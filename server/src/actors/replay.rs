@@ -2,36 +2,33 @@ use super::{TableActor, chat::server_chat, setup::next_requested_seed};
 use crate::{
     model::{
         ExtraOptions, IDLE_TIMEOUT_MS, MAX_TABLE_NAME_LENGTH, MAX_TAG_LENGTH, PendingTag, Phase,
-        TableChat, Tag, tag_too_long,
+        TableChat, Tag, TagOperation, tag_too_long,
     },
     transport::{Outgoing, Session, frame},
 };
 use anyhow::{Context, Result, bail, ensure};
 use chrono::Utc;
-use hanabi_protocol::{MIN_PLAYERS, TableId, TableRequest};
-use serde_json::{Value, json};
+use hanabi_protocol::{HypotheticalAction, MIN_PLAYERS, TableId, TableRequest};
 use std::sync::Arc;
 
 /// Removes the moves of a hypothetical's last turn, the way clients go back. Morphs stay, since
 /// clients keep them when going back.
-pub(super) fn undo_hypothetical_turn(actions: &mut Vec<String>) {
-    let kind = |raw: &String| {
-        serde_json::from_str::<Value>(raw)
-            .ok()
-            .and_then(|v| v["type"].as_str().map(str::to_owned))
-            .unwrap_or_default()
-    };
-    let Some(last_turn) = actions.iter().rposition(|a| kind(a) == "turn") else {
+pub(super) fn undo_hypothetical_turn(actions: &mut Vec<HypotheticalAction>) {
+    let is_turn = |action: &HypotheticalAction| matches!(action, HypotheticalAction::Turn { .. });
+    let Some(last_turn) = actions.iter().rposition(is_turn) else {
         return;
     };
     let start = actions[..last_turn]
         .iter()
-        .rposition(|a| kind(a) == "turn")
+        .rposition(is_turn)
         .map_or(0, |i| i + 1);
     let mut index = 0;
-    actions.retain(|a| {
+    actions.retain(|action| {
         let keep = !(start..=last_turn).contains(&index)
-            || matches!(kind(a).as_str(), "morph" | "unmorph");
+            || matches!(
+                action,
+                HypotheticalAction::Morph { .. } | HypotheticalAction::Unmorph { .. }
+            );
         index += 1;
         keep
     });
@@ -43,7 +40,7 @@ impl TableActor {
         session: Arc<Session>,
         raw: &str,
         room: &str,
-        operation: &str,
+        operation: TagOperation,
     ) -> Result<()> {
         ensure!(self.attending(&session), "Not attending");
         ensure!(raw.len() <= MAX_TAG_LENGTH, tag_too_long());
@@ -54,7 +51,7 @@ impl TableActor {
                 .trim(),
         );
         ensure!(
-            operation == "tagsDeleteAll" || !tag.is_empty(),
+            operation == TagOperation::TagsDeleteAll || !tag.is_empty(),
             "Tags cannot be blank."
         );
         let mut next = self.candidate();
@@ -80,7 +77,7 @@ impl TableActor {
             .tags
             .iter()
             .any(|t| t.user == session.user && t.tag == tag);
-        if operation == "tag" {
+        if operation == TagOperation::Tag {
             ensure!(
                 !replay || !exists,
                 "You have already tagged this game with \"{escaped}\"."
@@ -94,11 +91,11 @@ impl TableActor {
             });
         } else {
             ensure!(
-                operation == "tagsDeleteAll" || exists,
+                operation == TagOperation::TagsDeleteAll || exists,
                 "The tag of \"{escaped}\" does not exist on this game yet."
             );
             s.tags.retain(|t| {
-                if operation == "tagsDeleteAll" {
+                if operation == TagOperation::TagsDeleteAll {
                     t.user != session.user
                 } else if replay {
                     t.user != session.user || t.tag != tag
@@ -115,17 +112,17 @@ impl TableActor {
             next.pending_tag = Some(PendingTag {
                 game_id: s.game_id,
                 user_id: session.user,
-                operation: operation.into(),
+                operation,
                 tag: tag.clone(),
             });
         }
-        let verb = if operation == "tag" {
+        let verb = if operation == TagOperation::Tag {
             "added"
         } else {
             "deleted"
         };
         let text = if replay {
-            if operation == "tagsDeleteAll" {
+            if operation == TagOperation::TagsDeleteAll {
                 format!(
                     "{} has deleted all their tags for this game.",
                     crate::accounts::escape_html(&session.name)
@@ -136,12 +133,16 @@ impl TableActor {
                     crate::accounts::escape_html(&session.name)
                 )
             }
-        } else if operation == "tagsDeleteAll" {
+        } else if operation == TagOperation::TagsDeleteAll {
             "Successfully deleted all your tags for this game.".into()
         } else {
             format!(
                 "Successfully {verb} {} tag of \"{escaped}\".",
-                if operation == "tag" { "a" } else { "the" }
+                if operation == TagOperation::Tag {
+                    "a"
+                } else {
+                    "the"
+                }
             )
         };
         let mut message = server_chat(self.table.id, &text);
@@ -149,7 +150,7 @@ impl TableActor {
             next.chat.push(TableChat {
                 id: None,
                 user: 0,
-                message: json!(message),
+                message: message.clone(),
             });
         } else {
             message.room = Some(room.to_owned());
@@ -216,7 +217,7 @@ impl TableActor {
         next.chat.push(TableChat {
             id: None,
             user: 0,
-            message: json!(message),
+            message: message.clone(),
         });
         self.persist(next).await?;
         let mut e = self.effects();
@@ -325,20 +326,14 @@ impl TableActor {
                 )
             }
             R::HypoAction { action, .. } => {
-                // Stored as JSON text, the format table checkpoints have always used.
-                let raw = serde_json::to_string(&action)?;
                 ensure!(
                     replay.hypothetical_actions.len() < crate::model::MAX_HYPOTHETICAL_ACTIONS
-                        && replay
-                            .hypothetical_actions
-                            .iter()
-                            .map(String::len)
-                            .sum::<usize>()
-                            + raw.len()
+                        && crate::model::hypothetical_bytes(&replay.hypothetical_actions)?
+                            + serde_json::to_string(&action)?.len()
                             <= crate::model::MAX_HYPOTHETICAL_BYTES,
                     "Too many hypothetical actions"
                 );
-                replay.hypothetical_actions.push(raw);
+                replay.hypothetical_actions.push(action.clone());
                 Outgoing::new(hanabi_protocol::server::HYPO_ACTION, action)
             }
             R::HypoBack { .. } => {
@@ -508,7 +503,7 @@ impl TableActor {
         next.chat.push(TableChat {
             id: None,
             user: 0,
-            message: json!(message),
+            message: message.clone(),
         });
         self.persist(next).await?;
         let mut e = self.effects();

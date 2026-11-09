@@ -431,7 +431,7 @@ impl Hub {
         let result = match command {
             Operation::Drained { .. } => unreachable!("handled before dispatch"),
             Operation::Inspect => Ok(
-                json!({"users":self.sessions.values().map(Self::user).collect::<Vec<_>>(),"tables":self.tables.values().map(|e|e.view.inspection.clone()).collect::<Vec<_>>(),"activeGames":self.tables.values().filter(|e|e.view.inspection["running"]==true&&e.view.inspection["replay"]==false&&e.view.inspection["frozen"]==false).count()}),
+                json!({"users":self.sessions.values().map(Self::user).collect::<Vec<_>>(),"tables":self.tables.values().map(|e|e.view.inspection).collect::<Vec<_>>(),"activeGames":self.tables.values().filter(|e|e.view.inspection.running&&!e.view.inspection.replay&&!e.view.inspection.frozen).count()}),
             ),
             Operation::Mute { user_id } => {
                 self.disconnect(&[user_id]);

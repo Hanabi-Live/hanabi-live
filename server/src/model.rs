@@ -2,7 +2,9 @@ use crate::game::{AssignedCharacter, Game, Options};
 use anyhow::{Result, ensure};
 use chrono::{DateTime, Utc};
 use hanabi_engine::EndCondition;
-use hanabi_protocol::{CLOCK_UNITS_PER_MINUTE, NO_VALUE, ReplayAction};
+use hanabi_protocol::{
+    CLOCK_UNITS_PER_MINUTE, Chat, HypotheticalAction, NO_VALUE, PregameStats, ReplayAction,
+};
 pub use hanabi_protocol::{CLOCK_UNITS_PER_SECOND, IDLE_TIMEOUT_MS};
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
@@ -17,7 +19,7 @@ pub const IDLE_WARNING_MS: i64 = 5 * CLOCK_UNITS_PER_MINUTE;
 pub struct Player {
     pub id: i32,
     pub name: String,
-    pub stats: Value,
+    pub stats: PregameStats,
 }
 #[derive(Clone, Debug, Default, Serialize, Deserialize)]
 #[serde(default, rename_all = "camelCase", deny_unknown_fields)]
@@ -89,8 +91,16 @@ pub struct Tag {
 pub struct PendingTag {
     pub game_id: i32,
     pub user_id: i32,
-    pub operation: String,
+    pub operation: TagOperation,
     pub tag: String,
+}
+/// A change to a replay's tags that a checkpoint records until the database applies it.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub enum TagOperation {
+    Tag,
+    TagDelete,
+    TagsDeleteAll,
 }
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
@@ -100,7 +110,9 @@ pub struct ReplayState {
     pub efficiency_modifier: i32,
     /// Whether the leader is exploring a hypothetical.
     pub hypothetical: bool,
-    pub hypothetical_actions: Vec<String>,
+    /// Stored as JSON text, the format table checkpoints have always used.
+    #[serde(with = "json_text")]
+    pub hypothetical_actions: Vec<HypotheticalAction>,
     pub show_drawn_cards: bool,
     /// Whether the shared replay hides what happens later in the game.
     #[serde(default, skip_serializing_if = "std::ops::Not::not")]
@@ -154,19 +166,54 @@ pub struct TableChat {
     #[serde(default)]
     pub id: Option<i32>,
     pub user: i32,
-    pub message: Value,
+    pub message: Chat,
 }
 impl TableChat {
+    /// When the message was sent.
+    pub fn sent(&self) -> Result<DateTime<Utc>> {
+        Ok(DateTime::parse_from_rfc3339(&self.message.datetime)
+            .map_err(|_| anyhow::anyhow!("Invalid checkpoint chat timestamp"))?
+            .with_timezone(&Utc))
+    }
     /// The message as the wire carries it. Checkpoints keep each message's timestamp as it was
     /// archived, which messages from before timestamps had one form may write with microseconds.
-    pub fn wire_message(&self) -> Result<Value> {
-        let mut message = self.message.clone();
-        let time = message["datetime"]
-            .as_str()
-            .and_then(|text| DateTime::parse_from_rfc3339(text).ok())
-            .ok_or_else(|| anyhow::anyhow!("Invalid checkpoint chat timestamp"))?;
-        message["datetime"] = Value::String(timestamp(time.with_timezone(&Utc)));
-        Ok(message)
+    pub fn wire_message(&self) -> Result<Chat> {
+        Ok(Chat {
+            datetime: timestamp(self.sent()?),
+            ..self.message.clone()
+        })
+    }
+}
+/// The serialized size of a hypothetical's actions, which checkpoints store as JSON text.
+pub fn hypothetical_bytes(actions: &[HypotheticalAction]) -> Result<usize> {
+    actions.iter().try_fold(0, |total, action| {
+        Ok(total + serde_json::to_string(action)?.len())
+    })
+}
+/// Serializes a list as one JSON text per element.
+mod json_text {
+    use serde::{Deserialize, Deserializer, Serialize, Serializer, de::DeserializeOwned};
+
+    pub fn serialize<S: Serializer, T: Serialize>(
+        values: &[T],
+        serializer: S,
+    ) -> Result<S::Ok, S::Error> {
+        values
+            .iter()
+            .map(serde_json::to_string)
+            .collect::<Result<Vec<_>, _>>()
+            .map_err(serde::ser::Error::custom)?
+            .serialize(serializer)
+    }
+
+    pub fn deserialize<'de, D: Deserializer<'de>, T: DeserializeOwned>(
+        deserializer: D,
+    ) -> Result<Vec<T>, D::Error> {
+        Vec::<String>::deserialize(deserializer)?
+            .iter()
+            .map(|text| serde_json::from_str(text))
+            .collect::<Result<_, _>>()
+            .map_err(serde::de::Error::custom)
     }
 }
 impl TableSnapshot {
@@ -355,16 +402,7 @@ impl TableSnapshot {
             ensure!(
                 replay.segment >= 0
                     && replay.hypothetical_actions.len() <= MAX_HYPOTHETICAL_ACTIONS
-                    && replay
-                        .hypothetical_actions
-                        .iter()
-                        .map(String::len)
-                        .sum::<usize>()
-                        <= MAX_HYPOTHETICAL_BYTES
-                    && replay
-                        .hypothetical_actions
-                        .iter()
-                        .all(|raw| serde_json::from_str::<Value>(raw).is_ok()),
+                    && hypothetical_bytes(&replay.hypothetical_actions)? <= MAX_HYPOTHETICAL_BYTES,
                 "Invalid replay controls"
             );
         }
@@ -379,13 +417,7 @@ impl TableSnapshot {
         }
         if let Some(edit) = &self.pending_tag {
             ensure!(
-                edit.game_id > 0
-                    && edit.user_id > 0
-                    && matches!(
-                        edit.operation.as_str(),
-                        "tag" | "tagDelete" | "tagsDeleteAll"
-                    )
-                    && edit.tag.len() <= MAX_TAG_LENGTH,
+                edit.game_id > 0 && edit.user_id > 0 && edit.tag.len() <= MAX_TAG_LENGTH,
                 "Invalid durable tag edit"
             );
             ensure!(
@@ -714,17 +746,35 @@ mod tests {
     }
 
     #[test]
+    fn checkpoints_keep_hypothetical_actions_as_json_text() {
+        let text = r#"{"type":"unmorph","order":3}"#;
+        let stored = serde_json::json!({
+            "leader": 1, "segment": 0, "efficiencyModifier": 0, "hypothetical": true,
+            "hypotheticalActions": [text], "showDrawnCards": false
+        });
+        let replay: ReplayState = serde_json::from_value(stored.clone()).unwrap();
+        assert!(matches!(
+            replay.hypothetical_actions[..],
+            [HypotheticalAction::Unmorph { order: 3 }]
+        ));
+        assert_eq!(serde_json::to_value(&replay).unwrap(), stored);
+    }
+
+    #[test]
     fn checkpoint_chat_keeps_its_archived_timestamp_but_sends_the_wire_form() {
         let chat = TableChat {
             id: Some(1),
             user: 1,
-            message: serde_json::json!({"msg": "hi", "datetime": "2026-11-02T20:00:00.123456Z"}),
+            message: serde_json::from_value(serde_json::json!(
+                {"msg": "hi", "source": "user", "datetime": "2026-11-02T20:00:00.123456Z"}
+            ))
+            .unwrap(),
         };
         assert_eq!(
-            chat.wire_message().unwrap()["datetime"],
+            chat.wire_message().unwrap().datetime,
             "2026-11-02T20:00:00.123Z"
         );
-        assert_eq!(chat.message["datetime"], "2026-11-02T20:00:00.123456Z");
+        assert_eq!(chat.message.datetime, "2026-11-02T20:00:00.123456Z");
     }
 
     #[test]

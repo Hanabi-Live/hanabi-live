@@ -602,12 +602,7 @@ impl TableActor {
                         hanabi_protocol::server::HYPOTHETICAL,
                         hanabi_protocol::Hypothetical {
                             show_drawn_cards: replay.show_drawn_cards,
-                            actions: replay
-                                .hypothetical_actions
-                                .iter()
-                                .map(|raw| hanabi_protocol::decode(&serde_json::from_str(raw)?))
-                                .collect::<Result<_>>()
-                                .context("Invalid stored hypothetical action")?,
+                            actions: replay.hypothetical_actions.clone(),
                         },
                     ),
                 ));

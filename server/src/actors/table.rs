@@ -1,7 +1,7 @@
 use super::{
     Allocation, Attendance, Command, Effects, GameInfo, HubCommand, NO_SHADOWED_SEAT,
     PREGAME_RECONNECT_GRACE, REPLAY_RECONNECT_GRACE, Reply, TableActor, TableChange, TableCommand,
-    TableView,
+    TableInspection, TableView,
     chat::{TABLE_CHAT_LIMIT, TABLE_CHAT_WINDOW, VariantDiscovery, is_variant_discovery},
     pregame::remove_pregame_players,
     setup::table_options,
@@ -10,7 +10,7 @@ use super::{
 use crate::{
     model::{
         CLOCK_UNITS_PER_SECOND, IDLE_TIMEOUT_MS, IDLE_WARNING_MS, Phase, Snapshot, TableChat,
-        TableSnapshot, small,
+        TableSnapshot, TagOperation, small,
     },
     server_info::ServerInfo,
     store::Store,
@@ -24,7 +24,7 @@ use hanabi_protocol::{
     TableRequest, TableStarted, UserId, Warning,
 };
 use serde::Serialize;
-use serde_json::{Value, json};
+use serde_json::json;
 use std::{
     collections::{BTreeMap, HashMap, HashSet},
     sync::{Arc, Mutex},
@@ -101,7 +101,11 @@ impl TableActor {
                 .filter(|(id, _)| replay || self.table.players().iter().all(|p| p.id != **id))
                 .map(|(id, shadow)| (*id, *shadow))
                 .collect(),
-            inspection: json!({"running":running,"replay":replay,"frozen":self.frozen}),
+            inspection: TableInspection {
+                running,
+                replay,
+                frozen: self.frozen,
+            },
             data: hanabi_protocol::Table {
                 database_id: replay_game.map(GameId),
                 id: TableId(self.table.id),
@@ -225,31 +229,13 @@ impl TableActor {
         }
     }
     pub(super) fn pregame_messages(&self, e: &mut Effects) {
-        // Statistics are stored in the checkpoint as JSON; a malformed value shows as no games
-        // rather than withholding the pregame.
-        let stats = self
-            .table
-            .players()
-            .iter()
-            .map(|p| {
-                serde_json::from_value::<hanabi_protocol::PregameStats>(p.stats.clone())
-                    .unwrap_or_else(|error| {
-                        eprintln!(
-                            "Invalid pregame statistics at table {}: {error}",
-                            self.table.id
-                        );
-                        hanabi_protocol::PregameStats::default()
-                    })
-            })
-            .collect::<Vec<_>>();
         for a in self.audience() {
             let players = self
                 .table
                 .players()
                 .iter()
-                .zip(&stats)
                 .enumerate()
-                .map(|(index, (p, stats))| hanabi_protocol::PregamePlayer {
+                .map(|(index, p)| hanabi_protocol::PregamePlayer {
                     index: small(index),
                     name: p.name.clone(),
                     you: p.id == a.session.user,
@@ -257,7 +243,7 @@ impl TableActor {
                         .attendees
                         .get(&p.id)
                         .is_some_and(|a| a.session.active() && !a.spectator),
-                    stats: stats.clone(),
+                    stats: p.stats.clone(),
                 })
                 .collect();
             let pregame = hanabi_protocol::Pregame {
@@ -607,12 +593,8 @@ impl TableActor {
             .filter(|player| users.contains(&player.id))
         {
             let count = counts.get(&player.id).copied().unwrap_or(0);
-            let stats = player
-                .stats
-                .as_object_mut()
-                .context("Invalid cached pregame statistics")?;
-            if stats.get("numGames").and_then(Value::as_i64) != Some(count) {
-                stats.insert("numGames".into(), json!(count));
+            if player.stats.num_games != count {
+                player.stats.num_games = count;
                 changed = true;
             }
         }
@@ -884,10 +866,15 @@ impl TableActor {
             ClientMessage::Pause(r) => self.pause(session, r.setting).await,
             ClientMessage::IdleReset(_) => self.idle_reset(session).await,
             ClientMessage::Note(r) => self.note(session, r.order, &r.note).await,
-            ClientMessage::Tag(r) | ClientMessage::TagDelete(r) => {
-                self.tag(session, &r.msg, &r.room, name).await
+            ClientMessage::Tag(r) => self.tag(session, &r.msg, &r.room, TagOperation::Tag).await,
+            ClientMessage::TagDelete(r) => {
+                self.tag(session, &r.msg, &r.room, TagOperation::TagDelete)
+                    .await
             }
-            ClientMessage::TagsDeleteAll(r) => self.tag(session, "", &r.room, name).await,
+            ClientMessage::TagsDeleteAll(r) => {
+                self.tag(session, "", &r.room, TagOperation::TagsDeleteAll)
+                    .await
+            }
             ClientMessage::Chat(r) => self.chat(session, &r.msg).await,
             ClientMessage::ChatRead(_) => self.chat_presence(session, false).await,
             ClientMessage::ChatTyping(_) => self.chat_presence(session, true).await,

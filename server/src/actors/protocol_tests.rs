@@ -536,9 +536,7 @@ async fn leader_transfers_announce_the_actor_and_target_once_to_the_table() -> R
                 "Leader notice leaked outside the table"
             );
             let table = h.snapshot(id).await?.0;
-            ensure!(
-                table.chat.len() == before + 1 && table.chat[before].message["msg"] == expected
-            );
+            ensure!(table.chat.len() == before + 1 && table.chat[before].message.msg == expected);
             ensure!(
                 h.send(
                     2,
@@ -1008,7 +1006,7 @@ async fn trying_to_join_a_full_table_tells_its_players_once() -> Result<()> {
         let notices = table
             .chat
             .iter()
-            .filter(|c| c.message.to_string().contains("tried to join"))
+            .filter(|c| c.message.msg.contains("tried to join"))
             .count();
         ensure!(notices == 1, "The table was told {notices} times");
         Ok(())
@@ -1356,7 +1354,7 @@ async fn remade_tables_publish_fresh_statistics_for_every_player() -> Result<()>
         let (saved, _) = h.snapshot(remade).await?;
         for player in saved.players() {
             ensure!(
-                player.stats["variant"]["bestScores"][0]["score"] == score,
+                player.stats.variant.best_scores[0].score == score,
                 "Fresh statistics were not persisted"
             );
         }
@@ -1848,11 +1846,11 @@ async fn pregame_total_counts_only_normal_non_speedrun_games() -> Result<()> {
         let snapshot = h.snapshot(id).await?.0;
         let players = snapshot.players();
         ensure!(
-            players.iter().find(|player| player.id == 1).context("Missing Alice")?.stats["numGames"] == 2,
+            players.iter().find(|player| player.id == 1).context("Missing Alice")?.stats.num_games == 2,
             "Pregame total must count normal non-speedrun games across variants, including zero-score normal finishes"
         );
         ensure!(
-            players.iter().find(|player| player.id == 2).context("Missing Bob")?.stats["numGames"] == 0,
+            players.iter().find(|player| player.id == 2).context("Missing Bob")?.stats.num_games == 0,
             "Another player's history must not affect the total"
         );
         ensure!(
@@ -1901,7 +1899,7 @@ async fn unknown_table_commands_are_persisted_and_delivered_to_bots() -> Result<
                     snapshot.chat.len() == before + 1,
                     "Command was not persisted"
                 );
-                ensure!(snapshot.chat[before].message["msg"] == expected);
+                ensure!(snapshot.chat[before].message.msg == expected);
                 ensure!(
                     chat_messages(&h.frames(2)?).is_empty(),
                     "Outsider received chat"
@@ -1957,8 +1955,8 @@ async fn option_proposals_publish_changed_values_but_keep_apply_button_private()
         let table = h.snapshot(id).await?.0;
         ensure!(table.options.variant_name == "No Variant" && table.name == "Original" && table.max_players == 5);
         let message = &table.chat.last().context("Summary was not persisted")?.message;
-        ensure!(message["msg"].as_str().unwrap().contains("Variant: <b>6 Suits</b>"));
-        ensure!(message.get("recipient").is_none());
+        ensure!(message.msg.contains("Variant: <b>6 Suits</b>"));
+        ensure!(message.recipient.is_none());
         let before = table.chat.len();
         let error = h.send(1, "tableUpdate", json!({"tableID":id,"name":"Original","maxPlayers":5,"options":{}}))
             .await.expect_err("Unchanged options should be rejected");
@@ -1990,7 +1988,7 @@ async fn findvariant_delivers_owner_button_and_guards_the_start_action() -> Resu
         let options=browser_json(suggestion(proposal)?);
         ensure!(options["variantName"]=="Rainbow (5 Suits)"&&options["tableName"]=="Team discovery"&&options["maxPlayers"]==5&&options["deckPlays"]==true&&options["oneExtraCard"]==true,"Proposal lost table settings");
         let (table,_)=h.snapshot(id).await?;
-        ensure!(table.chat.iter().all(|c|!c.message["msg"].as_str().unwrap_or("").contains("new-options")),"Private proposal entered public history");
+        ensure!(table.chat.iter().all(|c|!c.message.msg.contains("new-options")),"Private proposal entered public history");
         h.send(0,"tableUpdate",json!({"tableID":id,"name":options["tableName"],"maxPlayers":options["maxPlayers"],"options":options})).await?;
         let before=h.snapshot(id).await?.1;
         for data in [

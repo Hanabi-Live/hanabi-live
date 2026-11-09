@@ -770,7 +770,7 @@ async fn full_table_mailboxes_do_not_block_hub_and_replacements_fence_private_ef
         replay_game: None,
         visible: false,
         data: test_table(),
-        inspection: json!({}),
+        inspection: TableInspection::default(),
         reconnects: BTreeMap::new(),
     };
     let mut hub = Hub {
@@ -892,7 +892,7 @@ fn a_table_chat_that_players_filled_still_fits_in_a_checkpoint() -> Result<()> {
             table.chat.push(TableChat {
                 id: None,
                 user: 1,
-                message: json!(authored_chat(u64::MAX, &name, &text)),
+                message: authored_chat(u64::MAX, &name, &text),
             });
         }
     }
@@ -901,7 +901,7 @@ fn a_table_chat_that_players_filled_still_fits_in_a_checkpoint() -> Result<()> {
         table.chat.push(TableChat {
             id: None,
             user: 0,
-            message: json!(server_chat(u64::MAX, &notice)),
+            message: server_chat(u64::MAX, &notice),
         });
     }
     let size = serde_json::to_vec(&table)?.len();
@@ -915,7 +915,24 @@ fn a_table_chat_that_players_filled_still_fits_in_a_checkpoint() -> Result<()> {
 
 #[test]
 fn hypothetical_back_keeps_morphs() {
-    let action = |kind: &str, n: i64| json!({"type":kind,"order":n}).to_string();
+    let action = |kind: &str, n: i64| -> hanabi_protocol::HypotheticalAction {
+        let card = json!({"playerIndex":0,"order":n,"suitIndex":0,"rank":1});
+        let mut value = match kind {
+            "turn" => json!({"num":n,"currentPlayerIndex":0}),
+            "morph" => json!({"order":n,"suitIndex":0,"rank":1}),
+            "unmorph" => json!({"order":n}),
+            "discard" => json!({"playerIndex":0,"order":n,"suitIndex":0,"rank":1,"failed":false}),
+            _ => card,
+        };
+        value["type"] = json!(kind);
+        serde_json::from_value(value).unwrap()
+    };
+    let text = |actions: &[hanabi_protocol::HypotheticalAction]| {
+        actions
+            .iter()
+            .map(|action| serde_json::to_string(action).unwrap())
+            .collect::<Vec<_>>()
+    };
     let mut actions = vec![
         action("play", 0),
         action("turn", 1),
@@ -927,16 +944,22 @@ fn hypothetical_back_keeps_morphs() {
     ];
     undo_hypothetical_turn(&mut actions);
     assert_eq!(
-        actions,
-        [
+        text(&actions),
+        text(&[
             action("play", 0),
             action("turn", 1),
             action("morph", 2),
             action("unmorph", 6),
-        ]
+        ])
     );
     undo_hypothetical_turn(&mut actions);
-    assert_eq!(actions, [action("morph", 2), action("unmorph", 6)]);
+    assert_eq!(
+        text(&actions),
+        text(&[action("morph", 2), action("unmorph", 6)])
+    );
     undo_hypothetical_turn(&mut actions);
-    assert_eq!(actions, [action("morph", 2), action("unmorph", 6)]);
+    assert_eq!(
+        text(&actions),
+        text(&[action("morph", 2), action("unmorph", 6)])
+    );
 }

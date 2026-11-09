@@ -1,14 +1,15 @@
 use crate::{
     game::{Game, Options},
     model::{
-        FORMAT, IDLE_TIMEOUT_MS, PendingTag, Phase, Player, Snapshot, TableChat, TableSnapshot, Tag,
+        FORMAT, IDLE_TIMEOUT_MS, PendingTag, Phase, Player, Snapshot, TableChat, TableSnapshot,
+        Tag, TagOperation,
     },
     state::RedisState,
 };
 use anyhow::{Context, Result, ensure};
 use chrono::{DateTime, SubsecRound, Utc};
 use hanabi_engine::{AssignedCharacter, EndCondition, GameSetup, Interpretation};
-use hanabi_protocol::NO_VALUE;
+use hanabi_protocol::{ChatSource, NO_VALUE};
 use serde_json::{Value, json};
 
 use sqlx::{
@@ -327,12 +328,8 @@ impl Store {
                 let mut changed = false;
                 for player in players {
                     let count = counts.get(&player.id).copied().unwrap_or(0);
-                    let stats = player
-                        .stats
-                        .as_object_mut()
-                        .context("Invalid cached pregame statistics")?;
-                    if stats.get("numGames").and_then(Value::as_i64) != Some(count) {
-                        stats.insert("numGames".into(), json!(count));
+                    if player.stats.num_games != count {
+                        player.stats.num_games = count;
                         changed = true;
                     }
                 }
@@ -666,13 +663,7 @@ impl Store {
         );
         for (index, id) in pending.into_iter().zip(ids) {
             let chat = &mut table.chat[index];
-            let datetime = DateTime::parse_from_rfc3339(
-                chat.message["datetime"]
-                    .as_str()
-                    .context("Invalid chat timestamp")?,
-            )?
-            .with_timezone(&Utc);
-            chat.message["datetime"] = json!(crate::model::timestamp(datetime));
+            chat.message.datetime = crate::model::timestamp(chat.sent()?);
             chat.id = Some(i32::try_from(id)?);
         }
         Ok(())
@@ -687,25 +678,18 @@ impl Store {
             ensure!(id > 0, "Invalid durable chat identity");
             advisory_lock(&mut tx, LockSpace::Chat, id).await?;
             self.check_state()?;
-            let msg = entry.message["msg"]
-                .as_str()
-                .context("Invalid archived chat message")?;
-            let room = entry.message["room"]
-                .as_str()
+            let msg = &entry.message.msg;
+            let room = entry
+                .message
+                .room
+                .as_deref()
                 .context("Invalid archived chat room")?;
-            let source = entry.message["source"]
-                .as_str()
-                .context("Invalid archived chat source")?;
-            ensure!(
-                matches!(source, "user" | "server"),
-                "Invalid table chat source"
-            );
-            let datetime = DateTime::parse_from_rfc3339(
-                entry.message["datetime"]
-                    .as_str()
-                    .context("Invalid chat timestamp")?,
-            )?
-            .with_timezone(&Utc);
+            let source = match entry.message.source {
+                ChatSource::User => "user",
+                ChatSource::Server => "server",
+                ChatSource::Discord => anyhow::bail!("Invalid table chat source"),
+            };
+            let datetime = entry.sent()?;
             ensure!(
                 datetime.trunc_subsecs(DATABASE_TIMESTAMP_DIGITS) == datetime,
                 "Chat timestamp must use PostgreSQL precision before checkpointing"
@@ -719,7 +703,7 @@ impl Store {
             .await?;
             ensure!(
                 existing.user_id == entry.user
-                    && existing.message.clone() == msg
+                    && existing.message == *msg
                     && existing.room.clone() == room
                     && existing.source.clone() == source
                     && existing.datetime_sent == datetime,
@@ -737,11 +721,11 @@ impl Store {
             .fetch_one(&mut *tx)
             .await?;
         self.check_state()?;
-        match edit.operation.as_str() {
-            "tag" => {
+        match edit.operation {
+            TagOperation::Tag => {
                 sqlx::query!("INSERT INTO game_tags(game_id,user_id,tag) SELECT $1,$2,$3 WHERE NOT EXISTS(SELECT 1 FROM game_tags WHERE game_id=$1 AND user_id=$2 AND tag=$3)", edit.game_id, edit.user_id, &edit.tag).execute(&mut *tx).await?;
             }
-            "tagDelete" => {
+            TagOperation::TagDelete => {
                 sqlx::query!(
                     "DELETE FROM game_tags WHERE game_id=$1 AND user_id=$2 AND tag=$3",
                     edit.game_id,
@@ -751,7 +735,7 @@ impl Store {
                 .execute(&mut *tx)
                 .await?;
             }
-            "tagsDeleteAll" => {
+            TagOperation::TagsDeleteAll => {
                 sqlx::query!(
                     "DELETE FROM game_tags WHERE game_id=$1 AND user_id=$2",
                     edit.game_id,
@@ -760,7 +744,6 @@ impl Store {
                 .execute(&mut *tx)
                 .await?;
             }
-            _ => anyhow::bail!("Invalid durable tag operation"),
         }
         let mut tags = vec![];
         for row in sqlx::query!(
@@ -935,7 +918,10 @@ impl Store {
 }
 /// A pregame player's statistics as their table's checkpoint stores them: all of their games, and
 /// their games and best scores on the table's variant, from `user_stats` if they have played it.
-fn player_stats(num_games: i64, row: Option<&crate::database::UserStats>) -> Value {
+fn player_stats(
+    num_games: i64,
+    row: Option<&crate::database::UserStats>,
+) -> hanabi_protocol::PregameStats {
     let (variant_games, best_scores) =
         row.map_or((0, [(0, 0); crate::database::PLAYER_COUNTS]), |row| {
             (
@@ -949,7 +935,7 @@ fn player_stats(num_games: i64, row: Option<&crate::database::UserStats>) -> Val
                 ],
             )
         });
-    let stats = hanabi_protocol::PregameStats {
+    hanabi_protocol::PregameStats {
         num_games,
         variant: hanabi_protocol::PregameVariantStats {
             num_games: variant_games,
@@ -961,10 +947,9 @@ fn player_stats(num_games: i64, row: Option<&crate::database::UserStats>) -> Val
                 })
                 .collect(),
         },
-    };
-    serde_json::to_value(stats).expect("Pregame statistics serialize to JSON")
+    }
 }
-pub fn zero_stats() -> Value {
+pub fn zero_stats() -> hanabi_protocol::PregameStats {
     player_stats(0, None)
 }
 pub fn options_from_record(row: &crate::archive::GameRecord) -> Result<Options> {
@@ -1108,7 +1093,7 @@ mod tests {
             .map(unplayed)
             .collect();
         assert_eq!(
-            zero_stats(),
+            serde_json::to_value(zero_stats()).unwrap(),
             json!({"numGames":0,"variant":{"numGames":0,"bestScores":best_scores}})
         );
 
@@ -1127,7 +1112,7 @@ mod tests {
             best_score6: 30,
             best_score6_mod: 16,
         };
-        let stats = player_stats(12, Some(&row));
+        let stats = serde_json::to_value(player_stats(12, Some(&row))).unwrap();
         hanabi_protocol::validate::<hanabi_protocol::PregameStats>(&stats).unwrap();
         assert_eq!(stats["numGames"], 12);
         assert_eq!(stats["variant"]["numGames"], 7);
@@ -1198,17 +1183,17 @@ mod tests {
             let Phase::Pregame { players, .. } = &mut table.phase else {
                 unreachable!();
             };
-            players[0].stats["numGames"] = json!(727);
+            players[0].stats.num_games = 727;
             players.push(Player {
                 id: 2,
                 name: "Bob".into(),
                 stats: zero_stats(),
             });
-            players[1].stats["numGames"] = json!(572);
+            players[1].stats.num_games = 572;
             let original_revision = store.save(&table, 0).await?;
             let mut replay = pregame(store.allocate_table().await?);
             terminal(&mut replay)?;
-            replay.game_mut().unwrap().players[0].stats["numGames"] = json!(727);
+            replay.game_mut().unwrap().players[0].stats.num_games = 727;
             replay.phase = Phase::Replay {
                 snapshot: Box::new(replay.game().unwrap().clone()),
                 replay: crate::model::ReplayState {
@@ -1228,7 +1213,7 @@ mod tests {
             sqlx::query("LOCK TABLE games IN ACCESS EXCLUSIVE MODE").execute(&mut *blocked_archive).await?;
             let startup = tokio::time::timeout(Duration::from_secs(1), store.load_for_startup()).await??;
             let cached = startup.iter().find(|(saved, _)| saved.id == table.id).context("Missing startup pregame")?;
-            ensure!(cached.1 == original_revision && cached.0.players()[0].stats["numGames"] == 727,
+            ensure!(cached.1 == original_revision && cached.0.players()[0].stats.num_games == 727,
                 "Startup waited for optional statistics or changed its cached snapshot");
             blocked_archive.rollback().await?;
             let restored = store.load().await?;
@@ -1239,8 +1224,8 @@ mod tests {
             let Phase::Pregame { players, .. } = &mut table.phase else {
                 unreachable!();
             };
-            players[0].stats["numGames"] = json!(1);
-            players[1].stats["numGames"] = json!(0);
+            players[0].stats.num_games = 1;
+            players[1].stats.num_games = 0;
             ensure!(
                 serde_json::to_value(actual)? == serde_json::to_value(&table)?,
                 "Recovery must refresh totals without changing other pregame data"
@@ -1374,7 +1359,7 @@ mod tests {
             );
             terminal(&mut table)?;
             table.game_mut().unwrap().idle_remaining = 0;
-            table.game_mut().unwrap().players[0].stats["variant"]["numGames"] = json!(3);
+            table.game_mut().unwrap().players[0].stats.variant.num_games = 3;
             table.game_mut().unwrap().spectator_notes.insert(
                 3,
                 crate::model::NoteOwner {
@@ -1384,7 +1369,7 @@ mod tests {
             );
             let revision = store.save(&table, 2).await?;
             let mut changed = table.game().unwrap().clone();
-            changed.players[0].stats["variant"]["numGames"] = json!(4);
+            changed.players[0].stats.variant.num_games = 4;
             ensure!(
                 store.complete(&changed, revision).await.is_err(),
                 "Completion accepted statistics that differ from the durable checkpoint"
@@ -1443,7 +1428,7 @@ mod tests {
                 "Archive replay differs"
             );
             let mut pending=recovered[0].0.clone();
-            pending.pending_tag=Some(PendingTag{game_id:1,user_id:1,operation:"tag".into(),tag:"recovered-tag".into()});
+            pending.pending_tag=Some(PendingTag{game_id:1,user_id:1,operation:TagOperation::Tag,tag:"recovered-tag".into()});
             store.save(&pending,recovered[0].1).await?;
             #[expect(clippy::disallowed_methods, reason = "test SQL that sets up database state or failures directly")]
             sqlx::query("ALTER TABLE game_tags ADD CONSTRAINT reject_native_tag CHECK(tag <> 'recovered-tag')").execute(&store.primary).await?;
@@ -1559,7 +1544,7 @@ mod tests {
             .execute(&store.primary)
             .await?;
             let player = store.player(9001, "Carol".into()).await?;
-            let best = &player.stats["variant"]["bestScores"];
+            let best = serde_json::to_value(&player.stats.variant.best_scores)?;
             ensure!(
                 best[0]["score"] == 25
                     && best[0]["modifier"] == 4
@@ -1591,7 +1576,7 @@ mod tests {
         let store = Store::fixture(pool, state);
         let result=async{
             let id=store.allocate_table().await?;let mut table=pregame(id);
-            let message=json!({"msg":"identical legitimate entry","who":"Alice","source":"user","room":format!("table{id}"),"datetime":"2026-11-02T20:00:00.123456789Z"});
+            let message:hanabi_protocol::Chat=serde_json::from_value(json!({"msg":"identical legitimate entry","who":"Alice","source":"user","room":format!("table{id}"),"datetime":"2026-11-02T20:00:00.123456789Z"}))?;
             table.chat=vec![
                 TableChat{id:None,user:1,message:message.clone()},
                 TableChat{id:None,user:1,message:message.clone()},
@@ -1600,7 +1585,7 @@ mod tests {
             store.prepare_chat(&mut table).await?;
             let ids=table.chat.iter().map(|chat|chat.id.unwrap()).collect::<Vec<_>>();
             ensure!(ids.iter().collect::<std::collections::HashSet<_>>().len()==3,"Distinct messages shared an identity");
-            ensure!(table.chat[0].message["datetime"]=="2026-11-02T20:00:00.123Z","Timestamp was not canonicalized before durability");
+            ensure!(table.chat[0].message.datetime=="2026-11-02T20:00:00.123Z","Timestamp was not canonicalized before durability");
             store.save(&table,0).await?;
             #[expect(clippy::disallowed_methods, reason = "test SQL that sets up database state or failures directly")]
             sqlx::query(sqlx::AssertSqlSafe(format!("ALTER TABLE chat_log ADD CONSTRAINT reject_reserved_chat CHECK(id <> {})",ids[2]))).execute(&store.primary).await?;
@@ -1613,7 +1598,7 @@ mod tests {
             left?;right?;
             let rows:i64=sqlx::query_scalar!("SELECT count(*) AS \"v!\" FROM chat_log WHERE id=ANY($1)", &ids).fetch_one(&store.primary).await?;
             ensure!(rows==3,"Concurrent retries duplicated or conflated legitimate chat");
-            let mut conflicting=table.chat[0].clone();conflicting.message["msg"]=json!("conflicting payload");
+            let mut conflicting=table.chat[0].clone();conflicting.message.msg="conflicting payload".into();
             ensure!(store.archive_chat(&[conflicting]).await.is_err(),"Conflicting content reused a durable chat identity");
             let recovered=store.load().await?;
             ensure!(recovered[0].0.chat_archived==3&&recovered[0].0.chat.iter().map(|c|c.id.unwrap()).collect::<Vec<_>>()==ids,"Recovery changed reserved chat identities");
@@ -1637,7 +1622,7 @@ mod tests {
         let id = store.allocate_table().await?;
         let mut table = pregame(id);
         terminal(&mut table)?;
-        table.chat.push(TableChat{id:None,user:1,message:json!({"msg":"fenced chat","who":"Alice","source":"user","room":format!("table{id}"),"datetime":"2026-11-02T20:00:00.123456Z"})});
+        table.chat.push(TableChat{id:None,user:1,message:serde_json::from_value(json!({"msg":"fenced chat","who":"Alice","source":"user","room":format!("table{id}"),"datetime":"2026-11-02T20:00:00.123456Z"}))?});
         store.prepare_chat(&mut table).await?;
         let chat_id = table.chat[0].id.unwrap();
         let revision = store.save(&table, 0).await?;
@@ -1652,7 +1637,7 @@ mod tests {
             old.apply_tag(&PendingTag {
                 game_id: 1,
                 user_id: 1,
-                operation: "tagsDeleteAll".into(),
+                operation: TagOperation::TagsDeleteAll,
                 tag: String::new(),
             })
             .await
@@ -1878,12 +1863,7 @@ mod tests {
             };
             ensure!(
                 replay.hypothetical
-                    && replay
-                        .hypothetical_actions
-                        .iter()
-                        .map(|raw| serde_json::from_str::<Value>(raw))
-                        .collect::<Result<Vec<_>, _>>()?
-                        == vec![action],
+                    && serde_json::to_value(&replay.hypothetical_actions)? == json!([action]),
                 "Hypothetical was not recovered exactly"
             );
             send(

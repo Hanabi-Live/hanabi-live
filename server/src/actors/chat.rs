@@ -9,7 +9,6 @@ use hanabi_protocol::{
     Chat, ChatSource, ClientMessage, MAX_PLAYERS, MIN_PLAYERS, SECONDS_PER_MINUTE, Status, TableId,
     TableRequest,
 };
-use serde_json::json;
 use std::{
     cmp::Ordering,
     collections::HashSet,
@@ -85,7 +84,7 @@ pub(super) fn membership_notice(table: &mut TableSnapshot, text: &str) -> Option
     table.chat.push(TableChat {
         id: None,
         user: 0,
-        message: json!(message),
+        message: message.clone(),
     });
     Some(message)
 }
@@ -261,7 +260,7 @@ impl TableActor {
         next.chat.push(TableChat {
             id: None,
             user: 0,
-            message: json!(message),
+            message: message.clone(),
         });
         self.persist(next).await?;
         let mut effects = self.effects();
@@ -360,7 +359,7 @@ impl TableActor {
                 next.chat.push(TableChat {
                     id: None,
                     user: if index == 0 { session.user } else { 0 },
-                    message: json!(message),
+                    message: message.clone(),
                 });
             }
             self.persist(next).await?;
@@ -386,7 +385,7 @@ impl TableActor {
         next.chat.push(TableChat {
             id: None,
             user: session.user,
-            message: json!(message),
+            message: message.clone(),
         });
         self.persist(next).await?;
         let typing = self
@@ -446,7 +445,7 @@ impl TableActor {
             next.chat.push(TableChat {
                 id: None,
                 user: 0,
-                message: json!(message),
+                message: message.clone(),
             });
             self.persist(next).await?;
             let mut e = self.effects();
@@ -489,7 +488,7 @@ impl TableActor {
                 next.chat.push(TableChat {
                     id: None,
                     user: 0,
-                    message: json!(message),
+                    message: message.clone(),
                 });
             }
             self.persist(next).await?;
@@ -611,12 +610,12 @@ impl TableActor {
         next.chat.push(TableChat {
             id: None,
             user: session.user,
-            message: json!(authored),
+            message: authored.clone(),
         });
         next.chat.push(TableChat {
             id: None,
             user: 0,
-            message: json!(notice),
+            message: notice.clone(),
         });
         self.persist(next).await?;
         let mut e = self.effects();

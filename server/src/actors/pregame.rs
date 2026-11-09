@@ -18,7 +18,6 @@ use anyhow::{Context, Result, bail, ensure};
 use chrono::Utc;
 use hanabi_engine::{EndCondition, GameSetup, Interpretation};
 use hanabi_protocol::{Chat, MIN_PLAYERS, NO_VALUE, Status, TableId, TableRequest, TableStarted};
-use serde_json::json;
 use std::{
     collections::{BTreeMap, HashSet},
     sync::Arc,
@@ -177,7 +176,7 @@ impl TableActor {
             next.chat.push(TableChat {
                 id: None,
                 user: 0,
-                message: json!(message),
+                message: message.clone(),
             });
             self.persist(next).await?;
             let mut e = self.effects();
@@ -244,7 +243,7 @@ impl TableActor {
         next.chat.push(TableChat {
             id: None,
             user: 0,
-            message: json!(message),
+            message: message.clone(),
         });
         self.persist(next).await?;
         let mut e = self.effects();
@@ -530,7 +529,7 @@ impl TableActor {
                 "At least {SPLIT_GROUPS} players required"
             );
             let mut sorted = players.clone();
-            sorted.sort_by_key(|p| std::cmp::Reverse(p.stats["numGames"].as_u64().unwrap_or(0)));
+            sorted.sort_by_key(|p| std::cmp::Reverse(p.stats.num_games));
             let mid = sorted.len() / SPLIT_GROUPS;
             if sorted[..mid].iter().any(|p| p.id == self.table.owner) {
                 sorted[mid..].to_vec()

@@ -8,6 +8,7 @@ use crate::{
 };
 use anyhow::{Result, ensure};
 use hanabi_protocol::{ClientMessage, NO_VALUE, Status};
+use serde::Serialize;
 use serde_json::Value;
 use std::{
     collections::{BTreeMap, HashMap, HashSet},
@@ -130,8 +131,15 @@ pub struct TableView {
     replay_game: Option<i32>,
     visible: bool,
     data: hanabi_protocol::Table,
-    inspection: Value,
+    inspection: TableInspection,
     reconnects: BTreeMap<i32, Option<i32>>,
+}
+/// A table's state as the operations endpoint reports it.
+#[derive(Clone, Copy, Default, PartialEq, Serialize)]
+struct TableInspection {
+    running: bool,
+    replay: bool,
+    frozen: bool,
 }
 #[derive(Clone)]
 pub struct TableHandle {
