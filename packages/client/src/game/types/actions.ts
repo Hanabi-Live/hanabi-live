@@ -67,6 +67,7 @@ export interface ActionInit extends Readonly<
     | "sharedReplayEffMod"
     | "spoilerFree"
     | "paused"
+    | "pauseQueued"
   >
 > {
   readonly type: "init";

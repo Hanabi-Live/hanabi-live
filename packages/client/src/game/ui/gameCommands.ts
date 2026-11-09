@@ -553,6 +553,7 @@ function initStateStore(data: InitData) {
       data.paused && data.pausePlayerIndex !== NO_VALUE
         ? data.pausePlayerIndex
         : 0,
+    pauseQueued: data.pauseQueued,
     sharedReplayEffMod: data.sharedReplayEffMod,
   });
 

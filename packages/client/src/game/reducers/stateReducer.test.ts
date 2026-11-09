@@ -40,4 +40,11 @@ describe("stateReducer", () => {
     });
     expect(state.notes.efficiencyModifier).toBe(3);
   });
+  test("rejoining a game keeps a pause that the player queued", () => {
+    const state = stateReducer(initialState(defaultMetadata), {
+      ...init(),
+      pauseQueued: true,
+    });
+    expect(state.pause.queued).toBe(true);
+  });
 });

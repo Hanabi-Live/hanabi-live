@@ -33,6 +33,7 @@ export function init(): ActionInit {
     spoilerFree: false,
     paused: false,
     pausePlayerIndex: 0,
+    pauseQueued: false,
   };
 }
 

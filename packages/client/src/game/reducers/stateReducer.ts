@@ -168,6 +168,7 @@ function stateReducerFunction(state: Draft<State>, action: Action) {
         state.pause.active = true;
         state.pause.playerIndex = action.pausePlayerIndex;
       }
+      state.pause.queued = action.pauseQueued;
 
       break;
     }
