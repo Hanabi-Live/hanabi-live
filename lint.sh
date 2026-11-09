@@ -32,7 +32,7 @@ esac
 
 cd "$DIR"
 
-bash "$DIR/packages/client/set-version.sh"
+bash "$DIR/scripts/dev/set-version.sh"
 
 run_repository_check() {
   if [[ ${CI:-} == true ]]; then

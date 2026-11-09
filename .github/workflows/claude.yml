@@ -51,7 +51,7 @@ jobs:
           fetch-depth: 1
       - uses: ./.github/workflows/setup-bun
       - name: Create the "version.js" file
-        run: bash ./packages/client/set-version.sh
+        run: bash ./scripts/dev/set-version.sh
       - uses: ./.github/workflows/setup-redis
       - uses: ./.github/workflows/setup-rust
       - uses: anthropics/claude-code-action@61a9c274fa7110a66dfafc1bbbced03833eb25fe # v1

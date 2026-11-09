@@ -13,10 +13,10 @@ CLIENT_DIR="$REPO_ROOT/packages/client"
 
 # Get the "VERSION" environment variable.
 # shellcheck disable=SC1091
-source "$CLIENT_DIR/get-version.sh"
+source "$DIR/get-version.sh"
 
 # Prepare the "version.js" file.
-bash "$CLIENT_DIR/set-version.sh"
+bash "$DIR/set-version.sh"
 
 if ! command -v bun > /dev/null; then
   export PATH="${BUN_INSTALL:-${HOME:-/root}/.bun}/bin:$PATH"

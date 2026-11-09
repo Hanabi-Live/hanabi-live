@@ -196,7 +196,7 @@ async function buildServer() {
   const started = performance.now();
   // The server rejects clients from another revision, so pair the tests' client version with the
   // revision the server is built from.
-  await run("bash", [path.join(ROOT, "packages/client/set-version.sh")]);
+  await run("bash", [path.join(ROOT, "scripts/dev/set-version.sh")]);
   await run("cargo", ["build", "--release", "--locked"], {
     cwd: path.join(ROOT, "server"),
     timeout: 300_000,

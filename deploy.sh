@@ -56,7 +56,7 @@ REMOTE
   if [[ $check == false ]]; then
     # The check imports the data package, which needs the version file that client builds write.
     if [[ ! -f "$DIR/packages/data/src/version.js" ]]; then
-      bash "$DIR/packages/client/set-version.sh"
+      bash "$DIR/scripts/dev/set-version.sh"
     fi
     # Sign in and join the lobby the way a returning player does.
     bun run --cwd "$DIR" check-deployment
