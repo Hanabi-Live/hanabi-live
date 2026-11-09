@@ -340,8 +340,10 @@ function isSpectator() {
 }
 
 export function drawSpectators(tableID: number): void {
+  const container = $("#lobby-pregame-spectators-container");
   const list = $("#lobby-pregame-spectators");
   list.empty();
+  container.hide();
   if (globals.game === null) {
     return;
   }
@@ -350,6 +352,8 @@ export function drawSpectators(tableID: number): void {
   if (table === undefined) {
     return;
   }
+
+  container.toggle(table.spectators.length > 0);
 
   for (const spectator of table.spectators) {
     const nameSpan = getNameSpan(spectator.name);
