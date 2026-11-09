@@ -433,7 +433,7 @@ impl TableActor {
         source: TableSnapshot,
         destination: TableSnapshot,
         mut allocation: Allocation,
-        moving: Vec<(Arc<Session>, bool, Option<usize>)>,
+        moving: Vec<(Arc<Session>, bool, Option<crate::model::Seat>)>,
         retire: bool,
     ) -> CommandResult<()> {
         let players = destination

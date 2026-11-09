@@ -1,7 +1,7 @@
 use crate::{
     errors::CommandResult,
     lobby::{OnlineUser, Publication},
-    model::TableSnapshot,
+    model::{Seat, TableSnapshot},
     operations::Operation,
     server_info::ServerInfo,
     store::{Saved, Store},
@@ -13,7 +13,7 @@ use anyhow::Result;
 use hanabi_protocol::GameId;
 use hanabi_protocol::TableId;
 use hanabi_protocol::UserId;
-use hanabi_protocol::{ClientMessage, NO_VALUE, Status};
+use hanabi_protocol::{ClientMessage, Status};
 use serde::Serialize;
 use serde_json::Value;
 use std::{
@@ -45,9 +45,6 @@ type Reply = oneshot::Sender<CommandResult>;
 
 const PREGAME_RECONNECT_GRACE: Duration = Duration::from_secs(60);
 const REPLAY_RECONNECT_GRACE: Duration = Duration::from_secs(60);
-/// `NO_VALUE` in the one-byte fields that name the seat a spectator shadows.
-#[expect(clippy::cast_possible_truncation, reason = "NO_VALUE fits in a byte")]
-const NO_SHADOWED_SEAT: i8 = NO_VALUE as i8;
 
 pub struct Allocation {
     pub id: TableId,
@@ -137,7 +134,7 @@ pub struct TableView {
     visible: bool,
     data: hanabi_protocol::Table,
     inspection: TableInspection,
-    reconnects: BTreeMap<UserId, Option<i32>>,
+    reconnects: BTreeMap<UserId, Option<Seat>>,
 }
 /// A table's state as the operations endpoint reports it.
 #[derive(Clone, Copy, Default, PartialEq, Serialize)]
@@ -260,7 +257,7 @@ pub enum HubCommand {
         table: Box<TableSnapshot>,
         saved: Saved,
         allocation: Allocation,
-        attendees: Vec<(Arc<Session>, bool, Option<usize>)>,
+        attendees: Vec<(Arc<Session>, bool, Option<Seat>)>,
         chat_read: HashMap<UserId, usize>,
     },
     Quiesce(oneshot::Sender<Vec<TableHandle>>),
@@ -272,7 +269,7 @@ pub enum Command {
     /// Restores a reconnecting user's attendance and view.
     Reattend {
         spectate: bool,
-        shadow: Option<usize>,
+        shadow: Option<Seat>,
     },
 }
 pub enum TableCommand {
@@ -346,7 +343,7 @@ struct Attendance {
     session: Arc<Session>,
     loaded: bool,
     spectator: bool,
-    shadow: Option<usize>,
+    shadow: Option<Seat>,
     typing_until: Option<Instant>,
 }
 struct TableActor {

@@ -1,7 +1,6 @@
 use super::{
-    Allocation, Attendance, Command, Effects, GameInfo, HubCommand, NO_SHADOWED_SEAT,
-    PREGAME_RECONNECT_GRACE, REPLAY_RECONNECT_GRACE, Reply, TableActor, TableCommand,
-    TableInspection, TableView,
+    Allocation, Attendance, Command, Effects, GameInfo, HubCommand, PREGAME_RECONNECT_GRACE,
+    REPLAY_RECONNECT_GRACE, Reply, TableActor, TableCommand, TableInspection, TableView,
     chat::{TABLE_CHAT_LIMIT, TABLE_CHAT_WINDOW, VariantDiscovery, is_variant_discovery},
     pregame::remove_pregame_players,
     setup::wire_table_options,
@@ -13,7 +12,7 @@ use crate::routing::{Route, route};
 use crate::store::{Commit, Saved};
 use crate::{
     model::{
-        CLOCK_UNITS_PER_SECOND, IDLE_TIMEOUT_MS, IDLE_WARNING_MS, Phase, Snapshot, TableChat,
+        CLOCK_UNITS_PER_SECOND, IDLE_TIMEOUT_MS, IDLE_WARNING_MS, Phase, Seat, Snapshot, TableChat,
         TableSnapshot, small,
     },
     server_info::ServerInfo,
@@ -184,13 +183,10 @@ impl TableActor {
             .filter(|a| a.spectator && a.session.active())
             .map(|a| hanabi_protocol::Spectator {
                 name: a.session.name.clone(),
-                shadowing_player_index: a
-                    .shadow
-                    .and_then(|seat| i8::try_from(seat).ok())
-                    .unwrap_or(NO_SHADOWED_SEAT),
+                shadowing_player_index: Seat::wire(a.shadow),
                 shadowing_player_username: a
                     .shadow
-                    .and_then(|seat| self.table.players().get(seat))
+                    .and_then(|seat| self.table.players().get(seat.index()))
                     .map(|p| p.name.clone()),
             })
             .collect()
@@ -282,13 +278,9 @@ impl TableActor {
     }
     pub(super) fn pregame_messages(&self, e: &mut Effects) {
         for a in self.audience() {
-            let players = self
-                .table
-                .players()
-                .iter()
-                .enumerate()
-                .map(|(index, p)| hanabi_protocol::PregamePlayer {
-                    index: small(index),
+            let players = Seat::seated(self.table.players())
+                .map(|(seat, p)| hanabi_protocol::PregamePlayer {
+                    index: seat.into(),
                     name: p.name.clone(),
                     you: p.id == a.session.user,
                     present: self
@@ -488,10 +480,9 @@ impl TableActor {
         if old_ids != new_ids {
             for shadow in next.shadows.values_mut() {
                 *shadow = shadow
-                    .and_then(|seat| usize::try_from(seat).ok())
-                    .and_then(|seat| old_ids.get(seat))
+                    .and_then(|seat| old_ids.get(seat.index()))
                     .and_then(|id| new_ids.iter().position(|new| new == id))
-                    .map(hanabi_engine::int);
+                    .and_then(Seat::new);
             }
         }
         if let Some(s) = next.game_mut()
@@ -523,7 +514,7 @@ impl TableActor {
                 a.shadow = None;
             }
             if let Some(shadow) = self.table.shadows.get(&a.session.user) {
-                a.shadow = shadow.and_then(|s| usize::try_from(s).ok());
+                a.shadow = *shadow;
             }
         }
         self.anchor = Instant::now();
@@ -897,14 +888,7 @@ impl TableActor {
         let message = match command {
             Command::Client(message) => *message,
             Command::Reattend { spectate, shadow } => {
-                return self
-                    .reattend(
-                        session,
-                        blocks,
-                        spectate,
-                        Some(shadow.map_or(i64::from(NO_VALUE), int)),
-                    )
-                    .await;
+                return self.reattend(session, blocks, spectate, shadow).await;
             }
         };
         ensure_internal!(
@@ -916,8 +900,13 @@ impl TableActor {
             ClientMessage::TableJoin(r) => self.join(session, blocks, r.password).await,
             ClientMessage::TableReattend(_) => self.reattend(session, blocks, false, None).await,
             ClientMessage::TableSpectate(r) => {
-                self.reattend(session, blocks, true, Some(r.shadowing_player_index))
-                    .await
+                self.reattend(
+                    session,
+                    blocks,
+                    true,
+                    Seat::from_wire(r.shadowing_player_index),
+                )
+                .await
             }
             ClientMessage::TableUnattend(_) => self.leave(session, false).await,
             ClientMessage::TableLeave(_) => self.leave(session, true).await,

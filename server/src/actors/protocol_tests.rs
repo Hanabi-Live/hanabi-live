@@ -309,9 +309,7 @@ async fn player_shadow_from_saved_games_is_cleared_on_reattend() -> Result<()> {
             .iter()
             .position(|p| p.id == UserId(2))
             .unwrap();
-        table
-            .shadows
-            .insert(UserId(2), Some(hanabi_engine::int(alice)));
+        table.shadows.insert(UserId(2), Seat::new(alice));
         h.store.save_at(&table, revision).await?;
         h.tasks = TaskTracker::new();
         h.hub = Hub::start(
@@ -1303,7 +1301,7 @@ async fn expired_pregame_owner_is_removed_but_remaining_players_and_live_games_s
             actor.initialize(user.clone(), vec![]).await?;
         }
         actor
-            .reattend(h.users[3].clone(), &BTreeSet::new(), true, Some(1))
+            .reattend(h.users[3].clone(), &BTreeSet::new(), true, Seat::new(1))
             .await?;
         while notifications.try_recv().is_ok() {}
         h.users[0].cancel.cancel();
@@ -1331,7 +1329,7 @@ async fn expired_pregame_owner_is_removed_but_remaining_players_and_live_games_s
             "Departure did not cancel the start countdown"
         );
         ensure!(
-            restored.shadows.get(&UserId(4)) == Some(&Some(0)),
+            restored.shadows.get(&UserId(4)) == Some(&Seat::new(0)),
             "Departure changed the spectator's shadow target"
         );
         let mut published_owner = false;

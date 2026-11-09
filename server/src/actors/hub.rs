@@ -1,6 +1,6 @@
 use super::{
-    Allocation, Blocks, Command, Effects, Entry, HubCommand, NO_SHADOWED_SEAT, Presence, Reply,
-    SeatReservation, TableActor, TableCommand, TableHandle, TableView,
+    Allocation, Blocks, Command, Effects, Entry, HubCommand, Presence, Reply, SeatReservation,
+    TableActor, TableCommand, TableHandle, TableView,
     setup::{Creation, prepare_table},
 };
 use crate::errors::{CommandError, CommandResult, Report};
@@ -8,7 +8,7 @@ use crate::{
     accounts,
     integrations::IntegrationSlot,
     lobby::{OnlineUser, Publication},
-    model::TableSnapshot,
+    model::{Seat, TableSnapshot},
     operations::Operation,
     routing::{Route, route},
     server_info::ServerInfo,
@@ -751,11 +751,7 @@ impl Hub {
                 .map(|shadow| (*id, *shadow))
         }) {
             welcome.discon_spectating_table = Some(id);
-            welcome.discon_shadowing_seat = Some(
-                shadow
-                    .and_then(|seat| i8::try_from(seat).ok())
-                    .unwrap_or(NO_SHADOWED_SEAT),
-            );
+            welcome.discon_shadowing_seat = Some(Seat::wire(shadow));
         }
         self.sessions.insert(
             session.user,
@@ -914,7 +910,7 @@ impl Hub {
         table: TableSnapshot,
         saved: Saved,
         allocation: Allocation,
-        attendees: Vec<(Arc<Session>, bool, Option<usize>)>,
+        attendees: Vec<(Arc<Session>, bool, Option<Seat>)>,
         chat_read: HashMap<UserId, usize>,
     ) {
         if self.closing {

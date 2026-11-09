@@ -1,7 +1,7 @@
 use super::{Attendance, TableActor, chat::membership_notice, pregame::remove_pregame_players};
 use crate::errors::CommandResult;
 use crate::{
-    model::{IDLE_TIMEOUT_MS, Phase},
+    model::{IDLE_TIMEOUT_MS, Phase, Seat},
     transport::{Session, frame},
 };
 use anyhow::Context;
@@ -129,7 +129,7 @@ impl TableActor {
         session: Arc<Session>,
         blocks: &BTreeSet<UserId>,
         spectating: bool,
-        requested_shadow: Option<i64>,
+        requested_shadow: Option<Seat>,
     ) -> CommandResult<()> {
         let replay = matches!(self.table.phase, Phase::Replay { .. });
         let seat = self
@@ -156,23 +156,15 @@ impl TableActor {
             )?;
         }
         let shadow = if spectating {
-            requested_shadow
-                .and_then(|v| usize::try_from(v).ok())
-                .filter(|v| *v < self.table.players().len())
+            requested_shadow.filter(|seat| seat.index() < self.table.players().len())
         } else if replay {
-            self.table
-                .shadows
-                .get(&session.user)
-                .copied()
-                .flatten()
-                .and_then(|v| usize::try_from(v).ok())
+            self.table.shadows.get(&session.user).copied().flatten()
         } else {
             None
         };
         let pregame = matches!(self.table.phase, Phase::Pregame { .. });
         let mut next = self.candidate();
-        next.shadows
-            .insert(session.user, shadow.map(hanabi_engine::int));
+        next.shadows.insert(session.user, shadow);
         if replay {
             next.game_mut().context("Missing replay")?.idle_remaining = IDLE_TIMEOUT_MS;
         }

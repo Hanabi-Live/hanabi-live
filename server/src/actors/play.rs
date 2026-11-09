@@ -4,7 +4,7 @@ use super::{
     wire::{game_action, game_action_list, int},
 };
 use crate::errors::CommandResult;
-use crate::model::Snapshot;
+use crate::model::{Seat, Snapshot};
 use crate::{
     model::{
         CLOCK_UNITS_PER_SECOND, IDLE_TIMEOUT_MS, MAX_NOTE_LENGTH, NoteOwner, Phase, wire_options,
@@ -99,7 +99,7 @@ impl TableActor {
                 }
             } else {
                 Recipient::Spectator {
-                    shadowing_player_index: a.shadow.map(hanabi_engine::int),
+                    shadowing_player_index: a.shadow.map(i32::from),
                 }
             };
             for event in hanabi_engine::events_for_recipient(
@@ -409,7 +409,7 @@ impl TableActor {
         };
         let mut notes = vec![];
         for (i, p) in s.players.iter().enumerate() {
-            if a.shadow.is_none_or(|shadow| shadow == i)
+            if a.shadow.is_none_or(|shadow| shadow.index() == i)
                 || matches!(self.table.phase, Phase::Replay { .. })
             {
                 notes.push(hanabi_protocol::PlayerNotes {
@@ -468,7 +468,7 @@ impl TableActor {
             let init = hanabi_protocol::Init {
                 table_id: self.table.id,
                 player_names: s.players.iter().map(|p| p.name.clone()).collect(),
-                our_player_index: int(a.shadow.or(display_seat).unwrap_or(0)),
+                our_player_index: int(a.shadow.map(Seat::index).or(display_seat).unwrap_or(0)),
                 spectating: a.spectator && !replay,
                 shadowing: a.shadow.is_some() && !replay,
                 replay,
@@ -539,7 +539,7 @@ impl TableActor {
                 }
             } else {
                 Recipient::Spectator {
-                    shadowing_player_index: a.shadow.map(hanabi_engine::int),
+                    shadowing_player_index: a.shadow.map(i32::from),
                 }
             };
             let list = hanabi_engine::events_for_recipient(s.game.state(), recipient, None)?;
