@@ -3,7 +3,6 @@
 +------+
 
 - refactor -1 to undefined or null for activePlayerIndex
-- add a function to lint.ts for checking that all emoji exist
 
 +-----+
 | OLD |
