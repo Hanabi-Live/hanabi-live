@@ -516,12 +516,10 @@ const EFFICIENCY_DECIMALS: usize = 2;
 const HARD_EFFICIENCY: f64 = 1.33;
 /// The clue efficiency from which a missing score is shown as very hard.
 const VERY_HARD_EFFICIENCY: f64 = 1.5;
-/// The player counts that a variant has a best score for.
-const PLAYER_COUNTS: usize = hanabi_protocol::MAX_PLAYERS - hanabi_protocol::MIN_PLAYERS + 1;
 
 async fn score_summary(state: &PublicState, id: i32) -> Result<Value> {
     let statistics = user_stats(state, id).await?;
-    let mut totals = [0; PLAYER_COUNTS];
+    let mut totals = [0; crate::database::PLAYER_COUNTS];
     let mut rows = Vec::new();
     for variant in catalog::variants() {
         let row = statistics
@@ -547,7 +545,7 @@ async fn score_summary(state: &PublicState, id: i32) -> Result<Value> {
     let total: i64 = totals.iter().sum();
     let variants = i64::try_from(catalog::variants().len())?;
     Ok(
-        json!({"rows":rows,"total":total,"percentage":percentage(total,variants*i64::try_from(PLAYER_COUNTS)?),
+        json!({"rows":rows,"total":total,"percentage":percentage(total,variants*i64::try_from(crate::database::PLAYER_COUNTS)?),
         "perType":totals.iter().map(|t| json!({"total":t,"percentage":percentage(*t,variants)})).collect::<Vec<_>>()}),
     )
 }

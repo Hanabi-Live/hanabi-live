@@ -833,26 +833,11 @@ impl Store {
         )
         .fetch_optional(&self.primary)
         .await?;
-        let mut stats = zero_stats();
-        stats["numGames"] = json!(count);
-        if let Some(row) = row {
-            stats["variant"]["numGames"] = json!(row.num_games);
-            for (index, (score, modifier)) in [
-                (row.best_score2, row.best_score2_mod),
-                (row.best_score3, row.best_score3_mod),
-                (row.best_score4, row.best_score4_mod),
-                (row.best_score5, row.best_score5_mod),
-                (row.best_score6, row.best_score6_mod),
-            ]
-            .into_iter()
-            .enumerate()
-            {
-                let best = &mut stats["variant"]["bestScores"][index];
-                best["score"] = json!(score);
-                crate::model::ScoreModifier::from_bits(modifier).write(best);
-            }
-        }
-        Ok(Player { id, name, stats })
+        Ok(Player {
+            id,
+            name,
+            stats: player_stats(count, row.as_ref()),
+        })
     }
     pub async fn seed_count(&self, seed: &str) -> Result<i64> {
         Ok(sqlx::query_scalar!(
@@ -974,15 +959,39 @@ impl Store {
         result
     }
 }
+/// A pregame player's statistics as their table's checkpoint stores them: all of their games, and
+/// their games and best scores on the table's variant, from `user_stats` if they have played it.
+fn player_stats(num_games: i64, row: Option<&crate::database::UserStats>) -> Value {
+    let (variant_games, best_scores) =
+        row.map_or((0, [(0, 0); crate::database::PLAYER_COUNTS]), |row| {
+            (
+                i64::from(row.num_games),
+                [
+                    (row.best_score2, row.best_score2_mod),
+                    (row.best_score3, row.best_score3_mod),
+                    (row.best_score4, row.best_score4_mod),
+                    (row.best_score5, row.best_score5_mod),
+                    (row.best_score6, row.best_score6_mod),
+                ],
+            )
+        });
+    let stats = hanabi_protocol::PregameStats {
+        num_games,
+        variant: hanabi_protocol::PregameVariantStats {
+            num_games: variant_games,
+            best_scores: (hanabi_protocol::MIN_PLAYERS..=hanabi_protocol::MAX_PLAYERS)
+                .zip(best_scores)
+                .map(|(num_players, (score, modifier))| {
+                    crate::model::ScoreModifier::from_bits(modifier)
+                        .best_score(crate::model::small(num_players), i32::from(score))
+                })
+                .collect(),
+        },
+    };
+    serde_json::to_value(stats).expect("Pregame statistics serialize to JSON")
+}
 pub fn zero_stats() -> Value {
-    let best_scores = (hanabi_protocol::MIN_PLAYERS..=hanabi_protocol::MAX_PLAYERS)
-        .map(|n| {
-            let mut best = json!({"numPlayers":n,"score":0});
-            crate::model::ScoreModifier::default().write(&mut best);
-            best
-        })
-        .collect::<Vec<_>>();
-    json!({"numGames":0,"variant":{"numGames":0,"bestScores":best_scores}})
+    player_stats(0, None)
 }
 pub fn options_from_record(row: &crate::archive::GameRecord) -> Result<Options> {
     let variant = hanabi_engine::get_variant_by_id(u32::try_from(row.variant_id)?)?;
@@ -1115,6 +1124,50 @@ mod tests {
         };
         Ok(())
     }
+    #[test]
+    fn pregame_statistics_keep_their_stored_format() {
+        let unplayed = |n: usize| {
+            json!({"numPlayers":n,"score":0,"modifier":0,"deckPlays":false,"emptyClues":false,
+                "oneExtraCard":false,"oneLessCard":false,"allOrNothing":false})
+        };
+        let best_scores: Vec<Value> = (hanabi_protocol::MIN_PLAYERS..=hanabi_protocol::MAX_PLAYERS)
+            .map(unplayed)
+            .collect();
+        assert_eq!(
+            zero_stats(),
+            json!({"numGames":0,"variant":{"numGames":0,"bestScores":best_scores}})
+        );
+
+        let row = crate::database::UserStats {
+            user_id: 1,
+            variant_id: 0,
+            num_games: 7,
+            best_score2: 25,
+            best_score2_mod: 0,
+            best_score3: 24,
+            best_score3_mod: 2 + 8,
+            best_score4: 0,
+            best_score4_mod: 0,
+            best_score5: 0,
+            best_score5_mod: 0,
+            best_score6: 30,
+            best_score6_mod: 16,
+        };
+        let stats = player_stats(12, Some(&row));
+        hanabi_protocol::validate::<hanabi_protocol::PregameStats>(&stats).unwrap();
+        assert_eq!(stats["numGames"], 12);
+        assert_eq!(stats["variant"]["numGames"], 7);
+        let best = &stats["variant"]["bestScores"];
+        assert_eq!(best[0]["score"], 25);
+        assert_eq!(
+            best[1],
+            json!({"numPlayers":3,"score":24,"modifier":10,"deckPlays":false,"emptyClues":true,
+                "oneExtraCard":false,"oneLessCard":true,"allOrNothing":false})
+        );
+        assert_eq!(best[4]["numPlayers"], 6);
+        assert_eq!(best[4]["allOrNothing"], true);
+    }
+
     #[test]
     fn spectator_note_owners_round_trip_and_reject_invalid_keys() -> Result<()> {
         let mut table = pregame(1);

@@ -498,14 +498,14 @@ impl ScoreModifier {
     const ONE_LESS_CARD: i16 = 8;
     const ALL_OR_NOTHING: i16 = 16;
 
-    /// Each option, its key in the wire's best scores, and its name on the score pages. The pages
-    /// show only the first one that a score has, so the order ranks them.
-    const OPTIONS: [(i16, &str, &str); 5] = [
-        (Self::ALL_OR_NOTHING, "allOrNothing", "allornothing"),
-        (Self::ONE_EXTRA_CARD, "oneExtraCard", "oneextracard"),
-        (Self::ONE_LESS_CARD, "oneLessCard", "onelesscard"),
-        (Self::EMPTY_CLUES, "emptyClues", "emptyclues"),
-        (Self::DECK_PLAYS, "deckPlays", "deckplays"),
+    /// Each option and its name on the score pages. The pages show only the first one that a score
+    /// has, so the order ranks them.
+    const OPTIONS: [(i16, &str); 5] = [
+        (Self::ALL_OR_NOTHING, "allornothing"),
+        (Self::ONE_EXTRA_CARD, "oneextracard"),
+        (Self::ONE_LESS_CARD, "onelesscard"),
+        (Self::EMPTY_CLUES, "emptyclues"),
+        (Self::DECK_PLAYS, "deckplays"),
     ];
 
     pub fn of(options: &Options) -> Self {
@@ -537,15 +537,22 @@ impl ScoreModifier {
     pub fn shown(self) -> Option<&'static str> {
         Self::OPTIONS
             .iter()
-            .find(|(flag, _, _)| self.0 & flag != 0)
-            .map(|(_, _, name)| *name)
+            .find(|(flag, _)| self.0 & flag != 0)
+            .map(|(_, name)| *name)
     }
 
-    /// Sets a best score's modifier and one flag per option, as the wire's best scores carry them.
-    pub fn write(self, best: &mut Value) {
-        best["modifier"] = Value::from(self.0);
-        for (flag, key, _) in Self::OPTIONS {
-            best[key] = Value::Bool(self.0 & flag != 0);
+    /// A best score with this modifier and one flag per option, as the wire carries it.
+    pub fn best_score(self, num_players: u8, score: i32) -> hanabi_protocol::PregameBestScore {
+        let has = |flag: i16| self.0 & flag != 0;
+        hanabi_protocol::PregameBestScore {
+            num_players,
+            score,
+            modifier: i32::from(self.0),
+            deck_plays: has(Self::DECK_PLAYS),
+            empty_clues: has(Self::EMPTY_CLUES),
+            one_extra_card: has(Self::ONE_EXTRA_CARD),
+            one_less_card: has(Self::ONE_LESS_CARD),
+            all_or_nothing: has(Self::ALL_OR_NOTHING),
         }
     }
 }
@@ -683,12 +690,10 @@ mod tests {
             ScoreModifier::from_bits(16 + 1).shown(),
             Some("allornothing")
         );
-        let mut best = serde_json::json!({});
-        modifier.write(&mut best);
-        assert_eq!(best["modifier"], 10);
-        assert_eq!(best["emptyClues"], true);
-        assert_eq!(best["oneLessCard"], true);
-        assert_eq!(best["deckPlays"], false);
+        let best = modifier.best_score(3, 20);
+        assert_eq!(best.modifier, 10);
+        assert!(best.empty_clues && best.one_less_card);
+        assert!(!best.deck_plays && !best.one_extra_card && !best.all_or_nothing);
     }
 
     #[test]

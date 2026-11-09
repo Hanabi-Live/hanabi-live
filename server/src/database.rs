@@ -43,6 +43,9 @@ const _: () = assert!(
     hanabi_protocol::MIN_PLAYERS == 2 && hanabi_protocol::MAX_PLAYERS == 6,
     "The best-score columns must match the supported player counts"
 );
+/// The player counts that a variant has a best score for.
+pub(crate) const PLAYER_COUNTS: usize =
+    hanabi_protocol::MAX_PLAYERS - hanabi_protocol::MIN_PLAYERS + 1;
 
 #[derive(Serialize)]
 pub(crate) struct UserStats {
