@@ -346,6 +346,51 @@ struct Attendance {
     shadow: Option<Seat>,
     typing_until: Option<Instant>,
 }
+/// What a table keeps in memory for its phase. A restart forgets it: reconnection grace starts
+/// again, and warnings and notices can be sent again.
+#[derive(Debug, PartialEq)]
+enum PhaseRuntime {
+    Pregame {
+        /// When each absent player loses their seat.
+        absent_until: HashMap<UserId, Instant>,
+        /// Who the table was told tried to join it while it was full.
+        full_join_notices: HashSet<UserId>,
+        /// When a player last joined the table, so that a burst of joins plays the join sound
+        /// once.
+        last_join: Option<Instant>,
+    },
+    Live {
+        /// Whether the table was warned that the game is about to end for inactivity.
+        idle_warned: bool,
+    },
+    Replay {
+        /// When the replay closes if no viewer returns.
+        absent_until: Option<Instant>,
+    },
+}
+impl PhaseRuntime {
+    fn of(phase: &crate::model::Phase) -> Self {
+        use crate::model::Phase;
+        match phase {
+            Phase::Pregame { .. } => Self::Pregame {
+                absent_until: HashMap::new(),
+                full_join_notices: HashSet::new(),
+                last_join: None,
+            },
+            Phase::Live { .. } => Self::Live { idle_warned: false },
+            Phase::Replay { .. } => Self::Replay { absent_until: None },
+        }
+    }
+    fn matches(&self, phase: &crate::model::Phase) -> bool {
+        use crate::model::Phase;
+        matches!(
+            (self, phase),
+            (Self::Pregame { .. }, Phase::Pregame { .. })
+                | (Self::Live { .. }, Phase::Live { .. })
+                | (Self::Replay { .. }, Phase::Replay { .. })
+        )
+    }
+}
 struct TableActor {
     table: TableSnapshot,
     /// What the database holds for the table.
@@ -354,23 +399,14 @@ struct TableActor {
     retired: bool,
     attendees: HashMap<UserId, Attendance>,
     chat_read: HashMap<UserId, usize>,
-    pregame_absent_until: HashMap<UserId, Instant>,
-    replay_absent_until: Option<Instant>,
+    /// What the table keeps in memory for its phase. It always matches `table.phase`.
+    runtime: PhaseRuntime,
     cleanup: Arc<Notify>,
     store: Store,
     hub: mpsc::Sender<HubCommand>,
     anchor: Instant,
-    /// Whether the table was warned that the game is about to end for inactivity. Kept in memory:
-    /// after a restart, the warning is sent again.
-    idle_warned: bool,
     /// When the table may retry timed work that failed.
     timer_retry: Option<Instant>,
-    /// Who the table was told tried to join it while it was full. Kept in memory: after a restart,
-    /// the table can be told again.
-    full_join_notices: HashSet<UserId>,
-    /// When a player last joined the table, so that a burst of joins plays the join sound once.
-    /// Kept in memory: after a restart, the next join plays it.
-    last_join: Option<Instant>,
     /// Each player's recent table chat. Kept in memory: a restart forgives it.
     chat_limit: crate::accounts::Counter<i32>,
     _permit: OwnedSemaphorePermit,

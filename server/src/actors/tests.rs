@@ -498,12 +498,15 @@ async fn live_tables_wake_at_their_next_deadline() -> Result<()> {
 
     // The idle warning comes first, and a restarted idle timer lets it be sent again.
     let warning = at(lead);
-    actor.idle_warned = true;
-    ensure!(actor.next_timer() == Some(warning) && !actor.idle_warned);
+    actor.runtime = PhaseRuntime::Live { idle_warned: true };
+    ensure!(
+        actor.next_timer() == Some(warning)
+            && actor.runtime == PhaseRuntime::Live { idle_warned: false }
+    );
 
     // Once warned, the table wakes when the game would end for inactivity.
     actor.table.game_mut().unwrap().idle_remaining = IDLE_WARNING_MS - lead;
-    actor.idle_warned = true;
+    actor.runtime = PhaseRuntime::Live { idle_warned: true };
     let ending = at(IDLE_WARNING_MS - lead);
     ensure!(actor.next_timer() == Some(ending));
 

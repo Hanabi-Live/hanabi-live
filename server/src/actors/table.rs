@@ -1,6 +1,7 @@
 use super::{
     Allocation, Attendance, Command, Effects, GameInfo, HubCommand, PREGAME_RECONNECT_GRACE,
-    REPLAY_RECONNECT_GRACE, Reply, TableActor, TableCommand, TableInspection, TableView,
+    PhaseRuntime, REPLAY_RECONNECT_GRACE, Reply, TableActor, TableCommand, TableInspection,
+    TableView,
     chat::{TABLE_CHAT_LIMIT, TABLE_CHAT_WINDOW, VariantDiscovery, is_variant_discovery},
     pregame::remove_pregame_players,
     setup::wire_table_options,
@@ -90,22 +91,18 @@ impl TableActor {
         info: Arc<ServerInfo>,
     ) -> Self {
         Self {
+            runtime: PhaseRuntime::of(&table.phase),
             table,
             saved,
             frozen: false,
             retired: false,
             attendees: HashMap::new(),
             chat_read: HashMap::new(),
-            pregame_absent_until: HashMap::new(),
-            replay_absent_until: None,
             cleanup: Arc::new(Notify::new()),
             store,
             hub,
             anchor: Instant::now(),
-            idle_warned: false,
             timer_retry: None,
-            full_join_notices: HashSet::new(),
-            last_join: None,
             chat_limit: crate::accounts::Counter::new(TABLE_CHAT_LIMIT, TABLE_CHAT_WINDOW),
             _permit: permit,
             info,
@@ -357,8 +354,9 @@ impl TableActor {
         if self
             .timers()
             .is_some_and(|t| t.idle_remaining > IDLE_WARNING_MS)
+            && let Some(warned) = self.idle_warned()
         {
-            self.idle_warned = false;
+            *warned = false;
         }
         let now = Instant::now();
         let anchor = self.anchor;
@@ -368,8 +366,13 @@ impl TableActor {
             .values()
             .filter_map(|a| a.typing_until)
             .collect::<Vec<_>>();
-        deadlines.extend(self.pregame_absent_until.values().copied());
-        deadlines.extend(self.replay_absent_until);
+        match &self.runtime {
+            PhaseRuntime::Pregame { absent_until, .. } => {
+                deadlines.extend(absent_until.values().copied());
+            }
+            PhaseRuntime::Replay { absent_until } => deadlines.extend(*absent_until),
+            PhaseRuntime::Live { .. } => {}
+        }
         deadlines.extend(self.timer_retry);
         match &self.table.phase {
             Phase::Pregame {
@@ -395,7 +398,7 @@ impl TableActor {
             Phase::Live { snapshot: s } => {
                 if s.game.end_condition == EndCondition::InProgress {
                     deadlines.push(after(s.idle_remaining));
-                    if !self.idle_warned {
+                    if !matches!(self.runtime, PhaseRuntime::Live { idle_warned: true }) {
                         deadlines.push(after(s.idle_remaining - IDLE_WARNING_MS));
                     }
                     if s.game.options.timed && s.timer_started && !s.game.paused {
@@ -419,6 +422,49 @@ impl TableActor {
                 eprintln!("Table timer: {error}");
                 self.timer_retry = Some(Instant::now() + TIMER_RETRY);
             }
+        }
+    }
+    /// Starts the in-memory state of the table's phase when the phase changes.
+    fn sync_runtime(&mut self) {
+        if !self.runtime.matches(&self.table.phase) {
+            self.runtime = PhaseRuntime::of(&self.table.phase);
+        }
+    }
+    /// When each absent pregame player loses their seat. `None` outside a pregame.
+    pub(super) fn absent_players(&mut self) -> Option<&mut HashMap<UserId, Instant>> {
+        match &mut self.runtime {
+            PhaseRuntime::Pregame { absent_until, .. } => Some(absent_until),
+            _ => None,
+        }
+    }
+    /// When an empty replay closes. `None` outside a replay.
+    pub(super) fn replay_absent(&mut self) -> Option<&mut Option<Instant>> {
+        match &mut self.runtime {
+            PhaseRuntime::Replay { absent_until } => Some(absent_until),
+            _ => None,
+        }
+    }
+    /// Whether a game was warned that it is about to end for inactivity. `None` outside a game.
+    pub(super) fn idle_warned(&mut self) -> Option<&mut bool> {
+        match &mut self.runtime {
+            PhaseRuntime::Live { idle_warned } => Some(idle_warned),
+            _ => None,
+        }
+    }
+    /// Who a pregame was told tried to join it while it was full. `None` outside a pregame.
+    pub(super) fn full_join_notices(&mut self) -> Option<&mut HashSet<UserId>> {
+        match &mut self.runtime {
+            PhaseRuntime::Pregame {
+                full_join_notices, ..
+            } => Some(full_join_notices),
+            _ => None,
+        }
+    }
+    /// When a player last joined a pregame. `None` outside a pregame.
+    pub(super) fn last_join(&mut self) -> Option<&mut Option<Instant>> {
+        match &mut self.runtime {
+            PhaseRuntime::Pregame { last_join, .. } => Some(last_join),
+            _ => None,
         }
     }
     pub(super) fn candidate(&self) -> TableSnapshot {
@@ -445,6 +491,7 @@ impl TableActor {
         self.store.check_state()?;
         ensure_or_reject!(!self.frozen, "Table is frozen until recovery");
         self.table = next;
+        self.sync_runtime();
         self.anchor = Instant::now();
         Ok(())
     }
@@ -509,6 +556,7 @@ impl TableActor {
         let became_replay = matches!(self.table.phase, Phase::Live { .. })
             && matches!(next.phase, Phase::Replay { .. });
         self.table = next;
+        self.sync_runtime();
         for a in self.attendees.values_mut() {
             if became_replay {
                 a.spectator = true;
@@ -526,7 +574,9 @@ impl TableActor {
         s: Arc<Session>,
         warnings: Vec<String>,
     ) -> CommandResult<()> {
-        self.pregame_absent_until.remove(&s.user);
+        if let Some(absent) = self.absent_players() {
+            absent.remove(&s.user);
+        }
         let replay = matches!(self.table.phase, Phase::Replay { .. });
         if replay {
             let mut next = self.candidate();
@@ -544,7 +594,9 @@ impl TableActor {
                 typing_until: None,
             },
         );
-        self.replay_absent_until = None;
+        if let Some(absent) = self.replay_absent() {
+            *absent = None;
+        }
         let mut e = self.effects();
         if matches!(self.table.phase, Phase::Pregame { .. }) {
             e.statuses
@@ -736,15 +788,15 @@ impl TableActor {
             .map(|a| (a.session.user, a.session.name.clone()))
             .collect::<Vec<_>>();
         self.attendees.retain(|_, a| a.session.active());
-        if matches!(self.table.phase, Phase::Replay { .. }) && self.attendees.is_empty() {
-            let deadline = self
-                .replay_absent_until
-                .get_or_insert(now + REPLAY_RECONNECT_GRACE);
-            if now >= *deadline {
-                return self.retire().await;
+        let empty = self.attendees.is_empty();
+        if let Some(absent) = self.replay_absent() {
+            if empty {
+                if now >= *absent.get_or_insert(now + REPLAY_RECONNECT_GRACE) {
+                    return self.retire().await;
+                }
+            } else {
+                *absent = None;
             }
-        } else {
-            self.replay_absent_until = None;
         }
         let successor = self.audience().next().map(|a| a.session.user);
         if before != self.attendees.len()
@@ -772,7 +824,6 @@ impl TableActor {
     }
     pub(super) async fn cleanup_pregame(&mut self, now: Instant) -> CommandResult<()> {
         let Phase::Pregame { players, .. } = &self.table.phase else {
-            self.pregame_absent_until.clear();
             return Ok(());
         };
         let absent = players
@@ -785,16 +836,17 @@ impl TableActor {
             })
             .map(|p| p.id)
             .collect::<HashSet<_>>();
-        self.pregame_absent_until
-            .retain(|id, _| absent.contains(id));
+        let Some(absent_until) = self.absent_players() else {
+            return Ok(());
+        };
+        absent_until.retain(|id, _| absent.contains(id));
         for id in absent {
             // Recovered pregames also get a fresh grace period for reconnecting clients.
-            self.pregame_absent_until
+            absent_until
                 .entry(id)
                 .or_insert(now + PREGAME_RECONNECT_GRACE);
         }
-        let removed = self
-            .pregame_absent_until
+        let removed = absent_until
             .iter()
             .filter(|(_, deadline)| now >= **deadline)
             .map(|(id, _)| *id)
@@ -808,8 +860,9 @@ impl TableActor {
             return self.retire().await;
         }
         self.persist(next).await?;
-        self.pregame_absent_until
-            .retain(|id, _| !removed.contains(id));
+        if let Some(absent) = self.absent_players() {
+            absent.retain(|id, _| !removed.contains(id));
+        }
         let mut effects = self.effects();
         self.pregame_messages(&mut effects);
         self.spectator_messages(&mut effects);
@@ -1015,9 +1068,15 @@ impl TableActor {
         // Warn the table once before the game ends for inactivity. The warning is sent again after
         // a turn or an idle reset restarts the timer.
         if timers.idle_remaining > IDLE_WARNING_MS {
-            self.idle_warned = false;
-        } else if !idle && !self.idle_warned {
-            self.idle_warned = true;
+            if let Some(warned) = self.idle_warned() {
+                *warned = false;
+            }
+        } else if !idle
+            // Marks the table warned, and goes on only if it was not before.
+            && self
+                .idle_warned()
+                .is_some_and(|warned| !std::mem::replace(warned, true))
+        {
             let remaining_ms = timers.idle_remaining;
             let mut e = self.effects();
             self.add_all(

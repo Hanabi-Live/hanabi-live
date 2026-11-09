@@ -99,7 +99,9 @@ impl TableActor {
                 ));
             }
         }
-        let previous_join = self.last_join.replace(Instant::now());
+        let previous_join = self
+            .last_join()
+            .and_then(|last| last.replace(Instant::now()));
         if previous_join.is_none_or(|t| t.elapsed() > JOIN_SOUND_INTERVAL) {
             let players: HashSet<UserId> = self.table.players().iter().map(|p| p.id).collect();
             let sound = frame(
@@ -120,7 +122,11 @@ impl TableActor {
     /// Tells a full table, once per person, that someone else wants to play, so that the players
     /// can consider splitting into two tables.
     pub(super) async fn join_full(&mut self, session: &Arc<Session>) -> CommandResult<()> {
-        if self.table.password_hash.is_some() || !self.full_join_notices.insert(session.user) {
+        if self.table.password_hash.is_some()
+            || !self
+                .full_join_notices()
+                .is_some_and(|notices| notices.insert(session.user))
+        {
             reject!("This table is full.");
         }
         let mut next = self.candidate();
@@ -200,8 +206,12 @@ impl TableActor {
             None
         };
         self.persist(next).await?;
-        if pregame && !spectating && session.active() {
-            self.pregame_absent_until.remove(&session.user);
+        if pregame
+            && !spectating
+            && session.active()
+            && let Some(absent) = self.absent_players()
+        {
+            absent.remove(&session.user);
         }
         self.attendees.insert(
             session.user,
@@ -213,7 +223,9 @@ impl TableActor {
                 typing_until: None,
             },
         );
-        self.replay_absent_until = None;
+        if let Some(absent) = self.replay_absent() {
+            *absent = None;
+        }
         let mut e = self.effects();
         if let Some(notice) = notice {
             for attendee in self.audience().filter(|a| a.session.user != session.user) {
