@@ -38,9 +38,10 @@ to narrate implementation details, internal data flow, CI behavior, or build
 metadata.
 
 When a change adds, removes, or changes something that players or server
-operators notice, add a one-line entry for it to the matching section of
-`docs/changelog.md`, in the same commit. Do not add entries for bug fixes,
-refactors, tests, CI, or other internal changes.
+operators notice, add a one-line entry for it under today's date in
+`docs/changelog.md` (newest first, such as `## November 8th, 2026`), in the same
+commit. Do not add entries for bug fixes, refactors, tests, CI, or other
+internal changes.
 
 Keep installation instructions limited to the steps and configuration needed to
 install and run the server. When a command changes, update that command rather
