@@ -206,11 +206,6 @@ pub enum EngineEvent {
         list: Vec<usize>,
         turn: i32,
     },
-    Status {
-        clues: i32,
-        score: i32,
-        max_score: i32,
-    },
     Turn {
         num: i32,
         current_player_index: i32,

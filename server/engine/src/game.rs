@@ -427,11 +427,6 @@ fn finish_action(
     votes: Option<Vec<usize>>,
 ) {
     character_post_action(state, actor, action);
-    state.events.push(EngineEvent::Status {
-        clues: state.clue_tokens,
-        score: state.score,
-        max_score: state.max_score,
-    });
     if has_taken_last_turn(state) {
         for &order in &state.players[actor].hand {
             state.deck[order].cannot_be_played = true;

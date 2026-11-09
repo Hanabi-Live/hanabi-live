@@ -226,10 +226,7 @@ gameCommands.set("gameAction", (data) => {
   modals.closeIdleWarning();
 
   // Update the game state.
-  const action = toGameAction(data.action);
-  if (action !== undefined) {
-    globals.store!.dispatch(action);
-  }
+  globals.store!.dispatch(toGameAction(data.action));
 });
 
 gameCommands.set("gameActionList", (data) => {
@@ -245,9 +242,7 @@ gameCommands.set("gameActionList", (data) => {
   // response to the "getGameInfo2" command). Send this list to the reducers.
   globals.store!.dispatch({
     type: "gameActionList",
-    actions: data.list
-      .map(toGameAction)
-      .filter((action) => action !== undefined),
+    actions: data.list.map(toGameAction),
   });
 
   // We might need to go to a specific turn if we loaded a URL of e.g.:

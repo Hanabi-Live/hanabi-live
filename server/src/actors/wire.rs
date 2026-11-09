@@ -72,15 +72,6 @@ pub(super) fn wire_event(event: &hanabi_engine::EngineEvent) -> hanabi_protocol:
             list: list.iter().map(|&order| SafeInteger(int(order))).collect(),
             turn: (*turn).into(),
         },
-        E::Status {
-            clues,
-            score,
-            max_score,
-        } => G::Status {
-            clues: (*clues).into(),
-            score: (*score).into(),
-            max_score: (*max_score).into(),
-        },
         E::Turn {
             num,
             current_player_index,

@@ -200,11 +200,9 @@ databaseDescribe("normal-server protocol workload", () => {
             );
             const finished = await bootstrap(alice, tableID);
             expect(finished.init.replay).toBe(true);
-            expect(finished.history.list).toEqual<unknown>(
-              expect.arrayContaining([
-                expect.objectContaining({ type: "status", score: 25 }),
-              ]),
-            );
+            expect(
+              finished.history.list.filter((event) => event.type === "play"),
+            ).toHaveLength(25);
             completed.push({
               databaseID: finished.init.databaseID,
               aliceCookie,
@@ -280,11 +278,6 @@ databaseDescribe("normal-server protocol workload", () => {
         expect(
           replay.history.list.filter((event) => event.type === "play"),
         ).toHaveLength(25);
-        expect(replay.history.list).toEqual<unknown>(
-          expect.arrayContaining([
-            expect.objectContaining({ type: "status", score: 25 }),
-          ]),
-        );
         const historyReady = performance.now();
         await unattend(peer, tableID);
         return historyReady;

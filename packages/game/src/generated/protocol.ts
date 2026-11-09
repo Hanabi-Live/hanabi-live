@@ -318,24 +318,6 @@ export const gameEventSchema = z.discriminatedUnion("type", [
     type: z.literal("clue"),
   }),
   z.strictObject({
-    clues: z
-      .number()
-      .int()
-      .min(-9_007_199_254_740_991)
-      .max(9_007_199_254_740_991),
-    maxScore: z
-      .number()
-      .int()
-      .min(-9_007_199_254_740_991)
-      .max(9_007_199_254_740_991),
-    score: z
-      .number()
-      .int()
-      .min(-9_007_199_254_740_991)
-      .max(9_007_199_254_740_991),
-    type: z.literal("status"),
-  }),
-  z.strictObject({
     currentPlayerIndex: playerIndexOrNoneSchema,
     num: z
       .number()

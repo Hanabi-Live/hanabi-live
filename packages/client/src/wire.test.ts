@@ -9,12 +9,6 @@ function event(action: unknown) {
 }
 
 describe("server game events", () => {
-  test("status events are not applied", () => {
-    expect(
-      toGameAction({ type: "status", clues: 8, score: 0, maxScore: 25 }),
-    ).toBeUndefined();
-  });
-
   test("the final turn and an unattributed game over keep their -1 seat", () => {
     expect(
       toGameAction({ type: "turn", num: 30, currentPlayerIndex: -1 }),
@@ -45,7 +39,7 @@ describe("server game events", () => {
         turn: 2,
       }),
     );
-    if (action?.type !== "clue") {
+    if (action.type !== "clue") {
       throw new Error("Expected a clue action");
     }
     expect(action.clue).toEqual({ type: -1, value: -1 });
