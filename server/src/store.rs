@@ -642,30 +642,42 @@ async fn archive_chat(
     transaction: &mut Transaction<'static, Postgres>,
     entries: impl Iterator<Item = &TableChat>,
 ) -> Result<()> {
+    let (mut ids, mut users, mut messages, mut rooms, mut sources, mut sent) =
+        (vec![], vec![], vec![], vec![], vec![], vec![]);
     for entry in entries {
-        let id = entry.id.context("Missing chat identity")?;
-        let room = entry
-            .message
-            .room
-            .as_deref()
-            .context("Invalid archived chat room")?;
-        let source = match entry.message.source {
+        ids.push(entry.id.context("Missing chat identity")?);
+        users.push(entry.user);
+        messages.push(entry.message.msg.clone());
+        rooms.push(
+            entry
+                .message
+                .room
+                .clone()
+                .context("Invalid archived chat room")?,
+        );
+        sources.push(match entry.message.source {
             ChatSource::User => "user",
             ChatSource::Server => "server",
             ChatSource::Discord => bail!("Invalid table chat source"),
-        };
-        sqlx::query!(
-            "INSERT INTO chat_log(id,user_id,message,room,source,datetime_sent) VALUES($1,$2,$3,$4,$5,$6)",
-            id,
-            entry.user,
-            &entry.message.msg,
-            room,
-            source,
-            entry.sent()?
-        )
-        .execute(&mut **transaction)
-        .await?;
+        });
+        sent.push(entry.sent()?);
     }
+    if ids.is_empty() {
+        return Ok(());
+    }
+    sqlx::query!(
+        "INSERT INTO chat_log(id,user_id,message,room,source,datetime_sent)
+         SELECT * FROM UNNEST($1::integer[],$2::integer[],$3::text[],$4::text[],$5::text[],
+                              $6::timestamptz[])",
+        &ids,
+        &users,
+        &messages,
+        &rooms,
+        &sources as &[&str],
+        &sent
+    )
+    .execute(&mut **transaction)
+    .await?;
     Ok(())
 }
 
@@ -729,17 +741,50 @@ async fn archive_game(
     let variant = hanabi_engine::get_variant(&o.variant_name)?;
     let tx = transaction;
     sqlx::query!("INSERT INTO games(id,name,num_players,variant_id,timed,time_base,time_per_turn,speedrun,deck_plays,empty_clues,one_extra_card,one_less_card,all_or_nothing,detrimental_characters,seed,score,num_turns,end_condition,datetime_started,datetime_finished) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20)", s.game_id, &s.name, i16::try_from(o.num_players)?, i16::try_from(variant.id)?, o.timed, stored_seconds(o.time_base), i32::try_from(o.time_per_turn)?, o.speedrun, o.deck_plays, o.empty_clues, o.one_extra_card, o.one_less_card, o.all_or_nothing, o.detrimental_characters, &s.seed, i16::try_from(s.game.score)?, i16::try_from(s.game.turn)?, s.game.end_condition as i16, s.started, finished).execute(&mut **tx).await?;
+    let mut users = vec![];
+    let mut seats = vec![];
+    let mut assignments = vec![];
+    let mut metadata = vec![];
     for (seat, p) in s.players.iter().enumerate() {
-        let (assignment, metadata) = stored_character(&s.game.players[seat])?;
-        let participant:i32=sqlx::query_scalar!("INSERT INTO game_participants(game_id,user_id,seat,character_assignment,character_metadata) VALUES($1,$2,$3,$4,$5) RETURNING id", s.game_id, p.id, i16::try_from(seat)?, assignment, metadata).fetch_one(&mut **tx).await?;
-        for (order, note) in s.notes[seat]
-            .iter()
-            .enumerate()
-            .filter(|(_, n)| !n.is_empty())
-        {
-            sqlx::query!("INSERT INTO game_participant_notes(game_participant_id,card_order,note) VALUES($1,$2,$3)", participant, i16::try_from(order)?, note).execute(&mut **tx).await?;
+        let (assignment, value) = stored_character(&s.game.players[seat])?;
+        users.push(p.id);
+        seats.push(i16::try_from(seat)?);
+        assignments.push(assignment);
+        metadata.push(value);
+    }
+    let participants = sqlx::query!(
+        "INSERT INTO game_participants(game_id,user_id,seat,character_assignment,character_metadata)
+         SELECT $1,* FROM UNNEST($2::integer[],$3::smallint[],$4::smallint[],$5::smallint[])
+         RETURNING id,seat",
+        s.game_id,
+        &users,
+        &seats,
+        &assignments,
+        &metadata
+    )
+    .fetch_all(&mut **tx)
+    .await?;
+    let (mut note_participants, mut note_orders, mut notes) = (vec![], vec![], vec![]);
+    for participant in participants {
+        let seat_notes = s
+            .notes
+            .get(usize::try_from(participant.seat)?)
+            .context("Missing participant notes")?;
+        for (order, note) in seat_notes.iter().enumerate().filter(|(_, n)| !n.is_empty()) {
+            note_participants.push(participant.id);
+            note_orders.push(i16::try_from(order)?);
+            notes.push(note.as_str());
         }
     }
+    sqlx::query!(
+        "INSERT INTO game_participant_notes(game_participant_id,card_order,note)
+         SELECT * FROM UNNEST($1::integer[],$2::smallint[],$3::text[])",
+        &note_participants,
+        &note_orders,
+        &notes as &[&str]
+    )
+    .execute(&mut **tx)
+    .await?;
     let kinds: Vec<i16> = s
         .game
         .actions
@@ -759,16 +804,16 @@ async fn archive_game(
         .map(|a| i16::try_from(a.value))
         .collect::<Result<_, _>>()?;
     sqlx::query!("INSERT INTO game_actions(game_id,turn,type,target,value) SELECT $1,(a.turn-1)::smallint,a.kind,a.target,a.value FROM UNNEST($2::smallint[],$3::smallint[],$4::smallint[]) WITH ORDINALITY AS a(kind,target,value,turn)", s.game_id, &kinds, &targets, &values).execute(&mut **tx).await?;
-    for tag in &s.tags {
-        sqlx::query!(
-            "INSERT INTO game_tags(game_id,user_id,tag) VALUES($1,$2,$3)",
-            s.game_id,
-            tag.user,
-            &tag.tag
-        )
-        .execute(&mut **tx)
-        .await?;
-    }
+    let tag_users = s.tags.iter().map(|tag| tag.user).collect::<Vec<_>>();
+    let tags = s.tags.iter().map(|tag| tag.tag.as_str()).collect::<Vec<_>>();
+    sqlx::query!(
+        "INSERT INTO game_tags(game_id,user_id,tag) SELECT $1,* FROM UNNEST($2::integer[],$3::text[])",
+        s.game_id,
+        &tag_users,
+        &tags as &[&str]
+    )
+    .execute(&mut **tx)
+    .await?;
     Ok(())
 }
 
@@ -1300,6 +1345,9 @@ mod tests {
                 "A finished live game was saved"
             );
             finished.convert_to_replay()?;
+            let notes = &mut finished.game_mut().unwrap().notes;
+            notes[0][0] = "first".into();
+            notes[1][54] = "last".into();
             let archive = || Commit {
                 archive: true,
                 ..Commit::default()
@@ -1348,6 +1396,7 @@ mod tests {
             let replay = store.historical(1, 99, 1).await?;
             ensure!(
                 replay.game.actions == finished.game().unwrap().game.actions
+                    && replay.notes == finished.game().unwrap().notes
                     && replay.tags.len() == 1,
                 "The archived game differs"
             );

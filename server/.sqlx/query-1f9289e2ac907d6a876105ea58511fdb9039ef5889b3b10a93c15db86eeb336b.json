@@ -1,0 +1,44 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO game_participants(game_id,user_id,seat,character_assignment,character_metadata)\n         SELECT $1,* FROM UNNEST($2::integer[],$3::smallint[],$4::smallint[],$5::smallint[])\n         RETURNING id,seat",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Int4",
+        "origin": {
+          "Table": {
+            "table": "game_participants",
+            "name": "id"
+          }
+        }
+      },
+      {
+        "ordinal": 1,
+        "name": "seat",
+        "type_info": "Int2",
+        "origin": {
+          "Table": {
+            "table": "game_participants",
+            "name": "seat"
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Int4",
+        "Int4Array",
+        "Int2Array",
+        "Int2Array",
+        "Int2Array"
+      ]
+    },
+    "nullable": [
+      false,
+      false
+    ]
+  },
+  "hash": "1f9289e2ac907d6a876105ea58511fdb9039ef5889b3b10a93c15db86eeb336b"
+}
