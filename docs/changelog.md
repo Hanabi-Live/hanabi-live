@@ -7,8 +7,8 @@ listed here.
 
 ## November 9th, 2026
 
-- "Watch Replay" now groups its options like "Settings", with toggle buttons
-  for the source and visibility.
+- "Watch Replay" now groups its options like "Settings", with toggle buttons for
+  the source and visibility.
 - "New Game" now groups its options like "Settings", with checkboxes on the
   right.
 - "Settings" now opens a full page instead of a pop-up, with each setting on its
