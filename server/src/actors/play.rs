@@ -1,10 +1,11 @@
 use super::table::wrong_phase;
 use super::{
     Attendance, GameInfo, TableActor,
+    chat::table_notice,
     wire::{game_action, game_action_list, int},
 };
 use crate::errors::CommandResult;
-use crate::model::{Seat, Snapshot};
+use crate::model::{Seat, Snapshot, TableSnapshot};
 use crate::{
     model::{
         CLOCK_UNITS_PER_SECOND, IDLE_TIMEOUT_MS, MAX_NOTE_LENGTH, NoteOwner, Phase, wire_options,
@@ -15,7 +16,7 @@ use anyhow::Context;
 use hanabi_engine::{CompletionTiming, EndCondition, Recipient};
 use hanabi_protocol::ClientMessage;
 use hanabi_protocol::{
-    ChatTyping, MIN_PLAYERS, NO_VALUE, ReplayAction, SafeInteger, Status, TableRequest,
+    Chat, ChatTyping, MIN_PLAYERS, NO_VALUE, ReplayAction, SafeInteger, Status, TableRequest,
 };
 use std::sync::Arc;
 
@@ -75,13 +76,41 @@ impl TableActor {
         s.idle_remaining = IDLE_TIMEOUT_MS;
         s.maintenance_applied = false;
         let active = s.game.active_player_index;
+        let mut paused_by = None;
         if s.game.end_condition == EndCondition::InProgress && s.queued_pauses[active] {
             s.queued_pauses[active] = false;
             s.pause_player_index = hanabi_engine::int(active);
             s.game.set_paused(true);
+            paused_by = Some(s.players[active].name.clone());
         }
+        let notice = paused_by.and_then(|name| self.pause_notice(&mut next, &name, true));
         self.persist(next).await?;
-        self.transitions(from).await
+        self.transitions(from).await?;
+        if let Some(notice) = notice {
+            let mut e = self.effects();
+            self.add_chat(&mut e, &notice);
+            self.publish(e).await?;
+        }
+        Ok(())
+    }
+    /// Posts that a player paused or unpaused the game. Users who had read all of the chat also
+    /// read the notice, since the game already shows the pause.
+    fn pause_notice(&mut self, next: &mut TableSnapshot, name: &str, paused: bool) -> Option<Chat> {
+        let read_all = next.chat.len();
+        let notice = table_notice(
+            next,
+            &format!(
+                "{} {}paused the game.",
+                crate::accounts::escape_html(name),
+                if paused { "" } else { "un" }
+            ),
+        )?;
+        for read in self.chat_read.values_mut() {
+            if *read == read_all {
+                *read = next.chat.len();
+            }
+        }
+        Some(notice)
     }
     pub(super) async fn transitions(&self, from: usize) -> CommandResult<()> {
         let s = self.table.game().context("Missing game")?;
@@ -315,6 +344,7 @@ impl TableActor {
         );
         let mut next = self.candidate();
         let s = next.game_mut().expect("game");
+        let mut notice = None;
         match setting {
             P::PauseQueue | P::PauseUnqueue => s.queued_pauses[seat] = setting == P::PauseQueue,
             P::Pause | P::Unpause => {
@@ -327,6 +357,8 @@ impl TableActor {
                 if !s.game.paused {
                     s.turn_elapsed = 0;
                 }
+                let paused = s.game.paused;
+                notice = self.pause_notice(&mut next, &session.name, paused);
             }
         }
         self.persist(next).await?;
@@ -343,6 +375,9 @@ impl TableActor {
                 },
             );
             self.add_all(&mut e, hanabi_protocol::server::CLOCK, self.clock());
+        }
+        if let Some(notice) = notice {
+            self.add_chat(&mut e, &notice);
         }
         self.publish(e).await
     }

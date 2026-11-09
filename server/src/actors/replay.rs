@@ -505,8 +505,15 @@ impl TableActor {
                 (a.session.clone(), spectator, None)
             })
             .collect();
-        self.transfer(self.candidate(), destination, allocation, moving, true)
-            .await
+        self.transfer(
+            self.candidate(),
+            destination,
+            allocation,
+            moving,
+            true,
+            vec![],
+        )
+        .await
     }
     async fn decline_restart(
         &mut self,

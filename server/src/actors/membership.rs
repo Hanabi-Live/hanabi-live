@@ -1,4 +1,8 @@
-use super::{Attendance, TableActor, chat::membership_notice, pregame::remove_pregame_players};
+use super::{
+    Attendance, TableActor,
+    chat::table_notice,
+    pregame::{AUTOMATIC_START_ABORTED, AUTOMATIC_START_CANCELED, remove_pregame_players},
+};
 use crate::errors::CommandResult;
 use crate::{
     model::{IDLE_TIMEOUT_MS, Phase, Seat},
@@ -75,21 +79,45 @@ impl TableActor {
             crate::stats::player(&self.store.primary, &session.identity, variant.id).await?;
         ensure_or_reject!(session.active(), "Session changed during join");
         let mut next = self.candidate();
-        if let Phase::Pregame { players, .. } = &mut next.phase {
+        let owner_away = !self
+            .attendees
+            .get(&self.table.owner)
+            .is_some_and(|a| a.session.active());
+        let mut canceled = false;
+        let mut aborted = false;
+        if let Phase::Pregame {
+            players,
+            countdown,
+            automatic_start,
+            ..
+        } = &mut next.phase
+        {
             players.push(player);
+            canceled = countdown.take().is_some();
+            if owner_away && *automatic_start == Some(players.len()) {
+                *automatic_start = None;
+                aborted = true;
+            }
         }
         next.shadows.remove(&session.user);
-        let message = membership_notice(
+        let message = table_notice(
             &mut next,
             &format!(
                 "{} joined the game.",
                 crate::accounts::escape_html(&session.name)
             ),
         );
+        let mut notices = vec![];
+        if canceled {
+            notices.extend(table_notice(&mut next, AUTOMATIC_START_CANCELED));
+        }
+        if aborted {
+            notices.extend(table_notice(&mut next, AUTOMATIC_START_ABORTED));
+        }
         self.persist(next).await?;
         self.initialize(session.clone(), vec![]).await?;
         let mut e = self.effects();
-        if let Some(message) = message {
+        for message in message.into_iter().chain(notices) {
             for attendee in self.audience().filter(|a| a.session.user != session.user) {
                 e.messages.push((
                     attendee.session.clone(),
@@ -135,7 +163,7 @@ impl TableActor {
             reject!("This table is full.");
         }
         let mut next = self.candidate();
-        let message = membership_notice(
+        let message = table_notice(
             &mut next,
             &format!(
                 "{} tried to join, but the table is full.",
@@ -200,7 +228,7 @@ impl TableActor {
             next.game_mut().context("Missing replay")?.idle_remaining = IDLE_TIMEOUT_MS;
         }
         let notice = if pregame && spectating && !self.spectating(session.user) {
-            membership_notice(
+            table_notice(
                 &mut next,
                 &format!(
                     "{} joined the game (as a spectator).",
@@ -299,7 +327,7 @@ impl TableActor {
         next.shadows.remove(&session.user);
         if matches!(next.phase, Phase::Pregame { .. }) {
             if self.spectating(session.user) {
-                notices.extend(membership_notice(
+                notices.extend(table_notice(
                     &mut next,
                     &format!(
                         "{} left the game (as a spectator).",

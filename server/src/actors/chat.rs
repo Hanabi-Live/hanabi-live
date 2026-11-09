@@ -1,4 +1,4 @@
-use super::{Command, TableActor, setup::options_suggestion};
+use super::{Command, TableActor, pregame::AUTOMATIC_START_CANCELED, setup::options_suggestion};
 use crate::errors::CommandResult;
 use crate::errors::OrReject;
 use crate::{
@@ -63,12 +63,10 @@ pub(super) fn player_chat_has_room(chat: &[TableChat]) -> CommandResult<bool> {
         && serde_json::to_vec(chat)?.len() < MAX_PLAYER_CHAT_BYTES)
 }
 
-pub(super) fn membership_notice(table: &mut TableSnapshot, text: &str) -> Option<Chat> {
+/// Adds a server notice to a table's chat and returns it, unless the chat history is full.
+pub(super) fn table_notice(table: &mut TableSnapshot, text: &str) -> Option<Chat> {
     if table.chat.len() >= crate::model::MAX_TABLE_CHAT {
-        tracing::warn!(
-            "Table {} membership notice omitted: chat history is full.",
-            table.id
-        );
+        tracing::warn!("Table {} notice omitted: chat history is full.", table.id);
         return None;
     }
     let message = server_chat(table.id, text);
@@ -448,6 +446,7 @@ impl TableActor {
             reject!("This command requires a pregame table");
         };
         let mut boot = None;
+        let mut canceled = false;
         let notice;
         match parsed {
             Some(TableChatCommand::Start(count)) => {
@@ -505,7 +504,7 @@ impl TableActor {
                 );
                 kicked.push(player.id);
                 boot = Some(player.id);
-                *countdown = None;
+                canceled = countdown.take().is_some();
             }
             Some(TableChatCommand::Impostor) => {
                 ensure_or_reject!(
@@ -547,6 +546,11 @@ impl TableActor {
             user: crate::model::SERVER_AUTHOR,
             message: notice.clone(),
         });
+        let canceled = if canceled {
+            table_notice(&mut next, AUTOMATIC_START_CANCELED)
+        } else {
+            None
+        };
         self.persist(next).await?;
         let mut e = self.effects();
         if let Some(user) = boot
@@ -566,6 +570,9 @@ impl TableActor {
         self.pregame_messages(&mut e);
         self.add_chat(&mut e, &authored);
         self.add_chat(&mut e, &notice);
+        if let Some(canceled) = canceled {
+            self.add_chat(&mut e, &canceled);
+        }
         self.publish(e).await
     }
 }

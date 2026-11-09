@@ -1,7 +1,7 @@
 use super::table::wrong_phase;
 use super::{
     Allocation, HubCommand, TableActor, TableChange,
-    chat::{membership_notice, server_chat, truncate},
+    chat::{server_chat, table_notice, truncate},
     setup::{
         load_replay, normalize_options, option_changes, options_suggestion, requested_extra,
         validate_table_name,
@@ -35,6 +35,23 @@ const SPLIT_SUFFIX: &str = " (split)";
 /// move to a new table.
 const SPLIT_GROUPS: usize = 2;
 
+/// Posted when a change to a pregame cancels its `/startin` countdown.
+pub(super) const AUTOMATIC_START_CANCELED: &str = "Automatic game start has been canceled.";
+/// Posted when an automatic start is due but the owner is away.
+pub(super) const AUTOMATIC_START_ABORTED: &str =
+    "Aborting automatic game start since the table creator is away.";
+
+/// Posts that a pregame has a new owner.
+pub(super) fn new_owner_notice(table: &mut TableSnapshot, name: &str) -> Option<Chat> {
+    table_notice(
+        table,
+        &format!(
+            "{} is the new table owner.",
+            crate::accounts::escape_html(name)
+        ),
+    )
+}
+
 pub(super) fn remove_pregame_players(
     table: &mut TableSnapshot,
     removed: &HashSet<UserId>,
@@ -54,25 +71,33 @@ pub(super) fn remove_pregame_players(
         return vec![];
     }
     players.retain(|p| !removed.contains(&p.id));
-    *countdown = None;
-    if players.is_empty() {
+    let canceled = countdown.take().is_some();
+    let Some(first) = players.first() else {
         return vec![];
-    }
-    if !players.iter().any(|p| p.id == table.owner) {
-        table.owner = players[0].id;
+    };
+    let new_owner = (!players.iter().any(|p| p.id == table.owner)).then(|| first.clone());
+    if let Some(owner) = &new_owner {
+        table.owner = owner.id;
     }
     for id in removed {
         table.shadows.remove(id);
     }
-    names
+    let mut notices = names
         .into_iter()
         .filter_map(|name| {
-            membership_notice(
+            table_notice(
                 table,
                 &format!("{} left the game.", crate::accounts::escape_html(&name)),
             )
         })
-        .collect()
+        .collect::<Vec<_>>();
+    if canceled {
+        notices.extend(table_notice(table, AUTOMATIC_START_CANCELED));
+    }
+    if let Some(owner) = new_owner {
+        notices.extend(new_owner_notice(table, &owner.name));
+    }
+    notices
 }
 
 impl TableActor {
@@ -422,6 +447,21 @@ impl TableActor {
         }
         self.publish(e).await
     }
+    /// Cancels a `/startin` countdown that ran out while the owner is away.
+    pub(super) async fn abort_countdown(&mut self) -> CommandResult<()> {
+        let mut next = self.candidate();
+        let Phase::Pregame { countdown, .. } = &mut next.phase else {
+            return Ok(());
+        };
+        *countdown = None;
+        let notice = table_notice(&mut next, AUTOMATIC_START_ABORTED);
+        self.persist(next).await?;
+        let mut e = self.effects();
+        if let Some(notice) = notice {
+            self.add_chat(&mut e, &notice);
+        }
+        self.publish(e).await
+    }
     pub(super) async fn transfer(
         &mut self,
         source: TableSnapshot,
@@ -429,6 +469,7 @@ impl TableActor {
         mut allocation: Allocation,
         moving: Vec<(Arc<Session>, bool, Option<crate::model::Seat>)>,
         retire: bool,
+        notices: Vec<Chat>,
     ) -> CommandResult<()> {
         let humans = destination
             .players()
@@ -476,6 +517,9 @@ impl TableActor {
                 .push((session.clone(), Status::Lobby, None));
         }
         self.pregame_messages(&mut effects);
+        for notice in &notices {
+            self.add_chat(&mut effects, notice);
+        }
         self.publish(effects).await?;
         if retire {
             self.hub.send(HubCommand::Retire(self.table.id)).await?;
@@ -562,14 +606,37 @@ impl TableActor {
             unreachable!()
         };
         players.retain(|p| !selected_ids.contains(&p.id));
-        *countdown = None;
+        let canceled = countdown.take().is_some();
         *automatic_start = None;
-        if selected_ids.contains(&source.owner)
-            && let Some(p) = players.first()
-        {
-            source.owner = p.id;
-        }
+        let new_owner = players
+            .first()
+            .filter(|_| selected_ids.contains(&source.owner))
+            .cloned();
         let retire = players.is_empty();
+        if let Some(owner) = &new_owner {
+            source.owner = owner.id;
+        }
+        let names = selected
+            .iter()
+            .map(|p| crate::accounts::escape_html(&p.name))
+            .collect::<Vec<_>>()
+            .join(", ");
+        let mut notices = vec![];
+        if !retire {
+            notices.extend(table_notice(
+                &mut source,
+                &format!(
+                    "{} split {names} into a new lobby.",
+                    crate::accounts::escape_html(&session.name)
+                ),
+            ));
+            if canceled {
+                notices.extend(table_notice(&mut source, AUTOMATIC_START_CANCELED));
+            }
+            if let Some(owner) = new_owner {
+                notices.extend(new_owner_notice(&mut source, &owner.name));
+            }
+        }
         let mut destination = self.table.clone();
         destination.id = allocation.id;
         destination.name = format!(
@@ -589,12 +656,19 @@ impl TableActor {
         };
         destination.chat.clear();
         destination.shadows.clear();
+        table_notice(
+            &mut destination,
+            &format!(
+                "This lobby was created by splitting {}.",
+                crate::accounts::escape_html(&self.table.name)
+            ),
+        );
         let moving = self
             .audience()
             .filter(|a| selected_ids.contains(&a.session.user))
             .map(|a| (a.session.clone(), false, None))
             .collect();
-        self.transfer(source, destination, allocation, moving, retire)
+        self.transfer(source, destination, allocation, moving, retire, notices)
             .await
     }
 }

@@ -385,18 +385,17 @@ impl TableActor {
                 countdown,
                 ..
             } => {
-                // A start waits for the owner, whose return reschedules the timers.
-                if self
-                    .attendees
-                    .get(&self.table.owner)
-                    .is_some_and(|a| a.session.active())
+                // A restarted game waits for its owner to arrive, which reschedules the timers.
+                if automatic_start.is_some_and(|n| n == players.len())
+                    && self
+                        .attendees
+                        .get(&self.table.owner)
+                        .is_some_and(|a| a.session.active())
                 {
-                    if automatic_start.is_some_and(|n| n == players.len()) {
-                        deadlines.push(now);
-                    }
-                    if let Some(at) = countdown {
-                        deadlines.push(now + (*at - Utc::now()).to_std().unwrap_or_default());
-                    }
+                    deadlines.push(now);
+                }
+                if let Some(at) = countdown {
+                    deadlines.push(now + (*at - Utc::now()).to_std().unwrap_or_default());
                 }
             }
             Phase::Live { snapshot: s } => {
@@ -1041,16 +1040,21 @@ impl TableActor {
             ..
         } = &self.table.phase
         {
-            let due = automatic_start.is_some_and(|n| n == players.len())
-                || countdown.is_some_and(|t| Utc::now() >= t);
-            if due
-                && let Some(owner) = self
-                    .attendees
-                    .get(&self.table.owner)
-                    .filter(|a| a.session.active())
+            let full = automatic_start.is_some_and(|n| n == players.len());
+            let countdown_over = countdown.is_some_and(|t| Utc::now() >= t);
+            if !full && !countdown_over {
+                return Ok(());
+            }
+            if let Some(owner) = self
+                .attendees
+                .get(&self.table.owner)
+                .filter(|a| a.session.active())
             {
                 let owner = owner.session.clone();
                 return self.start(owner).await;
+            }
+            if countdown_over {
+                return self.abort_countdown().await;
             }
             return Ok(());
         }

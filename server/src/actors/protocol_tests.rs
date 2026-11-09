@@ -1117,6 +1117,190 @@ async fn joining_a_table_plays_a_sound_for_its_other_players_once_per_burst() ->
     outcome
 }
 
+/// The server notices in a table's chat.
+fn notices(table: &TableSnapshot) -> Vec<String> {
+    table
+        .chat
+        .iter()
+        .filter(|c| c.user == crate::model::SERVER_AUTHOR)
+        .map(|c| c.message.msg.clone())
+        .collect()
+}
+
+#[tokio::test]
+async fn pregame_changes_announce_new_owners_splits_and_canceled_starts() -> Result<()> {
+    let Some(mut h) = Harness::new(&["Alice", "Bob", "Carol", "Dave"]).await? else {
+        return Ok(());
+    };
+    let outcome = async {
+        let id = h.create(0, "Notices", json!({})).await?;
+        let room = format!("table{}", id.0);
+        let chat = |msg: &str| json!({"room":room,"msg":msg});
+        for index in [1, 2] {
+            h.send(index, "tableJoin", json!({"tableID":id})).await?;
+        }
+        h.send(0, "chat", chat("/startin 5")).await?;
+        h.send(3, "tableJoin", json!({"tableID":id})).await?;
+        h.send(0, "chat", chat("/startin 5")).await?;
+        h.send(0, "tableLeave", json!({"tableID":id})).await?;
+        h.send(1, "chat", chat("/startin 5")).await?;
+        h.send(1, "chat", chat("/kick Dave")).await?;
+        h.send(1, "chat", chat("/startin 5")).await?;
+        h.send(1, "chat", chat("/split Bob")).await?;
+        let started = "The game will automatically start in 5 minutes.";
+        let canceled = "Automatic game start has been canceled.";
+        let source = notices(&h.snapshot(id).await?.0);
+        ensure!(
+            source
+                == [
+                    "Bob joined the game.",
+                    "Carol joined the game.",
+                    started,
+                    "Dave joined the game.",
+                    canceled,
+                    started,
+                    "Alice left the game.",
+                    canceled,
+                    "Bob is the new table owner.",
+                    started,
+                    "Successfully kicked \"Dave\" from the game.",
+                    canceled,
+                    started,
+                    "Bob split Bob into a new lobby.",
+                    canceled,
+                    "Carol is the new table owner.",
+                ],
+            "Unexpected notices: {source:#?}"
+        );
+        let split = h
+            .store
+            .load()
+            .await?
+            .into_iter()
+            .map(|(table, _)| table)
+            .find(|table| table.name == "Notices (split)")
+            .context("Missing the split table")?;
+        ensure!(
+            notices(&split) == ["This lobby was created by splitting Notices."],
+            "Unexpected split notices: {:#?}",
+            notices(&split)
+        );
+        Ok(())
+    }
+    .await;
+    h.close().await?;
+    outcome
+}
+
+#[tokio::test]
+async fn an_automatic_start_is_aborted_while_the_owner_is_away() -> Result<()> {
+    let Some(mut h) = Harness::new(&["Alice", "Bob", "Carol", "Dave", "Erin"]).await? else {
+        return Ok(());
+    };
+    let outcome = async {
+        let aborted = "Aborting automatic game start since the table creator is away.";
+
+        // The player count of `/s` is reached.
+        let id = h.create(0, "Count", json!({})).await?;
+        h.send(
+            0,
+            "chat",
+            json!({"room":format!("table{}", id.0),"msg":"/s 3"}),
+        )
+        .await?;
+        h.send(1, "tableJoin", json!({"tableID":id})).await?;
+        h.users[0].cancel.cancel();
+        h.send(2, "tableJoin", json!({"tableID":id})).await?;
+        let (table, _) = h.snapshot(id).await?;
+        ensure!(
+            matches!(
+                table.phase,
+                Phase::Pregame {
+                    automatic_start: None,
+                    ..
+                }
+            ) && notices(&table).last().map(String::as_str) == Some(aborted),
+            "The table did not abort its start: {:#?}",
+            notices(&table)
+        );
+
+        // The `/startin` countdown runs out.
+        let id = h.create(3, "Countdown", json!({})).await?;
+        h.send(4, "tableJoin", json!({"tableID":id})).await?;
+        h.send(
+            3,
+            "chat",
+            json!({"room":format!("table{}", id.0),"msg":"/startin 0.02"}),
+        )
+        .await?;
+        h.users[3].cancel.cancel();
+        tokio::time::timeout(Duration::from_secs(10), async {
+            loop {
+                let (table, _) = h.snapshot(id).await?;
+                if notices(&table).last().map(String::as_str) == Some(aborted) {
+                    ensure!(
+                        matches!(
+                            table.phase,
+                            Phase::Pregame {
+                                countdown: None,
+                                ..
+                            }
+                        ),
+                        "The countdown was not canceled"
+                    );
+                    return Ok::<(), anyhow::Error>(());
+                }
+                tokio::time::sleep(Duration::from_millis(50)).await;
+            }
+        })
+        .await
+        .context("The countdown did not abort")??;
+        Ok(())
+    }
+    .await;
+    h.close().await?;
+    outcome
+}
+
+#[tokio::test]
+async fn pausing_a_game_is_announced_in_its_chat() -> Result<()> {
+    let Some(mut h) = Harness::new(&["Alice", "Bob"]).await? else {
+        return Ok(());
+    };
+    let outcome = async {
+        let id = h
+            .create(
+                0,
+                "Pause",
+                json!({"timed":true,"timeBase":120,"timePerTurn":20}),
+            )
+            .await?;
+        h.send(1, "tableJoin", json!({"tableID":id})).await?;
+        h.send(0, "tableStart", json!({"tableID":id})).await?;
+        for index in 0..2 {
+            h.send(index, "tableReattend", json!({"tableID":id}))
+                .await?;
+        }
+        h.send(1, "pause", json!({"tableID":id,"setting":"pause"}))
+            .await?;
+        h.send(0, "pause", json!({"tableID":id,"setting":"unpause"}))
+            .await?;
+        let (table, _) = h.snapshot(id).await?;
+        let notices = notices(&table);
+        ensure!(
+            notices.ends_with(&[
+                "Bob paused the game.".into(),
+                "Alice unpaused the game.".into()
+            ]),
+            "Unexpected notices: {notices:#?}"
+        );
+        Ok(())
+    }
+    .await;
+    h.close().await?;
+    outcome
+}
+
 #[tokio::test]
 async fn trying_to_join_a_full_table_tells_its_players_once() -> Result<()> {
     let Some(mut h) = Harness::new(&["Alice", "Bob", "Carol"]).await? else {
