@@ -57,6 +57,12 @@ const ARROW_ANCHOR = {
   MAX_SCORE: { x: 0.7 },
 } as const;
 
+/**
+ * How far an arrow pointing at a card stops short of the card's center, as a fraction of the stage
+ * height.
+ */
+const CARD_ARROW_BACKOFF = 0.075;
+
 function getClueArrowColor(
   element: Konva.Node | null,
   preview: boolean,
@@ -298,8 +304,7 @@ function getPos(element: Konva.Node, rot: number) {
 
     // If we set the arrow at the absolute position of a card, it will point to the exact center.
     // Instead, back it off a little bit (accounting for the rotation of the hand).
-    const winH = globals.stage.height();
-    const distance = -0.075 * winH;
+    const distance = -CARD_ARROW_BACKOFF * globals.stage.height();
     const rotRadians = konvaHelpers.degreesToRadians(-rot);
     pos.x += distance * Math.sin(rotRadians); // sin(x) = cos(x + (PI * 3 / 2))
     pos.y -= distance * -Math.cos(rotRadians); // -cos(x) = sin(x + (PI * 3 / 2))
