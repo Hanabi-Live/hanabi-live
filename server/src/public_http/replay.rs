@@ -1,9 +1,9 @@
-use super::{Error, Params, PublicState, Result, StatusCode, catalog, integer};
+use super::{HttpError, Params, PublicState, Result, StatusCode, catalog, integer};
 use hanabi_protocol::GameId;
 
 /// An archived game that cannot be exported. Its code and game ID reach the server log and the
 /// error alerts, so the game and the failed check can be found later.
-fn export_failure(code: &'static str, problem: &str, id: i64) -> Error {
+fn export_failure(code: &'static str, problem: &str, id: i64) -> HttpError {
     crate::errors::Fault::new(
         code,
         format!("{problem}: {id}"),
@@ -19,16 +19,16 @@ pub(super) async fn export(
     let raw = params
         .get("databaseID")
         .filter(|v| !v.is_empty())
-        .ok_or_else(|| Error::not_found("You must specify a database game ID."))?;
-    let id = integer(raw).ok_or_else(|| Error::bad("That is not a valid database game ID."))?;
+        .ok_or_else(|| HttpError::not_found("You must specify a database game ID."))?;
+    let id = integer(raw).ok_or_else(|| HttpError::bad("That is not a valid database game ID."))?;
     let Some(game_id) = i32::try_from(id).ok().filter(|id| *id >= 1) else {
-        return Err(Error::not_found(
+        return Err(HttpError::not_found(
             "That game does not exist in the database.",
         ));
     };
     let archive = crate::archive::load(&state.pool, GameId(game_id))
         .await?
-        .ok_or_else(|| Error::not_found("That game does not exist in the database."))?;
+        .ok_or_else(|| HttpError::not_found("That game does not exist in the database."))?;
     let row = archive.game;
     let players = archive.players;
     if players.len() != usize::try_from(row.num_players)?

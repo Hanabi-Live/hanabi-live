@@ -329,8 +329,7 @@ impl Transport for NativeTransport {
                     tokio::select! {()=cancel.cancelled()=>return Ok(()),result=attempt=>result};
                 let _ = events.try_send(json!({"t":"TRANSPORT_DISCONNECTED"}));
                 if let Err(error) = result {
-                    crate::errors::Report::from_error("Reconnecting Discord gateway", &error, None)
-                        .log();
+                    crate::errors::Report::from_error("Reconnecting Discord gateway", &error).log();
                 }
                 tokio::select! {()=cancel.cancelled()=>break,()=tokio::time::sleep(RECONNECT_DELAY)=>{}}
             }
@@ -450,7 +449,7 @@ impl Bridge {
             tokio::select! {
                 ()=lost.cancelled()=>{},
                 result=gateway.gateway(events,cancel)=>{if let Err(error)=result {
-                    crate::errors::Report::from_error("Discord gateway", &error, None).log();
+                    crate::errors::Report::from_error("Discord gateway", &error).log();
                 }}
             }
         });
@@ -475,7 +474,7 @@ impl Bridge {
                 if let Err(error) = inbound.event(event).await {
                     inbound.set_status(Status::Degraded);
                     let report =
-                        crate::errors::Report::from_error("Processing Discord event", &error, None);
+                        crate::errors::Report::from_error("Processing Discord event", &error);
                     report.log();
                     app.alert(&report);
                 }
@@ -899,11 +898,8 @@ impl Bridge {
             )
             .await;
         if let Err(error) = response {
-            let report = crate::errors::Report::from_error(
-                "Updating Discord subscription role",
-                &error,
-                None,
-            );
+            let report =
+                crate::errors::Report::from_error("Updating Discord subscription role", &error);
             report.log();
             self.send(
                 &format!(

@@ -1,6 +1,6 @@
 use super::{
-    API_PREFIX, Error, HashMap, HeaderMap, IntoResponse, Json, Params, Path, PublicState, Query,
-    RawQuery, Response, Result, State, Value, catalog, data, encoded, integer, json, replay,
+    API_PREFIX, HashMap, HeaderMap, HttpError, IntoResponse, Json, Params, Path, PublicState,
+    Query, RawQuery, Response, Result, State, Value, catalog, data, encoded, integer, json, replay,
     strict_query,
 };
 use axum::response::{Html, Redirect};
@@ -104,8 +104,8 @@ pub(super) async fn main_page(
     RawQuery(raw): RawQuery,
 ) -> Result<Response> {
     let q = strict_query(raw.as_deref(), MAIN_PAGE_PARAMETERS)?;
-    q.flag("dev").map_err(Error::bad)?;
-    q.nonempty("login").map_err(Error::bad)?;
+    q.flag("dev").map_err(HttpError::bad)?;
+    q.nonempty("login").map_err(HttpError::bad)?;
     let user_id = headers
         .get(axum::http::header::COOKIE)
         .and_then(|v| v.to_str().ok())
@@ -161,13 +161,13 @@ pub(super) async fn page(
         Err(error) => return Err(error),
     };
     // Redirects to the page's JSON API.
-    let api_redirect = q.flag("api").map_err(Error::bad)?;
+    let api_redirect = q.flag("api").map_err(HttpError::bad)?;
     let mut v = json!({"title":"History","page":mode,"stats":{},"games":[],"frequencies":[]});
     match mode {
         "export" => {
             return Ok(replay::export(&state, &params)
                 .await
-                .map_or_else(Error::json, |game| Json(game).into_response()));
+                .map_or_else(HttpError::json, |game| Json(game).into_response()));
         }
         "password-reset" => v["title"] = json!("Password Reset"),
         "scores" | "profile" | "history" | "tags" | "missing-scores" | "shared-missing-scores" => {
@@ -175,10 +175,12 @@ pub(super) async fn page(
             let n = params.get("numPlayers").and_then(|n| integer(n));
             if shared {
                 if n.is_none() {
-                    return Err(Error::bad("You must first specify the number of players."));
+                    return Err(HttpError::bad(
+                        "You must first specify the number of players.",
+                    ));
                 }
                 if !n.is_some_and(hanabi_protocol::is_player_count) {
-                    return Err(Error::bad(format!(
+                    return Err(HttpError::bad(format!(
                         "Number of players must be between {} and {}.",
                         hanabi_protocol::MIN_PLAYERS,
                         hanabi_protocol::MAX_PLAYERS
@@ -246,7 +248,7 @@ pub(super) async fn page(
             let seed = params
                 .get("seed")
                 .filter(|s| !s.is_empty())
-                .ok_or_else(|| Error::not_found("You must specify a seed."))?;
+                .ok_or_else(|| HttpError::not_found("You must specify a seed."))?;
             let api = format!("{API_PREFIX}/seed/{}", encoded(seed));
             if api_redirect {
                 return Ok(Redirect::permanent(&api).into_response());
@@ -266,10 +268,11 @@ pub(super) async fn page(
             let raw = params
                 .get("id")
                 .filter(|s| !s.is_empty())
-                .ok_or_else(|| Error::not_found("You must specify a variant ID."))?;
-            let id = integer(raw).ok_or_else(|| Error::bad("The variant ID must be a number."))?;
+                .ok_or_else(|| HttpError::not_found("You must specify a variant ID."))?;
+            let id =
+                integer(raw).ok_or_else(|| HttpError::bad("The variant ID must be a number."))?;
             let variant = catalog::variant(id)
-                .ok_or_else(|| Error::not_found("That variant does not exist."))?;
+                .ok_or_else(|| HttpError::not_found("That variant does not exist."))?;
             let api = format!("{API_PREFIX}/variants/{id}");
             if api_redirect {
                 return Ok(Redirect::permanent(&api).into_response());
@@ -304,7 +307,7 @@ pub(super) async fn page(
             let raw = params
                 .get("tag")
                 .filter(|s| !s.is_empty())
-                .ok_or_else(|| Error::not_found("You must specify a tag."))?;
+                .ok_or_else(|| HttpError::not_found("You must specify a tag."))?;
             let tag = data::sanitize_tag(raw)?;
             if api_redirect {
                 return Ok(
@@ -316,7 +319,7 @@ pub(super) async fn page(
             v["namesTitle"] = json!(format!("Games With a Tag of: {tag}"));
             v["games"] = json!(data::tagged(&state, &params, true).await?);
         }
-        _ => return Err(Error::not_found("Not found.")),
+        _ => return Err(HttpError::not_found("Not found.")),
     }
     render(&state, "public-page.html", v)
 }
@@ -556,7 +559,7 @@ async fn missing(
     q: &Query,
 ) -> Result<Response> {
     if shared && users.len() < hanabi_protocol::MIN_PLAYERS {
-        return Err(Error::not_found(format!(
+        return Err(HttpError::not_found(format!(
             "You must specify at least {} players.",
             hanabi_protocol::MIN_PLAYERS
         )));
@@ -564,7 +567,7 @@ async fn missing(
     // Only the shared page takes these parameters, so they are absent from the others.
     let terms = |key| -> Result<Vec<String>> {
         Ok(q.nonempty(key)
-            .map_err(Error::bad)?
+            .map_err(HttpError::bad)?
             .unwrap_or("")
             .split(',')
             .map(str::trim)
@@ -576,10 +579,10 @@ async fn missing(
     let excluded_variants = terms("excludeVariants")?;
     let mut bounds = [None, None];
     for (i, key) in ["minEfficiency", "maxEfficiency"].iter().enumerate() {
-        if let Some(s) = q.nonempty(key).map_err(Error::bad)?.map(str::trim) {
+        if let Some(s) = q.nonempty(key).map_err(HttpError::bad)?.map(str::trim) {
             bounds[i] = s.parse::<f64>().ok().filter(|n| n.is_finite());
             if bounds[i].is_none() {
-                return Err(Error::bad(format!(
+                return Err(HttpError::bad(format!(
                     "The {} efficiency must be a number.",
                     if i == 0 { "minimum" } else { "maximum" }
                 )));
@@ -594,7 +597,7 @@ async fn missing(
         }
     }
     if statistics.is_empty() {
-        return Err(Error::bad("You can not exclude every player."));
+        return Err(HttpError::bad("You can not exclude every player."));
     }
     let counts = num_players.map_or_else(
         || {

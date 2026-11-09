@@ -79,7 +79,7 @@ impl Alerts {
                         continue;
                     };
                     if let Err(error) = bridge.alert(&message).await {
-                        Report::from_error("Posting an error alert to Discord", &error, None).log();
+                        Report::from_error("Posting an error alert to Discord", &error).log();
                     }
                 }
             };
@@ -111,7 +111,7 @@ mod tests {
     use super::*;
 
     fn report(operation: &str, error: &str) -> Report {
-        Report::from_error(operation, &anyhow::anyhow!(error.to_owned()), None)
+        Report::from_error(operation, &anyhow::anyhow!(error.to_owned()))
     }
 
     #[test]

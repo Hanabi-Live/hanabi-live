@@ -1,4 +1,4 @@
-use super::{Error, Params, PublicState, Query, Result, catalog, integer, pagination};
+use super::{HttpError, Params, PublicState, Query, Result, catalog, integer, pagination};
 use crate::archive::GameRecord;
 use anyhow::Context;
 use hanabi_protocol::GameListColumn as Column;
@@ -112,13 +112,13 @@ pub(super) async fn players(
     } {
         let Some(name) = params.get(&format!("player{i}")).filter(|n| !n.is_empty()) else {
             if i == 1 {
-                return Err(Error::not_found("You must specify a player."));
+                return Err(HttpError::not_found("You must specify a player."));
             }
             break;
         };
         let normalized = crate::accounts::normalize_string(name);
         if !seen.insert(normalized.clone()) {
-            return Err(Error::not_found(
+            return Err(HttpError::not_found(
                 "You can not specify the same player twice.",
             ));
         }
@@ -130,7 +130,7 @@ pub(super) async fn players(
         .await?
         .map(|row| (row.id, row.username));
         users.push(user.ok_or_else(|| {
-            Error::not_found(if multiple {
+            HttpError::not_found(if multiple {
                 format!("The player of \"{name}\" does not exist in the database.")
             } else {
                 "That player does not exist in the database.".into()
@@ -154,17 +154,18 @@ pub(super) async fn selection(state: &PublicState, p: &Params, mode: &str) -> Re
             let raw = p
                 .get("id")
                 .filter(|v| !v.is_empty())
-                .ok_or_else(|| Error::not_found("You must specify a variant ID."))?;
-            let id = integer(raw).ok_or_else(|| Error::bad("The variant ID must be a number."))?;
+                .ok_or_else(|| HttpError::not_found("You must specify a variant ID."))?;
+            let id =
+                integer(raw).ok_or_else(|| HttpError::bad("The variant ID must be a number."))?;
             if catalog::variant(id).is_none() {
-                return Err(Error::not_found("That variant does not exist."));
+                return Err(HttpError::not_found("That variant does not exist."));
             }
             s.variant = Some(id);
         }
         _ => {
             s.seed = p.get("seed").filter(|v| !v.is_empty()).cloned();
             if s.seed.is_none() {
-                return Err(Error::not_found("You must specify a seed."));
+                return Err(HttpError::not_found("You must specify a seed."));
             }
         }
     }
@@ -260,13 +261,13 @@ pub(super) async fn list(
     for (key, value) in q.iter() {
         if let Some(column) = parse_column(key, "col[") {
             if sorted {
-                return Err(Error::bad("Sort by one column at a time."));
+                return Err(HttpError::bad("Sort by one column at a time."));
             }
             ascending = match value {
                 "0" => true,
                 "1" => false,
                 _ => {
-                    return Err(Error::bad(
+                    return Err(HttpError::bad(
                         "A sort direction must be 0 (ascending) or 1 (descending).",
                     ));
                 }
@@ -275,7 +276,7 @@ pub(super) async fn list(
             sorted = true;
         } else if let Some(column) = parse_column(key, "fcol[") {
             let value = integer(value).ok_or_else(|| {
-                Error::bad(format!(
+                HttpError::bad(format!(
                     "Invalid numeric filter for: {}",
                     column_name(column)
                 ))
@@ -364,7 +365,7 @@ pub(super) async fn history(
 
 pub(super) fn sanitize_tag(value: &str) -> Result<String> {
     if value.len() > crate::model::MAX_TAG_LENGTH {
-        return Err(Error::not_found(crate::model::tag_too_long()));
+        return Err(HttpError::not_found(crate::model::tag_too_long()));
     }
     let value: String = value
         .chars()
@@ -372,7 +373,7 @@ pub(super) fn sanitize_tag(value: &str) -> Result<String> {
         .collect();
     let value = value.trim_matches(' ');
     if value.is_empty() {
-        return Err(Error::not_found("Tags cannot be blank."));
+        return Err(HttpError::not_found("Tags cannot be blank."));
     }
     Ok(crate::accounts::normalize_string(value))
 }
@@ -387,7 +388,7 @@ pub(super) async fn tagged(
         let value = params
             .get("tag")
             .filter(|v| !v.is_empty())
-            .ok_or_else(|| Error::not_found("You must specify a tag."))?;
+            .ok_or_else(|| HttpError::not_found("You must specify a tag."))?;
         s.tag = Some(sanitize_tag(value)?);
     } else {
         s.tag_user = Some(players(state, params, false).await?[0].0);

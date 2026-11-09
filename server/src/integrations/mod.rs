@@ -26,13 +26,13 @@ impl Integrations {
             Ok(Some(config)) => match discord::Bridge::start(app.clone(), config, None).await {
                 Ok(bridge) => Some(bridge),
                 Err(error) => {
-                    crate::errors::Report::from_error("Initializing Discord", &error, None).log();
+                    crate::errors::Report::from_error("Initializing Discord", &error).log();
                     None
                 }
             },
             Ok(None) => None,
             Err(error) => {
-                crate::errors::Report::from_error("Configuring Discord", &error, None).log();
+                crate::errors::Report::from_error("Configuring Discord", &error).log();
                 None
             }
         };
@@ -67,7 +67,7 @@ impl Integrations {
             && let Err(error) = bridge.mirror(chat_id, raw).await
         {
             bridge.degrade();
-            let report = crate::errors::Report::from_error("Sending Discord message", &error, None);
+            let report = crate::errors::Report::from_error("Sending Discord message", &error);
             report.log();
             self.alerts.report(&report);
         }
@@ -114,7 +114,6 @@ impl Integrations {
                             "Announcing restart to Discord"
                         },
                         &error,
-                        None,
                     );
                     report.log();
                     self.alerts.report(&report);

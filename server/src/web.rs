@@ -6,6 +6,7 @@ mod protocol;
 #[cfg(test)]
 pub(crate) mod test_support;
 
+use crate::errors::HttpError;
 use crate::{
     accounts::{self, AccountConfig},
     actors::HubCommand,
@@ -202,7 +203,7 @@ fn serves_json(path: &str) -> bool {
 
 fn route_error(uri: &Uri, status: StatusCode, message: &str) -> Response {
     if serves_json(uri.path()) {
-        accounts::api_error(status, message)
+        HttpError::refused(status, message).json()
     } else {
         (status, message.to_owned()).into_response()
     }
@@ -221,7 +222,8 @@ async fn reject_get_bodies(request: Request, next: Next) -> Response {
             axum::http::Method::GET | axum::http::Method::HEAD
         )
     {
-        return accounts::api_error(StatusCode::BAD_REQUEST, "GET requests cannot have a body.");
+        return HttpError::refused(StatusCode::BAD_REQUEST, "GET requests cannot have a body.")
+            .json();
     }
     next.run(request).await
 }
@@ -347,14 +349,15 @@ async fn check_origin(State(app): State<Arc<App>>, request: Request, next: Next)
         app.public.use_tls,
     ) {
         log_rejection(&request, "an invalid origin");
-        return accounts::api_error(StatusCode::FORBIDDEN, "Invalid request origin.");
+        return HttpError::refused(StatusCode::FORBIDDEN, "Invalid request origin.").json();
     }
     let Ok(_admission) = app.lifecycle.admit().await else {
         log_rejection(&request, "the server draining");
-        return accounts::api_error(
+        return HttpError::refused(
             StatusCode::SERVICE_UNAVAILABLE,
             "The server is draining for maintenance.",
-        );
+        )
+        .json();
     };
     next.run(request).await
 }
@@ -535,7 +538,10 @@ fn load_lobby(app: Arc<App>, session: Arc<Session>) {
                 ));
             }
             Err(error) => {
-                let report = crate::errors::Report::from_error("Loading lobby statistics", &error, Some(crate::store::LOBBY_READ_TIMEOUT));
+                let report = crate::errors::Report::from_error(
+                    "Loading lobby statistics",
+                    &error.context(crate::errors::LobbyRead),
+                );
                 report.log();
                 session.emit(&frame(
                     hanabi_protocol::server::LOBBY_STATUS,
@@ -560,13 +566,15 @@ async fn websocket(
     }
     let query = match accounts::account_query(uri.query(), &["account", "version"]) {
         Ok(query) => query,
-        Err(message) => return accounts::api_error(StatusCode::BAD_REQUEST, message),
+        Err(message) => {
+            return HttpError::refused(StatusCode::BAD_REQUEST, message).json();
+        }
     };
     let version = query.get("version").unwrap_or_default().to_owned();
     let ip = address.ip();
     let Some(id) = accounts::session_id(&headers, &app.secret, uri.query()) else {
         eprintln!("Rejected websocket from {ip} without a valid session.");
-        return accounts::api_error(StatusCode::UNAUTHORIZED, "A valid session is required.");
+        return HttpError::refused(StatusCode::UNAUTHORIZED, "A valid session is required.").json();
     };
     match accounts::is_banned(&app.store.primary, &address.ip().to_string()).await {
         Ok(false) => {}
@@ -575,12 +583,8 @@ async fn websocket(
             return accounts::banned();
         }
         Err(error) => {
-            return crate::errors::Report::from_error(
-                "Checking live-connection access",
-                &error,
-                Some(crate::store::DATABASE_TIMEOUT),
-            )
-            .response(true);
+            return crate::errors::Report::from_error("Checking live-connection access", &error)
+                .response(true);
         }
     }
     let account = match Account::read(&app.store.primary, id).await {
@@ -591,16 +595,16 @@ async fn websocket(
         },
         Ok(None) => {
             eprintln!("Rejected websocket for deleted account {id} from IP: {ip}");
-            return accounts::api_error(
+            return HttpError::refused(
                 StatusCode::UNAUTHORIZED,
                 "The account for this session no longer exists. Please sign in again.",
-            );
+            )
+            .json();
         }
         Err(error) => {
             return crate::errors::Report::from_error(
                 "Checking the live-connection account",
                 &error.into(),
-                Some(crate::store::DATABASE_TIMEOUT),
             )
             .response(true);
         }
@@ -626,12 +630,8 @@ async fn websocket(
     if version == accounts::BOT_VERSION {
         eprintln!("Accepted bot websocket for account {id} from IP: {ip}");
         if let Err(error) = accounts::mark_bot(&app.store.primary, id).await {
-            return crate::errors::Report::from_error(
-                "Recording a bot connection",
-                &error,
-                Some(crate::store::DATABASE_TIMEOUT),
-            )
-            .response(true);
+            return crate::errors::Report::from_error("Recording a bot connection", &error)
+                .response(true);
         }
     }
     upgrade
@@ -693,11 +693,7 @@ async fn websocket(
                         }
                     };
                     if let Err(error) = result {
-                        let report = crate::errors::Report::from_error(
-                            "WebSocket session",
-                            &error,
-                            Some(crate::store::DATABASE_TIMEOUT),
-                        );
+                        let report = crate::errors::Report::from_error("WebSocket session", &error);
                         report.log();
                         app.alert(&report);
                     }
@@ -918,16 +914,7 @@ fn command_failure(error: CommandError, command: &str) -> Option<CommandFailure>
             true,
         ),
         CommandError::Internal(error) => {
-            let report = crate::errors::Report::from_error(
-                operation.clone(),
-                &error,
-                // History reads use the lobby read pool.
-                Some(if matches!(name, "historyGet" | "historyGetSeed") {
-                    crate::store::LOBBY_READ_TIMEOUT
-                } else {
-                    crate::store::DATABASE_TIMEOUT
-                }),
-            );
+            let report = crate::errors::Report::from_error(operation.clone(), &error);
             if report.code == crate::errors::INTERNAL_OPERATION_FAILED {
                 // The server wrote this description, so the player sees all of it.
                 (
@@ -1128,7 +1115,7 @@ async fn dispatch(app: &Arc<App>, session: Arc<Session>, input: &str) -> Command
             let effects = if history {
                 tokio::select! {
                     () = app.lifecycle.read_shutdown.cancelled() => return Ok(()),
-                    result = work => result?,
+                    result = work => result.context(crate::errors::LobbyRead)?,
                 }
             } else {
                 work.await?

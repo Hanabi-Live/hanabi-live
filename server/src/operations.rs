@@ -18,6 +18,7 @@ pub enum Operation {
 }
 
 use crate::{
+    errors::HttpError,
     lifecycle::{Control, Phase, Refusal},
     metrics,
     query::Query,
@@ -106,26 +107,9 @@ async fn guard(State(control): State<Arc<Control>>, request: Request, next: Next
     );
     response
 }
-struct Error(StatusCode, String);
-impl From<anyhow::Error> for Error {
-    fn from(error: anyhow::Error) -> Self {
-        let report = crate::errors::Report::from_error(
-            crate::errors::http_operation("Localhost operation"),
-            &error,
-            Some(crate::store::DATABASE_TIMEOUT),
-        );
-        report.log();
-        Self(report.status, report.text())
-    }
-}
-impl IntoResponse for Error {
-    fn into_response(self) -> Response {
-        (self.0, self.1).into_response()
-    }
-}
-type Result<T> = std::result::Result<T, Error>;
-fn bad(message: &str) -> Error {
-    Error(StatusCode::BAD_REQUEST, format!("{message}\n"))
+type Result<T> = std::result::Result<T, HttpError>;
+fn bad(message: &str) -> HttpError {
+    HttpError::bad(format!("{message}\n"))
 }
 const MAX_DOWNTIME_MESSAGE_CHARS: usize = 500;
 /// An optional reason for the downtime, shown to connected users and in Discord.
@@ -154,14 +138,14 @@ async fn handle(State(control): State<Arc<Control>>, request: Request) -> Result
         "/ban" | "/mute" => (&[], Some(&["username"])),
         "/gracefulRestart" | "/gracefulStop" => (&["message"], None),
         "/metrics" | "/version" => (&[], None),
-        _ => return Err(Error(StatusCode::NOT_FOUND, "Not found.\n".into())),
+        _ => return Err(HttpError::not_found("Not found.\n")),
     };
     let query =
         Query::parse(request.uri().query(), accepted_query).map_err(|message| bad(&message))?;
     let body = to_bytes(request.into_body(), crate::query::MAX_FORM_BODY_BYTES)
         .await
         .map_err(|_| {
-            Error(
+            HttpError::Refused(
                 StatusCode::PAYLOAD_TOO_LARGE,
                 "Request body too large.\n".into(),
             )
@@ -179,7 +163,7 @@ async fn handle(State(control): State<Arc<Control>>, request: Request) -> Result
         "/ban" | "/mute" => return user_action(&control, &path, &body).await,
         "/gracefulRestart" => {
             if control.lifecycle.phase() == Phase::Starting {
-                return Err(Error(
+                return Err(HttpError::Refused(
                     StatusCode::SERVICE_UNAVAILABLE,
                     "The server is not ready for lifecycle operations.\n".into(),
                 ));

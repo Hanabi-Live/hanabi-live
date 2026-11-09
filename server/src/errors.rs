@@ -27,6 +27,8 @@ mod sqlstate {
 
 tokio::task_local! {
     static HTTP_OPERATION: String;
+    /// Set while a request reads only from the lobby read pool.
+    static LOBBY_READS: ();
 }
 
 /// The code of a password check that waits for earlier ones from the same address.
@@ -48,10 +50,78 @@ pub async fn http_context(request: Request, next: Next) -> Response {
     HTTP_OPERATION.scope(operation, next.run(request)).await
 }
 
+/// Marks the requests of a router that reads only from the lobby read pool, so their database
+/// errors state that pool's timeout.
+pub async fn lobby_reads(request: Request, next: Next) -> Response {
+    LOBBY_READS.scope((), next.run(request)).await
+}
+
 pub fn http_operation(fallback: &str) -> String {
     HTTP_OPERATION
         .try_with(Clone::clone)
         .unwrap_or_else(|_| fallback.to_owned())
+}
+
+/// The error of an HTTP request: a refusal of a request that the server does not serve, or a
+/// failure, which is reported.
+#[derive(Debug)]
+pub enum HttpError {
+    /// The response's status and the message for the client.
+    Refused(StatusCode, String),
+    Failed(Box<Report>),
+}
+
+impl HttpError {
+    pub fn refused(status: StatusCode, message: impl Into<String>) -> Self {
+        Self::Refused(status, message.into())
+    }
+    pub fn bad(message: impl Into<String>) -> Self {
+        Self::Refused(StatusCode::BAD_REQUEST, message.into())
+    }
+    pub fn not_found(message: impl Into<String>) -> Self {
+        Self::Refused(StatusCode::NOT_FOUND, message.into())
+    }
+    /// The response for a client that reads JSON: every route other than an HTML page or the
+    /// operations endpoint.
+    pub fn json(self) -> Response {
+        match self {
+            Self::Refused(status, message) => {
+                (status, Json(hanabi_protocol::ApiError::new(message))).into_response()
+            }
+            Self::Failed(report) => report.response(true),
+        }
+    }
+}
+
+/// A failure of a request, reported as the request's operation.
+impl<E: Into<anyhow::Error>> From<E> for HttpError {
+    fn from(error: E) -> Self {
+        Self::Failed(Box::new(Report::from_error(
+            http_operation("HTTP request"),
+            &error.into(),
+        )))
+    }
+}
+
+/// The response as plain text.
+impl IntoResponse for HttpError {
+    fn into_response(self) -> Response {
+        match self {
+            Self::Refused(status, message) => (status, message).into_response(),
+            Self::Failed(report) => report.response(false),
+        }
+    }
+}
+
+/// Marks an error from the lobby read pool, whose waits and statements time out sooner than the
+/// other pools'. Attach it with `context` where a lobby read fails.
+#[derive(Debug)]
+pub struct LobbyRead;
+
+impl fmt::Display for LobbyRead {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.write_str("Reading lobby data")
+    }
 }
 
 /// Why a player's command did not complete. Handlers decide which kind of failure they report, so
@@ -226,14 +296,15 @@ impl Report {
         }
     }
 
-    pub fn from_error(
-        operation: impl Into<String>,
-        error: &anyhow::Error,
-        database_timeout: Option<std::time::Duration>,
-    ) -> Self {
-        let limit = database_timeout.map_or(String::new(), |timeout| {
-            format!(" after {} seconds", timeout.as_secs())
-        });
+    pub fn from_error(operation: impl Into<String>, error: &anyhow::Error) -> Self {
+        let timeout = if error.downcast_ref::<LobbyRead>().is_some()
+            || LOBBY_READS.try_with(|()| ()).is_ok()
+        {
+            crate::store::LOBBY_READ_TIMEOUT
+        } else {
+            crate::store::DATABASE_TIMEOUT
+        };
+        let limit = format!(" after {} seconds", timeout.as_secs());
         let (code, description, status) = if let Some(fault) = error.downcast_ref::<Fault>() {
             (fault.code, fault.description.clone(), fault.status)
         } else if let Some(database) = error.downcast_ref::<sqlx::Error>() {
@@ -448,8 +519,7 @@ mod tests {
     fn database_pool_and_unknown_errors_are_specific_and_redacted() {
         let report = Report::from_error(
             "Loading game history",
-            &sqlx::Error::PoolTimedOut.into(),
-            Some(crate::store::LOBBY_READ_TIMEOUT),
+            &anyhow::Error::from(sqlx::Error::PoolTimedOut).context(LobbyRead),
         );
         assert_eq!(report.code, "database_pool_timeout");
         assert!(
@@ -460,7 +530,6 @@ mod tests {
         let report = Report::from_error(
             "Saving settings",
             &anyhow::anyhow!("password=synthetic-secret SELECT private-data"),
-            None,
         );
         assert!(!report.text().contains("synthetic-secret"));
         assert!(!report.text().contains("SELECT"));
@@ -472,7 +541,6 @@ mod tests {
         let report = Report::from_error(
             "GET /api/v1/variants/{id}",
             &sqlx::Error::PoolTimedOut.into(),
-            Some(crate::store::LOBBY_READ_TIMEOUT),
         );
         let response = report.response(true);
         assert!(response.status().is_server_error());
@@ -493,7 +561,7 @@ mod tests {
             StatusCode::SERVICE_UNAVAILABLE,
         );
         let error = anyhow::anyhow!("private checkpoint payload").context(fault);
-        let report = Report::from_error("Playing a card", &error, None);
+        let report = Report::from_error("Playing a card", &error);
         assert_eq!(report.code, "persistence_uncertain");
         assert!(report.text().contains("may have been saved"));
         assert!(!report.text().contains("private checkpoint"));
@@ -523,8 +591,7 @@ mod tests {
             .unwrap_err();
         let report = Report::from_error(
             "Loading game history",
-            &error.into(),
-            Some(crate::store::LOBBY_READ_TIMEOUT),
+            &anyhow::Error::from(error).context(LobbyRead),
         );
         assert_eq!(report.code, "database_query_timeout");
         assert_eq!(report.status, StatusCode::GATEWAY_TIMEOUT);
@@ -537,11 +604,7 @@ mod tests {
             .execute(&mut *connection)
             .await
             .unwrap_err();
-        let report = Report::from_error(
-            "Loading data",
-            &error.into(),
-            Some(crate::store::LOBBY_READ_TIMEOUT),
-        );
+        let report = Report::from_error("Loading data", &error.into());
         assert!(report.text().contains("SQLSTATE 22P02"));
         assert!(!report.text().contains("synthetic-password-token"));
         #[expect(
@@ -552,11 +615,7 @@ mod tests {
             .execute(&mut *connection)
             .await
             .unwrap_err();
-        let report = Report::from_error(
-            "Loading data",
-            &error.into(),
-            Some(crate::store::LOBBY_READ_TIMEOUT),
-        );
+        let report = Report::from_error("Loading data", &error.into());
         assert_eq!(report.code, "database_query_cancelled");
         assert!(!report.text().contains("timed out"));
         drop(connection);

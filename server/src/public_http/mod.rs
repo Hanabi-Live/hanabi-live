@@ -47,51 +47,15 @@ struct PublicState {
     site_totals: Arc<tokio::sync::Mutex<pages::SiteTotals>>,
 }
 
-#[derive(Debug)]
-struct Error(StatusCode, String, Option<Box<crate::errors::Report>>);
-impl Error {
-    fn not_found(message: impl Into<String>) -> Self {
-        Self(StatusCode::NOT_FOUND, message.into(), None)
-    }
-    fn bad(message: impl Into<String>) -> Self {
-        Self(StatusCode::BAD_REQUEST, message.into(), None)
-    }
-}
-impl<E: Into<anyhow::Error>> From<E> for Error {
-    fn from(error: E) -> Self {
-        let report = crate::errors::Report::from_error(
-            crate::errors::http_operation("Loading public data"),
-            &error.into(),
-            // Public pages use the lobby read pool.
-            Some(crate::store::LOBBY_READ_TIMEOUT),
-        );
-        Self(report.status, report.text(), Some(Box::new(report)))
-    }
-}
-impl Error {
-    /// The response for a route that returns JSON, rather than an HTML page.
-    fn json(self) -> Response {
-        match self.2 {
-            Some(report) => report.response(true),
-            None => crate::accounts::api_error(self.0, self.1),
-        }
-    }
-}
-impl IntoResponse for Error {
-    fn into_response(self) -> Response {
-        match self.2 {
-            Some(report) => report.response(false),
-            None => (self.0, self.1).into_response(),
-        }
-    }
-}
-type Result<T> = std::result::Result<T, Error>;
+use crate::errors::HttpError;
+type Result<T> = std::result::Result<T, HttpError>;
+
 type Params = HashMap<String, String>;
 use crate::query::Query;
 
 /// Parses a request's query string, rejecting any parameter that the URL does not take.
 fn strict_query(raw: Option<&str>, accepted: &[&str]) -> Result<Query> {
-    Query::parse(raw, accepted).map_err(Error::bad)
+    Query::parse(raw, accepted).map_err(HttpError::bad)
 }
 
 pub(super) use hanabi_protocol::DEFAULT_PAGE_SIZE;
@@ -110,19 +74,19 @@ fn pagination(q: &Query) -> Result<Option<(i64, i64)>> {
         Some(size) => integer(size)
             .filter(|n| (1..=MAX_PAGE_SIZE).contains(n))
             .ok_or_else(|| {
-                Error::bad(format!("Page size must be between 1 and {MAX_PAGE_SIZE}."))
+                HttpError::bad(format!("Page size must be between 1 and {MAX_PAGE_SIZE}."))
             })?,
     };
     let page = match q.get("page") {
         None => 0,
         Some(page) => integer(page)
             .filter(|n| *n >= 0)
-            .ok_or_else(|| Error::bad("Page must be a nonnegative integer."))?,
+            .ok_or_else(|| HttpError::bad("Page must be a nonnegative integer."))?,
     };
     let offset = page
         .checked_mul(size)
         .filter(|n| *n <= hanabi_protocol::MAX_SAFE_INTEGER)
-        .ok_or_else(|| Error::bad("Pagination offset is too large."))?;
+        .ok_or_else(|| HttpError::bad("Pagination offset is too large."))?;
     Ok(Some((size, offset)))
 }
 fn integer(s: &str) -> Option<i64> {
@@ -237,6 +201,7 @@ pub fn router(pool: PgPool, config: &PublicConfig) -> Router {
             tower_http::services::ServeFile::new(config.root.join("public/img/favicon.ico")),
         )
         .with_state(state)
+        .layer(axum::middleware::from_fn(crate::errors::lobby_reads))
         .layer(axum::middleware::from_fn(crate::errors::http_context))
 }
 
@@ -296,7 +261,7 @@ async fn api_handler(
 ) -> Response {
     api_response(&state, &uri, &params, raw)
         .await
-        .unwrap_or_else(Error::json)
+        .unwrap_or_else(HttpError::json)
 }
 
 async fn api_response(
@@ -340,7 +305,7 @@ async fn api_response(
                     q.get(name)
                         .map(|value| {
                             integer(value).ok_or_else(|| {
-                                Error::bad(format!("The {name} game ID must be an integer."))
+                                HttpError::bad(format!("The {name} game ID must be an integer."))
                             })
                         })
                         .transpose()
@@ -352,6 +317,6 @@ async fn api_response(
         }
         "tags" => Json(data::tagged(state, params, false).await?).into_response(),
         "tag" => Json(data::tagged(state, params, true).await?).into_response(),
-        _ => return Err(Error::not_found("Not found.")),
+        _ => return Err(HttpError::not_found("Not found.")),
     })
 }

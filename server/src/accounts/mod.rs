@@ -22,6 +22,7 @@ pub use normalization::{
 pub(crate) use rate_limit::Counter;
 pub use rate_limit::TooMuchPasswordWork;
 
+use crate::errors::HttpError;
 use crate::{cookie, public_http::API_PREFIX, query::Query};
 use anyhow::Result;
 use axum::{
@@ -162,13 +163,14 @@ fn cookie_header(config: &AccountConfig, name: &str, value: &str, clear: bool) -
 }
 
 fn too_many_attempts(wait: std::time::Duration) -> Response {
-    let mut response = api_error(
+    let mut response = HttpError::refused(
         StatusCode::TOO_MANY_REQUESTS,
         format!(
             "Too many login attempts. Please try again in {}.",
             rate_limit::minutes_to_wait(wait)
         ),
-    );
+    )
+    .json();
     response.headers_mut().insert(
         header::RETRY_AFTER,
         axum::http::HeaderValue::from(wait.as_secs().max(1)),
@@ -177,7 +179,7 @@ fn too_many_attempts(wait: std::time::Duration) -> Response {
 }
 
 fn unauthorized(message: impl Into<String>) -> Response {
-    api_error(StatusCode::UNAUTHORIZED, message)
+    HttpError::refused(StatusCode::UNAUTHORIZED, message).json()
 }
 
 /// Rejects a client from a different release. Current clients reload the page instead of showing
@@ -226,20 +228,11 @@ pub fn validate_client_version(version: &str, current: &str) -> Result<(), Strin
 
 #[cfg(test)]
 fn failure_diagnostic(error: &anyhow::Error) -> String {
-    crate::errors::Report::from_error(
-        "Account operation",
-        error,
-        Some(crate::store::DATABASE_TIMEOUT),
-    )
-    .description
+    crate::errors::Report::from_error("Account operation", error).description
 }
 
 fn account_failure(operation: &'static str, error: &anyhow::Error) -> Response {
-    let report = crate::errors::Report::from_error(
-        format!("Account {operation}"),
-        error,
-        Some(crate::store::DATABASE_TIMEOUT),
-    );
+    let report = crate::errors::Report::from_error(format!("Account {operation}"), error);
     let mut response = report.response(true);
     if let Some(TooMuchPasswordWork(wait)) = error.downcast_ref() {
         response.headers_mut().insert(
@@ -469,11 +462,15 @@ async fn test_login(
 async fn logout(State(state): State<Arc<Accounts>>, uri: Uri, headers: HeaderMap) -> Response {
     let query = match account_query(uri.query(), &["account", "dev"]) {
         Ok(query) => query,
-        Err(message) => return api_error(StatusCode::BAD_REQUEST, message),
+        Err(message) => {
+            return HttpError::refused(StatusCode::BAD_REQUEST, message).json();
+        }
     };
     let dev = match query.flag("dev") {
         Ok(dev) => dev,
-        Err(message) => return api_error(StatusCode::BAD_REQUEST, message),
+        Err(message) => {
+            return HttpError::refused(StatusCode::BAD_REQUEST, message).json();
+        }
     };
     let latest = session_id(&headers, &state.config.secret, None);
     let requested = query.get("account").and_then(parse_account);
@@ -504,7 +501,7 @@ async fn logout(State(state): State<Arc<Accounts>>, uri: Uri, headers: HeaderMap
 
 async fn test_cookie(State(state): State<Arc<Accounts>>, uri: Uri, headers: HeaderMap) -> Response {
     if let Err(message) = account_query(uri.query(), &["account"]) {
-        return api_error(StatusCode::BAD_REQUEST, message);
+        return HttpError::refused(StatusCode::BAD_REQUEST, message).json();
     }
     if session_id(&headers, &state.config.secret, uri.query()).is_some() {
         "OK\n".into_response()
@@ -513,24 +510,19 @@ async fn test_cookie(State(state): State<Arc<Accounts>>, uri: Uri, headers: Head
     }
 }
 
-/// An error response for a client that reads JSON: every route other than an HTML page.
-pub(crate) fn api_error(status: StatusCode, message: impl Into<String>) -> Response {
-    (status, Json(ApiError::new(message))).into_response()
-}
-
 pub(crate) const BANNED: &str = "Your IP address has been banned. Please contact an administrator if you think this is a mistake.";
 
 /// The error for a request body that could not be read: too large, or not in the expected form.
 fn unreadable_body(status: StatusCode, malformed: &str) -> Response {
     if status == StatusCode::PAYLOAD_TOO_LARGE {
-        api_error(status, "The request body is too large.")
+        HttpError::refused(status, "The request body is too large.").json()
     } else {
-        api_error(StatusCode::BAD_REQUEST, malformed)
+        HttpError::refused(StatusCode::BAD_REQUEST, malformed).json()
     }
 }
 
 pub(crate) fn banned() -> Response {
-    api_error(StatusCode::FORBIDDEN, BANNED)
+    HttpError::refused(StatusCode::FORBIDDEN, BANNED).json()
 }
 
 async fn identity_token(
@@ -541,11 +533,14 @@ async fn identity_token(
     body: Result<axum::body::Bytes, axum::extract::rejection::BytesRejection>,
 ) -> Response {
     if let Err(message) = account_query(uri.query(), &["account"]) {
-        return api_error(StatusCode::BAD_REQUEST, message);
+        return HttpError::refused(StatusCode::BAD_REQUEST, message).json();
     }
     match body {
         Ok(body) if body.is_empty() => {}
-        Ok(_) => return api_error(StatusCode::BAD_REQUEST, "This request takes no body."),
+        Ok(_) => {
+            return HttpError::refused(StatusCode::BAD_REQUEST, "This request takes no body.")
+                .json();
+        }
         Err(rejection) => {
             return unreadable_body(rejection.status(), "This request takes no body.");
         }
@@ -555,20 +550,18 @@ async fn identity_token(
             return Ok(banned());
         }
         let Some(id) = session_id(&headers, &state.config.secret, uri.query()) else {
-            return Ok(api_error(
-                StatusCode::UNAUTHORIZED,
-                "You must be logged in.",
-            ));
+            return Ok(
+                HttpError::refused(StatusCode::UNAUTHORIZED, "You must be logged in.").json(),
+            );
         };
         let username: Option<String> =
             sqlx::query_scalar!("SELECT username FROM users WHERE id=$1", id)
                 .fetch_optional(&state.pool)
                 .await?;
         let Some(username) = username else {
-            return Ok(api_error(
-                StatusCode::UNAUTHORIZED,
-                "You must be logged in.",
-            ));
+            return Ok(
+                HttpError::refused(StatusCode::UNAUTHORIZED, "You must be logged in.").json(),
+            );
         };
         let ip = address.ip().to_string();
         let result = regenerate_token(&state.pool, &state.config.secret, id, &ip).await?;
@@ -605,10 +598,11 @@ async fn identity(
             }
         };
         let Some(token) = token else {
-            return Ok(api_error(
+            return Ok(HttpError::refused(
                 StatusCode::BAD_REQUEST,
                 "The request must be a JSON object with only a non-empty token.",
-            ));
+            )
+            .json());
         };
         let lookup = token_lookup_hash(&state.config.secret, &token)?;
         let row = sqlx::query!(
@@ -629,10 +623,7 @@ async fn identity(
                 .into_response());
             }
         }
-        Ok(api_error(
-            StatusCode::NOT_FOUND,
-            "Identity token not found.",
-        ))
+        Ok(HttpError::refused(StatusCode::NOT_FOUND, "Identity token not found.").json())
     }
     .await;
     result.unwrap_or_else(|error| account_failure("identity-lookup", &error))
@@ -650,7 +641,7 @@ async fn password_hash(
         }
     };
     let Some(request) = request else {
-        return api_error(StatusCode::BAD_REQUEST, "You must specify a password.");
+        return HttpError::refused(StatusCode::BAD_REQUEST, "You must specify a password.").json();
     };
     match hash_password(&address.ip().to_string(), request.password).await {
         Ok(hash) => Json(PasswordHashResponse { hash }).into_response(),
