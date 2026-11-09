@@ -9,6 +9,7 @@ of the repository.
 
 ## November 9th, 2026
 
+- Replay JSON links made before September 18th, 2026 no longer open.
 - Going to `/test` (such as https://hanab.live/test) logs you in as the shared
   "test" account.
 - In "Throw It in a Hole" games, the number of cards in the hole is now shown in

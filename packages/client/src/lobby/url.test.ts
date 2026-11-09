@@ -27,7 +27,7 @@ function welcome(
 }
 
 describe("replay URL loading", () => {
-  const payload = "215abcde,00ba,0";
+  const payload = "215abcde,00ba,0,";
   const locationDescriptor = Object.getOwnPropertyDescriptor(
     globalThis,
     "location",
@@ -52,10 +52,9 @@ describe("replay URL loading", () => {
   });
 
   test.each([
-    ["shared-replay-json", ",p4v0s3", "p4v0s3", "shared"],
-    ["replay-json", ",p4v0e3", "p4v0e3", "solo"],
-    ["shared-replay-json", "", "", "shared"],
-    ["replay-json", ",", "", "solo"],
+    ["shared-replay-json", "p4v0s3", "p4v0s3", "shared"],
+    ["replay-json", "p4v0e3", "p4v0e3", "solo"],
+    ["replay-json", "", "", "solo"],
   ])("%s preserves embedded seed %s", (route, suffix, seed, visibility) => {
     const setItem = vi.fn();
     const send = vi.spyOn(globals.conn!, "send");

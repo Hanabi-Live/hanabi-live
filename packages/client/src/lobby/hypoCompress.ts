@@ -21,10 +21,13 @@ interface MinMax {
 }
 
 /**
- * The number of comma-separated parts of a compressed game: the players and deck, the actions, and
- * the variant ID. An optional seed follows them.
+ * The number of comma-separated parts of a compressed game: the players and deck, the actions, the
+ * variant ID, and the seed.
  */
-const COMPRESSED_PARTS = 3;
+const COMPRESSED_PARTS = 4;
+
+/** The seed is the last part. */
+const SEED_PART = COMPRESSED_PARTS - 1;
 
 /** How often a hyphen is inserted so that a long compressed game wraps when it is posted. */
 const HYPHEN_INTERVAL = 20;
@@ -84,20 +87,20 @@ function parseGameJSON(JSONString: string) {
 /** Decompresses a string into a `GameJSON` object. Returns undefined if decompression fails. */
 export function expand(data: string): string | undefined {
   const parts = data.split(",");
-  const seed = parts[COMPRESSED_PARTS] ?? "";
+  const seed = parts[SEED_PART];
   if (
-    parts.length < COMPRESSED_PARTS
-    || parts.length > COMPRESSED_PARTS + 1
+    parts.length !== COMPRESSED_PARTS
+    || seed === undefined
     || !/^[\d\-A-Za-z]*$/u.test(seed)
   ) {
     return undefined;
   }
   // Remove wrapping hyphens from the compressed data, never from the seed.
-  const normal = parts.slice(0, COMPRESSED_PARTS).join(",").replaceAll("-", "");
+  const normal = parts.slice(0, SEED_PART).join(",").replaceAll("-", "");
 
   const [playersAndDeck, actionsString, variantIDString] = normal.split(
     ",",
-    COMPRESSED_PARTS,
+    SEED_PART,
   );
   assertDefined(
     playersAndDeck,
