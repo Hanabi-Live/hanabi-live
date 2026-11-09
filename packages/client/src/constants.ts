@@ -11,6 +11,9 @@ export const TYPED_HISTORY_MAX_LENGTH = 250;
 /** The value of `globals.tableID` when we are not joined to a table. */
 export const NO_TABLE_ID = -1;
 
+/** The value of `globals.userID` before the server's "welcome" message arrives. */
+export const NO_USER_ID = -1;
+
 /** The HTTP status codes that the client handles specially. */
 export const HTTP_STATUS = {
   OK: 200,

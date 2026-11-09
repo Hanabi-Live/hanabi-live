@@ -4,7 +4,7 @@ import type { GameHistory, ServerCommandData, UserID } from "@hanabi-live/data";
 import { defaultSettings } from "@hanabi-live/data";
 import type { Connection } from "./Connection";
 import type { Loader } from "./Loader";
-import { NO_TABLE_ID } from "./constants";
+import { NO_TABLE_ID, NO_USER_ID } from "./constants";
 import type { HanabiUI } from "./game/ui/HanabiUI";
 import type { Screen } from "./lobby/types/Screen";
 import { friendsChanged, screenChanged, usernameChanged } from "./sessionSlice";
@@ -20,7 +20,7 @@ export class Globals {
   // Values from the server "welcome" message
   // ----------------------------------------
 
-  userID = -1;
+  userID = NO_USER_ID;
   totalGames: number | null = null;
   muted = false;
 

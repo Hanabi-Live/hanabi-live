@@ -131,8 +131,16 @@ const DECEPTIVE_RANK_LABEL = {
   colorblind: { x: CARD_W / 20, y: CARD_H / 5, scale: 0.65 },
 } as const;
 
-/** The line that a gradient follows down the rank label in the top-left corner of a card. */
-const RANK_LABEL_GRADIENT = [0, 14, 0, 110] as const;
+/**
+ * The line that a gradient follows down the rank label in the top-left corner of a card, from the
+ * top of the label to its baseline.
+ */
+const RANK_LABEL_GRADIENT = [
+  0,
+  RANK_LABEL_FONT.normal.textYPos - RANK_LABEL_FONT.normal.fontSize,
+  0,
+  RANK_LABEL_FONT.normal.textYPos,
+] as const;
 
 /** The distance of the rank label from the left edge of a card. */
 const RANK_LABEL_X = 19;
