@@ -12,10 +12,10 @@
 //! caller; optional completion timing becomes a final event, not wall-clock
 //! effects inside the engine.
 //!
-//! `Interpretation::LegacyReplay` preserves historical pre-interpreted inverted
-//! actions and suppresses completion timing. Custom engine decks can be shorter
-//! than a catalog deck (the separate public replay-import validator may impose
-//! stricter import requirements).
+//! `Interpretation::Recorded` applies recorded actions as they are, without
+//! swapping inverted-suit plays and discards again, and suppresses completion
+//! timing. Custom engine decks can be shorter than a catalog deck (the separate
+//! public replay-import validator may impose stricter import requirements).
 mod catalog;
 mod character;
 mod characters;

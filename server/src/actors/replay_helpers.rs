@@ -193,7 +193,7 @@ pub fn parse(input: &ReplayImport) -> Result<Imported> {
         },
         deck: Some(deck),
         characters: (!characters.is_empty()).then_some(characters),
-        interpretation: Interpretation::LegacyReplay,
+        interpretation: Interpretation::Recorded,
     })?;
     let mut warnings = vec![];
     for (index, a) in actions.into_iter().enumerate() {

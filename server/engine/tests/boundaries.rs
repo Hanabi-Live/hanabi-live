@@ -499,7 +499,17 @@ fn privacy_is_historical_and_invalid_shadow_seats_are_omniscient() {
 }
 
 #[test]
-fn custom_shortened_legacy_decks_are_preserved_without_reshuffling() {
+fn recorded_interpretation_reads_its_earlier_name() {
+    let earlier: Interpretation = serde_json::from_str("\"legacy-replay\"").unwrap();
+    assert_eq!(earlier, Interpretation::Recorded);
+    assert_eq!(
+        serde_json::to_string(&Interpretation::Recorded).unwrap(),
+        "\"recorded\""
+    );
+}
+
+#[test]
+fn custom_shortened_decks_are_preserved_without_reshuffling() {
     let deck = vec![
         DeckCard {
             suit_index: 0,
@@ -513,7 +523,7 @@ fn custom_shortened_legacy_decks_are_preserved_without_reshuffling() {
     let mut input = setup(Options::default(), None);
     input.seed = "JSON".into();
     input.deck = Some(deck.clone());
-    input.interpretation = Interpretation::LegacyReplay;
+    input.interpretation = Interpretation::Recorded;
     let state = create_game(input).unwrap().state;
     assert_eq!(
         state

@@ -566,7 +566,7 @@ impl Store {
                 seed: seed.clone(),
                 deck: Some(deck),
                 characters: Some(characters),
-                interpretation: Interpretation::LegacyReplay,
+                interpretation: Interpretation::Recorded,
             },
             archive.actions,
         )?;

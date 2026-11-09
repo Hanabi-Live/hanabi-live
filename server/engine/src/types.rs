@@ -51,9 +51,15 @@ impl Default for Options {
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "kebab-case")]
 pub enum Interpretation {
+    /// Actions are what players request. For a card of an inverted suit, a play request
+    /// discards it and a discard request plays it.
     #[default]
     Live,
-    LegacyReplay,
+    /// Actions are what happened, as games record them. The engine does not swap them again,
+    /// and a finished game has no completion timing.
+    // Checkpoints from earlier releases store this as "legacy-replay".
+    #[serde(alias = "legacy-replay")]
+    Recorded,
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
