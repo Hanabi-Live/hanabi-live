@@ -150,6 +150,7 @@ pub struct TableSnapshot {
     pub name: String,
     pub owner: i32,
     pub visible: bool,
+    #[serde(deserialize_with = "deserialize_stored_options")]
     pub options: Options,
     pub max_players: usize,
     pub password_hash: Option<String>,
@@ -159,6 +160,27 @@ pub struct TableSnapshot {
     /// Messages without an ID are new: the next commit archives them.
     pub chat: Vec<TableChat>,
     pub shadows: BTreeMap<i32, Option<i32>>,
+}
+/// Reads a checkpoint's table options. `Options` fills in a missing option with its default, which
+/// would silently change a stored table, so every option that checkpoints always write is required.
+fn deserialize_stored_options<'de, D>(deserializer: D) -> std::result::Result<Options, D::Error>
+where
+    D: serde::Deserializer<'de>,
+{
+    use serde::de::Error;
+    let stored = serde_json::Map::<String, Value>::deserialize(deserializer)?;
+    let written = serde_json::to_value(Options::default()).map_err(D::Error::custom)?;
+    if let Some(missing) = written
+        .as_object()
+        .into_iter()
+        .flat_map(serde_json::Map::keys)
+        .find(|key| !stored.contains_key(*key))
+    {
+        return Err(D::Error::custom(format!(
+            "Missing checkpoint option {missing}"
+        )));
+    }
+    serde_json::from_value(Value::Object(stored)).map_err(D::Error::custom)
 }
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
@@ -222,33 +244,7 @@ impl TableSnapshot {
             payload.len() <= crate::state::MAX_CHECKPOINT_BYTES,
             "Oversized checkpoint"
         );
-        let value: Value = serde_json::from_str(payload)?;
-        ensure!(
-            value["chat"]
-                .as_array()
-                .is_some_and(|v| v.len() <= MAX_TABLE_CHAT),
-            "Missing or oversized checkpoint chat"
-        );
-        let options = value["options"]
-            .as_object()
-            .ok_or_else(|| anyhow::anyhow!("Missing checkpoint options"))?;
-        for key in [
-            "numPlayers",
-            "variantName",
-            "timed",
-            "timeBase",
-            "timePerTurn",
-            "speedrun",
-            "deckPlays",
-            "emptyClues",
-            "oneExtraCard",
-            "oneLessCard",
-            "allOrNothing",
-            "detrimentalCharacters",
-        ] {
-            ensure!(options.contains_key(key), "Missing checkpoint option {key}");
-        }
-        let table: Self = serde_json::from_value(value)?;
+        let table: Self = serde_json::from_str(payload)?;
         table.validate()?;
         Ok(table)
     }
