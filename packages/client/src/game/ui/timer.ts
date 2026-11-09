@@ -17,7 +17,7 @@ const TICK_MILLISECONDS = SECOND_IN_MILLISECONDS;
 const TICK_TOLERANCE_MILLISECONDS = 100;
 
 /** The time left at which the current player hears the low-time warning on every tick. */
-const LOW_TIME_WARNING_MILLISECONDS = 10_000;
+const LOW_TIME_WARNING_MILLISECONDS = 10 * SECOND_IN_MILLISECONDS;
 
 /**
  * This function handles the "clock" WebSocket command. It is sent at the beginning of every turn to

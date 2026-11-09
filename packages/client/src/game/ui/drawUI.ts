@@ -544,6 +544,9 @@ const CLUE_AREA_DISABLED_CROSS_INSET = { x: 0.075, y: 0.03 } as const;
 /** The width of the lines of the cross over a disabled clue area. */
 const CLUE_AREA_DISABLED_CROSS_WIDTH = 5 * STROKE_WIDTH_UNIT;
 
+/** The color of the lines of the cross over a disabled clue area. */
+const CLUE_AREA_DISABLED_CROSS_COLOR = "#1a1a1a";
+
 /** The "No clues" text over a disabled clue area. */
 const NO_CLUES_TEXT = {
   /** As a fraction of the clue area's height. */
@@ -2537,7 +2540,7 @@ function drawClueAreaDisabled(offsetX: number) {
 
   const spacing = CLUE_AREA_DISABLED_CROSS_INSET;
   const lineStyle = {
-    stroke: "#1a1a1a",
+    stroke: CLUE_AREA_DISABLED_CROSS_COLOR,
     strokeWidth: CLUE_AREA_DISABLED_CROSS_WIDTH * winH,
     listening: false,
   } as const;

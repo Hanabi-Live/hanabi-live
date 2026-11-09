@@ -9,6 +9,9 @@ import { drawPip } from "../game/ui/drawPip";
 /** The width and height of each pip's canvas, in pixels. */
 const PIP_CANVAS_SIZE = 200;
 
+/** The fill of a pip whose suit does not define one. */
+const DEFAULT_PIP_FILL = "#cccccc";
+
 document.addEventListener("DOMContentLoaded", () => {
   const uniquePips = new Map<
     string,
@@ -69,7 +72,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const mockSuit: Partial<Suit> = {
       pip,
-      fill: info.fill ?? "#cccccc",
+      fill: info.fill ?? DEFAULT_PIP_FILL,
       fillColors: info.fillColors ?? [],
     };
 
