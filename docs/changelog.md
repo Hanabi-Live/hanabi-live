@@ -22,6 +22,8 @@ This page lists the changes to Hanab Live, excluding bug fixes.
 - Removed the full-history and full-seed API aliases.
 - Removed the videos page.
 - Added a confirmation when playing a card whose note says it is unplayable.
+- The note icon glows when the note determines the suit or rank shown on the
+  card.
 - The deck tooltip in a shared replay shows how long the replay has been
   running.
 - The CSS bundle loads without blocking page rendering.
