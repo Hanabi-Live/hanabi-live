@@ -9,6 +9,8 @@ of the repository.
 
 ## November 9th, 2026
 
+- The efficiency tooltip now shows "Spare clues" (remaining possible clues minus
+  cards remaining to get) instead of "Number finesses required".
 - Hypotheticals now have a "Pass" button (or the right arrow key), which spends
   a clue to pass the turn to the next player.
 - Dark mode is now saved to your account instead of each browser. New accounts

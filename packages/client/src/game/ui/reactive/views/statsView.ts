@@ -139,10 +139,8 @@ export function onEfficiencyChanged(data: {
         : "-",
     )}
     ${formatLine(
-      "Number finesses required",
-      cluesStillUsable !== null && shouldShowFutureEfficiency
-        ? Math.max(cardsNotGotten - cluesStillUsable, 0)
-        : "-",
+      "Spare clues",
+      cluesStillUsable === null ? "-" : cluesStillUsable - cardsNotGotten,
     )}
     <br />
     Click / Double tap this number to add a modifier.
