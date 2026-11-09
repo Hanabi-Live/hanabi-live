@@ -14,7 +14,6 @@
 - delete UIGlobals.activePlayerIndex
 
 short term:
-- move "build-client.sh" out of "client" directory
 - refactor `ignoreNegative`, I don't think it should be created inside of the reducer (?)
 
 long term once the server is rewritten in TypeScript:

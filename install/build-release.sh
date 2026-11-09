@@ -22,7 +22,7 @@ release="$output/release"
 mkdir "$release"
 
 # CI mode avoids sourcing the operator's .env while building static assets.
-CI=true bash packages/client/build-client.sh
+CI=true bash scripts/dev/build-client.sh
 mkdir -p "$release/packages/game/src" "$release/install"
 cp -a public "$release/"
 cp -a packages/game/src/json "$release/packages/game/src/"

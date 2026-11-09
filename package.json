@@ -72,7 +72,7 @@
     }
   },
   "scripts": {
-    "build-client": "bash packages/client/build-client.sh",
+    "build-client": "bash scripts/dev/build-client.sh",
     "build-critical-css": "bun packages/testing/src/runTests.ts critical-css --write",
     "build-standalone": "bash scripts/dev/build-standalone.sh",
     "check-css": "bash scripts/lint/check-css.sh",

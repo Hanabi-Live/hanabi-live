@@ -9,13 +9,14 @@ DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &> /dev/null && pwd)
 SECONDS=0
 
 REPO_ROOT="$DIR/../.."
+CLIENT_DIR="$REPO_ROOT/packages/client"
 
 # Get the "VERSION" environment variable.
 # shellcheck disable=SC1091
-source "$DIR/get-version.sh"
+source "$CLIENT_DIR/get-version.sh"
 
 # Prepare the "version.js" file.
-bash "$DIR/set-version.sh"
+bash "$CLIENT_DIR/set-version.sh"
 
 if ! command -v bun > /dev/null; then
   export PATH="${BUN_INSTALL:-${HOME:-/root}/.bun}/bin:$PATH"
@@ -25,7 +26,7 @@ if ! command -v bun > /dev/null; then
   exit 1
 fi
 
-cd "$DIR"
+cd "$CLIENT_DIR"
 
 # The client is written in TypeScript and spread out across many files. We need to pack it into one
 # JavaScript file before sending it to end-users.
@@ -55,7 +56,7 @@ for file in *; do
     *) ;;
   esac
   page=${file%%.*}
-  if [[ $file == "$page.min.js"* && -f "$DIR/src/standalone/$page.ts" ]]; then
+  if [[ $file == "$page.min.js"* && -f "$CLIENT_DIR/src/standalone/$page.ts" ]]; then
     continue
   fi
   rm "$file"
@@ -67,7 +68,5 @@ cd "$CSS_DIR"
 if [[ -n $(ls main.*.min.css | grep -v "main.$VERSION.min.css") ]]; then
   ls main.*.min.css | grep -v "main.$VERSION.min.css" | xargs rm
 fi
-
-cd "$DIR"
 
 echo "Client version $VERSION successfully built in $SECONDS seconds."

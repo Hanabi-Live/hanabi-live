@@ -22,7 +22,7 @@ jobs:
         with:
           persist-credentials: false
       - uses: ./.github/workflows/setup-bun
-      - run: bash ./packages/client/build-client.sh
+      - run: bash ./scripts/dev/build-client.sh
 
   lint:
     runs-on: ubuntu-latest
