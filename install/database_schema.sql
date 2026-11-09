@@ -395,15 +395,14 @@ CREATE TABLE live_tables (
     id        BIGINT  PRIMARY KEY,
     revision  BIGINT  NOT NULL  CHECK (revision >= 0),
     /* The checkpoint JSON. A table that is reserved but not saved yet has none. */
-    payload   TEXT    NULL      CHECK ((revision = 0) = (payload IS NULL)),
-    /* Unused. Servers no longer fence writes with an ownership epoch; a later migration drops it. */
-    epoch     BIGINT  NOT NULL  DEFAULT 0
+    payload   TEXT    NULL      CHECK ((revision = 0) = (payload IS NULL))
 );
 
 /*
- * A live table's chat messages, game steps, and notes, each stored apart from its checkpoint. A
- * change then rewrites only the parts that changed. Keys are such as "chat/3", "step/12",
- * "notes/0" (a seat), and "spectatorNotes/42" (a user ID).
+ * A live table's game start, chat messages, game steps, and notes, each stored apart from its
+ * checkpoint. A change then rewrites only the parts that changed. Keys are such as "game/start"
+ * (the game's players and setup), "chat/3", "step/12", "notes/0" (a seat), and
+ * "spectatorNotes/42" (a user ID).
  */
 DROP TABLE IF EXISTS live_table_parts CASCADE;
 CREATE TABLE live_table_parts (
@@ -413,10 +412,3 @@ CREATE TABLE live_table_parts (
     PRIMARY KEY (table_id, part)
 );
 
-DROP TABLE IF EXISTS live_state_owner CASCADE;
-CREATE TABLE live_state_owner (
-    singleton  BOOLEAN  PRIMARY KEY  DEFAULT TRUE  CHECK (singleton),
-    /* Unused. Servers no longer fence writes with an ownership epoch; a later migration drops it. */
-    epoch      BIGINT   NOT NULL
-);
-INSERT INTO live_state_owner (epoch) VALUES (0);
