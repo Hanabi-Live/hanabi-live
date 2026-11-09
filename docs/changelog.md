@@ -3,7 +3,9 @@
 This page lists the changes to Hanab Live.
 
 Note that minor changes, bug fixes, and internal changes are intentionally not
-listed here. You can see those from [the commit history](<>) of the repository.
+listed here. You can see those from
+[the commit history](https://github.com/Hanabi-Live/hanabi-live/commits/main/)
+of the repository.
 
 ## November 9th, 2026
 
