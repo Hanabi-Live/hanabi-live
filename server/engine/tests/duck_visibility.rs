@@ -23,8 +23,7 @@ fn duck_projection_hides_both_clue_fields_from_every_player_and_shadow() -> Resu
             deck: None,
             characters: None,
             interpretation: Interpretation::Live,
-        })?
-        .state;
+        })?;
         for kind in [RecordedActionType::ColorClue, RecordedActionType::RankClue] {
             let actor = state.active_player_index;
             let target = (actor + 1) % state.players.len();
@@ -41,10 +40,11 @@ fn duck_projection_hides_both_clue_fields_from_every_player_and_shadow() -> Resu
                 })
                 .find(|action| !touched_orders(&state, action).is_empty())
                 .unwrap();
-            let transition = apply_action(&state, actor, &action, None)?;
-            state = transition.state;
+            let from = state.events.len();
+            apply_action(&mut state, actor, &action, None)?;
+            let new_events = state.events[from..].to_vec();
             let authoritative = state.clone();
-            for events in [None, Some(transition.events.as_slice())] {
+            for events in [None, Some(new_events.as_slice())] {
                 let original = clues(events.unwrap_or(&state.events));
                 assert_ne!(original, [] as [EngineEvent; 0]);
                 for index in 0..3 {

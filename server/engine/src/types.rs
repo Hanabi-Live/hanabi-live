@@ -283,13 +283,6 @@ pub struct EngineState {
     pub actions: Vec<RecordedAction>,
 }
 
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
-#[serde(deny_unknown_fields)]
-pub struct Transition {
-    pub state: EngineState,
-    pub events: Vec<EngineEvent>,
-}
-
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct CompletionTiming {

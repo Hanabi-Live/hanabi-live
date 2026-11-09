@@ -106,7 +106,7 @@ impl Deref for Game {
 impl Game {
     pub fn create(setup: GameSetup) -> Result<Self> {
         Ok(Self {
-            state: hanabi_engine::create_game(setup.clone())?.state,
+            state: hanabi_engine::create_game(setup.clone())?,
             log: GameLog {
                 setup,
                 steps: vec![],
@@ -127,19 +127,25 @@ impl Game {
         game.state.paused = stored.paused;
         Ok(game)
     }
+    /// Applies a step to the game. A rejected step changes nothing, as the engine guarantees.
     fn step(&mut self, step: GameStep) -> Result<()> {
-        self.state = match &step {
+        match &step {
             GameStep::Action {
                 actor,
                 action,
                 timing,
-            } => hanabi_engine::apply_action(&self.state, *actor, action, timing.clone())?,
+            } => hanabi_engine::apply_action(&mut self.state, *actor, action, timing.clone())?,
             GameStep::Termination {
                 termination,
                 timing,
-            } => hanabi_engine::terminate_game(&self.state, termination.clone(), timing.clone())?,
+            } => {
+                hanabi_engine::terminate_game(
+                    &mut self.state,
+                    termination.clone(),
+                    timing.clone(),
+                )?;
+            }
         }
-        .state;
         self.log.steps.push(step);
         Ok(())
     }

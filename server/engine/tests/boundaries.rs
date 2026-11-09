@@ -14,10 +14,40 @@ fn setup(options: Options, characters: Option<Vec<AssignedCharacter>>) -> GameSe
     }
 }
 fn standard() -> EngineState {
-    create_game(setup(Options::default(), None))
-        .expect("the default options are valid")
-        .state
+    create_game(setup(Options::default(), None)).expect("the default options are valid")
 }
+/// A game after an action or termination applied to a copy of it, and the events that it added.
+#[derive(Debug)]
+struct Applied {
+    state: EngineState,
+    events: Vec<EngineEvent>,
+}
+fn applied(
+    state: &EngineState,
+    actor: usize,
+    action: &PlayerAction,
+    timing: Option<CompletionTiming>,
+) -> Result<Applied> {
+    let mut next = state.clone();
+    apply_action(&mut next, actor, action, timing)?;
+    Ok(Applied {
+        events: next.events[state.events.len()..].to_vec(),
+        state: next,
+    })
+}
+fn terminated(
+    state: &EngineState,
+    termination: Termination,
+    timing: Option<CompletionTiming>,
+) -> Result<Applied> {
+    let mut next = state.clone();
+    terminate_game(&mut next, termination, timing)?;
+    Ok(Applied {
+        events: next.events[state.events.len()..].to_vec(),
+        state: next,
+    })
+}
+
 fn action(action_type: RecordedActionType, target: i32, value: i32) -> PlayerAction {
     PlayerAction {
         action_type,
@@ -36,7 +66,8 @@ fn assignments(first: &str, second: &str) -> Vec<AssignedCharacter> {
 }
 #[test]
 fn rejected_actions_are_atomic_and_client_terminations_are_not_actions() {
-    let state = standard();
+    // Rejections are checked against one state in place, which they must leave as it was.
+    let mut state = standard();
     let before = serde_json::to_value(&state).unwrap();
     // A recorded action type that is not a turn cannot come from a client, and other numbers are
     // not action types at all.
@@ -53,7 +84,7 @@ fn rejected_actions_are_atomic_and_client_terminations_are_not_actions() {
         RecordedActionType::GameOverByVote,
     ] {
         assert!(
-            apply_action(&state, 0, &action(kind, 0, 3), None)
+            apply_action(&mut state, 0, &action(kind, 0, 3), None)
                 .unwrap_err()
                 .downcast_ref::<ActionRejected>()
                 .is_some()
@@ -61,7 +92,7 @@ fn rejected_actions_are_atomic_and_client_terminations_are_not_actions() {
     }
     for target in [-1, 5, 50, i32::MAX] {
         assert!(
-            apply_action(
+            applied(
                 &state,
                 0,
                 &action(RecordedActionType::Play, target, 0),
@@ -80,26 +111,43 @@ fn rejected_actions_are_atomic_and_client_terminations_are_not_actions() {
     ] {
         assert!(validate_action(&state, 0, &a).is_err());
     }
-    assert!(apply_action(&state, 1, &action(RecordedActionType::Play, 5, 0), None).is_err());
+    assert!(apply_action(&mut state, 1, &action(RecordedActionType::Play, 5, 0), None).is_err());
     assert!(
         apply_action(
-            &state,
+            &mut state,
             usize::MAX,
             &action(RecordedActionType::Play, 0, 0),
             None
         )
         .is_err()
     );
+    assert!(
+        terminate_game(
+            &mut state,
+            Termination {
+                actor_index: 0,
+                condition: EndCondition::Normal,
+                player_index: -1,
+                votes: None,
+            },
+            None,
+        )
+        .is_err()
+    );
     let mut paused = state.clone();
     paused.paused = true;
     assert!(
-        apply_action(&paused, 0, &action(RecordedActionType::Play, 0, 0), None)
-            .unwrap_err()
-            .to_string()
-            .contains("paused")
+        apply_action(
+            &mut paused,
+            0,
+            &action(RecordedActionType::Play, 0, 0),
+            None
+        )
+        .unwrap_err()
+        .to_string()
+        .contains("paused")
     );
-    let result =
-        apply_action(&state, 0, &action(RecordedActionType::RankClue, 1, 1), None).unwrap();
+    let result = applied(&state, 0, &action(RecordedActionType::RankClue, 1, 1), None).unwrap();
     assert_eq!(serde_json::to_value(&state).unwrap(), before);
     assert_eq!(
         result.state.actions,
@@ -132,9 +180,8 @@ fn termination_uses_requesting_character_and_explicit_timing() {
                 .collect(),
         ),
     ))
-    .unwrap()
-    .state;
-    let ended = terminate_game(
+    .unwrap();
+    let ended = terminated(
         &state,
         Termination {
             actor_index: 1,
@@ -149,7 +196,7 @@ fn termination_uses_requesting_character_and_explicit_timing() {
     assert_eq!(ended.state.active_player_index, 2);
     assert_eq!(ended.state.players[2].character_metadata, 4);
     assert!(
-        apply_action(
+        applied(
             &ended.state,
             0,
             &action(RecordedActionType::Play, 0, 0),
@@ -162,7 +209,7 @@ fn termination_uses_requesting_character_and_explicit_timing() {
         player_times: vec![1234, -1234],
         duration: 5678,
     });
-    let timeout = terminate_game(
+    let timeout = terminated(
         &state,
         Termination {
             actor_index: 1,
@@ -180,7 +227,7 @@ fn termination_uses_requesting_character_and_explicit_timing() {
             duration: 5678
         })
     );
-    terminate_game(
+    terminated(
         &state,
         Termination {
             actor_index: 1,
@@ -192,7 +239,7 @@ fn termination_uses_requesting_character_and_explicit_timing() {
     )
     .unwrap();
     assert!(
-        terminate_game(
+        terminated(
             &state,
             Termination {
                 actor_index: 0,
@@ -205,7 +252,7 @@ fn termination_uses_requesting_character_and_explicit_timing() {
         .is_err()
     );
     assert!(
-        terminate_game(
+        terminated(
             &state,
             Termination {
                 actor_index: 0,
@@ -218,7 +265,7 @@ fn termination_uses_requesting_character_and_explicit_timing() {
         .is_err()
     );
     assert!(
-        apply_action(
+        applied(
             &state,
             0,
             &action(RecordedActionType::RankClue, 1, 1),
@@ -240,8 +287,7 @@ fn privacy_is_historical_and_invalid_shadow_seats_are_omniscient() {
         },
         Some(assignments("Slow-Witted", "n/a")),
     ))
-    .unwrap()
-    .state;
+    .unwrap();
     let visible =
         events_for_recipient(&state, Recipient::Player { player_index: 0 }, None).unwrap();
     let mut draws = 0;
@@ -275,7 +321,7 @@ fn privacy_is_historical_and_invalid_shadow_seats_are_omniscient() {
     assert_eq!(draws, 10);
     assert_eq!(revealed, vec![5, 6, 7, 8]);
     assert!(
-        apply_action(&state, 0, &action(RecordedActionType::RankClue, 1, 4), None)
+        applied(&state, 0, &action(RecordedActionType::RankClue, 1, 4), None)
             .unwrap_err()
             .to_string()
             .contains("touches 0 cards")
@@ -332,7 +378,7 @@ fn custom_shortened_decks_are_preserved_without_reshuffling() {
     input.seed = "JSON".into();
     input.deck = Some(deck.clone());
     input.interpretation = Interpretation::Recorded;
-    let state = create_game(input).unwrap().state;
+    let state = create_game(input).unwrap();
     assert_eq!(
         state
             .deck
@@ -344,7 +390,7 @@ fn custom_shortened_decks_are_preserved_without_reshuffling() {
             .collect::<Vec<_>>(),
         deck
     );
-    let next = apply_action(
+    let next = applied(
         &state,
         0,
         &action(RecordedActionType::Play, 0, 0),
@@ -387,9 +433,9 @@ fn custom_shortened_decks_are_preserved_without_reshuffling() {
         suit_index: 0,
         rank: 7,
     }]);
-    let state = create_game(input).unwrap().state;
+    let state = create_game(input).unwrap();
     let before = state.clone();
-    assert!(apply_action(&state, 0, &action(RecordedActionType::Play, 0, 0), None).is_err());
+    assert!(applied(&state, 0, &action(RecordedActionType::Play, 0, 0), None).is_err());
     assert_eq!(state, before);
 }
 
@@ -408,7 +454,7 @@ fn first_accepted(
 ) -> EngineState {
     let mut losing = None;
     for a in candidates {
-        if let Ok(next) = apply_action(
+        if let Ok(next) = applied(
             state,
             state.active_player_index,
             &a,
@@ -459,7 +505,7 @@ fn long_character_histories_are_bounded() {
             Some(assignments("Genius", partner)),
         );
         input.deck = Some(deck);
-        let mut state = create_game(input).unwrap().state;
+        let mut state = create_game(input).unwrap();
         for _ in 0..129 {
             if state.end_condition != EndCondition::InProgress {
                 break;
@@ -511,7 +557,7 @@ fn all_or_nothing_eventually_exhausts_resources_without_final_round() {
     let mut deck = create_shuffled_deck(get_variant("6 Suits").unwrap(), "p2v0s1");
     deck.sort_by_key(|c| (c.rank, c.suit_index));
     input.deck = Some(deck);
-    let mut state = create_game(input).unwrap().state;
+    let mut state = create_game(input).unwrap();
     for _ in 0..129 {
         if state.end_condition != EndCondition::InProgress {
             break;
@@ -549,8 +595,7 @@ fn sudoku_max_score_counts_only_cards_reachable_from_distinct_starts() {
             },
             None,
         ))
-        .unwrap()
-        .state;
+        .unwrap();
         for card in &mut state.deck {
             card.discarded = discarded.contains(&card.rank);
         }
@@ -571,8 +616,7 @@ fn sudoku_started_stack_cannot_count_available_ranks_before_its_start() {
         },
         None,
     ))
-    .unwrap()
-    .state;
+    .unwrap();
     state.stack_starts[0] = 3;
     for card in &mut state.deck {
         if card.suit_index == 0 && card.rank == 5 {

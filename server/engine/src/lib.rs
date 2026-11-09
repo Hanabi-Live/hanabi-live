@@ -4,11 +4,11 @@
 //! `create_game` takes already ordered seats and an optional already ordered
 //! deck. `prepare_game_order` supports lobby deck/seat shuffling on a shared
 //! RNG stream; character assignment intentionally starts an independent stream.
-//! `apply_action` and `terminate_game` return owned immutable transitions.
-//! Transitions are deterministic, so a game can be stored as its setup and the
+//! `apply_action` and `terminate_game` change the state in place and append
+//! their events to it. A rejected action or termination leaves the state as it
+//! was. Both are deterministic, so a game can be stored as its setup and the
 //! actions and terminations applied to it, and rebuilt by replaying them. Send
-//! only
-//! recipient-projected events. Pausing and timing accounting belong to the
+//! only recipient-projected events. Pausing and timing accounting belong to the
 //! caller; optional completion timing becomes a final event, not wall-clock
 //! effects inside the engine.
 //!

@@ -2,7 +2,7 @@ use crate::{
     ActionRejected, AssignedCharacter, Character, Clue, ClueType, CompletionTiming, EndCondition,
     EngineCard, EngineEvent, EnginePlayer, EngineState, GameSetup, Interpretation, NO_CHARACTER,
     Options, PlayerAction, RecordedAction, RecordedActionType, StackDirection, Termination,
-    Transition, assign_characters,
+    assign_characters,
     characters::{
         character_post_action, character_post_clue, check_character_softlock, has_taken_last_turn,
         needs_second_action, validate_character_action, validate_character_clue,
@@ -63,7 +63,7 @@ pub(crate) fn validate_options(options: &Options) -> Result<()> {
     Ok(())
 }
 
-pub fn create_game(setup: GameSetup) -> Result<Transition> {
+pub fn create_game(setup: GameSetup) -> Result<EngineState> {
     validate_options(&setup.options)?;
     ensure!(
         setup.player_names.len() == setup.options.num_players,
@@ -188,10 +188,7 @@ pub fn create_game(setup: GameSetup) -> Result<Transition> {
             draw_card(&mut state, player);
         }
     }
-    Ok(Transition {
-        events: state.events.clone(),
-        state,
-    })
+    Ok(state)
 }
 
 pub(crate) fn hand_size(options: &Options) -> usize {
@@ -485,24 +482,25 @@ fn validate_timing(state: &EngineState, timing: Option<&CompletionTiming>) -> Re
     Ok(())
 }
 
+/// Applies a player's action to a game. Its events are appended to `state.events`. A rejected
+/// action leaves the state as it was: every check runs before the first change.
 pub fn apply_action(
-    previous: &EngineState,
+    state: &mut EngineState,
     actor: usize,
     action: &PlayerAction,
     timing: Option<CompletionTiming>,
-) -> Result<Transition> {
-    validate_action(previous, actor, action)?;
-    validate_timing(previous, timing.as_ref())?;
-    let mut state = previous.clone();
+) -> Result<()> {
+    validate_action(state, actor, action)?;
+    validate_timing(state, timing.as_ref())?;
     if let Some(clue_type) = clue_type(action.action_type) {
-        give_clue(&mut state, actor, action, clue_type);
+        give_clue(state, actor, action, clue_type);
     } else {
         let order = usize::try_from(action.target)?;
         let deck_move = state.options.deck_plays
             && state.deck_index + 1 == state.deck.len()
             && order == state.deck_index;
         let inverted = state.interpretation == Interpretation::Live
-            && variant_for(&state).suits[state.deck[order].suit_index].inverted;
+            && variant_for(state).suits[state.deck[order].suit_index].inverted;
         let is_play = action.action_type
             == if inverted {
                 RecordedActionType::Discard
@@ -511,44 +509,43 @@ pub fn apply_action(
             };
         ensure!(
             !(is_play
-                && variant_for(&state).sudoku
+                && variant_for(state).sudoku
                 && state.deck[order].rank == START_CARD_RANK
                 && state.stacks[state.deck[order].suit_index] == 0),
             "The prepared card cannot start a Sudoku stack."
         );
-        if !is_play && state.clue_tokens < MAX_CLUES * clue_cost(&state) {
+        if !is_play && state.clue_tokens < MAX_CLUES * clue_cost(state) {
             state.clue_tokens += 1;
         }
         if deck_move {
-            draw_card(&mut state, actor);
+            draw_card(state, actor);
         }
-        remove_card(&mut state, actor, order);
+        remove_card(state, actor, order);
         if deck_move {
             state.deck[order].slot = NO_VALUE;
         }
         if is_play {
-            play(&mut state, actor, order);
+            play(state, actor, order);
         } else {
-            discard(&mut state, actor, order);
+            discard(state, actor, order);
         }
         if !deck_move {
-            draw_card(&mut state, actor);
+            draw_card(state, actor);
         }
     }
     state.started_timer = true;
-    finish_action(&mut state, actor, action, timing, None);
-    Ok(Transition {
-        events: state.events[previous.events.len()..].to_vec(),
-        state,
-    })
+    finish_action(state, actor, action, timing, None);
+    Ok(())
 }
 
-/// Trusted server operation, not a player action.
+/// Ends a game. This is a trusted server operation, not a player action. Its events are appended
+/// to `state.events`. A rejected termination leaves the state as it was.
 pub fn terminate_game(
-    previous: &EngineState,
+    state: &mut EngineState,
     termination: Termination,
     mut timing: Option<CompletionTiming>,
-) -> Result<Transition> {
+) -> Result<()> {
+    let previous = &*state;
     check_ongoing(previous)?;
     validate_timing(previous, timing.as_ref())?;
     if termination.actor_index >= previous.players.len() {
@@ -580,7 +577,11 @@ pub fn terminate_game(
             "Invalid termination votes."
         );
     }
-    let mut state = previous.clone();
+    let timed_out = if termination.condition == EndCondition::Timeout {
+        Some(usize::try_from(termination.player_index)?)
+    } else {
+        None
+    };
     state.end_condition = termination.condition;
     state.end_player = termination.player_index;
     let action = RecordedAction {
@@ -602,20 +603,15 @@ pub fn terminate_game(
     if termination.condition != EndCondition::AllOrNothingFail {
         state.actions.push(action);
     }
-    if termination.condition == EndCondition::Timeout
-        && let Some(t) = &mut timing
-    {
-        t.player_times[usize::try_from(termination.player_index)?] = 0;
+    if let (Some(player), Some(t)) = (timed_out, &mut timing) {
+        t.player_times[player] = 0;
     }
     finish_action(
-        &mut state,
+        state,
         termination.actor_index,
         &action,
         timing,
         termination.votes,
     );
-    Ok(Transition {
-        events: state.events[previous.events.len()..].to_vec(),
-        state,
-    })
+    Ok(())
 }
