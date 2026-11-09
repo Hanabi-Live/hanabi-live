@@ -116,6 +116,27 @@ const KELDON_TOP_HAND_Y = 0.01;
 /** The top of the name frame below our own hand in Keldon mode, when it is not derived from it. */
 const KELDON_BOTTOM_NAME_FRAME_Y = 0.97;
 
+/**
+ * In BGA mode, the black box drawn around a player's hand to indicate that it is their turn. It
+ * extends past the hand by fractions of the hand's size, split evenly between opposite sides. These
+ * were tuned by eye for how the box looks around the cards; it is not meant to match the width of
+ * the name frame below the hand.
+ */
+const BGA_TURN_RECT = {
+  paddingW: { default: 0.025, fivePlayers: 0.055 },
+  paddingH: 0.075,
+  /** How much further the bottom edge extends in games with the most players, in stage heights. */
+  maxPlayersExtraH: 0.005,
+  /** In fractions of the box's height. */
+  cornerRadius: 0.1,
+} as const;
+
+/**
+ * The size of the detrimental character icon, which is centered on the corner of a player's name
+ * frame, in fractions of the stage's width and height. The emoji fills the icon's height.
+ */
+const CHARACTER_ICON_SIZE = 0.03;
+
 const handPos: HandConfig[][] = [];
 const namePos: HandConfig[][] = [];
 const namePosBGA: HandConfig[][] = [];
@@ -541,11 +562,11 @@ export function drawHands(winW: number, winH: number): void {
       globals.elements.playerHandBlackLines.push(blackLine);
     } else {
       // In BGA mode, we show a black box around a player's hand to indicate that it is their turn.
-      // The box extends past the hand by these fractions of its size, split evenly between opposite
-      // sides. These were tuned by eye for how the box looks around the cards; it is not meant to
-      // match the width of the name frame below the hand.
-      const paddingW = numPlayers === 5 ? 0.055 : 0.025;
-      const paddingH = 0.075;
+      const paddingW =
+        numPlayers === 5
+          ? BGA_TURN_RECT.paddingW.fivePlayers
+          : BGA_TURN_RECT.paddingW.default;
+      const { paddingH } = BGA_TURN_RECT;
       const turnRectValues = {
         x: handValues.x,
         y: handValues.y,
@@ -557,7 +578,7 @@ export function drawHands(winW: number, winH: number): void {
 
       if (numPlayers === MAX_PLAYERS) {
         // Extend only the bottom edge.
-        turnRectValues.h += 0.005;
+        turnRectValues.h += BGA_TURN_RECT.maxPlayersExtraH;
       }
       const turnRect = new Konva.Rect({
         x: turnRectValues.x * winW,
@@ -569,7 +590,7 @@ export function drawHands(winW: number, winH: number): void {
           y: turnRectValues.offsetY * winH,
         },
         fill: "black",
-        cornerRadius: turnRectValues.h * 0.1 * winH,
+        cornerRadius: turnRectValues.h * BGA_TURN_RECT.cornerRadius * winH,
         rotation: handValues.rot,
         opacity: INDICATOR_OPACITY,
         visible: false,
@@ -626,14 +647,14 @@ function drawDetrimentalCharacters(
         }
       : getCharacter(characterID);
 
-  const width2 = 0.03 * winW;
-  const height2 = 0.03 * winH;
+  const iconW = CHARACTER_ICON_SIZE * winW;
+  const iconH = CHARACTER_ICON_SIZE * winH;
   const charIcon = new TextWithTooltip({
-    width: width2,
-    height: height2,
-    x: playerNamePos[numPlayers]![j]!.x * winW - width2 / 2,
-    y: playerNamePos[numPlayers]![j]!.y * winH - height2 / 2,
-    fontSize: 0.03 * winH,
+    width: iconW,
+    height: iconH,
+    x: playerNamePos[numPlayers]![j]!.x * winW - iconW / 2,
+    y: playerNamePos[numPlayers]![j]!.y * winH - iconH / 2,
+    fontSize: iconH,
     fontFamily: FONT_FAMILY,
     align: "center",
     text: character.emoji,

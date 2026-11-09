@@ -31,14 +31,17 @@ enum CardArea {
   Background,
 }
 
-/** Represents a stack base. Only used in this file for image drawing purposes. */
-const STACK_BASE_RANK = 0;
+/**
+ * Represents a stack base. Only used in this file for image drawing purposes. It fails to compile
+ * if it is ever the rank of a real card.
+ */
+const STACK_BASE_RANK = 0 as const satisfies Exclude<0, Rank>;
 
 /**
  * Represents an unknown card (e.g. the gray card with pips on it). Only used in this file for image
- * drawing purposes.
+ * drawing purposes. It fails to compile if it is ever the rank of a real card.
  */
-const UNKNOWN_CARD_RANK = 6;
+const UNKNOWN_CARD_RANK = 6 as const satisfies Exclude<6, Rank>;
 
 /** How far the card's outline is inset from the edges of its image. */
 const CARD_BORDER_PADDING = 4;
