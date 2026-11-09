@@ -22,7 +22,6 @@ If you need general help with the website, then read the
 | `/random [min] [max]`      | Get a random integer                                                                                                               |
 | `/replay [game ID] [turn]` | Generate a link to a replay so that you can share it with others                                                                   |
 | `/rules`                   | Get the link for the [Community Guidelines](https://github.com/Hanabi-Live/hanabi-live/blob/main/docs/community-guidelines.md)     |
-| `/shrug`                   | Displays a single line ASCII art                                                                                                   |
 | `/uptime`                  | Get how long the server has been online                                                                                            |
 
 <br />
@@ -35,6 +34,7 @@ If you need general help with the website, then read the
 | `/pmhistory [username] [amount]` | Show recent private messages with a player (default 5, maximum 100)  |
 | `/pmhistory [amount]`            | Show recent private messages with anyone (default 5, maximum 100)    |
 | `/r [msg]`                       | Reply to a private message                                           |
+| `/shrug`                         | Replace the chat box text with `¯\_(ツ)_/¯`, ready to send           |
 | `/friend [username]`             | Add someone to your friends list                                     |
 | `/friends`                       | Show a list of all your friends                                      |
 | `/unfriend [username]`           | Remove someone from your friends list                                |
