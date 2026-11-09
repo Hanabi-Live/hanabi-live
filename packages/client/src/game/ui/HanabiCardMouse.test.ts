@@ -2,7 +2,7 @@ import { describe, expect, test, vi } from "vitest";
 import type { HanabiCard } from "./HanabiCard";
 
 vi.mock("./UIGlobals", () => ({ globals: {} }));
-vi.mock("../../tooltips", () => ({}));
+vi.mock("../../tooltips", () => ({ close: vi.fn() }));
 vi.mock("./HanabiCardClick", () => ({ HanabiCardClick: vi.fn() }));
 vi.mock("./HanabiCardClickSpeedrun", () => ({
   mouseDownSpeedrun: vi.fn(),
@@ -13,12 +13,16 @@ vi.mock("./HanabiCardTouchActions", () => ({
   HanabiCardTap: vi.fn(),
 }));
 vi.mock("./arrows", () => ({}));
-vi.mock("./cursor", () => ({}));
-vi.mock("./konvaTooltips", () => ({}));
+vi.mock("./cursor", () => ({ set: vi.fn() }));
+vi.mock("./konvaTooltips", () => ({
+  setActiveHover: vi.fn(),
+  resetActiveHover: vi.fn(),
+}));
 vi.mock("./notes", () => ({}));
 const { registerMouseHandlers, setEmpathyOnHand } =
   await import("./HanabiCardMouse");
 const { globals } = await import("./UIGlobals");
+const tooltips = await import("../../tooltips");
 
 function makeCard(parent: unknown): HanabiCard {
   return {
@@ -174,5 +178,48 @@ describe("hypothetical card rotation in Keldon mode", () => {
     release();
 
     expect(getRotation()).toBe(90);
+  });
+});
+
+describe("touching a card", () => {
+  test("closes its note tooltip when the finger lifts off the card", () => {
+    // Stand in for the browser window, which receives the touch release.
+    const window = new EventTarget();
+    vi.stubGlobal("addEventListener", window.addEventListener.bind(window));
+    vi.stubGlobal(
+      "removeEventListener",
+      window.removeEventListener.bind(window),
+    );
+    const handlers = new Map<string, (event: unknown) => void>();
+    const card = {
+      tooltipName: "card-0",
+      state: { location: 0, order: 0 },
+      layout: { parent: null },
+      noteIndicator: { isVisible: () => false },
+      setCursor: vi.fn(),
+      on: vi.fn((event: string, handler: (event: unknown) => void) => {
+        handlers.set(event, handler);
+      }),
+    } as unknown as HanabiCard;
+    Object.assign(globals, {
+      editingNote: null,
+      globalEmpathyEnabled: true,
+      state: { replay: { hypothetical: null } },
+      elements: { clueLog: { showMatches: vi.fn() } },
+      layers: { UI: { batchDraw: vi.fn() } },
+    });
+
+    registerMouseHandlers.call(card);
+    // Shift disables empathy, which this test does not cover.
+    handlers.get("touchstart")?.call(card, { evt: { shiftKey: true } });
+    vi.mocked(tooltips.close).mockClear();
+
+    // Konva sends the release to the shape under the finger, which is no longer this card.
+    window.dispatchEvent(new Event("touchend"));
+    window.dispatchEvent(new Event("touchend"));
+    vi.unstubAllGlobals();
+
+    expect(tooltips.close).toHaveBeenCalledOnce();
+    expect(tooltips.close).toHaveBeenCalledWith("#tooltip-card-0");
   });
 });

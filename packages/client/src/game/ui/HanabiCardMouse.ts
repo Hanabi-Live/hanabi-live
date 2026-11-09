@@ -21,7 +21,6 @@ export function registerMouseHandlers(this: HanabiCard): void {
   this.on("mouseenter", mouseEnter);
   this.on("mouseleave", mouseLeave);
   this.on("touchstart", touchStart);
-  this.on("touchend", mouseLeave);
   this.on("click", HanabiCardClick);
   this.on("tap", HanabiCardTap);
   this.on("dbltap", HanabiCardDblTap);
@@ -91,6 +90,17 @@ function touchStart(
 
   // Do all of the same things that would occur if we hovered over the card.
   mouseEnter.call(this);
+
+  // Konva sends "touchend" to the shape under the finger when it lifts, so a touch that slides off
+  // the card would otherwise leave its note tooltip and Empathy on. Konva also ignores
+  // "touchcancel".
+  const touchEnd = () => {
+    globalThis.removeEventListener("touchend", touchEnd);
+    globalThis.removeEventListener("touchcancel", touchEnd);
+    mouseLeave.call(this);
+  };
+  globalThis.addEventListener("touchend", touchEnd);
+  globalThis.addEventListener("touchcancel", touchEnd);
 
   // During replay hypo, skip the starting player.
   if (checkForHypoEmpathy(this)) {
