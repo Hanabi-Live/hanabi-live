@@ -335,20 +335,20 @@ html[data-theme="dark"] #modals-container > div {
 }
 
 /* Settings screen */
-html[data-theme="dark"] .settings-list {
+html[data-theme="dark"] .lobby-rows {
   background-color: var(--dm-surface-2);
   border-color: var(--dm-border);
 }
 
-html[data-theme="dark"] .setting + .setting {
+html[data-theme="dark"] .lobby-row + .lobby-row {
   border-top-color: var(--dm-border);
 }
 
-html[data-theme="dark"] .setting .fa-fw {
+html[data-theme="dark"] .lobby-row .fa-fw {
   color: #6fcf7a;
 }
 
-html[data-theme="dark"] .settings-group h3 {
+html[data-theme="dark"] .lobby-group h3 {
   color: var(--dm-text-muted);
 }
 

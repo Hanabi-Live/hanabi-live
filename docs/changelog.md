@@ -7,6 +7,8 @@ listed here.
 
 ## November 9th, 2026
 
+- "New Game" now groups its options like "Settings", with checkboxes on the
+  right.
 - The numbers along the bottom of cards look as they did before November 8th.
 - "Settings" now opens a full page instead of a pop-up, with each setting on its
   own row.

@@ -746,12 +746,16 @@ table td {
 
 /* Most games do not use the extra options, so they start out hidden behind this button. */
 .create-game-extra-options-toggle {
-  margin: 1.75em 0;
+  margin: 1.5em 0 0;
   text-align: center;
 }
 
 #create-game-extra-options {
-  margin-bottom: 1.25em;
+  margin-top: 1.5em;
+}
+
+#create-game-submit {
+  margin-top: 1.5em;
 }
 
 /* A label beside its control. */
@@ -792,6 +796,10 @@ table td {
   position: relative;
 }
 
+#create-game-variant-dropdown1 {
+  width: 100%;
+}
+
 #create-game-variant-dropdown2 {
   padding-right: 2.75em;
 }
@@ -819,66 +827,6 @@ table td {
   line-height: 1.8em;
   margin: 0;
   padding-right: 0;
-}
-
-/* The checkbox lines up with the inputs, below their captions. */
-.create-game-timed {
-  align-items: flex-end;
-  display: flex;
-  gap: 1em;
-}
-
-/* Not a flex container, so that the theme's hidden checkbox can float. */
-.create-game-timed .lobby-form-check {
-  height: 3em;
-  padding-top: 0.6em;
-}
-
-/* Center the "Timed" label on the inputs rather than on their captions. */
-#create-game-timed-row {
-  align-items: end;
-}
-
-#create-game-timed-row > label {
-  line-height: 3em;
-}
-
-/* This label has no text, so give it the size of the box that it draws. */
-.create-game-timed .lobby-form-check label {
-  display: block;
-  height: 1.8em;
-  padding: 0;
-  width: 1.8em;
-}
-
-.create-game-timed-inputs {
-  column-gap: 1em;
-  flex: 1;
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  row-gap: 0.25em;
-}
-
-.create-game-timed-inputs label {
-  font-size: 0.85em;
-  margin: 0;
-}
-
-.lobby-form-checks {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(17em, 1fr));
-  column-gap: 2em;
-  margin: 0;
-  padding: 0;
-}
-
-.lobby-form-checks li {
-  align-items: center;
-  display: flex;
-  gap: 0.6em;
-  margin: 0;
-  min-height: 2.9em;
-  padding: 0;
 }
 
 @media screen and (max-width: 600px) {
@@ -1053,19 +1001,19 @@ input::-webkit-calendar-picker-indicator /* Chrome */ {
 }
 
 /*
-  Settings screen
+  Grouped rows on lobby pages ("Create Game" and "Settings")
 */
-.settings-group + .settings-group {
+.lobby-group + .lobby-group {
   margin-top: 1.5em;
 }
 
-.settings-group h3 {
+.lobby-group h3 {
   color: #8a8a8a;
   font-size: 1em;
   margin: 0 0 0.6em;
 }
 
-.settings-list {
+.lobby-rows {
   background-color: #fafafa;
   border: 1px solid #ececec;
   border-radius: 6px;
@@ -1074,8 +1022,8 @@ input::-webkit-calendar-picker-indicator /* Chrome */ {
   padding: 0;
 }
 
-/* A setting's description on the left and its control on the right. */
-.setting {
+/* A description on the left and its control on the right. */
+.lobby-row {
   align-items: center;
   display: flex;
   gap: 1.5em;
@@ -1085,14 +1033,19 @@ input::-webkit-calendar-picker-indicator /* Chrome */ {
   padding: 0.5em 1em;
 }
 
-.setting + .setting {
+.lobby-row + .lobby-row {
   border-top: 1px solid #ececec;
 }
 
+/* The password cannot be changed after the table is created. */
+.lobby-row.hidden {
+  display: none;
+}
+
 /* Wrapped lines of a description line up with its text rather than its icon. */
-.setting > label {
+.lobby-row > label,
+.lobby-row-label label {
   cursor: pointer;
-  flex: 1;
   font-size: 1em;
   line-height: 1.4em;
   margin: 0;
@@ -1100,30 +1053,57 @@ input::-webkit-calendar-picker-indicator /* Chrome */ {
   text-indent: -2em;
 }
 
-.setting .fa-fw {
+.lobby-row > label,
+.lobby-row-label {
+  flex: 1;
+}
+
+/* A description followed by a link that explains it. */
+.lobby-row-label {
+  align-items: center;
+  display: flex;
+  gap: 0.6em;
+}
+
+/* Controls are slimmer than elsewhere so that every row is about as tall as a checkbox row. */
+.lobby-row input[type="text"],
+.lobby-row input[type="number"],
+.lobby-row select {
+  height: 2.5em;
+}
+
+/* Text fields and the variant picker share one width, so their edges line up. */
+.lobby-row > input[type="text"],
+.lobby-row > input[type="number"],
+.create-game-variant {
+  flex: 0 0 20em;
+  width: 20em;
+}
+
+.lobby-row .fa-fw {
   color: #308943;
   margin-right: 0.75em;
   text-indent: 0;
 }
 
-.setting select {
+.lobby-row select {
   flex-shrink: 0;
   width: auto;
 }
 
 /* The checkbox draws its box with a label that has no text, so give it the size of the box. */
-.setting-checkbox {
+.lobby-row-checkbox {
   flex-shrink: 0;
   position: relative;
 }
 
 /* Keep the theme's hidden checkbox from taking up room beside the box. */
-.setting-checkbox input {
+.lobby-row-checkbox input {
   margin: 0;
   position: absolute;
 }
 
-.setting-checkbox input + label {
+.lobby-row-checkbox input + label {
   display: block;
   height: 1.8em;
   margin: 0;
@@ -1152,12 +1132,21 @@ input::-webkit-calendar-picker-indicator /* Chrome */ {
 }
 
 @media screen and (max-width: 600px) {
-  /* Put a dropdown or the volume below its description. */
-  .setting:has(select),
-  .setting:has(#settings-volume) {
+  /* Put a text field, dropdown, or the volume below its description. */
+  .lobby-row:has(select),
+  .lobby-row:has(input[type="text"]),
+  .lobby-row:has(input[type="number"]),
+  .lobby-row:has(#settings-volume) {
     align-items: stretch;
     flex-direction: column;
     gap: 0.5em;
+  }
+
+  .lobby-row > input[type="text"],
+  .lobby-row > input[type="number"],
+  .create-game-variant {
+    flex-basis: auto;
+    width: 100%;
   }
 
   #settings-volume-slider {
