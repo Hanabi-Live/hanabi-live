@@ -265,7 +265,6 @@ export function cardsReducer(
     case "receiveNote":
     case "gameOver":
     case "playerTimes":
-    case "strike":
     case "turn": {
       break;
     }

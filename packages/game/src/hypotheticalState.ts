@@ -18,7 +18,6 @@ import type {
   ActionDiscard,
   ActionDraw,
   ActionPlay,
-  ActionStrike,
   ActionTurn,
   HypotheticalWireAction,
 } from "./types/gameActions";
@@ -61,12 +60,7 @@ export type ActionHypotheticalUnmorph = Readonly<
 
 /** A game action that a hypothetical move can produce. */
 export type HypotheticalGameAction =
-  | ActionClue
-  | ActionDiscard
-  | ActionDraw
-  | ActionPlay
-  | ActionStrike
-  | ActionTurn;
+  ActionClue | ActionDiscard | ActionDraw | ActionPlay | ActionTurn;
 
 /** An action that a hypothetical can contain: a move's game actions, or a changed identity. */
 export type ActionIncludingHypothetical =

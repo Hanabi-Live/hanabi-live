@@ -139,11 +139,6 @@ fn explicit_stack_sizes() -> Vec<i32> {
     (1..MAX_RANK).collect()
 }
 
-/// Every strike number, from the first to the one that ends the game.
-fn strikes() -> Vec<i32> {
-    (1..=MAX_STRIKES).collect()
-}
-
 /// Whether a game can have this many players.
 pub fn is_player_count<T: TryInto<usize>>(count: T) -> bool {
     count
@@ -950,14 +945,6 @@ pub enum HypotheticalAction {
         #[schemars(with = "Vec<CardOrder>", extend("x-readonly" = true))]
         list: Vec<SafeInteger>,
         ignore_negative: bool,
-    },
-    Strike {
-        #[schemars(range(min = 1, max = MAX_STRIKES), extend("enum" = strikes()))]
-        num: i64,
-        #[schemars(range(min = -MAX_SAFE_INTEGER, max = MAX_SAFE_INTEGER))]
-        turn: i64,
-        #[schemars(with = "CardOrder")]
-        order: i64,
     },
     Turn {
         #[schemars(range(min = -MAX_SAFE_INTEGER, max = MAX_SAFE_INTEGER))]
@@ -2049,14 +2036,6 @@ pub enum GameEvent {
         list: Vec<SafeInteger>,
         #[schemars(range(min = -MAX_SAFE_INTEGER, max = MAX_SAFE_INTEGER))]
         turn: i64,
-    },
-    Strike {
-        #[schemars(range(min = 1, max = MAX_STRIKES), extend("enum" = strikes()))]
-        num: i64,
-        #[schemars(range(min = -MAX_SAFE_INTEGER, max = MAX_SAFE_INTEGER))]
-        turn: i64,
-        #[schemars(with = "CardOrder")]
-        order: i64,
     },
     Status {
         #[schemars(range(min = -MAX_SAFE_INTEGER, max = MAX_SAFE_INTEGER))]

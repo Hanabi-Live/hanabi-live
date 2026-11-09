@@ -318,16 +318,6 @@ export const gameEventSchema = z.discriminatedUnion("type", [
     type: z.literal("clue"),
   }),
   z.strictObject({
-    num: z.literal([1, 2, 3]),
-    order: cardOrderSchema,
-    turn: z
-      .number()
-      .int()
-      .min(-9_007_199_254_740_991)
-      .max(9_007_199_254_740_991),
-    type: z.literal("strike"),
-  }),
-  z.strictObject({
     clues: z
       .number()
       .int()
@@ -465,16 +455,6 @@ export const hypotheticalActionSchema = z.discriminatedUnion("type", [
     list: z.array(cardOrderSchema).readonly(),
     target: playerIndexSchema,
     type: z.literal("clue"),
-  }),
-  z.strictObject({
-    num: z.literal([1, 2, 3]),
-    order: cardOrderSchema,
-    turn: z
-      .number()
-      .int()
-      .min(-9_007_199_254_740_991)
-      .max(9_007_199_254_740_991),
-    type: z.literal("strike"),
   }),
   z.strictObject({
     currentPlayerIndex: playerIndexOrNoneSchema,

@@ -463,16 +463,14 @@ function gameReducerFunction(
       break;
     }
 
-    // Some actions do not affect the main state or are handled by another reducer. (A failed
-    // discard records a strike.)
+    // Some actions do not affect the main state or are handled by another reducer.
     case "setEffMod":
     case "editNote":
     case "noteList":
     case "noteListPlayer":
     case "receiveNote":
     case "turn":
-    case "cardIdentity":
-    case "strike": {
+    case "cardIdentity": {
       break;
     }
   }

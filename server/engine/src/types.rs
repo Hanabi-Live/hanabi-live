@@ -208,11 +208,6 @@ pub enum EngineEvent {
         list: Vec<usize>,
         turn: i32,
     },
-    Strike {
-        num: i32,
-        turn: i32,
-        order: usize,
-    },
     Status {
         clues: i32,
         score: i32,

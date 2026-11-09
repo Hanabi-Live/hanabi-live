@@ -21,7 +21,6 @@ export type GameAction =
   | ActionGameOver
   | ActionPlay
   | ActionPlayerTimes
-  | ActionStrike
   | ActionTurn
   | NoteAction;
 
@@ -64,9 +63,6 @@ export type ActionPlay = Event<"play">;
 
 /** One time per player, in seat order. */
 export type ActionPlayerTimes = Event<"playerTimes">;
-
-/** `order` is the card that was misplayed. */
-export type ActionStrike = Event<"strike">;
 
 /** `currentPlayerIndex` is -1 once the game has ended. */
 export type ActionTurn = Event<"turn">;

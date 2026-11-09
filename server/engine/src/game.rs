@@ -337,11 +337,6 @@ fn play(state: &mut EngineState, player: usize, order: usize) {
     if !playable || follower_misplays(state, player, &state.deck[order]) {
         state.deck[order].failed = true;
         state.strikes += 1;
-        state.events.push(EngineEvent::Strike {
-            num: state.strikes,
-            turn: state.turn,
-            order,
-        });
         discard(state, player, order);
         return;
     }

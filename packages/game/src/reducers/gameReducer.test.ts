@@ -4,8 +4,7 @@ import { CardStatus } from "../enums/CardStatus";
 import { MAX_CLUES } from "../generated/protocol";
 import { getDefaultMetadata } from "../metadata";
 import { colorClue, discard, draw, play, rankClue } from "../testActions";
-import type { CardOrder } from "../types/CardOrder";
-import type { ActionClue, GameAction } from "../types/gameActions";
+import type { ActionClue } from "../types/gameActions";
 import type { Rank } from "../types/Rank";
 import { gameReducer } from "./gameReducer";
 import { getInitialGameState } from "./initialStates/initialGameState";
@@ -201,29 +200,6 @@ describe("gameReducer", () => {
 
       const efficiency = getEfficiencyFromGameState(state);
       expect(efficiency).toBe(0);
-    });
-
-    test("counts a misplay once when the server also sends a strike", () => {
-      let state = getInitialGameState(DEFAULT_METADATA);
-      const actions: GameAction[] = [
-        draw(0, 0, 0, 1),
-        { type: "strike", num: 1, turn: 0, order: 0 as CardOrder },
-        discard(0, 0, 0, 1, true),
-      ];
-      for (const action of actions) {
-        state = gameReducer(
-          state,
-          action,
-          true,
-          false,
-          false,
-          false,
-          DEFAULT_METADATA,
-        );
-      }
-
-      expect(state.strikes).toEqual([{ order: 0 as CardOrder, segment: 1 }]);
-      expect(state.stats.potentialCluesLost).toBe(1);
     });
 
     test("is 3 after a 3-for-1 clue", () => {

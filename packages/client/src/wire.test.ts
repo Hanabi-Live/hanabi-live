@@ -71,9 +71,6 @@ describe("server game events", () => {
       }),
     ).toThrow();
     expect(() =>
-      event({ type: "strike", num: 4, turn: 3, order: 0 }),
-    ).toThrow();
-    expect(() =>
       event({ type: "draw", playerIndex: 0, order: 66, suitIndex: 0, rank: 1 }),
     ).toThrow();
     expect(() =>

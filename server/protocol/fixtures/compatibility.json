@@ -1164,21 +1164,6 @@
     "valid": false
   },
   {
-    "name": "a game ends on the third strike",
-    "direction": "server",
-    "command": "gameAction",
-    "input": {
-      "tableID": 3,
-      "action": {
-        "type": "strike",
-        "num": 4,
-        "turn": 3,
-        "order": 0
-      }
-    },
-    "valid": false
-  },
-  {
     "name": "game over votes are seats",
     "direction": "server",
     "command": "gameAction",
