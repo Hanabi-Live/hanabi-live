@@ -168,8 +168,9 @@ export function onChanged(
     text1.y(totalH / 2 - text1H / 2 + text1Offset * winH);
     text2.y(totalH / 2 - text2H / 2 + text2Offset * winH);
     text3.fitText(specialText);
-    const text3H = text3.measureSize(text3.text()).height;
-    text3.y(totalH / 2 - text3H / 2 + text3Offset * winH);
+    // The offsets were tuned with the warning offset by half the height of the first line rather
+    // than its own.
+    text3.y(totalH / 2 - text1H / 2 + text3Offset * winH);
     text3.show();
   }
 
