@@ -166,13 +166,13 @@
           </a>
         </li>
       </ul>
-      <ul id="nav-buttons-create-game" class="hidden">
+      <ul id="nav-buttons-form" class="hidden">
         <li>
-          <a id="nav-buttons-create-game-return" class="button">
+          <a id="nav-buttons-form-return" class="button">
             <i class="fas fa-arrow-left nav-icon"></i>
             <span class="hidden-sm">
               <span class="nav-hotkey-indicator">R</span>eturn to
-              <span id="nav-buttons-create-game-return-target">Lobby</span>
+              <span id="nav-buttons-form-return-target">Lobby</span>
             </span>
           </a>
         </li>
@@ -903,20 +903,20 @@
         </section>
 
         <!-- The form to create a new game or change the options of the current one -->
-        <section id="lobby-create-game" class="box hidden">
+        <section id="lobby-create-game" class="box lobby-form-screen hidden">
           <div id="create-game-form">
             <h2 id="create-game-title">Create a New Game</h2>
 
-            <div class="create-game-fields">
-              <div class="create-game-field">
+            <div class="lobby-form-fields">
+              <div class="lobby-form-field">
                 <label for="createTableName"
                   ><i class="fas fa-signature fa-fw"></i>Name</label
                 >
                 <input id="createTableName" type="text" placeholder="Name" />
               </div>
 
-              <div class="create-game-field">
-                <div class="create-game-label">
+              <div class="lobby-form-field">
+                <div class="lobby-form-label">
                   <label for="create-game-variant-dropdown1"
                     ><i class="fas fa-rainbow fa-fw"></i>Variant</label
                   >
@@ -955,14 +955,14 @@
                 </div>
               </div>
 
-              <div class="create-game-field">
+              <div class="lobby-form-field">
                 <label for="createTableMaxPlayers"
                   ><i class="fas fa-users fa-fw"></i>Max Players</label
                 >
                 <input id="createTableMaxPlayers" type="number" />
               </div>
 
-              <div id="password-row" class="create-game-field">
+              <div id="password-row" class="lobby-form-field">
                 <label for="createTablePassword"
                   ><i class="fas fa-key fa-fw"></i>Password</label
                 >
@@ -973,12 +973,12 @@
                 />
               </div>
 
-              <div id="create-game-timed-row" class="create-game-field">
+              <div id="create-game-timed-row" class="lobby-form-field">
                 <label for="createTableTimed"
                   ><i class="fas fa-clock fa-fw"></i>Timed</label
                 >
                 <div class="create-game-timed">
-                  <div class="create-game-check">
+                  <div class="lobby-form-check">
                     <input id="createTableTimed" type="checkbox" />
                     <label for="createTableTimed"></label>
                   </div>
@@ -1020,9 +1020,9 @@
             </div>
 
             <div id="create-game-extra-options" class="hidden">
-              <ul class="create-game-checks">
+              <ul class="lobby-form-checks">
                 <li>
-                  <div class="create-game-check">
+                  <div class="lobby-form-check">
                     <input id="createTableSpeedrun" type="checkbox" />
                     <label for="createTableSpeedrun"
                       ><i class="fas fa-running fa-fw"></i>Speedrun</label
@@ -1038,7 +1038,7 @@
                   </a>
                 </li>
                 <li>
-                  <div class="create-game-check">
+                  <div class="lobby-form-check">
                     <input id="createTableDeckPlays" type="checkbox" />
                     <label for="createTableDeckPlays"
                       ><i class="fas fa-blind fa-fw"></i>Bottom-Deck
@@ -1055,7 +1055,7 @@
                   </a>
                 </li>
                 <li>
-                  <div class="create-game-check">
+                  <div class="lobby-form-check">
                     <input id="createTableEmptyClues" type="checkbox" />
                     <label for="createTableEmptyClues"
                       ><i class="fas fa-expand fa-fw"></i>Empty Clues</label
@@ -1071,7 +1071,7 @@
                   </a>
                 </li>
                 <li id="createTableOneExtraCardRow">
-                  <div class="create-game-check">
+                  <div class="lobby-form-check">
                     <input id="createTableOneExtraCard" type="checkbox" />
                     <label
                       id="createTableOneExtraCardLabel"
@@ -1090,7 +1090,7 @@
                   </a>
                 </li>
                 <li id="createTableOneLessCardRow">
-                  <div class="create-game-check">
+                  <div class="lobby-form-check">
                     <input id="createTableOneLessCard" type="checkbox" />
                     <label
                       id="createTableOneLessCardLabel"
@@ -1109,7 +1109,7 @@
                   </a>
                 </li>
                 <li>
-                  <div class="create-game-check">
+                  <div class="lobby-form-check">
                     <input id="createTableAllOrNothing" type="checkbox" />
                     <label for="createTableAllOrNothing"
                       ><i class="fas fa-layer-group fa-fw"></i>All or
@@ -1126,7 +1126,7 @@
                   </a>
                 </li>
                 <li>
-                  <div class="create-game-check">
+                  <div class="lobby-form-check">
                     <input
                       id="createTableDetrimentalCharacters"
                       type="checkbox"
@@ -1153,6 +1153,105 @@
             </button>
             <input id="create-game-table-number" type="hidden" value="" />
           </div>
+        </section>
+
+        <!-- The form to watch the replay of a specific game -->
+        <section id="lobby-replay" class="box lobby-form-screen hidden">
+          <h2>Watch a Specific Replay</h2>
+
+          <div class="lobby-form-field">
+            <div class="lobby-form-label">
+              <span><i class="fas fa-database fa-fw"></i>Source</span>
+            </div>
+            <div class="lobby-form-radios">
+              <div class="lobby-form-check">
+                <input
+                  id="replay-source-id"
+                  type="radio"
+                  name="replay-source"
+                  value="id"
+                  checked
+                />
+                <label for="replay-source-id">Database ID</label>
+              </div>
+              <div class="lobby-form-check">
+                <input
+                  id="replay-source-json"
+                  type="radio"
+                  name="replay-source"
+                  value="json"
+                />
+                <label for="replay-source-json">JSON Data</label>
+              </div>
+            </div>
+          </div>
+
+          <div id="replay-id-row" class="lobby-form-field">
+            <label for="replay-id"
+              ><i class="fas fa-fingerprint fa-fw"></i>ID</label
+            >
+            <input
+              id="replay-id"
+              type="text"
+              inputmode="numeric"
+              placeholder="Game ID"
+            />
+          </div>
+
+          <div id="replay-json-row" class="lobby-form-field">
+            <label for="replay-json"
+              ><i class="fas fa-table fa-fw"></i>JSON</label
+            >
+            <textarea
+              id="replay-json"
+              placeholder="Paste the game's JSON data"
+            ></textarea>
+          </div>
+
+          <div id="replay-error-row" class="lobby-form-field">
+            <div></div>
+            <div id="replay-error-row-text"></div>
+          </div>
+
+          <div class="lobby-form-field">
+            <div class="lobby-form-label">
+              <span><i class="fas fa-users fa-fw"></i>Visibility</span>
+            </div>
+            <div class="lobby-form-radios">
+              <div class="lobby-form-check">
+                <input
+                  id="replay-visibility-solo"
+                  type="radio"
+                  name="replay-visibility"
+                  checked
+                />
+                <label for="replay-visibility-solo">Solo</label>
+              </div>
+              <div class="lobby-form-check">
+                <input
+                  id="replay-visibility-shared"
+                  type="radio"
+                  name="replay-visibility"
+                />
+                <label for="replay-visibility-shared">Shared</label>
+              </div>
+            </div>
+          </div>
+
+          <div id="replay-spoiler-free-row" class="lobby-form-field">
+            <div></div>
+            <div class="lobby-form-check">
+              <input id="replay-spoiler-free" type="checkbox" />
+              <label for="replay-spoiler-free"
+                ><i class="fas fa-eye-slash fa-fw"></i>Spoiler-Free
+                Review</label
+              >
+            </div>
+          </div>
+
+          <button id="replay-submit" class="button fit" type="submit">
+            Watch
+          </button>
         </section>
 
         <!-- The other scores table (all games on a specific seed) -->
@@ -1526,123 +1625,6 @@
             </button>
           </li>
         </ul>
-      </div>
-    </div>
-  </div>
-
-  <!-- Replay modal -->
-  <div id="replay-modal">
-    <h2 id="replay-modal-title">Watch a Specific Replay</h2>
-
-    <div class="row">
-      <div class="col-3 input-text">
-        <div class="create-game-icon">
-          <i class="fas fa-database"></i>
-        </div>
-        Source
-      </div>
-      <div class="col-4">
-        <input
-          id="replay-source-id"
-          type="radio"
-          name="replay-source"
-          value="id"
-          checked
-        />
-        <label class="replay-radio" for="replay-source-id">
-          <span class="replay-radio-label">Database ID</span>
-        </label>
-      </div>
-      <div class="col-4">
-        <input
-          id="replay-source-json"
-          type="radio"
-          name="replay-source"
-          value="json"
-        />
-        <label class="replay-radio" for="replay-source-json">
-          <span class="replay-radio-label">JSON Data</span>
-        </label>
-      </div>
-    </div>
-
-    <div id="replay-id-row" class="row">
-      <div class="col-3 input-text">
-        <div class="create-game-icon">
-          <i class="fas fa-fingerprint"></i>
-        </div>
-        ID
-      </div>
-      <div class="col-8">
-        <input id="replay-id" type="text" />
-      </div>
-    </div>
-
-    <div id="replay-json-row" class="row">
-      <div class="col-3 input-text">
-        <div class="create-game-icon">
-          <i class="fas fa-table"></i>
-        </div>
-        JSON
-      </div>
-      <div class="col-8">
-        <textarea id="replay-json" rows="3"></textarea>
-      </div>
-    </div>
-
-    <div id="replay-error-row" class="row">
-      <div class="col-3 input-text"></div>
-      <div id="replay-error-row-text" class="col-8"></div>
-    </div>
-
-    <div class="row">
-      <div class="col-3 input-text">
-        <div class="create-game-icon">
-          <i class="fas fa-users"></i>
-        </div>
-        Visibility
-      </div>
-      <div class="col-4">
-        <input
-          id="replay-visibility-solo"
-          type="radio"
-          name="replay-visibility"
-          checked
-        />
-        <label class="replay-radio" for="replay-visibility-solo">
-          <span class="replay-radio-label">Solo</span>
-        </label>
-      </div>
-      <div class="col-4">
-        <input
-          id="replay-visibility-shared"
-          type="radio"
-          name="replay-visibility"
-        />
-        <label class="replay-radio" for="replay-visibility-shared">
-          <span class="replay-radio-label">Shared</span>
-        </label>
-      </div>
-    </div>
-
-    <div id="replay-spoiler-free-row" class="row">
-      <div class="col-7 input-text">
-        <div class="create-game-icon">
-          <i class="fas fa-eye-slash"></i>
-        </div>
-        Spoiler-Free Review
-      </div>
-      <div class="col-4">
-        <input id="replay-spoiler-free" type="checkbox" />
-        <label class="replay-radio" for="replay-spoiler-free"></label>
-      </div>
-    </div>
-
-    <div class="row">
-      <div class="col-12">
-        <button id="replay-submit" class="button fit" type="submit">
-          <i class="fas fa-eye icon-label"></i>Watch
-        </button>
       </div>
     </div>
   </div>

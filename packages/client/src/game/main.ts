@@ -2,7 +2,7 @@
 
 import { FADE_TIME_MS, HISTORY_HASH, PATH } from "../constants";
 import { globals } from "../Globals";
-import * as createGame from "../lobby/createGame";
+import * as formScreen from "../lobby/formScreen";
 import { tablesDraw } from "../lobby/tablesDraw";
 import { Screen } from "../lobby/types/Screen";
 import * as sounds from "../sounds";
@@ -30,7 +30,7 @@ export function show(): void {
     pathname === PATH.LOBBY && hash.startsWith(HISTORY_HASH) ? hash : "";
 
   tooltips.clearPlayerTimeTooltips();
-  createGame.hide();
+  formScreen.hide();
   globals.currentScreen = Screen.Game;
   document.body.dataset["screen"] = "game";
   $("#page-wrapper").hide(); // We can't fade this out as it will overlap

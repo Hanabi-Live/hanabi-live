@@ -1,12 +1,11 @@
-// The "Watch Specific Replay" nav button.
+// The "Watch Specific Replay" screen.
 
 import { NO_VALUE } from "@hanabi-live/game";
 import { assertDefined, parseIntSafe } from "complete-common";
-import * as KeyCode from "keycode-js";
 import { LOCAL_STORAGE_KEY } from "../constants";
 import { globals } from "../Globals";
-import { closeModals } from "../modals";
 import { escapeHtml } from "../utils";
+import * as formScreen from "./formScreen";
 import type { GameJSON } from "./gameJSON";
 import { parseGameJSON } from "./gameJSON";
 
@@ -18,13 +17,6 @@ export function init(): void {
   // Only shared replays can be spoiler-free reviews.
   $("#replay-visibility-solo").change(replayVisibilityChange);
   $("#replay-visibility-shared").change(replayVisibilityChange);
-
-  $("#replay-tooltip").on("keypress", (event) => {
-    if (event.which === KeyCode.KEY_RETURN) {
-      event.preventDefault();
-      $("#replay-submit").click();
-    }
-  });
 
   $("#replay-submit").on("click", submit);
 }
@@ -175,7 +167,7 @@ function submit() {
     });
   }
 
-  closeModals();
+  formScreen.hide();
 }
 
 function showReplayError(text: string) {
@@ -183,9 +175,18 @@ function showReplayError(text: string) {
   $("#replay-error-row-text").text(text);
 }
 
-// This function is executed every time the "Watch Specific Replay" button is clicked (after the
-// tooltip is added to the DOM).
-export function ready(): boolean {
+export function show(): void {
+  ready();
+  formScreen.show("#lobby-replay", "#replay-submit");
+  $(
+    $("#replay-source-json").prop("checked") === true
+      ? "#replay-json"
+      : "#replay-id",
+  ).trigger("focus");
+}
+
+/** Fills in the form with what was used last time. */
+function ready() {
   // Set the "Source" radio button.
   const source = localStorage.getItem(LOCAL_STORAGE_KEY.WATCH_REPLAY_SOURCE);
   let sourceBox: string;
@@ -239,6 +240,4 @@ export function ready(): boolean {
     localStorage.getItem(LOCAL_STORAGE_KEY.WATCH_REPLAY_SPOILER_FREE)
       === "true",
   );
-
-  return true;
 }

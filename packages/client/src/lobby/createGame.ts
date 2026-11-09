@@ -24,7 +24,7 @@ import {
 import { globals } from "../Globals";
 import { DIMMED_OPACITY, LOCAL_STORAGE_KEY } from "../constants";
 import { getHTMLInputElement } from "../utils";
-import * as nav from "./nav";
+import * as formScreen from "./formScreen";
 import { Screen } from "./types/Screen";
 
 const BASIC_VARIANT_NAMES = [
@@ -341,7 +341,7 @@ function submit() {
     detrimentalCharacters: getCheckbox("createTableDetrimentalCharacters"),
   };
 
-  hide();
+  formScreen.hide();
 
   if (isNew) {
     globals.conn!.send("tableCreate", {
@@ -450,41 +450,13 @@ export function checkSettingChanged<T extends keyof Settings>(
   }
 }
 
-let shown = false;
-
-export function isShown(): boolean {
-  return shown;
-}
-
 /**
  * Shows the screen from the lobby (to create a game) or the pre-game screen (to change options).
  */
 export function show(): void {
   ready();
-  shown = true;
-
-  $("#lobby-history").hide();
-  $("#lobby-history-other-scores").hide();
-  $("#lobby-create-game").show();
-  nav.showLobbyHalves(false);
-  $("#nav-buttons-create-game-return-target").text(
-    globals.currentScreen === Screen.PreGame ? "Game" : "Lobby",
-  );
-  nav.show("create-game");
-
+  formScreen.show("#lobby-create-game", "#create-game-submit");
   $("#create-game-variant-dropdown1").trigger("focus");
-}
-
-/** Returns to the lobby or the pre-game screen. */
-export function hide(): void {
-  if (!shown) {
-    return;
-  }
-  shown = false;
-
-  $("#lobby-create-game").hide();
-  nav.showLobbyHalves(true);
-  nav.show(globals.currentScreen === Screen.PreGame ? "pregame" : "lobby");
 }
 
 /** Fills in the form for a new game or for the options of the current game. */

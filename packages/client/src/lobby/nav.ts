@@ -5,6 +5,7 @@ import { NO_TABLE_ID } from "../constants";
 import { globals } from "../Globals";
 import { initModal, showWarning } from "../modals";
 import * as createGame from "./createGame";
+import * as formScreen from "./formScreen";
 import * as history from "./history";
 import * as pregame from "./pregame";
 import * as tablesDraw from "./tablesDraw";
@@ -19,9 +20,9 @@ export function init(): void {
     },
   );
 
-  // The "Return to Lobby" or "Return to Game" button (from the "Create Game" screen).
-  $("#nav-buttons-create-game-return").on("click", () => {
-    createGame.hide();
+  // The "Return to Lobby" or "Return to Game" button (from a form screen).
+  $("#nav-buttons-form-return").on("click", () => {
+    formScreen.hide();
   });
 
   // The "Show History" button.
@@ -30,13 +31,9 @@ export function init(): void {
   });
 
   // The "Watch Specific Replay" button.
-  initModal(
-    "#nav-buttons-lobby-replay",
-    "#replay-modal",
-    watchReplay.ready,
-    undefined,
-    watchSpecificReplayFocus,
-  );
+  $("#nav-buttons-lobby-replay").on("click", () => {
+    watchReplay.show();
+  });
 
   // The "Help" button. (This is just a simple link, so it does not need any code.)
 
@@ -224,21 +221,6 @@ export function init(): void {
   // "history.drawOtherScores()" function.
 }
 
-function watchSpecificReplayFocus() {
-  if ($("#replay-id-row").is(":visible")) {
-    $("#replay-id").trigger("focus");
-  } else if ($("#replay-json-row").is(":visible")) {
-    $("#replay-json").trigger("focus");
-  }
-
-  $("#replay-id").on("keypress", (event) => {
-    if (event.key === "Enter") {
-      event.preventDefault();
-      $("#replay-submit").trigger("click");
-    }
-  });
-}
-
 /** Shows or hides the lobby's tables, chat, and online users, which full-page screens replace. */
 export function showLobbyHalves(visible: boolean): void {
   for (const selector of [
@@ -255,7 +237,7 @@ export function show(target: string): void {
   const navTypes = [
     "lobby",
     "pregame",
-    "create-game",
+    "form",
     "history",
     "history-other-scores",
   ];

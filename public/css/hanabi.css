@@ -731,10 +731,10 @@ table td {
 }
 
 /*
-  Create Game screen
+  Lobby form screens ("Create Game" and "Watch Specific Replay")
 */
-/* The lobby stretches its sections to full height; this one fits its content instead. */
-#lobby #lobby-create-game {
+/* The lobby stretches its sections to full height; these fit their content instead. */
+#lobby .lobby-form-screen {
   height: auto;
   margin: 0 auto;
   max-width: 46em;
@@ -742,11 +742,11 @@ table td {
   overflow-y: auto;
 }
 
-#create-game-title {
+.lobby-form-screen h2 {
   margin-bottom: 1em;
 }
 
-#create-game-form .fa-fw {
+.lobby-form-screen .fa-fw {
   margin-right: 0.6em;
 }
 
@@ -761,7 +761,7 @@ table td {
 }
 
 /* A label beside its control. */
-.create-game-field {
+.lobby-form-field {
   align-items: center;
   display: grid;
   gap: 0.4em 1.5em;
@@ -770,17 +770,17 @@ table td {
 }
 
 /* The password cannot be changed after the table is created. */
-.create-game-field.hidden {
+.lobby-form-field.hidden {
   display: none;
 }
 
-.create-game-field > label,
-.create-game-label label {
+.lobby-form-field > label,
+.lobby-form-label label {
   font-size: 1em;
   margin: 0;
 }
 
-.create-game-label {
+.lobby-form-label {
   align-items: center;
   display: flex;
   gap: 0.6em;
@@ -821,7 +821,7 @@ table td {
 }
 
 /* The checkbox draws its box in front of the label text, so center the text on the box. */
-.create-game-check label {
+.lobby-form-check label {
   line-height: 1.8em;
   margin: 0;
   padding-right: 0;
@@ -835,7 +835,7 @@ table td {
 }
 
 /* Not a flex container, so that the theme's hidden checkbox can float. */
-.create-game-timed .create-game-check {
+.create-game-timed .lobby-form-check {
   height: 3em;
   padding-top: 0.6em;
 }
@@ -850,7 +850,7 @@ table td {
 }
 
 /* This label has no text, so give it the size of the box that it draws. */
-.create-game-timed .create-game-check label {
+.create-game-timed .lobby-form-check label {
   display: block;
   height: 1.8em;
   padding: 0;
@@ -870,7 +870,7 @@ table td {
   margin: 0;
 }
 
-.create-game-checks {
+.lobby-form-checks {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(17em, 1fr));
   column-gap: 2em;
@@ -878,7 +878,7 @@ table td {
   padding: 0;
 }
 
-.create-game-checks li {
+.lobby-form-checks li {
   align-items: center;
   display: flex;
   gap: 0.6em;
@@ -889,12 +889,12 @@ table td {
 
 @media screen and (max-width: 600px) {
   /* Put each label above its control. */
-  .create-game-field {
+  .lobby-form-field {
     grid-template-columns: minmax(0, 1fr);
   }
 }
 
-#create-game-submit,
+.lobby-form-screen button[type="submit"],
 #change-variant-submit {
   font-size: 1em;
 }
@@ -930,32 +930,34 @@ input::-webkit-calendar-picker-indicator /* Chrome */ {
 }
 
 /*
-  Watch Specific Replay Dialog
+  Watch Specific Replay screen
 */
+.lobby-form-radios {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5em 2.5em;
+}
+
+/* Center the "JSON" label on the first line of the text area. */
+#replay-json-row {
+  align-items: start;
+}
+
+#replay-json-row > label {
+  line-height: 3em;
+}
+
 #replay-json {
-  resize: none;
+  min-height: 9em;
+  resize: vertical;
 }
 
 #replay-error-row-text {
   color: red;
 }
 
-.replay-radio-container {
-  position: absolute;
-}
-
-.replay-radio {
-  top: 0.6em;
-}
-
-.replay-radio-label {
-  position: relative;
-  top: 0.4em;
-}
-
-/* The checkbox is drawn lower than its row, so keep the same gap above the "Watch" button. */
-#replay-spoiler-free-row {
-  padding-bottom: 1.1em;
+#replay-submit {
+  margin-top: 1em;
 }
 
 /*

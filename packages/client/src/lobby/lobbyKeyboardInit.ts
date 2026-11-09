@@ -3,28 +3,29 @@
 import * as KeyCode from "keycode-js";
 import { globals } from "../Globals";
 import { isModalVisible } from "../modals";
-import * as createGame from "./createGame";
+import * as formScreen from "./formScreen";
 import { Screen } from "./types/Screen";
 
 export function lobbyKeyboardInit(): void {
   $(document).keydown((event) => {
-    // On the "Create Game" screen, submit the form if enter is pressed (unless it activates a
-    // focused button or link), and only allow returning otherwise.
-    if (createGame.isShown() && !isModalVisible()) {
+    // On a form screen, submit the form if enter is pressed (unless it activates a focused button
+    // or link, or adds a line to a text area), and only allow returning otherwise.
+    if (formScreen.isShown() && !isModalVisible()) {
       if (
         event.which === KeyCode.KEY_RETURN
         && !(
           document.activeElement instanceof HTMLButtonElement
           || document.activeElement instanceof HTMLAnchorElement
+          || document.activeElement instanceof HTMLTextAreaElement
         )
       ) {
         event.preventDefault();
-        clickElement("#create-game-submit");
+        clickElement(formScreen.getSubmitButton()!);
       } else if (
         event.which === KeyCode.KEY_ESCAPE
         || (event.altKey && event.which === KeyCode.KEY_R)
       ) {
-        clickElement("#nav-buttons-create-game-return");
+        clickElement("#nav-buttons-form-return");
       }
       return;
     }
