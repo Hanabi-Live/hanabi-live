@@ -602,6 +602,7 @@ mod tests {
                 players: vec![Player {
                     id: UserId(1),
                     name: "Alice".into(),
+                    bot: false,
                     stats: zero_stats(),
                 }],
                 automatic_start: None,
@@ -617,11 +618,13 @@ mod tests {
             Player {
                 id: UserId(1),
                 name: "Alice".into(),
+                bot: false,
                 stats: zero_stats(),
             },
             Player {
                 id: UserId(2),
                 name: "Bob".into(),
+                bot: false,
                 stats: zero_stats(),
             },
         ];
@@ -758,6 +761,7 @@ mod tests {
             players.push(Player {
                 id: UserId(2),
                 name: "Bob".into(),
+                bot: false,
                 stats: zero_stats(),
             });
             players[1].stats.num_games = 572;
@@ -917,6 +921,7 @@ mod tests {
                     .map(|id| Player {
                         id: UserId(id),
                         name: format!("Player{id}"),
+                        bot: false,
                         stats: zero_stats(),
                     })
                     .collect();
@@ -985,9 +990,8 @@ mod tests {
             )
             .execute(&store.primary)
             .await?;
-            let player =
-                crate::stats::player(&store.primary, UserId(9001), "Carol".into(), 0).await?;
-            let best = serde_json::to_value(&player.stats.variant.best_scores)?;
+            let carol = crate::stats::pregame_stats(&store.primary, UserId(9001), 0).await?;
+            let best = serde_json::to_value(&carol.variant.best_scores)?;
             ensure!(
                 best[0]["score"] == 25
                     && best[0]["modifier"] == 4
@@ -1275,6 +1279,7 @@ mod tests {
                 players[0] = Player {
                     id: UserId(2),
                     name: "Bob".into(),
+                    bot: false,
                     stats: zero_stats(),
                 };
             }

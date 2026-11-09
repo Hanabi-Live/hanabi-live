@@ -147,6 +147,7 @@ pub(crate) async fn replay(
         players.push(Player {
             id: UserId(r.user_id),
             name: r.name.clone(),
+            bot: false,
             stats: zero_stats(),
         });
         let assignment = r.character_assignment;

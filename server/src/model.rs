@@ -28,6 +28,9 @@ pub const IDLE_WARNING_MS: i64 = 5 * CLOCK_UNITS_PER_MINUTE;
 pub struct Player {
     pub id: UserId,
     pub name: String,
+    /// Whether the player joined as a bot. Bots can play at several tables at once.
+    #[serde(default, skip_serializing_if = "std::ops::Not::not")]
+    pub bot: bool,
     pub stats: PregameStats,
 }
 #[derive(Clone, Debug, Default, Serialize, Deserialize)]

@@ -437,13 +437,7 @@ pub(super) async fn prepare_table(
         load_replay(store, &mut extra, id, session.user, &mut options).await?;
         let variant = hanabi_engine::get_variant(&options.variant_name)?;
         options.variant_id = Some(variant.id);
-        let player = crate::stats::player(
-            &store.primary,
-            session.user,
-            session.name.clone(),
-            variant.id,
-        )
-        .await?;
+        let player = crate::stats::player(&store.primary, &session.identity, variant.id).await?;
         let max_players = usize::try_from(r.max_players)
             .ok()
             .filter(|n| hanabi_protocol::is_player_count(*n))

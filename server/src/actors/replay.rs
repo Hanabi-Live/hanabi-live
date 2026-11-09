@@ -462,14 +462,8 @@ impl TableActor {
         }
         let variant = hanabi_engine::get_variant(&self.table.options.variant_name)?;
         for player in &mut players {
-            player.stats = crate::stats::player(
-                &self.store.primary,
-                player.id,
-                player.name.clone(),
-                variant.id,
-            )
-            .await?
-            .stats;
+            player.stats =
+                crate::stats::pregame_stats(&self.store.primary, player.id, variant.id).await?;
         }
         ensure_or_reject!(
             session.active(),

@@ -225,14 +225,8 @@ impl TableActor {
         *countdown = None;
         *automatic_start = None;
         for player in players.iter_mut() {
-            player.stats = crate::stats::player(
-                &self.store.primary,
-                player.id,
-                player.name.clone(),
-                variant.id,
-            )
-            .await?
-            .stats;
+            player.stats =
+                crate::stats::pregame_stats(&self.store.primary, player.id, variant.id).await?;
         }
         ensure_or_reject!(
             session.active(),
@@ -436,15 +430,11 @@ impl TableActor {
         moving: Vec<(Arc<Session>, bool, Option<crate::model::Seat>)>,
         retire: bool,
     ) -> CommandResult<()> {
-        let players = destination
+        let humans = destination
             .players()
             .iter()
+            .filter(|p| !p.bot)
             .map(|p| p.id)
-            .collect::<Vec<_>>();
-        let bots = crate::database::bot_ids(&self.store.primary, &players).await?;
-        let humans = players
-            .into_iter()
-            .filter(|id| !bots.contains(id))
             .collect::<Vec<_>>();
         let (reply, received) = oneshot::channel();
         self.hub

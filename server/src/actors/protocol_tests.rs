@@ -1341,6 +1341,7 @@ async fn expired_pregame_owner_is_removed_but_remaining_players_and_live_games_s
                 players.push(Player {
                     id: user.user,
                     name: user.name.clone(),
+                    bot: false,
                     stats: crate::stats::zero_stats(),
                 });
             }

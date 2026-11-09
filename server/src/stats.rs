@@ -3,18 +3,24 @@
 use crate::{
     model::{Player, Snapshot},
     store::{LockSpace, advisory_lock},
+    transport::Identity,
 };
 use anyhow::Result;
-use hanabi_protocol::UserId;
+use hanabi_protocol::{PregameStats, UserId};
 use sqlx::PgPool;
 
 /// A pregame player with their statistics on `variant`.
-pub(crate) async fn player(
-    pool: &PgPool,
-    id: UserId,
-    name: String,
-    variant: u32,
-) -> Result<Player> {
+pub(crate) async fn player(pool: &PgPool, identity: &Identity, variant: u32) -> Result<Player> {
+    Ok(Player {
+        id: identity.user,
+        name: identity.name.clone(),
+        bot: identity.bot,
+        stats: pregame_stats(pool, identity.user, variant).await?,
+    })
+}
+
+/// A player's statistics on `variant`, as pregame tables show them.
+pub(crate) async fn pregame_stats(pool: &PgPool, id: UserId, variant: u32) -> Result<PregameStats> {
     let count = crate::database::normal_game_count(pool, id, false).await?;
     let row = sqlx::query_as!(
         crate::database::UserStats,
@@ -26,11 +32,7 @@ pub(crate) async fn player(
     )
     .fetch_optional(pool)
     .await?;
-    Ok(Player {
-        id,
-        name,
-        stats: player_stats(count, row.as_ref()),
-    })
+    Ok(player_stats(count, row.as_ref()))
 }
 
 /// Updates the seed, player, and variant statistics with a finished game.
@@ -100,10 +102,7 @@ pub(crate) async fn refresh(pool: &PgPool, s: &Snapshot) -> Result<()> {
 
 /// A pregame player's statistics as their table's checkpoint stores them: all of their games, and
 /// their games and best scores on the table's variant, from `user_stats` if they have played it.
-fn player_stats(
-    num_games: i64,
-    row: Option<&crate::database::UserStats>,
-) -> hanabi_protocol::PregameStats {
+fn player_stats(num_games: i64, row: Option<&crate::database::UserStats>) -> PregameStats {
     let (variant_games, best_scores) =
         row.map_or((0, [(0, 0); crate::database::PLAYER_COUNTS]), |row| {
             (
@@ -117,7 +116,7 @@ fn player_stats(
                 ],
             )
         });
-    hanabi_protocol::PregameStats {
+    PregameStats {
         num_games,
         variant: hanabi_protocol::PregameVariantStats {
             num_games: variant_games,
@@ -131,7 +130,7 @@ fn player_stats(
         },
     }
 }
-pub fn zero_stats() -> hanabi_protocol::PregameStats {
+pub fn zero_stats() -> PregameStats {
     player_stats(0, None)
 }
 
@@ -170,7 +169,7 @@ mod tests {
             best_score6_mod: 16,
         };
         let stats = serde_json::to_value(player_stats(12, Some(&row))).unwrap();
-        hanabi_protocol::validate::<hanabi_protocol::PregameStats>(&stats).unwrap();
+        hanabi_protocol::validate::<PregameStats>(&stats).unwrap();
         assert_eq!(stats["numGames"], 12);
         assert_eq!(stats["variant"]["numGames"], 7);
         let best = &stats["variant"]["bestScores"];

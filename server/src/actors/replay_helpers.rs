@@ -241,6 +241,7 @@ pub fn snapshot(imported: Imported, table_id: TableId, owner: UserId) -> Snapsho
             .map(|(i, p)| Player {
                 id: UserId(hanabi_engine::int(i) + 1),
                 name: p.name.clone(),
+                bot: false,
                 stats: zero_stats(),
             })
             .collect(),

@@ -27,19 +27,6 @@ pub(crate) async fn normal_game_counts(
         .collect())
 }
 
-/// The users among `ids` whose accounts are bots.
-pub(crate) async fn bot_ids(pool: &PgPool, ids: &[UserId]) -> Result<Vec<UserId>> {
-    let ids = ids.iter().map(|id| id.0).collect::<Vec<_>>();
-    Ok(
-        sqlx::query_scalar!("SELECT id FROM users WHERE id=ANY($1) AND is_bot", &ids)
-            .fetch_all(pool)
-            .await?
-            .into_iter()
-            .map(UserId)
-            .collect(),
-    )
-}
-
 pub(crate) async fn normal_game_count(
     pool: &PgPool,
     id: UserId,
