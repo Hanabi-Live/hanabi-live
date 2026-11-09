@@ -62,7 +62,7 @@ export interface LiveTable {
 /**
  * The lists that a checkpoint stores as parts, as `server/src/checkpoint.rs` defines them: the
  * prefix of each part's key, the path to the object that holds the list, the list's field, and
- * whether the list is an array.
+ * whether the list is an array. The head holds each list empty.
  */
 const PART_LISTS = [
   ["chat", [], "chat", true],
@@ -81,7 +81,7 @@ function withParts(head: unknown, parts: ReadonlyMap<string, string>): unknown {
           ? (parent as Record<string, unknown>)[key]
           : undefined;
     }
-    if (typeof parent !== "object" || parent === null || field in parent) {
+    if (typeof parent !== "object" || parent === null) {
       continue;
     }
     const entries = [...parts]

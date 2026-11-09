@@ -247,12 +247,6 @@ mod json_text {
     }
 }
 impl TableSnapshot {
-    /// Reads a table from its checkpoint JSON, as `checkpoint::decode` reassembles it.
-    pub fn from_value(value: Value) -> Result<Self> {
-        let table: Self = serde_json::from_value(value)?;
-        table.validate()?;
-        Ok(table)
-    }
     /// Updates the cached game totals of the pregame players in `users`, whose totals `counts`
     /// holds (a missing user has none). Returns whether any total changed.
     pub fn set_game_counts(&mut self, users: &[UserId], counts: &BTreeMap<UserId, i64>) -> bool {

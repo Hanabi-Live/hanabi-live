@@ -673,7 +673,7 @@ mod tests {
         Ok(())
     }
     #[test]
-    fn checkpoints_round_trip_as_parts_and_from_before_parts() -> Result<()> {
+    fn checkpoints_round_trip_as_a_head_and_parts() -> Result<()> {
         let mut table = pregame(TableId(1));
         terminal(&mut table)?;
         table.convert_to_replay()?;
@@ -697,10 +697,6 @@ mod tests {
             ),
         });
         let expected = serde_json::to_value(&table)?;
-        // A checkpoint from before parts existed holds everything in its head.
-        let inline = serde_json::to_string(&table)?;
-        let decoded = crate::checkpoint::decode(&inline, &[])?;
-        ensure!(serde_json::to_value(&decoded)? == expected);
         let encoded = crate::checkpoint::encode(&table)?;
         let parts = encoded.parts.clone().into_iter().collect::<Vec<_>>();
         for key in ["chat/0", "step/0", "notes/1", "spectatorNotes/3"] {
@@ -709,17 +705,18 @@ mod tests {
         ensure!(!encoded.head.contains("hello"), "The head kept the chat");
         let decoded = crate::checkpoint::decode(&encoded.head, &parts)?;
         ensure!(serde_json::to_value(&decoded)? == expected);
-        // A list cannot be both in the head and in parts, and parts cannot have gaps.
-        ensure!(crate::checkpoint::decode(&inline, &parts).is_err());
+        // The head cannot hold a list, and parts cannot have gaps.
+        let inline = serde_json::to_string(&table)?;
+        ensure!(crate::checkpoint::decode(&inline, &[]).is_err());
         let gap = parts
             .iter()
             .filter(|(key, _)| key != "step/0")
             .cloned()
             .collect::<Vec<_>>();
         ensure!(crate::checkpoint::decode(&encoded.head, &gap).is_err());
-        let mut invalid = serde_json::to_value(&table)?;
-        invalid["phase"]["snapshot"]["spectator_notes"] = json!({"not-a-user":owner});
-        ensure!(crate::checkpoint::decode(&invalid.to_string(), &[]).is_err());
+        let mut invalid = parts.clone();
+        invalid.push(("spectatorNotes/not-a-user".into(), json!(owner).to_string()));
+        ensure!(crate::checkpoint::decode(&encoded.head, &invalid).is_err());
         Ok(())
     }
     async fn database() -> Result<Option<(TestDb, PgPool)>> {
@@ -833,7 +830,7 @@ mod tests {
         result
     }
     #[tokio::test]
-    async fn saves_rewrite_only_changed_parts_and_move_old_checkpoints_into_parts() -> Result<()> {
+    async fn saves_rewrite_only_changed_parts() -> Result<()> {
         let Some((db, pool)) = database().await? else {
             return Ok(());
         };
@@ -843,18 +840,6 @@ mod tests {
             let mut table = pregame(store.allocate_table().await?);
             terminal(&mut table)?;
             table.convert_to_replay()?;
-            // A checkpoint that a server wrote before parts existed.
-            let inline = serde_json::to_string(&table)?;
-            state
-                .save(table.id, 0, &inline, &PartChanges::default())
-                .await?;
-            let (loaded, saved) = store
-                .load()
-                .await?
-                .into_iter()
-                .find(|(loaded, _)| loaded.id == table.id)
-                .context("Missing table")?;
-            ensure!(serde_json::to_value(&loaded)? == serde_json::to_value(&table)?);
 
             let id = i64::try_from(table.id.0)?;
             let versions = || async {
@@ -871,15 +856,15 @@ mod tests {
                     .collect::<BTreeMap<_, _>>(),
                 )
             };
-            let revision = store.save_at(&table, saved.revision).await?;
+            let revision = store.save_at(&table, 0).await?;
             let before = versions().await?;
             ensure!(
                 before.len() == crate::checkpoint::encode(&table)?.parts.len(),
-                "The first save did not move the lists into parts"
+                "The first save did not store the lists as parts"
             );
             let head = state.get(table.id).await?.context("Missing table")?.payload;
             ensure!(
-                !head.contains("\"steps\""),
+                head.contains("\"steps\":[]"),
                 "The head kept the game's steps"
             );
 

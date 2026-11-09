@@ -129,6 +129,30 @@ impl Game {
         self.log.steps.push(step);
         Ok(())
     }
+    /// Removes the game's steps, as JSON, for a checkpoint that stores them apart. The game's
+    /// state stays as it is.
+    pub(crate) fn take_steps(&mut self) -> Result<Vec<String>> {
+        std::mem::take(&mut self.log.steps)
+            .iter()
+            .map(|step| Ok(serde_json::to_string(step)?))
+            .collect()
+    }
+    /// Plays the steps that `take_steps` removed. The game must have none. The timer and pause
+    /// flags keep the values that the checkpoint stored with the game.
+    pub(crate) fn restore_steps(&mut self, steps: &[&str]) -> Result<()> {
+        ensure!(self.log.steps.is_empty(), "The game already has steps");
+        ensure!(
+            steps.len() <= hanabi_protocol::MAX_GAME_ACTIONS,
+            "Oversized stored game"
+        );
+        let (started_timer, paused) = (self.state.started_timer, self.state.paused);
+        for step in steps {
+            self.step(serde_json::from_str(step)?)?;
+        }
+        self.state.started_timer = started_timer;
+        self.state.paused = paused;
+        Ok(())
+    }
     /// The engine's state, for engine functions that read it.
     pub fn state(&self) -> &EngineState {
         &self.state
