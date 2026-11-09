@@ -22,6 +22,13 @@ const run = promisify(execFile);
 // The client's tests run with Vitest from the root "test" script.
 const TEST_DIRECTORIES = ["packages/game/src", "packages/testing/src"] as const;
 
+/**
+ * The connections that the disposable PostgreSQL server accepts. Rust runs one test per core, and
+ * each database test opens several pools, so the default of 100 runs out on machines with many
+ * cores.
+ */
+const POSTGRES_MAX_CONNECTIONS = 1000;
+
 const MISSING_POSTGRES =
   'The integration tests need PostgreSQL. Put the PostgreSQL server programs ("initdb" and "postgres") on your PATH, or set HANABI_TEST_DATABASE_URL to a disposable local server.';
 
@@ -136,6 +143,8 @@ async function startPostgres(): Promise<DisposablePostgres> {
         "unix_socket_directories=",
         "-c",
         "fsync=off",
+        "-c",
+        `max_connections=${POSTGRES_MAX_CONNECTIONS}`,
       ],
       { stdio: "ignore" },
     );
