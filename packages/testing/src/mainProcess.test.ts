@@ -83,8 +83,10 @@ databaseDescribe("compiled application entry point (rust)", () => {
           return {
             game_id: snapshot.game_id,
             revision: record.revision,
-            turn: snapshot.game.turn,
-            active_player_index: snapshot.game.activePlayerIndex,
+            // Each step in these games is one turn.
+            turn: snapshot.game.steps.length,
+            active_player_index:
+              snapshot.game.steps.length % snapshot.players.length,
             clocks: snapshot.clocks,
           };
         });

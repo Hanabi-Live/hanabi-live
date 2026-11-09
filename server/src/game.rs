@@ -5,27 +5,153 @@ use hanabi_engine::{
     Recipient, Termination,
 };
 use hanabi_protocol::ReplayAction;
-use serde::{Deserialize, Serialize};
+use serde::{Deserialize, Deserializer, Serialize, Serializer};
 use serde_json::Value;
-use std::ops::{Deref, DerefMut};
+use std::ops::Deref;
 
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
-#[serde(transparent)]
-pub struct Game(pub EngineState);
+/// A game: the engine's state, and the log that checkpoints store, from which the engine rebuilds
+/// that state.
+#[derive(Clone, Debug)]
+pub struct Game {
+    state: EngineState,
+    /// Absent for a game from a checkpoint written before games were stored as logs. Such a game
+    /// keeps storing its state until its table ends.
+    log: Option<GameLog>,
+}
+
+/// What a game started from and what happened in it.
+#[derive(Clone, Debug)]
+struct GameLog {
+    setup: GameSetup,
+    steps: Vec<GameStep>,
+}
+
+/// One change to a game after it starts.
+#[derive(Clone, Debug, Serialize, Deserialize)]
+#[serde(
+    tag = "step",
+    rename_all = "camelCase",
+    rename_all_fields = "camelCase",
+    deny_unknown_fields
+)]
+enum GameStep {
+    Action {
+        actor: usize,
+        action: PlayerAction,
+        #[serde(default, skip_serializing_if = "Option::is_none")]
+        timing: Option<CompletionTiming>,
+    },
+    Termination {
+        termination: Termination,
+        #[serde(default, skip_serializing_if = "Option::is_none")]
+        timing: Option<CompletionTiming>,
+    },
+}
+
+/// A game as checkpoints store it. The server sets the timer and pause flags outside the engine's
+/// transitions, so they are stored as well.
+#[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
+struct StoredGameRef<'a> {
+    setup: &'a GameSetup,
+    steps: &'a [GameStep],
+    started_timer: bool,
+    paused: bool,
+}
+#[derive(Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+struct StoredGame {
+    setup: GameSetup,
+    steps: Vec<GameStep>,
+    started_timer: bool,
+    paused: bool,
+}
+
+impl Serialize for Game {
+    fn serialize<S: Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
+        match &self.log {
+            Some(log) => StoredGameRef {
+                setup: &log.setup,
+                steps: &log.steps,
+                started_timer: self.state.started_timer,
+                paused: self.state.paused,
+            }
+            .serialize(serializer),
+            None => self.state.serialize(serializer),
+        }
+    }
+}
+
+impl<'de> Deserialize<'de> for Game {
+    fn deserialize<D: Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
+        let value = Value::deserialize(deserializer)?;
+        let game = if value.get("setup").is_some() {
+            serde_json::from_value::<StoredGame>(value)
+                .map_err(anyhow::Error::from)
+                .and_then(Self::rebuild)
+        } else {
+            hanabi_engine::parse_engine_state(value).map(|state| Self { state, log: None })
+        };
+        game.map_err(|error| serde::de::Error::custom(format!("{error:#}")))
+    }
+}
+
 impl Deref for Game {
     type Target = EngineState;
     fn deref(&self) -> &EngineState {
-        &self.0
-    }
-}
-impl DerefMut for Game {
-    fn deref_mut(&mut self) -> &mut EngineState {
-        &mut self.0
+        &self.state
     }
 }
 impl Game {
     pub fn create(setup: GameSetup) -> Result<Self> {
-        Ok(Self(hanabi_engine::create_game(setup)?.state))
+        Ok(Self {
+            state: hanabi_engine::create_game(setup.clone())?.state,
+            log: Some(GameLog {
+                setup,
+                steps: vec![],
+            }),
+        })
+    }
+    /// Replays a stored game through the engine.
+    fn rebuild(stored: StoredGame) -> Result<Self> {
+        ensure!(
+            stored.steps.len() <= hanabi_protocol::MAX_GAME_ACTIONS,
+            "Oversized stored game"
+        );
+        let mut game = Self::create(stored.setup)?;
+        for step in stored.steps {
+            game.step(step)?;
+        }
+        game.state.started_timer = stored.started_timer;
+        game.state.paused = stored.paused;
+        Ok(game)
+    }
+    fn step(&mut self, step: GameStep) -> Result<()> {
+        self.state = match &step {
+            GameStep::Action {
+                actor,
+                action,
+                timing,
+            } => hanabi_engine::apply_action(&self.state, *actor, action, timing.clone())?,
+            GameStep::Termination {
+                termination,
+                timing,
+            } => hanabi_engine::terminate_game(&self.state, termination.clone(), timing.clone())?,
+        }
+        .state;
+        if let Some(log) = &mut self.log {
+            log.steps.push(step);
+        }
+        Ok(())
+    }
+    /// The engine's state, for engine functions that read it.
+    pub fn state(&self) -> &EngineState {
+        &self.state
+    }
+    /// The engine's state, for tests that set up a game without playing it.
+    #[cfg(test)]
+    pub(crate) fn state_mut(&mut self) -> &mut EngineState {
+        &mut self.state
     }
     pub fn new(deck: Vec<Card>) -> Result<Self> {
         Self::create(GameSetup {
@@ -46,9 +172,11 @@ impl Game {
         action: &ReplayAction,
         timing: Option<CompletionTiming>,
     ) -> Result<()> {
-        self.0 =
-            hanabi_engine::apply_action(&self.0, actor, &PlayerAction::from(action), timing)?.state;
-        Ok(())
+        self.step(GameStep::Action {
+            actor,
+            action: PlayerAction::from(action),
+            timing,
+        })
     }
     pub fn terminate(
         &mut self,
@@ -58,18 +186,22 @@ impl Game {
         votes: Option<Vec<usize>>,
         timing: Option<CompletionTiming>,
     ) -> Result<()> {
-        self.0 = hanabi_engine::terminate_game(
-            &self.0,
-            Termination {
+        self.step(GameStep::Termination {
+            termination: Termination {
                 actor_index: actor,
                 condition,
                 player_index: player,
                 votes,
             },
             timing,
-        )?
-        .state;
-        Ok(())
+        })
+    }
+    /// Records that the active player's clock started, which the server tracks for the engine.
+    pub fn start_timer(&mut self) {
+        self.state.started_timer = true;
+    }
+    pub fn set_paused(&mut self, paused: bool) {
+        self.state.paused = paused;
     }
     pub fn projected(&self, seat: Option<usize>, from: usize) -> Vec<Event> {
         let recipient = seat.map_or(
@@ -80,11 +212,15 @@ impl Game {
                 player_index: hanabi_engine::int(i),
             },
         );
-        hanabi_engine::events_for_recipient(&self.0, recipient, Some(&self.events[from..]))
+        hanabi_engine::events_for_recipient(&self.state, recipient, Some(&self.events[from..]))
             .expect("validated actor recipient")
     }
+    /// Checks a stored state that the engine did not rebuild from a log.
     pub fn validate_recovery(&self) -> Result<()> {
-        hanabi_engine::validate_engine_state(&self.0)
+        if self.log.is_some() {
+            return Ok(());
+        }
+        hanabi_engine::validate_engine_state(&self.state)
     }
     pub fn identities(&self) -> Vec<Card> {
         self.deck
@@ -168,6 +304,32 @@ pub fn deck_size(id: i32) -> Result<usize> {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn games_store_their_steps_and_older_checkpoints_keep_their_state() {
+        let mut game = Game::new(standard_deck("p2v0s1").unwrap()).unwrap();
+        let active = game.active_player_index;
+        let card = game.players[active].hand[0];
+        let play = ReplayAction {
+            kind: hanabi_protocol::RecordedActionType::Play,
+            target: i32::try_from(card).unwrap(),
+            value: 0,
+        };
+        game.apply(active, play).unwrap();
+        game.set_paused(true);
+
+        let stored = serde_json::to_value(&game).unwrap();
+        assert_eq!(stored["steps"].as_array().unwrap().len(), 1);
+        assert!(stored.get("events").is_none());
+        let restored: Game = serde_json::from_value(stored.clone()).unwrap();
+        assert_eq!(restored.state(), game.state());
+        assert_eq!(serde_json::to_value(&restored).unwrap(), stored);
+
+        let legacy = serde_json::to_value(game.state()).unwrap();
+        let restored: Game = serde_json::from_value(legacy.clone()).unwrap();
+        assert_eq!(restored.state(), game.state());
+        assert_eq!(serde_json::to_value(&restored).unwrap(), legacy);
+    }
 
     #[test]
     fn hand_sizes_that_differ_get_their_own_seeds() {

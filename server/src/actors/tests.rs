@@ -99,7 +99,7 @@ fn typed_game_frames_preserve_wire_schema_and_projected_identities() -> Result<(
             None,
         ),
     ] {
-        let list = hanabi_engine::events_for_recipient(&game.0, recipient, None)?;
+        let list = hanabi_engine::events_for_recipient(game.state(), recipient, None)?;
         let encoded = test_frame("gameActionList", game_action_list(42, &list));
         let (command, body) = encoded
             .split_once(' ')

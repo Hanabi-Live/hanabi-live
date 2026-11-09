@@ -1280,7 +1280,7 @@ mod tests {
                         stats: zero_stats(),
                     })
                     .collect();
-                snapshot.game.score = hanabi_engine::int(count) + 10;
+                snapshot.game.state_mut().score = hanabi_engine::int(count) + 10;
                 expected[count - 2] = i16::try_from(count)? + 10;
                 store.refresh(&snapshot).await?;
                 let user = sqlx::query!(

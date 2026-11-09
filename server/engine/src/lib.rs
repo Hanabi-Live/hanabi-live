@@ -5,7 +5,9 @@
 //! deck. `prepare_game_order` supports lobby deck/seat shuffling on a shared
 //! RNG stream; character assignment intentionally starts an independent stream.
 //! `apply_action` and `terminate_game` return owned immutable transitions.
-//! Persist the complete state, restore with `parse_engine_state`, and send only
+//! Transitions are deterministic, so a game can be stored as its setup and the
+//! actions and terminations applied to it, and rebuilt by replaying them;
+//! `parse_engine_state` reads a complete stored state. Send only
 //! recipient-projected events. Pausing and timing accounting belong to the
 //! caller; optional completion timing becomes a final event, not wall-clock
 //! effects inside the engine.

@@ -365,7 +365,7 @@ async fn duck_clue_identity_is_private_in_live_history_and_recovery_but_not_comp
             hanabi_protocol::RecordedActionType::RankClue,
         ] {
             let (table, _) = h.snapshot(id).await?;
-            let game = &table.game().unwrap().game.0;
+            let game = table.game().unwrap().game.state();
             let seat = game.active_player_index;
             let target = (seat + 1) % game.players.len();
             let values = if kind == hanabi_protocol::RecordedActionType::ColorClue {

@@ -59,10 +59,9 @@ interface SocketClient {
 
 const rustProgressSnapshotSchema = z.object({
   game_id: z.number().int().positive(),
-  game: z.object({
-    turn: z.number().int().nonnegative(),
-    activePlayerIndex: z.number().int().nonnegative(),
-  }),
+  players: z.unknown().array().readonly(),
+  // Checkpoints store a game as the steps that the engine replays.
+  game: z.object({ steps: z.unknown().array().readonly() }),
   clocks: z.number().array().readonly(),
 });
 

@@ -53,7 +53,11 @@ impl TableActor {
         ensure_or_reject!(self.attending(&session), "Reattend before acting");
         let seat = self.seat(&session)?;
         let old = self.live();
-        hanabi_engine::validate_action(&old.game.0, seat, &hanabi_engine::PlayerAction::from(&a))?;
+        hanabi_engine::validate_action(
+            old.game.state(),
+            seat,
+            &hanabi_engine::PlayerAction::from(&a),
+        )?;
         let from = old.game.events.len();
         let mut next = self.candidate();
         let s = next.game_mut().expect("game");
@@ -73,7 +77,7 @@ impl TableActor {
         if s.game.end_condition == EndCondition::InProgress && s.queued_pauses[active] {
             s.queued_pauses[active] = false;
             s.pause_player_index = hanabi_engine::int(active);
-            s.game.paused = true;
+            s.game.set_paused(true);
         }
         self.persist(next).await?;
         self.transitions(from).await
@@ -98,7 +102,7 @@ impl TableActor {
                 }
             };
             for event in hanabi_engine::events_for_recipient(
-                &s.game.0,
+                s.game.state(),
                 recipient,
                 Some(&s.game.events[from..]),
             )? {
@@ -309,7 +313,7 @@ impl TableActor {
         match setting {
             P::PauseQueue | P::PauseUnqueue => s.queued_pauses[seat] = setting == P::PauseQueue,
             P::Pause | P::Unpause => {
-                s.game.paused = setting == P::Pause;
+                s.game.set_paused(setting == P::Pause);
                 s.pause_player_index = if s.game.paused {
                     hanabi_engine::int(seat)
                 } else {
@@ -535,7 +539,7 @@ impl TableActor {
                     shadowing_player_index: a.shadow.map(hanabi_engine::int),
                 }
             };
-            let list = hanabi_engine::events_for_recipient(&s.game.0, recipient, None)?;
+            let list = hanabi_engine::events_for_recipient(s.game.state(), recipient, None)?;
             e.messages.push((
                 session.clone(),
                 frame(

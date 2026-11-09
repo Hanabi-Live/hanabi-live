@@ -252,9 +252,6 @@ impl TableSnapshot {
         ] {
             ensure!(options.contains_key(key), "Missing checkpoint option {key}");
         }
-        if let Some(game) = value.pointer("/phase/snapshot/game") {
-            hanabi_engine::parse_engine_state(game.clone())?;
-        }
         let table: Self = serde_json::from_value(value)?;
         table.validate()?;
         ensure!(

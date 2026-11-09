@@ -932,7 +932,7 @@ impl TableActor {
                 {
                     starts_clock = !s.timer_started || !s.game.started_timer;
                     s.timer_started = true;
-                    s.game.started_timer = true;
+                    s.game.start_timer();
                 }
                 // Loading usually changes nothing durable; only starting the clock needs saving.
                 if starts_clock {
