@@ -16,6 +16,7 @@ import type { CheckButton } from "./controls/CheckButton";
 import type { CurrentPlayerArea } from "./controls/CurrentPlayerArea";
 import type { EnterHypoButton } from "./controls/EnterHypoButton";
 import type { FitText } from "./controls/FitText";
+import type { ReadyButton } from "./controls/ReadyButton";
 import type { SharedTurnsButton } from "./controls/SharedTurnsButton";
 import type { Shuttle } from "./controls/Shuttle";
 import type { SlidableGroup } from "./controls/SlidableGroup";
@@ -52,7 +53,7 @@ export class Elements {
   chatButton: Button | null = null;
   lobbyButton: Button | null = null;
   restartButton: Button | null = null;
-  restartReadyButton: CheckButton | null = null;
+  restartReadyButton: ReadyButton | null = null;
   deck: Deck | null = null;
   gameIDLabel: FitText | null = null;
   gameInfoImage: Konva.Image | null = null;

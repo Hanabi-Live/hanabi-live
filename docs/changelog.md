@@ -37,8 +37,8 @@ of the repository.
   deal, replacing the `!seed` table name.
 - Misplayed cards now launch like a dud firework, explode on the strike tracker,
   and fall into the discard pile.
-- After a game, players can uncheck "Ready" to tell the leader that they will
-  not play another game.
+- After a game, players can click "Ready" to tell the leader that they will not
+  play another game.
 - In "Throw It in a Hole" variants, played cards now spin into the hole instead
   of fading out.
 - "New Game", "Watch Replay", "Resources", and "Settings" now open a full page

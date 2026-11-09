@@ -81,6 +81,7 @@ import { CurrentPlayerArea } from "./controls/CurrentPlayerArea";
 import { FitText } from "./controls/FitText";
 import { ImageWithTooltip } from "./controls/ImageWithTooltip";
 import { PlayerButton } from "./controls/PlayerButton";
+import { ReadyButton } from "./controls/ReadyButton";
 import { RectWithTooltip } from "./controls/RectWithTooltip";
 import { SlidableGroup } from "./controls/SlidableGroup";
 import { StrikeSquare } from "./controls/StrikeSquare";
@@ -1189,14 +1190,13 @@ function drawBottomLeftButtons() {
   initKonvaTooltips(restartButton, true, false);
   globals.elements.restartButton = restartButton;
 
-  // The checkbox for other players to tell the leader whether they will play again. (It takes the
+  // The button for other players to tell the leader whether they will play again. (It takes the
   // place of the restart button, which only the leader sees.)
-  const restartReadyButton = new CheckButton({
+  const restartReadyButton = new ReadyButton({
     x: bottomLeftButtonValues.x * winW,
     y: bottomLeftButtonValues.y * winH,
     width: bottomLeftButtonValues.w! * winW,
     height: bottomLeftButtonValues.h! * winH,
-    text: "Ready",
     visible: false,
   });
   globals.layers.UI.add(restartReadyButton);
@@ -1205,7 +1205,7 @@ function drawBottomLeftButtons() {
   });
   restartReadyButton.tooltipName = "restart-ready";
   restartReadyButton.tooltipContent =
-    "Uncheck this to tell the shared replay leader that you will not play another game.";
+    "Click this to tell the shared replay leader whether you will play another game.";
   initKonvaTooltips(restartReadyButton, true, false);
   globals.elements.restartReadyButton = restartReadyButton;
 
