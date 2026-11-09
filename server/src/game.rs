@@ -66,6 +66,20 @@ struct StoredGame {
     paused: bool,
 }
 
+/// A game's steps, taken out of it while a checkpoint stores the rest of the game.
+#[derive(Default)]
+pub(crate) struct Steps(Vec<GameStep>);
+
+impl Steps {
+    pub(crate) fn len(&self) -> usize {
+        self.0.len()
+    }
+    /// The step at `index`, as JSON.
+    pub(crate) fn part(&self, index: usize) -> Result<String> {
+        Ok(serde_json::to_string(&self.0[index])?)
+    }
+}
+
 impl Serialize for Game {
     fn serialize<S: Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
         StoredGameRef {
@@ -131,15 +145,16 @@ impl Game {
         self.log.steps.push(step);
         Ok(())
     }
-    /// Removes the game's steps, as JSON, for a checkpoint that stores them apart. The game's
-    /// state stays as it is.
-    pub(crate) fn take_steps(&mut self) -> Result<Vec<String>> {
-        std::mem::take(&mut self.log.steps)
-            .iter()
-            .map(|step| Ok(serde_json::to_string(step)?))
-            .collect()
+    /// Removes the game's steps, for a checkpoint that stores them apart from the rest of the
+    /// game. The game's state stays as it is; `put_steps` gives the steps back.
+    pub(crate) fn take_steps(&mut self) -> Steps {
+        Steps(std::mem::take(&mut self.log.steps))
     }
-    /// Plays the steps that `take_steps` removed. The game must have none. The timer and pause
+    /// Gives back the steps that `take_steps` removed.
+    pub(crate) fn put_steps(&mut self, steps: Steps) {
+        self.log.steps = steps.0;
+    }
+    /// Plays steps that a checkpoint stored apart from the rest of the game. The game must have none. The timer and pause
     /// flags keep the values that the checkpoint stored with the game.
     pub(crate) fn restore_steps(&mut self, steps: &[&str]) -> Result<()> {
         ensure!(self.log.steps.is_empty(), "The game already has steps");

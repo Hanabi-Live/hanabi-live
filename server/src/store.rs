@@ -1,5 +1,5 @@
 use crate::{
-    checkpoint::{PartChanges, PartDigest},
+    checkpoint::{PartChanges, SavedParts},
     model::{PendingTag, Player, Snapshot, TableChat, TableSnapshot, Tag, TagOperation},
     state::LiveState,
 };
@@ -14,7 +14,7 @@ use sqlx::{
     PgPool, Postgres, Transaction,
     postgres::{PgConnectOptions, PgPoolOptions},
 };
-use std::{collections::HashMap, sync::Arc, time::Duration};
+use std::{sync::Arc, time::Duration};
 use tokio::sync::Semaphore;
 use tokio_util::{sync::CancellationToken, task::TaskTracker};
 
@@ -231,7 +231,7 @@ impl Store {
                 table.game_mut().context("Missing tagged replay")?.tags =
                     apply_tag(&mut transaction, edit).await?;
             }
-            let encoded = crate::checkpoint::encode(table)?;
+            let (encoded, parts) = crate::checkpoint::encode(table, &saved.parts)?;
             archive_chat(
                 &mut transaction,
                 new_chat.iter().map(|&index| &table.chat[index]),
@@ -249,33 +249,32 @@ impl Store {
                 crate::state::remove_in(&mut transaction, table.id, saved.revision).await?;
                 Saved {
                     revision: saved.revision,
-                    parts: HashMap::new(),
+                    parts: SavedParts::default(),
                 }
             } else {
-                let (changes, parts) = crate::checkpoint::changes(&saved.parts, &encoded);
-                written += written_bytes(&encoded.head, &changes);
+                written += written_bytes(&encoded.head, &encoded.changes);
                 let revision = crate::state::save_in(
                     &mut transaction,
                     table.id,
                     saved.revision,
                     &encoded.head,
-                    &changes,
+                    &encoded.changes,
                 )
                 .await?;
                 Saved { revision, parts }
             };
             let spawn = match work.spawn {
                 Some(spawn) => {
-                    let encoded = crate::checkpoint::encode(spawn)?;
                     // The new table was only reserved, so it has no parts yet.
-                    let (changes, parts) = crate::checkpoint::changes(&HashMap::new(), &encoded);
-                    written += written_bytes(&encoded.head, &changes);
+                    let (encoded, parts) =
+                        crate::checkpoint::encode(&mut spawn.clone(), &SavedParts::default())?;
+                    written += written_bytes(&encoded.head, &encoded.changes);
                     let revision = crate::state::save_in(
                         &mut transaction,
                         spawn.id,
                         0,
                         &encoded.head,
-                        &changes,
+                        &encoded.changes,
                     )
                     .await?;
                     Some(Saved { revision, parts })
@@ -397,12 +396,12 @@ pub struct Commit<'a> {
     pub spawn: Option<&'a TableSnapshot>,
 }
 
-/// What the database holds for a live table: its revision, and the digests of its parts, which
-/// tell a save which parts changed. The table's actor keeps it.
+/// What the database holds for a live table: its revision, and what it holds of its parts, which
+/// tells a save which parts to write. The table's actor keeps it.
 #[derive(Clone, Debug, Default)]
 pub struct Saved {
     pub revision: i64,
-    parts: HashMap<String, PartDigest>,
+    parts: SavedParts,
 }
 
 impl Saved {
@@ -410,10 +409,7 @@ impl Saved {
     fn of(revision: i64, parts: &[(String, String)]) -> Self {
         Self {
             revision,
-            parts: parts
-                .iter()
-                .map(|(key, value)| (key.clone(), crate::checkpoint::digest(value)))
-                .collect(),
+            parts: SavedParts::of(parts),
         }
     }
 }
@@ -693,10 +689,17 @@ mod tests {
             ),
         });
         let expected = serde_json::to_value(&table)?;
-        let encoded = crate::checkpoint::encode(&table)?;
-        let parts = encoded.parts.clone().into_iter().collect::<Vec<_>>();
+        let (encoded, _) = crate::checkpoint::encode(&mut table, &SavedParts::default())?;
+        ensure!(
+            serde_json::to_value(&table)? == expected,
+            "Encoding did not put the table's lists back"
+        );
+        let parts = encoded.changes.written.clone();
         for key in ["chat/0", "step/0", "notes/1", "spectatorNotes/3"] {
-            ensure!(encoded.parts.contains_key(key), "Missing part {key}");
+            ensure!(
+                parts.iter().any(|(part, _)| part == key),
+                "Missing part {key}"
+            );
         }
         ensure!(!encoded.head.contains("hello"), "The head kept the chat");
         let decoded = crate::checkpoint::decode(&encoded.head, &parts)?;
@@ -729,6 +732,51 @@ mod tests {
         let mut invalid = parts.clone();
         invalid.push(("spectatorNotes/not-a-user".into(), json!(owner).to_string()));
         ensure!(crate::checkpoint::decode(&encoded.head, &invalid).is_err());
+        Ok(())
+    }
+    #[test]
+    fn saves_write_only_new_entries_and_rewrite_lists_that_do_not_continue() -> Result<()> {
+        let mut table = pregame(TableId(1));
+        terminal(&mut table)?;
+        table.convert_to_replay()?;
+        let message = |id: i32| TableChat {
+            id: Some(id),
+            user: UserId(1),
+            message: hanabi_protocol::Chat::new(
+                format!("message {id}"),
+                ChatSource::User,
+                crate::model::timestamp(Utc::now()),
+            ),
+        };
+        let keys = |encoded: &crate::checkpoint::Encoded| {
+            encoded
+                .changes
+                .written
+                .iter()
+                .map(|(key, _)| key.clone())
+                .collect::<Vec<_>>()
+        };
+        table.chat = vec![message(1), message(2)];
+        let (_, saved) = crate::checkpoint::encode(&mut table, &SavedParts::default())?;
+        table.chat.push(message(3));
+        let (grown, saved) = crate::checkpoint::encode(&mut table, &saved)?;
+        ensure!(
+            keys(&grown) == ["chat/2"] && grown.changes.removed.is_empty(),
+            "A new message rewrote other parts: {:?}",
+            keys(&grown)
+        );
+        let (unchanged, _) = crate::checkpoint::encode(&mut table, &saved)?;
+        ensure!(
+            unchanged.changes.written.is_empty(),
+            "An unchanged table rewrote parts"
+        );
+        table.chat.remove(0);
+        let (rewritten, _) = crate::checkpoint::encode(&mut table, &saved)?;
+        ensure!(
+            keys(&rewritten) == ["chat/0", "chat/1"] && rewritten.changes.removed == ["chat/2"],
+            "A chat that does not continue the saved one was not rewritten: {:?}",
+            keys(&rewritten)
+        );
         Ok(())
     }
     async fn database() -> Result<Option<(TestDb, PgPool)>> {
@@ -872,7 +920,12 @@ mod tests {
             let revision = store.save_at(&table, 0).await?;
             let before = versions().await?;
             ensure!(
-                before.len() == crate::checkpoint::encode(&table)?.parts.len(),
+                before.len()
+                    == crate::checkpoint::encode(&mut table.clone(), &SavedParts::default())?
+                        .0
+                        .changes
+                        .written
+                        .len(),
                 "The first save did not store the lists as parts"
             );
             let head = state.get(table.id).await?.context("Missing table")?.payload;

@@ -1,8 +1,9 @@
 //! How a live table is stored: a head, which is the table's JSON with its growing lists left empty,
-//! and parts, which hold those lists one entry at a time. A change then rewrites the head and only
-//! the parts that changed, rather than the whole table.
+//! and parts, which hold those lists one entry at a time. A save writes the head and only the parts
+//! that changed: the new chat messages and game steps, and the notes that differ.
 
 use crate::{
+    game::Steps,
     model::{NoteOwner, TableChat, TableSnapshot},
     state::MAX_CHECKPOINT_BYTES,
 };
@@ -20,11 +21,10 @@ const NOTES: &str = "notes";
 /// The prefix of the parts that hold each spectator's notes, by user ID.
 const SPECTATOR_NOTES: &str = "spectatorNotes";
 
-/// A table as the database stores it.
+/// What a save writes: the table's head, and the changes to its parts.
 pub struct Encoded {
     pub head: String,
-    /// The parts by key, as JSON.
-    pub parts: BTreeMap<String, String>,
+    pub changes: PartChanges,
 }
 
 /// A digest of a part's value, to tell which parts changed since the last save.
@@ -38,36 +38,180 @@ fn key(prefix: &str, entry: impl std::fmt::Display) -> String {
     format!("{prefix}/{entry}")
 }
 
-/// Validates a table and splits it into its head and parts.
-pub fn encode(table: &TableSnapshot) -> Result<Encoded> {
+/// What the database holds of a table's parts, which tells a save what to write. Chat and steps
+/// only grow, so a save writes the entries after the saved ones; notes can change anywhere, so a
+/// save compares each seat's and spectator's notes with what it saved.
+#[derive(Clone, Debug, Default)]
+pub struct SavedParts {
+    chat: Tail,
+    steps: Tail,
+    /// The digests of the saved notes, by key.
+    notes: HashMap<String, PartDigest>,
+    /// The bytes of the saved notes' keys and values.
+    notes_bytes: usize,
+}
+
+/// The saved entries of a list that only grows.
+#[derive(Clone, Debug, Default)]
+struct Tail {
+    count: usize,
+    /// The digest of the last saved entry, to tell that the list still continues it.
+    last: Option<PartDigest>,
+    /// The bytes of the saved entries' keys and values.
+    bytes: usize,
+}
+
+impl SavedParts {
+    /// What the database holds, from the parts that it loaded.
+    pub fn of(parts: &[(String, String)]) -> Self {
+        let mut saved = Self::default();
+        let mut lists: HashMap<&str, BTreeMap<usize, &str>> = HashMap::new();
+        for (key, value) in parts {
+            let Some((prefix, entry)) = key.split_once('/') else {
+                continue;
+            };
+            if prefix == NOTES || prefix == SPECTATOR_NOTES {
+                saved.notes.insert(key.clone(), digest(value));
+                saved.notes_bytes += key.len() + value.len();
+            } else if let Ok(index) = entry.parse() {
+                lists.entry(prefix).or_default().insert(index, value);
+            }
+        }
+        for (prefix, tail) in [(CHAT, &mut saved.chat), (STEP, &mut saved.steps)] {
+            let entries = lists.remove(prefix).unwrap_or_default();
+            *tail = Tail {
+                count: entries.len(),
+                last: entries.values().next_back().map(|value| digest(value)),
+                bytes: entries
+                    .iter()
+                    .map(|(index, value)| key(prefix, index).len() + value.len())
+                    .sum(),
+            };
+        }
+        saved
+    }
+}
+
+/// Adds to `changes` the entries of a list that only grows, of length `len`, that the database
+/// does not hold. A list that does not continue the saved one is rewritten. Returns what the
+/// database holds after the save.
+fn grow(
+    prefix: &str,
+    len: usize,
+    saved: &Tail,
+    part: impl Fn(usize) -> Result<String>,
+    changes: &mut PartChanges,
+) -> Result<Tail> {
+    let continues = len >= saved.count
+        && match saved.count.checked_sub(1) {
+            None => true,
+            Some(last) => Some(digest(&part(last)?)) == saved.last,
+        };
+    let mut tail = if continues {
+        saved.clone()
+    } else {
+        changes
+            .removed
+            .extend((len..saved.count).map(|index| key(prefix, index)));
+        Tail::default()
+    };
+    for index in tail.count..len {
+        let (key, value) = (key(prefix, index), part(index)?);
+        tail.bytes += key.len() + value.len();
+        tail.last = Some(digest(&value));
+        changes.written.push((key, value));
+    }
+    tail.count = len;
+    Ok(tail)
+}
+
+/// Validates a table, and encodes what saving it over `saved` writes. Returns what the database
+/// holds after the save. The table's lists are taken out while its head is encoded, then put back.
+pub fn encode(table: &mut TableSnapshot, saved: &SavedParts) -> Result<(Encoded, SavedParts)> {
     table.validate()?;
-    let mut head = table.clone();
-    let mut parts = BTreeMap::new();
-    for (index, chat) in std::mem::take(&mut head.chat).iter().enumerate() {
-        parts.insert(key(CHAT, index), serde_json::to_string(chat)?);
+    let chat = std::mem::take(&mut table.chat);
+    let game = table.game_mut().map(|snapshot| {
+        (
+            snapshot.game.take_steps(),
+            std::mem::take(&mut snapshot.notes),
+            std::mem::take(&mut snapshot.spectator_notes),
+        )
+    });
+    let encoded = encode_parts(table, &chat, game.as_ref(), saved);
+    table.chat = chat;
+    if let (Some(snapshot), Some((steps, notes, spectator_notes))) = (table.game_mut(), game) {
+        snapshot.game.put_steps(steps);
+        snapshot.notes = notes;
+        snapshot.spectator_notes = spectator_notes;
     }
-    if let Some(snapshot) = head.game_mut() {
-        for (index, step) in snapshot.game.take_steps()?.into_iter().enumerate() {
-            parts.insert(key(STEP, index), step);
-        }
-        for (seat, notes) in std::mem::take(&mut snapshot.notes).iter().enumerate() {
-            parts.insert(key(NOTES, seat), serde_json::to_string(notes)?);
-        }
-        for (user, owner) in &std::mem::take(&mut snapshot.spectator_notes) {
-            parts.insert(key(SPECTATOR_NOTES, user.0), serde_json::to_string(owner)?);
-        }
+    encoded
+}
+
+/// A game's lists that `encode` takes out of it: its steps, each seat's notes, and each
+/// spectator's notes.
+type GameLists = (Steps, Vec<Vec<String>>, BTreeMap<UserId, NoteOwner>);
+
+/// Encodes a table whose lists `encode` took out of it.
+fn encode_parts(
+    head: &TableSnapshot,
+    chat: &[TableChat],
+    game: Option<&GameLists>,
+    saved: &SavedParts,
+) -> Result<(Encoded, SavedParts)> {
+    let head = serde_json::to_string(head)?;
+    let mut changes = PartChanges::default();
+    let chat = grow(
+        CHAT,
+        chat.len(),
+        &saved.chat,
+        |index| Ok(serde_json::to_string(&chat[index])?),
+        &mut changes,
+    )?;
+    let no_steps = Steps::default();
+    let (steps, notes, spectator_notes) = match game {
+        Some((steps, notes, spectator_notes)) => (steps, notes.as_slice(), Some(spectator_notes)),
+        None => (&no_steps, &[][..], None),
+    };
+    let steps = grow(
+        STEP,
+        steps.len(),
+        &saved.steps,
+        |index| steps.part(index),
+        &mut changes,
+    )?;
+    let mut note_parts = Vec::new();
+    for (seat, notes) in notes.iter().enumerate() {
+        note_parts.push((key(NOTES, seat), serde_json::to_string(notes)?));
     }
-    let head = serde_json::to_string(&head)?;
-    let size = head.len()
-        + parts
-            .iter()
-            .map(|(key, value)| key.len() + value.len())
-            .sum::<usize>();
+    for (user, owner) in spectator_notes.into_iter().flatten() {
+        note_parts.push((key(SPECTATOR_NOTES, user.0), serde_json::to_string(owner)?));
+    }
+    let mut after = SavedParts {
+        chat,
+        steps,
+        ..SavedParts::default()
+    };
+    for (key, value) in note_parts {
+        let part = digest(&value);
+        after.notes_bytes += key.len() + value.len();
+        if saved.notes.get(&key) != Some(&part) {
+            changes.written.push((key.clone(), value));
+        }
+        after.notes.insert(key, part);
+    }
+    changes.removed.extend(
+        saved
+            .notes
+            .keys()
+            .filter(|key| !after.notes.contains_key(*key))
+            .cloned(),
+    );
+    let size = head.len() + after.chat.bytes + after.steps.bytes + after.notes_bytes;
     ensure!(
         size <= MAX_CHECKPOINT_BYTES,
         "Checkpoint exceeds the durable state limit"
     );
-    Ok(Encoded { head, parts })
+    Ok((Encoded { head, changes }, after))
 }
 
 /// The entries of a list that parts hold by position, in order.
@@ -145,31 +289,4 @@ pub struct PartChanges {
     /// New or changed parts, by key.
     pub written: Vec<(String, String)>,
     pub removed: Vec<String>,
-}
-
-/// The parts of `encoded` that differ from the saved parts, whose digests are `saved`, and the
-/// digests of the parts once `encoded` is saved.
-pub fn changes(
-    saved: &HashMap<String, PartDigest>,
-    encoded: &Encoded,
-) -> (PartChanges, HashMap<String, PartDigest>) {
-    let digests = encoded
-        .parts
-        .iter()
-        .map(|(key, value)| (key.clone(), digest(value)))
-        .collect::<HashMap<_, _>>();
-    let changes = PartChanges {
-        written: encoded
-            .parts
-            .iter()
-            .filter(|(key, _)| saved.get(*key) != digests.get(*key))
-            .map(|(key, value)| (key.clone(), value.clone()))
-            .collect(),
-        removed: saved
-            .keys()
-            .filter(|key| !encoded.parts.contains_key(*key))
-            .cloned()
-            .collect(),
-    };
-    (changes, digests)
 }
