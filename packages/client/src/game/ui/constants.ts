@@ -12,16 +12,22 @@ export const CARD_H = 406;
 /** The middle of a card, in the card's own coordinates. */
 export const CARD_CENTER = { x: CARD_W / 2, y: CARD_H / 2 } as const;
 
+/** The width of the stage divided by its height. */
+export const STAGE_ASPECT_RATIO = 16 / 9;
+
 export const CARD_FADE = 0.6;
 export const STRIKE_FADE = 0.175;
+
+/** The width of a full-size card on the game board, as a fraction of the stage width. */
+const FULL_CARD_STAGE_W = 0.075;
 
 /**
  * The size of a full-size card on the game board, as fractions of the stage width and height. A
  * hand on the game board is one card tall.
  */
 export const FULL_CARD_STAGE_SIZE = {
-  W: 0.075,
-  H: 0.189,
+  W: FULL_CARD_STAGE_W,
+  H: (FULL_CARD_STAGE_W * STAGE_ASPECT_RATIO * CARD_H) / CARD_W,
 } as const;
 
 /** The gap between the panels at the edges of the game board and the edges of the stage. */

@@ -5,6 +5,7 @@ import type { Globals as LobbyGlobals } from "../../Globals";
 import { Screen } from "../../lobby/types/Screen";
 import * as tooltips from "../../tooltips";
 import type { GameExports } from "../main";
+import { STAGE_ASPECT_RATIO } from "./constants";
 import * as cursor from "./cursor";
 import { drawUI } from "./drawUI";
 import * as keyboard from "./keyboard";
@@ -248,8 +249,6 @@ export class HanabiUI {
 
 /** The number of full frames with no resize events to wait for before rebuilding the stage. */
 const RESIZE_SETTLE_FRAMES = 2;
-
-const STAGE_ASPECT_RATIO = 16 / 9;
 
 /** The stage seems to break for widths of around 235 px or less. */
 const MIN_STAGE_WIDTH = 240;

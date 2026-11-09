@@ -90,7 +90,7 @@ export function drawReplayArea(winW: number, winH: number): void {
     height: shuttleValues.h * winH,
     offset: {
       x: (shuttleValues.w / 2) * winW,
-      y: (shuttleValues.h / 2) * winW,
+      y: (shuttleValues.h / 2) * winH,
     },
     cornerRadius: shuttleValues.cornerRadius * winW,
     fill: getCanvasColors().replayShuttle,
@@ -112,7 +112,7 @@ export function drawReplayArea(winW: number, winH: number): void {
     height: shuttleValues.h * winH,
     offset: {
       x: (shuttleValues.w / 2) * winW,
-      y: (shuttleValues.h / 2) * winW,
+      y: (shuttleValues.h / 2) * winH,
     },
     cornerRadius: shuttleValues.cornerRadius * winW,
     fill: REPLAY_SHUTTLE_COLOR,

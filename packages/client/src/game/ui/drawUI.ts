@@ -118,6 +118,10 @@ let deckValues: Values;
 let scoreAreaValues: Values;
 let clueAreaValues: Values;
 let lowerClueAreaValues: Values;
+/**
+ * How far the lower part of the clue area slides left in a hypo, in fractions of the stage width.
+ */
+let lowerClueAreaSlideX: number;
 let clueLogValues: Values;
 let giveClueValues: Values;
 let spectatorsLabelValues: Values;
@@ -129,6 +133,20 @@ const leaderPlaceholder = getHTMLElement("#leader-placeholder");
  * score area, and spectators icon beside them, in fractions of the stage.
  */
 const BOTTOM_LEFT_GAP = 0.01;
+
+/** How big the cards in a row of small play stacks are, relative to a full-size card. */
+const SMALL_PLAY_STACK_SCALE = 0.8;
+
+/**
+ * The name under each play stack (when the variant shows suit names), in fractions of the stage. It
+ * extends `overhangX` past each side of the stack and sits `gapY` below it.
+ */
+const SUIT_LABEL = {
+  overhangX: 0.01,
+  gapY: 0.004,
+  h: 0.051,
+  fontSize: 0.02,
+} as const;
 
 /** The number of recent actions shown in the action log. */
 const ACTION_LOG_LINES = 8;
@@ -480,8 +498,8 @@ function drawPlayStacks() {
 
   let yOffset: number;
   if (smallStacks) {
-    cardWidth = 0.06;
-    cardHeight = 0.151;
+    cardWidth = FULL_CARD_STAGE_SIZE.W * SMALL_PLAY_STACK_SCALE;
+    cardHeight = FULL_CARD_STAGE_SIZE.H * SMALL_PLAY_STACK_SCALE;
     yOffset = 0.019;
   } else {
     cardWidth = FULL_CARD_STAGE_SIZE.W;
@@ -595,12 +613,14 @@ function drawPlayStacks() {
 
       const suitLabelText = new FitText({
         x:
-          (playStackValues.x - 0.01 + (cardWidth + playStackValues.spacing) * i)
+          (playStackValues.x
+            - SUIT_LABEL.overhangX
+            + (cardWidth + playStackValues.spacing) * i)
           * winW,
-        y: (playStackValues.y + 0.155) * winH,
-        width: 0.08 * winW,
-        height: 0.051 * winH,
-        fontSize: 0.02 * winH,
+        y: (playStackValues.y + cardHeight + SUIT_LABEL.gapY) * winH,
+        width: (cardWidth + SUIT_LABEL.overhangX * 2) * winW,
+        height: SUIT_LABEL.h * winH,
+        fontSize: SUIT_LABEL.fontSize * winH,
         fontFamily: FONT_FAMILY,
         align: "center",
         text,
@@ -1750,11 +1770,13 @@ function drawTimers() {
     return;
   }
 
+  // In the Keldon layout, the two timers sit in a row.
+  const keldonTimerY = 0.645;
   const timerValues = {
     x1: 0.145,
     x2: 0.595,
-    y1: 0.645,
-    y2: 0.645,
+    y1: keldonTimerY,
+    y2: keldonTimerY,
     w: 0.065,
     h: 0.051,
     fontSize: 0.03,
@@ -1987,8 +2009,8 @@ function drawClueArea() {
   // In a hypo, the lower part of the clue UI slides left independently of the clue target buttons.
   // The limiting factor on how far it can slide is when there is a color button for every suit.
   const maxColorWidth = buttonW * MAX_SUITS + buttonXSpacing * (MAX_SUITS - 1);
-  const lowerClueAreaWidth = maxColorWidth * winW;
-  const offsetX = -0.5 * (clueAreaValues.w! * winW - lowerClueAreaWidth);
+  lowerClueAreaSlideX = (clueAreaValues.w! - maxColorWidth) / 2;
+  const offsetX = -lowerClueAreaSlideX * winW;
   function setLeft(this: SlidableGroup) {
     const x = offsetX;
     this.x(x);
@@ -2158,7 +2180,11 @@ function drawClueAreaDisabled(offsetX: number) {
     x: 0.075,
     y: 0.03,
   };
-  const lineColor = "#1a1a1a";
+  const lineStyle = {
+    stroke: "#1a1a1a",
+    strokeWidth: 5 * STROKE_WIDTH_UNIT * winH,
+    listening: false,
+  } as const;
 
   // The line from top-left to bottom-right.
   const line1 = new Konva.Line({
@@ -2168,9 +2194,7 @@ function drawClueAreaDisabled(offsetX: number) {
       (clueAreaValues.w! - spacing.x) * winW,
       (clueAreaValues.h! - spacing.y) * winH,
     ],
-    stroke: lineColor,
-    strokeWidth: 5 * STROKE_WIDTH_UNIT * winH,
-    listening: false,
+    ...lineStyle,
   });
   globals.elements.clueAreaDisabled.add(line1);
 
@@ -2182,9 +2206,7 @@ function drawClueAreaDisabled(offsetX: number) {
       (clueAreaValues.w! - spacing.x) * winW,
       spacing.y * winH,
     ],
-    stroke: lineColor,
-    strokeWidth: 5 * STROKE_WIDTH_UNIT * winH,
-    listening: false,
+    ...lineStyle,
   });
   globals.elements.clueAreaDisabled.add(line2);
 
@@ -2363,14 +2385,18 @@ function drawHypotheticalArea() {
   const hypoButtonHeight = giveClueValues.h!;
   const hypoButtonFontSize = 0.019;
 
-  // The "Back 1 Turn" button (to the right of the give clue button).
+  const hypoButtonWidth = 0.075;
+  const hypoButtonSpacing = 0.008;
+
+  // The "Back 1 Turn" button (to the right of the give clue button, after it slides left).
   const hypoBackButtonValues = {
     x:
       clueAreaValues.x
       + lowerClueAreaValues.x
+      - lowerClueAreaSlideX
       + giveClueValues.x
       + giveClueValues.w!
-      - 0.05,
+      + hypoButtonSpacing,
     y: clueAreaValues.y + lowerClueAreaValues.y + giveClueValues.y,
     w: 0.035,
     h: hypoButtonHeight,
@@ -2397,9 +2423,6 @@ function drawHypotheticalArea() {
   globals.elements.hypoButtonsArea.add(
     globals.elements.hypoBackButton as unknown as Konva.Group,
   );
-
-  const hypoButtonWidth = 0.075;
-  const hypoButtonSpacing = 0.008;
 
   // The "End Hypothetical" button (to the right of the back button).
   const endHypotheticalButtonValues = {
@@ -2529,12 +2552,13 @@ function drawPauseArea() {
 
   const button1W = pauseAreaValues.w * 0.4;
   const button2W = pauseAreaValues.w * 0.125;
-  const buttonH = 0.33;
+  /** The top of the row of buttons, in fractions of the stage height. */
+  const buttonY = 0.33;
   const spacing = pauseAreaValues.w * 0.1;
 
   globals.elements.pauseButton = new Button({
     x: spacing * winW,
-    y: buttonH * winH,
+    y: buttonY * winH,
     width: button1W * winW,
     height: DIALOG.BUTTON_H * winH,
     text: "Unpause",
@@ -2551,7 +2575,7 @@ function drawPauseArea() {
 
   const chatButton = new Button({
     x: (pauseAreaValues.w - button2W * 2 - spacing * 2) * winW,
-    y: buttonH * winH,
+    y: buttonY * winH,
     width: button2W * winW,
     height: DIALOG.BUTTON_H * winH,
     // eslint-disable-next-line complete/require-ascii
@@ -2565,7 +2589,7 @@ function drawPauseArea() {
   const pauseLobbyButton = new Button(
     {
       x: (pauseAreaValues.w - button2W - spacing * 1.5) * winW,
-      y: buttonH * winH,
+      y: buttonY * winH,
       width: button2W * winW,
       height: DIALOG.BUTTON_H * winH,
     },
@@ -2616,12 +2640,15 @@ function drawRestartArea() {
   restartContents.add(restartTitle);
 
   const buttonW = restartAreaValues.w * 0.35;
-  const buttonH = 0.25;
+  /** The top of the row of buttons, in fractions of the stage height. */
+  const buttonY = 0.25;
   const spacing = restartAreaValues.w * 0.1;
+  /** The gap above the "Cancel" button, in fractions of the stage height. */
+  const cancelButtonGapY = 0.095;
 
   const restartGameButton = new Button({
     x: spacing * winW,
-    y: buttonH * winH,
+    y: buttonY * winH,
     width: buttonW * winW,
     height: DIALOG.BUTTON_H * winH,
     text: "Restart game",
@@ -2633,7 +2660,7 @@ function drawRestartArea() {
 
   const restartTableButton = new Button({
     x: (2 * spacing + buttonW) * winW,
-    y: buttonH * winH,
+    y: buttonY * winH,
     width: buttonW * winW,
     height: DIALOG.BUTTON_H * winH,
     text: "Remake table",
@@ -2645,7 +2672,7 @@ function drawRestartArea() {
 
   const restartCancelButton = new Button({
     x: (restartAreaValues.w - buttonW / 2 - spacing) * winW,
-    y: (buttonH * 1.5 + spacing) * winH,
+    y: (buttonY + DIALOG.BUTTON_H + cancelButtonGapY) * winH,
     width: (buttonW / 2) * winW,
     height: DIALOG.BUTTON_H * winH,
     text: "Cancel",

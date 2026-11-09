@@ -85,6 +85,27 @@ const HAND_BLACK_LINE = {
   cornerRadius: 0.003,
 } as const;
 
+/**
+ * In the Keldon layout, where the black line at the oldest end of a hand is, in fractions of the
+ * stage width.
+ */
+interface BlackLineX {
+  /** The line's left edge, relative to the hand's left edge. */
+  readonly start: number;
+  /** Replaces `start` for the hands that run down the sides of the board. */
+  readonly sideStart?: number;
+  /** The line's left edge for a reversed hand, relative to the hand's right edge. */
+  readonly reversedStart: number;
+}
+
+const KELDON_HAND_BLACK_LINE_X = {
+  2: { start: -0.0075, reversedStart: 0.002 },
+  3: { start: -0.0125, reversedStart: 0.002 },
+  4: { start: -0.005, reversedStart: 0 },
+  5: { start: -0.001, sideStart: -0.01, reversedStart: -0.005 },
+  6: { start: -0.0025, reversedStart: -0.005 },
+} as const satisfies Record<NumPlayers, BlackLineX>;
+
 /** The top of our own hand at the bottom of the board in Keldon mode. */
 const KELDON_BOTTOM_HAND_Y = 0.77;
 
@@ -114,12 +135,14 @@ export function drawHands(winW: number, winH: number): void {
   const handPos6W = reducedHandH * handPos6Ratio * KELDON_6P_HAND_WIDTH_SCALE;
   /** The size of a hand that runs down the left or right side of the board. */
   const sideHand = { w: 0.301, h: 0.18 } as const;
+  /** The left edge and width of a hand that spans the board, such as in 2-player games. */
+  const wideHand = { x: 0.19, w: 0.42 } as const;
   handPos[2] = [
-    { x: 0.19, y: KELDON_BOTTOM_HAND_Y, w: 0.42, h: keldonHandH, rot: 0 },
-    { x: 0.19, y: 0.01, w: 0.42, h: keldonHandH, rot: 0 },
+    { ...wideHand, y: KELDON_BOTTOM_HAND_Y, h: keldonHandH, rot: 0 },
+    { ...wideHand, y: 0.01, h: keldonHandH, rot: 0 },
   ];
   handPos[3] = [
-    { x: 0.19, y: KELDON_BOTTOM_HAND_Y, w: 0.42, h: keldonHandH, rot: 0 },
+    { ...wideHand, y: KELDON_BOTTOM_HAND_Y, h: keldonHandH, rot: 0 },
     { x: 0.011, y: 0.73, w: 0.41, h: keldonHandH, rot: -82 },
     { x: 0.735, y: 0.024, w: 0.41, h: keldonHandH, rot: 82 },
   ];
@@ -441,56 +464,16 @@ export function drawHands(winW: number, winH: number): void {
       });
       globals.layers.UI.add(blackLineGroup);
 
-      // The beginning of the hand is at 0 We want it a little to the left of the first card.
-      let blackLineX: number;
-      switch (numPlayers) {
-        case 2: {
-          blackLineX = -0.0075;
-          break;
-        }
-
-        case 3: {
-          blackLineX = -0.0125;
-          break;
-        }
-
-        case 4: {
-          blackLineX = -0.005;
-          break;
-        }
-
-        case 5: {
-          blackLineX = j === 1 || j === 4 ? -0.01 : -0.001;
-          break;
-        }
-
-        case 6: {
-          blackLineX = -0.0025;
-          break;
-        }
-      }
-
+      // The beginning of the hand is at 0. We want the line a little to the left of the first card.
+      const blackLineXValues: BlackLineX = KELDON_HAND_BLACK_LINE_X[numPlayers];
+      const isSideHand = handValues.rot !== 0;
+      const startX = isSideHand
+        ? (blackLineXValues.sideStart ?? blackLineXValues.start)
+        : blackLineXValues.start;
+      const blackLineX = isHandReversed(j)
+        ? handValues.w + blackLineXValues.reversedStart
+        : startX;
       const blackLineY = 0;
-      if (isHandReversed(j)) {
-        switch (numPlayers) {
-          case 2:
-          case 3: {
-            blackLineX = handValues.w + 0.002;
-            break;
-          }
-
-          case 4: {
-            blackLineX = handValues.w;
-            break;
-          }
-
-          case 5:
-          case 6: {
-            blackLineX = handValues.w - 0.005;
-            break;
-          }
-        }
-      }
       const blackLine = new Konva.Rect({
         x: blackLineX * winW,
         y: blackLineY * winH,
