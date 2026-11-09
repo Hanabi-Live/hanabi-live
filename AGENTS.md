@@ -47,9 +47,9 @@ metadata.
 
 When a change adds, removes, or changes something that players or server
 operators notice, add a one-line entry for it under today's date in
-`docs/changelog.md` (newest first, such as `## November 8th, 2026`), in the same
-commit. Do not add entries for bug fixes, refactors, tests, CI, or other
-internal changes.
+`docs/changelog.md` (dates newest first, such as `## November 8th, 2026`), in
+the same commit. Add the entry at the bottom of that date's list. Do not add
+entries for bug fixes, refactors, tests, CI, or other internal changes.
 
 Keep installation instructions limited to the steps and configuration needed to
 install and run the server. When a command changes, update that command rather
