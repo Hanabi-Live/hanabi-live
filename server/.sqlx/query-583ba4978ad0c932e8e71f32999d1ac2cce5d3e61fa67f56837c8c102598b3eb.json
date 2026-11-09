@@ -1,0 +1,76 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT t.id, t.revision, t.payload, p.part AS \"part?\", p.value AS \"value?\"\n               FROM live_tables t LEFT JOIN live_table_parts p ON p.table_id = t.id\n               WHERE t.id = $1",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Int8",
+        "origin": {
+          "Table": {
+            "table": "live_tables",
+            "name": "id"
+          }
+        }
+      },
+      {
+        "ordinal": 1,
+        "name": "revision",
+        "type_info": "Int8",
+        "origin": {
+          "Table": {
+            "table": "live_tables",
+            "name": "revision"
+          }
+        }
+      },
+      {
+        "ordinal": 2,
+        "name": "payload",
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "live_tables",
+            "name": "payload"
+          }
+        }
+      },
+      {
+        "ordinal": 3,
+        "name": "part?",
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "live_table_parts",
+            "name": "part"
+          }
+        }
+      },
+      {
+        "ordinal": 4,
+        "name": "value?",
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "live_table_parts",
+            "name": "value"
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Int8"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      true,
+      true,
+      true
+    ]
+  },
+  "hash": "583ba4978ad0c932e8e71f32999d1ac2cce5d3e61fa67f56837c8c102598b3eb"
+}

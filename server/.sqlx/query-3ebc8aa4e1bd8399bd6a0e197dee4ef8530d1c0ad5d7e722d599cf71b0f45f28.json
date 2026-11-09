@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "SELECT id, revision, payload AS \"payload!\" FROM live_tables\n             WHERE revision > 0 ORDER BY id",
+  "query": "SELECT t.id, t.revision, t.payload AS \"payload!\", p.part AS \"part?\",\n                      p.value AS \"value?\"\n               FROM live_tables t LEFT JOIN live_table_parts p ON p.table_id = t.id\n               WHERE t.revision > 0 ORDER BY t.id",
   "describe": {
     "columns": [
       {
@@ -35,6 +35,28 @@
             "name": "payload"
           }
         }
+      },
+      {
+        "ordinal": 3,
+        "name": "part?",
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "live_table_parts",
+            "name": "part"
+          }
+        }
+      },
+      {
+        "ordinal": 4,
+        "name": "value?",
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "live_table_parts",
+            "name": "value"
+          }
+        }
       }
     ],
     "parameters": {
@@ -43,8 +65,10 @@
     "nullable": [
       false,
       false,
-      true
+      true,
+      false,
+      false
     ]
   },
-  "hash": "9b744d8664ecc3603c8ddcc49c76e33d688e179e167d1c703009c31fc4bbb441"
+  "hash": "3ebc8aa4e1bd8399bd6a0e197dee4ef8530d1c0ad5d7e722d599cf71b0f45f28"
 }

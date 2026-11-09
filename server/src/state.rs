@@ -97,24 +97,28 @@ pub async fn save_in(
 }
 
 /// The parts of the tables in `ids`, by table.
-async fn parts_of(
-    connection: &mut PgConnection,
-    ids: &[i64],
-) -> Result<std::collections::HashMap<TableId, Vec<(String, String)>>> {
-    let mut parts = std::collections::HashMap::<TableId, Vec<(String, String)>>::new();
-    for row in sqlx::query!(
-        "SELECT table_id, part, value FROM live_table_parts WHERE table_id = ANY($1)",
-        ids
-    )
-    .fetch_all(connection)
-    .await?
-    {
-        parts
-            .entry(TableId(row.table_id.cast_unsigned()))
-            .or_default()
-            .push((row.part, row.value));
+/// Groups the rows of a query that joins each table's head to its parts, ordered by table, into
+/// stored tables. Reading heads and parts in one statement sees one snapshot, so a table's parts
+/// always belong to its head.
+fn stored(
+    rows: impl IntoIterator<Item = (i64, i64, String, Option<String>, Option<String>)>,
+) -> Vec<StoredState> {
+    let mut tables: Vec<StoredState> = Vec::new();
+    for (id, revision, payload, part, value) in rows {
+        let id = TableId(id.cast_unsigned());
+        if tables.last().is_none_or(|table| table.id != id) {
+            tables.push(StoredState {
+                id,
+                revision,
+                payload,
+                parts: Vec::new(),
+            });
+        }
+        if let (Some(part), Some(value), Some(table)) = (part, value, tables.last_mut()) {
+            table.parts.push((part, value));
+        }
     }
-    Ok(parts)
+    tables
 }
 
 /// Removes a table in a transaction from `LiveState::begin`, if its revision is still `expected`.
@@ -311,24 +315,25 @@ impl LiveState {
     #[cfg(test)]
     pub async fn get(&self, id: TableId) -> Result<Option<StoredState>> {
         self.check()?;
-        let key = table_id(id)?;
-        // One transaction reads the head and the parts of the same revision.
-        let mut transaction = self.pool.begin().await?;
-        let row = sqlx::query!(
-            "SELECT revision, payload FROM live_tables WHERE id = $1",
-            key
+        let rows = sqlx::query!(
+            r#"SELECT t.id, t.revision, t.payload, p.part AS "part?", p.value AS "value?"
+               FROM live_tables t LEFT JOIN live_table_parts p ON p.table_id = t.id
+               WHERE t.id = $1"#,
+            table_id(id)?
         )
-        .fetch_optional(&mut *transaction)
+        .fetch_all(&self.pool)
         .await?;
-        let mut parts = parts_of(&mut transaction, &[key]).await?;
-        transaction.commit().await?;
         self.check()?;
-        Ok(row.map(|row| StoredState {
-            id,
-            revision: row.revision,
-            payload: row.payload.unwrap_or_default(),
-            parts: parts.remove(&id).unwrap_or_default(),
+        Ok(stored(rows.into_iter().map(|row| {
+            (
+                row.id,
+                row.revision,
+                row.payload.unwrap_or_default(),
+                row.part,
+                row.value,
+            )
         }))
+        .pop())
     }
 
     /// The saved tables. Reservations that an earlier owner left unused are removed.
@@ -341,25 +346,17 @@ impl LiveState {
         .execute(&mut *transaction)
         .await?;
         let rows = sqlx::query!(
-            "SELECT id, revision, payload AS \"payload!\" FROM live_tables
-             WHERE revision > 0 ORDER BY id"
+            r#"SELECT t.id, t.revision, t.payload AS "payload!", p.part AS "part?",
+                      p.value AS "value?"
+               FROM live_tables t LEFT JOIN live_table_parts p ON p.table_id = t.id
+               WHERE t.revision > 0 ORDER BY t.id"#
         )
         .fetch_all(&mut *transaction)
         .await?;
-        let ids = rows.iter().map(|row| row.id).collect::<Vec<_>>();
-        let mut parts = parts_of(&mut transaction, &ids).await?;
         self.commit(transaction).await?;
-        Ok(rows
-            .into_iter()
-            .map(|row| StoredState {
-                id: TableId(row.id.cast_unsigned()),
-                revision: row.revision,
-                payload: row.payload,
-                parts: parts
-                    .remove(&TableId(row.id.cast_unsigned()))
-                    .unwrap_or_default(),
-            })
-            .collect())
+        Ok(stored(rows.into_iter().map(|row| {
+            (row.id, row.revision, row.payload, row.part, row.value)
+        })))
     }
 
     /// Takes ownership of a test database's live tables.
