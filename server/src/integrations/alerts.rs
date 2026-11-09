@@ -10,9 +10,6 @@ use std::{
 use tokio::sync::mpsc;
 use tokio_util::{sync::CancellationToken, task::TaskTracker};
 
-/// Routine failures that need no alert. Commands fail with this code while the server restarts.
-const IGNORED_CODES: [&str; 1] = ["server_draining"];
-
 /// Repeats of the same failure are counted instead of posted until this much time has passed.
 const REPEAT_INTERVAL: Duration = Duration::from_mins(10);
 
@@ -33,9 +30,9 @@ struct Throttle {
 }
 
 impl Throttle {
-    /// Returns the message to post, or `None` for a routine failure or a recent repeat.
+    /// Returns the message to post, or `None` for a refusal or a recent repeat.
     fn message(&mut self, report: &Report, release: &str, now: Instant) -> Option<String> {
-        if IGNORED_CODES.contains(&report.code) {
+        if !report.is_failure() {
             return None;
         }
         let key = (report.operation.clone(), report.code);
@@ -149,17 +146,25 @@ mod tests {
     }
 
     #[test]
-    fn routine_failures_are_not_posted() {
-        let draining = Report::known(
-            "Command note",
-            "server_draining",
-            "The server is not accepting new commands during startup or maintenance.",
-            axum::http::StatusCode::SERVICE_UNAVAILABLE,
-        );
-        assert!(
-            Throttle::default()
-                .message(&draining, "v1", Instant::now())
-                .is_none()
-        );
+    fn refusals_are_not_posted() {
+        for code in [
+            crate::errors::PASSWORD_RATE_LIMITED,
+            crate::errors::SERVER_DRAINING,
+            crate::errors::SESSION_REPLACED,
+        ] {
+            let refusal = Report::known(
+                "Command note",
+                code,
+                "The server refused this as intended.",
+                axum::http::StatusCode::SERVICE_UNAVAILABLE,
+            );
+            assert!(!refusal.is_failure(), "{code}");
+            assert!(
+                Throttle::default()
+                    .message(&refusal, "v1", Instant::now())
+                    .is_none(),
+                "{code}"
+            );
+        }
     }
 }

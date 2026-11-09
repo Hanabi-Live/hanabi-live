@@ -87,7 +87,7 @@ async fn guard(State(control): State<Arc<Control>>, request: Request, next: Next
         {
             crate::errors::Report::known(
                 crate::errors::http_operation("Localhost operation"),
-                "server_draining",
+                crate::errors::SERVER_DRAINING,
                 "The server is draining for maintenance. Wait for the restart to complete.",
                 StatusCode::SERVICE_UNAVAILABLE,
             )

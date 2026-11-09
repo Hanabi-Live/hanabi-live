@@ -29,6 +29,16 @@ tokio::task_local! {
     static HTTP_OPERATION: String;
 }
 
+/// The code of a password check that waits for earlier ones from the same address.
+pub const PASSWORD_RATE_LIMITED: &str = "password_rate_limited";
+/// The code of a command or request that arrives while the server starts or drains.
+pub const SERVER_DRAINING: &str = "server_draining";
+/// The code that tells a connection that the same account connected somewhere else.
+pub const SESSION_REPLACED: &str = "session_replaced";
+/// Codes that report the server working as intended, such as refusing work during a restart, so
+/// they are neither logged as failures nor posted as alerts.
+const REFUSALS: [&str; 3] = [PASSWORD_RATE_LIMITED, SERVER_DRAINING, SESSION_REPLACED];
+
 pub async fn http_context(request: Request, next: Next) -> Response {
     let path = request
         .extensions()
@@ -185,7 +195,7 @@ impl Report {
             )
         } else if let Some(limited) = error.downcast_ref::<crate::accounts::TooMuchPasswordWork>() {
             (
-                "password_rate_limited",
+                PASSWORD_RATE_LIMITED,
                 limited.to_string(),
                 StatusCode::TOO_MANY_REQUESTS,
             )
@@ -263,9 +273,13 @@ impl Report {
         )
     }
 
+    /// Whether this reports a failure, rather than a refusal of the server working as intended.
+    pub fn is_failure(&self) -> bool {
+        !REFUSALS.contains(&self.code)
+    }
+
     pub fn log(&self) {
-        // Refusals are logged where the limit is checked, because they are not failures.
-        if self.code == "password_rate_limited" {
+        if !self.is_failure() {
             return;
         }
         eprintln!(

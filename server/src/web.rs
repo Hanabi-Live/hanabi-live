@@ -764,7 +764,7 @@ async fn connection(
         if writer_session.was_superseded() {
             let report = crate::errors::Report::known(
                 "Keeping the live connection",
-                "session_replaced",
+                crate::errors::SESSION_REPLACED,
                 "This account connected in another browser tab or window. Reconnect here only if you want to move the connection back.",
                 StatusCode::CONFLICT,
             );
@@ -963,7 +963,7 @@ async fn dispatch(app: &Arc<App>, session: Arc<Session>, input: &str) -> Result<
     }
     if !app.accepting.load(Ordering::Acquire) {
         return Err(crate::errors::Fault::new(
-            "server_draining",
+            crate::errors::SERVER_DRAINING,
             "The server is not accepting new commands during startup or maintenance.",
             StatusCode::SERVICE_UNAVAILABLE,
         )
