@@ -239,7 +239,15 @@ impl TableActor {
         self.publish(e).await
     }
     pub(super) async fn leave(&mut self, session: Arc<Session>, remove: bool) -> Result<()> {
-        ensure!(self.attending(&session), "You are not attending this table");
+        // Players can leave a pregame that they returned to the lobby from, such as to join another.
+        let attending = self.attending(&session);
+        ensure!(
+            attending
+                || (remove
+                    && matches!(self.table.phase, Phase::Pregame { .. })
+                    && self.table.players().iter().any(|p| p.id == session.user)),
+            "You are not attending this table"
+        );
         let mut next = self.candidate();
         let mut notices = vec![];
         next.shadows.remove(&session.user);
@@ -269,18 +277,23 @@ impl TableActor {
             }
         }
         self.persist(next).await?;
-        self.attendees.remove(&session.user);
-        let mut e = self.effects();
-        e.statuses.push((session.clone(), Status::Lobby, None));
-        e.messages.push((
-            session,
-            frame(
-                hanabi_protocol::server::LEFT,
-                TableRequest {
-                    table_id: TableId(self.table.id),
-                },
-            ),
-        ));
+        let mut e = if attending {
+            self.attendees.remove(&session.user);
+            let mut e = self.effects();
+            e.statuses.push((session.clone(), Status::Lobby, None));
+            e.messages.push((
+                session,
+                frame(
+                    hanabi_protocol::server::LEFT,
+                    TableRequest {
+                        table_id: TableId(self.table.id),
+                    },
+                ),
+            ));
+            e
+        } else {
+            self.effects()
+        };
         if matches!(self.table.phase, Phase::Pregame { .. }) {
             self.pregame_messages(&mut e);
         }

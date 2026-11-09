@@ -1575,6 +1575,38 @@ async fn pregame_announces_spectators() -> Result<()> {
 }
 
 #[tokio::test]
+async fn spectators_can_join_after_leaving_a_pregame_they_returned_to_the_lobby_from() -> Result<()>
+{
+    let Some(mut h) = Harness::new(&["Alice", "Bob"]).await? else {
+        return Ok(());
+    };
+    let result = async {
+        let old = h.create(1, "Old", json!({})).await?;
+        h.send(1, "tableUnattend", json!({"tableID":old})).await?;
+        let new = h.create(0, "New", json!({})).await?;
+        h.send(1, "tableSpectate", json!({"tableID":new})).await?;
+        // The "Join Game" button leaves the other table first.
+        h.send(1, "tableLeave", json!({"tableID":old})).await?;
+        h.send(1, "tableJoin", json!({"tableID":new})).await?;
+        let (table, _) = h.snapshot(new).await?;
+        ensure!(
+            table
+                .players()
+                .iter()
+                .map(|p| p.name.as_str())
+                .collect::<Vec<_>>()
+                == ["Alice", "Bob"],
+            "Bob did not join the new table"
+        );
+        Ok::<(), anyhow::Error>(())
+    }
+    .await;
+    let cleanup = h.close().await;
+    result?;
+    cleanup
+}
+
+#[tokio::test]
 async fn pregame_history_survives_join_return_and_actor_recovery() -> Result<()> {
     let Some(mut h) = Harness::new(&["Alice", "Bob", "Outsider"]).await? else {
         return Ok(());

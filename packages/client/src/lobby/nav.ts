@@ -163,7 +163,6 @@ export function init(): void {
         return;
       }
       globals.conn!.send("tableLeave", { tableID: oldTable.id });
-      globals.conn!.send("tableUnattend", { tableID: globals.tableID });
     }
     tablesDraw.tableJoin(table);
   });
