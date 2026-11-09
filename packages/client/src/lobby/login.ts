@@ -12,6 +12,10 @@ import * as KeyCode from "keycode-js";
 import type { z } from "zod";
 import { globals } from "../Globals";
 import { FADE_TIME_MS, HTTP_STATUS } from "../constants";
+import {
+  isOutdatedClientResponse,
+  reloadOutdatedClient,
+} from "../outdatedClient";
 import { getHTMLElement, getHTMLInputElement, getURLFromPath } from "../utils";
 import { websocketInit } from "../websocketInit";
 import { TEST_COOKIE_PATH, checkCookieWithRetry } from "./cookieProbe";
@@ -124,9 +128,12 @@ function send(
 
   console.log(`Sending a login request to: ${url}`);
   requestLogin(url, data)
-    .then((body) => {
+    .then((login) => {
+      if (login === undefined) {
+        return;
+      }
       // We successfully got a cookie; attempt to establish a WebSocket connection.
-      setTabAccountFromLogin(body);
+      setTabAccountFromLogin(login.body);
       websocketInit();
     })
     .catch((error: unknown) => {
@@ -134,18 +141,22 @@ function send(
     });
 }
 
+/** Resolves to undefined when the page is reloading to update an outdated client. */
 async function requestLogin(
   url: string,
   data: z.output<typeof loginRequestSchema>,
-): Promise<unknown> {
+): Promise<{ body: unknown } | undefined> {
   const response = await fetch(url, {
     method: "POST",
     body: new URLSearchParams(data),
   });
   if (!response.ok) {
+    if ((await isOutdatedClientResponse(response)) && reloadOutdatedClient()) {
+      return undefined;
+    }
     throw await httpError(response, "Logging in");
   }
-  return await response.json();
+  return { body: await response.json() };
 }
 
 export function automaticLogin(): void {

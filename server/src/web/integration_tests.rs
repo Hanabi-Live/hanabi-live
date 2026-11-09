@@ -232,7 +232,11 @@ async fn websocket_checks_client_version_with_existing_cookie_postgres() {
         let mut socket = connect_query(&fixture, &cookie, query).await;
         tokio::time::timeout(Duration::from_secs(5), async {
             let WireMessage::Text(text) = socket.next().await.unwrap().unwrap() else {
-                panic!("Expected version error before any bootstrap messages");
+                panic!("Expected a version rejection before any bootstrap messages");
+            };
+            assert_eq!(text.as_str(), "outdatedClient {}");
+            let WireMessage::Text(text) = socket.next().await.unwrap().unwrap() else {
+                panic!("Expected a version error after the version rejection");
             };
             let body = text.strip_prefix("error ").unwrap();
             let payload: Value = serde_json::from_str(body).unwrap();

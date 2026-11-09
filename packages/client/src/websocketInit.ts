@@ -21,6 +21,7 @@ import { lobbyCommands } from "./lobby/lobbyCommands";
 import { Screen } from "./lobby/types/Screen";
 import { usersCleared } from "./lobby/users/usersSlice";
 import * as modals from "./modals";
+import { reloadOutdatedClient } from "./outdatedClient";
 import { ReconnectBackoff } from "./reconnect";
 import { store } from "./store";
 import { escapeHtml } from "./utils";
@@ -233,6 +234,12 @@ function openConnection(isReconnect: boolean) {
       ),
     );
   };
+  conn.on("outdatedClient", () => {
+    // Otherwise, the error that the server sends next explains how to update.
+    if (activeConnection === conn && !stopped && reloadOutdatedClient()) {
+      stopRecovery();
+    }
+  });
   conn.on("restart", ({ message }) => {
     if (activeConnection === conn) {
       conn.setReady(false);

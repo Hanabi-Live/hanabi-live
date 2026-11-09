@@ -21,6 +21,7 @@ export const SECONDS_PER_MINUTE = 60;
 export const TYPING_TIMEOUT_MS = 2000;
 export const MAX_SEED_LENGTH = 32;
 export const DEFAULT_TABLE_NAME_SUFFIX = "'s table";
+export const OUTDATED_CLIENT_CODE = "outdated_client";
 
 /**
  * The kind of a turn that a player takes, in the `action` command.
@@ -1322,6 +1323,7 @@ export const SERVER_COMMAND_SCHEMAS = {
   note: noteSchema,
   noteList: noteListSchema,
   noteListPlayer: noteListPlayerSchema,
+  outdatedClient: emptySchema,
   pause: pauseSchema,
   replayEfficiencyMod: replayEfficiencyModSchema,
   replayIndicator: replayIndicatorSchema,

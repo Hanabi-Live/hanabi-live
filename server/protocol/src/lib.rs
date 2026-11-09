@@ -35,6 +35,8 @@ pub const DEFAULT_MAX_PLAYERS: u8 = 5;
 pub const DEFAULT_VARIANT_NAME: &str = "No Variant";
 /// What follows the creator's name to name a table whose creator did not choose a name.
 pub const DEFAULT_TABLE_NAME_SUFFIX: &str = "'s table";
+/// The `code` of the login error for a client from a different release, which reloads the page.
+pub const OUTDATED_CLIENT_CODE: &str = "outdated_client";
 /// The most suits a variant can have.
 pub const MAX_SUITS: usize = 6;
 /// The lowest rank.

@@ -151,6 +151,8 @@ async fn login_requires_matching_release_sha_or_bot_postgres() {
         assert_eq!(status, StatusCode::UNAUTHORIZED);
         assert!(body.contains("outdated version"));
         assert!(body.contains(&version));
+        let payload: Value = serde_json::from_str(&body).unwrap();
+        assert_eq!(payload["code"], hanabi_protocol::OUTDATED_CLIENT_CODE);
     }
     db.close().await;
 }

@@ -115,6 +115,7 @@ macro_rules! server_contracts {
             USER_INACTIVE "userInactive" => UserInactive;
             FRIENDS "friends" => Friends;
             ERROR "error" => ErrorNotice;
+            OUTDATED_CLIENT "outdatedClient" => Empty;
             WARNING "warning" => Warning;
             SOUND_LOBBY "soundLobby" => SoundLobby;
             WELCOME "welcome" => Welcome;

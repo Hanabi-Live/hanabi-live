@@ -2,6 +2,7 @@ import { VERSION } from "@hanabi-live/data";
 import type { Clock } from "@sinonjs/fake-timers";
 import { install } from "@sinonjs/fake-timers";
 import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
+import { LocalStorageStub } from "./testLocalStorage";
 
 let clock: Clock;
 const originalFetch = globalThis.fetch;
@@ -36,6 +37,7 @@ const mockedGlobalNames = [
   "navigator",
   "document",
   "location",
+  "sessionStorage",
   "addEventListener",
   "$",
 ] as const;
@@ -44,6 +46,7 @@ const savedGlobalDescriptors = new Map<
   PropertyDescriptor | undefined
 >();
 const sockets: FakeSocket[] = [];
+const reload = vi.fn();
 
 class MockSocket {
   static readonly CONNECTING = 0;
@@ -95,6 +98,7 @@ beforeEach(() => {
     ],
   });
   sockets.length = 0;
+  reload.mockClear();
 
   globalThis.WebSocket = MockSocket as unknown as typeof WebSocket;
   globalThis.fetch = Object.assign(
@@ -118,8 +122,12 @@ beforeEach(() => {
         hostname: "localhost",
         protocol: "https:",
         port: "",
-        reload: vi.fn(),
+        reload,
       },
+    },
+    sessionStorage: {
+      configurable: true,
+      value: new LocalStorageStub(),
     },
     addEventListener: {
       configurable: true,
@@ -224,6 +232,23 @@ describe("initial WebSocket handshake watchdog", () => {
     expect(commands.get("error")).toHaveBeenCalledWith(error);
     expect(sockets).toHaveLength(1);
     expect(globalThis.fetch).not.toHaveBeenCalled();
+  });
+
+  test("reloads an outdated client once per client version", async () => {
+    websocketInit();
+    sockets[0]?.emit("open");
+    globals.conn?.callbacks.get("outdatedClient")?.({} as never);
+    sockets[0]?.emit("close");
+
+    await clock.tickAsync(30_000);
+    expect(reload).toHaveBeenCalledTimes(1);
+    expect(sockets).toHaveLength(1);
+
+    // A reload that served the same client again must not repeat forever.
+    websocketInit();
+    sockets[1]?.emit("open");
+    globals.conn?.callbacks.get("outdatedClient")?.({} as never);
+    expect(reload).toHaveBeenCalledTimes(1);
   });
 
   test("recovers a socket opened without a welcome", async () => {

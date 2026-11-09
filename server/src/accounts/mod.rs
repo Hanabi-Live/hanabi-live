@@ -277,7 +277,11 @@ async fn login_inner(state: &Accounts, ip: &str, input: LoginRequest) -> Result<
         Err(message) => return Ok(unauthorized(message)),
     };
     if let Err(message) = validate_client_version(&input.version, &state.config.version) {
-        return Ok(unauthorized(message));
+        let error = ApiError {
+            code: Some(hanabi_protocol::OUTDATED_CLIENT_CODE.into()),
+            ..ApiError::new(message)
+        };
+        return Ok((StatusCode::UNAUTHORIZED, Json(error)).into_response());
     }
     let mut attempt = match state.limits.begin(ip) {
         Ok(attempt) => attempt,

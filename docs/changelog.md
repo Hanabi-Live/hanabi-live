@@ -9,6 +9,8 @@ of the repository.
 
 ## November 9th, 2026
 
+- After the site updates, the page now reloads automatically instead of asking
+  for a hard refresh.
 - The "New Game" screen now has a "Custom Seed" option for playing a specific
   deal, replacing the `!seed` table name.
 - Misplayed cards now launch like a dud firework, explode on the strike tracker,
