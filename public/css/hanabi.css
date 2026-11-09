@@ -731,44 +731,167 @@ table td {
 }
 
 /*
-  Create Game modal
+  Create Game screen
 */
-.create-game-icon {
-  display: inline-block;
-  width: 2em;
+/* The lobby stretches its sections to full height; this one fits its content instead. */
+#lobby #lobby-create-game {
+  height: auto;
+  margin: 0 auto;
+  max-width: 46em;
+  max-height: 100%;
+  overflow-y: auto;
+}
+
+#create-game-title {
+  margin-bottom: 1em;
+}
+
+#create-game-form .fa-fw {
+  margin-right: 0.6em;
+}
+
+/* Most games do not use the extra options, so they start out hidden behind this button. */
+.create-game-extra-options-toggle {
+  margin: 1.75em 0;
   text-align: center;
 }
 
-.create-game-info-icon {
-  position: relative;
-  top: 0.35em;
+#create-game-extra-options {
+  margin-bottom: 1.25em;
 }
 
-.create-game-text-label {
-  /* Annoyingly, the text does not line up with the checkbox */
-  position: relative;
-  top: 0.25em;
+/* A label beside its control. */
+.create-game-field {
+  align-items: center;
+  display: grid;
+  gap: 0.4em 1.5em;
+  grid-template-columns: 9.5em minmax(0, 1fr);
+  margin-bottom: 1em;
 }
 
+/* The password cannot be changed after the table is created. */
+.create-game-field.hidden {
+  display: none;
+}
+
+.create-game-field > label,
+.create-game-label label {
+  font-size: 1em;
+  margin: 0;
+}
+
+.create-game-label {
+  align-items: center;
+  display: flex;
+  gap: 0.6em;
+}
+
+.create-game-variant {
+  align-items: center;
+  display: flex;
+  gap: 0.9em;
+}
+
+.create-game-variant-input {
+  flex: 1;
+  min-width: 0;
+  position: relative;
+}
+
+#create-game-variant-dropdown2 {
+  padding-right: 2.75em;
+}
+
+#create-game-variant-dropdown2-icon {
+  pointer-events: none; /* We want to "click through" this element */
+  position: absolute;
+  right: 1em;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+#dice {
+  color: green;
+  cursor: pointer;
+  font-size: 1.2em;
+}
+
+#dice:hover {
+  color: #00cc00;
+}
+
+/* The checkbox draws its box in front of the label text, so center the text on the box. */
+.create-game-check label {
+  line-height: 1.8em;
+  margin: 0;
+  padding-right: 0;
+}
+
+/* The checkbox lines up with the inputs, below their captions. */
+.create-game-timed {
+  align-items: flex-end;
+  display: flex;
+  gap: 1em;
+}
+
+/* Not a flex container, so that the theme's hidden checkbox can float. */
+.create-game-timed .create-game-check {
+  height: 3em;
+  padding-top: 0.6em;
+}
+
+/* Center the "Timed" label on the inputs rather than on their captions. */
 #create-game-timed-row {
-  min-height: 3em;
+  align-items: end;
 }
 
-#create-game-timed-option-1,
-#create-game-timed-option-3 {
-  line-height: 1.2em;
+#create-game-timed-row > label {
+  line-height: 3em;
 }
 
-#create-game-timed-label {
-  /* We need to move the "Timed" label even more */
-  position: relative;
-  top: 0.75em;
+/* This label has no text, so give it the size of the box that it draws. */
+.create-game-timed .create-game-check label {
+  display: block;
+  height: 1.8em;
+  padding: 0;
+  width: 1.8em;
 }
 
-#create-game-timed-container {
-  /* We need to move this down so that it is centered with the input elements */
-  position: relative;
-  top: 0.5em;
+.create-game-timed-inputs {
+  column-gap: 1em;
+  flex: 1;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  row-gap: 0.25em;
+}
+
+.create-game-timed-inputs label {
+  font-size: 0.85em;
+  margin: 0;
+}
+
+.create-game-checks {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(17em, 1fr));
+  column-gap: 2em;
+  margin: 0;
+  padding: 0;
+}
+
+.create-game-checks li {
+  align-items: center;
+  display: flex;
+  gap: 0.6em;
+  margin: 0;
+  min-height: 2.9em;
+  padding: 0;
+}
+
+@media screen and (max-width: 600px) {
+  /* Put each label above its control. */
+  .create-game-field {
+    grid-template-columns: minmax(0, 1fr);
+  }
 }
 
 #create-game-submit,
@@ -785,29 +908,6 @@ input::-webkit-list-button, /* iOS */
 input::-webkit-calendar-picker-indicator /* Chrome */ {
   /* This needs to be important since Chrome 91 */
   display: none !important;
-}
-
-#create-game-variant-dropdown2 {
-  padding-right: 2.25em;
-  float: left;
-}
-
-#create-game-variant-dropdown2-icon {
-  position: relative;
-  right: 1.8em;
-  pointer-events: none; /* We want to "click through" this element */
-}
-
-#dice {
-  display: inline;
-  color: green;
-  position: relative;
-  left: 0.2em;
-}
-
-#dice:hover {
-  color: #00cc00;
-  cursor: pointer;
 }
 
 /*
@@ -1008,20 +1108,6 @@ html:not([data-theme="dark"]) .modal :is(input, select, textarea) {
 }
 
 @media screen and (max-width: 510px) {
-  #create-game-timed-label {
-    width: 75%;
-    min-height: 3em;
-  }
-
-  #create-game-timed-container {
-    width: 25%;
-  }
-
-  #create-game-timed-row > .col-2 {
-    width: 50%;
-    margin-bottom: 0.5em;
-  }
-
   .modal,
   .modal-message {
     left: 0;

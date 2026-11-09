@@ -3,18 +3,29 @@
 import * as KeyCode from "keycode-js";
 import { globals } from "../Globals";
 import { isModalVisible } from "../modals";
+import * as createGame from "./createGame";
 import { Screen } from "./types/Screen";
 
 export function lobbyKeyboardInit(): void {
   $(document).keydown((event) => {
-    // On the "Create Game" tooltip, submit the form if enter is pressed.
-    if (
-      event.which === KeyCode.KEY_RETURN
-      && $("#create-game-modal-title").is(":visible")
-      && !$(".ss-search").is(":visible") // Make an exception if the variant dropdown is open
-    ) {
-      event.preventDefault();
-      clickElement("#create-game-submit");
+    // On the "Create Game" screen, submit the form if enter is pressed (unless it activates a
+    // focused button or link), and only allow returning otherwise.
+    if (createGame.isShown() && !isModalVisible()) {
+      if (
+        event.which === KeyCode.KEY_RETURN
+        && !(
+          document.activeElement instanceof HTMLButtonElement
+          || document.activeElement instanceof HTMLAnchorElement
+        )
+      ) {
+        event.preventDefault();
+        clickElement("#create-game-submit");
+      } else if (
+        event.which === KeyCode.KEY_ESCAPE
+        || (event.altKey && event.which === KeyCode.KEY_R)
+      ) {
+        clickElement("#nav-buttons-create-game-return");
+      }
       return;
     }
 

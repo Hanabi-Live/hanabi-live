@@ -24,7 +24,7 @@ export class Globals {
   totalGames: number | null = null;
   muted = false;
 
-  /** Contains the settings for the "Settings" tooltip and the "Create Game" tooltip. */
+  /** Contains the settings for the "Settings" modal and the "Create Game" screen. */
   settings = defaultSettings;
 
   // ----------------------------------------------------------------

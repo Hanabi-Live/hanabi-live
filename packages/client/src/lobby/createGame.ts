@@ -1,4 +1,4 @@
-// The "Create Game" nav button.
+// The "Create Game" screen, which also changes the options of an unstarted game.
 
 import type { Settings } from "@hanabi-live/data";
 import {
@@ -21,11 +21,10 @@ import {
   parseFloatSafe,
   parseIntSafe,
 } from "complete-common";
-import * as KeyCode from "keycode-js";
 import { globals } from "../Globals";
 import { DIMMED_OPACITY, LOCAL_STORAGE_KEY } from "../constants";
-import * as modals from "../modals";
 import { getHTMLInputElement } from "../utils";
+import * as nav from "./nav";
 import { Screen } from "./types/Screen";
 
 const BASIC_VARIANT_NAMES = [
@@ -36,6 +35,17 @@ const BASIC_VARIANT_NAMES = [
 ] as const;
 
 const BASIC_VARIANT_NAMES_SET = new ReadonlySet<string>(BASIC_VARIANT_NAMES);
+
+/** The checkboxes under "Extra Options", which stay collapsed unless one of them is selected. */
+const EXTRA_OPTIONS = [
+  "createTableSpeedrun",
+  "createTableDeckPlays",
+  "createTableEmptyClues",
+  "createTableOneExtraCard",
+  "createTableOneLessCard",
+  "createTableAllOrNothing",
+  "createTableDetrimentalCharacters",
+] as const satisfies ReadonlyArray<keyof Settings>;
 
 let dropdown1: JQuery<Element>;
 let dropdown2: JQuery<Element>;
@@ -93,22 +103,17 @@ export function init(): void {
   });
 
   $("#createTableSpeedrun").on("change", () => {
-    if ($("#createTableSpeedrun").prop("checked") === true) {
-      $("#create-game-timed-row").hide();
-      $("#create-game-timed-row-spacing").hide();
-    } else {
-      $("#create-game-timed-row").show();
-      $("#create-game-timed-row-spacing").show();
-    }
+    $("#create-game-timed-row").toggle(
+      $("#createTableSpeedrun").prop("checked") !== true,
+    );
 
     // Remember the new setting.
     getCheckbox("createTableSpeedrun");
   });
 
-  // The "Show Extra Options" button.
   $("#create-game-show-extra-options").on("click", () => {
-    $("#create-game-extra-options").show();
-    $("#create-game-show-extra-options-row").hide();
+    const button = $("#create-game-show-extra-options");
+    showExtraOptions(button.attr("aria-expanded") !== "true");
   });
 
   // Disable some checkboxes if a checkbox is checked.
@@ -169,14 +174,6 @@ export function init(): void {
     getCheckbox("createTableDetrimentalCharacters");
   });
 
-  // Pressing enter anywhere will submit the form.
-  $("#create-game-tooltip").on("keypress", (event) => {
-    if (event.which === KeyCode.KEY_RETURN) {
-      event.preventDefault();
-      $("#create-game-submit").trigger("click");
-    }
-  });
-
   $("#create-game-submit").on("click", submit);
 }
 
@@ -232,7 +229,7 @@ function firstVariantDropdownInit() {
 }
 
 function secondVariantDropdownInit() {
-  // Populate the full datalist/dropdown in the "Create Game" tooltip.
+  // Populate the full datalist/dropdown on the "Create Game" screen.
   for (const variantName of VARIANT_NAMES) {
     const option = new Option(variantName, variantName);
     $("#create-game-variant-dropdown2-list").append($(option));
@@ -344,8 +341,7 @@ function submit() {
     detrimentalCharacters: getCheckbox("createTableDetrimentalCharacters"),
   };
 
-  // Fast close modals first - the server might reply with a modal warning.
-  modals.closeModals(true);
+  hide();
 
   if (isNew) {
     globals.conn!.send("tableCreate", {
@@ -454,9 +450,45 @@ export function checkSettingChanged<T extends keyof Settings>(
   }
 }
 
-// This function is executed every time the "Create Game" button is clicked (after the tooltip is
-// added to the DOM).
-export function ready(): boolean {
+let shown = false;
+
+export function isShown(): boolean {
+  return shown;
+}
+
+/**
+ * Shows the screen from the lobby (to create a game) or the pre-game screen (to change options).
+ */
+export function show(): void {
+  ready();
+  shown = true;
+
+  $("#lobby-history").hide();
+  $("#lobby-history-other-scores").hide();
+  $("#lobby-create-game").show();
+  nav.showLobbyHalves(false);
+  $("#nav-buttons-create-game-return-target").text(
+    globals.currentScreen === Screen.PreGame ? "Game" : "Lobby",
+  );
+  nav.show("create-game");
+
+  $("#create-game-variant-dropdown1").trigger("focus");
+}
+
+/** Returns to the lobby or the pre-game screen. */
+export function hide(): void {
+  if (!shown) {
+    return;
+  }
+  shown = false;
+
+  $("#lobby-create-game").hide();
+  nav.showLobbyHalves(true);
+  nav.show(globals.currentScreen === Screen.PreGame ? "pregame" : "lobby");
+}
+
+/** Fills in the form for a new game or for the options of the current game. */
+export function ready(): void {
   // Change the UI if we are in a pre-game screen.
   let dialogTitle = "Create a New Game";
   let buttonTitle = "Create";
@@ -488,7 +520,7 @@ export function ready(): boolean {
   }
 
   // Set UI Elements and values.
-  $("#create-game-modal-title").text(dialogTitle);
+  $("#create-game-title").text(dialogTitle);
   $("#create-game-submit").text(buttonTitle);
   $("#createTableName").val(gameName);
 
@@ -525,24 +557,23 @@ export function ready(): boolean {
   }
   $("#createTableMaxPlayers").val(maxPlayers);
 
-  // Hide the extra options if we do not have any selected.
-  if (
-    globals.settings.createTableSpeedrun
-    || globals.settings.createTableDeckPlays
-    || globals.settings.createTableEmptyClues
-    || globals.settings.createTableOneExtraCard
-    || globals.settings.createTableOneLessCard
-    || globals.settings.createTableAllOrNothing
-    || globals.settings.createTableDetrimentalCharacters
-  ) {
-    $("#create-game-extra-options").show();
-    $("#create-game-show-extra-options-row").hide();
-  } else {
-    $("#create-game-extra-options").hide();
-    $("#create-game-show-extra-options-row").show();
-  }
+  // Only show the extra options when one of them is selected or when the user asks for them.
+  showExtraOptions(
+    EXTRA_OPTIONS.some((setting) => getHTMLInputElement(`#${setting}`).checked),
+  );
+}
 
-  return true;
+function showExtraOptions(visible: boolean) {
+  $("#create-game-extra-options").toggleClass("hidden", !visible);
+  const button = $("#create-game-show-extra-options");
+  button.attr("aria-expanded", visible.toString());
+  button
+    .find("i")
+    .toggleClass("fa-plus", !visible)
+    .toggleClass("fa-minus", visible);
+  button
+    .find("span")
+    .text(visible ? "Hide Extra Options" : "Show Extra Options");
 }
 
 function readyVariant(value: string) {

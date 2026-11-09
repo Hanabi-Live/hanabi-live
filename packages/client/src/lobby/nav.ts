@@ -12,21 +12,17 @@ import * as watchReplay from "./watchReplay";
 
 export function init(): void {
   // The "Create Game" and "Change Options" buttons.
-  initModal(
-    "#nav-buttons-lobby-create-game",
-    "#create-game-modal",
-    createGame.ready,
-    undefined,
-    "#create-game-variant-dropdown1",
+  $("#nav-buttons-lobby-create-game, #nav-buttons-pregame-change-options").on(
+    "click",
+    () => {
+      createGame.show();
+    },
   );
 
-  initModal(
-    "#nav-buttons-pregame-change-options",
-    "#create-game-modal",
-    createGame.ready,
-    undefined,
-    "#create-game-variant-dropdown1",
-  );
+  // The "Return to Lobby" or "Return to Game" button (from the "Create Game" screen).
+  $("#nav-buttons-create-game-return").on("click", () => {
+    createGame.hide();
+  });
 
   // The "Show History" button.
   $("#nav-buttons-lobby-history").on("click", () => {
@@ -243,8 +239,26 @@ function watchSpecificReplayFocus() {
   });
 }
 
+/** Shows or hides the lobby's tables, chat, and online users, which full-page screens replace. */
+export function showLobbyHalves(visible: boolean): void {
+  for (const selector of [
+    "#lobby-top-half",
+    "#lobby-separator",
+    "#lobby-bottom-half",
+    "#lobby-small-screen-buttons",
+  ]) {
+    $(selector).toggleClass("hidden", !visible);
+  }
+}
+
 export function show(target: string): void {
-  const navTypes = ["lobby", "pregame", "history", "history-other-scores"];
+  const navTypes = [
+    "lobby",
+    "pregame",
+    "create-game",
+    "history",
+    "history-other-scores",
+  ];
   for (const navType of navTypes) {
     $(`#nav-buttons-${navType}`).hide();
   }
