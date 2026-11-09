@@ -1,6 +1,8 @@
 use crate::{
     actors::{HubCommand, TableCommand},
+    integrations::IntegrationSlot,
     operations::Operation,
+    store::Store,
     web::App,
 };
 use anyhow::{Context, Result, ensure};
@@ -9,13 +11,130 @@ use sqlx::PgPool;
 use std::{
     path::PathBuf,
     sync::{
-        Arc, OnceLock, Weak,
-        atomic::{AtomicBool, Ordering},
+        Arc,
+        atomic::{AtomicU8, Ordering},
     },
     time::Instant,
 };
-use tokio::sync::{RwLock, mpsc, oneshot};
-use tokio_util::task::TaskTracker;
+use tokio::sync::{OwnedRwLockReadGuard, RwLock, mpsc, oneshot};
+use tokio_util::{sync::CancellationToken, task::TaskTracker};
+
+/// Where the server is in its life. Each state admits less work than the one before it, except
+/// `Starting`.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+#[repr(u8)]
+pub enum Phase {
+    /// The server restores its tables and starts its listeners. It admits no work yet.
+    Starting,
+    /// The server admits all work.
+    Running,
+    /// An administrator asked the server to stop. Players can still play, but no other lifecycle
+    /// operation is admitted.
+    StopRequested,
+    /// The server admits no new work and waits for admitted work to finish.
+    Draining,
+}
+
+/// Why work was not admitted.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum Refusal {
+    /// The server lost ownership of the live tables or is shutting down.
+    Unavailable,
+    /// The server is starting, stopping, or draining.
+    NotAccepting,
+}
+
+/// The server's lifecycle state, which every listener shares. Admitted work holds a read lock on
+/// the admission gate, so a drain can wait for all of it.
+pub struct Lifecycle {
+    phase: AtomicU8,
+    admission: Arc<RwLock<()>>,
+    /// Cancelled when the server stops its listeners and background work.
+    pub shutdown: CancellationToken,
+    /// Cancelled when a drain begins, to end optional reads early.
+    pub read_shutdown: CancellationToken,
+    /// Cancelled when the server loses ownership of the live tables.
+    pub ownership_lost: CancellationToken,
+}
+
+impl Lifecycle {
+    pub fn new(ownership_lost: CancellationToken) -> Arc<Self> {
+        Arc::new(Self {
+            phase: AtomicU8::new(Phase::Starting as u8),
+            admission: Arc::new(RwLock::new(())),
+            shutdown: CancellationToken::new(),
+            read_shutdown: CancellationToken::new(),
+            ownership_lost,
+        })
+    }
+    pub fn phase(&self) -> Phase {
+        match self.phase.load(Ordering::Acquire) {
+            0 => Phase::Starting,
+            1 => Phase::Running,
+            2 => Phase::StopRequested,
+            _ => Phase::Draining,
+        }
+    }
+    fn transition(&self, from: Phase, to: Phase) -> bool {
+        self.phase
+            .compare_exchange(from as u8, to as u8, Ordering::AcqRel, Ordering::Acquire)
+            .is_ok()
+    }
+    /// Starts admitting work once startup has finished.
+    pub fn activate(&self) {
+        self.transition(Phase::Starting, Phase::Running);
+    }
+    /// Whether the server still owns the live tables and is not shutting down.
+    pub fn healthy(&self) -> bool {
+        !self.shutdown.is_cancelled() && !self.ownership_lost.is_cancelled()
+    }
+    /// Whether players' work is admitted.
+    pub fn accepting(&self) -> bool {
+        matches!(self.phase(), Phase::Running | Phase::StopRequested)
+    }
+    pub fn draining(&self) -> bool {
+        matches!(self.phase(), Phase::StopRequested | Phase::Draining)
+    }
+    fn check(&self, accepting: bool) -> Result<(), Refusal> {
+        if !self.healthy() {
+            Err(Refusal::Unavailable)
+        } else if !accepting {
+            Err(Refusal::NotAccepting)
+        } else {
+            Ok(())
+        }
+    }
+    /// Admits a player's work. A drain waits until the returned guard is dropped.
+    pub async fn admit(&self) -> Result<OwnedRwLockReadGuard<()>, Refusal> {
+        let guard = self.admission.clone().read_owned().await;
+        self.check(self.accepting())?;
+        Ok(guard)
+    }
+    /// Admits an administrator's operation, which only a running server accepts.
+    pub async fn admit_operation(&self) -> Result<OwnedRwLockReadGuard<()>, Refusal> {
+        let guard = self.admission.clone().read_owned().await;
+        self.check(self.phase() == Phase::Running)?;
+        Ok(guard)
+    }
+    /// Marks a stop as requested. Returns false if the server is not running.
+    pub fn request_stop(&self) -> bool {
+        self.transition(Phase::Running, Phase::StopRequested)
+    }
+    /// Withdraws a stop request that could not be sent.
+    pub fn withdraw_stop(&self) {
+        self.transition(Phase::StopRequested, Phase::Running);
+    }
+    /// Stops admitting work and ends optional reads.
+    pub fn stop_admitting(&self) {
+        self.phase.store(Phase::Draining as u8, Ordering::Release);
+        self.read_shutdown.cancel();
+    }
+    /// Stops admitting work and waits for admitted work to finish.
+    pub async fn drain(&self) {
+        self.stop_admitting();
+        drop(self.admission.write().await);
+    }
+}
 
 #[derive(Debug)]
 pub enum StopReason {
@@ -48,28 +167,36 @@ impl StopReason {
         })
     }
 }
+/// What the operations endpoint reports about a running server. Tests without a database leave
+/// it out.
+pub struct Runtime {
+    pub store: Store,
+    pub integrations: IntegrationSlot,
+}
+
 pub struct Control {
+    pub lifecycle: Arc<Lifecycle>,
     pub hub: mpsc::Sender<HubCommand>,
     pub pool: PgPool,
     pub root: PathBuf,
     pub version: String,
     pub started: chrono::DateTime<chrono::Utc>,
     pub monotonic_started: Instant,
-    pub admission: Arc<RwLock<()>>,
-    pub accepting: AtomicBool,
-    pub draining: AtomicBool,
+    runtime: Option<Runtime>,
     stops: mpsc::Sender<StopReason>,
-    application: OnceLock<Weak<App>>,
 }
 impl Control {
     pub fn new(
+        lifecycle: Arc<Lifecycle>,
         hub: mpsc::Sender<HubCommand>,
         pool: PgPool,
+        runtime: Option<Runtime>,
         root: PathBuf,
         version: String,
         stops: mpsc::Sender<StopReason>,
     ) -> Arc<Self> {
         Arc::new(Self {
+            lifecycle,
             hub,
             pool,
             root,
@@ -77,38 +204,23 @@ impl Control {
             stops,
             started: chrono::Utc::now(),
             monotonic_started: Instant::now(),
-            admission: Arc::new(RwLock::new(())),
-            accepting: AtomicBool::new(false),
-            draining: AtomicBool::new(false),
-            application: OnceLock::new(),
+            runtime,
         })
-    }
-    pub fn attach_application(&self, app: Weak<App>) {
-        assert!(
-            self.application.set(app).is_ok(),
-            "Lifecycle application already attached"
-        );
     }
     pub fn storage_healthy(&self) -> bool {
-        self.application.get().is_none_or(|app| {
-            app.upgrade()
-                .is_some_and(|app| app.store.check_state().is_ok())
-        })
+        !self.lifecycle.ownership_lost.is_cancelled()
     }
-    pub fn store(&self) -> Option<crate::store::Store> {
-        self.application
-            .get()
-            .and_then(Weak::upgrade)
-            .map(|app| app.store.clone())
+    pub fn store(&self) -> Option<&Store> {
+        self.runtime.as_ref().map(|runtime| &runtime.store)
     }
     pub fn integration_status(&self) -> Value {
-        self.application.get().and_then(Weak::upgrade).map_or_else(
-            || json!({"discord":"disabled"}),
-            |app| app.integration_status(),
-        )
-    }
-    pub fn activate(&self) {
-        self.accepting.store(true, Ordering::Release);
+        self.runtime
+            .as_ref()
+            .and_then(|runtime| runtime.integrations.get())
+            .map_or_else(
+                || json!({"discord":"disabled"}),
+                |integrations| integrations.status(),
+            )
     }
     pub async fn operation(&self, command: Operation) -> Result<Value> {
         let (reply, received) = oneshot::channel();
@@ -123,30 +235,25 @@ impl Control {
     }
     pub async fn request_stop(&self, reason: StopReason) -> Result<()> {
         ensure!(
-            self.accepting.load(Ordering::Acquire),
-            "The server is not ready for lifecycle operations."
-        );
-        ensure!(
-            !self.draining.swap(true, Ordering::AcqRel),
-            "The server is already draining."
+            self.lifecycle.request_stop(),
+            "{}",
+            if self.lifecycle.draining() {
+                "The server is already draining."
+            } else {
+                "The server is not ready for lifecycle operations."
+            }
         );
         if matches!(reason, StopReason::Restart(_))
             && let Err(error) = crate::restart::prepare(&self.root).await
         {
-            self.draining.store(false, Ordering::Release);
+            self.lifecycle.withdraw_stop();
             return Err(error);
         }
         if let Err(error) = self.stops.try_send(reason) {
-            self.draining.store(false, Ordering::Release);
+            self.lifecycle.withdraw_stop();
             return Err(error.into());
         }
         Ok(())
-    }
-    pub async fn begin_drain(&self) {
-        self.accepting.store(false, Ordering::Release);
-        self.draining.store(true, Ordering::Release);
-        let drained = self.admission.write().await;
-        drop(drained);
     }
 }
 
@@ -184,7 +291,6 @@ pub async fn drain_game_runtime(
     tables: &TaskTracker,
     reason: &StopReason,
 ) -> Result<()> {
-    app.accepting.store(false, Ordering::Release);
     let mut failures = Vec::new();
     let (reply, received) = oneshot::channel();
     match app.hub.send(HubCommand::Quiesce(reply)).await {

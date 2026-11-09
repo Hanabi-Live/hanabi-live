@@ -17,7 +17,7 @@ async fn drains_notify_all_tables_before_waiting_for_acknowledgements() -> Resul
             return Ok(());
         };
         let state = crate::state::LiveState::for_test(&db.pool).await?;
-        let store = crate::store::Store::fixture(db.pool.clone(), state);
+        let store = Store::fixture(db.pool.clone(), state);
         let tasks = TaskTracker::new();
         let (table_sender, mut table_commands) = mpsc::channel(4);
         let (second_sender, mut second_commands) = mpsc::channel(4);
@@ -106,7 +106,7 @@ async fn drains_notify_all_tables_before_waiting_for_acknowledgements() -> Resul
                 seeded_deck: crate::game::seeded_deck,
                 deck_size: crate::game::deck_size,
             },
-            store.ownership_lost(),
+            Lifecycle::new(store.ownership_lost()),
             crate::server_info::test_info(),
         );
         let result = tokio::time::timeout(
@@ -132,7 +132,7 @@ async fn drains_notify_all_tables_before_waiting_for_acknowledgements() -> Resul
         }
         assert_eq!(notices.load(Ordering::Relaxed), u64::from(successful));
         assert!(tasks.is_empty());
-        app.shutdown.cancel();
+        app.lifecycle.shutdown.cancel();
         store.close().await?;
         db.close().await;
     }
@@ -145,15 +145,15 @@ async fn orderly_drain_waits_for_admitted_operations() {
         .connect_lazy("postgres://unused@127.0.0.1/unused")
         .unwrap();
     let h = crate::operations_tests::Harness::new(pool);
-    let admitted = h.control.admission.clone().read_owned().await;
+    let admitted = h.control.lifecycle.admit_operation().await.unwrap();
     let control = h.control.clone();
-    let mut drain = tokio::spawn(async move { control.begin_drain().await });
+    let mut drain = tokio::spawn(async move { control.lifecycle.drain().await });
     assert!(
         tokio::time::timeout(Duration::from_millis(20), &mut drain)
             .await
             .is_err()
     );
-    assert!(!h.control.accepting.load(Ordering::Acquire));
+    assert!(!h.control.lifecycle.accepting());
     drop(admitted);
     tokio::time::timeout(Duration::from_secs(2), drain)
         .await
@@ -174,7 +174,7 @@ async fn graceful_stop_does_not_wait_for_or_terminate_games() {
         h.stops.recv().await,
         Some(StopReason::GracefulStop(None))
     ));
-    assert!(h.control.draining.load(Ordering::Acquire));
+    assert!(h.control.lifecycle.draining());
     assert!(h.operations.lock().unwrap().is_empty());
     assert!(h.control.graceful_stop(None).await.is_err());
     h.close().await;

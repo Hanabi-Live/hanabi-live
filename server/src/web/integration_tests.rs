@@ -1,6 +1,7 @@
 use super::*;
 use crate::transport::test_frame;
 use axum::http::HeaderValue;
+use serde_json::{Value, json};
 use tokio_tungstenite::{
     connect_async,
     tungstenite::{Message as WireMessage, client::IntoClientRequest},
@@ -600,19 +601,16 @@ async fn native_admission_waits_for_inflight_http_and_fences_lost_ownership_post
     let Some(fixture) = test_support::Fixture::start().await else {
         return;
     };
-    let permit = fixture.app.admission.clone().read_owned().await;
-    fixture.app.accepting.store(false, Ordering::Release);
+    let permit = fixture.app.lifecycle.admit().await.unwrap();
     assert!(
-        tokio::time::timeout(Duration::from_millis(20), fixture.app.admission.write())
+        tokio::time::timeout(Duration::from_millis(20), fixture.app.lifecycle.drain())
             .await
             .is_err()
     );
     drop(permit);
-    drop(
-        tokio::time::timeout(Duration::from_secs(1), fixture.app.admission.write())
-            .await
-            .unwrap(),
-    );
+    tokio::time::timeout(Duration::from_secs(1), fixture.app.lifecycle.drain())
+        .await
+        .unwrap();
     let response = reqwest::Client::new()
         .get(format!("{}/test-cookie", fixture.url))
         .send()

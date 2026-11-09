@@ -107,7 +107,7 @@ async fn lifecycle_announcements_reach_both_channels_despite_network_latency_pos
             true,
             "test".into(),
             &fixture.app.background,
-            fixture.app.shutdown.clone(),
+            fixture.app.lifecycle.shutdown.clone(),
         ),
     };
     tokio::time::timeout(Duration::from_secs(2), async {
@@ -211,7 +211,7 @@ async fn discord_lifecycle_announcements_match_across_channels_postgres() {
         .unwrap();
     bridge.event(json!({"t":"READY"})).await.unwrap();
     bridge.event(json!({"t":"RESUMED"})).await.unwrap();
-    fixture.app.accepting.store(false, Ordering::Release);
+    fixture.app.lifecycle.stop_admitting();
     let (reply, quiesced) = tokio::sync::oneshot::channel();
     fixture
         .app

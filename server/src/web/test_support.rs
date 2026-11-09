@@ -42,11 +42,13 @@ impl Fixture {
             seeded_deck: crate::game::seeded_deck,
             deck_size: crate::game::deck_size,
         };
+        let lifecycle = Lifecycle::new(store.ownership_lost());
+        lifecycle.activate();
         let app = App::new(
             store.clone(),
             hub,
             config,
-            store.ownership_lost(),
+            lifecycle,
             crate::server_info::test_info(),
         );
         let server_stop = CancellationToken::new();
@@ -72,8 +74,7 @@ impl Fixture {
     }
 
     pub async fn close(self) {
-        self.app.accepting.store(false, Ordering::Release);
-        drop(self.app.admission.write().await);
+        self.app.lifecycle.drain().await;
         let (reply, received) = oneshot::channel();
         self.app.hub.send(HubCommand::Quiesce(reply)).await.unwrap();
         for table in received.await.unwrap() {
@@ -86,7 +87,7 @@ impl Fixture {
         received.await.unwrap();
         self.tasks.close();
         self.tasks.wait().await;
-        self.app.shutdown.cancel();
+        self.app.lifecycle.shutdown.cancel();
         self.server_stop.cancel();
         self.app.connections.close();
         self.app.connections.wait().await;

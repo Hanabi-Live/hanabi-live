@@ -444,8 +444,8 @@ impl Bridge {
         });
         let (events, mut receiver) = mpsc::channel(EVENT_QUEUE);
         let gateway = bridge.transport.clone();
-        let cancel = app.shutdown.child_token();
-        let lost = app.ownership_lost.clone();
+        let cancel = app.lifecycle.shutdown.child_token();
+        let lost = app.lifecycle.ownership_lost.clone();
         app.background.spawn(async move {
             tokio::select! {
                 ()=lost.cancelled()=>{},
@@ -456,7 +456,7 @@ impl Bridge {
         });
         let inbound = bridge.clone();
         let weak = Arc::downgrade(&app);
-        let shutdown = app.shutdown.clone();
+        let shutdown = app.lifecycle.shutdown.clone();
         app.background.spawn(async move {
             loop {
                 let event = tokio::select! {
@@ -469,10 +469,9 @@ impl Bridge {
                 let Some(app) = weak.upgrade() else {
                     break;
                 };
-                let _admission = app.admission.clone().read_owned().await;
-                if !app.accepting.load(Ordering::Acquire) || !app.healthy() {
+                let Ok(_admission) = app.lifecycle.admit().await else {
                     continue;
-                }
+                };
                 if let Err(error) = inbound.event(event).await {
                     inbound.set_status(Status::Degraded);
                     let report =
@@ -488,7 +487,7 @@ impl Bridge {
 
     fn app(&self) -> Result<Arc<App>> {
         let app = self.app.upgrade().context("Server stopped")?;
-        ensure!(app.healthy(), "Server ownership unavailable");
+        ensure!(app.lifecycle.healthy(), "Server ownership unavailable");
         Ok(app)
     }
 

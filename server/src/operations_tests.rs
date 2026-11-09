@@ -1,6 +1,6 @@
 use crate::{
     actors::HubCommand,
-    lifecycle::{Control, StopReason},
+    lifecycle::{Control, Lifecycle, Runtime, StopReason},
     operations::{Operation, router},
 };
 use axum::{
@@ -32,6 +32,9 @@ pub(crate) struct Harness {
 }
 impl Harness {
     pub fn new(pool: PgPool) -> Self {
+        Self::with_runtime(pool, None)
+    }
+    pub fn with_runtime(pool: PgPool, runtime: Option<Runtime>) -> Self {
         let (hub, mut commands) = mpsc::channel(16);
         let (stop, stops) = mpsc::channel(1);
         let operations = Arc::new(Mutex::new(Vec::new()));
@@ -54,13 +57,15 @@ impl Harness {
             }
         });
         let control = Control::new(
+            Lifecycle::new(tokio_util::sync::CancellationToken::new()),
             hub,
             pool,
+            runtime,
             PathBuf::from(env!("CARGO_MANIFEST_DIR")),
             "test-commit".into(),
             stop,
         );
-        control.activate();
+        control.lifecycle.activate();
         Self {
             control,
             operations,
@@ -70,7 +75,7 @@ impl Harness {
         }
     }
     pub async fn close(self) {
-        self.control.begin_drain().await;
+        self.control.lifecycle.drain().await;
         self.task.abort();
         let _ = self.task.await;
     }
@@ -217,7 +222,7 @@ async fn loopback_routes_admission() {
         app.clone().oneshot(remote).await.unwrap().status(),
         StatusCode::FORBIDDEN
     );
-    h.control.begin_drain().await;
+    h.control.lifecycle.drain().await;
     assert_eq!(
         request(app, "/gracefulStop", None).await.0,
         StatusCode::SERVICE_UNAVAILABLE
@@ -323,24 +328,13 @@ async fn metrics_report_actual_primary_and_archive_connection_budgets() -> anyho
         .collect(),
     )?;
     let store = crate::store::Store::connect(&config).await?;
-    let h = Harness::new(store.primary.clone());
-    let app = crate::web::App::new(
-        store.clone(),
-        h.control.hub.clone(),
-        crate::public_http::PublicConfig {
-            root,
-            session_secret: config.secret().into(),
-            domain: "localhost".into(),
-            use_tls: false,
-            client_version: "1".into(),
-            is_dev: true,
-            seeded_deck: crate::game::seeded_deck,
-            deck_size: crate::game::deck_size,
-        },
-        store.ownership_lost(),
-crate::server_info::test_info(),
+    let h = Harness::with_runtime(
+        store.primary.clone(),
+        Some(Runtime {
+            store: store.clone(),
+            integrations: crate::integrations::IntegrationSlot::default(),
+        }),
     );
-    h.control.attach_application(Arc::downgrade(&app));
     let (status, body) = request(router(h.control.clone()), "/metrics", None).await;
     assert_eq!(status, StatusCode::OK, "{body}");
     let report: serde_json::Value = serde_json::from_str(&body)?;
@@ -375,7 +369,6 @@ crate::server_info::test_info(),
     let usable: i32 = sqlx::query_scalar!("SELECT 1 AS \"v!\"").fetch_one(&store.primary).await?;
     assert_eq!(usable, 1, "Read cancellation interfered with the primary pool");
     h.close().await;
-    app.shutdown.cancel();
     store.close().await?;
     Ok(())
     }.await;

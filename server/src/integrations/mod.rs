@@ -11,6 +11,9 @@ use std::{collections::HashMap, sync::Arc, time::Duration};
 /// How long a restart or stop waits for its Discord announcement.
 const ANNOUNCEMENT_TIMEOUT: Duration = Duration::from_secs(5);
 
+/// The integrations once they start, which happens after the server starts listening.
+pub type IntegrationSlot = Arc<std::sync::OnceLock<Arc<Integrations>>>;
+
 pub struct Integrations {
     discord: Option<Arc<discord::Bridge>>,
     discord_failed: bool,
@@ -42,7 +45,7 @@ impl Integrations {
             app.is_development(),
             app.version.clone(),
             &app.background,
-            app.shutdown.clone(),
+            app.lifecycle.shutdown.clone(),
         );
         Ok(Arc::new(Self {
             discord,

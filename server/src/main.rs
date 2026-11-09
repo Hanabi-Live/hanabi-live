@@ -3,7 +3,7 @@ use hanabi_live::{
     actors::Hub,
     config::Config,
     game,
-    lifecycle::{Control, StopReason, drain_game_runtime},
+    lifecycle::{Control, Lifecycle, Runtime, StopReason, drain_game_runtime},
     migrations, operations,
     public_http::PublicConfig,
     release, restart,
@@ -15,7 +15,7 @@ use hanabi_live::{
 use std::{
     net::{SocketAddr, TcpListener},
     path::Path,
-    sync::{Arc, atomic::Ordering},
+    sync::Arc,
     time::Duration,
 };
 use tokio::{sync::mpsc, task::JoinSet};
@@ -149,7 +149,7 @@ async fn run(config: Config, version: String) -> Result<bool> {
             return Err(error).context("Failed to recover durable game state");
         }
     };
-    let ownership_lost = store.ownership_lost();
+    let lifecycle = Lifecycle::new(store.ownership_lost());
     let app = App::new(
         store,
         hub,
@@ -163,18 +163,22 @@ async fn run(config: Config, version: String) -> Result<bool> {
             seeded_deck: game::seeded_deck,
             deck_size: game::deck_size,
         },
-        ownership_lost.clone(),
+        lifecycle.clone(),
         info,
     );
     let (stops, mut stop_requests) = mpsc::channel(1);
     let control = Control::new(
+        lifecycle.clone(),
         app.hub.clone(),
         app.store.primary.clone(),
+        Some(Runtime {
+            store: app.store.clone(),
+            integrations: app.integrations.clone(),
+        }),
         config.root.clone(),
         restart::version().into(),
         stops,
     );
-    control.attach_application(Arc::downgrade(&app));
     let mut failures = Vec::new();
     let mut handles = Vec::new();
     let mut services = JoinSet::new();
@@ -226,12 +230,12 @@ async fn run(config: Config, version: String) -> Result<bool> {
             services.spawn(async move { ("HTTP redirect", server.serve(service).await) });
         }
         app.store.check_state()?;
-        control.activate();
+        lifecycle.activate();
         let integration_app = app.clone();
         let integrations = config.integrations.clone();
         app.background.spawn(async move {
             tokio::select! {
-                () = integration_app.shutdown.cancelled() => {},
+                () = integration_app.lifecycle.shutdown.cancelled() => {},
                 result = integration_app.start_integrations(&integrations) => {
                     if let Err(error) = result {
                         eprintln!("Optional integrations failed to initialize: {error:#}");
@@ -257,7 +261,7 @@ async fn run(config: Config, version: String) -> Result<bool> {
     } else {
         tokio::select! {
             biased;
-            ()=ownership_lost.cancelled()=>StopReason::OwnershipLost,
+            ()=lifecycle.ownership_lost.cancelled()=>StopReason::OwnershipLost,
             _=interrupt.recv()=>StopReason::Shutdown,
             _=terminate.recv()=>StopReason::Shutdown,
             request=stop_requests.recv()=>request.unwrap_or_else(||StopReason::Failure("Lifecycle control channel closed".into())),
@@ -268,22 +272,17 @@ async fn run(config: Config, version: String) -> Result<bool> {
     match &reason {
         StopReason::OwnershipLost => {
             failures.push("Live-table ownership or durability was lost".into());
-            app.shutdown.cancel();
+            lifecycle.shutdown.cancel();
         }
         StopReason::Failure(message) => failures.push(message.clone()),
         _ => {}
     }
-    app.accepting.store(false, Ordering::Release);
-    app.read_shutdown.cancel();
+    lifecycle.stop_admitting();
     match tokio::time::timeout(LOBBY_READ_CANCEL_TIMEOUT, app.store.cancel_lobby_reads()).await {
         Ok(Ok(())) => {}
         result => eprintln!("Optional read cancellation did not complete: {result:?}"),
     }
-    control.begin_drain().await;
-    {
-        let admitted = app.admission.write().await;
-        drop(admitted);
-    }
+    lifecycle.drain().await;
     match tokio::time::timeout(
         GAME_DRAIN_DEADLINE,
         drain_game_runtime(&app, &tables, &reason),
@@ -297,7 +296,7 @@ async fn run(config: Config, version: String) -> Result<bool> {
                 .into(),
         ),
     }
-    app.shutdown.cancel();
+    lifecycle.shutdown.cancel();
     for handle in handles {
         handle.graceful_shutdown(Some(LISTENER_SHUTDOWN_GRACE));
     }

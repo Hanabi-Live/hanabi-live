@@ -18,7 +18,11 @@ pub enum Operation {
 
 pub type OperationReply = tokio::sync::oneshot::Sender<anyhow::Result<Value>>;
 
-use crate::{lifecycle::Control, metrics, query::Query};
+use crate::{
+    lifecycle::{Control, Phase, Refusal},
+    metrics,
+    query::Query,
+};
 use anyhow::Context;
 use axum::{
     Json, Router,
@@ -30,10 +34,7 @@ use axum::{
     routing::{get, post},
 };
 use serde_json::json;
-use std::{
-    net::SocketAddr,
-    sync::{Arc, atomic::Ordering},
-};
+use std::{net::SocketAddr, sync::Arc};
 
 pub fn router(control: Arc<Control>) -> Router {
     let mut router = Router::new();
@@ -70,21 +71,18 @@ async fn guard(State(control): State<Arc<Control>>, request: Request, next: Next
         (StatusCode::FORBIDDEN,"Browser or non-loopback requests are not allowed on the localhost operations interface.\n").into_response()
     } else {
         let admission = if mutating(request.uri().path()) {
-            Some(control.admission.clone().read_owned().await)
+            Some(control.lifecycle.admit_operation().await)
         } else {
             None
         };
-        if admission.is_some() && !control.storage_healthy() {
+        if let Some(Err(Refusal::Unavailable)) = admission {
             crate::errors::Report::known(
                 crate::errors::http_operation("Localhost operation"),
                 "live_state_unavailable",
                 "Live-state recovery is unhealthy or ownership was lost. No new operation was admitted; inspect recovery before retrying.",
                 StatusCode::SERVICE_UNAVAILABLE,
             ).response(true)
-        } else if admission.is_some()
-            && (!control.accepting.load(Ordering::Acquire)
-                || control.draining.load(Ordering::Acquire))
-        {
+        } else if let Some(Err(Refusal::NotAccepting)) = admission {
             crate::errors::Report::known(
                 crate::errors::http_operation("Localhost operation"),
                 crate::errors::SERVER_DRAINING,
@@ -181,13 +179,13 @@ async fn handle(State(control): State<Arc<Control>>, request: Request) -> Result
     match path.as_str() {
         "/ban" | "/mute" => return user_action(&control, &path, &body).await,
         "/gracefulRestart" => {
-            if !control.accepting.load(Ordering::Acquire) {
+            if control.lifecycle.phase() == Phase::Starting {
                 return Err(Error(
                     StatusCode::SERVICE_UNAVAILABLE,
                     "The server is not ready for lifecycle operations.\n".into(),
                 ));
             }
-            if control.draining.load(Ordering::Acquire) {
+            if control.lifecycle.draining() {
                 return Err(bad("The server is already draining."));
             }
             control
@@ -273,7 +271,7 @@ async fn metrics_report(control: &Control) -> Result<Response> {
             .count()
     );
     let mut report = json!({"uptimeSeconds":control.monotonic_started.elapsed().as_secs_f64(),
-        "draining":control.draining.load(Ordering::Acquire),
+        "draining":control.lifecycle.draining(),
         "discord":control.integration_status()["discord"],
         "runtime":metrics::memory().await?,"commands":metrics::COMMAND_METRICS.snapshot(),"recovery":recovery});
     let database: std::result::Result<Value, anyhow::Error> = if let Some(store) = control.store() {

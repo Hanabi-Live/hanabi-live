@@ -9,7 +9,8 @@ pub(crate) mod test_support;
 use crate::{
     accounts::{self, AccountConfig},
     actors::HubCommand,
-    integrations::Integrations,
+    integrations::{IntegrationSlot, Integrations},
+    lifecycle::{Lifecycle, Refusal},
     lobby::{self, Caller, Effect},
     public_http::{self, PublicConfig},
     store::Store,
@@ -30,13 +31,12 @@ use axum::{
 use chrono::{DateTime, Utc};
 use futures_util::{SinkExt, StreamExt};
 use hanabi_protocol::ClientMessage;
-use serde_json::{Value, json};
 use std::{
     collections::HashMap,
     future::Future,
     net::SocketAddr,
     sync::{
-        Arc, OnceLock,
+        Arc,
         atomic::{AtomicBool, AtomicU64, Ordering},
     },
     task::Poll,
@@ -72,33 +72,22 @@ pub struct App {
     pub hub: mpsc::Sender<HubCommand>,
     pub secret: String,
     pub version: String,
-    pub accepting: AtomicBool,
+    pub lifecycle: Arc<Lifecycle>,
     pub connections: TaskTracker,
     pub background: TaskTracker,
-    pub shutdown: CancellationToken,
-    pub read_shutdown: CancellationToken,
-    pub ownership_lost: CancellationToken,
-    pub admission: Arc<tokio::sync::RwLock<()>>,
     generation: AtomicU64,
     sockets: Arc<Semaphore>,
     incoming_bytes: Arc<Semaphore>,
     lobby_slots: Arc<Semaphore>,
     public: PublicConfig,
     pub info: Arc<crate::server_info::ServerInfo>,
-    integrations: OnceLock<Arc<Integrations>>,
+    pub integrations: IntegrationSlot,
     integration_started: AtomicBool,
 }
 
 impl App {
     pub fn is_development(&self) -> bool {
         self.public.is_dev
-    }
-
-    pub fn integration_status(&self) -> Value {
-        self.integrations.get().map_or_else(
-            || json!({"discord":"disabled"}),
-            |integrations| integrations.status(),
-        )
     }
 
     pub async fn announce_restart(&self, message: Option<&str>) {
@@ -121,7 +110,7 @@ impl App {
         store: Store,
         hub: mpsc::Sender<HubCommand>,
         public: PublicConfig,
-        ownership_lost: CancellationToken,
+        lifecycle: Arc<Lifecycle>,
         info: Arc<crate::server_info::ServerInfo>,
     ) -> Arc<Self> {
         Arc::new(Self {
@@ -129,20 +118,16 @@ impl App {
             hub,
             secret: public.session_secret.to_string(),
             version: public.client_version.to_string(),
-            accepting: AtomicBool::new(true),
+            lifecycle,
             generation: AtomicU64::new(1),
             sockets: Arc::new(Semaphore::new(MAX_SOCKETS)),
             incoming_bytes: Arc::new(Semaphore::new(crate::transport::GLOBAL_INPUT_BYTES)),
             lobby_slots: Arc::new(Semaphore::new(LOBBY_SLOTS)),
             connections: TaskTracker::new(),
             background: TaskTracker::new(),
-            shutdown: CancellationToken::new(),
-            read_shutdown: CancellationToken::new(),
-            ownership_lost,
-            admission: Arc::new(tokio::sync::RwLock::new(())),
             public,
             info,
-            integrations: OnceLock::new(),
+            integrations: IntegrationSlot::default(),
             integration_started: AtomicBool::new(false),
         })
     }
@@ -162,12 +147,6 @@ impl App {
             .set(integrations)
             .map_err(|_| anyhow::anyhow!("Integrations already initialized"))?;
         Ok(())
-    }
-
-    pub fn healthy(&self) -> bool {
-        !self.shutdown.is_cancelled()
-            && !self.ownership_lost.is_cancelled()
-            && self.store.check_state().is_ok()
     }
 
     pub fn alert(&self, report: &crate::errors::Report) {
@@ -371,14 +350,13 @@ async fn check_origin(State(app): State<Arc<App>>, request: Request, next: Next)
         log_rejection(&request, "an invalid origin");
         return accounts::api_error(StatusCode::FORBIDDEN, "Invalid request origin.");
     }
-    let _admission = app.admission.clone().read_owned().await;
-    if !app.healthy() || !app.accepting.load(Ordering::Acquire) {
+    let Ok(_admission) = app.lifecycle.admit().await else {
         log_rejection(&request, "the server draining");
         return accounts::api_error(
             StatusCode::SERVICE_UNAVAILABLE,
             "The server is draining for maintenance.",
         );
-    }
+    };
     next.run(request).await
 }
 
@@ -538,11 +516,13 @@ fn load_lobby(app: Arc<App>, session: Arc<Session>) {
         };
         let result = tokio::select! {
             () = session.cancel.cancelled() => return,
-            () = app.read_shutdown.cancelled() => return,
+            () = app.lifecycle.read_shutdown.cancelled() => return,
             result = result => result,
         };
-        let _admission = app.admission.read().await;
-        if !app.accepting.load(Ordering::Acquire) || !app.healthy() || !session.active() {
+        let Ok(_admission) = app.lifecycle.admit().await else {
+            return;
+        };
+        if !session.active() {
             return;
         }
         match result {
@@ -574,9 +554,9 @@ async fn websocket(
     headers: HeaderMap,
     upgrade: WebSocketUpgrade,
 ) -> Response {
-    if !app.healthy() || !app.accepting.load(Ordering::Acquire) {
+    if !app.lifecycle.healthy() || !app.lifecycle.accepting() {
         return crate::errors::Report::known("Opening a live connection", "server_unavailable",
-            if app.healthy() { "The server is not accepting connections while it starts or drains for maintenance." } else { "Live-state recovery or ownership is unavailable. Wait for recovery before reconnecting." },
+            if app.lifecycle.healthy() { "The server is not accepting connections while it starts or drains for maintenance." } else { "Live-state recovery or ownership is unavailable. Wait for recovery before reconnecting." },
             StatusCode::SERVICE_UNAVAILABLE).response(true);
     }
     let query = match accounts::account_query(uri.query(), &["account", "version"]) {
@@ -745,11 +725,11 @@ async fn connection(
     ip: String,
 ) -> Result<()> {
     let id = account.id;
-    let admission = app.admission.clone().read_owned().await;
-    ensure!(
-        app.accepting.load(Ordering::Acquire) && app.healthy(),
-        "Server unavailable"
-    );
+    let admission = app
+        .lifecycle
+        .admit()
+        .await
+        .map_err(|refusal| anyhow::anyhow!("Server unavailable: {refusal:?}"))?;
     let data = match bootstrap(&app, account, &ip).await {
         Ok(data) => data,
         Err(error) => {
@@ -780,15 +760,15 @@ async fn connection(
             h_group_level: data.welcome.settings.h_group_level,
             bot: data.bot,
         },
-        app.ownership_lost.clone(),
-        app.shutdown.clone(),
+        app.lifecycle.ownership_lost.clone(),
+        app.lifecycle.shutdown.clone(),
     );
     for other in data.blocks {
         session.set_blocked(other, true);
     }
     let (mut sink, mut stream) = socket.split();
     let writer_session = session.clone();
-    let writer_shutdown = app.shutdown.clone();
+    let writer_shutdown = app.lifecycle.shutdown.clone();
     let writer = tokio::spawn(async move {
         loop {
             tokio::select! {
@@ -837,7 +817,7 @@ async fn connection(
     let (incoming, mut commands) = mpsc::channel::<Inbound>(INBOUND_QUEUE);
     let incoming_bytes = InboundBudget::new(app.incoming_bytes.clone());
     let reader_session = session.clone();
-    let reader_shutdown = app.shutdown.clone();
+    let reader_shutdown = app.lifecycle.shutdown.clone();
     let reader = tokio::spawn(async move {
         loop {
             tokio::select! {
@@ -874,7 +854,7 @@ async fn connection(
         loop {
             let command = tokio::select! {
                 ()=session.cancel.cancelled()=>break,
-                ()=app.shutdown.cancelled()=>break,
+                ()=app.lifecycle.shutdown.cancelled()=>break,
                 command=commands.recv()=>command,
             };
             let Some(command) = command else {
@@ -975,7 +955,7 @@ fn command_failure(error: &anyhow::Error, command: &str) -> CommandFailure {
 }
 
 pub async fn publish_external(app: &App, effects: Vec<Effect>) -> Result<()> {
-    ensure!(app.healthy(), "Server ownership unavailable");
+    ensure!(app.lifecycle.healthy(), "Server ownership unavailable");
     let (reply, received) = oneshot::channel();
     app.hub
         .send(HubCommand::ExternalEffects { effects, reply })
@@ -1041,20 +1021,22 @@ fn history_command(message: &ClientMessage) -> bool {
 }
 
 async fn dispatch(app: &Arc<App>, session: Arc<Session>, input: &str) -> Result<()> {
-    let _admission = app.admission.clone().read_owned().await;
-    if !app.healthy() {
-        return Err(crate::errors::Fault::new("live_state_unavailable",
-            "Live-state recovery or ownership is unavailable. Do not repeat game actions; wait for recovery.",
-            StatusCode::SERVICE_UNAVAILABLE).into());
-    }
-    if !app.accepting.load(Ordering::Acquire) {
-        return Err(crate::errors::Fault::new(
-            crate::errors::SERVER_DRAINING,
-            "The server is not accepting new commands during startup or maintenance.",
-            StatusCode::SERVICE_UNAVAILABLE,
-        )
-        .into());
-    }
+    let _admission = match app.lifecycle.admit().await {
+        Ok(admission) => admission,
+        Err(Refusal::Unavailable) => {
+            return Err(crate::errors::Fault::new("live_state_unavailable",
+                "Live-state recovery or ownership is unavailable. Do not repeat game actions; wait for recovery.",
+                StatusCode::SERVICE_UNAVAILABLE).into());
+        }
+        Err(Refusal::NotAccepting) => {
+            return Err(crate::errors::Fault::new(
+                crate::errors::SERVER_DRAINING,
+                "The server is not accepting new commands during startup or maintenance.",
+                StatusCode::SERVICE_UNAVAILABLE,
+            )
+            .into());
+        }
+    };
     ensure_or_reject!(
         session.active(),
         "This session was replaced or disconnected. Reconnect before sending commands."
@@ -1156,7 +1138,7 @@ async fn dispatch(app: &Arc<App>, session: Arc<Session>, input: &str) -> Result<
             );
             let effects = if history {
                 tokio::select! {
-                    () = app.read_shutdown.cancelled() => return Ok(()),
+                    () = app.lifecycle.read_shutdown.cancelled() => return Ok(()),
                     result = work => result?,
                 }
             } else {
