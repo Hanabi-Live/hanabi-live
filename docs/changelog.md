@@ -14,6 +14,7 @@ listed here.
 - Added the current global Twitch emotes, and removed the Twitch and BetterTTV
   emotes that are no longer global.
 - Removed the Twitch Turbo emotes `KappaHD` and `MiniK`.
+- Removed the stats page.
 
 ## November 8th, 2026
 
