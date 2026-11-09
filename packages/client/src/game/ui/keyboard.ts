@@ -297,6 +297,9 @@ function keydown(event: JQuery.KeyDownEvent) {
     globals.store!.dispatch({ type: "dragReset" });
     hypothetical.sendHypotheticalBack();
     return;
+  } else if (event.which === KeyCode.KEY_RIGHT) {
+    hypothetical.sendHypotheticalPassTurn();
+    return;
   }
 
   // Normal gameplay hotkeys

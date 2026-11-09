@@ -140,6 +140,7 @@ function createGameTooltips() {
     "efficiency-number",
     "hypo-back",
     "hypo-edit-cards",
+    "hypo-pass-turn",
     "hypo-show-drawn",
     "kill",
     "leader",

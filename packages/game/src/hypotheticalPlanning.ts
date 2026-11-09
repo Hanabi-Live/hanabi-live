@@ -3,7 +3,7 @@
 import { assertDefined } from "complete-common";
 import { possibleCardsFromNoteAndClues } from "./cardPresentation";
 import { StackDirection } from "./enums/StackDirection";
-import { ClueType, START_CARD_RANK } from "./generated/protocol";
+import { ClueType, NO_VALUE, START_CARD_RANK } from "./generated/protocol";
 import type { HypotheticalGameAction } from "./hypotheticalState";
 import type { CardIdentity } from "./interfaces/CardIdentity";
 import type { CardNote } from "./interfaces/CardNote";
@@ -39,7 +39,8 @@ export type HypotheticalActionIntent =
       readonly type: "rankClue";
       readonly target: PlayerIndex;
       readonly value: RankClueNumber;
-    };
+    }
+  | { readonly type: "passTurn" };
 
 /** Plain data from a card view needed to reproduce its hypothetical behavior. */
 export interface HypotheticalCardView {
@@ -386,6 +387,15 @@ export function planHypotheticalAction(
         actions.push(drawAction);
       }
     }
+  } else if (intent.type === "passTurn") {
+    actions.push({
+      type: "clue",
+      clue: { type: NO_VALUE, value: NO_VALUE },
+      giver: playerIndex,
+      list: [],
+      target: playerIndex,
+      ignoreNegative: true,
+    });
   } else {
     const clue: MsgClue =
       intent.type === "colorClue"

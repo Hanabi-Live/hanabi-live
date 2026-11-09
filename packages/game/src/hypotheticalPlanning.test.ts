@@ -547,6 +547,20 @@ describe("hypothetical planning", () => {
     });
   });
 
+  test("passing the turn spends a clue without touching or logging a clue", () => {
+    const context = makeContext();
+    const state = applyPlan(
+      planHypotheticalAction({ type: "passTurn" }, context),
+      context,
+    );
+    expect(state.clueTokens).toBe(context.gameState.clueTokens - 1);
+    expect(state.turn.currentPlayerIndex).toBe(1);
+    expect(state.turn.segment).toBe(context.gameState.turn.segment! + 1);
+    expect(state.clues).toEqual([]);
+    expect(state.deck).toEqual(context.gameState.deck);
+    expect(state.log.at(-1)?.text).toBe("[Hypo] Alice passes the turn");
+  });
+
   test("calculates touches from all possibilities and visibility", () => {
     const touchedCard = getHypotheticalCard(
       cardInput({

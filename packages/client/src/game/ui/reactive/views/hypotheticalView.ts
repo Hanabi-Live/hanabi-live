@@ -150,6 +150,11 @@ export function shouldShowHypoBackButtonChanged(enabled: boolean): void {
   globals.layers.UI.batchDraw();
 }
 
+export function shouldEnableHypoPassTurnButtonChanged(enabled: boolean): void {
+  globals.elements.hypoPassTurnButton?.setEnabled(enabled);
+  globals.layers.UI.batchDraw();
+}
+
 export function onDrawnCardsInHypotheticalChanged(
   drawnCardsInHypothetical: boolean,
 ): void {

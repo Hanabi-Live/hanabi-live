@@ -19,6 +19,7 @@ import {
   isCardNeededForMaxScore,
 } from "../rules/card";
 import { isCardClued } from "../rules/cardState";
+import { isPassTurnClue } from "../rules/clues";
 import { getClueCost, getNewClueTokensAfterAction } from "../rules/clueTokens";
 import { isInitialDealFinished } from "../rules/deck";
 import { getStackDirection, getStackStartRank } from "../rules/playStacks";
@@ -92,50 +93,53 @@ function gameReducerFunction(
         ? []
         : targetHand.filter((i) => !action.list.includes(i));
 
-      // Even though the objects for each clue type are the exact same, a switch statement is needed
-      // to satisfy the TypeScript compiler.
-      switch (action.clue.type) {
-        case -1: {
-          gameState.clues.push(
-            castDraft({
-              type: -1,
-              value: -1,
+      // A pass touches no cards, so it does not belong in the clue log.
+      if (!isPassTurnClue(action)) {
+        // Even though the objects for each clue type are the exact same, a switch statement is
+        // needed to satisfy the TypeScript compiler.
+        switch (action.clue.type) {
+          case -1: {
+            gameState.clues.push(
+              castDraft({
+                type: -1,
+                value: -1,
+                giver: action.giver,
+                target: action.target,
+                segment: gameState.turn.segment,
+                list: action.list,
+                negativeList,
+              }),
+            );
+            break;
+          }
+
+          case ClueType.Color: {
+            const clue = castDraft({
+              type: action.clue.type,
+              value: action.clue.value,
               giver: action.giver,
               target: action.target,
               segment: gameState.turn.segment,
               list: action.list,
               negativeList,
-            }),
-          );
-          break;
-        }
+            });
+            gameState.clues.push(clue);
+            break;
+          }
 
-        case ClueType.Color: {
-          const clue = castDraft({
-            type: action.clue.type,
-            value: action.clue.value,
-            giver: action.giver,
-            target: action.target,
-            segment: gameState.turn.segment,
-            list: action.list,
-            negativeList,
-          });
-          gameState.clues.push(clue);
-          break;
-        }
-
-        case ClueType.Rank: {
-          const clue = castDraft({
-            type: action.clue.type,
-            value: action.clue.value,
-            giver: action.giver,
-            target: action.target,
-            segment: gameState.turn.segment,
-            list: action.list,
-            negativeList,
-          });
-          gameState.clues.push(clue);
-          break;
+          case ClueType.Rank: {
+            const clue = castDraft({
+              type: action.clue.type,
+              value: action.clue.value,
+              giver: action.giver,
+              target: action.target,
+              segment: gameState.turn.segment,
+              list: action.list,
+              negativeList,
+            });
+            gameState.clues.push(clue);
+            break;
+          }
         }
       }
 

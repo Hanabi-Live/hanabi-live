@@ -20,7 +20,7 @@ import type {
   ActionPlay,
 } from "../types/gameActions";
 import { getCardName } from "./card";
-import { getClueName } from "./clues";
+import { getClueName, isPassTurnClue } from "./clues";
 import { getCardSlot } from "./hand";
 
 const SECONDS_PER_MINUTE = MINUTE_IN_MILLISECONDS / SECOND_IN_MILLISECONDS;
@@ -60,6 +60,10 @@ export function getClueText(
   const word = NUMBER_WORDS[action.list.length] ?? "unknown";
   const variant = getVariant(metadata.options.variantName);
   const hypoPrefix = hypothetical ? HYPO_PREFIX : "";
+
+  if (isPassTurnClue(action)) {
+    return `${hypoPrefix}${giver} passes the turn`;
+  }
 
   // First, handle the case of clue text in some special variants.
   const characterName = getCharacterNameForPlayer(

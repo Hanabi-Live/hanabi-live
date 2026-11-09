@@ -4,6 +4,7 @@ import type { Store, Unsubscribe } from "redux";
 import type { State } from "../../types/State";
 import type { Action } from "../../types/actions";
 import { globals } from "../UIGlobals";
+import { canPassTurnInHypothetical } from "../hypothetical";
 import type { Listener, Selector, Subscription } from "./observeStore";
 import { observeStore } from "./observeStore";
 import * as animateFastView from "./views/animateFastView";
@@ -362,6 +363,10 @@ const replayObservers: Subscriptions = [
   subAfterInit(
     (s) => hypotheticalView.shouldShowHypoBackButton(s),
     hypotheticalView.shouldShowHypoBackButtonChanged,
+  ),
+  subAfterInit(
+    (s) => canPassTurnInHypothetical(s),
+    hypotheticalView.shouldEnableHypoPassTurnButtonChanged,
   ),
   subAfterInit(
     (s) => s.replay.hypothetical?.showDrawnCards,

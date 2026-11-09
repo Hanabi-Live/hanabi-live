@@ -2773,6 +2773,27 @@ function drawHypotheticalArea() {
   );
   globals.elements.hypoButtonsArea.add(globals.elements.hypoBackButton);
 
+  // The "Pass" button (above the back button).
+  globals.elements.hypoPassTurnButton = new Button({
+    x: hypoBackButtonValues.x * winW,
+    y: (hypoBackButtonValues.y - hypoButtonHeight - hypoButtonSpacing) * winH,
+    width: hypoBackButtonValues.w * winW,
+    height: hypoBackButtonValues.h * winH,
+    text: "Pass",
+    fontSize: hypoButtonFontSize * winH,
+  });
+
+  globals.elements.hypoPassTurnButton.tooltipName = "hypo-pass-turn";
+  globals.elements.hypoPassTurnButton.tooltipContent =
+    "Spend a clue to pass the turn to the next player without giving a clue. (Right arrow)";
+  initKonvaTooltips(globals.elements.hypoPassTurnButton, true, false);
+
+  globals.elements.hypoPassTurnButton.on(
+    "click tap",
+    hypothetical.sendHypotheticalPassTurn,
+  );
+  globals.elements.hypoButtonsArea.add(globals.elements.hypoPassTurnButton);
+
   // The "End Hypothetical" button (to the right of the back button).
   const endHypotheticalButtonValues = {
     x: hypoBackButtonValues.x + hypoBackButtonValues.w + hypoButtonSpacing,

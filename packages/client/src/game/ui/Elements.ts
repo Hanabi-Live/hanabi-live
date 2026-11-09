@@ -125,6 +125,7 @@ export class Elements {
   hypoButtonsArea: Konva.Group | null = null;
   editCardsButton: CheckButton | null = null;
   hypoBackButton: Button | null = null;
+  hypoPassTurnButton: Button | null = null;
   toggleDrawnCardsButton: CheckButton | null = null;
   endHypotheticalButton: Button | null = null;
 

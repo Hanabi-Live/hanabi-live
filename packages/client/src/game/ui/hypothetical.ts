@@ -7,8 +7,10 @@ import type {
   HypotheticalCardView,
   PlayerIndex,
 } from "@hanabi-live/game";
+import { getClueCost } from "@hanabi-live/game";
 import { eRange } from "complete-common";
 import type { ClientAction } from "../types/ClientAction";
+import type { State } from "../types/State";
 import type { ActionIncludingHypothetical } from "../types/actions";
 import { setEmpathyOnHand } from "./HanabiCardMouse";
 import type { LayoutChild } from "./LayoutChild";
@@ -72,7 +74,6 @@ export function finishHypothetical(): void {
 }
 
 export function sendHypotheticalAction(hypoAction: ClientAction): void {
-  const gameState = globals.state.replay.hypothetical!.ongoing;
   let intent: HypotheticalActionIntent;
   switch (hypoAction.type) {
     case ActionType.Play: {
@@ -104,6 +105,31 @@ export function sendHypotheticalAction(hypoAction: ClientAction): void {
     }
   }
 
+  planAndSendHypotheticalAction(intent);
+}
+
+/** Spends a clue to give the turn to the next player, without giving a clue. */
+export function sendHypotheticalPassTurn(): void {
+  if (!canPassTurnInHypothetical(globals.state)) {
+    return;
+  }
+
+  planAndSendHypotheticalAction({ type: "passTurn" });
+}
+
+/** The leader (or a solo viewer) can pass when a clue could be given. */
+export function canPassTurnInHypothetical(state: State): boolean {
+  const { hypothetical, shared } = state.replay;
+  return (
+    hypothetical !== null
+    && (shared === null || shared.amLeader)
+    && hypothetical.ongoing.turn.currentPlayerIndex !== null
+    && hypothetical.ongoing.clueTokens >= getClueCost(globals.variant)
+  );
+}
+
+function planAndSendHypotheticalAction(intent: HypotheticalActionIntent) {
+  const gameState = globals.state.replay.hypothetical!.ongoing;
   const cardViews: HypotheticalCardView[] = [];
   if (gameState.turn.currentPlayerIndex !== null) {
     switch (intent.type) {
@@ -133,6 +159,10 @@ export function sendHypotheticalAction(hypoAction: ClientAction): void {
             visibleRank: card.visibleRank,
           });
         }
+        break;
+      }
+
+      case "passTurn": {
         break;
       }
     }
