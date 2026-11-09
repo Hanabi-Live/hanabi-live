@@ -195,6 +195,58 @@ const STRIKE_SQUARE = {
   h: 0.053,
   /** The horizontal distance from one strike square to the next. */
   spacing: 0.04,
+  cornerRadius: 0.005,
+} as const;
+
+/**
+ * The red X inside a strike square, in fractions of the stage. It is centered horizontally and sits
+ * `insetY` below the square's top.
+ */
+const STRIKE_X = {
+  w: 0.02,
+  h: 0.036,
+  insetY: 0.01,
+} as const;
+
+/**
+ * The "?" inside a strike square when the strikes are hidden, in fractions of the stage. Its inset
+ * is from the square's top-left corner.
+ */
+const STRIKE_QUESTION_MARK = {
+  insetX: 0.0105,
+  insetY: 0.013,
+  fontSize: 0.032,
+} as const;
+
+/** The widths of the warning borders around the board areas, in fractions of the stage width. */
+const WARNING_BORDER_WIDTH = {
+  /** Around the score area when the team cannot afford to spend more clues. */
+  scoreArea: 0.003,
+  /** Around the discard area when the team is at the maximum amount of clues. */
+  noDiscard: 0.005,
+  /** Around the discard area in a "Double Discard" situation. */
+  doubleDiscard: 0.004,
+} as const;
+
+/** The opacity of the border around the discard area in a "Double Discard" situation. */
+const DOUBLE_DISCARD_BORDER_OPACITY = 0.75;
+
+/**
+ * The width of the line under the variant name, in pixels. Unlike the other outlines, it does not
+ * scale with the stage, so it stays a hairline.
+ */
+const VARIANT_UNDERLINE_WIDTH_PIXELS = 1;
+
+/** The corner radius of the border around the deck, in fractions of the stage height. */
+const DECK_BORDER_CORNER_RADIUS = 0.01;
+
+/**
+ * Where the middle of the ring around a timer (which shows that a pause is queued) is, relative to
+ * the timer's top-left corner, in fractions of the stage.
+ */
+const TIMER_PAUSE_RING_CENTER = {
+  x: 0.0328,
+  y: 0.034,
 } as const;
 
 /** The left edge of a strike square, in fractions of the stage width. */
@@ -808,7 +860,7 @@ function drawDeck() {
     width: deckValues.w! * winW,
     height: deckValues.h! * winH,
     stroke: DECK_PLAY_AVAILABLE_COLOR,
-    cornerRadius: 0.01 * winH,
+    cornerRadius: DECK_BORDER_CORNER_RADIUS * winH,
     strokeWidth: 10 * STROKE_WIDTH_UNIT * winH,
     visible: false,
   });
@@ -842,7 +894,7 @@ function drawScoreArea() {
     width: scoreAreaValues.w! * winW,
     height: scoreAreaValues.h! * winH,
     stroke: WARNING_COLOR,
-    strokeWidth: 0.003 * winW,
+    strokeWidth: WARNING_BORDER_WIDTH.scoreArea * winW,
     cornerRadius: PANEL_CORNER_RADIUS * winW,
     visible: false,
     listening: false,
@@ -1106,7 +1158,7 @@ function drawScoreArea() {
         height: STRIKE_SQUARE.h * winH,
         stroke: "black",
         strokeWidth: 2 * STROKE_WIDTH_UNIT * winH,
-        cornerRadius: 0.005 * winW,
+        cornerRadius: STRIKE_SQUARE.cornerRadius * winW,
         listening: true,
       },
       i,
@@ -1117,10 +1169,10 @@ function drawScoreArea() {
     // Draw the red X that indicates the strike.
     const strikeX = new StrikeX(
       {
-        x: (strikeSquareX(i) + 0.005) * winW,
-        y: 0.125 * winH,
-        width: 0.02 * winW,
-        height: 0.036 * winH,
+        x: (strikeSquareX(i) + (STRIKE_SQUARE.w - STRIKE_X.w) / 2) * winW,
+        y: (STRIKE_SQUARE.y + STRIKE_X.insetY) * winH,
+        width: STRIKE_X.w * winW,
+        height: STRIKE_X.h * winH,
         image: globals.imageLoader!.get("x"),
         opacity: 0,
         listening: true,
@@ -1137,9 +1189,9 @@ function drawScoreArea() {
     ) {
       const questionMarkLabel = basicTextLabel.clone({
         text: "?",
-        fontSize: 0.032 * winH,
-        x: (strikeSquareX(i) + 0.0105) * winW,
-        y: 0.128 * winH,
+        fontSize: STRIKE_QUESTION_MARK.fontSize * winH,
+        x: (strikeSquareX(i) + STRIKE_QUESTION_MARK.insetX) * winW,
+        y: (STRIKE_SQUARE.y + STRIKE_QUESTION_MARK.insetY) * winH,
         listening: false,
       }) as Konva.Text;
       globals.elements.scoreArea.add(questionMarkLabel);
@@ -1480,7 +1532,7 @@ function drawStatistics() {
       underlineY,
     ],
     stroke: LABEL_COLOR,
-    strokeWidth: 1,
+    strokeWidth: VARIANT_UNDERLINE_WIDTH_PIXELS,
     lineJoin: "round",
     ...LINE_SHADOW,
     shadowOpacity: 0,
@@ -1619,7 +1671,7 @@ function drawDiscardArea() {
     width: DISCARD_AREA.w * winW,
     height: DISCARD_AREA.h * winH,
     stroke: WARNING_COLOR,
-    strokeWidth: 0.005 * winW,
+    strokeWidth: WARNING_BORDER_WIDTH.noDiscard * winW,
     cornerRadius: PANEL_CORNER_RADIUS * winW,
     visible: false,
     listening: false,
@@ -1633,9 +1685,9 @@ function drawDiscardArea() {
     width: DISCARD_AREA.w * winW,
     height: DISCARD_AREA.h * winH,
     stroke: DOUBLE_DISCARD_COLOR,
-    strokeWidth: 0.004 * winW,
+    strokeWidth: WARNING_BORDER_WIDTH.doubleDiscard * winW,
     cornerRadius: PANEL_CORNER_RADIUS * winW,
-    opacity: 0.75,
+    opacity: DOUBLE_DISCARD_BORDER_OPACITY,
     visible: false,
     listening: false,
   });
@@ -1719,8 +1771,8 @@ function drawTimers() {
   // A circle around the timer indicates that we have queued a pause. (We want the timer to be on
   // top of this so that it does not interfere with mouse events.)
   globals.elements.timer1Circle = new Konva.Ellipse({
-    x: (timerValues.x1 + 0.0328) * winW,
-    y: (timerValues.y1 + 0.034) * winH,
+    x: (timerValues.x1 + TIMER_PAUSE_RING_CENTER.x) * winW,
+    y: (timerValues.y1 + TIMER_PAUSE_RING_CENTER.y) * winH,
     radiusX: 0.05 * winW,
     radiusY: 0.07 * winH,
     stroke: ACTIVE_INDICATOR_COLOR,
@@ -2236,7 +2288,7 @@ function drawPreplayArea() {
   const w = 0.29;
   const h = 0.1;
   const x = clueAreaValues.x + clueAreaValues.w! / 2 - w / 2;
-  const y = clueAreaValues.y + 0.05; // "clueAreaValues.h" does not exist
+  const y = clueAreaValues.y + 0.05; // Near the top of the clue area, not centered in it.
   globals.elements.premoveCancelButton = new Button({
     x: x * winW,
     y: y * winH,

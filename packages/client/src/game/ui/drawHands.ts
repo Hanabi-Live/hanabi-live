@@ -50,6 +50,41 @@ const RIGHT_SIDE_NAME_FRAME_OFFSET_X = 0.111;
  */
 const KELDON_NAME_FRAME_GAP_Y = 0.02;
 
+/**
+ * In the Keldon layout for 5 players, the gap between a hand in the top row and the name frame
+ * below it, in fractions of the stage height.
+ */
+const KELDON_5P_TOP_NAME_FRAME_GAP_Y = 0.005;
+
+/**
+ * In the Keldon layout for 5 and 6 players, where the name frames of the hands that run down the
+ * left and right sides of the board are, in fractions of the stage. The left frame starts `leftX`
+ * to the left of its hand. The left and right frames sit `leftY` and `rightY` below the top of the
+ * left side hand.
+ */
+const KELDON_SIDE_NAME_FRAME_OFFSET = {
+  5: { leftX: 0.0095, leftY: 0.022, rightY: 0.025 },
+  6: { leftX: 0.009, leftY: 0.01, rightY: 0.01 },
+} as const;
+
+/** In the Keldon layout for 6 players, how much narrower our own hand and the top hands are. */
+const KELDON_6P_HAND_WIDTH_SCALE = 0.75;
+
+/**
+ * In the Keldon layout for 6 players, how much narrower the hands on the sides of the board are.
+ */
+const KELDON_6P_SIDE_HAND_WIDTH_SCALE = 0.8;
+
+/** The black line drawn at one end of each hand. */
+const HAND_BLACK_LINE = {
+  /** In fractions of the stage width. */
+  w: 0.0075,
+  /** In fractions of the stage height. */
+  strokeWidth: 0.002,
+  /** In fractions of the stage width. */
+  cornerRadius: 0.003,
+} as const;
+
 /** The top of our own hand at the bottom of the board in Keldon mode. */
 const KELDON_BOTTOM_HAND_Y = 0.77;
 
@@ -76,7 +111,7 @@ export function drawHands(winW: number, winH: number): void {
    */
   const reducedHandH = 0.165;
   const handPos6Ratio = narrowHandW / keldonHandH;
-  const handPos6W = reducedHandH * handPos6Ratio * 0.75;
+  const handPos6W = reducedHandH * handPos6Ratio * KELDON_6P_HAND_WIDTH_SCALE;
   /** The size of a hand that runs down the left or right side of the board. */
   const sideHand = { w: 0.301, h: 0.18 } as const;
   handPos[2] = [
@@ -117,15 +152,27 @@ export function drawHands(winW: number, winH: number): void {
     {
       x: 0.273,
       y: KELDON_BOTTOM_HAND_Y,
-      w: narrowHandW * 0.75,
+      w: narrowHandW * KELDON_6P_HAND_WIDTH_SCALE,
       h: keldonHandH,
       rot: 0,
     },
-    { x: 0.03, y: 0.72, w: sideHand.w * 0.8, h: sideHand.h, rot: -90 },
+    {
+      x: 0.03,
+      y: 0.72,
+      w: sideHand.w * KELDON_6P_SIDE_HAND_WIDTH_SCALE,
+      h: sideHand.h,
+      rot: -90,
+    },
     { x: 0.0235, y: 0.009, w: handPos6W, h: reducedHandH, rot: 0 },
     { x: 0.289, y: 0.009, w: handPos6W, h: reducedHandH, rot: 0 },
     { x: 0.5535, y: 0.009, w: handPos6W, h: reducedHandH, rot: 0 },
-    { x: 0.77, y: 0.292, w: sideHand.w * 0.8, h: sideHand.h, rot: 90 },
+    {
+      x: 0.77,
+      y: 0.292,
+      w: sideHand.w * KELDON_6P_SIDE_HAND_WIDTH_SCALE,
+      h: sideHand.h,
+      rot: 90,
+    },
   ];
   if (globals.options.oneExtraCard) {
     const adjustedYUs = 0.018;
@@ -265,26 +312,26 @@ export function drawHands(winW: number, winH: number): void {
       h: namePosValues.h,
     },
     {
-      x: handPos[5][1]!.x - 0.0095,
-      y: handPos[5][1]!.y + 0.022,
+      x: handPos[5][1]!.x - KELDON_SIDE_NAME_FRAME_OFFSET[5].leftX,
+      y: handPos[5][1]!.y + KELDON_SIDE_NAME_FRAME_OFFSET[5].leftY,
       w: SIDE_NAME_FRAME_W,
       h: namePosValues.h,
     },
     {
       x: handPos[5][2]!.x - NAME_FRAME_INSET_X,
-      y: handPos[5][2]!.y + handPos[5][2]!.h + 0.005,
+      y: handPos[5][2]!.y + handPos[5][2]!.h + KELDON_5P_TOP_NAME_FRAME_GAP_Y,
       w: handPos[5][2]!.w + NAME_FRAME_INSET_X * 2,
       h: namePosValues.h,
     },
     {
       x: handPos[5][3]!.x - NAME_FRAME_INSET_X,
-      y: handPos[5][3]!.y + handPos[5][3]!.h + 0.005,
+      y: handPos[5][3]!.y + handPos[5][3]!.h + KELDON_5P_TOP_NAME_FRAME_GAP_Y,
       w: handPos[5][3]!.w + NAME_FRAME_INSET_X * 2,
       h: namePosValues.h,
     },
     {
       x: handPos[5][4]!.x - RIGHT_SIDE_NAME_FRAME_OFFSET_X,
-      y: handPos[5][1]!.y + 0.025,
+      y: handPos[5][1]!.y + KELDON_SIDE_NAME_FRAME_OFFSET[5].rightY,
       w: SIDE_NAME_FRAME_W,
       h: namePosValues.h,
     },
@@ -297,8 +344,8 @@ export function drawHands(winW: number, winH: number): void {
       h: namePosValues.h,
     },
     {
-      x: handPos[6][1]!.x - 0.009,
-      y: handPos[6][1]!.y + 0.01,
+      x: handPos[6][1]!.x - KELDON_SIDE_NAME_FRAME_OFFSET[6].leftX,
+      y: handPos[6][1]!.y + KELDON_SIDE_NAME_FRAME_OFFSET[6].leftY,
       w: SIDE_NAME_FRAME_W,
       h: namePosValues.h,
     },
@@ -322,7 +369,7 @@ export function drawHands(winW: number, winH: number): void {
     },
     {
       x: handPos[6][5]!.x - RIGHT_SIDE_NAME_FRAME_OFFSET_X,
-      y: handPos[6][1]!.y + 0.01,
+      y: handPos[6][1]!.y + KELDON_SIDE_NAME_FRAME_OFFSET[6].rightY,
       w: SIDE_NAME_FRAME_W,
       h: namePosValues.h,
     },
@@ -447,12 +494,12 @@ export function drawHands(winW: number, winH: number): void {
       const blackLine = new Konva.Rect({
         x: blackLineX * winW,
         y: blackLineY * winH,
-        width: 0.0075 * winW,
+        width: HAND_BLACK_LINE.w * winW,
         height: handValues.h * winH,
         fill: OFF_BLACK,
         stroke: OFF_BLACK,
-        strokeWidth: 0.002 * winH,
-        cornerRadius: 0.003 * winW,
+        strokeWidth: HAND_BLACK_LINE.strokeWidth * winH,
+        cornerRadius: HAND_BLACK_LINE.cornerRadius * winW,
         listening: false,
       });
       blackLineGroup.add(blackLine);

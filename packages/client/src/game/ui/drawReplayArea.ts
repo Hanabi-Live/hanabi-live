@@ -48,6 +48,8 @@ export function drawReplayArea(winW: number, winH: number): void {
     y: 0.0425,
     w: replayAreaValues.w - 2 * replayBarInset,
     h: 0.01,
+    /** In fractions of the stage height. */
+    cornerRadius: 0.005,
   };
   globals.elements.replayBar = new Konva.Rect({
     x: replayBarValues.x * winW,
@@ -55,7 +57,7 @@ export function drawReplayArea(winW: number, winH: number): void {
     width: replayBarValues.w * winW,
     height: replayBarValues.h * winH,
     fill: "black",
-    cornerRadius: 0.005 * winH,
+    cornerRadius: replayBarValues.cornerRadius * winH,
     listening: false,
   });
   globals.elements.replayArea.add(globals.elements.replayBar);

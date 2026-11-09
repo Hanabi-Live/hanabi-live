@@ -3,7 +3,7 @@ import { assertDefined } from "complete-common";
 
 type DrawFunction = (ctx: CanvasRenderingContext2D) => void;
 const shapeFunctions = new Map<number, DrawFunction>();
-const sf = 2.2; // Scale factor
+const SCALE_FACTOR = 2.2;
 
 shapeFunctions.set(0, (ctx: CanvasRenderingContext2D) => {
   ctx.beginPath();
@@ -12,7 +12,7 @@ shapeFunctions.set(0, (ctx: CanvasRenderingContext2D) => {
 
 shapeFunctions.set(1, (ctx: CanvasRenderingContext2D) => {
   ctx.beginPath();
-  ctx.scale(sf, sf);
+  ctx.scale(SCALE_FACTOR, SCALE_FACTOR);
   ctx.translate(-49.066_27, -129.964_57);
   ctx.moveTo(49.037_052, 114.060_04);
   ctx.bezierCurveTo(
@@ -143,13 +143,13 @@ shapeFunctions.set(1, (ctx: CanvasRenderingContext2D) => {
     49.037_048,
     114.060_04,
   );
-  ctx.scale(1 / sf, 1 / sf);
+  ctx.scale(1 / SCALE_FACTOR, 1 / SCALE_FACTOR);
   ctx.closePath();
 });
 
 shapeFunctions.set(2, (ctx: CanvasRenderingContext2D) => {
   ctx.beginPath();
-  ctx.scale(sf, sf);
+  ctx.scale(SCALE_FACTOR, SCALE_FACTOR);
   ctx.translate(-69.621_888, -87.003_819);
   ctx.moveTo(79.134_002, 66.457_149);
   ctx.bezierCurveTo(
@@ -272,13 +272,13 @@ shapeFunctions.set(2, (ctx: CanvasRenderingContext2D) => {
     79.134_002,
     66.457_163,
   );
-  ctx.scale(1 / sf, 1 / sf);
+  ctx.scale(1 / SCALE_FACTOR, 1 / SCALE_FACTOR);
   ctx.closePath();
 });
 
 shapeFunctions.set(3, (ctx: CanvasRenderingContext2D) => {
   ctx.beginPath();
-  ctx.scale(sf, sf);
+  ctx.scale(SCALE_FACTOR, SCALE_FACTOR);
   ctx.translate(-81.640_414, -140.588_27);
   ctx.moveTo(88.098_524, 108.798_91);
   ctx.bezierCurveTo(
@@ -489,13 +489,13 @@ shapeFunctions.set(3, (ctx: CanvasRenderingContext2D) => {
     88.098_534,
     108.7974,
   );
-  ctx.scale(1 / sf, 1 / sf);
+  ctx.scale(1 / SCALE_FACTOR, 1 / SCALE_FACTOR);
   ctx.closePath();
 });
 
 shapeFunctions.set(4, (ctx: CanvasRenderingContext2D) => {
   ctx.beginPath();
-  ctx.scale(sf, sf);
+  ctx.scale(SCALE_FACTOR, SCALE_FACTOR);
   ctx.translate(-86.004_996, -130.169_46);
   ctx.moveTo(93.144_414, 103.078_08);
   ctx.bezierCurveTo(
@@ -714,13 +714,13 @@ shapeFunctions.set(4, (ctx: CanvasRenderingContext2D) => {
     93.144_444,
     103.078_96,
   );
-  ctx.scale(1 / sf, 1 / sf);
+  ctx.scale(1 / SCALE_FACTOR, 1 / SCALE_FACTOR);
   ctx.closePath();
 });
 
 shapeFunctions.set(5, (ctx: CanvasRenderingContext2D) => {
   ctx.beginPath();
-  ctx.scale(sf, sf);
+  ctx.scale(SCALE_FACTOR, SCALE_FACTOR);
   ctx.translate(-89.993_569, -112.6882);
   ctx.moveTo(94.939_252, 82.023_243);
   ctx.bezierCurveTo(
@@ -923,7 +923,7 @@ shapeFunctions.set(5, (ctx: CanvasRenderingContext2D) => {
     94.939_222,
     82.026_553,
   );
-  ctx.scale(1 / sf, 1 / sf);
+  ctx.scale(1 / SCALE_FACTOR, 1 / SCALE_FACTOR);
   ctx.closePath();
 });
 
@@ -934,7 +934,7 @@ shapeFunctions.set(6, (ctx: CanvasRenderingContext2D) => {
 
 shapeFunctions.set(7, (ctx: CanvasRenderingContext2D) => {
   ctx.beginPath();
-  ctx.scale(sf, sf);
+  ctx.scale(SCALE_FACTOR, SCALE_FACTOR);
   ctx.translate(-82.570_534, -140.298_14);
   ctx.moveTo(69.064_246, 130.785_45);
   ctx.bezierCurveTo(
@@ -1299,7 +1299,7 @@ shapeFunctions.set(7, (ctx: CanvasRenderingContext2D) => {
     69.064_25,
     130.786_19,
   );
-  ctx.scale(1 / sf, 1 / sf);
+  ctx.scale(1 / SCALE_FACTOR, 1 / SCALE_FACTOR);
   ctx.closePath();
 });
 
