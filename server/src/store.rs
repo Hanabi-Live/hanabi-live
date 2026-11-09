@@ -1281,7 +1281,6 @@ mod tests {
         let Some((db, pool)) = database().await? else {
             return Ok(());
         };
-        crate::accounts::test_support::legacy_column_order(&pool).await?;
         let state = LiveState::for_test(&pool).await?;
         let store = Store::fixture(pool.clone(), state);
         let result = async {

@@ -7,29 +7,6 @@ use std::{
 static DATABASE_ID: AtomicU64 = AtomicU64::new(0);
 const DEFAULT_MAX_CONNECTIONS: u32 = 6;
 
-pub(crate) async fn legacy_column_order(pool: &PgPool) -> anyhow::Result<()> {
-    for (table, column, definition) in [
-        ("chat_log", "source", "TEXT NOT NULL DEFAULT 'user'"),
-        ("games", "all_or_nothing", "BOOLEAN NOT NULL DEFAULT FALSE"),
-        ("games", "one_extra_card", "BOOLEAN NOT NULL DEFAULT FALSE"),
-        ("games", "one_less_card", "BOOLEAN NOT NULL DEFAULT FALSE"),
-    ] {
-        #[expect(
-            clippy::disallowed_methods,
-            reason = "table and column names cannot be bound parameters"
-        )]
-        sqlx::raw_sql(sqlx::AssertSqlSafe(format!(
-            "ALTER TABLE {table} RENAME COLUMN {column} TO legacy_column;
-             ALTER TABLE {table} ADD COLUMN {column} {definition};
-             UPDATE {table} SET {column}=legacy_column;
-             ALTER TABLE {table} DROP COLUMN legacy_column"
-        )))
-        .execute(pool)
-        .await?;
-    }
-    Ok(())
-}
-
 pub struct TestDb {
     pub pool: PgPool,
     admin: PgConnection,

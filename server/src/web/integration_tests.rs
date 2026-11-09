@@ -412,9 +412,6 @@ async fn native_browser_login_ws_bootstrap_and_command_routing_postgres() {
     let Some(fixture) = test_support::Fixture::start().await else {
         return;
     };
-    accounts::test_support::legacy_column_order(&fixture.db.pool)
-        .await
-        .unwrap();
     // Intentionally use Unicode to verify the username survives login, storage, and WebSocket messages.
     let alice_cookie = login(&fixture, "Alicè").await;
     let bob_cookie = login(&fixture, "Bob").await;

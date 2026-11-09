@@ -309,9 +309,6 @@ async fn public_database_routes_filters_privacy_exports_and_html() {
         INSERT INTO user_stats(user_id,variant_id,num_games,best_score2,best_score2_mod) VALUES(1,0,2,25,0);
         INSERT INTO variant_stats(variant_id,num_games,best_score2,num_max_scores) VALUES(0,2,25,1);")
         .execute(&db.pool).await.unwrap();
-    crate::accounts::test_support::legacy_column_order(&db.pool)
-        .await
-        .unwrap();
     sqlx::query!("UPDATE games SET datetime_started='2026-01-01T00:00:00.12345Z' WHERE id=3")
         .execute(&db.pool)
         .await
