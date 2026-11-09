@@ -71,6 +71,11 @@ const WRITE_TIMEOUT: Duration = Duration::from_secs(5);
 const CLOSE_SEND_TIMEOUT: Duration = Duration::from_secs(1);
 /// The received messages a connection queues before reading pauses.
 const INBOUND_QUEUE: usize = 64;
+/// How often the server pings a connection. The pings keep idle connections open through
+/// routers that drop quiet ones, and let `RECEIVE_TIMEOUT` find connections that have died.
+const PING_INTERVAL: Duration = Duration::from_secs(30);
+/// How long a connection may send nothing, not even a reply to a ping, before it is closed.
+const RECEIVE_TIMEOUT: Duration = Duration::from_secs(60);
 
 pub struct App {
     pub store: Store,
@@ -769,9 +774,18 @@ async fn connection(
     let writer_session = session.clone();
     let writer_shutdown = app.lifecycle.shutdown.clone();
     let writer = tokio::spawn(async move {
+        let mut ping = tokio::time::interval_at(
+            tokio::time::Instant::now() + PING_INTERVAL,
+            PING_INTERVAL,
+        );
+        ping.set_missed_tick_behavior(tokio::time::MissedTickBehavior::Delay);
         loop {
             tokio::select! {
                 ()=connection_stopped(&writer_session,&writer_shutdown)=>break,
+                _=ping.tick()=>{
+                    let sent=tokio::time::timeout(WRITE_TIMEOUT,sink.send(Message::Ping(axum::body::Bytes::new()))).await;
+                    if !matches!(sent,Ok(Ok(()))) {break;}
+                }
                 next=outgoing.recv()=>{
                     let Some(Outbound {message,permit,completion,global_permit})=next else {break;};
                     let send=sink.send(message);
@@ -821,7 +835,12 @@ async fn connection(
         loop {
             tokio::select! {
                 ()=connection_stopped(&reader_session,&reader_shutdown)=>break,
-                next=stream.next()=>match next {
+                next=tokio::time::timeout(RECEIVE_TIMEOUT,stream.next())=>match next {
+                    Err(_)=>{
+                        tracing::info!("Closing a connection that sent nothing for {} seconds.",RECEIVE_TIMEOUT.as_secs());
+                        break;
+                    }
+                    Ok(next)=>match next {
                     Some(Ok(Message::Text(text)))=>{
                         let Some(message)=incoming_bytes.admit(&reader_session,&text) else {break;};
                         if incoming.try_send(message).is_err() {
@@ -832,6 +851,7 @@ async fn connection(
                     }
                     Some(Ok(Message::Ping(_)|Message::Pong(_)))=>{},
                     _=>break,
+                    },
                 }
             }
         }
