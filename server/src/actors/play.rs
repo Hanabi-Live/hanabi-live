@@ -142,6 +142,15 @@ impl TableActor {
                         ),
                     ));
                 }
+                // The client rebuilds the game when it finishes, which needs the identities of the
+                // cards that were hidden from it.
+                e.messages.push((
+                    a.session.clone(),
+                    frame(
+                        hanabi_protocol::server::CARD_IDENTITIES,
+                        self.card_identities(s),
+                    ),
+                ));
                 e.messages.push((
                     a.session.clone(),
                     frame(
@@ -151,13 +160,6 @@ impl TableActor {
                             database_id: i64::from(s.game_id),
                             shared_replay_leader: self.leader_name(),
                         },
-                    ),
-                ));
-                e.messages.push((
-                    a.session.clone(),
-                    frame(
-                        hanabi_protocol::server::CARD_IDENTITIES,
-                        self.card_identities(s),
                     ),
                 ));
                 e.messages.push((

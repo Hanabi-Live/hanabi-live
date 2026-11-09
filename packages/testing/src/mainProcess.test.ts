@@ -640,10 +640,25 @@ databaseDescribe("compiled application entry point (rust)", () => {
         expect.objectContaining({ rank: -1, suitIndex: -1 }),
         expect.objectContaining({ rank: -1, suitIndex: -1 }),
       ]);
+      // The client rebuilds the game when it finishes, so it needs the identities of the scrubbed
+      // cards first.
+      const arrivals: string[] = [];
+      owner.socket.on("message", (raw) => {
+        if (Buffer.isBuffer(raw)) {
+          arrivals.push(raw.toString().split(" ", 1)[0] ?? "");
+        }
+      });
       owner.send("tableTerminate", { tableID });
       const finished = await owner.receive(
         "finishOngoingGame",
         SERVER_COMMAND_SCHEMAS.finishOngoingGame,
+      );
+      await owner.receive(
+        "cardIdentities",
+        SERVER_COMMAND_SCHEMAS.cardIdentities,
+      );
+      expect(arrivals.indexOf("cardIdentities")).toBeLessThan(
+        arrivals.indexOf("finishOngoingGame"),
       );
       expect(
         await sql`SELECT seat FROM game_participants WHERE game_id=${finished.databaseID}`,
