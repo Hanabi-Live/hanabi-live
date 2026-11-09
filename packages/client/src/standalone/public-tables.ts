@@ -39,6 +39,15 @@ const collator = new Intl.Collator(undefined, {
   sensitivity: "base",
 });
 
+/** The colors that the bars of ordinary scores cycle through. */
+const BAR_COLORS = ["#99bbff", "#3366ff", "#6699ff"] as const;
+
+/** Red */
+const ZERO_SCORE_BAR_COLOR = "#aa5555";
+
+/** Green */
+const BEST_SCORE_BAR_COLOR = "#00aa00";
+
 init().catch((error: unknown) => {
   showError(errorDetails(error, "Loading the page"));
 });
@@ -453,15 +462,6 @@ function drawScoreChart(
     },
   });
 }
-
-/** The colors that the bars of ordinary scores cycle through. */
-const BAR_COLORS = ["#99bbff", "#3366ff", "#6699ff"] as const;
-
-/** Red */
-const ZERO_SCORE_BAR_COLOR = "#aa5555";
-
-/** Green */
-const BEST_SCORE_BAR_COLOR = "#00aa00";
 
 /** Zero scores are red, the best score is green, and the rest alternate shades of blue. */
 function barColor(row: ScoreFrequency, best: boolean, index: number): string {
