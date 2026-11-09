@@ -1,7 +1,7 @@
 // Checks that "emojis.json" and "emotes.json" are in alphabetical order, that each emote list in
-// "emotes.json" matches the images in its directory, and that the Twitch and BetterTTV directories
-// hold exactly the global emotes of those services, each showing the same pixels as the PNG that
-// the service serves. It exits with an error if any check fails.
+// "emotes.json" matches the images in its directory, and that the Twitch, BetterTTV, and
+// FrankerFaceZ directories hold exactly the global emotes of those services, each showing the same
+// pixels as the PNG that the service serves. It exits with an error if any check fails.
 
 import { CHAT_EMOTES, CHAT_SPECIAL_EMOTES } from "@hanabi-live/data";
 import type { DecodedPng } from "fast-png";
@@ -14,6 +14,8 @@ const BETTERTTV_GLOBAL_EMOTES_URL =
 /** Twitch's own API requires OAuth credentials, so this uses a public mirror of it. */
 const TWITCH_GLOBAL_EMOTES_URL =
   "https://emotes.adamcy.pl/v1/global/emotes/twitch";
+const FRANKERFACEZ_GLOBAL_EMOTES_URL =
+  "https://api.frankerfacez.com/v1/set/global";
 const TIMEOUT_MS = 30_000;
 const REPO_ROOT = path.resolve(import.meta.dirname, "..", "..", "..");
 const EMOTES_DIR = path.join(REPO_ROOT, "public", "img", "emotes");
@@ -47,6 +49,24 @@ interface BetterTTVEmote {
   readonly modifier: boolean;
 }
 
+interface FrankerFaceZResponse {
+  /** The sets that every user has; the others belong to particular users. */
+  readonly default_sets: readonly number[];
+  readonly sets: Readonly<Record<string, FrankerFaceZSet>>;
+}
+
+interface FrankerFaceZSet {
+  readonly emoticons: readonly FrankerFaceZEmote[];
+}
+
+interface FrankerFaceZEmote {
+  readonly name: string;
+  /** Modifiers change other emotes rather than appearing on their own. */
+  readonly modifier: boolean;
+  /** Maps each scale to an image URL. */
+  readonly urls: Readonly<Record<string, string>>;
+}
+
 interface MirrorEmote {
   readonly code: string;
   readonly urls: ReadonlyArray<{ readonly size: string; readonly url: string }>;
@@ -62,6 +82,11 @@ const SERVICES = [
     name: "Twitch",
     category: "twitch",
     fetchGlobalEmotes: fetchTwitchEmotes,
+  },
+  {
+    name: "FrankerFaceZ",
+    category: "frankerfacez",
+    fetchGlobalEmotes: fetchFrankerFaceZEmotes,
   },
 ] as const satisfies readonly Service[];
 
@@ -100,7 +125,7 @@ if (failures.length > 0) {
 }
 
 console.log(
-  "The emoji and emotes are in alphabetical order, every emote list matches its directory, and the Twitch and BetterTTV emotes match their global emotes.",
+  "The emoji and emotes are in alphabetical order, every emote list matches its directory, and the Twitch, BetterTTV, and FrankerFaceZ emotes match their global emotes.",
 );
 
 /**
@@ -218,6 +243,24 @@ async function fetchBetterTTVEmotes(): Promise<readonly UpstreamEmote[]> {
       // Without an extension, the CDN chooses the format from the request's "Accept" header.
       imageURL: `https://cdn.betterttv.net/emote/${emote.id}/1x.png`,
     }));
+}
+
+async function fetchFrankerFaceZEmotes(): Promise<readonly UpstreamEmote[]> {
+  const response = await fetchOK(FRANKERFACEZ_GLOBAL_EMOTES_URL);
+  const { default_sets: defaultSets, sets } =
+    (await response.json()) as FrankerFaceZResponse;
+  return defaultSets
+    .flatMap((setID) => sets[setID]?.emoticons ?? [])
+    .filter((emote) => !emote.modifier)
+    .map((emote) => {
+      const imageURL = emote.urls["1"];
+      if (imageURL === undefined) {
+        throw new Error(
+          `The FrankerFaceZ emote "${emote.name}" has no 1x image.`,
+        );
+      }
+      return { code: emote.name, imageURL };
+    });
 }
 
 async function fetchTwitchEmotes(): Promise<readonly UpstreamEmote[]> {

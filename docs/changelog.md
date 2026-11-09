@@ -7,6 +7,8 @@ listed here.
 
 ## November 9th, 2026
 
+- Added the current global FrankerFaceZ emotes, and removed the ones that are no
+  longer global.
 - "Resources" now opens a full page instead of a pop-up, with its links grouped
   by topic.
 - The emoji and emote pickers are now in alphabetical order.
