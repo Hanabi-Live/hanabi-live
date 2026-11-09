@@ -77,6 +77,7 @@
     "build-standalone": "bash scripts/dev/build-standalone.sh",
     "check-css": "bash scripts/lint/check-css.sh",
     "check-deployment": "bun --tsconfig-override tsconfig.monorepo.json ./packages/scripts/src/checkDeployment.mts",
+    "check-emoji": "bun --tsconfig-override tsconfig.monorepo.json ./packages/scripts/src/checkEmoji.mts",
     "check-knip": "bunx --bun --no-install knip --treat-config-hints-as-errors",
     "check-shellcheck": "bash scripts/lint/check-shellcheck.sh",
     "check-templates": "bash scripts/lint/check-templates.sh",
