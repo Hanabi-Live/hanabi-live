@@ -410,7 +410,7 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip, UICard {
     // Show or hide pips, shadow, etc.
     this.showCardElements(morphedBlank, suitToShow, rankToShow);
 
-    this.noteIndicator.setGlowing(
+    this.noteIndicator.setIdentitySource(
       isCardIdentityFromNote(this.identityPresentationOptions(cardIdentity)),
     );
 

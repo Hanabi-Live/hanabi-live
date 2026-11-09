@@ -1,38 +1,48 @@
 import Konva from "konva";
-import type { Context } from "konva/lib/Context";
 
 /** How far the note indicator tilts to show spectators that a note was updated. */
 const TILT_DEGREES = 15;
 
-/** The glow that shows that the note determines the suit or rank shown on the card face. */
-const GLOW_COLOR = "#00e5ff";
-const GLOW_BLUR = 20;
+/**
+ * The note icon is tinted blue when the note determines the suit or rank shown on the card face.
+ * The icon is yellow, so this hue rotation turns it blue.
+ */
+const IDENTITY_SOURCE_FILTER = "hue-rotate(170deg) saturate(4)";
 
-/** Canvas shadows cannot spread, so the glowing icon is drawn this many times to intensify it. */
-const GLOW_PASSES = 3;
+/** The blue copy of each note icon, which is made once for each source image. */
+const identitySourceImages = new WeakMap<
+  CanvasImageSource,
+  HTMLCanvasElement
+>();
+
+function getIdentitySourceImage(image: HTMLImageElement): HTMLCanvasElement {
+  const existing = identitySourceImages.get(image);
+  if (existing !== undefined) {
+    return existing;
+  }
+
+  const canvas = document.createElement("canvas");
+  canvas.width = image.naturalWidth;
+  canvas.height = image.naturalHeight;
+  const ctx = canvas.getContext("2d");
+  if (ctx !== null) {
+    ctx.filter = IDENTITY_SOURCE_FILTER;
+    ctx.drawImage(image, 0, 0);
+  }
+  identitySourceImages.set(image, canvas);
+
+  return canvas;
+}
 
 export class NoteIndicator extends Konva.Image {
   // We tilt the note indicator in order to indicate to spectators that the note was updated.
   tilted = false;
 
-  private glowing = false;
-
-  /** The shadow from the configuration, which the glow replaces while it shows. */
-  private readonly normalShadow: {
-    color: string;
-    blur: number;
-    opacity: number;
-    enabled: boolean;
-  };
+  private readonly normalImage: Konva.ImageConfig["image"];
 
   constructor(config: Konva.ImageConfig) {
     super(config);
-    this.normalShadow = {
-      color: this.shadowColor(),
-      blur: this.shadowBlur(),
-      opacity: this.shadowOpacity(),
-      enabled: this.shadowEnabled(),
-    };
+    this.normalImage = config.image;
   }
 
   setTilted(tilted: boolean): void {
@@ -44,25 +54,14 @@ export class NoteIndicator extends Konva.Image {
     this.tilted = tilted;
   }
 
-  setGlowing(glowing: boolean): void {
-    this.glowing = glowing;
-    if (glowing) {
-      this.shadowColor(GLOW_COLOR);
-      this.shadowBlur(GLOW_BLUR);
-      this.shadowOpacity(1);
-      this.shadowEnabled(true);
-    } else {
-      this.shadowColor(this.normalShadow.color);
-      this.shadowBlur(this.normalShadow.blur);
-      this.shadowOpacity(this.normalShadow.opacity);
-      this.shadowEnabled(this.normalShadow.enabled);
-    }
-  }
-
-  override _sceneFunc(context: Context): void {
-    const passes = this.glowing ? GLOW_PASSES : 1;
-    for (let i = 0; i < passes; i++) {
-      super._sceneFunc(context);
+  /** Tints the icon blue when the note determines the suit or rank shown on the card face. */
+  setIdentitySource(isIdentitySource: boolean): void {
+    const image =
+      isIdentitySource && this.normalImage instanceof HTMLImageElement
+        ? getIdentitySourceImage(this.normalImage)
+        : this.normalImage;
+    if (image !== this.image()) {
+      this.image(image);
     }
   }
 }
