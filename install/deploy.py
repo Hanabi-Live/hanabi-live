@@ -375,7 +375,7 @@ def deploy(root, check, apply_migrations):
                 require(release.digest(root / name) == metadata["files"][name], f"Published file differs: {name}")
             phase("verified")
             print(f"Deployed {revision}; running revision, paired files, and recovery health verified.")
-            print("Verify authenticated browser reconnects and review fresh server logs.")
+            print("Review fresh server logs.")
             prune(backups)
         except (OSError, ValueError, KeyError, subprocess.SubprocessError, zipfile.BadZipFile):
             print(f"Deployment stopped in phase {record['phase']}. Preserve {work}; "

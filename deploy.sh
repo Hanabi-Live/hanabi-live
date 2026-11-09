@@ -6,9 +6,11 @@ set -o errexit -o nounset -o pipefail
 # https://stackoverflow.com/questions/59895/getting-the-source-directory-of-a-bash-script-from-within
 DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &> /dev/null && pwd)
 
+check=false
 for argument in "$@"; do
   case "$argument" in
-    --check | --apply-migrations) ;;
+    --check) check=true ;;
+    --apply-migrations) ;;
     -h | --help)
       echo "Usage: $0 [--check] [--apply-migrations]"
       echo "Deploy approved main to root@hanab.live:/home/hanabi/hanabi-live over SSH."
@@ -47,7 +49,10 @@ REMOTE
 sudo --user=hanabi --preserve-env=GH_TOKEN python3 -B "$tools/deploy.py" "$@"
 REMOTE
 } | ssh -T root@hanab.live "bash -l -s -- $*"; then
-  exit 0
+  if [[ $check == false ]]; then
+    # Sign in and join the lobby the way a returning player does.
+    bun run --cwd "$DIR" check-deployment
+  fi
 else
   status=$?
   if [[ $status == 255 ]]; then
