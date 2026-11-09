@@ -473,7 +473,7 @@ impl Report {
         if !self.is_failure() {
             return;
         }
-        eprintln!(
+        tracing::error!(
             "Server failure: {}",
             json!({
                 "timestamp": chrono::Utc::now().to_rfc3339(),

@@ -289,7 +289,7 @@ async fn metrics_report(control: &Control) -> Result<Response> {
                 .into_response())
         }
         Err(error) => {
-            eprintln!("Database metrics unavailable: {error}");
+            tracing::warn!("Database metrics unavailable: {error}");
             report["database"] = json!({"error":"Database pool activity is unavailable."});
             Ok((StatusCode::SERVICE_UNAVAILABLE, Json(report)).into_response())
         }

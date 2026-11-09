@@ -32,6 +32,7 @@ use std::{
 };
 use tokio::sync::{Semaphore, mpsc, oneshot};
 use tokio_util::task::TaskTracker;
+use tracing::Instrument;
 
 /// The commands the hub queues before senders wait.
 const HUB_QUEUE: usize = 512;
@@ -129,6 +130,7 @@ impl Hub {
     /// stay in the lobby with its players seated and never answer.
     pub(super) fn supervise(&self, id: TableId, task: impl Future<Output = ()> + Send + 'static) {
         let hub = self.sender.clone();
+        let task = task.instrument(tracing::info_span!("table", id = %id));
         self.tasks.spawn(async move {
             if AssertUnwindSafe(task).catch_unwind().await.is_err() {
                 let _ = hub.send(HubCommand::TableFailed(id)).await;

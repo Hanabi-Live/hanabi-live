@@ -98,7 +98,7 @@ impl Alerts {
         if let Some(queue) = &self.queue
             && queue.try_send(report.clone()).is_err()
         {
-            eprintln!(
+            tracing::warn!(
                 "Error alert queue unavailable; diagnostic {} remains in local logs.",
                 report.diagnostic_id
             );

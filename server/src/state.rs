@@ -225,7 +225,7 @@ impl LiveState {
                 }
                 let alive = tokio::time::timeout(WATCHDOG_TIMEOUT, lock.ping()).await;
                 if !matches!(alive, Ok(Ok(()))) {
-                    eprintln!("The connection that holds live-table ownership failed.");
+                    tracing::error!("The connection that holds live-table ownership failed.");
                     watchdog.lost.cancel();
                     break;
                 }

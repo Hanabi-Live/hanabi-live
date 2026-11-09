@@ -115,6 +115,11 @@ tokio-util = { version = "0.7", features = ["rt"] }
 tokio-tungstenite = { version = "0.30", features = ["rustls-tls-webpki-roots"] }
 unicode-normalization = "0.1"
 tower-http = { version = "0.7", features = ["fs", "timeout"] }
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", default-features = false, features = [
+  "fmt",
+  "std"
+] }
 url = "2"
 
 [dev-dependencies]

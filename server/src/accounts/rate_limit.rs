@@ -60,7 +60,7 @@ pub(super) fn charge_password_work(ip: &str) -> Result<(), TooMuchPasswordWork> 
         .unwrap_or_else(PoisonError::into_inner)
         .charge(ip, Instant::now())
         .map_err(|wait| {
-            eprintln!(
+            tracing::warn!(
                 "Refused a password check from {ip} for {} more seconds.",
                 wait.as_secs()
             );

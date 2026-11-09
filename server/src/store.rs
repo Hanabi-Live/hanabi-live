@@ -350,7 +350,7 @@ impl Store {
     }
     pub fn refresh_background(&self, snapshot: Snapshot) {
         let Ok(permit) = self.stats_slots.clone().try_acquire_owned() else {
-            eprintln!(
+            tracing::warn!(
                 "Derived statistics capacity exhausted; the completed archive remains durable."
             );
             return;
@@ -362,7 +362,7 @@ impl Store {
                 return;
             };
             if let Err(e) = crate::stats::refresh(&store.primary, &snapshot).await {
-                eprintln!("Derived statistics failed: {e}");
+                tracing::error!("Derived statistics failed: {e}");
             }
         });
     }

@@ -423,7 +423,7 @@ impl TableActor {
         match self.tick().await {
             Ok(()) => self.timer_retry = None,
             Err(error) => {
-                eprintln!("Table timer: {error}");
+                tracing::error!("Table timer: {error}");
                 self.timer_retry = Some(Instant::now() + TIMER_RETRY);
             }
         }
@@ -685,7 +685,7 @@ impl TableActor {
                 result = async { pregame_refresh.as_mut().expect("enabled statistics refresh").await }, if pregame_refresh.is_some() => {
                     pregame_refresh = None;
                     if let Err(error) = self.apply_game_counts(result).await {
-                        eprintln!("Deferred pregame statistics failed for table {}: {error:#}", self.table.id);
+                        tracing::warn!("Deferred pregame statistics failed for table {}: {error:#}", self.table.id);
                     }
                 }
                 selected = async { discovery.as_mut().expect("enabled discovery").0.query.as_mut().await }, if discovering => {
@@ -723,7 +723,7 @@ impl TableActor {
                 },
                 () = self.cleanup.notified() => {
                     if let Err(e) = self.cleanup(Instant::now()).await {
-                        eprintln!("Table cleanup: {e}");
+                        tracing::error!("Table cleanup: {e}");
                     }
                 }
                 () = async { tokio::time::sleep_until(timer.expect("scheduled timer").into()).await }, if timer.is_some() => {

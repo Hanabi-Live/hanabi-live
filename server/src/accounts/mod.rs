@@ -318,7 +318,7 @@ async fn login_inner(state: &Accounts, ip: &str, input: LoginRequest) -> Result<
         };
         if !verify_password(ip, input.password.clone(), original.clone()).await? {
             attempt.keep();
-            eprintln!("Failed login for account {id} from IP: {ip}");
+            tracing::warn!("Failed login for account {id} from IP: {ip}");
             return Ok(unauthorized("That is not the correct password."));
         }
         let automatic_upgrade =
@@ -336,7 +336,9 @@ async fn login_inner(state: &Accounts, ip: &str, input: LoginRequest) -> Result<
                 return Ok(unauthorized("That is not the correct password."));
             }
             if !changed {
-                eprintln!("Skipped password hash upgrade after a concurrent credential change.");
+                tracing::info!(
+                    "Skipped password hash upgrade after a concurrent credential change."
+                );
             }
         }
         if input.version == BOT_VERSION {
@@ -391,7 +393,7 @@ async fn login_inner(state: &Accounts, ip: &str, input: LoginRequest) -> Result<
     } else {
         ""
     };
-    eprintln!("Successful login for account {id}{bot} from IP: {ip}");
+    tracing::info!("Successful login for account {id}{bot} from IP: {ip}");
     let signed = cookie::encode(id, &state.config.secret, Utc::now().timestamp())?;
     Ok(with_cookies(
         Json(LoginResponse {
@@ -565,7 +567,7 @@ async fn identity_token(
         };
         let ip = address.ip().to_string();
         let result = regenerate_token(&state.pool, &state.config.secret, id, &ip).await?;
-        eprintln!("Issued identity token for account {id} from IP: {ip}");
+        tracing::info!("Issued identity token for account {id} from IP: {ip}");
         Ok(Json(IdentityTokenResponse {
             username,
             token: result.token,
@@ -616,7 +618,7 @@ async fn identity(
             let expiry: DateTime<Utc> = row.expires_at;
             let ip = address.ip().to_string();
             if expiry > Utc::now() && verify_password(&ip, token, row.token_hash.clone()).await? {
-                eprintln!("Verified identity token from IP: {ip}");
+                tracing::info!("Verified identity token from IP: {ip}");
                 return Ok(Json(IdentityResponse {
                     username: row.username.clone(),
                 })

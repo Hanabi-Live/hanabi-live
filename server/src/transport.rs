@@ -53,18 +53,18 @@ impl InboundBudget {
             return None;
         }
         if text.len() > MAX_MESSAGE_BYTES {
-            eprintln!("Closing connection with oversized input.");
+            tracing::warn!(user = %session.user, "Closing connection with oversized input.");
             session.cancel.cancel();
             return None;
         }
         let length = u32::try_from(text.len()).unwrap_or(u32::MAX);
         let Ok(local) = self.bytes.clone().try_acquire_many_owned(length) else {
-            eprintln!("Closing connection exceeding its input byte budget.");
+            tracing::warn!(user = %session.user, "Closing connection exceeding its input byte budget.");
             session.cancel.cancel();
             return None;
         };
         let Ok(global) = self.global.clone().try_acquire_many_owned(length) else {
-            eprintln!("Closing connection because the aggregate input byte budget is exhausted.");
+            tracing::warn!(user = %session.user, "Closing connection because the aggregate input byte budget is exhausted.");
             session.cancel.cancel();
             return None;
         };
@@ -197,17 +197,17 @@ impl Session {
             .then(|| u32::try_from(length).ok())
             .flatten()
         else {
-            eprintln!("Closing a connection with an oversized frame.");
+            tracing::warn!(user = %self.user, "Closing a connection with an oversized frame.");
             self.cancel.cancel();
             return false;
         };
         let Ok(permit) = self.bytes.clone().try_acquire_many_owned(length) else {
-            eprintln!("Closing a slow connection.");
+            tracing::warn!(user = %self.user, "Closing a slow connection.");
             self.cancel.cancel();
             return false;
         };
         let Ok(global_permit) = GLOBAL_OUTPUT_BYTES.clone().try_acquire_many_owned(length) else {
-            eprintln!(
+            tracing::warn!(user = %self.user,
                 "Closing a connection because the aggregate output byte budget is exhausted."
             );
             self.cancel.cancel();
@@ -220,7 +220,7 @@ impl Session {
             global_permit,
         };
         if self.outbound.try_send(outbound).is_err() {
-            eprintln!("Closing a saturated connection.");
+            tracing::warn!(user = %self.user, "Closing a saturated connection.");
             self.cancel.cancel();
             return false;
         }

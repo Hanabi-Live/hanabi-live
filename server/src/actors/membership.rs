@@ -61,9 +61,11 @@ impl TableActor {
             let hash = hash.clone();
             let valid = crate::accounts::verify_password(&session.ip, password, hash).await?;
             if !valid {
-                eprintln!(
+                tracing::warn!(
                     "Incorrect password for table {} by account {} from IP: {}",
-                    self.table.id, session.user, session.ip
+                    self.table.id,
+                    session.user,
+                    session.ip
                 );
                 reject!("Incorrect table password");
             }

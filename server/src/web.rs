@@ -47,6 +47,7 @@ use std::{
 };
 use tokio::sync::{Semaphore, mpsc, oneshot};
 use tokio_util::{sync::CancellationToken, task::TaskTracker};
+use tracing::Instrument;
 
 /// How long loading a connecting user's lobby statistics may take.
 const LOBBY_LOAD_DEADLINE: Duration = Duration::from_secs(10);
@@ -335,7 +336,7 @@ fn log_rejection(request: &Request, reason: &str) {
                     .take(MAX_LOGGED_CLIENT_TEXT)
                     .collect()
             });
-    eprintln!(
+    tracing::warn!(
         "Rejected {} from {ip} with {origin} because of {reason}.",
         request.uri().path()
     );
@@ -573,13 +574,13 @@ async fn websocket(
     let version = query.get("version").unwrap_or_default().to_owned();
     let ip = address.ip();
     let Some(id) = accounts::session_id(&headers, &app.secret, uri.query()) else {
-        eprintln!("Rejected websocket from {ip} without a valid session.");
+        tracing::warn!("Rejected websocket from {ip} without a valid session.");
         return HttpError::refused(StatusCode::UNAUTHORIZED, "A valid session is required.").json();
     };
     match accounts::is_banned(&app.store.primary, &address.ip().to_string()).await {
         Ok(false) => {}
         Ok(true) => {
-            eprintln!("Rejected websocket for account {id} from banned IP: {ip}");
+            tracing::warn!("Rejected websocket for account {id} from banned IP: {ip}");
             return accounts::banned();
         }
         Err(error) => {
@@ -594,7 +595,7 @@ async fn websocket(
             ..account
         },
         Ok(None) => {
-            eprintln!("Rejected websocket for deleted account {id} from IP: {ip}");
+            tracing::warn!("Rejected websocket for deleted account {id} from IP: {ip}");
             return HttpError::refused(
                 StatusCode::UNAUTHORIZED,
                 "The account for this session no longer exists. Please sign in again.",
@@ -628,19 +629,21 @@ async fn websocket(
     };
     let version_check = accounts::validate_client_version(&version, &app.version);
     if version == accounts::BOT_VERSION {
-        eprintln!("Accepted bot websocket for account {id} from IP: {ip}");
+        tracing::info!("Accepted bot websocket for account {id} from IP: {ip}");
         if let Err(error) = accounts::mark_bot(&app.store.primary, id).await {
             return crate::errors::Report::from_error("Recording a bot connection", &error)
                 .response(true);
         }
     }
+    let span = tracing::info_span!("session", user = %id, generation);
     upgrade
         .max_message_size(crate::transport::MAX_MESSAGE_BYTES)
         .max_frame_size(crate::transport::MAX_MESSAGE_BYTES)
         .on_upgrade(move |mut socket| async move {
             let tracker = app.connections.clone();
             tracker
-                .track_future(async move {
+                .track_future(
+                    async move {
                     let _slot = slot;
                     let result = match version_check {
                         Ok(()) => {
@@ -654,7 +657,7 @@ async fn websocket(
                             .await
                         }
                         Err(message) => {
-                            eprintln!(
+                            tracing::warn!(
                                 "Rejected websocket for account {id} from {ip} with version: {:?}",
                                 version
                                     .chars()
@@ -697,7 +700,9 @@ async fn websocket(
                         report.log();
                         app.alert(&report);
                     }
-                })
+                    }
+                    .instrument(span),
+                )
                 .await;
         })
 }
@@ -803,7 +808,7 @@ async fn connection(
                     .await;
         }
         let _ = tokio::time::timeout(CLOSE_SEND_TIMEOUT, sink.send(Message::Close(None))).await;
-    });
+    }.in_current_span());
     let (incoming, mut commands) = mpsc::channel::<Inbound>(INBOUND_QUEUE);
     let incoming_bytes = InboundBudget::new(app.incoming_bytes.clone());
     let reader_session = session.clone();
@@ -816,7 +821,7 @@ async fn connection(
                     Some(Ok(Message::Text(text)))=>{
                         let Some(message)=incoming_bytes.admit(&reader_session,&text) else {break;};
                         if incoming.try_send(message).is_err() {
-                            eprintln!("Closing connection with a saturated input command queue.");
+                            tracing::warn!("Closing connection with a saturated input command queue.");
                             reader_session.cancel.cancel();
                             break;
                         }
@@ -827,7 +832,7 @@ async fn connection(
             }
         }
         reader_session.cancel.cancel();
-    });
+    }.in_current_span());
     let result = async {
         let (reply, received) = oneshot::channel();
         app.hub

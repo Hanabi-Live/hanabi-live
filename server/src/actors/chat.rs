@@ -65,7 +65,7 @@ pub(super) fn player_chat_has_room(chat: &[TableChat]) -> CommandResult<bool> {
 
 pub(super) fn membership_notice(table: &mut TableSnapshot, text: &str) -> Option<Chat> {
     if table.chat.len() >= crate::model::MAX_TABLE_CHAT {
-        eprintln!(
+        tracing::warn!(
             "Table {} membership notice omitted: chat history is full.",
             table.id
         );

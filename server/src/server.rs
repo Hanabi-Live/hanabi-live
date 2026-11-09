@@ -54,6 +54,12 @@ pub fn main() -> Result<()> {
     } else {
         release::Mode::Inspect
     })?;
+    // Logs go to standard error as text. journald, which runs the server, adds the time.
+    tracing_subscriber::fmt()
+        .with_writer(std::io::stderr)
+        .with_ansi(false)
+        .without_time()
+        .init();
     // Load once before Tokio starts; dotenv values never mutate process-wide environment.
     let config = Config::load(Path::new(".env"))?;
     let version = restart::validate_assets(&config)?;
@@ -154,7 +160,7 @@ async fn run(config: Config, version: String) -> Result<bool> {
         Ok(hub) => hub,
         Err(error) => {
             if let Err(close) = store.close().await {
-                eprintln!("Startup storage cleanup failed: {close:#}");
+                tracing::error!("Startup storage cleanup failed: {close:#}");
             }
             return Err(error).context("Failed to recover durable game state");
         }
@@ -249,17 +255,17 @@ async fn run(config: Config, version: String) -> Result<bool> {
                 () = integration_app.lifecycle.shutdown.cancelled() => {},
                 result = integration_app.start_integrations(&integrations) => {
                     if let Err(error) = result {
-                        eprintln!("Optional integrations failed to initialize: {error:#}");
+                        tracing::warn!("Optional integrations failed to initialize: {error:#}");
                     }
                 }
             }
         });
-        println!(
+        tracing::info!(
             "Server listening at {}://{address}",
             if config.use_tls() { "https" } else { "http" }
         );
-        println!("Localhost operations listening at http://{operations_address}");
-        println!(
+        tracing::info!("Localhost operations listening at http://{operations_address}");
+        tracing::info!(
             "The server has successfully started at: {} ({})",
             control.started.to_rfc3339(),
             control.version
@@ -291,7 +297,7 @@ async fn run(config: Config, version: String) -> Result<bool> {
     lifecycle.stop_admitting();
     match tokio::time::timeout(LOBBY_READ_CANCEL_TIMEOUT, app.store.cancel_lobby_reads()).await {
         Ok(Ok(())) => {}
-        result => eprintln!("Optional read cancellation did not complete: {result:?}"),
+        result => tracing::warn!("Optional read cancellation did not complete: {result:?}"),
     }
     lifecycle.drain().await;
     match tokio::time::timeout(
@@ -335,6 +341,6 @@ async fn run(config: Config, version: String) -> Result<bool> {
         "Server shutdown failed: {}",
         failures.join("; ")
     );
-    println!("The server successfully shut down.");
+    tracing::info!("The server successfully shut down.");
     Ok(replace)
 }

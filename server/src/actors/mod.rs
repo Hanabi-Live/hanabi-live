@@ -117,7 +117,7 @@ impl Drop for Allocation {
             let reservation = self.reservation.take();
             tasks.spawn(async move {
                 if let Err(error) = store.remove(id, revision).await {
-                    eprintln!("Uninstalled table {id} cleanup failed: {error}");
+                    tracing::error!("Uninstalled table {id} cleanup failed: {error}");
                 }
                 drop(permit);
                 drop(reservation);
