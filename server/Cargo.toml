@@ -88,7 +88,6 @@ minijinja = { version = "3", features = ["serde", "json", "urlencode"] }
 percent-encoding = "2"
 rand = "0.10"
 redis = { version = "1", default-features = false, features = [
-  "script",
   "tokio-rustls-comp",
   "tls-rustls-webpki-roots"
 ] }

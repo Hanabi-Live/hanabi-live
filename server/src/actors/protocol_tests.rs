@@ -1,9 +1,6 @@
 use super::chat::TABLE_CHAT_LIMIT;
 use super::*;
-use crate::{
-    accounts::test_support::TestDb, state::RedisState, test_redis::RedisFixture,
-    transport::Outbound,
-};
+use crate::{accounts::test_support::TestDb, state::LiveState, transport::Outbound};
 use crate::{
     model::{IDLE_TIMEOUT_MS, Phase, Player, TableSnapshot},
     operations::Operation,
@@ -27,12 +24,11 @@ const MAX_CONNECTIONS: u32 = 8;
 struct Harness {
     db: TestDb,
     store: Store,
-    state: RedisState,
+    state: LiveState,
     hub: mpsc::Sender<HubCommand>,
     tasks: TaskTracker,
     users: Vec<Arc<Session>>,
     outgoing: Vec<mpsc::Receiver<Outbound>>,
-    redis: RedisFixture,
 }
 impl Harness {
     async fn new(names: &[&str]) -> Result<Option<Self>> {
@@ -43,8 +39,7 @@ impl Harness {
         for (index, name) in names.iter().enumerate() {
             sqlx::query!("INSERT INTO users(id,username,normalized_username,password_hash,last_ip) VALUES($1,$2,$3,'fixture','127.0.0.1')", hanabi_engine::int(index)+1, name, crate::accounts::normalize_username(name)).execute(&pool).await?;
         }
-        let redis = RedisFixture::start(true).await?;
-        let state = RedisState::connect(&redis.url, "actor-protocol").await?;
+        let state = LiveState::for_test(&pool).await?;
         let store = Store::fixture(pool, state.clone());
         let tasks = TaskTracker::new();
         let hub = Hub::start(
@@ -61,7 +56,6 @@ impl Harness {
             tasks,
             users: vec![],
             outgoing: vec![],
-            redis,
         };
         for (index, name) in names.iter().enumerate() {
             let (session, outgoing) =
@@ -620,7 +614,7 @@ async fn abandoned_shared_reviews_expire_without_a_new_visitor() -> Result<()> {
             .context("Abandoned review did not expire on its own timer")?;
             ensure!(
                 h.state.get(id).await?.is_none(),
-                "Expired review remains in Redis"
+                "An expired review remained saved"
             );
             let mut retired = false;
             while let Ok(event) = notifications.try_recv() {
@@ -2396,28 +2390,24 @@ async fn pending_join_claim_survives_replacement_until_the_committed_view_is_pub
         let second = h.create(2, "Second", json!({})).await?;
         h.barrier(1).await?;
         h.frames(1)?;
-        let mut control = redis::Client::open(h.redis.url.as_str())?
-            .get_multiplexed_async_connection()
-            .await?;
-        redis::cmd("CLIENT")
-            .arg(&["PAUSE", "1500", "WRITE"])
-            .query_async::<String>(&mut control)
-            .await?;
+        // Hold the table's checkpoint row so that the join's save waits.
+        let mut blocker = h.db.pool.begin().await?;
+        sqlx::query_scalar!(
+            "SELECT id FROM live_tables WHERE id = $1 FOR UPDATE",
+            i64::try_from(first)?
+        )
+        .fetch_one(&mut *blocker)
+        .await?;
         let joining = h.begin(1, "tableJoin", json!({"tableID":first})).await?;
         tokio::time::timeout(Duration::from_secs(2), async {
             loop {
-                let clients: String = redis::cmd("CLIENT")
-                    .arg("LIST")
-                    .query_async(&mut control)
-                    .await?;
-                if clients.lines().any(|line| {
-                    line.contains("name=hanabi-state")
-                        && line.split_whitespace().any(|field| {
-                            field
-                                .strip_prefix("flags=")
-                                .is_some_and(|flags| flags.contains('b'))
-                        })
-                }) {
+                let waiting = sqlx::query_scalar!(
+                    "SELECT EXISTS(SELECT 1 FROM pg_stat_activity
+                     WHERE wait_event_type = 'Lock' AND query LIKE 'UPDATE live_tables%') AS \"blocked!\""
+                )
+                .fetch_one(&h.db.pool)
+                .await?;
+                if waiting {
                     return Ok::<(), anyhow::Error>(());
                 }
                 tokio::time::sleep(Duration::from_millis(10)).await;
@@ -2446,6 +2436,7 @@ async fn pending_join_claim_survives_replacement_until_the_committed_view_is_pub
             .contains("pending"),
             "Replacement bypassed pending create restriction"
         );
+        blocker.rollback().await?;
         joining.await??;
         h.barrier(1).await?;
         ensure!(

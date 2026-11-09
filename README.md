@@ -23,8 +23,7 @@
 - The server is programmed in [Rust](https://www.rust-lang.org/). It is located
   in the [`server`](server) subdirectory.
   - It uses a [PostgreSQL](https://www.postgresql.org/) database to store
-    information about users and completed games, and durable Redis storage for
-    recoverable live games.
+    information about users, live games, and completed games.
 - The core game logic is located in the [`packages/game`](packages/game)
   directory for TypeScript consumers and [`server/engine`](server/engine) for
   the native server.

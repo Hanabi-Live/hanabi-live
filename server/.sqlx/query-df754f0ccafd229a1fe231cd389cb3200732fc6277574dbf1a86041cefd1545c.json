@@ -1,0 +1,23 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT pg_terminate_backend(pid) AS \"ended!\" FROM pg_locks\n             WHERE locktype = 'advisory' AND classid = $1 AND granted\n             AND database = (SELECT oid FROM pg_database WHERE datname = current_database())",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "ended!",
+        "type_info": "Bool",
+        "origin": "Expression"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Oid"
+      ]
+    },
+    "nullable": [
+      null
+    ]
+  },
+  "hash": "df754f0ccafd229a1fe231cd389cb3200732fc6277574dbf1a86041cefd1545c"
+}

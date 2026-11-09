@@ -767,8 +767,8 @@ async fn connection(
                     let Some(Outbound {message,permit,completion,global_permit})=next else {break;};
                     let send=sink.send(message);
                     tokio::pin!(send);
-                    // Recheck the monotonic Redis deadline on every poll, including
-                    // the first poll after a stalled executor resumes.
+                    // Recheck live-table ownership on every poll, including the first poll
+                    // after a stalled executor resumes.
                     let guarded=futures_util::future::poll_fn(|cx| {
                         if writer_session.active() {send.as_mut().poll(cx).map(Some)} else {Poll::Ready(None)}
                     });
@@ -908,7 +908,6 @@ fn command_failure(error: &anyhow::Error, command: &str) -> CommandFailure {
     }
     let internal = error.chain().any(|cause| {
         cause.is::<sqlx::Error>()
-            || cause.is::<redis::RedisError>()
             || cause.is::<reqwest::Error>()
             || cause.is::<crate::errors::Fault>()
             || cause.is::<std::io::Error>()

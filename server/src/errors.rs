@@ -178,8 +178,6 @@ impl Report {
                 sqlx::Error::RowNotFound => ("record_not_found", "The requested database record no longer exists.".into(), StatusCode::NOT_FOUND),
                 _ => ("database_result_invalid", "The database response could not be decoded or did not match the expected schema.".into(), StatusCode::INTERNAL_SERVER_ERROR),
             }
-        } else if error.downcast_ref::<redis::RedisError>().is_some() {
-            ("live_state_unavailable", "The live-state store could not complete the operation. A write may have been saved without confirmation; do not repeat game actions. Reconnect after recovery.".into(), StatusCode::SERVICE_UNAVAILABLE)
         } else if let Some(http) = error.downcast_ref::<reqwest::Error>() {
             if http.is_timeout() {
                 (
@@ -411,11 +409,11 @@ mod tests {
             "The write may have been saved; do not repeat game actions.",
             StatusCode::SERVICE_UNAVAILABLE,
         );
-        let error = anyhow::anyhow!("private Redis payload").context(fault);
+        let error = anyhow::anyhow!("private checkpoint payload").context(fault);
         let report = Report::from_error("Playing a card", &error, None);
         assert_eq!(report.code, "persistence_uncertain");
         assert!(report.text().contains("may have been saved"));
-        assert!(!report.text().contains("private Redis"));
+        assert!(!report.text().contains("private checkpoint"));
     }
 
     #[tokio::test]

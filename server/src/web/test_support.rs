@@ -2,8 +2,7 @@ use super::*;
 use crate::{
     accounts::test_support::TestDb,
     actors::{Hub, TableCommand},
-    state::RedisState,
-    test_redis::RedisFixture,
+    state::LiveState,
 };
 
 pub struct Fixture {
@@ -14,18 +13,14 @@ pub struct Fixture {
     server: tokio::task::JoinHandle<std::io::Result<()>>,
     server_stop: CancellationToken,
     tasks: TaskTracker,
-    _redis: RedisFixture,
 }
 
 impl Fixture {
     pub async fn start() -> Option<Self> {
         std::env::var_os("HANABI_TEST_DATABASE_URL")?;
         let _ = rustls::crypto::ring::default_provider().install_default();
-        let redis = RedisFixture::start(true).await.unwrap();
         let db = TestDb::create().await?;
-        let state = RedisState::connect(&redis.url, "web-integration")
-            .await
-            .unwrap();
+        let state = LiveState::for_test(&db.pool).await.unwrap();
         let store = Store::fixture(db.pool.clone(), state);
         let tasks = TaskTracker::new();
         let hub = Hub::start(
@@ -73,7 +68,6 @@ impl Fixture {
             server,
             server_stop,
             tasks,
-            _redis: redis,
         })
     }
 

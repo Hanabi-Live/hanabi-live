@@ -30,14 +30,14 @@ function main {
 
   # Install dependencies.
   apt update
-  apt install --yes certbot cron curl git openssl postgresql python3 redis-server sudo ufw
+  apt install --yes certbot cron curl git openssl postgresql python3 sudo ufw
 
   # After upgrades, list services that need restarting instead of restarting them, because restarting
-  # Redis stops the game server. Reboot during a quiet time to apply library updates.
+  # PostgreSQL stops the game server. Reboot during a quiet time to apply library updates.
   mkdir --parents /etc/needrestart/conf.d
   echo "\$nrconf{restart} = 'l';" > /etc/needrestart/conf.d/hanabi.conf
 
-  # Size PostgreSQL's cache and Redis's limit from the server's memory, in KiB.
+  # Size PostgreSQL's cache from the server's memory, in KiB.
   local memory_kb
   memory_kb=$(awk '/^MemTotal:/ { print $2 }' /proc/meminfo)
 
@@ -55,11 +55,10 @@ function main {
 
   # Create the service accounts.
   useradd --system --user-group --no-create-home --home-dir "/home/$APP_USER" --shell /usr/sbin/nologin "$APP_USER"
-  useradd --system --user-group --no-create-home --home-dir /var/lib/hanabi-redis --shell /usr/sbin/nologin hanabi-redis
-  usermod --append --groups hanabi-redis "$APP_USER"
 
   # Install the systemd service for the server.
   install --mode 644 install/hanabi-live.service /etc/systemd/system/hanabi-live.service
+  systemctl daemon-reload
 
   # Download the latest release.
   local sha256 archive rev
@@ -110,24 +109,7 @@ DB_USER="$DB_USER"
 DB_PASSWORD="$db_password"
 TLS_CERT_FILE="/etc/letsencrypt/live/$DOMAIN/fullchain.pem"
 TLS_KEY_FILE="/etc/letsencrypt/live/$DOMAIN/privkey.pem"
-REDIS_URL="redis+unix:///run/hanabi-redis/redis.sock"
 EOF
-
-  # Configure durable, local-only Redis storage (instead of Ubuntu's default Redis service).
-  systemctl mask --now redis-server
-  install --directory --mode 755 /etc/hanabi-redis
-  install --mode 640 --group hanabi-redis install/redis/redis.conf /etc/hanabi-redis/redis.conf
-  # Let Redis use a fifth of memory.
-  sed --in-place "s/^maxmemory .*/maxmemory $((memory_kb / 5))kb/" /etc/hanabi-redis/redis.conf
-  grep --quiet "^maxmemory $((memory_kb / 5))kb$" /etc/hanabi-redis/redis.conf
-  install --mode 644 install/redis/hanabi-redis.service /etc/systemd/system/hanabi-redis.service
-
-  # Prevent Redis background saves from failing under memory pressure.
-  echo 'vm.overcommit_memory = 1' > /etc/sysctl.d/90-hanabi-redis.conf
-  sysctl --quiet --system
-
-  systemctl daemon-reload
-  systemctl enable --now hanabi-redis
 
   # Obtain the certificate and grant the service access to its private key.
   certbot certonly --standalone --cert-name "$DOMAIN" --domain "$DOMAIN" --domain "www.$DOMAIN" --domain "$ALT_DOMAIN" --domain "www.$ALT_DOMAIN"
@@ -155,7 +137,7 @@ EOF
   systemctl enable --now cron
   sudo --user "$APP_USER" ./scripts/admin/database-backup.sh
 
-  echo "The server is set up. Also keep coordinated PostgreSQL and Redis backups off this server."
+  echo "The server is set up. Also keep PostgreSQL backups off this server."
 }
 
 main "$@"

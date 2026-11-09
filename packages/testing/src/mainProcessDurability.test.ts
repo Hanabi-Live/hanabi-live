@@ -3,11 +3,12 @@ import { SERVER_COMMAND_SCHEMAS } from "@hanabi-live/data";
 import { expect, test } from "bun:test";
 import { assertDefined } from "complete-common";
 import { once } from "node:events";
-import { appendFile, mkdir, mkdtemp, rm } from "node:fs/promises";
+import { mkdir, mkdtemp, rm } from "node:fs/promises";
 import path from "node:path";
 import { setTimeout as delay } from "node:timers/promises";
 import type { WebSocket } from "ws";
-import { evaluationDatabase } from "./database";
+import { z } from "zod";
+import { evaluationDatabase, liveTables } from "./database";
 import {
   ROOT,
   bounded,
@@ -20,10 +21,9 @@ import {
   startProcess,
   stopChild,
 } from "./mainProcessSupport";
-import { redisFixture } from "./redisFixture";
 
 databaseDescribe("Rust actor durability and ownership", () => {
-  test.each(["crash", "failed write"] as const)(
+  test.each(["crash", "lost ownership"] as const)(
     "fences replaced sessions during persistence and recovers after %s",
     async (failure) => {
       const database = await evaluationDatabase();
@@ -31,20 +31,9 @@ databaseDescribe("Rust actor durability and ownership", () => {
       await mkdir(path.join(ROOT, "dist"), { recursive: true });
       const directory = await mkdtemp(path.join(ROOT, "dist/rust-recovery-"));
       let state: ReturnType<typeof startProcess> | undefined;
-      let redis: Awaited<ReturnType<typeof redisFixture>> | undefined;
-      const namespace = JSON.stringify([
-        database.connection.host,
-        database.connection.port,
-        database.connection.database,
-      ]);
       const sockets: WebSocket[] = [];
       try {
         await prepareRoot(directory, database, "localhost");
-        redis = await redisFixture();
-        await appendFile(
-          path.join(directory, ".env"),
-          `REDIS_URL=${redis.url}\n`,
-        );
         await buildRust(directory);
         await installSchema(directory);
         state = startProcess(directory);
@@ -106,7 +95,7 @@ databaseDescribe("Rust actor durability and ownership", () => {
         if (card.type !== "draw") {
           throw new Error("Expected a draw.");
         }
-        const startedState = await redis.states(namespace);
+        const startedState = await liveTables(sql);
         expect(startedState.length).toBeGreaterThan(0);
         const action = {
           tableID,
@@ -114,27 +103,33 @@ databaseDescribe("Rust actor durability and ownership", () => {
           target: card.order,
         };
         let replacement: Awaited<ReturnType<typeof connect>> | undefined;
+        // Holds the table's checkpoint row so that the action's save waits.
+        const blocker = await sql.reserve();
         try {
           active.send("action", { ...action, target: 9999 });
           await active.receive("warning", SERVER_COMMAND_SCHEMAS.warning);
-          await redis.command("CLIENT", "PAUSE", "2000", "WRITE");
+          await blocker`SET idle_in_transaction_session_timeout = 0`;
+          await blocker`BEGIN`;
+          await blocker`SELECT id FROM live_tables WHERE id = ${tableID} FOR UPDATE`;
           active.send("action", action);
           const deadline = performance.now() + 1500;
           for (;;) {
-            const clients = await redis.text("CLIENT", "LIST");
+            const rows = await sql`
+              SELECT EXISTS(
+                SELECT 1 FROM pg_stat_activity
+                WHERE wait_event_type = 'Lock' AND query LIKE 'UPDATE live_tables%'
+              ) AS blocked
+            `;
             if (
-              clients
-                .split("\n")
-                .some(
-                  (line) =>
-                    line.includes("name=hanabi-state ")
-                    && /flags=\S*b\S*/u.test(line),
-                )
+              z.array(z.object({ blocked: z.boolean() })).parse(rows)[0]
+                ?.blocked === true
             ) {
               break;
             }
             if (performance.now() > deadline) {
-              throw new Error("Rust action did not wait for its Redis write.");
+              throw new Error(
+                "Rust action did not wait for its checkpoint write.",
+              );
             }
             await delay(10);
           }
@@ -142,7 +137,7 @@ databaseDescribe("Rust actor durability and ownership", () => {
             active.frames.some((message) => message.startsWith("gameAction ")),
           ).toBe(false);
           replacement = await connect(activeIsAlice ? aliceCookie : bobCookie);
-          await redis.command("CLIENT", "UNPAUSE");
+          await blocker`ROLLBACK`;
           await other.receive(
             "gameAction",
             SERVER_COMMAND_SCHEMAS.gameAction,
@@ -158,7 +153,8 @@ databaseDescribe("Rust actor durability and ownership", () => {
             ),
           ).toBe(false);
         } finally {
-          await redis.command("CLIENT", "UNPAUSE");
+          await blocker`ROLLBACK`;
+          blocker.release();
         }
         if (activeIsAlice) {
           alice = replacement;
@@ -184,39 +180,22 @@ databaseDescribe("Rust actor durability and ownership", () => {
             (event) => event.type === "play" || event.type === "discard",
           ),
         ).toHaveLength(1);
-        const acknowledged = await redis.states(namespace);
-        if (failure === "failed write") {
-          const next = activeIsAlice ? bob : alice;
-          const nextInitial = activeIsAlice ? b : a;
-          const nextCard = nextInitial.history.list.find(
-            (event) => event.type === "draw" && event.playerIndex === 1,
-          );
-          assertDefined(nextCard, "Missing next player's hand.");
-          if (nextCard.type !== "draw") {
-            throw new Error("Expected a draw.");
-          }
-          const offset = replacement.frames.length;
+        const acknowledged = await liveTables(sql);
+        if (failure === "lost ownership") {
           const stopped = once(state.child, "close");
-          await redis.command("CONFIG", "SET", "maxmemory", "1");
-          next.send("action", {
-            tableID,
-            type: 0,
-            target: nextCard.order,
-          });
-          await bounded(stopped, "Rust fail-closed Redis shutdown", 15_000);
+          // End the server's live-state connections, including the one that holds ownership.
+          await sql`
+            SELECT pg_terminate_backend(pid) FROM pg_stat_activity
+            WHERE datname = current_database() AND application_name LIKE 'hanabi-live-%-live'
+          `;
+          await bounded(stopped, "Rust fail-closed shutdown", 15_000);
           expect(state.child.exitCode).not.toBe(0);
-          expect(
-            replacement.frames
-              .slice(offset)
-              .some((message) => message.startsWith("gameAction ")),
-          ).toBe(false);
-          await redis.restart();
         } else {
           const closed = once(state.child, "close");
           state.child.kill("SIGKILL");
           await bounded(closed, "Rust crash");
         }
-        expect(await redis.states(namespace)).toEqual(acknowledged);
+        expect(await liveTables(sql)).toEqual(acknowledged);
         state = startProcess(directory);
         address = await bounded(state.ready, "Rust cold recovery readiness");
         const returning = await connect(
@@ -266,7 +245,6 @@ databaseDescribe("Rust actor durability and ownership", () => {
         if (state !== undefined) {
           await stopChild(state.child);
         }
-        await redis?.close();
         await sql.end({ timeout: 3 });
         await database.close();
         await rm(directory, { recursive: true, force: true });

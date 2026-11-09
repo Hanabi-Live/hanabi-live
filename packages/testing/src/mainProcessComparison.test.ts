@@ -2,7 +2,7 @@
 import { SERVER_COMMAND_SCHEMAS } from "@hanabi-live/data";
 import { expect, test } from "bun:test";
 import { once } from "node:events";
-import { appendFile, mkdir, mkdtemp, readFile, rm } from "node:fs/promises";
+import { mkdir, mkdtemp, readFile, rm } from "node:fs/promises";
 import path from "node:path";
 import { setTimeout as delay } from "node:timers/promises";
 import type { WebSocket } from "ws";
@@ -22,7 +22,6 @@ import {
   summary,
   wireHistorySchema,
 } from "./mainProcessSupport";
-import { redisFixture } from "./redisFixture";
 
 /** The deal of this two-player seed lets the players alternate 25 plays. */
 const SEED_SUFFIX = "77621";
@@ -39,7 +38,6 @@ databaseDescribe("normal-server protocol workload", () => {
     await mkdir(path.join(ROOT, "dist"), { recursive: true });
     const directory = await mkdtemp(path.join(ROOT, "dist/normal-comparison-"));
     let processState: ReturnType<typeof startProcess> | undefined;
-    let redis: Awaited<ReturnType<typeof redisFixture>> | undefined;
     const sockets = new Set<WebSocket>();
     const samples = {
       action: [] as number[],
@@ -57,11 +55,6 @@ databaseDescribe("normal-server protocol workload", () => {
     }> = [];
     try {
       await prepareRoot(directory, database, "localhost");
-      redis = await redisFixture();
-      await appendFile(
-        path.join(directory, ".env"),
-        `REDIS_URL=${redis.url}\n`,
-      );
       await buildRust(directory);
       await installSchema(directory);
       processState = startProcess(directory);
@@ -335,12 +328,12 @@ databaseDescribe("normal-server protocol workload", () => {
           language: "rust",
           driverBun: process.versions.bun,
           scope:
-            "Release-mode server with real login, cookies, client protocol, Redis AOF/WAITAOF state and disposable PostgreSQL history. Not a capacity benchmark.",
+            "Release-mode server with real login, cookies, client protocol, and disposable PostgreSQL live state and history. Not a capacity benchmark.",
           seed: `p2v0s${SEED_SUFFIX}`,
           games: completed.length,
           lanes: 4,
           peakRSSKiB,
-          stateStore: "Redis AOF/WAITAOF",
+          stateStore: "PostgreSQL",
           gameplayMilliseconds,
           mixedReadMilliseconds: performance.now() - readStart,
           latency,
@@ -358,7 +351,6 @@ databaseDescribe("normal-server protocol workload", () => {
       if (processState !== undefined) {
         await stopChild(processState.child);
       }
-      await redis?.close();
       await sql.end({ timeout: 3 });
       await database.close();
       await rm(directory, { recursive: true, force: true });

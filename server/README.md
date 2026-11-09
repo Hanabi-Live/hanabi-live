@@ -1,32 +1,14 @@
 # Native Rust server
 
 This is the production Hanab Live server. It uses native Rust rules and
-actor-owned tables, PostgreSQL for historical data, and Redis for authoritative
-recoverable live state.
+actor-owned tables. PostgreSQL stores the live tables and the historical data.
 
 ## Running
 
 Use a separate development checkout/configuration and disposable storage before
 considering a deployment. Build the existing client assets and apply PostgreSQL
 migrations with `hanabi-live migrate apply`. Rust uses the existing `.env`
-settings plus `REDIS_URL`. For a local Redis instance:
-
-```dotenv
-REDIS_URL=redis://127.0.0.1:6379
-```
-
-Redis **7.2 or newer** is required, with AOF enabled and eviction disabled.
-Recommended Redis settings:
-
-```text
-bind 127.0.0.1
-appendonly yes
-appendfsync always
-maxmemory-policy noeviction
-```
-
-Do not expose Redis publicly. Authenticated TLS (`rediss://`) and local Unix
-sockets (`redis+unix:///path/to/redis.sock`) are also supported.
+settings.
 
 From the repository root:
 
@@ -37,8 +19,8 @@ cargo build --release --locked --manifest-path server/Cargo.toml
 
 `--version` reports its compiled Git commit. `--check-startup` validates local
 configuration, assets, and TLS without taking storage ownership; normal startup
-also validates the database, acquires the Redis lease, and restores durable
-tables.
+also validates the database, takes ownership of the live tables, and restores
+them.
 
 Build/install the replacement binary and paired client before requesting
 `/gracefulRestart`. The loopback control plane performs preflight, durable
@@ -89,7 +71,7 @@ nullable outer-join columns.
 CI publishes `hanabi-live-<revision>-linux-amd64`. It contains the statically
 linked Rust binary named `hanabi-live` (which embeds the schema and migrations),
 paired client assets, and the word list. No Node, Cargo, or compiler is needed
-on the deployment host; installation uses Python, Bash, PostgreSQL, and Redis.
+on the deployment host; installation uses Python, Bash, and PostgreSQL.
 
 To build locally on Linux amd64, install `musl-tools`, add Rust's
 `x86_64-unknown-linux-musl` target, and run:
@@ -112,9 +94,14 @@ compatible pre-promotion release before applying migration 007.
 
 ## Storage and ownership
 
-Redis is authoritative for recoverable pregames, live games, and replay state.
-PostgreSQL retains accounts, completed games, notes, tags, chat, and statistics.
-Preserve both Redis persistence and PostgreSQL backups.
+PostgreSQL stores the live tables: pregames, live games, and replays. It also
+stores accounts, completed games, notes, tags, chat, and statistics. Its backups
+cover all of them.
+
+Installations that kept the live tables in Redis must move them once. Stop the
+previous release with `/gracefulStop`. Then run `hanabi-live migrate apply` and
+`hanabi-live migrate import-redis` with the new release, which reads
+`REDIS_URL`. The server does not start until the import is done.
 
 Pregame players have a 60-second reconnect grace period, including after server
 recovery. Disconnected players are then removed, ownership passes to a remaining
@@ -130,11 +117,6 @@ controls, and user chat in shared reviews refresh it; server announcements do
 not. Normal game completion starts a fresh review window, including recovery of
 an interrupted completion. Idle-ended games retain their expiry behavior.
 
-The Redis namespace includes the configured PostgreSQL host, port, and database.
-Keep that identity and the Redis endpoint stable across restarts, including the
-spelling of otherwise-equivalent database hosts. Do not discard the Redis volume
-even when no games are active: it also preserves non-reused table identities.
-
 One coordinator owns sessions and table handles; each table actor exclusively
 owns its mutable state. The coordinator never waits for table processing or
 socket writes. Queues, byte budgets, and capacity permits are bounded. Session
@@ -142,22 +124,18 @@ generation and monotonic ownership checks guard admission and publication.
 
 Mutations follow candidate -> durable checkpoint -> publication. Terminal
 checkpoints precede idempotent PostgreSQL completion. Uncertain table writes
-freeze the table; Redis connection or lease loss closes admission for the whole
-instance. Recovery validates snapshots and completes pending archive operations.
+freeze the table. Loss of ownership, or a write that the database cannot
+confirm, closes admission for the whole instance. Recovery validates snapshots
+and completes pending archive operations.
 
-Every state mutation is fenced by an exclusive expiring owner token and
-confirmed with `WAITAOF` on the **same physical connection**. Transparent
-reconnection is deliberately disabled: reconnecting would lose the write offset
-being confirmed. Use one authoritative Redis instance with a stable clock and
-persistent volume. Acknowledgements confirm its local AOF, not replica
-durability: do not automatically fail over to a replica that can omit
-acknowledged writes. This is not a claim of multi-master safety or protection
-against losing that volume.
+One server owns the live tables at a time. A dedicated connection holds a
+session advisory lock for as long as the server runs. Each new owner increments
+an ownership epoch. Every live-table write locks that epoch and commits only
+while it is current, so an earlier owner cannot write after a new one starts.
 
 ## Verification
 
-The normal process harness uses owned PostgreSQL databases and private Redis
-processes. Put `redis-server` and `redis-cli` on `PATH`:
+The normal process harness uses owned PostgreSQL databases:
 
 ```sh
 HANABI_TEST_DATABASE_URL='postgres://postgres@127.0.0.1:5432/postgres?sslmode=disable' \

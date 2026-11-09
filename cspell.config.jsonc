@@ -251,6 +251,7 @@
     "setitimer",
     "setleader",
     "setname",
+    "setval",
     "setvariant",
     "sharedmissingscores",
     "shellcheck",

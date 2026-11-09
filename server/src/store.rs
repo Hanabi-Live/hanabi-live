@@ -4,7 +4,7 @@ use crate::{
         FORMAT, IDLE_TIMEOUT_MS, PendingTag, Phase, Player, Snapshot, TableChat, TableSnapshot,
         Tag, TagOperation,
     },
-    state::RedisState,
+    state::LiveState,
 };
 use anyhow::{Context, Result, ensure};
 use chrono::{DateTime, SubsecRound, Utc};
@@ -14,7 +14,7 @@ use serde_json::{Value, json};
 
 use sqlx::{
     PgPool,
-    postgres::{PgConnectOptions, PgPoolOptions, PgSslMode},
+    postgres::{PgConnectOptions, PgPoolOptions},
 };
 use std::{collections::BTreeMap, sync::Arc, time::Duration};
 use tokio::sync::Semaphore;
@@ -28,7 +28,7 @@ pub struct Store {
     primary_name: String,
     archive_name: String,
     lobby_name: String,
-    state: RedisState,
+    state: LiveState,
     stats: TaskTracker,
     stats_slots: Arc<Semaphore>,
 }
@@ -51,6 +51,8 @@ pub const LOBBY_READ_TIMEOUT: Duration = Duration::from_secs(2);
 const PRIMARY_CONNECTIONS: u32 = 8;
 /// Connections in the pool that archives finished games.
 const ARCHIVE_CONNECTIONS: u32 = 2;
+/// Connections in the pool that saves live tables, besides the one that holds their ownership.
+const LIVE_CONNECTIONS: u32 = 4;
 /// Connections in the pool that serves lobby reads and the public pages.
 const LOBBY_READ_CONNECTIONS: u32 = 2;
 /// The most derived-statistics refreshes that can run or wait at once.
@@ -70,6 +72,8 @@ pub(crate) enum LockSpace {
     VariantStats = 17483,
     /// A durable chat message, by chat ID.
     Chat = 17484,
+    /// Ownership of the live tables, held for as long as a server runs.
+    LiveState = 17485,
 }
 
 /// Holds the advisory lock on `key` in `space` until the transaction ends.
@@ -99,7 +103,7 @@ async fn pool(options: PgConnectOptions, max: u32) -> Result<PgPool> {
 
 impl Store {
     #[cfg(test)]
-    pub(crate) fn fixture(primary: PgPool, state: RedisState) -> Self {
+    pub(crate) fn fixture(primary: PgPool, state: LiveState) -> Self {
         Self {
             archive: primary.clone(),
             lobby_reads: primary.clone(),
@@ -113,17 +117,12 @@ impl Store {
         }
     }
     pub async fn connect(config: &crate::config::Config) -> Result<Self> {
-        let options = PgConnectOptions::new()
-            .host(&config.database_host)
-            .port(config.database_port)
-            .username(&config.database_user)
-            .password(&config.database_password)
-            .database(&config.database)
-            .ssl_mode(PgSslMode::Disable);
+        let options = config.database_options();
         let instance = rand::random::<u64>();
         let primary_name = format!("hanabi-live-{instance:016x}-primary");
         let archive_name = format!("hanabi-live-{instance:016x}-archive");
         let lobby_name = format!("hanabi-live-{instance:016x}-lobby");
+        let live_name = format!("hanabi-live-{instance:016x}-live");
         let primary = pool(
             options.clone().application_name(&primary_name),
             PRIMARY_CONNECTIONS,
@@ -134,23 +133,23 @@ impl Store {
             ARCHIVE_CONNECTIONS,
         )
         .await?;
+        let live = pool(
+            options.clone().application_name(&live_name),
+            LIVE_CONNECTIONS,
+        )
+        .await?;
         let lobby_reads = PgPoolOptions::new()
             .max_connections(LOBBY_READ_CONNECTIONS)
             .acquire_timeout(LOBBY_READ_TIMEOUT)
-            .connect_lazy_with(options.application_name(&lobby_name).options([
+            .connect_lazy_with(options.clone().application_name(&lobby_name).options([
                 (
                     "statement_timeout",
                     LOBBY_READ_TIMEOUT.as_millis().to_string(),
                 ),
                 ("default_transaction_read_only", "on".to_owned()),
             ]));
-        crate::migrations::require_current(&primary).await?;
-        let namespace = serde_json::to_string(&(
-            &config.database_host,
-            config.database_port,
-            &config.database,
-        ))?;
-        let state = RedisState::connect(&config.redis_url, &namespace).await?;
+        crate::migrations::require_current(&mut *primary.acquire().await?).await?;
+        let state = LiveState::connect(live, &options.application_name(&live_name)).await?;
         Ok(Self {
             primary,
             archive,
@@ -250,7 +249,7 @@ impl Store {
                 continue;
             }
             let mut table = TableSnapshot::decode(&stored.payload)?;
-            ensure!(table.id == id, "Redis identity mismatch");
+            ensure!(table.id == id, "Live-table identity mismatch");
             let mut revision = stored.revision;
             if let Some(edit) = table.pending_tag.take() {
                 let tags = self.apply_tag(&edit).await?;
@@ -342,7 +341,7 @@ impl Store {
             .state
             .get(s.table_id)
             .await?
-            .context("Missing terminal Redis checkpoint")?;
+            .context("Missing terminal checkpoint")?;
         ensure!(
             stored.revision == revision,
             "Completion requires the current checkpoint"
@@ -974,7 +973,6 @@ mod tests {
         accounts::test_support::TestDb,
         actors::{Hub, HubCommand, TableCommand},
         model::ExtraOptions,
-        test_redis::RedisFixture,
         transport::Session,
     };
     use std::sync::Arc;
@@ -1153,8 +1151,7 @@ mod tests {
         let Some((db, pool)) = database().await? else {
             return Ok(());
         };
-        let redis = RedisFixture::start(true).await?;
-        let state = RedisState::connect(&redis.url, "pregame-count-recovery").await?;
+        let state = LiveState::for_test(&pool).await?;
         let store = Store::fixture(pool, state.clone());
         let result = async {
             sqlx::query!("INSERT INTO games(name,num_players,variant_id,timed,time_base,time_per_turn,
@@ -1257,8 +1254,7 @@ mod tests {
         let Some((db, pool)) = database().await? else {
             return Ok(());
         };
-        let redis = RedisFixture::start(true).await?;
-        let state = RedisState::connect(&redis.url, "derived-stats").await?;
+        let state = LiveState::for_test(&pool).await?;
         let store = Store::fixture(pool, state);
         let result = async {
             sqlx::query!(
@@ -1331,8 +1327,7 @@ mod tests {
             return Ok(());
         };
         crate::accounts::test_support::legacy_column_order(&pool).await?;
-        let redis = RedisFixture::start(true).await?;
-        let state = RedisState::connect(&redis.url, "native-store-integration").await?;
+        let state = LiveState::for_test(&pool).await?;
         let store = Store::fixture(pool, state);
         let result = async {
             let id = store.allocate_table().await?;
@@ -1450,8 +1445,7 @@ mod tests {
         let Some((db, pool)) = database().await? else {
             return Ok(());
         };
-        let redis = RedisFixture::start(true).await?;
-        let state = RedisState::connect(&redis.url, "native-split-recovery").await?;
+        let state = LiveState::for_test(&pool).await?;
         let store = Store::fixture(pool, state);
         let source_id = store.allocate_table().await?;
         let destination_id = store.allocate_table().await?;
@@ -1469,7 +1463,7 @@ mod tests {
         source.pending_spawn = Some(Box::new(destination));
         store.save(&source, 0).await?;
         store.state.close().await?;
-        let state = RedisState::connect(&redis.url, "native-split-recovery").await?;
+        let state = LiveState::for_test(&store.primary).await?;
         let restored = Store::fixture(store.primary.clone(), state);
         let result = async {
             let tables = restored.load().await?;
@@ -1517,8 +1511,7 @@ mod tests {
         let Some((db, pool)) = database().await? else {
             return Ok(());
         };
-        let redis = RedisFixture::start(true).await?;
-        let state = RedisState::connect(&redis.url, "native-best-score-modifiers").await?;
+        let state = LiveState::for_test(&pool).await?;
         let store = Store::fixture(pool, state);
         let result = async {
             #[expect(
@@ -1561,8 +1554,7 @@ mod tests {
         let Some((db, pool)) = database().await? else {
             return Ok(());
         };
-        let redis = RedisFixture::start(true).await?;
-        let state = RedisState::connect(&redis.url, "native-chat-identities").await?;
+        let state = LiveState::for_test(&pool).await?;
         let store = Store::fixture(pool, state);
         let result=async{
             let id=store.allocate_table().await?;let mut table=pregame(id);
@@ -1606,8 +1598,7 @@ mod tests {
         let Some((db, pool)) = database().await? else {
             return Ok(());
         };
-        let redis = RedisFixture::start(true).await?;
-        let state = RedisState::connect(&redis.url, "native-postgres-fence").await?;
+        let state = LiveState::for_test(&pool).await?;
         let store = Store::fixture(pool, state.clone());
         let id = store.allocate_table().await?;
         let mut table = pregame(id);
@@ -1643,7 +1634,7 @@ mod tests {
             }
         }).await??;
         state.close().await?;
-        let replacement = RedisState::connect(&redis.url, "native-postgres-fence").await?;
+        let replacement = LiveState::for_test(&store.primary).await?;
         let current = Store::fixture(store.primary.clone(), replacement);
         sqlx::query!("INSERT INTO game_tags(game_id,user_id,tag) VALUES(1,1,'new-owner')")
             .execute(&mut *blocker)
@@ -1689,8 +1680,7 @@ mod tests {
         let Some((db, pool)) = database().await? else {
             return Ok(());
         };
-        let redis = RedisFixture::start(true).await?;
-        let state = RedisState::connect(&redis.url, "native-auto-chat-retire").await?;
+        let state = LiveState::for_test(&pool).await?;
         let store = Store::fixture(pool, state);
         let tasks = TaskTracker::new();
         let hub = Hub::start(
@@ -1760,8 +1750,7 @@ mod tests {
         let Some((db, pool)) = database().await? else {
             return Ok(());
         };
-        let redis = RedisFixture::start(true).await?;
-        let state = RedisState::connect(&redis.url, "native-split-replay").await?;
+        let state = LiveState::for_test(&pool).await?;
         let store = Store::fixture(pool, state);
         let tasks = TaskTracker::new();
         let hub = Hub::start(
@@ -1911,8 +1900,7 @@ mod tests {
         let Some((db, pool)) = database().await? else {
             return Ok(());
         };
-        let redis = RedisFixture::start(true).await?;
-        let state = RedisState::connect(&redis.url, "native-actors-integration").await?;
+        let state = LiveState::for_test(&pool).await?;
         let store = Store::fixture(pool, state);
         let tasks = TaskTracker::new();
         let hub = Hub::start(

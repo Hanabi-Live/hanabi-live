@@ -6,6 +6,7 @@ use super::{
     wire::{game_action, game_action_list},
 };
 use crate::transport::test_frame;
+use crate::{accounts::test_support::TestDb, state::LiveState};
 use crate::{
     game::{Game, Options},
     model::{
@@ -15,13 +16,11 @@ use crate::{
     store::Store,
     transport::Session,
 };
-use crate::{state::RedisState, test_redis::RedisFixture};
 use anyhow::{Context, Result, ensure};
 use chrono::{Duration as ChronoDuration, Utc};
 use hanabi_engine::{CompletionTiming, EndCondition, Recipient};
 use hanabi_protocol::{MAX_SEED_LENGTH, ReplayAction, Status};
 use serde_json::{Value, json};
-use sqlx::postgres::PgPoolOptions;
 use std::{
     collections::{BTreeMap, HashMap, HashSet},
     sync::{Arc, Mutex},
@@ -250,11 +249,13 @@ fn option_summaries_include_only_changes_and_escape_values() {
     );
 }
 
-async fn fixture_store(namespace: &str) -> Result<(RedisFixture, Store, RedisState)> {
-    let fixture = RedisFixture::start(true).await?;
-    let state = RedisState::connect(&fixture.url, namespace).await?;
-    let pool = PgPoolOptions::new().connect_lazy("postgres://unused@127.0.0.1/unused")?;
-    Ok((fixture, Store::fixture(pool, state.clone()), state))
+async fn fixture_store() -> Result<Option<(TestDb, Store, LiveState)>> {
+    let Some(db) = TestDb::create().await else {
+        return Ok(None);
+    };
+    let state = LiveState::for_test(&db.pool).await?;
+    let store = Store::fixture(db.pool.clone(), state.clone());
+    Ok(Some((db, store, state)))
 }
 pub(super) fn pregame(id: u64) -> TableSnapshot {
     TableSnapshot {
@@ -299,7 +300,9 @@ fn attendance(session: Arc<Session>, spectator: bool) -> Attendance {
 
 #[tokio::test]
 async fn joining_or_reattending_an_old_review_does_not_immediately_close_it() -> Result<()> {
-    let (_redis, store, state) = fixture_store("review-join-idle").await?;
+    let Some((db, store, state)) = fixture_store().await? else {
+        return Ok(());
+    };
     for shared in [true, false] {
         let id = store.allocate_table().await?;
         let mut table = review(id, EndCondition::TerminatedByPlayer)?;
@@ -346,12 +349,15 @@ async fn joining_or_reattending_an_old_review_does_not_immediately_close_it() ->
         actor.retire().await?;
     }
     store.close().await?;
+    db.close().await;
     Ok(())
 }
 
 #[tokio::test]
 async fn idle_reviews_expire_without_someone_joining() -> Result<()> {
-    let (_redis, store, state) = fixture_store("review-idle-tick").await?;
+    let Some((db, store, state)) = fixture_store().await? else {
+        return Ok(());
+    };
     let id = store.allocate_table().await?;
     let mut table = review(id, EndCondition::TerminatedByPlayer)?;
     table.game_mut().unwrap().idle_remaining = 1000;
@@ -380,12 +386,15 @@ async fn idle_reviews_expire_without_someone_joining() -> Result<()> {
     }
     ensure!(removed, "Idle review remained in the lobby");
     store.close().await?;
+    db.close().await;
     Ok(())
 }
 
 #[tokio::test]
 async fn completion_starts_a_fresh_review_without_reviving_idle_ended_games() -> Result<()> {
-    let (_redis, store, state) = fixture_store("review-transition-idle").await?;
+    let Some((db, store, state)) = fixture_store().await? else {
+        return Ok(());
+    };
     for condition in [EndCondition::TerminatedByPlayer, EndCondition::IdleTimeout] {
         let id = store.allocate_table().await?;
         let mut table = review(id, condition)?;
@@ -431,6 +440,7 @@ async fn completion_starts_a_fresh_review_without_reviving_idle_ended_games() ->
         );
     }
     store.close().await?;
+    db.close().await;
     Ok(())
 }
 
@@ -452,7 +462,9 @@ fn published(notifications: &mut mpsc::Receiver<HubCommand>, command: &str) -> u
 
 #[tokio::test]
 async fn live_tables_wake_at_their_next_deadline() -> Result<()> {
-    let (_redis, store, _state) = fixture_store("live-timer-deadlines").await?;
+    let Some((db, store, _state)) = fixture_store().await? else {
+        return Ok(());
+    };
     let id = store.allocate_table().await?;
     let imported = replay_helpers::parse(&hanabi_protocol::decode(
         &json!({"players":["Alice","Bob"],"seed":"p2v0s1"}),
@@ -494,12 +506,15 @@ async fn live_tables_wake_at_their_next_deadline() -> Result<()> {
     actor.timer_retry = Some(retry);
     ensure!(actor.next_timer() == Some(retry));
     store.close().await?;
+    db.close().await;
     Ok(())
 }
 
 #[tokio::test]
 async fn idle_live_games_warn_once_and_players_can_keep_them_going() -> Result<()> {
-    let (_redis, store, _state) = fixture_store("live-idle-warning").await?;
+    let Some((db, store, _state)) = fixture_store().await? else {
+        return Ok(());
+    };
     let id = store.allocate_table().await?;
     let imported = replay_helpers::parse(&hanabi_protocol::decode(
         &json!({"players":["Alice","Bob"],"seed":"p2v0s1"}),
@@ -565,12 +580,15 @@ async fn idle_live_games_warn_once_and_players_can_keep_them_going() -> Result<(
         "The table was not warned again"
     );
     store.close().await?;
+    db.close().await;
     Ok(())
 }
 
 #[tokio::test]
 async fn spectating_a_live_game_does_not_refresh_its_idle_deadline() -> Result<()> {
-    let (_redis, store, _state) = fixture_store("live-spectator-idle").await?;
+    let Some((db, store, _state)) = fixture_store().await? else {
+        return Ok(());
+    };
     let id = store.allocate_table().await?;
     let imported = replay_helpers::parse(&hanabi_protocol::decode(
         &json!({"players":["Alice","Bob"],"seed":"p2v0s1"}),
@@ -603,6 +621,7 @@ async fn spectating_a_live_game_does_not_refresh_its_idle_deadline() -> Result<(
         "A spectator kept an idle live game alive"
     );
     store.close().await?;
+    db.close().await;
     Ok(())
 }
 
@@ -632,7 +651,9 @@ pub(super) fn review(id: u64, condition: EndCondition) -> Result<TableSnapshot> 
 
 #[tokio::test]
 async fn abandoned_pregames_expire_durably_even_with_a_password_or_spectator() -> Result<()> {
-    let (_redis, store, state) = fixture_store("abandoned-pregames").await?;
+    let Some((db, store, state)) = fixture_store().await? else {
+        return Ok(());
+    };
     for protected in [false, true] {
         let id = store.allocate_table().await?;
         let mut table = pregame(id);
@@ -697,12 +718,15 @@ async fn abandoned_pregames_expire_durably_even_with_a_password_or_spectator() -
         );
     }
     store.close().await?;
+    db.close().await;
     Ok(())
 }
 
 #[tokio::test]
 async fn restored_pregames_allow_reconnects_and_keep_connected_afk_players() -> Result<()> {
-    let (_redis, store, state) = fixture_store("pregame-reconnect-grace").await?;
+    let Some((db, store, state)) = fixture_store().await? else {
+        return Ok(());
+    };
     let id = store.allocate_table().await?;
     let mut table = pregame(id);
     table.created = Utc::now() - ChronoDuration::days(1);
@@ -751,12 +775,15 @@ async fn restored_pregames_allow_reconnects_and_keep_connected_afk_players() -> 
         "Recovered table survived permanent abandonment"
     );
     store.close().await?;
+    db.close().await;
     Ok(())
 }
 
 #[tokio::test]
 async fn abandoned_pregame_cleanup_does_not_override_frozen_or_newer_state() -> Result<()> {
-    let (_redis, store, state) = fixture_store("pregame-cleanup-fence").await?;
+    let Some((db, store, state)) = fixture_store().await? else {
+        return Ok(());
+    };
     let id = store.allocate_table().await?;
     let table = pregame(id);
     let revision = store.save(&table, 0).await?;
@@ -796,12 +823,15 @@ async fn abandoned_pregame_cleanup_does_not_override_frozen_or_newer_state() -> 
         "Failed cleanup announced retirement"
     );
     store.close().await?;
+    db.close().await;
     Ok(())
 }
 #[tokio::test]
 async fn canceled_reservations_and_uninstalled_tables_release_capacity_after_durable_cleanup()
 -> Result<()> {
-    let (_redis, store, state) = fixture_store("allocation-cleanup").await?;
+    let Some((db, store, state)) = fixture_store().await? else {
+        return Ok(());
+    };
     let capacity = Arc::new(Semaphore::new(1));
     for persist in [false, true] {
         let tasks = TaskTracker::new();
@@ -833,12 +863,15 @@ async fn canceled_reservations_and_uninstalled_tables_release_capacity_after_dur
         );
     }
     store.close().await?;
+    db.close().await;
     Ok(())
 }
 #[tokio::test]
 async fn full_table_mailboxes_do_not_block_hub_and_replacements_fence_private_effects() -> Result<()>
 {
-    let (_redis, store, _state) = fixture_store("hub-fencing").await?;
+    let Some((db, store, _state)) = fixture_store().await? else {
+        return Ok(());
+    };
     let (sender, receiver) = mpsc::channel(16);
     let (old, mut old_frames) = Session::new(1, "Alice".into(), 1, false);
     let (table_sender, _table_receiver) = mpsc::channel(1);
@@ -957,6 +990,7 @@ async fn full_table_mailboxes_do_not_block_hub_and_replacements_fence_private_ef
     replied.await?;
     task.await?;
     store.close().await?;
+    db.close().await;
     Ok(())
 }
 

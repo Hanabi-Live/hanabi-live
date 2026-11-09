@@ -25,9 +25,6 @@ const TEST_DIRECTORIES = ["packages/game/src", "packages/testing/src"] as const;
 const MISSING_POSTGRES =
   'The integration tests need PostgreSQL. Put the PostgreSQL server programs ("initdb" and "postgres") on your PATH, or set HANABI_TEST_DATABASE_URL to a disposable local server.';
 
-const MISSING_REDIS =
-  'The integration tests need Redis. Put the Redis server program ("redis-server", version 7.2 or newer) on your PATH.';
-
 async function isExecutable(file: string): Promise<boolean> {
   try {
     await access(file);
@@ -41,19 +38,6 @@ function pathDirectories(): readonly string[] {
   return (process.env["PATH"] ?? "")
     .split(path.delimiter)
     .filter((directory) => directory !== "");
-}
-
-/** Fails before the slow server build when the Redis fixture cannot start. */
-async function checkRedis() {
-  const found = await Promise.all(
-    pathDirectories().map(
-      async (directory) =>
-        await isExecutable(path.join(directory, "redis-server")),
-    ),
-  );
-  if (!found.includes(true)) {
-    throw new Error(MISSING_REDIS);
-  }
 }
 
 /** Finds the directory holding "initdb" and "postgres". */
@@ -291,7 +275,6 @@ async function main(): Promise<number> {
   if (!isSuite(suite)) {
     throw new Error(`The first argument must be one of: ${SUITES.join(", ")}`);
   }
-  await checkRedis();
   let database: DisposablePostgres | undefined;
   let url = process.env["HANABI_TEST_DATABASE_URL"];
   if (url === undefined) {

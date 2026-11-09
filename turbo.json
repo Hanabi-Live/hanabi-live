@@ -229,7 +229,6 @@
         "packages/testing/src/criticalCSS.ts",
         "packages/testing/src/database.ts",
         "packages/testing/src/mainProcessSupport.ts",
-        "packages/testing/src/redisFixture.ts",
         "packages/testing/src/runTests.ts",
         "public/css/**",
         "!public/css/main.*.min.css",

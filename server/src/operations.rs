@@ -262,7 +262,7 @@ async fn metrics_report(control: &Control) -> Result<Response> {
     let inspect = control.operation(Operation::Inspect).await?;
     let mut recovery = metrics::recovery();
     recovery["storageInitialized"] = json!(true);
-    recovery["authority"] = json!("Redis AOF/WAITAOF");
+    recovery["authority"] = json!("PostgreSQL");
     recovery["stateHealthy"] = json!(control.storage_healthy());
     recovery["frozenTables"] = json!(
         inspect["tables"]

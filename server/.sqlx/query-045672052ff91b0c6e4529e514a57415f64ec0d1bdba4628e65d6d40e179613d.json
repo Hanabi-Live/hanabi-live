@@ -1,0 +1,21 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT EXISTS(SELECT 1 FROM pg_stat_activity\n                     WHERE wait_event_type = 'Lock' AND query LIKE 'UPDATE live_tables%') AS \"blocked!\"",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "blocked!",
+        "type_info": "Bool",
+        "origin": "Expression"
+      }
+    ],
+    "parameters": {
+      "Left": []
+    },
+    "nullable": [
+      null
+    ]
+  },
+  "hash": "045672052ff91b0c6e4529e514a57415f64ec0d1bdba4628e65d6d40e179613d"
+}

@@ -1,143 +1,55 @@
+//! The live tables' latest checkpoints, which PostgreSQL stores. One server owns them at a time.
+
+use crate::{errors::Fault, store::LockSpace};
 use anyhow::{Context, Result, bail, ensure};
-use redis::{Script, aio::MultiplexedConnection};
+use axum::http::StatusCode;
+use sqlx::{Connection, PgConnection, PgPool, Postgres, Transaction, postgres::PgConnectOptions};
 use std::{
-    sync::{
-        Arc,
-        atomic::{AtomicU64, Ordering},
-    },
+    sync::Arc,
     time::{Duration, Instant},
 };
 use tokio_util::{sync::CancellationToken, task::TaskTracker};
 
 /// The largest checkpoint payload, in bytes.
 pub const MAX_CHECKPOINT_BYTES: usize = 4 * crate::MIB;
-const MAX_RECORDS: usize = 4096;
-const RESPONSE_TIMEOUT: Duration = Duration::from_secs(30);
-const LEASE_TIME: Duration = Duration::from_secs(5);
-/// The shortest lease that ownership accepts.
-const MIN_LEASE_TIME: Duration = Duration::from_millis(100);
 /// How long startup waits for another server to release ownership.
 const ACQUISITION_TIMEOUT: Duration = Duration::from_secs(10);
 /// How long to wait between attempts to take ownership.
-const ACQUISITION_RETRY: Duration = Duration::from_millis(25);
-/// The percentage of a lease during which ownership is trusted, leaving the rest as a margin.
-const SAFE_LEASE_PERCENT: u64 = 75;
-/// How many times ownership is renewed per lease.
-const RENEWALS_PER_LEASE: u32 = 5;
-/// How often the watchdog checks that ownership is still trusted.
-const WATCHDOG_INTERVAL: Duration = Duration::from_millis(10);
-/// The longest state namespace, in bytes.
-const MAX_NAMESPACE_LENGTH: usize = 1024;
-
-/// The status a write script returns when the checkpoint revision is not the expected one.
-const STALE_REVISION: i64 = -1;
-/// The status a write script returns when another process holds ownership.
-const LEASE_LOST: i64 = -2;
-/// The status a write script returns when the index is full or inconsistent.
-const INTEGRITY_FAILURE: i64 = -3;
-
-/// Prepares a write script, defining its status codes as Lua locals.
-fn status_script(body: &str) -> Script {
-    Script::new(&format!(
-        "local STALE_REVISION, LEASE_LOST, INTEGRITY_FAILURE = {STALE_REVISION}, {LEASE_LOST}, {INTEGRITY_FAILURE}\n{body}"
-    ))
-}
-
-const RESERVE: &str = r"
-if redis.call('GET', KEYS[1]) ~= ARGV[1] then return LEASE_LOST end
-if redis.call('EXISTS', KEYS[2]) ~= 0 then return STALE_REVISION end
-if redis.call('SCARD', KEYS[3]) >= tonumber(ARGV[3]) then return INTEGRITY_FAILURE end
-redis.call('HSET', KEYS[2], 'revision', 0, 'payload', '', 'creator', ARGV[1])
-redis.call('SADD', KEYS[3], ARGV[2])
-return 0
-";
-
-const ALLOCATE_TABLE: &str = r"
-if redis.call('GET', KEYS[1]) ~= ARGV[1] then return LEASE_LOST end
-if redis.call('SCARD', KEYS[3]) >= tonumber(ARGV[2]) then return INTEGRITY_FAILURE end
-local current = redis.call('GET', KEYS[4])
-if current and tonumber(current) >= tonumber(ARGV[3]) then return INTEGRITY_FAILURE end
-local id = redis.call('INCR', KEYS[4])
-local member = 't:' .. redis.call('GET', KEYS[4])
-local key = KEYS[2] .. member
-if redis.call('EXISTS', key) ~= 0 then return INTEGRITY_FAILURE end
-redis.call('HSET', key, 'revision', 0, 'payload', '', 'creator', ARGV[1])
-redis.call('SADD', KEYS[3], member)
-return id
-";
-
-const SAVE: &str = r"
-if redis.call('GET', KEYS[1]) ~= ARGV[1] then return LEASE_LOST end
-local current = redis.call('HGET', KEYS[2], 'revision')
-local expected = tonumber(ARGV[2])
-if current == false or tonumber(current) ~= expected then return STALE_REVISION end
-if redis.call('SISMEMBER', KEYS[3], ARGV[4]) ~= 1 then return INTEGRITY_FAILURE end
-local next = expected + 1
-redis.call('HSET', KEYS[2], 'revision', next, 'payload', ARGV[3])
-redis.call('SADD', KEYS[3], ARGV[4])
-return next
-";
-const REMOVE: &str = r"
-if redis.call('GET', KEYS[1]) ~= ARGV[1] then return LEASE_LOST end
-local current = redis.call('HGET', KEYS[2], 'revision')
-if current == false then
-  if redis.call('SISMEMBER', KEYS[3], ARGV[3]) ~= 0 then return INTEGRITY_FAILURE end
-  return 0
-end
-if tonumber(current) ~= tonumber(ARGV[2]) then return STALE_REVISION end
-redis.call('DEL', KEYS[2])
-redis.call('SREM', KEYS[3], ARGV[3])
-return 1
-";
-const READ: &str = r"
-if redis.call('GET', KEYS[1]) ~= ARGV[1] then return redis.error_reply('STATE_LEASE_LOST') end
-if redis.call('HSTRLEN', KEYS[2], 'payload') > tonumber(ARGV[2]) then return redis.error_reply('STATE_TOO_LARGE') end
-return redis.call('HMGET', KEYS[2], 'revision', 'payload', 'creator')
-";
-const LOAD_INDEX: &str = r"
-if redis.call('GET', KEYS[1]) ~= ARGV[1] then return redis.error_reply('STATE_LEASE_LOST') end
-if redis.call('SCARD', KEYS[2]) > tonumber(ARGV[2]) then return redis.error_reply('STATE_INDEX_TOO_LARGE') end
-return redis.call('SMEMBERS', KEYS[2])
-";
-const RENEW: &str = r"
-if redis.call('GET', KEYS[1]) ~= ARGV[1] then return 0 end
-return redis.call('PEXPIRE', KEYS[1], ARGV[2])
-";
-const RELEASE: &str = r"
-if redis.call('GET', KEYS[1]) ~= ARGV[1] then return 0 end
-return redis.call('DEL', KEYS[1])
-";
-
-/// The Redis index member for a table's checkpoint.
-fn member(table_id: u64) -> Result<String> {
-    ensure!(
-        (1..=hanabi_protocol::MAX_SAFE_INTEGER.unsigned_abs()).contains(&table_id),
-        "Invalid table identity"
-    );
-    Ok(format!("t:{table_id}"))
-}
-fn parse_member(value: &str) -> Result<u64> {
-    let id = value
-        .strip_prefix("t:")
-        .context("Unknown Redis state identity")?
-        .parse()?;
-    ensure!(member(id)? == value, "Non-canonical Redis state identity");
-    Ok(id)
-}
+const ACQUISITION_RETRY: Duration = Duration::from_millis(100);
+/// How often the watchdog checks the connection that holds ownership.
+const WATCHDOG_INTERVAL: Duration = Duration::from_secs(1);
+/// How long the watchdog's check may take before ownership counts as lost.
+const WATCHDOG_TIMEOUT: Duration = Duration::from_secs(5);
+/// The command that moves the live tables of an installation that kept them in Redis.
+pub const IMPORT_COMMAND: &str = "hanabi-live migrate import-redis";
 
 pub struct StoredState {
     pub id: u64,
     pub revision: i64,
     pub payload: String,
-    creator: String,
+}
+
+/// Table IDs are positive and stay within the integers that clients represent exactly.
+fn table_id(id: u64) -> Result<i64> {
+    i64::try_from(id)
+        .ok()
+        .filter(|id| (1..=hanabi_protocol::MAX_SAFE_INTEGER).contains(id))
+        .context("Invalid table identity")
 }
 
 struct Ownership {
-    token: String,
-    key: String,
-    start: Instant,
-    deadline: AtomicU64,
+    /// This server's ownership epoch. Writes commit only while it is current.
+    epoch: i64,
     lost: CancellationToken,
+}
+impl Ownership {
+    fn check(&self) -> Result<()> {
+        ensure!(
+            !self.lost.is_cancelled(),
+            "Live-table ownership is unavailable; stop admission and recover"
+        );
+        Ok(())
+    }
 }
 struct LeaseGuard(CancellationToken);
 impl Drop for LeaseGuard {
@@ -145,195 +57,90 @@ impl Drop for LeaseGuard {
         self.0.cancel();
     }
 }
-impl Ownership {
-    fn elapsed(&self) -> u64 {
-        u64::try_from(self.start.elapsed().as_millis()).unwrap_or(u64::MAX)
-    }
-    fn check(&self) -> Result<()> {
-        if self.lost.is_cancelled() || self.elapsed() >= self.deadline.load(Ordering::Acquire) {
-            self.lost.cancel();
-            bail!("Redis state ownership is unavailable; stop admission and recover");
-        }
-        Ok(())
-    }
-}
 
 #[derive(Clone)]
-pub struct RedisState {
-    connection: MultiplexedConnection,
+pub struct LiveState {
+    pool: PgPool,
     owner: Arc<Ownership>,
-    prefix: String,
     tasks: TaskTracker,
     _lease_guard: Arc<LeaseGuard>,
 }
 
-async fn durable(connection: &mut MultiplexedConnection) -> Result<()> {
-    // WAITAOF must use the same physical connection as the preceding write.
-    let (local, _replicas): (i64, i64) = redis::cmd("WAITAOF")
-        .arg(1)
-        .arg(0)
-        .arg(u64::try_from(RESPONSE_TIMEOUT.as_millis())?)
-        .query_async(connection)
+/// Whether the live tables are in PostgreSQL. An installation that kept them in Redis must import
+/// them first.
+pub async fn require_imported(connection: &mut PgConnection) -> Result<()> {
+    let imported = sqlx::query_scalar!("SELECT imported FROM live_state_owner")
+        .fetch_one(connection)
         .await?;
-    ensure!(local >= 1, "Redis did not confirm local AOF durability");
+    ensure!(
+        imported,
+        "The live tables are still in Redis. Stop the previous release with /gracefulStop, then run `{IMPORT_COMMAND}`"
+    );
     Ok(())
 }
 
-impl RedisState {
-    pub async fn connect(url: &str, namespace: &str) -> Result<Self> {
-        Self::connect_timed(url, namespace, LEASE_TIME, ACQUISITION_TIMEOUT).await
+impl LiveState {
+    /// Takes ownership of the live tables. A dedicated connection holds a session advisory lock
+    /// while the server runs, and the ownership epoch fences writes from any earlier owner.
+    pub async fn connect(pool: PgPool, options: &PgConnectOptions) -> Result<Self> {
+        Self::connect_within(pool, options, ACQUISITION_TIMEOUT).await
     }
-}
 
-impl RedisState {
-    async fn connect_timed(
-        url: &str,
-        namespace: &str,
-        lease_time: Duration,
+    async fn connect_within(
+        pool: PgPool,
+        options: &PgConnectOptions,
         acquisition: Duration,
     ) -> Result<Self> {
-        ensure!(
-            !namespace.is_empty() && namespace.len() <= MAX_NAMESPACE_LENGTH,
-            "Invalid Redis namespace"
-        );
-        let client = redis::Client::open(url).map_err(|_| anyhow::anyhow!("Invalid REDIS_URL"))?;
-        let config = redis::AsyncConnectionConfig::new()
-            .set_connection_timeout(Some(RESPONSE_TIMEOUT))
-            .set_response_timeout(Some(RESPONSE_TIMEOUT));
-        // Deliberately no ConnectionManager: reconnecting between EVAL and WAITAOF would
-        // lose the write offset that WAITAOF is supposed to acknowledge.
-        let mut connection = client
-            .get_multiplexed_async_connection_with_config(&config)
-            .await?;
-        let mut renewal = client
-            .get_multiplexed_async_connection_with_config(&config)
-            .await?;
-        redis::cmd("CLIENT")
-            .arg("SETNAME")
-            .arg("hanabi-state")
-            .query_async::<String>(&mut connection)
-            .await?;
-        redis::cmd("CLIENT")
-            .arg("SETNAME")
-            .arg("hanabi-lease")
-            .query_async::<String>(&mut renewal)
-            .await?;
-        let info: String = redis::cmd("INFO")
-            .arg("persistence")
-            .query_async(&mut connection)
-            .await?;
-        ensure!(
-            info.lines().any(|line| line.trim() == "aof_enabled:1"),
-            "Redis AOF must be enabled"
-        );
-        let memory: String = redis::cmd("INFO")
-            .arg("memory")
-            .query_async(&mut connection)
-            .await?;
-        ensure!(
-            memory
-                .lines()
-                .any(|line| line.trim() == "maxmemory_policy:noeviction"),
-            "Redis must use maxmemory-policy noeviction to preserve acknowledged state"
-        );
-        let encoded = hex::encode(namespace);
-        let prefix = format!("hanabi:{{{encoded}}}");
-        let key = format!("{prefix}:owner");
-        let token = format!("{:032x}", rand::random::<u128>());
+        let mut lock = PgConnection::connect_with(options).await?;
         let started = Instant::now();
-        ensure!(lease_time >= MIN_LEASE_TIME, "Ownership interval too short");
-        let lease_ms = u64::try_from(lease_time.as_millis())?;
-        let safe_window = lease_ms * SAFE_LEASE_PERCENT / 100;
-        let request_start;
         loop {
-            let before = u64::try_from(started.elapsed().as_millis()).unwrap_or(u64::MAX);
-            let acquired: Option<String> = redis::cmd("SET")
-                .arg(&key)
-                .arg(&token)
-                .arg("NX")
-                .arg("PX")
-                .arg(lease_ms)
-                .query_async(&mut connection)
-                .await?;
-            if acquired.is_some() {
-                request_start = before;
+            let acquired = sqlx::query_scalar!(
+                "SELECT pg_try_advisory_lock($1, 0) AS \"acquired!\"",
+                LockSpace::LiveState as i32
+            )
+            .fetch_one(&mut lock)
+            .await?;
+            if acquired {
                 break;
             }
             ensure!(
                 started.elapsed() < acquisition,
-                "Another server owns this Redis state namespace"
+                "Another server owns the live tables in this database"
             );
             tokio::time::sleep(ACQUISITION_RETRY).await;
         }
-        durable(&mut connection).await?;
+        require_imported(&mut lock).await?;
+        // This waits for any write that an earlier owner has in progress.
+        let epoch =
+            sqlx::query_scalar!("UPDATE live_state_owner SET epoch = epoch + 1 RETURNING epoch")
+                .fetch_one(&mut lock)
+                .await?;
         let owner = Arc::new(Ownership {
-            token,
-            key,
-            start: started,
-            deadline: AtomicU64::new(request_start + safe_window),
+            epoch,
             lost: CancellationToken::new(),
         });
-        owner.check()?;
         let tasks = TaskTracker::new();
-        let renewing = owner.clone();
-        tasks.spawn(async move {
-            loop {
-                tokio::select! {
-                    () = renewing.lost.cancelled() => break,
-                    () = tokio::time::sleep(lease_time / RENEWALS_PER_LEASE) => {}
-                }
-                if renewing.check().is_err() {
-                    break;
-                }
-                let before = renewing.elapsed();
-                let refreshed = async {
-                    let renewed: i64 = Script::new(RENEW)
-                        .key(&renewing.key)
-                        .arg(&renewing.token)
-                        .arg(lease_ms)
-                        .invoke_async(&mut renewal)
-                        .await?;
-                    ensure!(
-                        renewed == 1,
-                        "Redis ownership lease was replaced or expired"
-                    );
-                    durable(&mut renewal).await?;
-                    ensure!(
-                        renewing.elapsed() < before + safe_window,
-                        "Ownership renewal arrived too late"
-                    );
-                    Ok::<(), anyhow::Error>(())
-                };
-                let result = tokio::select! {
-                    () = renewing.lost.cancelled() => break,
-                    result = refreshed => result,
-                };
-                if let Err(error) = result {
-                    eprintln!("Redis ownership renewal failed: {error}");
-                    renewing.lost.cancel();
-                    break;
-                }
-                renewing
-                    .deadline
-                    .store(before + safe_window, Ordering::Release);
-            }
-        });
         let watchdog = owner.clone();
         tasks.spawn(async move {
             loop {
                 tokio::select! {
                     () = watchdog.lost.cancelled() => break,
-                    () = tokio::time::sleep(WATCHDOG_INTERVAL) => {
-                        if watchdog.check().is_err() { break; }
-                    }
+                    () = tokio::time::sleep(WATCHDOG_INTERVAL) => {}
+                }
+                let alive = tokio::time::timeout(WATCHDOG_TIMEOUT, lock.ping()).await;
+                if !matches!(alive, Ok(Ok(()))) {
+                    eprintln!("The connection that holds live-table ownership failed.");
+                    watchdog.lost.cancel();
+                    break;
                 }
             }
+            // Closing the connection releases the advisory lock.
+            let _ = lock.close().await;
         });
         let lease_guard = Arc::new(LeaseGuard(owner.lost.clone()));
         Ok(Self {
-            connection,
+            pool,
             owner,
-            prefix,
             tasks,
             _lease_guard: lease_guard,
         })
@@ -345,47 +152,37 @@ impl RedisState {
     pub fn lost(&self) -> CancellationToken {
         self.owner.lost.clone()
     }
-    fn index(&self) -> String {
-        format!("{}:states", self.prefix)
-    }
-    fn key(&self, id: u64) -> Result<String> {
-        Ok(format!("{}:state:{}", self.prefix, member(id)?))
+
+    /// Begins a transaction that commits only while this server owns the live tables. Locking the
+    /// epoch makes a new owner wait for this transaction before it reads the tables.
+    pub async fn begin(&self) -> Result<Transaction<'static, Postgres>> {
+        self.check()?;
+        let mut transaction = self.pool.begin().await?;
+        let epoch = sqlx::query_scalar!("SELECT epoch FROM live_state_owner FOR SHARE")
+            .fetch_one(&mut *transaction)
+            .await?;
+        if epoch != self.owner.epoch {
+            self.owner.lost.cancel();
+            bail!("Another server took ownership of the live tables; stop admission and recover");
+        }
+        Ok(transaction)
     }
 
-    async fn acknowledge(&self, connection: &mut MultiplexedConnection) -> Result<()> {
-        if let Err(error) = durable(connection).await {
+    /// Commits a transaction from `begin`. A failed commit may still have been applied, so the
+    /// server stops admitting work.
+    pub async fn commit(&self, transaction: Transaction<'static, Postgres>) -> Result<()> {
+        if let Err(error) = transaction.commit().await {
             self.owner.lost.cancel();
-            return Err(error.context(crate::errors::Fault::new(
+            return Err(anyhow::Error::from(error).context(Fault::new(
                 "persistence_uncertain",
-                "The live-state write may have been saved, but durability could not be confirmed. Do not repeat game actions; wait for recovery.",
-                axum::http::StatusCode::SERVICE_UNAVAILABLE,
+                "The live-state write may have been saved, but the database could not confirm it. Do not repeat game actions; wait for recovery.",
+                StatusCode::SERVICE_UNAVAILABLE,
             )));
         }
         self.check()
     }
 
-    fn reply(&self, result: redis::RedisResult<i64>) -> Result<i64> {
-        match result {
-            Ok(LEASE_LOST) => {
-                self.owner.lost.cancel();
-                bail!("Redis state ownership was lost");
-            }
-            Ok(STALE_REVISION) => bail!("Stale Redis checkpoint revision"),
-            Ok(INTEGRITY_FAILURE) => bail!("Redis state capacity or index integrity failure"),
-            Ok(value) => Ok(value),
-            Err(error) => {
-                self.owner.lost.cancel();
-                Err(anyhow::Error::from(error).context(crate::errors::Fault::new(
-                    "persistence_uncertain",
-                    "The live-state operation may have completed without confirmation. Do not repeat game actions; wait for recovery.",
-                    axum::http::StatusCode::SERVICE_UNAVAILABLE,
-                )))
-            }
-        }
-    }
-
     pub async fn save(&self, id: u64, expected: i64, payload: &str) -> Result<i64> {
-        self.check()?;
         ensure!(
             (0..hanabi_protocol::MAX_SAFE_INTEGER).contains(&expected),
             "Invalid checkpoint revision"
@@ -394,162 +191,126 @@ impl RedisState {
             !payload.is_empty() && payload.len() <= MAX_CHECKPOINT_BYTES,
             "Invalid checkpoint size"
         );
-        let mut connection = self.connection.clone();
-        let reply = status_script(SAVE)
-            .key(&self.owner.key)
-            .key(self.key(id)?)
-            .key(self.index())
-            .arg(&self.owner.token)
-            .arg(expected)
-            .arg(payload)
-            .arg(member(id)?)
-            .arg(MAX_RECORDS)
-            .invoke_async(&mut connection)
-            .await;
-        let revision = self.reply(reply)?;
-        self.acknowledge(&mut connection).await?;
+        let id = table_id(id)?;
+        let mut transaction = self.begin().await?;
+        let revision = sqlx::query_scalar!(
+            "UPDATE live_tables SET revision = revision + 1, payload = $3
+             WHERE id = $1 AND revision = $2 RETURNING revision",
+            id,
+            expected,
+            payload
+        )
+        .fetch_optional(&mut *transaction)
+        .await?
+        .context("Stale live-table checkpoint revision")?;
+        self.commit(transaction).await?;
         Ok(revision)
     }
 
+    /// Reserves a table ID that was allocated earlier, such as the destination of a split.
     pub async fn reserve(&self, id: u64) -> Result<()> {
-        self.check()?;
-        let mut connection = self.connection.clone();
-        let result = status_script(RESERVE)
-            .key(&self.owner.key)
-            .key(self.key(id)?)
-            .key(self.index())
-            .arg(&self.owner.token)
-            .arg(member(id)?)
-            .arg(MAX_RECORDS)
-            .invoke_async(&mut connection)
-            .await;
-        self.reply(result)?;
-        self.acknowledge(&mut connection).await
+        let id = table_id(id)?;
+        let mut transaction = self.begin().await?;
+        sqlx::query_scalar!(
+            "INSERT INTO live_tables (id, revision, payload, epoch) VALUES ($1, 0, NULL, $2)
+             ON CONFLICT DO NOTHING RETURNING id",
+            id,
+            self.owner.epoch
+        )
+        .fetch_optional(&mut *transaction)
+        .await?
+        .context("The live table already exists")?;
+        self.commit(transaction).await
     }
 
+    /// Reserves a new table ID. IDs are never reused.
     pub async fn allocate_table(&self) -> Result<u64> {
-        self.check()?;
-        let mut connection = self.connection.clone();
-        let result = status_script(ALLOCATE_TABLE)
-            .key(&self.owner.key)
-            .key(format!("{}:state:", self.prefix))
-            .key(self.index())
-            .key(format!("{}:table-counter", self.prefix))
-            .arg(&self.owner.token)
-            .arg(MAX_RECORDS)
-            .arg(hanabi_protocol::MAX_SAFE_INTEGER)
-            .invoke_async(&mut connection)
-            .await;
-        let id = self.reply(result)?;
-        ensure!(id > 0, "Invalid allocated table ID");
-        self.acknowledge(&mut connection).await?;
+        let mut transaction = self.begin().await?;
+        let id = sqlx::query_scalar!(
+            "INSERT INTO live_tables (id, revision, payload, epoch)
+             VALUES (nextval('live_table_ids'), 0, NULL, $1) RETURNING id",
+            self.owner.epoch
+        )
+        .fetch_one(&mut *transaction)
+        .await?;
+        self.commit(transaction).await?;
         Ok(id.cast_unsigned())
     }
 
     pub async fn remove(&self, id: u64, expected: i64) -> Result<()> {
-        self.check()?;
         ensure!(expected >= 0, "Invalid removal revision");
-        let mut connection = self.connection.clone();
-        let result = status_script(REMOVE)
-            .key(&self.owner.key)
-            .key(self.key(id)?)
-            .key(self.index())
-            .arg(&self.owner.token)
-            .arg(expected)
-            .arg(member(id)?)
-            .invoke_async(&mut connection)
-            .await;
-        self.reply(result)?;
-        self.acknowledge(&mut connection).await
+        let id = table_id(id)?;
+        let mut transaction = self.begin().await?;
+        let removed = sqlx::query!(
+            "DELETE FROM live_tables WHERE id = $1 AND revision = $2",
+            id,
+            expected
+        )
+        .execute(&mut *transaction)
+        .await?
+        .rows_affected();
+        if removed == 0 {
+            let exists = sqlx::query_scalar!("SELECT revision FROM live_tables WHERE id = $1", id)
+                .fetch_optional(&mut *transaction)
+                .await?;
+            ensure!(exists.is_none(), "Stale live-table checkpoint revision");
+        }
+        self.commit(transaction).await
     }
 
     pub async fn get(&self, id: u64) -> Result<Option<StoredState>> {
         self.check()?;
-        let mut connection = self.connection.clone();
-        let result: redis::RedisResult<(Option<i64>, Option<String>, Option<String>)> =
-            Script::new(READ)
-                .key(&self.owner.key)
-                .key(self.key(id)?)
-                .arg(&self.owner.token)
-                .arg(MAX_CHECKPOINT_BYTES)
-                .invoke_async(&mut connection)
-                .await;
-        let (revision, payload, creator) = match result {
-            Ok(result) => result,
-            Err(error) => {
-                self.owner.lost.cancel();
-                return Err(error.into());
-            }
-        };
+        let row = sqlx::query!(
+            "SELECT revision, payload FROM live_tables WHERE id = $1",
+            table_id(id)?
+        )
+        .fetch_optional(&self.pool)
+        .await?;
         self.check()?;
-        match (revision, payload, creator) {
-            (None, None, None) => Ok(None),
-            (Some(revision), Some(payload), Some(creator)) => {
-                ensure!(
-                    revision >= 0
-                        && (revision == 0) == payload.is_empty()
-                        && payload.len() <= MAX_CHECKPOINT_BYTES
-                        && !creator.is_empty(),
-                    "Invalid stored Redis checkpoint"
-                );
-                Ok(Some(StoredState {
-                    id,
-                    revision,
-                    payload,
-                    creator,
-                }))
-            }
-            _ => bail!("Incomplete Redis checkpoint"),
-        }
+        Ok(row.map(|row| StoredState {
+            id,
+            revision: row.revision,
+            payload: row.payload.unwrap_or_default(),
+        }))
     }
 
+    /// The saved tables. Reservations that an earlier owner left unused are removed.
     pub async fn load(&self) -> Result<Vec<StoredState>> {
-        self.check()?;
-        let mut connection = self.connection.clone();
-        let members: Vec<String> = Script::new(LOAD_INDEX)
-            .key(&self.owner.key)
-            .key(self.index())
-            .arg(&self.owner.token)
-            .arg(MAX_RECORDS)
-            .invoke_async(&mut connection)
-            .await
-            .map_err(|error| {
-                self.owner.lost.cancel();
-                anyhow::Error::from(error).context("Failed to load the authoritative Redis index")
-            })?;
-        self.check()?;
-        let mut states = Vec::with_capacity(members.len());
-        for member in members {
-            let id = parse_member(&member)?;
-            let record = self
-                .get(id)
-                .await?
-                .context("Redis state index references a missing checkpoint")?;
-            if record.revision == 0 {
-                if record.creator != self.owner.token {
-                    self.remove(id, 0).await?;
-                }
-            } else {
-                states.push(record);
-            }
-        }
-        self.check()?;
-        Ok(states)
+        let mut transaction = self.begin().await?;
+        sqlx::query!(
+            "DELETE FROM live_tables WHERE revision = 0 AND epoch <> $1",
+            self.owner.epoch
+        )
+        .execute(&mut *transaction)
+        .await?;
+        let rows = sqlx::query!(
+            "SELECT id, revision, payload AS \"payload!\" FROM live_tables
+             WHERE revision > 0 ORDER BY id"
+        )
+        .fetch_all(&mut *transaction)
+        .await?;
+        self.commit(transaction).await?;
+        Ok(rows
+            .into_iter()
+            .map(|row| StoredState {
+                id: row.id.cast_unsigned(),
+                revision: row.revision,
+                payload: row.payload,
+            })
+            .collect())
     }
 
+    /// Takes ownership of a test database's live tables.
+    #[cfg(test)]
+    pub(crate) async fn for_test(pool: &PgPool) -> Result<Self> {
+        Self::connect(pool.clone(), &pool.connect_options()).await
+    }
+
+    /// Releases ownership.
     pub async fn close(&self) -> Result<()> {
         self.owner.lost.cancel();
         self.tasks.close();
         self.tasks.wait().await;
-        let mut connection = self.connection.clone();
-        let removed: i64 = Script::new(RELEASE)
-            .key(&self.owner.key)
-            .arg(&self.owner.token)
-            .invoke_async(&mut connection)
-            .await?;
-        if removed != 0 {
-            durable(&mut connection).await?;
-        }
         Ok(())
     }
 }
@@ -557,275 +318,164 @@ impl RedisState {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::test_redis::RedisFixture;
+    use crate::accounts::test_support::TestDb;
 
-    async fn connect(fixture: &RedisFixture, namespace: &str) -> Result<RedisState> {
-        RedisState::connect_timed(
-            &fixture.url,
-            namespace,
-            Duration::from_millis(500),
-            Duration::from_secs(2),
+    /// Ends the connection that holds a server's ownership, as a network failure would.
+    async fn drop_ownership_connection(pool: &PgPool) -> Result<()> {
+        let ended = sqlx::query_scalar!(
+            "SELECT pg_terminate_backend(pid) AS \"ended!\" FROM pg_locks
+             WHERE locktype = 'advisory' AND classid = $1 AND granted
+             AND database = (SELECT oid FROM pg_database WHERE datname = current_database())",
+            LockSpace::LiveState as i32
+        )
+        .fetch_all(pool)
+        .await?;
+        ensure!(ended == [true], "Expected one ownership connection");
+        Ok(())
+    }
+
+    #[tokio::test]
+    async fn revisions_fence_concurrent_writers_and_ids_are_not_reused() -> Result<()> {
+        let Some(db) = TestDb::create().await else {
+            return Ok(());
+        };
+        let state = LiveState::for_test(&db.pool).await?;
+        let id = state.allocate_table().await?;
+        ensure!(state.save(id, 0, "initial").await? == 1);
+        let (one, two) = tokio::join!(state.save(id, 1, "one"), state.save(id, 1, "two"));
+        ensure!(one.is_ok() != two.is_ok(), "Two stale writers succeeded");
+        let saved = state.get(id).await?.context("Missing table")?;
+        ensure!(saved.revision == 2 && ["one", "two"].contains(&saved.payload.as_str()));
+        ensure!(
+            state.remove(id, 1).await.is_err(),
+            "Removed a stale revision"
+        );
+        state.remove(id, 2).await?;
+        ensure!(
+            state.save(id, 0, "resurrected").await.is_err(),
+            "A removed table was saved again"
+        );
+        ensure!(state.load().await?.is_empty(), "A removed table was loaded");
+        ensure!(state.allocate_table().await? > id, "A table ID was reused");
+        state.close().await?;
+        db.close().await;
+        Ok(())
+    }
+
+    #[tokio::test]
+    async fn one_server_owns_the_live_tables_at_a_time() -> Result<()> {
+        let Some(db) = TestDb::create().await else {
+            return Ok(());
+        };
+        let first = LiveState::for_test(&db.pool).await?;
+        let options = db.pool.connect_options();
+        ensure!(
+            LiveState::connect_within(db.pool.clone(), &options, Duration::ZERO)
+                .await
+                .is_err(),
+            "A second server took ownership while the first ran"
+        );
+        let id = first.allocate_table().await?;
+        first.save(id, 0, "first").await?;
+        first.close().await?;
+        ensure!(first.save(id, 1, "closed").await.is_err());
+        let second = LiveState::for_test(&db.pool).await?;
+        ensure!(second.get(id).await?.context("Missing table")?.payload == "first");
+        second.close().await?;
+        db.close().await;
+        Ok(())
+    }
+
+    #[tokio::test]
+    async fn a_replaced_owner_cannot_write_and_learns_that_it_lost_ownership() -> Result<()> {
+        let Some(db) = TestDb::create().await else {
+            return Ok(());
+        };
+        let first = LiveState::for_test(&db.pool).await?;
+        let id = first.allocate_table().await?;
+        first.save(id, 0, "first").await?;
+        drop_ownership_connection(&db.pool).await?;
+        let second = LiveState::for_test(&db.pool).await?;
+        ensure!(
+            first.save(id, 1, "stale").await.is_err(),
+            "A replaced owner saved a table"
+        );
+        ensure!(
+            first.lost().is_cancelled(),
+            "A replaced owner kept admitting work"
+        );
+        ensure!(second.get(id).await?.context("Missing table")?.payload == "first");
+        second.save(id, 1, "second").await?;
+        second.close().await?;
+        db.close().await;
+        Ok(())
+    }
+
+    #[tokio::test]
+    async fn the_watchdog_notices_a_failed_ownership_connection() -> Result<()> {
+        let Some(db) = TestDb::create().await else {
+            return Ok(());
+        };
+        let state = LiveState::for_test(&db.pool).await?;
+        drop_ownership_connection(&db.pool).await?;
+        tokio::time::timeout(
+            WATCHDOG_INTERVAL + WATCHDOG_TIMEOUT,
+            state.lost().cancelled(),
         )
         .await
+        .context("The watchdog did not notice the failed connection")?;
+        ensure!(state.check().is_err());
+        db.close().await;
+        Ok(())
     }
 
     #[tokio::test]
-    async fn durable_cas_survives_abrupt_redis_restart_without_resurrection() -> Result<()> {
-        let mut fixture = RedisFixture::start(true).await?;
-        let first = RedisState::connect(&fixture.url, "cas").await?;
-        let id = 1;
-        first.reserve(id).await?;
+    async fn new_owners_remove_unused_reservations_of_earlier_ones() -> Result<()> {
+        let Some(db) = TestDb::create().await else {
+            return Ok(());
+        };
+        let first = LiveState::for_test(&db.pool).await?;
+        let unused = first.allocate_table().await?;
+        let saved = first.allocate_table().await?;
+        first.save(saved, 0, "saved").await?;
+        first.close().await?;
+        let second = LiveState::for_test(&db.pool).await?;
+        let own = second.allocate_table().await?;
+        let loaded = second.load().await?;
         ensure!(
-            first.save(id, 0, "initial").await? == 1,
-            "Wrong initial revision"
+            loaded.len() == 1 && loaded[0].id == saved,
+            "Wrong saved tables"
         );
-        let (one, two) = tokio::join!(first.save(id, 1, "one"), first.save(id, 1, "two"));
-        ensure!(one.is_ok() != two.is_ok(), "Two stale writers succeeded");
-        let committed = first.get(id).await?.context("Missing state")?;
-        ensure!(committed.revision == 2, "Wrong committed revision");
-        fixture.kill()?;
-        fixture.restart().await?;
-        let recovered = RedisState::connect(&fixture.url, "cas").await?;
-        // A brief scheduler stall must not invalidate this functional recovery test's lease.
-        std::thread::sleep(Duration::from_millis(400));
-        let restored = recovered
-            .get(id)
+        ensure!(
+            second.get(unused).await?.is_none(),
+            "An unused reservation remained"
+        );
+        ensure!(
+            second
+                .get(own)
+                .await?
+                .is_some_and(|table| table.revision == 0),
+            "The current owner lost its reservation"
+        );
+        second.close().await?;
+        db.close().await;
+        Ok(())
+    }
+
+    #[tokio::test]
+    async fn servers_wait_for_live_tables_to_be_imported_from_redis() -> Result<()> {
+        let Some(db) = TestDb::create().await else {
+            return Ok(());
+        };
+        sqlx::query!("UPDATE live_state_owner SET imported = FALSE")
+            .execute(&db.pool)
+            .await?;
+        let error = LiveState::for_test(&db.pool)
             .await
-            .context("Reading the recovered checkpoint after a scheduling stall")?
-            .context("Lost durable state")?;
-        ensure!(
-            restored.payload == committed.payload && restored.revision == 2,
-            "AOF recovery changed acknowledged state"
-        );
-        ensure!(
-            first.save(id, 2, "stale process").await.is_err(),
-            "Old process retained write authority"
-        );
-        recovered.remove(id, 2).await?;
-        ensure!(
-            recovered.save(id, 0, "resurrected").await.is_err(),
-            "Removed state was resurrected"
-        );
-        ensure!(
-            recovered.load().await?.is_empty(),
-            "Removed state remained indexed"
-        );
-        recovered.close().await?;
-        Ok(())
-    }
-
-    #[tokio::test]
-    async fn ownership_replacement_fences_writes_and_old_owner_release() -> Result<()> {
-        let fixture = RedisFixture::start(true).await?;
-        let first = RedisState::connect(&fixture.url, "fence").await?;
-        let id = first.allocate_table().await?;
-        first.save(id, 0, "owned").await?;
-        // Replacement must reject a second owner even when polling is briefly delayed.
-        std::thread::sleep(Duration::from_millis(650));
-        first.check()?;
-        let occupied =
-            RedisState::connect_timed(&fixture.url, "fence", LEASE_TIME, Duration::ZERO).await;
-        ensure!(occupied.is_err(), "Two owners acquired the same namespace");
-        let mut control = redis::Client::open(fixture.url.as_str())?
-            .get_multiplexed_async_connection()
-            .await?;
-        redis::cmd("DEL")
-            .arg(&first.owner.key)
-            .query_async::<i64>(&mut control)
-            .await?;
-        let second = RedisState::connect(&fixture.url, "fence").await?;
-        ensure!(
-            first.save(id, 1, "old owner").await.is_err(),
-            "Missing ownership fence"
-        );
-        first.close().await?;
-        ensure!(
-            second.save(id, 1, "new owner").await? == 2,
-            "Old close removed the current lease"
-        );
-        second.close().await?;
-        Ok(())
-    }
-
-    #[tokio::test]
-    async fn volatile_redis_is_rejected_and_durability_loss_closes_admission() -> Result<()> {
-        let volatile = RedisFixture::start(false).await?;
-        ensure!(
-            connect(&volatile, "volatile").await.is_err(),
-            "Volatile Redis accepted"
-        );
-        let fixture = RedisFixture::start(true).await?;
-        let mut control = redis::Client::open(fixture.url.as_str())?
-            .get_multiplexed_async_connection()
-            .await?;
-        redis::cmd("CONFIG")
-            .arg("SET")
-            .arg("maxmemory-policy")
-            .arg("allkeys-lru")
-            .query_async::<String>(&mut control)
-            .await?;
-        ensure!(
-            connect(&fixture, "eviction").await.is_err(),
-            "Evictable state was accepted"
-        );
-        redis::cmd("CONFIG")
-            .arg("SET")
-            .arg("maxmemory-policy")
-            .arg("noeviction")
-            .query_async::<String>(&mut control)
-            .await?;
-        let state = connect(&fixture, "durability").await?;
-        let id = 1;
-        state.reserve(id).await?;
-        redis::cmd("CONFIG")
-            .arg("SET")
-            .arg("appendonly")
-            .arg("no")
-            .query_async::<String>(&mut control)
-            .await?;
-        ensure!(
-            state.save(id, 0, "not acknowledged").await.is_err(),
-            "Write without AOF was acknowledged"
-        );
-        ensure!(
-            state.check().is_err(),
-            "Admission remained open after uncertain durability"
-        );
-        Ok(())
-    }
-
-    #[tokio::test]
-    async fn watchdog_expires_authority_even_while_redis_is_unresponsive() -> Result<()> {
-        let fixture = RedisFixture::start(true).await?;
-        let state = connect(&fixture, "watchdog").await?;
-        let mut control = redis::Client::open(fixture.url.as_str())?
-            .get_multiplexed_async_connection()
-            .await?;
-        redis::cmd("CLIENT")
-            .arg("PAUSE")
-            .arg("1000")
-            .arg("ALL")
-            .query_async::<String>(&mut control)
-            .await?;
-        tokio::time::timeout(Duration::from_secs(2), state.lost().cancelled()).await?;
-        ensure!(state.check().is_err(), "Expired owner remained active");
-        Ok(())
-    }
-
-    #[tokio::test]
-    async fn unused_reservations_recover_but_corrupt_indexes_do_not_look_empty() -> Result<()> {
-        let fixture = RedisFixture::start(true).await?;
-        let first = connect(&fixture, "recovery").await?;
-        first.reserve(1).await?;
-        first.close().await?;
-        let second = connect(&fixture, "recovery").await?;
-        ensure!(
-            second.load().await?.is_empty(),
-            "Unacknowledged reservation became a game"
-        );
-        let mut control = redis::Client::open(fixture.url.as_str())?
-            .get_multiplexed_async_connection()
-            .await?;
-        redis::cmd("SADD")
-            .arg(second.index())
-            .arg("g:2")
-            .query_async::<i64>(&mut control)
-            .await?;
-        ensure!(
-            second.load().await.is_err(),
-            "Corrupt index was silently discarded"
-        );
-        second.close().await?;
-        Ok(())
-    }
-
-    #[tokio::test]
-    async fn table_ids_are_durable_and_not_reused_after_state_removal() -> Result<()> {
-        let fixture = RedisFixture::start(true).await?;
-        let first = connect(&fixture, "identities").await?;
-        let (left, right) = tokio::try_join!(first.allocate_table(), first.allocate_table())?;
-        ensure!(
-            left != right,
-            "Concurrent allocations reused a table identity"
-        );
-        let revision = first.save(left, 0, "table").await?;
-        first.remove(left, revision).await?;
-        first.close().await?;
-        let second = connect(&fixture, "identities").await?;
-        ensure!(
-            second.load().await?.is_empty(),
-            "Unused reservation was restored as a table"
-        );
-        ensure!(
-            second.allocate_table().await? > left.max(right),
-            "Retired table identity was reused"
-        );
-        second.close().await?;
-        Ok(())
-    }
-
-    #[tokio::test]
-    async fn dropping_the_last_handle_stops_lease_renewal() -> Result<()> {
-        let fixture = RedisFixture::start(true).await?;
-        let first = connect(&fixture, "drop").await?;
-        let lost = first.lost();
-        let clone = first.clone();
-        drop(first);
-        ensure!(
-            !lost.is_cancelled(),
-            "Dropping one handle stopped a shared owner"
-        );
-        drop(clone);
-        ensure!(lost.is_cancelled(), "Unowned background renewal leaked");
-        let second = connect(&fixture, "drop").await?;
-        second.close().await?;
-        Ok(())
-    }
-
-    #[tokio::test]
-    async fn publication_guard_expires_before_the_watchdog_can_run_after_a_runtime_stall()
-    -> Result<()> {
-        let fixture = RedisFixture::start(true).await?;
-        let state = connect(&fixture, "stalled-runtime").await?;
-        // The current-thread runtime cannot poll the watchdog during this stall.
-        std::thread::sleep(Duration::from_millis(650));
-        ensure!(
-            !state.lost().is_cancelled(),
-            "Watchdog unexpectedly ran while blocked"
-        );
-        ensure!(
-            state.check().is_err(),
-            "Publication remained authorized after the lease expired"
-        );
-        ensure!(
-            state.lost().is_cancelled(),
-            "Expired publication did not close admission"
-        );
-        Ok(())
-    }
-
-    #[tokio::test]
-    async fn an_empty_recovery_index_does_not_bypass_the_ownership_fence() -> Result<()> {
-        let fixture = RedisFixture::start(true).await?;
-        let first = connect(&fixture, "empty-index").await?;
-        let mut control = redis::Client::open(fixture.url.as_str())?
-            .get_multiplexed_async_connection()
-            .await?;
-        redis::cmd("DEL")
-            .arg(&first.owner.key)
-            .query_async::<i64>(&mut control)
-            .await?;
-        let second = connect(&fixture, "empty-index").await?;
-        ensure!(
-            first.load().await.is_err(),
-            "Empty recovery authorized a replaced owner"
-        );
-        first.close().await?;
-        ensure!(
-            second.load().await?.is_empty(),
-            "Current empty state failed recovery"
-        );
-        second.close().await?;
+            .err()
+            .context("A server started before the import")?;
+        ensure!(format!("{error:#}").contains(IMPORT_COMMAND));
+        db.close().await;
         Ok(())
     }
 }

@@ -115,8 +115,6 @@ jobs:
       - name: Create the "version.js" file
         run: bash ./scripts/dev/set-version.sh
 
-      - uses: ./.github/workflows/setup-redis
-
       - uses: ./.github/workflows/setup-rust
 
       - name: Restore successful JavaScript test results

@@ -1,4 +1,4 @@
-# PostgreSQL and Redis for local development. Start everything with "bun run dev".
+# PostgreSQL for local development. Start everything with "bun run dev".
 name: hanabi-live
 services:
   postgres:
@@ -11,22 +11,5 @@ services:
       - "127.0.0.1:${DB_PORT:-5432}:5432"
     volumes:
       - postgres:/var/lib/postgresql
-  redis:
-    image: docker.io/library/redis:8.0.5-bookworm@sha256:0c1fd4ba160ccc49565ceda980791adfaaee3254ca5db70ec656cb62c25d14a4
-    command:
-      [
-        "redis-server",
-        "--appendonly",
-        "yes",
-        "--appendfsync",
-        "always",
-        "--maxmemory-policy",
-        "noeviction",
-      ]
-    ports:
-      - "127.0.0.1:6379:6379"
-    volumes:
-      - redis:/data
 volumes:
   postgres:
-  redis:

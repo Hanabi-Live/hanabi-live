@@ -3,9 +3,8 @@
 use crate::config::Config;
 use anyhow::{Context, Result, bail, ensure};
 use sqlx::{
-    Connection, PgConnection, PgPool, SqlSafeStr,
+    Connection, PgConnection, SqlSafeStr,
     migrate::{AppliedMigration, Migrate, Migration, MigrationType, Migrator},
-    postgres::{PgConnectOptions, PgSslMode},
 };
 use std::{collections::BTreeSet, time::Duration};
 
@@ -209,9 +208,8 @@ async fn apply_watched(config: &Config, connection: &mut PgConnection) -> Result
 }
 
 /// Refuses to serve a database that is not exactly at `SCHEMA_VERSION`.
-pub(crate) async fn require_current(pool: &PgPool) -> Result<()> {
-    let mut connection = pool.acquire().await?;
-    let state = inspect(&mut connection).await?;
+pub(crate) async fn require_current(connection: &mut PgConnection) -> Result<()> {
+    let state = inspect(connection).await?;
     ensure!(
         matches!(state, State::History(_)) && pending(&state, &migrator()).is_empty(),
         "Server requires database schema version {SCHEMA_VERSION}; run `{APPLY_COMMAND}`"
@@ -219,21 +217,14 @@ pub(crate) async fn require_current(pool: &PgPool) -> Result<()> {
     Ok(())
 }
 
-async fn connect(config: &Config) -> Result<PgConnection> {
-    let options = PgConnectOptions::new()
-        .host(&config.database_host)
-        .port(config.database_port)
-        .username(&config.database_user)
-        .password(&config.database_password)
-        .database(&config.database)
-        .ssl_mode(PgSslMode::Disable)
-        .options([
-            (
-                "statement_timeout",
-                STATEMENT_TIMEOUT.as_millis().to_string(),
-            ),
-            ("lock_timeout", LOCK_TIMEOUT.as_millis().to_string()),
-        ]);
+pub async fn connect(config: &Config) -> Result<PgConnection> {
+    let options = config.database_options().options([
+        (
+            "statement_timeout",
+            STATEMENT_TIMEOUT.as_millis().to_string(),
+        ),
+        ("lock_timeout", LOCK_TIMEOUT.as_millis().to_string()),
+    ]);
     tokio::time::timeout(CONNECT_TIMEOUT, PgConnection::connect_with(&options))
         .await
         .context("Timed out connecting to PostgreSQL")?

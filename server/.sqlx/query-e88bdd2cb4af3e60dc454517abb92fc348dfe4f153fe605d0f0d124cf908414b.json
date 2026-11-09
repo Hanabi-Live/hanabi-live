@@ -1,0 +1,12 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "UPDATE live_state_owner SET imported = FALSE",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": []
+    },
+    "nullable": []
+  },
+  "hash": "e88bdd2cb4af3e60dc454517abb92fc348dfe4f153fe605d0f0d124cf908414b"
+}

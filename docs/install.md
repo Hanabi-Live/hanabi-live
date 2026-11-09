@@ -10,10 +10,10 @@
 - Clone the repository.
 - Install the dependencies:
   - `bun ci`
-- Start the Hanab server, PostgreSQL, and Redis:
+- Start the Hanab server and PostgreSQL:
   - `bun run dev`
 - In a browser, surf to: http://localhost:1212/
-- To stop the containers (their data is kept):
+- To stop the container (its data is kept):
   - `bun run dev down`
 
 ## For Production

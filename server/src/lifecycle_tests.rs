@@ -3,7 +3,6 @@ use std::time::Duration;
 
 #[tokio::test]
 async fn drains_notify_all_tables_before_waiting_for_acknowledgements() -> Result<()> {
-    let redis = crate::test_redis::RedisFixture::start(true).await?;
     for (successful, reason) in [
         (true, StopReason::Restart(Some("Upgrading <db>".into()))),
         (false, StopReason::Restart(None)),
@@ -14,12 +13,11 @@ async fn drains_notify_all_tables_before_waiting_for_acknowledgements() -> Resul
         (false, StopReason::GracefulStop(None)),
     ] {
         let restart = matches!(reason, StopReason::Restart(_));
-        let state =
-            crate::state::RedisState::connect(&redis.url, &format!("lifecycle-{successful}"))
-                .await?;
-        let pool = sqlx::postgres::PgPoolOptions::new()
-            .connect_lazy("postgres://unused@127.0.0.1/unused")?;
-        let store = crate::store::Store::fixture(pool, state);
+        let Some(db) = crate::accounts::test_support::TestDb::create().await else {
+            return Ok(());
+        };
+        let state = crate::state::LiveState::for_test(&db.pool).await?;
+        let store = crate::store::Store::fixture(db.pool.clone(), state);
         let tasks = TaskTracker::new();
         let (table_sender, mut table_commands) = mpsc::channel(4);
         let (second_sender, mut second_commands) = mpsc::channel(4);
@@ -136,6 +134,7 @@ async fn drains_notify_all_tables_before_waiting_for_acknowledgements() -> Resul
         assert!(tasks.is_empty());
         app.shutdown.cancel();
         store.close().await?;
+        db.close().await;
     }
     Ok(())
 }

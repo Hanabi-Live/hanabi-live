@@ -20,7 +20,6 @@ import {
   startProcess,
   stopChild,
 } from "./mainProcessSupport";
-import { redisFixture } from "./redisFixture";
 
 // eslint-disable-next-line @typescript-eslint/strict-void-return -- promisify ignores the ChildProcess return value.
 const run = promisify(execFile);
@@ -183,15 +182,11 @@ async function generate(): Promise<string> {
   await mkdir(path.join(ROOT, "dist"), { recursive: true });
   const directory = await mkdtemp(path.join(ROOT, "dist/critical-css-"));
   const database = await evaluationDatabase();
-  const redis = await redisFixture();
   let server: ReturnType<typeof startProcess> | undefined;
   try {
     await prepareRoot(directory, database, PRODUCTION_DOMAIN);
     // A production domain makes the server listen on every interface unless told otherwise.
-    await appendFile(
-      path.join(directory, ".env"),
-      `REDIS_URL=${redis.url}\nLISTEN_HOST=127.0.0.1\n`,
-    );
+    await appendFile(path.join(directory, ".env"), "LISTEN_HOST=127.0.0.1\n");
     const bundle = await buildBundle(directory);
     await symlink(
       path.join(ROOT, "public/webfonts"),
@@ -205,7 +200,6 @@ async function generate(): Promise<string> {
     if (server !== undefined) {
       await stopChild(server.child);
     }
-    await redis.close();
     await database.close();
     await rm(directory, { recursive: true, force: true });
   }

@@ -9,6 +9,7 @@ of the repository.
 
 ## November 9th, 2026
 
+- The server keeps live games in PostgreSQL and no longer needs Redis.
 - The efficiency tooltip now shows "Spare clues" (remaining possible clues minus
   cards remaining to get) instead of "Number finesses required".
 - Hypotheticals now have a "Pass" button (or the right arrow key), which spends

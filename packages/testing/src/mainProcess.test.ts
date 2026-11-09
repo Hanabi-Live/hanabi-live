@@ -6,12 +6,12 @@ import {
 import { expect, test } from "bun:test";
 import { assertDefined } from "complete-common";
 import { once } from "node:events";
-import { appendFile, mkdir, mkdtemp, rm } from "node:fs/promises";
+import { mkdir, mkdtemp, rm } from "node:fs/promises";
 import path from "node:path";
 import { setTimeout as delay } from "node:timers/promises";
 import type { WebSocket } from "ws";
 import { z } from "zod";
-import { evaluationDatabase } from "./database";
+import { evaluationDatabase, liveTables } from "./database";
 import type { CheckpointProgress } from "./mainProcessSupport";
 import {
   ROOT,
@@ -26,7 +26,6 @@ import {
   startProcess,
   stopChild,
 } from "./mainProcessSupport";
-import { redisFixture } from "./redisFixture";
 
 databaseDescribe("compiled application entry point (rust)", () => {
   test.each([
@@ -58,19 +57,12 @@ databaseDescribe("compiled application entry point (rust)", () => {
       const client = database.connect();
       let directory: string | undefined;
       let processState: ReturnType<typeof startProcess> | undefined;
-      let redis: Awaited<ReturnType<typeof redisFixture>> | undefined;
       let outputBeforeCrash = "";
       const sockets: WebSocket[] = [];
       async function checkpointProgress(): Promise<
         readonly CheckpointProgress[]
       > {
-        assertDefined(redis, "Missing native checkpoint fixture.");
-        const namespace = JSON.stringify([
-          database.connection.host,
-          database.connection.port,
-          database.connection.database,
-        ]);
-        const stored = await redis.states(namespace);
+        const stored = await liveTables(client);
         return stored.flatMap((record) => {
           if (record.revision === 0) {
             return [];
@@ -95,11 +87,6 @@ databaseDescribe("compiled application entry point (rust)", () => {
         await mkdir(path.join(ROOT, "dist"), { recursive: true });
         directory = await mkdtemp(path.join(ROOT, "dist/server-process-"));
         await prepareRoot(directory, database, domain);
-        redis = await redisFixture();
-        await appendFile(
-          path.join(directory, ".env"),
-          `REDIS_URL=${redis.url}\n`,
-        );
         await buildRust(directory);
         await installSchema(directory);
         processState = startProcess(directory);
@@ -529,7 +516,6 @@ databaseDescribe("compiled application entry point (rust)", () => {
             await stopChild(processState.child);
           }
         } finally {
-          await redis?.close();
           try {
             await client.end({ timeout: 3 });
           } finally {
@@ -553,15 +539,9 @@ databaseDescribe("compiled application entry point (rust)", () => {
     await mkdir(path.join(ROOT, "dist"), { recursive: true });
     const directory = await mkdtemp(path.join(ROOT, "dist/native-parity-"));
     let state: ReturnType<typeof startProcess> | undefined;
-    let redis: Awaited<ReturnType<typeof redisFixture>> | undefined;
     const sockets: WebSocket[] = [];
     try {
       await prepareRoot(directory, database, "localhost");
-      redis = await redisFixture();
-      await appendFile(
-        path.join(directory, ".env"),
-        `REDIS_URL=${redis.url}\n`,
-      );
       await buildRust(directory);
       await installSchema(directory);
       state = startProcess(directory);
@@ -814,7 +794,6 @@ databaseDescribe("compiled application entry point (rust)", () => {
       if (state !== undefined) {
         await stopChild(state.child);
       }
-      await redis?.close();
       await sql.end({ timeout: 3 });
       await database.close();
       await rm(directory, { recursive: true, force: true });

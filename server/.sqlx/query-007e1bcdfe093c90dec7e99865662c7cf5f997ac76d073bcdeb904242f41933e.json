@@ -1,0 +1,14 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "DELETE FROM live_tables WHERE revision = 0 AND epoch <> $1",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Int8"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "007e1bcdfe093c90dec7e99865662c7cf5f997ac76d073bcdeb904242f41933e"
+}

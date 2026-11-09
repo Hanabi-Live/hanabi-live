@@ -293,7 +293,6 @@ async fn metrics_report_actual_primary_and_archive_connection_budgets() -> anyho
         return Ok(());
     };
     let result:anyhow::Result<()>=async{
-    let redis = crate::test_redis::RedisFixture::start(true).await?;
     let options = db.pool.connect_options();
     let test_url = url::Url::parse(&std::env::var("HANABI_TEST_DATABASE_URL")?)?;
     let host = test_url
@@ -307,7 +306,6 @@ async fn metrics_report_actual_primary_and_archive_connection_budgets() -> anyho
         &root,
         &[
             ("SESSION_SECRET", "test".repeat(32)),
-            ("REDIS_URL", redis.url.clone()),
             ("DB_HOST", host),
             ("DB_PORT", options.get_port().to_string()),
             ("DB_USER", options.get_username().to_owned()),
@@ -353,7 +351,7 @@ crate::server_info::test_info(),
         assert_eq!(pool["maxConnections"], max);
         assert!((1..=max).contains(&pool["totalConnections"].as_u64().unwrap()));
     }
-    assert_eq!(report["recovery"]["authority"], "Redis AOF/WAITAOF");
+    assert_eq!(report["recovery"]["authority"], "PostgreSQL");
     assert_eq!(store.lobby_reads.options().get_max_connections(), 2);
     let mut reader = store.lobby_reads.acquire().await?;
     #[expect(clippy::disallowed_methods, reason = "test SQL that sets up database state or failures directly")]

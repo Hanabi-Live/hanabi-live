@@ -41,10 +41,6 @@ const config = {
     },
   },
 
-  ignoreBinaries: [
-    "redis-server", // A system binary.
-  ],
-
   ignoreDependencies: [
     "complete-cli", // Used in "scripts/lint/check-templates.sh".
     "complete-lint", // This is a linting meta-package.

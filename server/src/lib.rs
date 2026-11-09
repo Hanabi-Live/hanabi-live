@@ -61,13 +61,12 @@ pub mod operations;
 mod operations_tests;
 pub mod public_http;
 mod query;
+pub mod redis_import;
 pub mod release;
 pub mod restart;
 pub mod server_info;
 pub mod state;
 pub mod store;
-#[cfg(test)]
-pub(crate) mod test_redis;
 pub mod tls;
 pub mod transport;
 pub mod web;

@@ -41,6 +41,34 @@ function evaluationPool(connection: EvaluationConnection): postgres.Sql {
   });
 }
 
+const liveTableSchema = z.object({
+  id: z.coerce.number().int().positive(),
+  revision: z.coerce.number().int().nonnegative(),
+  payload: z.string().nullable(),
+});
+
+export interface LiveTable {
+  readonly id: number;
+  readonly revision: number;
+  readonly payload: unknown;
+}
+
+/** Reads the live tables that the server saved, in table order. */
+export async function liveTables(
+  sql: postgres.Sql,
+): Promise<readonly LiveTable[]> {
+  const rows =
+    await sql`SELECT id, revision, payload FROM live_tables ORDER BY id`;
+  return rows.map((row) => {
+    const { id, revision, payload } = liveTableSchema.parse(row);
+    return {
+      id,
+      revision,
+      payload: payload === null ? undefined : (JSON.parse(payload) as unknown),
+    };
+  });
+}
+
 /** Provision a disposable database, never source .env or touch the ordinary app schema. */
 export async function evaluationDatabase(): Promise<EvaluationDatabase> {
   const selector = process.env["HANABI_TEST_DATABASE_URL"];

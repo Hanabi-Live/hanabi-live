@@ -110,10 +110,9 @@ when `public/css/critical.min.css` is out of date; regenerate it with
 `bun run build-critical-css`). Run one with `bun run <suite>`; arguments to
 `test-bun` go to the Bun test runner (such as `-t <pattern>`). The Rust and Bun
 suites each start a disposable PostgreSQL server, which needs `initdb` and
-`postgres` on `PATH` (or set `HANABI_TEST_DATABASE_URL` to one), and the
-integration suites need `redis-server` on `PATH`. Keep automatic `.env` loading
-disabled in `bunfig.toml`; applications and build scripts manage their own
-configuration.
+`postgres` on `PATH` (or set `HANABI_TEST_DATABASE_URL` to one). Keep automatic
+`.env` loading disabled in `bunfig.toml`; applications and build scripts manage
+their own configuration.
 
 External dependency versions belong in the root `package.json`
 `workspaces.catalog`. Reference them with `catalog:` in package manifests; use
@@ -138,7 +137,7 @@ Clippy, Rust dependency checks, Prettier, spelling, ShellCheck, and repository
 consistency. CI runs the JavaScript and Rust checks in separate jobs; run the
 no-argument command above before pushing. It requires Bun, JavaScript
 dependencies, the pinned Rust toolchain, cargo-deny, cargo-machete, and
-ShellCheck, but no running PostgreSQL or Redis services.
+ShellCheck, but no running PostgreSQL service.
 
 Run it against the final changes, even if package-specific checks already
 passed. Fix any failures and rerun the full suite before pushing. If a required
@@ -187,13 +186,10 @@ commands. If needed, you can inspect that file for more information.
 (A new client version requires a graceful restart even if only TypeScript
 changed.)
 
-Live state is authoritative in `hanabi-redis.service`, using
-`redis+unix:///run/hanabi-redis/redis.sock`, with persistence in
-`/var/lib/hanabi-redis`. Do not delete that data or use the unrelated legacy
-Redis service. `database-backup.sh` backs up PostgreSQL only: recovery also
-requires Redis state and cross-store consistency. Keep the Redis endpoint,
-database identity, and namespace stable. A binary rollback cannot convert live
-state to another format.
+Live tables are in PostgreSQL, so `database-backup.sh` covers them. Earlier
+releases kept them in `hanabi-redis.service`. Until production runs
+`hanabi-live migrate import-redis`, do not delete that Redis data. A binary
+rollback cannot convert live state to another format.
 
 **Never use `systemctl restart` or `systemctl stop` on a running game server.**
 Use `/gracefulRestart` to restart, `/gracefulStop` to stop immediately while

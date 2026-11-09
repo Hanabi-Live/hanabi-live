@@ -36,7 +36,8 @@ const LOOPBACK_IPV6: &str = "::1";
 const DEFAULT_LOCALHOST_PORT: u16 = 8081;
 /// The PostgreSQL port when `DB_PORT` is unset.
 const DEFAULT_DATABASE_PORT: u16 = 5432;
-/// The Redis endpoint when `REDIS_URL` is unset.
+/// The Redis endpoint, from which `migrate import-redis` reads live tables, when `REDIS_URL` is
+/// unset.
 const DEFAULT_REDIS_URL: &str = "redis://127.0.0.1:6379";
 /// The shortest session signing key, in bytes.
 const MIN_SESSION_SECRET_LENGTH: usize = 128;
@@ -44,6 +45,16 @@ const MIN_SESSION_SECRET_LENGTH: usize = 128;
 const MAX_DOMAIN_LABEL_LENGTH: usize = 63;
 
 impl Config {
+    /// The settings for connecting to PostgreSQL.
+    pub(crate) fn database_options(&self) -> sqlx::postgres::PgConnectOptions {
+        sqlx::postgres::PgConnectOptions::new()
+            .host(&self.database_host)
+            .port(self.database_port)
+            .username(&self.database_user)
+            .password(&self.database_password)
+            .database(&self.database)
+            .ssl_mode(sqlx::postgres::PgSslMode::Disable)
+    }
     pub fn secret(&self) -> &str {
         &self.secret
     }

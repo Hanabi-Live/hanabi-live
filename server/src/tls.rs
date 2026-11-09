@@ -20,7 +20,7 @@ pub(crate) const SITE_HOSTS: [&str; 4] = [
 pub async fn configuration(
     config: &Config,
 ) -> Result<Option<axum_server::tls_rustls::RustlsConfig>> {
-    // Redis and optional HTTPS integrations also use Rustls when the HTTP listener is plain.
+    // Optional HTTPS integrations also use Rustls when the HTTP listener is plain.
     let _ = rustls::crypto::ring::default_provider().install_default();
     let Some(cert) = &config.tls_cert_file else {
         return Ok(None);
@@ -334,7 +334,6 @@ mod tests {
             root,
             &[
                 ("SESSION_SECRET", "x".repeat(128)),
-                ("REDIS_URL", "redis://localhost".into()),
                 ("TLS_CERT_FILE", "cert.pem".into()),
                 ("TLS_KEY_FILE", "key.pem".into()),
             ]

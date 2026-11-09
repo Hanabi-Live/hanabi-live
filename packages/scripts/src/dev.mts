@@ -1,5 +1,5 @@
 // Runs Hanab Live for local development:
-// - PostgreSQL and Redis in containers (see "compose.yml"), with the schema loaded on first use.
+// - PostgreSQL in a container (see "compose.yml"), with the schema loaded on first use.
 // - The server, rebuilt and restarted whenever its sources change.
 // - The client from Vite's development server, which reloads the page when the client changes.
 // - A watch build of the scripts of the standalone pages. "bun run dev down" stops the containers;
@@ -150,22 +150,15 @@ function composeCommand(): readonly string[] {
   if (Bun.which("docker") !== null) {
     return ["docker", "compose", "--file", file];
   }
-  return fail("Podman or Docker is required to run PostgreSQL and Redis.");
+  return fail("Podman or Docker is required to run PostgreSQL.");
 }
 
-async function startServices(env: ReadonlyMap<string, string>) {
-  const compose = composeCommand();
-  log("services", "Starting PostgreSQL and Redis...");
-  const up = await run("services", [...compose, "up", "--detach"]);
-  if (!up.ok) {
-    fail(
-      "Could not start the containers. Is something else using port 5432 or 6379?",
-    );
-  }
+/** Runs psql in the PostgreSQL container, as the configured user and database. */
+function psqlCommand(env: ReadonlyMap<string, string>): readonly string[] {
   const user = setting(env, "DB_USER", "hanabiuser");
   const database = setting(env, "DB_NAME", "hanabi");
-  const psql = [
-    ...compose,
+  return [
+    ...composeCommand(),
     "exec",
     "-T",
     "postgres",
@@ -176,30 +169,33 @@ async function startServices(env: ReadonlyMap<string, string>) {
     `--username=${user}`,
     `--dbname=${database}`,
   ];
+}
+
+async function startServices(env: ReadonlyMap<string, string>) {
+  const compose = composeCommand();
+  log("services", "Starting PostgreSQL...");
+  const up = await run("services", [...compose, "up", "--detach"]);
+  if (!up.ok) {
+    fail("Could not start the container. Is something else using port 5432?");
+  }
+  const psql = psqlCommand(env);
   for (let attempt = 0; ; attempt++) {
     // eslint-disable-next-line no-await-in-loop -- Each check waits for the previous one.
-    const [postgres, redis] = await Promise.all([
-      run("services", [...psql, "--tuples-only", "--command=SELECT 1"], {
-        quiet: true,
-      }),
-      run(
-        "services",
-        [...compose, "exec", "-T", "redis", "redis-cli", "ping"],
-        {
-          quiet: true,
-        },
-      ),
-    ]);
-    if (postgres.ok && redis.output === "PONG") {
+    const postgres = await run(
+      "services",
+      [...psql, "--tuples-only", "--command=SELECT 1"],
+      { quiet: true },
+    );
+    if (postgres.ok) {
       break;
     }
     if (attempt === 60) {
-      fail("PostgreSQL and Redis did not become ready within a minute.");
+      fail("PostgreSQL did not become ready within a minute.");
     }
     // eslint-disable-next-line no-await-in-loop -- Each check waits for the previous one.
     await Bun.sleep(1000);
   }
-  log("services", "PostgreSQL and Redis are ready.");
+  log("services", "PostgreSQL is ready.");
 }
 
 /** The server refuses client assets from another revision, so both clients follow the server. */
@@ -247,7 +243,7 @@ async function stopServer() {
   const child = server;
   if (child !== undefined) {
     server = undefined;
-    // The server drains gracefully on SIGTERM; live games survive in Redis.
+    // The server drains gracefully on SIGTERM; live games survive in PostgreSQL.
     child.kill("SIGTERM");
     await child.exited;
   }
@@ -359,6 +355,19 @@ async function main() {
   }
   for (const line of migrated.output.trim().split("\n")) {
     log("services", line);
+  }
+  // A database from before live games moved to PostgreSQL waits for an import from Redis.
+  // Development has no live games worth keeping, so skip it.
+  const imported = await run(
+    "services",
+    [
+      ...psqlCommand(env),
+      "--command=UPDATE live_state_owner SET imported = TRUE",
+    ],
+    { quiet: true },
+  );
+  if (!imported.ok) {
+    fail("Could not prepare the live tables.");
   }
 
   client = start(

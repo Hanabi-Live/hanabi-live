@@ -83,13 +83,10 @@ mod tests {
         std::fs::create_dir_all(root.join("public/js/bundles"))?;
         let config = Config::from_values(
             &root,
-            &[
-                ("SESSION_SECRET", "x".repeat(128)),
-                ("REDIS_URL", "redis://localhost".into()),
-            ]
-            .into_iter()
-            .map(|(k, v)| (k.into(), v))
-            .collect(),
+            &[("SESSION_SECRET", "x".repeat(128))]
+                .into_iter()
+                .map(|(k, v)| (k.into(), v))
+                .collect(),
         )?;
         assert!(validate_assets(&config).is_err());
         std::fs::write(
