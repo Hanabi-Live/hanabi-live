@@ -46,7 +46,7 @@ impl Fixture {
             store.clone(),
             hub,
             config,
-            store.state_lost(),
+            store.ownership_lost(),
             crate::server_info::test_info(),
         );
         let server_stop = CancellationToken::new();

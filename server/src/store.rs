@@ -173,7 +173,7 @@ impl Store {
         .await?;
         Ok(())
     }
-    pub fn state_lost(&self) -> CancellationToken {
+    pub fn ownership_lost(&self) -> CancellationToken {
         self.state.lost()
     }
     pub async fn allocate_table(&self) -> Result<u64> {

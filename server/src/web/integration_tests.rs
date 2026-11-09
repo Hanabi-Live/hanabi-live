@@ -596,7 +596,7 @@ async fn native_browser_login_ws_bootstrap_and_command_routing_postgres() {
 }
 
 #[tokio::test]
-async fn native_admission_waits_for_inflight_http_and_fences_lease_postgres() {
+async fn native_admission_waits_for_inflight_http_and_fences_lost_ownership_postgres() {
     let Some(fixture) = test_support::Fixture::start().await else {
         return;
     };

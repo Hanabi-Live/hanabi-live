@@ -149,7 +149,7 @@ async fn run(config: Config, version: String) -> Result<bool> {
             return Err(error).context("Failed to recover durable game state");
         }
     };
-    let lease_lost = store.state_lost();
+    let ownership_lost = store.ownership_lost();
     let app = App::new(
         store,
         hub,
@@ -163,7 +163,7 @@ async fn run(config: Config, version: String) -> Result<bool> {
             seeded_deck: game::seeded_deck,
             deck_size: game::deck_size,
         },
-        lease_lost.clone(),
+        ownership_lost.clone(),
         info,
     );
     let (stops, mut stop_requests) = mpsc::channel(1);
@@ -257,7 +257,7 @@ async fn run(config: Config, version: String) -> Result<bool> {
     } else {
         tokio::select! {
             biased;
-            ()=lease_lost.cancelled()=>StopReason::LeaseLost,
+            ()=ownership_lost.cancelled()=>StopReason::OwnershipLost,
             _=interrupt.recv()=>StopReason::Shutdown,
             _=terminate.recv()=>StopReason::Shutdown,
             request=stop_requests.recv()=>request.unwrap_or_else(||StopReason::Failure("Lifecycle control channel closed".into())),
@@ -266,7 +266,7 @@ async fn run(config: Config, version: String) -> Result<bool> {
     };
     let replace = matches!(reason, StopReason::Restart(_));
     match &reason {
-        StopReason::LeaseLost => {
+        StopReason::OwnershipLost => {
             failures.push("Live-table ownership or durability was lost".into());
             app.shutdown.cancel();
         }

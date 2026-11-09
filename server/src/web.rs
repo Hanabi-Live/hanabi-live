@@ -77,7 +77,7 @@ pub struct App {
     pub background: TaskTracker,
     pub shutdown: CancellationToken,
     pub read_shutdown: CancellationToken,
-    pub lease_lost: CancellationToken,
+    pub ownership_lost: CancellationToken,
     pub admission: Arc<tokio::sync::RwLock<()>>,
     generation: AtomicU64,
     sockets: Arc<Semaphore>,
@@ -121,7 +121,7 @@ impl App {
         store: Store,
         hub: mpsc::Sender<HubCommand>,
         public: PublicConfig,
-        lease_lost: CancellationToken,
+        ownership_lost: CancellationToken,
         info: Arc<crate::server_info::ServerInfo>,
     ) -> Arc<Self> {
         Arc::new(Self {
@@ -138,7 +138,7 @@ impl App {
             background: TaskTracker::new(),
             shutdown: CancellationToken::new(),
             read_shutdown: CancellationToken::new(),
-            lease_lost,
+            ownership_lost,
             admission: Arc::new(tokio::sync::RwLock::new(())),
             public,
             info,
@@ -166,7 +166,7 @@ impl App {
 
     pub fn healthy(&self) -> bool {
         !self.shutdown.is_cancelled()
-            && !self.lease_lost.is_cancelled()
+            && !self.ownership_lost.is_cancelled()
             && self.store.check_state().is_ok()
     }
 
@@ -751,7 +751,7 @@ async fn connection(
             h_group: data.welcome.settings.h_group_conventions,
             bot: data.bot,
         },
-        app.lease_lost.clone(),
+        app.ownership_lost.clone(),
         Arc::new(move || !shutdown.is_cancelled() && store.check_state().is_ok()),
     );
     for other in data.blocks {
@@ -764,7 +764,7 @@ async fn connection(
         loop {
             tokio::select! {
                 ()=writer_session.cancel.cancelled()=>break,
-                ()=writer_session.lease_lost.cancelled()=>break,
+                ()=writer_session.ownership_lost.cancelled()=>break,
                 ()=writer_shutdown.cancelled()=>break,
                 next=outgoing.recv()=>{
                     let Some(Outbound {message,permit,completion,global_permit})=next else {break;};
@@ -777,7 +777,7 @@ async fn connection(
                     });
                     let result=tokio::select! {
                         ()=writer_session.cancel.cancelled()=>None,
-                        ()=writer_session.lease_lost.cancelled()=>None,
+                        ()=writer_session.ownership_lost.cancelled()=>None,
                         ()=writer_shutdown.cancelled()=>None,
                         result=tokio::time::timeout(WRITE_TIMEOUT,guarded)=>result.ok().flatten(),
                     };
@@ -817,7 +817,7 @@ async fn connection(
         loop {
             tokio::select! {
                 ()=reader_session.cancel.cancelled()=>break,
-                ()=reader_session.lease_lost.cancelled()=>break,
+                ()=reader_session.ownership_lost.cancelled()=>break,
                 ()=reader_shutdown.cancelled()=>break,
                 next=stream.next()=>match next {
                     Some(Ok(Message::Text(text)))=>{

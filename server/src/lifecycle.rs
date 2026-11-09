@@ -23,7 +23,7 @@ pub enum StopReason {
     /// The optional message is an administrator's plain-text reason for the downtime.
     Restart(Option<String>),
     GracefulStop(Option<String>),
-    LeaseLost,
+    OwnershipLost,
     Failure(String),
 }
 impl StopReason {

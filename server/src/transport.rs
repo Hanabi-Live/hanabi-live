@@ -84,7 +84,7 @@ pub struct Session {
     pub normalized_name: String,
     pub ip: String,
     pub cancel: CancellationToken,
-    pub lease_lost: CancellationToken,
+    pub ownership_lost: CancellationToken,
     pub lobby_load: Arc<Semaphore>,
     health: HealthCheck,
     /// Whether the account has authenticated as a bot.
@@ -135,7 +135,7 @@ impl Session {
 
     pub fn with_health(
         metadata: SessionMetadata,
-        lease_lost: CancellationToken,
+        ownership_lost: CancellationToken,
         health: HealthCheck,
     ) -> (Arc<Self>, mpsc::Receiver<Outbound>) {
         let (outbound, receiver) = mpsc::channel(OUTBOUND_QUEUE);
@@ -153,7 +153,7 @@ impl Session {
                 closing: AtomicBool::new(false),
                 superseded: AtomicBool::new(false),
                 cancel: CancellationToken::new(),
-                lease_lost,
+                ownership_lost,
                 lobby_load: Arc::new(Semaphore::new(1)),
                 health,
                 outbound,
@@ -164,7 +164,7 @@ impl Session {
     }
 
     pub fn active(&self) -> bool {
-        if self.cancel.is_cancelled() || self.lease_lost.is_cancelled() || !(self.health)() {
+        if self.cancel.is_cancelled() || self.ownership_lost.is_cancelled() || !(self.health)() {
             self.cancel.cancel();
             return false;
         }
@@ -390,7 +390,7 @@ mod tests {
     }
 
     #[test]
-    fn lease_deadline_fences_without_waiting_for_watchdog() {
+    fn a_failed_ownership_check_stops_a_session_before_the_watchdog_notices() {
         let valid = Arc::new(AtomicBool::new(true));
         let check = valid.clone();
         let lost = CancellationToken::new();

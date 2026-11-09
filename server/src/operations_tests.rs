@@ -337,7 +337,7 @@ async fn metrics_report_actual_primary_and_archive_connection_budgets() -> anyho
             seeded_deck: crate::game::seeded_deck,
             deck_size: crate::game::deck_size,
         },
-        store.state_lost(),
+        store.ownership_lost(),
 crate::server_info::test_info(),
     );
     h.control.attach_application(Arc::downgrade(&app));

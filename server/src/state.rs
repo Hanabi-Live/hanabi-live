@@ -103,8 +103,8 @@ impl Ownership {
         Ok(())
     }
 }
-struct LeaseGuard(CancellationToken);
-impl Drop for LeaseGuard {
+struct OwnershipGuard(CancellationToken);
+impl Drop for OwnershipGuard {
     fn drop(&mut self) {
         self.0.cancel();
     }
@@ -115,7 +115,7 @@ pub struct LiveState {
     pool: PgPool,
     owner: Arc<Ownership>,
     tasks: TaskTracker,
-    _lease_guard: Arc<LeaseGuard>,
+    _ownership_guard: Arc<OwnershipGuard>,
 }
 
 impl LiveState {
@@ -175,12 +175,12 @@ impl LiveState {
             // Closing the connection releases the advisory lock.
             let _ = lock.close().await;
         });
-        let lease_guard = Arc::new(LeaseGuard(owner.lost.clone()));
+        let ownership_guard = Arc::new(OwnershipGuard(owner.lost.clone()));
         Ok(Self {
             pool,
             owner,
             tasks,
-            _lease_guard: lease_guard,
+            _ownership_guard: ownership_guard,
         })
     }
 

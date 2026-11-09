@@ -106,7 +106,7 @@ async fn drains_notify_all_tables_before_waiting_for_acknowledgements() -> Resul
                 seeded_deck: crate::game::seeded_deck,
                 deck_size: crate::game::deck_size,
             },
-            store.state_lost(),
+            store.ownership_lost(),
             crate::server_info::test_info(),
         );
         let result = tokio::time::timeout(

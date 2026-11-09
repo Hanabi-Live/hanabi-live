@@ -445,7 +445,7 @@ impl Bridge {
         let (events, mut receiver) = mpsc::channel(EVENT_QUEUE);
         let gateway = bridge.transport.clone();
         let cancel = app.shutdown.child_token();
-        let lost = app.lease_lost.clone();
+        let lost = app.ownership_lost.clone();
         app.background.spawn(async move {
             tokio::select! {
                 ()=lost.cancelled()=>{},
