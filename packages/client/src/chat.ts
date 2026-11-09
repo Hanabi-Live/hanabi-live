@@ -3,6 +3,7 @@
 
 import type { ServerCommandData } from "@hanabi-live/data";
 import {
+  CHAT_COLON_EMOTES,
   CHAT_EMOJIS as emojis,
   CHAT_EMOTES as emotes,
   PROJECT_NAME,
@@ -49,12 +50,6 @@ export enum SelfChatMessageType {
  * server's typing timeout so that the indicator does not flicker while we keep typing.
  */
 const TYPING_REPORT_INTERVAL_MS = TYPING_TIMEOUT_MS / 2;
-
-/** BetterTTV emotes whose codes contain a colon, mapped to their file names. */
-const COLON_EMOTES = [
-  ["D:", "D"],
-  [":tf:", "tf"],
-] as const;
 
 const emojiMap = new Map<string, string>();
 const emojiList: string[] = [];
@@ -844,7 +839,7 @@ function fillTwitchEmotes(message: string) {
     const re = /&lt;3/gu; // "\b" won't work with a semicolon.
     filledMessage = filledMessage.replaceAll(re, emoteTag);
   }
-  for (const [code, fileName] of COLON_EMOTES) {
+  for (const [code, fileName] of Object.entries(CHAT_COLON_EMOTES)) {
     if (filledMessage.includes(code)) {
       const emoteTag = `<img class="chat-emote" src="/public/img/emotes/betterttv/${fileName}.png" title="${code}" />`;
       // "\b" won't work with a colon, so the emote must be surrounded by whitespace instead.
