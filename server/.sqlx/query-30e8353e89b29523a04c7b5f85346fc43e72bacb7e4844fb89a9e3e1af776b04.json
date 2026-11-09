@@ -1,0 +1,17 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO users(id,username,normalized_username,password_hash,last_ip,is_bot) VALUES($1,$2,$3,'fixture','127.0.0.1',$4)",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Int4",
+        "Text",
+        "Text",
+        "Bool"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "30e8353e89b29523a04c7b5f85346fc43e72bacb7e4844fb89a9e3e1af776b04"
+}

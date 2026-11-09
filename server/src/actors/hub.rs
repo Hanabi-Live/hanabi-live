@@ -155,14 +155,14 @@ impl Hub {
             return;
         }
         let joining = matches!(&command, Command::Client(message) if matches!(**message, ClientMessage::TableJoin(_)));
-        if joining && !s.name.starts_with("Bot-") && self.playing_elsewhere(s.user, Some(id)) {
+        if joining && !s.bot && self.playing_elsewhere(s.user, Some(id)) {
             let _ = reply.send(Err(rejection!(
                 "You cannot join more than one table at a time. Terminate your other game before joining a new one."
             )));
             return;
         }
         if let Some(entry) = self.tables.get(&id) {
-            if joining && !s.name.starts_with("Bot-") {
+            if joining && !s.bot {
                 let claim = match PlayingClaim::acquire(&self.playing_claims, s.user) {
                     Ok(claim) => claim,
                     Err(error) => {
@@ -240,7 +240,7 @@ impl Hub {
             let _ = reply.send(Err(rejection!("{message}")));
             return;
         }
-        let playing = matches!(creation, Creation::Table(_)) && !s.name.starts_with("Bot-");
+        let playing = matches!(creation, Creation::Table(_)) && !s.bot;
         if playing && self.playing_elsewhere(s.user, None) {
             let _ = reply.send(Err(rejection!("You cannot join more than one table at a time. Terminate your other game before creating a new one.")));
             return;

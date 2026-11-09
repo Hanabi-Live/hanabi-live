@@ -30,6 +30,29 @@ struct Harness {
     users: Vec<Arc<Session>>,
     outgoing: Vec<mpsc::Receiver<Outbound>>,
 }
+/// Whether a harness user is a bot account, which the tests mark by name.
+fn is_test_bot(name: &str) -> bool {
+    name.starts_with("Bot-")
+}
+fn test_session(
+    user: i32,
+    name: &str,
+    generation: u64,
+) -> (Arc<Session>, mpsc::Receiver<Outbound>) {
+    Session::with_health(
+        crate::transport::SessionMetadata {
+            user,
+            name: name.into(),
+            normalized_name: crate::accounts::normalize_username(name),
+            ip: String::new(),
+            generation,
+            h_group: false,
+            bot: is_test_bot(name),
+        },
+        tokio_util::sync::CancellationToken::new(),
+        Arc::new(|| true),
+    )
+}
 impl Harness {
     async fn new(names: &[&str]) -> Result<Option<Self>> {
         let Some(db) = TestDb::with_max_connections(MAX_CONNECTIONS).await else {
@@ -37,7 +60,7 @@ impl Harness {
         };
         let pool = db.pool.clone();
         for (index, name) in names.iter().enumerate() {
-            sqlx::query!("INSERT INTO users(id,username,normalized_username,password_hash,last_ip) VALUES($1,$2,$3,'fixture','127.0.0.1')", hanabi_engine::int(index)+1, name, crate::accounts::normalize_username(name)).execute(&pool).await?;
+            sqlx::query!("INSERT INTO users(id,username,normalized_username,password_hash,last_ip,is_bot) VALUES($1,$2,$3,'fixture','127.0.0.1',$4)", hanabi_engine::int(index)+1, name, crate::accounts::normalize_username(name), is_test_bot(name)).execute(&pool).await?;
         }
         let state = LiveState::for_test(&pool).await?;
         let store = Store::fixture(pool, state.clone());
@@ -58,8 +81,7 @@ impl Harness {
             outgoing: vec![],
         };
         for (index, name) in names.iter().enumerate() {
-            let (session, outgoing) =
-                Session::new(hanabi_engine::int(index) + 1, (*name).into(), 1, false);
+            let (session, outgoing) = test_session(hanabi_engine::int(index) + 1, name, 1);
             h.register(session.clone()).await?;
             h.users.push(session);
             h.outgoing.push(outgoing);
@@ -80,8 +102,7 @@ impl Harness {
     }
     async fn replace(&mut self, index: usize) -> Result<(Arc<Session>, mpsc::Receiver<Outbound>)> {
         let old = self.users[index].clone();
-        let (session, outgoing) =
-            Session::new(old.user, old.name.clone(), old.generation + 1, false);
+        let (session, outgoing) = test_session(old.user, &old.name, old.generation + 1);
         self.register(session.clone()).await?;
         self.users[index] = session;
         Ok((old, std::mem::replace(&mut self.outgoing[index], outgoing)))

@@ -431,11 +431,15 @@ impl TableActor {
         moving: Vec<(Arc<Session>, bool, Option<usize>)>,
         retire: bool,
     ) -> Result<()> {
-        let humans = destination
+        let players = destination
             .players()
             .iter()
-            .filter(|p| !p.name.starts_with("Bot-"))
             .map(|p| p.id)
+            .collect::<Vec<_>>();
+        let bots = crate::database::bot_ids(&self.store.primary, &players).await?;
+        let humans = players
+            .into_iter()
+            .filter(|id| !bots.contains(id))
             .collect::<Vec<_>>();
         for user in &humans {
             allocation

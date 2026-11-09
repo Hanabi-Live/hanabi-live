@@ -9,6 +9,9 @@ of the repository.
 
 ## November 9th, 2026
 
+- Bot accounts (those that connect with the "bot" client version) can now play
+  at more than one table at a time. Accounts named "Bot-..." are now marked as
+  bots.
 - Losing the last copy of a card now flashes the card and the maximum score in
   red.
 - The strike that ends the game now flashes all of the strike squares in red.
