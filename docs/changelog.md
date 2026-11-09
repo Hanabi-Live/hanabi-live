@@ -115,15 +115,10 @@ This page lists the changes to Hanab Live, excluding bug fixes.
 ## October 7th, 2026
 
 - Added the `/pmhistory` chat command, which shows recent private messages.
-- Improved card dragging.
 
 ## October 2nd, 2026
 
 - Added dark mode, with a System / Light / Dark setting.
-
-## September 28th, 2026
-
-- Improved tooltips.
 
 ## September 27th, 2026
 
@@ -162,13 +157,13 @@ This page lists the changes to Hanab Live, excluding bug fixes.
 
 ## March 14th, 2026
 
-- The game UI resizes responsively.
+- The game board redraws when the window is resized, without reloading the page.
 - Added identity tokens and the `/token` chat command, which let other sites
   confirm a player's identity.
 
 ## March 10th, 2026
 
-- Added the Scarce Ones variants.
+- Added the "Scarce Ones" variants, which have one fewer 1 in each suit.
 
 ## March 2nd, 2026
 
@@ -176,7 +171,9 @@ This page lists the changes to Hanab Live, excluding bug fixes.
 
 ## February 1st, 2026
 
-- Cards with a "ptd" note get a maroon border.
+- Cards with a discard permission note ("ptd", "ctd", or "discard") get a maroon
+  border.
+- A "bd" (Baton Discard) note marks a card as chop moved.
 
 ## January 11th, 2026
 
@@ -188,22 +185,20 @@ This page lists the changes to Hanab Live, excluding bug fixes.
 
 ## January 2nd, 2026
 
-- Restored the Yam suit.
+- The "Matryoshka" variants use a new Ruby suit instead of Red.
 
 ## December 28th, 2025
 
+- The "Inverted" suit was renamed to "Orange", with an orange color and a
+  reverse-arrows pip.
+- Added the "Dark Orange" suit and variants combining Orange and Dark Orange
+  with other suits.
 - Added a pips reference page.
-- Added the Dark Orange suit and orange custom variants.
-- Pips are generated automatically for new suits.
-- Updated the black and inverted pips.
+- Updated the black pip.
 
 ## December 22nd, 2025
 
 - Incrementing a seed number keeps its leading zeros.
-
-## December 2nd, 2025
-
-- Detrimental characters are sorted.
 
 ## November 11th, 2025
 
@@ -211,11 +206,12 @@ This page lists the changes to Hanab Live, excluding bug fixes.
 
 ## November 3rd, 2025
 
-- Added a tooltip for the inverted suit.
+- Cards of the "Inverted" suit have a tooltip explaining it.
 
 ## October 20th, 2025
 
-- Added the inverted suit.
+- Added the "Inverted" suit (now "Orange"), where playing a card discards it and
+  discarding a card plays it.
 
 ## September 16th, 2025
 
@@ -227,12 +223,13 @@ This page lists the changes to Hanab Live, excluding bug fixes.
 
 ## July 27th, 2025
 
-- Added a button to join or spectate a pregame table.
+- The pregame screen has buttons to switch between playing and spectating (Alt +
+  J and Alt + P).
 
 ## July 26th, 2025
 
 - Added a button to apply the variant found by `/findvariant`.
-- Added the White Reversed & Rainbow variants.
+- Added the "White Reversed & Rainbow" variants.
 
 ## July 22nd, 2025
 
@@ -244,11 +241,8 @@ This page lists the changes to Hanab Live, excluding bug fixes.
 
 ## June 5th, 2025
 
-- Added an API endpoint with more information about variants.
-
-## December 25th, 2024
-
-- Added a Christmas theme.
+- Added the `/api/v1/variants-full` API endpoint, with more information about
+  each variant.
 
 ## November 10th, 2024
 
@@ -257,10 +251,13 @@ This page lists the changes to Hanab Live, excluding bug fixes.
 ## October 19th, 2024
 
 - Added the `/vote` chat command to vote to terminate a game.
+- The deck tooltip shows the game's database ID.
+- Removed the Discord-only convention question commands, such as `/notation`,
+  `/oop`, and `/rtfm`.
 
 ## September 28th, 2024
 
-- Added a clap sound effect.
+- Alt + A plays a clap sound for everyone in a shared replay.
 
 ## July 23rd, 2024
 
@@ -272,15 +269,16 @@ This page lists the changes to Hanab Live, excluding bug fixes.
 
 ## June 10th, 2024
 
-- Discarding a clued card is prefixed with "(clued)" in the action log.
+- Discarding a clued card adds "(clued)" to the action log.
 
 ## May 24th, 2024
 
-- Discarding a critical card is called out in the action log.
+- Discarding a critical card adds "(critical)" to the action log.
 
 ## March 8th, 2024
 
-- Added a hotkey for "kt" notes.
+- Ctrl + Shift + Alt + right-click adds a "kt" note, replacing the shortcut that
+  copied the last note section.
 
 ## December 12th, 2023
 
