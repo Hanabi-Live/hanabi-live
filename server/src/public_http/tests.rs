@@ -157,13 +157,21 @@ async fn shell_routes_metadata_and_static_files() {
             "/public/html/theme-init.html?test-version",
             Some(immutable.as_str()),
         ),
-        (&app, "/public/html/theme-init.html", None),
-        (&app, "/public/html/theme-init.html?other-version", None),
-        (&app, "/public/missing.test-version.min.js", None),
+        (&app, "/public/html/theme-init.html", Some("no-cache")),
+        (
+            &app,
+            "/public/html/theme-init.html?other-version",
+            Some("no-cache"),
+        ),
+        (
+            &app,
+            "/public/missing.test-version.min.js",
+            Some("no-cache"),
+        ),
         (
             &router(pool.clone(), &dev_config),
             "/public/html/theme-init.html?test-version",
-            None,
+            Some("no-cache"),
         ),
     ] {
         let response = app

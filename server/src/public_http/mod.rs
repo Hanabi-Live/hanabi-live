@@ -229,7 +229,7 @@ pub fn router(pool: PgPool, config: &PublicConfig) -> Router {
                 ))
                 .layer(axum::middleware::from_fn_with_state(
                     state.clone(),
-                    cache_versioned_assets,
+                    cache_public_assets,
                 )),
         )
         .route_service(
@@ -241,9 +241,10 @@ pub fn router(pool: PgPool, config: &PublicConfig) -> Router {
 }
 
 /// Lets browsers cache the current release's assets for good. Their URLs carry the client version,
-/// either in the file name or as the query string. Development builds reuse the version of the
-/// checked-out commit, so their assets are left to revalidate.
-async fn cache_versioned_assets(
+/// either in the file name or as the query string. Every other file (such as images and sounds) can
+/// change under the same URL, so browsers must check that their copy is current before using it.
+/// Development builds reuse the version of the checked-out commit, so their assets always revalidate.
+async fn cache_public_assets(
     State(state): State<PublicState>,
     request: axum::extract::Request,
     next: axum::middleware::Next,
@@ -253,15 +254,17 @@ async fn cache_versioned_assets(
     let versioned = !state.config.is_dev
         && (uri.path().contains(&format!(".{version}.")) || uri.query() == Some(version));
     let mut response = next.run(request).await;
-    if versioned && response.status() == StatusCode::OK {
-        response.headers_mut().insert(
-            axum::http::header::CACHE_CONTROL,
-            axum::http::HeaderValue::from_str(&format!(
-                "public, max-age={VERSIONED_ASSET_MAX_AGE_SECONDS}, immutable"
-            ))
-            .expect("a valid header value"),
-        );
-    }
+    let cache_control = if versioned && response.status() == StatusCode::OK {
+        axum::http::HeaderValue::from_str(&format!(
+            "public, max-age={VERSIONED_ASSET_MAX_AGE_SECONDS}, immutable"
+        ))
+        .expect("a valid header value")
+    } else {
+        axum::http::HeaderValue::from_static("no-cache")
+    };
+    response
+        .headers_mut()
+        .insert(axum::http::header::CACHE_CONTROL, cache_control);
     response
 }
 
