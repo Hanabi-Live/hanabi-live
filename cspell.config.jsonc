@@ -222,6 +222,7 @@
     "rfind",
     "rngs",
     "rposition",
+    "rsplit",
     "rustc",
     "RUSTFLAGS",
     "rustls",
