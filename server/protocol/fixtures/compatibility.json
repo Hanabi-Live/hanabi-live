@@ -122,7 +122,6 @@
     "command": "chatPMHistoryGet",
     "input": {
       "amount": -9007199254740991,
-      "beforeID": 9007199254740991,
       "room": "",
       "username": ""
     },
@@ -142,7 +141,7 @@
     "direction": "client",
     "command": "chatPMHistoryGet",
     "input": {
-      "beforeID": null
+      "username": null
     },
     "valid": false
   },
@@ -259,7 +258,6 @@
     "command": "tableStart",
     "input": {
       "tableID": 1,
-      "intendedVariant": "",
       "intendedPlayers": ["", "", "", "", "", ""]
     },
     "valid": true
@@ -309,8 +307,7 @@
       "who": "",
       "room": "",
       "recipient": "",
-      "chatID": 9007199254740991,
-      "pmID": 1
+      "chatID": 9007199254740991
     },
     "valid": true
   },
@@ -353,7 +350,6 @@
     "command": "chatPMHistory",
     "input": {
       "list": [],
-      "hasMore": false,
       "room": ""
     },
     "valid": false
@@ -409,7 +405,6 @@
       "totalGames": null,
       "muted": false,
       "firstTimeUser": false,
-      "connectionMode": "initial",
       "friends": [],
       "playingAtTables": [3],
       "settings": {
@@ -423,7 +418,6 @@
       "totalGames": null,
       "muted": false,
       "firstTimeUser": false,
-      "connectionMode": "initial",
       "friends": [],
       "playingAtTables": [3],
       "settings": {
@@ -464,7 +458,6 @@
       "username": "Alice",
       "muted": false,
       "firstTimeUser": false,
-      "connectionMode": "initial",
       "friends": [],
       "playingAtTables": [3],
       "settings": {
@@ -507,7 +500,6 @@
       "totalGames": null,
       "muted": false,
       "firstTimeUser": false,
-      "connectionMode": "initial",
       "friends": [],
       "playingAtTables": [3],
       "settings": {
@@ -538,8 +530,7 @@
         "detrimentalCharacters": false
       },
       "password": "",
-      "maxPlayers": 5,
-      "hidePregame": false
+      "maxPlayers": 5
     },
     "valid": true
   },

@@ -298,7 +298,6 @@ pub async fn private_message(
     let data = Chat {
         who: Some(caller.name.clone()),
         recipient: Some(target.name.clone()),
-        pm_id: Some(i64::from(row.id)),
         ..Chat::new(
             message,
             ChatSource::User,
@@ -344,10 +343,8 @@ pub async fn private_history(
         }
         found
     };
-    // Chat IDs are positive, so a non-positive cursor means no cursor.
-    let before = data.before_id.filter(|id| *id > 0);
     let rows = sqlx::query!(
-        "SELECT c.id, c.message, c.datetime_sent,
+        "SELECT c.message, c.datetime_sent,
          COALESCE(u.username, 'Deleted user #' || c.user_id) AS who,
          COALESCE(r.username, 'Deleted user #' || c.recipient_id) AS recipient
          FROM chat_log_pm c LEFT JOIN users u ON u.id=c.user_id
@@ -355,21 +352,16 @@ pub async fn private_history(
          WHERE (c.user_id=$1 OR c.recipient_id=$1)
            AND ($2::int IS NULL OR (c.user_id=$1 AND c.recipient_id=$2)
                 OR (c.user_id=$2 AND c.recipient_id=$1))
-           AND ($3::bigint IS NULL OR c.id < $3)
-         ORDER BY c.id DESC LIMIT $4",
+         ORDER BY c.id DESC LIMIT $3",
         caller.id,
         peer,
-        before,
-        amount + 1
+        amount
     )
     .fetch_all(pool)
     .await?;
-    let shown = usize::try_from(amount)?;
-    let more = rows.len() > shown;
     let mut list = Vec::new();
-    for row in rows.iter().take(shown).rev() {
+    for row in rows.iter().rev() {
         list.push(ChatHistoryMessage {
-            pm_id: i64::from(row.id),
             msg: row.message.clone(),
             who: row.who.clone().context("Missing private message author")?,
             recipient: row
@@ -381,7 +373,6 @@ pub async fn private_history(
     }
     let response = ChatHistory {
         list,
-        has_more: more,
         room: data.room.clone().filter(|room| !room.is_empty()),
     };
     Ok(vec![Effect::ToSelf(Outgoing::new(

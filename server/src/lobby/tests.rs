@@ -294,11 +294,10 @@ async fn lobby_private_messages_and_command_privacy_postgres() {
             .iter()
             .any(|e| matches!(e,Effect::ToUser {id,generation:29,..} if *id==b))
     );
-    let stored = sqlx::query!("SELECT id,datetime_sent FROM chat_log_pm")
+    let stored = sqlx::query!("SELECT datetime_sent FROM chat_log_pm")
         .fetch_one(&db.pool)
         .await
         .unwrap();
-    assert_eq!(message["pmID"], stored.id);
     assert_eq!(
         message["datetime"],
         crate::model::timestamp(stored.datetime_sent)
@@ -322,7 +321,6 @@ async fn lobby_private_messages_and_command_privacy_postgres() {
     let history = self_data(&result, "chatPMHistory");
     assert_eq!(history["list"].as_array().unwrap().len(), 1);
     assert_eq!(history["list"][0]["msg"], "&lt;secret&gt;");
-    assert_eq!(history["hasMore"], false);
     let carol = caller(c, "Carol");
     let result = run(
         &db.pool,
@@ -330,15 +328,6 @@ async fn lobby_private_messages_and_command_privacy_postgres() {
         &[],
         "chatPMHistoryGet",
         json!({"amount":10,"username":"Alice"}),
-    )
-    .await;
-    assert_eq!(self_data(&result, "chatPMHistory")["list"], json!([]));
-    let result = run(
-        &db.pool,
-        &who,
-        &[],
-        "chatPMHistoryGet",
-        json!({"amount":10,"beforeID":message["pmID"]}),
     )
     .await;
     assert_eq!(self_data(&result, "chatPMHistory")["list"], json!([]));

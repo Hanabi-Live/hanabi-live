@@ -16,7 +16,7 @@ async fn websocket_errors_explain_invalid_fields_and_database_failures_postgres(
         return;
     };
     let cookie = login(&fixture, "ErrorDetails").await;
-    let mut socket = connect(&fixture, &cookie, false).await;
+    let mut socket = connect(&fixture, &cookie).await;
     receive(&mut socket, "welcome").await;
     for (request, expected) in [
         (
@@ -110,17 +110,8 @@ async fn login(fixture: &test_support::Fixture, name: &str) -> String {
         .into()
 }
 
-async fn connect(fixture: &test_support::Fixture, cookie: &str, reconnect: bool) -> Socket {
-    connect_query(
-        fixture,
-        cookie,
-        if reconnect {
-            "version=42&reconnect=1"
-        } else {
-            "version=42"
-        },
-    )
-    .await
+async fn connect(fixture: &test_support::Fixture, cookie: &str) -> Socket {
+    connect_query(fixture, cookie, "version=42").await
 }
 
 async fn connect_query(fixture: &test_support::Fixture, cookie: &str, query: &str) -> Socket {
@@ -208,7 +199,7 @@ async fn websocket_rejects_parameters_it_does_not_take_postgres() {
     let cookie = login(&fixture, "StrictQuery").await;
     for query in [
         "fastResume=1",
-        "reconnect=0",
+        "reconnect=1",
         "account=x",
         "version=42&version=42",
     ] {
@@ -237,13 +228,7 @@ async fn websocket_checks_client_version_with_existing_cookie_postgres() {
         return;
     };
     let cookie = login(&fixture, "ClientVersion").await;
-    for query in [
-        "",
-        "reconnect=1",
-        "version=",
-        "version=41",
-        "version=41&reconnect=1",
-    ] {
+    for query in ["", "version=", "version=41"] {
         let mut socket = connect_query(&fixture, &cookie, query).await;
         tokio::time::timeout(Duration::from_secs(5), async {
             let WireMessage::Text(text) = socket.next().await.unwrap().unwrap() else {
@@ -260,7 +245,7 @@ async fn websocket_checks_client_version_with_existing_cookie_postgres() {
         .await
         .unwrap();
     }
-    for query in ["version=42", "version=42&reconnect=1", "version=bot"] {
+    for query in ["version=42", "version=bot"] {
         let mut socket = connect_query(&fixture, &cookie, query).await;
         receive(&mut socket, "welcome").await;
         socket.close(None).await.unwrap();
@@ -295,8 +280,8 @@ async fn uptime_replies_only_to_requester_in_lobby_and_table_postgres() {
     };
     let alice_cookie = login(&fixture, "Alice").await;
     let bob_cookie = login(&fixture, "Bob").await;
-    let mut alice = connect(&fixture, &alice_cookie, false).await;
-    let mut bob = connect(&fixture, &bob_cookie, false).await;
+    let mut alice = connect(&fixture, &alice_cookie).await;
+    let mut bob = connect(&fixture, &bob_cookie).await;
     receive(&mut alice, "welcome").await;
     receive(&mut bob, "welcome").await;
     for socket in [&mut alice, &mut bob] {
@@ -443,10 +428,9 @@ async fn native_browser_login_ws_bootstrap_and_command_routing_postgres() {
     .execute(&fixture.db.pool)
     .await
     .unwrap();
-    let mut alice = connect(&fixture, &alice_cookie, false).await;
+    let mut alice = connect(&fixture, &alice_cookie).await;
     let welcome = receive(&mut alice, "welcome").await;
     assert_eq!(welcome["username"], "Alicè");
-    assert_eq!(welcome["connectionMode"], "initial");
     assert!(receive(&mut alice, "chatList").await["list"].is_array());
     assert_eq!(receive(&mut alice, "lobbyStatus").await["state"], "ready");
     alice
@@ -461,7 +445,7 @@ async fn native_browser_login_ws_bootstrap_and_command_routing_postgres() {
     assert_eq!(history[0]["options"]["timeBase"], 180.0);
     assert_eq!(history[0]["options"]["emptyClues"], true);
     assert_eq!(history[0]["tags"], "authored");
-    let mut bob = connect(&fixture, &bob_cookie, false).await;
+    let mut bob = connect(&fixture, &bob_cookie).await;
     let bob_welcome = receive(&mut bob, "welcome").await;
     let _ = receive(&mut bob, "user").await;
     receive(&mut bob, "chatList").await;
@@ -488,7 +472,6 @@ async fn native_browser_login_ws_bootstrap_and_command_routing_postgres() {
     assert_eq!(pm["who"], "Alicè");
     assert_eq!(pm["recipient"], "Bob");
     assert_eq!(pm["msg"], "private &lt;content&gt;");
-    assert!(pm["pmID"].as_i64().unwrap() > 0);
     assert!(pm.get("chatID").is_none());
     assert!(pm.get("room").is_none());
     let echo = receive(&mut alice, "chat").await;
@@ -534,11 +517,8 @@ async fn native_browser_login_ws_bootstrap_and_command_routing_postgres() {
             .unwrap_or_else(|| table["tableID"].as_u64().unwrap())
             > 0
     );
-    let mut replacement = connect(&fixture, &bob_cookie, true).await;
-    assert_eq!(
-        receive(&mut replacement, "welcome").await["connectionMode"],
-        "reconnect"
-    );
+    let mut replacement = connect(&fixture, &bob_cookie).await;
+    receive(&mut replacement, "welcome").await;
     let alice_generation = Session::new(
         i32::try_from(welcome["userID"].as_i64().unwrap()).unwrap(),
         "Alicè".into(),
@@ -651,7 +631,7 @@ async fn websocket_defers_lobby_reads_without_an_opt_in_postgres() {
         .execute(&mut *lock)
         .await
         .unwrap();
-    let mut socket = connect(&fixture, &cookie, false).await;
+    let mut socket = connect(&fixture, &cookie).await;
     let welcome = tokio::time::timeout(Duration::from_secs(1), receive(&mut socket, "welcome"))
         .await
         .expect("Archive reads blocked the welcome");
@@ -683,7 +663,7 @@ async fn game_archive_locks_do_not_block_authentication_and_deferred_errors_are_
         .unwrap();
     let prepared = tokio::time::timeout(
         Duration::from_secs(1),
-        bootstrap(&fixture.app, user, "127.0.0.1", false),
+        bootstrap(&fixture.app, user, "127.0.0.1"),
     )
     .await
     .expect("Archive reads blocked the welcome")
@@ -704,7 +684,7 @@ async fn game_archive_locks_do_not_block_authentication_and_deferred_errors_are_
         .await
         .unwrap();
     let (session, mut outgoing) = Session::new(user, "FastResume".into(), 1, false);
-    load_lobby(fixture.app.clone(), session, false);
+    load_lobby(fixture.app.clone(), session);
     let message = tokio::time::timeout(Duration::from_secs(1), outgoing.recv())
         .await
         .unwrap()
@@ -770,9 +750,7 @@ async fn full_history_bootstrap_queues_in_order_without_a_writer_postgres() {
     .await
     .unwrap();
 
-    let prepared = bootstrap(&fixture.app, alice, "127.0.0.1", false)
-        .await
-        .unwrap();
+    let prepared = bootstrap(&fixture.app, alice, "127.0.0.1").await.unwrap();
     let mut history_lock = fixture.db.pool.begin().await.unwrap();
     #[expect(
         clippy::disallowed_methods,
@@ -782,21 +760,17 @@ async fn full_history_bootstrap_queues_in_order_without_a_writer_postgres() {
         .execute(&mut *history_lock)
         .await
         .unwrap();
-    for reconnect in [false, true] {
-        let (messages, total) = tokio::time::timeout(
-            Duration::from_secs(1),
-            lobby_initial(&fixture.app, alice, reconnect),
-        )
-        .await
-        .expect("Lobby initialization queried personal history")
-        .unwrap();
-        assert_eq!(total, 200);
-        assert!(
-            messages
-                .iter()
-                .all(|message| !message.starts_with("gameHistory"))
-        );
-    }
+    let (messages, total) =
+        tokio::time::timeout(Duration::from_secs(1), lobby_initial(&fixture.app, alice))
+            .await
+            .expect("Lobby initialization queried personal history")
+            .unwrap();
+    assert_eq!(total, 200);
+    assert!(
+        messages
+            .iter()
+            .all(|message| !message.starts_with("gameHistory"))
+    );
     history_lock.rollback().await.unwrap();
     let own_ids = lobby::history_ids(&fixture.db.pool, alice, 0, 100)
         .await
@@ -822,7 +796,7 @@ async fn full_history_bootstrap_queues_in_order_without_a_writer_postgres() {
                 .unwrap()
         ),
     );
-    let mut initial = lobby_initial(&fixture.app, alice, false).await.unwrap().0;
+    let mut initial = lobby_initial(&fixture.app, alice).await.unwrap().0;
     assert!(
         initial
             .iter()

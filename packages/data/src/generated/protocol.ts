@@ -156,7 +156,6 @@ export const chatSchema = z
      * Pre-escaped HTML, not an instruction to escape or normalize again.
      */
     msg: z.string().min(1),
-    pmID: z.number().int().min(1).max(9_007_199_254_740_991).optional(),
     recipient: z.string().optional(),
     room: z.string().optional(),
     source: chatSourceSchema,
@@ -178,14 +177,12 @@ export const chatHistoryMessageSchema = z
   .strictObject({
     datetime: z.iso.datetime({ precision: 3 }),
     msg: z.string().min(1),
-    pmID: z.number().int().min(1).max(9_007_199_254_740_991),
     recipient: z.string().min(1),
     who: z.string().min(1),
   })
   .readonly();
 export const chatHistorySchema = z
   .strictObject({
-    hasMore: z.boolean(),
     list: z.array(chatHistoryMessageSchema).readonly(),
     room: z.string().min(1).optional(),
   })
@@ -198,12 +195,6 @@ export const chatHistoryRequestSchema = z
       .min(-9_007_199_254_740_991)
       .max(9_007_199_254_740_991)
       .default(0),
-    beforeID: z
-      .number()
-      .int()
-      .min(-9_007_199_254_740_991)
-      .max(9_007_199_254_740_991)
-      .optional(),
     room: z.string().optional(),
     username: z.string().optional(),
   })
@@ -1045,7 +1036,6 @@ export const tableSchema = z
   .readonly();
 export const tableCommandSchema = z.strictObject({ tableID: tableIdSchema });
 export const tableCreateRequestSchema = z.strictObject({
-  hidePregame: z.boolean().default(false),
   maxPlayers: z
     .number()
     .int()
@@ -1097,7 +1087,6 @@ export const tableSpectateRequestSchema = z.strictObject({
 });
 export const tableStartRequestSchema = z.strictObject({
   intendedPlayers: z.array(z.string()).max(6).optional(),
-  intendedVariant: z.string().optional(),
   tableID: tableIdSchema,
 });
 export const tableStartedSchema = z.strictObject({
@@ -1114,7 +1103,6 @@ export const tableSuggestRequestSchema = z.strictObject({
   tableID: tableIdSchema,
 });
 export const tableUpdateRequestSchema = z.strictObject({
-  hidePregame: z.boolean().default(false),
   maxPlayers: z
     .number()
     .int()
@@ -1201,14 +1189,12 @@ export const voteChangeSchema = z.strictObject({ vote: z.boolean() });
 export const warningSchema = z
   .strictObject({ warning: z.string().min(1) })
   .readonly();
-const connectionModeSchema = z.enum(["initial", "reconnect"]);
 
 /**
  * The first message after connecting.
  */
 export const welcomeSchema = z
   .strictObject({
-    connectionMode: connectionModeSchema,
     /**
      * The seat the user was shadowing at that table, or -1 for none.
      */

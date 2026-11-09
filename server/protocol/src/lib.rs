@@ -265,9 +265,6 @@ pub struct ChatHistoryRequest {
     #[serde(default)]
     #[schemars(range(min = -MAX_SAFE_INTEGER, max = MAX_SAFE_INTEGER))]
     pub amount: i64,
-    #[serde(default, rename = "beforeID", skip_serializing_if = "Option::is_none")]
-    #[schemars(with = "i64", range(min = -MAX_SAFE_INTEGER, max = MAX_SAFE_INTEGER))]
-    pub before_id: Option<i64>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     #[schemars(with = "String")]
     pub room: Option<String>,
@@ -345,9 +342,6 @@ pub struct TableCommand {
 pub struct TableStartRequest {
     #[serde(rename = "tableID")]
     pub table_id: TableId,
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    #[schemars(with = "String")]
-    pub intended_variant: Option<String>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     #[schemars(with = "Vec<String>", length(max = MAX_PLAYERS))]
     pub intended_players: Option<Vec<String>>,
@@ -445,8 +439,6 @@ pub struct TableCreateRequest {
     #[serde(default = "default_max_players")]
     #[schemars(range(min = -MAX_SAFE_INTEGER, max = MAX_SAFE_INTEGER))]
     pub max_players: i64,
-    #[serde(default)]
-    pub hide_pregame: bool,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
@@ -463,8 +455,6 @@ pub struct TableUpdateRequest {
     #[serde(default = "default_max_players")]
     #[schemars(range(min = -MAX_SAFE_INTEGER, max = MAX_SAFE_INTEGER))]
     pub max_players: i64,
-    #[serde(default)]
-    pub hide_pregame: bool,
 }
 
 /// `id` replays a finished game from the database; `json` imports a game in the replay format.
@@ -1150,9 +1140,6 @@ pub struct Chat {
     #[serde(default, rename = "chatID", skip_serializing_if = "Option::is_none")]
     #[schemars(with = "i64", range(min = 1, max = MAX_SAFE_INTEGER))]
     pub chat_id: Option<i64>,
-    #[serde(default, rename = "pmID", skip_serializing_if = "Option::is_none")]
-    #[schemars(with = "i64", range(min = 1, max = MAX_SAFE_INTEGER))]
-    pub pm_id: Option<i64>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     #[schemars(with = "String")]
     pub room: Option<String>,
@@ -1173,7 +1160,6 @@ impl Chat {
             datetime: datetime.into(),
             who: None,
             chat_id: None,
-            pm_id: None,
             room: None,
             recipient: None,
             suggested_options: None,
@@ -1211,9 +1197,6 @@ pub struct ChatList {
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 #[schemars(extend("x-readonly" = true))]
 pub struct ChatHistoryMessage {
-    #[serde(rename = "pmID")]
-    #[schemars(range(min = 1, max = MAX_SAFE_INTEGER))]
-    pub pm_id: i64,
     #[schemars(length(min = 1))]
     pub msg: String,
     #[schemars(length(min = 1))]
@@ -1230,7 +1213,6 @@ pub struct ChatHistoryMessage {
 pub struct ChatHistory {
     #[schemars(extend("x-readonly" = true))]
     pub list: Vec<ChatHistoryMessage>,
-    pub has_more: bool,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     #[schemars(with = "String", length(min = 1))]
     pub room: Option<String>,
@@ -1559,13 +1541,6 @@ impl Default for Settings {
     }
 }
 
-#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
-#[serde(rename_all = "camelCase")]
-pub enum ConnectionMode {
-    Initial,
-    Reconnect,
-}
-
 /// The first message after connecting.
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
@@ -1585,7 +1560,6 @@ pub struct Welcome {
     pub muted: bool,
     pub first_time_user: bool,
     pub settings: Settings,
-    pub connection_mode: ConnectionMode,
     #[schemars(extend("x-readonly" = true))]
     pub friends: Vec<String>,
     /// Ongoing games the user is a player in.
@@ -2465,7 +2439,6 @@ pub fn schemas() -> std::collections::BTreeMap<String, serde_json::Value> {
         Warning,
         SoundLobby,
         Settings,
-        ConnectionMode,
         Welcome,
         GameOptions,
         Spectator,

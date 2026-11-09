@@ -387,7 +387,7 @@ struct Bootstrap {
     initial: Vec<String>,
 }
 
-async fn bootstrap(app: &App, id: i32, ip: &str, reconnect: bool) -> Result<Bootstrap> {
+async fn bootstrap(app: &App, id: i32, ip: &str) -> Result<Bootstrap> {
     let pool = &app.store.primary;
     ensure!(
         !accounts::is_banned(pool, ip).await?,
@@ -416,11 +416,6 @@ async fn bootstrap(app: &App, id: i32, ip: &str, reconnect: bool) -> Result<Boot
         muted,
         first_time_user: Utc::now() - created < FIRST_TIME_USER_WINDOW,
         settings,
-        connection_mode: if reconnect {
-            hanabi_protocol::ConnectionMode::Reconnect
-        } else {
-            hanabi_protocol::ConnectionMode::Initial
-        },
         friends,
         playing_at_tables: vec![],
         discon_spectating_table: None,
@@ -445,50 +440,48 @@ async fn bootstrap(app: &App, id: i32, ip: &str, reconnect: bool) -> Result<Boot
     })
 }
 
-async fn lobby_initial(app: &App, id: i32, reconnect: bool) -> Result<(Vec<String>, i64)> {
+async fn lobby_initial(app: &App, id: i32) -> Result<(Vec<String>, i64)> {
     let pool = &app.store.lobby_reads;
     let total = crate::database::normal_game_count(pool, id, true).await?;
     let mut initial = vec![];
-    if !reconnect {
-        let chat = lobby::lobby_history(pool, LOBBY_HISTORY_MESSAGES).await?;
-        initial.push(frame(
-            hanabi_protocol::server::CHAT_LIST,
-            hanabi_protocol::ChatList {
-                list: chat,
-                unread: 0,
+    let chat = lobby::lobby_history(pool, LOBBY_HISTORY_MESSAGES).await?;
+    initial.push(frame(
+        hanabi_protocol::server::CHAT_LIST,
+        hanabi_protocol::ChatList {
+            list: chat,
+            unread: 0,
+        },
+    ));
+    initial.push(frame(hanabi_protocol::server::CHAT, hanabi_protocol::Chat {
+        room: Some("lobby".into()),
+        ..hanabi_protocol::Chat::new(
+            "Find teammates and discuss strategy in the <a href=\"https://discord.gg/FADvkJp\" target=\"_blank\" rel=\"noopener noreferrer\">Discord chat</a>.",
+            hanabi_protocol::ChatSource::Server,
+            crate::model::timestamp(Utc::now()),
+        )
+    }));
+    let motd = app.public.root.join("motd.txt");
+    match tokio::fs::read_to_string(motd).await {
+        Ok(text) if !text.trim().is_empty() => initial.push(frame(
+            hanabi_protocol::server::CHAT,
+            hanabi_protocol::Chat {
+                who: Some(String::new()),
+                room: Some("lobby".into()),
+                ..hanabi_protocol::Chat::new(
+                    format!("[Server Notice] {}", text.trim()),
+                    hanabi_protocol::ChatSource::Server,
+                    crate::model::timestamp(Utc::now()),
+                )
             },
-        ));
-        initial.push(frame(hanabi_protocol::server::CHAT, hanabi_protocol::Chat {
-            room: Some("lobby".into()),
-            ..hanabi_protocol::Chat::new(
-                "Find teammates and discuss strategy in the <a href=\"https://discord.gg/FADvkJp\" target=\"_blank\" rel=\"noopener noreferrer\">Discord chat</a>.",
-                hanabi_protocol::ChatSource::Server,
-                crate::model::timestamp(Utc::now()),
-            )
-        }));
-        let motd = app.public.root.join("motd.txt");
-        match tokio::fs::read_to_string(motd).await {
-            Ok(text) if !text.trim().is_empty() => initial.push(frame(
-                hanabi_protocol::server::CHAT,
-                hanabi_protocol::Chat {
-                    who: Some(String::new()),
-                    room: Some("lobby".into()),
-                    ..hanabi_protocol::Chat::new(
-                        format!("[Server Notice] {}", text.trim()),
-                        hanabi_protocol::ChatSource::Server,
-                        crate::model::timestamp(Utc::now()),
-                    )
-                },
-            )),
-            Ok(_) => {}
-            Err(error) if error.kind() == std::io::ErrorKind::NotFound => {}
-            Err(error) => return Err(error.into()),
-        }
+        )),
+        Ok(_) => {}
+        Err(error) if error.kind() == std::io::ErrorKind::NotFound => {}
+        Err(error) => return Err(error.into()),
     }
     Ok((initial, total))
 }
 
-fn load_lobby(app: Arc<App>, session: Arc<Session>, reconnect: bool) {
+fn load_lobby(app: Arc<App>, session: Arc<Session>) {
     let Ok(session_slot) = session.lobby_load.clone().try_acquire_owned() else {
         session.emit(&frame(
             hanabi_protocol::server::LOBBY_STATUS,
@@ -506,7 +499,7 @@ fn load_lobby(app: Arc<App>, session: Arc<Session>, reconnect: bool) {
                 StatusCode::SERVICE_UNAVAILABLE))?;
             tokio::time::timeout(
                 LOBBY_LOAD_DEADLINE,
-                lobby_initial(&app, session.user, reconnect),
+                lobby_initial(&app, session.user),
             )
             .await
             .map_err(|_| crate::errors::Fault::new(
@@ -560,19 +553,9 @@ async fn websocket(
             if app.healthy() { "The server is not accepting connections while it starts or drains for maintenance." } else { "Live-state recovery or ownership is unavailable. Wait for recovery before reconnecting." },
             StatusCode::SERVICE_UNAVAILABLE).response(true);
     }
-    let query = match accounts::account_query(uri.query(), &["account", "reconnect", "version"]) {
+    let query = match accounts::account_query(uri.query(), &["account", "version"]) {
         Ok(query) => query,
         Err(message) => return accounts::api_error(StatusCode::BAD_REQUEST, message),
-    };
-    let reconnect = match query.get("reconnect") {
-        None => false,
-        Some("1") => true,
-        Some(_) => {
-            return accounts::api_error(
-                StatusCode::BAD_REQUEST,
-                "The query parameter \"reconnect\" must be 1.",
-            );
-        }
     };
     let version = query.get("version").unwrap_or_default().to_owned();
     let ip = address.ip();
@@ -653,7 +636,6 @@ async fn websocket(
                                 id,
                                 generation,
                                 address.ip().to_string(),
-                                reconnect,
                             )
                             .await
                         }
@@ -705,14 +687,13 @@ async fn connection(
     id: i32,
     generation: u64,
     ip: String,
-    reconnect: bool,
 ) -> Result<()> {
     let admission = app.admission.clone().read_owned().await;
     ensure!(
         app.accepting.load(Ordering::Acquire) && app.healthy(),
         "Server unavailable"
     );
-    let data = match bootstrap(&app, id, &ip, reconnect).await {
+    let data = match bootstrap(&app, id, &ip).await {
         Ok(data) => data,
         Err(error) => {
             let _ = tokio::time::timeout(
@@ -838,7 +819,7 @@ async fn connection(
             .await?;
         received.await??;
         drop(admission);
-        load_lobby(app.clone(), session.clone(), false);
+        load_lobby(app.clone(), session.clone());
         loop {
             let command = tokio::select! {
                 ()=session.cancel.cancelled()=>break,
@@ -1020,7 +1001,7 @@ async fn dispatch(app: &Arc<App>, session: Arc<Session>, input: &str) -> Result<
             hanabi_protocol::server::LOBBY_STATUS,
             hanabi_protocol::LobbyStatus::Loading { total_games: () },
         ));
-        load_lobby(app.clone(), session, false);
+        load_lobby(app.clone(), session);
         measurement.success();
         return Ok(());
     }

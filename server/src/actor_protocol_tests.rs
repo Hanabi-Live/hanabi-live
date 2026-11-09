@@ -1888,10 +1888,10 @@ async fn findvariant_delivers_owner_button_and_guards_the_start_action() -> Resu
         h.send(0,"tableUpdate",json!({"tableID":id,"name":options["tableName"],"maxPlayers":options["maxPlayers"],"options":options})).await?;
         let before=h.snapshot(id).await?.1;
         for data in [
-            json!({"tableID":id,"intendedPlayers":["Alice","Bob"],"intendedVariant":"No Variant"}),
-            json!({"tableID":id,"intendedPlayers":["Alice","Cathy"],"intendedVariant":"Rainbow (5 Suits)"}),
+            json!({"tableID":id,"intendedPlayers":["Alice","Cathy"]}),
+            json!({"tableID":id,"intendedPlayers":["Alice"]}),
         ]{h.send(0,"tableStart",data).await?;ensure!(h.snapshot(id).await?.1==before,"Stale start intent mutated the game");}
-        h.send(0,"tableStart",json!({"tableID":id,"intendedPlayers":["Bob","Alice"],"intendedVariant":"Rainbow (5 Suits)"})).await?;
+        h.send(0,"tableStart",json!({"tableID":id,"intendedPlayers":["Bob","Alice"]})).await?;
         ensure!(matches!(h.snapshot(id).await?.0.phase,Phase::Live{..}),"Valid guarded start failed");
         Ok::<(),anyhow::Error>(())
     }.await;

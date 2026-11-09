@@ -468,7 +468,6 @@ pub(crate) fn test_welcome() -> hanabi_protocol::Welcome {
         muted: false,
         first_time_user: false,
         settings: hanabi_protocol::Settings::default(),
-        connection_mode: hanabi_protocol::ConnectionMode::Initial,
         friends: vec![],
         playing_at_tables: vec![],
         discon_spectating_table: None,
@@ -951,25 +950,21 @@ impl Hub {
                             table: None,
                         },
                     );
-                    let reconnect =
-                        welcome.connection_mode == hanabi_protocol::ConnectionMode::Reconnect;
                     session.emit(&frame(hanabi_protocol::server::WELCOME, welcome));
-                    if !reconnect {
-                        session.emit(&frame(
-                            hanabi_protocol::server::USER_LIST,
-                            UserList(self.sessions.values().map(Self::user).collect()),
-                        ));
-                        session.emit(&frame(
-                            hanabi_protocol::server::TABLE_LIST,
-                            hanabi_protocol::TableList(
-                                self.tables
-                                    .values()
-                                    .filter(|e| e.view.visible)
-                                    .map(|e| Self::table_for(&e.view, session.user))
-                                    .collect(),
-                            ),
-                        ));
-                    }
+                    session.emit(&frame(
+                        hanabi_protocol::server::USER_LIST,
+                        UserList(self.sessions.values().map(Self::user).collect()),
+                    ));
+                    session.emit(&frame(
+                        hanabi_protocol::server::TABLE_LIST,
+                        hanabi_protocol::TableList(
+                            self.tables
+                                .values()
+                                .filter(|e| e.view.visible)
+                                .map(|e| Self::table_for(&e.view, session.user))
+                                .collect(),
+                        ),
+                    ));
                     for message in initial {
                         session.emit(&message);
                     }
@@ -1980,7 +1975,7 @@ async fn prepare_table(
             id,
             name,
             owner: session.user,
-            visible: !r.hide_pregame,
+            visible: true,
             options,
             max_players,
             password_hash,
@@ -2896,14 +2891,9 @@ impl TableActor {
             ClientMessage::TableStart(r) => {
                 let players = self.table.players();
                 // A start based on a stale view of the table does nothing.
-                if r.intended_variant
-                    .as_deref()
-                    .is_some_and(|v| !v.is_empty() && v != self.table.options.variant_name)
-                    || r.intended_players.as_ref().is_some_and(|names| {
-                        names.len() != players.len()
-                            || players.iter().any(|p| !names.contains(&p.name))
-                    })
-                {
+                if r.intended_players.as_ref().is_some_and(|names| {
+                    names.len() != players.len() || players.iter().any(|p| !names.contains(&p.name))
+                }) {
                     return Ok(());
                 }
                 self.start(session).await
@@ -3113,9 +3103,6 @@ impl TableActor {
         next.options = options;
         next.max_players = max_players;
         next.extra = extra;
-        if !variant_only {
-            next.visible = !request.as_ref().is_some_and(|r| r.hide_pregame);
-        }
         let Phase::Pregame {
             players,
             countdown,
