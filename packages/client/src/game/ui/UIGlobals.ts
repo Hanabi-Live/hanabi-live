@@ -81,12 +81,10 @@ export class UIGlobals {
   playerTimes: number[] = [];
 
   /**
-   * "activeIndex" must be tracked separately from the "currentPlayerIndex" because the current
-   * player may change in an in-game replay.
-   *
-   * This is a legacy variable; kill this and use `state.currentPlayerIndex` instead.
+   * The player whose clock is running, from the last "clock" message. `NO_VALUE` when no clock is
+   * running. It indexes `playerTimes` from the same message, so it is not read from the game state.
    */
-  activePlayerIndex: PlayerIndex | typeof NO_VALUE = NO_VALUE;
+  clockPlayerIndex: PlayerIndex | typeof NO_VALUE = NO_VALUE;
 
   timeTaken = 0;
   startingTurnTime = 0;
@@ -161,7 +159,7 @@ export class UIGlobals {
     this.lastNote = "";
     this.timerID = null;
     this.playerTimes = [];
-    this.activePlayerIndex = NO_VALUE; // Legacy variable
+    this.clockPlayerIndex = NO_VALUE;
     this.timeTaken = 0;
     this.startingTurnTime = 0;
     this.lastTimerUpdateTimeMS = 0;

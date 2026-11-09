@@ -13,7 +13,7 @@ vi.mock("./UIGlobals", () => ({
     layers: { timer: { batchDraw: vi.fn() } },
     timerID: null,
     playerTimes: [],
-    activePlayerIndex: -1,
+    clockPlayerIndex: -1,
     timeTaken: 0,
   },
 }));
@@ -24,7 +24,7 @@ const { resumeAfterResize, stop, update } = await import("./timer");
 beforeEach(() => {
   vi.clearAllMocks();
   globals.playerTimes = [10_000, 20_000];
-  globals.activePlayerIndex = 0;
+  globals.clockPlayerIndex = 0;
   globals.timerID = null;
 });
 afterEach(() => {
@@ -49,7 +49,7 @@ test("a late live clock cannot restart timers in a finished replay", () => {
   expect(clear).toHaveBeenCalledWith(123);
   expect(start).not.toHaveBeenCalled();
   expect(globals.timerID).toBeNull();
-  expect(globals.activePlayerIndex).toBe(-1);
+  expect(globals.clockPlayerIndex).toBe(-1);
   expect(hideFirst).toHaveBeenCalled();
   expect(hideSecond).toHaveBeenCalled();
 });
