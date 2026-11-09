@@ -1,7 +1,6 @@
 use super::{
     Allocation, Attendance, Command, Effects, GameInfo, HubCommand, PREGAME_RECONNECT_GRACE,
-    PhaseRuntime, REPLAY_RECONNECT_GRACE, Reply, TableActor, TableCommand, TableInspection,
-    TableView,
+    PhaseRuntime, REPLAY_RECONNECT_GRACE, Reply, TableActor, TableCommand, TableView,
     chat::{TABLE_CHAT_LIMIT, TABLE_CHAT_WINDOW, VariantDiscovery, is_variant_discovery},
     pregame::remove_pregame_players,
     setup::wire_table_options,
@@ -142,11 +141,7 @@ impl TableActor {
                 .filter(|(id, _)| replay || self.table.players().iter().all(|p| p.id != **id))
                 .map(|(id, shadow)| (*id, *shadow))
                 .collect(),
-            inspection: TableInspection {
-                running,
-                replay,
-                frozen: self.frozen,
-            },
+            frozen: self.frozen,
             data: hanabi_protocol::Table {
                 database_id: replay_game,
                 id: self.table.id,
@@ -202,12 +197,14 @@ impl TableActor {
         Effects {
             table: self.table.id,
             view: self.view(),
+            attendees: BTreeSet::new(),
             statuses: vec![],
             messages: vec![],
         }
     }
-    pub(super) async fn publish(&self, effects: Effects) -> CommandResult<()> {
+    pub(super) async fn publish(&self, mut effects: Effects) -> CommandResult<()> {
         self.store.check_state()?;
+        effects.attendees = self.attendees.keys().copied().collect();
         Ok(self
             .hub
             .send(HubCommand::Effects(effects))

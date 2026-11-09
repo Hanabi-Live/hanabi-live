@@ -5,6 +5,7 @@ use super::{
     setup::{next_requested_seed, option_changes, requested_seed, validate_table_name},
     wire::{game_action, game_action_list},
 };
+use crate::errors::CommandError;
 use crate::transport::test_frame;
 use crate::{accounts::test_support::TestDb, state::LiveState};
 use crate::{
@@ -909,7 +910,7 @@ async fn full_table_mailboxes_do_not_block_hub_and_replacements_fence_private_ef
         replay_game: None,
         visible: false,
         data: test_table(),
-        inspection: TableInspection::default(),
+        frozen: false,
         reconnects: BTreeMap::new(),
     };
     let mut hub = Hub {
@@ -946,6 +947,7 @@ async fn full_table_mailboxes_do_not_block_hub_and_replacements_fence_private_ef
                 cleanup: Arc::new(Notify::new()),
             },
             view: view.clone(),
+            attendees: BTreeSet::new(),
             published: true,
         },
     );
@@ -959,10 +961,11 @@ async fn full_table_mailboxes_do_not_block_hub_and_replacements_fence_private_ef
         })
         .await?;
     ensure!(
-        tokio::time::timeout(Duration::from_secs(1), replied)
-            .await??
-            .is_err(),
-        "Saturated table queue admitted work"
+        matches!(
+            tokio::time::timeout(Duration::from_secs(1), replied).await??,
+            Err(CommandError::Rejected { message, .. }) if message.contains("busy")
+        ),
+        "A saturated table queue did not refuse the command as busy"
     );
     let (reply, replied) = oneshot::channel();
     sender
@@ -990,6 +993,7 @@ async fn full_table_mailboxes_do_not_block_hub_and_replacements_fence_private_ef
         .send(HubCommand::Effects(Effects {
             table: TableId(42),
             view,
+            attendees: BTreeSet::new(),
             statuses: vec![(old.clone(), Status::Playing, Some(TableId(42)))],
             messages: vec![(old.clone(), "secret private frame".into())],
         }))
@@ -1068,9 +1072,10 @@ async fn a_table_that_panics_is_removed_and_frees_its_players() -> Result<()> {
                 replay_game: None,
                 visible: true,
                 data: test_table(),
-                inspection: TableInspection::default(),
+                frozen: false,
                 reconnects: BTreeMap::new(),
             },
+            attendees: BTreeSet::new(),
             published: true,
         },
     );

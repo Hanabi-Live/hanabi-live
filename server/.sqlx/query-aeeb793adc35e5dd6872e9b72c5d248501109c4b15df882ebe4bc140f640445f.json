@@ -1,0 +1,44 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT count(*) AS \"total!\",\n                          count(*) FILTER (WHERE state = 'active') AS \"active!\",\n                          count(*) FILTER (WHERE state = 'idle') AS \"idle!\",\n                          count(*) FILTER (WHERE state LIKE 'idle in transaction%') AS \"idle_transaction!\"\n                   FROM pg_stat_activity\n                   WHERE datname = current_database() AND application_name = $1",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "total!",
+        "type_info": "Int8",
+        "origin": "Expression"
+      },
+      {
+        "ordinal": 1,
+        "name": "active!",
+        "type_info": "Int8",
+        "origin": "Expression"
+      },
+      {
+        "ordinal": 2,
+        "name": "idle!",
+        "type_info": "Int8",
+        "origin": "Expression"
+      },
+      {
+        "ordinal": 3,
+        "name": "idle_transaction!",
+        "type_info": "Int8",
+        "origin": "Expression"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Text"
+      ]
+    },
+    "nullable": [
+      null,
+      null,
+      null,
+      null
+    ]
+  },
+  "hash": "aeeb793adc35e5dd6872e9b72c5d248501109c4b15df882ebe4bc140f640445f"
+}

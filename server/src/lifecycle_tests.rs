@@ -83,7 +83,7 @@ async fn drains_notify_all_tables_before_waiting_for_acknowledgements() -> Resul
                         };
                         assert_eq!(message.as_deref(), successful.then_some(expected));
                         seen.fetch_add(1, Ordering::Relaxed);
-                        let _ = reply.send(Ok(json!({})));
+                        let _ = reply.send(Ok(()));
                     }
                     HubCommand::Stop(reply) => {
                         let _ = reply.send(());
@@ -169,7 +169,6 @@ async fn graceful_stop_does_not_wait_for_or_terminate_games() {
         .connect_lazy("postgres://unused@127.0.0.1/unused")
         .unwrap();
     let mut h = crate::operations_tests::Harness::new(pool);
-    assert_eq!(h.active.load(Ordering::Acquire), 1);
     h.control.graceful_stop(None).await.unwrap();
     assert!(matches!(
         h.stops.recv().await,

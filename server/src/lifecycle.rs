@@ -1,12 +1,11 @@
 use crate::{
-    actors::{HubCommand, TableCommand},
+    actors::{HubCommand, Inspection, TableCommand},
     integrations::IntegrationSlot,
     operations::Operation,
     store::Store,
     web::App,
 };
 use anyhow::{Context, Result, ensure};
-use serde_json::{Value, json};
 use sqlx::PgPool;
 use std::{
     path::PathBuf,
@@ -213,22 +212,29 @@ impl Control {
     pub fn store(&self) -> Option<&Store> {
         self.runtime.as_ref().map(|runtime| &runtime.store)
     }
-    pub fn integration_status(&self) -> Value {
+    /// The Discord bridge's status.
+    pub fn discord_status(&self) -> &'static str {
         self.runtime
             .as_ref()
             .and_then(|runtime| runtime.integrations.get())
-            .map_or_else(
-                || json!({"discord":"disabled"}),
-                |integrations| integrations.status(),
-            )
+            .map_or("disabled", |integrations| integrations.discord_status())
     }
-    pub async fn operation(&self, command: Operation) -> Result<Value> {
+    pub async fn operation(&self, command: Operation) -> Result<()> {
         let (reply, received) = oneshot::channel();
         self.hub
             .send(HubCommand::Operations { command, reply })
             .await
             .context("Hub stopped")?;
         received.await.context("Hub operation was interrupted")?
+    }
+    /// What the hub reports about its tables.
+    pub async fn inspect(&self) -> Result<Inspection> {
+        let (reply, received) = oneshot::channel();
+        self.hub
+            .send(HubCommand::Inspect(reply))
+            .await
+            .context("Hub stopped")?;
+        received.await.context("Hub inspection was interrupted")?
     }
     pub async fn graceful_stop(&self, message: Option<String>) -> Result<()> {
         self.request_stop(StopReason::GracefulStop(message)).await
@@ -348,7 +354,7 @@ pub async fn drain_game_runtime(
             .is_ok()
         {
             match closed.await {
-                Ok(Ok(_)) => {}
+                Ok(Ok(())) => {}
                 Ok(Err(error)) => failures.push(format!("Maintenance close failed: {error:#}")),
                 Err(error) => failures.push(error.to_string()),
             }

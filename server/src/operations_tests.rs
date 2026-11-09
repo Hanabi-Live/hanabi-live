@@ -1,5 +1,5 @@
 use crate::{
-    actors::HubCommand,
+    actors::{HubCommand, Inspection},
     lifecycle::{Control, Lifecycle, Runtime, StopReason},
     operations::{Operation, router},
 };
@@ -10,15 +10,11 @@ use axum::{
     http::{Request, StatusCode},
 };
 use hanabi_protocol::UserId;
-use serde_json::json;
 use sqlx::PgPool;
 use std::{
     net::SocketAddr,
     path::PathBuf,
-    sync::{
-        Arc, Mutex,
-        atomic::{AtomicU64, Ordering},
-    },
+    sync::{Arc, Mutex},
     time::Duration,
 };
 use tokio::sync::mpsc;
@@ -27,7 +23,6 @@ use tower::ServiceExt;
 pub(crate) struct Harness {
     pub control: Arc<Control>,
     pub operations: Arc<Mutex<Vec<Operation>>>,
-    pub active: Arc<AtomicU64>,
     pub stops: mpsc::Receiver<StopReason>,
     task: tokio::task::JoinHandle<()>,
 }
@@ -40,20 +35,17 @@ impl Harness {
         let (stop, stops) = mpsc::channel(1);
         let operations = Arc::new(Mutex::new(Vec::new()));
         let events = operations.clone();
-        let active = Arc::new(AtomicU64::new(1));
-        let count = active.clone();
         let task = tokio::spawn(async move {
             while let Some(command) = commands.recv().await {
-                if let HubCommand::Operations { command, reply } = command {
-                    let result = match &command {
-                        Operation::Inspect => {
-                            json!({"activeGames":count.load(Ordering::Acquire),"users":[],"tables":[
-                            {"id":7,"name":"Old table","created":"2020-01-01T00:00:00Z","running":true,"replay":false,"frozen":false}]})
-                        }
-                        _ => json!({}),
-                    };
-                    events.lock().unwrap().push(command);
-                    let _ = reply.send(Ok(result));
+                match command {
+                    HubCommand::Operations { command, reply } => {
+                        events.lock().unwrap().push(command);
+                        let _ = reply.send(Ok(()));
+                    }
+                    HubCommand::Inspect(reply) => {
+                        let _ = reply.send(Ok(Inspection { frozen_tables: 0 }));
+                    }
+                    _ => {}
                 }
             }
         });
@@ -70,7 +62,6 @@ impl Harness {
         Self {
             control,
             operations,
-            active,
             stops,
             task,
         }

@@ -8,6 +8,7 @@ use hanabi_protocol::ChatSource;
 use hanabi_protocol::GameId;
 use hanabi_protocol::TableId;
 use hanabi_protocol::UserId;
+#[cfg(test)]
 use serde_json::{Value, json};
 
 use sqlx::{
@@ -163,18 +164,32 @@ impl Store {
         .await?;
         Ok(GameId(i32::try_from(id)?))
     }
-    pub async fn database_reports(&self) -> Result<Value> {
-        async fn report(pool: &PgPool, name: &str) -> Result<Value> {
-            let row=sqlx::query!("SELECT count(*)::bigint total,count(*) FILTER(WHERE state='active')::bigint active,count(*) FILTER(WHERE state='idle')::bigint idle,count(*) FILTER(WHERE state LIKE 'idle in transaction%')::bigint idle_transaction FROM pg_stat_activity WHERE datname=current_database() AND application_name=$1", name).fetch_one(pool).await?;
-            Ok(
-                json!({"maxConnections":pool.options().get_max_connections(),"totalConnections":row.total,"activeConnections":row.active,"idleConnections":row.idle,"idleTransactionConnections":row.idle_transaction}),
+    /// The connections of the primary pool and of the lobby read pool.
+    pub async fn database_reports(&self) -> Result<(PoolReport, PoolReport)> {
+        async fn report(pool: &PgPool, name: &str) -> Result<PoolReport> {
+            let row = sqlx::query!(
+                r#"SELECT count(*) AS "total!",
+                          count(*) FILTER (WHERE state = 'active') AS "active!",
+                          count(*) FILTER (WHERE state = 'idle') AS "idle!",
+                          count(*) FILTER (WHERE state LIKE 'idle in transaction%') AS "idle_transaction!"
+                   FROM pg_stat_activity
+                   WHERE datname = current_database() AND application_name = $1"#,
+                name
             )
+            .fetch_one(pool)
+            .await?;
+            Ok(PoolReport {
+                max: pool.options().get_max_connections(),
+                total: row.total,
+                active: Some(row.active),
+                idle: row.idle,
+                idle_transaction: Some(row.idle_transaction),
+            })
         }
-        let (primary, reads) = tokio::try_join!(
+        Ok(tokio::try_join!(
             report(&self.primary, &self.primary_name),
             report(&self.lobby_reads, &self.lobby_name)
-        )?;
-        Ok(json!({"primary":primary,"lobbyReads":reads}))
+        )?)
     }
     pub async fn remove(&self, id: TableId, revision: i64) -> Result<()> {
         self.state.remove(id, revision).await
@@ -378,6 +393,23 @@ impl Store {
         self.primary.close().await;
         result
     }
+}
+/// A database pool's connections, as the operations endpoint reports them.
+#[derive(serde::Serialize)]
+pub struct PoolReport {
+    #[serde(rename = "maxConnections")]
+    pub max: u32,
+    #[serde(rename = "totalConnections")]
+    pub total: i64,
+    #[serde(rename = "activeConnections", skip_serializing_if = "Option::is_none")]
+    pub active: Option<i64>,
+    #[serde(rename = "idleConnections")]
+    pub idle: i64,
+    #[serde(
+        rename = "idleTransactionConnections",
+        skip_serializing_if = "Option::is_none"
+    )]
+    pub idle_transaction: Option<i64>,
 }
 /// The bytes that a save writes: the head and the changed parts.
 fn written_bytes(head: &str, changes: &PartChanges) -> usize {

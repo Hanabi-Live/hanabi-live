@@ -1,12 +1,13 @@
 use anyhow::{Result, ensure};
 use serde_json::Value;
+use std::{collections::BTreeSet, sync::LazyLock};
 
 /// The client command an input names, for error messages about inputs that failed to parse.
 pub fn command_name(input: &str) -> Option<&'static str> {
+    static NAMES: LazyLock<BTreeSet<&'static str>> =
+        LazyLock::new(|| hanabi_protocol::client_contracts().into_keys().collect());
     let name = input.split_once(' ').map_or(input, |(name, _)| name);
-    hanabi_protocol::client_contracts()
-        .into_keys()
-        .find(|candidate| *candidate == name)
+    NAMES.get(name).copied()
 }
 
 pub fn parse(input: &str) -> Result<hanabi_protocol::ClientMessage> {

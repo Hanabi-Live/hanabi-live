@@ -14,7 +14,7 @@ use hanabi_protocol::GameId;
 use hanabi_protocol::TableId;
 use hanabi_protocol::UserId;
 use hanabi_protocol::{ClientMessage, Status};
-use serde::Serialize;
+#[cfg(test)]
 use serde_json::Value;
 use std::{
     collections::{BTreeMap, BTreeSet, HashMap, HashSet},
@@ -133,15 +133,14 @@ pub struct TableView {
     replay_game: Option<GameId>,
     visible: bool,
     data: hanabi_protocol::Table,
-    inspection: TableInspection,
+    /// Whether the table stopped saving after a failure and waits for recovery.
+    frozen: bool,
     reconnects: BTreeMap<UserId, Option<Seat>>,
 }
-/// A table's state as the operations endpoint reports it.
-#[derive(Clone, Copy, Default, PartialEq, Serialize)]
-struct TableInspection {
-    running: bool,
-    replay: bool,
-    frozen: bool,
+/// What the hub reports about its tables to the operations endpoint.
+pub struct Inspection {
+    /// The tables that wait for recovery after a failure to save.
+    pub frozen_tables: usize,
 }
 #[derive(Clone)]
 pub struct TableHandle {
@@ -151,6 +150,8 @@ pub struct TableHandle {
 struct Entry {
     handle: TableHandle,
     view: TableView,
+    /// The table's attendees, as it last published them.
+    attendees: BTreeSet<UserId>,
     published: bool,
 }
 /// A connected user, as the hub keeps them.
@@ -182,6 +183,9 @@ pub type Blocks = Arc<BTreeSet<UserId>>;
 pub struct Effects {
     pub table: TableId,
     pub view: TableView,
+    /// The users whom the table keeps as attendees, connected or not. The table publishes them so
+    /// that the hub wakes only the tables of a user who connects or leaves.
+    pub attendees: BTreeSet<UserId>,
     pub statuses: Vec<(Arc<Session>, Status, Option<TableId>)>,
     pub messages: Vec<(Arc<Session>, String)>,
 }
@@ -234,8 +238,9 @@ pub enum HubCommand {
     },
     Operations {
         command: Operation,
-        reply: oneshot::Sender<Result<Value>>,
+        reply: oneshot::Sender<Result<()>>,
     },
+    Inspect(oneshot::Sender<Result<Inspection>>),
     Sync {
         session: Arc<Session>,
         reply: Reply,

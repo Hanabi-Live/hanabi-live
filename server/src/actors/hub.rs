@@ -1,6 +1,6 @@
 use super::{
-    Allocation, Blocks, Command, Effects, Entry, HubCommand, Presence, Reply, SeatReservation,
-    TableActor, TableCommand, TableHandle, TableView,
+    Allocation, Blocks, Command, Effects, Entry, HubCommand, Inspection, Presence, Reply,
+    SeatReservation, TableActor, TableCommand, TableHandle, TableView,
     setup::{Creation, prepare_table},
 };
 use crate::errors::{CommandError, CommandResult, Report};
@@ -23,7 +23,6 @@ use hanabi_protocol::{
     ClientMessage, ErrorNotice, SoundLobby, Status, TableId, TableRequest, User, UserId, UserLeft,
     UserList,
 };
-use serde_json::{Value, json};
 use std::{
     collections::{BTreeSet, HashMap},
     panic::AssertUnwindSafe,
@@ -106,6 +105,7 @@ impl Hub {
                 Entry {
                     handle,
                     view,
+                    attendees: BTreeSet::new(),
                     published: true,
                 },
             );
@@ -266,6 +266,15 @@ impl Hub {
             }
         }
     }
+    /// Wakes the tables where a user plays or attends, so that they notice the user's connection
+    /// came or went.
+    fn wake_tables_of(&self, user: UserId) {
+        for entry in self.tables.values() {
+            if entry.attendees.contains(&user) || entry.view.players.contains(&user) {
+                entry.handle.cleanup.notify_one();
+            }
+        }
+    }
     /// A connected user's blocks.
     fn blocks(&self, user: UserId) -> Blocks {
         self.sessions
@@ -278,11 +287,11 @@ impl Hub {
             let _ = reply.send(Err(rejection!("Stale session or draining server")));
             return;
         }
-        let joining = matches!(&command, Command::Client(message) if matches!(**message, ClientMessage::TableJoin(_)));
-        if !self.tables.contains_key(&id) {
+        let Some(sender) = self.tables.get(&id).map(|e| e.handle.sender.clone()) else {
             let _ = reply.send(Err(rejection!("Unknown table")));
             return;
-        }
+        };
+        let joining = matches!(&command, Command::Client(message) if matches!(**message, ClientMessage::TableJoin(_)));
         let blocks = self.blocks(s.user);
         let reservation = if joining && !s.bot {
             match self.reserve(
@@ -299,52 +308,59 @@ impl Hub {
         } else {
             None
         };
-        if let Some(entry) = self.tables.get(&id) {
-            if let Some(reservation) = reservation {
+        // A join answers through the hub, which first ends its seat reservation.
+        let (table_reply, joined) = match reservation {
+            Some(reservation) => {
                 let (completed, received) = oneshot::channel();
-                if entry
-                    .handle
-                    .sender
-                    .try_send(TableCommand::Client {
-                        session: s,
-                        blocks,
-                        command,
-                        reply: completed,
-                    })
-                    .is_err()
-                {
-                    let _ = reply.send(Err(internal!("Table queue unavailable")));
-                    return;
+                (completed, Some((received, reservation, reply)))
+            }
+            None => (reply, None),
+        };
+        let queued = sender.try_send(TableCommand::Client {
+            session: s,
+            blocks,
+            command,
+            reply: table_reply,
+        });
+        if let Err(error) = queued {
+            let refusal = match &error {
+                mpsc::error::TrySendError::Full(_) => {
+                    rejection!("This table is busy. Please try again in a moment.")
                 }
-                let hub = self.sender.clone();
-                self.tasks.spawn(async move {
-                    let result = received
-                        .await
-                        .unwrap_or_else(|_| Err(rejection!("Table closed")));
-                    if let Err(error) = hub
-                        .send(HubCommand::JoinFinished {
-                            result,
-                            reply,
-                            reservation,
-                        })
-                        .await
-                        && let HubCommand::JoinFinished { reply, .. } = error.0
-                    {
-                        let _ = reply.send(Err(internal!("Coordinator stopped")));
+                mpsc::error::TrySendError::Closed(_) => rejection!("Table closed"),
+            };
+            match joined {
+                Some((_, _, reply)) => {
+                    let _ = reply.send(Err(refusal));
+                }
+                None => {
+                    if let TableCommand::Client { reply, .. } = error.into_inner() {
+                        let _ = reply.send(Err(refusal));
                     }
-                });
-                return;
+                }
             }
-            if let Err(e) = entry.handle.sender.try_send(TableCommand::Client {
-                session: s,
-                blocks,
-                command,
-                reply,
-            }) && let TableCommand::Client { reply, .. } = e.into_inner()
-            {
-                let _ = reply.send(Err(internal!("Table queue unavailable")));
-            }
+            return;
         }
+        let Some((received, reservation, reply)) = joined else {
+            return;
+        };
+        let hub = self.sender.clone();
+        self.tasks.spawn(async move {
+            let result = received
+                .await
+                .unwrap_or_else(|_| Err(rejection!("Table closed")));
+            if let Err(error) = hub
+                .send(HubCommand::JoinFinished {
+                    result,
+                    reply,
+                    reservation,
+                })
+                .await
+                && let HubCommand::JoinFinished { reply, .. } = error.0
+            {
+                let _ = reply.send(Err(internal!("Coordinator stopped")));
+            }
+        });
     }
     /// A shared replay of the same database game that a link to it should join.
     fn existing_replay(&self, r: &hanabi_protocol::ReplayCreateRequest) -> Option<TableId> {
@@ -500,11 +516,11 @@ impl Hub {
                 ));
             }
         }
-        for e in self.tables.values() {
-            e.handle.cleanup.notify_one();
+        for user in users {
+            self.wake_tables_of(*user);
         }
     }
-    fn operations(&mut self, command: Operation, reply: oneshot::Sender<Result<Value>>) {
+    fn operations(&mut self, command: Operation, reply: oneshot::Sender<Result<()>>) {
         if let Err(error) = self.store.check_state() {
             let _ = reply.send(Err(error));
             return;
@@ -531,7 +547,6 @@ impl Hub {
                     )
                 },
             ];
-            let total = self.sessions.len();
             let receipts = self
                 .sessions
                 .values()
@@ -541,28 +556,19 @@ impl Hub {
                 })
                 .collect::<Vec<_>>();
             self.tasks.spawn(async move {
-                let closed = match tokio::time::timeout(
+                // Connections that do not take their closing messages in time are closed anyway.
+                let _ = tokio::time::timeout(
                     RESTART_CLOSE_TIMEOUT,
                     futures_util::future::join_all(receipts),
                 )
-                .await
-                {
-                    Ok(results) => results.iter().filter(|r| r.is_ok()).count(),
-                    Err(_) => 0,
-                };
-                let _ = reply.send(Ok(json!({"closed":closed,"total":total})));
+                .await;
+                let _ = reply.send(Ok(()));
             });
             return;
         }
-        let result = match command {
+        match command {
             Operation::Drained { .. } => unreachable!("handled before dispatch"),
-            Operation::Inspect => Ok(
-                json!({"users":self.sessions.values().map(Self::user).collect::<Vec<_>>(),"tables":self.tables.values().map(|e|e.view.inspection).collect::<Vec<_>>(),"activeGames":self.tables.values().filter(|e|e.view.inspection.running&&!e.view.inspection.replay&&!e.view.inspection.frozen).count()}),
-            ),
-            Operation::Mute { user_id } => {
-                self.disconnect(&[user_id]);
-                Ok(json!({}))
-            }
+            Operation::Mute { user_id } => self.disconnect(&[user_id]),
             Operation::Ban { user_id, ip } => {
                 // Bans apply to an IP address, which is checked when connecting rather than on
                 // every command, so also disconnect other accounts using that address.
@@ -576,10 +582,9 @@ impl Hub {
                     );
                 }
                 self.disconnect(&users);
-                Ok(json!({}))
             }
-        };
-        let _ = reply.send(result);
+        }
+        let _ = reply.send(Ok(()));
     }
     pub(super) async fn run(mut self) {
         while let Some(command) = self.receiver.recv().await {
@@ -636,6 +641,12 @@ impl Hub {
                 }
                 HubCommand::EndReservation { id, users } => self.end_reservation_of(id, &users),
                 HubCommand::Operations { command, reply } => self.operations(command, reply),
+                HubCommand::Inspect(reply) => {
+                    let result = self.store.check_state().map(|()| Inspection {
+                        frozen_tables: self.tables.values().filter(|e| e.view.frozen).count(),
+                    });
+                    let _ = reply.send(result);
+                }
                 HubCommand::Client {
                     session,
                     message,
@@ -735,9 +746,7 @@ impl Hub {
         if let Some(old) = self.sessions.remove(&session.user) {
             old.session.supersede();
         }
-        for entry in self.tables.values() {
-            entry.handle.cleanup.notify_one();
-        }
+        self.wake_tables_of(session.user);
         welcome.playing_at_tables = self
             .tables
             .iter()
@@ -794,9 +803,7 @@ impl Hub {
                 },
             ));
         }
-        for e in self.tables.values() {
-            e.handle.cleanup.notify_one();
-        }
+        self.wake_tables_of(session.user);
     }
     /// Lists the online users, for a session that is current.
     fn directory(&self, session: &Session) -> CommandResult<Vec<OnlineUser>> {
@@ -896,6 +903,7 @@ impl Hub {
             Entry {
                 handle: handle.clone(),
                 view,
+                attendees: BTreeSet::new(),
                 published: false,
             },
         );
@@ -937,6 +945,7 @@ impl Hub {
         let hidden = entry.view.visible && !effects.view.visible;
         let changed = !entry.published || entry.view != effects.view;
         entry.view = effects.view;
+        entry.attendees = effects.attendees;
         entry.published = true;
         if hidden {
             self.broadcast(&frame(

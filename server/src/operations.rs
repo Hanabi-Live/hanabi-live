@@ -1,6 +1,6 @@
 use hanabi_protocol::UserId;
-use serde_json::Value;
 
+/// An administrator's operation that the hub carries out.
 #[derive(Clone, Debug)]
 pub enum Operation {
     Ban {
@@ -10,20 +10,19 @@ pub enum Operation {
     Mute {
         user_id: UserId,
     },
-    Inspect,
     Drained {
         reconnect: bool,
         message: Option<String>,
     },
 }
 
+use crate::store::PoolReport;
 use crate::{
     errors::HttpError,
     lifecycle::{Control, Phase, Refusal},
     metrics,
     query::Query,
 };
-use anyhow::Context;
 use axum::{
     Json, Router,
     body::to_bytes,
@@ -33,8 +32,8 @@ use axum::{
     response::{IntoResponse, Response},
     routing::{get, post},
 };
-use serde_json::json;
-use std::{net::SocketAddr, sync::Arc};
+use serde::Serialize;
+use std::{collections::BTreeMap, net::SocketAddr, sync::Arc};
 
 pub fn router(control: Arc<Control>) -> Router {
     let mut router = Router::new();
@@ -241,57 +240,74 @@ async fn user_action(control: &Control, path: &str, body: &Query) -> Result<Resp
         .await?;
     Ok("success\n".into_response())
 }
+/// What `/metrics` reports.
+#[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
+struct MetricsReport {
+    uptime_seconds: f64,
+    draining: bool,
+    discord: &'static str,
+    runtime: metrics::Memory,
+    commands: BTreeMap<String, metrics::Metric>,
+    recovery: metrics::Recovery,
+    database: DatabaseReport,
+    lobby_database: Option<PoolReport>,
+}
+#[derive(Serialize)]
+#[serde(untagged)]
+enum DatabaseReport {
+    Pool(PoolReport),
+    Error { error: &'static str },
+}
 async fn metrics_report(control: &Control) -> Result<Response> {
-    let inspect = control.operation(Operation::Inspect).await?;
-    let mut recovery = metrics::recovery();
-    recovery["storageInitialized"] = json!(true);
-    recovery["authority"] = json!("PostgreSQL");
-    recovery["stateHealthy"] = json!(control.storage_healthy());
-    recovery["frozenTables"] = json!(
-        inspect["tables"]
-            .as_array()
-            .context("Missing inspected tables")?
-            .iter()
-            .filter(|v| v["frozen"] == true)
-            .count()
-    );
-    let mut report = json!({"uptimeSeconds":control.monotonic_started.elapsed().as_secs_f64(),
-        "draining":control.lifecycle.draining(),
-        "discord":control.integration_status()["discord"],
-        "runtime":metrics::memory().await?,"commands":metrics::COMMAND_METRICS.snapshot(),"recovery":recovery});
-    let database: std::result::Result<Value, anyhow::Error> = if let Some(store) = control.store() {
-        store.database_reports().await
+    let inspection = control.inspect().await?;
+    let mut report = MetricsReport {
+        uptime_seconds: control.monotonic_started.elapsed().as_secs_f64(),
+        draining: control.lifecycle.draining(),
+        discord: control.discord_status(),
+        runtime: metrics::memory().await?,
+        commands: metrics::COMMAND_METRICS.snapshot(),
+        recovery: metrics::recovery(control.storage_healthy(), inspection.frozen_tables),
+        database: DatabaseReport::Error {
+            error: "Database pool activity is unavailable.",
+        },
+        lobby_database: None,
+    };
+    let database = if let Some(store) = control.store() {
+        store
+            .database_reports()
+            .await
+            .map(|(primary, reads)| (primary, Some(reads)))
     } else {
-        match sqlx::query_scalar!("SELECT 1 AS \"value!\"")
+        sqlx::query_scalar!("SELECT 1 AS \"value!\"")
             .fetch_one(&control.pool)
             .await
-        {
-            Ok(_) => Ok(json!({"primary":{
-                "maxConnections":control.pool.options().get_max_connections(),
-                "totalConnections":control.pool.size(),
-                "idleConnections":control.pool.num_idle()
-            },"lobbyReads":null})),
-            Err(error) => Err(error.into()),
-        }
+            .map(|_| {
+                let primary = PoolReport {
+                    max: control.pool.options().get_max_connections(),
+                    total: i64::from(control.pool.size()),
+                    active: None,
+                    idle: i64::try_from(control.pool.num_idle()).unwrap_or(i64::MAX),
+                    idle_transaction: None,
+                };
+                (primary, None)
+            })
+            .map_err(anyhow::Error::from)
     };
-    match database {
-        Ok(database) => {
-            report["database"] = database["primary"].clone();
-            report["lobbyDatabase"] = database["lobbyReads"].clone();
-            Ok((
-                if control.storage_healthy() {
-                    StatusCode::OK
-                } else {
-                    StatusCode::SERVICE_UNAVAILABLE
-                },
-                Json(report),
-            )
-                .into_response())
+    let status = match database {
+        Ok((primary, reads)) => {
+            report.database = DatabaseReport::Pool(primary);
+            report.lobby_database = reads;
+            if control.storage_healthy() {
+                StatusCode::OK
+            } else {
+                StatusCode::SERVICE_UNAVAILABLE
+            }
         }
         Err(error) => {
             tracing::warn!("Database metrics unavailable: {error}");
-            report["database"] = json!({"error":"Database pool activity is unavailable."});
-            Ok((StatusCode::SERVICE_UNAVAILABLE, Json(report)).into_response())
+            StatusCode::SERVICE_UNAVAILABLE
         }
-    }
+    };
+    Ok((status, Json(report)).into_response())
 }

@@ -1,5 +1,4 @@
 use serde::Serialize;
-use serde_json::{Value, json};
 use std::{
     collections::BTreeMap,
     sync::{
@@ -19,16 +18,32 @@ pub fn record_checkpoint(bytes: usize) {
 pub fn record_checkpoint_failure() {
     FAILED_CHECKPOINTS.fetch_add(1, Ordering::Relaxed);
 }
-pub fn recovery() -> Value {
+/// The state of live-table storage, which a deployment checks before it calls a server healthy.
+#[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct Recovery {
+    operations: BTreeMap<String, Metric>,
+    encoded_bytes: u64,
+    failed_checkpoints: u64,
+    pending_transactions: u64,
+    storage_initialized: bool,
+    authority: &'static str,
+    state_healthy: bool,
+    frozen_tables: usize,
+}
+pub fn recovery(state_healthy: bool, frozen_tables: usize) -> Recovery {
     let operations = STORAGE_METRICS.snapshot();
-    let pending: u64 = operations
-        .as_object()
-        .into_iter()
-        .flat_map(|o| o.values())
-        .map(|v| v["inFlight"].as_u64().unwrap_or(0))
-        .sum();
-    json!({"operations":operations,"encodedBytes":ENCODED_BYTES.load(Ordering::Relaxed),
-        "failedCheckpoints":FAILED_CHECKPOINTS.load(Ordering::Relaxed),"pendingTransactions":pending})
+    let pending_transactions = operations.values().map(|metric| metric.in_flight).sum();
+    Recovery {
+        operations,
+        encoded_bytes: ENCODED_BYTES.load(Ordering::Relaxed),
+        failed_checkpoints: FAILED_CHECKPOINTS.load(Ordering::Relaxed),
+        pending_transactions,
+        storage_initialized: true,
+        authority: "PostgreSQL",
+        state_healthy,
+        frozen_tables,
+    }
 }
 
 const LIMITS: [f64; 10] = [
@@ -43,9 +58,9 @@ const LIMITS: [f64; 10] = [
     10.0,
     f64::INFINITY,
 ];
-#[derive(Default, Serialize)]
+#[derive(Clone, Default, Serialize)]
 #[serde(rename_all = "camelCase")]
-struct Metric {
+pub struct Metric {
     in_flight: u64,
     completed: u64,
     failed: u64,
@@ -79,13 +94,11 @@ impl Metrics {
             failed: true,
         }
     }
-    pub fn snapshot(&self) -> Value {
-        json!(
-            *self
-                .0
-                .lock()
-                .unwrap_or_else(std::sync::PoisonError::into_inner)
-        )
+    pub fn snapshot(&self) -> BTreeMap<String, Metric> {
+        self.0
+            .lock()
+            .unwrap_or_else(std::sync::PoisonError::into_inner)
+            .clone()
     }
 }
 impl Measurement {
@@ -130,7 +143,15 @@ fn bucket(limit: f64) -> String {
 /// `/proc/self/status` reports memory in KiB.
 const BYTES_PER_KIB: u64 = crate::KIB as u64;
 
-pub async fn memory() -> anyhow::Result<Value> {
+/// The server process's memory.
+#[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct Memory {
+    resident_bytes: u64,
+    virtual_bytes: u64,
+}
+
+pub async fn memory() -> anyhow::Result<Memory> {
     let status = tokio::fs::read_to_string("/proc/self/status").await?;
     let field = |name: &str| -> anyhow::Result<u64> {
         let line = status
@@ -144,7 +165,10 @@ pub async fn memory() -> anyhow::Result<Value> {
             .parse::<u64>()?
             * BYTES_PER_KIB)
     };
-    Ok(json!({"residentBytes":field("VmRSS:")?,"virtualBytes":field("VmSize:")?}))
+    Ok(Memory {
+        resident_bytes: field("VmRSS:")?,
+        virtual_bytes: field("VmSize:")?,
+    })
 }
 #[cfg(test)]
 mod tests {
@@ -154,14 +178,14 @@ mod tests {
         let metrics = Metrics::default();
         let mut success = metrics.start("checkpoint");
         let failed = metrics.start("checkpoint");
-        assert_eq!(metrics.snapshot()["checkpoint"]["inFlight"], 2);
+        assert_eq!(metrics.snapshot()["checkpoint"].in_flight, 2);
         success.success();
         drop(success);
         drop(failed);
-        let report = metrics.snapshot();
-        assert_eq!(report["checkpoint"]["inFlight"], 0);
-        assert_eq!(report["checkpoint"]["completed"], 2);
-        assert_eq!(report["checkpoint"]["failed"], 1);
-        assert_eq!(report["checkpoint"]["durationBucketsSeconds"]["+Inf"], 2);
+        let report = &metrics.snapshot()["checkpoint"];
+        assert_eq!(report.in_flight, 0);
+        assert_eq!(report.completed, 2);
+        assert_eq!(report.failed, 1);
+        assert_eq!(report.duration_buckets_seconds["+Inf"], 2);
     }
 }
