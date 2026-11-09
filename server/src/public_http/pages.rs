@@ -166,11 +166,6 @@ pub(super) async fn page(
                 .map_or_else(Error::json, |game| Json(game).into_response()));
         }
         "password-reset" => v["title"] = json!("Password Reset"),
-        "stats" => {
-            v["title"] = json!("Stats");
-            v["namesTitle"] = json!("Global Statistics");
-            v["stats"] = aggregate(&state, None, None).await?;
-        }
         "scores" | "profile" | "history" | "tags" | "missing-scores" | "shared-missing-scores" => {
             let shared = mode == "shared-missing-scores";
             let n = params.get("numPlayers").and_then(|n| integer(n));
@@ -192,7 +187,7 @@ pub(super) async fn page(
                 "scores" | "profile" => {
                     v["page"] = json!("scores");
                     v["title"] = json!("Scores");
-                    let mut statistics = aggregate(&state, Some(users[0].0), None).await?;
+                    let mut statistics = aggregate(&state, Scope::Player(users[0].0)).await?;
                     let summary = score_summary(&state, users[0].0).await?;
                     statistics
                         .as_object_mut()
@@ -278,7 +273,7 @@ pub(super) async fn page(
             v["title"] = json!("Variant Stats");
             v["namesTitle"] = json!(format!("Global Statistics for {}", variant.name));
             v["apiPath"] = json!(api);
-            let mut statistics = aggregate(&state, None, Some(id)).await?;
+            let mut statistics = aggregate(&state, Scope::Variant(id)).await?;
             let row = sqlx::query_as!(
                 crate::database::VariantStats,
                 "SELECT variant_id,num_games,best_score2,best_score3,best_score4,best_score5,best_score6,
@@ -371,38 +366,41 @@ fn names_title(names: &[String]) -> String {
     )
 }
 
-pub(super) type SiteTotals = HashMap<Option<i64>, (std::time::Instant, Value)>;
+pub(super) type SiteTotals = HashMap<i64, (std::time::Instant, Value)>;
 
-// Site-wide totals scan the whole games table on a pool with only two connections, so compute
+/// Whose games a statistics summary counts.
+#[derive(Clone, Copy)]
+enum Scope {
+    Player(i32),
+    Variant(i64),
+}
+
+// Variant totals scan every game of the variant on a pool with only two connections, so compute
 // them at most once per period and make concurrent visitors share the result.
 const SITE_TOTALS_LIFETIME: std::time::Duration = if cfg!(test) {
     std::time::Duration::ZERO
 } else {
     std::time::Duration::from_mins(5)
 };
-/// How long a site-wide statistics scan may run, longer than the lobby pool's usual limit.
+/// How long a statistics scan may run, longer than the lobby pool's usual limit.
 const AGGREGATE_STATEMENT_TIMEOUT: std::time::Duration = std::time::Duration::from_secs(20);
 
-async fn aggregate(state: &PublicState, user: Option<i32>, variant: Option<i64>) -> Result<Value> {
-    if user.is_some() {
-        return compute_aggregate(state, user, variant).await;
-    }
+async fn aggregate(state: &PublicState, scope: Scope) -> Result<Value> {
+    let Scope::Variant(variant) = scope else {
+        return compute_aggregate(state, scope).await;
+    };
     let mut totals = state.site_totals.lock().await;
     if let Some((computed, statistics)) = totals.get(&variant)
         && computed.elapsed() < SITE_TOTALS_LIFETIME
     {
         return Ok(statistics.clone());
     }
-    let statistics = compute_aggregate(state, None, variant).await?;
+    let statistics = compute_aggregate(state, scope).await?;
     totals.insert(variant, (std::time::Instant::now(), statistics.clone()));
     Ok(statistics)
 }
 
-async fn compute_aggregate(
-    state: &PublicState,
-    user: Option<i32>,
-    variant: Option<i64>,
-) -> Result<Value> {
+async fn compute_aggregate(state: &PublicState, scope: Scope) -> Result<Value> {
     let mut transaction = state.pool.begin().await?;
     sqlx::query_scalar!(
         "SELECT set_config('statement_timeout',$1,true)",
@@ -411,30 +409,12 @@ async fn compute_aggregate(
     .fetch_one(&mut *transaction)
     .await?;
     let normal_end = EndCondition::Normal as i16;
-    // Each case has its own query: a shared `$1 IS NULL OR ...` query gets a generic plan that
-    // cannot use an index. The variant is compared as the column's own SMALLINT, because a cast
-    // column cannot use its index either. A player's totals start from their own games.
-    // Site-wide time counts every player's time, so it is multiplied by the number of players.
-    macro_rules! game_totals {
-        ($filter:literal $(, $argument:expr)*) => {{
-            let row = sqlx::query!(
-                "SELECT count(*) FILTER(WHERE NOT speedrun AND end_condition=$1) AS \"normal!\",
-                count(*) FILTER(WHERE NOT speedrun AND end_condition<>$1) AS \"other!\",
-                count(*) FILTER(WHERE speedrun) AS \"speed!\",
-                COALESCE(sum(extract(epoch FROM datetime_finished-datetime_started) * num_players)
-                  FILTER(WHERE NOT speedrun),0)::bigint AS \"duration!\",
-                COALESCE(sum(extract(epoch FROM datetime_finished-datetime_started) * num_players)
-                  FILTER(WHERE speedrun),0)::bigint AS \"speed_duration!\"
-                FROM games" + $filter,
-                normal_end $(, $argument)*
-            )
-            .fetch_one(&mut *transaction)
-            .await?;
-            (row.normal, row.other, row.speed, row.duration, row.speed_duration)
-        }};
-    }
-    let (normal, other, speed, played, speed_played) = match (user, variant) {
-        (Some(user), None) => {
+    // Each case has its own query: a shared query gets a generic plan that cannot use an index.
+    // The variant is compared as the column's own SMALLINT, because a cast column cannot use its
+    // index either. A player's totals start from their own games. A variant's time counts every
+    // player's time, so it is multiplied by the number of players.
+    let (normal, other, speed, played, speed_played) = match scope {
+        Scope::Player(user) => {
             let row = sqlx::query!(
                 "SELECT count(*) FILTER(WHERE NOT g.speedrun AND g.end_condition=$1) AS \"normal!\",
                 count(*) FILTER(WHERE NOT g.speedrun AND g.end_condition<>$1) AS \"other!\",
@@ -457,23 +437,37 @@ async fn compute_aggregate(
                 row.speed_duration,
             )
         }
-        (None, Some(variant)) => {
+        Scope::Variant(variant) => {
             let variant = i16::try_from(variant)
                 .map_err(|_| anyhow::anyhow!("Variant ID {variant} is outside the stored range"))?;
-            game_totals!(" WHERE variant_id=$2", variant)
-        }
-        (None, None) => game_totals!(""),
-        (Some(_), Some(_)) => {
-            return Err(
-                anyhow::anyhow!("Per-player statistics are not filtered by variant").into(),
-            );
+            let row = sqlx::query!(
+                "SELECT count(*) FILTER(WHERE NOT speedrun AND end_condition=$1) AS \"normal!\",
+                count(*) FILTER(WHERE NOT speedrun AND end_condition<>$1) AS \"other!\",
+                count(*) FILTER(WHERE speedrun) AS \"speed!\",
+                COALESCE(sum(extract(epoch FROM datetime_finished-datetime_started) * num_players)
+                  FILTER(WHERE NOT speedrun),0)::bigint AS \"duration!\",
+                COALESCE(sum(extract(epoch FROM datetime_finished-datetime_started) * num_players)
+                  FILTER(WHERE speedrun),0)::bigint AS \"speed_duration!\"
+                FROM games WHERE variant_id=$2",
+                normal_end,
+                variant
+            )
+            .fetch_one(&mut *transaction)
+            .await?;
+            (
+                row.normal,
+                row.other,
+                row.speed,
+                row.duration,
+                row.speed_duration,
+            )
         }
     };
     transaction.commit().await?;
     let mut statistics = json!({"numGamesNormal":normal,"numGamesOther":other,"numGamesTotal":normal+other,
         "numGamesSpeedrun":speed,"timePlayed":duration(played),
         "timePlayedSpeedrun":duration(speed_played)});
-    if let Some(user) = user {
+    if let Scope::Player(user) = scope {
         use chrono::Datelike;
         let date: chrono::DateTime<chrono::Utc> =
             sqlx::query_scalar!("SELECT datetime_created FROM users WHERE id=$1", user)

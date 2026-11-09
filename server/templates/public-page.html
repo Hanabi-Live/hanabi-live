@@ -66,7 +66,7 @@
             <p id="password-reset-error" role="alert" hidden></p>
           </form>
           <script src="/public/js/bundles/password-reset.min.js?{{ version }}"></script>
-          {% else %} {% if page in ["scores","variant","stats"] %} {% if page ==
+          {% else %} {% if page in ["scores","variant"] %} {% if page ==
           "variant" and stats.numGamesTotal == 0 and stats.numGamesSpeedrun == 0
           %}
           <p>No-one has played a game on this variant yet.</p>
@@ -268,5 +268,5 @@
     </div>
   </section>
 </div>
-{% if page not in ["password-reset","stats"] %}{% include
-"public-table-scripts.html" %}{% endif %} {% endblock %}
+{% if page not in ["password-reset"] %}{% include "public-table-scripts.html"
+%}{% endif %} {% endblock %}

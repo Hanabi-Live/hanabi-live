@@ -1685,7 +1685,6 @@ table th {
 
 @media screen and (max-width: 570px) {
   /* hide 'help' nav menu */
-  #header nav > ul > li a#nav-buttons-lobby-stats,
   #header nav > ul > li a#nav-buttons-lobby-resources {
     display: none;
   }

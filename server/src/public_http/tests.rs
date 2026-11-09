@@ -174,14 +174,14 @@ async fn shell_routes_metadata_and_static_files() {
 }
 
 #[tokio::test]
-async fn stats_database_failure_is_not_an_empty_success() {
+async fn variant_database_failure_is_not_an_empty_success() {
     let pool = PgPoolOptions::new()
         .connect_lazy("postgres://unused@127.0.0.1/unused")
         .unwrap();
     pool.close().await;
-    let (status, body) = request(router(pool, &config()), "/stats").await;
+    let (status, body) = request(router(pool, &config()), "/variant/0").await;
     assert_eq!(status, StatusCode::SERVICE_UNAVAILABLE);
-    assert!(body.contains("GET /stats failed"));
+    assert!(body.contains("GET /variant/{id} failed"), "{body}");
     assert!(body.contains("database connection pool is closed"));
     assert!(body.contains("Reference:"));
 }
@@ -243,8 +243,6 @@ async fn public_database_routes_filters_privacy_exports_and_html() {
         return;
     };
     let app = router(db.pool.clone(), &config());
-    let (status, body) = request(app.clone(), "/stats").await;
-    assert_eq!(status, StatusCode::OK, "{body}");
     let stat_pattern =
         regex!(r#"(?s)<li>\s*<span class="stat-description"\s*>(.*?)</span\s*>\s*(.*?)\s*</li>"#);
     let normalize = |text: &str| text.split_whitespace().collect::<Vec<_>>().join(" ");
@@ -254,10 +252,6 @@ async fn public_database_routes_filters_privacy_exports_and_html() {
             .map(|item| normalize(&item[2]))
             .collect::<Vec<_>>()
     };
-    assert_eq!(
-        stats_values(&body),
-        ["0 (0 normally finished)", "-", "0", "-"]
-    );
     #[expect(clippy::disallowed_methods, reason = "test SQL that sets up database state or failures directly")]
     sqlx::raw_sql(
         "INSERT INTO users(id,username,normalized_username,password_hash,last_ip) VALUES
@@ -288,32 +282,6 @@ async fn public_database_routes_filters_privacy_exports_and_html() {
         .execute(&db.pool)
         .await
         .unwrap();
-    let (status, body) = request(app.clone(), "/stats").await;
-    assert_eq!(status, StatusCode::OK, "{body}");
-    assert!(body.contains("Global Statistics"));
-    assert_eq!(
-        stats_values(&body),
-        [
-            "2 (1 normally finished)",
-            "4 hours and 0 minutes",
-            "1",
-            "2 hours and 0 minutes",
-        ]
-    );
-    for removed in [
-        "Number of variants",
-        "max scores",
-        "perfect scores",
-        "strikeouts",
-        "Average score",
-        "<table",
-        "class=\"pager\"",
-    ] {
-        assert!(
-            !body.contains(removed),
-            "Stats page still contains {removed}"
-        );
-    }
     for (path, total, len) in [
         ("/api/v1/history/Alice?size=1", 3, 1),
         ("/api/v1/history/Alice/Bob?fcol%5B2%5D=25", 1, 1),
@@ -593,7 +561,6 @@ async fn public_database_routes_filters_privacy_exports_and_html() {
         ),
         ("/history/Alice?api=1", 400, "takes no value"),
         ("/scores/Alice?api", 400, "takes no parameters"),
-        ("/stats?utm_source=x", 400, "takes no parameters"),
         ("/lobby?utm_source=x", 400, "Unknown query parameter"),
         ("/lobby?login=", 400, "cannot be empty"),
         (

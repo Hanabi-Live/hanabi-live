@@ -770,7 +770,6 @@ move for the current situation.
 | `/shared-missing-scores/2/[username1]/[username2]` | Lists the remaining non-max scores that 2 players both need. (You can specify up to 6 players.) |
 | `/tags/[username]`                                 | Lists the player's tagged games.                                                                |
 | `/seed/[seed]`                                     | Lists the games played on a specific seed.                                                      |
-| `/stats`                                           | Lists stats for the entire website.                                                             |
 | `/variant/[id]`                                    | Lists stats for a specific variant.                                                             |
 | `/tag/[tag]`                                       | Lists all the games that match the specified tag.                                               |
 
