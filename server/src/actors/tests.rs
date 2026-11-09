@@ -1,7 +1,34 @@
 use super::*;
+use super::{
+    chat::{authored_chat, parse_start_minutes, player_chat_has_room, server_chat},
+    replay::undo_hypothetical_turn,
+    setup::{next_requested_seed, option_changes, requested_seed, validate_table_name},
+    wire::{game_action, game_action_list},
+};
 use crate::transport::test_frame;
+use crate::{
+    game::{Game, Options},
+    model::{
+        ExtraOptions, FORMAT, IDLE_TIMEOUT_MS, IDLE_WARNING_MS, Phase, Player, ReplayState,
+        TableChat, TableSnapshot,
+    },
+    store::Store,
+    transport::Session,
+};
 use crate::{state::RedisState, test_redis::RedisFixture};
+use anyhow::{Context, Result, ensure};
+use chrono::{Duration as ChronoDuration, Utc};
+use hanabi_engine::{CompletionTiming, EndCondition, Recipient};
+use hanabi_protocol::{MAX_SEED_LENGTH, ReplayAction, Status};
+use serde_json::{Value, json};
 use sqlx::postgres::PgPoolOptions;
+use std::{
+    collections::{BTreeMap, HashMap, HashSet},
+    sync::{Arc, Mutex},
+    time::{Duration, Instant},
+};
+use tokio::sync::{Notify, Semaphore, mpsc, oneshot};
+use tokio_util::task::TaskTracker;
 
 #[test]
 fn table_names_allow_owner_defaults_but_reject_markup() {
