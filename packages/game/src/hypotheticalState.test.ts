@@ -646,4 +646,41 @@ describe("hypothetical state", () => {
     );
     expect(next.ongoing).toBe(ended.ongoing);
   });
+
+  test.each([
+    { rank: 5, ends: true },
+    { rank: 1, ends: false },
+  ] as const)(
+    "with a rank $rank last in the final round, ends = $ends",
+    ({ rank, ends }) => {
+      let finalRound = getInitialGameState(metadata);
+      for (let order = 0; order < 10; order++) {
+        finalRound = gameReducer(
+          finalRound,
+          order < 5 ? draw(0, order) : draw(1, order, 0, rank),
+          true,
+          false,
+          false,
+          true,
+          metadata,
+        );
+      }
+      finalRound = {
+        ...finalRound,
+        turn: {
+          ...finalRound.turn,
+          endTurnNum: finalRound.turn.turnNum + metadata.options.numPlayers,
+        },
+      };
+
+      const state = initializeHypotheticalState(
+        finalRound,
+        false,
+        [rankClue(3, 0, [], 1)],
+        false,
+        metadata,
+      );
+      expect(state.ongoing.turn.currentPlayerIndex).toBe(ends ? null : 1);
+    },
+  );
 });

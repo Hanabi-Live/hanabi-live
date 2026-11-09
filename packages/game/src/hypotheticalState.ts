@@ -3,12 +3,15 @@
 
 import type { Draft } from "immer";
 import { castDraft, produce } from "immer";
-import { MAX_STRIKES } from "./generated/protocol";
+import { getVariant } from "./gameData";
 import type { CardIdentity } from "./interfaces/CardIdentity";
 import type { GameMetadata } from "./interfaces/GameMetadata";
 import type { GameState } from "./interfaces/GameState";
 import { recalculateDeductions } from "./reducers/cardDeductionReducer";
 import { gameReducer } from "./reducers/gameReducer";
+import { isCardPotentiallyPlayable } from "./rules/card";
+import { getTotalCardsInDeck } from "./rules/deck";
+import { isGameOver } from "./rules/gameOver";
 import type { PlayerIndex } from "./types/PlayerIndex";
 import type {
   ActionClue,
@@ -256,7 +259,7 @@ function hypotheticalStateReducerFunction(
   );
   state.ongoing = castDraft(newState);
 
-  if (isHypotheticalOver(newState, metadata)) {
+  if (isHypotheticalOver(state, newState, metadata)) {
     state.ongoing.turn.currentPlayerIndex = null;
   }
 
@@ -266,21 +269,48 @@ function hypotheticalStateReducerFunction(
   }
 }
 
-/** Whether a real game would end in this state. */
+/**
+ * Whether a real game would end in this state. Cards shown as other identities are played as those
+ * identities, and a hidden card or a stack pretending to be played up could be anything.
+ */
 function isHypotheticalOver(
+  state: Draft<HypotheticalState>,
   gameState: GameState,
   metadata: GameMetadata,
 ): boolean {
-  // Everyone gets one more turn after the final card is drawn.
-  const { turnNum, endTurnNum } = gameState.turn;
-  const isFinalRoundOver =
-    !metadata.options.allOrNothing
-    && endTurnNum !== null
-    && turnNum >= endTurnNum;
-
-  return (
-    gameState.strikes.length >= MAX_STRIKES
-    || gameState.score >= gameState.stats.maxScore
-    || isFinalRoundOver
+  const variant = getVariant(metadata.options.variantName);
+  const stackBaseOrder = getTotalCardsInDeck(variant);
+  const isStackBaseMorphed = variant.suits.some(
+    (_suit, suitIndex) =>
+      state.morphedIdentities[stackBaseOrder + suitIndex] !== undefined,
   );
+
+  if (isStackBaseMorphed) {
+    return isGameOver(gameState, metadata, () => true);
+  }
+
+  return isGameOver(gameState, metadata, (card) => {
+    const morphedIdentity = state.morphedIdentities[card.order];
+    if (morphedIdentity?.suitIndex === null || morphedIdentity?.rank === null) {
+      return true;
+    }
+
+    const shownCard =
+      morphedIdentity === undefined
+        ? card
+        : {
+            ...card,
+            possibleCards: [
+              [morphedIdentity.suitIndex, morphedIdentity.rank] as const,
+            ],
+          };
+    return isCardPotentiallyPlayable(
+      shownCard,
+      gameState.deck,
+      gameState.playStacks,
+      gameState.playStackDirections,
+      gameState.playStackStarts,
+      variant,
+    );
+  });
 }
