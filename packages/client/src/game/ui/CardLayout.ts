@@ -52,7 +52,7 @@ export class CardLayout extends Konva.Group {
   // one location to another without having to worry about the relative position.
   addChild(child: LayoutChild): void {
     const pos = child.getAbsolutePosition();
-    this.add(child as unknown as Konva.Group);
+    this.add(child);
     child.setAbsolutePosition(pos);
     if (this.empathy) {
       child.card.setEmpathy(true);
@@ -192,9 +192,9 @@ export class CardLayout extends Konva.Group {
   }
 
   checkSetDraggableAll(): void {
-    this.children.each((layoutChild) => {
+    for (const layoutChild of this.children) {
       (layoutChild as unknown as LayoutChild).checkSetDraggable();
-    });
+    }
   }
 
   getAbsoluteCenterPos(): { x: number; y: number } {
@@ -222,9 +222,9 @@ export class CardLayout extends Konva.Group {
     }
 
     this.empathy = enabled;
-    this.children.each((layoutChild) => {
+    for (const layoutChild of this.children) {
       // The first Konva child is not guaranteed to be the card itself.
       (layoutChild as unknown as LayoutChild).card.setEmpathy(enabled);
-    });
+    }
   }
 }

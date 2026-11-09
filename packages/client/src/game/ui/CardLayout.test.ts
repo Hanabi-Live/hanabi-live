@@ -14,11 +14,7 @@ describe("CardLayout.setEmpathy", () => {
     } as unknown as LayoutChild;
     const layout = {
       empathy: false,
-      children: {
-        each: (callback: (child: LayoutChild) => void) => {
-          callback(layoutChild);
-        },
-      },
+      children: [layoutChild],
     } as unknown as InstanceType<typeof CardLayout>;
 
     expect(() => {

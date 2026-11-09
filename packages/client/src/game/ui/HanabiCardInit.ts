@@ -8,10 +8,10 @@ import {
 } from "@hanabi-live/game";
 import { assertDefined } from "complete-common";
 import Konva from "konva";
-import type * as KonvaContext from "konva/types/Context";
-import type * as KonvaUtil from "konva/types/Util";
-import type { Arrow } from "konva/types/shapes/Arrow";
-import type { RectConfig } from "konva/types/shapes/Rect";
+import type * as KonvaContext from "konva/lib/Context";
+import type * as KonvaUtil from "konva/lib/Util";
+import type { Arrow } from "konva/lib/shapes/Arrow";
+import type { RectConfig } from "konva/lib/shapes/Rect";
 import { START_CARD_RANK_LABEL } from "../../constants";
 import type { Pips } from "../types/Pips";
 import { globals } from "./UIGlobals";
@@ -93,7 +93,7 @@ export function image(getBareName: () => string): Konva.Image {
   const bare = new Konva.Image({
     width: CARD_W,
     height: CARD_H,
-    image: null as unknown as ImageBitmapSource,
+    image: undefined,
     shadowEnabled: false,
     shadowColor: "black",
     shadowOffset: {

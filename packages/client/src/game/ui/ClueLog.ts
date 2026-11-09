@@ -23,12 +23,12 @@ export class ClueLog extends Konva.Group {
   }
 
   addClue(clue: ClueEntry): void {
-    this.add(clue as unknown as Konva.Group);
+    this.add(clue);
   }
 
   updateClue(index: number, clue: ClueEntry): void {
     this.children[index]?.remove();
-    this.add(clue as unknown as Konva.Group);
+    this.add(clue);
     clue.zIndex(index);
   }
 
@@ -63,7 +63,7 @@ export class ClueLog extends Konva.Group {
   // We have moused over a card (or stopped mousing over a card), so update the highlighting for all
   // of the clue log entries.
   showMatches(targetCardOrder: CardOrder | null): void {
-    for (const child of this.children.toArray() as ClueEntry[]) {
+    for (const child of [...this.children] as ClueEntry[]) {
       child.showMatch(targetCardOrder);
     }
   }

@@ -369,7 +369,7 @@ function dragStart(card: HanabiCard) {
     return;
   }
   let hideArrows = false;
-  for (const layoutChild of hand.children.toArray() as LayoutChild[]) {
+  for (const layoutChild of [...hand.children] as LayoutChild[]) {
     for (const arrow of globals.elements.arrows) {
       if (arrow.pointingTo === layoutChild.card) {
         hideArrows = true;

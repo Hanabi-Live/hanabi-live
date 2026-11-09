@@ -13,7 +13,7 @@ const { LayoutChild } = await import("./LayoutChild");
 const { globals } = await import("./UIGlobals");
 
 describe("LayoutChild initialization without a pointer", () => {
-  test.each([undefined, { x: 10, y: 20 }])(
+  test.each([null, { x: 10, y: 20 }])(
     "updates drag state with pointer %p",
     (pointer) => {
       const shape = {};
@@ -32,13 +32,17 @@ describe("LayoutChild initialization without a pointer", () => {
       } as unknown as InstanceType<typeof LayoutChild>;
       Object.assign(globals, {
         state: { visibleState: { turn: { currentPlayerIndex: 0 } } },
-        stage: { getPointerPosition: () => pointer, getIntersection },
+        stage: {
+          getPointersPositions: () => (pointer === null ? [] : [pointer]),
+          getPointerPosition: () => pointer,
+          getIntersection,
+        },
       });
       expect(() => {
         LayoutChild.prototype.checkSetDraggable.call(child);
       }).not.toThrow();
       expect(draggable).toHaveBeenCalledWith(true);
-      if (pointer === undefined) {
+      if (pointer === null) {
         expect(getIntersection).not.toHaveBeenCalled();
         expect(setCursor).not.toHaveBeenCalled();
       } else {

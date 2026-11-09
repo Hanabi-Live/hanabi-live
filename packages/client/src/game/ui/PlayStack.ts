@@ -14,7 +14,7 @@ const PLAY_ANIMATION_SECONDS = 0.8;
 export class PlayStack extends Konva.Group {
   addChild(layoutChild: LayoutChild): void {
     const pos = layoutChild.getAbsolutePosition();
-    this.add(layoutChild as unknown as Konva.Group);
+    this.add(layoutChild);
     layoutChild.setAbsolutePosition(pos);
     this.doLayout();
   }
@@ -22,7 +22,7 @@ export class PlayStack extends Konva.Group {
   doLayout(): void {
     const lh = this.height();
 
-    const layoutChildren = this.children.toArray() as LayoutChild[];
+    const layoutChildren = [...this.children] as LayoutChild[];
     const layoutChild = layoutChildren.at(-1)!;
     const scale = lh / layoutChild.height();
     const stackBase = layoutChild.card.isStackBase;

@@ -137,14 +137,14 @@ export function onScoreOrMaxScoreChanged(data: {
   }
   maxScoreLabel.text(` / ${data.maxScore}`);
   // The type of Konva.Text.width is "any" for some reason.
-  const maxScoreLabelWidth = maxScoreLabel.measureSize(maxScoreLabel.text())
-    .width as number;
+  const maxScoreLabelWidth = maxScoreLabel.measureSize(
+    maxScoreLabel.text(),
+  ).width;
   if (typeof maxScoreLabelWidth !== "number") {
     throw new TypeError("The width of maxScoreLabel was not a number.");
   }
   maxScoreLabel.width(maxScoreLabelWidth);
-  const scoreLabelWidth = scoreLabel.measureSize(scoreLabel.text())
-    .width as number;
+  const scoreLabelWidth = scoreLabel.measureSize(scoreLabel.text()).width;
   if (typeof scoreLabelWidth !== "number") {
     throw new TypeError("The width of scoreLabel was not a number.");
   }

@@ -1,10 +1,9 @@
 import Konva from "konva";
-import type * as KonvaBaseLayer from "konva/types/BaseLayer";
 import { globals } from "./UIGlobals";
 import { HALF_TURN_DEGREES } from "./constants";
 
 export function drawLayer(node: Konva.Node): void {
-  const layer = node.getLayer() as KonvaBaseLayer.BaseLayer | null;
+  const layer = node.getLayer();
   if (layer !== null) {
     layer.batchDraw();
   }
@@ -77,9 +76,7 @@ export function animate(
       node.listening(true);
     }
   } else {
-    // The Konva TypeScript definitions specify a Tween config as "any".
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const config: any = {
+    const config: Konva.TweenConfig = {
       node,
       onFinish: () => {
         // If the game is restarted in the middle of an animation, it is possible to get here with
@@ -108,9 +105,7 @@ export function animate(
       },
     };
 
-    // The Konva object is weakly typed, and expects the keys to be there or not if there is a
-    // desire to change the value. Therefore, disable the linter rule for this block.
-    /* eslint-disable @typescript-eslint/no-unsafe-member-access */
+    // Konva tweens every key that is present, so only set the keys that should change.
     if (params.duration !== undefined) {
       config.duration = params.duration;
     }
@@ -139,7 +134,6 @@ export function animate(
     if (params.easing !== undefined) {
       config.easing = params.easing;
     }
-    /* eslint-enable @typescript-eslint/no-unsafe-member-access */
 
     // Temporarily disable listening on this element while it is animating (for performance reasons
     // and to prevent players from accidentally clicking on it).

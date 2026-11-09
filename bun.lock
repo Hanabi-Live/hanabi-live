@@ -121,9 +121,6 @@
     "esbuild",
     "unrs-resolver",
   ],
-  "patchedDependencies": {
-    "konva@3.4.1": "patches/konva@3.4.1.patch",
-  },
   "catalog": {
     "@reduxjs/toolkit": "2.14.0",
     "@sinonjs/fake-timers": "15.0.0",
@@ -154,7 +151,7 @@
     "jquery": "4.0.0",
     "jsdom": "30.1.3",
     "keycode-js": "3.1.0",
-    "konva": "3.4.1",
+    "konva": "10.9.1",
     "lightningcss": "1.33.0",
     "linkify-html": "4.3.3",
     "linkifyjs": "4.3.3",
@@ -1197,7 +1194,7 @@
 
     "knip": ["knip@6.44.1", "", { "dependencies": { "formatly": "^0.11.4", "get-tsconfig": "4.14.3", "jiti": "^2.7.0", "oxc-parser": "^0.155.0", "oxc-resolver": "11.24.2", "picomatch": "^4.0.7", "smol-toml": "^1.9.0", "strip-json-comments": "5.0.3", "tinyglobby": "^0.2.17", "unbash": "^6.0.1", "yaml": "^2.9.1", "zod": "^4.6.5" }, "bin": { "knip": "bin/knip.js", "knip-bun": "bin/knip-bun.js" } }, "sha512-Hbd8nvkIsNgFfXgC7Jsb5LHv7jj6VwA3tmfHd53XPX2z9Vc9RnAZqV0BIiP4OrtYqKwCoLseFHQZerb1bNlbSw=="],
 
-    "konva": ["konva@3.4.1", "", {}, "sha512-Lra+Sb9dFwsCtkWoFvtcmVFbzAZCqSS/we3iTxDogBl3DTTjieY0e/1crqvs/EZCNR5uV2Kfvkn7t2547cD1SQ=="],
+    "konva": ["konva@10.9.1", "", { "peerDependencies": { "canvas": "^3.0.0", "skia-canvas": "^3.0.0" }, "optionalPeers": ["canvas", "skia-canvas"] }, "sha512-m49x+GatSxEUSvqahYhxpTjgKbtrLtw4P4o4B4iux953ZFpceaK52Ea+CFsAsd7W4I0Y5u6mMoRUsY/eltNZmw=="],
 
     "levn": ["levn@0.4.1", "", { "dependencies": { "prelude-ls": "^1.2.1", "type-check": "~0.4.0" } }, "sha512-+bT2uH4E5LGE7h/n3evcS/sQlJXCpIp6ym8OWJ5eV6+67Dsql/LaaT7qJBAt2rzfoa/5QBGBhxDix1dMt2kQKQ=="],
 

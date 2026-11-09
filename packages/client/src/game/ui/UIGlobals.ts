@@ -19,6 +19,9 @@ import { Layers } from "./Layers";
 import * as cursor from "./cursor";
 import type { StateObserver } from "./reactive/StateObserver";
 
+// Konva 9 moved text lower within its bounds; keep the positions that the layout was designed for.
+Konva.legacyTextRendering = true;
+
 /**
  * This object contains global variables for the game UI. Every class variable must also be reset in
  * the "reset()" function.

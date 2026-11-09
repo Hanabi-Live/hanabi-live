@@ -2,7 +2,7 @@ import type { NumPlayers } from "@hanabi-live/game";
 import type { Tuple } from "complete-common";
 import { assertNotNull, eRange, newArray } from "complete-common";
 import Konva from "konva";
-import type { ContainerConfig } from "konva/types/Container";
+import type { ContainerConfig } from "konva/lib/Container";
 import { getCanvasColors } from "../../theme";
 import { MultiFitText } from "./MultiFitText";
 import { globals } from "./UIGlobals";
@@ -196,21 +196,21 @@ export class FullActionLog extends Konva.Group {
 
   private makeLog() {
     this.logText = new MultiFitText(this.textOptions, MAX_LINES);
-    this.add(this.logText as unknown as Konva.Group);
+    this.add(this.logText);
     this.logNumbers = new MultiFitText(this.numbersOptions, MAX_LINES);
-    this.add(this.logNumbers as unknown as Konva.Group);
+    this.add(this.logNumbers);
   }
 
   private makePlayerLog(i: number) {
     const playerLog = new MultiFitText(this.textOptions, MAX_LINES);
     playerLog.hide();
     this.playerLogs[i] = playerLog;
-    this.add(playerLog as unknown as Konva.Group);
+    this.add(playerLog);
 
     const playerLogNumber = new MultiFitText(this.numbersOptions, MAX_LINES);
     playerLogNumber.hide();
     this.playerLogNumbers[i] = playerLogNumber;
-    this.add(playerLogNumber as unknown as Konva.Group);
+    this.add(playerLogNumber);
   }
 
   private refreshText() {

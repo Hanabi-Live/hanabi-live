@@ -206,8 +206,11 @@ export function barClick(this: Konva.Rect): void {
     return;
   }
 
-  const rectX =
-    globals.stage.getPointerPosition().x - this.getAbsolutePosition().x;
+  const pointer = globals.stage.getPointerPosition();
+  if (pointer === null) {
+    return;
+  }
+  const rectX = pointer.x - this.getAbsolutePosition().x;
   const w = globals.elements.replayBar!.width();
   goToSegment(segmentFromBarPosition(rectX, w), true);
 }
@@ -233,7 +236,7 @@ export function barScroll(
  * The range that the center of a replay shuttle can move along the replay bar: the absolute x
  * position of its first stop and the distance to its last one.
  */
-function shuttleTrack(shuttle: Konva.Rect): { min: number; w: number } {
+function shuttleTrack(shuttle: Konva.Node): { min: number; w: number } {
   return {
     min:
       globals.elements.replayBar!.getAbsolutePosition().x + shuttle.width() / 2,
@@ -244,7 +247,7 @@ function shuttleTrack(shuttle: Konva.Rect): { min: number; w: number } {
 // Restricts the positions of the replay shuttle. Given a desired position, returns the allowed
 // position closest to it.
 export function shuttleDragBound(
-  this: Konva.Rect,
+  this: Konva.Node,
   pos: Konva.Vector2d,
 ): { x: number; y: number } {
   const { min, w } = shuttleTrack(this);

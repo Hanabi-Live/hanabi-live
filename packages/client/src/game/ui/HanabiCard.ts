@@ -310,10 +310,6 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip, UICard {
     this._tweening = true;
     this.tweenFinalPosition = { x: posX, y: 0 };
     this.tweenFinalScale = { x: scale, y: scale };
-
-    // HACK: since Konva doesn't propagate listening hierarchically until v7, stop the image from
-    // listening.
-    this.bare.listening(this.isListening() === true);
   }
 
   finishedTweening(): void {
@@ -323,10 +319,6 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip, UICard {
     this._tweening = false;
     this.tweenFinalPosition = null;
     this.tweenFinalScale = null;
-
-    // HACK: since Konva doesn't propagate listening hierarchically until v7, stop the image from
-    // listening.
-    this.bare.listening(this.isListening() === true);
   }
 
   // ----------------------------------------------
@@ -754,7 +746,7 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip, UICard {
       // We can't use a fill gradient because the "fill" is actually a big stroke. (The Konva arrow
       // object is not a shape, but instead a very thick line.) Instead, just use the the first
       // gradient color.
-      this.arrowBase!.stroke(suit.fillColors[0]!);
+      this.arrowBase!.stroke(suit.fillColors[0]);
     }
     if (this.rankPips.isVisible() === true) {
       this.setArrowMiddleRight();
@@ -1016,7 +1008,7 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip, UICard {
     } else {
       layoutChild.opacity(1); // Cards can be hidden in certain variants.
       const pos = layoutChild.getAbsolutePosition();
-      globals.elements.deck.add(layoutChild as unknown as Konva.Group);
+      globals.elements.deck.add(layoutChild);
       layoutChild.setAbsolutePosition(pos);
 
       // Animate to the deck.

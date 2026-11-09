@@ -1,5 +1,5 @@
 import Konva from "konva";
-import type * as KonvaContext from "konva/types/Context";
+import type * as KonvaContext from "konva/lib/Context";
 import { MIN_FONT_SIZE } from "../constants";
 
 export class FitText extends Konva.Text {
@@ -23,7 +23,11 @@ export class FitText extends Konva.Text {
       if (this.needsResize) {
         this.resize();
       }
-      Konva.Text.prototype._sceneFunc.call(this, context);
+      // Konva only calls scene functions with a scene context.
+      Konva.Text.prototype._sceneFunc.call(
+        this,
+        context as KonvaContext.SceneContext,
+      );
     });
   }
 

@@ -80,7 +80,6 @@ export function drawReplayArea(winW: number, winH: number): void {
     width: replayAreaValues.w * winW,
     height: REPLAY_AREA.h * winH,
     visible: false,
-    listening: false,
   });
 
   // The thin black rectangle that the replay slider slides on. In the Keldon layout, it is inset
@@ -187,9 +186,7 @@ export function drawReplayArea(winW: number, winH: number): void {
       ],
     );
     globals.elements.replayBackFullButton.on("click tap", replay.backFull);
-    globals.elements.replayArea.add(
-      globals.elements.replayBackFullButton as unknown as Konva.Group,
-    );
+    globals.elements.replayArea.add(globals.elements.replayBackFullButton);
 
     // Go back one turn (the second left-most button).
     x += replayButtonValues.w + replayButtonValues.spacing;
@@ -217,9 +214,7 @@ export function drawReplayArea(winW: number, winH: number): void {
 
       replay.back();
     });
-    globals.elements.replayArea.add(
-      globals.elements.replayBackButton as unknown as Konva.Group,
-    );
+    globals.elements.replayArea.add(globals.elements.replayBackButton);
 
     // Go forward one turn (the second right-most button).
     x += replayButtonValues.w + replayButtonValues.spacing;
@@ -247,9 +242,7 @@ export function drawReplayArea(winW: number, winH: number): void {
 
       replay.forward();
     });
-    globals.elements.replayArea.add(
-      globals.elements.replayForwardButton as unknown as Konva.Group,
-    );
+    globals.elements.replayArea.add(globals.elements.replayForwardButton);
 
     // Go forward to the end (the right-most button).
     x += replayButtonValues.w + replayButtonValues.spacing;
@@ -269,9 +262,7 @@ export function drawReplayArea(winW: number, winH: number): void {
       "click tap",
       replay.forwardFull,
     );
-    globals.elements.replayArea.add(
-      globals.elements.replayForwardFullButton as unknown as Konva.Group,
-    );
+    globals.elements.replayArea.add(globals.elements.replayForwardFullButton);
   }
 
   const extra = REPLAY_BOTTOM_BUTTON.extraW;
@@ -300,9 +291,7 @@ export function drawReplayArea(winW: number, winH: number): void {
     visible: !globals.state.finished,
   });
   globals.elements.replayExitButton.on("click tap", replay.exitButton);
-  globals.elements.replayArea.add(
-    globals.elements.replayExitButton as unknown as Konva.Group,
-  );
+  globals.elements.replayArea.add(globals.elements.replayExitButton);
 
   // The next two buttons will be moved to the left for replay leaders and centered for
   // non-replay-leaders.
@@ -330,9 +319,7 @@ export function drawReplayArea(winW: number, winH: number): void {
   globals.elements.pauseSharedTurnsButton.setCenter = setCenter;
   globals.elements.pauseSharedTurnsButton.setCenter(); // Set it to be center by default
   globals.elements.pauseSharedTurnsButton.setLeft = setLeft;
-  globals.elements.replayArea.add(
-    globals.elements.pauseSharedTurnsButton as unknown as Konva.Group,
-  );
+  globals.elements.replayArea.add(globals.elements.pauseSharedTurnsButton);
 
   // The "Use Shared Turns" button. (This will be shown when the client receives the "replayLeader"
   // command.)
@@ -350,9 +337,7 @@ export function drawReplayArea(winW: number, winH: number): void {
   globals.elements.useSharedTurnsButton.setCenter = setCenter;
   globals.elements.useSharedTurnsButton.setCenter(); // Set it to be center by default
   globals.elements.useSharedTurnsButton.setLeft = setLeft;
-  globals.elements.replayArea.add(
-    globals.elements.useSharedTurnsButton as unknown as Konva.Group,
-  );
+  globals.elements.replayArea.add(globals.elements.useSharedTurnsButton);
 
   // The "Enter Hypothetical" button.
   globals.elements.enterHypoButton = new EnterHypoButton({
@@ -365,9 +350,7 @@ export function drawReplayArea(winW: number, winH: number): void {
     "click tap",
     hypothetical.startHypothetical,
   );
-  globals.elements.replayArea.add(
-    globals.elements.enterHypoButton as unknown as Konva.Group,
-  );
+  globals.elements.replayArea.add(globals.elements.enterHypoButton);
 
   // This button will be moved to the left during in-game replay, centered during private replay,
   // and right during shared replay.

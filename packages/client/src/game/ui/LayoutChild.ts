@@ -33,7 +33,7 @@ export class LayoutChild extends Konva.Group {
   }
 
   private addCard(child: HanabiCard) {
-    this.add(child as unknown as Konva.Group);
+    this.add(child);
     this.width(child.width());
     this.height(child.height());
 
@@ -61,6 +61,8 @@ export class LayoutChild extends Konva.Group {
 
     if (this.shouldBeDraggable(draggablePlayerIndex(globals.state))) {
       this.draggable(true);
+      // This method runs repeatedly, so replace the handler instead of adding another copy of it.
+      this.off("dragend");
       // eslint-disable-next-line @typescript-eslint/unbound-method
       this.on("dragend", this.dragEnd);
     } else {
@@ -68,10 +70,13 @@ export class LayoutChild extends Konva.Group {
       this.off("dragend");
     }
 
-    const pointer = globals.stage.getPointerPosition();
-    // Konva 3's declaration omits the undefined result before the first pointer event.
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-    if (pointer === undefined) {
+    // Konva warns when asked for the pointer position before the pointer has entered the stage.
+    const { stage } = globals;
+    const pointer =
+      stage.getPointersPositions().length > 0
+        ? stage.getPointerPosition()
+        : null;
+    if (pointer === null) {
       return;
     }
     const shape = globals.stage.getIntersection(pointer);

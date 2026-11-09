@@ -1,9 +1,9 @@
 import Konva from "konva";
-import type * as KonvaContext from "konva/types/Context";
+import type * as KonvaContext from "konva/lib/Context";
 import { CLUED_COLOR } from "../constants";
 
 export class RankPip extends Konva.Text {
-  private fillValue: string | undefined;
+  private fillValue: string | CanvasGradient | undefined;
   private positive = false;
 
   constructor(config?: Konva.TextConfig) {
@@ -15,7 +15,7 @@ export class RankPip extends Konva.Text {
    * Draws the outline before the fill. The fill then covers the inner half of the outline, so the
    * whole outline lies outside the digit and still surrounds it when cards are drawn small.
    */
-  override _sceneFunc(context: KonvaContext.Context): void {
+  override _sceneFunc(context: KonvaContext.SceneContext): void {
     // Shadow the prototype method on this context only while the text is drawn.
     context.fillStrokeShape = (shape: Konva.Shape) => {
       context.strokeShape(shape);

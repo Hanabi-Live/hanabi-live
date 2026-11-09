@@ -116,7 +116,7 @@ function pressCard() {
   const position = { x: 10, y: 20 };
   const hand = {
     rotation: () => -90,
-    children: { toArray: () => [] },
+    children: [],
     moveToTop: vi.fn(),
   };
   const card = {

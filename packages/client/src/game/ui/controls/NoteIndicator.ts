@@ -1,5 +1,5 @@
 import Konva from "konva";
-import type { Context } from "konva/types/Context";
+import type { Context } from "konva/lib/Context";
 
 /** How far the note indicator tilts to show spectators that a note was updated. */
 const TILT_DEGREES = 15;

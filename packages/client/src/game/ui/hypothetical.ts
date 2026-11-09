@@ -124,7 +124,7 @@ export function sendHypotheticalAction(hypoAction: ClientAction): void {
       case "colorClue":
       case "rankClue": {
         const hand = globals.elements.playerHands[intent.target]!;
-        hand.children.each((child) => {
+        for (const child of hand.children) {
           const { card } = child as unknown as LayoutChild;
           cardViews.push({
             state: card.state,
@@ -132,7 +132,7 @@ export function sendHypotheticalAction(hypoAction: ClientAction): void {
             visibleSuitIndex: card.visibleSuitIndex,
             visibleRank: card.visibleRank,
           });
-        });
+        }
         break;
       }
     }

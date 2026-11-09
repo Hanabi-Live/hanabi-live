@@ -47,7 +47,7 @@
       "jquery": "4.0.0",
       "jsdom": "30.1.3",
       "keycode-js": "3.1.0",
-      "konva": "3.4.1",
+      "konva": "10.9.1",
       "lightningcss": "1.33.0",
       "linkify-html": "4.3.3",
       "linkifyjs": "4.3.3",
@@ -112,9 +112,6 @@
     "typescript": "catalog:"
   },
   "packageManager": "bun@1.4.4",
-  "patchedDependencies": {
-    "konva@3.4.1": "patches/konva@3.4.1.patch"
-  },
   "trustedDependencies": [
     "@parcel/watcher",
     "esbuild",

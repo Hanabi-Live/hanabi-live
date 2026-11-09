@@ -20,8 +20,8 @@ import {
 } from "@hanabi-live/game";
 import { assertEnumValue } from "complete-common";
 import Konva from "konva";
-import type * as KonvaContext from "konva/types/Context";
-import type { KonvaEventObject } from "konva/types/Node";
+import type * as KonvaContext from "konva/lib/Context";
+import type { KonvaEventObject } from "konva/lib/Node";
 import * as tooltips from "../../tooltips";
 import { CardLayout } from "./CardLayout";
 import { HanabiCard } from "./HanabiCard";
@@ -339,8 +339,7 @@ function getPos(element: Konva.Node, rot: number) {
       default: {
         // The type of Konva.Text.width is "any" for some reason.
         const textElement = element as Konva.Text;
-        const width = textElement.measureSize(textElement.text())
-          .width as number;
+        const { width } = textElement.measureSize(textElement.text());
         if (typeof width !== "number") {
           throw new TypeError("The width of the element was not a number.");
         }

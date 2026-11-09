@@ -93,9 +93,7 @@ export function onDiscardStacksChanged(
     discardStacks,
     (i) => {
       const suit = globals.variant.suits[i]!;
-      return globals.elements.discardStacks.get(
-        suit,
-      )! as unknown as Konva.Container;
+      return globals.elements.discardStacks.get(suit)!;
     },
     (card) => {
       if (card.state.isMisplayed) {
@@ -116,9 +114,7 @@ export function onPlayStacksChanged(
     playStacks,
     (i) => {
       const suit = globals.variant.suits[i]!;
-      return globals.elements.playStacks.get(
-        suit,
-      )! as unknown as Konva.Container;
+      return globals.elements.playStacks.get(suit)!;
     },
     (card) => {
       card.animateToPlayStacks();
@@ -248,7 +244,7 @@ function syncChildren(
   for (const [i, collection] of collections.entries()) {
     // eslint-disable-next-line func-style
     const getCurrentSorting = () =>
-      (getCollectionUI(i).children.toArray() as LayoutChild[])
+      ([...getCollectionUI(i).children] as LayoutChild[])
         .map((layoutChild) => layoutChild.card)
         .filter((card) => !card.isStackBase)
         .map((card) => card.state.order);

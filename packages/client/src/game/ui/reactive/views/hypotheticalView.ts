@@ -121,7 +121,7 @@ export function onStatesLengthChanged(): void {
 
   // Enable or disable the individual clue target buttons, depending on whose turn it is.
   const buttonGroup = globals.elements.clueTargetButtonGroup2!;
-  const buttons = buttonGroup.children.toArray() as PlayerButton[];
+  const buttons = [...buttonGroup.children] as PlayerButton[];
   for (const button of buttons) {
     button.setPressed(false);
     const { currentPlayerIndex } = globals.state.visibleState!.turn;

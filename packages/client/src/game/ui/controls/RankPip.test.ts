@@ -1,5 +1,5 @@
 import Konva from "konva";
-import type * as KonvaContext from "konva/types/Context";
+import type * as KonvaContext from "konva/lib/Context";
 import { describe, expect, test, vi } from "vitest";
 import { RankPip } from "./RankPip";
 
@@ -23,7 +23,7 @@ describe("RankPip", () => {
         calls.push("fill then stroke");
       },
     };
-    const context = Object.create(prototype) as KonvaContext.Context;
+    const context = Object.create(prototype) as KonvaContext.SceneContext;
     const pip = Object.create(RankPip.prototype) as RankPip;
 
     pip._sceneFunc(context);

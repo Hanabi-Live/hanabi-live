@@ -694,9 +694,7 @@ export function drawHands(winW: number, winH: number): void {
       // Hands must listen in order for the events to propagate through to the cards.
       listening: true,
     });
-    globals.layers.card.add(
-      globals.elements.playerHands[i] as unknown as Konva.Group,
-    );
+    globals.layers.card.add(globals.elements.playerHands[i]);
 
     if (globals.lobby.settings.keldonMode) {
       // In Keldon mode, we want to show a helper element that indicates which side of the hand is
@@ -785,9 +783,7 @@ export function drawHands(winW: number, winH: number): void {
       },
       i as PlayerIndex,
     );
-    globals.layers.UI.add(
-      globals.elements.nameFrames[i] as unknown as Konva.Group,
-    );
+    globals.layers.UI.add(globals.elements.nameFrames[i]);
 
     drawDetrimentalCharacters(winW, winH, numPlayers, i, j);
   }

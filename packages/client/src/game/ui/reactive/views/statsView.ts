@@ -82,13 +82,12 @@ export function onEfficiencyChanged(data: {
   }
 
   const text = effLabel.text();
-  const size = effLabel.measureSize(text);
-  const width = size.width as number;
+  const { width } = effLabel.measureSize(text);
   effLabel.width(width);
 
   // Reposition the two labels to the right of the efficiency label so that they are aligned
   // properly. The type of Konva.Text.width is "any" for some reason.
-  const effLabelSize = effLabel.measureSize(effLabel.text()).width as number;
+  const effLabelSize = effLabel.measureSize(effLabel.text()).width;
   if (typeof effLabelSize !== "number") {
     throw new TypeError("The width of effLabel was not a number.");
   }
@@ -96,8 +95,7 @@ export function onEfficiencyChanged(data: {
   effPipeLabel.x(pipeX);
 
   // The type of Konva.Text.width is "any" for some reason.
-  const effPipeLabelSize = effPipeLabel.measureSize(effPipeLabel.text())
-    .width as number;
+  const effPipeLabelSize = effPipeLabel.measureSize(effPipeLabel.text()).width;
   if (typeof effPipeLabelSize !== "number") {
     throw new TypeError("The width of effPipeLabel was not a number.");
   }

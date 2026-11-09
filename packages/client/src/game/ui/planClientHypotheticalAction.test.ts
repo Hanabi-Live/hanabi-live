@@ -153,16 +153,7 @@ describe("client hypothetical planning", () => {
       metadata: context.metadata,
       variant: context.variant,
       elements: {
-        playerHands: [
-          { children: { each: vi.fn() } },
-          {
-            children: {
-              each: (callback: (child: unknown) => void) => {
-                callback(handChild);
-              },
-            },
-          },
-        ],
+        playerHands: [{ children: [] }, { children: [handChild] }],
       },
       state: {
         ...state,

@@ -171,26 +171,34 @@ function playSharedReplayTween(
 ) {
   const opacity = 0;
   if (sharedSegment < previousSharedSegment) {
-    globals.elements.sharedReplayBackward?.show();
-    globals.elements.sharedReplayBackward?.opacity(1);
+    const indicator = globals.elements.sharedReplayBackward;
+    if (indicator === null) {
+      return;
+    }
+    indicator.show();
+    indicator.opacity(1);
     if (globals.elements.sharedReplayBackwardTween !== null) {
       globals.elements.sharedReplayBackwardTween.destroy();
       globals.elements.sharedReplayBackwardTween = null;
     }
     globals.elements.sharedReplayBackwardTween = new Konva.Tween({
-      node: globals.elements.sharedReplayBackward,
+      node: indicator,
       duration: SHARED_REPLAY_INDICATOR_FADE_SECONDS,
       opacity,
     }).play();
   } else if (sharedSegment > previousSharedSegment) {
-    globals.elements.sharedReplayForward?.show();
-    globals.elements.sharedReplayForward?.opacity(1);
+    const indicator = globals.elements.sharedReplayForward;
+    if (indicator === null) {
+      return;
+    }
+    indicator.show();
+    indicator.opacity(1);
     if (globals.elements.sharedReplayForwardTween !== null) {
       globals.elements.sharedReplayForwardTween.destroy();
       globals.elements.sharedReplayForwardTween = null;
     }
     globals.elements.sharedReplayForwardTween = new Konva.Tween({
-      node: globals.elements.sharedReplayForward,
+      node: indicator,
       duration: SHARED_REPLAY_INDICATOR_FADE_SECONDS,
       opacity,
     }).play();
