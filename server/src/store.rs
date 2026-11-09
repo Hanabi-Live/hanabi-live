@@ -704,22 +704,6 @@ mod tests {
         ensure!(!encoded.head.contains("hello"), "The head kept the chat");
         let decoded = crate::checkpoint::decode(&encoded.head, &parts)?;
         ensure!(serde_json::to_value(&decoded)? == expected);
-        // Heads written before revision 87a9312bd leave out the lists instead of emptying them.
-        let mut old_head: Value = serde_json::from_str(&encoded.head)?;
-        old_head.as_object_mut().unwrap().remove("chat");
-        let snapshot = old_head
-            .pointer_mut("/phase/snapshot")
-            .and_then(Value::as_object_mut)
-            .unwrap();
-        snapshot.remove("notes");
-        snapshot.remove("spectator_notes");
-        let game = snapshot
-            .get_mut("game")
-            .and_then(Value::as_object_mut)
-            .unwrap();
-        ensure!(game.remove("steps").is_some(), "The head has no steps");
-        let decoded = crate::checkpoint::decode(&old_head.to_string(), &parts)?;
-        ensure!(serde_json::to_value(&decoded)? == expected);
         // The head cannot hold a list, and parts cannot have gaps.
         let inline = serde_json::to_string(&table)?;
         ensure!(crate::checkpoint::decode(&inline, &[]).is_err());

@@ -72,10 +72,8 @@ pub struct Snapshot {
     pub idle_remaining: i64,
     pub pause_player_index: i32,
     pub queued_pauses: Vec<bool>,
-    /// Checkpoint heads written before revision 87a9312bd leave out the notes.
-    #[serde(default)]
     pub notes: Vec<Vec<String>>,
-    #[serde(default, deserialize_with = "deserialize_note_owners")]
+    #[serde(deserialize_with = "deserialize_note_owners")]
     pub spectator_notes: BTreeMap<UserId, NoteOwner>,
     pub tags: Vec<Tag>,
     pub votes: Vec<bool>,
@@ -171,9 +169,7 @@ pub struct TableSnapshot {
     pub extra: ExtraOptions,
     pub created: DateTime<Utc>,
     pub phase: Phase,
-    /// Messages without an ID are new: the next commit archives them. Checkpoint heads written
-    /// before revision 87a9312bd leave out the chat.
-    #[serde(default)]
+    /// Messages without an ID are new: the next commit archives them.
     pub chat: Vec<TableChat>,
     pub shadows: BTreeMap<UserId, Option<Seat>>,
 }
