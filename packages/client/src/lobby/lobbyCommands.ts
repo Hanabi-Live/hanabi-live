@@ -15,7 +15,7 @@ import * as history from "./history";
 import * as lobbyLogin from "./login";
 import * as playerSettings from "./playerSettings";
 import * as pregame from "./pregame";
-import { tablesDraw } from "./tablesDraw";
+import { tableChanged, tableGone, tablesListed } from "./tables/tablesSlice";
 import { Screen } from "./types/Screen";
 import * as url from "./url";
 import {
@@ -66,9 +66,6 @@ lobbyCommands.set("friends", (data) => {
 
   // Since our list of friends has changed, we need to redraw some UI elements so that users that
   // happen to be our friend will be shown in the correct color.
-  if (globals.currentScreen === Screen.Lobby) {
-    tablesDraw();
-  }
   if (globals.currentScreen === Screen.PreGame) {
     pregame.draw();
   }
@@ -154,24 +151,15 @@ lobbyCommands.set("soundLobby", (data) => {
 
 // Received by the client when a table is created or modified.
 lobbyCommands.set("table", (data) => {
-  globals.tableMap.set(data.id, data);
-  if (globals.currentScreen === Screen.Lobby) {
-    tablesDraw();
-  } else if (
-    globals.currentScreen === Screen.PreGame
-    && globals.tableID === data.id
-  ) {
+  store.dispatch(tableChanged(data));
+  if (globals.currentScreen === Screen.PreGame && globals.tableID === data.id) {
     pregame.drawSpectators(data.id);
   }
 });
 
 // Received by the client when a table no longer has any members present.
 lobbyCommands.set("tableGone", (data) => {
-  globals.tableMap.delete(data.tableID);
-
-  if (globals.currentScreen === Screen.Lobby) {
-    tablesDraw();
-  }
+  store.dispatch(tableGone(data.tableID));
 
   // If we were spectating the pre-game of this table, return to the lobby.
   if (
@@ -185,12 +173,7 @@ lobbyCommands.set("tableGone", (data) => {
 
 // Received by the client upon initial connection.
 lobbyCommands.set("tableList", (dataList) => {
-  for (const data of dataList) {
-    globals.tableMap.set(data.id, data);
-  }
-  if (globals.currentScreen === Screen.Lobby) {
-    tablesDraw();
-  }
+  store.dispatch(tablesListed(dataList));
 });
 
 lobbyCommands.set("tableStart", (data) => {

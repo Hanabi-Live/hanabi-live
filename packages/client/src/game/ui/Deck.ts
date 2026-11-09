@@ -243,7 +243,7 @@ function getTooltipContent(): string {
   let content = "<strong>Game Info:</strong>";
   content += '<ul class="game-tooltips-ul">';
 
-  const currentTable = globals.lobby.tableMap.get(globals.lobby.tableID);
+  const currentTable = globals.lobby.getTable(globals.lobby.tableID);
   if (currentTable !== undefined) {
     content += tooltipField(
       "fas fa-signature",

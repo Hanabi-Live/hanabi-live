@@ -14,6 +14,7 @@ import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
 import { globals } from "../../Globals";
 import { DIMMED_OPACITY } from "../../constants";
 import { store } from "../../store";
+import { tablesCleared, tablesListed } from "../tables/tablesSlice";
 import { Screen } from "../types/Screen";
 import { OnlineUserCount, UsersList } from "./UsersList";
 import { userInactiveChanged, usersCleared, usersListed } from "./usersSlice";
@@ -22,11 +23,11 @@ vi.mock("../../tooltips", () => ({
   attach: vi.fn(),
   SMALL_TOOLTIP_TEXT_STYLE: "",
 }));
-vi.mock("../tablesDraw", () => ({
+vi.mock("../tables/tableActions", () => ({
   tableJoin: vi.fn(),
   tableSpectate: vi.fn(),
 }));
-const { tableJoin } = await import("../tablesDraw");
+const { tableJoin } = await import("../tables/tableActions");
 
 const TABLE_ID = tableIdSchema.parse(7);
 
@@ -67,6 +68,7 @@ beforeEach(() => {
   globals.friends = ["zed", "Bob"];
   globals.currentScreen = Screen.Lobby;
   store.dispatch(usersCleared());
+  store.dispatch(tablesCleared());
 });
 
 afterEach(cleanup);
@@ -130,7 +132,7 @@ describe("UsersList", () => {
 
   test("links the status of users at a table, except from the pre-game", () => {
     const table = { id: TABLE_ID } as ServerCommandData["table"];
-    globals.tableMap.set(TABLE_ID, table);
+    store.dispatch(tablesListed([table]));
     store.dispatch(
       usersListed([user(1, "Alice", Status.PreGame), user(2, "Bob")]),
     );

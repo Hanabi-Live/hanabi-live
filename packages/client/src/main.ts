@@ -21,6 +21,7 @@ import * as lobbyLogin from "./lobby/login";
 import * as lobbyNav from "./lobby/nav";
 import * as playerSettings from "./lobby/playerSettings";
 import * as lobbyPregame from "./lobby/pregame";
+import { mountTablesList } from "./lobby/tables/mountTablesList";
 import { Screen } from "./lobby/types/Screen";
 import { mountUsersList } from "./lobby/users/mountUsersList";
 import * as lobbyWatchReplay from "./lobby/watchReplay";
@@ -101,6 +102,7 @@ $(document).ready(() => {
   lobbyKeyboardInit();
   lobbyLogin.init();
   lobbyNav.init();
+  mountTablesList();
   mountUsersList();
   playerSettings.init();
   lobbyTutorialInit();

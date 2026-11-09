@@ -1,13 +1,11 @@
 // The lobby area that shows all of the players in the current unstarted game.
 
-import { SECONDS_PER_MINUTE } from "@hanabi-live/data";
 import type { Options, PlayerIndex } from "@hanabi-live/game";
 import {
   getVariant,
   MAX_PLAYERS,
   MIN_PLAYERS,
   NO_VALUE,
-  secondsToClockString,
 } from "@hanabi-live/game";
 import { assertNotNull, eRange, iRange } from "complete-common";
 import { globals } from "../Globals";
@@ -18,7 +16,7 @@ import * as tooltips from "../tooltips";
 import { escapeHtml, getHTMLElement, setBrowserAddressBarPath } from "../utils";
 import * as lobbyPage from "./lobbyPage";
 import * as nav from "./nav";
-import { tablesDraw } from "./tablesDraw";
+import { getOptionDescriptions } from "./optionDescriptions";
 import { Screen } from "./types/Screen";
 
 const lobbyChatText = getHTMLElement("#lobby-chat-text");
@@ -79,7 +77,6 @@ export function show(): void {
 export function hide(updateURL = true): void {
   lobbyPage.hide();
   globals.currentScreen = Screen.Lobby;
-  tablesDraw();
 
   // Replace the list of current players with a list of the current games.
   $("#lobby-pregame").hide();
@@ -164,7 +161,7 @@ function drawOptions() {
     `;
   }
 
-  html += getOptionIcons(globals.game.options, "lobby-pregame", 0);
+  html += getOptionIcons(globals.game.options);
 
   // Set the HTML. Hide the whole section when there are no options so that it does not leave an
   // empty gap.
@@ -178,185 +175,29 @@ function drawOptions() {
     tooltips.create("#lobby-pregame-options-password");
   }
 
-  initializeOptionTooltips(globals.game.options, "lobby-pregame", 0);
+  initializeOptionTooltips(globals.game.options);
 }
 
-export function getOptionIcons(
-  options: Options,
-  idPrefix: string,
-  rowId: number,
-): string {
+function getOptionIcons(options: Options): string {
   let html = "";
-
-  if (options.timed) {
-    html += `<li><i id="${idPrefix}-options-timer-${rowId}" class="${OptionIcons.Timed} icon-label" `;
-    html += `data-tooltip-content="#${idPrefix}-tooltip-timer-${rowId}"></i>(`;
-    html += secondsToClockString(options.timeBase);
-    html += " + ";
-    html += secondsToClockString(options.timePerTurn);
-    html += ")</li>";
+  for (const { name, icon, label, tooltip } of getOptionDescriptions(options)) {
+    const style =
+      icon === OptionIcons.DeckPlays ? ` style="${DECK_PLAYS_ICON_STYLE}"` : "";
+    const labelClass = label === undefined ? "" : " icon-label";
+    html += `<li><i id="lobby-pregame-options-${name}" class="${icon}${labelClass}"${style} `;
+    html += `data-tooltip-content="#lobby-pregame-tooltip-${name}"></i>${label ?? ""}</li>`;
     html += `
       <div class="hidden">
-        <div id="${idPrefix}-tooltip-timer-${rowId}" class="${idPrefix}-tooltip-icon">
-          This is a <strong>Timed Game</strong>. The base time is <strong>${secondsToClockString(
-            options.timeBase,
-          )} minute${options.timeBase === SECONDS_PER_MINUTE ? "" : "s"}</strong> plus <strong>${
-            options.timePerTurn
-          } second${options.timePerTurn === 1 ? "" : "s"}</strong> per turn.
-        </div>
-      </div>
-    `;
-  }
-
-  if (options.speedrun) {
-    html += `<li><i id="${idPrefix}-options-speedrun-${rowId}" class="${OptionIcons.Speedrun}" `;
-    html += `data-tooltip-content="#${idPrefix}-tooltip-speedrun-${rowId}"></i></li>`;
-    html += `
-      <div class="hidden">
-        <div id="${idPrefix}-tooltip-speedrun-${rowId}" class="${idPrefix}-tooltip-icon">
-          This is a <strong>Speedrun</strong>.
-        </div>
-      </div>
-    `;
-  }
-
-  if (options.deckPlays) {
-    html += `<li><i id="${idPrefix}-options-deck-plays-${rowId}" class="${OptionIcons.DeckPlays}" `;
-    html += `style="${DECK_PLAYS_ICON_STYLE}" `;
-    html += `data-tooltip-content="#${idPrefix}-tooltip-deck-plays-${rowId}"></i></li>`;
-    html += `
-      <div class="hidden">
-        <div id="${idPrefix}-tooltip-deck-plays-${rowId}" class="${idPrefix}-tooltip-icon">
-          The <strong>Bottom-Deck Blind-Plays</strong> option is enabled.
-        </div>
-      </div>
-    `;
-  }
-
-  if (options.emptyClues) {
-    html += `<li><i id="${idPrefix}-options-empty-clues-${rowId}" class="${OptionIcons.EmptyClues}" `;
-    html += `data-tooltip-content="#${idPrefix}-tooltip-empty-clues-${rowId}"></i></li>`;
-    html += `
-      <div class="hidden">
-        <div id="${idPrefix}-tooltip-empty-clues-${rowId}" class="${idPrefix}-tooltip-icon">
-          The <strong>Empty Clues</strong> option is enabled.
-        </div>
-      </div>
-    `;
-  }
-
-  if (options.oneExtraCard) {
-    html += `<li><i id="${idPrefix}-options-one-extra-card-${rowId}" class="${OptionIcons.OneExtraCard}" `;
-    html += `data-tooltip-content="#${idPrefix}-tooltip-one-extra-card-${rowId}"></i></li>`;
-    html += `
-      <div class="hidden">
-        <div id="${idPrefix}-tooltip-one-extra-card-${rowId}" class="${idPrefix}-tooltip-icon">
-          The <strong>One Extra Card</strong> option is enabled.
-        </div>
-      </div>
-    `;
-  }
-
-  if (options.oneLessCard) {
-    html += `<li><i id="${idPrefix}-options-one-less-card-${rowId}" class="${OptionIcons.OneLessCard}" `;
-    html += `data-tooltip-content="#${idPrefix}-tooltip-one-less-card-${rowId}"></i></li>`;
-    html += `
-      <div class="hidden">
-        <div id="${idPrefix}-tooltip-one-less-card-${rowId}" class="${idPrefix}-tooltip-icon">
-          The <strong>One Less Card</strong> option is enabled.
-        </div>
-      </div>
-    `;
-  }
-
-  if (options.allOrNothing) {
-    html += `<li><i id="${idPrefix}-options-all-or-nothing-${rowId}" class="${OptionIcons.AllOrNothing}" `;
-    html += `data-tooltip-content="#${idPrefix}-tooltip-all-or-nothing-${rowId}"></i></li>`;
-    html += `
-      <div class="hidden">
-        <div id="${idPrefix}-tooltip-all-or-nothing-${rowId}" class="${idPrefix}-tooltip-icon">
-          The <strong>All or Nothing</strong> option is enabled.
-        </div>
-      </div>
-    `;
-  }
-
-  if (options.detrimentalCharacters) {
-    html += `<li><i id="${idPrefix}-options-characters-${rowId}" class="${OptionIcons.DetrimentalCharacters}" `;
-    html += `data-tooltip-content="#${idPrefix}-tooltip-characters-${rowId}"></i></li>`;
-    html += `
-      <div class="hidden">
-        <div id="${idPrefix}-tooltip-characters-${rowId}" class="${idPrefix}-tooltip-icon">
-          The <strong>Detrimental Characters</strong> option is enabled.
-        </div>
-      </div>
-    `;
-  }
-
-  if (options.seed !== undefined) {
-    html += `<li><i id="${idPrefix}-options-seed-${rowId}" class="${OptionIcons.Seed}" `;
-    html += `data-tooltip-content="#${idPrefix}-tooltip-seed-${rowId}"></i></li>`;
-    html += `
-      <div class="hidden">
-        <div id="${idPrefix}-tooltip-seed-${rowId}" class="${idPrefix}-tooltip-icon">
-          This table deals the custom seed of: <strong>${escapeHtml(options.seed)}</strong>
-        </div>
-      </div>
-    `;
-  }
-
-  if (options.replayGameID !== undefined) {
-    const turn =
-      options.replayTurn === undefined
-        ? ""
-        : ` (from turn ${options.replayTurn})`;
-    html += `<li><i id="${idPrefix}-options-replay-${rowId}" class="${OptionIcons.Replay}" `;
-    html += `data-tooltip-content="#${idPrefix}-tooltip-replay-${rowId}"></i></li>`;
-    html += `
-      <div class="hidden">
-        <div id="${idPrefix}-tooltip-replay-${rowId}" class="${idPrefix}-tooltip-icon">
-          This table replays game: <strong>#${options.replayGameID}</strong>${turn}
-        </div>
+        <div id="lobby-pregame-tooltip-${name}" class="lobby-pregame-tooltip-icon">${tooltip}</div>
       </div>
     `;
   }
   return html;
 }
 
-export function initializeOptionTooltips(
-  options: Options,
-  idPrefix: string,
-  rowId: number,
-): void {
-  if (options.timed) {
-    tooltips.create(`#${idPrefix}-options-timer-${rowId}`);
-  }
-  if (options.speedrun) {
-    tooltips.create(`#${idPrefix}-options-speedrun-${rowId}`);
-  }
-  if (options.deckPlays) {
-    tooltips.create(`#${idPrefix}-options-deck-plays-${rowId}`);
-  }
-  if (options.emptyClues) {
-    tooltips.create(`#${idPrefix}-options-empty-clues-${rowId}`);
-  }
-  if (options.oneExtraCard) {
-    tooltips.create(`#${idPrefix}-options-one-extra-card-${rowId}`);
-  }
-  if (options.oneLessCard) {
-    tooltips.create(`#${idPrefix}-options-one-less-card-${rowId}`);
-  }
-  if (options.allOrNothing) {
-    tooltips.create(`#${idPrefix}-options-all-or-nothing-${rowId}`);
-  }
-  if (options.detrimentalCharacters) {
-    tooltips.create(`#${idPrefix}-options-characters-${rowId}`);
-  }
-  if (options.seed !== undefined) {
-    tooltips.create(`#${idPrefix}-options-seed-${rowId}`);
-  }
-  if (options.replayGameID !== undefined) {
-    tooltips.create(`#${idPrefix}-options-replay-${rowId}`);
+function initializeOptionTooltips(options: Options) {
+  for (const { name } of getOptionDescriptions(options)) {
+    tooltips.create(`#lobby-pregame-options-${name}`);
   }
 }
 
@@ -505,7 +346,7 @@ export function drawSpectators(tableID: number): void {
     return;
   }
 
-  const table = globals.tableMap.get(tableID);
+  const table = globals.getTable(tableID);
   if (table === undefined) {
     return;
   }

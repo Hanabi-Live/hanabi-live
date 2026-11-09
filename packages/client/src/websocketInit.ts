@@ -18,6 +18,7 @@ import { gameCommands } from "./game/ui/gameCommands";
 import { globals } from "./Globals";
 import { fetchCookieOnce } from "./lobby/cookieProbe";
 import { lobbyCommands } from "./lobby/lobbyCommands";
+import { tablesCleared } from "./lobby/tables/tablesSlice";
 import { Screen } from "./lobby/types/Screen";
 import { usersCleared } from "./lobby/users/usersSlice";
 import * as modals from "./modals";
@@ -264,7 +265,7 @@ function openConnection(isReconnect: boolean) {
       globals.conn = conn;
       globals.userMap.clear();
       store.dispatch(usersCleared());
-      globals.tableMap.clear();
+      store.dispatch(tablesCleared());
       if (
         globals.currentScreen === Screen.Game
         && globals.ui !== null

@@ -1,7 +1,7 @@
 // The central point for all tooltips.
 
 import { MAX_DECK_SIZE, MAX_PLAYERS, MAX_SUITS } from "@hanabi-live/game";
-import { eRange } from "complete-common";
+import { eRange, SECOND_IN_MILLISECONDS } from "complete-common";
 import type { TooltipSide } from "./Tooltip";
 import { hoverTooltip, Tooltip } from "./Tooltip";
 import { globals } from "./game/ui/UIGlobals";
@@ -11,6 +11,9 @@ export const TOOLTIP_DELAY_IN_MILLISECONDS = 500;
 
 /** The style of tooltip text that is smaller than the default. */
 export const SMALL_TOOLTIP_TEXT_STYLE = "font-size: 0.75em;";
+
+/** How long the tooltip that confirms a copied URL stays open. */
+const COPIED_TOOLTIP_MILLISECONDS = SECOND_IN_MILLISECONDS;
 
 const CLIPBOARD_CONTENT = `<span style="${SMALL_TOOLTIP_TEXT_STYLE}">URL copied to clipboard!</span>`;
 
@@ -29,19 +32,11 @@ export function initGame(): void {
 
 /**
  * Creates a tooltip that opens on hover, showing the element that the anchor's
- * "data-tooltip-content" attribute selects. A "clipboard" tooltip instead opens only when told to.
+ * "data-tooltip-content" attribute selects.
  */
-export function create(
-  selector: string,
-  type: "clipboard" | "hover" = "hover",
-): void {
+export function create(selector: string): void {
   const anchor = getHTMLElement(selector);
   if (tooltips.has(anchor)) {
-    return;
-  }
-
-  if (type === "clipboard") {
-    tooltips.set(anchor, new Tooltip(anchor, { content: CLIPBOARD_CONTENT }));
     return;
   }
 
@@ -58,6 +53,15 @@ export function attach(element: HTMLElement, content: string): () => void {
   return () => {
     tooltip.destroy();
   };
+}
+
+/** Briefly shows, beside an element, that a URL was copied to the clipboard. */
+export function showCopied(element: HTMLElement): void {
+  const tooltip = new Tooltip(element, { content: CLIPBOARD_CONTENT });
+  tooltip.open();
+  setTimeout(() => {
+    tooltip.close();
+  }, COPIED_TOOLTIP_MILLISECONDS);
 }
 
 export function open(selector: string): void {

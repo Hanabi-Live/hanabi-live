@@ -6,6 +6,8 @@ import type { Connection } from "./Connection";
 import type { Loader } from "./Loader";
 import { NO_TABLE_ID, NO_USER_ID } from "./constants";
 import type { HanabiUI } from "./game/ui/HanabiUI";
+import type { Table } from "./lobby/tables/tablesSlice";
+import { selectTable, selectTables } from "./lobby/tables/tablesSlice";
 import type { Screen } from "./lobby/types/Screen";
 import { friendsChanged, screenChanged, usernameChanged } from "./sessionSlice";
 import { store } from "./store";
@@ -59,6 +61,15 @@ export class Globals {
     store.dispatch(screenChanged(screen));
   }
 
+  /** From the "tableList", "table", and "tableGone" messages. */
+  get tables(): readonly Table[] {
+    return selectTables(store.getState());
+  }
+
+  getTable(tableID: number): Table | undefined {
+    return selectTable(store.getState(), tableID);
+  }
+
   /* eslint-enable @typescript-eslint/class-methods-use-this */
 
   // -----------------------
@@ -67,9 +78,6 @@ export class Globals {
 
   /** Keys are IDs. */
   userMap = new Map<UserID, ServerCommandData["user"]>();
-
-  /** Keys are IDs. */
-  tableMap = new Map<number, ServerCommandData["table"]>();
 
   /** Keys are IDs. */
   history = new Map<number, GameHistory>();

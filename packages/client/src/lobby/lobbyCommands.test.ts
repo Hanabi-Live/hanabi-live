@@ -11,7 +11,6 @@ vi.mock("./history", () => ({}));
 vi.mock("./login", () => ({}));
 vi.mock("./playerSettings", () => ({}));
 vi.mock("./pregame", () => ({ hide: vi.fn() }));
-vi.mock("./tablesDraw", () => ({ tablesDraw: vi.fn() }));
 vi.mock("./url", () => ({}));
 const { globals } = await import("../Globals");
 const pregame = await import("./pregame");

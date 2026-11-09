@@ -11,7 +11,6 @@ import * as tooltips from "../tooltips";
 import { dateTimeFormatter, setBrowserAddressBarPath } from "../utils";
 import { getOtherScoresHash } from "./historyHash";
 import * as nav from "./nav";
-import { tablesDraw } from "./tablesDraw";
 import { Screen } from "./types/Screen";
 
 /** The number of games that each history request asks for, the same as a public history page. */
@@ -69,7 +68,6 @@ function request() {
 export function hide(): void {
   globals.currentScreen = Screen.Lobby;
   setBrowserAddressBarPath(PATH.LOBBY, undefined);
-  tablesDraw();
 
   $("#lobby-history").hide();
   $("#lobby-history-other-scores").hide();

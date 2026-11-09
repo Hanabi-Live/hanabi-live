@@ -3,7 +3,6 @@
 import { FADE_TIME_MS, HISTORY_HASH, PATH } from "../constants";
 import { globals } from "../Globals";
 import * as lobbyPage from "../lobby/lobbyPage";
-import { tablesDraw } from "../lobby/tablesDraw";
 import { Screen } from "../lobby/types/Screen";
 import * as sounds from "../sounds";
 import * as tooltips from "../tooltips";
@@ -69,7 +68,6 @@ function hide() {
     setBrowserAddressBarPath(PATH.LOBBY, historyHash);
   }
   document.body.dataset["screen"] = "lobby";
-  tablesDraw();
 
   if (globals.ui !== null) {
     globals.ui.destroy();

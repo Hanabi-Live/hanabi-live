@@ -6,7 +6,7 @@ import { globals } from "../../Globals";
 import { DIMMED_OPACITY } from "../../constants";
 import { useAppSelector } from "../../store";
 import * as tooltips from "../../tooltips";
-import { tableJoin, tableSpectate } from "../tablesDraw";
+import { tableJoin, tableSpectate } from "../tables/tableActions";
 import { Screen } from "../types/Screen";
 import type { UserRow } from "./usersSlice";
 import { selectUserCount, selectUserRows } from "./usersSlice";
@@ -151,7 +151,7 @@ function goToTable(user: UserRow["user"]) {
   if (user.tableID === undefined) {
     return;
   }
-  const table = globals.tableMap.get(user.tableID);
+  const table = globals.getTable(user.tableID);
   if (table === undefined) {
     return;
   }

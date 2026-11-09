@@ -21,7 +21,6 @@ import { getHTMLElement, getHTMLInputElement, getURLFromPath } from "../utils";
 import { websocketInit } from "../websocketInit";
 import { TEST_COOKIE_PATH, checkCookieWithRetry } from "./cookieProbe";
 import * as nav from "./nav";
-import { tablesDraw } from "./tablesDraw";
 import { Screen } from "./types/Screen";
 
 /** How long the change-password form and the scroll to an error take to animate. */
@@ -278,7 +277,6 @@ export function hide(firstTimeUser: boolean): void {
 
   // Show the lobby
   globals.currentScreen = Screen.Lobby;
-  tablesDraw();
   $("#lobby").show();
   $("#lobby-history").hide();
   // We can't hide this element by default in "index.html" or else the "No game history" text will

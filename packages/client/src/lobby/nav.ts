@@ -8,7 +8,7 @@ import * as createGame from "./createGame";
 import * as history from "./history";
 import * as lobbyPage from "./lobbyPage";
 import * as pregame from "./pregame";
-import * as tablesDraw from "./tablesDraw";
+import { tableJoin, tableSpectate } from "./tables/tableActions";
 import * as watchReplay from "./watchReplay";
 
 export function init(): void {
@@ -146,13 +146,12 @@ export function init(): void {
       return;
     }
 
-    const table = globals.tableMap.get(globals.tableID);
+    const table = globals.getTable(globals.tableID);
     if (table === undefined) {
       return;
     }
 
-    const tables = [...globals.tableMap.values()];
-    const oldTable = tables.find(
+    const oldTable = globals.tables.find(
       (value) => value.joined && !value.sharedReplay,
     );
     if (oldTable !== undefined) {
@@ -164,7 +163,7 @@ export function init(): void {
       }
       globals.conn!.send("tableLeave", { tableID: oldTable.id });
     }
-    tablesDraw.tableJoin(table);
+    tableJoin(table);
   });
 
   // The "Spectate Game" button.
@@ -173,13 +172,13 @@ export function init(): void {
       return;
     }
 
-    const table = globals.tableMap.get(globals.tableID);
+    const table = globals.getTable(globals.tableID);
     if (table === undefined) {
       return;
     }
 
     globals.conn!.send("tableLeave", { tableID: globals.tableID });
-    tablesDraw.tableSpectate(table);
+    tableSpectate(table);
   });
 
   // The "Return to Lobby" button (from the "Pregame" screen).
@@ -194,7 +193,7 @@ export function init(): void {
   // The "Leave Game" button.
   $("#nav-buttons-pregame-leave").on("click", () => {
     // "Leave Game" and "Return to Lobby" are the same for spectators.
-    const table = globals.tableMap.get(globals.tableID);
+    const table = globals.getTable(globals.tableID);
     if (table === undefined) {
       return;
     }
