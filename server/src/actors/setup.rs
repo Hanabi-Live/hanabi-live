@@ -7,7 +7,7 @@ use crate::{
         ExtraOptions, FORMAT, MAX_TABLE_NAME_LENGTH, Phase, ReplayState, Snapshot, TableSnapshot,
         engine_options, small, wire_options,
     },
-    store::Store,
+    store::{Saved, Store},
     transport::Session,
 };
 use chrono::Utc;
@@ -371,7 +371,7 @@ pub(super) async fn prepare_table(
     store: &Store,
     session: &Session,
     creation: Creation,
-) -> CommandResult<(TableSnapshot, i64, Vec<String>)> {
+) -> CommandResult<(TableSnapshot, Saved, Vec<String>)> {
     ensure_or_reject!(session.active(), "Stale session");
     let id = store.allocate_table().await?;
     let result = async {
@@ -415,8 +415,9 @@ pub(super) async fn prepare_table(
                 if let Some(seed) = custom_seed {
                     table.extra.custom_seed = seed;
                 }
-                let revision = store.save(&table, 0).await?;
-                return Ok((table, revision, warnings));
+                let mut saved = Saved::default();
+                store.save(&mut table, &mut saved).await?;
+                return Ok((table, saved, warnings));
             }
         };
         let mut name = crate::accounts::truncate_to_max_bytes(r.name.trim(), MAX_TABLE_NAME_LENGTH)
@@ -459,7 +460,7 @@ pub(super) async fn prepare_table(
             Some(crate::accounts::hash_password(&session.ip, password).await?)
         };
         ensure_or_reject!(session.active(), "Creator disconnected during preparation");
-        let table = TableSnapshot {
+        let mut table = TableSnapshot {
             format: FORMAT.into(),
             id,
             name,
@@ -479,8 +480,9 @@ pub(super) async fn prepare_table(
             chat: vec![],
             shadows: BTreeMap::new(),
         };
-        let revision = store.save(&table, 0).await?;
-        Ok((table, revision, vec![]))
+        let mut saved = Saved::default();
+        store.save(&mut table, &mut saved).await?;
+        Ok((table, saved, vec![]))
     }
     .await;
     if result.is_err() {

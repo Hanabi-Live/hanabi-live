@@ -1,5 +1,5 @@
 use crate::{
-    checkpoint::{Encoded, PartChanges, PartDigest},
+    checkpoint::{PartChanges, PartDigest},
     model::{PendingTag, Player, Snapshot, TableChat, TableSnapshot, Tag, TagOperation},
     state::LiveState,
 };
@@ -14,11 +14,7 @@ use sqlx::{
     PgPool, Postgres, Transaction,
     postgres::{PgConnectOptions, PgPoolOptions},
 };
-use std::{
-    collections::HashMap,
-    sync::{Arc, Mutex},
-    time::Duration,
-};
+use std::{collections::HashMap, sync::Arc, time::Duration};
 use tokio::sync::Semaphore;
 use tokio_util::{sync::CancellationToken, task::TaskTracker};
 
@@ -31,9 +27,6 @@ pub struct Store {
     archive_name: String,
     lobby_name: String,
     state: LiveState,
-    /// The digests of each live table's saved parts, by table, which tell a save which parts
-    /// changed. Every write of a live table goes through `Store`, so these match the database.
-    saved_parts: Arc<Mutex<HashMap<TableId, HashMap<String, PartDigest>>>>,
     stats: TaskTracker,
     stats_slots: Arc<Semaphore>,
 }
@@ -100,7 +93,6 @@ impl Store {
             archive_name: String::new(),
             lobby_name: String::new(),
             state,
-            saved_parts: Arc::default(),
             stats: TaskTracker::new(),
             stats_slots: Arc::new(Semaphore::new(STATS_SLOTS)),
         }
@@ -147,7 +139,6 @@ impl Store {
             archive_name,
             lobby_name,
             state,
-            saved_parts: Arc::default(),
             stats: TaskTracker::new(),
             stats_slots: Arc::new(Semaphore::new(STATS_SLOTS)),
         })
@@ -197,47 +188,8 @@ impl Store {
         )?;
         Ok(json!({"primary":primary,"recovery":recovery}))
     }
-    fn saved_parts(
-        &self,
-    ) -> std::sync::MutexGuard<'_, HashMap<TableId, HashMap<String, PartDigest>>> {
-        self.saved_parts
-            .lock()
-            .unwrap_or_else(std::sync::PoisonError::into_inner)
-    }
-    /// What saving `encoded` as table `id` changes among its parts, and the parts' digests after.
-    fn part_changes(
-        &self,
-        id: TableId,
-        encoded: &Encoded,
-    ) -> (PartChanges, HashMap<String, PartDigest>) {
-        let saved = self.saved_parts().get(&id).cloned().unwrap_or_default();
-        crate::checkpoint::changes(&saved, encoded)
-    }
-    pub async fn save(&self, table: &TableSnapshot, revision: i64) -> Result<i64> {
-        let mut metric = crate::metrics::STORAGE_METRICS.start("checkpoint");
-        let result = async {
-            let encoded = crate::checkpoint::encode(table)?;
-            let (changes, digests) = self.part_changes(table.id, &encoded);
-            let revision = self
-                .state
-                .save(table.id, revision, &encoded.head, &changes)
-                .await?;
-            self.saved_parts().insert(table.id, digests);
-            crate::metrics::record_checkpoint(written_bytes(&encoded.head, &changes));
-            Ok(revision)
-        }
-        .await;
-        if result.is_ok() {
-            metric.success();
-        } else {
-            crate::metrics::record_checkpoint_failure();
-        }
-        result
-    }
     pub async fn remove(&self, id: TableId, revision: i64) -> Result<()> {
-        self.state.remove(id, revision).await?;
-        self.saved_parts().remove(&id);
-        Ok(())
+        self.state.remove(id, revision).await
     }
     /// A live table and its revision, as the database holds it.
     #[cfg(test)]
@@ -253,36 +205,36 @@ impl Store {
             })
             .transpose()
     }
-    /// The saved live tables and their revisions. A pregame's cached game totals may be stale; its
-    /// actor refreshes them after startup, so that startup does not wait for statistics.
-    pub async fn load(&self) -> Result<Vec<(TableSnapshot, i64)>> {
-        let mut output = vec![];
-        let mut saved_parts = HashMap::new();
-        for stored in self.state.load().await? {
-            let table = crate::checkpoint::decode(&stored.payload, &stored.parts)?;
-            ensure!(table.id == stored.id, "Live-table identity mismatch");
-            saved_parts.insert(
-                stored.id,
-                stored
-                    .parts
-                    .iter()
-                    .map(|(key, value)| (key.clone(), crate::checkpoint::digest(value)))
-                    .collect(),
-            );
-            output.push((table, stored.revision));
-        }
-        *self.saved_parts() = saved_parts;
-        Ok(output)
+    /// The saved live tables. A pregame's cached game totals may be stale; its actor refreshes
+    /// them after startup, so that startup does not wait for statistics.
+    pub async fn load(&self) -> Result<Vec<(TableSnapshot, Saved)>> {
+        self.state
+            .load()
+            .await?
+            .into_iter()
+            .map(|stored| {
+                let table = crate::checkpoint::decode(&stored.payload, &stored.parts)?;
+                ensure!(table.id == stored.id, "Live-table identity mismatch");
+                Ok((table, Saved::of(stored.revision, &stored.parts)))
+            })
+            .collect()
+    }
+    /// Saves a table on its own. See `commit`.
+    pub async fn save(&self, table: &mut TableSnapshot, saved: &mut Saved) -> Result<()> {
+        self.commit(table, saved, Commit::default()).await?;
+        Ok(())
     }
     /// Saves a table and the work that goes with it in one transaction. New chat messages and a
     /// finished game are archived, a tag edit is applied, and a table that a split creates is
-    /// saved. A failure before the commit changes nothing.
+    /// saved. `saved` is what the database held for the table before, and what it holds after.
+    /// Returns what the database holds for the table in `Commit::spawn`. A failure before the
+    /// commit changes nothing.
     pub async fn commit(
         &self,
         table: &mut TableSnapshot,
-        revision: i64,
+        saved: &mut Saved,
         work: Commit<'_>,
-    ) -> Result<Committed> {
+    ) -> Result<Option<Saved>> {
         let mut metric = crate::metrics::STORAGE_METRICS.start("checkpoint");
         let result = async {
             let mut transaction = self.state.begin().await?;
@@ -304,27 +256,31 @@ impl Store {
                 )
                 .await?;
             }
-            let (changes, digests) = self.part_changes(table.id, &encoded);
             let mut written = 0;
-            let revision = if work.retire {
-                crate::state::remove_in(&mut transaction, table.id, revision).await?;
-                revision
+            let after = if work.retire {
+                crate::state::remove_in(&mut transaction, table.id, saved.revision).await?;
+                Saved {
+                    revision: saved.revision,
+                    parts: HashMap::new(),
+                }
             } else {
+                let (changes, parts) = crate::checkpoint::changes(&saved.parts, &encoded);
                 written += written_bytes(&encoded.head, &changes);
-                crate::state::save_in(
+                let revision = crate::state::save_in(
                     &mut transaction,
                     table.id,
-                    revision,
+                    saved.revision,
                     &encoded.head,
                     &changes,
                 )
-                .await?
+                .await?;
+                Saved { revision, parts }
             };
             let spawn = match work.spawn {
                 Some(spawn) => {
                     let encoded = crate::checkpoint::encode(spawn)?;
                     // The new table was only reserved, so it has no parts yet.
-                    let (changes, digests) = crate::checkpoint::changes(&HashMap::new(), &encoded);
+                    let (changes, parts) = crate::checkpoint::changes(&HashMap::new(), &encoded);
                     written += written_bytes(&encoded.head, &changes);
                     let revision = crate::state::save_in(
                         &mut transaction,
@@ -334,27 +290,14 @@ impl Store {
                         &changes,
                     )
                     .await?;
-                    Some((spawn.id, revision, digests))
+                    Some(Saved { revision, parts })
                 }
                 None => None,
             };
             self.state.commit(transaction).await?;
-            let mut saved = self.saved_parts();
-            if work.retire {
-                saved.remove(&table.id);
-            } else {
-                saved.insert(table.id, digests);
-            }
-            let spawn_revision = spawn.map(|(id, revision, digests)| {
-                saved.insert(id, digests);
-                revision
-            });
-            drop(saved);
+            *saved = after;
             crate::metrics::record_checkpoint(written);
-            Ok(Committed {
-                revision,
-                spawn_revision,
-            })
+            Ok(spawn)
         }
         .await;
         if result.is_ok() {
@@ -363,6 +306,38 @@ impl Store {
             crate::metrics::record_checkpoint_failure();
         }
         result
+    }
+    /// What the database holds for table `id` at `revision`, for tests that save tables by their
+    /// revision.
+    #[cfg(test)]
+    pub async fn saved_at(&self, id: TableId, revision: i64) -> Result<Saved> {
+        let parts = match self.state.get(id).await? {
+            Some(stored) if stored.revision == revision => stored.parts,
+            _ => vec![],
+        };
+        Ok(Saved::of(revision, &parts))
+    }
+    /// Saves a table that the database holds at `revision`. Returns its new revision.
+    #[cfg(test)]
+    pub async fn save_at(&self, table: &TableSnapshot, revision: i64) -> Result<i64> {
+        let mut saved = self.saved_at(table.id, revision).await?;
+        self.save(&mut table.clone(), &mut saved).await?;
+        Ok(saved.revision)
+    }
+    /// Commits a table that the database holds at `revision`.
+    #[cfg(test)]
+    pub async fn commit_at(
+        &self,
+        table: &mut TableSnapshot,
+        revision: i64,
+        work: Commit<'_>,
+    ) -> Result<Committed> {
+        let mut saved = self.saved_at(table.id, revision).await?;
+        let spawn = self.commit(table, &mut saved, work).await?;
+        Ok(Committed {
+            revision: saved.revision,
+            spawn_revision: spawn.map(|spawn| spawn.revision),
+        })
     }
     pub async fn seed_count(&self, seed: &str) -> Result<i64> {
         Ok(sqlx::query_scalar!(
@@ -432,6 +407,29 @@ pub struct Commit<'a> {
     pub spawn: Option<&'a TableSnapshot>,
 }
 
+/// What the database holds for a live table: its revision, and the digests of its parts, which
+/// tell a save which parts changed. The table's actor keeps it.
+#[derive(Clone, Debug, Default)]
+pub struct Saved {
+    pub revision: i64,
+    parts: HashMap<String, PartDigest>,
+}
+
+impl Saved {
+    /// What the database holds for a table at `revision` with these parts.
+    fn of(revision: i64, parts: &[(String, String)]) -> Self {
+        Self {
+            revision,
+            parts: parts
+                .iter()
+                .map(|(key, value)| (key.clone(), crate::checkpoint::digest(value)))
+                .collect(),
+        }
+    }
+}
+
+/// The revisions after a commit, for tests.
+#[cfg(test)]
 pub struct Committed {
     /// The table's new revision, or its last one if it was removed.
     pub revision: i64,
@@ -763,7 +761,7 @@ mod tests {
                 stats: zero_stats(),
             });
             players[1].stats.num_games = 572;
-            let original_revision = store.save(&table, 0).await?;
+            let original_revision = store.save_at(&table, 0).await?;
             let mut replay = pregame(store.allocate_table().await?);
             terminal(&mut replay)?;
             replay.game_mut().unwrap().players[0].stats.num_games = 727;
@@ -780,7 +778,7 @@ mod tests {
                     restart_declined: vec![],
                 },
             };
-            let replay_revision = store.save(&replay, 0).await?;
+            let replay_revision = store.save_at(&replay, 0).await?;
             // Startup does not wait for statistics, even while their table is locked.
             let mut blocked_archive = store.primary.begin().await?;
             #[expect(clippy::disallowed_methods, reason = "test SQL that sets up database state or failures directly")]
@@ -850,7 +848,7 @@ mod tests {
             state
                 .save(table.id, 0, &inline, &PartChanges::default())
                 .await?;
-            let (loaded, revision) = store
+            let (loaded, saved) = store
                 .load()
                 .await?
                 .into_iter()
@@ -873,7 +871,7 @@ mod tests {
                     .collect::<BTreeMap<_, _>>(),
                 )
             };
-            let revision = store.save(&table, revision).await?;
+            let revision = store.save_at(&table, saved.revision).await?;
             let before = versions().await?;
             ensure!(
                 before.len() == crate::checkpoint::encode(&table)?.parts.len(),
@@ -886,7 +884,7 @@ mod tests {
             );
 
             table.game_mut().unwrap().notes[1][0] = "changed".into();
-            store.save(&table, revision).await?;
+            store.save_at(&table, revision).await?;
             let after = versions().await?;
             let changed = before
                 .iter()
@@ -1072,8 +1070,8 @@ mod tests {
         let result = async {
             let id = store.allocate_table().await?;
             let table = pregame(id);
-            ensure!(store.save(&table, 0).await? == 1, "First revision");
-            let (a, b) = tokio::join!(store.save(&table, 1), store.save(&table, 1));
+            ensure!(store.save_at(&table, 0).await? == 1, "First revision");
+            let (a, b) = tokio::join!(store.save_at(&table, 1), store.save_at(&table, 1));
             ensure!(
                 a.is_ok() != b.is_ok(),
                 "Two writers committed the same revision"
@@ -1082,7 +1080,7 @@ mod tests {
             terminal(&mut finished)?;
             finished.game_mut().unwrap().idle_remaining = 0;
             ensure!(
-                store.save(&finished, 2).await.is_err(),
+                store.save_at(&finished, 2).await.is_err(),
                 "A finished live game was saved"
             );
             finished.convert_to_replay()?;
@@ -1103,7 +1101,7 @@ mod tests {
                 .await?;
             ensure!(
                 store
-                    .commit(&mut finished.clone(), 2, archive())
+                    .commit_at(&mut finished.clone(), 2, archive())
                     .await
                     .is_err(),
                 "A broken archive committed"
@@ -1114,7 +1112,7 @@ mod tests {
             );
             let restored = store.load().await?;
             ensure!(
-                restored[0].1 == 2 && matches!(restored[0].0.phase, Phase::Pregame { .. }),
+                restored[0].1.revision == 2 && matches!(restored[0].0.phase, Phase::Pregame { .. }),
                 "A failed commit changed the table"
             );
             #[expect(
@@ -1125,7 +1123,7 @@ mod tests {
                 .execute(&pool)
                 .await?;
 
-            let committed = store.commit(&mut finished.clone(), 2, archive()).await?;
+            let committed = store.commit_at(&mut finished.clone(), 2, archive()).await?;
             ensure!(committed.revision == 3);
             let restored = store.load().await?;
             ensure!(
@@ -1163,7 +1161,7 @@ mod tests {
             let mut replay_table = restored[0].0.clone();
             ensure!(
                 store
-                    .commit(&mut replay_table.clone(), 3, tagging())
+                    .commit_at(&mut replay_table.clone(), 3, tagging())
                     .await
                     .is_err(),
                 "A rejected tag committed"
@@ -1175,7 +1173,7 @@ mod tests {
             sqlx::query("ALTER TABLE game_tags DROP CONSTRAINT reject_test")
                 .execute(&pool)
                 .await?;
-            store.commit(&mut replay_table, 3, tagging()).await?;
+            store.commit_at(&mut replay_table, 3, tagging()).await?;
             ensure!(
                 replay_table
                     .game()
@@ -1204,7 +1202,7 @@ mod tests {
         let result = async {
             let id = store.allocate_table().await?;
             let mut table = pregame(id);
-            store.save(&table, 0).await?;
+            store.save_at(&table, 0).await?;
             // The schema starts the chat log with one message.
             let initial = count(&pool, "chat_log").await?;
             table.chat = vec![chat(id, "first")?, chat(id, "second")?];
@@ -1220,7 +1218,7 @@ mod tests {
             .await?;
             ensure!(
                 store
-                    .commit(&mut table.clone(), 1, Commit::default())
+                    .commit_at(&mut table.clone(), 1, Commit::default())
                     .await
                     .is_err(),
                 "A rejected message committed"
@@ -1238,7 +1236,7 @@ mod tests {
                 .await?;
 
             let revision = store
-                .commit(&mut table, 1, Commit::default())
+                .commit_at(&mut table, 1, Commit::default())
                 .await?
                 .revision;
             ensure!(
@@ -1247,7 +1245,7 @@ mod tests {
                 "Archived messages lack their identities or stored timestamps"
             );
             store
-                .commit(&mut table, revision, Commit::default())
+                .commit_at(&mut table, revision, Commit::default())
                 .await?;
             ensure!(
                 count(&pool, "chat_log").await? == initial + 2,
@@ -1282,7 +1280,7 @@ mod tests {
         let result = async {
             let source_id = store.allocate_table().await?;
             let source = pregame(source_id);
-            store.save(&source, 0).await?;
+            store.save_at(&source, 0).await?;
             let mut destination = pregame(store.allocate_table().await?);
             destination.owner = UserId(2);
             if let Phase::Pregame { players, .. } = &mut destination.phase {
@@ -1299,7 +1297,7 @@ mod tests {
             };
             ensure!(
                 store
-                    .commit(&mut source.clone(), 5, split(true))
+                    .commit_at(&mut source.clone(), 5, split(true))
                     .await
                     .is_err(),
                 "A stale split committed"
@@ -1309,7 +1307,7 @@ mod tests {
                 restored.len() == 1 && restored[0].0.id == source_id,
                 "A failed split changed the tables"
             );
-            let committed = store.commit(&mut source.clone(), 1, split(true)).await?;
+            let committed = store.commit_at(&mut source.clone(), 1, split(true)).await?;
             ensure!(committed.spawn_revision == Some(1));
             let restored = store.load().await?;
             ensure!(
@@ -1333,14 +1331,14 @@ mod tests {
         let store = Store::fixture(pool.clone(), state);
         let id = store.allocate_table().await?;
         let mut table = pregame(id);
-        store.save(&table, 0).await?;
+        store.save_at(&table, 0).await?;
         terminal(&mut table)?;
         table.convert_to_replay()?;
         let archive = Commit {
             archive: true,
             ..Commit::default()
         };
-        store.commit(&mut table, 1, archive).await?;
+        store.commit_at(&mut table, 1, archive).await?;
         // Hold the game so that the old owner's tag edit waits inside its commit.
         let mut blocker = pool.begin().await?;
         sqlx::query!("SELECT id FROM games WHERE id=1 FOR UPDATE")
@@ -1355,7 +1353,7 @@ mod tests {
                 operation: TagOperation::Tag,
                 tag: "old-owner".into(),
             };
-            old.commit(
+            old.commit_at(
                 &mut tagged,
                 2,
                 Commit {
@@ -1403,7 +1401,7 @@ mod tests {
         let current = Store::fixture(pool.clone(), new_owner.await??);
         let restored = current.load().await?;
         ensure!(
-            restored[0].1 == committed.revision
+            restored[0].1.revision == committed.revision
                 && restored[0]
                     .0
                     .game()
@@ -1415,7 +1413,7 @@ mod tests {
         );
         ensure!(
             store
-                .save(&restored[0].0, committed.revision)
+                .save_at(&restored[0].0, committed.revision)
                 .await
                 .is_err(),
             "The old owner wrote after the new owner started"

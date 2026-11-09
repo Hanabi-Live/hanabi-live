@@ -307,12 +307,13 @@ async fn joining_or_reattending_an_old_review_does_not_immediately_close_it() ->
         let finished = table.game().unwrap().finished;
         let duration = table.game().unwrap().duration;
         let clocks = table.game().unwrap().clocks.clone();
-        let revision = store.save(&table, 0).await?;
+        let revision = store.save_at(&table, 0).await?;
         let (hub, _notifications) = mpsc::channel(16);
         let capacity = Arc::new(Semaphore::new(1));
+        let saved = store.saved_at(table.id, revision).await?;
         let mut actor = TableActor::new(
             table,
-            revision,
+            saved,
             store.clone(),
             hub,
             capacity.try_acquire_owned()?,
@@ -361,12 +362,13 @@ async fn idle_reviews_expire_without_someone_joining() -> Result<()> {
     let id = store.allocate_table().await?;
     let mut table = review(id, EndCondition::TerminatedByPlayer)?;
     table.game_mut().unwrap().idle_remaining = 1000;
-    let revision = store.save(&table, 0).await?;
+    let revision = store.save_at(&table, 0).await?;
     let (hub, mut notifications) = mpsc::channel(16);
     let capacity = Arc::new(Semaphore::new(1));
+    let saved = store.saved_at(table.id, revision).await?;
     let mut actor = TableActor::new(
         table,
-        revision,
+        saved,
         store.clone(),
         hub,
         capacity.try_acquire_owned()?,
@@ -405,12 +407,13 @@ async fn completion_starts_a_fresh_review_without_reviving_idle_ended_games() ->
         table.extra.no_write_to_database = true;
         table.game_mut().unwrap().idle_remaining = 0;
         // The game ended in memory; its table still stores the state before.
-        let revision = store.save(&pregame(id), 0).await?;
+        let revision = store.save_at(&pregame(id), 0).await?;
         let (hub, _notifications) = mpsc::channel(16);
         let capacity = Arc::new(Semaphore::new(1));
+        let saved = store.saved_at(table.id, revision).await?;
         let mut actor = TableActor::new(
             table,
-            revision,
+            saved,
             store.clone(),
             hub,
             capacity.try_acquire_owned()?,
@@ -480,9 +483,10 @@ async fn live_tables_wake_at_their_next_deadline() -> Result<()> {
     };
     let (hub, _notifications) = mpsc::channel(64);
     let capacity = Arc::new(Semaphore::new(1));
+    let saved = store.saved_at(table.id, 0).await?;
     let mut actor = TableActor::new(
         table,
-        0,
+        saved,
         store.clone(),
         hub,
         capacity.try_acquire_owned()?,
@@ -527,12 +531,13 @@ async fn idle_live_games_warn_once_and_players_can_keep_them_going() -> Result<(
     table.phase = Phase::Live {
         snapshot: Box::new(snapshot),
     };
-    let revision = store.save(&table, 0).await?;
+    let revision = store.save_at(&table, 0).await?;
     let (hub, mut notifications) = mpsc::channel(64);
     let capacity = Arc::new(Semaphore::new(1));
+    let saved = store.saved_at(table.id, revision).await?;
     let mut actor = TableActor::new(
         table,
-        revision,
+        saved,
         store.clone(),
         hub,
         capacity.try_acquire_owned()?,
@@ -601,12 +606,13 @@ async fn spectating_a_live_game_does_not_refresh_its_idle_deadline() -> Result<(
     table.phase = Phase::Live {
         snapshot: Box::new(snapshot),
     };
-    let revision = store.save(&table, 0).await?;
+    let revision = store.save_at(&table, 0).await?;
     let (hub, _notifications) = mpsc::channel(16);
     let capacity = Arc::new(Semaphore::new(1));
+    let saved = store.saved_at(table.id, revision).await?;
     let mut actor = TableActor::new(
         table,
-        revision,
+        saved,
         store.clone(),
         hub,
         capacity.try_acquire_owned()?,
@@ -659,12 +665,13 @@ async fn abandoned_pregames_expire_durably_even_with_a_password_or_spectator() -
         let id = store.allocate_table().await?;
         let mut table = pregame(id);
         table.password_hash = protected.then(|| "unused-test-password-hash".into());
-        let revision = store.save(&table, 0).await?;
+        let revision = store.save_at(&table, 0).await?;
         let capacity = Arc::new(Semaphore::new(1));
         let (hub, mut notifications) = mpsc::channel(32);
+        let saved = store.saved_at(table.id, revision).await?;
         let mut actor = TableActor::new(
             table,
-            revision,
+            saved,
             store.clone(),
             hub,
             capacity.clone().try_acquire_owned()?,
@@ -735,12 +742,13 @@ async fn restored_pregames_allow_reconnects_and_keep_connected_afk_players() -> 
     let id = store.allocate_table().await?;
     let mut table = pregame(id);
     table.created = Utc::now() - ChronoDuration::days(1);
-    let revision = store.save(&table, 0).await?;
+    let revision = store.save_at(&table, 0).await?;
     let (hub, _notifications) = mpsc::channel(32);
     let capacity = Arc::new(Semaphore::new(1));
+    let saved = store.saved_at(table.id, revision).await?;
     let mut actor = TableActor::new(
         table,
-        revision,
+        saved,
         store.clone(),
         hub,
         capacity.try_acquire_owned()?,
@@ -791,12 +799,13 @@ async fn abandoned_pregame_cleanup_does_not_override_frozen_or_newer_state() -> 
     };
     let id = store.allocate_table().await?;
     let table = pregame(id);
-    let revision = store.save(&table, 0).await?;
+    let revision = store.save_at(&table, 0).await?;
     let (hub, mut notifications) = mpsc::channel(32);
     let capacity = Arc::new(Semaphore::new(1));
+    let saved = store.saved_at(table.id, revision).await?;
     let mut actor = TableActor::new(
         table.clone(),
-        revision,
+        saved,
         store.clone(),
         hub,
         capacity.try_acquire_owned()?,
@@ -810,7 +819,7 @@ async fn abandoned_pregame_cleanup_does_not_override_frozen_or_newer_state() -> 
         "Frozen pregame was cleaned up"
     );
     actor.frozen = false;
-    let newer = store.save(&table, revision).await?;
+    let newer = store.save_at(&table, revision).await?;
     ensure!(
         actor.cleanup(now + PREGAME_RECONNECT_GRACE).await.is_err(),
         "Cleanup overwrote a newer checkpoint"
@@ -849,7 +858,7 @@ async fn canceled_reservations_and_uninstalled_tables_release_capacity_after_dur
             0,
         );
         if persist {
-            allocation.revision = store.save(&pregame(id), 0).await?;
+            allocation.revision = store.save_at(&pregame(id), 0).await?;
         }
         ensure!(
             capacity.available_permits() == 0,

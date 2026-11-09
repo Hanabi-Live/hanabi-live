@@ -4,7 +4,7 @@ use crate::{
     model::TableSnapshot,
     operations::Operation,
     server_info::ServerInfo,
-    store::Store,
+    store::{Saved, Store},
     transport::{Outgoing, Session},
 };
 #[cfg(test)]
@@ -228,7 +228,7 @@ pub enum HubCommand {
     TableFailed(TableId),
     Install {
         table: Box<TableSnapshot>,
-        revision: i64,
+        saved: Saved,
         allocation: Allocation,
         session: Arc<Session>,
         warnings: Vec<String>,
@@ -236,7 +236,7 @@ pub enum HubCommand {
     },
     Spawn {
         table: Box<TableSnapshot>,
-        revision: i64,
+        saved: Saved,
         allocation: Allocation,
         attendees: Vec<(Arc<Session>, bool, Option<usize>)>,
         chat_read: HashMap<UserId, usize>,
@@ -327,7 +327,8 @@ struct Attendance {
 }
 struct TableActor {
     table: TableSnapshot,
-    revision: i64,
+    /// What the database holds for the table.
+    saved: Saved,
     frozen: bool,
     retired: bool,
     attendees: HashMap<UserId, Attendance>,

@@ -10,7 +10,7 @@ use super::{
 use crate::errors::OrReject;
 use crate::errors::{CommandError, CommandResult};
 use crate::routing::{Route, route};
-use crate::store::{Commit, Committed};
+use crate::store::{Commit, Saved};
 use crate::{
     model::{
         CLOCK_UNITS_PER_SECOND, IDLE_TIMEOUT_MS, IDLE_WARNING_MS, Phase, Snapshot, TableChat,
@@ -84,7 +84,7 @@ const MAINTENANCE_CLOCK_ALLOWANCE_SECONDS: i64 = 20;
 impl TableActor {
     pub(super) fn new(
         table: TableSnapshot,
-        revision: i64,
+        saved: Saved,
         store: Store,
         hub: mpsc::Sender<HubCommand>,
         permit: OwnedSemaphorePermit,
@@ -92,7 +92,7 @@ impl TableActor {
     ) -> Self {
         Self {
             table,
-            revision,
+            saved,
             frozen: false,
             retired: false,
             attendees: HashMap::new(),
@@ -460,12 +460,12 @@ impl TableActor {
     }
     /// Saves a change to the table, with the work that goes with it, in one transaction. A finished
     /// game becomes a replay and is archived in the same commit. When saving fails, the table keeps
-    /// its earlier state.
+    /// its earlier state. Returns what the database holds for the table in `Commit::spawn`.
     pub(super) async fn persist_with(
         &mut self,
         mut next: TableSnapshot,
         mut work: Commit<'_>,
-    ) -> CommandResult<Committed> {
+    ) -> CommandResult<Option<Saved>> {
         self.store.check_state()?;
         ensure_or_reject!(!self.frozen, "Table is frozen until recovery");
         if next.visible
@@ -510,11 +510,10 @@ impl TableActor {
         }
         work.archive = finished && !next.extra.no_write_to_database;
         let archived = work.archive;
-        let committed = self.store.commit(&mut next, self.revision, work).await?;
+        let spawn = self.store.commit(&mut next, &mut self.saved, work).await?;
         if archived && let Some(s) = next.game() {
             self.store.refresh_background(s.clone());
         }
-        self.revision = committed.revision;
         let became_replay = matches!(self.table.phase, Phase::Live { .. })
             && matches!(next.phase, Phase::Replay { .. });
         self.table = next;
@@ -528,7 +527,7 @@ impl TableActor {
             }
         }
         self.anchor = Instant::now();
-        Ok(committed)
+        Ok(spawn)
     }
     pub(super) async fn initialize(
         &mut self,
@@ -1073,7 +1072,7 @@ impl TableActor {
     }
     pub(super) async fn retire(&mut self) -> CommandResult<()> {
         ensure_internal!(!self.frozen, "Frozen table cannot be removed");
-        if let Err(e) = self.store.remove(self.table.id, self.revision).await {
+        if let Err(e) = self.store.remove(self.table.id, self.saved.revision).await {
             self.frozen = true;
             return Err(e.into());
         }

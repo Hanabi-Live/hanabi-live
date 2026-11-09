@@ -77,7 +77,7 @@ impl Hub {
             info,
             integrations,
         };
-        for (table, revision) in restored {
+        for (table, saved) in restored {
             let permit = hub
                 .capacity
                 .clone()
@@ -85,7 +85,7 @@ impl Hub {
                 .context("Recovery table capacity exhausted")?;
             let actor = TableActor::new(
                 table,
-                revision,
+                saved,
                 hub.store.clone(),
                 sender.clone(),
                 permit,
@@ -383,14 +383,14 @@ impl Hub {
         self.tasks.spawn(async move {
             let prepared = prepare_table(&store, &s, creation).await;
             match prepared {
-                Ok((table, revision, warnings)) => {
+                Ok((table, saved, warnings)) => {
                     let id = table.id;
                     let mut allocation =
-                        Allocation::new(id, permit, store.clone(), tasks, revision);
+                        Allocation::new(id, permit, store.clone(), tasks, saved.revision);
                     allocation.reservation = reservation;
                     let installed = HubCommand::Install {
                         table: Box::new(table),
-                        revision,
+                        saved,
                         allocation,
                         session: s,
                         warnings,
@@ -766,7 +766,7 @@ impl Hub {
                 }
                 HubCommand::Install {
                     table,
-                    revision,
+                    saved,
                     allocation,
                     session,
                     warnings,
@@ -792,7 +792,7 @@ impl Hub {
                     }
                     let actor = TableActor::new(
                         *table,
-                        revision,
+                        saved,
                         self.store.clone(),
                         self.sender.clone(),
                         allocation.into_permit(),
@@ -812,7 +812,7 @@ impl Hub {
                 }
                 HubCommand::Spawn {
                     table,
-                    revision,
+                    saved,
                     allocation,
                     attendees,
                     chat_read,
@@ -826,7 +826,7 @@ impl Hub {
                     }
                     let mut actor = TableActor::new(
                         *table,
-                        revision,
+                        saved,
                         self.store.clone(),
                         self.sender.clone(),
                         allocation.into_permit(),

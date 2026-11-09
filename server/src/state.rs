@@ -274,6 +274,7 @@ impl LiveState {
         self.check()
     }
 
+    #[cfg(test)]
     pub async fn save(
         &self,
         id: TableId,

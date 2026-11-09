@@ -313,7 +313,7 @@ async fn player_shadow_from_saved_games_is_cleared_on_reattend() -> Result<()> {
         table
             .shadows
             .insert(UserId(2), Some(hanabi_engine::int(alice)));
-        h.store.save(&table, revision).await?;
+        h.store.save_at(&table, revision).await?;
         h.tasks = TaskTracker::new();
         h.hub = Hub::start(
             h.store.clone(),
@@ -621,12 +621,13 @@ async fn abandoned_shared_reviews_expire_without_a_new_visitor() -> Result<()> {
         for recovered in [false, true] {
             let id = h.store.allocate_table().await?;
             let table = tests::review(id, EndCondition::TerminatedByPlayer)?;
-            let revision = h.store.save(&table, 0).await?;
+            let revision = h.store.save_at(&table, 0).await?;
             let (hub, mut notifications) = mpsc::channel(32);
             let capacity = Arc::new(Semaphore::new(1));
+            let saved = h.store.saved_at(table.id, revision).await?;
             let mut actor = TableActor::new(
                 table,
-                revision,
+                saved,
                 h.store.clone(),
                 hub,
                 capacity.try_acquire_owned()?,
@@ -676,12 +677,13 @@ async fn rejoining_a_shared_review_cancels_its_empty_room_deadline() -> Result<(
         let id = h.store.allocate_table().await?;
         let mut table = tests::review(id, EndCondition::TerminatedByPlayer)?;
         table.game_mut().unwrap().idle_remaining = 1;
-        let revision = h.store.save(&table, 0).await?;
+        let revision = h.store.save_at(&table, 0).await?;
         let (hub, _notifications) = mpsc::channel(32);
         let capacity = Arc::new(Semaphore::new(1));
+        let saved = h.store.saved_at(table.id, revision).await?;
         let mut actor = TableActor::new(
             table,
-            revision,
+            saved,
             h.store.clone(),
             hub,
             capacity.try_acquire_owned()?,
@@ -718,12 +720,13 @@ async fn shared_review_chat_refreshes_idle_and_inactive_reviews_expire() -> Resu
     let outcome = Box::pin(async {
         let id = h.store.allocate_table().await?;
         let table = tests::review(id, EndCondition::TerminatedByPlayer)?;
-        let revision = h.store.save(&table, 0).await?;
+        let revision = h.store.save_at(&table, 0).await?;
         let (hub, _notifications) = mpsc::channel(32);
         let capacity = Arc::new(Semaphore::new(1));
+        let saved = h.store.saved_at(table.id, revision).await?;
         let mut actor = TableActor::new(
             table,
-            revision,
+            saved,
             h.store.clone(),
             hub,
             capacity.try_acquire_owned()?,
@@ -774,12 +777,13 @@ async fn shared_review_hypothetical_actions_refresh_idle() -> Result<()> {
     let outcome = async {
         let id = h.store.allocate_table().await?;
         let table = tests::review(id, EndCondition::TerminatedByPlayer)?;
-        let revision = h.store.save(&table, 0).await?;
+        let revision = h.store.save_at(&table, 0).await?;
         let (hub, _notifications) = mpsc::channel(32);
         let capacity = Arc::new(Semaphore::new(1));
+        let saved = h.store.saved_at(table.id, revision).await?;
         let mut actor = TableActor::new(
             table,
-            revision,
+            saved,
             h.store.clone(),
             hub,
             capacity.try_acquire_owned()?,
@@ -1022,7 +1026,7 @@ async fn shared_replays_of_older_games_start_when_their_table_is_created() -> Re
         let game = table.game_mut().context("Missing replay game")?;
         game.started = created - chrono::TimeDelta::days(2);
         game.finished = Some(created - chrono::TimeDelta::days(1));
-        h.store.save(&table, revision).await?;
+        h.store.save_at(&table, revision).await?;
         h.tasks = TaskTracker::new();
         h.hub = Hub::start(
             h.store.clone(),
@@ -1287,12 +1291,13 @@ async fn expired_pregame_owner_is_removed_but_remaining_players_and_live_games_s
             *countdown = Some(Utc::now() + ChronoDuration::minutes(5));
             *automatic_start = Some(3);
         }
-        let revision = h.store.save(&table, 0).await?;
+        let revision = h.store.save_at(&table, 0).await?;
         let capacity = Arc::new(Semaphore::new(1));
         let (hub, mut notifications) = mpsc::channel(64);
+        let saved = h.store.saved_at(table.id, revision).await?;
         let mut actor = TableActor::new(
             table,
-            revision,
+            saved,
             h.store.clone(),
             hub,
             capacity.try_acquire_owned()?,

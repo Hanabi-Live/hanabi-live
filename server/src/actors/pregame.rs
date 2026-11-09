@@ -456,7 +456,7 @@ impl TableActor {
             .await?;
         allocation.reservation = Some(received.await??);
         // The source and its new table change in one commit.
-        let committed = self
+        let destination_saved = self
             .persist_with(
                 source,
                 crate::store::Commit {
@@ -465,11 +465,9 @@ impl TableActor {
                     ..crate::store::Commit::default()
                 },
             )
-            .await?;
-        let destination_revision = committed
-            .spawn_revision
+            .await?
             .context("Missing the split table's revision")?;
-        allocation.revision = destination_revision;
+        allocation.revision = destination_saved.revision;
         allocation.preserve();
         let mut effects = self.effects();
         for (session, _, _) in &moving {
@@ -496,7 +494,7 @@ impl TableActor {
         self.hub
             .send(HubCommand::Spawn {
                 table: Box::new(destination),
-                revision: destination_revision,
+                saved: destination_saved,
                 allocation,
                 chat_read: moving
                     .iter()
