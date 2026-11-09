@@ -141,33 +141,22 @@ pub(crate) fn notice_publication(recipient: &str, message: &str, room: &str) -> 
     ))
 }
 
-/// Whether the lobby handles a command: a lobby command, or chat, which the lobby checks before a
-/// table's chat continues to its table.
-pub fn handles(message: &ClientMessage) -> bool {
-    matches!(message, ClientMessage::Chat(_)) || route(message) == Route::Lobby
-}
-
-pub async fn dispatch_chat(
-    pool: &PgPool,
-    secret: &str,
-    caller: &Identity,
-    message: &str,
-    room: &str,
-    rendered: Option<&str>,
-) -> Result<Option<Vec<Effect>>> {
-    chat::lobby_chat(pool, secret, caller, message, room, rendered).await
-}
-
+/// Runs a command that `route` sends to the lobby: a `Route::Lobby` command, or a table's chat.
+/// `online` lists the online users, which only a private message needs. `rendered` is a lobby
+/// message as Discord shows it. Returns `None` for a table's chat that continues to its table.
 pub async fn dispatch(
     pool: &PgPool,
     secret: &str,
     caller: &Identity,
     online: &[OnlineUser],
+    rendered: Option<&str>,
     message: ClientMessage,
 ) -> Result<Option<Vec<Effect>>> {
-    if !handles(&message) {
-        return Ok(None);
-    }
+    ensure!(
+        matches!(route(&message), Route::Lobby | Route::TableChat(_)),
+        "The lobby does not run {}",
+        message.name()
+    );
     ensure!(caller.user > UserId(0), "Invalid caller");
     let command = message.name();
     let effects = match message {
@@ -198,7 +187,8 @@ pub async fn dispatch(
             ]
         }
         ClientMessage::Chat(request) => {
-            return chat::lobby_chat(pool, secret, caller, &request.msg, &request.room, None).await;
+            return chat::lobby_chat(pool, secret, caller, &request.msg, &request.room, rendered)
+                .await;
         }
 
         ClientMessage::ChatPM(request) => {
@@ -292,7 +282,7 @@ pub async fn dispatch(
                 &request.room,
             )]
         }
-        _ => unreachable!("handles() admits only lobby commands"),
+        _ => unreachable!("the route check admits only lobby commands"),
     };
     Ok(Some(effects))
 }

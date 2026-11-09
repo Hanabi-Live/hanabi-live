@@ -37,7 +37,9 @@ async fn uptime_is_private_before_history_or_discord_publication_postgres() {
         .unwrap();
     let history_before = lobby_history(&db.pool, 100).await.unwrap();
     for room in ["lobby", "table42"] {
-        let effects = dispatch_chat(&db.pool, "secret", &who, "/UpTiMe", room, None)
+        let message =
+            crate::actors::client_message("chat", &json!({"msg":"/UpTiMe","room":room})).unwrap();
+        let effects = dispatch(&db.pool, "secret", &who, &[], None, message)
             .await
             .unwrap()
             .unwrap();
@@ -83,6 +85,7 @@ async fn run(
         "synthetic-lobby-secret",
         caller,
         online,
+        None,
         crate::actors::client_message(command, &data).unwrap(),
     )
     .await
@@ -386,6 +389,7 @@ async fn lobby_private_messages_and_command_privacy_postgres() {
             "synthetic-lobby-secret",
             &who,
             &[],
+            None,
             crate::actors::client_message("chat", &json!({"msg":"not lobby","room":"table42"}))
                 .unwrap()
         )
@@ -399,6 +403,7 @@ async fn lobby_private_messages_and_command_privacy_postgres() {
             "synthetic-lobby-secret",
             &who,
             &[],
+            None,
             crate::actors::client_message("chat", &json!({"msg":"/findvariant","room":"table42"}))
                 .unwrap()
         )

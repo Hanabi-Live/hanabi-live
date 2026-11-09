@@ -1371,6 +1371,7 @@ async fn blocked_players_cannot_join_or_spectate_each_others_tables() -> Result<
                 "secret",
                 &caller,
                 &[],
+                None,
                 client_message(command, &json!({"name":name,"room":"lobby"}))?,
             )
             .await?

@@ -961,7 +961,7 @@ impl TableActor {
             }
         };
         ensure_internal!(
-            matches!(route(&message), Route::Table(_)),
+            matches!(route(&message), Route::Table(_) | Route::TableChat(_)),
             "Unsupported table command: {}",
             message.name()
         );

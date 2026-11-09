@@ -7,9 +7,11 @@ use hanabi_protocol::TableId;
 pub enum Route {
     /// The connection reloads its own lobby statistics.
     Connection,
-    /// The lobby runs the command against the database. Chat always goes to the lobby first, which
-    /// checks it and runs chat commands; a table's chat then continues to `Table`.
+    /// The lobby runs the command against the database. This includes the lobby's chat.
     Lobby,
+    /// A table's chat. The lobby checks it and runs chat commands first, then the rest continues to
+    /// the table with this ID.
+    TableChat(TableId),
     /// The hub runs the command: a sync, or the creation of a table or replay.
     Hub,
     /// The table with this ID runs the command.
@@ -42,7 +44,7 @@ pub fn route(message: &ClientMessage) -> Route {
             .strip_prefix("table")
             .and_then(|id| id.parse().ok().map(TableId))
         {
-            Some(id) => return Route::Table(id),
+            Some(id) => return Route::TableChat(id),
             None => return Route::Lobby,
         },
         M::ChatRead(r)

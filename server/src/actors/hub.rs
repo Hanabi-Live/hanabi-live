@@ -836,7 +836,7 @@ impl Hub {
                 }
             }
             message => match route(&message) {
-                Route::Table(table) => {
+                Route::Table(table) | Route::TableChat(table) => {
                     self.route(session, table, Command::Client(Box::new(message)), reply);
                 }
                 other => {

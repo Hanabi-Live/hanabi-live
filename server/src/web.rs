@@ -16,6 +16,7 @@ use crate::{
     lifecycle::{Lifecycle, Refusal},
     lobby::{self, Effect, Publication},
     public_http::{self, PublicConfig},
+    routing::Route,
     store::Store,
     transport::{Identity, Inbound, InboundBudget, Outbound, Outgoing, Session, frame},
 };
@@ -1038,61 +1039,53 @@ async fn lobby_command(
         Vec::new()
     };
     let caller = session.identity.clone();
-    let effects = match message {
-        ClientMessage::Chat(request) => {
-            let text = request.msg.as_str();
-            let room = request.room.as_str();
-            let mut rendered = None;
-            if room == "lobby"
-                && let Ok(normalized) = accounts::normalize_chat(text)
-                && matches!(
-                    lobby::classify_chat(&normalized),
-                    lobby::Classification::Text | lobby::Classification::Public
-                )
-                && let Some(integrations) = app.integrations.get()
-            {
-                rendered = Some(integrations.render(&normalized).await);
-            }
-            let effects = lobby::dispatch_chat(
-                &app.store.primary,
-                &app.secret,
-                &caller,
-                text,
-                room,
-                rendered.as_deref(),
-            )
-            .await?;
-            let Some(effects) = effects else {
-                return Ok(Some(ClientMessage::Chat(request)));
-            };
-            effects
+    let rendered = match &message {
+        ClientMessage::Chat(request) if request.room == "lobby" => {
+            discord_rendering(app, &request.msg).await
         }
-        message => {
-            let history = history_command(&message);
-            let work = lobby::dispatch(
-                if history {
-                    &app.store.lobby_reads
-                } else {
-                    &app.store.primary
-                },
-                &app.secret,
-                &caller,
-                &online,
-                message,
-            );
-            let effects = if history {
-                tokio::select! {
-                    () = app.lifecycle.read_shutdown.cancelled() => return Ok(None),
-                    result = work => result.context(crate::errors::LobbyRead)?,
-                }
-            } else {
-                work.await?
-            };
-            effects.context("A lobby command had no lobby handler")?
+        _ => None,
+    };
+    let history = history_command(&message);
+    let pool = if history {
+        &app.store.lobby_reads
+    } else {
+        &app.store.primary
+    };
+    let chat = matches!(message, ClientMessage::Chat(_)).then(|| message.clone());
+    let work = lobby::dispatch(
+        pool,
+        &app.secret,
+        &caller,
+        &online,
+        rendered.as_deref(),
+        message,
+    );
+    let effects = if history {
+        tokio::select! {
+            () = app.lifecycle.read_shutdown.cancelled() => return Ok(None),
+            result = work => result.context(crate::errors::LobbyRead)?,
         }
+    } else {
+        work.await?
+    };
+    let Some(effects) = effects else {
+        // A table's chat continues to its table.
+        return Ok(chat);
     };
     publish(app, session, effects).await?;
     Ok(None)
+}
+
+/// A lobby chat message as Discord shows it, for one that Discord mirrors.
+async fn discord_rendering(app: &App, text: &str) -> Option<String> {
+    let normalized = accounts::normalize_chat(text).ok()?;
+    if !matches!(
+        lobby::classify_chat(&normalized),
+        lobby::Classification::Text | lobby::Classification::Public
+    ) {
+        return None;
+    }
+    Some(app.integrations.get()?.render(&normalized).await)
 }
 
 fn history_command(message: &ClientMessage) -> bool {
@@ -1151,7 +1144,8 @@ async fn dispatch(
         }
     };
     let mut measurement = crate::metrics::COMMAND_METRICS.start(message.name());
-    if crate::routing::route(&message) == crate::routing::Route::Connection {
+    let route = crate::routing::route(&message);
+    if route == Route::Connection {
         session.emit(&frame(
             hanabi_protocol::server::LOBBY_STATUS,
             hanabi_protocol::LobbyStatus::Loading { total_games: () },
@@ -1160,7 +1154,7 @@ async fn dispatch(
         measurement.success();
         return Ok(());
     }
-    let message = if lobby::handles(&message) {
+    let message = if matches!(route, Route::Lobby | Route::TableChat(_)) {
         let answer = request(user, |reply| user::UserCommand::Lobby {
             session: session.clone(),
             message: Box::new(message),
