@@ -284,13 +284,15 @@ This page lists the changes to Hanab Live, excluding bug fixes.
 
 ## December 12th, 2023
 
-- Added the `/terminate` chat command.
-- Added account linking.
+- Added the `/terminate` chat command to terminate an ongoing game.
+- Added the `/link` chat command, which links another account to yours so you
+  won't be dealt the same seeds.
 - Added the Sudoku 4-suit variants and the dark 6-suit variants.
 
 ## August 10th, 2023
 
-- Suit names are shown under the stacks whenever they are needed.
+- The Candy Corn Mix, Holiday Mix, and RGB Mix variants show suit names under
+  the stacks.
 
 ## July 27th, 2023
 
@@ -298,216 +300,173 @@ This page lists the changes to Hanab Live, excluding bug fixes.
 
 ## July 26th, 2023
 
-- Added the Sudoku variants.
-
-## July 15th, 2023
-
-- API queries sort by game ID as a secondary column.
+- Added the "Sudoku" variants.
 
 ## July 6th, 2023
 
-- Ctrl + left-click opens a card's note.
+- Ctrl + left-click opens a card's note, for Macs without right-click.
 
 ## May 31st, 2023
 
-- A variant is considered hard at 1.33 efficiency or higher.
+- A variant is now considered hard at 1.33 efficiency or higher.
 
 ## March 3rd, 2023
 
-- Added the RGB Mix variants.
-
-## March 2nd, 2023
-
-- Simple chat commands are easier to edit.
+- Added the "RGB Mix" variants.
 
 ## February 1st, 2023
 
-- Added seed statistics and charts.
-- Added links to seeds from the variant page.
-- Added the Valentine Mix variants.
+- Added the "Valentine Mix" variants.
+- Seed pages show a chart of how often each score was reached, and the lobby's
+  other-scores screen links to them.
+- The games list on variant pages links each game's seed.
 
 ## January 20th, 2023
 
-- Added the `[!]` note.
+- A `!` note now shows an exclamation mark on the card.
 
 ## January 18th, 2023
 
-- The lobby table list and game name show the table options.
+- The lobby table list and game name now show the table options.
 
 ## January 11th, 2023
 
-- Spectators can use note hotkeys.
-- Shared replays keep their names.
-- Empathy shows morphed cards.
+- Spectators can use the right-click note shortcuts (such as shift + right-click
+  for `f`).
+- A finished game's shared replay now keeps the table name, adding the game
+  number.
+- In a hypothetical, Empathy shows morphed cards as their morphed identity.
 
 ## January 4th, 2023
 
-- Added the Matryoshka variants.
+- Added the "Matryoshka" variants.
 
 ## January 3rd, 2023
 
-- Added the `?` note.
-- Right-click to terminate a game.
+- A `?` note shows a question mark on the card.
+- Left-clicking the skull now votes to terminate the game, and right-clicking
+  terminates it immediately.
 
 ## December 28th, 2022
 
-- "unknown" is a synonym for "blank" in notes.
+- "unknown" is now a synonym for the "blank" card note.
 
 ## December 16th, 2022
 
-- Anyone can set the shared replay leader.
+- Anyone can pass the shared replay leader by clicking the crown, not just the
+  leader.
 - Total variant statistics no longer count strikeouts.
 
 ## December 8th, 2022
 
-- Spectator notes affect how cards look.
-
-## December 5th, 2022
-
-- Added the FAQ.
+- Spectators' own notes now change how cards look for them (e.g. chop move and
+  finesse borders), as players' notes do.
 
 ## December 1st, 2022
 
-- Added the Holiday Mix variants and new emotes.
-
-## November 30th, 2022
-
-- Added the `/untag` chat command.
-- Copying a game also copies its bombs.
+- Added the "Holiday Mix" variants.
+- Added 3 new emotes.
 
 ## November 29th, 2022
 
-- Improved card morphing.
+- Morphing can make a card blank or restore it.
+- Morphed cards count toward deductions and `/copy`.
+- Escape now closes the morph dialog.
 
 ## November 22nd, 2022
 
-- Added "cm" notes.
-
-## November 21st, 2022
-
-- Cards known to be trash are shown as trash.
+- More chop move abbreviations in notes (such as `ttcm` and `atcm`) mark a card
+  as chop moved.
 
 ## November 12th, 2022
 
-- Spectator notes are saved.
-- Added a trash can indicator.
+- Spectators' notes are kept after they leave and shown after the game, below
+  the players' notes.
+- A new trash can icon marks cards that their holder can deduce are trash.
 
 ## October 28th, 2022
 
-- Added Zen mode.
-- Added `/suggest` to the in-game commands.
+- Added Zen mode, which hides chat notifications and the spectator count. You
+  can activate it by right-clicking the chat button in a game.
 
 ## October 6th, 2022
 
-- Added the Funnels variants.
+- Added the "Funnels" variants.
 
 ## October 5th, 2022
 
-- A table can be remade from its restart.
+- Restarting a game offers to remake the table as a pre-game, so players can
+  join or leave first.
 
 ## May 31st, 2022
 
-- Added positive color clues.
-- The lobby shows each table's spectators and owner.
-
-## April 24th, 2022
-
-- Changed the license from AGPL back to GPL.
+- Suit pips are highlighted when a positive color clue touched that suit.
+- Players can spectate a table before it starts by clicking on the spectators
+  section of the row.
 
 ## February 23rd, 2022
 
-- The cluing interface is more obvious.
+- The player buttons in the clue area show a radio-button dot for the selected
+  player.
 
 ## February 14th, 2022
 
-- Arrows can be used in solo replays.
-
-## February 9th, 2022
-
-- Hypothetical links are compressed.
+- Arrows can now be used in solo replays.
 
 ## February 5th, 2022
 
-- Variants have new string IDs.
-- Restored `/ping`, `/here`, `/subscribe`, and `/unsubscribe`, and added
-  `/teachme`.
-- Bot replies are public, and bot commands work only in the lobby.
-
-## February 4th, 2022
-
-- Notes can be used in speedruns.
-
-## February 2nd, 2022
-
-- Seeds starting with `legacy-` are supported.
-
-## February 1st, 2022
-
-- Added the Odds and Evens variants.
-- Added the `/mem` and `/memory` chat commands.
+- The Discord bot replies publicly instead of privately, and its commands work
+  only in the Discord lobby channel.
 
 ## January 27th, 2022
 
-- Added the Those Cards Are Odd variants.
+- Added "Odds and Evens" variants.
 
 ## January 26th, 2022
 
-- Text between `||` is shown as a spoiler.
+- Discord spoilers (e.g., `||text||`) are hidden in the lobby chat until hovered
+  over.
 
 ## January 19th, 2022
 
-- Improved the morphing dialog.
-
-## January 16th, 2022
-
-- Variant search can search from the start of a name and by color clues.
+- The morphing dialog now shows a grid of every card, so a card can be picked
+  with one click.
 
 ## January 15th, 2022
 
-- Efficiency is shown on the missing scores pages.
-
-## January 13th, 2022
-
-- Seeds have names.
+- Efficiency is now shown on the missing scores pages.
 
 ## January 11th, 2022
 
-- A hypothetical can be copied to the clipboard.
+- Added the /copy chat command, which copies a hypothetical (with anonymized
+  players) to the clipboard.
 
 ## January 8th, 2022
 
-- The full history API includes user tags.
-
-## January 6th, 2022
-
-- Options can be updated from a seed.
+- The full history API now includes user tags.
 
 ## January 5th, 2022
 
-- The repository moved to the Hanabi-Live organization.
+- The Git repository for this website has moved to the Hanabi-Live organization.
 
 ## January 4th, 2022
 
-- The table host can accept proposed options.
 - Added new JSON routes to the API.
 
 ## January 2nd, 2022
 
-- The history, variant, and seed pages load with Ajax and show a spinner.
+- The history, variant, and seed pages now load dynamically and show a spinner.
 
 ## December 23rd, 2021
 
 - Added the `/levels` chat command.
-- The number of online users is shown on both tabs.
-- Added more chat commands.
+- Added the `/manual` chat command.
+- Added the `/sin` chat command.
+- On narrow screens, the online users heading shows the number of users online.
 
 ## December 18th, 2021
 
-- Statistics are paginated and filterable.
-
-## December 16th, 2021
-
-- The variant can be set directly.
+- The dedicated statistics pages are now paginated and filterable.
 
 ## December 14th, 2021
 
@@ -519,43 +478,42 @@ This page lists the changes to Hanab Live, excluding bug fixes.
 
 ## December 9th, 2021
 
-- Morphing uses a dialog.
+- Morphing now uses a dialog.
 
 ## December 7th, 2021
 
-- Added eleven emotes.
+- Added 11 new emotes.
 
 ## November 29th, 2021
 
-- Replaced browser dialogs with modals.
+- Replaced browser dialogs with better-looking modals.
 
 ## November 2nd, 2021
 
-- Players who are not the host can propose options.
+- Players who are not the host can now propose options.
 
 ## October 29th, 2021
 
-- Options can be changed in the pregame.
-- Added the `/rtfm` chat command and aliases for common commands.
-- Added the Synesthesia and Critical Fours variants.
-- Notes can be edited on mobile.
+- Options can be changed in the pre-game screen.
+- Added the "Synesthesia" and "Critical Fours" variants.
+- Notes can now be edited on mobile.
 
 ## August 3rd, 2021
 
-- The up and down arrow keys toggle the replay.
+- While in a game, the up and down arrow keys will toggle the replay.
 
 ## May 11th, 2021
 
-- Added indicators for cards that could be the last copy (DDA).
-- Plays from a rewound state can be disabled.
+- Added indicators for cards that could be the last copy (for double discard
+  avoidance).
 
 ## May 3rd, 2021
 
-- Suits have tooltips that explain prisms and dual-color suits.
+- Added tooltips for the play stacks.
 
 ## April 24th, 2021
 
-- Added a pip for the start card.
+- In "Up or Down" variants, there is now a pip for the start card.
 
 ## March 15th, 2021
 
@@ -563,11 +521,13 @@ This page lists the changes to Hanab Live, excluding bug fixes.
 
 ## March 11th, 2021
 
-- Chat history can be searched.
+- Typing the start of a message and pressing up recalls your earlier messages
+  that begin with it.
 
 ## March 5th, 2021
 
-- Appending notes now uses bracket syntax.
+- The shift + right click and alt + right click shortcuts now put the
+  corresponding identity note in square brackets.
 - Players who are not the leader can now suggest variants with the dropdown.
 
 ## February 11th, 2021
@@ -651,7 +611,8 @@ This page lists the changes to Hanab Live, excluding bug fixes.
 
 ## August 14th, 2020
 
-- Anyone can now change the shared replay leader.
+- Anyone can now change the shared replay leader with the "/setleader" chat
+  command.
 - JSON games support detrimental characters.
 
 ## August 13th, 2020
@@ -802,13 +763,14 @@ This page lists the changes to Hanab Live, excluding bug fixes.
 
 ## April 15th, 2020
 
-- Added tab completion and new emotes.
-- Shutdowns now give notice at 5 and 10 minutes.
+- Added 41 new emotes.
+- Added tab completion for emotes.
+- Games are now warned 10 minutes before a shutdown ends them (in addition to
+  the existing 5 minutes).
 
 ## April 14th, 2020
 
-- Pressing the up arrow after typing the start of a message recalls the earlier
-  messages beginning with it.
+- In the chat, the up and down arrows now recall previous chat messages.
 
 ## April 13th, 2020
 
@@ -822,6 +784,8 @@ This page lists the changes to Hanab Live, excluding bug fixes.
 
 - Added the `/rules` chat command to show the community guidelines.
 - Added the "All History" button to the bottom of the history page.
+- Shutdowns end unfinished games after 30 minutes, warning them 5 minutes
+  before.
 
 ## April 5th, 2020
 
@@ -862,7 +826,8 @@ This page lists the changes to Hanab Live, excluding bug fixes.
 ## March 26th, 2020
 
 - The variant dropdown is now searchable.
-- Ongoing tables are notified of server restarts and shutdowns.
+- Scheduled restarts and shutdowns are announced in game chats as well as the
+  lobby.
 
 ## March 25th, 2020
 
