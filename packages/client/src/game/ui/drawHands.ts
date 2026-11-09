@@ -137,6 +137,75 @@ const BGA_TURN_RECT = {
  */
 const CHARACTER_ICON_SIZE = 0.03;
 
+/** In the Keldon layout, the width of a hand that does not span the board, as with 4 players. */
+const KELDON_NARROW_HAND_W = 0.34;
+
+/**
+ * In the Keldon layout, the height of a hand whose cards are shrunk to make room, such as in the
+ * top row of 6-player games or when each hand has one extra card.
+ */
+const KELDON_REDUCED_HAND_H = 0.165;
+
+/**
+ * In the Keldon layout, the size of a hand that runs down the left or right side of the board with
+ * 5 and 6 players, and the left edges of the hands on each side.
+ */
+const KELDON_SIDE_HAND = {
+  w: 0.301,
+  h: 0.18,
+  leftX: 0.03,
+  rightX: 0.77,
+} as const;
+
+/** In the Keldon layout, the width of the tilted hands on the sides of the board with 3 players. */
+const KELDON_TILTED_SIDE_HAND_W = 0.41;
+
+/** In the Keldon layout, the left edge and width of a hand that spans the board (2 players). */
+const KELDON_WIDE_HAND = { x: 0.19, w: 0.42 } as const;
+
+/**
+ * In the Keldon layout, the left edge and width of a narrow hand in the middle of the board, as
+ * with 4 players.
+ */
+const KELDON_CENTERED_NARROW_HAND = {
+  x: 0.23,
+  w: KELDON_NARROW_HAND_W,
+} as const;
+
+/** In the Keldon layout with one extra card, how far our own hand and the others move down. */
+const KELDON_EXTRA_CARD_OFFSET_Y = { us: 0.018, other: 0.013 } as const;
+
+/**
+ * In the Keldon layout with one extra card, the hands that run down the sides of the board, and
+ * every hand in 6-player games, shrink further to fit the extra card.
+ */
+const KELDON_EXTRA_CARD_HAND_H = {
+  side: KELDON_REDUCED_HAND_H - 0.02,
+  sixPlayerBottom: KELDON_REDUCED_HAND_H - 0.01,
+  sixPlayerTop: KELDON_REDUCED_HAND_H - 0.03,
+} as const;
+
+/** The height of a player's name frame, in fractions of the stage height. */
+const NAME_FRAME_H = 0.02;
+
+/** In BGA mode, how the hands are spaced in the column between the logs. */
+const BGA_HANDS = {
+  /** The top of the first hand, in fractions of the stage height. */
+  topY: 0.03,
+  /** How much higher the first hand starts with 5 or more players, to make room for the cards. */
+  manyPlayersRaiseY: 0.005,
+  /** The lowest that the last hand can reach, in fractions of the stage height. */
+  bottomY: 0.96,
+  /** The gap between adjacent cards, in card widths. */
+  cardSpacing: 0.1,
+  /** Replaces `cardSpacing` when each hand holds 4 or fewer cards. */
+  fewCardsSpacing: 0.2,
+  /** The gap between adjacent hands, in hand heights. */
+  handSpacing: 0.45,
+  /** The gap between a hand and the name frame below it, in fractions of the stage height. */
+  nameFrameGapY: 0.01,
+} as const;
+
 const handPos: HandConfig[][] = [];
 const namePos: HandConfig[][] = [];
 const namePosBGA: HandConfig[][] = [];
@@ -149,71 +218,79 @@ export function drawHands(winW: number, winH: number): void {
   // In Keldon mode, the hand positions are different depending on the amount of players, so they
   // have to be hard-coded.
   const keldonHandH = FULL_CARD_STAGE_SIZE.H;
-  /** The width of a hand that does not span the board, such as in 4-player games. */
-  const narrowHandW = 0.34;
-  /**
-   * The height of a hand whose cards are shrunk to make room, such as in the top row of 6-player
-   * games or when each hand has one extra card.
-   */
-  const reducedHandH = 0.165;
-  const handPos6Ratio = narrowHandW / keldonHandH;
-  const handPos6W = reducedHandH * handPos6Ratio * KELDON_6P_HAND_WIDTH_SCALE;
-  /**
-   * The size of a hand that runs down the left or right side of the board in 5-player and 6-player
-   * games, and the left edges of the hands on each side.
-   */
-  const sideHand = { w: 0.301, h: 0.18, leftX: 0.03, rightX: 0.77 } as const;
-  /** The width of the tilted hands on the sides of the board in 3-player games. */
-  const tiltedSideHandW = 0.41;
-  /** The left edge and width of a hand that spans the board, such as in 2-player games. */
-  const wideHand = { x: 0.19, w: 0.42 } as const;
-  /**
-   * The left edge and width of a narrow hand in the middle of the board, such as in 4-player games.
-   */
-  const centeredNarrowHand = { x: 0.23, w: narrowHandW } as const;
+  const handPos6Ratio = KELDON_NARROW_HAND_W / keldonHandH;
+  const handPos6W =
+    KELDON_REDUCED_HAND_H * handPos6Ratio * KELDON_6P_HAND_WIDTH_SCALE;
   handPos[2] = [
-    { ...wideHand, y: KELDON_BOTTOM_HAND_Y, h: keldonHandH, rot: 0 },
-    { ...wideHand, y: KELDON_TOP_HAND_Y, h: keldonHandH, rot: 0 },
+    { ...KELDON_WIDE_HAND, y: KELDON_BOTTOM_HAND_Y, h: keldonHandH, rot: 0 },
+    { ...KELDON_WIDE_HAND, y: KELDON_TOP_HAND_Y, h: keldonHandH, rot: 0 },
   ];
   handPos[3] = [
-    { ...wideHand, y: KELDON_BOTTOM_HAND_Y, h: keldonHandH, rot: 0 },
-    { x: 0.011, y: 0.73, w: tiltedSideHandW, h: keldonHandH, rot: -82 },
-    { x: 0.735, y: 0.024, w: tiltedSideHandW, h: keldonHandH, rot: 82 },
+    { ...KELDON_WIDE_HAND, y: KELDON_BOTTOM_HAND_Y, h: keldonHandH, rot: 0 },
+    {
+      x: 0.011,
+      y: 0.73,
+      w: KELDON_TILTED_SIDE_HAND_W,
+      h: keldonHandH,
+      rot: -82,
+    },
+    {
+      x: 0.735,
+      y: 0.024,
+      w: KELDON_TILTED_SIDE_HAND_W,
+      h: keldonHandH,
+      rot: 82,
+    },
   ];
   handPos[4] = [
-    { ...centeredNarrowHand, y: KELDON_BOTTOM_HAND_Y, h: keldonHandH, rot: 0 },
-    { x: 0.015, y: 0.68, w: narrowHandW, h: keldonHandH, rot: -78 },
-    { ...centeredNarrowHand, y: KELDON_TOP_HAND_Y, h: keldonHandH, rot: 0 },
-    { x: 0.715, y: 0.095, w: narrowHandW, h: keldonHandH, rot: 78 },
+    {
+      ...KELDON_CENTERED_NARROW_HAND,
+      y: KELDON_BOTTOM_HAND_Y,
+      h: keldonHandH,
+      rot: 0,
+    },
+    { x: 0.015, y: 0.68, w: KELDON_NARROW_HAND_W, h: keldonHandH, rot: -78 },
+    {
+      ...KELDON_CENTERED_NARROW_HAND,
+      y: KELDON_TOP_HAND_Y,
+      h: keldonHandH,
+      rot: 0,
+    },
+    { x: 0.715, y: 0.095, w: KELDON_NARROW_HAND_W, h: keldonHandH, rot: 78 },
   ];
   handPos[5] = [
-    { ...centeredNarrowHand, y: KELDON_BOTTOM_HAND_Y, h: keldonHandH, rot: 0 },
     {
-      x: sideHand.leftX,
+      ...KELDON_CENTERED_NARROW_HAND,
+      y: KELDON_BOTTOM_HAND_Y,
+      h: keldonHandH,
+      rot: 0,
+    },
+    {
+      x: KELDON_SIDE_HAND.leftX,
       y: 0.756,
-      w: sideHand.w,
-      h: sideHand.h,
+      w: KELDON_SIDE_HAND.w,
+      h: KELDON_SIDE_HAND.h,
       rot: -QUARTER_TURN_DEGREES,
     },
     {
       x: 0.0205,
       y: KELDON_TOP_HAND_Y,
-      w: narrowHandW,
+      w: KELDON_NARROW_HAND_W,
       h: keldonHandH,
       rot: 0,
     },
     {
       x: 0.44,
       y: KELDON_TOP_HAND_Y,
-      w: narrowHandW,
+      w: KELDON_NARROW_HAND_W,
       h: keldonHandH,
       rot: 0,
     },
     {
-      x: sideHand.rightX,
+      x: KELDON_SIDE_HAND.rightX,
       y: 0.238,
-      w: sideHand.w,
-      h: sideHand.h,
+      w: KELDON_SIDE_HAND.w,
+      h: KELDON_SIDE_HAND.h,
       rot: QUARTER_TURN_DEGREES,
     },
   ];
@@ -221,97 +298,85 @@ export function drawHands(winW: number, winH: number): void {
     {
       x: 0.273,
       y: KELDON_BOTTOM_HAND_Y,
-      w: narrowHandW * KELDON_6P_HAND_WIDTH_SCALE,
+      w: KELDON_NARROW_HAND_W * KELDON_6P_HAND_WIDTH_SCALE,
       h: keldonHandH,
       rot: 0,
     },
     {
-      x: sideHand.leftX,
+      x: KELDON_SIDE_HAND.leftX,
       y: 0.72,
-      w: sideHand.w * KELDON_6P_SIDE_HAND_WIDTH_SCALE,
-      h: sideHand.h,
+      w: KELDON_SIDE_HAND.w * KELDON_6P_SIDE_HAND_WIDTH_SCALE,
+      h: KELDON_SIDE_HAND.h,
       rot: -QUARTER_TURN_DEGREES,
     },
     {
       x: 0.0235,
       y: KELDON_TOP_HAND_Y,
       w: handPos6W,
-      h: reducedHandH,
+      h: KELDON_REDUCED_HAND_H,
       rot: 0,
     },
     {
       x: 0.289,
       y: KELDON_TOP_HAND_Y,
       w: handPos6W,
-      h: reducedHandH,
+      h: KELDON_REDUCED_HAND_H,
       rot: 0,
     },
     {
       x: 0.5535,
       y: KELDON_TOP_HAND_Y,
       w: handPos6W,
-      h: reducedHandH,
+      h: KELDON_REDUCED_HAND_H,
       rot: 0,
     },
     {
-      x: sideHand.rightX,
+      x: KELDON_SIDE_HAND.rightX,
       y: 0.292,
-      w: sideHand.w * KELDON_6P_SIDE_HAND_WIDTH_SCALE,
-      h: sideHand.h,
+      w: KELDON_SIDE_HAND.w * KELDON_6P_SIDE_HAND_WIDTH_SCALE,
+      h: KELDON_SIDE_HAND.h,
       rot: QUARTER_TURN_DEGREES,
     },
   ];
   if (globals.options.oneExtraCard) {
-    const adjustedYUs = 0.018;
-    const adjustedYOther = 0.013;
-    /**
-     * The hands that run down the sides of the board, and every hand in 6-player games, shrink
-     * further to fit the extra card.
-     */
-    const extraCardHandH = {
-      side: reducedHandH - 0.02,
-      sixPlayerBottom: reducedHandH - 0.01,
-      sixPlayerTop: reducedHandH - 0.03,
-    } as const;
-
     // 2-player
-    handPos[2][0]!.h = reducedHandH;
-    handPos[2][1]!.h = reducedHandH;
-    handPos[2][0]!.y += adjustedYUs;
-    handPos[2][1]!.y += adjustedYOther;
+    handPos[2][0]!.h = KELDON_REDUCED_HAND_H;
+    handPos[2][1]!.h = KELDON_REDUCED_HAND_H;
+    handPos[2][0]!.y += KELDON_EXTRA_CARD_OFFSET_Y.us;
+    handPos[2][1]!.y += KELDON_EXTRA_CARD_OFFSET_Y.other;
 
     // 3-player
-    handPos[3][0]!.h = reducedHandH;
-    handPos[3][1]!.h = reducedHandH;
-    handPos[3][2]!.h = reducedHandH;
-    handPos[3][0]!.y += adjustedYUs;
+    handPos[3][0]!.h = KELDON_REDUCED_HAND_H;
+    handPos[3][1]!.h = KELDON_REDUCED_HAND_H;
+    handPos[3][2]!.h = KELDON_REDUCED_HAND_H;
+    handPos[3][0]!.y += KELDON_EXTRA_CARD_OFFSET_Y.us;
 
     // 4-player
-    handPos[4][0]!.h = reducedHandH;
-    handPos[4][1]!.h = reducedHandH;
-    handPos[4][2]!.h = reducedHandH;
-    handPos[4][3]!.h = reducedHandH;
-    handPos[4][0]!.y += adjustedYUs;
-    handPos[4][2]!.y += adjustedYOther;
+    handPos[4][0]!.h = KELDON_REDUCED_HAND_H;
+    handPos[4][1]!.h = KELDON_REDUCED_HAND_H;
+    handPos[4][2]!.h = KELDON_REDUCED_HAND_H;
+    handPos[4][3]!.h = KELDON_REDUCED_HAND_H;
+    handPos[4][0]!.y += KELDON_EXTRA_CARD_OFFSET_Y.us;
+    handPos[4][2]!.y += KELDON_EXTRA_CARD_OFFSET_Y.other;
 
     // 5-player
-    handPos[5][0]!.h = reducedHandH;
-    handPos[5][1]!.h = extraCardHandH.side;
-    handPos[5][2]!.h = reducedHandH;
-    handPos[5][3]!.h = reducedHandH;
-    handPos[5][4]!.h = extraCardHandH.side;
-    handPos[5][0]!.y += adjustedYUs;
+    handPos[5][0]!.h = KELDON_REDUCED_HAND_H;
+    handPos[5][1]!.h = KELDON_EXTRA_CARD_HAND_H.side;
+    handPos[5][2]!.h = KELDON_REDUCED_HAND_H;
+    handPos[5][3]!.h = KELDON_REDUCED_HAND_H;
+    handPos[5][4]!.h = KELDON_EXTRA_CARD_HAND_H.side;
+    handPos[5][0]!.y += KELDON_EXTRA_CARD_OFFSET_Y.us;
 
     // 6-player
-    handPos[6][0]!.h = extraCardHandH.sixPlayerBottom;
-    handPos[6][1]!.h = extraCardHandH.side;
-    handPos[6][2]!.h = extraCardHandH.sixPlayerTop;
-    handPos[6][3]!.h = extraCardHandH.sixPlayerTop;
-    handPos[6][4]!.h = extraCardHandH.sixPlayerTop;
-    handPos[6][5]!.h = extraCardHandH.side;
-    handPos[6][2]!.y += adjustedYOther;
-    handPos[6][3]!.y += adjustedYOther;
-    handPos[6][4]!.y += adjustedYOther;
+    handPos[6][0]!.h = KELDON_EXTRA_CARD_HAND_H.sixPlayerBottom;
+    handPos[6][1]!.h = KELDON_EXTRA_CARD_HAND_H.side;
+    handPos[6][2]!.h = KELDON_EXTRA_CARD_HAND_H.sixPlayerTop;
+    handPos[6][3]!.h = KELDON_EXTRA_CARD_HAND_H.sixPlayerTop;
+    handPos[6][4]!.h = KELDON_EXTRA_CARD_HAND_H.sixPlayerTop;
+    handPos[6][5]!.h = KELDON_EXTRA_CARD_HAND_H.side;
+    handPos[6][2]!.y += KELDON_EXTRA_CARD_OFFSET_Y.other;
+    handPos[6][3]!.y += KELDON_EXTRA_CARD_OFFSET_Y.other;
+    handPos[6][4]!.y += KELDON_EXTRA_CARD_OFFSET_Y.other;
   }
 
   // In Board Game Arena mode, the hands are all in a line, so they do not have to be hard-coded.
@@ -319,10 +384,9 @@ export function drawHands(winW: number, winH: number): void {
   if (!globals.lobby.settings.keldonMode) {
     let leftX = BGA_ACTION_LOG.x + BGA_ACTION_LOG.w + HAND_LOG_GAP;
     const rightX = CLUE_LOG.x - HAND_LOG_GAP;
-    let topY = 0.03;
-    const bottomY = 0.96;
-    let cardSpacing = 0.1; // The amount of card widths between adjacent cards.
-    const handSpacing = 0.45; // The amount of hand heights between adjacent hands.
+    let topY: number = BGA_HANDS.topY;
+    const { bottomY, handSpacing } = BGA_HANDS;
+    let cardSpacing: number = BGA_HANDS.cardSpacing;
 
     if (numPlayers >= 4) {
       // The hands would overlap with the timer for spectators or the hypothetical controls during a
@@ -331,12 +395,12 @@ export function drawHands(winW: number, winH: number): void {
     }
     if (numPlayers >= 5) {
       // Create a bit more space for the cards.
-      topY -= 0.005;
+      topY -= BGA_HANDS.manyPlayersRaiseY;
     }
 
     if (numCardsPerHand <= 4) {
       // We do not need to keep the cards so close to each other.
-      cardSpacing = 0.2;
+      cardSpacing = BGA_HANDS.fewCardsSpacing;
     }
 
     // The ratio of hand width to card width.
@@ -382,54 +446,51 @@ export function drawHands(winW: number, winH: number): void {
 
   // This is the position for the player name frames in Keldon mode. This cannot be algorithmically
   // derived from the hand positions.
-  const namePosValues = {
-    h: 0.02,
-  };
   namePos[2] = [
-    { x: 0.175, y: KELDON_BOTTOM_NAME_FRAME_Y, w: 0.45, h: namePosValues.h },
-    { x: 0.175, y: 0.21, w: 0.45, h: namePosValues.h },
+    { x: 0.175, y: KELDON_BOTTOM_NAME_FRAME_Y, w: 0.45, h: NAME_FRAME_H },
+    { x: 0.175, y: 0.21, w: 0.45, h: NAME_FRAME_H },
   ];
   namePos[3] = [
-    { x: 0.18, y: KELDON_BOTTOM_NAME_FRAME_Y, w: 0.44, h: namePosValues.h },
-    { x: 0.0075, y: 0.775, w: SIDE_NAME_FRAME_W, h: namePosValues.h },
-    { x: 0.675, y: 0.775, w: SIDE_NAME_FRAME_W, h: namePosValues.h },
+    { x: 0.18, y: KELDON_BOTTOM_NAME_FRAME_Y, w: 0.44, h: NAME_FRAME_H },
+    { x: 0.0075, y: 0.775, w: SIDE_NAME_FRAME_W, h: NAME_FRAME_H },
+    { x: 0.675, y: 0.775, w: SIDE_NAME_FRAME_W, h: NAME_FRAME_H },
   ];
   namePos[4] = [
-    { x: 0.22, y: KELDON_BOTTOM_NAME_FRAME_Y, w: 0.36, h: namePosValues.h },
-    { x: 0.01, y: 0.74, w: 0.13, h: namePosValues.h },
-    { x: 0.22, y: 0.21, w: 0.36, h: namePosValues.h },
-    { x: 0.66, y: 0.74, w: 0.13, h: namePosValues.h },
+    { x: 0.22, y: KELDON_BOTTOM_NAME_FRAME_Y, w: 0.36, h: NAME_FRAME_H },
+    { x: 0.01, y: 0.74, w: 0.13, h: NAME_FRAME_H },
+    { x: 0.22, y: 0.21, w: 0.36, h: NAME_FRAME_H },
+    { x: 0.66, y: 0.74, w: 0.13, h: NAME_FRAME_H },
   ];
   namePos[5] = [
     {
       x: handPos[5][0]!.x - NAME_FRAME_INSET_X,
       y: handPos[5][0]!.y + handPos[5][1]!.h + KELDON_NAME_FRAME_GAP_Y,
       w: handPos[5][0]!.w + NAME_FRAME_INSET_X * 2,
-      h: namePosValues.h,
+      h: NAME_FRAME_H,
     },
     {
       x: handPos[5][1]!.x - KELDON_SIDE_NAME_FRAME_OFFSET[5].leftX,
       y: handPos[5][1]!.y + KELDON_SIDE_NAME_FRAME_OFFSET[5].leftY,
       w: SIDE_NAME_FRAME_W,
-      h: namePosValues.h,
+      h: NAME_FRAME_H,
     },
     {
       x: handPos[5][2]!.x - NAME_FRAME_INSET_X,
       y: handPos[5][2]!.y + handPos[5][2]!.h + KELDON_5P_TOP_NAME_FRAME_GAP_Y,
       w: handPos[5][2]!.w + NAME_FRAME_INSET_X * 2,
-      h: namePosValues.h,
+      h: NAME_FRAME_H,
     },
     {
       x: handPos[5][3]!.x - NAME_FRAME_INSET_X,
       y: handPos[5][3]!.y + handPos[5][3]!.h + KELDON_5P_TOP_NAME_FRAME_GAP_Y,
       w: handPos[5][3]!.w + NAME_FRAME_INSET_X * 2,
-      h: namePosValues.h,
+      h: NAME_FRAME_H,
     },
     {
       x: handPos[5][4]!.x - RIGHT_SIDE_NAME_FRAME_OFFSET_X,
       y: handPos[5][1]!.y + KELDON_SIDE_NAME_FRAME_OFFSET[5].rightY,
       w: SIDE_NAME_FRAME_W,
-      h: namePosValues.h,
+      h: NAME_FRAME_H,
     },
   ];
   namePos[6] = [
@@ -437,50 +498,49 @@ export function drawHands(winW: number, winH: number): void {
       x: handPos[6][0]!.x - NAME_FRAME_INSET_X,
       y: handPos[6][0]!.y + handPos[6][1]!.h + KELDON_NAME_FRAME_GAP_Y,
       w: handPos[6][0]!.w + NAME_FRAME_INSET_X * 2,
-      h: namePosValues.h,
+      h: NAME_FRAME_H,
     },
     {
       x: handPos[6][1]!.x - KELDON_SIDE_NAME_FRAME_OFFSET[6].leftX,
       y: handPos[6][1]!.y + KELDON_SIDE_NAME_FRAME_OFFSET[6].leftY,
       w: SIDE_NAME_FRAME_W,
-      h: namePosValues.h,
+      h: NAME_FRAME_H,
     },
     {
       x: handPos[6][2]!.x - NAME_FRAME_INSET_X,
       y: handPos[6][2]!.y + handPos[6][2]!.h + KELDON_NAME_FRAME_GAP_Y,
       w: handPos[6][2]!.w + NAME_FRAME_INSET_X * 2,
-      h: namePosValues.h,
+      h: NAME_FRAME_H,
     },
     {
       x: handPos[6][3]!.x - NAME_FRAME_INSET_X,
       y: handPos[6][3]!.y + handPos[6][3]!.h + KELDON_NAME_FRAME_GAP_Y,
       w: handPos[6][3]!.w + NAME_FRAME_INSET_X * 2,
-      h: namePosValues.h,
+      h: NAME_FRAME_H,
     },
     {
       x: handPos[6][4]!.x - NAME_FRAME_INSET_X,
       y: handPos[6][4]!.y + handPos[6][4]!.h + KELDON_NAME_FRAME_GAP_Y,
       w: handPos[6][4]!.w + NAME_FRAME_INSET_X * 2,
-      h: namePosValues.h,
+      h: NAME_FRAME_H,
     },
     {
       x: handPos[6][5]!.x - RIGHT_SIDE_NAME_FRAME_OFFSET_X,
       y: handPos[6][1]!.y + KELDON_SIDE_NAME_FRAME_OFFSET[6].rightY,
       w: SIDE_NAME_FRAME_W,
-      h: namePosValues.h,
+      h: NAME_FRAME_H,
     },
   ];
 
   if (!globals.lobby.settings.keldonMode) {
     const i = numPlayers;
-    /** The gap between a hand and the name frame below it, in fractions of the stage height. */
-    const nameFrameGapY = 0.01;
+    const { nameFrameGapY } = BGA_HANDS;
     namePosBGA[i] = [];
     for (const j of eRange(i)) {
       namePosBGA[i].push({
         x: handPosBGA[i]![j]!.x - NAME_FRAME_INSET_X,
         y: handPosBGA[i]![j]!.y + handPosBGA[i]![j]!.h + nameFrameGapY,
-        h: namePosValues.h,
+        h: NAME_FRAME_H,
         w: handPosBGA[i]![j]!.w + NAME_FRAME_INSET_X * 2,
       });
     }
