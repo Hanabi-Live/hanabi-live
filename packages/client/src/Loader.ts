@@ -27,6 +27,7 @@ const FILE_IDS = [
   "ghost",
   "home",
   "note",
+  "note-pencil",
   "question-mark",
   "question-mark2",
   "replay",

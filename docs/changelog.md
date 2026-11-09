@@ -9,6 +9,8 @@ of the repository.
 
 ## November 9th, 2026
 
+- When a note determines the suit or rank shown on a card, the note icon now
+  shows a large pencil instead of glowing.
 - Losing the last copy of a card now flashes the card and the maximum score in
   red.
 - The strike that ends the game now flashes all of the strike squares in red.

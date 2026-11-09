@@ -542,6 +542,7 @@ export function note(
         : NOTE_INDICATOR_POSITION.y) * CARD_H,
     align: "center",
     image: globals.imageLoader!.get("note"),
+    identitySourceImage: globals.imageLoader!.get("note-pencil"),
     width: SMALL_ICON_SIZE,
     height: SMALL_ICON_SIZE,
     rotation: HALF_TURN_DEGREES,
