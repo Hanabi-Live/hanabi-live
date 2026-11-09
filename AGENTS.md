@@ -25,6 +25,14 @@ including in error messages that state it. Derive related values (such as
 clients or the game catalog in `server/protocol`. A literal used once whose
 meaning is obvious from context can stay inline.
 
+## Writing style
+
+Write prose for people (replies, commit messages, pull request descriptions,
+code comments, and documentation) about 80% of the way to ASD-STE100 Simplified
+Technical English, as Andrej Karpathy recommends: short sentences, one idea per
+sentence, active voice, and common words that have one meaning. Keep technical
+names, such as identifiers, commands, and error messages, exact.
+
 ## Documentation
 
 Default to no documentation changes. Update prose only when explicitly requested
