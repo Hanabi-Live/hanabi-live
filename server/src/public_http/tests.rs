@@ -145,24 +145,20 @@ async fn shell_routes_metadata_and_static_files() {
             .values()
             .any(|v| v["stackSize"] != 5)
     );
-    let (status, body) = request(app.clone(), "/public/html/theme-init.html").await;
+    let (status, body) = request(app.clone(), "/public/css/dark.css").await;
     assert_eq!(status, StatusCode::OK);
-    assert!(body.contains("localStorage"));
+    assert!(body.contains("data-theme"));
     let immutable = format!("public, max-age={VERSIONED_ASSET_MAX_AGE_SECONDS}, immutable");
     let mut dev_config = config();
     dev_config.is_dev = true;
     for (app, path, expected) in [
         (
             &app,
-            "/public/html/theme-init.html?test-version",
+            "/public/css/dark.css?test-version",
             Some(immutable.as_str()),
         ),
-        (&app, "/public/html/theme-init.html", Some("no-cache")),
-        (
-            &app,
-            "/public/html/theme-init.html?other-version",
-            Some("no-cache"),
-        ),
+        (&app, "/public/css/dark.css", Some("no-cache")),
+        (&app, "/public/css/dark.css?other-version", Some("no-cache")),
         (
             &app,
             "/public/missing.test-version.min.js",
@@ -170,7 +166,7 @@ async fn shell_routes_metadata_and_static_files() {
         ),
         (
             &router(pool.clone(), &dev_config),
-            "/public/html/theme-init.html?test-version",
+            "/public/css/dark.css?test-version",
             Some("no-cache"),
         ),
     ] {

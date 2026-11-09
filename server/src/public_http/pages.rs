@@ -50,6 +50,10 @@ pub(super) fn templates() -> minijinja::Environment<'static> {
             "public-page.html",
             include_str!("../../templates/public-page.html"),
         ),
+        (
+            "theme-init.html",
+            include_str!("../../templates/theme-init.html"),
+        ),
     ] {
         env.add_template(name, source)
             .expect("native public template");
