@@ -1,11 +1,11 @@
 /* eslint-disable unicorn/no-null */
 
 import { describe, expect, spyOn, test } from "bun:test";
+import { MAX_STRIKES } from "./generated/protocol";
 import {
   hypotheticalStateReducer,
   initializeHypotheticalState,
 } from "./hypotheticalState";
-import { MAX_STRIKES } from "./generated/protocol";
 import { getDefaultMetadata } from "./metadata";
 import * as gameReducerModule from "./reducers/gameReducer";
 import { gameReducer } from "./reducers/gameReducer";
