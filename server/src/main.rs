@@ -225,7 +225,7 @@ async fn run(config: Config, version: String) -> Result<bool> {
             .into_make_service_with_connect_info::<SocketAddr>();
             services.spawn(async move { ("HTTP redirect", server.serve(service).await) });
         }
-        app.store.state_health()?;
+        app.store.check_state()?;
         control.activate();
         let integration_app = app.clone();
         let integrations = config.integrations.clone();
@@ -314,7 +314,7 @@ async fn run(config: Config, version: String) -> Result<bool> {
     app.background.close();
     app.connections.wait().await;
     app.background.wait().await;
-    if let Err(error) = app.store.state_health() {
+    if let Err(error) = app.store.check_state() {
         failures.push(format!("Final state ownership check failed: {error:#}"));
     }
     if let Err(error) = app.store.close().await {

@@ -92,7 +92,7 @@ impl Control {
     pub fn storage_healthy(&self) -> bool {
         self.application.get().is_none_or(|app| {
             app.upgrade()
-                .is_some_and(|app| app.store.state_health().is_ok())
+                .is_some_and(|app| app.store.check_state().is_ok())
         })
     }
     pub fn store(&self) -> Option<crate::store::Store> {
@@ -219,7 +219,7 @@ pub async fn drain_game_runtime(
         },
         Err(error) => failures.push(error.to_string()),
     }
-    if let Err(error) = app.store.state_health() {
+    if let Err(error) = app.store.check_state() {
         failures.push(format!("State ownership was lost during drain: {error:#}"));
     }
     if failures.is_empty() {

@@ -46,9 +46,10 @@ impl GoRandom {
     pub fn new(seed: i64) -> Self {
         static COOKED: OnceLock<Vec<i64>> = OnceLock::new();
         let cooked = COOKED.get_or_init(|| {
-            let words: Vec<String> =
-                serde_json::from_str(include_str!("../../packages/data/src/json/goRandom.json"))
-                    .expect("checked-in Go random constants");
+            let words: Vec<String> = serde_json::from_str(include_str!(
+                "../../../packages/data/src/json/goRandom.json"
+            ))
+            .expect("checked-in Go random constants");
             assert_eq!(words.len(), RNG_LEN);
             words
                 .iter()

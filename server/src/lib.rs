@@ -37,7 +37,6 @@ pub mod operations;
 mod operations_tests;
 pub mod public_http;
 mod query;
-pub mod random;
 pub mod release;
 pub mod restart;
 pub mod server_info;

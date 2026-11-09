@@ -27,7 +27,7 @@ pub struct Store {
     primary_name: String,
     archive_name: String,
     lobby_name: String,
-    state: Option<RedisState>,
+    state: RedisState,
     stats: TaskTracker,
     stats_slots: Arc<Semaphore>,
 }
@@ -106,7 +106,7 @@ impl Store {
             primary_name: String::new(),
             archive_name: String::new(),
             lobby_name: String::new(),
-            state: Some(state),
+            state,
             stats: TaskTracker::new(),
             stats_slots: Arc::new(Semaphore::new(STATS_SLOTS)),
         }
@@ -157,21 +157,13 @@ impl Store {
             primary_name,
             archive_name,
             lobby_name,
-            state: Some(state),
+            state,
             stats: TaskTracker::new(),
             stats_slots: Arc::new(Semaphore::new(STATS_SLOTS)),
         })
     }
-    pub(crate) fn state(&self) -> Result<&RedisState> {
-        self.state
-            .as_ref()
-            .context("Redis authority is not connected")
-    }
     pub fn check_state(&self) -> Result<()> {
-        self.state()?.check()
-    }
-    pub fn state_health(&self) -> Result<()> {
-        self.check_state()
+        self.state.check()
     }
     pub async fn cancel_lobby_reads(&self) -> Result<()> {
         if self.lobby_name.is_empty() {
@@ -188,17 +180,10 @@ impl Store {
         Ok(())
     }
     pub fn state_lost(&self) -> CancellationToken {
-        self.state.as_ref().map_or_else(
-            || {
-                let token = CancellationToken::new();
-                token.cancel();
-                token
-            },
-            RedisState::lost,
-        )
+        self.state.lost()
     }
     pub async fn allocate_table(&self) -> Result<u64> {
-        self.state()?.allocate_table().await
+        self.state.allocate_table().await
     }
     pub async fn reserve(&self) -> Result<i32> {
         self.check_state()?;
@@ -233,7 +218,7 @@ impl Store {
                 "Pending chat must reserve numeric archive identities before checkpointing"
             );
             let payload = serde_json::to_string(table)?;
-            let revision = self.state()?.save(table.id, revision, &payload).await?;
+            let revision = self.state.save(table.id, revision, &payload).await?;
             crate::metrics::record_checkpoint(payload.len());
             Ok(revision)
         }
@@ -246,7 +231,7 @@ impl Store {
         result
     }
     pub async fn remove(&self, id: u64, revision: i64) -> Result<()> {
-        self.state()?.remove(id, revision).await
+        self.state.remove(id, revision).await
     }
     pub async fn load(&self) -> Result<Vec<(TableSnapshot, i64)>> {
         self.restore(true).await
@@ -257,7 +242,7 @@ impl Store {
     }
     async fn restore(&self, refresh_stats: bool) -> Result<Vec<(TableSnapshot, i64)>> {
         let mut output = vec![];
-        let stored = self.state()?.load().await?;
+        let stored = self.state.load().await?;
         let mut queue = std::collections::VecDeque::from(stored);
         let mut seen = std::collections::HashSet::new();
         while let Some(stored) = queue.pop_front() {
@@ -281,7 +266,7 @@ impl Store {
             }
             if let Some(destination) = table.pending_spawn.take() {
                 let destination_id = destination.id;
-                let existing = self.state()?.get(destination_id).await?;
+                let existing = self.state.get(destination_id).await?;
                 match existing {
                     Some(ref record) if record.revision > 0 => {
                         ensure!(
@@ -292,13 +277,13 @@ impl Store {
                     }
                     _ => {
                         if existing.is_none() {
-                            self.state()?.reserve(destination_id).await?;
+                            self.state.reserve(destination_id).await?;
                         }
                         self.save(&destination, 0).await?;
                     }
                 }
                 queue.push_back(
-                    self.state()?
+                    self.state
                         .get(destination_id)
                         .await?
                         .context("Lost transfer destination")?,
@@ -370,7 +355,7 @@ impl Store {
             "Cannot archive an ongoing/JSON game"
         );
         let stored = self
-            .state()?
+            .state
             .get(s.table_id)
             .await?
             .context("Missing terminal Redis checkpoint")?;
@@ -941,11 +926,7 @@ impl Store {
     pub async fn close(&self) -> Result<()> {
         self.stats.close();
         self.stats.wait().await;
-        let result = if let Some(state) = &self.state {
-            state.close().await
-        } else {
-            Ok(())
-        };
+        let result = self.state.close().await;
         self.archive.close().await;
         self.lobby_reads.close().await;
         self.primary.close().await;
@@ -1425,7 +1406,7 @@ mod tests {
             ensure!(games == 0, "Partial PG transaction escaped");
             ensure!(
                 store
-                    .state()?
+                    .state
                     .get(id)
                     .await?
                     .unwrap()
@@ -1512,7 +1493,7 @@ mod tests {
         source.owner = 2;
         source.pending_spawn = Some(Box::new(destination));
         store.save(&source, 0).await?;
-        store.state()?.close().await?;
+        store.state.close().await?;
         let state = RedisState::connect(&redis.url, "native-split-recovery").await?;
         let restored = Store::fixture(store.primary.clone(), state);
         let result = async {

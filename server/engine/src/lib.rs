@@ -24,8 +24,7 @@ mod setup;
 mod types;
 mod visibility;
 
-#[path = "../../src/random.rs"]
-pub mod random;
+mod random;
 
 pub use anyhow::Result;
 pub use catalog::*;
