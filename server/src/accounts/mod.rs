@@ -184,6 +184,17 @@ fn unauthorized(message: impl Into<String>) -> Response {
 /// The client version that bots send instead of the current client version.
 pub const BOT_VERSION: &str = "bot";
 
+/// Flags an account that authenticated as a bot, so bot privileges can later depend on the flag.
+pub async fn mark_bot(pool: &PgPool, id: i32) -> Result<()> {
+    sqlx::query!(
+        "UPDATE users SET is_bot=TRUE WHERE id=$1 AND NOT is_bot",
+        id
+    )
+    .execute(pool)
+    .await?;
+    Ok(())
+}
+
 pub fn validate_client_version(version: &str, current: &str) -> Result<(), String> {
     if !version.is_empty() && (version == BOT_VERSION || version == current) {
         return Ok(());
@@ -333,6 +344,9 @@ async fn login_inner(state: &Accounts, ip: &str, input: LoginRequest) -> Result<
                 eprintln!("Skipped password hash upgrade after a concurrent credential change.");
             }
         }
+        if input.version == BOT_VERSION {
+            mark_bot(&state.pool, id).await?;
+        }
     } else {
         if !input.new_password.is_empty() {
             return Ok(unauthorized(
@@ -361,12 +375,13 @@ async fn login_inner(state: &Accounts, ip: &str, input: LoginRequest) -> Result<
         // Creating an account costs as much as a guess, so it counts against the address.
         attempt.keep();
         id = sqlx::query_scalar!(
-            "INSERT INTO users (username, normalized_username, password_hash, last_ip)
-             VALUES ($1,$2,$3,$4) RETURNING id",
+            "INSERT INTO users (username, normalized_username, password_hash, last_ip, is_bot)
+             VALUES ($1,$2,$3,$4,$5) RETURNING id",
             username,
             normalized,
             hash,
-            ip
+            ip,
+            input.version == BOT_VERSION
         )
         .fetch_one(&state.pool)
         .await?;

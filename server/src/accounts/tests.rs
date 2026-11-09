@@ -126,7 +126,7 @@ async fn login_requires_matching_release_sha_or_bot_postgres() {
             ..config()
         },
     );
-    for submitted in [&version, "bot"] {
+    for submitted in [&version, BOT_VERSION] {
         let (status, _, _) = request(
             &app,
             "POST",
@@ -138,6 +138,27 @@ async fn login_requires_matching_release_sha_or_bot_postgres() {
         .await;
         assert_eq!(status, StatusCode::OK);
     }
+    let is_bot = |name: &'static str| {
+        sqlx::query_scalar!("SELECT is_bot FROM users WHERE username=$1", name).fetch_one(&db.pool)
+    };
+    assert!(
+        is_bot("Alice").await.unwrap(),
+        "a bot login flags an existing account"
+    );
+    let bob = format!("username=Bob&password=test&version={BOT_VERSION}");
+    let (status, _, _) = request(&app, "POST", "/login", &bob, None, false).await;
+    assert_eq!(status, StatusCode::OK);
+    assert!(
+        is_bot("Bob").await.unwrap(),
+        "a bot login flags a new account"
+    );
+    let cathy = format!("username=Cathy&password=test&version={version}");
+    let (status, _, _) = request(&app, "POST", "/login", &cathy, None, false).await;
+    assert_eq!(status, StatusCode::OK);
+    assert!(
+        !is_bot("Cathy").await.unwrap(),
+        "a client login does not flag an account"
+    );
     for submitted in ["b".repeat(40), "42".into(), version[..12].into()] {
         let (status, _, body) = request(
             &app,

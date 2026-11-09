@@ -254,6 +254,11 @@ async fn websocket_checks_client_version_with_existing_cookie_postgres() {
         receive(&mut socket, "welcome").await;
         socket.close(None).await.unwrap();
     }
+    let flagged: Vec<bool> = sqlx::query_scalar!("SELECT is_bot FROM users")
+        .fetch_all(&fixture.db.pool)
+        .await
+        .unwrap();
+    assert_eq!(flagged, [true], "a bot connection flags its account");
     fixture.close().await;
 }
 

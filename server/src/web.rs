@@ -621,10 +621,15 @@ async fn websocket(
     };
     let version_check = accounts::validate_client_version(&version, &app.version);
     if version == accounts::BOT_VERSION {
-        eprintln!(
-            "Accepted bot websocket for account {id} from IP: {}",
-            address.ip()
-        );
+        eprintln!("Accepted bot websocket for account {id} from IP: {ip}");
+        if let Err(error) = accounts::mark_bot(&app.store.primary, id).await {
+            return crate::errors::Report::from_error(
+                "Recording a bot connection",
+                &error,
+                Some(crate::store::DATABASE_TIMEOUT),
+            )
+            .response(true);
+        }
     }
     upgrade
         .max_message_size(crate::transport::MAX_MESSAGE_BYTES)

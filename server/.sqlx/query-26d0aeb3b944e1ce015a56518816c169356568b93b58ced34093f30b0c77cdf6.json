@@ -1,0 +1,14 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "UPDATE users SET is_bot=TRUE WHERE id=$1 AND NOT is_bot",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Int4"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "26d0aeb3b944e1ce015a56518816c169356568b93b58ced34093f30b0c77cdf6"
+}

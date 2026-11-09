@@ -46,7 +46,10 @@ CREATE TABLE users (
      * The settings a user changed, keyed by their client-facing names. The server supplies the
      * default for every setting that is not listed.
      */
-    settings                   JSONB    NOT NULL  DEFAULT '{}'
+    settings                   JSONB    NOT NULL  DEFAULT '{}',
+
+    /* Set when the account authenticates with the bot client version. */
+    is_bot                     BOOLEAN  NOT NULL  DEFAULT FALSE
 );
 
 /* User stats are per variant. */

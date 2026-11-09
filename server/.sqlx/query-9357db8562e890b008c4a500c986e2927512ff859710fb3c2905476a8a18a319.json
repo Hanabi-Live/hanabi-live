@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "INSERT INTO users (username, normalized_username, password_hash, last_ip)\n             VALUES ($1,$2,$3,$4) RETURNING id",
+  "query": "INSERT INTO users (username, normalized_username, password_hash, last_ip, is_bot)\n             VALUES ($1,$2,$3,$4,$5) RETURNING id",
   "describe": {
     "columns": [
       {
@@ -20,12 +20,13 @@
         "Text",
         "Text",
         "Text",
-        "Text"
+        "Text",
+        "Bool"
       ]
     },
     "nullable": [
       false
     ]
   },
-  "hash": "242ab5b22085b813a0b271dabe9bd0397ea95f08cc6aeac82ec92874c7b95965"
+  "hash": "9357db8562e890b008c4a500c986e2927512ff859710fb3c2905476a8a18a319"
 }

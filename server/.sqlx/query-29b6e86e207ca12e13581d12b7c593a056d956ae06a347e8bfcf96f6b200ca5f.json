@@ -1,0 +1,26 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT is_bot FROM users",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "is_bot",
+        "type_info": "Bool",
+        "origin": {
+          "Table": {
+            "table": "users",
+            "name": "is_bot"
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Left": []
+    },
+    "nullable": [
+      false
+    ]
+  },
+  "hash": "29b6e86e207ca12e13581d12b7c593a056d956ae06a347e8bfcf96f6b200ca5f"
+}
