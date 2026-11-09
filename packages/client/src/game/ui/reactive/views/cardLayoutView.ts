@@ -124,11 +124,11 @@ export function onStackCompletionDataChanged(
   data: StackCompletionData,
   previousData: StackCompletionData | undefined,
 ): void {
-  // Skip the animation when jumping or fast-forwarding through a replay.
+  // Celebrate only in a game in progress, not in a replay.
   if (
     previousData === undefined
     || globals.animateFast
-    || globals.fastForwarding
+    || globals.state.replay.active
   ) {
     return;
   }
