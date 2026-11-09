@@ -39,6 +39,7 @@
       "complete-node": "18.1.2",
       "esbuild": "0.28.2",
       "fast-deep-equal": "3.1.3",
+      "fast-png": "8.0.0",
       "git-pull-run": "2.1.0",
       "husky": "9.1.7",
       "immer": "11.1.21",

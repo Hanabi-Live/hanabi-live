@@ -1,8 +1,10 @@
 // Checks that each emote list in "emotes.json" matches the images in its directory, and that every
-// global BetterTTV emote is present and byte-for-byte the PNG that BetterTTV serves. It exits with
-// an error if any check fails.
+// global BetterTTV emote is present and shows the same pixels as the PNG that BetterTTV serves. It
+// exits with an error if any check fails.
 
 import { CHAT_COLON_EMOTES, CHAT_EMOTES } from "@hanabi-live/data";
+import type { DecodedPng } from "fast-png";
+import { convertIndexedToRgb, decode } from "fast-png";
 import { readdir } from "node:fs/promises";
 import path from "node:path";
 
@@ -14,6 +16,9 @@ const BETTERTTV_CATEGORY = "betterttv";
 const EMOTE_EXTENSION = ".png";
 /** Holds emotes that chat matches separately, such as "<3", so it has no list. */
 const UNLISTED_DIRECTORY = "other";
+const RGBA_CHANNELS = 4;
+const SUPPORTED_BIT_DEPTH = 8;
+const OPAQUE_ALPHA = 255;
 
 interface BetterTTVEmote {
   readonly id: string;
@@ -149,9 +154,76 @@ async function checkBetterTTVEmote(
   const imageURL = `https://cdn.betterttv.net/emote/${emote.id}/1x.png`;
   const response = await fetchOK(imageURL);
   const [local, remote] = await Promise.all([file.bytes(), response.bytes()]);
-  if (!Buffer.from(local).equals(remote)) {
+  if (!samePixels(local, remote)) {
     return `${code}: "${relativePath}" differs from ${imageURL}.`;
   }
 
   return undefined;
+}
+
+/**
+ * The CDN's image optimization (Cloudflare Polish) recompresses PNGs, strips their metadata, and
+ * clears the color of fully transparent pixels, and edge servers can serve either the original or
+ * the optimized copy. Thus, images are compared by what they show rather than by their bytes.
+ */
+function samePixels(a: Uint8Array, b: Uint8Array): boolean {
+  const imageA = decode(a);
+  const imageB = decode(b);
+  if (imageA.width !== imageB.width || imageA.height !== imageB.height) {
+    return false;
+  }
+
+  const pixelsA = toRGBA(imageA);
+  const pixelsB = toRGBA(imageB);
+  for (let i = 0; i < pixelsA.length; i += RGBA_CHANNELS) {
+    const alpha = pixelsA[i + RGBA_CHANNELS - 1];
+    if (alpha !== pixelsB[i + RGBA_CHANNELS - 1]) {
+      return false;
+    }
+    if (alpha === 0) {
+      continue;
+    }
+    for (let channel = 0; channel < RGBA_CHANNELS - 1; channel++) {
+      if (pixelsA[i + channel] !== pixelsB[i + channel]) {
+        return false;
+      }
+    }
+  }
+
+  return true;
+}
+
+function toRGBA(image: DecodedPng): Uint8Array {
+  const { palette } = image;
+  if (
+    palette === undefined
+    && (image.depth !== SUPPORTED_BIT_DEPTH || image.transparency !== undefined)
+  ) {
+    throw new Error(
+      `Only ${SUPPORTED_BIT_DEPTH}-bit PNGs without a transparent color key are supported.`,
+    );
+  }
+  const [data, channels] =
+    palette === undefined
+      ? [image.data, image.channels]
+      : [convertIndexedToRgb(image), palette[0]?.length ?? RGBA_CHANNELS];
+
+  const hasAlpha = channels % 2 === 0;
+  const colorChannels = hasAlpha ? channels - 1 : channels;
+  const pixelCount = image.width * image.height;
+  const rgba = new Uint8Array(pixelCount * RGBA_CHANNELS);
+  for (let pixel = 0; pixel < pixelCount; pixel++) {
+    const source = pixel * channels;
+    const target = pixel * RGBA_CHANNELS;
+    for (let channel = 0; channel < RGBA_CHANNELS - 1; channel++) {
+      // Grayscale images repeat their one color channel.
+      rgba[target + channel] =
+        data[source + (colorChannels === 1 ? 0 : channel)] ?? 0;
+    }
+    rgba[target + RGBA_CHANNELS - 1] = hasAlpha
+      ? (data[source + colorChannels] ?? 0)
+      : OPAQUE_ALPHA;
+  }
+
+  return rgba;
 }
