@@ -178,6 +178,9 @@ fn unauthorized(message: impl Into<String>) -> Response {
     api_error(StatusCode::UNAUTHORIZED, message)
 }
 
+/// Rejects a client from a different release. Current clients reload the page instead of showing
+/// this explanation, so players only see it when the reload served the same client again, such as
+/// from a stale cache; hence the hard-refresh advice.
 pub fn validate_client_version(version: &str, current: &str) -> Result<(), String> {
     if !version.is_empty() && (version == "bot" || version == current) {
         return Ok(());
