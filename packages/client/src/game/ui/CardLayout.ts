@@ -124,7 +124,7 @@ export class CardLayout extends Konva.Group {
         layoutChild.tween.destroy();
         layoutChild.tween = null;
       }
-      layoutChild.stopMisplayAnimation();
+      layoutChild.stopAnimations();
 
       // Animate the card going:
       // - from the deck to a player's hand (or vice versa)

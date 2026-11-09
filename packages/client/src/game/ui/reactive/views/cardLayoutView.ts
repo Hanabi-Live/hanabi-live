@@ -11,6 +11,7 @@ import type Konva from "konva";
 import type { HanabiCard } from "../../HanabiCard";
 import type { LayoutChild } from "../../LayoutChild";
 import { globals } from "../../UIGlobals";
+import { startStackCompleteAnimation } from "../../stackCompleteAnimation";
 import { updateCardVisuals } from "./cardsView";
 
 const STACK_STRINGS_REVERSED = new ReadonlyMap<StackDirection, string>([
@@ -104,6 +105,44 @@ export function onDiscardStacksChanged(
   );
 
   globals.layers.card.batchDraw();
+}
+
+/** Celebrates a card that completes its play stack. */
+export function onPlayStacksOrClueTokensChanged(
+  data: { playStacks: GameState["playStacks"]; clueTokens: number },
+  previousData:
+    { playStacks: GameState["playStacks"]; clueTokens: number } | undefined,
+): void {
+  // Skip the animation when jumping through a replay.
+  if (previousData === undefined || globals.animateFast) {
+    return;
+  }
+
+  const { stackSize } = globals.variant;
+  for (const [suitIndex, stack] of data.playStacks.entries()) {
+    const previousStack = previousData.playStacks[suitIndex];
+    if (stack.length !== stackSize || previousStack?.length !== stackSize - 1) {
+      continue;
+    }
+
+    const card = globals.deck[stack.at(-1)!];
+    if (card === undefined) {
+      continue;
+    }
+    const suit = globals.variant.suits[suitIndex]!;
+    const playStack = globals.elements.playStacks.get(suit)!;
+    const gainedClue = data.clueTokens > previousData.clueTokens;
+    const { layout } = card;
+    layout.stopAnimations();
+    layout.stackCompleteAnimation = startStackCompleteAnimation(
+      layout,
+      playStack,
+      gainedClue ? previousData.clueTokens : null,
+      () => {
+        layout.stackCompleteAnimation = null;
+      },
+    );
+  }
 }
 
 export function onPlayStacksChanged(

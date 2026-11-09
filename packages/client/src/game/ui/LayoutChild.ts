@@ -13,6 +13,7 @@ import { confirmPlay } from "./confirmPlay";
 import * as cursor from "./cursor";
 import type { MisplayAnimation } from "./misplayAnimation";
 import { draggablePlayerIndex } from "./reactive/views/draggableView";
+import type { StackCompleteAnimation } from "./stackCompleteAnimation";
 import * as turn from "./turn";
 
 /** Parent of a `HanabiCard`. It has a `CardLayout` or `PlayStack` parent. */
@@ -20,6 +21,7 @@ export class LayoutChild extends Konva.Group {
   tween: Konva.Tween | null = null;
   doMisplayAnimation = false;
   misplayAnimation: MisplayAnimation | null = null;
+  stackCompleteAnimation: StackCompleteAnimation | null = null;
   blank = false;
 
   private readonly _card: HanabiCard;
@@ -54,10 +56,14 @@ export class LayoutChild extends Konva.Group {
     child.on("heightChange", change);
   }
 
-  stopMisplayAnimation(): void {
+  stopAnimations(): void {
     if (this.misplayAnimation !== null) {
       this.misplayAnimation.stop();
       this.misplayAnimation = null;
+    }
+    if (this.stackCompleteAnimation !== null) {
+      this.stackCompleteAnimation.stop();
+      this.stackCompleteAnimation = null;
     }
   }
 

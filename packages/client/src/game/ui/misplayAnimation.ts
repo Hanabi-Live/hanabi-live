@@ -11,6 +11,16 @@ import {
   QUARTER_TURN_DEGREES,
 } from "./constants";
 import { CARD_CORNER_ROUNDNESS } from "./drawCards";
+import type { Point } from "./fireworks";
+import {
+  EffectTimeline,
+  absoluteCenter,
+  bezier,
+  easeIn,
+  easeOut,
+  interpolate,
+  randomBetween,
+} from "./fireworks";
 import { degreesToRadians } from "./konvaHelpers";
 import {
   areStrikesHidden,
@@ -67,6 +77,9 @@ const RAY_COLORS = ["#ff6b35", "#ffd166"] as const;
 const SMOKE_SECONDS = 0.9;
 const SMOKE_STAGGER_SECONDS = 0.07;
 const FLASH_SECONDS = 0.22;
+/** The final radius of the flash and the shock ring, as fractions of a stack height. */
+const FLASH_RADIUS = 0.43;
+const RING_RADIUS = 0.68;
 const RING_SECONDS = 0.42;
 const RAYS_SECONDS = 0.38;
 const NUM_RAYS = 12;
@@ -76,11 +89,6 @@ export interface MisplayAnimation {
   readonly exploded: boolean;
   /** Ends the animation where it is. The card's layout then animates it from there. */
   stop: () => void;
-}
-
-interface Point {
-  x: number;
-  y: number;
 }
 
 /** Where a card sits in a layout, in that layout's coordinates. */
@@ -96,45 +104,6 @@ interface Pose {
   y: number;
   scale: number;
   rotation: number;
-}
-
-/** Something that runs for a while, starting at a fixed time in the animation. */
-interface Track {
-  start: number;
-  duration: number;
-  update: (t: number) => void;
-  end?: () => void;
-  ended: boolean;
-}
-
-function easeIn(t: number) {
-  return t * t;
-}
-
-function easeOut(t: number) {
-  return t * (2 - t);
-}
-
-function interpolate(a: number, b: number, t: number) {
-  return a + (b - a) * t;
-}
-
-function bezier(a: Point, control: Point, b: Point, t: number): Point {
-  const u = 1 - t;
-  return {
-    x: u * u * a.x + 2 * u * t * control.x + t * t * b.x,
-    y: u * u * a.y + 2 * u * t * control.y + t * t * b.y,
-  };
-}
-
-function absoluteCenter(node: Konva.Node): Point {
-  return node
-    .getAbsoluteTransform()
-    .point({ x: node.width() / 2, y: node.height() / 2 });
-}
-
-function randomBetween(min: number, max: number): number {
-  return min + Math.random() * (max - min);
 }
 
 /**
@@ -200,14 +169,7 @@ export function startMisplayAnimation(
   const blast =
     strikeSquare === undefined ? hover : absoluteCenter(strikeSquare);
 
-  // Effects are drawn above the cards.
-  const fxLayer = globals.layers.UI2;
-  const fxInverse = fxLayer.getAbsoluteTransform().copy().invert();
-  const fx = new Konva.Group({ listening: false });
-  fxLayer.add(fx);
-  function toFx(point: Point) {
-    return fxInverse.point(point);
-  }
+  const timeline = new EffectTimeline(unit);
 
   const scorch = new Konva.Rect({
     width: cardW,
@@ -238,42 +200,6 @@ export function startMisplayAnimation(
     });
   }
 
-  const tracks: Track[] = [];
-  function add(
-    trackStart: number,
-    duration: number,
-    update: (t: number) => void,
-    trackEnd?: () => void,
-  ) {
-    const track: Track = { start: trackStart, duration, update, ended: false };
-    if (trackEnd !== undefined) {
-      track.end = trackEnd;
-    }
-    tracks.push(track);
-  }
-
-  // An effect that draws a shape and then destroys it.
-  function addShape(
-    shapeStart: number,
-    duration: number,
-    shape: Konva.Shape,
-    update: (t: number) => void,
-  ) {
-    shape.visible(false);
-    fx.add(shape);
-    add(
-      shapeStart,
-      duration,
-      (t) => {
-        shape.visible(true);
-        update(t);
-      },
-      () => {
-        shape.destroy();
-      },
-    );
-  }
-
   function sparks(
     sparksStart: number,
     origin: Point,
@@ -285,32 +211,37 @@ export function startMisplayAnimation(
     for (let i = 0; i < count; i++) {
       const angle = -Math.PI / 2 + randomBetween(-spread, spread);
       const distance = randomBetween(0.22, 0.55) * unit;
-      const local = toFx(origin);
+      const local = timeline.toFx(origin);
       const spark = new Konva.Circle({
         radius: randomBetween(0.02, 0.04) * unit,
         fill: colors[i % colors.length]!,
       });
-      addShape(sparksStart, duration * randomBetween(0.7, 1.2), spark, (t) => {
-        const out = easeOut(t);
-        spark.position({
-          x: local.x + Math.cos(angle) * distance * out,
-          y: local.y + Math.sin(angle) * distance * out + 0.28 * unit * t * t,
-        });
-        spark.opacity(1 - t);
-      });
+      timeline.addShape(
+        sparksStart,
+        duration * randomBetween(0.7, 1.2),
+        spark,
+        (t) => {
+          const out = easeOut(t);
+          spark.position({
+            x: local.x + Math.cos(angle) * distance * out,
+            y: local.y + Math.sin(angle) * distance * out + 0.28 * unit * t * t,
+          });
+          spark.opacity(1 - t);
+        },
+      );
     }
   }
 
   function smoke(smokeStart: number, origin: Point, count: number) {
     for (let i = 0; i < count; i++) {
-      const local = toFx(origin);
+      const local = timeline.toFx(origin);
       const x = local.x + randomBetween(-0.12, 0.12) * unit;
       const drift = randomBetween(-0.18, 0.18) * unit;
       const rise = randomBetween(0.5, 0.88) * unit;
       const puff = new Konva.Circle({
         fill: SMOKE_COLORS[i % SMOKE_COLORS.length]!,
       });
-      addShape(
+      timeline.addShape(
         smokeStart + i * SMOKE_STAGGER_SECONDS,
         SMOKE_SECONDS,
         puff,
@@ -325,19 +256,15 @@ export function startMisplayAnimation(
   }
 
   function explosion(explosionStart: number, at: Point) {
-    const local = toFx(at);
-    const flash = new Konva.Circle({ ...local, fill: FLASH_COLOR });
-    addShape(explosionStart, FLASH_SECONDS, flash, (t) => {
-      flash.radius((0.05 + 0.38 * easeOut(t)) * unit);
-      flash.opacity(1 - easeOut(t));
-    });
-    const ring = new Konva.Circle({ ...local, stroke: RING_COLOR });
-    addShape(explosionStart, RING_SECONDS, ring, (t) => {
-      const out = easeOut(t);
-      ring.radius((0.08 + 0.6 * out) * unit);
-      ring.strokeWidth((0.06 * (1 - out) + 0.006) * unit);
-      ring.opacity(1 - out);
-    });
+    const local = timeline.toFx(at);
+    timeline.addFlash(
+      explosionStart,
+      at,
+      FLASH_RADIUS,
+      FLASH_COLOR,
+      FLASH_SECONDS,
+    );
+    timeline.addRing(explosionStart, at, RING_RADIUS, RING_COLOR, RING_SECONDS);
     for (let i = 0; i < NUM_RAYS; i++) {
       const angle = (i / NUM_RAYS) * 2 * Math.PI + randomBetween(0, 0.2);
       const length = randomBetween(0.42, 0.65) * unit;
@@ -346,7 +273,7 @@ export function startMisplayAnimation(
         strokeWidth: 0.04 * unit,
         lineCap: "round",
       });
-      addShape(explosionStart, RAYS_SECONDS, ray, (t) => {
+      timeline.addShape(explosionStart, RAYS_SECONDS, ray, (t) => {
         const out = easeOut(t);
         const outer = length * out;
         const inner = length * Math.max(0, out - 0.35) * 1.4;
@@ -365,7 +292,7 @@ export function startMisplayAnimation(
     // that the animation does not redraw on each frame. Otherwise, a layer can stay drawn at a
     // shaken position after the shake ends.
     const layers = Object.values(globals.layers) as Konva.Layer[];
-    add(
+    timeline.add(
       explosionStart,
       SHAKE_SECONDS,
       (t) => {
@@ -399,7 +326,7 @@ export function startMisplayAnimation(
           y: origin.y - halfH * (scale - 1),
         });
       }
-      add(
+      timeline.add(
         explosionStart,
         STRIKE_POP_SECONDS,
         (t) => {
@@ -415,7 +342,7 @@ export function startMisplayAnimation(
 
   // 1. Launch over the stack.
   let time = 0;
-  add(time, LAUNCH_SECONDS, (t) => {
+  timeline.add(time, LAUNCH_SECONDS, (t) => {
     const out = easeOut(t);
     setPose({
       x: interpolate(start.x, hover.x, out),
@@ -430,7 +357,7 @@ export function startMisplayAnimation(
   sparks(time, fuse, 8, SPARK_COLORS, 0.9, 0.3);
   sparks(time + 0.15, fuse, 5, EMBER_COLORS, 0.6, 0.28);
   smoke(time + 0.2, fuse, 3);
-  add(time, SPUTTER_SECONDS, (t) => {
+  timeline.add(time, SPUTTER_SECONDS, (t) => {
     setPose({
       x: hover.x,
       y:
@@ -460,7 +387,7 @@ export function startMisplayAnimation(
       + QUARTER_TURN_DEGREES;
     const flightStart = time;
     let lastSpark = 0;
-    add(time, FLIGHT_SECONDS, (t) => {
+    timeline.add(time, FLIGHT_SECONDS, (t) => {
       const eased = easeIn(t);
       const point = bezier(hover, control, blast, eased);
       const scale = interpolate(1, FLIGHT_END_SCALE, eased);
@@ -497,7 +424,7 @@ export function startMisplayAnimation(
     scale: blastPose.scale * (RECOIL_SCALE / FLIGHT_END_SCALE),
     rotation: blastPose.rotation + RECOIL_SPIN_DEGREES,
   };
-  add(time, RECOIL_SECONDS, (t) => {
+  timeline.add(time, RECOIL_SECONDS, (t) => {
     const out = easeOut(t);
     setPose({
       ...blastPose,
@@ -509,7 +436,7 @@ export function startMisplayAnimation(
   time += RECOIL_SECONDS;
 
   // 5. The burnt card tumbles into the discard pile.
-  add(time, FALL_SECONDS, (t) => {
+  timeline.add(time, FALL_SECONDS, (t) => {
     setPose({
       x: interpolate(recoil.x, end.x, easeOut(t)),
       y:
@@ -520,57 +447,27 @@ export function startMisplayAnimation(
     });
     scorch.opacity(EXPLODED_SCORCH_OPACITY * (1 - t));
   });
-  time += FALL_SECONDS;
-
-  const totalSeconds = Math.max(
-    time,
-    ...tracks.map((track) => track.start + track.duration),
-  );
 
   function cleanUp() {
-    animation.stop();
-    for (const track of tracks) {
-      if (!track.ended) {
-        track.ended = true;
-        track.end?.();
-      }
-    }
-    fx.destroy();
     scorch.destroy();
     revealStrike();
-    fxLayer.batchDraw();
   }
 
-  const animation = new Konva.Animation(
-    (frame) => {
-      const seconds = frame.time / 1000;
-      for (const track of tracks) {
-        if (track.ended || seconds < track.start) {
-          continue;
-        }
-        const t = Math.min(1, (seconds - track.start) / track.duration);
-        track.update(t);
-        if (t === 1) {
-          track.ended = true;
-          track.end?.();
-        }
-      }
-      if (seconds >= totalSeconds) {
-        cleanUp();
-        layoutChild.position({ x: target.x, y: target.y });
-        layoutChild.scale({ x: target.scale, y: target.scale });
-        layoutChild.rotation(0);
-        onFinish();
-      }
-    },
-    [globals.layers.card, fxLayer, globals.layers.UI],
-  );
-  animation.start();
+  timeline.play([globals.layers.card, globals.layers.UI], () => {
+    cleanUp();
+    layoutChild.position({ x: target.x, y: target.y });
+    layoutChild.scale({ x: target.scale, y: target.scale });
+    layoutChild.rotation(0);
+    onFinish();
+  });
 
   return {
     get exploded() {
       return exploded;
     },
-    stop: cleanUp,
+    stop: () => {
+      timeline.stop();
+      cleanUp();
+    },
   };
 }

@@ -9,6 +9,8 @@ of the repository.
 
 ## November 9th, 2026
 
+- Completing a play stack now sets off a firework. When the team gets a clue
+  back, a spark flies to the clue count.
 - Selecting a clue now previews the target's hand as they would see it after the
   clue. Click the selected color or number again to deselect it.
 - Everyone must sign in again once, because the session cookie format changed.

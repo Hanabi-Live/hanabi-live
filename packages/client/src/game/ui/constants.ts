@@ -304,6 +304,8 @@ export const TIMER_WARNING_OPACITY = 0.7;
 
 export const CARD_ANIMATION_LENGTH_SECONDS = 0.5;
 export const CARD_ANIMATION_DELAY_SECONDS = 0.1;
+/** How long a card takes to move between a hand and a play stack. */
+export const PLAY_ANIMATION_SECONDS = 0.8;
 export const PREPLAY_DELAY_MILLISECONDS = 75;
 export const DOUBLE_TAP_DELAY_MILLISECONDS = 500;
 

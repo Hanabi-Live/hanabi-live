@@ -198,6 +198,11 @@ const visibleStateObservers: Subscriptions = [
   subVS((s) => s.hole, cardLayoutView.onHoleChanged),
   // Play stacks come last so we can show the bases if they get empty.
   subVS((s) => s.playStacks, cardLayoutView.onPlayStacksChanged),
+  // This must come after the play stacks, so that the completing card is already moving.
+  subVS(
+    (s) => ({ playStacks: s.playStacks, clueTokens: s.clueTokens }),
+    cardLayoutView.onPlayStacksOrClueTokensChanged,
+  ),
   subVS(
     (s) => s.playStackDirections,
     cardLayoutView.onPlayStackDirectionsChanged,
