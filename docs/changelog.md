@@ -9,6 +9,7 @@ of the repository.
 
 ## November 9th, 2026
 
+- The pregame chat now says when a spectator joins or leaves the game.
 - After the site updates, the page now reloads automatically instead of asking
   for a hard refresh.
 - The "New Game" screen now has a "Custom Seed" option for playing a specific

@@ -1482,6 +1482,38 @@ async fn restart_leaves_out_players_who_are_done_playing() -> Result<()> {
 }
 
 #[tokio::test]
+async fn pregame_announces_spectators() -> Result<()> {
+    let Some(mut h) = Harness::new(&["Alice", "Bob"]).await? else {
+        return Ok(());
+    };
+    let result = async {
+        let id = h.create(0, "Spectator notices", json!({})).await?;
+        h.send(1, "tableSpectate", json!({"tableID":id})).await?;
+        let history = h.receive(1, "chatList").await?;
+        ensure!(history["list"][0]["msg"] == "Bob joined the game (as a spectator).");
+        h.send(1, "tableSpectate", json!({"tableID":id})).await?;
+        h.send(1, "tableUnattend", json!({"tableID":id})).await?;
+        let notices = chat_messages(&h.frames(0)?)
+            .into_iter()
+            .map(|m| m["msg"].clone())
+            .collect::<Vec<_>>();
+        ensure!(
+            notices
+                == [
+                    "Bob joined the game (as a spectator).",
+                    "Bob left the game (as a spectator).",
+                ],
+            "{notices:?}"
+        );
+        Ok::<(), anyhow::Error>(())
+    }
+    .await;
+    let cleanup = h.close().await;
+    result?;
+    cleanup
+}
+
+#[tokio::test]
 async fn pregame_history_survives_join_return_and_actor_recovery() -> Result<()> {
     let Some(mut h) = Harness::new(&["Alice", "Bob", "Outsider"]).await? else {
         return Ok(());

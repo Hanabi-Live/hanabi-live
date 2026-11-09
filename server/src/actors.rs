@@ -2267,6 +2267,9 @@ impl TableActor {
             e.messages.push((a.session.clone(), message.clone()));
         }
     }
+    fn spectating(&self, user: i32) -> bool {
+        self.attendees.get(&user).is_some_and(|a| a.spectator)
+    }
     fn add_chat(&self, e: &mut Effects, chat: &Chat) {
         self.add_all(e, hanabi_protocol::server::CHAT, chat.clone());
     }
@@ -3391,14 +3394,25 @@ impl TableActor {
         } else {
             None
         };
+        let pregame = matches!(self.table.phase, Phase::Pregame { .. });
         let mut next = self.candidate();
         next.shadows
             .insert(session.user, shadow.map(hanabi_engine::int));
         if replay {
             next.game_mut().context("Missing replay")?.idle_remaining = IDLE_TIMEOUT_MS;
         }
+        let notice = if pregame && spectating && !self.spectating(session.user) {
+            membership_notice(
+                &mut next,
+                &format!(
+                    "{} joined the game (as a spectator).",
+                    crate::accounts::escape_html(&session.name)
+                ),
+            )
+        } else {
+            None
+        };
         self.persist(next).await?;
-        let pregame = matches!(self.table.phase, Phase::Pregame { .. });
         if pregame && !spectating && session.active() {
             self.pregame_absent_until.remove(&session.user);
         }
@@ -3414,6 +3428,14 @@ impl TableActor {
         );
         self.replay_absent_until = None;
         let mut e = self.effects();
+        if let Some(notice) = notice {
+            for attendee in self.audience().filter(|a| a.session.user != session.user) {
+                e.messages.push((
+                    attendee.session.clone(),
+                    frame(hanabi_protocol::server::CHAT, notice.clone()),
+                ));
+            }
+        }
         e.statuses.push((
             session.clone(),
             if replay {
@@ -3463,10 +3485,20 @@ impl TableActor {
         let mut next = self.candidate();
         let mut notices = vec![];
         next.shadows.remove(&session.user);
-        if remove && matches!(next.phase, Phase::Pregame { .. }) {
-            notices = remove_pregame_players(&mut next, &HashSet::from([session.user]));
-            if next.players().is_empty() {
-                return self.retire().await;
+        if matches!(next.phase, Phase::Pregame { .. }) {
+            if self.spectating(session.user) {
+                notices.extend(membership_notice(
+                    &mut next,
+                    &format!(
+                        "{} left the game (as a spectator).",
+                        crate::accounts::escape_html(&session.name)
+                    ),
+                ));
+            } else if remove {
+                notices = remove_pregame_players(&mut next, &HashSet::from([session.user]));
+                if next.players().is_empty() {
+                    return self.retire().await;
+                }
             }
         }
         if matches!(next.phase, Phase::Replay { .. })
