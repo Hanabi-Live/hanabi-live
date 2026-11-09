@@ -796,6 +796,10 @@ move for the current situation.
   send messages in exactly the same way that a real player would. A reference
   bot implementation can be found at
   [`hanabi-live-bot`](https://github.com/Hanabi-Live/hanabi-live-bot).
+- To mark an account as a bot, send `bot` as the client version: the `version`
+  field when you log in to `/login`, or `?version=bot` in the WebSocket URL. The
+  account stays a bot after that. Other players see a robot icon next to it.
+- Unlike human players, bots can play at more than one table at a time.
 
 ### JSON Endpoints
 
