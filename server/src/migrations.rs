@@ -22,6 +22,11 @@ const CONNECT_TIMEOUT: Duration = Duration::from_secs(10);
 const STATEMENT_TIMEOUT: Duration = Duration::from_hours(1);
 /// How long a migration waits for a lock, so that it fails instead of stalling live queries.
 const LOCK_TIMEOUT: Duration = Duration::from_secs(5);
+/// How long a live query may wait for a migration's locks before the migration is cancelled. A
+/// migration holds its locks until it commits, so a slow one can stall logins and games.
+const MAX_BLOCKED_WAIT: Duration = Duration::from_secs(10);
+/// How often `apply_watched` looks for queries that the migration blocks.
+const BLOCKED_POLL_INTERVAL: Duration = Duration::from_secs(1);
 
 /// The command that brings a database to `SCHEMA_VERSION`.
 pub const APPLY_COMMAND: &str = "hanabi-live migrate apply";
@@ -156,6 +161,53 @@ pub async fn apply(connection: &mut PgConnection) -> Result<Vec<String>> {
     Ok(steps)
 }
 
+/// Runs `apply`, cancelling the statement in progress if a live query waits on the migration's
+/// locks for longer than `MAX_BLOCKED_WAIT`. A migration in a transaction then rolls back.
+async fn apply_watched(config: &Config, connection: &mut PgConnection) -> Result<Vec<String>> {
+    let pid = sqlx::query_scalar!("SELECT pg_backend_pid() AS \"pid!\"")
+        .fetch_one(&mut *connection)
+        .await?;
+    let mut watchdog = connect(config).await?;
+    let applying = apply(connection);
+    tokio::pin!(applying);
+    let mut poll = tokio::time::interval(BLOCKED_POLL_INTERVAL);
+    let blocked = loop {
+        tokio::select! {
+            result = &mut applying => {
+                watchdog.close().await?;
+                return result;
+            }
+            _ = poll.tick() => {
+                let blocked = sqlx::query_scalar!(
+                    "SELECT count(*) AS \"blocked!\" FROM pg_stat_activity
+                     WHERE $1 = ANY(pg_blocking_pids(pid))
+                         AND now() - query_start > make_interval(secs => $2)",
+                    pid,
+                    MAX_BLOCKED_WAIT.as_secs_f64()
+                )
+                .fetch_one(&mut watchdog)
+                .await?;
+                if blocked > 0 {
+                    break blocked;
+                }
+            }
+        }
+    };
+    sqlx::query_scalar!("SELECT pg_cancel_backend($1) AS \"cancelled!\"", pid)
+        .fetch_one(&mut watchdog)
+        .await?;
+    watchdog.close().await?;
+    let error = match applying.await {
+        // The cancellation arrived between statements, after the last migration.
+        Ok(steps) => return Ok(steps),
+        Err(error) => error,
+    };
+    Err(error.context(format!(
+        "Cancelled the migration because {blocked} live queries waited more than {} seconds for its locks",
+        MAX_BLOCKED_WAIT.as_secs()
+    )))
+}
+
 /// Refuses to serve a database that is not exactly at `SCHEMA_VERSION`.
 pub(crate) async fn require_current(pool: &PgPool) -> Result<()> {
     let mut connection = pool.acquire().await?;
@@ -192,7 +244,7 @@ async fn connect(config: &Config) -> Result<PgConnection> {
 pub async fn run(config: &Config, apply_pending: bool) -> Result<()> {
     let mut connection = connect(config).await?;
     if apply_pending {
-        let steps = apply(&mut connection).await?;
+        let steps = apply_watched(config, &mut connection).await?;
         for step in &steps {
             println!("Applied: {step}");
         }
