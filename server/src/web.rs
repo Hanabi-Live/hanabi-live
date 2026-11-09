@@ -620,6 +620,12 @@ async fn websocket(
             StatusCode::SERVICE_UNAVAILABLE).response(true);
     };
     let version_check = accounts::validate_client_version(&version, &app.version);
+    if version == accounts::BOT_VERSION {
+        eprintln!(
+            "Accepted bot websocket for account {id} from IP: {}",
+            address.ip()
+        );
+    }
     upgrade
         .max_message_size(crate::transport::MAX_MESSAGE_BYTES)
         .max_frame_size(crate::transport::MAX_MESSAGE_BYTES)

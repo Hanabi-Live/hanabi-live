@@ -181,8 +181,11 @@ fn unauthorized(message: impl Into<String>) -> Response {
 /// Rejects a client from a different release. Current clients reload the page instead of showing
 /// this explanation, so players only see it when the reload served the same client again, such as
 /// from a stale cache; hence the hard-refresh advice.
+/// The client version that bots send instead of the current client version.
+pub const BOT_VERSION: &str = "bot";
+
 pub fn validate_client_version(version: &str, current: &str) -> Result<(), String> {
-    if !version.is_empty() && (version == "bot" || version == current) {
+    if !version.is_empty() && (version == BOT_VERSION || version == current) {
         return Ok(());
     }
     Err(format!(
@@ -368,7 +371,12 @@ async fn login_inner(state: &Accounts, ip: &str, input: LoginRequest) -> Result<
         .fetch_one(&state.pool)
         .await?;
     }
-    eprintln!("Successful login for account {id} from IP: {ip}");
+    let bot = if input.version == BOT_VERSION {
+        " as a bot"
+    } else {
+        ""
+    };
+    eprintln!("Successful login for account {id}{bot} from IP: {ip}");
     let signed = cookie::encode(id, &state.config.secret, Utc::now().timestamp())?;
     Ok(with_cookies(
         Json(LoginResponse {
