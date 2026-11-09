@@ -66,6 +66,7 @@ run_parallel javascript bunx --bun --no-install turbo run lint --cache=local:rw 
 run_parallel javascript bash "$DIR/scripts/lint/check-prettier.sh"
 run_parallel javascript bash "$DIR/scripts/lint/check-spelling.sh"
 run_parallel javascript run_repository_check check-css
+run_parallel javascript run_repository_check check-emoji
 run_parallel javascript run_repository_check check-knip
 run_parallel javascript run_repository_check check-shellcheck
 run_parallel javascript run_repository_check check-templates

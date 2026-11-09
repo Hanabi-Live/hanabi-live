@@ -35,6 +35,10 @@
       ],
       "outputs": []
     },
+    "//#check-emoji": {
+      "dependsOn": ["@hanabi-live/scripts#transit"],
+      "cache": false
+    },
     "//#check-knip": {
       "inputs": ["$TURBO_DEFAULT$", "!**/*.md"],
       "env": [
