@@ -206,11 +206,12 @@ export function directionArrow(
 
   const arrowHeight = 0.25;
   const pointerLength = 0.05 * CARD_W;
+  const pointerWidth = pointerLength * 1.5;
 
   const border = new Konva.Arrow({
     points: [0, 0, 0, arrowHeight * CARD_H],
     pointerLength,
-    pointerWidth: pointerLength * 1.5,
+    pointerWidth,
     fill: "black",
     stroke: "black",
     strokeWidth: pointerLength * ARROW_STROKE_WIDTH.OUTLINE,
@@ -230,7 +231,7 @@ export function directionArrow(
   const arrowBase = new Konva.Arrow({
     points: [0, 0, 0, arrowHeight * CARD_H],
     pointerLength,
-    pointerWidth: pointerLength * 1.5,
+    pointerWidth,
     fill: "white",
     stroke: "white", // This should match the color of the suit; it will be manually set later on
     strokeWidth: pointerLength * ARROW_STROKE_WIDTH.BODY,

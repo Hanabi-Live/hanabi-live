@@ -42,6 +42,21 @@ import { drawPip } from "./drawPip";
 import { getCardOrStackBase } from "./getCardOrStackBase";
 import * as konvaHelpers from "./konvaHelpers";
 
+/**
+ * Where an arrow points on an element that is not a card or a text label, as fractions of the
+ * element's width and height from its top-left corner.
+ */
+const ARROW_ANCHOR = {
+  /** The top middle of the deck. */
+  DECK: { x: 0.5, y: 0.1 },
+
+  /** The first digit of the turn, score, plays, and clues numbers. */
+  SCORE_AREA_NUMBER: { x: 0.15 },
+
+  /** The max score number, which follows the score. */
+  MAX_SCORE: { x: 0.7 },
+} as const;
+
 function getClueArrowColor(
   element: Konva.Node | null,
   preview: boolean,
@@ -294,8 +309,8 @@ function getPos(element: Konva.Node, rot: number) {
     switch (element) {
       case globals.elements.deck: {
         // Order = ReplayArrowOrder.Deck (-1).
-        pos.x += element.width() * 0.5;
-        pos.y += element.height() * 0.1;
+        pos.x += element.width() * ARROW_ANCHOR.DECK.x;
+        pos.y += element.height() * ARROW_ANCHOR.DECK.y;
 
         break;
       }
@@ -304,14 +319,14 @@ function getPos(element: Konva.Node, rot: number) {
       case globals.elements.scoreNumberLabel:
       case globals.elements.playsNumberLabel:
       case globals.elements.cluesNumberLabel: {
-        pos.x += element.width() * 0.15;
+        pos.x += element.width() * ARROW_ANCHOR.SCORE_AREA_NUMBER.x;
 
         break;
       }
 
       case globals.elements.maxScoreNumberLabel: {
         // Order = ReplayArrowOrder.MaxScore (-4).
-        pos.x += element.width() * 0.7;
+        pos.x += element.width() * ARROW_ANCHOR.MAX_SCORE.x;
 
         break;
       }

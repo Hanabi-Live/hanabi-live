@@ -11,6 +11,7 @@ import {
   BUTTON_TEXT_MIDDLE,
   BUTTON_TEXT_SIZE,
   FONT_FAMILY,
+  STROKE_WIDTH_UNIT,
 } from "./constants";
 import { drawPip } from "./drawPip";
 import { drawLayer } from "./konvaHelpers";
@@ -72,7 +73,7 @@ export class ColorButton extends Konva.Group {
           fontFamily: FONT_FAMILY,
           fill: "white",
           stroke: "black",
-          strokeWidth: 0.014_87 * h,
+          strokeWidth: STROKE_WIDTH_UNIT * globals.stage.height(),
           align: "center",
           text: config["text"] as string | undefined,
           listening: false,

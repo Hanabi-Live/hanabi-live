@@ -1,6 +1,7 @@
 import Konva from "konva";
 import { getCanvasColors } from "../../theme";
 import { globals } from "./UIGlobals";
+import { STROKE_WIDTH_UNIT } from "./constants";
 import { Button } from "./controls/Button";
 import { EnterHypoButton } from "./controls/EnterHypoButton";
 import { SharedTurnsButton } from "./controls/SharedTurnsButton";
@@ -38,11 +39,13 @@ export function drawReplayArea(winW: number, winH: number): void {
     listening: false,
   });
 
-  // The thin black rectangle that the replay slider slides on.
+  // The thin black rectangle that the replay slider slides on. In the Keldon layout, it is inset
+  // from both sides of the replay area.
+  const replayBarInset = globals.lobby.settings.keldonMode ? 0.01 : 0;
   const replayBarValues = {
-    x: globals.lobby.settings.keldonMode ? 0.01 : 0,
+    x: replayBarInset,
     y: 0.0425,
-    w: globals.lobby.settings.keldonMode ? 0.481 : replayAreaValues.w,
+    w: replayAreaValues.w - 2 * replayBarInset,
     h: 0.01,
   };
   globals.elements.replayBar = new Konva.Rect({
@@ -74,7 +77,7 @@ export function drawReplayArea(winW: number, winH: number): void {
     h: 0.03,
     cornerRadius: 0.01,
     stroke: "black",
-    strokeWidth: 0.001_217,
+    strokeWidth: 2 * STROKE_WIDTH_UNIT,
   };
 
   // The shared (white) replay shuttle. (We want it to be behind the normal replay shuttle, so we
@@ -89,7 +92,7 @@ export function drawReplayArea(winW: number, winH: number): void {
     cornerRadius: shuttleValues.cornerRadius * winW,
     fill: getCanvasColors().replayShuttle,
     stroke: shuttleValues.stroke,
-    strokeWidth: shuttleValues.strokeWidth * winW,
+    strokeWidth: shuttleValues.strokeWidth * winH,
     visible: false,
     listening: true,
   });
@@ -113,7 +116,7 @@ export function drawReplayArea(winW: number, winH: number): void {
     draggable: true,
     dragBoundFunc: replay.shuttleDragBound,
     stroke: shuttleValues.stroke,
-    strokeWidth: shuttleValues.strokeWidth * winW,
+    strokeWidth: shuttleValues.strokeWidth * winH,
     listening: true,
   });
   globals.elements.replayShuttle.on("dragmove", replay.shuttleDragMove);

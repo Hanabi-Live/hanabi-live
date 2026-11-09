@@ -28,6 +28,12 @@ type ScoreFrequency = z.infer<typeof scoreFrequencySchema>;
 
 const scoreFrequencies = z.array(scoreFrequencySchema);
 
+/** The font size of the count drawn above each bar of the score chart, in pixels. */
+const SCORE_CHART_LABEL_FONT_SIZE = 16;
+
+/** The space above the bars of the score chart, which keeps the tallest bar's count in view. */
+const SCORE_CHART_TOP_PADDING = 2.5 * SCORE_CHART_LABEL_FONT_SIZE;
+
 const collator = new Intl.Collator(undefined, {
   numeric: true,
   sensitivity: "base",
@@ -430,14 +436,14 @@ function drawScoreChart(
       ],
     },
     options: {
-      layout: { padding: { top: 40 } },
+      layout: { padding: { top: SCORE_CHART_TOP_PADDING } },
       plugins: {
         legend: { display: false },
         datalabels: {
           color: "#000000",
           anchor: "end",
           align: "end",
-          font: { weight: "bold", size: 16 },
+          font: { weight: "bold", size: SCORE_CHART_LABEL_FONT_SIZE },
         },
       },
       scales: {

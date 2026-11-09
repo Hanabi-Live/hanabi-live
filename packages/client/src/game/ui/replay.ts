@@ -14,6 +14,19 @@ import { animate } from "./konvaHelpers";
 /** How long a replay shuttle takes to slide to a new segment. */
 const SHUTTLE_ANIMATION_SECONDS = 0.25;
 
+/** How far down the replay bar a shuttle's center sits, as a fraction of the shuttle's height. */
+const SHUTTLE_Y_ANCHOR = 0.55;
+
+/**
+ * The replay shuttle shrinks when it is on the same segment as the shared replay shuttle, so that
+ * both stay visible. It also moves up (as a fraction of the stage height) to stay centered on the
+ * bar.
+ */
+const OVERLAPPING_SHUTTLE = {
+  scale: 0.7,
+  yNudge: 0.003,
+} as const;
+
 const setTurnButton = getHTMLElement("#set-turn-button");
 const setTurnInput = getHTMLInputElement("#set-turn-input");
 
@@ -278,11 +291,11 @@ function positionReplayShuttle(
     globals.elements.replayBar!.x()
     + (sliderW / finalSegment) * targetSegment
     + shuttle.width() / 2;
-  let y = globals.elements.replayBar!.y() + shuttle.height() * 0.55;
+  let y = globals.elements.replayBar!.y() + shuttle.height() * SHUTTLE_Y_ANCHOR;
   if (smaller) {
-    y -= 0.003 * winH;
+    y -= OVERLAPPING_SHUTTLE.yNudge * winH;
   }
-  const scale = smaller ? 0.7 : 1;
+  const scale = smaller ? OVERLAPPING_SHUTTLE.scale : 1;
   animate(
     shuttle,
     {

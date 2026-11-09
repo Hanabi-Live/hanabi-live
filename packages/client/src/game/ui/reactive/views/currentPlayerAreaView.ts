@@ -31,6 +31,16 @@ const ARROW_ROTATION_SECONDS = 0.75;
  */
 const IMAGINARY_PLAYER_DISTANCE = 600 / 1080;
 
+/**
+ * How far the center of each line of text sits below the center of the current player area, as
+ * fractions of the stage height. The lines are "Current player:", the player's name, and an
+ * optional warning (such as "(cannot discard; at 8 clues)").
+ */
+const LINE_OFFSETS = {
+  withoutWarning: [-0.03, 0.03],
+  withWarning: [-0.04, 0.01, 0.06],
+} as const;
+
 export function isVisible(state: State): boolean {
   return (
     // Do not show it we happen to have the in-game replay open.
@@ -142,21 +152,21 @@ export function onChanged(
   const totalH = currentPlayerArea.height();
   const text1H = text1.measureSize(text1.text()).height;
   if (specialText === "") {
-    setPlayerText(2);
+    const [text1Offset, text2Offset] = LINE_OFFSETS.withoutWarning;
+    setPlayerText(LINE_OFFSETS.withoutWarning.length);
     const text2H = text2.measureSize(text2.text()).height;
-    const spacing = 0.03 * winH;
-    text1.y(totalH / 2 - text1H / 2 - spacing);
-    text2.y(totalH / 2 - text2H / 2 + spacing);
+    text1.y(totalH / 2 - text1H / 2 + text1Offset * winH);
+    text2.y(totalH / 2 - text2H / 2 + text2Offset * winH);
     text3.hide();
   } else {
-    setPlayerText(3);
+    const [text1Offset, text2Offset, text3Offset] = LINE_OFFSETS.withWarning;
+    setPlayerText(LINE_OFFSETS.withWarning.length);
     const text2H = text2.measureSize(text2.text()).height;
-    const spacing = 0.04 * winH;
-    text1.y(totalH / 2 - text1H / 2 - spacing);
-    text2.y(totalH / 2 - text2H / 2 + spacing * 0.25);
+    text1.y(totalH / 2 - text1H / 2 + text1Offset * winH);
+    text2.y(totalH / 2 - text2H / 2 + text2Offset * winH);
     text3.fitText(specialText);
     const text3H = text3.measureSize(text3.text()).height;
-    text3.y(totalH / 2 - text3H / 2 + spacing * 1.5);
+    text3.y(totalH / 2 - text3H / 2 + text3Offset * winH);
     text3.show();
   }
 

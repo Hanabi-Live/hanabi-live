@@ -136,6 +136,7 @@ export class CurrentPlayerArea extends Konva.Group {
     this.add(rect2);
 
     const baseArrowLength = 0.005_28 * winH;
+    const arrowPointerSize = baseArrowLength * 2;
 
     this.arrow = new Konva.Group({
       x: (arrowValues.x + arrowValues.w / 2) * winW,
@@ -155,8 +156,8 @@ export class CurrentPlayerArea extends Konva.Group {
         (arrowValues.w - arrowValues.spacing) * winW,
         (arrowValues.h / 2) * winH,
       ],
-      pointerLength: baseArrowLength * 2,
-      pointerWidth: baseArrowLength * 2,
+      pointerLength: arrowPointerSize,
+      pointerWidth: arrowPointerSize,
       fill: "black",
       stroke: "black",
       strokeWidth: baseArrowLength * 2,
@@ -188,8 +189,8 @@ export class CurrentPlayerArea extends Konva.Group {
         (arrowValues.w - arrowValues.spacing) * winW,
         (arrowValues.h / 2) * winH,
       ],
-      pointerLength: baseArrowLength * 2,
-      pointerWidth: baseArrowLength * 2,
+      pointerLength: arrowPointerSize,
+      pointerWidth: arrowPointerSize,
       fill: LABEL_COLOR,
       stroke: LABEL_COLOR,
       strokeWidth: baseArrowLength,

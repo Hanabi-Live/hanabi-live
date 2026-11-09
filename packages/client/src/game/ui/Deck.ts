@@ -15,6 +15,7 @@ import {
   CARD_ANIMATION_LENGTH_SECONDS,
   FONT_FAMILY,
   LEFT_MOUSE_BUTTON_HELD,
+  STROKE_WIDTH_UNIT,
 } from "./constants";
 import * as cursor from "./cursor";
 import { isOurTurn } from "./isOurTurn";
@@ -65,7 +66,7 @@ export class Deck extends Konva.Group {
     this.numLeftText = new Konva.Text({
       fill: "white",
       stroke: NUM_LEFT_STROKE_COLOR,
-      strokeWidth: 0.0168 * this.height(),
+      strokeWidth: 3 * STROKE_WIDTH_UNIT * globals.stage.height(),
       align: "center",
       x: 0,
       y: NUM_LEFT_Y * this.height(),
