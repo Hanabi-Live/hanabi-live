@@ -87,6 +87,7 @@
     "packages/scripts": {
       "name": "@hanabi-live/scripts",
       "dependencies": {
+        "@hanabi-live/data": "workspace:*",
         "@hanabi-live/game": "workspace:*",
         "complete-common": "catalog:",
         "complete-node": "catalog:",

@@ -1,8 +1,16 @@
 // Checks the live site the way a returning player reaches it after a deployment: it signs in a
 // shared test account over HTTPS, then opens a WebSocket with the client version that the site
-// serves, and waits for the lobby's first messages. It exits with an error if any step fails. The
-// deployed revision can differ from this checkout, so this does not validate payloads against this
-// checkout's schemas; the integration tests cover the payloads.
+// serves, and waits for the lobby's first messages. It exits with an error if any step fails. When
+// the site serves this checkout's revision, it also validates every payload with the generated
+// schemas; otherwise those schemas may differ from the deployed ones, so it skips that.
+
+import type { ServerCommand } from "@hanabi-live/data";
+import {
+  loginResponseSchema,
+  SERVER_COMMAND_SCHEMAS,
+  unpackWSMessage,
+} from "@hanabi-live/data";
+import { $ } from "bun";
 
 const SITE = "hanab.live";
 /** A shared test account; connecting replaces any other session that it has. */
@@ -10,6 +18,10 @@ const ACCOUNT = "test3";
 const TIMEOUT_MS = 30_000;
 /** The messages that every new connection receives before it can use the lobby. */
 const REQUIRED = ["welcome", "userList", "tableList"] as const;
+
+const serverSchemas: Readonly<
+  Partial<Record<string, (typeof SERVER_COMMAND_SCHEMAS)[ServerCommand]>>
+> = SERVER_COMMAND_SCHEMAS;
 
 /**
  * Bun's WebSocket, which can send the session cookie. This package also loads the DOM's types,
@@ -25,6 +37,7 @@ function fail(message: string): never {
   process.exit(1);
 }
 
+/** The client version is the revision of the deployed release. */
 async function servedVersion(): Promise<string> {
   const response = await fetch(
     `https://${SITE}/public/js/bundles/version.txt`,
@@ -37,9 +50,18 @@ async function servedVersion(): Promise<string> {
   return text.trim();
 }
 
+async function checkoutRevision(): Promise<string> {
+  const text = await $`git rev-parse HEAD`
+    .cwd(import.meta.dir)
+    .quiet()
+    .text();
+  return text.trim();
+}
+
 /** Signs in and returns the account's user ID and the cookies that identify its session. */
 async function signIn(
   version: string,
+  validate: boolean,
 ): Promise<{ userID: number; cookie: string }> {
   const response = await fetch(`https://${SITE}/login`, {
     method: "POST",
@@ -56,6 +78,14 @@ async function signIn(
     );
   }
   const body = (await response.json()) as { userID?: unknown };
+  if (validate) {
+    const result = loginResponseSchema.safeParse(body);
+    if (!result.success) {
+      fail(
+        `The server sent an invalid login response: ${result.error.message}`,
+      );
+    }
+  }
   const cookie = response.headers
     .getSetCookie()
     .map((header) => header.split(";", 1)[0])
@@ -66,7 +96,12 @@ async function signIn(
   return { userID: body.userID, cookie };
 }
 
-async function joinLobby(version: string, userID: number, cookie: string) {
+async function joinLobby(
+  version: string,
+  userID: number,
+  cookie: string,
+  validate: boolean,
+) {
   const url = `wss://${SITE}/ws?account=${userID}&version=${encodeURIComponent(version)}`;
   const socket = new BunWebSocket(url, { headers: { Cookie: cookie } });
   const received = new Set<string>();
@@ -84,11 +119,28 @@ async function joinLobby(version: string, userID: number, cookie: string) {
     if (typeof event.data !== "string") {
       return;
     }
-    // Each message is the command's name, a space, and its JSON payload.
-    const [name = "", ...rest] = event.data.split(" ");
-    if (name === "error" || name === "warning") {
-      reject(new Error(`The server sent ${name}: ${rest.join(" ")}`));
+    const message = unpackWSMessage(event.data);
+    if (message === undefined) {
+      reject(new Error("The server sent a message with no command."));
       return;
+    }
+    const [name, data] = message;
+    if (name === "error" || name === "warning") {
+      reject(new Error(`The server sent ${name}: ${JSON.stringify(data)}`));
+      return;
+    }
+    if (validate) {
+      const result = serverSchemas[name]?.safeParse(data);
+      if (result?.success !== true) {
+        reject(
+          new Error(
+            result === undefined
+              ? `The server sent "${name}", which has no schema.`
+              : `The server sent an invalid "${name}": ${result.error.message}`,
+          ),
+        );
+        return;
+      }
     }
     received.add(name);
     if (REQUIRED.every((required) => received.has(required))) {
@@ -109,12 +161,19 @@ async function joinLobby(version: string, userID: number, cookie: string) {
 }
 
 const version = await servedVersion();
-const { userID, cookie } = await signIn(version);
+const revision = await checkoutRevision();
+const validate = version === revision;
+if (!validate) {
+  console.warn(
+    `The site serves ${version}, but this checkout is at ${revision}, so payloads are not validated against its schemas.`,
+  );
+}
+const { userID, cookie } = await signIn(version, validate);
 try {
-  await joinLobby(version, userID, cookie);
+  await joinLobby(version, userID, cookie, validate);
 } catch (error) {
   fail(error instanceof Error ? error.message : String(error));
 }
 console.log(
-  `Deployment check passed: "${ACCOUNT}" signed in and joined the lobby with client version ${version}.`,
+  `Deployment check passed: "${ACCOUNT}" signed in and joined the lobby with client version ${version}${validate ? ", and every payload matched its schema" : ""}.`,
 );

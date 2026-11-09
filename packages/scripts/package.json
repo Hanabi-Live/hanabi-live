@@ -5,6 +5,7 @@
     "lint": "bash ./lint.sh"
   },
   "dependencies": {
+    "@hanabi-live/data": "workspace:*",
     "@hanabi-live/game": "workspace:*",
     "complete-common": "catalog:",
     "complete-node": "catalog:",
