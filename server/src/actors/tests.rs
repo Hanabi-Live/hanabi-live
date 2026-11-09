@@ -1,6 +1,6 @@
 use super::*;
 use super::{
-    chat::{authored_chat, parse_start_minutes, player_chat_has_room, server_chat},
+    chat::{authored_chat, player_chat_has_room, server_chat},
     replay::undo_hypothetical_turn,
     setup::{next_requested_seed, option_changes, requested_seed, validate_table_name},
     wire::{game_action, game_action_list},
@@ -250,21 +250,6 @@ fn option_summaries_include_only_changes_and_escape_values() {
     );
 }
 
-#[test]
-fn countdown_accepts_float_syntax_and_rejects_nonfinite_values() {
-    for (text, expected) in [
-        (".5", 0.5),
-        ("1_0", 10.0),
-        ("x1p0", 1.0),
-        ("x1.8p1", 3.0),
-        ("x1p-99999", 0.0),
-    ] {
-        assert_eq!(parse_start_minutes(text), Some(expected), "{text}");
-    }
-    for text in ["-1", "+1", "NaN", "Infinity", "1e9999", "x1p99999"] {
-        assert!(parse_start_minutes(text).is_none(), "{text}");
-    }
-}
 async fn fixture_store(namespace: &str) -> Result<(RedisFixture, Store, RedisState)> {
     let fixture = RedisFixture::start(true).await?;
     let state = RedisState::connect(&fixture.url, namespace).await?;

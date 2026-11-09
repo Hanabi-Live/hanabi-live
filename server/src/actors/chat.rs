@@ -21,15 +21,6 @@ use std::{
 const TYPING_TIMEOUT: Duration = Duration::from_millis(hanabi_protocol::TYPING_TIMEOUT_MS);
 /// The longest countdown `/startin` can set, in minutes.
 const MAX_START_IN_MINUTES: f64 = 10.0;
-/// The bits of an `f64` mantissa, including its implicit leading bit.
-const FLOAT_MANTISSA_BITS: i32 = f64::MANTISSA_DIGITS.cast_signed();
-/// The power of two of the smallest positive subnormal `f64`.
-const FLOAT_MIN_EXPONENT: i32 = f64::MIN_EXP - FLOAT_MANTISSA_BITS;
-/// The prefix of a hexadecimal float.
-const HEX_PREFIX: &str = "0x";
-const HEX_RADIX: u32 = 16;
-/// The binary digits that one hexadecimal digit holds.
-const HEX_DIGIT_BITS: u32 = HEX_RADIX.trailing_zeros();
 /// The fewest players for the Impostor command, which needs more than one other player.
 const MIN_IMPOSTOR_PLAYERS: usize = MIN_PLAYERS + 1;
 
@@ -97,69 +88,6 @@ pub(super) fn membership_notice(table: &mut TableSnapshot, text: &str) -> Option
 )]
 pub(super) fn truncate(value: f64) -> i64 {
     value as i64
-}
-#[expect(
-    clippy::cast_precision_loss,
-    reason = "the parsed mantissa is rounded to an `f64`'s precision before it becomes a float"
-)]
-pub(super) fn parse_start_minutes(argument: &str) -> Option<f64> {
-    let value = format!("0{argument}");
-    if regex!(r"(?i)^\d(?:_?\d)*(?:\.(?:\d(?:_?\d)*)?)?(?:e[+-]?\d(?:_?\d)*)?$").is_match(&value) {
-        let value = value.replace('_', "").parse::<f64>().ok()?;
-        return value.is_finite().then_some(value);
-    }
-    if !regex!(r"(?i)^0x_?(?:[0-9a-f](?:_?[0-9a-f])*(?:\.(?:[0-9a-f](?:_?[0-9a-f])*)?)?|\.[0-9a-f](?:_?[0-9a-f])*)p[+-]?\d(?:_?\d)*$").is_match(&value) {
-        return None;
-    }
-    let cleaned = value.replace('_', "").to_ascii_lowercase();
-    let (mantissa, power) = cleaned[HEX_PREFIX.len()..].split_once('p')?;
-    let fraction = mantissa
-        .split_once('.')
-        .map_or(0, |(_, fraction)| fraction.len());
-    let power = power.parse::<i64>().unwrap_or_else(|_| {
-        if power.starts_with('-') {
-            i64::MIN
-        } else {
-            i64::MAX
-        }
-    });
-    let exponent = power.saturating_sub(
-        i64::try_from(fraction)
-            .unwrap_or(i64::MAX)
-            .saturating_mul(i64::from(HEX_DIGIT_BITS)),
-    );
-    let mut bits = Vec::new();
-    for digit in mantissa.chars().filter(|c| *c != '.') {
-        let value = digit.to_digit(HEX_RADIX)?;
-        for bit in (0..HEX_DIGIT_BITS).rev() {
-            bits.push((value >> bit) & 1);
-        }
-    }
-    let Some(first) = bits.iter().position(|b| *b != 0) else {
-        return Some(0.0);
-    };
-    let bits = &bits[first..];
-    let size = i64::try_from(bits.len()).ok()?;
-    let min_exponent = i64::from(FLOAT_MIN_EXPONENT);
-    if exponent.saturating_add(size) < min_exponent {
-        return Some(0.0);
-    }
-    if exponent.saturating_add(size) > i64::from(f64::MAX_EXP) {
-        return None;
-    }
-    let shift = 0
-        .max(size - i64::from(FLOAT_MANTISSA_BITS))
-        .max(min_exponent - exponent);
-    let kept = usize::try_from((size - shift).max(0)).ok()?;
-    let mut rounded = bits[..kept]
-        .iter()
-        .fold(0_u64, |v, bit| (v << 1) | u64::from(*bit));
-    // Round once, including subnormal results, using guard/sticky bits.
-    if bits.get(kept) == Some(&1) && (bits[kept + 1..].contains(&1) || rounded & 1 != 0) {
-        rounded += 1;
-    }
-    let result = rounded as f64 * 2_f64.powi(i32::try_from(exponent + shift).ok()?);
-    result.is_finite().then_some(result)
 }
 pub(super) fn is_variant_discovery(command: &Command) -> bool {
     let Command::Client(message) = command else {
@@ -519,7 +447,7 @@ impl TableActor {
             }
             Some(TableChatCommand::StartIn) => {
                 ensure!(args.len() == 1, "Expected /startin [minutes]");
-                let minutes = parse_start_minutes(args[0]).context("Invalid countdown number")?;
+                let minutes = args[0].parse::<f64>().context("Invalid countdown number")?;
                 ensure!(
                     minutes.is_finite() && minutes > 0.0 && minutes <= MAX_START_IN_MINUTES,
                     "Minutes must be between zero and {MAX_START_IN_MINUTES}"
