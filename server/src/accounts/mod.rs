@@ -10,13 +10,14 @@ mod tests;
 mod upgrade_tests;
 
 pub use crypto::{
-    HashFailure, HashOverload, IdentityToken, hash_password, regenerate_token, token_lookup_hash,
-    verify_password,
+    HashFailure, HashOverload, hash_password, regenerate_token, token_lookup_hash, verify_password,
 };
+#[cfg(test)]
+pub use normalization::normalize_username;
 pub use normalization::{
     MAX_CONSECUTIVE_MARKS, MAX_USERNAME_LENGTH, USERNAME_SPECIAL_CHARACTERS, escape_html,
-    has_username_emoji, max_consecutive_marks, normalize_chat, normalize_string,
-    normalize_username, remove_disallowed_characters, truncate_to_max_bytes, validate_username,
+    max_consecutive_marks, normalize_chat, normalize_string, remove_disallowed_characters,
+    truncate_to_max_bytes, validate_username,
 };
 pub(crate) use rate_limit::Counter;
 pub use rate_limit::TooMuchPasswordWork;

@@ -17,8 +17,6 @@ pub enum Operation {
     },
 }
 
-pub type OperationReply = tokio::sync::oneshot::Sender<anyhow::Result<Value>>;
-
 use crate::{
     lifecycle::{Control, Phase, Refusal},
     metrics,

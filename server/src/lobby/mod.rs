@@ -9,10 +9,10 @@ mod tests;
 
 pub use chat::{
     Classification, GeneralResponse, TableChatCommand, classify_chat, external_command,
-    general_response, lobby_history, server_chat, valid_room,
+    general_response, lobby_history, server_chat,
 };
 pub use history::{blocked_seeds, get_history, history_ids};
-pub use relationships::{block_relations, blocked_between, change_friend, friend_ids, friends};
+pub use relationships::{block_relations, blocked_between, friends};
 pub use settings::{changed_settings, get_settings, set_setting};
 
 use crate::accounts::{escape_html, normalize_string};
@@ -30,7 +30,6 @@ pub struct Caller {
     pub name: String,
     pub normalized_name: String,
     pub ip: String,
-    pub generation: u64,
 }
 
 #[derive(Clone, Debug)]
@@ -41,8 +40,10 @@ pub struct OnlineUser {
     pub generation: u64,
 }
 
+/// A change that the hub makes for a lobby command: a message to send, or an update to a connected
+/// user's session.
 #[derive(Clone, Debug)]
-pub enum Effect {
+pub enum Publication {
     ToSelf(Outgoing),
     ToUser {
         id: UserId,
@@ -53,24 +54,26 @@ pub enum Effect {
     HGroup(bool),
     HGroupLevel(u8),
     Inactive(bool),
-    RelationshipChanged {
-        user_id: UserId,
-        target_id: UserId,
-        added: bool,
-    },
     /// Whether any block remains between two users after one of them changed it.
     BlocksChanged {
         user_id: UserId,
         target_id: UserId,
         blocked: bool,
     },
+}
+
+/// What a lobby command asks for once it has run. The web layer does the work that needs the
+/// server's runtime or integrations, and the hub publishes the rest.
+#[derive(Clone, Debug)]
+pub enum Effect {
+    Publish(Publication),
+    /// Copies a saved lobby message to Discord.
     DiscordMirror {
         chat_id: i32,
-        server: bool,
         message: String,
     },
-    /// Runtime-specific replies need the parent's domain or uptime.
-    /// Public commands are already persisted; uptime is private and is not.
+    /// A chat command whose reply needs the server's domain or uptime. Public commands are
+    /// already persisted; uptime is private and is not.
     RuntimeChat {
         command: String,
         args: Vec<String>,
@@ -78,8 +81,46 @@ pub enum Effect {
     },
 }
 
+impl From<Publication> for Effect {
+    fn from(publication: Publication) -> Self {
+        Self::Publish(publication)
+    }
+}
+
+impl Effect {
+    /// A message to the user who sent the command.
+    pub fn to_self(message: Outgoing) -> Self {
+        Publication::ToSelf(message).into()
+    }
+    /// A message to everyone in the lobby.
+    pub fn broadcast(message: Outgoing) -> Self {
+        Publication::Broadcast(message).into()
+    }
+}
+
+/// A server message saved to the lobby chat.
+#[derive(Clone, Debug)]
+pub struct SavedChat {
+    pub chat_id: i32,
+    /// The chat message for everyone in the lobby.
+    pub broadcast: Outgoing,
+    /// The message as it was saved, for Discord.
+    pub message: String,
+}
+
+/// The reply to a public chat command from Discord.
+#[derive(Debug)]
+pub enum ExternalReply {
+    Saved(SavedChat),
+    /// The reply needs the server's runtime information.
+    Runtime {
+        command: String,
+        args: Vec<String>,
+    },
+}
+
 fn warning(message: &str) -> Effect {
-    Effect::ToSelf(Outgoing::new(
+    Effect::to_self(Outgoing::new(
         hanabi_protocol::server::WARNING,
         hanabi_protocol::Warning {
             warning: message.into(),
@@ -87,8 +128,13 @@ fn warning(message: &str) -> Effect {
     ))
 }
 
-pub(crate) fn notice(recipient: &str, message: &str, room: &str) -> Effect {
-    Effect::ToSelf(Outgoing::new(
+fn notice(recipient: &str, message: &str, room: &str) -> Effect {
+    notice_publication(recipient, message, room).into()
+}
+
+/// A server reply that only the user who sent a chat command sees.
+pub(crate) fn notice_publication(recipient: &str, message: &str, room: &str) -> Publication {
+    Publication::ToSelf(Outgoing::new(
         hanabi_protocol::server::CHAT,
         hanabi_protocol::Chat {
             who: Some("Hanab Live".into()),
@@ -140,17 +186,17 @@ pub async fn dispatch(
             }
             set_setting(pool, caller.id.0, name, value).await?;
             match name {
-                "hGroupConventions" => vec![Effect::HGroup(value == "true")],
+                "hGroupConventions" => vec![Publication::HGroup(value == "true").into()],
                 // `validate_setting` has already checked that the level is in range.
-                "hGroupLevel" => vec![Effect::HGroupLevel(value.parse()?)],
+                "hGroupLevel" => vec![Publication::HGroupLevel(value.parse()?).into()],
                 _ => vec![],
             }
         }
         ClientMessage::Inactive(request) => {
             let inactive = request.inactive;
             vec![
-                Effect::Inactive(inactive),
-                Effect::Broadcast(Outgoing::new(
+                Publication::Inactive(inactive).into(),
+                Effect::broadcast(Outgoing::new(
                     hanabi_protocol::server::USER_INACTIVE,
                     hanabi_protocol::UserInactive {
                         user_id: caller.id,
@@ -188,7 +234,7 @@ pub async fn dispatch(
                 return Ok(Some(vec![warning("That is not a valid end value.")]));
             }
             let ids = history_ids(pool, caller.id.0, offset, amount).await?;
-            vec![Effect::ToSelf(Outgoing::new(
+            vec![Effect::to_self(Outgoing::new(
                 hanabi_protocol::server::GAME_HISTORY,
                 hanabi_protocol::GameHistoryList(get_history(pool, &ids, false).await?),
             ))]
@@ -214,7 +260,7 @@ pub async fn dispatch(
             let variant_name = games
                 .first()
                 .map_or_else(|| "n/a".into(), |game| game.options.variant_name.clone());
-            vec![Effect::ToSelf(Outgoing::new(
+            vec![Effect::to_self(Outgoing::new(
                 hanabi_protocol::server::GAME_HISTORY_OTHER_SCORES,
                 hanabi_protocol::GameHistoryOtherScores {
                     games,

@@ -108,6 +108,7 @@ async fn drains_notify_all_tables_before_waiting_for_acknowledgements() -> Resul
             },
             Lifecycle::new(store.ownership_lost()),
             crate::server_info::test_info(),
+            IntegrationSlot::default(),
         );
         let result = tokio::time::timeout(
             Duration::from_secs(3),

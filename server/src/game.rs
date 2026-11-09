@@ -1,8 +1,7 @@
 use anyhow::{Result, ensure};
-pub use hanabi_engine::{AssignedCharacter, DeckCard as Card, EngineEvent as Event, Options};
+pub use hanabi_engine::{AssignedCharacter, DeckCard as Card, Options};
 use hanabi_engine::{
-    CompletionTiming, EndCondition, EngineState, GameSetup, Interpretation, PlayerAction,
-    Recipient, Termination,
+    CompletionTiming, EndCondition, EngineState, GameSetup, PlayerAction, Termination,
 };
 use hanabi_protocol::ReplayAction;
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
@@ -139,6 +138,8 @@ impl Game {
     pub(crate) fn state_mut(&mut self) -> &mut EngineState {
         &mut self.state
     }
+    /// A two-player game with this deck, for tests.
+    #[cfg(test)]
     pub fn new(deck: Vec<Card>) -> Result<Self> {
         Self::create(GameSetup {
             options: Options::default(),
@@ -146,7 +147,7 @@ impl Game {
             seed: "JSON".into(),
             deck: Some(deck),
             characters: None,
-            interpretation: Interpretation::Live,
+            interpretation: hanabi_engine::Interpretation::Live,
         })
     }
     pub fn apply(&mut self, actor: usize, action: ReplayAction) -> Result<()> {
@@ -189,18 +190,6 @@ impl Game {
     pub fn set_paused(&mut self, paused: bool) {
         self.state.paused = paused;
     }
-    pub fn projected(&self, seat: Option<usize>, from: usize) -> Vec<Event> {
-        let recipient = seat.map_or(
-            Recipient::Spectator {
-                shadowing_player_index: None,
-            },
-            |i| Recipient::Player {
-                player_index: hanabi_engine::int(i),
-            },
-        );
-        hanabi_engine::events_for_recipient(&self.state, recipient, Some(&self.events[from..]))
-            .expect("validated actor recipient")
-    }
     pub fn identities(&self) -> Vec<Card> {
         self.deck
             .iter()
@@ -236,11 +225,7 @@ impl Game {
         Ok(game)
     }
 }
-pub fn unshuffled_deck() -> Vec<Card> {
-    hanabi_engine::create_deck(
-        hanabi_engine::get_variant(hanabi_protocol::DEFAULT_VARIANT_NAME).expect("catalog"),
-    )
-}
+#[cfg(test)]
 pub fn standard_deck(seed: &str) -> Result<Vec<Card>> {
     Ok(hanabi_engine::create_shuffled_deck(
         hanabi_engine::get_variant(hanabi_protocol::DEFAULT_VARIANT_NAME)?,
@@ -262,13 +247,6 @@ pub fn seed_prefix(num_players: usize, variant_id: u32, options: &Options) -> St
         _ => SEED_LETTER,
     };
     format!("p{num_players}v{variant_id}{letter}")
-}
-pub fn options() -> Value {
-    serde_json::to_value(Options {
-        variant_id: Some(0),
-        ..Options::default()
-    })
-    .expect("options")
 }
 pub fn seeded_deck(id: i32, seed: &str) -> Result<Value> {
     Ok(serde_json::to_value(hanabi_engine::create_shuffled_deck(

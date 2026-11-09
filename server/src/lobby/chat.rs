@@ -1,4 +1,4 @@
-use super::{Caller, Effect, OnlineUser, notice, warning};
+use super::{Caller, Effect, ExternalReply, OnlineUser, Publication, SavedChat, notice, warning};
 use crate::accounts::{escape_html, is_muted, normalize_chat, normalize_string, regenerate_token};
 use crate::transport::Outgoing;
 use anyhow::{Context, Result, ensure};
@@ -206,12 +206,12 @@ pub fn classify_chat(message: &str) -> Classification {
     }
 }
 
-pub async fn external_command(pool: &PgPool, message: &str) -> Result<Vec<Effect>> {
+pub async fn external_command(pool: &PgPool, message: &str) -> Result<Option<ExternalReply>> {
     let Some((command, args)) = parsed(message) else {
-        return Ok(vec![]);
+        return Ok(None);
     };
     if classify_chat(message) != Classification::Public {
-        return Ok(vec![]);
+        return Ok(None);
     }
     let response = if let Some(response) = simple(&command) {
         response.response.clone()
@@ -220,15 +220,16 @@ pub async fn external_command(pool: &PgPool, message: &str) -> Result<Vec<Effect
     } else if command == "random" {
         random_response(&args)
     } else if command == "replay" {
-        return Ok(vec![Effect::RuntimeChat {
+        return Ok(Some(ExternalReply::Runtime {
             command,
             args: args.iter().map(|s| (*s).into()).collect(),
-            room: "lobby".into(),
-        }]);
+        }));
     } else {
         "You can only perform this command while in a game.".into()
     };
-    server_chat(pool, &response).await
+    Ok(Some(ExternalReply::Saved(
+        server_chat(pool, &response).await?,
+    )))
 }
 
 fn help() -> String {
@@ -330,12 +331,13 @@ pub async fn private_message(
         )
     };
     Ok(vec![
-        Effect::ToSelf(Outgoing::new(hanabi_protocol::server::CHAT, data.clone())),
-        Effect::ToUser {
+        Effect::to_self(Outgoing::new(hanabi_protocol::server::CHAT, data.clone())),
+        Publication::ToUser {
             id: target.id,
             generation: target.generation,
             message: Outgoing::new(hanabi_protocol::server::CHAT, data),
-        },
+        }
+        .into(),
     ])
 }
 
@@ -400,7 +402,7 @@ pub async fn private_history(
         list,
         room: data.room.clone().filter(|room| !room.is_empty()),
     };
-    Ok(vec![Effect::ToSelf(Outgoing::new(
+    Ok(vec![Effect::to_self(Outgoing::new(
         hanabi_protocol::server::CHAT_PM_HISTORY,
         response,
     ))])
@@ -533,7 +535,7 @@ pub async fn lobby_chat(
         .fetch_one(&mut *tx)
         .await?;
         let chat_id: i32 = row.id;
-        effects.push(Effect::Broadcast(Outgoing::new(
+        effects.push(Effect::broadcast(Outgoing::new(
             hanabi_protocol::server::CHAT,
             Chat {
                 who: Some(who.into()),
@@ -548,7 +550,6 @@ pub async fn lobby_chat(
         )));
         effects.push(Effect::DiscordMirror {
             chat_id,
-            server: source == "server",
             message: raw,
         });
     }
@@ -617,7 +618,7 @@ pub async fn lobby_history(pool: &PgPool, count: i64) -> Result<Vec<Chat>> {
 }
 
 /// Persist a runtime-generated lobby response before publishing it.
-pub async fn server_chat(pool: &PgPool, message: &str) -> Result<Vec<Effect>> {
+pub async fn server_chat(pool: &PgPool, message: &str) -> Result<SavedChat> {
     let row = sqlx::query!(
         "INSERT INTO chat_log(user_id,source,message,room) VALUES(0,'server',$1,'lobby')
          RETURNING id, datetime_sent",
@@ -626,8 +627,9 @@ pub async fn server_chat(pool: &PgPool, message: &str) -> Result<Vec<Effect>> {
     .fetch_one(pool)
     .await?;
     let chat_id: i32 = row.id;
-    Ok(vec![
-        Effect::Broadcast(Outgoing::new(
+    Ok(SavedChat {
+        chat_id,
+        broadcast: Outgoing::new(
             hanabi_protocol::server::CHAT,
             Chat {
                 who: Some("Hanab Live".into()),
@@ -639,11 +641,7 @@ pub async fn server_chat(pool: &PgPool, message: &str) -> Result<Vec<Effect>> {
                     crate::model::timestamp(row.datetime_sent),
                 )
             },
-        )),
-        Effect::DiscordMirror {
-            chat_id,
-            server: true,
-            message: message.into(),
-        },
-    ])
+        ),
+        message: message.into(),
+    })
 }

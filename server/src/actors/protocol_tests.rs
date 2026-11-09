@@ -71,6 +71,7 @@ impl Harness {
             store.clone(),
             tasks.clone(),
             crate::server_info::test_info(),
+            crate::integrations::IntegrationSlot::default(),
         )
         .await?;
         let mut h = Self {
@@ -224,6 +225,7 @@ impl Harness {
             self.store.clone(),
             self.tasks.clone(),
             crate::server_info::test_info(),
+            crate::integrations::IntegrationSlot::default(),
         )
         .await?;
         for index in 0..self.users.len() {
@@ -317,6 +319,7 @@ async fn player_shadow_from_saved_games_is_cleared_on_reattend() -> Result<()> {
             h.store.clone(),
             h.tasks.clone(),
             crate::server_info::test_info(),
+            crate::integrations::IntegrationSlot::default(),
         )
         .await?;
         for index in 0..h.users.len() {
@@ -1025,6 +1028,7 @@ async fn shared_replays_of_older_games_start_when_their_table_is_created() -> Re
             h.store.clone(),
             h.tasks.clone(),
             crate::server_info::test_info(),
+            crate::integrations::IntegrationSlot::default(),
         )
         .await?;
         for index in 0..h.users.len() {
@@ -1117,7 +1121,6 @@ async fn blocked_players_cannot_join_or_spectate_each_others_tables() -> Result<
                 name: session.name.clone(),
                 normalized_name: session.normalized_name.clone(),
                 ip: session.ip.clone(),
-                generation: session.generation,
             };
             let effects = crate::lobby::dispatch(
                 &h.store.primary,
@@ -1127,7 +1130,13 @@ async fn blocked_players_cannot_join_or_spectate_each_others_tables() -> Result<
                 client_message(command, &json!({"name":name,"room":"lobby"}))?,
             )
             .await?
-            .context("Missing lobby effects")?;
+            .context("Missing lobby effects")?
+            .into_iter()
+            .map(|effect| match effect {
+                crate::lobby::Effect::Publish(publication) => Ok(publication),
+                other => Err(anyhow::anyhow!("Unexpected lobby effect: {other:?}")),
+            })
+            .collect::<Result<Vec<_>>>()?;
             let (reply, replied) = oneshot::channel();
             h.hub
                 .send(HubCommand::LobbyEffects {

@@ -1,7 +1,7 @@
 use crate::transport::Outgoing;
 use crate::{
     accounts::{escape_html, normalize_chat},
-    lobby::{self, Effect},
+    lobby::{self, ExternalReply, SavedChat},
     web::{self, App},
 };
 use anyhow::{Context, Result, ensure};
@@ -675,55 +675,64 @@ impl Bridge {
         if link_copy(&self.pool, chat_id, &id).await? {
             web::publish_external(
                 self.app()?.as_ref(),
-                vec![Effect::Broadcast(Outgoing::new(
+                vec![Outgoing::new(
                     hanabi_protocol::server::CHAT_DELETE,
                     hanabi_protocol::ChatDelete {
                         chat_id: i64::from(chat_id),
                         room: hanabi_protocol::LobbyRoom::Lobby,
                     },
-                ))],
+                )],
             )
             .await?;
         }
         Ok(())
     }
 
-    async fn publish_effects(&self, effects: Vec<Effect>) -> Result<()> {
+    /// Sends messages to everyone in the lobby.
+    async fn broadcast(&self, messages: Vec<Outgoing>) -> Result<()> {
         let app = self.app()?;
-        let mut public = vec![];
+        web::publish_external(&app, messages).await
+    }
+
+    /// Publishes server messages saved to the lobby chat, then copies them to Discord.
+    async fn publish_saved(&self, saved: Vec<SavedChat>) -> Result<()> {
+        let mut messages = vec![];
         let mut mirrors = vec![];
-        for effect in effects {
-            match effect {
-                Effect::DiscordMirror { chat_id, .. } => mirrors.push(chat_id),
-                Effect::RuntimeChat { command, args, .. } => {
-                    for response in app.info.runtime_response(&command, &args)? {
-                        for item in lobby::server_chat(&self.pool, &response).await? {
-                            if let Effect::DiscordMirror { chat_id, .. } = item {
-                                mirrors.push(chat_id);
-                            } else {
-                                public.push(item);
-                            }
-                        }
-                    }
-                }
-                Effect::Broadcast(_) => public.push(effect),
-                _ => {}
-            }
+        for chat in saved {
+            messages.push(chat.broadcast);
+            mirrors.push(chat.chat_id);
         }
-        web::publish_external(&app, public).await?;
+        self.broadcast(messages).await?;
         for id in mirrors {
             self.mirror(id, None).await?;
         }
         Ok(())
     }
 
+    /// Publishes the reply to a public chat command from Discord.
+    async fn publish_reply(&self, reply: Option<ExternalReply>) -> Result<()> {
+        let saved = match reply {
+            None => return Ok(()),
+            Some(ExternalReply::Saved(saved)) => vec![saved],
+            Some(ExternalReply::Runtime { command, args }) => {
+                let app = self.app()?;
+                let mut saved = vec![];
+                for response in app.info.runtime_response(&command, &args)? {
+                    saved.push(lobby::server_chat(&self.pool, &response).await?);
+                }
+                saved
+            }
+        };
+        self.publish_saved(saved).await
+    }
+
     async fn announce(&self, message: &str) -> Result<()> {
         self.app()?;
-        let effects = lobby::server_chat(&self.pool, message).await?;
+        let saved = lobby::server_chat(&self.pool, message).await?;
         // Poll both deliveries to completion; a slow or failed channel must not cancel the other.
         let plain = decode_html(message);
         let (lobby, development) = tokio::join!(
-            self.publish_effects(effects),
+            self.publish_saved(vec![saved]),
             self.send_to(&self.config.development, &plain, true),
         );
         lobby.context("Sending lifecycle announcement to the lobby channel")?;
@@ -824,7 +833,7 @@ impl Bridge {
                     self.subscribe(author, &name, subscription == "/subscribe")
                         .await?;
                 } else {
-                    self.publish_effects(vec![Effect::Broadcast(Outgoing::new(
+                    self.broadcast(vec![Outgoing::new(
                         hanabi_protocol::server::CHAT,
                         hanabi_protocol::Chat {
                             chat_id: Some(i64::from(chat_id)),
@@ -836,10 +845,10 @@ impl Bridge {
                                 crate::model::timestamp(time),
                             )
                         },
-                    ))])
+                    )])
                     .await?;
                     if class == lobby::Classification::Public {
-                        self.publish_effects(lobby::external_command(&self.pool, &text).await?)
+                        self.publish_reply(lobby::external_command(&self.pool, &text).await?)
                             .await?;
                     }
                 }
@@ -855,13 +864,13 @@ impl Bridge {
                 };
                 for id in ids {
                     if let Some(chat_id) = delete_message(&self.pool, id).await? {
-                        self.publish_effects(vec![Effect::Broadcast(Outgoing::new(
+                        self.broadcast(vec![Outgoing::new(
                             hanabi_protocol::server::CHAT_DELETE,
                             hanabi_protocol::ChatDelete {
                                 chat_id: i64::from(chat_id),
                                 room: hanabi_protocol::LobbyRoom::Lobby,
                             },
-                        ))])
+                        )])
                         .await?;
                     }
                 }
@@ -915,7 +924,7 @@ impl Bridge {
         let notice = format!("@{name} {action} the @Ping Crew.");
         let rendered = self.render(&notice).await;
         if let Some((id, time)) = insert_message(&self.pool, "", &rendered, None).await? {
-            self.publish_effects(vec![Effect::Broadcast(Outgoing::new(
+            self.broadcast(vec![Outgoing::new(
                 hanabi_protocol::server::CHAT,
                 hanabi_protocol::Chat {
                     chat_id: Some(i64::from(id)),
@@ -927,7 +936,7 @@ impl Bridge {
                         crate::model::timestamp(time),
                     )
                 },
-            ))])
+            )])
             .await?;
         }
         self.send(&format!("`@{name}` {action} the `@Ping Crew`."), false)

@@ -1,4 +1,4 @@
-use super::{Caller, Effect, notice, warning};
+use super::{Caller, Effect, Publication, notice, warning};
 use crate::accounts::{escape_html, normalize_string};
 use crate::transport::Outgoing;
 use anyhow::Result;
@@ -13,14 +13,6 @@ pub async fn friends(pool: &PgPool, id: i32) -> Result<Vec<String>> {
     )
     .fetch_all(pool)
     .await?)
-}
-
-pub async fn friend_ids(pool: &PgPool, id: i32) -> Result<Vec<i32>> {
-    Ok(
-        sqlx::query_scalar!("SELECT friend_id FROM user_friends WHERE user_id=$1", id)
-            .fetch_all(pool)
-            .await?,
-    )
 }
 
 /// Whether `user` and any of `others` have blocked each other, in either direction.
@@ -218,12 +210,7 @@ pub async fn relationship(
     );
     let mut effects = vec![notice(&caller.name, &message, room)];
     if friend {
-        effects.push(Effect::RelationshipChanged {
-            user_id: caller.id,
-            target_id: UserId(target),
-            added: add,
-        });
-        effects.push(Effect::ToSelf(Outgoing::new(
+        effects.push(Effect::to_self(Outgoing::new(
             hanabi_protocol::server::FRIENDS,
             hanabi_protocol::Friends {
                 friends: friends(pool, caller.id.0).await?,
@@ -274,11 +261,12 @@ async fn block(
     };
     Ok(vec![
         notice(&caller.name, &message, room),
-        Effect::BlocksChanged {
+        Publication::BlocksChanged {
             user_id: caller.id,
             target_id: UserId(target),
             // The other user may have blocked this one too.
             blocked: blocked_between(pool, caller.id.0, &[target]).await?,
-        },
+        }
+        .into(),
     ])
 }

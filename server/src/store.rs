@@ -1,6 +1,6 @@
 use crate::{
     checkpoint::{Encoded, PartChanges, PartDigest},
-    model::{PendingTag, Phase, Player, Snapshot, TableChat, TableSnapshot, Tag, TagOperation},
+    model::{PendingTag, Player, Snapshot, TableChat, TableSnapshot, Tag, TagOperation},
     state::LiveState,
 };
 use anyhow::{Context, Result, bail, ensure};
@@ -240,6 +240,7 @@ impl Store {
         Ok(())
     }
     /// A live table and its revision, as the database holds it.
+    #[cfg(test)]
     pub async fn get(&self, id: TableId) -> Result<Option<(TableSnapshot, i64)>> {
         self.state
             .get(id)
@@ -252,14 +253,9 @@ impl Store {
             })
             .transpose()
     }
+    /// The saved live tables and their revisions. A pregame's cached game totals may be stale; its
+    /// actor refreshes them after startup, so that startup does not wait for statistics.
     pub async fn load(&self) -> Result<Vec<(TableSnapshot, i64)>> {
-        self.restore(true).await
-    }
-    pub async fn load_for_startup(&self) -> Result<Vec<(TableSnapshot, i64)>> {
-        // Pregame actors refresh cached totals without holding up live-game admission.
-        self.restore(false).await
-    }
-    async fn restore(&self, refresh_stats: bool) -> Result<Vec<(TableSnapshot, i64)>> {
         let mut output = vec![];
         let mut saved_parts = HashMap::new();
         for stored in self.state.load().await? {
@@ -276,25 +272,6 @@ impl Store {
             output.push((table, stored.revision));
         }
         *self.saved_parts() = saved_parts;
-        let users = output
-            .iter()
-            .filter_map(|(table, _)| match &table.phase {
-                Phase::Pregame { players, .. } => Some(players),
-                _ => None,
-            })
-            .flatten()
-            .map(|player| player.id)
-            .collect::<std::collections::BTreeSet<_>>()
-            .into_iter()
-            .collect::<Vec<_>>();
-        if refresh_stats && !users.is_empty() {
-            let counts = crate::database::normal_game_counts(&self.primary, &users, false).await?;
-            for (table, revision) in &mut output {
-                if table.set_game_counts(&users, &counts) {
-                    *revision = self.save(table, *revision).await?;
-                }
-            }
-        }
         Ok(output)
     }
     /// Saves a table and the work that goes with it in one transaction. New chat messages and a
@@ -592,6 +569,7 @@ async fn apply_tag(
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::model::Phase;
     use crate::{
         accounts::test_support::TestDb,
         actors::{Hub, HubCommand, TableCommand},
@@ -755,7 +733,7 @@ mod tests {
         Ok(Some((db, pool)))
     }
     #[tokio::test]
-    async fn recovery_refreshes_only_pregame_totals_and_persists_them_once() -> Result<()> {
+    async fn recovered_pregames_refresh_their_totals_after_startup() -> Result<()> {
         let Some((db, pool)) = database().await? else {
             return Ok(());
         };
@@ -803,51 +781,51 @@ mod tests {
                 },
             };
             let replay_revision = store.save(&replay, 0).await?;
+            // Startup does not wait for statistics, even while their table is locked.
             let mut blocked_archive = store.primary.begin().await?;
             #[expect(clippy::disallowed_methods, reason = "test SQL that sets up database state or failures directly")]
             sqlx::query("LOCK TABLE games IN ACCESS EXCLUSIVE MODE").execute(&mut *blocked_archive).await?;
-            let startup = tokio::time::timeout(Duration::from_secs(1), store.load_for_startup()).await??;
-            let cached = startup.iter().find(|(saved, _)| saved.id == table.id).context("Missing startup pregame")?;
-            ensure!(cached.1 == original_revision && cached.0.players()[0].stats.num_games == 727,
+            let tasks = TaskTracker::new();
+            let hub = tokio::time::timeout(
+                Duration::from_secs(1),
+                Hub::start(store.clone(), tasks.clone(), crate::server_info::test_info(), crate::integrations::IntegrationSlot::default(),),
+            )
+            .await??;
+            let (cached, cached_revision) = store.get(table.id).await?.context("Missing pregame")?;
+            ensure!(cached_revision == original_revision && cached.players()[0].stats.num_games == 727,
                 "Startup waited for optional statistics or changed its cached snapshot");
             blocked_archive.rollback().await?;
-            let restored = store.load().await?;
-            let (actual, revision) = restored
-                .iter()
-                .find(|(saved, _)| saved.id == table.id)
-                .context("Missing restored pregame")?;
             let Phase::Pregame { players, .. } = &mut table.phase else {
                 unreachable!();
             };
             players[0].stats.num_games = 1;
             players[1].stats.num_games = 0;
+            let refreshed = tokio::time::timeout(Duration::from_secs(5), async {
+                loop {
+                    let (durable, revision) = store.get(table.id).await?.context("Missing pregame")?;
+                    if revision > original_revision {
+                        return Ok::<_, anyhow::Error>((durable, revision));
+                    }
+                    tokio::time::sleep(Duration::from_millis(20)).await;
+                }
+            })
+            .await?;
+            let (stop, stopped) = oneshot::channel();
+            hub.send(HubCommand::Stop(stop)).await?;
+            stopped.await?;
+            tasks.close();
+            tasks.wait().await;
+            let (durable, revision) = refreshed?;
             ensure!(
-                serde_json::to_value(actual)? == serde_json::to_value(&table)?,
-                "Recovery must refresh totals without changing other pregame data"
-            );
-            ensure!(*revision == original_revision + 1);
-            let (durable, durable_revision) = store
-                .get(table.id)
-                .await?
-                .context("Missing durable pregame")?;
-            ensure!(
-                durable_revision == *revision
+                revision == original_revision + 1
                     && serde_json::to_value(&durable)? == serde_json::to_value(&table)?,
-                "Refreshed totals were not durably saved"
+                "Recovery must save refreshed totals once, without changing other pregame data"
             );
-            let (saved_replay, saved_revision) = restored
-                .iter()
-                .find(|(saved, _)| saved.id == replay.id)
-                .context("Missing replay")?;
+            let (saved_replay, saved_revision) = store.get(replay.id).await?.context("Missing replay")?;
             ensure!(
-                *saved_revision == replay_revision
-                    && serde_json::to_value(saved_replay)? == serde_json::to_value(&replay)?,
+                saved_revision == replay_revision
+                    && serde_json::to_value(&saved_replay)? == serde_json::to_value(&replay)?,
                 "Recovery changed historical replay statistics"
-            );
-            let again = store.load().await?;
-            ensure!(
-                again.iter().find(|(saved, _)| saved.id == table.id).unwrap().1 == *revision,
-                "Unchanged totals caused another checkpoint write"
             );
             Ok::<(), anyhow::Error>(())
         }
@@ -1459,6 +1437,7 @@ mod tests {
             store.clone(),
             tasks.clone(),
             crate::server_info::test_info(),
+            crate::integrations::IntegrationSlot::default(),
         )
         .await?;
         let mut users = vec![];
@@ -1533,6 +1512,7 @@ mod tests {
             store.clone(),
             tasks.clone(),
             crate::server_info::test_info(),
+            crate::integrations::IntegrationSlot::default(),
         )
         .await?;
         let mut users = vec![];
@@ -1688,6 +1668,7 @@ mod tests {
             store.clone(),
             tasks.clone(),
             crate::server_info::test_info(),
+            crate::integrations::IntegrationSlot::default(),
         )
         .await?;
         let mut users = vec![];

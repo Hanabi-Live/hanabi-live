@@ -12,10 +12,10 @@ use crate::{
     errors::{CommandError, CommandResult},
     integrations::{IntegrationSlot, Integrations},
     lifecycle::{Lifecycle, Refusal},
-    lobby::{self, Caller, Effect},
+    lobby::{self, Caller, Effect, Publication},
     public_http::{self, PublicConfig},
     store::Store,
-    transport::{Inbound, InboundBudget, Outbound, Session, SessionMetadata, frame},
+    transport::{Inbound, InboundBudget, Outbound, Outgoing, Session, SessionMetadata, frame},
 };
 use anyhow::{Context, Result, ensure};
 use axum::{
@@ -114,6 +114,7 @@ impl App {
         public: PublicConfig,
         lifecycle: Arc<Lifecycle>,
         info: Arc<crate::server_info::ServerInfo>,
+        integrations: IntegrationSlot,
     ) -> Arc<Self> {
         Arc::new(Self {
             store,
@@ -129,7 +130,7 @@ impl App {
             background: TaskTracker::new(),
             public,
             info,
-            integrations: IntegrationSlot::default(),
+            integrations,
             integration_started: AtomicBool::new(false),
         })
     }
@@ -155,10 +156,6 @@ impl App {
         if let Some(integrations) = self.integrations.get() {
             integrations.report(report);
         }
-    }
-
-    pub fn public_url(&self, path: &str) -> String {
-        self.info.public_url(path)
     }
 }
 
@@ -958,23 +955,25 @@ fn command_failure(error: CommandError, command: &str) -> Option<CommandFailure>
     })
 }
 
-pub async fn publish_external(app: &App, effects: Vec<Effect>) -> Result<()> {
+/// Sends messages from outside the server, such as Discord, to everyone in the lobby.
+pub async fn publish_external(app: &App, messages: Vec<Outgoing>) -> Result<()> {
     ensure!(app.lifecycle.healthy(), "Server ownership unavailable");
     let (reply, received) = oneshot::channel();
     app.hub
-        .send(HubCommand::ExternalEffects { effects, reply })
+        .send(HubCommand::Broadcast { messages, reply })
         .await?;
     received.await?.map_err(anyhow::Error::from)
 }
 
+/// Does the work of a lobby command's effects that needs the server's runtime or integrations, and
+/// has the hub publish the rest.
 async fn publish(app: &App, session: Arc<Session>, effects: Vec<Effect>) -> CommandResult {
-    let mut ordinary = vec![];
+    let mut publications = vec![];
     let mut mirrors = vec![];
     for effect in effects {
         match effect {
-            Effect::DiscordMirror {
-                chat_id, message, ..
-            } => mirrors.push((chat_id, message)),
+            Effect::Publish(publication) => publications.push(publication),
+            Effect::DiscordMirror { chat_id, message } => mirrors.push((chat_id, message)),
             Effect::RuntimeChat {
                 command,
                 args,
@@ -982,29 +981,25 @@ async fn publish(app: &App, session: Arc<Session>, effects: Vec<Effect>) -> Comm
             } => {
                 for message in app.info.runtime_response(&command, &args)? {
                     if command == "uptime" {
-                        ordinary.push(lobby::notice(&session.name, &message, &room));
+                        publications.push(lobby::notice_publication(
+                            &session.name,
+                            &message,
+                            &room,
+                        ));
                         continue;
                     }
-                    for effect in lobby::server_chat(&app.store.primary, &message).await? {
-                        if let Effect::DiscordMirror {
-                            chat_id, message, ..
-                        } = effect
-                        {
-                            mirrors.push((chat_id, message));
-                        } else {
-                            ordinary.push(effect);
-                        }
-                    }
+                    let saved = lobby::server_chat(&app.store.primary, &message).await?;
+                    publications.push(Publication::Broadcast(saved.broadcast));
+                    mirrors.push((saved.chat_id, saved.message));
                 }
             }
-            effect => ordinary.push(effect),
         }
     }
     let (reply, received) = oneshot::channel();
     app.hub
         .send(HubCommand::LobbyEffects {
             session,
-            effects: ordinary,
+            effects: publications,
             reply,
         })
         .await?;
@@ -1098,7 +1093,6 @@ async fn dispatch(app: &Arc<App>, session: Arc<Session>, input: &str) -> Command
         name: session.name.clone(),
         normalized_name: session.normalized_name.clone(),
         ip: session.ip.clone(),
-        generation: session.generation,
     };
     let effects = match message {
         ClientMessage::Chat(request) => {

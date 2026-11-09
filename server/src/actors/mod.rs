@@ -1,11 +1,11 @@
 use crate::{
     errors::CommandResult,
-    lobby::{Effect, OnlineUser},
-    model::{Snapshot, TableSnapshot},
+    lobby::{OnlineUser, Publication},
+    model::TableSnapshot,
     operations::Operation,
     server_info::ServerInfo,
     store::Store,
-    transport::Session,
+    transport::{Outgoing, Session},
 };
 #[cfg(test)]
 use anyhow::Context;
@@ -176,12 +176,6 @@ pub enum HubCommand {
     },
     Logout(Arc<Session>),
     Allocate(oneshot::Sender<CommandResult<Allocation>>),
-    Replay {
-        session: Arc<Session>,
-        snapshot: Box<Snapshot>,
-        allocation: Allocation,
-        reply: Reply,
-    },
     Client {
         session: Arc<Session>,
         message: ClientMessage,
@@ -195,11 +189,12 @@ pub enum HubCommand {
     },
     LobbyEffects {
         session: Arc<Session>,
-        effects: Vec<Effect>,
+        effects: Vec<Publication>,
         reply: Reply,
     },
-    ExternalEffects {
-        effects: Vec<Effect>,
+    /// Sends messages from outside the server, such as Discord, to everyone in the lobby.
+    Broadcast {
+        messages: Vec<Outgoing>,
         reply: Reply,
     },
     /// A join to a table finished; the hub ends its seat reservation and answers the request.
@@ -223,18 +218,14 @@ pub enum HubCommand {
         command: Operation,
         reply: oneshot::Sender<Result<Value>>,
     },
-    Route {
-        session: Arc<Session>,
-        table: TableId,
-        command: Command,
-        reply: Reply,
-    },
     Sync {
         session: Arc<Session>,
         reply: Reply,
     },
     Effects(Effects),
     Retire(TableId),
+    /// A table's task panicked.
+    TableFailed(TableId),
     Install {
         table: Box<TableSnapshot>,
         revision: i64,

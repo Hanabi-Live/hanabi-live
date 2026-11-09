@@ -905,6 +905,7 @@ async fn full_table_mailboxes_do_not_block_hub_and_replacements_fence_private_ef
         reservations: HashMap::new(),
         next_reservation: 0,
         info: crate::server_info::test_info(),
+        integrations: crate::integrations::IntegrationSlot::default(),
     };
     hub.sessions.insert(
         UserId(1),
@@ -928,13 +929,9 @@ async fn full_table_mailboxes_do_not_block_hub_and_replacements_fence_private_ef
     let task = tokio::spawn(hub.run());
     let (reply, replied) = oneshot::channel();
     sender
-        .send(HubCommand::Route {
+        .send(HubCommand::Client {
             session: old.clone(),
-            table: TableId(42),
-            command: Command::Client(Box::new(client_message(
-                "getGameInfo1",
-                &json!({"tableID":42}),
-            )?)),
+            message: client_message("getGameInfo1", &json!({"tableID":42}))?,
             reply,
         })
         .await?;
@@ -998,6 +995,103 @@ async fn full_table_mailboxes_do_not_block_hub_and_replacements_fence_private_ef
     store.close().await?;
     db.close().await;
     Ok(())
+}
+
+#[tokio::test]
+async fn a_table_that_panics_is_removed_and_frees_its_players() -> Result<()> {
+    let Some((db, store, _state)) = fixture_store().await? else {
+        return Ok(());
+    };
+    let (sender, receiver) = mpsc::channel(16);
+    let (alice, mut frames) = Session::new(UserId(1), "Alice".into(), 1, false);
+    let (table_sender, _table_receiver) = mpsc::channel(1);
+    let mut hub = Hub {
+        receiver,
+        sender: sender.clone(),
+        sessions: HashMap::new(),
+        tables: HashMap::new(),
+        closing: false,
+        store: store.clone(),
+        tasks: TaskTracker::new(),
+        capacity: Arc::new(Semaphore::new(1)),
+        reservations: HashMap::new(),
+        next_reservation: 0,
+        info: crate::server_info::test_info(),
+        integrations: crate::integrations::IntegrationSlot::default(),
+    };
+    hub.sessions.insert(
+        UserId(1),
+        Presence {
+            session: alice.clone(),
+            status: Status::Playing,
+            table: Some(TableId(42)),
+        },
+    );
+    hub.tables.insert(
+        TableId(42),
+        Entry {
+            handle: TableHandle {
+                sender: table_sender,
+                cleanup: Arc::new(Notify::new()),
+            },
+            view: TableView {
+                players: vec![UserId(1)],
+                replay: false,
+                replay_game: None,
+                visible: true,
+                data: test_table(),
+                inspection: TableInspection::default(),
+                reconnects: BTreeMap::new(),
+            },
+            published: true,
+        },
+    );
+    hub.supervise(TableId(42), async { panic!("A table bug") });
+    let task = tokio::spawn(hub.run());
+    let result = async {
+        let mut seen = Vec::new();
+        tokio::time::timeout(Duration::from_secs(3), async {
+            while !(seen.iter().any(|f: &String| f.starts_with("tableGone "))
+                && seen.iter().any(|f| f.starts_with("boot "))
+                && seen.iter().any(|f| f.starts_with("warning "))
+                && seen.iter().any(|f| f.starts_with("user ")))
+            {
+                let frame = frames.recv().await.context("Socket closed")?;
+                seen.push(frame.message.to_text()?.to_owned());
+            }
+            Ok::<(), anyhow::Error>(())
+        })
+        .await??;
+        let user = seen
+            .iter()
+            .rfind(|f| f.starts_with("user "))
+            .context("Missing user update")?;
+        ensure!(
+            user.contains("\"status\":0"),
+            "The player did not return to the lobby: {user}"
+        );
+        let (reply, replied) = oneshot::channel();
+        sender
+            .send(HubCommand::ReserveSeats {
+                users: vec![UserId(1)],
+                from: TableId(7),
+                reply,
+            })
+            .await?;
+        ensure!(
+            replied.await?.is_ok(),
+            "The failed table still holds its player's seat"
+        );
+        Ok::<(), anyhow::Error>(())
+    }
+    .await;
+    let (reply, replied) = oneshot::channel();
+    sender.send(HubCommand::Stop(reply)).await?;
+    replied.await?;
+    task.await?;
+    store.close().await?;
+    db.close().await;
+    result
 }
 
 #[test]

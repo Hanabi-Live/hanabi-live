@@ -539,10 +539,10 @@ async fn native_browser_login_ws_bootstrap_and_command_routing_postgres() {
         .hub
         .send(HubCommand::LobbyEffects {
             session: alice_generation,
-            effects: vec![Effect::ToUser {
+            effects: vec![Publication::ToUser {
                 id: UserId(i32::try_from(bob_welcome["userID"].as_i64().unwrap()).unwrap()),
                 generation: 2,
-                message: crate::transport::Outgoing::new(
+                message: Outgoing::new(
                     hanabi_protocol::server::CHAT,
                     hanabi_protocol::Chat::new(
                         "must not reroute to replacement",

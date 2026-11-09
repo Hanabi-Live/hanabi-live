@@ -1,11 +1,13 @@
 use super::{
     Allocation, Command, Entry, HubCommand, NO_SHADOWED_SEAT, Presence, Reply, SeatReservation,
     TableActor, TableCommand, TableHandle, TableView,
-    setup::{Creation, prepare_table, replay_table},
+    setup::{Creation, prepare_table},
 };
-use crate::errors::CommandResult;
+use crate::errors::{CommandError, CommandResult, Report};
 use crate::{
-    lobby::{Effect, OnlineUser},
+    accounts,
+    integrations::IntegrationSlot,
+    lobby::{OnlineUser, Publication},
     operations::Operation,
     routing::{Route, route},
     server_info::ServerInfo,
@@ -13,13 +15,15 @@ use crate::{
     transport::{Session, frame},
 };
 use anyhow::{Context, Result};
+use axum::http::StatusCode;
+use futures_util::FutureExt;
 use hanabi_protocol::GameId;
 use hanabi_protocol::{
     ClientMessage, ErrorNotice, SoundLobby, Status, TableId, TableRequest, User, UserId, UserLeft,
     UserList,
 };
 use serde_json::{Value, json};
-use std::{collections::HashMap, sync::Arc, time::Duration};
+use std::{collections::HashMap, panic::AssertUnwindSafe, sync::Arc, time::Duration};
 use tokio::sync::{Semaphore, mpsc, oneshot};
 use tokio_util::task::TaskTracker;
 
@@ -47,14 +51,17 @@ pub struct Hub {
     pub(super) reservations: HashMap<UserId, u64>,
     pub(super) next_reservation: u64,
     pub(super) info: Arc<ServerInfo>,
+    /// Where the hub sends alerts, once the integrations start.
+    pub(super) integrations: IntegrationSlot,
 }
 impl Hub {
     pub async fn start(
         store: Store,
         tasks: TaskTracker,
         info: Arc<ServerInfo>,
+        integrations: IntegrationSlot,
     ) -> Result<mpsc::Sender<HubCommand>> {
-        let restored = store.load_for_startup().await?;
+        let restored = store.load().await?;
         let (sender, receiver) = mpsc::channel(HUB_QUEUE);
         let mut hub = Self {
             receiver,
@@ -68,6 +75,7 @@ impl Hub {
             reservations: HashMap::new(),
             next_reservation: 0,
             info,
+            integrations,
         };
         for (table, revision) in restored {
             let permit = hub
@@ -108,8 +116,62 @@ impl Hub {
             sender,
             cleanup: actor.cleanup.clone(),
         };
-        self.tasks.spawn(actor.run(receiver, initial));
+        self.supervise(actor.table.id, actor.run(receiver, initial));
         handle
+    }
+    /// Runs a table's task. If the task panics, the hub removes its table, which would otherwise
+    /// stay in the lobby with its players seated and never answer.
+    pub(super) fn supervise(&self, id: TableId, task: impl Future<Output = ()> + Send + 'static) {
+        let hub = self.sender.clone();
+        self.tasks.spawn(async move {
+            if AssertUnwindSafe(task).catch_unwind().await.is_err() {
+                let _ = hub.send(HubCommand::TableFailed(id)).await;
+            }
+        });
+    }
+    /// Removes a table whose task panicked, sends its users back to the lobby, and reports the
+    /// failure. The table's last checkpoint stays saved, so the table comes back after a restart.
+    fn table_failed(&mut self, id: TableId) {
+        let report = Report::known(
+            "Running a table",
+            "table_failed",
+            format!(
+                "Table {id} stopped after an internal error. Its last saved state comes back when the server restarts."
+            ),
+            StatusCode::INTERNAL_SERVER_ERROR,
+        );
+        report.log();
+        if let Some(integrations) = self.integrations.get() {
+            integrations.report(&report);
+        }
+        if self.tables.remove(&id).is_some_and(|e| e.view.visible) {
+            self.broadcast(&frame(
+                hanabi_protocol::server::TABLE_GONE,
+                TableRequest { table_id: id },
+            ));
+        }
+        let boot = frame(hanabi_protocol::server::BOOT, TableRequest { table_id: id });
+        let warning = frame(
+            hanabi_protocol::server::WARNING,
+            hanabi_protocol::Warning {
+                warning: accounts::escape_html(&report.text()),
+            },
+        );
+        let users = self
+            .sessions
+            .values_mut()
+            .filter(|p| p.table == Some(id))
+            .map(|p| {
+                p.status = Status::Lobby;
+                p.table = None;
+                p.session.emit(&boot);
+                p.session.emit(&warning);
+                p.session.user
+            })
+            .collect::<Vec<_>>();
+        for user in users {
+            self.broadcast_user(user);
+        }
     }
     fn current(&self, s: &Session) -> bool {
         self.store.check_state().is_ok()
@@ -346,26 +408,20 @@ impl Hub {
     }
     fn apply_effects(
         &mut self,
-        session: Option<&Arc<Session>>,
-        effects: Vec<Effect>,
+        session: &Arc<Session>,
+        effects: Vec<Publication>,
     ) -> CommandResult<()> {
         self.store.check_state()?;
-        if let Some(s) = session {
-            ensure_or_reject!(self.current(s), "Stale session");
-        }
+        ensure_or_reject!(self.current(session), "Stale session");
         for effect in effects {
             match effect {
-                Effect::Broadcast(message) => self.broadcast(&message.frame()),
-                Effect::ToSelf(message) => {
-                    let s = session.context("External effects must be public")?;
-                    s.emit(&message.frame());
-                }
-                Effect::ToUser {
+                Publication::Broadcast(message) => self.broadcast(&message.frame()),
+                Publication::ToSelf(message) => session.emit(&message.frame()),
+                Publication::ToUser {
                     id,
                     generation,
                     message,
                 } => {
-                    ensure_internal!(session.is_some(), "External private effect rejected");
                     if let Some(p) = self
                         .sessions
                         .get(&id)
@@ -374,46 +430,38 @@ impl Hub {
                         p.session.emit(&message.frame());
                     }
                 }
-                Effect::HGroup(value) => {
-                    let s = session.context("Missing session")?;
-                    s.set_h_group(value);
-                    if let Some(p) = self.sessions.get(&s.user) {
-                        self.broadcast(&frame(hanabi_protocol::server::USER, Self::user(p)));
-                    }
+                Publication::HGroup(value) => {
+                    session.set_h_group(value);
+                    self.broadcast_user(session.user);
                 }
-                Effect::HGroupLevel(value) => {
-                    let s = session.context("Missing session")?;
-                    s.set_h_group_level(value);
-                    if let Some(p) = self.sessions.get(&s.user) {
-                        self.broadcast(&frame(hanabi_protocol::server::USER, Self::user(p)));
-                    }
+                Publication::HGroupLevel(value) => {
+                    session.set_h_group_level(value);
+                    self.broadcast_user(session.user);
                 }
-                Effect::Inactive(value) => {
-                    let s = session.context("Missing session")?;
-                    s.set_inactive(value);
-                    if let Some(p) = self.sessions.get(&s.user) {
-                        self.broadcast(&frame(hanabi_protocol::server::USER, Self::user(p)));
-                    }
+                Publication::Inactive(value) => {
+                    session.set_inactive(value);
+                    self.broadcast_user(session.user);
                 }
-                Effect::RelationshipChanged { .. } => {
-                    ensure_internal!(session.is_some(), "External relationship effect rejected");
-                }
-                Effect::BlocksChanged {
+                Publication::BlocksChanged {
                     user_id,
                     target_id,
                     blocked,
                 } => {
-                    ensure_internal!(session.is_some(), "External block effect rejected");
                     for (user, other) in [(user_id, target_id), (target_id, user_id)] {
                         if let Some(p) = self.sessions.get(&user) {
                             p.session.set_blocked(other, blocked);
                         }
                     }
                 }
-                _ => bail_internal!("Runtime effects must be resolved before hub publication"),
             }
         }
         Ok(())
+    }
+    /// Tells everyone about a change to a connected user.
+    fn broadcast_user(&self, user: UserId) {
+        if let Some(p) = self.sessions.get(&user) {
+            self.broadcast(&frame(hanabi_protocol::server::USER, Self::user(p)));
+        }
     }
     fn disconnect(&mut self, users: &[UserId]) {
         for user in users {
@@ -629,18 +677,16 @@ impl Hub {
                     effects,
                     reply,
                 } => {
-                    let result = self.apply_effects(Some(&session), effects);
+                    let result = self.apply_effects(&session, effects);
                     let _ = reply.send(result);
                 }
-                HubCommand::ExternalEffects { effects, reply } => {
-                    let result = if effects
-                        .iter()
-                        .all(|e| matches!(e, Effect::Broadcast { .. }))
-                    {
-                        self.apply_effects(None, effects)
-                    } else {
-                        Err(internal!("External effects must be public"))
-                    };
+                HubCommand::Broadcast { messages, reply } => {
+                    let result = self.store.check_state().map_err(CommandError::from);
+                    if result.is_ok() {
+                        for message in messages {
+                            self.broadcast(&message.frame());
+                        }
+                    }
                     let _ = reply.send(result);
                 }
                 HubCommand::JoinFinished {
@@ -716,35 +762,6 @@ impl Hub {
                         }
                         .await;
                         let _ = reply.send(result);
-                    });
-                }
-                HubCommand::Replay {
-                    session,
-                    snapshot,
-                    mut allocation,
-                    reply,
-                } => {
-                    let table = replay_table(*snapshot, false, false, session.user, &session.name);
-                    let store = self.store.clone();
-                    let hub = self.sender.clone();
-                    self.tasks.spawn(async move {
-                        match store.save(&table, 0).await {
-                            Ok(revision) => {
-                                allocation.revision = revision;
-                                let installed = HubCommand::Install {
-                                    table: Box::new(table),
-                                    revision,
-                                    allocation,
-                                    session,
-                                    warnings: vec![],
-                                    reply,
-                                };
-                                send_install(&hub, installed).await;
-                            }
-                            Err(e) => {
-                                let _ = reply.send(Err(e.into()));
-                            }
-                        }
                     });
                 }
                 HubCommand::Install {
@@ -841,12 +858,6 @@ impl Hub {
                         }
                     }
                 }
-                HubCommand::Route {
-                    session,
-                    table,
-                    command,
-                    reply,
-                } => self.route(session, table, command, reply),
                 HubCommand::Sync { session, reply } => {
                     let result = if self.current(&session) && !self.closing {
                         session.emit(&frame(
@@ -918,6 +929,7 @@ impl Hub {
                         }
                     }
                 }
+                HubCommand::TableFailed(id) => self.table_failed(id),
                 HubCommand::Retire(id) => {
                     if self.tables.remove(&id).is_some_and(|e| e.view.visible) {
                         self.broadcast(&frame(

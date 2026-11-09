@@ -114,6 +114,8 @@ pub struct SessionMetadata {
 }
 
 impl Session {
+    /// A session with no address or server tokens, for tests.
+    #[cfg(test)]
     pub fn new(
         user: UserId,
         name: String,
@@ -339,9 +341,11 @@ impl Outgoing {
             data: serde_json::to_value(data).expect("JSON-serializable protocol payload"),
         }
     }
+    #[cfg(test)]
     pub fn command(&self) -> &'static str {
         self.command
     }
+    #[cfg(test)]
     pub fn data(&self) -> &serde_json::Value {
         &self.data
     }

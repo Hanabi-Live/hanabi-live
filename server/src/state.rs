@@ -287,22 +287,6 @@ impl LiveState {
         Ok(revision)
     }
 
-    /// Reserves a table ID that was allocated earlier, such as the destination of a split.
-    pub async fn reserve(&self, id: TableId) -> Result<()> {
-        let id = table_id(id)?;
-        let mut transaction = self.begin().await?;
-        sqlx::query_scalar!(
-            "INSERT INTO live_tables (id, revision, payload, epoch) VALUES ($1, 0, NULL, $2)
-             ON CONFLICT DO NOTHING RETURNING id",
-            id,
-            self.owner.epoch
-        )
-        .fetch_optional(&mut *transaction)
-        .await?
-        .context("The live table already exists")?;
-        self.commit(transaction).await
-    }
-
     /// Reserves a new table ID. IDs are never reused.
     pub async fn allocate_table(&self) -> Result<TableId> {
         let mut transaction = self.begin().await?;
@@ -323,6 +307,7 @@ impl LiveState {
         self.commit(transaction).await
     }
 
+    #[cfg(test)]
     pub async fn get(&self, id: TableId) -> Result<Option<StoredState>> {
         self.check()?;
         let key = table_id(id)?;

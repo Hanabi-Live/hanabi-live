@@ -23,10 +23,12 @@ impl Fixture {
         let state = LiveState::for_test(&db.pool).await.unwrap();
         let store = Store::fixture(db.pool.clone(), state);
         let tasks = TaskTracker::new();
+        let integrations = IntegrationSlot::default();
         let hub = Hub::start(
             store.clone(),
             tasks.clone(),
             crate::server_info::test_info(),
+            integrations.clone(),
         )
         .await
         .unwrap();
@@ -50,6 +52,7 @@ impl Fixture {
             config,
             lifecycle,
             crate::server_info::test_info(),
+            integrations,
         );
         let server_stop = CancellationToken::new();
         let stop = server_stop.clone();

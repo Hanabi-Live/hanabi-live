@@ -5,6 +5,7 @@ pub fn normalize_string(input: &str) -> String {
     deunicode::deunicode_with_tofu(input, "").to_lowercase()
 }
 
+#[cfg(test)]
 pub fn normalize_username(input: &str) -> String {
     normalize_string(input.trim())
 }

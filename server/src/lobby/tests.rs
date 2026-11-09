@@ -8,7 +8,6 @@ fn caller(id: i32, name: &str) -> Caller {
         name: name.into(),
         normalized_name: normalize_username(name),
         ip: "127.0.0.1".into(),
-        generation: 17,
     }
 }
 
@@ -16,7 +15,9 @@ fn self_data(effects: &[Effect], command: &str) -> Value {
     effects
         .iter()
         .find_map(|effect| match effect {
-            Effect::ToSelf(message) if message.command() == command => Some(message.data().clone()),
+            Effect::Publish(Publication::ToSelf(message)) if message.command() == command => {
+                Some(message.data().clone())
+            }
             _ => None,
         })
         .unwrap_or_else(|| panic!("Missing {command} in {effects:?}"))
@@ -49,7 +50,7 @@ async fn uptime_is_private_before_history_or_discord_publication_postgres() {
         external_command(&db.pool, "/uptime")
             .await
             .unwrap()
-            .is_empty()
+            .is_none()
     );
     assert_eq!(
         sqlx::query_scalar!("SELECT COUNT(*) AS \"v!\" FROM chat_log")
@@ -109,8 +110,8 @@ async fn lobby_relationships_atomic_settings_and_parameterization_postgres() {
     let _ = run(&db.pool, &who, &[], "chatUnfriend", data.clone()).await;
     assert_eq!(friends(&db.pool, a).await.unwrap(), Vec::<String>::new());
     let (one, two) = tokio::join!(
-        change_friend(&db.pool, a, b, true),
-        change_friend(&db.pool, a, b, true)
+        relationships::change_friend(&db.pool, a, b, true),
+        relationships::change_friend(&db.pool, a, b, true)
     );
     assert_ne!(one.unwrap(), two.unwrap());
     let result = run(
@@ -121,7 +122,10 @@ async fn lobby_relationships_atomic_settings_and_parameterization_postgres() {
         json!({"name":"hGroupConventions","setting":"true"}),
     )
     .await;
-    assert!(matches!(result.as_slice(), [Effect::HGroup(true)]));
+    assert!(matches!(
+        result.as_slice(),
+        [Effect::Publish(Publication::HGroup(true))]
+    ));
     assert_eq!(
         serde_json::to_value(get_settings(&db.pool, a).await.unwrap()).unwrap()["hGroupConventions"],
         true
@@ -134,7 +138,10 @@ async fn lobby_relationships_atomic_settings_and_parameterization_postgres() {
         json!({"name":"hGroupLevel","setting":"5"}),
     )
     .await;
-    assert!(matches!(result.as_slice(), [Effect::HGroupLevel(5)]));
+    assert!(matches!(
+        result.as_slice(),
+        [Effect::Publish(Publication::HGroupLevel(5))]
+    ));
     let too_high = (hanabi_protocol::MAX_H_GROUP_LEVEL + 1).to_string();
     assert!(
         set_setting(&db.pool, a, "hGroupLevel", &too_high)
@@ -177,7 +184,10 @@ async fn lobby_relationships_atomic_settings_and_parameterization_postgres() {
     assert_eq!(settings["soundTimer"], false);
     assert_eq!(settings["volume"], 25);
     let result = run(&db.pool, &who, &[], "inactive", json!({"inactive":true})).await;
-    assert!(matches!(result.first(), Some(Effect::Inactive(true))));
+    assert!(matches!(
+        result.first(),
+        Some(Effect::Publish(Publication::Inactive(true)))
+    ));
     db.close().await;
 }
 
@@ -303,15 +313,13 @@ async fn lobby_private_messages_and_command_privacy_postgres() {
     assert!(message.get("chatID").is_none());
     assert_eq!(effects.len(), 2);
     assert!(effects.iter().all(|effect| match effect {
-        Effect::ToSelf { .. } => true,
-        Effect::ToUser { id, .. } => *id == UserId(b),
+        Effect::Publish(Publication::ToSelf(_)) => true,
+        Effect::Publish(Publication::ToUser { id, .. }) => *id == UserId(b),
         _ => false,
     }));
-    assert!(
-        effects
-            .iter()
-            .any(|e| matches!(e,Effect::ToUser {id,generation:29,..} if *id==UserId(b)))
-    );
+    assert!(effects.iter().any(
+        |e| matches!(e,Effect::Publish(Publication::ToUser {id,generation:29,..}) if *id==UserId(b))
+    ));
     let stored = sqlx::query!("SELECT datetime_sent FROM chat_log_pm")
         .fetch_one(&db.pool)
         .await
@@ -361,7 +369,7 @@ async fn lobby_private_messages_and_command_privacy_postgres() {
         assert!(
             result
                 .iter()
-                .all(|effect| matches!(effect, Effect::ToSelf { .. }))
+                .all(|effect| matches!(effect, Effect::Publish(Publication::ToSelf(_))))
         );
     }
     let result = run(
@@ -422,7 +430,7 @@ async fn lobby_private_messages_and_command_privacy_postgres() {
     assert_eq!(
         result
             .iter()
-            .filter(|e| matches!(e, Effect::Broadcast { .. }))
+            .filter(|e| matches!(e, Effect::Publish(Publication::Broadcast(_))))
             .count(),
         2
     );
@@ -436,7 +444,7 @@ async fn lobby_private_messages_and_command_privacy_postgres() {
     .await;
     assert!(
         result.iter().any(
-            |e| matches!(e,Effect::Broadcast(message) if message.data()["msg"]=="&lt;plain&gt;")
+            |e| matches!(e,Effect::Publish(Publication::Broadcast(message)) if message.data()["msg"]=="&lt;plain&gt;")
         )
     );
     let before: i64 = sqlx::query_scalar!("SELECT COUNT(*) AS \"v!\" FROM chat_log")
@@ -511,7 +519,9 @@ async fn lobby_history_pages_include_only_own_games_postgres() {
     let other = game(&db, b, "p2v0s2", 20).await;
     let shared = game(&db, a, "p2v0s4", 20).await;
     sqlx::query!("INSERT INTO game_participants(game_id,user_id,seat,character_assignment,character_metadata) VALUES($1,$2,1,0,0)", shared, b).execute(&db.pool).await.unwrap();
-    change_friend(&db.pool, a, b, true).await.unwrap();
+    relationships::change_friend(&db.pool, a, b, true)
+        .await
+        .unwrap();
     sqlx::query!(
         "UPDATE games SET datetime_finished='2026-11-04T00:00:00Z' WHERE id=ANY($1)",
         &[own, other, shared][..]
