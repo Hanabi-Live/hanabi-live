@@ -1,5 +1,4 @@
 import type { LogEntry } from "@hanabi-live/game";
-import { eRange } from "complete-common";
 import { globals } from "../../UIGlobals";
 
 export function onLogChanged(log: readonly LogEntry[]): void {
@@ -13,17 +12,7 @@ function updateActionLog(log: readonly LogEntry[]) {
     return;
   }
 
-  const startingIndex = Math.max(0, log.length - actionLog.maxLines);
-  for (const i of eRange(actionLog.maxLines)) {
-    const line =
-      startingIndex + i > log.length - 1
-        ? ""
-        : (log[startingIndex + i]?.text ?? "");
-    if (line !== actionLog.smallHistory[i]) {
-      actionLog.smallHistory[i] = line;
-    }
-  }
-  actionLog.refreshText();
+  actionLog.update(log);
 
   globals.layers.UI.batchDraw();
 }

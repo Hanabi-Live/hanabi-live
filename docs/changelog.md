@@ -62,6 +62,7 @@ of the repository.
 - When the deck runs out, it now pulses, and its count of 0 turns amber.
 - When a note determines the suit or rank shown on a card, the note icon now
   shows a large pencil instead of glowing.
+- The text in the action log now slides up and down when it changes.
 
 ## November 8th, 2026
 

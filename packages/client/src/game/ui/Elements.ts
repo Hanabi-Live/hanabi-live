@@ -1,12 +1,12 @@
 import type { Suit } from "@hanabi-live/game";
 import type Konva from "konva";
+import type { ActionLog } from "./ActionLog";
 import type { ButtonGroup } from "./ButtonGroup";
 import type { CardLayout } from "./CardLayout";
 import type { ClueLog } from "./ClueLog";
 import type { ColorButton } from "./ColorButton";
 import type { Deck } from "./Deck";
 import type { FullActionLog } from "./FullActionLog";
-import type { MultiFitText } from "./MultiFitText";
 import type { NameFrame } from "./NameFrame";
 import type { PlayStack } from "./PlayStack";
 import type { RankButton } from "./RankButton";
@@ -48,7 +48,7 @@ export class Elements {
   playerHandTurnRects: Konva.Rect[] = [];
   playerHandBlackLines: Konva.Rect[] = [];
   nameFrames: NameFrame[] = [];
-  actionLog: MultiFitText | null = null;
+  actionLog: ActionLog | null = null;
   replayButton: Button | null = null;
   chatButton: Button | null = null;
   lobbyButton: Button | null = null;

@@ -30,6 +30,7 @@ import Konva from "konva";
 import * as modals from "../../modals";
 import { getCanvasColors } from "../../theme";
 import { getHTMLElement } from "../../utils";
+import { ActionLog } from "./ActionLog";
 import { ButtonGroup } from "./ButtonGroup";
 import { CardLayout } from "./CardLayout";
 import { ClueLog } from "./ClueLog";
@@ -38,7 +39,6 @@ import { Deck } from "./Deck";
 import { Elements } from "./Elements";
 import { FullActionLog } from "./FullActionLog";
 import { HanabiCard } from "./HanabiCard";
-import { MultiFitText } from "./MultiFitText";
 import { PlayStack } from "./PlayStack";
 import { RankButton } from "./RankButton";
 import { globals } from "./UIGlobals";
@@ -847,7 +847,8 @@ function drawActionLog() {
   const maxLines = globals.lobby.settings.keldonMode
     ? KELDON_ACTION_LOG_LINES
     : ACTION_LOG_LINES;
-  globals.elements.actionLog = new MultiFitText(
+  const textHeight = (actionLogValues.h! - ACTION_LOG_TEXT_INSET.y * 2) * winH;
+  globals.elements.actionLog = new ActionLog(
     {
       align: "center",
       fontSize: ACTION_LOG_FONT_SIZE * winH,
@@ -857,11 +858,18 @@ function drawActionLog() {
       x: ACTION_LOG_TEXT_INSET.x * winW,
       y: ACTION_LOG_TEXT_INSET.y * winH,
       width: (actionLogValues.w! - ACTION_LOG_TEXT_INSET.x * 2) * winW,
-      height: (actionLogValues.h! - ACTION_LOG_TEXT_INSET.y * 2) * winH,
-      listening: false,
+      height: textHeight,
     },
     maxLines,
   );
+
+  // Hide the lines that slide in and out of the action log.
+  actionLogGroup.clip({
+    x: 0,
+    y: ACTION_LOG_TEXT_INSET.y * winH,
+    width: actionLogValues.w! * winW,
+    height: textHeight,
+  });
   actionLogGroup.add(globals.elements.actionLog);
 
   // The full action log (that appears when you click on the action log).
