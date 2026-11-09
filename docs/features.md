@@ -24,7 +24,8 @@ before asking any questions in the chat.
 1. [Linked Accounts](#linked-accounts)
 1. [Tags](#tags)
 1. [Website Endpoints](#website-endpoints)
-1. [Research & Bots](#research--bots)
+1. [JSON Games](#json-games)
+1. [Bots](#bots)
 1. [Password Reset](#password-reset)
 1. [Project History](#project-history)
 
@@ -778,7 +779,7 @@ move for the current situation.
 
 <br />
 
-## Research & Bots
+## JSON Games
 
 - A game can be stored as a [JSON](https://www.json.org/json-en.html) object.
   The community uses
@@ -790,16 +791,6 @@ move for the current situation.
 - This is useful for researchers and bot-makers because you can take one of the
   games that your bot plays and then plug it into the website in order to
   more-easily see what kinds of strategies that it is doing.
-- It is also possible to program a bot to play on the website with other
-  players. Unlike other websites such as [lichess.org](https://lichess.org/),
-  there is no bot-specific API. Bots must connect to the WebSocket server and
-  send messages in exactly the same way that a real player would. A reference
-  bot implementation can be found at
-  [`hanabi-live-bot`](https://github.com/Hanabi-Live/hanabi-live-bot).
-- To mark an account as a bot, send `bot` as the client version: the `version`
-  field when you log in to `/login`, or `?version=bot` in the WebSocket URL. The
-  account stays a bot after that. Other players see a robot icon next to it.
-- Unlike human players, bots can play at more than one table at a time.
 
 ### JSON Endpoints
 
@@ -832,6 +823,21 @@ parameter repeated, is rejected.
 | 1     | fcol[x]   | integer | filters by column x (0, 1, ...)         | filter value              |
 | 2     | start     | integer | sets the starting ID of the data        | ...                       |
 | 2     | end       | integer | sets the ending ID of the data          | ...                       |
+
+<br />
+
+## Bots
+
+- It is also possible to program a bot to play on the website with other
+  players. Unlike other websites such as [lichess.org](https://lichess.org/),
+  there is no bot-specific API. Bots must connect to the WebSocket server and
+  send messages in exactly the same way that a real player would. A reference
+  bot implementation can be found at
+  [`hanabi-live-bot`](https://github.com/Hanabi-Live/hanabi-live-bot).
+- To mark an account as a bot, send `bot` as the client version: the `version`
+  field when you log in to `/login`, or `?version=bot` in the WebSocket URL. The
+  account stays a bot after that. Other players see a robot icon next to it.
+- Unlike human players, bots can play at more than one table at a time.
 
 <br />
 
