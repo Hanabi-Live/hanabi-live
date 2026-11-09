@@ -559,7 +559,7 @@ This page lists the changes to Hanab Live, excluding bug fixes.
 
 ## March 15th, 2021
 
-- Added the "clued" note.
+- Added the "clued" identity note.
 
 ## March 11th, 2021
 
@@ -567,16 +567,17 @@ This page lists the changes to Hanab Live, excluding bug fixes.
 
 ## March 5th, 2021
 
-- Appending notes uses bracket syntax.
-- Players who are not the leader can suggest variants with the dropdown.
+- Appending notes now uses bracket syntax.
+- Players who are not the leader can now suggest variants with the dropdown.
 
 ## February 11th, 2021
 
-- Card possibilities are reduced by deduction.
+- Card possibilities are now reduced by complex deduction, not just by counting
+  visible cards.
 
 ## January 7th, 2021
 
-- Added negative identity notes.
+- Added the ability to put negative identity notes with "!", like "!b".
 
 ## December 6th, 2020
 
@@ -584,51 +585,56 @@ This page lists the changes to Hanab Live, excluding bug fixes.
 
 ## December 5th, 2020
 
-- The number of finesses is tracked.
+- The future efficiency tooltip now shows more detailed information.
 
 ## December 1st, 2020
 
-- Notes can modify efficiency.
-- Added the `/bga`, `/doc`, and `/issue` chat commands.
+- Cards that have been denoted as being finessed with an "f" note will now
+  automatically modify the future efficiency.
+- Added the `/bga` and `/doc` chat commands.
 
 ## November 26th, 2020
 
-- Added the Impostor character.
-- Added efficiency for Throw It in a Hole.
+- Added the "Impostor" detrimental character.
+- Added efficiency for "Throw It in a Hole" variants.
 
 ## November 21st, 2020
 
-- Hypotheticals can be started during a game.
-- Ctrl + click copies a link from the lobby.
+- Hypotheticals can now be started in the middle of a game, not just in a
+  replay.
+- You can Ctrl + click a table row in the lobby to put a link for that table in
+  the clipboard.
 
 ## November 20th, 2020
 
-- Added the Deceptive Ones and Deceptive Fives variants.
-- Added the `/notation` chat command.
-- The turn is stored in the URL hash.
+- Added the "Deceptive-Ones" and "Deceptive-Fives" variants.
+- The current turn of a game is now stored in the URL.
 
 ## November 18th, 2020
 
 - Hovering over the turn number shows the maximum rounds left and other
   statistics.
-- Added arrow rotation.
+- In the Keldon layout, the current player arrow points at the player instead of
+  their cards.
 
 ## November 11th, 2020
 
-- Added identity list notes.
+- Identity list notes will now automatically change the pips on a card to match.
 
 ## November 1st, 2020
 
-- Added future efficiency, which can be modified with a right-click.
+- Future efficiency will now be shown on the right side of a game. You can
+  manually modify it by right-clicking.
 
 ## October 29th, 2020
 
-- Removed `/here`.
+- Removed the `/here` chat command to ping Discord.
 
 ## August 25th, 2020
 
-- Added the Dark Prism suit.
-- The timer starts when the first player has loaded.
+- Added the "Dark Prism" variants.
+- The timer now starts when the first player has loaded (instead of when the
+  game has started).
 
 ## August 24th, 2020
 
@@ -636,22 +642,21 @@ This page lists the changes to Hanab Live, excluding bug fixes.
 
 ## August 21st, 2020
 
-- Added the `/tell` and `/t` chat commands.
-- Overlapping suit abbreviations are handled automatically.
+- Overlapping suit abbreviations are now handled automatically.
 
 ## August 18th, 2020
 
-- The "Your Turn" interface shows in the in-game replay.
-- Seeds are sorted by score.
+- The "Your Turn" UI now shows in the in-game replay.
+- Seeds are now sorted by score.
 
 ## August 14th, 2020
 
-- Anyone can change the shared replay leader.
-- JSON games support characters.
+- Anyone can now change the shared replay leader.
+- JSON games support detrimental characters.
 
 ## August 13th, 2020
 
-- Lazy initialization cut loading times.
+- The loading time of the website has been reduced due to lazy initialization.
 
 ## July 30th, 2020
 
@@ -663,17 +668,17 @@ This page lists the changes to Hanab Live, excluding bug fixes.
 
 ## July 28th, 2020
 
-- Misplays are allowed in hypotheticals.
-- The create game dialog remembers its options and hides extra options by
+- Misplays are now allowed in hypotheticals.
+- The create game dialog now remembers its options and hides extra options by
   default.
 
 ## July 26th, 2020
 
-- The history page can be filtered by score.
+- The history page can now be filtered by score.
 
 ## July 25th, 2020
 
-- The lobby status is clickable.
+- The lobby status is now clickable.
 
 ## July 24th, 2020
 
@@ -690,20 +695,18 @@ This page lists the changes to Hanab Live, excluding bug fixes.
 
 ## July 13th, 2020
 
-- Players replay the game as spectators when it ends.
+- You no longer have to refresh the game after it ends in order to get
+  up-to-date card information.
 
 ## July 12th, 2020
 
-- Added custom cursors.
-- Stack bases can be morphed.
+- The cursor changes over cards to show when you can drag or Empathy.
+- Stack bases can now be morphed.
 
 ## July 7th, 2020
 
-- Added deck animations and reverse animations.
-
-## July 4th, 2020
-
-- Card properties are reactive.
+- Added animations for cards coming from the deck.
+- Added the ability for animations to go in reverse.
 
 ## June 28th, 2020
 
@@ -711,22 +714,22 @@ This page lists the changes to Hanab Live, excluding bug fixes.
 
 ## June 21st, 2020
 
-- Added touch actions.
+- Added mobile support for touching cards and other UI elements in-game.
 - Added borders for clued cards.
-- Arrows can be placed on everything in the score area.
+- Arrows can now be placed on everything in the score area.
 
 ## June 14th, 2020
 
-- Added the `/kick` chat command.
+- Added the `/kick` chat command for administrators.
 
 ## June 9th, 2020
 
-- The history page can be filtered.
+- The history page can now be filtered.
 
 ## June 1st, 2020
 
 - Added the `/seed` endpoint.
-- Perspectives can be shifted in solo replays.
+- Perspectives can now be shifted in solo replays.
 - Added reversed variants with special suits.
 
 ## May 31st, 2020
@@ -736,53 +739,53 @@ This page lists the changes to Hanab Live, excluding bug fixes.
 
 ## May 30th, 2020
 
-- Added friends history.
-- Added the `/tagdelete` chat command.
+- Added the friends history feature.
 
 ## May 29th, 2020
 
-- Added tags.
+- Added the tags feature, so that you can tag games with arbitrary text. Use
+  `/tag` and `/untag` while in a game.
 - Added a critical card indicator.
-- The deck tooltip shows the seed.
+- The deck tooltip now shows the seed.
 
 ## May 28th, 2020
 
-- Added the `/shrug` and `/setleader` chat commands.
-- Added reversed suits.
-
-## May 26th, 2020
-
-- Added the `/friendlist` chat command.
+- Added the `/shrug` chat commands to display `¯\_(ツ)_/¯`.
+- Added the `/setleader` chat command.
+- Added reversed variants.
 
 ## May 25th, 2020
 
-- Added a marker for the current turn.
+- Added a translucent dark box drawn behind the hand of the player whose turn it
+  is.
 - Added a password reset link to the login screen.
 
 ## May 24th, 2020
 
-- Removed the speedrun record feature.
+- Speedruns no longer announce how close they came to the record.
 
 ## May 16th, 2020
 
-- Negative information can reveal suits and ranks.
+- Negative information can now cause a card to appear as its true suit or rank.
 - Server notices are highlighted in the chat.
 
 ## May 15th, 2020
 
-- Cards can be morphed into blank cards.
+- In a hypothetical, cards can now be morphed into blank cards.
 
 ## May 12th, 2020
 
-- Added the `/new` chat command.
+- Added the `/new` chat command to link the H-Group beginner's guide.
 
 ## May 9th, 2020
 
-- Added friends, with the `/friend`, `/unfriend`, and `/friends` chat commands.
+- Added the friends feature. Tables with friends will be automatically sorted to
+  the top of the list.
+- Added the `/friend`, `/unfriend`, and `/friends` chat commands.
 
 ## May 8th, 2020
 
-- Added a message of the day.
+- Added a message of the day feature.
 
 ## May 5th, 2020
 
@@ -790,76 +793,75 @@ This page lists the changes to Hanab Live, excluding bug fixes.
 
 ## May 1st, 2020
 
-- Passwords are hashed with Argon2.
-- Added a new "Your Turn" interface.
+- Passwords are stored more securely (with Argon2 hashing).
+- Added a new "Your Turn" UI in-game.
 
 ## April 16th, 2020
 
-- Restored desktop notifications.
+- Re-added the desktop notification feature.
 
 ## April 15th, 2020
 
 - Added tab completion and new emotes.
-- Shutdowns give notice at 5 and 10 minutes.
+- Shutdowns now give notice at 5 and 10 minutes.
 
 ## April 14th, 2020
 
-- The up and down arrows recall previous chat messages.
+- Pressing the up arrow after typing the start of a message recalls the earlier
+  messages beginning with it.
 
 ## April 13th, 2020
 
-- The profile shows the date the player joined.
+- The profile shows the date the player joined the website.
 
 ## April 12th, 2020
 
 - Added a password reset page.
-- Added the `/timeleft` chat command.
 
 ## April 11th, 2020
 
-- Added the `/rules` chat command and the "All History" button.
-
-## April 9th, 2020
-
-- Added the `/lastmove` chat command.
+- Added the `/rules` chat command to show the community guidelines.
+- Added the "All History" button to the bottom of the history page.
 
 ## April 5th, 2020
 
-- Added rate limiting.
-- Shared replays can change perspective.
+- Added server-side rate limiting to prevent denial of service attacks.
+- In a shared replay, you can now change your perspective to a specific player.
 
-## April 4th, 2020
+## March 23rd, 2020
 
-- Added a maintenance page.
+- Removed the desktop notification feature.
 
 ## March 31st, 2020
 
-- Added a typing indicator.
-- Inactive users are shown.
+- While in a game, there is now an indicator to show that a player is currently
+  typing.
+- In the lobby, inactive users are given a special icon and faded.
 
 ## March 30th, 2020
 
-- Added private messages.
-- Added the `/whoami` chat command and muting.
-- Added the Slow-Witted and Quacker characters.
+- Added the ability to send private messages with `/pm`.
+- Added the `/whoami` chat command.
+- Added the ability for administrators to mute people.
+- Added the "Slow-Witted" and "Quacker" detrimental characters.
 
 ## March 29th, 2020
 
 - Added the `/uptime` chat command.
-- Hypotheticals have a back button.
+- Hypotheticals now have a back button.
 
 ## March 28th, 2020
 
-- Added the Forgetful character.
+- Added the "Forgetful" detrimental character.
 
 ## March 27th, 2020
 
 - Added the `/findvariant` chat command.
-- Added the legible numbers option.
+- Added the "Make numbers on cards match the art style" option.
 
 ## March 26th, 2020
 
-- The variant dropdown is searchable.
+- The variant dropdown is now searchable.
 - Ongoing tables are notified of server restarts and shutdowns.
 
 ## March 25th, 2020
@@ -869,31 +871,28 @@ This page lists the changes to Hanab Live, excluding bug fixes.
 
 ## March 23rd, 2020
 
-- Added the hyphen-ated conventions option.
+- Added an option for "Enable H-Group features".
 
 ## March 22nd, 2020
 
-- Added the card cycling option.
+- Re-added the card cycling option.
 - Revamped the statistics and missing scores pages.
-- Tables are sorted by status.
-
-## March 21st, 2020
-
-- Added aliases for `/link`.
+- Tables are now sorted by status.
 
 ## November 19th, 2019
 
-- Hypotheticals work, and morphing is limited to hypotheticals.
+- Added in-game hypotheticals.
+- Added morphing a card inside of a hypotheticals.
 
 ## November 17th, 2019
 
-- Added a note for blanking out a card.
+- A "blank" note blanks out a card.
 - An "f" note gives a card an aqua border.
 
 ## November 1st, 2019
 
 - Added the `/startin` chat command.
-- Added the Prism Ones and Multi Fives variants.
+- Added the "Prism-Ones" and "Multi-Fives" variants.
 
 ## October 31st, 2019
 
@@ -901,33 +900,34 @@ This page lists the changes to Hanab Live, excluding bug fixes.
 
 ## September 24th, 2019
 
-- Added the Cocoa Rainbow and Chiaroscuro Pink variants.
+- Added the "Cocoa Rainbow" and "Chiaroscuro Pink" variants.
 
 ## September 23rd, 2019
 
-- Added the Extremely Ambiguous variants and a speedrun mode setting.
+- Added the "Extremely Ambiguous" variants and a speedrun mode setting.
 
 ## September 20th, 2019
 
-- Added the Very Ambiguous variants.
+- Added the "Very Ambiguous" variants.
 
 ## September 16th, 2019
 
-- Added the Alternating Clues variants.
-- The variant can be searched in the create game dialog.
+- Added the "Alternating Clues" variants.
+- The variant can now be searched in the create game dialog.
 
 ## September 13th, 2019
 
+- Added the "Throw It in a Hole" variants.
 - Added the `/maintenance` chat command.
-- The turn can be given in the URL.
+- The turn can now be given in a replay URL.
 
 ## September 5th, 2019
 
-- A red border indicates 0 clues.
+- Added a red border around the discard pile when at 0 clues.
 
 ## September 3rd, 2019
 
-- Added the Ambiguous and Dual-Color variants.
+- Added the "Ambiguous and Dual-Color" variants.
 
 ## September 2nd, 2019
 
@@ -944,7 +944,7 @@ This page lists the changes to Hanab Live, excluding bug fixes.
 ## August 6th, 2019
 
 - Links in the chat are clickable.
-- Added the Null suit.
+- Added the "Null" variants.
 
 ## August 1st, 2019
 
@@ -952,7 +952,7 @@ This page lists the changes to Hanab Live, excluding bug fixes.
 
 ## July 30th, 2019
 
-- Added the Omni suit.
+- Added the "Omni" variants.
 
 ## July 29th, 2019
 
@@ -964,7 +964,7 @@ This page lists the changes to Hanab Live, excluding bug fixes.
 
 ## April 30th, 2019
 
-- Added the Prism Ones variants.
+- Added the "Prism-Ones" variants.
 - Spectators can write notes.
 - Chat is kept when a game is restarted.
 
@@ -979,7 +979,8 @@ This page lists the changes to Hanab Live, excluding bug fixes.
 ## April 16th, 2019
 
 - Added pausing.
-- Added the Cow & Pig, Number Blind, Pink, Color Mute, and Number Mute variants.
+- Added the "Cow & Pig", "Number Blind", "Pink", "Color Mute", and "Number Mute"
+  variants.
 
 ## April 15th, 2019
 
@@ -992,7 +993,7 @@ This page lists the changes to Hanab Live, excluding bug fixes.
 ## April 13th, 2019
 
 - Added correspondence games.
-- Added the Gray suit.
+- Added "Gray" variants.
 - Dead cards are faded.
 
 ## April 11th, 2019
@@ -1002,7 +1003,8 @@ This page lists the changes to Hanab Live, excluding bug fixes.
 ## April 7th, 2019
 
 - Settings are stored on the server.
-- The BGA layout is the default, and a real-life layout was added.
+- The BGA layout is the default.
+- Added "real-life mode".
 
 ## March 27th, 2019
 
@@ -1012,6 +1014,8 @@ This page lists the changes to Hanab Live, excluding bug fixes.
 ## March 26th, 2019
 
 - The server announces when it goes down.
+- Speedruns in main variants announce how close they came to the record, with a
+  sound for a new record.
 
 ## March 24th, 2019
 
@@ -1025,7 +1029,7 @@ This page lists the changes to Hanab Live, excluding bug fixes.
 
 ## March 20th, 2019
 
-- Strikes have tooltips, and clicking one shows the misplayed card.
+- Strikes have tooltips. Clicking on a strike box shows the misplayed card.
 
 ## March 17th, 2019
 
@@ -1045,7 +1049,7 @@ This page lists the changes to Hanab Live, excluding bug fixes.
 
 ## February 15th, 2019
 
-- Added restarting a game.
+- Added the ability to restart a game.
 
 ## February 14th, 2019
 
@@ -1054,7 +1058,6 @@ This page lists the changes to Hanab Live, excluding bug fixes.
 ## February 12th, 2019
 
 - Added speedrun mode, which does not count toward statistics.
-- Games can start automatically.
 
 ## February 10th, 2019
 
@@ -1068,19 +1071,11 @@ This page lists the changes to Hanab Live, excluding bug fixes.
 
 ## January 25th, 2019
 
-- Added pregame chat and a draggable, resizable in-game chat.
+- Added pregame chat and a draggable/resizable in-game chat.
 
 ## January 23rd, 2019
 
-- Added the Clue Starved variants.
-
-## January 18th, 2019
-
-- Added a flowchart guidance system.
-
-## January 13th, 2019
-
-- Rewrote the lobby.
+- Added the "Clue Starved" variants.
 
 ## January 10th, 2019
 
@@ -1088,30 +1083,30 @@ This page lists the changes to Hanab Live, excluding bug fixes.
 
 ## January 3rd, 2019
 
-- Up or Down cards are labeled with their direction.
+- Up or Down cards are now labeled with their direction.
+
+## January 2nd, 2019
+
+- Added the "Up or Down" variants.
 
 ## January 1st, 2019
 
-- Preplaying is an optional setting.
-- Added the Four Suits and Three Suits variants.
+- Preplaying is now an optional setting.
+- Added three suit and four suit variants.
 - The history screens are full screen.
 
 ## December 30th, 2018
 
-- Added new variants.
+- Added the "White (6 Suits)" variant.
 
 ## November 10th, 2018
 
-- Added characters.
-- Removed the reorder cards feature.
-
-## October 25th, 2018
-
-- Renamed "Acid Trip" to "Color Blind".
+- Added the "Detrimental Characters" option.
+- Removed the card cycling option.
 
 ## October 1st, 2018
 
-- Added in-game chat.
+- Added lobby chat.
 
 ## September 28th, 2018
 
@@ -1127,7 +1122,8 @@ This page lists the changes to Hanab Live, excluding bug fixes.
 
 ## August 13th, 2018
 
-- Added the `/help` and `/last` chat commands.
+- Added the `/help` chat command to get the list of commands.
+- Added the `/last` chat command to see how long it was before the last ping.
 
 ## August 8th, 2018
 
@@ -1136,15 +1132,15 @@ This page lists the changes to Hanab Live, excluding bug fixes.
 
 ## August 7th, 2018
 
-- Added shared replay progress.
+- Added shared replay progress indicators in the lobby.
 
 ## July 24th, 2018
 
-- Added the `/here` chat command.
+- Added the `/here` chat command to ping Discord.
 
 ## July 20th, 2018
 
-- Added the `/list` chat command.
+- Added the `/list` chat command to get the waiting list.
 
 ## July 6th, 2018
 
@@ -1153,7 +1149,7 @@ This page lists the changes to Hanab Live, excluding bug fixes.
 
 ## July 5th, 2018
 
-- Added the `/next` chat command.
+- Added the `/next` chat command to be pinged on Discord.
 
 ## June 28th, 2018
 
@@ -1161,12 +1157,12 @@ This page lists the changes to Hanab Live, excluding bug fixes.
 
 ## June 25th, 2018
 
-- Added idle timeouts.
+- Added idle table/game timeouts.
 
 ## June 21st, 2018
 
 - Added the reverse hand direction option.
-- Added the Single Multi Rainbow variant.
+- Added the "Dark Rainbow" variant.
 
 ## June 18th, 2018
 
@@ -1178,11 +1174,7 @@ This page lists the changes to Hanab Live, excluding bug fixes.
 
 ## March 2nd, 2018
 
-- Added new variants.
-
-## January 18th, 2018
-
-- Rewrote the lobby.
+- Added "Ambiguous", "Very Ambiguous", and "Color Blind" variants.
 
 ## January 17th, 2018
 
@@ -1216,7 +1208,7 @@ This page lists the changes to Hanab Live, excluding bug fixes.
 
 ## October 23rd, 2017
 
-- Clues can be applied to other players' cards.
+- Positive/negative clues are now recorded on every card.
 
 ## October 22nd, 2017
 
@@ -1231,11 +1223,11 @@ This page lists the changes to Hanab Live, excluding bug fixes.
 
 ## October 3rd, 2017
 
-- Pips show learned information.
+- In replays, faded pips show which suits and ranks clues have ruled out.
 
 ## September 23rd, 2017
 
-- The timer ticking sound is a separate setting.
+- Added a separate setting for the timer ticking sound.
 
 ## September 6th, 2017
 
@@ -1256,7 +1248,7 @@ This page lists the changes to Hanab Live, excluding bug fixes.
 
 ## August 3rd, 2017
 
-- Added new variants.
+- Added the "Dual-Color Mix" variant.
 
 ## August 1st, 2017
 
@@ -1264,7 +1256,7 @@ This page lists the changes to Hanab Live, excluding bug fixes.
 
 ## July 30th, 2017
 
-- Added the White variant.
+- Added the "White & Rainbow (6 Suits)" variant.
 - The clue label turns red at 8 clues.
 
 ## July 27th, 2017
@@ -1274,7 +1266,7 @@ This page lists the changes to Hanab Live, excluding bug fixes.
 
 ## July 26th, 2017
 
-- Added card reordering.
+- Added the card cycling option.
 - Added black clues to black suit variants.
 
 ## July 24th, 2017
@@ -1301,7 +1293,7 @@ This page lists the changes to Hanab Live, excluding bug fixes.
 
 ## July 19th, 2017
 
-- Added solid color cards with triangles.
+- Changed the appearance of dual-color suits.
 - Timers are shown in untimed games.
 - Renamed "loss rate" to "strikeout rate".
 
@@ -1311,8 +1303,7 @@ This page lists the changes to Hanab Live, excluding bug fixes.
 
 ## July 16th, 2017
 
-- Added the Mixed-Color Suits variant.
-- Added username, password, and table name validation.
+- Added dual-color variants.
 - Added clue hotkeys.
 
 ## July 14th, 2017
@@ -1322,8 +1313,8 @@ This page lists the changes to Hanab Live, excluding bug fixes.
 ## July 12th, 2017
 
 - The lobby shows each player's status.
-- Added sound preloading and a spectator count.
-- A game ends when no more cards can be played.
+- Added a spectator count.
+- Games now automatically end when no more cards can be played.
 
 ## July 9th, 2017
 
@@ -1331,12 +1322,12 @@ This page lists the changes to Hanab Live, excluding bug fixes.
 
 ## July 7th, 2017
 
-- Added bottom-deck blind plays.
+- Added the "Bottom-Deck Blind-Plays" table option.
 
 ## July 6th, 2017
 
-- Added clocks.
+- Added the "Timed" table option.
 
 ## July 2nd, 2017
 
-- Initial release, based on Keldon's Hanabi server.
+- The initial release, based on Keldon's Hanabi server.
