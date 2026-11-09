@@ -215,14 +215,13 @@ impl Store {
     /// Saves a table and the work that goes with it in one transaction. New chat messages and a
     /// finished game are archived, a tag edit is applied, and a table that a split creates is
     /// saved. `saved` is what the database held for the table before, and what it holds after.
-    /// Returns what the database holds for the table in `Commit::spawn`. A failure before the
-    /// commit changes nothing.
+    /// A failure before the commit changes nothing.
     pub async fn commit(
         &self,
         table: &mut TableSnapshot,
         saved: &mut Saved,
         work: Commit<'_>,
-    ) -> Result<Option<Saved>> {
+    ) -> Result<Outcome> {
         let mut metric = crate::metrics::STORAGE_METRICS.start("checkpoint");
         let result = async {
             let mut transaction = self.state.begin().await?;
@@ -244,6 +243,19 @@ impl Store {
                 )
                 .await?;
             }
+            let seed_games = if work.count_seed {
+                let seed = &table.game().context("Missing finished game")?.seed;
+                Some(
+                    sqlx::query_scalar!(
+                        "SELECT count(*) AS \"value!\" FROM games WHERE seed=$1",
+                        seed
+                    )
+                    .fetch_one(&mut *transaction)
+                    .await?,
+                )
+            } else {
+                None
+            };
             let mut written = 0;
             let after = if work.retire {
                 crate::state::remove_in(&mut transaction, table.id, saved.revision).await?;
@@ -284,7 +296,7 @@ impl Store {
             self.state.commit(transaction).await?;
             *saved = after;
             crate::metrics::record_checkpoint(written);
-            Ok(spawn)
+            Ok(Outcome { spawn, seed_games })
         }
         .await;
         if result.is_ok() {
@@ -320,19 +332,12 @@ impl Store {
         work: Commit<'_>,
     ) -> Result<Committed> {
         let mut saved = self.saved_at(table.id, revision).await?;
-        let spawn = self.commit(table, &mut saved, work).await?;
+        let outcome = self.commit(table, &mut saved, work).await?;
         Ok(Committed {
             revision: saved.revision,
-            spawn_revision: spawn.map(|spawn| spawn.revision),
+            spawn_revision: outcome.spawn.map(|spawn| spawn.revision),
+            seed_games: outcome.seed_games,
         })
-    }
-    pub async fn seed_count(&self, seed: &str) -> Result<i64> {
-        Ok(sqlx::query_scalar!(
-            "SELECT count(*) AS \"value!\" FROM games WHERE seed=$1",
-            seed
-        )
-        .fetch_one(&self.primary)
-        .await?)
     }
     /// The first seed with this prefix that none of the players have played.
     pub async fn next_seed(&self, players: &[Player], prefix: String) -> Result<String> {
@@ -394,6 +399,16 @@ pub struct Commit<'a> {
     pub retire: bool,
     /// A reserved table to save, such as one that a split creates.
     pub spawn: Option<&'a TableSnapshot>,
+    /// Whether to count the saved games on the table's seed, for a game that just finished.
+    pub count_seed: bool,
+}
+
+/// What `Store::commit` returns.
+pub struct Outcome {
+    /// What the database holds for the table in `Commit::spawn`.
+    pub spawn: Option<Saved>,
+    /// The saved games on the table's seed, if `Commit::count_seed` asked for them.
+    pub seed_games: Option<i64>,
 }
 
 /// What the database holds for a live table: its revision, and what it holds of its parts, which
@@ -421,6 +436,7 @@ pub struct Committed {
     pub revision: i64,
     /// The revision of the table in `Commit::spawn`.
     pub spawn_revision: Option<i64>,
+    pub seed_games: Option<i64>,
 }
 
 /// Gives new chat messages their archive IDs and stored timestamps. Returns their positions.
@@ -1124,6 +1140,7 @@ mod tests {
             notes[1][54] = "last".into();
             let archive = || Commit {
                 archive: true,
+                count_seed: true,
                 ..Commit::default()
             };
 
@@ -1160,6 +1177,10 @@ mod tests {
 
             let committed = store.commit_at(&mut finished.clone(), 2, archive()).await?;
             ensure!(committed.revision == 3);
+            ensure!(
+                committed.seed_games == Some(1),
+                "The seed count left out the game that the commit archived"
+            );
             let restored = store.load().await?;
             ensure!(
                 matches!(restored[0].0.phase, Phase::Replay { .. })

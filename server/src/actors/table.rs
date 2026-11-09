@@ -10,7 +10,7 @@ use super::{
 use crate::errors::OrReject;
 use crate::errors::{CommandError, CommandResult};
 use crate::routing::{Route, route};
-use crate::store::{Commit, Saved};
+use crate::store::{Commit, Outcome, Saved};
 use crate::{
     model::{
         CLOCK_UNITS_PER_SECOND, IDLE_TIMEOUT_MS, IDLE_WARNING_MS, Phase, Seat, Snapshot, TableChat,
@@ -501,14 +501,24 @@ impl TableActor {
     pub(super) async fn persist(&mut self, next: TableSnapshot) -> CommandResult<()> {
         self.persist_with(next, Commit::default()).await.map(|_| ())
     }
+    /// Saves a turn of a live game and sends its events. Events from position `from` on are new.
+    pub(super) async fn persist_turn(
+        &mut self,
+        next: TableSnapshot,
+        from: usize,
+    ) -> CommandResult<()> {
+        let outcome = self.persist_with(next, Commit::default()).await?;
+        self.transitions(from, outcome.seed_games.unwrap_or(0))
+            .await
+    }
     /// Saves a change to the table, with the work that goes with it, in one transaction. A finished
     /// game becomes a replay and is archived in the same commit. When saving fails, the table keeps
-    /// its earlier state. Returns what the database holds for the table in `Commit::spawn`.
+    /// its earlier state.
     pub(super) async fn persist_with(
         &mut self,
         mut next: TableSnapshot,
         mut work: Commit<'_>,
-    ) -> CommandResult<Option<Saved>> {
+    ) -> CommandResult<Outcome> {
         self.store.check_state()?;
         ensure_or_reject!(!self.frozen, "Table is frozen until recovery");
         if next.visible
@@ -551,8 +561,12 @@ impl TableActor {
             }
         }
         work.archive = finished && !next.extra.no_write_to_database;
+        work.count_seed = finished
+            && next
+                .game()
+                .is_some_and(|s| s.game_id > crate::model::UNSAVED_GAME);
         let archived = work.archive;
-        let spawn = self.store.commit(&mut next, &mut self.saved, work).await?;
+        let outcome = self.store.commit(&mut next, &mut self.saved, work).await?;
         if archived && let Some(s) = next.game() {
             self.store.refresh_background(s.clone());
         }
@@ -570,7 +584,7 @@ impl TableActor {
             }
         }
         self.anchor = Instant::now();
-        Ok(spawn)
+        Ok(outcome)
     }
     pub(super) async fn initialize(
         &mut self,
@@ -1124,8 +1138,7 @@ impl TableActor {
                     duration: s.duration,
                 }),
             )?;
-            self.persist(next).await?;
-            self.transitions(from).await?;
+            self.persist_turn(next, from).await?;
         }
         Ok(())
     }

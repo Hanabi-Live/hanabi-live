@@ -6,6 +6,7 @@ use super::{
 };
 use crate::errors::CommandResult;
 use crate::model::{Seat, Snapshot, TableSnapshot};
+use crate::store::Commit;
 use crate::{
     model::{
         CLOCK_UNITS_PER_SECOND, IDLE_TIMEOUT_MS, MAX_NOTE_LENGTH, NoteOwner, Phase, wire_options,
@@ -84,8 +85,7 @@ impl TableActor {
             paused_by = Some(s.players[active].name.clone());
         }
         let notice = paused_by.and_then(|name| self.pause_notice(&mut next, &name, true));
-        self.persist(next).await?;
-        self.transitions(from).await?;
+        self.persist_turn(next, from).await?;
         if let Some(notice) = notice {
             let mut e = self.effects();
             self.add_chat(&mut e, &notice);
@@ -112,7 +112,9 @@ impl TableActor {
         }
         Some(notice)
     }
-    pub(super) async fn transitions(&self, from: usize) -> CommandResult<()> {
+    /// Sends the game's events from position `from` on. For a game that just finished,
+    /// `seed_games` is how many saved games use its seed.
+    pub(super) async fn transitions(&self, from: usize, seed_games: i64) -> CommandResult<()> {
         let s = self.table.game().context("Missing game")?;
         let replay = matches!(self.table.phase, Phase::Replay { .. });
         let mut e = self.effects();
@@ -148,11 +150,7 @@ impl TableActor {
         if replay {
             self.add_all(&mut e, hanabi_protocol::server::CONNECTED, self.connected());
             self.spectator_messages(&mut e);
-            let count = if s.game_id > crate::model::UNSAVED_GAME {
-                self.store.seed_count(&s.seed).await?
-            } else {
-                0
-            };
+            let count = seed_games;
             for a in self.audience() {
                 e.statuses.push((
                     a.session.clone(),
@@ -278,7 +276,7 @@ impl TableActor {
                 }),
             )?;
         }
-        self.persist(next).await?;
+        let outcome = self.persist_with(next, Commit::default()).await?;
         let mut e = self.effects();
         if vote {
             e.messages.push((
@@ -293,7 +291,8 @@ impl TableActor {
         }
         self.publish(e).await?;
         if terminate {
-            self.transitions(from).await?;
+            self.transitions(from, outcome.seed_games.unwrap_or(0))
+                .await?;
         }
         Ok(())
     }

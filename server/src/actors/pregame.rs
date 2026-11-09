@@ -497,6 +497,7 @@ impl TableActor {
                 },
             )
             .await?
+            .spawn
             .context("Missing the split table's revision")?;
         allocation.revision = destination_saved.revision;
         allocation.preserve();
