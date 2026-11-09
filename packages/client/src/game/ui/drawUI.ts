@@ -2474,7 +2474,7 @@ function drawClueArea() {
     spacingX: buttonXSpacing,
     spacingY: buttonYSpacing,
   } = CLUE_TYPE_BUTTON;
-  globals.elements.clueTypeButtonGroup = new ButtonGroup({}, true);
+  globals.elements.clueTypeButtonGroup = new ButtonGroup({});
 
   // In a hypo, the lower part of the clue UI slides left independently of the clue target buttons.
   // The limiting factor on how far it can slide is when there is a color button for every suit.
