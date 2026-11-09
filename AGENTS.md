@@ -223,11 +223,21 @@ Some tables (such as `chat_log`) are very large:
 - `ALTER TABLE` blocks all reads and writes of the table until its transaction
   commits. Never run it before slow statements in the same migration; put it in
   its own migration or last.
-- Do not update or delete every row in one transaction. Backfill in small ID
-  batches with `VACUUM` between batches; plan lock duration and disk headroom.
+- A migration file is sent as one query string, so it cannot commit partway: a
+  `DO` block or procedure cannot `COMMIT`, and `VACUUM` cannot run. Every row it
+  changes stays locked until it ends. To work in batches, split the work across
+  migrations, which each commit.
+- Do slow work only on rows the server does not write. Update rows that it
+  writes (such as `users`, `seeds`, and the statistics tables) last, from values
+  computed beforehand in temporary tables. Check what triggers do: deleting a
+  game updates its players' `users` rows.
+- Before writing a migration that changes many rows, count them with read-only
+  queries against production, and plan lock duration and disk headroom.
+  `migrate apply` cancels a migration when a live query waits too long for its
+  locks (`MAX_BLOCKED_WAIT` in `server/src/migrations.rs`).
 - To change a large column's type or format: add a new nullable column, deploy
-  code that writes both, backfill in batches, deploy code that reads the new
-  column, then drop the old one. Never rename or drop a column the running
-  server still uses.
+  code that writes both, backfill it, deploy code that reads the new column,
+  then drop the old one. Never rename or drop a column the running server still
+  uses.
 - Add `CHECK` constraints with `NOT VALID`, then `VALIDATE CONSTRAINT` without
   blocking normal reads and writes.
