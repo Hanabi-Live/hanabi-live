@@ -9,7 +9,6 @@ of the repository.
 
 ## November 9th, 2026
 
-- When there are no games, the lobby now shows a "New Game" button.
 - Losing the last copy of a card now flashes the card and the maximum score in
   red.
 - The strike that ends the game now flashes all of the strike squares in red.

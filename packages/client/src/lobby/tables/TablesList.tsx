@@ -7,7 +7,6 @@ import { DECK_PLAYS_ICON_CSS, OptionIcons } from "../../enums/OptionIcons";
 import { useAppSelector } from "../../store";
 import * as tooltips from "../../tooltips";
 import { copyStringToClipboard, getURLFromPath } from "../../utils";
-import * as createGame from "../createGame";
 import type { OptionDescription } from "../optionDescriptions";
 import { getOptionDescriptions } from "../optionDescriptions";
 import { tableJoin, tableReattend, tableSpectate } from "./tableActions";
@@ -37,18 +36,8 @@ export function TablesList(): React.JSX.Element {
 
   if (rows.length === 0) {
     return (
-      <div className="align-center-v tw:h-full tw:flex-col">
+      <div className="align-center-v tw:h-full">
         <h3 id="lobby-games-no">No one is playing right now.</h3>
-        <button
-          className="button"
-          onClick={() => {
-            createGame.show();
-          }}
-          type="button"
-        >
-          <i className="fas fa-plus icon-label" />
-          New Game
-        </button>
       </div>
     );
   }
