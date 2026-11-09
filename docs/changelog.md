@@ -7,6 +7,9 @@ listed here.
 
 ## November 9th, 2026
 
+- "Settings" now opens a full page instead of a pop-up, with each setting on its
+  own row.
+- Checkboxes and radio buttons now match the dark theme.
 - Added the current global FrankerFaceZ emotes, and removed the ones that are no
   longer global.
 - "Resources" now opens a full page instead of a pop-up, with its links grouped

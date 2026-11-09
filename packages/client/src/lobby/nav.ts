@@ -3,7 +3,7 @@
 import { clearTabAccount, withTabAccount } from "@hanabi-live/data";
 import { NO_TABLE_ID } from "../constants";
 import { globals } from "../Globals";
-import { initModal, showWarning } from "../modals";
+import { showWarning } from "../modals";
 import * as createGame from "./createGame";
 import * as history from "./history";
 import * as lobbyPage from "./lobbyPage";
@@ -43,7 +43,9 @@ export function init(): void {
   });
 
   // The "Settings" button
-  initModal("#nav-buttons-lobby-settings", "#settings-modal");
+  $("#nav-buttons-lobby-settings").on("click", () => {
+    lobbyPage.show("#lobby-settings");
+  });
 
   // The "Sign Out" button.
   $(".signout").on("click", () => {

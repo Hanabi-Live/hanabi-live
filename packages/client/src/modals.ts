@@ -37,8 +37,6 @@ const confirmModalCancel = getHTMLElement("#confirm-modal-cancel");
 const confirmModalConfirm = getHTMLElement("#confirm-modal-confirm");
 const confirmModalDescription = getHTMLElement("#confirm-modal-description");
 const confirmModalTitle = getHTMLElement("#confirm-modal-title");
-const createGameSubmit = getHTMLElement("#create-game-submit");
-const createTablePassword = getHTMLInputElement("#createTablePassword");
 const errorModalButton = getHTMLElement("#error-modal-button");
 const errorModalDescription = getHTMLElement("#error-modal-description");
 const idleModalClose = getHTMLElement("#idle-modal-close");
@@ -122,13 +120,6 @@ export function init(): void {
     globalThis.location.reload();
   });
 
-  // Create Game modal setup.
-  createTablePassword.addEventListener("keydown", (event) => {
-    if (event.key === "Enter") {
-      createGameSubmit.click();
-    }
-  });
-
   // Morph modal textbox.
   const morphTextboxObserver = new MutationObserver(() => {
     const { suit } = morphModalTextbox.dataset;
@@ -187,7 +178,7 @@ export function askForPassword(tableID: number): void {
     passwordModalPassword.focus();
     passwordModalPassword.select();
   };
-  showModal("#password-modal", true, undefined, ready);
+  showModal("#password-modal", true, ready);
 }
 
 export function askForMorph(
@@ -331,7 +322,7 @@ export function showWarning(msg: string): void {
   const ready = () => {
     warningModalButton.focus();
   };
-  showModal("#warning-modal", true, undefined, ready);
+  showModal("#warning-modal", true, ready);
 }
 
 /**
@@ -379,7 +370,7 @@ export function showIdleWarning(
   };
 
   globals.lastActiveElement = document.activeElement as HTMLElement;
-  showModal("#idle-modal", true, undefined, () => {
+  showModal("#idle-modal", true, () => {
     (keepPlaying === null ? idleModalClose : idleModalKeep).focus();
   });
 }
@@ -427,7 +418,7 @@ export function askForConfirmation(
   const ready = () => {
     confirmModalConfirm.focus();
   };
-  showModal("#confirm-modal", true, undefined, ready);
+  showModal("#confirm-modal", true, ready);
 
   // Showing the modal closes any previous one (and cancels its confirmation), so the new callbacks
   // must be stored afterward.
@@ -456,40 +447,6 @@ export function showError(msg: string): void {
   errorModalDescription.innerHTML =
     downtimeMessage === null ? msg : `${downtimeMessage}<br /><br />${msg}`;
   showModal("#error-modal", false);
-}
-
-/** Initializes a modal for a specific element. */
-export function initModal(
-  buttonSelector: string,
-  selector: string,
-  before?: () => boolean,
-  test?: () => boolean,
-  focus?: (() => unknown) | string,
-): void {
-  const button = getHTMLElement(buttonSelector);
-
-  button.addEventListener("click", () => {
-    if (test !== undefined) {
-      const result = test();
-      if (!result) {
-        return;
-      }
-    }
-
-    showModal(selector, true, before);
-
-    if (focus === undefined) {
-      return;
-    }
-
-    setTimeout(() => {
-      if (typeof focus === "string") {
-        getHTMLElement(focus).focus();
-      } else {
-        focus();
-      }
-    }, MODAL_DELAY_MILLISECONDS);
-  });
 }
 
 export function showPrompt(
@@ -563,12 +520,7 @@ export function isModalVisible(): boolean {
   return currentModal !== null;
 }
 
-function showModal(
-  selector: string,
-  allowClose: boolean,
-  before?: () => boolean,
-  ready?: () => void,
-) {
+function showModal(selector: string, allowClose: boolean, ready?: () => void) {
   closeModals(true);
 
   const element = getHTMLElement(selector);
@@ -584,13 +536,6 @@ function showModal(
     // Do not bubble clicks to pageCover.
     event.stopPropagation();
   };
-
-  if (before !== undefined) {
-    const result = before();
-    if (!result) {
-      return;
-    }
-  }
 
   pageCover.append(element);
   pageCover.style.display = "flex";

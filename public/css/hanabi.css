@@ -243,12 +243,6 @@ table td {
   top: 0.25em;
 }
 
-/* For checkbox labels */
-.label-text {
-  position: relative;
-  top: 0.25em;
-}
-
 /*
   For inserting elements without changing the surrounding formatting
   https://stackoverflow.com/questions/6040005/relatively-position-an-element-without-it-taking-up-space-in-document-flow
@@ -1059,46 +1053,116 @@ input::-webkit-calendar-picker-indicator /* Chrome */ {
 }
 
 /*
-  Settings
+  Settings screen
 */
-#settings-modal {
-  min-width: unset;
-  max-width: 100vw;
-  width: min(1100px, 90vw);
+.settings-group + .settings-group {
+  margin-top: 1.5em;
 }
 
-#settings-modal .settings-content {
+.settings-group h3 {
+  color: #8a8a8a;
+  font-size: 1em;
+  margin: 0 0 0.6em;
+}
+
+.settings-list {
+  background-color: #fafafa;
+  border: 1px solid #ececec;
+  border-radius: 6px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+/* A setting's description on the left and its control on the right. */
+.setting {
+  align-items: center;
+  display: flex;
+  gap: 1.5em;
+  justify-content: space-between;
+  margin: 0;
+  min-height: 3.4em;
+  padding: 0.5em 1em;
+}
+
+.setting + .setting {
+  border-top: 1px solid #ececec;
+}
+
+/* Wrapped lines of a description line up with its text rather than its icon. */
+.setting > label {
+  cursor: pointer;
+  flex: 1;
+  font-size: 1em;
+  line-height: 1.4em;
+  margin: 0;
+  padding-left: 2em;
+  text-indent: -2em;
+}
+
+.setting .fa-fw {
+  color: #308943;
+  margin-right: 0.75em;
+  text-indent: 0;
+}
+
+.setting select {
+  flex-shrink: 0;
+  width: auto;
+}
+
+/* The checkbox draws its box with a label that has no text, so give it the size of the box. */
+.setting-checkbox {
+  flex-shrink: 0;
+  position: relative;
+}
+
+/* Keep the theme's hidden checkbox from taking up room beside the box. */
+.setting-checkbox input {
+  margin: 0;
+  position: absolute;
+}
+
+.setting-checkbox input + label {
   display: block;
-  width: 100%;
-  columns: 20em;
-  column-gap: 2em;
+  height: 1.8em;
+  margin: 0;
+  padding: 0;
+  width: 1.8em;
 }
 
-#settings-modal .settings-content > div {
-  break-inside: avoid;
+#settings-volume {
+  align-items: center;
+  display: flex;
+  flex-shrink: 0;
+  gap: 1em;
 }
 
-#settings-modal h5 {
-  font-weight: normal;
-  font-size: 1.2em;
+#settings-volume-slider {
+  background: #ddd;
+  border: none;
+  border-radius: 3px;
+  height: 0.25em;
+  width: 10em;
 }
 
-/* The nearest gray to the legacy text color that meets normal-text contrast on white. */
-html:not([data-theme="dark"]) .modal,
-html:not([data-theme="dark"]) #settings-modal input[type="checkbox"] + label {
-  color: #767676;
+#settings-volume-slider-value {
+  min-width: 2.75em;
+  text-align: right;
 }
 
-html:not([data-theme="dark"]) .modal :is(input, select, textarea) {
-  color: #707070;
-}
+@media screen and (max-width: 600px) {
+  /* Put a dropdown or the volume below its description. */
+  .setting:has(select),
+  .setting:has(#settings-volume) {
+    align-items: stretch;
+    flex-direction: column;
+    gap: 0.5em;
+  }
 
-#settings-modal p {
-  margin-bottom: 0.5em;
-}
-
-#settings-modal div p:last-child {
-  margin-bottom: 2em;
+  #settings-volume-slider {
+    flex: 1;
+  }
 }
 
 .horizontal {
@@ -1113,24 +1177,20 @@ html:not([data-theme="dark"]) .modal :is(input, select, textarea) {
   margin-right: 1em;
 }
 
-#settings-volume > li {
-  height: 2.25em;
-  line-height: 2.25em;
-}
-
-#settings-volume-slider {
-  position: relative;
-  bottom: 0.25em;
-  width: 12.5em;
-  height: 0.25em;
-  background: #ddd;
-  border: none;
-  border-radius: 3px;
-}
-
 /*
   Modals
 */
+
+/* The nearest gray to the legacy text color that meets normal-text contrast on white. */
+html:not([data-theme="dark"]) :is(.modal, .lobby-page) {
+  color: #767676;
+}
+
+html:not([data-theme="dark"])
+  :is(.modal, .lobby-page)
+  :is(input, select, textarea) {
+  color: #707070;
+}
 
 #page-cover {
   display: none;

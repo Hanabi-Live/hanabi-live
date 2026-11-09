@@ -23,8 +23,6 @@ const dom = new JSDOM(`<!doctype html><body>
       <button id="idle-modal-keep"></button>
       <button id="idle-modal-close"></button>
     </div>
-    <button id="create-game-submit"></button>
-    <input id="createTablePassword" />
     <button id="morph-modal-button-cancel"></button>
     <button id="morph-modal-button-ok"></button>
     <p id="morph-modal-description"></p>

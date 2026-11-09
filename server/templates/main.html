@@ -1443,6 +1443,185 @@
           </div>
         </section>
 
+        <!-- The settings, which take effect as soon as they are changed -->
+        <section id="lobby-settings" class="box lobby-page hidden">
+          <h2>Settings</h2>
+
+          <div class="settings-group">
+            <h3>Notifications &amp; Sound</h3>
+            <ul class="settings-list">
+              <li class="setting">
+                <label for="desktopNotification"
+                  ><i class="fas fa-bell fa-fw"></i>Show a desktop notification
+                  when it reaches your turn</label
+                >
+                <span class="setting-checkbox">
+                  <input id="desktopNotification" type="checkbox" />
+                  <label for="desktopNotification"></label>
+                </span>
+              </li>
+              <li class="setting">
+                <label for="soundMove"
+                  ><i class="fas fa-music fa-fw"></i>Move sounds</label
+                >
+                <select id="soundMove">
+                  <option value="0">Play a sound when a move is made</option>
+                  <option value="1">Play a sound when it's my turn</option>
+                  <option value="2">No Sound</option>
+                </select>
+              </li>
+              <li class="setting">
+                <label for="soundTimer"
+                  ><i class="fas fa-stopwatch fa-fw"></i>Play a sound when a
+                  timer is below 10 seconds</label
+                >
+                <span class="setting-checkbox">
+                  <input id="soundTimer" type="checkbox" />
+                  <label for="soundTimer"></label>
+                </span>
+              </li>
+              <li class="setting">
+                <label for="settings-volume-slider"
+                  ><i class="fas fa-volume-up fa-fw"></i>Volume</label
+                >
+                <span id="settings-volume">
+                  <input
+                    id="settings-volume-slider"
+                    type="range"
+                    min="0"
+                    step="5"
+                  />
+                  <span id="settings-volume-slider-value"></span>
+                  <button
+                    id="settings-volume-test"
+                    class="button alt small"
+                    type="button"
+                  >
+                    Test
+                  </button>
+                </span>
+              </li>
+            </ul>
+          </div>
+
+          <div class="settings-group">
+            <h3>Appearance</h3>
+            <ul class="settings-list">
+              <li class="setting">
+                <label for="darkMode"
+                  ><i class="fas fa-adjust fa-fw"></i>Theme</label
+                >
+                <select id="darkMode">
+                  <option value="false">Light</option>
+                  <option value="true">Dark</option>
+                  <option value="system">System (follow OS)</option>
+                </select>
+              </li>
+              <li class="setting">
+                <label for="keldonMode"
+                  ><i class="fas fa-users fa-fw"></i>Keldon mode (hands spread
+                  around the table)</label
+                >
+                <span class="setting-checkbox">
+                  <input id="keldonMode" type="checkbox" />
+                  <label for="keldonMode"></label>
+                </span>
+              </li>
+              <li class="setting">
+                <label for="colorblindMode"
+                  ><i class="fas fa-eye fa-fw"></i>Colorblind mode</label
+                >
+                <span class="setting-checkbox">
+                  <input id="colorblindMode" type="checkbox" />
+                  <label for="colorblindMode"></label>
+                </span>
+              </li>
+              <li class="setting">
+                <label for="realLifeMode"
+                  ><i class="fas fa-hand-paper fa-fw"></i>Real-life mode (no
+                  extra UI elements)</label
+                >
+                <span class="setting-checkbox">
+                  <input id="realLifeMode" type="checkbox" />
+                  <label for="realLifeMode"></label>
+                </span>
+              </li>
+              <li class="setting">
+                <label for="reverseHands"
+                  ><i class="fas fa-exchange-alt fa-fw"></i>Reverse hand
+                  direction (new cards go on the right)</label
+                >
+                <span class="setting-checkbox">
+                  <input id="reverseHands" type="checkbox" />
+                  <label for="reverseHands"></label>
+                </span>
+              </li>
+              <li class="setting">
+                <label for="styleNumbers"
+                  ><i class="fas fa-paint-brush fa-fw"></i>Make numbers on cards
+                  match the art style</label
+                >
+                <span class="setting-checkbox">
+                  <input id="styleNumbers" type="checkbox" />
+                  <label for="styleNumbers"></label>
+                </span>
+              </li>
+              <li class="setting">
+                <label for="showTimerInUntimed"
+                  ><i class="fas fa-clock fa-fw"></i>Show turn timers in untimed
+                  games</label
+                >
+                <span class="setting-checkbox">
+                  <input id="showTimerInUntimed" type="checkbox" />
+                  <label for="showTimerInUntimed"></label>
+                </span>
+              </li>
+            </ul>
+          </div>
+
+          <div class="settings-group">
+            <h3>Expert Features</h3>
+            <ul class="settings-list">
+              <li class="setting">
+                <label for="speedrunPreplay"
+                  ><i class="fas fa-forward fa-fw"></i>Enable pre-playing
+                  cards</label
+                >
+                <span class="setting-checkbox">
+                  <input id="speedrunPreplay" type="checkbox" />
+                  <label for="speedrunPreplay"></label>
+                </span>
+              </li>
+              <li class="setting">
+                <label for="speedrunMode"
+                  ><i class="fas fa-running fa-fw"></i>Enable speedrun features
+                  in non-speedrun games</label
+                >
+                <span class="setting-checkbox">
+                  <input id="speedrunMode" type="checkbox" />
+                  <label for="speedrunMode"></label>
+                </span>
+              </li>
+              <li class="setting">
+                <label for="hGroupConventions"
+                  ><i class="fas fa-chess fa-fw"></i>Enable
+                  <a
+                    href="https://github.com/Hanabi-Live/hanabi-live/blob/main/docs/features.md#h-group-conventions"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    >H-Group</a
+                  >
+                  features</label
+                >
+                <span class="setting-checkbox">
+                  <input id="hGroupConventions" type="checkbox" />
+                  <label for="hGroupConventions"></label>
+                </span>
+              </li>
+            </ul>
+          </div>
+        </section>
+
         <!-- The other scores table (all games on a specific seed) -->
         <section id="lobby-history-other-scores" class="box hidden">
           <div class="lobby-table-container">
@@ -1554,144 +1733,6 @@
         </li>
       </ul>
     </section>
-  </div>
-
-  <!-- Settings modal -->
-  <div id="settings-modal">
-    <h2>Settings</h2>
-
-    <div class="settings-content">
-      <div>
-        <h5>Notifications</h5>
-        <p>
-          <input id="desktopNotification" type="checkbox" />
-          <label for="desktopNotification">
-            <span class="label-text">
-              Show a desktop notification when it reaches your turn
-            </span>
-          </label>
-        </p>
-        <p>
-          <select id="soundMove">
-            <option value="0">Play a sound when a move is made</option>
-            <option value="1">Play a sound when it's my turn</option>
-            <option value="2">No Sound</option>
-          </select>
-        </p>
-        <p>
-          <input id="soundTimer" type="checkbox" />
-          <label for="soundTimer">
-            <span class="label-text">
-              Play a sound when a timer is below 10 seconds
-            </span>
-          </label>
-        </p>
-      </div>
-      <div>
-        <h5>Appearance</h5>
-        <p>
-          <select id="darkMode">
-            <option value="false">Light</option>
-            <option value="true">Dark</option>
-            <option value="system">System (follow OS)</option>
-          </select>
-        </p>
-        <p>
-          <input id="keldonMode" type="checkbox" />
-          <label for="keldonMode">
-            <span class="label-text">
-              Keldon mode (hands spread around the table)
-            </span>
-          </label>
-        </p>
-        <p>
-          <input id="colorblindMode" type="checkbox" />
-          <label for="colorblindMode">
-            <span class="label-text"> Colorblind mode </span>
-          </label>
-        </p>
-        <p>
-          <input id="realLifeMode" type="checkbox" />
-          <label for="realLifeMode">
-            <span class="label-text">
-              Real-life mode (no extra UI elements)
-            </span>
-          </label>
-        </p>
-        <p>
-          <input id="reverseHands" type="checkbox" />
-          <label for="reverseHands">
-            <span class="label-text">
-              Reverse hand direction (new cards go on the right)
-            </span>
-          </label>
-        </p>
-        <p>
-          <input id="styleNumbers" type="checkbox" />
-          <label for="styleNumbers">
-            <span class="label-text">
-              Make numbers on cards match the art style
-            </span>
-          </label>
-        </p>
-        <p>
-          <input id="showTimerInUntimed" type="checkbox" />
-          <label for="showTimerInUntimed">
-            <span class="label-text"> Show turn timers in untimed games </span>
-          </label>
-        </p>
-      </div>
-      <div>
-        <h5>Expert Features</h5>
-        <p>
-          <input id="speedrunPreplay" type="checkbox" />
-          <label for="speedrunPreplay">
-            <span class="label-text"> Enable pre-playing cards </span>
-          </label>
-        </p>
-        <p>
-          <input id="speedrunMode" type="checkbox" />
-          <label for="speedrunMode">
-            <span class="label-text">
-              Enable speedrun features in non-speedrun games
-            </span>
-          </label>
-        </p>
-        <p>
-          <input id="hGroupConventions" type="checkbox" />
-          <label for="hGroupConventions">
-            <span class="label-text">
-              Enable
-              <a
-                href="https://github.com/Hanabi-Live/hanabi-live/blob/main/docs/features.md#h-group-conventions"
-                target="_blank"
-                rel="noopener noreferrer"
-                >H-Group</a
-              >
-              features
-            </span>
-          </label>
-        </p>
-      </div>
-      <div>
-        <h5>Volume</h5>
-        <ul id="settings-volume" class="horizontal">
-          <li>
-            <input id="settings-volume-slider" type="range" min="0" step="5" />
-          </li>
-          <li id="settings-volume-slider-value"></li>
-          <li>
-            <button
-              id="settings-volume-test"
-              class="button alt small"
-              type="button"
-            >
-              Test
-            </button>
-          </li>
-        </ul>
-      </div>
-    </div>
   </div>
 
   <!-- Set Leader modal -->

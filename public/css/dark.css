@@ -308,7 +308,7 @@ html[data-theme="dark"] #lobby-games-table {
 
 /* Settings volume slider */
 html[data-theme="dark"] #settings-volume-slider {
-  background: var(--dm-surface-2);
+  background: var(--dm-border);
 }
 
 /* Login page */
@@ -334,12 +334,21 @@ html[data-theme="dark"] #modals-container > div {
   border-color: var(--dm-border);
 }
 
-/* Settings modal */
-html[data-theme="dark"] #settings-modal {
-  background-color: var(--dm-surface);
+/* Settings screen */
+html[data-theme="dark"] .settings-list {
+  background-color: var(--dm-surface-2);
+  border-color: var(--dm-border);
 }
 
-html[data-theme="dark"] #settings-modal h5 {
+html[data-theme="dark"] .setting + .setting {
+  border-top-color: var(--dm-border);
+}
+
+html[data-theme="dark"] .setting .fa-fw {
+  color: #6fcf7a;
+}
+
+html[data-theme="dark"] .settings-group h3 {
   color: var(--dm-text-muted);
 }
 
@@ -349,9 +358,21 @@ html[data-theme="dark"] .features-row section {
 }
 
 /* Alpha template: labels on inputs */
-html[data-theme="dark"] label,
-html[data-theme="dark"] .label-text {
+html[data-theme="dark"] label {
   color: var(--dm-text);
+}
+
+/* Alpha template: checkboxes and radio buttons */
+html[data-theme="dark"] input[type="checkbox"] + label:before,
+html[data-theme="dark"] input[type="radio"] + label:before {
+  background: var(--dm-surface-2);
+  border-color: var(--dm-border);
+}
+
+html[data-theme="dark"] input[type="checkbox"]:checked + label:before,
+html[data-theme="dark"] input[type="radio"]:checked + label:before {
+  background: var(--dm-accent-green);
+  border-color: var(--dm-accent-green);
 }
 
 /* Alpha template: horizontal lists */
