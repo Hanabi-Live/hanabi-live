@@ -1309,4 +1309,3 @@ listed here.
 ## July 2nd, 2017
 
 - The initial release, based on Keldon's Hanabi server.
-- A sound plays when it is your turn.
