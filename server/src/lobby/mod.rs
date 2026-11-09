@@ -13,7 +13,7 @@ pub use chat::{
 };
 pub use history::{blocked_seeds, get_history, history_ids};
 pub use relationships::{block_relations, blocked_between, change_friend, friend_ids, friends};
-pub use settings::{get_settings, set_setting};
+pub use settings::{changed_settings, get_settings, set_setting};
 
 use crate::accounts::{escape_html, normalize_string};
 use crate::transport::Outgoing;

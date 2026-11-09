@@ -1,48 +1,54 @@
-// Theme management for dark mode. The preference is stored in localStorage (client-only, not synced
-// to the server). The default is light mode.
+// Dark mode is an account setting. Each browser caches the last value it received so that
+// "server/templates/theme-init.html" can apply the theme before the page renders.
 
-const STORAGE_KEY = "darkMode";
+/** The cache key and value must match "server/templates/theme-init.html". */
+const CACHE_KEY = "theme";
+const DARK = "dark";
 
-/** Read the stored preference. Returns null if not set. (Exported for testing.) */
-export function getStoredPreference(): boolean | "system" | null {
-  try {
-    const value = localStorage.getItem(STORAGE_KEY);
-    if (value === "true") {
-      return true;
-    }
-    if (value === "false") {
-      return false;
-    }
-    if (value === "system") {
-      return "system";
-    }
-  } catch {
-    // localStorage may be unavailable (e.g. private browsing, disabled).
-  }
-  return null;
-}
+/** Before dark mode was an account setting, each browser stored its own choice under this key. */
+const LEGACY_STORAGE_KEY = "darkMode";
 
-/** Read the system preference. */
-function getSystemPreference(): boolean {
+/** Whether the system prefers a dark theme. A new account starts with this as its setting. */
+export function systemPrefersDark(): boolean {
   return globalThis.matchMedia("(prefers-color-scheme: dark)").matches;
 }
 
-/** Determine the effective dark mode state. (Exported for testing.) */
-export function isDarkMode(): boolean {
-  const stored = getStoredPreference();
-  if (typeof stored === "boolean") {
-    return stored;
+/** Applies the dark mode setting and caches it for the next page load. */
+export function setDarkMode(dark: boolean): void {
+  try {
+    if (dark) {
+      localStorage.setItem(CACHE_KEY, DARK);
+    } else {
+      localStorage.removeItem(CACHE_KEY);
+    }
+  } catch {
+    // The localStorage API may be unavailable.
   }
-  return stored === "system" && getSystemPreference();
+
+  const { dataset } = document.documentElement;
+  if ((dataset["theme"] === DARK) === dark) {
+    return;
+  }
+  if (dark) {
+    dataset["theme"] = DARK;
+  } else {
+    delete dataset["theme"];
+  }
+  document.dispatchEvent(new Event("theme_change"));
 }
 
-/** Apply the current theme to the document. */
-function applyTheme() {
-  const dark = isDarkMode();
-  if (dark) {
-    document.documentElement.dataset["theme"] = "dark";
-  } else {
-    delete document.documentElement.dataset["theme"];
+/**
+ * Removes the dark mode choice that this browser stored before dark mode was an account setting,
+ * returning whether that choice was dark.
+ */
+export function takeLegacyDarkMode(): boolean {
+  try {
+    const value = localStorage.getItem(LEGACY_STORAGE_KEY);
+    localStorage.removeItem(LEGACY_STORAGE_KEY);
+    return value === "true" || (value === "system" && systemPrefersDark());
+  } catch {
+    // The localStorage API may be unavailable.
+    return false;
   }
 }
 
@@ -85,54 +91,4 @@ export function getCanvasColors(): CanvasColors {
     surfaceArea: getCSSVariable("--canvas-surface-area"),
     loadingLabelStroke: getCSSVariable("--canvas-loading-label-stroke"),
   };
-}
-
-/** Set the dark mode preference. */
-function setDarkMode(preference: boolean | "system") {
-  try {
-    localStorage.setItem(STORAGE_KEY, String(preference));
-  } catch {
-    // The localStorage API may be unavailable.
-  }
-  applyTheme();
-  document.dispatchEvent(new Event("theme_change"));
-}
-
-/** Called on page load to wire up the settings dropdown. */
-export function init(): void {
-  applyTheme();
-
-  // Listen for OS theme changes (only relevant when the system preference is selected).
-  globalThis
-    .matchMedia("(prefers-color-scheme: dark)")
-    .addEventListener("change", () => {
-      const stored = getStoredPreference();
-      if (stored === "system") {
-        applyTheme();
-        document.dispatchEvent(new Event("theme_change"));
-      }
-    });
-
-  // Wire up the settings dropdown if it exists on the page.
-  const select = document.querySelector<HTMLSelectElement>("#darkMode");
-  if (select !== null) {
-    const stored = getStoredPreference();
-    if (stored === true) {
-      select.value = "true";
-    } else if (stored === "system") {
-      select.value = "system";
-    } else {
-      select.value = "false";
-    }
-    select.addEventListener("change", () => {
-      const { value } = select;
-      if (value === "true") {
-        setDarkMode(true);
-      } else if (value === "false") {
-        setDarkMode(false);
-      } else {
-        setDarkMode("system");
-      }
-    });
-  }
 }

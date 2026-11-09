@@ -1274,6 +1274,9 @@ pub struct LoginRequest {
     /// Sets a new password after the current one is verified.
     pub new_password: String,
     pub version: String,
+    /// Whether the client's system prefers a dark theme. A new account starts with this as its
+    /// dark mode setting.
+    pub dark_mode: bool,
 }
 
 /// The body of a successful `/login` response.
@@ -1505,6 +1508,7 @@ pub struct Settings {
     pub desktop_notification: bool,
     pub sound_move: SoundMove,
     pub sound_timer: bool,
+    pub dark_mode: bool,
     pub keldon_mode: bool,
     pub colorblind_mode: bool,
     pub real_life_mode: bool,
@@ -1540,6 +1544,7 @@ impl Default for Settings {
             desktop_notification: false,
             sound_move: SoundMove::All,
             sound_timer: true,
+            dark_mode: false,
             keldon_mode: false,
             colorblind_mode: false,
             real_life_mode: false,

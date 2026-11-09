@@ -9,6 +9,7 @@ import * as modals from "../modals";
 import { ServerHandlers } from "../serverHandlers";
 import * as sounds from "../sounds";
 import { store } from "../store";
+import * as theme from "../theme";
 import { toSoundType } from "../wire";
 import * as history from "./history";
 import * as lobbyLogin from "./login";
@@ -246,6 +247,15 @@ lobbyCommands.set("welcome", (data) => {
   globals.muted = data.muted;
   globals.settings = data.settings;
   globals.friends = data.friends;
+
+  if (theme.takeLegacyDarkMode() && !globals.settings.darkMode) {
+    globals.settings = { ...globals.settings, darkMode: true };
+    globals.conn!.send("setting", {
+      name: "darkMode",
+      setting: "true", // The server expects all setting values as strings.
+    });
+  }
+  theme.setDarkMode(globals.settings.darkMode);
 
   // Update various elements of the UI to reflect our settings.
   $("#nav-buttons-history-total-games").text(

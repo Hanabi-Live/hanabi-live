@@ -16,6 +16,7 @@ import {
   isOutdatedClientResponse,
   reloadOutdatedClient,
 } from "../outdatedClient";
+import * as theme from "../theme";
 import { getHTMLElement, getHTMLInputElement, getURLFromPath } from "../utils";
 import { websocketInit } from "../websocketInit";
 import { TEST_COOKIE_PATH, checkCookieWithRetry } from "./cookieProbe";
@@ -124,6 +125,7 @@ function send(
     password,
     newPassword,
     version: VERSION,
+    darkMode: theme.systemPrefersDark(),
   });
 
   console.log(`Sending a login request to: ${url}`);
@@ -148,7 +150,7 @@ async function requestLogin(
 ): Promise<{ body: unknown } | undefined> {
   const response = await fetch(url, {
     method: "POST",
-    body: new URLSearchParams(data),
+    body: new URLSearchParams({ ...data, darkMode: String(data.darkMode) }),
   });
   if (!response.ok) {
     if ((await isOutdatedClientResponse(response)) && reloadOutdatedClient()) {

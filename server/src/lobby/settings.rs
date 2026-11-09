@@ -16,6 +16,19 @@ pub(super) fn defaults() -> serde_json::Map<String, Value> {
     }
 }
 
+/// The values that differ from their defaults, in the form that the database stores.
+pub fn changed_settings(settings: &Settings) -> Value {
+    let defaults = defaults();
+    match serde_json::to_value(settings) {
+        Ok(Value::Object(map)) => Value::Object(
+            map.into_iter()
+                .filter(|(name, value)| defaults.get(name) != Some(value))
+                .collect(),
+        ),
+        _ => unreachable!("settings serialize to an object"),
+    }
+}
+
 pub async fn get_settings(pool: &PgPool, id: i32) -> Result<Settings> {
     let stored = sqlx::query_scalar!("SELECT settings FROM users WHERE id=$1", id)
         .fetch_optional(pool)

@@ -453,6 +453,11 @@ export const lobbyStatusSchema = z.discriminatedUnion("state", [
  */
 export const loginRequestSchema = z.strictObject({
   /**
+   * Whether the client's system prefers a dark theme. A new account starts with this as its
+   * dark mode setting.
+   */
+  darkMode: z.boolean().default(false),
+  /**
    * Sets a new password after the current one is verified.
    */
   newPassword: z.string().default(""),
@@ -949,6 +954,7 @@ export const settingsSchema = z
       .default(20),
     createTableTimed: z.boolean().default(false),
     createTableVariant: z.string().min(1).default("No Variant"),
+    darkMode: z.boolean().default(false),
     desktopNotification: z.boolean().default(false),
     hGroupConventions: z.boolean().default(false),
     keldonMode: z.boolean().default(false),

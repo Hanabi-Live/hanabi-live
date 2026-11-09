@@ -24,6 +24,7 @@ import * as modals from "./modals";
 import { reloadOutdatedClient } from "./outdatedClient";
 import { ReconnectBackoff } from "./reconnect";
 import { store } from "./store";
+import * as theme from "./theme";
 import { escapeHtml } from "./utils";
 
 const reconnectBackoff = new ReconnectBackoff();
@@ -272,6 +273,7 @@ function openConnection(isReconnect: boolean) {
         globals.muted = data.muted;
         globals.settings = data.settings;
         globals.friends = data.friends;
+        theme.setDarkMode(globals.settings.darkMode);
         const retained = tableIdSchema.parse(globals.tableID);
         conn.on("tableStart", (table) => {
           if (!isCurrentConnection(conn)) {

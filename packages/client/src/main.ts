@@ -26,7 +26,6 @@ import { mountUsersList } from "./lobby/users/mountUsersList";
 import * as lobbyWatchReplay from "./lobby/watchReplay";
 import * as modals from "./modals";
 import * as sounds from "./sounds";
-import * as theme from "./theme";
 import * as tooltips from "./tooltips";
 import { setBrowserAddressBarPath } from "./utils";
 
@@ -104,7 +103,6 @@ $(document).ready(() => {
   lobbyNav.init();
   mountUsersList();
   playerSettings.init();
-  theme.init();
   lobbyTutorialInit();
   lobbyWatchReplay.init();
   sounds.init();

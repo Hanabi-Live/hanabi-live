@@ -1593,13 +1593,12 @@
             <ul class="lobby-rows">
               <li class="lobby-row">
                 <label for="darkMode"
-                  ><i class="fas fa-adjust fa-fw"></i>Theme</label
+                  ><i class="fas fa-adjust fa-fw"></i>Dark mode</label
                 >
-                <select id="darkMode">
-                  <option value="false">Light</option>
-                  <option value="true">Dark</option>
-                  <option value="system">System (follow OS)</option>
-                </select>
+                <span class="lobby-row-checkbox">
+                  <input id="darkMode" type="checkbox" />
+                  <label for="darkMode"></label>
+                </span>
               </li>
               <li class="lobby-row">
                 <label for="keldonMode"

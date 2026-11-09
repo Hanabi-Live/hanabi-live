@@ -9,6 +9,8 @@ of the repository.
 
 ## November 9th, 2026
 
+- Dark mode is now saved to your account instead of each browser. New accounts
+  start with the system's theme.
 - Bots now have a robot icon in the "Online Users" list.
 - The "New Game" screen now has a "Replay Game" option for replaying part of an
   existing game, replacing the `!replay` table name.

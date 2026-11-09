@@ -11,6 +11,7 @@ import { globals } from "../Globals";
 import { SoundType } from "../game/types/SoundType";
 import * as notifications from "../notifications";
 import { SOUNDS_PATH } from "../sounds";
+import * as theme from "../theme";
 
 export function init(): void {
   $("#settings-volume-slider")
@@ -165,5 +166,8 @@ function changeSetting(this: HTMLElement) {
 
   if (settingName === "desktopNotification" && checked) {
     notifications.test();
+  }
+  if (settingName === "darkMode") {
+    theme.setDarkMode(checked);
   }
 }

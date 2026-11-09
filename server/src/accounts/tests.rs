@@ -644,6 +644,58 @@ async fn seven_concurrent_account_registrations_and_logins_postgres() {
 }
 
 #[tokio::test]
+async fn new_accounts_start_with_the_system_dark_mode_postgres() {
+    let Some(db) = test_support::TestDb::create().await else {
+        return;
+    };
+    let app = router(db.pool.clone(), config());
+    for (username, dark_mode, expected) in [
+        ("Dark", "&darkMode=true", true),
+        ("Light", "&darkMode=false", false),
+        ("Unspecified", "", false),
+    ] {
+        let (status, _, body) = request(
+            &app,
+            "POST",
+            "/login",
+            &format!("username={username}&password=secret&version=42{dark_mode}"),
+            None,
+            false,
+        )
+        .await;
+        assert_eq!(status, StatusCode::OK, "{body}");
+        let id: i32 = sqlx::query_scalar!("SELECT id FROM users WHERE username=$1", username)
+            .fetch_one(&db.pool)
+            .await
+            .unwrap();
+        let settings = crate::lobby::get_settings(&db.pool, id).await.unwrap();
+        assert_eq!(settings.dark_mode, expected, "{username}");
+    }
+    // Only a new account takes the system preference.
+    let (status, _, body) = request(
+        &app,
+        "POST",
+        "/login",
+        "username=Light&password=secret&version=42&darkMode=true",
+        None,
+        false,
+    )
+    .await;
+    assert_eq!(status, StatusCode::OK, "{body}");
+    let id: i32 = sqlx::query_scalar!("SELECT id FROM users WHERE username=$1", "Light")
+        .fetch_one(&db.pool)
+        .await
+        .unwrap();
+    assert!(
+        !crate::lobby::get_settings(&db.pool, id)
+            .await
+            .unwrap()
+            .dark_mode
+    );
+    db.close().await;
+}
+
+#[tokio::test]
 async fn login_rejects_unknown_form_fields() {
     let pool = sqlx::postgres::PgPoolOptions::new()
         .connect_lazy("postgres://unused@127.0.0.1/unused")
