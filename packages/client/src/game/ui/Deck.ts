@@ -38,6 +38,12 @@ const NUM_LEFT_Y = 0.3;
  */
 const EMPTY_DECK_NUM_LEFT_Y = 0.15;
 
+/**
+ * How far the count of cards left moves down on an empty deck to center it between the game ID and
+ * the labels that show the turns remaining, as a fraction of the deck's height.
+ */
+const GAME_ID_NUM_LEFT_NUDGE = 0.07;
+
 export class Deck extends Konva.Group {
   cardBack: Konva.Image;
   numLeft: number;
@@ -216,7 +222,7 @@ export class Deck extends Konva.Group {
   }
 
   nudgeCountDownwards(): void {
-    const nudgeAmount = 0.07 * this.height();
+    const nudgeAmount = GAME_ID_NUM_LEFT_NUDGE * this.height();
     this.numLeftText.y(this.numLeftText.y() + nudgeAmount);
   }
 

@@ -14,6 +14,7 @@ import {
   FULL_CARD_STAGE_SIZE,
   INDICATOR_OPACITY,
   OFF_BLACK,
+  QUARTER_TURN_DEGREES,
   TEXT_SHADOW,
 } from "./constants";
 import { TextWithTooltip } from "./controls/TextWithTooltip";
@@ -109,6 +110,9 @@ const KELDON_HAND_BLACK_LINE_X = {
 /** The top of our own hand at the bottom of the board in Keldon mode. */
 const KELDON_BOTTOM_HAND_Y = 0.77;
 
+/** The top of the hands along the top of the board in Keldon mode. */
+const KELDON_TOP_HAND_Y = 0.01;
+
 /** The top of the name frame below our own hand in Keldon mode, when it is not derived from it. */
 const KELDON_BOTTOM_NAME_FRAME_Y = 0.97;
 
@@ -133,18 +137,23 @@ export function drawHands(winW: number, winH: number): void {
   const reducedHandH = 0.165;
   const handPos6Ratio = narrowHandW / keldonHandH;
   const handPos6W = reducedHandH * handPos6Ratio * KELDON_6P_HAND_WIDTH_SCALE;
-  /** The size of a hand that runs down the left or right side of the board. */
-  const sideHand = { w: 0.301, h: 0.18 } as const;
+  /**
+   * The size of a hand that runs down the left or right side of the board in 5-player and 6-player
+   * games, and the left edges of the hands on each side.
+   */
+  const sideHand = { w: 0.301, h: 0.18, leftX: 0.03, rightX: 0.77 } as const;
+  /** The width of the tilted hands on the sides of the board in 3-player games. */
+  const tiltedSideHandW = 0.41;
   /** The left edge and width of a hand that spans the board, such as in 2-player games. */
   const wideHand = { x: 0.19, w: 0.42 } as const;
   handPos[2] = [
     { ...wideHand, y: KELDON_BOTTOM_HAND_Y, h: keldonHandH, rot: 0 },
-    { ...wideHand, y: 0.01, h: keldonHandH, rot: 0 },
+    { ...wideHand, y: KELDON_TOP_HAND_Y, h: keldonHandH, rot: 0 },
   ];
   handPos[3] = [
     { ...wideHand, y: KELDON_BOTTOM_HAND_Y, h: keldonHandH, rot: 0 },
-    { x: 0.011, y: 0.73, w: 0.41, h: keldonHandH, rot: -82 },
-    { x: 0.735, y: 0.024, w: 0.41, h: keldonHandH, rot: 82 },
+    { x: 0.011, y: 0.73, w: tiltedSideHandW, h: keldonHandH, rot: -82 },
+    { x: 0.735, y: 0.024, w: tiltedSideHandW, h: keldonHandH, rot: 82 },
   ];
   handPos[4] = [
     {
@@ -155,7 +164,13 @@ export function drawHands(winW: number, winH: number): void {
       rot: 0,
     },
     { x: 0.015, y: 0.68, w: narrowHandW, h: keldonHandH, rot: -78 },
-    { x: 0.23, y: 0.01, w: narrowHandW, h: keldonHandH, rot: 0 },
+    {
+      x: 0.23,
+      y: KELDON_TOP_HAND_Y,
+      w: narrowHandW,
+      h: keldonHandH,
+      rot: 0,
+    },
     { x: 0.715, y: 0.095, w: narrowHandW, h: keldonHandH, rot: 78 },
   ];
   handPos[5] = [
@@ -166,10 +181,34 @@ export function drawHands(winW: number, winH: number): void {
       h: keldonHandH,
       rot: 0,
     },
-    { x: 0.03, y: 0.756, w: sideHand.w, h: sideHand.h, rot: -90 },
-    { x: 0.0205, y: 0.009, w: narrowHandW, h: keldonHandH, rot: 0 },
-    { x: 0.44, y: 0.009, w: narrowHandW, h: keldonHandH, rot: 0 },
-    { x: 0.77, y: 0.238, w: sideHand.w, h: sideHand.h, rot: 90 },
+    {
+      x: sideHand.leftX,
+      y: 0.756,
+      w: sideHand.w,
+      h: sideHand.h,
+      rot: -QUARTER_TURN_DEGREES,
+    },
+    {
+      x: 0.0205,
+      y: KELDON_TOP_HAND_Y,
+      w: narrowHandW,
+      h: keldonHandH,
+      rot: 0,
+    },
+    {
+      x: 0.44,
+      y: KELDON_TOP_HAND_Y,
+      w: narrowHandW,
+      h: keldonHandH,
+      rot: 0,
+    },
+    {
+      x: sideHand.rightX,
+      y: 0.238,
+      w: sideHand.w,
+      h: sideHand.h,
+      rot: QUARTER_TURN_DEGREES,
+    },
   ];
   handPos[6] = [
     {
@@ -180,26 +219,53 @@ export function drawHands(winW: number, winH: number): void {
       rot: 0,
     },
     {
-      x: 0.03,
+      x: sideHand.leftX,
       y: 0.72,
       w: sideHand.w * KELDON_6P_SIDE_HAND_WIDTH_SCALE,
       h: sideHand.h,
-      rot: -90,
+      rot: -QUARTER_TURN_DEGREES,
     },
-    { x: 0.0235, y: 0.009, w: handPos6W, h: reducedHandH, rot: 0 },
-    { x: 0.289, y: 0.009, w: handPos6W, h: reducedHandH, rot: 0 },
-    { x: 0.5535, y: 0.009, w: handPos6W, h: reducedHandH, rot: 0 },
     {
-      x: 0.77,
+      x: 0.0235,
+      y: KELDON_TOP_HAND_Y,
+      w: handPos6W,
+      h: reducedHandH,
+      rot: 0,
+    },
+    {
+      x: 0.289,
+      y: KELDON_TOP_HAND_Y,
+      w: handPos6W,
+      h: reducedHandH,
+      rot: 0,
+    },
+    {
+      x: 0.5535,
+      y: KELDON_TOP_HAND_Y,
+      w: handPos6W,
+      h: reducedHandH,
+      rot: 0,
+    },
+    {
+      x: sideHand.rightX,
       y: 0.292,
       w: sideHand.w * KELDON_6P_SIDE_HAND_WIDTH_SCALE,
       h: sideHand.h,
-      rot: 90,
+      rot: QUARTER_TURN_DEGREES,
     },
   ];
   if (globals.options.oneExtraCard) {
     const adjustedYUs = 0.018;
     const adjustedYOther = 0.013;
+    /**
+     * The hands that run down the sides of the board, and every hand in 6-player games, shrink
+     * further to fit the extra card.
+     */
+    const extraCardHandH = {
+      side: reducedHandH - 0.02,
+      sixPlayerBottom: reducedHandH - 0.01,
+      sixPlayerTop: reducedHandH - 0.03,
+    } as const;
 
     // 2-player
     handPos[2][0]!.h = reducedHandH;
@@ -223,19 +289,19 @@ export function drawHands(winW: number, winH: number): void {
 
     // 5-player
     handPos[5][0]!.h = reducedHandH;
-    handPos[5][1]!.h = reducedHandH - 0.02;
+    handPos[5][1]!.h = extraCardHandH.side;
     handPos[5][2]!.h = reducedHandH;
     handPos[5][3]!.h = reducedHandH;
-    handPos[5][4]!.h = reducedHandH - 0.02;
+    handPos[5][4]!.h = extraCardHandH.side;
     handPos[5][0]!.y += adjustedYUs;
 
     // 6-player
-    handPos[6][0]!.h = reducedHandH - 0.01;
-    handPos[6][1]!.h = reducedHandH - 0.02;
-    handPos[6][2]!.h = reducedHandH - 0.03;
-    handPos[6][3]!.h = reducedHandH - 0.03;
-    handPos[6][4]!.h = reducedHandH - 0.03;
-    handPos[6][5]!.h = reducedHandH - 0.02;
+    handPos[6][0]!.h = extraCardHandH.sixPlayerBottom;
+    handPos[6][1]!.h = extraCardHandH.side;
+    handPos[6][2]!.h = extraCardHandH.sixPlayerTop;
+    handPos[6][3]!.h = extraCardHandH.sixPlayerTop;
+    handPos[6][4]!.h = extraCardHandH.sixPlayerTop;
+    handPos[6][5]!.h = extraCardHandH.side;
     handPos[6][2]!.y += adjustedYOther;
     handPos[6][3]!.y += adjustedYOther;
     handPos[6][4]!.y += adjustedYOther;

@@ -142,6 +142,8 @@ const COLOR_TRIANGLE_SIZE = 50;
 
 const QUARTER_TURN_RADIANS = FULL_CIRCLE_RADIANS / 4;
 
+const HALF_TURN_RADIANS = FULL_CIRCLE_RADIANS / 2;
+
 export const CARD_IMAGE_STACK_BASE_RANK_NAME = "StackBase";
 export const CARD_IMAGE_UNKNOWN_CARD_RANK_NAME = "UnknownRank";
 
@@ -262,7 +264,7 @@ export function drawCards<Canvas, Image>(
         if (!variant.upOrDown && !suit.reversed) {
           ctx.save();
           ctx.translate(CARD_W, CARD_H);
-          ctx.rotate(Math.PI);
+          ctx.rotate(HALF_TURN_RADIANS);
           if (styleNumbers && !colorblindMode) {
             drawStylizedRank(ctx, rank);
             ctx.fill();
@@ -370,7 +372,7 @@ function drawSuitPips(
       scale * FACE_PIP_SCALE_MULTIPLIER.rank2,
       scale * FACE_PIP_SCALE_MULTIPLIER.rank2,
     );
-    ctx.rotate(Math.PI);
+    ctx.rotate(HALF_TURN_RADIANS);
     drawPip(ctx, suit, variant, enableShadows);
     ctx.restore();
   }
@@ -389,7 +391,7 @@ function drawSuitPips(
     ctx.translate(CARD_CENTER.x, CARD_CENTER.y);
     ctx.translate(0, symbolYPos);
     ctx.scale(scale, scale);
-    ctx.rotate(Math.PI);
+    ctx.rotate(HALF_TURN_RADIANS);
     drawPip(ctx, suit, variant, enableShadows);
     ctx.restore();
   }
@@ -407,7 +409,7 @@ function drawSuitPips(
     ctx.translate(CARD_CENTER.x, CARD_CENTER.y);
     ctx.translate(FACE_PIP_OFFSET_X, 0);
     ctx.scale(scale, scale);
-    ctx.rotate(Math.PI);
+    ctx.rotate(HALF_TURN_RADIANS);
     drawPip(ctx, suit, variant, enableShadows);
     ctx.restore();
   }

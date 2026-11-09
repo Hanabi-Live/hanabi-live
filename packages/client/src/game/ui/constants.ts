@@ -78,6 +78,9 @@ export const FULL_CIRCLE_RADIANS = 2 * Math.PI;
 /** A half turn, for the Konva functions that take a rotation. */
 export const HALF_TURN_DEGREES = 180;
 
+/** A quarter turn, for the Konva functions that take a rotation. */
+export const QUARTER_TURN_DEGREES = HALF_TURN_DEGREES / 2;
+
 /** A full turn, for the Konva functions that take a rotation. */
 export const FULL_TURN_DEGREES = 2 * HALF_TURN_DEGREES;
 
@@ -244,11 +247,16 @@ export const DIALOG_CORNER_RADIUS = 0.01;
 /** The opacity of a control that cannot be used right now. */
 export const DISABLED_OPACITY = 0.2;
 
-/** The sizes shared by the dialogs drawn over the game board, as fractions of the stage height. */
+/**
+ * The sizes shared by the dialogs drawn over the game board, as fractions of the stage height
+ * unless noted otherwise.
+ */
 export const DIALOG = {
   TITLE_Y: 0.1,
   TITLE_FONT_SIZE: 0.08,
   BUTTON_H: 0.1,
+  /** The gap around a row of buttons, as a fraction of the dialog's width. */
+  BUTTON_SPACING: 0.1,
 } as const;
 
 /** The opacity of the dark overlay shown behind dialogs such as the full action log. */

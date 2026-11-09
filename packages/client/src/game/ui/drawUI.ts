@@ -258,6 +258,34 @@ const VARIANT_UNDERLINE_WIDTH_PIXELS = 1;
 /** The corner radius of the border around the deck, in fractions of the stage height. */
 const DECK_BORDER_CORNER_RADIUS = 0.01;
 
+/** The icon in the bottom-left corner of the deck that shows the game's details on hover. */
+const GAME_INFO_IMAGE = {
+  /** As a fraction of the deck's width. */
+  SIZE: 0.15,
+  /** How far it is inset from the deck's corner, as a fraction of the stage width. */
+  INSET: 0.004,
+} as const;
+
+/**
+ * The column with the spectators' eyes and their number below it, in fractions of the stage. The
+ * crown of a shared replay sits above it.
+ */
+const SPECTATORS_COLUMN = {
+  W: 0.03,
+  /** The top of the number, below the top of the eyes. */
+  NUMBER_Y: 0.04,
+  NUMBER_FONT_SIZE: 0.03,
+} as const;
+
+/** The top of the crown of a shared replay, relative to the top of the spectators' eyes. */
+const CROWN_TOP_Y = -0.067;
+
+/**
+ * The center of the "Your Turn" indicator, relative to the top-left corner of the spectators
+ * column, in fractions of the stage.
+ */
+const YOUR_TURN_CENTER = { x: 0.0695, y: 0.026 } as const;
+
 /**
  * Where the middle of the ring around a timer (which shows that a pause is queued) is, relative to
  * the timer's top-left corner, in fractions of the stage.
@@ -819,11 +847,16 @@ function drawDeck() {
 
   // At the bottom of the deck, draw a thing hinting that the user can mouse over the deck for
   // detailed information about the current game.
+  const gameInfoImageSize = deckValues.w! * GAME_INFO_IMAGE.SIZE * winW;
+  const gameInfoImageInset = GAME_INFO_IMAGE.INSET * winW;
   globals.elements.gameInfoImage = new Konva.Image({
-    x: (deckValues.x + 0.004) * winW,
-    y: (deckValues.y + 0.161) * winH,
-    width: deckValues.w! * 0.15 * winW,
-    height: deckValues.w! * 0.15 * winW,
+    x: deckValues.x * winW + gameInfoImageInset,
+    y:
+      (deckValues.y + deckValues.h!) * winH
+      - gameInfoImageInset
+      - gameInfoImageSize,
+    width: gameInfoImageSize,
+    height: gameInfoImageSize,
     image: globals.imageLoader!.get("question-mark"),
     ...TEXT_SHADOW,
     shadowBlur: 2,
@@ -1291,7 +1324,8 @@ function drawSpectators() {
   }
   const imageSize = 0.02;
   const spectatorsLabel = new ImageWithTooltip({
-    x: (spectatorsLabelValues.x + 0.005) * winW,
+    // Center the eyes over the number of spectators.
+    x: (spectatorsLabelValues.x + (SPECTATORS_COLUMN.W - imageSize) / 2) * winW,
     y: spectatorsLabelValues.y * winH,
     width: imageSize * winW,
     height: imageSize * winW,
@@ -1310,10 +1344,10 @@ function drawSpectators() {
 
   globals.elements.spectatorsNumLabel = new Konva.Text({
     x: spectatorsLabelValues.x * winW,
-    y: (spectatorsLabelValues.y + 0.04) * winH,
-    width: 0.03 * winW,
-    height: 0.03 * winH,
-    fontSize: 0.03 * winH,
+    y: (spectatorsLabelValues.y + SPECTATORS_COLUMN.NUMBER_Y) * winH,
+    width: SPECTATORS_COLUMN.W * winW,
+    height: SPECTATORS_COLUMN.NUMBER_FONT_SIZE * winH,
+    fontSize: SPECTATORS_COLUMN.NUMBER_FONT_SIZE * winH,
     fontFamily: FONT_FAMILY,
     align: "center",
     text: "0",
@@ -1327,16 +1361,17 @@ function drawSpectators() {
 
 // The "crown" symbol to show that we are in a shared replay.
 function drawSharedReplay() {
-  const sharedReplayLeaderLabelValues = {
-    x: spectatorsLabelValues.x,
-    y: spectatorsLabelValues.y - 0.06,
+  // The crown is centered over the spectators column, above the eyes.
+  const size = 0.025 * winW;
+  const crownCenter = {
+    x: (spectatorsLabelValues.x + SPECTATORS_COLUMN.W / 2) * winW,
+    y: (spectatorsLabelValues.y + CROWN_TOP_Y) * winH + size / 2,
   };
 
   // A circle around the crown indicates that we are the current replay leader. (We want the icon to
   // be on top of this so that it does not interfere with mouse events.)
   globals.elements.sharedReplayLeaderCircle = new Konva.Circle({
-    x: (sharedReplayLeaderLabelValues.x + 0.015) * winW,
-    y: (sharedReplayLeaderLabelValues.y + 0.015) * winH,
+    ...crownCenter,
     radius: 0.028 * winH,
     stroke: ACTIVE_INDICATOR_COLOR,
     strokeWidth: 2 * STROKE_WIDTH_UNIT * winH,
@@ -1346,10 +1381,9 @@ function drawSharedReplay() {
   globals.layers.UI.add(globals.elements.sharedReplayLeaderCircle);
 
   // The crown
-  const size = 0.025 * winW;
   const sharedReplayLeaderLabel = new ImageWithTooltip({
-    x: (sharedReplayLeaderLabelValues.x + 0.0025) * winW,
-    y: (sharedReplayLeaderLabelValues.y - 0.007) * winH,
+    x: crownCenter.x - size / 2,
+    y: crownCenter.y - size / 2,
     width: size,
     height: size,
     image: globals.imageLoader!.get("crown"),
@@ -1364,10 +1398,11 @@ function drawSharedReplay() {
   if (!globals.isResizing) {
     globals.elements.sharedReplayLeaderLabelPulse = new Konva.Tween({
       node: sharedReplayLeaderLabel,
+      // Grow from the center of the crown.
       width: size * 2,
       height: size * 2,
-      offsetX: 0.025 * winH,
-      offsetY: 0.025 * winH,
+      offsetX: size / 2,
+      offsetY: size / 2,
       duration: CARD_ANIMATION_LENGTH_SECONDS,
       // eslint-disable-next-line @typescript-eslint/unbound-method
       easing: Konva.Easings.EaseInOut,
@@ -1446,9 +1481,10 @@ function drawYourTurn() {
     return;
   }
 
+  // The group is centered on the ellipse.
   globals.elements.yourTurn = new Konva.Group({
-    x: (spectatorsLabelValues.x + 0.052) * winW,
-    y: (spectatorsLabelValues.y - 0.01) * winH,
+    x: (spectatorsLabelValues.x + YOUR_TURN_CENTER.x) * winW,
+    y: (spectatorsLabelValues.y + YOUR_TURN_CENTER.y) * winH,
     visible: false,
     listening: false,
   });
@@ -1459,17 +1495,11 @@ function drawYourTurn() {
     radiusY: 0.05 * winH,
     ...INDICATOR_ELLIPSE_STYLE,
     strokeWidth: INDICATOR_ELLIPSE_STROKE_WIDTH * winH,
-    offset: {
-      x: -0.0175 * winW,
-      y: -0.036 * winH,
-    },
     listening: false,
   });
   globals.elements.yourTurn.add(circle);
 
   const text = new Konva.Text({
-    x: -0.004 * winW,
-    y: 0.003 * winH,
     fontSize: 0.034 * winH,
     fontFamily: FONT_FAMILY,
     fill: CURRENT_TURN_COLOR,
@@ -1477,6 +1507,7 @@ function drawYourTurn() {
     text: "Your\nTurn",
     listening: false,
   });
+  text.offset({ x: text.width() / 2, y: text.height() / 2 });
   globals.elements.yourTurn.add(text);
 }
 
@@ -2554,7 +2585,7 @@ function drawPauseArea() {
   const button2W = pauseAreaValues.w * 0.125;
   /** The top of the row of buttons, in fractions of the stage height. */
   const buttonY = 0.33;
-  const spacing = pauseAreaValues.w * 0.1;
+  const spacing = pauseAreaValues.w * DIALOG.BUTTON_SPACING;
 
   globals.elements.pauseButton = new Button({
     x: spacing * winW,
@@ -2642,7 +2673,7 @@ function drawRestartArea() {
   const buttonW = restartAreaValues.w * 0.35;
   /** The top of the row of buttons, in fractions of the stage height. */
   const buttonY = 0.25;
-  const spacing = restartAreaValues.w * 0.1;
+  const spacing = restartAreaValues.w * DIALOG.BUTTON_SPACING;
   /** The gap above the "Cancel" button, in fractions of the stage height. */
   const cancelButtonGapY = 0.095;
 

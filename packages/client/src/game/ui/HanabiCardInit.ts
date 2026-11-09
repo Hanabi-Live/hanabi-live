@@ -60,8 +60,14 @@ const LARGE_ICON_CENTERED_X = (CARD_W - LARGE_ICON_SIZE) / 2;
 /** The top edge of the large icons drawn over the middle of a card. */
 const LARGE_ICON_Y = 0.2 * CARD_H;
 
-/** The center of the radial gradient that fills a pip of a suit with several colors. */
-const MULTI_FILL_PIP_GRADIENT_CENTER = { x: 75, y: 140 } as const;
+/** The size of the trash can drawn over a card that can no longer be played. */
+const TRASHCAN_SIZE = { w: 0.7 * CARD_W, h: 0.6 * CARD_H } as const;
+
+/** The radial gradient that fills a pip of a suit with several colors, in the pip's units. */
+const MULTI_FILL_PIP_GRADIENT = {
+  center: { x: 75, y: 140 },
+  radius: 71,
+} as const;
 
 /** The fraction of the gradient's radius that is filled with its first color. */
 const MULTI_FILL_PIP_GRADIENT_INNER_STOP = 0.3;
@@ -126,11 +132,17 @@ const SUIT_PIP_STROKE_WIDTH = 5;
 /** The size of the X over a suit pip that has been ruled out, in the pip's units. */
 const SUIT_PIP_X_SIZE = 50;
 
-/** How far the X over a suit pip is shifted to center it on the pip, as multiples of its size. */
-const SUIT_PIP_X_NUDGE = { x: -1.4, y: -2 } as const;
-
 /** The size of the X over a rank pip that has been ruled out. */
 const RANK_PIP_X_SIZE = 13;
+
+/**
+ * The center of the X over a rank pip that has been ruled out, relative to the top-left corner of
+ * the pip's box. The digit is larger than its box, so its middle is below the middle of the box.
+ */
+const RANK_PIP_X_CENTER = { x: RANK_PIP_SIZE / 2, y: 27 } as const;
+
+/** The row of rank pips along the bottom of a card, as fractions of the card height. */
+const RANK_PIP_ROW = { y: 0.81, h: 0.15 } as const;
 
 /** The outline around the X over a rank pip that has been ruled out. */
 const RANK_PIP_X_STROKE_WIDTH = 2;
@@ -321,11 +333,15 @@ function makeCachedPips(variant: Variant) {
       opacity: 1,
       visible: false,
       sceneFunc: (ctx, shape) => {
-        const width = SUIT_PIP_X_SIZE;
-        const xx = Math.floor(CARD_W * 0.25 - width * 0.5);
-        const xy = Math.floor(CARD_H * 0.25 - width * 0.05);
-        ctx.translate(SUIT_PIP_X_NUDGE.x * width, SUIT_PIP_X_NUDGE.y * width);
-        drawX(ctx, shape, xx, xy, width, width);
+        // Center the X on the pip.
+        drawX(
+          ctx,
+          shape,
+          -SUIT_PIP_X_SIZE / 2,
+          0,
+          SUIT_PIP_X_SIZE,
+          SUIT_PIP_X_SIZE,
+        );
       },
       listening: false,
     });
@@ -376,17 +392,21 @@ function makeCachedPips(variant: Variant) {
     /** The X that will show when a certain rank can be ruled out. */
     const rankPipX = new Konva.Shape({
       x,
-      y: Math.floor(CARD_H * 0.02),
+      y: 0,
       fill: "black",
       stroke: "black",
       strokeWidth: RANK_PIP_X_STROKE_WIDTH,
       opacity: 1,
       visible: false,
       sceneFunc: (ctx, shape) => {
-        const width = RANK_PIP_X_SIZE;
-        const xx = Math.floor(CARD_W * 0.05);
-        const xy = Math.floor(CARD_H * 0.047);
-        drawX(ctx, shape, xx, xy, width, width);
+        drawX(
+          ctx,
+          shape,
+          RANK_PIP_X_CENTER.x - RANK_PIP_X_SIZE / 2,
+          RANK_PIP_X_CENTER.y,
+          RANK_PIP_X_SIZE,
+          RANK_PIP_X_SIZE,
+        );
       },
       listening: false,
     });
@@ -425,9 +445,9 @@ export function pips(variant: Variant): Pips {
 
   const rankPips = new Konva.Group({
     x: 0,
-    y: Math.floor(CARD_H * 0.81),
+    y: Math.floor(CARD_H * RANK_PIP_ROW.y),
     width: CARD_W,
-    height: Math.floor(CARD_H * 0.15),
+    height: Math.floor(CARD_H * RANK_PIP_ROW.h),
     visible: false,
     listening: false,
   });
@@ -571,10 +591,10 @@ export function ghost(): Konva.Image {
 
 export function trashcan(): Konva.Image {
   return new Konva.Image({
-    x: LARGE_ICON_X,
+    x: (CARD_W - TRASHCAN_SIZE.w) / 2,
     y: LARGE_ICON_Y,
-    width: 0.7 * CARD_W,
-    height: 0.6 * CARD_H,
+    width: TRASHCAN_SIZE.w,
+    height: TRASHCAN_SIZE.h,
     image: globals.imageLoader!.get("trashcan2"),
     visible: false,
   });
@@ -800,10 +820,10 @@ function getNewColorPip(
         color,
       ]),
     );
-    suitPip.fillRadialGradientStartPoint(MULTI_FILL_PIP_GRADIENT_CENTER);
-    suitPip.fillRadialGradientEndPoint(MULTI_FILL_PIP_GRADIENT_CENTER);
+    suitPip.fillRadialGradientStartPoint(MULTI_FILL_PIP_GRADIENT.center);
+    suitPip.fillRadialGradientEndPoint(MULTI_FILL_PIP_GRADIENT.center);
     suitPip.fillRadialGradientStartRadius(0);
-    suitPip.fillRadialGradientEndRadius(Math.floor(CARD_W * 0.25));
+    suitPip.fillRadialGradientEndRadius(MULTI_FILL_PIP_GRADIENT.radius);
   }
 
   return suitPip;
