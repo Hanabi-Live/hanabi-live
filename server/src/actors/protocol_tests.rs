@@ -1153,6 +1153,7 @@ async fn pregame_changes_announce_new_owners_splits_and_canceled_starts() -> Res
         ensure!(
             source
                 == [
+                    "<strong>Alice</strong> created the table.",
                     "Bob joined the game.",
                     "Carol joined the game.",
                     started,
@@ -1844,7 +1845,7 @@ async fn pregame_announces_spectators() -> Result<()> {
         let id = h.create(0, "Spectator notices", json!({})).await?;
         h.send(1, "tableSpectate", json!({"tableID":id})).await?;
         let history = h.receive(1, "chatList").await?;
-        ensure!(history["list"][0]["msg"] == "Bob joined the game (as a spectator).");
+        ensure!(history["list"][1]["msg"] == "Bob joined the game (as a spectator).");
         h.send(1, "tableSpectate", json!({"tableID":id})).await?;
         h.send(1, "tableUnattend", json!({"tableID":id})).await?;
         let notices = chat_messages(&h.frames(0)?)
@@ -1907,13 +1908,22 @@ async fn pregame_history_survives_join_return_and_actor_recovery() -> Result<()>
     let result = async {
         let id = h.create(0, "Chat recovery", json!({})).await?;
         let room = format!("table{id}");
+        h.send(0, "tableUnattend", json!({"tableID":id})).await?;
+        h.send(0, "tableReattend", json!({"tableID":id})).await?;
+        let history = h.receive(0, "chatList").await?;
+        ensure!(history["list"][0]["msg"] == "<strong>Alice</strong> created the table.");
+        ensure!(history["list"][0]["source"] == "server");
+        ensure!(
+            history["unread"] == 0,
+            "The creator has unread chat: {history}"
+        );
         h.send(0, "chat", json!({"room":room,"msg":"Before Bob joined"}))
             .await?;
         h.send(1, "tableJoin", json!({"tableID":id})).await?;
         let history = h.receive(1, "chatList").await?;
-        ensure!(history["list"][0]["msg"] == "Before Bob joined");
-        ensure!(history["list"][1]["msg"] == "Bob joined the game.");
-        ensure!(history["list"][1]["source"] == "server");
+        ensure!(history["list"][1]["msg"] == "Before Bob joined");
+        ensure!(history["list"][2]["msg"] == "Bob joined the game.");
+        ensure!(history["list"][2]["source"] == "server");
         ensure!(
             chat_messages(&h.frames(0)?)
                 .iter()
@@ -1927,13 +1937,13 @@ async fn pregame_history_survives_join_return_and_actor_recovery() -> Result<()>
             .await?;
         h.send(1, "tableReattend", json!({"tableID":id})).await?;
         let history = h.receive(1, "chatList").await?;
-        ensure!(history["list"].as_array().unwrap().len() == 4);
-        ensure!(history["list"][3]["msg"] == "While Bob was away");
+        ensure!(history["list"].as_array().unwrap().len() == 5);
+        ensure!(history["list"][4]["msg"] == "While Bob was away");
         h.send(1, "tableLeave", json!({"tableID":id})).await?;
         h.send(1, "tableJoin", json!({"tableID":id})).await?;
         let history = h.receive(1, "chatList").await?;
-        ensure!(history["list"][4]["msg"] == "Bob left the game.");
-        ensure!(history["list"][5]["msg"] == "Bob joined the game.");
+        ensure!(history["list"][5]["msg"] == "Bob left the game.");
+        ensure!(history["list"][6]["msg"] == "Bob joined the game.");
         ensure!(
             h.frames(2)?
                 .iter()
@@ -1941,14 +1951,14 @@ async fn pregame_history_survives_join_return_and_actor_recovery() -> Result<()>
             "Table chat leaked to an outsider"
         );
         let snapshot = h.snapshot(id).await?.0;
-        ensure!(snapshot.chat.len() == 6 && snapshot.chat.iter().all(|chat| chat.id.is_some()));
+        ensure!(snapshot.chat.len() == 7 && snapshot.chat.iter().all(|chat| chat.id.is_some()));
         let count: i64 = sqlx::query_scalar!(
             "SELECT count(*) AS \"v!\" FROM chat_log WHERE room=$1",
             &room
         )
         .fetch_one(&h.store.primary)
         .await?;
-        ensure!(count == 6, "Pregame messages were not archived");
+        ensure!(count == 7, "Pregame messages were not archived");
         h.restart().await?;
         h.send(0, "tableReattend", json!({"tableID":id})).await?;
         let restored = h.receive(0, "chatList").await?;

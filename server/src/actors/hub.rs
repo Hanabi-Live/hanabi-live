@@ -659,11 +659,13 @@ impl Hub {
                     } else if self.tables.contains_key(&table.id) || allocation.id != table.id {
                         let _ = reply.send(Err(internal!("Duplicate table installation")));
                     } else {
+                        // The creator has seen the chat that preparing the table wrote.
+                        let chat_read = HashMap::from([(table.owner, table.chat.len())]);
                         self.install(
                             *table,
                             saved,
                             allocation,
-                            HashMap::new(),
+                            chat_read,
                             Some((session, warnings, reply)),
                         );
                     }

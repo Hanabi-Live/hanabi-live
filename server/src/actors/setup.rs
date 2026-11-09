@@ -1,4 +1,4 @@
-use super::chat::server_chat;
+use super::chat::{server_chat, table_notice};
 use crate::errors::CommandResult;
 use crate::errors::OrReject;
 use crate::{
@@ -474,6 +474,14 @@ pub(super) async fn prepare_table(
             chat: vec![],
             shadows: BTreeMap::new(),
         };
+        // Records when the table was created, for players who join later.
+        table_notice(
+            &mut table,
+            &format!(
+                "<strong>{}</strong> created the table.",
+                crate::accounts::escape_html(&session.name)
+            ),
+        );
         let mut saved = Saved::default();
         store.save(&mut table, &mut saved).await?;
         Ok((table, saved, vec![]))
