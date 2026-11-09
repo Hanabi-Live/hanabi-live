@@ -149,28 +149,60 @@ fn option_summaries_include_only_changes_and_escape_values() {
     table.options.time_per_turn = 20;
     let mut options = table.options.clone();
     assert_eq!(
-        option_changes(&table, &options, &table.name, table.max_players, ""),
+        option_changes(
+            &table,
+            &options,
+            &table.name,
+            table.max_players,
+            &ExtraOptions::default()
+        ),
         ""
     );
     options.time_base = 150.5;
     assert_eq!(
-        option_changes(&table, &options, &table.name, table.max_players, ""),
+        option_changes(
+            &table,
+            &options,
+            &table.name,
+            table.max_players,
+            &ExtraOptions::default()
+        ),
         "<span class=\"cp\">Timed: <b>150.5 / 20</b></span>"
     );
     options.time_base = 120.0;
     options.time_per_turn = 30;
     assert!(
-        option_changes(&table, &options, &table.name, table.max_players, "").contains("120 / 30")
+        option_changes(
+            &table,
+            &options,
+            &table.name,
+            table.max_players,
+            &ExtraOptions::default()
+        )
+        .contains("120 / 30")
     );
     options.timed = false;
     assert_eq!(
-        option_changes(&table, &options, &table.name, table.max_players, ""),
+        option_changes(
+            &table,
+            &options,
+            &table.name,
+            table.max_players,
+            &ExtraOptions::default()
+        ),
         "<span class=\"cp\">Timed: <b>No</b></span>"
     );
     table.options.timed = false;
     options.timed = true;
     assert!(
-        option_changes(&table, &options, &table.name, table.max_players, "").contains("120 / 30")
+        option_changes(
+            &table,
+            &options,
+            &table.name,
+            table.max_players,
+            &ExtraOptions::default()
+        )
+        .contains("120 / 30")
     );
     options.timed = false;
     options.deck_plays = true;
@@ -180,9 +212,17 @@ fn option_summaries_include_only_changes_and_escape_values() {
     options.all_or_nothing = true;
     options.speedrun = true;
     options.detrimental_characters = true;
-    let summary = option_changes(&table, &options, "<new>", 2, "match-1");
+    let extra = ExtraOptions {
+        set_seed_suffix: "match-1".into(),
+        set_replay: true,
+        set_replay_turn: 4,
+        replay_game_id: Some(7),
+        ..ExtraOptions::default()
+    };
+    let summary = option_changes(&table, &options, "<new>", 2, &extra);
     assert!(summary.contains("Table Name: <b>&lt;new&gt;</b>"));
     assert!(summary.contains("Seed: <b>match-1</b>"));
+    assert!(summary.contains("Replay: <b>Game #7 from turn 5</b>"));
     assert!(summary.contains("Max Players: <b>2</b>"));
     assert!(!summary.contains("Timed:"));
     for label in [
@@ -199,7 +239,13 @@ fn option_summaries_include_only_changes_and_escape_values() {
     table.options = options.clone();
     options.deck_plays = false;
     assert_eq!(
-        option_changes(&table, &options, &table.name, table.max_players, ""),
+        option_changes(
+            &table,
+            &options,
+            &table.name,
+            table.max_players,
+            &ExtraOptions::default()
+        ),
         "<span class=\"cp\">Bottom-Deck: <b>No</b></span>"
     );
 }

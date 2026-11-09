@@ -673,9 +673,11 @@ move for the current situation.
     `showmatch-jan-2050-game-1` to `showmatch-jan-2050-game-2`.
 - Additionally, you can start a game that will be a partial replay of an
   existing game. For example, this is useful if you want to see how a game would
-  play out if a different move was taken. The format for this is to use a name
-  of `!replay [id] [turn]`. Specifying the turn number is optional; if omitted,
-  the game will start on the first turn.
+  play out if a different move was taken. To do this, enter the ID of the game
+  in the "Replay Game" option under "Extra Options" when creating a game, and
+  optionally the turn to start from. If the turn is omitted, the game will start
+  on the first turn. The game uses the same deal, seats, and options as the
+  original, so it needs the same number of players.
 
 <br />
 

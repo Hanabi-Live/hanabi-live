@@ -764,6 +764,31 @@ table td {
   gap: 0.9em;
 }
 
+/* The ID of the game to replay and the turn to start from share one row. */
+.create-game-replay {
+  align-items: center;
+  display: flex;
+  gap: 0.75em;
+}
+
+.create-game-replay > input {
+  flex: 1;
+  min-width: 0;
+}
+
+#create-game-replay-turn-label {
+  align-items: center;
+  display: flex;
+  gap: 0.75em;
+  margin: 0;
+  white-space: nowrap;
+}
+
+#create-game-replay-turn {
+  text-align: center;
+  width: 4em;
+}
+
 .create-game-variant-input {
   flex: 1;
   min-width: 0;
@@ -1010,7 +1035,8 @@ input::-webkit-calendar-picker-indicator /* Chrome */ {
 /* Text fields and the variant picker share one width, so their edges line up. */
 .lobby-row > input[type="text"],
 .lobby-row > input[type="number"],
-.create-game-variant {
+.create-game-variant,
+.create-game-replay {
   flex: 0 0 20em;
   width: 20em;
 }
@@ -1144,7 +1170,8 @@ input::-webkit-calendar-picker-indicator /* Chrome */ {
 
   .lobby-row > input[type="text"],
   .lobby-row > input[type="number"],
-  .create-game-variant {
+  .create-game-variant,
+  .create-game-replay {
     flex-basis: auto;
     width: 100%;
   }

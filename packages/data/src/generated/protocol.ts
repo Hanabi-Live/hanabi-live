@@ -4,6 +4,7 @@ import {
   cardOrderSchema,
   EndCondition,
   gameEventSchema,
+  gameIdSchema,
   gameOptionsSchema,
   hypotheticalActionSchema,
   playerIndexOrNoneSchema,
@@ -282,12 +283,6 @@ export const gameActionListSchema = z.strictObject({
   list: z.array(gameEventSchema),
   tableID: tableIdSchema,
 });
-export const gameIdSchema = z
-  .number()
-  .int()
-  .min(0)
-  .max(2_147_483_647)
-  .brand<"GameID">();
 
 /**
  * A completed game in a player's history.

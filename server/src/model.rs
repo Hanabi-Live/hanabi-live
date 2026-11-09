@@ -32,8 +32,12 @@ pub struct ExtraOptions {
     /// The seed that the table requested, without the player count and variant that prefix it.
     /// Blank deals the next seed that none of the players have played.
     pub set_seed_suffix: String,
+    /// Whether the table replays a finished game, which plays its first `set_replay_turn` actions.
     pub set_replay: bool,
     pub set_replay_turn: usize,
+    /// The finished game that the table replays.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub replay_game_id: Option<i32>,
 }
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
@@ -688,6 +692,8 @@ pub(crate) fn wire_options(options: &Options) -> hanabi_protocol::GameOptions {
         table_name: table_name.clone(),
         max_players: max_players.map(small),
         seed: None,
+        replay_game_id: None,
+        replay_turn: None,
     }
 }
 
@@ -709,8 +715,10 @@ pub(crate) fn engine_options(options: &hanabi_protocol::GameOptions) -> Options 
         detrimental_characters,
         table_name,
         max_players,
-        // A table keeps its seed apart from the game's rules, in `ExtraOptions`.
+        // A table keeps its seed and replayed game apart from the game's rules, in `ExtraOptions`.
         seed: _,
+        replay_game_id: _,
+        replay_turn: _,
     } = options;
     Options {
         num_players: usize::from(*num_players),

@@ -41,12 +41,22 @@ const BASIC_VARIANT_NAMES_SET = new ReadonlySet<string>(BASIC_VARIANT_NAMES);
 /** A character that the server accepts in a seed. */
 const SEED_CHARACTER_REGEX = /^[\d\-A-Za-z]$/u;
 
-/** Explains why the seed is invalid while its box is red. */
-let seedTooltip: Tooltip | undefined;
+/** The largest database ID, and the latest turn, that the server accepts. */
+const MAX_INTEGER_FIELD = 2_147_483_647;
+
+/** A text box that turns red and explains why while its value is invalid. */
+interface CheckedInput {
+  readonly element: HTMLInputElement;
+  readonly tooltip: Tooltip;
+  /** Returns why the value is invalid, if it is. */
+  readonly getError: () => string | undefined;
+}
+
+const checkedInputs: CheckedInput[] = [];
 
 /**
- * The checkboxes under "Extra Options", which stay collapsed unless one of them is selected or a
- * seed is entered.
+ * The checkboxes under "Extra Options", which stay collapsed unless one of them is selected, a seed
+ * is entered, or a game is replayed.
  */
 const EXTRA_OPTIONS = [
   "createTableSpeedrun",
@@ -71,12 +81,10 @@ export function init(): void {
     placeholder: defaultSettings.createTableMaxPlayers,
   });
 
-  const seedInput = getHTMLInputElement("#create-game-seed");
-  seedInput.maxLength = MAX_SEED_LENGTH;
-  seedTooltip = new Tooltip(seedInput, { content: "" });
-  seedInput.addEventListener("input", () => {
-    checkSeed();
-  });
+  getHTMLInputElement("#create-game-seed").maxLength = MAX_SEED_LENGTH;
+  addCheckedInput("#create-game-seed", getSeedError);
+  addCheckedInput("#create-game-replay-game-id", getReplayGameIDError);
+  addCheckedInput("#create-game-replay-turn", getReplayTurnError);
 
   firstVariantDropdownInit();
   secondVariantDropdownInit();
@@ -313,13 +321,17 @@ function submit() {
     }
   }
 
-  // Seeds are not saved, so that a new game does not accidentally repeat a deal.
-  const seed = getHTMLInputElement("#create-game-seed").value.trim();
-  if (!checkSeed()) {
+  // Seeds and replays are not saved, so that a new game does not accidentally repeat a deal.
+  if (!checkInputs()) {
     showExtraOptions(true);
-    seedTooltip?.open();
     return;
   }
+  const seed = getText("#create-game-seed");
+  const replayGameID = parseIntSafe(getText("#create-game-replay-game-id"));
+  const replayTurn =
+    replayGameID === undefined
+      ? undefined
+      : parseIntSafe(getText("#create-game-replay-turn"));
 
   // Table names are not saved.
   const name = $("#createTableName").val();
@@ -366,6 +378,8 @@ function submit() {
     allOrNothing: getCheckbox("createTableAllOrNothing"),
     detrimentalCharacters: getCheckbox("createTableDetrimentalCharacters"),
     ...(seed !== "" && { seed }),
+    ...(replayGameID !== undefined && { replayGameID }),
+    ...(replayTurn !== undefined && { replayTurn }),
   };
 
   lobbyPage.hide();
@@ -404,31 +418,96 @@ export function acceptOptionsFromGuest(options: Options): void {
   });
 }
 
+function addCheckedInput(selector: string, getError: () => string | undefined) {
+  const element = getHTMLInputElement(selector);
+  checkedInputs.push({
+    element,
+    tooltip: new Tooltip(element, { content: "" }),
+    getError,
+  });
+
+  // The fields depend on each other, so a change to one checks them all.
+  element.addEventListener("input", () => {
+    checkInputs();
+  });
+}
+
 /**
- * Marks the seed box red and explains why while the seed has characters that the server rejects.
- * Returns whether the seed is valid.
+ * Marks each checked text box red and explains why while it is invalid. Returns whether they are
+ * all valid.
  */
-function checkSeed(): boolean {
-  const seed = getHTMLInputElement("#create-game-seed").value.trim();
+function checkInputs(): boolean {
+  // The turn only applies to a replay.
+  const replaying = getText("#create-game-replay-game-id") !== "";
+  $("#create-game-replay-turn").prop("disabled", !replaying);
+  $("#create-game-replay-turn-label").fadeTo(0, replaying ? 1 : DIMMED_OPACITY);
+
+  let valid = true;
+  for (const { element, tooltip, getError } of checkedInputs) {
+    const error = getError();
+    element.classList.toggle("wrongInput", error !== undefined);
+    if (error === undefined) {
+      tooltip.close();
+    } else {
+      valid = false;
+      tooltip.setContent(escapeHtml(error));
+      tooltip.open();
+    }
+  }
+  return valid;
+}
+
+function closeInputErrors() {
+  for (const { tooltip } of checkedInputs) {
+    tooltip.close();
+  }
+}
+
+function getText(selector: string): string {
+  return getHTMLInputElement(selector).value.trim();
+}
+
+function getSeedError(): string | undefined {
   const invalidCharacters = new Set(
-    [...new Intl.Segmenter().segment(seed)]
+    [...new Intl.Segmenter().segment(getText("#create-game-seed"))]
       .map(({ segment }) => segment)
       .filter((character) => !SEED_CHARACTER_REGEX.test(character)),
   );
-  const valid = invalidCharacters.size === 0;
-  $("#create-game-seed").toggleClass("wrongInput", !valid);
-  if (valid) {
-    seedTooltip?.close();
-  } else {
-    const shown = [...invalidCharacters]
-      .map((character) => (character === " " ? "(space)" : character))
-      .join(" ");
-    seedTooltip?.setContent(
-      `You cannot have these characters in a seed: ${escapeHtml(shown)}`,
-    );
-    seedTooltip?.open();
+  if (invalidCharacters.size === 0) {
+    return undefined;
   }
-  return valid;
+  const shown = [...invalidCharacters]
+    .map((character) => (character === " " ? "(space)" : character))
+    .join(" ");
+  return `You cannot have these characters in a seed: ${shown}`;
+}
+
+function getReplayGameIDError(): string | undefined {
+  const text = getText("#create-game-replay-game-id");
+  if (text === "") {
+    return undefined;
+  }
+  if (!isPositiveInteger(text)) {
+    return "The game ID must be a positive number.";
+  }
+  if (getText("#create-game-seed") !== "") {
+    return "A replay uses its game's seed, so the custom seed must be blank.";
+  }
+  return undefined;
+}
+
+function getReplayTurnError(): string | undefined {
+  const text = getText("#create-game-replay-turn");
+  return getText("#create-game-replay-game-id") === ""
+    || text === ""
+    || isPositiveInteger(text)
+    ? undefined
+    : "The turn must be a positive number.";
+}
+
+function isPositiveInteger(text: string): boolean {
+  const value = /^\d+$/u.test(text) ? parseIntSafe(text) : undefined;
+  return value !== undefined && value > 0 && value <= MAX_INTEGER_FIELD;
 }
 
 function getCheckbox(setting: keyof Settings): boolean {
@@ -509,9 +588,7 @@ export function checkSettingChanged<T extends keyof Settings>(
  */
 export function show(): void {
   ready();
-  lobbyPage.show("#lobby-create-game", "#create-game-submit", () => {
-    seedTooltip?.close();
-  });
+  lobbyPage.show("#lobby-create-game", "#create-game-submit", closeInputErrors);
   $("#create-game-variant-dropdown1").trigger("focus");
 }
 
@@ -523,6 +600,8 @@ export function ready(): void {
   let gameName: string;
   let dialogOptions: Options | Settings;
   let seed = "";
+  let replayGameID = "";
+  let replayTurn = "";
 
   if (globals.game === null || globals.currentScreen === Screen.Lobby) {
     // Create New Game
@@ -541,6 +620,8 @@ export function ready(): void {
     gameName = globals.game.name;
     dialogOptions = globals.game.options;
     seed = globals.game.options.seed ?? "";
+    replayGameID = globals.game.options.replayGameID?.toString() ?? "";
+    replayTurn = globals.game.options.replayTurn?.toString() ?? "";
 
     // Can't change the password once the game is created.
     $("#password-row").addClass("hidden");
@@ -554,7 +635,9 @@ export function ready(): void {
   $("#create-game-submit").text(buttonTitle);
   $("#createTableName").val(gameName);
   $("#create-game-seed").val(seed);
-  checkSeed();
+  $("#create-game-replay-game-id").val(replayGameID);
+  $("#create-game-replay-turn").val(replayTurn);
+  checkInputs();
 
   // Fill in the rest of form with the settings that we used last time (which is stored on the
   // server).
@@ -592,6 +675,7 @@ export function ready(): void {
   // Only show the extra options when one of them is selected or when the user asks for them.
   showExtraOptions(
     seed !== ""
+      || replayGameID !== ""
       || EXTRA_OPTIONS.some(
         (setting) => getHTMLInputElement(`#${setting}`).checked,
       ),

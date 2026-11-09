@@ -2,15 +2,15 @@ use super::{
     Allocation, HubCommand, PlayingClaim, TableActor, TableChange,
     chat::{membership_notice, server_chat, truncate},
     setup::{
-        normalize_options, option_changes, options_suggestion, requested_seed,
-        special_game_options, validate_table_name,
+        load_replay, normalize_options, option_changes, options_suggestion, requested_extra,
+        validate_table_name,
     },
 };
 use crate::{
     game::Game,
     model::{
-        CLOCK_UNITS_PER_SECOND, ExtraOptions, FORMAT, IDLE_TIMEOUT_MS, MAX_TABLE_NAME_LENGTH,
-        Phase, Player, Snapshot, TableChat, TableSnapshot, engine_options,
+        CLOCK_UNITS_PER_SECOND, FORMAT, IDLE_TIMEOUT_MS, MAX_TABLE_NAME_LENGTH, Phase, Player,
+        Snapshot, TableChat, TableSnapshot, engine_options,
     },
     transport::{Session, frame},
 };
@@ -123,21 +123,14 @@ impl TableActor {
                 .filter(|n| hanabi_protocol::is_player_count(*n))
                 .unwrap_or(usize::from(hanabi_protocol::DEFAULT_MAX_PLAYERS))
         };
-        let mut extra = if variant_only {
-            self.table.extra.clone()
-        } else {
-            ExtraOptions {
-                set_seed_suffix: requested_seed(
-                    request.as_ref().and_then(|r| r.options.seed.as_deref()),
-                )?,
-                ..ExtraOptions::default()
-            }
+        let mut extra = match &request {
+            Some(r) if !variant_only => requested_extra(&r.options)?,
+            _ => self.table.extra.clone(),
         };
         if !variant_only && session.user == self.table.owner {
-            extra = special_game_options(
+            load_replay(
                 &self.store,
-                &name,
-                extra.set_seed_suffix,
+                &mut extra,
                 self.table.id,
                 session.user,
                 &mut options,
@@ -148,13 +141,7 @@ impl TableActor {
         options.variant_id = Some(variant.id);
         max_players = max_players.max(extra.custom_num_players.unwrap_or(MIN_PLAYERS));
         if session.user != self.table.owner {
-            let changes = option_changes(
-                &self.table,
-                &options,
-                &name,
-                max_players,
-                &extra.set_seed_suffix,
-            );
+            let changes = option_changes(&self.table, &options, &name, max_players, &extra);
             ensure!(!changes.is_empty(), "There are no new options proposed.");
             let message = server_chat(
                 self.table.id,
@@ -179,7 +166,7 @@ impl TableActor {
                     &options,
                     &name,
                     max_players,
-                    &extra.set_seed_suffix,
+                    &extra,
                 );
                 e.messages.push((
                     owner.session.clone(),

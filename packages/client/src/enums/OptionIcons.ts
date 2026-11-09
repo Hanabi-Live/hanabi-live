@@ -10,6 +10,7 @@ export enum OptionIcons {
   AllOrNothing = "fas fa-layer-group",
   DetrimentalCharacters = "fas fa-flushed",
   Seed = "fas fa-seedling",
+  Replay = "fas fa-redo",
 }
 
 /** The deck plays icon sits too far left, so it is nudged right wherever it is shown. */

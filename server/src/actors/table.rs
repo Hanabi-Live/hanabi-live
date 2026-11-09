@@ -4,7 +4,7 @@ use super::{
     TableInspection, TableView,
     chat::{TABLE_CHAT_LIMIT, TABLE_CHAT_WINDOW, VariantDiscovery, is_variant_discovery},
     pregame::remove_pregame_players,
-    setup::table_options,
+    setup::wire_table_options,
     wire::int,
 };
 use crate::{
@@ -113,7 +113,7 @@ impl TableActor {
                 max_players: small(self.table.max_players),
                 name: self.table.name.clone(),
                 num_players: small(self.table.players().len()),
-                options: table_options(&self.table),
+                options: wire_table_options(&self.table.options, &self.table.extra),
                 owner_id: UserId(self.table.owner),
                 password_protected: self.table.password_hash.is_some(),
                 players: self
@@ -251,7 +251,7 @@ impl TableActor {
                 name: self.table.name.clone(),
                 owner: UserId(self.table.owner),
                 players,
-                options: table_options(&self.table),
+                options: wire_table_options(&self.table.options, &self.table.extra),
                 password_protected: self.table.password_hash.is_some(),
                 max_players: small(self.table.max_players),
             };

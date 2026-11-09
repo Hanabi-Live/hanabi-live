@@ -304,6 +304,22 @@ export function getOptionIcons(
       </div>
     `;
   }
+
+  if (options.replayGameID !== undefined) {
+    const turn =
+      options.replayTurn === undefined
+        ? ""
+        : ` (from turn ${options.replayTurn})`;
+    html += `<li><i id="${idPrefix}-options-replay-${rowId}" class="${OptionIcons.Replay}" `;
+    html += `data-tooltip-content="#${idPrefix}-tooltip-replay-${rowId}"></i></li>`;
+    html += `
+      <div class="hidden">
+        <div id="${idPrefix}-tooltip-replay-${rowId}" class="${idPrefix}-tooltip-icon">
+          This table replays game: <strong>#${options.replayGameID}</strong>${turn}
+        </div>
+      </div>
+    `;
+  }
   return html;
 }
 
@@ -338,6 +354,9 @@ export function initializeOptionTooltips(
   }
   if (options.seed !== undefined) {
     tooltips.create(`#${idPrefix}-options-seed-${rowId}`);
+  }
+  if (options.replayGameID !== undefined) {
+    tooltips.create(`#${idPrefix}-options-replay-${rowId}`);
   }
 }
 

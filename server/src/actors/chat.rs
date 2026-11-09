@@ -288,7 +288,7 @@ impl TableActor {
                 &options,
                 &self.table.name,
                 self.table.max_players,
-                &self.table.extra.set_seed_suffix,
+                &self.table.extra,
             );
             effects.messages.push((
                 owner.session.clone(),

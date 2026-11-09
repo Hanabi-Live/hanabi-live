@@ -1635,6 +1635,16 @@ pub struct GameOptions {
     #[serde(skip_serializing_if = "Option::is_none")]
     #[schemars(with = "String", length(min = 1, max = MAX_SEED_LENGTH))]
     pub seed: Option<String>,
+    /// A finished game that a table plays again with its deal, seats, characters, and options,
+    /// which replace the others. Only tables report it.
+    #[serde(rename = "replayGameID", skip_serializing_if = "Option::is_none")]
+    #[schemars(with = "GameId")]
+    pub replay_game_id: Option<GameId>,
+    /// The turn of `replayGameID` that the game starts from, counting from 1. Absent starts from
+    /// the first turn.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    #[schemars(with = "u32", range(min = 1, max = i32::MAX))]
+    pub replay_turn: Option<u32>,
 }
 
 /// Must match `hanabi_engine::Options::default()`; a server test checks this.
@@ -1657,6 +1667,8 @@ impl Default for GameOptions {
             table_name: None,
             max_players: None,
             seed: None,
+            replay_game_id: None,
+            replay_turn: None,
         }
     }
 }

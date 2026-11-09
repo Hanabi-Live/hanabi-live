@@ -386,8 +386,8 @@ impl TableActor {
         );
         self.seat(&session)?;
         ensure!(
-            !self.table.name.starts_with("!replay"),
-            "Cannot restart !replay games"
+            !self.table.extra.set_replay,
+            "Cannot restart replayed games"
         );
         let declined = match &self.table.phase {
             Phase::Replay { replay, .. } => replay.restart_declined.as_slice(),

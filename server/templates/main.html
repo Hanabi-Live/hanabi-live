@@ -1183,6 +1183,42 @@
                   spellcheck="false"
                 />
               </li>
+              <li class="lobby-row">
+                <div class="lobby-row-label">
+                  <label for="create-game-replay-game-id"
+                    ><i class="fas fa-redo fa-fw"></i>Replay Game</label
+                  >
+                  <a
+                    href="https://github.com/Hanabi-Live/hanabi-live/blob/main/docs/features.md#similar-deals-and-competitive-play"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    title="About Replay Game"
+                  >
+                    <i class="fas fa-question-circle question-mark"></i>
+                  </a>
+                </div>
+                <div class="create-game-replay">
+                  <input
+                    id="create-game-replay-game-id"
+                    type="text"
+                    inputmode="numeric"
+                    placeholder="Game ID"
+                    autocomplete="off"
+                    aria-label="Game ID"
+                  />
+                  <!-- Dimmed until a game ID is entered. -->
+                  <label id="create-game-replay-turn-label">
+                    from turn
+                    <input
+                      id="create-game-replay-turn"
+                      type="text"
+                      inputmode="numeric"
+                      placeholder="1"
+                      autocomplete="off"
+                    />
+                  </label>
+                </div>
+              </li>
             </ul>
           </div>
 
