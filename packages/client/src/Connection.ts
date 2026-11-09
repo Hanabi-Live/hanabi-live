@@ -36,17 +36,15 @@ export class Connection {
   debug: boolean;
   /** Called instead of the command's callback when a message does not match its schema. */
   invalidMessage?: (command: string, error: Error) => void;
-  private readonly allowApplicationCommands: boolean;
   private ready = true;
 
   setReady(ready: boolean): void {
     this.ready = ready;
   }
 
-  constructor(addr: string, debug: boolean, allowApplicationCommands = true) {
+  constructor(addr: string, debug: boolean) {
     this.ws = new WebSocket(addr);
     this.debug = debug;
-    this.allowApplicationCommands = allowApplicationCommands;
 
     this.ws.addEventListener("close", this.onClose.bind(this));
     this.ws.addEventListener("open", this.onOpen.bind(this));
@@ -79,10 +77,6 @@ export class Connection {
     const callback = this.callbacks.get(command) as
       ((data: unknown) => void) | undefined;
     if (callback === undefined) {
-      if (!this.allowApplicationCommands) {
-        // Older servers send normal bootstrap messages during reconnect.
-        return;
-      }
       console.error(
         `Received a WebSocket message with no corresponding callback: ${command}`,
       );
@@ -138,10 +132,8 @@ export class Connection {
     command: Command,
     data: z.input<(typeof CLIENT_COMMAND_SCHEMAS)[Command]>,
   ): void {
-    // Resume probes must never submit gameplay commands to a stateful server.
     if (
-      !this.allowApplicationCommands
-      || this.ws.readyState !== WebSocket.OPEN
+      this.ws.readyState !== WebSocket.OPEN
       || (!this.ready
         && ![
           "getGameInfo1",

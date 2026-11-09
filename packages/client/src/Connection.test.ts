@@ -25,8 +25,8 @@ class FakeWebSocket {
   }
 }
 
-describe("WebSocket resume safety", () => {
-  test("resume probes stay inert and normal commands work without randomUUID", () => {
+describe("sending commands", () => {
+  test("commands wait for readiness and work without randomUUID", () => {
     // eslint-disable-next-line unicorn/no-unnecessary-global-this
     const originalWebSocket = globalThis.WebSocket;
     const originalRandomUUID = Object.getOwnPropertyDescriptor(
@@ -41,24 +41,15 @@ describe("WebSocket resume safety", () => {
       value: undefined,
     });
     try {
-      const probe = new Connection(
-        "ws://localhost/ws?reconnect=1",
-        false,
-        false,
-      );
-      probe.send("chat", { room: "table123", msg: "unsafe" });
-      expect(sockets[0]?.address).toBe("ws://localhost/ws?reconnect=1");
-      expect(sockets[0]?.sent).toEqual([]);
-
       const initial = new Connection("ws://localhost/ws", false);
       initial.send("chat", { room: "lobby", msg: "allowed" });
-      expect(sockets[1]?.sent).toHaveLength(1);
+      expect(sockets[0]?.sent).toHaveLength(1);
       initial.send("action", {
         tableID: 123,
         type: ActionType.Play,
         target: 1,
       });
-      expect(sockets[1]?.sent[1]).toBe(
+      expect(sockets[0]?.sent[1]).toBe(
         'action {"tableID":123,"type":0,"target":1}',
       );
       initial.setReady(false);
@@ -67,16 +58,16 @@ describe("WebSocket resume safety", () => {
         type: ActionType.Play,
         target: 1,
       });
-      expect(sockets[1]?.sent).toHaveLength(2);
+      expect(sockets[0]?.sent).toHaveLength(2);
       initial.send("getGameInfo2", { tableID: 123 });
-      expect(sockets[1]?.sent).toHaveLength(3);
+      expect(sockets[0]?.sent).toHaveLength(3);
       initial.setReady(true);
       initial.send("action", {
         tableID: 123,
         type: ActionType.Play,
         target: 1,
       });
-      expect(sockets[1]?.sent).toHaveLength(4);
+      expect(sockets[0]?.sent).toHaveLength(4);
     } finally {
       globalThis.WebSocket = originalWebSocket;
       if (originalRandomUUID === undefined) {
