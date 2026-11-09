@@ -10,6 +10,8 @@ listed here.
 - "Watch Replay" now opens a full page instead of a pop-up.
 - "New Game" and "Change Options" now open a full page instead of a pop-up.
 - Added the current global BetterTTV emotes that were missing, including `:tf:`.
+- Added the current global Twitch emotes, and removed the Twitch and BetterTTV
+  emotes that are no longer global.
 
 ## November 8th, 2026
 

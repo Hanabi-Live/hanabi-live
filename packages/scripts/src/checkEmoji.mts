@@ -1,6 +1,6 @@
-// Checks that each emote list in "emotes.json" matches the images in its directory, and that every
-// global BetterTTV emote is present and shows the same pixels as the PNG that BetterTTV serves. It
-// exits with an error if any check fails.
+// Checks that each emote list in "emotes.json" matches the images in its directory, and that the
+// Twitch and BetterTTV directories hold exactly the global emotes of those services, each showing
+// the same pixels as the PNG that the service serves. It exits with an error if any check fails.
 
 import { CHAT_EMOTES, CHAT_SPECIAL_EMOTES } from "@hanabi-live/data";
 import type { DecodedPng } from "fast-png";
@@ -8,15 +8,31 @@ import { convertIndexedToRgb, decode } from "fast-png";
 import { readdir } from "node:fs/promises";
 import path from "node:path";
 
-const GLOBAL_EMOTES_URL = "https://api.betterttv.net/3/cached/emotes/global";
+const BETTERTTV_GLOBAL_EMOTES_URL =
+  "https://api.betterttv.net/3/cached/emotes/global";
+/** Twitch's own API requires OAuth credentials, so this uses a public mirror of it. */
+const TWITCH_GLOBAL_EMOTES_URL =
+  "https://emotes.adamcy.pl/v1/global/emotes/twitch";
 const TIMEOUT_MS = 30_000;
 const REPO_ROOT = path.resolve(import.meta.dirname, "..", "..", "..");
 const EMOTES_DIR = path.join(REPO_ROOT, "public", "img", "emotes");
-const BETTERTTV_CATEGORY = "betterttv";
 const EMOTE_EXTENSION = ".png";
+/** Chat matches emotes at word boundaries, so it cannot match other codes (such as ":)"). */
+const MATCHABLE_CODE = /^\w+$/u;
 const RGBA_CHANNELS = 4;
 const SUPPORTED_BIT_DEPTH = 8;
 const OPAQUE_ALPHA = 255;
+
+interface UpstreamEmote {
+  readonly code: string;
+  readonly imageURL: string;
+}
+
+interface Service {
+  readonly name: string;
+  readonly category: keyof typeof CHAT_EMOTES;
+  readonly fetchGlobalEmotes: () => Promise<readonly UpstreamEmote[]>;
+}
 
 interface BetterTTVEmote {
   readonly id: string;
@@ -25,19 +41,32 @@ interface BetterTTVEmote {
   readonly modifier: boolean;
 }
 
+interface MirrorEmote {
+  readonly code: string;
+  readonly urls: ReadonlyArray<{ readonly size: string; readonly url: string }>;
+}
+
+const SERVICES = [
+  {
+    name: "BetterTTV",
+    category: "betterttv",
+    fetchGlobalEmotes: fetchBetterTTVEmotes,
+  },
+  {
+    name: "Twitch",
+    category: "twitch",
+    fetchGlobalEmotes: fetchTwitchEmotes,
+  },
+] as const satisfies readonly Service[];
+
 const specialEmotePaths: ReadonlyMap<string, string> = new Map(
   Object.entries(CHAT_SPECIAL_EMOTES),
 );
 const directoryFailures = await checkDirectories();
-const betterTTVEmotes = await fetchGlobalEmotes();
-const betterTTVFailures = await Promise.all(
-  betterTTVEmotes
-    .filter((emote) => !emote.modifier)
-    .map(async (emote) => await checkBetterTTVEmote(emote)),
+const serviceFailures = await Promise.all(
+  SERVICES.map(async (service) => await checkService(service)),
 );
-const failures = [...directoryFailures, ...betterTTVFailures].filter(
-  (failure) => failure !== undefined,
-);
+const failures = [...directoryFailures, ...serviceFailures.flat()];
 
 if (failures.length > 0) {
   for (const failure of failures) {
@@ -48,7 +77,7 @@ if (failures.length > 0) {
 }
 
 console.log(
-  "Every emote list matches its directory, and every global BetterTTV emote is present and up to date.",
+  "Every emote list matches its directory, and the Twitch and BetterTTV emotes match their global emotes.",
 );
 
 /** Checks that each list in "emotes.json" has exactly the images in its directory. */
@@ -105,9 +134,29 @@ async function checkCategory(
   return problems;
 }
 
-async function fetchGlobalEmotes(): Promise<readonly BetterTTVEmote[]> {
-  const response = await fetchOK(GLOBAL_EMOTES_URL);
-  return (await response.json()) as BetterTTVEmote[];
+async function fetchBetterTTVEmotes(): Promise<readonly UpstreamEmote[]> {
+  const response = await fetchOK(BETTERTTV_GLOBAL_EMOTES_URL);
+  const emotes = (await response.json()) as BetterTTVEmote[];
+  return emotes
+    .filter((emote) => !emote.modifier)
+    .map((emote) => ({
+      code: emote.code,
+      // Without an extension, the CDN chooses the format from the request's "Accept" header.
+      imageURL: `https://cdn.betterttv.net/emote/${emote.id}/1x.png`,
+    }));
+}
+
+async function fetchTwitchEmotes(): Promise<readonly UpstreamEmote[]> {
+  const response = await fetchOK(TWITCH_GLOBAL_EMOTES_URL);
+  const emotes = (await response.json()) as MirrorEmote[];
+  return emotes.map((emote) => {
+    const url = emote.urls.find((candidate) => candidate.size === "1x")?.url;
+    if (url === undefined) {
+      throw new Error(`The Twitch emote "${emote.code}" has no 1x image.`);
+    }
+    // The "default" variant of an animated emote is a GIF; the "static" variant is always a PNG.
+    return { code: emote.code, imageURL: url.replace("/default/", "/static/") };
+  });
 }
 
 async function fetchOK(url: string): Promise<Response> {
@@ -120,30 +169,88 @@ async function fetchOK(url: string): Promise<Response> {
   return response;
 }
 
-async function checkBetterTTVEmote(
-  emote: BetterTTVEmote,
-): Promise<string | undefined> {
-  const { code } = emote;
-  const specialEmotePath = specialEmotePaths.get(code);
-  if (
-    specialEmotePath === undefined
-    && !CHAT_EMOTES[BETTERTTV_CATEGORY].includes(code)
-  ) {
-    return `${code}: missing from the "${BETTERTTV_CATEGORY}" list in "emotes.json".`;
-  }
-  const relativePath = `${specialEmotePath ?? `${BETTERTTV_CATEGORY}/${code}`}${EMOTE_EXTENSION}`;
+/**
+ * Checks that a service's directory has every global emote that chat can match, no emotes that are
+ * not global, and the same images as the service.
+ */
+async function checkService(service: Service): Promise<readonly string[]> {
+  const { name, category } = service;
+  const upstreamEmotes = await service.fetchGlobalEmotes();
 
+  // Some codes are listed more than once with different images; any of them is accepted.
+  const imageURLs = new Map<string, string[]>();
+  for (const { code, imageURL } of upstreamEmotes) {
+    const urls = imageURLs.get(code) ?? [];
+    urls.push(imageURL);
+    imageURLs.set(code, urls);
+  }
+
+  // Map each local emote code to its image path in the emote directory.
+  const localEmotes = new Map<string, string>();
+  for (const code of CHAT_EMOTES[category]) {
+    localEmotes.set(code, `${category}/${code}`);
+  }
+  for (const [code, emotePath] of specialEmotePaths) {
+    if (path.posix.dirname(emotePath) === category) {
+      localEmotes.set(code, emotePath);
+    }
+  }
+
+  const problems: string[] = [];
+  for (const [code, emotePath] of localEmotes) {
+    if (!imageURLs.has(code)) {
+      problems.push(
+        `"${emotePath}${EMOTE_EXTENSION}" is not a global ${name} emote ("${code}"), so it should be removed.`,
+      );
+    }
+  }
+  for (const code of imageURLs.keys()) {
+    if (
+      !localEmotes.has(code)
+      && (MATCHABLE_CODE.test(code) || specialEmotePaths.has(code))
+    ) {
+      problems.push(
+        `The global ${name} emote "${code}" is missing from the "${category}" list in "emotes.json".`,
+      );
+    }
+  }
+
+  const imageProblems = await Promise.all(
+    [...localEmotes].map(async ([code, emotePath]) => {
+      const urls = imageURLs.get(code);
+      return urls === undefined
+        ? undefined
+        : await checkImage(code, emotePath, urls);
+    }),
+  );
+
+  return [
+    ...problems,
+    ...imageProblems.filter((problem) => problem !== undefined),
+  ];
+}
+
+async function checkImage(
+  code: string,
+  emotePath: string,
+  urls: readonly string[],
+): Promise<string | undefined> {
+  const relativePath = `${emotePath}${EMOTE_EXTENSION}`;
   const file = Bun.file(path.join(EMOTES_DIR, relativePath));
   if (!(await file.exists())) {
-    return `${code}: missing "${relativePath}".`;
+    // "checkDirectories" reports the missing file.
+    return undefined;
   }
 
-  // Without an extension, the CDN chooses the format from the request's "Accept" header.
-  const imageURL = `https://cdn.betterttv.net/emote/${emote.id}/1x.png`;
-  const response = await fetchOK(imageURL);
-  const [local, remote] = await Promise.all([file.bytes(), response.bytes()]);
-  if (!samePixels(local, remote)) {
-    return `${code}: "${relativePath}" differs from ${imageURL}.`;
+  const local = await file.bytes();
+  const remotes = await Promise.all(
+    urls.map(async (url) => {
+      const response = await fetchOK(url);
+      return await response.bytes();
+    }),
+  );
+  if (remotes.every((remote) => !samePixels(local, remote))) {
+    return `"${relativePath}" differs from the image of "${code}" at ${urls.join(" or ")}.`;
   }
 
   return undefined;
