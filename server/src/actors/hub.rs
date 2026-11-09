@@ -5,6 +5,7 @@ use super::{
 };
 use crate::{
     lobby::{Effect, OnlineUser},
+    routing::{Route, route},
     operations::Operation,
     server_info::ServerInfo,
     store::Store,
@@ -647,13 +648,17 @@ impl Hub {
                             self.create(session, Creation::Replay(r), reply);
                         }
                     }
-                    message => {
-                        if let Some(table) = table_target(&message) {
+                    message => match route(&message) {
+                        Route::Table(table) => {
                             self.route(session, table, Command::Client(Box::new(message)), reply);
-                        } else {
-                            let _ = reply.send(Err(anyhow::anyhow!("Missing tableID")));
                         }
-                    }
+                        other => {
+                            let _ = reply.send(Err(anyhow::anyhow!(
+                                "Command {} runs at {other:?}, not at a table",
+                                message.name()
+                            )));
+                        }
+                    },
                 },
                 HubCommand::Allocate(reply) => {
                     let permit = self.capacity.clone().try_acquire_owned();
@@ -899,58 +904,4 @@ async fn send_install(hub: &mpsc::Sender<HubCommand>, install: HubCommand) {
             "Coordinator stopped; table is recoverable"
         )));
     }
-}
-
-/// The table a command is for: its table ID, or for chat, its "table{id}" room.
-pub(super) fn table_target(message: &ClientMessage) -> Option<u64> {
-    use ClientMessage as M;
-    let id = match message {
-        M::Chat(r) => return r.room.strip_prefix("table")?.parse().ok(),
-        M::ChatRead(r)
-        | M::ChatTyping(r)
-        | M::TableLeave(r)
-        | M::TableReattend(r)
-        | M::IdleReset(r) => r.table_id,
-        M::TableUnattend(r)
-        | M::TableTerminate(r)
-        | M::TableVoteForTermination(r)
-        | M::GetGameInfo1(r)
-        | M::GetGameInfo2(r)
-        | M::Loaded(r) => r.table_id,
-        M::TableJoin(r) => r.table_id,
-        M::TableSetLeader(r) => r.table_id,
-        M::TableSetVariant(r) => r.table_id,
-        M::TableStart(r) => r.table_id,
-        M::TableRestart(r) => r.table_id,
-        M::TableRestartDecline(r) => r.table_id,
-        M::TableSuggest(r) => r.table_id,
-        M::TableSpectate(r) => r.table_id,
-        M::TableUpdate(r) => r.table_id,
-        M::Action(r) => r.table_id,
-        M::Pause(r) => r.table_id,
-        M::Note(r) => r.table_id,
-        M::Tag(r) | M::TagDelete(r) => r.table_id,
-        M::TagsDeleteAll(r) => r.table_id,
-        M::ReplayAction(r) => r.table_id(),
-        M::LobbyLoad(_)
-        | M::Sync(_)
-        | M::ChatPM(_)
-        | M::ChatPMHistoryGet(_)
-        | M::ChatFriend(_)
-        | M::ChatUnfriend(_)
-        | M::ChatLink(_)
-        | M::ChatUnlink(_)
-        | M::ChatLinked(_)
-        | M::ChatBlock(_)
-        | M::ChatUnblock(_)
-        | M::ChatBlocked(_)
-        | M::Setting(_)
-        | M::Inactive(_)
-        | M::HistoryGet(_)
-        | M::HistoryGetSeed(_)
-        | M::TagSearch(_)
-        | M::TableCreate(_)
-        | M::ReplayCreate(_) => return None,
-    };
-    Some(id.0)
 }

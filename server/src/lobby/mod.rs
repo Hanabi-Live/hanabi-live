@@ -16,6 +16,7 @@ pub use relationships::{block_relations, blocked_between, change_friend, friend_
 pub use settings::{changed_settings, get_settings, set_setting};
 
 use crate::accounts::{escape_html, normalize_string};
+use crate::routing::{Route, route};
 use crate::transport::Outgoing;
 use anyhow::{Result, ensure};
 use hanabi_protocol::ClientMessage;
@@ -101,62 +102,12 @@ pub(crate) fn notice(recipient: &str, message: &str, room: &str) -> Effect {
     ))
 }
 
-/// Check ownership before transferring a parsed payload to this dispatcher.
-/// Whether the lobby handles a command. Every command is listed, so a new one needs a decision.
+/// Whether the lobby handles a command: a lobby command, or chat, which the lobby checks before a
+/// table's chat continues to its table.
 pub fn handles(message: &ClientMessage) -> bool {
-    use ClientMessage as M;
-    match message {
-        M::Setting(_)
-        | M::Inactive(_)
-        | M::HistoryGet(_)
-        | M::HistoryGetSeed(_)
-        | M::ChatPM(_)
-        | M::ChatPMHistoryGet(_)
-        | M::ChatFriend(_)
-        | M::ChatUnfriend(_)
-        | M::ChatLink(_)
-        | M::ChatUnlink(_)
-        | M::ChatLinked(_)
-        | M::ChatBlock(_)
-        | M::ChatUnblock(_)
-        | M::ChatBlocked(_)
-        | M::TagSearch(_)
-        | M::Chat(_) => true,
-        M::LobbyLoad(_)
-        | M::Sync(_)
-        | M::ChatRead(_)
-        | M::ChatTyping(_)
-        | M::TableJoin(_)
-        | M::TableLeave(_)
-        | M::TableReattend(_)
-        | M::TableSetLeader(_)
-        | M::TableSetVariant(_)
-        | M::TableStart(_)
-        | M::TableRestart(_)
-        | M::TableRestartDecline(_)
-        | M::TableSuggest(_)
-        | M::TableSpectate(_)
-        | M::TableUnattend(_)
-        | M::TableTerminate(_)
-        | M::TableVoteForTermination(_)
-        | M::GetGameInfo1(_)
-        | M::GetGameInfo2(_)
-        | M::Loaded(_)
-        | M::TableCreate(_)
-        | M::TableUpdate(_)
-        | M::ReplayCreate(_)
-        | M::Action(_)
-        | M::Pause(_)
-        | M::IdleReset(_)
-        | M::Note(_)
-        | M::Tag(_)
-        | M::TagDelete(_)
-        | M::TagsDeleteAll(_)
-        | M::ReplayAction(_) => false,
-    }
+    matches!(message, ClientMessage::Chat(_)) || route(message) == Route::Lobby
 }
 
-/// The renderer is a trusted internal Discord renderer, never a client field.
 pub async fn dispatch_chat(
     pool: &PgPool,
     secret: &str,

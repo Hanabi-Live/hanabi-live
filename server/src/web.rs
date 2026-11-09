@@ -1082,7 +1082,7 @@ async fn dispatch(app: &Arc<App>, session: Arc<Session>, input: &str) -> Result<
         }
     };
     let mut measurement = crate::metrics::COMMAND_METRICS.start(message.name());
-    if let ClientMessage::LobbyLoad(_) = message {
+    if crate::routing::route(&message) == crate::routing::Route::Connection {
         session.emit(&frame(
             hanabi_protocol::server::LOBBY_STATUS,
             hanabi_protocol::LobbyStatus::Loading { total_games: () },

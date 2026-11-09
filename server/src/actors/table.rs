@@ -8,6 +8,7 @@ use super::{
     wire::int,
 };
 use crate::errors::OrReject;
+use crate::routing::{Route, route};
 use crate::store::{Commit, Committed};
 use crate::{
     model::{
@@ -18,7 +19,7 @@ use crate::{
     store::Store,
     transport::{Outgoing, Session, frame, stored_frame},
 };
-use anyhow::{Context, Result, bail, ensure};
+use anyhow::{Context, Result, ensure};
 use chrono::Utc;
 use hanabi_engine::{CompletionTiming, EndCondition};
 use hanabi_protocol::{
@@ -888,7 +889,11 @@ impl TableActor {
                     .await;
             }
         };
-        let name = message.name();
+        ensure!(
+            matches!(route(&message), Route::Table(_)),
+            "Unsupported table command: {}",
+            message.name()
+        );
         match message {
             ClientMessage::TableJoin(r) => self.join(session, r.password).await,
             ClientMessage::TableReattend(_) => self.reattend(session, false, None).await,
@@ -932,26 +937,6 @@ impl TableActor {
             ClientMessage::ChatRead(_) => self.chat_presence(session, false).await,
             ClientMessage::ChatTyping(_) => self.chat_presence(session, true).await,
             ClientMessage::TableSetLeader(r) => self.leader(session, &r.name).await,
-            // Handled before reaching a table.
-            ClientMessage::LobbyLoad(_)
-            | ClientMessage::Sync(_)
-            | ClientMessage::ChatPM(_)
-            | ClientMessage::ChatPMHistoryGet(_)
-            | ClientMessage::ChatFriend(_)
-            | ClientMessage::ChatUnfriend(_)
-            | ClientMessage::ChatLink(_)
-            | ClientMessage::ChatUnlink(_)
-            | ClientMessage::ChatLinked(_)
-            | ClientMessage::ChatBlock(_)
-            | ClientMessage::ChatUnblock(_)
-            | ClientMessage::ChatBlocked(_)
-            | ClientMessage::Setting(_)
-            | ClientMessage::Inactive(_)
-            | ClientMessage::HistoryGet(_)
-            | ClientMessage::HistoryGetSeed(_)
-            | ClientMessage::TagSearch(_)
-            | ClientMessage::TableCreate(_)
-            | ClientMessage::ReplayCreate(_) => bail!("Unsupported table command: {name}"),
             // The rest depend on the table's phase.
             message => match self.table.phase {
                 Phase::Pregame { .. } => self.pregame_command(session, message).await,

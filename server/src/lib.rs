@@ -62,6 +62,7 @@ mod operations_tests;
 pub mod public_http;
 mod query;
 pub mod release;
+pub mod routing;
 pub mod restart;
 pub mod server_info;
 pub mod state;
