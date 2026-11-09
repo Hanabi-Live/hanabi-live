@@ -396,6 +396,7 @@ chatCommands.set("tagsdeleteall", (room: string) => {
       room,
       SelfChatMessageType.Error,
     );
+    return;
   }
   globals.conn!.send("tagsDeleteAll", {
     tableID: globals.tableID,
