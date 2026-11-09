@@ -1,3 +1,4 @@
+use super::request;
 use super::table::wrong_phase;
 use super::{
     Allocation, HubCommand, TableActor, TableChange,
@@ -27,7 +28,6 @@ use std::{
     collections::{BTreeMap, HashSet},
     sync::Arc,
 };
-use tokio::sync::oneshot;
 
 /// Appended to the name of a table that a split creates.
 const SPLIT_SUFFIX: &str = " (split)";
@@ -477,15 +477,13 @@ impl TableActor {
             .filter(|p| !p.bot)
             .map(|p| p.id)
             .collect::<Vec<_>>();
-        let (reply, received) = oneshot::channel();
-        self.hub
-            .send(HubCommand::ReserveSeats {
-                users: humans,
-                from: self.table.id,
-                reply,
-            })
-            .await?;
-        allocation.reservation = Some(received.await??);
+        let reservation = request(&self.hub, |reply| HubCommand::ReserveSeats {
+            users: humans,
+            from: self.table.id,
+            reply,
+        })
+        .await??;
+        allocation.reservation = Some(reservation);
         // The source and its new table change in one commit.
         let destination_saved = self
             .persist_with(

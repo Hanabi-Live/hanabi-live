@@ -1,11 +1,11 @@
 use crate::{
-    actors::{HubCommand, Inspection, TableCommand},
+    actors::{HubCommand, Inspection, TableCommand, request},
     integrations::IntegrationSlot,
     operations::Operation,
     store::Store,
     web::App,
 };
-use anyhow::{Context, Result, ensure};
+use anyhow::{Result, ensure};
 use sqlx::PgPool;
 use std::{
     path::PathBuf,
@@ -220,21 +220,11 @@ impl Control {
             .map_or("disabled", |integrations| integrations.discord_status())
     }
     pub async fn operation(&self, command: Operation) -> Result<()> {
-        let (reply, received) = oneshot::channel();
-        self.hub
-            .send(HubCommand::Operations { command, reply })
-            .await
-            .context("Hub stopped")?;
-        received.await.context("Hub operation was interrupted")?
+        request(&self.hub, |reply| HubCommand::Operations { command, reply }).await?
     }
     /// What the hub reports about its tables.
     pub async fn inspect(&self) -> Result<Inspection> {
-        let (reply, received) = oneshot::channel();
-        self.hub
-            .send(HubCommand::Inspect(reply))
-            .await
-            .context("Hub stopped")?;
-        received.await.context("Hub inspection was interrupted")?
+        request(&self.hub, HubCommand::Inspect).await?
     }
     pub async fn graceful_stop(&self, message: Option<String>) -> Result<()> {
         self.request_stop(StopReason::GracefulStop(message)).await
@@ -340,35 +330,22 @@ pub async fn drain_game_runtime(
             StopReason::GracefulStop(message) => app.announce_stop(message.as_deref()).await,
             _ => {}
         }
-        let (reply, closed) = oneshot::channel();
-        if app
-            .hub
-            .send(HubCommand::Operations {
-                command: Operation::Drained {
-                    reconnect: reason.reconnect(),
-                    message: reason.user_notice(),
-                },
-                reply,
-            })
-            .await
-            .is_ok()
-        {
-            match closed.await {
-                Ok(Ok(())) => {}
-                Ok(Err(error)) => failures.push(format!("Maintenance close failed: {error:#}")),
-                Err(error) => failures.push(error.to_string()),
-            }
-        } else {
-            failures.push("Hub stopped before maintenance close".into());
+        let closed = request(&app.hub, |reply| HubCommand::Operations {
+            command: Operation::Drained {
+                reconnect: reason.reconnect(),
+                message: reason.user_notice(),
+            },
+            reply,
+        })
+        .await;
+        match closed {
+            Ok(Ok(())) => {}
+            Ok(Err(error)) => failures.push(format!("Maintenance close failed: {error:#}")),
+            Err(error) => failures.push(format!("{error:#}")),
         }
     }
-    let (reply, stopped) = oneshot::channel();
-    if app.hub.send(HubCommand::Stop(reply)).await.is_ok() {
-        if let Err(error) = stopped.await {
-            failures.push(error.to_string());
-        }
-    } else {
-        failures.push("Hub stopped before shutdown acknowledgement".into());
+    if let Err(error) = request(&app.hub, HubCommand::Stop).await {
+        failures.push(format!("{error:#}"));
     }
     tables.close();
     tables.wait().await;

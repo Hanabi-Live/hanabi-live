@@ -43,6 +43,27 @@ mod wire;
 pub use hub::Hub;
 type Reply = oneshot::Sender<CommandResult>;
 
+/// Sends an actor a command that carries a reply channel, and waits for the reply.
+pub async fn request<C, T>(
+    actor: &mpsc::Sender<C>,
+    command: impl FnOnce(oneshot::Sender<T>) -> C,
+) -> Result<T> {
+    let (reply, received) = oneshot::channel();
+    actor
+        .send(command(reply))
+        .await
+        .map_err(|_| anyhow::anyhow!("The {} actor stopped", actor_name::<C>()))?;
+    received
+        .await
+        .map_err(|_| anyhow::anyhow!("The {} actor stopped before it answered", actor_name::<C>()))
+}
+
+/// The name of the actor that takes commands of type `C`, for errors.
+fn actor_name<C>() -> &'static str {
+    let name = std::any::type_name::<C>();
+    name.rsplit("::").next().unwrap_or(name)
+}
+
 const PREGAME_RECONNECT_GRACE: Duration = Duration::from_secs(60);
 const REPLAY_RECONNECT_GRACE: Duration = Duration::from_secs(60);
 

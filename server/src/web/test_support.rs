@@ -4,6 +4,7 @@ use crate::{
     actors::{Hub, TableCommand},
     state::LiveState,
 };
+use tokio::sync::oneshot;
 
 pub struct Fixture {
     pub app: Arc<App>,

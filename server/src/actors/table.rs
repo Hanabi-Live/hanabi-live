@@ -1,3 +1,4 @@
+use super::request;
 use super::{
     Allocation, Attendance, Command, Effects, GameInfo, HubCommand, PREGAME_RECONNECT_GRACE,
     PhaseRuntime, REPLAY_RECONNECT_GRACE, Reply, TableActor, TableCommand, TableView,
@@ -32,7 +33,7 @@ use std::{
     sync::Arc,
     time::{Duration, Instant},
 };
-use tokio::sync::{Notify, OwnedSemaphorePermit, mpsc, oneshot};
+use tokio::sync::{Notify, OwnedSemaphorePermit, mpsc};
 
 /// How long a table waits before retrying timed work that failed.
 const TIMER_RETRY: Duration = Duration::from_millis(250);
@@ -1021,9 +1022,7 @@ impl TableActor {
         }
     }
     pub(super) async fn allocation(&self) -> CommandResult<Allocation> {
-        let (reply, received) = oneshot::channel();
-        self.hub.send(HubCommand::Allocate(reply)).await?;
-        received.await?
+        request(&self.hub, HubCommand::Allocate).await?
     }
     pub(super) async fn tick(&mut self) -> CommandResult<()> {
         self.cleanup(Instant::now()).await?;

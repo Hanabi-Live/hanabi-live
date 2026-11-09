@@ -10,7 +10,7 @@ mod user;
 use crate::errors::HttpError;
 use crate::{
     accounts::{self, AccountConfig},
-    actors::HubCommand,
+    actors::{HubCommand, request},
     errors::{CommandError, CommandResult},
     integrations::{IntegrationSlot, Integrations},
     lifecycle::{Lifecycle, Refusal},
@@ -46,7 +46,7 @@ use std::{
     task::Poll,
     time::Duration,
 };
-use tokio::sync::{Semaphore, mpsc, oneshot};
+use tokio::sync::{Semaphore, mpsc};
 use tokio_util::{sync::CancellationToken, task::TaskTracker};
 use tracing::Instrument;
 
@@ -858,17 +858,15 @@ async fn connection(
         reader_session.cancel.cancel();
     }.in_current_span());
     let result = async {
-        let (reply, received) = oneshot::channel();
-        app.hub
-            .send(HubCommand::Register {
-                session: session.clone(),
-                blocks: data.blocks.into_iter().collect(),
-                welcome: data.welcome,
-                initial: data.initial,
-                reply,
-            })
-            .await?;
-        received.await?.map_err(anyhow::Error::from)?;
+        request(&app.hub, |reply| HubCommand::Register {
+            session: session.clone(),
+            blocks: data.blocks.into_iter().collect(),
+            welcome: data.welcome,
+            initial: data.initial,
+            reply,
+        })
+        .await?
+        .map_err(anyhow::Error::from)?;
         let user = app.users.task(&app, session.user);
         user.send(user::UserCommand::Current(session.generation))
             .await?;
@@ -973,11 +971,9 @@ fn command_failure(error: CommandError, command: &str) -> Option<CommandFailure>
 /// Sends messages from outside the server, such as Discord, to everyone in the lobby.
 pub async fn publish_external(app: &App, messages: Vec<Outgoing>) -> Result<()> {
     ensure!(app.lifecycle.healthy(), "Server ownership unavailable");
-    let (reply, received) = oneshot::channel();
-    app.hub
-        .send(HubCommand::Broadcast { messages, reply })
-        .await?;
-    received.await?.map_err(anyhow::Error::from)
+    request(&app.hub, |reply| HubCommand::Broadcast { messages, reply })
+        .await?
+        .map_err(anyhow::Error::from)
 }
 
 /// Does the work of a lobby command's effects that needs the server's runtime or integrations, and
@@ -1010,15 +1006,12 @@ async fn publish(app: &App, session: Arc<Session>, effects: Vec<Effect>) -> Comm
             }
         }
     }
-    let (reply, received) = oneshot::channel();
-    app.hub
-        .send(HubCommand::LobbyEffects {
-            session,
-            effects: publications,
-            reply,
-        })
-        .await?;
-    received.await??;
+    request(&app.hub, |reply| HubCommand::LobbyEffects {
+        session,
+        effects: publications,
+        reply,
+    })
+    .await??;
     if let Some(integrations) = app.integrations.get() {
         for (id, raw) in mirrors {
             integrations.mirror(id, Some(&raw)).await;
@@ -1036,14 +1029,11 @@ async fn lobby_command(
 ) -> CommandResult<Option<ClientMessage>> {
     // Only private messages need the list of online users.
     let online = if matches!(message, ClientMessage::ChatPM(_)) {
-        let (reply, received) = oneshot::channel();
-        app.hub
-            .send(HubCommand::Directory {
-                session: session.clone(),
-                reply,
-            })
-            .await?;
-        received.await??
+        request(&app.hub, |reply| HubCommand::Directory {
+            session: session.clone(),
+            reply,
+        })
+        .await??
     } else {
         Vec::new()
     };
@@ -1171,15 +1161,14 @@ async fn dispatch(
         return Ok(());
     }
     let message = if lobby::handles(&message) {
-        let (reply, received) = oneshot::channel();
-        user.send(user::UserCommand::Lobby {
+        let answer = request(user, |reply| user::UserCommand::Lobby {
             session: session.clone(),
             message: Box::new(message),
             reply,
         })
-        .await?;
+        .await??;
         // Table chat continues to its table.
-        let Some(message) = received.await?? else {
+        let Some(message) = answer else {
             measurement.success();
             return Ok(());
         };
@@ -1187,18 +1176,18 @@ async fn dispatch(
     } else {
         message
     };
-    let (reply, received) = oneshot::channel();
-    let request = if let ClientMessage::Sync(_) = message {
-        HubCommand::Sync { session, reply }
-    } else {
-        HubCommand::Client {
-            session,
-            message,
-            reply,
+    request(&app.hub, |reply| {
+        if let ClientMessage::Sync(_) = message {
+            HubCommand::Sync { session, reply }
+        } else {
+            HubCommand::Client {
+                session,
+                message,
+                reply,
+            }
         }
-    };
-    app.hub.send(request).await?;
-    received.await??;
+    })
+    .await??;
     measurement.success();
     Ok(())
 }
