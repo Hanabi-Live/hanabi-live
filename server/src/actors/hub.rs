@@ -283,13 +283,7 @@ impl Hub {
                         warnings,
                         reply,
                     };
-                    if let Err(e) = hub.send(installed).await
-                        && let HubCommand::Install { reply, .. } = e.0
-                    {
-                        let _ = reply.send(Err(anyhow::anyhow!(
-                            "Coordinator stopped; table is recoverable"
-                        )));
-                    }
+                    send_install(&hub, installed).await;
                 }
                 Err(error) => {
                     let _ = reply.send(Err(error));
@@ -690,16 +684,15 @@ impl Hub {
                         match store.save(&table, 0).await {
                             Ok(revision) => {
                                 allocation.revision = revision;
-                                let _ = hub
-                                    .send(HubCommand::Install {
-                                        table: Box::new(table),
-                                        revision,
-                                        allocation,
-                                        session,
-                                        warnings: vec![],
-                                        reply,
-                                    })
-                                    .await;
+                                let installed = HubCommand::Install {
+                                    table: Box::new(table),
+                                    revision,
+                                    allocation,
+                                    session,
+                                    warnings: vec![],
+                                    reply,
+                                };
+                                send_install(&hub, installed).await;
                             }
                             Err(e) => {
                                 let _ = reply.send(Err(e));
@@ -739,15 +732,7 @@ impl Hub {
                     );
                     let id = actor.table.id;
                     let view = actor.view();
-                    let initial = if !self.closing && self.current(&session) {
-                        Some((session, warnings, reply))
-                    } else {
-                        let _ = reply.send(Err(rejection!(
-                            "Session changed during preparation; table is recoverable"
-                        )));
-                        None
-                    };
-                    let handle = self.spawn(actor, initial);
+                    let handle = self.spawn(actor, Some((session, warnings, reply)));
                     self.tables.insert(
                         id,
                         Entry {
@@ -901,6 +886,18 @@ impl Hub {
                 }
             }
         }
+    }
+}
+
+/// Sends a prepared table to the hub to install. If the hub has stopped, answers the request; the
+/// saved table recovers on the next start.
+async fn send_install(hub: &mpsc::Sender<HubCommand>, install: HubCommand) {
+    if let Err(error) = hub.send(install).await
+        && let HubCommand::Install { reply, .. } = error.0
+    {
+        let _ = reply.send(Err(anyhow::anyhow!(
+            "Coordinator stopped; table is recoverable"
+        )));
     }
 }
 
