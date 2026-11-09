@@ -37,7 +37,6 @@
     "@types/lodash": "catalog:",
     "@types/react": "catalog:",
     "@types/react-dom": "catalog:",
-    "@types/sinonjs__fake-timers": "catalog:",
     "@vitejs/plugin-react": "catalog:",
     "esbuild": "catalog:",
     "jsdom": "catalog:",

@@ -1,10 +1,10 @@
-import type { InstalledClock } from "@sinonjs/fake-timers";
+import type { Clock } from "@sinonjs/fake-timers";
 import { install } from "@sinonjs/fake-timers";
 import { afterEach, describe, expect, test, vi } from "vitest";
 import { checkCookieWithRetry } from "./cookieProbe";
 
 const originalFetch = globalThis.fetch;
-let clock: InstalledClock | undefined;
+let clock: Clock | undefined;
 
 afterEach(() => {
   globalThis.fetch = originalFetch;

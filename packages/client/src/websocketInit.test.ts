@@ -1,9 +1,9 @@
 import { VERSION } from "@hanabi-live/data";
-import type { InstalledClock } from "@sinonjs/fake-timers";
+import type { Clock } from "@sinonjs/fake-timers";
 import { install } from "@sinonjs/fake-timers";
 import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
 
-let clock: InstalledClock;
+let clock: Clock;
 const originalFetch = globalThis.fetch;
 
 vi.mock("./Globals", () => ({

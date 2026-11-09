@@ -54,7 +54,6 @@
         "@types/lodash": "catalog:",
         "@types/react": "catalog:",
         "@types/react-dom": "catalog:",
-        "@types/sinonjs__fake-timers": "catalog:",
         "@vitejs/plugin-react": "catalog:",
         "esbuild": "catalog:",
         "jsdom": "catalog:",
@@ -134,7 +133,6 @@
     "@types/lodash": "4.17.27",
     "@types/react": "19.3.0",
     "@types/react-dom": "19.3.0",
-    "@types/sinonjs__fake-timers": "15.0.1",
     "@types/ws": "8.18.2",
     "@vitejs/plugin-react": "6.2.1",
     "complete-cli": "1.5.35",
@@ -759,8 +757,6 @@
     "@types/react": ["@types/react@19.3.0", "", { "dependencies": { "csstype": "^3.2.2" } }, "sha512-N0rFCuH9YoxG9/m61l9MfpJKfmLOVU0em7ipIz6TRgSSkvReLB9vL85GB+yr8Bs5leqpvg96JSwF4ZS1s4viQg=="],
 
     "@types/react-dom": ["@types/react-dom@19.3.0", "", { "peerDependencies": { "@types/react": "^19.3.0" } }, "sha512-ZI7bU42mZXXKHn/qNLEw2IrbiINU7X5+vfgdixBHkCNpYWXjKgfQ/P+uyGb5CjOLB9UcnTeg3rylQtV2hym44Q=="],
-
-    "@types/sinonjs__fake-timers": ["@types/sinonjs__fake-timers@15.0.1", "", {}, "sha512-Ko2tjWJq8oozHzHV+reuvS5KYIRAokHnGbDwGh/J64LntgpbuylF74ipEL24HCyRjf9FOlBiBHWBR1RlVKsI1w=="],
 
     "@types/tough-cookie": ["@types/tough-cookie@4.0.5", "", {}, "sha512-/Ad8+nIOV7Rl++6f1BdKxFSMgmoqEoYbHRpPcx3JEfv8VRsQe9Z4mCXeJBzxs7mbHY/XOZZuXlRNfhpVPbs6ZA=="],
 

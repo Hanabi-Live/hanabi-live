@@ -164,22 +164,22 @@ async function startPostgres(): Promise<DisposablePostgres> {
       if (child.exitCode !== null) {
         throw new Error("PostgreSQL exited before accepting connections.");
       }
-      const sql = postgres(url, {
-        max: 1,
-        connect_timeout: 1,
-        onnotice: () => undefined,
-      });
-      try {
-        await sql`SELECT 1`;
-        break;
-      } catch (error) {
-        if (performance.now() >= deadline) {
-          throw new Error("PostgreSQL did not accept connections.", {
-            cause: error,
-          });
+      {
+        await using sql = postgres(url, {
+          max: 1,
+          connect_timeout: 1,
+          onnotice: () => undefined,
+        });
+        try {
+          await sql`SELECT 1`;
+          break;
+        } catch (error) {
+          if (performance.now() >= deadline) {
+            throw new Error("PostgreSQL did not accept connections.", {
+              cause: error,
+            });
+          }
         }
-      } finally {
-        await sql.end();
       }
       await delay(100);
     }

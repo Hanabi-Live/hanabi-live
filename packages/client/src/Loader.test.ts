@@ -1,9 +1,9 @@
-import type { InstalledClock } from "@sinonjs/fake-timers";
+import type { Clock } from "@sinonjs/fake-timers";
 import { install } from "@sinonjs/fake-timers";
 import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
 import { Loader } from "./Loader";
 
-let clock: InstalledClock;
+let clock: Clock;
 
 class FakeImage {
   readonly listeners = new Map<string, () => void>();
