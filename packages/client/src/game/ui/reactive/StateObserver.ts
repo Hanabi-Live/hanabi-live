@@ -207,6 +207,11 @@ const visibleStateObservers: Subscriptions = [
     }),
     cardLayoutView.onStackCompletionDataChanged,
   ),
+  // This must come after the discard stacks, so that a misplayed card is already moving.
+  subVS(
+    (s) => ({ maxScore: s.stats.maxScore, discardStacks: s.discardStacks }),
+    cardLayoutView.onMaxScoreOrDiscardStacksChanged,
+  ),
   subVS(
     (s) => s.playStackDirections,
     cardLayoutView.onPlayStackDirectionsChanged,

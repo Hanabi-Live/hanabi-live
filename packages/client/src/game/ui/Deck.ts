@@ -13,6 +13,7 @@ import { dateTimeFormatter, escapeHtml } from "../../utils";
 import * as arrows from "./arrows";
 import {
   CARD_ANIMATION_LENGTH_SECONDS,
+  EMPTY_DECK_COLOR,
   FONT_FAMILY,
   LEFT_MOUSE_BUTTON_HELD,
   STROKE_WIDTH_UNIT,
@@ -25,6 +26,9 @@ import { globals } from "./UIGlobals";
 
 /** The size of the count of cards left in the deck, as a fraction of the deck's height. */
 const NUM_LEFT_SIZE = 0.4;
+
+/** The color of the number of cards remaining in the deck, while it is not empty. */
+const NUM_LEFT_COLOR = "white";
 
 /** The dark gray outline of the number of cards remaining in the deck. */
 const NUM_LEFT_STROKE_COLOR = "#222222";
@@ -73,7 +77,7 @@ export class Deck extends Konva.Group {
     // The text that shows the number of cards remaining in the deck.
     this.numLeft = getTotalCardsInDeck(globals.variant);
     this.numLeftText = new Konva.Text({
-      fill: "white",
+      fill: NUM_LEFT_COLOR,
       stroke: NUM_LEFT_STROKE_COLOR,
       strokeWidth: NUM_LEFT_STROKE_WIDTH * globals.stage.height(),
       align: "center",
@@ -205,6 +209,7 @@ export class Deck extends Konva.Group {
   setCount(count: number): void {
     this.numLeft = count;
     this.numLeftText.text(count.toString());
+    this.numLeftText.fill(count === 0 ? EMPTY_DECK_COLOR : NUM_LEFT_COLOR);
 
     // When there are no cards left in the deck, remove the card-back and show a label that
     // indicates how many turns are left before the game ends.

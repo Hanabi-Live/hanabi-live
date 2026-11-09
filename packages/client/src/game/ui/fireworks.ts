@@ -2,7 +2,9 @@
 // and the flash and the shock ring of an explosion.
 
 import Konva from "konva";
+import type { LayoutChild } from "./LayoutChild";
 import { globals } from "./UIGlobals";
+import { CARD_CORNER_ROUNDNESS } from "./drawCards";
 
 export interface Point {
   x: number;
@@ -24,6 +26,12 @@ const FLASH_START_RADIUS = 0.05;
 const RING_START_RADIUS = 0.08;
 /** How thick the shock ring is when it starts and when it ends, as a fraction of the unit. */
 const RING_STROKE = { start: 0.066, end: 0.006 } as const;
+
+/** The glow and the sheen on a card. */
+const CARD_GLOW_WIDTH = 0.05;
+const SHEEN_WIDTH = 0.36;
+const SHEEN_DEGREES = 25;
+const SCORE_GLOW_BLUR = 0.13;
 
 export function easeIn(t: number): number {
   return t * t;
@@ -226,4 +234,148 @@ export class EffectTimeline {
     this.fx.destroy();
     this.fxLayer.batchDraw();
   }
+}
+
+/** The card glows. A sheen can sweep across it at the same time. */
+export function addCardGlow(
+  timeline: EffectTimeline,
+  layoutChild: LayoutChild,
+  start: number,
+  color: string,
+  seconds: number,
+  withSheen: boolean,
+): void {
+  const cardW = layoutChild.width();
+  const cardH = layoutChild.height();
+  const glow = new Konva.Rect({
+    width: cardW,
+    height: cardH,
+    cornerRadius: cardW * CARD_CORNER_ROUNDNESS.withoutShadow,
+    stroke: color,
+    strokeWidth: CARD_GLOW_WIDTH * cardW,
+    shadowColor: color,
+    shadowBlur: cardW / 4,
+    shadowOpacity: 1,
+    opacity: 0,
+    listening: false,
+  });
+  const sheen = new Konva.Group({
+    clipX: 0,
+    clipY: 0,
+    clipWidth: cardW,
+    clipHeight: cardH,
+    visible: false,
+    listening: false,
+  });
+  const bandW = SHEEN_WIDTH * cardW;
+  const band = new Konva.Rect({
+    y: -cardH,
+    width: bandW,
+    height: cardH * 3,
+    rotation: SHEEN_DEGREES,
+    fillLinearGradientStartPoint: { x: 0, y: 0 },
+    fillLinearGradientEndPoint: { x: bandW, y: 0 },
+    fillLinearGradientColorStops: [
+      0,
+      "rgba(255, 255, 255, 0)",
+      0.5,
+      "rgba(255, 255, 255, 0.85)",
+      1,
+      "rgba(255, 255, 255, 0)",
+    ],
+  });
+  sheen.add(band);
+  layoutChild.add(glow);
+  if (withSheen) {
+    layoutChild.add(sheen);
+  }
+  timeline.add(
+    start,
+    seconds,
+    (t) => {
+      sheen.visible(withSheen);
+      glow.opacity(Math.sin(Math.PI * t));
+      band.x(interpolate(-cardW * 0.8, cardW * 1.2, easeInOut(t)));
+    },
+    () => {
+      glow.destroy();
+      sheen.destroy();
+    },
+  );
+}
+
+/** The score area's border glows. */
+export function addScoreGlow(
+  timeline: EffectTimeline,
+  start: number,
+  color: string,
+  seconds: number,
+): void {
+  const border = globals.elements.scoreAreaBorder;
+  if (border === null) {
+    return;
+  }
+  const glow = border.clone({
+    ...timeline.toFx(border.getAbsolutePosition()),
+    visible: true,
+    stroke: color,
+    shadowColor: color,
+    shadowOpacity: 1,
+    listening: false,
+  }) as Konva.Rect;
+  timeline.addShape(start, seconds, glow, (t) => {
+    glow.opacity(1 - t);
+    glow.shadowBlur(SCORE_GLOW_BLUR * timeline.unit * (1 - t));
+  });
+}
+
+/** The center of a label's text. (A label can be wider than its text.) */
+export function textCenter(label: Konva.Text): Point {
+  return label.getAbsoluteTransform().point(localTextCenter(label));
+}
+
+/** The center of a label's text, in the label's own coordinates. */
+function localTextCenter(label: Konva.Text): Point {
+  const { width } = label.measureSize(label.text()) as { width: number };
+  const space = label.width() - width;
+  const align = label.align();
+  let left = 0;
+  if (align === "center") {
+    left = space / 2;
+  } else if (align === "right") {
+    left = space;
+  }
+  return { x: left + width / 2, y: label.height() / 2 };
+}
+
+/** A number pops, scaling about its center. It is tinted for the first `colorPart` of the pop. */
+export function addLabelPop(
+  timeline: EffectTimeline,
+  start: number,
+  label: Konva.Text,
+  color: string,
+  peakScale: number,
+  seconds: number,
+  colorPart: number,
+): void {
+  // A copy of the label pops above the cards while the label is hidden.
+  const pop = label.clone({ listening: false }) as Konva.Text;
+  timeline.addShape(start, seconds, pop, (t) => {
+    const scale = interpolate(peakScale, 1, easeOut(t));
+    pop.text(label.text());
+    pop.offset(localTextCenter(label));
+    pop.position(timeline.toFx(textCenter(label)));
+    pop.scale({ x: scale, y: scale });
+    pop.fill(t < colorPart ? color : label.fill());
+  });
+  timeline.add(
+    start,
+    seconds,
+    () => {
+      label.opacity(0);
+    },
+    () => {
+      label.opacity(1);
+    },
+  );
 }

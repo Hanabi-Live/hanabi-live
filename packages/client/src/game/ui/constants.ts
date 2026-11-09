@@ -132,6 +132,9 @@ export const WARNING_COLOR = "#df1c2d";
 /** Yellow, for the circles that show that the replay leader or a queued pause is active. */
 export const ACTIVE_INDICATOR_COLOR = "#ffe03b";
 
+/** Amber, for the count of an empty deck (since each player then has one turn left). */
+export const EMPTY_DECK_COLOR = "#ffb13b";
+
 /** For the clue counter and the score area border when no clues are available. */
 export const NO_CLUES_COLOR = "red";
 

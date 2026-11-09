@@ -11,6 +11,12 @@ import type Konva from "konva";
 import type { HanabiCard } from "../../HanabiCard";
 import type { LayoutChild } from "../../LayoutChild";
 import { globals } from "../../UIGlobals";
+import { CARD_ANIMATION_LENGTH_SECONDS } from "../../constants";
+import { MISPLAY_ANIMATION_SECONDS } from "../../misplayAnimation";
+import {
+  startMaxScoreDropAnimation,
+  stopMaxScoreDropAnimation,
+} from "../../signalAnimations";
 import { startStackCompleteAnimation } from "../../stackCompleteAnimation";
 import { updateCardVisuals } from "./cardsView";
 
@@ -149,6 +155,40 @@ export function onStackCompletionDataChanged(
       },
     );
   }
+}
+
+interface MaxScoreData {
+  maxScore: number;
+  discardStacks: GameState["discardStacks"];
+}
+
+/** Shows when a lost card lowers the maximum score. */
+export function onMaxScoreOrDiscardStacksChanged(
+  data: MaxScoreData,
+  previousData: MaxScoreData | undefined,
+): void {
+  if (previousData === undefined || data.maxScore === previousData.maxScore) {
+    return;
+  }
+
+  stopMaxScoreDropAnimation();
+  // Skip the animation when jumping through a replay or when going backwards.
+  if (globals.animateFast || data.maxScore > previousData.maxScore) {
+    return;
+  }
+
+  // Find the card that was just lost.
+  const previousDiscards = new Set(previousData.discardStacks.flat());
+  const order = data.discardStacks
+    .flat()
+    .find((discardedOrder) => !previousDiscards.has(discardedOrder));
+  const layoutChild =
+    order === undefined ? undefined : globals.deck[order]?.layout;
+  const delay =
+    layoutChild?.misplayAnimation === null || layoutChild === undefined
+      ? CARD_ANIMATION_LENGTH_SECONDS
+      : MISPLAY_ANIMATION_SECONDS;
+  startMaxScoreDropAnimation(layoutChild, previousData.maxScore, delay);
 }
 
 export function onPlayStacksChanged(

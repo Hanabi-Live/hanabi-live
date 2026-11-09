@@ -9,6 +9,10 @@ of the repository.
 
 ## November 9th, 2026
 
+- Losing the last copy of a card now flashes the card and the maximum score in
+  red.
+- The strike that ends the game now flashes all of the strike squares in red.
+- When the deck runs out, it now pulses, and its count of 0 turns amber.
 - If you enable the H-Group features, you can now also set your highest H-Group
   level. Pre-game tables show it beside your name, with a link to that level's
   page.

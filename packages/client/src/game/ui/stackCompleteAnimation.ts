@@ -11,16 +11,19 @@ import type { LayoutChild } from "./LayoutChild";
 import type { PlayStack } from "./PlayStack";
 import { globals } from "./UIGlobals";
 import { PLAY_ANIMATION_SECONDS } from "./constants";
-import { CARD_CORNER_ROUNDNESS } from "./drawCards";
 import type { Point } from "./fireworks";
 import {
   EffectTimeline,
   absoluteCenter,
+  addCardGlow,
+  addLabelPop,
+  addScoreGlow,
   bezier,
   easeInOut,
   easeOut,
   interpolate,
   randomBetween,
+  textCenter,
 } from "./fireworks";
 import { onClueTokensChanged } from "./reactive/views/gameInfoView";
 
@@ -69,12 +72,6 @@ const SPARK_FALL = 0.5;
 /** The part of the burst after which the sparks fade out. */
 const SPARK_FADE_START = 0.6;
 
-/** The gold glow and the sheen on the card. */
-const CARD_GLOW_SECONDS = 0.7;
-const CARD_GLOW_WIDTH = 0.05;
-const SHEEN_WIDTH = 0.36;
-const SHEEN_DEGREES = 25;
-
 /** The spark waits for the burst to open before it leaves. */
 const COMET_DELAY_SECONDS = 0.12;
 const COMET_SECONDS = 0.65;
@@ -94,7 +91,7 @@ const CLUE_POP_SCALE = 1.7;
 /** The part of the pop during which the clue count is green. */
 const CLUE_POP_GREEN = 0.55;
 const SCORE_GLOW_SECONDS = 0.6;
-const SCORE_GLOW_BLUR = 0.13;
+const CARD_GLOW_SECONDS = 0.7;
 
 // The perfect score finale.
 /** The first rocket leaves after the card lands. The others follow, one stack at a time. */
@@ -174,7 +171,7 @@ export function startStackCompleteAnimation(
     y: stackCenter.y - BURST_HEIGHT * unit,
   };
 
-  addCardGlow(timeline, layoutChild, landed);
+  addCardGlow(timeline, layoutChild, landed, GOLD, CARD_GLOW_SECONDS, true);
   if (perfectScore) {
     // The game is over, so the finale replaces the spark to the clue count.
     addFinale(timeline, landed);
@@ -331,7 +328,7 @@ function addFinale(timeline: EffectTimeline, start: number) {
   for (const [, playStack] of stacks) {
     const top = playStack.children.at(-1) as LayoutChild | undefined;
     if (top !== undefined) {
-      addCardGlow(timeline, top, boom);
+      addCardGlow(timeline, top, boom, GOLD, CARD_GLOW_SECONDS, true);
     }
   }
   addScoreGlow(timeline, boom, GOLD, FINALE_SCORE_GLOW_SECONDS);
@@ -450,68 +447,6 @@ function addBurst(
   }
 }
 
-/** The card flashes gold while a sheen sweeps across it. */
-function addCardGlow(
-  timeline: EffectTimeline,
-  layoutChild: LayoutChild,
-  start: number,
-) {
-  const cardW = layoutChild.width();
-  const cardH = layoutChild.height();
-  const glow = new Konva.Rect({
-    width: cardW,
-    height: cardH,
-    cornerRadius: cardW * CARD_CORNER_ROUNDNESS.withoutShadow,
-    stroke: GOLD,
-    strokeWidth: CARD_GLOW_WIDTH * cardW,
-    shadowColor: GOLD,
-    shadowBlur: cardW / 4,
-    shadowOpacity: 1,
-    opacity: 0,
-    listening: false,
-  });
-  const sheen = new Konva.Group({
-    clipX: 0,
-    clipY: 0,
-    clipWidth: cardW,
-    clipHeight: cardH,
-    visible: false,
-    listening: false,
-  });
-  const bandW = SHEEN_WIDTH * cardW;
-  const band = new Konva.Rect({
-    y: -cardH,
-    width: bandW,
-    height: cardH * 3,
-    rotation: SHEEN_DEGREES,
-    fillLinearGradientStartPoint: { x: 0, y: 0 },
-    fillLinearGradientEndPoint: { x: bandW, y: 0 },
-    fillLinearGradientColorStops: [
-      0,
-      "rgba(255, 255, 255, 0)",
-      0.5,
-      "rgba(255, 255, 255, 0.85)",
-      1,
-      "rgba(255, 255, 255, 0)",
-    ],
-  });
-  sheen.add(band);
-  layoutChild.add(glow, sheen);
-  timeline.add(
-    start,
-    CARD_GLOW_SECONDS,
-    (t) => {
-      sheen.visible(true);
-      glow.opacity(Math.sin(Math.PI * t));
-      band.x(interpolate(-cardW * 0.8, cardW * 1.2, easeInOut(t)));
-    },
-    () => {
-      glow.destroy();
-      sheen.destroy();
-    },
-  );
-}
-
 /** A glowing spark that flies to the clue count and leaves embers behind. */
 function addComet(
   timeline: EffectTimeline,
@@ -559,71 +494,4 @@ function addEmber(timeline: EffectTimeline, start: number, at: Point) {
     ember.radius(radius * (1 - t / 2));
     ember.opacity(1 - t);
   });
-}
-
-/** The score area's border glows. */
-function addScoreGlow(
-  timeline: EffectTimeline,
-  start: number,
-  color: string,
-  seconds: number,
-) {
-  const border = globals.elements.scoreAreaBorder;
-  if (border === null) {
-    return;
-  }
-  const glow = border.clone({
-    ...timeline.toFx(border.getAbsolutePosition()),
-    visible: true,
-    stroke: color,
-    shadowColor: color,
-    shadowOpacity: 1,
-    listening: false,
-  }) as Konva.Rect;
-  timeline.addShape(start, seconds, glow, (t) => {
-    glow.opacity(1 - t);
-    glow.shadowBlur(SCORE_GLOW_BLUR * timeline.unit * (1 - t));
-  });
-}
-
-/** The center of a label's text. (A label can be wider than its text.) */
-function textCenter(label: Konva.Text): Point {
-  const { width } = label.measureSize(label.text()) as { width: number };
-  return label
-    .getAbsoluteTransform()
-    .point({ x: width / 2, y: label.height() / 2 });
-}
-
-/** A number pops, scaling about its center. It is tinted for the first `colorPart` of the pop. */
-function addLabelPop(
-  timeline: EffectTimeline,
-  start: number,
-  label: Konva.Text,
-  color: string,
-  peakScale: number,
-  seconds: number,
-  colorPart: number,
-) {
-  // A copy of the label pops above the cards while the label is hidden.
-  const pop = label.clone({ listening: false }) as Konva.Text;
-  timeline.addShape(start, seconds, pop, (t) => {
-    const text = label.text();
-    const { width } = label.measureSize(text) as { width: number };
-    const scale = interpolate(peakScale, 1, easeOut(t));
-    pop.text(text);
-    pop.offset({ x: width / 2, y: label.height() / 2 });
-    pop.position(timeline.toFx(textCenter(label)));
-    pop.scale({ x: scale, y: scale });
-    pop.fill(t < colorPart ? color : label.fill());
-  });
-  timeline.add(
-    start,
-    seconds,
-    () => {
-      label.opacity(0);
-    },
-    () => {
-      label.opacity(1);
-    },
-  );
 }

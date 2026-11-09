@@ -2,6 +2,7 @@
 // fuse sputters, and then it misfires into the strike tracker, where it explodes and leaves the
 // strike X behind. The scorched card then tumbles into the discard pile.
 
+import { MAX_STRIKES } from "@hanabi-live/game";
 import Konva from "konva";
 import type { LayoutChild } from "./LayoutChild";
 import { globals } from "./UIGlobals";
@@ -26,6 +27,7 @@ import {
   areStrikesHidden,
   onOngoingOrVisibleStrikesChanged,
 } from "./reactive/views/gameInfoView";
+import { addStrikeoutFlash } from "./signalAnimations";
 
 /** The card rises over its play stack. */
 const LAUNCH_SECONDS = 0.35;
@@ -37,6 +39,13 @@ const FLIGHT_SECONDS = 0.38;
 const RECOIL_SECONDS = 0.12;
 /** The card tumbles into the discard pile. */
 const FALL_SECONDS = 0.5;
+/** How long a misplayed card takes to reach the discard pile. */
+export const MISPLAY_ANIMATION_SECONDS =
+  LAUNCH_SECONDS
+  + SPUTTER_SECONDS
+  + FLIGHT_SECONDS
+  + RECOIL_SECONDS
+  + FALL_SECONDS;
 
 // Distances and sizes are fractions of the height of a card on the play stacks.
 const HOVER_HEIGHT = 0.375;
@@ -65,6 +74,8 @@ const TRAIL_SPARK_INTERVAL = 0.06;
 const SHAKE_SECONDS = 0.25;
 const STRIKE_POP_SECONDS = 0.35;
 const STRIKE_POP_SCALE = 1.8;
+/** The pause between the pop of the last strike and the flash that ends the game. */
+const STRIKEOUT_DELAY_SECONDS = 0.15;
 
 const SPARK_COLORS = ["#ffd166", "#ff9f1c", "#fff1c1"] as const;
 const EMBER_COLORS = ["#ffb347", "#c9a26a"] as const;
@@ -325,6 +336,13 @@ export function startMisplayAnimation(
           x: origin.x - halfW * (scale - 1),
           y: origin.y - halfH * (scale - 1),
         });
+      }
+      if (strikeIndex === MAX_STRIKES - 1) {
+        // This strike ends the game.
+        addStrikeoutFlash(
+          timeline,
+          explosionStart + STRIKE_POP_SECONDS + STRIKEOUT_DELAY_SECONDS,
+        );
       }
       timeline.add(
         explosionStart,
