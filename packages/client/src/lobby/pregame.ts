@@ -14,12 +14,12 @@ import { H_GROUP_LEVEL_URL_PREFIX, PATH } from "../constants";
 import { DECK_PLAYS_ICON_STYLE, OptionIcons } from "../enums/OptionIcons";
 import * as tooltips from "../tooltips";
 import { escapeHtml, getHTMLElement, setBrowserAddressBarPath } from "../utils";
+import { scrollLobbyChatToBottom } from "./chat/LobbyChat";
 import * as lobbyPage from "./lobbyPage";
 import * as nav from "./nav";
 import { getOptionDescriptions } from "./optionDescriptions";
 import { Screen } from "./types/Screen";
 
-const lobbyChatText = getHTMLElement("#lobby-chat-text");
 const lobbyChatPregameText = getHTMLElement("#lobby-chat-pregame-text");
 
 /** Removes the tooltips of the H-Group level badges, which are redrawn with the player boxes. */
@@ -54,7 +54,7 @@ export function show(): void {
 
   // Scroll to the bottom of both the lobby chat and the pregame chat. (Even if the lobby chat is
   // already at the bottom, it will change size and cause it to not be scrolled all the way down.)
-  lobbyChatText.scrollTop = lobbyChatText.scrollHeight;
+  scrollLobbyChatToBottom();
   lobbyChatPregameText.scrollTop = lobbyChatPregameText.scrollHeight;
 
   // Focus the pregame chat.

@@ -2,15 +2,14 @@
 
 import { FADE_TIME_MS, HISTORY_HASH, PATH } from "../constants";
 import { globals } from "../Globals";
+import { scrollLobbyChatToBottom } from "../lobby/chat/LobbyChat";
 import * as lobbyPage from "../lobby/lobbyPage";
 import { Screen } from "../lobby/types/Screen";
 import * as sounds from "../sounds";
 import * as tooltips from "../tooltips";
-import { getHTMLElement, setBrowserAddressBarPath } from "../utils";
+import { setBrowserAddressBarPath } from "../utils";
 import * as chat from "./chat";
 import { HanabiUI } from "./ui/HanabiUI";
-
-const lobbyChatText = getHTMLElement("#lobby-chat-text");
 
 /** The history screen's address (e.g. "#history"), if a replay was opened from one. */
 let historyHash = "";
@@ -85,7 +84,7 @@ function hide() {
   tooltips.closeAllTooltips();
 
   // Scroll to the bottom of the chat.
-  lobbyChatText.scrollTop = lobbyChatText.scrollHeight;
+  scrollLobbyChatToBottom();
 }
 
 /** Whether an element is displayed, even if a hidden ancestor keeps it from being visible. */

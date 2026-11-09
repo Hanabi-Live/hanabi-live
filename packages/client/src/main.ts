@@ -11,6 +11,7 @@ import { initErrorListener } from "./errors";
 import * as gameChat from "./game/chat";
 import * as game from "./game/main";
 import { backToLobby } from "./game/ui/backToLobby";
+import { mountLobbyChat } from "./lobby/chat/mountLobbyChat";
 import * as lobbyCreateGame from "./lobby/createGame";
 import { mountHistoryLists } from "./lobby/gameHistory/mountHistoryLists";
 import * as lobbyHistory from "./lobby/history";
@@ -103,6 +104,7 @@ $(document).ready(() => {
   lobbyLogin.init();
   lobbyNav.init();
   mountHistoryLists();
+  mountLobbyChat();
   mountTablesList();
   mountUsersList();
   playerSettings.init();

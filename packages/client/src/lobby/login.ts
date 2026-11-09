@@ -19,6 +19,7 @@ import {
 import * as theme from "../theme";
 import { getHTMLElement, getHTMLInputElement, getURLFromPath } from "../utils";
 import { websocketInit } from "../websocketInit";
+import { scrollLobbyChatToBottom } from "./chat/LobbyChat";
 import { TEST_COOKIE_PATH, checkCookieWithRetry } from "./cookieProbe";
 import * as nav from "./nav";
 import { Screen } from "./types/Screen";
@@ -286,13 +287,7 @@ export function hide(firstTimeUser: boolean): void {
 
   // Scroll to the bottom of the chat. (This is necessary if we are going to the lobby after the
   // tutorial.)
-  const chat = $("#lobby-chat-text");
-  chat.animate(
-    {
-      scrollTop: chat[0]!.scrollHeight,
-    },
-    0,
-  );
+  scrollLobbyChatToBottom();
 }
 
 function formError(msg: string) {

@@ -25,13 +25,3 @@ export class LobbyChatDeletionState {
     );
   }
 }
-
-// The existing chat-line-* IDs are client-local counters, not database IDs.
-export function getLobbyChatIDAttribute(
-  room: string | undefined,
-  chatID: number | undefined,
-): string {
-  return room === "lobby" && chatID !== undefined
-    ? ` data-chat-id="${chatID}"`
-    : "";
-}

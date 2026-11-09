@@ -10,23 +10,24 @@ import {
   TYPING_TIMEOUT_MS,
 } from "@hanabi-live/data";
 import { eRange, isArray, trimPrefix } from "complete-common";
-import * as KeyCode from "keycode-js";
 import linkifyHtml from "linkify-html";
 import { find as linkifyFind } from "linkifyjs";
 import { globals } from "./Globals";
 import { chatCommands } from "./chatCommands";
-import {
-  getLobbyChatIDAttribute,
-  LobbyChatDeletionState,
-} from "./chatDeletion";
+import { LobbyChatDeletionState } from "./chatDeletion";
 import {
   FADE_TIME_MS,
   LOCAL_STORAGE_KEY,
   TYPED_HISTORY_MAX_LENGTH,
 } from "./constants";
+import {
+  lobbyChatLineAdded,
+  lobbyChatLineDeleted,
+} from "./lobby/chat/lobbyChatSlice";
 import { acceptOptionsFromGuest } from "./lobby/createGame";
 import { Screen } from "./lobby/types/Screen";
 import * as modals from "./modals";
+import { store } from "./store";
 import { getHTMLInputElement } from "./utils";
 
 /** Formats chat timestamps as 24-hour "HH:MM" regardless of the browser's locale. */
@@ -70,16 +71,13 @@ let tabCompleteOriginalText = "";
 let activeChatInput: HTMLInputElement | null = null;
 
 export function init(): void {
-  $("#lobby-chat-input").on("input", input);
-  $("#lobby-chat-input").on("keypress", keypress("lobby"));
-  $("#lobby-chat-input").on("keydown", keydown);
-  $("#lobby-chat-pregame-input").on("input", input);
-  $("#lobby-chat-pregame-input").on("keypress", keypress("table"));
-  $("#lobby-chat-pregame-input").on("keydown", keydown);
-  $("#game-chat-input").on("input", input);
-  $("#game-chat-input").on("keypress", keypress("table"));
-  $("#game-chat-input").on("keydown", keydown);
-  $(".emoji-button").on("click", emojiClick);
+  attachChatInput(getHTMLInputElement("#lobby-chat-pregame-input"), "table");
+  attachChatInput(getHTMLInputElement("#game-chat-input"), "table");
+  // (The lobby chat input is a React component that attaches itself.)
+  $(".emoji-button[data-target]").on("click", (event) => {
+    const { target } = event.currentTarget.dataset;
+    openEmojiPicker(getHTMLInputElement(`#${target}`));
+  });
 
   // Make an emoji list/map and ensure that there are no overlapping emoji.
   for (const [emojiName, emoji] of Object.entries(emojis)) {
@@ -164,24 +162,61 @@ function pickEmoji(this: HTMLElement) {
   modals.closeModals();
 }
 
-function emojiClick(this: HTMLElement) {
-  const targetInputId = this.dataset["target"];
-  activeChatInput = getHTMLInputElement(`#${targetInputId}`);
+/** Opens the emote and emoji picker, which adds what we pick to a chat input. */
+export function openEmojiPicker(chatInput: HTMLInputElement): void {
+  activeChatInput = chatInput;
   modals.showPrompt("#emoji-modal");
 }
 
-function input(this: HTMLElement, event: JQuery.Event) {
-  const element = $(this);
-  const text = element.val();
-  if (typeof text !== "string") {
-    throw new TypeError(
-      "The value of the element in the input function is not a string.",
-    );
-  }
+/**
+ * Handles typing in a chat input: sending, commands, typed history, tab completion, and emoji.
+ * Returns a function that removes the handlers.
+ */
+export function attachChatInput(
+  element: HTMLInputElement,
+  room: "lobby" | "table",
+): () => void {
+  const controller = new AbortController();
+  const { signal } = controller;
+  element.addEventListener(
+    "input",
+    () => {
+      input(element, room);
+    },
+    { signal },
+  );
+  element.addEventListener(
+    "keypress",
+    (event) => {
+      // We have typed a new character, so reset the tab-complete variables.
+      tabResetAutoCompleteList();
+      typedChatHistoryIndex = null;
+
+      if (event.key === "Enter") {
+        send(room, element);
+      }
+    },
+    { signal },
+  );
+  element.addEventListener(
+    "keydown",
+    (event) => {
+      keydown(element, event);
+    },
+    { signal },
+  );
+
+  return () => {
+    controller.abort();
+  };
+}
+
+function input(element: HTMLInputElement, room: "lobby" | "table") {
+  const text = element.value;
 
   // If this is a pregame or game input, report to the server that we are typing. (But do not spam
   // the server with more than one message per interval.)
-  if (this.id !== "lobby-chat-input") {
+  if (room !== "lobby") {
     const datetimeNow = Date.now();
     if (datetimeNow - datetimeLastChatInput >= TYPING_REPORT_INTERVAL_MS) {
       datetimeLastChatInput = datetimeNow;
@@ -193,14 +228,14 @@ function input(this: HTMLElement, event: JQuery.Event) {
 
   // /r - A PM reply.
   if (text === "/r " && lastPM !== "") {
-    element.val(`/pm ${lastPM} `);
+    element.value = `/pm ${lastPM} `;
     return;
   }
 
   // /shrug
   if (text === "/shrug") {
     // eslint-disable-next-line complete/require-ascii
-    element.val(String.raw`¯\_(ツ)_/¯`);
+    element.value = String.raw`¯\_(ツ)_/¯`;
     return;
   }
 
@@ -209,32 +244,12 @@ function input(this: HTMLElement, event: JQuery.Event) {
   // e.g. :100: --> 💯
   const newText = substituteEmoji(text);
   if (newText !== null) {
-    element.val(newText);
-    event.preventDefault();
+    element.value = newText;
   }
 }
 
-// This cannot be a normal function since it uses `this`.
-// eslint-disable-next-line func-style
-const keypress = (room: string) =>
-  function keypressFunction(this: HTMLElement, event: JQuery.Event) {
-    const element = $(this);
-
-    // We have typed a new character, so reset the tab-complete variables.
-    tabResetAutoCompleteList();
-    typedChatHistoryIndex = null;
-
-    if (event.which === KeyCode.KEY_RETURN) {
-      send(room, element);
-    }
-  };
-
-function send(room: string, element: JQuery) {
-  let msg = element.val();
-  if (typeof msg !== "string") {
-    throw new TypeError("The value of the element is not a string.");
-  }
-  msg = msg.trim();
+function send(room: string, element: HTMLInputElement) {
+  const msg = element.value.trim();
 
   // Validate that they are accidentally broadcasting a private message reply.
   if (msg.startsWith("/r ")) {
@@ -245,7 +260,7 @@ function send(room: string, element: JQuery) {
   }
 
   // Clear the chat box.
-  element.val("");
+  element.value = "";
 
   sendText(room, msg);
 }
@@ -318,36 +333,30 @@ function sendText(room: string, msgRaw: string) {
   });
 }
 
-function keydown(this: HTMLElement, event: JQuery.Event) {
-  const element = $(this);
-
+function keydown(element: HTMLInputElement, event: KeyboardEvent) {
   // The up and down arrows are only caught in the "keydown" event:
   // https://stackoverflow.com/questions/5597060/detecting-arrow-key-presses-in-javascript
   // The tab key is only caught in the "keydown" event because it switches the input focus.
-  switch (event.which) {
-    // 8, 46
-    case KeyCode.KEY_BACK_SPACE:
-    case KeyCode.KEY_DELETE: {
+  switch (event.key) {
+    case "Backspace":
+    case "Delete": {
       typedChatHistoryIndex = null;
       break;
     }
 
-    // 9
-    case KeyCode.KEY_TAB: {
+    case "Tab": {
       event.preventDefault();
-      tab(element, event);
+      tab(element, event.shiftKey);
       break;
     }
 
-    // 38
-    case KeyCode.KEY_UP: {
+    case "ArrowUp": {
       event.preventDefault();
       arrowUp(element);
       break;
     }
 
-    // 40
-    case KeyCode.KEY_DOWN: {
+    case "ArrowDown": {
       event.preventDefault();
       arrowDown(element);
       break;
@@ -386,32 +395,29 @@ function historyMatchNext(current: string, increment: number): string | null {
   return typedChatHistory[typedChatHistoryIndex]!;
 }
 
-function arrowUp(element: JQuery) {
-  const retrievedHistory = historyMatchNext(String(element.val() ?? ""), 1);
+function arrowUp(element: HTMLInputElement) {
+  const retrievedHistory = historyMatchNext(element.value, 1);
   // Set the chat input box to what we last typed.
-  element.val(retrievedHistory ?? "");
+  element.value = retrievedHistory ?? "";
 }
 
-function arrowDown(element: JQuery) {
-  const retrievedHistory = historyMatchNext(String(element.val() ?? ""), -1);
+function arrowDown(element: HTMLInputElement) {
+  const retrievedHistory = historyMatchNext(element.value, -1);
   // Set the chat input box to what we last typed.
-  element.val(retrievedHistory ?? "");
+  element.value = retrievedHistory ?? "";
 }
 
-export function tab(element: JQuery, event: JQuery.Event): void {
+/** Completes the final word of a text box. Shift-tab goes backwards through the matches. */
+export function tab(element: HTMLInputElement, shiftKey: boolean): void {
   // Parse the final word from what we have typed so far.
-  let message = element.val();
-  if (typeof message !== "string") {
-    message = "";
-  }
-  message = message.trim();
+  const message = element.value.trim();
   const messageWords = message.split(" ");
   const finalWord = messageWords.at(-1)!;
 
   // Increment the tab counter.
   if (tabCompleteWordListIndex === null) {
-    tabInitAutoCompleteList(event, finalWord);
-  } else if (event.shiftKey === true) {
+    tabInitAutoCompleteList(shiftKey, finalWord);
+  } else if (shiftKey) {
     // Shift-tab goes backwards
     tabCompleteWordListIndex--;
     if (tabCompleteWordListIndex === -1) {
@@ -429,18 +435,18 @@ export function tab(element: JQuery, event: JQuery.Event): void {
     // We have rotated through all of the possible auto-complete entries (or there are no
     // auto-complete matches for this particular sequence of text), so return the original text.
     messageWords[messageWords.length - 1] = tabCompleteOriginalText;
-    element.val(messageWords.join(" "));
+    element.value = messageWords.join(" ");
     return;
   }
 
   // Replace the final word with the new auto-complete word.
   const autoCompleteWord = tabCompleteWordList[tabCompleteWordListIndex]!;
   messageWords[messageWords.length - 1] = autoCompleteWord;
-  element.val(messageWords.join(" "));
+  element.value = messageWords.join(" ");
 }
 
 /** This is the first time we are pressing tab on this particular sequence of text. */
-function tabInitAutoCompleteList(event: JQuery.Event, finalWord: string) {
+function tabInitAutoCompleteList(shiftKey: boolean, finalWord: string) {
   // Save our current partially-completed word in case we need to cycle back to it later.
   tabCompleteOriginalText = finalWord;
 
@@ -475,8 +481,7 @@ function tabInitAutoCompleteList(event: JQuery.Event, finalWord: string) {
   // Set the starting index, depending on whether or not we are pressing shift:
   // - Shift-tab goes backwards.
   // - Tab goes forwards.
-  tabCompleteWordListIndex =
-    event.shiftKey === true ? tabCompleteWordList.length - 1 : 0;
+  tabCompleteWordListIndex = shiftKey ? tabCompleteWordList.length - 1 : 0;
 }
 
 export function tabResetAutoCompleteList(): void {
@@ -544,7 +549,7 @@ export function add(data: ChatData, fast: boolean): void {
 export function removeDeletedLobbyMessage(chatID: number): void {
   // Retain recent deletions so a late live message or chatList cannot revive one.
   lobbyChatDeletionState.markDeleted(chatID);
-  $(`#lobby-chat-text [data-chat-id="${chatID}"]`).remove();
+  store.dispatch(lobbyChatLineDeleted(chatID));
 }
 
 export function addPMHistory(data: PMHistoryMessage, room?: string): void {
@@ -574,24 +579,53 @@ function addInternal(data: ChatData, fast: boolean, updateLiveState: boolean) {
     lastPM = data.who;
   }
 
-  const chat = getChatBoxElement(data);
-  if (chat === undefined) {
+  const box = getChatBox(data);
+  if (box === undefined) {
     return;
   }
 
   let rawMsg = data.msg;
   // Replace chat suggestions with anchors which, when clicked, are chat commands.
-  if (chat.is($("#lobby-chat-pregame-text"))) {
+  if (box === "pregame") {
     rawMsg = mapTextSegments(rawMsg, fillChatSuggestions);
   }
-  const msg = getPreparedMessage(rawMsg);
+  const html = formatChatLine(data, getPreparedMessage(rawMsg));
 
+  if (box === "lobby") {
+    store.dispatch(
+      lobbyChatLineAdded({
+        key: chatLineNum,
+        ...(data.room === "lobby"
+          && data.chatID !== undefined && { chatID: data.chatID }),
+        html,
+        fadeIn: !fast,
+      }),
+    );
+    chatLineNum++;
+  } else {
+    appendChatLine(
+      box === "pregame" ? $("#lobby-chat-pregame-text") : $("#game-chat-text"),
+      html,
+      fast,
+      data.suggestedOptions,
+    );
+  }
+
+  // Remove the person from the typing list, if present.
+  if (updateLiveState && data.who !== undefined) {
+    const index = globals.peopleTyping.indexOf(data.who);
+    if (index !== -1) {
+      globals.peopleTyping.splice(index, 1);
+      updatePeopleTyping();
+    }
+  }
+}
+
+/** Returns the HTML of a chat line: its time, its author, and the prepared message. */
+function formatChatLine(data: ChatData, msg: string): string {
   const datetime = chatTimeFormatter.format(new Date(data.datetime));
 
-  const chatIDAttribute = getLobbyChatIDAttribute(data.room, data.chatID);
-  let line = `<span id="chat-line-${chatLineNum}"${chatIDAttribute}`;
-  line += ` class="${fast ? "" : "hidden"}">`;
-  line += `[${datetime}]&nbsp; `;
+  let line = `[${datetime}]&nbsp; `;
   if (data.recipient !== undefined && data.recipient !== "") {
     line +=
       data.recipient === globals.username
@@ -615,8 +649,17 @@ function addInternal(data: ChatData, fast: boolean, updateLiveState: boolean) {
       '<span class="red">[Server Notice]</span>',
     );
   }
-  line += "</span>";
 
+  return line;
+}
+
+/** Adds a line to the pre-game chat or the game chat. */
+function appendChatLine(
+  chat: JQuery,
+  html: string,
+  fast: boolean,
+  suggestedOptions: ChatData["suggestedOptions"],
+) {
   // Find out if we should automatically scroll down after adding the new line of chat:
   // https://stackoverflow.com/questions/6271237/detecting-when-user-scrolls-to-bottom-of-div-with-jquery
   // If we are already scrolled to the bottom, then it is ok to automatically scroll. scrollTop can
@@ -630,9 +673,10 @@ function addInternal(data: ChatData, fast: boolean, updateLiveState: boolean) {
     ) < pxEpsilon;
 
   // Add the new line and fade it in.
-  chat.append(line);
+  chat.append(
+    `<span id="chat-line-${chatLineNum}" class="${fast ? "" : "hidden"}">${html}</span>`,
+  );
   $(`#chat-line-${chatLineNum}`).fadeIn(FADE_TIME_MS).css("display", "block");
-  const { suggestedOptions } = data;
   if (suggestedOptions !== undefined) {
     $(`#chat-line-${chatLineNum} button.new-options`).on("click", (event) => {
       acceptOptionsFromGuest(suggestedOptions);
@@ -660,51 +704,31 @@ function addInternal(data: ChatData, fast: boolean, updateLiveState: boolean) {
       chat[0],
     );
   }
-
-  // Remove the person from the typing list, if present.
-  if (updateLiveState && data.who !== undefined) {
-    const index = globals.peopleTyping.indexOf(data.who);
-    if (index !== -1) {
-      globals.peopleTyping.splice(index, 1);
-      updatePeopleTyping();
-    }
-  }
 }
 
-/** Find out which chat box we should add the new chat message to. */
-function getChatBoxElement(data: ChatData): JQuery | undefined {
+/** Finds out which chat box we should add the new chat message to. */
+function getChatBox(data: ChatData): "lobby" | "pregame" | "game" | undefined {
   if (data.room === "lobby") {
-    return $("#lobby-chat-text");
-  }
-
-  if (data.room !== undefined && data.room.startsWith("table")) {
-    if (globals.currentScreen === Screen.PreGame) {
-      return $("#lobby-chat-pregame-text");
-    }
-
-    if (globals.currentScreen === Screen.Game) {
-      return $("#game-chat-text");
-    }
-
-    // Ignore table chat if we are not in a pre-game and not in a game.
-    return undefined;
+    return "lobby";
   }
 
   // A blank room indicates a private message (PM). PMs do not have a room associated with them, so
   // we default to displaying them on the chat window that the user currently has open.
-  if (data.room === undefined || data.room === "") {
-    if (globals.currentScreen === Screen.PreGame) {
-      return $("#lobby-chat-pregame-text");
-    }
-
-    if (globals.currentScreen === Screen.Game) {
-      return $("#game-chat-text");
-    }
-
-    return $("#lobby-chat-text");
+  const isPM = data.room === undefined || data.room === "";
+  if (!isPM && !data.room.startsWith("table")) {
+    return undefined;
   }
 
-  return undefined;
+  if (globals.currentScreen === Screen.PreGame) {
+    return "pregame";
+  }
+
+  if (globals.currentScreen === Screen.Game) {
+    return "game";
+  }
+
+  // Ignore table chat if we are not in a pre-game and not in a game.
+  return isPM ? "lobby" : undefined;
 }
 
 /**

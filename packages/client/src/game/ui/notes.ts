@@ -213,7 +213,7 @@ export function openEditTooltip(
 
     if (key === "Tab") {
       event.preventDefault();
-      chat.tab(noteTextbox, event);
+      chat.tab(input, event.shiftKey);
       return;
     }
 
