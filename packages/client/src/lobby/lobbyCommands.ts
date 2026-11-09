@@ -177,8 +177,15 @@ lobbyCommands.set("tableStart", (data) => {
 
 // Received by the client when a user connects or has a new status.
 lobbyCommands.set("user", (data) => {
+  const previous = globals.userMap.get(data.userID);
   globals.userMap.set(data.userID, data);
   store.dispatch(userChanged(data));
+  if (
+    previous?.hGroup !== data.hGroup
+    || previous.hGroupLevel !== data.hGroupLevel
+  ) {
+    pregame.userChanged(data.name);
+  }
 });
 
 lobbyCommands.set("userList", (dataList) => {

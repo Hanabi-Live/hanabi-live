@@ -375,6 +375,7 @@
       "status": 6,
       "tableID": 3,
       "hGroup": false,
+      "hGroupLevel": 0,
       "bot": false,
       "inactive": false
     },
@@ -391,6 +392,7 @@
         "status": 2,
         "tableID": 3,
         "hGroup": false,
+        "hGroupLevel": 3,
         "bot": false,
         "inactive": false
       }
@@ -437,6 +439,7 @@
         "speedrunPreplay": false,
         "speedrunMode": false,
         "hGroupConventions": false,
+        "hGroupLevel": 0,
         "createTableVariant": "No Variant",
         "createTableTimed": false,
         "createTableTimeBaseMinutes": 2.0,
@@ -478,6 +481,7 @@
         "speedrunPreplay": false,
         "speedrunMode": false,
         "hGroupConventions": false,
+        "hGroupLevel": 0,
         "createTableVariant": "No Variant",
         "createTableTimed": false,
         "createTableTimeBaseMinutes": 2.0,

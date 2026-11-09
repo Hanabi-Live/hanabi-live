@@ -127,6 +127,7 @@ impl Hub {
                 p.table.map(TableId)
             },
             h_group: p.session.h_group(),
+            h_group_level: p.session.h_group_level(),
             bot: p.session.bot,
             inactive: p.session.inactive(),
         }
@@ -329,6 +330,13 @@ impl Hub {
                 Effect::HGroup(value) => {
                     let s = session.context("Missing session")?;
                     s.set_h_group(value);
+                    if let Some(p) = self.sessions.get(&s.user) {
+                        self.broadcast(&frame(hanabi_protocol::server::USER, Self::user(p)));
+                    }
+                }
+                Effect::HGroupLevel(value) => {
+                    let s = session.context("Missing session")?;
+                    s.set_h_group_level(value);
                     if let Some(p) = self.sessions.get(&s.user) {
                         self.broadcast(&frame(hanabi_protocol::server::USER, Self::user(p)));
                     }

@@ -9,6 +9,9 @@ of the repository.
 
 ## November 9th, 2026
 
+- If you enable the H-Group features, you can now also set your highest H-Group
+  level. Pre-game tables show it beside your name, with a link to that level's
+  page.
 - A perfect score now sets off a fireworks finale over the play stacks.
 - Completing a play stack now sets off a firework. When the team gets a clue
   back, a spark flies to the clue count.

@@ -749,6 +749,7 @@ async fn connection(
             ip,
             generation,
             h_group: data.welcome.settings.h_group_conventions,
+            h_group_level: data.welcome.settings.h_group_level,
             bot: data.bot,
         },
         app.ownership_lost.clone(),

@@ -16,6 +16,7 @@ import {
 import * as z from "zod";
 
 export const MAX_VOLUME = 100;
+export const MAX_H_GROUP_LEVEL = 25;
 export const DEFAULT_PAGE_SIZE = 10;
 export const MAX_PRIVATE_HISTORY_MESSAGES = 100;
 export const SECONDS_PER_MINUTE = 60;
@@ -955,6 +956,10 @@ export const settingsSchema = z
     darkMode: z.boolean().default(false),
     desktopNotification: z.boolean().default(false),
     hGroupConventions: z.boolean().default(false),
+    /**
+     * The highest H-Group level that this user wants to play at, or 0 if they did not choose one.
+     */
+    hGroupLevel: z.number().int().min(0).max(25).default(0),
     keldonMode: z.boolean().default(false),
     realLifeMode: z.boolean().default(false),
     reverseHands: z.boolean().default(false),
@@ -1182,6 +1187,10 @@ export const userSchema = z
   .strictObject({
     bot: z.boolean(),
     hGroup: z.boolean(),
+    /**
+     * The highest H-Group level that this user wants to play at, or 0 if they did not choose one.
+     */
+    hGroupLevel: z.number().int().min(0).max(25),
     inactive: z.boolean(),
     name: z.string().min(1),
     status: z.enum(Status),

@@ -49,6 +49,7 @@ pub enum Effect {
     },
     Broadcast(Outgoing),
     HGroup(bool),
+    HGroupLevel(u8),
     Inactive(bool),
     RelationshipChanged {
         user_id: i32,
@@ -186,10 +187,11 @@ pub async fn dispatch(
                 return Ok(Some(vec![warning(&error.to_string())]));
             }
             set_setting(pool, caller.id, name, value).await?;
-            if name == "hGroupConventions" {
-                vec![Effect::HGroup(value == "true")]
-            } else {
-                vec![]
+            match name {
+                "hGroupConventions" => vec![Effect::HGroup(value == "true")],
+                // `validate_setting` has already checked that the level is in range.
+                "hGroupLevel" => vec![Effect::HGroupLevel(value.parse()?)],
+                _ => vec![],
             }
         }
         ClientMessage::Inactive(request) => {

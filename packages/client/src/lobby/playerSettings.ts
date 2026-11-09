@@ -1,9 +1,15 @@
 // The "Settings" nav button.
 
-import { MAX_VOLUME, SoundMove, defaultSettings } from "@hanabi-live/data";
+import {
+  MAX_H_GROUP_LEVEL,
+  MAX_VOLUME,
+  SoundMove,
+  defaultSettings,
+} from "@hanabi-live/data";
 import {
   assertDefined,
   assertEnumValue,
+  iRange,
   isKeyOf,
   parseIntSafe,
 } from "complete-common";
@@ -99,6 +105,38 @@ export function init(): void {
       setting: soundMove.toString(), // The server expects all setting values as strings.
     });
   });
+
+  const hGroupLevelSelect = $("#hGroupLevel");
+  hGroupLevelSelect.append($("<option>").val(0).text("Not set"));
+  for (const level of iRange(1, MAX_H_GROUP_LEVEL)) {
+    hGroupLevelSelect.append($("<option>").val(level).text(`Level ${level}`));
+  }
+  hGroupLevelSelect.change(function settingsHGroupLevelChange(
+    this: HTMLElement,
+  ) {
+    const hGroupLevelString = $(this).val();
+    if (typeof hGroupLevelString !== "string") {
+      throw new TypeError(
+        `The value of the "#hGroupLevel" element is not a string: ${hGroupLevelString}`,
+      );
+    }
+
+    const hGroupLevel = parseIntSafe(hGroupLevelString);
+    assertDefined(
+      hGroupLevel,
+      `The value of the "#hGroupLevel" element could not be converted to a number: ${hGroupLevelString}`,
+    );
+
+    globals.settings = {
+      ...globals.settings,
+      hGroupLevel,
+    };
+
+    globals.conn!.send("setting", {
+      name: "hGroupLevel",
+      setting: hGroupLevelString, // The server expects all setting values as strings.
+    });
+  });
 }
 
 export function setPlayerSettings(): void {
@@ -115,11 +153,14 @@ export function setPlayerSettings(): void {
       }
       $("#settings-volume-slider").val(value);
       $("#settings-volume-slider-value").html(`${value}%`);
-    } else if (setting === "soundMove") {
+    } else if (setting === "soundMove" || setting === "hGroupLevel") {
+      // These settings are drop-down menus whose element has the same ID as the setting.
       if (typeof value !== "number") {
-        throw new TypeError("The soundMove setting is not stored as a number.");
+        throw new TypeError(
+          `The "${setting}" setting is not stored as a number.`,
+        );
       }
-      $("#soundMove").val(value);
+      $(`#${setting}`).val(value);
     } else {
       const element = $(`#${setting}`);
       if (typeof value !== "boolean") {
@@ -131,6 +172,12 @@ export function setPlayerSettings(): void {
       element.change(changeSetting);
     }
   }
+  showHGroupLevel(globals.settings.hGroupConventions);
+}
+
+/** The H-Group level only matters to people who use the H-Group features. */
+function showHGroupLevel(hGroupConventions: boolean) {
+  $("#hGroupLevel-row").toggle(hGroupConventions);
 }
 
 function changeSetting(this: HTMLElement) {
@@ -164,10 +211,26 @@ function changeSetting(this: HTMLElement) {
     setting: checked.toString(), // The server expects all setting values as strings.
   });
 
-  if (settingName === "desktopNotification" && checked) {
-    notifications.test();
-  }
-  if (settingName === "darkMode") {
-    theme.setDarkMode(checked);
+  switch (settingName) {
+    case "desktopNotification": {
+      if (checked) {
+        notifications.test();
+      }
+      break;
+    }
+
+    case "hGroupConventions": {
+      showHGroupLevel(checked);
+      break;
+    }
+
+    case "darkMode": {
+      theme.setDarkMode(checked);
+      break;
+    }
+
+    default: {
+      break;
+    }
   }
 }

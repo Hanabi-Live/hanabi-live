@@ -2,7 +2,7 @@ use axum::extract::ws::{CloseFrame, Message};
 use serde::Serialize;
 use std::sync::{
     Arc, LazyLock,
-    atomic::{AtomicBool, Ordering},
+    atomic::{AtomicBool, AtomicU8, Ordering},
 };
 use tokio::sync::{OwnedSemaphorePermit, Semaphore, mpsc, oneshot};
 use tokio_util::sync::CancellationToken;
@@ -90,6 +90,7 @@ pub struct Session {
     /// Whether the account has authenticated as a bot.
     pub bot: bool,
     h_group: AtomicBool,
+    h_group_level: AtomicU8,
     /// Users who have blocked, or were blocked by, this user.
     blocks: std::sync::Mutex<std::collections::BTreeSet<i32>>,
     inactive: AtomicBool,
@@ -108,6 +109,7 @@ pub struct SessionMetadata {
     pub ip: String,
     pub generation: u64,
     pub h_group: bool,
+    pub h_group_level: u8,
     pub bot: bool,
 }
 
@@ -126,6 +128,7 @@ impl Session {
                 ip: String::new(),
                 generation,
                 h_group,
+                h_group_level: 0,
                 bot: false,
             },
             CancellationToken::new(),
@@ -148,6 +151,7 @@ impl Session {
                 generation: metadata.generation,
                 bot: metadata.bot,
                 h_group: AtomicBool::new(metadata.h_group),
+                h_group_level: AtomicU8::new(metadata.h_group_level),
                 blocks: std::sync::Mutex::default(),
                 inactive: AtomicBool::new(false),
                 closing: AtomicBool::new(false),
@@ -208,6 +212,14 @@ impl Session {
 
     pub fn set_h_group(&self, value: bool) {
         self.h_group.store(value, Ordering::Release);
+    }
+
+    pub fn h_group_level(&self) -> u8 {
+        self.h_group_level.load(Ordering::Acquire)
+    }
+
+    pub fn set_h_group_level(&self, value: u8) {
+        self.h_group_level.store(value, Ordering::Release);
     }
 
     pub fn inactive(&self) -> bool {
@@ -402,6 +414,7 @@ mod tests {
                 ip: "127.0.0.1".into(),
                 generation: 1,
                 h_group: false,
+                h_group_level: 0,
                 bot: false,
             },
             lost.clone(),

@@ -10,7 +10,7 @@ import {
 import { assertNotNull, eRange, iRange } from "complete-common";
 import { globals } from "../Globals";
 import * as chat from "../chat";
-import { PATH } from "../constants";
+import { H_GROUP_LEVEL_URL_PREFIX, PATH } from "../constants";
 import { DECK_PLAYS_ICON_STYLE, OptionIcons } from "../enums/OptionIcons";
 import * as tooltips from "../tooltips";
 import { escapeHtml, getHTMLElement, setBrowserAddressBarPath } from "../utils";
@@ -21,6 +21,9 @@ import { Screen } from "./types/Screen";
 
 const lobbyChatText = getHTMLElement("#lobby-chat-text");
 const lobbyChatPregameText = getHTMLElement("#lobby-chat-pregame-text");
+
+/** Removes the tooltips of the H-Group level badges, which are redrawn with the player boxes. */
+const removeBadgeTooltips: Array<() => void> = [];
 
 export function show(): void {
   lobbyPage.hide();
@@ -130,6 +133,9 @@ export function draw(): void {
   drawOptions();
 
   // Draw the player boxes.
+  for (const removeTooltip of removeBadgeTooltips.splice(0)) {
+    removeTooltip();
+  }
   for (const i of eRange(MAX_PLAYERS)) {
     const playerIndex = i as PlayerIndex;
     drawPlayerBox(playerIndex);
@@ -229,6 +235,10 @@ function drawPlayerBox(playerIndex: PlayerIndex) {
   const strong = $("<strong>");
   strong.append(span);
   const p = $("<p>").addClass("margin0 padding0p5").append(strong);
+  const hGroupLevelBadge = getHGroupLevelBadge(player.name);
+  if (hGroupLevelBadge !== undefined) {
+    p.append(hGroupLevelBadge);
+  }
   div.append(p);
 
   const variantStats = player.stats.variant;
@@ -318,6 +328,49 @@ function drawPlayerBox(playerIndex: PlayerIndex) {
 
   // Initialize the tooltip
   tooltips.create(`#lobby-pregame-player-${playerIndex + 1}-scores-icon`);
+}
+
+/**
+ * A link to the highest H-Group level that an online player chose, if they chose one and have the
+ * H-Group features enabled.
+ */
+function getHGroupLevelBadge(name: string) {
+  let hGroupLevel = 0;
+  for (const user of globals.userMap.values()) {
+    if (user.name === name && user.hGroup) {
+      ({ hGroupLevel } = user);
+    }
+  }
+  if (hGroupLevel === 0) {
+    return undefined;
+  }
+
+  const level = hGroupLevel.toString();
+  const badge = $("<a>")
+    .addClass("h-group-level-badge")
+    .attr({
+      href: `${H_GROUP_LEVEL_URL_PREFIX}${level}`,
+      target: "_blank",
+      rel: "noopener noreferrer",
+    })
+    .text(`Level ${level}`);
+  const removeTooltip = tooltips.attach(
+    badge[0]!,
+    `<span style="${tooltips.SMALL_TOOLTIP_TEXT_STYLE}">This player wants to play with H-Group conventions up to level ${level}.</span>`,
+  );
+  removeBadgeTooltips.push(removeTooltip);
+  return badge;
+}
+
+/** Redraws the pre-game screen when the H-Group level badge of a player at the table changes. */
+export function userChanged(name: string): void {
+  if (
+    globals.currentScreen === Screen.PreGame
+    && globals.game !== null
+    && globals.game.players.some((player) => player.name === name)
+  ) {
+    draw();
+  }
 }
 
 function getNameSpan(name: string) {

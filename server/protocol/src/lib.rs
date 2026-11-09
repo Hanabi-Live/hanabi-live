@@ -89,6 +89,8 @@ pub const MAX_TIME_BASE_SECONDS: i32 = 7 * SECONDS_PER_DAY;
 pub const MAX_TIME_PER_TURN_SECONDS: i64 = SECONDS_PER_DAY as i64;
 /// The loudest volume setting.
 pub const MAX_VOLUME: u8 = 100;
+/// The highest level of the H-Group convention guide's learning path.
+pub const MAX_H_GROUP_LEVEL: u8 = 25;
 /// The volume setting of a new user.
 pub const DEFAULT_VOLUME: u8 = MAX_VOLUME / 2;
 /// The starting clock that a new user's timed tables have, in minutes.
@@ -1418,6 +1420,9 @@ pub struct User {
     #[schemars(with = "TableId")]
     pub table_id: Option<TableId>,
     pub h_group: bool,
+    /// The highest H-Group level that this user wants to play at, or 0 if they did not choose one.
+    #[schemars(range(min = 0, max = MAX_H_GROUP_LEVEL))]
+    pub h_group_level: u8,
     pub bot: bool,
     pub inactive: bool,
 }
@@ -1505,6 +1510,9 @@ pub struct Settings {
     pub speedrun_preplay: bool,
     pub speedrun_mode: bool,
     pub h_group_conventions: bool,
+    /// The highest H-Group level that this user wants to play at, or 0 if they did not choose one.
+    #[schemars(range(min = 0, max = MAX_H_GROUP_LEVEL))]
+    pub h_group_level: u8,
     #[schemars(length(min = 1))]
     pub create_table_variant: String,
     pub create_table_timed: bool,
@@ -1540,6 +1548,7 @@ impl Default for Settings {
             speedrun_preplay: false,
             speedrun_mode: false,
             h_group_conventions: false,
+            h_group_level: 0,
             create_table_variant: DEFAULT_VARIANT_NAME.into(),
             create_table_timed: false,
             create_table_time_base_minutes: DEFAULT_TIME_BASE_MINUTES,

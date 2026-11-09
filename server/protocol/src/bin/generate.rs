@@ -644,6 +644,10 @@ fn data_constants() -> String {
     exported_constants(&[
         ("MAX_VOLUME", hanabi_protocol::MAX_VOLUME.to_string()),
         (
+            "MAX_H_GROUP_LEVEL",
+            hanabi_protocol::MAX_H_GROUP_LEVEL.to_string(),
+        ),
+        (
             "DEFAULT_PAGE_SIZE",
             hanabi_protocol::DEFAULT_PAGE_SIZE.to_string(),
         ),

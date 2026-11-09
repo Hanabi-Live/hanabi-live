@@ -41,6 +41,7 @@ function user(
     name,
     status,
     hGroup: false,
+    hGroupLevel: 0,
     bot: false,
     inactive: false,
     ...(status !== Status.Lobby && { tableID: TABLE_ID }),

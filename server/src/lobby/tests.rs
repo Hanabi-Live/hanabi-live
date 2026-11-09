@@ -126,6 +126,21 @@ async fn lobby_relationships_atomic_settings_and_parameterization_postgres() {
         serde_json::to_value(get_settings(&db.pool, a).await.unwrap()).unwrap()["hGroupConventions"],
         true
     );
+    let result = run(
+        &db.pool,
+        &who,
+        &[],
+        "setting",
+        json!({"name":"hGroupLevel","setting":"5"}),
+    )
+    .await;
+    assert!(matches!(result.as_slice(), [Effect::HGroupLevel(5)]));
+    let too_high = (hanabi_protocol::MAX_H_GROUP_LEVEL + 1).to_string();
+    assert!(
+        set_setting(&db.pool, a, "hGroupLevel", &too_high)
+            .await
+            .is_err()
+    );
     assert!(set_setting(&db.pool, a, "volume", "101").await.is_err());
     assert!(set_setting(&db.pool, a, "volume", "2.1").await.is_err());
     assert!(
