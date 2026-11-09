@@ -192,7 +192,7 @@ describe("hypothetical planning", () => {
     expect(state.turn.currentPlayerIndex).toBe(1);
   });
 
-  test("draws the bottom card before a failed discard and strike", () => {
+  test("draws the bottom card before a failed discard", () => {
     const base = makeBottomDeckContext();
     const context = {
       ...base,
@@ -215,7 +215,6 @@ describe("hypothetical planning", () => {
         rank: 2,
         failed: true,
       },
-      { type: "strike", num: 1, turn: 4, order: 2 },
       { type: "turn", num: 7, currentPlayerIndex: 1 },
     ]);
     const state = applyPlan(actions, context);
@@ -413,14 +412,14 @@ describe("hypothetical planning", () => {
     ).toBe("play");
   });
 
-  test("turns a misplay into a failed discard and strike", () => {
+  test("turns a misplay into a failed discard", () => {
     const actions = planHypotheticalAction(
       { type: "play", order: 0 as CardOrder },
       makeContext({
         cardIdentities: [{ suitIndex: 0, rank: 2 }],
       }),
     );
-    expect(actions?.slice(0, 2)).toEqual<unknown>([
+    expect(actions?.slice(0, 1)).toEqual<unknown>([
       {
         type: "discard",
         playerIndex: 0,
@@ -429,7 +428,6 @@ describe("hypothetical planning", () => {
         rank: 2,
         failed: true,
       },
-      { type: "strike", num: 1, turn: 4, order: 0 },
     ]);
   });
 
@@ -753,7 +751,10 @@ function playRedFour(
 }
 
 function isStrike(actions: readonly GameAction[] | null) {
-  return actions?.some((action) => action.type === "strike") === true;
+  return (
+    actions?.some((action) => action.type === "discard" && action.failed)
+    === true
+  );
 }
 
 describe("hypothetical plays on a morphed stack base", () => {

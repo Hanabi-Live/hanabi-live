@@ -356,16 +356,6 @@ export function planHypotheticalAction(
       });
     }
 
-    if (failed) {
-      actions.push({
-        type: "strike",
-        num: (gameState.strikes.length + 1) as 1 | 2 | 3,
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-        turn: gameState.turn.segment!,
-        order: intent.order,
-      });
-    }
-
     if (gameState.deck.length < context.cardIdentities.length) {
       const nextCardOrder = gameState.deck.length as CardOrder;
       const nextCard = context.cardIdentities[nextCardOrder];

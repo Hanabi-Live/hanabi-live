@@ -182,6 +182,15 @@ function gameReducerFunction(
         hand.splice(handIndex, 1);
       }
 
+      if (action.failed) {
+        // We intentionally do not validate the size of the strikes array because we allow more than
+        // 3 strikes in hypotheticals.
+        gameState.strikes.push({
+          order: action.order,
+          segment: gameState.turn.segment ?? 1,
+        });
+      }
+
       if (
         !throwItInAHolePlayedOrMisplayed(
           gameState,
@@ -454,38 +463,16 @@ function gameReducerFunction(
       break;
     }
 
-    /**
-     * A player failed to play a card.
-     *
-     * ```ts
-     * {
-     *   type: "strike",
-     *   num: 1,
-     *   turn: 32,
-     *   order: 24,
-     * }
-     * ```
-     */
-    // TODO: This message is unnecessary and will be removed in a future version of the code
-    case "strike": {
-      // We intentionally do not validate the size of the strikes array because we allow more than 3
-      // strikes in hypotheticals.
-      gameState.strikes.push({
-        order: action.order,
-        segment: gameState.turn.segment ?? 1,
-      });
-
-      break;
-    }
-
-    // Some actions do not affect the main state or are handled by another reducer.
+    // Some actions do not affect the main state or are handled by another reducer. (A failed
+    // discard records a strike.)
     case "setEffMod":
     case "editNote":
     case "noteList":
     case "noteListPlayer":
     case "receiveNote":
     case "turn":
-    case "cardIdentity": {
+    case "cardIdentity":
+    case "strike": {
       break;
     }
   }

@@ -195,7 +195,7 @@ export function loadGameJSON(gameJSON: JSONGame): State {
           s.deck,
         );
         if (!nextPlayableRanks.includes(jsonCard.rank)) {
-          // Send a discard and a strike.
+          // Send a failed discard.
           action = {
             type: "discard",
             playerIndex: a.playerIndex,
@@ -203,29 +203,6 @@ export function loadGameJSON(gameJSON: JSONGame): State {
             suitIndex: a.suitIndex,
             rank: a.rank,
             failed: true,
-          };
-          nextState = gameReducer(
-            s,
-            action,
-            false,
-            false,
-            false,
-            false,
-            state.metadata,
-          );
-
-          if (
-            shouldStoreSegment(nextState.turn.segment, s.turn.segment, action)
-            && nextState.turn.segment !== null
-          ) {
-            states[nextState.turn.segment] = nextState;
-          }
-
-          action = {
-            type: "strike",
-            num: nextState.strikes.length as 1 | 2 | 3,
-            order: a.order,
-            turn,
           };
         }
 

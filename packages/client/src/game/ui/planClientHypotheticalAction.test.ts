@@ -126,7 +126,7 @@ describe("client hypothetical planning", () => {
         context,
       );
       expect(actions).not.toBeNull();
-      expect(dispatch).toHaveBeenCalledTimes(rank === 1 ? 3 : 4);
+      expect(dispatch).toHaveBeenCalledTimes(3);
       for (const [index, action] of actions!.entries()) {
         expect(dispatch).toHaveBeenNthCalledWith(index + 1, {
           type: "hypoAction",
@@ -214,7 +214,7 @@ describe("client hypothetical planning", () => {
     expect(context.gameState.deck).toHaveLength(2);
   });
 
-  test("draws before a failed discard and strike without an existing UI card", () => {
+  test("draws before a failed discard without an existing UI card", () => {
     const context = makeContext(2);
     const actions = planClientHypotheticalAction(
       { type: "play", order: bottomOrder },
@@ -230,7 +230,6 @@ describe("client hypothetical planning", () => {
         rank: 2,
         failed: true,
       },
-      { type: "strike", num: 1, turn: 4, order: 2 },
       { type: "turn", num: 7, currentPlayerIndex: 1 },
     ]);
     const state = applyPlan(actions, context);

@@ -11,7 +11,6 @@ import type {
   ActionDiscard,
   ActionDraw,
   ActionPlay,
-  ActionStrike,
 } from "./types/gameActions";
 
 /** Helper functions to build a color `ActionClue` with a compact syntax. For use in tests. */
@@ -117,19 +116,5 @@ export function actionCardIdentity(
     order: order as CardOrder,
     suitIndex,
     rank,
-  };
-}
-
-/** Helper functions to build a `ActionStrike` with a compact syntax. For use in tests. */
-export function strike(
-  num: 1 | 2 | 3,
-  order: number, // We do not want to force the consumer to brand their numbers.
-  turn: number,
-): ActionStrike {
-  return {
-    type: "strike",
-    num,
-    order: order as CardOrder,
-    turn,
   };
 }

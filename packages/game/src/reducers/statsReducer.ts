@@ -54,10 +54,13 @@ function statsReducerFunction(
       break;
     }
 
-    case "strike": {
+    case "discard": {
       // A strike is equivalent to losing a clue. But do not reveal that a strike has happened to
       // players in an ongoing "Throw It in a Hole" game.
-      if (!variant.throwItInAHole || (!playing && !shadowing)) {
+      if (
+        action.failed
+        && (!variant.throwItInAHole || (!playing && !shadowing))
+      ) {
         statsState.potentialCluesLost += getDiscardClueTokenValue(variant);
       }
 
