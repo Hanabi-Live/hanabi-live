@@ -14,7 +14,10 @@
     },
     "lint": {
       "dependsOn": ["transit"],
-      "inputs": ["$TURBO_DEFAULT$", "$TURBO_ROOT$/scripts/lint/check-typescript.sh"],
+      "inputs": [
+        "$TURBO_DEFAULT$",
+        "$TURBO_ROOT$/scripts/lint/check-typescript.sh"
+      ],
       "outputs": []
     },
     "//#check-css": {
