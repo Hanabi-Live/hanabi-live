@@ -183,7 +183,19 @@ pub fn validate_client_version(version: &str, current: &str) -> Result<(), Strin
         return Ok(());
     }
     Err(format!(
-        "You are running an outdated version of the client code.<br />(You are on <strong>v{}</strong> and the latest is <strong>v{}</strong>.)<br />Please perform a <a href=\"https://www.getfilecloud.com/blog/2015/03/tech-tip-how-to-do-hard-refresh-in-browsers/\">hard-refresh</a> to get the latest version.<br />(Note that a hard-refresh is different from a normal refresh.)<br />On Windows, the hotkey for this is: <code>Ctrl + Shift + R</code><br />On MacOS, the hotkey for this is: <code>Command + Shift + R</code>",
+        concat!(
+            "You are running an outdated version of the client code.",
+            "<ul>",
+            "<li>You are on version: <strong>v{}</strong></li>",
+            "<li>The latest version is: <strong>v{}</strong></li>",
+            "</ul>",
+            "Please perform a <a href=\"https://www.getfilecloud.com/blog/2015/03/tech-tip-how-to-do-hard-refresh-in-browsers/\">hard-refresh</a> to get the latest version. ",
+            "(Note that a hard-refresh is different from a normal refresh.)",
+            "<ul>",
+            "<li>On Windows, the hotkey for this is: <code>Ctrl + Shift + R</code></li>",
+            "<li>On MacOS, the hotkey for this is: <code>Command + Shift + R</code></li>",
+            "</ul>",
+        ),
         escape_html(if version.is_empty() {
             "unknown"
         } else {
