@@ -287,6 +287,10 @@ listed here.
 
 - Added the "RGB Mix" variants.
 
+## February 9th, 2023
+
+- Pausing or unpausing a game plays a sound.
+
 ## February 1st, 2023
 
 - Added the "Valentine Mix" variants.
@@ -563,11 +567,17 @@ listed here.
 
 - Removed the `/here` chat command to ping Discord.
 
+## August 31st, 2020
+
+- The lobby plays a sound when the server shuts down or restarts.
+
 ## August 25th, 2020
 
 - Added the "Dark Prism" variants.
 - The timer now starts when the first player has loaded (instead of when the
   game has started).
+- Players with H-Group features enabled hear sounds for order chop moves and for
+  discards that cause or happen in a double discard situation.
 
 ## August 24th, 2020
 
@@ -599,6 +609,7 @@ listed here.
 ## July 29th, 2020
 
 - Added the `/missingscores` chat command.
+- Five and six blind-plays in a row each have their own sound.
 
 ## July 28th, 2020
 
@@ -852,12 +863,15 @@ listed here.
 
 - Added the "Alternating Clues" variants.
 - The variant can now be searched in the create game dialog.
+- Clues in Cow & Pig variants play moo and oink sounds.
 
 ## September 13th, 2019
 
 - Added the "Throw It in a Hole" variants.
 - Added the `/maintenance` chat command.
 - The turn can now be given in a replay URL.
+- Dropping a card where it cannot go, such as discarding at 8 clues, plays an
+  error sound.
 
 ## September 5th, 2019
 
@@ -948,6 +962,7 @@ listed here.
 
 - Added the `/replay` chat command.
 - History links are clickable.
+- Clues in Duck variants play a quack sound.
 
 ## March 26th, 2019
 
@@ -980,6 +995,7 @@ listed here.
 ## March 11th, 2019
 
 - Added a "Turns left" counter.
+- Added a "nooo" sound that the leader of a shared replay can play for everyone.
 
 ## February 24th, 2019
 
@@ -1003,9 +1019,22 @@ listed here.
 - Clicking a played card goes to the turn it was played.
 - The delete key deletes the hovered note.
 
+## February 8th, 2019
+
+- A game that ends with a perfect score plays its own sound.
+
 ## February 7th, 2019
 
 - Added a tutorial for new users.
+
+## February 1st, 2019
+
+- Added a "holy" sound that the leader of a shared replay can play for everyone.
+
+## January 30th, 2019
+
+- Two misplays in a row have their own sound.
+- A sound plays when a game ends, with a different one for a loss.
 
 ## January 25th, 2019
 
@@ -1089,6 +1118,10 @@ listed here.
 
 - Added the `/next` chat command to be pinged on Discord.
 
+## June 29th, 2018
+
+- Added a buzz sound that the leader of a shared replay can play for everyone.
+
 ## June 28th, 2018
 
 - Player names link to their profiles.
@@ -1096,6 +1129,7 @@ listed here.
 ## June 25th, 2018
 
 - Added idle table/game timeouts.
+- A sad sound plays when the maximum score decreases.
 
 ## June 21st, 2018
 
@@ -1123,6 +1157,10 @@ listed here.
 - The server was rewritten from Node.js to Go.
 - Added a new card back.
 - Players rejoin shared replays automatically.
+
+## January 7th, 2018
+
+- Two, three, and four blind-plays in a row each have their own sound.
 
 ## November 29th, 2017
 
@@ -1257,6 +1295,7 @@ listed here.
 ## July 9th, 2017
 
 - A sound plays when a player's timer runs low.
+- Blind-plays and misplays have their own sounds.
 
 ## July 7th, 2017
 
@@ -1265,7 +1304,9 @@ listed here.
 ## July 6th, 2017
 
 - Added the "Timed" table option.
+- A different sound plays when another player takes their turn.
 
 ## July 2nd, 2017
 
 - The initial release, based on Keldon's Hanabi server.
+- A sound plays when it is your turn.
