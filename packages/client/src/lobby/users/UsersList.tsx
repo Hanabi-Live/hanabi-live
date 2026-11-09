@@ -132,8 +132,16 @@ function BotIcon() {
   useEffect(() => tooltips.attach(ref.current!, BOT_TOOLTIP), []);
 
   return (
-    <span aria-label="Bot" ref={ref} role="img">
-      {ROBOT_EMOJI}
+    // The slot has the width of the other icons, which keeps the names aligned.
+    <span className="tw:inline-block tw:w-[0.75em]">
+      <span
+        aria-label="Bot"
+        className="tw:text-[0.7em] tw:leading-none"
+        ref={ref}
+        role="img"
+      >
+        {ROBOT_EMOJI}
+      </span>
     </span>
   );
 }
