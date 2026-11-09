@@ -431,8 +431,8 @@ impl Hub {
         ensure_or_reject!(self.current(session), "Stale session");
         for effect in effects {
             match effect {
-                Publication::Broadcast(message) => self.broadcast(&message.frame()),
-                Publication::ToSelf(message) => session.emit(&message.frame()),
+                Publication::Broadcast(message) => self.broadcast(message.frame()),
+                Publication::ToSelf(message) => session.emit(message.frame()),
                 Publication::ToUser {
                     id,
                     generation,
@@ -443,7 +443,7 @@ impl Hub {
                         .get(&id)
                         .filter(|p| p.session.generation == generation && p.session.active())
                     {
-                        p.session.emit(&message.frame());
+                        p.session.emit(message.frame());
                     }
                 }
                 Publication::HGroup(value) => {
@@ -611,7 +611,7 @@ impl Hub {
                     let result = self.store.check_state().map_err(CommandError::from);
                     if result.is_ok() {
                         for message in messages {
-                            self.broadcast(&message.frame());
+                            self.broadcast(message.frame());
                         }
                     }
                     let _ = reply.send(result);

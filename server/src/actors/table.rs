@@ -18,7 +18,7 @@ use crate::{
     },
     server_info::ServerInfo,
     store::Store,
-    transport::{Outgoing, Session, frame, stored_frame},
+    transport::{Outgoing, Session, frame},
 };
 use anyhow::{Context, Result};
 use chrono::Utc;
@@ -28,7 +28,6 @@ use hanabi_protocol::{
     UserId, Warning,
 };
 use serde::Serialize;
-use serde_json::json;
 use std::{
     collections::{BTreeMap, BTreeSet, HashMap, HashSet},
     sync::Arc,
@@ -244,9 +243,9 @@ impl TableActor {
         }
     }
     pub(super) fn add_outgoing(&self, e: &mut Effects, message: &Outgoing) {
-        let message = message.frame();
         for a in self.audience() {
-            e.messages.push((a.session.clone(), message.clone()));
+            e.messages
+                .push((a.session.clone(), message.frame().to_owned()));
         }
     }
     pub(super) fn spectating(&self, user: UserId) -> bool {
@@ -311,13 +310,18 @@ impl TableActor {
         let read = self.chat_read.get(&session.user).copied().unwrap_or(0);
         e.messages.push((
             session.clone(),
-            stored_frame(
+            frame(
                 hanabi_protocol::server::CHAT_LIST,
-                &json!({
-                    "list":self.table.chat.iter().map(TableChat::wire_message).collect::<Result<Vec<_>>>()?,
-                    "unread":self.table.chat.len().saturating_sub(read)
-                }),
-            )?,
+                hanabi_protocol::ChatList {
+                    list: self
+                        .table
+                        .chat
+                        .iter()
+                        .map(TableChat::wire_message)
+                        .collect::<Result<_>>()?,
+                    unread: i64::try_from(self.table.chat.len().saturating_sub(read))?,
+                },
+            ),
         ));
         Ok(())
     }

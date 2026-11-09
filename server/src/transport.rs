@@ -260,40 +260,27 @@ fn raw_frame(command: &str, data: impl Serialize) -> String {
     String::from_utf8(buffer).expect("JSON protocol frames are UTF-8")
 }
 
-/// Encodes JSON stored before payloads were typed, such as chat saved in a table checkpoint. It is
-/// checked against the message's schema first, so it cannot reach clients in another shape.
-pub fn stored_frame<T: hanabi_protocol::JsonSchema>(
-    message: hanabi_protocol::ServerMessage<T>,
-    data: &serde_json::Value,
-) -> anyhow::Result<String> {
-    hanabi_protocol::validate::<T>(data)?;
-    Ok(raw_frame(message.name(), data))
-}
-
-/// A registered server message waiting to be sent, such as a lobby command's reply.
+/// A registered server message waiting to be sent, such as a lobby command's reply, encoded once.
 #[derive(Clone, Debug)]
-pub struct Outgoing {
-    command: &'static str,
-    data: serde_json::Value,
-}
+pub struct Outgoing(String);
 
 impl Outgoing {
     pub fn new<T: Serialize>(message: hanabi_protocol::ServerMessage<T>, data: T) -> Self {
-        Self {
-            command: message.name(),
-            data: serde_json::to_value(data).expect("JSON-serializable protocol payload"),
-        }
+        Self(frame(message, data))
     }
     #[cfg(test)]
-    pub fn command(&self) -> &'static str {
-        self.command
+    pub fn command(&self) -> &str {
+        self.0
+            .split_once(' ')
+            .map_or(self.0.as_str(), |(command, _)| command)
     }
     #[cfg(test)]
-    pub fn data(&self) -> &serde_json::Value {
-        &self.data
+    pub fn data(&self) -> serde_json::Value {
+        let (_, data) = self.0.split_once(' ').expect("frames have a payload");
+        serde_json::from_str(data).expect("frames hold JSON")
     }
-    pub fn frame(&self) -> String {
-        raw_frame(self.command, &self.data)
+    pub fn frame(&self) -> &str {
+        &self.0
     }
 }
 
