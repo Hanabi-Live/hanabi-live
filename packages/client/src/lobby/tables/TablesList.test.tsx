@@ -24,6 +24,8 @@ vi.mock("./tableActions", () => ({
   tableSpectate: vi.fn(),
 }));
 const { tableJoin, tableSpectate } = await import("./tableActions");
+vi.mock("../createGame", () => ({ show: vi.fn() }));
+const createGame = await import("../createGame");
 
 const ROW_HEIGHT = 20;
 
@@ -93,10 +95,12 @@ afterEach(() => {
 });
 
 describe("TablesList", () => {
-  test("says when there are no tables", () => {
+  test("offers to create a game when there are no tables", () => {
     renderList();
 
-    expect(screen.getByText("No current games.")).toBeDefined();
+    expect(screen.getByText("No one is playing right now.")).toBeDefined();
+    fireEvent.click(screen.getByRole("button", { name: "New Game" }));
+    expect(createGame.show).toHaveBeenCalledOnce();
     expect(screen.queryByRole("table")).toBeNull();
   });
 

@@ -9,6 +9,7 @@ of the repository.
 
 ## November 9th, 2026
 
+- When there are no games, the lobby now shows a "New Game" button.
 - Bot accounts (those that connect with the "bot" client version) can now play
   at more than one table at a time. Accounts named "Bot-..." are now marked as
   bots.
