@@ -261,7 +261,9 @@ pub(crate) async fn insert(
     }
     let participants = sqlx::query!(
         "INSERT INTO game_participants(game_id,user_id,seat,character_assignment,character_metadata)
-         SELECT $1,* FROM UNNEST($2::integer[],$3::smallint[],$4::smallint[],$5::smallint[])
+         SELECT $1,p.user_id,p.seat,p.assignment,p.metadata
+         FROM UNNEST($2::integer[],$3::smallint[],$4::smallint[],$5::smallint[])
+         AS p(user_id,seat,assignment,metadata)
          RETURNING id,seat",
         s.game_id,
         &users,
@@ -285,7 +287,8 @@ pub(crate) async fn insert(
     }
     sqlx::query!(
         "INSERT INTO game_participant_notes(game_participant_id,card_order,note)
-         SELECT * FROM UNNEST($1::integer[],$2::smallint[],$3::text[])",
+         SELECT n.participant,n.card_order,n.note
+         FROM UNNEST($1::integer[],$2::smallint[],$3::text[]) AS n(participant,card_order,note)",
         &note_participants,
         &note_orders,
         &notes as &[&str]
@@ -318,7 +321,7 @@ pub(crate) async fn insert(
         .map(|tag| tag.tag.as_str())
         .collect::<Vec<_>>();
     sqlx::query!(
-        "INSERT INTO game_tags(game_id,user_id,tag) SELECT $1,* FROM UNNEST($2::integer[],$3::text[])",
+        "INSERT INTO game_tags(game_id,user_id,tag) SELECT $1,t.user_id,t.tag FROM UNNEST($2::integer[],$3::text[]) AS t(user_id,tag)",
         s.game_id,
         &tag_users,
         &tags as &[&str]

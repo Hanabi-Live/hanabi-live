@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "INSERT INTO game_participants(game_id,user_id,seat,character_assignment,character_metadata)\n         SELECT $1,* FROM UNNEST($2::integer[],$3::smallint[],$4::smallint[],$5::smallint[])\n         RETURNING id,seat",
+  "query": "INSERT INTO game_participants(game_id,user_id,seat,character_assignment,character_metadata)\n         SELECT $1,p.user_id,p.seat,p.assignment,p.metadata\n         FROM UNNEST($2::integer[],$3::smallint[],$4::smallint[],$5::smallint[])\n         AS p(user_id,seat,assignment,metadata)\n         RETURNING id,seat",
   "describe": {
     "columns": [
       {
@@ -40,5 +40,5 @@
       false
     ]
   },
-  "hash": "1f9289e2ac907d6a876105ea58511fdb9039ef5889b3b10a93c15db86eeb336b"
+  "hash": "5eeb7aaa7dbed747f3f876982f3a909fe31c4f2c429ee9cd9f6f69c0c7565cb2"
 }

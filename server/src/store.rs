@@ -439,8 +439,9 @@ async fn archive_chat(
     }
     sqlx::query!(
         "INSERT INTO chat_log(id,user_id,message,room,source,datetime_sent)
-         SELECT * FROM UNNEST($1::integer[],$2::integer[],$3::text[],$4::text[],$5::text[],
-                              $6::timestamptz[])",
+         SELECT c.id,c.user_id,c.message,c.room,c.source,c.sent
+         FROM UNNEST($1::integer[],$2::integer[],$3::text[],$4::text[],$5::text[],
+                     $6::timestamptz[]) AS c(id,user_id,message,room,source,sent)",
         &ids,
         &users,
         &messages,

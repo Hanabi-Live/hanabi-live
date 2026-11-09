@@ -1,0 +1,16 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO game_participant_notes(game_participant_id,card_order,note)\n         SELECT n.participant,n.card_order,n.note\n         FROM UNNEST($1::integer[],$2::smallint[],$3::text[]) AS n(participant,card_order,note)",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Int4Array",
+        "Int2Array",
+        "TextArray"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "94d23c8b3ebdbca84d81b9a82c95a9325120f2e2125d78e1a6e4667e9fe0addc"
+}

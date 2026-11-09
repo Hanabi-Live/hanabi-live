@@ -1,0 +1,19 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO chat_log(id,user_id,message,room,source,datetime_sent)\n         SELECT c.id,c.user_id,c.message,c.room,c.source,c.sent\n         FROM UNNEST($1::integer[],$2::integer[],$3::text[],$4::text[],$5::text[],\n                     $6::timestamptz[]) AS c(id,user_id,message,room,source,sent)",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Int4Array",
+        "Int4Array",
+        "TextArray",
+        "TextArray",
+        "TextArray",
+        "TimestamptzArray"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "338d15f93a42d99a3490d475412a5d671396373770267815c8f519c2e916393e"
+}
