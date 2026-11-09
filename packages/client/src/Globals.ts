@@ -1,11 +1,12 @@
 // These are exported global variables to be shared between all of the TypeScript code.
 
-import type { GameHistory, ServerCommandData, UserID } from "@hanabi-live/data";
+import type { ServerCommandData, UserID } from "@hanabi-live/data";
 import { defaultSettings } from "@hanabi-live/data";
 import type { Connection } from "./Connection";
 import type { Loader } from "./Loader";
 import { NO_TABLE_ID, NO_USER_ID } from "./constants";
 import type { HanabiUI } from "./game/ui/HanabiUI";
+import { totalGamesChanged } from "./lobby/gameHistory/historySlice";
 import type { Table } from "./lobby/tables/tablesSlice";
 import { selectTable, selectTables } from "./lobby/tables/tablesSlice";
 import type { Screen } from "./lobby/types/Screen";
@@ -23,7 +24,6 @@ export class Globals {
   // ----------------------------------------
 
   userID = NO_USER_ID;
-  totalGames: number | null = null;
   muted = false;
 
   /** Contains the settings for the "Settings" modal and the "Create Game" screen. */
@@ -61,6 +61,15 @@ export class Globals {
     store.dispatch(screenChanged(screen));
   }
 
+  /** From the "welcome" and "lobbyStatus" messages. */
+  get totalGames(): number | null {
+    return store.getState().history.totalGames;
+  }
+
+  set totalGames(totalGames: number | null) {
+    store.dispatch(totalGamesChanged(totalGames));
+  }
+
   /** From the "tableList", "table", and "tableGone" messages. */
   get tables(): readonly Table[] {
     return selectTables(store.getState());
@@ -78,9 +87,6 @@ export class Globals {
 
   /** Keys are IDs. */
   userMap = new Map<UserID, ServerCommandData["user"]>();
-
-  /** Keys are IDs. */
-  history = new Map<number, GameHistory>();
 
   /** Keys are IDs. */
 

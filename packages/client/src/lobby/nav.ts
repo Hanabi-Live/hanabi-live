@@ -219,8 +219,10 @@ export function init(): void {
     history.hide();
   });
 
-  // The "Return to History" button from the "History Details" screen. This is initialized in the
-  // "history.drawOtherScores()" function.
+  // The "Return to History" button (from the "Other Scores" screen).
+  $("#nav-buttons-history-other-scores-return").on("click", () => {
+    history.hideOtherScores();
+  });
 }
 
 /** Shows or hides the lobby's tables, chat, and online users, which full-page screens replace. */

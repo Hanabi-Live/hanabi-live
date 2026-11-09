@@ -173,7 +173,6 @@
             class="button"
             rel="noopener noreferrer"
           >
-            <!-- The correct link is set in "lobby/history.ts" -->
             <i class="fas fa-search-plus nav-icon"></i>
             View seed data
           </a>
@@ -815,57 +814,7 @@
     <div class="row lobby-full">
       <div class="col-12">
         <!-- The history table (all played games) -->
-        <section id="lobby-history" class="box">
-          <h3 id="lobby-history-no" class="align-center"></h3>
-          <div
-            id="lobby-history-table-container"
-            class="hidden lobby-table-container"
-          >
-            <table class="alt">
-              <thead>
-                <tr>
-                  <th>Game ID</th>
-                  <th># of Players</th>
-                  <th>Score</th>
-                  <th>Variant</th>
-                  <th>Options</th>
-                  <th id="lobby-history-table-players">Other Players</th>
-                  <th>Date Played</th>
-                  <th>Watch Replay</th>
-                  <th>Share Replay</th>
-                  <th>Other Scores</th>
-                </tr>
-              </thead>
-              <tbody id="lobby-history-table-tbody"></tbody>
-            </table>
-
-            <div class="align-center">
-              <button
-                id="lobby-history-show-more"
-                class="button align-center"
-                style="margin-right: 2em"
-                type="submit"
-              >
-                <i class="fas fa-chevron-circle-down icon-label"></i>Show More
-                History
-              </button>
-              <a
-                id="lobby-history-show-all"
-                href="/history"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                <!-- The correct link is set in "lobby/websocketInit.ts" -->
-                <button
-                  id="lobby-history-show-all-button"
-                  class="button align-center"
-                >
-                  <i class="fas fa-history icon-label"></i>All History
-                </button>
-              </a>
-            </div>
-          </div>
-        </section>
+        <section id="lobby-history" class="box"></section>
 
         <!-- The form to create a new game or change the options of the current one -->
         <section id="lobby-create-game" class="box lobby-page hidden">
@@ -1684,25 +1633,7 @@
         </section>
 
         <!-- The other scores table (all games on a specific seed) -->
-        <section id="lobby-history-other-scores" class="box hidden">
-          <div class="lobby-table-container">
-            <table class="alt">
-              <thead>
-                <tr>
-                  <th>Game ID</th>
-                  <th>Score</th>
-                  <th>Options</th>
-                  <th>Players</th>
-                  <th>Date Played</th>
-                  <th>Seed</th>
-                  <th>Watch Replay</th>
-                  <th>Share Replay</th>
-                </tr>
-              </thead>
-              <tbody id="lobby-history-other-scores-table-tbody"></tbody>
-            </table>
-          </div>
-        </section>
+        <section id="lobby-history-other-scores" class="box hidden"></section>
       </div>
     </div>
   </div>

@@ -5,7 +5,7 @@ import { replayImportSchema, tableIdSchema } from "@hanabi-live/data";
 
 vi.mock("./history", () => ({
   show: vi.fn(),
-  showOtherScoresFromURL: vi.fn(),
+  showOtherScores: vi.fn(),
 }));
 vi.mock("../Globals", () => ({
   globals: { conn: { send: vi.fn() } },
@@ -103,7 +103,7 @@ describe("replay URL loading", () => {
 
   test("restores the other scores history route", () => {
     const show = vi.spyOn(history, "show");
-    const showOtherScores = vi.spyOn(history, "showOtherScoresFromURL");
+    const showOtherScores = vi.spyOn(history, "showOtherScores");
     const url = "https://hanab.live/lobby#history-other-scores-p4v0s1";
     Object.defineProperty(globalThis, "location", {
       configurable: true,

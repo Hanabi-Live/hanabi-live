@@ -11,7 +11,10 @@ import * as sounds from "../sounds";
 import { store } from "../store";
 import * as theme from "../theme";
 import { toSoundType } from "../wire";
-import * as history from "./history";
+import {
+  historyReceived,
+  otherScoresReceived,
+} from "./gameHistory/historySlice";
 import * as lobbyLogin from "./login";
 import * as playerSettings from "./playerSettings";
 import * as pregame from "./pregame";
@@ -100,33 +103,19 @@ lobbyCommands.set("game", (data) => {
 lobbyCommands.set("gameHistory", (dataArray) => {
   // `data` will be an array of all of the games that we have previously played.
   for (const data of dataArray) {
-    globals.history.set(data.id, data);
-
     if (data.incrementNumGames && globals.totalGames !== null) {
       globals.totalGames++;
     }
   }
+  store.dispatch(historyReceived(dataArray));
 
-  // Only redraw the screen that requested this page; late responses must not switch views.
-  if (globals.currentScreen === Screen.History) {
-    history.draw();
-  }
-
-  const shownGames = globals.history.size;
-  $("#nav-buttons-history-shown-games").html(shownGames.toString());
   $("#nav-buttons-history-total-games").text(
     globals.totalGames?.toString() ?? "loading...",
   );
-  if (
-    globals.currentScreen === Screen.History
-    && shownGames === globals.totalGames
-  ) {
-    $("#lobby-history-show-more").hide();
-  }
 });
 
 lobbyCommands.set("gameHistoryOtherScores", (data) => {
-  history.drawOtherScores(data.games, data.variantName, data.seed);
+  store.dispatch(otherScoresReceived(data));
 });
 
 lobbyCommands.set("joined", (data) => {

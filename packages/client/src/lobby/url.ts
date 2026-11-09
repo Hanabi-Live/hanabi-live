@@ -258,7 +258,7 @@ function restoreLobbyHistoryView(): boolean {
   const seed = getOtherScoresSeed(globalThis.location.hash);
   if (seed !== undefined) {
     history.show(false);
-    history.showOtherScoresFromURL(seed);
+    history.showOtherScores(seed);
     return true;
   }
 

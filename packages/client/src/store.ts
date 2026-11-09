@@ -1,11 +1,13 @@
 import { configureStore } from "@reduxjs/toolkit";
 import { useSelector } from "react-redux";
+import { historyReducer } from "./lobby/gameHistory/historySlice";
 import { tablesReducer } from "./lobby/tables/tablesSlice";
 import { usersReducer } from "./lobby/users/usersSlice";
 import { sessionReducer } from "./sessionSlice";
 
 export const store = configureStore({
   reducer: {
+    history: historyReducer,
     session: sessionReducer,
     tables: tablesReducer,
     users: usersReducer,

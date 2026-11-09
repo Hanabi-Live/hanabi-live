@@ -12,6 +12,7 @@ import * as gameChat from "./game/chat";
 import * as game from "./game/main";
 import { backToLobby } from "./game/ui/backToLobby";
 import * as lobbyCreateGame from "./lobby/createGame";
+import { mountHistoryLists } from "./lobby/gameHistory/mountHistoryLists";
 import * as lobbyHistory from "./lobby/history";
 import { getOtherScoresSeed } from "./lobby/historyHash";
 import { lobbyIdleInit } from "./lobby/lobbyIdleInit";
@@ -73,7 +74,7 @@ $(document).ready(() => {
       lobbyHistory.show();
       const seed = getOtherScoresSeed(hash);
       if (seed !== undefined) {
-        lobbyHistory.showOtherScoresFromURL(seed);
+        lobbyHistory.showOtherScores(seed);
       }
     } else if (
       globals.currentScreen === Screen.History
@@ -97,11 +98,11 @@ $(document).ready(() => {
   gameChat.init();
   tooltips.initGame();
   lobbyCreateGame.init();
-  lobbyHistory.init();
   lobbyIdleInit();
   lobbyKeyboardInit();
   lobbyLogin.init();
   lobbyNav.init();
+  mountHistoryLists();
   mountTablesList();
   mountUsersList();
   playerSettings.init();
