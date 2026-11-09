@@ -63,15 +63,6 @@ const LARGE_ICON_Y = 0.2 * CARD_H;
 /** The size of the trash can drawn over a card that can no longer be played. */
 const TRASHCAN_SIZE = { w: 0.7 * CARD_W, h: 0.6 * CARD_H } as const;
 
-/** The radial gradient that fills a pip of a suit with several colors, in the pip's units. */
-const MULTI_FILL_PIP_GRADIENT = {
-  center: { x: 75, y: 140 },
-  radius: 71,
-} as const;
-
-/** The fraction of the gradient's radius that is filled with its first color. */
-const MULTI_FILL_PIP_GRADIENT_INNER_STOP = 0.3;
-
 export function image(getBareName: () => string): Konva.Image {
   // Create the "bare" card image, which is the main card graphic. If the card is not revealed, it
   // will just be a gray rounded rectangle. The pips and other elements of a card are drawn on top
@@ -293,27 +284,13 @@ function makeCachedPips(variant: Variant) {
       x: -position.x,
       y: -position.y,
     };
-    let { fill } = suit;
-    if (suit.fill === "multi") {
-      fill = "";
-    }
 
-    const suitPip = getNewColorPip(
-      x,
-      y,
-      scale,
-      offset,
-      fill,
-      suit,
-      variant,
-      false,
-    );
+    const suitPip = getNewColorPip(x, y, scale, offset, suit, variant, false);
     const suitPipPositive = getNewColorPip(
       x,
       y,
       scale,
       offset,
-      fill,
       suit,
       variant,
       true,
@@ -783,17 +760,15 @@ function getNewColorPip(
   y: number,
   scale: { x: number; y: number },
   offset: { x: number; y: number },
-  fill: string,
   suit: Suit,
   variant: Variant,
   isPositive: boolean,
 ): Konva.Shape {
-  const suitPip = new Konva.Shape({
+  return new Konva.Shape({
     x,
     y,
     scale,
     offset,
-    fill,
     stroke: "black",
     strokeWidth: SUIT_PIP_STROKE_WIDTH,
     sceneFunc: (ctx: KonvaContext.Context) => {
@@ -809,22 +784,4 @@ function getNewColorPip(
     },
     listening: false,
   });
-
-  if (suit.fill === "multi") {
-    // Spread the colors evenly from the inner stop to the edge.
-    const lastIndex = suit.fillColors.length - 1;
-    suitPip.fillRadialGradientColorStops(
-      suit.fillColors.flatMap((color, i) => [
-        MULTI_FILL_PIP_GRADIENT_INNER_STOP
-          + ((1 - MULTI_FILL_PIP_GRADIENT_INNER_STOP) * i) / lastIndex,
-        color,
-      ]),
-    );
-    suitPip.fillRadialGradientStartPoint(MULTI_FILL_PIP_GRADIENT.center);
-    suitPip.fillRadialGradientEndPoint(MULTI_FILL_PIP_GRADIENT.center);
-    suitPip.fillRadialGradientStartRadius(0);
-    suitPip.fillRadialGradientEndRadius(MULTI_FILL_PIP_GRADIENT.radius);
-  }
-
-  return suitPip;
 }
