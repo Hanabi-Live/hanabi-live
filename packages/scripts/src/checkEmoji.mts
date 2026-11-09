@@ -1,6 +1,7 @@
-// Checks that each emote list in "emotes.json" matches the images in its directory, and that the
-// Twitch and BetterTTV directories hold exactly the global emotes of those services, each showing
-// the same pixels as the PNG that the service serves. It exits with an error if any check fails.
+// Checks that "emojis.json" and "emotes.json" are in alphabetical order, that each emote list in
+// "emotes.json" matches the images in its directory, and that the Twitch and BetterTTV directories
+// hold exactly the global emotes of those services, each showing the same pixels as the PNG that
+// the service serves. It exits with an error if any check fails.
 
 import { CHAT_EMOTES, CHAT_SPECIAL_EMOTES } from "@hanabi-live/data";
 import type { DecodedPng } from "fast-png";
@@ -17,6 +18,11 @@ const TIMEOUT_MS = 30_000;
 const REPO_ROOT = path.resolve(import.meta.dirname, "..", "..", "..");
 const EMOTES_DIR = path.join(REPO_ROOT, "public", "img", "emotes");
 const EMOTE_EXTENSION = ".png";
+const JSON_DIR = path.join(REPO_ROOT, "packages", "data", "src", "json");
+const EMOJIS_JSON_PATH = path.join(JSON_DIR, "emojis.json");
+const EMOTES_JSON_PATH = path.join(JSON_DIR, "emotes.json");
+/** A key of the root object, which Prettier indents by two spaces. */
+const ROOT_KEY = /^ {2}("(?:[^"\\]|\\.)*"):/gmu;
 /** Chat matches emotes at word boundaries, so it cannot match other codes (such as ":)"). */
 const MATCHABLE_CODE = /^\w+$/u;
 const RGBA_CHANNELS = 4;
@@ -62,11 +68,28 @@ const SERVICES = [
 const specialEmotePaths: ReadonlyMap<string, string> = new Map(
   Object.entries(CHAT_SPECIAL_EMOTES),
 );
+const orderFailures = [
+  checkAlphabetical(
+    'The keys of "emojis.json"',
+    await readRootKeys(EMOJIS_JSON_PATH),
+  ),
+  checkAlphabetical(
+    'The keys of "emotes.json"',
+    await readRootKeys(EMOTES_JSON_PATH),
+  ),
+  ...Object.entries(CHAT_EMOTES).map(([category, emotes]) =>
+    checkAlphabetical(`The "${category}" list in "emotes.json"`, emotes),
+  ),
+].filter((failure) => failure !== undefined);
 const directoryFailures = await checkDirectories();
 const serviceFailures = await Promise.all(
   SERVICES.map(async (service) => await checkService(service)),
 );
-const failures = [...directoryFailures, ...serviceFailures.flat()];
+const failures = [
+  ...orderFailures,
+  ...directoryFailures,
+  ...serviceFailures.flat(),
+];
 
 if (failures.length > 0) {
   for (const failure of failures) {
@@ -77,8 +100,59 @@ if (failures.length > 0) {
 }
 
 console.log(
-  "Every emote list matches its directory, and the Twitch and BetterTTV emotes match their global emotes.",
+  "The emoji and emotes are in alphabetical order, every emote list matches its directory, and the Twitch and BetterTTV emotes match their global emotes.",
 );
+
+/**
+ * Checks that names are in case-insensitive alphabetical order, with names that differ only in case
+ * in code point order, and that none repeat.
+ */
+function checkAlphabetical(
+  description: string,
+  names: readonly string[],
+): string | undefined {
+  for (const [i, name] of names.entries()) {
+    const previous = names[i - 1];
+    if (previous !== undefined && compareAlphabetically(previous, name) >= 0) {
+      return `${description} must be in alphabetical order, but "${previous}" is before "${name}".`;
+    }
+  }
+
+  return undefined;
+}
+
+/**
+ * Reads the keys of a JSON file's root object in the order of the file. (A parsed object lists
+ * integer-like keys, such as "100", first.)
+ */
+async function readRootKeys(filePath: string): Promise<readonly string[]> {
+  const text = await Bun.file(filePath).text();
+  const keys = Array.from(text.matchAll(ROOT_KEY), (match) => {
+    const key: unknown = JSON.parse(match[1] ?? "");
+    if (typeof key !== "string") {
+      throw new TypeError(`Failed to parse a key in "${filePath}".`);
+    }
+    return key;
+  });
+  const parsed = JSON.parse(text) as object;
+  if (keys.length !== Object.keys(parsed).length) {
+    throw new Error(`Failed to find every root key in "${filePath}".`);
+  }
+
+  return keys;
+}
+
+function compareAlphabetically(a: string, b: string): number {
+  const caseInsensitive = compareCodePoints(a.toLowerCase(), b.toLowerCase());
+  return caseInsensitive === 0 ? compareCodePoints(a, b) : caseInsensitive;
+}
+
+function compareCodePoints(a: string, b: string): number {
+  if (a < b) {
+    return -1;
+  }
+  return a > b ? 1 : 0;
+}
 
 /** Checks that each list in "emotes.json" has exactly the images in its directory. */
 async function checkDirectories(): Promise<readonly string[]> {
