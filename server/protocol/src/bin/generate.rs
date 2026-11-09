@@ -681,7 +681,7 @@ fn exported_constants(constants: &[(&str, String)]) -> String {
     output
 }
 
-/// The protocol's limits that the game library exports under the same names.
+/// The protocol's constants that the game library exports under the same names.
 fn game_library_constants() -> String {
     exported_constants(&[
         ("MIN_PLAYERS", hanabi_protocol::MIN_PLAYERS.to_string()),
@@ -695,6 +695,17 @@ fn game_library_constants() -> String {
         ("MAX_SUITS", hanabi_protocol::MAX_SUITS.to_string()),
         ("MAX_DECK_SIZE", hanabi_protocol::MAX_DECK_SIZE.to_string()),
         ("MIN_RANK", hanabi_protocol::MIN_RANK.to_string()),
+        ("MAX_RANK", hanabi_protocol::MAX_RANK.to_string()),
+        (
+            "DEFAULT_CARD_RANKS",
+            format!(
+                "{} as const",
+                serde_json::to_string(
+                    &(hanabi_protocol::MIN_RANK..=hanabi_protocol::MAX_RANK).collect::<Vec<_>>()
+                )
+                .expect("a list of ranks serializes")
+            ),
+        ),
         (
             "START_CARD_RANK",
             hanabi_protocol::START_CARD_RANK.to_string(),

@@ -1,5 +1,9 @@
 import { ReadonlySet } from "complete-common";
-import { START_CARD_RANK } from "./generated/protocol";
+import {
+  DEFAULT_CARD_RANKS,
+  MAX_RANK,
+  START_CARD_RANK,
+} from "./generated/protocol";
 
 /** The suit used to draw cards whose suit is not known. */
 export const UNKNOWN_SUIT_NAME = "Unknown";
@@ -8,9 +12,10 @@ export const BLACK_SUIT_NAME = "Black";
 export const OMNI_SUIT_NAME = "Omni";
 export const DARK_OMNI_SUIT_NAME = "Dark Omni";
 
-export const DEFAULT_CARD_RANKS = [1, 2, 3, 4, 5] as const;
 export const ALL_CARD_RANKS = [...DEFAULT_CARD_RANKS, START_CARD_RANK] as const;
-export const DEFAULT_CLUE_RANKS = [1, 2, 3, 4, 5] as const;
+
+/** Rank clues name the normal ranks. */
+export const DEFAULT_CLUE_RANKS = DEFAULT_CARD_RANKS;
 
 /** The odd ranks, which the odd rank clue touches in an Odds and Evens variant. */
 export const ODD_CARD_RANKS: ReadonlyArray<
@@ -26,7 +31,7 @@ export const EVEN_CARD_RANKS: ReadonlyArray<
  * The amount of cards that need to be played on a play stack in order for it to be considered
  * finished. In a no variant game, this is 5 because we need to play 1, 2, 3, 4, and 5.
  */
-export const DEFAULT_FINISHED_STACK_LENGTH = 5;
+export const DEFAULT_FINISHED_STACK_LENGTH = MAX_RANK;
 
 /** The valid amount of players that can be in a game. */
 export const VALID_NUM_PLAYERS = [2, 3, 4, 5, 6] as const;

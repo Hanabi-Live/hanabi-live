@@ -1,12 +1,8 @@
 import { assertDefined, parseIntSafe } from "complete-common";
 import { getUppercaseSuitAbbreviationsForVariant } from "./abbreviations";
-import {
-  DEFAULT_CARD_RANKS,
-  DEFAULT_CLUE_RANKS,
-  DEFAULT_FINISHED_STACK_LENGTH,
-} from "./constants";
+import { DEFAULT_CLUE_RANKS, DEFAULT_FINISHED_STACK_LENGTH } from "./constants";
 import { Pip } from "./enums/Pip";
-import { START_CARD_RANK } from "./generated/protocol";
+import { DEFAULT_CARD_RANKS, START_CARD_RANK } from "./generated/protocol";
 import type { Color } from "./interfaces/Color";
 import type { Suit } from "./interfaces/Suit";
 import type { Variant } from "./interfaces/Variant";
