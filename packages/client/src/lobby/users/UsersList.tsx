@@ -11,8 +11,7 @@ import { Screen } from "../types/Screen";
 import type { UserRow } from "./usersSlice";
 import { selectUserCount, selectUserRows } from "./usersSlice";
 
-const HYPHENATED_TOOLTIP =
-  '<span style="font-size: 0.75em;">This person is a self-identified member of the Hyphenated group.</span>';
+const HYPHENATED_TOOLTIP = `<span style="${tooltips.SMALL_TOOLTIP_TEXT_STYLE}">This person is a self-identified member of the Hyphenated group.</span>`;
 
 const SLEEPING_EMOJI = "\u{1F4A4}";
 

@@ -18,7 +18,10 @@ import { Screen } from "../types/Screen";
 import { OnlineUserCount, UsersList } from "./UsersList";
 import { userInactiveChanged, usersCleared, usersListed } from "./usersSlice";
 
-vi.mock("../../tooltips", () => ({ attach: vi.fn() }));
+vi.mock("../../tooltips", () => ({
+  attach: vi.fn(),
+  SMALL_TOOLTIP_TEXT_STYLE: "",
+}));
 vi.mock("../tablesDraw", () => ({
   tableJoin: vi.fn(),
   tableSpectate: vi.fn(),

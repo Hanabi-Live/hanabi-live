@@ -44,6 +44,12 @@ const SIDE_NAME_FRAME_W = 0.12;
  */
 const RIGHT_SIDE_NAME_FRAME_OFFSET_X = 0.111;
 
+/**
+ * In the Keldon layout for 5 and 6 players, the gap between a hand and the name frame below it, in
+ * fractions of the stage height.
+ */
+const KELDON_NAME_FRAME_GAP_Y = 0.02;
+
 /** The top of our own hand at the bottom of the board in Keldon mode. */
 const KELDON_BOTTOM_HAND_Y = 0.77;
 
@@ -254,7 +260,7 @@ export function drawHands(winW: number, winH: number): void {
   namePos[5] = [
     {
       x: handPos[5][0]!.x - NAME_FRAME_INSET_X,
-      y: handPos[5][0]!.y + handPos[5][1]!.h + 0.02,
+      y: handPos[5][0]!.y + handPos[5][1]!.h + KELDON_NAME_FRAME_GAP_Y,
       w: handPos[5][0]!.w + NAME_FRAME_INSET_X * 2,
       h: namePosValues.h,
     },
@@ -286,7 +292,7 @@ export function drawHands(winW: number, winH: number): void {
   namePos[6] = [
     {
       x: handPos[6][0]!.x - NAME_FRAME_INSET_X,
-      y: handPos[6][0]!.y + handPos[6][1]!.h + 0.02,
+      y: handPos[6][0]!.y + handPos[6][1]!.h + KELDON_NAME_FRAME_GAP_Y,
       w: handPos[6][0]!.w + NAME_FRAME_INSET_X * 2,
       h: namePosValues.h,
     },
@@ -298,19 +304,19 @@ export function drawHands(winW: number, winH: number): void {
     },
     {
       x: handPos[6][2]!.x - NAME_FRAME_INSET_X,
-      y: handPos[6][2]!.y + handPos[6][2]!.h + 0.02,
+      y: handPos[6][2]!.y + handPos[6][2]!.h + KELDON_NAME_FRAME_GAP_Y,
       w: handPos[6][2]!.w + NAME_FRAME_INSET_X * 2,
       h: namePosValues.h,
     },
     {
       x: handPos[6][3]!.x - NAME_FRAME_INSET_X,
-      y: handPos[6][3]!.y + handPos[6][3]!.h + 0.02,
+      y: handPos[6][3]!.y + handPos[6][3]!.h + KELDON_NAME_FRAME_GAP_Y,
       w: handPos[6][3]!.w + NAME_FRAME_INSET_X * 2,
       h: namePosValues.h,
     },
     {
       x: handPos[6][4]!.x - NAME_FRAME_INSET_X,
-      y: handPos[6][4]!.y + handPos[6][4]!.h + 0.02,
+      y: handPos[6][4]!.y + handPos[6][4]!.h + KELDON_NAME_FRAME_GAP_Y,
       w: handPos[6][4]!.w + NAME_FRAME_INSET_X * 2,
       h: namePosValues.h,
     },

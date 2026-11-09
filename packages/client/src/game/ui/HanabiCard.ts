@@ -43,6 +43,7 @@ import { LayoutChild } from "./LayoutChild";
 import { globals } from "./UIGlobals";
 import {
   CARD_ANIMATION_LENGTH_SECONDS,
+  CARD_CENTER,
   CARD_FADE,
   CARD_H,
   CARD_SHADOW_OFFSET,
@@ -205,12 +206,8 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip, UICard {
     // Cards should start off with a constant width and height.
     this.width(CARD_W);
     this.height(CARD_H);
-    this.x(CARD_W / 2);
-    this.y(CARD_H / 2);
-    this.offset({
-      x: 0.5 * CARD_W,
-      y: 0.5 * CARD_H,
-    });
+    this.position(CARD_CENTER);
+    this.offset(CARD_CENTER);
 
     // Order is defined upon first initialization.
     const initialState = getInitialCardState(order, this.variant, numPlayers);

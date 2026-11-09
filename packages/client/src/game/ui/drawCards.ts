@@ -15,6 +15,7 @@ import {
 import { START_CARD_RANK_LABEL } from "../../constants";
 import type { CardRendererBackend } from "./cardRendererBackend";
 import {
+  CARD_CENTER,
   CARD_H,
   CARD_IMAGE_SHADOW_COLOR,
   CARD_W,
@@ -333,7 +334,7 @@ function drawSuitPips(
   // The middle for card 1.
   if (rank === 1) {
     ctx.save();
-    ctx.translate(CARD_W / 2, CARD_H / 2);
+    ctx.translate(CARD_CENTER.x, CARD_CENTER.y);
     ctx.scale(
       scale * FACE_PIP_SCALE_MULTIPLIER.rank1,
       scale * FACE_PIP_SCALE_MULTIPLIER.rank1,
@@ -344,7 +345,7 @@ function drawSuitPips(
     // Top and bottom for card 2.
     const symbolYPos = pipOffsetY.rank2;
     ctx.save();
-    ctx.translate(CARD_W / 2, CARD_H / 2);
+    ctx.translate(CARD_CENTER.x, CARD_CENTER.y);
     ctx.translate(0, -symbolYPos);
     ctx.scale(
       scale * FACE_PIP_SCALE_MULTIPLIER.rank2,
@@ -354,7 +355,7 @@ function drawSuitPips(
     ctx.restore();
 
     ctx.save();
-    ctx.translate(CARD_W / 2, CARD_H / 2);
+    ctx.translate(CARD_CENTER.x, CARD_CENTER.y);
     ctx.translate(0, symbolYPos);
     ctx.scale(
       scale * FACE_PIP_SCALE_MULTIPLIER.rank2,
@@ -369,14 +370,14 @@ function drawSuitPips(
   if (rank >= 3 && rank <= 5) {
     const symbolYPos = pipOffsetY.ranks3To5;
     ctx.save();
-    ctx.translate(CARD_W / 2, CARD_H / 2);
+    ctx.translate(CARD_CENTER.x, CARD_CENTER.y);
     ctx.translate(0, -symbolYPos);
     ctx.scale(scale, scale);
     drawPip(ctx, suit, variant, enableShadows);
     ctx.restore();
 
     ctx.save();
-    ctx.translate(CARD_W / 2, CARD_H / 2);
+    ctx.translate(CARD_CENTER.x, CARD_CENTER.y);
     ctx.translate(0, symbolYPos);
     ctx.scale(scale, scale);
     ctx.rotate(Math.PI);
@@ -387,14 +388,14 @@ function drawSuitPips(
   // Left and right for cards 4 and 5.
   if (rank === 4 || rank === 5) {
     ctx.save();
-    ctx.translate(CARD_W / 2, CARD_H / 2);
+    ctx.translate(CARD_CENTER.x, CARD_CENTER.y);
     ctx.translate(-FACE_PIP_OFFSET_X, 0);
     ctx.scale(scale, scale);
     drawPip(ctx, suit, variant, enableShadows);
     ctx.restore();
 
     ctx.save();
-    ctx.translate(CARD_W / 2, CARD_H / 2);
+    ctx.translate(CARD_CENTER.x, CARD_CENTER.y);
     ctx.translate(FACE_PIP_OFFSET_X, 0);
     ctx.scale(scale, scale);
     ctx.rotate(Math.PI);
@@ -406,7 +407,7 @@ function drawSuitPips(
   if (rank === 3 || rank === 5) {
     ctx.globalAlpha = 1;
     ctx.save();
-    ctx.translate(CARD_W / 2, CARD_H / 2);
+    ctx.translate(CARD_CENTER.x, CARD_CENTER.y);
     ctx.scale(
       scale * FACE_PIP_SCALE_MULTIPLIER.center,
       scale * FACE_PIP_SCALE_MULTIPLIER.center,
@@ -419,7 +420,7 @@ function drawSuitPips(
   if (rank === STACK_BASE_RANK) {
     ctx.globalAlpha = 1;
     ctx.save();
-    ctx.translate(CARD_W / 2, CARD_H / 2);
+    ctx.translate(CARD_CENTER.x, CARD_CENTER.y);
     ctx.scale(
       scale * FACE_PIP_SCALE_MULTIPLIER.stackBase,
       scale * FACE_PIP_SCALE_MULTIPLIER.stackBase,
@@ -440,7 +441,7 @@ function drawSuitPips(
         ? UNKNOWN_CARD_LARGE_PIP_ALPHA.colorblind
         : UNKNOWN_CARD_LARGE_PIP_ALPHA.normal;
     }
-    ctx.translate(CARD_W / 2, CARD_H / 2);
+    ctx.translate(CARD_CENTER.x, CARD_CENTER.y);
     ctx.scale(
       scale * FACE_PIP_SCALE_MULTIPLIER.large,
       scale * FACE_PIP_SCALE_MULTIPLIER.large,
@@ -475,7 +476,7 @@ function makeUnknownCard<Canvas>(
   ctx.lineWidth = CARD_BORDER_WIDTH;
   ctx.lineJoin = "round";
 
-  ctx.translate(CARD_W / 2, CARD_H / 2);
+  ctx.translate(CARD_CENTER.x, CARD_CENTER.y);
 
   return {
     cvs,

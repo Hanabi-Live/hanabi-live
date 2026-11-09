@@ -25,11 +25,14 @@ const MAX_SHRINK_STEPS = 100;
 /** How long the current player arrow takes to turn toward the next player. */
 const ARROW_ROTATION_SECONDS = 0.75;
 
+/** The stage height, in pixels, on which the imaginary player distance was tuned. */
+const REFERENCE_STAGE_HEIGHT = 1080;
+
 /**
  * In Keldon mode, how far behind each hand the arrow aims, as a fraction of the stage height (600
- * pixels on a 1080-pixel stage).
+ * pixels on the reference stage).
  */
-const IMAGINARY_PLAYER_DISTANCE = 600 / 1080;
+const IMAGINARY_PLAYER_DISTANCE = 600 / REFERENCE_STAGE_HEIGHT;
 
 /**
  * How far the center of each line of text sits below the center of the current player area, as

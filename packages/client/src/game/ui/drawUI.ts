@@ -144,8 +144,47 @@ const WAITING_ON_SERVER_RING = {
   strokeWidth: 5 * STROKE_WIDTH_UNIT,
 } as const;
 
+/**
+ * The gap between the panels stacked in the right-hand column (the clue log, the statistics, and
+ * the discard area), and below the last of them, in fractions of the stage.
+ */
+const RIGHT_COLUMN_GAP = 0.01;
+
+/** The statistics panel below the clue log, in fractions of the stage. */
+const STATISTICS_PANEL = {
+  x: CLUE_LOG.x,
+  y: CLUE_LOG.y + CLUE_LOG.h + RIGHT_COLUMN_GAP,
+  w: CLUE_LOG.w,
+  h: 0.09,
+} as const;
+
+/** How far the statistics labels and the variant underline are inset from the panel's sides. */
+const STATISTICS_LABEL_INSET_X = 0.025;
+
+/** The top edge of the discard area, in fractions of the stage height. */
+const DISCARD_AREA_Y =
+  STATISTICS_PANEL.y + STATISTICS_PANEL.h + RIGHT_COLUMN_GAP;
+
+/** The discard area below the statistics panel, in fractions of the stage. */
+const DISCARD_AREA = {
+  x: CLUE_LOG.x,
+  y: DISCARD_AREA_Y,
+  w: CLUE_LOG.w,
+  h: 1 - DISCARD_AREA_Y - RIGHT_COLUMN_GAP,
+} as const;
+
+/** How far the discard stacks are inset from the edges of the discard area. */
+const DISCARD_STACK_INSET = 0.01;
+
 /** The opacity of the trash can icon over the discard pile. */
 const TRASH_CAN_OPACITY = 0.2;
+
+/** How far the trash can icon is inset from the edges of the discard area. */
+const TRASH_CAN_INSET = {
+  x: 0.02,
+  top: 0.02,
+  bottom: 0.01,
+} as const;
 
 /** The strike squares in the score area, in fractions of the stage. */
 const STRIKE_SQUARE = {
@@ -546,9 +585,11 @@ function drawDiscardStacks() {
   for (const [suitIndex, suit] of globals.variant.suits.entries()) {
     // Make the discard stack for this suit.
     const discardStack = new CardLayout({
-      x: 0.81 * winW,
-      y: (0.64 + discardStackSpacing * suitIndex) * winH,
-      width: 0.17 * winW,
+      x: (DISCARD_AREA.x + DISCARD_STACK_INSET) * winW,
+      y:
+        (DISCARD_AREA.y + DISCARD_STACK_INSET + discardStackSpacing * suitIndex)
+        * winH,
+      width: (DISCARD_AREA.w - DISCARD_STACK_INSET * 2) * winW,
       height: 0.15 * winH,
       listening: false,
     });
@@ -1394,17 +1435,17 @@ function drawClueLog() {
 // Statistics are shown on the right-hand side of the screen (at the bottom of the clue log).
 function drawStatistics() {
   // The statistics are a grid of labels with their numbers beside them.
-  const labelX = 0.825 * winW;
-  const numberX = 0.9 * winW;
-  const paceY = 0.57 * winH;
-  const efficiencyY = 0.59 * winH;
+  const labelX = (STATISTICS_PANEL.x + STATISTICS_LABEL_INSET_X) * winW;
+  const numberX = (STATISTICS_PANEL.x + 0.1) * winW;
+  const paceY = (STATISTICS_PANEL.y + 0.04) * winH;
+  const efficiencyY = (STATISTICS_PANEL.y + 0.06) * winH;
   const fontSize = 0.02 * winH;
 
   const statsRect = new Konva.Rect({
-    x: clueLogValues.x * winW,
-    y: 0.53 * winH,
-    width: clueLogValues.w! * winW,
-    height: 0.09 * winH,
+    x: STATISTICS_PANEL.x * winW,
+    y: STATISTICS_PANEL.y * winH,
+    width: STATISTICS_PANEL.w * winW,
+    height: STATISTICS_PANEL.h * winH,
     fill: "black",
     opacity: PANEL_OPACITY,
     cornerRadius: PANEL_CORNER_RADIUS * winW,
@@ -1415,7 +1456,7 @@ function drawStatistics() {
   const variantLabel = new FitText({
     text: globals.variant.name.replace(/(?<!\s)\s*\(\d Suits\)/u, ""),
     x: labelX,
-    y: 0.54 * winH,
+    y: (STATISTICS_PANEL.y + 0.01) * winH,
     width: 0.15 * winW,
     height: 0.03 * winH,
     fontSize,
@@ -1428,8 +1469,15 @@ function drawStatistics() {
   globals.layers.UI.add(variantLabel);
   globals.elements.variantLabel = variantLabel;
 
+  const underlineY = (STATISTICS_PANEL.y + 0.03) * winH;
   const variantUnderline = new Konva.Line({
-    points: [labelX, 0.56 * winH, 0.965 * winW, 0.56 * winH],
+    points: [
+      labelX,
+      underlineY,
+      (STATISTICS_PANEL.x + STATISTICS_PANEL.w - STATISTICS_LABEL_INSET_X)
+        * winW,
+      underlineY,
+    ],
     stroke: LABEL_COLOR,
     strokeWidth: 1,
     lineJoin: "round",
@@ -1523,7 +1571,7 @@ function drawStatistics() {
 
   const efficiencyPipeLabel = basicNumberLabel.clone({
     text: " | ",
-    x: 0.905 * winW,
+    x: numberX + 0.005 * winW,
     y: efficiencyY,
     fontSize,
     listening: true,
@@ -1533,7 +1581,7 @@ function drawStatistics() {
 
   const efficiencyMinNeededLabel = basicNumberLabel.clone({
     text: globals.metadata.minEfficiency.toFixed(EFFICIENCY_DECIMAL_PLACES),
-    x: 0.918 * winW,
+    x: numberX + 0.018 * winW,
     y: efficiencyY,
     fontSize,
     // - "Easy" variants use the default color (off-white).
@@ -1563,19 +1611,12 @@ function drawStatistics() {
 }
 
 function drawDiscardArea() {
-  const discardAreaValues = {
-    x: 0.8,
-    y: 0.63,
-    w: 0.19,
-    h: 0.36,
-  };
-
   // The red border that surrounds the discard pile when the team is at 8 clues.
   globals.elements.noDiscardBorder = new Konva.Rect({
-    x: discardAreaValues.x * winW,
-    y: discardAreaValues.y * winH,
-    width: discardAreaValues.w * winW,
-    height: discardAreaValues.h * winH,
+    x: DISCARD_AREA.x * winW,
+    y: DISCARD_AREA.y * winH,
+    width: DISCARD_AREA.w * winW,
+    height: DISCARD_AREA.h * winH,
     stroke: WARNING_COLOR,
     strokeWidth: 0.005 * winW,
     cornerRadius: PANEL_CORNER_RADIUS * winW,
@@ -1586,10 +1627,10 @@ function drawDiscardArea() {
 
   // The yellow border that surrounds the discard pile when it is a "Double Discard" situation.
   globals.elements.noDoubleDiscardBorder = new Konva.Rect({
-    x: discardAreaValues.x * winW,
-    y: discardAreaValues.y * winH,
-    width: discardAreaValues.w * winW,
-    height: discardAreaValues.h * winH,
+    x: DISCARD_AREA.x * winW,
+    y: DISCARD_AREA.y * winH,
+    width: DISCARD_AREA.w * winW,
+    height: DISCARD_AREA.h * winH,
     stroke: DOUBLE_DISCARD_COLOR,
     strokeWidth: 0.004 * winW,
     cornerRadius: PANEL_CORNER_RADIUS * winW,
@@ -1601,10 +1642,10 @@ function drawDiscardArea() {
 
   // The faded rectangle around the trash can.
   const discardAreaRect = new Konva.Rect({
-    x: discardAreaValues.x * winW,
-    y: discardAreaValues.y * winH,
-    width: discardAreaValues.w * winW,
-    height: discardAreaValues.h * winH,
+    x: DISCARD_AREA.x * winW,
+    y: DISCARD_AREA.y * winH,
+    width: DISCARD_AREA.w * winW,
+    height: DISCARD_AREA.h * winH,
     fill: "black",
     opacity: PANEL_OPACITY,
     cornerRadius: PANEL_CORNER_RADIUS * winW,
@@ -1613,10 +1654,11 @@ function drawDiscardArea() {
 
   // The trash can icon over the discard pile.
   const trashcan = new Konva.Image({
-    x: 0.82 * winW,
-    y: 0.65 * winH,
-    width: 0.15 * winW,
-    height: 0.33 * winH,
+    x: (DISCARD_AREA.x + TRASH_CAN_INSET.x) * winW,
+    y: (DISCARD_AREA.y + TRASH_CAN_INSET.top) * winH,
+    width: (DISCARD_AREA.w - TRASH_CAN_INSET.x * 2) * winW,
+    height:
+      (DISCARD_AREA.h - TRASH_CAN_INSET.top - TRASH_CAN_INSET.bottom) * winH,
     opacity: TRASH_CAN_OPACITY,
     image: globals.imageLoader!.get("trashcan"),
     listening: false,
@@ -1626,10 +1668,10 @@ function drawDiscardArea() {
   // This is the invisible rectangle that players drag cards to in order to discard them. It extends
   // to the edges of the stage so that cards dropped beside the discard pile still count.
   globals.elements.discardArea = new Konva.Rect({
-    x: discardAreaValues.x * winW,
-    y: discardAreaValues.y * winH,
-    width: (1 - discardAreaValues.x) * winW,
-    height: (1 - discardAreaValues.y) * winH,
+    x: DISCARD_AREA.x * winW,
+    y: DISCARD_AREA.y * winH,
+    width: (1 - DISCARD_AREA.x) * winW,
+    height: (1 - DISCARD_AREA.y) * winH,
     listening: false,
   });
 }
@@ -2390,8 +2432,8 @@ function drawPauseArea() {
   };
 
   globals.elements.pauseArea = new Konva.Group({
-    x: 0.25 * winW,
-    y: 0.25 * winH,
+    x: ((1 - pauseAreaValues.w) / 2) * winW,
+    y: ((1 - pauseAreaValues.h) / 2) * winH,
     visible: false,
     listening: false,
   });
@@ -2487,8 +2529,8 @@ function drawRestartArea() {
   };
 
   globals.elements.restartArea = new Konva.Group({
-    x: 0.15 * winW,
-    y: 0.2 * winH,
+    x: ((1 - restartAreaValues.w) / 2) * winW,
+    y: ((1 - restartAreaValues.h) / 2) * winH,
     visible: false,
     listening: false,
   });
@@ -2577,9 +2619,9 @@ function drawRestartArea() {
 function drawExtraAnimations() {
   // These images are shown to the player to indicate which direction we are moving in a shared
   // replay.
-  const x = playAreaValues.x + playAreaValues.w! / 2 - 0.05;
-  const y = playAreaValues.y + playAreaValues.h! / 2 - 0.05;
   const size = 0.1;
+  const x = playAreaValues.x + (playAreaValues.w! - size) / 2;
+  const y = playAreaValues.y + (playAreaValues.h! - size) / 2;
 
   globals.elements.sharedReplayForward = new Konva.Image({
     x: x * winW,

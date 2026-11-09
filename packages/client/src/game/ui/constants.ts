@@ -8,6 +8,10 @@ import type { Tuple } from "complete-common";
 
 export const CARD_W = 286;
 export const CARD_H = 406;
+
+/** The middle of a card, in the card's own coordinates. */
+export const CARD_CENTER = { x: CARD_W / 2, y: CARD_H / 2 } as const;
+
 export const CARD_FADE = 0.6;
 export const STRIKE_FADE = 0.175;
 

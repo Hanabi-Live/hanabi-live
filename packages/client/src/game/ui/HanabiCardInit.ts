@@ -19,6 +19,7 @@ import {
   ARROW_STROKE_WIDTH,
   BOTTOM_LEFT_X,
   BOTTOM_LEFT_Y,
+  CARD_CENTER,
   CARD_H,
   CARD_SHADOW_OFFSET,
   CARD_W,
@@ -52,6 +53,9 @@ const LARGE_ICON_SIZE = 0.8 * CARD_W;
 
 /** The left edge of most of the large icons drawn over the middle of a card. */
 const LARGE_ICON_X = 0.15 * CARD_W;
+
+/** The left edge of a large icon that is centered horizontally on a card. */
+const LARGE_ICON_CENTERED_X = (CARD_W - LARGE_ICON_SIZE) / 2;
 
 /** The top edge of the large icons drawn over the middle of a card. */
 const LARGE_ICON_Y = 0.2 * CARD_H;
@@ -264,8 +268,7 @@ function makeCachedPips(variant: Variant) {
 
   for (const [suitIndex, suit] of variant.suits.entries()) {
     // Set the pip at the middle of the card.
-    const x = Math.floor(CARD_W * 0.5);
-    const y = Math.floor(CARD_H * 0.5);
+    const { x, y } = CARD_CENTER;
 
     const scale = {
       x: SUIT_PIP_SCALE,
@@ -557,7 +560,7 @@ export function exclamationMark(): Konva.Image {
 
 export function ghost(): Konva.Image {
   return new Konva.Image({
-    x: 0.1 * CARD_W,
+    x: LARGE_ICON_CENTERED_X,
     y: LARGE_ICON_Y,
     width: LARGE_ICON_SIZE,
     height: LARGE_ICON_SIZE,
@@ -579,7 +582,7 @@ export function trashcan(): Konva.Image {
 
 export function wrench(): Konva.Image {
   return new Konva.Image({
-    x: 0.1 * CARD_W,
+    x: LARGE_ICON_CENTERED_X,
     y: 0.33 * CARD_H,
     width: LARGE_ICON_SIZE,
     image: globals.imageLoader!.get("wrench"),
