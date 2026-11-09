@@ -35,6 +35,7 @@ describe("removeLayoutChildFromParent", () => {
       dragging: true,
       layout,
       setEmpathy: vi.fn(),
+      stopVortex: vi.fn(),
     } as unknown as InstanceType<typeof HanabiCard>;
 
     HanabiCard.prototype.removeLayoutChildFromParent.call(card);

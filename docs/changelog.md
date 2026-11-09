@@ -9,6 +9,8 @@ of the repository.
 
 ## November 9th, 2026
 
+- In "Throw It in a Hole" variants, played cards now spin into the hole instead
+  of fading out.
 - "New Game", "Watch Replay", "Resources", and "Settings" now open a full page
   instead of a pop-up. Also, their design has been updated.
 - Checkboxes and radio buttons now match the dark theme.

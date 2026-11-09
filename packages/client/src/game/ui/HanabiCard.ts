@@ -50,6 +50,7 @@ import {
   CARD_SHADOW_OFFSET,
   CARD_W,
   DRAGGED_CARD_SHADOW_OFFSET,
+  FULL_TURN_DEGREES,
   HALF_TURN_DEGREES,
 } from "./constants";
 import type { NodeWithTooltip } from "./controls/NodeWithTooltip";
@@ -83,6 +84,15 @@ const CLUED_CARD_RAISE = 0.1;
  */
 const DRAGGED_CARD_LIFT = 0.02;
 
+/** How many times a card spins as it vanishes into the hole in "Throw It in a Hole" variants. */
+const VORTEX_TURNS = 4;
+
+/**
+ * How large a card is when it finishes vanishing into the hole. (Konva cannot invert the transform
+ * of a node with a scale of 0.)
+ */
+const VORTEX_FINAL_SCALE = 0.01;
+
 /**
  * Where the arrow of a reversed suit sits on a card, as a fraction of the card's height: beside the
  * rank pips when they are shown, or near the bottom otherwise.
@@ -103,6 +113,7 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip, UICard {
   tween: Konva.Tween | null = null; // Required in order to be able to cancel animations
   tweenFinalPosition: { x: number; y: number } | null = null;
   tweenFinalScale: { x: number; y: number } | null = null;
+  private vortexTween: Konva.Tween | null = null;
   cursor: CursorType = "default";
   private empathy = false;
   dragging = false;
@@ -319,6 +330,39 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip, UICard {
     this._tweening = false;
     this.tweenFinalPosition = null;
     this.tweenFinalScale = null;
+  }
+
+  /**
+   * Shrinks and spins the card about its center, so that it looks like it is being sucked into the
+   * hole in "Throw It in a Hole" variants. This is separate from the tween of the `LayoutChild`,
+   * which moves the card to the hole at the same time.
+   */
+  vortex(duration: number, onFinish: () => void): void {
+    this.stopVortex();
+    this.vortexTween = new Konva.Tween({
+      node: this,
+      duration,
+      scaleX: VORTEX_FINAL_SCALE,
+      scaleY: VORTEX_FINAL_SCALE,
+      rotation: VORTEX_TURNS * FULL_TURN_DEGREES,
+      // eslint-disable-next-line @typescript-eslint/unbound-method
+      easing: Konva.Easings.EaseIn,
+      onFinish: () => {
+        onFinish();
+        this.stopVortex();
+      },
+    });
+    this.vortexTween.play();
+  }
+
+  /** Restores the normal size and rotation of a card that was sucked into the hole. */
+  private stopVortex(): void {
+    if (this.vortexTween !== null) {
+      this.vortexTween.destroy();
+      this.vortexTween = null;
+    }
+    this.scale({ x: 1, y: 1 });
+    this.rotation(0);
   }
 
   // ----------------------------------------------
@@ -1120,6 +1164,9 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip, UICard {
   removeLayoutChildFromParent(): void {
     // Ensure that empathy is disabled prior to removing a card from a player's hand.
     this.setEmpathy(false);
+
+    // A card can leave the hole before it has finished vanishing into it, such as when rewinding.
+    this.stopVortex();
 
     // A held card can leave the hand, such as when it is played with a hotkey. Otherwise, it would
     // keep the raised look of a held card in its new location.

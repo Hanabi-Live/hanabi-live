@@ -28,13 +28,19 @@ export class PlayStack extends Konva.Group {
     const stackBase = layoutChild.card.isStackBase;
 
     // Hide cards in "Throw It in a Hole" variants.
-    const opacity =
+    const hidden =
       globals.variant.throwItInAHole
       && (globals.state.playing || globals.state.shadowing) // Revert to the normal behavior for spectators of ongoing games
       && !globals.state.finished // Revert to the normal behavior for dedicated replays
-      && !stackBase // We want the stack bases to always be visible
-        ? 0
-        : 1;
+      && !stackBase; // We want the stack bases to always be visible
+
+    // Instead of fading out, the card is sucked into the hole; it is hidden once it has vanished.
+    const vortex = hidden && !globals.animateFast;
+    if (vortex) {
+      layoutChild.card.vortex(PLAY_ANIMATION_SECONDS, () => {
+        layoutChild.opacity(0);
+      });
+    }
 
     if (layoutChild.tween !== null) {
       layoutChild.tween.destroy();
@@ -54,7 +60,7 @@ export class PlayStack extends Konva.Group {
         y: 0,
         scale,
         rotation: 0,
-        opacity,
+        ...(!vortex && { opacity: hidden ? 0 : 1 }),
         // eslint-disable-next-line @typescript-eslint/unbound-method
         easing: Konva.Easings.EaseOut,
         onFinish: () => {
