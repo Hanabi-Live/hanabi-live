@@ -166,10 +166,9 @@ function drawOptions() {
 
   html += getOptionIcons(globals.game.options, "lobby-pregame", 0);
 
-  // Set the HTML
-  const optionsTitleDiv = $("#lobby-pregame-options-title");
-  const optionsText = html === "" ? "" : "Options:";
-  optionsTitleDiv.text(optionsText);
+  // Set the HTML. Hide the whole section when there are no options so that it does not leave an
+  // empty gap.
+  $("#lobby-pregame-options-container").toggle(html !== "");
   const optionsDiv = $("#lobby-pregame-options");
   optionsDiv.html(html);
 
