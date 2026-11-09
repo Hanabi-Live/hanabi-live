@@ -200,8 +200,12 @@ const visibleStateObservers: Subscriptions = [
   subVS((s) => s.playStacks, cardLayoutView.onPlayStacksChanged),
   // This must come after the play stacks, so that the completing card is already moving.
   subVS(
-    (s) => ({ playStacks: s.playStacks, clueTokens: s.clueTokens }),
-    cardLayoutView.onPlayStacksOrClueTokensChanged,
+    (s) => ({
+      playStacks: s.playStacks,
+      clueTokens: s.clueTokens,
+      score: s.score,
+    }),
+    cardLayoutView.onStackCompletionDataChanged,
   ),
   subVS(
     (s) => s.playStackDirections,

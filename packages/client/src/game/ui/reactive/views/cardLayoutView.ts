@@ -107,11 +107,16 @@ export function onDiscardStacksChanged(
   globals.layers.card.batchDraw();
 }
 
+interface StackCompletionData {
+  playStacks: GameState["playStacks"];
+  clueTokens: number;
+  score: number;
+}
+
 /** Celebrates a card that completes its play stack. */
-export function onPlayStacksOrClueTokensChanged(
-  data: { playStacks: GameState["playStacks"]; clueTokens: number },
-  previousData:
-    { playStacks: GameState["playStacks"]; clueTokens: number } | undefined,
+export function onStackCompletionDataChanged(
+  data: StackCompletionData,
+  previousData: StackCompletionData | undefined,
 ): void {
   // Skip the animation when jumping through a replay.
   if (previousData === undefined || globals.animateFast) {
@@ -138,6 +143,7 @@ export function onPlayStacksOrClueTokensChanged(
       layout,
       playStack,
       gainedClue ? previousData.clueTokens : null,
+      data.score === globals.variant.maxScore,
       () => {
         layout.stackCompleteAnimation = null;
       },

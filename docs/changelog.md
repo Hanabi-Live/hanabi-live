@@ -9,6 +9,7 @@ of the repository.
 
 ## November 9th, 2026
 
+- A perfect score now sets off a fireworks finale over the play stacks.
 - Completing a play stack now sets off a firework. When the team gets a clue
   back, a spark flies to the clue count.
 - Selecting a clue now previews the target's hand as they would see it after the
