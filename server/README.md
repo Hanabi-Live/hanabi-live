@@ -88,9 +88,7 @@ python3 install/release.py activate /absolute/deployment/root REVISION \
 ```
 
 Activation requires the service to be stopped and holds the shared lifecycle
-lock. Only Rust releases can be verified, staged, or activated. Installations
-with unresolved legacy PostgreSQL checkpoints must complete recovery using a
-compatible pre-promotion release before applying migration 007.
+lock. Only Rust releases can be verified, staged, or activated.
 
 ## Storage and ownership
 
