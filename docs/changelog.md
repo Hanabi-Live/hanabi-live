@@ -69,8 +69,6 @@ of the repository.
   and cocoa versions) now shows all of their colors.
 - Hover over "Give Clue" to see the target's hand as they would see it after the
   clue.
-- The server no longer sends the `status` game action. Bots should compute the
-  clue count and score from the other game actions.
 
 ## November 8th, 2026
 
