@@ -21,6 +21,7 @@ This page lists the changes to Hanab Live, excluding bug fixes.
   - `/linked` (use `/links` instead)
 - Removed the full-history and full-seed API aliases.
 - Removed the videos page.
+- Added a link to the changelog in the resources dialog.
 - Added a confirmation when playing a card whose note says it is unplayable.
 - The note icon glows when the note determines the suit or rank shown on the
   card.
