@@ -296,7 +296,7 @@ fn attendance(session: Arc<Session>, spectator: bool) -> Attendance {
 
 #[tokio::test]
 async fn joining_or_reattending_an_old_review_does_not_immediately_close_it() -> Result<()> {
-    let Some((db, store, state)) = fixture_store().await? else {
+    let Some((db, store, _)) = fixture_store().await? else {
         return Ok(());
     };
     for shared in [true, false] {
@@ -329,8 +329,7 @@ async fn joining_or_reattending_an_old_review_does_not_immediately_close_it() ->
             !actor.retired,
             "Joining an old review immediately closed it"
         );
-        let saved = state.get(id).await?.context("Review was deleted")?;
-        let restored = TableSnapshot::decode(&saved.payload)?;
+        let (restored, _) = store.get(id).await?.context("Review was deleted")?;
         let snapshot = restored.game().context("Missing review")?;
         ensure!(
             snapshot.idle_remaining == IDLE_TIMEOUT_MS,

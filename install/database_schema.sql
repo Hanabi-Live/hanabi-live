@@ -400,6 +400,19 @@ CREATE TABLE live_tables (
     epoch     BIGINT  NOT NULL
 );
 
+/*
+ * A live table's chat messages, game steps, and notes, each stored apart from its checkpoint. A
+ * change then rewrites only the parts that changed. Keys are such as "chat/3", "step/12",
+ * "notes/0" (a seat), and "spectatorNotes/42" (a user ID).
+ */
+DROP TABLE IF EXISTS live_table_parts CASCADE;
+CREATE TABLE live_table_parts (
+    table_id  BIGINT  NOT NULL  REFERENCES live_tables (id) ON DELETE CASCADE,
+    part      TEXT    NOT NULL,
+    value     TEXT    NOT NULL,
+    PRIMARY KEY (table_id, part)
+);
+
 DROP TABLE IF EXISTS live_state_owner CASCADE;
 CREATE TABLE live_state_owner (
     singleton  BOOLEAN  PRIMARY KEY  DEFAULT TRUE  CHECK (singleton),

@@ -47,24 +47,82 @@ const liveTableSchema = z.object({
   payload: z.string().nullable(),
 });
 
+const livePartSchema = z.object({
+  table_id: z.coerce.number().int().positive(),
+  part: z.string(),
+  value: z.string(),
+});
+
 export interface LiveTable {
   readonly id: number;
   readonly revision: number;
   readonly payload: unknown;
 }
 
+/**
+ * The lists that a checkpoint stores as parts, as `server/src/checkpoint.rs` defines them: the
+ * prefix of each part's key, the path to the object that holds the list, the list's field, and
+ * whether the list is an array.
+ */
+const PART_LISTS = [
+  ["chat", [], "chat", true],
+  ["step", ["phase", "snapshot", "game"], "steps", true],
+  ["notes", ["phase", "snapshot"], "notes", true],
+  ["spectatorNotes", ["phase", "snapshot"], "spectator_notes", false],
+] as const;
+
+/** Rebuilds a checkpoint's JSON from its head and parts, as the server does. */
+function withParts(head: unknown, parts: ReadonlyMap<string, string>): unknown {
+  for (const [prefix, path, field, isArray] of PART_LISTS) {
+    let parent: unknown = head;
+    for (const key of path) {
+      parent =
+        typeof parent === "object" && parent !== null
+          ? (parent as Record<string, unknown>)[key]
+          : undefined;
+    }
+    if (typeof parent !== "object" || parent === null || field in parent) {
+      continue;
+    }
+    const entries = [...parts]
+      .filter(([key]) => key.startsWith(`${prefix}/`))
+      .map(
+        ([key, value]) =>
+          [key.slice(prefix.length + 1), JSON.parse(value) as unknown] as const,
+      );
+    (parent as Record<string, unknown>)[field] = isArray
+      ? entries
+          .toSorted(([a], [b]) => Number(a) - Number(b))
+          .map(([, value]) => value)
+      : Object.fromEntries(entries);
+  }
+  return head;
+}
+
 /** Reads the live tables that the server saved, in table order. */
 export async function liveTables(
   sql: postgres.Sql,
 ): Promise<readonly LiveTable[]> {
-  const rows =
-    await sql`SELECT id, revision, payload FROM live_tables ORDER BY id`;
+  const [rows, partRows] = await sql.begin(async (transaction) => [
+    await transaction`SELECT id, revision, payload FROM live_tables ORDER BY id`,
+    await transaction`SELECT table_id, part, value FROM live_table_parts`,
+  ]);
+  const parts = new Map<number, Map<string, string>>();
+  for (const row of partRows) {
+    const { table_id: tableID, part, value } = livePartSchema.parse(row);
+    const tableParts = parts.get(tableID) ?? new Map<string, string>();
+    tableParts.set(part, value);
+    parts.set(tableID, tableParts);
+  }
   return rows.map((row) => {
     const { id, revision, payload } = liveTableSchema.parse(row);
     return {
       id,
       revision,
-      payload: payload === null ? undefined : (JSON.parse(payload) as unknown),
+      payload:
+        payload === null
+          ? undefined
+          : withParts(JSON.parse(payload), parts.get(id) ?? new Map()),
     };
   });
 }

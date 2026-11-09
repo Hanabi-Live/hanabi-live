@@ -1,0 +1,35 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT part, xmin::text AS \"version!\" FROM live_table_parts\n                         WHERE table_id = $1",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "part",
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "live_table_parts",
+            "name": "part"
+          }
+        }
+      },
+      {
+        "ordinal": 1,
+        "name": "version!",
+        "type_info": "Text",
+        "origin": "Expression"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Int8"
+      ]
+    },
+    "nullable": [
+      false,
+      null
+    ]
+  },
+  "hash": "d879a79039efd1accf3fc6ad491a6568ee066e875389350e21f3f6c4ae93237b"
+}

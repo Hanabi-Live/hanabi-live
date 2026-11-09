@@ -186,8 +186,7 @@ impl Harness {
             .context("Missing replay identity")
     }
     async fn snapshot(&self, id: u64) -> Result<(TableSnapshot, i64)> {
-        let record = self.state.get(id).await?.context("Missing durable table")?;
-        Ok((TableSnapshot::decode(&record.payload)?, record.revision))
+        self.store.get(id).await?.context("Missing durable table")
     }
     async fn wait_locks(&self, count: i64) -> Result<()> {
         tokio::time::timeout(Duration::from_secs(3),async{

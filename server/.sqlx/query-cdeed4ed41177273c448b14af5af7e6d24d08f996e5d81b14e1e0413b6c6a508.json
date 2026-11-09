@@ -1,0 +1,16 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO live_table_parts (table_id, part, value)\n             SELECT $1, p.part, p.value FROM UNNEST($2::text[], $3::text[]) AS p(part, value)\n             ON CONFLICT (table_id, part) DO UPDATE SET value = excluded.value",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Int8",
+        "TextArray",
+        "TextArray"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "cdeed4ed41177273c448b14af5af7e6d24d08f996e5d81b14e1e0413b6c6a508"
+}

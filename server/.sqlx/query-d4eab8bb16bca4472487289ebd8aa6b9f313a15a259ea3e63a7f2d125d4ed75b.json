@@ -1,0 +1,15 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "DELETE FROM live_table_parts WHERE table_id = $1 AND part = ANY($2)",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Int8",
+        "TextArray"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "d4eab8bb16bca4472487289ebd8aa6b9f313a15a259ea3e63a7f2d125d4ed75b"
+}

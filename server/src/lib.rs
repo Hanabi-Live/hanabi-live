@@ -44,6 +44,7 @@ pub const MIB: usize = 1024 * KIB;
 pub mod accounts;
 pub mod actors;
 mod archive;
+mod checkpoint;
 pub mod config;
 pub mod cookie;
 mod database;

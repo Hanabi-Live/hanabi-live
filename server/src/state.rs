@@ -1,6 +1,6 @@
 //! The live tables' latest checkpoints, which PostgreSQL stores. One server owns them at a time.
 
-use crate::{errors::Fault, store::LockSpace};
+use crate::{checkpoint::PartChanges, errors::Fault, store::LockSpace};
 use anyhow::{Context, Result, bail, ensure};
 use axum::http::StatusCode;
 use sqlx::{Connection, PgConnection, PgPool, Postgres, Transaction, postgres::PgConnectOptions};
@@ -24,7 +24,10 @@ const WATCHDOG_TIMEOUT: Duration = Duration::from_secs(5);
 pub struct StoredState {
     pub id: u64,
     pub revision: i64,
+    /// The checkpoint's head; see `checkpoint`.
     pub payload: String,
+    /// The checkpoint's parts, by key.
+    pub parts: Vec<(String, String)>,
 }
 
 /// Table IDs are positive and stay within the integers that clients represent exactly.
@@ -35,13 +38,14 @@ fn table_id(id: u64) -> Result<i64> {
         .context("Invalid table identity")
 }
 
-/// Saves a table's checkpoint in a transaction from `LiveState::begin`, if its revision is still
-/// `expected`. Returns the new revision.
+/// Saves a table's checkpoint head and the changes to its parts in a transaction from
+/// `LiveState::begin`, if its revision is still `expected`. Returns the new revision.
 pub async fn save_in(
     transaction: &mut Transaction<'static, Postgres>,
     id: u64,
     expected: i64,
     payload: &str,
+    parts: &PartChanges,
 ) -> Result<i64> {
     ensure!(
         (0..hanabi_protocol::MAX_SAFE_INTEGER).contains(&expected),
@@ -51,16 +55,65 @@ pub async fn save_in(
         !payload.is_empty() && payload.len() <= MAX_CHECKPOINT_BYTES,
         "Invalid checkpoint size"
     );
-    sqlx::query_scalar!(
+    let id = table_id(id)?;
+    let revision = sqlx::query_scalar!(
         "UPDATE live_tables SET revision = revision + 1, payload = $3
          WHERE id = $1 AND revision = $2 RETURNING revision",
-        table_id(id)?,
+        id,
         expected,
         payload
     )
     .fetch_optional(&mut **transaction)
     .await?
-    .context("Stale live-table checkpoint revision")
+    .context("Stale live-table checkpoint revision")?;
+    if !parts.removed.is_empty() {
+        sqlx::query!(
+            "DELETE FROM live_table_parts WHERE table_id = $1 AND part = ANY($2)",
+            id,
+            &parts.removed
+        )
+        .execute(&mut **transaction)
+        .await?;
+    }
+    if !parts.written.is_empty() {
+        let (keys, values): (Vec<&str>, Vec<&str>) = parts
+            .written
+            .iter()
+            .map(|(key, value)| (key.as_str(), value.as_str()))
+            .unzip();
+        sqlx::query!(
+            "INSERT INTO live_table_parts (table_id, part, value)
+             SELECT $1, p.part, p.value FROM UNNEST($2::text[], $3::text[]) AS p(part, value)
+             ON CONFLICT (table_id, part) DO UPDATE SET value = excluded.value",
+            id,
+            &keys as &[&str],
+            &values as &[&str]
+        )
+        .execute(&mut **transaction)
+        .await?;
+    }
+    Ok(revision)
+}
+
+/// The parts of the tables in `ids`, by table.
+async fn parts_of(
+    connection: &mut PgConnection,
+    ids: &[i64],
+) -> Result<std::collections::HashMap<u64, Vec<(String, String)>>> {
+    let mut parts = std::collections::HashMap::<u64, Vec<(String, String)>>::new();
+    for row in sqlx::query!(
+        "SELECT table_id, part, value FROM live_table_parts WHERE table_id = ANY($1)",
+        ids
+    )
+    .fetch_all(connection)
+    .await?
+    {
+        parts
+            .entry(row.table_id.cast_unsigned())
+            .or_default()
+            .push((row.part, row.value));
+    }
+    Ok(parts)
 }
 
 /// Removes a table in a transaction from `LiveState::begin`, if its revision is still `expected`.
@@ -220,9 +273,15 @@ impl LiveState {
         self.check()
     }
 
-    pub async fn save(&self, id: u64, expected: i64, payload: &str) -> Result<i64> {
+    pub async fn save(
+        &self,
+        id: u64,
+        expected: i64,
+        payload: &str,
+        parts: &PartChanges,
+    ) -> Result<i64> {
         let mut transaction = self.begin().await?;
-        let revision = save_in(&mut transaction, id, expected, payload).await?;
+        let revision = save_in(&mut transaction, id, expected, payload, parts).await?;
         self.commit(transaction).await?;
         Ok(revision)
     }
@@ -265,17 +324,23 @@ impl LiveState {
 
     pub async fn get(&self, id: u64) -> Result<Option<StoredState>> {
         self.check()?;
+        let key = table_id(id)?;
+        // One transaction reads the head and the parts of the same revision.
+        let mut transaction = self.pool.begin().await?;
         let row = sqlx::query!(
             "SELECT revision, payload FROM live_tables WHERE id = $1",
-            table_id(id)?
+            key
         )
-        .fetch_optional(&self.pool)
+        .fetch_optional(&mut *transaction)
         .await?;
+        let mut parts = parts_of(&mut transaction, &[key]).await?;
+        transaction.commit().await?;
         self.check()?;
         Ok(row.map(|row| StoredState {
             id,
             revision: row.revision,
             payload: row.payload.unwrap_or_default(),
+            parts: parts.remove(&id).unwrap_or_default(),
         }))
     }
 
@@ -294,6 +359,8 @@ impl LiveState {
         )
         .fetch_all(&mut *transaction)
         .await?;
+        let ids = rows.iter().map(|row| row.id).collect::<Vec<_>>();
+        let mut parts = parts_of(&mut transaction, &ids).await?;
         self.commit(transaction).await?;
         Ok(rows
             .into_iter()
@@ -301,6 +368,7 @@ impl LiveState {
                 id: row.id.cast_unsigned(),
                 revision: row.revision,
                 payload: row.payload,
+                parts: parts.remove(&row.id.cast_unsigned()).unwrap_or_default(),
             })
             .collect())
     }
@@ -346,8 +414,17 @@ mod tests {
         };
         let state = LiveState::for_test(&db.pool).await?;
         let id = state.allocate_table().await?;
-        ensure!(state.save(id, 0, "initial").await? == 1);
-        let (one, two) = tokio::join!(state.save(id, 1, "one"), state.save(id, 1, "two"));
+        ensure!(
+            state
+                .save(id, 0, "initial", &PartChanges::default())
+                .await?
+                == 1
+        );
+        let none = PartChanges::default();
+        let (one, two) = tokio::join!(
+            state.save(id, 1, "one", &none),
+            state.save(id, 1, "two", &none)
+        );
         ensure!(one.is_ok() != two.is_ok(), "Two stale writers succeeded");
         let saved = state.get(id).await?.context("Missing table")?;
         ensure!(saved.revision == 2 && ["one", "two"].contains(&saved.payload.as_str()));
@@ -357,7 +434,10 @@ mod tests {
         );
         state.remove(id, 2).await?;
         ensure!(
-            state.save(id, 0, "resurrected").await.is_err(),
+            state
+                .save(id, 0, "resurrected", &PartChanges::default())
+                .await
+                .is_err(),
             "A removed table was saved again"
         );
         ensure!(state.load().await?.is_empty(), "A removed table was loaded");
@@ -381,9 +461,14 @@ mod tests {
             "A second server took ownership while the first ran"
         );
         let id = first.allocate_table().await?;
-        first.save(id, 0, "first").await?;
+        first.save(id, 0, "first", &PartChanges::default()).await?;
         first.close().await?;
-        ensure!(first.save(id, 1, "closed").await.is_err());
+        ensure!(
+            first
+                .save(id, 1, "closed", &PartChanges::default())
+                .await
+                .is_err()
+        );
         let second = LiveState::for_test(&db.pool).await?;
         ensure!(second.get(id).await?.context("Missing table")?.payload == "first");
         second.close().await?;
@@ -398,11 +483,14 @@ mod tests {
         };
         let first = LiveState::for_test(&db.pool).await?;
         let id = first.allocate_table().await?;
-        first.save(id, 0, "first").await?;
+        first.save(id, 0, "first", &PartChanges::default()).await?;
         drop_ownership_connection(&db.pool).await?;
         let second = LiveState::for_test(&db.pool).await?;
         ensure!(
-            first.save(id, 1, "stale").await.is_err(),
+            first
+                .save(id, 1, "stale", &PartChanges::default())
+                .await
+                .is_err(),
             "A replaced owner saved a table"
         );
         ensure!(
@@ -410,7 +498,9 @@ mod tests {
             "A replaced owner kept admitting work"
         );
         ensure!(second.get(id).await?.context("Missing table")?.payload == "first");
-        second.save(id, 1, "second").await?;
+        second
+            .save(id, 1, "second", &PartChanges::default())
+            .await?;
         second.close().await?;
         db.close().await;
         Ok(())
@@ -442,7 +532,9 @@ mod tests {
         let first = LiveState::for_test(&db.pool).await?;
         let unused = first.allocate_table().await?;
         let saved = first.allocate_table().await?;
-        first.save(saved, 0, "saved").await?;
+        first
+            .save(saved, 0, "saved", &PartChanges::default())
+            .await?;
         first.close().await?;
         let second = LiveState::for_test(&db.pool).await?;
         let own = second.allocate_table().await?;

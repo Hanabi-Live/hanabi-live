@@ -239,12 +239,9 @@ mod json_text {
     }
 }
 impl TableSnapshot {
-    pub fn decode(payload: &str) -> Result<Self> {
-        ensure!(
-            payload.len() <= crate::state::MAX_CHECKPOINT_BYTES,
-            "Oversized checkpoint"
-        );
-        let table: Self = serde_json::from_str(payload)?;
+    /// Reads a table from its checkpoint JSON, as `checkpoint::decode` reassembles it.
+    pub fn from_value(value: Value) -> Result<Self> {
+        let table: Self = serde_json::from_value(value)?;
         table.validate()?;
         Ok(table)
     }
