@@ -1,5 +1,6 @@
 use super::{Command, TableActor, setup::options_suggestion};
 use crate::{
+    lobby::TableChatCommand,
     model::{Phase, TableChat, TableSnapshot},
     transport::{Session, frame},
 };
@@ -168,14 +169,11 @@ pub(super) fn is_variant_discovery(command: &Command) -> bool {
         return false;
     };
     crate::accounts::normalize_chat(&request.msg).is_ok_and(|text| {
-        matches!(
-            text.split_whitespace()
-                .next()
-                .unwrap_or("")
-                .to_ascii_lowercase()
-                .as_str(),
-            "/findvariant" | "/find-variant" | "/fv" | "/randomvariant" | "/random-variant"
-        )
+        text.split_whitespace()
+            .next()
+            .and_then(|word| word.strip_prefix('/'))
+            .and_then(|name| TableChatCommand::parse(&name.to_ascii_lowercase()))
+            == Some(TableChatCommand::FindVariant)
     })
 }
 pub(super) struct VariantDiscovery {
@@ -185,12 +183,9 @@ pub(super) struct VariantDiscovery {
 }
 
 impl TableActor {
-    pub(super) fn prepare_discovery(&self, requester: Arc<Session>) -> Result<VariantDiscovery> {
-        self.store.check_state()?;
-        ensure!(
-            !self.frozen && self.attending(&requester),
-            "You are not at an available table."
-        );
+    /// The users whose scores the score commands compare: everyone watching a replay, or the
+    /// table's players.
+    fn score_participants(&self) -> Result<Vec<(i32, String)>> {
         let participants = if matches!(self.table.phase, Phase::Replay { .. }) {
             self.audience()
                 .map(|a| (a.session.user, a.session.name.clone()))
@@ -206,6 +201,15 @@ impl TableActor {
             hanabi_protocol::is_player_count(participants.len()),
             "This command requires {MIN_PLAYERS} to {MAX_PLAYERS} participants"
         );
+        Ok(participants)
+    }
+    pub(super) fn prepare_discovery(&self, requester: Arc<Session>) -> Result<VariantDiscovery> {
+        self.store.check_state()?;
+        ensure!(
+            !self.frozen && self.attending(&requester),
+            "You are not at an available table."
+        );
+        let participants = self.score_participants()?;
         let count = participants.len();
         let ids = participants.iter().map(|(id, _)| *id).collect::<Vec<_>>();
         let store = self.store.clone();
@@ -403,32 +407,10 @@ impl TableActor {
         let mut words = text[1..].split_whitespace();
         let command = words.next().unwrap_or("").to_ascii_lowercase();
         let args = words.collect::<Vec<_>>();
+        let parsed = TableChatCommand::parse(&command);
         let mut next = self.candidate();
-        if [
-            "m",
-            "missing",
-            "missing-scores",
-            "missingscores",
-            "shared-missing-scores",
-            "sharedmissingscores",
-        ]
-        .contains(&command.as_str())
-        {
-            let participants = if matches!(self.table.phase, Phase::Replay { .. }) {
-                self.audience()
-                    .map(|a| (a.session.user, a.session.name.clone()))
-                    .collect::<Vec<_>>()
-            } else {
-                self.table
-                    .players()
-                    .iter()
-                    .map(|p| (p.id, p.name.clone()))
-                    .collect::<Vec<_>>()
-            };
-            ensure!(
-                hanabi_protocol::is_player_count(participants.len()),
-                "This command requires {MIN_PLAYERS} to {MAX_PLAYERS} participants"
-            );
+        if parsed == Some(TableChatCommand::MissingScores) {
+            let participants = self.score_participants()?;
             let message = format!(
                 "{}/shared-missing-scores/{}/{}",
                 self.info.public_url(""),
@@ -452,7 +434,7 @@ impl TableActor {
             self.add_chat(&mut e, &message);
             return self.publish(e).await;
         }
-        if command == "tags" || command == "taglist" {
+        if parsed == Some(TableChatCommand::Tags) {
             let messages = if matches!(self.table.phase, Phase::Replay { .. }) {
                 let id = self.table.game().expect("replay game").game_id;
                 let tags = self
@@ -498,14 +480,14 @@ impl TableActor {
             }
             return self.publish(e).await;
         }
-        if command == "suggest" {
+        if parsed == Some(TableChatCommand::Suggest) {
             ensure!(args.len() == 1, "Expected /suggest [turn]");
             return self
                 .suggest(session, i64::from(args[0].parse::<i32>()?))
                 .await;
         }
-        if ["split", "splitauto", "sa"].contains(&command.as_str()) {
-            return self.split(session, &args, command != "split").await;
+        if let Some(TableChatCommand::Split { automatic }) = parsed {
+            return self.split(session, &args, automatic).await;
         }
         ensure!(
             session.user == self.table.owner,
@@ -522,12 +504,12 @@ impl TableActor {
         };
         let mut boot = None;
         let notice;
-        match command.as_str() {
-            name if name == "s" || crate::lobby::start_player_count(name).is_some() => {
+        match parsed {
+            Some(TableChatCommand::Start(count)) => {
                 let n = if let Some(arg) = args.first() {
                     arg.parse::<usize>()?
                 } else {
-                    crate::lobby::start_player_count(name).unwrap_or(players.len() + 1)
+                    count.unwrap_or(players.len() + 1)
                 };
                 ensure!(
                     hanabi_protocol::is_player_count(n),
@@ -537,7 +519,7 @@ impl TableActor {
                 *countdown = None;
                 notice = format!("The game will start as soon as {n} players have joined.");
             }
-            "si" | "startin" => {
+            Some(TableChatCommand::StartIn) => {
                 ensure!(args.len() == 1, "Expected /startin [minutes]");
                 let minutes = parse_start_minutes(args[0]).context("Invalid countdown number")?;
                 ensure!(
@@ -555,7 +537,7 @@ impl TableActor {
                 };
                 notice = format!("The game will automatically start in {wait}.");
             }
-            "kick" => {
+            Some(TableChatCommand::Kick) => {
                 ensure!(args.len() == 1, "Expected /kick [username]");
                 let index = players
                     .iter()
@@ -577,7 +559,7 @@ impl TableActor {
                 boot = Some(player.id);
                 *countdown = None;
             }
-            "impostor" => {
+            Some(TableChatCommand::Impostor) => {
                 ensure!(
                     players.len() >= MIN_IMPOSTOR_PLAYERS,
                     "Impostor requires at least {MIN_IMPOSTOR_PLAYERS} players"

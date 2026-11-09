@@ -2,8 +2,8 @@ use super::{
     Allocation, HubCommand, PlayingClaim, TableActor, TableChange,
     chat::{membership_notice, server_chat, truncate},
     setup::{
-        option_changes, options_suggestion, requested_seed, special_game_options,
-        valid_timed_options, validate_table_name,
+        normalize_options, option_changes, options_suggestion, requested_seed,
+        special_game_options, validate_table_name,
     },
 };
 use crate::{
@@ -99,16 +99,7 @@ impl TableActor {
         if let Some(variant) = &variant {
             options.variant_name.clone_from(variant);
         }
-        if options.speedrun || !options.timed {
-            options.timed = false;
-            options.time_base = 0.0;
-            options.time_per_turn = 0;
-        }
-        ensure!(valid_timed_options(&options), "Invalid timed options");
-        if options.one_extra_card && options.one_less_card {
-            options.one_extra_card = false;
-            options.one_less_card = false;
-        }
+        normalize_options(&mut options)?;
         let mut name = if variant_only {
             self.table.name.clone()
         } else {

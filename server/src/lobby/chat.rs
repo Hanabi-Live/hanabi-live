@@ -50,41 +50,66 @@ const WEBSITE: &[&str] = &[
     "w",
     "whisper",
 ];
-const DELEGATED: &[&str] = &[
-    "m",
-    "missing",
-    "missing-scores",
-    "missingscores",
-    "shared-missing-scores",
-    "sharedmissingscores",
-    "find-variant",
-    "findvariant",
-    "fv",
-    "random-variant",
-    "randomvariant",
-    "suggest",
-    "taglist",
-    "tags",
-    "sa",
-    "split",
-    "splitauto",
-    "kick",
-    "s",
-    "si",
-    "startin",
-    "impostor",
+/// A chat command that runs at a table rather than in the lobby.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum TableChatCommand {
+    MissingScores,
+    FindVariant,
+    Suggest,
+    Tags,
+    Split {
+        automatic: bool,
+    },
+    Kick,
+    /// Starts the game once this many players have joined: `/s4` names the count, and `/s`
+    /// takes it as an argument or defaults to one more than the current players.
+    Start(Option<usize>),
+    StartIn,
+    Impostor,
+}
+
+/// The names of the table chat commands, other than `/s{MIN_PLAYERS}` to `/s{MAX_PLAYERS}`.
+const TABLE_COMMANDS: &[(&str, TableChatCommand)] = &[
+    ("m", TableChatCommand::MissingScores),
+    ("missing", TableChatCommand::MissingScores),
+    ("missing-scores", TableChatCommand::MissingScores),
+    ("missingscores", TableChatCommand::MissingScores),
+    ("shared-missing-scores", TableChatCommand::MissingScores),
+    ("sharedmissingscores", TableChatCommand::MissingScores),
+    ("find-variant", TableChatCommand::FindVariant),
+    ("findvariant", TableChatCommand::FindVariant),
+    ("fv", TableChatCommand::FindVariant),
+    ("random-variant", TableChatCommand::FindVariant),
+    ("randomvariant", TableChatCommand::FindVariant),
+    ("suggest", TableChatCommand::Suggest),
+    ("taglist", TableChatCommand::Tags),
+    ("tags", TableChatCommand::Tags),
+    ("sa", TableChatCommand::Split { automatic: true }),
+    ("split", TableChatCommand::Split { automatic: false }),
+    ("splitauto", TableChatCommand::Split { automatic: true }),
+    ("kick", TableChatCommand::Kick),
+    ("s", TableChatCommand::Start(None)),
+    ("si", TableChatCommand::StartIn),
+    ("startin", TableChatCommand::StartIn),
+    ("impostor", TableChatCommand::Impostor),
 ];
 
-/// The player count that a pregame command such as `/s4` starts the game at, from `/s{MIN_PLAYERS}`
-/// to `/s{MAX_PLAYERS}`.
-pub fn start_player_count(command: &str) -> Option<usize> {
-    let count = command.strip_prefix('s')?;
-    (MIN_PLAYERS..=MAX_PLAYERS).find(|n| count == n.to_string())
+impl TableChatCommand {
+    /// Reads a lowercase command name without its slash.
+    pub fn parse(command: &str) -> Option<Self> {
+        if let Some((_, parsed)) = TABLE_COMMANDS.iter().find(|(name, _)| *name == command) {
+            return Some(*parsed);
+        }
+        let count = command.strip_prefix('s')?;
+        (MIN_PLAYERS..=MAX_PLAYERS)
+            .find(|n| count == n.to_string())
+            .map(|n| Self::Start(Some(n)))
+    }
 }
 
 /// Whether a command runs at a table rather than in the lobby.
 fn delegated(command: &str) -> bool {
-    DELEGATED.contains(&command) || start_player_count(command).is_some()
+    TableChatCommand::parse(command).is_some()
 }
 
 pub fn valid_room(room: &str) -> bool {
@@ -209,7 +234,7 @@ pub async fn external_command(pool: &PgPool, message: &str) -> Result<Vec<Effect
 fn help() -> String {
     let mut names: Vec<_> = WEBSITE
         .iter()
-        .chain(DELEGATED)
+        .chain(TABLE_COMMANDS.iter().map(|(name, _)| name))
         .chain(["random", "replay", "uptime", "token"].iter())
         .map(|s| format!("/{s}"))
         .collect();

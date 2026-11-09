@@ -106,6 +106,14 @@ impl EnginePlayer {
     pub fn character(&self) -> Option<Character> {
         Character::from_name(&self.character)
     }
+
+    /// The metadata chosen when the player's character was assigned, which games record, or
+    /// `None` when the character has none.
+    pub fn assigned_metadata(&self) -> Option<i32> {
+        self.character()
+            .is_some_and(Character::has_assigned_metadata)
+            .then_some(self.character_metadata)
+    }
 }
 
 #[cfg(test)]

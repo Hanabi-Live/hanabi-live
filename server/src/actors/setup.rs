@@ -17,11 +17,27 @@ use std::{collections::BTreeMap, fmt::Write as _};
 const MAX_TABLE_PASSWORD_BYTES: usize = 1024;
 
 /// Whether an untimed game, or a timed game within the clock limits.
-pub(super) fn valid_timed_options(options: &Options) -> bool {
-    !options.timed
-        || (options.time_base > 0.0
-            && options.time_base <= f64::from(hanabi_protocol::MAX_TIME_BASE_SECONDS)
-            && (1..=hanabi_protocol::MAX_TIME_PER_TURN_SECONDS).contains(&options.time_per_turn))
+/// Clears the clock of an untimed or speedrun game and the hand-size options when both are set,
+/// then checks that a timed game is within the clock limits.
+pub(super) fn normalize_options(options: &mut Options) -> Result<()> {
+    if options.speedrun || !options.timed {
+        options.timed = false;
+        options.time_base = 0.0;
+        options.time_per_turn = 0;
+    }
+    if options.one_extra_card && options.one_less_card {
+        options.one_extra_card = false;
+        options.one_less_card = false;
+    }
+    ensure!(
+        !options.timed
+            || (options.time_base > 0.0
+                && options.time_base <= f64::from(hanabi_protocol::MAX_TIME_BASE_SECONDS)
+                && (1..=hanabi_protocol::MAX_TIME_PER_TURN_SECONDS)
+                    .contains(&options.time_per_turn)),
+        "Invalid timed options"
+    );
+    Ok(())
 }
 
 pub(super) fn validate_table_name(name: &str) -> Result<()> {
@@ -130,13 +146,7 @@ pub(super) async fn special_game_options(
                         } else {
                             p.character.clone()
                         },
-                        metadata: if hanabi_engine::Character::from_name(&p.character)
-                            .is_some_and(hanabi_engine::Character::has_assigned_metadata)
-                        {
-                            p.character_metadata
-                        } else {
-                            NO_VALUE
-                        },
+                        metadata: p.assigned_metadata().unwrap_or(NO_VALUE),
                     })
                     .collect(),
             );
@@ -399,16 +409,7 @@ pub(super) async fn prepare_table(
         }
         validate_table_name(&name)?;
         let mut options = engine_options(&r.options);
-        if options.speedrun || !options.timed {
-            options.timed = false;
-            options.time_base = 0.0;
-            options.time_per_turn = 0;
-        }
-        if options.one_extra_card && options.one_less_card {
-            options.one_extra_card = false;
-            options.one_less_card = false;
-        }
-        ensure!(valid_timed_options(&options), "Invalid timed options");
+        normalize_options(&mut options)?;
         let extra = special_game_options(
             store,
             &name,

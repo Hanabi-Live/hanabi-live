@@ -261,6 +261,25 @@ impl TableSnapshot {
         );
         Ok(table)
     }
+    /// Updates the cached game totals of the pregame players in `users`, whose totals `counts`
+    /// holds (a missing user has none). Returns whether any total changed.
+    pub fn set_game_counts(&mut self, users: &[i32], counts: &BTreeMap<i32, i64>) -> bool {
+        let Phase::Pregame { players, .. } = &mut self.phase else {
+            return false;
+        };
+        let mut changed = false;
+        for player in players
+            .iter_mut()
+            .filter(|player| users.contains(&player.id))
+        {
+            let count = counts.get(&player.id).copied().unwrap_or(0);
+            if player.stats.num_games != count {
+                player.stats.num_games = count;
+                changed = true;
+            }
+        }
+        changed
+    }
     pub fn players(&self) -> &[Player] {
         match &self.phase {
             Phase::Pregame { players, .. } => players,

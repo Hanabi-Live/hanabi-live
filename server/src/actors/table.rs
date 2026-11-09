@@ -584,21 +584,7 @@ impl TableActor {
     ) -> Result<()> {
         let (users, counts) = result?;
         let mut next = self.candidate();
-        let Phase::Pregame { players, .. } = &mut next.phase else {
-            return Ok(());
-        };
-        let mut changed = false;
-        for player in players
-            .iter_mut()
-            .filter(|player| users.contains(&player.id))
-        {
-            let count = counts.get(&player.id).copied().unwrap_or(0);
-            if player.stats.num_games != count {
-                player.stats.num_games = count;
-                changed = true;
-            }
-        }
-        if changed {
+        if next.set_game_counts(&users, &counts) {
             self.persist(next).await?;
             let mut effects = self.effects();
             self.pregame_messages(&mut effects);

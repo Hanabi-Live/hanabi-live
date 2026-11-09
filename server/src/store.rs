@@ -316,24 +316,13 @@ impl Store {
             })
             .flatten()
             .map(|player| player.id)
-            .collect::<std::collections::BTreeSet<_>>();
+            .collect::<std::collections::BTreeSet<_>>()
+            .into_iter()
+            .collect::<Vec<_>>();
         if refresh_stats && !users.is_empty() {
-            let counts = self
-                .completed_game_counts(&users.into_iter().collect::<Vec<_>>())
-                .await?;
+            let counts = self.completed_game_counts(&users).await?;
             for (table, revision) in &mut output {
-                let Phase::Pregame { players, .. } = &mut table.phase else {
-                    continue;
-                };
-                let mut changed = false;
-                for player in players {
-                    let count = counts.get(&player.id).copied().unwrap_or(0);
-                    if player.stats.num_games != count {
-                        player.stats.num_games = count;
-                        changed = true;
-                    }
-                }
-                if changed {
+                if table.set_game_counts(&users, &counts) {
                     *revision = self.save(table, *revision).await?;
                 }
             }
@@ -403,18 +392,7 @@ impl Store {
             .await?;
             ensure!(players.len() == s.players.len(), "Conflicting participants");
             for (seat, (row, player)) in players.iter().zip(&s.players).enumerate() {
-                let character = &s.game.players[seat];
-                let assignment = hanabi_engine::characters()
-                    .iter()
-                    .find(|c| c.name == character.character)
-                    .map_or(Ok(NO_CHARACTER_ASSIGNMENT), |c| i16::try_from(c.id))?;
-                let metadata = if hanabi_engine::Character::from_name(&character.character)
-                    .is_some_and(hanabi_engine::Character::has_assigned_metadata)
-                {
-                    i16::try_from(character.character_metadata)?
-                } else {
-                    0
-                };
+                let (assignment, metadata) = stored_character(&s.game.players[seat])?;
                 ensure!(
                     row.user_id == player.id
                         && i16::try_from(seat).ok() == Some(row.seat)
@@ -481,18 +459,7 @@ impl Store {
         }
         sqlx::query!("INSERT INTO games(id,name,num_players,variant_id,timed,time_base,time_per_turn,speedrun,deck_plays,empty_clues,one_extra_card,one_less_card,all_or_nothing,detrimental_characters,seed,score,num_turns,end_condition,datetime_started,datetime_finished) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20)", s.game_id, &s.name, i16::try_from(o.num_players)?, i16::try_from(variant.id)?, o.timed, stored_seconds(o.time_base), i32::try_from(o.time_per_turn)?, o.speedrun, o.deck_plays, o.empty_clues, o.one_extra_card, o.one_less_card, o.all_or_nothing, o.detrimental_characters, &s.seed, i16::try_from(s.game.score)?, i16::try_from(s.game.turn)?, s.game.end_condition as i16, s.started, finished).execute(&mut *tx).await?;
         for (seat, p) in s.players.iter().enumerate() {
-            let character = &s.game.players[seat];
-            let assignment = hanabi_engine::characters()
-                .iter()
-                .find(|c| c.name == character.character)
-                .map_or(Ok(NO_CHARACTER_ASSIGNMENT), |c| i16::try_from(c.id))?;
-            let metadata = if hanabi_engine::Character::from_name(&character.character)
-                .is_some_and(hanabi_engine::Character::has_assigned_metadata)
-            {
-                i16::try_from(character.character_metadata)?
-            } else {
-                0
-            };
+            let (assignment, metadata) = stored_character(&s.game.players[seat])?;
             let participant:i32=sqlx::query_scalar!("INSERT INTO game_participants(game_id,user_id,seat,character_assignment,character_metadata) VALUES($1,$2,$3,$4,$5) RETURNING id", s.game_id, p.id, i16::try_from(seat)?, assignment, metadata).fetch_one(&mut *tx).await?;
             for (order, note) in s.notes[seat]
                 .iter()
@@ -915,6 +882,15 @@ impl Store {
         self.primary.close().await;
         result
     }
+}
+/// The character assignment and metadata that `game_participants` stores for a player.
+fn stored_character(player: &hanabi_engine::EnginePlayer) -> Result<(i16, i16)> {
+    let assignment = hanabi_engine::characters()
+        .iter()
+        .find(|c| c.name == player.character)
+        .map_or(Ok(NO_CHARACTER_ASSIGNMENT), |c| i16::try_from(c.id))?;
+    let metadata = player.assigned_metadata().map_or(Ok(0), i16::try_from)?;
+    Ok((assignment, metadata))
 }
 /// A pregame player's statistics as their table's checkpoint stores them: all of their games, and
 /// their games and best scores on the table's variant, from `user_stats` if they have played it.
