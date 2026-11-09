@@ -652,6 +652,13 @@ async fn websocket_defers_lobby_reads_without_an_opt_in_postgres() {
     fixture.close().await;
 }
 
+async fn test_account(fixture: &test_support::Fixture, id: i32) -> Account {
+    Account::read(&fixture.app.store.primary, id)
+        .await
+        .unwrap()
+        .expect("test account")
+}
+
 #[tokio::test]
 async fn game_archive_locks_do_not_block_authentication_and_deferred_errors_are_explicit() {
     let Some(fixture) = test_support::Fixture::start().await else {
@@ -669,7 +676,7 @@ async fn game_archive_locks_do_not_block_authentication_and_deferred_errors_are_
         .unwrap();
     let prepared = tokio::time::timeout(
         Duration::from_secs(1),
-        bootstrap(&fixture.app, user, "127.0.0.1"),
+        bootstrap(&fixture.app, test_account(&fixture, user).await, "127.0.0.1"),
     )
     .await
     .expect("Archive reads blocked the welcome")
@@ -756,7 +763,7 @@ async fn full_history_bootstrap_queues_in_order_without_a_writer_postgres() {
     .await
     .unwrap();
 
-    let prepared = bootstrap(&fixture.app, alice, "127.0.0.1").await.unwrap();
+    let prepared = bootstrap(&fixture.app, test_account(&fixture, alice).await, "127.0.0.1").await.unwrap();
     let mut history_lock = fixture.db.pool.begin().await.unwrap();
     #[expect(
         clippy::disallowed_methods,

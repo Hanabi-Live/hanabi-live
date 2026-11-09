@@ -382,6 +382,34 @@ async fn check_origin(State(app): State<Arc<App>>, request: Request, next: Next)
     next.run(request).await
 }
 
+/// The account that a live connection signs in to, as `websocket` reads it before the upgrade.
+struct Account {
+    id: i32,
+    name: String,
+    normalized_name: String,
+    created: DateTime<Utc>,
+    bot: bool,
+}
+
+impl Account {
+    /// Reads the account with `id`, if it still exists.
+    async fn read(pool: &sqlx::PgPool, id: i32) -> sqlx::Result<Option<Self>> {
+        Ok(sqlx::query!(
+            "SELECT username,normalized_username,datetime_created,is_bot FROM users WHERE id=$1",
+            id
+        )
+        .fetch_optional(pool)
+        .await?
+        .map(|row| Self {
+            id,
+            name: row.username,
+            normalized_name: row.normalized_username,
+            created: row.datetime_created,
+            bot: row.is_bot,
+        }))
+    }
+}
+
 struct Bootstrap {
     name: String,
     normalized_name: String,
@@ -391,28 +419,21 @@ struct Bootstrap {
     initial: Vec<String>,
 }
 
-async fn bootstrap(app: &App, id: i32, ip: &str) -> Result<Bootstrap> {
+async fn bootstrap(app: &App, account: Account, ip: &str) -> Result<Bootstrap> {
     let pool = &app.store.primary;
-    ensure!(
-        !accounts::is_banned(pool, ip).await?,
-        "Your IP address has been banned."
-    );
-    let row = sqlx::query!(
-        "SELECT username,normalized_username,datetime_created,is_bot FROM users WHERE id=$1",
-        id
-    )
-    .fetch_optional(pool)
-    .await?
-    .context("The authenticated user no longer exists.")?;
-    let name: String = row.username.clone();
-    let normalized_name: String = row.normalized_username.clone();
+    let Account {
+        id,
+        name,
+        normalized_name,
+        created,
+        bot,
+    } = account;
     let (settings, friends, blocks, muted) = tokio::try_join!(
         lobby::get_settings(pool, id),
         lobby::friends(pool, id),
         lobby::block_relations(pool, id),
         accounts::is_muted(pool, ip)
     )?;
-    let created: DateTime<Utc> = row.datetime_created;
     let welcome = hanabi_protocol::Welcome {
         user_id: hanabi_protocol::UserId(id),
         username: name.clone(),
@@ -435,7 +456,7 @@ async fn bootstrap(app: &App, id: i32, ip: &str) -> Result<Bootstrap> {
     Ok(Bootstrap {
         name,
         normalized_name,
-        bot: row.is_bot,
+        bot,
         blocks,
         welcome,
         initial: vec![frame(
@@ -583,15 +604,13 @@ async fn websocket(
             .response(true);
         }
     }
-    match sqlx::query_scalar!(
-        "SELECT EXISTS(SELECT 1 FROM users WHERE id=$1) AS \"value!\"",
-        id
-    )
-    .fetch_one(&app.store.primary)
-    .await
-    {
-        Ok(true) => {}
-        Ok(false) => {
+    let account = match Account::read(&app.store.primary, id).await {
+        Ok(Some(account)) => Account {
+            // A bot's first connection marks the account below.
+            bot: account.bot || version == accounts::BOT_VERSION,
+            ..account
+        },
+        Ok(None) => {
             eprintln!("Rejected websocket for deleted account {id} from IP: {ip}");
             return accounts::api_error(
                 StatusCode::UNAUTHORIZED,
@@ -606,7 +625,7 @@ async fn websocket(
             )
             .response(true);
         }
-    }
+    };
     let Ok(slot) = app.sockets.clone().try_acquire_owned() else {
         return crate::errors::Report::known(
             "Opening a live connection",
@@ -649,7 +668,7 @@ async fn websocket(
                             connection(
                                 socket,
                                 app.clone(),
-                                id,
+                                account,
                                 generation,
                                 address.ip().to_string(),
                             )
@@ -721,16 +740,17 @@ async fn connection_stopped(session: &Session, shutdown: &CancellationToken) {
 async fn connection(
     mut socket: WebSocket,
     app: Arc<App>,
-    id: i32,
+    account: Account,
     generation: u64,
     ip: String,
 ) -> Result<()> {
+    let id = account.id;
     let admission = app.admission.clone().read_owned().await;
     ensure!(
         app.accepting.load(Ordering::Acquire) && app.healthy(),
         "Server unavailable"
     );
-    let data = match bootstrap(&app, id, &ip).await {
+    let data = match bootstrap(&app, account, &ip).await {
         Ok(data) => data,
         Err(error) => {
             let _ = tokio::time::timeout(
