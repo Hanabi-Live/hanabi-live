@@ -24,19 +24,25 @@ export const FULL_CARD_STAGE_SIZE = {
   H: 0.189,
 } as const;
 
+/** The gap between the panels at the edges of the game board and the edges of the stage. */
+export const STAGE_MARGIN = 0.01;
+
 /** The action log in the Board Game Arena layout, in fractions of the stage. */
 export const BGA_ACTION_LOG = {
-  x: 0.01,
-  y: 0.01,
+  x: STAGE_MARGIN,
+  y: STAGE_MARGIN,
   w: 0.4,
   h: 0.25,
 } as const;
 
-/** The clue log, in fractions of the stage. */
+/** The width of the clue log and the panels below it, in fractions of the stage width. */
+const CLUE_LOG_W = 0.19;
+
+/** The clue log, in the top-right corner, in fractions of the stage. */
 export const CLUE_LOG = {
-  x: 0.8,
-  y: 0.01,
-  w: 0.19,
+  x: 1 - STAGE_MARGIN - CLUE_LOG_W,
+  y: STAGE_MARGIN,
+  w: CLUE_LOG_W,
   h: 0.51,
 } as const;
 

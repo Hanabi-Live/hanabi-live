@@ -19,6 +19,7 @@ import {
   CARD_H,
   CARD_IMAGE_SHADOW_COLOR,
   CARD_W,
+  FULL_CIRCLE_RADIANS,
   NO_SHADOW_COLOR,
   RANK_FONT_FAMILY,
 } from "./constants";
@@ -132,6 +133,14 @@ const OMNI_BACKGROUND_GRADIENT_OVERSHOOT = 30;
 
 /** How much further apart the suit pips are spread on the deck than on an unknown card. */
 const DECK_SUIT_PIP_RING_SPREAD = 1.05;
+
+/**
+ * How far the triangles that show a card's colors reach along the card's edges from the top-right
+ * and bottom-left corners.
+ */
+const COLOR_TRIANGLE_SIZE = 50;
+
+const QUARTER_TURN_RADIANS = FULL_CIRCLE_RADIANS / 4;
 
 export const CARD_IMAGE_STACK_BASE_RANK_NAME = "StackBase";
 export const CARD_IMAGE_UNKNOWN_CARD_RANK_NAME = "UnknownRank";
@@ -622,8 +631,9 @@ function drawDualColorTriangles(
 
   ctx.save();
   ctx.lineWidth = 1;
-  const triangleSize = 50;
-  const sliceAngle = Math.PI / 2 / count;
+
+  // Each triangle spans a quarter turn, from one edge of the card to the other.
+  const sliceAngle = QUARTER_TURN_RADIANS / count;
 
   // Top-right
   drawColorTriangle(
@@ -631,9 +641,8 @@ function drawDualColorTriangles(
     clueColors,
     CARD_W - CARD_BORDER_WIDTH,
     CARD_BORDER_WIDTH,
-    Math.PI,
+    2 * QUARTER_TURN_RADIANS, // Pointing left, then turning down.
     -1,
-    triangleSize,
     sliceAngle,
     enableShadows,
   );
@@ -644,9 +653,8 @@ function drawDualColorTriangles(
     clueColors,
     CARD_BORDER_WIDTH,
     CARD_H - CARD_BORDER_WIDTH,
-    1.5 * Math.PI,
+    3 * QUARTER_TURN_RADIANS, // Pointing up, then turning right.
     1,
-    triangleSize,
     sliceAngle,
     enableShadows,
   );
@@ -661,7 +669,6 @@ function drawColorTriangle(
   cy: number,
   startTheta: number,
   direction: number,
-  triangleSize: number,
   sliceAngle: number,
   enableShadows: boolean,
 ) {
@@ -673,9 +680,11 @@ function drawColorTriangle(
     // (Manhattan distance), `r = size / (|cos| + |sin|)` ensures the point lies on the straight
     // diagonal line.
     const r1 =
-      triangleSize / (Math.abs(Math.cos(theta1)) + Math.abs(Math.sin(theta1)));
+      COLOR_TRIANGLE_SIZE
+      / (Math.abs(Math.cos(theta1)) + Math.abs(Math.sin(theta1)));
     const r2 =
-      triangleSize / (Math.abs(Math.cos(theta2)) + Math.abs(Math.sin(theta2)));
+      COLOR_TRIANGLE_SIZE
+      / (Math.abs(Math.cos(theta2)) + Math.abs(Math.sin(theta2)));
 
     ctx.beginPath();
     ctx.moveTo(cx, cy); // Start at corner.

@@ -67,6 +67,7 @@ import {
   PANEL_OPACITY,
   RIGHT_MOUSE_BUTTON,
   STAGE_FADE_OPACITY,
+  STAGE_MARGIN,
   STRIKE_ARROW_ORDERS,
   STROKE_WIDTH_UNIT,
   TEXT_SHADOW,
@@ -146,7 +147,7 @@ const WAITING_ON_SERVER_RING = {
 
 /**
  * The gap between the panels stacked in the right-hand column (the clue log, the statistics, and
- * the discard area), and below the last of them, in fractions of the stage.
+ * the discard area), in fractions of the stage.
  */
 const RIGHT_COLUMN_GAP = 0.01;
 
@@ -170,7 +171,7 @@ const DISCARD_AREA = {
   x: CLUE_LOG.x,
   y: DISCARD_AREA_Y,
   w: CLUE_LOG.w,
-  h: 1 - DISCARD_AREA_Y - RIGHT_COLUMN_GAP,
+  h: 1 - DISCARD_AREA_Y - STAGE_MARGIN,
 } as const;
 
 /** How far the discard stacks are inset from the edges of the discard area. */
@@ -600,7 +601,7 @@ function drawDiscardStacks() {
 
 function drawBottomLeftButtons() {
   bottomLeftButtonValues = {
-    x: 0.01,
+    x: STAGE_MARGIN,
     y: 0.8,
     w: 0.07,
     h: 0.0563,

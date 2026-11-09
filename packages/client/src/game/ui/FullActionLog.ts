@@ -57,22 +57,23 @@ export class FullActionLog extends Konva.Group {
     });
     Konva.Group.prototype.add.call(this, rect);
 
-    // The turn numbers sit in a narrow column to the left of the text, with the same margin above
-    // and below.
-    const margin = 0.01 * winH;
-    const textHeight = height - 2 * margin;
+    // The turn numbers sit in a narrow column to the left of the text. The text and the numbers
+    // keep the same margin from the edges of the log.
+    const margin = 0.01;
+    const textHeight = height - 2 * margin * winH;
     const fontSize = textHeight / MAX_LINES;
-    const numbersX = 0.01;
+    const numbersX = margin;
     const numbersWidth = 0.03;
+    const textX = numbersX + numbersWidth;
 
     // The text for each action.
     this.textOptions = {
       fontSize,
       fontFamily: FONT_FAMILY,
       fill: "white",
-      x: (numbersX + numbersWidth) * winW,
-      y: margin,
-      width: 0.35 * winW,
+      x: textX * winW,
+      y: margin * winH,
+      width: width - (textX + margin) * winW,
       height: textHeight,
       listening: false,
     };
@@ -83,7 +84,7 @@ export class FullActionLog extends Konva.Group {
       fontFamily: FONT_FAMILY,
       fill: getCanvasColors().actionLogNumber,
       x: numbersX * winW,
-      y: margin,
+      y: margin * winH,
       width: numbersWidth * winW,
       height: textHeight,
       listening: false,

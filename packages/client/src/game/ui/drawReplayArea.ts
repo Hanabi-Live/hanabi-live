@@ -1,7 +1,7 @@
 import Konva from "konva";
 import { getCanvasColors } from "../../theme";
 import { globals } from "./UIGlobals";
-import { STROKE_WIDTH_UNIT } from "./constants";
+import { BGA_ACTION_LOG, STROKE_WIDTH_UNIT } from "./constants";
 import { Button } from "./controls/Button";
 import { EnterHypoButton } from "./controls/EnterHypoButton";
 import { SharedTurnsButton } from "./controls/SharedTurnsButton";
@@ -25,9 +25,10 @@ export function drawReplayArea(winW: number, winH: number): void {
     w: 0.5,
   };
   if (!globals.lobby.settings.keldonMode) {
-    replayAreaValues.x = 0.01;
+    // The replay area lines up with the action log above it.
+    replayAreaValues.x = BGA_ACTION_LOG.x;
     replayAreaValues.y = 0.49;
-    replayAreaValues.w = 0.4;
+    replayAreaValues.w = BGA_ACTION_LOG.w;
   }
 
   globals.elements.replayArea = new Konva.Group({

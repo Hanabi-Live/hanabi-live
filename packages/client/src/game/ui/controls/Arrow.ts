@@ -7,6 +7,23 @@ const SHADOW_BLUR_LENGTHS = 4;
 /** The outline of the circle that shows the clue, as a multiple of the arrow's pointer length. */
 const CIRCLE_STROKE_WIDTH_LENGTHS = 0.25;
 
+/** The radius of the circle that shows the clue, as a multiple of the arrow's pointer length. */
+const CIRCLE_RADIUS_LENGTHS = 2.25;
+
+/**
+ * The height of the clue number's text box, as a multiple of the circle's height. Text centered
+ * exactly in the circle sits slightly high, so the taller box nudges it down.
+ */
+const CIRCLE_TEXT_HEIGHT = 1.09;
+
+/**
+ * The font size of the clue number, as a fraction of the arrow's offset from its group's origin.
+ */
+const CIRCLE_FONT_SIZE = 0.38;
+
+/** The scale of the suit pip that replaces the clue number in colorblind mode. */
+const CIRCLE_SUIT_PIP_SCALE = 0.2;
+
 // These are arrows used to show which cards that are touched by a clue (and for pointing to various
 // things in a shared replay).
 export class Arrow extends Konva.Group {
@@ -85,7 +102,7 @@ export class Arrow extends Konva.Group {
     this.circle = new Konva.Circle({
       x,
       y: circleY,
-      radius: pointerLength * 2.25,
+      radius: pointerLength * CIRCLE_RADIUS_LENGTHS,
       fill: "black",
       stroke: "white",
       strokeWidth: pointerLength * CIRCLE_STROKE_WIDTH_LENGTHS,
@@ -103,10 +120,8 @@ export class Arrow extends Konva.Group {
         y: this.circle.height() / 2,
       },
       width: this.circle.width(),
-      // For some reason the text is offset if we place it exactly in the middle of the circle, so
-      // nudge it downwards.
-      height: this.circle.height() * 1.09,
-      fontSize: y * 0.38,
+      height: this.circle.height() * CIRCLE_TEXT_HEIGHT,
+      fontSize: y * CIRCLE_FONT_SIZE,
       fontFamily: FONT_FAMILY,
       fill: "white",
       align: "center",
@@ -122,8 +137,8 @@ export class Arrow extends Konva.Group {
         x,
         y: circleY,
         scale: {
-          x: 0.2,
-          y: 0.2,
+          x: CIRCLE_SUIT_PIP_SCALE,
+          y: CIRCLE_SUIT_PIP_SCALE,
         },
         visible: false,
         listening: false,
