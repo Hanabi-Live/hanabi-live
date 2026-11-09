@@ -1,6 +1,9 @@
 import type { State } from "../../../types/State";
 import { globals } from "../../UIGlobals";
 
+/** Replay steps closer together than this are fast-forwarding, such as when a key is held down. */
+const FAST_FORWARD_STEP_MS = 500;
+
 export function onObserversStarted(
   state: State,
   previousState: State | undefined,
@@ -20,6 +23,21 @@ export function onObserversStarted(
   let segmentDifference = 0;
   if (currentSegment !== null && oldSegment !== null) {
     segmentDifference = Math.abs(currentSegment - oldSegment);
+  }
+
+  if (
+    state.replay.active
+    && currentSegment !== null
+    && oldSegment !== null
+    && currentSegment > oldSegment
+  ) {
+    const now = Date.now();
+    globals.fastForwarding =
+      now - globals.lastReplayStepTimeMS < FAST_FORWARD_STEP_MS;
+    globals.lastReplayStepTimeMS = now;
+    if (globals.fastForwarding) {
+      stopStackCompleteAnimations();
+    }
   }
 
   globals.animateFast =
@@ -52,5 +70,15 @@ export function onObserversFinished(
   // All of the observers are finished firing, so reset "animateFast" back to false.
   if (!globals.isResizing) {
     globals.animateFast = false;
+  }
+  globals.fastForwarding = false;
+}
+
+function stopStackCompleteAnimations() {
+  for (const { layout } of globals.deck) {
+    if (layout.stackCompleteAnimation !== null) {
+      layout.stackCompleteAnimation.stop();
+      layout.stackCompleteAnimation = null;
+    }
   }
 }

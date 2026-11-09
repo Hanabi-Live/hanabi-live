@@ -92,6 +92,9 @@ export class UIGlobals {
 
   // Miscellaneous
   animateFast = true;
+  /** Whether the replay is moving forward one segment at a time in quick succession. */
+  fastForwarding = false;
+  lastReplayStepTimeMS = 0;
 
   /** Used to prevent accidental double clicks. */
   UIClickTime = 0;
@@ -164,6 +167,8 @@ export class UIGlobals {
     this.startingTurnTime = 0;
     this.lastTimerUpdateTimeMS = 0;
     this.animateFast = true;
+    this.fastForwarding = false;
+    this.lastReplayStepTimeMS = 0;
     this.UIClickTime = 0;
     this.restartPending = false;
     this.globalEmpathyEnabled = false;

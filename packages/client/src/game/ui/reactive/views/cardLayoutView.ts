@@ -124,8 +124,12 @@ export function onStackCompletionDataChanged(
   data: StackCompletionData,
   previousData: StackCompletionData | undefined,
 ): void {
-  // Skip the animation when jumping through a replay.
-  if (previousData === undefined || globals.animateFast) {
+  // Skip the animation when jumping or fast-forwarding through a replay.
+  if (
+    previousData === undefined
+    || globals.animateFast
+    || globals.fastForwarding
+  ) {
     return;
   }
 
