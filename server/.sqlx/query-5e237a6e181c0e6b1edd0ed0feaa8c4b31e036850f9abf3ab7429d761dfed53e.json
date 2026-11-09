@@ -1,0 +1,12 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "DELETE FROM live_tables WHERE revision = 0",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": []
+    },
+    "nullable": []
+  },
+  "hash": "5e237a6e181c0e6b1edd0ed0feaa8c4b31e036850f9abf3ab7429d761dfed53e"
+}

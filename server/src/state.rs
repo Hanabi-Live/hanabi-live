@@ -1,7 +1,7 @@
 //! The live tables' latest checkpoints, which PostgreSQL stores. One server owns them at a time.
 
 use crate::{checkpoint::PartChanges, errors::Fault, store::LockSpace};
-use anyhow::{Context, Result, bail, ensure};
+use anyhow::{Context, Result, ensure};
 use axum::http::StatusCode;
 use hanabi_protocol::TableId;
 use sqlx::{Connection, PgConnection, PgPool, Postgres, Transaction, postgres::PgConnectOptions};
@@ -148,8 +148,6 @@ pub async fn remove_in(
 }
 
 struct Ownership {
-    /// This server's ownership epoch. Writes commit only while it is current.
-    epoch: i64,
     lost: CancellationToken,
 }
 impl Ownership {
@@ -178,7 +176,9 @@ pub struct LiveState {
 
 impl LiveState {
     /// Takes ownership of the live tables. A dedicated connection holds a session advisory lock
-    /// while the server runs, and the ownership epoch fences writes from any earlier owner.
+    /// while the server runs. A server that loses that connection stops, so another can take over.
+    /// Writes need no other fence: a second server cannot start beside a running one, because it
+    /// cannot bind the same port, and a write from a stale revision fails.
     pub async fn connect(pool: PgPool, options: &PgConnectOptions) -> Result<Self> {
         Self::connect_within(pool, options, ACQUISITION_TIMEOUT).await
     }
@@ -206,13 +206,12 @@ impl LiveState {
             );
             tokio::time::sleep(ACQUISITION_RETRY).await;
         }
-        // This waits for any write that an earlier owner has in progress.
-        let epoch =
-            sqlx::query_scalar!("UPDATE live_state_owner SET epoch = epoch + 1 RETURNING epoch")
-                .fetch_one(&mut lock)
-                .await?;
+        // Table IDs that an earlier owner reserved but never saved are unused. This server has
+        // reserved none yet.
+        sqlx::query!("DELETE FROM live_tables WHERE revision = 0")
+            .execute(&mut lock)
+            .await?;
         let owner = Arc::new(Ownership {
-            epoch,
             lost: CancellationToken::new(),
         });
         let tasks = TaskTracker::new();
@@ -249,19 +248,10 @@ impl LiveState {
         self.owner.lost.clone()
     }
 
-    /// Begins a transaction that commits only while this server owns the live tables. Locking the
-    /// epoch makes a new owner wait for this transaction before it reads the tables.
+    /// Begins a transaction for the live tables, while this server owns them.
     pub async fn begin(&self) -> Result<Transaction<'static, Postgres>> {
         self.check()?;
-        let mut transaction = self.pool.begin().await?;
-        let epoch = sqlx::query_scalar!("SELECT epoch FROM live_state_owner FOR SHARE")
-            .fetch_one(&mut *transaction)
-            .await?;
-        if epoch != self.owner.epoch {
-            self.owner.lost.cancel();
-            bail!("Another server took ownership of the live tables; stop admission and recover");
-        }
-        Ok(transaction)
+        Ok(self.pool.begin().await?)
     }
 
     /// Commits a transaction from `begin`. A failed commit may still have been applied, so the
@@ -296,9 +286,8 @@ impl LiveState {
     pub async fn allocate_table(&self) -> Result<TableId> {
         let mut transaction = self.begin().await?;
         let id = sqlx::query_scalar!(
-            "INSERT INTO live_tables (id, revision, payload, epoch)
-             VALUES (nextval('live_table_ids'), 0, NULL, $1) RETURNING id",
-            self.owner.epoch
+            "INSERT INTO live_tables (id, revision, payload)
+             VALUES (nextval('live_table_ids'), 0, NULL) RETURNING id"
         )
         .fetch_one(&mut *transaction)
         .await?;
@@ -336,15 +325,9 @@ impl LiveState {
         .pop())
     }
 
-    /// The saved tables. Reservations that an earlier owner left unused are removed.
+    /// The saved tables.
     pub async fn load(&self) -> Result<Vec<StoredState>> {
         let mut transaction = self.begin().await?;
-        sqlx::query!(
-            "DELETE FROM live_tables WHERE revision = 0 AND epoch <> $1",
-            self.owner.epoch
-        )
-        .execute(&mut *transaction)
-        .await?;
         let rows = sqlx::query!(
             r#"SELECT t.id, t.revision, t.payload AS "payload!", p.part AS "part?",
                       p.value AS "value?"
@@ -457,36 +440,6 @@ mod tests {
         );
         let second = LiveState::for_test(&db.pool).await?;
         ensure!(second.get(id).await?.context("Missing table")?.payload == "first");
-        second.close().await?;
-        db.close().await;
-        Ok(())
-    }
-
-    #[tokio::test]
-    async fn a_replaced_owner_cannot_write_and_learns_that_it_lost_ownership() -> Result<()> {
-        let Some(db) = TestDb::create().await else {
-            return Ok(());
-        };
-        let first = LiveState::for_test(&db.pool).await?;
-        let id = first.allocate_table().await?;
-        first.save(id, 0, "first", &PartChanges::default()).await?;
-        drop_ownership_connection(&db.pool).await?;
-        let second = LiveState::for_test(&db.pool).await?;
-        ensure!(
-            first
-                .save(id, 1, "stale", &PartChanges::default())
-                .await
-                .is_err(),
-            "A replaced owner saved a table"
-        );
-        ensure!(
-            first.lost().is_cancelled(),
-            "A replaced owner kept admitting work"
-        );
-        ensure!(second.get(id).await?.context("Missing table")?.payload == "first");
-        second
-            .save(id, 1, "second", &PartChanges::default())
-            .await?;
         second.close().await?;
         db.close().await;
         Ok(())

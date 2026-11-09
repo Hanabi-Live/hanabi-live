@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "INSERT INTO live_tables (id, revision, payload, epoch)\n             VALUES (nextval('live_table_ids'), 0, NULL, $1) RETURNING id",
+  "query": "INSERT INTO live_tables (id, revision, payload)\n             VALUES (nextval('live_table_ids'), 0, NULL) RETURNING id",
   "describe": {
     "columns": [
       {
@@ -16,13 +16,11 @@
       }
     ],
     "parameters": {
-      "Left": [
-        "Int8"
-      ]
+      "Left": []
     },
     "nullable": [
       false
     ]
   },
-  "hash": "53be985d1d0608e87a997c5743073591d791b3d86d4076241799bfedd94bf85b"
+  "hash": "e6db36651dcc588c0c277bc24020846147700ff11f0887fe451062054d3d9f67"
 }

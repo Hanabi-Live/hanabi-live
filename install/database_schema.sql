@@ -396,8 +396,8 @@ CREATE TABLE live_tables (
     revision  BIGINT  NOT NULL  CHECK (revision >= 0),
     /* The checkpoint JSON. A table that is reserved but not saved yet has none. */
     payload   TEXT    NULL      CHECK ((revision = 0) = (payload IS NULL)),
-    /* The ownership epoch that reserved the table. A later owner removes unused reservations. */
-    epoch     BIGINT  NOT NULL
+    /* Unused. Servers no longer fence writes with an ownership epoch; a later migration drops it. */
+    epoch     BIGINT  NOT NULL  DEFAULT 0
 );
 
 /*
@@ -416,7 +416,7 @@ CREATE TABLE live_table_parts (
 DROP TABLE IF EXISTS live_state_owner CASCADE;
 CREATE TABLE live_state_owner (
     singleton  BOOLEAN  PRIMARY KEY  DEFAULT TRUE  CHECK (singleton),
-    /* Each server that takes ownership increments this. Writes from older owners fail. */
+    /* Unused. Servers no longer fence writes with an ownership epoch; a later migration drops it. */
     epoch      BIGINT   NOT NULL
 );
 INSERT INTO live_state_owner (epoch) VALUES (0);
