@@ -708,6 +708,16 @@ async fn websocket(
         })
 }
 
+/// Completes when a connection must stop: it was closed or replaced, the server lost ownership of
+/// the live tables, or the server is shutting down.
+async fn connection_stopped(session: &Session, shutdown: &CancellationToken) {
+    tokio::select! {
+        () = session.cancel.cancelled() => {}
+        () = session.ownership_lost.cancelled() => {}
+        () = shutdown.cancelled() => {}
+    }
+}
+
 async fn connection(
     mut socket: WebSocket,
     app: Arc<App>,
@@ -739,9 +749,7 @@ async fn connection(
             return Err(error);
         }
     };
-    let store = app.store.clone();
-    let shutdown = app.shutdown.clone();
-    let (session, mut outgoing) = Session::with_health(
+    let (session, mut outgoing) = Session::with_tokens(
         SessionMetadata {
             user: id,
             name: data.name,
@@ -753,7 +761,7 @@ async fn connection(
             bot: data.bot,
         },
         app.ownership_lost.clone(),
-        Arc::new(move || !shutdown.is_cancelled() && store.check_state().is_ok()),
+        app.shutdown.clone(),
     );
     for other in data.blocks {
         session.set_blocked(other, true);
@@ -764,9 +772,7 @@ async fn connection(
     let writer = tokio::spawn(async move {
         loop {
             tokio::select! {
-                ()=writer_session.cancel.cancelled()=>break,
-                ()=writer_session.ownership_lost.cancelled()=>break,
-                ()=writer_shutdown.cancelled()=>break,
+                ()=connection_stopped(&writer_session,&writer_shutdown)=>break,
                 next=outgoing.recv()=>{
                     let Some(Outbound {message,permit,completion,global_permit})=next else {break;};
                     let send=sink.send(message);
@@ -777,9 +783,7 @@ async fn connection(
                         if writer_session.active() {send.as_mut().poll(cx).map(Some)} else {Poll::Ready(None)}
                     });
                     let result=tokio::select! {
-                        ()=writer_session.cancel.cancelled()=>None,
-                        ()=writer_session.ownership_lost.cancelled()=>None,
-                        ()=writer_shutdown.cancelled()=>None,
+                        ()=connection_stopped(&writer_session,&writer_shutdown)=>None,
                         result=tokio::time::timeout(WRITE_TIMEOUT,guarded)=>result.ok().flatten(),
                     };
                     drop(permit);
@@ -817,9 +821,7 @@ async fn connection(
     let reader = tokio::spawn(async move {
         loop {
             tokio::select! {
-                ()=reader_session.cancel.cancelled()=>break,
-                ()=reader_session.ownership_lost.cancelled()=>break,
-                ()=reader_shutdown.cancelled()=>break,
+                ()=connection_stopped(&reader_session,&reader_shutdown)=>break,
                 next=stream.next()=>match next {
                     Some(Ok(Message::Text(text)))=>{
                         let Some(message)=incoming_bytes.admit(&reader_session,&text) else {break;};

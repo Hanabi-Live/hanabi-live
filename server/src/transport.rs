@@ -86,7 +86,8 @@ pub struct Session {
     pub cancel: CancellationToken,
     pub ownership_lost: CancellationToken,
     pub lobby_load: Arc<Semaphore>,
-    health: HealthCheck,
+    /// Cancelled when the server shuts down.
+    shutdown: CancellationToken,
     /// Whether the account has authenticated as a bot.
     pub bot: bool,
     h_group: AtomicBool,
@@ -99,8 +100,6 @@ pub struct Session {
     outbound: mpsc::Sender<Outbound>,
     bytes: Arc<Semaphore>,
 }
-
-pub type HealthCheck = Arc<dyn Fn() -> bool + Send + Sync>;
 
 pub struct SessionMetadata {
     pub user: i32,
@@ -120,7 +119,7 @@ impl Session {
         generation: u64,
         h_group: bool,
     ) -> (Arc<Self>, mpsc::Receiver<Outbound>) {
-        Self::with_health(
+        Self::with_tokens(
             SessionMetadata {
                 user,
                 normalized_name: crate::accounts::normalize_username(&name),
@@ -132,14 +131,16 @@ impl Session {
                 bot: false,
             },
             CancellationToken::new(),
-            Arc::new(|| true),
+            CancellationToken::new(),
         )
     }
 
-    pub fn with_health(
+    /// Creates a session that stops when the server loses ownership of the live tables or shuts
+    /// down.
+    pub fn with_tokens(
         metadata: SessionMetadata,
         ownership_lost: CancellationToken,
-        health: HealthCheck,
+        shutdown: CancellationToken,
     ) -> (Arc<Self>, mpsc::Receiver<Outbound>) {
         let (outbound, receiver) = mpsc::channel(OUTBOUND_QUEUE);
         (
@@ -159,7 +160,7 @@ impl Session {
                 cancel: CancellationToken::new(),
                 ownership_lost,
                 lobby_load: Arc::new(Semaphore::new(1)),
-                health,
+                shutdown,
                 outbound,
                 bytes: Arc::new(Semaphore::new(SESSION_OUTPUT_BYTES)),
             }),
@@ -167,12 +168,12 @@ impl Session {
         )
     }
 
+    /// Whether the session can still send and receive. The writer closes a connection whose
+    /// session is no longer active.
     pub fn active(&self) -> bool {
-        if self.cancel.is_cancelled() || self.ownership_lost.is_cancelled() || !(self.health)() {
-            self.cancel.cancel();
-            return false;
-        }
-        true
+        !self.cancel.is_cancelled()
+            && !self.ownership_lost.is_cancelled()
+            && !self.shutdown.is_cancelled()
     }
 
     pub fn supersede(&self) {
@@ -234,94 +235,67 @@ impl Session {
         if !self.active() || self.closing.load(Ordering::Acquire) {
             return;
         }
-        let permit = (message.len() <= MAX_MESSAGE_BYTES)
-            .then_some(message.len())
-            .and_then(|len| u32::try_from(len).ok())
-            .and_then(|len| self.bytes.clone().try_acquire_many_owned(len).ok());
-        let Some(permit) = permit else {
-            eprintln!("Closing a slow or oversized connection.");
-            self.cancel.cancel();
-            return;
+        self.enqueue(Message::Text(message.into()), None);
+    }
+
+    /// Queues a frame for the writer, holding its bytes against the session's and the server's
+    /// output budgets until it is written. A frame that does not fit closes the connection. Returns
+    /// whether the frame was queued.
+    fn enqueue(&self, message: Message, completion: Option<oneshot::Sender<()>>) -> bool {
+        let length = match &message {
+            Message::Text(text) => text.len(),
+            // A close frame holds one byte, so that it still waits for space in the budgets.
+            _ => 1,
         };
-        let Ok(global_permit) = GLOBAL_OUTPUT_BYTES
-            .clone()
-            .try_acquire_many_owned(u32::try_from(message.len()).unwrap_or(u32::MAX))
+        let Some(length) = (length <= MAX_MESSAGE_BYTES)
+            .then(|| u32::try_from(length).ok())
+            .flatten()
         else {
+            eprintln!("Closing a connection with an oversized frame.");
             self.cancel.cancel();
-            return;
+            return false;
+        };
+        let Ok(permit) = self.bytes.clone().try_acquire_many_owned(length) else {
+            eprintln!("Closing a slow connection.");
+            self.cancel.cancel();
+            return false;
+        };
+        let Ok(global_permit) = GLOBAL_OUTPUT_BYTES.clone().try_acquire_many_owned(length) else {
+            eprintln!("Closing a connection because the aggregate output byte budget is exhausted.");
+            self.cancel.cancel();
+            return false;
         };
         let outbound = Outbound {
-            message: Message::Text(message.to_owned().into()),
+            message,
             permit,
-            completion: None,
+            completion,
             global_permit,
         };
         if self.outbound.try_send(outbound).is_err() {
             eprintln!("Closing a saturated connection.");
             self.cancel.cancel();
+            return false;
         }
+        true
     }
 
+    /// Sends `messages` and then a close frame with `code`. Nothing else is sent afterward. The
+    /// receiver completes once the close frame is written.
     pub fn close_after(&self, messages: &[String], code: u16) -> Option<oneshot::Receiver<()>> {
         if !self.active() || self.closing.swap(true, Ordering::AcqRel) {
             return None;
         }
         for message in messages {
-            let permit = (message.len() <= MAX_MESSAGE_BYTES)
-                .then_some(message.len())
-                .and_then(|len| u32::try_from(len).ok())
-                .and_then(|len| self.bytes.clone().try_acquire_many_owned(len).ok());
-            let Some(permit) = permit else {
-                self.cancel.cancel();
-                return None;
-            };
-            let Ok(global_permit) = GLOBAL_OUTPUT_BYTES
-                .clone()
-                .try_acquire_many_owned(u32::try_from(message.len()).unwrap_or(u32::MAX))
-            else {
-                self.cancel.cancel();
-                return None;
-            };
-            if self
-                .outbound
-                .try_send(Outbound {
-                    message: Message::Text(message.clone().into()),
-                    permit,
-                    completion: None,
-                    global_permit,
-                })
-                .is_err()
-            {
-                self.cancel.cancel();
+            if !self.enqueue(Message::Text(message.as_str().into()), None) {
                 return None;
             }
         }
-        let Ok(permit) = self.bytes.clone().try_acquire_owned() else {
-            self.cancel.cancel();
-            return None;
-        };
         let (completion, received) = oneshot::channel();
-        let Ok(global_permit) = GLOBAL_OUTPUT_BYTES.clone().try_acquire_owned() else {
-            self.cancel.cancel();
-            return None;
-        };
-        if self
-            .outbound
-            .try_send(Outbound {
-                message: Message::Close(Some(CloseFrame {
-                    code,
-                    reason: "Server maintenance".into(),
-                })),
-                permit,
-                completion: Some(completion),
-                global_permit,
-            })
-            .is_err()
-        {
-            self.cancel.cancel();
-            return None;
-        }
-        Some(received)
+        let close = Message::Close(Some(CloseFrame {
+            code,
+            reason: "Server maintenance".into(),
+        }));
+        self.enqueue(close, Some(completion)).then_some(received)
     }
 }
 
@@ -402,31 +376,35 @@ mod tests {
     }
 
     #[test]
-    fn a_failed_ownership_check_stops_a_session_before_the_watchdog_notices() {
-        let valid = Arc::new(AtomicBool::new(true));
-        let check = valid.clone();
-        let lost = CancellationToken::new();
-        let (session, mut receiver) = Session::with_health(
-            SessionMetadata {
-                user: 1,
-                name: "Alice".into(),
-                normalized_name: "alice".into(),
-                ip: "127.0.0.1".into(),
-                generation: 1,
-                h_group: false,
-                h_group_level: 0,
-                bot: false,
-            },
-            lost.clone(),
-            Arc::new(move || check.load(Ordering::Acquire)),
-        );
-        session.emit("before {}");
-        drop(receiver.try_recv().unwrap());
-        valid.store(false, Ordering::Release);
-        assert!(!lost.is_cancelled());
-        session.emit("after {}");
-        assert!(!session.active());
-        assert!(receiver.try_recv().is_err());
+    fn lost_ownership_or_shutdown_stops_a_session() {
+        for stop_by_shutdown in [false, true] {
+            let lost = CancellationToken::new();
+            let shutdown = CancellationToken::new();
+            let (session, mut receiver) = Session::with_tokens(
+                SessionMetadata {
+                    user: 1,
+                    name: "Alice".into(),
+                    normalized_name: "alice".into(),
+                    ip: "127.0.0.1".into(),
+                    generation: 1,
+                    h_group: false,
+                    h_group_level: 0,
+                    bot: false,
+                },
+                lost.clone(),
+                shutdown.clone(),
+            );
+            session.emit("before {}");
+            drop(receiver.try_recv().unwrap());
+            if stop_by_shutdown {
+                shutdown.cancel();
+            } else {
+                lost.cancel();
+            }
+            session.emit("after {}");
+            assert!(!session.active());
+            assert!(receiver.try_recv().is_err());
+        }
     }
 
     #[test]

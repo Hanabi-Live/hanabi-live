@@ -39,7 +39,7 @@ fn test_session(
     name: &str,
     generation: u64,
 ) -> (Arc<Session>, mpsc::Receiver<Outbound>) {
-    Session::with_health(
+    Session::with_tokens(
         crate::transport::SessionMetadata {
             user,
             name: name.into(),
@@ -47,10 +47,11 @@ fn test_session(
             ip: String::new(),
             generation,
             h_group: false,
+            h_group_level: 0,
             bot: is_test_bot(name),
         },
         tokio_util::sync::CancellationToken::new(),
-        Arc::new(|| true),
+        tokio_util::sync::CancellationToken::new(),
     )
 }
 impl Harness {
@@ -2505,7 +2506,7 @@ async fn ban_disconnects_every_session_from_the_banned_ip() -> Result<()> {
             (2, "AliceAlt", "192.0.2.1"),
             (3, "Bob", "192.0.2.2"),
         ] {
-            let (session, receiver) = Session::with_health(
+            let (session, receiver) = Session::with_tokens(
                 crate::transport::SessionMetadata {
                     user,
                     name: name.into(),
@@ -2517,7 +2518,7 @@ async fn ban_disconnects_every_session_from_the_banned_ip() -> Result<()> {
                     bot: false,
                 },
                 tokio_util::sync::CancellationToken::new(),
-                Arc::new(|| true),
+                tokio_util::sync::CancellationToken::new(),
             );
             h.register(session.clone()).await?;
             sessions.push(session);
