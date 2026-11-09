@@ -26,6 +26,8 @@ listed here.
   card.
 - The deck tooltip in a shared replay shows how long the replay has been
   running.
+- Slightly changed the appearance of number pips to try and make them less
+  visually buggy.
 
 ## November 7th, 2026
 
