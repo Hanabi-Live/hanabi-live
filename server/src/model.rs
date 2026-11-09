@@ -2,6 +2,7 @@ use crate::game::{AssignedCharacter, Game, Options};
 use anyhow::{Result, ensure};
 use chrono::{DateTime, Utc};
 use hanabi_engine::EndCondition;
+use hanabi_protocol::GameId;
 use hanabi_protocol::TableId;
 use hanabi_protocol::UserId;
 use hanabi_protocol::{
@@ -15,6 +16,9 @@ use std::collections::{BTreeMap, HashSet};
 pub const FORMAT: &str = "hanabi-live-1";
 /// The author of chat that the server wrote, as `chat_log` stores it. Real users have positive IDs.
 pub const SERVER_AUTHOR: UserId = UserId(0);
+/// The game ID of a game that is not in the database, such as a replay of uploaded JSON. Games in
+/// the database have positive IDs.
+pub const UNSAVED_GAME: GameId = GameId(0);
 /// How long before an idle game ends to warn its table.
 pub const IDLE_WARNING_MS: i64 = 5 * CLOCK_UNITS_PER_MINUTE;
 
@@ -41,14 +45,14 @@ pub struct ExtraOptions {
     pub set_replay_turn: usize,
     /// The finished game that the table replays.
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub replay_game_id: Option<i32>,
+    pub replay_game_id: Option<GameId>,
 }
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct Snapshot {
     pub format: String,
     pub table_id: TableId,
-    pub game_id: i32,
+    pub game_id: GameId,
     pub owner: UserId,
     pub name: String,
     pub players: Vec<Player>,
@@ -97,7 +101,7 @@ pub struct Tag {
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct PendingTag {
-    pub game_id: i32,
+    pub game_id: GameId,
     pub user_id: UserId,
     pub operation: TagOperation,
     pub tag: String,
@@ -424,7 +428,7 @@ impl TableSnapshot {
 impl Snapshot {
     pub fn validate(&self) -> Result<()> {
         ensure!(
-            self.format == FORMAT && self.table_id.0 > 0 && self.game_id >= 0,
+            self.format == FORMAT && self.table_id.0 > 0 && self.game_id >= UNSAVED_GAME,
             "Incompatible game checkpoint"
         );
         let n = self.players.len();
@@ -489,7 +493,7 @@ impl Snapshot {
         names.sort_by_key(|s| s.to_lowercase());
         let time = timestamp;
         hanabi_protocol::GameHistory {
-            id: hanabi_protocol::GameId(self.game_id),
+            id: self.game_id,
             options: wire_options(&self.game.options),
             seed: self.seed.clone(),
             score: self.game.score,

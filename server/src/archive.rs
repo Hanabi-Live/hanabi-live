@@ -8,6 +8,7 @@ use crate::{
 use anyhow::{Context, Result, ensure};
 use chrono::{DateTime, Utc};
 use hanabi_engine::{AssignedCharacter, EndCondition, GameSetup, Interpretation};
+use hanabi_protocol::GameId;
 use hanabi_protocol::TableId;
 use hanabi_protocol::UserId;
 use hanabi_protocol::{NO_VALUE, ReplayAction};
@@ -67,7 +68,7 @@ pub(crate) struct Archive {
     pub tags: Vec<Tag>,
 }
 
-pub(crate) async fn load(pool: &PgPool, id: i32) -> Result<Option<Archive>> {
+pub(crate) async fn load(pool: &PgPool, id: GameId) -> Result<Option<Archive>> {
     // One statement preserves a consistent snapshot without per-player note queries.
     let Some(row) = sqlx::query!(
         "SELECT to_jsonb(g) AS \"game!: Json<GameRecord>\",
@@ -87,7 +88,7 @@ pub(crate) async fn load(pool: &PgPool, id: i32) -> Result<Option<Archive>> {
           ORDER BY t.user_id,t.tag) FROM game_tags t
           WHERE t.game_id=g.id),'[]'::jsonb) AS \"archive_tags!: Json<Vec<Tag>>\"
         FROM games g WHERE g.id=$1",
-        id
+        id.0
     )
     .fetch_optional(pool)
     .await?
@@ -118,7 +119,7 @@ pub const NO_CHARACTER_ASSIGNMENT: i16 = -1;
 /// Rebuilds a finished game from the database as a replay at table `table_id`, owned by `owner`.
 pub(crate) async fn replay(
     pool: &PgPool,
-    id: i32,
+    id: GameId,
     table_id: TableId,
     owner: UserId,
 ) -> Result<Snapshot> {
@@ -199,7 +200,7 @@ pub(crate) async fn replay(
     Ok(Snapshot {
         format: FORMAT.into(),
         table_id,
-        game_id: row.id,
+        game_id: GameId(row.id),
         owner,
         name: row.name.clone(),
         players,
@@ -224,8 +225,8 @@ pub(crate) async fn replay(
 }
 
 /// A finished game's tags, or `None` if the game does not exist.
-pub(crate) async fn tags(pool: &PgPool, id: i32) -> Result<Option<Vec<Tag>>> {
-    let rows=sqlx::query!("SELECT t.user_id AS \"user_id?\",t.tag AS \"tag?\" FROM games g LEFT JOIN game_tags t ON t.game_id=g.id WHERE g.id=$1 ORDER BY t.user_id,t.tag", id).fetch_all(pool).await?;
+pub(crate) async fn tags(pool: &PgPool, id: GameId) -> Result<Option<Vec<Tag>>> {
+    let rows=sqlx::query!("SELECT t.user_id AS \"user_id?\",t.tag AS \"tag?\" FROM games g LEFT JOIN game_tags t ON t.game_id=g.id WHERE g.id=$1 ORDER BY t.user_id,t.tag", id.0).fetch_all(pool).await?;
     if rows.is_empty() {
         return Ok(None);
     }
@@ -247,14 +248,14 @@ pub(crate) async fn insert(
     s: &Snapshot,
 ) -> Result<()> {
     ensure!(
-        s.game_id > 0 && s.game.end_condition != EndCondition::InProgress,
+        s.game_id > crate::model::UNSAVED_GAME && s.game.end_condition != EndCondition::InProgress,
         "Cannot archive an ongoing/JSON game"
     );
     let finished = s.finished.context("Missing completion time")?;
     let o = &s.game.options;
     let variant = hanabi_engine::get_variant(&o.variant_name)?;
     let tx = transaction;
-    sqlx::query!("INSERT INTO games(id,name,num_players,variant_id,timed,time_base,time_per_turn,speedrun,deck_plays,empty_clues,one_extra_card,one_less_card,all_or_nothing,detrimental_characters,seed,score,num_turns,end_condition,datetime_started,datetime_finished) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20)", s.game_id, &s.name, i16::try_from(o.num_players)?, i16::try_from(variant.id)?, o.timed, stored_seconds(o.time_base), i32::try_from(o.time_per_turn)?, o.speedrun, o.deck_plays, o.empty_clues, o.one_extra_card, o.one_less_card, o.all_or_nothing, o.detrimental_characters, &s.seed, i16::try_from(s.game.score)?, i16::try_from(s.game.turn)?, s.game.end_condition as i16, s.started, finished).execute(&mut **tx).await?;
+    sqlx::query!("INSERT INTO games(id,name,num_players,variant_id,timed,time_base,time_per_turn,speedrun,deck_plays,empty_clues,one_extra_card,one_less_card,all_or_nothing,detrimental_characters,seed,score,num_turns,end_condition,datetime_started,datetime_finished) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20)", s.game_id.0, &s.name, i16::try_from(o.num_players)?, i16::try_from(variant.id)?, o.timed, stored_seconds(o.time_base), i32::try_from(o.time_per_turn)?, o.speedrun, o.deck_plays, o.empty_clues, o.one_extra_card, o.one_less_card, o.all_or_nothing, o.detrimental_characters, &s.seed, i16::try_from(s.game.score)?, i16::try_from(s.game.turn)?, s.game.end_condition as i16, s.started, finished).execute(&mut **tx).await?;
     let mut users = vec![];
     let mut seats = vec![];
     let mut assignments = vec![];
@@ -272,7 +273,7 @@ pub(crate) async fn insert(
          FROM UNNEST($2::integer[],$3::smallint[],$4::smallint[],$5::smallint[])
          AS p(user_id,seat,assignment,metadata)
          RETURNING id,seat",
-        s.game_id,
+        s.game_id.0,
         &users,
         &seats,
         &assignments,
@@ -320,7 +321,7 @@ pub(crate) async fn insert(
         .iter()
         .map(|a| i16::try_from(a.value))
         .collect::<Result<_, _>>()?;
-    sqlx::query!("INSERT INTO game_actions(game_id,turn,type,target,value) SELECT $1,(a.turn-1)::smallint,a.kind,a.target,a.value FROM UNNEST($2::smallint[],$3::smallint[],$4::smallint[]) WITH ORDINALITY AS a(kind,target,value,turn)", s.game_id, &kinds, &targets, &values).execute(&mut **tx).await?;
+    sqlx::query!("INSERT INTO game_actions(game_id,turn,type,target,value) SELECT $1,(a.turn-1)::smallint,a.kind,a.target,a.value FROM UNNEST($2::smallint[],$3::smallint[],$4::smallint[]) WITH ORDINALITY AS a(kind,target,value,turn)", s.game_id.0, &kinds, &targets, &values).execute(&mut **tx).await?;
     let tag_users = s.tags.iter().map(|tag| tag.user.0).collect::<Vec<_>>();
     let tags = s
         .tags
@@ -329,7 +330,7 @@ pub(crate) async fn insert(
         .collect::<Vec<_>>();
     sqlx::query!(
         "INSERT INTO game_tags(game_id,user_id,tag) SELECT $1,t.user_id,t.tag FROM UNNEST($2::integer[],$3::text[]) AS t(user_id,tag)",
-        s.game_id,
+        s.game_id.0,
         &tag_users,
         &tags as &[&str]
     )

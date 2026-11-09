@@ -13,6 +13,7 @@ use crate::{
     transport::{Session, frame},
 };
 use anyhow::{Context, Result};
+use hanabi_protocol::GameId;
 use hanabi_protocol::{
     ClientMessage, ErrorNotice, SoundLobby, Status, TableId, TableRequest, User, UserId, UserLeft,
     UserList,
@@ -276,7 +277,9 @@ impl Hub {
         let game = r.database_id?;
         self.tables
             .iter()
-            .filter(|(_, e)| e.view.replay && e.view.visible && e.view.replay_game == Some(game))
+            .filter(|(_, e)| {
+                e.view.replay && e.view.visible && e.view.replay_game == Some(GameId(game))
+            })
             .map(|(id, _)| *id)
             .min()
     }

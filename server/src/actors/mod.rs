@@ -10,6 +10,7 @@ use crate::{
 #[cfg(test)]
 use anyhow::Context;
 use anyhow::Result;
+use hanabi_protocol::GameId;
 use hanabi_protocol::TableId;
 use hanabi_protocol::UserId;
 use hanabi_protocol::{ClientMessage, NO_VALUE, Status};
@@ -132,7 +133,7 @@ pub struct TableView {
     players: Vec<UserId>,
     replay: bool,
     /// The database game shown by a replay.
-    replay_game: Option<i32>,
+    replay_game: Option<GameId>,
     visible: bool,
     data: hanabi_protocol::Table,
     inspection: TableInspection,

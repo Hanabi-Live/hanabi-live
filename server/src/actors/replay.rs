@@ -102,7 +102,7 @@ impl TableActor {
         let escaped = crate::accounts::escape_html(&tag);
         if replay {
             ensure_or_reject!(
-                s.game_id > 0,
+                s.game_id > crate::model::UNSAVED_GAME,
                 "JSON replays do not have a database game to tag."
             );
             s.tags = crate::archive::tags(&self.store.primary, s.game_id)
@@ -146,7 +146,7 @@ impl TableActor {
         }
         let edit = if replay {
             ensure_or_reject!(
-                s.game_id > 0,
+                s.game_id > crate::model::UNSAVED_GAME,
                 "JSON replays cannot be tagged in the database"
             );
             Some(PendingTag {
@@ -456,7 +456,7 @@ impl TableActor {
             "Original players must attend to restart"
         );
         let snapshot = self.table.game().context("Missing completed game")?;
-        if snapshot.game_id > 0 && !self.table.extra.no_write_to_database {
+        if snapshot.game_id > crate::model::UNSAVED_GAME && !self.table.extra.no_write_to_database {
             // The replay may be visible before its background statistics finish.
             crate::stats::refresh(&self.store.archive, snapshot).await?;
         }

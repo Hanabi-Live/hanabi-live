@@ -113,7 +113,7 @@ pub(super) fn requested_extra(
         "A replay keeps its game's seed"
     );
     extra.set_replay = true;
-    extra.replay_game_id = Some(game_id);
+    extra.replay_game_id = Some(GameId(game_id));
     extra.set_replay_turn = match request.replay_turn {
         Some(turn) => usize::try_from(turn)
             .ok()
@@ -177,7 +177,7 @@ pub(super) fn wire_table_options(
 ) -> hanabi_protocol::GameOptions {
     hanabi_protocol::GameOptions {
         seed: (!extra.set_seed_suffix.is_empty()).then(|| extra.set_seed_suffix.clone()),
-        replay_game_id: extra.replay_game_id.map(GameId),
+        replay_game_id: extra.replay_game_id,
         replay_turn: replay_turn(extra),
         ..wire_options(options)
     }
@@ -321,7 +321,7 @@ pub(super) fn replay_table(
     let name = format!(
         "{} replay for {}",
         if shared { "Shared" } else { "Solo" },
-        if snapshot.game_id == 0 {
+        if snapshot.game_id == crate::model::UNSAVED_GAME {
             format!(
                 "{owner_name}{} JSON game",
                 if owner_name.ends_with('s') { "'" } else { "'s" }
@@ -399,7 +399,7 @@ pub(super) async fn prepare_table(
                 } else {
                     crate::archive::replay(
                         &store.primary,
-                        r.database_id.or_reject("Missing databaseID")?,
+                        GameId(r.database_id.or_reject("Missing databaseID")?),
                         id,
                         session.user,
                     )

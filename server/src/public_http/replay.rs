@@ -1,4 +1,5 @@
 use super::{Error, Params, PublicState, Result, StatusCode, catalog, integer};
+use hanabi_protocol::GameId;
 
 /// An archived game that cannot be exported. Its code and game ID reach the server log and the
 /// error alerts, so the game and the failed check can be found later.
@@ -25,7 +26,7 @@ pub(super) async fn export(
             "That game does not exist in the database.",
         ));
     };
-    let archive = crate::archive::load(&state.pool, game_id)
+    let archive = crate::archive::load(&state.pool, GameId(game_id))
         .await?
         .ok_or_else(|| Error::not_found("That game does not exist in the database."))?;
     let row = archive.game;

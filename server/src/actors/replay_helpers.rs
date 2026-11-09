@@ -230,7 +230,7 @@ pub fn snapshot(imported: Imported, table_id: TableId, owner: UserId) -> Snapsho
     Snapshot {
         format: FORMAT.into(),
         table_id,
-        game_id: 0,
+        game_id: crate::model::UNSAVED_GAME,
         owner,
         name: "JSON Replay".into(),
         players: imported

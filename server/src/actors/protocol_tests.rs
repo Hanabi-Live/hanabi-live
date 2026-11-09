@@ -2256,7 +2256,7 @@ async fn tags_use_authoritative_sorted_frames_and_private_live_acknowledgements(
         let game_id = h.snapshot(id).await?.0.game().unwrap().game_id;
         sqlx::query!(
             "INSERT INTO game_tags(game_id,user_id,tag) VALUES($1,2,'zeta'),($1,2,'alpha <b>')",
-            game_id
+            game_id.0
         )
         .execute(&h.store.primary)
         .await?;

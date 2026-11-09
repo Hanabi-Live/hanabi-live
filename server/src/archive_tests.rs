@@ -24,12 +24,12 @@ async fn archive_reads_use_one_fresh_snapshot_across_concurrent_edits_postgres()
         sqlx::query!("INSERT INTO game_actions(game_id,turn,type,target,value) VALUES(1,0,4,0,4)")
             .execute(&db.pool).await?;
 
-        let initial = load(&db.pool, 1).await?.context("Missing initial archive")?;
+        let initial = load(&db.pool, GameId(1)).await?.context("Missing initial archive")?;
         ensure!(initial.players.len() == 2 && initial.players[0].user_id == alice
             && initial.players[1].user_id == bob, "Participant order changed");
         ensure!(initial.actions.len() == 1 && initial.notes[0].note == "before-note"
             && initial.tags[0].tag == "before-tag", "Archive components missing");
-        ensure!(load(&db.pool, 999).await?.is_none(), "Missing game looked present");
+        ensure!(load(&db.pool, GameId(999)).await?.is_none(), "Missing game looked present");
 #[expect(clippy::disallowed_methods, reason = "test SQL that sets up database state or failures directly")]
 
         sqlx::raw_sql(
@@ -43,7 +43,7 @@ async fn archive_reads_use_one_fresh_snapshot_across_concurrent_edits_postgres()
         let mut guard = db.pool.begin().await?;
         sqlx::query!("SELECT pg_advisory_xact_lock(17893,1)").execute(&mut *guard).await?;
         let pool = db.pool.clone();
-        let reader = tokio::spawn(async move { load(&pool, 1).await });
+        let reader = tokio::spawn(async move { load(&pool, GameId(1)).await });
         tokio::time::timeout(Duration::from_secs(5), async {
             loop {
                 let blocked: bool = sqlx::query_scalar!("SELECT EXISTS(SELECT 1 FROM pg_locks WHERE locktype='advisory'
@@ -63,7 +63,7 @@ async fn archive_reads_use_one_fresh_snapshot_across_concurrent_edits_postgres()
         let snapshot = reader.await??.context("Blocked archive disappeared")?;
         ensure!(snapshot.notes[0].note == "before-note" && snapshot.tags[0].tag == "before-tag",
             "A replay combined components from different database snapshots");
-        let fresh = load(&db.pool, 1).await?.context("Updated archive disappeared")?;
+        let fresh = load(&db.pool, GameId(1)).await?.context("Updated archive disappeared")?;
         ensure!(fresh.notes[0].note == "after-note" && fresh.tags[0].tag == "after-tag",
             "Replay reads cached mutable metadata");
         Ok(())

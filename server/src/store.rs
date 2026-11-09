@@ -5,6 +5,7 @@ use crate::{
 };
 use anyhow::{Context, Result, bail, ensure};
 use hanabi_protocol::ChatSource;
+use hanabi_protocol::GameId;
 use hanabi_protocol::TableId;
 use hanabi_protocol::UserId;
 use serde_json::{Value, json};
@@ -174,14 +175,14 @@ impl Store {
     pub async fn allocate_table(&self) -> Result<TableId> {
         self.state.allocate_table().await
     }
-    pub async fn reserve(&self) -> Result<i32> {
+    pub async fn reserve(&self) -> Result<GameId> {
         self.check_state()?;
         let id: i64 = sqlx::query_scalar!(
             "SELECT nextval(pg_get_serial_sequence('games','id')) AS \"value!\""
         )
         .fetch_one(&self.archive)
         .await?;
-        Ok(i32::try_from(id)?)
+        Ok(GameId(i32::try_from(id)?))
     }
     pub async fn database_reports(&self) -> Result<Value> {
         async fn report(pool: &PgPool, name: &str) -> Result<Value> {
@@ -544,17 +545,20 @@ async fn apply_tag(
     edit: &PendingTag,
 ) -> Result<Vec<Tag>> {
     // Serializes tag edits of the same game from different tables.
-    sqlx::query!("SELECT id FROM games WHERE id=$1 FOR UPDATE", edit.game_id)
-        .fetch_one(&mut **transaction)
-        .await?;
+    sqlx::query!(
+        "SELECT id FROM games WHERE id=$1 FOR UPDATE",
+        edit.game_id.0
+    )
+    .fetch_one(&mut **transaction)
+    .await?;
     match edit.operation {
         TagOperation::Tag => {
-            sqlx::query!("INSERT INTO game_tags(game_id,user_id,tag) SELECT $1,$2,$3 WHERE NOT EXISTS(SELECT 1 FROM game_tags WHERE game_id=$1 AND user_id=$2 AND tag=$3)", edit.game_id, edit.user_id.0, &edit.tag).execute(&mut **transaction).await?;
+            sqlx::query!("INSERT INTO game_tags(game_id,user_id,tag) SELECT $1,$2,$3 WHERE NOT EXISTS(SELECT 1 FROM game_tags WHERE game_id=$1 AND user_id=$2 AND tag=$3)", edit.game_id.0, edit.user_id.0, &edit.tag).execute(&mut **transaction).await?;
         }
         TagOperation::TagDelete => {
             sqlx::query!(
                 "DELETE FROM game_tags WHERE game_id=$1 AND user_id=$2 AND tag=$3",
-                edit.game_id,
+                edit.game_id.0,
                 edit.user_id.0,
                 &edit.tag
             )
@@ -564,7 +568,7 @@ async fn apply_tag(
         TagOperation::TagsDeleteAll => {
             sqlx::query!(
                 "DELETE FROM game_tags WHERE game_id=$1 AND user_id=$2",
-                edit.game_id,
+                edit.game_id.0,
                 edit.user_id.0
             )
             .execute(&mut **transaction)
@@ -573,7 +577,7 @@ async fn apply_tag(
     }
     Ok(sqlx::query!(
         "SELECT user_id,tag FROM game_tags WHERE game_id=$1 ORDER BY user_id,tag",
-        edit.game_id
+        edit.game_id.0
     )
     .fetch_all(&mut **transaction)
     .await?
@@ -664,7 +668,7 @@ mod tests {
             snapshot: Box::new(Snapshot {
                 format: FORMAT.into(),
                 table_id: table.id,
-                game_id: 1,
+                game_id: GameId(1),
                 owner: UserId(1),
                 name: table.name.clone(),
                 players,
@@ -1152,7 +1156,8 @@ mod tests {
                 "The finished game did not become a fresh review"
             );
             ensure!(count(&pool, "game_actions").await? == 1);
-            let replay = crate::archive::replay(&store.primary, 1, TableId(99), UserId(1)).await?;
+            let replay =
+                crate::archive::replay(&store.primary, GameId(1), TableId(99), UserId(1)).await?;
             ensure!(
                 replay.game.actions == finished.game().unwrap().game.actions
                     && replay.notes == finished.game().unwrap().notes
@@ -1161,7 +1166,7 @@ mod tests {
             );
 
             let edit = PendingTag {
-                game_id: 1,
+                game_id: GameId(1),
                 user_id: UserId(1),
                 operation: TagOperation::Tag,
                 tag: "added".into(),
@@ -1367,7 +1372,7 @@ mod tests {
         let mut tagged = table.clone();
         let old_commit = tokio::spawn(async move {
             let edit = PendingTag {
-                game_id: 1,
+                game_id: GameId(1),
                 user_id: UserId(1),
                 operation: TagOperation::Tag,
                 tag: "old-owner".into(),

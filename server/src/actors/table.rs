@@ -24,8 +24,8 @@ use anyhow::{Context, Result};
 use chrono::Utc;
 use hanabi_engine::{CompletionTiming, EndCondition};
 use hanabi_protocol::{
-    Chat, ChatTyping, ClientMessage, GameId, IdleWarning, NO_VALUE, Status, TableRequest,
-    TableStarted, UserId, Warning,
+    Chat, ChatTyping, ClientMessage, IdleWarning, NO_VALUE, Status, TableRequest, TableStarted,
+    UserId, Warning,
 };
 use serde::Serialize;
 use serde_json::json;
@@ -129,7 +129,9 @@ impl TableActor {
         };
         let spectators = self.spectators();
         let replay_game = match &self.table.phase {
-            Phase::Replay { snapshot, .. } if snapshot.game_id > 0 => Some(snapshot.game_id),
+            Phase::Replay { snapshot, .. } if snapshot.game_id > crate::model::UNSAVED_GAME => {
+                Some(snapshot.game_id)
+            }
             _ => None,
         };
         TableView {
@@ -150,7 +152,7 @@ impl TableActor {
                 frozen: self.frozen,
             },
             data: hanabi_protocol::Table {
-                database_id: replay_game.map(GameId),
+                database_id: replay_game,
                 id: self.table.id,
                 joined: false,
                 max_players: small(self.table.max_players),

@@ -119,7 +119,7 @@ impl TableActor {
         if replay {
             self.add_all(&mut e, hanabi_protocol::server::CONNECTED, self.connected());
             self.spectator_messages(&mut e);
-            let count = if s.game_id > 0 {
+            let count = if s.game_id > crate::model::UNSAVED_GAME {
                 self.store.seed_count(&s.seed).await?
             } else {
                 0
@@ -158,7 +158,7 @@ impl TableActor {
                         hanabi_protocol::server::FINISH_ONGOING_GAME,
                         hanabi_protocol::FinishOngoingGame {
                             table_id: self.table.id,
-                            database_id: i64::from(s.game_id),
+                            database_id: i64::from(s.game_id.0),
                             shared_replay_leader: self.leader_name(),
                         },
                     ),
@@ -473,7 +473,7 @@ impl TableActor {
                 shadowing: a.shadow.is_some() && !replay,
                 replay,
                 database_id: if replay {
-                    s.game_id.into()
+                    s.game_id.0.into()
                 } else {
                     NO_VALUE.into()
                 },

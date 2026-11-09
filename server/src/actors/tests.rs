@@ -215,7 +215,7 @@ fn option_summaries_include_only_changes_and_escape_values() {
         set_seed_suffix: "match-1".into(),
         set_replay: true,
         set_replay_turn: 4,
-        replay_game_id: Some(7),
+        replay_game_id: Some(GameId(7)),
         ..ExtraOptions::default()
     };
     let summary = option_changes(&table, &options, "<new>", 2, &extra);
