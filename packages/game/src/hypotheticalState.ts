@@ -211,6 +211,11 @@ function hypotheticalStateReducerFunction(
     return;
   }
 
+  // The hypothetical is over, so persisted replay actions cannot continue it.
+  if (state.ongoing.turn.currentPlayerIndex === null) {
+    return;
+  }
+
   // Validate persisted replay actions, which bypass the local action planner. A card outside the
   // acting player's hand would end up in two collections, or does not exist yet.
   if (action.type === "play" || action.type === "discard") {
@@ -249,6 +254,16 @@ function hypotheticalStateReducerFunction(
     metadata,
   );
   state.ongoing = castDraft(newState);
+
+  // Like in a real game, everyone gets one more turn after the final card is drawn.
+  const { turnNum, endTurnNum } = newState.turn;
+  if (
+    !metadata.options.allOrNothing
+    && endTurnNum !== null
+    && turnNum >= endTurnNum
+  ) {
+    state.ongoing.turn.currentPlayerIndex = null;
+  }
 
   if (oldSegment !== newState.turn.segment) {
     // Save the new segment in case we want to go backwards.

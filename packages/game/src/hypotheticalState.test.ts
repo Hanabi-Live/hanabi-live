@@ -606,4 +606,31 @@ describe("hypothetical state", () => {
     expect(empathy()).toContainEqual(yellow5);
     expect(state.ongoing.deck[0]).toMatchObject({ suitIndex: 2, rank: 5 });
   });
+
+  test("ends after the final round", () => {
+    const finalTurn = {
+      ...startingState,
+      turn: {
+        ...startingState.turn,
+        segment: 0,
+        endTurnNum: startingState.turn.turnNum + 1,
+      },
+    };
+    const ended = initializeHypotheticalState(
+      finalTurn,
+      false,
+      [rankClue(3, 0, [], 1)],
+      false,
+      metadata,
+    );
+    expect(ended.ongoing.turn.currentPlayerIndex).toBeNull();
+
+    const next = hypotheticalStateReducer(
+      ended,
+      rankClue(3, 1, [], 0),
+      false,
+      metadata,
+    );
+    expect(next.ongoing).toBe(ended.ongoing);
+  });
 });
