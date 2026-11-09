@@ -828,11 +828,11 @@ parameter repeated, is rejected.
 
 ## Bots
 
-- It is also possible to program a bot to play on the website with other
-  players. Unlike other websites such as [lichess.org](https://lichess.org/),
-  there is no bot-specific API. Bots must connect to the WebSocket server and
-  send messages in exactly the same way that a real player would. A reference
-  bot implementation can be found at
+- It is possible to program a bot to play on the website with other players.
+  Unlike other websites such as [lichess.org](https://lichess.org/), there is no
+  bot-specific API. Bots must connect to the WebSocket server and send messages
+  in exactly the same way that a real player would. A reference bot
+  implementation can be found at
   [`hanabi-live-bot`](https://github.com/Hanabi-Live/hanabi-live-bot).
 - To mark an account as a bot, send `bot` as the client version: the `version`
   field when you log in to `/login`, or `?version=bot` in the WebSocket URL. The
