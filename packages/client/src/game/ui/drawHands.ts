@@ -160,6 +160,18 @@ const KELDON_SIDE_HAND = {
 /** In the Keldon layout, the width of the tilted hands on the sides of the board with 3 players. */
 const KELDON_TILTED_SIDE_HAND_W = 0.41;
 
+/**
+ * In the Keldon layout, how far the hands on the sides of the board are rotated with 3 players, in
+ * degrees. The left hand is rotated by the negative value.
+ */
+const KELDON_3P_SIDE_HAND_ROTATION = 82;
+
+/**
+ * In the Keldon layout, how far the hands on the sides of the board are rotated with 4 players, in
+ * degrees. The left hand is rotated by the negative value.
+ */
+const KELDON_4P_SIDE_HAND_ROTATION = 78;
+
 /** In the Keldon layout, the left edge and width of a hand that spans the board (2 players). */
 const KELDON_WIDE_HAND = { x: 0.19, w: 0.42 } as const;
 
@@ -206,6 +218,14 @@ const BGA_HANDS = {
   nameFrameGapY: 0.01,
 } as const;
 
+/** Shown in place of a character when a player has none, which can happen when debugging. */
+const UNASSIGNED_CHARACTER = {
+  id: -1,
+  name: "n/a",
+  description: "",
+  emoji: "",
+} as const;
+
 const handPos: HandConfig[][] = [];
 const namePos: HandConfig[][] = [];
 const namePosBGA: HandConfig[][] = [];
@@ -232,14 +252,14 @@ export function drawHands(winW: number, winH: number): void {
       y: 0.73,
       w: KELDON_TILTED_SIDE_HAND_W,
       h: keldonHandH,
-      rot: -82,
+      rot: -KELDON_3P_SIDE_HAND_ROTATION,
     },
     {
       x: 0.735,
       y: 0.024,
       w: KELDON_TILTED_SIDE_HAND_W,
       h: keldonHandH,
-      rot: 82,
+      rot: KELDON_3P_SIDE_HAND_ROTATION,
     },
   ];
   handPos[4] = [
@@ -249,14 +269,26 @@ export function drawHands(winW: number, winH: number): void {
       h: keldonHandH,
       rot: 0,
     },
-    { x: 0.015, y: 0.68, w: KELDON_NARROW_HAND_W, h: keldonHandH, rot: -78 },
+    {
+      x: 0.015,
+      y: 0.68,
+      w: KELDON_NARROW_HAND_W,
+      h: keldonHandH,
+      rot: -KELDON_4P_SIDE_HAND_ROTATION,
+    },
     {
       ...KELDON_CENTERED_NARROW_HAND,
       y: KELDON_TOP_HAND_Y,
       h: keldonHandH,
       rot: 0,
     },
-    { x: 0.715, y: 0.095, w: KELDON_NARROW_HAND_W, h: keldonHandH, rot: 78 },
+    {
+      x: 0.715,
+      y: 0.095,
+      w: KELDON_NARROW_HAND_W,
+      h: keldonHandH,
+      rot: KELDON_4P_SIDE_HAND_ROTATION,
+    },
   ];
   handPos[5] = [
     {
@@ -696,15 +728,9 @@ function drawDetrimentalCharacters(
   }
 
   const characterID = globals.metadata.characterAssignments[i];
-  // A character with an ID of null may be assigned when debugging.
   const character =
     characterID === null || characterID === undefined
-      ? {
-          id: -1,
-          name: "n/a",
-          description: "",
-          emoji: "",
-        }
+      ? UNASSIGNED_CHARACTER
       : getCharacter(characterID);
 
   const iconW = CHARACTER_ICON_SIZE * winW;

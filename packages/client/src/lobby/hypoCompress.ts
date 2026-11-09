@@ -207,8 +207,8 @@ function gameJSONCompress(data: GameJSON): string | undefined {
  * series of strings one characters long, each representing a `DeckCard`.
  */
 function compressDeck(deck: readonly DeckCard[]): string | undefined {
-  const rankRange = getRankMinMax(deck);
-  if (!isMinMaxValid(rankRange)) {
+  const rankRange = getMinMax(deck.map((card) => card.rank));
+  if (rankRange === undefined || !isMinMaxValid(rankRange)) {
     return undefined;
   }
 
@@ -291,8 +291,8 @@ function stringToDeckCard(src: string, rankRange: MinMax): DeckCard {
  */
 function compressActions(actions: readonly Action[]): string {
   // Find min/max values of Action.type.
-  const typeRange = getTypeMinMax(actions);
-  if (!isMinMaxValid(typeRange)) {
+  const typeRange = getMinMax(actions.map((action) => action.type));
+  if (typeRange === undefined || !isMinMaxValid(typeRange)) {
     // Empty actions still require min/max values.
     return "00";
   }
@@ -389,39 +389,17 @@ function getPlayers(size: number): readonly string[] {
   return DEFAULT_PLAYER_NAMES.slice(0, size);
 }
 
-/**
- * Creates a `MinMax` object, containing the minimum and maximum values of `DeckCard.rank` found in
- * an array of `DeckCard`.
- */
-function getRankMinMax(deck: readonly DeckCard[]): MinMax {
-  const range: MinMax = {
-    min: -1,
-    max: -1,
-  };
-
-  for (const card of deck) {
-    range.min = range.min === -1 ? card.rank : Math.min(range.min, card.rank);
-    range.max = range.max === -1 ? card.rank : Math.max(range.max, card.rank);
+/** Returns the minimum and maximum of the values, or undefined if there are none. */
+function getMinMax(values: readonly number[]): MinMax | undefined {
+  const [first, ...rest] = values;
+  if (first === undefined) {
+    return undefined;
   }
 
-  return range;
-}
-
-/**
- * Creates a `MinMax` object, containing the minimum and maximum values of `Action.type` found in an
- * array of `Action`.
- */
-function getTypeMinMax(actions: readonly Action[]): MinMax {
-  const range: MinMax = {
-    min: -1,
-    max: -1,
-  };
-
-  for (const action of actions) {
-    range.min =
-      range.min === -1 ? action.type : Math.min(range.min, action.type);
-    range.max =
-      range.max === -1 ? action.type : Math.max(range.max, action.type);
+  const range: MinMax = { min: first, max: first };
+  for (const value of rest) {
+    range.min = Math.min(range.min, value);
+    range.max = Math.max(range.max, value);
   }
 
   return range;

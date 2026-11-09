@@ -5,6 +5,9 @@ type DrawFunction = (ctx: CanvasRenderingContext2D) => void;
 const shapeFunctions = new Map<number, DrawFunction>();
 const SCALE_FACTOR = 2.2;
 
+/** Where the top-left corner of a stylized rank shape is drawn on the card, in pixels. */
+const SHAPE_ORIGIN = { x: 60, y: 135 } as const;
+
 shapeFunctions.set(0, (ctx: CanvasRenderingContext2D) => {
   ctx.beginPath();
   ctx.closePath();
@@ -1315,8 +1318,7 @@ export function drawStylizedRank(
   );
 
   ctx.save();
-  // Move the cursor to the top-left hand corner.
-  ctx.translate(60, 135);
+  ctx.translate(SHAPE_ORIGIN.x, SHAPE_ORIGIN.y);
 
   // Draw the respective shape on the canvas.
   shapeFunction(ctx);
