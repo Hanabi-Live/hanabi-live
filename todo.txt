@@ -2,8 +2,7 @@
 | TODO |
 +------+
 
-- fix bug where tooltip isn't updated in non-timed games
-- refactor to lint.ts
+- refactor -1 to undefined or null for activePlayerIndex
 - add a function to lint.ts for checking that all emoji exist
 
 +-----+
