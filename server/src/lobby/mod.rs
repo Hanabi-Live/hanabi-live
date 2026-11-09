@@ -17,26 +17,18 @@ pub use settings::{changed_settings, get_settings, set_setting};
 
 use crate::accounts::{escape_html, normalize_string};
 use crate::routing::{Route, route};
-use crate::transport::Outgoing;
+use crate::transport::{Identity, Outgoing};
 use anyhow::{Result, ensure};
 use hanabi_protocol::ClientMessage;
 use hanabi_protocol::UserId;
+use std::sync::Arc;
 
 use sqlx::PgPool;
 
-#[derive(Clone, Debug)]
-pub struct Caller {
-    pub id: UserId,
-    pub name: String,
-    pub normalized_name: String,
-    pub ip: String,
-}
-
+/// A connected user, as private messages find them.
 #[derive(Clone, Debug)]
 pub struct OnlineUser {
-    pub id: UserId,
-    pub name: String,
-    pub normalized_name: String,
+    pub identity: Arc<Identity>,
     pub generation: u64,
 }
 
@@ -158,7 +150,7 @@ pub fn handles(message: &ClientMessage) -> bool {
 pub async fn dispatch_chat(
     pool: &PgPool,
     secret: &str,
-    caller: &Caller,
+    caller: &Identity,
     message: &str,
     room: &str,
     rendered: Option<&str>,
@@ -169,14 +161,14 @@ pub async fn dispatch_chat(
 pub async fn dispatch(
     pool: &PgPool,
     secret: &str,
-    caller: &Caller,
+    caller: &Identity,
     online: &[OnlineUser],
     message: ClientMessage,
 ) -> Result<Option<Vec<Effect>>> {
     if !handles(&message) {
         return Ok(None);
     }
-    ensure!(caller.id > UserId(0), "Invalid caller");
+    ensure!(caller.user > UserId(0), "Invalid caller");
     let command = message.name();
     let effects = match message {
         ClientMessage::Setting(request) => {
@@ -184,7 +176,7 @@ pub async fn dispatch(
             if let Err(error) = settings::validate_setting(name, value) {
                 return Ok(Some(vec![warning(&error.to_string())]));
             }
-            set_setting(pool, caller.id.0, name, value).await?;
+            set_setting(pool, caller.user.0, name, value).await?;
             match name {
                 "hGroupConventions" => vec![Publication::HGroup(value == "true").into()],
                 // `validate_setting` has already checked that the level is in range.
@@ -199,7 +191,7 @@ pub async fn dispatch(
                 Effect::broadcast(Outgoing::new(
                     hanabi_protocol::server::USER_INACTIVE,
                     hanabi_protocol::UserInactive {
-                        user_id: caller.id,
+                        user_id: caller.user,
                         inactive,
                     },
                 )),
@@ -233,7 +225,7 @@ pub async fn dispatch(
             if amount < 0 {
                 return Ok(Some(vec![warning("That is not a valid end value.")]));
             }
-            let ids = history_ids(pool, caller.id.0, offset, amount).await?;
+            let ids = history_ids(pool, caller.user.0, offset, amount).await?;
             vec![Effect::to_self(Outgoing::new(
                 hanabi_protocol::server::GAME_HISTORY,
                 hanabi_protocol::GameHistoryList(get_history(pool, &ids, false).await?),

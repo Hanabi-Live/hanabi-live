@@ -13,6 +13,7 @@ use chrono::{Duration as ChronoDuration, Utc};
 use hanabi_engine::EndCondition;
 use serde_json::{Value, json};
 use std::{
+    collections::BTreeSet,
     sync::Arc,
     time::{Duration, Instant},
 };
@@ -41,16 +42,14 @@ fn test_session(
     generation: u64,
 ) -> (Arc<Session>, mpsc::Receiver<Outbound>) {
     Session::with_tokens(
-        crate::transport::SessionMetadata {
+        crate::transport::Identity {
             user: UserId(user),
             name: name.into(),
             normalized_name: crate::accounts::normalize_username(name),
             ip: String::new(),
-            generation,
-            h_group: false,
-            h_group_level: 0,
             bot: is_test_bot(name),
         },
+        generation,
         tokio_util::sync::CancellationToken::new(),
         tokio_util::sync::CancellationToken::new(),
     )
@@ -96,6 +95,7 @@ impl Harness {
         self.hub
             .send(HubCommand::Register {
                 session,
+                blocks: BTreeSet::new(),
                 welcome: test_welcome(),
                 initial: vec![],
                 reply,
@@ -230,8 +230,7 @@ impl Harness {
         .await?;
         for index in 0..self.users.len() {
             let old = &self.users[index];
-            let (session, outgoing) =
-                Session::new(old.user, old.name.clone(), old.generation + 1, false);
+            let (session, outgoing) = Session::new(old.user, old.name.clone(), old.generation + 1);
             self.register(session.clone()).await?;
             self.users[index] = session;
             self.outgoing[index] = outgoing;
@@ -692,7 +691,9 @@ async fn rejoining_a_shared_review_cancels_its_empty_room_deadline() -> Result<(
         actor
             .cleanup(Instant::now().checked_sub(Duration::from_secs(61)).unwrap())
             .await?;
-        actor.reattend(h.users[1].clone(), true, None).await?;
+        actor
+            .reattend(h.users[1].clone(), &BTreeSet::new(), true, None)
+            .await?;
         actor.tick().await?;
         ensure!(!actor.retired, "Rejoining a review immediately closed it");
         ensure!(actor.table.game().unwrap().idle_remaining == IDLE_TIMEOUT_MS);
@@ -1120,12 +1121,7 @@ async fn blocked_players_cannot_join_or_spectate_each_others_tables() -> Result<
         // Run the lobby command and hand its effects to the hub, as the web layer does.
         let change = async |h: &Harness, index: usize, command: &str, name: &str| -> Result<()> {
             let session = h.users[index].clone();
-            let caller = crate::lobby::Caller {
-                id: session.user,
-                name: session.name.clone(),
-                normalized_name: session.normalized_name.clone(),
-                ip: session.ip.clone(),
-            };
+            let caller = session.identity.clone();
             let effects = crate::lobby::dispatch(
                 &h.store.primary,
                 "secret",
@@ -1306,7 +1302,9 @@ async fn expired_pregame_owner_is_removed_but_remaining_players_and_live_games_s
         for user in &h.users[..3] {
             actor.initialize(user.clone(), vec![]).await?;
         }
-        actor.reattend(h.users[3].clone(), true, Some(1)).await?;
+        actor
+            .reattend(h.users[3].clone(), &BTreeSet::new(), true, Some(1))
+            .await?;
         while notifications.try_recv().is_ok() {}
         h.users[0].cancel.cancel();
         let now = Instant::now();
@@ -1824,9 +1822,9 @@ async fn finished_game_publishes_replay_leader_candidates_without_reconnecting()
                 .context("Missing roster")?
                 .iter()
                 .map(|p| p["name"].as_str().unwrap())
-                .collect::<std::collections::BTreeSet<_>>();
+                .collect::<BTreeSet<_>>();
             ensure!(
-                names == std::collections::BTreeSet::from(["Alice", "Bob", "Observer"]),
+                names == BTreeSet::from(["Alice", "Bob", "Observer"]),
                 "Finished-game players were missing from replay leader candidates"
             );
             let clock = h.receive(index, "clock").await?;
@@ -2539,16 +2537,14 @@ async fn ban_disconnects_every_session_from_the_banned_ip() -> Result<()> {
             (3, "Bob", "192.0.2.2"),
         ] {
             let (session, receiver) = Session::with_tokens(
-                crate::transport::SessionMetadata {
+                crate::transport::Identity {
                     user: UserId(user),
                     name: name.into(),
                     normalized_name: crate::accounts::normalize_username(name),
                     ip: ip.into(),
-                    generation: 1,
-                    h_group: false,
-                    h_group_level: 0,
                     bot: false,
                 },
+                1,
                 tokio_util::sync::CancellationToken::new(),
                 tokio_util::sync::CancellationToken::new(),
             );

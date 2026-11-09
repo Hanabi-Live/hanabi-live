@@ -17,7 +17,7 @@ use hanabi_protocol::{ClientMessage, NO_VALUE, Status};
 use serde::Serialize;
 use serde_json::Value;
 use std::{
-    collections::{BTreeMap, HashMap, HashSet},
+    collections::{BTreeMap, BTreeSet, HashMap, HashSet},
     sync::Arc,
     time::{Duration, Instant},
 };
@@ -156,11 +156,32 @@ struct Entry {
     view: TableView,
     published: bool,
 }
+/// A connected user, as the hub keeps them.
 struct Presence {
     session: Arc<Session>,
     status: Status,
     table: Option<TableId>,
+    h_group: bool,
+    h_group_level: u8,
+    inactive: bool,
+    blocks: Blocks,
 }
+impl Presence {
+    fn new(session: Arc<Session>, settings: &hanabi_protocol::Settings, blocks: Blocks) -> Self {
+        Self {
+            session,
+            status: Status::Lobby,
+            table: None,
+            h_group: settings.h_group_conventions,
+            h_group_level: settings.h_group_level,
+            inactive: false,
+            blocks,
+        }
+    }
+}
+/// The users whom a user has blocked or was blocked by. The hub keeps each connected user's set
+/// and sends it with the user's table commands.
+pub type Blocks = Arc<BTreeSet<UserId>>;
 pub struct Effects {
     pub table: TableId,
     pub view: TableView,
@@ -170,6 +191,7 @@ pub struct Effects {
 pub enum HubCommand {
     Register {
         session: Arc<Session>,
+        blocks: BTreeSet<UserId>,
         welcome: hanabi_protocol::Welcome,
         initial: Vec<String>,
         reply: Reply,
@@ -256,6 +278,8 @@ pub enum Command {
 pub enum TableCommand {
     Client {
         session: Arc<Session>,
+        /// The user's blocks when the hub sent the command.
+        blocks: Blocks,
         command: Command,
         reply: Reply,
     },

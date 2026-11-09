@@ -1,6 +1,6 @@
-use super::{Caller, Effect, ExternalReply, OnlineUser, Publication, SavedChat, notice, warning};
+use super::{Effect, ExternalReply, OnlineUser, Publication, SavedChat, notice, warning};
 use crate::accounts::{escape_html, is_muted, normalize_chat, normalize_string, regenerate_token};
-use crate::transport::Outgoing;
+use crate::transport::{Identity, Outgoing};
 use anyhow::{Context, Result, ensure};
 use chrono::SecondsFormat;
 use hanabi_protocol::{
@@ -277,7 +277,7 @@ fn random_response(args: &[&str]) -> String {
 
 pub async fn private_message(
     pool: &PgPool,
-    caller: &Caller,
+    caller: &Identity,
     online: &[OnlineUser],
     message: &str,
     recipient: &str,
@@ -299,31 +299,34 @@ pub async fn private_message(
             "You cannot send a private message to yourself.",
         )]);
     }
-    let Some(target) = online.iter().find(|u| u.normalized_name == normalized) else {
+    let Some(target) = online
+        .iter()
+        .find(|u| u.identity.normalized_name == normalized)
+    else {
         return Ok(vec![warning(&format!(
             "User \"{}\" is not currently online.",
             escape_html(&recipient)
         ))]);
     };
-    if super::blocked_between(pool, caller.id.0, &[target.id.0]).await? {
+    if super::blocked_between(pool, caller.user.0, &[target.identity.user.0]).await? {
         return Ok(vec![warning(&format!(
             "You cannot send a private message to \"{}\".",
-            escape_html(&target.name)
+            escape_html(&target.identity.name)
         ))]);
     }
     let message = escape_html(&message);
     let row = sqlx::query!(
         "INSERT INTO chat_log_pm(user_id,recipient_id,message) VALUES($1,$2,$3)
          RETURNING id, datetime_sent",
-        caller.id.0,
-        target.id.0,
+        caller.user.0,
+        target.identity.user.0,
         &message
     )
     .fetch_one(pool)
     .await?;
     let data = Chat {
         who: Some(caller.name.clone()),
-        recipient: Some(target.name.clone()),
+        recipient: Some(target.identity.name.clone()),
         ..Chat::new(
             message,
             ChatSource::User,
@@ -333,7 +336,7 @@ pub async fn private_message(
     Ok(vec![
         Effect::to_self(Outgoing::new(hanabi_protocol::server::CHAT, data.clone())),
         Publication::ToUser {
-            id: target.id,
+            id: target.identity.user,
             generation: target.generation,
             message: Outgoing::new(hanabi_protocol::server::CHAT, data),
         }
@@ -343,7 +346,7 @@ pub async fn private_message(
 
 pub async fn private_history(
     pool: &PgPool,
-    caller: &Caller,
+    caller: &Identity,
     data: &ChatHistoryRequest,
 ) -> Result<Vec<Effect>> {
     let amount = data.amount;
@@ -380,7 +383,7 @@ pub async fn private_history(
            AND ($2::int IS NULL OR (c.user_id=$1 AND c.recipient_id=$2)
                 OR (c.user_id=$2 AND c.recipient_id=$1))
          ORDER BY c.id DESC LIMIT $3",
-        caller.id.0,
+        caller.user.0,
         peer,
         amount
     )
@@ -413,7 +416,7 @@ pub async fn private_history(
 pub async fn lobby_chat(
     pool: &PgPool,
     secret: &str,
-    caller: &Caller,
+    caller: &Identity,
     message: &str,
     room: &str,
     rendered: Option<&str>,
@@ -437,7 +440,7 @@ pub async fn lobby_chat(
         let response = if args.iter().any(|arg| !arg.is_empty()) {
             "The format of the /token command is: /token".into()
         } else {
-            let token = regenerate_token(pool, secret, caller.id.0, &caller.ip).await?;
+            let token = regenerate_token(pool, secret, caller.user.0, &caller.ip).await?;
             format!(
                 "Identity token (valid until {} UTC): <code>{}</code>",
                 token.expires_at.to_rfc3339_opts(SecondsFormat::Secs, true),
@@ -510,7 +513,7 @@ pub async fn lobby_chat(
     let mut tx = pool.begin().await?;
     let mut effects = Vec::new();
     for (id, source, who, content, raw) in std::iter::once((
-        caller.id,
+        caller.user,
         "user",
         caller.name.as_str(),
         rendered.map_or_else(|| escape_html(&message), str::to_owned),

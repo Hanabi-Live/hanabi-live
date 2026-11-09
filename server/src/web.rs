@@ -12,10 +12,10 @@ use crate::{
     errors::{CommandError, CommandResult},
     integrations::{IntegrationSlot, Integrations},
     lifecycle::{Lifecycle, Refusal},
-    lobby::{self, Caller, Effect, Publication},
+    lobby::{self, Effect, Publication},
     public_http::{self, PublicConfig},
     store::Store,
-    transport::{Inbound, InboundBudget, Outbound, Outgoing, Session, SessionMetadata, frame},
+    transport::{Identity, Inbound, InboundBudget, Outbound, Outgoing, Session, frame},
 };
 use anyhow::{Context, Result, ensure};
 use axum::{
@@ -749,22 +749,17 @@ async fn connection(
         }
     };
     let (session, mut outgoing) = Session::with_tokens(
-        SessionMetadata {
+        Identity {
             user: id,
             name: data.name,
             normalized_name: data.normalized_name,
             ip,
-            generation,
-            h_group: data.welcome.settings.h_group_conventions,
-            h_group_level: data.welcome.settings.h_group_level,
             bot: data.bot,
         },
+        generation,
         app.lifecycle.ownership_lost.clone(),
         app.lifecycle.shutdown.clone(),
     );
-    for other in data.blocks {
-        session.set_blocked(other, true);
-    }
     let (mut sink, mut stream) = socket.split();
     let writer_session = session.clone();
     let writer_shutdown = app.lifecycle.shutdown.clone();
@@ -842,6 +837,7 @@ async fn connection(
         app.hub
             .send(HubCommand::Register {
                 session: session.clone(),
+                blocks: data.blocks.into_iter().collect(),
                 welcome: data.welcome,
                 initial: data.initial,
                 reply,
@@ -1088,12 +1084,7 @@ async fn dispatch(app: &Arc<App>, session: Arc<Session>, input: &str) -> Command
     } else {
         Vec::new()
     };
-    let caller = Caller {
-        id: session.user,
-        name: session.name.clone(),
-        normalized_name: session.normalized_name.clone(),
-        ip: session.ip.clone(),
-    };
+    let caller = session.identity.clone();
     let effects = match message {
         ClientMessage::Chat(request) => {
             let text = request.msg.as_str();

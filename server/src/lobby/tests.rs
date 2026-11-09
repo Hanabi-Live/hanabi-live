@@ -2,12 +2,13 @@ use super::*;
 use crate::accounts::{normalize_username, test_support::TestDb};
 use serde_json::{Value, json};
 
-fn caller(id: i32, name: &str) -> Caller {
-    Caller {
-        id: UserId(id),
+fn caller(id: i32, name: &str) -> Identity {
+    Identity {
+        user: UserId(id),
         name: name.into(),
         normalized_name: normalize_username(name),
         ip: "127.0.0.1".into(),
+        bot: false,
     }
 }
 
@@ -72,7 +73,7 @@ async fn uptime_is_private_before_history_or_discord_publication_postgres() {
 
 async fn run(
     pool: &PgPool,
-    caller: &Caller,
+    caller: &Identity,
     online: &[OnlineUser],
     command: &str,
     data: Value,
@@ -201,15 +202,10 @@ async fn blocked_players_cannot_message_each_other_postgres() {
     let alice = caller(a, "Alice");
     let bob = caller(b, "Bob");
     let online_user = |id, name: &str| OnlineUser {
-        id,
-        name: name.into(),
-        normalized_name: normalize_username(name),
+        identity: Arc::new(caller(id, name)),
         generation: 1,
     };
-    let online = vec![
-        online_user(UserId(a), "Alice"),
-        online_user(UserId(b), "Bob"),
-    ];
+    let online = vec![online_user(a, "Alice"), online_user(b, "Bob")];
     let warning_of = |effects: &[Effect]| {
         self_data(effects, "warning")["warning"]
             .as_str()
@@ -293,9 +289,7 @@ async fn lobby_private_messages_and_command_privacy_postgres() {
     let c = db.user("Carol").await;
     let who = caller(a, "Alice");
     let target = OnlineUser {
-        id: UserId(b),
-        name: "Bob".into(),
-        normalized_name: "bob".into(),
+        identity: Arc::new(caller(b, "Bob")),
         generation: 29,
     };
     let online = vec![target];

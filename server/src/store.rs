@@ -580,7 +580,10 @@ mod tests {
     use chrono::Utc;
     use hanabi_engine::{EndCondition, GameSetup, Interpretation};
     use hanabi_protocol::NO_VALUE;
-    use std::{collections::BTreeMap, sync::Arc};
+    use std::{
+        collections::{BTreeMap, BTreeSet},
+        sync::Arc,
+    };
     use tokio::sync::oneshot;
 
     fn pregame(id: TableId) -> TableSnapshot {
@@ -1426,15 +1429,12 @@ mod tests {
         let mut users = vec![];
         let mut outgoing = vec![];
         for (index, name) in ["Alice", "Bob", "Cathy"].iter().enumerate() {
-            let (session, frames) = Session::new(
-                UserId(hanabi_engine::int(index) + 1),
-                (*name).into(),
-                1,
-                false,
-            );
+            let (session, frames) =
+                Session::new(UserId(hanabi_engine::int(index) + 1), (*name).into(), 1);
             let (reply, received) = oneshot::channel();
             hub.send(HubCommand::Register {
                 session: session.clone(),
+                blocks: BTreeSet::new(),
                 welcome: crate::actors::test_welcome(),
                 initial: vec![],
                 reply,
@@ -1501,15 +1501,12 @@ mod tests {
         let mut users = vec![];
         let mut outgoing = vec![];
         for (index, name) in ["Alice", "Bob", "Cathy"].iter().enumerate() {
-            let (session, frames) = Session::new(
-                UserId(hanabi_engine::int(index) + 1),
-                (*name).into(),
-                1,
-                false,
-            );
+            let (session, frames) =
+                Session::new(UserId(hanabi_engine::int(index) + 1), (*name).into(), 1);
             let (reply, received) = oneshot::channel();
             hub.send(HubCommand::Register {
                 session: session.clone(),
+                blocks: BTreeSet::new(),
                 welcome: crate::actors::test_welcome(),
                 initial: vec![],
                 reply,
@@ -1658,10 +1655,11 @@ mod tests {
         let mut frames = vec![];
         for (i, name) in ["Alice", "Bob", "Cathy"].iter().enumerate() {
             let (session, outgoing) =
-                Session::new(UserId(hanabi_engine::int(i) + 1), (*name).into(), 1, false);
+                Session::new(UserId(hanabi_engine::int(i) + 1), (*name).into(), 1);
             let (reply, received) = oneshot::channel();
             hub.send(HubCommand::Register {
                 session: session.clone(),
+                blocks: BTreeSet::new(),
                 welcome: crate::actors::test_welcome(),
                 initial: vec![],
                 reply,

@@ -30,7 +30,7 @@ use hanabi_protocol::{
 use serde::Serialize;
 use serde_json::json;
 use std::{
-    collections::{BTreeMap, HashMap, HashSet},
+    collections::{BTreeMap, BTreeSet, HashMap, HashSet},
     sync::Arc,
     time::{Duration, Instant},
 };
@@ -651,7 +651,7 @@ impl TableActor {
                         let _ = reply.send(self.drain().await.map_err(anyhow::Error::from));
                         break;
                     }
-                    Some(TableCommand::Client { session, command, reply }) => {
+                    Some(TableCommand::Client { session, blocks, command, reply }) => {
                         if is_variant_discovery(&command) {
                             if discovering {
                                 let _ = reply.send(Err(rejection!("A variant search is already pending at this table.")));
@@ -666,7 +666,7 @@ impl TableActor {
                             continue;
                         }
                         let result = if session.active() {
-                            self.command(session, command).await
+                            self.command(session, &blocks, command).await
                         } else {
                             Err(rejection!("Stale session or unavailable authority"))
                         };
@@ -883,6 +883,7 @@ impl TableActor {
     pub(super) async fn command(
         &mut self,
         session: Arc<Session>,
+        blocks: &BTreeSet<UserId>,
         command: Command,
     ) -> CommandResult<()> {
         ensure_or_reject!(!self.frozen, "Table is frozen until recovery");
@@ -899,6 +900,7 @@ impl TableActor {
                 return self
                     .reattend(
                         session,
+                        blocks,
                         spectate,
                         Some(shadow.map_or(i64::from(NO_VALUE), int)),
                     )
@@ -911,10 +913,10 @@ impl TableActor {
             message.name()
         );
         match message {
-            ClientMessage::TableJoin(r) => self.join(session, r.password).await,
-            ClientMessage::TableReattend(_) => self.reattend(session, false, None).await,
+            ClientMessage::TableJoin(r) => self.join(session, blocks, r.password).await,
+            ClientMessage::TableReattend(_) => self.reattend(session, blocks, false, None).await,
             ClientMessage::TableSpectate(r) => {
-                self.reattend(session, true, Some(r.shadowing_player_index))
+                self.reattend(session, blocks, true, Some(r.shadowing_player_index))
                     .await
             }
             ClientMessage::TableUnattend(_) => self.leave(session, false).await,

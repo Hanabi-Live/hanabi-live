@@ -1,6 +1,6 @@
 use super::{
-    Allocation, Command, Entry, HubCommand, NO_SHADOWED_SEAT, Presence, Reply, SeatReservation,
-    TableActor, TableCommand, TableHandle, TableView,
+    Allocation, Blocks, Command, Entry, HubCommand, NO_SHADOWED_SEAT, Presence, Reply,
+    SeatReservation, TableActor, TableCommand, TableHandle, TableView,
     setup::{Creation, prepare_table},
 };
 use crate::errors::{CommandError, CommandResult, Report};
@@ -191,10 +191,10 @@ impl Hub {
             } else {
                 p.table
             },
-            h_group: p.session.h_group(),
-            h_group_level: p.session.h_group_level(),
+            h_group: p.h_group,
+            h_group_level: p.h_group_level,
             bot: p.session.bot,
-            inactive: p.session.inactive(),
+            inactive: p.inactive,
         }
     }
     fn broadcast(&self, message: &str) {
@@ -258,6 +258,13 @@ impl Hub {
             }
         }
     }
+    /// A connected user's blocks.
+    fn blocks(&self, user: UserId) -> Blocks {
+        self.sessions
+            .get(&user)
+            .map(|p| p.blocks.clone())
+            .unwrap_or_default()
+    }
     fn route(&mut self, s: Arc<Session>, id: TableId, command: Command, reply: Reply) {
         if self.closing || !self.current(&s) {
             let _ = reply.send(Err(rejection!("Stale session or draining server")));
@@ -268,6 +275,7 @@ impl Hub {
             let _ = reply.send(Err(rejection!("Unknown table")));
             return;
         }
+        let blocks = self.blocks(s.user);
         let reservation = if joining && !s.bot {
             match self.reserve(
                 vec![s.user],
@@ -291,6 +299,7 @@ impl Hub {
                     .sender
                     .try_send(TableCommand::Client {
                         session: s,
+                        blocks,
                         command,
                         reply: completed,
                     })
@@ -320,6 +329,7 @@ impl Hub {
             }
             if let Err(e) = entry.handle.sender.try_send(TableCommand::Client {
                 session: s,
+                blocks,
                 command,
                 reply,
             }) && let TableCommand::Client { reply, .. } = e.into_inner()
@@ -431,16 +441,13 @@ impl Hub {
                     }
                 }
                 Publication::HGroup(value) => {
-                    session.set_h_group(value);
-                    self.broadcast_user(session.user);
+                    self.update_user(session.user, |p| p.h_group = value);
                 }
                 Publication::HGroupLevel(value) => {
-                    session.set_h_group_level(value);
-                    self.broadcast_user(session.user);
+                    self.update_user(session.user, |p| p.h_group_level = value);
                 }
                 Publication::Inactive(value) => {
-                    session.set_inactive(value);
-                    self.broadcast_user(session.user);
+                    self.update_user(session.user, |p| p.inactive = value);
                 }
                 Publication::BlocksChanged {
                     user_id,
@@ -448,14 +455,26 @@ impl Hub {
                     blocked,
                 } => {
                     for (user, other) in [(user_id, target_id), (target_id, user_id)] {
-                        if let Some(p) = self.sessions.get(&user) {
-                            p.session.set_blocked(other, blocked);
+                        if let Some(p) = self.sessions.get_mut(&user) {
+                            let blocks = Arc::make_mut(&mut p.blocks);
+                            if blocked {
+                                blocks.insert(other);
+                            } else {
+                                blocks.remove(&other);
+                            }
                         }
                     }
                 }
             }
         }
         Ok(())
+    }
+    /// Changes a connected user and tells everyone.
+    fn update_user(&mut self, user: UserId, change: impl FnOnce(&mut Presence)) {
+        if let Some(p) = self.sessions.get_mut(&user) {
+            change(p);
+        }
+        self.broadcast_user(user);
     }
     /// Tells everyone about a change to a connected user.
     fn broadcast_user(&self, user: UserId) {
@@ -559,6 +578,7 @@ impl Hub {
             match command {
                 HubCommand::Register {
                     session,
+                    blocks,
                     mut welcome,
                     initial,
                     reply,
@@ -602,11 +622,7 @@ impl Hub {
                     }
                     self.sessions.insert(
                         session.user,
-                        Presence {
-                            session: session.clone(),
-                            status: Status::Lobby,
-                            table: None,
-                        },
+                        Presence::new(session.clone(), &welcome.settings, Arc::new(blocks)),
                     );
                     session.emit(&frame(hanabi_protocol::server::WELCOME, welcome));
                     session.emit(&frame(
@@ -663,9 +679,7 @@ impl Hub {
                             .values()
                             .filter(|p| p.session.active())
                             .map(|p| OnlineUser {
-                                id: p.session.user,
-                                name: p.session.name.clone(),
-                                normalized_name: p.session.normalized_name.clone(),
+                                identity: p.session.identity.clone(),
                                 generation: p.session.generation,
                             })
                             .collect())
@@ -848,6 +862,7 @@ impl Hub {
                         if self.current(&session) {
                             let (reply, _) = oneshot::channel();
                             let _ = handle.sender.try_send(TableCommand::Client {
+                                blocks: self.blocks(session.user),
                                 session,
                                 command: Command::Reattend {
                                     spectate: spectator,

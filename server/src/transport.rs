@@ -3,7 +3,7 @@ use hanabi_protocol::UserId;
 use serde::Serialize;
 use std::sync::{
     Arc, LazyLock,
-    atomic::{AtomicBool, AtomicU8, Ordering},
+    atomic::{AtomicBool, Ordering},
 };
 use tokio::sync::{OwnedSemaphorePermit, Semaphore, mpsc, oneshot};
 use tokio_util::sync::CancellationToken;
@@ -78,39 +78,38 @@ impl InboundBudget {
     }
 }
 
-pub struct Session {
+/// Who a connection signed in as. It does not change while the connection lasts.
+#[derive(Clone, Debug)]
+pub struct Identity {
     pub user: UserId,
     pub name: String,
-    pub generation: u64,
     pub normalized_name: String,
     pub ip: String,
+    /// Whether the account has authenticated as a bot.
+    pub bot: bool,
+}
+
+/// A live connection: its user's identity and the queue of frames to send. The hub keeps what can
+/// change while the connection lasts, such as the user's status and blocks.
+pub struct Session {
+    pub identity: Arc<Identity>,
+    pub generation: u64,
     pub cancel: CancellationToken,
     pub ownership_lost: CancellationToken,
     pub lobby_load: Arc<Semaphore>,
     /// Cancelled when the server shuts down.
     shutdown: CancellationToken,
-    /// Whether the account has authenticated as a bot.
-    pub bot: bool,
-    h_group: AtomicBool,
-    h_group_level: AtomicU8,
-    /// Users who have blocked, or were blocked by, this user.
-    blocks: std::sync::Mutex<std::collections::BTreeSet<UserId>>,
-    inactive: AtomicBool,
     closing: AtomicBool,
     superseded: AtomicBool,
     outbound: mpsc::Sender<Outbound>,
     bytes: Arc<Semaphore>,
 }
 
-pub struct SessionMetadata {
-    pub user: UserId,
-    pub name: String,
-    pub normalized_name: String,
-    pub ip: String,
-    pub generation: u64,
-    pub h_group: bool,
-    pub h_group_level: u8,
-    pub bot: bool,
+impl std::ops::Deref for Session {
+    type Target = Identity;
+    fn deref(&self) -> &Identity {
+        &self.identity
+    }
 }
 
 impl Session {
@@ -120,19 +119,16 @@ impl Session {
         user: UserId,
         name: String,
         generation: u64,
-        h_group: bool,
     ) -> (Arc<Self>, mpsc::Receiver<Outbound>) {
         Self::with_tokens(
-            SessionMetadata {
+            Identity {
                 user,
                 normalized_name: crate::accounts::normalize_username(&name),
                 name,
                 ip: String::new(),
-                generation,
-                h_group,
-                h_group_level: 0,
                 bot: false,
             },
+            generation,
             CancellationToken::new(),
             CancellationToken::new(),
         )
@@ -141,23 +137,16 @@ impl Session {
     /// Creates a session that stops when the server loses ownership of the live tables or shuts
     /// down.
     pub fn with_tokens(
-        metadata: SessionMetadata,
+        identity: Identity,
+        generation: u64,
         ownership_lost: CancellationToken,
         shutdown: CancellationToken,
     ) -> (Arc<Self>, mpsc::Receiver<Outbound>) {
         let (outbound, receiver) = mpsc::channel(OUTBOUND_QUEUE);
         (
             Arc::new(Self {
-                user: metadata.user,
-                name: metadata.name,
-                normalized_name: metadata.normalized_name,
-                ip: metadata.ip,
-                generation: metadata.generation,
-                bot: metadata.bot,
-                h_group: AtomicBool::new(metadata.h_group),
-                h_group_level: AtomicU8::new(metadata.h_group_level),
-                blocks: std::sync::Mutex::default(),
-                inactive: AtomicBool::new(false),
+                identity: Arc::new(identity),
+                generation,
                 closing: AtomicBool::new(false),
                 superseded: AtomicBool::new(false),
                 cancel: CancellationToken::new(),
@@ -186,52 +175,6 @@ impl Session {
 
     pub fn was_superseded(&self) -> bool {
         self.superseded.load(Ordering::Acquire)
-    }
-
-    pub fn h_group(&self) -> bool {
-        self.h_group.load(Ordering::Acquire)
-    }
-
-    /// Whether this user has blocked, or was blocked by, any of `users`.
-    pub fn blocks_any(&self, users: impl IntoIterator<Item = UserId>) -> bool {
-        let blocks = self
-            .blocks
-            .lock()
-            .unwrap_or_else(std::sync::PoisonError::into_inner);
-        users.into_iter().any(|user| blocks.contains(&user))
-    }
-
-    /// Records whether any block remains between this user and `other`.
-    pub fn set_blocked(&self, other: UserId, blocked: bool) {
-        let mut blocks = self
-            .blocks
-            .lock()
-            .unwrap_or_else(std::sync::PoisonError::into_inner);
-        if blocked {
-            blocks.insert(other);
-        } else {
-            blocks.remove(&other);
-        }
-    }
-
-    pub fn set_h_group(&self, value: bool) {
-        self.h_group.store(value, Ordering::Release);
-    }
-
-    pub fn h_group_level(&self) -> u8 {
-        self.h_group_level.load(Ordering::Acquire)
-    }
-
-    pub fn set_h_group_level(&self, value: u8) {
-        self.h_group_level.store(value, Ordering::Release);
-    }
-
-    pub fn inactive(&self) -> bool {
-        self.inactive.load(Ordering::Acquire)
-    }
-
-    pub fn set_inactive(&self, value: bool) {
-        self.inactive.store(value, Ordering::Release);
     }
 
     pub fn emit(&self, message: &str) {
@@ -365,7 +308,7 @@ mod tests {
     use super::*;
     #[test]
     fn outbound_saturation_cancels_without_blocking() {
-        let (session, _receiver) = Session::new(UserId(1), "Alice".into(), 1, false);
+        let (session, _receiver) = Session::new(UserId(1), "Alice".into(), 1);
         for _ in 0..65 {
             session.emit("name {}");
         }
@@ -373,7 +316,7 @@ mod tests {
     }
     #[test]
     fn byte_budget_is_released_when_frames_are_dropped() {
-        let (session, mut receiver) = Session::new(UserId(1), "Alice".into(), 1, false);
+        let (session, mut receiver) = Session::new(UserId(1), "Alice".into(), 1);
         session.emit(&"x".repeat(131_072));
         drop(receiver.try_recv().unwrap());
         session.emit(&"x".repeat(131_072));
@@ -388,16 +331,14 @@ mod tests {
             let lost = CancellationToken::new();
             let shutdown = CancellationToken::new();
             let (session, mut receiver) = Session::with_tokens(
-                SessionMetadata {
+                Identity {
                     user: UserId(1),
                     name: "Alice".into(),
                     normalized_name: "alice".into(),
                     ip: "127.0.0.1".into(),
-                    generation: 1,
-                    h_group: false,
-                    h_group_level: 0,
                     bot: false,
                 },
+                1,
                 lost.clone(),
                 shutdown.clone(),
             );
@@ -416,7 +357,7 @@ mod tests {
 
     #[test]
     fn full_replay_frames_and_ordered_maintenance_close() {
-        let (session, mut receiver) = Session::new(UserId(1), "Alice".into(), 1, false);
+        let (session, mut receiver) = Session::new(UserId(1), "Alice".into(), 1);
         session.emit(&"x".repeat(300_000));
         assert!(session.active());
         drop(receiver.try_recv().unwrap());
@@ -452,7 +393,7 @@ mod tests {
             bytes: Arc::new(Semaphore::new(16)),
             global: global.clone(),
         };
-        let (session, _) = Session::new(UserId(1), "Alice".into(), 1, false);
+        let (session, _) = Session::new(UserId(1), "Alice".into(), 1);
         let (sender, mut receiver) = mpsc::channel(1);
         assert!(
             sender
@@ -486,8 +427,8 @@ mod tests {
             bytes: Arc::new(Semaphore::new(16)),
             global: global.clone(),
         };
-        let (alice, _) = Session::new(UserId(1), "Alice".into(), 1, false);
-        let (bob, _) = Session::new(UserId(2), "Bob".into(), 2, false);
+        let (alice, _) = Session::new(UserId(1), "Alice".into(), 1);
+        let (bob, _) = Session::new(UserId(2), "Bob".into(), 2);
         let processing = first.admit(&alice, "12345678").unwrap();
         assert!(second.admit(&bob, "abcdefgh").is_none());
         assert!(bob.cancel.is_cancelled());
@@ -517,7 +458,7 @@ mod tests {
     fn inbound_valid_large_replay_keeps_full_payload_and_returns_capacity() {
         let global = Arc::new(Semaphore::new(GLOBAL_INPUT_BYTES));
         let budget = InboundBudget::new(global.clone());
-        let (session, _) = Session::new(UserId(1), "Alice".into(), 1, false);
+        let (session, _) = Session::new(UserId(1), "Alice".into(), 1);
         let text = format!(
             "replayCreate {}",
             serde_json::json!({"source":"json","visibility":"solo","gameJSON":{
@@ -539,7 +480,7 @@ mod tests {
             bytes: Arc::new(Semaphore::new(16)),
             global: global.clone(),
         };
-        let (session, _) = Session::new(UserId(1), "Alice".into(), 1, false);
+        let (session, _) = Session::new(UserId(1), "Alice".into(), 1);
         let message = budget.admit(&session, "12345678").unwrap();
         let task = tokio::spawn(async move {
             std::future::pending::<()>().await;
@@ -554,7 +495,7 @@ mod tests {
 
     #[test]
     fn valid_large_replay_notes_queue_without_a_writer_and_remain_complete() {
-        let (session, mut outgoing) = Session::new(UserId(1), "Alice".into(), 1, false);
+        let (session, mut outgoing) = Session::new(UserId(1), "Alice".into(), 1);
         let notes: Vec<_> = (0..6).map(|_| "n".repeat(65536)).collect();
         let all_notes: Vec<_> = (0..6)
             .map(|index| {

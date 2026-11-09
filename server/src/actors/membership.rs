@@ -5,24 +5,32 @@ use crate::{
     transport::{Session, frame},
 };
 use anyhow::Context;
+use hanabi_protocol::UserId;
 use hanabi_protocol::{Status, TableRequest, TableStarted};
-use std::{collections::HashSet, sync::Arc};
+use std::{
+    collections::{BTreeSet, HashSet},
+    sync::Arc,
+};
 
 impl TableActor {
     /// Rejects a user who has blocked, or was blocked by, a player at this table or its owner.
-    pub(super) fn ensure_not_blocked(&self, session: &Session, message: &str) -> CommandResult<()> {
-        let others = self
-            .table
-            .players()
-            .iter()
-            .map(|p| p.id)
-            .chain([self.table.owner]);
-        ensure_or_reject!(!session.blocks_any(others), "{message}");
+    fn ensure_not_blocked(&self, blocks: &BTreeSet<UserId>, message: &str) -> CommandResult<()> {
+        ensure_or_reject!(
+            !self
+                .table
+                .players()
+                .iter()
+                .map(|p| p.id)
+                .chain([self.table.owner])
+                .any(|user| blocks.contains(&user)),
+            "{message}"
+        );
         Ok(())
     }
     pub(super) async fn join(
         &mut self,
         session: Arc<Session>,
+        blocks: &BTreeSet<UserId>,
         password: String,
     ) -> CommandResult<()> {
         let Phase::Pregame {
@@ -40,7 +48,7 @@ impl TableActor {
             "You have already joined this table."
         );
         let full = players.len() >= self.table.max_players;
-        self.ensure_not_blocked(&session, "You cannot join this table.")?;
+        self.ensure_not_blocked(blocks, "You cannot join this table.")?;
         if full {
             return self.join_full(&session).await;
         }
@@ -119,6 +127,7 @@ impl TableActor {
     pub(super) async fn reattend(
         &mut self,
         session: Arc<Session>,
+        blocks: &BTreeSet<UserId>,
         spectating: bool,
         requested_shadow: Option<i64>,
     ) -> CommandResult<()> {
@@ -138,7 +147,7 @@ impl TableActor {
         );
         if seat.is_none() {
             self.ensure_not_blocked(
-                &session,
+                blocks,
                 if replay {
                     "You cannot join this replay."
                 } else {

@@ -22,7 +22,7 @@ use hanabi_engine::{CompletionTiming, EndCondition, Recipient};
 use hanabi_protocol::{MAX_SEED_LENGTH, ReplayAction, Status};
 use serde_json::{Value, json};
 use std::{
-    collections::{BTreeMap, HashMap},
+    collections::{BTreeMap, BTreeSet, HashMap},
     sync::Arc,
     time::{Duration, Instant},
 };
@@ -326,9 +326,10 @@ async fn joining_or_reattending_an_old_review_does_not_immediately_close_it() ->
             if shared { UserId(3) } else { UserId(1) },
             "Viewer".into(),
             1,
-            false,
         );
-        actor.reattend(viewer, shared, None).await?;
+        actor
+            .reattend(viewer, &BTreeSet::new(), shared, None)
+            .await?;
         actor.anchor -= Duration::from_secs(2);
         actor.tick().await?;
         ensure!(
@@ -544,10 +545,14 @@ async fn idle_live_games_warn_once_and_players_can_keep_them_going() -> Result<(
         crate::server_info::test_info(),
     );
     let player = actor.table.players()[0].id;
-    let (alice, _alice_frames) = Session::new(player, "Alice".into(), 1, false);
-    let (viewer, _viewer_frames) = Session::new(UserId(99), "Viewer".into(), 1, false);
-    actor.reattend(alice.clone(), false, None).await?;
-    actor.reattend(viewer.clone(), true, None).await?;
+    let (alice, _alice_frames) = Session::new(player, "Alice".into(), 1);
+    let (viewer, _viewer_frames) = Session::new(UserId(99), "Viewer".into(), 1);
+    actor
+        .reattend(alice.clone(), &BTreeSet::new(), false, None)
+        .await?;
+    actor
+        .reattend(viewer.clone(), &BTreeSet::new(), true, None)
+        .await?;
     published(&mut notifications, "idleWarning");
 
     // Both attendees are warned once, not on every tick.
@@ -621,8 +626,8 @@ async fn spectating_a_live_game_does_not_refresh_its_idle_deadline() -> Result<(
     actor.anchor = Instant::now()
         .checked_sub(Duration::from_millis(900))
         .unwrap();
-    let (viewer, _frames) = Session::new(UserId(3), "Viewer".into(), 1, false);
-    actor.reattend(viewer, true, None).await?;
+    let (viewer, _frames) = Session::new(UserId(3), "Viewer".into(), 1);
+    actor.reattend(viewer, &BTreeSet::new(), true, None).await?;
     ensure!(
         actor.table.game().unwrap().idle_remaining <= 1000,
         "A spectator kept an idle live game alive"
@@ -677,8 +682,8 @@ async fn abandoned_pregames_expire_durably_even_with_a_password_or_spectator() -
             capacity.clone().try_acquire_owned()?,
             crate::server_info::test_info(),
         );
-        let (owner, _owner_frames) = Session::new(UserId(1), "Alice".into(), 1, false);
-        let (observer, _observer_frames) = Session::new(UserId(2), "Observer".into(), 1, false);
+        let (owner, _owner_frames) = Session::new(UserId(1), "Alice".into(), 1);
+        let (observer, _observer_frames) = Session::new(UserId(2), "Observer".into(), 1);
         actor
             .attendees
             .insert(UserId(1), attendance(owner.clone(), false));
@@ -760,9 +765,10 @@ async fn restored_pregames_allow_reconnects_and_keep_connected_afk_players() -> 
         !actor.retired,
         "Recovery immediately deleted an old pregame"
     );
-    let (owner, _frames) = Session::new(UserId(1), "Alice".into(), 2, false);
-    actor.reattend(owner.clone(), false, None).await?;
-    owner.set_inactive(true);
+    let (owner, _frames) = Session::new(UserId(1), "Alice".into(), 2);
+    actor
+        .reattend(owner.clone(), &BTreeSet::new(), false, None)
+        .await?;
     let later = now + PREGAME_RECONNECT_GRACE;
     actor.cleanup(later).await?;
     ensure!(
@@ -887,7 +893,7 @@ async fn full_table_mailboxes_do_not_block_hub_and_replacements_fence_private_ef
         return Ok(());
     };
     let (sender, receiver) = mpsc::channel(16);
-    let (old, mut old_frames) = Session::new(UserId(1), "Alice".into(), 1, false);
+    let (old, mut old_frames) = Session::new(UserId(1), "Alice".into(), 1);
     let (table_sender, _table_receiver) = mpsc::channel(1);
     let (drain, _drained) = oneshot::channel();
     table_sender
@@ -919,9 +925,13 @@ async fn full_table_mailboxes_do_not_block_hub_and_replacements_fence_private_ef
     hub.sessions.insert(
         UserId(1),
         Presence {
-            session: old.clone(),
             status: Status::Playing,
             table: Some(TableId(42)),
+            ..Presence::new(
+                old.clone(),
+                &hanabi_protocol::Settings::default(),
+                Blocks::default(),
+            )
         },
     );
     hub.tables.insert(
@@ -959,11 +969,12 @@ async fn full_table_mailboxes_do_not_block_hub_and_replacements_fence_private_ef
         .await?;
     tokio::time::timeout(Duration::from_secs(1), replied).await???;
     ensure!(old_frames.try_recv().is_ok(), "Hub blocked on table");
-    let (new, mut new_frames) = Session::new(UserId(1), "Alice".into(), 2, false);
+    let (new, mut new_frames) = Session::new(UserId(1), "Alice".into(), 2);
     let (reply, replied) = oneshot::channel();
     sender
         .send(HubCommand::Register {
             session: new.clone(),
+            blocks: BTreeSet::new(),
             welcome: test_welcome(),
             initial: vec![],
             reply,
@@ -1012,7 +1023,7 @@ async fn a_table_that_panics_is_removed_and_frees_its_players() -> Result<()> {
         return Ok(());
     };
     let (sender, receiver) = mpsc::channel(16);
-    let (alice, mut frames) = Session::new(UserId(1), "Alice".into(), 1, false);
+    let (alice, mut frames) = Session::new(UserId(1), "Alice".into(), 1);
     let (table_sender, _table_receiver) = mpsc::channel(1);
     let mut hub = Hub {
         receiver,
@@ -1031,9 +1042,13 @@ async fn a_table_that_panics_is_removed_and_frees_its_players() -> Result<()> {
     hub.sessions.insert(
         UserId(1),
         Presence {
-            session: alice.clone(),
             status: Status::Playing,
             table: Some(TableId(42)),
+            ..Presence::new(
+                alice.clone(),
+                &hanabi_protocol::Settings::default(),
+                Blocks::default(),
+            )
         },
     );
     hub.tables.insert(

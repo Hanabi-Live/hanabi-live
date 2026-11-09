@@ -2,6 +2,7 @@ use super::*;
 use crate::transport::test_frame;
 use axum::http::HeaderValue;
 use serde_json::{Value, json};
+use std::collections::BTreeSet;
 use tokio_tungstenite::{
     connect_async,
     tungstenite::{Message as WireMessage, client::IntoClientRequest},
@@ -530,7 +531,6 @@ async fn native_browser_login_ws_bootstrap_and_command_routing_postgres() {
         UserId(i32::try_from(welcome["userID"].as_i64().unwrap()).unwrap()),
         "Alicè".into(),
         1,
-        true,
     )
     .0;
     let (reply, received) = oneshot::channel();
@@ -574,7 +574,7 @@ async fn native_browser_login_ws_bootstrap_and_command_routing_postgres() {
         .app
         .hub
         .send(HubCommand::Directory {
-            session: Session::new(UserId(999), "stale".into(), 999, false).0,
+            session: Session::new(UserId(999), "stale".into(), 999).0,
             users: true,
             reply,
         })
@@ -698,7 +698,7 @@ async fn game_archive_locks_do_not_block_authentication_and_deferred_errors_are_
         .acquire_many_owned(64)
         .await
         .unwrap();
-    let (session, mut outgoing) = Session::new(UserId(user), "FastResume".into(), 1, false);
+    let (session, mut outgoing) = Session::new(UserId(user), "FastResume".into(), 1);
     load_lobby(fixture.app.clone(), session);
     let message = tokio::time::timeout(Duration::from_secs(1), outgoing.recv())
         .await
@@ -843,13 +843,14 @@ async fn full_history_bootstrap_queues_in_order_without_a_writer_postgres() {
         "This regression must exercise aggregate bootstrap size, not only a large single frame"
     );
     assert!(initial.iter().map(String::len).sum::<usize>() > 262_144);
-    let (session, mut outgoing) = Session::new(UserId(alice), prepared.name, 42, false);
+    let (session, mut outgoing) = Session::new(UserId(alice), prepared.name, 42);
     let (reply, received) = oneshot::channel();
     fixture
         .app
         .hub
         .send(HubCommand::Register {
             session: session.clone(),
+            blocks: BTreeSet::new(),
             welcome: prepared.welcome,
             initial,
             reply,

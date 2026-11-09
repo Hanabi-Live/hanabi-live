@@ -1,6 +1,6 @@
-use super::{Caller, Effect, Publication, notice, warning};
+use super::{Effect, Publication, notice, warning};
 use crate::accounts::{escape_html, normalize_string};
-use crate::transport::Outgoing;
+use crate::transport::{Identity, Outgoing};
 use anyhow::Result;
 use hanabi_protocol::UserId;
 use sqlx::PgPool;
@@ -79,7 +79,7 @@ pub async fn change_friend(pool: &PgPool, id: i32, target: i32, add: bool) -> Re
 
 pub async fn relationship(
     pool: &PgPool,
-    caller: &Caller,
+    caller: &Identity,
     command: &str,
     name: &str,
     room: &str,
@@ -88,7 +88,7 @@ pub async fn relationship(
         let names: Vec<String> = sqlx::query_scalar!(
             "SELECT u.username FROM user_blocks b JOIN users u ON u.id=b.blocked_id
              WHERE b.user_id=$1 ORDER BY LOWER(u.username) COLLATE \"C\"",
-            caller.id.0
+            caller.user.0
         )
         .fetch_all(pool)
         .await?;
@@ -110,7 +110,7 @@ pub async fn relationship(
         let names: Vec<String> = sqlx::query_scalar!(
             "SELECT u.username FROM user_linkages l JOIN users u ON u.id=l.linked_id
              WHERE l.user_id=$1 ORDER BY LOWER(u.username) COLLATE \"C\"",
-            caller.id.0
+            caller.user.0
         )
         .fetch_all(pool)
         .await?;
@@ -164,12 +164,12 @@ pub async fn relationship(
     let add = matches!(verb, "friend" | "link");
     let friend = matches!(verb, "friend" | "unfriend");
     let changed = if friend {
-        change_friend(pool, caller.id.0, target, add).await?
+        change_friend(pool, caller.user.0, target, add).await?
     } else {
         let result = if add {
             sqlx::query!(
                 "INSERT INTO user_linkages(user_id,linked_id) VALUES($1,$2) ON CONFLICT DO NOTHING",
-                caller.id.0,
+                caller.user.0,
                 target
             )
             .execute(pool)
@@ -177,7 +177,7 @@ pub async fn relationship(
         } else {
             sqlx::query!(
                 "DELETE FROM user_linkages WHERE user_id=$1 AND linked_id=$2",
-                caller.id.0,
+                caller.user.0,
                 target
             )
             .execute(pool)
@@ -213,7 +213,7 @@ pub async fn relationship(
         effects.push(Effect::to_self(Outgoing::new(
             hanabi_protocol::server::FRIENDS,
             hanabi_protocol::Friends {
-                friends: friends(pool, caller.id.0).await?,
+                friends: friends(pool, caller.user.0).await?,
             },
         )));
     }
@@ -222,7 +222,7 @@ pub async fn relationship(
 
 async fn block(
     pool: &PgPool,
-    caller: &Caller,
+    caller: &Identity,
     target: i32,
     escaped: &str,
     add: bool,
@@ -231,7 +231,7 @@ async fn block(
     let result = if add {
         sqlx::query!(
             "INSERT INTO user_blocks(user_id,blocked_id) VALUES($1,$2) ON CONFLICT DO NOTHING",
-            caller.id.0,
+            caller.user.0,
             target
         )
         .execute(pool)
@@ -239,7 +239,7 @@ async fn block(
     } else {
         sqlx::query!(
             "DELETE FROM user_blocks WHERE user_id=$1 AND blocked_id=$2",
-            caller.id.0,
+            caller.user.0,
             target
         )
         .execute(pool)
@@ -262,10 +262,10 @@ async fn block(
     Ok(vec![
         notice(&caller.name, &message, room),
         Publication::BlocksChanged {
-            user_id: caller.id,
+            user_id: caller.user,
             target_id: UserId(target),
             // The other user may have blocked this one too.
-            blocked: blocked_between(pool, caller.id.0, &[target]).await?,
+            blocked: blocked_between(pool, caller.user.0, &[target]).await?,
         }
         .into(),
     ])
