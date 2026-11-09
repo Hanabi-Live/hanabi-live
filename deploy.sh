@@ -24,7 +24,11 @@ for argument in "$@"; do
   esac
 done
 
+# How long the replacement server must run without logging a failure after the restart.
+FAILURE_SCAN_SECONDS=60
+
 echo "Deployment target: root@hanab.live:/home/hanabi/hanabi-live"
+started=$(date +%s)
 # Send credentials on encrypted stdin, never in SSH command-line arguments.
 if {
   token=${GH_TOKEN:-${GITHUB_TOKEN_PERSONAL_CLASSIC:-${GITHUB_TOKEN:-}}}
@@ -56,6 +60,29 @@ REMOTE
     fi
     # Sign in and join the lobby the way a returning player does.
     bun run --cwd "$DIR" check-deployment
+    # Migrations can block live queries before the restart, so scan the whole deployment.
+    echo "Checking that the server logged no failures during the deployment and the $FAILURE_SCAN_SECONDS seconds after its restart."
+    failures=$(
+      ssh -T root@hanab.live "bash -s -- $started $FAILURE_SCAN_SECONDS" << 'REMOTE'
+set -o errexit -o nounset -o pipefail
+journal() { journalctl --unit=hanabi-live --since="@$1" "${@:2}" --no-pager --output=short-unix; }
+# The first start of a replacement server, or the deployment's start if it did not restart.
+restarted=$(journal "$1" | awk '/ Server listening at / && start == "" { start = $1 } END { print start }')
+restarted=${restarted:-$1}
+restarted=${restarted%.*}
+remaining=$((restarted + $2 - $(date +%s)))
+if ((remaining > 0)); then
+  sleep "$remaining"
+fi
+journal "$1" --until="@$((restarted + $2))" | grep -F " Server failure: " || true
+REMOTE
+    )
+    if [[ -n $failures ]]; then
+      echo "Deployment check failed: the server logged failures during the deployment:" >&2
+      echo "$failures" >&2
+      exit 1
+    fi
+    echo "The server logged no failures."
   fi
 else
   status=$?
