@@ -2498,6 +2498,7 @@ async fn ban_disconnects_every_session_from_the_banned_ip() -> Result<()> {
                     ip: ip.into(),
                     generation: 1,
                     h_group: false,
+                    bot: false,
                 },
                 tokio_util::sync::CancellationToken::new(),
                 Arc::new(|| true),

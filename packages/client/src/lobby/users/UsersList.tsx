@@ -13,7 +13,10 @@ import { selectUserCount, selectUserRows } from "./usersSlice";
 
 const H_GROUP_TOOLTIP = `<span style="${tooltips.SMALL_TOOLTIP_TEXT_STYLE}">This person is a self-identified member of the H-Group.</span>`;
 
+const BOT_TOOLTIP = `<span style="${tooltips.SMALL_TOOLTIP_TEXT_STYLE}">This account is a bot.</span>`;
+
 const SLEEPING_EMOJI = "\u{1F4A4}";
+const ROBOT_EMOJI = "\u{1F916}";
 
 const NAME_CLASSES = {
   self: "name-me",
@@ -77,11 +80,7 @@ function UserRowView({
   return (
     <tr>
       <td>
-        {user.hGroup ? (
-          <HGroupIcon />
-        ) : (
-          <span className="tw:inline-block tw:w-[0.75em]" />
-        )}
+        <UserIcon user={user} />
         {"\u{A0} "}
         <span style={user.inactive ? { opacity: DIMMED_OPACITY } : undefined}>
           {kind === "self" ? <strong>{nameLink}</strong> : nameLink}
@@ -114,6 +113,27 @@ function HGroupIcon() {
   return (
     <span ref={ref}>
       <i className="fas fa-heading fa-xs" />
+    </span>
+  );
+}
+
+function UserIcon({ user }: { readonly user: UserRow["user"] }) {
+  if (user.bot) {
+    return <BotIcon />;
+  }
+  if (user.hGroup) {
+    return <HGroupIcon />;
+  }
+  return <span className="tw:inline-block tw:w-[0.75em]" />;
+}
+
+function BotIcon() {
+  const ref = useRef<HTMLSpanElement>(null);
+  useEffect(() => tooltips.attach(ref.current!, BOT_TOOLTIP), []);
+
+  return (
+    <span aria-label="Bot" ref={ref} role="img">
+      {ROBOT_EMOJI}
     </span>
   );
 }

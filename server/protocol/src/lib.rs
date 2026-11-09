@@ -1430,6 +1430,7 @@ pub struct User {
     #[schemars(with = "TableId")]
     pub table_id: Option<TableId>,
     pub h_group: bool,
+    pub bot: bool,
     pub inactive: bool,
 }
 

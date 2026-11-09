@@ -9,6 +9,7 @@ of the repository.
 
 ## November 9th, 2026
 
+- Bots now have a robot icon in the "Online Users" list.
 - The "New Game" screen now has a "Replay Game" option for replaying part of an
   existing game, replacing the `!replay` table name.
 - The pregame chat now says when a spectator joins or leaves the game.

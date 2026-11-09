@@ -382,6 +382,7 @@ async fn check_origin(State(app): State<Arc<App>>, request: Request, next: Next)
 struct Bootstrap {
     name: String,
     normalized_name: String,
+    bot: bool,
     blocks: Vec<i32>,
     welcome: hanabi_protocol::Welcome,
     initial: Vec<String>,
@@ -394,7 +395,7 @@ async fn bootstrap(app: &App, id: i32, ip: &str) -> Result<Bootstrap> {
         "Your IP address has been banned."
     );
     let row = sqlx::query!(
-        "SELECT username,normalized_username,datetime_created FROM users WHERE id=$1",
+        "SELECT username,normalized_username,datetime_created,is_bot FROM users WHERE id=$1",
         id
     )
     .fetch_optional(pool)
@@ -431,6 +432,7 @@ async fn bootstrap(app: &App, id: i32, ip: &str) -> Result<Bootstrap> {
     Ok(Bootstrap {
         name,
         normalized_name,
+        bot: row.is_bot,
         blocks,
         welcome,
         initial: vec![frame(
@@ -744,6 +746,7 @@ async fn connection(
             ip,
             generation,
             h_group: data.welcome.settings.h_group_conventions,
+            bot: data.bot,
         },
         app.lease_lost.clone(),
         Arc::new(move || !shutdown.is_cancelled() && store.check_state().is_ok()),

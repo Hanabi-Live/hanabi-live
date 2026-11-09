@@ -87,6 +87,8 @@ pub struct Session {
     pub lease_lost: CancellationToken,
     pub lobby_load: Arc<Semaphore>,
     health: HealthCheck,
+    /// Whether the account has authenticated as a bot.
+    pub bot: bool,
     h_group: AtomicBool,
     /// Users who have blocked, or were blocked by, this user.
     blocks: std::sync::Mutex<std::collections::BTreeSet<i32>>,
@@ -106,6 +108,7 @@ pub struct SessionMetadata {
     pub ip: String,
     pub generation: u64,
     pub h_group: bool,
+    pub bot: bool,
 }
 
 impl Session {
@@ -123,6 +126,7 @@ impl Session {
                 ip: String::new(),
                 generation,
                 h_group,
+                bot: false,
             },
             CancellationToken::new(),
             Arc::new(|| true),
@@ -142,6 +146,7 @@ impl Session {
                 normalized_name: metadata.normalized_name,
                 ip: metadata.ip,
                 generation: metadata.generation,
+                bot: metadata.bot,
                 h_group: AtomicBool::new(metadata.h_group),
                 blocks: std::sync::Mutex::default(),
                 inactive: AtomicBool::new(false),
@@ -397,6 +402,7 @@ mod tests {
                 ip: "127.0.0.1".into(),
                 generation: 1,
                 h_group: false,
+                bot: false,
             },
             lost.clone(),
             Arc::new(move || check.load(Ordering::Acquire)),

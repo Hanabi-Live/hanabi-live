@@ -375,6 +375,7 @@
       "status": 6,
       "tableID": 3,
       "hGroup": false,
+      "bot": false,
       "inactive": false
     },
     "valid": false
@@ -390,6 +391,7 @@
         "status": 2,
         "tableID": 3,
         "hGroup": false,
+        "bot": false,
         "inactive": false
       }
     ],

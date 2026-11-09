@@ -127,6 +127,7 @@ impl Hub {
                 p.table.map(TableId)
             },
             h_group: p.session.h_group(),
+            bot: p.session.bot,
             inactive: p.session.inactive(),
         }
     }

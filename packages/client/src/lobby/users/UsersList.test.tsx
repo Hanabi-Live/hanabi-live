@@ -40,6 +40,7 @@ function user(
     name,
     status,
     hGroup: false,
+    bot: false,
     inactive: false,
     ...(status !== Status.Lobby && { tableID: TABLE_ID }),
   };
@@ -109,6 +110,22 @@ describe("UsersList", () => {
 
     expect(name.style.opacity).toBe(String(DIMMED_OPACITY));
     expect(name.textContent).toContain("\u{1F4A4}");
+  });
+
+  test("marks bots with a robot instead of the H-Group icon", () => {
+    store.dispatch(
+      usersListed([
+        { ...user(1, "Alice"), hGroup: true },
+        { ...user(2, "Bot-Bob"), hGroup: true, bot: true },
+      ]),
+    );
+    renderList();
+
+    const [alice, bot] = screen.getAllByRole("row").slice(1);
+    expect(alice!.querySelector(".fa-heading")).not.toBeNull();
+    expect(alice!.textContent).not.toContain("\u{1F916}");
+    expect(bot!.querySelector(".fa-heading")).toBeNull();
+    expect(bot!.textContent).toContain("\u{1F916}");
   });
 
   test("links the status of users at a table, except from the pre-game", () => {

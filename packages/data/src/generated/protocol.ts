@@ -1176,6 +1176,7 @@ export const tagsDeleteAllRequestSchema = z.strictObject({
  */
 export const userSchema = z
   .strictObject({
+    bot: z.boolean(),
     hGroup: z.boolean(),
     inactive: z.boolean(),
     name: z.string().min(1),
