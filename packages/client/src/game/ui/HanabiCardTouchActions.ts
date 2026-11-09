@@ -7,6 +7,13 @@ import * as notes from "./notes";
 import * as replay from "./replay";
 
 export function HanabiCardTap(this: HanabiCard): void {
+  // We executed a tap, so prevent the code from considering a long press is happening. (Otherwise,
+  // the second tap of a double tap would close the note that the double tap opens.)
+  if (this.touchstartTimeout !== null) {
+    clearTimeout(this.touchstartTimeout);
+    this.touchstartTimeout = null;
+  }
+
   // We must delay the action by a bit to make sure it isn't a double tap.
   if (this.wasRecentlyTapped) {
     // We now know it was a double tap, so ignore the tap action.
@@ -14,11 +21,6 @@ export function HanabiCardTap(this: HanabiCard): void {
     return;
   }
   this.wasRecentlyTapped = true;
-
-  if (this.touchstartTimeout !== null) {
-    // We executed a tap, so prevent the code from considering a long press is happening.
-    clearTimeout(this.touchstartTimeout);
-  }
 
   setTimeout(() => {
     if (this.wasRecentlyTapped) {
