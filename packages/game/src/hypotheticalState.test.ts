@@ -5,6 +5,7 @@ import {
   hypotheticalStateReducer,
   initializeHypotheticalState,
 } from "./hypotheticalState";
+import { MAX_STRIKES } from "./generated/protocol";
 import { getDefaultMetadata } from "./metadata";
 import * as gameReducerModule from "./reducers/gameReducer";
 import { gameReducer } from "./reducers/gameReducer";
@@ -607,17 +608,29 @@ describe("hypothetical state", () => {
     expect(state.ongoing.deck[0]).toMatchObject({ suitIndex: 2, rank: 5 });
   });
 
-  test("ends after the final round", () => {
-    const finalTurn = {
-      ...startingState,
-      turn: {
-        ...startingState.turn,
+  const lastSegment = { ...startingState.turn, segment: 0 };
+  test.each([
+    {
+      name: "the final round",
+      turn: { ...lastSegment, endTurnNum: startingState.turn.turnNum + 1 },
+    },
+    {
+      name: "a strikeout",
+      turn: lastSegment,
+      strikes: Array.from({ length: MAX_STRIKES }, (_, i) => ({
+        order: i as CardOrder,
         segment: 0,
-        endTurnNum: startingState.turn.turnNum + 1,
-      },
-    };
+      })),
+    },
+    {
+      name: "the maximum score",
+      turn: lastSegment,
+      score: startingState.stats.maxScore,
+    },
+  ])("ends after $name", (overrides) => {
+    const { name: _name, ...stateOverrides } = overrides;
     const ended = initializeHypotheticalState(
-      finalTurn,
+      { ...startingState, ...stateOverrides },
       false,
       [rankClue(3, 0, [], 1)],
       false,

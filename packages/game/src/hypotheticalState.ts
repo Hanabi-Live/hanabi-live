@@ -3,6 +3,7 @@
 
 import type { Draft } from "immer";
 import { castDraft, produce } from "immer";
+import { MAX_STRIKES } from "./generated/protocol";
 import type { CardIdentity } from "./interfaces/CardIdentity";
 import type { GameMetadata } from "./interfaces/GameMetadata";
 import type { GameState } from "./interfaces/GameState";
@@ -255,13 +256,7 @@ function hypotheticalStateReducerFunction(
   );
   state.ongoing = castDraft(newState);
 
-  // Like in a real game, everyone gets one more turn after the final card is drawn.
-  const { turnNum, endTurnNum } = newState.turn;
-  if (
-    !metadata.options.allOrNothing
-    && endTurnNum !== null
-    && turnNum >= endTurnNum
-  ) {
+  if (isHypotheticalOver(newState, metadata)) {
     state.ongoing.turn.currentPlayerIndex = null;
   }
 
@@ -269,4 +264,23 @@ function hypotheticalStateReducerFunction(
     // Save the new segment in case we want to go backwards.
     state.states.push(castDraft(newState));
   }
+}
+
+/** Whether a real game would end in this state. */
+function isHypotheticalOver(
+  gameState: GameState,
+  metadata: GameMetadata,
+): boolean {
+  // Everyone gets one more turn after the final card is drawn.
+  const { turnNum, endTurnNum } = gameState.turn;
+  const isFinalRoundOver =
+    !metadata.options.allOrNothing
+    && endTurnNum !== null
+    && turnNum >= endTurnNum;
+
+  return (
+    gameState.strikes.length >= MAX_STRIKES
+    || gameState.score >= gameState.stats.maxScore
+    || isFinalRoundOver
+  );
 }
