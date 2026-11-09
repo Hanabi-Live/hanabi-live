@@ -1,6 +1,9 @@
 # Changelog
 
-This page lists the changes to Hanab Live, excluding bug fixes.
+This page lists the changes to Hanab Live.
+
+Note that minor changes, bug fixes, and internal changes are intentionally not
+listed here.
 
 ## November 8th, 2026
 
