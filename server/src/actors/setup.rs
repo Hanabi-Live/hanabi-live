@@ -349,7 +349,6 @@ pub(super) async fn prepare_table(
     session: &Session,
     creation: Creation,
 ) -> Result<(TableSnapshot, i64, Vec<String>)> {
-    store.check_state()?;
     ensure!(session.active(), "Stale session");
     let id = store.allocate_table().await?;
     let result = async {

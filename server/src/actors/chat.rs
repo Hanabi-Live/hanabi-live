@@ -204,7 +204,6 @@ impl TableActor {
         Ok(participants)
     }
     pub(super) fn prepare_discovery(&self, requester: Arc<Session>) -> Result<VariantDiscovery> {
-        self.store.check_state()?;
         ensure!(
             !self.frozen && self.attending(&requester),
             "You are not at an available table."
@@ -251,7 +250,6 @@ impl TableActor {
         query: VariantDiscovery,
         selected: Result<Option<String>>,
     ) -> Result<()> {
-        self.store.check_state()?;
         ensure!(
             !self.frozen && self.attending(&query.requester),
             "Variant requester is no longer at this table."

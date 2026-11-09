@@ -536,10 +536,10 @@ impl TableActor {
                             }
                             continue;
                         }
-                        let result = if !session.active() || self.store.check_state().is_err() {
-                            Err(anyhow::anyhow!("Stale session or unavailable authority"))
-                        } else {
+                        let result = if session.active() {
                             self.command(session, command).await
+                        } else {
+                            Err(anyhow::anyhow!("Stale session or unavailable authority"))
                         };
                         let _ = reply.send(result);
                     }
@@ -594,7 +594,6 @@ impl TableActor {
     }
     /// Saves the table for a graceful stop, giving timed games their maintenance allowance once.
     async fn drain(&mut self) -> Result<()> {
-        self.store.check_state()?;
         ensure!(!self.frozen, "Cannot drain frozen table");
         let mut next = self.candidate();
         if let Some(s) = next.game_mut()
@@ -1018,7 +1017,6 @@ impl TableActor {
         Ok(())
     }
     pub(super) async fn retire(&mut self) -> Result<()> {
-        self.store.check_state()?;
         ensure!(!self.frozen, "Frozen table cannot be removed");
         if let Err(e) = self.store.remove(self.table.id, self.revision).await {
             self.frozen = true;

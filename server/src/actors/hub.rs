@@ -131,11 +131,9 @@ impl Hub {
         }
     }
     fn broadcast(&self, message: &str) {
-        if self.store.check_state().is_ok() {
-            for p in self.sessions.values() {
-                if self.current(&p.session) {
-                    p.session.emit(message);
-                }
+        for p in self.sessions.values() {
+            if self.current(&p.session) {
+                p.session.emit(message);
             }
         }
     }
@@ -617,7 +615,7 @@ impl Hub {
                             "An original player is already playing at another table."
                         ))
                     } else {
-                        self.store.check_state()
+                        Ok(())
                     };
                     let _ = reply.send(result);
                 }
