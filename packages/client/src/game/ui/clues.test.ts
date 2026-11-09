@@ -12,6 +12,7 @@ vi.mock("./arrows", () => ({
   isPotentialClueShown: vi.fn(),
 }));
 vi.mock("./turn", () => ({}));
+vi.mock("./cluePreview", () => ({ setPotentialClue: vi.fn() }));
 vi.mock("./reactive/views/cluesView", () => ({}));
 const { globals } = await import("./UIGlobals");
 const arrows = await import("./arrows");

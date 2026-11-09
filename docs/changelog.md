@@ -70,6 +70,8 @@ of the repository.
 - The server uses one database pool of 14 connections for writes, and the
   localhost `/metrics` report shows the lobby read pool as `lobbyDatabase`
   instead of the archive pool.
+- Hover over "Give Clue" to see the target's hand as they would see it after the
+  clue.
 
 ## November 8th, 2026
 

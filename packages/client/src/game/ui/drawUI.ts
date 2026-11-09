@@ -44,6 +44,7 @@ import { RankButton } from "./RankButton";
 import { globals } from "./UIGlobals";
 import * as arrows from "./arrows";
 import { backToLobby } from "./backToLobby";
+import * as cluePreview from "./cluePreview";
 import * as clues from "./clues";
 import {
   ACTIVE_INDICATOR_COLOR,
@@ -2593,6 +2594,13 @@ function drawClueArea() {
   globals.elements.giveClueButton.setEnabled(false);
   globals.elements.lowerClueArea.add(globals.elements.giveClueButton);
   globals.elements.giveClueButton.on("click tap", clues.give);
+  // Hovering shows the target's hand as they would see it after the clue.
+  globals.elements.giveClueButton.on("mouseenter", () => {
+    if (globals.elements.giveClueButton!.enabled) {
+      cluePreview.show();
+    }
+  });
+  globals.elements.giveClueButton.on("mouseleave", cluePreview.hide);
 
   globals.layers.UI.add(globals.elements.clueArea);
 
