@@ -2,7 +2,7 @@
   "name": "@hanabi-live/client",
   "private": true,
   "scripts": {
-    "lint": "bash ./lint.sh",
+    "lint": "bash ../../scripts/lint/check-typescript.sh",
     "test": "vitest run"
   },
   "dependencies": {

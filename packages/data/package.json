@@ -4,7 +4,7 @@
   "sideEffects": false,
   "exports": "./src/index.ts",
   "scripts": {
-    "lint": "bash ./lint.sh"
+    "lint": "bash ../../scripts/lint/check-typescript.sh"
   },
   "dependencies": {
     "@hanabi-live/game": "workspace:*",

@@ -3,7 +3,7 @@
   "private": true,
   "exports": "./src/index.ts",
   "scripts": {
-    "lint": "bash ./lint.sh"
+    "lint": "bash ../../scripts/lint/check-typescript.sh"
   },
   "devDependencies": {
     "@hanabi-live/data": "workspace:*",

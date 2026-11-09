@@ -2,7 +2,7 @@
   "name": "@hanabi-live/scripts",
   "private": true,
   "scripts": {
-    "lint": "bash ./lint.sh"
+    "lint": "bash ../../scripts/lint/check-typescript.sh"
   },
   "dependencies": {
     "@hanabi-live/data": "workspace:*",

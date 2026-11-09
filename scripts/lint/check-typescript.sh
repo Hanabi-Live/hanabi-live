@@ -2,17 +2,12 @@
 
 set -o errexit -o nounset -o pipefail
 
-# Get the directory of this script:
-# https://stackoverflow.com/questions/59895/getting-the-source-directory-of-a-bash-script-from-within
-DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &> /dev/null && pwd)
+# Lint the package in the current directory. Each package's "lint" script runs this from its own
+# directory.
 
-# Get the name of this package:
-# https://stackoverflow.com/questions/23162299/how-to-get-the-last-part-of-dirname-in-bash/23162553
-PACKAGE_NAME="$(basename "$DIR")"
+PACKAGE_NAME="$(basename "$PWD")"
 
 SECONDS=0
-
-cd "$DIR"
 
 # Ensure that the code passes the TypeScript compiler.
 bunx --bun --no-install tsc --noEmit
