@@ -7,7 +7,7 @@ listed here.
 
 ## November 8th, 2026
 
-- The lobby and history pages now use more of the screen width on wide monitors.
+- The lobby and history pages are now a bit wider on wide monitors.
 - The lobby user list now refers to the Hyphenated group by its new name, the
   H-Group.
 - Removed the card cycling option and the games that used it.
