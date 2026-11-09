@@ -567,7 +567,7 @@ impl Hub {
             } else {
                 p.table.map(TableId)
             },
-            hyphenated: p.session.hyphenated(),
+            h_group: p.session.h_group(),
             inactive: p.session.inactive(),
         }
     }
@@ -769,9 +769,9 @@ impl Hub {
                         p.session.emit(&message.frame());
                     }
                 }
-                Effect::Hyphenated(value) => {
+                Effect::HGroup(value) => {
                     let s = session.context("Missing session")?;
-                    s.set_hyphenated(value);
+                    s.set_h_group(value);
                     if let Some(p) = self.sessions.get(&s.user) {
                         self.broadcast(&frame(hanabi_protocol::server::USER, Self::user(p)));
                     }

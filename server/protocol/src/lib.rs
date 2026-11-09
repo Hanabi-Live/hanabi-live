@@ -1405,7 +1405,7 @@ pub struct User {
     #[serde(default, rename = "tableID", skip_serializing_if = "Option::is_none")]
     #[schemars(with = "TableId")]
     pub table_id: Option<TableId>,
-    pub hyphenated: bool,
+    pub h_group: bool,
     pub inactive: bool,
 }
 
@@ -1490,7 +1490,7 @@ pub struct Settings {
     pub volume: u8,
     pub speedrun_preplay: bool,
     pub speedrun_mode: bool,
-    pub hyphenated_conventions: bool,
+    pub h_group_conventions: bool,
     #[schemars(length(min = 1))]
     pub create_table_variant: String,
     pub create_table_timed: bool,
@@ -1524,7 +1524,7 @@ impl Default for Settings {
             volume: DEFAULT_VOLUME,
             speedrun_preplay: false,
             speedrun_mode: false,
-            hyphenated_conventions: false,
+            h_group_conventions: false,
             create_table_variant: DEFAULT_VARIANT_NAME.into(),
             create_table_timed: false,
             create_table_time_base_minutes: DEFAULT_TIME_BASE_MINUTES,

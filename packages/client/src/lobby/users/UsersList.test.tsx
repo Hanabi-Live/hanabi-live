@@ -39,7 +39,7 @@ function user(
     userID: userIdSchema.parse(userID),
     name,
     status,
-    hyphenated: false,
+    hGroup: false,
     inactive: false,
     ...(status !== Status.Lobby && { tableID: TABLE_ID }),
   };

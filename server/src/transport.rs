@@ -87,7 +87,7 @@ pub struct Session {
     pub lease_lost: CancellationToken,
     pub lobby_load: Arc<Semaphore>,
     health: HealthCheck,
-    hyphenated: AtomicBool,
+    h_group: AtomicBool,
     /// Users who have blocked, or were blocked by, this user.
     blocks: std::sync::Mutex<std::collections::BTreeSet<i32>>,
     inactive: AtomicBool,
@@ -105,7 +105,7 @@ pub struct SessionMetadata {
     pub normalized_name: String,
     pub ip: String,
     pub generation: u64,
-    pub hyphenated: bool,
+    pub h_group: bool,
 }
 
 impl Session {
@@ -113,7 +113,7 @@ impl Session {
         user: i32,
         name: String,
         generation: u64,
-        hyphenated: bool,
+        h_group: bool,
     ) -> (Arc<Self>, mpsc::Receiver<Outbound>) {
         Self::with_health(
             SessionMetadata {
@@ -122,7 +122,7 @@ impl Session {
                 name,
                 ip: String::new(),
                 generation,
-                hyphenated,
+                h_group,
             },
             CancellationToken::new(),
             Arc::new(|| true),
@@ -142,7 +142,7 @@ impl Session {
                 normalized_name: metadata.normalized_name,
                 ip: metadata.ip,
                 generation: metadata.generation,
-                hyphenated: AtomicBool::new(metadata.hyphenated),
+                h_group: AtomicBool::new(metadata.h_group),
                 blocks: std::sync::Mutex::default(),
                 inactive: AtomicBool::new(false),
                 closing: AtomicBool::new(false),
@@ -175,8 +175,8 @@ impl Session {
         self.superseded.load(Ordering::Acquire)
     }
 
-    pub fn hyphenated(&self) -> bool {
-        self.hyphenated.load(Ordering::Acquire)
+    pub fn h_group(&self) -> bool {
+        self.h_group.load(Ordering::Acquire)
     }
 
     /// Whether this user has blocked, or was blocked by, any of `users`.
@@ -201,8 +201,8 @@ impl Session {
         }
     }
 
-    pub fn set_hyphenated(&self, value: bool) {
-        self.hyphenated.store(value, Ordering::Release);
+    pub fn set_h_group(&self, value: bool) {
+        self.h_group.store(value, Ordering::Release);
     }
 
     pub fn inactive(&self) -> bool {
@@ -396,7 +396,7 @@ mod tests {
                 normalized_name: "alice".into(),
                 ip: "127.0.0.1".into(),
                 generation: 1,
-                hyphenated: false,
+                h_group: false,
             },
             lost.clone(),
             Arc::new(move || check.load(Ordering::Acquire)),

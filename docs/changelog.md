@@ -7,6 +7,8 @@ listed here.
 
 ## November 8th, 2026
 
+- The lobby user list now refers to the Hyphenated group by its new name, the
+  H-Group.
 - Removed the card cycling option and the games that used it.
 - Removed the legacy starting player option and the pre-April 2020 games that
   did not start with the first player.

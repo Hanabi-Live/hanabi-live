@@ -2315,7 +2315,7 @@ async fn ban_disconnects_every_session_from_the_banned_ip() -> Result<()> {
                     normalized_name: crate::accounts::normalize_username(name),
                     ip: ip.into(),
                     generation: 1,
-                    hyphenated: false,
+                    h_group: false,
                 },
                 tokio_util::sync::CancellationToken::new(),
                 Arc::new(|| true),

@@ -48,7 +48,7 @@ pub enum Effect {
         message: Outgoing,
     },
     Broadcast(Outgoing),
-    Hyphenated(bool),
+    HGroup(bool),
     Inactive(bool),
     RelationshipChanged {
         user_id: i32,
@@ -185,8 +185,8 @@ pub async fn dispatch(
                 return Ok(Some(vec![warning(&error.to_string())]));
             }
             set_setting(pool, caller.id, name, value).await?;
-            if name == "hyphenatedConventions" {
-                vec![Effect::Hyphenated(value == "true")]
+            if name == "hGroupConventions" {
+                vec![Effect::HGroup(value == "true")]
             } else {
                 vec![]
             }

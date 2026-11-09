@@ -452,13 +452,13 @@ async fn native_browser_login_ws_bootstrap_and_command_routing_postgres() {
     assert_eq!(receive(&mut bob, "lobbyStatus").await["state"], "ready");
     alice
         .send(WireMessage::Text(
-            "setting {\"name\":\"hyphenatedConventions\",\"setting\":\"true\"}".into(),
+            "setting {\"name\":\"hGroupConventions\",\"setting\":\"true\"}".into(),
         ))
         .await
         .unwrap();
     loop {
         let user = receive(&mut alice, "user").await;
-        if user["userID"] == welcome["userID"] && user["hyphenated"] == true {
+        if user["userID"] == welcome["userID"] && user["hGroup"] == true {
             break;
         }
     }

@@ -827,7 +827,7 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip, UICard {
       dda
       && !this.shouldShowClueBorder()
       && this.trashcan.isVisible() === false
-      && globals.lobby.settings.hyphenatedConventions
+      && globals.lobby.settings.hGroupConventions
       && !globals.metadata.hardVariant
     );
   }

@@ -82,7 +82,7 @@ function getClueArrowColor(
   }
 
   // if H-Group features are enabled, use a different color for cards that have been chop-moved
-  if (globals.lobby.settings.hyphenatedConventions && element.note.chopMoved) {
+  if (globals.lobby.settings.hGroupConventions && element.note.chopMoved) {
     return ARROW_COLOR.CM_TOUCHED;
   }
 

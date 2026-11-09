@@ -11,7 +11,7 @@ import { Screen } from "../types/Screen";
 import type { UserRow } from "./usersSlice";
 import { selectUserCount, selectUserRows } from "./usersSlice";
 
-const HYPHENATED_TOOLTIP = `<span style="${tooltips.SMALL_TOOLTIP_TEXT_STYLE}">This person is a self-identified member of the Hyphenated group.</span>`;
+const H_GROUP_TOOLTIP = `<span style="${tooltips.SMALL_TOOLTIP_TEXT_STYLE}">This person is a self-identified member of the H-Group.</span>`;
 
 const SLEEPING_EMOJI = "\u{1F4A4}";
 
@@ -77,8 +77,8 @@ function UserRowView({
   return (
     <tr>
       <td>
-        {user.hyphenated ? (
-          <HyphenatedIcon />
+        {user.hGroup ? (
+          <HGroupIcon />
         ) : (
           <span className="tw:inline-block tw:w-[0.75em]" />
         )}
@@ -107,9 +107,9 @@ function UserRowView({
   );
 }
 
-function HyphenatedIcon() {
+function HGroupIcon() {
   const ref = useRef<HTMLSpanElement>(null);
-  useEffect(() => tooltips.attach(ref.current!, HYPHENATED_TOOLTIP), []);
+  useEffect(() => tooltips.attach(ref.current!, H_GROUP_TOOLTIP), []);
 
   return (
     <span ref={ref}>

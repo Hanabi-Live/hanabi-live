@@ -939,7 +939,7 @@ export const settingsSchema = z
     createTableTimed: z.boolean().default(false),
     createTableVariant: z.string().min(1).default("No Variant"),
     desktopNotification: z.boolean().default(false),
-    hyphenatedConventions: z.boolean().default(false),
+    hGroupConventions: z.boolean().default(false),
     keldonMode: z.boolean().default(false),
     realLifeMode: z.boolean().default(false),
     reverseHands: z.boolean().default(false),
@@ -1157,7 +1157,7 @@ export const tagsDeleteAllRequestSchema = z.strictObject({
  */
 export const userSchema = z
   .strictObject({
-    hyphenated: z.boolean(),
+    hGroup: z.boolean(),
     inactive: z.boolean(),
     name: z.string().min(1),
     status: z.enum(Status),

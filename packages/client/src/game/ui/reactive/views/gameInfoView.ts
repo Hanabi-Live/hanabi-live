@@ -118,12 +118,12 @@ export function onScoreOrMaxScoreChanged(data: {
     globals.variant.suits.length * LOW_SCORE_PHASE_CARDS_PER_SUIT;
   const lowScorePhase = data.score < lowScorePhaseThreshold;
   const scoreLabelColor =
-    lowScorePhase && globals.lobby.settings.hyphenatedConventions
+    lowScorePhase && globals.lobby.settings.hGroupConventions
       ? "cyan"
       : LABEL_COLOR;
   const scoreLabelStyle =
     lowScorePhase
-    && globals.lobby.settings.hyphenatedConventions
+    && globals.lobby.settings.hGroupConventions
     && globals.lobby.settings.colorblindMode
       ? "bold"
       : "normal";
@@ -220,7 +220,7 @@ export function onClueTokensOrDoubleDiscardChanged(data: {
   // Show a yellow border around the discard pile (to reinforce that this is a "Double Discard"
   // situation).
   globals.elements.noDoubleDiscardBorder?.visible(
-    globals.lobby.settings.hyphenatedConventions
+    globals.lobby.settings.hGroupConventions
       && !noDiscard
       && data.doubleDiscard !== null,
   );

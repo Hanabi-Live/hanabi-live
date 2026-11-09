@@ -118,12 +118,12 @@ async fn lobby_relationships_atomic_settings_and_parameterization_postgres() {
         &who,
         &[],
         "setting",
-        json!({"name":"hyphenatedConventions","setting":"true"}),
+        json!({"name":"hGroupConventions","setting":"true"}),
     )
     .await;
-    assert!(matches!(result.as_slice(), [Effect::Hyphenated(true)]));
+    assert!(matches!(result.as_slice(), [Effect::HGroup(true)]));
     assert_eq!(
-        serde_json::to_value(get_settings(&db.pool, a).await.unwrap()).unwrap()["hyphenatedConventions"],
+        serde_json::to_value(get_settings(&db.pool, a).await.unwrap()).unwrap()["hGroupConventions"],
         true
     );
     assert!(set_setting(&db.pool, a, "volume", "101").await.is_err());

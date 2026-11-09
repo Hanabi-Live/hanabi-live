@@ -721,7 +721,7 @@ async fn connection(
             normalized_name: data.normalized_name,
             ip,
             generation,
-            hyphenated: data.welcome.settings.hyphenated_conventions,
+            h_group: data.welcome.settings.h_group_conventions,
         },
         app.lease_lost.clone(),
         Arc::new(move || !shutdown.is_cancelled() && store.check_state().is_ok()),

@@ -374,7 +374,7 @@
       "name": "Alice",
       "status": 6,
       "tableID": 3,
-      "hyphenated": false,
+      "hGroup": false,
       "inactive": false
     },
     "valid": false
@@ -389,7 +389,7 @@
         "name": "Alice",
         "status": 2,
         "tableID": 3,
-        "hyphenated": false,
+        "hGroup": false,
         "inactive": false
       }
     ],
@@ -433,7 +433,7 @@
         "volume": 70,
         "speedrunPreplay": false,
         "speedrunMode": false,
-        "hyphenatedConventions": false,
+        "hGroupConventions": false,
         "createTableVariant": "No Variant",
         "createTableTimed": false,
         "createTableTimeBaseMinutes": 2.0,
@@ -473,7 +473,7 @@
         "volume": 50,
         "speedrunPreplay": false,
         "speedrunMode": false,
-        "hyphenatedConventions": false,
+        "hGroupConventions": false,
         "createTableVariant": "No Variant",
         "createTableTimed": false,
         "createTableTimeBaseMinutes": 2.0,

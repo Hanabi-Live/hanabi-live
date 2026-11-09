@@ -91,7 +91,7 @@ function getAdjustedSoundType(
       || soundType === SoundType.DiscardClued
       || soundType === SoundType.DoubleDiscard
       || soundType === SoundType.DoubleDiscardCause)
-      && !globals.lobby.settings.hyphenatedConventions
+      && !globals.lobby.settings.hGroupConventions
       // Disable special sounds in "Throw It in a Hole" variants because they leak information.
       && !globals.variant.throwItInAHole
       ? standardSoundType

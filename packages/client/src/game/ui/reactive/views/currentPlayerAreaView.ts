@@ -114,14 +114,14 @@ export function onChanged(
       specialText = `(cannot discard; at ${cluesTokensText} clues)`;
       text3.fill(LABEL_COLOR);
     } else if (
-      globals.lobby.settings.hyphenatedConventions
+      globals.lobby.settings.hGroupConventions
       && isHandLocked(currentPlayerHand, globals.state.ongoingGame.deck)
     ) {
       specialText = "(locked; may not be able to discard)";
       text3.fill(LABEL_COLOR);
     } else if (
       globals.state.ongoingGame.stats.doubleDiscardCard !== null
-      && globals.lobby.settings.hyphenatedConventions
+      && globals.lobby.settings.hGroupConventions
     ) {
       specialText = '(potentially in a "Double Discard" situation)';
       text3.fill(DOUBLE_DISCARD_COLOR);

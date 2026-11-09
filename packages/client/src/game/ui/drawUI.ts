@@ -164,7 +164,7 @@ const ACTION_LOG_LINES = 8;
 /** The number of recent actions shown in the smaller action log of the Keldon layout. */
 const KELDON_ACTION_LOG_LINES = 3;
 
-/** Pink, for the minimum efficiency of a "Hard" variant when hyphenated conventions are enabled. */
+/** Pink, for the minimum efficiency of a "Hard" variant when H-Group conventions are enabled. */
 const HARD_VARIANT_EFFICIENCY_COLOR = "#ffb2b2";
 
 /** The rings of the waiting-on-server animation at full size, in fractions of the stage height. */
@@ -2022,14 +2022,13 @@ function drawStatistics() {
     // - "Easy" variants use the default color (off-white).
     // - "Hard" variants use pink.
     fill:
-      globals.metadata.hardVariant
-      && globals.lobby.settings.hyphenatedConventions
+      globals.metadata.hardVariant && globals.lobby.settings.hGroupConventions
         ? HARD_VARIANT_EFFICIENCY_COLOR
         : LABEL_COLOR,
     // If colorblindMode is activated, indicate make font bold if "Hard".
     fontStyle:
       globals.metadata.hardVariant
-      && globals.lobby.settings.hyphenatedConventions
+      && globals.lobby.settings.hGroupConventions
       && globals.lobby.settings.colorblindMode
         ? "bold"
         : "normal",
