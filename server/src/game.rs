@@ -59,6 +59,8 @@ struct StoredGameRef<'a> {
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 struct StoredGame {
     setup: GameSetup,
+    /// Checkpoint heads written before revision 87a9312bd leave out the steps.
+    #[serde(default)]
     steps: Vec<GameStep>,
     started_timer: bool,
     paused: bool,
