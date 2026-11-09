@@ -1062,23 +1062,55 @@ async fn joining_a_table_plays_a_sound_for_its_other_players_once_per_burst() ->
         return Ok(());
     };
     let outcome = async {
+        // A join right after the table is created plays no sound.
         let id = h.create(0, "Join sound", json!({})).await?;
         h.send(1, "tableJoin", json!({"tableID":id})).await?;
-        let sound = h.receive(0, "soundLobby").await?;
+        h.barrier(0).await?;
         ensure!(
-            sound == json!({"file":"someone-joined"}),
-            "Unexpected sound: {sound}"
+            !h.frames(0)?
+                .iter()
+                .any(|(command, _)| command == "soundLobby"),
+            "A join right after the table was created played a sound"
         );
-        h.send(2, "tableJoin", json!({"tableID":id})).await?;
-        for index in 0..3 {
-            h.barrier(index).await?;
-            let sounds = h
-                .frames(index)?
-                .into_iter()
-                .filter(|(command, _)| command == "soundLobby")
-                .count();
-            ensure!(sounds == 0, "User {index} heard {sounds} more join sounds");
+
+        // A join long after the table is created plays it, but the next join does not.
+        let id = h.store.allocate_table().await?;
+        let mut table = tests::pregame(id);
+        table.created = Utc::now() - ChronoDuration::minutes(1);
+        let revision = h.store.save_at(&table, 0).await?;
+        let (hub, mut notifications) = mpsc::channel(32);
+        let capacity = Arc::new(Semaphore::new(1));
+        let saved = h.store.saved_at(table.id, revision).await?;
+        let mut actor = TableActor::new(
+            table,
+            saved,
+            h.store.clone(),
+            hub,
+            capacity.try_acquire_owned()?,
+            crate::server_info::test_info(),
+        );
+        actor.initialize(h.users[0].clone(), vec![]).await?;
+        let mut sounds = vec![];
+        for index in [1, 2] {
+            actor
+                .join(h.users[index].clone(), &BTreeSet::new(), String::new())
+                .await?;
+            let mut heard = vec![];
+            while let Ok(notification) = notifications.try_recv() {
+                if let HubCommand::Effects(effects) = notification {
+                    for (session, message) in effects.messages {
+                        if let Some(body) = message.strip_prefix("soundLobby ") {
+                            heard.push((session.user, serde_json::from_str::<Value>(body)?));
+                        }
+                    }
+                }
+            }
+            sounds.push(heard);
         }
+        ensure!(
+            sounds == vec![vec![(UserId(1), json!({"file":"someone-joined"}))], vec![]],
+            "Unexpected join sounds: {sounds:?}"
+        );
         Ok(())
     }
     .await;

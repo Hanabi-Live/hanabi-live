@@ -356,7 +356,7 @@ enum PhaseRuntime {
         /// Who the table was told tried to join it while it was full.
         full_join_notices: HashSet<UserId>,
         /// When a player last joined the table, so that a burst of joins plays the join sound
-        /// once.
+        /// once. Before the first join, the table's creation counts as the last join.
         last_join: Option<Instant>,
     },
     Live {

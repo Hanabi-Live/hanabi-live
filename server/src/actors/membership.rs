@@ -5,6 +5,7 @@ use crate::{
     transport::{Session, frame},
 };
 use anyhow::Context;
+use chrono::Utc;
 use hanabi_protocol::UserId;
 use hanabi_protocol::{LobbySound, SoundLobby, Status, TableRequest, TableStarted};
 use std::{
@@ -99,10 +100,17 @@ impl TableActor {
                 ));
             }
         }
-        let previous_join = self
+        let since_last_join = match self
             .last_join()
-            .and_then(|last| last.replace(Instant::now()));
-        if previous_join.is_none_or(|t| t.elapsed() > JOIN_SOUND_INTERVAL) {
+            .and_then(|last| last.replace(Instant::now()))
+        {
+            Some(last) => last.elapsed(),
+            // The owner joined when the table was created.
+            None => (Utc::now() - self.table.created)
+                .to_std()
+                .unwrap_or_default(),
+        };
+        if since_last_join > JOIN_SOUND_INTERVAL {
             let players: HashSet<UserId> = self.table.players().iter().map(|p| p.id).collect();
             let sound = frame(
                 hanabi_protocol::server::SOUND_LOBBY,
