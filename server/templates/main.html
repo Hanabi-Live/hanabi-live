@@ -1174,95 +1174,93 @@
         <section id="lobby-replay" class="box lobby-page hidden">
           <h2>Watch a Specific Replay</h2>
 
-          <div class="lobby-form-field">
-            <div class="lobby-form-label">
-              <span><i class="fas fa-database fa-fw"></i>Source</span>
-            </div>
-            <div class="lobby-form-radios">
-              <div class="lobby-form-check">
+          <div class="lobby-group">
+            <h3>Replay</h3>
+            <ul class="lobby-rows">
+              <li class="lobby-row">
+                <span class="lobby-row-text"
+                  ><i class="fas fa-database fa-fw"></i>Source</span
+                >
+                <span class="lobby-segmented">
+                  <input
+                    id="replay-source-id"
+                    type="radio"
+                    name="replay-source"
+                    value="id"
+                    checked
+                  />
+                  <label for="replay-source-id">Database ID</label>
+                  <input
+                    id="replay-source-json"
+                    type="radio"
+                    name="replay-source"
+                    value="json"
+                  />
+                  <label for="replay-source-json">JSON Data</label>
+                </span>
+              </li>
+              <li id="replay-id-row" class="lobby-row">
+                <label for="replay-id"
+                  ><i class="fas fa-fingerprint fa-fw"></i>ID</label
+                >
                 <input
-                  id="replay-source-id"
-                  type="radio"
-                  name="replay-source"
-                  value="id"
-                  checked
+                  id="replay-id"
+                  type="text"
+                  inputmode="numeric"
+                  placeholder="Game ID"
                 />
-                <label for="replay-source-id">Database ID</label>
-              </div>
-              <div class="lobby-form-check">
-                <input
-                  id="replay-source-json"
-                  type="radio"
-                  name="replay-source"
-                  value="json"
-                />
-                <label for="replay-source-json">JSON Data</label>
-              </div>
-            </div>
+              </li>
+              <li id="replay-json-row" class="lobby-row">
+                <label for="replay-json"
+                  ><i class="fas fa-table fa-fw"></i>JSON</label
+                >
+                <textarea
+                  id="replay-json"
+                  placeholder="Paste the game's JSON data"
+                ></textarea>
+              </li>
+            </ul>
           </div>
 
-          <div id="replay-id-row" class="lobby-form-field">
-            <label for="replay-id"
-              ><i class="fas fa-fingerprint fa-fw"></i>ID</label
-            >
-            <input
-              id="replay-id"
-              type="text"
-              inputmode="numeric"
-              placeholder="Game ID"
-            />
+          <div class="lobby-group">
+            <h3>Viewing</h3>
+            <ul class="lobby-rows">
+              <li class="lobby-row">
+                <span class="lobby-row-text"
+                  ><i class="fas fa-users fa-fw"></i>Visibility</span
+                >
+                <span class="lobby-segmented">
+                  <input
+                    id="replay-visibility-solo"
+                    type="radio"
+                    name="replay-visibility"
+                    checked
+                  />
+                  <label for="replay-visibility-solo">Solo</label>
+                  <input
+                    id="replay-visibility-shared"
+                    type="radio"
+                    name="replay-visibility"
+                  />
+                  <label for="replay-visibility-shared">Shared</label>
+                </span>
+              </li>
+              <li id="replay-spoiler-free-row" class="lobby-row">
+                <label for="replay-spoiler-free"
+                  ><i class="fas fa-eye-slash fa-fw"></i>Spoiler-free
+                  review</label
+                >
+                <span class="lobby-row-checkbox">
+                  <input id="replay-spoiler-free" type="checkbox" />
+                  <label for="replay-spoiler-free"></label>
+                </span>
+              </li>
+            </ul>
           </div>
 
-          <div id="replay-json-row" class="lobby-form-field">
-            <label for="replay-json"
-              ><i class="fas fa-table fa-fw"></i>JSON</label
-            >
-            <textarea
-              id="replay-json"
-              placeholder="Paste the game's JSON data"
-            ></textarea>
-          </div>
-
-          <div id="replay-error-row" class="lobby-form-field">
-            <div></div>
-            <div id="replay-error-row-text"></div>
-          </div>
-
-          <div class="lobby-form-field">
-            <div class="lobby-form-label">
-              <span><i class="fas fa-users fa-fw"></i>Visibility</span>
-            </div>
-            <div class="lobby-form-radios">
-              <div class="lobby-form-check">
-                <input
-                  id="replay-visibility-solo"
-                  type="radio"
-                  name="replay-visibility"
-                  checked
-                />
-                <label for="replay-visibility-solo">Solo</label>
-              </div>
-              <div class="lobby-form-check">
-                <input
-                  id="replay-visibility-shared"
-                  type="radio"
-                  name="replay-visibility"
-                />
-                <label for="replay-visibility-shared">Shared</label>
-              </div>
-            </div>
-          </div>
-
-          <div id="replay-spoiler-free-row" class="lobby-form-field">
-            <div></div>
-            <div class="lobby-form-check">
-              <input id="replay-spoiler-free" type="checkbox" />
-              <label for="replay-spoiler-free"
-                ><i class="fas fa-eye-slash fa-fw"></i>Spoiler-Free
-                Review</label
-              >
-            </div>
-          </div>
+          <p id="replay-error-row">
+            <span id="replay-error-row-text"></span>
+          </p>
 
           <button id="replay-submit" class="button fit" type="submit">
             Watch

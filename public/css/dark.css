@@ -352,6 +352,20 @@ html[data-theme="dark"] .lobby-group h3 {
   color: var(--dm-text-muted);
 }
 
+html[data-theme="dark"] .lobby-segmented,
+html[data-theme="dark"] .lobby-segmented label + input[type="radio"] + label {
+  border-color: var(--dm-border);
+}
+
+html[data-theme="dark"] .lobby-segmented input[type="radio"] + label {
+  background-color: var(--dm-surface);
+}
+
+html[data-theme="dark"] .lobby-segmented input[type="radio"]:checked + label {
+  background-color: var(--dm-accent-green);
+  color: white;
+}
+
 /* Alpha template: feature row borders */
 html[data-theme="dark"] .features-row section {
   border-color: var(--dm-border);
