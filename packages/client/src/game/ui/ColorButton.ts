@@ -68,7 +68,7 @@ export class ColorButton extends Konva.Group {
           x: 0,
           y: (BUTTON_TEXT_MIDDLE - BUTTON_TEXT_SIZE / 2) * h,
           width: w,
-          height: 0.6 * h,
+          height: BUTTON_TEXT_SIZE * h,
           fontSize: BUTTON_TEXT_SIZE * h,
           fontFamily: FONT_FAMILY,
           fill: "white",

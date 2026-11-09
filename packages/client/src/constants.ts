@@ -1,6 +1,6 @@
 // Time constants
 
-/** In milliseconds. */
+/** How long an element takes to fade, grow, or shrink in or out, in milliseconds. */
 export const FADE_TIME_MS = 350;
 
 /** The opacity of a lobby element that is disabled or inactive. */

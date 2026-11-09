@@ -1,6 +1,24 @@
 import Konva from "konva";
 import { ARROW_STROKE_WIDTH, FONT_FAMILY } from "../constants";
 
+/**
+ * The point that the arrow is positioned and rotated around, relative to the end of its tail, as a
+ * fraction of the stage. The arrow points straight along it before rotating.
+ */
+const ORIGIN_OFFSET = 0.1;
+
+/** The length of the arrow's pointer, as a fraction of the stage width. */
+const POINTER_LENGTH = 0.006;
+
+/** The length of the arrow, as a fraction of its vertical offset. */
+const LENGTH = 0.8;
+
+/**
+ * The middle of the circle that shows the clue, along the arrow, as a fraction of its vertical
+ * offset.
+ */
+const CIRCLE_Y = 0.3;
+
 /** How far the shadow around the arrow's outline spreads, as a multiple of its pointer length. */
 const SHADOW_BLUR_LENGTHS = 4;
 
@@ -36,8 +54,8 @@ export class Arrow extends Konva.Group {
   suitPip: Konva.Shape | null;
 
   constructor(winW: number, winH: number, colorblindMode: boolean) {
-    const x = 0.1 * winW;
-    const y = 0.1 * winH;
+    const x = ORIGIN_OFFSET * winW;
+    const y = ORIGIN_OFFSET * winH;
     super({
       x,
       y,
@@ -54,11 +72,9 @@ export class Arrow extends Konva.Group {
     this.pointingTo = null;
     this.tween = null;
 
-    const pointerLength = 0.006 * winW;
-    const length = 0.8 * y;
-
-    /** The middle of the circle that shows the clue, along the body of the arrow. */
-    const circleY = 0.3 * y;
+    const pointerLength = POINTER_LENGTH * winW;
+    const length = LENGTH * y;
+    const circleY = CIRCLE_Y * y;
 
     // We want there to be a black outline around the arrow, so we draw a second arrow that is
     // slightly bigger than the first.

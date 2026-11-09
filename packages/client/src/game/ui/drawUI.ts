@@ -71,6 +71,7 @@ import {
   STRIKE_ARROW_ORDERS,
   STROKE_WIDTH_UNIT,
   TEXT_SHADOW,
+  THIN_STROKE_WIDTH,
   WARNING_COLOR,
 } from "./constants";
 import { Arrow } from "./controls/Arrow";
@@ -264,6 +265,8 @@ const GAME_INFO_IMAGE = {
   SIZE: 0.15,
   /** How far it is inset from the deck's corner, as a fraction of the stage width. */
   INSET: 0.004,
+  /** In pixels. */
+  SHADOW_BLUR: 2,
 } as const;
 
 /**
@@ -294,6 +297,309 @@ const TIMER_PAUSE_RING_CENTER = {
   x: 0.0328,
   y: 0.034,
 } as const;
+
+/** The ring around a timer that shows that a pause is queued, in fractions of the stage. */
+const TIMER_PAUSE_RING_RADIUS = { x: 0.05, y: 0.07 } as const;
+
+/**
+ * The default text label that the other labels are cloned from, in fractions of the stage. Number
+ * labels are narrower.
+ */
+const BASIC_LABEL = {
+  x: 0.01,
+  y: 0.01,
+  textW: 0.11,
+  numberW: 0.03,
+  h: 0.03,
+  fontSize: 0.026,
+} as const;
+
+/** The action log in the Keldon layout, in fractions of the stage. */
+const KELDON_ACTION_LOG = {
+  x: 0.2,
+  y: 0.235,
+  w: 0.4,
+  h: 0.098,
+} as const;
+
+/**
+ * How far the action log's text is inset from the edges of its panel, in fractions of the stage.
+ */
+const ACTION_LOG_TEXT_INSET = { x: 0.01, y: 0.003 } as const;
+
+/** The size of the action log's text, as a fraction of the stage height. */
+const ACTION_LOG_FONT_SIZE = 0.028;
+
+/** The row of play stacks, in fractions of the stage. */
+const PLAY_STACKS = {
+  /** The left edge of a row of full-size stacks in the Keldon layout. */
+  keldonX: 0.183,
+  /** The top of a row of full-size stacks in the Keldon layout. */
+  keldonY: 0.345,
+  /** How much lower a row of small stacks sits in the Keldon layout. */
+  smallStacksOffsetY: 0.019,
+  /** How much higher the stacks sit in the Keldon layout to make room for suit names. */
+  suitNamesOffsetY: 0.018,
+  /** The gap between adjacent stacks in the Keldon layout. */
+  keldonSpacing: 0.015,
+  /** The gap between the action log and the stacks below it in the BGA layout. */
+  bgaGapY: 0.02,
+  /** The gap between adjacent stacks in the BGA layout, when they do not fill the row. */
+  bgaSpacing: 0.006,
+} as const;
+
+/**
+ * The vertical distance between the tops of adjacent discard stacks, in fractions of the stage
+ * height. The stacks are closer together when there are the maximum amount of suits.
+ */
+const DISCARD_STACK_SPACING = {
+  maxSuits: 0.038,
+  fewerSuits: 0.047,
+} as const;
+
+/** The height of each discard stack, in fractions of the stage height. */
+const DISCARD_STACK_H = 0.15;
+
+/**
+ * The buttons stacked in the bottom-left corner (replay or restart, chat, and lobby), in fractions
+ * of the stage. `y` is the top of the first button.
+ */
+const BOTTOM_LEFT_BUTTON = {
+  y: 0.8,
+  w: 0.07,
+  h: 0.0563,
+} as const;
+
+/** The game ID near the top of the deck in a replay, in fractions of the stage height. */
+const GAME_ID_LABEL = {
+  /** Below the top of the deck. */
+  insetY: 0.01,
+  fontSize: 0.019,
+} as const;
+
+/**
+ * The two lines of "Turns left: #" over an empty deck, in fractions of the stage. The tops of the
+ * lines are measured up from the bottom of the deck.
+ */
+const DECK_TURNS_LEFT_LABEL = {
+  insetX: 0.017,
+  line1Y: 0.07,
+  line2Y: 0.04,
+  fontSize: 0.025,
+} as const;
+
+/** The width of the border around the deck when a bottom-deck blind-play is available. */
+const DECK_PLAY_AVAILABLE_BORDER_WIDTH = 10 * STROKE_WIDTH_UNIT;
+
+/**
+ * The score area that holds the turn, score, and clue count, in fractions of the stage. In the
+ * Keldon layout, it is centered vertically on the deck.
+ */
+const SCORE_AREA = {
+  keldonX: 0.66,
+  bgaY: 0.81,
+  w: 0.13,
+  h: 0.18,
+} as const;
+
+/**
+ * The maximum score beside the score, in fractions of the stage height. It is smaller, so it sits
+ * lower to share a baseline.
+ */
+const MAX_SCORE_LABEL = {
+  offsetY: 0.005,
+  fontSize: 0.017,
+} as const;
+
+/** How the clue count grows when the team cannot discard, in fractions of the stage height. */
+const CLUES_PULSE = {
+  fontSize: 0.04,
+  offsetX: 0.001,
+  offsetY: 0.01,
+} as const;
+
+/**
+ * Where the spectators column sits in the Keldon layout, relative to the top-left corner of the
+ * score area, in fractions of the stage.
+ */
+const KELDON_SPECTATORS_OFFSET = { x: -0.037, y: 0.09 } as const;
+
+/** The crown of a shared replay. */
+const CROWN = {
+  /** As a fraction of the stage width. */
+  SIZE: 0.025,
+  /** The ring around it that marks the replay leader, as a fraction of the stage height. */
+  LEADER_RING_RADIUS: 0.028,
+  /** How much it grows when leadership passes to someone else. */
+  PULSE_SCALE: 2,
+} as const;
+
+/** The "Your Turn" indicator, in fractions of the stage. */
+const YOUR_TURN = {
+  radiusX: 0.039,
+  radiusY: 0.05,
+  fontSize: 0.034,
+} as const;
+
+/**
+ * The text of the statistics panel, relative to the panel's top-left corner, in fractions of the
+ * stage.
+ */
+const STATISTICS_TEXT = {
+  fontSize: 0.02,
+  variantY: 0.01,
+  variantW: 0.15,
+  variantH: 0.03,
+  underlineY: 0.03,
+  paceY: 0.04,
+  efficiencyY: 0.06,
+  /** The left edge of the numbers beside the labels. */
+  numberX: 0.1,
+  /** The "|" and the minimum efficiency after the efficiency, relative to `numberX`. */
+  pipeX: 0.005,
+  minEfficiencyX: 0.018,
+} as const;
+
+/** The two timers, in fractions of the stage height unless noted otherwise. */
+const TIMER = {
+  /** As a fraction of the stage width. */
+  w: 0.065,
+  h: 0.051,
+  fontSize: 0.03,
+  /** The label of the current player's timer, which can be a long name. */
+  labelFontSize: 0.02,
+  cornerRadius: 0.05,
+  spaceH: 0.01,
+} as const;
+
+/** The left edges and top of the two timers, which sit in a row in the Keldon layout. */
+const KELDON_TIMERS = { x1: 0.145, x2: 0.595, y: 0.645 } as const;
+
+/** The left edge and tops of the two timers, which sit one above the other in the BGA layout. */
+const BGA_TIMERS = { x: 0.352, y1: 0.77, y2: 0.885 } as const;
+
+/** The clue area below the play stacks, in fractions of the stage height. */
+const CLUE_AREA = {
+  /** The gap between the play stacks and the clue area. */
+  gapY: 0.005,
+  h: 0.23,
+  /** How much lower it sits to make room for suit names. */
+  suitNamesOffsetY: 0.03,
+  /** How much lower it sits in the BGA layout, which has room to spare. */
+  bgaOffsetY: 0.02,
+} as const;
+
+/** The buttons that choose who to give a clue to, in fractions of the stage. */
+const CLUE_TARGET_BUTTON = {
+  keldonH: 0.025,
+  bgaH: 0.035,
+  spacing: 0.0075,
+} as const;
+
+/** The "Give Clue" button, in fractions of the stage. */
+const GIVE_CLUE_BUTTON = {
+  w: 0.236,
+  h: 0.051,
+} as const;
+
+/**
+ * How far the cross over a disabled clue area is inset from its corners, in fractions of the stage.
+ */
+const CLUE_AREA_DISABLED_CROSS_INSET = { x: 0.075, y: 0.03 } as const;
+
+/** The width of the lines of the cross over a disabled clue area. */
+const CLUE_AREA_DISABLED_CROSS_WIDTH = 5 * STROKE_WIDTH_UNIT;
+
+/** The "No clues" text over a disabled clue area. */
+const NO_CLUES_TEXT = {
+  /** As a fraction of the clue area's height. */
+  y: 0.4,
+  /** As a fraction of the stage height. */
+  fontSize: 0.07,
+} as const;
+
+/**
+ * The "Current player" box, centered in the clue area, in fractions of the stage. Its width fits
+ * between the two timers of the Keldon layout.
+ */
+const CURRENT_PLAYER_AREA = {
+  offsetY: 0.015,
+  w: 0.3,
+  h: 0.15,
+  spacing: 0.006,
+} as const;
+
+/**
+ * The "Cancel Pre-Move" button, centered in the clue area, in fractions of the stage. It is near
+ * the top of the clue area, not centered in it.
+ */
+const PREMOVE_CANCEL_BUTTON = {
+  offsetY: 0.05,
+  w: 0.29,
+  h: 0.1,
+} as const;
+
+/**
+ * The "Hypothetical" indicator, in fractions of the stage unless noted otherwise. It spans the
+ * width of the action log.
+ */
+const HYPO_INDICATOR = {
+  /** Below the top of the clue area. */
+  offsetY: 0.06,
+  h: 0.05,
+  /** The top of the text, as a fraction of `h`. */
+  textY: 0.4,
+  fontSize: 0.06,
+  /** The horizontal radius of the ellipse, as a fraction of the action log's width. */
+  radiusX: 0.4,
+} as const;
+
+/** The buttons used in a hypothetical, in fractions of the stage. */
+const HYPO_BUTTON = {
+  w: 0.075,
+  /** The narrower "Back" button. */
+  backW: 0.035,
+  spacing: 0.008,
+  fontSize: 0.019,
+  /** The "Show Hidden" button, which has a longer label. */
+  showHiddenFontSize: 0.016,
+} as const;
+
+/**
+ * The pause dialog, in fractions of the stage height unless noted otherwise. The button widths are
+ * fractions of the dialog's width.
+ */
+const PAUSE_DIALOG = {
+  /** As a fraction of the stage width. */
+  w: 0.5,
+  h: 0.5,
+  textY: 0.21,
+  textFontSize: 0.05,
+  buttonY: 0.33,
+  unpauseButtonW: 0.4,
+  /** The chat and lobby buttons. */
+  smallButtonW: 0.125,
+} as const;
+
+/**
+ * The restart dialog, in fractions of the stage height unless noted otherwise. The button width is
+ * a fraction of the dialog's width; the "Cancel" button is half as wide.
+ */
+const RESTART_DIALOG = {
+  /** As a fraction of the stage width. */
+  w: 0.7,
+  h: 0.6,
+  buttonW: 0.35,
+  buttonY: 0.25,
+  /** The gap above the "Cancel" button. */
+  cancelButtonGapY: 0.095,
+} as const;
+
+/**
+ * The size of the images over the play stacks that show which way a shared replay is moving, in
+ * fractions of the stage.
+ */
+const SHARED_REPLAY_DIRECTION_SIZE = 0.1;
 
 /** The left edge of a strike square, in fractions of the stage width. */
 function strikeSquareX(strikeIndex: number): number {
@@ -421,11 +727,11 @@ function drawBackground() {
 function initReusableObjects() {
   // Create some default objects.
   basicTextLabel = new Konva.Text({
-    x: 0.01 * winW,
-    y: 0.01 * winH,
-    width: 0.11 * winW,
-    height: 0.03 * winH,
-    fontSize: 0.026 * winH,
+    x: BASIC_LABEL.x * winW,
+    y: BASIC_LABEL.y * winH,
+    width: BASIC_LABEL.textW * winW,
+    height: BASIC_LABEL.h * winH,
+    fontSize: BASIC_LABEL.fontSize * winH,
     fontFamily: FONT_FAMILY,
     align: "left",
     text: "Placeholder text",
@@ -435,17 +741,12 @@ function initReusableObjects() {
   });
   basicNumberLabel = basicTextLabel.clone() as Konva.Text;
   basicNumberLabel.text("0");
-  basicNumberLabel.width(0.03 * winW);
+  basicNumberLabel.width(BASIC_LABEL.numberW * winW);
 }
 
 function drawActionLog() {
   actionLogValues = globals.lobby.settings.keldonMode
-    ? {
-        x: 0.2,
-        y: 0.235,
-        w: 0.4,
-        h: 0.098,
-      }
+    ? KELDON_ACTION_LOG
     : BGA_ACTION_LOG;
 
   const actionLogGroup = new Konva.Group({
@@ -487,14 +788,14 @@ function drawActionLog() {
   globals.elements.actionLog = new MultiFitText(
     {
       align: "center",
-      fontSize: 0.028 * winH,
+      fontSize: ACTION_LOG_FONT_SIZE * winH,
       fontFamily: FONT_FAMILY,
       fill: LABEL_COLOR,
       ...TEXT_SHADOW,
-      x: 0.01 * winW,
-      y: 0.003 * winH,
-      width: (actionLogValues.w! - 0.02) * winW,
-      height: (actionLogValues.h! - 0.003) * winH,
+      x: ACTION_LOG_TEXT_INSET.x * winW,
+      y: ACTION_LOG_TEXT_INSET.y * winH,
+      width: (actionLogValues.w! - ACTION_LOG_TEXT_INSET.x * 2) * winW,
+      height: (actionLogValues.h! - ACTION_LOG_TEXT_INSET.y * 2) * winH,
       listening: false,
     },
     maxLines,
@@ -528,20 +829,20 @@ function drawPlayStacks() {
   if (smallStacks) {
     cardWidth = FULL_CARD_STAGE_SIZE.W * SMALL_PLAY_STACK_SCALE;
     cardHeight = FULL_CARD_STAGE_SIZE.H * SMALL_PLAY_STACK_SCALE;
-    yOffset = 0.019;
+    yOffset = PLAY_STACKS.smallStacksOffsetY;
   } else {
     cardWidth = FULL_CARD_STAGE_SIZE.W;
     cardHeight = FULL_CARD_STAGE_SIZE.H;
     yOffset = 0;
   }
   const playStackValues: PlayStackValues = {
-    x: 0.183,
-    y: 0.345 + yOffset,
+    x: PLAY_STACKS.keldonX,
+    y: PLAY_STACKS.keldonY + yOffset,
     w: 0, // Is set below
-    spacing: 0.015,
+    spacing: PLAY_STACKS.keldonSpacing,
   };
   if (globals.variant.showSuitNames) {
-    playStackValues.y -= 0.018;
+    playStackValues.y -= PLAY_STACKS.suitNamesOffsetY;
   }
 
   // In BGA mode, a full row of stacks spreads out to the width of the action log.
@@ -549,13 +850,14 @@ function drawPlayStacks() {
     !globals.lobby.settings.keldonMode && numSuits >= fullSizeStackSlots;
   if (!globals.lobby.settings.keldonMode) {
     playStackValues.x = actionLogValues.x;
-    playStackValues.y = actionLogValues.y + actionLogValues.h! + 0.02;
+    playStackValues.y =
+      actionLogValues.y + actionLogValues.h! + PLAY_STACKS.bgaGapY;
     if (fillsActionLogWidth) {
       playStackValues.spacing = actionLogValues.w!;
       playStackValues.spacing -= cardWidth * numSuits;
       playStackValues.spacing /= numSuits - 1;
     } else {
-      playStackValues.spacing = 0.006;
+      playStackValues.spacing = PLAY_STACKS.bgaSpacing;
     }
   }
   playStackValues.w = cardWidth * numSuits;
@@ -681,7 +983,9 @@ function drawPlayStacks() {
 
 function drawDiscardStacks() {
   const discardStackSpacing =
-    globals.variant.suits.length === MAX_SUITS ? 0.038 : 0.047;
+    globals.variant.suits.length === MAX_SUITS
+      ? DISCARD_STACK_SPACING.maxSuits
+      : DISCARD_STACK_SPACING.fewerSuits;
 
   for (const [suitIndex, suit] of globals.variant.suits.entries()) {
     // Make the discard stack for this suit.
@@ -691,7 +995,7 @@ function drawDiscardStacks() {
         (DISCARD_AREA.y + DISCARD_STACK_INSET + discardStackSpacing * suitIndex)
         * winH,
       width: (DISCARD_AREA.w - DISCARD_STACK_INSET * 2) * winW,
-      height: 0.15 * winH,
+      height: DISCARD_STACK_H * winH,
       listening: false,
     });
     globals.elements.discardStacks.set(suit, discardStack);
@@ -702,9 +1006,7 @@ function drawDiscardStacks() {
 function drawBottomLeftButtons() {
   bottomLeftButtonValues = {
     x: STAGE_MARGIN,
-    y: 0.8,
-    w: 0.07,
-    h: 0.0563,
+    ...BOTTOM_LEFT_BUTTON,
   };
 
   // The toggle in-game replay button.
@@ -831,12 +1133,12 @@ function drawDeck() {
   globals.elements.gameIDLabel = new FitText({
     text: `ID: ${globals.state.replay.databaseID ?? 0}`,
     x: deckValues.x * winW,
-    y: (deckValues.y + 0.01) * winH,
+    y: (deckValues.y + GAME_ID_LABEL.insetY) * winH,
     width: deckValues.w! * winW,
     fontFamily: FONT_FAMILY,
     fill: "white",
     align: "center",
-    fontSize: 0.019 * winH,
+    fontSize: GAME_ID_LABEL.fontSize * winH,
     ...TEXT_SHADOW,
     visible: globals.state.finished && globals.state.replay.databaseID !== null,
     listening: false,
@@ -859,7 +1161,7 @@ function drawDeck() {
     height: gameInfoImageSize,
     image: globals.imageLoader!.get("question-mark"),
     ...TEXT_SHADOW,
-    shadowBlur: 2,
+    shadowBlur: GAME_INFO_IMAGE.SHADOW_BLUR,
   });
   // This goes on the same layer as the gameIDLabel.
   globals.layers.arrow.add(globals.elements.gameInfoImage);
@@ -886,21 +1188,20 @@ function drawDeck() {
 
   // When there are no cards left in the deck, show a label that indicates how many turns are left
   // before the game ends.
-  const xOffset = 0.017;
-  const fontSize = 0.025;
+  const deckBottom = deckValues.y + deckValues.h!;
   globals.elements.deckTurnsRemainingLabel1 = basicTextLabel.clone({
     text: "Turns",
-    x: (deckValues.x + xOffset) * winW,
-    y: (deckValues.y + deckValues.h! - 0.07) * winH,
-    fontSize: fontSize * winH,
+    x: (deckValues.x + DECK_TURNS_LEFT_LABEL.insetX) * winW,
+    y: (deckBottom - DECK_TURNS_LEFT_LABEL.line1Y) * winH,
+    fontSize: DECK_TURNS_LEFT_LABEL.fontSize * winH,
     visible: false,
   }) as Konva.Text;
   globals.layers.UI.add(globals.elements.deckTurnsRemainingLabel1);
   globals.elements.deckTurnsRemainingLabel2 = basicTextLabel.clone({
     text: "left: #",
-    x: (deckValues.x + xOffset) * winW,
-    y: (deckValues.y + deckValues.h! - 0.04) * winH,
-    fontSize: fontSize * winH,
+    x: (deckValues.x + DECK_TURNS_LEFT_LABEL.insetX) * winW,
+    y: (deckBottom - DECK_TURNS_LEFT_LABEL.line2Y) * winH,
+    fontSize: DECK_TURNS_LEFT_LABEL.fontSize * winH,
     visible: false,
   }) as Konva.Text;
   globals.layers.UI.add(globals.elements.deckTurnsRemainingLabel2);
@@ -914,7 +1215,7 @@ function drawDeck() {
     height: deckValues.h! * winH,
     stroke: DECK_PLAY_AVAILABLE_COLOR,
     cornerRadius: DECK_BORDER_CORNER_RADIUS * winH,
-    strokeWidth: 10 * STROKE_WIDTH_UNIT * winH,
+    strokeWidth: DECK_PLAY_AVAILABLE_BORDER_WIDTH * winH,
     visible: false,
   });
   globals.layers.UI.add(globals.elements.deckPlayAvailableLabel);
@@ -922,16 +1223,15 @@ function drawDeck() {
 
 function drawScoreArea() {
   // The rectangle that holds the turn, score, and clue count.
-  const scoreAreaHeight = 0.18;
   scoreAreaValues = {
-    x: 0.66,
-    y: deckValues.y + (deckValues.h! - scoreAreaHeight) / 2,
-    w: 0.13,
-    h: scoreAreaHeight,
+    x: SCORE_AREA.keldonX,
+    y: deckValues.y + (deckValues.h! - SCORE_AREA.h) / 2,
+    w: SCORE_AREA.w,
+    h: SCORE_AREA.h,
   };
   if (!globals.lobby.settings.keldonMode) {
     scoreAreaValues.x = deckValues.x + deckValues.w! + BOTTOM_LEFT_GAP;
-    scoreAreaValues.y = 0.81;
+    scoreAreaValues.y = SCORE_AREA.bgaY;
   }
   globals.elements.scoreArea = new Konva.Group({
     x: scoreAreaValues.x * winW,
@@ -1058,8 +1358,8 @@ function drawScoreArea() {
   globals.elements.maxScoreNumberLabel = basicNumberLabel.clone({
     text: "",
     x: (labelX + labelSpacing) * winW,
-    y: (labelRowY.score + 0.005) * winH,
-    fontSize: 0.017 * winH,
+    y: (labelRowY.score + MAX_SCORE_LABEL.offsetY) * winH,
+    fontSize: MAX_SCORE_LABEL.fontSize * winH,
     listening: true,
     visible:
       !globals.variant.throwItInAHole
@@ -1139,10 +1439,10 @@ function drawScoreArea() {
   if (!globals.isResizing) {
     globals.elements.cluesNumberLabelPulse = new Konva.Tween({
       node: cluesNumberLabel,
-      fontSize: 0.04 * winH,
+      fontSize: CLUES_PULSE.fontSize * winH,
       fill: WARNING_COLOR,
-      offsetX: 0.001 * winH,
-      offsetY: 0.01 * winH,
+      offsetX: CLUES_PULSE.offsetX * winH,
+      offsetY: CLUES_PULSE.offsetY * winH,
       duration: CARD_ANIMATION_LENGTH_SECONDS,
       // eslint-disable-next-line @typescript-eslint/unbound-method
       easing: Konva.Easings.EaseInOut,
@@ -1210,7 +1510,7 @@ function drawScoreArea() {
         width: STRIKE_SQUARE.w * winW,
         height: STRIKE_SQUARE.h * winH,
         stroke: "black",
-        strokeWidth: 2 * STROKE_WIDTH_UNIT * winH,
+        strokeWidth: THIN_STROKE_WIDTH * winH,
         cornerRadius: STRIKE_SQUARE.cornerRadius * winW,
         listening: true,
       },
@@ -1314,8 +1614,8 @@ function drawScoreArea() {
 function drawSpectators() {
   // Position it to the bottom-left of the score area.
   spectatorsLabelValues = {
-    x: scoreAreaValues.x - 0.037,
-    y: scoreAreaValues.y + 0.09,
+    x: scoreAreaValues.x + KELDON_SPECTATORS_OFFSET.x,
+    y: scoreAreaValues.y + KELDON_SPECTATORS_OFFSET.y,
   };
   if (!globals.lobby.settings.keldonMode) {
     // Position it to the bottom-right of the score area.
@@ -1362,7 +1662,7 @@ function drawSpectators() {
 // The "crown" symbol to show that we are in a shared replay.
 function drawSharedReplay() {
   // The crown is centered over the spectators column, above the eyes.
-  const size = 0.025 * winW;
+  const size = CROWN.SIZE * winW;
   const crownCenter = {
     x: (spectatorsLabelValues.x + SPECTATORS_COLUMN.W / 2) * winW,
     y: (spectatorsLabelValues.y + CROWN_TOP_Y) * winH + size / 2,
@@ -1372,9 +1672,9 @@ function drawSharedReplay() {
   // be on top of this so that it does not interfere with mouse events.)
   globals.elements.sharedReplayLeaderCircle = new Konva.Circle({
     ...crownCenter,
-    radius: 0.028 * winH,
+    radius: CROWN.LEADER_RING_RADIUS * winH,
     stroke: ACTIVE_INDICATOR_COLOR,
-    strokeWidth: 2 * STROKE_WIDTH_UNIT * winH,
+    strokeWidth: THIN_STROKE_WIDTH * winH,
     visible: false,
     listening: false,
   });
@@ -1399,10 +1699,10 @@ function drawSharedReplay() {
     globals.elements.sharedReplayLeaderLabelPulse = new Konva.Tween({
       node: sharedReplayLeaderLabel,
       // Grow from the center of the crown.
-      width: size * 2,
-      height: size * 2,
-      offsetX: size / 2,
-      offsetY: size / 2,
+      width: size * CROWN.PULSE_SCALE,
+      height: size * CROWN.PULSE_SCALE,
+      offsetX: (size * (CROWN.PULSE_SCALE - 1)) / 2,
+      offsetY: (size * (CROWN.PULSE_SCALE - 1)) / 2,
       duration: CARD_ANIMATION_LENGTH_SECONDS,
       // eslint-disable-next-line @typescript-eslint/unbound-method
       easing: Konva.Easings.EaseInOut,
@@ -1491,8 +1791,8 @@ function drawYourTurn() {
   globals.layers.UI.add(globals.elements.yourTurn);
 
   const circle = new Konva.Ellipse({
-    radiusX: 0.039 * winW,
-    radiusY: 0.05 * winH,
+    radiusX: YOUR_TURN.radiusX * winW,
+    radiusY: YOUR_TURN.radiusY * winH,
     ...INDICATOR_ELLIPSE_STYLE,
     strokeWidth: INDICATOR_ELLIPSE_STROKE_WIDTH * winH,
     listening: false,
@@ -1500,7 +1800,7 @@ function drawYourTurn() {
   globals.elements.yourTurn.add(circle);
 
   const text = new Konva.Text({
-    fontSize: 0.034 * winH,
+    fontSize: YOUR_TURN.fontSize * winH,
     fontFamily: FONT_FAMILY,
     fill: CURRENT_TURN_COLOR,
     align: "center",
@@ -1540,10 +1840,10 @@ function drawClueLog() {
 function drawStatistics() {
   // The statistics are a grid of labels with their numbers beside them.
   const labelX = (STATISTICS_PANEL.x + STATISTICS_LABEL_INSET_X) * winW;
-  const numberX = (STATISTICS_PANEL.x + 0.1) * winW;
-  const paceY = (STATISTICS_PANEL.y + 0.04) * winH;
-  const efficiencyY = (STATISTICS_PANEL.y + 0.06) * winH;
-  const fontSize = 0.02 * winH;
+  const numberX = (STATISTICS_PANEL.x + STATISTICS_TEXT.numberX) * winW;
+  const paceY = (STATISTICS_PANEL.y + STATISTICS_TEXT.paceY) * winH;
+  const efficiencyY = (STATISTICS_PANEL.y + STATISTICS_TEXT.efficiencyY) * winH;
+  const fontSize = STATISTICS_TEXT.fontSize * winH;
 
   const statsRect = new Konva.Rect({
     x: STATISTICS_PANEL.x * winW,
@@ -1560,9 +1860,9 @@ function drawStatistics() {
   const variantLabel = new FitText({
     text: globals.variant.name.replace(/(?<!\s)\s*\(\d Suits\)/u, ""),
     x: labelX,
-    y: (STATISTICS_PANEL.y + 0.01) * winH,
-    width: 0.15 * winW,
-    height: 0.03 * winH,
+    y: (STATISTICS_PANEL.y + STATISTICS_TEXT.variantY) * winH,
+    width: STATISTICS_TEXT.variantW * winW,
+    height: STATISTICS_TEXT.variantH * winH,
     fontSize,
     fontFamily: FONT_FAMILY,
     fill: LABEL_COLOR,
@@ -1573,7 +1873,7 @@ function drawStatistics() {
   globals.layers.UI.add(variantLabel);
   globals.elements.variantLabel = variantLabel;
 
-  const underlineY = (STATISTICS_PANEL.y + 0.03) * winH;
+  const underlineY = (STATISTICS_PANEL.y + STATISTICS_TEXT.underlineY) * winH;
   const variantUnderline = new Konva.Line({
     points: [
       labelX,
@@ -1675,7 +1975,7 @@ function drawStatistics() {
 
   const efficiencyPipeLabel = basicNumberLabel.clone({
     text: " | ",
-    x: numberX + 0.005 * winW,
+    x: numberX + STATISTICS_TEXT.pipeX * winW,
     y: efficiencyY,
     fontSize,
     listening: true,
@@ -1685,7 +1985,7 @@ function drawStatistics() {
 
   const efficiencyMinNeededLabel = basicNumberLabel.clone({
     text: globals.metadata.minEfficiency.toFixed(EFFICIENCY_DECIMAL_PLACES),
-    x: numberX + 0.018 * winW,
+    x: numberX + STATISTICS_TEXT.minEfficiencyX * winW,
     y: efficiencyY,
     fontSize,
     // - "Easy" variants use the default color (off-white).
@@ -1801,35 +2101,32 @@ function drawTimers() {
     return;
   }
 
-  // In the Keldon layout, the two timers sit in a row.
-  const keldonTimerY = 0.645;
   const timerValues = {
-    x1: 0.145,
-    x2: 0.595,
-    y1: keldonTimerY,
-    y2: keldonTimerY,
-    w: 0.065,
-    h: 0.051,
-    fontSize: 0.03,
-    cornerRadius: 0.05,
-    spaceH: 0.01,
+    ...TIMER,
+    ...(globals.lobby.settings.keldonMode
+      ? {
+          x1: KELDON_TIMERS.x1,
+          x2: KELDON_TIMERS.x2,
+          y1: KELDON_TIMERS.y,
+          y2: KELDON_TIMERS.y,
+        }
+      : {
+          x1: BGA_TIMERS.x,
+          x2: BGA_TIMERS.x,
+          y1: BGA_TIMERS.y1,
+          y2: BGA_TIMERS.y2,
+        }),
   };
-  if (!globals.lobby.settings.keldonMode) {
-    timerValues.x1 = 0.352;
-    timerValues.x2 = timerValues.x1;
-    timerValues.y1 = 0.77;
-    timerValues.y2 = 0.885;
-  }
 
   // A circle around the timer indicates that we have queued a pause. (We want the timer to be on
   // top of this so that it does not interfere with mouse events.)
   globals.elements.timer1Circle = new Konva.Ellipse({
     x: (timerValues.x1 + TIMER_PAUSE_RING_CENTER.x) * winW,
     y: (timerValues.y1 + TIMER_PAUSE_RING_CENTER.y) * winH,
-    radiusX: 0.05 * winW,
-    radiusY: 0.07 * winH,
+    radiusX: TIMER_PAUSE_RING_RADIUS.x * winW,
+    radiusY: TIMER_PAUSE_RING_RADIUS.y * winH,
     stroke: ACTIVE_INDICATOR_COLOR,
-    strokeWidth: 2 * STROKE_WIDTH_UNIT * winH,
+    strokeWidth: THIN_STROKE_WIDTH * winH,
     visible: false,
     listening: false,
   });
@@ -1869,7 +2166,7 @@ function drawTimers() {
     width: timerValues.w * winW,
     height: timerValues.h * winH,
     fontSize: timerValues.fontSize * winH,
-    labelFontSize: 0.02 * winH,
+    labelFontSize: timerValues.labelFontSize * winH,
     cornerRadius: timerValues.cornerRadius * winH,
     spaceH: timerValues.spaceH * winH,
     visible: false,
@@ -1923,16 +2220,16 @@ function drawClueArea() {
   // Put the clue area directly below the play stacks, with a little bit of spacing.
   clueAreaValues = {
     x: actionLogValues.x,
-    y: playAreaValues.y + playAreaValues.h! + 0.005,
+    y: playAreaValues.y + playAreaValues.h! + CLUE_AREA.gapY,
     w: actionLogValues.w!,
-    h: 0.23,
+    h: CLUE_AREA.h,
   };
   if (globals.variant.showSuitNames) {
-    clueAreaValues.y += 0.03;
+    clueAreaValues.y += CLUE_AREA.suitNamesOffsetY;
   }
   // In BGA mode, we can afford to put a bit more spacing to make it look less packed together.
   if (!globals.lobby.settings.keldonMode) {
-    clueAreaValues.y += 0.02;
+    clueAreaValues.y += CLUE_AREA.bgaOffsetY;
   }
   globals.elements.clueArea = new Konva.Group({
     x: clueAreaValues.x * winW,
@@ -1944,8 +2241,10 @@ function drawClueArea() {
 
   // Player buttons
   const { numPlayers } = globals.options;
-  const playerButtonH = globals.lobby.settings.keldonMode ? 0.025 : 0.035;
-  const playerButtonSpacing = 0.0075;
+  const playerButtonH = globals.lobby.settings.keldonMode
+    ? CLUE_TARGET_BUTTON.keldonH
+    : CLUE_TARGET_BUTTON.bgaH;
+  const playerButtonSpacing = CLUE_TARGET_BUTTON.spacing;
 
   // If this is a two player game, we can slide the clue UI down by a bit (since the clue target
   // buttons won't be shown).
@@ -2074,7 +2373,7 @@ function drawClueArea() {
   globals.elements.colorClueButtons = [];
   let totalColorWidth = buttonW * globals.variant.clueColors.length;
   totalColorWidth += buttonXSpacing * (globals.variant.clueColors.length - 1);
-  const colorX = clueAreaValues.w! * 0.5 - totalColorWidth * 0.5;
+  const colorX = (clueAreaValues.w! - totalColorWidth) / 2;
   const colorY = buttonYSpacing - playerButtonAdjustment;
   for (const [i, clueColor] of globals.variant.clueColors.entries()) {
     // Find the first suit that matches this color.
@@ -2114,7 +2413,7 @@ function drawClueArea() {
   const numRanks = globals.variant.clueRanks.length;
   let totalRankWidth = buttonW * numRanks;
   totalRankWidth += buttonXSpacing * (numRanks - 1);
-  const rankX = clueAreaValues.w! * 0.5 - totalRankWidth * 0.5;
+  const rankX = (clueAreaValues.w! - totalRankWidth) / 2;
   const rankY = colorY + buttonH + buttonYSpacing;
   for (const [i, rank] of globals.variant.clueRanks.entries()) {
     const button = new RankButton({
@@ -2142,12 +2441,11 @@ function drawClueArea() {
 
   // The "Give Clue" button.
   giveClueValues = {
-    x: 0,
+    x: (clueAreaValues.w! - GIVE_CLUE_BUTTON.w) / 2,
     y: rankY + buttonH + buttonYSpacing,
-    w: 0.236,
-    h: 0.051,
+    w: GIVE_CLUE_BUTTON.w,
+    h: GIVE_CLUE_BUTTON.h,
   };
-  giveClueValues.x = clueAreaValues.w! * 0.5 - giveClueValues.w! * 0.5;
 
   globals.elements.giveClueButton = new Button({
     x: giveClueValues.x * winW,
@@ -2207,13 +2505,10 @@ function drawClueAreaDisabled(offsetX: number) {
   });
   globals.elements.clueAreaDisabled.add(rect);
 
-  const spacing = {
-    x: 0.075,
-    y: 0.03,
-  };
+  const spacing = CLUE_AREA_DISABLED_CROSS_INSET;
   const lineStyle = {
     stroke: "#1a1a1a",
-    strokeWidth: 5 * STROKE_WIDTH_UNIT * winH,
+    strokeWidth: CLUE_AREA_DISABLED_CROSS_WIDTH * winH,
     listening: false,
   } as const;
 
@@ -2243,15 +2538,15 @@ function drawClueAreaDisabled(offsetX: number) {
 
   // The "No clues available" text.
   const noCluesText = new FitText({
-    y: clueAreaValues.h! * 0.4 * winH,
+    y: clueAreaValues.h! * NO_CLUES_TEXT.y * winH,
     width: clueAreaValues.w! * winW,
-    fontSize: 0.07 * winH,
+    fontSize: NO_CLUES_TEXT.fontSize * winH,
     fontFamily: FONT_FAMILY,
     align: "center",
     text: "No clues",
     fill: LABEL_COLOR,
     stroke: "black",
-    strokeWidth: 2 * STROKE_WIDTH_UNIT * winH,
+    strokeWidth: THIN_STROKE_WIDTH * winH,
     listening: false,
   });
   globals.elements.clueAreaDisabled.add(noCluesText);
@@ -2319,13 +2614,12 @@ function createWaitingOnServerAnimation(
 
 function drawCurrentPlayerArea() {
   // The "Current player: [player name]" box
-  const currentPlayerAreaWidth = 0.3; // This is big enough to fit in between the two timers
   const currentPlayerAreaValues = {
-    x: clueAreaValues.x + clueAreaValues.w! / 2 - currentPlayerAreaWidth / 2,
-    y: clueAreaValues.y + 0.015,
-    w: currentPlayerAreaWidth,
-    h: 0.15,
-    spacing: 0.006,
+    x: clueAreaValues.x + (clueAreaValues.w! - CURRENT_PLAYER_AREA.w) / 2,
+    y: clueAreaValues.y + CURRENT_PLAYER_AREA.offsetY,
+    w: CURRENT_PLAYER_AREA.w,
+    h: CURRENT_PLAYER_AREA.h,
+    spacing: CURRENT_PLAYER_AREA.spacing,
   };
   globals.elements.currentPlayerArea = new CurrentPlayerArea(
     currentPlayerAreaValues,
@@ -2338,10 +2632,9 @@ function drawCurrentPlayerArea() {
 }
 
 function drawPreplayArea() {
-  const w = 0.29;
-  const h = 0.1;
-  const x = clueAreaValues.x + clueAreaValues.w! / 2 - w / 2;
-  const y = clueAreaValues.y + 0.05; // Near the top of the clue area, not centered in it.
+  const { w, h } = PREMOVE_CANCEL_BUTTON;
+  const x = clueAreaValues.x + (clueAreaValues.w! - w) / 2;
+  const y = clueAreaValues.y + PREMOVE_CANCEL_BUTTON.offsetY;
   globals.elements.premoveCancelButton = new Button({
     x: x * winW,
     y: y * winH,
@@ -2364,14 +2657,14 @@ function drawPreplayArea() {
 function drawHypotheticalArea() {
   const hypoValues = {
     x: actionLogValues.x,
-    y: clueAreaValues.y + 0.06,
+    y: clueAreaValues.y + HYPO_INDICATOR.offsetY,
     w: actionLogValues.w,
-    h: 0.05,
+    h: HYPO_INDICATOR.h,
   };
 
   // The circle is centered on the text.
-  const hypoTextY = hypoValues.h * 0.4;
-  const hypoFontSize = 0.06;
+  const hypoTextY = hypoValues.h * HYPO_INDICATOR.textY;
+  const hypoFontSize = HYPO_INDICATOR.fontSize;
 
   // The "Hypothetical" circle that shows we are currently in a hypothetical.
   globals.elements.hypoCircle = new Konva.Group({
@@ -2383,9 +2676,9 @@ function drawHypotheticalArea() {
   globals.layers.UI.add(globals.elements.hypoCircle);
 
   const circle = new Konva.Ellipse({
-    x: hypoValues.w! * 0.5 * winW,
+    x: (hypoValues.w! / 2) * winW,
     y: (hypoTextY + hypoFontSize / 2) * winH,
-    radiusX: hypoValues.w! * 0.4 * winW,
+    radiusX: hypoValues.w! * HYPO_INDICATOR.radiusX * winW,
     radiusY: hypoValues.h * winH,
     ...INDICATOR_ELLIPSE_STYLE,
     strokeWidth: INDICATOR_ELLIPSE_STROKE_WIDTH * winH,
@@ -2414,10 +2707,9 @@ function drawHypotheticalArea() {
 
   // The hypothetical buttons share the row of the give clue button.
   const hypoButtonHeight = giveClueValues.h!;
-  const hypoButtonFontSize = 0.019;
-
-  const hypoButtonWidth = 0.075;
-  const hypoButtonSpacing = 0.008;
+  const hypoButtonFontSize = HYPO_BUTTON.fontSize;
+  const hypoButtonWidth = HYPO_BUTTON.w;
+  const hypoButtonSpacing = HYPO_BUTTON.spacing;
 
   // The "Back 1 Turn" button (to the right of the give clue button, after it slides left).
   const hypoBackButtonValues = {
@@ -2429,7 +2721,7 @@ function drawHypotheticalArea() {
       + giveClueValues.w!
       + hypoButtonSpacing,
     y: clueAreaValues.y + lowerClueAreaValues.y + giveClueValues.y,
-    w: 0.035,
+    w: HYPO_BUTTON.backW,
     h: hypoButtonHeight,
   };
 
@@ -2516,7 +2808,7 @@ function drawHypotheticalArea() {
     width: hypoButtonWidth * winW,
     height: hypoButtonHeight * winH,
     text: "Show Hidden",
-    fontSize: 0.016 * winH,
+    fontSize: HYPO_BUTTON.showHiddenFontSize * winH,
   });
   globals.elements.toggleDrawnCardsButton.tooltipName = "hypo-show-drawn";
   globals.elements.toggleDrawnCardsButton.tooltipContent =
@@ -2533,10 +2825,7 @@ function drawHypotheticalArea() {
 }
 
 function drawPauseArea() {
-  const pauseAreaValues = {
-    w: 0.5,
-    h: 0.5,
-  };
+  const pauseAreaValues = PAUSE_DIALOG;
 
   globals.elements.pauseArea = new Konva.Group({
     x: ((1 - pauseAreaValues.w) / 2) * winW,
@@ -2569,10 +2858,10 @@ function drawPauseArea() {
   globals.elements.pauseArea.add(pauseTitle);
 
   globals.elements.pauseText = new Konva.Text({
-    y: 0.21 * winH,
+    y: PAUSE_DIALOG.textY * winH,
     width: pauseAreaValues.w * winW,
     fontFamily: FONT_FAMILY,
-    fontSize: 0.05 * winH,
+    fontSize: PAUSE_DIALOG.textFontSize * winH,
     text: "by: [username]",
     align: "center",
     fill: "white",
@@ -2581,10 +2870,9 @@ function drawPauseArea() {
   });
   globals.elements.pauseArea.add(globals.elements.pauseText);
 
-  const button1W = pauseAreaValues.w * 0.4;
-  const button2W = pauseAreaValues.w * 0.125;
-  /** The top of the row of buttons, in fractions of the stage height. */
-  const buttonY = 0.33;
+  const button1W = pauseAreaValues.w * PAUSE_DIALOG.unpauseButtonW;
+  const button2W = pauseAreaValues.w * PAUSE_DIALOG.smallButtonW;
+  const { buttonY } = PAUSE_DIALOG;
   const spacing = pauseAreaValues.w * DIALOG.BUTTON_SPACING;
   // The row has the same margin on both sides, with equal gaps between the buttons.
   const buttonGap =
@@ -2636,10 +2924,7 @@ function drawPauseArea() {
 }
 
 function drawRestartArea() {
-  const restartAreaValues = {
-    w: 0.7,
-    h: 0.6,
-  };
+  const restartAreaValues = RESTART_DIALOG;
 
   globals.elements.restartArea = new Konva.Group({
     x: ((1 - restartAreaValues.w) / 2) * winW,
@@ -2675,12 +2960,10 @@ function drawRestartArea() {
   });
   restartContents.add(restartTitle);
 
-  const buttonW = restartAreaValues.w * 0.35;
-  /** The top of the row of buttons, in fractions of the stage height. */
-  const buttonY = 0.25;
+  const buttonW = restartAreaValues.w * RESTART_DIALOG.buttonW;
+  const { buttonY } = RESTART_DIALOG;
   const spacing = restartAreaValues.w * DIALOG.BUTTON_SPACING;
-  /** The gap above the "Cancel" button, in fractions of the stage height. */
-  const cancelButtonGapY = 0.095;
+  const { cancelButtonGapY } = RESTART_DIALOG;
 
   const restartGameButton = new Button({
     x: spacing * winW,
@@ -2735,7 +3018,7 @@ function drawRestartArea() {
 function drawExtraAnimations() {
   // These images are shown to the player to indicate which direction we are moving in a shared
   // replay.
-  const size = 0.1;
+  const size = SHARED_REPLAY_DIRECTION_SIZE;
   const x = playAreaValues.x + (playAreaValues.w! - size) / 2;
   const y = playAreaValues.y + (playAreaValues.h! - size) / 2;
 

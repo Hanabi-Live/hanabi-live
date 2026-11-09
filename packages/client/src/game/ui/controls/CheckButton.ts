@@ -13,6 +13,17 @@ import {
 } from "../constants";
 import { drawLayer } from "../konvaHelpers";
 
+/** The size of the checkbox, as a fraction of the button's height. It is centered vertically. */
+const CHECKBOX_SIZE = 0.35;
+
+/**
+ * The gap between the button's left edge and the checkbox, as a fraction of the button's height.
+ */
+const CHECKBOX_MARGIN = 0.13;
+
+/** The gap between the checkbox and the text, as a fraction of the button's height. */
+const CHECKBOX_TEXT_GAP = CHECKBOX_MARGIN / 2;
+
 export class CheckButton extends Konva.Group {
   enabled = true;
   pressed = false;
@@ -48,10 +59,10 @@ export class CheckButton extends Konva.Group {
     });
     this.add(this.background);
 
-    const checkY = 0.325 * h;
-    const checkX = checkY / 2.5;
-    const checkH = 0.35 * h;
+    const checkH = CHECKBOX_SIZE * h;
     const checkW = checkH;
+    const checkX = CHECKBOX_MARGIN * h;
+    const checkY = (h - checkH) / 2;
 
     this.checkImageOn = new Konva.Image({
       x: checkX,
@@ -102,7 +113,7 @@ export class CheckButton extends Konva.Group {
     this.textElement = null;
     if (config["text"] !== undefined) {
       this.textElement = new Konva.Text({
-        x: checkW + checkX * 1.5,
+        x: checkX + checkW + CHECKBOX_TEXT_GAP * h,
         y: (BUTTON_TEXT_MIDDLE - textSize / 2 / h) * h,
         width: w,
         height: BUTTON_TEXT_SIZE * h,

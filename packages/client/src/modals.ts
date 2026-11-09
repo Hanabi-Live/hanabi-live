@@ -16,8 +16,8 @@ import * as lobbyNav from "./lobby/nav";
 import { getHTMLElement, getHTMLInputElement } from "./utils";
 
 /**
- * How long the modal code waits for the page cover to change before showing, focusing, or hiding
- * what is behind it.
+ * How long the modal code waits for the page cover to change before showing or focusing what is
+ * behind it.
  */
 export const MODAL_DELAY_MILLISECONDS = 100;
 
@@ -61,6 +61,17 @@ export function init(): void {
   // Close modal on escape press or by clicking outside.
   pageCover.addEventListener("pointerdown", () => {
     closeModals();
+  });
+  // Remove the page cover once it has faded out, unless a modal was opened in the meantime (e.g. a
+  // confirmation after a prompt).
+  pageCover.addEventListener("animationend", (event) => {
+    if (
+      event.target === pageCover
+      && !pageCover.classList.contains("show")
+      && currentModal === null
+    ) {
+      pageCover.style.display = "none";
+    }
   });
   document.addEventListener("keydown", (event) => {
     if (event.key === "Escape" && currentModal !== null) {
@@ -533,15 +544,9 @@ export function closeModals(fast = false): void {
     currentModal = null;
   }
 
+  // Otherwise, the page cover is removed when its fade-out animation ends.
   if (fast) {
     pageCover.style.display = "none";
-  } else {
-    setTimeout(() => {
-      // A modal may have been opened in the meantime (e.g. a confirmation after a prompt).
-      if (currentModal === null) {
-        pageCover.style.display = "none";
-      }
-    }, MODAL_DELAY_MILLISECONDS);
   }
 
   if (globals.lastActiveElement !== null) {

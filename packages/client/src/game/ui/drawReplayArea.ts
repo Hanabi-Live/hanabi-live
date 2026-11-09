@@ -1,7 +1,7 @@
 import Konva from "konva";
 import { getCanvasColors } from "../../theme";
 import { globals } from "./UIGlobals";
-import { BGA_ACTION_LOG, STROKE_WIDTH_UNIT } from "./constants";
+import { BGA_ACTION_LOG, THIN_STROKE_WIDTH } from "./constants";
 import { Button } from "./controls/Button";
 import { EnterHypoButton } from "./controls/EnterHypoButton";
 import { SharedTurnsButton } from "./controls/SharedTurnsButton";
@@ -80,7 +80,7 @@ export function drawReplayArea(winW: number, winH: number): void {
     h: 0.03,
     cornerRadius: 0.01,
     stroke: "black",
-    strokeWidth: 2 * STROKE_WIDTH_UNIT,
+    strokeWidth: THIN_STROKE_WIDTH,
   };
 
   // The shared (white) replay shuttle. (We want it to be behind the normal replay shuttle, so we

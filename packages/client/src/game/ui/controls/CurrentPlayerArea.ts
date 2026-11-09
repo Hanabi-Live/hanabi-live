@@ -7,12 +7,39 @@ import {
   NO_CLUES_COLOR,
   PANEL_CORNER_RADIUS,
   PANEL_OPACITY,
+  STROKE_WIDTH_UNIT,
   TEXT_SHADOW,
 } from "../constants";
 import { FitText } from "./FitText";
 
 /** How far the shadow around the outline of the current player arrow spreads. */
 const ARROW_SHADOW_BLUR = 75;
+
+/** The size of the text in the name box, as a fraction of the stage height. */
+const FONT_SIZE = 0.08;
+
+/**
+ * How far the current player's name and its label are inset from each side of the name box, in
+ * multiples of the area's spacing.
+ */
+const NAME_TEXT_INSET_SPACINGS = 2;
+
+/** How far the warning below the name is inset from each side of the name box, likewise. */
+const WARNING_TEXT_INSET_SPACINGS = 1;
+
+/**
+ * The gap between each end of the arrow and the sides of its box, in fractions of the stage width.
+ */
+const ARROW_INSET = 0.01;
+
+/** The width of the arrow's body, as a fraction of the stage height. */
+const ARROW_BODY_WIDTH = 5 * STROKE_WIDTH_UNIT;
+
+/**
+ * The size of the arrow's pointer and the width of its black outline, as multiples of the width of
+ * its body.
+ */
+const ARROW_POINTER_AND_OUTLINE_STROKES = 2;
 
 interface ElementValues {
   x: number;
@@ -67,15 +94,15 @@ export class CurrentPlayerArea extends Konva.Group {
     this.add(this.rect1);
 
     const textValues = {
-      w: box1Width - values.spacing * 4,
-      w2: box1Width - values.spacing * 2,
+      w: box1Width - values.spacing * NAME_TEXT_INSET_SPACINGS * 2,
+      w2: box1Width - values.spacing * WARNING_TEXT_INSET_SPACINGS * 2,
       x: 0,
       x2: 0,
     };
     textValues.x = box1Width / 2 - textValues.w / 2;
     textValues.x2 = box1Width / 2 - textValues.w2 / 2;
 
-    const fontSize = 0.08 * winH;
+    const fontSize = FONT_SIZE * winH;
 
     this.text1 = new FitText({
       x: textValues.x * winW,
@@ -121,7 +148,7 @@ export class CurrentPlayerArea extends Konva.Group {
       x: values.w * nameBoxShare + values.spacing,
       w: values.w * (1 - nameBoxShare) - values.spacing,
       h: values.h,
-      spacing: 0.01,
+      spacing: ARROW_INSET,
     };
 
     const rect2 = new Konva.Rect({
@@ -135,8 +162,9 @@ export class CurrentPlayerArea extends Konva.Group {
     });
     this.add(rect2);
 
-    const baseArrowLength = 0.005_28 * winH;
-    const arrowPointerSize = baseArrowLength * 2;
+    const baseArrowLength = ARROW_BODY_WIDTH * winH;
+    const arrowPointerSize =
+      baseArrowLength * ARROW_POINTER_AND_OUTLINE_STROKES;
 
     this.arrow = new Konva.Group({
       x: (arrowValues.x + arrowValues.w / 2) * winW,
@@ -160,7 +188,7 @@ export class CurrentPlayerArea extends Konva.Group {
       pointerWidth: arrowPointerSize,
       fill: "black",
       stroke: "black",
-      strokeWidth: baseArrowLength * 2,
+      strokeWidth: baseArrowLength * ARROW_POINTER_AND_OUTLINE_STROKES,
       shadowBlur: ARROW_SHADOW_BLUR,
       shadowOpacity: 1,
       listening: false,

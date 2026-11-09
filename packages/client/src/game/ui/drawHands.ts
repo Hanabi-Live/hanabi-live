@@ -146,6 +146,10 @@ export function drawHands(winW: number, winH: number): void {
   const tiltedSideHandW = 0.41;
   /** The left edge and width of a hand that spans the board, such as in 2-player games. */
   const wideHand = { x: 0.19, w: 0.42 } as const;
+  /**
+   * The left edge and width of a narrow hand in the middle of the board, such as in 4-player games.
+   */
+  const centeredNarrowHand = { x: 0.23, w: narrowHandW } as const;
   handPos[2] = [
     { ...wideHand, y: KELDON_BOTTOM_HAND_Y, h: keldonHandH, rot: 0 },
     { ...wideHand, y: KELDON_TOP_HAND_Y, h: keldonHandH, rot: 0 },
@@ -156,31 +160,13 @@ export function drawHands(winW: number, winH: number): void {
     { x: 0.735, y: 0.024, w: tiltedSideHandW, h: keldonHandH, rot: 82 },
   ];
   handPos[4] = [
-    {
-      x: 0.23,
-      y: KELDON_BOTTOM_HAND_Y,
-      w: narrowHandW,
-      h: keldonHandH,
-      rot: 0,
-    },
+    { ...centeredNarrowHand, y: KELDON_BOTTOM_HAND_Y, h: keldonHandH, rot: 0 },
     { x: 0.015, y: 0.68, w: narrowHandW, h: keldonHandH, rot: -78 },
-    {
-      x: 0.23,
-      y: KELDON_TOP_HAND_Y,
-      w: narrowHandW,
-      h: keldonHandH,
-      rot: 0,
-    },
+    { ...centeredNarrowHand, y: KELDON_TOP_HAND_Y, h: keldonHandH, rot: 0 },
     { x: 0.715, y: 0.095, w: narrowHandW, h: keldonHandH, rot: 78 },
   ];
   handPos[5] = [
-    {
-      x: 0.23,
-      y: KELDON_BOTTOM_HAND_Y,
-      w: narrowHandW,
-      h: keldonHandH,
-      rot: 0,
-    },
+    { ...centeredNarrowHand, y: KELDON_BOTTOM_HAND_Y, h: keldonHandH, rot: 0 },
     {
       x: sideHand.leftX,
       y: 0.756,

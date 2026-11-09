@@ -5,6 +5,15 @@ import { Button } from "./Button";
 /** The opacity of the radio button that shows which player is selected. */
 const RADIO_OPACITY = 0.8;
 
+/**
+ * The radius of the radio button, as a fraction of the button's height. It is centered in a square
+ * at the left end of the button.
+ */
+const RADIO_RADIUS = 1 / 3;
+
+/** The radius of the dot inside a selected radio button, as a fraction of the button's height. */
+const RADIO_DOT_RADIUS = RADIO_RADIUS / 2;
+
 export class PlayerButton extends Button {
   targetPlayerIndex: PlayerIndex;
   radioBackground: Konva.Circle;
@@ -14,11 +23,12 @@ export class PlayerButton extends Button {
     super(config, []);
     this.targetPlayerIndex = targetPlayerIndex;
 
-    const x = this.height() / 2;
+    const h = this.height();
+    const x = h / 2;
     this.radioBackground = new Konva.Circle({
       x,
       y: x,
-      radius: x / 1.5,
+      radius: RADIO_RADIUS * h,
       stroke: "gray",
       fill: "white",
       opacity: RADIO_OPACITY,
@@ -28,7 +38,7 @@ export class PlayerButton extends Button {
     this.radioDot = new Konva.Circle({
       x,
       y: x,
-      radius: x / 3,
+      radius: RADIO_DOT_RADIUS * h,
       fill: "black",
       opacity: RADIO_OPACITY,
       visible: false,

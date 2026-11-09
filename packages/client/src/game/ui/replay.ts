@@ -229,15 +229,25 @@ export function barScroll(
   goToSegment(getCurrentReplaySegment() + delta, true);
 }
 
+/**
+ * The range that the center of a replay shuttle can move along the replay bar: the absolute x
+ * position of its first stop and the distance to its last one.
+ */
+function shuttleTrack(shuttle: Konva.Rect): { min: number; w: number } {
+  return {
+    min:
+      globals.elements.replayBar!.getAbsolutePosition().x + shuttle.width() / 2,
+    w: globals.elements.replayBar!.width() - shuttle.width(),
+  };
+}
+
 // Restricts the positions of the replay shuttle. Given a desired position, returns the allowed
 // position closest to it.
 export function shuttleDragBound(
   this: Konva.Rect,
   pos: Konva.Vector2d,
 ): { x: number; y: number } {
-  const min =
-    globals.elements.replayBar!.getAbsolutePosition().x + this.width() * 0.5;
-  const w = globals.elements.replayBar!.width() - this.width();
+  const { min, w } = shuttleTrack(this);
 
   const shuttleX = clamp(pos.x - min, 0, w);
   const segment = segmentFromBarPosition(shuttleX, w);
@@ -253,9 +263,7 @@ export function shuttleDragBound(
 
 // Called when the shuttle moves. The position is guaranteed to be valid by shuttleDragBound.
 export function shuttleDragMove(this: Konva.Rect): void {
-  const min =
-    globals.elements.replayBar!.getAbsolutePosition().x + this.width() * 0.5;
-  const w = globals.elements.replayBar!.width() - this.width();
+  const { min, w } = shuttleTrack(this);
   const newSegment = segmentFromBarPosition(
     this.getAbsolutePosition().x - min,
     w,

@@ -29,6 +29,9 @@ const NUM_LEFT_SIZE = 0.4;
 /** The dark gray outline of the number of cards remaining in the deck. */
 const NUM_LEFT_STROKE_COLOR = "#222222";
 
+/** The width of the outline around the number of cards left, as a fraction of the stage height. */
+const NUM_LEFT_STROKE_WIDTH = 3 * STROKE_WIDTH_UNIT;
+
 /** The top of the count of cards left, as a fraction of the deck's height. */
 const NUM_LEFT_Y = 0.3;
 
@@ -72,7 +75,7 @@ export class Deck extends Konva.Group {
     this.numLeftText = new Konva.Text({
       fill: "white",
       stroke: NUM_LEFT_STROKE_COLOR,
-      strokeWidth: 3 * STROKE_WIDTH_UNIT * globals.stage.height(),
+      strokeWidth: NUM_LEFT_STROKE_WIDTH * globals.stage.height(),
       align: "center",
       x: 0,
       y: NUM_LEFT_Y * this.height(),

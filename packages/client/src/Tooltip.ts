@@ -1,8 +1,7 @@
 // A tooltip that opens beside an anchor element. The bubble is a manual popover, so it is drawn in
 // the top layer above every other element, including modals.
 
-/** How long a tooltip takes to grow open or to shrink closed. */
-const ANIMATION_DURATION_IN_MILLISECONDS = 350;
+import { FADE_TIME_MS } from "./constants";
 
 /** The height of the arrow that points from the tooltip to its anchor. */
 const ARROW_SIZE_IN_PIXELS = 6;
@@ -49,10 +48,7 @@ export class Tooltip {
       "tooltip-interactive",
       options.interactive === true,
     );
-    this.bubble.style.setProperty(
-      "--tooltip-duration",
-      `${ANIMATION_DURATION_IN_MILLISECONDS}ms`,
-    );
+    this.bubble.style.setProperty("--tooltip-duration", `${FADE_TIME_MS}ms`);
     this.bubble.style.setProperty(
       "--tooltip-arrow-size",
       `${ARROW_SIZE_IN_PIXELS}px`,
@@ -134,7 +130,7 @@ export class Tooltip {
     this.closingTimeout = setTimeout(() => {
       this.closingTimeout = undefined;
       this.bubble.remove();
-    }, ANIMATION_DURATION_IN_MILLISECONDS);
+    }, FADE_TIME_MS);
   }
 
   /**

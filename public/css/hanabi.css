@@ -942,10 +942,13 @@ html:not([data-theme="dark"]) .modal :is(input, select, textarea) {
   animation: pageCoverHide 0.4s forwards 1;
   align-items: center;
   justify-content: center;
+  /* While it fades out, the page cover must not block clicks on the page behind it. */
+  pointer-events: none;
 }
 
 #page-cover.show {
   animation: pageCoverShow 0.4s forwards 1;
+  pointer-events: auto;
 }
 
 @keyframes pageCoverHide {

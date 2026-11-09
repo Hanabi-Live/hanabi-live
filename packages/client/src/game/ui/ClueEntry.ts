@@ -18,6 +18,28 @@ const HIGHLIGHT_OPACITY = 0.4;
 /** Light red, for an entry whose clue did not touch the card under the mouse. */
 const NEGATIVE_HIGHLIGHT_COLOR = "#ff7777";
 
+/** The size of the text in every column, as a fraction of the entry's height. */
+const FONT_SIZE = 0.9;
+
+/**
+ * The columns of an entry, as fractions of its width. The giver, the target, and the clue name sit
+ * in a row, with `GAP` before each one.
+ */
+const COLUMN = {
+  GAP: 0.05,
+  PLAYER_NAME_W: 0.3,
+  CLUE_NAME_W: 0.2,
+  /**
+   * The center of the cross that marks a clue that did not touch the card under the mouse. It
+   * overlaps the end of the clue name, near the right edge of the entry.
+   */
+  NEGATIVE_MARKER_CENTER_X: 0.98,
+} as const;
+
+const GIVER_X = COLUMN.GAP;
+const TARGET_X = GIVER_X + COLUMN.PLAYER_NAME_W + COLUMN.GAP;
+const CLUE_NAME_X = TARGET_X + COLUMN.PLAYER_NAME_W + COLUMN.GAP;
+
 export class ClueEntry extends Konva.Group {
   clue: StateClue;
 
@@ -36,9 +58,9 @@ export class ClueEntry extends Konva.Group {
     assertDefined(h, 'ClueEntry was not provided with a "height" value.');
 
     // Every column of the entry uses the same text size.
-    const fontSize = 0.9 * h;
-    const playerNameWidth = 0.3 * w;
-    const clueNameWidth = 0.2 * w;
+    const fontSize = FONT_SIZE * h;
+    const playerNameWidth = COLUMN.PLAYER_NAME_W * w;
+    const clueNameWidth = COLUMN.CLUE_NAME_W * w;
 
     this.background = new Konva.Rect({
       x: 0,
@@ -52,7 +74,7 @@ export class ClueEntry extends Konva.Group {
     this.add(this.background);
 
     const giver = new FitText({
-      x: 0.05 * w,
+      x: GIVER_X * w,
       y: 0,
       width: playerNameWidth,
       height: h,
@@ -66,7 +88,7 @@ export class ClueEntry extends Konva.Group {
     this.add(giver);
 
     const target = new FitText({
-      x: 0.4 * w,
+      x: TARGET_X * w,
       y: 0,
       width: playerNameWidth,
       height: h,
@@ -90,7 +112,7 @@ export class ClueEntry extends Konva.Group {
       characterName,
     );
     const name = new Konva.Text({
-      x: 0.75 * w,
+      x: CLUE_NAME_X * w,
       y: 0,
       width: clueNameWidth,
       height: h,
@@ -105,7 +127,7 @@ export class ClueEntry extends Konva.Group {
     this.add(name);
 
     this.negativeMarker = new Konva.Text({
-      x: 0.88 * w,
+      x: COLUMN.NEGATIVE_MARKER_CENTER_X * w - clueNameWidth / 2,
       y: 0,
       width: clueNameWidth,
       height: h,

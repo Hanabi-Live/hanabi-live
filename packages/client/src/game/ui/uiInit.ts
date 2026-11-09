@@ -9,6 +9,16 @@ import * as drawCardsBrowser from "./drawCardsBrowser";
 import { drawUI } from "./drawUI";
 import * as keyboard from "./keyboard";
 
+/**
+ * The labels of the loading screen, in fractions of the stage height. Their height is also their
+ * font size, and the progress count sits below the loading label.
+ */
+const LOADING_LABEL = {
+  h: 0.05,
+  loadingY: 0.7,
+  progressY: 0.8,
+} as const;
+
 // When the HanabiUI object is instantiated, we do not know how many players are in the game or what
 // the variant is. Now that the server has sent us that information, we can initialize the UI.
 export function uiInit(): void {
@@ -56,7 +66,7 @@ export function uiInit(): void {
     listening: false,
   });
 
-  const labelHeight = 0.05 * winH;
+  const labelHeight = LOADING_LABEL.h * winH;
   const labelConfig = {
     fill: LABEL_COLOR,
     stroke: getCanvasColors().loadingLabelStroke,
@@ -74,14 +84,14 @@ export function uiInit(): void {
   const loadingLabel = new Konva.Text({
     ...labelConfig,
     text: "Loading...",
-    y: 0.7 * winH,
+    y: LOADING_LABEL.loadingY * winH,
   });
   loadingLayer.add(loadingLabel);
 
   const progressLabel = new Konva.Text({
     ...labelConfig,
     text: "0 / 0",
-    y: 0.8 * winH,
+    y: LOADING_LABEL.progressY * winH,
   });
   loadingLayer.add(progressLabel);
 

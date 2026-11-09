@@ -179,6 +179,12 @@ export const TEXT_SHRINK_FACTOR = 0.9;
  */
 export const STROKE_WIDTH_UNIT = 0.001_056;
 
+/**
+ * The width of the thin outlines around small controls and indicators, such as the strike squares
+ * and the replay shuttles, as a fraction of the stage height.
+ */
+export const THIN_STROKE_WIDTH = 2 * STROKE_WIDTH_UNIT;
+
 /** The shadow under a player's name and the lines beside it, and under the variant label. */
 export const LINE_SHADOW = {
   shadowColor: "black",
