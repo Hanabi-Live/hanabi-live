@@ -92,6 +92,10 @@ Use Conventional Commits for commit messages:
 `type(optional-scope): description`, for example
 `fix(client): clear stale spectators` or `docs: update setup instructions`.
 
+When you tell the user about a commit, link it to GitHub. Do not give only its
+hash in backticks. For example:
+`[59abdc880 fix(server): send card identities before finishing a game](https://github.com/Hanabi-Live/hanabi-live/commit/59abdc880)`.
+
 ## Before pushing
 
 Use `GITHUB_TOKEN` for GitHub CLI authentication:
