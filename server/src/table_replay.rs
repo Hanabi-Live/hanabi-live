@@ -62,7 +62,7 @@ pub fn parse(input: &ReplayImport) -> Result<Imported> {
     };
     let mut players = input.players.clone().unwrap_or_default();
     if players.is_empty() {
-        let pattern = regex!(r"^(?:legacy-\d+-)?p(\d+)v\d+s[-0-9A-Za-z]+$");
+        let pattern = regex!(crate::game::SEED_PATTERN);
         let count: usize = pattern
             .captures(seed)
             .context("Provide players when the seed has no player count")?[1]

@@ -878,11 +878,9 @@ impl Store {
     pub async fn next_seed(
         &self,
         players: &[Player],
-        variant: u32,
-        count: usize,
+        prefix: String,
         suffix: &str,
     ) -> Result<String> {
-        let prefix = format!("p{count}v{variant}s");
         if !suffix.is_empty() {
             return Ok(prefix + suffix);
         }

@@ -3472,8 +3472,7 @@ impl TableActor {
             self.store
                 .next_seed(
                     &players,
-                    variant.id,
-                    players.len(),
+                    crate::game::seed_prefix(players.len(), variant.id, &self.table.options),
                     &self.table.extra.set_seed_suffix,
                 )
                 .await?

@@ -132,6 +132,22 @@ pub fn standard_deck(seed: &str) -> Result<Vec<Card>> {
         seed,
     )
 }
+/// The letter between the variant and the number of a server-made seed. Hand sizes that differ get
+/// their own seeds, so that games on the same seed have comparable scores.
+const SEED_LETTER: char = 's';
+const ONE_EXTRA_CARD_SEED_LETTER: char = 'e';
+const ONE_LESS_CARD_SEED_LETTER: char = 'l';
+/// Matches the seeds that the server makes, capturing the player count.
+pub const SEED_PATTERN: &str = r"^(?:legacy-\d+-)?p(\d+)v\d+[sel][-0-9A-Za-z]+$";
+/// The seed of a new game without its number, such as "p2v0s".
+pub fn seed_prefix(num_players: usize, variant_id: u32, options: &Options) -> String {
+    let letter = match (options.one_extra_card, options.one_less_card) {
+        (true, false) => ONE_EXTRA_CARD_SEED_LETTER,
+        (false, true) => ONE_LESS_CARD_SEED_LETTER,
+        _ => SEED_LETTER,
+    };
+    format!("p{num_players}v{variant_id}{letter}")
+}
 pub fn options() -> Value {
     serde_json::to_value(Options {
         variant_id: Some(0),
@@ -147,4 +163,31 @@ pub fn seeded_deck(id: i32, seed: &str) -> Result<Value> {
 }
 pub fn deck_size(id: i32) -> Result<usize> {
     Ok(hanabi_engine::create_deck(hanabi_engine::get_variant_by_id(u32::try_from(id)?)?).len())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn hand_sizes_that_differ_get_their_own_seeds() {
+        let seed = |one_extra_card, one_less_card| {
+            let options = Options {
+                one_extra_card,
+                one_less_card,
+                ..Options::default()
+            };
+            format!("{}19", seed_prefix(2, 2, &options))
+        };
+        let seeds = [
+            seed(false, false),
+            seed(true, false),
+            seed(false, true),
+            seed(true, true),
+        ];
+        assert_eq!(seeds, ["p2v2s19", "p2v2e19", "p2v2l19", "p2v2s19"]);
+        for seed in seeds {
+            assert_eq!(&regex!(SEED_PATTERN).captures(&seed).unwrap()[1], "2");
+        }
+    }
 }
