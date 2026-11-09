@@ -1,6 +1,8 @@
-//! How a live table is stored: a head, which is the table's JSON with its growing lists left empty,
-//! and parts, which hold those lists one entry at a time. A save writes the head and only the parts
-//! that changed: the new chat messages and game steps, and the notes that differ.
+//! How a live table is stored: a head, which is the table's JSON without its game's start and with
+//! its growing lists left empty, and parts, which hold the rest. The game's start (its players and
+//! its setup) does not change once the game begins, so it has a part of its own; the lists have one
+//! part per entry. A save writes the head and only the parts that changed: the new chat messages
+//! and game steps, and the notes and game start that differ.
 
 use crate::{
     game::Steps,
@@ -9,6 +11,7 @@ use crate::{
 };
 use anyhow::{Context, Result, bail, ensure};
 use hanabi_protocol::UserId;
+use serde_json::{Map, Value};
 use sha2::{Digest, Sha256};
 use std::collections::{BTreeMap, HashMap};
 
@@ -20,6 +23,14 @@ const STEP: &str = "step";
 const NOTES: &str = "notes";
 /// The prefix of the parts that hold each spectator's notes, by user ID.
 const SPECTATOR_NOTES: &str = "spectatorNotes";
+/// The key of the part that holds a game's start: its players and its setup.
+const GAME_START: &str = "game/start";
+/// Where the head of a table with a game holds the game's start: the game's players, and the setup
+/// that the game began from. The start part holds them by their last key.
+const START_PATHS: [&[&str]; 2] = [
+    &["phase", "snapshot", "players"],
+    &["phase", "snapshot", "game", "setup"],
+];
 
 /// What a save writes: the table's head, and the changes to its parts.
 pub struct Encoded {
@@ -39,16 +50,21 @@ fn key(prefix: &str, entry: impl std::fmt::Display) -> String {
 }
 
 /// What the database holds of a table's parts, which tells a save what to write. Chat and steps
-/// only grow, so a save writes the entries after the saved ones; notes can change anywhere, so a
-/// save compares each seat's and spectator's notes with what it saved.
+/// only grow, so a save writes the entries after the saved ones. Notes and the game's start are
+/// replaced as a whole, so a save compares each with what it saved.
 #[derive(Clone, Debug, Default)]
 pub struct SavedParts {
     chat: Tail,
     steps: Tail,
-    /// The digests of the saved notes, by key.
-    notes: HashMap<String, PartDigest>,
-    /// The bytes of the saved notes' keys and values.
-    notes_bytes: usize,
+    /// The digests of the saved parts that a save replaces as a whole, by key.
+    replaced: HashMap<String, PartDigest>,
+    /// The bytes of those parts' keys and values.
+    replaced_bytes: usize,
+}
+
+/// Whether a part is replaced as a whole when it changes, rather than one entry of a list.
+fn replaced(key: &str, prefix: &str) -> bool {
+    key == GAME_START || prefix == NOTES || prefix == SPECTATOR_NOTES
 }
 
 /// The saved entries of a list that only grows.
@@ -70,9 +86,9 @@ impl SavedParts {
             let Some((prefix, entry)) = key.split_once('/') else {
                 continue;
             };
-            if prefix == NOTES || prefix == SPECTATOR_NOTES {
-                saved.notes.insert(key.clone(), digest(value));
-                saved.notes_bytes += key.len() + value.len();
+            if replaced(key, prefix) {
+                saved.replaced.insert(key.clone(), digest(value));
+                saved.replaced_bytes += key.len() + value.len();
             } else if let Ok(index) = entry.parse() {
                 lists.entry(prefix).or_default().insert(index, value);
             }
@@ -151,6 +167,47 @@ pub fn encode(table: &mut TableSnapshot, saved: &SavedParts) -> Result<(Encoded,
 /// spectator's notes.
 type GameLists = (Steps, Vec<Vec<String>>, BTreeMap<UserId, NoteOwner>);
 
+/// Removes a game's start from a table's head, and returns it as the start part's value. A table
+/// without a game has none.
+fn take_start(head: &mut Value) -> Result<Option<String>> {
+    if head.pointer("/phase/snapshot").is_none() {
+        return Ok(None);
+    }
+    let mut start = Map::new();
+    for path in START_PATHS {
+        let (name, parent) = path.split_last().context("Empty game start path")?;
+        let removed = head
+            .pointer_mut(&format!("/{}", parent.join("/")))
+            .and_then(Value::as_object_mut)
+            .and_then(|object| object.remove(*name))
+            .with_context(|| format!("The checkpoint head has no game {name}"))?;
+        start.insert((*name).to_owned(), removed);
+    }
+    Ok(Some(serde_json::to_string(&start)?))
+}
+
+/// Puts a game's start back into a table's head.
+fn put_start(head: &mut Value, start: &str) -> Result<()> {
+    let mut start: Map<String, Value> = serde_json::from_str(start)?;
+    for path in START_PATHS {
+        let (name, parent) = path.split_last().context("Empty game start path")?;
+        let object = head
+            .pointer_mut(&format!("/{}", parent.join("/")))
+            .and_then(Value::as_object_mut)
+            .context("A checkpoint has a game start but no game")?;
+        ensure!(
+            !object.contains_key(*name),
+            "The checkpoint head holds the game {name}"
+        );
+        let value = start
+            .remove(*name)
+            .with_context(|| format!("The game start has no {name}"))?;
+        object.insert((*name).to_owned(), value);
+    }
+    ensure!(start.is_empty(), "The game start has unknown fields");
+    Ok(())
+}
+
 /// Encodes a table whose lists `encode` took out of it.
 fn encode_parts(
     head: &TableSnapshot,
@@ -158,7 +215,9 @@ fn encode_parts(
     game: Option<&GameLists>,
     saved: &SavedParts,
 ) -> Result<(Encoded, SavedParts)> {
-    let head = serde_json::to_string(head)?;
+    let mut head = serde_json::to_value(head)?;
+    let start = take_start(&mut head)?;
+    let head = serde_json::to_string(&head)?;
     let mut changes = PartChanges::default();
     let chat = grow(
         CHAT,
@@ -179,34 +238,35 @@ fn encode_parts(
         |index| steps.part(index),
         &mut changes,
     )?;
-    let mut note_parts = Vec::new();
+    let mut replaced_parts = Vec::new();
+    replaced_parts.extend(start.map(|start| (GAME_START.to_owned(), start)));
     for (seat, notes) in notes.iter().enumerate() {
-        note_parts.push((key(NOTES, seat), serde_json::to_string(notes)?));
+        replaced_parts.push((key(NOTES, seat), serde_json::to_string(notes)?));
     }
     for (user, owner) in spectator_notes.into_iter().flatten() {
-        note_parts.push((key(SPECTATOR_NOTES, user.0), serde_json::to_string(owner)?));
+        replaced_parts.push((key(SPECTATOR_NOTES, user.0), serde_json::to_string(owner)?));
     }
     let mut after = SavedParts {
         chat,
         steps,
         ..SavedParts::default()
     };
-    for (key, value) in note_parts {
+    for (key, value) in replaced_parts {
         let part = digest(&value);
-        after.notes_bytes += key.len() + value.len();
-        if saved.notes.get(&key) != Some(&part) {
+        after.replaced_bytes += key.len() + value.len();
+        if saved.replaced.get(&key) != Some(&part) {
             changes.written.push((key.clone(), value));
         }
-        after.notes.insert(key, part);
+        after.replaced.insert(key, part);
     }
     changes.removed.extend(
         saved
-            .notes
+            .replaced
             .keys()
-            .filter(|key| !after.notes.contains_key(*key))
+            .filter(|key| !after.replaced.contains_key(*key))
             .cloned(),
     );
-    let size = head.len() + after.chat.bytes + after.steps.bytes + after.notes_bytes;
+    let size = head.len() + after.chat.bytes + after.steps.bytes + after.replaced_bytes;
     ensure!(
         size <= MAX_CHECKPOINT_BYTES,
         "Checkpoint exceeds the durable state limit"
@@ -231,12 +291,17 @@ fn positional<'a>(prefix: &str, entries: Vec<(&str, &'a str)>) -> Result<Vec<&'a
     Ok(indexed.into_iter().map(|(_, part)| part).collect())
 }
 
-/// Rebuilds a table from its head and parts.
+/// Rebuilds a table from its head and parts. A head that still holds its game's start, as servers
+/// wrote before the start had a part of its own, is read as it is.
 pub fn decode(head: &str, parts: &[(String, String)]) -> Result<TableSnapshot> {
     ensure!(head.len() <= MAX_CHECKPOINT_BYTES, "Oversized checkpoint");
-    let mut table: TableSnapshot = serde_json::from_str(head)?;
+    let mut head: Value = serde_json::from_str(head)?;
+    if let Some((_, start)) = parts.iter().find(|(key, _)| key == GAME_START) {
+        put_start(&mut head, start)?;
+    }
+    let mut table: TableSnapshot = serde_json::from_value(head)?;
     let mut grouped: HashMap<&str, Vec<(&str, &str)>> = HashMap::new();
-    for (key, part) in parts {
+    for (key, part) in parts.iter().filter(|(key, _)| key != GAME_START) {
         let (prefix, entry) = key
             .split_once('/')
             .with_context(|| format!("Invalid checkpoint part {key}"))?;

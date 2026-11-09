@@ -745,15 +745,50 @@ mod tests {
             "Encoding did not put the table's lists back"
         );
         let parts = encoded.changes.written.clone();
-        for key in ["chat/0", "step/0", "notes/1", "spectatorNotes/3"] {
+        for key in [
+            "chat/0",
+            "step/0",
+            "notes/1",
+            "spectatorNotes/3",
+            "game/start",
+        ] {
             ensure!(
                 parts.iter().any(|(part, _)| part == key),
                 "Missing part {key}"
             );
         }
         ensure!(!encoded.head.contains("hello"), "The head kept the chat");
+        let head: Value = serde_json::from_str(&encoded.head)?;
+        ensure!(
+            head["phase"]["snapshot"].get("players").is_none()
+                && head["phase"]["snapshot"]["game"].get("setup").is_none(),
+            "The head kept the game's start"
+        );
         let decoded = crate::checkpoint::decode(&encoded.head, &parts)?;
         ensure!(serde_json::to_value(&decoded)? == expected);
+        // Servers wrote the game's start in the head before it had a part of its own.
+        let (_, start) = parts
+            .iter()
+            .find(|(key, _)| key == "game/start")
+            .context("Missing game start")?;
+        let start: Value = serde_json::from_str(start)?;
+        let mut deployed = head.clone();
+        deployed["phase"]["snapshot"]["players"] = start["players"].clone();
+        deployed["phase"]["snapshot"]["game"]["setup"] = start["setup"].clone();
+        let without_start = parts
+            .iter()
+            .filter(|(key, _)| key != "game/start")
+            .cloned()
+            .collect::<Vec<_>>();
+        let decoded = crate::checkpoint::decode(&deployed.to_string(), &without_start)?;
+        ensure!(
+            serde_json::to_value(&decoded)? == expected,
+            "A head that holds its game's start was not read as it is"
+        );
+        ensure!(
+            crate::checkpoint::decode(&deployed.to_string(), &parts).is_err(),
+            "A game start was read from both the head and a part"
+        );
         // The head cannot hold a list, and parts cannot have gaps.
         let inline = serde_json::to_string(&table)?;
         ensure!(crate::checkpoint::decode(&inline, &[]).is_err());

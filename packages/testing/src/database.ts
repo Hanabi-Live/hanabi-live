@@ -71,17 +71,48 @@ const PART_LISTS = [
   ["spectatorNotes", ["phase", "snapshot"], "spectator_notes", false],
 ] as const;
 
+/**
+ * The part that holds a game's start, and where the head would hold each of its fields, as
+ * `server/src/checkpoint.rs` defines them.
+ */
+const GAME_START = "game/start";
+const GAME_START_PATHS = [
+  [["phase", "snapshot"], "players"],
+  [["phase", "snapshot", "game"], "setup"],
+] as const;
+
+/** The object at a path in a checkpoint's JSON, if there is one. */
+function objectAt(
+  head: unknown,
+  path: readonly string[],
+): Record<string, unknown> | undefined {
+  let parent: unknown = head;
+  for (const key of path) {
+    parent =
+      typeof parent === "object" && parent !== null
+        ? (parent as Record<string, unknown>)[key]
+        : undefined;
+  }
+  return typeof parent === "object" && parent !== null
+    ? (parent as Record<string, unknown>)
+    : undefined;
+}
+
 /** Rebuilds a checkpoint's JSON from its head and parts, as the server does. */
 function withParts(head: unknown, parts: ReadonlyMap<string, string>): unknown {
-  for (const [prefix, path, field, isArray] of PART_LISTS) {
-    let parent: unknown = head;
-    for (const key of path) {
-      parent =
-        typeof parent === "object" && parent !== null
-          ? (parent as Record<string, unknown>)[key]
-          : undefined;
+  const start = parts.get(GAME_START);
+  if (start !== undefined) {
+    const fields = JSON.parse(start) as Record<string, unknown>;
+    for (const [path, field] of GAME_START_PATHS) {
+      const parent = objectAt(head, path);
+      if (parent !== undefined) {
+        parent[field] = fields[field];
+      }
     }
-    if (typeof parent !== "object" || parent === null) {
+  }
+  for (const [prefix, path, field, isArray] of PART_LISTS) {
+    const parent = objectAt(head, path);
+    if (parent === undefined) {
       continue;
     }
     const entries = [...parts]
@@ -90,7 +121,7 @@ function withParts(head: unknown, parts: ReadonlyMap<string, string>): unknown {
         ([key, value]) =>
           [key.slice(prefix.length + 1), JSON.parse(value) as unknown] as const,
       );
-    (parent as Record<string, unknown>)[field] = isArray
+    parent[field] = isArray
       ? entries
           .toSorted(([a], [b]) => Number(a) - Number(b))
           .map(([, value]) => value)
