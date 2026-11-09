@@ -2,7 +2,7 @@
 // global BetterTTV emote is present and shows the same pixels as the PNG that BetterTTV serves. It
 // exits with an error if any check fails.
 
-import { CHAT_COLON_EMOTES, CHAT_EMOTES } from "@hanabi-live/data";
+import { CHAT_EMOTES, CHAT_SPECIAL_EMOTES } from "@hanabi-live/data";
 import type { DecodedPng } from "fast-png";
 import { convertIndexedToRgb, decode } from "fast-png";
 import { readdir } from "node:fs/promises";
@@ -14,8 +14,6 @@ const REPO_ROOT = path.resolve(import.meta.dirname, "..", "..", "..");
 const EMOTES_DIR = path.join(REPO_ROOT, "public", "img", "emotes");
 const BETTERTTV_CATEGORY = "betterttv";
 const EMOTE_EXTENSION = ".png";
-/** Holds emotes that chat matches separately, such as "<3", so it has no list. */
-const UNLISTED_DIRECTORY = "other";
 const RGBA_CHANNELS = 4;
 const SUPPORTED_BIT_DEPTH = 8;
 const OPAQUE_ALPHA = 255;
@@ -27,8 +25,8 @@ interface BetterTTVEmote {
   readonly modifier: boolean;
 }
 
-const colonEmotes: ReadonlyMap<string, string> = new Map(
-  Object.entries(CHAT_COLON_EMOTES),
+const specialEmotePaths: ReadonlyMap<string, string> = new Map(
+  Object.entries(CHAT_SPECIAL_EMOTES),
 );
 const directoryFailures = await checkDirectories();
 const betterTTVEmotes = await fetchGlobalEmotes();
@@ -58,12 +56,7 @@ async function checkDirectories(): Promise<readonly string[]> {
   const categories: ReadonlySet<string> = new Set(Object.keys(CHAT_EMOTES));
   const entries = await readdir(EMOTES_DIR, { withFileTypes: true });
   const unlistedDirectoryFailures = entries
-    .filter(
-      (entry) =>
-        entry.isDirectory()
-        && entry.name !== UNLISTED_DIRECTORY
-        && !categories.has(entry.name),
-    )
+    .filter((entry) => entry.isDirectory() && !categories.has(entry.name))
     .map((entry) => `"${entry.name}" has no emote list in "emotes.json".`);
   const categoryFailures = await Promise.all(
     Object.entries(CHAT_EMOTES).map(
@@ -80,9 +73,9 @@ async function checkCategory(
 ): Promise<readonly string[]> {
   const problems: string[] = [];
   const expected = new Set(emotes);
-  if (category === BETTERTTV_CATEGORY) {
-    for (const fileName of colonEmotes.values()) {
-      expected.add(fileName);
+  for (const emotePath of specialEmotePaths.values()) {
+    if (path.posix.dirname(emotePath) === category) {
+      expected.add(path.posix.basename(emotePath));
     }
   }
 
@@ -105,9 +98,7 @@ async function checkCategory(
   }
   for (const name of expected) {
     if (!present.has(name)) {
-      problems.push(
-        `"${name}" is in the "${category}" list in "emotes.json", but "${category}/${name}${EMOTE_EXTENSION}" is missing.`,
-      );
+      problems.push(`"${category}/${name}${EMOTE_EXTENSION}" is missing.`);
     }
   }
 
@@ -133,17 +124,14 @@ async function checkBetterTTVEmote(
   emote: BetterTTVEmote,
 ): Promise<string | undefined> {
   const { code } = emote;
-  const colonEmoteFileName = colonEmotes.get(code);
+  const specialEmotePath = specialEmotePaths.get(code);
   if (
-    colonEmoteFileName === undefined
+    specialEmotePath === undefined
     && !CHAT_EMOTES[BETTERTTV_CATEGORY].includes(code)
   ) {
     return `${code}: missing from the "${BETTERTTV_CATEGORY}" list in "emotes.json".`;
   }
-  const relativePath = path.join(
-    BETTERTTV_CATEGORY,
-    `${colonEmoteFileName ?? code}${EMOTE_EXTENSION}`,
-  );
+  const relativePath = `${specialEmotePath ?? `${BETTERTTV_CATEGORY}/${code}`}${EMOTE_EXTENSION}`;
 
   const file = Bun.file(path.join(EMOTES_DIR, relativePath));
   if (!(await file.exists())) {

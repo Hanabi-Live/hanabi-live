@@ -3,7 +3,7 @@
 
 import type { ServerCommandData } from "@hanabi-live/data";
 import {
-  CHAT_COLON_EMOTES,
+  CHAT_SPECIAL_EMOTES,
   CHAT_EMOJIS as emojis,
   CHAT_EMOTES as emotes,
   PROJECT_NAME,
@@ -50,6 +50,9 @@ export enum SelfChatMessageType {
  * server's typing timeout so that the indicator does not flicker while we keep typing.
  */
 const TYPING_REPORT_INTERVAL_MS = TYPING_TIMEOUT_MS / 2;
+
+// The heart matches anywhere, but the emotes with colons must be surrounded by whitespace.
+const { "<3": HEART_EMOTE_PATH, ...COLON_EMOTE_PATHS } = CHAT_SPECIAL_EMOTES;
 
 const emojiMap = new Map<string, string>();
 const emojiList: string[] = [];
@@ -834,14 +837,13 @@ function fillTwitchEmotes(message: string) {
   // Also handle emotes that have special characters in them.
   if (filledMessage.includes("&lt;3")) {
     // The Twitch heart emote.
-    const emoteTag =
-      '<img class="chat-emote" src="/public/img/emotes/other/3.png" title="&lt;3" />';
+    const emoteTag = `<img class="chat-emote" src="/public/img/emotes/${HEART_EMOTE_PATH}.png" title="&lt;3" />`;
     const re = /&lt;3/gu; // "\b" won't work with a semicolon.
     filledMessage = filledMessage.replaceAll(re, emoteTag);
   }
-  for (const [code, fileName] of Object.entries(CHAT_COLON_EMOTES)) {
+  for (const [code, emotePath] of Object.entries(COLON_EMOTE_PATHS)) {
     if (filledMessage.includes(code)) {
-      const emoteTag = `<img class="chat-emote" src="/public/img/emotes/betterttv/${fileName}.png" title="${code}" />`;
+      const emoteTag = `<img class="chat-emote" src="/public/img/emotes/${emotePath}.png" title="${code}" />`;
       // "\b" won't work with a colon, so the emote must be surrounded by whitespace instead.
       const re = new RegExp(String.raw`(?<=^|\s)${code}(?=\s|$)`, "gu");
       filledMessage = filledMessage.replaceAll(re, emoteTag);
