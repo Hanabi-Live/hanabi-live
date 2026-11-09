@@ -1,5 +1,5 @@
 import { ActionType } from "@hanabi-live/data";
-import type { CardOrder, Clue, PlayerIndex } from "@hanabi-live/game";
+import type { Clue, PlayerIndex } from "@hanabi-live/game";
 import {
   ClueType,
   getCharacterNameForPlayer,
@@ -17,7 +17,6 @@ import type { LayoutChild } from "./LayoutChild";
 import type { RankButton } from "./RankButton";
 import { globals } from "./UIGlobals";
 import * as arrows from "./arrows";
-import * as cluePreview from "./cluePreview";
 import type { PlayerButton } from "./controls/PlayerButton";
 import { colorToColorIndex } from "./convert";
 import * as cluesView from "./reactive/views/cluesView";
@@ -97,7 +96,7 @@ export function checkLegal(): void {
 }
 
 function showClueMatch(target: PlayerIndex, clue: Clue): boolean {
-  arrows.hideAll();
+  arrows.hideAll(true);
 
   const cardLayout = globals.elements.playerHands[target];
   if (cardLayout === undefined) {
@@ -105,7 +104,7 @@ function showClueMatch(target: PlayerIndex, clue: Clue): boolean {
   }
 
   const hand = cardLayout.children;
-  const touchedCards: CardOrder[] = [];
+  let touchedAtLeastOneCard = false;
   for (const i of eRange(hand.length)) {
     const child = hand[i];
     if (child === undefined) {
@@ -114,24 +113,20 @@ function showClueMatch(target: PlayerIndex, clue: Clue): boolean {
 
     const { card } = child as unknown as LayoutChild;
     if (isTouched(card, clue)) {
-      touchedCards.push(card.order);
+      touchedAtLeastOneCard = true;
       arrows.set(i, card, null, clue, true);
     }
   }
 
-  // The arrows are set first, since their color depends on the clues that the cards already have.
-  cluePreview.show(target, clue, touchedCards);
-
-  return touchedCards.length > 0;
+  return touchedAtLeastOneCard;
 }
 
 /** Restores the normal view after the player deselects a potential clue. */
 function hideClueMatch() {
-  if (!cluePreview.isShown()) {
+  if (!arrows.isPotentialClueShown()) {
     return;
   }
 
-  // Hiding the arrows also hides the preview.
   cluesView.refreshArrows(false);
 }
 

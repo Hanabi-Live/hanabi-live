@@ -26,7 +26,6 @@ import * as tooltips from "../../tooltips";
 import { CardLayout } from "./CardLayout";
 import { HanabiCard } from "./HanabiCard";
 import { globals } from "./UIGlobals";
-import * as cluePreview from "./cluePreview";
 import {
   ARROW_COLOR,
   CARD_ANIMATION_DELAY_SECONDS,
@@ -90,9 +89,16 @@ function getClueArrowColor(
   return ARROW_COLOR.DEFAULT;
 }
 
-export function hideAll(): void {
-  // A potential clue's preview lasts only as long as its arrows.
-  cluePreview.hide();
+/** Whether the arrows show a clue that the player is considering giving. */
+let potentialClueShown = false;
+
+export function isPotentialClueShown(): boolean {
+  return potentialClueShown;
+}
+
+/** Hides every arrow. Pass true when the arrows will next show a potential clue. */
+export function hideAll(potentialClue = false): void {
+  potentialClueShown = potentialClue;
 
   let changed = false;
   for (const arrow of globals.elements.arrows) {

@@ -46,8 +46,8 @@ of the repository.
   "test" account.
 - Replay JSON links made before September 18th, 2026 no longer open.
 - Everyone must sign in again once, because the session cookie format changed.
-- Selecting a clue now previews the target's hand as they would see it after the
-  clue. Click the selected player, color, or number again to deselect it.
+- Click the selected player, color, or number in the clue area again to deselect
+  it.
 - Completing a play stack now sets off a firework. When the team gets a clue
   back, a spark flies to the clue count.
 - After a game, players can click "Ready" to tell the leader that they will not
