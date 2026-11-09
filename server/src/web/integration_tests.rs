@@ -1,8 +1,18 @@
+use super::socket::{Account, bootstrap, load_lobby, lobby_initial};
 use super::*;
 use crate::transport::test_frame;
+use crate::{
+    errors::CommandError,
+    lobby::{self, Publication},
+    transport::{Outgoing, Session},
+};
+use axum::extract::ws::Message;
 use axum::http::HeaderValue;
+use futures_util::{SinkExt, StreamExt};
+use hanabi_protocol::UserId;
 use serde_json::{Value, json};
 use std::collections::BTreeSet;
+use std::time::Duration;
 use tokio::sync::oneshot;
 use tokio_tungstenite::{
     connect_async,

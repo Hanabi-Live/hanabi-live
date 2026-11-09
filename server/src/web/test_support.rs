@@ -5,6 +5,7 @@ use crate::{
     state::LiveState,
 };
 use tokio::sync::oneshot;
+use tokio_util::sync::CancellationToken;
 
 pub struct Fixture {
     pub app: Arc<App>,

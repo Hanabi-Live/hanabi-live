@@ -60,7 +60,7 @@ async fn run(app: Arc<App>, mut receiver: mpsc::Receiver<UserCommand>) {
                         "This session was replaced or disconnected. Reconnect before sending commands."
                     ))
                 } else {
-                    super::lobby_command(&app, session, *message).await
+                    super::dispatch::lobby_command(&app, session, *message).await
                 };
                 let _ = reply.send(result);
             }
