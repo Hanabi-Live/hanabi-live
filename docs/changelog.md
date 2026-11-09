@@ -5,6 +5,10 @@ This page lists the changes to Hanab Live.
 Note that minor changes, bug fixes, and internal changes are intentionally not
 listed here.
 
+## November 9th, 2026
+
+- Added the current global BetterTTV emotes that were missing, including `:tf:`.
+
 ## November 8th, 2026
 
 - The lobby and history pages are now a bit wider on wide monitors.

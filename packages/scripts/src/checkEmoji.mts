@@ -11,12 +11,13 @@ const REPO_ROOT = path.resolve(import.meta.dirname, "..", "..", "..");
 const EMOTES_DIR = path.join(REPO_ROOT, "public", "img", "emotes");
 const CATEGORY = "betterttv";
 
-/** Emotes whose codes chat cannot match by name, so they are stored elsewhere or not at all. */
-const SPECIAL_EMOTES: ReadonlyMap<string, string | undefined> = new Map([
-  // Chat turns text between colons into an emoji.
-  [":tf:", undefined],
-  // Chat replaces this code itself, since it does not end at a word boundary.
-  ["D:", path.join("other", "D.png")],
+/**
+ * Emotes whose codes contain a colon, mapped to their file names. Chat matches these itself, so
+ * they are not in "emotes.json".
+ */
+const COLON_EMOTES: ReadonlyMap<string, string> = new Map([
+  [":tf:", "tf"],
+  ["D:", "D"],
 ]);
 
 interface BetterTTVEmote {
@@ -64,19 +65,11 @@ async function fetchOK(url: string): Promise<Response> {
 
 async function checkEmote(emote: BetterTTVEmote): Promise<string | undefined> {
   const { code } = emote;
-  let relativePath: string;
-  if (SPECIAL_EMOTES.has(code)) {
-    const specialPath = SPECIAL_EMOTES.get(code);
-    if (specialPath === undefined) {
-      return undefined;
-    }
-    relativePath = specialPath;
-  } else {
-    if (!listedEmotes.has(code)) {
-      return `${code}: missing from the "${CATEGORY}" list in "emotes.json".`;
-    }
-    relativePath = path.join(CATEGORY, `${code}.png`);
+  const colonEmoteFileName = COLON_EMOTES.get(code);
+  if (colonEmoteFileName === undefined && !listedEmotes.has(code)) {
+    return `${code}: missing from the "${CATEGORY}" list in "emotes.json".`;
   }
+  const relativePath = path.join(CATEGORY, `${colonEmoteFileName ?? code}.png`);
 
   const file = Bun.file(path.join(EMOTES_DIR, relativePath));
   if (!(await file.exists())) {

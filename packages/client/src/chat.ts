@@ -50,6 +50,12 @@ export enum SelfChatMessageType {
  */
 const TYPING_REPORT_INTERVAL_MS = TYPING_TIMEOUT_MS / 2;
 
+/** BetterTTV emotes whose codes contain a colon, mapped to their file names. */
+const COLON_EMOTES = [
+  ["D:", "D"],
+  [":tf:", "tf"],
+] as const;
+
 const emojiMap = new Map<string, string>();
 const emojiList: string[] = [];
 const emoteList: string[] = [];
@@ -838,13 +844,13 @@ function fillTwitchEmotes(message: string) {
     const re = /&lt;3/gu; // "\b" won't work with a semicolon.
     filledMessage = filledMessage.replaceAll(re, emoteTag);
   }
-  if (filledMessage.includes("D:")) {
-    // A BetterTwitchTV emote.
-    const emoteTag =
-      '<img class="chat-emote" src="/public/img/emotes/other/D.png" title="D:" />';
-    // From: https://stackoverflow.com/questions/4134605/regex-and-the-colon
-    const re = /(?:^|\s)D:(?:\s|$)/gu; // "\b" won't work with a colon
-    filledMessage = filledMessage.replaceAll(re, ` ${emoteTag} `); // We have to re-add the spaces.
+  for (const [code, fileName] of COLON_EMOTES) {
+    if (filledMessage.includes(code)) {
+      const emoteTag = `<img class="chat-emote" src="/public/img/emotes/betterttv/${fileName}.png" title="${code}" />`;
+      // "\b" won't work with a colon, so the emote must be surrounded by whitespace instead.
+      const re = new RegExp(String.raw`(?<=^|\s)${code}(?=\s|$)`, "gu");
+      filledMessage = filledMessage.replaceAll(re, emoteTag);
+    }
   }
 
   return filledMessage;
