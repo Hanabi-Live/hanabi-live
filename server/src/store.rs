@@ -1245,6 +1245,7 @@ mod tests {
                     hypothetical_actions: vec![],
                     show_drawn_cards: false,
                     spoiler_free: false,
+                    restart_declined: vec![],
                 },
             };
             let replay_revision = store.save(&replay, 0).await?;

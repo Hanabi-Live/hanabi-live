@@ -65,6 +65,7 @@ mod tests {
                 "note" => json!({"tableID":1,"order":0,"note":"test"}),
                 "tag" | "tagDelete" => json!({"tableID":1,"msg":"test"}),
                 "replayAction" => json!({"tableID":1,"type":"hypoStart"}),
+                "tableRestartDecline" => json!({"tableID":1,"declined":true}),
                 "sync" | "lobbyLoad" | "tableCreate" | "historyGet" | "chatLinked"
                 | "chatFriend" | "chatUnfriend" | "chatLink" | "chatUnlink" | "chatBlock"
                 | "chatUnblock" | "chatBlocked" | "chatPMHistoryGet" | "tagSearch" => json!({}),

@@ -126,6 +126,16 @@ function replayReducerFunction(
       break;
     }
 
+    case "restartDeclined": {
+      assertNotNull(
+        state.shared,
+        `A "${action.type}" action was dispatched, but we are not in a shared replay.`,
+      );
+
+      state.shared.restartDeclined = castDraft(action.names);
+      break;
+    }
+
     // --------------------
     // Hypothetical actions
     // --------------------

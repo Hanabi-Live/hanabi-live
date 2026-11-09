@@ -103,6 +103,9 @@ pub struct ReplayState {
     /// Whether the shared replay hides what happens later in the game.
     #[serde(default, skip_serializing_if = "std::ops::Not::not")]
     pub spoiler_free: bool,
+    /// The players who will not play again if the leader restarts.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub restart_declined: Vec<i32>,
 }
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(tag = "phase", rename_all = "camelCase", deny_unknown_fields)]
@@ -251,6 +254,7 @@ impl TableSnapshot {
                 hypothetical_actions: vec![],
                 show_drawn_cards: false,
                 spoiler_free: false,
+                restart_declined: vec![],
             },
         };
         Ok(())

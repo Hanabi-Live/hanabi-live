@@ -132,6 +132,7 @@ pub fn handles(message: &ClientMessage) -> bool {
         | M::TableSetVariant(_)
         | M::TableStart(_)
         | M::TableRestart(_)
+        | M::TableRestartDecline(_)
         | M::TableSuggest(_)
         | M::TableSpectate(_)
         | M::TableUnattend(_)

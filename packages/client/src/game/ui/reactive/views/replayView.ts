@@ -2,9 +2,11 @@ import type { Spectator } from "@hanabi-live/data";
 import Konva from "konva";
 import * as tooltips from "../../../../tooltips";
 import { escapeHtml } from "../../../../utils";
-import { globals } from "../../UIGlobals";
+import type { SharedReplayState } from "../../../types/SharedReplayState";
 import * as replay from "../../replay";
+import * as restart from "../../restart";
 import * as timer from "../../timer";
+import { globals } from "../../UIGlobals";
 import { toggleZen } from "../../zen";
 import * as cluesView from "./cluesView";
 
@@ -290,9 +292,38 @@ export function onSharedLeaderChanged(
   }
 }
 
+/** Shows the leader whether they can restart, and the other players whether they declined. */
+export function onRestartChanged(
+  shared: Pick<
+    SharedReplayState,
+    "leader" | "amLeader" | "restartDeclined"
+  > | null,
+): void {
+  const { playerNames, ourUsername } = globals.metadata;
+  const amLeader = shared?.amLeader === true;
+  const canRestart = shared !== null && restart.canRestart(shared, playerNames);
+  globals.elements.restartButton?.visible(amLeader);
+
+  const amPlayer = playerNames.includes(ourUsername);
+  const readyButton = globals.elements.restartReadyButton;
+  readyButton?.visible(shared !== null && !amLeader && amPlayer);
+  readyButton?.setPressed(
+    shared?.restartDeclined.includes(ourUsername) !== true,
+  );
+
+  const declined = shared === null ? [] : restart.declinedPlayers(shared);
+  globals.elements.restartGameButton?.setEnabled(declined.length === 0);
+  globals.elements.restartTableButton?.setEnabled(canRestart);
+  globals.elements.restartText?.text(
+    declined.length === 0 ? "" : `Not ready: ${declined.join(", ")}`,
+  );
+
+  globals.layers.UI.batchDraw();
+  globals.layers.UI2.batchDraw();
+}
+
 export function onSharedAmLeaderChanged(amLeader: boolean): void {
   globals.elements.sharedReplayLeaderCircle?.visible(amLeader);
-  globals.elements.restartButton?.visible(amLeader);
   globals.elements.enterHypoButton?.visible(amLeader);
 
   // Arrange the buttons in the center of the screen in a certain way depending on whether we are

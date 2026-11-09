@@ -11,4 +11,7 @@ export interface SharedReplayState {
    * Hides what happens later in the game: the turn slider, jumping to the end, and future strikes.
    */
   readonly spoilerFree: boolean;
+
+  /** The players who will not play again if the leader restarts. */
+  readonly restartDeclined: readonly string[];
 }

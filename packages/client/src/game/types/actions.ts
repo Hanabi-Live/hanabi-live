@@ -34,6 +34,7 @@ export type ReplayAction =
   | ActionReplaySharedSegment
   | ActionReplayUseSharedSegments
   | ActionReplayLeader
+  | ActionRestartDeclined
   | HypotheticalAction;
 
 type HypotheticalAction =
@@ -66,6 +67,7 @@ export interface ActionInit extends Readonly<
     | "sharedReplayLeader"
     | "sharedReplayEffMod"
     | "spoilerFree"
+    | "restartDeclined"
     | "paused"
     | "pauseQueued"
   >
@@ -158,6 +160,12 @@ interface ActionReplayLeader extends Readonly<
   Pick<ServerCommandData["replayLeader"], "name">
 > {
   readonly type: "replayLeader";
+}
+
+interface ActionRestartDeclined extends Readonly<
+  Pick<ServerCommandData["restartDeclined"], "names">
+> {
+  readonly type: "restartDeclined";
 }
 
 // --------------------

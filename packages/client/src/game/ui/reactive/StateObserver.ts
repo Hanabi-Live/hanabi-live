@@ -305,6 +305,17 @@ const replayObservers: Subscriptions = [
     replayView.onSharedAmLeaderChanged,
   ),
   subAfterInit(
+    (s) =>
+      s.replay.shared === null
+        ? null
+        : {
+            leader: s.replay.shared.leader,
+            amLeader: s.replay.shared.amLeader,
+            restartDeclined: s.replay.shared.restartDeclined,
+          },
+    replayView.onRestartChanged,
+  ),
+  subAfterInit(
     (s) => ({
       leader: s.replay.shared?.leader,
       spectators: s.spectators,

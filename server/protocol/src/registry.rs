@@ -37,6 +37,7 @@ macro_rules! client_contracts {
             TableSetVariant "tableSetVariant" => TableVariantRequest;
             TableStart "tableStart" => TableStartRequest;
             TableRestart "tableRestart" => TableRestartRequest;
+            TableRestartDecline "tableRestartDecline" => TableRestartDeclineRequest;
             TableSuggest "tableSuggest" => TableSuggestRequest;
             TableSpectate "tableSpectate" => TableSpectateRequest;
             TableUnattend "tableUnattend" => TableCommand;
@@ -81,6 +82,7 @@ macro_rules! server_contracts {
             REPLAY_INDICATOR "replayIndicator" => ReplayIndicator;
             REPLAY_SOUND "replaySound" => ReplaySound;
             REPLAY_LEADER "replayLeader" => ReplayLeader;
+            RESTART_DECLINED "restartDeclined" => RestartDeclined;
             SUGGESTION "suggestion" => Suggestion;
             HYPOTHETICAL "hypothetical" => Hypothetical;
             HYPO_START "hypoStart" => TableRequest;
@@ -228,8 +230,9 @@ pub mod server {
         GameHistoryList, GameHistoryOtherScores, HypoShowDrawnCards, Hypothetical,
         HypotheticalAction, IdleWarning, Init, LobbyStatus, Note, NoteList, NoteListPlayer, Pause,
         Pregame, ReplayEfficiencyMod, ReplayIndicator, ReplayLeader, ReplaySegment, ReplaySound,
-        Restart, ServerMessage, SoundLobby, Spectators, Suggestion, Table, TableList, TableRequest,
-        TableStarted, User, UserInactive, UserLeft, UserList, VoteChange, Warning, Welcome,
+        Restart, RestartDeclined, ServerMessage, SoundLobby, Spectators, Suggestion, Table,
+        TableList, TableRequest, TableStarted, User, UserInactive, UserLeft, UserList, VoteChange,
+        Warning, Welcome,
     };
     server_contracts!(server_messages);
 }

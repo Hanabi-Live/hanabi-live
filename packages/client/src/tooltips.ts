@@ -148,6 +148,7 @@ function createGameTooltips() {
     "pace",
     "replay",
     "restart",
+    "restart-ready",
     "spectators",
     "strikes",
     "turn-number",

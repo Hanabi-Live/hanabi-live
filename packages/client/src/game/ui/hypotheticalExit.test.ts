@@ -36,6 +36,7 @@ function setup(shared: boolean) {
             amLeader: true,
             datetimeStarted: "2026-01-01T00:00:00.000Z",
             spoilerFree: false,
+            restartDeclined: [],
           }
         : null,
     },

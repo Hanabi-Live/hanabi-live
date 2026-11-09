@@ -123,6 +123,7 @@ function stateReducerFunction(state: Draft<State>, action: Action) {
         amLeader: action.sharedReplayLeader === state.metadata.ourUsername,
         datetimeStarted: action.datetimeFinished,
         spoilerFree: false,
+        restartDeclined: [],
       };
 
       break;
@@ -159,6 +160,7 @@ function stateReducerFunction(state: Draft<State>, action: Action) {
             datetimeStarted:
               action.datetimeSharedReplayStarted ?? new Date().toISOString(),
             spoilerFree: action.spoilerFree,
+            restartDeclined: action.restartDeclined ?? [],
           };
           state.notes.efficiencyModifier = action.sharedReplayEffMod;
         }
@@ -179,6 +181,7 @@ function stateReducerFunction(state: Draft<State>, action: Action) {
     case "replaySharedSegment":
     case "replayUseSharedSegments":
     case "replayLeader":
+    case "restartDeclined":
     case "hypoStart":
     case "hypoBack":
     case "hypoEnd":

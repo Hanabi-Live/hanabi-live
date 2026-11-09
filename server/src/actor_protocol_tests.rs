@@ -1425,6 +1425,63 @@ async fn chat_read_positions_survive_game_start_reconnect_and_remake() -> Result
 }
 
 #[tokio::test]
+async fn restart_leaves_out_players_who_are_done_playing() -> Result<()> {
+    let Some(mut h) = Harness::new(&["Alice", "Bob", "Carol"]).await? else {
+        return Ok(());
+    };
+    let result = async {
+        let id = h.create(0, "Done playing", json!({})).await?;
+        for index in 1..3 {
+            h.send(index, "tableJoin", json!({"tableID":id})).await?;
+        }
+        h.send(0, "tableStart", json!({"tableID":id})).await?;
+        for index in 0..3 {
+            h.send(index, "loaded", json!({"tableID":id})).await?;
+        }
+        h.send(0, "tableTerminate", json!({"tableID":id})).await?;
+        for index in 0..3 {
+            h.barrier(index).await?;
+            h.frames(index)?;
+        }
+        h.send(
+            2,
+            "tableRestartDecline",
+            json!({"tableID":id,"declined":true}),
+        )
+        .await?;
+        for index in 0..3 {
+            let declined = h.receive(index, "restartDeclined").await?;
+            ensure!(declined["names"] == json!(["Carol"]), "{declined}");
+        }
+        h.send(2, "getGameInfo1", json!({"tableID":id})).await?;
+        let init = h.receive(2, "init").await?;
+        ensure!(init["restartDeclined"] == json!(["Carol"]), "{init}");
+        ensure!(
+            h.send(0, "tableRestart", json!({"tableID":id,"hidePregame":true}))
+                .await
+                .is_err(),
+            "Restarted the game without a player who is done playing"
+        );
+        h.send(0, "tableRestart", json!({"tableID":id,"hidePregame":false}))
+            .await?;
+        let remade = h.receive(0, "game").await?;
+        let mut players = remade["players"]
+            .as_array()
+            .context("Missing players")?
+            .iter()
+            .filter_map(|p| p["name"].as_str())
+            .collect::<Vec<_>>();
+        players.sort_unstable();
+        ensure!(players == ["Alice", "Bob"], "{remade}");
+        Ok::<(), anyhow::Error>(())
+    }
+    .await;
+    let cleanup = h.close().await;
+    result?;
+    cleanup
+}
+
+#[tokio::test]
 async fn pregame_history_survives_join_return_and_actor_recovery() -> Result<()> {
     let Some(mut h) = Harness::new(&["Alice", "Bob", "Outsider"]).await? else {
         return Ok(());

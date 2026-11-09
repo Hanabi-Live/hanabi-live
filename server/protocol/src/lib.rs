@@ -356,6 +356,15 @@ pub struct TableRestartRequest {
     pub hide_pregame: bool,
 }
 
+/// A player in a shared replay saying whether they will play again if the leader restarts.
+#[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct TableRestartDeclineRequest {
+    #[serde(rename = "tableID")]
+    pub table_id: TableId,
+    pub declined: bool,
+}
+
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct TableSuggestRequest {
@@ -854,6 +863,16 @@ pub struct ReplayLeader {
     #[serde(rename = "tableID")]
     pub table_id: TableId,
     pub name: String,
+}
+
+/// The players in a shared replay who will not play again if the leader restarts.
+#[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct RestartDeclined {
+    #[serde(rename = "tableID")]
+    pub table_id: TableId,
+    #[schemars(length(max = MAX_PLAYERS))]
+    pub names: Vec<String>,
 }
 
 /// A spectator suggesting a turn to the shared replay's leader.
@@ -2098,6 +2117,10 @@ pub struct Init {
     pub shared_replay_eff_mod: i64,
     /// Whether the shared replay hides what happens later in the game.
     pub spoiler_free: bool,
+    /// The players in a shared replay who will not play again if the leader restarts.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    #[schemars(length(max = MAX_PLAYERS))]
+    pub restart_declined: Vec<String>,
     /// When the shared replay began, present only in shared replays.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     #[schemars(with = "Timestamp")]
@@ -2386,6 +2409,7 @@ pub fn schemas() -> std::collections::BTreeMap<String, serde_json::Value> {
         TableCommand,
         TableStartRequest,
         TableRestartRequest,
+        TableRestartDeclineRequest,
         TableSuggestRequest,
         TableSpectateRequest,
         SettingRequest,
@@ -2408,6 +2432,7 @@ pub fn schemas() -> std::collections::BTreeMap<String, serde_json::Value> {
         ReplayIndicator,
         ReplaySound,
         ReplayLeader,
+        RestartDeclined,
         Suggestion,
         Hypothetical,
         HypotheticalAction,

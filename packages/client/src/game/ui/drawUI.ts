@@ -630,6 +630,9 @@ const RESTART_DIALOG = {
   buttonY: 0.25,
   /** The gap above the "Cancel" button. */
   cancelButtonGapY: 0.095,
+  /** The line that lists the players who will not play again. */
+  declinedY: 0.19,
+  declinedFontSize: 0.03,
 } as const;
 
 /**
@@ -1079,7 +1082,10 @@ function drawBottomLeftButtons() {
   });
   globals.layers.UI.add(restartButton);
   restartButton.on("click tap", () => {
-    if (globals.options.speedrun) {
+    const { shared } = globals.state.replay;
+    const everyoneWilling =
+      shared !== null && restart.declinedPlayers(shared).length === 0;
+    if (globals.options.speedrun && everyoneWilling) {
       restart.request(true);
     } else {
       globals.elements.restartArea?.visible(true);
@@ -1091,6 +1097,26 @@ function drawBottomLeftButtons() {
     "Automatically go into a new game with the current members of the shared replay (using the same game settings as this one).";
   initKonvaTooltips(restartButton, true, false);
   globals.elements.restartButton = restartButton;
+
+  // The checkbox for other players to tell the leader whether they will play again. (It takes the
+  // place of the restart button, which only the leader sees.)
+  const restartReadyButton = new CheckButton({
+    x: bottomLeftButtonValues.x * winW,
+    y: bottomLeftButtonValues.y * winH,
+    width: bottomLeftButtonValues.w! * winW,
+    height: bottomLeftButtonValues.h! * winH,
+    text: "Ready",
+    visible: false,
+  });
+  globals.layers.UI.add(restartReadyButton);
+  restartReadyButton.on("click tap", () => {
+    restart.decline(restartReadyButton.pressed);
+  });
+  restartReadyButton.tooltipName = "restart-ready";
+  restartReadyButton.tooltipContent =
+    "Uncheck this to tell the shared replay leader that you will not play another game.";
+  initKonvaTooltips(restartReadyButton, true, false);
+  globals.elements.restartReadyButton = restartReadyButton;
 
   // The chat button.
   const chatButton = new Button({
@@ -2950,6 +2976,20 @@ function drawRestartArea() {
   });
   restartContents.add(restartTitle);
 
+  // Lists the players who will not play again. (Filled in by the replay view.)
+  const restartText = new Konva.Text({
+    y: RESTART_DIALOG.declinedY * winH,
+    width: restartAreaValues.w * winW,
+    fontFamily: FONT_FAMILY,
+    fontSize: RESTART_DIALOG.declinedFontSize * winH,
+    align: "center",
+    fill: "white",
+    ...TEXT_SHADOW,
+    listening: false,
+  });
+  restartContents.add(restartText);
+  globals.elements.restartText = restartText;
+
   const buttonW = restartAreaValues.w * RESTART_DIALOG.buttonW;
   const { buttonY } = RESTART_DIALOG;
   const spacing = restartAreaValues.w * DIALOG.BUTTON_SPACING;
@@ -2966,6 +3006,7 @@ function drawRestartArea() {
     restart.request(true);
   });
   restartContents.add(restartGameButton);
+  globals.elements.restartGameButton = restartGameButton;
 
   const restartTableButton = new Button({
     x: (2 * spacing + buttonW) * winW,
@@ -2978,6 +3019,7 @@ function drawRestartArea() {
     restart.request(false);
   });
   restartContents.add(restartTableButton);
+  globals.elements.restartTableButton = restartTableButton;
 
   const restartCancelButton = new Button({
     x: (restartAreaValues.w - buttonW / 2 - spacing) * winW,

@@ -411,6 +411,10 @@ export const initSchema = z.strictObject({
   paused: z.boolean(),
   playerNames: z.array(z.string()).min(2).max(6),
   replay: z.boolean(),
+  /**
+   * The players in a shared replay who will not play again if the leader restarts.
+   */
+  restartDeclined: z.array(z.string()).max(6).optional(),
   seed: z.string(),
   shadowing: z.boolean(),
   sharedReplay: z.boolean(),
@@ -900,6 +904,14 @@ export const restartSchema = z.strictObject({
 });
 
 /**
+ * The players in a shared replay who will not play again if the leader restarts.
+ */
+export const restartDeclinedSchema = z.strictObject({
+  names: z.array(z.string()).max(6),
+  tableID: tableIdSchema,
+});
+
+/**
  * How many games with a seed reached a score, as the seed page's chart shows them.
  */
 export const scoreFrequencySchema = z.strictObject({
@@ -1072,6 +1084,14 @@ export const tableLeaderRequestSchema = z.strictObject({
 });
 export const tableListSchema = z.array(tableSchema).readonly();
 export const tableRequestSchema = z.strictObject({ tableID: tableIdSchema });
+
+/**
+ * A player in a shared replay saying whether they will play again if the leader restarts.
+ */
+export const tableRestartDeclineRequestSchema = z.strictObject({
+  declined: z.boolean(),
+  tableID: tableIdSchema,
+});
 export const tableRestartRequestSchema = z.strictObject({
   hidePregame: z.boolean().default(false),
   tableID: tableIdSchema,
@@ -1253,6 +1273,7 @@ export const CLIENT_COMMAND_SCHEMAS = {
   tableLeave: tableRequestSchema,
   tableReattend: tableRequestSchema,
   tableRestart: tableRestartRequestSchema,
+  tableRestartDecline: tableRestartDeclineRequestSchema,
   tableSetLeader: tableLeaderRequestSchema,
   tableSetVariant: tableVariantRequestSchema,
   tableSpectate: tableSpectateRequestSchema,
@@ -1307,6 +1328,7 @@ export const SERVER_COMMAND_SCHEMAS = {
   replaySegment: replaySegmentSchema,
   replaySound: replaySoundSchema,
   restart: restartSchema,
+  restartDeclined: restartDeclinedSchema,
   soundLobby: soundLobbySchema,
   spectators: spectatorsSchema,
   suggestion: suggestionSchema,

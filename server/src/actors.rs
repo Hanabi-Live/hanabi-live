@@ -1768,6 +1768,7 @@ fn replay_table(
                 hypothetical_actions: vec![],
                 show_drawn_cards: false,
                 spoiler_free,
+                restart_declined: vec![],
             },
         },
         chat: vec![],
@@ -1842,6 +1843,7 @@ fn table_target(message: &ClientMessage) -> Option<u64> {
         M::TableSetVariant(r) => r.table_id,
         M::TableStart(r) => r.table_id,
         M::TableRestart(r) => r.table_id,
+        M::TableRestartDecline(r) => r.table_id,
         M::TableSuggest(r) => r.table_id,
         M::TableSpectate(r) => r.table_id,
         M::TableUpdate(r) => r.table_id,
@@ -2966,6 +2968,9 @@ impl TableActor {
                     .await
             }
             ClientMessage::TableRestart(r) => self.restart(session, r.hide_pregame).await,
+            ClientMessage::TableRestartDecline(r) => {
+                self.decline_restart(session, r.declined).await
+            }
             ClientMessage::ReplayAction(r) => self.replay_action(session, r).await,
             // Handled before reaching a table.
             ClientMessage::LobbyLoad(_)
@@ -4860,14 +4865,21 @@ impl TableActor {
             !self.table.name.starts_with("!replay"),
             "Cannot restart !replay games"
         );
+        let declined = match &self.table.phase {
+            Phase::Replay { replay, .. } => replay.restart_declined.as_slice(),
+            _ => &[],
+        };
         let mut players = self
             .table
             .players()
             .iter()
             .filter(|p| {
-                self.attendees
-                    .get(&p.id)
-                    .is_some_and(|a| a.session.active())
+                // Restarting means the leader is playing again.
+                (p.id == session.user || !declined.contains(&p.id))
+                    && self
+                        .attendees
+                        .get(&p.id)
+                        .is_some_and(|a| a.session.active())
             })
             .cloned()
             .collect::<Vec<_>>();
@@ -4947,6 +4959,65 @@ impl TableActor {
         self.transfer(self.candidate(), destination, allocation, moving, true)
             .await
     }
+    async fn decline_restart(&mut self, session: Arc<Session>, declined: bool) -> Result<()> {
+        ensure!(
+            self.attending(&session)
+                && self.table.visible
+                && matches!(self.table.phase, Phase::Replay { .. }),
+            "Not a shared replay"
+        );
+        self.seat(&session)?;
+        let mut next = self.candidate();
+        let Phase::Replay { replay, .. } = &mut next.phase else {
+            unreachable!("checked above");
+        };
+        if replay.restart_declined.contains(&session.user) == declined {
+            return Ok(());
+        }
+        if declined {
+            replay.restart_declined.push(session.user);
+        } else {
+            replay.restart_declined.retain(|&id| id != session.user);
+        }
+        let name = crate::accounts::escape_html(&session.name);
+        let message = server_chat(
+            self.table.id,
+            &if declined {
+                format!("{name} is not ready to play again.")
+            } else {
+                format!("{name} is ready to play again.")
+            },
+        );
+        next.chat.push(TableChat {
+            id: None,
+            user: 0,
+            message: json!(message),
+        });
+        self.persist(next).await?;
+        let mut e = self.effects();
+        self.add_chat(&mut e, &message);
+        self.add_all(
+            &mut e,
+            hanabi_protocol::server::RESTART_DECLINED,
+            hanabi_protocol::RestartDeclined {
+                table_id: TableId(self.table.id),
+                names: self.restart_declined_names(),
+            },
+        );
+        self.publish(e).await
+    }
+    /// The names of the players who will not play again if the leader restarts, in seat order.
+    fn restart_declined_names(&self) -> Vec<String> {
+        let Phase::Replay { replay, .. } = &self.table.phase else {
+            return vec![];
+        };
+        self.table
+            .players()
+            .iter()
+            .filter(|p| replay.restart_declined.contains(&p.id))
+            .map(|p| p.name.clone())
+            .collect()
+    }
     async fn info(&self, session: Arc<Session>, part: GameInfo) -> Result<()> {
         ensure!(
             self.attending(&session),
@@ -5018,6 +5089,7 @@ impl TableActor {
                 shared_replay_segment: segment.into(),
                 shared_replay_eff_mod: efficiency.into(),
                 spoiler_free,
+                restart_declined: self.restart_declined_names(),
                 // A review of a game just played begins when the game ends; a replay of an older
                 // game begins when its table is created.
                 datetime_shared_replay_started: shared_replay.then(|| {

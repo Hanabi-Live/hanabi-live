@@ -342,6 +342,18 @@ gameCommands.set("replayLeader", (data) => {
   });
 });
 
+// This is used in shared replays to specify which players will not play again.
+gameCommands.set("restartDeclined", (data) => {
+  if (globals.state.replay.shared === null) {
+    return;
+  }
+
+  globals.store!.dispatch({
+    type: "restartDeclined",
+    names: data.names,
+  });
+});
+
 // This is used in shared replays to specify who the leader is.
 gameCommands.set("suggestion", (data) => {
   if (globals.state.replay.shared === null) {
@@ -546,6 +558,7 @@ function initStateStore(data: InitData) {
     sharedReplaySegment: data.sharedReplaySegment,
     sharedReplayLeader: data.sharedReplayLeader,
     spoilerFree: data.spoilerFree,
+    restartDeclined: data.restartDeclined,
     paused: data.paused,
     // The server sends `NO_VALUE` when nobody is pausing, and the pauser is only shown while
     // paused.
