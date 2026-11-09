@@ -72,6 +72,8 @@ of the repository.
   instead of the archive pool.
 - Hover over "Give Clue" to see the target's hand as they would see it after the
   clue.
+- Server log lines now start with their level, and lines about a table or a
+  connection name its table ID or user ID.
 
 ## November 8th, 2026
 
