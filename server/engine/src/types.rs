@@ -57,8 +57,6 @@ pub enum Interpretation {
     Live,
     /// Actions are what happened, as games record them. The engine does not swap them again,
     /// and a finished game has no completion timing.
-    // Checkpoints from earlier releases store this as "legacy-replay".
-    #[serde(alias = "legacy-replay")]
     Recorded,
 }
 

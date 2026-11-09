@@ -317,16 +317,6 @@ fn privacy_is_historical_and_invalid_shadow_seats_are_omniscient() {
 }
 
 #[test]
-fn recorded_interpretation_reads_its_earlier_name() {
-    let earlier: Interpretation = serde_json::from_str("\"legacy-replay\"").unwrap();
-    assert_eq!(earlier, Interpretation::Recorded);
-    assert_eq!(
-        serde_json::to_string(&Interpretation::Recorded).unwrap(),
-        "\"recorded\""
-    );
-}
-
-#[test]
 fn custom_shortened_decks_are_preserved_without_reshuffling() {
     let deck = vec![
         DeckCard {
