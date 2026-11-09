@@ -58,6 +58,9 @@ pub const PANICKY_MAX_CLUES: i32 = 4;
 pub const MAX_DECK_SIZE: usize = 60;
 /// The most actions a game can record.
 pub const MAX_GAME_ACTIONS: usize = 512;
+/// The longest seed that a table can request, in bytes. The full seed also names the player count
+/// and variant, such as "p3v0s" before "123".
+pub const MAX_SEED_LENGTH: usize = 32;
 /// The longest note, in bytes, that an imported game can give a card.
 pub const MAX_IMPORTED_NOTE_LENGTH: usize = 65536;
 /// The number of seconds in a minute.
@@ -1624,6 +1627,12 @@ pub struct GameOptions {
     #[serde(skip_serializing_if = "Option::is_none")]
     #[schemars(with = "NumPlayers")]
     pub max_players: Option<u8>,
+    /// The deal that a table requests, as the end of its full seed: "123" in a 3-player game of No
+    /// Variant deals `p3v0s123`. Absent when the server deals the next seed that none of the
+    /// players have played. Only tables report it; games report their full seed elsewhere.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    #[schemars(with = "String", length(min = 1, max = MAX_SEED_LENGTH))]
+    pub seed: Option<String>,
 }
 
 /// Must match `hanabi_engine::Options::default()`; a server test checks this.
@@ -1645,6 +1654,7 @@ impl Default for GameOptions {
             detrimental_characters: false,
             table_name: None,
             max_players: None,
+            seed: None,
         }
     }
 }

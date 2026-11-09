@@ -3,6 +3,7 @@
 import type { Settings } from "@hanabi-live/data";
 import {
   DEFAULT_TABLE_NAME_SUFFIX,
+  MAX_SEED_LENGTH,
   SECONDS_PER_MINUTE,
   defaultSettings,
 } from "@hanabi-live/data";
@@ -21,9 +22,10 @@ import {
   parseFloatSafe,
   parseIntSafe,
 } from "complete-common";
-import { globals } from "../Globals";
 import { DIMMED_OPACITY, LOCAL_STORAGE_KEY } from "../constants";
-import { getHTMLInputElement } from "../utils";
+import { globals } from "../Globals";
+import { Tooltip } from "../Tooltip";
+import { escapeHtml, getHTMLInputElement } from "../utils";
 import * as lobbyPage from "./lobbyPage";
 import { Screen } from "./types/Screen";
 
@@ -36,7 +38,16 @@ const BASIC_VARIANT_NAMES = [
 
 const BASIC_VARIANT_NAMES_SET = new ReadonlySet<string>(BASIC_VARIANT_NAMES);
 
-/** The checkboxes under "Extra Options", which stay collapsed unless one of them is selected. */
+/** A character that the server accepts in a seed. */
+const SEED_CHARACTER_REGEX = /^[\d\-A-Za-z]$/u;
+
+/** Explains why the seed is invalid while its box is red. */
+let seedTooltip: Tooltip | undefined;
+
+/**
+ * The checkboxes under "Extra Options", which stay collapsed unless one of them is selected or a
+ * seed is entered.
+ */
 const EXTRA_OPTIONS = [
   "createTableSpeedrun",
   "createTableDeckPlays",
@@ -58,6 +69,13 @@ export function init(): void {
     min: MIN_PLAYERS,
     max: MAX_PLAYERS,
     placeholder: defaultSettings.createTableMaxPlayers,
+  });
+
+  const seedInput = getHTMLInputElement("#create-game-seed");
+  seedInput.maxLength = MAX_SEED_LENGTH;
+  seedTooltip = new Tooltip(seedInput, { content: "" });
+  seedInput.addEventListener("input", () => {
+    checkSeed();
   });
 
   firstVariantDropdownInit();
@@ -295,6 +313,14 @@ function submit() {
     }
   }
 
+  // Seeds are not saved, so that a new game does not accidentally repeat a deal.
+  const seed = getHTMLInputElement("#create-game-seed").value.trim();
+  if (!checkSeed()) {
+    showExtraOptions(true);
+    seedTooltip?.open();
+    return;
+  }
+
   // Table names are not saved.
   const name = $("#createTableName").val();
   if (typeof name !== "string") {
@@ -339,6 +365,7 @@ function submit() {
     oneLessCard: getCheckbox("createTableOneLessCard"),
     allOrNothing: getCheckbox("createTableAllOrNothing"),
     detrimentalCharacters: getCheckbox("createTableDetrimentalCharacters"),
+    ...(seed !== "" && { seed }),
   };
 
   lobbyPage.hide();
@@ -375,6 +402,33 @@ export function acceptOptionsFromGuest(options: Options): void {
     options,
     maxPlayers,
   });
+}
+
+/**
+ * Marks the seed box red and explains why while the seed has characters that the server rejects.
+ * Returns whether the seed is valid.
+ */
+function checkSeed(): boolean {
+  const seed = getHTMLInputElement("#create-game-seed").value.trim();
+  const invalidCharacters = new Set(
+    [...new Intl.Segmenter().segment(seed)]
+      .map(({ segment }) => segment)
+      .filter((character) => !SEED_CHARACTER_REGEX.test(character)),
+  );
+  const valid = invalidCharacters.size === 0;
+  $("#create-game-seed").toggleClass("wrongInput", !valid);
+  if (valid) {
+    seedTooltip?.close();
+  } else {
+    const shown = [...invalidCharacters]
+      .map((character) => (character === " " ? "(space)" : character))
+      .join(" ");
+    seedTooltip?.setContent(
+      `You cannot have these characters in a seed: ${escapeHtml(shown)}`,
+    );
+    seedTooltip?.open();
+  }
+  return valid;
 }
 
 function getCheckbox(setting: keyof Settings): boolean {
@@ -455,7 +509,9 @@ export function checkSettingChanged<T extends keyof Settings>(
  */
 export function show(): void {
   ready();
-  lobbyPage.show("#lobby-create-game", "#create-game-submit");
+  lobbyPage.show("#lobby-create-game", "#create-game-submit", () => {
+    seedTooltip?.close();
+  });
   $("#create-game-variant-dropdown1").trigger("focus");
 }
 
@@ -466,6 +522,7 @@ export function ready(): void {
   let buttonTitle = "Create";
   let gameName: string;
   let dialogOptions: Options | Settings;
+  let seed = "";
 
   if (globals.game === null || globals.currentScreen === Screen.Lobby) {
     // Create New Game
@@ -483,6 +540,7 @@ export function ready(): void {
     buttonTitle = "Change";
     gameName = globals.game.name;
     dialogOptions = globals.game.options;
+    seed = globals.game.options.seed ?? "";
 
     // Can't change the password once the game is created.
     $("#password-row").addClass("hidden");
@@ -495,6 +553,8 @@ export function ready(): void {
   $("#create-game-title").text(dialogTitle);
   $("#create-game-submit").text(buttonTitle);
   $("#createTableName").val(gameName);
+  $("#create-game-seed").val(seed);
+  checkSeed();
 
   // Fill in the rest of form with the settings that we used last time (which is stored on the
   // server).
@@ -531,7 +591,10 @@ export function ready(): void {
 
   // Only show the extra options when one of them is selected or when the user asks for them.
   showExtraOptions(
-    EXTRA_OPTIONS.some((setting) => getHTMLInputElement(`#${setting}`).checked),
+    seed !== ""
+      || EXTRA_OPTIONS.some(
+        (setting) => getHTMLInputElement(`#${setting}`).checked,
+      ),
   );
 }
 

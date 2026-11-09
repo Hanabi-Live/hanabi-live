@@ -293,6 +293,18 @@ export function getOptionIcons(
       </div>
     `;
   }
+
+  if (options.seed !== undefined) {
+    html += `<li><i id="${idPrefix}-options-seed-${rowId}" class="${OptionIcons.Seed}" `;
+    html += `data-tooltip-content="#${idPrefix}-tooltip-seed-${rowId}"></i></li>`;
+    html += `
+      <div class="hidden">
+        <div id="${idPrefix}-tooltip-seed-${rowId}" class="${idPrefix}-tooltip-icon">
+          This table deals the custom seed of: <strong>${escapeHtml(options.seed)}</strong>
+        </div>
+      </div>
+    `;
+  }
   return html;
 }
 
@@ -324,6 +336,9 @@ export function initializeOptionTooltips(
   }
   if (options.detrimentalCharacters) {
     tooltips.create(`#${idPrefix}-options-characters-${rowId}`);
+  }
+  if (options.seed !== undefined) {
+    tooltips.create(`#${idPrefix}-options-seed-${rowId}`);
   }
 }
 

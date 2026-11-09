@@ -14,6 +14,27 @@ fn table_names_allow_owner_defaults_but_reject_markup() {
 }
 
 #[test]
+fn requested_seeds_are_validated_and_restarts_count_them_up() {
+    assert_eq!(requested_seed(None).unwrap(), "");
+    assert_eq!(requested_seed(Some(" match-1 ")).unwrap(), "match-1");
+    let longest = "a".repeat(MAX_SEED_LENGTH);
+    assert!(requested_seed(Some(&longest)).is_ok());
+    for seed in ["has space", "p2v0s1!", &format!("{longest}a")] {
+        assert!(requested_seed(Some(seed)).is_err(), "{seed}");
+    }
+    for (seed, next) in [
+        ("", ""),
+        ("game", "game1"),
+        ("game-9", "game-10"),
+        ("007", "008"),
+    ] {
+        assert_eq!(next_requested_seed(seed).unwrap(), next);
+    }
+    let full = format!("{}9", "a".repeat(MAX_SEED_LENGTH - 1));
+    assert!(next_requested_seed(&full).is_err());
+}
+
+#[test]
 fn typed_game_frames_preserve_wire_schema_and_projected_identities() -> Result<()> {
     let mut game = Game::new(crate::game::standard_deck("p2v0s1")?)?;
     let rank = game.deck[game.players[1].hand[0]].rank;
@@ -101,25 +122,29 @@ fn option_summaries_include_only_changes_and_escape_values() {
     table.options.time_per_turn = 20;
     let mut options = table.options.clone();
     assert_eq!(
-        option_changes(&table, &options, &table.name, table.max_players),
+        option_changes(&table, &options, &table.name, table.max_players, ""),
         ""
     );
     options.time_base = 150.5;
     assert_eq!(
-        option_changes(&table, &options, &table.name, table.max_players),
+        option_changes(&table, &options, &table.name, table.max_players, ""),
         "<span class=\"cp\">Timed: <b>150.5 / 20</b></span>"
     );
     options.time_base = 120.0;
     options.time_per_turn = 30;
-    assert!(option_changes(&table, &options, &table.name, table.max_players).contains("120 / 30"));
+    assert!(
+        option_changes(&table, &options, &table.name, table.max_players, "").contains("120 / 30")
+    );
     options.timed = false;
     assert_eq!(
-        option_changes(&table, &options, &table.name, table.max_players),
+        option_changes(&table, &options, &table.name, table.max_players, ""),
         "<span class=\"cp\">Timed: <b>No</b></span>"
     );
     table.options.timed = false;
     options.timed = true;
-    assert!(option_changes(&table, &options, &table.name, table.max_players).contains("120 / 30"));
+    assert!(
+        option_changes(&table, &options, &table.name, table.max_players, "").contains("120 / 30")
+    );
     options.timed = false;
     options.deck_plays = true;
     options.empty_clues = true;
@@ -128,8 +153,9 @@ fn option_summaries_include_only_changes_and_escape_values() {
     options.all_or_nothing = true;
     options.speedrun = true;
     options.detrimental_characters = true;
-    let summary = option_changes(&table, &options, "<new>", 2);
+    let summary = option_changes(&table, &options, "<new>", 2, "match-1");
     assert!(summary.contains("Table Name: <b>&lt;new&gt;</b>"));
+    assert!(summary.contains("Seed: <b>match-1</b>"));
     assert!(summary.contains("Max Players: <b>2</b>"));
     assert!(!summary.contains("Timed:"));
     for label in [
@@ -146,7 +172,7 @@ fn option_summaries_include_only_changes_and_escape_values() {
     table.options = options.clone();
     options.deck_plays = false;
     assert_eq!(
-        option_changes(&table, &options, &table.name, table.max_players),
+        option_changes(&table, &options, &table.name, table.max_players, ""),
         "<span class=\"cp\">Bottom-Deck: <b>No</b></span>"
     );
 }

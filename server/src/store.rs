@@ -847,15 +847,8 @@ impl Store {
         .fetch_one(&self.primary)
         .await?)
     }
-    pub async fn next_seed(
-        &self,
-        players: &[Player],
-        prefix: String,
-        suffix: &str,
-    ) -> Result<String> {
-        if !suffix.is_empty() {
-            return Ok(prefix + suffix);
-        }
+    /// The first seed with this prefix that none of the players have played.
+    pub async fn next_seed(&self, players: &[Player], prefix: String) -> Result<String> {
         let ids = players.iter().map(|p| p.id).collect::<Vec<_>>();
         let seeds = crate::lobby::blocked_seeds(&self.primary, &ids, &prefix).await?;
         let seeds = seeds.into_iter().collect::<std::collections::HashSet<_>>();
@@ -1995,7 +1988,7 @@ mod tests {
             frames.push(outgoing);
         }
         let result=async{
-            send(&hub,users[0].clone(),"tableCreate",json!({"name":"!seed native","maxPlayers":6,"options":{"variantName":"Clue Starved (6 Suits)","timed":true,"timeBase":120,"timePerTurn":20,"oneExtraCard":true,"detrimentalCharacters":true}})).await?;
+            send(&hub,users[0].clone(),"tableCreate",json!({"name":"native","maxPlayers":6,"options":{"seed":"native","variantName":"Clue Starved (6 Suits)","timed":true,"timeBase":120,"timePerTurn":20,"oneExtraCard":true,"detrimentalCharacters":true}})).await?;
             let id=store.load().await?[0].0.id;
             for user in users.iter().skip(1){send(&hub,user.clone(),"tableJoin",json!({"tableID":id,"password":""})).await?;}
             send(&hub,users[0].clone(),"tableStart",json!({"tableID":id})).await?;

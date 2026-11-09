@@ -91,6 +91,8 @@ function gotoPath(data: ServerCommandData["welcome"]): boolean {
     const detrimentalCharacters =
       urlParams.get("detrimentalCharacters") === "true";
     const password = urlParams.get("password") ?? "";
+    // A blank seed deals one that none of the players have played.
+    const seed = urlParams.get("seed") ?? "";
 
     globals.conn!.send("tableCreate", {
       name,
@@ -106,6 +108,7 @@ function gotoPath(data: ServerCommandData["welcome"]): boolean {
         oneLessCard,
         allOrNothing,
         detrimentalCharacters,
+        ...(seed !== "" && { seed }),
       },
       password,
     });

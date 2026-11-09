@@ -19,6 +19,7 @@ export const DEFAULT_PAGE_SIZE = 10;
 export const MAX_PRIVATE_HISTORY_MESSAGES = 100;
 export const SECONDS_PER_MINUTE = 60;
 export const TYPING_TIMEOUT_MS = 2000;
+export const MAX_SEED_LENGTH = 32;
 export const DEFAULT_TABLE_NAME_SUFFIX = "'s table";
 
 /**

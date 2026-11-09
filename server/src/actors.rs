@@ -17,8 +17,8 @@ use chrono::{Duration as ChronoDuration, Utc};
 use hanabi_engine::{CompletionTiming, EndCondition, GameSetup, Interpretation, Recipient};
 use hanabi_protocol::{
     Chat, ChatSource, ChatTyping, ClientMessage, ErrorNotice, GameId, IdleWarning, MAX_PLAYERS,
-    MIN_PLAYERS, ReplayAction, SECONDS_PER_MINUTE, SoundLobby, Status, TableId, TableRequest,
-    TableStarted, User, UserId, UserLeft, UserList, Warning,
+    MAX_SEED_LENGTH, MIN_PLAYERS, ReplayAction, SECONDS_PER_MINUTE, SoundLobby, Status, TableId,
+    TableRequest, TableStarted, User, UserId, UserLeft, UserList, Warning,
 };
 use serde::Serialize;
 use serde_json::{Value, json};
@@ -1350,35 +1350,72 @@ fn validate_table_name(name: &str) -> Result<()> {
     Ok(())
 }
 
-/// Reads a `!seed` or `!replay` table name into the options it sets. A replay also replaces
-/// `options` with the replayed game's options. Other names set nothing.
+/// Reads a requested seed: blank deals the next seed that none of the players have played.
+fn requested_seed(seed: Option<&str>) -> Result<String> {
+    let seed = seed.unwrap_or_default().trim();
+    ensure!(
+        seed.len() <= MAX_SEED_LENGTH,
+        "Seeds cannot be longer than {MAX_SEED_LENGTH} characters"
+    );
+    ensure!(
+        seed.bytes().all(|b| b.is_ascii_alphanumeric() || b == b'-'),
+        "Seeds can only contain letters, numbers, and hyphens"
+    );
+    Ok(seed.into())
+}
+
+/// The seed after a requested one, counting up its trailing number: "game-9" becomes "game-10",
+/// "007" becomes "008", and "game" becomes "game1". Blank stays blank.
+fn next_requested_seed(seed: &str) -> Result<String> {
+    if seed.is_empty() {
+        return Ok(String::new());
+    }
+    let split = seed
+        .rfind(|c: char| !c.is_ascii_digit())
+        .map_or(0, |i| i + 1);
+    let (prefix, number) = seed.split_at(split);
+    let next = if number.is_empty() {
+        format!("{seed}1")
+    } else {
+        format!(
+            "{prefix}{:0width$}",
+            number
+                .parse::<u64>()?
+                .checked_add(1)
+                .context("Seed suffix exhausted")?,
+            width = number.len()
+        )
+    };
+    requested_seed(Some(&next))
+}
+
+/// Reads the options that a table's name and requested seed set. A `!replay` name also replaces
+/// `options` with the replayed game's options.
 async fn special_game_options(
     store: &Store,
     name: &str,
+    seed: String,
     table_id: u64,
     user: i32,
     options: &mut Options,
 ) -> Result<ExtraOptions> {
-    let mut extra = ExtraOptions::default();
+    let mut extra = ExtraOptions {
+        set_seed_suffix: seed,
+        ..ExtraOptions::default()
+    };
     if !name.starts_with('!') {
         return Ok(extra);
     }
     let parts = name.split_whitespace().collect::<Vec<_>>();
     match parts.first().copied() {
-        Some("!seed") => {
-            ensure!(
-                parts.len() == 2
-                    && parts[1]
-                        .bytes()
-                        .all(|b| b.is_ascii_alphanumeric() || b == b'-'),
-                "Expected !seed [seed name]"
-            );
-            extra.set_seed_suffix = parts[1].into();
-        }
         Some("!replay") => {
             ensure!(
                 (2..=3).contains(&parts.len()),
                 "Expected !replay [game ID] [turn]"
+            );
+            ensure!(
+                extra.set_seed_suffix.is_empty(),
+                "A replay keeps its game's seed"
             );
             let historical = store.historical(parts[1].parse()?, table_id, user).await?;
             let turn = if parts.len() == 3 {
@@ -1599,6 +1636,17 @@ fn parse_start_minutes(argument: &str) -> Option<f64> {
     let result = rounded as f64 * 2_f64.powi(i32::try_from(exponent + shift).ok()?);
     result.is_finite().then_some(result)
 }
+/// A table's requested seed as the wire carries it.
+fn wire_seed(seed: &str) -> Option<String> {
+    (!seed.is_empty()).then(|| seed.into())
+}
+/// A table's options as the lobby and its players see them.
+fn table_options(table: &TableSnapshot) -> hanabi_protocol::GameOptions {
+    hanabi_protocol::GameOptions {
+        seed: wire_seed(&table.extra.set_seed_suffix),
+        ..wire_options(&table.options)
+    }
+}
 /// A private message to a table's owner, with a button that applies the suggested options.
 fn options_suggestion(
     id: u64,
@@ -1606,12 +1654,14 @@ fn options_suggestion(
     options: &Options,
     name: &str,
     max_players: usize,
+    seed: &str,
 ) -> Chat {
     Chat {
         recipient: Some(owner.into()),
         suggested_options: Some(hanabi_protocol::GameOptions {
             table_name: Some(name.into()),
             max_players: Some(small(max_players)),
+            seed: wire_seed(seed),
             ..wire_options(options)
         }),
         ..server_chat(
@@ -1629,6 +1679,7 @@ fn option_changes(
     options: &Options,
     name: &str,
     max_players: usize,
+    seed: &str,
 ) -> String {
     let current = &table.options;
     let mut changes = String::new();
@@ -1658,6 +1709,9 @@ fn option_changes(
         }
     } else if current.timed {
         add("Timed", "No");
+    }
+    if seed != table.extra.set_seed_suffix {
+        add("Seed", if seed.is_empty() { "Any" } else { seed });
     }
     if max_players != table.max_players {
         add("Max Players", &max_players.to_string());
@@ -1950,7 +2004,15 @@ async fn prepare_table(
             options.one_less_card = false;
         }
         ensure!(valid_timed_options(&options), "Invalid timed options");
-        let extra = special_game_options(store, &name, id, session.user, &mut options).await?;
+        let extra = special_game_options(
+            store,
+            &name,
+            requested_seed(r.options.seed.as_deref())?,
+            id,
+            session.user,
+            &mut options,
+        )
+        .await?;
         let variant = hanabi_engine::get_variant(&options.variant_name)?;
         options.variant_id = Some(variant.id);
         let player = store
@@ -2109,7 +2171,7 @@ impl TableActor {
                 max_players: small(self.table.max_players),
                 name: self.table.name.clone(),
                 num_players: small(self.table.players().len()),
-                options: wire_options(&self.table.options),
+                options: table_options(&self.table),
                 owner_id: UserId(self.table.owner),
                 password_protected: self.table.password_hash.is_some(),
                 players: self
@@ -2262,7 +2324,7 @@ impl TableActor {
                 name: self.table.name.clone(),
                 owner: UserId(self.table.owner),
                 players,
-                options: wire_options(&self.table.options),
+                options: table_options(&self.table),
                 password_protected: self.table.password_hash.is_some(),
                 max_players: small(self.table.max_players),
             };
@@ -2699,6 +2761,7 @@ impl TableActor {
                 &options,
                 &self.table.name,
                 self.table.max_players,
+                &self.table.extra.set_seed_suffix,
             );
             effects.messages.push((
                 owner.session.clone(),
@@ -3054,12 +3117,18 @@ impl TableActor {
         let mut extra = if variant_only {
             self.table.extra.clone()
         } else {
-            ExtraOptions::default()
+            ExtraOptions {
+                set_seed_suffix: requested_seed(
+                    request.as_ref().and_then(|r| r.options.seed.as_deref()),
+                )?,
+                ..ExtraOptions::default()
+            }
         };
         if !variant_only && session.user == self.table.owner {
             extra = special_game_options(
                 &self.store,
                 &name,
+                extra.set_seed_suffix,
                 self.table.id,
                 session.user,
                 &mut options,
@@ -3070,7 +3139,13 @@ impl TableActor {
         options.variant_id = Some(variant.id);
         max_players = max_players.max(extra.custom_num_players.unwrap_or(MIN_PLAYERS));
         if session.user != self.table.owner {
-            let changes = option_changes(&self.table, &options, &name, max_players);
+            let changes = option_changes(
+                &self.table,
+                &options,
+                &name,
+                max_players,
+                &extra.set_seed_suffix,
+            );
             ensure!(!changes.is_empty(), "There are no new options proposed.");
             let message = server_chat(
                 self.table.id,
@@ -3095,6 +3170,7 @@ impl TableActor {
                     &options,
                     &name,
                     max_players,
+                    &extra.set_seed_suffix,
                 );
                 e.messages.push((
                     owner.session.clone(),
@@ -3461,13 +3537,11 @@ impl TableActor {
         let seed = if let Some(seed) = &self.table.extra.custom_seed {
             seed.clone()
         } else {
-            self.store
-                .next_seed(
-                    &players,
-                    crate::game::seed_prefix(players.len(), variant.id, &self.table.options),
-                    &self.table.extra.set_seed_suffix,
-                )
-                .await?
+            let prefix = crate::game::seed_prefix(players.len(), variant.id, &self.table.options);
+            match self.table.extra.set_seed_suffix.as_str() {
+                "" => self.store.next_seed(&players, prefix).await?,
+                suffix => prefix + suffix,
+            }
         };
         let game_id = self.store.reserve().await?;
         let extra = &self.table.extra;
@@ -4908,24 +4982,7 @@ impl TableActor {
         let mut destination = self.table.clone();
         destination.id = allocation.id;
         destination.created = Utc::now();
-        destination.name = if let Some(seed) = self.table.name.strip_prefix("!seed ") {
-            let split = seed
-                .rfind(|c: char| !c.is_ascii_digit())
-                .map_or(0, |i| i + 1);
-            let (prefix, number) = seed.split_at(split);
-            if number.is_empty() {
-                format!("!seed {seed}1")
-            } else {
-                format!(
-                    "!seed {prefix}{:0width$}",
-                    number
-                        .parse::<u64>()?
-                        .checked_add(1)
-                        .context("Seed suffix exhausted")?,
-                    width = number.len()
-                )
-            }
-        } else {
+        destination.name = {
             let (base, count) =
                 if let Some(m) = regex!(r"^(.*) \(#(\d+)\)$").captures(&self.table.name) {
                     (m[1].to_owned(), m[2].parse::<u64>()? + 1)
@@ -4938,8 +4995,9 @@ impl TableActor {
                 crate::accounts::truncate_to_max_bytes(&base, MAX_TABLE_NAME_LENGTH - suffix.len())
             )
         };
+        // A table that requested a seed moves on to the one after it.
         destination.extra = ExtraOptions {
-            set_seed_suffix: destination.name.strip_prefix("!seed ").unwrap_or("").into(),
+            set_seed_suffix: next_requested_seed(&self.table.extra.set_seed_suffix)?,
             ..ExtraOptions::default()
         };
         destination.shadows.clear();

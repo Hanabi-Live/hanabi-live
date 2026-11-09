@@ -654,22 +654,23 @@ move for the current situation.
     "Valentine Mix (6 Suit)". (Variant number 0 would be equal to no variant.)
   - The "s5" part means that it is seed 5. In other words, it is the 5th
     generated deal for this player number and variant combination.
-- You can force the server to give you a specific deal by entering a specific
-  game name. This is useful for competitive play (e.g. if two groups of players
-  want to compete against each other).
-- The first way to guarantee a specific deal is by starting the game with a name
-  of: `!seed [seed]`
+- You can force the server to give you a specific deal by entering a seed in the
+  "Custom Seed" field under "Extra Options" when creating a game. This is useful
+  for competitive play (e.g. if two groups of players want to compete against
+  each other). The seed can contain letters, numbers, and hyphens.
   - For example, say that a group wanted to play a deal that another group had
     already played. So, they went into the replay for the existing game, and
     moused over the deck, and saw that the seed was `p3v0s123`. Thus, they knew
     that this game was the 123rd seed for this player and variant combination.
     So, they created a game with the appropriate player count & variant, using a
-    name of `!seed 123`.
+    seed of `123`.
   - For example, say that two groups wanted to play a brand new deal that had
     never been played before. So, they each created a game with the same player
-    count & variant, using a name of `!seed showmatch-jan-2050-game-1`. (In this
-    case, they were playing a 3-player game of no variant, so resulting full
-    seed for the game was `p3v0sshowmatch-jan-2050-game-1`.)
+    count & variant, using a seed of `showmatch-jan-2050-game-1`. (In this case,
+    they were playing a 3-player game of no variant, so resulting full seed for
+    the game was `p3v0sshowmatch-jan-2050-game-1`.)
+  - Restarting a game with a seed moves on to the next one, such as from
+    `showmatch-jan-2050-game-1` to `showmatch-jan-2050-game-2`.
 - Additionally, you can start a game that will be a partial replay of an
   existing game. For example, this is useful if you want to see how a game would
   play out if a different move was taken. The format for this is to use a name

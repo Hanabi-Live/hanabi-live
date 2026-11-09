@@ -9,8 +9,8 @@ use hanabi_engine::{AssignedCharacter, EndCondition, GameSetup, Interpretation};
 use hanabi_protocol::{NO_VALUE, RecordedActionType, ReplayAction, ReplayImport};
 use std::collections::BTreeMap;
 
-/// The longest seed that a replay import can name, in bytes. A `!seed` table prefixes its name with
-/// the player count and variant ID, so this leaves room above `MAX_TABLE_NAME_LENGTH`.
+/// The longest seed that a replay import can name, in bytes. A table's seed is prefixed with the
+/// player count and variant ID, so this leaves room above `MAX_SEED_LENGTH`.
 const MAX_IMPORTED_SEED_LENGTH: usize = 64;
 
 pub struct Imported {
@@ -294,12 +294,12 @@ mod tests {
     }
 
     #[test]
-    fn imports_accept_the_longest_seed_a_seed_table_makes() {
+    fn imports_accept_the_longest_seed_a_table_makes() {
         let variant = hanabi_engine::variants()
             .iter()
             .max_by_key(|v| v.id)
             .unwrap();
-        let suffix = "a".repeat(crate::model::MAX_TABLE_NAME_LENGTH - "!seed ".len());
+        let suffix = "a".repeat(hanabi_protocol::MAX_SEED_LENGTH);
         let seed = format!("p{}v{}s{suffix}", hanabi_protocol::MAX_PLAYERS, variant.id);
         let imported =
             import(&json!({"seed": seed, "options": {"variant": variant.name}})).unwrap();

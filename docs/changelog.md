@@ -9,6 +9,8 @@ of the repository.
 
 ## November 9th, 2026
 
+- The "New Game" screen now has a "Custom Seed" option for playing a specific
+  deal, replacing the `!seed` table name.
 - Misplayed cards now launch like a dud firework, explode on the strike tracker,
   and fall into the discard pile.
 - After a game, players can uncheck "Ready" to tell the leader that they will

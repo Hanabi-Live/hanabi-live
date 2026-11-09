@@ -27,6 +27,8 @@ pub struct ExtraOptions {
     pub custom_characters: Option<Vec<AssignedCharacter>>,
     pub custom_num_players: Option<usize>,
     pub no_write_to_database: bool,
+    /// The seed that the table requested, without the player count and variant that prefix it.
+    /// Blank deals the next seed that none of the players have played.
     pub set_seed_suffix: String,
     pub set_replay: bool,
     pub set_replay_turn: usize,
@@ -634,6 +636,7 @@ pub(crate) fn wire_options(options: &Options) -> hanabi_protocol::GameOptions {
         detrimental_characters: *detrimental_characters,
         table_name: table_name.clone(),
         max_players: max_players.map(small),
+        seed: None,
     }
 }
 
@@ -655,6 +658,8 @@ pub(crate) fn engine_options(options: &hanabi_protocol::GameOptions) -> Options 
         detrimental_characters,
         table_name,
         max_players,
+        // A table keeps its seed apart from the game's rules, in `ExtraOptions`.
+        seed: _,
     } = options;
     Options {
         num_players: usize::from(*num_players),

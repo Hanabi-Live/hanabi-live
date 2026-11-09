@@ -9,6 +9,7 @@ export enum OptionIcons {
   OneLessCard = "fas fa-minus-circle",
   AllOrNothing = "fas fa-layer-group",
   DetrimentalCharacters = "fas fa-flushed",
+  Seed = "fas fa-seedling",
 }
 
 /** The deck plays icon sits too far left, so it is nudged right wherever it is shown. */

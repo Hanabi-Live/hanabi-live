@@ -391,6 +391,12 @@ export const gameOptionsSchema = z
     numPlayers: z.literal([2, 3, 4, 5, 6]).default(2),
     oneExtraCard: z.boolean().default(false),
     oneLessCard: z.boolean().default(false),
+    /**
+     * The deal that a table requests, as the end of its full seed: "123" in a 3-player game of No
+     * Variant deals `p3v0s123`. Absent when the server deals the next seed that none of the
+     * players have played. Only tables report it; games report their full seed elsewhere.
+     */
+    seed: z.string().min(1).max(32).optional(),
     speedrun: z.boolean().default(false),
     tableName: z.string().min(1).optional(),
     timeBase: z.number().default(0),

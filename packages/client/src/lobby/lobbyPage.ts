@@ -8,17 +8,23 @@ import { Screen } from "./types/Screen";
 interface LobbyPage {
   readonly section: string;
   readonly submitButton: string | undefined;
+  readonly onHide: (() => void) | undefined;
 }
 
 let current: LobbyPage | null = null;
 
 /**
  * Shows a page from the lobby or from the pre-game screen, which it returns to. Pages with a form
- * pass the button that submits it, so that pressing enter submits the form.
+ * pass the button that submits it, so that pressing enter submits the form. `onHide` runs when the
+ * page is hidden, such as to close its tooltips.
  */
-export function show(section: string, submitButton?: string): void {
+export function show(
+  section: string,
+  submitButton?: string,
+  onHide?: () => void,
+): void {
   hide();
-  current = { section, submitButton };
+  current = { section, submitButton, onHide };
 
   $(section).show();
   nav.showLobbyHalves(false);
@@ -34,6 +40,7 @@ export function hide(): void {
   }
 
   $(current.section).hide();
+  current.onHide?.();
   current = null;
   nav.showLobbyHalves(true);
   nav.show(globals.currentScreen === Screen.PreGame ? "pregame" : "lobby");
