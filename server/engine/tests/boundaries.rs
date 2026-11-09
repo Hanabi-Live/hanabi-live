@@ -627,7 +627,7 @@ fn long_character_histories_are_bounded_and_restorable() {
         ("Clue Starved (6 Suits)", "Slow-Witted"),
     ] {
         let v = get_variant(variant_name).unwrap();
-        let mut deck = create_shuffled_deck(v, "p2v0s1").unwrap();
+        let mut deck = create_shuffled_deck(v, "p2v0s1");
         let first = deck
             .iter()
             .position(|c| c.rank == if v.suits[c.suit_index].reversed { 5 } else { 1 })
@@ -692,7 +692,7 @@ fn all_or_nothing_eventually_exhausts_resources_without_final_round() {
         },
         Some(assignments("Slow-Witted", "n/a")),
     );
-    let mut deck = create_shuffled_deck(get_variant("6 Suits").unwrap(), "p2v0s1").unwrap();
+    let mut deck = create_shuffled_deck(get_variant("6 Suits").unwrap(), "p2v0s1");
     deck.sort_by_key(|c| (c.rank, c.suit_index));
     input.deck = Some(deck);
     let mut state = create_game(input).unwrap().state;

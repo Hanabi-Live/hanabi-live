@@ -100,7 +100,7 @@ pub fn parse(input: &ReplayImport) -> Result<Imported> {
     let seeded = if seed.is_empty() {
         None
     } else {
-        Some(hanabi_engine::create_shuffled_deck(variant, seed)?)
+        Some(hanabi_engine::create_shuffled_deck(variant, seed))
     };
     if deck.is_empty()
         && let Some(seeded) = &seeded
@@ -331,7 +331,7 @@ mod tests {
     fn a_seed_and_a_deck_must_agree() {
         let seed = "p2v0s1";
         let variant = hanabi_engine::get_variant(hanabi_protocol::DEFAULT_VARIANT_NAME).unwrap();
-        let seeded = hanabi_engine::create_shuffled_deck(variant, seed).unwrap();
+        let seeded = hanabi_engine::create_shuffled_deck(variant, seed);
         let mut other = seeded.clone();
         let different = (1..other.len()).find(|&i| other[i] != other[0]).unwrap();
         other.swap(0, different);

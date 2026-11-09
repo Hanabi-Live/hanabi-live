@@ -3485,7 +3485,7 @@ impl TableActor {
             &seed,
             &mut players,
             extra.custom_seed.is_none(),
-        )?;
+        );
         ensure!(session.active(), "Owner disconnected during start");
         let mut options = self.table.options.clone();
         options.num_players = players.len();

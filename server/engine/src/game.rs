@@ -82,7 +82,7 @@ pub fn create_game(setup: GameSetup) -> Result<Transition> {
     let variant = get_variant(&setup.options.variant_name)?;
     let identities = match setup.deck {
         Some(deck) => deck,
-        None => create_shuffled_deck(variant, &setup.seed)?,
+        None => create_shuffled_deck(variant, &setup.seed),
     };
     ensure!(
         !identities.is_empty()

@@ -1,33 +1,18 @@
 // Derived from Go's legacy math/rand; see packages/data/src/json/goRandom.LICENSE.
-use anyhow::{Result, ensure};
 use std::sync::OnceLock;
 
-/// Seeds that begin with this marker carry a one-character label, such as "legacy-1-".
-const LEGACY_SEED_MARKER: &str = "legacy-";
-/// The labelled prefix that a legacy seed's hash skips, as Go's `len("legacy-x-")` does.
-const LEGACY_SEED_PREFIX: &str = "legacy-x-";
 /// The CRC-64 ECMA polynomial in reversed bit order, as Go's `crc64.ECMA` table uses it.
 const CRC64_ECMA_REVERSED: u64 = 0xc96c_5795_d787_0f42;
 
-pub fn seed_hash(seed: &str) -> Result<i64> {
-    let bytes = seed.as_bytes();
-    let bytes = if seed.starts_with(LEGACY_SEED_MARKER) {
-        ensure!(
-            bytes.len() >= LEGACY_SEED_PREFIX.len(),
-            "Malformed legacy seed"
-        );
-        &bytes[LEGACY_SEED_PREFIX.len()..]
-    } else {
-        bytes
-    };
+pub fn seed_hash(seed: &str) -> i64 {
     let mut crc = u64::MAX;
-    for byte in bytes {
+    for byte in seed.as_bytes() {
         crc ^= u64::from(*byte);
         for _ in 0..u8::BITS {
             crc = (crc >> 1) ^ if crc & 1 != 0 { CRC64_ECMA_REVERSED } else { 0 };
         }
     }
-    Ok((!crc).cast_signed())
+    (!crc).cast_signed()
 }
 
 // Go's `math/rand` source: an additive lagged Fibonacci generator, seeded with a

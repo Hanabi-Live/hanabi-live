@@ -127,10 +127,10 @@ pub fn unshuffled_deck() -> Vec<Card> {
     )
 }
 pub fn standard_deck(seed: &str) -> Result<Vec<Card>> {
-    hanabi_engine::create_shuffled_deck(
+    Ok(hanabi_engine::create_shuffled_deck(
         hanabi_engine::get_variant(hanabi_protocol::DEFAULT_VARIANT_NAME)?,
         seed,
-    )
+    ))
 }
 /// The letter between the variant and the number of a server-made seed. Hand sizes that differ get
 /// their own seeds, so that games on the same seed have comparable scores.
@@ -138,7 +138,7 @@ const SEED_LETTER: char = 's';
 const ONE_EXTRA_CARD_SEED_LETTER: char = 'e';
 const ONE_LESS_CARD_SEED_LETTER: char = 'l';
 /// Matches the seeds that the server makes, capturing the player count.
-pub const SEED_PATTERN: &str = r"^(?:legacy-\d+-)?p(\d+)v\d+[sel][-0-9A-Za-z]+$";
+pub const SEED_PATTERN: &str = r"^p(\d+)v\d+[sel][-0-9A-Za-z]+$";
 /// The seed of a new game without its number, such as "p2v0s".
 pub fn seed_prefix(num_players: usize, variant_id: u32, options: &Options) -> String {
     let letter = match (options.one_extra_card, options.one_less_card) {
@@ -159,7 +159,7 @@ pub fn seeded_deck(id: i32, seed: &str) -> Result<Value> {
     Ok(serde_json::to_value(hanabi_engine::create_shuffled_deck(
         hanabi_engine::get_variant_by_id(u32::try_from(id)?)?,
         seed,
-    )?)?)
+    ))?)
 }
 pub fn deck_size(id: i32) -> Result<usize> {
     Ok(hanabi_engine::create_deck(hanabi_engine::get_variant_by_id(u32::try_from(id)?)?).len())

@@ -485,7 +485,7 @@ impl Store {
                 );
             }
             ensure!(
-                hanabi_engine::create_shuffled_deck(variant, &s.seed)? == s.game.identities(),
+                hanabi_engine::create_shuffled_deck(variant, &s.seed) == s.game.identities(),
                 "Conflicting deck"
             );
             let times = (row.datetime_started, row.datetime_finished);
@@ -561,7 +561,7 @@ impl Store {
         let options = options_from_record(&row)?;
         let variant = hanabi_engine::get_variant(&options.variant_name)?;
         let seed: String = row.seed.clone();
-        let deck = hanabi_engine::create_shuffled_deck(variant, &seed)?;
+        let deck = hanabi_engine::create_shuffled_deck(variant, &seed);
         ensure!(
             deck.len() <= hanabi_engine::create_deck(variant).len()
                 && deck.iter().all(|c| c.suit_index < variant.suits.len()),

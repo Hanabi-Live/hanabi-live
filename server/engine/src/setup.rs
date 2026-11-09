@@ -21,11 +21,11 @@ pub fn create_deck(variant: &Variant) -> Vec<DeckCard> {
     deck
 }
 
-pub fn create_shuffled_deck(variant: &Variant, seed: &str) -> Result<Vec<DeckCard>> {
-    let mut rng = GoRandom::new(seed_hash(seed)?);
+pub fn create_shuffled_deck(variant: &Variant, seed: &str) -> Vec<DeckCard> {
+    let mut rng = GoRandom::new(seed_hash(seed));
     let mut deck = create_deck(variant);
     rng.shuffle(&mut deck);
-    Ok(deck)
+    deck
 }
 
 /// When the lobby shuffles seats, consume the same stream *after* shuffling the deck.
@@ -35,10 +35,10 @@ pub fn prepare_deck_and_players<T>(
     seed: &str,
     players: &mut [T],
     shuffle_players: bool,
-) -> Result<Vec<DeckCard>> {
+) -> Vec<DeckCard> {
     let mut deck = create_deck(variant);
-    prepare_game_order(&mut deck, players, seed, true, shuffle_players)?;
-    Ok(deck)
+    prepare_game_order(&mut deck, players, seed, true, shuffle_players);
+    deck
 }
 
 /// Apply conditional, forward deck/seat shuffles with one per-game stream.
@@ -49,15 +49,14 @@ pub fn prepare_game_order<T>(
     seed: &str,
     shuffle_deck: bool,
     shuffle_players: bool,
-) -> Result<()> {
-    let mut rng = GoRandom::new(seed_hash(seed)?);
+) {
+    let mut rng = GoRandom::new(seed_hash(seed));
     if shuffle_deck {
         rng.shuffle(deck);
     }
     if shuffle_players {
         rng.shuffle(players);
     }
-    Ok(())
 }
 
 pub fn assign_characters(
@@ -69,7 +68,7 @@ pub fn assign_characters(
         hanabi_protocol::is_player_count(players.len()),
         "Character assignments require {MIN_PLAYERS} to {MAX_PLAYERS} players."
     );
-    let mut rng = GoRandom::new(seed_hash(seed)?);
+    let mut rng = GoRandom::new(seed_hash(seed));
     let catalog = characters();
     let mut assigned: Vec<AssignedCharacter> = vec![];
     for (index, player) in players.iter().enumerate() {

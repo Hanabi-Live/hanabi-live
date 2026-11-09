@@ -53,7 +53,7 @@ describe("replay URL loading", () => {
 
   test.each([
     ["shared-replay-json", ",p4v0s3", "p4v0s3", "shared"],
-    ["replay-json", ",legacy-1-p4v0s3", "legacy-1-p4v0s3", "solo"],
+    ["replay-json", ",p4v0e3", "p4v0e3", "solo"],
     ["shared-replay-json", "", "", "shared"],
     ["replay-json", ",", "", "solo"],
   ])("%s preserves embedded seed %s", (route, suffix, seed, visibility) => {

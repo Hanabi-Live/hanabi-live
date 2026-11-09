@@ -13,19 +13,17 @@ describe("replay URL seed metadata", () => {
     expect(shrink(json!)).toBe(`${payload},`);
   });
 
-  test.each([
-    "p4v0s3",
-    "legacy-1-p4v0s3",
-    "",
-    "A-very-long-seed-with-hyphens-1234567890",
-  ])("round-trips seed %s without changing the game", (seed) => {
-    const legacy = replayGameSchema.parse(JSON.parse(expand(payload)!));
-    const game = { ...legacy, seed };
-    const compressed = shrink(JSON.stringify(game));
-    expect(compressed).toBeDefined();
-    expect(compressed!.endsWith(`,${seed}`)).toBe(true);
-    expect(JSON.parse(expand(compressed!)!)).toEqual(game);
-  });
+  test.each(["p4v0s3", "", "A-very-long-seed-with-hyphens-1234567890"])(
+    "round-trips seed %s without changing the game",
+    (seed) => {
+      const legacy = replayGameSchema.parse(JSON.parse(expand(payload)!));
+      const game = { ...legacy, seed };
+      const compressed = shrink(JSON.stringify(game));
+      expect(compressed).toBeDefined();
+      expect(compressed!.endsWith(`,${seed}`)).toBe(true);
+      expect(JSON.parse(expand(compressed!)!)).toEqual(game);
+    },
+  );
 
   test.each(["bad seed", "bad/seed", "bad,seed", "bad?seed"])(
     "rejects invalid seed %s",
