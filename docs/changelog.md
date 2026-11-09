@@ -9,6 +9,8 @@ This page lists the changes to Hanab Live, excluding bug fixes.
     that used it.
   - Removed the legacy starting player option and the pre-April 2020 games that
     did not start with the first seat.
+  - Removed legacy seeds (those beginning with `legacy-`), which only those
+    games used.
   - Public pages and API endpoints now reject unknown or invalid query
     parameters with an error that names the problem, instead of silently using
     defaults.
