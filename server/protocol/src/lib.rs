@@ -281,7 +281,6 @@ pub struct ChatHistoryRequest {
 #[derive(Clone, Debug, Default, Serialize, Deserialize, JsonSchema)]
 #[serde(default, rename_all = "camelCase", deny_unknown_fields)]
 #[schemars(extend("x-readonly" = true))]
-#[schemars(extend("x-undefined-default" = ChatUserRequest::default()))]
 pub struct ChatUserRequest {
     pub name: String,
     pub room: String,
@@ -290,7 +289,6 @@ pub struct ChatUserRequest {
 #[derive(Clone, Debug, Default, Serialize, Deserialize, JsonSchema)]
 #[serde(default, rename_all = "camelCase", deny_unknown_fields)]
 #[schemars(extend("x-readonly" = true))]
-#[schemars(extend("x-undefined-default" = ChatLinkedRequest::default()))]
 pub struct ChatLinkedRequest {
     pub room: String,
 }

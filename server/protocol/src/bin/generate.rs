@@ -163,7 +163,6 @@ fn expression(schema: &Value) -> Result<String> {
                 "default",
                 "x-brand",
                 "x-readonly",
-                "x-undefined-default",
                 "x-enum",
                 "x-date",
                 "pattern",
@@ -381,9 +380,6 @@ fn expression(schema: &Value) -> Result<String> {
     }
     if schema["x-readonly"] == true {
         result.push_str(".readonly()");
-    }
-    if let Some(default) = schema.get("x-undefined-default") {
-        write!(result, ".default({default})")?;
     }
     Ok(result)
 }

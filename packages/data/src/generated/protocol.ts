@@ -206,8 +206,7 @@ export const chatHistoryRequestSchema = z
   .readonly();
 export const chatLinkedRequestSchema = z
   .strictObject({ room: z.string().default("") })
-  .readonly()
-  .default({ room: "" });
+  .readonly();
 export const chatListSchema = z
   .strictObject({
     list: z.array(chatSchema).readonly(),
@@ -233,8 +232,7 @@ export const chatTypingSchema = z
   .readonly();
 export const chatUserRequestSchema = z
   .strictObject({ name: z.string().default(""), room: z.string().default("") })
-  .readonly()
-  .default({ name: "", room: "" });
+  .readonly();
 
 /**
  * Every player's remaining time, in milliseconds.
