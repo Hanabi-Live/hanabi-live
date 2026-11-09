@@ -1,6 +1,7 @@
 //! Where each client command runs. Every command is listed, so a new one needs a decision.
 
 use hanabi_protocol::ClientMessage;
+use hanabi_protocol::TableId;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Route {
@@ -12,7 +13,7 @@ pub enum Route {
     /// The hub runs the command: a sync, or the creation of a table or replay.
     Hub,
     /// The table with this ID runs the command.
-    Table(u64),
+    Table(TableId),
 }
 
 pub fn route(message: &ClientMessage) -> Route {
@@ -36,7 +37,11 @@ pub fn route(message: &ClientMessage) -> Route {
         | M::ChatBlocked(_)
         | M::TagSearch(_) => return Route::Lobby,
         // The lobby rejects a room that is neither the lobby nor a table.
-        M::Chat(r) => match r.room.strip_prefix("table").and_then(|id| id.parse().ok()) {
+        M::Chat(r) => match r
+            .room
+            .strip_prefix("table")
+            .and_then(|id| id.parse().ok().map(TableId))
+        {
             Some(id) => return Route::Table(id),
             None => return Route::Lobby,
         },
@@ -67,5 +72,5 @@ pub fn route(message: &ClientMessage) -> Route {
         M::TagsDeleteAll(r) => r.table_id,
         M::ReplayAction(r) => r.table_id(),
     };
-    Route::Table(id.0)
+    Route::Table(id)
 }

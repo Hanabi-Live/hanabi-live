@@ -21,7 +21,7 @@ use anyhow::Context;
 use chrono::Utc;
 use hanabi_engine::{EndCondition, GameSetup, Interpretation};
 use hanabi_protocol::ClientMessage;
-use hanabi_protocol::{Chat, MIN_PLAYERS, NO_VALUE, Status, TableId, TableRequest, TableStarted};
+use hanabi_protocol::{Chat, MIN_PLAYERS, NO_VALUE, Status, TableRequest, TableStarted};
 use std::{
     collections::{BTreeMap, HashSet},
     sync::Arc,
@@ -267,7 +267,7 @@ impl TableActor {
                     frame(
                         hanabi_protocol::server::BOOT,
                         TableRequest {
-                            table_id: TableId(self.table.id),
+                            table_id: self.table.id,
                         },
                     ),
                 ));
@@ -419,7 +419,7 @@ impl TableActor {
                 frame(
                     hanabi_protocol::server::TABLE_START,
                     TableStarted {
-                        table_id: TableId(self.table.id),
+                        table_id: self.table.id,
                         replay,
                     },
                 ),
@@ -478,7 +478,7 @@ impl TableActor {
                 frame(
                     hanabi_protocol::server::BOOT,
                     TableRequest {
-                        table_id: TableId(self.table.id),
+                        table_id: self.table.id,
                     },
                 ),
             ));

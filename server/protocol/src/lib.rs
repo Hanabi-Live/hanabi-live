@@ -235,10 +235,18 @@ pub enum LobbyStatus {
     },
 }
 
-#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
+#[derive(
+    Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize, JsonSchema,
+)]
 #[serde(transparent)]
 #[schemars(extend("x-brand" = "TableID"))]
 pub struct TableId(#[schemars(range(min = 0, max = MAX_SAFE_INTEGER))] pub u64);
+
+impl std::fmt::Display for TableId {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        self.0.fmt(f)
+    }
+}
 
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
@@ -1247,10 +1255,18 @@ pub struct TableStarted {
     pub replay: bool,
 }
 
-#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
+#[derive(
+    Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize, JsonSchema,
+)]
 #[serde(transparent)]
 #[schemars(extend("x-brand" = "UserID"))]
 pub struct UserId(#[schemars(range(min = 0, max = i32::MAX))] pub i32);
+
+impl std::fmt::Display for UserId {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        self.0.fmt(f)
+    }
+}
 
 /// The `/login` form.
 #[derive(Clone, Debug, Default, Serialize, Deserialize, JsonSchema)]
@@ -1745,10 +1761,18 @@ pub struct Table {
 #[schemars(extend("x-readonly" = true))]
 pub struct TableList(pub Vec<Table>);
 
-#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
+#[derive(
+    Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize, JsonSchema,
+)]
 #[serde(transparent)]
 #[schemars(extend("x-brand" = "GameID"))]
 pub struct GameId(#[schemars(range(min = 0, max = i32::MAX))] pub i32);
+
+impl std::fmt::Display for GameId {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        self.0.fmt(f)
+    }
+}
 
 /// A completed game in a player's history.
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]

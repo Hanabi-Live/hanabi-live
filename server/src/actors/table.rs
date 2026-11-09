@@ -24,7 +24,7 @@ use anyhow::{Context, Result};
 use chrono::Utc;
 use hanabi_engine::{CompletionTiming, EndCondition};
 use hanabi_protocol::{
-    Chat, ChatTyping, ClientMessage, GameId, IdleWarning, NO_VALUE, Status, TableId, TableRequest,
+    Chat, ChatTyping, ClientMessage, GameId, IdleWarning, NO_VALUE, Status, TableRequest,
     TableStarted, UserId, Warning,
 };
 use serde::Serialize;
@@ -151,7 +151,7 @@ impl TableActor {
             },
             data: hanabi_protocol::Table {
                 database_id: replay_game.map(GameId),
-                id: TableId(self.table.id),
+                id: self.table.id,
                 joined: false,
                 max_players: small(self.table.max_players),
                 name: self.table.name.clone(),
@@ -198,7 +198,7 @@ impl TableActor {
             e,
             hanabi_protocol::server::SPECTATORS,
             hanabi_protocol::Spectators {
-                table_id: TableId(self.table.id),
+                table_id: self.table.id,
                 spectators: self.spectators(),
             },
         );
@@ -263,7 +263,7 @@ impl TableActor {
         let message = frame(
             hanabi_protocol::server::CHAT_TYPING,
             ChatTyping {
-                table_id: TableId(self.table.id),
+                table_id: self.table.id,
                 name: name.into(),
                 typing,
             },
@@ -291,7 +291,7 @@ impl TableActor {
                 })
                 .collect();
             let pregame = hanabi_protocol::Pregame {
-                table_id: TableId(self.table.id),
+                table_id: self.table.id,
                 name: self.table.name.clone(),
                 owner: UserId(self.table.owner),
                 players,
@@ -556,7 +556,7 @@ impl TableActor {
                 frame(
                     hanabi_protocol::server::JOINED,
                     TableRequest {
-                        table_id: TableId(self.table.id),
+                        table_id: self.table.id,
                     },
                 ),
             ));
@@ -576,7 +576,7 @@ impl TableActor {
                 frame(
                     hanabi_protocol::server::TABLE_START,
                     TableStarted {
-                        table_id: TableId(self.table.id),
+                        table_id: self.table.id,
                         replay: true,
                     },
                 ),
@@ -822,7 +822,7 @@ impl TableActor {
     pub(super) fn connected(&self) -> hanabi_protocol::Connected {
         let replay = matches!(self.table.phase, Phase::Replay { .. });
         hanabi_protocol::Connected {
-            table_id: TableId(self.table.id),
+            table_id: self.table.id,
             list: self
                 .table
                 .players()
@@ -839,7 +839,7 @@ impl TableActor {
     }
     pub(super) fn card_identities(&self, s: &Snapshot) -> hanabi_protocol::CardIdentities {
         hanabi_protocol::CardIdentities {
-            table_id: TableId(self.table.id),
+            table_id: self.table.id,
             card_identities: s
                 .game
                 .identities()
@@ -859,7 +859,7 @@ impl TableActor {
         let mut times = s.clocks.clone();
         times[s.game.active_player_index] = now.active_clock;
         hanabi_protocol::Clock {
-            table_id: TableId(self.table.id),
+            table_id: self.table.id,
             times,
             active_player_index: if live {
                 int(s.game.active_player_index)
@@ -1025,7 +1025,7 @@ impl TableActor {
                 &mut e,
                 hanabi_protocol::server::IDLE_WARNING,
                 IdleWarning {
-                    table_id: TableId(self.table.id),
+                    table_id: self.table.id,
                     remaining_ms,
                 },
             );
@@ -1077,7 +1077,7 @@ impl TableActor {
                 frame(
                     hanabi_protocol::server::BOOT,
                     TableRequest {
-                        table_id: TableId(self.table.id),
+                        table_id: self.table.id,
                     },
                 ),
             ));

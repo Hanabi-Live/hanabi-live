@@ -15,7 +15,7 @@ use anyhow::Context;
 use hanabi_engine::{CompletionTiming, EndCondition, Recipient};
 use hanabi_protocol::ClientMessage;
 use hanabi_protocol::{
-    ChatTyping, MIN_PLAYERS, NO_VALUE, ReplayAction, SafeInteger, Status, TableId, TableRequest,
+    ChatTyping, MIN_PLAYERS, NO_VALUE, ReplayAction, SafeInteger, Status, TableRequest,
 };
 use std::sync::Arc;
 
@@ -157,7 +157,7 @@ impl TableActor {
                     frame(
                         hanabi_protocol::server::FINISH_ONGOING_GAME,
                         hanabi_protocol::FinishOngoingGame {
-                            table_id: TableId(self.table.id),
+                            table_id: self.table.id,
                             database_id: i64::from(s.game_id),
                             shared_replay_leader: self.leader_name(),
                         },
@@ -168,7 +168,7 @@ impl TableActor {
                     frame(
                         hanabi_protocol::server::NOTE_LIST,
                         hanabi_protocol::NoteList {
-                            table_id: TableId(self.table.id),
+                            table_id: self.table.id,
                             notes: self.observer_notes(a),
                         },
                     ),
@@ -182,7 +182,7 @@ impl TableActor {
                     &mut e,
                     hanabi_protocol::server::PAUSE,
                     hanabi_protocol::Pause {
-                        table_id: TableId(self.table.id),
+                        table_id: self.table.id,
                         active: true,
                         player_index: i64::from(s.pause_player_index),
                     },
@@ -284,7 +284,7 @@ impl TableActor {
             &mut e,
             hanabi_protocol::server::IDLE_RESET,
             TableRequest {
-                table_id: TableId(self.table.id),
+                table_id: self.table.id,
             },
         );
         self.publish(e).await
@@ -335,7 +335,7 @@ impl TableActor {
                 &mut e,
                 hanabi_protocol::server::PAUSE,
                 hanabi_protocol::Pause {
-                    table_id: TableId(self.table.id),
+                    table_id: self.table.id,
                     active: s.game.paused,
                     player_index: i64::from(s.pause_player_index),
                 },
@@ -394,7 +394,7 @@ impl TableActor {
                 frame(
                     hanabi_protocol::server::NOTE,
                     hanabi_protocol::Note {
-                        table_id: TableId(self.table.id),
+                        table_id: self.table.id,
                         order: i64::try_from(order)?,
                         notes,
                     },
@@ -466,7 +466,7 @@ impl TableActor {
                 };
             let shared_replay = replay && self.table.visible;
             let init = hanabi_protocol::Init {
-                table_id: TableId(self.table.id),
+                table_id: self.table.id,
                 player_names: s.players.iter().map(|p| p.name.clone()).collect(),
                 our_player_index: int(a.shadow.or(display_seat).unwrap_or(0)),
                 spectating: a.spectator && !replay,
@@ -565,7 +565,7 @@ impl TableActor {
                     frame(
                         hanabi_protocol::server::NOTE_LIST,
                         hanabi_protocol::NoteList {
-                            table_id: TableId(self.table.id),
+                            table_id: self.table.id,
                             notes: self.observer_notes(a),
                         },
                     ),
@@ -576,7 +576,7 @@ impl TableActor {
                     frame(
                         hanabi_protocol::server::NOTE_LIST_PLAYER,
                         hanabi_protocol::NoteListPlayer {
-                            table_id: TableId(self.table.id),
+                            table_id: self.table.id,
                             notes: s.notes[seat].clone(),
                         },
                     ),
@@ -607,7 +607,7 @@ impl TableActor {
                 frame(
                     hanabi_protocol::server::SPECTATORS,
                     hanabi_protocol::Spectators {
-                        table_id: TableId(self.table.id),
+                        table_id: self.table.id,
                         spectators: self.spectators(),
                     },
                 ),
@@ -621,7 +621,7 @@ impl TableActor {
                     frame(
                         hanabi_protocol::server::CHAT_TYPING,
                         ChatTyping {
-                            table_id: TableId(self.table.id),
+                            table_id: self.table.id,
                             name: a.session.name.clone(),
                             typing: true,
                         },

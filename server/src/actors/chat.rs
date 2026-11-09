@@ -26,18 +26,14 @@ const MAX_START_IN_MINUTES: f64 = 10.0;
 /// The fewest players for the Impostor command, which needs more than one other player.
 const MIN_IMPOSTOR_PLAYERS: usize = MIN_PLAYERS + 1;
 
-pub(super) fn server_chat(id: u64, message: &str) -> Chat {
+pub(super) fn server_chat(id: TableId, message: &str) -> Chat {
     Chat {
         who: Some("Hanab Live".into()),
-        room: Some(if id == 0 {
-            "lobby".into()
-        } else {
-            format!("table{id}")
-        }),
+        room: Some(format!("table{id}")),
         ..Chat::new(message, ChatSource::Server, chat_time())
     }
 }
-pub(super) fn authored_chat(id: u64, name: &str, message: &str) -> Chat {
+pub(super) fn authored_chat(id: TableId, name: &str, message: &str) -> Chat {
     Chat {
         who: Some(name.into()),
         room: Some(format!("table{id}")),
@@ -557,7 +553,7 @@ impl TableActor {
                 frame(
                     hanabi_protocol::server::LEFT,
                     TableRequest {
-                        table_id: TableId(self.table.id),
+                        table_id: self.table.id,
                     },
                 ),
             ));

@@ -11,6 +11,7 @@ use crate::{
     transport::Session,
 };
 use chrono::Utc;
+use hanabi_protocol::TableId;
 use hanabi_protocol::{Chat, GameId, MAX_SEED_LENGTH, MIN_PLAYERS, NO_VALUE, ReplayAction};
 use std::{collections::BTreeMap, fmt::Write as _};
 
@@ -126,7 +127,7 @@ pub(super) fn requested_extra(
 pub(super) async fn load_replay(
     store: &Store,
     extra: &mut ExtraOptions,
-    table_id: u64,
+    table_id: TableId,
     user: i32,
     options: &mut Options,
 ) -> CommandResult<()> {
@@ -189,7 +190,7 @@ fn replay_turn(extra: &ExtraOptions) -> Option<u32> {
 }
 /// A private message to a table's owner, with a button that applies the suggested options.
 pub(super) fn options_suggestion(
-    id: u64,
+    id: TableId,
     owner: &str,
     options: &Options,
     name: &str,

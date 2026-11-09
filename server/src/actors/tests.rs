@@ -99,7 +99,7 @@ fn typed_game_frames_preserve_wire_schema_and_projected_identities() -> Result<(
         ),
     ] {
         let list = hanabi_engine::events_for_recipient(game.state(), recipient, None)?;
-        let encoded = test_frame("gameActionList", game_action_list(42, &list));
+        let encoded = test_frame("gameActionList", game_action_list(TableId(42), &list));
         let (command, body) = encoded
             .split_once(' ')
             .context("Missing protocol separator")?;
@@ -107,7 +107,7 @@ fn typed_game_frames_preserve_wire_schema_and_projected_identities() -> Result<(
         let body: Value = serde_json::from_str(body)?;
         assert_eq!(body, json!({"tableID":42,"list":list}));
         for (event, expected) in list.iter().zip(body["list"].as_array().unwrap()) {
-            let encoded = test_frame("gameAction", game_action(42, event));
+            let encoded = test_frame("gameAction", game_action(TableId(42), event));
             let (command, body) = encoded
                 .split_once(' ')
                 .context("Missing action separator")?;
@@ -142,7 +142,7 @@ fn typed_game_frames_preserve_wire_schema_and_projected_identities() -> Result<(
 
 #[test]
 fn option_summaries_include_only_changes_and_escape_values() {
-    let mut table = pregame(1);
+    let mut table = pregame(TableId(1));
     table.options.timed = true;
     table.options.time_base = 120.0;
     table.options.time_per_turn = 20;
@@ -257,7 +257,7 @@ async fn fixture_store() -> Result<Option<(TestDb, Store, LiveState)>> {
     let store = Store::fixture(db.pool.clone(), state.clone());
     Ok(Some((db, store, state)))
 }
-pub(super) fn pregame(id: u64) -> TableSnapshot {
+pub(super) fn pregame(id: TableId) -> TableSnapshot {
     TableSnapshot {
         format: FORMAT.into(),
         id,
@@ -621,7 +621,7 @@ async fn spectating_a_live_game_does_not_refresh_its_idle_deadline() -> Result<(
     Ok(())
 }
 
-pub(super) fn review(id: u64, condition: EndCondition) -> Result<TableSnapshot> {
+pub(super) fn review(id: TableId, condition: EndCondition) -> Result<TableSnapshot> {
     let mut imported = replay_helpers::parse(&hanabi_protocol::decode(
         &json!({"players":["Alice","Bob"],"seed":"p2v0s1"}),
     )?)?;
@@ -902,11 +902,11 @@ async fn full_table_mailboxes_do_not_block_hub_and_replacements_fence_private_ef
         Presence {
             session: old.clone(),
             status: Status::Playing,
-            table: Some(42),
+            table: Some(TableId(42)),
         },
     );
     hub.tables.insert(
-        42,
+        TableId(42),
         Entry {
             handle: TableHandle {
                 sender: table_sender,
@@ -921,7 +921,7 @@ async fn full_table_mailboxes_do_not_block_hub_and_replacements_fence_private_ef
     sender
         .send(HubCommand::Route {
             session: old.clone(),
-            table: 42,
+            table: TableId(42),
             command: Command::Client(Box::new(client_message(
                 "getGameInfo1",
                 &json!({"tableID":42}),
@@ -958,9 +958,9 @@ async fn full_table_mailboxes_do_not_block_hub_and_replacements_fence_private_ef
     ensure!(!old.active(), "Replacement did not cancel old session");
     sender
         .send(HubCommand::Effects(Effects {
-            table: 42,
+            table: TableId(42),
             view,
-            statuses: vec![(old.clone(), Status::Playing, Some(42))],
+            statuses: vec![(old.clone(), Status::Playing, Some(TableId(42)))],
             messages: vec![(old.clone(), "secret private frame".into())],
         }))
         .await?;
@@ -994,7 +994,7 @@ async fn full_table_mailboxes_do_not_block_hub_and_replacements_fence_private_ef
 #[test]
 fn a_table_chat_that_players_filled_still_fits_in_a_checkpoint() -> Result<()> {
     const CHAT_BATCH: usize = 64;
-    let mut table = review(1, EndCondition::TerminatedByPlayer)?;
+    let mut table = review(TableId(1), EndCondition::TerminatedByPlayer)?;
     let name = "x".repeat(crate::accounts::MAX_USERNAME_LENGTH);
     // Quotes are the characters that grow the most when escaped as HTML.
     let text = crate::accounts::normalize_chat(&"\"".repeat(1000)).map_err(anyhow::Error::msg)?;
@@ -1005,7 +1005,11 @@ fn a_table_chat_that_players_filled_still_fits_in_a_checkpoint() -> Result<()> {
             table.chat.push(TableChat {
                 id: None,
                 user: 1,
-                message: authored_chat(u64::MAX, &name, &text),
+                message: authored_chat(
+                    TableId(hanabi_protocol::MAX_SAFE_INTEGER.unsigned_abs()),
+                    &name,
+                    &text,
+                ),
             });
         }
     }
@@ -1014,7 +1018,10 @@ fn a_table_chat_that_players_filled_still_fits_in_a_checkpoint() -> Result<()> {
         table.chat.push(TableChat {
             id: None,
             user: 0,
-            message: server_chat(u64::MAX, &notice),
+            message: server_chat(
+                TableId(hanabi_protocol::MAX_SAFE_INTEGER.unsigned_abs()),
+                &notice,
+            ),
         });
     }
     let size = serde_json::to_vec(&table)?.len();

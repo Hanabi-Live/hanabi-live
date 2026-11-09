@@ -8,6 +8,7 @@ use crate::{
     transport::Session,
 };
 use anyhow::Result;
+use hanabi_protocol::TableId;
 use hanabi_protocol::{ClientMessage, NO_VALUE, Status};
 use serde::Serialize;
 use serde_json::Value;
@@ -19,10 +20,7 @@ use std::{
 use tokio::sync::{Notify, OwnedSemaphorePermit, mpsc, oneshot};
 use tokio_util::task::TaskTracker;
 #[cfg(test)]
-use {
-    anyhow::Context,
-    hanabi_protocol::{TableId, UserId},
-};
+use {anyhow::Context, hanabi_protocol::UserId};
 
 #[cfg(test)]
 mod protocol_tests;
@@ -50,7 +48,7 @@ const REPLAY_RECONNECT_GRACE: Duration = Duration::from_secs(60);
 const NO_SHADOWED_SEAT: i8 = NO_VALUE as i8;
 
 pub struct Allocation {
-    pub id: u64,
+    pub id: TableId,
     permit: Option<OwnedSemaphorePermit>,
     cleanup: Option<(Store, TaskTracker)>,
     revision: i64,
@@ -89,7 +87,7 @@ impl Drop for SeatReservation {
 }
 impl Allocation {
     fn new(
-        id: u64,
+        id: TableId,
         permit: OwnedSemaphorePermit,
         store: Store,
         tasks: TaskTracker,
@@ -159,12 +157,12 @@ struct Entry {
 struct Presence {
     session: Arc<Session>,
     status: Status,
-    table: Option<u64>,
+    table: Option<TableId>,
 }
 pub struct Effects {
-    pub table: u64,
+    pub table: TableId,
     pub view: TableView,
-    pub statuses: Vec<(Arc<Session>, Status, Option<u64>)>,
+    pub statuses: Vec<(Arc<Session>, Status, Option<TableId>)>,
     pub messages: Vec<(Arc<Session>, String)>,
 }
 pub enum HubCommand {
@@ -211,7 +209,7 @@ pub enum HubCommand {
     /// Reserves seats for users who move from table `from` to a new table, such as in a split.
     ReserveSeats {
         users: Vec<i32>,
-        from: u64,
+        from: TableId,
         reply: oneshot::Sender<CommandResult<SeatReservation>>,
     },
     /// Ends a seat reservation that was dropped before its request finished.
@@ -225,7 +223,7 @@ pub enum HubCommand {
     },
     Route {
         session: Arc<Session>,
-        table: u64,
+        table: TableId,
         command: Command,
         reply: Reply,
     },
@@ -234,7 +232,7 @@ pub enum HubCommand {
         reply: Reply,
     },
     Effects(Effects),
-    Retire(u64),
+    Retire(TableId),
     Install {
         table: Box<TableSnapshot>,
         revision: i64,

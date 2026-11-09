@@ -3,6 +3,7 @@
 use crate::{checkpoint::PartChanges, errors::Fault, store::LockSpace};
 use anyhow::{Context, Result, bail, ensure};
 use axum::http::StatusCode;
+use hanabi_protocol::TableId;
 use sqlx::{Connection, PgConnection, PgPool, Postgres, Transaction, postgres::PgConnectOptions};
 use std::{
     sync::Arc,
@@ -22,7 +23,7 @@ const WATCHDOG_INTERVAL: Duration = Duration::from_secs(1);
 const WATCHDOG_TIMEOUT: Duration = Duration::from_secs(5);
 
 pub struct StoredState {
-    pub id: u64,
+    pub id: TableId,
     pub revision: i64,
     /// The checkpoint's head; see `checkpoint`.
     pub payload: String,
@@ -31,8 +32,8 @@ pub struct StoredState {
 }
 
 /// Table IDs are positive and stay within the integers that clients represent exactly.
-fn table_id(id: u64) -> Result<i64> {
-    i64::try_from(id)
+fn table_id(id: TableId) -> Result<i64> {
+    i64::try_from(id.0)
         .ok()
         .filter(|id| (1..=hanabi_protocol::MAX_SAFE_INTEGER).contains(id))
         .context("Invalid table identity")
@@ -42,7 +43,7 @@ fn table_id(id: u64) -> Result<i64> {
 /// `LiveState::begin`, if its revision is still `expected`. Returns the new revision.
 pub async fn save_in(
     transaction: &mut Transaction<'static, Postgres>,
-    id: u64,
+    id: TableId,
     expected: i64,
     payload: &str,
     parts: &PartChanges,
@@ -99,8 +100,8 @@ pub async fn save_in(
 async fn parts_of(
     connection: &mut PgConnection,
     ids: &[i64],
-) -> Result<std::collections::HashMap<u64, Vec<(String, String)>>> {
-    let mut parts = std::collections::HashMap::<u64, Vec<(String, String)>>::new();
+) -> Result<std::collections::HashMap<TableId, Vec<(String, String)>>> {
+    let mut parts = std::collections::HashMap::<TableId, Vec<(String, String)>>::new();
     for row in sqlx::query!(
         "SELECT table_id, part, value FROM live_table_parts WHERE table_id = ANY($1)",
         ids
@@ -109,7 +110,7 @@ async fn parts_of(
     .await?
     {
         parts
-            .entry(row.table_id.cast_unsigned())
+            .entry(TableId(row.table_id.cast_unsigned()))
             .or_default()
             .push((row.part, row.value));
     }
@@ -120,7 +121,7 @@ async fn parts_of(
 /// A table that is already gone counts as removed.
 pub async fn remove_in(
     transaction: &mut Transaction<'static, Postgres>,
-    id: u64,
+    id: TableId,
     expected: i64,
 ) -> Result<()> {
     ensure!(expected >= 0, "Invalid removal revision");
@@ -275,7 +276,7 @@ impl LiveState {
 
     pub async fn save(
         &self,
-        id: u64,
+        id: TableId,
         expected: i64,
         payload: &str,
         parts: &PartChanges,
@@ -287,7 +288,7 @@ impl LiveState {
     }
 
     /// Reserves a table ID that was allocated earlier, such as the destination of a split.
-    pub async fn reserve(&self, id: u64) -> Result<()> {
+    pub async fn reserve(&self, id: TableId) -> Result<()> {
         let id = table_id(id)?;
         let mut transaction = self.begin().await?;
         sqlx::query_scalar!(
@@ -303,7 +304,7 @@ impl LiveState {
     }
 
     /// Reserves a new table ID. IDs are never reused.
-    pub async fn allocate_table(&self) -> Result<u64> {
+    pub async fn allocate_table(&self) -> Result<TableId> {
         let mut transaction = self.begin().await?;
         let id = sqlx::query_scalar!(
             "INSERT INTO live_tables (id, revision, payload, epoch)
@@ -313,16 +314,16 @@ impl LiveState {
         .fetch_one(&mut *transaction)
         .await?;
         self.commit(transaction).await?;
-        Ok(id.cast_unsigned())
+        Ok(TableId(id.cast_unsigned()))
     }
 
-    pub async fn remove(&self, id: u64, expected: i64) -> Result<()> {
+    pub async fn remove(&self, id: TableId, expected: i64) -> Result<()> {
         let mut transaction = self.begin().await?;
         remove_in(&mut transaction, id, expected).await?;
         self.commit(transaction).await
     }
 
-    pub async fn get(&self, id: u64) -> Result<Option<StoredState>> {
+    pub async fn get(&self, id: TableId) -> Result<Option<StoredState>> {
         self.check()?;
         let key = table_id(id)?;
         // One transaction reads the head and the parts of the same revision.
@@ -365,10 +366,12 @@ impl LiveState {
         Ok(rows
             .into_iter()
             .map(|row| StoredState {
-                id: row.id.cast_unsigned(),
+                id: TableId(row.id.cast_unsigned()),
                 revision: row.revision,
                 payload: row.payload,
-                parts: parts.remove(&row.id.cast_unsigned()).unwrap_or_default(),
+                parts: parts
+                    .remove(&TableId(row.id.cast_unsigned()))
+                    .unwrap_or_default(),
             })
             .collect())
     }

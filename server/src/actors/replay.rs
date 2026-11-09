@@ -12,7 +12,7 @@ use crate::{
 use anyhow::Context;
 use chrono::Utc;
 use hanabi_protocol::ClientMessage;
-use hanabi_protocol::{HypotheticalAction, MIN_PLAYERS, TableId, TableRequest};
+use hanabi_protocol::{HypotheticalAction, MIN_PLAYERS, TableRequest};
 use std::sync::Arc;
 
 /// Removes the moves of a hypothetical's last turn, the way clients go back. Morphs stay, since
@@ -275,7 +275,7 @@ impl TableActor {
             &mut e,
             hanabi_protocol::server::REPLAY_LEADER,
             hanabi_protocol::ReplayLeader {
-                table_id: TableId(self.table.id),
+                table_id: self.table.id,
                 name: target.1.clone(),
             },
         );
@@ -300,7 +300,7 @@ impl TableActor {
             frame(
                 hanabi_protocol::server::SUGGESTION,
                 hanabi_protocol::Suggestion {
-                    table_id: TableId(self.table.id),
+                    table_id: self.table.id,
                     user_name: session.name.clone(),
                     segment,
                 },
@@ -331,7 +331,7 @@ impl TableActor {
                 Outgoing::new(
                     hanabi_protocol::server::REPLAY_SEGMENT,
                     hanabi_protocol::ReplaySegment {
-                        table_id: TableId(self.table.id),
+                        table_id: self.table.id,
                         segment: i64::from(segment),
                     },
                 )
@@ -339,14 +339,14 @@ impl TableActor {
             R::Arrow { order, .. } => Outgoing::new(
                 hanabi_protocol::server::REPLAY_INDICATOR,
                 hanabi_protocol::ReplayIndicator {
-                    table_id: TableId(self.table.id),
+                    table_id: self.table.id,
                     order,
                 },
             ),
             R::Sound { sound, .. } => Outgoing::new(
                 hanabi_protocol::server::REPLAY_SOUND,
                 hanabi_protocol::ReplaySound {
-                    table_id: TableId(self.table.id),
+                    table_id: self.table.id,
                     sound,
                 },
             ),
@@ -357,7 +357,7 @@ impl TableActor {
                 Outgoing::new(
                     hanabi_protocol::server::HYPO_START,
                     TableRequest {
-                        table_id: TableId(self.table.id),
+                        table_id: self.table.id,
                     },
                 )
             }
@@ -368,7 +368,7 @@ impl TableActor {
                 Outgoing::new(
                     hanabi_protocol::server::HYPO_END,
                     TableRequest {
-                        table_id: TableId(self.table.id),
+                        table_id: self.table.id,
                     },
                 )
             }
@@ -388,7 +388,7 @@ impl TableActor {
                 Outgoing::new(
                     hanabi_protocol::server::HYPO_BACK,
                     TableRequest {
-                        table_id: TableId(self.table.id),
+                        table_id: self.table.id,
                     },
                 )
             }
@@ -397,7 +397,7 @@ impl TableActor {
                 Outgoing::new(
                     hanabi_protocol::server::HYPO_SHOW_DRAWN_CARDS,
                     hanabi_protocol::HypoShowDrawnCards {
-                        table_id: TableId(self.table.id),
+                        table_id: self.table.id,
                         show_drawn_cards: replay.show_drawn_cards,
                     },
                 )
@@ -407,7 +407,7 @@ impl TableActor {
                 Outgoing::new(
                     hanabi_protocol::server::REPLAY_EFFICIENCY_MOD,
                     hanabi_protocol::ReplayEfficiencyMod {
-                        table_id: TableId(self.table.id),
+                        table_id: self.table.id,
                         r#mod: replay.efficiency_modifier,
                     },
                 )
@@ -542,7 +542,7 @@ impl TableActor {
             &mut e,
             hanabi_protocol::server::RESTART_DECLINED,
             hanabi_protocol::RestartDeclined {
-                table_id: TableId(self.table.id),
+                table_id: self.table.id,
                 names: self.restart_declined_names(),
             },
         );

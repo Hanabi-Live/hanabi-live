@@ -5,6 +5,7 @@ use crate::{
 };
 use anyhow::{Context, Result, bail, ensure};
 use hanabi_protocol::ChatSource;
+use hanabi_protocol::TableId;
 use serde_json::{Value, json};
 
 use sqlx::{
@@ -30,7 +31,7 @@ pub struct Store {
     state: LiveState,
     /// The digests of each live table's saved parts, by table, which tell a save which parts
     /// changed. Every write of a live table goes through `Store`, so these match the database.
-    saved_parts: Arc<Mutex<HashMap<u64, HashMap<String, PartDigest>>>>,
+    saved_parts: Arc<Mutex<HashMap<TableId, HashMap<String, PartDigest>>>>,
     stats: TaskTracker,
     stats_slots: Arc<Semaphore>,
 }
@@ -169,7 +170,7 @@ impl Store {
     pub fn ownership_lost(&self) -> CancellationToken {
         self.state.lost()
     }
-    pub async fn allocate_table(&self) -> Result<u64> {
+    pub async fn allocate_table(&self) -> Result<TableId> {
         self.state.allocate_table().await
     }
     pub async fn reserve(&self) -> Result<i32> {
@@ -194,7 +195,9 @@ impl Store {
         )?;
         Ok(json!({"primary":primary,"recovery":recovery}))
     }
-    fn saved_parts(&self) -> std::sync::MutexGuard<'_, HashMap<u64, HashMap<String, PartDigest>>> {
+    fn saved_parts(
+        &self,
+    ) -> std::sync::MutexGuard<'_, HashMap<TableId, HashMap<String, PartDigest>>> {
         self.saved_parts
             .lock()
             .unwrap_or_else(std::sync::PoisonError::into_inner)
@@ -202,7 +205,7 @@ impl Store {
     /// What saving `encoded` as table `id` changes among its parts, and the parts' digests after.
     fn part_changes(
         &self,
-        id: u64,
+        id: TableId,
         encoded: &Encoded,
     ) -> (PartChanges, HashMap<String, PartDigest>) {
         let saved = self.saved_parts().get(&id).cloned().unwrap_or_default();
@@ -229,13 +232,13 @@ impl Store {
         }
         result
     }
-    pub async fn remove(&self, id: u64, revision: i64) -> Result<()> {
+    pub async fn remove(&self, id: TableId, revision: i64) -> Result<()> {
         self.state.remove(id, revision).await?;
         self.saved_parts().remove(&id);
         Ok(())
     }
     /// A live table and its revision, as the database holds it.
-    pub async fn get(&self, id: u64) -> Result<Option<(TableSnapshot, i64)>> {
+    pub async fn get(&self, id: TableId) -> Result<Option<(TableSnapshot, i64)>> {
         self.state
             .get(id)
             .await?
@@ -599,7 +602,7 @@ mod tests {
     use std::{collections::BTreeMap, sync::Arc};
     use tokio::sync::oneshot;
 
-    fn pregame(id: u64) -> TableSnapshot {
+    fn pregame(id: TableId) -> TableSnapshot {
         TableSnapshot {
             format: FORMAT.into(),
             id,
@@ -690,7 +693,7 @@ mod tests {
     }
     #[test]
     fn checkpoints_round_trip_as_parts_and_from_before_parts() -> Result<()> {
-        let mut table = pregame(1);
+        let mut table = pregame(TableId(1));
         terminal(&mut table)?;
         table.convert_to_replay()?;
         let owner = crate::model::NoteOwner {
@@ -872,7 +875,7 @@ mod tests {
                 .context("Missing table")?;
             ensure!(serde_json::to_value(&loaded)? == serde_json::to_value(&table)?);
 
-            let id = i64::try_from(table.id)?;
+            let id = i64::try_from(table.id.0)?;
             let versions = || async {
                 Ok::<_, anyhow::Error>(
                     sqlx::query!(
@@ -1052,7 +1055,7 @@ mod tests {
         Ok(())
     }
     /// A table chat message as players send it.
-    fn chat(id: u64, text: &str) -> Result<TableChat> {
+    fn chat(id: TableId, text: &str) -> Result<TableChat> {
         Ok(TableChat {
             id: None,
             user: 1,
@@ -1147,7 +1150,7 @@ mod tests {
                 "The finished game did not become a fresh review"
             );
             ensure!(count(&pool, "game_actions").await? == 1);
-            let replay = crate::archive::replay(&store.primary, 1, 99, 1).await?;
+            let replay = crate::archive::replay(&store.primary, 1, TableId(99), 1).await?;
             ensure!(
                 replay.game.actions == finished.game().unwrap().game.actions
                     && replay.notes == finished.game().unwrap().notes

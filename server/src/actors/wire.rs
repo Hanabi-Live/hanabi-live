@@ -110,21 +110,21 @@ pub(super) fn wire_event(event: &hanabi_engine::EngineEvent) -> hanabi_protocol:
 }
 
 pub(crate) fn game_action(
-    table: u64,
+    table: TableId,
     event: &hanabi_engine::EngineEvent,
 ) -> hanabi_protocol::GameAction {
     hanabi_protocol::GameAction {
-        table_id: TableId(table),
+        table_id: table,
         action: wire_event(event),
     }
 }
 
 pub(crate) fn game_action_list(
-    table: u64,
+    table: TableId,
     list: &[hanabi_engine::EngineEvent],
 ) -> hanabi_protocol::GameActionList {
     hanabi_protocol::GameActionList {
-        table_id: TableId(table),
+        table_id: table,
         list: list.iter().map(wire_event).collect(),
     }
 }

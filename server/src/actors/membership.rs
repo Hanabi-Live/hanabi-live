@@ -5,7 +5,7 @@ use crate::{
     transport::{Session, frame},
 };
 use anyhow::Context;
-use hanabi_protocol::{Status, TableId, TableRequest, TableStarted};
+use hanabi_protocol::{Status, TableRequest, TableStarted};
 use std::{collections::HashSet, sync::Arc};
 
 impl TableActor {
@@ -226,7 +226,7 @@ impl TableActor {
                 frame(
                     hanabi_protocol::server::JOINED,
                     TableRequest {
-                        table_id: TableId(self.table.id),
+                        table_id: self.table.id,
                     },
                 ),
             ));
@@ -237,7 +237,7 @@ impl TableActor {
                 frame(
                     hanabi_protocol::server::TABLE_START,
                     TableStarted {
-                        table_id: TableId(self.table.id),
+                        table_id: self.table.id,
                         replay,
                     },
                 ),
@@ -294,7 +294,7 @@ impl TableActor {
                 frame(
                     hanabi_protocol::server::LEFT,
                     TableRequest {
-                        table_id: TableId(self.table.id),
+                        table_id: self.table.id,
                     },
                 ),
             ));

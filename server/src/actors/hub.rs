@@ -35,7 +35,7 @@ pub struct Hub {
     pub(super) receiver: mpsc::Receiver<HubCommand>,
     pub(super) sender: mpsc::Sender<HubCommand>,
     pub(super) sessions: HashMap<i32, Presence>,
-    pub(super) tables: HashMap<u64, Entry>,
+    pub(super) tables: HashMap<TableId, Entry>,
     pub(super) closing: bool,
     pub(super) store: Store,
     pub(super) tasks: TaskTracker,
@@ -126,7 +126,7 @@ impl Hub {
             table_id: if p.status == Status::Replay {
                 Some(TableId(0))
             } else {
-                p.table.map(TableId)
+                p.table
             },
             h_group: p.session.h_group(),
             h_group_level: p.session.h_group_level(),
@@ -146,7 +146,7 @@ impl Hub {
         data.joined = v.players.contains(&user);
         data
     }
-    fn playing_elsewhere(&self, user: i32, except: Option<u64>) -> bool {
+    fn playing_elsewhere(&self, user: i32, except: Option<TableId>) -> bool {
         self.tables.iter().any(|(id, entry)| {
             Some(*id) != except && !entry.view.replay && entry.view.players.contains(&user)
         })
@@ -156,7 +156,7 @@ impl Hub {
     fn reserve(
         &mut self,
         users: Vec<i32>,
-        except: Option<u64>,
+        except: Option<TableId>,
         playing_elsewhere: &str,
     ) -> CommandResult<SeatReservation> {
         ensure_or_reject!(
@@ -195,7 +195,7 @@ impl Hub {
             }
         }
     }
-    fn route(&mut self, s: Arc<Session>, id: u64, command: Command, reply: Reply) {
+    fn route(&mut self, s: Arc<Session>, id: TableId, command: Command, reply: Reply) {
         if self.closing || !self.current(&s) {
             let _ = reply.send(Err(rejection!("Stale session or draining server")));
             return;
@@ -266,7 +266,7 @@ impl Hub {
         }
     }
     /// A shared replay of the same database game that a link to it should join.
-    fn existing_replay(&self, r: &hanabi_protocol::ReplayCreateRequest) -> Option<u64> {
+    fn existing_replay(&self, r: &hanabi_protocol::ReplayCreateRequest) -> Option<TableId> {
         if !r.join_existing
             || r.visibility != hanabi_protocol::ReplayVisibility::Shared
             || r.source != hanabi_protocol::ReplaySource::Id
@@ -536,7 +536,7 @@ impl Hub {
                         .tables
                         .iter()
                         .filter(|(_, e)| !e.view.replay && e.view.players.contains(&session.user))
-                        .map(|(id, _)| TableId(*id))
+                        .map(|(id, _)| *id)
                         .collect();
                     if let Some((id, shadow)) = self.tables.iter().find_map(|(id, e)| {
                         e.view
@@ -544,7 +544,7 @@ impl Hub {
                             .get(&session.user)
                             .map(|shadow| (*id, *shadow))
                     }) {
-                        welcome.discon_spectating_table = Some(TableId(id));
+                        welcome.discon_spectating_table = Some(id);
                         welcome.discon_shadowing_seat = Some(
                             shadow
                                 .and_then(|seat| i8::try_from(seat).ok())
@@ -681,7 +681,7 @@ impl Hub {
                                 id,
                                 Command::Client(Box::new(ClientMessage::TableSpectate(
                                     hanabi_protocol::TableSpectateRequest {
-                                        table_id: TableId(id),
+                                        table_id: id,
                                         shadowing_player_index: r.shadowing_player_index,
                                     },
                                 ))),
@@ -875,7 +875,7 @@ impl Hub {
                         self.broadcast(&frame(
                             hanabi_protocol::server::TABLE_GONE,
                             TableRequest {
-                                table_id: TableId(effects.table),
+                                table_id: effects.table,
                             },
                         ));
                     }
@@ -923,9 +923,7 @@ impl Hub {
                     if self.tables.remove(&id).is_some_and(|e| e.view.visible) {
                         self.broadcast(&frame(
                             hanabi_protocol::server::TABLE_GONE,
-                            TableRequest {
-                                table_id: TableId(id),
-                            },
+                            TableRequest { table_id: id },
                         ));
                     }
                 }

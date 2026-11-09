@@ -170,7 +170,7 @@ impl Harness {
         })
         .await?
     }
-    async fn create(&mut self, index: usize, name: &str, options: Value) -> Result<u64> {
+    async fn create(&mut self, index: usize, name: &str, options: Value) -> Result<TableId> {
         self.send(
             index,
             "tableCreate",
@@ -179,15 +179,17 @@ impl Harness {
         .await?;
         self.receive(index, "joined").await?["tableID"]
             .as_u64()
+            .map(TableId)
             .context("Missing table identity")
     }
-    async fn replay(&mut self, index: usize) -> Result<u64> {
+    async fn replay(&mut self, index: usize) -> Result<TableId> {
         self.send(index,"replayCreate",json!({"source":"json","visibility":"shared","gameJSON":{"players":["Alice","Bob"],"seed":"p2v0s1"}})).await?;
         self.receive(index, "tableStart").await?["tableID"]
             .as_u64()
+            .map(TableId)
             .context("Missing replay identity")
     }
-    async fn snapshot(&self, id: u64) -> Result<(TableSnapshot, i64)> {
+    async fn snapshot(&self, id: TableId) -> Result<(TableSnapshot, i64)> {
         self.store.get(id).await?.context("Missing durable table")
     }
     async fn wait_locks(&self, count: i64) -> Result<()> {
@@ -1001,7 +1003,7 @@ async fn shared_replays_of_older_games_start_when_their_table_is_created() -> Re
         let id = h.receive(0, "tableStart").await?["tableID"].clone();
         h.stop_hub().await?;
         let (mut table, revision) = h
-            .snapshot(id.as_u64().context("Missing replay identity")?)
+            .snapshot(TableId(id.as_u64().context("Missing replay identity")?))
             .await?;
         let created = table.created;
         let game = table.game_mut().context("Missing replay game")?;
@@ -1068,7 +1070,9 @@ async fn trying_to_join_a_full_table_tells_its_players_once() -> Result<()> {
             chat["msg"] == "Carol tried to join, but the table is full.",
             "Unexpected chat: {chat}"
         );
-        let (table, _) = h.snapshot(id.as_u64().context("Missing table ID")?).await?;
+        let (table, _) = h
+            .snapshot(TableId(id.as_u64().context("Missing table ID")?))
+            .await?;
         let notices = table
             .chat
             .iter()
@@ -1088,12 +1092,13 @@ async fn blocked_players_cannot_join_or_spectate_each_others_tables() -> Result<
         return Ok(());
     };
     let outcome = async {
-        let refused = async |h: &Harness, index: usize, command: &str, id: u64| -> Result<String> {
-            match h.send(index, command, json!({"tableID":id})).await {
-                Ok(()) => bail!("{command} was allowed"),
-                Err(error) => Ok(error.to_string()),
-            }
-        };
+        let refused =
+            async |h: &Harness, index: usize, command: &str, id: TableId| -> Result<String> {
+                match h.send(index, command, json!({"tableID":id})).await {
+                    Ok(()) => bail!("{command} was allowed"),
+                    Err(error) => Ok(error.to_string()),
+                }
+            };
         // Run the lobby command and hand its effects to the hub, as the web layer does.
         let change = async |h: &Harness, index: usize, command: &str, name: &str| -> Result<()> {
             let session = h.users[index].clone();
@@ -1402,10 +1407,10 @@ async fn remade_tables_publish_fresh_statistics_for_every_player() -> Result<()>
         // Release the delayed completion refresh only after the remake is requested.
         lock.rollback().await?;
         pending.await??;
-        let mut remade = 0;
+        let mut remade = TableId(0);
         for index in 0..3 {
             let frame = h.receive(index, "game").await?;
-            remade = frame["tableID"].as_u64().context("Missing remade table")?;
+            remade = TableId(frame["tableID"].as_u64().context("Missing remade table")?);
             let players = frame["players"].as_array().context("Missing players")?;
             ensure!(players.len() == 2, "Spectator became a player");
             for player in players {
@@ -1482,6 +1487,7 @@ async fn chat_read_positions_survive_game_start_reconnect_and_remake() -> Result
         let started = h.receive(0, "tableStart").await?;
         let remade = started["tableID"]
             .as_u64()
+            .map(TableId)
             .context("Missing remade table")?;
         ensure!(remade != id);
         for (index, read) in [alice_read, bob_read].into_iter().enumerate() {
@@ -2417,7 +2423,7 @@ async fn pending_join_claim_survives_replacement_until_the_committed_view_is_pub
         let mut blocker = h.db.pool.begin().await?;
         sqlx::query_scalar!(
             "SELECT id FROM live_tables WHERE id = $1 FOR UPDATE",
-            i64::try_from(first)?
+            i64::try_from(first.0)?
         )
         .fetch_one(&mut *blocker)
         .await?;

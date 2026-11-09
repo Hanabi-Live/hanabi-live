@@ -8,6 +8,7 @@ use crate::{
 use anyhow::{Context, Result, ensure};
 use chrono::{DateTime, Utc};
 use hanabi_engine::{AssignedCharacter, EndCondition, GameSetup, Interpretation};
+use hanabi_protocol::TableId;
 use hanabi_protocol::{NO_VALUE, ReplayAction};
 use serde::Deserialize;
 use sqlx::{PgPool, types::Json};
@@ -114,7 +115,12 @@ fn stored_seconds(time_base: f64) -> i32 {
 pub const NO_CHARACTER_ASSIGNMENT: i16 = -1;
 
 /// Rebuilds a finished game from the database as a replay at table `table_id`, owned by `owner`.
-pub(crate) async fn replay(pool: &PgPool, id: i32, table_id: u64, owner: i32) -> Result<Snapshot> {
+pub(crate) async fn replay(
+    pool: &PgPool,
+    id: i32,
+    table_id: TableId,
+    owner: i32,
+) -> Result<Snapshot> {
     let archive = load(pool, id).await?.context("Unknown replay")?;
     let row = archive.game;
     let options = options(&row)?;

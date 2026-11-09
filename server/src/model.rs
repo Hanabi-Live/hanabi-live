@@ -2,6 +2,7 @@ use crate::game::{AssignedCharacter, Game, Options};
 use anyhow::{Result, ensure};
 use chrono::{DateTime, Utc};
 use hanabi_engine::EndCondition;
+use hanabi_protocol::TableId;
 use hanabi_protocol::{
     CLOCK_UNITS_PER_MINUTE, Chat, HypotheticalAction, NO_VALUE, PregameStats, ReplayAction,
 };
@@ -43,7 +44,7 @@ pub struct ExtraOptions {
 #[serde(deny_unknown_fields)]
 pub struct Snapshot {
     pub format: String,
-    pub table_id: u64,
+    pub table_id: TableId,
     pub game_id: i32,
     pub owner: i32,
     pub name: String,
@@ -146,7 +147,7 @@ pub enum Phase {
 #[serde(deny_unknown_fields)]
 pub struct TableSnapshot {
     pub format: String,
-    pub id: u64,
+    pub id: TableId,
     pub name: String,
     pub owner: i32,
     pub visible: bool,
@@ -314,8 +315,8 @@ impl TableSnapshot {
     pub fn validate(&self) -> Result<()> {
         ensure!(
             self.format == FORMAT
-                && self.id > 0
-                && self.id <= hanabi_protocol::MAX_SAFE_INTEGER.unsigned_abs(),
+                && self.id.0 > 0
+                && self.id.0 <= hanabi_protocol::MAX_SAFE_INTEGER.unsigned_abs(),
             "Incompatible table checkpoint"
         );
         ensure!(
@@ -416,7 +417,7 @@ impl TableSnapshot {
 impl Snapshot {
     pub fn validate(&self) -> Result<()> {
         ensure!(
-            self.format == FORMAT && self.table_id > 0 && self.game_id >= 0,
+            self.format == FORMAT && self.table_id.0 > 0 && self.game_id >= 0,
             "Incompatible game checkpoint"
         );
         let n = self.players.len();
