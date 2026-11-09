@@ -530,23 +530,8 @@ impl TableActor {
         } else {
             replay.restart_declined.retain(|&id| id != session.user);
         }
-        let name = crate::accounts::escape_html(&session.name);
-        let message = server_chat(
-            self.table.id,
-            &if declined {
-                format!("{name} is not ready to play again.")
-            } else {
-                format!("{name} is ready to play again.")
-            },
-        );
-        next.chat.push(TableChat {
-            id: None,
-            user: 0,
-            message: message.clone(),
-        });
         self.persist(next).await?;
         let mut e = self.effects();
-        self.add_chat(&mut e, &message);
         self.add_all(
             &mut e,
             hanabi_protocol::server::RESTART_DECLINED,
