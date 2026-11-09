@@ -6,6 +6,7 @@ import {
   getCardBorderPresentation,
   getCardIdentityToShow,
   getCardPipPresentation,
+  isCardIdentityFromNote,
 } from "./cardPresentation";
 import { getDefaultVariant } from "./gameData";
 import type { CardIdentity } from "./interfaces/CardIdentity";
@@ -101,6 +102,62 @@ describe("card presentation", () => {
           finished: false,
         }),
       ).toEqual({ suitIndex: 3, rank: 4 });
+    });
+
+    describe("identity from a note", () => {
+      const options = {
+        cardIdentity: unknownIdentity,
+        state: baseCard,
+        empathy: false,
+        isStackBase: false,
+        finished: false,
+      };
+      const red3Note: CardNote = { ...emptyNote, possibilities: [[0, 3]] };
+
+      test("is set when the note fills in an unknown suit or rank", () => {
+        expect(isCardIdentityFromNote({ ...options, note: red3Note })).toBe(
+          true,
+        );
+      });
+
+      test("is not set when the note does not change the card face", () => {
+        expect(isCardIdentityFromNote({ ...options, note: emptyNote })).toBe(
+          false,
+        );
+        expect(
+          isCardIdentityFromNote({
+            ...options,
+            cardIdentity: { suitIndex: 0, rank: 3 },
+            note: red3Note,
+          }),
+        ).toBe(false);
+        expect(
+          isCardIdentityFromNote({ ...options, empathy: true, note: red3Note }),
+        ).toBe(false);
+
+        // The clues already show the rank that the note names.
+        const cluedThree: CardState = {
+          ...baseCard,
+          possibleCardsFromClues: [
+            [0, 3],
+            [1, 3],
+          ],
+        };
+        const threeNote: CardNote = {
+          ...emptyNote,
+          possibilities: [
+            [0, 3],
+            [1, 3],
+          ],
+        };
+        expect(
+          isCardIdentityFromNote({
+            ...options,
+            state: cluedThree,
+            note: threeNote,
+          }),
+        ).toBe(false);
+      });
     });
   });
 

@@ -101,6 +101,25 @@ export function getCardIdentityToShow({
   return { suitIndex, rank };
 }
 
+/** Whether the note changes the suit or rank shown on the card face. */
+export function isCardIdentityFromNote(
+  options: CardIdentityPresentationOptions,
+): boolean {
+  if (options.note.possibilities.length === 0) {
+    return false;
+  }
+
+  const shown = getCardIdentityToShow(options);
+  const shownWithoutNote = getCardIdentityToShow({
+    ...options,
+    note: { ...options.note, possibilities: [] },
+  });
+  return (
+    shown.suitIndex !== shownWithoutNote.suitIndex
+    || shown.rank !== shownWithoutNote.rank
+  );
+}
+
 export function getCardBorderPresentation(
   state: CardState,
   note: CardNote,

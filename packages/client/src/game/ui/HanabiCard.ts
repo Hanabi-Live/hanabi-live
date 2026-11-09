@@ -30,6 +30,7 @@ import {
   hasReversedSuits,
   isCardClued,
   isCardDiscarded,
+  isCardIdentityFromNote,
   isCardPlayed,
 } from "@hanabi-live/game";
 import { assertDefined, assertNotNull } from "complete-common";
@@ -369,6 +370,10 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip, UICard {
     // Show or hide pips, shadow, etc.
     this.showCardElements(morphedBlank, suitToShow, rankToShow);
 
+    this.noteIndicator.setGlowing(
+      isCardIdentityFromNote(this.identityPresentationOptions(cardIdentity)),
+    );
+
     // Set fading, criticality, etc.
     this.setStatus();
 
@@ -405,8 +410,8 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip, UICard {
     return cardIdentity;
   }
 
-  private getIdentityToShow(cardIdentity: CardIdentity): CardIdentity {
-    return getCardIdentityToShow({
+  private identityPresentationOptions(cardIdentity: CardIdentity) {
+    return {
       cardIdentity,
       state: this.state,
       note: this.note,
@@ -414,7 +419,13 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip, UICard {
       morphedIdentity: this.isMorphed() ? this.getMorph() : undefined,
       isStackBase: this.isStackBase,
       finished: globals.state.finished,
-    });
+    };
+  }
+
+  private getIdentityToShow(cardIdentity: CardIdentity): CardIdentity {
+    return getCardIdentityToShow(
+      this.identityPresentationOptions(cardIdentity),
+    );
   }
 
   getSuitToShow(cardIdentity: CardIdentity): Suit | null {
