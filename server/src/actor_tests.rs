@@ -1,9 +1,6 @@
 use super::*;
 use crate::transport::test_frame;
-use crate::{
-    state::{RedisState, StateId},
-    test_redis::RedisFixture,
-};
+use crate::{state::RedisState, test_redis::RedisFixture};
 use sqlx::postgres::PgPoolOptions;
 
 #[test]
@@ -249,10 +246,7 @@ async fn joining_or_reattending_an_old_review_does_not_immediately_close_it() ->
             !actor.retired,
             "Joining an old review immediately closed it"
         );
-        let saved = state
-            .get(StateId::Table(id))
-            .await?
-            .context("Review was deleted")?;
+        let saved = state.get(id).await?.context("Review was deleted")?;
         let restored = TableSnapshot::decode(&saved.payload)?;
         let snapshot = restored.game().context("Missing review")?;
         ensure!(
@@ -291,7 +285,7 @@ async fn idle_reviews_expire_without_someone_joining() -> Result<()> {
     actor.anchor = Instant::now().checked_sub(Duration::from_secs(2)).unwrap();
     actor.tick().await?;
     ensure!(
-        actor.retired && state.get(StateId::Table(id)).await?.is_none(),
+        actor.retired && state.get(id).await?.is_none(),
         "Idle review required a visitor before expiring"
     );
     let mut removed = false;
@@ -534,7 +528,7 @@ async fn abandoned_pregames_expire_durably_even_with_a_password_or_spectator() -
             )
             .await?;
         ensure!(
-            !actor.retired && state.get(StateId::Table(id)).await?.is_some(),
+            !actor.retired && state.get(id).await?.is_some(),
             "Disconnected player lost the reconnect grace period"
         );
         actor.cleanup(now + PREGAME_RECONNECT_GRACE).await?;
@@ -599,7 +593,7 @@ async fn restored_pregames_allow_reconnects_and_keep_connected_afk_players() -> 
     let later = now + PREGAME_RECONNECT_GRACE;
     actor.cleanup(later).await?;
     ensure!(
-        !actor.retired && state.get(StateId::Table(id)).await?.is_some(),
+        !actor.retired && state.get(id).await?.is_some(),
         "Connected AFK player lost the table"
     );
     owner.cancel.cancel();
@@ -658,12 +652,7 @@ async fn abandoned_pregame_cleanup_does_not_override_frozen_or_newer_state() -> 
         "Uncertain cleanup did not preserve the table"
     );
     ensure!(
-        state
-            .get(StateId::Table(id))
-            .await?
-            .context("Checkpoint deleted")?
-            .revision
-            == newer,
+        state.get(id).await?.context("Checkpoint deleted")?.revision == newer,
         "Cleanup removed newer authoritative state"
     );
     ensure!(
@@ -699,7 +688,7 @@ async fn canceled_reservations_and_uninstalled_tables_release_capacity_after_dur
         tasks.close();
         tokio::time::timeout(Duration::from_secs(3), tasks.wait()).await?;
         ensure!(
-            state.get(StateId::Table(id)).await?.is_none(),
+            state.get(id).await?.is_none(),
             "Canceled creation leaked same-owner state"
         );
         ensure!(

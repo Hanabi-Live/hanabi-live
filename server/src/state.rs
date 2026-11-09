@@ -108,46 +108,25 @@ if redis.call('GET', KEYS[1]) ~= ARGV[1] then return 0 end
 return redis.call('DEL', KEYS[1])
 ";
 
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
-pub enum StateId {
-    Game(i32),
-    Table(u64),
+/// The Redis index member for a table's checkpoint.
+fn member(table_id: u64) -> Result<String> {
+    ensure!(
+        (1..=hanabi_protocol::MAX_SAFE_INTEGER.unsigned_abs()).contains(&table_id),
+        "Invalid table identity"
+    );
+    Ok(format!("t:{table_id}"))
 }
-impl StateId {
-    fn member(self) -> Result<String> {
-        match self {
-            Self::Game(id) => {
-                ensure!(id > 0, "Invalid game identity");
-                Ok(format!("g:{id}"))
-            }
-            Self::Table(id) => {
-                ensure!(
-                    (1..=hanabi_protocol::MAX_SAFE_INTEGER.unsigned_abs()).contains(&id),
-                    "Invalid table identity"
-                );
-                Ok(format!("t:{id}"))
-            }
-        }
-    }
-    fn parse(value: &str) -> Result<Self> {
-        let (kind, id) = value
-            .split_once(':')
-            .context("Invalid Redis state identity")?;
-        let parsed = match kind {
-            "g" => Self::Game(id.parse()?),
-            "t" => Self::Table(id.parse()?),
-            _ => bail!("Unknown Redis state identity"),
-        };
-        ensure!(
-            parsed.member()? == value,
-            "Non-canonical Redis state identity"
-        );
-        Ok(parsed)
-    }
+fn parse_member(value: &str) -> Result<u64> {
+    let id = value
+        .strip_prefix("t:")
+        .context("Unknown Redis state identity")?
+        .parse()?;
+    ensure!(member(id)? == value, "Non-canonical Redis state identity");
+    Ok(id)
 }
 
 pub struct StoredState {
-    pub id: StateId,
+    pub id: u64,
     pub revision: i64,
     pub payload: String,
     creator: String,
@@ -369,8 +348,8 @@ impl RedisState {
     fn index(&self) -> String {
         format!("{}:states", self.prefix)
     }
-    fn key(&self, id: StateId) -> Result<String> {
-        Ok(format!("{}:state:{}", self.prefix, id.member()?))
+    fn key(&self, id: u64) -> Result<String> {
+        Ok(format!("{}:state:{}", self.prefix, member(id)?))
     }
 
     async fn acknowledge(&self, connection: &mut MultiplexedConnection) -> Result<()> {
@@ -405,7 +384,7 @@ impl RedisState {
         }
     }
 
-    pub async fn save(&self, id: StateId, expected: i64, payload: &str) -> Result<i64> {
+    pub async fn save(&self, id: u64, expected: i64, payload: &str) -> Result<i64> {
         self.check()?;
         ensure!(
             (0..hanabi_protocol::MAX_SAFE_INTEGER).contains(&expected),
@@ -423,7 +402,7 @@ impl RedisState {
             .arg(&self.owner.token)
             .arg(expected)
             .arg(payload)
-            .arg(id.member()?)
+            .arg(member(id)?)
             .arg(MAX_RECORDS)
             .invoke_async(&mut connection)
             .await;
@@ -432,7 +411,7 @@ impl RedisState {
         Ok(revision)
     }
 
-    pub async fn reserve(&self, id: StateId) -> Result<()> {
+    pub async fn reserve(&self, id: u64) -> Result<()> {
         self.check()?;
         let mut connection = self.connection.clone();
         let result = status_script(RESERVE)
@@ -440,7 +419,7 @@ impl RedisState {
             .key(self.key(id)?)
             .key(self.index())
             .arg(&self.owner.token)
-            .arg(id.member()?)
+            .arg(member(id)?)
             .arg(MAX_RECORDS)
             .invoke_async(&mut connection)
             .await;
@@ -467,7 +446,7 @@ impl RedisState {
         Ok(id.cast_unsigned())
     }
 
-    pub async fn remove(&self, id: StateId, expected: i64) -> Result<()> {
+    pub async fn remove(&self, id: u64, expected: i64) -> Result<()> {
         self.check()?;
         ensure!(expected >= 0, "Invalid removal revision");
         let mut connection = self.connection.clone();
@@ -477,14 +456,14 @@ impl RedisState {
             .key(self.index())
             .arg(&self.owner.token)
             .arg(expected)
-            .arg(id.member()?)
+            .arg(member(id)?)
             .invoke_async(&mut connection)
             .await;
         self.reply(result)?;
         self.acknowledge(&mut connection).await
     }
 
-    pub async fn get(&self, id: StateId) -> Result<Option<StoredState>> {
+    pub async fn get(&self, id: u64) -> Result<Option<StoredState>> {
         self.check()?;
         let mut connection = self.connection.clone();
         let result: redis::RedisResult<(Option<i64>, Option<String>, Option<String>)> =
@@ -541,7 +520,7 @@ impl RedisState {
         self.check()?;
         let mut states = Vec::with_capacity(members.len());
         for member in members {
-            let id = StateId::parse(&member)?;
+            let id = parse_member(&member)?;
             let record = self
                 .get(id)
                 .await?
@@ -594,7 +573,7 @@ mod tests {
     async fn durable_cas_survives_abrupt_redis_restart_without_resurrection() -> Result<()> {
         let mut fixture = RedisFixture::start(true).await?;
         let first = RedisState::connect(&fixture.url, "cas").await?;
-        let id = StateId::Game(1);
+        let id = 1;
         first.reserve(id).await?;
         ensure!(
             first.save(id, 0, "initial").await? == 1,
@@ -639,7 +618,7 @@ mod tests {
     async fn ownership_replacement_fences_writes_and_old_owner_release() -> Result<()> {
         let fixture = RedisFixture::start(true).await?;
         let first = RedisState::connect(&fixture.url, "fence").await?;
-        let id = StateId::Table(first.allocate_table().await?);
+        let id = first.allocate_table().await?;
         first.save(id, 0, "owned").await?;
         // Replacement must reject a second owner even when polling is briefly delayed.
         std::thread::sleep(Duration::from_millis(650));
@@ -696,7 +675,7 @@ mod tests {
             .query_async::<String>(&mut control)
             .await?;
         let state = connect(&fixture, "durability").await?;
-        let id = StateId::Game(1);
+        let id = 1;
         state.reserve(id).await?;
         redis::cmd("CONFIG")
             .arg("SET")
@@ -737,7 +716,7 @@ mod tests {
     async fn unused_reservations_recover_but_corrupt_indexes_do_not_look_empty() -> Result<()> {
         let fixture = RedisFixture::start(true).await?;
         let first = connect(&fixture, "recovery").await?;
-        first.reserve(StateId::Game(1)).await?;
+        first.reserve(1).await?;
         first.close().await?;
         let second = connect(&fixture, "recovery").await?;
         ensure!(
@@ -769,8 +748,8 @@ mod tests {
             left != right,
             "Concurrent allocations reused a table identity"
         );
-        let revision = first.save(StateId::Table(left), 0, "table").await?;
-        first.remove(StateId::Table(left), revision).await?;
+        let revision = first.save(left, 0, "table").await?;
+        first.remove(left, revision).await?;
         first.close().await?;
         let second = connect(&fixture, "identities").await?;
         ensure!(

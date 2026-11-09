@@ -1,8 +1,6 @@
 use super::*;
 use crate::{
-    accounts::test_support::TestDb,
-    state::{RedisState, StateId},
-    test_redis::RedisFixture,
+    accounts::test_support::TestDb, state::RedisState, test_redis::RedisFixture,
     transport::Outbound,
 };
 
@@ -155,11 +153,7 @@ impl Harness {
             .context("Missing replay identity")
     }
     async fn snapshot(&self, id: u64) -> Result<(TableSnapshot, i64)> {
-        let record = self
-            .state
-            .get(StateId::Table(id))
-            .await?
-            .context("Missing durable table")?;
+        let record = self.state.get(id).await?.context("Missing durable table")?;
         Ok((TableSnapshot::decode(&record.payload)?, record.revision))
     }
     async fn wait_locks(&self, count: i64) -> Result<()> {
@@ -610,7 +604,7 @@ async fn abandoned_shared_reviews_expire_without_a_new_visitor() -> Result<()> {
             .await
             .context("Abandoned review did not expire on its own timer")?;
             ensure!(
-                h.state.get(StateId::Table(id)).await?.is_none(),
+                h.state.get(id).await?.is_none(),
                 "Expired review remains in Redis"
             );
             let mut retired = false;
@@ -715,7 +709,7 @@ async fn shared_review_chat_refreshes_idle_and_inactive_reviews_expire() -> Resu
         actor.anchor -= Duration::from_secs(2);
         actor.tick().await?;
         ensure!(
-            actor.retired && h.state.get(StateId::Table(id)).await?.is_none(),
+            actor.retired && h.state.get(id).await?.is_none(),
             "Inactive review did not expire automatically"
         );
         Ok(())

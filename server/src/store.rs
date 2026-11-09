@@ -3,7 +3,7 @@ use crate::{
     model::{
         FORMAT, IDLE_TIMEOUT_MS, PendingTag, Phase, Player, Snapshot, TableChat, TableSnapshot, Tag,
     },
-    state::{RedisState, StateId},
+    state::RedisState,
 };
 use anyhow::{Context, Result, ensure};
 use chrono::{DateTime, SubsecRound, Utc};
@@ -233,10 +233,7 @@ impl Store {
                 "Pending chat must reserve numeric archive identities before checkpointing"
             );
             let payload = serde_json::to_string(table)?;
-            let revision = self
-                .state()?
-                .save(StateId::Table(table.id), revision, &payload)
-                .await?;
+            let revision = self.state()?.save(table.id, revision, &payload).await?;
             crate::metrics::record_checkpoint(payload.len());
             Ok(revision)
         }
@@ -249,7 +246,7 @@ impl Store {
         result
     }
     pub async fn remove(&self, id: u64, revision: i64) -> Result<()> {
-        self.state()?.remove(StateId::Table(id), revision).await
+        self.state()?.remove(id, revision).await
     }
     pub async fn load(&self) -> Result<Vec<(TableSnapshot, i64)>> {
         self.restore(true).await
@@ -261,20 +258,10 @@ impl Store {
     async fn restore(&self, refresh_stats: bool) -> Result<Vec<(TableSnapshot, i64)>> {
         let mut output = vec![];
         let stored = self.state()?.load().await?;
-        ensure!(
-            stored
-                .iter()
-                .all(|record| matches!(record.id, StateId::Table(_))),
-            "Non-table checkpoints require recovery with a compatible release before serving"
-        );
         let mut queue = std::collections::VecDeque::from(stored);
         let mut seen = std::collections::HashSet::new();
         while let Some(stored) = queue.pop_front() {
-            let StateId::Table(id) = stored.id else {
-                anyhow::bail!(
-                    "Unexpected standalone game checkpoint; explicit format migration required"
-                );
-            };
+            let id = stored.id;
             if !seen.insert(id) {
                 continue;
             }
@@ -293,7 +280,7 @@ impl Store {
                 revision = self.save(&table, revision).await?;
             }
             if let Some(destination) = table.pending_spawn.take() {
-                let destination_id = StateId::Table(destination.id);
+                let destination_id = destination.id;
                 let existing = self.state()?.get(destination_id).await?;
                 match existing {
                     Some(ref record) if record.revision > 0 => {
@@ -384,7 +371,7 @@ impl Store {
         );
         let stored = self
             .state()?
-            .get(StateId::Table(s.table_id))
+            .get(s.table_id)
             .await?
             .context("Missing terminal Redis checkpoint")?;
         ensure!(
@@ -1232,7 +1219,7 @@ mod tests {
             );
             ensure!(*revision == original_revision + 1);
             let durable = state
-                .get(StateId::Table(table.id))
+                .get(table.id)
                 .await?
                 .context("Missing durable pregame")?;
             ensure!(
@@ -1392,7 +1379,7 @@ mod tests {
             ensure!(
                 store
                     .state()?
-                    .get(StateId::Table(id))
+                    .get(id)
                     .await?
                     .unwrap()
                     .revision
