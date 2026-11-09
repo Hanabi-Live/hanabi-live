@@ -17,7 +17,7 @@ use hanabi_protocol::{ClientMessage, Status};
 #[cfg(test)]
 use serde_json::Value;
 use std::{
-    collections::{BTreeMap, BTreeSet, HashMap, HashSet},
+    collections::{BTreeMap, BTreeSet, HashMap},
     sync::Arc,
     time::{Duration, Instant},
 };
@@ -371,51 +371,6 @@ struct Attendance {
     shadow: Option<Seat>,
     typing_until: Option<Instant>,
 }
-/// What a table keeps in memory for its phase. A restart forgets it: reconnection grace starts
-/// again, and warnings and notices can be sent again.
-#[derive(Debug, PartialEq)]
-enum PhaseRuntime {
-    Pregame {
-        /// When each absent player loses their seat.
-        absent_until: HashMap<UserId, Instant>,
-        /// Who the table was told tried to join it while it was full.
-        full_join_notices: HashSet<UserId>,
-        /// When a player last joined the table, so that a burst of joins plays the join sound
-        /// once. Before the first join, the table's creation counts as the last join.
-        last_join: Option<Instant>,
-    },
-    Live {
-        /// Whether the table was warned that the game is about to end for inactivity.
-        idle_warned: bool,
-    },
-    Replay {
-        /// When the replay closes if no viewer returns.
-        absent_until: Option<Instant>,
-    },
-}
-impl PhaseRuntime {
-    fn of(phase: &crate::model::Phase) -> Self {
-        use crate::model::Phase;
-        match phase {
-            Phase::Pregame { .. } => Self::Pregame {
-                absent_until: HashMap::new(),
-                full_join_notices: HashSet::new(),
-                last_join: None,
-            },
-            Phase::Live { .. } => Self::Live { idle_warned: false },
-            Phase::Replay { .. } => Self::Replay { absent_until: None },
-        }
-    }
-    fn matches(&self, phase: &crate::model::Phase) -> bool {
-        use crate::model::Phase;
-        matches!(
-            (self, phase),
-            (Self::Pregame { .. }, Phase::Pregame { .. })
-                | (Self::Live { .. }, Phase::Live { .. })
-                | (Self::Replay { .. }, Phase::Replay { .. })
-        )
-    }
-}
 struct TableActor {
     table: TableSnapshot,
     /// What the database holds for the table.
@@ -424,8 +379,6 @@ struct TableActor {
     retired: bool,
     attendees: HashMap<UserId, Attendance>,
     chat_read: HashMap<UserId, usize>,
-    /// What the table keeps in memory for its phase. It always matches `table.phase`.
-    runtime: PhaseRuntime,
     cleanup: Arc<Notify>,
     store: Store,
     hub: mpsc::Sender<HubCommand>,

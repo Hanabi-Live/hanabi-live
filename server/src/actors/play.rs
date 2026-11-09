@@ -1,4 +1,4 @@
-use super::table::wrong_phase;
+use super::table::{game_mut, wrong_phase};
 use super::{
     Attendance, GameInfo, TableActor,
     chat::table_notice,
@@ -49,13 +49,16 @@ impl TableActor {
         }
     }
     /// The game in progress. Commands that use it run only while a game is live.
-    fn live(&self) -> &Snapshot {
-        self.table.game().expect("live commands run in a live game")
+    fn live(&self) -> CommandResult<&Snapshot> {
+        match &self.table.phase {
+            Phase::Live { snapshot, .. } => Ok(snapshot),
+            _ => bail_internal!("A live command ran outside a live game"),
+        }
     }
     async fn action(&mut self, session: Arc<Session>, a: ReplayAction) -> CommandResult<()> {
         ensure_or_reject!(self.attending(&session), "Reattend before acting");
         let seat = self.seat(&session)?;
-        let old = self.live();
+        let old = self.live()?;
         hanabi_engine::validate_action(
             old.game.state(),
             seat,
@@ -63,7 +66,7 @@ impl TableActor {
         )?;
         let from = old.game.events.len();
         let mut next = self.candidate();
-        let s = next.game_mut().expect("game");
+        let s = game_mut(&mut next)?;
         if s.game.options.timed {
             s.clocks[seat] += s.game.options.time_per_turn * i64::from(CLOCK_UNITS_PER_SECOND);
         }
@@ -201,9 +204,9 @@ impl TableActor {
                     ),
                 ));
             }
-            self.add_all(&mut e, hanabi_protocol::server::CLOCK, self.clock());
+            self.add_all(&mut e, hanabi_protocol::server::CLOCK, self.clock()?);
         } else {
-            self.add_all(&mut e, hanabi_protocol::server::CLOCK, self.clock());
+            self.add_all(&mut e, hanabi_protocol::server::CLOCK, self.clock()?);
             if s.game.paused {
                 self.add_all(
                     &mut e,
@@ -234,9 +237,9 @@ impl TableActor {
     async fn terminate(&mut self, session: Arc<Session>, vote: bool) -> CommandResult<()> {
         ensure_or_reject!(self.attending(&session), "You are not attending");
         let seat = self.seat(&session)?;
-        let from = self.live().game.events.len();
+        let from = self.live()?.game.events.len();
         let mut next = self.candidate();
-        let s = next.game_mut().expect("game");
+        let s = game_mut(&mut next)?;
         let mut votes = None;
         let mut terminate = !vote;
         if vote {
@@ -284,7 +287,12 @@ impl TableActor {
                 frame(
                     hanabi_protocol::server::VOTE_CHANGE,
                     hanabi_protocol::VoteChange {
-                        vote: self.table.game().expect("game").votes[seat],
+                        // A vote that ends the game has already made it a replay.
+                        vote: self
+                            .table
+                            .game()
+                            .context("A vote was counted without a game")?
+                            .votes[seat],
                     },
                 ),
             ));
@@ -300,7 +308,7 @@ impl TableActor {
     async fn idle_reset(&mut self, session: Arc<Session>) -> CommandResult<()> {
         ensure_or_reject!(self.attending(&session), "Not attending");
         self.seat(&session)?;
-        self.live();
+        self.live()?;
         let mut next = self.candidate();
         next.game_mut().context("Missing game")?.idle_remaining = IDLE_TIMEOUT_MS;
         // Like arrows and sounds, an idle reset only restarts the idle timer, so it skips the durable
@@ -327,7 +335,7 @@ impl TableActor {
         use hanabi_protocol::PauseSetting as P;
         ensure_or_reject!(self.attending(&session), "Not attending");
         let seat = self.seat(&session)?;
-        let old = self.live();
+        let old = self.live()?;
         ensure_or_reject!(old.game.options.timed, "This is not a timed game");
         if setting == P::PauseQueue && seat == old.game.active_player_index {
             setting = P::Pause;
@@ -342,7 +350,7 @@ impl TableActor {
             "Pause setting already applied"
         );
         let mut next = self.candidate();
-        let s = next.game_mut().expect("game");
+        let s = game_mut(&mut next)?;
         let mut notice = None;
         match setting {
             P::PauseQueue | P::PauseUnqueue => s.queued_pauses[seat] = setting == P::PauseQueue,
@@ -361,7 +369,7 @@ impl TableActor {
             }
         }
         self.persist(next).await?;
-        let s = self.table.game().expect("game");
+        let s = self.live()?;
         let mut e = self.effects();
         if matches!(setting, P::Pause | P::Unpause) {
             self.add_all(
@@ -373,7 +381,7 @@ impl TableActor {
                     player_index: i64::from(s.pause_player_index),
                 },
             );
-            self.add_all(&mut e, hanabi_protocol::server::CLOCK, self.clock());
+            self.add_all(&mut e, hanabi_protocol::server::CLOCK, self.clock()?);
         }
         if let Some(notice) = notice {
             self.add_chat(&mut e, &notice);
@@ -382,7 +390,7 @@ impl TableActor {
     }
     async fn note(&mut self, session: Arc<Session>, order: u64, note: &str) -> CommandResult<()> {
         ensure_or_reject!(self.attending(&session), "Not attending");
-        self.live();
+        self.live()?;
         let order = usize::try_from(order)?;
         let text = crate::accounts::truncate_to_max_bytes(note, MAX_NOTE_LENGTH);
         let text = crate::accounts::remove_disallowed_characters(text)
@@ -399,7 +407,7 @@ impl TableActor {
             .iter()
             .position(|p| p.id == session.user);
         let mut next = self.candidate();
-        let s = next.game_mut().expect("game");
+        let s = game_mut(&mut next)?;
         let size = s.game.deck.len() + s.game.stacks.len();
         ensure_or_reject!(order < size, "Invalid note order");
         if let Some(seat) = seat {
@@ -634,7 +642,7 @@ impl TableActor {
             if !replay {
                 e.messages.push((
                     session.clone(),
-                    frame(hanabi_protocol::server::CLOCK, self.clock()),
+                    frame(hanabi_protocol::server::CLOCK, self.clock()?),
                 ));
             }
             self.chat_history(&mut e, &session)?;

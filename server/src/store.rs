@@ -642,6 +642,7 @@ mod tests {
                 automatic_start: None,
                 countdown: None,
                 kicked: vec![],
+                runtime: crate::model::PregameRuntime::default(),
             },
             chat: vec![],
             shadows: BTreeMap::new(),
@@ -709,6 +710,7 @@ mod tests {
                 votes: vec![false, false],
                 maintenance_applied: false,
             }),
+            runtime: crate::model::LiveRuntime::default(),
         };
         Ok(())
     }
@@ -866,8 +868,7 @@ mod tests {
                     show_drawn_cards: false,
                     spoiler_free: false,
                     restart_declined: vec![],
-                },
-            };
+                }, runtime: crate::model::ReplayRuntime::default() };
             let replay_revision = store.save_at(&replay, 0).await?;
             // Startup does not wait for statistics, even while their table is locked.
             let mut blocked_archive = store.primary.begin().await?;

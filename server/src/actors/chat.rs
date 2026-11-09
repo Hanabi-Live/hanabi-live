@@ -6,7 +6,7 @@ use crate::{
     model::{Phase, TableChat, TableSnapshot},
     transport::{Session, frame},
 };
-use anyhow::Result;
+use anyhow::{Context, Result};
 use chrono::{Duration as ChronoDuration, Utc};
 use hanabi_protocol::UserId;
 use hanabi_protocol::{
@@ -370,7 +370,11 @@ impl TableActor {
         }
         if parsed == Some(TableChatCommand::Tags) {
             let messages = if matches!(self.table.phase, Phase::Replay { .. }) {
-                let id = self.table.game().expect("replay game").game_id;
+                let id = self
+                    .table
+                    .game()
+                    .context("A replay command ran without a game")?
+                    .game_id;
                 let tags = crate::archive::tags(&self.store.primary, id)
                     .await?
                     .unwrap_or_default()
@@ -441,6 +445,7 @@ impl TableActor {
             automatic_start,
             countdown,
             kicked,
+            ..
         } = &mut next.phase
         else {
             reject!("This command requires a pregame table");

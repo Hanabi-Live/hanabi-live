@@ -280,6 +280,7 @@ pub(super) fn pregame(id: TableId) -> TableSnapshot {
             automatic_start: None,
             countdown: None,
             kicked: vec![],
+            runtime: crate::model::PregameRuntime::default(),
         },
         chat: vec![],
         shadows: BTreeMap::new(),
@@ -406,7 +407,10 @@ async fn completion_starts_a_fresh_review_without_reviving_idle_ended_games() ->
         let Phase::Replay { snapshot, .. } = table.phase else {
             unreachable!()
         };
-        table.phase = Phase::Live { snapshot };
+        table.phase = Phase::Live {
+            snapshot,
+            runtime: crate::model::LiveRuntime::default(),
+        };
         table.extra.no_write_to_database = true;
         table.game_mut().unwrap().idle_remaining = 0;
         // The game ended in memory; its table still stores the state before.
@@ -483,6 +487,7 @@ async fn live_tables_wake_at_their_next_deadline() -> Result<()> {
     table.options = snapshot.game.options.clone();
     table.phase = Phase::Live {
         snapshot: Box::new(snapshot),
+        runtime: crate::model::LiveRuntime::default(),
     };
     let (hub, _notifications) = mpsc::channel(64);
     let capacity = Arc::new(Semaphore::new(1));
@@ -500,15 +505,12 @@ async fn live_tables_wake_at_their_next_deadline() -> Result<()> {
 
     // The idle warning comes first, and a restarted idle timer lets it be sent again.
     let warning = at(lead);
-    actor.runtime = PhaseRuntime::Live { idle_warned: true };
-    ensure!(
-        actor.next_timer() == Some(warning)
-            && actor.runtime == PhaseRuntime::Live { idle_warned: false }
-    );
+    *actor.idle_warned().unwrap() = true;
+    ensure!(actor.next_timer() == Some(warning) && !*actor.idle_warned().unwrap());
 
     // Once warned, the table wakes when the game would end for inactivity.
     actor.table.game_mut().unwrap().idle_remaining = IDLE_WARNING_MS - lead;
-    actor.runtime = PhaseRuntime::Live { idle_warned: true };
+    *actor.idle_warned().unwrap() = true;
     let ending = at(IDLE_WARNING_MS - lead);
     ensure!(actor.next_timer() == Some(ending));
 
@@ -536,6 +538,7 @@ async fn idle_live_games_warn_once_and_players_can_keep_them_going() -> Result<(
     table.options = snapshot.game.options.clone();
     table.phase = Phase::Live {
         snapshot: Box::new(snapshot),
+        runtime: crate::model::LiveRuntime::default(),
     };
     let revision = store.save_at(&table, 0).await?;
     let (hub, mut notifications) = mpsc::channel(64);
@@ -615,6 +618,7 @@ async fn spectating_a_live_game_does_not_refresh_its_idle_deadline() -> Result<(
     table.options = snapshot.game.options.clone();
     table.phase = Phase::Live {
         snapshot: Box::new(snapshot),
+        runtime: crate::model::LiveRuntime::default(),
     };
     let revision = store.save_at(&table, 0).await?;
     let (hub, _notifications) = mpsc::channel(16);
@@ -662,6 +666,7 @@ pub(super) fn review(id: TableId, condition: EndCondition) -> Result<TableSnapsh
             restart_declined: vec![],
         },
         snapshot: Box::new(snapshot),
+        runtime: crate::model::ReplayRuntime::default(),
     };
     Ok(table)
 }

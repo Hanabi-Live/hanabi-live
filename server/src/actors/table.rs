@@ -1,7 +1,7 @@
 use super::request;
 use super::{
     Allocation, Attendance, Command, Effects, GameInfo, HubCommand, PREGAME_RECONNECT_GRACE,
-    PhaseRuntime, REPLAY_RECONNECT_GRACE, Reply, TableActor, TableCommand, TableView,
+    REPLAY_RECONNECT_GRACE, Reply, TableActor, TableCommand, TableView,
     chat::{TABLE_CHAT_LIMIT, TABLE_CHAT_WINDOW, VariantDiscovery, is_variant_discovery},
     pregame::remove_pregame_players,
     setup::wire_table_options,
@@ -59,6 +59,15 @@ pub(super) fn wrong_phase(message: &ClientMessage) -> CommandError {
     rejection!("{reason}")
 }
 
+/// The game of a table that is about to change, such as a candidate. A table without a game is
+/// an internal error, not a panic, so that a command that runs in the wrong phase fails alone.
+pub(super) fn game_mut(table: &mut TableSnapshot) -> CommandResult<&mut Snapshot> {
+    match table.game_mut() {
+        Some(snapshot) => Ok(snapshot),
+        None => bail_internal!("A game command ran at a table without a game"),
+    }
+}
+
 /// A running game's timers as they stand now.
 struct Timers {
     idle_remaining: i64,
@@ -90,7 +99,6 @@ impl TableActor {
         info: Arc<ServerInfo>,
     ) -> Self {
         Self {
-            runtime: PhaseRuntime::of(&table.phase),
             table,
             saved,
             frozen: false,
@@ -368,12 +376,12 @@ impl TableActor {
             .values()
             .filter_map(|a| a.typing_until)
             .collect::<Vec<_>>();
-        match &self.runtime {
-            PhaseRuntime::Pregame { absent_until, .. } => {
-                deadlines.extend(absent_until.values().copied());
+        match &self.table.phase {
+            Phase::Pregame { runtime, .. } => {
+                deadlines.extend(runtime.absent_until.values().copied());
             }
-            PhaseRuntime::Replay { absent_until } => deadlines.extend(*absent_until),
-            PhaseRuntime::Live { .. } => {}
+            Phase::Replay { runtime, .. } => deadlines.extend(runtime.absent_until),
+            Phase::Live { .. } => {}
         }
         deadlines.extend(self.timer_retry);
         match &self.table.phase {
@@ -396,10 +404,11 @@ impl TableActor {
                     deadlines.push(now + (*at - Utc::now()).to_std().unwrap_or_default());
                 }
             }
-            Phase::Live { snapshot: s } => {
+            Phase::Live { snapshot: s, .. } => {
                 if s.game.end_condition == EndCondition::InProgress {
                     deadlines.push(after(s.idle_remaining));
-                    if !matches!(self.runtime, PhaseRuntime::Live { idle_warned: true }) {
+                    if !matches!(&self.table.phase, Phase::Live { runtime, .. } if runtime.idle_warned)
+                    {
                         deadlines.push(after(s.idle_remaining - IDLE_WARNING_MS));
                     }
                     if s.game.options.timed && s.timer_started && !s.game.paused {
@@ -425,46 +434,38 @@ impl TableActor {
             }
         }
     }
-    /// Starts the in-memory state of the table's phase when the phase changes.
-    fn sync_runtime(&mut self) {
-        if !self.runtime.matches(&self.table.phase) {
-            self.runtime = PhaseRuntime::of(&self.table.phase);
-        }
-    }
     /// When each absent pregame player loses their seat. `None` outside a pregame.
     pub(super) fn absent_players(&mut self) -> Option<&mut HashMap<UserId, Instant>> {
-        match &mut self.runtime {
-            PhaseRuntime::Pregame { absent_until, .. } => Some(absent_until),
+        match &mut self.table.phase {
+            Phase::Pregame { runtime, .. } => Some(&mut runtime.absent_until),
             _ => None,
         }
     }
     /// When an empty replay closes. `None` outside a replay.
     pub(super) fn replay_absent(&mut self) -> Option<&mut Option<Instant>> {
-        match &mut self.runtime {
-            PhaseRuntime::Replay { absent_until } => Some(absent_until),
+        match &mut self.table.phase {
+            Phase::Replay { runtime, .. } => Some(&mut runtime.absent_until),
             _ => None,
         }
     }
     /// Whether a game was warned that it is about to end for inactivity. `None` outside a game.
     pub(super) fn idle_warned(&mut self) -> Option<&mut bool> {
-        match &mut self.runtime {
-            PhaseRuntime::Live { idle_warned } => Some(idle_warned),
+        match &mut self.table.phase {
+            Phase::Live { runtime, .. } => Some(&mut runtime.idle_warned),
             _ => None,
         }
     }
     /// Who a pregame was told tried to join it while it was full. `None` outside a pregame.
     pub(super) fn full_join_notices(&mut self) -> Option<&mut HashSet<UserId>> {
-        match &mut self.runtime {
-            PhaseRuntime::Pregame {
-                full_join_notices, ..
-            } => Some(full_join_notices),
+        match &mut self.table.phase {
+            Phase::Pregame { runtime, .. } => Some(&mut runtime.full_join_notices),
             _ => None,
         }
     }
     /// When a player last joined a pregame. `None` outside a pregame.
     pub(super) fn last_join(&mut self) -> Option<&mut Option<Instant>> {
-        match &mut self.runtime {
-            PhaseRuntime::Pregame { last_join, .. } => Some(last_join),
+        match &mut self.table.phase {
+            Phase::Pregame { runtime, .. } => Some(&mut runtime.last_join),
             _ => None,
         }
     }
@@ -492,7 +493,6 @@ impl TableActor {
         self.store.check_state()?;
         ensure_or_reject!(!self.frozen, "Table is frozen until recovery");
         self.table = next;
-        self.sync_runtime();
         self.anchor = Instant::now();
         Ok(())
     }
@@ -550,7 +550,7 @@ impl TableActor {
         {
             s.finished = Some(Utc::now());
         }
-        let finished = matches!(&next.phase, Phase::Live { snapshot }
+        let finished = matches!(&next.phase, Phase::Live { snapshot, .. }
             if snapshot.game.end_condition != EndCondition::InProgress);
         if finished {
             next.convert_to_replay()?;
@@ -571,7 +571,6 @@ impl TableActor {
         let became_replay = matches!(self.table.phase, Phase::Live { .. })
             && matches!(next.phase, Phase::Replay { .. });
         self.table = next;
-        self.sync_runtime();
         for a in self.attendees.values_mut() {
             if became_replay {
                 a.spectator = true;
@@ -918,14 +917,17 @@ impl TableActor {
                 .collect(),
         }
     }
-    pub(super) fn clock(&self) -> hanabi_protocol::Clock {
-        let s = self.table.game().expect("game clock");
-        let now = self.timers().expect("game timers");
+    pub(super) fn clock(&self) -> CommandResult<hanabi_protocol::Clock> {
+        let s = self
+            .table
+            .game()
+            .context("A clock was read without a game")?;
+        let now = self.timers().context("A clock was read without a game")?;
         let live = matches!(self.table.phase, Phase::Live { .. })
             && s.game.end_condition == EndCondition::InProgress;
         let mut times = s.clocks.clone();
         times[s.game.active_player_index] = now.active_clock;
-        hanabi_protocol::Clock {
+        Ok(hanabi_protocol::Clock {
             table_id: self.table.id,
             times,
             active_player_index: if live {
@@ -938,7 +940,7 @@ impl TableActor {
             } else {
                 now.turn_elapsed
             },
-        }
+        })
     }
     pub(super) async fn command(
         &mut self,
@@ -985,7 +987,7 @@ impl TableActor {
                 ensure_or_reject!(self.attending(&session), "Reattend before loading");
                 let mut next = self.candidate();
                 let mut starts_clock = false;
-                if let Phase::Live { snapshot: s } = &mut next.phase
+                if let Phase::Live { snapshot: s, .. } = &mut next.phase
                     && s.game.end_condition == EndCondition::InProgress
                     && s.players[s.game.active_player_index].id == session.user
                 {
@@ -1005,7 +1007,7 @@ impl TableActor {
                 let mut e = self.effects();
                 self.add_all(&mut e, hanabi_protocol::server::CONNECTED, self.connected());
                 if matches!(self.table.phase, Phase::Live { .. }) {
-                    self.add_all(&mut e, hanabi_protocol::server::CLOCK, self.clock());
+                    self.add_all(&mut e, hanabi_protocol::server::CLOCK, self.clock()?);
                 }
                 self.publish(e).await
             }
@@ -1068,7 +1070,9 @@ impl TableActor {
             }
             return Ok(());
         }
-        let timers = self.timers().expect("game timers");
+        let timers = self
+            .timers()
+            .context("A game's timers were read without a game")?;
         if matches!(self.table.phase, Phase::Replay { .. }) {
             if timers.idle_remaining == 0 {
                 return self.retire().await;
@@ -1110,7 +1114,7 @@ impl TableActor {
         let timeout = timers.timed_out();
         if idle || timeout {
             let mut next = self.candidate();
-            let s = next.game_mut().expect("game");
+            let s = game_mut(&mut next)?;
             let active = s.game.active_player_index;
             let from = s.game.events.len();
             if timeout {

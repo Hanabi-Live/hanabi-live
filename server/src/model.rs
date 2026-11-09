@@ -12,7 +12,10 @@ use hanabi_protocol::{
 pub use hanabi_protocol::{CLOCK_UNITS_PER_SECOND, IDLE_TIMEOUT_MS};
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
-use std::collections::{BTreeMap, HashSet};
+use std::{
+    collections::{BTreeMap, HashMap, HashSet},
+    time::Instant,
+};
 
 pub const FORMAT: &str = "hanabi-live-1";
 /// The author of chat that the server wrote, as `chat_log` stores it. Real users have positive IDs.
@@ -145,14 +148,43 @@ pub enum Phase {
         automatic_start: Option<usize>,
         countdown: Option<DateTime<Utc>>,
         kicked: Vec<UserId>,
+        #[serde(skip)]
+        runtime: PregameRuntime,
     },
     Live {
         snapshot: Box<Snapshot>,
+        #[serde(skip)]
+        runtime: LiveRuntime,
     },
     Replay {
         snapshot: Box<Snapshot>,
         replay: ReplayState,
+        #[serde(skip)]
+        runtime: ReplayRuntime,
     },
+}
+// What a table keeps in memory for its phase. Checkpoints leave it out, so a restart forgets it:
+// reconnection grace starts again, and warnings and notices can be sent again. A new phase starts
+// with none.
+#[derive(Clone, Debug, Default)]
+pub struct PregameRuntime {
+    /// When each absent player loses their seat.
+    pub absent_until: HashMap<UserId, Instant>,
+    /// Who the table was told tried to join it while it was full.
+    pub full_join_notices: HashSet<UserId>,
+    /// When a player last joined the table, so that a burst of joins plays the join sound once.
+    /// Before the first join, the table's creation counts as the last join.
+    pub last_join: Option<Instant>,
+}
+#[derive(Clone, Debug, Default)]
+pub struct LiveRuntime {
+    /// Whether the table was warned that the game is about to end for inactivity.
+    pub idle_warned: bool,
+}
+#[derive(Clone, Debug, Default)]
+pub struct ReplayRuntime {
+    /// When the replay closes if no viewer returns.
+    pub absent_until: Option<Instant>,
 }
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
@@ -273,23 +305,23 @@ impl TableSnapshot {
     pub fn players(&self) -> &[Player] {
         match &self.phase {
             Phase::Pregame { players, .. } => players,
-            Phase::Live { snapshot } | Phase::Replay { snapshot, .. } => &snapshot.players,
+            Phase::Live { snapshot, .. } | Phase::Replay { snapshot, .. } => &snapshot.players,
         }
     }
     pub fn game(&self) -> Option<&Snapshot> {
         match &self.phase {
             Phase::Pregame { .. } => None,
-            Phase::Live { snapshot } | Phase::Replay { snapshot, .. } => Some(snapshot),
+            Phase::Live { snapshot, .. } | Phase::Replay { snapshot, .. } => Some(snapshot),
         }
     }
     pub fn game_mut(&mut self) -> Option<&mut Snapshot> {
         match &mut self.phase {
             Phase::Pregame { .. } => None,
-            Phase::Live { snapshot } | Phase::Replay { snapshot, .. } => Some(snapshot),
+            Phase::Live { snapshot, .. } | Phase::Replay { snapshot, .. } => Some(snapshot),
         }
     }
     pub fn convert_to_replay(&mut self) -> Result<()> {
-        let Phase::Live { snapshot } = &self.phase else {
+        let Phase::Live { snapshot, .. } = &self.phase else {
             anyhow::bail!("Only a completed live game can become a review");
         };
         ensure!(
@@ -314,6 +346,7 @@ impl TableSnapshot {
                 spoiler_free: false,
                 restart_declined: vec![],
             },
+            runtime: ReplayRuntime::default(),
         };
         Ok(())
     }
@@ -394,7 +427,7 @@ impl TableSnapshot {
                     "Invalid pregame controls"
                 );
             }
-            Phase::Live { snapshot } | Phase::Replay { snapshot, .. } => {
+            Phase::Live { snapshot, .. } | Phase::Replay { snapshot, .. } => {
                 snapshot.validate()?;
                 // A game becomes a replay in the same commit that ends it.
                 ensure!(

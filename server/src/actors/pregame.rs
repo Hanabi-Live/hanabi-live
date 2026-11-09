@@ -244,7 +244,7 @@ impl TableActor {
             ..
         } = &mut next.phase
         else {
-            unreachable!()
+            bail_internal!("A pregame command ran outside a pregame");
         };
         let removed = players.split_off(players.len().min(max_players));
         *countdown = None;
@@ -415,6 +415,7 @@ impl TableActor {
         next.options = options;
         next.phase = Phase::Live {
             snapshot: Box::new(snapshot),
+            runtime: crate::model::LiveRuntime::default(),
         };
         self.persist(next).await?;
         for a in self.attendees.values_mut() {
@@ -602,7 +603,7 @@ impl TableActor {
             ..
         } = &mut source.phase
         else {
-            unreachable!()
+            bail_internal!("A pregame command ran outside a pregame");
         };
         players.retain(|p| !selected_ids.contains(&p.id));
         let canceled = countdown.take().is_some();
@@ -652,6 +653,7 @@ impl TableActor {
             automatic_start: None,
             countdown: None,
             kicked: vec![],
+            runtime: crate::model::PregameRuntime::default(),
         };
         destination.chat.clear();
         destination.shadows.clear();

@@ -320,8 +320,11 @@ impl TableActor {
             "You must lead this shared replay"
         );
         let mut next = self.candidate();
-        let Phase::Replay { snapshot, replay } = &mut next.phase else {
-            unreachable!("replay commands run in replays");
+        let Phase::Replay {
+            snapshot, replay, ..
+        } = &mut next.phase
+        else {
+            bail_internal!("A replay command ran outside a replay");
         };
         // Arrows and sounds only reset the idle timer, so they skip the durable write.
         let checkpoint = !matches!(r, R::Arrow { .. } | R::Sound { .. });
@@ -497,6 +500,7 @@ impl TableActor {
             players,
             countdown: None,
             kicked: vec![],
+            runtime: crate::model::PregameRuntime::default(),
         };
         let moving = self
             .audience()
@@ -527,7 +531,7 @@ impl TableActor {
         self.seat(&session)?;
         let mut next = self.candidate();
         let Phase::Replay { replay, .. } = &mut next.phase else {
-            unreachable!("replay commands run in replays");
+            bail_internal!("A replay command ran outside a replay");
         };
         if replay.restart_declined.contains(&session.user) == declined {
             return Ok(());
