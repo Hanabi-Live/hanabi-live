@@ -32,14 +32,16 @@ import {
   OFF_BLACK,
   RANK_FONT_FAMILY,
   SMALL_ICON_SIZE,
+  TEXT_SHADOW,
   TOP_LEFT_X,
   TOP_LEFT_Y,
 } from "./constants";
 import { NoteIndicator } from "./controls/NoteIndicator";
 import { RankPip } from "./controls/RankPip";
+import { drawWithKonva3Shadow } from "./controls/konva3Shadow";
 import { SUIT_PIP_SCALE, drawPip, getSuitPipRingPosition } from "./drawPip";
 
-/** The opacity of the shadow under a card. */
+/** The opacity of the shadow under a card and under the pips drawn on it. */
 const CARD_SHADOW_OPACITY = 0.4;
 
 /**
@@ -138,12 +140,21 @@ const RANK_PIP_SHADOW = {
   shadowColor: "black",
   shadowOffsetX: 5,
   shadowOffsetY: 5,
-  shadowOpacity: 0.4,
+  shadowOpacity: CARD_SHADOW_OPACITY,
   shadowForStrokeEnabled: true,
 } as const;
 
 /** The outline around a suit pip. */
 const SUIT_PIP_STROKE_WIDTH = 5;
+
+/** The drop shadow under a suit pip, which is omitted in speedrun games. */
+const SUIT_PIP_SHADOW = {
+  shadowColor: "black",
+  shadowOffsetX: 15,
+  shadowOffsetY: 15,
+  shadowOpacity: CARD_SHADOW_OPACITY,
+  shadowForStrokeEnabled: true,
+} as const;
 
 /** The size of the X over a suit pip that has been ruled out, in the pip's units. */
 const SUIT_PIP_X_SIZE = 50;
@@ -534,6 +545,8 @@ export function note(
     width: SMALL_ICON_SIZE,
     height: SMALL_ICON_SIZE,
     rotation: HALF_TURN_DEGREES,
+    shadowEnabled: !globals.options.speedrun,
+    ...TEXT_SHADOW,
     visible: shouldShowIndicator(),
     listening: false,
   });
@@ -554,6 +567,8 @@ export function criticalIndicator(offsetCornerElements: boolean): Konva.Image {
     width: SMALL_ICON_SIZE,
     height: SMALL_ICON_SIZE,
     rotation: HALF_TURN_DEGREES,
+    shadowEnabled: !globals.options.speedrun,
+    ...TEXT_SHADOW,
     visible: false,
     listening: false,
   });
@@ -802,16 +817,20 @@ function getNewColorPip(
     offset,
     stroke: "black",
     strokeWidth: SUIT_PIP_STROKE_WIDTH,
-    sceneFunc: (ctx: KonvaContext.Context) => {
-      drawPip(
-        ctx as unknown as CanvasRenderingContext2D,
-        suit,
-        variant,
-        false,
-        undefined,
-        undefined,
-        isPositive,
-      );
+    shadowEnabled: !globals.options.speedrun,
+    ...SUIT_PIP_SHADOW,
+    sceneFunc: (ctx: KonvaContext.Context, shape: Konva.Shape) => {
+      drawWithKonva3Shadow(shape, ctx, () => {
+        drawPip(
+          ctx as unknown as CanvasRenderingContext2D,
+          suit,
+          variant,
+          false,
+          undefined,
+          undefined,
+          isPositive,
+        );
+      });
     },
     listening: false,
   });

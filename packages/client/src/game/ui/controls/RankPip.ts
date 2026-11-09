@@ -1,6 +1,7 @@
 import Konva from "konva";
 import type * as KonvaContext from "konva/lib/Context";
-import { CLUED_COLOR, NO_SHADOW_COLOR } from "../constants";
+import { CLUED_COLOR } from "../constants";
+import { drawWithKonva3Shadow } from "./konva3Shadow";
 
 /** The default miter limit of a canvas, which Konva 3 outlined text with. */
 const CANVAS_DEFAULT_MITER_LIMIT = 10;
@@ -14,19 +15,10 @@ export class RankPip extends Konva.Text {
     this.fillValue = config?.fill;
   }
 
-  /**
-   * Draws a shadowed pip as Konva 3 did: once with the shadow and once more on top without it, so
-   * the shadows of the fill and the outline overlap. Konva 10 instead draws the pip through a
-   * buffer and casts one flat shadow, which looks different.
-   */
   override _sceneFunc(context: KonvaContext.SceneContext): void {
-    super._sceneFunc(context);
-    if (this.hasShadow() === true && !this._useBufferCanvas()) {
-      context.save();
-      context.setAttr("shadowColor", NO_SHADOW_COLOR);
+    drawWithKonva3Shadow(this, context, () => {
       super._sceneFunc(context);
-      context.restore();
-    }
+    });
   }
 
   /** Like Konva 3, use a buffer only for a transparent pip. */

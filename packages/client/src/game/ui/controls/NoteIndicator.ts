@@ -15,13 +15,24 @@ export class NoteIndicator extends Konva.Image {
   // We tilt the note indicator in order to indicate to spectators that the note was updated.
   tilted = false;
 
+  private glowing = false;
+
+  /** The shadow from the configuration, which the glow replaces while it shows. */
+  private readonly normalShadow: {
+    color: string;
+    blur: number;
+    opacity: number;
+    enabled: boolean;
+  };
+
   constructor(config: Konva.ImageConfig) {
-    super({
-      ...config,
-      shadowColor: GLOW_COLOR,
-      shadowBlur: GLOW_BLUR,
-      shadowEnabled: false,
-    });
+    super(config);
+    this.normalShadow = {
+      color: this.shadowColor(),
+      blur: this.shadowBlur(),
+      opacity: this.shadowOpacity(),
+      enabled: this.shadowEnabled(),
+    };
   }
 
   setTilted(tilted: boolean): void {
@@ -34,11 +45,22 @@ export class NoteIndicator extends Konva.Image {
   }
 
   setGlowing(glowing: boolean): void {
-    this.shadowEnabled(glowing);
+    this.glowing = glowing;
+    if (glowing) {
+      this.shadowColor(GLOW_COLOR);
+      this.shadowBlur(GLOW_BLUR);
+      this.shadowOpacity(1);
+      this.shadowEnabled(true);
+    } else {
+      this.shadowColor(this.normalShadow.color);
+      this.shadowBlur(this.normalShadow.blur);
+      this.shadowOpacity(this.normalShadow.opacity);
+      this.shadowEnabled(this.normalShadow.enabled);
+    }
   }
 
   override _sceneFunc(context: Context): void {
-    const passes = this.shadowEnabled() ? GLOW_PASSES : 1;
+    const passes = this.glowing ? GLOW_PASSES : 1;
     for (let i = 0; i < passes; i++) {
       super._sceneFunc(context);
     }
