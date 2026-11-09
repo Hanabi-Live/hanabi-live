@@ -4,6 +4,8 @@ import type { Settings } from "@hanabi-live/data";
 import {
   DEFAULT_TABLE_NAME_SUFFIX,
   MAX_SEED_LENGTH,
+  MAX_TIME_BASE_SECONDS,
+  MAX_TIME_PER_TURN_SECONDS,
   SECONDS_PER_MINUTE,
   defaultSettings,
 } from "@hanabi-live/data";
@@ -82,6 +84,8 @@ export function init(): void {
   });
 
   getHTMLInputElement("#create-game-seed").maxLength = MAX_SEED_LENGTH;
+  addCheckedInput("#createTableTimeBaseMinutes", getTimeBaseError);
+  addCheckedInput("#createTableTimePerTurnSeconds", getTimePerTurnError);
   addCheckedInput("#create-game-seed", getSeedError);
   addCheckedInput("#create-game-replay-game-id", getReplayGameIDError);
   addCheckedInput("#create-game-replay-turn", getReplayTurnError);
@@ -126,6 +130,7 @@ export function init(): void {
 
     // Remember the new setting.
     getCheckbox("createTableTimed");
+    checkInputs();
   });
 
   $("#createTableSpeedrun").on("change", () => {
@@ -135,6 +140,7 @@ export function init(): void {
 
     // Remember the new setting.
     getCheckbox("createTableSpeedrun");
+    checkInputs();
   });
 
   $("#create-game-show-extra-options").on("click", () => {
@@ -182,10 +188,10 @@ export function init(): void {
     getVariantName();
   });
   $("#createTableTimeBaseMinutes").on("change", () => {
-    getTextboxForTimeBase();
+    getTimeBaseMinutes();
   });
   $("#createTableTimePerTurnSeconds").on("change", () => {
-    getTextboxForTimePerTurn();
+    getTimePerTurnSeconds();
   });
   $("#createTableDeckPlays").on("change", () => {
     getCheckbox("createTableDeckPlays");
@@ -290,42 +296,25 @@ function submit() {
   // options.
   const isNew = $("#create-game-table-number").val() === "";
 
-  // Get timer values
-  const timed = getCheckbox("createTableTimed");
-  let timeBaseSeconds = 0;
-  let timePerTurn = 0;
-
-  // Try getting the user's values. If they are invalid, leave the dialog open.
-  if (timed) {
-    let foundErrors = false;
-
-    try {
-      const timeValue = getTextboxForTimeBase();
-      timeBaseSeconds = Math.round(timeValue * SECONDS_PER_MINUTE);
-    } catch {
-      // Invalid value, inform the UI and do not close the tooltip.
-      $("#createTableTimeBaseMinutes").addClass("wrongInput");
-      foundErrors = true;
-    }
-
-    try {
-      timePerTurn = getTextboxForTimePerTurn();
-    } catch {
-      // Invalid value, inform the UI and do not close the tooltip.
-      $("#createTableTimePerTurnSeconds").addClass("wrongInput");
-      foundErrors = true;
-    }
-
-    if (foundErrors) {
-      return;
-    }
-  }
-
-  // Seeds and replays are not saved, so that a new game does not accidentally repeat a deal.
+  // Leave the dialog open while any value is invalid, showing the extra options only when the
+  // problem is among them.
   if (!checkInputs()) {
-    showExtraOptions(true);
+    if (
+      getTimeBaseError() === undefined
+      && getTimePerTurnError() === undefined
+    ) {
+      showExtraOptions(true);
+    }
     return;
   }
+
+  const timed = getCheckbox("createTableTimed");
+  const timeBaseMinutes = timed ? getTimeBaseMinutes() : undefined;
+  const timeBaseSeconds =
+    timeBaseMinutes === undefined ? 0 : toSeconds(timeBaseMinutes);
+  const timePerTurn = (timed ? getTimePerTurnSeconds() : undefined) ?? 0;
+
+  // Seeds and replays are not saved, so that a new game does not accidentally repeat a deal.
   const seed = getText("#create-game-seed");
   const replayGameID = parseIntSafe(getText("#create-game-replay-game-id"));
   const replayTurn =
@@ -400,10 +389,6 @@ function submit() {
       maxPlayers,
     });
   }
-
-  // Remove error indications
-  $("#createTableTimeBaseMinutes").removeClass("wrongInput");
-  $("#createTableTimePerTurnSeconds").removeClass("wrongInput");
 }
 
 export function acceptOptionsFromGuest(options: Options): void {
@@ -467,6 +452,46 @@ function getText(selector: string): string {
   return getHTMLInputElement(selector).value.trim();
 }
 
+/** Whether the clock options apply, since a speedrun is never timed. */
+function isTimed(): boolean {
+  return (
+    getHTMLInputElement("#createTableTimed").checked
+    && !getHTMLInputElement("#createTableSpeedrun").checked
+  );
+}
+
+function toSeconds(minutes: number): number {
+  return Math.round(minutes * SECONDS_PER_MINUTE);
+}
+
+function getTimeBaseError(): string | undefined {
+  if (!isTimed()) {
+    return undefined;
+  }
+  const minutes = parseFloatSafe(getText("#createTableTimeBaseMinutes"));
+  if (minutes === undefined || toSeconds(minutes) <= 0) {
+    return "The base time must be a positive number of minutes.";
+  }
+  if (toSeconds(minutes) > MAX_TIME_BASE_SECONDS) {
+    return `The base time cannot be more than ${MAX_TIME_BASE_SECONDS / SECONDS_PER_MINUTE} minutes.`;
+  }
+  return undefined;
+}
+
+function getTimePerTurnError(): string | undefined {
+  if (!isTimed()) {
+    return undefined;
+  }
+  const seconds = parseIntSafe(getText("#createTableTimePerTurnSeconds"));
+  if (seconds === undefined || seconds <= 0) {
+    return "The time per turn must be a positive whole number of seconds.";
+  }
+  if (seconds > MAX_TIME_PER_TURN_SECONDS) {
+    return `The time per turn cannot be more than ${MAX_TIME_PER_TURN_SECONDS} seconds.`;
+  }
+  return undefined;
+}
+
 function getSeedError(): string | undefined {
   const invalidCharacters = new Set(
     [...new Intl.Segmenter().segment(getText("#create-game-seed"))]
@@ -518,44 +543,24 @@ function getCheckbox(setting: keyof Settings): boolean {
   return value;
 }
 
-function getTextboxValue(setting: keyof Settings): string {
-  const selector = `#${setting}`;
-  const element = getHTMLInputElement(selector);
-  return element.value.trim();
+/** Returns the base time and remembers it, if it is valid. */
+function getTimeBaseMinutes(): number | undefined {
+  const minutes = parseFloatSafe(getText("#createTableTimeBaseMinutes"));
+  if (minutes === undefined || getTimeBaseError() !== undefined) {
+    return undefined;
+  }
+  checkSettingChanged("createTableTimeBaseMinutes", minutes);
+  return minutes;
 }
 
-function getTextboxForTimePerTurn(): number {
-  const setting = "createTableTimePerTurnSeconds";
-  const element = $(`#${setting}`);
-  const valueString = getTextboxValue(setting);
-  let value = parseIntSafe(valueString);
-  if (value === undefined) {
-    // They have entered an invalid amount of seconds, so revert to using the default value.
-    value = defaultSettings.createTableTimePerTurnSeconds;
-
-    // Also change the value of the actual element on the page.
-    element.val(value.toString());
+/** Returns the time per turn and remembers it, if it is valid. */
+function getTimePerTurnSeconds(): number | undefined {
+  const seconds = parseIntSafe(getText("#createTableTimePerTurnSeconds"));
+  if (seconds === undefined || getTimePerTurnError() !== undefined) {
+    return undefined;
   }
-
-  checkSettingChanged(setting, value);
-  return value;
-}
-
-function getTextboxForTimeBase(): number {
-  const setting = "createTableTimeBaseMinutes";
-  const element = $(`#${setting}`);
-  const valueString = getTextboxValue(setting);
-  let value = parseFloatSafe(valueString);
-  if (value === undefined) {
-    // They have entered an invalid amount of minutes, so revert to using the default value.
-    value = defaultSettings.createTableTimeBaseMinutes;
-
-    // Also change the value of the actual element on the page.
-    element.val(value.toString());
-  }
-
-  checkSettingChanged(setting, value);
-  return value;
+  checkSettingChanged("createTableTimePerTurnSeconds", seconds);
+  return seconds;
 }
 
 function getVariantName(): string {
@@ -637,7 +642,6 @@ export function ready(): void {
   $("#create-game-seed").val(seed);
   $("#create-game-replay-game-id").val(replayGameID);
   $("#create-game-replay-turn").val(replayTurn);
-  checkInputs();
 
   // Fill in the rest of form with the settings that we used last time (which is stored on the
   // server).
@@ -671,6 +675,7 @@ export function ready(): void {
     maxPlayers = defaultSettings.createTableMaxPlayers;
   }
   $("#createTableMaxPlayers").val(maxPlayers);
+  checkInputs();
 
   // Only show the extra options when one of them is selected or when the user asks for them.
   showExtraOptions(

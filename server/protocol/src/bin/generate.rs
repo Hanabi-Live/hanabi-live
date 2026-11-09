@@ -660,6 +660,14 @@ fn data_constants() -> String {
             hanabi_protocol::SECONDS_PER_MINUTE.to_string(),
         ),
         (
+            "MAX_TIME_BASE_SECONDS",
+            literal(&hanabi_protocol::MAX_TIME_BASE_SECONDS.into()),
+        ),
+        (
+            "MAX_TIME_PER_TURN_SECONDS",
+            literal(&hanabi_protocol::MAX_TIME_PER_TURN_SECONDS.into()),
+        ),
+        (
             "TYPING_TIMEOUT_MS",
             hanabi_protocol::TYPING_TIMEOUT_MS.to_string(),
         ),
