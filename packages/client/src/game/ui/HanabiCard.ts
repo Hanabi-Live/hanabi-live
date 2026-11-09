@@ -164,24 +164,25 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip, UICard {
     return this._layout;
   }
 
-  // HACK: this is temporary to figure out what needs to be converted to reactive. In the end, the
-  // state should not be exposed by the UI in any form and nobody should depend on the HanabiCard UI
-  // state.
-  private _state: CardState;
+  readonly order: CardOrder;
+
+  /** The state of a card that is not in the deck, such as a stack base. */
+  private readonly fallbackState: CardState;
+
+  /**
+   * The clue preview state if one is shown. Otherwise, the card's entry in the visible deck.
+   * Otherwise, the fixed state of a card that is not in the deck.
+   */
   get state(): CardState {
     return (
       this.cluePreviewState
-      ?? globals.store?.getState().visibleState?.deck[this._state.order]
-      ?? this._state
+      ?? globals.store?.getState().visibleState?.deck[this.order]
+      ?? this.fallbackState
     );
   }
 
-  set state(state: CardState) {
-    this._state = state;
-  }
-
   get note(): CardNote {
-    return globals.state.notes.ourNotes[this.state.order]!;
+    return globals.state.notes.ourNotes[this.order]!;
   }
 
   private _tweening = false;
@@ -190,7 +191,7 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip, UICard {
   }
 
   get tooltipName(): string {
-    return `card-${this.state.order}`;
+    return `card-${this.order}`;
   }
 
   private _visibleSuitIndex: SuitIndex | null = null;
@@ -225,9 +226,9 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip, UICard {
     this.position(CARD_CENTER);
     this.offset(CARD_CENTER);
 
-    // Order is defined upon first initialization.
+    this.order = order;
     const initialState = getInitialCardState(order, this.variant, numPlayers);
-    this._state = {
+    this.fallbackState = {
       ...initialState,
       suitIndex, // Only initially specified for stack bases.
     };
@@ -441,10 +442,10 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip, UICard {
     }
 
     // Card identities are stored on the global state for convenience.
-    const cardIdentity = globals.state.cardIdentities[this.state.order];
+    const cardIdentity = globals.state.cardIdentities[this.order];
     assertDefined(
       cardIdentity,
-      `Failed to get the previously known card identity for card: ${this.state.order}`,
+      `Failed to get the previously known card identity for card: ${this.order}`,
     );
 
     return cardIdentity;
@@ -487,9 +488,7 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip, UICard {
   }
 
   getMorph(): CardIdentity | undefined {
-    return globals.state.replay.hypothetical?.morphedIdentities[
-      this.state.order
-    ];
+    return globals.state.replay.hypothetical?.morphedIdentities[this.order];
   }
 
   getMorphedIdentity(): CardIdentity {
@@ -521,7 +520,7 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip, UICard {
       return this.state;
     }
 
-    return globals.state.cardIdentities[this.state.order]!;
+    return globals.state.cardIdentities[this.order]!;
   }
 
   getMorphedPossibilities(): readonly SuitRankTuple[] {
@@ -559,7 +558,7 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip, UICard {
       return false;
     }
 
-    const { order } = this.state;
+    const { order } = this;
     const cardIdentity = globals.state.cardIdentities[order];
     return (
       order >= globals.state.ongoingGame.deck.length
@@ -983,8 +982,7 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip, UICard {
     // If we are a player in an ongoing game, show the note indicator if we have a non-blank note on
     // it.
     if (globals.state.playing) {
-      const ourNote =
-        globals.state.notes.ourNotes[this.state.order]?.text ?? "";
+      const ourNote = globals.state.notes.ourNotes[this.order]?.text ?? "";
       return ourNote !== "";
     }
 
@@ -995,7 +993,7 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip, UICard {
 
     // We are not a player in an ongoing game. Only show the note indicator if there is one or more
     // non-blank notes.
-    const note = globals.state.notes.allNotes[this.state.order];
+    const note = globals.state.notes.allNotes[this.order];
     if (note === undefined) {
       return false;
     }
@@ -1089,19 +1087,19 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip, UICard {
     // Adding the card to the play stack will automatically tween the card.
     assertNotNull(
       this.state.suitIndex,
-      `Failed to animate card ${this.state.order} to the play stacks since it has a null suit index.`,
+      `Failed to animate card ${this.order} to the play stacks since it has a null suit index.`,
     );
 
     const suit = this.variant.suits[this.state.suitIndex];
     assertDefined(
       suit,
-      `Failed to animate card ${this.state.order} to the play stacks since the suit was not found at index: ${this.state.suitIndex}`,
+      `Failed to animate card ${this.order} to the play stacks since the suit was not found at index: ${this.state.suitIndex}`,
     );
 
     const playStack = globals.elements.playStacks.get(suit);
     assertDefined(
       playStack,
-      `Failed to animate card ${this.state.order} to the play stacks since the play stack was not found for suit: ${suit.name}`,
+      `Failed to animate card ${this.order} to the play stacks since the play stack was not found for suit: ${suit.name}`,
     );
 
     playStack.addChild(this.layout);
@@ -1131,19 +1129,19 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip, UICard {
     // Adding the card to the discard pile will automatically tween the card.
     assertNotNull(
       this.state.suitIndex,
-      `Failed to animate card ${this.state.order} to the discard pile since it has a null suit index.`,
+      `Failed to animate card ${this.order} to the discard pile since it has a null suit index.`,
     );
 
     const suit = this.variant.suits[this.state.suitIndex];
     assertDefined(
       suit,
-      `Failed to animate card ${this.state.order} to the discard pile since the suit was not found at index: ${this.state.suitIndex}`,
+      `Failed to animate card ${this.order} to the discard pile since the suit was not found at index: ${this.state.suitIndex}`,
     );
 
     const discardStack = globals.elements.discardStacks.get(suit);
     assertDefined(
       discardStack,
-      `Failed to animate card ${this.state.order} to the discard pile since the discard stack was not found for suit: ${suit.name}`,
+      `Failed to animate card ${this.order} to the discard pile since the discard stack was not found for suit: ${suit.name}`,
     );
 
     discardStack.addChild(this.layout);
@@ -1218,7 +1216,7 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip, UICard {
   // ------------
 
   setNote(note: string): void {
-    notes.set(this.state.order, note);
+    notes.set(this.order, note);
     notes.update(this, note);
     if (note !== "") {
       notes.show(this);
@@ -1260,8 +1258,7 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip, UICard {
     protect = true, // true to add [] to meaningful updates
     stripProse = false, // true to strip prose and conflicting border tokens
   ): void {
-    const existingNote =
-      globals.state.notes.ourNotes[this.state.order]?.text ?? "";
+    const existingNote = globals.state.notes.ourNotes[this.order]?.text ?? "";
     const noteText = existingNote.trim();
     const note = protect ? this.protectedNote(noteAdded) : noteAdded;
     const lastPipe = noteText.lastIndexOf("|");
@@ -1327,7 +1324,7 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip, UICard {
   }
 
   checkSpecialNote(): void {
-    const note = globals.state.notes.ourNotes[this.state.order]!;
+    const note = globals.state.notes.ourNotes[this.order]!;
     checkNoteImpossibility(this.variant, this.state, note, this.isStackBase);
 
     // Morph the card if it has an "exact" card note. (Or clear the bare image if the note was

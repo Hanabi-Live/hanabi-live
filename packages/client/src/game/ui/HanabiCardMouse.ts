@@ -41,7 +41,7 @@ function mouseEnter(this: HanabiCard) {
 
   // When we hover over a card, the relevant positive and negative clues will be highlighted in the
   // clue log.
-  globals.elements.clueLog!.showMatches(this.state.order);
+  globals.elements.clueLog!.showMatches(this.order);
   globals.layers.UI.batchDraw();
 
   // When we hover over a card, the cursor can change.

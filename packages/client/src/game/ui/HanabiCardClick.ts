@@ -100,30 +100,24 @@ function clickLeft(card: HanabiCard, event: MouseEvent) {
     // drawn, tween the card being drawn, and then indicate the card.)
     if (card.state.segmentDrawn === null) {
       // The card was drawn during the initial deal before the first turn.
-      replay.goToSegmentAndIndicateCard(0, card.state.order);
+      replay.goToSegmentAndIndicateCard(0, card.order);
     } else {
       // The card was drawn after the initial deal. Go to the segment that it was drawn and then
       // fast-forward one segment in order to show the card tweening into the hand. (We have to
       // record the segment because it will be cleared after the first "goToTurn()".)
       const { segmentDrawn } = card.state;
       replay.goToSegment(segmentDrawn, true);
-      replay.goToSegmentAndIndicateCard(segmentDrawn + 1, card.state.order);
+      replay.goToSegmentAndIndicateCard(segmentDrawn + 1, card.order);
     }
   } else if (isCardPlayed(card.state) && card.state.segmentPlayed !== null) {
     // Clicking on played cards goes to the turn immediately before they were played.
-    replay.goToSegmentAndIndicateCard(
-      card.state.segmentPlayed,
-      card.state.order,
-    );
+    replay.goToSegmentAndIndicateCard(card.state.segmentPlayed, card.order);
   } else if (
     isCardDiscarded(card.state)
     && card.state.segmentDiscarded !== null
   ) {
     // Clicking on discarded cards goes to the turn immediately before they were discarded.
-    replay.goToSegmentAndIndicateCard(
-      card.state.segmentDiscarded,
-      card.state.order,
-    );
+    replay.goToSegmentAndIndicateCard(card.state.segmentDiscarded, card.order);
   }
 }
 
@@ -154,9 +148,7 @@ function clickRight(card: HanabiCard, event: MouseEvent) {
   const rank = card.state.rank ?? undefined;
   const suitText = suit?.name ?? "Unknown";
   const rankText = rank?.toString() ?? "Unknown";
-  console.log(
-    `The order of the ${suitText} ${rankText} is: ${card.state.order}`,
-  );
+  console.log(`The order of the ${suitText} ${rankText} is: ${card.order}`);
 
   // Alt + right-click is a card morph (in a hypothetical).
   if (
@@ -182,13 +174,13 @@ function clickRight(card: HanabiCard, event: MouseEvent) {
       || (globals.state.replay.shared.amLeader
         && globals.state.replay.shared.useSharedSegments))
   ) {
-    arrows.toggle(card.state.order);
+    arrows.toggle(card.order);
     return;
   }
 
   // Right-click in a solo replay just prints out the order of the card.
   if (globals.state.finished && globals.state.replay.shared === null) {
-    console.log(`This card's order is: ${card.state.order}`);
+    console.log(`This card's order is: ${card.order}`);
     return;
   }
 
@@ -203,7 +195,7 @@ function clickRight(card: HanabiCard, event: MouseEvent) {
     && !event.metaKey
     && globals.state.replay.shared === null
   ) {
-    arrows.toggle(card.state.order);
+    arrows.toggle(card.order);
     return;
   }
 
@@ -222,12 +214,12 @@ export function morphReplayFromModal(
   if (cardIdentity === "original") {
     hypothetical.sendHypotheticalActionToServer({
       type: "unmorph",
-      order: card.state.order,
+      order: card.order,
     });
   } else {
     hypothetical.sendHypotheticalActionToServer({
       type: "morph",
-      order: card.state.order,
+      order: card.order,
       suitIndex: cardIdentity.suitIndex ?? NO_VALUE,
       rank: cardIdentity.rank ?? NO_VALUE,
     });

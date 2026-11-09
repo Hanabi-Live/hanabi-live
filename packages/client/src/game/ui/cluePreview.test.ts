@@ -38,7 +38,7 @@ describe("clue preview", () => {
     };
 
     const cards = [RED_ONE, BLUE_TWO].map((order) => ({
-      state: { order },
+      order,
       setCluePreview: vi.fn<(state: CardState | null) => void>(),
     }));
     Object.assign(globals, {

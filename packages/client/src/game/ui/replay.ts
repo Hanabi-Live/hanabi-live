@@ -137,7 +137,7 @@ export function goToSegmentAndIndicateCard(
   arrows.hideAll(); // We hide all the arrows first to ensure that the arrow is always shown
   const card = getCardOrStackBase(order);
   if (card) {
-    arrows.toggle(card.state.order);
+    arrows.toggle(card.order);
   }
 }
 

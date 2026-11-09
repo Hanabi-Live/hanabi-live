@@ -162,7 +162,7 @@ export function startMisplayAnimation(
   const strikeIndex = areStrikesHidden()
     ? -1
     : globals.state.visibleState!.strikes.findIndex(
-        (strike) => strike.order === card.state.order,
+        (strike) => strike.order === card.order,
       );
   const strikeSquare = globals.elements.strikeSquares[strikeIndex];
   const strikeX = globals.elements.strikeXs[strikeIndex];

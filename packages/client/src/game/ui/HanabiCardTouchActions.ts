@@ -38,19 +38,13 @@ function HanabiCardTapAction(this: HanabiCard) {
 
   if (isCardPlayed(this.state) && this.state.segmentPlayed !== null) {
     // Tapping on played cards goes to the turn immediately before they were played.
-    replay.goToSegmentAndIndicateCard(
-      this.state.segmentPlayed,
-      this.state.order,
-    );
+    replay.goToSegmentAndIndicateCard(this.state.segmentPlayed, this.order);
   } else if (
     isCardDiscarded(this.state)
     && this.state.segmentDiscarded !== null
   ) {
     // Tapping on discarded cards goes to the turn immediately before they were discarded.
-    replay.goToSegmentAndIndicateCard(
-      this.state.segmentDiscarded,
-      this.state.order,
-    );
+    replay.goToSegmentAndIndicateCard(this.state.segmentDiscarded, this.order);
   }
 }
 

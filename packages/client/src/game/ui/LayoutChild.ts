@@ -192,7 +192,7 @@ export class LayoutChild extends Konva.Group {
           () => {
             turn.end({
               type: ActionType.Play,
-              target: this.card.state.order,
+              target: this.card.order,
             });
           },
           returnToHand,
@@ -203,7 +203,7 @@ export class LayoutChild extends Konva.Group {
       case "discardArea": {
         turn.end({
           type: ActionType.Discard,
-          target: this.card.state.order,
+          target: this.card.order,
         });
         break;
       }

@@ -66,7 +66,7 @@ describe("isMorphedBlank", () => {
       },
     });
     const card = Object.assign(Object.create(HanabiCard.prototype), {
-      _state: { order },
+      order,
       isStackBase: false,
     }) as InstanceType<typeof HanabiCard>;
 

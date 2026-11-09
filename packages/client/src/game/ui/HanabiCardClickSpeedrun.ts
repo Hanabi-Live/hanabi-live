@@ -60,7 +60,7 @@ function clickLeft(card: HanabiCard, event: MouseEvent) {
   ) {
     turn.end({
       type: ActionType.Play,
-      target: card.state.order,
+      target: card.order,
     });
     return;
   }
@@ -166,7 +166,7 @@ function clickRight(card: HanabiCard, event: MouseEvent) {
 
     turn.end({
       type: ActionType.Discard,
-      target: card.state.order,
+      target: card.order,
     });
     return;
   }

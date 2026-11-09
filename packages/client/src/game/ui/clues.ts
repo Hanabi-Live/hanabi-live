@@ -114,7 +114,7 @@ function showClueMatch(target: PlayerIndex, clue: Clue): boolean {
 
     const { card } = child as unknown as LayoutChild;
     if (isTouched(card, clue)) {
-      touchedCards.push(card.state.order);
+      touchedCards.push(card.order);
       arrows.set(i, card, null, clue, true);
     }
   }

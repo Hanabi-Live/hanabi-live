@@ -292,7 +292,7 @@ function syncChildren(
       ([...getCollectionUI(i).children] as LayoutChild[])
         .map((layoutChild) => layoutChild.card)
         .filter((card) => !card.isStackBase)
-        .map((card) => card.state.order);
+        .map((card) => card.order);
 
     let current = getCurrentSorting();
 
@@ -301,7 +301,7 @@ function syncChildren(
     const removedCards = removedCardOrders.map(getCard);
     for (const card of removedCards) {
       const realState =
-        globals.store?.getState().visibleState?.deck[card!.state.order];
+        globals.store?.getState().visibleState?.deck[card!.order];
       if (realState === undefined || realState.location === "deck") {
         card!.animateToDeck();
       } else {

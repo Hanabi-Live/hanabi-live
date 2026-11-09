@@ -53,7 +53,7 @@ export function show(
     (child) => (child as unknown as LayoutChild).card,
   );
   for (const card of previewedCards) {
-    card.setCluePreview(deck[card.state.order] ?? null);
+    card.setCluePreview(deck[card.order] ?? null);
   }
 
   globals.layers.card.batchDraw();

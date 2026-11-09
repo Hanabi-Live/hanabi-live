@@ -139,7 +139,7 @@ export function show(card: HanabiCard): void {
   tooltips.setPosition(tooltip, posX, posY);
 
   // Update the tooltip content.
-  let shownNote = get(card.state.order, false, true);
+  let shownNote = get(card.order, false, true);
   if (card.state.location === "playStack") {
     if (shownNote !== "") {
       shownNote += "<br><br>";
@@ -177,7 +177,7 @@ export function openEditTooltip(
   show(card);
 
   globals.editingNote = tooltip;
-  const note = get(card.state.order, true);
+  const note = get(card.order, true);
 
   const input = document.createElement("input");
   input.setAttribute("id", `tooltip-${card.tooltipName}-input`);
@@ -224,7 +224,7 @@ export function openEditTooltip(
     let newNote: string;
     if (key === "Escape") {
       // If Escape is pressed, use the existing note, if any.
-      newNote = get(card.state.order, true);
+      newNote = get(card.order, true);
     } else {
       // If Enter is pressed, get the value of the input box.
       const val = noteTextbox.val();
@@ -241,7 +241,7 @@ export function openEditTooltip(
 
       newNote = chat.fillEmojis(newNote);
 
-      set(card.state.order, newNote);
+      set(card.order, newNote);
     }
 
     // Check to see if an event happened while we were editing this note.
