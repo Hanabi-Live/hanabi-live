@@ -149,12 +149,12 @@ impl Hub {
     }
     fn route(&self, s: Arc<Session>, id: u64, command: Command, reply: Reply) {
         if self.closing || !self.current(&s) {
-            let _ = reply.send(Err(anyhow::anyhow!("Stale session or draining server")));
+            let _ = reply.send(Err(rejection!("Stale session or draining server")));
             return;
         }
         let joining = matches!(&command, Command::Client(message) if matches!(**message, ClientMessage::TableJoin(_)));
         if joining && !s.name.starts_with("Bot-") && self.playing_elsewhere(s.user, Some(id)) {
-            let _ = reply.send(Err(anyhow::anyhow!(
+            let _ = reply.send(Err(rejection!(
                 "You cannot join more than one table at a time. Terminate your other game before joining a new one."
             )));
             return;
@@ -186,7 +186,7 @@ impl Hub {
                 self.tasks.spawn(async move {
                     let result = received
                         .await
-                        .unwrap_or_else(|_| Err(anyhow::anyhow!("Table closed")));
+                        .unwrap_or_else(|_| Err(rejection!("Table closed")));
                     if let Err(error) = hub
                         .send(HubCommand::PlayingFinished {
                             result,
@@ -210,7 +210,7 @@ impl Hub {
                 let _ = reply.send(Err(anyhow::anyhow!("Table queue unavailable")));
             }
         } else {
-            let _ = reply.send(Err(anyhow::anyhow!("Unknown table")));
+            let _ = reply.send(Err(rejection!("Unknown table")));
         }
     }
     /// A shared replay of the same database game that a link to it should join.
@@ -235,12 +235,12 @@ impl Hub {
             } else {
                 "Your session is no longer current."
             };
-            let _ = reply.send(Err(anyhow::anyhow!(message)));
+            let _ = reply.send(Err(rejection!("{message}")));
             return;
         }
         let playing = matches!(creation, Creation::Table(_)) && !s.name.starts_with("Bot-");
         if playing && self.playing_elsewhere(s.user, None) {
-            let _ = reply.send(Err(anyhow::anyhow!("You cannot join more than one table at a time. Terminate your other game before creating a new one.")));
+            let _ = reply.send(Err(rejection!("You cannot join more than one table at a time. Terminate your other game before creating a new one.")));
             return;
         }
         let playing_claim = if playing {
@@ -254,12 +254,11 @@ impl Hub {
         } else {
             None
         };
-        let permit = match self.capacity.clone().try_acquire_owned() {
-            Ok(p) => p,
-            Err(e) => {
-                let _ = reply.send(Err(e.into()));
-                return;
-            }
+        let Ok(permit) = self.capacity.clone().try_acquire_owned() else {
+            let _ = reply.send(Err(rejection!(
+                "The server has reached its limit of {MAX_TABLES} open tables. Please try again later."
+            )));
+            return;
         };
         let store = self.store.clone();
         let hub = self.sender.clone();
@@ -303,7 +302,7 @@ impl Hub {
     ) -> Result<()> {
         self.store.check_state()?;
         if let Some(s) = session {
-            ensure!(self.current(s), "Stale session");
+            ensure_or_reject!(self.current(s), "Stale session");
         }
         for effect in effects {
             match effect {
@@ -471,7 +470,7 @@ impl Hub {
                             .is_some_and(|p| p.session.generation > session.generation)
                     {
                         session.cancel.cancel();
-                        let _ = reply.send(Err(anyhow::anyhow!("Stale or draining session")));
+                        let _ = reply.send(Err(rejection!("Stale or draining session")));
                         continue;
                     }
                     if let Some(old) = self.sessions.remove(&session.user) {
@@ -555,7 +554,7 @@ impl Hub {
                     reply,
                 } => {
                     let result = if !self.current(&session) {
-                        Err(anyhow::anyhow!("Stale session"))
+                        Err(rejection!("Stale session"))
                     } else if !users {
                         Ok(Vec::new())
                     } else {
@@ -606,12 +605,12 @@ impl Hub {
                     reply,
                 } => {
                     let result = if self.closing {
-                        Err(anyhow::anyhow!("The server is shutting down."))
+                        Err(rejection!("The server is shutting down."))
                     } else if users
                         .iter()
                         .any(|user| self.playing_elsewhere(*user, Some(except)))
                     {
-                        Err(anyhow::anyhow!(
+                        Err(rejection!(
                             "An original player is already playing at another table."
                         ))
                     } else {
@@ -660,7 +659,7 @@ impl Hub {
                     let closing = self.closing;
                     self.tasks.spawn(async move {
                         let result = async {
-                            ensure!(!closing, "Draining");
+                            ensure_or_reject!(!closing, "Draining");
                             let permit = permit?;
                             let id = store.allocate_table().await?;
                             Ok(Allocation::new(id, permit, store, tasks, 0))
@@ -708,14 +707,13 @@ impl Hub {
                     reply,
                 } => {
                     if self.closing {
-                        let _ = reply.send(Err(anyhow::anyhow!(
+                        let _ = reply.send(Err(rejection!(
                             "Server draining; the prepared table will recover"
                         )));
                         continue;
                     }
                     if !self.current(&session) {
-                        let _ =
-                            reply.send(Err(anyhow::anyhow!("Session changed during preparation")));
+                        let _ = reply.send(Err(rejection!("Session changed during preparation")));
                         continue;
                     }
                     if self.tables.contains_key(&table.id) || allocation.id != table.id {
@@ -735,7 +733,7 @@ impl Hub {
                     let initial = if !self.closing && self.current(&session) {
                         Some((session, warnings, reply))
                     } else {
-                        let _ = reply.send(Err(anyhow::anyhow!(
+                        let _ = reply.send(Err(rejection!(
                             "Session changed during preparation; table is recoverable"
                         )));
                         None
@@ -808,7 +806,7 @@ impl Hub {
                         ));
                         Ok(())
                     } else {
-                        Err(anyhow::anyhow!("Session unavailable"))
+                        Err(rejection!("Session unavailable"))
                     };
                     let _ = reply.send(result);
                 }

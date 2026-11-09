@@ -12,6 +12,7 @@ of the repository.
 - The "New Game" screen now has a "Replay Game" option for replaying part of an
   existing game, replacing the `!replay` table name.
 - The pregame chat now says when a spectator joins or leaves the game.
+- Unexpected errors now include a reference to pass on to an administrator.
 - After the site updates, the page now reloads automatically instead of asking
   for a hard refresh.
 - The "New Game" screen now has a "Custom Seed" option for playing a specific

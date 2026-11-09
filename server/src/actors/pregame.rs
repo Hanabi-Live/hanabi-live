@@ -6,6 +6,7 @@ use super::{
         validate_table_name,
     },
 };
+use crate::errors::OrReject;
 use crate::{
     game::Game,
     model::{
@@ -14,7 +15,7 @@ use crate::{
     },
     transport::{Session, frame},
 };
-use anyhow::{Context, Result, bail, ensure};
+use anyhow::{Context, Result};
 use chrono::Utc;
 use hanabi_engine::{EndCondition, GameSetup, Interpretation};
 use hanabi_protocol::{Chat, MIN_PLAYERS, NO_VALUE, Status, TableId, TableRequest, TableStarted};
@@ -81,13 +82,13 @@ impl TableActor {
             TableChange::Options(request) => (None, Some(*request)),
         };
         let variant_only = variant.is_some();
-        ensure!(self.attending(&session), "You must attend this table");
+        ensure_or_reject!(self.attending(&session), "You must attend this table");
         self.seat(&session)?;
-        ensure!(
+        ensure_or_reject!(
             matches!(self.table.phase, Phase::Pregame { .. }),
             "Game already started"
         );
-        ensure!(
+        ensure_or_reject!(
             !variant_only || session.user == self.table.owner,
             "Only owner can change variant"
         );
@@ -142,7 +143,7 @@ impl TableActor {
         max_players = max_players.max(extra.custom_num_players.unwrap_or(MIN_PLAYERS));
         if session.user != self.table.owner {
             let changes = option_changes(&self.table, &options, &name, max_players, &extra);
-            ensure!(!changes.is_empty(), "There are no new options proposed.");
+            ensure_or_reject!(!changes.is_empty(), "There are no new options proposed.");
             let message = server_chat(
                 self.table.id,
                 &format!(
@@ -199,7 +200,7 @@ impl TableActor {
                 .await?
                 .stats;
         }
-        ensure!(
+        ensure_or_reject!(
             session.active(),
             "Session changed while refreshing table options"
         );
@@ -244,18 +245,18 @@ impl TableActor {
         self.publish(e).await
     }
     pub(super) async fn start(&mut self, session: Arc<Session>) -> Result<()> {
-        ensure!(
+        ensure_or_reject!(
             self.attending(&session) && session.user == self.table.owner,
             "Only the attended owner can start"
         );
         let Phase::Pregame { players, .. } = &self.table.phase else {
-            bail!("Already started");
+            reject!("Already started");
         };
-        ensure!(
+        ensure_or_reject!(
             hanabi_protocol::is_player_count(players.len()),
             "You need at least {MIN_PLAYERS} players"
         );
-        ensure!(
+        ensure_or_reject!(
             self.table
                 .extra
                 .custom_num_players
@@ -263,7 +264,7 @@ impl TableActor {
             "Custom game requires its original player count"
         );
         if self.table.extra.custom_num_players.is_some() {
-            ensure!(
+            ensure_or_reject!(
                 players.iter().all(|p| self
                     .attendees
                     .get(&p.id)
@@ -291,7 +292,7 @@ impl TableActor {
             &mut players,
             extra.custom_seed.is_none(),
         );
-        ensure!(session.active(), "Owner disconnected during start");
+        ensure_or_reject!(session.active(), "Owner disconnected during start");
         let mut options = self.table.options.clone();
         options.num_players = players.len();
         let mut game = Game::create(GameSetup {
@@ -494,15 +495,15 @@ impl TableActor {
         args: &[&str],
         automatic: bool,
     ) -> Result<()> {
-        ensure!(
+        ensure_or_reject!(
             self.attending(&session) && session.user == self.table.owner,
             "Only owner can split"
         );
         let Phase::Pregame { players, .. } = &self.table.phase else {
-            bail!("Split requires a pregame");
+            reject!("Split requires a pregame");
         };
         let selected = if automatic {
-            ensure!(
+            ensure_or_reject!(
                 players.len() >= SPLIT_GROUPS,
                 "At least {SPLIT_GROUPS} players required"
             );
@@ -515,7 +516,7 @@ impl TableActor {
                 sorted[..mid].to_vec()
             }
         } else {
-            ensure!(!args.is_empty(), "Expected /split [username] ...");
+            ensure_or_reject!(!args.is_empty(), "Expected /split [username] ...");
             let mut selected = vec![];
             for name in args {
                 let player = players
@@ -524,8 +525,8 @@ impl TableActor {
                         crate::accounts::normalize_string(&p.name)
                             == crate::accounts::normalize_string(name)
                     })
-                    .context("Unknown split player")?;
-                ensure!(
+                    .or_reject("Unknown split player")?;
+                ensure_or_reject!(
                     !selected.iter().any(|p: &Player| p.id == player.id),
                     "Duplicate split player"
                 );
@@ -533,13 +534,13 @@ impl TableActor {
             }
             selected
         };
-        ensure!(
+        ensure_or_reject!(
             !selected.is_empty() && selected.len() <= self.table.max_players,
             "Invalid split size"
         );
         let selected_ids = selected.iter().map(|p| p.id).collect::<HashSet<_>>();
         let allocation = self.allocation().await?;
-        ensure!(session.active(), "Owner changed while splitting");
+        ensure_or_reject!(session.active(), "Owner changed while splitting");
         let mut source = self.candidate();
         let Phase::Pregame {
             players,

@@ -7,6 +7,7 @@ use super::{
     setup::wire_table_options,
     wire::int,
 };
+use crate::errors::OrReject;
 use crate::{
     model::{
         CLOCK_UNITS_PER_SECOND, IDLE_TIMEOUT_MS, IDLE_WARNING_MS, Phase, Snapshot, TableChat,
@@ -206,7 +207,7 @@ impl TableActor {
             .players()
             .iter()
             .position(|p| p.id == s.user)
-            .context("You are not playing at this table")
+            .or_reject("You are not playing at this table")
     }
     pub(super) fn audience(&self) -> impl Iterator<Item = &Attendance> {
         self.attendees.values().filter(|a| a.session.active())
@@ -413,14 +414,14 @@ impl TableActor {
     /// before then only loses this change.
     pub(super) fn apply_without_checkpoint(&mut self, next: TableSnapshot) -> Result<()> {
         self.store.check_state()?;
-        ensure!(!self.frozen, "Table is frozen until recovery");
+        ensure_or_reject!(!self.frozen, "Table is frozen until recovery");
         self.table = next;
         self.anchor = Instant::now();
         Ok(())
     }
     pub(super) async fn persist(&mut self, mut next: TableSnapshot) -> Result<()> {
         self.store.check_state()?;
-        ensure!(!self.frozen, "Table is frozen until recovery");
+        ensure_or_reject!(!self.frozen, "Table is frozen until recovery");
         if next.visible
             && next
                 .chat
@@ -641,7 +642,7 @@ impl TableActor {
                     Some(TableCommand::Client { session, command, reply }) => {
                         if is_variant_discovery(&command) {
                             if discovering {
-                                let _ = reply.send(Err(anyhow::anyhow!("A variant search is already pending at this table.")));
+                                let _ = reply.send(Err(rejection!("A variant search is already pending at this table.")));
                             } else {
                                 match self.prepare_discovery(session) {
                                     Ok(query) => discovery = Some((query, reply)),
@@ -655,7 +656,7 @@ impl TableActor {
                         let result = if session.active() {
                             self.command(session, command).await
                         } else {
-                            Err(anyhow::anyhow!("Stale session or unavailable authority"))
+                            Err(rejection!("Stale session or unavailable authority"))
                         };
                         let _ = reply.send(result);
                     }
@@ -671,9 +672,7 @@ impl TableActor {
             }
         }
         if let Some((_, reply)) = discovery.take() {
-            let _ = reply.send(Err(anyhow::anyhow!(
-                "Table closed during variant discovery"
-            )));
+            let _ = reply.send(Err(rejection!("Table closed during variant discovery")));
         }
         receiver.close();
         while let Some(command) = receiver.recv().await {
@@ -686,7 +685,7 @@ impl TableActor {
                     });
                 }
                 TableCommand::Client { reply, .. } => {
-                    let _ = reply.send(Err(anyhow::anyhow!("Table closed")));
+                    let _ = reply.send(Err(rejection!("Table closed")));
                 }
             }
         }
@@ -870,7 +869,7 @@ impl TableActor {
         }
     }
     pub(super) async fn command(&mut self, session: Arc<Session>, command: Command) -> Result<()> {
-        ensure!(!self.frozen, "Table is frozen until recovery");
+        ensure_or_reject!(!self.frozen, "Table is frozen until recovery");
         if matches!(self.table.phase, Phase::Live { .. })
             && self
                 .timers()
@@ -913,7 +912,7 @@ impl TableActor {
                 self.start(session).await
             }
             ClientMessage::Loaded(_) => {
-                ensure!(self.attending(&session), "Reattend before loading");
+                ensure_or_reject!(self.attending(&session), "Reattend before loading");
                 let mut next = self.candidate();
                 let mut starts_clock = false;
                 if let Phase::Live { snapshot: s } = &mut next.phase
@@ -951,7 +950,7 @@ impl TableActor {
             ClientMessage::TableTerminate(_)
                 if matches!(self.table.phase, Phase::Pregame { .. }) =>
             {
-                ensure!(
+                ensure_or_reject!(
                     self.attending(&session) && session.user == self.table.owner,
                     "Only owner can terminate"
                 );
@@ -1013,9 +1012,9 @@ impl TableActor {
     }
     pub(super) fn live(&self) -> Result<&Snapshot> {
         let Phase::Live { snapshot } = &self.table.phase else {
-            bail!("Not an ongoing game");
+            reject!("Not an ongoing game");
         };
-        ensure!(
+        ensure_or_reject!(
             snapshot.game.end_condition == EndCondition::InProgress,
             "Game already ended"
         );

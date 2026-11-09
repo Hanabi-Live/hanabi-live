@@ -3,7 +3,7 @@ use crate::{
     model::{IDLE_TIMEOUT_MS, Phase},
     transport::{Session, frame},
 };
-use anyhow::{Context, Result, bail, ensure};
+use anyhow::{Context, Result};
 use hanabi_protocol::{Status, TableId, TableRequest, TableStarted};
 use std::{collections::HashSet, sync::Arc};
 
@@ -16,7 +16,7 @@ impl TableActor {
             .iter()
             .map(|p| p.id)
             .chain([self.table.owner]);
-        ensure!(!session.blocks_any(others), "{message}");
+        ensure_or_reject!(!session.blocks_any(others), "{message}");
         Ok(())
     }
     pub(super) async fn join(&mut self, session: Arc<Session>, password: String) -> Result<()> {
@@ -24,13 +24,13 @@ impl TableActor {
             players, kicked, ..
         } = &self.table.phase
         else {
-            bail!("The table has started");
+            reject!("The table has started");
         };
-        ensure!(
+        ensure_or_reject!(
             !kicked.contains(&session.user),
             "You were kicked from this table"
         );
-        ensure!(
+        ensure_or_reject!(
             !players.iter().any(|p| p.id == session.user),
             "You have already joined this table."
         );
@@ -47,7 +47,7 @@ impl TableActor {
                     "Incorrect password for table {} by account {} from IP: {}",
                     self.table.id, session.user, session.ip
                 );
-                bail!("Incorrect table password");
+                reject!("Incorrect table password");
             }
         }
         let variant = hanabi_engine::get_variant(&self.table.options.variant_name)?;
@@ -55,7 +55,7 @@ impl TableActor {
             .store
             .player_for_variant(session.user, session.name.clone(), variant.id)
             .await?;
-        ensure!(session.active(), "Session changed during join");
+        ensure_or_reject!(session.active(), "Session changed during join");
         let mut next = self.candidate();
         if let Phase::Pregame { players, .. } = &mut next.phase {
             players.push(player);
@@ -85,7 +85,7 @@ impl TableActor {
     /// can consider splitting into two tables.
     pub(super) async fn join_full(&mut self, session: &Arc<Session>) -> Result<()> {
         if self.table.password_hash.is_some() || !self.full_join_notices.insert(session.user) {
-            bail!("This table is full.");
+            reject!("This table is full.");
         }
         let mut next = self.candidate();
         let message = membership_notice(
@@ -106,7 +106,7 @@ impl TableActor {
             }
         }
         self.publish(e).await?;
-        bail!("This table is full. The players were told that you want to join.");
+        reject!("This table is full. The players were told that you want to join.");
     }
     pub(super) async fn reattend(
         &mut self,
@@ -120,11 +120,11 @@ impl TableActor {
             .players()
             .iter()
             .position(|p| p.id == session.user);
-        ensure!(
+        ensure_or_reject!(
             spectating || seat.is_some() || replay,
             "You are not a player"
         );
-        ensure!(
+        ensure_or_reject!(
             !spectating || seat.is_none() || replay,
             "Players cannot spectate their own ongoing game"
         );
@@ -241,7 +241,7 @@ impl TableActor {
     pub(super) async fn leave(&mut self, session: Arc<Session>, remove: bool) -> Result<()> {
         // Players can leave a pregame that they returned to the lobby from, such as to join another.
         let attending = self.attending(&session);
-        ensure!(
+        ensure_or_reject!(
             attending
                 || (remove
                     && matches!(self.table.phase, Phase::Pregame { .. })

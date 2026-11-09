@@ -1,4 +1,5 @@
 use super::{TableActor, chat::server_chat, setup::next_requested_seed};
+use crate::errors::OrReject;
 use crate::{
     model::{
         ExtraOptions, IDLE_TIMEOUT_MS, MAX_TABLE_NAME_LENGTH, MAX_TAG_LENGTH, PendingTag, Phase,
@@ -6,7 +7,7 @@ use crate::{
     },
     transport::{Outgoing, Session, frame},
 };
-use anyhow::{Context, Result, bail, ensure};
+use anyhow::{Context, Result};
 use chrono::Utc;
 use hanabi_protocol::{HypotheticalAction, MIN_PLAYERS, TableId, TableRequest};
 use std::sync::Arc;
@@ -42,24 +43,24 @@ impl TableActor {
         room: &str,
         operation: TagOperation,
     ) -> Result<()> {
-        ensure!(self.attending(&session), "Not attending");
-        ensure!(raw.len() <= MAX_TAG_LENGTH, tag_too_long());
+        ensure_or_reject!(self.attending(&session), "Not attending");
+        ensure_or_reject!(raw.len() <= MAX_TAG_LENGTH, "{}", tag_too_long());
         let tag = crate::accounts::normalize_string(
             raw.chars()
                 .map(|c| if c.is_whitespace() { ' ' } else { c })
                 .collect::<String>()
                 .trim(),
         );
-        ensure!(
+        ensure_or_reject!(
             operation == TagOperation::TagsDeleteAll || !tag.is_empty(),
             "Tags cannot be blank."
         );
         let mut next = self.candidate();
         let replay = matches!(next.phase, Phase::Replay { .. });
-        let s = next.game_mut().context("No game")?;
+        let s = next.game_mut().or_reject("No game")?;
         let escaped = crate::accounts::escape_html(&tag);
         if replay {
-            ensure!(
+            ensure_or_reject!(
                 s.game_id > 0,
                 "JSON replays do not have a database game to tag."
             );
@@ -67,8 +68,8 @@ impl TableActor {
                 .store
                 .tags_for_game(s.game_id)
                 .await?
-                .context("That game no longer exists in the database.")?;
-            ensure!(
+                .or_reject("That game no longer exists in the database.")?;
+            ensure_or_reject!(
                 self.attending(&session),
                 "Tag author is no longer at this table."
             );
@@ -78,7 +79,7 @@ impl TableActor {
             .iter()
             .any(|t| t.user == session.user && t.tag == tag);
         if operation == TagOperation::Tag {
-            ensure!(
+            ensure_or_reject!(
                 !replay || !exists,
                 "You have already tagged this game with \"{escaped}\"."
             );
@@ -90,7 +91,7 @@ impl TableActor {
                 tag: tag.clone(),
             });
         } else {
-            ensure!(
+            ensure_or_reject!(
                 operation == TagOperation::TagsDeleteAll || exists,
                 "The tag of \"{escaped}\" does not exist on this game yet."
             );
@@ -105,7 +106,7 @@ impl TableActor {
             });
         }
         if replay {
-            ensure!(
+            ensure_or_reject!(
                 s.game_id > 0,
                 "JSON replays cannot be tagged in the database"
             );
@@ -167,7 +168,7 @@ impl TableActor {
         self.publish(e).await
     }
     pub(super) async fn leader(&mut self, session: Arc<Session>, name: &str) -> Result<()> {
-        ensure!(self.attending(&session), "Not attending");
+        ensure_or_reject!(self.attending(&session), "Not attending");
         let target = if matches!(self.table.phase, Phase::Replay { .. }) {
             self.audience()
                 .find(|a| {
@@ -185,12 +186,12 @@ impl TableActor {
                 })
                 .map(|p| (p.id, p.name.clone()))
         }
-        .context("That player is not at this table")?;
-        ensure!(
+        .or_reject("That player is not at this table")?;
+        ensure_or_reject!(
             target.0 != self.table.owner,
             "That player is already the leader"
         );
-        ensure!(
+        ensure_or_reject!(
             !matches!(self.table.phase, Phase::Replay { .. }) || self.table.visible,
             "Solo replay cannot change leader"
         );
@@ -236,7 +237,7 @@ impl TableActor {
         self.publish(e).await
     }
     pub(super) async fn suggest(&self, session: Arc<Session>, segment: i64) -> Result<()> {
-        ensure!(
+        ensure_or_reject!(
             self.attending(&session)
                 && matches!(self.table.phase, Phase::Replay { .. })
                 && self.table.visible,
@@ -246,7 +247,7 @@ impl TableActor {
             .attendees
             .get(&self.table.owner)
             .filter(|a| a.session.active())
-            .context("Leader is not attending")?;
+            .or_reject("Leader is not attending")?;
         let mut e = self.effects();
         e.messages.push((
             leader.session.clone(),
@@ -268,13 +269,13 @@ impl TableActor {
     ) -> Result<()> {
         use hanabi_protocol::ReplayActionRequest as R;
 
-        ensure!(
+        ensure_or_reject!(
             self.attending(&session) && session.user == self.table.owner && self.table.visible,
             "You must lead this shared replay"
         );
         let mut next = self.candidate();
         let Phase::Replay { snapshot, replay } = &mut next.phase else {
-            bail!("Not a replay");
+            reject!("Not a replay");
         };
         // Arrows and sounds only reset the idle timer, so they skip the durable write.
         let checkpoint = !matches!(r, R::Arrow { .. } | R::Sound { .. });
@@ -304,7 +305,7 @@ impl TableActor {
                 },
             ),
             R::HypoStart { .. } => {
-                ensure!(!replay.hypothetical, "Already hypothetical");
+                ensure_or_reject!(!replay.hypothetical, "Already hypothetical");
                 replay.hypothetical = true;
                 replay.show_drawn_cards = false;
                 Outgoing::new(
@@ -315,7 +316,7 @@ impl TableActor {
                 )
             }
             R::HypoEnd { .. } => {
-                ensure!(replay.hypothetical, "Not hypothetical");
+                ensure_or_reject!(replay.hypothetical, "Not hypothetical");
                 replay.hypothetical = false;
                 replay.hypothetical_actions.clear();
                 Outgoing::new(
@@ -326,7 +327,7 @@ impl TableActor {
                 )
             }
             R::HypoAction { action, .. } => {
-                ensure!(
+                ensure_or_reject!(
                     replay.hypothetical_actions.len() < crate::model::MAX_HYPOTHETICAL_ACTIONS
                         && crate::model::hypothetical_bytes(&replay.hypothetical_actions)?
                             + serde_json::to_string(&action)?.len()
@@ -377,7 +378,7 @@ impl TableActor {
         self.publish(e).await
     }
     pub(super) async fn restart(&mut self, session: Arc<Session>, hide: bool) -> Result<()> {
-        ensure!(
+        ensure_or_reject!(
             self.attending(&session)
                 && session.user == self.table.owner
                 && self.table.visible
@@ -385,7 +386,7 @@ impl TableActor {
             "Only the shared replay leader can restart"
         );
         self.seat(&session)?;
-        ensure!(
+        ensure_or_reject!(
             !self.table.extra.set_replay,
             "Cannot restart replayed games"
         );
@@ -407,7 +408,7 @@ impl TableActor {
             })
             .cloned()
             .collect::<Vec<_>>();
-        ensure!(
+        ensure_or_reject!(
             players.len() >= MIN_PLAYERS && (!hide || players.len() == self.table.players().len()),
             "Original players must attend to restart"
         );
@@ -424,7 +425,7 @@ impl TableActor {
                 .await?
                 .stats;
         }
-        ensure!(
+        ensure_or_reject!(
             session.active(),
             "Session changed while refreshing restart statistics"
         );
@@ -472,7 +473,7 @@ impl TableActor {
         session: Arc<Session>,
         declined: bool,
     ) -> Result<()> {
-        ensure!(
+        ensure_or_reject!(
             self.attending(&session)
                 && self.table.visible
                 && matches!(self.table.phase, Phase::Replay { .. }),

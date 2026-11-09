@@ -12,6 +12,30 @@ macro_rules! regex {
     }};
 }
 
+/// A `Rejection` of a player's request, built like `anyhow!`.
+macro_rules! rejection {
+    ($($message:tt)+) => {
+        anyhow::Error::new($crate::errors::Rejection(format!($($message)+)))
+    };
+}
+
+/// Returns a `Rejection` of a player's request, like `bail!`.
+macro_rules! reject {
+    ($($message:tt)+) => {
+        return Err(rejection!($($message)+))
+    };
+}
+
+/// Returns a `Rejection` of a player's request unless a condition holds, like `ensure!`.
+macro_rules! ensure_or_reject {
+    ($condition:expr, $($message:tt)+) => {
+        if $condition {
+        } else {
+            reject!($($message)+);
+        }
+    };
+}
+
 /// The bytes in a KiB.
 pub const KIB: usize = 1024;
 /// The bytes in a MiB.

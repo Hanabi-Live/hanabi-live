@@ -8,7 +8,7 @@ use crate::{
     },
     transport::{Session, frame},
 };
-use anyhow::{Context, Result, ensure};
+use anyhow::{Context, Result};
 use hanabi_engine::{CompletionTiming, EndCondition, Recipient};
 use hanabi_protocol::{
     ChatTyping, MIN_PLAYERS, NO_VALUE, ReplayAction, SafeInteger, Status, TableId, TableRequest,
@@ -17,7 +17,7 @@ use std::sync::Arc;
 
 impl TableActor {
     pub(super) async fn action(&mut self, session: Arc<Session>, a: ReplayAction) -> Result<()> {
-        ensure!(self.attending(&session), "Reattend before acting");
+        ensure_or_reject!(self.attending(&session), "Reattend before acting");
         let seat = self.seat(&session)?;
         let old = self.live()?;
         hanabi_engine::validate_action(&old.game.0, seat, &hanabi_engine::PlayerAction::from(&a))?;
@@ -165,7 +165,7 @@ impl TableActor {
             .unwrap_or_default()
     }
     pub(super) async fn terminate(&mut self, session: Arc<Session>, vote: bool) -> Result<()> {
-        ensure!(self.attending(&session), "You are not attending");
+        ensure_or_reject!(self.attending(&session), "You are not attending");
         let seat = self.seat(&session)?;
         let from = self.live()?.game.events.len();
         let mut next = self.candidate();
@@ -230,7 +230,7 @@ impl TableActor {
     }
     /// A player keeps an idle game going, restarting its idle timer.
     pub(super) async fn idle_reset(&mut self, session: Arc<Session>) -> Result<()> {
-        ensure!(self.attending(&session), "Not attending");
+        ensure_or_reject!(self.attending(&session), "Not attending");
         self.seat(&session)?;
         self.live()?;
         let mut next = self.candidate();
@@ -255,14 +255,14 @@ impl TableActor {
         mut setting: hanabi_protocol::PauseSetting,
     ) -> Result<()> {
         use hanabi_protocol::PauseSetting as P;
-        ensure!(self.attending(&session), "Not attending");
+        ensure_or_reject!(self.attending(&session), "Not attending");
         let seat = self.seat(&session)?;
         let old = self.live()?;
-        ensure!(old.game.options.timed, "This is not a timed game");
+        ensure_or_reject!(old.game.options.timed, "This is not a timed game");
         if setting == P::PauseQueue && seat == old.game.active_player_index {
             setting = P::Pause;
         }
-        ensure!(
+        ensure_or_reject!(
             match setting {
                 P::Pause => !old.game.paused,
                 P::Unpause => old.game.paused,
@@ -310,14 +310,14 @@ impl TableActor {
         order: u64,
         note: &str,
     ) -> Result<()> {
-        ensure!(self.attending(&session), "Not attending");
+        ensure_or_reject!(self.attending(&session), "Not attending");
         self.live()?;
         let order = usize::try_from(order)?;
         let text = crate::accounts::truncate_to_max_bytes(note, MAX_NOTE_LENGTH);
         let text = crate::accounts::remove_disallowed_characters(text)
             .trim()
             .to_owned();
-        ensure!(
+        ensure_or_reject!(
             crate::accounts::max_consecutive_marks(&text) <= crate::accounts::MAX_CONSECUTIVE_MARKS,
             "Notes cannot contain more than {} consecutive diacritics.",
             crate::accounts::MAX_CONSECUTIVE_MARKS
@@ -330,7 +330,7 @@ impl TableActor {
         let mut next = self.candidate();
         let s = next.game_mut().expect("game");
         let size = s.game.deck.len() + s.game.stacks.len();
-        ensure!(order < size, "Invalid note order");
+        ensure_or_reject!(order < size, "Invalid note order");
         if let Some(seat) = seat {
             s.notes[seat][order] = text;
         } else {
@@ -408,7 +408,7 @@ impl TableActor {
         notes
     }
     pub(super) async fn info(&self, session: Arc<Session>, part: GameInfo) -> Result<()> {
-        ensure!(
+        ensure_or_reject!(
             self.attending(&session),
             "Reattend before requesting private game data"
         );

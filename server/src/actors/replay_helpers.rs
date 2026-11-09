@@ -1,9 +1,10 @@
+use crate::errors::OrReject;
 use crate::{
     game::{Card, Game, Options},
     model::{FORMAT, IDLE_TIMEOUT_MS, Player, Snapshot},
     store::zero_stats,
 };
-use anyhow::{Context, Result, ensure};
+use anyhow::Result;
 use chrono::Utc;
 use hanabi_engine::{AssignedCharacter, EndCondition, GameSetup, Interpretation};
 use hanabi_protocol::{NO_VALUE, RecordedActionType, ReplayAction, ReplayImport};
@@ -32,7 +33,7 @@ fn seconds(value: i64) -> f64 {
 
 pub fn parse(input: &ReplayImport) -> Result<Imported> {
     let seed = input.seed.as_deref().unwrap_or("");
-    ensure!(
+    ensure_or_reject!(
         seed.len() <= MAX_IMPORTED_SEED_LENGTH
             && seed.bytes().all(|b| b.is_ascii_alphanumeric() || b == b'-'),
         "Invalid seed"
@@ -65,9 +66,10 @@ pub fn parse(input: &ReplayImport) -> Result<Imported> {
         let pattern = regex!(crate::game::SEED_PATTERN);
         let count: usize = pattern
             .captures(seed)
-            .context("Provide players when the seed has no player count")?[1]
-            .parse()?;
-        ensure!(
+            .or_reject("Provide players when the seed has no player count")?[1]
+            .parse()
+            .or_reject("Invalid seed")?;
+        ensure_or_reject!(
             hanabi_protocol::is_player_count(count),
             "The seed's player count must be between {} and {}",
             hanabi_protocol::MIN_PLAYERS,
@@ -77,7 +79,7 @@ pub fn parse(input: &ReplayImport) -> Result<Imported> {
             ["Alice", "Bob", "Cathy", "Donald", "Emily", "Frank"];
         players = names[..count].iter().map(|n| (*n).into()).collect();
     }
-    ensure!(
+    ensure_or_reject!(
         hanabi_protocol::is_player_count(players.len())
             && players.iter().all(|n| !n.is_empty()
                 && n.len() <= crate::accounts::MAX_USERNAME_LENGTH
@@ -107,7 +109,7 @@ pub fn parse(input: &ReplayImport) -> Result<Imported> {
     {
         deck.clone_from(seeded);
     }
-    ensure!(
+    ensure_or_reject!(
         deck.len() == hanabi_engine::create_deck(variant).len()
             && deck.iter().all(|c| c.suit_index < variant.suits.len()
                 && matches!(
@@ -118,7 +120,7 @@ pub fn parse(input: &ReplayImport) -> Result<Imported> {
         "The deck must have {} valid cards in it.",
         hanabi_engine::create_deck(variant).len()
     );
-    ensure!(
+    ensure_or_reject!(
         seeded.as_ref().is_none_or(|d| *d == deck),
         "The deck does not match the seed"
     );
@@ -131,7 +133,7 @@ pub fn parse(input: &ReplayImport) -> Result<Imported> {
             metadata: character.metadata.unwrap_or(0),
         })
         .collect();
-    ensure!(
+    ensure_or_reject!(
         !has_characters || characters.len() == players.len(),
         "The amount of characters must match the number of players"
     );
@@ -146,7 +148,7 @@ pub fn parse(input: &ReplayImport) -> Result<Imported> {
         })
         .collect();
     for (i, a) in actions.iter().enumerate() {
-        ensure!(
+        ensure_or_reject!(
             match a.kind {
                 RecordedActionType::Play | RecordedActionType::Discard =>
                     usize::try_from(a.target).is_ok_and(|t| t < deck.len()) && a.value == 0,
@@ -166,15 +168,15 @@ pub fn parse(input: &ReplayImport) -> Result<Imported> {
     }
     let size = deck.len() + variant.suits.len();
     let raw_notes = input.notes.as_deref().unwrap_or_default();
-    ensure!(
+    ensure_or_reject!(
         raw_notes.is_empty() || raw_notes.len() == players.len(),
         "Invalid note rows"
     );
     let mut notes = vec![vec![String::new(); size]; players.len()];
     for (i, row) in raw_notes.iter().enumerate() {
-        ensure!(row.0.len() <= size, "Too many notes");
+        ensure_or_reject!(row.0.len() <= size, "Too many notes");
         for (j, text) in row.0.iter().enumerate() {
-            ensure!(
+            ensure_or_reject!(
                 text.len() <= hanabi_protocol::MAX_IMPORTED_NOTE_LENGTH,
                 "Note too long"
             );

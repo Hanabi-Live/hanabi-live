@@ -6,7 +6,7 @@ use crate::{
     store::Store,
     transport::Session,
 };
-use anyhow::{Result, ensure};
+use anyhow::Result;
 use hanabi_protocol::{ClientMessage, NO_VALUE, Status};
 use serde::Serialize;
 use serde_json::Value;
@@ -61,7 +61,7 @@ pub struct PlayingClaim {
 }
 impl PlayingClaim {
     fn acquire(users: &Arc<Mutex<HashSet<i32>>>, user: i32) -> Result<Self> {
-        ensure!(
+        ensure_or_reject!(
             users
                 .lock()
                 .unwrap_or_else(std::sync::PoisonError::into_inner)

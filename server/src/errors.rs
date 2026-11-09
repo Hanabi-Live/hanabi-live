@@ -54,6 +54,45 @@ pub fn http_operation(fallback: &str) -> String {
         .unwrap_or_else(|_| fallback.to_owned())
 }
 
+/// A refusal of a player's request, such as a command they may not use. The server is working as
+/// intended, so the message is shown to the player as it is, and it is not logged as a failure.
+#[derive(Debug)]
+pub struct Rejection(pub String);
+
+impl fmt::Display for Rejection {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.write_str(&self.0)
+    }
+}
+impl std::error::Error for Rejection {}
+
+/// Turns a missing value or a failed parse of a player's input into a `Rejection`.
+pub trait OrReject<T> {
+    fn or_reject(self, message: impl Into<String>) -> anyhow::Result<T>;
+}
+impl<T> OrReject<T> for Option<T> {
+    fn or_reject(self, message: impl Into<String>) -> anyhow::Result<T> {
+        self.ok_or_else(|| Rejection(message.into()).into())
+    }
+}
+impl<T, E> OrReject<T> for Result<T, E> {
+    fn or_reject(self, message: impl Into<String>) -> anyhow::Result<T> {
+        self.map_err(|_| Rejection(message.into()).into())
+    }
+}
+
+/// Whether an error refuses a player's request rather than reporting a failure.
+pub fn is_rejection(error: &anyhow::Error) -> bool {
+    error.downcast_ref::<Rejection>().is_some()
+        || error
+            .downcast_ref::<hanabi_engine::ActionRejected>()
+            .is_some()
+}
+
+/// The code of a command that failed for a reason the server did not anticipate. Its report keeps
+/// the server's own description, so the player can pass it on with the reference.
+pub const COMMAND_FAILED: &str = "command_failed";
+
 /// Only construct this with server-defined descriptions, never request values or raw errors.
 #[derive(Debug)]
 pub struct Fault {

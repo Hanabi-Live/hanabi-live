@@ -1,10 +1,11 @@
 use super::{Command, TableActor, setup::options_suggestion};
+use crate::errors::OrReject;
 use crate::{
     lobby::TableChatCommand,
     model::{Phase, TableChat, TableSnapshot},
     transport::{Session, frame},
 };
-use anyhow::{Context, Result, bail, ensure};
+use anyhow::Result;
 use chrono::{Duration as ChronoDuration, Utc};
 use hanabi_protocol::{
     Chat, ChatSource, ClientMessage, MAX_PLAYERS, MIN_PLAYERS, SECONDS_PER_MINUTE, Status, TableId,
@@ -125,14 +126,14 @@ impl TableActor {
                 .map(|p| (p.id, p.name.clone()))
                 .collect()
         };
-        ensure!(
+        ensure_or_reject!(
             hanabi_protocol::is_player_count(participants.len()),
             "This command requires {MIN_PLAYERS} to {MAX_PLAYERS} participants"
         );
         Ok(participants)
     }
     pub(super) fn prepare_discovery(&self, requester: Arc<Session>) -> Result<VariantDiscovery> {
-        ensure!(
+        ensure_or_reject!(
             !self.frozen && self.attending(&requester),
             "You are not at an available table."
         );
@@ -178,7 +179,7 @@ impl TableActor {
         query: VariantDiscovery,
         selected: Result<Option<String>>,
     ) -> Result<()> {
-        ensure!(
+        ensure_or_reject!(
             !self.frozen && self.attending(&query.requester),
             "Variant requester is no longer at this table."
         );
@@ -230,7 +231,7 @@ impl TableActor {
         session: Arc<Session>,
         typing: bool,
     ) -> Result<()> {
-        ensure!(self.attending(&session), "Not attending");
+        ensure_or_reject!(self.attending(&session), "Not attending");
         let a = self.attendees.get_mut(&session.user).expect("attendee");
         let notify = typing && a.typing_until.is_none();
         if typing {
@@ -246,16 +247,16 @@ impl TableActor {
         Ok(())
     }
     pub(super) async fn chat(&mut self, session: Arc<Session>, msg: &str) -> Result<()> {
-        ensure!(self.attending(&session), "Not attending");
+        ensure_or_reject!(self.attending(&session), "Not attending");
         let text = crate::accounts::normalize_chat(msg).map_err(anyhow::Error::msg)?;
         // Every message rewrites the table's checkpoint, so its cost grows with the chat.
         if let Err(wait) = self.chat_limit.charge(session.user, Instant::now()) {
-            bail!(
+            reject!(
                 "You are sending messages too quickly. Please wait {} seconds.",
                 wait.as_secs().max(1)
             );
         }
-        ensure!(
+        ensure_or_reject!(
             player_chat_has_room(&self.table.chat)?,
             "Chat history is full"
         );
@@ -281,7 +282,7 @@ impl TableActor {
                     .map(|response| server_chat(self.table.id, response)),
             );
             let mut next = self.candidate();
-            ensure!(
+            ensure_or_reject!(
                 next.chat.len() + messages.len() <= crate::model::MAX_TABLE_CHAT,
                 "Chat history is full"
             );
@@ -308,7 +309,7 @@ impl TableActor {
         }
         let message = authored_chat(self.table.id, &session.name, &text);
         let mut next = self.candidate();
-        ensure!(
+        ensure_or_reject!(
             next.chat.len() < crate::model::MAX_TABLE_CHAT,
             "Chat history is full"
         );
@@ -384,7 +385,7 @@ impl TableActor {
             } else {
                 vec!["You can only perform this command while in a replay.".to_owned()]
             };
-            ensure!(
+            ensure_or_reject!(
                 self.attending(&session),
                 "Tag reader is no longer at this table."
             );
@@ -407,15 +408,22 @@ impl TableActor {
             return self.publish(e).await;
         }
         if parsed == Some(TableChatCommand::Suggest) {
-            ensure!(args.len() == 1, "Expected /suggest [turn]");
+            ensure_or_reject!(args.len() == 1, "Expected /suggest [turn]");
             return self
-                .suggest(session, i64::from(args[0].parse::<i32>()?))
+                .suggest(
+                    session,
+                    i64::from(
+                        args[0]
+                            .parse::<i32>()
+                            .or_reject("Expected /suggest [turn]")?,
+                    ),
+                )
                 .await;
         }
         if let Some(TableChatCommand::Split { automatic }) = parsed {
             return self.split(session, &args, automatic).await;
         }
-        ensure!(
+        ensure_or_reject!(
             session.user == self.table.owner,
             "Only the table owner can use that command"
         );
@@ -426,18 +434,19 @@ impl TableActor {
             kicked,
         } = &mut next.phase
         else {
-            bail!("This command requires a pregame table");
+            reject!("This command requires a pregame table");
         };
         let mut boot = None;
         let notice;
         match parsed {
             Some(TableChatCommand::Start(count)) => {
                 let n = if let Some(arg) = args.first() {
-                    arg.parse::<usize>()?
+                    arg.parse::<usize>()
+                        .or_reject("Expected /s [number of players]")?
                 } else {
                     count.unwrap_or(players.len() + 1)
                 };
-                ensure!(
+                ensure_or_reject!(
                     hanabi_protocol::is_player_count(n),
                     "Tables require {MIN_PLAYERS} to {MAX_PLAYERS} players"
                 );
@@ -446,9 +455,11 @@ impl TableActor {
                 notice = format!("The game will start as soon as {n} players have joined.");
             }
             Some(TableChatCommand::StartIn) => {
-                ensure!(args.len() == 1, "Expected /startin [minutes]");
-                let minutes = args[0].parse::<f64>().context("Invalid countdown number")?;
-                ensure!(
+                ensure_or_reject!(args.len() == 1, "Expected /startin [minutes]");
+                let minutes = args[0]
+                    .parse::<f64>()
+                    .or_reject("Invalid countdown number")?;
+                ensure_or_reject!(
                     minutes.is_finite() && minutes > 0.0 && minutes <= MAX_START_IN_MINUTES,
                     "Minutes must be between zero and {MAX_START_IN_MINUTES}"
                 );
@@ -464,15 +475,15 @@ impl TableActor {
                 notice = format!("The game will automatically start in {wait}.");
             }
             Some(TableChatCommand::Kick) => {
-                ensure!(args.len() == 1, "Expected /kick [username]");
+                ensure_or_reject!(args.len() == 1, "Expected /kick [username]");
                 let index = players
                     .iter()
                     .position(|p| {
                         crate::accounts::normalize_string(&p.name)
                             == crate::accounts::normalize_string(args[0])
                     })
-                    .context("Player not found")?;
-                ensure!(
+                    .or_reject("Player not found")?;
+                ensure_or_reject!(
                     players[index].id != session.user,
                     "You cannot kick yourself"
                 );
@@ -486,7 +497,7 @@ impl TableActor {
                 *countdown = None;
             }
             Some(TableChatCommand::Impostor) => {
-                ensure!(
+                ensure_or_reject!(
                     players.len() >= MIN_IMPOSTOR_PLAYERS,
                     "Impostor requires at least {MIN_IMPOSTOR_PLAYERS} players"
                 );
@@ -511,7 +522,7 @@ impl TableActor {
                 }
                 return self.publish(e).await;
             }
-            _ => bail!("Unknown table chat command: /{command}"),
+            _ => reject!("Unknown table chat command: /{command}"),
         }
         let authored = authored_chat(self.table.id, &session.name, text);
         let notice = server_chat(self.table.id, &notice);

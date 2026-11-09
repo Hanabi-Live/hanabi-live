@@ -1,4 +1,4 @@
-use anyhow::{Result, bail, ensure};
+use anyhow::{Result, ensure};
 use serde_json::Value;
 use sqlx::PgPool;
 
@@ -61,17 +61,17 @@ pub async fn set_setting(pool: &PgPool, id: i32, name: &str, value: &str) -> Res
 
 /// Parses a setting sent by a client into the JSON value that is stored.
 pub fn validate_setting(name: &str, value: &str) -> Result<Value> {
-    ensure!(!name.is_empty(), "The settings name cannot be blank.");
+    ensure_or_reject!(!name.is_empty(), "The settings name cannot be blank.");
     let defaults = defaults();
     let Some(default) = defaults.get(name) else {
-        bail!(
+        reject!(
             "The settings name of \"{}\" is invalid.",
             crate::accounts::escape_html(name)
         );
     };
     let parsed = match default {
         Value::Bool(_) => {
-            ensure!(
+            ensure_or_reject!(
                 matches!(value, "true" | "false"),
                 "The setting of \"{name}\" must have a value of \"true\" or \"false\"."
             );
@@ -79,17 +79,17 @@ pub fn validate_setting(name: &str, value: &str) -> Result<Value> {
         }
         Value::Number(number) if number.is_f64() => {
             let Some(number) = value.parse::<f64>().ok().filter(|n| n.is_finite()) else {
-                bail!("The setting of \"{name}\" must be an float64.");
+                reject!("The setting of \"{name}\" must be an float64.");
             };
-            ensure!(number > 0.0, "The setting of \"{name}\" must be positive.");
+            ensure_or_reject!(number > 0.0, "The setting of \"{name}\" must be positive.");
             Value::from(number)
         }
         Value::Number(_) => {
             let Ok(number) = value.parse::<i64>() else {
-                bail!("The setting of \"{name}\" must be an integer.");
+                reject!("The setting of \"{name}\" must be an integer.");
             };
-            ensure!(number >= 0, "The setting of \"{name}\" cannot be negative.");
-            ensure!(
+            ensure_or_reject!(number >= 0, "The setting of \"{name}\" cannot be negative.");
+            ensure_or_reject!(
                 name != "volume" || number <= i64::from(MAX_VOLUME),
                 "The setting of \"volume\" must be between 0 and {MAX_VOLUME}."
             );
@@ -100,7 +100,7 @@ pub fn validate_setting(name: &str, value: &str) -> Result<Value> {
     };
     // The wire contract enforces the remaining limits, such as the timed-game limits and the allowed
     // player counts.
-    ensure!(
+    ensure_or_reject!(
         hanabi_protocol::validate::<Settings>(&serde_json::json!({ name: parsed })).is_ok(),
         "The setting of \"{name}\" is not an allowed value."
     );

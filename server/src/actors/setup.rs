@@ -1,4 +1,5 @@
 use super::chat::server_chat;
+use crate::errors::OrReject;
 use crate::{
     game::Options,
     model::{
@@ -8,7 +9,7 @@ use crate::{
     store::Store,
     transport::Session,
 };
-use anyhow::{Context, Result, ensure};
+use anyhow::Result;
 use chrono::Utc;
 use hanabi_protocol::{Chat, GameId, MAX_SEED_LENGTH, MIN_PLAYERS, NO_VALUE, ReplayAction};
 use std::{collections::BTreeMap, fmt::Write as _};
@@ -29,7 +30,7 @@ pub(super) fn normalize_options(options: &mut Options) -> Result<()> {
         options.one_extra_card = false;
         options.one_less_card = false;
     }
-    ensure!(
+    ensure_or_reject!(
         !options.timed
             || (options.time_base > 0.0
                 && options.time_base <= f64::from(hanabi_protocol::MAX_TIME_BASE_SECONDS)
@@ -41,7 +42,7 @@ pub(super) fn normalize_options(options: &mut Options) -> Result<()> {
 }
 
 pub(super) fn validate_table_name(name: &str) -> Result<()> {
-    ensure!(
+    ensure_or_reject!(
         name.chars().all(|c| c.is_alphanumeric()
             || unicode_normalization::char::is_combining_mark(c)
             || " _!#$'()+,-.:;=?@".contains(c)),
@@ -53,11 +54,11 @@ pub(super) fn validate_table_name(name: &str) -> Result<()> {
 /// Reads a requested seed: blank deals the next seed that none of the players have played.
 pub(super) fn requested_seed(seed: Option<&str>) -> Result<String> {
     let seed = seed.unwrap_or_default().trim();
-    ensure!(
+    ensure_or_reject!(
         seed.len() <= MAX_SEED_LENGTH,
         "Seeds cannot be longer than {MAX_SEED_LENGTH} characters"
     );
-    ensure!(
+    ensure_or_reject!(
         seed.bytes().all(|b| b.is_ascii_alphanumeric() || b == b'-'),
         "Seeds can only contain letters, numbers, and hyphens"
     );
@@ -80,9 +81,10 @@ pub(super) fn next_requested_seed(seed: &str) -> Result<String> {
         format!(
             "{prefix}{:0width$}",
             number
-                .parse::<u64>()?
-                .checked_add(1)
-                .context("Seed suffix exhausted")?,
+                .parse::<u64>()
+                .ok()
+                .and_then(|number| number.checked_add(1))
+                .or_reject("Seed suffix exhausted")?,
             width = number.len()
         )
     };
@@ -96,22 +98,23 @@ pub(super) fn requested_extra(request: &hanabi_protocol::GameOptions) -> Result<
         ..ExtraOptions::default()
     };
     let Some(GameId(game_id)) = request.replay_game_id else {
-        ensure!(
+        ensure_or_reject!(
             request.replay_turn.is_none(),
             "A replay turn needs a game to replay"
         );
         return Ok(extra);
     };
-    ensure!(
+    ensure_or_reject!(
         extra.set_seed_suffix.is_empty(),
         "A replay keeps its game's seed"
     );
     extra.set_replay = true;
     extra.replay_game_id = Some(game_id);
     extra.set_replay_turn = match request.replay_turn {
-        Some(turn) => usize::try_from(turn)?
-            .checked_sub(1)
-            .context("Turn must be positive")?,
+        Some(turn) => usize::try_from(turn)
+            .ok()
+            .and_then(|turn| turn.checked_sub(1))
+            .or_reject("Turn must be positive")?,
         None => 0,
     };
     Ok(extra)
@@ -129,7 +132,7 @@ pub(super) async fn load_replay(
         return Ok(());
     };
     let historical = store.historical(game_id, table_id, user).await?;
-    ensure!(
+    ensure_or_reject!(
         usize::try_from(historical.game.turn).is_ok_and(|limit| extra.set_replay_turn < limit),
         "Replay turn exceeds game"
     );
@@ -369,18 +372,18 @@ pub(super) async fn prepare_table(
     session: &Session,
     creation: Creation,
 ) -> Result<(TableSnapshot, i64, Vec<String>)> {
-    ensure!(session.active(), "Stale session");
+    ensure_or_reject!(session.active(), "Stale session");
     let id = store.allocate_table().await?;
     let result = async {
         let r = match creation {
             Creation::Table(r) => r,
             Creation::Replay(r) => {
-                ensure!(
+                ensure_or_reject!(
                     r.password.is_empty(),
                     "You cannot create a replay with a password."
                 );
                 let shared = r.visibility == hanabi_protocol::ReplayVisibility::Shared;
-                ensure!(
+                ensure_or_reject!(
                     shared || !r.spoiler_free,
                     "Only a shared replay can be a spoiler-free review."
                 );
@@ -388,7 +391,7 @@ pub(super) async fn prepare_table(
                 let mut custom_seed = None;
                 let snapshot = if r.source == hanabi_protocol::ReplaySource::Json {
                     let imported = super::replay_helpers::parse(
-                        r.game_json.as_ref().context("Missing game JSON")?,
+                        r.game_json.as_ref().or_reject("Missing game JSON")?,
                     )?;
                     warnings.clone_from(&imported.warnings);
                     custom_seed = Some(imported.custom_seed.clone());
@@ -396,7 +399,7 @@ pub(super) async fn prepare_table(
                 } else {
                     store
                         .historical(
-                            r.database_id.context("Missing databaseID")?,
+                            r.database_id.or_reject("Missing databaseID")?,
                             id,
                             session.user,
                         )
@@ -445,13 +448,13 @@ pub(super) async fn prepare_table(
         let password_hash = if password.is_empty() {
             None
         } else {
-            ensure!(
+            ensure_or_reject!(
                 password.len() <= MAX_TABLE_PASSWORD_BYTES,
                 "Passwords cannot be longer than {MAX_TABLE_PASSWORD_BYTES} bytes"
             );
             Some(crate::accounts::hash_password(&session.ip, password).await?)
         };
-        ensure!(session.active(), "Creator disconnected during preparation");
+        ensure_or_reject!(session.active(), "Creator disconnected during preparation");
         let table = TableSnapshot {
             format: FORMAT.into(),
             id,

@@ -1,7 +1,7 @@
 use super::{Caller, Effect, OnlineUser, notice, warning};
 use crate::accounts::{escape_html, is_muted, normalize_chat, normalize_string, regenerate_token};
 use crate::transport::Outgoing;
-use anyhow::{Context, Result, ensure};
+use anyhow::{Context, Result};
 use chrono::SecondsFormat;
 use hanabi_protocol::{
     Chat, ChatHistory, ChatHistoryMessage, ChatHistoryRequest, ChatSource, MAX_PLAYERS,
@@ -553,7 +553,7 @@ pub async fn lobby_chat(
 }
 
 pub async fn lobby_history(pool: &PgPool, count: i64) -> Result<Vec<Chat>> {
-    ensure!(count >= 0, "Invalid history count");
+    ensure_or_reject!(count >= 0, "Invalid history count");
     let rows = sqlx::query!(
         "SELECT c.id,c.user_id,c.source,c.message,c.discord_name,c.datetime_sent,
          u.username AS \"username?\" FROM chat_log c LEFT JOIN users u ON u.id=c.user_id

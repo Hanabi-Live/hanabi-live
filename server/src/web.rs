@@ -860,39 +860,14 @@ async fn connection(
                 {
                     continue;
                 }
-                let internal = error.chain().any(|cause| {
-                    cause.is::<sqlx::Error>()
-                        || cause.is::<redis::RedisError>()
-                        || cause.is::<reqwest::Error>()
-                        || cause.is::<crate::errors::Fault>()
-                        || cause.is::<std::io::Error>()
-                        || cause.is::<tokio::time::error::Elapsed>()
-                        || cause.is::<tokio::task::JoinError>()
-                });
-                let warning = if internal {
-                    let name = protocol::command_name(&command.text).unwrap_or("unknown command");
-                    let operation = match name {
-                        "historyGet" => "Loading game history".to_owned(),
-                        "historyGetSeed" => "Loading seed history".to_owned(),
-                        "setting" => "Saving preferences".to_owned(),
-                        _ => format!("Command {name}"),
-                    };
-                    let report = crate::errors::Report::from_error(
-                        operation,
-                        &error,
-                        // History reads use the lobby read pool.
-                        Some(if matches!(name, "historyGet" | "historyGetSeed") {
-                            crate::store::LOBBY_READ_TIMEOUT
-                        } else {
-                            crate::store::DATABASE_TIMEOUT
-                        }),
-                    );
+                let failure = command_failure(&error, &command.text);
+                if let Some(report) = &failure.report {
                     report.log();
-                    app.alert(&report);
-                    accounts::escape_html(&report.text())
-                } else {
-                    accounts::escape_html(&error.to_string())
-                };
+                    if failure.alert {
+                        app.alert(report);
+                    }
+                }
+                let warning = failure.warning;
                 session.emit(&frame(
                     hanabi_protocol::server::WARNING,
                     hanabi_protocol::Warning { warning },
@@ -908,6 +883,67 @@ async fn connection(
     reader.await?;
     writer.await?;
     result
+}
+
+/// What a player is told about a command that failed, and the report of a failure.
+struct CommandFailure {
+    warning: String,
+    /// Absent for a rejection, which is the server working as intended.
+    report: Option<crate::errors::Report>,
+    /// Whether the failure is posted to the error alerts. For now, only failures of storage,
+    /// services, and the runtime are.
+    alert: bool,
+}
+
+fn command_failure(error: &anyhow::Error, command: &str) -> CommandFailure {
+    if crate::errors::is_rejection(error) {
+        return CommandFailure {
+            warning: accounts::escape_html(&error.to_string()),
+            report: None,
+            alert: false,
+        };
+    }
+    let internal = error.chain().any(|cause| {
+        cause.is::<sqlx::Error>()
+            || cause.is::<redis::RedisError>()
+            || cause.is::<reqwest::Error>()
+            || cause.is::<crate::errors::Fault>()
+            || cause.is::<std::io::Error>()
+            || cause.is::<tokio::time::error::Elapsed>()
+            || cause.is::<tokio::task::JoinError>()
+    });
+    let name = protocol::command_name(command).unwrap_or("unknown command");
+    let operation = match name {
+        "historyGet" => "Loading game history".to_owned(),
+        "historyGetSeed" => "Loading seed history".to_owned(),
+        "setting" => "Saving preferences".to_owned(),
+        _ => format!("Command {name}"),
+    };
+    let report = if internal {
+        crate::errors::Report::from_error(
+            operation,
+            error,
+            // History reads use the lobby read pool.
+            Some(if matches!(name, "historyGet" | "historyGetSeed") {
+                crate::store::LOBBY_READ_TIMEOUT
+            } else {
+                crate::store::DATABASE_TIMEOUT
+            }),
+        )
+    } else {
+        // The server wrote this description, so the player sees all of it.
+        crate::errors::Report::known(
+            operation,
+            crate::errors::COMMAND_FAILED,
+            format!("{error:#}"),
+            StatusCode::INTERNAL_SERVER_ERROR,
+        )
+    };
+    CommandFailure {
+        warning: accounts::escape_html(&report.text()),
+        report: Some(report),
+        alert: internal,
+    }
 }
 
 pub async fn publish_external(app: &App, effects: Vec<Effect>) -> Result<()> {
@@ -991,7 +1027,7 @@ async fn dispatch(app: &Arc<App>, session: Arc<Session>, input: &str) -> Result<
         )
         .into());
     }
-    ensure!(
+    ensure_or_reject!(
         session.active(),
         "This session was replaced or disconnected. Reconnect before sending commands."
     );
@@ -1129,6 +1165,33 @@ async fn dispatch(app: &Arc<App>, session: Arc<Session>, input: &str) -> Result<
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[test]
+    fn command_failures_show_rejections_as_they_are_and_report_everything_else() {
+        let command = r#"tableJoin {"tableID":1}"#;
+        let rejected = command_failure(&rejection!("This table is full."), command);
+        assert_eq!(rejected.warning, "This table is full.");
+        assert!(rejected.report.is_none() && !rejected.alert);
+
+        let unexpected = command_failure(
+            &anyhow::anyhow!("Duplicate table installation").context("Installing the table"),
+            command,
+        );
+        let report = unexpected.report.expect("reported failure");
+        assert_eq!(report.code, crate::errors::COMMAND_FAILED);
+        assert!(!unexpected.alert);
+        assert_eq!(
+            unexpected.warning,
+            format!(
+                "Command tableJoin failed: Installing the table: Duplicate table installation \
+                 [Reference: {}]",
+                report.diagnostic_id
+            )
+        );
+
+        let storage = command_failure(&sqlx::Error::PoolClosed.into(), command);
+        assert!(storage.alert && storage.report.is_some());
+        assert!(!storage.warning.contains("PoolClosed"));
+    }
     #[test]
     fn origins_allow_real_browser_and_bots_but_not_cross_site() {
         let uri = Uri::from_static("/login");
