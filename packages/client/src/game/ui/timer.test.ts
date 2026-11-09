@@ -1,7 +1,7 @@
 import { assertNotNull } from "complete-common";
 import { afterEach, beforeEach, expect, test, vi } from "vitest";
 
-vi.mock("../../tooltips", () => ({}));
+vi.mock("../../tooltips", () => ({ setContent: vi.fn() }));
 vi.mock("./konvaHelpers", () => ({ drawLayer: vi.fn() }));
 vi.mock("./UIGlobals", () => ({
   globals: {
@@ -18,7 +18,8 @@ vi.mock("./UIGlobals", () => ({
   },
 }));
 const { globals } = await import("./UIGlobals");
-const { resumeAfterResize, update } = await import("./timer");
+const tooltips = await import("../../tooltips");
+const { resumeAfterResize, stop, update } = await import("./timer");
 
 beforeEach(() => {
   vi.clearAllMocks();
@@ -58,4 +59,36 @@ test("resizing a replay does not resume a stale active-player clock", () => {
   resumeAfterResize();
   expect(start).not.toHaveBeenCalled();
   expect(globals.timerID).toBeNull();
+});
+
+test("untimed games without timers still update the player time tooltips", () => {
+  vi.useFakeTimers();
+  vi.stubGlobal("window", globalThis);
+  const { elements, state } = globals;
+  Object.assign(globals, {
+    state: { finished: false, playing: true, pause: { active: false } },
+    elements: { timer1: null, timer2: null, deck: null },
+    options: { timed: false, speedrun: false },
+    lobby: { settings: { speedrunMode: false, showTimerInUntimed: false } },
+    metadata: { ourPlayerIndex: 1 },
+  });
+  try {
+    update({ times: [-5000, 0], activePlayerIndex: 0, timeTaken: 0 });
+    expect(globals.playerTimes).toEqual([-5000, 0]);
+    expect(tooltips.setContent).toHaveBeenCalledWith(
+      "#tooltip-player-0",
+      "Time taken:<br /><strong>0:05</strong>",
+    );
+
+    vi.advanceTimersByTime(1000);
+    expect(tooltips.setContent).toHaveBeenLastCalledWith(
+      "#tooltip-player-0",
+      "Time taken:<br /><strong>0:06</strong>",
+    );
+  } finally {
+    stop();
+    Object.assign(globals, { elements, state });
+    vi.useRealTimers();
+    vi.unstubAllGlobals();
+  }
 });

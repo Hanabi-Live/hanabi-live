@@ -38,15 +38,10 @@ export function update(
   // `NO_VALUE` if the game just ended.
   const { activePlayerIndex } = data;
 
-  // We do not need to update the timers if they are not showing.
-  if (globals.elements.timer1 === null || globals.elements.timer2 === null) {
-    return;
-  }
-
   if (globals.state.finished) {
     globals.activePlayerIndex = NO_VALUE;
-    globals.elements.timer1.hide();
-    globals.elements.timer2.hide();
+    globals.elements.timer1?.hide();
+    globals.elements.timer2?.hide();
     globals.layers.timer.batchDraw();
     return;
   }
@@ -57,7 +52,8 @@ export function update(
     return;
   }
 
-  // Record the data
+  // Record the data. The player name tooltips and the deck tooltip use it even when the timers are
+  // not showing.
   globals.playerTimes = data.times;
   globals.activePlayerIndex = activePlayerIndex;
   globals.timeTaken = data.timeTaken;
@@ -68,43 +64,13 @@ export function update(
   // Mark the time that we updated the local player times.
   globals.lastTimerUpdateTimeMS = Date.now();
 
-  // Update onscreen time displays.
-  if (globals.state.playing) {
-    // The visibility of the first timer does not change during a game.
-    let time = globals.playerTimes[globals.metadata.ourPlayerIndex]!;
-    if (!globals.options.timed) {
-      // Invert it to show how much time each player is taking.
-      time *= -1;
-    }
-
-    const text = millisecondsToClockString(time);
-    globals.elements.timer1.setTimerText(text);
-  }
-
   const ourTurn =
     globals.state.playing
     && activePlayerIndex === globals.metadata.ourPlayerIndex;
-  if (!ourTurn) {
-    // Update the UI with the value of the timer for the active player.
-    let time = globals.playerTimes[activePlayerIndex]!;
-    if (!globals.options.timed) {
-      // Invert it to show how much time each player is taking.
-      time *= -1;
-    }
-
-    const text = millisecondsToClockString(time);
-    globals.elements.timer2.setTimerText(text);
-
-    if (activePlayerIndex !== NO_VALUE) {
-      const activePlayerName = globals.metadata.playerNames[activePlayerIndex];
-      if (activePlayerName !== undefined) {
-        globals.elements.timer2.setLabelText(activePlayerName);
-      }
-    }
+  const { timer1, timer2 } = globals.elements;
+  if (timer1 !== null && timer2 !== null) {
+    updateTimerDisplays(timer1, timer2, activePlayerIndex, ourTurn);
   }
-
-  globals.elements.timer2.visible(!ourTurn && activePlayerIndex !== NO_VALUE);
-  globals.layers.timer.batchDraw();
 
   // Update the timer tooltips for each player.
   for (const i of globals.playerTimes.keys()) {
@@ -118,14 +84,9 @@ export function update(
     return;
   }
 
-  // Clear the low-time warning from both timers.
-  globals.elements.timer1.clearWarningFlash();
-  globals.elements.timer2.clearWarningFlash();
-
-  // Start the local timer for the active player.
-  const activeTimer = ourTurn
-    ? globals.elements.timer1
-    : globals.elements.timer2;
+  // Start the local timer for the active player. (The timers are not drawn in untimed games unless
+  // the player enabled them.)
+  const activeTimer = ourTurn ? timer1 : timer2;
   // eslint-disable-next-line unicorn/prefer-global-this
   globals.timerID = window.setInterval(() => {
     setTickingDownTime(activeTimer);
@@ -133,6 +94,51 @@ export function update(
     setTickingDownTimeCurrentPlayerTooltip();
     globals.elements.deck?.updateDeckTooltip();
   }, TICK_MILLISECONDS);
+}
+
+function updateTimerDisplays(
+  timer1: TimerDisplay,
+  timer2: TimerDisplay,
+  activePlayerIndex: PlayerIndex | typeof NO_VALUE,
+  ourTurn: boolean,
+) {
+  if (globals.state.playing) {
+    // The visibility of the first timer does not change during a game.
+    let time = globals.playerTimes[globals.metadata.ourPlayerIndex]!;
+    if (!globals.options.timed) {
+      // Invert it to show how much time each player is taking.
+      time *= -1;
+    }
+
+    const text = millisecondsToClockString(time);
+    timer1.setTimerText(text);
+  }
+
+  if (!ourTurn) {
+    // Update the UI with the value of the timer for the active player.
+    let time = globals.playerTimes[activePlayerIndex]!;
+    if (!globals.options.timed) {
+      // Invert it to show how much time each player is taking.
+      time *= -1;
+    }
+
+    const text = millisecondsToClockString(time);
+    timer2.setTimerText(text);
+
+    if (activePlayerIndex !== NO_VALUE) {
+      const activePlayerName = globals.metadata.playerNames[activePlayerIndex];
+      if (activePlayerName !== undefined) {
+        timer2.setLabelText(activePlayerName);
+      }
+    }
+  }
+
+  timer2.visible(!ourTurn && activePlayerIndex !== NO_VALUE);
+  globals.layers.timer.batchDraw();
+
+  // Clear the low-time warning from both timers.
+  timer1.clearWarningFlash();
+  timer2.clearWarningFlash();
 }
 
 export function stop(): void {
@@ -163,7 +169,7 @@ export function resumeAfterResize(): void {
   });
 }
 
-function setTickingDownTime(timer: TimerDisplay) {
+function setTickingDownTime(timer: TimerDisplay | null) {
   // Calculate the elapsed time since the last timer update.
   const now = Date.now();
   const elapsedTime = now - globals.lastTimerUpdateTimeMS;
@@ -187,6 +193,9 @@ function setTickingDownTime(timer: TimerDisplay) {
   if (!globals.options.timed) {
     // Invert it to show how much time each player is taking.
     millisecondsLeft *= -1;
+  }
+  if (timer === null) {
+    return;
   }
   const text = millisecondsToClockString(millisecondsLeft);
   timer.setTimerText(text);
