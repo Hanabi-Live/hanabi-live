@@ -9,6 +9,8 @@ of the repository.
 
 ## November 9th, 2026
 
+- In "Throw It in a Hole" games, the number of cards in the hole is now shown in
+  the middle of the play stacks.
 - The server keeps live games in PostgreSQL and no longer needs Redis.
 - The efficiency tooltip now shows "Spare clues" (remaining possible clues minus
   cards remaining to get) instead of "Number finesses required".

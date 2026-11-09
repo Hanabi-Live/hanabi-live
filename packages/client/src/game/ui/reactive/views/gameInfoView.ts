@@ -162,6 +162,10 @@ export function onNumAttemptedCardsPlayedChanged(
   }
 
   globals.elements.playsNumberLabel?.text(numAttemptedCardsPlayed.toString());
+  if (globals.elements.holeCountLabel !== null) {
+    globals.elements.holeCountLabel.text(numAttemptedCardsPlayed.toString());
+    globals.layers.UI2.batchDraw();
+  }
   globals.layers.UI.batchDraw();
 }
 

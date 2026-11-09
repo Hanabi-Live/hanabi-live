@@ -265,6 +265,7 @@ export function onFinishedChanged(
     globals.elements.maxScoreNumberLabel?.show();
     globals.elements.playsTextLabel?.hide();
     globals.elements.playsNumberLabel?.hide();
+    globals.elements.holeCounter?.hide();
     for (const label of globals.elements.questionMarkLabels) {
       label.hide();
     }

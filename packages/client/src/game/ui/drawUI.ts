@@ -150,6 +150,25 @@ const SUIT_LABEL = {
 } as const;
 
 /**
+ * The counter of the cards in the hole for "Throw It in a Hole" variants, which is centered on the
+ * play stacks, in fractions of the stage.
+ */
+const HOLE_COUNTER = {
+  padding: 0.008,
+  numberFontSize: 0.058,
+  captionFontSize: 0.019,
+} as const;
+
+/** The darkened felt behind the counter of the cards in the hole. */
+const HOLE_COUNTER_FILL = "rgba(8, 32, 16, 0.88)";
+
+/** A faint outline of the counter of the cards in the hole, in the label color. */
+const HOLE_COUNTER_OUTLINE = "rgba(216, 213, 239, 0.3)";
+
+/** The widest count the counter of the cards in the hole is sized for. */
+const HOLE_COUNTER_WIDEST_COUNT = "99";
+
+/**
  * How far the invisible area that cards are dragged to in order to play them extends past each side
  * of the play stacks, in fractions of the stage.
  */
@@ -856,6 +875,68 @@ interface PlayStackValues {
   spacing: number;
 }
 
+/**
+ * Draws the counter of the cards in the hole for "Throw It in a Hole" variants, centered on the
+ * given point: a large count with a caption to its right.
+ */
+function drawHoleCounter(centerX: number, centerY: number): Konva.Group {
+  const padding = HOLE_COUNTER.padding * winH;
+  const holeCounter = new Konva.Group({
+    x: centerX,
+    y: centerY,
+    listening: false,
+  });
+
+  const countLabel = new Konva.Text({
+    text: HOLE_COUNTER_WIDEST_COUNT,
+    fontSize: HOLE_COUNTER.numberFontSize * winH,
+    fontFamily: FONT_FAMILY,
+    fontStyle: "bold",
+    fill: LABEL_COLOR,
+    align: "right",
+    ...TEXT_SHADOW,
+  });
+  // Keep the width of the widest count so that the counter does not change size.
+  countLabel.width(countLabel.width());
+
+  const caption = new Konva.Text({
+    text: "total cards in the hole\n(from your perspective)",
+    fontSize: HOLE_COUNTER.captionFontSize * winH,
+    lineHeight: 1.25,
+    fontFamily: FONT_FAMILY,
+    fill: LABEL_COLOR,
+    ...TEXT_SHADOW,
+  });
+
+  const width = countLabel.width() + padding + caption.width() + padding * 4;
+  const height = Math.max(countLabel.height(), caption.height()) + padding * 2;
+  holeCounter.add(
+    new Konva.Rect({
+      x: -width / 2,
+      y: -height / 2,
+      width,
+      height,
+      fill: HOLE_COUNTER_FILL,
+      stroke: HOLE_COUNTER_OUTLINE,
+      strokeWidth: THIN_STROKE_WIDTH * winH,
+      cornerRadius: PANEL_CORNER_RADIUS * winW,
+    }),
+  );
+
+  countLabel.position({
+    x: -width / 2 + padding * 2,
+    y: -countLabel.height() / 2,
+  });
+  caption.position({
+    x: countLabel.x() + countLabel.width() + padding,
+    y: -caption.height() / 2,
+  });
+  holeCounter.add(countLabel, caption);
+
+  globals.elements.holeCountLabel = countLabel;
+  return holeCounter;
+}
+
 function drawPlayStacks() {
   const numSuits = globals.variant.suits.length;
 
@@ -922,6 +1003,16 @@ function drawPlayStacks() {
     });
     globals.elements.playStacks.set("hole", playStack);
     globals.layers.card.add(playStack);
+
+    // Players cannot see the score, so show them how many cards they have put in the hole. (This is
+    // drawn above the cards so that it can overlap the stack bases.)
+    if (globals.state.playing || globals.state.shadowing) {
+      globals.elements.holeCounter = drawHoleCounter(
+        (playStackValues.x + playStackValues.w / 2) * winW,
+        (playStackValues.y + cardHeight / 2) * winH,
+      );
+      globals.layers.UI2.add(globals.elements.holeCounter);
+    }
   }
 
   for (const [i, suit] of globals.variant.suits.entries()) {

@@ -30,6 +30,9 @@ export class Elements {
   playArea: Konva.Rect | null = null;
 
   playStacks = new Map<Suit | "hole", PlayStack>();
+  /** For "Throw It in a Hole" variants. */
+  holeCounter: Konva.Group | null = null;
+  holeCountLabel: Konva.Text | null = null;
 
   /**
    * UI row below play stacks, usually used for information about the suits, but also for stack
