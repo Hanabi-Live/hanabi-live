@@ -1,16 +1,16 @@
 {
   "db_name": "PostgreSQL",
-  "query": "SELECT message,datetime_sent FROM chat_log WHERE room='lobby' AND source='server'\n         ORDER BY id DESC LIMIT 1",
+  "query": "INSERT INTO chat_log(user_id,source,message) VALUES(NULL,'server',$1)\n         RETURNING id, datetime_sent",
   "describe": {
     "columns": [
       {
         "ordinal": 0,
-        "name": "message",
-        "type_info": "Text",
+        "name": "id",
+        "type_info": "Int4",
         "origin": {
           "Table": {
             "table": "chat_log",
-            "name": "message"
+            "name": "id"
           }
         }
       },
@@ -27,12 +27,14 @@
       }
     ],
     "parameters": {
-      "Left": []
+      "Left": [
+        "Text"
+      ]
     },
     "nullable": [
       false,
       false
     ]
   },
-  "hash": "a70802fdada125ccbcbe646c3a44427e979d4547b30e63f64ef6a60434ec83ef"
+  "hash": "eb74fea83a9de7479582f29a6419c1bc88e1af8ea979805f716154e5ebbe540e"
 }

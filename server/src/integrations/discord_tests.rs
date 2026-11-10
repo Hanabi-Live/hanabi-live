@@ -499,7 +499,14 @@ async fn discord_mock_transport_public_privacy_rendering_and_status_postgres() {
     );
     let alice = fixture.db.user("Alice").await;
     let raw = "public <text>";
-    let id:i32=sqlx::query_scalar!("INSERT INTO chat_log(user_id,source,message,room) VALUES($1,'user',$2,'lobby') RETURNING id", alice, escape_html(raw)).fetch_one(&fixture.db.pool).await.unwrap();
+    let id: i32 = sqlx::query_scalar!(
+        "INSERT INTO chat_log(user_id,source,message) VALUES($1,'user',$2) RETURNING id",
+        alice,
+        escape_html(raw)
+    )
+    .fetch_one(&fixture.db.pool)
+    .await
+    .unwrap();
     assert!(bridge.mirror(id, Some("private secret")).await.is_err());
     bridge.mirror(id, Some(raw)).await.unwrap();
     let requests = mock.requests.lock().await;

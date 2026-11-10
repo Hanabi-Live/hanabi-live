@@ -534,8 +534,8 @@ async fn archive_chat(
     transaction: &mut Transaction<'static, Postgres>,
     entries: impl Iterator<Item = &TableChat>,
 ) -> Result<()> {
-    let (mut ids, mut users, mut messages, mut rooms, mut tables, mut sources, mut sent) =
-        (vec![], vec![], vec![], vec![], vec![], vec![], vec![]);
+    let (mut ids, mut users, mut messages, mut tables, mut sources, mut sent) =
+        (vec![], vec![], vec![], vec![], vec![], vec![]);
     for entry in entries {
         ids.push(entry.id.context("Missing chat identity")?);
         // Server messages have no author.
@@ -545,7 +545,6 @@ async fn archive_chat(
             .message
             .table_id
             .context("Invalid archived chat room")?;
-        rooms.push(format!("table{table}"));
         tables.push(i64::try_from(table.0)?);
         sources.push(match entry.message.source {
             ChatSource::User => "user",
@@ -558,15 +557,14 @@ async fn archive_chat(
         return Ok(());
     }
     sqlx::query!(
-        "INSERT INTO chat_log(id,user_id,message,room,table_id,source,datetime_sent)
-         SELECT c.id,c.user_id,c.message,c.room,c.table_id,c.source,c.sent
-         FROM UNNEST($1::integer[],$2::integer[],$3::text[],$4::text[],$5::bigint[],$6::text[],
-                     $7::timestamptz[]) AS c(id,user_id,message,room,table_id,source,sent)",
+        "INSERT INTO chat_log(id,user_id,message,table_id,source,datetime_sent)
+         SELECT c.id,c.user_id,c.message,c.table_id,c.source,c.sent
+         FROM UNNEST($1::integer[],$2::integer[],$3::text[],$4::bigint[],$5::text[],
+                     $6::timestamptz[]) AS c(id,user_id,message,table_id,source,sent)",
         &ids,
         // SQLx infers `&[i32]`; the cast allows NULL elements.
         &users as &[Option<i32>],
         &messages,
-        &rooms,
         &tables,
         &sources as &[&str],
         &sent
@@ -1570,7 +1568,7 @@ mod tests {
             send(&hub,users[2].clone(),"tableSpectate",json!({"tableID":id,"shadowingPlayerIndex":0})).await?;
             send(&hub,users[0].clone(),"chat",json!({"tableID":id,"text":"retained authored chat"})).await?;
             send(&hub,users[0].clone(),"tableTerminate",json!({"tableID":id})).await?;
-            let rows:i64=sqlx::query_scalar!("SELECT count(*) AS \"v!\" FROM chat_log WHERE user_id=1 AND source='user' AND room=$1 AND table_id=$2 AND message='retained authored chat'", format!("table{id}"), i64::try_from(id.0)?).fetch_one(&store.primary).await?;
+            let rows:i64=sqlx::query_scalar!("SELECT count(*) AS \"v!\" FROM chat_log WHERE user_id=1 AND source='user' AND table_id=$1 AND message='retained authored chat'", i64::try_from(id.0)?).fetch_one(&store.primary).await?;
             ensure!(rows==1,"Accepted authored chat was omitted or duplicated in PostgreSQL");
             let restored=store.load().await?;
             ensure!(restored[0].0.chat.iter().all(|chat|chat.id.is_some()),"Chat was not archived with its checkpoint");

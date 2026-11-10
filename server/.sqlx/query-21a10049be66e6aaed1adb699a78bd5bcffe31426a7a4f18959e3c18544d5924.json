@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "SELECT c.id,c.source,c.message,c.discord_name,c.datetime_sent,\n         u.username AS \"username?\" FROM chat_log c LEFT JOIN users u ON u.id=c.user_id\n         WHERE c.room='lobby' AND c.deleted_at IS NULL\n         ORDER BY c.datetime_sent DESC,c.id DESC LIMIT $1",
+  "query": "SELECT c.id,c.source,c.message,c.discord_name,c.datetime_sent,\n         u.username AS \"username?\" FROM chat_log c LEFT JOIN users u ON u.id=c.user_id\n         WHERE c.table_id IS NULL AND c.deleted_at IS NULL\n         ORDER BY c.datetime_sent DESC,c.id DESC LIMIT $1",
   "describe": {
     "columns": [
       {
@@ -84,5 +84,5 @@
       false
     ]
   },
-  "hash": "8a7b4856e79c819a7c6f0dfdf02c492850223c0edf41e2e56058ef2df0580c4d"
+  "hash": "21a10049be66e6aaed1adb699a78bd5bcffe31426a7a4f18959e3c18544d5924"
 }

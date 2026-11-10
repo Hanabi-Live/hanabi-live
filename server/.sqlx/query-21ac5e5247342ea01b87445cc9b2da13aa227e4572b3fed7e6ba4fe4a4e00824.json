@@ -1,16 +1,16 @@
 {
   "db_name": "PostgreSQL",
-  "query": "INSERT INTO chat_log(user_id,source,discord_name,message,room,discord_message_id)\n         VALUES(NULL,'discord',$1,$2,'lobby',$3)\n         ON CONFLICT(discord_message_id) WHERE discord_message_id IS NOT NULL DO NOTHING\n         RETURNING id,datetime_sent",
+  "query": "SELECT message,datetime_sent FROM chat_log WHERE table_id IS NULL AND source='server'\n         ORDER BY id DESC LIMIT 1",
   "describe": {
     "columns": [
       {
         "ordinal": 0,
-        "name": "id",
-        "type_info": "Int4",
+        "name": "message",
+        "type_info": "Text",
         "origin": {
           "Table": {
             "table": "chat_log",
-            "name": "id"
+            "name": "message"
           }
         }
       },
@@ -27,16 +27,12 @@
       }
     ],
     "parameters": {
-      "Left": [
-        "Text",
-        "Text",
-        "Text"
-      ]
+      "Left": []
     },
     "nullable": [
       false,
       false
     ]
   },
-  "hash": "813844c119a9027b3b9b6a4394f8ce2f33f36e1cbcdfb7ac4cccae73783f7213"
+  "hash": "21ac5e5247342ea01b87445cc9b2da13aa227e4572b3fed7e6ba4fe4a4e00824"
 }

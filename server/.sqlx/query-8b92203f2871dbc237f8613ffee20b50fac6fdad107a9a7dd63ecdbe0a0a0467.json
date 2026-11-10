@@ -1,0 +1,14 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO chat_log(user_id,source,message) VALUES($1,'user','/UpTiMe')",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Int4"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "8b92203f2871dbc237f8613ffee20b50fac6fdad107a9a7dd63ecdbe0a0a0467"
+}

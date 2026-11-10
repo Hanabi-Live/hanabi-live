@@ -316,7 +316,7 @@ CREATE TABLE chat_log (
     discord_message_id  TEXT         NULL,     /* Discord snowflake, if the message came from Discord. */
     deleted_at          TIMESTAMPTZ  NULL,     /* Tombstone: do not show or restore removed messages. */
     message             TEXT         NOT NULL,
-    room                TEXT         NOT NULL, /* Either "lobby" or "table####". */
+    room                TEXT         NULL,     /* Unused; replaced by `table_id`. */
     datetime_sent       TIMESTAMPTZ  NOT NULL  DEFAULT NOW(),
     table_id            BIGINT       NULL,     /* The table whose chat this is; NULL for the lobby. */
     CONSTRAINT chat_log_user_id_fkey
@@ -326,6 +326,8 @@ CREATE TABLE chat_log (
 CREATE INDEX chat_log_index_user_id          ON chat_log (user_id);
 CREATE INDEX chat_log_index_room             ON chat_log (room);
 CREATE INDEX chat_log_index_datetime_sent_id ON chat_log (datetime_sent, id);
+/* The lobby's chat, which has no table. */
+CREATE INDEX chat_log_index_lobby            ON chat_log (id) WHERE table_id IS NULL;
 CREATE INDEX chat_log_index_room_datetime_sent_id ON chat_log (room, datetime_sent, id)
     WHERE deleted_at IS NULL;
 CREATE UNIQUE INDEX chat_log_index_discord_message_id ON chat_log (discord_message_id)

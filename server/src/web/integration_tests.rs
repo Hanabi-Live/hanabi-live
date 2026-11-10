@@ -781,8 +781,8 @@ async fn full_history_bootstrap_queues_in_order_without_a_writer_postgres() {
     .await
     .unwrap();
     sqlx::query!(
-        "INSERT INTO chat_log(user_id,source,message,room)
-         SELECT $1,'user',$2,'lobby' FROM generate_series(1,50)",
+        "INSERT INTO chat_log(user_id,source,message)
+         SELECT $1,'user',$2 FROM generate_series(1,50)",
         alice,
         accounts::escape_html(&"\"".repeat(300))
     )

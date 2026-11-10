@@ -495,7 +495,7 @@ pub async fn lobby_chat(
     .chain(public_response.map(|r| (crate::model::SERVER_AUTHOR, "server", None, r.clone(), r)))
     {
         let row = sqlx::query!(
-            "INSERT INTO chat_log(user_id,source,message,room) VALUES($1,$2,$3,'lobby')
+            "INSERT INTO chat_log(user_id,source,message) VALUES($1,$2,$3)
              RETURNING id,datetime_sent",
             (source == "user").then_some(id.0),
             source,
@@ -533,7 +533,7 @@ pub async fn lobby_history(pool: &PgPool, count: i64) -> Result<Vec<Chat>> {
     let rows = sqlx::query!(
         "SELECT c.id,c.source,c.message,c.discord_name,c.datetime_sent,
          u.username AS \"username?\" FROM chat_log c LEFT JOIN users u ON u.id=c.user_id
-         WHERE c.room='lobby' AND c.deleted_at IS NULL
+         WHERE c.table_id IS NULL AND c.deleted_at IS NULL
          ORDER BY c.datetime_sent DESC,c.id DESC LIMIT $1",
         count
     )
@@ -584,7 +584,7 @@ pub async fn lobby_history(pool: &PgPool, count: i64) -> Result<Vec<Chat>> {
 /// Persist a runtime-generated lobby response before publishing it.
 pub async fn server_chat(pool: &PgPool, message: &str) -> Result<SavedChat> {
     let row = sqlx::query!(
-        "INSERT INTO chat_log(user_id,source,message,room) VALUES(NULL,'server',$1,'lobby')
+        "INSERT INTO chat_log(user_id,source,message) VALUES(NULL,'server',$1)
          RETURNING id, datetime_sent",
         message
     )

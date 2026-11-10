@@ -444,7 +444,7 @@ impl Bridge {
         let _guard = self.outbound.lock().await;
         self.available()?;
         let row=sqlx::query!("SELECT c.message,c.source,c.discord_message_id,u.username FROM chat_log c
-             LEFT JOIN users u ON u.id=c.user_id WHERE c.id=$1 AND c.room='lobby' AND c.deleted_at IS NULL", chat_id).fetch_optional(&self.pool).await?;
+             LEFT JOIN users u ON u.id=c.user_id WHERE c.id=$1 AND c.table_id IS NULL AND c.deleted_at IS NULL", chat_id).fetch_optional(&self.pool).await?;
         let Some(row) = row else {
             return Ok(());
         };
@@ -781,7 +781,7 @@ async fn roles(http: &Client, guild: Id<GuildMarker>) -> Result<HashMap<Id<RoleM
 /// When the most recent server announcement is a graceful shutdown, returns when it was sent.
 async fn last_shutdown(pool: &PgPool) -> Result<Option<DateTime<Utc>>> {
     let row = sqlx::query!(
-        "SELECT message,datetime_sent FROM chat_log WHERE room='lobby' AND source='server'
+        "SELECT message,datetime_sent FROM chat_log WHERE table_id IS NULL AND source='server'
          ORDER BY id DESC LIMIT 1"
     )
     .fetch_optional(pool)
@@ -806,8 +806,8 @@ pub async fn insert_message(
             .await?;
     }
     let result = sqlx::query!(
-        "INSERT INTO chat_log(user_id,source,discord_name,message,room,discord_message_id)
-         VALUES(NULL,'discord',$1,$2,'lobby',$3)
+        "INSERT INTO chat_log(user_id,source,discord_name,message,discord_message_id)
+         VALUES(NULL,'discord',$1,$2,$3)
          ON CONFLICT(discord_message_id) WHERE discord_message_id IS NOT NULL DO NOTHING
          RETURNING id,datetime_sent",
         name,
@@ -827,8 +827,8 @@ pub async fn delete_message(pool: &PgPool, id: &str) -> Result<Option<i32>> {
         .execute(&mut *tx)
         .await?;
     let result = sqlx::query_scalar!(
-        "INSERT INTO chat_log(user_id,source,message,room,discord_message_id,deleted_at)
-         VALUES(NULL,'discord','','lobby',$1,NOW())
+        "INSERT INTO chat_log(user_id,source,message,discord_message_id,deleted_at)
+         VALUES(NULL,'discord','',$1,NOW())
          ON CONFLICT(discord_message_id) WHERE discord_message_id IS NOT NULL
          DO UPDATE SET message='',discord_name=NULL,deleted_at=EXCLUDED.deleted_at
          WHERE chat_log.deleted_at IS NULL RETURNING id",
@@ -863,9 +863,9 @@ pub async fn link_copy(pool: &PgPool, chat_id: i32, id: &str) -> Result<bool> {
             row.deleted_at.is_some(),
             "Discord copy belongs to another live message"
         );
-        deleted=sqlx::query!("UPDATE chat_log SET message='',discord_name=NULL,deleted_at=NOW() WHERE id=$1 AND room='lobby' AND deleted_at IS NULL", chat_id).execute(&mut *tx).await?.rows_affected()>0;
+        deleted=sqlx::query!("UPDATE chat_log SET message='',discord_name=NULL,deleted_at=NOW() WHERE id=$1 AND table_id IS NULL AND deleted_at IS NULL", chat_id).execute(&mut *tx).await?.rows_affected()>0;
     } else {
-        sqlx::query!("UPDATE chat_log SET discord_message_id=$2 WHERE id=$1 AND room='lobby' AND deleted_at IS NULL", chat_id, id).execute(&mut *tx).await?;
+        sqlx::query!("UPDATE chat_log SET discord_message_id=$2 WHERE id=$1 AND table_id IS NULL AND deleted_at IS NULL", chat_id, id).execute(&mut *tx).await?;
     }
     tx.commit().await?;
     Ok(deleted)
@@ -998,7 +998,13 @@ mod tests {
         );
         assert_ne!(one.unwrap().is_some(), two.unwrap().is_some());
         let author = db.user("Alice").await;
-        let chat:i32=sqlx::query_scalar!("INSERT INTO chat_log(user_id,source,message,room) VALUES($1,'user','message','lobby') RETURNING id", author).fetch_one(&db.pool).await.unwrap();
+        let chat: i32 = sqlx::query_scalar!(
+            "INSERT INTO chat_log(user_id,source,message) VALUES($1,'user','message') RETURNING id",
+            author
+        )
+        .fetch_one(&db.pool)
+        .await
+        .unwrap();
         assert!(link_copy(&db.pool, chat, id).await.unwrap());
         let row = sqlx::query!(
             "SELECT user_id,message,deleted_at FROM chat_log WHERE id=$1",

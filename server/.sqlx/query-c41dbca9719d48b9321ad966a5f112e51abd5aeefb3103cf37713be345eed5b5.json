@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "INSERT INTO chat_log(user_id,source,message,room) VALUES(NULL,'server',$1,'lobby')\n         RETURNING id, datetime_sent",
+  "query": "INSERT INTO chat_log(user_id,source,message) VALUES($1,$2,$3)\n             RETURNING id,datetime_sent",
   "describe": {
     "columns": [
       {
@@ -28,6 +28,8 @@
     ],
     "parameters": {
       "Left": [
+        "Int4",
+        "Text",
         "Text"
       ]
     },
@@ -36,5 +38,5 @@
       false
     ]
   },
-  "hash": "3792bcee5717386ba980685ad1b0507033273890d3672ee9d614528ed7d85520"
+  "hash": "c41dbca9719d48b9321ad966a5f112e51abd5aeefb3103cf37713be345eed5b5"
 }

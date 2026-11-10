@@ -1,0 +1,15 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "UPDATE chat_log SET discord_message_id=$2 WHERE id=$1 AND table_id IS NULL AND deleted_at IS NULL",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Int4",
+        "Text"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "0e096a17d5da9403b721d90647daa7160cd76c657a85dd4a4d08e7a2f653d35a"
+}

@@ -1,0 +1,28 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO chat_log(user_id,source,message,discord_message_id,deleted_at)\n         VALUES(NULL,'discord','',$1,NOW())\n         ON CONFLICT(discord_message_id) WHERE discord_message_id IS NOT NULL\n         DO UPDATE SET message='',discord_name=NULL,deleted_at=EXCLUDED.deleted_at\n         WHERE chat_log.deleted_at IS NULL RETURNING id",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Int4",
+        "origin": {
+          "Table": {
+            "table": "chat_log",
+            "name": "id"
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Text"
+      ]
+    },
+    "nullable": [
+      false
+    ]
+  },
+  "hash": "83a2c9d5e3d196876d1cc0f453490433f4de6b6931b03f8732337c24d52ac442"
+}

@@ -1,0 +1,14 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO chat_log(user_id,source,message) VALUES($1,'user','/token legacy-secret'),($1,'user','/unknown secret')",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Int4"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "630fa330902b12fe249963c82ca7d105ab289492b5fd9ade1ef4c87c69093572"
+}

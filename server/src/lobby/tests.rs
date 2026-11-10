@@ -69,7 +69,7 @@ async fn uptime_is_private_before_history_or_discord_publication_postgres() {
         before
     );
     sqlx::query!(
-        "INSERT INTO chat_log(user_id,source,message,room) VALUES($1,'user','/UpTiMe','lobby')",
+        "INSERT INTO chat_log(user_id,source,message) VALUES($1,'user','/UpTiMe')",
         user
     )
     .execute(&db.pool)
@@ -502,7 +502,7 @@ async fn lobby_private_messages_and_command_privacy_postgres() {
             .unwrap(),
         before
     );
-    sqlx::query!("INSERT INTO chat_log(user_id,source,message,room) VALUES($1,'user','/token legacy-secret','lobby'),($1,'user','/unknown secret','lobby')", a).execute(&db.pool).await.unwrap();
+    sqlx::query!("INSERT INTO chat_log(user_id,source,message) VALUES($1,'user','/token legacy-secret'),($1,'user','/unknown secret')", a).execute(&db.pool).await.unwrap();
     let history = lobby_history(&db.pool, 100).await.unwrap();
     assert!(!history.iter().any(|r| r.text.contains("secret")));
     db.close().await;
