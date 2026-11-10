@@ -176,6 +176,16 @@ gameCommands.set("note", (data) => {
     return;
   }
 
+  // The server also sends us our own notes, which we have already read.
+  const oldNotes = globals.state.notes.allNotes[data.order] ?? [];
+  const othersChanged = data.notes.some(
+    (note) =>
+      note.username !== globals.metadata.ourUsername
+      && note.text
+        !== (oldNotes.find((oldNote) => oldNote.username === note.username)
+          ?.text ?? ""),
+  );
+
   globals.store!.dispatch({
     type: "receiveNote",
     order: data.order,
@@ -185,7 +195,7 @@ gameCommands.set("note", (data) => {
   // Set the note indicator.
   const card = getCardOrStackBase(data.order);
   if (card) {
-    card.setNoteIndicator();
+    card.setNoteIndicator(othersChanged);
   }
 });
 

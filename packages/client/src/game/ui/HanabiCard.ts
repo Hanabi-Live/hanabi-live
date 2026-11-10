@@ -976,12 +976,18 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip, UICard {
     );
   }
 
-  setNoteIndicator(): void {
+  /** @param unread Whether to tilt the indicator to show spectators that the notes changed. */
+  setNoteIndicator(unread = true): void {
     const visible = this.shouldShowNoteIndicator();
     this.noteIndicator.visible(visible);
 
     // Spectators
-    if (visible && !globals.state.playing && !globals.state.finished) {
+    if (
+      unread
+      && visible
+      && !globals.state.playing
+      && !globals.state.finished
+    ) {
       this.noteIndicator.setTilted(true);
     }
 
