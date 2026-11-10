@@ -606,8 +606,15 @@ const HYPO_INDICATOR = {
   fontSize: 0.06,
   /** The horizontal radius of the ellipse, as a fraction of the action log's width. */
   radiusX: 0.4,
-  /** The gap between the bottom of the ellipse and the spectators' "Pause Shared Turns" button. */
-  buttonGapY: 0.01,
+  /**
+   * The spectators' "Pause Shared Turns" button below the ellipse. It is small so that it fits
+   * above the bottom hand in the Keldon layout.
+   */
+  button: {
+    gapY: 0.005,
+    w: 0.13,
+    h: 0.04,
+  },
 } as const;
 
 /** The buttons used in a hypothetical, in fractions of the stage. */
@@ -2803,16 +2810,15 @@ function drawHypotheticalArea() {
   globals.elements.hypoCircle.add(text);
 
   // The replay area is hidden during hypotheticals, so spectators need another "Pause Shared Turns"
-  // button to leave the leader's hypothetical. It is the same size as the one in the replay area.
-  const replayPauseButton = globals.elements.pauseSharedTurnsButton!;
+  // button to leave the leader's hypothetical.
+  const pauseButtonValues = HYPO_INDICATOR.button;
   const ellipseBottomY =
     hypoValues.y + hypoTextY + hypoFontSize / 2 + hypoValues.h;
   globals.elements.hypoPauseSharedTurnsButton = new Button({
-    x:
-      (hypoValues.x + hypoValues.w! / 2) * winW - replayPauseButton.width() / 2,
-    y: (ellipseBottomY + HYPO_INDICATOR.buttonGapY) * winH,
-    width: replayPauseButton.width(),
-    height: replayPauseButton.height(),
+    x: (hypoValues.x + (hypoValues.w! - pauseButtonValues.w) / 2) * winW,
+    y: (ellipseBottomY + pauseButtonValues.gapY) * winH,
+    width: pauseButtonValues.w * winW,
+    height: pauseButtonValues.h * winH,
     text: "Pause Shared Turns",
     visible: false,
   });
