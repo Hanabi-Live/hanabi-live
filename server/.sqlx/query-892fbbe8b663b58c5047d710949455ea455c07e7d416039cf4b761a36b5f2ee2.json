@@ -1,0 +1,38 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT target,value FROM game_actions ORDER BY game_id,turn",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "target",
+        "type_info": "Int2",
+        "origin": {
+          "Table": {
+            "table": "game_actions",
+            "name": "target"
+          }
+        }
+      },
+      {
+        "ordinal": 1,
+        "name": "value",
+        "type_info": "Int2",
+        "origin": {
+          "Table": {
+            "table": "game_actions",
+            "name": "value"
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Left": []
+    },
+    "nullable": [
+      true,
+      true
+    ]
+  },
+  "hash": "892fbbe8b663b58c5047d710949455ea455c07e7d416039cf4b761a36b5f2ee2"
+}

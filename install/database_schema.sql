@@ -59,16 +59,16 @@ CREATE TABLE user_stats (
     variant_id       SMALLINT  NOT NULL,
     num_games        INTEGER   NOT NULL  DEFAULT 0,
     /* Their best score for 2-player games on this variant. NULL when they have played none. */
-    best_score2      SMALLINT  NULL      DEFAULT 0,
+    best_score2      SMALLINT  NULL,
     /* This stores if they used additional options to make the game easier. */
     best_score2_mod  SMALLINT  NOT NULL  DEFAULT 0,
-    best_score3      SMALLINT  NULL      DEFAULT 0,
+    best_score3      SMALLINT  NULL,
     best_score3_mod  SMALLINT  NOT NULL  DEFAULT 0,
-    best_score4      SMALLINT  NULL      DEFAULT 0,
+    best_score4      SMALLINT  NULL,
     best_score4_mod  SMALLINT  NOT NULL  DEFAULT 0,
-    best_score5      SMALLINT  NULL      DEFAULT 0,
+    best_score5      SMALLINT  NULL,
     best_score5_mod  SMALLINT  NOT NULL  DEFAULT 0,
-    best_score6      SMALLINT  NULL      DEFAULT 0,
+    best_score6      SMALLINT  NULL,
     best_score6_mod  SMALLINT  NOT NULL  DEFAULT 0,
     FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE,
     PRIMARY KEY (user_id, variant_id)
@@ -255,12 +255,12 @@ CREATE TABLE game_actions (
      * - If a play or a discard, corresponds to the order of the the card that was played/discarded.
      * - If a clue, corresponds to the index of the player that received the clue.
      * - If a game over, corresponds to the index of the player that caused the game to end, or NULL
-     *   if no player did. (Rows from before November 2026 store -1 instead.)
+     *   if no player did.
      */
     target   SMALLINT  NULL,
 
     /**
-     * - If a play or discard, then NULL. (Rows from before November 2026 store 0 instead.)
+     * - If a play or discard, then NULL.
      * - If a color clue, then 0 if red, 1 if yellow, etc.
      * - If a rank clue, then 1 if 1, 2 if 2, etc.
      * - If a game over, then the value corresponds to "EndCondition" in "server/engine/src/types.rs".
@@ -268,7 +268,9 @@ CREATE TABLE game_actions (
     value    SMALLINT  NULL,
 
     FOREIGN KEY (game_id) REFERENCES games (id) ON DELETE CASCADE,
-    PRIMARY KEY (game_id, turn)
+    PRIMARY KEY (game_id, turn),
+    CONSTRAINT game_actions_value_check CHECK ((type IN (0, 1)) = (value IS NULL)),
+    CONSTRAINT game_actions_target_check CHECK (target IS NOT NULL OR type IN (4, 5))
 );
 
 DROP TABLE IF EXISTS game_tags CASCADE;
@@ -296,11 +298,11 @@ CREATE TABLE variant_stats (
      * The best score from any team for a 2-player game on this variant without options. NULL when
      * there is no such game.
      */
-    best_score2     SMALLINT  NULL      DEFAULT 0,
-    best_score3     SMALLINT  NULL      DEFAULT 0,
-    best_score4     SMALLINT  NULL      DEFAULT 0,
-    best_score5     SMALLINT  NULL      DEFAULT 0,
-    best_score6     SMALLINT  NULL      DEFAULT 0,
+    best_score2     SMALLINT  NULL,
+    best_score3     SMALLINT  NULL,
+    best_score4     SMALLINT  NULL,
+    best_score5     SMALLINT  NULL,
+    best_score6     SMALLINT  NULL,
     num_max_scores  INTEGER   NOT NULL  DEFAULT 0
 );
 

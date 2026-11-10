@@ -306,7 +306,7 @@ async fn public_database_routes_filters_privacy_exports_and_html() {
           VALUES(1,1,0,NULL,NULL),(1,2,1,NULL,NULL),(2,1,0,NULL,NULL),(2,3,1,NULL,NULL),(3,1,0,0,1),(3,2,1,NULL,NULL);
         INSERT INTO seeds(seed,num_games) VALUES('same',2),('custom-seed',1);
         INSERT INTO game_tags(game_id,user_id,tag) VALUES(1,1,'mine'),(1,2,'other'),(3,1,'mine');
-        INSERT INTO game_actions(game_id,turn,type,target,value) VALUES(3,0,0,4,0),(3,1,4,0,1);
+        INSERT INTO game_actions(game_id,turn,type,target,value) VALUES(3,0,0,4,NULL),(3,1,4,0,1);
         INSERT INTO game_participant_notes(game_participant_id,card_order,note)
           SELECT id,0,'<note>' FROM game_participants WHERE game_id=3 AND user_id=1;
         INSERT INTO user_stats(user_id,variant_id,num_games,best_score2,best_score2_mod) VALUES(1,0,2,25,0);

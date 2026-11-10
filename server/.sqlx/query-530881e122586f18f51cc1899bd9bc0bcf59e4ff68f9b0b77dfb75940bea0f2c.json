@@ -1,0 +1,14 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO game_actions(game_id,turn,type,target,value)\n             VALUES($1,0,0,0,NULL),($1,1,0,5,NULL),($1,2,4,0,4)",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Int4"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "530881e122586f18f51cc1899bd9bc0bcf59e4ff68f9b0b77dfb75940bea0f2c"
+}

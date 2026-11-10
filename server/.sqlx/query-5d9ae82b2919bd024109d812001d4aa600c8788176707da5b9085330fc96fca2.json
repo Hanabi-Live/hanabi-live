@@ -1,0 +1,12 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO variant_stats(variant_id,best_score2,best_score3,best_score4,best_score5,\n               best_score6) VALUES(0,0,0,0,0,0)",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": []
+    },
+    "nullable": []
+  },
+  "hash": "5d9ae82b2919bd024109d812001d4aa600c8788176707da5b9085330fc96fca2"
+}

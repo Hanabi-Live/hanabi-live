@@ -31,7 +31,7 @@ pub(crate) struct ArchivePlayer {
 }
 
 /// An action as `game_actions` stores it: NULL for a game over's target when no player caused it,
-/// and for a play's or a discard's value. Rows from before November 2026 store -1 and 0 instead.
+/// and for a play's or a discard's value. The engine's records use `NO_VALUE` and 0 instead.
 #[derive(Debug, Deserialize)]
 struct ArchiveAction {
     #[serde(rename = "type")]

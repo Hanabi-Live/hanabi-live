@@ -917,7 +917,7 @@ async fn tables_replay_a_finished_game_from_a_chosen_turn() -> Result<()> {
         .await?;
         // Each player plays their first card, and then the game is terminated.
         sqlx::query!("INSERT INTO game_actions(game_id,turn,type,target,value)
-             VALUES($1,0,0,0,0),($1,1,0,5,0),($1,2,4,0,4)", game)
+             VALUES($1,0,0,0,NULL),($1,1,0,5,NULL),($1,2,4,0,4)", game)
             .execute(&h.store.primary)
             .await?;
 
