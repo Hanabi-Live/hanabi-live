@@ -523,7 +523,6 @@ export function GameScreen({
                 {pausedBy} paused the game.
               </div>
             )}
-            <ActionLog log={visibleState.log} />
             {state.playing && (
               <CluePanel
                 canClue={canClue}
@@ -591,7 +590,7 @@ export function GameScreen({
             </div>
           </div>
 
-          <div className="tw:flex tw:w-[214px] tw:shrink-0 tw:flex-col tw:gap-3">
+          <div className="tw:flex tw:w-[300px] tw:shrink-0 tw:flex-col tw:gap-3">
             <DiscardPile
               cardWidth={Math.min(tableCardWidth, TABLE_CARD_WIDTH.MAX)}
               colorblindMode={settings.colorblindMode}
@@ -601,6 +600,7 @@ export function GameScreen({
               variant={variant}
               zoneState={discardZoneState}
             />
+            <ActionLog log={visibleState.log} />
             <TableTokens
               clues={getUnadjustedClueTokens(visibleState.clueTokens, variant)}
               maxClues={MAX_CLUES}

@@ -182,7 +182,7 @@ export const DiscardPile = forwardRef<
     return (
       <section
         aria-label="Discards"
-        className={`tw:relative tw:box-border tw:flex tw:flex-1 tw:flex-col tw:gap-3 tw:rounded-[18px] tw:px-4.5 tw:py-4 ${zoneClasses[zoneState]}`}
+        className={`tw:relative tw:box-border tw:flex tw:flex-col tw:gap-3 tw:rounded-[18px] tw:px-4.5 tw:py-4 ${zoneClasses[zoneState]}`}
         ref={ref}
       >
         <h2 className="tw:m-0 tw:text-[15px] tw:font-medium tw:text-text-label">
@@ -268,7 +268,7 @@ export function TableTokens({
         >
           {[...eRange(MAX_STRIKES)].map((i) => (
             <span
-              className={`tw:box-border tw:size-[24px] tw:rounded-md tw:border-2 ${
+              className={`tw:box-border tw:size-[32px] tw:rounded-lg tw:border-2 ${
                 i < strikes
                   ? "tw:border-critical tw:bg-critical"
                   : "tw:border-text-label"
