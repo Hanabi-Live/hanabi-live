@@ -44,10 +44,6 @@ of the repository.
 - When a card shows rows of possibilities, a suit that is ruled out now shares a
   row with the other suits that the clues allowed the same ranks, with its pip
   crossed out.
-- The game lists of the public API now name each game's ID `gameID`, its variant
-  `variantID`, its seed's game count `numGamesOnSeed`, and its players
-  `playerNames` (a list in seat order). Identity tokens now give their expiry as
-  `expiresAt`.
 
 ## November 9th, 2026
 
