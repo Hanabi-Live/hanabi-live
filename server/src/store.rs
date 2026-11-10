@@ -41,8 +41,10 @@ pub const DATABASE_TIMEOUT: Duration = Duration::from_secs(30);
 pub const LOBBY_READ_TIMEOUT: Duration = Duration::from_secs(2);
 /// Connections in the primary pool, besides the one that holds live-table ownership.
 pub const PRIMARY_CONNECTIONS: u32 = 14;
-/// Connections in the pool that serves lobby reads and the public pages.
-pub const LOBBY_READ_CONNECTIONS: u32 = 2;
+/// Connections in the pool that serves lobby reads and the public pages. A statistics page can hold
+/// one for most of a second, so after a restart, when every client loads the lobby at once, two
+/// were not enough. The server has two CPUs, so more would mostly queue for them.
+pub const LOBBY_READ_CONNECTIONS: u32 = 4;
 /// The most derived-statistics refreshes that can run or wait at once.
 const STATS_SLOTS: usize = 32;
 /// The most derived-statistics refreshes that run at once.

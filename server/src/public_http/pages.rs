@@ -382,8 +382,9 @@ enum Scope {
     Variant(i64),
 }
 
-// Variant totals scan every game of the variant on a pool with only two connections, so compute
-// them at most once per period and make concurrent visitors share the result.
+// Variant totals scan every game of the variant on the small lobby read pool
+// (`LOBBY_READ_CONNECTIONS`), so compute them at most once per period and make concurrent
+// visitors share the result.
 const SITE_TOTALS_LIFETIME: std::time::Duration = if cfg!(test) {
     std::time::Duration::ZERO
 } else {
