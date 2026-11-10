@@ -141,10 +141,10 @@ function pressCard() {
     }),
   } as unknown as HanabiCard;
   Object.assign(globals, {
-    state: { replay: { hypothetical: { startingPlayerIndex: null } } },
+    state: { replay: { hypothetical: { startingPlayerIndex: undefined } } },
     options: { speedrun: false },
     lobby: { settings: { speedrunMode: false, keldonMode: true } },
-    elements: { editCardsButton: null, playerHands: [], arrows: [] },
+    elements: { editCardsButton: undefined, playerHands: [], arrows: [] },
     layers: { card: { batchDraw: vi.fn() } },
     store: { dispatch: vi.fn() },
   });
@@ -203,9 +203,9 @@ describe("touching a card", () => {
       }),
     } as unknown as HanabiCard;
     Object.assign(globals, {
-      editingNote: null,
+      editingNote: undefined,
       globalEmpathyEnabled: true,
-      state: { replay: { hypothetical: null } },
+      state: { replay: { hypothetical: undefined } },
     });
 
     registerMouseHandlers.call(card);

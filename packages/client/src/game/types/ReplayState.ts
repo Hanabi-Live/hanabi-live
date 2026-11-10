@@ -16,8 +16,8 @@ export interface ReplayState {
 
   /** Absent when the game is not in the database, such as an ongoing or imported game. */
   readonly databaseID: number | undefined;
-  readonly shared: SharedReplayState | null;
+  readonly shared: SharedReplayState | undefined;
 
   /** The hypothetical that we show. In shared replays, this follows `shared.hypothetical`. */
-  readonly hypothetical: HypotheticalState | null;
+  readonly hypothetical: HypotheticalState | undefined;
 }

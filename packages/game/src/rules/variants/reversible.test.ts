@@ -14,8 +14,7 @@ describe("upOrDownDeadCardsDirectionUndecided", () => {
   test("Handles no discard, no play", () => {
     const allDiscardedSet = new Set<Rank>();
     const ranks = reversibleGetRanksUsefulForMaxScore(
-      // eslint-disable-next-line unicorn/no-null
-      null,
+      undefined,
       allDiscardedSet,
       StackDirection.Undecided,
       true,
@@ -26,8 +25,7 @@ describe("upOrDownDeadCardsDirectionUndecided", () => {
     for (const discardedRank of [1, 5, START_CARD_RANK]) {
       const allDiscardedSet = new Set<Rank>([discardedRank as Rank]);
       const ranks = reversibleGetRanksUsefulForMaxScore(
-        // eslint-disable-next-line unicorn/no-null
-        null,
+        undefined,
         allDiscardedSet,
         StackDirection.Undecided,
         true,
@@ -58,8 +56,7 @@ describe("upOrDownDeadCardsDirectionUndecided", () => {
   test("Handles discard 2 and 4", () => {
     const allDiscardedSet = new Set<Rank>([2, 4]);
     const ranks = reversibleGetRanksUsefulForMaxScore(
-      // eslint-disable-next-line unicorn/no-null
-      null,
+      undefined,
       allDiscardedSet,
       StackDirection.Undecided,
       true,
@@ -99,8 +96,7 @@ describe("upOrDownDeadCardsDirectionUndecided", () => {
   test("Handles discard 2, 5 and Start", () => {
     const allDiscardedSet = new Set<Rank>([2, 5, START_CARD_RANK]);
     const ranks = reversibleGetRanksUsefulForMaxScore(
-      // eslint-disable-next-line unicorn/no-null
-      null,
+      undefined,
       allDiscardedSet,
       StackDirection.Undecided,
       true,
@@ -112,8 +108,7 @@ describe("upOrDownDeadCardsDirectionUndecided", () => {
 describe("fixed reversed suits cannot start after their starting card is discarded", () => {
   test("discarding the only reversed 5 makes all lower ranks trash", () => {
     const ranks = reversibleGetRanksUsefulForMaxScore(
-      // eslint-disable-next-line unicorn/no-null
-      null,
+      undefined,
       new Set<Rank>([5]),
       StackDirection.Down,
       false,
@@ -123,8 +118,7 @@ describe("fixed reversed suits cannot start after their starting card is discard
 
   test("discarding every normal 1 makes higher ranks trash", () => {
     const ranks = reversibleGetRanksUsefulForMaxScore(
-      // eslint-disable-next-line unicorn/no-null
-      null,
+      undefined,
       new Set<Rank>([1]),
       StackDirection.Up,
       false,
@@ -148,8 +142,7 @@ describe("Dark Prism Reversed card status (#3047)", () => {
       suit.reversed ? StackDirection.Down : StackDirection.Up,
     ) as unknown as GameState["playStackDirections"];
     const starts = variant.suits.map(
-      // eslint-disable-next-line unicorn/no-null
-      () => null,
+      () => undefined,
     ) as unknown as GameState["playStackStarts"];
     const discardedFive = {
       order: 0,

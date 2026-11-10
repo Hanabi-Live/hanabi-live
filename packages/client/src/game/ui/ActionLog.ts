@@ -27,7 +27,7 @@ export class ActionLog extends Konva.Group {
   /** The log index of the first visible line. */
   private firstIndex = 0;
 
-  private tween: Konva.Tween | null = null;
+  private tween: Konva.Tween | undefined = undefined;
 
   constructor(config: Konva.TextConfig, maxLines: number) {
     super({
@@ -90,7 +90,7 @@ export class ActionLog extends Konva.Group {
     this.firstIndex = firstIndex;
 
     this.tween?.destroy();
-    this.tween = null;
+    this.tween = undefined;
 
     if (!slides) {
       this.lines.y(0);
@@ -112,7 +112,7 @@ export class ActionLog extends Konva.Group {
       easing: Konva.Easings.EaseOut,
       onFinish: () => {
         this.tween?.destroy();
-        this.tween = null;
+        this.tween = undefined;
       },
     }).play();
   }

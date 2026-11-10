@@ -10,4 +10,3 @@
 - remove type assertions from lobby + views
 
 long term:
-- remove all null in @hanabi-live/game (this might need server changes)

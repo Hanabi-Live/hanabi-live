@@ -239,9 +239,9 @@ export function discardPermissionBorder(): Konva.Group {
 
 export function directionArrow(
   variant: Variant,
-): { arrow: Konva.Group; arrowBase: Konva.Shape } | null {
+): { arrow: Konva.Group; arrowBase: Konva.Shape } | undefined {
   if (!hasReversedSuits(variant)) {
-    return null;
+    return undefined;
   }
 
   const arrow = new Konva.Group({
@@ -272,7 +272,7 @@ export function directionArrow(
 }
 
 // Cache the pip objects to save time on the multiple cards.
-let cachedVariant: Variant | null = null;
+let cachedVariant: Variant | undefined;
 let cachedPips: {
   suitPipsMap: Map<number, Konva.Shape>;
   suitPipsPositiveMap: Map<number, Konva.Shape>;

@@ -1045,7 +1045,7 @@ function drawPlayStacks() {
     const stackBase = new HanabiCard(
       order,
       suitIndex,
-      null,
+      undefined,
       true,
       globals.variant,
       globals.options.numPlayers,
@@ -1183,7 +1183,7 @@ function drawBottomLeftButtons() {
   restartButton.on("click tap", () => {
     const { shared } = globals.state.replay;
     const everyoneWilling =
-      shared !== null && restart.declinedPlayers(shared).length === 0;
+      shared !== undefined && restart.declinedPlayers(shared).length === 0;
     if (globals.options.speedrun && everyoneWilling) {
       restart.request(true);
     } else {
@@ -1226,7 +1226,8 @@ function drawBottomLeftButtons() {
     height: bottomLeftButtonValues.h! * winH,
     // eslint-disable-next-line complete/require-ascii
     text: "💬",
-    visible: !globals.state.finished || globals.state.replay.shared !== null,
+    visible:
+      !globals.state.finished || globals.state.replay.shared !== undefined,
   });
   globals.layers.UI.add(chatButton);
   chatButton.on("click tap", (event: Konva.KonvaEventObject<MouseEvent>) => {
@@ -1600,7 +1601,7 @@ function drawScoreArea() {
       // eslint-disable-next-line @typescript-eslint/unbound-method
       easing: Konva.Easings.EaseInOut,
       onFinish: () => {
-        if (globals.elements.cluesNumberLabelPulse !== null) {
+        if (globals.elements.cluesNumberLabelPulse !== undefined) {
           globals.elements.cluesNumberLabelPulse.reverse();
         }
       },
@@ -1860,7 +1861,7 @@ function drawSharedReplay() {
       // eslint-disable-next-line @typescript-eslint/unbound-method
       easing: Konva.Easings.EaseInOut,
       onFinish: () => {
-        if (globals.elements.sharedReplayLeaderLabelPulse !== null) {
+        if (globals.elements.sharedReplayLeaderLabelPulse !== undefined) {
           globals.elements.sharedReplayLeaderLabelPulse.reverse();
         }
       },
@@ -1879,7 +1880,7 @@ function drawSharedReplay() {
   // The user can click on the crown to pass the replay leader to an arbitrary person. Require a
   // double tap to prevent accidentally opening the dialog when hovering over the crown.
   sharedReplayLeaderLabel.on("click dbltap", () => {
-    if (globals.state.replay.shared === null) {
+    if (globals.state.replay.shared === undefined) {
       return;
     }
 
@@ -1915,10 +1916,10 @@ function drawSharedReplay() {
   });
 }
 
-function setLeader(player: string | null | undefined) {
+function setLeader(player: string | undefined) {
   modals.closeModals();
 
-  if (player === null || player === undefined) {
+  if (player === undefined) {
     return;
   }
 
@@ -2751,7 +2752,7 @@ function drawPreplayArea() {
   globals.elements.premoveCancelButton.on("click tap", () => {
     globals.store!.dispatch({
       type: "premove",
-      premove: null,
+      premove: undefined,
     });
   });
 }

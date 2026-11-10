@@ -61,7 +61,7 @@ export function isSpoilerFree(): boolean {
 /** Spectators watch the leader's hypothetical, but do not control it. */
 export function isSpectatingHypothetical(): boolean {
   const { hypothetical, shared } = globals.state.replay;
-  return hypothetical !== null && shared !== null && !shared.amLeader;
+  return hypothetical !== undefined && shared !== undefined && !shared.amLeader;
 }
 
 function getCurrentReplaySegment() {
@@ -84,7 +84,7 @@ export function goToSegment(
   if (currentSegment === newSegment) {
     if (
       newSegment === finalSegment
-      && globals.state.replay.hypothetical === null
+      && globals.state.replay.hypothetical === undefined
       && !globals.state.finished
     ) {
       exit();
@@ -96,7 +96,7 @@ export function goToSegment(
   // will set "force" equal to true.) Spectators can leave the leader's hypothetical by breaking
   // free from the shared segments.
   if (
-    globals.state.replay.hypothetical !== null
+    globals.state.replay.hypothetical !== undefined
     && !force
     && !(breakFree && isSpectatingHypothetical())
   ) {
@@ -111,7 +111,7 @@ export function goToSegment(
   // navigating to a new segment as the shared replay leader, do not disable shared segments.
   if (
     breakFree
-    && globals.state.replay.shared !== null
+    && globals.state.replay.shared !== undefined
     && globals.state.replay.shared.useSharedSegments
     && !globals.state.replay.shared.amLeader
   ) {
@@ -127,7 +127,7 @@ export function goToSegment(
   });
 
   if (
-    globals.state.replay.shared !== null
+    globals.state.replay.shared !== undefined
     && globals.state.replay.shared.amLeader
     && globals.state.replay.shared.useSharedSegments
   ) {
@@ -293,7 +293,7 @@ function positionReplayShuttle(
 ) {
   let finalSegment = globals.state.ongoingGame.turn.segment;
   if (
-    finalSegment === null // The final segment is null during initialization
+    finalSegment === undefined // The final segment is undefined during initialization
     || finalSegment === 0 // The final segment is 0 before a move is made
   ) {
     // For the purposes of the replay shuttle calculation, we need to assume that there are at least
@@ -336,7 +336,7 @@ export function adjustShuttles(fast: boolean): void {
   // If the two shuttles are overlapping, then make the normal shuttle a little bit smaller.
   let smaller = false;
   if (
-    globals.state.replay.shared !== null
+    globals.state.replay.shared !== undefined
     && !globals.state.replay.shared.useSharedSegments
     && globals.state.replay.segment === globals.state.replay.shared.segment
   ) {
@@ -356,9 +356,9 @@ export function adjustShuttles(fast: boolean): void {
 
   // Adjust the shared replay shuttle along the bar based on the shared segment.
   globals.elements.replayShuttleShared!.visible(
-    globals.state.replay.shared !== null,
+    globals.state.replay.shared !== undefined,
   );
-  if (globals.state.replay.shared !== null) {
+  if (globals.state.replay.shared !== undefined) {
     positionReplayShuttle(
       globals.elements.replayShuttleShared!,
       globals.state.replay.shared.segment,
@@ -395,7 +395,7 @@ export function promptTurn(): void {
     goTo(setTurnInput.value);
   };
 
-  showPrompt("#set-turn-modal", null, setTurnInput, setTurnButton);
+  showPrompt("#set-turn-modal", undefined, setTurnInput, setTurnButton);
 }
 
 export function goTo(turnString: string): void {
@@ -416,7 +416,7 @@ export function goTo(turnString: string): void {
 // --------------------------------
 
 export function toggleSharedSegments(): void {
-  if (globals.state.replay.shared === null) {
+  if (globals.state.replay.shared === undefined) {
     return;
   }
 

@@ -30,22 +30,17 @@ const CLUE_AFTER_UI_CLICK_DELAY_MILLISECONDS = SECOND_IN_MILLISECONDS;
 
 export function checkLegal(): void {
   const clueTargetButtonGroup =
-    globals.state.replay.hypothetical === null
+    globals.state.replay.hypothetical === undefined
       ? globals.elements.clueTargetButtonGroup
       : globals.elements.clueTargetButtonGroup2;
 
   const target = clueTargetButtonGroup?.getPressed() as
-    PlayerButton | null | undefined;
+    PlayerButton | undefined;
   const { clueTypeButtonGroup } = globals.elements;
   const clueButton = clueTypeButtonGroup?.getPressed() as
-    ColorButton | RankButton | null | undefined;
+    ColorButton | RankButton | undefined;
 
-  if (
-    target === undefined
-    || target === null
-    || clueButton === undefined
-    || clueButton === null
-  ) {
+  if (target === undefined || clueButton === undefined) {
     // They have not selected a player or a clue type.
     globals.elements.giveClueButton!.setEnabled(false);
     hideClueMatch();
@@ -54,7 +49,7 @@ export function checkLegal(): void {
 
   const who = target.targetPlayerIndex;
   const { currentPlayerIndex } = globals.state.visibleState!.turn;
-  if (currentPlayerIndex === null) {
+  if (currentPlayerIndex === undefined) {
     return;
   }
   if (who === currentPlayerIndex) {
@@ -114,7 +109,7 @@ function showClueMatch(target: PlayerIndex, clue: Clue): boolean {
     const { card } = child as unknown as LayoutChild;
     if (isTouched(card, clue)) {
       touchedAtLeastOneCard = true;
-      arrows.set(i, card, null, clue, true);
+      arrows.set(i, card, undefined, clue, true);
     }
   }
 
@@ -135,28 +130,27 @@ function isTouched(card: HanabiCard, clue: Clue): boolean {
   return morphedPossibilities.every(
     ([suitIndex, rank]) =>
       isCardTouchedByClue(globals.variant, clue, suitIndex, rank)
-      && ((clue.type === ClueType.Rank && card.visibleRank !== null)
-        || (clue.type === ClueType.Color && card.visibleSuitIndex !== null)),
+      && ((clue.type === ClueType.Rank && card.visibleRank !== undefined)
+        || (clue.type === ClueType.Color
+          && card.visibleSuitIndex !== undefined)),
   );
 }
 
 export function give(): void {
   const clueTargetButtonGroup =
-    globals.state.replay.hypothetical === null
+    globals.state.replay.hypothetical === undefined
       ? globals.elements.clueTargetButtonGroup
       : globals.elements.clueTargetButtonGroup2;
 
   const playerButton = clueTargetButtonGroup?.getPressed() as
-    PlayerButton | null | undefined;
+    PlayerButton | undefined;
   const { clueTypeButtonGroup } = globals.elements;
   const clueOrRankButton = clueTypeButtonGroup?.getPressed() as
-    ColorButton | RankButton | null | undefined;
+    ColorButton | RankButton | undefined;
 
   if (
     playerButton === undefined
-    || playerButton === null
     || clueOrRankButton === undefined
-    || clueOrRankButton === null
     || !shouldGiveClue()
   ) {
     // They have not selected a player or a clue type, or a clue cannot be given.
@@ -201,12 +195,12 @@ function shouldGiveClue() {
   const { currentPlayerIndex } = globals.state.ongoingGame.turn;
   const { ourPlayerIndex } = globals.metadata;
   const ongoingGameState =
-    globals.state.replay.hypothetical === null
+    globals.state.replay.hypothetical === undefined
       ? globals.state.ongoingGame
       : globals.state.replay.hypothetical.ongoing;
   const ourTurn =
     currentPlayerIndex === ourPlayerIndex
-    || globals.state.replay.hypothetical !== null;
+    || globals.state.replay.hypothetical !== undefined;
   const clueTokenAvailable =
     ongoingGameState.clueTokens >= getClueCost(globals.variant);
   const recentlyClicked =

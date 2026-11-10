@@ -41,7 +41,7 @@ export function onNewSoundEffect(
     || data.gameState.turn.currentPlayerIndex
       === previousData?.gameState.turn.currentPlayerIndex
     // Do not play sounds in hypotheticals.
-    || globals.state.replay.hypothetical !== null
+    || globals.state.replay.hypothetical !== undefined
     || globals.state.finished
     // Do not play sounds if it is not the user's turn and the user only wants sounds on their own
     // moves.

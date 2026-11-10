@@ -15,7 +15,9 @@ export interface GameMetadata {
    */
   readonly ourPlayerIndex: PlayerIndex;
 
-  readonly characterAssignments: Readonly<Tuple<number | null, NumPlayers>>;
+  readonly characterAssignments: Readonly<
+    Tuple<number | undefined, NumPlayers>
+  >;
   readonly characterMetadata: Readonly<Tuple<number, NumPlayers>>;
 
   /** The minimum efficiency required in order to get a perfect score in the chosen variant. */

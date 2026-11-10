@@ -148,7 +148,7 @@ export function getSoundType(
       if (
         nextPlayerHand !== undefined
         && !isHandLocked(nextPlayerHand, gameState.deck)
-        && previousGameState.stats.doubleDiscardCard !== null
+        && previousGameState.stats.doubleDiscardCard !== undefined
         && !metadata.hardVariant
       ) {
         const previouslyDiscardedCard =
@@ -167,7 +167,10 @@ export function getSoundType(
         }
       }
 
-      if (gameState.stats.doubleDiscardCard !== null && !metadata.hardVariant) {
+      if (
+        gameState.stats.doubleDiscardCard !== undefined
+        && !metadata.hardVariant
+      ) {
         // A player has discarded to *cause* a double discard situation.
         return SoundType.DoubleDiscardCause;
       }
@@ -313,7 +316,7 @@ function isOrderChopMove(
       (card) =>
         card.order !== newestOneOrder
         && card.firstCluedWhileOnChop === true
-        && card.segmentFirstClued !== null
+        && card.segmentFirstClued !== undefined
         && card.segmentFirstClued === newestOne.segmentFirstClued,
     );
     if (chopFocusedCard !== undefined) {

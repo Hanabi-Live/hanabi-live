@@ -25,7 +25,7 @@ export function UserLink({
   );
   const anchorRef = useRef<HTMLAnchorElement>(null);
   const [menu] = useState(() => document.createElement("div"));
-  const tooltipRef = useRef<Tooltip>(undefined);
+  const tooltipRef = useRef<Tooltip>(null);
   useEffect(() => {
     const tooltip = new Tooltip(anchorRef.current!, {
       content: menu,

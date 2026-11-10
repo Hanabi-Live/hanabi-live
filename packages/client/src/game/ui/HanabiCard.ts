@@ -33,7 +33,7 @@ import {
   isCardIdentityFromNote,
   isCardPlayed,
 } from "@hanabi-live/game";
-import { assertDefined, assertNotNull } from "complete-common";
+import { assertDefined } from "complete-common";
 import Konva from "konva";
 import * as tooltips from "../../tooltips";
 import { noteEqual, noteHasMeaning, parseNote } from "../reducers/notesReducer";
@@ -110,15 +110,15 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip, UICard {
 
   private readonly variant: Variant;
 
-  tween: Konva.Tween | null = null; // Required in order to be able to cancel animations
-  tweenFinalPosition: { x: number; y: number } | null = null;
-  tweenFinalScale: { x: number; y: number } | null = null;
-  private vortexTween: Konva.Tween | null = null;
+  tween: Konva.Tween | undefined = undefined; // Required in order to be able to cancel animations
+  tweenFinalPosition: { x: number; y: number } | undefined = undefined;
+  tweenFinalScale: { x: number; y: number } | undefined = undefined;
+  private vortexTween: Konva.Tween | undefined = undefined;
   cursor: CursorType = "default";
   private empathy = false;
   dragging = false;
   wasRecentlyTapped = false;
-  touchstartTimeout: ReturnType<typeof setTimeout> | null = null;
+  touchstartTimeout: ReturnType<typeof setTimeout> | undefined = undefined;
 
   isStackBase: boolean;
 
@@ -138,8 +138,8 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip, UICard {
   private readonly rankPipsMap: Map<number, RankPip>;
   private readonly rankPipsXMap: Map<number, Konva.Shape>;
   private readonly criticalIndicator: Konva.Image;
-  private readonly arrow: Konva.Group | null = null;
-  private readonly arrowBase: Konva.Shape | null = null;
+  private readonly arrow: Konva.Group | undefined = undefined;
+  private readonly arrowBase: Konva.Shape | undefined = undefined;
 
   noteIndicator: NoteIndicator;
   private readonly trashcan: Konva.Image;
@@ -190,13 +190,13 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip, UICard {
     return `card-${this.order}`;
   }
 
-  private _visibleSuitIndex: SuitIndex | null = null;
-  get visibleSuitIndex(): SuitIndex | null {
+  private _visibleSuitIndex: SuitIndex | undefined = undefined;
+  get visibleSuitIndex(): SuitIndex | undefined {
     return this._visibleSuitIndex;
   }
 
-  private _visibleRank: Rank | null = null;
-  get visibleRank(): Rank | null {
+  private _visibleRank: Rank | undefined = undefined;
+  get visibleRank(): Rank | undefined {
     return this._visibleRank;
   }
 
@@ -206,8 +206,8 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip, UICard {
 
   constructor(
     order: CardOrder,
-    suitIndex: SuitIndex | null,
-    rank: Rank | null,
+    suitIndex: SuitIndex | undefined,
+    rank: Rank | undefined,
     isStackBase: boolean,
     variant: Variant,
     numPlayers: NumPlayers,
@@ -264,7 +264,7 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip, UICard {
     this.add(this.criticalIndicator);
 
     const arrowElements = HanabiCardInit.directionArrow(this.variant);
-    if (arrowElements !== null) {
+    if (arrowElements !== undefined) {
       this.arrow = arrowElements.arrow;
       this.arrowBase = arrowElements.arrowBase;
       this.add(this.arrow);
@@ -306,7 +306,7 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip, UICard {
     this._layout = new LayoutChild(this);
 
     // Initialize the bare image.
-    if (suitIndex !== null || rank !== null) {
+    if (suitIndex !== undefined || rank !== undefined) {
       this.setBareImage();
     }
   }
@@ -329,8 +329,8 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip, UICard {
       return;
     }
     this._tweening = false;
-    this.tweenFinalPosition = null;
-    this.tweenFinalScale = null;
+    this.tweenFinalPosition = undefined;
+    this.tweenFinalScale = undefined;
   }
 
   /**
@@ -358,9 +358,9 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip, UICard {
 
   /** Restores the normal size and rotation of a card that was sucked into the hole. */
   private stopVortex(): void {
-    if (this.vortexTween !== null) {
+    if (this.vortexTween !== undefined) {
       this.vortexTween.destroy();
-      this.vortexTween = null;
+      this.vortexTween = undefined;
     }
     this.scale({ x: 1, y: 1 });
     this.rotation(0);
@@ -391,12 +391,13 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip, UICard {
     this.layout.checkSetDraggable();
 
     // Set the visible state. (This must be after the morphed blank check.)
-    if (suitToShow === null) {
-      this._visibleSuitIndex = null;
+    if (suitToShow === undefined) {
+      this._visibleSuitIndex = undefined;
     } else {
       const suitIndexToShow = this.variant.suits.indexOf(suitToShow) as
         SuitIndex | -1;
-      this._visibleSuitIndex = suitIndexToShow === -1 ? null : suitIndexToShow;
+      this._visibleSuitIndex =
+        suitIndexToShow === -1 ? undefined : suitIndexToShow;
     }
     this._visibleRank = rankToShow;
 
@@ -465,17 +466,17 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip, UICard {
     );
   }
 
-  getSuitToShow(cardIdentity: CardIdentity): Suit | null {
+  getSuitToShow(cardIdentity: CardIdentity): Suit | undefined {
     const { suitIndex } = this.getIdentityToShow(cardIdentity);
-    return suitIndexToSuit(suitIndex, this.variant) ?? null;
+    return suitIndexToSuit(suitIndex, this.variant) ?? undefined;
   }
 
-  getRankToShow(cardIdentity: CardIdentity): Rank | null {
+  getRankToShow(cardIdentity: CardIdentity): Rank | undefined {
     return this.getIdentityToShow(cardIdentity).rank;
   }
 
   isMorphed(): boolean {
-    if (globals.state.replay.hypothetical === null) {
+    if (globals.state.replay.hypothetical === undefined) {
       return false;
     }
 
@@ -495,7 +496,7 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip, UICard {
       return morph!;
     }
 
-    if (globals.state.replay.hypothetical !== null) {
+    if (globals.state.replay.hypothetical !== undefined) {
       const noteIdentity = getIdentityFromNote(
         this.note,
         this.state,
@@ -521,12 +522,12 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip, UICard {
 
   getMorphedPossibilities(): readonly SuitRankTuple[] {
     const { suitIndex, rank } = this.getMorphedIdentity();
-    if (suitIndex !== null && rank !== null) {
+    if (suitIndex !== undefined && rank !== undefined) {
       return [[suitIndex, rank]];
     }
 
     const possibleCardsWithoutObservation =
-      globals.state.replay.hypothetical !== null && globals.state.playing
+      globals.state.replay.hypothetical !== undefined && globals.state.playing
         ? possibleCardsFromNoteAndClues(this.note, this.state)
         : this.state.possibleCardsFromClues;
     return possibleCardsWithoutObservation.filter(([suitIndexB, rankB]) =>
@@ -542,7 +543,10 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip, UICard {
     }
 
     const morphedIdentity = this.getMorph()!;
-    return morphedIdentity.rank === null && morphedIdentity.suitIndex === null;
+    return (
+      morphedIdentity.rank === undefined
+      && morphedIdentity.suitIndex === undefined
+    );
   }
 
   /**
@@ -550,7 +554,7 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip, UICard {
    * it stays blank even when drawn cards are shown.
    */
   private isUnknownHypotheticalDraw(): boolean {
-    if (globals.state.replay.hypothetical === null || this.isStackBase) {
+    if (globals.state.replay.hypothetical === undefined || this.isStackBase) {
       return false;
     }
 
@@ -558,8 +562,9 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip, UICard {
     const cardIdentity = globals.state.cardIdentities[order];
     return (
       order >= globals.state.ongoingGame.deck.length
-      && cardIdentity?.suitIndex === null
-      && cardIdentity.rank === null
+      && cardIdentity !== undefined
+      && cardIdentity.suitIndex === undefined
+      && cardIdentity.rank === undefined
     );
   }
 
@@ -570,10 +575,10 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip, UICard {
    */
   getBareName(
     morphedBlank: boolean,
-    suitToShow: Suit | null,
-    rankToShow: Rank | null,
+    suitToShow: Suit | undefined,
+    rankToShow: Rank | undefined,
   ): string {
-    // If a card is morphed to a null identity, the card should appear blank no matter what.
+    // If a card is morphed to a undefined identity, the card should appear blank no matter what.
     if (morphedBlank) {
       return DECK_BACK_IMAGE;
     }
@@ -592,7 +597,7 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip, UICard {
     // In Real-Life mode, always show the vanilla card back if the card is not fully revealed.
     if (
       globals.lobby.settings.realLifeMode
-      && (suitToShow === null || rankToShow === null)
+      && (suitToShow === undefined || rankToShow === undefined)
       && !this.isStackBase
     ) {
       return DECK_BACK_IMAGE;
@@ -604,10 +609,10 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip, UICard {
     return `card-${bareNameSuit}-${bareNameRank}`;
   }
 
-  getBareNameRank(rankToShow: Rank | null): string {
+  getBareNameRank(rankToShow: Rank | undefined): string {
     // If a non-null rank is provided, it should take the highest precedence. (We want players to
     // make notes on the stack bases in "Throw it in a Hole" variants.)
-    if (rankToShow !== null) {
+    if (rankToShow !== undefined) {
       return rankToShow.toString();
     }
 
@@ -678,16 +683,16 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip, UICard {
 
   showCardElements(
     morphedBlank: boolean,
-    suitToShow: Suit | null,
-    rankToShow: Rank | null,
+    suitToShow: Suit | undefined,
+    rankToShow: Rank | undefined,
   ): void {
     // Show or hide the pips.
     if (globals.lobby.settings.realLifeMode || morphedBlank) {
       this.suitPips.hide();
       this.rankPips.hide();
     } else {
-      const suitUnknown = suitToShow === null;
-      const rankUnknown = rankToShow === null;
+      const suitUnknown = suitToShow === undefined;
+      const rankUnknown = rankToShow === undefined;
       this.suitPips.visible(suitUnknown && !this.isStackBase);
       this.rankPips.visible(rankUnknown && !this.isStackBase);
     }
@@ -738,8 +743,8 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip, UICard {
     );
 
     // Show or hide the direction arrows.
-    if (this.arrow !== null && globals.state.visibleState !== null) {
-      if (this.visibleSuitIndex === null || this.isStackBase) {
+    if (this.arrow !== undefined && globals.state.visibleState !== undefined) {
+      if (this.visibleSuitIndex === undefined || this.isStackBase) {
         this.arrow.hide();
       } else {
         this.setDirectionArrow(
@@ -818,12 +823,12 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip, UICard {
   setStatus(): void {
     const { visibleState } = globals.state;
     // Do not show any status in real life mode.
-    if (visibleState === null || globals.lobby.settings.realLifeMode) {
+    if (visibleState === undefined || globals.lobby.settings.realLifeMode) {
       return;
     }
 
     const status =
-      this.visibleSuitIndex === null || this.visibleRank === null
+      this.visibleSuitIndex === undefined || this.visibleRank === undefined
         ? CardStatus.NeedsToBePlayed // Default status; not faded and not critical.
         : visibleState.cardStatus[this.visibleSuitIndex][this.visibleRank];
 
@@ -844,7 +849,7 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip, UICard {
   }
 
   private setTrashMiniIndicator(isTrash: boolean) {
-    const known = this.visibleRank !== null;
+    const known = this.visibleRank !== undefined;
     if (isTrash && this.trashcan.isVisible() === false) {
       this.trashMiniIndicatorTop.visible(!known);
       this.trashMiniIndicatorBottom.visible(known);
@@ -856,7 +861,7 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip, UICard {
 
   private setDDA(dda: boolean) {
     const visible = this.shouldSetDDA(dda);
-    const known = this.visibleRank !== null;
+    const known = this.visibleRank !== undefined;
     if (visible) {
       this.ddaIndicatorTop.visible(!known);
       this.ddaIndicatorBottom.visible(known);
@@ -1044,7 +1049,7 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip, UICard {
       || layoutChild.parent === null
       // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
       || layoutChild.parent === undefined
-      || globals.elements.deck === null
+      || globals.elements.deck === undefined
     ) {
       // Do not do anything on first initialization.
       return;
@@ -1090,9 +1095,9 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip, UICard {
     this.removeLayoutChildFromParent();
 
     // Adding the card to the play stack will automatically tween the card.
-    assertNotNull(
+    assertDefined(
       this.state.suitIndex,
-      `Failed to animate card ${this.order} to the play stacks since it has a null suit index.`,
+      `Failed to animate card ${this.order} to the play stacks since it has a undefined suit index.`,
     );
 
     const suit = this.variant.suits[this.state.suitIndex];
@@ -1132,9 +1137,9 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip, UICard {
     this.removeLayoutChildFromParent();
 
     // Adding the card to the discard pile will automatically tween the card.
-    assertNotNull(
+    assertDefined(
       this.state.suitIndex,
-      `Failed to animate card ${this.order} to the discard pile since it has a null suit index.`,
+      `Failed to animate card ${this.order} to the discard pile since it has a undefined suit index.`,
     );
 
     const suit = this.variant.suits[this.state.suitIndex];

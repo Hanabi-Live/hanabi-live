@@ -93,14 +93,14 @@ describe("integration", () => {
       test("has the correct stats", () => {
         const finalState = getFinalState(testState);
         expect(finalState.turn.turnNum).toBe(50);
-        expect(finalState.turn.currentPlayerIndex).toBeNull();
+        expect(finalState.turn.currentPlayerIndex).toBeUndefined();
         expect(finalState.score).toBe(24);
         expect(finalState.clueTokens).toBe(2);
-        expect(finalState.stats.pace).toBeNull();
+        expect(finalState.stats.pace).toBeUndefined();
         const efficiency = getEfficiencyFromGameState(finalState);
         expect(efficiency).toBeCloseTo(1.39);
         const futureEfficiency = getFutureEfficiency(finalState);
-        expect(futureEfficiency).toBeNull();
+        expect(futureEfficiency).toBeUndefined();
         expect(finalState.stats.potentialCluesLost).toBe(18);
 
         expect(finalState.playStackDirections).toEqual([
@@ -153,14 +153,14 @@ describe("integration", () => {
       test("has the correct stats", () => {
         const finalState = getFinalState(testState);
         expect(finalState.turn.turnNum).toBe(53);
-        expect(finalState.turn.currentPlayerIndex).toBeNull();
+        expect(finalState.turn.currentPlayerIndex).toBeUndefined();
         expect(finalState.score).toBe(25);
         expect(finalState.clueTokens).toBe(8);
-        expect(finalState.stats.pace).toBeNull();
+        expect(finalState.stats.pace).toBeUndefined();
         const efficiency = getEfficiencyFromGameState(finalState);
         expect(efficiency).toBeCloseTo(1.39);
         const futureEfficiency = getFutureEfficiency(finalState);
-        expect(futureEfficiency).toBeNull();
+        expect(futureEfficiency).toBeUndefined();
         expect(finalState.stats.potentialCluesLost).toBe(18);
       });
     });

@@ -1,6 +1,6 @@
 import type { CardOrder, GameMetadata, GameState } from "@hanabi-live/game";
 import { draw, rankClue } from "@hanabi-live/game";
-import { assertDefined, assertNotNull } from "complete-common";
+import { assertDefined } from "complete-common";
 import { beforeAll, describe, expect, test, vi } from "vitest";
 
 import testGame from "../../../test_data/up_or_down.json";
@@ -41,7 +41,7 @@ describe("replayReducer", () => {
         metadata,
       );
 
-      assertNotNull(state.hypothetical, "Failed to start the hypothetical.");
+      assertDefined(state.hypothetical, "Failed to start the hypothetical.");
 
       expect(state.hypothetical.ongoing).toBe<unknown>(
         testState.replay.states[testState.replay.segment],
@@ -81,7 +81,7 @@ describe("replayReducer", () => {
         false,
         metadata,
       );
-      assertNotNull(state.hypothetical, "Failed to start the hypothetical.");
+      assertDefined(state.hypothetical, "Failed to start the hypothetical.");
       expect(state.hypothetical.startingPlayerIndex).toBe(0);
       expect(state.hypothetical.states[0]).toBe(startingState);
       expect(state.hypothetical.states).toHaveLength(3);
@@ -94,7 +94,7 @@ describe("replayReducer", () => {
           .map((clue) => clue.negativeList),
       ).toEqual([[], []]);
       expect(state.hypothetical.morphedIdentities[0]).toEqual({
-        suitIndex: null,
+        suitIndex: undefined,
         rank: 3,
       });
     });
@@ -115,8 +115,8 @@ describe("replayReducer", () => {
         metadata,
       );
       expect(state.hypothetical?.morphedIdentities[30]).toEqual({
-        suitIndex: null,
-        rank: null,
+        suitIndex: undefined,
+        rank: undefined,
       });
       expect(state.hypothetical?.morphedIdentities[0]).toBeUndefined();
       state = replayReducer(
@@ -166,8 +166,8 @@ describe("replayReducer", () => {
         order + 1,
       ]);
       expect(state.hypothetical?.morphedIdentities[order]).toEqual({
-        suitIndex: null,
-        rank: null,
+        suitIndex: undefined,
+        rank: undefined,
       });
       expect(state.hypothetical?.ongoing.cardsRemainingInTheDeck).toBe(
         startingState.cardsRemainingInTheDeck - 2,
@@ -211,8 +211,8 @@ describe("replayReducer", () => {
       expect(state.hypothetical?.showDrawnCards).toBe(false);
       for (const drawnOrder of [order, order + 1, order + 2]) {
         expect(state.hypothetical?.morphedIdentities[drawnOrder]).toEqual({
-          suitIndex: null,
-          rank: null,
+          suitIndex: undefined,
+          rank: undefined,
         });
       }
       expect(state.hypothetical?.morphedIdentities[0]).toEqual({
@@ -301,7 +301,7 @@ describe("replayReducer", () => {
           datetimeStarted: "2026-01-01T00:00:00.000Z",
           spoilerFree: false,
           restartDeclined: [],
-          hypothetical: null,
+          hypothetical: undefined,
         },
       };
 
@@ -312,7 +312,7 @@ describe("replayReducer", () => {
         true,
         metadata,
       );
-      expect(state.hypothetical).toBeNull();
+      expect(state.hypothetical).toBeUndefined();
       expect(state.segment).toBe(ourSegment);
       const hidden = state.shared?.hypothetical;
       expect(hidden?.states[0]).toBe(state.states[sharedSegment]);
@@ -327,8 +327,8 @@ describe("replayReducer", () => {
       expect(state.hypothetical).toBe(hidden);
 
       state = replayReducer(state, hypoEnd(), true, metadata);
-      expect(state.hypothetical).toBeNull();
-      expect(state.shared?.hypothetical).toBeNull();
+      expect(state.hypothetical).toBeUndefined();
+      expect(state.shared?.hypothetical).toBeUndefined();
     });
 
     test("can end hypothetical after giving a clue", () => {
@@ -337,7 +337,7 @@ describe("replayReducer", () => {
       const hypoClue = hypoAction(rankClue(3, 0, [], 1));
       state = replayReducer(state, hypoClue, false, metadata);
       state = replayReducer(state, hypoEnd(), false, metadata);
-      expect(state.hypothetical).toBeNull();
+      expect(state.hypothetical).toBeUndefined();
     });
   });
 });

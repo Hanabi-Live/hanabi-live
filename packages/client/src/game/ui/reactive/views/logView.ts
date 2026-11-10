@@ -8,7 +8,7 @@ export function onLogChanged(log: readonly LogEntry[]): void {
 
 function updateActionLog(log: readonly LogEntry[]) {
   const { actionLog } = globals.elements;
-  if (actionLog === null) {
+  if (actionLog === undefined) {
     return;
   }
 
@@ -19,7 +19,7 @@ function updateActionLog(log: readonly LogEntry[]) {
 
 function updateFullActionLog(log: readonly LogEntry[]) {
   const { fullActionLog } = globals.elements;
-  if (fullActionLog === null) {
+  if (fullActionLog === undefined) {
     return;
   }
 

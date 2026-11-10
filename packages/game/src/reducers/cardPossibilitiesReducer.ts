@@ -1,7 +1,5 @@
 // Calculates the state of a card after a clue.
 
-/* eslint-disable unicorn/no-null */
-
 import { newArray } from "complete-common";
 import { EVEN_CARD_RANKS, ODD_CARD_RANKS } from "../constants";
 import { getVariant } from "../gameData";
@@ -98,7 +96,7 @@ function updateIdentity(
   const suitDetermined = possibleSuitsSet.size === 1;
 
   if (suitDetermined) {
-    suitIndex = possibleSuits[0] ?? null;
+    suitIndex = possibleSuits[0];
   }
 
   const possibleRanks = possibleCardsFromClues.map(
@@ -108,7 +106,7 @@ function updateIdentity(
   const rankDetermined = possibleRanksSet.size === 1;
 
   if (rankDetermined) {
-    rank = possibleRanks[0] ?? null;
+    rank = possibleRanks[0];
   }
 
   return {

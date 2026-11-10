@@ -33,7 +33,7 @@ const DISCARD_REGEX = /^(?:\[Hypo\] )?(.*) discards .* slot #(\d).*$/u;
 const CLUE_REGEX = /^.+ tells (.*) about \w+ ([A-Za-z]+|\d)s?$/u;
 
 export function createJSONFromReplay(room: string): void {
-  if (globals.store === null || !globals.state.finished) {
+  if (globals.store === undefined || !globals.state.finished) {
     sendSelfPMFromServer(
       "You can only use the <code>/copy</code> command during the review of a game.",
       room,
@@ -76,14 +76,17 @@ export function createJSONFromReplay(room: string): void {
     const morph = globals.state.replay.hypothetical?.morphedIdentities[i];
     if (
       morph !== undefined
-      && morph.suitIndex !== null
-      && morph.rank !== null
+      && morph.suitIndex !== undefined
+      && morph.rank !== undefined
     ) {
       game.deck.push({
         suitIndex: morph.suitIndex,
         rank: morph.rank,
       });
-    } else if (cardIdentity.suitIndex === null || cardIdentity.rank === null) {
+    } else if (
+      cardIdentity.suitIndex === undefined
+      || cardIdentity.rank === undefined
+    ) {
       sendSelfPMFromServer(
         "The deck is still loading. Please try again after it loads.",
         room,
@@ -117,7 +120,7 @@ export function createJSONFromReplay(room: string): void {
   game.actions = getGameActionsFromState(replay).map(toRecordedAction);
 
   // Add the hypothetical from the log, after the current segment.
-  if (replay.hypothetical !== null) {
+  if (replay.hypothetical !== undefined) {
     const { states } = replay.hypothetical;
     const { log } = states.at(-1)!;
     if (replay.segment < log.length) {
@@ -391,7 +394,7 @@ function getCardOrderFromHypoState(
   playerIndex: PlayerIndex,
   slotIndex: number,
 ): CardOrder | undefined {
-  if (globals.state.replay.hypothetical === null) {
+  if (globals.state.replay.hypothetical === undefined) {
     return undefined;
   }
 

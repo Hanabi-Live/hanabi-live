@@ -196,7 +196,7 @@ export function startMisplayAnimation(
   if (strikeX !== undefined) {
     // The strike appears when the card explodes on it.
     strikeX.tween?.destroy();
-    strikeX.tween = null;
+    strikeX.tween = undefined;
     strikeX.opacity(0);
   }
   function revealStrike() {

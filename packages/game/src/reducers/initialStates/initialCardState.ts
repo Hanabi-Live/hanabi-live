@@ -1,5 +1,3 @@
-/* eslint-disable unicorn/no-null */
-
 import { newArray } from "complete-common";
 import type { CardState } from "../../interfaces/CardState";
 import type { Variant } from "../../interfaces/Variant";
@@ -29,8 +27,8 @@ export function getInitialCardState(
   return {
     order,
     location: order < totalCardsInDeck ? "deck" : "playStack",
-    suitIndex: null,
-    rank: null,
+    suitIndex: undefined,
+    rank: undefined,
     possibleCardsFromClues: possibleCards,
     possibleCards,
     possibleCardsForEmpathy: possibleCards,
@@ -41,13 +39,13 @@ export function getInitialCardState(
     rankDetermined: false,
     hasClueApplied: false,
     numPositiveClues: 0,
-    segmentDrawn: null,
-    segmentFirstClued: null,
-    segmentPlayed: null,
-    segmentDiscarded: null,
+    segmentDrawn: undefined,
+    segmentFirstClued: undefined,
+    segmentPlayed: undefined,
+    segmentDiscarded: undefined,
     isMisplayed: false,
     dealtToStartingHand: false,
-    firstCluedWhileOnChop: null,
+    firstCluedWhileOnChop: undefined,
     inDoubleDiscard: false,
     isKnownTrashFromEmpathy: false,
   };

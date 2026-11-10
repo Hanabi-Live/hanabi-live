@@ -54,9 +54,9 @@ export type ActionDiscard = Event<"discard">;
 export type ActionDraw = Event<"draw">;
 
 /**
- * `playerIndex` is -1 when no player caused the end of the game. In a normal game, `votes` holds
- * the players who voted to terminate the game. In a replay, it is null because the server does not
- * store who voted to kill the game in the database.
+ * `playerIndex` is undefined when no player caused the end of the game. `votes` holds the players
+ * who voted to terminate the game. It is undefined when no vote ended the game, and in a replay,
+ * because the server does not store who voted to kill the game in the database.
  */
 export type ActionGameOver = Event<"gameOver">;
 

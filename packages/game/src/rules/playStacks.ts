@@ -1,5 +1,3 @@
-/* eslint-disable unicorn/no-null */
-
 import { StackDirection } from "../enums/StackDirection";
 import { START_CARD_RANK } from "../generated/protocol";
 import type { CardState } from "../interfaces/CardState";
@@ -31,12 +29,12 @@ export function getNextPlayableRanks(
 }
 
 /**
- * Like `getNextPlayableRanks`, but takes the rank of the card on top of the play stack (or null if
- * no card has been played on it) instead of reading it from the deck.
+ * Like `getNextPlayableRanks`, but takes the rank of the card on top of the play stack (or
+ * undefined if no card has been played on it) instead of reading it from the deck.
  */
 export function getNextPlayableRanksAfter(
   suitIndex: SuitIndex,
-  currentlyPlayedRank: Rank | null,
+  currentlyPlayedRank: Rank | undefined,
   playStackDirection: StackDirection,
   playStackStarts: GameState["playStackStarts"],
   variant: Variant,
@@ -52,13 +50,15 @@ export function getNextPlayableRanksAfter(
       if (!variant.sudoku) {
         // In non-Sudoku variants, the next playable card is 1 if the stack is not stared yet or the
         // N+1 rank.
-        return currentlyPlayedRank === null ? [1] : [currentlyPlayedRank + 1];
+        return currentlyPlayedRank === undefined
+          ? [1]
+          : [currentlyPlayedRank + 1];
       }
 
       // In Sudoku variants, determining the next playable ranks is more complicated. If the stack
       // is already started, then we go up, wrapping around from 5 to 1 (unless the stack was
       // started at 1, in which case 5 will be the last card of this suit).
-      if (currentlyPlayedRank !== null) {
+      if (currentlyPlayedRank !== undefined) {
         // We mod by the stack size and then add to obtain values [1, ..., stackSize].
         return [(currentlyPlayedRank % variant.stackSize) + 1];
       }
@@ -67,7 +67,7 @@ export function getNextPlayableRanksAfter(
       // play stack, even when no cards have been played when this is the last suit. In that case,
       // only the (known) stack start can be played.
       const playStackStart = playStackStarts[suitIndex];
-      if (playStackStart !== undefined && playStackStart !== null) {
+      if (playStackStart !== undefined) {
         return [playStackStart];
       }
 
@@ -79,7 +79,9 @@ export function getNextPlayableRanksAfter(
     case StackDirection.Down: {
       // In non-Sudoku variants, the next playable card is 5 if the stack is not stared yet or the
       // N-1 rank.
-      return currentlyPlayedRank === null ? [5] : [currentlyPlayedRank - 1];
+      return currentlyPlayedRank === undefined
+        ? [5]
+        : [currentlyPlayedRank - 1];
     }
 
     case StackDirection.Finished: {
@@ -92,15 +94,15 @@ export function getNextPlayableRanksAfter(
 export function getLastPlayedRank(
   playStack: readonly number[],
   deck: readonly CardState[],
-): Rank | null {
+): Rank | undefined {
   const orderOfTopCard = playStack.at(-1);
   if (orderOfTopCard === undefined) {
-    return null;
+    return undefined;
   }
 
   const card = deck[orderOfTopCard];
   if (card === undefined) {
-    return null;
+    return undefined;
   }
 
   return card.rank;
@@ -130,7 +132,7 @@ export function getStackDirection(
   }
 
   const top = getLastPlayedRank(playStack, deck);
-  if (top === null || top === START_CARD_RANK) {
+  if (top === undefined || top === START_CARD_RANK) {
     return StackDirection.Undecided;
   }
 
@@ -161,15 +163,15 @@ export function getStackDirection(
 export function getStackStartRank(
   playStack: readonly number[],
   deck: readonly CardState[],
-): Rank | null {
+): Rank | undefined {
   const bottomCardOrder = playStack[0];
   if (bottomCardOrder === undefined) {
-    return null;
+    return undefined;
   }
 
   const bottomCard = deck[bottomCardOrder];
   if (bottomCard === undefined) {
-    return null;
+    return undefined;
   }
 
   return bottomCard.rank;

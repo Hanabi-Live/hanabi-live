@@ -38,12 +38,12 @@ describe("takeLegacyDarkMode", () => {
   test("returns the stored choice and removes it", () => {
     localStorageStub.setItem(LEGACY_STORAGE_KEY, "true");
     expect(takeLegacyDarkMode()).toBe(true);
-    expect(localStorageStub.getItem(LEGACY_STORAGE_KEY)).toBeNull();
+    expect(localStorageStub.getItem(LEGACY_STORAGE_KEY)).toBeUndefined();
 
     localStorageStub.setItem(LEGACY_STORAGE_KEY, "false");
     matchMediaMock.matches = true;
     expect(takeLegacyDarkMode()).toBe(false);
-    expect(localStorageStub.getItem(LEGACY_STORAGE_KEY)).toBeNull();
+    expect(localStorageStub.getItem(LEGACY_STORAGE_KEY)).toBeUndefined();
   });
 
   test('resolves "system" with the system preference', () => {

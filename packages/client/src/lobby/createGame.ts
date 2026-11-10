@@ -607,7 +607,7 @@ export function ready(): void {
   let replayGameID = "";
   let replayTurn = "";
 
-  if (globals.game === null || globals.currentScreen === Screen.Lobby) {
+  if (globals.game === undefined || globals.currentScreen === Screen.Lobby) {
     // Create New Game
     gameName = `${globals.username}${DEFAULT_TABLE_NAME_SUFFIX}`;
     dialogOptions = globals.settings;

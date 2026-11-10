@@ -3,7 +3,7 @@ import type { StrikeIndex } from "../constants";
 
 export class StrikeX extends Konva.Image {
   readonly num: StrikeIndex;
-  tween: Konva.Tween | null = null;
+  tween: Konva.Tween | undefined = undefined;
 
   tooltipName = "";
   tooltipContent = "";

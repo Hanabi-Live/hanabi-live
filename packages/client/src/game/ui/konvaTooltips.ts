@@ -84,10 +84,10 @@ export function show(element: NodeWithTooltip): void {
 
 export function setActiveHover(element: NodeWithTooltip): void {
   // Most elements use "mouseout", but cards use "mouseleave" instead, so send both events.
-  if (globals.activeHover !== null) {
+  if (globals.activeHover !== undefined) {
     globals.activeHover.dispatchEvent(new MouseEvent("mouseout"));
   }
-  if (globals.activeHover !== null) {
+  if (globals.activeHover !== undefined) {
     globals.activeHover.dispatchEvent(new MouseEvent("mouseleave"));
   }
 
@@ -96,6 +96,6 @@ export function setActiveHover(element: NodeWithTooltip): void {
 
 export function resetActiveHover(element: NodeWithTooltip): void {
   if (globals.activeHover === element) {
-    globals.activeHover = null;
+    globals.activeHover = undefined;
   }
 }

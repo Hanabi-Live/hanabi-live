@@ -22,7 +22,7 @@ type Game = ServerCommandData["pregame"];
 
 export class Globals {
   /** The WebSocket connection (set in "websocketInit.ts"). */
-  conn: Connection | null = null;
+  conn: Connection | undefined = undefined;
 
   // ----------------------------------------
   // Values from the server "welcome" message
@@ -76,11 +76,11 @@ export class Globals {
   }
 
   /** From the "welcome" and "lobbyStatus" messages. */
-  get totalGames(): number | null {
+  get totalGames(): number | undefined {
     return store.getState().history.totalGames;
   }
 
-  set totalGames(totalGames: number | null) {
+  set totalGames(totalGames: number | undefined) {
     store.dispatch(totalGamesChanged(totalGames));
   }
 
@@ -114,10 +114,11 @@ export class Globals {
    * If the start game button is disabled due to a player leaving or joining, stores the ID of a
    * timeout designed to re-enable it.
    */
-  enableStartGameButtonTimeout: ReturnType<typeof setTimeout> | null = null;
+  enableStartGameButtonTimeout: ReturnType<typeof setTimeout> | undefined =
+    undefined;
 
   /** Equal to the data from the "game" command. */
-  game: Game | null = null;
+  game: Game | undefined = undefined;
 
   /** Equal to the table we are joined to or `NO_TABLE_ID` if no table. */
   tableID = NO_TABLE_ID;
@@ -128,8 +129,8 @@ export class Globals {
   // UI variables
   // ------------
 
-  imageLoader: Loader | null = null;
-  ui: HanabiUI | null = null;
+  imageLoader: Loader | undefined = undefined;
+  ui: HanabiUI | undefined = undefined;
 
   /** Used to keep track of how many in-game chat messages are currently unread. */
   chatUnread = 0;
@@ -137,7 +138,7 @@ export class Globals {
   zenModeEnabled = false;
 
   /** Used to keep track of the active element before model warning box. */
-  lastActiveElement: HTMLElement | null = null;
+  lastActiveElement: HTMLElement | undefined = undefined;
 }
 
 export const globals = new Globals();

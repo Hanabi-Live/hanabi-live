@@ -43,7 +43,7 @@ function setup(amLeader: boolean) {
         datetimeStarted: "2026-01-01T00:00:00.000Z",
         spoilerFree: false,
         restartDeclined: [],
-        hypothetical: null,
+        hypothetical: undefined,
       },
     },
   });
@@ -64,8 +64,8 @@ describe("replay navigation during a shared hypothetical", () => {
 
     const state = store.getState().replay;
     expect(state.shared?.useSharedSegments).toBe(false);
-    expect(state.hypothetical).toBeNull();
-    expect(state.shared?.hypothetical).not.toBeNull();
+    expect(state.hypothetical).toBeUndefined();
+    expect(state.shared?.hypothetical).not.toBeUndefined();
     expect(state.segment).toBe(0);
   });
 
@@ -76,7 +76,7 @@ describe("replay navigation during a shared hypothetical", () => {
 
     const state = store.getState().replay;
     expect(state.shared?.useSharedSegments).toBe(true);
-    expect(state.hypothetical).not.toBeNull();
+    expect(state.hypothetical).not.toBeUndefined();
     expect(state.segment).toBe(1);
   });
 });

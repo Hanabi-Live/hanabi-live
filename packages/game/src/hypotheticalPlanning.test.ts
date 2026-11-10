@@ -1,4 +1,3 @@
-/* eslint-disable unicorn/no-null */
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 
 import { describe, expect, test } from "bun:test";
@@ -73,21 +72,21 @@ function makeContext(
     variant,
     cardIdentities: [
       { suitIndex: 0, rank: 1 },
-      { suitIndex: null, rank: null },
+      { suitIndex: undefined, rank: undefined },
     ],
     morphedIdentities: [],
     showDrawnCards: true,
     startingPlayerIndex: 0,
     notes: [emptyNote, emptyNote],
     playing: true,
-    cardViews: [view(card0, 1, 1), view(card1, null, null)],
+    cardViews: [view(card0, 1, 1), view(card1, undefined, undefined)],
   };
   return { ...context, ...overrides };
 }
 
 function view(
   state: CardState,
-  visibleSuitIndex: SuitIndex | null,
+  visibleSuitIndex: SuitIndex | undefined,
   visibleRank: CardState["rank"],
 ): HypotheticalCardView {
   return { state, isStackBase: false, visibleSuitIndex, visibleRank };
@@ -135,15 +134,15 @@ function makeBottomDeckContext(
     },
     cardIdentities: [...context.cardIdentities, { suitIndex: 0, rank: 1 }],
     notes: [...context.notes, emptyNote],
-    cardViews: [...context.cardViews, view(finalCard, null, null)],
+    cardViews: [...context.cardViews, view(finalCard, undefined, undefined)],
   };
 }
 
 function applyPlan(
-  actions: readonly GameAction[] | null,
+  actions: readonly GameAction[] | undefined,
   context: PlanHypotheticalActionContext,
 ): GameState {
-  expect(actions).not.toBeNull();
+  expect(actions).not.toBeUndefined();
   let state = context.gameState;
   for (const action of actions!) {
     state = gameReducer(
@@ -170,7 +169,7 @@ describe("hypothetical planning", () => {
       };
       expect(
         planHypotheticalAction({ type, order: 1 as CardOrder }, context),
-      ).toBeNull();
+      ).toBeUndefined();
     },
   );
 
@@ -292,7 +291,7 @@ describe("hypothetical planning", () => {
       ...base,
       cardIdentities: [
         ...base.cardIdentities.slice(0, 2),
-        { suitIndex: null, rank: null },
+        { suitIndex: undefined, rank: undefined },
       ],
       morphedIdentities: [
         undefined,
@@ -344,7 +343,11 @@ describe("hypothetical planning", () => {
         notes: [...base.notes, emptyNote],
         cardViews: [
           ...base.cardViews,
-          view(getInitialCardState(3 as CardOrder, variant, 2), null, null),
+          view(
+            getInitialCardState(3 as CardOrder, variant, 2),
+            undefined,
+            undefined,
+          ),
         ],
         gameState: { ...base.gameState, cardsRemainingInTheDeck: 2 },
       };
@@ -396,7 +399,7 @@ describe("hypothetical planning", () => {
           () => StackDirection.Up,
         ) as unknown as GameState["playStackDirections"],
         playStackStarts: invertedVariant!.suits.map(
-          () => null,
+          () => undefined,
         ) as unknown as GameState["playStackStarts"],
       },
     });
@@ -464,7 +467,7 @@ describe("hypothetical planning", () => {
         },
         cardIdentities: [
           { suitIndex: 0, rank: 1 },
-          { suitIndex: null, rank: null },
+          { suitIndex: undefined, rank: undefined },
         ],
       }),
     );
@@ -481,11 +484,11 @@ describe("hypothetical planning", () => {
       planHypotheticalAction(
         { type: "play", order: 0 as CardOrder },
         makeContext({
-          cardIdentities: [{ suitIndex: null, rank: null }],
+          cardIdentities: [{ suitIndex: undefined, rank: undefined }],
           notes: [emptyNote],
         }),
       ),
-    ).toBeNull();
+    ).toBeUndefined();
   });
 
   test("uses the card state for stack base identities", () => {
@@ -606,7 +609,7 @@ describe("hypothetical planning", () => {
             [0, 2],
           ],
         },
-        identity: { suitIndex: null, rank: null },
+        identity: { suitIndex: undefined, rank: undefined },
       }),
     );
     const clue = { type: ClueType.Rank, value: 1 as RankClueNumber };
@@ -640,8 +643,8 @@ describe("hypothetical planning", () => {
           possibleCardsFromClues: [[0, 1]],
           possibleCards: [],
         },
-        morphedIdentity: { suitIndex: 0 as SuitIndex, rank: null },
-        visibleRank: null,
+        morphedIdentity: { suitIndex: 0 as SuitIndex, rank: undefined },
+        visibleRank: undefined,
       }),
     );
     // The client used `every` for both visibility and clue matching, so an empty list is touched.
@@ -652,7 +655,7 @@ describe("hypothetical planning", () => {
 
   test("does not touch a blank morph", () => {
     const blank = getHypotheticalCard(
-      cardInput({ morphedIdentity: { suitIndex: null, rank: null } }),
+      cardInput({ morphedIdentity: { suitIndex: undefined, rank: undefined } }),
     );
     expect(
       getHypotheticalTouchedCards(
@@ -678,10 +681,10 @@ describe("hypothetical planning", () => {
     const partial = getHypotheticalCard(
       cardInput({
         state,
-        morphedIdentity: { suitIndex: 0 as SuitIndex, rank: null },
+        morphedIdentity: { suitIndex: 0 as SuitIndex, rank: undefined },
       }),
     );
-    expect(partial.identity).toEqual({ suitIndex: 0, rank: null });
+    expect(partial.identity).toEqual({ suitIndex: 0, rank: undefined });
     expect(partial.possibilities).toEqual([
       [0, 1],
       [0, 2],
@@ -690,7 +693,7 @@ describe("hypothetical planning", () => {
     const singleton = getHypotheticalCard(
       cardInput({
         state,
-        identity: { suitIndex: null, rank: null },
+        identity: { suitIndex: undefined, rank: undefined },
         note: {
           ...emptyNote,
           possibilities: [
@@ -738,7 +741,7 @@ describe("hypothetical planning", () => {
     });
   });
 
-  test("returns no plan when the current player is null", () => {
+  test("returns no plan when the current player is undefined", () => {
     const context = makeContext();
     expect(
       planHypotheticalAction(
@@ -747,11 +750,11 @@ describe("hypothetical planning", () => {
           ...context,
           gameState: {
             ...context.gameState,
-            turn: { ...context.gameState.turn, currentPlayerIndex: null },
+            turn: { ...context.gameState.turn, currentPlayerIndex: undefined },
           },
         },
       ),
-    ).toBeNull();
+    ).toBeUndefined();
   });
 });
 
@@ -783,7 +786,7 @@ function playRedFour(
   );
 }
 
-function isStrike(actions: readonly GameAction[] | null) {
+function isStrike(actions: readonly GameAction[] | undefined) {
   return (
     actions?.some((action) => action.type === "discard" && action.failed)
     === true
@@ -832,7 +835,7 @@ describe("hypothetical plays on a morphed stack base", () => {
 function playWithNote(
   morphedIdentity: CardIdentity | undefined,
   playing: boolean,
-): readonly GameAction[] | null {
+): readonly GameAction[] | undefined {
   // Our unknown card 0 has a note saying it is a red 1.
   const base = makeContext();
   return planHypotheticalAction(
@@ -841,11 +844,11 @@ function playWithNote(
       ...base,
       playing,
       cardIdentities: [
-        { suitIndex: null, rank: null },
+        { suitIndex: undefined, rank: undefined },
         ...base.cardIdentities.slice(1),
       ],
       cardViews: [
-        view(base.gameState.deck[0]!, null, null),
+        view(base.gameState.deck[0]!, undefined, undefined),
         ...base.cardViews.slice(1),
       ],
       notes: [
@@ -858,7 +861,7 @@ function playWithNote(
 }
 
 describe("hypothetical plays of hidden cards with a note", () => {
-  const hidden = { suitIndex: null, rank: null };
+  const hidden = { suitIndex: undefined, rank: undefined };
 
   test("uses the note for a card hidden by a blank morph while playing", () => {
     expect(playWithNote(hidden, true)?.[0]).toMatchObject({
@@ -870,7 +873,7 @@ describe("hypothetical plays of hidden cards with a note", () => {
   });
 
   test("ignores notes outside of an ongoing game", () => {
-    expect(playWithNote(hidden, false)).toBeNull();
+    expect(playWithNote(hidden, false)).toBeUndefined();
   });
 
   test("prefers a morph to a real identity over the note", () => {

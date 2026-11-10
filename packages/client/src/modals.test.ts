@@ -63,7 +63,7 @@ afterAll(() => {
 });
 
 vi.mock("./Globals", () => ({
-  globals: { errorOccurred: false, lastActiveElement: null },
+  globals: { errorOccurred: false, lastActiveElement: undefined },
 }));
 vi.mock("./game/reducers/noteIdentity", () => ({}));
 vi.mock("./game/ui/HanabiCardClick", () => ({
@@ -87,7 +87,7 @@ test("the idle warning counts down and only lets players keep the game going", a
   const idleModal = document.querySelector("#idle-modal");
   const keep = document.querySelector<HTMLElement>("#idle-modal-keep");
 
-  modals.showIdleWarning(299_000, null);
+  modals.showIdleWarning(299_000, undefined);
   await waitForModal();
   expect(idleModal?.parentElement?.id).toBe("page-cover");
   expect(

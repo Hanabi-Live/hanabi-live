@@ -40,7 +40,7 @@ describe("speedrun clue clicks", () => {
       variant: getVariant("No Variant"),
       state: { ongoingGame: { clueTokens: 0 } },
       elements: {
-        clueTypeButtonGroup: null,
+        clueTypeButtonGroup: undefined,
         cluesNumberLabelPulse: { play: pulse },
       },
     });

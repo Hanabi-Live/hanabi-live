@@ -90,7 +90,7 @@ export function showMoreOtherScores(): void {
   const shown = store.getState().history.otherScores;
   if (
     globals.currentScreen === Screen.HistoryOtherScores
-    && shown !== null
+    && shown !== undefined
     && !shown.loading
   ) {
     store.dispatch(moreOtherScoresRequested());

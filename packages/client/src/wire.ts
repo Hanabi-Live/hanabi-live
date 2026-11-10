@@ -25,11 +25,11 @@ export function toPlayerTuple<T>(
   return [...values] as unknown as Tuple<T, NumPlayers>;
 }
 
-/** The server marks an unknown suit or rank with `NO_VALUE`; the game state uses null. */
+/** The server marks an unknown suit or rank with `NO_VALUE`; the game state uses undefined. */
 export function toCardIdentity(identity: WireCardIdentity): CardIdentity {
   return {
-    suitIndex: identity.suitIndex === NO_VALUE ? null : identity.suitIndex,
-    rank: identity.rank === NO_VALUE ? null : identity.rank,
+    suitIndex: identity.suitIndex === NO_VALUE ? undefined : identity.suitIndex,
+    rank: identity.rank === NO_VALUE ? undefined : identity.rank,
   };
 }
 

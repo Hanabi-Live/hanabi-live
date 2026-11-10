@@ -105,7 +105,7 @@ export function update(card: HanabiCard, text: string): void {
     const tooltip = `#tooltip-${card.tooltipName}`;
     tooltips.close(tooltip);
   } else {
-    globals.editingNote = null;
+    globals.editingNote = undefined;
     show(card);
   }
 
@@ -269,7 +269,7 @@ export function openEditTooltip(
 
     // Check for emoji substitution.
     const newText = chat.substituteEmoji(text);
-    if (newText !== null) {
+    if (newText !== undefined) {
       noteTextbox.val(newText);
       event.preventDefault();
     }

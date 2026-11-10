@@ -53,6 +53,6 @@ describe("hypothetical clue matching", () => {
     checkLegal();
 
     expect(setEnabled).toHaveBeenCalledWith(true);
-    expect(arrows.set).toHaveBeenCalledWith(0, card, null, clue, true);
+    expect(arrows.set).toHaveBeenCalledWith(0, card, undefined, clue, true);
   });
 });

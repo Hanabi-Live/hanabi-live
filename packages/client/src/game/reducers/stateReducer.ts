@@ -7,7 +7,7 @@ import type {
   GameState,
 } from "@hanabi-live/game";
 import { gameReducer, getInitialGameState, NO_VALUE } from "@hanabi-live/game";
-import { assertDefined, assertNotNull } from "complete-common";
+import { assertDefined } from "complete-common";
 import type { Draft } from "immer";
 import { castDraft, original, produce } from "immer";
 import type { State } from "../types/State";
@@ -97,9 +97,9 @@ function stateReducerFunction(state: Draft<State>, action: Action) {
       // that the game ended.
       const inInGameReplay = state.replay.active;
 
-      assertNotNull(
+      assertDefined(
         state.ongoingGame.turn.segment,
-        "The segment for the ongoing game was null when it finished.",
+        "The segment for the ongoing game was undefined when it finished.",
       );
 
       if (state.ongoingGame.turn.segment < 1) {
@@ -124,7 +124,7 @@ function stateReducerFunction(state: Draft<State>, action: Action) {
         datetimeStarted: action.datetimeFinished,
         spoilerFree: false,
         restartDeclined: [],
-        hypothetical: null,
+        hypothetical: undefined,
       };
 
       break;
@@ -132,7 +132,7 @@ function stateReducerFunction(state: Draft<State>, action: Action) {
 
     case "init": {
       state.datetimeStarted = action.datetimeStarted;
-      state.datetimeFinished = action.datetimeFinished ?? null;
+      state.datetimeFinished = action.datetimeFinished;
 
       if (action.spectating) {
         state.playing = false;
@@ -162,7 +162,7 @@ function stateReducerFunction(state: Draft<State>, action: Action) {
               action.datetimeSharedReplayStarted ?? new Date().toISOString(),
             spoilerFree: action.spoilerFree,
             restartDeclined: action.restartDeclined ?? [],
-            hypothetical: null,
+            hypothetical: undefined,
           };
           state.notes.efficiencyModifier =
             action.sharedReplayEfficiencyModifier;
@@ -207,10 +207,10 @@ function stateReducerFunction(state: Draft<State>, action: Action) {
     }
 
     case "premove": {
-      if (action.premove === null) {
+      if (action.premove === undefined) {
         // Allow the clearing of a premove anytime. (It might be our turn and we are clearing the
         // premove prior to sending our action to the server.)
-        state.premove = null;
+        state.premove = undefined;
       } else if (
         // Only allow premoves in ongoing games.
         !state.finished
@@ -282,7 +282,7 @@ function stateReducerFunction(state: Draft<State>, action: Action) {
             state.playing,
             state.shadowing,
             state.finished,
-            state.replay.hypothetical !== null,
+            state.replay.hypothetical !== undefined,
             state.metadata,
             state.notes.ourNotes,
           ),
@@ -316,7 +316,7 @@ function stateReducerFunction(state: Draft<State>, action: Action) {
           previousSegment,
           action,
         )
-        && state.ongoingGame.turn.segment !== null
+        && state.ongoingGame.turn.segment !== undefined
       ) {
         state.replay.states[state.ongoingGame.turn.segment] = state.ongoingGame;
       }
@@ -358,7 +358,7 @@ function reduceGameActions(
 
     if (
       shouldStoreSegment(nextState.turn.segment, s.turn.segment, a)
-      && nextState.turn.segment !== null
+      && nextState.turn.segment !== undefined
     ) {
       states[nextState.turn.segment] = nextState;
     }
@@ -400,14 +400,14 @@ function updateCardIdentities(state: Draft<State>) {
 function visualStateToShow(
   state: Draft<State>,
   action: Action,
-): Draft<GameState> | null {
-  if (state.visibleState === null) {
+): Draft<GameState> | undefined {
+  if (state.visibleState === undefined) {
     // The state is still initializing, so do not show anything.
-    return null;
+    return undefined;
   }
 
   if (state.replay.active) {
-    if (state.replay.hypothetical === null) {
+    if (state.replay.hypothetical === undefined) {
       // Show the current replay segment.
       const currentReplayState = state.replay.states[state.replay.segment];
       assertDefined(
@@ -425,7 +425,7 @@ function visualStateToShow(
   // After an ongoing game ends, do not automatically show the final segment with the player's times
   // by default in order to avoid drowning out the reason why the game ended.
   if (action.type === "playerTimes") {
-    return state.replay.states.at(-2) ?? null; // The penultimate segment
+    return state.replay.states.at(-2) ?? undefined; // The penultimate segment
   }
 
   // Show the final segment of the current game.
@@ -455,7 +455,7 @@ function rehydrateScrubbedActions(
       );
 
       const { suitIndex, rank } = cardIdentity;
-      if (suitIndex === null || rank === null) {
+      if (suitIndex === undefined || rank === undefined) {
         throw new Error(
           "Failed to find the suit index or rank of a card identity for an action while rehydrating the scrubbed actions.",
         );

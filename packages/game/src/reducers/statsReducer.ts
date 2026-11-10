@@ -2,7 +2,6 @@
 // action.
 
 /* eslint-disable no-param-reassign */
-/* eslint-disable unicorn/no-null */
 
 import { sumArray } from "complete-common";
 import type { Draft } from "immer";
@@ -42,7 +41,7 @@ function statsReducerFunction(
   playing: boolean,
   shadowing: boolean,
   metadata: GameMetadata,
-  ourNotes: readonly CardNote[] | null,
+  ourNotes: readonly CardNote[] | undefined,
 ) {
   const variant = getVariant(metadata.options.variantName);
 
@@ -123,8 +122,8 @@ function statsReducerFunction(
     gameState.cardsRemainingInTheDeck,
     statsState.maxScore,
     numEndGameTurns,
-    // `currentPlayerIndex` will be null if the game is over.
-    gameState.turn.currentPlayerIndex === null,
+    // `currentPlayerIndex` will be undefined if the game is over.
+    gameState.turn.currentPlayerIndex === undefined,
   );
   statsState.paceRisk = getPaceRisk(
     statsState.pace,
@@ -143,8 +142,8 @@ function statsReducerFunction(
     variant,
   );
   statsState.cardsGottenByNotes =
-    ourNotes === null
-      ? null
+    ourNotes === undefined
+      ? undefined
       : getCardsGottenByNotes(
           gameState.deck,
           gameState.playStacks,
@@ -191,7 +190,7 @@ function statsReducerFunction(
   // number of turns.
   statsState.finalRoundEffectivelyStarted =
     gameState.cardsRemainingInTheDeck <= 0
-    || statsState.cluesStillUsable === null
+    || statsState.cluesStillUsable === undefined
     || statsState.cluesStillUsable < 1;
 
   // Handle double discard calculation.
@@ -202,7 +201,7 @@ function statsReducerFunction(
       variant,
     );
   } else if (action.type === "play" || action.type === "clue") {
-    statsState.doubleDiscardCard = null;
+    statsState.doubleDiscardCard = undefined;
   }
 
   // Handle `numSubsequentBlindPlays`.

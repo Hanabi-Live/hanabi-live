@@ -1,4 +1,4 @@
-import { assertNotNull } from "complete-common";
+import { assertDefined } from "complete-common";
 import Konva from "konva";
 import {
   BUTTON_CORNER_RADIUS,
@@ -22,9 +22,9 @@ export class Button extends Konva.Group {
   assignedTextSize = false;
 
   background: Konva.Rect;
-  textElement: FitText | null = null;
-  imageElement: Konva.Image | null = null;
-  imageDisabledElement: Konva.Image | null = null;
+  textElement: FitText | undefined = undefined;
+  imageElement: Konva.Image | undefined = undefined;
+  imageDisabledElement: Konva.Image | undefined = undefined;
 
   tooltipName = "";
   tooltipContent = "";
@@ -56,8 +56,8 @@ export class Button extends Konva.Group {
     });
     this.add(this.background);
 
-    this.textElement = null;
-    this.imageElement = null;
+    this.textElement = undefined;
+    this.imageElement = undefined;
     if (config["text"] !== undefined) {
       this.textElement = new FitText({
         x: 0,
@@ -127,11 +127,14 @@ export class Button extends Konva.Group {
     }
     this.enabled = enabled;
 
-    if (this.textElement !== null) {
+    if (this.textElement !== undefined) {
       this.textElement.fill(enabled ? "white" : BUTTON_DISABLED_TEXT_COLOR);
     }
 
-    if (this.imageElement !== null && this.imageDisabledElement !== null) {
+    if (
+      this.imageElement !== undefined
+      && this.imageDisabledElement !== undefined
+    ) {
       this.imageElement.visible(enabled);
       this.imageDisabledElement.visible(!enabled);
     }
@@ -148,7 +151,7 @@ export class Button extends Konva.Group {
   }
 
   text(newText: string): void {
-    assertNotNull(
+    assertDefined(
       this.textElement,
       'The "text()" method was called on a non-text Button.',
     );
@@ -162,7 +165,7 @@ export class Button extends Konva.Group {
   }
 
   fill(newFill: string): void {
-    assertNotNull(
+    assertDefined(
       this.textElement,
       'The "fill()" method was called on a non-text Button.',
     );

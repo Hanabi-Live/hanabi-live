@@ -30,7 +30,7 @@ function playWithNote(
 ) {
   Object.assign(globals, {
     state: {
-      replay: { hypothetical: null },
+      replay: { hypothetical: undefined },
       notes: { ourNotes: [{ possibilities }] },
       ongoingGame: {
         turn: { currentPlayerIndex: 0 },
@@ -41,7 +41,7 @@ function playWithNote(
           { length: NUM_SUITS },
           () => StackDirection.Up,
         ),
-        playStackStarts: Array.from({ length: NUM_SUITS }, () => null),
+        playStackStarts: Array.from({ length: NUM_SUITS }, () => undefined),
       },
     },
   });

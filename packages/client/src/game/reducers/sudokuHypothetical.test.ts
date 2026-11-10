@@ -11,7 +11,7 @@ import {
   initializeHypotheticalState,
   planHypotheticalAction,
 } from "@hanabi-live/game";
-import { assertDefined, assertNotNull } from "complete-common";
+import { assertDefined } from "complete-common";
 import { describe, expect, test } from "vitest";
 import { loadGameJSON } from "../../../test/loadGameJSON";
 import sudokuGame from "../../../test_data/sudoku_hypothetical_1663033.json";
@@ -67,7 +67,7 @@ describe("Sudoku hypothetical from public game 1663033 (issue #3040)", () => {
       const gameState = replay.replay.states[segment];
       assertDefined(gameState, `Missing replay segment: ${segment}`);
       const playerIndex = gameState.turn.currentPlayerIndex;
-      assertNotNull(
+      assertDefined(
         playerIndex,
         `Missing current player at segment: ${segment}`,
       );
@@ -86,20 +86,20 @@ describe("Sudoku hypothetical from public game 1663033 (issue #3040)", () => {
             cardIdentities,
             morphedIdentities: [],
             showDrawnCards: true,
-            startingPlayerIndex: null,
+            startingPlayerIndex: undefined,
             notes,
             playing: false,
             cardViews: [
               {
                 state: card,
                 isStackBase: false,
-                visibleSuitIndex: null,
-                visibleRank: null,
+                visibleSuitIndex: undefined,
+                visibleRank: undefined,
               },
             ],
           };
           const actions = planHypotheticalAction({ type, order }, context);
-          assertNotNull(actions, "Failed to plan a hand action.");
+          assertDefined(actions, "Failed to plan a hand action.");
 
           let hypothetical = initializeHypotheticalState(
             gameState,
@@ -173,7 +173,7 @@ describe("Sudoku hypothetical from public game 1663033 (issue #3040)", () => {
         playing: false,
         cardViews,
       });
-      assertNotNull(planned, "Failed to plan a replay action.");
+      assertDefined(planned, "Failed to plan a replay action.");
       for (const action of planned) {
         hypothetical = hypotheticalStateReducer(
           hypothetical,
@@ -205,19 +205,19 @@ describe("Sudoku hypothetical from public game 1663033 (issue #3040)", () => {
         cardIdentities,
         morphedIdentities,
         showDrawnCards: true,
-        startingPlayerIndex: null,
+        startingPlayerIndex: undefined,
         notes,
         playing: false,
         cardViews: [
           {
             state: card,
             isStackBase: false,
-            visibleSuitIndex: null,
-            visibleRank: null,
+            visibleSuitIndex: undefined,
+            visibleRank: undefined,
           },
         ],
       },
     );
-    expect(invalidPlan).toBeNull();
+    expect(invalidPlan).toBeUndefined();
   });
 });

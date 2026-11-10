@@ -18,10 +18,10 @@ import * as turn from "./turn";
 
 /** Parent of a `HanabiCard`. It has a `CardLayout` or `PlayStack` parent. */
 export class LayoutChild extends Konva.Group {
-  tween: Konva.Tween | null = null;
+  tween: Konva.Tween | undefined = undefined;
   doMisplayAnimation = false;
-  misplayAnimation: MisplayAnimation | null = null;
-  stackCompleteAnimation: StackCompleteAnimation | null = null;
+  misplayAnimation: MisplayAnimation | undefined = undefined;
+  stackCompleteAnimation: StackCompleteAnimation | undefined = undefined;
   blank = false;
 
   private readonly _card: HanabiCard;
@@ -57,20 +57,20 @@ export class LayoutChild extends Konva.Group {
   }
 
   stopAnimations(): void {
-    if (this.misplayAnimation !== null) {
+    if (this.misplayAnimation !== undefined) {
       this.misplayAnimation.stop();
-      this.misplayAnimation = null;
+      this.misplayAnimation = undefined;
     }
-    if (this.stackCompleteAnimation !== null) {
+    if (this.stackCompleteAnimation !== undefined) {
       this.stackCompleteAnimation.stop();
-      this.stackCompleteAnimation = null;
+      this.stackCompleteAnimation = undefined;
     }
   }
 
   // Note that this method cannot be named "setDraggable()", since that would overlap with the Konva
   // function.
   checkSetDraggable(): void {
-    if (globals.state.visibleState === null) {
+    if (globals.state.visibleState === undefined) {
       return;
     }
 
@@ -100,16 +100,16 @@ export class LayoutChild extends Konva.Group {
     }
   }
 
-  shouldBeDraggable(draggableIndex: PlayerIndex | null): boolean {
+  shouldBeDraggable(draggableIndex: PlayerIndex | undefined): boolean {
     // Rarely, if the game is restarted when a tween is happening, we can get here without the card
     // being defined.
     // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-    if (this.card === null || this.card === undefined) {
+    if (this.card === undefined) {
       return false;
     }
 
     return (
-      draggableIndex !== null
+      draggableIndex !== undefined
       && this.card.state.location === draggableIndex
       // A morphed card with an unknown identity cannot be played or discarded.
       && !this.blank
@@ -130,7 +130,7 @@ export class LayoutChild extends Konva.Group {
     this.off("dragend");
 
     const ongoingGameState =
-      globals.state.replay.hypothetical === null
+      globals.state.replay.hypothetical === undefined
         ? globals.state.ongoingGame
         : globals.state.replay.hypothetical.ongoing;
 
@@ -141,10 +141,10 @@ export class LayoutChild extends Konva.Group {
     ) {
       sounds.play(SoundType.Error);
       globals.elements.cluesNumberLabelPulse?.play();
-      draggedTo = null;
+      draggedTo = undefined;
     }
     if (
-      globals.state.replay.hypothetical !== null
+      globals.state.replay.hypothetical !== undefined
       && (draggedTo === "playArea" || draggedTo === "discardArea")
     ) {
       const knownCard = this.checkHypoUnknown(draggedTo);
@@ -159,7 +159,7 @@ export class LayoutChild extends Konva.Group {
 
   checkHypoUnknown(draggedTo: "playArea" | "discardArea"): boolean {
     const { suitIndex, rank } = this.card.getMorphedIdentity();
-    if (suitIndex !== null && rank !== null) {
+    if (suitIndex !== undefined && rank !== undefined) {
       return true; // Known card
     }
 
@@ -172,13 +172,13 @@ export class LayoutChild extends Konva.Group {
     return false; // Unknown card
   }
 
-  continueDragAction(draggedTo: "playArea" | "discardArea" | null): void {
+  continueDragAction(draggedTo: "playArea" | "discardArea" | undefined): void {
     const returnToHand = () => {
       (this.parent as unknown as CardLayout | PlayStack).doLayout();
     };
 
     switch (draggedTo) {
-      case null: {
+      case undefined: {
         // The card was dragged to an invalid location; tween it back to the hand.
         returnToHand();
         break;

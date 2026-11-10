@@ -5,7 +5,7 @@ import { globals } from "../../UIGlobals";
 import * as ourHand from "../../ourHand";
 
 export function shouldShowCancelButton(state: State): boolean {
-  return !state.replay.active && state.premove !== null;
+  return !state.replay.active && state.premove !== undefined;
 }
 
 export function shouldShowCancelButtonChanged(shouldShow: boolean): void {
@@ -14,15 +14,15 @@ export function shouldShowCancelButtonChanged(shouldShow: boolean): void {
 }
 
 export function onChanged(
-  action: ClientAction | null,
-  previousAction: ClientAction | null | undefined,
+  action: ClientAction | undefined,
+  previousAction: ClientAction | undefined,
+  initializing: boolean,
 ): void {
-  if (previousAction === undefined) {
-    // The state is initializing to a null action.
+  if (initializing) {
     return;
   }
 
-  if (action === null && previousAction !== null) {
+  if (action === undefined && previousAction !== undefined) {
     // We just canceled a premove action.
 
     // If we dragged a card, we have to make the card tween back to the hand.
@@ -33,7 +33,7 @@ export function onChanged(
       ourHand.get().doLayout();
       globals.layers.card.draw();
     }
-  } else if (action !== null && previousAction === null) {
+  } else if (action !== undefined && previousAction === undefined) {
     // We just specified a premove action.
     let text = "Cancel Pre-";
     switch (action.type) {

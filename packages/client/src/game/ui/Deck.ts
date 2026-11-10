@@ -273,7 +273,7 @@ export class Deck extends Konva.Group {
     globals.elements.gameInfoImage?.visible(!showEmpathy && this.numLeft > 0);
     globals.layers.arrow.batchDraw();
 
-    if (showEmpathy && globals.state.visibleState !== null) {
+    if (showEmpathy && globals.state.visibleState !== undefined) {
       const possibilities = getDeckPossibilities(
         globals.state.visibleState.deck,
         globals.metadata,
@@ -382,7 +382,7 @@ function getTooltipContent(): string {
     );
   }
 
-  if (globals.state.finished && globals.state.datetimeFinished !== null) {
+  if (globals.state.finished && globals.state.datetimeFinished !== undefined) {
     const datetimeFinishedDate = new Date(globals.state.datetimeFinished);
     const formattedDatetimeFinished =
       dateTimeFormatter.format(datetimeFinishedDate);
@@ -394,10 +394,10 @@ function getTooltipContent(): string {
   }
 
   // "datetimeStarted" and "datetimeFinished" are initialized to strings during the "init" command,
-  // so they should never be null.
+  // so they should never be undefined.
   if (
-    globals.state.datetimeStarted !== null
-    && globals.state.datetimeFinished !== null
+    globals.state.datetimeStarted !== undefined
+    && globals.state.datetimeFinished !== undefined
   ) {
     const startedDate = new Date(globals.state.datetimeStarted);
     const finishedDate = globals.state.finished
@@ -413,7 +413,7 @@ function getTooltipContent(): string {
   }
 
   const sharedReplay = globals.state.replay.shared;
-  if (sharedReplay !== null) {
+  if (sharedReplay !== undefined) {
     const startedDate = new Date(sharedReplay.datetimeStarted);
     const elapsedMilliseconds = Date.now() - startedDate.getTime();
     const clockString = millisecondsToClockString(elapsedMilliseconds);

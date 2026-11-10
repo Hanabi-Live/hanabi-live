@@ -65,7 +65,7 @@ export function HistoryList(): React.JSX.Element {
       </table>
 
       <div className="align-center">
-        {(totalGames === null || games.length < totalGames) && (
+        {(totalGames === undefined || games.length < totalGames) && (
           <button
             className="button align-center"
             id="lobby-history-show-more"
@@ -158,8 +158,9 @@ function HistoryRow({
 export function OtherScoresList(): React.JSX.Element {
   const shown = useAppSelector((state) => state.history.otherScores);
   const username = useAppSelector((state) => state.session.username);
-  const variantName = shown?.variantName ?? null;
-  const maxScore = variantName === null ? 0 : getVariant(variantName).maxScore;
+  const variantName = shown?.variantName;
+  const maxScore =
+    variantName === undefined ? 0 : getVariant(variantName).maxScore;
 
   return (
     <div className="lobby-table-container">
@@ -188,8 +189,8 @@ export function OtherScoresList(): React.JSX.Element {
         </tbody>
       </table>
 
-      {shown !== null
-        && shown.total !== null
+      {shown !== undefined
+        && shown.total !== undefined
         && shown.games.length < shown.total && (
           <div className="align-center">
             <button

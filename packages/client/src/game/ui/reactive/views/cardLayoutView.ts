@@ -5,7 +5,7 @@ import {
   getTotalCardsInDeck,
   hasReversedSuits,
 } from "@hanabi-live/game";
-import { ReadonlyMap, assertDefined, assertNotNull } from "complete-common";
+import { ReadonlyMap, assertDefined } from "complete-common";
 import equal from "fast-deep-equal";
 import type Konva from "konva";
 import type { HanabiCard } from "../../HanabiCard";
@@ -152,10 +152,10 @@ export function onStackCompletionDataChanged(
     layout.stackCompleteAnimation = startStackCompleteAnimation(
       layout,
       playStack,
-      gainedClue ? previousData.clueTokens : null,
+      gainedClue ? previousData.clueTokens : undefined,
       data.score === globals.variant.maxScore,
       () => {
-        layout.stackCompleteAnimation = null;
+        layout.stackCompleteAnimation = undefined;
       },
     );
   }
@@ -189,7 +189,7 @@ export function onMaxScoreOrDiscardStacksChanged(
   const layoutChild =
     order === undefined ? undefined : globals.deck[order]?.layout;
   const delay =
-    layoutChild?.misplayAnimation === null || layoutChild === undefined
+    layoutChild?.misplayAnimation === undefined
       ? CARD_ANIMATION_LENGTH_SECONDS
       : MISPLAY_ANIMATION_SECONDS;
   startMaxScoreDropAnimation(layoutChild, previousData.maxScore, delay);
@@ -238,7 +238,7 @@ export function onPlayStacksChanged(
         playStack,
         globals.state.visibleState!.deck,
       );
-      if (stackStart !== null) {
+      if (stackStart !== undefined) {
         availableStackStartsFlags[stackStart - 1] = false;
       }
     }
@@ -267,7 +267,7 @@ export function onPlayStacksChanged(
           `Failed to get the first played card at index: ${firstPlayedCardOrder}`,
         );
         const firstPlayedRank = firstPlayedCard.getCardIdentity().rank;
-        assertNotNull(
+        assertDefined(
           firstPlayedRank,
           `Failed to get the rank of the first played card at index: ${firstPlayedCardOrder}`,
         );

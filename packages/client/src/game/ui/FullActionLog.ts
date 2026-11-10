@@ -1,6 +1,6 @@
 import type { NumPlayers } from "@hanabi-live/game";
 import type { Tuple } from "complete-common";
-import { assertNotNull, eRange, newArray } from "complete-common";
+import { assertDefined, eRange, newArray } from "complete-common";
 import Konva from "konva";
 import type { ContainerConfig } from "konva/lib/Container";
 import { getCanvasColors } from "../../theme";
@@ -32,11 +32,11 @@ const FULL_ACTION_LOG_TEXT = {
 
 export class FullActionLog extends Konva.Group {
   buffer: Array<{ turnNum: number; text: string }> = [];
-  logText: MultiFitText | null = null;
-  logNumbers: MultiFitText | null = null;
+  logText: MultiFitText | undefined = undefined;
+  logNumbers: MultiFitText | undefined = undefined;
   playerLogEmptyMessage: FitText;
-  private playerLogs: Tuple<MultiFitText | null, NumPlayers>;
-  private playerLogNumbers: Tuple<MultiFitText | null, NumPlayers>;
+  private playerLogs: Tuple<MultiFitText | undefined, NumPlayers>;
+  private playerLogNumbers: Tuple<MultiFitText | undefined, NumPlayers>;
   private needsRefresh = false;
   private readonly numbersOptions: ContainerConfig;
   private readonly textOptions: ContainerConfig;
@@ -111,14 +111,14 @@ export class FullActionLog extends Konva.Group {
     this.playerLogEmptyMessage.hide();
     this.add(this.playerLogEmptyMessage);
 
-    this.playerLogs = newArray(globals.options.numPlayers, null) as Tuple<
-      null,
+    this.playerLogs = newArray(globals.options.numPlayers, undefined) as Tuple<
+      undefined,
       NumPlayers
     >;
-    this.playerLogNumbers = newArray(globals.options.numPlayers, null) as Tuple<
-      null,
-      NumPlayers
-    >;
+    this.playerLogNumbers = newArray(
+      globals.options.numPlayers,
+      undefined,
+    ) as Tuple<undefined, NumPlayers>;
   }
 
   addMessage(turn: number, msg: string): void {
@@ -155,16 +155,16 @@ export class FullActionLog extends Konva.Group {
     this.logText!.hide();
     this.logNumbers!.hide();
 
-    if (this.playerLogs[playerIndex] === null) {
+    if (this.playerLogs[playerIndex] === undefined) {
       this.playerLogEmptyMessage.show();
     } else {
-      this.playerLogs[playerIndex]!.show();
+      this.playerLogs[playerIndex].show();
       this.playerLogNumbers[playerIndex]!.show();
     }
 
     this.show();
 
-    assertNotNull(
+    assertDefined(
       globals.elements.stageFade,
       'The "stageFade" element was not initialized.',
     );
@@ -172,7 +172,7 @@ export class FullActionLog extends Konva.Group {
     globals.layers.UI2.batchDraw();
 
     globals.elements.stageFade.on("click tap", () => {
-      assertNotNull(
+      assertDefined(
         globals.elements.stageFade,
         'The "stageFade" element was not initialized.',
       );
@@ -181,7 +181,7 @@ export class FullActionLog extends Konva.Group {
       this.playerLogs[playerIndex]?.hide();
       this.playerLogNumbers[playerIndex]?.hide();
 
-      if (this.logText === null || this.logNumbers === null) {
+      if (this.logText === undefined || this.logNumbers === undefined) {
         this.makeLog();
       }
 
@@ -214,7 +214,7 @@ export class FullActionLog extends Konva.Group {
   }
 
   private refreshText() {
-    if (this.logText === null || this.logNumbers === null) {
+    if (this.logText === undefined || this.logNumbers === undefined) {
       this.makeLog();
     }
 
@@ -229,7 +229,7 @@ export class FullActionLog extends Konva.Group {
         if (
           logEntry.text.startsWith(globals.metadata.playerNames[playerIndex]!)
         ) {
-          if (this.playerLogs[playerIndex] === null) {
+          if (this.playerLogs[playerIndex] === undefined) {
             this.makePlayerLog(playerIndex);
           }
           appendLine(

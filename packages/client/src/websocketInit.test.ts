@@ -8,7 +8,7 @@ let clock: Clock;
 const originalFetch = globalThis.fetch;
 
 vi.mock("./Globals", () => ({
-  globals: { conn: null, currentScreen: "Login", ui: null },
+  globals: { conn: undefined, currentScreen: "Login", ui: undefined },
 }));
 vi.mock("./commands", () => ({
   commands: new Map([["error", vi.fn()]]),

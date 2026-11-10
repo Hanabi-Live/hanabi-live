@@ -11,7 +11,7 @@ interface LobbyPage {
   readonly onHide: (() => void) | undefined;
 }
 
-let current: LobbyPage | null = null;
+let current: LobbyPage | undefined;
 
 /**
  * Shows a page from the lobby or from the pre-game screen, which it returns to. Pages with a form
@@ -35,19 +35,19 @@ export function show(
 }
 
 export function hide(): void {
-  if (current === null) {
+  if (current === undefined) {
     return;
   }
 
   $(current.section).hide();
   current.onHide?.();
-  current = null;
+  current = undefined;
   nav.showLobbyHalves(true);
   nav.show(globals.currentScreen === Screen.PreGame ? "pregame" : "lobby");
 }
 
 export function isShown(): boolean {
-  return current !== null;
+  return current !== undefined;
 }
 
 /** The button that submits the form on the page being shown, if any. */

@@ -1,6 +1,6 @@
 import { describe, expect, test, vi } from "vitest";
 
-vi.mock("./UIGlobals", () => ({ globals: { activeHover: null } }));
+vi.mock("./UIGlobals", () => ({ globals: { activeHover: undefined } }));
 vi.mock("../../tooltips", () => ({}));
 vi.mock("../../Globals", () => ({ globals: {} }));
 vi.mock("./noteCheckImpossibility", () => ({
@@ -47,7 +47,7 @@ describe("removeLayoutChildFromParent", () => {
 });
 
 describe("isMorphedBlank", () => {
-  const UNKNOWN = { suitIndex: null, rank: null } as const;
+  const UNKNOWN = { suitIndex: undefined, rank: undefined } as const;
   const RED_ONE = { suitIndex: 0, rank: 1 } as const;
   const PRESENT_DECK_LENGTH = 12;
 

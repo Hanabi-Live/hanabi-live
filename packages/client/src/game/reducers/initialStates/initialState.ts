@@ -17,7 +17,7 @@ export function initialState(metadata: GameMetadata): State {
   const numNoteOrders = totalCardsInDeck + variant.suits.length;
 
   return {
-    visibleState: null,
+    visibleState: undefined,
     ongoingGame: gameState,
     replay: {
       active: false,
@@ -26,16 +26,16 @@ export function initialState(metadata: GameMetadata): State {
       actions: [],
 
       databaseID: undefined,
-      shared: null,
-      hypothetical: null,
+      shared: undefined,
+      hypothetical: undefined,
     },
 
     playing: true,
     shadowing: false,
     finished: false,
 
-    datetimeStarted: null,
-    datetimeFinished: null,
+    datetimeStarted: undefined,
+    datetimeFinished: undefined,
 
     notes: {
       ourNotes: newArray(numNoteOrders, {
@@ -59,10 +59,10 @@ export function initialState(metadata: GameMetadata): State {
 
     metadata,
     cardIdentities: newArray(totalCardsInDeck, {
-      suitIndex: null,
-      rank: null,
+      suitIndex: undefined,
+      rank: undefined,
     }),
-    premove: null,
+    premove: undefined,
     pause: {
       active: false,
       playerIndex: 0,
@@ -70,7 +70,7 @@ export function initialState(metadata: GameMetadata): State {
     },
     spectators: [],
     UI: {
-      cardDragged: null,
+      cardDragged: undefined,
     },
   };
 }

@@ -9,7 +9,7 @@ import { getInitialCardState, planHypotheticalAction } from "@hanabi-live/game";
 export function planClientHypotheticalAction(
   intent: HypotheticalActionIntent,
   context: PlanHypotheticalActionContext,
-): readonly HypotheticalGameAction[] | null {
+): readonly HypotheticalGameAction[] | undefined {
   const { gameState, metadata, variant, cardIdentities, cardViews } = context;
   if (
     (intent.type === "play" || intent.type === "discard")
@@ -31,8 +31,8 @@ export function planClientHypotheticalAction(
             metadata.options.numPlayers,
           ),
           isStackBase: false,
-          visibleSuitIndex: null,
-          visibleRank: null,
+          visibleSuitIndex: undefined,
+          visibleRank: undefined,
         },
       ],
     });

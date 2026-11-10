@@ -27,12 +27,7 @@ import {
   isCardTouchedByClue,
   msgClueToClue,
 } from "@hanabi-live/game";
-import {
-  assertDefined,
-  assertEnumValue,
-  assertNotNull,
-  eRange,
-} from "complete-common";
+import { assertDefined, assertEnumValue, eRange } from "complete-common";
 import { initialState } from "../src/game/reducers/initialStates/initialState";
 import { shouldStoreSegment } from "../src/game/reducers/stateReducerHelpers";
 import type { State } from "../src/game/types/State";
@@ -81,7 +76,7 @@ export function loadGameJSON(gameJSON: JSONGame): State {
 
   for (const actionJSON of gameJSON.actions) {
     const action = parseJSONAction(currentPlayerIndex, turn, deck, actionJSON);
-    if (action !== null) {
+    if (action !== undefined) {
       actions.push(action);
       if (
         topOfDeck < gameJSON.deck.length
@@ -165,11 +160,11 @@ export function loadGameJSON(gameJSON: JSONGame): State {
           jsonCard,
           `Failed to get the card at order ${a.order} in the JSON deck.`,
         );
-        assertNotNull(
+        assertDefined(
           jsonCard.suitIndex,
           `Failed to get the suit for card ${a.order} in the JSON deck.`,
         );
-        assertNotNull(
+        assertDefined(
           jsonCard.rank,
           `Failed to get the rank for card ${a.order} in the JSON deck.`,
         );
@@ -227,7 +222,7 @@ export function loadGameJSON(gameJSON: JSONGame): State {
 
     if (
       shouldStoreSegment(nextState.turn.segment, previousSegment, action)
-      && nextState.turn.segment !== null
+      && nextState.turn.segment !== undefined
     ) {
       states[nextState.turn.segment] = nextState;
     }
@@ -250,11 +245,11 @@ export function loadGameJSON(gameJSON: JSONGame): State {
       efficiencyModifier: 0,
     },
 
-    datetimeStarted: null,
-    datetimeFinished: null,
+    datetimeStarted: undefined,
+    datetimeFinished: undefined,
 
     metadata,
-    premove: null,
+    premove: undefined,
     pause: {
       active: false,
       playerIndex: 0,
@@ -262,7 +257,7 @@ export function loadGameJSON(gameJSON: JSONGame): State {
     },
     spectators: [],
     UI: {
-      cardDragged: null,
+      cardDragged: undefined,
     },
   };
 }
@@ -277,13 +272,13 @@ function drawCard(
     cardIdentity,
     `Failed to draw a card with order "${order}" since the card identity was not found in the deck.`,
   );
-  assertNotNull(
+  assertDefined(
     cardIdentity.suitIndex,
-    `Failed to draw a card with order "${order}" since the suit index of the card identity was null.`,
+    `Failed to draw a card with order "${order}" since the suit index of the card identity was undefined.`,
   );
-  assertNotNull(
+  assertDefined(
     cardIdentity.rank,
-    `Failed to draw a card with order "${order}" since the rank of the card identity was null.`,
+    `Failed to draw a card with order "${order}" since the rank of the card identity was undefined.`,
   );
 
   return {
@@ -326,7 +321,7 @@ function parseJSONAction(
   turn: number,
   deck: readonly CardIdentity[],
   a: JSONAction,
-): GameAction | null {
+): GameAction | undefined {
   assertEnumValue(
     a.type,
     JSONActionType,

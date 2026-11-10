@@ -40,8 +40,8 @@ const EMPTY_DECK_RING_SECONDS = 0.7;
 const EMPTY_DECK_POP_SCALE = 1.6;
 const EMPTY_DECK_POP_SECONDS = 0.5;
 
-let maxScoreDrop: { stop: () => void } | null = null;
-let emptyDeck: EffectTimeline | null = null;
+let maxScoreDrop: { stop: () => void } | undefined;
+let emptyDeck: EffectTimeline | undefined;
 
 /** Effects are sized by the height of a play stack. */
 function createTimeline(): EffectTimeline {
@@ -51,7 +51,7 @@ function createTimeline(): EffectTimeline {
 
 function showMaxScore() {
   const { visibleState } = globals.state;
-  if (visibleState !== null) {
+  if (visibleState !== undefined) {
     onScoreOrMaxScoreChanged({
       score: visibleState.score,
       maxScore: visibleState.stats.maxScore,
@@ -74,7 +74,7 @@ export function startMaxScoreDropAnimation(
 ): void {
   stopMaxScoreDropAnimation();
   const label = globals.elements.maxScoreNumberLabel;
-  if (label === null) {
+  if (label === undefined) {
     return;
   }
 
@@ -135,7 +135,7 @@ export function startMaxScoreDropAnimation(
     showMaxScore();
   }
   timeline.play([globals.layers.card, globals.layers.UI], () => {
-    maxScoreDrop = null;
+    maxScoreDrop = undefined;
     restore();
   });
   maxScoreDrop = {
@@ -147,9 +147,9 @@ export function startMaxScoreDropAnimation(
 }
 
 export function stopMaxScoreDropAnimation(): void {
-  if (maxScoreDrop !== null) {
+  if (maxScoreDrop !== undefined) {
     maxScoreDrop.stop();
-    maxScoreDrop = null;
+    maxScoreDrop = undefined;
   }
 }
 
@@ -200,7 +200,7 @@ export function addStrikeoutFlash(
 export function startEmptyDeckAnimation(delay: number): void {
   stopEmptyDeckAnimation();
   const { deck } = globals.elements;
-  if (deck === null) {
+  if (deck === undefined) {
     return;
   }
 
@@ -222,14 +222,14 @@ export function startEmptyDeckAnimation(delay: number): void {
     1,
   );
   timeline.play([globals.layers.card, globals.layers.UI], () => {
-    emptyDeck = null;
+    emptyDeck = undefined;
   });
   emptyDeck = timeline;
 }
 
 export function stopEmptyDeckAnimation(): void {
-  if (emptyDeck !== null) {
+  if (emptyDeck !== undefined) {
     emptyDeck.stop();
-    emptyDeck = null;
+    emptyDeck = undefined;
   }
 }

@@ -2,15 +2,15 @@ import type { PlayerIndex } from "@hanabi-live/game";
 import type { State } from "../../../types/State";
 import { globals } from "../../UIGlobals";
 
-/** Returns the index of the player whose cards can be dragged, or null if no cards can be. */
-export function draggablePlayerIndex(state: State): PlayerIndex | null {
+/** Returns the index of the player whose cards can be dragged, or undefined if no cards can be. */
+export function draggablePlayerIndex(state: State): PlayerIndex | undefined {
   const { hypothetical, shared } = state.replay;
 
   // In a hypothetical, the replay leader drags the cards of whoever's turn it is.
-  if (hypothetical !== null) {
-    return shared === null || shared.amLeader
-      ? (state.visibleState?.turn.currentPlayerIndex ?? null)
-      : null;
+  if (hypothetical !== undefined) {
+    return shared === undefined || shared.amLeader
+      ? (state.visibleState?.turn.currentPlayerIndex ?? undefined)
+      : undefined;
   }
 
   const { ourPlayerIndex, options } = state.metadata;
@@ -23,12 +23,12 @@ export function draggablePlayerIndex(state: State): PlayerIndex | null {
       // Our cards can only be dragged on our turn, unless pre-playing is enabled.
       && (ourTurn || speedrunPreplay)
       // A queued move must be canceled before dragging another card.
-      && state.premove === null
+      && state.premove === undefined
       // Speedrunning uses clicks instead of dragging.
       && !options.speedrun
       && !speedrunMode
       ? ourPlayerIndex
-      : null
+      : undefined
   );
 }
 

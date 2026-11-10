@@ -26,13 +26,13 @@ import type { TimerDisplay } from "./controls/TimerDisplay";
 
 export class Elements {
   // The main screen
-  stageFade: Konva.Rect | null = null;
-  playArea: Konva.Rect | null = null;
+  stageFade: Konva.Rect | undefined = undefined;
+  playArea: Konva.Rect | undefined = undefined;
 
   playStacks = new Map<Suit | "hole", PlayStack>();
   /** For "Throw It in a Hole" variants. */
-  holeCounter: Konva.Group | null = null;
-  holeCountLabel: Konva.Text | null = null;
+  holeCounter: Konva.Group | undefined = undefined;
+  holeCountLabel: Konva.Text | undefined = undefined;
 
   /**
    * UI row below play stacks, usually used for information about the suits, but also for stack
@@ -41,122 +41,122 @@ export class Elements {
    */
   suitLabelTexts: FitText[] = [];
 
-  discardArea: Konva.Rect | null = null;
+  discardArea: Konva.Rect | undefined = undefined;
   discardStacks = new Map<Suit, CardLayout>();
   playerHands: CardLayout[] = [];
   playerHandTurnRects: Konva.Rect[] = [];
   playerHandBlackLines: Konva.Rect[] = [];
   nameFrames: NameFrame[] = [];
-  actionLog: ActionLog | null = null;
-  replayButton: Button | null = null;
-  chatButton: Button | null = null;
-  lobbyButton: Button | null = null;
-  restartButton: Button | null = null;
-  restartReadyButton: ReadyButton | null = null;
-  deck: Deck | null = null;
-  gameIDLabel: FitText | null = null;
-  gameInfoImage: Konva.Image | null = null;
-  deckTurnsRemainingLabel1: Konva.Text | null = null;
-  deckTurnsRemainingLabel2: Konva.Text | null = null;
-  deckPlayAvailableLabel: Konva.Rect | null = null;
-  variantLabel: FitText | null = null;
-  variantUnderline: Konva.Line | null = null;
+  actionLog: ActionLog | undefined = undefined;
+  replayButton: Button | undefined = undefined;
+  chatButton: Button | undefined = undefined;
+  lobbyButton: Button | undefined = undefined;
+  restartButton: Button | undefined = undefined;
+  restartReadyButton: ReadyButton | undefined = undefined;
+  deck: Deck | undefined = undefined;
+  gameIDLabel: FitText | undefined = undefined;
+  gameInfoImage: Konva.Image | undefined = undefined;
+  deckTurnsRemainingLabel1: Konva.Text | undefined = undefined;
+  deckTurnsRemainingLabel2: Konva.Text | undefined = undefined;
+  deckPlayAvailableLabel: Konva.Rect | undefined = undefined;
+  variantLabel: FitText | undefined = undefined;
+  variantUnderline: Konva.Line | undefined = undefined;
 
   // Extra elements on the right-hand side + the bottom.
-  paceNumberLabel: Konva.Text | null = null;
-  efficiencyNumberLabel: TextWithTooltip | null = null;
-  efficiencyPipeLabel: Konva.Text | null = null;
-  efficiencyMinNeededLabel: Konva.Text | null = null;
-  noDiscardBorder: Konva.Rect | null = null;
-  noDoubleDiscardBorder: Konva.Rect | null = null;
+  paceNumberLabel: Konva.Text | undefined = undefined;
+  efficiencyNumberLabel: TextWithTooltip | undefined = undefined;
+  efficiencyPipeLabel: Konva.Text | undefined = undefined;
+  efficiencyMinNeededLabel: Konva.Text | undefined = undefined;
+  noDiscardBorder: Konva.Rect | undefined = undefined;
+  noDoubleDiscardBorder: Konva.Rect | undefined = undefined;
 
   // The score area
-  scoreArea: Konva.Group | null = null;
-  scoreAreaBorder: Konva.Rect | null = null;
-  turnNumberLabel: TextWithTooltip | null = null;
-  scoreTextLabel: Konva.Text | null = null;
-  scoreNumberLabel: Konva.Text | null = null;
-  maxScoreNumberLabel: Konva.Text | null = null;
-  playsTextLabel: Konva.Text | null = null;
-  playsNumberLabel: Konva.Text | null = null;
-  cluesNumberLabel: Konva.Text | null = null;
-  cluesNumberLabelPulse: Konva.Tween | null = null;
+  scoreArea: Konva.Group | undefined = undefined;
+  scoreAreaBorder: Konva.Rect | undefined = undefined;
+  turnNumberLabel: TextWithTooltip | undefined = undefined;
+  scoreTextLabel: Konva.Text | undefined = undefined;
+  scoreNumberLabel: Konva.Text | undefined = undefined;
+  maxScoreNumberLabel: Konva.Text | undefined = undefined;
+  playsTextLabel: Konva.Text | undefined = undefined;
+  playsNumberLabel: Konva.Text | undefined = undefined;
+  cluesNumberLabel: Konva.Text | undefined = undefined;
+  cluesNumberLabelPulse: Konva.Tween | undefined = undefined;
   strikeSquares: StrikeSquare[] = [];
   strikeXs: StrikeX[] = [];
   questionMarkLabels: Konva.Text[] = [];
-  terminateButton: Button | null = null;
+  terminateButton: Button | undefined = undefined;
 
   // Next to the score area.
-  spectatorsLabel: Konva.Image | null = null;
-  spectatorsNumLabel: Konva.Text | null = null;
-  sharedReplayLeaderLabel: Konva.Image | null = null;
-  sharedReplayLeaderCircle: Konva.Circle | null = null;
-  sharedReplayLeaderLabelPulse: Konva.Tween | null = null;
-  yourTurn: Konva.Group | null = null;
+  spectatorsLabel: Konva.Image | undefined = undefined;
+  spectatorsNumLabel: Konva.Text | undefined = undefined;
+  sharedReplayLeaderLabel: Konva.Image | undefined = undefined;
+  sharedReplayLeaderCircle: Konva.Circle | undefined = undefined;
+  sharedReplayLeaderLabelPulse: Konva.Tween | undefined = undefined;
+  yourTurn: Konva.Group | undefined = undefined;
 
   // The clue UI
-  clueArea: Konva.Group | null = null;
-  clueTargetButtonGroup: ButtonGroup | null = null;
-  clueTargetButtonGroup2: ButtonGroup | null = null; // For hypotheticals
-  lowerClueArea: SlidableGroup | null = null;
-  clueTypeButtonGroup: ButtonGroup | null = null;
+  clueArea: Konva.Group | undefined = undefined;
+  clueTargetButtonGroup: ButtonGroup | undefined = undefined;
+  clueTargetButtonGroup2: ButtonGroup | undefined = undefined; // For hypotheticals
+  lowerClueArea: SlidableGroup | undefined = undefined;
+  clueTypeButtonGroup: ButtonGroup | undefined = undefined;
   rankClueButtons: RankButton[] = [];
   colorClueButtons: ColorButton[] = [];
-  giveClueButton: Button | null = null;
-  clueAreaDisabled: SlidableGroup | null = null;
-  waitingOnServer: Konva.Group | null = null;
-  waitingOnServerAnimation: Konva.Animation | null = null;
+  giveClueButton: Button | undefined = undefined;
+  clueAreaDisabled: SlidableGroup | undefined = undefined;
+  waitingOnServer: Konva.Group | undefined = undefined;
+  waitingOnServerAnimation: Konva.Animation | undefined = undefined;
 
   // The current turn UI.
-  currentPlayerArea: CurrentPlayerArea | null = null;
+  currentPlayerArea: CurrentPlayerArea | undefined = undefined;
 
   // The replay screen
-  replayArea: Konva.Group | null = null;
-  replayBar: Konva.Rect | null = null;
-  replayShuttleShared: Shuttle | null = null;
-  replayShuttle: Shuttle | null = null;
-  replayBackFullButton: Button | null = null;
-  replayBackButton: Button | null = null;
-  replayForwardButton: Button | null = null;
-  replayForwardFullButton: Button | null = null;
-  replayExitButton: Button | null = null;
-  pauseSharedTurnsButton: SharedTurnsButton | null = null;
-  useSharedTurnsButton: SharedTurnsButton | null = null;
-  enterHypoButton: EnterHypoButton | null = null;
-  hypoCircle: Konva.Group | null = null;
-  hypoPauseSharedTurnsButton: Button | null = null;
-  hypoButtonsArea: Konva.Group | null = null;
-  editCardsButton: CheckButton | null = null;
-  hypoBackButton: Button | null = null;
-  hypoPassTurnButton: Button | null = null;
-  toggleDrawnCardsButton: CheckButton | null = null;
-  endHypotheticalButton: Button | null = null;
+  replayArea: Konva.Group | undefined = undefined;
+  replayBar: Konva.Rect | undefined = undefined;
+  replayShuttleShared: Shuttle | undefined = undefined;
+  replayShuttle: Shuttle | undefined = undefined;
+  replayBackFullButton: Button | undefined = undefined;
+  replayBackButton: Button | undefined = undefined;
+  replayForwardButton: Button | undefined = undefined;
+  replayForwardFullButton: Button | undefined = undefined;
+  replayExitButton: Button | undefined = undefined;
+  pauseSharedTurnsButton: SharedTurnsButton | undefined = undefined;
+  useSharedTurnsButton: SharedTurnsButton | undefined = undefined;
+  enterHypoButton: EnterHypoButton | undefined = undefined;
+  hypoCircle: Konva.Group | undefined = undefined;
+  hypoPauseSharedTurnsButton: Button | undefined = undefined;
+  hypoButtonsArea: Konva.Group | undefined = undefined;
+  editCardsButton: CheckButton | undefined = undefined;
+  hypoBackButton: Button | undefined = undefined;
+  hypoPassTurnButton: Button | undefined = undefined;
+  toggleDrawnCardsButton: CheckButton | undefined = undefined;
+  endHypotheticalButton: Button | undefined = undefined;
 
   // The pause screen
-  pauseArea: Konva.Group | null = null;
-  pauseText: Konva.Text | null = null;
-  pauseButton: Button | null = null;
+  pauseArea: Konva.Group | undefined = undefined;
+  pauseText: Konva.Text | undefined = undefined;
+  pauseButton: Button | undefined = undefined;
 
   // The restart screen
-  restartArea: Konva.Group | null = null;
-  restartText: Konva.Text | null = null;
-  restartGameButton: Button | null = null;
-  restartTableButton: Button | null = null;
-  restartContents: Konva.Group | null = null;
-  restartWaitingOnServer: Konva.Group | null = null;
-  restartWaitingOnServerAnimation: Konva.Animation | null = null;
+  restartArea: Konva.Group | undefined = undefined;
+  restartText: Konva.Text | undefined = undefined;
+  restartGameButton: Button | undefined = undefined;
+  restartTableButton: Button | undefined = undefined;
+  restartContents: Konva.Group | undefined = undefined;
+  restartWaitingOnServer: Konva.Group | undefined = undefined;
+  restartWaitingOnServerAnimation: Konva.Animation | undefined = undefined;
 
   // Other screens
-  fullActionLog: FullActionLog | null = null;
+  fullActionLog: FullActionLog | undefined = undefined;
 
   // Other conditional elements
   arrows: Arrow[] = [];
-  timer1Circle: Konva.Ellipse | null = null;
-  timer1: TimerDisplay | null = null;
-  timer2: TimerDisplay | null = null;
-  premoveCancelButton: Button | null = null;
-  sharedReplayForward: Konva.Image | null = null;
-  sharedReplayForwardTween: Konva.Tween | null = null;
-  sharedReplayBackward: Konva.Image | null = null;
-  sharedReplayBackwardTween: Konva.Tween | null = null;
+  timer1Circle: Konva.Ellipse | undefined = undefined;
+  timer1: TimerDisplay | undefined = undefined;
+  timer2: TimerDisplay | undefined = undefined;
+  premoveCancelButton: Button | undefined = undefined;
+  sharedReplayForward: Konva.Image | undefined = undefined;
+  sharedReplayForwardTween: Konva.Tween | undefined = undefined;
+  sharedReplayBackward: Konva.Image | undefined = undefined;
+  sharedReplayBackwardTween: Konva.Tween | undefined = undefined;
 }

@@ -10,13 +10,13 @@ import * as turn from "../../turn";
 // For replay leaders, we want to disable entering a hypothetical during certain situations.
 export function shouldEnableEnterHypoButton(state: State): boolean {
   return (
-    (state.replay.shared === null && state.replay.active)
-    || (state.replay.shared !== null
+    (state.replay.shared === undefined && state.replay.active)
+    || (state.replay.shared !== undefined
       && state.replay.shared.useSharedSegments
       && state.replay.shared.amLeader
       // We can't start a hypothetical on a segment where the game has already ended.
-      && state.visibleState !== null
-      && state.visibleState.turn.currentPlayerIndex !== null)
+      && state.visibleState !== undefined
+      && state.visibleState.turn.currentPlayerIndex !== undefined)
   );
 }
 
@@ -27,8 +27,8 @@ export function shouldEnableEnterHypoButtonChanged(enabled: boolean): void {
 
 export function shouldShowReplayArea(state: State): boolean {
   return (
-    (state.replay.active || state.replay.shared !== null)
-    && state.replay.hypothetical === null
+    (state.replay.active || state.replay.shared !== undefined)
+    && state.replay.hypothetical === undefined
   );
 }
 
@@ -59,8 +59,8 @@ export function onActiveChanged(data: {
 
 export function shouldShowHypoControls(state: State): boolean {
   return (
-    state.replay.hypothetical !== null
-    && (state.replay.shared === null || state.replay.shared.amLeader)
+    state.replay.hypothetical !== undefined
+    && (state.replay.shared === undefined || state.replay.shared.amLeader)
   );
 }
 
@@ -83,8 +83,8 @@ export function shouldShowHypoControlsChanged(shouldShow: boolean): void {
 export function shouldShowToggleDrawnCards(state: State): boolean {
   return (
     state.finished
-    && state.replay.hypothetical !== null
-    && (state.replay.shared === null || state.replay.shared.amLeader)
+    && state.replay.hypothetical !== undefined
+    && (state.replay.shared === undefined || state.replay.shared.amLeader)
   );
 }
 
@@ -142,8 +142,8 @@ export function onStatesLengthChanged(): void {
 
 export function shouldShowHypoBackButton(state: State): boolean {
   return (
-    (state.replay.shared === null || state.replay.shared.amLeader)
-    && state.replay.hypothetical !== null
+    (state.replay.shared === undefined || state.replay.shared.amLeader)
+    && state.replay.hypothetical !== undefined
     && state.replay.hypothetical.states.length > 1
   );
 }

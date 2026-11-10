@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import { assertDefined, assertNotNull, eRange, iRange } from "complete-common";
+import { assertDefined, eRange, iRange } from "complete-common";
 import { CardStatus } from "../enums/CardStatus";
 import { MAX_CLUES } from "../generated/protocol";
 import { getDefaultMetadata } from "../metadata";
@@ -658,7 +658,7 @@ describe("gameReducer", () => {
 
       function currentPlayerIndex() {
         const playerIndex = state.turn.currentPlayerIndex;
-        assertNotNull(
+        assertDefined(
           playerIndex,
           "Expected currentPlayerIndex to be non-null during this Sudoku regression test.",
         );

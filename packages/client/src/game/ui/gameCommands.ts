@@ -253,7 +253,7 @@ gameCommands.set("idleWarning", (data) => {
             tableID: globals.lobby.tableID,
           });
         }
-      : null,
+      : undefined,
   );
 });
 
@@ -280,7 +280,7 @@ gameCommands.set("pause", (data) => {
 
 gameCommands.set("replayEfficiencyModifier", (data) => {
   if (
-    globals.state.replay.shared === null
+    globals.state.replay.shared === undefined
     // Shared replay leaders already set the efficiency after sending the "replayAction" message.
     || globals.state.replay.shared.amLeader
   ) {
@@ -301,7 +301,7 @@ gameCommands.set("voteChange", (data) => {
 // This is used in shared replays to highlight a specific card (or UI element).
 gameCommands.set("replayIndicator", (data) => {
   if (
-    globals.state.replay.shared === null
+    globals.state.replay.shared === undefined
     // Shared replay leaders already drew the arrow after sending the "replayAction" message.
     || globals.state.replay.shared.amLeader
     // If we are not currently using the shared segments, the arrow that the shared replay leader is
@@ -319,7 +319,7 @@ gameCommands.set("replayIndicator", (data) => {
 
 // This is used in shared replays to specify who the leader is.
 gameCommands.set("replayLeader", (data) => {
-  if (globals.state.replay.shared === null) {
+  if (globals.state.replay.shared === undefined) {
     return;
   }
 
@@ -331,7 +331,7 @@ gameCommands.set("replayLeader", (data) => {
 
 // This is used in shared replays to specify which players will not play again.
 gameCommands.set("restartDeclined", (data) => {
-  if (globals.state.replay.shared === null) {
+  if (globals.state.replay.shared === undefined) {
     return;
   }
 
@@ -343,7 +343,7 @@ gameCommands.set("restartDeclined", (data) => {
 
 // This is used in shared replays to specify who the leader is.
 gameCommands.set("suggestion", (data) => {
-  if (globals.state.replay.shared === null) {
+  if (globals.state.replay.shared === undefined) {
     return;
   }
 
@@ -355,7 +355,7 @@ gameCommands.set("replaySegment", (data) => {
   // If we are the replay leader, we will already have the shared segment set to be equal to what
   // the server is broadcasting.
   if (
-    globals.state.replay.shared === null
+    globals.state.replay.shared === undefined
     || globals.state.replay.shared.amLeader
   ) {
     return;
@@ -412,9 +412,9 @@ function setNoteIndicatorAndCheckForSpecialNote() {
 function canFollowSuggestion(): boolean {
   return (
     globals.state.finished
-    && globals.state.replay.shared !== null
+    && globals.state.replay.shared !== undefined
     && globals.state.replay.shared.amLeader
-    && globals.state.replay.hypothetical === null
+    && globals.state.replay.hypothetical === undefined
   );
 }
 
@@ -481,14 +481,14 @@ function initStateStore(data: InitData) {
 
   // The list is empty unless detrimental characters are on.
   let characterAssignments = data.characters.map(
-    (character) => character.characterID ?? null,
-  ) as Tuple<number | null, NumPlayers> | [];
+    (character) => character.characterID ?? undefined,
+  ) as Tuple<number | undefined, NumPlayers> | [];
 
   if (characterAssignments.length === 0) {
-    characterAssignments = newArray(data.options.numPlayers, null) as Tuple<
-      number | null,
-      NumPlayers
-    >;
+    characterAssignments = newArray(
+      data.options.numPlayers,
+      undefined,
+    ) as Tuple<number | undefined, NumPlayers>;
   }
 
   // Create the state store (using the Redux library).

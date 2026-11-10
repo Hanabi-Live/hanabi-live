@@ -1,6 +1,6 @@
 /* eslint-disable no-param-reassign */
 
-import { assertNotNull } from "complete-common";
+import { assertDefined } from "complete-common";
 import type { Draft } from "immer";
 import { produce } from "immer";
 import { getVariant } from "../gameData";
@@ -38,7 +38,7 @@ function turnReducerFunction(
       turn.cardsPlayedOrDiscardedThisTurn++;
 
       if (gameState.cardsRemainingInTheDeck === 0) {
-        if (turn.segment !== null) {
+        if (turn.segment !== undefined) {
           turn.segment++;
         }
 
@@ -60,7 +60,7 @@ function turnReducerFunction(
       }
 
       if (gameState.cardsRemainingInTheDeck === 0) {
-        if (turn.segment !== null) {
+        if (turn.segment !== undefined) {
           turn.segment++;
         }
 
@@ -88,7 +88,7 @@ function turnReducerFunction(
     case "clue": {
       turn.cluesGivenThisTurn++;
 
-      assertNotNull(
+      assertDefined(
         turn.segment,
         `A "${action.type}" action happened before all of the initial cards were dealt.`,
       );
@@ -107,7 +107,7 @@ function turnReducerFunction(
     }
 
     case "draw": {
-      if (turn.segment === null) {
+      if (turn.segment === undefined) {
         // If the initial deal is still going on.
         if (
           isInitialDealFinished(gameState.cardsRemainingInTheDeck, metadata)
@@ -143,14 +143,14 @@ function turnReducerFunction(
     }
 
     case "gameOver": {
-      assertNotNull(
+      assertDefined(
         turn.segment,
         `A "${action.type}" action happened before all of the initial cards were dealt.`,
       );
 
-      // Setting the current player index to null signifies that the game is over and will prevent
-      // any name frames from being highlighted on subsequent segments.
-      turn.currentPlayerIndex = null; // eslint-disable-line unicorn/no-null
+      // Setting the current player index to undefined signifies that the game is over and will
+      // prevent any name frames from being highlighted on subsequent segments.
+      turn.currentPlayerIndex = undefined;
 
       // For some types of game overs, we want the explanation text to appear on its own replay
       // segment. The types of "gameOver" that do not have to do with the previous action should be
@@ -170,7 +170,7 @@ function turnReducerFunction(
     }
 
     case "playerTimes": {
-      assertNotNull(
+      assertDefined(
         turn.segment,
         `A "${action.type}" action happened before all of the initial cards were dealt.`,
       );
@@ -206,7 +206,7 @@ function nextTurn(
     state.playOrderInverted,
   );
 
-  if (deckSize === 0 && state.endTurnNum === null) {
+  if (deckSize === 0 && state.endTurnNum === undefined) {
     state.endTurnNum = getEndTurn(state.turnNum, metadata);
   }
 

@@ -30,8 +30,8 @@ describe("clue arrow suit pips", () => {
       }),
     };
     const arrow = {
-      pointingTo: null,
-      tween: null,
+      pointingTo: undefined,
+      tween: undefined,
       show: vi.fn(),
       moveToTop: vi.fn(),
       rotation: vi.fn(),
@@ -65,7 +65,7 @@ describe("clue arrow suit pips", () => {
       layers: { arrow: { batchDraw: vi.fn() } },
       lobby: { settings: { colorblindMode: true } },
       // Character ID 34 is Quacker; player 1 has no character.
-      metadata: { characterAssignments: [34, null] },
+      metadata: { characterAssignments: [34, undefined] },
       variant,
       state: { finished: false },
       animateFast: false,
@@ -88,7 +88,7 @@ describe("clue arrow suit pips", () => {
     expect(pipVisible).toBe(true);
 
     // Non-clue highlight arrows must not inherit the pip either.
-    set(0, deck, null, null, false, true);
+    set(0, deck, undefined, undefined, false, true);
     expect(pipVisible).toBe(false);
   });
 });

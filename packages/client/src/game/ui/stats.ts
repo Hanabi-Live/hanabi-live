@@ -18,12 +18,12 @@ export function setEfficiencyModifier(efficiencyModifier: number): void {
     efficiencyModifier,
   });
 
-  if (globals.state.visibleState === null) {
+  if (globals.state.visibleState === undefined) {
     return;
   }
 
   if (
-    globals.state.replay.shared !== null
+    globals.state.replay.shared !== undefined
     && globals.state.replay.shared.amLeader
   ) {
     globals.lobby.conn!.send("replayAction", {
@@ -57,7 +57,7 @@ export function askForEfficiency(): void {
 
   if (
     globals.state.finished
-    && globals.state.replay.shared !== null
+    && globals.state.replay.shared !== undefined
     && !globals.state.replay.shared.amLeader
   ) {
     modals.showWarning(
@@ -87,7 +87,7 @@ export function askForEfficiency(): void {
 
   modals.showPrompt(
     "#set-modifier-modal",
-    null,
+    undefined,
     setModifierNew,
     setModifierButton,
   );

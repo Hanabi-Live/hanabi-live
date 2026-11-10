@@ -35,7 +35,7 @@ interface CardIdentities {
   readonly ranks: Rank[];
 }
 
-function parseSuit(variant: Variant, suitText: string): SuitIndex | null {
+function parseSuit(variant: Variant, suitText: string): SuitIndex | undefined {
   const suitAbbreviationIndex = variant.suitAbbreviations.findIndex(
     (abbreviation) => abbreviation.toLowerCase() === suitText,
   );
@@ -50,10 +50,10 @@ function parseSuit(variant: Variant, suitText: string): SuitIndex | null {
     return suitNameIndex as SuitIndex;
   }
 
-  return null;
+  return undefined;
 }
 
-function parseRank(rankText: string): Rank | null {
+function parseRank(rankText: string): Rank | undefined {
   switch (rankText) {
     case "0":
     case START_CARD_RANK_LABEL.toLowerCase():
@@ -63,7 +63,8 @@ function parseRank(rankText: string): Rank | null {
 
     default: {
       return (
-        DEFAULT_CARD_RANKS.find((rank) => rank.toString() === rankText) ?? null
+        DEFAULT_CARD_RANKS.find((rank) => rank.toString() === rankText)
+        ?? undefined
       );
     }
   }
@@ -95,8 +96,8 @@ export function parseIdentity(
   if (keyword.toLowerCase() === "blank") {
     // Create a blank morph.
     return {
-      suitIndex: null,
-      rank: null,
+      suitIndex: undefined,
+      rank: undefined,
     };
   }
 
@@ -127,8 +128,8 @@ function parseIdentities(variant: Variant, keyword: string): CardIdentities {
   const identityMatch = identityPattern(variant.identityNotePattern).exec(
     keyword,
   );
-  let suitIndex: SuitIndex | null = null;
-  let rank: Rank | null = null;
+  let suitIndex: SuitIndex | undefined;
+  let rank: Rank | undefined;
   if (identityMatch !== null) {
     const squishText = extractSquishText(identityMatch);
     const suitIndices: SuitIndex[] = [];
@@ -137,9 +138,9 @@ function parseIdentities(variant: Variant, keyword: string): CardIdentities {
       for (const letter of squishText) {
         suitIndex = parseSuit(variant, letter);
         rank = parseRank(letter);
-        if (suitIndex !== null) {
+        if (suitIndex !== undefined) {
           suitIndices.push(suitIndex);
-        } else if (rank !== null) {
+        } else if (rank !== undefined) {
           ranks.push(rank);
         }
       }
@@ -159,8 +160,8 @@ function parseIdentities(variant: Variant, keyword: string): CardIdentities {
   }
 
   return {
-    suitIndices: suitIndex === null ? [] : [suitIndex],
-    ranks: rank === null ? [] : [rank],
+    suitIndices: suitIndex === undefined ? [] : [suitIndex],
+    ranks: rank === undefined ? [] : [rank],
   };
 }
 

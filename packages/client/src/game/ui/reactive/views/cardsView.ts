@@ -7,7 +7,7 @@ import { globals } from "../../UIGlobals";
 import { getCardOrStackBase } from "../../getCardOrStackBase";
 import { changeStartingHandVisibility } from "../../hypothetical";
 import type { Listener, Selector, Subscription } from "../observeStore";
-import { observeStore } from "../observeStore";
+import { observeStore, SKIP } from "../observeStore";
 
 export function onCardsPossiblyAdded(length: number): void {
   const totalCardsInDeck = getTotalCardsInDeck(globals.variant);
@@ -17,8 +17,8 @@ export function onCardsPossiblyAdded(length: number): void {
     if (globals.deck.length <= i) {
       const newCard = new HanabiCard(
         i as CardOrder,
-        null,
-        null,
+        undefined,
+        undefined,
         false,
         globals.variant,
         globals.options.numPlayers,
@@ -109,9 +109,8 @@ function subscribeToCardChanges(order: CardOrder) {
   function checkOrderAndSelect<T>(s: Selector<State, T>): Selector<State, T> {
     return (state) => {
       if (order >= state.visibleState!.deck.length) {
-        // This card was removed from visible state. Return undefined to prevent firing the
-        // listener.
-        return undefined;
+        // This card was removed from visible state, so skip the listener.
+        return SKIP;
       }
 
       return s(state);
@@ -151,15 +150,15 @@ function subscribeToCardChanges(order: CardOrder) {
       const morphedIdentity = s.replay.hypothetical?.morphedIdentities[order];
       const identity =
         morphedIdentity
-        ?? (card.suitIndex === null || card.rank === null
+        ?? (card.suitIndex === undefined || card.rank === undefined
           ? s.cardIdentities[order]
           : { suitIndex: card.suitIndex, rank: card.rank });
 
       const status =
         identity === undefined
-        || identity.suitIndex === null
-        || identity.rank === null
-          ? null
+        || identity.suitIndex === undefined
+        || identity.rank === undefined
+          ? undefined
           : s.visibleState!.cardStatus[identity.suitIndex][identity.rank];
 
       return {

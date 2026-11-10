@@ -2,8 +2,8 @@
 export class LocalStorageStub {
   private readonly store = new Map<string, string>();
 
-  getItem(key: string): string | null {
-    return this.store.get(key) ?? null;
+  getItem(key: string): string | undefined {
+    return this.store.get(key) ?? undefined;
   }
 
   setItem(key: string, value: string): void {

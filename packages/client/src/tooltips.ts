@@ -68,14 +68,14 @@ export function open(selector: string): void {
 
 export function close(selector: string): void {
   if (globals.editingNote === selector) {
-    globals.editingNote = null;
+    globals.editingNote = undefined;
   }
 
   getTooltip(selector)?.close();
 }
 
 export function closeAllTooltips(): void {
-  globals.editingNote = null;
+  globals.editingNote = undefined;
 
   for (const tooltip of gameTooltips) {
     tooltip.close();

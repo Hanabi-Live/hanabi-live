@@ -20,33 +20,35 @@ const gamesAdapter = createEntityAdapter({
 interface HistoryState {
   readonly games: ReturnType<typeof gamesAdapter.getInitialState>;
 
-  /** The number of games that we have played, or null until the server counts them. */
-  readonly totalGames: number | null;
+  /** The number of games that we have played, or undefined until the server counts them. */
+  readonly totalGames: number | undefined;
 
   /** Whether we are waiting for a page of our history. */
   readonly loading: boolean;
 
   /** The seed whose other scores we show, and the pages of its games that the server sent. */
-  readonly otherScores: {
-    readonly seed: string;
-    readonly games: readonly GameHistory[];
+  readonly otherScores:
+    | {
+        readonly seed: string;
+        readonly games: readonly GameHistory[];
 
-    /** The seed's variant, or null until the server sends a game. */
-    readonly variantName: string | null;
+        /** The seed's variant, or undefined until the server sends a game. */
+        readonly variantName: string | undefined;
 
-    /** The number of games on the seed, or null until the server counts them. */
-    readonly total: number | null;
+        /** The number of games on the seed, or undefined until the server counts them. */
+        readonly total: number | undefined;
 
-    /** Whether we are waiting for a page of the seed's games. */
-    readonly loading: boolean;
-  } | null;
+        /** Whether we are waiting for a page of the seed's games. */
+        readonly loading: boolean;
+      }
+    | undefined;
 }
 
 const initialState: HistoryState = {
   games: gamesAdapter.getInitialState(),
-  totalGames: null,
+  totalGames: undefined,
   loading: false,
-  otherScores: null,
+  otherScores: undefined,
 };
 
 const historySlice = createSlice({
@@ -60,20 +62,20 @@ const historySlice = createSlice({
       gamesAdapter.setMany(state.games, action.payload);
       state.loading = false;
     },
-    totalGamesChanged(state, action: PayloadAction<number | null>) {
+    totalGamesChanged(state, action: PayloadAction<number | undefined>) {
       state.totalGames = action.payload;
     },
     otherScoresRequested(state, action: PayloadAction<string>) {
       state.otherScores = {
         seed: action.payload,
         games: [],
-        variantName: null,
-        total: null,
+        variantName: undefined,
+        total: undefined,
         loading: true,
       };
     },
     moreOtherScoresRequested(state) {
-      if (state.otherScores !== null) {
+      if (state.otherScores !== undefined) {
         state.otherScores.loading = true;
       }
     },

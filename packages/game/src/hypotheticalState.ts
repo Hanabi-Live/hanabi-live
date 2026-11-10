@@ -1,5 +1,4 @@
 /* eslint-disable no-param-reassign */
-/* eslint-disable unicorn/no-null */
 
 import type { Draft } from "immer";
 import { castDraft, produce } from "immer";
@@ -38,11 +37,11 @@ export interface HypotheticalState {
    * A sparse array indexed by card order.
    *
    * If a card is in this array, it is being shown with an alternate identity. If the alternate
-   * identity is null/null, it is shown as blank.
+   * identity is undefined/undefined, it is shown as blank.
    */
   readonly morphedIdentities: readonly CardIdentity[];
 
-  readonly startingPlayerIndex: PlayerIndex | null;
+  readonly startingPlayerIndex: PlayerIndex | undefined;
 
   /** Whether empathy has been deduced from cards shown as other identities. */
   readonly deducedFromShownIdentities: boolean;
@@ -114,8 +113,8 @@ export function hypotheticalStateReducer(
   const showsOtherIdentities = shownIdentities.some(
     (identity, order) =>
       identity !== undefined
-      && identity.suitIndex !== null
-      && identity.rank !== null
+      && identity.suitIndex !== undefined
+      && identity.rank !== undefined
       && typeof ongoing.deck[order]?.location === "number",
   );
   const shownIdentitiesChanged =
@@ -169,8 +168,8 @@ function hypotheticalStateReducerFunction(
           delete state.morphedIdentities[order];
         } else {
           state.morphedIdentities[order] = {
-            rank: null,
-            suitIndex: null,
+            rank: undefined,
+            suitIndex: undefined,
           };
         }
       }
@@ -179,8 +178,8 @@ function hypotheticalStateReducerFunction(
 
     case "morph": {
       state.morphedIdentities[action.order] = {
-        suitIndex: action.suitIndex === -1 ? null : action.suitIndex,
-        rank: action.rank === -1 ? null : action.rank,
+        suitIndex: action.suitIndex === -1 ? undefined : action.suitIndex,
+        rank: action.rank === -1 ? undefined : action.rank,
       };
       return;
     }
@@ -210,7 +209,7 @@ function hypotheticalStateReducerFunction(
   }
 
   // The hypothetical is over, so persisted replay actions cannot continue it.
-  if (state.ongoing.turn.currentPlayerIndex === null) {
+  if (state.ongoing.turn.currentPlayerIndex === undefined) {
     return;
   }
 
@@ -227,8 +226,8 @@ function hypotheticalStateReducerFunction(
     state.drawnCardsInHypothetical.push(action.order);
     if (!state.showDrawnCards) {
       state.morphedIdentities[action.order] = {
-        suitIndex: null,
-        rank: null,
+        suitIndex: undefined,
+        rank: undefined,
       };
     }
   }
@@ -246,7 +245,7 @@ function hypotheticalStateReducerFunction(
   state.ongoing = castDraft(newState);
 
   if (isHypotheticalOver(state, newState, metadata)) {
-    state.ongoing.turn.currentPlayerIndex = null;
+    state.ongoing.turn.currentPlayerIndex = undefined;
   }
 
   if (oldSegment !== newState.turn.segment) {
@@ -277,19 +276,15 @@ function isHypotheticalOver(
 
   return isGameOver(gameState, metadata, (card) => {
     const morphedIdentity = state.morphedIdentities[card.order];
-    if (morphedIdentity?.suitIndex === null || morphedIdentity?.rank === null) {
-      return true;
+    let shownCard = card;
+    if (morphedIdentity !== undefined) {
+      const { suitIndex, rank } = morphedIdentity;
+      if (suitIndex === undefined || rank === undefined) {
+        return true;
+      }
+      shownCard = { ...card, possibleCards: [[suitIndex, rank]] };
     }
 
-    const shownCard =
-      morphedIdentity === undefined
-        ? card
-        : {
-            ...card,
-            possibleCards: [
-              [morphedIdentity.suitIndex, morphedIdentity.rank] as const,
-            ],
-          };
     return isCardPotentiallyPlayable(
       shownCard,
       gameState.deck,

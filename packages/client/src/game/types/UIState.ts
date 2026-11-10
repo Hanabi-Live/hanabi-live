@@ -1,5 +1,5 @@
 import type { UICard } from "./UICard";
 
 export interface UIState {
-  readonly cardDragged: UICard | null;
+  readonly cardDragged: UICard | undefined;
 }

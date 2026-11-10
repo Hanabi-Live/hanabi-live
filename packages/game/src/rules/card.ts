@@ -204,31 +204,33 @@ export function isCardPotentiallyPlayable(
 
 export function canCardPossiblyBeFromCluesOnly(
   card: CardState,
-  suitIndex: SuitIndex | null,
-  rank: Rank | null,
+  suitIndex: SuitIndex | undefined,
+  rank: Rank | undefined,
 ): boolean {
-  if (suitIndex === null && rank === null) {
+  if (suitIndex === undefined && rank === undefined) {
     // We have nothing to check.
     return true;
   }
   return card.possibleCardsFromClues.some(
     ([s, r]) =>
-      (suitIndex === null || suitIndex === s) && (rank === null || rank === r),
+      (suitIndex === undefined || suitIndex === s)
+      && (rank === undefined || rank === r),
   );
 }
 
 export function canCardPossiblyBeFromEmpathy(
   card: CardState,
-  suitIndex: SuitIndex | null,
-  rank: Rank | null,
+  suitIndex: SuitIndex | undefined,
+  rank: Rank | undefined,
 ): boolean {
-  if (suitIndex === null && rank === null) {
+  if (suitIndex === undefined && rank === undefined) {
     // We have nothing to check.
     return true;
   }
   return card.possibleCardsForEmpathy.some(
     ([s, r]) =>
-      (suitIndex === null || suitIndex === s) && (rank === null || rank === r),
+      (suitIndex === undefined || suitIndex === s)
+      && (rank === undefined || rank === r),
   );
 }
 
@@ -242,7 +244,7 @@ export function isAllCardPossibilitiesTrash(
   empathy: boolean,
 ): boolean {
   // If we fully know the card already, just check if it's playable.
-  if (!empathy && card.rank !== null && card.suitIndex !== null) {
+  if (!empathy && card.rank !== undefined && card.suitIndex !== undefined) {
     return !isCardNeededForMaxScore(
       card.suitIndex,
       card.rank,

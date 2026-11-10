@@ -56,9 +56,9 @@ export class Loader {
   finished = false;
   failedFiles = new Set<string>();
   imageMap = new Map<string, HTMLImageElement>();
-  progressCallback: ProgressCallback | null = null;
-  finishedCallback: FinishedCallback | null = null;
-  failedCallback: FailedCallback | null = null;
+  progressCallback: ProgressCallback | undefined = undefined;
+  finishedCallback: FinishedCallback | undefined = undefined;
+  failedCallback: FailedCallback | undefined = undefined;
 
   get failed(): boolean {
     return this.failedFiles.size > 0;
@@ -114,7 +114,7 @@ export class Loader {
   }
 
   progress(): void {
-    if (this.progressCallback !== null) {
+    if (this.progressCallback !== undefined) {
       this.progressCallback(this.numLoaded, this.filePathMap.size);
     }
   }

@@ -53,26 +53,26 @@ export function isVisible(state: State): boolean {
       !== state.metadata.ourPlayerIndex
       || !state.playing)
     // The premove cancel button should take precedence over the "Current Player" area.
-    && state.premove === null
+    && state.premove === undefined
     // Do not show it if the game is over.
-    && state.ongoingGame.turn.currentPlayerIndex !== null
+    && state.ongoingGame.turn.currentPlayerIndex !== undefined
   );
 }
 
 export function onChanged(
   data: {
     visible: boolean;
-    currentPlayerIndex: PlayerIndex | null;
+    currentPlayerIndex: PlayerIndex | undefined;
   },
   previousData:
     | {
         visible: boolean;
-        currentPlayerIndex: PlayerIndex | null;
+        currentPlayerIndex: PlayerIndex | undefined;
       }
     | undefined,
 ): void {
   const { currentPlayerArea } = globals.elements;
-  if (currentPlayerArea === null) {
+  if (currentPlayerArea === undefined) {
     return;
   }
 
@@ -88,7 +88,7 @@ export function onChanged(
   const winH = globals.stage.height();
   const { clueTokens } = globals.state.ongoingGame;
   const { currentPlayerIndex } = globals.state.ongoingGame.turn;
-  if (currentPlayerIndex === null) {
+  if (currentPlayerIndex === undefined) {
     return;
   }
   const currentPlayerHand =
@@ -120,7 +120,7 @@ export function onChanged(
       specialText = "(locked; may not be able to discard)";
       text3.fill(LABEL_COLOR);
     } else if (
-      globals.state.ongoingGame.stats.doubleDiscardCard !== null
+      globals.state.ongoingGame.stats.doubleDiscardCard !== undefined
       && globals.lobby.settings.hGroupConventions
     ) {
       specialText = '(potentially in a "Double Discard" situation)';
@@ -190,9 +190,9 @@ export function onChanged(
     // 2) we are exiting an in-game replay
     currentPlayerArea.arrow.rotation(rotation);
   } else {
-    if (currentPlayerArea.tween !== null) {
+    if (currentPlayerArea.tween !== undefined) {
       currentPlayerArea.tween.destroy();
-      currentPlayerArea.tween = null;
+      currentPlayerArea.tween = undefined;
     }
 
     // Since the "Current Player" area might have been hidden and/or not updated for a while, update
@@ -222,8 +222,6 @@ export function onChanged(
         if (
           // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
           currentPlayerArea.arrow !== undefined
-          // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-          && currentPlayerArea.arrow !== null
         ) {
           currentPlayerArea.arrow.rotation(unmodifiedRotation);
         }

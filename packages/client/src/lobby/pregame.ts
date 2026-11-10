@@ -2,7 +2,7 @@
 
 import type { Options, PlayerIndex } from "@hanabi-live/game";
 import { getVariant, MAX_PLAYERS, MIN_PLAYERS } from "@hanabi-live/game";
-import { assertNotNull, eRange, iRange } from "complete-common";
+import { assertDefined, eRange, iRange } from "complete-common";
 import { globals } from "../Globals";
 import * as chat from "../chat";
 import { H_GROUP_LEVEL_URL_PREFIX, PATH } from "../constants";
@@ -112,7 +112,7 @@ export function hide(updateURL = true): void {
 }
 
 export function draw(): void {
-  assertNotNull(
+  assertDefined(
     globals.game,
     'Attempted to draw the pre-game screen without having first received a "game" message from the server.',
   );
@@ -140,7 +140,7 @@ export function draw(): void {
 }
 
 function drawOptions() {
-  if (globals.game === null) {
+  if (globals.game === undefined) {
     return;
   }
 
@@ -200,7 +200,7 @@ function initializeOptionTooltips(options: Options) {
 }
 
 function drawPlayerBox(playerIndex: PlayerIndex) {
-  if (globals.game === null) {
+  if (globals.game === undefined) {
     return;
   }
 
@@ -358,7 +358,7 @@ function getHGroupLevelBadge(name: string) {
 export function userChanged(name: string): void {
   if (
     globals.currentScreen === Screen.PreGame
-    && globals.game !== null
+    && globals.game !== undefined
     && globals.game.players.some((player) => player.username === name)
   ) {
     draw();
@@ -389,7 +389,7 @@ export function drawSpectators(tableID: number): void {
   const list = $("#lobby-pregame-spectators");
   list.empty();
   container.hide();
-  if (globals.game === null) {
+  if (globals.game === undefined) {
     return;
   }
 
@@ -429,7 +429,7 @@ export function toggleStartGameButton(): void {
   // players.
   $("#nav-buttons-pregame-start").addClass("disabled");
 
-  if (globals.game === null) {
+  if (globals.game === undefined) {
     return;
   }
 
@@ -437,16 +437,16 @@ export function toggleStartGameButton(): void {
     globals.game.ownerID === globals.userID
     && globals.game.players.length >= MIN_PLAYERS
     && globals.game.players.length <= MAX_PLAYERS
-    // If this field is not equal to null it means that we are waiting a short time to re-enable the
-    // button after a player joined.
-    && globals.enableStartGameButtonTimeout === null
+    // If this field is not equal to undefined it means that we are waiting a short time to
+    // re-enable the button after a player joined.
+    && globals.enableStartGameButtonTimeout === undefined
   ) {
     $("#nav-buttons-pregame-start").removeClass("disabled");
   }
 }
 
 export function toggleJoinSpectateButtons(): void {
-  if (globals.game === null) {
+  if (globals.game === undefined) {
     return;
   }
 

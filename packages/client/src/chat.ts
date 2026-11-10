@@ -75,12 +75,12 @@ const lobbyChatDeletionState = new LobbyChatDeletionState();
 let lastPM = "";
 let datetimeLastChatInput = Date.now();
 let typedChatHistory: string[] = [];
-let typedChatHistoryIndex: number | null = null;
+let typedChatHistoryIndex: number | undefined;
 let typedChatHistoryPrefix = "";
-let tabCompleteWordListIndex: number | null = null;
+let tabCompleteWordListIndex: number | undefined;
 let tabCompleteWordList: string[] = [];
 let tabCompleteOriginalText = "";
-let activeChatInput: HTMLInputElement | null = null;
+let activeChatInput: HTMLInputElement | undefined;
 
 export function init(): void {
   attachChatInput(getHTMLInputElement("#lobby-chat-pregame-input"), "table");
@@ -202,7 +202,7 @@ export function attachChatInput(
     (event) => {
       // We have typed a new character, so reset the tab-complete variables.
       tabResetAutoCompleteList();
-      typedChatHistoryIndex = null;
+      typedChatHistoryIndex = undefined;
 
       if (event.key === "Enter") {
         send(room, element);
@@ -255,7 +255,7 @@ function input(element: HTMLInputElement, room: "lobby" | "table") {
   // eslint-disable-next-line complete/require-ascii
   // e.g. :100: --> 💯
   const newText = substituteEmoji(text);
-  if (newText !== null) {
+  if (newText !== undefined) {
     element.value = newText;
   }
 }
@@ -322,7 +322,7 @@ function sendText(room: string, msgRaw: string) {
 
   // Reset the typed history index.
   typedChatHistoryPrefix = "";
-  typedChatHistoryIndex = null;
+  typedChatHistoryIndex = undefined;
 
   // Check for chat commands.
   const args = msg.split(" ");
@@ -353,7 +353,7 @@ function keydown(element: HTMLInputElement, event: KeyboardEvent) {
   switch (event.key) {
     case "Backspace":
     case "Delete": {
-      typedChatHistoryIndex = null;
+      typedChatHistoryIndex = undefined;
       break;
     }
 
@@ -381,10 +381,13 @@ function keydown(element: HTMLInputElement, event: KeyboardEvent) {
   }
 }
 
-function historyMatchNext(current: string, increment: number): string | null {
-  if (typedChatHistoryIndex === null) {
+function historyMatchNext(
+  current: string,
+  increment: number,
+): string | undefined {
+  if (typedChatHistoryIndex === undefined) {
     if (increment < 0) {
-      return null;
+      return undefined;
     }
     typedChatHistoryIndex = -1;
     typedChatHistoryPrefix = current;
@@ -428,23 +431,23 @@ export function tab(element: HTMLInputElement, shiftKey: boolean): void {
   const finalWord = messageWords.at(-1)!;
 
   // Increment the tab counter.
-  if (tabCompleteWordListIndex === null) {
+  if (tabCompleteWordListIndex === undefined) {
     tabInitAutoCompleteList(shiftKey, finalWord);
   } else if (shiftKey) {
     // Shift-tab goes backwards
     tabCompleteWordListIndex--;
     if (tabCompleteWordListIndex === -1) {
-      tabCompleteWordListIndex = null;
+      tabCompleteWordListIndex = undefined;
     }
   } else {
     // Tab goes forwards.
     tabCompleteWordListIndex++;
     if (tabCompleteWordListIndex === tabCompleteWordList.length) {
-      tabCompleteWordListIndex = null;
+      tabCompleteWordListIndex = undefined;
     }
   }
 
-  if (tabCompleteWordListIndex === null) {
+  if (tabCompleteWordListIndex === undefined) {
     // We have rotated through all of the possible auto-complete entries (or there are no
     // auto-complete matches for this particular sequence of text), so return the original text.
     messageWords[messageWords.length - 1] = tabCompleteOriginalText;
@@ -486,7 +489,7 @@ function tabInitAutoCompleteList(shiftKey: boolean, finalWord: string) {
     }
   }
 
-  // If there were no possible matches, keep the "tabCompleteWordListIndex" as null as return.
+  // If there were no possible matches, keep the "tabCompleteWordListIndex" as undefined as return.
   if (tabCompleteWordList.length === 0) {
     return;
   }
@@ -499,7 +502,7 @@ function tabInitAutoCompleteList(shiftKey: boolean, finalWord: string) {
 
 export function tabResetAutoCompleteList(): void {
   tabCompleteWordList = [];
-  tabCompleteWordListIndex = null;
+  tabCompleteWordListIndex = undefined;
 }
 
 // eslint-disable-next-line complete/prefer-readonly-parameter-types
@@ -834,10 +837,10 @@ export function fillEmojis(message: string): string {
   return filledMessage;
 }
 
-export function substituteEmoji(text: string): string | null {
+export function substituteEmoji(text: string): string | undefined {
   const matches = text.match(/:\S+:/gu); // "\S" is a non-whitespace character.
   if (matches === null) {
-    return null;
+    return undefined;
   }
 
   for (const match of matches) {
@@ -849,7 +852,7 @@ export function substituteEmoji(text: string): string | null {
     }
   }
 
-  return null;
+  return undefined;
 }
 
 function fillTwitchEmotes(message: string) {

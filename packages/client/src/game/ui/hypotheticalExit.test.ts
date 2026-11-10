@@ -37,9 +37,9 @@ function setup(shared: boolean) {
             datetimeStarted: "2026-01-01T00:00:00.000Z",
             spoilerFree: false,
             restartDeclined: [],
-            hypothetical: null,
+            hypothetical: undefined,
           }
-        : null,
+        : undefined,
     },
   });
   const send = vi.fn();
@@ -65,7 +65,7 @@ describe("hypothetical exit", () => {
       tableID: 42,
       type: "hypoEnd",
     });
-    expect(store.getState().replay.hypothetical).not.toBeNull();
+    expect(store.getState().replay.hypothetical).not.toBeUndefined();
 
     // An earlier action can arrive after Exit was clicked but before hypoEnd.
     store.dispatch({
@@ -78,7 +78,7 @@ describe("hypothetical exit", () => {
     });
 
     finishHypothetical();
-    expect(store.getState().replay.hypothetical).toBeNull();
+    expect(store.getState().replay.hypothetical).toBeUndefined();
     expect(send).toHaveBeenCalledTimes(1);
   });
 
@@ -87,7 +87,7 @@ describe("hypothetical exit", () => {
 
     endHypothetical();
 
-    expect(store.getState().replay.hypothetical).toBeNull();
+    expect(store.getState().replay.hypothetical).toBeUndefined();
     expect(send).not.toHaveBeenCalled();
   });
 
@@ -95,7 +95,7 @@ describe("hypothetical exit", () => {
     const { store, send } = setup(true);
     finishHypothetical();
     finishHypothetical();
-    expect(store.getState().replay.hypothetical).toBeNull();
+    expect(store.getState().replay.hypothetical).toBeUndefined();
     expect(send).not.toHaveBeenCalled();
   });
 });

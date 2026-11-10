@@ -40,7 +40,7 @@ const playDiscardMessage = getHTMLElement("#play-discard-message");
 const playDiscardTitle = getHTMLElement("#play-discard-title");
 
 function selectNextPlayerTarget() {
-  if (globals.state.replay.hypothetical === null) {
+  if (globals.state.replay.hypothetical === undefined) {
     globals.elements.clueTargetButtonGroup!.selectNextTarget();
   } else {
     globals.elements.clueTargetButtonGroup2!.selectNextTarget();
@@ -109,7 +109,7 @@ function keydown(event: JQuery.KeyDownEvent) {
   // upon going back to the lobby, but double check just in case.)
   if (
     globals.lobby.currentScreen !== Screen.Game
-    || globals.editingNote !== null
+    || globals.editingNote !== undefined
     || isModalVisible()
   ) {
     return;
@@ -122,7 +122,7 @@ function keydown(event: JQuery.KeyDownEvent) {
       return;
     }
 
-    if (globals.state.replay.hypothetical !== null) {
+    if (globals.state.replay.hypothetical !== undefined) {
       // Escape = If in a hypothetical, exit back to the replay.
       hypothetical.endHypothetical();
       return;
@@ -233,7 +233,7 @@ function keydown(event: JQuery.KeyDownEvent) {
   // Delete = Delete the note from the card that we are currently hovering-over, if any.
   if (
     event.which === KeyCode.KEY_DELETE
-    && globals.activeHover !== null
+    && globals.activeHover !== undefined
     && globals.activeHover instanceof HanabiCard
   ) {
     const card: HanabiCard = globals.activeHover;
@@ -243,7 +243,7 @@ function keydown(event: JQuery.KeyDownEvent) {
 
   // Replay hotkeys
   if (
-    globals.state.replay.hypothetical === null
+    globals.state.replay.hypothetical === undefined
     || replay.isSpectatingHypothetical()
   ) {
     switch (event.which) {
@@ -260,7 +260,7 @@ function keydown(event: JQuery.KeyDownEvent) {
 
       case KeyCode.KEY_UP:
       case KeyCode.KEY_DOWN: {
-        if (globals.state.replay.shared !== null) {
+        if (globals.state.replay.shared !== undefined) {
           replay.toggleSharedSegments();
         } else if (!globals.state.finished) {
           if (globals.state.replay.active) {
@@ -323,9 +323,9 @@ function getNormalGameplayHotkeyFunction(
   const ourTurnInOngoingGame =
     !globals.state.replay.active && currentPlayerIndex === ourPlayerIndex;
   const amSharedReplayLeaderInHypothetical =
-    globals.state.replay.shared !== null
+    globals.state.replay.shared !== undefined
     && globals.state.replay.shared.amLeader
-    && globals.state.replay.hypothetical !== null;
+    && globals.state.replay.hypothetical !== undefined;
   const shouldHaveKeyboardHotkeysForActions =
     ourTurnInOngoingGame || amSharedReplayLeaderInHypothetical;
   if (!shouldHaveKeyboardHotkeysForActions) {
@@ -333,7 +333,7 @@ function getNormalGameplayHotkeyFunction(
   }
 
   const ongoingGameState =
-    globals.state.replay.hypothetical === null
+    globals.state.replay.hypothetical === undefined
       ? globals.state.ongoingGame
       : globals.state.replay.hypothetical.ongoing;
 
@@ -370,7 +370,7 @@ function keyup(event: JQuery.KeyUpEvent) {
 function sharedReplaySendSound(sound: "buzz" | "clap" | "holy" | "nooo") {
   if (
     // Only send sound effects in shared replays.
-    globals.state.replay.shared === null
+    globals.state.replay.shared === undefined
     // Only send sound effects for shared replay leaders.
     || !globals.state.replay.shared.amLeader
   ) {
@@ -395,16 +395,16 @@ function discard() {
 
 function promptCardOrder(actionType: ActionType.Play | ActionType.Discard) {
   const playerIndex =
-    globals.state.replay.hypothetical === null
+    globals.state.replay.hypothetical === undefined
       ? globals.metadata.ourPlayerIndex
       : globals.state.replay.hypothetical.ongoing.turn.currentPlayerIndex;
 
-  if (playerIndex === null) {
+  if (playerIndex === undefined) {
     return;
   }
 
   const hand =
-    globals.state.replay.hypothetical === null
+    globals.state.replay.hypothetical === undefined
       ? globals.state.ongoingGame.hands[playerIndex]
       : globals.state.replay.hypothetical.ongoing.hands[playerIndex];
 
@@ -450,7 +450,12 @@ function promptCardOrder(actionType: ActionType.Play | ActionType.Discard) {
     }
   };
 
-  showPrompt("#play-discard-modal", null, playDiscardCard, playDiscardButton);
+  showPrompt(
+    "#play-discard-modal",
+    undefined,
+    playDiscardCard,
+    playDiscardButton,
+  );
 }
 
 function click(element: Konva.Node) {
@@ -478,7 +483,7 @@ function sendAction(
   actionType: ActionType.Play | ActionType.Discard,
   target: CardOrder,
 ) {
-  if (globals.state.replay.hypothetical === null) {
+  if (globals.state.replay.hypothetical === undefined) {
     globals.lobby.conn!.send("action", {
       tableID: globals.lobby.tableID,
       type: actionType,

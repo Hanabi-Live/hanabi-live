@@ -64,7 +64,7 @@ const ARROW_ANCHOR = {
 const CARD_ARROW_BACKOFF = 0.075;
 
 function getClueArrowColor(
-  element: Konva.Node | null,
+  element: Konva.Node | undefined,
   preview: boolean,
 ): string {
   if (!(element instanceof HanabiCard)) {
@@ -102,13 +102,13 @@ export function hideAll(potentialClue = false): void {
 
   let changed = false;
   for (const arrow of globals.elements.arrows) {
-    if (arrow.pointingTo !== null) {
+    if (arrow.pointingTo !== undefined) {
       changed = true;
-      arrow.pointingTo = null;
+      arrow.pointingTo = undefined;
       arrow.hide();
-      if (arrow.tween !== null) {
+      if (arrow.tween !== undefined) {
         arrow.tween.destroy();
-        arrow.tween = null;
+        arrow.tween = undefined;
       }
     }
   }
@@ -119,9 +119,9 @@ export function hideAll(potentialClue = false): void {
 
 export function set(
   i: number,
-  element: Konva.Node | null,
-  giverPlayerIndex: PlayerIndex | null,
-  clue: Clue | HiddenClue | null,
+  element: Konva.Node | undefined,
+  giverPlayerIndex: PlayerIndex | undefined,
+  clue: Clue | HiddenClue | undefined,
   preview = false,
   immediate = false,
 ): void {
@@ -167,7 +167,7 @@ export function set(
   arrow.text.rotation(FULL_TURN_DEGREES - rot);
 
   // Set the arrow features.
-  if (clue === null) {
+  if (clue === undefined) {
     // This is a highlight arrow.
     const color = ARROW_COLOR.HIGHLIGHT;
     arrow.base.fill(color);
@@ -268,15 +268,15 @@ export function set(
     }
   }
 
-  if (arrow.tween !== null) {
+  if (arrow.tween !== undefined) {
     arrow.tween.destroy();
-    arrow.tween = null;
+    arrow.tween = undefined;
   }
   if (
     immediate
     || globals.animateFast
     || globals.isResizing
-    || giverPlayerIndex === null
+    || giverPlayerIndex === undefined
   ) {
     const pos = getPos(element!, rot);
     arrow.setAbsolutePosition(pos);
@@ -295,8 +295,8 @@ function getPos(element: Konva.Node, rot: number) {
     // current position.
     if (
       element.tweening
-      && element.tweenFinalPosition !== null
-      && element.tweenFinalScale !== null
+      && element.tweenFinalPosition !== undefined
+      && element.tweenFinalScale !== undefined
     ) {
       const origPos = element.layout.position();
       const origScale = element.layout.scale();
@@ -408,7 +408,7 @@ export function click(
   // Do not allow followers in a shared replay to summon arrows because it could be misleading as to
   // who the real replay leader is.
   if (
-    globals.state.replay.shared !== null
+    globals.state.replay.shared !== undefined
     && !globals.state.replay.shared.amLeader
   ) {
     return;
@@ -417,7 +417,7 @@ export function click(
   // Do not allow shared replay leaders to summon arrows when they are not in shared turns because
   // it could be misleading as to whether or not the arrows are being shown to the other players.
   if (
-    globals.state.replay.shared !== null
+    globals.state.replay.shared !== undefined
     && !globals.state.replay.shared.useSharedSegments
   ) {
     return;
@@ -446,7 +446,7 @@ export function toggle(
 
   hideAll();
   if (show) {
-    set(0, element, null, null);
+    set(0, element, undefined, undefined);
 
     // If this element has a tooltip and it is open, close it.
     if (element.tooltipName !== undefined && element.tooltipName !== "") {
@@ -455,7 +455,7 @@ export function toggle(
   }
 
   if (
-    globals.state.replay.shared !== null
+    globals.state.replay.shared !== undefined
     && globals.state.replay.shared.amLeader
     && globals.state.replay.shared.useSharedSegments
   ) {

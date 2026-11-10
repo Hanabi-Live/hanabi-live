@@ -42,9 +42,9 @@ export interface GameState {
 
   /**
    * For Sudoku variants, this denotes the first rank played of this stack. If the stack is not
-   * started yet, then the value stored is null.
+   * started yet, then the value stored is undefined.
    */
-  readonly playStackStarts: Readonly<Tuple<Rank | null, NumSuits>>;
+  readonly playStackStarts: Readonly<Tuple<Rank | undefined, NumSuits>>;
 
   /** For "Throw It in a Hole" variants. All played cards go into the hole. */
   readonly hole: readonly CardOrder[];

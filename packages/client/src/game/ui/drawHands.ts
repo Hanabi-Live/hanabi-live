@@ -808,7 +808,7 @@ function drawDetrimentalCharacters(
 
   const characterID = globals.metadata.characterAssignments[i];
   const character =
-    characterID === null || characterID === undefined
+    characterID === undefined
       ? UNASSIGNED_CHARACTER
       : getCharacter(characterID);
 

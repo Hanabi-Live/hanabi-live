@@ -22,7 +22,7 @@ export class HanabiUI {
   globals: UIGlobals;
   private readonly resizeHandler: () => void;
   private readonly themeChangeHandler: () => void;
-  private resizeRequestAnimationFrame: number | null = null;
+  private resizeRequestAnimationFrame: number | undefined = undefined;
   private resizeFrame = 0;
   private lastResizeEventFrame = 0;
   private liveResizeActive = false;
@@ -107,7 +107,7 @@ export class HanabiUI {
 
   // eslint-disable-next-line @typescript-eslint/class-methods-use-this
   updateChatLabel(): void {
-    if (globals.elements.chatButton === null) {
+    if (globals.elements.chatButton === undefined) {
       return;
     }
 
@@ -143,9 +143,9 @@ export class HanabiUI {
   destroy(): void {
     window.removeEventListener("resize", this.resizeHandler);
     document.removeEventListener("theme_change", this.themeChangeHandler);
-    if (this.resizeRequestAnimationFrame !== null) {
+    if (this.resizeRequestAnimationFrame !== undefined) {
       cancelAnimationFrame(this.resizeRequestAnimationFrame);
-      this.resizeRequestAnimationFrame = null;
+      this.resizeRequestAnimationFrame = undefined;
     }
     unmountClueLog();
     keyboard.destroy();
@@ -156,7 +156,7 @@ export class HanabiUI {
 
   private scheduleResizeFrame(): void {
     this.resizeRequestAnimationFrame = requestAnimationFrame(() => {
-      this.resizeRequestAnimationFrame = null;
+      this.resizeRequestAnimationFrame = undefined;
       this.resizeFrame++;
 
       this.applyLiveResizeScale();
@@ -223,12 +223,15 @@ export class HanabiUI {
     drawUI();
 
     // Re-subscribe the cards to the state store.
-    if (visibleState !== null) {
+    if (visibleState !== undefined) {
       cardsView.onCardsPossiblyAdded(visibleState.deck.length);
     }
 
     // Re-register the state observers to bind them to the new UI elements.
-    if (this.globals.stateObserver !== null && this.globals.store !== null) {
+    if (
+      this.globals.stateObserver !== undefined
+      && this.globals.store !== undefined
+    ) {
       this.globals.stateObserver.registerObservers(this.globals.store);
     }
     cluesView.refreshArrows(false);

@@ -20,8 +20,8 @@ export function shouldShowYourTurnIndicatorChanged(shouldShow: boolean): void {
 
 export function shouldShowTurnUI(state: State): boolean {
   return (
-    (state.replay.hypothetical !== null
-      && (state.replay.shared === null || state.replay.shared.amLeader))
+    (state.replay.hypothetical !== undefined
+      && (state.replay.shared === undefined || state.replay.shared.amLeader))
     || (state.playing
       && !state.replay.active
       && state.ongoingGame.turn.currentPlayerIndex
@@ -73,7 +73,9 @@ export function shouldEnableBottomDeckBlindPlayChanged(
   }
 }
 
-export function onLastClueTypeChanged(lastClueType: ClueType | null): void {
+export function onLastClueTypeChanged(
+  lastClueType: ClueType | undefined,
+): void {
   function setColorClueButtonsVisible(visible: boolean) {
     for (const button of globals.elements.colorClueButtons) {
       button.visible(visible);
@@ -89,7 +91,7 @@ export function onLastClueTypeChanged(lastClueType: ClueType | null): void {
   // Hide some specific clue buttons in certain variants with clue restrictions.
   if (globals.variant.alternatingClues) {
     switch (lastClueType) {
-      case null: {
+      case undefined: {
         setColorClueButtonsVisible(true);
         setRankClueButtonsVisible(true);
         break;

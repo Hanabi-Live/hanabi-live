@@ -10,20 +10,20 @@ export interface TurnState {
    *
    * The client makes a copy of the entire game state whenever "segment" changes.
    *
-   * This is null when dealing the initial cards, then set to 0.
+   * This is undefined when dealing the initial cards, then set to 0.
    */
-  readonly segment: number | null;
+  readonly segment: number | undefined;
 
   readonly turnNum: number;
 
   /**
-   * Initialized to the first seat. If this is null, it signifies that the game is over and will
-   * prevent any name frames from being highlighted on subsequent segments.
+   * Initialized to the first seat. If this is undefined, it signifies that the game is over and
+   * will prevent any name frames from being highlighted on subsequent segments.
    */
-  readonly currentPlayerIndex: PlayerIndex | null;
+  readonly currentPlayerIndex: PlayerIndex | undefined;
 
   readonly playOrderInverted: boolean;
-  readonly endTurnNum: number | null;
+  readonly endTurnNum: number | undefined;
   readonly cardsPlayedOrDiscardedThisTurn: number;
   readonly cardsDiscardedThisTurn: number;
   readonly cluesGivenThisTurn: number;

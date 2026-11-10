@@ -33,29 +33,29 @@ export class ButtonGroup extends Konva.Group {
           }
         }
 
-        that.fire("change", null);
+        that.fire("change", undefined);
       },
     );
   }
 
-  getPressed(): ClueButton | null {
+  getPressed(): ClueButton | undefined {
     for (const button of this.list) {
       if (button.pressed) {
         return button;
       }
     }
 
-    return null;
+    return undefined;
   }
 
-  getPressedIndex(): number | null {
+  getPressedIndex(): number | undefined {
     for (const [i, button] of this.list.entries()) {
       if (button.pressed) {
         return i;
       }
     }
 
-    return null;
+    return undefined;
   }
 
   clearPressed(): void {

@@ -13,7 +13,7 @@ vi.mock("../../UIGlobals", () => ({
     lobby: { settings: { soundMove: 0, hGroupConventions: false } },
     isResizing: false,
     playStartSound: false,
-    state: { replay: { hypothetical: null, states: [] }, finished: false },
+    state: { replay: { hypothetical: undefined, states: [] }, finished: false },
     metadata: { ourPlayerIndex: 0 },
     variant: { throwItInAHole: false },
     game: { sounds: { play: vi.fn() } },

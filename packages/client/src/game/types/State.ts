@@ -7,7 +7,7 @@ import type { ReplayState } from "./ReplayState";
 import type { UIState } from "./UIState";
 
 export interface State {
-  readonly visibleState: GameState | null; // Null during initialization
+  readonly visibleState: GameState | undefined; // Null during initialization
   readonly ongoingGame: GameState; // In a replay, this is the state of the final turn
   readonly replay: ReplayState;
 
@@ -24,11 +24,11 @@ export interface State {
   readonly metadata: GameMetadata;
 
   // We do not use a `Date` object for dates in order to speed up state copying.
-  readonly datetimeStarted: string | null;
-  readonly datetimeFinished: string | null;
+  readonly datetimeStarted: string | undefined;
+  readonly datetimeFinished: string | undefined;
 
   readonly cardIdentities: readonly CardIdentity[];
-  readonly premove: ClientAction | null;
+  readonly premove: ClientAction | undefined;
   readonly pause: PauseState;
   readonly spectators: Spectator[];
 

@@ -23,7 +23,7 @@ vi.mock("../../UIGlobals", () => ({
       },
     },
     state: {
-      premove: null,
+      premove: undefined,
     },
     layers: {
       UI: {

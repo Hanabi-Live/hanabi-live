@@ -45,14 +45,14 @@ function renderLog(
     visibleState: { clues },
     metadata: {
       playerNames: ["Alice", "Bob"],
-      characterAssignments: [null, null],
+      characterAssignments: [undefined, undefined],
     },
   } as unknown as State;
   render(
     <Provider store={createStore(() => state)}>
       <ClueLog
         colorblindMode={options.colorblindMode ?? false}
-        hoveredCardOrder={(options.hoveredCardOrder ?? null) as CardOrder}
+        hoveredCardOrder={(options.hoveredCardOrder ?? undefined) as CardOrder}
         stageHeight={STAGE_HEIGHT}
         stageWidth={1600}
         variant={getDefaultVariant()}

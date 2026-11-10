@@ -1,5 +1,3 @@
-/* eslint-disable unicorn/no-null */
-
 import { describe, expect, test } from "bun:test";
 import type { Tuple } from "complete-common";
 import { eRange, newArray } from "complete-common";
@@ -19,12 +17,12 @@ const REVERSED_VARIANT = getVariant("Reversed (6 Suits)");
 
 const DEFAULT_PLAY_STACK_STARTS = newArray(
   DEFAULT_VARIANT.suits.length,
-  null,
-) as Tuple<Rank | null, NumSuits>;
+  undefined,
+) as Tuple<Rank | undefined, NumSuits>;
 const DEFAULT_PLAY_STACK_STARTS_REVERSED = newArray(
   REVERSED_VARIANT.suits.length,
-  null,
-) as Tuple<Rank | null, NumSuits>;
+  undefined,
+) as Tuple<Rank | undefined, NumSuits>;
 
 describe("direction", () => {
   test("returns Up for No Variant, not finished", () => {

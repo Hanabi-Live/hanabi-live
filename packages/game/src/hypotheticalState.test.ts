@@ -1,5 +1,3 @@
-/* eslint-disable unicorn/no-null */
-
 import { describe, expect, spyOn, test } from "bun:test";
 import { MAX_STRIKES } from "./generated/protocol";
 import {
@@ -50,7 +48,7 @@ describe("hypothetical state", () => {
     },
   );
 
-  test.each([1, null] as const)(
+  test.each([1, undefined] as const)(
     "captures starting player %s from the selected state",
     (currentPlayerIndex) => {
       const selected = {
@@ -91,7 +89,10 @@ describe("hypothetical state", () => {
       [],
       [],
     ]);
-    expect(state.morphedIdentities[0]).toEqual({ suitIndex: null, rank: 3 });
+    expect(state.morphedIdentities[0]).toEqual({
+      suitIndex: undefined,
+      rank: 3,
+    });
   });
 
   test("morph and unmorph preserve the game state and sparse indexes", () => {
@@ -114,8 +115,8 @@ describe("hypothetical state", () => {
       metadata,
     );
     expect(state.morphedIdentities[30]).toEqual({
-      suitIndex: null,
-      rank: null,
+      suitIndex: undefined,
+      rank: undefined,
     });
     expect(state.morphedIdentities[0]).toBeUndefined();
     state = hypotheticalStateReducer(
@@ -292,8 +293,8 @@ describe("hypothetical state", () => {
     );
     expect(state.drawnCardsInHypothetical).toEqual([order, order + 1]);
     expect(state.morphedIdentities[order]).toEqual({
-      suitIndex: null,
-      rank: null,
+      suitIndex: undefined,
+      rank: undefined,
     });
     expect(state.ongoing.cardsRemainingInTheDeck).toBe(
       startingState.cardsRemainingInTheDeck - 2,
@@ -337,8 +338,8 @@ describe("hypothetical state", () => {
     expect(state.showDrawnCards).toBe(false);
     for (const drawnOrder of [order, order + 1, order + 2]) {
       expect(state.morphedIdentities[drawnOrder]).toEqual({
-        suitIndex: null,
-        rank: null,
+        suitIndex: undefined,
+        rank: undefined,
       });
     }
     expect(state.morphedIdentities[0]).toEqual({ suitIndex: 1, rank: 2 });
@@ -616,7 +617,7 @@ describe("hypothetical state", () => {
       false,
       metadata,
     );
-    expect(ended.ongoing.turn.currentPlayerIndex).toBeNull();
+    expect(ended.ongoing.turn.currentPlayerIndex).toBeUndefined();
 
     const next = hypotheticalStateReducer(
       ended,
@@ -660,7 +661,7 @@ describe("hypothetical state", () => {
         false,
         metadata,
       );
-      expect(state.ongoing.turn.currentPlayerIndex).toBe(ends ? null : 1);
+      expect(state.ongoing.turn.currentPlayerIndex).toBe(ends ? undefined : 1);
     },
   );
 });

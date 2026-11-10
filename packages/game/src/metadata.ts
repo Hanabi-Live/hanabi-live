@@ -1,5 +1,3 @@
-/* eslint-disable unicorn/no-null */
-
 import type { Tuple } from "complete-common";
 import { newArray } from "complete-common";
 import { DEFAULT_PLAYER_NAMES } from "./constants";
@@ -32,8 +30,8 @@ export function getDefaultMetadata(
     string,
     NumPlayers
   >;
-  const characterAssignments = newArray(numPlayers, null) as Tuple<
-    number | null,
+  const characterAssignments = newArray(numPlayers, undefined) as Tuple<
+    number | undefined,
     NumPlayers
   >;
   const characterMetadata = newArray(numPlayers, -1) as Tuple<

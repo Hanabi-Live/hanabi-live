@@ -28,7 +28,7 @@ function handlePremove() {
   const { premove } = globals.state;
   const { clueTokens } = globals.state.ongoingGame;
 
-  if (premove === null) {
+  if (premove === undefined) {
     return;
   }
 
@@ -36,7 +36,7 @@ function handlePremove() {
   const oldPremove = { ...premove };
   globals.store!.dispatch({
     type: "premove",
-    premove: null,
+    premove: undefined,
   });
 
   // Perform some validation.
@@ -89,7 +89,7 @@ export function resetSelectedClue(): void {
 }
 
 export function end(clientAction: ClientAction): void {
-  if (globals.state.replay.hypothetical !== null) {
+  if (globals.state.replay.hypothetical !== undefined) {
     hypothetical.sendHypotheticalAction(clientAction);
     return;
   }

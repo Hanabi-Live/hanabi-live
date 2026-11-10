@@ -94,7 +94,7 @@ interface ActionCardIdentities {
 
 interface ActionPremove {
   readonly type: "premove";
-  readonly premove: ClientAction | null;
+  readonly premove: ClientAction | undefined;
 }
 
 interface ActionPause extends Readonly<

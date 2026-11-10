@@ -20,18 +20,18 @@ describe("stateReducer", () => {
     expect(newState).not.toStrictEqual(state);
     expect(state).toStrictEqual(unchangedState);
   });
-  test("has a null visibleState until a gameActionList is received", () => {
+  test("has a undefined visibleState until a gameActionList is received", () => {
     let state = initialState(defaultMetadata);
-    expect(state.visibleState).toBeNull();
+    expect(state.visibleState).toBeUndefined();
 
     state = stateReducer(state, draw(0, 0));
-    expect(state.visibleState).toBeNull();
+    expect(state.visibleState).toBeUndefined();
 
     state = stateReducer(state, replayEnter());
-    expect(state.visibleState).toBeNull();
+    expect(state.visibleState).toBeUndefined();
 
     state = stateReducer(state, { type: "gameActionList", actions: [] });
-    expect(state.visibleState).not.toBeNull();
+    expect(state.visibleState).not.toBeUndefined();
   });
   test("joining a shared replay applies its efficiency modifier", () => {
     const state = stateReducer(initialState(defaultMetadata), {

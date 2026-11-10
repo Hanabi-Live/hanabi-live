@@ -5,12 +5,12 @@ import type { PlayerIndex } from "../types/PlayerIndex";
 
 export function ddaReducer(
   deck: readonly CardState[],
-  dda: number | null,
-  currentPlayerIndex: PlayerIndex | null,
+  dda: number | undefined,
+  currentPlayerIndex: PlayerIndex | undefined,
 ): readonly CardState[] {
   const newDeck = [...deck];
 
-  if (dda === null || currentPlayerIndex === null) {
+  if (dda === undefined || currentPlayerIndex === undefined) {
     for (const [order, card] of newDeck.entries()) {
       newDeck[order] = {
         ...card,

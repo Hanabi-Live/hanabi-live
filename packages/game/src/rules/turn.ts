@@ -1,5 +1,3 @@
-/* eslint-disable unicorn/no-null */
-
 import { getCharacter } from "../gameData";
 import { PANICKY_MAX_CLUES } from "../generated/protocol";
 import type { GameMetadata } from "../interfaces/GameMetadata";
@@ -50,13 +48,13 @@ export function shouldPlayOrderInvert(characterName: string): boolean {
 }
 
 export function getNextPlayerIndex(
-  currentPlayerIndex: PlayerIndex | null,
+  currentPlayerIndex: PlayerIndex | undefined,
   numPlayers: NumPlayers,
   turnsInverted: boolean,
-): PlayerIndex | null {
+): PlayerIndex | undefined {
   // If the game is already over, then there is no next player.
-  if (currentPlayerIndex === null) {
-    return null;
+  if (currentPlayerIndex === undefined) {
+    return undefined;
   }
 
   if (turnsInverted) {
@@ -78,12 +76,12 @@ export function getNextPlayerIndex(
 
 export function getEndGameLength(
   options: Options,
-  characterAssignments: Readonly<Array<number | null>>,
+  characterAssignments: Readonly<Array<number | undefined>>,
 ): number {
   // The Contrarian detrimental character has a 2-turn end game.
   if (options.detrimentalCharacters) {
     for (const characterID of characterAssignments) {
-      if (characterID !== null) {
+      if (characterID !== undefined) {
         const character = getCharacter(characterID);
         if (character.name === "Contrarian") {
           return 2;

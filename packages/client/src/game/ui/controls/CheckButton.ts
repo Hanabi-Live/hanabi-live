@@ -1,4 +1,4 @@
-import { assertNotNull } from "complete-common";
+import { assertDefined } from "complete-common";
 import Konva from "konva";
 import { globals } from "../UIGlobals";
 import {
@@ -29,11 +29,11 @@ export class CheckButton extends Konva.Group {
   pressed = false;
 
   background: Konva.Rect;
-  checkImageOn: Konva.Image | null = null;
-  checkImageOff: Konva.Image | null = null;
-  checkImageOnDisabled: Konva.Image | null = null;
-  checkImageOffDisabled: Konva.Image | null = null;
-  textElement: Konva.Text | null = null;
+  checkImageOn: Konva.Image | undefined = undefined;
+  checkImageOff: Konva.Image | undefined = undefined;
+  checkImageOnDisabled: Konva.Image | undefined = undefined;
+  checkImageOffDisabled: Konva.Image | undefined = undefined;
+  textElement: Konva.Text | undefined = undefined;
 
   tooltipName = "";
   tooltipContent = "";
@@ -110,7 +110,7 @@ export class CheckButton extends Konva.Group {
 
     this.updateImageVisibility();
 
-    this.textElement = null;
+    this.textElement = undefined;
     if (config["text"] !== undefined) {
       this.textElement = new Konva.Text({
         x: checkX + checkW + CHECKBOX_TEXT_GAP * h,
@@ -154,7 +154,7 @@ export class CheckButton extends Konva.Group {
     }
     this.enabled = enabled;
 
-    if (this.textElement !== null) {
+    if (this.textElement !== undefined) {
       this.textElement.fill(enabled ? "white" : BUTTON_DISABLED_TEXT_COLOR);
     }
 
@@ -178,7 +178,7 @@ export class CheckButton extends Konva.Group {
   }
 
   text(newText: string): void {
-    assertNotNull(
+    assertDefined(
       this.textElement,
       'The "text()" method was called on a non-text Button.',
     );
@@ -187,7 +187,7 @@ export class CheckButton extends Konva.Group {
   }
 
   fill(newFill: string): void {
-    assertNotNull(
+    assertDefined(
       this.textElement,
       'The "fill()" method was called on a non-text Button.',
     );

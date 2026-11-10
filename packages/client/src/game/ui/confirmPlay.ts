@@ -21,7 +21,7 @@ export function confirmPlay(
   const { ongoingGame } = globals.state;
 
   const shouldWarn =
-    globals.state.replay.hypothetical === null
+    globals.state.replay.hypothetical === undefined
     && !globals.options.speedrun
     && !globals.variant.throwItInAHole
     // Do not use warnings for preplays unless the next strike would end the game.

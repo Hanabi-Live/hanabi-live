@@ -142,7 +142,7 @@ export class NameFrame extends Konva.Group {
         || globals.options.speedrun
         || globals.playerTimes[this.playerIndex] === undefined
         || globals.state.finished
-        || globals.editingNote !== null
+        || globals.editingNote !== undefined
       ) {
         return;
       }
@@ -254,7 +254,7 @@ export class NameFrame extends Konva.Group {
             source: "id",
             databaseID,
             visibility:
-              globals.state.replay.shared === null ? "solo" : "shared",
+              globals.state.replay.shared === undefined ? "solo" : "shared",
             shadowingPlayerIndex,
           });
         }, 0);

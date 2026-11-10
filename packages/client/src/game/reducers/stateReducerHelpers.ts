@@ -6,11 +6,11 @@ import { EndCondition } from "@hanabi-live/game";
  * state of the game (for the purposes of replays).
  */
 export function shouldStoreSegment(
-  segment: number | null,
-  previousSegment: number | null,
+  segment: number | undefined,
+  previousSegment: number | undefined,
   action: GameAction,
 ): boolean {
-  if (segment === null) {
+  if (segment === undefined) {
     // The game is still doing the initial deal.
     return false;
   }

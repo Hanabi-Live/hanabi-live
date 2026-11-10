@@ -14,7 +14,7 @@ export function lobbyIdleInit(): void {
 }
 
 function mousemoveOrKeypress() {
-  if (globals.conn === null) {
+  if (globals.conn === undefined) {
     return;
   }
 
@@ -27,7 +27,7 @@ function mousemoveOrKeypress() {
 }
 
 function timerIncrement() {
-  if (globals.conn === null) {
+  if (globals.conn === undefined) {
     return;
   }
 

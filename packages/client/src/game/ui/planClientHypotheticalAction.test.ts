@@ -68,17 +68,17 @@ function makeContext(rank: Rank = 1): PlanHypotheticalActionContext {
     cardViews: deck.map((card) => ({
       state: card,
       isStackBase: false,
-      visibleSuitIndex: null,
-      visibleRank: null,
+      visibleSuitIndex: undefined,
+      visibleRank: undefined,
     })),
   };
 }
 
 function applyPlan(
-  actions: readonly GameAction[] | null,
+  actions: readonly GameAction[] | undefined,
   context: PlanHypotheticalActionContext,
 ): GameState {
-  expect(actions).not.toBeNull();
+  expect(actions).not.toBeUndefined();
   let state = context.gameState;
   for (const action of actions!) {
     state = gameReducer(
@@ -127,7 +127,7 @@ describe("client hypothetical planning", () => {
         { type: "play", order: bottomOrder },
         context,
       );
-      expect(actions).not.toBeNull();
+      expect(actions).not.toBeUndefined();
       expect(dispatch).toHaveBeenCalledTimes(3);
       for (const [index, action] of actions!.entries()) {
         expect(dispatch).toHaveBeenNthCalledWith(index + 1, {
@@ -199,7 +199,7 @@ describe("client hypothetical planning", () => {
     expect(
       context.cardViews.find(({ state }) => state.order === bottomOrder),
     ).toBeUndefined();
-    expect(planHypotheticalAction(intent, context)).toBeNull();
+    expect(planHypotheticalAction(intent, context)).toBeUndefined();
 
     const actions = planClientHypotheticalAction(intent, context);
     expect(actions).toEqual<unknown>([
@@ -272,7 +272,7 @@ describe("client hypothetical planning", () => {
         { type: "play", order: bottomOrder },
         context,
       ),
-    ).toBeNull();
+    ).toBeUndefined();
   });
 
   test.each([2, 3])(
@@ -289,7 +289,7 @@ describe("client hypothetical planning", () => {
           { type: "play", order: order as CardOrder },
           context,
         ),
-      ).toBeNull();
+      ).toBeUndefined();
     },
   );
 
@@ -299,7 +299,7 @@ describe("client hypothetical planning", () => {
         { type: "play", order: 3 as CardOrder },
         makeContext(),
       ),
-    ).toBeNull();
+    ).toBeUndefined();
   });
 
   test("requires the remaining count to agree with the final order", () => {
@@ -313,6 +313,6 @@ describe("client hypothetical planning", () => {
         { type: "play", order: bottomOrder },
         context,
       ),
-    ).toBeNull();
+    ).toBeUndefined();
   });
 });

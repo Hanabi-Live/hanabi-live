@@ -1,6 +1,6 @@
 // In-game chat
 
-import { assertNotNull, parseFloatSafe } from "complete-common";
+import { assertDefined, parseFloatSafe } from "complete-common";
 import interact from "interactjs";
 import { globals } from "../Globals";
 import { FADE_TIME_MS, LOCAL_STORAGE_KEY } from "../constants";
@@ -159,7 +159,7 @@ export function show(focusInput = true): void {
     globals.chatUnread = 0;
 
     // We need to notify the server that we have read everything.
-    assertNotNull(
+    assertDefined(
       globals.conn,
       'The "globals.conn" object is not initialized.',
     );
@@ -168,7 +168,7 @@ export function show(focusInput = true): void {
     });
 
     // Reset the "Chat" UI button back to normal.
-    assertNotNull(globals.ui, 'The "globals.ui" object is not initialized.');
+    assertDefined(globals.ui, 'The "globals.ui" object is not initialized.');
     globals.ui.updateChatLabel();
   }
 

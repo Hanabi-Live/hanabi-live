@@ -66,7 +66,7 @@ export interface ClueLogProps {
   readonly variant: Variant;
   readonly colorblindMode: boolean;
   /** The card under the mouse, whose clues are highlighted. */
-  readonly hoveredCardOrder: CardOrder | null;
+  readonly hoveredCardOrder: CardOrder | undefined;
 }
 
 export function ClueLog({
@@ -139,8 +139,8 @@ export function ClueLog({
   );
 }
 
-function getMatch(clue: StateClue, cardOrder: CardOrder | null): Match {
-  if (cardOrder === null) {
+function getMatch(clue: StateClue, cardOrder: CardOrder | undefined): Match {
+  if (cardOrder === undefined) {
     return "none";
   }
   if (clue.list.includes(cardOrder)) {

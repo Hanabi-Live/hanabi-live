@@ -6,7 +6,7 @@ import type { Action } from "../../types/actions";
 import { globals } from "../UIGlobals";
 import { canPassTurnInHypothetical } from "../hypothetical";
 import type { Listener, Selector, Subscription } from "./observeStore";
-import { observeStore } from "./observeStore";
+import { observeStore, SKIP } from "./observeStore";
 import * as animateFastView from "./views/animateFastView";
 import * as cardLayoutView from "./views/cardLayoutView";
 import * as cardsView from "./views/cardsView";
@@ -30,7 +30,7 @@ import * as turnView from "./views/turnView";
 type Subscriptions = Array<Subscription<State, any>>;
 
 export class StateObserver {
-  private unsubscribe: Unsubscribe | null = null;
+  private unsubscribe: Unsubscribe | undefined = undefined;
 
   constructor(store: Store<State, Action>) {
     this.registerObservers(store);
@@ -54,7 +54,7 @@ export class StateObserver {
   }
 
   unregisterObservers(): void {
-    if (this.unsubscribe !== null) {
+    if (this.unsubscribe !== undefined) {
       this.unsubscribe();
     }
   }
@@ -74,11 +74,11 @@ function sub<T>(s: Selector<State, T>, l: Listener<T>) {
 
 /** A shorthand function used to subscribe an observer to the visible state. */
 function subVS<T>(s: Selector<GameState, T>, l: Listener<T>) {
-  // We do not want anything to fire if the visible state is null
+  // We do not want anything to fire if the visible state is undefined
   // (e.g. when the UI is still initializing)
   // eslint-disable-next-line func-style
   const selector = (state: State) =>
-    state.visibleState === null ? undefined : s(state.visibleState);
+    state.visibleState === undefined ? SKIP : s(state.visibleState);
   return sub(selector, l);
 }
 
@@ -89,7 +89,7 @@ function subVS<T>(s: Selector<GameState, T>, l: Listener<T>) {
 function subAfterInit<T>(s: Selector<State, T>, l: Listener<T>) {
   // eslint-disable-next-line func-style
   const selector = (state: State) =>
-    state.visibleState === null ? undefined : s(state);
+    state.visibleState === undefined ? SKIP : s(state);
   return {
     select: selector,
     onChange: l,
@@ -167,7 +167,7 @@ const visibleStateObservers: Subscriptions = [
   ),
   sub(
     (s) => {
-      if (s.visibleState !== null) {
+      if (s.visibleState !== undefined) {
         return {
           pace: s.visibleState.stats.pace,
           cluesStillUsable: s.visibleState.stats.cluesStillUsable,
@@ -178,7 +178,7 @@ const visibleStateObservers: Subscriptions = [
           numPlayers: s.metadata.options.numPlayers,
         };
       }
-      return undefined;
+      return SKIP;
     },
 
     statsView.onMaxTurnsChanged,
@@ -257,7 +257,7 @@ const ongoingGameObservers: Subscriptions = [
   // Alternating Clues UI
   subAfterInit((s) => {
     const type = s.visibleState!.clues.at(-1)?.type;
-    return type === NO_VALUE ? null : type;
+    return type === NO_VALUE ? undefined : type;
   }, turnView.onLastClueTypeChanged),
 
   // Segment + current player index.
@@ -305,22 +305,28 @@ const ongoingGameObservers: Subscriptions = [
 
 const replayObservers: Subscriptions = [
   // Database ID
-  subAfterInit(replayView.getGameIDLabel, replayView.onGameIDLabelChanged),
+  subAfterInit(
+    (s) => replayView.getGameIDLabel(s) ?? SKIP,
+    replayView.onGameIDLabelChanged,
+  ),
 
   // Shared replay
-  subAfterInit((s) => s.replay.shared !== null, replayView.onSharedReplayEnter),
   subAfterInit(
-    (s) => s.replay.shared?.leader,
+    (s) => s.replay.shared !== undefined,
+    replayView.onSharedReplayEnter,
+  ),
+  subAfterInit(
+    (s) => s.replay.shared?.leader ?? SKIP,
     replayView.onSharedLeaderChanged,
   ),
   subAfterInit(
-    (s) => s.replay.shared?.amLeader,
+    (s) => s.replay.shared?.amLeader ?? SKIP,
     replayView.onSharedAmLeaderChanged,
   ),
   subAfterInit(
     (s) =>
-      s.replay.shared === null
-        ? null
+      s.replay.shared === undefined
+        ? undefined
         : {
             leader: s.replay.shared.leader,
             amLeader: s.replay.shared.amLeader,
@@ -355,21 +361,21 @@ const replayObservers: Subscriptions = [
   ),
   subAfterInit(
     (s) => ({
-      hypotheticalActive: s.replay.hypothetical !== null,
-      replayActive: s.replay.shared !== null || s.replay.active,
+      hypotheticalActive: s.replay.hypothetical !== undefined,
+      replayActive: s.replay.shared !== undefined || s.replay.active,
     }),
     hypotheticalView.onActiveChanged,
   ),
   subAfterInit(
     (s) => ({
-      active: s.replay.hypothetical !== null,
-      amLeader: s.replay.shared === null || s.replay.shared.amLeader,
-      sharedReplay: s.replay.shared !== null,
+      active: s.replay.hypothetical !== undefined,
+      amLeader: s.replay.shared === undefined || s.replay.shared.amLeader,
+      sharedReplay: s.replay.shared !== undefined,
     }),
     hypotheticalView.onActiveOrAmLeaderChanged,
   ),
   subAfterInit(
-    (s) => s.replay.hypothetical?.states.length,
+    (s) => s.replay.hypothetical?.states.length ?? SKIP,
     hypotheticalView.onStatesLengthChanged,
   ),
   subAfterInit(
@@ -381,7 +387,7 @@ const replayObservers: Subscriptions = [
     hypotheticalView.shouldEnableHypoPassTurnButtonChanged,
   ),
   subAfterInit(
-    (s) => s.replay.hypothetical?.showDrawnCards,
+    (s) => s.replay.hypothetical?.showDrawnCards ?? SKIP,
     hypotheticalView.onDrawnCardsInHypotheticalChanged,
   ),
 
@@ -410,20 +416,20 @@ const replayObservers: Subscriptions = [
 
   // Replay button
   subAfterInit(
-    (s) => s.replay.hypothetical === null && !globals.state.finished,
+    (s) => s.replay.hypothetical === undefined && !globals.state.finished,
     replayView.onShouldShowReplayButtonChanged,
   ),
 
   // "Enter Hypothetical" button
   subAfterInit(
-    (s) => ({ finished: s.finished, shared: s.replay.shared !== null }),
+    (s) => ({ finished: s.finished, shared: s.replay.shared !== undefined }),
     replayView.enterHypoButtonLocationChanged,
   ),
 
   // Card and stack base morphing.
   subAfterInit(
     (s) => ({
-      hypotheticalActive: s.replay.hypothetical !== null,
+      hypotheticalActive: s.replay.hypothetical !== undefined,
       morphedIdentities: s.replay.hypothetical?.morphedIdentities,
     }),
     cardsView.onMorphedIdentitiesChanged,
@@ -472,5 +478,5 @@ const lateObservers = [
 
   // Initialization finished. (This will get called when the visible state becomes valid and after
   // all other view updates.)
-  sub((s) => s.visibleState !== null, initView.onInitializationChanged),
+  sub((s) => s.visibleState !== undefined, initView.onInitializationChanged),
 ];

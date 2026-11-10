@@ -1,6 +1,6 @@
 import type { NumPlayers } from "@hanabi-live/game";
 import { PaceRisk, getEfficiency } from "@hanabi-live/game";
-import { assertNotNull } from "complete-common";
+import { assertDefined } from "complete-common";
 import { globals } from "../../UIGlobals";
 import {
   EFFICIENCY_DECIMAL_PLACES,
@@ -21,16 +21,16 @@ const PACE_HIGH_RISK_COLOR = "#ef8c1d";
 /** Updates the labels on the right-hand side of the screen. */
 export function onEfficiencyChanged(data: {
   cardsGotten: number;
-  cardsGottenByNotes: number | null;
+  cardsGottenByNotes: number | undefined;
   efficiencyModifier: number;
   potentialCluesLost: number;
   maxScore: number;
-  cluesStillUsableNotRounded: number | null;
+  cluesStillUsableNotRounded: number | undefined;
   finalRoundEffectivelyStarted: boolean;
 }): void {
   const cluesStillUsable =
-    data.cluesStillUsableNotRounded === null
-      ? null
+    data.cluesStillUsableNotRounded === undefined
+      ? undefined
       : Math.floor(data.cluesStillUsableNotRounded);
 
   const effLabel = globals.elements.efficiencyNumberLabel!;
@@ -41,7 +41,7 @@ export function onEfficiencyChanged(data: {
   //   applicable.
   // - Do not use the efficiency modifier during in-game replays.
   const shouldModifyEff = globals.state.finished
-    ? globals.state.replay.shared !== null
+    ? globals.state.replay.shared !== undefined
       && globals.state.replay.shared.useSharedSegments
     : globals.state.visibleState === globals.state.ongoingGame;
 
@@ -55,11 +55,11 @@ export function onEfficiencyChanged(data: {
       // (e.g. to account for a card that is Finessed).
       cardsGottenModified = true;
     }
-    if (cardsGottenByNotes !== null) {
+    if (cardsGottenByNotes !== undefined) {
       cardsGotten += cardsGottenByNotes;
     }
   } else {
-    cardsGottenByNotes = null;
+    cardsGottenByNotes = undefined;
   }
 
   const cardsNotGotten = Math.max(data.maxScore - cardsGotten, 0);
@@ -68,7 +68,7 @@ export function onEfficiencyChanged(data: {
   const shouldShowEfficiency =
     Number.isFinite(efficiency) && !data.finalRoundEffectivelyStarted;
   const futureEfficiency =
-    cluesStillUsable === null
+    cluesStillUsable === undefined
       ? NaN
       : getEfficiency(cardsNotGotten, cluesStillUsable);
   const shouldShowFutureEfficiency = Number.isFinite(futureEfficiency);
@@ -113,7 +113,9 @@ export function onEfficiencyChanged(data: {
     ${formatLine("Current cards gotten", data.cardsGotten)}
     ${formatLine(
       "Current cards noted as gotten",
-      cardsGottenByNotes !== null && shouldModifyEff ? cardsGottenByNotes : "-",
+      cardsGottenByNotes !== undefined && shouldModifyEff
+        ? cardsGottenByNotes
+        : "-",
     )}
     ${formatLine(
       "Current cards gotten modifier",
@@ -140,7 +142,7 @@ export function onEfficiencyChanged(data: {
     )}
     ${formatLine(
       "Spare clues",
-      cluesStillUsable === null ? "-" : cluesStillUsable - cardsNotGotten,
+      cluesStillUsable === undefined ? "-" : cluesStillUsable - cardsNotGotten,
     )}
     <br />
     Click / Double tap this number to add a modifier.
@@ -156,17 +158,17 @@ function formatLine(left: string, right: number | string) {
 }
 
 export function onPaceOrPaceRiskChanged(data: {
-  pace: number | null;
+  pace: number | undefined;
   paceRisk: PaceRisk;
   finalRoundEffectivelyStarted: boolean;
 }): void {
   const label = globals.elements.paceNumberLabel;
-  assertNotNull(label, "paceNumberLabel is not initialized.");
+  assertDefined(label, "paceNumberLabel is not initialized.");
 
   // Update the pace. (Part of the efficiency statistics on the right-hand side of the screen.) If
   // there are no cards left in the deck, pace is meaningless.
   if (
-    data.pace === null
+    data.pace === undefined
     || data.finalRoundEffectivelyStarted
     || globals.options.allOrNothing
   ) {
@@ -208,12 +210,12 @@ function getPaceLabelColor(paceRisk: PaceRisk): string {
 }
 
 export function onMaxTurnsChanged(data: {
-  pace: number | null;
-  cluesStillUsable: number | null;
+  pace: number | undefined;
+  cluesStillUsable: number | undefined;
   score: number;
   maxScore: number;
   turnNum: number;
-  endTurnNum: number | null;
+  endTurnNum: number | undefined;
   numPlayers: NumPlayers;
 }): void {
   const {
@@ -226,7 +228,7 @@ export function onMaxTurnsChanged(data: {
     numPlayers,
   } = data;
   let maxTurnsLeft: number;
-  if (pace === null) {
+  if (pace === undefined) {
     maxTurnsLeft = endTurnNum! - turnNum;
   } else {
     let cardsToBePlayed = maxScore - score;
@@ -241,7 +243,7 @@ export function onMaxTurnsChanged(data: {
   const maxTotalTurns = turnNum + maxTurnsLeft;
 
   const label = globals.elements.turnNumberLabel;
-  assertNotNull(label, "turnNumberLabel is not initialized.");
+  assertDefined(label, "turnNumberLabel is not initialized.");
 
   label.tooltipContent = `<span class="turns-description">Rounds left (max):</span> <strong>${maxTurnsLeftForCurrentPlayer}</strong><br />
 <span class="turns-description">Turns left (max):</span> <strong>${maxTurnsLeft}</strong><br />

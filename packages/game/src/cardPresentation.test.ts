@@ -1,5 +1,3 @@
-/* eslint-disable unicorn/no-null */
-
 import { describe, expect, test } from "bun:test";
 import {
   PipState,
@@ -17,7 +15,7 @@ import type { CardOrder } from "./types/CardOrder";
 
 const variant = getDefaultVariant();
 const baseCard = getInitialCardState(0 as CardOrder, variant, 2);
-const unknownIdentity: CardIdentity = { suitIndex: null, rank: null };
+const unknownIdentity: CardIdentity = { suitIndex: undefined, rank: undefined };
 const emptyNote: CardNote = {
   possibilities: [],
   knownTrash: false,
@@ -51,10 +49,12 @@ function getIdentity(
 describe("card presentation", () => {
   describe("visible identity", () => {
     test("shows a known suit while leaving an unknown rank hidden", () => {
-      expect(getIdentity(emptyNote, { suitIndex: 1, rank: null })).toEqual({
-        suitIndex: 1,
-        rank: null,
-      });
+      expect(getIdentity(emptyNote, { suitIndex: 1, rank: undefined })).toEqual(
+        {
+          suitIndex: 1,
+          rank: undefined,
+        },
+      );
     });
 
     test("uses note possibilities when they determine a suit or rank", () => {
@@ -67,7 +67,7 @@ describe("card presentation", () => {
       };
       expect(getIdentity(suitNote)).toEqual({
         suitIndex: 2,
-        rank: null,
+        rank: undefined,
       });
 
       const rankNote: CardNote = {
@@ -78,7 +78,7 @@ describe("card presentation", () => {
         ],
       };
       expect(getIdentity(rankNote)).toEqual({
-        suitIndex: null,
+        suitIndex: undefined,
         rank: 3,
       });
     });

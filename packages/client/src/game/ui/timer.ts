@@ -71,7 +71,7 @@ export function update(
     globals.state.playing
     && activePlayerIndex === globals.metadata.ourPlayerIndex;
   const { timer1, timer2 } = globals.elements;
-  if (timer1 !== null && timer2 !== null) {
+  if (timer1 !== undefined && timer2 !== undefined) {
     updateTimerDisplays(timer1, timer2, activePlayerIndex, ourTurn);
   }
 
@@ -143,9 +143,9 @@ function updateTimerDisplays(
 }
 
 export function stop(): void {
-  if (globals.timerID !== null) {
+  if (globals.timerID !== undefined) {
     globalThis.clearInterval(globals.timerID);
-    globals.timerID = null;
+    globals.timerID = undefined;
   }
 }
 
@@ -170,7 +170,7 @@ export function resumeAfterResize(): void {
   });
 }
 
-function setTickingDownTime(timer: TimerDisplay | null) {
+function setTickingDownTime(timer: TimerDisplay | undefined) {
   // Calculate the elapsed time since the last timer update.
   const now = Date.now();
   const elapsedTime = now - globals.lastTimerUpdateTimeMS;
@@ -193,7 +193,7 @@ function setTickingDownTime(timer: TimerDisplay | null) {
     // Invert it to show how much time each player is taking.
     millisecondsLeft *= -1;
   }
-  if (timer === null) {
+  if (timer === undefined) {
     return;
   }
   const text = millisecondsToClockString(millisecondsLeft);

@@ -45,7 +45,7 @@ export function reversibleIsCardNeededForMaxScore(
 }
 
 export function reversibleGetRanksUsefulForMaxScore(
-  lastPlayed: Rank | null,
+  lastPlayed: Rank | undefined,
   allDiscardedSet: ReadonlySet<Rank>,
   direction: StackDirection | undefined,
   upOrDown: boolean,
@@ -78,7 +78,7 @@ export function reversibleGetRanksUsefulForMaxScore(
       return ranksSet;
     }
     let nextToPlay = MIN_RANK + 1;
-    if (lastPlayed === null) {
+    if (lastPlayed === undefined) {
       ranksSet.add(MIN_RANK);
       if (upOrDown) {
         ranksSet.add(START_CARD_RANK);
@@ -104,7 +104,7 @@ export function reversibleGetRanksUsefulForMaxScore(
       return ranksSet;
     }
     let nextToPlay = MAX_RANK - 1;
-    if (lastPlayed === null) {
+    if (lastPlayed === undefined) {
       ranksSet.add(MAX_RANK);
       if (upOrDown) {
         ranksSet.add(START_CARD_RANK);

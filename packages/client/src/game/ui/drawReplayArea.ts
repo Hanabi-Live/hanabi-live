@@ -137,7 +137,7 @@ export function drawReplayArea(winW: number, winH: number): void {
     listening: true,
   });
   globals.elements.replayShuttleShared.on("click tap", () => {
-    if (globals.state.replay.shared !== null) {
+    if (globals.state.replay.shared !== undefined) {
       replay.goToSegment(globals.state.replay.shared.segment, true);
     }
   });

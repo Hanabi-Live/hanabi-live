@@ -46,13 +46,13 @@ const CIRCLE_SUIT_PIP_SCALE = 0.2;
 // These are arrows used to show which cards that are touched by a clue (and for pointing to various
 // things in a shared replay).
 export class Arrow extends Konva.Group {
-  pointingTo: Konva.Node | null;
-  tween: Konva.Tween | null;
+  pointingTo: Konva.Node | undefined;
+  tween: Konva.Tween | undefined;
 
   base: Konva.Shape;
   circle: Konva.Circle;
   text: Konva.Text;
-  suitPip: Konva.Shape | null;
+  suitPip: Konva.Shape | undefined;
 
   constructor(winW: number, winH: number, colorblindMode: boolean) {
     const x = ORIGIN_OFFSET * winW;
@@ -70,8 +70,8 @@ export class Arrow extends Konva.Group {
 
     // Class variables. (We can't initialize these above due to "super()" not being on the first
     // line.)
-    this.pointingTo = null;
-    this.tween = null;
+    this.pointingTo = undefined;
+    this.tween = undefined;
 
     const pointerLength = POINTER_LENGTH * winW;
     const length = LENGTH * y;
@@ -138,7 +138,7 @@ export class Arrow extends Konva.Group {
       });
       this.add(this.suitPip);
     } else {
-      this.suitPip = null;
+      this.suitPip = undefined;
     }
   }
 }

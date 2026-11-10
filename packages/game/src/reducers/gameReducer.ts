@@ -1,9 +1,8 @@
 // Functions for building a game state for every turn.
 
 /* eslint-disable no-param-reassign */
-/* eslint-disable unicorn/no-null */
 
-import { assertDefined, assertNotNull } from "complete-common";
+import { assertDefined } from "complete-common";
 import type { Draft } from "immer";
 import { castDraft, original, produce } from "immer";
 import { VALID_PLAYER_INDEXES } from "../constants";
@@ -78,7 +77,7 @@ function gameReducerFunction(
     case "clue": {
       gameState.clueTokens -= getClueCost(variant);
 
-      assertNotNull(
+      assertDefined(
         gameState.turn.segment,
         `A "${action.type}" action happened before all of the initial cards were dealt.`,
       );
@@ -175,7 +174,7 @@ function gameReducerFunction(
       );
 
       const handIndex = hand.indexOf(action.order);
-      let slot: number | null = null;
+      let slot: number | undefined;
       if (handIndex !== -1) {
         // It is possible for players to misplay the deck.
         slot = hand.length - handIndex;
@@ -364,7 +363,7 @@ function gameReducerFunction(
       );
 
       const handIndex = hand.indexOf(action.order);
-      let slot: number | null = null;
+      let slot: number | undefined;
       if (handIndex !== -1) {
         slot = hand.length - handIndex;
         hand.splice(handIndex, 1);
@@ -578,7 +577,7 @@ function gameReducerFunction(
       playing,
       shadowing,
       metadata,
-      ourNotes ?? null,
+      ourNotes ?? undefined,
     ),
   );
 

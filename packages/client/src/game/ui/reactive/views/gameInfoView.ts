@@ -29,7 +29,7 @@ const STRIKE_ANIMATION_SECONDS = 0.5;
 
 export function onTurnChanged(data: {
   turn: number;
-  endTurn: number | null;
+  endTurn: number | undefined;
 }): void {
   // On both the client and the server, the first turn of the game is represented as turn 0.
   // However, turn 0 is represented to the end-user as turn 1, so we must add one.
@@ -41,12 +41,12 @@ export function onTurnChanged(data: {
   // Update the address bar if we are not in a hypothetical. (The turn number in the hypothetical
   // will cause bugs if the user refreshes, since the hypothetical turn will not map on to the real
   // game state.)
-  if (globals.state.replay.hypothetical === null) {
+  if (globals.state.replay.hypothetical === undefined) {
     setBrowserAddressBarPath(globalThis.location.pathname, `#${friendlyTurn}`);
   }
 
   // If there are no cards left in the deck, update the "Turns left: #" label on the deck
-  if (data.endTurn !== null) {
+  if (data.endTurn !== undefined) {
     let numTurnsLeft = data.endTurn - data.turn;
 
     // Also account for the fact that in non-replays, an extra turn is sent to show the times
@@ -62,7 +62,7 @@ export function onTurnChanged(data: {
 }
 
 export function onCurrentPlayerIndexChanged(
-  currentPlayerIndex: PlayerIndex | null,
+  currentPlayerIndex: PlayerIndex | undefined,
 ): void {
   // Bold the name frame of the current player to signify that it is their turn.
   for (const [
@@ -72,7 +72,7 @@ export function onCurrentPlayerIndexChanged(
     nameFrame.setActive(currentPlayerIndex === playerIndex);
   }
 
-  if (currentPlayerIndex === null) {
+  if (currentPlayerIndex === undefined) {
     // The game has ended. Ensure that the clue UI is not showing.
     arrows.hideAll();
   } else if (globals.lobby.settings.keldonMode) {
@@ -107,7 +107,7 @@ export function onScoreOrMaxScoreChanged(data: {
   maxScore: number;
 }): void {
   const scoreLabel = globals.elements.scoreNumberLabel;
-  if (scoreLabel === null) {
+  if (scoreLabel === undefined) {
     return;
   }
   scoreLabel.text(data.score.toString());
@@ -132,7 +132,7 @@ export function onScoreOrMaxScoreChanged(data: {
 
   // Reposition the maximum score.
   const maxScoreLabel = globals.elements.maxScoreNumberLabel;
-  if (maxScoreLabel === null) {
+  if (maxScoreLabel === undefined) {
     return;
   }
   maxScoreLabel.text(` / ${data.maxScore}`);
@@ -162,7 +162,7 @@ export function onNumAttemptedCardsPlayedChanged(
   }
 
   globals.elements.playsNumberLabel?.text(numAttemptedCardsPlayed.toString());
-  if (globals.elements.holeCountLabel !== null) {
+  if (globals.elements.holeCountLabel !== undefined) {
     globals.elements.holeCountLabel.text(numAttemptedCardsPlayed.toString());
     globals.layers.UI2.batchDraw();
   }
@@ -209,7 +209,7 @@ export function onClueTokensChanged(clueTokens: number): void {
 
 export function onClueTokensOrDoubleDiscardChanged(data: {
   clueTokens: number;
-  doubleDiscard: number | null;
+  doubleDiscard: number | undefined;
 }): void {
   if (globals.lobby.settings.realLifeMode) {
     return;
@@ -226,7 +226,7 @@ export function onClueTokensOrDoubleDiscardChanged(data: {
   globals.elements.noDoubleDiscardBorder?.visible(
     globals.lobby.settings.hGroupConventions
       && !noDiscard
-      && data.doubleDiscard !== null,
+      && data.doubleDiscard !== undefined,
   );
 
   globals.layers.UI.batchDraw();
@@ -263,9 +263,9 @@ export function onOngoingOrVisibleStrikesChanged(data: {
       // Either this strike has never happened, or we are moving backwards in a replay. If this
       // strike never happened, it should be invisible. If this strike happened in the future, then
       // it should be slightly faded.
-      if (strikeX.tween !== null) {
+      if (strikeX.tween !== undefined) {
         strikeX.tween.destroy();
-        strikeX.tween = null;
+        strikeX.tween = undefined;
       }
       // Spoiler-free reviews hide future strikes.
       const opacity =
@@ -285,9 +285,9 @@ export function onOngoingOrVisibleStrikesChanged(data: {
       === false
     ) {
       // The misplay animation reveals the strike when the card explodes on it.
-      if (strikeX.tween !== null) {
+      if (strikeX.tween !== undefined) {
         strikeX.tween.destroy();
-        strikeX.tween = null;
+        strikeX.tween = undefined;
       }
       strikeX.opacity(0);
     } else {

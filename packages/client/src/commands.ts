@@ -31,7 +31,7 @@ commands.set("error", (data) => {
   modals.showError(data.message);
 
   // Disconnect from the server, if connected.
-  if (globals.conn !== null) {
+  if (globals.conn !== undefined) {
     // This is safe to call if the WebSocket connection is already closed.
     globals.conn.close();
   }
@@ -80,7 +80,10 @@ function acknowledgeChatRead(
     globals.conn!.send("chatRead", {
       tableID: globals.tableID,
     });
-  } else if (globals.currentScreen === Screen.Game && globals.ui !== null) {
+  } else if (
+    globals.currentScreen === Screen.Game
+    && globals.ui !== undefined
+  ) {
     if ($("#game-chat-modal").is(":visible")) {
       // The chat window was open; notify the server that we have read the chat message that was
       // just received.
@@ -90,7 +93,7 @@ function acknowledgeChatRead(
       return;
     }
 
-    if (globals.ui.globals.store === null) {
+    if (globals.ui.globals.store === undefined) {
       return;
     }
 
@@ -132,7 +135,7 @@ commands.set("chatList", (data) => {
   for (const line of data.messages) {
     chat.add(line, true); // The second argument is "fast"
   }
-  if (globals.ui !== null && !$("#game-chat-modal").is(":visible")) {
+  if (globals.ui !== undefined && !$("#game-chat-modal").is(":visible")) {
     // If the UI is open, we assume that this is a list of in-game chat messages.
     globals.chatUnread += data.unread;
     globals.ui.updateChatLabel();

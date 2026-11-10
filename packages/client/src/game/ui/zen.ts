@@ -10,7 +10,7 @@ export function toggleZen(): void {
     globals.game!.chat.hide();
   }
 
-  if (globals.lobby.ui !== null) {
+  if (globals.lobby.ui !== undefined) {
     globals.lobby.ui.updateChatLabel();
   }
 

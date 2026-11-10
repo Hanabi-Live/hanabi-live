@@ -76,7 +76,7 @@ lobbyCommands.set("friends", (data) => {
   if (globals.currentScreen === Screen.PreGame) {
     pregame.draw();
   }
-  if (globals.currentScreen === Screen.Game && globals.ui !== null) {
+  if (globals.currentScreen === Screen.Game && globals.ui !== undefined) {
     spectatorsView.onSpectatorsChanged({
       spectators: globals.ui.globals.state.spectators,
       finished: globals.ui.globals.state.finished,
@@ -91,12 +91,12 @@ lobbyCommands.set("pregame", (data) => {
   pregame.draw();
   if (previousPlayers?.length !== data.players.length) {
     // Disable the start game button for a short time after the player count changes.
-    if (globals.enableStartGameButtonTimeout !== null) {
+    if (globals.enableStartGameButtonTimeout !== undefined) {
       clearTimeout(globals.enableStartGameButtonTimeout);
     }
     $("#nav-buttons-pregame-start").addClass("disabled");
     globals.enableStartGameButtonTimeout = setTimeout(() => {
-      globals.enableStartGameButtonTimeout = null;
+      globals.enableStartGameButtonTimeout = undefined;
       pregame.toggleStartGameButton();
     }, START_GAME_BUTTON_DISABLED_MILLISECONDS);
   }
@@ -112,7 +112,7 @@ lobbyCommands.set("gameHistory", (dataArray) => {
 lobbyCommands.set("gameHistoryAdded", (data) => {
   // We just finished a game, so add it to our history and our total.
   store.dispatch(historyReceived([data]));
-  if (globals.totalGames !== null) {
+  if (globals.totalGames !== undefined) {
     globals.totalGames++;
   }
   $("#nav-buttons-history-total-games").text(
@@ -236,7 +236,7 @@ lobbyCommands.set("welcome", (data) => {
   globals.userID = data.userID;
   setTabAccount(data.userID);
   globals.username = data.username; // We might have logged-in with a different stylization
-  globals.totalGames = null;
+  globals.totalGames = undefined;
   globals.muted = data.muted;
   globals.settings = data.settings;
   globals.friends = data.friends;

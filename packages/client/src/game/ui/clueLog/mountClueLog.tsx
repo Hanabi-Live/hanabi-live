@@ -8,19 +8,19 @@ import { Provider } from "react-redux";
 import { globals } from "../UIGlobals";
 import { ClueLog } from "./ClueLog";
 
-let rootElement: HTMLDivElement | null = null;
-let root: Root | null = null;
-let hoveredCardOrder: CardOrder | null = null;
+let rootElement: HTMLDivElement | undefined;
+let root: Root | undefined;
+let hoveredCardOrder: CardOrder | undefined;
 
 /** Draws the clue log at the current stage size. Call it again after the stage is rebuilt. */
 export function drawClueLog(): void {
   // The stage removes its old contents when a new game creates it again.
   const { content } = globals.stage;
-  if (rootElement !== null && !content.contains(rootElement)) {
+  if (rootElement !== undefined && !content.contains(rootElement)) {
     unmountClueLog();
   }
 
-  if (root === null) {
+  if (root === undefined) {
     const element = document.createElement("div");
     // The stage's layers are canvases inside the same element, so the log must sit above them.
     element.style.position = "absolute";
@@ -35,22 +35,22 @@ export function drawClueLog(): void {
   render();
 }
 
-/** Highlights the clues that touched or missed a card, or clears the highlight when `null`. */
-export function showClueMatches(cardOrder: CardOrder | null): void {
+/** Highlights the clues that touched or missed a card, or clears the highlight when `undefined`. */
+export function showClueMatches(cardOrder: CardOrder | undefined): void {
   hoveredCardOrder = cardOrder;
   render();
 }
 
 export function unmountClueLog(): void {
   root?.unmount();
-  root = null;
+  root = undefined;
   rootElement?.remove();
-  rootElement = null;
-  hoveredCardOrder = null;
+  rootElement = undefined;
+  hoveredCardOrder = undefined;
 }
 
 function render() {
-  if (root === null || globals.store === null) {
+  if (root === undefined || globals.store === undefined) {
     return;
   }
 

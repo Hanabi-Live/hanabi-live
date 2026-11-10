@@ -6,10 +6,10 @@ import { globals } from "./UIGlobals";
  */
 export function isOurTurn(): boolean {
   // First, handle the special case of a hypothetical.
-  if (globals.state.replay.hypothetical !== null) {
+  if (globals.state.replay.hypothetical !== undefined) {
     // It is always the replay leader's turn in a hypothetical.
     return (
-      globals.state.replay.shared === null
+      globals.state.replay.shared === undefined
       || globals.state.replay.shared.amLeader
     );
   }

@@ -14,7 +14,7 @@ const gameDiv = getHTMLElement("#game");
 
 export function set(cursorType: CursorType): void {
   // It is possible to receive cursor events before the UI has initialized.
-  if (globals.store === null || cursorType === currentCursorType) {
+  if (globals.store === undefined || cursorType === currentCursorType) {
     return;
   }
 
@@ -41,25 +41,25 @@ export function set(cursorType: CursorType): void {
 
 export function getElementDragLocation(
   element: LayoutChild | Deck,
-): "playArea" | "discardArea" | null {
+): "playArea" | "discardArea" | undefined {
   const pos = element.getAbsolutePosition();
   pos.x += (element.width() * element.scaleX()) / 2;
   pos.y += (element.height() * element.scaleY()) / 2;
 
   if (
-    globals.elements.playArea !== null
+    globals.elements.playArea !== undefined
     && posOverlaps(pos, globals.elements.playArea)
   ) {
     return "playArea";
   }
   if (
-    globals.elements.discardArea !== null
+    globals.elements.discardArea !== undefined
     && posOverlaps(pos, globals.elements.discardArea)
   ) {
     return "discardArea";
   }
 
-  return null;
+  return undefined;
 }
 
 function posOverlaps(pos: Konva.Vector2d, element: Konva.Rect | LayoutChild) {

@@ -112,7 +112,7 @@ export function recalculateDeductions(
     return {
       ...card,
       possibleCards:
-        card.suitIndex === null || card.rank === null
+        card.suitIndex === undefined || card.rank === undefined
           ? card.possibleCardsFromClues
           : [[card.suitIndex, card.rank]],
       possibleCardsForEmpathy: card.possibleCardsFromClues,
@@ -227,8 +227,8 @@ function getFullIdentity(
   identity: CardIdentity | undefined,
 ): SuitRankTuple | undefined {
   return identity === undefined
-    || identity.suitIndex === null
-    || identity.rank === null
+    || identity.suitIndex === undefined
+    || identity.rank === undefined
     ? undefined
     : [identity.suitIndex, identity.rank];
 }
@@ -393,7 +393,11 @@ function getCardPossibilitiesForPlayer(
   }
 
   const revealedToThisPlayer = card.revealedToPlayer[playerIndex] ?? false;
-  if (revealedToThisPlayer && card.suitIndex !== null && card.rank !== null) {
+  if (
+    revealedToThisPlayer
+    && card.suitIndex !== undefined
+    && card.rank !== undefined
+  ) {
     // If we know the suit and rank, it might be because it is morphed.
     return [[card.suitIndex, card.rank]];
   }

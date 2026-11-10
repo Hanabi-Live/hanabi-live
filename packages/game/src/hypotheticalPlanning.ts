@@ -1,5 +1,3 @@
-/* eslint-disable unicorn/no-null */
-
 import { assertDefined } from "complete-common";
 import { possibleCardsFromNoteAndClues } from "./cardPresentation";
 import { StackDirection } from "./enums/StackDirection";
@@ -46,7 +44,7 @@ export type HypotheticalActionIntent =
 export interface HypotheticalCardView {
   readonly state: CardState;
   readonly isStackBase: boolean;
-  readonly visibleSuitIndex: SuitIndex | null;
+  readonly visibleSuitIndex: SuitIndex | undefined;
   readonly visibleRank: CardState["rank"];
 }
 
@@ -55,7 +53,7 @@ export interface HypotheticalCard {
   readonly order: CardOrder;
   readonly identity: CardIdentity;
   readonly possibilities: readonly SuitRankTuple[];
-  readonly visibleSuitIndex: SuitIndex | null;
+  readonly visibleSuitIndex: SuitIndex | undefined;
   readonly visibleRank: CardState["rank"];
 }
 
@@ -108,7 +106,9 @@ export function getHypotheticalCard(
   // A blank morph only hides the card (for example, a card drawn during the hypothetical), so the
   // player's own note still identifies it.
   const blankMorph =
-    morphedIdentity?.suitIndex === null && morphedIdentity.rank === null;
+    morphedIdentity !== undefined
+    && morphedIdentity.suitIndex === undefined
+    && morphedIdentity.rank === undefined;
   const noteIdentity = getIdentityFromNote(note, state, playing);
   let morphedCardIdentity: CardIdentity;
   if (morphedIdentity !== undefined && !blankMorph) {
@@ -127,8 +127,8 @@ export function getHypotheticalCard(
   }
 
   if (
-    morphedCardIdentity.suitIndex !== null
-    && morphedCardIdentity.rank !== null
+    morphedCardIdentity.suitIndex !== undefined
+    && morphedCardIdentity.rank !== undefined
   ) {
     return {
       order: state.order,
@@ -171,7 +171,7 @@ export function getHypotheticalTouchedCards(
 
   for (const card of cards) {
     const { suitIndex, rank } = card.identity;
-    if (suitIndex === null && rank === null) {
+    if (suitIndex === undefined && rank === undefined) {
       // Blank morphs are never touched, even when their underlying possibilities match.
       continue;
     }
@@ -182,8 +182,8 @@ export function getHypotheticalTouchedCards(
       )
       && card.possibilities.every(() =>
         clue.type === ClueType.Rank
-          ? card.visibleRank !== null
-          : card.visibleSuitIndex !== null,
+          ? card.visibleRank !== undefined
+          : card.visibleSuitIndex !== undefined,
       )
     ) {
       touchedCards.push(card.order);
@@ -200,13 +200,13 @@ export interface PlanHypotheticalActionContext {
   readonly cardIdentities: readonly CardIdentity[];
   readonly morphedIdentities: ReadonlyArray<CardIdentity | undefined>;
   readonly showDrawnCards: boolean;
-  readonly startingPlayerIndex: PlayerIndex | null;
+  readonly startingPlayerIndex: PlayerIndex | undefined;
   readonly notes: readonly CardNote[];
   readonly playing: boolean;
   readonly cardViews: readonly HypotheticalCardView[];
 }
 
-/** Returns the game actions for a hypothetical intent, or null when it cannot be planned. */
+/** Returns the game actions for a hypothetical intent, or undefined when it cannot be planned. */
 /**
  * In a hypothetical, a stack base can be morphed into a card of its suit to pretend that the stack
  * has already been played up to that card. This lasts until a card is played on the stack. In "Up
@@ -231,7 +231,7 @@ function getMorphedStackBaseRank(
   const morphedIdentity = context.morphedIdentities[stackBaseOrder];
   if (
     morphedIdentity?.suitIndex !== suitIndex
-    || morphedIdentity.rank === null
+    || morphedIdentity.rank === undefined
     || (playStackDirection === StackDirection.Undecided
       && morphedIdentity.rank !== START_CARD_RANK)
   ) {
@@ -244,11 +244,11 @@ function getMorphedStackBaseRank(
 export function planHypotheticalAction(
   intent: HypotheticalActionIntent,
   context: PlanHypotheticalActionContext,
-): readonly HypotheticalGameAction[] | null {
+): readonly HypotheticalGameAction[] | undefined {
   const { gameState, metadata, variant } = context;
   const playerIndex = gameState.turn.currentPlayerIndex;
-  if (playerIndex === null) {
-    return null;
+  if (playerIndex === undefined) {
+    return undefined;
   }
 
   function cardAt(order: CardOrder): HypotheticalCard | undefined {
@@ -264,7 +264,7 @@ export function planHypotheticalAction(
     ) {
       return undefined;
     }
-    const identity = cardIdentity ?? { suitIndex: null, rank: null };
+    const identity = cardIdentity ?? { suitIndex: undefined, rank: undefined };
     return getHypotheticalCard({
       ...view,
       identity,
@@ -282,16 +282,16 @@ export function planHypotheticalAction(
         otherPlayerIndex !== playerIndex && hand.includes(intent.order),
     );
     if (isInOtherHand) {
-      return null;
+      return undefined;
     }
 
     const card = cardAt(intent.order);
     if (
       card === undefined
-      || card.identity.suitIndex === null
-      || card.identity.rank === null
+      || card.identity.suitIndex === undefined
+      || card.identity.rank === undefined
     ) {
-      return null;
+      return undefined;
     }
 
     const { suitIndex, rank } = card.identity;
@@ -399,7 +399,7 @@ export function planHypotheticalAction(
     for (const order of targetHand) {
       const card = cardAt(order);
       if (card === undefined) {
-        return null;
+        return undefined;
       }
       targetCards.push(card);
     }

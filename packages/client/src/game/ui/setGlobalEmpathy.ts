@@ -13,7 +13,7 @@ export function setGlobalEmpathy(enabled: boolean): void {
   globals.elements.deck?.setEmpathy(enabled);
 
   // Turning off global empathy also turned it off for the hypothetical's starting hand.
-  if (!enabled && globals.state.replay.hypothetical !== null) {
+  if (!enabled && globals.state.replay.hypothetical !== undefined) {
     changeStartingHandVisibility();
   }
 }

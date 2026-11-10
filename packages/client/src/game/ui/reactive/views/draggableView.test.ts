@@ -14,9 +14,9 @@ const OTHER_PLAYER_INDEX = 2;
 function makeState({
   currentPlayerIndex = OUR_PLAYER_INDEX,
   playing = true,
-  premove = null,
-  hypothetical = null,
-  shared = null,
+  premove,
+  hypothetical,
+  shared,
 }: {
   currentPlayerIndex?: number;
   playing?: boolean;
@@ -48,7 +48,7 @@ describe("draggablePlayerIndex", () => {
 
   test("allows our cards on another turn only with pre-playing enabled", () => {
     const state = makeState({ currentPlayerIndex: OTHER_PLAYER_INDEX });
-    expect(draggablePlayerIndex(state)).toBeNull();
+    expect(draggablePlayerIndex(state)).toBeUndefined();
 
     settings.speedrunPreplay = true;
     expect(draggablePlayerIndex(state)).toBe(OUR_PLAYER_INDEX);
@@ -57,8 +57,8 @@ describe("draggablePlayerIndex", () => {
   test("blocks dragging while a premove is queued or when spectating", () => {
     expect(
       draggablePlayerIndex(makeState({ premove: { type: 0 } })),
-    ).toBeNull();
-    expect(draggablePlayerIndex(makeState({ playing: false }))).toBeNull();
+    ).toBeUndefined();
+    expect(draggablePlayerIndex(makeState({ playing: false }))).toBeUndefined();
   });
 
   test("allows only the hypothetical leader to drag the current player's cards", () => {
@@ -70,6 +70,6 @@ describe("draggablePlayerIndex", () => {
       draggablePlayerIndex(
         makeState({ hypothetical, shared: { amLeader: false } }),
       ),
-    ).toBeNull();
+    ).toBeUndefined();
   });
 });

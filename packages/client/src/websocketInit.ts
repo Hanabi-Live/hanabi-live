@@ -267,7 +267,7 @@ function openConnection(isReconnect: boolean) {
       store.dispatch(tablesCleared());
       if (
         globals.currentScreen === Screen.Game
-        && globals.ui !== null
+        && globals.ui !== undefined
         && data.userID === globals.userID
       ) {
         globals.muted = data.muted;
@@ -283,19 +283,19 @@ function openConnection(isReconnect: boolean) {
           if (
             table.tableID === retained
             && !table.replay
-            && globals.ui !== null
-            && globals.ui.globals.store !== null
+            && globals.ui !== undefined
+            && globals.ui.globals.store !== undefined
             && !globals.ui.globals.state.finished
           ) {
             conn.send("getGameState", { tableID: retained });
           } else {
             globals.ui?.destroy();
-            globals.ui = null;
+            globals.ui = undefined;
             lobbyCommands.get("tableStarted")?.(table);
           }
         });
         conn.on("gameActionList", (actionList) => {
-          if (!isCurrentConnection(conn) || globals.ui === null) {
+          if (!isCurrentConnection(conn) || globals.ui === undefined) {
             return;
           }
           const rebuilding = globals.ui.globals.loading;
@@ -314,7 +314,7 @@ function openConnection(isReconnect: boolean) {
             tableID: retained,
             ...(!data.playingAtTables.includes(retained) && {
               shadowingPlayerIndex:
-                globals.ui.globals.store !== null
+                globals.ui.globals.store !== undefined
                 && globals.ui.globals.state.shadowing
                   ? globals.ui.globals.metadata.ourPlayerIndex
                   : undefined,
@@ -322,9 +322,9 @@ function openConnection(isReconnect: boolean) {
           },
         );
       } else {
-        if (globals.ui !== null) {
+        if (globals.ui !== undefined) {
           globals.ui.destroy();
-          globals.ui = null;
+          globals.ui = undefined;
         }
         conn.setReady(true);
         lobbyCommands.get("welcome")?.(data);
@@ -429,7 +429,7 @@ function gameCallback<Command extends ServerCommand>(
     if (
       !isCurrentConnection(conn)
       || globals.currentScreen !== Screen.Game
-      || globals.ui === null
+      || globals.ui === undefined
     ) {
       return;
     }

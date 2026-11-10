@@ -16,7 +16,7 @@ let historyHash = "";
 
 export function init(): void {
   $("#game").on("mouseenter mouseleave", () => {
-    if (globals.currentScreen === Screen.Game && globals.ui !== null) {
+    if (globals.currentScreen === Screen.Game && globals.ui !== undefined) {
       globals.ui.focusLost();
     }
   });
@@ -68,9 +68,9 @@ function hide() {
   }
   document.body.dataset["screen"] = "lobby";
 
-  if (globals.ui !== null) {
+  if (globals.ui !== undefined) {
     globals.ui.destroy();
-    globals.ui = null;
+    globals.ui = undefined;
   }
 
   $("#game").hide(); // We can't fade this out as it will overlap

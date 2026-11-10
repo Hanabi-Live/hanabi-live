@@ -40,9 +40,9 @@ export class PlayStack extends Konva.Group {
       });
     }
 
-    if (layoutChild.tween !== null) {
+    if (layoutChild.tween !== undefined) {
       layoutChild.tween.destroy();
-      layoutChild.tween = null;
+      layoutChild.tween = undefined;
     }
     layoutChild.stopAnimations();
 
@@ -63,9 +63,9 @@ export class PlayStack extends Konva.Group {
         // eslint-disable-next-line @typescript-eslint/unbound-method
         easing: Konva.Easings.EaseOut,
         onFinish: () => {
-          if (layoutChild.tween !== null) {
+          if (layoutChild.tween !== undefined) {
             layoutChild.tween.destroy();
-            layoutChild.tween = null;
+            layoutChild.tween = undefined;
           }
           layoutChild.card.finishedTweening();
           layoutChild.checkSetDraggable();
@@ -84,7 +84,7 @@ export class PlayStack extends Konva.Group {
         continue;
       }
 
-      if (layoutChild.tween !== null) {
+      if (layoutChild.tween !== undefined) {
         // Do not hide anything if one of the cards on the stack is still tweening.
         return;
       }

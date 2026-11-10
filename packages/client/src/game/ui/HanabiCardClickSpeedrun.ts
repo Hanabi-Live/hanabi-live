@@ -103,7 +103,7 @@ function getColorForSpeedrunClue(
   cardState: CardState,
   variant: Variant,
 ): Color | undefined {
-  if (cardState.suitIndex === null || cardState.rank === null) {
+  if (cardState.suitIndex === undefined || cardState.rank === undefined) {
     return undefined;
   }
 
@@ -116,8 +116,7 @@ function getColorForSpeedrunClue(
   // want to use that color.
   const clueButton = globals.elements.clueTypeButtonGroup?.getPressed();
   if (
-    clueButton !== null
-    && clueButton !== undefined
+    clueButton !== undefined
     && clueButton instanceof ColorButton
     && typeof clueButton.clue.value !== "number"
     && isCardTouchedByClueColor(
@@ -176,7 +175,7 @@ function clickRight(card: HanabiCard, event: MouseEvent) {
     typeof card.state.location === "number"
     && card.state.location !== globals.metadata.ourPlayerIndex
     && isCardInPlayerHand(card.state)
-    && card.state.rank !== null
+    && card.state.rank !== undefined
     // It is not possible to clue a START card with a rank clue.
     && card.state.rank !== START_CARD_RANK
     && !event.ctrlKey
@@ -219,7 +218,7 @@ function rejectClueTokenAction() {
 function getRankForSpeedrunClue(
   cardState: CardState,
 ): RankClueNumber | undefined {
-  if (cardState.suitIndex === null || cardState.rank === null) {
+  if (cardState.suitIndex === undefined || cardState.rank === undefined) {
     return undefined;
   }
 
@@ -232,8 +231,7 @@ function getRankForSpeedrunClue(
   // want to use that rank.
   const clueButton = globals.elements.clueTypeButtonGroup?.getPressed();
   if (
-    clueButton !== null
-    && clueButton !== undefined
+    clueButton !== undefined
     && clueButton instanceof RankButton
     && typeof clueButton.clue.value === "number"
     && isCardTouchedByClueRank(

@@ -10,10 +10,10 @@ import type {
 } from "@hanabi-live/game";
 
 export function suitIndexToSuit(
-  suitIndex: SuitIndex | null,
+  suitIndex: SuitIndex | undefined,
   variant: Variant,
 ): Suit | undefined {
-  if (suitIndex === null) {
+  if (suitIndex === undefined) {
     return undefined;
   }
 

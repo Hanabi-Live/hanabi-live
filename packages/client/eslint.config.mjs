@@ -61,8 +61,8 @@ export default defineConfig(
        * Documentation:
        * https://github.com/sindresorhus/eslint-plugin-unicorn/blob/main/docs/rules/no-null.md
        *
-       * The codebase uses many cases of null. In the long term, this should be refactored to
-       * undefined where possible, without changing established wire contracts.
+       * The client uses undefined for missing values. The remaining uses of null are for browser,
+       * React, and Konva APIs that require it.
        */
       "unicorn/no-null": "off",
 

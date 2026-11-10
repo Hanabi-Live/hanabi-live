@@ -1,9 +1,7 @@
 // Functions to calculate game stats such as pace and efficiency.
 
-/* eslint-disable unicorn/no-null */
-
 import type { Tuple } from "complete-common";
-import { assertNotNull, newArray, sumArray } from "complete-common";
+import { assertDefined, newArray, sumArray } from "complete-common";
 import { PaceRisk } from "../enums/PaceRisk";
 import { MAX_CLUES } from "../generated/protocol";
 import type { CardNote } from "../interfaces/CardNote";
@@ -89,9 +87,9 @@ export function getPace(
   maxScore: number,
   endGameLength: number,
   gameOver: boolean,
-): number | null {
+): number | undefined {
   if (gameOver || deckSize <= 0) {
-    return null;
+    return undefined;
   }
 
   // The formula for pace was derived by Libster.
@@ -101,10 +99,10 @@ export function getPace(
 
 /** @returns A measure of how risky a discard would be right now, using different heuristics. */
 export function getPaceRisk(
-  currentPace: number | null,
+  currentPace: number | undefined,
   numPlayers: NumPlayers,
 ): PaceRisk {
-  if (currentPace === null) {
+  if (currentPace === undefined) {
     return PaceRisk.Low;
   }
 
@@ -307,7 +305,7 @@ export function getCluesStillUsableNotRounded(
   discardClueTokenValue: number,
   suitCompleteClueTokenValue: number,
   currentClues: number,
-): number | null {
+): number | undefined {
   if (scorePerStack.length !== maxScorePerStack.length) {
     throw new Error(
       "Failed to calculate efficiency: scorePerStack must have the same length as maxScorePerStack.",
@@ -323,7 +321,7 @@ export function getCluesStillUsableNotRounded(
   }
 
   if (deckSize <= 0) {
-    return null;
+    return undefined;
   }
 
   const maxScore = sumArray(maxScorePerStack);
@@ -387,7 +385,7 @@ export function getCluesStillUsable(
   discardClueTokenValue: number,
   suitCompleteClueTokenValue: number,
   currentClues: number,
-): number | null {
+): number | undefined {
   const result = getCluesStillUsableNotRounded(
     score,
     scorePerStack,
@@ -402,7 +400,7 @@ export function getCluesStillUsable(
 
   // Since we can't use up a fractional clue, we round it down for most purposes. This only matters
   // in Clue Starved variants.
-  return result === null ? null : Math.floor(result);
+  return result === undefined ? undefined : Math.floor(result);
 }
 
 /**
@@ -436,7 +434,7 @@ export function getStartingCluesUsable(
     suitCompleteClueTokenValue,
     MAX_CLUES,
   );
-  assertNotNull(startingClues, "The starting clues usable was null.");
+  assertDefined(startingClues, "The starting clues usable was undefined.");
 
   return startingClues;
 }
@@ -448,9 +446,9 @@ export function getEfficiency(
   return numCardsGotten / potentialCluesLost;
 }
 
-export function getFutureEfficiency(gameState: GameState): number | null {
-  if (gameState.stats.cluesStillUsable === null) {
-    return null;
+export function getFutureEfficiency(gameState: GameState): number | undefined {
+  if (gameState.stats.cluesStillUsable === undefined) {
+    return undefined;
   }
 
   const cardsNotGotten = gameState.stats.maxScore - gameState.stats.cardsGotten;
@@ -465,14 +463,14 @@ export function getDoubleDiscardCard(
   orderOfDiscardedCard: CardOrder,
   gameState: GameState,
   variant: Variant,
-): CardOrder | null {
+): CardOrder | undefined {
   const cardDiscarded = gameState.deck[orderOfDiscardedCard];
   // It is never a double discard situation if the game is over.
   if (
     cardDiscarded === undefined
-    || gameState.turn.currentPlayerIndex === null
+    || gameState.turn.currentPlayerIndex === undefined
   ) {
-    return null;
+    return undefined;
   }
 
   // It is never a double discard situation if the next player has one or more positive clues on
@@ -483,14 +481,17 @@ export function getDoubleDiscardCard(
   if (hand !== undefined) {
     const nextPlayerLocked = isHandLocked(hand, gameState.deck);
     if (nextPlayerLocked) {
-      return null;
+      return undefined;
     }
   }
 
   // It is never a double discard situation if we do not know the identity of the discarded card
   // (which can happen in certain variants).
-  if (cardDiscarded.suitIndex === null || cardDiscarded.rank === null) {
-    return null;
+  if (
+    cardDiscarded.suitIndex === undefined
+    || cardDiscarded.rank === undefined
+  ) {
+    return undefined;
   }
 
   // It is never a double discard situation if the discarded card does not need to be played.
@@ -504,7 +505,7 @@ export function getDoubleDiscardCard(
     variant,
   );
   if (!neededForMaxScore) {
-    return null;
+    return undefined;
   }
 
   // It is never a double discard situation if another player has a copy of the card in their hand
@@ -517,14 +518,14 @@ export function getDoubleDiscardCard(
       && typeof cardInDeck.location === "number" // The card is in a player's hand
       && cardInDeck.possibleCardsFromClues.length === 1 // The card is fully "filled-in"
     ) {
-      return null;
+      return undefined;
     }
   }
 
   // Otherwise, it is a double discard situation if there is only one copy of the card left.
   const suit = variant.suits[cardDiscarded.suitIndex];
   if (suit === undefined) {
-    return null;
+    return undefined;
   }
   const numCopiesTotal = getNumCopiesOfCard(suit, cardDiscarded.rank, variant);
   const numDiscarded = getNumDiscardedCopiesOfCard(
@@ -533,5 +534,5 @@ export function getDoubleDiscardCard(
     cardDiscarded.rank,
   );
 
-  return numCopiesTotal === numDiscarded + 1 ? orderOfDiscardedCard : null;
+  return numCopiesTotal === numDiscarded + 1 ? orderOfDiscardedCard : undefined;
 }

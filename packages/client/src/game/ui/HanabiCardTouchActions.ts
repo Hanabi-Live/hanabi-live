@@ -9,9 +9,9 @@ import * as replay from "./replay";
 export function HanabiCardTap(this: HanabiCard): void {
   // We executed a tap, so prevent the code from considering a long press is happening. (Otherwise,
   // the second tap of a double tap would close the note that the double tap opens.)
-  if (this.touchstartTimeout !== null) {
+  if (this.touchstartTimeout !== undefined) {
     clearTimeout(this.touchstartTimeout);
-    this.touchstartTimeout = null;
+    this.touchstartTimeout = undefined;
   }
 
   // We must delay the action by a bit to make sure it isn't a double tap.
@@ -36,12 +36,12 @@ function HanabiCardTapAction(this: HanabiCard) {
     return;
   }
 
-  if (isCardPlayed(this.state) && this.state.segmentPlayed !== null) {
+  if (isCardPlayed(this.state) && this.state.segmentPlayed !== undefined) {
     // Tapping on played cards goes to the turn immediately before they were played.
     replay.goToSegmentAndIndicateCard(this.state.segmentPlayed, this.order);
   } else if (
     isCardDiscarded(this.state)
-    && this.state.segmentDiscarded !== null
+    && this.state.segmentDiscarded !== undefined
   ) {
     // Tapping on discarded cards goes to the turn immediately before they were discarded.
     replay.goToSegmentAndIndicateCard(this.state.segmentDiscarded, this.order);

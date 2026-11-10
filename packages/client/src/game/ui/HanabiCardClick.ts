@@ -63,9 +63,9 @@ function clickLeft(card: HanabiCard, event: MouseEvent) {
 
   // If we are in "edit cards" mode, left clicking a card morphs it.
   if (
-    globals.elements.editCardsButton !== null
+    globals.elements.editCardsButton !== undefined
     && globals.elements.editCardsButton.pressed
-    && globals.state.replay.hypothetical !== null
+    && globals.state.replay.hypothetical !== undefined
   ) {
     clickMorph(card);
     return;
@@ -90,7 +90,7 @@ function clickLeft(card: HanabiCard, event: MouseEvent) {
     || event.metaKey
     || card.isStackBase  // Disable clicking on the stack base
     // No replay actions should happen in a hypothetical.
-    || globals.state.replay.hypothetical !== null
+    || globals.state.replay.hypothetical !== undefined
   ) {
     return;
   }
@@ -98,7 +98,7 @@ function clickLeft(card: HanabiCard, event: MouseEvent) {
   if (event.altKey) {
     // Alt + clicking a card goes to the turn it was drawn. (We want to go to the turn before it is
     // drawn, tween the card being drawn, and then indicate the card.)
-    if (card.state.segmentDrawn === null) {
+    if (card.state.segmentDrawn === undefined) {
       // The card was drawn during the initial deal before the first turn.
       replay.goToSegmentAndIndicateCard(0, card.order);
     } else {
@@ -109,12 +109,15 @@ function clickLeft(card: HanabiCard, event: MouseEvent) {
       replay.goToSegment(segmentDrawn, true);
       replay.goToSegmentAndIndicateCard(segmentDrawn + 1, card.order);
     }
-  } else if (isCardPlayed(card.state) && card.state.segmentPlayed !== null) {
+  } else if (
+    isCardPlayed(card.state)
+    && card.state.segmentPlayed !== undefined
+  ) {
     // Clicking on played cards goes to the turn immediately before they were played.
     replay.goToSegmentAndIndicateCard(card.state.segmentPlayed, card.order);
   } else if (
     isCardDiscarded(card.state)
-    && card.state.segmentDiscarded !== null
+    && card.state.segmentDiscarded !== undefined
   ) {
     // Clicking on discarded cards goes to the turn immediately before they were discarded.
     replay.goToSegmentAndIndicateCard(card.state.segmentDiscarded, card.order);
@@ -129,7 +132,7 @@ function clickMiddle(card: HanabiCard, event: MouseEvent) {
 
   // Middle clicking on a card goes to the turn it was first clued.
   if (
-    card.state.segmentFirstClued !== null
+    card.state.segmentFirstClued !== undefined
     && !card.isStackBase // Disable this functionality for the stack base
   ) {
     // We add one to the segment so that the clue is visible. (If we go to the turn that the card
@@ -142,18 +145,18 @@ function clickRight(card: HanabiCard, event: MouseEvent) {
   // Print the order of the card in the JavaScript log for debugging purposes. (This makes
   // right-click an easy way to get the order of an arbitrary card.)
   const suit =
-    card.state.suitIndex === null
+    card.state.suitIndex === undefined
       ? undefined
       : globals.variant.suits[card.state.suitIndex];
-  const rank = card.state.rank ?? undefined;
+  const { rank } = card.state;
   const suitText = suit?.name ?? "Unknown";
   const rankText = rank?.toString() ?? "Unknown";
   console.log(`The order of the ${suitText} ${rankText} is: ${card.order}`);
 
   // Alt + right-click is a card morph (in a hypothetical).
   if (
-    globals.state.replay.hypothetical !== null
-    && (globals.state.replay.shared === null
+    globals.state.replay.hypothetical !== undefined
+    && (globals.state.replay.shared === undefined
       || globals.state.replay.shared.amLeader)
     && !event.ctrlKey
     && !event.shiftKey
@@ -170,7 +173,7 @@ function clickRight(card: HanabiCard, event: MouseEvent) {
   // hotkey while highlighting cards.)
   if (
     globals.state.finished
-    && (globals.state.replay.shared === null
+    && (globals.state.replay.shared === undefined
       || (globals.state.replay.shared.amLeader
         && globals.state.replay.shared.useSharedSegments))
   ) {
@@ -179,7 +182,7 @@ function clickRight(card: HanabiCard, event: MouseEvent) {
   }
 
   // Right-click in a solo replay just prints out the order of the card.
-  if (globals.state.finished && globals.state.replay.shared === null) {
+  if (globals.state.finished && globals.state.replay.shared === undefined) {
     console.log(`This card's order is: ${card.order}`);
     return;
   }
@@ -193,7 +196,7 @@ function clickRight(card: HanabiCard, event: MouseEvent) {
     && !event.shiftKey
     && !event.altKey
     && !event.metaKey
-    && globals.state.replay.shared === null
+    && globals.state.replay.shared === undefined
   ) {
     arrows.toggle(card.order);
     return;

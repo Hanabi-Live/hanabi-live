@@ -15,7 +15,7 @@ describe("tapping a card", () => {
     vi.useFakeTimers();
     const card = {
       wasRecentlyTapped: false,
-      touchstartTimeout: null,
+      touchstartTimeout: undefined,
     } as unknown as HanabiCard;
     const longPress = vi.fn();
 

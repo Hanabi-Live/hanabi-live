@@ -16,14 +16,14 @@ const SHARED_REPLAY_INDICATOR_FADE_SECONDS = 1;
 
 export function onActiveChanged(active: boolean): void {
   const { replayArea } = globals.elements;
-  if (replayArea === null) {
+  if (replayArea === undefined) {
     return;
   }
 
   if (active) {
     // Visibility is handled by hypotheticalView.shouldShowReplayAreaChanged.
     replay.adjustShuttles(true); // We want it to immediately snap to the end
-  } else if (globals.state.premove !== null) {
+  } else if (globals.state.premove !== undefined) {
     // We are exiting a replay.
     globals.elements.premoveCancelButton?.show();
   }
@@ -36,18 +36,18 @@ export function onActiveChanged(active: boolean): void {
 export function onSegmentChanged(
   data: {
     active: boolean;
-    replaySegment: number | null;
-    ongoingGameSegment: number | null;
+    replaySegment: number | undefined;
+    ongoingGameSegment: number | undefined;
   },
   previousData:
     | {
         active: boolean;
-        replaySegment: number | null;
-        ongoingGameSegment: number | null;
+        replaySegment: number | undefined;
+        ongoingGameSegment: number | undefined;
       }
     | undefined,
 ): void {
-  if (data.replaySegment === null) {
+  if (data.replaySegment === undefined) {
     return;
   }
 
@@ -66,7 +66,7 @@ export function onSegmentChanged(
   if (
     previousData === undefined
     || !data.active
-    || data.ongoingGameSegment === null
+    || data.ongoingGameSegment === undefined
   ) {
     return;
   }
@@ -175,14 +175,14 @@ function playSharedReplayTween(
   const opacity = 0;
   if (sharedSegment < previousSharedSegment) {
     const indicator = globals.elements.sharedReplayBackward;
-    if (indicator === null) {
+    if (indicator === undefined) {
       return;
     }
     indicator.show();
     indicator.opacity(1);
-    if (globals.elements.sharedReplayBackwardTween !== null) {
+    if (globals.elements.sharedReplayBackwardTween !== undefined) {
       globals.elements.sharedReplayBackwardTween.destroy();
-      globals.elements.sharedReplayBackwardTween = null;
+      globals.elements.sharedReplayBackwardTween = undefined;
     }
     globals.elements.sharedReplayBackwardTween = new Konva.Tween({
       node: indicator,
@@ -191,14 +191,14 @@ function playSharedReplayTween(
     }).play();
   } else if (sharedSegment > previousSharedSegment) {
     const indicator = globals.elements.sharedReplayForward;
-    if (indicator === null) {
+    if (indicator === undefined) {
       return;
     }
     indicator.show();
     indicator.opacity(1);
-    if (globals.elements.sharedReplayForwardTween !== null) {
+    if (globals.elements.sharedReplayForwardTween !== undefined) {
       globals.elements.sharedReplayForwardTween.destroy();
-      globals.elements.sharedReplayForwardTween = null;
+      globals.elements.sharedReplayForwardTween = undefined;
     }
     globals.elements.sharedReplayForwardTween = new Konva.Tween({
       node: indicator,
@@ -259,7 +259,7 @@ export function onFinishedChanged(
   globals.elements.replayButton?.hide();
 
   // Hide the terminate button and show the last strike UI.
-  if (globals.elements.terminateButton !== null) {
+  if (globals.elements.terminateButton !== undefined) {
     globals.elements.terminateButton.hide();
     globals.elements.strikeSquares.at(-1)!.show();
     globals.elements.strikeXs.at(-1)!.show();
@@ -305,22 +305,22 @@ export function onSharedLeaderChanged(
 
 /** Shows the leader whether they can restart, and the other players whether they declined. */
 export function onRestartChanged(
-  shared: Pick<
-    SharedReplayState,
-    "leader" | "amLeader" | "restartDeclined"
-  > | null,
+  shared:
+    | Pick<SharedReplayState, "leader" | "amLeader" | "restartDeclined">
+    | undefined,
 ): void {
   const { playerNames, ourUsername } = globals.metadata;
   const amLeader = shared?.amLeader === true;
-  const canRestart = shared !== null && restart.canRestart(shared, playerNames);
+  const canRestart =
+    shared !== undefined && restart.canRestart(shared, playerNames);
   globals.elements.restartButton?.visible(amLeader);
 
   const amPlayer = playerNames.includes(ourUsername);
   const readyButton = globals.elements.restartReadyButton;
-  readyButton?.visible(shared !== null && !amLeader && amPlayer);
+  readyButton?.visible(shared !== undefined && !amLeader && amPlayer);
   readyButton?.setReady(shared?.restartDeclined.includes(ourUsername) !== true);
 
-  const declined = shared === null ? [] : restart.declinedPlayers(shared);
+  const declined = shared === undefined ? [] : restart.declinedPlayers(shared);
   globals.elements.restartGameButton?.setEnabled(declined.length === 0);
   globals.elements.restartTableButton?.setEnabled(canRestart);
   globals.elements.restartText?.text(

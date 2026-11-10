@@ -144,9 +144,9 @@ export class CardLayout extends Konva.Group {
         layoutChild.doMisplayAnimation = false;
       }
 
-      if (layoutChild.tween !== null) {
+      if (layoutChild.tween !== undefined) {
         layoutChild.tween.destroy();
-        layoutChild.tween = null;
+        layoutChild.tween = undefined;
       }
       layoutChild.stopAnimations();
 
@@ -187,7 +187,7 @@ export class CardLayout extends Konva.Group {
           layoutChild,
           { x: newX, y: 0, scale },
           () => {
-            layoutChild.misplayAnimation = null;
+            layoutChild.misplayAnimation = undefined;
             layoutChild.card.finishedTweening();
             layoutChild.checkSetDraggable();
           },

@@ -22,16 +22,16 @@ import { getHTMLElement, getHTMLInputElement } from "./utils";
 export const MODAL_DELAY_MILLISECONDS = 100;
 
 /** Used by the morph dialog. */
-type DragAreaType = "playArea" | "discardArea" | null;
+type DragAreaType = "playArea" | "discardArea" | undefined;
 
 let allowCloseModal = true;
 /** An administrator's reason for a restart or stop, shown until its warning modal is closed. */
-let downtimeMessage: string | null = null;
-let currentModal: HTMLElement | null = null;
-let confirmModalOnConfirm: (() => void) | null = null;
-let confirmModalOnCancel: (() => void) | null = null;
-let morphDragArea: DragAreaType = null;
-let idleCountdown: ReturnType<typeof setInterval> | null = null;
+let downtimeMessage: string | undefined;
+let currentModal: HTMLElement | undefined;
+let confirmModalOnConfirm: (() => void) | undefined;
+let confirmModalOnCancel: (() => void) | undefined;
+let morphDragArea: DragAreaType;
+let idleCountdown: ReturnType<typeof setInterval> | undefined;
 
 const confirmModalCancel = getHTMLElement("#confirm-modal-cancel");
 const confirmModalConfirm = getHTMLElement("#confirm-modal-confirm");
@@ -66,13 +66,13 @@ export function init(): void {
     if (
       event.target === pageCover
       && !pageCover.classList.contains("show")
-      && currentModal === null
+      && currentModal === undefined
     ) {
       pageCover.style.display = "none";
     }
   });
   document.addEventListener("keydown", (event) => {
-    if (event.key === "Escape" && currentModal !== null) {
+    if (event.key === "Escape" && currentModal !== undefined) {
       // The key press must not also act on the screen behind the modal (e.g. leaving a replay).
       event.stopImmediatePropagation();
       closeModals();
@@ -106,8 +106,8 @@ export function init(): void {
   // Confirm modal setup. Use "click" so that the buttons also work from the keyboard.
   confirmModalConfirm.addEventListener("click", () => {
     const onConfirm = confirmModalOnConfirm;
-    confirmModalOnConfirm = null;
-    confirmModalOnCancel = null;
+    confirmModalOnConfirm = undefined;
+    confirmModalOnCancel = undefined;
     closeModals();
     onConfirm?.();
   });
@@ -182,21 +182,24 @@ export function askForPassword(tableID: number): void {
 }
 
 export function askForMorph(
-  card: HanabiCard | null,
+  card: HanabiCard | undefined,
   variant: Variant,
   cardImages: ReadonlyMap<string, HTMLCanvasElement>,
-  draggedTo: DragAreaType = null,
+  draggedTo?: DragAreaType,
 ): void {
   morphDragArea = draggedTo;
   allowCloseModal = false;
 
   const { suits, ranks } = variant;
   const start =
-    card === null ? { suitIndex: null, rank: null } : card.getMorphedIdentity();
+    card === undefined
+      ? { suitIndex: undefined, rank: undefined }
+      : card.getMorphedIdentity();
   const startSuitIndex = start.suitIndex ?? 0;
   const startRank = start.rank ?? 1;
 
-  const possibilities = card === null ? [] : card.state.possibleCardsForEmpathy;
+  const possibilities =
+    card === undefined ? [] : card.state.possibleCardsForEmpathy;
   const startSuit = suits[startSuitIndex];
   assertDefined(
     startSuit,
@@ -219,8 +222,8 @@ export function askForMorph(
     morphModalTextbox.select();
   }, MODAL_DELAY_MILLISECONDS);
 
-  if (draggedTo === null) {
-    // If action is null, the function was called from "HanabiCardClick.ts" during replay hypo.
+  if (draggedTo === undefined) {
+    // If action is undefined, the function was called from "HanabiCardClick.ts" during replay hypo.
     morphModalDescription.textContent =
       "Select the card you want to morph it into.";
 
@@ -252,9 +255,9 @@ export function askForMorph(
   }
 }
 
-function morphFinishLayout(card: HanabiCard | null) {
+function morphFinishLayout(card: HanabiCard | undefined) {
   // Finish drag action.
-  if (card === null) {
+  if (card === undefined) {
     return;
   }
 
@@ -262,7 +265,7 @@ function morphFinishLayout(card: HanabiCard | null) {
 }
 
 function morphReplayOkButton(
-  card: HanabiCard | null,
+  card: HanabiCard | undefined,
   variant: Variant,
 ): boolean {
   allowCloseModal = true;
@@ -282,10 +285,10 @@ function morphReplayOkButton(
   return true;
 }
 
-function morphInGameOkButton(card: HanabiCard | null, variant: Variant) {
+function morphInGameOkButton(card: HanabiCard | undefined, variant: Variant) {
   const success = morphReplayOkButton(card, variant);
   if (!success) {
-    morphDragArea = null;
+    morphDragArea = undefined;
   }
 
   morphFinishLayout(card);
@@ -296,9 +299,9 @@ function morphReplayCancelButton() {
   closeModals();
 }
 
-function morphInGameCancelButton(card: HanabiCard | null) {
+function morphInGameCancelButton(card: HanabiCard | undefined) {
   morphReplayCancelButton();
-  morphDragArea = null;
+  morphDragArea = undefined;
   morphFinishLayout(card);
 }
 
@@ -331,7 +334,7 @@ export function showWarning(msg: string): void {
  */
 export function showIdleWarning(
   remainingMs: number,
-  keepPlaying: (() => void) | null,
+  keepPlaying: (() => void) | undefined,
 ): void {
   if (globals.errorOccurred) {
     return;
@@ -342,7 +345,7 @@ export function showIdleWarning(
   idleModalDescription.replaceChildren(
     "Nobody has taken a turn in a while, so this game will end in ",
     countdown,
-    keepPlaying === null
+    keepPlaying === undefined
       ? " unless a player takes a turn or keeps it going."
       : " unless someone takes a turn or keeps it going.",
   );
@@ -361,7 +364,7 @@ export function showIdleWarning(
     }
   }, SECOND_IN_MILLISECONDS);
 
-  idleModalKeep.style.display = keepPlaying === null ? "none" : "";
+  idleModalKeep.style.display = keepPlaying === undefined ? "none" : "";
   // We can't use "addEventListener" because we can't easily remove the previous listener.
   // eslint-disable-next-line unicorn/prefer-add-event-listener
   idleModalKeep.onpointerdown = () => {
@@ -371,7 +374,7 @@ export function showIdleWarning(
 
   globals.lastActiveElement = document.activeElement as HTMLElement;
   showModal("#idle-modal", true, () => {
-    (keepPlaying === null ? idleModalClose : idleModalKeep).focus();
+    (keepPlaying === undefined ? idleModalClose : idleModalKeep).focus();
   });
 }
 
@@ -384,9 +387,9 @@ export function closeIdleWarning(): void {
 }
 
 function stopIdleCountdown() {
-  if (idleCountdown !== null) {
+  if (idleCountdown !== undefined) {
     clearInterval(idleCountdown);
-    idleCountdown = null;
+    idleCountdown = undefined;
   }
 }
 
@@ -423,7 +426,7 @@ export function askForConfirmation(
   // Showing the modal closes any previous one (and cancels its confirmation), so the new callbacks
   // must be stored afterward.
   confirmModalOnConfirm = onConfirm;
-  confirmModalOnCancel = onCancel ?? null;
+  confirmModalOnCancel = onCancel;
 }
 
 /** The reason stays visible if a reconnect error (such as an outdated client) replaces it. */
@@ -445,22 +448,24 @@ export function showError(msg: string): void {
   // Error messages include the formatted stack trace from "errors.ts".
   // eslint-disable-next-line unicorn/no-unsafe-dom-html
   errorModalDescription.innerHTML =
-    downtimeMessage === null ? msg : `${downtimeMessage}<br /><br />${msg}`;
+    downtimeMessage === undefined
+      ? msg
+      : `${downtimeMessage}<br /><br />${msg}`;
   showModal("#error-modal", false);
 }
 
 export function showPrompt(
   selector: string,
-  test: (() => unknown) | null = null,
-  focusElement: HTMLInputElement | null = null,
-  clickButtonElement: HTMLElement | null = null,
+  test?: () => unknown,
+  focusElement?: HTMLInputElement,
+  clickButtonElement?: HTMLElement,
 ): void {
   // eslint-disable-next-line
-  if (!(test?.call(null) ?? true)) {
+  if (!(test?.call(undefined) ?? true)) {
     return;
   }
 
-  if (focusElement !== null && clickButtonElement !== null) {
+  if (focusElement !== undefined && clickButtonElement !== undefined) {
     // We can't use "addEventListener" because we can't easily remove the previous listener.
     // eslint-disable-next-line unicorn/prefer-add-event-listener
     focusElement.onkeydown = (event) => {
@@ -472,7 +477,7 @@ export function showPrompt(
 
   showModal(selector, true);
 
-  if (focusElement !== null) {
+  if (focusElement !== undefined) {
     setTimeout(() => {
       focusElement.focus();
       const oldType = focusElement.type;
@@ -493,12 +498,12 @@ export function closeModals(fast = false): void {
   }
 
   pageCover.classList.remove("show");
-  downtimeMessage = null;
-  if (currentModal !== null) {
+  downtimeMessage = undefined;
+  if (currentModal !== undefined) {
     currentModal.classList.add("hidden");
     currentModal.remove();
     modalsContainer.append(currentModal);
-    currentModal = null;
+    currentModal = undefined;
   }
 
   // Otherwise, the page cover is removed when its fade-out animation ends.
@@ -506,18 +511,18 @@ export function closeModals(fast = false): void {
     pageCover.style.display = "none";
   }
 
-  if (globals.lastActiveElement !== null) {
+  if (globals.lastActiveElement !== undefined) {
     globals.lastActiveElement.focus();
   }
 
   const onCancel = confirmModalOnCancel;
-  confirmModalOnConfirm = null;
-  confirmModalOnCancel = null;
+  confirmModalOnConfirm = undefined;
+  confirmModalOnCancel = undefined;
   onCancel?.();
 }
 
 export function isModalVisible(): boolean {
-  return currentModal !== null;
+  return currentModal !== undefined;
 }
 
 function showModal(selector: string, allowClose: boolean, ready?: () => void) {

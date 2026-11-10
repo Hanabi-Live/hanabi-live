@@ -22,14 +22,10 @@ export function sudokuIsCardNeededForMaxScore(
     variant,
   );
 
+  // Undefined until the suit's first card decides where the stack starts.
   const playStackStart = playStackStarts[suitIndex];
-  assertDefined(
-    playStackStart,
-    `Failed to find the play stack start for suit index: ${suitIndex}`,
-  );
-
   const possibleStackStartRanks =
-    playStackStart === null
+    playStackStart === undefined
       ? sudokuGetUnusedStackStartRanks(playStackStarts, variant)
       : [playStackStart];
 
@@ -305,7 +301,7 @@ export function sudokuGetMaxScorePerStack(
       continue;
     }
 
-    if (stackStart !== null) {
+    if (stackStart !== undefined) {
       const score = maxScoresForEachStartingValueOfSuit[stackStart - 1];
       assertDefined(
         score,

@@ -1,5 +1,3 @@
-/* eslint-disable unicorn/no-null */
-
 import type { Tuple } from "complete-common";
 import { newArray, sumArray } from "complete-common";
 import type { CardStatus } from "../../enums/CardStatus";
@@ -46,8 +44,8 @@ export function getInitialGameState(metadata: GameMetadata): GameState {
   const playStackDirections = suitIndexes.map((suitIndex) =>
     getStackDirection(suitIndex, [], [], variant),
   ) as Tuple<StackDirection, NumSuits>;
-  const playStackStarts = newArray(variant.suits.length, null) as Tuple<
-    Rank | null,
+  const playStackStarts = newArray(variant.suits.length, undefined) as Tuple<
+    Rank | undefined,
     NumSuits
   >;
 
@@ -105,8 +103,8 @@ export function getInitialGameState(metadata: GameMetadata): GameState {
     currentClues,
   );
   const cluesStillUsable =
-    cluesStillUsableNotRounded === null
-      ? null
+    cluesStillUsableNotRounded === undefined
+      ? undefined
       : Math.floor(cluesStillUsableNotRounded);
 
   return {
@@ -140,7 +138,7 @@ export function getInitialGameState(metadata: GameMetadata): GameState {
       cluesStillUsable,
       cluesStillUsableNotRounded,
 
-      doubleDiscardCard: null,
+      doubleDiscardCard: undefined,
 
       numSubsequentBlindPlays: 0,
       numSubsequentMisplays: 0,

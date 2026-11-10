@@ -9,8 +9,8 @@ import type { Color } from "./Color";
 export interface CardState {
   readonly order: CardOrder;
   readonly location: "deck" | "discard" | "playStack" | PlayerIndex;
-  readonly suitIndex: SuitIndex | null;
-  readonly rank: Rank | null;
+  readonly suitIndex: SuitIndex | undefined;
+  readonly rank: Rank | undefined;
 
   /**
    * A one-dimensional array of tuples. It contains a tuple for each specific card that is still
@@ -54,10 +54,10 @@ export interface CardState {
   readonly rankDetermined: boolean;
   readonly hasClueApplied: boolean;
   readonly numPositiveClues: number;
-  readonly segmentFirstClued: number | null;
-  readonly segmentDrawn: number | null;
-  readonly segmentDiscarded: number | null;
-  readonly segmentPlayed: number | null;
+  readonly segmentFirstClued: number | undefined;
+  readonly segmentDrawn: number | undefined;
+  readonly segmentDiscarded: number | undefined;
+  readonly segmentPlayed: number | undefined;
 
   /**
    * Whether the card is potentially in DDA. Since DDA status depends on the card's location and
@@ -76,5 +76,5 @@ export interface CardState {
   readonly dealtToStartingHand: boolean;
 
   /** Needed for special sound effects. */
-  readonly firstCluedWhileOnChop: boolean | null;
+  readonly firstCluedWhileOnChop: boolean | undefined;
 }

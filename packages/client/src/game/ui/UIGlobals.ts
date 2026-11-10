@@ -29,7 +29,7 @@ Konva.legacyTextRendering = true;
 export class UIGlobals {
   // Objects sent upon UI initialization.
   lobby: LobbyGlobals = new LobbyGlobals();
-  game: GameExports | null = null;
+  game: GameExports | undefined = undefined;
 
   /**
    * The UI is instantiated before all the images are necessarily downloaded and before we know
@@ -42,7 +42,7 @@ export class UIGlobals {
   stackBases: HanabiCard[] = [];
 
   // UI elements
-  imageLoader: Loader | null = null;
+  imageLoader: Loader | undefined = undefined;
   stage: Konva.Stage = new Konva.Stage({
     container: "game",
     listening: false,
@@ -52,7 +52,7 @@ export class UIGlobals {
   elements: Elements = new Elements();
 
   /** The element that the mouse cursor is currently over. */
-  activeHover: Konva.Node | null = null;
+  activeHover: Konva.Node | undefined = undefined;
 
   cardImages = new ReadonlyMap<string, HTMLCanvasElement>();
   scaledCardImages = new Map<string, HTMLCanvasElement[]>();
@@ -67,9 +67,9 @@ export class UIGlobals {
 
   /**
    * Used to keep track of which card the user is editing. Users can only update one note at a time
-   * to prevent bugs. Equal to the selector of the tooltip or null.
+   * to prevent bugs. Equal to the selector of the tooltip or undefined.
    */
-  editingNote: string | null = null;
+  editingNote: string | undefined = undefined;
 
   /** Equal to true if something happened when the note box happens to be open. */
   actionOccurred = false;
@@ -77,7 +77,7 @@ export class UIGlobals {
   lastNote = ""; // Equal to the last note entered
 
   // Timer feature
-  timerID: number | null = null;
+  timerID: number | undefined = undefined;
   playerTimes: number[] = [];
 
   /**
@@ -109,8 +109,8 @@ export class UIGlobals {
   playStartSound = false;
 
   // State information
-  store: Redux.Store<State, Action> | null = null;
-  stateObserver: StateObserver | null = null;
+  store: Redux.Store<State, Action> | undefined = undefined;
+  stateObserver: StateObserver | undefined = undefined;
   cardSubscriptions: Redux.Unsubscribe[] = [];
 
   get state(): State {
@@ -139,12 +139,12 @@ export class UIGlobals {
    */
   reset(): void {
     this.lobby = new LobbyGlobals();
-    this.game = null;
+    this.game = undefined;
     this.loading = true;
     this.variant = getDefaultVariant();
     this.deck = [];
     this.stackBases = [];
-    this.imageLoader = null;
+    this.imageLoader = undefined;
     this.stage = new Konva.Stage({
       container: "game",
       listening: true,
@@ -154,16 +154,16 @@ export class UIGlobals {
     });
     this.layers = new Layers();
     this.elements = new Elements();
-    this.activeHover = null;
+    this.activeHover = undefined;
     this.cardImages = new Map<string, HTMLCanvasElement>();
     this.scaledCardImages = new Map<string, HTMLCanvasElement[]>();
     this.replayLog = [];
     this.finalReplayPos = 0;
     this.finalReplayTurn = 0;
-    this.editingNote = null;
+    this.editingNote = undefined;
     this.actionOccurred = false;
     this.lastNote = "";
-    this.timerID = null;
+    this.timerID = undefined;
     this.playerTimes = [];
     this.clockPlayerIndex = undefined;
     this.timeTaken = 0;
@@ -177,14 +177,14 @@ export class UIGlobals {
     this.playStartSound = false;
 
     this.stateObserver?.unregisterObservers();
-    this.stateObserver = null;
+    this.stateObserver = undefined;
 
     for (const unsubscribeFunc of this.cardSubscriptions) {
       unsubscribeFunc();
     }
 
     this.cardSubscriptions = [];
-    this.store = null;
+    this.store = undefined;
   }
 }
 

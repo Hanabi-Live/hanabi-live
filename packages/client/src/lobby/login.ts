@@ -261,10 +261,10 @@ export function automaticLogin(): void {
       if (!showFirefoxWarningIfNeeded()) {
         show();
       }
-      return null;
+      return undefined;
     })
     .then((response) => {
-      if (response === null || showFirefoxWarningIfNeeded()) {
+      if (response === undefined || showFirefoxWarningIfNeeded()) {
         return;
       }
 

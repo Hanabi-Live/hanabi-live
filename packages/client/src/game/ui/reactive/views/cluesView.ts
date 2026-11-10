@@ -6,14 +6,14 @@ import { getCardOrStackBase } from "../../getCardOrStackBase";
 
 export function onLastClueOrSegmentChanged(data: {
   clues: readonly StateClue[];
-  segment: number | null;
+  segment: number | undefined;
 }): void {
   updateArrows(data.clues, data.segment, true);
 }
 
 export function refreshArrows(animate: boolean): void {
   const { visibleState } = globals.state;
-  if (visibleState === null) {
+  if (visibleState === undefined) {
     arrows.hideAll();
     return;
   }
@@ -23,12 +23,12 @@ export function refreshArrows(animate: boolean): void {
 
 function updateArrows(
   clues: readonly StateClue[],
-  segment: number | null,
+  segment: number | undefined,
   animate: boolean,
 ) {
   arrows.hideAll();
 
-  if (segment === null) {
+  if (segment === undefined) {
     return;
   }
 

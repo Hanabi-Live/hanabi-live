@@ -55,7 +55,7 @@ function mouseLeave(this: HanabiCard) {
   checkHideNoteTooltip(this);
 
   // When we stop hovering over a card, the clue log will return to normal.
-  showClueMatches(null);
+  showClueMatches(undefined);
 
   // When we stop hovering over a card, the cursor should change back to normal.
   cursor.set("default");
@@ -81,7 +81,7 @@ function touchStart(
     // it will appear like the second tap of a double tap. Do not worry about this if we actually
     // double-tapped.
     this.wasRecentlyTapped = true;
-    if (globals.editingNote !== null) {
+    if (globals.editingNote !== undefined) {
       tooltips.close(globals.editingNote);
       tooltips.close(`#tooltip-${this.tooltipName}`);
     }
@@ -123,9 +123,9 @@ function mouseDown(
   }
 
   const editMode =
-    globals.elements.editCardsButton !== null
+    globals.elements.editCardsButton !== undefined
     && globals.elements.editCardsButton.pressed
-    && globals.state.replay.hypothetical !== null;
+    && globals.state.replay.hypothetical !== undefined;
   // Empathy
   if (
     event.evt.buttons === LEFT_MOUSE_BUTTON_HELD // Only enable Empathy for left-clicks
@@ -162,7 +162,7 @@ function mouseUp(this: HanabiCard) {
 // -----------
 
 function checkShowNoteTooltip(card: HanabiCard) {
-  if (globals.editingNote !== null) {
+  if (globals.editingNote !== undefined) {
     // Do not open any more note tooltips if the user is currently editing a note
     return;
   }
@@ -195,9 +195,9 @@ function getCursorType(card: HanabiCard) {
   }
 
   if (
-    globals.elements.editCardsButton !== null
+    globals.elements.editCardsButton !== undefined
     && globals.elements.editCardsButton.pressed
-    && globals.state.replay.hypothetical !== null
+    && globals.state.replay.hypothetical !== undefined
   ) {
     return "edit";
   }
@@ -334,7 +334,7 @@ function dragStart(card: HanabiCard) {
   // temporarily remove all rotation (for the duration of the drag). The rotation will be
   // automatically reset if the card tweens back to the hand.
   if (
-    globals.state.replay.hypothetical !== null
+    globals.state.replay.hypothetical !== undefined
     && card.layout.parent !== null
     && globals.lobby.settings.keldonMode
   ) {
@@ -405,10 +405,10 @@ function dragEnd(card: HanabiCard) {
 }
 
 function checkForHypoEmpathy(card: HanabiCard): boolean {
-  if (globals.state.replay.hypothetical !== null) {
+  if (globals.state.replay.hypothetical !== undefined) {
     const { startingPlayerIndex } = globals.state.replay.hypothetical;
     if (
-      startingPlayerIndex === null
+      startingPlayerIndex === undefined
       || startingPlayerIndex >= globals.elements.playerHands.length
       || globals.elements.playerHands[startingPlayerIndex] === undefined
     ) {

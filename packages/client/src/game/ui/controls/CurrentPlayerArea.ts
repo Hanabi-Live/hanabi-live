@@ -71,7 +71,7 @@ export class CurrentPlayerArea extends Konva.Group {
   text2: FitText;
   text3: FitText;
   arrow: Konva.Group;
-  tween: Konva.Tween | null = null;
+  tween: Konva.Tween | undefined = undefined;
 
   constructor(values: ElementValues, winW: number, winH: number) {
     super({

@@ -79,7 +79,7 @@ export class EffectTimeline {
   private readonly fx = new Konva.Group({ listening: false });
   private readonly fxInverse: Konva.Transform;
   private readonly tracks: Track[] = [];
-  private animation: Konva.Animation | null = null;
+  private animation: Konva.Animation | undefined = undefined;
 
   constructor(unit: number) {
     this.unit = unit;
@@ -312,7 +312,7 @@ export function addScoreGlow(
   seconds: number,
 ): void {
   const border = globals.elements.scoreAreaBorder;
-  if (border === null) {
+  if (border === undefined) {
     return;
   }
   const glow = border.clone({

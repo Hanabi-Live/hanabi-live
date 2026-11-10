@@ -1,4 +1,3 @@
-/* eslint-disable unicorn/no-null */
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 
 import { describe, expect, spyOn, test } from "bun:test";
@@ -98,9 +97,9 @@ describe("cardsReducer", () => {
   });
 
   describe("segmentDiscarded", () => {
-    test("is null while on the deck", () => {
+    test("is undefined while on the deck", () => {
       const deck: CardState[] = [FIRST_CARD];
-      expect(deck[0]!.segmentDiscarded).toBe(null);
+      expect(deck[0]!.segmentDiscarded).toBe(undefined);
     });
 
     test("is correct when discarded", () => {
@@ -117,7 +116,7 @@ describe("cardsReducer", () => {
       expect(newDeck[0]!.segmentDiscarded).toBe(GAME_STATE.turn.segment);
     });
 
-    test("is null when played", () => {
+    test("is undefined when played", () => {
       let deck: readonly CardState[] = [FIRST_CARD];
       deck = cardsReducer(deck, draw(0, 0), GAME_STATE, DEFAULT_METADATA);
 
@@ -128,7 +127,7 @@ describe("cardsReducer", () => {
         GAME_STATE,
         DEFAULT_METADATA,
       );
-      expect(newDeck[0]!.segmentDiscarded).toBe(null);
+      expect(newDeck[0]!.segmentDiscarded).toBe(undefined);
     });
 
     test("is correct when misplayed", () => {
@@ -145,7 +144,7 @@ describe("cardsReducer", () => {
     test("remembers the segment when the first clue happened", () => {
       let deck: readonly CardState[] = [FIRST_CARD];
       deck = cardsReducer(deck, draw(0, 0), GAME_STATE, DEFAULT_METADATA);
-      expect(deck[0]!.segmentFirstClued).toBeNull();
+      expect(deck[0]!.segmentFirstClued).toBeUndefined();
 
       const clue1Segment = 999;
       const gameStateFirstTurn = {
@@ -672,7 +671,7 @@ describe("cardsReducer", () => {
     test("does not eliminate that possibility on Slow-Witted cards", () => {
       const metadata = {
         ...DEFAULT_METADATA,
-        characterAssignments: [null, null, 33],
+        characterAssignments: [undefined, undefined, 33],
       } as const;
       let deck: readonly CardState[] = [FIRST_CARD, SECOND_CARD];
       // P2 draws a yellow 1.
@@ -691,7 +690,7 @@ describe("cardsReducer", () => {
     test("does not eliminate that possibility on Oblivious cards for next player", () => {
       const metadata = {
         ...DEFAULT_METADATA,
-        characterAssignments: [null, null, 30],
+        characterAssignments: [undefined, undefined, 30],
       } as const;
       let deck: readonly CardState[] = [FIRST_CARD, SECOND_CARD];
       // P2 draws a yellow 1.
@@ -710,7 +709,7 @@ describe("cardsReducer", () => {
     test("does eliminate that possibility on Oblivious cards for previous player", () => {
       const metadata = {
         ...DEFAULT_METADATA,
-        characterAssignments: [null, 30, null],
+        characterAssignments: [undefined, 30, undefined],
       } as const;
       let deck: readonly CardState[] = [FIRST_CARD, SECOND_CARD];
       // P1 draws a yellow 1.
@@ -728,7 +727,7 @@ describe("cardsReducer", () => {
     test("does not eliminate that possibility on Blind Spot cards for previous player", () => {
       const metadata = {
         ...DEFAULT_METADATA,
-        characterAssignments: [null, 29, null],
+        characterAssignments: [undefined, 29, undefined],
       } as const;
       let deck: readonly CardState[] = [FIRST_CARD, SECOND_CARD];
       // P1 draws a yellow 1.
@@ -747,7 +746,7 @@ describe("cardsReducer", () => {
     test("does eliminate that possibility on Blind Spot cards for next player", () => {
       const metadata = {
         ...DEFAULT_METADATA,
-        characterAssignments: [null, null, 29],
+        characterAssignments: [undefined, undefined, 29],
       } as const;
       let deck: readonly CardState[] = [FIRST_CARD, SECOND_CARD];
       // P2 draws a yellow 1.
@@ -943,7 +942,7 @@ describe("cardsReducer", () => {
     test("eliminates a possibility on Slow-Witted cards", () => {
       const metadata = {
         ...DEFAULT_METADATA,
-        characterAssignments: [null, null, 33],
+        characterAssignments: [undefined, undefined, 33],
       } as const;
       let deck: readonly CardState[] = [FIRST_CARD, SECOND_CARD, THIRD_CARD];
 

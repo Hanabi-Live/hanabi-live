@@ -68,12 +68,15 @@ describe("server game events", () => {
 });
 
 describe("card identities", () => {
-  test("unknown suits and ranks become null", () => {
+  test("unknown suits and ranks become undefined", () => {
     const [identity] = SERVER_COMMAND_SCHEMAS.cardIdentities.parse({
       tableID: 1,
       identities: [{ suitIndex: -1, rank: 7 }],
     }).identities;
-    expect(toCardIdentity(identity!)).toEqual({ suitIndex: null, rank: 7 });
+    expect(toCardIdentity(identity!)).toEqual({
+      suitIndex: undefined,
+      rank: 7,
+    });
   });
 });
 

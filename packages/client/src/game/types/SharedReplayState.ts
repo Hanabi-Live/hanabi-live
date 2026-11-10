@@ -21,5 +21,5 @@ export interface SharedReplayState {
    * The leader's hypothetical. We only show it (as `ReplayState.hypothetical`) while we use the
    * shared segments, so that it does not interrupt us while we look at other turns.
    */
-  readonly hypothetical: HypotheticalState | null;
+  readonly hypothetical: HypotheticalState | undefined;
 }

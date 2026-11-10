@@ -38,11 +38,11 @@ const NUMBER_WORDS = [
 ] as const;
 
 export function getGoesFirstText(
-  playerIndex: PlayerIndex | null,
+  playerIndex: PlayerIndex | undefined,
   playerNames: Readonly<Tuple<string, NumPlayers>>,
 ): string {
   const playerName =
-    playerIndex === null
+    playerIndex === undefined
       ? "[unknown]"
       : (playerNames[playerIndex] ?? "[unknown]");
 
@@ -213,7 +213,7 @@ function getPlayerNames(
 
 export function getPlayText(
   action: ActionPlay | ActionDiscard,
-  slot: number | null,
+  slot: number | undefined,
   touched: boolean,
   playing: boolean,
   shadowing: boolean,
@@ -232,7 +232,7 @@ export function getPlayText(
     ? "a card"
     : getCardName(action.suitIndex, action.rank, variant);
 
-  const location = slot === null ? "the deck" : `slot #${slot}`;
+  const location = slot === undefined ? "the deck" : `slot #${slot}`;
   const suffix = touched ? "" : " (blind)";
   const hypoPrefix = hypothetical ? HYPO_PREFIX : "";
   const playText =
@@ -245,7 +245,7 @@ export function getPlayText(
 
 export function getDiscardText(
   action: ActionDiscard,
-  slot: number | null,
+  slot: number | undefined,
   touched: boolean,
   critical: boolean,
   playing: boolean,
@@ -277,7 +277,7 @@ export function getDiscardText(
     ? "a card"
     : getCardName(action.suitIndex, action.rank, variant);
 
-  const location = slot === null ? "the deck" : `slot #${slot}`;
+  const location = slot === undefined ? "the deck" : `slot #${slot}`;
   const suffix = getDiscardTextSuffix(touched, critical);
   const hypoPrefix = hypothetical ? HYPO_PREFIX : "";
 

@@ -1,7 +1,5 @@
 // Calculates the state of the deck after an action.
 
-/* eslint-disable unicorn/no-null */
-
 import {
   arrayCopyTwoDimensional,
   assertDefined,
@@ -71,7 +69,7 @@ export function cardsReducer(
         break;
       }
 
-      if (card.suitIndex !== null && card.rank !== null) {
+      if (card.suitIndex !== undefined && card.rank !== undefined) {
         // We already know the full identity of this card, so we can safely ignore this action.
         break;
       }
@@ -88,7 +86,9 @@ export function cardsReducer(
 
     case "clue": {
       const clue =
-        action.clue.type === -1 ? null : msgClueToClue(action.clue, variant);
+        action.clue.type === -1
+          ? undefined
+          : msgClueToClue(action.clue, variant);
 
       const hand = game.hands[action.target];
       assertDefined(hand, `Failed to find the hand at index: ${action.target}`);
@@ -97,7 +97,7 @@ export function cardsReducer(
       const applyClue = (order: CardOrder, positive: boolean) => {
         // Clues do not have to be applied in certain situations.
         if (
-          clue === null
+          clue === undefined
           || !shouldApplyClue(action.giver, metadata, variant)
         ) {
           return;
@@ -233,8 +233,8 @@ export function cardsReducer(
         possibleCards = [[action.suitIndex, action.rank]] as const;
       }
 
-      const suitIndex = action.suitIndex === -1 ? null : action.suitIndex;
-      const rank = action.rank === -1 ? null : action.rank;
+      const suitIndex = action.suitIndex === -1 ? undefined : action.suitIndex;
+      const rank = action.rank === -1 ? undefined : action.rank;
 
       const drawnCard = {
         ...initial,
@@ -248,8 +248,8 @@ export function cardsReducer(
           metadata.characterAssignments,
         ),
         possibleCards,
-        // The segment will be null during the initial deal.
-        dealtToStartingHand: game.turn.segment === null,
+        // The segment will be undefined during the initial deal.
+        dealtToStartingHand: game.turn.segment === undefined,
       };
 
       newDeck[action.order] = drawnCard;
@@ -311,7 +311,7 @@ function cardIdentityRevealedToPlayer(
 function drawnCardRevealedToPlayer(
   drawLocation: number,
   numPlayers: NumPlayers,
-  characterAssignments: Readonly<Array<number | null>>,
+  characterAssignments: Readonly<Array<number | undefined>>,
 ): readonly boolean[] {
   const revealedToPlayer: boolean[] = [];
 
@@ -334,7 +334,7 @@ function canPlayerSeeDrawnCard(
   playerIndex: PlayerIndex,
   drawLocation: number,
   numPlayers: NumPlayers,
-  characterAssignments: Readonly<Array<number | null>>,
+  characterAssignments: Readonly<Array<number | undefined>>,
 ): boolean {
   if (playerIndex === drawLocation) {
     return false;
@@ -372,13 +372,13 @@ function getCard(deck: readonly CardState[], order: CardOrder): CardState {
 }
 
 function revealCard(
-  suitIndex: SuitIndex | null,
-  rank: Rank | null,
+  suitIndex: SuitIndex | undefined,
+  rank: Rank | undefined,
   card: CardState,
 ): boolean {
   // The action from the server did not specify the identity of the card, so we cannot reveal it
   // (e.g. we are playing a special variant where cards are not revealed when they are played)
-  if (suitIndex === null || rank === null) {
+  if (suitIndex === undefined || rank === undefined) {
     return false;
   }
 

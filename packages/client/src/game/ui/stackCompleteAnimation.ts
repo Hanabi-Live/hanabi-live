@@ -151,14 +151,14 @@ const FINALE_SCORE_GLOW_SECONDS = 1.1;
  * @param layoutChild The card that completed the stack.
  * @param playStack The stack that the card completed.
  * @param previousClueTokens The clue tokens before the card was played, if the team got a clue
- *                           back. Otherwise, null.
+ *                           back. Otherwise, undefined.
  * @param perfectScore Whether the card gave the team a perfect score.
  * @param onFinish Called when the animation ends (but not if it is stopped).
  */
 export function startStackCompleteAnimation(
   layoutChild: LayoutChild,
   playStack: PlayStack,
-  previousClueTokens: number | null,
+  previousClueTokens: number | undefined,
   perfectScore: boolean,
   onFinish: () => void,
 ): StackCompleteAnimation {
@@ -204,7 +204,7 @@ export function startStackCompleteAnimation(
   }
 
   const cluesLabel = globals.elements.cluesNumberLabel;
-  if (previousClueTokens !== null && cluesLabel !== null) {
+  if (previousClueTokens !== undefined && cluesLabel !== undefined) {
     // The clue count goes up when the spark reaches it.
     cluesShown = false;
     onClueTokensChanged(previousClueTokens);
@@ -333,7 +333,7 @@ function addFinale(timeline: EffectTimeline, start: number) {
   }
   addScoreGlow(timeline, boom, GOLD, FINALE_SCORE_GLOW_SECONDS);
   const scoreLabel = globals.elements.scoreNumberLabel;
-  if (scoreLabel !== null) {
+  if (scoreLabel !== undefined) {
     addLabelPop(
       timeline,
       boom,

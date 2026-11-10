@@ -1,4 +1,3 @@
-/* eslint-disable unicorn/no-null */
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 
 import type { CardIdentity } from "./interfaces/CardIdentity";
@@ -59,8 +58,8 @@ export function getCardIdentityToShow({
   isStackBase,
   finished,
 }: CardIdentityPresentationOptions): CardIdentity {
-  let suitIndex: CardIdentity["suitIndex"] = null;
-  let rank: CardIdentity["rank"] = null;
+  let suitIndex: CardIdentity["suitIndex"];
+  let rank: CardIdentity["rank"];
 
   if (empathy) {
     const {
@@ -70,17 +69,17 @@ export function getCardIdentityToShow({
       rankDetermined,
     } = state;
 
-    if (stateSuitIndex !== null && suitDetermined) {
+    if (stateSuitIndex !== undefined && suitDetermined) {
       suitIndex = stateSuitIndex;
     }
-    if (stateRank !== null && rankDetermined) {
+    if (stateRank !== undefined && rankDetermined) {
       rank = stateRank;
     }
 
     if (morphedIdentity !== undefined) {
       const { suitIndex: morphedSuitIndex, rank: morphedRank } =
         morphedIdentity;
-      if (morphedSuitIndex !== null && morphedRank !== null) {
+      if (morphedSuitIndex !== undefined && morphedRank !== undefined) {
         suitIndex ??= morphedSuitIndex;
         rank ??= morphedRank;
       }
@@ -93,7 +92,7 @@ export function getCardIdentityToShow({
   suitIndex = cardSuitIndex ?? getSuitIndexFromNote(note, state);
 
   const rankFromNote = getRankFromNote(note, state);
-  rank = cardRank ?? rankFromNote ?? null;
+  rank = cardRank ?? rankFromNote;
   if (isStackBase && !finished && rankFromNote !== undefined) {
     rank = rankFromNote;
   }
@@ -230,7 +229,7 @@ export function possibleCardsFromNoteAndClues(
 function getSuitIndexFromNote(
   note: CardNote,
   state: CardState,
-): SuitIndex | null {
+): SuitIndex | undefined {
   if (note.possibilities.length > 0) {
     const possibilities = possibleCardsFromNoteAndClues(note, state);
     const [candidateSuitIndex] = possibilities[0]!;
@@ -241,7 +240,7 @@ function getSuitIndexFromNote(
     }
   }
 
-  return null;
+  return undefined;
 }
 
 function getRankFromNote(note: CardNote, state: CardState): Rank | undefined {

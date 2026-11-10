@@ -24,7 +24,7 @@ export function startHypothetical(): void {
   }
 
   if (
-    globals.state.replay.shared !== null
+    globals.state.replay.shared !== undefined
     && globals.state.replay.shared.amLeader
   ) {
     globals.lobby.conn!.send("replayAction", {
@@ -43,11 +43,11 @@ export function startHypothetical(): void {
 }
 
 export function endHypothetical(): void {
-  if (globals.state.replay.hypothetical === null) {
+  if (globals.state.replay.hypothetical === undefined) {
     return;
   }
 
-  if (globals.state.replay.shared !== null) {
+  if (globals.state.replay.shared !== undefined) {
     if (globals.state.replay.shared.amLeader) {
       globals.lobby.conn!.send("replayAction", {
         tableID: globals.lobby.tableID,
@@ -76,7 +76,9 @@ export function finishHypothetical(): void {
 /** In shared replays, the leader's hypothetical exists even while we do not show it. */
 function hypotheticalExists(): boolean {
   const { hypothetical, shared } = globals.state.replay;
-  return (shared === null ? hypothetical : shared.hypothetical) !== null;
+  return (
+    (shared === undefined ? hypothetical : shared.hypothetical) !== undefined
+  );
 }
 
 export function sendHypotheticalAction(hypoAction: ClientAction): void {
@@ -127,9 +129,9 @@ export function sendHypotheticalPassTurn(): void {
 export function canPassTurnInHypothetical(state: State): boolean {
   const { hypothetical, shared } = state.replay;
   return (
-    hypothetical !== null
-    && (shared === null || shared.amLeader)
-    && hypothetical.ongoing.turn.currentPlayerIndex !== null
+    hypothetical !== undefined
+    && (shared === undefined || shared.amLeader)
+    && hypothetical.ongoing.turn.currentPlayerIndex !== undefined
     && hypothetical.ongoing.clueTokens >= getClueCost(globals.variant)
   );
 }
@@ -138,7 +140,7 @@ function planAndSendHypotheticalAction(intent: HypotheticalActionIntent) {
   const hypothetical = globals.state.replay.hypothetical!;
   const gameState = hypothetical.ongoing;
   const cardViews: HypotheticalCardView[] = [];
-  if (gameState.turn.currentPlayerIndex !== null) {
+  if (gameState.turn.currentPlayerIndex !== undefined) {
     switch (intent.type) {
       case "play":
       case "discard": {
@@ -187,7 +189,7 @@ function planAndSendHypotheticalAction(intent: HypotheticalActionIntent) {
     playing: globals.state.playing,
     cardViews,
   });
-  if (actions !== null) {
+  if (actions !== undefined) {
     for (const action of actions) {
       sendHypotheticalActionToServer(action);
     }
@@ -197,7 +199,7 @@ function planAndSendHypotheticalAction(intent: HypotheticalActionIntent) {
 export function sendHypotheticalActionToServer(
   hypoAction: ActionIncludingHypothetical,
 ): void {
-  if (globals.state.replay.shared === null) {
+  if (globals.state.replay.shared === undefined) {
     globals.store!.dispatch({
       type: "hypoAction",
       action: hypoAction,
@@ -213,13 +215,13 @@ export function sendHypotheticalActionToServer(
 
 export function sendHypotheticalBack(): void {
   if (
-    globals.state.replay.hypothetical === null
+    globals.state.replay.hypothetical === undefined
     || globals.state.replay.hypothetical.states.length <= 1
   ) {
     return;
   }
 
-  if (globals.state.replay.shared === null) {
+  if (globals.state.replay.shared === undefined) {
     globals.store!.dispatch({
       type: "hypoBack",
     });
@@ -232,11 +234,11 @@ export function sendHypotheticalBack(): void {
 }
 
 export function toggleRevealed(): void {
-  if (globals.state.replay.hypothetical === null) {
+  if (globals.state.replay.hypothetical === undefined) {
     return;
   }
 
-  if (globals.state.replay.shared === null) {
+  if (globals.state.replay.shared === undefined) {
     globals.store!.dispatch({
       type: "hypoShowDrawnCards",
       showDrawnCards: !globals.state.replay.hypothetical.showDrawnCards,
@@ -255,7 +257,7 @@ export function toggleRevealed(): void {
 export function checkToggleRevealedButton(
   actionMessage: ActionIncludingHypothetical,
 ): void {
-  if (globals.state.replay.hypothetical === null) {
+  if (globals.state.replay.hypothetical === undefined) {
     return;
   }
 
@@ -301,7 +303,6 @@ export function changeStartingHandVisibility(): void {
 
   if (
     startingPlayerIndex === undefined
-    || startingPlayerIndex === null
     || globals.elements.playerHands[startingPlayerIndex] === undefined
   ) {
     // Remove all empathy visibility, no longer in hypo.

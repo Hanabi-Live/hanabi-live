@@ -1,4 +1,4 @@
-import { assertNotNull } from "complete-common";
+import { assertDefined } from "complete-common";
 import Konva from "konva";
 import * as modals from "../../modals";
 import { getCanvasColors } from "../../theme";
@@ -22,7 +22,7 @@ const LOADING_LABEL = {
 // When the HanabiUI object is instantiated, we do not know how many players are in the game or what
 // the variant is. Now that the server has sent us that information, we can initialize the UI.
 export function uiInit(): void {
-  assertNotNull(
+  assertDefined(
     globals.lobby.imageLoader,
     "Failed to find the image loader when initializing the user interface.",
   );

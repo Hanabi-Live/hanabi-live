@@ -9,7 +9,7 @@ import {
   hypotheticalStateReducer,
   initializeHypotheticalState,
 } from "@hanabi-live/game";
-import { assertDefined, assertNotNull } from "complete-common";
+import { assertDefined } from "complete-common";
 import type { Draft } from "immer";
 import { castDraft, original, produce } from "immer";
 import type { ReplayState } from "../types/ReplayState";
@@ -78,7 +78,7 @@ function replayReducerFunction(
     }
 
     case "replaySharedSegment": {
-      assertNotNull(
+      assertDefined(
         state.shared,
         `A "${action.type}" action was dispatched, but we are not in a shared replay.`,
       );
@@ -103,7 +103,7 @@ function replayReducerFunction(
     }
 
     case "replayUseSharedSegments": {
-      assertNotNull(
+      assertDefined(
         state.shared,
         `A "${action.type}" action was dispatched, but we are not in a shared replay.`,
       );
@@ -120,7 +120,7 @@ function replayReducerFunction(
     }
 
     case "replayLeader": {
-      assertNotNull(
+      assertDefined(
         state.shared,
         `A "${action.type}" action was dispatched, but we are not in a shared replay.`,
       );
@@ -131,7 +131,7 @@ function replayReducerFunction(
     }
 
     case "restartDeclined": {
-      assertNotNull(
+      assertDefined(
         state.shared,
         `A "${action.type}" action was dispatched, but we are not in a shared replay.`,
       );
@@ -145,7 +145,7 @@ function replayReducerFunction(
     // --------------------
 
     case "hypoStart": {
-      if (getHypothetical(state) !== null) {
+      if (getHypothetical(state) !== undefined) {
         throw new Error(
           `A "${action.type}" action was dispatched with a non-null hypothetical state.`,
         );
@@ -176,12 +176,12 @@ function replayReducerFunction(
     }
 
     case "hypoEnd": {
-      assertNotNull(
+      assertDefined(
         getHypothetical(state),
-        `A "${action.type}" action was dispatched with a null hypothetical state.`,
+        `A "${action.type}" action was dispatched with a undefined hypothetical state.`,
       );
 
-      setHypothetical(state, null);
+      setHypothetical(state, undefined);
       break;
     }
 
@@ -189,9 +189,9 @@ function replayReducerFunction(
     case "hypoShowDrawnCards":
     case "hypoAction": {
       const hypotheticalDraft = getHypothetical(state);
-      assertNotNull(
+      assertDefined(
         hypotheticalDraft,
-        `A "${action.type}" action was dispatched with a null hypothetical state.`,
+        `A "${action.type}" action was dispatched with a undefined hypothetical state.`,
       );
 
       const hypothetical = original(hypotheticalDraft);
@@ -222,25 +222,27 @@ function replayReducerFunction(
   }
 
   // In shared replays, we only show the leader's hypothetical while we use the shared segments.
-  if (state.shared !== null) {
+  if (state.shared !== undefined) {
     state.hypothetical = state.shared.useSharedSegments
       ? state.shared.hypothetical
-      : null;
+      : undefined;
   }
 }
 
 /** In shared replays, the leader's hypothetical exists even when we do not show it. */
 function getHypothetical(
   state: Draft<ReplayState>,
-): Draft<HypotheticalState> | null {
-  return state.shared === null ? state.hypothetical : state.shared.hypothetical;
+): Draft<HypotheticalState> | undefined {
+  return state.shared === undefined
+    ? state.hypothetical
+    : state.shared.hypothetical;
 }
 
 function setHypothetical(
   state: Draft<ReplayState>,
-  hypothetical: Draft<HypotheticalState> | null,
+  hypothetical: Draft<HypotheticalState> | undefined,
 ) {
-  if (state.shared === null) {
+  if (state.shared === undefined) {
     state.hypothetical = hypothetical;
   } else {
     state.shared.hypothetical = hypothetical;

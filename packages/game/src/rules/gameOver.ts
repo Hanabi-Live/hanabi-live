@@ -30,7 +30,7 @@ export function isGameOver(
   const variant = getVariant(options.variantName);
   const { currentPlayerIndex, turnNum, endTurnNum, playOrderInverted } =
     gameState.turn;
-  if (currentPlayerIndex === null) {
+  if (currentPlayerIndex === undefined) {
     return true;
   }
 
@@ -48,12 +48,16 @@ export function isGameOver(
 
   // Everyone gets one more turn after the final card is drawn. The game also ends early when none
   // of the players left to take their final turn can play a card.
-  if (options.allOrNothing || endTurnNum === null) {
+  if (options.allOrNothing || endTurnNum === undefined) {
     return false;
   }
 
-  let playerIndex: typeof currentPlayerIndex | null = currentPlayerIndex;
-  for (let turn = turnNum; turn < endTurnNum && playerIndex !== null; turn++) {
+  let playerIndex: typeof currentPlayerIndex | undefined = currentPlayerIndex;
+  for (
+    let turn = turnNum;
+    turn < endTurnNum && playerIndex !== undefined;
+    turn++
+  ) {
     const hand = gameState.hands[playerIndex] ?? [];
     const canPlay = hand.some((order) => {
       const card = gameState.deck[order];

@@ -10,7 +10,7 @@ export function drawLayer(node: Konva.Node): void {
 }
 
 interface CanTween {
-  tween: Konva.Tween | null;
+  tween: Konva.Tween | undefined;
 }
 
 interface TweenConfig {
@@ -37,9 +37,9 @@ export function animate(
   // hidden).
   node.show();
 
-  if (node.tween !== null) {
+  if (node.tween !== undefined) {
     node.tween.destroy();
-    node.tween = null;
+    node.tween = undefined;
   }
 
   if (fast || params.duration === 0) {
@@ -84,14 +84,14 @@ export function animate(
         if (
           // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
           node === undefined
-          || globals.store === null
+          || globals.store === undefined
         ) {
           return;
         }
 
-        if (node.tween !== null) {
+        if (node.tween !== undefined) {
           node.tween.destroy();
-          node.tween = null;
+          node.tween = undefined;
         }
 
         // Now that the animation is finished, we can re-enable listening (see below explanation).
