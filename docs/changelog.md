@@ -73,8 +73,6 @@ of the repository.
   Message", "Add to Friends", and "Block".
 - The "Other Scores" screen now shows 10 games at a time, with a "Show More
   Scores" button.
-- The server now starts even if it cannot restore a table. It sends an error
-  alert for that table and keeps the table's saved state.
 
 ## November 8th, 2026
 
