@@ -1,12 +1,12 @@
 // The lobby area that shows all of the current tables.
 
 import { isValidPlayerIndex, MAX_PLAYERS } from "@hanabi-live/game";
-import { Fragment, useEffect, useLayoutEffect, useRef } from "react";
+import { Fragment, useLayoutEffect, useRef } from "react";
 import { PATH } from "../../constants";
 import { useAppSelector } from "../../store";
 import * as tooltips from "../../tooltips";
 import { copyStringToClipboard, getURLFromPath } from "../../utils";
-import type { OptionDescription } from "../optionDescriptions";
+import { OptionIcon } from "../OptionIcon";
 import { getOptionDescriptions } from "../optionDescriptions";
 import { tableJoin, tableReattend, tableSpectate } from "./tableActions";
 import type { Table, TableRow } from "./tablesSlice";
@@ -140,7 +140,10 @@ function TableRowView({
         {getOptionDescriptions(table.options).map((description) => (
           // The space separates the icons like the spaces between words.
           <Fragment key={description.name}>
-            <OptionIcon description={description} />{" "}
+            <OptionIcon
+              description={description}
+              tooltipClassName="lobby-games-table-tooltip-icon"
+            />{" "}
           </Fragment>
         ))}
       </td>
@@ -240,32 +243,6 @@ function useMovedTime(ref: React.RefObject<HTMLTableRowElement | null>) {
   });
 
   return movedTime;
-}
-
-function OptionIcon({
-  description: { icon, label, tooltip },
-}: {
-  readonly description: OptionDescription;
-}) {
-  const ref = useRef<HTMLElement>(null);
-  useEffect(
-    () =>
-      tooltips.attach(
-        ref.current!,
-        `<div class="lobby-games-table-tooltip-icon">${tooltip}</div>`,
-      ),
-    [tooltip],
-  );
-
-  return (
-    <li>
-      <i
-        className={label === undefined ? icon : `${icon} icon-label`}
-        ref={ref}
-      />
-      {label}
-    </li>
-  );
 }
 
 /** Decides the background color of the row. */

@@ -3,7 +3,7 @@
 import { MAX_DECK_SIZE, MAX_PLAYERS, MAX_SUITS } from "@hanabi-live/game";
 import { eRange, SECOND_IN_MILLISECONDS } from "complete-common";
 import type { TooltipSide } from "./Tooltip";
-import { hoverTooltip, Tooltip } from "./Tooltip";
+import { Tooltip } from "./Tooltip";
 import { globals } from "./game/ui/UIGlobals";
 import { getHTMLElement } from "./utils";
 
@@ -26,19 +26,6 @@ export function initGame(): void {
   createGameTooltips();
   createPlayerTooltips();
   createCardTooltips();
-}
-
-/**
- * Creates a tooltip that opens on hover, showing the element that the anchor's
- * "data-tooltip-content" attribute selects.
- */
-export function create(selector: string): void {
-  const anchor = getHTMLElement(selector);
-  if (tooltips.has(anchor)) {
-    return;
-  }
-
-  tooltips.set(anchor, hoverTooltip(anchor));
 }
 
 /**

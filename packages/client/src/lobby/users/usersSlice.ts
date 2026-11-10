@@ -136,3 +136,17 @@ export function selectUserCount(state: RootState): number {
 export function selectBotsShown(state: RootState): boolean {
   return state.users.botsShown && selectBotRows(state).length > 0;
 }
+
+/**
+ * The highest H-Group level that an online user chose, if they chose one and have the H-Group
+ * features enabled.
+ */
+export function selectHGroupLevel(
+  state: RootState,
+  username: string,
+): number | undefined {
+  const user = usersSelectors
+    .selectAll(state)
+    .find((loopUser) => loopUser.username === username);
+  return user?.hGroup === true ? user.hGroupLevel : undefined;
+}

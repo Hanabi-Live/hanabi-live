@@ -71,11 +71,8 @@ lobbyCommands.set("friends", (data) => {
   // The server has sent us a new list of our friends; store this locally.
   globals.friends = [...data.friends];
 
-  // Since our list of friends has changed, we need to redraw some UI elements so that users that
-  // happen to be our friend will be shown in the correct color.
-  if (globals.currentScreen === Screen.PreGame) {
-    pregame.draw();
-  }
+  // Since our list of friends has changed, we need to redraw the spectators of the game so that
+  // users that happen to be our friend will be shown in the correct color.
   if (globals.currentScreen === Screen.Game && globals.ui !== undefined) {
     spectatorsView.onSpectatorsChanged({
       spectators: globals.ui.globals.state.spectators,
@@ -88,7 +85,8 @@ lobbyCommands.set("pregame", (data) => {
   const previousPlayers = globals.game?.players;
   globals.game = data;
   globals.tableID = data.tableID;
-  pregame.draw();
+  pregame.toggleStartGameButton();
+  pregame.toggleJoinSpectateButtons();
   if (previousPlayers?.length !== data.players.length) {
     // Disable the start game button for a short time after the player count changes.
     if (globals.enableStartGameButtonTimeout !== undefined) {
@@ -100,8 +98,6 @@ lobbyCommands.set("pregame", (data) => {
       pregame.toggleStartGameButton();
     }, START_GAME_BUTTON_DISABLED_MILLISECONDS);
   }
-
-  pregame.drawSpectators(globals.tableID);
 });
 
 lobbyCommands.set("gameHistory", (dataArray) => {
@@ -129,7 +125,6 @@ lobbyCommands.set("joined", (data) => {
 
   // We joined a new game, so transition between screens.
   pregame.show();
-  pregame.drawSpectators(data.tableID);
 });
 
 lobbyCommands.set("left", () => {
@@ -147,12 +142,6 @@ lobbyCommands.set("soundLobby", (data) => {
 // Received by the client when a table is created or modified.
 lobbyCommands.set("table", (data) => {
   store.dispatch(tableChanged(data));
-  if (
-    globals.currentScreen === Screen.PreGame
-    && globals.tableID === data.tableID
-  ) {
-    pregame.drawSpectators(data.tableID);
-  }
 });
 
 // Received by the client when a table no longer has any members present.
@@ -191,15 +180,8 @@ lobbyCommands.set("tableStarted", (data) => {
 
 // Received by the client when a user connects or has a new status.
 lobbyCommands.set("user", (data) => {
-  const previous = globals.userMap.get(data.userID);
   globals.userMap.set(data.userID, data);
   store.dispatch(userChanged(data));
-  if (
-    previous?.hGroup !== data.hGroup
-    || previous.hGroupLevel !== data.hGroupLevel
-  ) {
-    pregame.userChanged(data.username);
-  }
 });
 
 lobbyCommands.set("userList", (dataList) => {

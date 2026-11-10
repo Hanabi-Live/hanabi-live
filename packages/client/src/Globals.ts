@@ -7,6 +7,8 @@ import type { Loader } from "./Loader";
 import { NO_TABLE_ID, NO_USER_ID } from "./constants";
 import type { HanabiUI } from "./game/ui/HanabiUI";
 import { totalGamesChanged } from "./lobby/gameHistory/historySlice";
+import type { Game } from "./lobby/pregame/pregameSlice";
+import { gameChanged } from "./lobby/pregame/pregameSlice";
 import type { Table } from "./lobby/tables/tablesSlice";
 import { selectTable, selectTables } from "./lobby/tables/tablesSlice";
 import type { Screen } from "./lobby/types/Screen";
@@ -17,8 +19,6 @@ import {
   usernameChanged,
 } from "./sessionSlice";
 import { store } from "./store";
-
-type Game = ServerCommandData["pregame"];
 
 export class Globals {
   /** The WebSocket connection (set in "websocketInit.ts"). */
@@ -93,6 +93,15 @@ export class Globals {
     return selectTable(store.getState(), tableID);
   }
 
+  /** From the "pregame" message. */
+  get game(): Game | undefined {
+    return store.getState().pregame.game;
+  }
+
+  set game(game: Game | undefined) {
+    store.dispatch(gameChanged(game));
+  }
+
   /* eslint-enable @typescript-eslint/class-methods-use-this */
 
   // -----------------------
@@ -114,9 +123,6 @@ export class Globals {
    */
   enableStartGameButtonTimeout: ReturnType<typeof setTimeout> | undefined =
     undefined;
-
-  /** Equal to the data from the "game" command. */
-  game: Game | undefined = undefined;
 
   /** Equal to the table we are joined to or `NO_TABLE_ID` if no table. */
   tableID = NO_TABLE_ID;

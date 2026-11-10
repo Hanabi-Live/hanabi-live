@@ -1,0 +1,149 @@
+// @vitest-environment jsdom
+
+import { tableIdSchema, userIdSchema } from "@hanabi-live/data";
+import { defaultOptions } from "@hanabi-live/game";
+import { act, cleanup, render, screen } from "@testing-library/react";
+import { Provider } from "react-redux";
+import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
+import type { Connection } from "../../Connection";
+import { globals } from "../../Globals";
+import { store } from "../../store";
+import type { Table } from "../tables/tablesSlice";
+import { tableChanged } from "../tables/tablesSlice";
+import { userChanged } from "../users/usersSlice";
+import { Pregame } from "./Pregame";
+import type { Game } from "./pregameSlice";
+
+vi.mock("../../tooltips", () => ({ attach: vi.fn(() => vi.fn()) }));
+
+const TABLE_ID = tableIdSchema.parse(5);
+
+function player(
+  index: number,
+  username: string,
+  present: boolean,
+): Game["players"][number] {
+  const bestScore = {
+    allOrNothing: false,
+    deckPlays: false,
+    emptyClues: false,
+    modifier: 0,
+    oneExtraCard: false,
+    oneLessCard: false,
+  };
+  return {
+    index,
+    username,
+    present,
+    you: false,
+    stats: {
+      numGames: 10,
+      variant: {
+        numGames: 4,
+        bestScores: [
+          { ...bestScore, numPlayers: 2, score: 25 },
+          // A player count that this player has not played.
+          { ...bestScore, numPlayers: 3 },
+        ],
+      },
+    },
+  };
+}
+
+const game: Game = {
+  tableID: TABLE_ID,
+  name: "my table",
+  maxPlayers: 5,
+  ownerID: userIdSchema.parse(1),
+  passwordProtected: true,
+  options: { ...defaultOptions, variantName: "No Variant", speedrun: true },
+  players: [player(0, "alice", true), player(1, "bob", false)],
+};
+
+const table = {
+  tableID: TABLE_ID,
+  name: game.name,
+  playerNames: ["alice", "bob"],
+  spectators: [
+    { username: "me", shadowingPlayerIndex: 1 },
+    { username: "dave" },
+  ],
+} as unknown as Table;
+
+const send = vi.fn();
+
+beforeEach(() => {
+  globals.username = "me";
+  globals.friends = ["dave"];
+  globals.tableID = TABLE_ID;
+  globals.conn = { send } as unknown as Connection;
+  send.mockClear();
+  store.dispatch(tableChanged(table));
+  store.dispatch(
+    userChanged({
+      userID: userIdSchema.parse(1),
+      username: "alice",
+      status: "pregame",
+      tableID: TABLE_ID,
+      hGroup: true,
+      hGroupLevel: 3,
+      bot: false,
+      inactive: false,
+    }),
+  );
+  globals.game = game;
+  render(
+    <Provider store={store}>
+      <Pregame />
+    </Provider>,
+  );
+});
+
+afterEach(() => {
+  cleanup();
+  globals.game = undefined;
+});
+
+describe("Pregame", () => {
+  test("shows the table, its players, and its spectators", () => {
+    expect(screen.getByText("my table")).toBeTruthy();
+    expect(screen.getByText("2 / 5")).toBeTruthy();
+    // The password and the speedrun option.
+    expect(
+      document.querySelectorAll("#lobby-pregame-options > li"),
+    ).toHaveLength(2);
+
+    const boxes = document.querySelectorAll(".lobby-pregame-player");
+    expect(boxes).toHaveLength(2);
+    expect(boxes[0]!.textContent).toContain("2-player best score:25");
+    expect(screen.getByText("Level 3").getAttribute("href")).toContain(
+      "level-3",
+    );
+    expect(boxes[1]!.textContent).toContain("AWAY");
+
+    const spectators = document.querySelector("#lobby-pregame-spectators")!;
+    expect(spectators.textContent).toContain("me (\u{1F575}\u{FE0F} bob)");
+    expect(screen.getByText("dave").className).toBe("friend");
+  });
+
+  test("a spectator shadows a player, and stops shadowing them", () => {
+    act(() => {
+      screen.getByText("alice").click();
+    });
+    expect(send).toHaveBeenLastCalledWith("tableSpectate", {
+      tableID: TABLE_ID,
+      shadowingPlayerIndex: 0,
+    });
+
+    // We are already shadowing Bob.
+    const bob = document.querySelector(".un-shadow")!;
+    expect(bob.textContent).toContain("bob");
+    act(() => {
+      (bob as HTMLElement).click();
+    });
+    expect(send).toHaveBeenLastCalledWith("tableSpectate", {
+      tableID: TABLE_ID,
+      shadowingPlayerIndex: undefined,
+    });
+  });
+});

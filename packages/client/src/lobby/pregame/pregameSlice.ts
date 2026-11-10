@@ -1,4 +1,5 @@
-// The table that we are at before its game starts: its chat, and who is typing there.
+// The table that we are at before its game starts: its players and options, its chat, and who is
+// typing there.
 
 import type { ServerCommandData } from "@hanabi-live/data";
 import type { PayloadAction } from "@reduxjs/toolkit";
@@ -10,7 +11,12 @@ interface PregameChatLine extends ChatLine {
   readonly suggestion?: NonNullable<ServerCommandData["chat"]["suggestion"]>;
 }
 
+export type Game = ServerCommandData["pregame"];
+
 interface PregameState {
+  /** From the "pregame" message. */
+  readonly game: Game | undefined;
+
   readonly chatLines: readonly PregameChatLine[];
 
   /** The people at our table who are typing. The game chat shows them too. */
@@ -18,6 +24,7 @@ interface PregameState {
 }
 
 const initialState: PregameState = {
+  game: undefined,
   chatLines: [],
   typing: [],
 };
@@ -26,6 +33,9 @@ const pregameSlice = createSlice({
   name: "pregame",
   initialState,
   reducers: {
+    gameChanged(state, action: PayloadAction<Game | undefined>) {
+      state.game = action.payload;
+    },
     pregameChatLineAdded(state, action: PayloadAction<PregameChatLine>) {
       state.chatLines.push(action.payload);
     },
@@ -47,6 +57,7 @@ const pregameSlice = createSlice({
 });
 
 export const {
+  gameChanged,
   pregameChatLineAdded,
   pregameChatCleared,
   typingStarted,
