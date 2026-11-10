@@ -13,7 +13,6 @@ import type { CardState } from "../interfaces/CardState";
 import type { GameMetadata } from "../interfaces/GameMetadata";
 import type { GameState } from "../interfaces/GameState";
 import { msgClueToClue, shouldApplyClue } from "../rules/clues";
-import { isInitialDealFinished } from "../rules/deck";
 import { isCardOnChop } from "../rules/hand";
 import { shouldSeeSlot2CardIdentity } from "../rules/variants/characters";
 import type { CardOrder } from "../types/CardOrder";
@@ -270,15 +269,8 @@ export function cardsReducer(
     }
   }
 
-  if (
-    game.turn.turnNum === 0
-    && action.type === "draw"
-    && !isInitialDealFinished(newDeck.length, metadata)
-  ) {
-    // No need to do deduction while cards are being drawn.
-    return newDeck;
-  }
-
+  // Deduction runs after every action, because `cardDeductionReducer` only recalculates cards whose
+  // inputs changed.
   return cardDeductionReducer(newDeck, deck, action, hands, metadata);
 }
 

@@ -1,11 +1,16 @@
 import { describe, expect, test } from "bun:test";
 import { assertDefined, eRange, iRange } from "complete-common";
+import { DEFAULT_PLAYER_NAMES } from "../constants";
 import { CardStatus } from "../enums/CardStatus";
 import { MAX_CLUES } from "../generated/protocol";
+import type { GameMetadata } from "../interfaces/GameMetadata";
+import type { GameState } from "../interfaces/GameState";
 import { getDefaultMetadata } from "../metadata";
 import { colorClue, discard, draw, play, rankClue } from "../testActions";
-import type { ActionClue } from "../types/gameActions";
+import type { ActionClue, GameAction } from "../types/gameActions";
+import type { PlayerIndex } from "../types/PlayerIndex";
 import type { Rank } from "../types/Rank";
+import { recalculateDeductions } from "./cardDeductionReducer";
 import { gameReducer } from "./gameReducer";
 import { getInitialGameState } from "./initialStates/initialGameState";
 import { getInitialGameStateTest } from "./initialStates/initialGameStateTest";
@@ -922,4 +927,153 @@ describe("gameReducer", () => {
       expect(state.score).toBe(1);
     });
   });
+});
+
+function applyAction(
+  state: GameState,
+  action: GameAction,
+  metadata: GameMetadata,
+): GameState {
+  return gameReducer(state, action, true, false, false, false, metadata);
+}
+
+/**
+ * Card deduction is incremental, so its result must match a full recalculation from the clues on
+ * the table.
+ */
+function expectFullyDeduced(state: GameState, metadata: GameMetadata) {
+  const full = recalculateDeductions(state.deck, state.hands, [], metadata);
+  for (const [order, card] of state.deck.entries()) {
+    const fullCard = full[order];
+    assertDefined(
+      fullCard,
+      `Failed to find the card in the deck at index: ${order}`,
+    );
+    expect(card.possibleCards).toEqual(fullCard.possibleCards);
+    expect(card.possibleCardsForEmpathy).toEqual(
+      fullCard.possibleCardsForEmpathy,
+    );
+  }
+}
+
+describe("card deduction", () => {
+  const SEATS = [0, 1, 2] as const;
+
+  function getMetadataForSeat(
+    ourPlayerIndex: (typeof SEATS)[number],
+  ): GameMetadata {
+    return {
+      ...getDefaultMetadata(NUM_PLAYERS),
+      ourUsername: DEFAULT_PLAYER_NAMES[ourPlayerIndex],
+      ourPlayerIndex,
+    };
+  }
+
+  /**
+   * Player `p` holds the 1 to 5 of suit `p`, in card orders `p * 5` to `p * 5 + 4`. The cards that
+   * we draw ourselves carry no identity.
+   */
+  function getDealActions(ourPlayerIndex: PlayerIndex): readonly GameAction[] {
+    const actions: GameAction[] = [];
+    for (const playerIndex of SEATS) {
+      for (const rank of [1, 2, 3, 4, 5] as const) {
+        const order = playerIndex * 5 + rank - 1;
+        actions.push(
+          playerIndex === ourPlayerIndex
+            ? draw(playerIndex, order)
+            : draw(playerIndex, order, playerIndex, rank),
+        );
+      }
+    }
+    return actions;
+  }
+
+  function deal(metadata: GameMetadata): GameState {
+    let state = getInitialGameState(metadata);
+    for (const action of getDealActions(metadata.ourPlayerIndex)) {
+      state = applyAction(state, action, metadata);
+    }
+    return state;
+  }
+
+  test.each(SEATS)(
+    "the deal applies what we can see from seat %i",
+    (ourPlayerIndex) => {
+      const metadata = getMetadataForSeat(ourPlayerIndex);
+      const state = deal(metadata);
+      const hand = state.hands[ourPlayerIndex];
+      assertDefined(
+        hand,
+        `Failed to find the hand at index: ${ourPlayerIndex}`,
+      );
+      for (const order of hand) {
+        const card = state.deck[order];
+        assertDefined(
+          card,
+          `Failed to find the card in the deck at index: ${order}`,
+        );
+        for (const otherPlayerIndex of SEATS) {
+          if (otherPlayerIndex === ourPlayerIndex) {
+            continue;
+          }
+          // We can see the only copy of the 5 of each other player's suit.
+          expect(card.possibleCards).not.toContainEqual([otherPlayerIndex, 5]);
+        }
+        // We hold the only 5 of our own suit and cannot see it.
+        expect(card.possibleCards).toContainEqual([ourPlayerIndex, 5]);
+      }
+    },
+  );
+
+  test.each(SEATS)(
+    "incremental deduction equals a full recalculation from seat %i",
+    (ourPlayerIndex) => {
+      const metadata = getMetadataForSeat(ourPlayerIndex);
+      let state = getInitialGameState(metadata);
+
+      // The deal.
+      for (const action of getDealActions(ourPlayerIndex)) {
+        state = applyAction(state, action, metadata);
+        expectFullyDeduced(state, metadata);
+      }
+
+      // Player 0 plays their red 1 and draws a blue 5 (the first-turn replacement draw).
+      state = applyAction(state, play(0, 0, 0, 1), metadata);
+      expectFullyDeduced(state, metadata);
+      state = applyAction(
+        state,
+        ourPlayerIndex === 0 ? draw(0, 15) : draw(0, 15, 3, 5),
+        metadata,
+      );
+      expectFullyDeduced(state, metadata);
+
+      // Player 1 gives a rank 5 clue to player 2, touching order 14.
+      state = applyAction(state, rankClue(5, 1, [14], 2), metadata);
+      expectFullyDeduced(state, metadata);
+
+      // Player 2 discards their green 1 and draws a purple 5.
+      state = applyAction(state, discard(2, 10, 2, 1, false), metadata);
+      expectFullyDeduced(state, metadata);
+      state = applyAction(
+        state,
+        ourPlayerIndex === 2 ? draw(2, 16) : draw(2, 16, 4, 5),
+        metadata,
+      );
+      expectFullyDeduced(state, metadata);
+
+      // Player 0 gives a color clue for suit 1 to player 1, touching orders 5 to 9.
+      state = applyAction(state, colorClue(1, 0, [5, 6, 7, 8, 9], 1), metadata);
+      expectFullyDeduced(state, metadata);
+
+      // Player 1 plays their yellow 1 and draws a blue 1.
+      state = applyAction(state, play(1, 5, 1, 1), metadata);
+      expectFullyDeduced(state, metadata);
+      state = applyAction(
+        state,
+        ourPlayerIndex === 1 ? draw(1, 17) : draw(1, 17, 3, 1),
+        metadata,
+      );
+      expectFullyDeduced(state, metadata);
+    },
+  );
 });
