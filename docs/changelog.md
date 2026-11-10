@@ -36,6 +36,8 @@ of the repository.
   classic screen, and a "Classic view" button switches to it at any time.
 - In replays, a misplayed card now moves to its play stack and then straight to
   the discard pile, instead of exploding on the strike tracker.
+- Tooltips now fade in quickly instead of growing with a bounce, and their lines
+  have more space between them.
 
 ## November 9th, 2026
 

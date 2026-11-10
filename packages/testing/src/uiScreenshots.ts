@@ -105,6 +105,8 @@ interface State {
   readonly prepare?: (page: Page) => Promise<void>;
   /** Runs after the screenshots, so that the next state starts from the lobby. */
   readonly cleanup?: (page: Page) => Promise<void>;
+  /** The element that the pointer rests on during the screenshots, such as one with a tooltip. */
+  readonly hover?: string;
 }
 
 async function clickNav(page: Page, id: string) {
@@ -295,6 +297,12 @@ function getStates({
         await page.getByRole("button", { name: "Replay" }).click();
         await page.getByRole("button", { name: "Previous turn" }).click();
       },
+    },
+    {
+      name: "new-ui-tooltip",
+      path: "/",
+      loggedIn: true,
+      hover: '#game-new-ui [aria-label^="About efficiency"]',
     },
   ];
 }
@@ -822,6 +830,11 @@ async function capture(
       await page.setViewportSize(size);
       for (const theme of options.themes) {
         await page.evaluate(setTheme, theme);
+        if (state.hover !== undefined) {
+          // Move the pointer onto the element again, so that a tooltip opens at its new position.
+          await page.mouse.move(0, size.height - 1);
+          await page.hover(state.hover);
+        }
         await page.waitForTimeout(SETTLE_MILLISECONDS);
         const file = path.join(
           OUTPUT_DIRECTORY,

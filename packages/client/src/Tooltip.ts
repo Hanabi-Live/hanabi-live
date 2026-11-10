@@ -1,10 +1,17 @@
 // A tooltip that opens beside an anchor element. The bubble is a manual popover, so it is drawn in
 // the top layer above every other element, including modals.
 
-import { FADE_TIME_MS } from "./constants";
-
 /** The height of the arrow that points from the tooltip to its anchor. */
 const ARROW_SIZE_IN_PIXELS = 6;
+
+/** How long a tooltip takes to fade in. */
+const OPEN_DURATION_IN_MILLISECONDS = 120;
+
+/** How long a tooltip takes to fade out. It is quicker than opening, to get out of the way. */
+const CLOSE_DURATION_IN_MILLISECONDS = 80;
+
+/** How far a tooltip slides away from its anchor as it opens. */
+const SLIDE_IN_PIXELS = 4;
 
 /** The closest that a tooltip comes to the edge of the window. */
 const WINDOW_MARGIN_IN_PIXELS = 8;
@@ -48,7 +55,15 @@ export class Tooltip {
       "tooltip-interactive",
       options.interactive === true,
     );
-    this.bubble.style.setProperty("--tooltip-duration", `${FADE_TIME_MS}ms`);
+    this.bubble.style.setProperty(
+      "--tooltip-open-duration",
+      `${OPEN_DURATION_IN_MILLISECONDS}ms`,
+    );
+    this.bubble.style.setProperty(
+      "--tooltip-close-duration",
+      `${CLOSE_DURATION_IN_MILLISECONDS}ms`,
+    );
+    this.bubble.style.setProperty("--tooltip-slide", `${SLIDE_IN_PIXELS}px`);
     this.bubble.style.setProperty(
       "--tooltip-arrow-size",
       `${ARROW_SIZE_IN_PIXELS}px`,
@@ -69,7 +84,7 @@ export class Tooltip {
     return this.bubble.matches(":popover-open");
   }
 
-  /** Whether the tooltip is still shrinking after it was closed. */
+  /** Whether the tooltip is still fading out after it was closed. */
   get isClosing(): boolean {
     return this.closingTimeout !== undefined;
   }
@@ -138,7 +153,7 @@ export class Tooltip {
     this.closingTimeout = setTimeout(() => {
       this.closingTimeout = undefined;
       this.bubble.remove();
-    }, FADE_TIME_MS);
+    }, CLOSE_DURATION_IN_MILLISECONDS);
   }
 
   /**

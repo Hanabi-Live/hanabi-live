@@ -93,7 +93,7 @@ export function setSide(selector: string, side: TooltipSide): void {
   }
 }
 
-/** Whether the tooltip is still shrinking after it was closed. */
+/** Whether the tooltip is still fading out after it was closed. */
 export function isClosing(selector: string): boolean {
   return getTooltip(selector)?.isClosing ?? false;
 }

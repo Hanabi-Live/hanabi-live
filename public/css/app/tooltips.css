@@ -9,34 +9,44 @@
   background: none;
   overflow: visible;
   pointer-events: none;
-  transform: scale(0);
-  /* Grow from the arrow's tip, so that the tip stays on the anchor while the bubble overshoots. */
-  transform-origin: var(--tooltip-arrow-x) 100%;
+  /* Closed, the bubble sits a little closer to its anchor, and fades out as it moves there. */
+  opacity: 0;
+  transform: translateY(var(--tooltip-slide));
   transition:
-    transform var(--tooltip-duration),
-    overlay var(--tooltip-duration) allow-discrete,
-    display var(--tooltip-duration) allow-discrete;
+    opacity var(--tooltip-close-duration) ease-in,
+    transform var(--tooltip-close-duration) ease-in,
+    overlay var(--tooltip-close-duration) allow-discrete,
+    display var(--tooltip-close-duration) allow-discrete;
 }
 
 .tooltip-bubble[data-side="bottom"] {
   padding: var(--tooltip-arrow-size) 0 0;
-  transform-origin: var(--tooltip-arrow-x) 0;
+  transform: translateY(calc(-1 * var(--tooltip-slide)));
 }
 
 .tooltip-bubble.tooltip-interactive {
   pointer-events: auto;
 }
 
-/* Grow when opened, and shrink through the transition when closed. */
+/* Opened, the bubble fades in as it slides away from its anchor into place. */
 .tooltip-bubble:popover-open {
-  transform: scale(1);
-  animation: tooltip-grow var(--tooltip-duration)
-    cubic-bezier(0.175, 0.885, 0.32, 1.15);
+  opacity: 1;
+  transform: none;
+  transition:
+    opacity var(--tooltip-open-duration) ease-out,
+    transform var(--tooltip-open-duration) ease-out,
+    overlay var(--tooltip-open-duration) allow-discrete,
+    display var(--tooltip-open-duration) allow-discrete;
 }
 
-@keyframes tooltip-grow {
-  from {
-    transform: scale(0);
+@starting-style {
+  .tooltip-bubble:popover-open {
+    opacity: 0;
+    transform: translateY(var(--tooltip-slide));
+  }
+
+  .tooltip-bubble[data-side="bottom"]:popover-open {
+    transform: translateY(calc(-1 * var(--tooltip-slide)));
   }
 }
 
@@ -67,18 +77,20 @@
     100vh - 2 * var(--tooltip-window-margin) - var(--tooltip-arrow-size)
   );
   overflow: auto;
-  padding: 0.5em;
+  padding: 0.65em 0.85em;
   border-radius: var(--radius);
   background: var(--tooltip-background);
   border: var(--tooltip-border);
-  box-shadow: 0 0 10px 6px rgb(0 0 0 / 10%);
+  box-shadow: 0 6px 20px rgb(0 0 0 / 25%);
   color: var(--text);
   font-size: 1.5em;
-  line-height: 1em;
+  line-height: 1.5;
 }
 
-/* Tooltip text that is smaller than the default */
+/* Tooltip text that is smaller than the default. It is a block, so that its lines are spaced by
+   its own font size instead of the box's larger one. */
 .small-tooltip-text {
+  display: block;
   font-size: 0.75em;
 }
 
