@@ -3,6 +3,8 @@ use super::{
     Query, RawQuery, Response, Result, State, Value, catalog, data, encoded, integer, json, replay,
     strict_query,
 };
+use crate::errors::StatementLimit;
+use anyhow::Context as _;
 use axum::response::{Html, Redirect};
 use hanabi_engine::EndCondition;
 use std::sync::Arc;
@@ -443,7 +445,8 @@ async fn compute_aggregate(state: &PublicState, scope: Scope) -> Result<Value> {
                 user
             )
             .fetch_one(&mut *transaction)
-            .await?;
+            .await
+            .context(StatementLimit(AGGREGATE_STATEMENT_TIMEOUT))?;
             (
                 row.normal,
                 row.other,
@@ -468,7 +471,8 @@ async fn compute_aggregate(state: &PublicState, scope: Scope) -> Result<Value> {
                 variant
             )
             .fetch_one(&mut *transaction)
-            .await?;
+            .await
+            .context(StatementLimit(AGGREGATE_STATEMENT_TIMEOUT))?;
             (
                 row.normal,
                 row.other,
@@ -600,7 +604,8 @@ async fn seed_averages(
         format!("{prefix}%"),
     )
     .fetch_all(&mut *transaction)
-    .await?
+    .await
+    .context(StatementLimit(AGGREGATE_STATEMENT_TIMEOUT))?
     .into();
     transaction.commit().await?;
     cache.insert(prefix, (std::time::Instant::now(), averages.clone()));

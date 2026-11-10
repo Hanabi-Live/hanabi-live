@@ -152,6 +152,7 @@ CREATE TABLE games (
 CREATE INDEX games_index_num_players ON games (num_players);
 CREATE INDEX games_index_seed        ON games (seed);
 CREATE INDEX games_index_variant_id_score_id ON games (variant_id, score DESC, id DESC);
+CREATE INDEX games_index_variant_id_num_players_seed ON games (variant_id, num_players, seed) INCLUDE (score);
 
 DROP TABLE IF EXISTS game_participants CASCADE;
 CREATE TABLE game_participants (

@@ -113,6 +113,21 @@ impl IntoResponse for HttpError {
     }
 }
 
+/// Marks an error from a statement that sets its own `statement_timeout`, so a timeout states that
+/// limit instead of its pool's. Attach it with `context` where the statement fails.
+#[derive(Debug)]
+pub struct StatementLimit(pub std::time::Duration);
+
+impl fmt::Display for StatementLimit {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(
+            f,
+            "Running a statement limited to {} seconds",
+            self.0.as_secs()
+        )
+    }
+}
+
 /// Marks an error from the lobby read pool, whose waits and statements time out sooner than the
 /// other pools'. Attach it with `context` where a lobby read fails.
 #[derive(Debug)]
@@ -310,7 +325,9 @@ impl Report {
     }
 
     pub fn from_error(operation: impl Into<String>, error: &anyhow::Error) -> Self {
-        let timeout = if error.downcast_ref::<LobbyRead>().is_some()
+        let timeout = if let Some(StatementLimit(limit)) = error.downcast_ref() {
+            *limit
+        } else if error.downcast_ref::<LobbyRead>().is_some()
             || LOBBY_READS.try_with(|()| ()).is_ok()
         {
             crate::store::LOBBY_READ_TIMEOUT
@@ -598,6 +615,21 @@ mod tests {
         assert_eq!(report.code, "database_query_timeout");
         assert_eq!(report.status, StatusCode::GATEWAY_TIMEOUT);
         assert!(report.text().contains("timed out after 2 seconds"));
+        #[expect(
+            clippy::disallowed_methods,
+            reason = "test SQL that sets up database state or failures directly"
+        )]
+        let error = sqlx::query("SELECT pg_sleep(3)")
+            .execute(&mut *connection)
+            .await
+            .unwrap_err();
+        let report = Report::from_error(
+            "Loading seed statistics",
+            &anyhow::Error::from(error)
+                .context(StatementLimit(std::time::Duration::from_secs(20)))
+                .context(LobbyRead),
+        );
+        assert!(report.text().contains("timed out after 20 seconds"));
         #[expect(
             clippy::disallowed_methods,
             reason = "test SQL that sets up database state or failures directly"
