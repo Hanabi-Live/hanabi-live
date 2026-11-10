@@ -1,0 +1,15 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO user_stats(user_id,variant_id,num_games)\n         SELECT u.user_id,$2,1 FROM UNNEST($1::integer[]) AS u(user_id) ORDER BY u.user_id\n         ON CONFLICT(user_id,variant_id) DO UPDATE SET num_games=user_stats.num_games+1",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Int4Array",
+        "Int2"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "2d00da0642ccfb71561b90de954cd0fea04e8e41b35a6c84e3ab4fc9804d0066"
+}

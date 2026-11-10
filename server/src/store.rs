@@ -1387,6 +1387,23 @@ mod tests {
                 committed.seed_games == Some(1),
                 "The seed count left out the game that the commit archived"
             );
+            // A restart refreshes the statistics again after the background refresh.
+            for _ in 0..2 {
+                crate::stats::refresh(&store.primary, finished.game().unwrap()).await?;
+            }
+            let users = sqlx::query_scalar!(
+                "SELECT num_games FROM user_stats WHERE variant_id=0 ORDER BY user_id"
+            )
+            .fetch_all(&pool)
+            .await?;
+            let variant =
+                sqlx::query_scalar!("SELECT num_games FROM variant_stats WHERE variant_id=0")
+                    .fetch_one(&pool)
+                    .await?;
+            ensure!(
+                users == [1, 1] && variant == 1,
+                "The game was not counted once: players {users:?}, variant {variant}"
+            );
             let restored = store.load().await?;
             ensure!(
                 matches!(restored[0].0.phase, Phase::Replay { .. })

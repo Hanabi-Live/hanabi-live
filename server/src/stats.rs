@@ -72,7 +72,8 @@ pub(crate) async fn pregame_stats_of(
         .collect())
 }
 
-/// Updates the seed, player, and variant statistics with a finished game.
+/// Updates the seed count and the best scores with a finished game. Running it again for the same
+/// game changes nothing. The game counts are updated when the game is saved (`archive::insert`).
 pub(crate) async fn refresh(pool: &PgPool, s: &Snapshot) -> Result<()> {
     let variant = hanabi_engine::get_variant(&s.game.options.variant_name)?;
     let v = i16::try_from(variant.id)?;
@@ -91,13 +92,16 @@ pub(crate) async fn refresh(pool: &PgPool, s: &Snapshot) -> Result<()> {
     .execute(&mut *tx)
     .await?;
     let modifier = crate::model::ScoreModifier::of(&s.game.options);
-    for p in &s.players {
+    // Rows are locked in the same order as when the game is saved: players by ID, then the variant.
+    let mut users = s.players.iter().map(|p| p.id.0).collect::<Vec<_>>();
+    users.sort_unstable();
+    for user in users {
         sqlx::query!(
             "INSERT INTO user_stats(user_id,variant_id,best_score2,best_score2_mod,best_score3,
              best_score3_mod,best_score4,best_score4_mod,best_score5,best_score5_mod,best_score6,
              best_score6_mod) VALUES($1,$2,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL)
              ON CONFLICT DO NOTHING",
-            p.id.0,
+            user,
             v
         )
         .execute(&mut *tx)
@@ -107,13 +111,9 @@ pub(crate) async fn refresh(pool: &PgPool, s: &Snapshot) -> Result<()> {
              best_score3=CASE WHEN $5=3 THEN GREATEST(best_score3,$3) ELSE best_score3 END,best_score3_mod=CASE WHEN $5=3 AND (best_score3 IS NULL OR $3>best_score3 OR ($3=best_score3 AND $4<best_score3_mod)) THEN $4 ELSE best_score3_mod END,
              best_score4=CASE WHEN $5=4 THEN GREATEST(best_score4,$3) ELSE best_score4 END,best_score4_mod=CASE WHEN $5=4 AND (best_score4 IS NULL OR $3>best_score4 OR ($3=best_score4 AND $4<best_score4_mod)) THEN $4 ELSE best_score4_mod END,
              best_score5=CASE WHEN $5=5 THEN GREATEST(best_score5,$3) ELSE best_score5 END,best_score5_mod=CASE WHEN $5=5 AND (best_score5 IS NULL OR $3>best_score5 OR ($3=best_score5 AND $4<best_score5_mod)) THEN $4 ELSE best_score5_mod END,
-             best_score6=CASE WHEN $5=6 THEN GREATEST(best_score6,$3) ELSE best_score6 END,best_score6_mod=CASE WHEN $5=6 AND (best_score6 IS NULL OR $3>best_score6 OR ($3=best_score6 AND $4<best_score6_mod)) THEN $4 ELSE best_score6_mod END,
-             num_games=s.n
-             FROM (SELECT count(*)::integer n FROM games g
-             JOIN game_participants p ON p.game_id=g.id
-             WHERE p.user_id=$1 AND g.variant_id=$2 AND NOT g.speedrun) s
+             best_score6=CASE WHEN $5=6 THEN GREATEST(best_score6,$3) ELSE best_score6 END,best_score6_mod=CASE WHEN $5=6 AND (best_score6 IS NULL OR $3>best_score6 OR ($3=best_score6 AND $4<best_score6_mod)) THEN $4 ELSE best_score6_mod END
              WHERE user_id=$1 AND variant_id=$2",
-            p.id.0,
+            user,
             v,
             i16::try_from(s.game.score)?,
             modifier.bits(),
@@ -123,18 +123,14 @@ pub(crate) async fn refresh(pool: &PgPool, s: &Snapshot) -> Result<()> {
         .await?;
     }
     sqlx::query!(
-        "UPDATE variant_stats SET best_score2=CASE WHEN $5=2 AND $4 THEN GREATEST(best_score2,$2) ELSE best_score2 END,
-         best_score3=CASE WHEN $5=3 AND $4 THEN GREATEST(best_score3,$2) ELSE best_score3 END,
-         best_score4=CASE WHEN $5=4 AND $4 THEN GREATEST(best_score4,$2) ELSE best_score4 END,
-         best_score5=CASE WHEN $5=5 AND $4 THEN GREATEST(best_score5,$2) ELSE best_score5 END,
-         best_score6=CASE WHEN $5=6 AND $4 THEN GREATEST(best_score6,$2) ELSE best_score6 END,
-         num_games=s.n,num_max_scores=s.maximum
-         FROM (SELECT count(*)::integer n,(count(*) FILTER(WHERE score=$3))::integer maximum
-         FROM games WHERE variant_id=$1 AND NOT speedrun) s
+        "UPDATE variant_stats SET best_score2=CASE WHEN $4=2 AND $3 THEN GREATEST(best_score2,$2) ELSE best_score2 END,
+         best_score3=CASE WHEN $4=3 AND $3 THEN GREATEST(best_score3,$2) ELSE best_score3 END,
+         best_score4=CASE WHEN $4=4 AND $3 THEN GREATEST(best_score4,$2) ELSE best_score4 END,
+         best_score5=CASE WHEN $4=5 AND $3 THEN GREATEST(best_score5,$2) ELSE best_score5 END,
+         best_score6=CASE WHEN $4=6 AND $3 THEN GREATEST(best_score6,$2) ELSE best_score6 END
          WHERE variant_id=$1",
         v,
         i16::try_from(s.game.score)?,
-        i16::try_from(variant.max_score)?,
         modifier == crate::model::ScoreModifier::default(),
         players,
     )

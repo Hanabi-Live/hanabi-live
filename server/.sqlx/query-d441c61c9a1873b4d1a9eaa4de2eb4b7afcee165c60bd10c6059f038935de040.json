@@ -1,0 +1,17 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "UPDATE variant_stats SET best_score2=CASE WHEN $4=2 AND $3 THEN GREATEST(best_score2,$2) ELSE best_score2 END,\n         best_score3=CASE WHEN $4=3 AND $3 THEN GREATEST(best_score3,$2) ELSE best_score3 END,\n         best_score4=CASE WHEN $4=4 AND $3 THEN GREATEST(best_score4,$2) ELSE best_score4 END,\n         best_score5=CASE WHEN $4=5 AND $3 THEN GREATEST(best_score5,$2) ELSE best_score5 END,\n         best_score6=CASE WHEN $4=6 AND $3 THEN GREATEST(best_score6,$2) ELSE best_score6 END\n         WHERE variant_id=$1",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Int2",
+        "Int2",
+        "Bool",
+        "Int4"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "d441c61c9a1873b4d1a9eaa4de2eb4b7afcee165c60bd10c6059f038935de040"
+}

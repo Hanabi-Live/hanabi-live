@@ -1,0 +1,26 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT num_games FROM user_stats WHERE variant_id=0 ORDER BY user_id",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "num_games",
+        "type_info": "Int4",
+        "origin": {
+          "Table": {
+            "table": "user_stats",
+            "name": "num_games"
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Left": []
+    },
+    "nullable": [
+      false
+    ]
+  },
+  "hash": "c0d1f63ed88eb3db58b96b797661800c49e2702de1df6e9855bb8ed94ced4acc"
+}
