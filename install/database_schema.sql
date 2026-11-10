@@ -159,8 +159,6 @@ CREATE TABLE game_participants (
     game_id               INTEGER   NOT NULL,
     user_id               INTEGER   NOT NULL,
     seat                  SMALLINT  NOT NULL, /* 0-indexed. Orders the players and assigns their notes. */
-    character_assignment  SMALLINT,           /* Unused; replaced by `character_id`. */
-    character_metadata    SMALLINT,           /* Unused; replaced by `assigned_metadata`. */
     character_id          SMALLINT,           /* NULL when the player has no character. */
     assigned_metadata     SMALLINT,           /* NULL when the character has no assigned metadata. */
     FOREIGN KEY (game_id) REFERENCES games (id) ON DELETE CASCADE,
