@@ -24,6 +24,12 @@ interface HandsProps {
   readonly colorblindMode: boolean;
   readonly cardWidth: number;
 
+  /**
+   * The width of the column with each player's name, in CSS pixels. On narrow screens, the name
+   * sits above the cards instead, and this is `undefined`.
+   */
+  readonly nameColumnWidth: number | undefined;
+
   /** Whether the viewer can pick a player to clue. */
   readonly canChooseClueTarget: boolean;
   readonly clueTarget: PlayerIndex | undefined;
@@ -50,7 +56,12 @@ interface HandsProps {
 export const CARD_GAP = 10;
 
 /** The width of the column with each player's name, in CSS pixels. */
-export const NAME_COLUMN_WIDTH = 150;
+export const NAME_COLUMN_WIDTH = {
+  WIDE: 150,
+
+  /** For windows up to the 1440 px breakpoint, where the side columns are narrower too. */
+  MEDIUM: 110,
+} as const;
 
 function NameChip({ seat }: { readonly seat: Seat }): React.JSX.Element {
   const youIcon = seat.you ? (
@@ -200,10 +211,17 @@ function Hand({
   return (
     <div
       aria-label={`${seat.name}'s hand`}
-      className={`tw:flex tw:items-center tw:gap-4 tw:rounded-2xl tw:px-4 tw:pt-4 tw:pb-2 ${boxClass}`}
+      className={`tw:flex tw:rounded-2xl tw:px-4 tw:pt-4 tw:pb-2 ${
+        props.nameColumnWidth === undefined
+          ? "tw:flex-col tw:items-start tw:gap-2"
+          : "tw:items-center tw:gap-4"
+      } ${boxClass}`}
       role="group"
     >
-      <div className="tw:flex tw:shrink-0" style={{ width: NAME_COLUMN_WIDTH }}>
+      <div
+        className="tw:flex tw:max-w-full tw:shrink-0"
+        style={{ width: props.nameColumnWidth }}
+      >
         {canPick ? (
           <button
             aria-pressed={chosen}

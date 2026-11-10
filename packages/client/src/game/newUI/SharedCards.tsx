@@ -80,7 +80,7 @@ export const PlayArea = forwardRef<
     const height = cardWidth * CARD_HEIGHT_PER_WIDTH;
 
     return (
-      <div className="tw:flex tw:shrink-0 tw:flex-col tw:items-center tw:gap-3">
+      <div className="tw:flex tw:shrink-0 tw:flex-col tw:items-center tw:gap-3 tw:narrow-980:flex-row tw:narrow-980:items-start">
         <section
           aria-label="Play stacks"
           className={`tw:relative tw:flex tw:flex-col tw:items-center tw:gap-3 tw:rounded-[18px] tw:px-4.5 tw:py-4 ${zoneClasses[zoneState]}`}
@@ -89,7 +89,7 @@ export const PlayArea = forwardRef<
           <h2 className="tw:m-0 tw:text-[15px] tw:font-medium tw:text-text-label">
             Play stacks
           </h2>
-          <div className="tw:flex tw:flex-col tw:gap-2">
+          <div className="tw:flex tw:flex-col tw:gap-2 tw:narrow-980:flex-row tw:narrow-980:flex-wrap">
             {stacks.map((stack) => {
               const suit = variant.suits[stack.suitIndex];
               if (stack.topRank === undefined) {

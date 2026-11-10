@@ -58,7 +58,7 @@ export function CluePanel({
   return (
     <section
       aria-label="Give a clue"
-      className="tw:flex tw:h-14 tw:shrink-0 tw:items-center tw:gap-2 tw:rounded-[14px] tw:bg-surface tw:px-4"
+      className="tw:flex tw:min-h-14 tw:shrink-0 tw:flex-wrap tw:items-center tw:gap-2 tw:rounded-[14px] tw:bg-surface tw:px-4 tw:py-2"
     >
       <span className="tw:mr-1 tw:min-w-0 tw:truncate tw:text-text-label">
         {targetName === undefined ? "Pick a hand" : `Clue ${targetName}:`}

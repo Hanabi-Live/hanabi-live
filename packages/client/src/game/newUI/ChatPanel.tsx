@@ -26,8 +26,12 @@ export function ChatPanel({
   unread,
   numPlayers,
   numSpectators,
+  overlay,
 }: {
   readonly open: boolean;
+
+  /** Whether the open panel covers the table, on windows too narrow to fit both side by side. */
+  readonly overlay: boolean;
   readonly unread: number;
   readonly numPlayers: number;
   readonly numSpectators: number;
@@ -97,7 +101,11 @@ export function ChatPanel({
   return (
     <aside
       aria-label="Chat"
-      className="tw:flex tw:w-[320px] tw:shrink-0 tw:flex-col tw:border-l tw:border-border tw:bg-surface-panel"
+      className={`tw:flex tw:w-[320px] tw:max-w-full tw:shrink-0 tw:flex-col tw:border-l tw:border-border tw:bg-surface-panel ${
+        overlay
+          ? "tw:absolute tw:inset-y-0 tw:right-0 tw:z-20 tw:shadow-2xl"
+          : ""
+      }`}
     >
       <header className="tw:flex tw:items-center tw:justify-between tw:border-b tw:border-border-panel tw:py-3.5 tw:pr-2 tw:pl-5 tw:text-sm tw:text-text-label">
         <span>

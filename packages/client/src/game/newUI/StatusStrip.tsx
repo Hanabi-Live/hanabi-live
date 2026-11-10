@@ -22,7 +22,7 @@ function Stat({
   return (
     <div className="tw:flex tw:min-w-0 tw:flex-col tw:gap-0.5">
       <span className="tw:text-[13px] tw:text-text-label">{label}</span>
-      <span className="tw:truncate tw:text-[22px] tw:font-bold tw:text-text-strong">
+      <span className="tw:truncate tw:text-[22px] tw:font-bold tw:text-text-strong tw:narrow-980:text-[17px]">
         {children}
       </span>
     </div>
@@ -45,7 +45,7 @@ export function OutOf({
 }
 
 const buttonClass =
-  "tw:flex tw:h-11 tw:cursor-pointer tw:items-center tw:gap-2 tw:rounded-[10px] tw:border-0 tw:bg-border tw:px-4 tw:text-[15px] tw:text-text-strong tw:hover:brightness-95 tw:disabled:cursor-default tw:disabled:opacity-50";
+  "tw:flex tw:h-11 tw:cursor-pointer tw:items-center tw:gap-2 tw:rounded-[10px] tw:border-0 tw:bg-border tw:px-4 tw:text-[15px] tw:text-text-strong tw:hover:brightness-95 tw:narrow-980:h-9 tw:narrow-980:px-3 tw:narrow-980:text-sm tw:disabled:cursor-default tw:disabled:opacity-50";
 
 /**
  * The numbers about the whole game, along the bottom of the screen, most important first. (The clue
@@ -65,7 +65,7 @@ export function StatusStrip({
   onLobby,
 }: StatusStripProps): React.JSX.Element {
   return (
-    <footer className="tw:flex tw:h-[76px] tw:shrink-0 tw:items-center tw:gap-8 tw:border-t tw:border-border tw:bg-surface-panel tw:px-7">
+    <footer className="tw:flex tw:h-[76px] tw:shrink-0 tw:items-center tw:gap-8 tw:border-t tw:border-border tw:bg-surface-panel tw:px-7 tw:narrow-980:h-auto tw:narrow-980:flex-wrap tw:narrow-980:gap-x-5 tw:narrow-980:gap-y-2 tw:narrow-980:px-3 tw:narrow-980:py-3">
       <Stat label="Turn">{turn}</Stat>
       <Stat label="Score">
         <OutOf max={maxScore} value={score} />
@@ -78,11 +78,11 @@ export function StatusStrip({
       </div>
       <div className="tw:min-w-0 tw:max-w-[260px]">
         <span className="tw:text-[13px] tw:text-text-label">Variant</span>
-        <div className="tw:truncate tw:text-[22px] tw:font-bold tw:text-text-label">
+        <div className="tw:truncate tw:text-[22px] tw:font-bold tw:text-text-label tw:narrow-980:text-[17px]">
           {variantName}
         </div>
       </div>
-      <div className="tw:ml-auto tw:flex tw:shrink-0 tw:gap-2.5">
+      <div className="tw:ml-auto tw:flex tw:shrink-0 tw:flex-wrap tw:gap-2.5">
         <button
           className={buttonClass}
           disabled={!canOpenReplay}

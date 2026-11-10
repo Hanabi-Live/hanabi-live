@@ -20,7 +20,7 @@ export function ActionLog({
   return (
     <section
       aria-label="Action log"
-      className="tw:flex tw:min-h-0 tw:flex-1 tw:flex-col tw:overflow-hidden tw:rounded-[18px] tw:bg-surface"
+      className="tw:flex tw:min-h-0 tw:flex-1 tw:flex-col tw:overflow-hidden tw:rounded-[18px] tw:bg-surface tw:narrow-980:h-[220px] tw:narrow-980:flex-none"
     >
       <h2 className="tw:m-0 tw:px-4.5 tw:pt-4 tw:pb-1 tw:text-[15px] tw:font-medium tw:text-text-label">
         Action log

@@ -1,4 +1,4 @@
-import { useEffect, useState, useSyncExternalStore } from "react";
+import { useCallback, useEffect, useState, useSyncExternalStore } from "react";
 import type { State } from "../types/State";
 import { globals } from "../ui/UIGlobals";
 import * as newUIState from "./newUIState";
@@ -72,4 +72,23 @@ export function useElementSize(element: HTMLElement | null): {
   }, [element]);
 
   return size;
+}
+
+/** Whether a media query, such as a window width, matches. It updates as the window changes. */
+export function useMediaQuery(query: string): boolean {
+  const subscribe = useCallback(
+    (listener: () => void) => {
+      const media = globalThis.matchMedia(query);
+      media.addEventListener("change", listener);
+      return () => {
+        media.removeEventListener("change", listener);
+      };
+    },
+    [query],
+  );
+
+  return useSyncExternalStore(
+    subscribe,
+    () => globalThis.matchMedia(query).matches,
+  );
 }

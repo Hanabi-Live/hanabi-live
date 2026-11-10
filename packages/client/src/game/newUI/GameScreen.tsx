@@ -16,6 +16,7 @@ import {
 } from "@hanabi-live/game";
 import { clamp } from "complete-common";
 import { useEffect, useRef, useState } from "react";
+import * as gameChat from "../chat";
 import type {
   ClientAction,
   ClientActionColorClue,
@@ -35,7 +36,13 @@ import { CARD_GAP, Hands, NAME_COLUMN_WIDTH } from "./Hands";
 import type { DiscardView, StackView, ZoneState } from "./SharedCards";
 import { DiscardPile, PlayArea, TableTokens } from "./SharedCards";
 import { StatusStrip } from "./StatusStrip";
-import { useElementSize, useGameState, useNewUIVersion, useNow } from "./hooks";
+import {
+  useElementSize,
+  useGameState,
+  useMediaQuery,
+  useNewUIVersion,
+  useNow,
+} from "./hooks";
 import * as newUIState from "./newUIState";
 import type { CardView } from "./tableView";
 import {
@@ -48,6 +55,16 @@ import {
   isClueAllowed,
 } from "./tableView";
 
+/**
+ * Window widths from the breakpoints in "public/css/tokens.css". The layout classes use the same
+ * widths through the "narrow-1440" and "narrow-980" variants. At or below each one, the screen
+ * makes room: first the side columns get narrower, then chat covers the table when open, and then
+ * the columns stack and the page scrolls.
+ */
+const MEDIUM_WIDTH_QUERY = "(max-width: 1440px)";
+const CHAT_OVERLAY_WIDTH_QUERY = "(max-width: 1280px)";
+const STACKED_WIDTH_QUERY = "(max-width: 980px)";
+
 /** How far the pointer must move after pressing a card before the card starts to move with it. */
 const DRAG_THRESHOLD_PIXELS = 6;
 
@@ -59,6 +76,9 @@ const HAND_CARD_WIDTH = { MIN: 36, MAX: 104 } as const;
 
 /** The smallest and largest card on the play stacks and in the discard pile. */
 const TABLE_CARD_WIDTH = { MIN: 30, MAX: 64 } as const;
+
+/** The width in a stacked play area that is not cards: its padding and the gap before the deck. */
+const STACKED_PLAY_AREA_OTHER_WIDTH = 48;
 
 /** The space in each hand's box around its cards: padding above (for raised cards) and below. */
 const HAND_BOX_VERTICAL_PADDING = 24;
@@ -213,22 +233,29 @@ function showDiscard(order: CardOrder) {
   }
 }
 
+/**
+ * Returns the width of the cards in the hands. When the columns stack, the page scrolls, so only
+ * the width of the screen limits the cards.
+ */
 function getHandCardWidth(
   handsWidth: number,
   handsHeight: number,
   numPlayers: number,
   cardsPerHand: number,
+  nameColumnWidth: number | undefined,
 ): number {
   const widthForCards =
     handsWidth
-    - NAME_COLUMN_WIDTH
+    - (nameColumnWidth ?? 0)
     - HAND_BOX_HORIZONTAL_PADDING
     - CARD_GAP * cardsPerHand;
   const byWidth = widthForCards / cardsPerHand;
   const rowHeight =
     (handsHeight - HAND_ROW_GAP * (numPlayers - 1)) / numPlayers;
   const byHeight =
-    (rowHeight - HAND_BOX_VERTICAL_PADDING) / CARD_HEIGHT_PER_WIDTH;
+    nameColumnWidth === undefined
+      ? Infinity
+      : (rowHeight - HAND_BOX_VERTICAL_PADDING) / CARD_HEIGHT_PER_WIDTH;
   return clamp(
     Math.floor(Math.min(byWidth, byHeight)),
     HAND_CARD_WIDTH.MIN,
@@ -236,15 +263,22 @@ function getHandCardWidth(
   );
 }
 
-function getTableCardWidth(playAreaHeight: number, numSuits: number): number {
-  // The play stacks and the deck are each one card tall.
-  const heightForCards =
-    playAreaHeight - PLAY_AREA_OTHER_HEIGHT - PLAY_STACK_GAP * (numSuits - 1);
-  return clamp(
-    Math.floor(heightForCards / ((numSuits + 1) * CARD_HEIGHT_PER_WIDTH)),
-    TABLE_CARD_WIDTH.MIN,
-    TABLE_CARD_WIDTH.MAX,
-  );
+/**
+ * Returns the width of the cards on the play stacks and in the discard pile. The play stacks and
+ * the deck are one column of cards, or one row when the columns stack.
+ */
+function getTableCardWidth(
+  playAreaWidth: number,
+  playAreaHeight: number,
+  numSuits: number,
+  stacked: boolean,
+): number {
+  const gaps = PLAY_STACK_GAP * (numSuits - 1);
+  const width = stacked
+    ? (playAreaWidth - STACKED_PLAY_AREA_OTHER_WIDTH - gaps) / (numSuits + 1)
+    : (playAreaHeight - PLAY_AREA_OTHER_HEIGHT - gaps)
+      / ((numSuits + 1) * CARD_HEIGHT_PER_WIDTH);
+  return clamp(Math.floor(width), TABLE_CARD_WIDTH.MIN, TABLE_CARD_WIDTH.MAX);
 }
 
 export function GameScreen({
@@ -255,6 +289,9 @@ export function GameScreen({
   useNewUIVersion();
   useNow(CLOCK_TICK_MILLISECONDS);
   const state = useGameState();
+  const mediumWidth = useMediaQuery(MEDIUM_WIDTH_QUERY);
+  const chatOverlay = useMediaQuery(CHAT_OVERLAY_WIDTH_QUERY);
+  const stacked = useMediaQuery(STACKED_WIDTH_QUERY);
 
   const [clueTarget, setClueTarget] = useState<PlayerIndex>();
   const [clue, setClue] = useState<Clue>();
@@ -274,6 +311,13 @@ export function GameScreen({
   );
   const handsSize = useElementSize(handsElement);
   const playAreaSize = useElementSize(playAreaElement);
+
+  // On a window too narrow for the chat panel beside the table, the chat starts collapsed.
+  useEffect(() => {
+    if (chatOverlay) {
+      gameChat.hide();
+    }
+  }, [chatOverlay]);
 
   // A new turn clears the clue being chosen and any open card menu.
   const turnNum = state?.ongoingGame.turn.turnNum;
@@ -421,15 +465,24 @@ export function GameScreen({
     waitingText = "The team has no clues. Play or discard a card.";
   }
 
+  let nameColumnWidth: number | undefined;
+  if (!stacked) {
+    nameColumnWidth = mediumWidth
+      ? NAME_COLUMN_WIDTH.MEDIUM
+      : NAME_COLUMN_WIDTH.WIDE;
+  }
   const handCardWidth = getHandCardWidth(
     handsSize.width,
     handsSize.height,
     options.numPlayers,
     getCardsPerHand(options),
+    nameColumnWidth,
   );
   const tableCardWidth = getTableCardWidth(
+    playAreaSize.width,
     playAreaSize.height,
     variant.suits.length,
+    stacked,
   );
 
   let playZoneState: ZoneState = "idle";
@@ -462,8 +515,11 @@ export function GameScreen({
   return (
     <div className="tw:fixed tw:inset-0 tw:flex tw:bg-surface-sunken tw:text-text-strong">
       <main className="tw:flex tw:min-w-0 tw:flex-1 tw:flex-col">
-        <div className="tw:flex tw:min-h-0 tw:flex-1 tw:justify-center tw:gap-9 tw:px-7 tw:pt-6 tw:pb-5">
-          <div className="tw:flex tw:shrink-0" ref={setPlayAreaElement}>
+        <div className="tw:flex tw:min-h-0 tw:flex-1 tw:justify-center tw:gap-9 tw:px-7 tw:pt-6 tw:pb-5 tw:narrow-1440:gap-6 tw:narrow-1440:px-5 tw:narrow-980:flex-col tw:narrow-980:justify-start tw:narrow-980:gap-4 tw:narrow-980:overflow-y-auto tw:narrow-980:px-3 tw:narrow-980:pt-3">
+          <div
+            className="tw:flex tw:shrink-0 tw:narrow-980:justify-center"
+            ref={setPlayAreaElement}
+          >
             <PlayArea
               cardsInDeck={visibleState.cardsRemainingInTheDeck}
               cardWidth={tableCardWidth}
@@ -475,7 +531,7 @@ export function GameScreen({
             />
           </div>
 
-          <div className="tw:flex tw:min-w-0 tw:max-w-[760px] tw:flex-1 tw:flex-col tw:gap-3.5">
+          <div className="tw:flex tw:min-w-0 tw:max-w-[760px] tw:flex-1 tw:flex-col tw:gap-3.5 tw:narrow-980:order-first tw:narrow-980:max-w-none tw:narrow-980:flex-none">
             {inReplay && (
               <div
                 className="tw:flex tw:shrink-0 tw:items-center tw:gap-2 tw:rounded-[14px] tw:bg-clue tw:px-4 tw:py-2 tw:font-bold tw:text-card-ink"
@@ -541,7 +597,7 @@ export function GameScreen({
               />
             )}
             <div
-              className="tw:flex tw:min-h-0 tw:flex-1 tw:flex-col tw:justify-center"
+              className="tw:flex tw:min-h-0 tw:flex-1 tw:flex-col tw:justify-center tw:narrow-980:flex-none"
               ref={setHandsElement}
             >
               <Hands
@@ -553,6 +609,7 @@ export function GameScreen({
                 colorblindMode={settings.colorblindMode}
                 draggedCard={drag?.order}
                 menuCard={menuCard}
+                nameColumnWidth={nameColumnWidth}
                 onCardClick={(order) => {
                   if (justDragged.current) {
                     justDragged.current = false;
@@ -590,7 +647,7 @@ export function GameScreen({
             </div>
           </div>
 
-          <div className="tw:flex tw:w-[300px] tw:shrink-0 tw:flex-col tw:gap-3">
+          <div className="tw:flex tw:w-[300px] tw:shrink-0 tw:flex-col tw:gap-3 tw:narrow-1440:w-[240px] tw:narrow-980:w-full">
             <DiscardPile
               cardWidth={Math.min(tableCardWidth, TABLE_CARD_WIDTH.MAX)}
               colorblindMode={settings.colorblindMode}
@@ -639,6 +696,7 @@ export function GameScreen({
         numPlayers={options.numPlayers}
         numSpectators={state.spectators.length}
         open={newUIState.isChatOpen()}
+        overlay={chatOverlay}
         unread={globals.lobby.chatUnread}
       />
 
