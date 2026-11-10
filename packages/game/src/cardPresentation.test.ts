@@ -326,5 +326,57 @@ describe("card presentation", () => {
         presentation.possibilityRows?.[0]?.rankPips[2]?.positive,
       ).toBeTrue();
     });
+
+    test("puts a ruled-out suit in the row of suits that the clues allowed the same ranks", () => {
+      // A red, yellow, green, or purple 5, or a blue 1 or 5. The red 5 and the yellow 5 are visible
+      // elsewhere.
+      const state: CardState = {
+        ...baseCard,
+        possibleCardsFromClues: [
+          [0, 5],
+          [1, 5],
+          [2, 5],
+          [3, 1],
+          [3, 5],
+          [4, 5],
+        ],
+        possibleCards: [
+          [2, 5],
+          [3, 1],
+          [3, 5],
+          [4, 5],
+        ],
+      };
+      const presentation = getCardPipPresentation(
+        variant,
+        state,
+        emptyNote,
+        false,
+      );
+
+      const rows = presentation.possibilityRows?.map((row) => ({
+        suits: row.suitPips.map((suitPip) => [
+          suitPip.suitIndex,
+          suitPip.state,
+        ]),
+        ranks: row.rankPips.map((rankPip) => rankPip.state),
+      }));
+      const { Hidden, Eliminated, Visible } = PipState;
+      expect(rows).toEqual([
+        {
+          suits: [
+            [0, Eliminated],
+            [1, Eliminated],
+            [2, Visible],
+            [4, Visible],
+          ],
+          ranks: [Hidden, Hidden, Hidden, Hidden, Visible],
+        },
+        {
+          suits: [[3, Visible]],
+          ranks: [Visible, Hidden, Hidden, Hidden, Visible],
+        },
+      ]);
+    });
   });
 });

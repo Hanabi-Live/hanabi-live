@@ -263,29 +263,49 @@ function getPossibilityRows(
     return undefined;
   }
 
-  const rows = new Map<string, PossibilityRowPresentation>();
-  for (const suitPip of suitPips) {
-    if (suitPip.state === PipState.Hidden) {
-      continue;
-    }
-
-    const rankPips = variant.ranks.map((rank) => {
-      const key = cardKey(suitPip.suitIndex, rank);
-      let pipState = PipState.Hidden;
-      if (possible.has(key)) {
-        pipState = PipState.Visible;
-      } else if (fromClues.has(key)) {
-        pipState = PipState.Eliminated;
-      }
-      return { rank, state: pipState, positive: isPositiveRank(rank) };
+  const suits = suitPips
+    .filter((suitPip) => suitPip.state !== PipState.Hidden)
+    .map((suitPip) => {
+      const rankPips = variant.ranks.map((rank) => {
+        const key = cardKey(suitPip.suitIndex, rank);
+        let pipState = PipState.Hidden;
+        if (possible.has(key)) {
+          pipState = PipState.Visible;
+        } else if (fromClues.has(key)) {
+          pipState = PipState.Eliminated;
+        }
+        return { rank, state: pipState, positive: isPositiveRank(rank) };
+      });
+      const clueRanksKey = rankPips
+        .map((rankPip) => rankPip.state !== PipState.Hidden)
+        .join(",");
+      const rowKey = rankPips.map((rankPip) => rankPip.state).join(",");
+      return { suitPip, rankPips, clueRanksKey, rowKey };
     });
-    const rowKey = rankPips.map((rankPip) => rankPip.state).join(",");
-    const row = rows.get(rowKey);
-    if (row === undefined) {
-      rows.set(rowKey, { suitPips: [suitPip], rankPips });
-    } else {
-      rows.set(rowKey, { ...row, suitPips: [...row.suitPips, suitPip] });
+
+  // A ruled-out suit joins a row of suits that the clues allowed the same ranks, since its
+  // crossed-out suit pip already shows that it is none of them.
+  const possibleSuitForClueRanks = new Map<string, (typeof suits)[number]>();
+  for (const suit of suits) {
+    if (suit.suitPip.state !== PipState.Eliminated) {
+      possibleSuitForClueRanks.set(suit.clueRanksKey, suit);
     }
+  }
+
+  const rows = new Map<string, PossibilityRowPresentation>();
+  for (const { suitPip, clueRanksKey, rowKey, rankPips } of suits) {
+    const rowSuit =
+      suitPip.state === PipState.Eliminated
+        ? possibleSuitForClueRanks.get(clueRanksKey)
+        : undefined;
+    const key = rowSuit?.rowKey ?? rowKey;
+    const row = rows.get(key);
+    rows.set(
+      key,
+      row === undefined
+        ? { suitPips: [suitPip], rankPips: rowSuit?.rankPips ?? rankPips }
+        : { ...row, suitPips: [...row.suitPips, suitPip] },
+    );
   }
 
   return [...rows.values()];

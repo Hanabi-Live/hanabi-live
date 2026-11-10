@@ -41,6 +41,9 @@ of the repository.
 - In the old game UI, the "Ready", "Edit Cards", "Show Hidden", and post-clue
   empathy buttons are now checkboxes, so you can see whether each one is on.
   "Show Hidden" is now "Show drawn cards".
+- When a card shows rows of possibilities, a suit that is ruled out now shares a
+  row with the other suits that the clues allowed the same ranks, with its pip
+  crossed out.
 
 ## November 9th, 2026
 
