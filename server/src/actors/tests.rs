@@ -1117,7 +1117,7 @@ async fn a_table_that_panics_is_removed_and_frees_its_players() -> Result<()> {
             .rfind(|f| f.starts_with("user "))
             .context("Missing user update")?;
         ensure!(
-            user.contains("\"status\":0"),
+            user.contains(r#""status":"lobby""#),
             "The player did not return to the lobby: {user}"
         );
         let (reply, replied) = oneshot::channel();

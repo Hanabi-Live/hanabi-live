@@ -384,7 +384,7 @@
     "input": {
       "userID": 7,
       "username": "Alice",
-      "status": 6,
+      "status": "away",
       "tableID": 3,
       "hGroup": false,
       "hGroupLevel": 0,
@@ -401,7 +401,7 @@
       {
         "userID": 7,
         "username": "Alice",
-        "status": 2,
+        "status": "playing",
         "tableID": 3,
         "hGroup": false,
         "hGroupLevel": 3,

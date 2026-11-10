@@ -1,11 +1,15 @@
-import { Status } from "./generated/protocol";
+import type { z } from "zod";
+import type { statusSchema } from "./generated/protocol";
+
+/** The activity that a user is currently performing. */
+export type Status = z.infer<typeof statusSchema>;
 
 /** How the lobby describes each status. */
 export const StatusText = {
-  [Status.Lobby]: "Lobby",
-  [Status.Pregame]: "Pre-Game",
-  [Status.Playing]: "Playing",
-  [Status.Spectating]: "Spectating",
-  [Status.Replay]: "Replay",
-  [Status.SharedReplay]: "Shared Replay",
+  lobby: "Lobby",
+  pregame: "Pre-Game",
+  playing: "Playing",
+  spectating: "Spectating",
+  replay: "Replay",
+  sharedReplay: "Shared Replay",
 } as const satisfies Record<Status, string>;

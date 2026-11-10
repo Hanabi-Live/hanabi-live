@@ -69,18 +69,6 @@ export enum SoundMove {
   None = 2,
 }
 
-/**
- * The activity that a user is currently performing.
- */
-export enum Status {
-  Lobby = 0,
-  Pregame = 1,
-  Playing = 2,
-  Spectating = 3,
-  Replay = 4,
-  SharedReplay = 5,
-}
-
 export const tableIdSchema = z
   .number()
   .int()
@@ -1087,6 +1075,18 @@ export const spectatorsSchema = z
   .readonly();
 
 /**
+ * The activity that a user is currently performing.
+ */
+export const statusSchema = z.enum([
+  "lobby",
+  "pregame",
+  "playing",
+  "spectating",
+  "replay",
+  "sharedReplay",
+]);
+
+/**
  * A spectator suggesting a turn to the shared replay's leader.
  */
 export const suggestionSchema = z.strictObject({
@@ -1282,7 +1282,7 @@ export const userSchema = z
      */
     hGroupLevel: z.number().int().min(0).max(25),
     inactive: z.boolean(),
-    status: z.enum(Status),
+    status: statusSchema,
     tableID: tableIdSchema.optional(),
     userID: userIdSchema,
     username: z.string().min(1),

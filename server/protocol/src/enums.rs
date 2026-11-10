@@ -156,16 +156,16 @@ wire_enum! {
     }
 }
 
-wire_enum! {
-    /// The activity that a user is currently performing.
-    pub enum Status {
-        Lobby = 0,
-        Pregame = 1,
-        Playing = 2,
-        Spectating = 3,
-        Replay = 4,
-        SharedReplay = 5,
-    }
+/// The activity that a user is currently performing.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize, JsonSchema)]
+#[serde(rename_all = "camelCase")]
+pub enum Status {
+    Lobby,
+    Pregame,
+    Playing,
+    Spectating,
+    Replay,
+    SharedReplay,
 }
 
 /// Every wire enum, for the TypeScript generator.
@@ -175,5 +175,4 @@ pub const WIRE_ENUMS: &[WireEnum] = &[
     GameListColumn::WIRE,
     RecordedActionType::WIRE,
     SoundMove::WIRE,
-    Status::WIRE,
 ];

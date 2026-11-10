@@ -1,6 +1,7 @@
 // The lobby area that shows all of the current logged-in users.
 
-import { Status, StatusText } from "@hanabi-live/data";
+import type { Status } from "@hanabi-live/data";
+import { StatusText } from "@hanabi-live/data";
 import { useEffect, useRef } from "react";
 import { globals } from "../../Globals";
 import { DIMMED_OPACITY } from "../../constants";
@@ -29,8 +30,8 @@ const ROBOT_EMOJI = "\u{1F916}";
 
 /** In these statuses, the user is not at a table that we could join or spectate. */
 const STATUSES_WITHOUT_TABLE: ReadonlySet<Status> = new Set([
-  Status.Lobby,
-  Status.Replay,
+  "lobby",
+  "replay",
 ]);
 
 export function UsersList(): React.JSX.Element {
@@ -199,20 +200,20 @@ function goToTable(user: UserRow["user"]) {
   }
 
   switch (user.status) {
-    case Status.Pregame: {
+    case "pregame": {
       tableJoin(table);
       break;
     }
 
-    case Status.Playing:
-    case Status.Spectating:
-    case Status.SharedReplay: {
+    case "playing":
+    case "spectating":
+    case "sharedReplay": {
       tableSpectate(table);
       break;
     }
 
-    case Status.Lobby:
-    case Status.Replay: {
+    case "lobby":
+    case "replay": {
       break;
     }
   }

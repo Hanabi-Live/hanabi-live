@@ -793,6 +793,7 @@ fn main() -> Result<()> {
             "ReplayImport",
             "ReplayBoardElement",
             "ReplaySoundEffect",
+            "Status",
             "LoginRequest",
             "LoginResponse",
             "ApiError",
@@ -955,12 +956,12 @@ mod tests {
 
     #[test]
     fn wire_enums_use_the_generated_typescript_enum() {
-        let status = json!({"type":"integer","enum":[0,1,2,3,4,5],"x-enum":"Status"});
-        assert_eq!(expression(&status).unwrap(), "z.enum(Status)");
+        let sound_move = json!({"type":"integer","enum":[0,1,2],"x-enum":"SoundMove"});
+        assert_eq!(expression(&sound_move).unwrap(), "z.enum(SoundMove)");
         // A field cannot list other values than the enum has.
-        assert!(expression(&json!({"type":"integer","enum":[0,1],"x-enum":"Status"})).is_err());
+        assert!(expression(&json!({"type":"integer","enum":[0,1],"x-enum":"SoundMove"})).is_err());
         assert!(expression(&json!({"type":"integer","enum":[0,1],"x-enum":"Other"})).is_err());
-        assert!(expression(&json!({"type":"integer","x-enum":"Status"})).is_err());
+        assert!(expression(&json!({"type":"integer","x-enum":"SoundMove"})).is_err());
     }
 
     #[test]
@@ -986,7 +987,7 @@ mod tests {
     fn each_package_declares_its_own_enums() {
         let game = enum_declarations(true);
         assert!(game.contains("export enum ClueType {\nColor = 0,\nRank = 1,\n}"));
-        assert!(!game.contains("enum Status"));
+        assert!(!game.contains("enum SoundMove"));
         let data = enum_declarations(false);
         assert!(data.contains("export enum SoundMove {\nAll = 0,\nOnlyOwn = 1,\nNone = 2,\n}"));
         assert!(!data.contains("enum ClueType"));

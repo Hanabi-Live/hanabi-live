@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 
-import type { ServerCommandData } from "@hanabi-live/data";
-import { Status, tableIdSchema, userIdSchema } from "@hanabi-live/data";
+import type { ServerCommandData, Status } from "@hanabi-live/data";
+import { tableIdSchema, userIdSchema } from "@hanabi-live/data";
 import {
   act,
   cleanup,
@@ -64,7 +64,7 @@ const TABLE_ID = tableIdSchema.parse(7);
 function user(
   userID: number,
   name: string,
-  status = Status.Lobby,
+  status: Status = "lobby",
 ): ServerCommandData["user"] {
   return {
     userID: userIdSchema.parse(userID),
@@ -74,7 +74,7 @@ function user(
     hGroupLevel: 0,
     bot: false,
     inactive: false,
-    ...(status !== Status.Lobby && { tableID: TABLE_ID }),
+    ...(status !== "lobby" && { tableID: TABLE_ID }),
   };
 }
 
@@ -215,9 +215,7 @@ describe("UsersList", () => {
   test("links the status of users at a table, except from the pre-game", () => {
     const table = { tableID: TABLE_ID } as ServerCommandData["table"];
     store.dispatch(tablesListed([table]));
-    store.dispatch(
-      usersListed([user(1, "Alice", Status.Pregame), user(2, "Bob")]),
-    );
+    store.dispatch(usersListed([user(1, "Alice", "pregame"), user(2, "Bob")]));
     renderList();
 
     expect(screen.getByText("Lobby").tagName).toBe("TD");
