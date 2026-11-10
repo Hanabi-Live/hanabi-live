@@ -124,6 +124,7 @@ function stateReducerFunction(state: Draft<State>, action: Action) {
         datetimeStarted: action.datetimeFinished,
         spoilerFree: false,
         restartDeclined: [],
+        hypothetical: null,
       };
 
       break;
@@ -161,6 +162,7 @@ function stateReducerFunction(state: Draft<State>, action: Action) {
               action.datetimeSharedReplayStarted ?? new Date().toISOString(),
             spoilerFree: action.spoilerFree,
             restartDeclined: action.restartDeclined ?? [],
+            hypothetical: null,
           };
           state.notes.efficiencyModifier =
             action.sharedReplayEfficiencyModifier;

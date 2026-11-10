@@ -81,6 +81,8 @@ of the repository.
   it creates the account, so a typo no longer creates a new account.
 - In "/create-table" links, `timeBase` and `timePerTurn` are now
   `timeBaseSeconds` and `timePerTurnSeconds`.
+- In shared replays, a hypothetical no longer takes you away from the turn that
+  you are looking at. It appears when you use the shared turns again.
 
 ## November 8th, 2026
 

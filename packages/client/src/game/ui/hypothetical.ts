@@ -19,7 +19,7 @@ import { getCardOrStackBase } from "./getCardOrStackBase";
 import { planClientHypotheticalAction } from "./planClientHypotheticalAction";
 
 export function startHypothetical(): void {
-  if (globals.state.replay.hypothetical !== null) {
+  if (hypotheticalExists()) {
     return;
   }
 
@@ -64,13 +64,19 @@ export function endHypothetical(): void {
 
 /** Apply the server-confirmed end (or immediately end a local hypothetical). */
 export function finishHypothetical(): void {
-  if (globals.state.replay.hypothetical === null) {
+  if (!hypotheticalExists()) {
     return;
   }
 
   globals.store!.dispatch({
     type: "hypoEnd",
   });
+}
+
+/** In shared replays, the leader's hypothetical exists even while we do not show it. */
+function hypotheticalExists(): boolean {
+  const { hypothetical, shared } = globals.state.replay;
+  return (shared === null ? hypothetical : shared.hypothetical) !== null;
 }
 
 export function sendHypotheticalAction(hypoAction: ClientAction): void {

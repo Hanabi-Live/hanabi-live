@@ -16,5 +16,7 @@ export interface ReplayState {
 
   readonly databaseID: number | null; // `null` if we are in an ongoing game.
   readonly shared: SharedReplayState | null;
+
+  /** The hypothetical that we show. In shared replays, this follows `shared.hypothetical`. */
   readonly hypothetical: HypotheticalState | null;
 }

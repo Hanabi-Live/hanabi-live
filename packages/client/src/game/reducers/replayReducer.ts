@@ -1,6 +1,10 @@
 // The reducer for replays and hypotheticals.
 
-import type { GameMetadata, HypotheticalStateAction } from "@hanabi-live/game";
+import type {
+  GameMetadata,
+  HypotheticalState,
+  HypotheticalStateAction,
+} from "@hanabi-live/game";
 import {
   hypotheticalStateReducer,
   initializeHypotheticalState,
@@ -141,56 +145,56 @@ function replayReducerFunction(
     // --------------------
 
     case "hypoStart": {
-      if (state.hypothetical !== null) {
+      if (getHypothetical(state) !== null) {
         throw new Error(
           `A "${action.type}" action was dispatched with a non-null hypothetical state.`,
         );
       }
-      if (state.shared !== null) {
-        // Bring us to the current shared replay turn, if we are not already there
-        state.segment = state.shared.segment;
-        state.shared.useSharedSegments = true;
-      }
 
-      const ongoing = state.states[state.segment];
+      // In shared replays, the hypothetical starts on the shared segment, even if we are looking at
+      // a different segment.
+      const segment = state.shared?.segment ?? state.segment;
+      if (state.shared?.useSharedSegments === true) {
+        state.segment = segment;
+      }
+      const ongoing = state.states[segment];
       assertDefined(
         ongoing,
-        `Failed to get the game state for segment: ${state.segment}`,
+        `Failed to get the game state for segment: ${segment}`,
       );
 
-      const originalOngoing = original(ongoing);
-      state.hypothetical = castDraft(
-        initializeHypotheticalState(
-          originalOngoing,
-          action.showDrawnCards,
-          action.actions,
-          finished,
-          metadata,
-        ),
+      const hypothetical = initializeHypotheticalState(
+        original(ongoing),
+        action.showDrawnCards,
+        action.actions,
+        finished,
+        metadata,
       );
+      setHypothetical(state, castDraft(hypothetical));
 
       break;
     }
 
     case "hypoEnd": {
       assertNotNull(
-        state.hypothetical,
+        getHypothetical(state),
         `A "${action.type}" action was dispatched with a null hypothetical state.`,
       );
 
-      state.hypothetical = null;
+      setHypothetical(state, null);
       break;
     }
 
     case "hypoBack":
     case "hypoShowDrawnCards":
     case "hypoAction": {
+      const hypotheticalDraft = getHypothetical(state);
       assertNotNull(
-        state.hypothetical,
+        hypotheticalDraft,
         `A "${action.type}" action was dispatched with a null hypothetical state.`,
       );
 
-      const hypothetical = original(state.hypothetical);
+      const hypothetical = original(hypotheticalDraft);
       let coreAction: HypotheticalStateAction;
       if (action.type === "hypoAction") {
         coreAction = action.action;
@@ -202,10 +206,43 @@ function replayReducerFunction(
           showDrawnCards: action.showDrawnCards,
         };
       }
-      state.hypothetical = castDraft(
-        hypotheticalStateReducer(hypothetical, coreAction, finished, metadata),
+      setHypothetical(
+        state,
+        castDraft(
+          hypotheticalStateReducer(
+            hypothetical,
+            coreAction,
+            finished,
+            metadata,
+          ),
+        ),
       );
       break;
     }
+  }
+
+  // In shared replays, we only show the leader's hypothetical while we use the shared segments.
+  if (state.shared !== null) {
+    state.hypothetical = state.shared.useSharedSegments
+      ? state.shared.hypothetical
+      : null;
+  }
+}
+
+/** In shared replays, the leader's hypothetical exists even when we do not show it. */
+function getHypothetical(
+  state: Draft<ReplayState>,
+): Draft<HypotheticalState> | null {
+  return state.shared === null ? state.hypothetical : state.shared.hypothetical;
+}
+
+function setHypothetical(
+  state: Draft<ReplayState>,
+  hypothetical: Draft<HypotheticalState> | null,
+) {
+  if (state.shared === null) {
+    state.hypothetical = hypothetical;
+  } else {
+    state.shared.hypothetical = hypothetical;
   }
 }

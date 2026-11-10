@@ -1,3 +1,5 @@
+import type { HypotheticalState } from "@hanabi-live/game";
+
 export interface SharedReplayState {
   readonly segment: number;
   readonly useSharedSegments: boolean;
@@ -14,4 +16,10 @@ export interface SharedReplayState {
 
   /** The players who will not play again if the leader restarts. */
   readonly restartDeclined: readonly string[];
+
+  /**
+   * The leader's hypothetical. We only show it (as `ReplayState.hypothetical`) while we use the
+   * shared segments, so that it does not interrupt us while we look at other turns.
+   */
+  readonly hypothetical: HypotheticalState | null;
 }

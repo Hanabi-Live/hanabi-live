@@ -4,6 +4,7 @@ import { assertDefined, assertNotNull } from "complete-common";
 import { beforeAll, describe, expect, test, vi } from "vitest";
 
 import testGame from "../../../test_data/up_or_down.json";
+import type { ReplayState } from "../types/ReplayState";
 import type { State } from "../types/State";
 
 vi.mock("./uiReducer", () => ({
@@ -283,6 +284,51 @@ describe("replayReducer", () => {
 
       const originalState = testState.visibleState;
       expect(state.hypothetical?.ongoing).toBe<unknown>(originalState);
+    });
+
+    test("waits until we use the shared segments to show the leader's hypothetical", () => {
+      const sharedSegment = 1;
+      const ourSegment = 3;
+      let state: ReplayState = {
+        ...testState.replay,
+        active: true,
+        segment: ourSegment,
+        shared: {
+          segment: sharedSegment,
+          useSharedSegments: false,
+          leader: "leader",
+          amLeader: false,
+          datetimeStarted: "2026-01-01T00:00:00.000Z",
+          spoilerFree: false,
+          restartDeclined: [],
+          hypothetical: null,
+        },
+      };
+
+      state = replayReducer(state, hypoStart(), true, metadata);
+      state = replayReducer(
+        state,
+        hypoAction(rankClue(3, 0, [], 1)),
+        true,
+        metadata,
+      );
+      expect(state.hypothetical).toBeNull();
+      expect(state.segment).toBe(ourSegment);
+      const hidden = state.shared?.hypothetical;
+      expect(hidden?.states[0]).toBe(state.states[sharedSegment]);
+      expect(hidden?.states).toHaveLength(2);
+
+      state = replayReducer(
+        state,
+        { type: "replayUseSharedSegments", useSharedSegments: true },
+        true,
+        metadata,
+      );
+      expect(state.hypothetical).toBe(hidden);
+
+      state = replayReducer(state, hypoEnd(), true, metadata);
+      expect(state.hypothetical).toBeNull();
+      expect(state.shared?.hypothetical).toBeNull();
     });
 
     test("can end hypothetical after giving a clue", () => {
