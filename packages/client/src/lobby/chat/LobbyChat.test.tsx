@@ -13,7 +13,7 @@ import { LobbyChat } from "./LobbyChat";
 
 vi.mock("../../chatCommands", () => ({ chatCommands: new Map() }));
 vi.mock("../../modals", () => ({}));
-vi.mock("../../tooltips", () => ({ SMALL_TOOLTIP_TEXT_STYLE: "" }));
+vi.mock("../../tooltips", () => ({}));
 vi.mock("../createGame", () => ({}));
 
 function message(

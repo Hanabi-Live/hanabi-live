@@ -5,7 +5,7 @@ import type { Options } from "@hanabi-live/game";
 import { getVariant, secondsToClockString } from "@hanabi-live/game";
 import { Fragment, useEffect, useRef } from "react";
 import { PATH } from "../../constants";
-import { DECK_PLAYS_ICON_STYLE, OptionIcons } from "../../enums/OptionIcons";
+import { OptionIcons } from "../../enums/OptionIcons";
 import { globals } from "../../Globals";
 import { useAppSelector } from "../../store";
 import * as tooltips from "../../tooltips";
@@ -253,12 +253,7 @@ function HistoryOptions({ options }: { readonly options: Options }) {
   const items = getOptionItems(options);
   const tooltip = items
     .map(
-      ({ icon, text }) =>
-        `<li><i class="${icon} icon-label"${
-          icon === OptionIcons.DeckPlays
-            ? ` style="${DECK_PLAYS_ICON_STYLE}"`
-            : ""
-        }></i>${text}</li>`,
+      ({ icon, text }) => `<li><i class="${icon} icon-label"></i>${text}</li>`,
     )
     .join("");
   useEffect(

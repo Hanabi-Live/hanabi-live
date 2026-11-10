@@ -3,7 +3,6 @@
 import { isValidPlayerIndex, MAX_PLAYERS } from "@hanabi-live/game";
 import { Fragment, useEffect, useLayoutEffect, useRef } from "react";
 import { PATH } from "../../constants";
-import { DECK_PLAYS_ICON_CSS, OptionIcons } from "../../enums/OptionIcons";
 import { useAppSelector } from "../../store";
 import * as tooltips from "../../tooltips";
 import { copyStringToClipboard, getURLFromPath } from "../../utils";
@@ -260,7 +259,6 @@ function OptionIcon({
       <i
         className={label === undefined ? icon : `${icon} icon-label`}
         ref={ref}
-        style={icon === OptionIcons.DeckPlays ? DECK_PLAYS_ICON_CSS : undefined}
       />
       {label}
     </li>

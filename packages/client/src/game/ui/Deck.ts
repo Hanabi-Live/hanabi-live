@@ -9,7 +9,7 @@ import {
   UNKNOWN_SUIT_NAME,
 } from "@hanabi-live/game";
 import Konva from "konva";
-import { DECK_PLAYS_ICON_STYLE, OptionIcons } from "../../enums/OptionIcons";
+import { OptionIcons } from "../../enums/OptionIcons";
 import { globals as globals2 } from "../../Globals";
 import * as tooltips from "../../tooltips";
 import { dateTimeFormatter, escapeHtml } from "../../utils";
@@ -451,11 +451,7 @@ function getTooltipContent(): string {
   }
 
   if (globals.options.deckPlays) {
-    content += tooltipItem(
-      OptionIcons.DeckPlays,
-      "Bottom-Deck Blind Plays",
-      DECK_PLAYS_ICON_STYLE,
-    );
+    content += tooltipItem(OptionIcons.DeckPlays, "Bottom-Deck Blind Plays");
   }
 
   if (globals.options.emptyClues) {
@@ -486,9 +482,8 @@ function getTooltipContent(): string {
   return content;
 }
 
-function tooltipItem(iconClass: string, html: string, iconStyle?: string) {
-  const style = iconStyle === undefined ? "" : ` style="${iconStyle}"`;
-  return `<li><span class="game-tooltips-icon"><i class="${iconClass}"${style}></i></span>${html}</li>`;
+function tooltipItem(iconClass: string, html: string) {
+  return `<li><span class="game-tooltips-icon"><i class="${iconClass}"></i></span>${html}</li>`;
 }
 
 function tooltipField(iconClass: string, label: string, valueHTML: string) {

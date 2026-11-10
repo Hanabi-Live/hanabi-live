@@ -198,6 +198,12 @@ body[data-screen="game"] {
   }
 }
 
+/* The logo in the header bar */
+.logo {
+  height: 3.25em;
+  vertical-align: bottom;
+}
+
 .login-logo {
   min-width: 180px;
   max-width: 306px;
@@ -1398,6 +1404,17 @@ input::-webkit-calendar-picker-indicator /* Chrome */ {
   line-height: 1em;
 }
 
+/* Tooltip text that is smaller than the default */
+.small-tooltip-text {
+  font-size: 0.75em;
+}
+
+/* The deck plays icon sits too far left. */
+.fa-blind {
+  position: relative;
+  left: 0.2em;
+}
+
 .game-tooltips-ul {
   list-style-type: none;
   margin-top: 0.5em;
@@ -1511,6 +1528,12 @@ input::-webkit-calendar-picker-indicator /* Chrome */ {
 #filter-players > li {
   height: 3em;
   line-height: 3em;
+}
+
+#scoreFreqs {
+  width: 100%;
+  max-width: 700px;
+  margin: auto;
 }
 
 .score-modifier {

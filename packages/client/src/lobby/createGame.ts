@@ -158,11 +158,9 @@ export function init(): void {
     if ($("#createTableOneExtraCard").is(":checked")) {
       $("#createTableOneLessCardRow").fadeTo(0, DIMMED_OPACITY);
       $("#createTableOneLessCard").prop("disabled", true);
-      $("#createTableOneLessCardLabel").css("cursor", "auto");
     } else {
       $("#createTableOneLessCardRow").fadeTo(0, 1);
       $("#createTableOneLessCard").prop("disabled", false);
-      $("#createTableOneLessCardLabel").css("cursor", "pointer");
     }
 
     // Remember the new setting.
@@ -173,11 +171,9 @@ export function init(): void {
     if ($("#createTableOneLessCard").is(":checked")) {
       $("#createTableOneExtraCardRow").fadeTo(0, DIMMED_OPACITY);
       $("#createTableOneExtraCard").prop("disabled", true);
-      $("#createTableOneExtraCardLabel").css("cursor", "auto");
     } else {
       $("#createTableOneExtraCardRow").fadeTo(0, 1);
       $("#createTableOneExtraCard").prop("disabled", false);
-      $("#createTableOneExtraCardLabel").css("cursor", "pointer");
     }
 
     // Remember the new setting.

@@ -12,9 +12,11 @@ import { UserLink } from "./UserMenu";
 import type { UserRow } from "./usersSlice";
 import { selectUserCount, selectUserRows } from "./usersSlice";
 
-const H_GROUP_TOOLTIP = `<span style="${tooltips.SMALL_TOOLTIP_TEXT_STYLE}">This person is a self-identified member of the H-Group.</span>`;
+const H_GROUP_TOOLTIP =
+  '<span class="small-tooltip-text">This person is a self-identified member of the H-Group.</span>';
 
-const BOT_TOOLTIP = `<span style="${tooltips.SMALL_TOOLTIP_TEXT_STYLE}">This account is a bot.</span>`;
+const BOT_TOOLTIP =
+  '<span class="small-tooltip-text">This account is a bot.</span>';
 
 const SLEEPING_EMOJI = "\u{1F4A4}";
 const ROBOT_EMOJI = "\u{1F916}";

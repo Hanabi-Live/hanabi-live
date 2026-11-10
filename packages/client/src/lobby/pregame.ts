@@ -6,7 +6,6 @@ import { assertNotNull, eRange, iRange } from "complete-common";
 import { globals } from "../Globals";
 import * as chat from "../chat";
 import { H_GROUP_LEVEL_URL_PREFIX, PATH } from "../constants";
-import { DECK_PLAYS_ICON_STYLE, OptionIcons } from "../enums/OptionIcons";
 import * as tooltips from "../tooltips";
 import { escapeHtml, getHTMLElement, setBrowserAddressBarPath } from "../utils";
 import { scrollLobbyChatToBottom } from "./chat/LobbyChat";
@@ -182,10 +181,8 @@ function drawOptions() {
 function getOptionIcons(options: Options): string {
   let html = "";
   for (const { name, icon, label, tooltip } of getOptionDescriptions(options)) {
-    const style =
-      icon === OptionIcons.DeckPlays ? ` style="${DECK_PLAYS_ICON_STYLE}"` : "";
     const labelClass = label === undefined ? "" : " icon-label";
-    html += `<li><i id="lobby-pregame-options-${name}" class="${icon}${labelClass}"${style} `;
+    html += `<li><i id="lobby-pregame-options-${name}" class="${icon}${labelClass}" `;
     html += `data-tooltip-content="#lobby-pregame-tooltip-${name}"></i>${label ?? ""}</li>`;
     html += `
       <div class="hidden">
@@ -351,7 +348,7 @@ function getHGroupLevelBadge(name: string) {
     .text(`Level ${level}`);
   const removeTooltip = tooltips.attach(
     badge[0]!,
-    `<span style="${tooltips.SMALL_TOOLTIP_TEXT_STYLE}">This player wants to play with H-Group conventions up to level ${level}.</span>`,
+    `<span class="small-tooltip-text">This player wants to play with H-Group conventions up to level ${level}.</span>`,
   );
   removeBadgeTooltips.push(removeTooltip);
   return badge;

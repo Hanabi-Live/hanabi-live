@@ -21,7 +21,6 @@ import { userInactiveChanged, usersCleared, usersListed } from "./usersSlice";
 
 vi.mock("../../tooltips", () => ({
   attach: vi.fn(),
-  SMALL_TOOLTIP_TEXT_STYLE: "",
 }));
 // The menu tooltip shows its content in the body, since jsdom does not support popovers.
 vi.mock("../../Tooltip", () => ({

@@ -591,6 +591,11 @@ input[type="radio"] + label:before {
   border-radius: 100%;
 }
 
+input[type="checkbox"]:disabled + label,
+input[type="radio"]:disabled + label {
+  cursor: auto;
+}
+
 ::placeholder {
   color: #999;
   opacity: 1;

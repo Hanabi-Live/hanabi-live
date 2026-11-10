@@ -12,12 +12,3 @@ export enum OptionIcons {
   Seed = "fas fa-seedling",
   Replay = "fas fa-redo",
 }
-
-/** The deck plays icon sits too far left, so it is nudged right wherever it is shown. */
-export const DECK_PLAYS_ICON_CSS = {
-  position: "relative",
-  left: "0.2em",
-} as const;
-
-/** `DECK_PLAYS_ICON_CSS` as a "style" attribute. */
-export const DECK_PLAYS_ICON_STYLE = `position: ${DECK_PLAYS_ICON_CSS.position}; left: ${DECK_PLAYS_ICON_CSS.left};`;

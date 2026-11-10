@@ -9,13 +9,11 @@ import { getHTMLElement } from "./utils";
 
 export const TOOLTIP_DELAY_IN_MILLISECONDS = 500;
 
-/** The style of tooltip text that is smaller than the default. */
-export const SMALL_TOOLTIP_TEXT_STYLE = "font-size: 0.75em;";
-
 /** How long the tooltip that confirms a copied URL stays open. */
 const COPIED_TOOLTIP_MILLISECONDS = SECOND_IN_MILLISECONDS;
 
-const CLIPBOARD_CONTENT = `<span style="${SMALL_TOOLTIP_TEXT_STYLE}">URL copied to clipboard!</span>`;
+const CLIPBOARD_CONTENT =
+  '<span class="small-tooltip-text">URL copied to clipboard!</span>';
 
 /** The tooltips of the page, by their anchor element. */
 const tooltips = new WeakMap<HTMLElement, Tooltip>();
