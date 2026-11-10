@@ -76,8 +76,13 @@ type Theme = (typeof THEMES)[number];
 /** States are set up at this size, so that every button is visible. */
 const SETUP_SIZE = SIZES[0];
 
+const NARROWEST_SIZE = SIZES.at(-1) ?? SETUP_SIZE;
+
 /** Long enough for the transitions of the stylesheets to finish. */
 const SETTLE_MILLISECONDS = 400;
+
+/** How many times to press Escape to go from the deepest screen back to the lobby. */
+const MAX_ESCAPES = 3;
 
 /** The seed of the first seeded game: two players, the variant with ID 0, and the first seed. */
 const SEED = "p2v0s1";
@@ -105,13 +110,103 @@ interface State {
   readonly prepare?: (page: Page) => Promise<void>;
   /** Runs after the screenshots, so that the next state starts from the lobby. */
   readonly cleanup?: (page: Page) => Promise<void>;
-  /** The element that the pointer rests on during the screenshots, such as one with a tooltip. */
-  readonly hover?: string;
+  /**
+   * The element that the pointer rests on during the screenshots, such as one with a tooltip: a
+   * selector, or a function that moves the pointer.
+   */
+  readonly hover?: string | ((page: Page) => Promise<void>);
 }
 
 async function clickNav(page: Page, id: string) {
   await page.click(`#nav-buttons-lobby-${id}`);
   await page.waitForTimeout(SETTLE_MILLISECONDS);
+}
+
+/**
+ * Opens the replay of a seeded game from the lobby. The client ignores a "/replay/<id>" path for an
+ * account that is a few seconds old.
+ */
+async function openReplay(page: Page, replayID: number) {
+  await clickNav(page, "replay");
+  await page.fill("#replay-id", replayID.toString());
+  await page.click("#replay-submit");
+  await page.waitForSelector(".konvajs-content");
+  await page.waitForTimeout(SETTLE_MILLISECONDS * 2);
+}
+
+/**
+ * Leaves a replay. The server keeps the account in it until it goes back to the lobby. In a
+ * hypothetical, the first Escape only ends the hypothetical.
+ */
+async function leaveReplay(page: Page) {
+  const lobby = page.locator("#lobby");
+  for (let i = 0; i < MAX_ESCAPES && !(await lobby.isVisible()); i++) {
+    await page.keyboard.press("Escape");
+    await page.waitForTimeout(SETTLE_MILLISECONDS);
+  }
+  await lobby.waitFor();
+}
+
+/**
+ * Runs in the page. The center of an element of the classic game screen, which draws on a canvas,
+ * in page coordinates. The path leads from "globals.elements" to the element, such as
+ * `["playerHands", 0, "children", 0]` for the first card of the first hand.
+ */
+function getCanvasElementCenter(elementPath: ReadonlyArray<string | number>): {
+  readonly x: number;
+  readonly y: number;
+} {
+  interface CanvasElement {
+    getClientRect: () => {
+      x: number;
+      y: number;
+      width: number;
+      height: number;
+    };
+  }
+  let value: unknown = (
+    globalThis as unknown as { globals: { elements: unknown } }
+  ).globals.elements;
+  for (const key of elementPath) {
+    value = (value as Record<string | number, unknown> | undefined)?.[key];
+  }
+  if (value === undefined) {
+    throw new Error(
+      `The game screen has no element at: ${elementPath.join(".")}`,
+    );
+  }
+  const rect = (value as CanvasElement).getClientRect();
+  const canvas = document.querySelector(".konvajs-content");
+  if (canvas === null) {
+    throw new Error("The game screen is not drawn.");
+  }
+  const origin = canvas.getBoundingClientRect();
+  return {
+    x: origin.x + rect.x + rect.width / 2,
+    y: origin.y + rect.y + rect.height / 2,
+  };
+}
+
+/** Runs in the page. Whether the classic game screen has finished drawing itself for a new size. */
+function isGameScreenResized(): boolean {
+  return (
+    (globalThis as unknown as { globals: { isResizing?: boolean } }).globals
+      .isResizing !== true
+  );
+}
+
+/**
+ * Moves the pointer onto an element of the classic game screen. After the window resizes, the
+ * screen draws new elements in place of the old ones, so this waits for them first.
+ */
+async function hoverCanvasElement(
+  page: Page,
+  elementPath: ReadonlyArray<string | number>,
+) {
+  await page.waitForTimeout(SETTLE_MILLISECONDS);
+  await page.waitForFunction(isGameScreenResized);
+  const { x, y } = await page.evaluate(getCanvasElementCenter, elementPath);
+  await page.mouse.move(x, y);
 }
 
 function getStates({
@@ -219,19 +314,53 @@ function getStates({
       name: "replay",
       path: "/",
       loggedIn: true,
-      // The client ignores a "/replay/<id>" path for an account that is a few seconds old, so open
-      // the replay from the lobby.
       prepare: async (page) => {
-        await clickNav(page, "replay");
-        await page.fill("#replay-id", replayID.toString());
-        await page.click("#replay-submit");
-        await page.waitForSelector(".konvajs-content");
-        await page.waitForTimeout(SETTLE_MILLISECONDS * 2);
+        await openReplay(page, replayID);
       },
-      // The server keeps the account in the replay until it goes back to the lobby.
-      cleanup: async (page) => {
-        await page.keyboard.press("Escape");
+      cleanup: leaveReplay,
+    },
+    // The tooltip of the deck in the classic game screen, which lists the game's options.
+    {
+      name: "replay-tooltip",
+      path: "/",
+      loggedIn: true,
+      prepare: async (page) => {
+        await openReplay(page, replayID);
+      },
+      hover: async (page) => {
+        // On the narrowest screen, the tooltip opens below the deck, under the pointer, which
+        // closes it again at once.
+        if (page.viewportSize()?.width === NARROWEST_SIZE.width) {
+          return;
+        }
+        await hoverCanvasElement(page, ["deck"]);
+        await page.locator(".game-tooltips-ul").waitFor();
+      },
+      cleanup: leaveReplay,
+    },
+    // The modal that changes a card into another during a hypothetical.
+    {
+      name: "morph-modal",
+      path: "/",
+      loggedIn: true,
+      prepare: async (page) => {
+        await openReplay(page, replayID);
+        await hoverCanvasElement(page, ["enterHypoButton"]);
+        await page.mouse.down();
+        await page.mouse.up();
         await page.waitForTimeout(SETTLE_MILLISECONDS);
+        // An Alt + right-click on a card morphs it.
+        await hoverCanvasElement(page, ["playerHands", 0, "children", 0]);
+        await page.keyboard.down("Alt");
+        await page.mouse.down({ button: "right" });
+        await page.mouse.up({ button: "right" });
+        await page.keyboard.up("Alt");
+        await page.locator("#morph-modal").waitFor();
+      },
+      cleanup: async (page) => {
+        await page.click("#morph-modal-button-cancel");
+        await page.waitForTimeout(SETTLE_MILLISECONDS);
+        await leaveReplay(page);
       },
     },
     // Joining a table keeps the account in it, so these states come last.
@@ -833,7 +962,9 @@ async function capture(
         if (state.hover !== undefined) {
           // Move the pointer onto the element again, so that a tooltip opens at its new position.
           await page.mouse.move(0, size.height - 1);
-          await page.hover(state.hover);
+          await (typeof state.hover === "string"
+            ? page.hover(state.hover)
+            : state.hover(page));
         }
         await page.waitForTimeout(SETTLE_MILLISECONDS);
         const file = path.join(
