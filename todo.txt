@@ -11,4 +11,3 @@
 
 long term:
 - remove all null in @hanabi-live/game (this might need server changes)
-- make chat_log.user_id nullable with a foreign key (the source column already marks server messages)
