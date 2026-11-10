@@ -30,13 +30,13 @@ function friend(room: string, args: readonly string[]) {
   }
 
   // Validate that we are not targeting ourselves.
-  const name = args.join(" ");
-  if (name.toLowerCase() === globals.username.toLowerCase()) {
+  const username = args.join(" ");
+  if (username.toLowerCase() === globals.username.toLowerCase()) {
     sendSelfPMFromServer("You cannot friend yourself.", room);
   }
 
   globals.conn!.send("chatFriend", {
-    username: name,
+    username,
   });
 }
 chatCommands.set("friend", friend);
@@ -64,13 +64,13 @@ function link(room: string, args: readonly string[]) {
   }
 
   // Validate that we are not targeting ourselves.
-  const name = args.join(" ");
-  if (name.toLowerCase() === globals.username.toLowerCase()) {
+  const username = args.join(" ");
+  if (username.toLowerCase() === globals.username.toLowerCase()) {
     sendSelfPMFromServer("You cannot link yourself.", room);
   }
 
   globals.conn!.send("chatLink", {
-    username: name,
+    username,
   });
 }
 
@@ -87,13 +87,13 @@ function unlink(room: string, args: readonly string[]) {
   }
 
   // Validate that we are not targeting ourselves.
-  const name = args.join(" ");
-  if (name.toLowerCase() === globals.username.toLowerCase()) {
+  const username = args.join(" ");
+  if (username.toLowerCase() === globals.username.toLowerCase()) {
     sendSelfPMFromServer("You cannot unlink yourself.", room);
   }
 
   globals.conn!.send("chatUnlink", {
-    username: name,
+    username,
   });
 }
 
@@ -432,8 +432,8 @@ chatCommands.set("unfriend", (room: string, args: readonly string[]) => {
   }
 
   // Validate that we are not targeting ourselves.
-  const name = args.join(" ");
-  if (name.toLowerCase() === globals.username.toLowerCase()) {
+  const username = args.join(" ");
+  if (username.toLowerCase() === globals.username.toLowerCase()) {
     sendSelfPMFromServer(
       "You cannot unfriend yourself.",
       room,
@@ -442,7 +442,7 @@ chatCommands.set("unfriend", (room: string, args: readonly string[]) => {
   }
 
   globals.conn!.send("chatUnfriend", {
-    username: name,
+    username,
   });
 });
 
