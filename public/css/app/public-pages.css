@@ -19,17 +19,18 @@
 }
 
 /* History Pages */
-section.history-page {
-  padding: 0;
+.history-page > header {
+  text-align: center;
+}
+
+.history-page > header h2 {
+  font-size: 2.75em;
+  margin: 0;
 }
 
 .public-table-scroll {
   max-width: 100%;
   overflow-x: auto;
-}
-
-.history-page > header {
-  margin: 0;
 }
 
 table.history {
@@ -198,6 +199,12 @@ span.table-spinner:after {
 
   #profile-buttons li {
     padding-top: 1em;
+  }
+}
+
+@media screen and (max-width: 736px) {
+  .history-page > header h2 {
+    font-size: 2em;
   }
 }
 

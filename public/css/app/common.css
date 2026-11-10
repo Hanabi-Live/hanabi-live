@@ -48,6 +48,10 @@ body,
   height: 100%;
 }
 
+#page-wrapper {
+  padding-top: 3em;
+}
+
 body {
   background-color: var(--page-bg);
   background-image: url("/public/img/dark-wood.png");

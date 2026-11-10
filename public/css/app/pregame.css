@@ -1,22 +1,3 @@
-.lobby-pregame-players .shadow:hover,
-#lobby-games-table-tbody .shadow:hover {
-  /* detective */
-  cursor:
-    url("data:image/svg+xml;utf8,<svg width='23.713' height='23.713' viewBox='0 0 23.713 23.713' xmlns='http://www.w3.org/2000/svg'><text y='15'>🕵️</text></svg>")
-      12 12,
-    pointer;
-  color: var(--name-hover);
-}
-
-.lobby-pregame-players .un-shadow:hover {
-  /* eyes */
-  cursor:
-    url("data:image/svg+xml;utf8,<svg width='23.713' height='23.713' viewBox='0 0 23.713 23.713' xmlns='http://www.w3.org/2000/svg'><text y='15'>👀</text></svg>")
-      12 12,
-    pointer;
-  color: var(--name-hover);
-}
-
 .lobby-pregame-container {
   height: 100%;
   display: flex;

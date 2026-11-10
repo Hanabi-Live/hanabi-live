@@ -1,3 +1,87 @@
+#header {
+  background: var(--header-bg);
+  border-bottom: var(--header-border);
+  color: var(--header-text);
+  cursor: default;
+  height: 3.25em;
+  left: 0;
+  line-height: 3.25em;
+  position: fixed;
+  top: 0;
+  width: 100%;
+  z-index: var(--z-header);
+}
+
+#header a {
+  cursor: pointer;
+}
+
+#header a.disabled {
+  cursor: not-allowed;
+}
+
+#header h1 {
+  color: inherit;
+  height: inherit;
+  left: 1.25em;
+  line-height: inherit;
+  margin: 0;
+  padding: 0;
+  position: absolute;
+  top: 0;
+}
+
+#header nav {
+  height: inherit;
+  line-height: inherit;
+  position: absolute;
+  right: 0.75em;
+  top: 0;
+  vertical-align: middle;
+}
+
+#header nav > ul {
+  list-style: none;
+  margin: 0;
+  padding-left: 0;
+}
+
+#header nav > ul > li {
+  display: inline-block;
+  padding-left: 0;
+}
+
+#header nav > ul > li a {
+  display: inline-block;
+  height: 2em;
+  line-height: 2em;
+  padding: 0 1em;
+  border-radius: var(--radius);
+}
+
+#header nav > ul > li:first-child {
+  margin-left: 0;
+}
+
+#header nav > ul > li .button {
+  margin: 0 0 0 0.5em;
+  position: relative;
+}
+
+#header .button {
+  background-color: transparent;
+  box-shadow: inset 0 0 0 2px #999;
+  color: #fff;
+}
+
+#header .button:hover {
+  background-color: rgba(153, 153, 153, 0.25);
+}
+
+#header .button:active {
+  background-color: rgba(153, 153, 153, 0.5);
+}
+
 /* The logo in the header bar */
 .logo {
   height: 3.25em;
@@ -21,11 +105,11 @@
   border-bottom: 1px solid #999;
 }
 
-.help-button {
+#header .help-button {
   background-color: var(--button-green);
 }
 
-.help-button:hover {
+#header .help-button:hover {
   background-color: var(--button-green-hover);
 }
 
