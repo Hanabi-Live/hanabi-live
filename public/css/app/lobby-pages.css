@@ -103,12 +103,6 @@
   color: var(--help-icon-hover);
 }
 
-/* The default arrow on input lists */
-input::-webkit-calendar-picker-indicator {
-  /* This needs to be important since Chrome 91 */
-  display: none !important;
-}
-
 /*
   Resources screen
 */

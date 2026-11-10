@@ -121,9 +121,9 @@ describe("UsersList", () => {
     renderList();
 
     expect(rowNames()).toStrictEqual(["me", "Bob", "zed", "Alice", "carol"]);
-    expect(screen.getByText("me").className).toBe("name-me");
+    expect(screen.getByText("me").className).toBe("tw:text-name-me");
     expect(screen.getByText("me").parentElement!.tagName).toBe("STRONG");
-    expect(screen.getByText("Bob").className).toBe("friend");
+    expect(screen.getByText("Bob").className).toBe("tw:text-friend");
     expect(screen.getByText("Alice").className).toBe("");
     expect(screen.getByText("Alice").getAttribute("href")).toBe(
       "/scores/Alice",

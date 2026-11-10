@@ -55,7 +55,7 @@ export function Pregame(): React.JSX.Element | undefined {
       >
         <h4 className="tw:pb-2">
           <strong>
-            <i className="fas fa-signature icon-label" />
+            <i className="fas fa-signature tw:mr-[0.4em]" />
             Name:
           </strong>
           <br />
@@ -65,7 +65,7 @@ export function Pregame(): React.JSX.Element | undefined {
         </h4>
         <h4 className="tw:pb-2">
           <strong>
-            <i className="fas fa-rainbow icon-label" />
+            <i className="fas fa-rainbow tw:mr-[0.4em]" />
             Variant:
           </strong>
           <br />
@@ -75,7 +75,7 @@ export function Pregame(): React.JSX.Element | undefined {
         </h4>
         <h4 className="tw:pb-2">
           <strong>
-            <i className="fas fa-users icon-label" />
+            <i className="fas fa-users tw:mr-[0.4em]" />
             Players:
           </strong>
           <br />
@@ -105,7 +105,7 @@ export function Pregame(): React.JSX.Element | undefined {
         {spectators.length > 0 && (
           <h4 className="tw:pb-2" id="lobby-pregame-spectators-container">
             <strong>
-              <i className="fas fa-glasses icon-label" />
+              <i className="fas fa-glasses tw:mr-[0.4em]" />
               Spectators:
             </strong>
             <br />
@@ -225,9 +225,9 @@ function StatRow({
   readonly value: React.ReactNode;
 }) {
   return (
-    <div className="row">
-      <div className="col-10">{label}</div>
-      <div className="col-2 tw:p-0 tw:text-right">{value}</div>
+    <div className="tw:flex tw:gap-2">
+      <div className="tw:flex-1">{label}</div>
+      <div className="tw:text-right">{value}</div>
     </div>
   );
 }
@@ -326,9 +326,9 @@ function useNameClassName(name: string): string | undefined {
     state.session.friends.includes(name),
   );
   if (isUs) {
-    return "name-me";
+    return "tw:text-name-me";
   }
-  return isFriend ? "friend" : undefined;
+  return isFriend ? "tw:text-friend" : undefined;
 }
 
 /** A link to the highest H-Group level that an online player chose, if they chose one. */

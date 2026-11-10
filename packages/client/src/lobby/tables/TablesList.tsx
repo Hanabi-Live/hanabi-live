@@ -58,7 +58,7 @@ export function TablesList(): React.JSX.Element {
 
   if (rows.length === 0) {
     return (
-      <div className="align-center-v tw:h-full">
+      <div className="tw:flex tw:h-full tw:items-center tw:justify-center">
         <h3 id="lobby-games-no">No one is playing right now.</h3>
       </div>
     );
@@ -69,7 +69,7 @@ export function TablesList(): React.JSX.Element {
       className="tw:h-full tw:overflow-y-auto"
       id="lobby-games-table-container"
     >
-      <h3 className="lobby-title">List of games</h3>
+      <h3 className="tw:text-[1.3em]">List of games</h3>
       <table className={`${BORDERED_TABLE} tw:mb-0`} id="lobby-games-table">
         <thead>
           <tr>
@@ -183,12 +183,12 @@ function TableRowView({
         {table.playerNames.map((player, playerIndex) => {
           let className: string | undefined;
           if (player === username) {
-            className = "name-me";
+            className = "tw:text-name-me";
           } else if (
             friends.includes(player)
             && table.phase !== "sharedReplay"
           ) {
-            className = "friend";
+            className = "tw:text-friend";
           }
           if (canShadow) {
             className =
@@ -235,7 +235,7 @@ function TableRowView({
           <Fragment key={name}>
             {i > 0 && ", "}
             {friends.includes(name) ? (
-              <span className="friend">{name}</span>
+              <span className="tw:text-friend">{name}</span>
             ) : (
               name
             )}

@@ -14,7 +14,7 @@ export function LobbyChat(): React.JSX.Element {
 
   return (
     <>
-      <h3 className="lobby-title">
+      <h3 className="tw:text-[1.3em]">
         Lobby Chat
         <span className="tw:hidden tw:narrow-640:inline">
           {" "}

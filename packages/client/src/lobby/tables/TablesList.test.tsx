@@ -143,7 +143,7 @@ describe("TablesList", () => {
       "ongoing",
       "replay",
     ]);
-    expect(screen.getByText("bob").classList).toContain("friend");
+    expect(screen.getByText("bob").classList).toContain("tw:text-friend");
   });
 
   test("joins a table from its row and shadows a player from their name", () => {

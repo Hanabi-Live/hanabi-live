@@ -15,7 +15,7 @@ export function PregameChat(): React.JSX.Element {
 
   return (
     <>
-      <h3 className="lobby-title">Pre-game Chat</h3>
+      <h3 className="tw:text-[1.3em]">Pre-game Chat</h3>
       <ChatTextBox
         id="lobby-chat-pregame-text"
         lines={lines}
@@ -50,9 +50,10 @@ export function PregameChat(): React.JSX.Element {
       />
       <ChatInput id={PREGAME_CHAT_INPUT_ID} ref={inputRef} room="table" />
       <div
-        className="istyping"
+        className="tw:relative tw:bottom-[0.3em] tw:h-0 tw:text-[0.75em]"
         // The message escapes the names.
         dangerouslySetInnerHTML={{ __html: getTypingMessage(typing) }}
+        id="lobby-chat-pregame-istyping"
       />
     </>
   );

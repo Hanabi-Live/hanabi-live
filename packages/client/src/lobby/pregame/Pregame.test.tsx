@@ -123,7 +123,7 @@ describe("Pregame", () => {
 
     const spectators = document.querySelector("#lobby-pregame-spectators")!;
     expect(spectators.textContent).toContain("me (\u{1F575}\u{FE0F} bob)");
-    expect(screen.getByText("dave").className).toBe("friend");
+    expect(screen.getByText("dave").className).toBe("tw:text-friend");
   });
 
   test("a spectator shadows a player, and stops shadowing them", () => {

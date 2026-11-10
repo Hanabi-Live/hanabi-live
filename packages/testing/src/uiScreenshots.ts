@@ -152,7 +152,7 @@ function getStates({
       path: "/",
       loggedIn: true,
       prepare: async (page) => {
-        await page.click(".emoji-button");
+        await page.click("#lobby-chat-input + button");
       },
     },
     {

@@ -50,7 +50,7 @@ export function UsersList(): React.JSX.Element {
   );
 
   return (
-    <table className="slim-table" id="lobby-users-table">
+    <table className="tw:mb-2 tw:[&_td]:p-1" id="lobby-users-table">
       <thead>
         <tr>
           <th>Name</th>

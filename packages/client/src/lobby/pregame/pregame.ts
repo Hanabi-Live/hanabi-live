@@ -35,7 +35,7 @@ export function show(): void {
   // Add an extra chat box.
   $("#lobby-chat-container").removeClass("col-8");
   $("#lobby-chat-container").addClass("col-4");
-  $("#lobby-chat-pregame-container").show();
+  $("#lobby-chat-pregame-container").removeClass("hidden");
 
   // Clear the pregame chat box of any previous content.
   store.dispatch(pregameChatCleared());
@@ -86,7 +86,7 @@ export function hide(updateURL = true): void {
   // Remove the extra chat box.
   $("#lobby-chat-container").addClass("col-8");
   $("#lobby-chat-container").removeClass("col-4");
-  $("#lobby-chat-pregame-container").hide();
+  $("#lobby-chat-pregame-container").addClass("hidden");
 
   // Clear the typing list.
   store.dispatch(typingCleared());

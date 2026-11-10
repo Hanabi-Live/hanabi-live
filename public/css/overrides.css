@@ -3,13 +3,46 @@
   display: none;
 }
 
+/* "hidden-<width>" hides an element on screens that are this wide or narrower. */
+@media screen and (max-width: 1280px) {
+  .hidden-1280 {
+    display: none;
+  }
+}
+
+@media screen and (max-width: 840px) {
+  .hidden-840 {
+    display: none;
+  }
+}
+
+@media screen and (max-width: 736px) {
+  .hidden-736 {
+    display: none;
+  }
+}
+
+@media screen and (max-width: 640px) {
+  .hidden-640 {
+    display: none;
+  }
+}
+
+@media screen and (max-width: 530px) {
+  .hidden-530 {
+    display: none;
+  }
+}
+
 .margin0 {
   margin: 0;
 }
 
-/* A disabled button has the same colors everywhere, such as in the header. */
+/* A disabled button looks the same everywhere, such as in the header. */
 .button.disabled,
 .button:disabled {
   background-color: var(--button-disabled-bg);
   color: var(--button-disabled-text);
+  cursor: not-allowed;
+  opacity: 0.25;
 }

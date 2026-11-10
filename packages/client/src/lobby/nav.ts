@@ -86,9 +86,9 @@ export function init(): void {
     // Show bottom half for small screens.
     $("#lobby-bottom-half").addClass("toggle-active");
     // Show online and hide chat, pregame chat.
-    $("#lobby-online-users").removeClass("narrow-screen-hidden");
-    $("#lobby-chat-container").addClass("narrow-screen-hidden");
-    $("#lobby-chat-pregame-container").addClass("narrow-screen-hidden");
+    $("#lobby-online-users").removeClass("hidden-640");
+    $("#lobby-chat-container").addClass("hidden-640");
+    $("#lobby-chat-pregame-container").addClass("hidden-640");
   });
 
   // The "Chat & Users" bottom screen toggle button.
@@ -102,8 +102,8 @@ export function init(): void {
     // Show bottom half for small screens.
     $("#lobby-bottom-half").addClass("toggle-active");
     // Show chat and hide online, pregame chat.
-    $("#lobby-chat-container").removeClass("narrow-screen-hidden");
-    $("#lobby-online-users").addClass("narrow-screen-hidden");
+    $("#lobby-chat-container").removeClass("hidden-640");
+    $("#lobby-online-users").addClass("hidden-640");
   });
 
   // The "Pregame Chat" bottom screen toggle button.
@@ -117,10 +117,10 @@ export function init(): void {
     // Show bottom half for small screens.
     $("#lobby-bottom-half").addClass("toggle-active");
     // Show chat, pregame chat and hide online.
-    $("#lobby-chat-container").removeClass("narrow-screen-hidden");
-    $("#lobby-chat-pregame-container").removeClass("narrow-screen-hidden");
-    $("#lobby-chat-pregame").removeClass("narrow-screen-hidden");
-    $("#lobby-online-users").addClass("narrow-screen-hidden");
+    $("#lobby-chat-container").removeClass("hidden-640");
+    $("#lobby-chat-pregame-container").removeClass("hidden-640");
+    $("#lobby-chat-pregame").removeClass("hidden-640");
+    $("#lobby-online-users").addClass("hidden-640");
     // Fix chat margin for small screens.
     $("#lobby-chat-container")
       .addClass("pregame-chat-layout")

@@ -29,9 +29,9 @@ export function onSpectatorsChanged(data: {
       const name = escapeHtml(spectator.username);
       let nameEntry = "<li>";
       if (spectator.username === globals.metadata.ourUsername) {
-        nameEntry += `<span class="name-me">${name}</span>`;
+        nameEntry += `<span class="tw:text-name-me">${name}</span>`;
       } else if (globals.lobby.friends.includes(spectator.username)) {
-        nameEntry += `<span class="friend">${name}</span>`;
+        nameEntry += `<span class="tw:text-friend">${name}</span>`;
       } else {
         nameEntry += name;
       }

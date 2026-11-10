@@ -24,7 +24,7 @@ export function OptionIcon({
   return (
     <li className="tw:mr-2 tw:inline-block tw:pl-0">
       <i
-        className={label === undefined ? icon : `${icon} icon-label`}
+        className={label === undefined ? icon : `${icon} tw:mr-[0.4em]`}
         ref={ref}
       />
       {label}

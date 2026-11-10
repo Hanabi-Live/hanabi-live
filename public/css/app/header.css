@@ -16,10 +16,6 @@
   cursor: pointer;
 }
 
-#header a.disabled {
-  cursor: not-allowed;
-}
-
 #header h1 {
   color: inherit;
   height: inherit;

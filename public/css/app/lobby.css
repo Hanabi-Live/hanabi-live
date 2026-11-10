@@ -178,10 +178,6 @@ a.toggle-active {
     padding-left: 2em;
   }
 
-  .narrow-screen-hidden {
-    display: none !important;
-  }
-
   .row > #lobby-chat-container {
     width: 100%;
   }

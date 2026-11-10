@@ -43,7 +43,7 @@ export function ChatTextBox({
 
   return (
     <div
-      className="lobby-chat-text-box"
+      className="tw:mb-4 tw:min-h-0 tw:flex-1 tw:overflow-y-auto tw:border tw:border-solid tw:border-border tw:bg-(--chat-bg) tw:px-2 tw:wrap-break-word"
       id={id}
       onClick={onClick}
       onScroll={(event) => {
@@ -94,22 +94,23 @@ export function ChatInput({
   useEffect(() => attachChatInput(ref.current!, room), [ref, room]);
 
   return (
-    <div className="chat-input-container">
+    <div className="tw:relative">
       <input
         autoComplete="off"
+        className="tw:pr-10"
         id={id}
         placeholder="Chat"
         ref={ref}
         type="text"
       />
       <button
-        className="emoji-button"
+        className="tw:absolute tw:top-1/2 tw:right-4 tw:-translate-y-1/2 tw:cursor-pointer tw:border-none tw:bg-transparent tw:p-0 tw:text-text tw:hover:text-text-strong"
         onClick={() => {
           openEmojiPicker(ref.current!);
         }}
         type="button"
       >
-        <i className="fas fa-smile" />
+        <i className="fas fa-smile tw:text-[1.6em]" />
       </button>
     </div>
   );

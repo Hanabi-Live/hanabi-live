@@ -9,8 +9,8 @@ import { getHTMLInputElement } from "../../utils";
 import type { UserRow } from "./usersSlice";
 
 const NAME_CLASSES = {
-  self: "name-me",
-  friend: "friend",
+  self: "tw:text-name-me",
+  friend: "tw:text-friend",
   other: undefined,
 } as const satisfies Record<UserRow["kind"], string | undefined>;
 

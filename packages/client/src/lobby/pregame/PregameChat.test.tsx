@@ -61,9 +61,9 @@ describe("PregameChat", () => {
       document.querySelector("#lobby-chat-pregame-text")?.textContent,
     ).toContain("ready?");
     // A message from someone means that they stopped typing.
-    expect(document.querySelector(".istyping")?.textContent).toBe(
-      "bob is typing...",
-    );
+    expect(
+      document.querySelector("#lobby-chat-pregame-istyping")?.textContent,
+    ).toBe("bob is typing...");
   });
 
   test("fills the input with a suggested command and applies a suggestion", () => {

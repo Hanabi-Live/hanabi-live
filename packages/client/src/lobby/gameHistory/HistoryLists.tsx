@@ -36,8 +36,8 @@ export function HistoryList(): React.JSX.Element {
 
   if (games.length === 0) {
     return (
-      <div className="align-center-v tw:h-full">
-        <h3 className="align-center" id="lobby-history-no">
+      <div className="tw:flex tw:h-full tw:items-center tw:justify-center">
+        <h3 className="tw:text-center" id="lobby-history-no">
           {loading ? "Loading history..." : "No game history. Play some games!"}
         </h3>
       </div>
@@ -71,16 +71,16 @@ export function HistoryList(): React.JSX.Element {
         </tbody>
       </table>
 
-      <div className="align-center">
+      <div className="tw:text-center">
         {(totalGames === undefined || games.length < totalGames) && (
           <button
-            className="button align-center"
+            className="button"
             id="lobby-history-show-more"
             onClick={showMore}
             style={{ marginRight: "2em" }}
             type="submit"
           >
-            <i className="fas fa-chevron-circle-down icon-label" />
+            <i className="fas fa-chevron-circle-down tw:mr-[0.625em]" />
             Show More History
           </button>
         )}
@@ -91,11 +91,11 @@ export function HistoryList(): React.JSX.Element {
           target="_blank"
         >
           <button
-            className="button align-center"
+            className="button"
             id="lobby-history-show-all-button"
             type="button"
           >
-            <i className="fas fa-history icon-label" />
+            <i className="fas fa-history tw:mr-[0.625em]" />
             All History
           </button>
         </a>
@@ -200,18 +200,14 @@ export function OtherScoresList(): React.JSX.Element {
       {shown !== undefined
         && shown.total !== undefined
         && shown.games.length < shown.total && (
-          <div className="align-center">
+          <div className="tw:text-center">
             <button
-              className={
-                shown.loading
-                  ? "button align-center disabled"
-                  : "button align-center"
-              }
+              className={shown.loading ? "button disabled" : "button"}
               id="lobby-history-other-scores-show-more"
               onClick={shown.loading ? undefined : showMoreOtherScores}
               type="submit"
             >
-              <i className="fas fa-chevron-circle-down icon-label" />
+              <i className="fas fa-chevron-circle-down tw:mr-[0.625em]" />
               Show More Scores
             </button>
           </div>
