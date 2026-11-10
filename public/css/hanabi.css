@@ -1973,8 +1973,10 @@ table.history {
 .history .table-filters input {
   width: 5em;
   height: auto;
+  background-color: var(--surface);
   border: 1px solid var(--border);
   border-radius: 6px;
+  color: inherit;
 }
 
 .history-bullets {
