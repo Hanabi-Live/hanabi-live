@@ -101,10 +101,10 @@ pub(super) fn is_variant_discovery(command: &Command) -> bool {
             == Some(TableChatCommand::FindVariant)
     })
 }
+/// A variant search: who asked, and whose scores it compares.
 pub(super) struct VariantDiscovery {
     pub(super) requester: Arc<Session>,
     pub(super) participants: Vec<(UserId, String)>,
-    pub(super) query: std::pin::Pin<Box<dyn Future<Output = Result<Option<String>>> + Send>>,
 }
 
 impl TableActor {
@@ -128,10 +128,14 @@ impl TableActor {
         );
         Ok(participants)
     }
+    /// Prepares a variant search. Returns it with the query that picks the variant.
     pub(super) fn prepare_discovery(
         &self,
         requester: Arc<Session>,
-    ) -> CommandResult<VariantDiscovery> {
+    ) -> CommandResult<(
+        VariantDiscovery,
+        impl Future<Output = Result<Option<String>>> + Send + 'static,
+    )> {
         ensure_or_reject!(
             self.attending(&requester),
             "You are not at an available table."
@@ -140,7 +144,7 @@ impl TableActor {
         let count = participants.len();
         let ids = participants.iter().map(|(id, _)| id.0).collect::<Vec<_>>();
         let store = self.store.clone();
-        let query = Box::pin(async move {
+        let query = async move {
             let rows = sqlx::query!(
                 r#"SELECT variant_id,CASE $2::smallint WHEN 2 THEN best_score2 WHEN 3 THEN best_score3
                    WHEN 4 THEN best_score4 WHEN 5 THEN best_score5 ELSE best_score6 END AS "score!"
@@ -166,12 +170,14 @@ impl TableActor {
             } else {
                 Some(missing[rand::random_range(0..missing.len())].name.clone())
             })
-        });
-        Ok(VariantDiscovery {
-            requester,
-            participants,
+        };
+        Ok((
+            VariantDiscovery {
+                requester,
+                participants,
+            },
             query,
-        })
+        ))
     }
     pub(super) async fn finish_discovery(
         &mut self,

@@ -8,6 +8,7 @@ use crate::{
 use anyhow::Result;
 use hanabi_protocol::{PregameStats, UserId};
 use sqlx::PgPool;
+use std::collections::BTreeMap;
 
 /// A pregame player with their statistics on `variant`.
 pub(crate) async fn player(pool: &PgPool, identity: &Identity, variant: u32) -> Result<Player> {
@@ -21,18 +22,54 @@ pub(crate) async fn player(pool: &PgPool, identity: &Identity, variant: u32) -> 
 
 /// A player's statistics on `variant`, as pregame tables show them.
 pub(crate) async fn pregame_stats(pool: &PgPool, id: UserId, variant: u32) -> Result<PregameStats> {
-    let count = crate::database::normal_game_count(pool, id, false).await?;
-    let row = sqlx::query_as!(
+    Ok(pregame_stats_of(pool, &[id], variant)
+        .await?
+        .remove(&id)
+        .unwrap_or_else(zero_stats))
+}
+
+/// Sets the statistics of each pregame player on `variant`, reading all of them at once.
+pub(crate) async fn refresh_players(
+    pool: &PgPool,
+    players: &mut [Player],
+    variant: u32,
+) -> Result<()> {
+    let ids = players.iter().map(|p| p.id).collect::<Vec<_>>();
+    let mut stats = pregame_stats_of(pool, &ids, variant).await?;
+    for player in players {
+        player.stats = stats.remove(&player.id).unwrap_or_else(zero_stats);
+    }
+    Ok(())
+}
+
+/// The statistics on `variant` of the users in `ids`, as pregame tables show them.
+async fn pregame_stats_of(
+    pool: &PgPool,
+    ids: &[UserId],
+    variant: u32,
+) -> Result<BTreeMap<UserId, PregameStats>> {
+    let counts = crate::database::normal_game_counts(pool, ids, false).await?;
+    let raw_ids = ids.iter().map(|id| id.0).collect::<Vec<_>>();
+    let rows = sqlx::query_as!(
         crate::database::UserStats,
         "SELECT user_id,variant_id,num_games,best_score2,best_score2_mod,best_score3,best_score3_mod,
          best_score4,best_score4_mod,best_score5,best_score5_mod,best_score6,best_score6_mod
-         FROM user_stats WHERE user_id=$1 AND variant_id=$2",
-        id.0,
+         FROM user_stats WHERE user_id=ANY($1) AND variant_id=$2",
+        &raw_ids,
         i16::try_from(variant)?
     )
-    .fetch_optional(pool)
-    .await?;
-    Ok(player_stats(count, row.as_ref()))
+    .fetch_all(pool)
+    .await?
+    .into_iter()
+    .map(|row| (UserId(row.user_id), row))
+    .collect::<BTreeMap<_, _>>();
+    Ok(ids
+        .iter()
+        .map(|id| {
+            let count = counts.get(id).copied().unwrap_or(0);
+            (*id, player_stats(count, rows.get(id)))
+        })
+        .collect())
 }
 
 /// Updates the seed, player, and variant statistics with a finished game.

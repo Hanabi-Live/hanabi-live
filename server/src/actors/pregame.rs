@@ -249,10 +249,7 @@ impl TableActor {
         let removed = players.split_off(players.len().min(max_players));
         *countdown = None;
         *automatic_start = None;
-        for player in players.iter_mut() {
-            player.stats =
-                crate::stats::pregame_stats(&self.store.primary, player.id, variant.id).await?;
-        }
+        crate::stats::refresh_players(&self.store.primary, players, variant.id).await?;
         ensure_or_reject!(
             session.active(),
             "Session changed while refreshing table options"

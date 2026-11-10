@@ -1093,7 +1093,7 @@ async fn joining_a_table_plays_a_sound_for_its_other_players_once_per_burst() ->
         let mut sounds = vec![];
         for index in [1, 2] {
             actor
-                .join(h.users[index].clone(), &BTreeSet::new(), String::new())
+                .join(h.users[index].clone(), &BTreeSet::new(), None)
                 .await?;
             let mut heard = vec![];
             while let Ok(notification) = notifications.try_recv() {
@@ -1343,6 +1343,44 @@ async fn trying_to_join_a_full_table_tells_its_players_once() -> Result<()> {
             .filter(|c| c.message.msg.contains("tried to join"))
             .count();
         ensure!(notices == 1, "The table was told {notices} times");
+        Ok(())
+    }
+    .await;
+    h.close().await?;
+    outcome
+}
+
+#[tokio::test]
+async fn joining_a_table_with_a_password_checks_the_password() -> Result<()> {
+    let Some(mut h) = Harness::new(&["Alice", "Bob"]).await? else {
+        return Ok(());
+    };
+    let outcome = async {
+        h.send(
+            0,
+            "tableCreate",
+            json!({"name":"Private","options":{},"maxPlayers":5,"password":"secret"}),
+        )
+        .await?;
+        let id = h.receive(0, "joined").await?["tableID"].clone();
+        let error = h
+            .send(1, "tableJoin", json!({"tableID":id,"password":"wrong"}))
+            .await
+            .err()
+            .context("Bob joined with the wrong password")?;
+        ensure!(
+            error.to_string().contains("Incorrect table password"),
+            "Unexpected error: {error}"
+        );
+        h.send(1, "tableJoin", json!({"tableID":id,"password":"secret"}))
+            .await?;
+        let (table, _) = h
+            .snapshot(TableId(id.as_u64().context("Missing table ID")?))
+            .await?;
+        ensure!(
+            table.players().iter().map(|p| p.id).collect::<Vec<_>>() == [UserId(1), UserId(2)],
+            "Bob did not join with the right password"
+        );
         Ok(())
     }
     .await;

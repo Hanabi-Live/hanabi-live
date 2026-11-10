@@ -2,7 +2,8 @@ use super::request;
 use super::{
     Allocation, Attendance, Command, Effects, GameInfo, HubCommand, PREGAME_RECONNECT_GRACE,
     REPLAY_RECONNECT_GRACE, Reply, TableActor, TableCommand, TableView,
-    chat::{TABLE_CHAT_LIMIT, TABLE_CHAT_WINDOW, VariantDiscovery, is_variant_discovery},
+    chat::{TABLE_CHAT_LIMIT, TABLE_CHAT_WINDOW, is_variant_discovery},
+    pending::{Completed, Pending},
     pregame::remove_pregame_players,
     setup::wire_table_options,
     wire::int,
@@ -622,22 +623,26 @@ impl TableActor {
         mut receiver: mpsc::Receiver<TableCommand>,
         initial: Option<(Arc<Session>, Vec<String>, Reply)>,
     ) {
-        let mut pregame_refresh =
-            if initial.is_none() && matches!(self.table.phase, Phase::Pregame { .. }) {
-                let pool = self.store.lobby_reads.clone();
-                let users = self
-                    .table
-                    .players()
-                    .iter()
-                    .map(|player| player.id)
-                    .collect::<Vec<_>>();
-                Some(Box::pin(async move {
-                    let counts = crate::database::normal_game_counts(&pool, &users, false).await?;
-                    Ok::<_, anyhow::Error>((users, counts))
-                }))
-            } else {
-                None
-            };
+        let mut pending = Pending::default();
+        if initial.is_none() && matches!(self.table.phase, Phase::Pregame { .. }) {
+            let pool = self.store.lobby_reads.clone();
+            let users = self
+                .table
+                .players()
+                .iter()
+                .map(|player| player.id)
+                .collect::<Vec<_>>();
+            pending.start(
+                async move {
+                    Completed::GameCounts(
+                        crate::database::normal_game_counts(&pool, &users, false)
+                            .await
+                            .map(|counts| (users, counts)),
+                    )
+                },
+                None,
+            );
+        }
         if let Some((session, warnings, reply)) = initial {
             let result = self.initialize(session, warnings).await;
             let _ = reply.send(result);
@@ -646,24 +651,29 @@ impl TableActor {
         if self.store.check_state().is_ok() {
             self.run_timers().await;
         }
-        let mut discovery: Option<(VariantDiscovery, Reply)> = None;
+        // Whether a variant search is pending. A table runs one at a time.
+        let mut discovering = false;
         loop {
             if self.retired {
                 break;
             }
-            let discovering = discovery.is_some();
             let timer = self.next_timer();
             tokio::select! {
-                result = async { pregame_refresh.as_mut().expect("enabled statistics refresh").await }, if pregame_refresh.is_some() => {
-                    pregame_refresh = None;
-                    if let Err(error) = self.apply_game_counts(result).await {
-                        tracing::warn!("Deferred pregame statistics failed for table {}: {error:#}", self.table.id);
+                (completed, reply) = pending.next() => {
+                    if matches!(completed, Completed::Discovery { .. }) {
+                        discovering = false;
                     }
-                }
-                selected = async { discovery.as_mut().expect("enabled discovery").0.query.as_mut().await }, if discovering => {
-                    let (query, reply) = discovery.take().expect("completed discovery");
-                    let result = self.finish_discovery(query, selected).await;
-                    let _ = reply.send(result);
+                    let result = self.complete(completed).await;
+                    match reply {
+                        Some(reply) => {
+                            let _ = reply.send(result);
+                        }
+                        None => {
+                            if let Err(error) = result {
+                                tracing::warn!("Table {} background work failed: {error}", self.table.id);
+                            }
+                        }
+                    }
                 }
                 command = receiver.recv() => match command {
                     None => break,
@@ -677,12 +687,26 @@ impl TableActor {
                                 let _ = reply.send(Err(rejection!("A variant search is already pending at this table.")));
                             } else {
                                 match self.prepare_discovery(session) {
-                                    Ok(query) => discovery = Some((query, reply)),
+                                    Ok((discovery, query)) => {
+                                        discovering = true;
+                                        pending.start(
+                                            async move {
+                                                Completed::Discovery { discovery, selected: query.await }
+                                            },
+                                            Some(reply),
+                                        );
+                                    }
                                     Err(error) => {
                                         let _ = reply.send(Err(error));
                                     }
                                 }
                             }
+                            continue;
+                        }
+                        if session.active()
+                            && let Some(check) = self.start_password_check(&session, &blocks, &command)
+                        {
+                            pending.start(check, Some(reply));
                             continue;
                         }
                         let result = if session.active() {
@@ -703,9 +727,7 @@ impl TableActor {
                 }
             }
         }
-        if let Some((_, reply)) = discovery.take() {
-            let _ = reply.send(Err(rejection!("Table closed during variant discovery")));
-        }
+        pending.close();
         receiver.close();
         while let Some(command) = receiver.recv().await {
             match command {
@@ -719,6 +741,25 @@ impl TableActor {
                 TableCommand::Client { reply, .. } => {
                     let _ = reply.send(Err(rejection!("Table closed")));
                 }
+            }
+        }
+    }
+    /// Applies work that finished outside the table's loop.
+    async fn complete(&mut self, completed: Completed) -> CommandResult<()> {
+        match completed {
+            Completed::GameCounts(result) => self.apply_game_counts(result).await,
+            Completed::Discovery {
+                discovery,
+                selected,
+            } => self.finish_discovery(discovery, selected).await,
+            Completed::Password {
+                session,
+                blocks,
+                hash,
+                valid,
+            } => {
+                self.finish_password_check(session, &blocks, hash, valid)
+                    .await
             }
         }
     }
@@ -927,7 +968,8 @@ impl TableActor {
             message.name()
         );
         match message {
-            ClientMessage::TableJoin(r) => self.join(session, blocks, r.password).await,
+            // A join to a table with a password starts its password check in `run` instead.
+            ClientMessage::TableJoin(_) => self.join(session, blocks, None).await,
             ClientMessage::TableReattend(_) => self.reattend(session, blocks, false, None).await,
             ClientMessage::TableSpectate(r) => {
                 self.reattend(

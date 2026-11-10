@@ -1,6 +1,7 @@
 use super::{
-    Attendance, TableActor,
+    Attendance, Blocks, Command, TableActor,
     chat::table_notice,
+    pending::Completed,
     pregame::{AUTOMATIC_START_ABORTED, AUTOMATIC_START_CANCELED, remove_pregame_players},
 };
 use crate::errors::CommandResult;
@@ -11,7 +12,7 @@ use crate::{
 use anyhow::Context;
 use chrono::Utc;
 use hanabi_protocol::UserId;
-use hanabi_protocol::{LobbySound, SoundLobby, Status, TableRequest, TableStarted};
+use hanabi_protocol::{ClientMessage, LobbySound, SoundLobby, Status, TableRequest, TableStarted};
 use std::{
     collections::{BTreeSet, HashSet},
     sync::Arc,
@@ -36,12 +37,9 @@ impl TableActor {
         );
         Ok(())
     }
-    pub(super) async fn join(
-        &mut self,
-        session: Arc<Session>,
-        blocks: &BTreeSet<UserId>,
-        password: String,
-    ) -> CommandResult<()> {
+    /// Checks that a user may join this table, apart from its password. Returns whether the table
+    /// is full.
+    fn join_allowed(&self, session: &Session, blocks: &BTreeSet<UserId>) -> CommandResult<bool> {
         let Phase::Pregame {
             players, kicked, ..
         } = &self.table.phase
@@ -56,23 +54,77 @@ impl TableActor {
             !players.iter().any(|p| p.id == session.user),
             "You have already joined this table."
         );
-        let full = players.len() >= self.table.max_players;
         self.ensure_not_blocked(blocks, "You cannot join this table.")?;
-        if full {
+        Ok(players.len() >= self.table.max_players)
+    }
+    /// Starts the password check of a join to a table with a password, which can take seconds
+    /// while other password checks run. Returns `None` for a join that needs no check, or that
+    /// fails without one; `join` then answers it.
+    pub(super) fn start_password_check(
+        &self,
+        session: &Arc<Session>,
+        blocks: &Blocks,
+        command: &Command,
+    ) -> Option<impl Future<Output = Completed> + Send + 'static> {
+        let Command::Client(message) = command else {
+            return None;
+        };
+        let ClientMessage::TableJoin(request) = &**message else {
+            return None;
+        };
+        let hash = self.table.password_hash.clone()?;
+        if !matches!(self.join_allowed(session, blocks), Ok(false)) {
+            return None;
+        }
+        let (session, blocks, password) =
+            (session.clone(), blocks.clone(), request.password.clone());
+        Some(async move {
+            let valid = crate::accounts::verify_password(&session.ip, password, hash.clone()).await;
+            Completed::Password {
+                session,
+                blocks,
+                hash,
+                valid,
+            }
+        })
+    }
+    /// Finishes a join whose password check has finished.
+    pub(super) async fn finish_password_check(
+        &mut self,
+        session: Arc<Session>,
+        blocks: &BTreeSet<UserId>,
+        hash: String,
+        valid: anyhow::Result<bool>,
+    ) -> CommandResult<()> {
+        if !valid? {
+            tracing::warn!(
+                "Incorrect password for table {} by account {} from IP: {}",
+                self.table.id,
+                session.user,
+                session.ip
+            );
+            reject!("Incorrect table password");
+        }
+        ensure_or_reject!(session.active(), "Session changed during join");
+        self.join(session, blocks, Some(&hash)).await
+    }
+    /// Adds a user to the pregame. A table with a password needs `checked_hash`: the password hash
+    /// that the user's password matched.
+    pub(super) async fn join(
+        &mut self,
+        session: Arc<Session>,
+        blocks: &BTreeSet<UserId>,
+        checked_hash: Option<&str>,
+    ) -> CommandResult<()> {
+        if self.join_allowed(&session, blocks)? {
             return self.join_full(&session).await;
         }
         if let Some(hash) = &self.table.password_hash {
-            let hash = hash.clone();
-            let valid = crate::accounts::verify_password(&session.ip, password, hash).await?;
-            if !valid {
-                tracing::warn!(
-                    "Incorrect password for table {} by account {} from IP: {}",
-                    self.table.id,
-                    session.user,
-                    session.ip
-                );
-                reject!("Incorrect table password");
-            }
+            ensure_or_reject!(checked_hash.is_some(), "Incorrect table password");
+            ensure_or_reject!(
+                checked_hash == Some(hash.as_str()),
+                "The table password changed. Please try again."
+            );
         }
         let variant = hanabi_engine::get_variant(&self.table.options.variant_name)?;
         let player =

@@ -464,10 +464,7 @@ impl TableActor {
             crate::stats::refresh(&self.store.primary, snapshot).await?;
         }
         let variant = hanabi_engine::get_variant(&self.table.options.variant_name)?;
-        for player in &mut players {
-            player.stats =
-                crate::stats::pregame_stats(&self.store.primary, player.id, variant.id).await?;
-        }
+        crate::stats::refresh_players(&self.store.primary, &mut players, variant.id).await?;
         ensure_or_reject!(
             session.active(),
             "Session changed while refreshing restart statistics"

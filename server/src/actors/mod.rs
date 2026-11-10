@@ -33,6 +33,7 @@ mod tests;
 mod chat;
 mod hub;
 mod membership;
+mod pending;
 mod play;
 mod pregame;
 mod replay;
