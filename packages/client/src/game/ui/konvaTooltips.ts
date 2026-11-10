@@ -76,9 +76,9 @@ export function show(element: NodeWithTooltip): void {
       width = element.width();
     }
   }
+  const { y, height } = element.getClientRect();
   const tooltip = `#tooltip-${element.tooltipName}`;
-  const tooltipX = pos.x + width / 2;
-  tooltips.setPosition(tooltip, tooltipX, pos.y);
+  tooltips.setPosition(tooltip, { x: pos.x, y, width, height });
   tooltips.open(tooltip);
 }
 

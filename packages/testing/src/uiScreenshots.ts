@@ -76,8 +76,6 @@ type Theme = (typeof THEMES)[number];
 /** States are set up at this size, so that every button is visible. */
 const SETUP_SIZE = SIZES[0];
 
-const NARROWEST_SIZE = SIZES.at(-1) ?? SETUP_SIZE;
-
 /** Long enough for the transitions of the stylesheets to finish. */
 const SETTLE_MILLISECONDS = 400;
 
@@ -328,11 +326,6 @@ function getStates({
         await openReplay(page, replayID);
       },
       hover: async (page) => {
-        // On the narrowest screen, the tooltip opens below the deck, under the pointer, which
-        // closes it again at once.
-        if (page.viewportSize()?.width === NARROWEST_SIZE.width) {
-          return;
-        }
         await hoverCanvasElement(page, ["deck"]);
         await page.locator(".game-tooltips-ul").waitFor();
       },

@@ -122,21 +122,14 @@ export function update(card: HanabiCard, text: string): void {
 export function show(card: HanabiCard): void {
   const tooltip = `#tooltip-${card.tooltipName}`;
 
-  // We want the tooltip to appear above the card by default. Use the on-screen bounds so that cards
-  // in rotated hands are measured correctly.
+  // The tooltip appears above the card, unless the card is too close to the top of the screen. Use
+  // the on-screen bounds so that cards in rotated hands are measured correctly.
   const rect = card.getClientRect({});
-  const posX = rect.x + rect.width / 2;
-  let posY = rect.y;
-  tooltips.setSide(tooltip, "top");
-
-  // Flip the tooltip if it is too close to the top of the screen.
-  if (posY < TOOLTIP_FLIP_THRESHOLD_PX) {
-    posY = rect.y + rect.height;
-    tooltips.setSide(tooltip, "bottom");
-  }
-
-  // Update the tooltip position.
-  tooltips.setPosition(tooltip, posX, posY);
+  tooltips.setSide(
+    tooltip,
+    rect.y < TOOLTIP_FLIP_THRESHOLD_PX ? "bottom" : "top",
+  );
+  tooltips.setPosition(tooltip, rect);
 
   // Update the tooltip content.
   let shownNote = get(card.order, false, true);

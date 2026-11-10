@@ -2,7 +2,9 @@
   height: 100%;
 }
 
+/* The anchors of the in-game tooltips cover canvas elements, but the canvas still gets the pointer. */
 #game-tooltips > div {
+  pointer-events: none;
   position: absolute;
 }
 

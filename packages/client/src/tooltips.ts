@@ -80,10 +80,19 @@ export function setContent(selector: string, content: string): void {
   getTooltip(selector)?.setContent(content);
 }
 
-export function setPosition(selector: string, x: number, y: number): void {
+/**
+ * Puts an in-game tooltip's anchor over an element of the game canvas, so that the tooltip opens
+ * above or below the element. A tooltip over the element would take the pointer from it and close.
+ */
+export function setPosition(
+  selector: string,
+  rect: Readonly<Pick<DOMRect, "x" | "y" | "width" | "height">>,
+): void {
   const anchor = getHTMLElement(selector);
-  anchor.style.left = `${x}px`;
-  anchor.style.top = `${y}px`;
+  anchor.style.left = `${rect.x}px`;
+  anchor.style.top = `${rect.y}px`;
+  anchor.style.width = `${rect.width}px`;
+  anchor.style.height = `${rect.height}px`;
 }
 
 export function setSide(selector: string, side: TooltipSide): void {
