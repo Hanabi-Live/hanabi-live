@@ -7,7 +7,7 @@
 */
 
 /*
-  The colors of both themes, and the stacking order. Rules use these variables instead of literal
+  The colors of both themes, the lobby cursors, and the stacking order. Rules use these variables instead of literal
   values, so that the dark theme only has to change the values here. "packages/client/src/theme.ts" reads the canvas colors,
   and "packages/client/src/tailwind.css" makes the general colors available to Tailwind.
 */
@@ -117,6 +117,14 @@
 
   /* The corner radius of panels, modals, tooltips, buttons, and form fields */
   --radius: 6px;
+
+  /* The lobby's custom cursors, with their hot spots */
+  --cursor-rejoin: url("/public/img/cursors/rejoin.svg") 12 12, pointer;
+  --cursor-join: url("/public/img/cursors/join.svg") 12 10, pointer;
+  --cursor-full: url("/public/img/cursors/full.svg") 12 12, pointer;
+  --cursor-spectate: url("/public/img/cursors/spectate.svg") 14 12, pointer;
+  --cursor-shadow: url("/public/img/cursors/shadow.svg") 12 12, pointer;
+  --cursor-un-shadow: url("/public/img/cursors/un-shadow.svg") 12 12, pointer;
 
   /*
     Stacking order, from back to front. Other "z-index" values only order the parts of one

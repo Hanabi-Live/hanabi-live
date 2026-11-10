@@ -24,6 +24,9 @@ const MAX_OPTION_ICONS = 3;
 /** Takes the number at the end of a seed, such as "12" from "p2v0s12". */
 const SEED_NUMBER_REGEX = /p\d+v\d+[els](\d+)/u;
 
+/** A larger icon inside a table button. */
+const BUTTON_ICON = "tw:relative tw:top-[0.22em] tw:text-[1.5em]";
+
 export function HistoryList(): React.JSX.Element {
   const games = useAppSelector(selectHistoryGames);
   const loading = useAppSelector((state) => state.history.loading);
@@ -41,7 +44,10 @@ export function HistoryList(): React.JSX.Element {
   }
 
   return (
-    <div className="lobby-table-container" id="lobby-history-table-container">
+    <div
+      className="tw:h-full tw:overflow-y-auto"
+      id="lobby-history-table-container"
+    >
       <table className="alt">
         <thead>
           <tr>
@@ -147,7 +153,7 @@ function HistoryRow({
           }
           type="button"
         >
-          <i className="fas fa-chart-bar lobby-button-icon tw:mr-[0.4em]" />
+          <i className={`fas fa-chart-bar ${BUTTON_ICON} tw:mr-[0.4em]`} />
           {otherGameCount}
         </button>
       </td>
@@ -163,7 +169,7 @@ export function OtherScoresList(): React.JSX.Element {
     variantName === undefined ? 0 : getVariant(variantName).maxScore;
 
   return (
-    <div className="lobby-table-container">
+    <div className="tw:h-full tw:overflow-y-auto">
       <table className="alt">
         <thead>
           <tr>
@@ -254,7 +260,8 @@ function HistoryOptions({ options }: { readonly options: Options }) {
   const items = getOptionItems(options);
   const tooltip = items
     .map(
-      ({ icon, text }) => `<li><i class="${icon} icon-label"></i>${text}</li>`,
+      ({ icon, text }) =>
+        `<li class="tw:mb-[0.3em] tw:pl-[0.2em] tw:last:mb-0"><i class="${icon} icon-label"></i>${text}</li>`,
     )
     .join("");
   useEffect(
@@ -263,7 +270,7 @@ function HistoryOptions({ options }: { readonly options: Options }) {
         ? undefined
         : tooltips.attach(
             ref.current!,
-            `<ul class="lobby-history-table-tooltip-ul">${tooltip}</ul>`,
+            `<ul class="tw:m-0 tw:list-none tw:p-0">${tooltip}</ul>`,
           ),
     [tooltip],
   );
@@ -352,7 +359,7 @@ function ReplayButton({
       type="button"
     >
       <i
-        className={`fas ${visibility === "solo" ? "fa-eye" : "fa-users"} lobby-button-icon`}
+        className={`fas ${visibility === "solo" ? "fa-eye" : "fa-users"} ${BUTTON_ICON}`}
       />
     </button>
   );

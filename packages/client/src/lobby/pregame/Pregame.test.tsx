@@ -136,10 +136,8 @@ describe("Pregame", () => {
     });
 
     // We are already shadowing Bob.
-    const bob = document.querySelector(".un-shadow")!;
-    expect(bob.textContent).toContain("bob");
     act(() => {
-      (bob as HTMLElement).click();
+      screen.getByText("bob \u{1F575}\u{FE0F}").click();
     });
     expect(send).toHaveBeenLastCalledWith("tableSpectate", {
       tableID: TABLE_ID,

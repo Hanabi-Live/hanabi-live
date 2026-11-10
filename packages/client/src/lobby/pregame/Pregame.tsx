@@ -10,6 +10,7 @@ import { H_GROUP_LEVEL_URL_PREFIX } from "../../constants";
 import { useAppSelector } from "../../store";
 import * as tooltips from "../../tooltips";
 import { OptionIcon } from "../OptionIcon";
+import { SHADOW_NAME, UN_SHADOW_NAME } from "../cursorClasses";
 import { getOptionDescriptions } from "../optionDescriptions";
 import { selectTable } from "../tables/tablesSlice";
 import { selectHGroupLevel } from "../users/usersSlice";
@@ -299,7 +300,7 @@ function ShadowName({
   readonly shadowed: boolean;
 }) {
   const nameClassName = useNameClassName(name);
-  const shadowClassName = shadowed ? "un-shadow" : "shadow";
+  const shadowClassName = shadowed ? UN_SHADOW_NAME : SHADOW_NAME;
   return (
     <span
       className={

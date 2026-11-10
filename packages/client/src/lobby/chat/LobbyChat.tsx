@@ -16,7 +16,7 @@ export function LobbyChat(): React.JSX.Element {
     <>
       <h3 className="lobby-title">
         Lobby Chat
-        <span className="only-on-narrow-screen">
+        <span className="tw:hidden tw:narrow-640:inline">
           {" "}
           (<OnlineUserCount /> online)
         </span>

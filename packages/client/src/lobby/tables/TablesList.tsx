@@ -7,6 +7,13 @@ import { useAppSelector } from "../../store";
 import * as tooltips from "../../tooltips";
 import { copyStringToClipboard, getURLFromPath } from "../../utils";
 import { OptionIcon } from "../OptionIcon";
+import {
+  FULL_CURSOR,
+  JOIN_CURSOR,
+  REJOIN_CURSOR,
+  SHADOW_NAME,
+  SPECTATE_CURSOR,
+} from "../cursorClasses";
 import { getOptionDescriptions } from "../optionDescriptions";
 import { tableJoin, tableReattend, tableSpectate } from "./tableActions";
 import type { Table, TableRow } from "./tablesSlice";
@@ -19,16 +26,31 @@ import { selectTableRows } from "./tablesSlice";
  */
 const MOVED_ROW_CLICK_DELAY_MS = 500;
 
-/** Narrow screens hide some of these columns by their position. */
-const COLUMNS = [
-  "Name",
-  "# of Players",
-  "Variant",
-  "Options",
-  "Status",
-  "Players",
-  "Spectators",
-] as const;
+/** The columns, and the classes that hide the less important ones on narrow screens. */
+const COLUMNS = {
+  name: { title: "Name", className: "tw:narrow-736:hidden" },
+  numPlayers: { title: "# of Players", className: "tw:narrow-840:hidden" },
+  // When the "Name" column is hidden, this column is the first one, so it needs a left border.
+  variant: {
+    title: "Variant",
+    className: "tw:narrow-736:[border-left-width:1px]",
+  },
+  options: { title: "Options", className: "tw:narrow-530:hidden" },
+  status: { title: "Status", className: "tw:narrow-410:hidden" },
+  players: { title: "Players", className: undefined },
+  spectators: { title: "Spectators", className: "tw:narrow-640:hidden" },
+} as const;
+
+/** The background of each kind of row. */
+const ROW_CLASSES = {
+  joined: `tw:bg-lobby-table-joined tw:hover:bg-lobby-table-joined-hover ${REJOIN_CURSOR}`,
+  unstarted:
+    "tw:bg-lobby-table-unstarted tw:hover:bg-lobby-table-unstarted-hover",
+  "unstarted-password":
+    "tw:bg-lobby-table-unstarted-password tw:hover:bg-lobby-table-unstarted-password-hover",
+  started: `tw:bg-lobby-table-started tw:hover:bg-lobby-table-started-hover ${SPECTATE_CURSOR}`,
+  replay: `tw:bg-lobby-table-replay tw:hover:bg-lobby-table-replay-hover ${SPECTATE_CURSOR}`,
+} as const;
 
 export function TablesList(): React.JSX.Element {
   const rows = useAppSelector(selectTableRows);
@@ -42,13 +64,18 @@ export function TablesList(): React.JSX.Element {
   }
 
   return (
-    <div className="lobby-table-container" id="lobby-games-table-container">
+    <div
+      className="tw:h-full tw:overflow-y-auto"
+      id="lobby-games-table-container"
+    >
       <h3 className="lobby-title">List of games</h3>
-      <table className="alt" id="lobby-games-table">
+      <table className="alt tw:mb-0" id="lobby-games-table">
         <thead>
           <tr>
-            {COLUMNS.map((column) => (
-              <th key={column}>{column}</th>
+            {Object.values(COLUMNS).map(({ title, className }) => (
+              <th className={className} key={title}>
+                {title}
+              </th>
             ))}
           </tr>
         </thead>
@@ -72,12 +99,13 @@ function TableRowView({
   const friends = useAppSelector((state) => state.session.friends);
   const movedTime = useMovedTime(ref);
 
-  const classNames = [`lobby-games-table-${getKind(table)}`];
-  if (
-    table.numPlayers === table.maxPlayers
-    || (action === "join" && table.numPlayers >= MAX_PLAYERS)
-  ) {
-    classNames.push("full");
+  const kind = getKind(table);
+  const classNames: string[] = [ROW_CLASSES[kind]];
+  if (kind === "unstarted" || kind === "unstarted-password") {
+    const full =
+      table.numPlayers === table.maxPlayers
+      || (action === "join" && table.numPlayers >= MAX_PLAYERS);
+    classNames.push(full ? FULL_CURSOR : JOIN_CURSOR);
   }
   if (firstJoinable) {
     classNames.push("lobby-games-join-first-table-button");
@@ -124,21 +152,21 @@ function TableRowView({
       }}
       ref={ref}
     >
-      <td>
+      <td className={COLUMNS.name.className}>
         {table.passwordProtected && table.phase === "pregame" && (
           // The key's solid head is on its right, so it needs more room than other icons.
           <i className="fas fa-key fa-sm tw:mr-2.5" />
         )}
         {table.name}
       </td>
-      <td>
+      <td className={COLUMNS.numPlayers.className}>
         {table.phase === "pregame"
           ? `${table.numPlayers} / ${table.maxPlayers}`
           : table.numPlayers}
       </td>
-      <td>{table.options.variantName}</td>
+      <td className={COLUMNS.variant.className}>{table.options.variantName}</td>
       {/* The icons stay on one line when the table is narrow. */}
-      <td className="tw:whitespace-nowrap">
+      <td className={`tw:whitespace-nowrap ${COLUMNS.options.className}`}>
         {getOptionDescriptions(table.options).map((description) => (
           // The space separates the icons like the spaces between words.
           <Fragment key={description.name}>
@@ -146,7 +174,7 @@ function TableRowView({
           </Fragment>
         ))}
       </td>
-      <td>
+      <td className={COLUMNS.status.className}>
         {status}
         {status !== "Not Started" && hasFriends && ` (${table.progress}%)`}
       </td>
@@ -163,7 +191,9 @@ function TableRowView({
           }
           if (canShadow) {
             className =
-              className === undefined ? "shadow" : `${className} shadow`;
+              className === undefined
+                ? SHADOW_NAME
+                : `${className} ${SHADOW_NAME}`;
           }
           return (
             <Fragment key={player}>
@@ -186,7 +216,11 @@ function TableRowView({
         })}
       </td>
       <td
-        className={canSpectateFromCells ? "lobby-spectators" : undefined}
+        className={
+          canSpectateFromCells
+            ? `${COLUMNS.spectators.className} ${SPECTATE_CURSOR}`
+            : COLUMNS.spectators.className
+        }
         onClick={
           canSpectateFromCells
             ? (event) => {

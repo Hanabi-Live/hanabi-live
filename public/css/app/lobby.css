@@ -27,111 +27,9 @@
   height: 100%;
 }
 
-.lobby-table-container {
-  overflow-y: auto;
-  height: 100%;
-}
-
-.lobby-button-icon {
-  font-size: 1.5em;
-  position: relative;
-  top: 0.22em;
-}
-
 .lobby-title {
   /* We want to make h3 elements a bit smaller */
   font-size: 1.3em;
-}
-
-#lobby-games-table {
-  margin-bottom: 0;
-}
-
-.lobby-games-table-joined {
-  background-color: var(--lobby-table-joined);
-}
-
-.lobby-games-table-unstarted {
-  background-color: var(--lobby-table-unstarted);
-}
-
-.lobby-games-table-unstarted-password {
-  background-color: var(--lobby-table-unstarted-password);
-}
-
-.lobby-games-table-started {
-  background-color: var(--lobby-table-started);
-}
-
-.lobby-games-table-replay {
-  background-color: var(--lobby-table-replay);
-}
-
-.lobby-games-table-joined:hover {
-  background-color: var(--lobby-table-joined-hover);
-  /* rejoin */
-  cursor:
-    url("/public/img/cursors/rejoin.svg") 12 12,
-    pointer;
-}
-
-.lobby-games-table-unstarted:hover {
-  background-color: var(--lobby-table-unstarted-hover);
-}
-
-.lobby-games-table-unstarted-password:hover {
-  background-color: var(--lobby-table-unstarted-password-hover);
-}
-
-.lobby-games-table-unstarted:hover,
-.lobby-games-table-unstarted-password:hover {
-  /* join */
-  cursor:
-    url("/public/img/cursors/join.svg") 12 10,
-    pointer;
-}
-
-.lobby-games-table-unstarted.full:hover,
-.lobby-games-table-unstarted-password.full:hover {
-  /* full */
-  cursor:
-    url("/public/img/cursors/full.svg") 12 12,
-    pointer;
-}
-
-.lobby-games-table-started:hover {
-  background-color: var(--lobby-table-started-hover);
-}
-
-.lobby-games-table-replay:hover {
-  background-color: var(--lobby-table-replay-hover);
-}
-
-.lobby-games-table-started,
-.lobby-games-table-replay,
-.lobby-games-table-unstarted .lobby-spectators,
-.lobby-games-table-unstarted-password .lobby-spectators {
-  /* eyes */
-  cursor:
-    url("/public/img/cursors/spectate.svg") 14 12,
-    pointer;
-}
-
-/* A name that a spectator can click to see the game as that player sees it */
-.shadow:hover {
-  /* detective */
-  cursor:
-    url("/public/img/cursors/shadow.svg") 12 12,
-    pointer;
-  color: var(--name-hover);
-}
-
-.un-shadow:hover {
-  /* eyes */
-  cursor:
-    url("/public/img/cursors/un-shadow.svg") 12 12,
-    pointer;
-  color: var(--name-hover);
 }
 
 .lobby-chat-text-box {
@@ -216,61 +114,8 @@
   padding-left: 0;
 }
 
-.only-on-narrow-screen {
-  display: none;
-}
-
 a.toggle-active {
   background-color: var(--button-green);
-}
-
-@media screen and (max-width: 840px) {
-  /*
-    Media queries for lobby redesign on smaller screens
-  */
-  /* hide column '# of Players' */
-  #lobby-games-table th:nth-child(2),
-  #lobby-games-table td:nth-child(2) {
-    display: none;
-  }
-}
-
-@media screen and (max-width: 736px) {
-  /* hide column 'Name' */
-  #lobby-games-table th:nth-child(1),
-  #lobby-games-table td:nth-child(1) {
-    display: none;
-  }
-
-  /* fix border of column 'Variant' */
-  #lobby-games-table th:nth-child(3),
-  #lobby-games-table td:nth-child(3) {
-    border-left-width: 1px;
-  }
-}
-
-@media screen and (max-width: 640px) {
-  /* hide column 'Spectators' */
-  #lobby-games-table th:nth-child(7),
-  #lobby-games-table td:nth-child(7) {
-    display: none;
-  }
-}
-
-@media screen and (max-width: 530px) {
-  /* hide column 'Options' */
-  #lobby-games-table th:nth-child(4),
-  #lobby-games-table td:nth-child(4) {
-    display: none;
-  }
-}
-
-@media screen and (max-width: 410px) {
-  /* hide column 'Status' */
-  #lobby-games-table th:nth-child(5),
-  #lobby-games-table td:nth-child(5) {
-    display: none;
-  }
 }
 
 @media screen and (max-height: 530px) {
@@ -316,10 +161,6 @@ a.toggle-active {
 @media screen and (max-width: 640px) {
   #small-screen-toggle-users-h3 {
     display: none;
-  }
-
-  .only-on-narrow-screen {
-    display: inline;
   }
 
   .lobby-users-box-container {
