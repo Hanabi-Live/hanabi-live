@@ -35,7 +35,7 @@
     "*.min.css",
     // CSS files might have strange paths.
     "hanabi.css",
-    "alpha.css",
+    "defaults.css",
     // Emoji names are often two words without a space.
     "emojis.json",
     // Most emote names are not words.

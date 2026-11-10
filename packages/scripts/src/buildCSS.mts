@@ -11,7 +11,7 @@ const CSS_DIR = path.resolve(REPO_ROOT, "public", "css");
 const BUNDLE = [
   "lib/fontawesome.min.css",
   "lib/solid.min.css",
-  "lib/alpha.css",
+  "defaults.css",
   "hanabi.css",
   "dark.css",
 ] as const;

@@ -116,13 +116,13 @@ html[data-theme="dark"] .help-button:hover {
   background-color: var(--dm-accent-green-hover) !important;
 }
 
-/* Alpha template: .box panels (lobby sections, modals) */
+/* Defaults: .box panels (lobby sections, modals) */
 html[data-theme="dark"] .box {
   background-color: var(--dm-surface);
   box-shadow: 0 2px 0 0 var(--dm-border);
 }
 
-/* Alpha template: .modal / .dialog */
+/* Defaults: .modal / .dialog */
 html[data-theme="dark"] .modal,
 html[data-theme="dark"] .dialog {
   background-color: var(--dm-surface);
@@ -159,13 +159,13 @@ html[data-theme="dark"] .resource-group h3 {
   color: var(--dm-text-muted);
 }
 
-/* Alpha template: tables */
+/* Defaults: tables */
 html[data-theme="dark"] table tbody tr {
   border-bottom: 1px solid var(--dm-border);
 }
 
 /*
-  Zebra stripes: alpha.css gives odd rows a light background. The lobby games table rows get
+  Zebra stripes: "defaults.css" gives odd rows a light background. The lobby games table rows get
   their status colors back further down, with ID specificity, so they beat these zebra rules.
 */
 html[data-theme="dark"] table tbody tr:nth-child(2n),
@@ -178,7 +178,7 @@ html[data-theme="dark"] table.alt tbody tr:nth-child(2n + 1) {
   background-color: transparent;
 }
 
-/* Alpha template: form controls */
+/* Defaults: form controls */
 html[data-theme="dark"] input[type="text"],
 html[data-theme="dark"] input[type="password"],
 html[data-theme="dark"] input[type="email"],
@@ -199,7 +199,7 @@ html[data-theme="dark"] textarea:focus {
   border-color: var(--dm-link);
 }
 
-/* Alpha template: buttons (filled with mid-tone colors, so they keep white text) */
+/* Defaults: buttons (filled with mid-tone colors, so they keep white text) */
 html[data-theme="dark"] .button {
   color: var(--color-text-on-accent);
 }
@@ -221,7 +221,7 @@ html[data-theme="dark"] input[type="button"] {
   color: var(--color-text-on-accent);
 }
 
-/* Alpha template: code / pre */
+/* Defaults: code / pre */
 html[data-theme="dark"] pre,
 html[data-theme="dark"] code {
   background-color: var(--dm-surface-2);
@@ -234,10 +234,6 @@ html[data-theme="dark"] code {
 html[data-theme="dark"] .lobby-chat-text-box {
   border-color: var(--dm-border) !important;
   background-color: var(--dm-surface-2);
-  color: var(--dm-text);
-}
-
-html[data-theme="dark"] .chat-text {
   color: var(--dm-text);
 }
 
@@ -370,17 +366,12 @@ html[data-theme="dark"] .lobby-segmented input[type="radio"]:checked + label {
   color: white;
 }
 
-/* Alpha template: feature row borders */
-html[data-theme="dark"] .features-row section {
-  border-color: var(--dm-border);
-}
-
-/* Alpha template: labels on inputs */
+/* Defaults: labels on inputs */
 html[data-theme="dark"] label {
   color: var(--dm-text);
 }
 
-/* Alpha template: checkboxes and radio buttons */
+/* Defaults: checkboxes and radio buttons */
 html[data-theme="dark"] input[type="checkbox"] + label:before,
 html[data-theme="dark"] input[type="radio"] + label:before {
   background: var(--dm-surface-2);
@@ -393,7 +384,7 @@ html[data-theme="dark"] input[type="radio"]:checked + label:before {
   border-color: var(--dm-accent-green);
 }
 
-/* Alpha template: horizontal lists */
+/* Defaults: horizontal lists */
 html[data-theme="dark"] .horizontal > li {
   color: var(--dm-text);
 }
@@ -408,19 +399,9 @@ html[data-theme="dark"] #game-chat-modal {
   border-color: var(--dm-border);
 }
 
-/* Alpha template: row divider */
-html[data-theme="dark"] .row {
-  border-bottom-color: var(--dm-border);
-}
-
-/* Alpha template: nav button hover */
+/* Defaults: nav button hover */
 html[data-theme="dark"] #nav a:hover {
   background-color: var(--dm-surface-2);
-}
-
-/* Alpha template: footer */
-html[data-theme="dark"] footer {
-  color: var(--dm-text-muted);
 }
 
 html[data-theme="dark"] .tooltip-bubble {

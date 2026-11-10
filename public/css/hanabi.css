@@ -56,61 +56,12 @@
       format("woff"); /* Chrome 6+, Firefox 3.6+, IE 9+, Safari 5.1+ */
 }
 
-/*
-  Font Awesome 5 fixes
-*/
-
-input[type="checkbox"] + label:before,
-input[type="radio"] + label:before,
-.icon:before,
-#navButton .toggle:before {
-  font-family: "Font Awesome 5 Free";
-}
-
-/*
-  Alpha edits
-*/
-
-#header a {
-  cursor: pointer;
-}
-
-#header a.disabled {
-  cursor: not-allowed;
-}
-
-.button {
-  /* Disable the ugly black border that appears when we click on a button */
-  outline: none;
-}
-
-.button.icon {
-  /* Center the button around the icon and the text, instead of just the text */
-  padding-right: 1.35em;
-}
-
-.row {
-  border-bottom: 0;
-}
-
-a {
-  /* The default link style is a dotted bottom border, which is quite ugly */
-  border-bottom: 0;
-  text-decoration: underline;
-  color: blue;
-}
-
 .name-me {
   color: var(--color-name-me);
 }
 
 .friend {
   color: var(--color-friend);
-}
-
-/* Sets fill color of the select arrow to #777 */
-select {
-  background-image: url("data:image/svg+xml;charset=utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40' preserveAspectRatio='none' viewBox='0 0 40 40'%3E%3Cpath d='M9.4,12.3l10.4,10.4l10.4-10.4c0.2-0.2,0.5-0.4,0.9-0.4c0.3,0,0.6,0.1,0.9,0.4l3.3,3.3c0.2,0.2,0.4,0.5,0.4,0.9 c0,0.4-0.1,0.6-0.4,0.9L20.7,31.9c-0.2,0.2-0.5,0.4-0.9,0.4c-0.3,0-0.6-0.1-0.9-0.4L4.3,17.3c-0.2-0.2-0.4-0.5-0.4-0.9 c0-0.4,0.1-0.6,0.4-0.9l3.3-3.3c0.2-0.2,0.5-0.4,0.9-0.4S9.1,12.1,9.4,12.3z' fill='%23777777' /%3E%3C/svg%3E");
 }
 
 /*
@@ -172,13 +123,8 @@ body {
   background-attachment: fixed;
 }
 
-table td {
-  /* In Chrome, middle is default, but in Firefox, bottom is default */
-  vertical-align: middle;
-}
-
 /*
-  The "align-center" class will do horizontal centering (in "alpha.css")
+  The "align-center" class will do horizontal centering (in "defaults.css")
   The "align-center-v" class will do vertical centering
 */
 .align-center-v {
@@ -195,10 +141,6 @@ table td {
   margin: 0 !important;
 }
 
-.margin3 {
-  margin-bottom: 3em;
-}
-
 .padding0 {
   padding: 0 !important;
 }
@@ -209,18 +151,6 @@ table td {
 
 .padding0p75 {
   padding-bottom: 0.75em;
-}
-
-.padding-top1 {
-  padding-top: 1em !important;
-}
-
-.padding-top1p5 {
-  padding-top: 1.5em !important;
-}
-
-.padding-right1 {
-  padding-right: 1em;
 }
 
 .slim-table {
@@ -237,31 +167,9 @@ table td {
   top: 0.75em;
 }
 
-/* For text input labels with 2 lines */
-.input-text2 {
-  position: relative;
-  top: 0.25em;
-}
-
-/*
-  For inserting elements without changing the surrounding formatting
-  https://stackoverflow.com/questions/6040005/relatively-position-an-element-without-it-taking-up-space-in-document-flow
-*/
-.relative-container {
-  position: relative;
-  width: 0;
-  height: 0;
-}
-
 /*
   Title
 */
-
-#title-text {
-  color: white;
-  position: relative;
-  top: 0.1em;
-}
 
 #title-sub {
   color: #f2f2f2 !important;
@@ -413,7 +321,7 @@ table td {
 #lobby {
   margin-top: 1.5em;
   margin-bottom: 0.5em;
-  /* Left and right margins are handled on the rows in "alpha.css" */
+  /* Left and right margins are handled on the rows in "defaults.css" */
   height: calc(100% - 3em); /* The header is 3em */
 }
 
@@ -716,7 +624,6 @@ table td {
   white-space: nowrap;
 }
 
-.lobby-games-table-tooltip,
 .lobby-pregame-tooltip {
   font-size: 0.75em;
   width: 8em;
@@ -728,17 +635,13 @@ table td {
 }
 
 .lobby-pregame-tooltip > div {
-  /* Alpha sets this to -2em, so we have to reset it */
+  /* ".row" sets this to -2em, so we have to reset it */
   margin-left: 0em;
   text-align: left;
 }
 
 .lobby-pregame-tooltip > div > div {
   padding-left: 0;
-}
-
-.lobby-pregame-col {
-  width: 13.75%;
 }
 
 #lobby-chat-pregame-container {
@@ -843,8 +746,7 @@ table td {
   color: #00cc00;
 }
 
-.lobby-page button[type="submit"],
-#change-variant-submit {
+.lobby-page button[type="submit"] {
   font-size: 1em;
 }
 
@@ -1367,16 +1269,6 @@ html:not([data-theme="dark"])
   margin-bottom: 0.5em;
 }
 
-#morph-modal-suits,
-#morph-modal-ranks {
-  display: flex;
-  justify-content: center;
-}
-
-#morph-modal-ranks {
-  margin-bottom: 1em;
-}
-
 #morph-modal input[type="checkbox"] {
   display: none;
 }
@@ -1622,7 +1514,7 @@ html:not([data-theme="dark"])
   z-index: 1;
   /* The modal is automatically positioned in the "chat.js" file */
   background-color: black;
-  border-radius: 10px; /* This has to match the border-radius below */
+  border-radius: 10px;
   border: 3px solid black;
   touch-action: none;
 }
@@ -1658,15 +1550,6 @@ html:not([data-theme="dark"])
     (e.g. ".lobby-chat-text-box") because there is no title to account for
   */
   height: calc(100% - 4em);
-}
-
-/* From: https://codepen.io/ZeroX-DG/pen/vjdoYe */
-.resizable .resizers {
-  width: 100%;
-  height: 100%;
-  border: 3px solid black;
-  border-radius: 10px; /* This has to match the border-radius above */
-  box-sizing: border-box;
 }
 
 .efficiency-description {
@@ -1733,18 +1616,8 @@ html:not([data-theme="dark"])
 
     hidden-*:      hidden on this and all smaller screens
 */
-@media screen and (max-width: 1680px) {
-  .hidden-xxl {
-    display: none !important;
-  }
-}
 @media screen and (max-width: 1280px) {
   .hidden-xl {
-    display: none !important;
-  }
-}
-@media screen and (max-width: 980px) {
-  .hidden-lg {
     display: none !important;
   }
 }
@@ -1797,13 +1670,6 @@ html:not([data-theme="dark"])
   }
 }
 
-/* Reinstate the containers round box */
-@media screen and (max-width: 480px) {
-  .box {
-    border-radius: 6px;
-  }
-}
-
 /* Make the pre-game nav bar show only the button icons on smaller resolutions */
 @media screen and (max-width: 400px) {
   #nav-buttons-pregame .nav-icon {
@@ -1821,10 +1687,8 @@ html:not([data-theme="dark"])
 /* Stack the profile buttons on top of each other if they would go off screen otherwise */
 @media screen and (max-width: 840px) {
   #profile-buttons {
-    /* These lines are copied from alpha.css which has breakpoint 480 px */
     display: flex;
     flex-wrap: wrap;
-    box-sizing: border-box;
     align-items: stretch;
   }
 
@@ -1836,11 +1700,6 @@ html:not([data-theme="dark"])
   #profile-buttons li {
     padding-top: 1em;
   }
-
-  /* Make the main screen appear the same way, even on smaller resolutions */
-  #page-wrapper {
-    padding-top: 3em;
-  }
 }
 
 /* Fix the box margins on smaller resolutions */
@@ -1850,20 +1709,6 @@ html:not([data-theme="dark"])
     margin-left: 1em;
     margin-right: 1em;
   }
-
-  .box {
-    margin: 0em;
-    padding: 1.5em !important;
-    overflow-y: hidden;
-  }
-}
-
-/*
-  Tables headers
-*/
-table th {
-  padding: 0 0.75em 0.25em 0.75em;
-  font-size: 0.8em;
 }
 
 /*
@@ -1876,11 +1721,6 @@ table th {
   }
 }
 @media screen and (max-width: 840px) {
-  /* override alpha.css default behavior */
-  #header {
-    display: block;
-  }
-
   /* make nav items in between space smaller */
   #header nav > ul > li a:not(.button) {
     padding: 0 0.5em;
@@ -2027,9 +1867,6 @@ table th {
     height: calc(100% - 1.25em); /* The header is 3em */
   }
 
-  .pregame-hidden {
-    display: none;
-  }
   .pregame-lobby-chat {
     margin-bottom: 1em;
   }
@@ -2081,44 +1918,6 @@ input[type="text"].wrongInput {
 }
 
 /* Dialogs */
-#backdrop {
-  display: none;
-  position: absolute;
-  left: 0;
-  top: 0;
-  right: 0;
-  bottom: 0;
-  animation: backdropHide 0.4s forwards 1;
-  align-items: center;
-  justify-content: center;
-}
-
-#backdrop.show {
-  animation: backdropShow 0.4s forwards 1;
-}
-
-@keyframes backdropHide {
-  0% {
-    background-color: rgba(0, 0, 0, 0.7);
-    z-index: 99999;
-  }
-  100% {
-    background-color: rgba(0, 0, 0, 0);
-    z-index: -1;
-  }
-}
-
-@keyframes backdropShow {
-  0% {
-    background-color: rgba(0, 0, 0, 0);
-    z-index: -1;
-  }
-  100% {
-    background-color: rgba(0, 0, 0, 0.7);
-    z-index: 99999;
-  }
-}
-
 .dialog {
   background-color: white;
   border: 2px solid #308943;
@@ -2135,54 +1934,6 @@ input[type="text"].wrongInput {
   justify-content: center;
   align-content: space-evenly;
   column-gap: 10px;
-}
-
-#set-turn-label {
-  text-align: center;
-  font-size: 2em;
-  margin-bottom: 1em;
-}
-
-#set-turn-range-container {
-  text-align: center;
-  background-color: rgba(102, 102, 102, 0.3);
-  border-radius: 5px;
-  margin-bottom: 1em;
-  padding-bottom: 10px;
-}
-
-#set-turn-range {
-  -webkit-appearance: none;
-  appearance: none;
-  width: 90%;
-  height: 2px;
-  border-radius: 5px;
-  background-color: rgba(255, 255, 255, 0.3);
-  outline: none;
-  padding: 0;
-  margin: 0;
-  cursor: pointer;
-}
-
-#set-turn-range::-webkit-slider-thumb {
-  -webkit-appearance: none;
-  width: 20px;
-  height: 20px;
-  border-radius: 50%;
-  background-color: white;
-  cursor: pointer;
-}
-
-#set-turn-range::-moz-range-thumb {
-  width: 20px;
-  height: 20px;
-  border-radius: 50%;
-  background-color: white;
-  cursor: pointer;
-}
-
-#set-turn-label::after {
-  content: attr(data-value);
 }
 
 /* Cursors styles for game container */
@@ -2356,16 +2107,6 @@ span.tableSpinner:after {
   100% {
     transform: rotate(360deg);
   }
-}
-
-/* Discord replacements */
-.spoiler {
-  background: black;
-  color: black;
-}
-.spoiler:hover {
-  background: unset;
-  color: unset;
 }
 
 div.noteTitle {
