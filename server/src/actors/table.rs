@@ -101,7 +101,6 @@ impl TableActor {
         Self {
             table,
             saved,
-            frozen: false,
             retired: false,
             attendees: HashMap::new(),
             chat_read: HashMap::new(),
@@ -150,7 +149,6 @@ impl TableActor {
                 .filter(|(id, _)| replay || self.table.players().iter().all(|p| p.id != **id))
                 .map(|(id, shadow)| (*id, *shadow))
                 .collect(),
-            frozen: self.frozen,
             data: hanabi_protocol::Table {
                 database_id: replay_game,
                 id: self.table.id,
@@ -358,7 +356,7 @@ impl TableActor {
     /// pregame start, an idle warning or ending, or a player running out of time. Once a turn or
     /// an idle reset restarts the idle timer, this also lets the idle warning be sent again.
     pub(super) fn next_timer(&mut self) -> Option<Instant> {
-        if self.frozen || self.store.check_state().is_err() {
+        if self.store.check_state().is_err() {
             return None;
         }
         if self
@@ -491,7 +489,6 @@ impl TableActor {
     /// before then only loses this change.
     pub(super) fn apply_without_checkpoint(&mut self, next: TableSnapshot) -> CommandResult<()> {
         self.store.check_state()?;
-        ensure_or_reject!(!self.frozen, "Table is frozen until recovery");
         self.table = next;
         self.anchor = Instant::now();
         Ok(())
@@ -518,7 +515,6 @@ impl TableActor {
         mut work: Commit<'_>,
     ) -> CommandResult<Outcome> {
         self.store.check_state()?;
-        ensure_or_reject!(!self.frozen, "Table is frozen until recovery");
         if next.visible
             && next
                 .chat
@@ -681,7 +677,7 @@ impl TableActor {
             let _ = reply.send(result);
         }
         // Recovered tables start their reconnection grace and catch up on missed deadlines.
-        if !self.frozen && self.store.check_state().is_ok() {
+        if self.store.check_state().is_ok() {
             self.run_timers().await;
         }
         let mut discovery: Option<(VariantDiscovery, Reply)> = None;
@@ -777,7 +773,6 @@ impl TableActor {
     }
     /// Saves the table for a graceful stop, giving timed games their maintenance allowance once.
     async fn drain(&mut self) -> CommandResult<()> {
-        ensure_internal!(!self.frozen, "Cannot drain frozen table");
         let mut next = self.candidate();
         if let Some(s) = next.game_mut()
             && s.game.end_condition == EndCondition::InProgress
@@ -793,7 +788,6 @@ impl TableActor {
     }
     pub(super) async fn cleanup(&mut self, now: Instant) -> CommandResult<()> {
         self.store.check_state()?;
-        ensure_internal!(!self.frozen, "Frozen table cannot be cleaned up");
         let before = self.attendees.len();
         let expired = self
             .attendees
@@ -948,7 +942,6 @@ impl TableActor {
         blocks: &BTreeSet<UserId>,
         command: Command,
     ) -> CommandResult<()> {
-        ensure_or_reject!(!self.frozen, "Table is frozen until recovery");
         if matches!(self.table.phase, Phase::Live { .. })
             && self
                 .timers()
@@ -1142,12 +1135,12 @@ impl TableActor {
         }
         Ok(())
     }
+    /// Removes the table. If the removal fails, the table stays as it was, and the timed work
+    /// that asked for it tries again.
     pub(super) async fn retire(&mut self) -> CommandResult<()> {
-        ensure_internal!(!self.frozen, "Frozen table cannot be removed");
-        if let Err(e) = self.store.remove(self.table.id, self.saved.revision).await {
-            self.frozen = true;
-            return Err(e.into());
-        }
+        self.store
+            .remove(self.table.id, self.saved.revision)
+            .await?;
         let mut e = self.effects();
         for a in self.audience() {
             e.statuses.push((a.session.clone(), Status::Lobby, None));

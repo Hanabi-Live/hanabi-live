@@ -1,6 +1,6 @@
 use super::{
-    Allocation, Blocks, Command, Effects, Entry, HubCommand, Inspection, Presence, Reply,
-    SeatReservation, TableActor, TableCommand, TableHandle, TableView,
+    Allocation, Blocks, Command, Effects, Entry, HubCommand, Presence, Reply, SeatReservation,
+    TableActor, TableCommand, TableHandle, TableView,
     setup::{Creation, prepare_table},
 };
 use crate::errors::{CommandError, CommandResult, Report};
@@ -658,10 +658,7 @@ impl Hub {
                     reply,
                 } => self.drained(reconnect, message, reply),
                 HubCommand::Inspect(reply) => {
-                    let result = self.store.check_state().map(|()| Inspection {
-                        frozen_tables: self.tables.values().filter(|e| e.view.frozen).count(),
-                    });
-                    let _ = reply.send(result);
+                    let _ = reply.send(self.store.check_state());
                 }
                 HubCommand::Client {
                     session,

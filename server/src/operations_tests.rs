@@ -1,5 +1,5 @@
 use crate::{
-    actors::{HubCommand, Inspection},
+    actors::HubCommand,
     lifecycle::{Control, Lifecycle, Runtime, StopReason},
     operations::{Operation, router},
 };
@@ -43,7 +43,7 @@ impl Harness {
                         let _ = reply.send(Ok(()));
                     }
                     HubCommand::Inspect(reply) => {
-                        let _ = reply.send(Ok(Inspection { frozen_tables: 0 }));
+                        let _ = reply.send(Ok(()));
                     }
                     _ => {}
                 }

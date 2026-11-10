@@ -29,9 +29,8 @@ pub struct Recovery {
     storage_initialized: bool,
     authority: &'static str,
     state_healthy: bool,
-    frozen_tables: usize,
 }
-pub fn recovery(state_healthy: bool, frozen_tables: usize) -> Recovery {
+pub fn recovery(state_healthy: bool) -> Recovery {
     let operations = STORAGE_METRICS.snapshot();
     let pending_transactions = operations.values().map(|metric| metric.in_flight).sum();
     Recovery {
@@ -42,7 +41,6 @@ pub fn recovery(state_healthy: bool, frozen_tables: usize) -> Recovery {
         storage_initialized: true,
         authority: "PostgreSQL",
         state_healthy,
-        frozen_tables,
     }
 }
 

@@ -164,7 +164,6 @@ def healthy(metrics):
         metrics["draining"] is False
         and recovery["storageInitialized"] is True
         and recovery["stateHealthy"] is True
-        and recovery["frozenTables"] == 0
         and recovery["pendingTransactions"] == 0
     )
 

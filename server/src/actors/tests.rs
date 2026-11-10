@@ -809,7 +809,7 @@ async fn restored_pregames_allow_reconnects_and_keep_connected_afk_players() -> 
 }
 
 #[tokio::test]
-async fn abandoned_pregame_cleanup_does_not_override_frozen_or_newer_state() -> Result<()> {
+async fn abandoned_pregame_cleanup_does_not_override_newer_state() -> Result<()> {
     let Some((db, store, state)) = fixture_store().await? else {
         return Ok(());
     };
@@ -829,21 +829,12 @@ async fn abandoned_pregame_cleanup_does_not_override_frozen_or_newer_state() -> 
     );
     let now = Instant::now();
     actor.cleanup(now).await?;
-    actor.frozen = true;
-    ensure!(
-        actor.cleanup(now + PREGAME_RECONNECT_GRACE).await.is_err(),
-        "Frozen pregame was cleaned up"
-    );
-    actor.frozen = false;
     let newer = store.save_at(&table, revision).await?;
     ensure!(
         actor.cleanup(now + PREGAME_RECONNECT_GRACE).await.is_err(),
         "Cleanup overwrote a newer checkpoint"
     );
-    ensure!(
-        actor.frozen && !actor.retired,
-        "Uncertain cleanup did not preserve the table"
-    );
+    ensure!(!actor.retired, "Failed cleanup did not preserve the table");
     ensure!(
         state.get(id).await?.context("Checkpoint deleted")?.revision == newer,
         "Cleanup removed newer authoritative state"
@@ -915,7 +906,6 @@ async fn full_table_mailboxes_do_not_block_hub_and_replacements_fence_private_ef
         replay_game: None,
         visible: false,
         data: test_table(),
-        frozen: false,
         reconnects: BTreeMap::new(),
     };
     let mut hub = Hub {
@@ -1077,7 +1067,6 @@ async fn a_table_that_panics_is_removed_and_frees_its_players() -> Result<()> {
                 replay_game: None,
                 visible: true,
                 data: test_table(),
-                frozen: false,
                 reconnects: BTreeMap::new(),
             },
             attendees: BTreeSet::new(),

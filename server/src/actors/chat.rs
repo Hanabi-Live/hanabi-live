@@ -133,7 +133,7 @@ impl TableActor {
         requester: Arc<Session>,
     ) -> CommandResult<VariantDiscovery> {
         ensure_or_reject!(
-            !self.frozen && self.attending(&requester),
+            self.attending(&requester),
             "You are not at an available table."
         );
         let participants = self.score_participants()?;
@@ -179,7 +179,7 @@ impl TableActor {
         selected: Result<Option<String>>,
     ) -> CommandResult<()> {
         ensure_or_reject!(
-            !self.frozen && self.attending(&query.requester),
+            self.attending(&query.requester),
             "Variant requester is no longer at this table."
         );
         let selected = selected?;

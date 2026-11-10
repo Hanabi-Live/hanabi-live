@@ -1,5 +1,5 @@
 use crate::{
-    actors::{HubCommand, Inspection, TableCommand, request},
+    actors::{HubCommand, TableCommand, request},
     integrations::IntegrationSlot,
     operations::Operation,
     store::Store,
@@ -222,8 +222,8 @@ impl Control {
     pub async fn operation(&self, command: Operation) -> Result<()> {
         request(&self.hub, |reply| HubCommand::Operations { command, reply }).await?
     }
-    /// What the hub reports about its tables.
-    pub async fn inspect(&self) -> Result<Inspection> {
+    /// Fails if the hub has stopped or the server lost ownership of the live tables.
+    pub async fn inspect(&self) -> Result<()> {
         request(&self.hub, HubCommand::Inspect).await?
     }
     pub async fn graceful_stop(&self, message: Option<String>) -> Result<()> {

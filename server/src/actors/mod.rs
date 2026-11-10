@@ -154,14 +154,7 @@ pub struct TableView {
     replay_game: Option<GameId>,
     visible: bool,
     data: hanabi_protocol::Table,
-    /// Whether the table stopped saving after a failure and waits for recovery.
-    frozen: bool,
     reconnects: BTreeMap<UserId, Option<Seat>>,
-}
-/// What the hub reports about its tables to the operations endpoint.
-pub struct Inspection {
-    /// The tables that wait for recovery after a failure to save.
-    pub frozen_tables: usize,
 }
 #[derive(Clone)]
 pub struct TableHandle {
@@ -268,7 +261,9 @@ pub enum HubCommand {
         message: Option<String>,
         reply: oneshot::Sender<Result<()>>,
     },
-    Inspect(oneshot::Sender<Result<Inspection>>),
+    /// Answers whether the hub runs and the server still owns the live tables, for the
+    /// operations endpoint.
+    Inspect(oneshot::Sender<Result<()>>),
     Sync {
         session: Arc<Session>,
         reply: Reply,
@@ -382,7 +377,6 @@ struct TableActor {
     table: TableSnapshot,
     /// What the database holds for the table.
     saved: Saved,
-    frozen: bool,
     retired: bool,
     attendees: HashMap<UserId, Attendance>,
     chat_read: HashMap<UserId, usize>,

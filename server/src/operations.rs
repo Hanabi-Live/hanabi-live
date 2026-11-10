@@ -251,14 +251,14 @@ enum DatabaseReport {
     Error { error: &'static str },
 }
 async fn metrics_report(control: &Control) -> Result<Response> {
-    let inspection = control.inspect().await?;
+    control.inspect().await?;
     let mut report = MetricsReport {
         uptime_seconds: control.monotonic_started.elapsed().as_secs_f64(),
         draining: control.lifecycle.draining(),
         discord: control.discord_status(),
         runtime: metrics::memory().await?,
         commands: metrics::COMMAND_METRICS.snapshot(),
-        recovery: metrics::recovery(control.storage_healthy(), inspection.frozen_tables),
+        recovery: metrics::recovery(control.storage_healthy()),
         database: DatabaseReport::Error {
             error: "Database pool activity is unavailable.",
         },
