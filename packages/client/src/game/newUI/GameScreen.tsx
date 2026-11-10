@@ -770,10 +770,9 @@ export function GameScreen({
       </main>
 
       <ChatPanel
-        numPlayers={options.numPlayers}
-        numSpectators={state.spectators.length}
         open={newUIState.isChatOpen()}
         overlay={chatOverlay}
+        spectators={state.spectators.map((spectator) => spectator.username)}
         unread={globals.lobby.chatUnread}
       />
 

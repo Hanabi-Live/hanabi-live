@@ -1,10 +1,13 @@
-import { useLayoutEffect, useRef } from "react";
+import { useLayoutEffect, useRef, useState } from "react";
 import * as gameChat from "../chat";
 
 /**
  * While the panel holds the classic chat box, these classes make it fill the panel instead of the
  * chat window. Tailwind utilities beat the site's stylesheets, so they override its rules.
  */
+/** The header names this many spectators, and a button shows the rest. */
+const MAX_LISTED_SPECTATORS = 3;
+
 /**
  * The chat box's stylesheet uses the theme's colors. The game screen is dark in both themes, so the
  * panel gives the box the game screen's colors in their place.
@@ -39,8 +42,7 @@ const BORROWED_CHAT_BOX_CLASSES = [
 export function ChatPanel({
   open,
   unread,
-  numPlayers,
-  numSpectators,
+  spectators,
   overlay,
 }: {
   readonly open: boolean;
@@ -48,10 +50,12 @@ export function ChatPanel({
   /** Whether the open panel covers the table, on windows too narrow to fit both side by side. */
   readonly overlay: boolean;
   readonly unread: number;
-  readonly numPlayers: number;
-  readonly numSpectators: number;
+
+  /** The names of the people watching the game. */
+  readonly spectators: readonly string[];
 }): React.JSX.Element {
   const boxRef = useRef<HTMLDivElement>(null);
+  const [showAllSpectators, setShowAllSpectators] = useState(false);
 
   // Borrow the chat box from the classic chat window while the panel is open, and give it back when
   // the panel closes, so that the classic screen can show it again.
@@ -76,7 +80,11 @@ export function ChatPanel({
     };
   }, [open]);
 
-  const spectatorsLabel = `${numSpectators} watching`;
+  const spectatorsLabel = `${spectators.length} watching`;
+  const listedSpectators = showAllSpectators
+    ? spectators
+    : spectators.slice(0, MAX_LISTED_SPECTATORS);
+  const hiddenSpectators = spectators.length - listedSpectators.length;
 
   if (!open) {
     return (
@@ -102,13 +110,20 @@ export function ChatPanel({
             </span>
           )}
         </button>
-        <div
-          className="tw:flex tw:flex-col tw:items-center tw:gap-0.5 tw:text-[13px] tw:text-game-muted"
-          title={spectatorsLabel}
-        >
-          <i aria-hidden="true" className="fas fa-eye" />
-          <span aria-label={spectatorsLabel}>{numSpectators}</span>
-        </div>
+        {spectators.length > 0 && (
+          <button
+            aria-label={`${spectatorsLabel}. Open chat to see who`}
+            className="tw:flex tw:cursor-pointer tw:flex-col tw:items-center tw:gap-0.5 tw:rounded-lg tw:border-0 tw:bg-transparent tw:px-2 tw:py-1 tw:text-[13px] tw:text-game-muted tw:hover:bg-game-raised tw:hover:text-game-text"
+            onClick={() => {
+              gameChat.show(false);
+            }}
+            title={spectatorsLabel}
+            type="button"
+          >
+            <i aria-hidden="true" className="fas fa-eye" />
+            {spectators.length}
+          </button>
+        )}
       </aside>
     );
   }
@@ -122,11 +137,33 @@ export function ChatPanel({
           : ""
       }`}
     >
-      <header className="tw:flex tw:items-center tw:justify-between tw:border-b tw:border-game-zone tw:py-3.5 tw:pr-2 tw:pl-5 tw:text-sm tw:text-game-muted">
-        <span>
-          {numPlayers} players, {spectatorsLabel}
-          <i aria-hidden="true" className="fas fa-eye tw:ml-1.5" />
-        </span>
+      <header className="tw:flex tw:items-start tw:gap-2 tw:border-b tw:border-game-zone tw:py-3.5 tw:pr-2 tw:pl-5 tw:text-sm tw:text-game-muted">
+        {/* With no one watching, the header stays blank. */}
+        <div className="tw:min-w-0 tw:flex-1 tw:leading-relaxed">
+          {spectators.length > 0 && (
+            <>
+              <i aria-hidden="true" className="fas fa-eye tw:mr-1.5" />
+              Watching:{" "}
+              <span className="tw:text-game-text">
+                {listedSpectators.join(", ")}
+              </span>
+              {hiddenSpectators > 0 && (
+                <>
+                  {" "}
+                  <button
+                    className="tw:cursor-pointer tw:border-0 tw:bg-transparent tw:p-0 tw:text-game-text tw:underline"
+                    onClick={() => {
+                      setShowAllSpectators(true);
+                    }}
+                    type="button"
+                  >
+                    and {hiddenSpectators} more
+                  </button>
+                </>
+              )}
+            </>
+          )}
+        </div>
         <button
           aria-label="Collapse chat"
           className="tw:flex tw:size-9 tw:cursor-pointer tw:items-center tw:justify-center tw:rounded-lg tw:border-0 tw:bg-transparent tw:text-game-muted tw:hover:bg-game-raised tw:hover:text-game-text"

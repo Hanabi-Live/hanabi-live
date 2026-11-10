@@ -82,6 +82,9 @@ const SETTLE_MILLISECONDS = 400;
 /** The seed of the first seeded game: two players, the variant with ID 0, and the first seed. */
 const SEED = "p2v0s1";
 
+/** The accounts that watch the open table. */
+const SPECTATOR_NAMES = ["Carol", "Dave", "Erin", "Frank"] as const;
+
 /** The variant of the open table. */
 const LONG_VARIANT_NAME = "Rainbow-Ones & Orange (6 Suits)";
 
@@ -481,9 +484,14 @@ async function seed(address: string): Promise<Seed> {
     SERVER_COMMAND_SCHEMAS.joined,
   );
   bob.send("chat", { text: "Hello from the seeded lobby." });
-  const carol = await connect(address, "Carol");
-  carol.send("tableSpectate", { tableID });
-  await carol.receive("joined", SERVER_COMMAND_SCHEMAS.joined);
+  // More spectators than the game screen's chat header names, so that it offers to show the rest.
+  const spectators: Peer[] = [];
+  for (const name of SPECTATOR_NAMES) {
+    const spectator = await connect(address, name);
+    spectator.send("tableSpectate", { tableID });
+    await spectator.receive("joined", SERVER_COMMAND_SCHEMAS.joined);
+    spectators.push(spectator);
+  }
   const bot = await connect(address, "Robot", BOT_VERSION);
 
   async function startGame() {
@@ -521,7 +529,7 @@ async function seed(address: string): Promise<Seed> {
 
   // The browser logs in as Alice, with a session of its own.
   const cookie = await login(address, USERNAME);
-  return { replayID, startGame, cookie, peers: [bob, carol, bot] };
+  return { replayID, startGame, cookie, peers: [bob, ...spectators, bot] };
 }
 
 /** Runs in the page. */
