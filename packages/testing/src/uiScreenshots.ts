@@ -269,6 +269,23 @@ function getStates({
         await page.locator('#game-new-ui [aria-label="Hands"]').waitFor();
       },
     },
+    // The game from the previous state, after the account plays a card and steps back over it in
+    // the in-game replay.
+    {
+      name: "new-ui-replay",
+      path: "/",
+      loggedIn: true,
+      prepare: async (page) => {
+        const hand = page.locator(
+          `#game-new-ui [aria-label="${USERNAME}'s hand"]`,
+        );
+        await hand.locator("button").first().click();
+        await page.getByRole("button", { name: "Play", exact: true }).click();
+        await page.waitForTimeout(SETTLE_MILLISECONDS);
+        await page.getByRole("button", { name: "Replay" }).click();
+        await page.getByRole("button", { name: "Previous turn" }).click();
+      },
+    },
   ];
 }
 

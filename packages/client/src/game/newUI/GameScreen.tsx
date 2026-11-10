@@ -3,6 +3,7 @@
 import type {
   CardOrder,
   Clue,
+  GameState,
   PlayerIndex,
   SuitIndex,
 } from "@hanabi-live/game";
@@ -15,7 +16,7 @@ import {
   millisecondsToClockString,
 } from "@hanabi-live/game";
 import { clamp } from "complete-common";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import * as gameChat from "../chat";
 import type {
   ClientAction,
@@ -36,6 +37,15 @@ import { CARD_GAP, Hands, NAME_COLUMN_WIDTH } from "./Hands";
 import type { DiscardView, StackView, ZoneState } from "./SharedCards";
 import { DiscardPile, PlayArea, TableTokens } from "./SharedCards";
 import { StatusStrip } from "./StatusStrip";
+import type { CardPositions } from "./cardMotion";
+import {
+  MAX_ANIMATED_SEGMENT_CHANGE,
+  MOVE_BATCH_MILLISECONDS,
+  animateCardMoves,
+  areCardsMoving,
+  measureCards,
+  stopCardMoves,
+} from "./cardMotion";
 import {
   useElementSize,
   useGameState,
@@ -186,6 +196,7 @@ function getStacks(state: State): readonly StackView[] {
     const top = visibleState.playStacks[suitIndex]?.at(-1);
     return {
       suitIndex,
+      topOrder: top,
       topRank:
         top === undefined
           ? undefined
@@ -400,6 +411,69 @@ export function GameScreen({
     };
   }, []);
 
+  // Move the cards when the game advances or the replay steps through a turn. The server sends one
+  // move as several updates a few milliseconds apart (such as a play, then a draw, then the turn),
+  // and the screen renders after each. So the updates within a short window count as one move:
+  // each one starts the cards again from where they were before the move began, toward their newest
+  // places. This runs before the page is painted, so the cards never flash in their new places.
+  const rootRef = useRef<HTMLDivElement>(null);
+  const shown = useRef<{
+    /** Where the cards were the last time that nothing was moving. */
+    readonly settledPositions: CardPositions;
+    readonly shownState: GameState | undefined;
+    readonly move:
+      | {
+          readonly startPositions: CardPositions;
+          readonly startState: GameState;
+          readonly startedAt: number;
+        }
+      | undefined;
+  }>({ settledPositions: new Map(), shownState: undefined, move: undefined });
+  useLayoutEffect(() => {
+    const root = rootRef.current;
+    const shownState = state?.visibleState;
+    if (root === null || shownState === undefined) {
+      return;
+    }
+
+    const previous = shown.current;
+    if (previous.shownState === undefined) {
+      shown.current = {
+        settledPositions: measureCards(root),
+        shownState,
+        move: undefined,
+      };
+      return;
+    }
+
+    if (previous.shownState === shownState) {
+      // Keep the positions up to date (for example, after a resize), unless cards are moving.
+      if (!areCardsMoving()) {
+        shown.current = { ...previous, settledPositions: measureCards(root) };
+      }
+      return;
+    }
+
+    const now = performance.now();
+    const move =
+      previous.move !== undefined
+      && now - previous.move.startedAt <= MOVE_BATCH_MILLISECONDS
+        ? previous.move
+        : {
+            startPositions: previous.settledPositions,
+            startState: previous.shownState,
+            startedAt: now,
+          };
+    stopCardMoves();
+    const positions = measureCards(root);
+    const segmentChange =
+      (shownState.turn.segment ?? 0) - (move.startState.turn.segment ?? 0);
+    if (Math.abs(segmentChange) <= MAX_ANIMATED_SEGMENT_CHANGE) {
+      animateCardMoves(root, move.startPositions, positions, segmentChange > 0);
+    }
+    shown.current = { settledPositions: positions, shownState, move };
+  });
+
   if (state?.visibleState === undefined) {
     return (
       <div className="tw:fixed tw:inset-0 tw:flex tw:items-center tw:justify-center tw:bg-game-bg tw:text-game-muted">
@@ -513,7 +587,10 @@ export function GameScreen({
     visibleState === ongoingGame ? state.notes.efficiencyModifier : 0;
 
   return (
-    <div className="tw:fixed tw:inset-0 tw:flex tw:bg-game-bg tw:text-game-text">
+    <div
+      className="tw:fixed tw:inset-0 tw:flex tw:bg-game-bg tw:text-game-text"
+      ref={rootRef}
+    >
       <main className="tw:flex tw:min-w-0 tw:flex-1 tw:flex-col">
         <div className="tw:flex tw:min-h-0 tw:flex-1 tw:justify-center tw:gap-9 tw:px-7 tw:pt-6 tw:pb-5 tw:narrow-1440:gap-6 tw:narrow-1440:px-5 tw:narrow-980:flex-col tw:narrow-980:justify-start tw:narrow-980:gap-4 tw:narrow-980:overflow-y-auto tw:narrow-980:px-3 tw:narrow-980:pt-3">
           <div

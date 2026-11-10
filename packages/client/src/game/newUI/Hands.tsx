@@ -93,10 +93,14 @@ function NameChip({ seat }: { readonly seat: Seat }): React.JSX.Element {
 function OwnCard({
   card,
   slot,
+  place,
   props,
 }: {
   readonly card: CardView;
   readonly slot: number;
+
+  /** Where the card is, so that it moves only when this changes (see "cardMotion.ts"). */
+  readonly place: string;
   readonly props: HandsProps;
 }): React.JSX.Element {
   const { variant, colorblindMode, cardWidth, canMoveCards } = props;
@@ -108,6 +112,8 @@ function OwnCard({
     return (
       <div
         className="tw:box-border tw:shrink-0 tw:rounded-[10px] tw:border-2 tw:border-dashed tw:border-game-line"
+        data-card-order={card.order}
+        data-card-place={place}
         style={{ width: cardWidth, height }}
       />
     );
@@ -133,14 +139,23 @@ function OwnCard({
 
   if (!canMoveCards) {
     return (
-      <div aria-label={label} role="img">
+      <div
+        aria-label={label}
+        data-card-order={card.order}
+        data-card-place={place}
+        role="img"
+      >
         {face}
       </div>
     );
   }
 
   return (
-    <div className="tw:relative">
+    <div
+      className="tw:relative"
+      data-card-order={card.order}
+      data-card-place={place}
+    >
       <button
         aria-expanded={menuOpen}
         aria-label={`${label}. Play or discard`}
@@ -253,7 +268,13 @@ function Hand({
       >
         {seat.cards.map((card, i) =>
           seat.you ? (
-            <OwnCard card={card} key={card.order} props={props} slot={i + 1} />
+            <OwnCard
+              card={card}
+              key={card.order}
+              place={`hand-${seat.playerIndex}-${i}`}
+              props={props}
+              slot={i + 1}
+            />
           ) : (
             <div
               aria-label={describeCard(
@@ -261,6 +282,8 @@ function Hand({
                 card.suitIndex,
                 card.rank,
               )}
+              data-card-order={card.order}
+              data-card-place={`hand-${seat.playerIndex}-${i}`}
               key={card.order}
               role="img"
             >

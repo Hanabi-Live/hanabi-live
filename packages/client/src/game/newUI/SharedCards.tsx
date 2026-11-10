@@ -17,6 +17,9 @@ export interface StackView {
 
   /** The rank on top of the stack, or `undefined` before the stack starts. */
   readonly topRank: Rank | undefined;
+
+  /** The card on top of the stack, so that a card can move between a hand and the stack. */
+  readonly topOrder: CardOrder | undefined;
 }
 
 export interface DiscardView {
@@ -119,6 +122,9 @@ export const PlayArea = forwardRef<
                     stack.suitIndex,
                     stack.topRank,
                   )}
+                  data-card-order={stack.topOrder}
+                  data-card-place={`stack-${stack.suitIndex}`}
+                  data-play-stack
                   key={stack.suitIndex}
                   role="img"
                 >
@@ -142,6 +148,7 @@ export const PlayArea = forwardRef<
         >
           <div
             className="tw:flex tw:items-center tw:justify-center tw:rounded-[10px] tw:bg-game-raised tw:ring-1 tw:ring-game-line"
+            data-deck
             style={{ width: cardWidth, height }}
           >
             <span
@@ -202,6 +209,8 @@ export const DiscardPile = forwardRef<
                 <button
                   aria-label={`${describeCard(variant, card.suitIndex, card.rank)}. Show the turn it was discarded`}
                   className="tw:shrink-0 tw:cursor-pointer tw:rounded-[9px] tw:border-0 tw:bg-transparent tw:p-0 tw:transition-transform tw:hover:z-10 tw:hover:-translate-y-1.5 tw:focus-visible:z-10 tw:focus-visible:-translate-y-1.5 tw:motion-reduce:transition-none"
+                  data-card-order={card.order}
+                  data-card-place={`discard-${rowIndex}-${i}`}
                   key={card.order}
                   onClick={() => {
                     onShowDiscard(card.order);
