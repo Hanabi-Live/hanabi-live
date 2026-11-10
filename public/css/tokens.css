@@ -1,5 +1,7 @@
 /*
   Breakpoints: media queries cannot use custom properties, so they use these values directly.
+  "scripts/lint/check-css.sh" fails on any other value, and on rules for "[data-theme]" outside of
+  this file.
   "max-width": 1920px, 1440px, 1280px, 980px, 840px, 736px, 640px, 530px, and 410px
   "max-height": 530px
 */

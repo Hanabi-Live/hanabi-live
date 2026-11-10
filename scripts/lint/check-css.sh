@@ -12,3 +12,29 @@ REPO_ROOT=$(cd -- "$DIR/../.." &> /dev/null && pwd)
 OUTPUT=$(mktemp)
 trap 'rm -f "$OUTPUT"' EXIT
 bun "$REPO_ROOT/packages/scripts/src/buildCSS.mts" "$OUTPUT"
+
+CSS_DIR="$REPO_ROOT/public/css"
+TOKENS="$CSS_DIR/tokens.css"
+STYLESHEETS=("$CSS_DIR/defaults.css" "$CSS_DIR/hanabi.css")
+
+# The dark theme only changes the values of the variables in "tokens.css", so that each rule has
+# one set of colors for both themes.
+if grep -n "data-theme" "${STYLESHEETS[@]}"; then
+  echo 'Error: Set dark theme colors as variables in "public/css/tokens.css", instead of in a rule for "[data-theme]".' >&2
+  exit 1
+fi
+
+# Media queries use only the breakpoints that "tokens.css" lists.
+for DIMENSION in max-width max-height; do
+  ALLOWED=$(grep -E "^\s*\"$DIMENSION\":" "$TOKENS" | grep -oE "[0-9]+px" || true)
+  if [[ -z $ALLOWED ]]; then
+    echo "Error: \"public/css/tokens.css\" does not list the \"$DIMENSION\" breakpoints." >&2
+    exit 1
+  fi
+  while read -r VALUE; do
+    if ! grep -qx "$VALUE" <<< "$ALLOWED"; then
+      echo "Error: A media query uses \"$DIMENSION: $VALUE\", which is not a breakpoint in \"public/css/tokens.css\"." >&2
+      exit 1
+    fi
+  done < <(grep -ohE "\($DIMENSION: [0-9]+px\)" "${STYLESHEETS[@]}" | grep -oE "[0-9]+px" | sort -u)
+done
