@@ -71,9 +71,14 @@ export class ActionLog extends Konva.Group {
       Math.abs(shift) === 1
       && !globals.animateFast
       && this.texts.every((text, i) => {
-        // Every line that stays on the screen must keep its text.
+        // Every visible line that stays on the screen must keep its text. Do not check the hidden
+        // lines: the hidden line below is empty before a new log line arrives.
         const newRow = i - shift;
-        return newRow < 1 || newRow > this.maxLines || texts[newRow] === text;
+        return (
+          !this.isVisibleRow(i)
+          || !this.isVisibleRow(newRow)
+          || texts[newRow] === text
+        );
       });
 
     for (const [i, text] of texts.entries()) {
@@ -110,5 +115,10 @@ export class ActionLog extends Konva.Group {
         this.tween = null;
       },
     }).play();
+  }
+
+  /** Row 0 and row `maxLines + 1` are the hidden lines. */
+  private isVisibleRow(row: number): boolean {
+    return row >= 1 && row <= this.maxLines;
   }
 }
