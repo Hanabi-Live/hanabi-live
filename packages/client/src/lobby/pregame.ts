@@ -281,7 +281,7 @@ function drawPlayerBox(playerIndex: PlayerIndex) {
       <div class="col-2 align-right padding0">
         <i id="lobby-pregame-player-${
           playerIndex + 1
-        }-scores-icon" class="fas fa-chart-area green" data-tooltip-content="#lobby-pregame-player-${
+        }-scores-icon" class="fas fa-chart-bar green" data-tooltip-content="#lobby-pregame-player-${
           playerIndex + 1
         }-tooltip"></i>
       </div>
