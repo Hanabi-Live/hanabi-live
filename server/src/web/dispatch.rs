@@ -332,8 +332,12 @@ mod tests {
             panic!("A fault was not unavailable");
         };
         assert_eq!(fault.code, "persistence_uncertain");
-        let storage = command_failure(sqlx::Error::PoolClosed.into(), command).unwrap();
-        assert!(storage.alert && storage.report.is_some());
-        assert!(!storage.warning.contains("PoolClosed"));
+        let unavailable = command_failure(CommandError::Unavailable(fault), command).unwrap();
+        assert!(unavailable.alert && unavailable.report.is_some());
+        assert!(
+            unavailable
+                .warning
+                .contains("The write may have been saved.")
+        );
     }
 }
