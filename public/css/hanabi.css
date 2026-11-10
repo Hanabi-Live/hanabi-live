@@ -732,8 +732,7 @@ body[data-screen="game"] {
 }
 
 /* The default arrow on input lists */
-input::-webkit-list-button, /* iOS */
-input::-webkit-calendar-picker-indicator /* Chrome */ {
+input::-webkit-calendar-picker-indicator {
   /* This needs to be important since Chrome 91 */
   display: none !important;
 }
@@ -1484,9 +1483,6 @@ input::-webkit-calendar-picker-indicator /* Chrome */ {
 
 /* prevent unwanted selection when double clicking */
 .konvajs-content canvas {
-  -webkit-user-select: none;
-  -moz-user-select: none;
-  -ms-user-select: none;
   user-select: none;
 }
 
@@ -1897,18 +1893,6 @@ span.cp {
 /* Wrong input indicator */
 input[type="text"].wrong-input {
   border: 2px solid var(--error);
-}
-
-/* Dialogs */
-.dialog {
-  background-color: var(--surface);
-  border: 2px solid var(--modal-border);
-  border-radius: 5px;
-  max-height: 90vh;
-  max-width: 80vw;
-  overflow-y: auto;
-  scrollbar-gutter: stable;
-  padding: 20px 30px;
 }
 
 #leader-placeholder {

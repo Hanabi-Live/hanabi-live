@@ -9,7 +9,6 @@ html,
 body,
 div,
 span,
-applet,
 object,
 iframe,
 h1,
@@ -19,13 +18,10 @@ h4,
 h5,
 h6,
 p,
-blockquote,
 pre,
 a,
 abbr,
-acronym,
 address,
-big,
 cite,
 code,
 del,
@@ -34,23 +30,14 @@ em,
 img,
 ins,
 kbd,
-q,
 s,
 samp,
 small,
-strike,
 strong,
-sub,
-sup,
-tt,
 var,
 b,
 u,
 i,
-center,
-dl,
-dt,
-dd,
 ol,
 ul,
 li,
@@ -61,7 +48,6 @@ legend,
 table,
 caption,
 tbody,
-tfoot,
 thead,
 tr,
 th,
@@ -79,11 +65,9 @@ hgroup,
 menu,
 nav,
 output,
-ruby,
 section,
 summary,
 time,
-mark,
 audio,
 video {
   margin: 0;
@@ -118,31 +102,9 @@ ul {
   list-style: none;
 }
 
-blockquote,
-q {
-  quotes: none;
-}
-
-blockquote:before,
-blockquote:after,
-q:before,
-q:after {
-  content: none;
-}
-
 table {
   border-collapse: collapse;
   border-spacing: 0;
-}
-
-mark {
-  background-color: transparent;
-  color: inherit;
-}
-
-input::-moz-focus-inner {
-  border: 0;
-  padding: 0;
 }
 
 input,
@@ -255,33 +217,13 @@ h6 {
   letter-spacing: 0;
 }
 
-sub {
-  font-size: 0.8em;
-  position: relative;
-  top: 0.5em;
-}
-
-sup {
-  font-size: 0.8em;
-  position: relative;
-  top: -0.5em;
-}
-
 hr {
   border: 0;
   border-bottom: solid 2px var(--border);
   margin: 2em 0;
 }
 
-blockquote {
-  border-left: solid 4px var(--border);
-  font-style: italic;
-  margin: 0 0 2em 0;
-  padding: 0.5em 0 0.5em 2em;
-}
-
 pre {
-  -webkit-overflow-scrolling: touch;
   background: var(--surface-sunken);
   border-radius: 6px;
   border: solid 1px var(--border);
@@ -549,7 +491,6 @@ input[type="radio"] + label {
 
 input[type="checkbox"] + label:before,
 input[type="radio"] + label:before {
-  -moz-osx-font-smoothing: grayscale;
   -webkit-font-smoothing: antialiased;
   font-family: "Font Awesome 5 Free";
   font-style: normal;
@@ -623,7 +564,6 @@ input[type="radio"]:disabled + label {
 }
 
 .icon:before {
-  -moz-osx-font-smoothing: grayscale;
   -webkit-font-smoothing: antialiased;
   font-family: "Font Awesome 5 Free";
   font-style: normal;
@@ -651,25 +591,6 @@ ul {
 
 ul li {
   padding-left: 0.5em;
-}
-
-ul.alt {
-  list-style: none;
-  padding-left: 0;
-}
-
-ul.alt li {
-  border-top: solid 1px var(--border);
-  padding: 0.5em 0;
-}
-
-ul.alt li:first-child {
-  border-top: 0;
-  padding-top: 0;
-}
-
-dl {
-  margin: 0 0 2em 0;
 }
 
 /* Actions */
@@ -728,7 +649,6 @@ ul.actions.fit li > * {
   }
 
   ul.actions li input[type="submit"],
-  ul.actions li input[type="reset"],
   ul.actions li input[type="button"],
   ul.actions li button,
   ul.actions li .button {
@@ -736,7 +656,6 @@ ul.actions.fit li > * {
   }
 
   ul.actions li input[type="submit"].icon:before,
-  ul.actions li input[type="reset"].icon:before,
   ul.actions li input[type="button"].icon:before,
   ul.actions li button.icon:before,
   ul.actions li .button.icon:before {
@@ -767,7 +686,6 @@ table tbody tr:nth-child(2n + 1) {
 
 table td {
   padding: 0.75em 0.75em;
-  /* In Chrome, middle is the default, but in Firefox, bottom is the default. */
   vertical-align: middle;
 }
 
@@ -781,10 +699,6 @@ table th {
 
 table thead {
   border-bottom: solid 2px var(--border);
-}
-
-table tfoot {
-  border-top: solid 2px var(--border);
 }
 
 table.alt {
@@ -809,14 +723,9 @@ table.alt thead {
   border-bottom: 0;
 }
 
-table.alt tfoot {
-  border-top: 0;
-}
-
 /* Button */
 
 input[type="submit"],
-input[type="reset"],
 input[type="button"],
 .button {
   appearance: none;
@@ -841,14 +750,12 @@ input[type="button"],
 }
 
 input[type="submit"]:hover,
-input[type="reset"]:hover,
 input[type="button"]:hover,
 .button:hover {
   background-color: #737373;
 }
 
 input[type="submit"]:active,
-input[type="reset"]:active,
 input[type="button"]:active,
 .button:active {
   background-color: #595959;
@@ -856,7 +763,6 @@ input[type="button"]:active,
 
 /* Center the button around the icon and the text, instead of just the text. */
 input[type="submit"].icon,
-input[type="reset"].icon,
 input[type="button"].icon,
 .button.icon {
   padding-left: 1.35em;
@@ -864,21 +770,18 @@ input[type="button"].icon,
 }
 
 input[type="submit"].icon:before,
-input[type="reset"].icon:before,
 input[type="button"].icon:before,
 .button.icon:before {
   margin-right: 0.5em;
 }
 
 input[type="submit"].fit,
-input[type="reset"].fit,
 input[type="button"].fit,
 .button.fit {
   width: 100%;
 }
 
 input[type="submit"].small,
-input[type="reset"].small,
 input[type="button"].small,
 .button.small {
   font-size: 0.8em;
@@ -887,7 +790,6 @@ input[type="button"].small,
 }
 
 input[type="submit"].alt,
-input[type="reset"].alt,
 input[type="button"].alt,
 .button.alt {
   background-color: var(--button-alt-bg);
@@ -896,21 +798,18 @@ input[type="button"].alt,
 }
 
 input[type="submit"].alt:hover,
-input[type="reset"].alt:hover,
 input[type="button"].alt:hover,
 .button.alt:hover {
   background-color: var(--button-alt-hover-bg);
 }
 
 input[type="submit"].alt:active,
-input[type="reset"].alt:active,
 input[type="button"].alt:active,
 .button.alt:active {
   background-color: var(--button-alt-active-bg);
 }
 
 input[type="submit"].primary,
-input[type="reset"].primary,
 input[type="button"].primary,
 .button.primary {
   background-color: #e89980;
@@ -918,14 +817,12 @@ input[type="button"].primary,
 }
 
 input[type="submit"].primary:hover,
-input[type="reset"].primary:hover,
 input[type="button"].primary:hover,
 .button.primary:hover {
   background-color: #ecaa96;
 }
 
 input[type="submit"].primary:active,
-input[type="reset"].primary:active,
 input[type="button"].primary:active,
 .button.primary:active {
   background-color: #e4886a;
@@ -933,8 +830,6 @@ input[type="button"].primary:active,
 
 input[type="submit"].disabled,
 input[type="submit"]:disabled,
-input[type="reset"].disabled,
-input[type="reset"]:disabled,
 input[type="button"].disabled,
 input[type="button"]:disabled,
 .button.disabled,
@@ -1037,11 +932,6 @@ input[type="button"]:disabled,
   background-color: var(--header-link-hover-bg);
 }
 
-#header nav > ul > li a:not(.button).icon:before {
-  color: #999;
-  margin-right: 0.5em;
-}
-
 #header nav > ul > li:first-child {
   margin-left: 0;
 }
@@ -1052,7 +942,6 @@ input[type="button"]:disabled,
 }
 
 #header input[type="submit"],
-#header input[type="reset"],
 #header input[type="button"],
 #header .button {
   background-color: transparent;
@@ -1061,14 +950,12 @@ input[type="button"]:disabled,
 }
 
 #header input[type="submit"]:hover,
-#header input[type="reset"]:hover,
 #header input[type="button"]:hover,
 #header .button:hover {
   background-color: rgba(153, 153, 153, 0.25);
 }
 
 #header input[type="submit"]:active,
-#header input[type="reset"]:active,
 #header input[type="button"]:active,
 #header .button:active {
   background-color: rgba(153, 153, 153, 0.5);
