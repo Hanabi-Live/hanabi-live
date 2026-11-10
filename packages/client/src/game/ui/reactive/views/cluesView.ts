@@ -1,5 +1,5 @@
 import type { StateClue } from "@hanabi-live/game";
-import { msgClueToClue, NO_VALUE } from "@hanabi-live/game";
+import { msgClueToClue } from "@hanabi-live/game";
 import { globals } from "../../UIGlobals";
 import * as arrows from "../../arrows";
 import { getCardOrStackBase } from "../../getCardOrStackBase";
@@ -38,7 +38,7 @@ function updateArrows(
   }
 
   const clue =
-    clueForSegment.type === NO_VALUE
+    clueForSegment.type === undefined
       ? clueForSegment
       : msgClueToClue(clueForSegment, globals.variant);
 

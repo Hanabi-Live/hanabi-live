@@ -1,7 +1,7 @@
 // Click functions for the HanabiCard object.
 
 import type { CardIdentity } from "@hanabi-live/game";
-import { isCardDiscarded, isCardPlayed, NO_VALUE } from "@hanabi-live/game";
+import { isCardDiscarded, isCardPlayed } from "@hanabi-live/game";
 import type Konva from "konva";
 import * as modals from "../../modals";
 import type { HanabiCard } from "./HanabiCard";
@@ -222,8 +222,8 @@ export function morphReplayFromModal(
     hypothetical.sendHypotheticalActionToServer({
       type: "morph",
       order: card.order,
-      suitIndex: cardIdentity.suitIndex ?? NO_VALUE,
-      rank: cardIdentity.rank ?? NO_VALUE,
+      suitIndex: cardIdentity.suitIndex,
+      rank: cardIdentity.rank,
     });
   }
 }

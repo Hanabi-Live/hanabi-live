@@ -37,7 +37,7 @@ export type NoteAction =
 // ------------
 
 // The server sends these events, so their types come from its wire contracts. Unknown suits and
-// ranks are -1: the card is hidden from the recipient, or the variant does not reveal it.
+// ranks are absent: the card is hidden from the recipient, or the variant does not reveal it.
 
 type GameEvent = z.output<typeof gameEventSchema>;
 

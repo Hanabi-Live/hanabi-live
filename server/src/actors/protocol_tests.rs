@@ -468,7 +468,7 @@ async fn duck_clue_identity_is_private_in_live_history_and_recovery_but_not_comp
                         == if index == 3 {
                             clue.clone()
                         } else {
-                            json!({"type":-1,"value":-1})
+                            Value::Null
                         },
                     "Live clue identity leaked or spectator view changed"
                 );
@@ -508,7 +508,7 @@ async fn duck_clue_identity_is_private_in_live_history_and_recovery_but_not_comp
                 let expected = if index == 3 {
                     originals.clone()
                 } else {
-                    vec![json!({"type":-1,"value":-1}); 2]
+                    vec![Value::Null; 2]
                 };
                 ensure!(
                     clues == expected,

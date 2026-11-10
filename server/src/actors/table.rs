@@ -877,8 +877,8 @@ impl TableActor {
                 .identities()
                 .iter()
                 .map(|card| hanabi_protocol::CardIdentity {
-                    suit_index: int(card.suit_index),
-                    rank: i64::from(card.rank),
+                    suit_index: Some(int(card.suit_index)),
+                    rank: Some(i64::from(card.rank)),
                 })
                 .collect(),
         }

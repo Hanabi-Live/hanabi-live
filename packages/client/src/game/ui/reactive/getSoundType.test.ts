@@ -25,7 +25,7 @@ test("concealed Duck clues play the quack sound", () => {
       state,
       {
         type: "clue",
-        clue: { type: -1, value: -1 },
+        clue: { type: undefined, value: undefined },
         giver: 0,
         target: 1,
         orders: [],

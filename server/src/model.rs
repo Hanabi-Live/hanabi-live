@@ -1057,18 +1057,29 @@ mod tests {
         let clue = r#"{"type":"clue","clue":{"type":0,"value":1},"giver":0,"target":1,"list":[2],"ignoreNegative":false}"#;
         let replay: ReplayState = serde_json::from_value(serde_json::json!({
             "leader": 1, "segment": 0, "efficiencyModifier": 0, "hypothetical": true,
-            "hypotheticalActions": [clue, r#"{"type":"turn","num":3,"currentPlayerIndex":-1}"#],
+            "hypotheticalActions": [
+                clue,
+                r#"{"type":"turn","num":3,"currentPlayerIndex":-1}"#,
+                r#"{"type":"draw","playerIndex":0,"order":3,"suitIndex":-1,"rank":-1}"#,
+                r#"{"type":"clue","clue":{"type":-1,"value":-1},"giver":0,"target":1,"list":[2],"ignoreNegative":false}"#,
+            ],
             "showDrawnCards": false
         }))
         .unwrap();
         assert!(matches!(
             &replay.hypothetical_actions[..],
             [
-                HypotheticalAction::Clue { orders, .. },
+                HypotheticalAction::Clue { orders, clue: Some(_), .. },
                 HypotheticalAction::Turn {
                     current_player_index: None,
                     ..
                 },
+                HypotheticalAction::Draw {
+                    suit_index: None,
+                    rank: None,
+                    ..
+                },
+                HypotheticalAction::Clue { clue: None, .. },
             ] if orders.len() == 1
         ));
     }

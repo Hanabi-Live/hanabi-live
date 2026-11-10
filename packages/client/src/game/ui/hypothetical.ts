@@ -9,6 +9,7 @@ import type {
 } from "@hanabi-live/game";
 import { getClueCost } from "@hanabi-live/game";
 import { eRange } from "complete-common";
+import { toWireHypotheticalAction } from "../../wire";
 import type { ClientAction } from "../types/ClientAction";
 import type { State } from "../types/State";
 import type { ActionIncludingHypothetical } from "../types/actions";
@@ -218,7 +219,7 @@ export function sendHypotheticalActionToServer(
     globals.lobby.conn!.send("replayAction", {
       tableID: globals.lobby.tableID,
       type: "hypoAction",
-      action: hypoAction,
+      action: toWireHypotheticalAction(hypoAction),
     });
   } else {
     globals.store!.dispatch({

@@ -67,10 +67,13 @@ pub struct VoteChange {
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct CardIdentity {
-    #[schemars(with = "SuitIndexOrUnknown")]
-    pub suit_index: i64,
-    #[schemars(with = "RankOrUnknown")]
-    pub rank: i64,
+    /// Absent when the recipient may not see the card.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[schemars(with = "SuitIndex")]
+    pub suit_index: Option<i64>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[schemars(with = "CardRank")]
+    pub rank: Option<i64>,
 }
 
 /// Every card's identity, by card order, once a game ends.
@@ -156,7 +159,7 @@ pub struct Note {
     pub notes: Vec<CardNote>,
 }
 
-/// A clue's type and value, as the server relays them. `ReceivedClue` describes the values it holds.
+/// A clue's type and value. `ReceivedClue` describes the values it holds.
 #[derive(Clone, Copy, Debug, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct Clue {
@@ -165,8 +168,7 @@ pub struct Clue {
     pub value: i32,
 }
 
-/// A clue as its recipient sees it: a color clue names a suit's color, a rank clue names a rank,
-/// and a clue the recipient may not see hides both its type and value.
+/// A clue's type and value: a color clue names a suit's color, and a rank clue names a rank.
 #[derive(JsonSchema)]
 #[serde(untagged, deny_unknown_fields)]
 pub enum ReceivedClue {
@@ -184,16 +186,10 @@ pub enum ReceivedClue {
         #[schemars(range(min = MIN_RANK, max = MAX_RANK), extend("enum" = ranks()))]
         value: i32,
     },
-    Hidden {
-        #[serde(rename = "type")]
-        #[schemars(extend("const" = NO_VALUE))]
-        clue_type: i32,
-        #[schemars(extend("const" = NO_VALUE))]
-        value: i32,
-    },
 }
 
-/// One game event as a particular recipient sees it. Unknown card identities are -1.
+/// One game event as a particular recipient sees it. A card identity that the recipient may not see
+/// is absent.
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
 #[serde(
     tag = "type",
@@ -207,45 +203,59 @@ pub enum GameEvent {
         player_index: i64,
         #[schemars(with = "CardOrder")]
         order: i64,
-        #[schemars(with = "SuitIndexOrUnknown")]
-        suit_index: i64,
-        #[schemars(with = "RankOrUnknown")]
-        rank: i64,
+        /// Absent when the recipient may not see the card.
+        #[serde(default, skip_serializing_if = "Option::is_none")]
+        #[schemars(with = "SuitIndex")]
+        suit_index: Option<i64>,
+        #[serde(default, skip_serializing_if = "Option::is_none")]
+        #[schemars(with = "CardRank")]
+        rank: Option<i64>,
     },
     Play {
         #[schemars(with = "PlayerIndex")]
         player_index: i64,
         #[schemars(with = "CardOrder")]
         order: i64,
-        #[schemars(with = "SuitIndexOrUnknown")]
-        suit_index: i64,
-        #[schemars(with = "RankOrUnknown")]
-        rank: i64,
+        /// Absent when the recipient may not see the card.
+        #[serde(default, skip_serializing_if = "Option::is_none")]
+        #[schemars(with = "SuitIndex")]
+        suit_index: Option<i64>,
+        #[serde(default, skip_serializing_if = "Option::is_none")]
+        #[schemars(with = "CardRank")]
+        rank: Option<i64>,
     },
     CardIdentity {
         #[schemars(with = "PlayerIndex")]
         player_index: i64,
         #[schemars(with = "CardOrder")]
         order: i64,
-        #[schemars(with = "SuitIndexOrUnknown")]
-        suit_index: i64,
-        #[schemars(with = "RankOrUnknown")]
-        rank: i64,
+        /// Absent when the recipient may not see the card.
+        #[serde(default, skip_serializing_if = "Option::is_none")]
+        #[schemars(with = "SuitIndex")]
+        suit_index: Option<i64>,
+        #[serde(default, skip_serializing_if = "Option::is_none")]
+        #[schemars(with = "CardRank")]
+        rank: Option<i64>,
     },
     Discard {
         #[schemars(with = "PlayerIndex")]
         player_index: i64,
         #[schemars(with = "CardOrder")]
         order: i64,
-        #[schemars(with = "SuitIndexOrUnknown")]
-        suit_index: i64,
-        #[schemars(with = "RankOrUnknown")]
-        rank: i64,
+        /// Absent when the recipient may not see the card.
+        #[serde(default, skip_serializing_if = "Option::is_none")]
+        #[schemars(with = "SuitIndex")]
+        suit_index: Option<i64>,
+        #[serde(default, skip_serializing_if = "Option::is_none")]
+        #[schemars(with = "CardRank")]
+        rank: Option<i64>,
         failed: bool,
     },
     Clue {
+        /// Absent when the recipient may not see the clue's type and value.
+        #[serde(default, skip_serializing_if = "Option::is_none")]
         #[schemars(with = "ReceivedClue")]
-        clue: Clue,
+        clue: Option<Clue>,
         #[schemars(with = "PlayerIndex")]
         giver: i64,
         #[schemars(with = "PlayerIndex")]

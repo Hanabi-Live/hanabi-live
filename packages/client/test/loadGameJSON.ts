@@ -127,7 +127,7 @@ export function loadGameJSON(gameJSON: JSONGame): State {
 
     switch (a.type) {
       case "clue": {
-        if (a.clue.type === -1) {
+        if (a.clue.type === undefined) {
           throw new Error("A test replay cannot reconstruct a hidden clue.");
         }
         const clue = msgClueToClue(a.clue, variant);

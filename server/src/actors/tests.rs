@@ -112,8 +112,12 @@ fn typed_game_frames_preserve_wire_schema_and_projected_identities() -> Result<(
         for event in expected.as_array_mut().unwrap() {
             let event = event.as_object_mut().unwrap();
             event.retain(|key, value| {
-                !(matches!(key.as_str(), "currentPlayerIndex" | "playerIndex") && *value == -1
-                    || key == "votes" && value.is_null())
+                !(matches!(
+                    key.as_str(),
+                    "currentPlayerIndex" | "playerIndex" | "suitIndex" | "rank"
+                ) && *value == -1
+                    || key == "votes" && value.is_null()
+                    || key == "clue" && value["type"].is_null())
             });
             for (engine, wire) in [
                 ("list", "orders"),
@@ -138,11 +142,11 @@ fn typed_game_frames_preserve_wire_schema_and_projected_identities() -> Result<(
                 let player = usize::try_from(expected["playerIndex"].as_u64().unwrap()).unwrap();
                 let order = usize::try_from(expected["order"].as_u64().unwrap()).unwrap();
                 let (suit, rank) = if hidden == Some(player) {
-                    (-1, -1)
+                    (Value::Null, Value::Null)
                 } else {
                     (
-                        hanabi_engine::int(game.deck[order].suit_index),
-                        game.deck[order].rank,
+                        json!(hanabi_engine::int(game.deck[order].suit_index)),
+                        json!(game.deck[order].rank),
                     )
                 };
                 assert_eq!(expected["suitIndex"], suit);

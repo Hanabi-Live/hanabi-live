@@ -12,7 +12,6 @@ import {
   DEFAULT_PLAYER_NAMES,
   EVEN_RANK_CLUE,
   getCardsPerHand,
-  NO_VALUE,
   ODD_RANK_CLUE,
 } from "@hanabi-live/game";
 import { assertDefined, parseIntSafe } from "complete-common";
@@ -43,7 +42,7 @@ export function createJSONFromReplay(room: string): void {
   }
   if (
     globals.state.replay.actions.some(
-      (action) => action.type === "clue" && action.clue.type === NO_VALUE,
+      (action) => action.type === "clue" && action.clue.type === undefined,
     )
   ) {
     sendSelfPMFromServer(
@@ -200,7 +199,7 @@ function getGameActionsFromState(source: ReplayState): readonly ClientAction[] {
 
       case "clue": {
         switch (action.clue.type) {
-          case NO_VALUE: {
+          case undefined: {
             throw new Error(
               "Cannot export a replay with concealed clue identities.",
             );

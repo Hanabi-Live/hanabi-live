@@ -1,5 +1,4 @@
 import type { GameState } from "@hanabi-live/game";
-import { NO_VALUE } from "@hanabi-live/game";
 import type { Store, Unsubscribe } from "redux";
 import type { State } from "../../types/State";
 import type { Action } from "../../types/actions";
@@ -254,11 +253,12 @@ const ongoingGameObservers: Subscriptions = [
     turnView.shouldEnableBottomDeckBlindPlayChanged,
   ),
 
-  // Alternating Clues UI
-  subAfterInit((s) => {
-    const type = s.visibleState!.clues.at(-1)?.type;
-    return type === NO_VALUE ? undefined : type;
-  }, turnView.onLastClueTypeChanged),
+  // Alternating Clues UI. The last clue's type is undefined before the first clue and for a hidden
+  // clue.
+  subAfterInit(
+    (s) => s.visibleState!.clues.at(-1)?.type,
+    turnView.onLastClueTypeChanged,
+  ),
 
   // Segment + current player index.
   subAfterInit(

@@ -46,7 +46,7 @@ describe("gameReducer", () => {
     }
     const action: ActionClue = {
       type: "clue",
-      clue: { type: -1, value: -1 },
+      clue: { type: undefined, value: undefined },
       giver: 0,
       target: 1,
       orders: [first.order],
@@ -62,8 +62,8 @@ describe("gameReducer", () => {
       metadata,
     );
     expect(updated.clues.at(-1)).toMatchObject({
-      type: -1,
-      value: -1,
+      type: undefined,
+      value: undefined,
       giver: 0,
       target: 1,
       list: [0],

@@ -305,8 +305,8 @@ describe("hypothetical planning", () => {
     );
     expect(actions?.[0]).toMatchObject({
       type: "draw",
-      suitIndex: -1,
-      rank: -1,
+      suitIndex: undefined,
+      rank: undefined,
     });
     expect(actions?.[1]).toMatchObject({ type: "play", suitIndex: 0, rank: 1 });
     const state = applyPlan(actions, context);
@@ -474,8 +474,8 @@ describe("hypothetical planning", () => {
     expect(unknown?.[1]).toMatchObject({
       type: "draw",
       order: 1,
-      suitIndex: -1,
-      rank: -1,
+      suitIndex: undefined,
+      rank: undefined,
     });
   });
 

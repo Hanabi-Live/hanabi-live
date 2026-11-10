@@ -71,7 +71,7 @@ export function getClueText(
     metadata.characterAssignments,
   );
   if (
-    action.clue.type === -1
+    action.clue.type === undefined
     || variant.cowAndPig
     || variant.duck
     || characterName === "Quacker"
@@ -96,12 +96,7 @@ export function getClueText(
   }
 
   // Handle the default case of a normal clue.
-  let clueName = getClueName(
-    action.clue.type,
-    action.clue.value,
-    variant,
-    characterName,
-  );
+  let clueName = getClueName(action.clue, variant, characterName);
   if (action.orders.length !== 1) {
     clueName += "s";
   }
@@ -114,7 +109,7 @@ function getClueActionName(
   variant: Variant,
   characterName: string,
 ): string {
-  if (msgClue.type === -1) {
+  if (msgClue.type === undefined) {
     return "quacks";
   }
   if (variant.cowAndPig) {
@@ -224,8 +219,8 @@ export function getPlayText(
   const playerName = getPlayerName(action.playerIndex, metadata);
 
   const cardIsHidden =
-    action.suitIndex === -1
-    || action.rank === -1
+    action.suitIndex === undefined
+    || action.rank === undefined
     || (variant.throwItInAHole && (playing || shadowing));
 
   const cardName = cardIsHidden
@@ -269,8 +264,8 @@ export function getDiscardText(
   const playerName = getPlayerName(action.playerIndex, metadata);
 
   const cardIsHidden =
-    action.suitIndex === -1
-    || action.rank === -1
+    action.suitIndex === undefined
+    || action.rank === undefined
     || (variant.throwItInAHole && (playing || shadowing));
 
   const cardName = cardIsHidden

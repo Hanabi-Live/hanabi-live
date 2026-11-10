@@ -226,7 +226,7 @@ databaseDescribe("compiled application entry point (rust)", () => {
         if (card.type !== "draw") {
           throw new Error("Expected an initial draw.");
         }
-        expect(card.rank).toBe(-1);
+        expect(card.rank).toBeUndefined();
         active.send("action", {
           tableID,
           type: 0,
@@ -433,7 +433,7 @@ databaseDescribe("compiled application entry point (rust)", () => {
         expect(
           replayHistory.actions
             .filter((event) => event.type === "draw")
-            .every((event) => event.rank > 0),
+            .every((event) => event.rank !== undefined),
         ).toBe(true);
         expect(
           await client`SELECT id FROM games WHERE id = ${finished.databaseID}`,
@@ -610,7 +610,9 @@ databaseDescribe("compiled application entry point (rust)", () => {
         );
         expect(hand).toHaveLength(2);
         expect(
-          hand.every((event) => event.type === "draw" && event.rank === -1),
+          hand.every(
+            (event) => event.type === "draw" && event.rank === undefined,
+          ),
         ).toBe(true);
       }
       observer.send("tableSpectate", { tableID, shadowingPlayerIndex: 0 });
@@ -625,13 +627,10 @@ databaseDescribe("compiled application entry point (rust)", () => {
         ourPlayerIndex: 0,
       });
       expect(
-        shadow.history.actions.filter(
-          (event) => event.type === "draw" && event.playerIndex === 0,
-        ),
-      ).toEqual<unknown>([
-        expect.objectContaining({ rank: -1, suitIndex: -1 }),
-        expect.objectContaining({ rank: -1, suitIndex: -1 }),
-      ]);
+        shadow.history.actions
+          .filter((event) => event.type === "draw" && event.playerIndex === 0)
+          .map((event) => "suitIndex" in event || "rank" in event),
+      ).toEqual([false, false]);
       // The client rebuilds the game when it finishes, so it needs the identities of the scrubbed
       // cards first.
       const arrivals: string[] = [];
@@ -706,7 +705,7 @@ databaseDescribe("compiled application entry point (rust)", () => {
         expect(
           imported.history.actions
             .filter((event) => event.type === "draw")
-            .every((event) => event.rank > 0),
+            .every((event) => event.rank !== undefined),
         ).toBe(true);
         let replayPeer: ReturnType<typeof socketClient> = owner;
         if (source === "json") {

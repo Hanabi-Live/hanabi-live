@@ -6,7 +6,7 @@ import type {
   GameMetadata,
   GameState,
 } from "@hanabi-live/game";
-import { gameReducer, getInitialGameState, NO_VALUE } from "@hanabi-live/game";
+import { gameReducer, getInitialGameState } from "@hanabi-live/game";
 import { assertDefined } from "complete-common";
 import type { Draft } from "immer";
 import { castDraft, original, produce } from "immer";
@@ -446,7 +446,7 @@ function rehydrateScrubbedActions(
       (action.type === "play"
         || action.type === "discard"
         || action.type === "draw")
-      && (action.suitIndex === NO_VALUE || action.rank === NO_VALUE)
+      && (action.suitIndex === undefined || action.rank === undefined)
     ) {
       const cardIdentity = cardIdentities[action.order];
       assertDefined(

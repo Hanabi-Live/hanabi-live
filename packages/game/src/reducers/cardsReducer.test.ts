@@ -512,7 +512,7 @@ describe("cardsReducer", () => {
       nextGameState = getGameStateWithHands([[], [0, 1]]);
       deck = cardsReducer(
         deck,
-        discard(1, 1, -1, -1, false),
+        discard(1, 1, undefined, undefined, false),
         nextGameState,
         THROW_IT_IN_A_HOLE_METADATA,
       );

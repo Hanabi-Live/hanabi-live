@@ -23,7 +23,6 @@ describe("server game events", () => {
     const action = toGameAction(
       event({
         type: "clue",
-        clue: { type: -1, value: -1 },
         giver: 0,
         target: 1,
         orders: [3, 4],
@@ -33,7 +32,7 @@ describe("server game events", () => {
     if (action.type !== "clue") {
       throw new Error("Expected a clue action");
     }
-    expect(action.clue).toEqual({ type: -1, value: -1 });
+    expect(action.clue).toEqual({ type: undefined, value: undefined });
     expect(action.orders.map(Number)).toEqual([3, 4]);
   });
 
@@ -68,10 +67,10 @@ describe("server game events", () => {
 });
 
 describe("card identities", () => {
-  test("unknown suits and ranks become undefined", () => {
+  test("unknown suits and ranks stay undefined", () => {
     const [identity] = SERVER_COMMAND_SCHEMAS.cardIdentities.parse({
       tableID: 1,
-      identities: [{ suitIndex: -1, rank: 7 }],
+      identities: [{ rank: 7 }],
     }).identities;
     expect(toCardIdentity(identity!)).toEqual({
       suitIndex: undefined,

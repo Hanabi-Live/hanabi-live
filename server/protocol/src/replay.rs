@@ -310,7 +310,7 @@ pub struct Hypothetical {
 }
 
 /// One action in a hypothetical. The server relays these; each client applies them to its own copy
-/// of the game. Unknown card identities are -1.
+/// of the game. A card identity that the recipient may not see is absent.
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
 #[serde(
     tag = "type",
@@ -324,35 +324,74 @@ pub enum HypotheticalAction {
         player_index: i64,
         #[schemars(with = "CardOrder")]
         order: i64,
-        #[schemars(with = "SuitIndexOrUnknown")]
-        suit_index: i64,
-        #[schemars(with = "RankOrUnknown")]
-        rank: i64,
+        /// Absent when the recipient may not see the card.
+        #[serde(
+            default,
+            deserialize_with = "deserialize_stored_identity",
+            skip_serializing_if = "Option::is_none"
+        )]
+        #[schemars(with = "SuitIndex")]
+        suit_index: Option<i64>,
+        #[serde(
+            default,
+            deserialize_with = "deserialize_stored_identity",
+            skip_serializing_if = "Option::is_none"
+        )]
+        #[schemars(with = "CardRank")]
+        rank: Option<i64>,
     },
     Play {
         #[schemars(with = "PlayerIndex")]
         player_index: i64,
         #[schemars(with = "CardOrder")]
         order: i64,
-        #[schemars(with = "SuitIndexOrUnknown")]
-        suit_index: i64,
-        #[schemars(with = "RankOrUnknown")]
-        rank: i64,
+        /// Absent when the recipient may not see the card.
+        #[serde(
+            default,
+            deserialize_with = "deserialize_stored_identity",
+            skip_serializing_if = "Option::is_none"
+        )]
+        #[schemars(with = "SuitIndex")]
+        suit_index: Option<i64>,
+        #[serde(
+            default,
+            deserialize_with = "deserialize_stored_identity",
+            skip_serializing_if = "Option::is_none"
+        )]
+        #[schemars(with = "CardRank")]
+        rank: Option<i64>,
     },
     Discard {
         #[schemars(with = "PlayerIndex")]
         player_index: i64,
         #[schemars(with = "CardOrder")]
         order: i64,
-        #[schemars(with = "SuitIndexOrUnknown")]
-        suit_index: i64,
-        #[schemars(with = "RankOrUnknown")]
-        rank: i64,
+        /// Absent when the recipient may not see the card.
+        #[serde(
+            default,
+            deserialize_with = "deserialize_stored_identity",
+            skip_serializing_if = "Option::is_none"
+        )]
+        #[schemars(with = "SuitIndex")]
+        suit_index: Option<i64>,
+        #[serde(
+            default,
+            deserialize_with = "deserialize_stored_identity",
+            skip_serializing_if = "Option::is_none"
+        )]
+        #[schemars(with = "CardRank")]
+        rank: Option<i64>,
         failed: bool,
     },
     Clue {
+        /// Absent when the recipient may not see the clue's type and value.
+        #[serde(
+            default,
+            deserialize_with = "deserialize_stored_clue",
+            skip_serializing_if = "Option::is_none"
+        )]
         #[schemars(with = "ReceivedClue")]
-        clue: Clue,
+        clue: Option<Clue>,
         #[schemars(with = "PlayerIndex")]
         giver: i64,
         #[schemars(with = "PlayerIndex")]
@@ -380,16 +419,47 @@ pub enum HypotheticalAction {
     Morph {
         #[schemars(with = "CardOrder")]
         order: i64,
-        #[schemars(with = "SuitIndexOrUnknown")]
-        suit_index: i64,
-        #[schemars(with = "RankOrUnknown")]
-        rank: i64,
+        /// Absent when the recipient may not see the card.
+        #[serde(
+            default,
+            deserialize_with = "deserialize_stored_identity",
+            skip_serializing_if = "Option::is_none"
+        )]
+        #[schemars(with = "SuitIndex")]
+        suit_index: Option<i64>,
+        #[serde(
+            default,
+            deserialize_with = "deserialize_stored_identity",
+            skip_serializing_if = "Option::is_none"
+        )]
+        #[schemars(with = "CardRank")]
+        rank: Option<i64>,
     },
     /// Shows a morphed card as its original identity again.
     Unmorph {
         #[schemars(with = "CardOrder")]
         order: i64,
     },
+}
+
+/// Reads a card's suit or rank that may be absent. Checkpoints written before November 10th, 2026
+/// store an absent value as -1.
+fn deserialize_stored_identity<'de, D>(deserializer: D) -> Result<Option<i64>, D::Error>
+where
+    D: serde::Deserializer<'de>,
+{
+    let value = Option::<i64>::deserialize(deserializer)?;
+    Ok(value.filter(|value| *value >= 0))
+}
+
+/// Reads a clue that may be hidden. Checkpoints written before November 10th, 2026 store a hidden
+/// clue with -1 as its type and value.
+fn deserialize_stored_clue<'de, D>(deserializer: D) -> Result<Option<Clue>, D::Error>
+where
+    D: serde::Deserializer<'de>,
+{
+    let clue = Option::<Clue>::deserialize(deserializer)?;
+    Ok(clue.filter(|clue| clue.clue_type >= 0))
 }
 
 /// Reads a seat that may be absent. Checkpoints written before November 10th, 2026 store an absent

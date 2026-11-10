@@ -97,11 +97,11 @@ function gameReducerFunction(
         // Even though the objects for each clue type are the exact same, a switch statement is
         // needed to satisfy the TypeScript compiler.
         switch (action.clue.type) {
-          case -1: {
+          case undefined: {
             gameState.clues.push(
               castDraft({
-                type: -1,
-                value: -1,
+                type: undefined,
+                value: undefined,
                 giver: action.giver,
                 target: action.target,
                 segment: gameState.turn.segment,
@@ -200,7 +200,7 @@ function gameReducerFunction(
           finished,
         )
       ) {
-        if (action.suitIndex === -1) {
+        if (action.suitIndex === undefined) {
           throw new Error(
             `The suit index for a discarded card was: ${action.suitIndex}`,
           );
@@ -380,7 +380,7 @@ function gameReducerFunction(
           finished,
         )
       ) {
-        if (action.suitIndex === -1) {
+        if (action.suitIndex === undefined) {
           throw new Error(
             `The suit index for a played card was: ${action.suitIndex}`,
           );
@@ -488,9 +488,7 @@ function gameReducerFunction(
   // Resolve the stack direction.
   if (action.type === "play" && (hasReversedSuits(variant) || variant.sudoku)) {
     const suitIndex =
-      action.suitIndex === -1
-        ? (gameState.deck[action.order]?.suitIndex ?? undefined)
-        : action.suitIndex;
+      action.suitIndex ?? gameState.deck[action.order]?.suitIndex;
 
     if (suitIndex !== undefined) {
       // We have to wait until the deck is updated with the information of the card that we played
@@ -514,9 +512,7 @@ function gameReducerFunction(
   // In Sudoku variants, resolve the stack starting value.
   if (action.type === "play" && variant.sudoku) {
     const suitIndex =
-      action.suitIndex === -1
-        ? (gameState.deck[action.order]?.suitIndex ?? undefined)
-        : action.suitIndex;
+      action.suitIndex ?? gameState.deck[action.order]?.suitIndex;
 
     if (suitIndex !== undefined) {
       const playStack = gameState.playStacks[suitIndex];
@@ -536,8 +532,8 @@ function gameReducerFunction(
   // make other cards critical.
   if (
     (action.type === "play" || action.type === "discard")
-    && action.suitIndex !== -1
-    && action.rank !== -1
+    && action.suitIndex !== undefined
+    && action.rank !== undefined
   ) {
     // For a no-variant game, we would only have to iterate over cards of the same suit to check for
     // non-playability. But other variants become more complicated, so we iterate over the entire

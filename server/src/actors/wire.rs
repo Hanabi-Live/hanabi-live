@@ -4,6 +4,11 @@ pub(super) fn int(value: usize) -> i64 {
     i64::try_from(value).unwrap_or(i64::MAX)
 }
 
+/// A suit or rank that the engine marks with `NO_VALUE` when the recipient may not see it.
+fn known(value: i32) -> Option<i64> {
+    (value != NO_VALUE).then(|| value.into())
+}
+
 /// The wire form of an engine event, which serializes identically.
 pub(super) fn wire_event(event: &hanabi_engine::EngineEvent) -> hanabi_protocol::GameEvent {
     use hanabi_engine::EngineEvent as E;
@@ -17,8 +22,8 @@ pub(super) fn wire_event(event: &hanabi_engine::EngineEvent) -> hanabi_protocol:
         } => G::Draw {
             player_index: int(*player_index),
             order: int(*order),
-            suit_index: (*suit_index).into(),
-            rank: (*rank).into(),
+            suit_index: known(*suit_index),
+            rank: known(*rank),
         },
         E::Play {
             player_index,
@@ -28,8 +33,8 @@ pub(super) fn wire_event(event: &hanabi_engine::EngineEvent) -> hanabi_protocol:
         } => G::Play {
             player_index: int(*player_index),
             order: int(*order),
-            suit_index: (*suit_index).into(),
-            rank: (*rank).into(),
+            suit_index: known(*suit_index),
+            rank: known(*rank),
         },
         E::CardIdentity {
             player_index,
@@ -39,8 +44,8 @@ pub(super) fn wire_event(event: &hanabi_engine::EngineEvent) -> hanabi_protocol:
         } => G::CardIdentity {
             player_index: int(*player_index),
             order: int(*order),
-            suit_index: (*suit_index).into(),
-            rank: (*rank).into(),
+            suit_index: known(*suit_index),
+            rank: known(*rank),
         },
         E::Discard {
             player_index,
@@ -51,8 +56,8 @@ pub(super) fn wire_event(event: &hanabi_engine::EngineEvent) -> hanabi_protocol:
         } => G::Discard {
             player_index: int(*player_index),
             order: int(*order),
-            suit_index: (*suit_index).into(),
-            rank: (*rank).into(),
+            suit_index: known(*suit_index),
+            rank: known(*rank),
             failed: *failed,
         },
         E::Clue {
@@ -62,11 +67,11 @@ pub(super) fn wire_event(event: &hanabi_engine::EngineEvent) -> hanabi_protocol:
             list,
             turn,
         } => G::Clue {
-            clue: hanabi_protocol::Clue {
-                // The wire marks a clue that the recipient may not see with NO_VALUE.
-                clue_type: clue.clue_type.map_or(NO_VALUE, i32::from),
+            // The wire omits a clue that the recipient may not see.
+            clue: clue.clue_type.map(|clue_type| hanabi_protocol::Clue {
+                clue_type: i32::from(clue_type),
                 value: clue.value,
-            },
+            }),
             giver: int(*giver),
             target: int(*target),
             orders: list.iter().map(|&order| SafeInteger(int(order))).collect(),

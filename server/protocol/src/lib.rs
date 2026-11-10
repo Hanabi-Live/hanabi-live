@@ -55,6 +55,8 @@ pub const OUTDATED_CLIENT_CODE: &str = "outdated_client";
 pub const NO_ACCOUNT_CODE: &str = "no_account";
 /// The most suits a variant can have.
 pub const MAX_SUITS: usize = 6;
+/// The highest suit index.
+const MAX_SUIT_INDEX: usize = MAX_SUITS - 1;
 /// The lowest rank.
 pub const MIN_RANK: i32 = 1;
 /// The highest normal rank, which is also a suit's stack size unless the variant sets one.
@@ -132,21 +134,16 @@ fn seats() -> Vec<i64> {
         .collect()
 }
 
-/// Every seat index after -1, which means an unknown suit.
-fn seats_or_none() -> Vec<i64> {
-    std::iter::once(i64::from(NO_VALUE))
-        .chain(seats())
+/// Every suit index.
+fn suits() -> Vec<i64> {
+    (0..=MAX_SUIT_INDEX)
+        .filter_map(|suit| i64::try_from(suit).ok())
         .collect()
 }
 
 /// Every normal rank, which are also the ranks that clues can name.
 fn ranks() -> Vec<i32> {
     (MIN_RANK..=MAX_RANK).collect()
-}
-
-/// Every rank a card can have, after -1, which means an unknown rank.
-fn ranks_or_unknown() -> Vec<i32> {
-    std::iter::once(NO_VALUE).chain(catalog_ranks()).collect()
 }
 
 /// Every rank a catalog can name: the normal ranks and the start card's.
@@ -274,18 +271,18 @@ pub struct PlayerIndex(
 #[schemars(extend("x-brand" = "CardOrder"))]
 pub struct CardOrder(#[schemars(range(min = 0, max = MAX_CARD_ORDER))] pub i64);
 
-/// A card's suit, or -1 when the recipient may not see it.
+/// A card's suit.
 #[derive(JsonSchema)]
 #[serde(transparent)]
-pub struct SuitIndexOrUnknown(
-    #[schemars(range(min = NO_VALUE, max = MAX_SEAT), extend("enum" = seats_or_none()))] pub i64,
+pub struct SuitIndex(
+    #[schemars(range(min = 0, max = MAX_SUIT_INDEX), extend("enum" = suits()))] pub i64,
 );
 
-/// A card's rank, or -1 when the recipient may not see it. 7 is the rank of a stack's start card.
+/// A card's rank. 7 is the rank of a stack's start card.
 #[derive(JsonSchema)]
 #[serde(transparent)]
-pub struct RankOrUnknown(
-    #[schemars(range(min = NO_VALUE, max = START_CARD_RANK), extend("enum" = ranks_or_unknown()))]
+pub struct CardRank(
+    #[schemars(range(min = MIN_RANK, max = START_CARD_RANK), extend("enum" = catalog_ranks()))]
     pub i64,
 );
 

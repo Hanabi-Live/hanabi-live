@@ -16,7 +16,6 @@ import {
   isCardDiscarded,
   isCardInPlayerHand,
   isCardPlayed,
-  NO_VALUE,
 } from "@hanabi-live/game";
 import { assertEnumValue } from "complete-common";
 import Konva from "konva";
@@ -187,7 +186,7 @@ export function set(
       globals.metadata.characterAssignments,
     );
     if (
-      clue.type === NO_VALUE
+      clue.type === undefined
       || globals.variant.duck
       || (giverCharacterName === "Quacker" && !globals.state.finished)
     ) {

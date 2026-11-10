@@ -74,7 +74,7 @@ describe("hypothetical state", () => {
       startingState,
       false,
       [
-        { type: "morph", order: 0 as CardOrder, suitIndex: -1, rank: 3 },
+        { type: "morph", order: 0 as CardOrder, suitIndex: undefined, rank: 3 },
         action,
         action,
       ],
@@ -108,8 +108,8 @@ describe("hypothetical state", () => {
       {
         type: "morph",
         order: 30 as CardOrder,
-        suitIndex: -1,
-        rank: -1,
+        suitIndex: undefined,
+        rank: undefined,
       },
       false,
       metadata,
@@ -484,7 +484,12 @@ describe("hypothetical state", () => {
       try {
         let state = hypotheticalStateReducer(
           initial,
-          { type: "morph", order: 0 as CardOrder, suitIndex: -1, rank: -1 },
+          {
+            type: "morph",
+            order: 0 as CardOrder,
+            suitIndex: undefined,
+            rank: undefined,
+          },
           finished,
           metadata,
         );

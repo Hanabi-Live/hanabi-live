@@ -16,6 +16,7 @@ import type { Variant } from "../interfaces/Variant";
 import { getCharacterNameForPlayer } from "../reducers/reducerHelpers";
 import type { Clue } from "../types/Clue";
 import { newColorClue, newRankClue } from "../types/Clue";
+import type { HiddenClue } from "../types/HiddenClue";
 import type { MsgClue } from "../types/MsgClue";
 import type { PlayerIndex } from "../types/PlayerIndex";
 import type { Rank } from "../types/Rank";
@@ -32,16 +33,15 @@ export function isPassTurnClue(action: ActionClue): boolean {
 }
 
 export function getClueName(
-  clueType: ClueType | -1,
-  clueValue: number,
+  clue: MsgClue | HiddenClue,
   variant: Variant,
   characterName: string,
 ): string {
-  if (clueType === -1) {
+  if (clue.type === undefined) {
     return "Quack";
   }
   if (variant.cowAndPig) {
-    switch (clueType) {
+    switch (clue.type) {
       case ClueType.Color: {
         return "Moo";
       }
@@ -56,24 +56,24 @@ export function getClueName(
     return "Quack";
   }
 
-  if (variant.oddsAndEvens && clueType === ClueType.Rank) {
-    if (clueValue === ODD_RANK_CLUE) {
+  if (variant.oddsAndEvens && clue.type === ClueType.Rank) {
+    if (clue.value === ODD_RANK_CLUE) {
       return "Odd";
     }
 
-    if (clueValue === EVEN_RANK_CLUE) {
+    if (clue.value === EVEN_RANK_CLUE) {
       return "Even";
     }
   }
 
-  switch (clueType) {
+  switch (clue.type) {
     case ClueType.Color: {
-      const color = variant.clueColors[clueValue];
+      const color = variant.clueColors[clue.value];
       return color === undefined ? "Unknown" : color.name;
     }
 
     case ClueType.Rank: {
-      return clueValue.toString();
+      return clue.value.toString();
     }
   }
 }

@@ -2,9 +2,17 @@
 // schemas, where the client represents a value differently from the server. The remaining checks
 // cover what the schemas cannot express: seat-indexed tuples.
 
-import type { ServerCommandData } from "@hanabi-live/data";
-import type { CardIdentity, GameAction, NumPlayers } from "@hanabi-live/game";
-import { isValidNumPlayers, NO_VALUE } from "@hanabi-live/game";
+import type { ClientCommandData, ServerCommandData } from "@hanabi-live/data";
+import type {
+  ActionIncludingHypothetical,
+  CardIdentity,
+  GameAction,
+  HiddenClue,
+  MsgClue,
+  NumPlayers,
+  WireClue,
+} from "@hanabi-live/game";
+import { ClueType, isValidNumPlayers } from "@hanabi-live/game";
 import type { Tuple } from "complete-common";
 import { SoundType } from "./game/types/SoundType";
 
@@ -25,12 +33,52 @@ export function toPlayerTuple<T>(
   return [...values] as unknown as Tuple<T, NumPlayers>;
 }
 
-/** The server marks an unknown suit or rank with `NO_VALUE`; the game state uses undefined. */
+/** The server omits a suit or rank that the recipient may not see. */
 export function toCardIdentity(identity: WireCardIdentity): CardIdentity {
-  return {
-    suitIndex: identity.suitIndex === NO_VALUE ? undefined : identity.suitIndex,
-    rank: identity.rank === NO_VALUE ? undefined : identity.rank,
-  };
+  return { suitIndex: identity.suitIndex, rank: identity.rank };
+}
+
+type WireHypotheticalAction = ServerCommandData["hypoAction"];
+type OutgoingHypotheticalAction = Extract<
+  ClientCommandData["replayAction"],
+  { type: "hypoAction" }
+>["action"];
+
+/** The server omits a clue that the recipient may not see; the game state keeps its giver. */
+const HIDDEN_CLUE = {
+  type: undefined,
+  value: undefined,
+} as const satisfies HiddenClue;
+
+/** Converts a clue from the server, naming its type with the enum. */
+function toClue(clue: WireClue | undefined): HiddenClue | MsgClue {
+  if (clue === undefined) {
+    return HIDDEN_CLUE;
+  }
+  return clue.type === 0
+    ? { type: ClueType.Color, value: clue.value }
+    : { type: ClueType.Rank, value: clue.value };
+}
+
+/** Converts a hypothetical action from the server into the action the game state applies. */
+export function toHypotheticalAction(
+  action: WireHypotheticalAction,
+): ActionIncludingHypothetical {
+  if (action.type !== "clue") {
+    return action;
+  }
+  return { ...action, clue: toClue(action.clue) };
+}
+
+/** Converts a hypothetical action for the server, which omits a hidden clue. */
+export function toWireHypotheticalAction(
+  action: ActionIncludingHypothetical,
+): OutgoingHypotheticalAction {
+  if (action.type !== "clue") {
+    return action;
+  }
+  const { clue, ...rest } = action;
+  return clue.type === undefined ? rest : { ...rest, clue };
 }
 
 /**
@@ -43,7 +91,7 @@ export function toGameAction(event: WireEvent): GameAction {
     return event;
   }
   const { turn: _turn, ...clue } = event;
-  return { ...clue, ignoreNegative: false };
+  return { ...clue, clue: toClue(clue.clue), ignoreNegative: false };
 }
 
 type WireSound =

@@ -57,8 +57,8 @@ export function rankClue(
 export function draw(
   playerIndex: PlayerIndex,
   order: number, // We do not want to force the consumer to brand their numbers.
-  suitIndex: SuitIndex | -1 = -1,
-  rank: Rank | -1 = -1,
+  suitIndex?: SuitIndex,
+  rank?: Rank,
 ): ActionDraw {
   return {
     type: "draw",
@@ -73,8 +73,8 @@ export function draw(
 export function discard(
   playerIndex: PlayerIndex,
   order: number, // We do not want to force the consumer to brand their numbers.
-  suitIndex: SuitIndex | -1,
-  rank: Rank | -1,
+  suitIndex: SuitIndex | undefined,
+  rank: Rank | undefined,
   failed: boolean,
 ): ActionDiscard {
   return {

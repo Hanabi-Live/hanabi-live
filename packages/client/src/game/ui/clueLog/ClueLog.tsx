@@ -124,8 +124,7 @@ export function ClueLog({
             key={firstIndex + i}
             match={getMatch(clue, hoveredCardOrder)}
             name={getClueName(
-              clue.type,
-              clue.value,
+              clue,
               variant,
               getCharacterNameForPlayer(clue.giver, characterAssignments),
             )}

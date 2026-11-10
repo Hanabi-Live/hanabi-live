@@ -61,8 +61,8 @@ export function cardsReducer(
       if (
         !shouldSeeSlot2CardIdentity(metadata)
         || action.playerIndex === metadata.ourPlayerIndex
-        || action.suitIndex === -1
-        || action.rank === -1
+        || action.suitIndex === undefined
+        || action.rank === undefined
       ) {
         // Otherwise, the server scrubs the identity from cards that slide from slot 1 to slot 2 in
         // our own hand in order to prevent leaking information.
@@ -86,7 +86,7 @@ export function cardsReducer(
 
     case "clue": {
       const clue =
-        action.clue.type === -1
+        action.clue.type === undefined
           ? undefined
           : msgClueToClue(action.clue, variant);
 
@@ -150,9 +150,8 @@ export function cardsReducer(
 
       // If the rank or suit coming from the action is -1 (i.e. unknown), prefer what we already had
       // inferred.
-      const suitIndex =
-        action.suitIndex === -1 ? card.suitIndex : action.suitIndex;
-      const rank = action.rank === -1 ? card.rank : action.rank;
+      const suitIndex = action.suitIndex ?? card.suitIndex;
+      const rank = action.rank ?? card.rank;
 
       const identityDetermined = revealCard(suitIndex, rank, card);
 
@@ -179,12 +178,14 @@ export function cardsReducer(
       const goesIntoHole =
         variant.throwItInAHole && (action.type === "play" || action.failed);
       const revealedToPlayer =
-        action.suitIndex === -1 || action.rank === -1 || goesIntoHole
+        action.suitIndex === undefined
+        || action.rank === undefined
+        || goesIntoHole
           ? card.revealedToPlayer
           : newArray(MAX_PLAYERS, true);
 
       const possibleCards =
-        action.suitIndex === -1 || action.rank === -1
+        action.suitIndex === undefined || action.rank === undefined
           ? card.possibleCards
           : ([[action.suitIndex, action.rank]] as readonly SuitRankTuple[]);
 
@@ -229,12 +230,11 @@ export function cardsReducer(
 
       let { possibleCards } = initial;
 
-      if (action.suitIndex !== -1 && action.rank !== -1) {
+      if (action.suitIndex !== undefined && action.rank !== undefined) {
         possibleCards = [[action.suitIndex, action.rank]] as const;
       }
 
-      const suitIndex = action.suitIndex === -1 ? undefined : action.suitIndex;
-      const rank = action.rank === -1 ? undefined : action.rank;
+      const { suitIndex, rank } = action;
 
       const drawnCard = {
         ...initial,

@@ -13,7 +13,6 @@ import {
   getVariant,
   isCardClued,
   isHandLocked,
-  NO_VALUE,
 } from "@hanabi-live/game";
 import { includes } from "complete-common";
 import { SoundType } from "../../types/SoundType";
@@ -88,7 +87,7 @@ export function getSoundType(
 
   switch (action.type) {
     case "clue": {
-      if (action.clue.type === NO_VALUE) {
+      if (action.clue.type === undefined) {
         return SoundType.Quack;
       }
       if (metadata.options.detrimentalCharacters) {

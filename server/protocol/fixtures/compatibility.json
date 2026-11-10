@@ -825,7 +825,6 @@
       "action": {
         "type": "morph",
         "order": 3,
-        "suitIndex": -1,
         "rank": 2
       }
     },
@@ -881,17 +880,13 @@
     "valid": true
   },
   {
-    "name": "hidden clues conceal both their type and value",
+    "name": "hidden clues omit their type and value",
     "direction": "server",
     "command": "gameAction",
     "input": {
       "tableID": 3,
       "action": {
         "type": "clue",
-        "clue": {
-          "type": -1,
-          "value": -1
-        },
         "giver": 0,
         "target": 1,
         "orders": [3, 4],
@@ -901,7 +896,7 @@
     "valid": true
   },
   {
-    "name": "hidden clues cannot reveal their value",
+    "name": "hidden clues are omitted, not marked with -1",
     "direction": "server",
     "command": "gameAction",
     "input": {
@@ -990,9 +985,7 @@
         {
           "type": "draw",
           "playerIndex": 0,
-          "order": 0,
-          "suitIndex": -1,
-          "rank": -1
+          "order": 0
         },
         {
           "type": "gameOver",
@@ -1004,7 +997,7 @@
     "valid": true
   },
   {
-    "name": "cards can be unknown or a stack's start card",
+    "name": "unknown suits are omitted, not marked with -1",
     "direction": "server",
     "command": "gameAction",
     "input": {
@@ -1014,6 +1007,21 @@
         "playerIndex": 0,
         "order": 0,
         "suitIndex": -1,
+        "rank": 7
+      }
+    },
+    "valid": false
+  },
+  {
+    "name": "cards can be unknown or a stack's start card",
+    "direction": "server",
+    "command": "gameAction",
+    "input": {
+      "tableID": 3,
+      "action": {
+        "type": "draw",
+        "playerIndex": 0,
+        "order": 0,
         "rank": 7
       }
     },
@@ -1135,7 +1143,6 @@
       "action": {
         "type": "morph",
         "order": 66,
-        "suitIndex": -1,
         "rank": 2
       }
     },

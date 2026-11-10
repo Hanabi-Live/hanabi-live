@@ -38,15 +38,15 @@ export function getCardName(
  * maximum score. This mirrors the server function "Card.NeedsToBePlayed()".
  */
 export function isCardNeededForMaxScore(
-  suitIndex: SuitIndex | -1,
-  rank: Rank | -1,
+  suitIndex: SuitIndex | undefined,
+  rank: Rank | undefined,
   deck: readonly CardState[],
   playStacks: GameState["playStacks"],
   playStackDirections: GameState["playStackDirections"],
   playStackStarts: GameState["playStackStarts"],
   variant: Variant,
 ): boolean {
-  if (suitIndex === -1 || rank === -1) {
+  if (suitIndex === undefined || rank === undefined) {
     return false;
   }
 
@@ -131,13 +131,13 @@ export function getCardStatus(
 
 /** This does not mirror any function on the server. */
 export function isCardCritical(
-  suitIndex: SuitIndex | -1,
-  rank: Rank | -1,
+  suitIndex: SuitIndex | undefined,
+  rank: Rank | undefined,
   deck: readonly CardState[],
   playStackDirections: GameState["playStackDirections"],
   variant: Variant,
 ): boolean {
-  if (suitIndex === -1 || rank === -1) {
+  if (suitIndex === undefined || rank === undefined) {
     return false;
   }
 

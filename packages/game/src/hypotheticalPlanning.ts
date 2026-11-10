@@ -1,7 +1,7 @@
 import { assertDefined } from "complete-common";
 import { possibleCardsFromNoteAndClues } from "./cardPresentation";
 import { StackDirection } from "./enums/StackDirection";
-import { ClueType, NO_VALUE, START_CARD_RANK } from "./generated/protocol";
+import { ClueType, START_CARD_RANK } from "./generated/protocol";
 import type { HypotheticalGameAction } from "./hypotheticalState";
 import type { CardIdentity } from "./interfaces/CardIdentity";
 import type { CardNote } from "./interfaces/CardNote";
@@ -365,8 +365,8 @@ export function planHypotheticalAction(
         type: "draw",
         order: nextCardOrder,
         playerIndex,
-        suitIndex: nextCard?.suitIndex ?? -1,
-        rank: nextCard?.rank ?? -1,
+        suitIndex: nextCard?.suitIndex,
+        rank: nextCard?.rank,
       };
       const isBottomDeckAction =
         metadata.options.deckPlays
@@ -382,7 +382,7 @@ export function planHypotheticalAction(
   } else if (intent.type === "passTurn") {
     actions.push({
       type: "clue",
-      clue: { type: NO_VALUE, value: NO_VALUE },
+      clue: { type: undefined, value: undefined },
       giver: playerIndex,
       orders: [],
       target: playerIndex,

@@ -2,6 +2,7 @@
 import {
   cardNoteSchema,
   cardOrderSchema,
+  cardRankSchema,
   EndCondition,
   gameEventSchema,
   gameIdSchema,
@@ -9,8 +10,7 @@ import {
   hypotheticalActionSchema,
   playerIndexSchema,
   playerNotesSchema,
-  rankOrUnknownSchema,
-  suitIndexOrUnknownSchema,
+  suitIndexSchema,
 } from "@hanabi-live/game";
 import * as z from "zod";
 
@@ -149,8 +149,11 @@ export const blockedSchema = z
   .strictObject({ blocked: z.array(z.string()).readonly() })
   .readonly();
 const cardIdentitySchema = z.strictObject({
-  rank: rankOrUnknownSchema,
-  suitIndex: suitIndexOrUnknownSchema,
+  rank: cardRankSchema.optional(),
+  /**
+   * Absent when the recipient may not see the card.
+   */
+  suitIndex: suitIndexSchema.optional(),
 });
 
 /**

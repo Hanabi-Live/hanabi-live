@@ -24,6 +24,7 @@ import { setBrowserAddressBarPath } from "../../utils";
 import {
   toCardIdentity,
   toGameAction,
+  toHypotheticalAction,
   toPlayerTuple,
   toSoundType,
 } from "../../wire";
@@ -104,7 +105,7 @@ gameCommands.set("finishOngoingGame", (data) => {
   });
   if (
     globals.state.replay.actions.some(
-      (action) => action.type === "clue" && action.clue.type === NO_VALUE,
+      (action) => action.type === "clue" && action.clue.type === undefined,
     )
   ) {
     // Completed replays may reveal clues; replace the restricted history before exporting it.
@@ -123,11 +124,12 @@ gameCommands.set("hypothetical", (data) => {
     type: "hypoStart",
     shared: true,
     showDrawnCards: data.showDrawnCards,
-    actions: data.actions,
+    actions: data.actions.map(toHypotheticalAction),
   });
 });
 
-gameCommands.set("hypoAction", (action) => {
+gameCommands.set("hypoAction", (wireAction) => {
+  const action = toHypotheticalAction(wireAction);
   globals.store!.dispatch({
     type: "hypoAction",
     shared: true,
