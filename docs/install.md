@@ -36,6 +36,3 @@ mkdir -p /home/hanabi
 git clone https://github.com/Hanabi-Live/hanabi-live.git /home/hanabi/hanabi-live
 /home/hanabi/hanabi-live/install/initial-production-setup.sh
 ```
-
-PostgreSQL logs statements that take over 250 ms and queries that wait over a
-second on a lock to `/var/log/postgresql/`.
