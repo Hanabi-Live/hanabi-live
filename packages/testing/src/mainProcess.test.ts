@@ -375,11 +375,10 @@ databaseDescribe("compiled application entry point (rust)", () => {
         });
         replacement.send("tag", {
           tableID,
-          msg: "compiled smoke",
-          room: `table${tableID}`,
+          tag: "compiled smoke",
         });
         replacement.send("chat", {
-          room: `table${tableID}`,
+          tableID,
           text: "retained authored chat",
         });
         if (signal === undefined && domain === "localhost") {

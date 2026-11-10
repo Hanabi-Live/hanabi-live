@@ -178,12 +178,16 @@ export const chatSchema = z
     chatID: z.number().int().min(1).max(9_007_199_254_740_991).optional(),
     datetime: z.iso.datetime({ precision: 3 }),
     recipient: z.string().optional(),
-    room: z.string().optional(),
     source: chatSourceSchema,
     /**
      * What the message's button applies to the table, in a suggestion to its owner.
      */
     suggestion: tableSuggestionSchema.optional(),
+    /**
+     * The table whose chat shows the message. Absent means the lobby, or the recipient's current
+     * chat for a private message.
+     */
+    tableID: tableIdSchema.optional(),
     /**
      * Pre-escaped HTML, not an instruction to escape or normalize again.
      */
@@ -191,12 +195,8 @@ export const chatSchema = z
     username: z.string().optional(),
   })
   .readonly();
-const lobbyRoomSchema = z.literal("lobby");
 export const chatDeleteSchema = z
-  .strictObject({
-    chatID: z.number().int().min(1).max(9_007_199_254_740_991),
-    room: lobbyRoomSchema,
-  })
+  .strictObject({ chatID: z.number().int().min(1).max(9_007_199_254_740_991) })
   .readonly();
 export const chatHistoryMessageSchema = z
   .strictObject({
@@ -209,7 +209,10 @@ export const chatHistoryMessageSchema = z
 export const chatHistorySchema = z
   .strictObject({
     messages: z.array(chatHistoryMessageSchema).readonly(),
-    room: z.string().min(1).optional(),
+    /**
+     * The table whose chat requested the history. Absent means the lobby.
+     */
+    tableID: tableIdSchema.optional(),
   })
   .readonly();
 export const chatHistoryRequestSchema = z
@@ -220,12 +223,20 @@ export const chatHistoryRequestSchema = z
       .min(-9_007_199_254_740_991)
       .max(9_007_199_254_740_991)
       .default(0),
-    room: z.string().optional(),
+    /**
+     * The table whose chat the command was typed in. Absent means the lobby.
+     */
+    tableID: tableIdSchema.optional(),
     username: z.string().optional(),
   })
   .readonly();
 export const chatLinkedRequestSchema = z
-  .strictObject({ room: z.string().default("") })
+  .strictObject({
+    /**
+     * The table whose chat the command was typed in. Absent means the lobby.
+     */
+    tableID: tableIdSchema.optional(),
+  })
   .readonly();
 export const chatListSchema = z
   .strictObject({
@@ -241,7 +252,13 @@ export const chatPmRequestSchema = z
   .strictObject({ recipient: z.string().min(1), text: z.string().min(1) })
   .readonly();
 export const chatRequestSchema = z
-  .strictObject({ room: z.string().min(1), text: z.string().min(1) })
+  .strictObject({
+    /**
+     * The table whose chat the message is for. Absent means the lobby.
+     */
+    tableID: tableIdSchema.optional(),
+    text: z.string().min(1),
+  })
   .readonly();
 export const chatTypingSchema = z
   .strictObject({
@@ -252,7 +269,10 @@ export const chatTypingSchema = z
   .readonly();
 export const chatUserRequestSchema = z
   .strictObject({
-    room: z.string().default(""),
+    /**
+     * The table whose chat the command was typed in. Absent means the lobby.
+     */
+    tableID: tableIdSchema.optional(),
     username: z.string().default(""),
   })
   .readonly();
@@ -323,9 +343,9 @@ export const gameHistorySchema = z
     score: z.number().int().min(0).max(2_147_483_647),
     seed: z.string(),
     /**
-     * The game's tags, separated by commas.
+     * The game's tags, in alphabetical order.
      */
-    tags: z.string(),
+    tags: z.array(z.string()),
   })
   .readonly();
 export const gameHistoryListSchema = z.array(gameHistorySchema).readonly();
@@ -972,13 +992,6 @@ export const scoreFrequencySchema = z.strictObject({
   numTimes: z.number().int().min(1).max(9_007_199_254_740_991),
   score: z.number().int().min(0).max(2_147_483_647),
 });
-export const settingRequestSchema = z.strictObject({
-  name: z.string(),
-  /**
-   * The value as text; the server parses it according to the setting.
-   */
-  setting: z.string(),
-});
 
 /**
  * A user's preferences. Missing fields take their default, so stored settings only need the values
@@ -1023,6 +1036,12 @@ export const settingsSchema = z
     volume: z.number().int().min(0).max(100).default(50),
   })
   .readonly();
+export const settingRequestSchema = z.strictObject({
+  /**
+   * The settings to change, each with the type that `Settings` gives it.
+   */
+  settings: settingsSchema,
+});
 
 /**
  * A sound played outside of a game. The server plays "shutdown" to everyone when it is going down,
@@ -1208,16 +1227,17 @@ export const tableVariantRequestSchema = z.strictObject({
  * Adds or removes one tag on the table's game.
  */
 export const tagRequestSchema = z.strictObject({
-  msg: z.string(),
-  room: z.string().default(""),
   tableID: tableIdSchema,
+  tag: z.string(),
 });
 export const tagSearchRequestSchema = z.strictObject({
-  msg: z.string().default(""),
-  room: z.string().default(""),
+  /**
+   * The table whose chat the command was typed in. Absent means the lobby.
+   */
+  tableID: tableIdSchema.optional(),
+  tag: z.string().default(""),
 });
 export const tagsDeleteAllRequestSchema = z.strictObject({
-  room: z.string().default(""),
   tableID: tableIdSchema,
 });
 

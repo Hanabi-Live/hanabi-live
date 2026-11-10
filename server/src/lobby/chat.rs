@@ -5,7 +5,7 @@ use anyhow::{Context, Result, ensure};
 use chrono::SecondsFormat;
 use hanabi_protocol::{
     Chat, ChatHistory, ChatHistoryMessage, ChatHistoryRequest, ChatSource,
-    MAX_PRIVATE_HISTORY_MESSAGES,
+    MAX_PRIVATE_HISTORY_MESSAGES, TableId,
 };
 use serde::Deserialize;
 use serde_json::json;
@@ -98,17 +98,6 @@ impl TableChatCommand {
 /// Whether a command runs at a table rather than in the lobby.
 fn delegated(command: &str) -> bool {
     TableChatCommand::parse(command).is_some()
-}
-
-pub fn valid_room(room: &str) -> bool {
-    room == "lobby"
-        || room.strip_prefix("table").is_some_and(|id| {
-            !id.is_empty()
-                && id.bytes().all(|b| b.is_ascii_digit())
-                && id
-                    .parse::<u64>()
-                    .is_ok_and(|id| id <= hanabi_protocol::MAX_SAFE_INTEGER.unsigned_abs())
-        })
 }
 
 fn parsed(message: &str) -> Option<(String, Vec<&str>)> {
@@ -390,7 +379,7 @@ pub async fn private_history(
     }
     let response = ChatHistory {
         messages: list,
-        room: data.room.clone().filter(|room| !room.is_empty()),
+        table_id: data.table_id,
     };
     Ok(vec![Effect::to_self(Outgoing::new(
         hanabi_protocol::server::CHAT_PM_HISTORY,
@@ -405,7 +394,7 @@ pub async fn lobby_chat(
     secret: &str,
     caller: &Identity,
     message: &str,
-    room: &str,
+    table: Option<TableId>,
     rendered: Option<&str>,
 ) -> Result<Option<Vec<Effect>>> {
     if is_muted(pool, &caller.ip).await? {
@@ -417,9 +406,6 @@ pub async fn lobby_chat(
         Ok(message) => message,
         Err(error) => return Ok(Some(vec![warning(&error)])),
     };
-    if !valid_room(room) {
-        return Ok(Some(vec![warning("That is not a valid room.")]));
-    }
     let command = parsed(&message);
     if let Some((command, args)) = &command
         && command == "token"
@@ -434,7 +420,7 @@ pub async fn lobby_chat(
                 token.token
             )
         };
-        return Ok(Some(vec![notice(&caller.name, &response, room)]));
+        return Ok(Some(vec![notice(&caller.name, &response, table)]));
     }
     if let Some((command, args)) = &command
         && command == "uptime"
@@ -442,10 +428,10 @@ pub async fn lobby_chat(
         return Ok(Some(vec![Effect::RuntimeChat {
             command: command.clone(),
             args: args.iter().map(|arg| (*arg).into()).collect(),
-            room: room.into(),
+            table,
         }]));
     }
-    if room != "lobby" {
+    if table.is_some() {
         return Ok(None);
     }
     let mut private_response = None;
@@ -480,7 +466,7 @@ pub async fn lobby_chat(
             runtime = Some(Effect::RuntimeChat {
                 command: command.clone(),
                 args: args.iter().map(|s| (*s).to_owned()).collect(),
-                room: room.into(),
+                table,
             });
         } else {
             return Ok(Some(vec![notice(
@@ -489,13 +475,13 @@ pub async fn lobby_chat(
                     "The chat command of <code>/{}</code> is not valid. Use <code>/help</code> to get a list of available commands.",
                     escape_html(command)
                 ),
-                room,
+                table,
             )]));
         }
     }
     // Private commands, including help, do not enter public history.
     if let Some(response) = private_response {
-        return Ok(Some(vec![notice(&caller.name, &response, room)]));
+        return Ok(Some(vec![notice(&caller.name, &response, table)]));
     }
     let mut tx = pool.begin().await?;
     let mut effects = Vec::new();
@@ -529,7 +515,6 @@ pub async fn lobby_chat(
             hanabi_protocol::server::CHAT,
             Chat {
                 username: Some(who.into()),
-                room: Some("lobby".into()),
                 chat_id: Some(i64::from(chat_id)),
                 ..Chat::new(
                     content,
@@ -596,7 +581,6 @@ pub async fn lobby_history(pool: &PgPool, count: i64) -> Result<Vec<Chat>> {
         result.push(Chat {
             chat_id: Some(i64::from(row.id)),
             username: Some(who),
-            room: Some("lobby".into()),
             ..Chat::new(
                 message,
                 serde_json::from_value(json!(source))?,
@@ -623,7 +607,6 @@ pub async fn server_chat(pool: &PgPool, message: &str) -> Result<SavedChat> {
             hanabi_protocol::server::CHAT,
             Chat {
                 username: Some("Hanab Live".into()),
-                room: Some("lobby".into()),
                 chat_id: Some(i64::from(chat_id)),
                 ..Chat::new(
                     message,

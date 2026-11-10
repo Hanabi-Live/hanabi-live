@@ -92,9 +92,9 @@ const MAIN_PAGE_PARAMETERS: &[&str] = &[
     "oneLessCard",
     "password",
     "speedrun",
-    "timeBase",
+    "timeBaseSeconds",
     "timed",
-    "timePerTurn",
+    "timePerTurnSeconds",
     "variantName",
 ];
 

@@ -40,7 +40,7 @@ commands.set("error", (data) => {
 // Received by the client when a new chat message arrives.
 commands.set("chat", (data) => {
   chat.add(data, false); // The second argument is "fast".
-  acknowledgeChatRead(data.room, data.recipient);
+  acknowledgeChatRead(data.tableID, data.recipient);
 });
 
 commands.set("chatDelete", (data) => {
@@ -48,7 +48,7 @@ commands.set("chatDelete", (data) => {
 });
 
 commands.set("chatPMHistory", (data) => {
-  const room = data.room ?? "lobby";
+  const room = chat.tableRoom(data.tableID);
 
   if (data.messages.length === 0) {
     chat.sendSelfPMFromServer(
@@ -65,11 +65,11 @@ commands.set("chatPMHistory", (data) => {
 });
 
 function acknowledgeChatRead(
-  room: string | undefined,
+  tableID: number | undefined,
   recipient: string | undefined,
 ) {
   const isPM = recipient !== undefined && recipient !== "";
-  const isTableRoom = room !== undefined && room.startsWith("table");
+  const isTableRoom = tableID !== undefined;
   const isLobbyChat = !isPM && !isTableRoom;
   if (isLobbyChat) {
     return;

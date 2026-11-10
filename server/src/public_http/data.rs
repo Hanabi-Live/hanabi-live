@@ -75,7 +75,7 @@ struct HistoryRow {
     game: GameRecord,
     names: Vec<String>,
     seed_count: i32,
-    tags: String,
+    tags: Vec<String>,
 }
 
 /// The rows are built in SQL, so that counting and paging stay in one statement, and decoded into
@@ -337,11 +337,11 @@ pub(super) async fn history(
     let mut qb = selected(s);
     qb.push(") SELECT ").push(GAME_COLUMNS);
     // Keep PostgreSQL's existing timestamp text, including fractional-second precision.
-    qb.push(", ARRAY(SELECT u.username FROM game_participants gp JOIN users u ON u.id=gp.user_id WHERE gp.game_id=g.id ORDER BY lower(u.username),u.username) AS names, COALESCE((SELECT num_games FROM seeds WHERE seed=g.seed),0) AS seed_count, COALESCE((SELECT string_agg(DISTINCT tag, ', ' ORDER BY tag) FROM game_tags WHERE game_id=g.id");
+    qb.push(", ARRAY(SELECT u.username FROM game_participants gp JOIN users u ON u.id=gp.user_id WHERE gp.game_id=g.id ORDER BY lower(u.username),u.username) AS names, COALESCE((SELECT num_games FROM seeds WHERE seed=g.seed),0) AS seed_count, COALESCE((SELECT array_agg(DISTINCT tag ORDER BY tag) FROM game_tags WHERE game_id=g.id");
     if let Some(user) = tag_user {
         qb.push(" AND user_id=").push_bind(user);
     }
-    qb.push("),'') AS tags FROM selected g ORDER BY ");
+    qb.push("),'{}') AS tags FROM selected g ORDER BY ");
     qb.push(if seed_sort {
         "g.score DESC,g.datetime_finished ASC,g.id ASC"
     } else {

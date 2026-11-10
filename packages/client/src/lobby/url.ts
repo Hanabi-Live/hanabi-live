@@ -67,16 +67,16 @@ function gotoPath(data: ServerCommandData["welcome"]): boolean {
     const name = urlParams.get("name") ?? "";
     const variantName = urlParams.get("variantName") ?? DEFAULT_VARIANT_NAME;
     const timed = urlParams.get("timed") === "true";
-    const timeBaseString =
-      urlParams.get("timeBase")
+    const timeBaseSecondsString =
+      urlParams.get("timeBaseSeconds")
       ?? (
         defaultSettings.createTableTimeBaseMinutes * SECONDS_PER_MINUTE
       ).toString();
-    const timeBaseSeconds = parseIntSafe(timeBaseString);
-    const timePerTurnString =
-      urlParams.get("timePerTurn")
+    const timeBaseSeconds = parseIntSafe(timeBaseSecondsString);
+    const timePerTurnSecondsString =
+      urlParams.get("timePerTurnSeconds")
       ?? defaultSettings.createTableTimePerTurnSeconds.toString();
-    const timePerTurnSeconds = parseIntSafe(timePerTurnString);
+    const timePerTurnSeconds = parseIntSafe(timePerTurnSecondsString);
     const speedrun = urlParams.get("speedrun") === "true";
     const deckPlays = urlParams.get("deckPlays") === "true";
     const emptyClues = urlParams.get("emptyClues") === "true";

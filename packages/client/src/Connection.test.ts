@@ -42,7 +42,7 @@ describe("sending commands", () => {
     });
     try {
       const initial = new Connection("ws://localhost/ws", false);
-      initial.send("chat", { room: "lobby", text: "allowed" });
+      initial.send("chat", { text: "allowed" });
       expect(sockets[0]?.sent).toHaveLength(1);
       initial.send("action", {
         tableID: 123,

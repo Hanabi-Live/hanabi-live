@@ -93,14 +93,14 @@ async fn publish(app: &App, session: Arc<Session>, effects: Vec<Effect>) -> Comm
             Effect::RuntimeChat {
                 command,
                 args,
-                room,
+                table,
             } => {
                 for message in app.info.runtime_response(&command, &args)? {
                     if command == "uptime" {
                         publications.push(lobby::notice_publication(
                             &session.name,
                             &message,
-                            &room,
+                            table,
                         ));
                         continue;
                     }
@@ -144,7 +144,7 @@ pub(super) async fn lobby_command(
     };
     let caller = session.identity.clone();
     let rendered = match &message {
-        ClientMessage::Chat(request) if request.room == "lobby" => {
+        ClientMessage::Chat(request) if request.table_id.is_none() => {
             discord_rendering(app, &request.text).await
         }
         _ => None,

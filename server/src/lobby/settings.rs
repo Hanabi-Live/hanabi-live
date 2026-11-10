@@ -7,8 +7,6 @@ use sqlx::PgPool;
 /// user changed; everything else comes from `Default`.
 pub use hanabi_protocol::Settings;
 
-use hanabi_protocol::MAX_VOLUME;
-
 /// Every setting with its default value, keyed by its client-facing name.
 pub(super) fn defaults() -> serde_json::Map<String, Value> {
     match serde_json::to_value(Settings::default()) {
@@ -54,11 +52,12 @@ fn from_stored(stored: Value) -> Settings {
     serde_json::from_value(Value::Object(valid)).unwrap_or_default()
 }
 
-pub async fn set_setting(pool: &PgPool, id: UserId, name: &str, value: &str) -> Result<()> {
-    let value = validate_setting(name, value).map_err(anyhow::Error::from)?;
+/// Stores one setting, after checking it against the wire contract.
+pub async fn set_setting(pool: &PgPool, id: UserId, name: &str, value: &Value) -> Result<()> {
+    validate_setting(name, value).map_err(anyhow::Error::from)?;
     // A value equal to the default is removed, so changing a default later reaches everyone who
     // never chose it.
-    let changed = (defaults().get(name) != Some(&value)).then_some(value);
+    let changed = (defaults().get(name) != Some(value)).then_some(value);
     let updated = sqlx::query!(
         "UPDATE users SET settings = CASE WHEN $3::jsonb IS NULL THEN settings - $2::text
            ELSE settings || jsonb_build_object($2::text, $3::jsonb) END
@@ -73,50 +72,16 @@ pub async fn set_setting(pool: &PgPool, id: UserId, name: &str, value: &str) -> 
     Ok(())
 }
 
-/// Parses a setting sent by a client into the JSON value that is stored.
-pub fn validate_setting(name: &str, value: &str) -> crate::errors::CommandResult<Value> {
-    ensure_or_reject!(!name.is_empty(), "The settings name cannot be blank.");
-    let defaults = defaults();
-    let Some(default) = defaults.get(name) else {
-        reject!(
-            "The settings name of \"{}\" is invalid.",
-            crate::accounts::escape_html(name)
-        );
-    };
-    let parsed = match default {
-        Value::Bool(_) => {
-            ensure_or_reject!(
-                matches!(value, "true" | "false"),
-                "The setting of \"{name}\" must have a value of \"true\" or \"false\"."
-            );
-            Value::Bool(value == "true")
-        }
-        Value::Number(number) if number.is_f64() => {
-            let Some(number) = value.parse::<f64>().ok().filter(|n| n.is_finite()) else {
-                reject!("The setting of \"{name}\" must be an float64.");
-            };
-            ensure_or_reject!(number > 0.0, "The setting of \"{name}\" must be positive.");
-            Value::from(number)
-        }
-        Value::Number(_) => {
-            let Ok(number) = value.parse::<i64>() else {
-                reject!("The setting of \"{name}\" must be an integer.");
-            };
-            ensure_or_reject!(number >= 0, "The setting of \"{name}\" cannot be negative.");
-            ensure_or_reject!(
-                name != "volume" || number <= i64::from(MAX_VOLUME),
-                "The setting of \"volume\" must be between 0 and {MAX_VOLUME}."
-            );
-            Value::from(number)
-        }
-        Value::String(_) => Value::String(value.to_owned()),
-        _ => unreachable!("settings are booleans, numbers, or strings"),
-    };
-    // The wire contract enforces the remaining limits, such as the timed-game limits and the allowed
-    // player counts.
+/// Checks a setting that a client sent. The wire contract gives each setting its type and limits.
+pub fn validate_setting(name: &str, value: &Value) -> crate::errors::CommandResult<()> {
     ensure_or_reject!(
-        hanabi_protocol::validate::<Settings>(&serde_json::json!({ name: parsed })).is_ok(),
-        "The setting of \"{name}\" is not an allowed value."
+        hanabi_protocol::validate::<Settings>(&serde_json::json!({ name: value })).is_ok(),
+        "The setting of \"{}\" is not an allowed value.",
+        crate::accounts::escape_html(name)
     );
-    Ok(parsed)
+    ensure_or_reject!(
+        name != "createTableTimeBaseMinutes" || value.as_f64().is_some_and(|minutes| minutes > 0.0),
+        "The setting of \"{name}\" must be positive."
+    );
+    Ok(())
 }

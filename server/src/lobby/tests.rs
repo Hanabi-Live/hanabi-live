@@ -36,16 +36,22 @@ async fn uptime_is_private_before_history_or_discord_publication_postgres() {
         .await
         .unwrap();
     let history_before = lobby_history(&db.pool, 100).await.unwrap();
-    for room in ["lobby", "table42"] {
-        let message =
-            crate::actors::client_message("chat", &json!({"text":"/UpTiMe","room":room})).unwrap();
+    for table in [None, Some(TableId(42))] {
+        let message = crate::actors::client_message(
+            "chat",
+            &table.map_or_else(
+                || json!({"text":"/UpTiMe"}),
+                |table| json!({"text":"/UpTiMe","tableID":table}),
+            ),
+        )
+        .unwrap();
         let effects = dispatch(&db.pool, "secret", &who, &[], None, message)
             .await
             .unwrap()
             .unwrap();
         assert!(matches!(effects.as_slice(),
-            [Effect::RuntimeChat { command, room: response_room, .. }]
-            if command == "uptime" && response_room == room
+            [Effect::RuntimeChat { command, table: response_table, .. }]
+            if command == "uptime" && *response_table == table
         ));
     }
     assert!(matches!(classify_chat("/UpTiMe"), Classification::Private));
@@ -101,7 +107,7 @@ async fn lobby_relationships_atomic_settings_and_parameterization_postgres() {
     let a = db.user("Alice").await;
     let b = db.user("Bob").await;
     let who = caller(a, "Alice");
-    let data = json!({"username":"bób","room":"lobby"});
+    let data = json!({"username":"bób"});
     let result = run(&db.pool, &who, &[], "chatFriend", data.clone()).await;
     assert_eq!(self_data(&result, "friends"), json!({"friends":["Bob"]}));
     let repeated = run(&db.pool, &who, &[], "chatFriend", data.clone()).await;
@@ -126,7 +132,7 @@ async fn lobby_relationships_atomic_settings_and_parameterization_postgres() {
         &who,
         &[],
         "setting",
-        json!({"name":"hGroupConventions","setting":"true"}),
+        json!({"settings":{"hGroupConventions":true}}),
     )
     .await;
     assert!(matches!(
@@ -142,55 +148,61 @@ async fn lobby_relationships_atomic_settings_and_parameterization_postgres() {
         &who,
         &[],
         "setting",
-        json!({"name":"hGroupLevel","setting":"5"}),
+        json!({"settings":{"hGroupLevel":5}}),
     )
     .await;
     assert!(matches!(
         result.as_slice(),
         [Effect::Publish(Publication::HGroupLevel(5))]
     ));
-    let too_high = (hanabi_protocol::MAX_H_GROUP_LEVEL + 1).to_string();
+    let too_high = json!(hanabi_protocol::MAX_H_GROUP_LEVEL + 1);
     assert!(
         set_setting(&db.pool, UserId(a), "hGroupLevel", &too_high)
             .await
             .is_err()
     );
     assert!(
-        set_setting(&db.pool, UserId(a), "volume", "101")
+        set_setting(&db.pool, UserId(a), "volume", &json!(101))
             .await
             .is_err()
     );
     assert!(
-        set_setting(&db.pool, UserId(a), "volume", "2.1")
+        set_setting(&db.pool, UserId(a), "volume", &json!(2.1))
             .await
             .is_err()
     );
     assert!(
-        set_setting(&db.pool, UserId(a), "soundTimer", "TRUE")
+        set_setting(&db.pool, UserId(a), "soundTimer", &json!("TRUE"))
             .await
             .is_err()
     );
     assert!(
-        set_setting(&db.pool, UserId(a), "createTableTimeBaseMinutes", "NaN")
+        set_setting(&db.pool, UserId(a), "createTableTimeBaseMinutes", &json!(0))
             .await
             .is_err()
     );
     assert!(
-        set_setting(&db.pool, UserId(a), "volume=0; DROP TABLE users;--", "0")
-            .await
-            .is_err()
+        set_setting(
+            &db.pool,
+            UserId(a),
+            "volume=0; DROP TABLE users;--",
+            &json!(0)
+        )
+        .await
+        .is_err()
     );
     let literal = "x'; DROP TABLE users; --";
-    set_setting(&db.pool, UserId(a), "createTableVariant", literal)
+    set_setting(&db.pool, UserId(a), "createTableVariant", &json!(literal))
         .await
         .unwrap();
     assert_eq!(
         serde_json::to_value(get_settings(&db.pool, UserId(a)).await.unwrap()).unwrap()["createTableVariant"],
         literal
     );
+    let (sound_timer, volume) = (json!(false), json!(25));
     let (one, two) = tokio::join!(
-        set_setting(&db.pool, UserId(b), "soundTimer", "false"),
-        set_setting(&db.pool, UserId(b), "volume", "25")
+        set_setting(&db.pool, UserId(b), "soundTimer", &sound_timer),
+        set_setting(&db.pool, UserId(b), "volume", &volume)
     );
     one.unwrap();
     two.unwrap();
@@ -232,21 +244,14 @@ async fn blocked_players_cannot_message_each_other_postgres() {
             .unwrap()
             .to_owned()
     };
-    let bob_name = json!({"username":"bob","room":"lobby"});
+    let bob_name = json!({"username":"bob"});
 
     let blocked = run(&db.pool, &alice, &[], "chatBlock", bob_name.clone()).await;
     assert!(notice_of(&blocked).contains("Successfully blocked"));
     assert_eq!(self_data(&blocked, "blocked"), json!({"blocked":["Bob"]}));
     let repeated = run(&db.pool, &alice, &[], "chatBlock", bob_name.clone()).await;
     assert!(warning_of(&repeated).contains("already blocked"));
-    let list = run(
-        &db.pool,
-        &alice,
-        &[],
-        "chatBlocked",
-        json!({"room":"lobby"}),
-    )
-    .await;
+    let list = run(&db.pool, &alice, &[], "chatBlocked", json!({})).await;
     assert_eq!(notice_of(&list), "Currently blocked players: Bob");
     let own = run(
         &db.pool,
@@ -281,14 +286,7 @@ async fn blocked_players_cannot_message_each_other_postgres() {
     assert_eq!(self_data(&unblocked, "blocked"), json!({"blocked":[]}));
     let missing = run(&db.pool, &alice, &[], "chatUnblock", bob_name).await;
     assert!(warning_of(&missing).contains("not blocked"));
-    let list = run(
-        &db.pool,
-        &alice,
-        &[],
-        "chatBlocked",
-        json!({"room":"lobby"}),
-    )
-    .await;
+    let list = run(&db.pool, &alice, &[], "chatBlocked", json!({})).await;
     assert_eq!(notice_of(&list), "Currently, you have not blocked anyone.");
     let result = run(
         &db.pool,
@@ -358,7 +356,7 @@ async fn lobby_private_messages_and_command_privacy_postgres() {
         &who,
         &[],
         "chatPMHistory",
-        json!({"amount":1,"username":"BOB","room":"pmBob"}),
+        json!({"amount":1,"username":"BOB","tableID":7}),
     )
     .await;
     let history = self_data(&result, "chatPMHistory");
@@ -375,14 +373,7 @@ async fn lobby_private_messages_and_command_privacy_postgres() {
     .await;
     assert_eq!(self_data(&result, "chatPMHistory")["messages"], json!([]));
     for text in ["/not-a-command private", "/token extra", "/help"] {
-        let result = run(
-            &db.pool,
-            &who,
-            &[],
-            "chat",
-            json!({"text":text,"room":"lobby"}),
-        )
-        .await;
+        let result = run(&db.pool, &who, &[], "chat", json!({"text":text})).await;
         assert!(
             result
                 .iter()
@@ -394,7 +385,7 @@ async fn lobby_private_messages_and_command_privacy_postgres() {
         &who,
         &[],
         "chat",
-        json!({"text":"/ToKeN","room":"table42"}),
+        json!({"text":"/ToKeN","tableID":42}),
     )
     .await;
     assert!(
@@ -410,7 +401,7 @@ async fn lobby_private_messages_and_command_privacy_postgres() {
             &who,
             &[],
             None,
-            crate::actors::client_message("chat", &json!({"text":"not lobby","room":"table42"}))
+            crate::actors::client_message("chat", &json!({"text":"not lobby","tableID":42}))
                 .unwrap()
         )
         .await
@@ -424,7 +415,7 @@ async fn lobby_private_messages_and_command_privacy_postgres() {
             &who,
             &[],
             None,
-            crate::actors::client_message("chat", &json!({"text":"/findvariant","room":"table42"}))
+            crate::actors::client_message("chat", &json!({"text":"/findvariant","tableID":42}))
                 .unwrap()
         )
         .await
@@ -438,14 +429,7 @@ async fn lobby_private_messages_and_command_privacy_postgres() {
             .unwrap(),
         0
     );
-    let result = run(
-        &db.pool,
-        &who,
-        &[],
-        "chat",
-        json!({"text":"/rules","room":"lobby"}),
-    )
-    .await;
+    let result = run(&db.pool, &who, &[], "chat", json!({"text":"/rules"})).await;
     assert_eq!(
         result
             .iter()
@@ -453,14 +437,7 @@ async fn lobby_private_messages_and_command_privacy_postgres() {
             .count(),
         2
     );
-    let result = run(
-        &db.pool,
-        &who,
-        &[],
-        "chat",
-        json!({"text":"<plain>","room":"lobby"}),
-    )
-    .await;
+    let result = run(&db.pool, &who, &[], "chat", json!({"text":"<plain>"})).await;
     assert!(
         result.iter().any(
             |e| matches!(e,Effect::Publish(Publication::Broadcast(message)) if message.data()["text"]=="&lt;plain&gt;")
@@ -488,14 +465,7 @@ async fn lobby_private_messages_and_command_privacy_postgres() {
             .unwrap()
             .contains("muted")
     );
-    let result = run(
-        &db.pool,
-        &who,
-        &[],
-        "chat",
-        json!({"text":"muted","room":"lobby"}),
-    )
-    .await;
+    let result = run(&db.pool, &who, &[], "chat", json!({"text":"muted"})).await;
     assert!(
         self_data(&result, "warning")["message"]
             .as_str()
@@ -705,7 +675,7 @@ async fn lobby_directed_linked_seeds_and_histories_postgres() {
         &who,
         &[],
         "tagSearch",
-        json!({"msg":"x'; delete from users; --","room":"lobby"}),
+        json!({"tag":"x'; delete from users; --"}),
     )
     .await;
     assert!(
@@ -750,14 +720,14 @@ async fn every_setting_round_trips_and_only_changes_are_stored_postgres() {
     };
     assert_eq!(stored().await, json!({}), "Defaults are not stored");
     for (name, default) in settings::defaults() {
-        let (value, expected) = match &default {
-            Value::Bool(flag) => ((!flag).to_string(), json!(!flag)),
-            Value::Number(number) if number.is_f64() => ("7.5".into(), json!(7.5)),
-            Value::Number(_) => ("2".into(), json!(2)),
-            _ => ("Rainbow (6 Suits)".into(), json!("Rainbow (6 Suits)")),
+        let expected = match &default {
+            Value::Bool(flag) => json!(!flag),
+            Value::Number(number) if number.is_f64() => json!(7.5),
+            Value::Number(_) => json!(2),
+            _ => json!("Rainbow (6 Suits)"),
         };
         assert_ne!(default, expected, "{name} must change");
-        set_setting(&db.pool, UserId(id), &name, &value)
+        set_setting(&db.pool, UserId(id), &name, &expected)
             .await
             .unwrap();
         assert_eq!(
@@ -768,7 +738,7 @@ async fn every_setting_round_trips_and_only_changes_are_stored_postgres() {
         assert_eq!(stored().await[&name], expected, "{name} was not stored");
     }
     // Choosing the default again removes the stored value.
-    set_setting(&db.pool, UserId(id), "volume", "50")
+    set_setting(&db.pool, UserId(id), "volume", &json!(50))
         .await
         .unwrap();
     assert!(stored().await.get("volume").is_none());
@@ -798,12 +768,12 @@ async fn settings_outside_the_wire_contract_are_not_sent_or_saved_postgres() {
     assert_eq!(settings.create_table_max_players, 5);
     assert_eq!(settings.volume, 70);
     for (name, value) in [
-        ("createTableMaxPlayers", "7"),
-        ("soundMove", "3"),
-        ("createTableVariant", ""),
+        ("createTableMaxPlayers", json!(7)),
+        ("soundMove", json!(3)),
+        ("createTableVariant", json!("")),
     ] {
         assert!(
-            set_setting(&db.pool, UserId(id), name, value)
+            set_setting(&db.pool, UserId(id), name, &value)
                 .await
                 .is_err(),
             "{name}={value} was accepted"

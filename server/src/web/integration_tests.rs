@@ -343,8 +343,11 @@ async fn uptime_replies_only_to_requester_in_lobby_and_table_postgres() {
         .await
         .unwrap();
     let tables_before = fixture.app.store.load().await.unwrap();
-    for room in ["lobby".to_owned(), format!("table{table}")] {
-        let payload = json!({"text":"/UpTiMe","room":room});
+    for table in [None, Some(table)] {
+        let payload = table.map_or_else(
+            || json!({"text":"/UpTiMe"}),
+            |table| json!({"text":"/UpTiMe","tableID":table}),
+        );
         alice
             .send(WireMessage::Text(format!("chat {payload}").into()))
             .await
@@ -353,7 +356,7 @@ async fn uptime_replies_only_to_requester_in_lobby_and_table_postgres() {
             let reply = receive(&mut alice, "chat").await;
             assert_eq!(reply["username"], "Hanab Live");
             assert_eq!(reply["recipient"], "Alice");
-            assert_eq!(reply["room"], room);
+            assert_eq!(reply.get("tableID").and_then(Value::as_u64), table);
             assert_eq!(reply["source"], "server");
             assert!(reply["text"].as_str().unwrap().starts_with(prefix));
             assert!(reply.get("chatID").is_none());
@@ -469,7 +472,7 @@ async fn native_browser_login_ws_bootstrap_and_command_routing_postgres() {
     assert_eq!(history[0]["options"]["variantName"], "6 Suits");
     assert_eq!(history[0]["options"]["timeBaseSeconds"], 180.0);
     assert_eq!(history[0]["options"]["emptyClues"], true);
-    assert_eq!(history[0]["tags"], "authored");
+    assert_eq!(history[0]["tags"], json!(["authored"]));
     let mut bob = connect(&fixture, &bob_cookie).await;
     let bob_welcome = receive(&mut bob, "welcome").await;
     let _ = receive(&mut bob, "user").await;
@@ -477,7 +480,7 @@ async fn native_browser_login_ws_bootstrap_and_command_routing_postgres() {
     assert_eq!(receive(&mut bob, "lobbyStatus").await["state"], "ready");
     alice
         .send(WireMessage::Text(
-            "setting {\"name\":\"hGroupConventions\",\"setting\":\"true\"}".into(),
+            "setting {\"settings\":{\"hGroupConventions\":true}}".into(),
         ))
         .await
         .unwrap();
@@ -498,13 +501,11 @@ async fn native_browser_login_ws_bootstrap_and_command_routing_postgres() {
     assert_eq!(pm["recipient"], "Bob");
     assert_eq!(pm["text"], "private &lt;content&gt;");
     assert!(pm.get("chatID").is_none());
-    assert!(pm.get("room").is_none());
+    assert!(pm.get("tableID").is_none());
     let echo = receive(&mut alice, "chat").await;
     assert_eq!(echo, pm);
     alice
-        .send(WireMessage::Text(
-            "chat {\"text\":\"/token\",\"room\":\"lobby\"}".into(),
-        ))
+        .send(WireMessage::Text("chat {\"text\":\"/token\"}".into()))
         .await
         .unwrap();
     let token = receive(&mut alice, "chat").await;
@@ -518,9 +519,7 @@ async fn native_browser_login_ws_bootstrap_and_command_routing_postgres() {
         0
     );
     alice
-        .send(WireMessage::Text(
-            "chat {\"text\":\"/findvariant\",\"room\":\"lobby\"}".into(),
-        ))
+        .send(WireMessage::Text("chat {\"text\":\"/findvariant\"}".into()))
         .await
         .unwrap();
     let _ = receive(&mut alice, "chat").await;
@@ -894,7 +893,7 @@ async fn full_history_bootstrap_queues_in_order_without_a_writer_postgres() {
                 assert_eq!(data.as_array().unwrap().len(), 100);
                 assert_eq!(data[0]["playerNames"].as_array().unwrap().len(), 6);
                 assert_eq!(data[0]["options"]["variantName"], "6 Suits");
-                assert_eq!(data[0]["tags"].as_str().unwrap().split(", ").count(), 8);
+                assert_eq!(data[0]["tags"].as_array().unwrap().len(), 8);
             }
             _ => {}
         }
@@ -931,11 +930,8 @@ async fn a_lobby_command_from_a_replaced_connection_writes_nothing_postgres() {
     task.send(user::UserCommand::Lobby {
         session: older,
         message: Box::new(
-            crate::actors::client_message(
-                "setting",
-                &json!({"name": "volume", "setting": volume.to_string()}),
-            )
-            .unwrap(),
+            crate::actors::client_message("setting", &json!({ "settings": { "volume": volume } }))
+                .unwrap(),
         ),
         reply,
     })

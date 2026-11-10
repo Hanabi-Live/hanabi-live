@@ -152,7 +152,6 @@ pub(super) async fn lobby_initial(app: &App, id: UserId) -> Result<(Vec<Frame>, 
         },
     ));
     initial.push(frame(hanabi_protocol::server::CHAT, hanabi_protocol::Chat {
-        room: Some("lobby".into()),
         ..hanabi_protocol::Chat::new(
             "Find teammates and discuss strategy in the <a href=\"https://discord.gg/FADvkJp\" target=\"_blank\" rel=\"noopener noreferrer\">Discord chat</a>.",
             hanabi_protocol::ChatSource::Server,
@@ -165,7 +164,6 @@ pub(super) async fn lobby_initial(app: &App, id: UserId) -> Result<(Vec<Frame>, 
             hanabi_protocol::server::CHAT,
             hanabi_protocol::Chat {
                 username: Some(String::new()),
-                room: Some("lobby".into()),
                 ..hanabi_protocol::Chat::new(
                     format!("[Server Notice] {}", text.trim()),
                     hanabi_protocol::ChatSource::Server,

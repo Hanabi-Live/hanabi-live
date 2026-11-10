@@ -2,7 +2,7 @@ use super::{Effect, Publication, notice, warning};
 use crate::accounts::{escape_html, normalize_string};
 use crate::transport::{Identity, Outgoing};
 use anyhow::Result;
-use hanabi_protocol::UserId;
+use hanabi_protocol::{TableId, UserId};
 use sqlx::PgPool;
 
 pub async fn friends(pool: &PgPool, id: UserId) -> Result<Vec<String>> {
@@ -98,7 +98,7 @@ pub async fn relationship(
     caller: &Identity,
     command: &str,
     name: &str,
-    room: &str,
+    table: Option<TableId>,
 ) -> Result<Vec<Effect>> {
     if command == "chatBlocked" {
         let names = blocked(pool, caller.user).await?;
@@ -114,7 +114,7 @@ pub async fn relationship(
                     .join(", ")
             )
         };
-        return Ok(vec![notice(&caller.name, &message, room)]);
+        return Ok(vec![notice(&caller.name, &message, table)]);
     }
     if command == "chatLinked" {
         let names: Vec<String> = sqlx::query_scalar!(
@@ -136,7 +136,7 @@ pub async fn relationship(
                     .join(", ")
             )
         };
-        return Ok(vec![notice(&caller.name, &message, room)]);
+        return Ok(vec![notice(&caller.name, &message, table)]);
     }
     let verb = match command {
         "chatFriend" => "friend",
@@ -169,7 +169,7 @@ pub async fn relationship(
     };
     let escaped = escape_html(name);
     if matches!(verb, "block" | "unblock") {
-        return block(pool, caller, target, &escaped, verb == "block", room).await;
+        return block(pool, caller, target, &escaped, verb == "block", table).await;
     }
     let add = matches!(verb, "friend" | "link");
     let friend = matches!(verb, "friend" | "unfriend");
@@ -218,7 +218,7 @@ pub async fn relationship(
             "linked users"
         }
     );
-    let mut effects = vec![notice(&caller.name, &message, room)];
+    let mut effects = vec![notice(&caller.name, &message, table)];
     if friend {
         effects.push(Effect::to_self(Outgoing::new(
             hanabi_protocol::server::FRIENDS,
@@ -236,7 +236,7 @@ async fn block(
     target: UserId,
     escaped: &str,
     add: bool,
-    room: &str,
+    table: Option<TableId>,
 ) -> Result<Vec<Effect>> {
     let result = if add {
         sqlx::query!(
@@ -270,7 +270,7 @@ async fn block(
         format!("Successfully unblocked \"{escaped}\".")
     };
     Ok(vec![
-        notice(&caller.name, &message, room),
+        notice(&caller.name, &message, table),
         Effect::to_self(Outgoing::new(
             hanabi_protocol::server::BLOCKED,
             hanabi_protocol::Blocked {

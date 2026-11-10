@@ -1,12 +1,13 @@
 // Users can chat in the lobby, in the pregame, and in a game. Logic for the game chat box is
 // located separately in "game/chat.ts".
 
-import type { ServerCommandData } from "@hanabi-live/data";
+import type { ServerCommandData, TableID } from "@hanabi-live/data";
 import {
   CHAT_SPECIAL_EMOTES,
   CHAT_EMOJIS as emojis,
   CHAT_EMOTES as emotes,
   PROJECT_NAME,
+  tableIdSchema,
   TYPING_TIMEOUT_MS,
 } from "@hanabi-live/data";
 import { eRange, isArray, trimPrefix } from "complete-common";
@@ -38,6 +39,17 @@ const chatTimeFormatter = new Intl.DateTimeFormat("en-US", {
 });
 
 type ChatData = ServerCommandData["chat"];
+
+/** The table of a chat room ("lobby" or "table" and the table's ID), or undefined for the lobby. */
+export function roomTableID(room: string): TableID | undefined {
+  const match = /^table(\d+)$/u.exec(room);
+  return match === null ? undefined : tableIdSchema.parse(Number(match[1]));
+}
+
+/** The chat room of a table, or the lobby when there is no table. */
+export function tableRoom(tableID: number | undefined): string {
+  return tableID === undefined ? "lobby" : `table${tableID}`;
+}
 type PMHistoryMessage = ServerCommandData["chatPMHistory"]["messages"][number];
 
 export enum SelfChatMessageType {
@@ -327,9 +339,10 @@ function sendText(room: string, msgRaw: string) {
   }
 
   // This is not a command, so send a the chat message to the server.
+  const tableID = roomTableID(roomID);
   globals.conn!.send("chat", {
     text: msg,
-    room: roomID,
+    ...(tableID !== undefined && { tableID }),
   });
 }
 
@@ -565,7 +578,7 @@ export function addPMHistory(data: PMHistoryMessage, room?: string): void {
 }
 
 function addInternal(data: ChatData, fast: boolean, updateLiveState: boolean) {
-  if (lobbyChatDeletionState.shouldSkipMessage(data.room, data.chatID)) {
+  if (lobbyChatDeletionState.shouldSkipMessage(data.tableID, data.chatID)) {
     return;
   }
 
@@ -595,7 +608,7 @@ function addInternal(data: ChatData, fast: boolean, updateLiveState: boolean) {
     store.dispatch(
       lobbyChatLineAdded({
         key: chatLineNum,
-        ...(data.room === "lobby"
+        ...(data.tableID === undefined
           && data.chatID !== undefined && { chatID: data.chatID }),
         html,
         fadeIn: !fast,
@@ -708,15 +721,11 @@ function appendChatLine(
 
 /** Finds out which chat box we should add the new chat message to. */
 function getChatBox(data: ChatData): "lobby" | "pregame" | "game" | undefined {
-  if (data.room === "lobby") {
+  // A private message (PM) or private notice outside of a table has no room, so we display it on
+  // the chat window that the user currently has open.
+  const isPM = data.tableID === undefined && data.recipient !== undefined;
+  if (data.tableID === undefined && !isPM) {
     return "lobby";
-  }
-
-  // A blank room indicates a private message (PM). PMs do not have a room associated with them, so
-  // we default to displaying them on the chat window that the user currently has open.
-  const isPM = data.room === undefined || data.room === "";
-  if (!isPM && !data.room.startsWith("table")) {
-    return undefined;
   }
 
   if (globals.currentScreen === Screen.PreGame) {
@@ -924,7 +933,7 @@ export function sendSelfPMFromServer(
       username: PROJECT_NAME,
       source: "server",
       datetime: new Date().toISOString(),
-      room,
+      ...(roomTableID(room) !== undefined && { tableID: roomTableID(room) }),
       recipient: globals.username,
     },
     false,

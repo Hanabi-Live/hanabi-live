@@ -126,7 +126,6 @@ export function UserLink({
                     closeMenu();
                     globals.conn!.send(blocked ? "chatUnblock" : "chatBlock", {
                       username: user.username,
-                      room: "lobby",
                     });
                   }}
                 >

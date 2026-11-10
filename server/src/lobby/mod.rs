@@ -19,9 +19,10 @@ pub use settings::{changed_settings, get_settings, set_setting};
 use crate::accounts::{escape_html, normalize_string};
 use crate::routing::{Route, route};
 use crate::transport::{Identity, Outgoing};
-use anyhow::{Result, ensure};
+use anyhow::{Context, Result, ensure};
 use hanabi_protocol::ClientMessage;
-use hanabi_protocol::UserId;
+use hanabi_protocol::{TableId, UserId};
+use serde_json::Value;
 use std::sync::Arc;
 
 use sqlx::PgPool;
@@ -70,7 +71,7 @@ pub enum Effect {
     RuntimeChat {
         command: String,
         args: Vec<String>,
-        room: String,
+        table: Option<TableId>,
     },
 }
 
@@ -135,17 +136,21 @@ fn warning(message: &str) -> Effect {
     ))
 }
 
-fn notice(recipient: &str, message: &str, room: &str) -> Effect {
-    notice_publication(recipient, message, room).into()
+fn notice(recipient: &str, message: &str, table: Option<TableId>) -> Effect {
+    notice_publication(recipient, message, table).into()
 }
 
 /// A server reply that only the user who sent a chat command sees.
-pub(crate) fn notice_publication(recipient: &str, message: &str, room: &str) -> Publication {
+pub(crate) fn notice_publication(
+    recipient: &str,
+    message: &str,
+    table: Option<TableId>,
+) -> Publication {
     Publication::ToSelf(Outgoing::new(
         hanabi_protocol::server::CHAT,
         hanabi_protocol::Chat {
             username: Some("Hanab Live".into()),
-            room: Some(room.into()),
+            table_id: table,
             recipient: Some(recipient.into()),
             ..hanabi_protocol::Chat::new(
                 message,
@@ -176,17 +181,30 @@ pub async fn dispatch(
     let command = message.name();
     let effects = match message {
         ClientMessage::Setting(request) => {
-            let (name, value) = (request.name.as_str(), request.setting.as_str());
-            if let Err(error) = settings::validate_setting(name, value) {
-                return Ok(Some(vec![warning(&error.to_string())]));
+            let changes = request.settings;
+            for (name, value) in &changes {
+                if let Err(error) = settings::validate_setting(name, value) {
+                    return Ok(Some(vec![warning(&error.to_string())]));
+                }
             }
-            set_setting(pool, caller.user, name, value).await?;
-            match name {
-                "hGroupConventions" => vec![Publication::HGroup(value == "true").into()],
-                // `validate_setting` has already checked that the level is in range.
-                "hGroupLevel" => vec![Publication::HGroupLevel(value.parse()?).into()],
-                _ => vec![],
+            let mut effects = vec![];
+            for (name, value) in &changes {
+                set_setting(pool, caller.user, name, value).await?;
+                // `validate_setting` has already checked each value's type and range.
+                match name.as_str() {
+                    "hGroupConventions" => {
+                        effects.push(Publication::HGroup(value == &Value::Bool(true)).into());
+                    }
+                    "hGroupLevel" => effects.push(
+                        Publication::HGroupLevel(u8::try_from(
+                            value.as_u64().context("Invalid H-Group level")?,
+                        )?)
+                        .into(),
+                    ),
+                    _ => {}
+                }
             }
+            effects
         }
         ClientMessage::Inactive(request) => {
             let inactive = request.inactive;
@@ -202,8 +220,15 @@ pub async fn dispatch(
             ]
         }
         ClientMessage::Chat(request) => {
-            return chat::lobby_chat(pool, secret, caller, &request.text, &request.room, rendered)
-                .await;
+            return chat::lobby_chat(
+                pool,
+                secret,
+                caller,
+                &request.text,
+                request.table_id,
+                rendered,
+            )
+            .await;
         }
 
         ClientMessage::ChatPM(request) => {
@@ -213,7 +238,7 @@ pub async fn dispatch(
             chat::private_history(pool, caller, &request).await?
         }
         ClientMessage::ChatLinked(request) | ClientMessage::ChatBlocked(request) => {
-            relationships::relationship(pool, caller, command, "", &request.room).await?
+            relationships::relationship(pool, caller, command, "", request.table_id).await?
         }
         ClientMessage::ChatFriend(request)
         | ClientMessage::ChatUnfriend(request)
@@ -221,7 +246,7 @@ pub async fn dispatch(
         | ClientMessage::ChatUnlink(request)
         | ClientMessage::ChatBlock(request)
         | ClientMessage::ChatUnblock(request) => {
-            relationships::relationship(pool, caller, command, &request.username, &request.room)
+            relationships::relationship(pool, caller, command, &request.username, request.table_id)
                 .await?
         }
         ClientMessage::GameHistory(hanabi_protocol::HistoryRequest { offset, amount }) => {
@@ -270,7 +295,7 @@ pub async fn dispatch(
             ))]
         }
         ClientMessage::TagSearch(request) => {
-            let raw = request.msg.as_str();
+            let raw = request.tag.as_str();
             if raw.len() > crate::model::MAX_TAG_LENGTH {
                 return Ok(Some(vec![warning(&crate::model::tag_too_long())]));
             }
@@ -297,7 +322,7 @@ pub async fn dispatch(
             vec![notice(
                 &caller.name,
                 &format!("Games matching \"{}\": {list}", escape_html(&tag)),
-                &request.room,
+                request.table_id,
             )]
         }
         _ => unreachable!("the route check admits only lobby commands"),

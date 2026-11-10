@@ -462,14 +462,11 @@ mod tests {
     #[test]
     fn optional_values_are_omitted_not_null() {
         let error = decode::<ChatRequest>(&json!({
-            "text": "private text", "room": null
+            "text": "private text", "tableID": null
         }))
         .unwrap_err();
         assert!(!format!("{error:#}").contains("private text"));
-        let data = decode::<ChatRequest>(&json!({"text":"hello","room":"lobby"})).unwrap();
-        assert_eq!(
-            serde_json::to_value(data).unwrap(),
-            json!({"text":"hello","room":"lobby"})
-        );
+        let data = decode::<ChatRequest>(&json!({"text":"hello"})).unwrap();
+        assert_eq!(serde_json::to_value(data).unwrap(), json!({"text":"hello"}));
     }
 }

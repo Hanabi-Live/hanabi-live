@@ -1,0 +1,44 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT to_jsonb(g) AS \"game!: Json<GameRecord>\",\n            COALESCE((SELECT array_agg(u.username ORDER BY LOWER(u.username) COLLATE \"C\")\n                FROM game_participants p JOIN users u ON u.id=p.user_id WHERE p.game_id=g.id),\n                '{}') AS \"player_names!\",\n            COALESCE((SELECT ARRAY_AGG(DISTINCT tag ORDER BY tag) FROM game_tags\n                WHERE game_id=g.id),'{}') AS \"tags!\",\n            COALESCE((SELECT num_games FROM seeds WHERE seed=g.seed),0) AS \"num_games_on_this_seed!\"\n         FROM games g WHERE id=ANY($1) ORDER BY g.datetime_finished DESC, g.id DESC",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "game!: Json<GameRecord>",
+        "type_info": "Jsonb",
+        "origin": "Expression"
+      },
+      {
+        "ordinal": 1,
+        "name": "player_names!",
+        "type_info": "TextArray",
+        "origin": "Expression"
+      },
+      {
+        "ordinal": 2,
+        "name": "tags!",
+        "type_info": "TextArray",
+        "origin": "Expression"
+      },
+      {
+        "ordinal": 3,
+        "name": "num_games_on_this_seed!",
+        "type_info": "Int4",
+        "origin": "Expression"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Int4Array"
+      ]
+    },
+    "nullable": [
+      null,
+      null,
+      null,
+      null
+    ]
+  },
+  "hash": "ce7c0b5af468a374a1103fd37b75a9a7bd5cb143728171790340e162a8e6c41a"
+}

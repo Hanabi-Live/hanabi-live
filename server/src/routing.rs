@@ -38,12 +38,7 @@ pub fn route(message: &ClientMessage) -> Route {
         | M::ChatUnblock(_)
         | M::ChatBlocked(_)
         | M::TagSearch(_) => return Route::Lobby,
-        // The lobby rejects a room that is neither the lobby nor a table.
-        M::Chat(r) => match r
-            .room
-            .strip_prefix("table")
-            .and_then(|id| id.parse().ok().map(TableId))
-        {
+        M::Chat(r) => match r.table_id {
             Some(id) => return Route::TableChat(id),
             None => return Route::Lobby,
         },

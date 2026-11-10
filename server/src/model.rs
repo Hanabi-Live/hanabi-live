@@ -236,8 +236,10 @@ pub struct TableChat {
     #[serde(deserialize_with = "deserialize_stored_chat")]
     pub message: Chat,
 }
+
 /// Reads a checkpoint's chat message. Checkpoints written before November 10th, 2026 use the old
-/// wire names, and keep a suggestion's table name and player limit among its options.
+/// wire names, name the room instead of the table, and keep a suggestion's table name and player
+/// limit among its options.
 fn deserialize_stored_chat<'de, D>(deserializer: D) -> std::result::Result<Chat, D::Error>
 where
     D: serde::Deserializer<'de>,
@@ -248,6 +250,14 @@ where
         if let Some(value) = stored.remove(old) {
             stored.insert(new.into(), value);
         }
+    }
+    if let Some(room) = stored.remove("room") {
+        let table = room
+            .as_str()
+            .and_then(|room| room.strip_prefix("table"))
+            .and_then(|id| id.parse::<u64>().ok())
+            .ok_or_else(|| D::Error::custom("Invalid checkpoint chat room"))?;
+        stored.insert("tableID".into(), table.into());
     }
     if let Some(Value::Object(mut options)) = stored.remove("suggestedOptions") {
         for (old, new) in [
@@ -656,9 +666,10 @@ impl Snapshot {
             tags: self
                 .tags
                 .iter()
-                .map(|t| t.tag.as_str())
-                .collect::<Vec<_>>()
-                .join(", "),
+                .map(|t| t.tag.clone())
+                .collect::<std::collections::BTreeSet<_>>()
+                .into_iter()
+                .collect(),
         }
     }
 }
@@ -1016,7 +1027,7 @@ mod tests {
     fn checkpoints_from_before_the_protocol_renames_still_decode() {
         let chat: TableChat = serde_json::from_value(serde_json::json!({
             "id": 1, "user": 1, "message": {
-                "msg": "hi", "who": "Alice", "source": "user",
+                "msg": "hi", "who": "Alice", "source": "user", "room": "table7",
                 "datetime": "2026-11-02T20:00:00.123Z",
                 "suggestedOptions": {
                     "timeBase": 120.0, "timePerTurn": 20, "tableName": "Fun", "maxPlayers": 4
@@ -1026,6 +1037,7 @@ mod tests {
         .unwrap();
         assert_eq!(chat.message.text, "hi");
         assert_eq!(chat.message.username.as_deref(), Some("Alice"));
+        assert_eq!(chat.message.table_id, Some(TableId(7)));
         let suggestion = chat.message.suggestion.unwrap();
         assert_eq!(
             (suggestion.name.as_str(), suggestion.max_players),

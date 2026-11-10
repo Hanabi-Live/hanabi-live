@@ -46,10 +46,7 @@ export function init(): void {
     };
 
     $("#settings-volume-slider-value").html(`${volume}%`);
-    globals.conn!.send("setting", {
-      name: "volume",
-      setting: volumeString, // The server expects all setting values as strings.
-    });
+    globals.conn!.send("setting", { settings: { volume } });
     showSaved(this);
   });
 
@@ -101,10 +98,7 @@ export function init(): void {
       soundMove,
     };
 
-    globals.conn!.send("setting", {
-      name: "soundMove",
-      setting: soundMove.toString(), // The server expects all setting values as strings.
-    });
+    globals.conn!.send("setting", { settings: { soundMove } });
     showSaved(this);
   });
 
@@ -134,10 +128,7 @@ export function init(): void {
       hGroupLevel,
     };
 
-    globals.conn!.send("setting", {
-      name: "hGroupLevel",
-      setting: hGroupLevelString, // The server expects all setting values as strings.
-    });
+    globals.conn!.send("setting", { settings: { hGroupLevel } });
     showSaved(this);
   });
 }
@@ -248,10 +239,7 @@ function changeSetting(this: HTMLElement) {
   (globals.settings[settingName] as any) = checked;
 
   // Send the new value to the server.
-  globals.conn!.send("setting", {
-    name: settingName,
-    setting: checked.toString(), // The server expects all setting values as strings.
-  });
+  globals.conn!.send("setting", { settings: { [settingName]: checked } });
   showSaved(this);
 
   switch (settingName) {

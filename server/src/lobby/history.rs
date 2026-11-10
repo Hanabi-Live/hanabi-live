@@ -49,7 +49,7 @@ pub async fn seed_game_count(pool: &PgPool, seed: &str) -> Result<i64> {
 struct HistoryRow {
     game: Json<GameRecord>,
     player_names: Vec<String>,
-    tags: String,
+    tags: Vec<String>,
     num_games_on_this_seed: i32,
 }
 
@@ -66,8 +66,8 @@ pub async fn get_history(
             COALESCE((SELECT array_agg(u.username ORDER BY LOWER(u.username) COLLATE \"C\")
                 FROM game_participants p JOIN users u ON u.id=p.user_id WHERE p.game_id=g.id),
                 '{}') AS \"player_names!\",
-            COALESCE((SELECT STRING_AGG(DISTINCT tag, ', ' ORDER BY tag) FROM game_tags
-                WHERE game_id=g.id),'') AS \"tags!\",
+            COALESCE((SELECT ARRAY_AGG(DISTINCT tag ORDER BY tag) FROM game_tags
+                WHERE game_id=g.id),'{}') AS \"tags!\",
             COALESCE((SELECT num_games FROM seeds WHERE seed=g.seed),0) AS \"num_games_on_this_seed!\"
          FROM games g WHERE id=ANY($1) ORDER BY " + $order, ids
             ).fetch_all(pool).await?

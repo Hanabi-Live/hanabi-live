@@ -446,7 +446,7 @@ async fn public_database_routes_filters_privacy_exports_and_html() {
             .as_array()
             .unwrap()
             .iter()
-            .all(|g| g["tags"] == "mine")
+            .all(|g| g["tags"] == json!(["mine"]))
     );
     let (_, body) = request(app.clone(), "/api/v1/tag/%20MINE%20").await;
     assert_eq!(

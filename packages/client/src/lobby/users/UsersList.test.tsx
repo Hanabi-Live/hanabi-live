@@ -172,7 +172,6 @@ describe("UsersList", () => {
     fireEvent.click(screen.getByText("Block"));
     expect(send).toHaveBeenCalledWith("chatBlock", {
       username: "Alice",
-      room: "lobby",
     });
     act(() => {
       globals.blocked = ["Alice"];

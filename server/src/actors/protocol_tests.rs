@@ -1155,8 +1155,7 @@ async fn pregame_changes_announce_new_owners_and_splits() -> Result<()> {
     };
     let outcome = async {
         let id = h.create(0, "Notices", json!({})).await?;
-        let room = format!("table{}", id.0);
-        let chat = |msg: &str| json!({"room":room,"text":msg});
+        let chat = |msg: &str| json!({"tableID":id,"text":msg});
         for index in [1, 2] {
             h.send(index, "tableJoin", json!({"tableID":id})).await?;
         }
@@ -1370,7 +1369,7 @@ async fn blocked_players_cannot_join_or_spectate_each_others_tables() -> Result<
                 &caller,
                 &[],
                 None,
-                client_message(command, &json!({"username":name,"room":"lobby"}))?,
+                client_message(command, &json!({"username":name}))?,
             )
             .await?
             .context("Missing lobby effects")?
@@ -1692,12 +1691,8 @@ async fn chat_read_positions_survive_game_start_reconnect_and_remake() -> Result
         h.send(1, "tableJoin", json!({"tableID":id})).await?;
         h.send(1, "chatRead", json!({"tableID":id})).await?;
         let bob_read = h.snapshot(id).await?.0.chat.len();
-        h.send(
-            0,
-            "chat",
-            json!({"room":format!("table{id}"),"text":"One unread message"}),
-        )
-        .await?;
+        h.send(0, "chat", json!({"tableID":id,"text":"One unread message"}))
+            .await?;
         h.send(0, "chatRead", json!({"tableID":id})).await?;
         let alice_read = h.snapshot(id).await?.0.chat.len();
         h.send(0, "tableStart", json!({"tableID":id})).await?;
@@ -1926,7 +1921,7 @@ async fn pregame_history_survives_join_return_and_actor_recovery() -> Result<()>
             history["unread"] == 0,
             "The creator has unread chat: {history}"
         );
-        h.send(0, "chat", json!({"room":room,"text":"Before Bob joined"}))
+        h.send(0, "chat", json!({"tableID":id,"text":"Before Bob joined"}))
             .await?;
         h.send(1, "tableJoin", json!({"tableID":id})).await?;
         let history = h.receive(1, "chatList").await?;
@@ -1938,11 +1933,11 @@ async fn pregame_history_survives_join_return_and_actor_recovery() -> Result<()>
                 .iter()
                 .any(|m| m["text"] == "Bob joined the game.")
         );
-        h.send(1, "chat", json!({"room":room,"text":"Bob's message"}))
+        h.send(1, "chat", json!({"tableID":id,"text":"Bob's message"}))
             .await?;
         h.send(1, "tableUnattend", json!({"tableID":id})).await?;
         h.frames(1)?;
-        h.send(0, "chat", json!({"room":room,"text":"While Bob was away"}))
+        h.send(0, "chat", json!({"tableID":id,"text":"While Bob was away"}))
             .await?;
         h.send(1, "tableReattend", json!({"tableID":id})).await?;
         let history = h.receive(1, "chatList").await?;
@@ -2271,7 +2266,6 @@ async fn unknown_table_commands_are_persisted_and_delivered_to_bots() -> Result<
     let outcome = async {
         let id = h.create(0, "Bot table", json!({})).await?;
         h.send(1, "tableJoin", json!({"tableID":id})).await?;
-        let room = format!("table{id}");
         for running in [false, true] {
             if running {
                 h.send(0, "tableStart", json!({"tableID":id})).await?;
@@ -2284,7 +2278,7 @@ async fn unknown_table_commands_are_persisted_and_delivered_to_bots() -> Result<
                 ("/custom-bot <level>", "/custom-bot &lt;level&gt;"),
             ] {
                 let before = h.snapshot(id).await?.0.chat.len();
-                h.send(1, "chat", json!({"room":room,"text":text})).await?;
+                h.send(1, "chat", json!({"tableID":id,"text":text})).await?;
                 let messages = chat_messages(&h.frames(0)?);
                 ensure!(
                     messages.iter().any(|message| message["text"] == expected
@@ -2375,7 +2369,6 @@ async fn players_cannot_fill_a_table_chat_and_block_the_owner() -> Result<()> {
     let result = async {
         let id = h.create(0, "Original", json!({})).await?;
         h.send(1, "tableJoin", json!({"tableID":id})).await?;
-        let room = format!("table{id}");
         let proposal = json!({"tableID":id,"name":"Proposal","maxPlayers":5,"options":{}});
         // Proposals count like chat messages.
         for _ in 0..TABLE_CHAT_LIMIT {
@@ -2406,7 +2399,7 @@ async fn players_cannot_fill_a_table_chat_and_block_the_owner() -> Result<()> {
         }
 
         for (command, data) in [
-            ("chat", json!({"room":room,"text":"Hello"})),
+            ("chat", json!({"tableID":id,"text":"Hello"})),
             ("tableUpdate", proposal.clone()),
         ] {
             let refused = h
@@ -2445,7 +2438,7 @@ async fn findvariant_delivers_owner_button_and_guards_the_start_action() -> Resu
         let id=h.create(0,"Team discovery",json!({"deckPlays":true,"oneExtraCard":true})).await?;
         h.send(1,"tableJoin",json!({"tableID":id})).await?;h.barrier(0).await?;
         h.frames(0)?;h.frames(1)?;
-        h.send(1,"chat",json!({"room":format!("table{id}"),"text":"/findvariant"})).await?;h.barrier(0).await?;
+        h.send(1,"chat",json!({"tableID":id,"text":"/findvariant"})).await?;h.barrier(0).await?;
         let alice=chat_messages(&h.frames(0)?);let bob=chat_messages(&h.frames(1)?);
         let proposal=alice.iter().find(|v|v["text"].as_str().is_some_and(|s|s.contains("new-options"))).context("Owner did not receive proposal")?;
         ensure!(proposal["recipient"]=="Alice","Proposal was not private");
@@ -2482,7 +2475,7 @@ async fn findvariant_rechecks_roster_after_lookup_without_blocking_table_command
         let mut lock=h.store.primary.begin().await?;
         #[expect(clippy::disallowed_methods, reason = "test SQL that sets up database state or failures directly")]
         sqlx::query("LOCK TABLE user_stats IN ACCESS EXCLUSIVE MODE").execute(&mut *lock).await?;
-        let finding=h.begin(1,"chat",json!({"room":format!("table{id}"),"text":"/fv"})).await?;
+        let finding=h.begin(1,"chat",json!({"tableID":id,"text":"/fv"})).await?;
         h.wait_locks(1).await?;
         h.send(0,"tableLeave",json!({"tableID":id})).await?;
         let joining=h.begin(2,"tableJoin",json!({"tableID":id})).await?;
@@ -2522,7 +2515,7 @@ async fn findvariant_targets_only_the_current_owner_generation() -> Result<()> {
             .execute(&mut *lock)
             .await?;
         let finding = h
-            .begin(1, "chat", json!({"room":format!("table{id}"),"text":"/fv"}))
+            .begin(1, "chat", json!({"tableID":id,"text":"/fv"}))
             .await?;
         h.wait_locks(1).await?;
         let (old, mut old_frames) = h.replace(0).await?;
@@ -2570,12 +2563,8 @@ async fn tags_use_authoritative_sorted_frames_and_private_live_acknowledgements(
         h.frames(0)?;
         h.frames(1)?;
         for _ in 0..2 {
-            h.send(
-                0,
-                "tag",
-                json!({"tableID":id,"room":format!("table{id}"),"msg":" ALPHA <b> "}),
-            )
-            .await?;
+            h.send(0, "tag", json!({"tableID":id,"tag":" ALPHA <b> "}))
+                .await?;
         }
         h.barrier(0).await?;
         let private = chat_messages(&h.frames(0)?);
@@ -2595,7 +2584,7 @@ async fn tags_use_authoritative_sorted_frames_and_private_live_acknowledgements(
             "Live tag map duplicated an entry"
         );
         ensure!(
-            h.send(1, "tagDelete", json!({"tableID":id,"msg":"alpha <b>"}))
+            h.send(1, "tagDelete", json!({"tableID":id,"tag":"alpha <b>"}))
                 .await
                 .is_err(),
             "Another author deleted a live tag"
@@ -2612,7 +2601,7 @@ async fn tags_use_authoritative_sorted_frames_and_private_live_acknowledgements(
         .execute(&h.store.primary)
         .await?;
         for alias in ["/tags", "/taglist"] {
-            h.send(0, "chat", json!({"room":format!("table{id}"),"text":alias}))
+            h.send(0, "chat", json!({"tableID":id,"text":alias}))
                 .await?;
             h.barrier(0).await?;
             for index in 0..2 {
@@ -2636,7 +2625,7 @@ async fn tags_use_authoritative_sorted_frames_and_private_live_acknowledgements(
                 );
             }
         }
-        h.send(1, "tagDelete", json!({"tableID":id,"msg":"zeta"}))
+        h.send(1, "tagDelete", json!({"tableID":id,"tag":"zeta"}))
             .await?;
         h.barrier(0).await?;
         ensure!(
@@ -2651,12 +2640,8 @@ async fn tags_use_authoritative_sorted_frames_and_private_live_acknowledgements(
         h.barrier(0).await?;
         h.frames(0)?;
         h.frames(1)?;
-        h.send(
-            1,
-            "chat",
-            json!({"room":format!("table{id}"),"text":"/tags"}),
-        )
-        .await?;
+        h.send(1, "chat", json!({"tableID":id,"text":"/tags"}))
+            .await?;
         h.barrier(0).await?;
         ensure!(
             chat_messages(&h.frames(0)?)
@@ -2971,14 +2956,13 @@ async fn table_chat_commands_link_to_the_server_url() -> Result<()> {
     let outcome = async {
         let id = h.create(0, "Chat commands", json!({})).await?;
         h.send(1, "tableJoin", json!({"tableID":id})).await?;
-        let room = format!("table{id}");
         for (command, expected) in [
             ("/replay 5 3", "http://localhost/replay/5#3"),
             ("/missing", "http://localhost/shared-missing-scores/2/"),
         ] {
             h.barrier(0).await?;
             h.frames(0)?;
-            h.send(0, "chat", json!({"text":command,"room":room}))
+            h.send(0, "chat", json!({"text":command,"tableID":id}))
                 .await?;
             h.barrier(0).await?;
             let messages = chat_messages(&h.frames(0)?);
@@ -3004,17 +2988,16 @@ async fn table_chat_is_rate_limited_per_player() -> Result<()> {
     let outcome = async {
         let id = h.create(0, "Chatty", json!({})).await?;
         h.send(1, "tableJoin", json!({"tableID":id})).await?;
-        let room = format!("table{id}");
         for index in 0..TABLE_CHAT_LIMIT {
             h.send(
                 0,
                 "chat",
-                json!({"room":room,"text":format!("Message {index}")}),
+                json!({"tableID":id,"text":format!("Message {index}")}),
             )
             .await?;
         }
         let refused = h
-            .send(0, "chat", json!({"room":room,"text":"One too many"}))
+            .send(0, "chat", json!({"tableID":id,"text":"One too many"}))
             .await
             .expect_err("Chat past the limit was accepted");
         ensure!(
@@ -3024,7 +3007,7 @@ async fn table_chat_is_rate_limited_per_player() -> Result<()> {
         h.send(
             1,
             "chat",
-            json!({"room":room,"text":"Players have separate limits"}),
+            json!({"tableID":id,"text":"Players have separate limits"}),
         )
         .await?;
         Ok(())

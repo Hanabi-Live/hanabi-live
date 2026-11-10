@@ -79,14 +79,10 @@ impl TableActor {
         message: ClientMessage,
     ) -> CommandResult<()> {
         match message {
-            ClientMessage::Tag(r) => self.tag(session, &r.msg, &r.room, TagOperation::Tag).await,
-            ClientMessage::TagDelete(r) => {
-                self.tag(session, &r.msg, &r.room, TagOperation::TagDelete)
-                    .await
-            }
-            ClientMessage::TagsDeleteAll(r) => {
-                self.tag(session, "", &r.room, TagOperation::TagsDeleteAll)
-                    .await
+            ClientMessage::Tag(r) => self.tag(session, &r.tag, TagOperation::Tag).await,
+            ClientMessage::TagDelete(r) => self.tag(session, &r.tag, TagOperation::TagDelete).await,
+            ClientMessage::TagsDeleteAll(_) => {
+                self.tag(session, "", TagOperation::TagsDeleteAll).await
             }
             message => Err(wrong_phase(&message)),
         }
@@ -95,7 +91,6 @@ impl TableActor {
         &mut self,
         session: Arc<Session>,
         raw: &str,
-        room: &str,
         operation: TagOperation,
     ) -> CommandResult<()> {
         ensure_or_reject!(self.attending(&session), "Not attending");
@@ -208,7 +203,6 @@ impl TableActor {
             table_notice(&mut next, &text)
         } else {
             let mut message = server_chat(self.table.id, &text);
-            message.room = Some(room.to_owned());
             message.recipient = Some(session.name.clone());
             Some(message)
         };

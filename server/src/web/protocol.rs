@@ -55,16 +55,16 @@ mod tests {
     fn every_registered_command_has_a_parser() {
         for command in hanabi_protocol::client_contracts().into_keys() {
             let value = match command {
-                "setting" => json!({"name":"volume","setting":"50"}),
+                "setting" => json!({"settings":{"volume":50}}),
                 "inactive" => json!({"inactive":true}),
                 "gameHistoryOtherScores" => json!({"seed":"p2v0s1","offset":0,"amount":10}),
-                "chat" => json!({"text":"hello","room":"lobby"}),
+                "chat" => json!({"text":"hello"}),
                 "chatPM" => json!({"text":"hello","recipient":"Alice"}),
                 "replayCreate" => json!({"source":"id","visibility":"shared","databaseID":1}),
                 "action" => json!({"tableID":1,"type":3,"target":0}),
                 "pause" => json!({"tableID":1,"setting":"pause"}),
                 "note" => json!({"tableID":1,"order":0,"note":"test"}),
-                "tag" | "tagDelete" => json!({"tableID":1,"msg":"test"}),
+                "tag" | "tagDelete" => json!({"tableID":1,"tag":"test"}),
                 "replayAction" => json!({"tableID":1,"type":"hypoStart"}),
                 "tableRestartDecline" => json!({"tableID":1,"declined":true}),
                 "sync" | "lobbyLoad" | "tableCreate" | "gameHistory" | "chatLinked"
@@ -79,7 +79,7 @@ mod tests {
     fn private_messages_take_only_a_message_and_recipient() {
         assert!(parse(r#"chatPM {"text":"hello","recipient":"Alice"}"#).is_ok());
         for data in [
-            json!({"text":"hello","recipient":"Alice","room":"lobby"}),
+            json!({"text":"hello","recipient":"Alice","tableID":1}),
             json!({"text":"hello","recipient":"Alice","admin":true}),
         ] {
             assert!(parse(&format!("chatPM {data}")).is_err());
@@ -90,9 +90,9 @@ mod tests {
     fn strict_types_limits_and_defaults() {
         for input in [
             "action {\"tableID\":1,\"type\":4,\"target\":0}",
-            "chat {\"msg\":\"x\",\"room\":\"lobby\",\"admin\":true}",
+            "chat {\"text\":\"x\",\"admin\":true}",
             "tableStart {\"tableID\":9007199254740992}",
-            "setting {\"name\":\"volume\",\"setting\":50}",
+            "setting {\"settings\":{\"volume\":\"50\"}}",
             "sync []",
             "unknown {}",
             "historyFriendsGet {\"offset\":0,\"amount\":10}",

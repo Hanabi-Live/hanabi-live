@@ -79,6 +79,8 @@ of the repository.
   a game automatically.
 - Signing in with a username that has no account now asks you to confirm before
   it creates the account, so a typo no longer creates a new account.
+- In "/create-table" links, `timeBase` and `timePerTurn` are now
+  `timeBaseSeconds` and `timePerTurnSeconds`.
 
 ## November 8th, 2026
 

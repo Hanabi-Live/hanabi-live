@@ -1,6 +1,7 @@
 // @vitest-environment jsdom
 
 import type { ServerCommandData } from "@hanabi-live/data";
+import { tableIdSchema } from "@hanabi-live/data";
 import { act, cleanup, render, screen } from "@testing-library/react";
 import { Provider } from "react-redux";
 import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
@@ -23,7 +24,6 @@ function message(
     username: "alice",
     source: "user",
     datetime: "2026-11-09T12:34:00.000Z",
-    room: "lobby",
     ...fields,
   };
 }
@@ -51,9 +51,9 @@ describe("LobbyChat", () => {
     act(() => {
       add(message({ chatID: 1, text: "first" }), true);
       add(message({ chatID: 2, text: "second" }), true);
-      add(message({ room: "", recipient: "me", text: "psst" }), true);
+      add(message({ recipient: "me", text: "psst" }), true);
       // Table chat goes to the pre-game or game chat, never the lobby chat.
-      add(message({ room: "table5", text: "table" }), true);
+      add(message({ tableID: tableIdSchema.parse(5), text: "table" }), true);
     });
 
     const lines = lineTexts();

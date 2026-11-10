@@ -58,8 +58,7 @@
     "direction": "client",
     "command": "chat",
     "input": {
-      "text": "&lt;hello&gt;",
-      "room": "lobby"
+      "text": "&lt;hello&gt;"
     },
     "valid": true
   },
@@ -69,7 +68,6 @@
     "command": "chat",
     "input": {
       "text": "hello",
-      "room": "lobby",
       "requestID": "r"
     },
     "valid": false
@@ -79,17 +77,7 @@
     "direction": "client",
     "command": "chat",
     "input": {
-      "text": "",
-      "room": "lobby"
-    },
-    "valid": false
-  },
-  {
-    "name": "chat rejects missing room",
-    "direction": "client",
-    "command": "chat",
-    "input": {
-      "text": "hello"
+      "text": ""
     },
     "valid": false
   },
@@ -99,7 +87,6 @@
     "command": "chat",
     "input": {
       "text": "hello",
-      "room": "lobby",
       "admin": true
     },
     "valid": false
@@ -120,7 +107,6 @@
     "command": "chatPMHistory",
     "input": {
       "amount": -9007199254740991,
-      "room": "",
       "username": ""
     },
     "valid": true
@@ -160,8 +146,7 @@
     "input": {},
     "valid": true,
     "normalized": {
-      "username": "",
-      "room": ""
+      "username": ""
     }
   },
   {
@@ -309,7 +294,6 @@
       "source": "user",
       "datetime": "2026-01-01T12:00:00.000Z",
       "username": "",
-      "room": "",
       "recipient": "",
       "chatID": 9007199254740991
     },
@@ -339,7 +323,7 @@
     "valid": false
   },
   {
-    "name": "chat deletion rejects table room",
+    "name": "chat deletion rejects a room",
     "direction": "server",
     "command": "chatDelete",
     "input": {
@@ -349,12 +333,12 @@
     "valid": false
   },
   {
-    "name": "private history rejects empty explicit room",
+    "name": "private history rejects an invalid table",
     "direction": "server",
     "command": "chatPMHistory",
     "input": {
       "messages": [],
-      "room": ""
+      "tableID": -1
     },
     "valid": false
   },
@@ -681,7 +665,7 @@
         "datetimeFinished": "2023-12-29T18:21:43.812Z",
         "numGamesOnThisSeed": 3,
         "playerNames": ["Alice", "Bob"],
-        "tags": ""
+        "tags": []
       }
     ],
     "valid": true
@@ -715,7 +699,7 @@
         "datetimeFinished": "2023-12-29T18:21:43.812Z",
         "numGamesOnThisSeed": 3,
         "playerNames": ["Alice", "Bob"],
-        "tags": ""
+        "tags": []
       }
     ],
     "valid": false
@@ -749,7 +733,7 @@
         "datetimeFinished": "2023-12-29T18:21:43.812Z",
         "numGamesOnThisSeed": 3,
         "playerNames": ["Alice", "Bob"],
-        "tags": ""
+        "tags": []
       }
     ],
     "valid": false
@@ -783,7 +767,7 @@
         "datetimeFinished": "2023-12-29T18:21:43.812Z",
         "numGamesOnThisSeed": 3,
         "playerNames": ["Alice", "Bob"],
-        "tags": ""
+        "tags": []
       }
     ],
     "valid": false
@@ -817,7 +801,7 @@
         "datetimeFinished": "2023-12-29T18:21:43.812Z",
         "numGamesOnThisSeed": 3,
         "playerNames": ["Alice", "Bob"],
-        "tags": ""
+        "tags": []
       }
     ],
     "valid": false

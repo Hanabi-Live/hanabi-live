@@ -484,7 +484,6 @@ impl Bridge {
                 hanabi_protocol::server::CHAT_DELETE,
                 hanabi_protocol::ChatDelete {
                     chat_id: i64::from(chat_id),
-                    room: hanabi_protocol::LobbyRoom::Lobby,
                 },
             )])
             .await?;
@@ -639,7 +638,6 @@ impl Bridge {
                         hanabi_protocol::Chat {
                             chat_id: Some(i64::from(chat_id)),
                             username: Some(name.clone()),
-                            room: Some("lobby".into()),
                             ..hanabi_protocol::Chat::new(
                                 rendered,
                                 hanabi_protocol::ChatSource::Discord,
@@ -678,7 +676,6 @@ impl Bridge {
                     hanabi_protocol::server::CHAT_DELETE,
                     hanabi_protocol::ChatDelete {
                         chat_id: i64::from(chat_id),
-                        room: hanabi_protocol::LobbyRoom::Lobby,
                     },
                 )])
                 .await?;
@@ -733,7 +730,6 @@ impl Bridge {
                 hanabi_protocol::Chat {
                     chat_id: Some(i64::from(id)),
                     username: Some(String::new()),
-                    room: Some("lobby".into()),
                     ..hanabi_protocol::Chat::new(
                         rendered,
                         hanabi_protocol::ChatSource::Discord,

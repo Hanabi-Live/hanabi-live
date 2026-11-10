@@ -541,13 +541,13 @@ async fn archive_chat(
         // Server messages have no author.
         users.push((entry.message.source == ChatSource::User).then_some(entry.user.0));
         messages.push(entry.message.text.clone());
-        rooms.push(
+        rooms.push(format!(
+            "table{}",
             entry
                 .message
-                .room
-                .clone()
-                .context("Invalid archived chat room")?,
-        );
+                .table_id
+                .context("Invalid archived chat room")?
+        ));
         sources.push(match entry.message.source {
             ChatSource::User => "user",
             ChatSource::Server => "server",
@@ -1240,7 +1240,7 @@ mod tests {
             user: UserId(1),
             message: serde_json::from_value(json!({
                 "text": text, "username": "Alice", "source": "user",
-                "room": format!("table{id}"), "datetime": "2026-11-02T20:00:00.123456Z"
+                "tableID":id, "datetime": "2026-11-02T20:00:00.123456Z"
             }))?,
         })
     }
@@ -1567,7 +1567,7 @@ mod tests {
                 loop{if store.load().await?.iter().any(|(t,_)|t.id==id&&matches!(t.phase,Phase::Live{..})){return Ok::<(),anyhow::Error>(());}tokio::time::sleep(Duration::from_millis(20)).await;}
             }).await??;
             send(&hub,users[2].clone(),"tableSpectate",json!({"tableID":id,"shadowingPlayerIndex":0})).await?;
-            send(&hub,users[0].clone(),"chat",json!({"room":format!("table{id}"),"text":"retained authored chat"})).await?;
+            send(&hub,users[0].clone(),"chat",json!({"tableID":id,"text":"retained authored chat"})).await?;
             send(&hub,users[0].clone(),"tableTerminate",json!({"tableID":id})).await?;
             let rows:i64=sqlx::query_scalar!("SELECT count(*) AS \"v!\" FROM chat_log WHERE user_id=1 AND source='user' AND room=$1 AND message='retained authored chat'", format!("table{id}")).fetch_one(&store.primary).await?;
             ensure!(rows==1,"Accepted authored chat was omitted or duplicated in PostgreSQL");
@@ -1641,7 +1641,7 @@ mod tests {
                 &hub,
                 users[0].clone(),
                 "chat",
-                json!({"room":format!("table{id}"),"text":"/split Bob"}),
+                json!({"tableID":id,"text":"/split Bob"}),
             )
             .await?;
             let tables = store.load().await?;
@@ -1790,7 +1790,7 @@ mod tests {
             send(&hub,users[actor].clone(),"loaded",json!({"tableID":id})).await?;
             send(&hub,users[actor].clone(),"pause",json!({"tableID":id,"setting":"pause"})).await?;
             send(&hub,users[actor].clone(),"note",json!({"tableID":id,"order":0,"note":"private"})).await?;
-            send(&hub,users[actor].clone(),"tag",json!({"tableID":id,"msg":"native-live"})).await?;
+            send(&hub,users[actor].clone(),"tag",json!({"tableID":id,"tag":"native-live"})).await?;
             let loaded=store.load().await?;let s=loaded[0].0.game().unwrap();ensure!(s.paused()&&s.notes[active][0]=="private"&&s.tags.len()==1,"Runtime mutations not durable");
             let (reply,received)=oneshot::channel();hub.send(HubCommand::Quiesce(reply)).await?;let handles=received.await?;
             for handle in handles{let (reply,received)=oneshot::channel();handle.sender.send(TableCommand::Drain(reply)).await?;received.await??;}

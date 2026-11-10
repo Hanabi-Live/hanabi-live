@@ -33,9 +33,11 @@ pub struct Chat {
     #[serde(default, rename = "chatID", skip_serializing_if = "Option::is_none")]
     #[schemars(with = "i64", range(min = 1, max = MAX_SAFE_INTEGER))]
     pub chat_id: Option<i64>,
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    #[schemars(with = "String")]
-    pub room: Option<String>,
+    /// The table whose chat shows the message. Absent means the lobby, or the recipient's current
+    /// chat for a private message.
+    #[serde(default, rename = "tableID", skip_serializing_if = "Option::is_none")]
+    #[schemars(with = "TableId")]
+    pub table_id: Option<TableId>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     #[schemars(with = "String")]
     pub recipient: Option<String>,
@@ -65,7 +67,7 @@ impl Chat {
             datetime: datetime.into(),
             username: None,
             chat_id: None,
-            room: None,
+            table_id: None,
             recipient: None,
             suggestion: None,
         }
@@ -79,13 +81,6 @@ pub struct ChatDelete {
     #[serde(rename = "chatID")]
     #[schemars(range(min = 1, max = MAX_SAFE_INTEGER))]
     pub chat_id: i64,
-    pub room: LobbyRoom,
-}
-
-#[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
-#[serde(rename_all = "lowercase")]
-pub enum LobbyRoom {
-    Lobby,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
@@ -118,9 +113,10 @@ pub struct ChatHistoryMessage {
 pub struct ChatHistory {
     #[schemars(extend("x-readonly" = true))]
     pub messages: Vec<ChatHistoryMessage>,
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    #[schemars(with = "String", length(min = 1))]
-    pub room: Option<String>,
+    /// The table whose chat requested the history. Absent means the lobby.
+    #[serde(default, rename = "tableID", skip_serializing_if = "Option::is_none")]
+    #[schemars(with = "TableId")]
+    pub table_id: Option<TableId>,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]

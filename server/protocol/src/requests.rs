@@ -15,8 +15,10 @@ use super::*;
 pub struct ChatRequest {
     #[schemars(length(min = 1))]
     pub text: String,
-    #[schemars(length(min = 1))]
-    pub room: String,
+    /// The table whose chat the message is for. Absent means the lobby.
+    #[serde(default, rename = "tableID", skip_serializing_if = "Option::is_none")]
+    #[schemars(with = "TableId")]
+    pub table_id: Option<TableId>,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
@@ -36,9 +38,10 @@ pub struct ChatHistoryRequest {
     #[serde(default)]
     #[schemars(range(min = -MAX_SAFE_INTEGER, max = MAX_SAFE_INTEGER))]
     pub amount: i64,
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    #[schemars(with = "String")]
-    pub room: Option<String>,
+    /// The table whose chat the command was typed in. Absent means the lobby.
+    #[serde(default, rename = "tableID", skip_serializing_if = "Option::is_none")]
+    #[schemars(with = "TableId")]
+    pub table_id: Option<TableId>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     #[schemars(with = "String")]
     pub username: Option<String>,
@@ -49,14 +52,20 @@ pub struct ChatHistoryRequest {
 #[schemars(extend("x-readonly" = true))]
 pub struct ChatUserRequest {
     pub username: String,
-    pub room: String,
+    /// The table whose chat the command was typed in. Absent means the lobby.
+    #[serde(default, rename = "tableID", skip_serializing_if = "Option::is_none")]
+    #[schemars(with = "TableId")]
+    pub table_id: Option<TableId>,
 }
 
 #[derive(Clone, Debug, Default, Serialize, Deserialize, JsonSchema)]
 #[serde(default, rename_all = "camelCase", deny_unknown_fields)]
 #[schemars(extend("x-readonly" = true))]
 pub struct ChatLinkedRequest {
-    pub room: String,
+    /// The table whose chat the command was typed in. Absent means the lobby.
+    #[serde(default, rename = "tableID", skip_serializing_if = "Option::is_none")]
+    #[schemars(with = "TableId")]
+    pub table_id: Option<TableId>,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
@@ -151,9 +160,9 @@ pub struct TableSpectateRequest {
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct SettingRequest {
-    pub name: String,
-    /// The value as text; the server parses it according to the setting.
-    pub setting: String,
+    /// The settings to change, each with the type that `Settings` gives it.
+    #[schemars(with = "Settings")]
+    pub settings: serde_json::Map<String, serde_json::Value>,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
@@ -193,9 +202,11 @@ pub struct HistorySeedRequest {
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct TagSearchRequest {
     #[serde(default)]
-    pub msg: String,
-    #[serde(default)]
-    pub room: String,
+    pub tag: String,
+    /// The table whose chat the command was typed in. Absent means the lobby.
+    #[serde(default, rename = "tableID", skip_serializing_if = "Option::is_none")]
+    #[schemars(with = "TableId")]
+    pub table_id: Option<TableId>,
 }
 
 fn default_max_players() -> i64 {
@@ -331,9 +342,7 @@ pub struct NoteRequest {
 pub struct TagRequest {
     #[serde(rename = "tableID")]
     pub table_id: TableId,
-    pub msg: String,
-    #[serde(default)]
-    pub room: String,
+    pub tag: String,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
@@ -341,8 +350,6 @@ pub struct TagRequest {
 pub struct TagsDeleteAllRequest {
     #[serde(rename = "tableID")]
     pub table_id: TableId,
-    #[serde(default)]
-    pub room: String,
 }
 
 /// A shared-replay leader's action, which the server applies and relays to everyone watching.

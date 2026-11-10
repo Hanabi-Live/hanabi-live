@@ -2,7 +2,7 @@ import { MAX_PRIVATE_HISTORY_MESSAGES, VERSION } from "@hanabi-live/data";
 import { VARIANT_NAMES } from "@hanabi-live/game";
 import { parseIntSafe } from "complete-common";
 import { globals } from "./Globals";
-import { SelfChatMessageType, sendSelfPMFromServer } from "./chat";
+import { SelfChatMessageType, roomTableID, sendSelfPMFromServer } from "./chat";
 import { NO_TABLE_ID } from "./constants";
 import * as createGame from "./lobby/createGame";
 import { createJSONFromReplay } from "./lobby/createReplayJSON";
@@ -11,6 +11,12 @@ import { createJSONFromReplay } from "./lobby/createReplayJSON";
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type Callback = (...args: any) => void;
 export const chatCommands = new Map<string, Callback>();
+
+/** The `tableID` field that tells the server which room a command was typed in. */
+function roomField(room: string): { tableID?: number } {
+  const tableID = roomTableID(room);
+  return tableID === undefined ? {} : { tableID };
+}
 
 // /copy
 chatCommands.set("copy", (room: string) => {
@@ -120,7 +126,7 @@ function blockCommand(command: "block" | "unblock") {
 
     globals.conn!.send(command === "block" ? "chatBlock" : "chatUnblock", {
       username: args.join(" "),
-      room,
+      ...roomField(room),
     });
   };
 }
@@ -130,7 +136,7 @@ chatCommands.set("unblock", blockCommand("unblock"));
 
 // /blocked
 chatCommands.set("blocked", (room: string) => {
-  globals.conn!.send("chatBlocked", { room });
+  globals.conn!.send("chatBlocked", roomField(room));
 });
 
 // /pm [username] [msg]
@@ -240,7 +246,7 @@ function pmHistory(room: string, args: readonly string[]) {
     return;
   }
 
-  globals.conn!.send("chatPMHistory", { ...data, room });
+  globals.conn!.send("chatPMHistory", { ...data, ...roomField(room) });
 }
 chatCommands.set("pmhistory", pmHistory);
 
@@ -355,7 +361,7 @@ chatCommands.set("tag", (room: string, args: readonly string[]) => {
   const tag = args.join(" ");
   globals.conn!.send("tag", {
     tableID: globals.tableID,
-    msg: tag,
+    tag,
   });
 });
 
@@ -372,7 +378,7 @@ function untag(room: string, args: readonly string[]) {
   const tag = args.join(" ");
   globals.conn!.send("tagDelete", {
     tableID: globals.tableID,
-    msg: tag,
+    tag,
   });
 }
 
@@ -384,8 +390,8 @@ chatCommands.set("tagsearch", (room: string, args: readonly string[]) => {
   const tag = args.join(" ");
 
   globals.conn!.send("tagSearch", {
-    msg: tag,
-    room,
+    tag,
+    ...roomField(room),
   });
 });
 

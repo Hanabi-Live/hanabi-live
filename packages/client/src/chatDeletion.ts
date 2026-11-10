@@ -15,11 +15,11 @@ export class LobbyChatDeletionState {
   }
 
   public shouldSkipMessage(
-    room: string | undefined,
+    tableID: number | undefined,
     chatID: number | undefined,
   ): boolean {
     return (
-      room === "lobby"
+      tableID === undefined
       && chatID !== undefined
       && this.deletedChatIDs.has(chatID)
     );

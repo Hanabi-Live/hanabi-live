@@ -252,7 +252,7 @@
                     >
                   </td>
                   {% if title == "Tagged Games" %}
-                  <td class="center">{{ game.tags }}</td>
+                  <td class="center">{{ game.tags|join(", ") }}</td>
                   {% endif %}
                 </tr>
                 {% endfor %}
