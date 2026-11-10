@@ -5,6 +5,7 @@ import type { Globals as LobbyGlobals } from "../../Globals";
 import { Screen } from "../../lobby/types/Screen";
 import * as tooltips from "../../tooltips";
 import type { GameExports } from "../main";
+import * as newUIState from "../newUI/newUIState";
 import { unmountClueLog } from "./clueLog/mountClueLog";
 import { STAGE_ASPECT_RATIO } from "./constants";
 import * as cursor from "./cursor";
@@ -107,6 +108,9 @@ export class HanabiUI {
 
   // eslint-disable-next-line @typescript-eslint/class-methods-use-this
   updateChatLabel(): void {
+    // The redesigned game screen shows the unread count on its own chat button.
+    newUIState.notify();
+
     if (globals.elements.chatButton === undefined) {
       return;
     }

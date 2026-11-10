@@ -31,6 +31,9 @@ of the repository.
 - The new flashlight button beside "Give Clue" shows the target's hand as they
   would see it after the selected clue. It turns off at the start of each turn.
 - Buttons now show an outline when you move to them with the keyboard.
+- The new "New UI" setting shows ongoing games in a redesigned game screen. It
+  is in testing and off by default. Finished games and replays still use the
+  classic screen, and a "Classic view" button switches to it at any time.
 
 ## November 9th, 2026
 

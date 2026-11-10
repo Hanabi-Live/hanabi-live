@@ -1033,6 +1033,10 @@ export const settingsSchema = z
      */
     hGroupLevel: z.number().int().min(1).max(25).optional(),
     keldonMode: z.boolean().default(false),
+    /**
+     * Shows games in the redesigned game screen, which is in testing. Players opt in.
+     */
+    newUi: z.boolean().default(false),
     realLifeMode: z.boolean().default(false),
     reverseHands: z.boolean().default(false),
     showTimerInUntimed: z.boolean().default(false),

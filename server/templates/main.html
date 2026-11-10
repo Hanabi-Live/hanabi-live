@@ -1446,6 +1446,16 @@
                 </span>
               </li>
               <li class="lobby-row">
+                <label for="newUi"
+                  ><i class="fas fa-flask fa-fw"></i>New UI (redesigned game
+                  screen, in testing)</label
+                >
+                <span class="lobby-row-checkbox">
+                  <input id="newUi" type="checkbox" />
+                  <label for="newUi"></label>
+                </span>
+              </li>
+              <li class="lobby-row">
                 <label for="colorblindMode"
                   ><i class="fas fa-eye fa-fw"></i>Colorblind mode</label
                 >
@@ -1782,6 +1792,9 @@
 
 <!-- Game (the UI when playing a game) -->
 <div id="game" class="hidden"></div>
+
+<!-- The redesigned game screen, for players who turned on the "New UI" setting -->
+<div id="game-new-ui" class="hidden"></div>
 
 <!-- Game tooltips (which are initialized in "tooltips.js") -->
 <span id="game-tooltips"></span><!-- This span cannot be hidden -->

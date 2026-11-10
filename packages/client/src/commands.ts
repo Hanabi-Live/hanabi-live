@@ -86,7 +86,7 @@ function acknowledgeChatRead(
     globals.currentScreen === Screen.Game
     && globals.ui !== undefined
   ) {
-    if ($("#game-chat-modal").is(":visible")) {
+    if (gameChat.isOpen()) {
       // The chat window was open; notify the server that we have read the chat message that was
       // just received.
       globals.conn!.send("chatRead", {
@@ -130,7 +130,7 @@ commands.set("chatList", (data) => {
   for (const line of data.messages) {
     chat.add(line, true); // The second argument is "fast"
   }
-  if (globals.ui !== undefined && !$("#game-chat-modal").is(":visible")) {
+  if (globals.ui !== undefined && !gameChat.isOpen()) {
     // If the UI is open, we assume that this is a list of in-game chat messages.
     globals.chatUnread += data.unread;
     globals.ui.updateChatLabel();

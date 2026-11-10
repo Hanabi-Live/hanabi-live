@@ -1,4 +1,5 @@
 import { StrictMode } from "react";
+import type { Root } from "react-dom/client";
 import { createRoot } from "react-dom/client";
 import { Provider } from "react-redux";
 import { store } from "./store";
@@ -8,10 +9,12 @@ import "./tailwind.css"; // eslint-disable-line import-x/no-unassigned-import
 export function renderRoot(
   container: HTMLElement,
   component: React.JSX.Element,
-): void {
-  createRoot(container).render(
+): Root {
+  const root = createRoot(container);
+  root.render(
     <StrictMode>
       <Provider store={store}>{component}</Provider>
     </StrictMode>,
   );
+  return root;
 }

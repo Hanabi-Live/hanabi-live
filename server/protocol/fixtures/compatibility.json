@@ -456,6 +456,7 @@
         "soundTimer": true,
         "darkMode": false,
         "keldonMode": false,
+        "newUi": false,
         "colorblindMode": false,
         "realLifeMode": false,
         "reverseHands": false,

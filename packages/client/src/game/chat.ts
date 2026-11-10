@@ -5,6 +5,7 @@ import interact from "interactjs";
 import { globals } from "../Globals";
 import { FADE_TIME_MS, LOCAL_STORAGE_KEY } from "../constants";
 import { getHTMLElement } from "../utils";
+import * as newUIState from "./newUI/newUIState";
 
 const gameChatText = getHTMLElement("#game-chat-text");
 
@@ -140,9 +141,15 @@ export function init(): void {
   });
 }
 
+/** Whether the player can see the in-game chat, in either game screen. */
+export function isOpen(): boolean {
+  return newUIState.isActive()
+    ? newUIState.isChatOpen()
+    : $("#game-chat-modal").is(":visible");
+}
+
 export function toggle(focusInput = true): void {
-  const modal = $("#game-chat-modal");
-  if (modal.is(":visible")) {
+  if (isOpen()) {
     hide();
   } else {
     show(focusInput);
@@ -150,27 +157,19 @@ export function toggle(focusInput = true): void {
 }
 
 export function show(focusInput = true): void {
+  markRead();
+
+  if (newUIState.isActive()) {
+    // The redesigned game screen shows the chat in its side panel instead of in the modal.
+    newUIState.setChatOpen(true);
+    if (focusInput) {
+      $("#game-chat-input").trigger("focus");
+    }
+    return;
+  }
+
   const modal = $("#game-chat-modal");
   modal.fadeIn(FADE_TIME_MS);
-
-  // Check to see if there are any unread chat messages.
-  if (globals.chatUnread !== 0) {
-    // If the user is opening the chat, then we assume that all of the chat messages are read.
-    globals.chatUnread = 0;
-
-    // We need to notify the server that we have read everything.
-    assertDefined(
-      globals.conn,
-      'The "globals.conn" object is not initialized.',
-    );
-    globals.conn.send("chatRead", {
-      tableID: globals.tableID,
-    });
-
-    // Reset the "Chat" UI button back to normal.
-    assertDefined(globals.ui, 'The "globals.ui" object is not initialized.');
-    globals.ui.updateChatLabel();
-  }
 
   // Set the modal to the default size and position.
   modal.css(DEFAULT_CHAT_MODAL_SIZE);
@@ -221,7 +220,31 @@ export function show(focusInput = true): void {
 }
 
 export function hide(): void {
+  if (newUIState.isActive()) {
+    newUIState.setChatOpen(false);
+    return;
+  }
+
   $("#game-chat-modal").fadeOut(FADE_TIME_MS);
+}
+
+/** Opening the chat counts every message in it as read. */
+function markRead() {
+  if (globals.chatUnread === 0) {
+    return;
+  }
+
+  globals.chatUnread = 0;
+
+  // We need to notify the server that we have read everything.
+  assertDefined(globals.conn, 'The "globals.conn" object is not initialized.');
+  globals.conn.send("chatRead", {
+    tableID: globals.tableID,
+  });
+
+  // Reset the "Chat" UI button back to normal.
+  assertDefined(globals.ui, 'The "globals.ui" object is not initialized.');
+  globals.ui.updateChatLabel();
 }
 
 /** Subroutine to move an element (using the "transform" CSS property). */

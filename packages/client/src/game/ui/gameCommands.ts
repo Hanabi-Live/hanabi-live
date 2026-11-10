@@ -26,6 +26,7 @@ import {
   toPlayerTuple,
   toSoundType,
 } from "../../wire";
+import * as newUIState from "../newUI/newUIState";
 import { initialState } from "../reducers/initialStates/initialState";
 import { stateReducer } from "../reducers/stateReducer";
 import { SoundType } from "../types/SoundType";
@@ -534,6 +535,9 @@ function initStateStore(data: InitData) {
     seed: data.seed,
   };
   globals.store = createStore(stateReducer, initialState(metadata));
+
+  // The redesigned game screen, if showing, waits for the store before it draws anything.
+  newUIState.notify();
 
   // The various UI views subscribe to the state store.
   globals.stateObserver = new StateObserver(globals.store);

@@ -138,3 +138,35 @@ div.note-title span {
   text-align: center;
   padding: 0 0.65em;
 }
+
+/* The redesigned game screen ("New UI") covers the whole window. */
+#game-new-ui {
+  position: fixed;
+  inset: 0;
+}
+
+/*
+  The redesigned game screen shows the in-game chat box in its side panel instead of in the chat
+  window. The panel is dark in both themes, so the chat uses dark colors there.
+*/
+#game-new-ui-chat {
+  --text: #dce3e8;
+  --text-strong: #eef1f3;
+  --text-label: #b3bdc5;
+  --text-faint: #8f9ba5;
+  --surface: #1f2930;
+  --surface-sunken: #26313a;
+  --border: #3a4752;
+  --link: #8fb2ff;
+}
+
+#game-new-ui-chat #game-chat-modal-white {
+  width: 100%;
+  height: 100%;
+  top: 0;
+  left: 0;
+  padding: 0.75em 1em;
+  background: transparent;
+  border: none;
+  border-radius: 0;
+}

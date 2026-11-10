@@ -9,6 +9,7 @@ import * as sounds from "../sounds";
 import * as tooltips from "../tooltips";
 import { setBrowserAddressBarPath } from "../utils";
 import * as chat from "./chat";
+import * as newUI from "./newUI/newUI";
 import { HanabiUI } from "./ui/HanabiUI";
 
 /** The history screen's address (e.g. "#history"), if a replay was opened from one. */
@@ -35,11 +36,17 @@ export function show(justStarted: boolean): void {
   $("#game-chat-text").html(""); // Clear the in-game chat box of any previous content
   // eslint-disable-next-line @typescript-eslint/strict-void-return
   $("body").on("contextmenu", () => false); // Disable the right-click context menu
-  $("#game").fadeIn(FADE_TIME_MS);
+  // The classic screen keeps running underneath the redesigned one, hidden.
+  if (!globals.settings.newUi) {
+    $("#game").fadeIn(FADE_TIME_MS);
+  }
 
   // Every time a new game is opened, the UI is rebuilt from scratch.
   globals.ui = new HanabiUI(globals, gameExports, justStarted);
   globals.chatUnread = 0;
+  if (globals.settings.newUi) {
+    newUI.mount();
+  }
 
   // Request some high-level information about the game (e.g. the number of players and the variant)
   // The server will send us back an "init" message, which will contain enough information to start
@@ -68,6 +75,7 @@ function hide() {
   }
   document.body.dataset["screen"] = "lobby";
 
+  newUI.unmount();
   if (globals.ui !== undefined) {
     globals.ui.destroy();
     globals.ui = undefined;

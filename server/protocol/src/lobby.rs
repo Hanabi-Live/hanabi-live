@@ -150,6 +150,8 @@ pub struct Settings {
     pub sound_timer: bool,
     pub dark_mode: bool,
     pub keldon_mode: bool,
+    /// Shows games in the redesigned game screen, which is in testing. Players opt in.
+    pub new_ui: bool,
     pub colorblind_mode: bool,
     pub real_life_mode: bool,
     pub reverse_hands: bool,
@@ -191,6 +193,7 @@ impl Default for Settings {
             sound_timer: true,
             dark_mode: false,
             keldon_mode: false,
+            new_ui: false,
             colorblind_mode: false,
             real_life_mode: false,
             reverse_hands: false,
