@@ -82,6 +82,9 @@ const SETTLE_MILLISECONDS = 400;
 /** The seed of the first seeded game: two players, the variant with ID 0, and the first seed. */
 const SEED = "p2v0s1";
 
+/** The variant of the open table. */
+const LONG_VARIANT_NAME = "Rainbow-Ones & Orange (6 Suits)";
+
 /** The H-Group level that the account at the open table chooses. */
 const H_GROUP_LEVEL = 3;
 
@@ -250,7 +253,11 @@ function getStates({
       prepare: async (page) => {
         // The settings are only in the lobby, so leave the pregame screen to turn on "New UI".
         await joinTable(page);
-        await page.click("#nav-buttons-pregame-unattend");
+        // When the account was already at the table, the header can still show the lobby's buttons,
+        // but the click works the same.
+        await page
+          .locator("#nav-buttons-pregame-unattend")
+          .dispatchEvent("click");
         await page.waitForTimeout(SETTLE_MILLISECONDS);
         await clickNav(page, "settings");
         // The checkbox itself is hidden behind its styled label.
@@ -462,7 +469,12 @@ async function seed(address: string): Promise<Seed> {
   });
   bob.send("tableCreate", {
     name: "Bob's table",
-    options: { speedrun: true, deckPlays: true },
+    // A long variant name with six suits, so that the screens show how they fit both.
+    options: {
+      speedrun: true,
+      deckPlays: true,
+      variantName: LONG_VARIANT_NAME,
+    },
   });
   const { tableID } = await bob.receive(
     "joined",
@@ -494,14 +506,15 @@ async function seed(address: string): Promise<Seed> {
     const newest = actions.findLast(
       (action) => action.type === "draw" && action.playerIndex !== 0,
     );
-    if (newest?.type !== "draw" || newest.suitIndex === undefined) {
+    if (newest?.type !== "draw" || newest.rank === undefined) {
       return;
     }
+    // A rank clue, since the variant's clue colors do not match its suits one to one.
     bob.send("action", {
       tableID,
-      type: "colorClue",
+      type: "rankClue",
       target: newest.playerIndex,
-      colorIndex: newest.suitIndex,
+      rank: newest.rank,
     });
     await bob.receive("gameAction", SERVER_COMMAND_SCHEMAS.gameAction);
   }

@@ -76,7 +76,7 @@ export function StatusStrip({
           <OutOf max={minEfficiency} value={futureEfficiency} />
         </Stat>
       </div>
-      <div className="tw:min-w-0 tw:max-w-[260px]">
+      <div className="tw:min-w-0 tw:flex-auto">
         <span className="tw:text-[13px] tw:text-game-muted">Variant</span>
         <div className="tw:truncate tw:text-[22px] tw:font-bold tw:text-game-muted tw:narrow-980:text-[17px]">
           {variantName}
