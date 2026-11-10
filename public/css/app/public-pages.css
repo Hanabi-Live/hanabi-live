@@ -189,8 +189,8 @@ span.table-spinner {
   animation: 1s rotate linear infinite;
 }
 
-span.table-spinner:before,
-span.table-spinner:after {
+span.table-spinner::before,
+span.table-spinner::after {
   content: "";
   top: 0;
   left: 0;
@@ -200,7 +200,7 @@ span.table-spinner:after {
   transform: translate(-10px, 19px) rotate(-35deg);
 }
 
-span.table-spinner:after {
+span.table-spinner::after {
   border-color: var(--spinner-red) transparent transparent;
   transform: translate(32px, 3px) rotate(-35deg);
 }

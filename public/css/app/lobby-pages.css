@@ -378,7 +378,7 @@
     color 0.15s ease;
 }
 
-.lobby-segmented input[type="radio"] + label:before {
+.lobby-segmented input[type="radio"] + label::before {
   display: none;
 }
 

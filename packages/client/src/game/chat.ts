@@ -250,9 +250,7 @@ function markRead() {
 /** Subroutine to move an element (using the "transform" CSS property). */
 function moveElement(element: JQuery, x: number, y: number) {
   // Update the element's style.
-  const transform = `translate(${x}px, ${y}px)`;
-  element.css("webkitTransform", transform);
-  element.css("transform", transform);
+  element.css("transform", `translate(${x}px, ${y}px)`);
 
   // Keep the dragged position in the "data-x" & "data-y" attributes.
   element.attr("data-x", x);

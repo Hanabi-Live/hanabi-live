@@ -120,7 +120,7 @@
   overflow: hidden;
 }
 
-#morph-modal label:before {
+#morph-modal label::before {
   background-color: var(--surface);
   color: var(--text-on-accent);
   content: " ";
@@ -148,7 +148,7 @@
   border-color: var(--morph-option-selected);
 }
 
-#morph-modal :checked + label:before {
+#morph-modal :checked + label::before {
   background-color: var(--morph-option-border);
   content: "✓";
   line-height: 1.2em;

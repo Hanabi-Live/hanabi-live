@@ -47,3 +47,10 @@ if grep -nE "[,{]\s*$" "$TOKENS" "${STYLESHEETS[@]}" | grep -E "[.#][-_a-zA-Z0-9
   echo "Error: Use kebab case for class and ID names, such as \".lobby-row\"." >&2
   exit 1
 fi
+
+# Pseudo-elements use two colons, such as "::before", so that they look different from
+# pseudo-classes.
+if grep -nE "(^|[^:]):(before|after|first-line|first-letter)\b" "${STYLESHEETS[@]}"; then
+  echo 'Error: Write pseudo-elements with two colons, such as "::before".' >&2
+  exit 1
+fi

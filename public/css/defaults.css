@@ -80,8 +80,8 @@ html {
 }
 
 *,
-*:before,
-*:after {
+*::before,
+*::after {
   box-sizing: inherit;
 }
 
@@ -381,8 +381,8 @@ input[type="radio"] + label {
   position: relative;
 }
 
-input[type="checkbox"] + label:before,
-input[type="radio"] + label:before {
+input[type="checkbox"] + label::before,
+input[type="radio"] + label::before {
   -webkit-font-smoothing: antialiased;
   font-family: "Font Awesome 5 Free";
   font-style: normal;
@@ -402,21 +402,21 @@ input[type="radio"] + label:before {
   width: 1.8em;
 }
 
-input[type="checkbox"]:checked + label:before,
-input[type="radio"]:checked + label:before {
+input[type="checkbox"]:checked + label::before,
+input[type="radio"]:checked + label::before {
   background: var(--checkbox-checked);
   border-color: var(--checkbox-checked);
   color: var(--text-on-accent);
   content: "\f00c";
 }
 
-input[type="checkbox"]:focus + label:before,
-input[type="radio"]:focus + label:before {
+input[type="checkbox"]:focus + label::before,
+input[type="radio"]:focus + label::before {
   border-color: var(--focus);
   box-shadow: 0 0 0 1px var(--focus);
 }
 
-input[type="radio"] + label:before {
+input[type="radio"] + label::before {
   border-radius: 100%;
 }
 
@@ -457,7 +457,7 @@ input::-webkit-calendar-picker-indicator {
   position: relative;
 }
 
-.icon:before {
+.icon::before {
   -webkit-font-smoothing: antialiased;
   font-family: "Font Awesome 5 Free";
   font-style: normal;
@@ -549,11 +549,11 @@ ul.actions.fit li > * {
     width: 100%;
   }
 
-  ul.actions li .button.icon:before {
+  ul.actions li .button.icon::before {
     margin-left: -0.5em;
   }
 
-  ul.actions li > .icon:before {
+  ul.actions li > .icon::before {
     margin-left: -2em;
   }
 }
@@ -634,7 +634,7 @@ input[type="button"]:active,
   padding-right: 1.35em;
 }
 
-.button.icon:before {
+.button.icon::before {
   margin-right: 0.5em;
 }
 
