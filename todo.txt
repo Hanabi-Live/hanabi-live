@@ -10,7 +10,6 @@
 
 - remove type assertions from lobby + views
 - refactor START_CARD_RANK from 7 --> 0 (might affect database?)
-- delete UIGlobals.activePlayerIndex
 
 long term:
 - linking to lobby table that doesn't exist shouldn't throw warning and should instead just redirect to /
