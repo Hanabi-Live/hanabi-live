@@ -251,11 +251,6 @@ input::-webkit-calendar-picker-indicator {
   border-top: 1px solid var(--border-panel);
 }
 
-/* The password cannot be changed after the table is created. */
-.lobby-row.hidden {
-  display: none;
-}
-
 /* Wrapped lines of a description line up with its text rather than its icon. */
 .lobby-row > label,
 .lobby-row-label label,

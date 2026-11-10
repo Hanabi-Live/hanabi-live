@@ -22,7 +22,7 @@ const ITEM_CLASS_NAME = [
   "tw:hover:bg-(--menu-hover-bg) tw:hover:text-(--menu-hover-text)",
 ].join(" ");
 
-const ICON_CLASS_NAME = "tw:w-[1em] tw:text-center";
+const ICON_CLASS_NAME = "tw:w-4 tw:text-center";
 
 /** The name of a user, which opens a menu of the things that we can do with them. */
 export function UserLink({

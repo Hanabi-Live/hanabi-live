@@ -1,0 +1,4 @@
+/* Hides an element, whatever "display" value the rules of its screen give it. */
+.hidden {
+  display: none;
+}

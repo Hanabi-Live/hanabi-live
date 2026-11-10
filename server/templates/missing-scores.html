@@ -1,32 +1,5 @@
 {% extends "layout.html" %}{% block body %}
 
-<style>
-  .stat-description {
-    /* Override the existing width since the columns are shorter on this page */
-    width: 11em;
-  }
-  .advanced-filters-toggle-wrapper {
-    text-align: right;
-    margin-bottom: 1em;
-  }
-  .advanced-filters {
-    border: 1px solid rgba(128, 128, 128, 0.35);
-    border-radius: 4px;
-    padding: 1.5em;
-    margin-bottom: 2em;
-  }
-  .advanced-filters[hidden],
-  #advanced-filters-error[hidden] {
-    display: none;
-  }
-  .advanced-filters-players {
-    margin: 0.5em 0 0 0;
-  }
-  .advanced-filters-players li {
-    margin-right: 1.5em;
-  }
-</style>
-
 <div id="page-wrapper">
   <!-- Header -->
   <header id="header">

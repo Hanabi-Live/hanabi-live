@@ -11,6 +11,11 @@
   "tw:bg-surface" uses "--surface".
 */
 @theme inline {
+  /*
+    The site sizes text and spacing in "em", from the font size of each screen width (see
+    "public/css/defaults.css"). Spacing utilities do too, so that "tw:p-2" is "0.5em".
+  */
+  --spacing: 0.25em;
   --color-*: initial;
   --color-white: #fff;
   --color-surface: var(--surface);

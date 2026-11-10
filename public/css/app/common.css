@@ -73,20 +73,8 @@ body[data-screen="game"] {
   justify-content: center;
 }
 
-.hidden {
-  display: none;
-}
-
 .margin0 {
   margin: 0 !important;
-}
-
-.padding0 {
-  padding: 0 !important;
-}
-
-.padding0p5 {
-  padding-bottom: 0.5em;
 }
 
 .padding0p75 {

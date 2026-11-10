@@ -314,12 +314,6 @@ a.toggle-active {
     display: block;
   }
 
-  #lobby-top-half.hidden,
-  #lobby-bottom-half.hidden,
-  #lobby-small-screen-buttons.hidden {
-    display: none;
-  }
-
   #lobby {
     height: calc(100% - 1.25em); /* The header is 3em */
   }

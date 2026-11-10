@@ -49,10 +49,10 @@ export function Pregame(): React.JSX.Element | undefined {
   return (
     <div className="tw:flex tw:h-full">
       <div
-        className="tw:w-[200px] tw:overflow-y-auto tw:pr-[0.5em] tw:text-[0.85em] tw:narrow-1440:w-[150px]"
+        className="tw:w-[200px] tw:overflow-y-auto tw:pr-2 tw:text-[0.85em] tw:narrow-1440:w-[150px]"
         id="lobby-pregame-left"
       >
-        <h4 className="tw:pb-[0.5em]">
+        <h4 className="tw:pb-2">
           <strong>
             <i className="fas fa-signature icon-label" />
             Name:
@@ -62,7 +62,7 @@ export function Pregame(): React.JSX.Element | undefined {
             {game.name}
           </span>
         </h4>
-        <h4 className="tw:pb-[0.5em]">
+        <h4 className="tw:pb-2">
           <strong>
             <i className="fas fa-rainbow icon-label" />
             Variant:
@@ -72,7 +72,7 @@ export function Pregame(): React.JSX.Element | undefined {
             {game.options.variantName}
           </span>
         </h4>
-        <h4 className="tw:pb-[0.5em]">
+        <h4 className="tw:pb-2">
           <strong>
             <i className="fas fa-users icon-label" />
             Players:
@@ -83,7 +83,7 @@ export function Pregame(): React.JSX.Element | undefined {
           </span>
         </h4>
         {hasOptions && (
-          <h4 className="tw:pb-[0.5em]" id="lobby-pregame-options-container">
+          <h4 className="tw:pb-2" id="lobby-pregame-options-container">
             <span className="tw:font-normal" id="lobby-pregame-options-title">
               Options:
             </span>
@@ -102,7 +102,7 @@ export function Pregame(): React.JSX.Element | undefined {
           </h4>
         )}
         {spectators.length > 0 && (
-          <h4 className="tw:pb-[0.5em]" id="lobby-pregame-spectators-container">
+          <h4 className="tw:pb-2" id="lobby-pregame-spectators-container">
             <strong>
               <i className="fas fa-glasses icon-label" />
               Spectators:
@@ -168,13 +168,13 @@ function PlayerBox({
   return (
     <div
       className={[
-        "tw:mr-[0.5em] tw:mb-[0.5em] tw:max-h-[calc(100%-0.5em)] tw:max-w-[300px] tw:flex-[1_1_160px]",
+        "tw:mr-2 tw:mb-2 tw:max-h-[calc(100%-0.5em)] tw:max-w-[300px] tw:flex-[1_1_160px]",
         "tw:overflow-y-auto tw:rounded-[5px] tw:border tw:border-solid tw:border-(--pregame-player-border)",
         "tw:p-[0.8em] tw:narrow-980:max-w-[200px]",
       ].join(" ")}
       id={`lobby-pregame-player-${playerIndex + 1}`}
     >
-      <p className="tw:m-0 tw:pb-[0.5em]">
+      <p className="tw:m-0 tw:pb-2">
         <strong>
           {isSpectator ? (
             <ShadowName
@@ -208,7 +208,7 @@ function PlayerBox({
         }
       />
       {!player.present && (
-        <p className="tw:mt-[1em] tw:mb-0">
+        <p className="tw:mt-4 tw:mb-0">
           <strong>AWAY</strong>
         </p>
       )}
@@ -250,7 +250,7 @@ function getBestScoresTooltip(
   variantName: string,
 ): string {
   const { maxScore } = getVariant(variantName);
-  let html = '<div class="tw:w-[8em] tw:text-[0.75em]">';
+  let html = '<div class="tw:w-32 tw:text-[0.75em]">';
   for (const bestScorePlayer of iRange(MIN_PLAYERS, MAX_PLAYERS)) {
     const bestScore = bestScores[bestScorePlayer - MIN_PLAYERS];
     if (bestScore === undefined) {
@@ -351,7 +351,7 @@ function HGroupLevelBadge({ name }: { readonly name: string }) {
   return (
     <a
       className={[
-        "tw:ml-[0.5em] tw:inline-block tw:rounded-[1em] tw:border tw:border-solid tw:border-current",
+        "tw:ml-2 tw:inline-block tw:rounded-[1em] tw:border tw:border-solid tw:border-current",
         "tw:px-[0.6em] tw:py-[0.1em] tw:align-[0.1em] tw:text-[0.8em] tw:leading-[1.3] tw:font-normal",
         "tw:whitespace-nowrap tw:text-inherit tw:no-underline tw:hover:underline",
       ].join(" ")}

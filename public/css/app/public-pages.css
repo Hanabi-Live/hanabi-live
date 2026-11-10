@@ -18,6 +18,26 @@
   width: 19em;
 }
 
+.advanced-filters-toggle-wrapper {
+  text-align: right;
+  margin-bottom: 1em;
+}
+
+.advanced-filters {
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1.5em;
+  margin-bottom: 2em;
+}
+
+.advanced-filters-players {
+  margin: 0.5em 0 0 0;
+}
+
+.advanced-filters-players li {
+  margin-right: 1.5em;
+}
+
 /* History Pages */
 .history-page > header {
   text-align: center;

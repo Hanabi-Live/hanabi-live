@@ -174,7 +174,7 @@ function UserIcon({ user }: { readonly user: UserRow["user"] }) {
   if (user.hGroup) {
     return <HGroupIcon />;
   }
-  return <span className="tw:inline-block tw:w-[0.75em]" />;
+  return <span className="tw:inline-block tw:w-3" />;
 }
 
 function BotIcon() {
@@ -183,7 +183,7 @@ function BotIcon() {
 
   return (
     // The slot has the width of the other icons, which keeps the names aligned.
-    <span className="tw:inline-block tw:w-[0.75em]">
+    <span className="tw:inline-block tw:w-3">
       <span
         aria-label="Bot"
         className="tw:text-[0.7em] tw:leading-none"

@@ -5,11 +5,12 @@
   - "icons": Font Awesome, whose classes must beat the element defaults (such as "i { font: inherit; }").
   - "app": the rules for the site's own screens, one file per screen. Their order matters: at equal
     specificity, a rule in a later file beats one in an earlier file.
+  - "overrides": rules that must beat every screen's rules, such as ".hidden".
   Tailwind's utilities ("packages/client/src/tailwind.css") are not in a layer, so they beat all of
   these.
 */
 
-@layer defaults, icons, app;
+@layer defaults, icons, app, overrides;
 
 @import url("tokens.css") layer(defaults);
 @import url("defaults.css") layer(defaults);
@@ -25,3 +26,4 @@
 @import url("app/tooltips.css") layer(app);
 @import url("app/game.css") layer(app);
 @import url("app/public-pages.css") layer(app);
+@import url("overrides.css") layer(overrides);

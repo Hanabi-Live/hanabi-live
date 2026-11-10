@@ -3,12 +3,6 @@
   padding-left: 1.5em;
 }
 
-/* Chat padding for options proposal */
-span.cp {
-  padding-left: 52px;
-  display: block;
-}
-
 @media screen and (max-height: 530px) {
   /* Put pregame chat boxes side by side */
   #lobby-chat-container.pregame-chat-layout,
