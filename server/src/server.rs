@@ -148,7 +148,7 @@ async fn run(config: Config, version: String) -> Result<bool> {
     let tables = TaskTracker::new();
     let info = Arc::new(ServerInfo::new(config.use_tls(), &config.domain));
     let integrations = IntegrationSlot::default();
-    let hub = match Hub::start(
+    let (hub, unreadable) = match Hub::recover(
         store.clone(),
         tables.clone(),
         info.clone(),
@@ -156,7 +156,7 @@ async fn run(config: Config, version: String) -> Result<bool> {
     )
     .await
     {
-        Ok(hub) => hub,
+        Ok(started) => started,
         Err(error) => {
             if let Err(close) = store.close().await {
                 tracing::error!("Startup storage cleanup failed: {close:#}");
@@ -251,8 +251,16 @@ async fn run(config: Config, version: String) -> Result<bool> {
             tokio::select! {
                 () = integration_app.lifecycle.shutdown.cancelled() => {},
                 result = integration_app.start_integrations(&integrations) => {
-                    if let Err(error) = result {
-                        tracing::warn!("Optional integrations failed to initialize: {error:#}");
+                    match result {
+                        // Recovery happened before the alerts could start.
+                        Ok(()) => {
+                            for report in &unreadable {
+                                integration_app.alert(report);
+                            }
+                        }
+                        Err(error) => {
+                            tracing::warn!("Optional integrations failed to initialize: {error:#}");
+                        }
                     }
                 }
             }

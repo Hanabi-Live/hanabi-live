@@ -61,13 +61,46 @@ pub struct Hub {
     pub(super) integrations: IntegrationSlot,
 }
 impl Hub {
+    /// Starts the hub for tests, which do not alert.
+    #[cfg(test)]
     pub async fn start(
         store: Store,
         tasks: TaskTracker,
         info: Arc<ServerInfo>,
         integrations: IntegrationSlot,
     ) -> Result<mpsc::Sender<HubCommand>> {
-        let restored = store.load().await?;
+        Ok(Self::recover(store, tasks, info, integrations).await?.0)
+    }
+    /// Starts the hub and restores the saved tables. Returns the reports of the tables that could
+    /// not be read, which it already logged, for the alerts once they start.
+    pub async fn recover(
+        store: Store,
+        tasks: TaskTracker,
+        info: Arc<ServerInfo>,
+        integrations: IntegrationSlot,
+    ) -> Result<(mpsc::Sender<HubCommand>, Vec<Report>)> {
+        let recovered = store.recover().await?;
+        let unreadable = recovered
+            .unreadable
+            .into_iter()
+            .map(|(id, error)| {
+                let report = Report::known(
+                    "Recovering a table",
+                    "table_unreadable",
+                    format!(
+                        "Table {id} could not be read from its checkpoint, so it was not restored. Its checkpoint stays in the database, and the next start reads it again."
+                    ),
+                    StatusCode::INTERNAL_SERVER_ERROR,
+                );
+                tracing::error!(
+                    diagnostic_id = %report.diagnostic_id,
+                    "Table {id} checkpoint is unreadable: {error:#}"
+                );
+                report.log();
+                report
+            })
+            .collect();
+        let restored = recovered.tables;
         let (sender, receiver) = mpsc::channel(HUB_QUEUE);
         let mut hub = Self {
             receiver,
@@ -111,7 +144,7 @@ impl Hub {
             );
         }
         tasks.spawn(hub.run());
-        Ok(sender)
+        Ok((sender, unreadable))
     }
     fn spawn(
         &self,

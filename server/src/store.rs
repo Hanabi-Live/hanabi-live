@@ -210,17 +210,35 @@ impl Store {
     }
     /// The saved live tables. A pregame's cached game totals may be stale; its actor refreshes
     /// them after startup, so that startup does not wait for statistics.
+    ///
+    /// A table whose checkpoint cannot be read is left out, with why, so that it does not stop the
+    /// other tables from starting. Its checkpoint stays in the database, and the next start reads
+    /// it again.
+    pub async fn recover(&self) -> Result<Recovered> {
+        let mut recovered = Recovered::default();
+        for stored in self.state.load().await? {
+            let read =
+                crate::checkpoint::decode(&stored.payload, &stored.parts).and_then(|table| {
+                    ensure!(table.id == stored.id, "Live-table identity mismatch");
+                    Ok(table)
+                });
+            match read {
+                Ok(table) => recovered
+                    .tables
+                    .push((table, Saved::of(stored.revision, &stored.parts))),
+                Err(error) => recovered.unreadable.push((stored.id, error)),
+            }
+        }
+        Ok(recovered)
+    }
+    /// The saved live tables, for tests, which fail if any table cannot be read.
+    #[cfg(test)]
     pub async fn load(&self) -> Result<Vec<(TableSnapshot, Saved)>> {
-        self.state
-            .load()
-            .await?
-            .into_iter()
-            .map(|stored| {
-                let table = crate::checkpoint::decode(&stored.payload, &stored.parts)?;
-                ensure!(table.id == stored.id, "Live-table identity mismatch");
-                Ok((table, Saved::of(stored.revision, &stored.parts)))
-            })
-            .collect()
+        let recovered = self.recover().await?;
+        if let Some((id, error)) = recovered.unreadable.into_iter().next() {
+            return Err(error.context(format!("Table {id} is unreadable")));
+        }
+        Ok(recovered.tables)
     }
     /// Saves a table on its own. See `commit`.
     pub async fn save(&self, table: &mut TableSnapshot, saved: &mut Saved) -> Result<()> {
@@ -420,6 +438,13 @@ fn written_bytes(head: &str, changes: &PartChanges) -> usize {
             .map(|(key, value)| key.len() + value.len())
             .sum::<usize>()
 }
+/// The live tables that `Store::recover` read, and the tables whose checkpoints it could not read.
+#[derive(Default)]
+pub struct Recovered {
+    pub tables: Vec<(TableSnapshot, Saved)>,
+    pub unreadable: Vec<(TableId, anyhow::Error)>,
+}
+
 /// The work that `Store::commit` does along with saving a table.
 #[derive(Default)]
 pub struct Commit<'a> {
@@ -949,6 +974,60 @@ mod tests {
                 saved_revision == replay_revision
                     && serde_json::to_value(&saved_replay)? == serde_json::to_value(&replay)?,
                 "Recovery changed historical replay statistics"
+            );
+            Ok::<(), anyhow::Error>(())
+        }
+        .await;
+        store.close().await?;
+        db.close().await;
+        result
+    }
+    #[tokio::test]
+    async fn an_unreadable_table_does_not_stop_the_others_from_starting() -> Result<()> {
+        let Some((db, pool)) = database().await? else {
+            return Ok(());
+        };
+        let state = LiveState::for_test(&pool).await?;
+        let store = Store::fixture(pool, state.clone());
+        let result = async {
+            let good = pregame(store.allocate_table().await?);
+            store.save_at(&good, 0).await?;
+            let bad = pregame(store.allocate_table().await?);
+            store.save_at(&bad, 0).await?;
+            #[expect(
+                clippy::disallowed_methods,
+                reason = "test SQL that sets up database state or failures directly"
+            )]
+            sqlx::query("UPDATE live_tables SET payload = '{}' WHERE id = $1")
+                .bind(i64::try_from(bad.id.0)?)
+                .execute(&store.primary)
+                .await?;
+            let tasks = TaskTracker::new();
+            let (hub, unreadable) = Hub::recover(
+                store.clone(),
+                tasks.clone(),
+                crate::server_info::test_info(),
+                crate::integrations::IntegrationSlot::default(),
+            )
+            .await?;
+            ensure!(
+                unreadable.len() == 1 && unreadable[0].code == "table_unreadable",
+                "The unreadable table was not reported"
+            );
+            let (stop, stopped) = oneshot::channel();
+            hub.send(HubCommand::Stop(stop)).await?;
+            stopped.await?;
+            tasks.close();
+            tasks.wait().await;
+            let recovered = store.recover().await?;
+            ensure!(
+                recovered.tables.len() == 1 && recovered.tables[0].0.id == good.id,
+                "The readable table was not recovered"
+            );
+            // The unreadable checkpoint stays, so that a later start can read it.
+            ensure!(
+                recovered.unreadable.len() == 1 && recovered.unreadable[0].0 == bad.id,
+                "The unreadable checkpoint was removed"
             );
             Ok::<(), anyhow::Error>(())
         }
