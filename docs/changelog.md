@@ -77,6 +77,8 @@ of the repository.
   screen first.
 - Removed the `/s`, `/s2` to `/s6`, and `/startin` chat commands, which started
   a game automatically.
+- Signing in with a username that has no account now asks you to confirm before
+  it creates the account, so a typo no longer creates a new account.
 
 ## November 8th, 2026
 

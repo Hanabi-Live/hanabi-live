@@ -284,6 +284,7 @@ export async function login(
       username,
       password: "synthetic-smoke-password",
       version: VERSION,
+      createAccount: "true",
     }),
     signal: AbortSignal.timeout(10_000),
   });

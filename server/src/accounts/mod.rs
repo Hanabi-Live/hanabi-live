@@ -259,7 +259,7 @@ async fn login(
         Err(rejection) => {
             return unreadable_body(
                 rejection.status(),
-                "The login form must contain only a username, password, newPassword, version, and darkMode.",
+                "The login form must contain only a username, password, newPassword, version, darkMode, and createAccount.",
             );
         }
     };
@@ -345,11 +345,6 @@ async fn login_inner(state: &Accounts, ip: &str, input: LoginRequest) -> Result<
             mark_bot(&state.pool, id).await?;
         }
     } else {
-        if !input.new_password.is_empty() {
-            return Ok(unauthorized(
-                "You requested an account creation. You cannot ask for a password change at the same time.",
-            ));
-        }
         let normalized = normalize_string(username);
         if normalized.is_empty() {
             return Ok(unauthorized(
@@ -367,6 +362,21 @@ async fn login_inner(state: &Accounts, ip: &str, input: LoginRequest) -> Result<
                 "That username is too similar to the existing user of \"{}\". If you are sure that this is your username, then please check to make sure that you are capitalized your username correctly. If you are logging on for the first time, then please choose a different username.",
                 escape_html(&similar)
             )));
+        }
+        if !input.create_account && input.version != BOT_VERSION {
+            let error = ApiError {
+                code: Some(hanabi_protocol::NO_ACCOUNT_CODE.into()),
+                ..ApiError::new(format!(
+                    "There is no account named \"{}\".",
+                    escape_html(username)
+                ))
+            };
+            return Ok((StatusCode::UNAUTHORIZED, Json(error)).into_response());
+        }
+        if !input.new_password.is_empty() {
+            return Ok(unauthorized(
+                "You requested an account creation. You cannot ask for a password change at the same time.",
+            ));
         }
         let hash = hash_password(ip, input.password).await?;
         // Creating an account costs as much as a guess, so it counts against the address.
@@ -437,6 +447,7 @@ async fn test_login(
         username: TEST_ACCOUNT.into(),
         password: TEST_ACCOUNT.into(),
         version: state.config.version.clone(),
+        create_account: true,
         ..LoginRequest::default()
     };
     let response = match login_inner(&state, &address.ip().to_string(), input).await {

@@ -21,6 +21,9 @@ pub struct LoginRequest {
     /// Whether the client's system prefers a dark theme. A new account starts with this as its
     /// dark mode setting.
     pub dark_mode: bool,
+    /// Creates the account if the username is free. Without it, an unknown username fails with
+    /// `NO_ACCOUNT_CODE`, so that a typo does not create an account. Bots do not need it.
+    pub create_account: bool,
 }
 
 /// The body of a successful `/login` response.

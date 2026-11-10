@@ -1,11 +1,7 @@
 // The server rejects clients from a different release. Reloading the page fetches the current
 // client, since its bundle URL carries the release version.
 
-import {
-  OUTDATED_CLIENT_CODE,
-  VERSION,
-  apiErrorSchema,
-} from "@hanabi-live/data";
+import { VERSION } from "@hanabi-live/data";
 
 /** Remembers the client version that last reloaded, so that a reload that did not help stops. */
 const RELOADED_VERSION_KEY = "outdatedClientReloadedVersion";
@@ -27,16 +23,4 @@ export function reloadOutdatedClient(): boolean {
   }
   globalThis.location.reload();
   return true;
-}
-
-/** Whether an HTTP error response rejects this client's version. */
-export async function isOutdatedClientResponse(
-  response: Response,
-): Promise<boolean> {
-  try {
-    const parsed = apiErrorSchema.safeParse(await response.clone().json());
-    return parsed.success && parsed.data.code === OUTDATED_CLIENT_CODE;
-  } catch {
-    return false;
-  }
 }

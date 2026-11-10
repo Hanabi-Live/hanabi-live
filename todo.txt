@@ -14,6 +14,5 @@ long term:
 - remove all null in @hanabi-live/game (this might need server changes)
 - server should send message about if this is the player's first initial load, then we can use that in the soundView.ts to not play the initial sound effect on first turn refresh
 - make chat_log.user_id nullable with a foreign key (the source column already marks server messages)
-- separate sign up and login into two separate forms
 - rename Table.players --> Table.playerNames
 - remove incrementNumGames, make dedicated `gameHistorySingle` command

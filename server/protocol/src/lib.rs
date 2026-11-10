@@ -52,6 +52,9 @@ pub const DEFAULT_VARIANT_NAME: &str = "No Variant";
 pub const DEFAULT_TABLE_NAME_SUFFIX: &str = "'s table";
 /// The `code` of the login error for a client from a different release, which reloads the page.
 pub const OUTDATED_CLIENT_CODE: &str = "outdated_client";
+/// The `code` of the login error for a username that has no account, when the client did not ask
+/// to create one. The client asks the player to confirm before it creates the account.
+pub const NO_ACCOUNT_CODE: &str = "no_account";
 /// The most suits a variant can have.
 pub const MAX_SUITS: usize = 6;
 /// The lowest rank.

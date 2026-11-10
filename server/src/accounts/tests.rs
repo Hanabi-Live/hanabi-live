@@ -65,7 +65,7 @@ async fn login_from(app: &Router, ip: &str, username: &str, password: &str) -> R
         .header(header::CONTENT_TYPE, "application/x-www-form-urlencoded")
         .extension(ConnectInfo(SocketAddr::new(ip.parse().unwrap(), 12345)))
         .body(Body::from(format!(
-            "username={username}&password={password}&version=42"
+            "username={username}&password={password}&version=42&createAccount=true"
         )))
         .unwrap();
     app.clone().oneshot(request).await.unwrap()
@@ -131,7 +131,7 @@ async fn login_requires_matching_release_sha_or_bot_postgres() {
             &app,
             "POST",
             "/login",
-            &format!("username=Alice&password=test&version={submitted}"),
+            &format!("username=Alice&password=test&version={submitted}&createAccount=true"),
             None,
             false,
         )
@@ -152,7 +152,7 @@ async fn login_requires_matching_release_sha_or_bot_postgres() {
         is_bot("Bob").await.unwrap(),
         "a bot login flags a new account"
     );
-    let cathy = format!("username=Cathy&password=test&version={version}");
+    let cathy = format!("username=Cathy&password=test&version={version}&createAccount=true");
     let (status, _, _) = request(&app, "POST", "/login", &cathy, None, false).await;
     assert_eq!(status, StatusCode::OK);
     assert!(
@@ -164,7 +164,7 @@ async fn login_requires_matching_release_sha_or_bot_postgres() {
             &app,
             "POST",
             "/login",
-            &format!("username=Alice&password=test&version={submitted}"),
+            &format!("username=Alice&password=test&version={submitted}&createAccount=true"),
             None,
             false,
         )
@@ -207,7 +207,9 @@ async fn accounts_without_password_hash_require_reset_before_login_postgres() {
             &app,
             "POST",
             "/login",
-            &format!("username=ResetRequired&password=anything&version=42{extra}"),
+            &format!(
+                "username=ResetRequired&password=anything&version=42&createAccount=true{extra}"
+            ),
             None,
             false,
         )
@@ -235,7 +237,7 @@ async fn accounts_without_password_hash_require_reset_before_login_postgres() {
         &app,
         "POST",
         "/login",
-        "username=ResetRequired&password=reset-password&version=42",
+        "username=ResetRequired&password=reset-password&version=42&createAccount=true",
         None,
         false,
     )
@@ -262,7 +264,7 @@ async fn native_accounts_http_and_identity_postgres() {
             &app,
             "POST",
             "/login",
-            "username=Alice&password=old&version=bad",
+            "username=Alice&password=old&version=bad&createAccount=true",
             None,
             false
         )
@@ -274,7 +276,7 @@ async fn native_accounts_http_and_identity_postgres() {
         &app,
         "POST",
         "/login",
-        "username=Alice&password=old&version=42",
+        "username=Alice&password=old&version=42&createAccount=true",
         None,
         false,
     )
@@ -315,7 +317,7 @@ async fn native_accounts_http_and_identity_postgres() {
             &app,
             "POST",
             "/login",
-            "username=alice&password=old&version=42",
+            "username=alice&password=old&version=42&createAccount=true",
             None,
             false
         )
@@ -328,7 +330,7 @@ async fn native_accounts_http_and_identity_postgres() {
             &app,
             "POST",
             "/login",
-            "username=Alice&password=wrong&version=42",
+            "username=Alice&password=wrong&version=42&createAccount=true",
             None,
             false
         )
@@ -341,7 +343,7 @@ async fn native_accounts_http_and_identity_postgres() {
             &app,
             "POST",
             "/login",
-            "username=Alice&password=old&newPassword=new&version=bot",
+            "username=Alice&password=old&newPassword=new&version=bot&createAccount=true",
             None,
             false
         )
@@ -354,7 +356,7 @@ async fn native_accounts_http_and_identity_postgres() {
             &app,
             "POST",
             "/login",
-            "username=Alice&password=old&version=42",
+            "username=Alice&password=old&version=42&createAccount=true",
             None,
             false
         )
@@ -367,7 +369,7 @@ async fn native_accounts_http_and_identity_postgres() {
             &app,
             "POST",
             "/login",
-            "username=Alice&password=new&version=42",
+            "username=Alice&password=new&version=42&createAccount=true",
             None,
             false
         )
@@ -458,7 +460,7 @@ async fn native_accounts_http_and_identity_postgres() {
             &app,
             "POST",
             "/login",
-            "username=Alice&password=new&version=42",
+            "username=Alice&password=new&version=42&createAccount=true",
             None,
             false
         )
@@ -540,7 +542,7 @@ async fn tabs_sign_in_and_out_of_separate_accounts_postgres() {
     let mut jar = Vec::new();
     let mut ids = Vec::new();
     for name in ["Alice", "Bob"] {
-        let body = format!("username={name}&password=secret&version=42");
+        let body = format!("username={name}&password=secret&version=42&createAccount=true");
         let (status, headers, body) = request(&app, "POST", "/login", &body, None, false).await;
         assert_eq!(status, StatusCode::OK);
         let id = serde_json::from_str::<Value>(&body).unwrap()["userID"]
@@ -593,6 +595,7 @@ async fn seven_concurrent_account_registrations_and_logins_postgres() {
                         .append_pair("username", &format!("Burst{index}"))
                         .append_pair("password", "synthetic-concurrency-password")
                         .append_pair("version", "42")
+                        .append_pair("createAccount", "true")
                         .finish();
                     request(app, "POST", "/login", &body, None, false).await
                 }
@@ -644,6 +647,40 @@ async fn seven_concurrent_account_registrations_and_logins_postgres() {
 }
 
 #[tokio::test]
+async fn an_unknown_username_creates_an_account_only_when_asked_postgres() {
+    let Some(db) = test_support::TestDb::create().await else {
+        return;
+    };
+    let app = router(db.pool.clone(), config());
+    let login = "username=Newcomer&password=secret&version=42";
+    let (status, _, body) = request(&app, "POST", "/login", login, None, false).await;
+    assert_eq!(status, StatusCode::UNAUTHORIZED, "{body}");
+    let error: Value = serde_json::from_str(&body).unwrap();
+    assert_eq!(error["code"], hanabi_protocol::NO_ACCOUNT_CODE);
+    let exists = async || {
+        sqlx::query_scalar!("SELECT id FROM users WHERE username=$1", "Newcomer")
+            .fetch_optional(&db.pool)
+            .await
+            .unwrap()
+            .is_some()
+    };
+    assert!(
+        !exists().await,
+        "a login without confirmation created an account"
+    );
+    let confirmed = format!("{login}&createAccount=true");
+    let (status, _, body) = request(&app, "POST", "/login", &confirmed, None, false).await;
+    assert_eq!(status, StatusCode::OK, "{body}");
+    assert!(
+        exists().await,
+        "a confirmed login did not create the account"
+    );
+    // Signing in to the account no longer needs the confirmation.
+    let (status, _, body) = request(&app, "POST", "/login", login, None, false).await;
+    assert_eq!(status, StatusCode::OK, "{body}");
+}
+
+#[tokio::test]
 async fn new_accounts_start_with_the_system_dark_mode_postgres() {
     let Some(db) = test_support::TestDb::create().await else {
         return;
@@ -658,7 +695,9 @@ async fn new_accounts_start_with_the_system_dark_mode_postgres() {
             &app,
             "POST",
             "/login",
-            &format!("username={username}&password=secret&version=42{dark_mode}"),
+            &format!(
+                "username={username}&password=secret&version=42&createAccount=true{dark_mode}"
+            ),
             None,
             false,
         )
@@ -678,7 +717,7 @@ async fn new_accounts_start_with_the_system_dark_mode_postgres() {
         &app,
         "POST",
         "/login",
-        "username=Light&password=secret&version=42&darkMode=true",
+        "username=Light&password=secret&version=42&createAccount=true&darkMode=true",
         None,
         false,
     )
@@ -707,7 +746,7 @@ async fn login_rejects_unknown_form_fields() {
         &app,
         "POST",
         "/login",
-        "username=Alice&password=secret&version=42&remember=1",
+        "username=Alice&password=secret&version=42&createAccount=true&remember=1",
         None,
         false,
     )
@@ -814,7 +853,7 @@ async fn test_path_signs_in_to_the_test_account_postgres() {
         &app,
         "POST",
         "/login",
-        "username=test&password=test&version=42",
+        "username=test&password=test&version=42&createAccount=true",
         None,
         false,
     )

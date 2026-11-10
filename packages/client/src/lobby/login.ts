@@ -1,7 +1,10 @@
 // The initial login page.
 
 import {
+  NO_ACCOUNT_CODE,
+  OUTDATED_CLIENT_CODE,
   VERSION,
+  apiErrorSchema,
   errorDetails,
   httpError,
   loginRequestSchema,
@@ -12,10 +15,7 @@ import * as KeyCode from "keycode-js";
 import type { z } from "zod";
 import { globals } from "../Globals";
 import { FADE_TIME_MS, HTTP_STATUS } from "../constants";
-import {
-  isOutdatedClientResponse,
-  reloadOutdatedClient,
-} from "../outdatedClient";
+import { reloadOutdatedClient } from "../outdatedClient";
 import * as theme from "../theme";
 import { getHTMLElement, getHTMLInputElement, getURLFromPath } from "../utils";
 import { websocketInit } from "../websocketInit";
@@ -34,6 +34,12 @@ const changePasswordContainer = getHTMLElement("#change-password-container");
 const loginUsername = getHTMLInputElement("#login-username");
 const loginPassword = getHTMLInputElement("#login-password");
 
+/**
+ * The username that the server said has no account. Submitting it again creates the account, so
+ * that a mistyped username does not create one by accident.
+ */
+let confirmingUsername: string | undefined;
+
 export function init(): void {
   $("#login-button").on("click", () => {
     $("#login-form").trigger("submit");
@@ -47,6 +53,13 @@ export function init(): void {
   });
 
   $("#login-form").on("submit", submit);
+
+  // Editing the username cancels the account creation that it was about to confirm.
+  $("#login-username").on("input", () => {
+    if (confirmingUsername !== undefined) {
+      setConfirmingUsername(undefined);
+    }
+  });
 
   $("#firefox-warning-button").on("click", () => {
     localStorage.setItem(FIREFOX_WARNING_COOKIE_NAME, "true");
@@ -64,6 +77,7 @@ export function init(): void {
         .slideDown()
         .delay(ANIMATION_TIME_MS)
         .removeClass("hidden");
+      setConfirmingUsername(undefined);
       $("#login-button").html("Sign In & Change Password");
     } else {
       $("#login-password").attr("placeholder", "Password");
@@ -106,13 +120,34 @@ function submit(event: JQuery.Event) {
     newPassword = changePassword.value;
   }
 
-  send(username, password, newPassword);
+  send(username, password, newPassword, username === confirmingUsername);
+}
+
+/** Asks the player to confirm the creation of an account, or stops asking with undefined. */
+function setConfirmingUsername(username: string | undefined) {
+  confirmingUsername = username;
+  const notice = $("#login-no-account");
+  if (username === undefined) {
+    notice.addClass("hidden").empty();
+    $("#login-button").html("Sign In");
+    return;
+  }
+  notice
+    .empty()
+    .append(
+      "There is no account named ",
+      $("<strong>").text(username),
+      '. Check the spelling, or click "Create Account" to create it.',
+    )
+    .removeClass("hidden");
+  $("#login-button").html("Create Account");
 }
 
 function send(
   username: string,
   password: string,
   newPassword: string | undefined,
+  createAccount: boolean,
 ) {
   $("#login-button").addClass("disabled");
   $("#login-explanation").hide();
@@ -126,12 +161,24 @@ function send(
     newPassword,
     version: VERSION,
     darkMode: theme.systemPrefersDark(),
+    createAccount,
   });
 
   console.log(`Sending a login request to: ${url}`);
   requestLogin(url, data)
     .then((login) => {
       if (login === undefined) {
+        return;
+      }
+      if (login === NO_ACCOUNT_CODE) {
+        if (newPassword === undefined) {
+          $("#login-ajax").hide();
+          $("#login-button").removeClass("disabled");
+          $("#login-alert").hide();
+          setConfirmingUsername(username);
+        } else {
+          formError("There is no account with that username.");
+        }
         return;
       }
       // We successfully got a cookie; attempt to establish a WebSocket connection.
@@ -143,22 +190,43 @@ function send(
     });
 }
 
-/** Resolves to undefined when the page is reloading to update an outdated client. */
+/**
+ * Resolves to undefined when the page is reloading to update an outdated client, and to
+ * `NO_ACCOUNT_CODE` when the username has no account and we did not ask to create one.
+ */
 async function requestLogin(
   url: string,
   data: z.output<typeof loginRequestSchema>,
-): Promise<{ body: unknown } | undefined> {
+): Promise<typeof NO_ACCOUNT_CODE | { body: unknown } | undefined> {
   const response = await fetch(url, {
     method: "POST",
-    body: new URLSearchParams({ ...data, darkMode: String(data.darkMode) }),
+    body: new URLSearchParams({
+      ...data,
+      darkMode: String(data.darkMode),
+      createAccount: String(data.createAccount),
+    }),
   });
   if (!response.ok) {
-    if ((await isOutdatedClientResponse(response)) && reloadOutdatedClient()) {
+    const code = await errorCode(response);
+    if (code === OUTDATED_CLIENT_CODE && reloadOutdatedClient()) {
       return undefined;
+    }
+    if (code === NO_ACCOUNT_CODE) {
+      return NO_ACCOUNT_CODE;
     }
     throw await httpError(response, "Logging in");
   }
   return { body: await response.json() };
+}
+
+/** The `code` of an HTTP error response, if it has one. */
+async function errorCode(response: Response): Promise<string | undefined> {
+  try {
+    const parsed = apiErrorSchema.safeParse(await response.clone().json());
+    return parsed.success ? parsed.data.code : undefined;
+  } catch {
+    return undefined;
+  }
 }
 
 export function automaticLogin(): void {
@@ -168,7 +236,8 @@ export function automaticLogin(): void {
   const username = urlParams.get("login");
   if (username !== null && username !== "") {
     console.log(`Automatically logging in as "${username}".`);
-    send(username, username, ""); // For test accounts, we use the username as the password.
+    // For test accounts, we use the username as the password, and create the account if needed.
+    send(username, username, "", true);
     return;
   }
 

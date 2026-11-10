@@ -27,6 +27,7 @@ export const TYPING_TIMEOUT_MS = 2000;
 export const MAX_SEED_LENGTH = 32;
 export const DEFAULT_TABLE_NAME_SUFFIX = "'s table";
 export const OUTDATED_CLIENT_CODE = "outdated_client";
+export const NO_ACCOUNT_CODE = "no_account";
 
 /**
  * The kind of a turn that a player takes, in the `action` command.
@@ -488,6 +489,11 @@ export const lobbyStatusSchema = z.discriminatedUnion("state", [
  * The `/login` form.
  */
 export const loginRequestSchema = z.strictObject({
+  /**
+   * Creates the account if the username is free. Without it, an unknown username fails with
+   * `NO_ACCOUNT_CODE`, so that a typo does not create an account. Bots do not need it.
+   */
+  createAccount: z.boolean().default(false),
   /**
    * Whether the client's system prefers a dark theme. A new account starts with this as its
    * dark mode setting.

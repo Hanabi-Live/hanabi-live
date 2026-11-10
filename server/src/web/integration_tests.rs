@@ -109,6 +109,7 @@ async fn login(fixture: &test_support::Fixture, name: &str) -> String {
             ("username", name),
             ("password", "synthetic-password"),
             ("version", "42"),
+            ("createAccount", "true"),
         ])
         .send()
         .await
@@ -409,7 +410,7 @@ async fn http2_login_accepts_uri_authority_without_host_header_postgres() {
                 .header(header::CONTENT_TYPE, "application/x-www-form-urlencoded")
                 .extension(ConnectInfo(fixture.address))
                 .body(axum::body::Body::from(
-                    "username=Http2User&password=synthetic-password&version=42",
+                    "username=Http2User&password=synthetic-password&version=42&createAccount=true",
                 ))
                 .unwrap(),
         )
