@@ -78,6 +78,10 @@ accounts and their own tables.
 When driving a browser, mute its audio (for Chromium, `--mute-audio`) unless you
 are debugging sound.
 
+Before you commit a change that adds or modifies a UI element, take a
+screenshot of each new or changed element in the browser and show it to the
+user.
+
 When running in WSL, the host app cannot display screenshots you send it. Open
 each one in the Windows image viewer instead:
 `explorer.exe "$(wslpath -w <file>)"`.
