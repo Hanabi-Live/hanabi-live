@@ -58,12 +58,15 @@ const BUNDLE_FILENAME = `main.${VERSION}.min.css`;
 /** The path that serves the stylesheets of the ref given with `--compare`. */
 const COMPARE_BUNDLE_PATH = "/public/css/compare.min.css";
 
-/** One size within each range of the breakpoints in "public/css/tokens.css". */
+/**
+ * One size within each range of the width breakpoints in "public/css/tokens.css". Two of them are
+ * shorter than the height breakpoint, so that both sides of it are seen.
+ */
 const SIZES = [
   { width: 1600, height: 900 },
   { width: 1200, height: 800 },
-  { width: 800, height: 800 },
-  { width: 600, height: 800 },
+  { width: 800, height: 500 },
+  { width: 600, height: 500 },
   { width: 375, height: 700 },
 ] as const;
 
