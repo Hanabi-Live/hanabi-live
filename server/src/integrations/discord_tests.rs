@@ -95,9 +95,13 @@ async fn lifecycle_announcements_reach_both_channels_despite_network_latency_pos
         restart_barrier: Some(Arc::new(tokio::sync::Barrier::new(2))),
         ..MockTransport::default()
     });
-    let bridge = Bridge::start(fixture.app.clone(), configuration(), Some(mock.clone()))
-        .await
-        .unwrap();
+    let bridge = Bridge::start(
+        fixture.app.integration_server(),
+        configuration(),
+        Some(mock.clone()),
+    )
+    .await
+    .unwrap();
     bridge.event(json!({"t":"READY"})).await.unwrap();
     let integrations = super::Integrations {
         discord: Some(bridge.clone()),
@@ -158,9 +162,13 @@ async fn failed_restart_channel_does_not_cancel_other_delivery_postgres() {
             restart_barrier: Some(Arc::new(tokio::sync::Barrier::new(2))),
             ..MockTransport::default()
         });
-        let bridge = Bridge::start(fixture.app.clone(), configuration(), Some(mock.clone()))
-            .await
-            .unwrap();
+        let bridge = Bridge::start(
+            fixture.app.integration_server(),
+            configuration(),
+            Some(mock.clone()),
+        )
+        .await
+        .unwrap();
         bridge.event(json!({"t":"READY"})).await.unwrap();
         let result = tokio::time::timeout(
             Duration::from_secs(2),
@@ -206,9 +214,13 @@ async fn discord_lifecycle_announcements_match_across_channels_postgres() {
         return;
     };
     let mock = Arc::new(MockTransport::default());
-    let bridge = Bridge::start(fixture.app.clone(), configuration(), Some(mock.clone()))
-        .await
-        .unwrap();
+    let bridge = Bridge::start(
+        fixture.app.integration_server(),
+        configuration(),
+        Some(mock.clone()),
+    )
+    .await
+    .unwrap();
     bridge.event(json!({"t":"READY"})).await.unwrap();
     bridge.event(json!({"t":"RESUMED"})).await.unwrap();
     fixture.app.lifecycle.stop_admitting();
@@ -287,9 +299,13 @@ async fn discord_lifecycle_announcements_match_across_channels_postgres() {
     .execute(&fixture.db.pool)
     .await
     .unwrap();
-    let replacement = Bridge::start(fixture.app.clone(), configuration(), Some(mock.clone()))
-        .await
-        .unwrap();
+    let replacement = Bridge::start(
+        fixture.app.integration_server(),
+        configuration(),
+        Some(mock.clone()),
+    )
+    .await
+    .unwrap();
     replacement.event(json!({"t":"READY"})).await.unwrap();
     let started: String = sqlx::query_scalar!(
         "SELECT message FROM chat_log WHERE source='server' ORDER BY id DESC LIMIT 1"
@@ -311,9 +327,21 @@ async fn discord_mock_transport_public_privacy_rendering_and_status_postgres() {
         return;
     };
     let mock = Arc::new(MockTransport::default());
-    let bridge = Bridge::start(fixture.app.clone(), configuration(), Some(mock.clone()))
-        .await
-        .unwrap();
+    let bridge = Bridge::start(
+        fixture.app.integration_server(),
+        configuration(),
+        Some(mock.clone()),
+    )
+    .await
+    .unwrap();
+    // The mock gateway sends READY once the bridge listens.
+    bridge.listen(super::alerts::Alerts::start(
+        None,
+        true,
+        "test".into(),
+        &fixture.app.background,
+        fixture.app.lifecycle.shutdown.clone(),
+    ));
     tokio::time::timeout(Duration::from_secs(2), async {
         while bridge.status() != "ready" {
             tokio::time::sleep(Duration::from_millis(5)).await;

@@ -9,9 +9,9 @@ use crate::{
     lifecycle::Refusal,
     lobby::{self, Effect, Publication},
     routing::Route,
-    transport::{Outgoing, Session, frame},
+    transport::{Session, frame},
 };
-use anyhow::{Context, Result, ensure};
+use anyhow::Context;
 use axum::http::StatusCode;
 use hanabi_protocol::ClientMessage;
 use std::sync::Arc;
@@ -72,14 +72,6 @@ pub(super) fn command_failure(error: CommandError, command: &str) -> Option<Comm
         report: Some(report),
         alert,
     })
-}
-
-/// Sends messages from outside the server, such as Discord, to everyone in the lobby.
-pub async fn publish_external(app: &App, messages: Vec<Outgoing>) -> Result<()> {
-    ensure!(app.lifecycle.healthy(), "Server ownership unavailable");
-    request(&app.hub, |reply| HubCommand::Broadcast { messages, reply })
-        .await?
-        .map_err(anyhow::Error::from)
 }
 
 /// Does the work of a lobby command's effects that needs the server's runtime or integrations, and

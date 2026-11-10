@@ -1,8 +1,9 @@
+use super::{Server, alerts::Alerts};
 use crate::transport::Outgoing;
 use crate::{
     accounts::{escape_html, normalize_chat},
+    actors::{HubCommand, request},
     lobby::{self, ExternalReply, SavedChat},
-    web::{self, App},
 };
 use anyhow::{Context, Result, ensure};
 use chrono::{DateTime, Utc};
@@ -15,7 +16,7 @@ use std::{
     fmt::Write as _,
     ops::RangeInclusive,
     sync::{
-        Arc, Weak,
+        Arc,
         atomic::{AtomicBool, AtomicU8, Ordering},
     },
     time::Duration,
@@ -361,7 +362,7 @@ impl Status {
 }
 
 pub struct Bridge {
-    app: Weak<App>,
+    server: Server,
     pool: PgPool,
     config: Configuration,
     transport: Arc<dyn Transport>,
@@ -373,8 +374,10 @@ pub struct Bridge {
 }
 
 impl Bridge {
+    /// Connects to Discord and checks the configured roles and channels. `listen` then starts
+    /// receiving its events.
     pub async fn start(
-        app: Arc<App>,
+        server: Server,
         config: Configuration,
         transport: Option<Arc<dyn Transport>>,
     ) -> Result<Arc<Self>> {
@@ -430,9 +433,9 @@ impl Bridge {
                     axum::http::StatusCode::BAD_GATEWAY).into());
             }
         }
-        let bridge = Arc::new(Self {
-            app: Arc::downgrade(&app),
-            pool: app.store.primary.clone(),
+        Ok(Arc::new(Self {
+            pool: server.pool.clone(),
+            server,
             config,
             transport,
             bot_id,
@@ -440,12 +443,18 @@ impl Bridge {
             incoming: Mutex::new(()),
             status: AtomicU8::new(Status::Connecting as u8),
             announced: AtomicBool::new(false),
-        });
+        }))
+    }
+
+    /// Receives Discord's events until the server shuts down. A failed event is reported to
+    /// `alerts`.
+    pub fn listen(self: &Arc<Self>, alerts: Arc<Alerts>) {
+        let server = &self.server;
         let (events, mut receiver) = mpsc::channel(EVENT_QUEUE);
-        let gateway = bridge.transport.clone();
-        let cancel = app.lifecycle.shutdown.child_token();
-        let lost = app.lifecycle.ownership_lost.clone();
-        app.background.spawn(async move {
+        let gateway = self.transport.clone();
+        let cancel = server.lifecycle.shutdown.child_token();
+        let lost = server.lifecycle.ownership_lost.clone();
+        server.background.spawn(async move {
             tokio::select! {
                 ()=lost.cancelled()=>{},
                 result=gateway.gateway(events,cancel)=>{if let Err(error)=result {
@@ -453,22 +462,18 @@ impl Bridge {
                 }}
             }
         });
-        let inbound = bridge.clone();
-        let weak = Arc::downgrade(&app);
-        let shutdown = app.lifecycle.shutdown.clone();
-        app.background.spawn(async move {
+        let inbound = self.clone();
+        let lifecycle = server.lifecycle.clone();
+        server.background.spawn(async move {
             loop {
                 let event = tokio::select! {
-                    ()=shutdown.cancelled()=>break,
+                    ()=lifecycle.shutdown.cancelled()=>break,
                     event=receiver.recv()=>event,
                 };
                 let Some(event) = event else {
                     break;
                 };
-                let Some(app) = weak.upgrade() else {
-                    break;
-                };
-                let Ok(_admission) = app.lifecycle.admit().await else {
+                let Ok(_admission) = lifecycle.admit().await else {
                     continue;
                 };
                 if let Err(error) = inbound.event(event).await {
@@ -476,18 +481,20 @@ impl Bridge {
                     let report =
                         crate::errors::Report::from_error("Processing Discord event", &error);
                     report.log();
-                    app.alert(&report);
+                    alerts.report(&report);
                 }
             }
             inbound.set_status(Status::Closed);
         });
-        Ok(bridge)
     }
 
-    fn app(&self) -> Result<Arc<App>> {
-        let app = self.app.upgrade().context("Server stopped")?;
-        ensure!(app.lifecycle.healthy(), "Server ownership unavailable");
-        Ok(app)
+    /// Fails once the server is shutting down or has lost ownership of the live tables.
+    fn available(&self) -> Result<()> {
+        ensure!(
+            self.server.lifecycle.healthy(),
+            "Server ownership unavailable"
+        );
+        Ok(())
     }
 
     pub fn status(&self) -> &'static str {
@@ -617,7 +624,7 @@ impl Bridge {
             })
             .map(|(id, _)| id)
             .collect();
-        self.app()?;
+        self.available()?;
         let response=self.transport.request(Method::POST,format!("/channels/{channel}/messages"),
             Some(json!({"content":text,"allowed_mentions":{"parse":[],"roles":if roles {json!(role_ids)} else {json!([])},"users":[],"replied_user":false}}))).await?;
         Ok(response["id"]
@@ -634,7 +641,7 @@ impl Bridge {
 
     pub async fn mirror(&self, chat_id: i32, supplied: Option<&str>) -> Result<()> {
         let _guard = self.outbound.lock().await;
-        self.app()?;
+        self.available()?;
         let row=sqlx::query!("SELECT c.message,c.source,c.discord_message_id,u.username FROM chat_log c
              LEFT JOIN users u ON u.id=c.user_id WHERE c.id=$1 AND c.room='lobby' AND c.deleted_at IS NULL", chat_id).fetch_optional(&self.pool).await?;
         let Some(row) = row else {
@@ -672,16 +679,13 @@ impl Bridge {
         };
         let id = self.send(&outbound_text(&username, raw), true).await?;
         if link_copy(&self.pool, chat_id, &id).await? {
-            web::publish_external(
-                self.app()?.as_ref(),
-                vec![Outgoing::new(
-                    hanabi_protocol::server::CHAT_DELETE,
-                    hanabi_protocol::ChatDelete {
-                        chat_id: i64::from(chat_id),
-                        room: hanabi_protocol::LobbyRoom::Lobby,
-                    },
-                )],
-            )
+            self.broadcast(vec![Outgoing::new(
+                hanabi_protocol::server::CHAT_DELETE,
+                hanabi_protocol::ChatDelete {
+                    chat_id: i64::from(chat_id),
+                    room: hanabi_protocol::LobbyRoom::Lobby,
+                },
+            )])
             .await?;
         }
         Ok(())
@@ -689,8 +693,13 @@ impl Bridge {
 
     /// Sends messages to everyone in the lobby.
     async fn broadcast(&self, messages: Vec<Outgoing>) -> Result<()> {
-        let app = self.app()?;
-        web::publish_external(&app, messages).await
+        self.available()?;
+        request(&self.server.hub, |reply| HubCommand::Broadcast {
+            messages,
+            reply,
+        })
+        .await?
+        .map_err(anyhow::Error::from)
     }
 
     /// Publishes server messages saved to the lobby chat, then copies them to Discord.
@@ -714,9 +723,9 @@ impl Bridge {
             None => return Ok(()),
             Some(ExternalReply::Saved(saved)) => vec![saved],
             Some(ExternalReply::Runtime { command, args }) => {
-                let app = self.app()?;
+                self.available()?;
                 let mut saved = vec![];
-                for response in app.info.runtime_response(&command, &args)? {
+                for response in self.server.info.runtime_response(&command, &args)? {
                     saved.push(lobby::server_chat(&self.pool, &response).await?);
                 }
                 saved
@@ -726,7 +735,7 @@ impl Bridge {
     }
 
     async fn announce(&self, message: &str) -> Result<()> {
-        self.app()?;
+        self.available()?;
         let saved = lobby::server_chat(&self.pool, message).await?;
         // Poll both deliveries to completion; a slow or failed channel must not cancel the other.
         let plain = decode_html(message);
@@ -763,7 +772,7 @@ impl Bridge {
 
     pub async fn event(&self, event: Value) -> Result<()> {
         let _guard = self.incoming.lock().await;
-        self.app()?;
+        self.available()?;
         let data = &event["d"];
         match event["t"].as_str() {
             Some("READY" | "RESUMED") => {

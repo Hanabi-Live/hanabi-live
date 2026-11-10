@@ -13,7 +13,7 @@ use crate::errors::HttpError;
 use crate::{
     accounts::{self, AccountConfig},
     actors::HubCommand,
-    integrations::{IntegrationSlot, Integrations},
+    integrations::{self, IntegrationSlot, Integrations},
     lifecycle::Lifecycle,
     public_http::{self, PublicConfig},
     store::Store,
@@ -65,13 +65,17 @@ pub struct App {
 }
 
 impl App {
-    pub fn is_development(&self) -> bool {
-        self.public.is_dev
-    }
-
-    /// The client version that this server serves, which connecting clients must match.
-    pub fn client_version(&self) -> &str {
-        &self.public.client_version
+    /// The parts of the server that the integrations use.
+    pub fn integration_server(&self) -> integrations::Server {
+        integrations::Server {
+            hub: self.hub.clone(),
+            pool: self.store.primary.clone(),
+            lifecycle: self.lifecycle.clone(),
+            info: self.info.clone(),
+            background: self.background.clone(),
+            development: self.public.is_dev,
+            release: self.public.client_version.to_string(),
+        }
     }
 
     pub async fn announce_restart(&self, message: Option<&str>) {
@@ -127,7 +131,7 @@ impl App {
                 .is_ok(),
             "Integrations already initialized"
         );
-        let integrations = Integrations::start(self.clone(), values).await?;
+        let integrations = Integrations::start(self.integration_server(), values).await?;
         self.integrations
             .set(integrations)
             .map_err(|_| anyhow::anyhow!("Integrations already initialized"))?;
@@ -140,8 +144,6 @@ impl App {
         }
     }
 }
-
-pub use dispatch::publish_external;
 
 pub fn router(app: Arc<App>) -> Router {
     let accounts = accounts::router(

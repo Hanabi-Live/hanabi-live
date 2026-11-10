@@ -4,15 +4,33 @@ pub mod discord;
 #[cfg(test)]
 mod discord_tests;
 
-use crate::web::App;
+use crate::{actors::HubCommand, lifecycle::Lifecycle, server_info::ServerInfo};
 use anyhow::Result;
+use sqlx::PgPool;
 use std::{collections::HashMap, sync::Arc, time::Duration};
+use tokio::sync::mpsc;
+use tokio_util::task::TaskTracker;
 
 /// How long a restart or stop waits for its Discord announcement.
 const ANNOUNCEMENT_TIMEOUT: Duration = Duration::from_secs(5);
 
 /// The integrations once they start, which happens after the server starts listening.
 pub type IntegrationSlot = Arc<std::sync::OnceLock<Arc<Integrations>>>;
+
+/// The parts of the running server that the integrations use.
+#[derive(Clone)]
+pub struct Server {
+    pub hub: mpsc::Sender<HubCommand>,
+    /// The primary database pool.
+    pub pool: PgPool,
+    pub lifecycle: Arc<Lifecycle>,
+    pub info: Arc<ServerInfo>,
+    /// Runs the integrations' tasks until the server shuts down.
+    pub background: TaskTracker,
+    pub development: bool,
+    /// The client version, which alerts name as the release.
+    pub release: String,
+}
 
 pub struct Integrations {
     discord: Option<Arc<discord::Bridge>>,
@@ -21,9 +39,9 @@ pub struct Integrations {
 }
 
 impl Integrations {
-    pub async fn start(app: Arc<App>, values: &HashMap<String, String>) -> Result<Arc<Self>> {
+    pub async fn start(server: Server, values: &HashMap<String, String>) -> Result<Arc<Self>> {
         let discord = match discord::Configuration::read(values) {
-            Ok(Some(config)) => match discord::Bridge::start(app.clone(), config, None).await {
+            Ok(Some(config)) => match discord::Bridge::start(server.clone(), config, None).await {
                 Ok(bridge) => Some(bridge),
                 Err(error) => {
                     crate::errors::Report::from_error("Initializing Discord", &error).log();
@@ -42,11 +60,14 @@ impl Integrations {
                 .any(|(key, value)| key.starts_with("DISCORD_") && !value.trim().is_empty());
         let alerts = alerts::Alerts::start(
             discord.clone(),
-            app.is_development(),
-            app.client_version().to_owned(),
-            &app.background,
-            app.lifecycle.shutdown.clone(),
+            server.development,
+            server.release.clone(),
+            &server.background,
+            server.lifecycle.shutdown.clone(),
         );
+        if let Some(bridge) = &discord {
+            bridge.listen(alerts.clone());
+        }
         Ok(Arc::new(Self {
             discord,
             discord_failed,
