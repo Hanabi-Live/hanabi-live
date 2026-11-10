@@ -308,7 +308,7 @@ pub async fn private_message(
             escape_html(&recipient)
         ))]);
     };
-    if super::blocked_between(pool, caller.user.0, &[target.identity.user.0]).await? {
+    if super::blocked_between(pool, caller.user, &[target.identity.user]).await? {
         return Ok(vec![warning(&format!(
             "You cannot send a private message to \"{}\".",
             escape_html(&target.identity.name)

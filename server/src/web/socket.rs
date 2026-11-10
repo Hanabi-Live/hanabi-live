@@ -103,9 +103,9 @@ pub(super) async fn bootstrap(app: &App, account: Account, ip: &str) -> Result<B
         bot,
     } = account;
     let (settings, friends, blocks, muted) = tokio::try_join!(
-        lobby::get_settings(pool, id.0),
-        lobby::friends(pool, id.0),
-        lobby::block_relations(pool, id.0),
+        lobby::get_settings(pool, id),
+        lobby::friends(pool, id),
+        lobby::block_relations(pool, id),
         accounts::is_muted(pool, ip)
     )?;
     let welcome = hanabi_protocol::Welcome {
@@ -131,7 +131,7 @@ pub(super) async fn bootstrap(app: &App, account: Account, ip: &str) -> Result<B
         name,
         normalized_name,
         bot,
-        blocks: blocks.into_iter().map(UserId).collect(),
+        blocks,
         welcome,
         initial: vec![frame(
             hanabi_protocol::server::LOBBY_STATUS,

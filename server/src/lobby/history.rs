@@ -1,15 +1,16 @@
 use crate::archive::GameRecord;
 use anyhow::{Context, Result};
+use hanabi_protocol::UserId;
 use sqlx::{PgPool, types::Json};
 
-pub async fn history_ids(pool: &PgPool, id: i32, offset: i64, amount: i64) -> Result<Vec<i32>> {
+pub async fn history_ids(pool: &PgPool, id: UserId, offset: i64, amount: i64) -> Result<Vec<i32>> {
     // A player is in one game at a time, so their game IDs follow the order their games finished.
     // Paging by ID reads only the requested entries from the (user_id, game_id) index, instead of
     // loading every game the player has finished to sort them by finish time.
     Ok(sqlx::query_scalar!(
         "SELECT game_id FROM game_participants WHERE user_id=$1
          ORDER BY game_id DESC LIMIT NULLIF($2::bigint,0) OFFSET $3",
-        id,
+        id.0,
         amount,
         if amount == 0 { 0 } else { offset }
     )
@@ -75,7 +76,8 @@ pub async fn get_history(
 
 /// Seed scope is directed, exactly one hop. A→B→C must not block C's seeds for A.
 /// Seeds starting with `prefix` already played by these users or the accounts they linked.
-pub async fn blocked_seeds(pool: &PgPool, user_ids: &[i32], prefix: &str) -> Result<Vec<String>> {
+pub async fn blocked_seeds(pool: &PgPool, users: &[UserId], prefix: &str) -> Result<Vec<String>> {
+    let user_ids = users.iter().map(|user| user.0).collect::<Vec<_>>();
     // Resolve linked accounts into one list first: an `OR ... IN (subquery)` condition prevents
     // the participant index from being used and scans every game.
     Ok(sqlx::query_scalar!(
@@ -83,7 +85,7 @@ pub async fn blocked_seeds(pool: &PgPool, user_ids: &[i32], prefix: &str) -> Res
          WHERE p.user_id=ANY($1::integer[] ||
            ARRAY(SELECT linked_id FROM user_linkages WHERE user_id=ANY($1)))
          AND starts_with(g.seed, $2)",
-        user_ids,
+        &user_ids,
         prefix
     )
     .fetch_all(pool)

@@ -165,7 +165,7 @@ pub async fn dispatch(
             if let Err(error) = settings::validate_setting(name, value) {
                 return Ok(Some(vec![warning(&error.to_string())]));
             }
-            set_setting(pool, caller.user.0, name, value).await?;
+            set_setting(pool, caller.user, name, value).await?;
             match name {
                 "hGroupConventions" => vec![Publication::HGroup(value == "true").into()],
                 // `validate_setting` has already checked that the level is in range.
@@ -215,7 +215,7 @@ pub async fn dispatch(
             if amount < 0 {
                 return Ok(Some(vec![warning("That is not a valid end value.")]));
             }
-            let ids = history_ids(pool, caller.user.0, offset, amount).await?;
+            let ids = history_ids(pool, caller.user, offset, amount).await?;
             vec![Effect::to_self(Outgoing::new(
                 hanabi_protocol::server::GAME_HISTORY,
                 hanabi_protocol::GameHistoryList(get_history(pool, &ids, false).await?),

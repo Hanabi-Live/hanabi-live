@@ -96,7 +96,6 @@ pub async fn save_in(
     Ok(revision)
 }
 
-/// The parts of the tables in `ids`, by table.
 /// Groups the rows of a query that joins each table's head to its parts, ordered by table, into
 /// stored tables. Reading heads and parts in one statement sees one snapshot, so a table's parts
 /// always belong to its head.

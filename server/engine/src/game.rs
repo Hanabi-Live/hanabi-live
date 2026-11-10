@@ -27,9 +27,10 @@ pub(crate) use hanabi_protocol::MAX_SAFE_INTEGER;
     reason = "a float represents MAX_SAFE_INTEGER exactly"
 )]
 const MAX_SAFE_FLOAT: f64 = MAX_SAFE_INTEGER as f64;
-/// The longest seed, and the longest player, variant, or character name, in bytes.
-pub(crate) const MAX_SEED_LENGTH: usize = 4096;
-pub(crate) const MAX_NAME_LENGTH: usize = 4096;
+/// The longest seed, and the longest player, variant, or table name, that the engine accepts, in
+/// bytes. It bounds memory. It is not the protocol's `MAX_SEED_LENGTH`, which limits the seed that a
+/// player can request.
+const MAX_SETUP_TEXT_BYTES: usize = 4096;
 
 pub(crate) fn validate_options(options: &Options) -> Result<()> {
     ensure!(
@@ -43,14 +44,14 @@ pub(crate) fn validate_options(options: &Options) -> Result<()> {
         "Invalid game timing."
     );
     ensure!(
-        !options.variant_name.is_empty() && options.variant_name.len() <= MAX_NAME_LENGTH,
+        !options.variant_name.is_empty() && options.variant_name.len() <= MAX_SETUP_TEXT_BYTES,
         "Invalid variant name."
     );
     ensure!(
         options
             .table_name
             .as_ref()
-            .is_none_or(|n| !n.is_empty() && n.len() <= MAX_NAME_LENGTH),
+            .is_none_or(|n| !n.is_empty() && n.len() <= MAX_SETUP_TEXT_BYTES),
         "Invalid table name."
     );
     ensure!(
@@ -70,11 +71,11 @@ pub fn create_game(setup: GameSetup) -> Result<EngineState> {
         "The game options do not match the ordered players."
     );
     ensure!(
-        setup.seed.len() <= MAX_SEED_LENGTH
+        setup.seed.len() <= MAX_SETUP_TEXT_BYTES
             && setup
                 .player_names
                 .iter()
-                .all(|n| n.len() <= MAX_NAME_LENGTH),
+                .all(|n| n.len() <= MAX_SETUP_TEXT_BYTES),
         "Game text is too long."
     );
     let variant = get_variant(&setup.options.variant_name)?;

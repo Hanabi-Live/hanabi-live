@@ -356,7 +356,7 @@ impl Store {
     }
     /// The first seed with this prefix that none of the players have played.
     pub async fn next_seed(&self, players: &[Player], prefix: String) -> Result<String> {
-        let ids = players.iter().map(|p| p.id.0).collect::<Vec<_>>();
+        let ids = players.iter().map(|p| p.id).collect::<Vec<_>>();
         let seeds = crate::lobby::blocked_seeds(&self.primary, &ids, &prefix).await?;
         let seeds = seeds.into_iter().collect::<std::collections::HashSet<_>>();
         for next in 1_u64.. {

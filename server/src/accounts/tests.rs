@@ -668,7 +668,9 @@ async fn new_accounts_start_with_the_system_dark_mode_postgres() {
             .fetch_one(&db.pool)
             .await
             .unwrap();
-        let settings = crate::lobby::get_settings(&db.pool, id).await.unwrap();
+        let settings = crate::lobby::get_settings(&db.pool, hanabi_protocol::UserId(id))
+            .await
+            .unwrap();
         assert_eq!(settings.dark_mode, expected, "{username}");
     }
     // Only a new account takes the system preference.
@@ -687,7 +689,7 @@ async fn new_accounts_start_with_the_system_dark_mode_postgres() {
         .await
         .unwrap();
     assert!(
-        !crate::lobby::get_settings(&db.pool, id)
+        !crate::lobby::get_settings(&db.pool, hanabi_protocol::UserId(id))
             .await
             .unwrap()
             .dark_mode

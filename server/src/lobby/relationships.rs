@@ -5,43 +5,48 @@ use anyhow::Result;
 use hanabi_protocol::UserId;
 use sqlx::PgPool;
 
-pub async fn friends(pool: &PgPool, id: i32) -> Result<Vec<String>> {
+pub async fn friends(pool: &PgPool, id: UserId) -> Result<Vec<String>> {
     Ok(sqlx::query_scalar!(
         "SELECT u.username FROM user_friends f JOIN users u ON u.id=f.friend_id
          WHERE f.user_id=$1 ORDER BY LOWER(u.username) COLLATE \"C\"",
-        id
+        id.0
     )
     .fetch_all(pool)
     .await?)
 }
 
 /// Whether `user` and any of `others` have blocked each other, in either direction.
-pub async fn blocked_between(pool: &PgPool, user: i32, others: &[i32]) -> Result<bool> {
+pub async fn blocked_between(pool: &PgPool, user: UserId, others: &[UserId]) -> Result<bool> {
     if others.is_empty() {
         return Ok(false);
     }
+    let others = others.iter().map(|other| other.0).collect::<Vec<_>>();
     Ok(sqlx::query_scalar!(
         "SELECT EXISTS(SELECT 1 FROM user_blocks
          WHERE (user_id=$1 AND blocked_id=ANY($2)) OR (blocked_id=$1 AND user_id=ANY($2))) AS \"value!\"",
-        user,
-        others
+        user.0,
+        &others
     )
     .fetch_one(pool)
     .await?)
 }
 
 /// Everyone who has blocked, or was blocked by, `id`.
-pub async fn block_relations(pool: &PgPool, id: i32) -> Result<Vec<i32>> {
+pub async fn block_relations(pool: &PgPool, id: UserId) -> Result<Vec<UserId>> {
     Ok(sqlx::query_scalar!(
         "SELECT blocked_id AS \"id!\" FROM user_blocks WHERE user_id=$1
          UNION SELECT user_id FROM user_blocks WHERE blocked_id=$1",
-        id
+        id.0
     )
     .fetch_all(pool)
-    .await?)
+    .await?
+    .into_iter()
+    .map(UserId)
+    .collect())
 }
 
-pub async fn change_friend(pool: &PgPool, id: i32, target: i32, add: bool) -> Result<bool> {
+pub async fn change_friend(pool: &PgPool, id: UserId, target: UserId, add: bool) -> Result<bool> {
+    let (id, target) = (id.0, target.0);
     let mut tx = pool.begin().await?;
     sqlx::query!("SELECT id FROM users WHERE id=$1 FOR UPDATE", id)
         .fetch_one(&mut *tx)
@@ -151,7 +156,7 @@ pub async fn relationship(
     )
     .fetch_optional(pool)
     .await?;
-    let Some(target) = target else {
+    let Some(target) = target.map(UserId) else {
         return Ok(vec![warning(&format!(
             "The username of \"{}\" does not exist in the database.",
             escape_html(name)
@@ -164,13 +169,13 @@ pub async fn relationship(
     let add = matches!(verb, "friend" | "link");
     let friend = matches!(verb, "friend" | "unfriend");
     let changed = if friend {
-        change_friend(pool, caller.user.0, target, add).await?
+        change_friend(pool, caller.user, target, add).await?
     } else {
         let result = if add {
             sqlx::query!(
                 "INSERT INTO user_linkages(user_id,linked_id) VALUES($1,$2) ON CONFLICT DO NOTHING",
                 caller.user.0,
-                target
+                target.0
             )
             .execute(pool)
             .await?
@@ -178,7 +183,7 @@ pub async fn relationship(
             sqlx::query!(
                 "DELETE FROM user_linkages WHERE user_id=$1 AND linked_id=$2",
                 caller.user.0,
-                target
+                target.0
             )
             .execute(pool)
             .await?
@@ -213,7 +218,7 @@ pub async fn relationship(
         effects.push(Effect::to_self(Outgoing::new(
             hanabi_protocol::server::FRIENDS,
             hanabi_protocol::Friends {
-                friends: friends(pool, caller.user.0).await?,
+                friends: friends(pool, caller.user).await?,
             },
         )));
     }
@@ -223,7 +228,7 @@ pub async fn relationship(
 async fn block(
     pool: &PgPool,
     caller: &Identity,
-    target: i32,
+    target: UserId,
     escaped: &str,
     add: bool,
     room: &str,
@@ -232,7 +237,7 @@ async fn block(
         sqlx::query!(
             "INSERT INTO user_blocks(user_id,blocked_id) VALUES($1,$2) ON CONFLICT DO NOTHING",
             caller.user.0,
-            target
+            target.0
         )
         .execute(pool)
         .await?
@@ -240,7 +245,7 @@ async fn block(
         sqlx::query!(
             "DELETE FROM user_blocks WHERE user_id=$1 AND blocked_id=$2",
             caller.user.0,
-            target
+            target.0
         )
         .execute(pool)
         .await?
@@ -263,9 +268,9 @@ async fn block(
         notice(&caller.name, &message, room),
         Publication::BlocksChanged {
             user_id: caller.user,
-            target_id: UserId(target),
+            target_id: target,
             // The other user may have blocked this one too.
-            blocked: blocked_between(pool, caller.user.0, &[target]).await?,
+            blocked: blocked_between(pool, caller.user, &[target]).await?,
         }
         .into(),
     ])

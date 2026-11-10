@@ -805,10 +805,10 @@ async fn full_history_bootstrap_queues_in_order_without_a_writer_postgres() {
             .all(|message| !message.starts_with("gameHistory"))
     );
     history_lock.rollback().await.unwrap();
-    let own_ids = lobby::history_ids(&fixture.db.pool, alice, 0, 100)
+    let own_ids = lobby::history_ids(&fixture.db.pool, UserId(alice), 0, 100)
         .await
         .unwrap();
-    let next_ids = lobby::history_ids(&fixture.db.pool, alice, 100, 100)
+    let next_ids = lobby::history_ids(&fixture.db.pool, UserId(alice), 100, 100)
         .await
         .unwrap();
     assert_eq!(own_ids.len(), 100);
@@ -916,7 +916,7 @@ async fn a_lobby_command_from_a_replaced_connection_writes_nothing_postgres() {
         .fetch_one(&fixture.app.store.primary)
         .await
         .unwrap();
-    let before = lobby::get_settings(&fixture.app.store.primary, id)
+    let before = lobby::get_settings(&fixture.app.store.primary, UserId(id))
         .await
         .unwrap()
         .volume;
@@ -943,7 +943,7 @@ async fn a_lobby_command_from_a_replaced_connection_writes_nothing_postgres() {
         replied.await.unwrap(),
         Err(CommandError::Rejected { .. })
     ));
-    let after = lobby::get_settings(&fixture.app.store.primary, id)
+    let after = lobby::get_settings(&fixture.app.store.primary, UserId(id))
         .await
         .unwrap()
         .volume;

@@ -1,4 +1,5 @@
 use anyhow::{Result, ensure};
+use hanabi_protocol::UserId;
 use serde_json::Value;
 use sqlx::PgPool;
 
@@ -29,8 +30,8 @@ pub fn changed_settings(settings: &Settings) -> Value {
     }
 }
 
-pub async fn get_settings(pool: &PgPool, id: i32) -> Result<Settings> {
-    let stored = sqlx::query_scalar!("SELECT settings FROM users WHERE id=$1", id)
+pub async fn get_settings(pool: &PgPool, id: UserId) -> Result<Settings> {
+    let stored = sqlx::query_scalar!("SELECT settings FROM users WHERE id=$1", id.0)
         .fetch_optional(pool)
         .await?
         .unwrap_or_else(|| Value::Object(serde_json::Map::new()));
@@ -53,7 +54,7 @@ fn from_stored(stored: Value) -> Settings {
     serde_json::from_value(Value::Object(valid)).unwrap_or_default()
 }
 
-pub async fn set_setting(pool: &PgPool, id: i32, name: &str, value: &str) -> Result<()> {
+pub async fn set_setting(pool: &PgPool, id: UserId, name: &str, value: &str) -> Result<()> {
     let value = validate_setting(name, value).map_err(anyhow::Error::from)?;
     // A value equal to the default is removed, so changing a default later reaches everyone who
     // never chose it.
@@ -62,7 +63,7 @@ pub async fn set_setting(pool: &PgPool, id: i32, name: &str, value: &str) -> Res
         "UPDATE users SET settings = CASE WHEN $3::jsonb IS NULL THEN settings - $2::text
            ELSE settings || jsonb_build_object($2::text, $3::jsonb) END
          WHERE id=$1",
-        id,
+        id.0,
         name,
         changed
     )
