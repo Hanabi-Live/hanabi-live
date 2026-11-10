@@ -12,7 +12,6 @@ import type { HanabiCard } from "../../HanabiCard";
 import type { LayoutChild } from "../../LayoutChild";
 import { globals } from "../../UIGlobals";
 import { CARD_ANIMATION_LENGTH_SECONDS } from "../../constants";
-import { MISPLAY_ANIMATION_SECONDS } from "../../misplayAnimation";
 import {
   startMaxScoreDropAnimation,
   stopMaxScoreDropAnimation,
@@ -189,9 +188,7 @@ export function onMaxScoreOrDiscardStacksChanged(
   const layoutChild =
     order === undefined ? undefined : globals.deck[order]?.layout;
   const delay =
-    layoutChild?.misplayAnimation === undefined
-      ? CARD_ANIMATION_LENGTH_SECONDS
-      : MISPLAY_ANIMATION_SECONDS;
+    layoutChild?.misplayAnimation?.seconds ?? CARD_ANIMATION_LENGTH_SECONDS;
   startMaxScoreDropAnimation(layoutChild, previousData.maxScore, delay);
 }
 

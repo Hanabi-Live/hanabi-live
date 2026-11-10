@@ -34,6 +34,8 @@ of the repository.
 - The new "New UI" setting shows ongoing games in a redesigned game screen. It
   is in testing and off by default. Finished games and replays still use the
   classic screen, and a "Classic view" button switches to it at any time.
+- In replays, a misplayed card now moves to its play stack and then straight to
+  the discard pile, instead of exploding on the strike tracker.
 
 ## November 9th, 2026
 

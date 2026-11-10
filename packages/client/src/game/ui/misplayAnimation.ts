@@ -1,6 +1,7 @@
 // The "dud rocket" misplay animation: the card launches over its play stack like a firework, its
 // fuse sputters, and then it misfires into the strike tracker, where it explodes and leaves the
-// strike X behind. The scorched card then tumbles into the discard pile.
+// strike X behind. The scorched card then tumbles into the discard pile. In a replay, the card only
+// bounces off its play stack into the discard pile.
 
 import { MAX_STRIKES } from "@hanabi-live/game";
 import Konva from "konva";
@@ -40,12 +41,19 @@ const RECOIL_SECONDS = 0.12;
 /** The card tumbles into the discard pile. */
 const FALL_SECONDS = 0.5;
 /** How long a misplayed card takes to reach the discard pile. */
-export const MISPLAY_ANIMATION_SECONDS =
+const MISPLAY_ANIMATION_SECONDS =
   LAUNCH_SECONDS
   + SPUTTER_SECONDS
   + FLIGHT_SECONDS
   + RECOIL_SECONDS
   + FALL_SECONDS;
+
+/** In a replay, the card moves to its play stack. */
+const REPLAY_TO_STACK_SECONDS = 0.25;
+/** In a replay, the card then moves from its play stack to the discard pile. */
+const REPLAY_TO_DISCARD_SECONDS = 0.25;
+const REPLAY_MISPLAY_ANIMATION_SECONDS =
+  REPLAY_TO_STACK_SECONDS + REPLAY_TO_DISCARD_SECONDS;
 
 // Distances and sizes are fractions of the height of a card on the play stacks.
 const HOVER_HEIGHT = 0.375;
@@ -98,6 +106,8 @@ const NUM_RAYS = 12;
 export interface MisplayAnimation {
   /** Whether the card has reached the strike tracker (or no longer needs to). */
   readonly exploded: boolean;
+  /** How long the card takes to reach the discard pile. */
+  readonly seconds: number;
   /** Ends the animation where it is. The card's layout then animates it from there. */
   stop: () => void;
 }
@@ -182,16 +192,6 @@ export function startMisplayAnimation(
 
   const timeline = new EffectTimeline(unit);
 
-  const scorch = new Konva.Rect({
-    width: cardW,
-    height: cardH,
-    cornerRadius: cardW * CARD_CORNER_ROUNDNESS.withoutShadow,
-    fill: SCORCH_COLOR,
-    opacity: 0,
-    listening: false,
-  });
-  layoutChild.add(scorch);
-
   let exploded = strikeX === undefined;
   if (strikeX !== undefined) {
     // The strike appears when the card explodes on it.
@@ -210,6 +210,49 @@ export function startMisplayAnimation(
       visibleStrikes: globals.state.visibleState!.strikes,
     });
   }
+
+  // In a replay, the card only bounces off its play stack into the discard pile.
+  if (globals.state.replay.active) {
+    const stackPose: Pose = { ...stackCenter, scale: 1, rotation: 0 };
+    timeline.add(0, REPLAY_TO_STACK_SECONDS, (t) => {
+      const out = easeOut(t);
+      setPose({
+        x: interpolate(start.x, stackPose.x, out),
+        y: interpolate(start.y, stackPose.y, out),
+        scale: interpolate(start.scale, stackPose.scale, out),
+        rotation: interpolate(start.rotation, stackPose.rotation, out),
+      });
+    });
+    timeline.add(REPLAY_TO_STACK_SECONDS, REPLAY_TO_DISCARD_SECONDS, (t) => {
+      revealStrike();
+      const out = easeOut(t);
+      setPose({
+        x: interpolate(stackPose.x, end.x, out),
+        y: interpolate(stackPose.y, end.y, out),
+        scale: interpolate(stackPose.scale, targetScale, out),
+        rotation: 0,
+      });
+    });
+    return playTimeline(
+      layoutChild,
+      timeline,
+      target,
+      REPLAY_MISPLAY_ANIMATION_SECONDS,
+      () => exploded,
+      revealStrike,
+      onFinish,
+    );
+  }
+
+  const scorch = new Konva.Rect({
+    width: cardW,
+    height: cardH,
+    cornerRadius: cardW * CARD_CORNER_ROUNDNESS.withoutShadow,
+    fill: SCORCH_COLOR,
+    opacity: 0,
+    listening: false,
+  });
+  layoutChild.add(scorch);
 
   function sparks(
     sparksStart: number,
@@ -466,11 +509,30 @@ export function startMisplayAnimation(
     scorch.opacity(EXPLODED_SCORCH_OPACITY * (1 - t));
   });
 
-  function cleanUp() {
-    scorch.destroy();
-    revealStrike();
-  }
+  return playTimeline(
+    layoutChild,
+    timeline,
+    target,
+    MISPLAY_ANIMATION_SECONDS,
+    () => exploded,
+    () => {
+      scorch.destroy();
+      revealStrike();
+    },
+    onFinish,
+  );
+}
 
+/** Plays a misplay timeline that ends with the card at its target placement. */
+function playTimeline(
+  layoutChild: LayoutChild,
+  timeline: EffectTimeline,
+  target: CardPlacement,
+  seconds: number,
+  isExploded: () => boolean,
+  cleanUp: () => void,
+  onFinish: () => void,
+): MisplayAnimation {
   timeline.play([globals.layers.card, globals.layers.UI], () => {
     cleanUp();
     layoutChild.position({ x: target.x, y: target.y });
@@ -481,8 +543,9 @@ export function startMisplayAnimation(
 
   return {
     get exploded() {
-      return exploded;
+      return isExploded();
     },
+    seconds,
     stop: () => {
       timeline.stop();
       cleanUp();
