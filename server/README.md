@@ -80,15 +80,7 @@ To build locally on Linux amd64, install `musl-tools`, add Rust's
 bash install/build-release.sh dist/release
 ```
 
-Use the checksum-verified release installer. Activate with:
-
-```sh
-python3 install/release.py activate /absolute/deployment/root REVISION \
-  --apply-migrations
-```
-
-Activation requires the service to be stopped and holds the shared lifecycle
-lock. Only Rust releases can be verified, staged, or activated.
+Deploy releases with `./deploy.sh` from the repository root.
 
 ## Storage and ownership
 

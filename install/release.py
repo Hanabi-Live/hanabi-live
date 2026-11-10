@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Build verification and stopped-service installation of native releases."""
+"""Build verification and staging of native releases."""
 
 import argparse
 import contextlib
@@ -72,21 +72,6 @@ class GitHub:
             return json.load(response)
 
 
-def require_forward_revision(previous, revision):
-    message = (
-        "Rollback/re-activation refused: recovery and schema compatibility require "
-        "a separate reviewed procedure"
-    )
-    require(previous != revision, message)
-    # Release stores have no Git checkout. Ask GitHub for ancestry, not an ordering of hashes.
-    comparison = GitHub().json(f"/compare/{previous}...{revision}")
-    require(
-        comparison["status"] == "ahead"
-        and comparison["merge_base_commit"]["sha"] == previous,
-        message,
-    )
-
-
 def digest(filename):
     with open(filename, "rb") as stream:
         return hashlib.file_digest(stream, "sha256").hexdigest()
@@ -148,7 +133,6 @@ def manifest(directory):
             if os.environ.get("GITHUB_ACTIONS") == "true"
             else "local-untrusted"
         ),
-        "goVersion": subprocess.check_output(["go", "version"], text=True).strip(),
         "bunVersion": subprocess.check_output(["bun", "--version"], text=True).strip(),
         "files": files_in(directory),
         "rustTarget": "x86_64-unknown-linux-musl",
@@ -192,10 +176,8 @@ def verify(directory):
         f"public/css/main.{metadata['clientVersion']}.min.css",
     ):
         require(name in expected, f"Missing required file: {name}")
-    # Previously published immutable releases retain the old asset layout.
     require(
-        "packages/data/src/json/chatReplyCommands.json" in expected
-        or "packages/server/src/json/chatReplyCommands.json" in expected,
+        "packages/data/src/json/chatReplyCommands.json" in expected,
         "Missing required file: packages/data/src/json/chatReplyCommands.json",
     )
     for name, value in (("git_revision.txt", revision), ("version.txt", metadata["clientVersion"])):
@@ -289,7 +271,7 @@ def stage(root, archive, checksum):
             require(not destination.exists(), "This revision is already installed")
             for name, target in RUNTIME_LINKS.items():
                 (staging / name).symlink_to(Path("../../shared") / target)
-            # Make the verified payload durable before it can become current.
+            # Make the verified payload durable before it is renamed into place.
             directories = [staging]
             for path in staging.rglob("*"):
                 if path.is_symlink():
@@ -307,51 +289,13 @@ def stage(root, archive, checksum):
             except OSError as error:
                 raise ReleaseStateUncertainError(
                     f"Staged release was renamed to {destination}, but directory sync failed: {error}. "
-                    "Staged durability is uncertain; current was NOT changed. "
-                    "Inspect the staged release and repair storage before activation."
+                    "Staged durability is uncertain. Inspect the staged release and repair storage "
+                    "before using it."
                 ) from error
-            print(f"Verified and staged {destination}; NOT activated.")
+            print(f"Verified and staged {destination}.")
         finally:
             if staging.exists():
                 shutil.rmtree(staging)
-
-
-def activate(root, revision):
-    require(re.fullmatch(r"[a-f0-9]{40}", revision), "Invalid revision")
-    with locked(root):
-        release = root / "releases" / revision
-        verify(release)
-        for name, target in RUNTIME_LINKS.items():
-            require(
-                (release / name).is_symlink()
-                and os.readlink(release / name) == str(Path("../../shared") / target),
-                f"Invalid runtime link: {name}",
-            )
-        require((root / "shared/.env").is_file(), "Provision shared/.env before activation")
-        current = root / "current"
-        if current.exists() or current.is_symlink():
-            require(current.is_symlink(), "Current must be an activation symlink")
-            previous = current.resolve()
-            require(previous.parent == root / "releases", "Current escapes the release store")
-            old = verify(previous)
-            require_forward_revision(old["revision"], revision)
-        pending = root / ".current-next"
-        require(not pending.exists() and not pending.is_symlink(), "Pending activation already exists")
-        # Migration failure may leave forward-only schema changes, but never changes
-        # current or checkpoints. Do not automatically start an older binary afterward.
-        subprocess.run([str(release / "hanabi-live"), "migrate", "apply"], check=True)
-        subprocess.run([str(release / "hanabi-live"), "--check-startup"], check=True)
-        pending.symlink_to(Path("releases") / revision)
-        os.replace(pending, current)
-        try:
-            sync_directory(root)
-        except OSError as error:
-            raise ReleaseStateUncertainError(
-                f"current was changed to {revision}, but directory sync failed: {error}. "
-                "Activation durability is uncertain. No process was started; keep the service stopped "
-                "and inspect current and repair storage before proceeding."
-            ) from error
-        print(f"Activated {revision}. Start the opt-in release service separately; no process was started.")
 
 
 def main():
@@ -364,10 +308,6 @@ def main():
     stage_parser.add_argument("root")
     stage_parser.add_argument("archive", type=Path)
     stage_parser.add_argument("sha256", help="Expected checksum obtained from trusted CI, not an untrusted download")
-    activation = commands.add_parser("activate")
-    activation.add_argument("root")
-    activation.add_argument("revision")
-    activation.add_argument("--apply-migrations", action="store_true", required=True)
     args = parser.parse_args()
     try:
         if args.command == "manifest":
@@ -376,10 +316,8 @@ def main():
             verify(args.directory.absolute())
         elif args.command == "init":
             init_root(args.root)
-        elif args.command == "stage":
-            stage(deployment_root(args.root), args.archive, args.sha256)
         else:
-            activate(deployment_root(args.root), args.revision)
+            stage(deployment_root(args.root), args.archive, args.sha256)
     except ReleaseStateUncertainError as error:
         parser.exit(2, f"Release state changed; durability unconfirmed: {error}\n")
     except (OSError, ValueError, KeyError, subprocess.SubprocessError, tarfile.TarError) as error:
