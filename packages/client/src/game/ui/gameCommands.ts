@@ -11,7 +11,6 @@ import {
   getMinEfficiency,
   getVariant,
   isHardVariant,
-  NO_VALUE,
 } from "@hanabi-live/game";
 import type { Tuple } from "complete-common";
 import { iRange, newArray } from "complete-common";
@@ -526,7 +525,7 @@ function initStateStore(data: InitData) {
     characterAssignments,
     characterMetadata: toPlayerTuple(
       data.characters.length === 0
-        ? newArray(data.options.numPlayers, NO_VALUE)
+        ? newArray(data.options.numPlayers, undefined)
         : data.characters.map((character) => character.metadata),
       "character metadata entries",
     ),

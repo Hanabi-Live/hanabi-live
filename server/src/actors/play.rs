@@ -542,7 +542,7 @@ impl TableActor {
                                 .iter()
                                 .find(|c| c.name == p.character)
                                 .map(|c| c.id),
-                            metadata: p.character_metadata,
+                            metadata: p.assigned_metadata(),
                         })
                         .collect()
                 } else {

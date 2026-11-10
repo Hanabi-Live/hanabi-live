@@ -18,7 +18,8 @@ export interface GameMetadata {
   readonly characterAssignments: Readonly<
     Tuple<number | undefined, NumPlayers>
   >;
-  readonly characterMetadata: Readonly<Tuple<number, NumPlayers>>;
+  /** Absent for a player whose character uses no metadata. */
+  readonly characterMetadata: Readonly<Tuple<number | undefined, NumPlayers>>;
 
   /** The minimum efficiency required in order to get a perfect score in the chosen variant. */
   readonly minEfficiency: number;

@@ -324,9 +324,11 @@ pub struct CharacterAssignment {
     )]
     #[schemars(with = "u32", range(min = 0, max = i32::MAX))]
     pub character_id: Option<u32>,
-    /// A value that some characters use, such as the rank or suit they may not clue.
-    #[schemars(range(min = i32::MIN, max = i32::MAX))]
-    pub metadata: i32,
+    /// A value that some characters use, such as the rank or suit they may not clue. Absent for
+    /// other characters.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[schemars(with = "i32", range(min = i32::MIN, max = i32::MAX))]
+    pub metadata: Option<i32>,
 }
 
 /// How the recipient takes part in a game: as a player or a spectator of a game in progress, as a

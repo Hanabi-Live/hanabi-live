@@ -34,8 +34,8 @@ export function getDefaultMetadata(
     number | undefined,
     NumPlayers
   >;
-  const characterMetadata = newArray(numPlayers, -1) as Tuple<
-    number,
+  const characterMetadata = newArray(numPlayers, undefined) as Tuple<
+    number | undefined,
     NumPlayers
   >;
   const variant = getVariant(variantName);

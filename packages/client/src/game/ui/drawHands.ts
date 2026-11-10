@@ -831,29 +831,33 @@ function drawDetrimentalCharacters(
   globals.layers.UI.add(charIcon);
 
   charIcon.tooltipName = `character-assignment-${i}`;
-  const metadata = globals.metadata.characterMetadata[i]!;
-  let tooltipContent = `<strong>#${character.id} - ${character.name}</strong><br />${character.description}`;
-  if (tooltipContent.includes("[random color]")) {
-    // Replace "[random color]" with the selected color.
-    tooltipContent = tooltipContent.replace(
+  const metadata = globals.metadata.characterMetadata[i];
+  const tooltipContent = `<strong>#${character.id} - ${character.name}</strong><br />${character.description}`;
+  charIcon.tooltipContent =
+    metadata === undefined
+      ? tooltipContent
+      : fillCharacterMetadata(tooltipContent, metadata);
+  initKonvaTooltips(charIcon, false, true);
+}
+
+/** Replaces the placeholder in a character's description with the value it was assigned. */
+function fillCharacterMetadata(description: string, metadata: number): string {
+  if (description.includes("[random color]")) {
+    return description.replace(
       "[random color]",
       globals.variant.clueColors[metadata]!.name.toLowerCase(),
     );
-  } else if (tooltipContent.includes("[random number]")) {
-    // Replace "[random number]" with the selected number.
-    tooltipContent = tooltipContent.replace(
-      "[random number]",
-      metadata.toString(),
-    );
-  } else if (tooltipContent.includes("[random suit]")) {
-    // Replace "[random suit]" with the selected suit name.
-    tooltipContent = tooltipContent.replace(
+  }
+  if (description.includes("[random number]")) {
+    return description.replace("[random number]", metadata.toString());
+  }
+  if (description.includes("[random suit]")) {
+    return description.replace(
       "[random suit]",
       globals.variant.suits[metadata]!.displayName,
     );
   }
-  charIcon.tooltipContent = tooltipContent;
-  initKonvaTooltips(charIcon, false, true);
+  return description;
 }
 
 function isHandReversed(j: number) {

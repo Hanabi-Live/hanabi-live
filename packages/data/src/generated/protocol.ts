@@ -478,9 +478,10 @@ const characterAssignmentSchema = z.strictObject({
    */
   characterID: z.number().int().min(0).max(2_147_483_647).optional(),
   /**
-   * A value that some characters use, such as the rank or suit they may not clue.
+   * A value that some characters use, such as the rank or suit they may not clue. Absent for
+   * other characters.
    */
-  metadata: z.number().int().min(-2_147_483_648).max(2_147_483_647),
+  metadata: z.number().int().min(-2_147_483_648).max(2_147_483_647).optional(),
 });
 
 /**
