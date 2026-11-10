@@ -5,6 +5,7 @@ use super::{
 };
 use axum::response::{Html, Redirect};
 use hanabi_engine::EndCondition;
+use std::sync::Arc;
 
 /// The option that a score page names for a best score's stored modifier, if any.
 fn shown_modifier(bits: i64) -> Result<Option<&'static str>> {
@@ -262,6 +263,7 @@ pub(super) async fn page(
                 .map(serde_json::from_value)
                 .collect::<serde_json::Result<Vec<hanabi_protocol::ScoreFrequency>>>()?;
             v["scoreFreqsJSON"] = json!(serde_json::to_string(&rows)?);
+            v["stats"] = seed_stats(&state, seed, &rows).await?;
             v["frequencies"] = json!(rows);
         }
         "variant" => {
@@ -407,7 +409,8 @@ async fn aggregate(state: &PublicState, scope: Scope) -> Result<Value> {
     Ok(statistics)
 }
 
-async fn compute_aggregate(state: &PublicState, scope: Scope) -> Result<Value> {
+/// A transaction for a statistics scan, which may run for up to `AGGREGATE_STATEMENT_TIMEOUT`.
+async fn scan(state: &PublicState) -> Result<sqlx::Transaction<'static, sqlx::Postgres>> {
     let mut transaction = state.pool.begin().await?;
     sqlx::query_scalar!(
         "SELECT set_config('statement_timeout',$1,true)",
@@ -415,6 +418,11 @@ async fn compute_aggregate(state: &PublicState, scope: Scope) -> Result<Value> {
     )
     .fetch_one(&mut *transaction)
     .await?;
+    Ok(transaction)
+}
+
+async fn compute_aggregate(state: &PublicState, scope: Scope) -> Result<Value> {
+    let mut transaction = scan(state).await?;
     let normal_end = EndCondition::Normal as i16;
     // Each case has its own query: a shared query gets a generic plan that cannot use an index.
     // The variant is compared as the column's own SMALLINT, because a cast column cannot use its
@@ -495,6 +503,108 @@ async fn compute_aggregate(state: &PublicState, scope: Scope) -> Result<Value> {
         ));
     }
     Ok(statistics)
+}
+
+/// The average scores of the seeds that share a prefix (such as "p2v0s"), sorted from lowest.
+pub(super) type SeedAverages = HashMap<String, (std::time::Instant, Arc<[f64]>)>;
+
+/// The statistics of a seed's games, and how hard the seed is compared to the other seeds of its
+/// variant, player count, and hand size.
+async fn seed_stats(
+    state: &PublicState,
+    seed: &str,
+    frequencies: &[hanabi_protocol::ScoreFrequency],
+) -> Result<Value> {
+    let games: i64 = frequencies.iter().map(|row| row.num_times).sum();
+    let Some(game) = sqlx::query!(
+        "SELECT variant_id,num_players FROM games WHERE seed=$1 LIMIT 1",
+        seed
+    )
+    .fetch_optional(&state.pool)
+    .await?
+    else {
+        return Ok(json!({}));
+    };
+    let Some(variant) = catalog::variant(i64::from(game.variant_id)) else {
+        return Ok(json!({}));
+    };
+    let total: i64 = frequencies
+        .iter()
+        .map(|row| i64::from(row.score) * row.num_times)
+        .sum();
+    let average = float(total) / float(games);
+    let max_scores: i64 = frequencies
+        .iter()
+        .filter(|row| i64::from(row.score) == i64::from(variant.max_score))
+        .map(|row| row.num_times)
+        .sum();
+    let mut statistics = json!({
+        "numGames": games,
+        "numMaxScores": max_scores,
+        "maxScoreRate": percentage(max_scores, games),
+        "averageScore": format!("{average:.AVERAGE_SCORE_DECIMALS$}"),
+        "maxScore": variant.max_score,
+    });
+    let Some(prefix) = regex!(crate::game::SEED_PATTERN)
+        .captures(seed)
+        .map(|captures| captures[1].to_owned())
+    else {
+        return Ok(statistics);
+    };
+    let averages = seed_averages(state, prefix, game.variant_id, game.num_players).await?;
+    let lower = averages.partition_point(|other| *other < average);
+    let not_higher = averages.partition_point(|other| *other <= average);
+    let higher = averages.len() - not_higher;
+    // One of the seeds with the same average is normally this seed.
+    let ties = (not_higher - lower).saturating_sub(1);
+    let others = i64::try_from(lower + ties + higher)?;
+    if others > 0 {
+        // A seed is harder than each seed with a higher average and half as hard as each tie, as
+        // in duplicate bridge's match points.
+        statistics["difficulty"] = json!({
+            "percentile": format!(
+                "{:.0}",
+                float(2 * i64::try_from(higher)? + i64::try_from(ties)?) * 50.0 / float(others)
+            ),
+            "numSeeds": others,
+            "numPlayers": game.num_players,
+            "variantName": variant.name,
+        });
+    }
+    Ok(statistics)
+}
+/// The decimal places that a seed's average score is shown with.
+const AVERAGE_SCORE_DECIMALS: usize = 1;
+
+/// The sorted average scores of the seeds with a prefix. A large variant has thousands of seeds,
+/// so the averages are shared for `SITE_TOTALS_LIFETIME`, like the variant totals.
+async fn seed_averages(
+    state: &PublicState,
+    prefix: String,
+    variant: i16,
+    num_players: i16,
+) -> Result<Arc<[f64]>> {
+    let mut cache = state.seed_averages.lock().await;
+    if let Some((computed, averages)) = cache.get(&prefix)
+        && computed.elapsed() < SITE_TOTALS_LIFETIME
+    {
+        return Ok(averages.clone());
+    }
+    let mut transaction = scan(state).await?;
+    // Dividing the integer sums as floats gives the same value as dividing them in Rust.
+    let averages: Arc<[f64]> = sqlx::query_scalar!(
+        "SELECT sum(score)::float8/count(*) AS \"average!\" FROM games
+         WHERE variant_id=$1 AND num_players=$2 AND seed LIKE $3 GROUP BY seed ORDER BY 1",
+        variant,
+        num_players,
+        format!("{prefix}%"),
+    )
+    .fetch_all(&mut *transaction)
+    .await?
+    .into();
+    transaction.commit().await?;
+    cache.insert(prefix, (std::time::Instant::now(), averages.clone()));
+    Ok(averages)
 }
 
 async fn user_stats(state: &PublicState, id: i32) -> Result<HashMap<i64, Value>> {

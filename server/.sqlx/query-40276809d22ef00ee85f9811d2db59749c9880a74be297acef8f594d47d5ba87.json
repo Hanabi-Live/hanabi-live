@@ -1,0 +1,25 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT sum(score)::float8/count(*) AS \"average!\" FROM games\n         WHERE variant_id=$1 AND num_players=$2 AND seed LIKE $3 GROUP BY seed ORDER BY 1",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "average!",
+        "type_info": "Float8",
+        "origin": "Expression"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Int2",
+        "Int2",
+        "Text"
+      ]
+    },
+    "nullable": [
+      null
+    ]
+  },
+  "hash": "40276809d22ef00ee85f9811d2db59749c9880a74be297acef8f594d47d5ba87"
+}

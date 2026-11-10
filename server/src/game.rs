@@ -278,8 +278,9 @@ pub fn standard_deck(seed: &str) -> Result<Vec<Card>> {
 const SEED_LETTER: char = 's';
 const ONE_EXTRA_CARD_SEED_LETTER: char = 'e';
 const ONE_LESS_CARD_SEED_LETTER: char = 'l';
-/// Matches the seeds that the server makes, capturing the player count.
-pub const SEED_PATTERN: &str = r"^p(\d+)v\d+[sel][-0-9A-Za-z]+$";
+/// Matches the seeds that the server makes, capturing the seed's prefix (such as "p2v0s") and then
+/// the player count.
+pub const SEED_PATTERN: &str = r"^(p(\d+)v\d+[sel])[-0-9A-Za-z]+$";
 /// The seed of a new game without its number, such as "p2v0s".
 pub fn seed_prefix(num_players: usize, variant_id: u32, options: &Options) -> String {
     let letter = match (options.one_extra_card, options.one_less_card) {
@@ -338,7 +339,7 @@ mod tests {
         ];
         assert_eq!(seeds, ["p2v2s19", "p2v2e19", "p2v2l19", "p2v2s19"]);
         for seed in seeds {
-            assert_eq!(&regex!(SEED_PATTERN).captures(&seed).unwrap()[1], "2");
+            assert_eq!(&regex!(SEED_PATTERN).captures(&seed).unwrap()[2], "2");
         }
     }
 }

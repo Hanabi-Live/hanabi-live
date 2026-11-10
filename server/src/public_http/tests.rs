@@ -712,3 +712,40 @@ async fn public_database_routes_filters_privacy_exports_and_html() {
     assert!(body.contains("players do not match its seats: 1"), "{body}");
     db.close().await;
 }
+
+#[tokio::test]
+async fn seed_page_ranks_the_seed_among_seeds_with_its_prefix() {
+    let Some(db) = crate::accounts::test_support::TestDb::create().await else {
+        return;
+    };
+    // The seeds' averages are 25, 20, 20, and 10. The "e" seed has another hand size, so it is not
+    // compared.
+    #[expect(
+        clippy::disallowed_methods,
+        reason = "test SQL that sets up database state directly"
+    )]
+    sqlx::raw_sql(
+        "INSERT INTO games(id,name,num_players,variant_id,timed,time_base,time_per_turn,speedrun,
+          deck_plays,empty_clues,one_extra_card,one_less_card,all_or_nothing,detrimental_characters,
+          seed,score,num_turns,end_condition,datetime_started,datetime_finished)
+        SELECT id,'test',2,0,false,0,0,false,false,false,false,false,false,false,seed,score,10,1,
+          '2026-01-01T00:00:00Z','2026-01-01T01:00:00Z'
+        FROM (VALUES(1,'p2v0s1',25),(2,'p2v0s2',15),(3,'p2v0s2',25),(4,'p2v0s3',20),(5,'p2v0s4',10),
+          (6,'p2v0e1',0)) AS g(id,seed,score);",
+    )
+    .execute(&db.pool)
+    .await
+    .unwrap();
+    let app = router(db.pool.clone(), &config());
+    let (status, body) = request(app, "/seed/p2v0s2").await;
+    assert_eq!(status, StatusCode::OK, "{body}");
+    let text = body.split_whitespace().collect::<Vec<_>>().join(" ");
+    for expected in [
+        "1 / 2 &nbsp;(50%)",
+        "20.0 / 25",
+        // Harder than the seed that averages 25, and tied with the other seed that averages 20.
+        "harder than 50% of the 3 other 2-player seeds of No Variant",
+    ] {
+        assert!(text.contains(expected), "{expected}: {text}");
+    }
+}

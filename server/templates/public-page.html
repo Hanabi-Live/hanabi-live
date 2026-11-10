@@ -130,6 +130,29 @@
             </ul>
             {% endif %}
           </div>
+          {% endif %} {% if page == "seed" and stats.numGames %}
+          <div class="history-bullets">
+            <ul>
+              <li>
+                <span class="stat-description">Perfect scores:</span> {{
+                stats.numMaxScores }} / {{ stats.numGames }} &nbsp;({{
+                stats.maxScoreRate }}%)
+              </li>
+              <li>
+                <span class="stat-description">Average score:</span> {{
+                stats.averageScore }} / {{ stats.maxScore }}
+              </li>
+              {% if stats.difficulty %}
+              <li>
+                <span class="stat-description">Difficulty:</span> harder than {{
+                stats.difficulty.percentile }}% of the {{
+                stats.difficulty.numSeeds }} other {{
+                stats.difficulty.numPlayers }}-player seeds of {{
+                stats.difficulty.variantName }} (by average score)
+              </li>
+              {% endif %}
+            </ul>
+          </div>
           {% endif %} {% if frequencies|length > 0 %}<canvas
             id="scoreFreqs"
             data-frequencies="{{ scoreFreqsJSON }}"
@@ -213,7 +236,9 @@
                   {% endif %}
                   <th>Players</th>
                   <th>Date &amp; Time</th>
-                  {% if page != "seed" %}
+                  {% if page == "seed" %}
+                  <th>Percentile</th>
+                  {% else %}
                   <th>
                     {% if page == "variant" %}Seed{% else %}Other Scores{% endif
                     %}

@@ -40,6 +40,7 @@ struct PublicState {
     config: PublicConfig,
     templates: Arc<minijinja::Environment<'static>>,
     site_totals: Arc<tokio::sync::Mutex<pages::SiteTotals>>,
+    seed_averages: Arc<tokio::sync::Mutex<pages::SeedAverages>>,
 }
 
 use crate::errors::HttpError;
@@ -99,6 +100,7 @@ pub fn router(pool: PgPool, config: &PublicConfig) -> Router {
         config: config.clone(),
         templates: Arc::new(pages::templates()),
         site_totals: Arc::default(),
+        seed_averages: Arc::default(),
     };
     let mut router = Router::new();
     for path in [

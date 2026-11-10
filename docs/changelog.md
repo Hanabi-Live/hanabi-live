@@ -81,6 +81,9 @@ of the repository.
   it creates the account, so a typo no longer creates a new account.
 - In shared replays, a hypothetical no longer takes you away from the turn that
   you are looking at. It appears when you use the shared turns again.
+- Seed pages now show the perfect score rate, the average score, how hard the
+  seed is compared to the other seeds of its variant, and each game's
+  percentile.
 
 ## November 8th, 2026
 

@@ -64,11 +64,12 @@ async function init() {
   const mode = main.dataset["page"];
 
   const chart = document.querySelector("#scoreFreqs");
+  const frequencies =
+    chart instanceof HTMLCanvasElement
+      ? scoreFrequencies.parse(JSON.parse(chart.dataset["frequencies"] ?? "[]"))
+      : [];
   if (chart instanceof HTMLCanvasElement) {
-    drawScoreChart(
-      chart,
-      scoreFrequencies.parse(JSON.parse(chart.dataset["frequencies"] ?? "[]")),
-    );
+    drawScoreChart(chart, frequencies);
   }
 
   if (mode === "missing-scores") {
@@ -91,7 +92,7 @@ async function init() {
     throw await httpError(response, "Loading the variants");
   }
   const variants = variantNamesSchema.parse(await response.json());
-  initServerTable(table, apiPath, mode, variants);
+  initServerTable(table, apiPath, mode, variants, frequencies);
 }
 
 function localSort(mode: string | undefined): Sort | undefined {
@@ -215,6 +216,7 @@ function initServerTable(
   apiPath: string,
   mode: string | undefined,
   variants: Readonly<Record<string, string>>,
+  frequencies: readonly ScoreFrequency[],
 ) {
   const playerCounts: Choice[] = Array.from(
     iRange(MIN_PLAYERS, MAX_PLAYERS),
@@ -278,7 +280,7 @@ function initServerTable(
         return;
       }
       ({ totalRows } = result);
-      showRows(table, gameRows(result, mode, variants));
+      showRows(table, gameRows(result, mode, variants, frequencies));
       pagers.draw(totalRows, String(totalRows));
       const error = document.querySelector<HTMLElement>("#history-error");
       if (error !== null) {
@@ -479,6 +481,7 @@ function gameRows(
   page: PublicGamePage,
   mode: string | undefined,
   variants: Readonly<Record<string, string>>,
+  frequencies: readonly ScoreFrequency[],
 ): ReadonlyArray<ReadonlyArray<Node | string>> {
   return page.rows.map((game) => {
     const names = game.users.split(", ");
@@ -503,7 +506,9 @@ function gameRows(
       ),
       displayTime(game.datetime),
     );
-    if (mode !== "seed") {
+    if (mode === "seed") {
+      row.push(percentile(game.score, frequencies));
+    } else {
       row.push(
         link(
           `${PATH.SEED}/${encodeURIComponent(game.seed)}`,
@@ -513,6 +518,27 @@ function gameRows(
     }
     return row;
   });
+}
+
+/**
+ * The percent of the other games on a seed that a score beat, counting a tie as half, as in
+ * duplicate bridge's match points. It is a dash when no other game was played.
+ */
+function percentile(
+  score: number,
+  frequencies: readonly ScoreFrequency[],
+): string {
+  let beaten = 0;
+  let others = -1;
+  for (const row of frequencies) {
+    others += row.numTimes;
+    if (row.score < score) {
+      beaten += row.numTimes;
+    } else if (row.score === score) {
+      beaten += (row.numTimes - 1) / 2;
+    }
+  }
+  return others > 0 ? String(Math.round((beaten * 100) / others)) : "-";
 }
 
 /** A timestamp as the server's pages show it: the date, an em dash, and the time in UTC. */

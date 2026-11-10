@@ -66,7 +66,7 @@ pub fn parse(input: &ReplayImport) -> CommandResult<Imported> {
         let pattern = regex!(crate::game::SEED_PATTERN);
         let count: usize = pattern
             .captures(seed)
-            .or_reject("Provide players when the seed has no player count")?[1]
+            .or_reject("Provide players when the seed has no player count")?[2]
             .parse()
             .or_reject("Invalid seed")?;
         ensure_or_reject!(
