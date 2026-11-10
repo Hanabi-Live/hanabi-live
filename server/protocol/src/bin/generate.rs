@@ -21,6 +21,7 @@ const GAME_LIBRARY_SCHEMAS: &[&str] = &[
     "GameEvent",
     "GameOptions",
     "HypotheticalAction",
+    "PlayerNotes",
 ];
 
 fn game_owned(name: &str) -> bool {

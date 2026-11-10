@@ -82,18 +82,8 @@ function notesReducerFunction(
       }
 
       // Set the new notes.
-      for (const [i, noteTextList] of action.noteTextLists.entries()) {
+      for (const { name, notes: noteTextList, isSpectator } of action.notes) {
         // If we are a spectator, copy our notes from combined list.
-        const name = action.names[i];
-        if (name === undefined) {
-          continue;
-        }
-
-        const isSpectator = action.isSpectators[i];
-        if (isSpectator === undefined) {
-          continue;
-        }
-
         if (name === metadata.ourUsername && !playing && !finished) {
           for (const [order, text] of noteTextList.entries()) {
             const newNote = parseNote(variant, text);

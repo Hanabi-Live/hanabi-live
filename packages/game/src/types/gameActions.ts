@@ -3,6 +3,7 @@ import type {
   gameEventSchema,
   hypotheticalActionSchema,
 } from "../generated/protocol";
+import type { PlayerNotes } from "../interfaces/PlayerNotes";
 import type { SpectatorNote } from "../interfaces/SpectatorNote";
 import type { CardOrder } from "./CardOrder";
 import type { HiddenClue } from "./HiddenClue";
@@ -100,9 +101,7 @@ export interface ActionNoteListPlayer {
 
 export interface ActionNoteList {
   readonly type: "noteList";
-  readonly names: readonly string[];
-  readonly noteTextLists: ReadonlyArray<readonly string[]>;
-  readonly isSpectators: readonly boolean[];
+  readonly notes: readonly PlayerNotes[];
 }
 
 export interface ActionSetEffMod {

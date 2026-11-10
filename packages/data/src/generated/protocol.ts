@@ -9,6 +9,7 @@ import {
   hypotheticalActionSchema,
   playerIndexOrNoneSchema,
   playerIndexSchema,
+  playerNotesSchema,
   rankOrUnknownSchema,
   safeIntegerSchema,
   suitIndexOrUnknownSchema,
@@ -519,15 +520,6 @@ export const noteSchema = z.strictObject({
   notes: z.array(cardNoteSchema),
   order: cardOrderSchema,
   tableID: tableIdSchema,
-});
-
-/**
- * One author's notes on every card.
- */
-const playerNotesSchema = z.strictObject({
-  isSpectator: z.boolean(),
-  name: z.string(),
-  notes: z.array(z.string()),
 });
 
 /**

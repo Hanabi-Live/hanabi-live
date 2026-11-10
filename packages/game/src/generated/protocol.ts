@@ -455,3 +455,12 @@ export const hypotheticalActionSchema = z.discriminatedUnion("type", [
   }),
   z.strictObject({ order: cardOrderSchema, type: z.literal("unmorph") }),
 ]);
+
+/**
+ * One author's notes on every card.
+ */
+export const playerNotesSchema = z.strictObject({
+  isSpectator: z.boolean(),
+  name: z.string(),
+  notes: z.array(z.string()),
+});

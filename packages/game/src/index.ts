@@ -19,6 +19,7 @@ export type * from "./interfaces/GameMetadata";
 export type * from "./interfaces/GameState";
 export type * from "./interfaces/LogEntry";
 export * from "./interfaces/Options";
+export type * from "./interfaces/PlayerNotes";
 export type * from "./interfaces/SpectatorNote";
 export type * from "./interfaces/StateStrike";
 export type * from "./interfaces/StatsState";

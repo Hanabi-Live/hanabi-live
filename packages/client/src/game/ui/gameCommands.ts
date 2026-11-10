@@ -190,19 +190,9 @@ gameCommands.set("note", (data) => {
  * (It gives the notes of all the players & spectators.)
  */
 gameCommands.set("noteList", (data) => {
-  const names = [] as string[];
-  const noteTextLists = [] as string[][];
-  const isSpectators = [] as boolean[];
-  for (const noteList of data.notes) {
-    names.push(noteList.name);
-    noteTextLists.push(noteList.notes);
-    isSpectators.push(noteList.isSpectator);
-  }
   globals.store!.dispatch({
     type: "noteList",
-    names,
-    isSpectators,
-    noteTextLists,
+    notes: data.notes,
   });
 
   setNoteIndicatorAndCheckForSpecialNote();
