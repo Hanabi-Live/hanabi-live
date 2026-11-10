@@ -352,24 +352,19 @@ pub(super) async fn websocket(
                                     .collect::<String>()
                             );
                             // Browsers cannot read HTTP errors from a failed WebSocket upgrade.
-                            // Current clients reload on "outdatedClient"; the error that follows
-                            // explains the problem when a reload did not help.
+                            // Clients reload once for this code, and show the message when a
+                            // reload did not help.
                             tokio::time::timeout(ERROR_SEND_TIMEOUT, async {
                                 socket
-                                    .send(Message::Text(
-                                        frame(
-                                            hanabi_protocol::server::OUTDATED_CLIENT,
-                                            hanabi_protocol::Empty {},
-                                        ),
-                                    ))
-                                    .await?;
-                                socket
-                                    .send(Message::Text(
-                                        frame(
-                                            hanabi_protocol::server::ERROR,
-                                            hanabi_protocol::ErrorNotice { message },
-                                        ),
-                                    ))
+                                    .send(Message::Text(frame(
+                                        hanabi_protocol::server::ERROR,
+                                        hanabi_protocol::Notice {
+                                            code: Some(
+                                                hanabi_protocol::OUTDATED_CLIENT_CODE.into(),
+                                            ),
+                                            ..hanabi_protocol::Notice::new(message)
+                                        },
+                                    )))
                                     .await?;
                                 socket.close().await
                             })
@@ -412,9 +407,7 @@ async fn connection(
                 ERROR_SEND_TIMEOUT,
                 socket.send(Message::Text(frame(
                     hanabi_protocol::server::ERROR,
-                    hanabi_protocol::ErrorNotice {
-                        message: "Account initialization failed.".into(),
-                    },
+                    hanabi_protocol::Notice::new("Account initialization failed."),
                 ))),
             )
             .await;
@@ -477,12 +470,7 @@ async fn connection(
                 StatusCode::CONFLICT,
             );
             report.log();
-            let message = frame(
-                hanabi_protocol::server::ERROR,
-                hanabi_protocol::ErrorNotice {
-                    message: report.text(),
-                },
-            );
+            let message = frame(hanabi_protocol::server::ERROR, report.notice());
             let _ =
                 tokio::time::timeout(CLOSE_SEND_TIMEOUT, sink.send(Message::Text(message)))
                     .await;
@@ -553,11 +541,7 @@ async fn connection(
                         app.alert(report);
                     }
                 }
-                let warning = failure.warning;
-                session.emit(&frame(
-                    hanabi_protocol::server::WARNING,
-                    hanabi_protocol::Warning { message: warning },
-                ));
+                session.emit(&frame(hanabi_protocol::server::WARNING, failure.warning));
             }
         }
         Ok::<(), anyhow::Error>(())

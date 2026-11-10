@@ -295,9 +295,7 @@ function setVariant(room: string, args: readonly string[]) {
 
   globals.conn!.send("tableSetVariant", {
     tableID: globals.tableID,
-    options: {
-      variantName,
-    },
+    variantName,
   });
 
   // Update our stored create table setting to be equal to this variant.

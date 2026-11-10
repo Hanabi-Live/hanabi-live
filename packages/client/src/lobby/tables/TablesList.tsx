@@ -104,7 +104,7 @@ function TableRowView({
   const classNames: string[] = [ROW_CLASSES[kind]];
   if (kind === "unstarted" || kind === "unstarted-password") {
     const full =
-      table.numPlayers === table.maxPlayers
+      table.numPlayers === table.settings.maxPlayers
       || (action === "join" && table.numPlayers >= MAX_PLAYERS);
     classNames.push(full ? FULL_CURSOR : JOIN_CURSOR);
   }
@@ -158,17 +158,19 @@ function TableRowView({
           // The key's solid head is on its right, so it needs more room than other icons.
           <i className="fas fa-key fa-sm tw:mr-2.5" />
         )}
-        {table.name}
+        {table.settings.name}
       </td>
       <td className={COLUMNS.numPlayers.className}>
         {table.phase === "pregame"
-          ? `${table.numPlayers} / ${table.maxPlayers}`
+          ? `${table.numPlayers} / ${table.settings.maxPlayers}`
           : table.numPlayers}
       </td>
-      <td className={COLUMNS.variant.className}>{table.options.variantName}</td>
+      <td className={COLUMNS.variant.className}>
+        {table.settings.options.variantName}
+      </td>
       {/* The icons stay on one line when the table is narrow. */}
       <td className={`tw:whitespace-nowrap ${COLUMNS.options.className}`}>
-        {getOptionDescriptions(table.options).map((description) => (
+        {getOptionDescriptions(table.settings).map((description) => (
           // The space separates the icons like the spaces between words.
           <Fragment key={description.name}>
             <OptionIcon description={description} />{" "}

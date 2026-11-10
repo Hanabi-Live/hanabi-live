@@ -53,7 +53,7 @@ export function createJSONFromReplay(room: string): void {
   }
 
   // Copy the entire deck.
-  const deck: Array<GameJSON["deck"][number]> = [];
+  const deck: Array<NonNullable<GameJSON["deck"]>[number]> = [];
   for (const [i, cardIdentity] of globals.state.cardIdentities.entries()) {
     const morph = globals.state.replay.hypothetical?.morphedIdentities[i];
     if (
@@ -88,7 +88,9 @@ export function createJSONFromReplay(room: string): void {
   const unchanged = deck.every((card, i) => {
     const original = globals.state.cardIdentities[i];
     return (
-      card.suitIndex === original?.suitIndex && card.rank === original.rank
+      original !== undefined
+      && card.suitIndex === original.suitIndex
+      && card.rank === original.rank
     );
   });
 

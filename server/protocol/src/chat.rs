@@ -43,19 +43,8 @@ pub struct Chat {
     pub recipient: Option<String>,
     /// What the message's button applies to the table, in a suggestion to its owner.
     #[serde(default, skip_serializing_if = "Option::is_none")]
-    #[schemars(with = "TableSuggestion")]
-    pub suggestion: Option<TableSuggestion>,
-}
-
-/// A table's name, player limit, and options, as a suggestion to its owner proposes them.
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize, JsonSchema)]
-#[serde(rename_all = "camelCase", deny_unknown_fields)]
-pub struct TableSuggestion {
-    #[schemars(length(min = 1))]
-    pub name: String,
-    #[schemars(with = "NumPlayers")]
-    pub max_players: u8,
-    pub options: GameOptions,
+    #[schemars(with = "TableSettings")]
+    pub suggestion: Option<TableSettings>,
 }
 
 impl Chat {
@@ -91,21 +80,8 @@ pub struct ChatList {
 
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
-pub struct ChatHistoryMessage {
-    #[schemars(length(min = 1))]
-    pub text: String,
-    #[schemars(length(min = 1))]
-    pub username: String,
-    #[schemars(length(min = 1))]
-    pub recipient: String,
-    #[schemars(with = "Timestamp")]
-    pub datetime: String,
-}
-
-#[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
-#[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct ChatHistory {
-    pub messages: Vec<ChatHistoryMessage>,
+    pub messages: Vec<Chat>,
     /// The table whose chat requested the history. Absent means the lobby.
     #[serde(default, rename = "tableID", skip_serializing_if = "Option::is_none")]
     #[schemars(with = "TableId")]

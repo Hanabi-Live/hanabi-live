@@ -44,7 +44,7 @@ export function Pregame(): React.JSX.Element | undefined {
   const shadowingPlayerIndex = spectators.find(
     (spectator) => spectator.username === username,
   )?.shadowingPlayerIndex;
-  const optionDescriptions = getOptionDescriptions(game.options);
+  const optionDescriptions = getOptionDescriptions(game.settings);
   const hasOptions = game.passwordProtected || optionDescriptions.length > 0;
 
   return (
@@ -60,7 +60,7 @@ export function Pregame(): React.JSX.Element | undefined {
           </strong>
           <br />
           <span className="tw:block" id="lobby-pregame-name">
-            {game.name}
+            {game.settings.name}
           </span>
         </h4>
         <h4 className="tw:pb-2">
@@ -70,7 +70,7 @@ export function Pregame(): React.JSX.Element | undefined {
           </strong>
           <br />
           <span className="tw:block" id="lobby-pregame-variant">
-            {game.options.variantName}
+            {game.settings.options.variantName}
           </span>
         </h4>
         <h4 className="tw:pb-2">
@@ -80,7 +80,7 @@ export function Pregame(): React.JSX.Element | undefined {
           </strong>
           <br />
           <span className="tw:block" id="lobby-pregame-seats">
-            {game.players.length} / {game.maxPlayers}
+            {game.players.length} / {game.settings.maxPlayers}
           </span>
         </h4>
         {hasOptions && (
@@ -204,7 +204,7 @@ function PlayerBox({
         value={
           <BestScoresIcon
             bestScores={variantStats.bestScores}
-            variantName={game.options.variantName}
+            variantName={game.settings.options.variantName}
           />
         }
       />

@@ -52,17 +52,19 @@ function player(
 
 const game: Game = {
   tableID: TABLE_ID,
-  name: "my table",
-  maxPlayers: 5,
+  settings: {
+    name: "my table",
+    maxPlayers: 5,
+    options: { ...defaultOptions, variantName: "No Variant", speedrun: true },
+  },
   ownerID: userIdSchema.parse(1),
   passwordProtected: true,
-  options: { ...defaultOptions, variantName: "No Variant", speedrun: true },
   players: [player(0, "alice", true), player(1, "bob", false)],
 };
 
 const table = {
   tableID: TABLE_ID,
-  name: game.name,
+  settings: game.settings,
   playerNames: ["alice", "bob"],
   spectators: [
     { username: "me", shadowingPlayerIndex: 1 },

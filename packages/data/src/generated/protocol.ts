@@ -6,7 +6,6 @@ import {
   colorIndexSchema,
   EndCondition,
   gameEventSchema,
-  gameIdSchema,
   gameOptionsSchema,
   hypotheticalActionSchema,
   playerIndexSchema,
@@ -155,15 +154,54 @@ export const cardIdentitiesSchema = z
   })
   .readonly();
 const chatSourceSchema = z.enum(["user", "server", "discord"]);
+export const gameIdSchema = z
+  .number()
+  .int()
+  .min(0)
+  .max(2_147_483_647)
+  .brand<"GameID">();
 
 /**
- * A table's name, player limit, and options, as a suggestion to its owner proposes them.
+ * A table's name, player limit, options, and deal, as its owner sets them and as tables report
+ * them. Missing fields take their defaults.
  */
-const tableSuggestionSchema = z
+const tableSettingsSchema = z
   .strictObject({
-    maxPlayers: z.literal([2, 3, 4, 5, 6]),
-    name: z.string().min(1),
-    options: gameOptionsSchema,
+    maxPlayers: z.literal([2, 3, 4, 5, 6]).default(5),
+    /**
+     * Blank in a request uses the owner's name.
+     */
+    name: z.string().default(""),
+    options: gameOptionsSchema.default({
+      allOrNothing: false,
+      deckPlays: false,
+      detrimentalCharacters: false,
+      emptyClues: false,
+      numPlayers: 2,
+      oneExtraCard: false,
+      oneLessCard: false,
+      speedrun: false,
+      timeBaseSeconds: 0,
+      timePerTurnSeconds: 0,
+      timed: false,
+      variantName: "No Variant",
+    }),
+    /**
+     * A finished game that the table plays again with its deal, seats, characters, and options,
+     * which replace the others.
+     */
+    replayGameID: gameIdSchema.optional(),
+    /**
+     * The turn of `replayGameID` that the game starts from, counting from 1. Absent starts from
+     * the first turn.
+     */
+    replayTurn: z.number().int().min(1).max(2_147_483_647).optional(),
+    /**
+     * The deal that the table requests, as the end of its full seed: "123" in a 3-player game of
+     * No Variant deals `p3v0s123`. Absent when the server deals the next seed that none of the
+     * players have played.
+     */
+    seed: z.string().min(1).max(32).optional(),
   })
   .readonly();
 export const chatSchema = z
@@ -175,7 +213,7 @@ export const chatSchema = z
     /**
      * What the message's button applies to the table, in a suggestion to its owner.
      */
-    suggestion: tableSuggestionSchema.optional(),
+    suggestion: tableSettingsSchema.optional(),
     /**
      * The table whose chat shows the message. Absent means the lobby, or the recipient's current
      * chat for a private message.
@@ -194,17 +232,9 @@ export const chatSchema = z
 export const chatDeleteSchema = z
   .strictObject({ chatID: z.number().int().min(1).max(9_007_199_254_740_991) })
   .readonly();
-export const chatHistoryMessageSchema = z
-  .strictObject({
-    datetime: z.iso.datetime({ precision: 3 }),
-    recipient: z.string().min(1),
-    text: z.string().min(1),
-    username: z.string().min(1),
-  })
-  .readonly();
 export const chatHistorySchema = z
   .strictObject({
-    messages: z.array(chatHistoryMessageSchema).readonly(),
+    messages: z.array(chatSchema).readonly(),
     /**
      * The table whose chat requested the history. Absent means the lobby.
      */
@@ -294,13 +324,6 @@ export const connectedSchema = z
   })
   .readonly();
 export const emptySchema = z.strictObject({}).readonly();
-
-/**
- * A problem the client shows in a modal. The text may contain HTML.
- */
-export const errorNoticeSchema = z
-  .strictObject({ message: z.string().min(1) })
-  .readonly();
 
 /**
  * The state of a shared replay that a client joins.
@@ -638,6 +661,22 @@ export const noteRequestSchema = z
   .readonly();
 
 /**
+ * A problem that the client shows in a modal: an `error`, after which the connection closes, or a
+ * recoverable `warning`. The text may contain HTML. A server failure also names its typed cause and
+ * the diagnostic ID that its log entry carries, as `ApiError` does.
+ */
+export const noticeSchema = z
+  .strictObject({
+    /**
+     * Such as `OUTDATED_CLIENT_CODE`, which makes the client reload the page.
+     */
+    code: z.string().min(1).optional(),
+    diagnosticID: z.string().min(1).optional(),
+    message: z.string().min(1),
+  })
+  .readonly();
+
+/**
  * The `/password-reset` request: a new password for an administrator to set.
  */
 export const passwordHashRequestSchema = z
@@ -727,12 +766,10 @@ const pregamePlayerSchema = z
  */
 export const pregameSchema = z
   .strictObject({
-    maxPlayers: z.literal([2, 3, 4, 5, 6]),
-    name: z.string().min(1),
-    options: gameOptionsSchema,
     ownerID: userIdSchema,
     passwordProtected: z.boolean(),
     players: z.array(pregamePlayerSchema).readonly(),
+    settings: tableSettingsSchema,
     tableID: tableIdSchema,
   })
   .readonly();
@@ -800,64 +837,35 @@ export const replayBoardElementSchema = z.enum([
 ]);
 
 /**
- * A card in an imported deck. A missing identity is 0.
+ * One player's notes, indexed by card order.
  */
-const importCardSchema = z
-  .strictObject({
-    rank: z.number().int().min(-2_147_483_648).max(2_147_483_647).optional(),
-    suitIndex: z.number().int().min(0).max(9_007_199_254_740_991).optional(),
-  })
+const noteRowSchema = z.array(z.string()).readonly();
+
+/**
+ * A card in the replay format. A missing suit is the first suit, as older exports omitted it.
+ */
+const replayCardSchema = z
+  .strictObject({ rank: cardRankSchema, suitIndex: suitIndexSchema.default(0) })
   .readonly();
 
 /**
- * A player's character in an imported game. A missing name is no character.
+ * A player's detrimental character in the replay format.
  */
-const importCharacterSchema = z
+const replayCharacterSchema = z
   .strictObject({
+    /**
+     * Absent when the character has no assigned metadata.
+     */
     metadata: z
       .number()
       .int()
       .min(-2_147_483_648)
       .max(2_147_483_647)
       .optional(),
-    name: z.string().optional(),
-  })
-  .readonly();
-
-/**
- * One player's imported notes, indexed by card order.
- */
-const importNoteRowSchema = z.array(z.string()).readonly();
-
-/**
- * The options of an imported game. Missing options take their defaults.
- */
-const importOptionsSchema = z
-  .strictObject({
-    allOrNothing: z.boolean().optional(),
-    deckPlays: z.boolean().optional(),
     /**
-     * When present, even as false, the game must assign every player a character.
+     * Absent, or empty, when the player has no character.
      */
-    detrimentalCharacters: z.boolean().optional(),
-    emptyClues: z.boolean().optional(),
-    oneExtraCard: z.boolean().optional(),
-    oneLessCard: z.boolean().optional(),
-    speedrun: z.boolean().optional(),
-    timeBaseSeconds: z
-      .number()
-      .int()
-      .min(-9_007_199_254_740_991)
-      .max(9_007_199_254_740_991)
-      .optional(),
-    timePerTurnSeconds: z
-      .number()
-      .int()
-      .min(-9_007_199_254_740_991)
-      .max(9_007_199_254_740_991)
-      .optional(),
-    timed: z.boolean().optional(),
-    variant: z.string().optional(),
+    name: z.string().optional(),
   })
   .readonly();
 
@@ -904,28 +912,65 @@ const replayGameActionSchema = z.discriminatedUnion("type", [
 ]);
 
 /**
- * A game to import, in the format that `ReplayGame` exports. Every field is optional: a seed alone
- * determines the deck, and missing options take their defaults. The server checks the game itself,
- * such as whether the deck matches the seed.
+ * A game's options in the replay format. Only options that differ from their defaults are
+ * included, and missing options take their defaults.
  */
-export const replayImportSchema = z
+const replayOptionsSchema = z
+  .strictObject({
+    allOrNothing: z.boolean().optional(),
+    deckPlays: z.boolean().optional(),
+    /**
+     * When present, even as false, the game must assign every player a character.
+     */
+    detrimentalCharacters: z.boolean().optional(),
+    emptyClues: z.boolean().optional(),
+    oneExtraCard: z.boolean().optional(),
+    oneLessCard: z.boolean().optional(),
+    speedrun: z.boolean().optional(),
+    timeBaseSeconds: z
+      .number()
+      .int()
+      .min(-9_007_199_254_740_991)
+      .max(9_007_199_254_740_991)
+      .optional(),
+    timePerTurnSeconds: z
+      .number()
+      .int()
+      .min(-9_007_199_254_740_991)
+      .max(9_007_199_254_740_991)
+      .optional(),
+    timed: z.boolean().optional(),
+    variant: z.string().optional(),
+  })
+  .readonly();
+
+/**
+ * A game in the replay format, which the server exports and imports, and which clients copy and
+ * paste. Every field is optional when importing: a seed alone determines the deck, and missing
+ * options take their defaults. The server checks the game itself, such as whether the deck matches
+ * the seed.
+ */
+export const replayGameSchema = z
   .strictObject({
     actions: z.array(replayGameActionSchema).max(512).readonly().optional(),
-    characters: z.array(importCharacterSchema).max(6).readonly().optional(),
+    characters: z.array(replayCharacterSchema).max(6).readonly().optional(),
     /**
      * The deck, by card order.
      */
-    deck: z.array(importCardSchema).max(60).readonly().optional(),
+    deck: z.array(replayCardSchema).max(60).readonly().optional(),
     /**
-     * The exported game's database ID. Importing does not use it.
+     * The game's ID, when it is exported from the database. Importing does not use it.
      */
-    id: z.number().int().min(0).max(9_007_199_254_740_991).optional(),
+    id: gameIdSchema.optional(),
     /**
-     * Each player's notes, indexed by card order.
+     * Each player's notes.
      */
-    notes: z.array(importNoteRowSchema).max(6).readonly().optional(),
-    options: importOptionsSchema.optional(),
+    notes: z.array(noteRowSchema).max(6).readonly().optional(),
+    options: replayOptionsSchema.optional(),
     playerNames: z.array(z.string()).max(6).readonly().optional(),
+    /**
+     * Absent for a game with its own deck instead of a seed, such as an imported one.
+     */
     seed: z.string().optional(),
   })
   .readonly();
@@ -958,7 +1003,7 @@ export const replayCreateRequestSchema = z.discriminatedUnion("source", [
     .readonly(),
   z
     .strictObject({
-      gameJSON: replayImportSchema,
+      gameJSON: replayGameSchema,
       /**
        * The seat to shadow, if any.
        */
@@ -972,83 +1017,6 @@ export const replayCreateRequestSchema = z.discriminatedUnion("source", [
     })
     .readonly(),
 ]);
-const replayCardSchema = z
-  .strictObject({ rank: cardRankSchema, suitIndex: suitIndexSchema })
-  .readonly();
-const replayCharacterSchema = z
-  .strictObject({
-    /**
-     * Absent when the character has no assigned metadata.
-     */
-    metadata: z
-      .number()
-      .int()
-      .min(-2_147_483_648)
-      .max(2_147_483_647)
-      .optional(),
-    /**
-     * Empty when the player has no character.
-     */
-    name: z.string(),
-  })
-  .readonly();
-
-/**
- * One player's notes, indexed by card order.
- */
-const replayNoteRowSchema = z.array(z.string()).readonly();
-
-/**
- * Only options that differ from their defaults are included.
- */
-const replayOptionsSchema = z
-  .strictObject({
-    allOrNothing: z.boolean().optional(),
-    deckPlays: z.boolean().optional(),
-    detrimentalCharacters: z.boolean().optional(),
-    emptyClues: z.boolean().optional(),
-    oneExtraCard: z.boolean().optional(),
-    oneLessCard: z.boolean().optional(),
-    speedrun: z.boolean().optional(),
-    timeBaseSeconds: z
-      .number()
-      .int()
-      .min(-9_007_199_254_740_991)
-      .max(9_007_199_254_740_991)
-      .optional(),
-    timePerTurnSeconds: z
-      .number()
-      .int()
-      .min(-9_007_199_254_740_991)
-      .max(9_007_199_254_740_991)
-      .optional(),
-    timed: z.boolean().optional(),
-    variant: z.string().optional(),
-  })
-  .readonly();
-
-/**
- * A game in the replay format: exported by the server and copied by the client. `ReplayImport`
- * reads it back.
- */
-export const replayGameSchema = z
-  .strictObject({
-    actions: z.array(replayGameActionSchema).readonly(),
-    characters: z.array(replayCharacterSchema).readonly().optional(),
-    deck: z.array(replayCardSchema).readonly(),
-    id: gameIdSchema,
-    /**
-     * Each player's notes, indexed by card order.
-     */
-    notes: z.array(replayNoteRowSchema).readonly().optional(),
-    options: replayOptionsSchema.optional(),
-    playerNames: z.array(z.string()).readonly(),
-    /**
-     * Absent for a game with its own deck instead of a seed, such as an imported one.
-     */
-    seed: z.string().optional(),
-  })
-  .readonly();
 export const replayLeaderSchema = z
   .strictObject({ tableID: tableIdSchema, username: z.string() })
   .readonly();
@@ -1292,13 +1260,10 @@ export const tableSchema = z
      * Whether the recipient is one of the players.
      */
     joined: z.boolean(),
-    maxPlayers: z.literal([2, 3, 4, 5, 6]),
-    name: z.string().min(1),
     /**
      * The current number of players, which can be below the minimum during a pregame.
      */
     numPlayers: z.number().int().min(0).max(6),
-    options: gameOptionsSchema,
     ownerID: userIdSchema,
     passwordProtected: z.boolean(),
     phase: tablePhaseSchema,
@@ -1307,32 +1272,32 @@ export const tableSchema = z
      * The percentage of the maximum score reached, or of a replay watched.
      */
     progress: z.number().int().min(0).max(100),
+    settings: tableSettingsSchema,
     spectators: z.array(spectatorSchema).readonly(),
     tableID: tableIdSchema,
   })
   .readonly();
 export const tableCreateRequestSchema = z
   .strictObject({
-    maxPlayers: z.literal([2, 3, 4, 5, 6]).default(5),
-    /**
-     * Blank uses the owner's name.
-     */
-    name: z.string().default(""),
-    options: gameOptionsSchema.default({
-      allOrNothing: false,
-      deckPlays: false,
-      detrimentalCharacters: false,
-      emptyClues: false,
-      numPlayers: 2,
-      oneExtraCard: false,
-      oneLessCard: false,
-      speedrun: false,
-      timeBaseSeconds: 0,
-      timePerTurnSeconds: 0,
-      timed: false,
-      variantName: "No Variant",
-    }),
     password: z.string().default(""),
+    settings: tableSettingsSchema.default({
+      maxPlayers: 5,
+      name: "",
+      options: {
+        allOrNothing: false,
+        deckPlays: false,
+        detrimentalCharacters: false,
+        emptyClues: false,
+        numPlayers: 2,
+        oneExtraCard: false,
+        oneLessCard: false,
+        speedrun: false,
+        timeBaseSeconds: 0,
+        timePerTurnSeconds: 0,
+        timed: false,
+        variantName: "No Variant",
+      },
+    }),
   })
   .readonly();
 export const tableJoinRequestSchema = z
@@ -1397,34 +1362,30 @@ export const tableSuggestRequestSchema = z
   .readonly();
 export const tableUpdateRequestSchema = z
   .strictObject({
-    maxPlayers: z.literal([2, 3, 4, 5, 6]).default(5),
-    name: z.string().default(""),
-    options: gameOptionsSchema.default({
-      allOrNothing: false,
-      deckPlays: false,
-      detrimentalCharacters: false,
-      emptyClues: false,
-      numPlayers: 2,
-      oneExtraCard: false,
-      oneLessCard: false,
-      speedrun: false,
-      timeBaseSeconds: 0,
-      timePerTurnSeconds: 0,
-      timed: false,
-      variantName: "No Variant",
-    }),
     password: z.string().default(""),
+    settings: tableSettingsSchema.default({
+      maxPlayers: 5,
+      name: "",
+      options: {
+        allOrNothing: false,
+        deckPlays: false,
+        detrimentalCharacters: false,
+        emptyClues: false,
+        numPlayers: 2,
+        oneExtraCard: false,
+        oneLessCard: false,
+        speedrun: false,
+        timeBaseSeconds: 0,
+        timePerTurnSeconds: 0,
+        timed: false,
+        variantName: "No Variant",
+      },
+    }),
     tableID: tableIdSchema,
   })
-  .readonly();
-const variantChoiceSchema = z
-  .strictObject({ variantName: z.string().default("") })
   .readonly();
 export const tableVariantRequestSchema = z
-  .strictObject({
-    options: variantChoiceSchema.default({ variantName: "" }),
-    tableID: tableIdSchema,
-  })
+  .strictObject({ tableID: tableIdSchema, variantName: z.string() })
   .readonly();
 
 /**
@@ -1441,9 +1402,6 @@ export const tagSearchRequestSchema = z
     tableID: tableIdSchema.optional(),
     tag: z.string(),
   })
-  .readonly();
-export const tagsDeleteAllRequestSchema = z
-  .strictObject({ tableID: tableIdSchema })
   .readonly();
 
 /**
@@ -1497,13 +1455,6 @@ export const voteChangeSchema = z
      */
     votesNeeded: z.number().int().min(1).max(6),
   })
-  .readonly();
-
-/**
- * A recoverable problem the client shows in a modal. The text may contain HTML.
- */
-export const warningSchema = z
-  .strictObject({ message: z.string().min(1) })
   .readonly();
 
 /**
@@ -1588,7 +1539,7 @@ export const CLIENT_COMMAND_SCHEMAS = {
   tag: tagRequestSchema,
   tagDelete: tagRequestSchema,
   tagSearch: tagSearchRequestSchema,
-  tagsDeleteAll: tagsDeleteAllRequestSchema,
+  tagsDeleteAll: tableRequestSchema,
 } as const;
 export const SERVER_COMMAND_SCHEMAS = {
   blocked: blockedSchema,
@@ -1601,7 +1552,7 @@ export const SERVER_COMMAND_SCHEMAS = {
   chatTyping: chatTypingSchema,
   clock: clockSchema,
   connected: connectedSchema,
-  error: errorNoticeSchema,
+  error: noticeSchema,
   finishOngoingGame: finishOngoingGameSchema,
   friends: friendsSchema,
   gameAction: gameActionSchema,
@@ -1619,7 +1570,6 @@ export const SERVER_COMMAND_SCHEMAS = {
   note: noteSchema,
   noteList: noteListSchema,
   noteListPlayer: noteListPlayerSchema,
-  outdatedClient: emptySchema,
   pause: pauseSchema,
   pregame: pregameSchema,
   replayAction: sharedReplayActionSchema,
@@ -1639,7 +1589,7 @@ export const SERVER_COMMAND_SCHEMAS = {
   userLeft: userLeftSchema,
   userList: userListSchema,
   voteChange: voteChangeSchema,
-  warning: warningSchema,
+  warning: noticeSchema,
   welcome: welcomeSchema,
 } as const;
 export type ClientCommand = keyof typeof CLIENT_COMMAND_SCHEMAS;

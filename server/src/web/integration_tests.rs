@@ -248,12 +248,9 @@ async fn websocket_checks_client_version_with_existing_cookie_postgres() {
             let WireMessage::Text(text) = socket.next().await.unwrap().unwrap() else {
                 panic!("Expected a version rejection before any bootstrap messages");
             };
-            assert_eq!(text.as_str(), "outdatedClient {}");
-            let WireMessage::Text(text) = socket.next().await.unwrap().unwrap() else {
-                panic!("Expected a version error after the version rejection");
-            };
             let body = text.strip_prefix("error ").unwrap();
             let payload: Value = serde_json::from_str(body).unwrap();
+            assert_eq!(payload["code"], hanabi_protocol::OUTDATED_CLIENT_CODE);
             assert!(
                 payload["message"]
                     .as_str()
@@ -318,7 +315,7 @@ async fn uptime_replies_only_to_requester_in_lobby_and_table_postgres() {
     }
     alice
         .send(WireMessage::Text(
-            "tableCreate {\"name\":\"Private uptime\"}".into(),
+            "tableCreate {\"settings\":{\"name\":\"Private uptime\"}}".into(),
         ))
         .await
         .unwrap();
@@ -536,7 +533,7 @@ async fn native_browser_login_ws_bootstrap_and_command_routing_postgres() {
     );
     alice
         .send(WireMessage::Text(
-            "tableCreate {\"name\":\"Browser game\",\"options\":{\"variantName\":\"No Variant\"}}"
+            "tableCreate {\"settings\":{\"name\":\"Browser game\",\"options\":{\"variantName\":\"No Variant\"}}}"
                 .into(),
         ))
         .await

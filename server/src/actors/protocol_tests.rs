@@ -171,13 +171,11 @@ impl Harness {
         })
         .await?
     }
-    async fn create(&mut self, index: usize, name: &str, options: Value) -> Result<TableId> {
-        self.send(
-            index,
-            "tableCreate",
-            json!({"name":name,"options":options,"maxPlayers":5}),
-        )
-        .await?;
+    /// Creates a table named `name`, with the other `settings` that are given.
+    async fn create(&mut self, index: usize, name: &str, mut settings: Value) -> Result<TableId> {
+        settings["name"] = json!(name);
+        self.send(index, "tableCreate", json!({ "settings": settings }))
+            .await?;
         self.receive(index, "joined").await?["tableID"]
             .as_u64()
             .map(TableId)
@@ -390,7 +388,11 @@ async fn duck_clue_identity_is_private_in_live_history_and_recovery_but_not_comp
     };
     let outcome = async {
         let id = h
-            .create(0, "Duck privacy", json!({"variantName":"Duck (5 Suits)"}))
+            .create(
+                0,
+                "Duck privacy",
+                json!({"options":{"variantName":"Duck (5 Suits)"}}),
+            )
             .await?;
         for index in 1..3 {
             h.send(index, "tableJoin", json!({"tableID":id})).await?;
@@ -925,9 +927,9 @@ async fn tables_replay_a_finished_game_from_a_chosen_turn() -> Result<()> {
         let id = h.create(0, "", json!({"replayGameID":game,"replayTurn":2})).await?;
         let listed = h.receive(1, "table").await?;
         ensure!(
-            listed["options"]["replayGameID"] == game
-                && listed["options"]["replayTurn"] == 2
-                && listed["options"]["timed"] == true,
+            listed["settings"]["replayGameID"] == game
+                && listed["settings"]["replayTurn"] == 2
+                && listed["settings"]["options"]["timed"] == true,
             "The table did not report the replayed game and its options: {listed}"
         );
         h.send(1, "tableJoin", json!({"tableID":id})).await?;
@@ -1216,7 +1218,7 @@ async fn pausing_a_game_is_announced_in_its_chat() -> Result<()> {
             .create(
                 0,
                 "Pause",
-                json!({"timed":true,"timeBaseSeconds":120,"timePerTurnSeconds":20}),
+                json!({"options":{"timed":true,"timeBaseSeconds":120,"timePerTurnSeconds":20}}),
             )
             .await?;
         h.send(1, "tableJoin", json!({"tableID":id})).await?;
@@ -1277,7 +1279,7 @@ async fn trying_to_join_a_full_table_tells_its_players_once() -> Result<()> {
         h.send(
             0,
             "tableCreate",
-            json!({"name":"Full table","options":{},"maxPlayers":2}),
+            json!({"settings":{"name":"Full table","maxPlayers":2}}),
         )
         .await?;
         let id = h.receive(0, "joined").await?["tableID"].clone();
@@ -1324,7 +1326,7 @@ async fn joining_a_table_with_a_password_checks_the_password() -> Result<()> {
         h.send(
             0,
             "tableCreate",
-            json!({"name":"Private","options":{},"maxPlayers":5,"password":"secret"}),
+            json!({"settings":{"name":"Private"},"password":"secret"}),
         )
         .await?;
         let id = h.receive(0, "joined").await?["tableID"].clone();
@@ -1490,9 +1492,7 @@ async fn default_table_names_use_the_creator_and_remain_editable() -> Result<()>
             h.send(
                 index,
                 "tableUpdate",
-                json!({
-                    "tableID": id, "name": expected, "options": {}, "maxPlayers": 5
-                }),
+                json!({"tableID": id, "settings": {"name": expected}}),
             )
             .await?;
             ensure!(
@@ -2336,8 +2336,8 @@ async fn option_proposals_publish_changed_values_but_keep_apply_button_private()
             h.frames(index)?;
         }
         h.send(1, "tableUpdate", json!({
-            "tableID":id,"name":"Proposal","maxPlayers":2,
-            "options":{"variantName":"6 Suits","timed":true,"timeBaseSeconds":120,"timePerTurnSeconds":20,"emptyClues":true}
+            "tableID":id,"settings":{"name":"Proposal","maxPlayers":2,
+            "options":{"variantName":"6 Suits","timed":true,"timeBaseSeconds":120,"timePerTurnSeconds":20,"emptyClues":true}}
         })).await?;
         h.barrier(0).await?;
         for index in 0..3 {
@@ -2365,7 +2365,7 @@ async fn option_proposals_publish_changed_values_but_keep_apply_button_private()
         ensure!(message.text.contains("Variant: <b>6 Suits</b>"));
         ensure!(message.recipient.is_none());
         let before = table.chat.len();
-        let error = h.send(1, "tableUpdate", json!({"tableID":id,"name":"Original","maxPlayers":5,"options":{}}))
+        let error = h.send(1, "tableUpdate", json!({"tableID":id,"settings":{"name":"Original"}}))
             .await.expect_err("Unchanged options should be rejected");
         ensure!(error.to_string() == "There are no new options proposed.");
         ensure!(h.snapshot(id).await?.0.chat.len() == before);
@@ -2384,7 +2384,7 @@ async fn players_cannot_fill_a_table_chat_and_block_the_owner() -> Result<()> {
     let result = async {
         let id = h.create(0, "Original", json!({})).await?;
         h.send(1, "tableJoin", json!({"tableID":id})).await?;
-        let proposal = json!({"tableID":id,"name":"Proposal","maxPlayers":5,"options":{}});
+        let proposal = json!({"tableID":id,"settings":{"name":"Proposal"}});
         // Proposals count like chat messages.
         for _ in 0..TABLE_CHAT_LIMIT {
             h.send(1, "tableUpdate", proposal.clone()).await?;
@@ -2427,7 +2427,7 @@ async fn players_cannot_fill_a_table_chat_and_block_the_owner() -> Result<()> {
         h.send(
             0,
             "tableUpdate",
-            json!({"tableID":id,"name":"Changed","maxPlayers":5,"options":{}}),
+            json!({"tableID":id,"settings":{"name":"Changed"}}),
         )
         .await?;
         h.send(0, "tableSetLeader", json!({"tableID":id,"username":"Bob"}))
@@ -2450,7 +2450,7 @@ async fn findvariant_delivers_owner_button_and_guards_the_start_action() -> Resu
     };
     let outcome=async{
         mark_complete(&h,2,Some("Rainbow (5 Suits)")).await?;
-        let id=h.create(0,"Team discovery",json!({"deckPlays":true,"oneExtraCard":true})).await?;
+        let id=h.create(0,"Team discovery",json!({"options":{"deckPlays":true,"oneExtraCard":true}})).await?;
         h.send(1,"tableJoin",json!({"tableID":id})).await?;h.barrier(0).await?;
         h.frames(0)?;h.frames(1)?;
         h.send(1,"chat",json!({"tableID":id,"text":"/findvariant"})).await?;h.barrier(0).await?;
@@ -2463,7 +2463,7 @@ async fn findvariant_delivers_owner_button_and_guards_the_start_action() -> Resu
         ensure!(options["variantName"]=="Rainbow (5 Suits)"&&suggestion["name"]=="Team discovery"&&suggestion["maxPlayers"]==5&&options["deckPlays"]==true&&options["oneExtraCard"]==true,"Proposal lost table settings");
         let (table,_)=h.snapshot(id).await?;
         ensure!(table.chat.iter().all(|c|!c.message.text.contains("new-options")),"Private proposal entered public history");
-        h.send(0,"tableUpdate",json!({"tableID":id,"name":suggestion["name"],"maxPlayers":suggestion["maxPlayers"],"options":options})).await?;
+        h.send(0,"tableUpdate",json!({"tableID":id,"settings":suggestion})).await?;
         let before=h.snapshot(id).await?.1;
         for data in [
             json!({"tableID":id,"intendedPlayerNames":["Alice","Cathy"]}),
@@ -2715,7 +2715,7 @@ async fn playing_membership_is_separate_from_replay_attendance_and_bots_can_play
             h.send(
                 0,
                 "tableCreate",
-                json!({"name":"second human game","options":{}})
+                json!({"settings":{"name":"second human game"}})
             )
             .await
             .is_err(),
@@ -2826,7 +2826,7 @@ async fn pending_join_claim_survives_replacement_until_the_committed_view_is_pub
             h.send(
                 1,
                 "tableCreate",
-                json!({"name":"racing creation","options":{}})
+                json!({"settings":{"name":"racing creation"}})
             )
             .await
             .unwrap_err()
@@ -3081,7 +3081,7 @@ async fn commands_for_another_phase_are_rejected() -> Result<()> {
             .send(
                 0,
                 "tableUpdate",
-                json!({"tableID": id, "name": "Later", "maxPlayers": 5, "options": {}}),
+                json!({"tableID": id, "settings": {"name": "Later"}}),
             )
             .await
             .expect_err("A live game accepted new options");
@@ -3103,7 +3103,7 @@ async fn a_failed_table_creation_ends_its_seat_reservation() -> Result<()> {
             h.send(
                 0,
                 "tableCreate",
-                json!({"name":"Broken","options":{"variantName":"No Such Variant"},"maxPlayers":5}),
+                json!({"settings":{"name":"Broken","options":{"variantName":"No Such Variant"}}}),
             )
             .await
             .is_err(),
@@ -3154,7 +3154,11 @@ async fn saved_characters_store_none_as_null() -> Result<()> {
     let outcome = async {
         for characters in [true, false] {
             let id = h
-                .create(0, "Characters", json!({"detrimentalCharacters":characters}))
+                .create(
+                    0,
+                    "Characters",
+                    json!({"options":{"detrimentalCharacters":characters}}),
+                )
                 .await?;
             h.send(1, "tableJoin", json!({"tableID":id})).await?;
             h.send(0, "tableStart", json!({"tableID":id})).await?;

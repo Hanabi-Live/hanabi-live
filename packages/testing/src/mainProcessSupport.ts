@@ -1,3 +1,4 @@
+import type { CLIENT_COMMAND_SCHEMAS, ClientCommand } from "@hanabi-live/data";
 import { VERSION } from "@hanabi-live/data";
 
 import { describe, expect } from "bun:test";
@@ -43,7 +44,10 @@ interface SocketClient {
     schema: z.ZodType<T>,
     accept?: (data: T) => boolean,
   ) => Promise<T>;
-  send: (command: string, data: object) => void;
+  send: <Command extends ClientCommand>(
+    command: Command,
+    data: z.input<(typeof CLIENT_COMMAND_SCHEMAS)[Command]>,
+  ) => void;
 }
 
 const rustProgressSnapshotSchema = z.object({
@@ -373,7 +377,7 @@ export function socketClient(address: string, cookie: string): SocketClient {
   return {
     socket,
     receive,
-    send(command: string, data: object) {
+    send(command, data) {
       socket.send(`${command} ${JSON.stringify(data)}`);
     },
   };

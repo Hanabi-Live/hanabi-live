@@ -4,8 +4,7 @@ use crate::transport::{Identity, Outgoing};
 use anyhow::{Context, Result, ensure};
 use chrono::SecondsFormat;
 use hanabi_protocol::{
-    Chat, ChatHistory, ChatHistoryMessage, ChatHistoryRequest, ChatSource,
-    MAX_PRIVATE_HISTORY_MESSAGES, TableId,
+    Chat, ChatHistory, ChatHistoryRequest, ChatSource, MAX_PRIVATE_HISTORY_MESSAGES, TableId,
 };
 use serde::Deserialize;
 use serde_json::json;
@@ -367,14 +366,18 @@ pub async fn private_history(
     .await?;
     let mut list = Vec::new();
     for row in rows.iter().rev() {
-        list.push(ChatHistoryMessage {
-            text: row.message.clone(),
-            username: row.who.clone().context("Missing private message author")?,
-            recipient: row
-                .recipient
-                .clone()
-                .context("Missing private message recipient")?,
-            datetime: crate::model::timestamp(row.datetime_sent),
+        list.push(Chat {
+            username: Some(row.who.clone().context("Missing private message author")?),
+            recipient: Some(
+                row.recipient
+                    .clone()
+                    .context("Missing private message recipient")?,
+            ),
+            ..Chat::new(
+                row.message.clone(),
+                ChatSource::User,
+                crate::model::timestamp(row.datetime_sent),
+            )
         });
     }
     let response = ChatHistory {

@@ -323,10 +323,11 @@ pub(crate) fn test_table() -> hanabi_protocol::Table {
         game_id: None,
         table_id: TableId(1),
         joined: false,
-        max_players: hanabi_protocol::DEFAULT_MAX_PLAYERS,
-        name: "test".into(),
+        settings: hanabi_protocol::TableSettings {
+            name: "test".into(),
+            ..hanabi_protocol::TableSettings::default()
+        },
         num_players: 1,
-        options: hanabi_protocol::GameOptions::default(),
         owner_id: UserId(1),
         password_protected: false,
         player_names: vec!["test".into()],

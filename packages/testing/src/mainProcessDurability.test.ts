@@ -52,7 +52,7 @@ databaseDescribe("Rust actor durability and ownership", () => {
         }
         let alice = await connect(aliceCookie);
         let bob = await connect(bobCookie);
-        alice.send("tableCreate", { name: "Recovery" });
+        alice.send("tableCreate", { settings: { name: "Recovery" } });
         const { tableID } = await alice.receive(
           "joined",
           SERVER_COMMAND_SCHEMAS.joined,
@@ -103,7 +103,7 @@ databaseDescribe("Rust actor durability and ownership", () => {
         const action = {
           tableID,
           action: { type: "play", order: card.order },
-        };
+        } as const;
         let replacement: Awaited<ReturnType<typeof connect>> | undefined;
         // Holds the table's checkpoint row so that the action's save waits.
         const blocker = await sql.reserve();

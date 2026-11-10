@@ -95,7 +95,7 @@ pub(super) fn next_requested_seed(seed: Option<&str>) -> CommandResult<Option<St
 
 /// Reads the custom seed and the replayed game that a table requests, without loading the game.
 pub(super) fn requested_extra(
-    request: &hanabi_protocol::GameOptions,
+    request: &hanabi_protocol::TableSettings,
 ) -> CommandResult<ExtraOptions> {
     let mut extra = ExtraOptions {
         set_seed_suffix: requested_seed(request.seed.as_deref())?,
@@ -167,16 +167,21 @@ pub(super) async fn load_replay(
         .collect();
     Ok(())
 }
-/// A table's options as the lobby and its players see them, with its custom seed and replayed game.
-pub(super) fn wire_table_options(
+/// A table's settings as the lobby and its players see them, with its custom seed and replayed
+/// game.
+pub(super) fn table_settings(
+    name: &str,
+    max_players: usize,
     options: &Options,
     extra: &ExtraOptions,
-) -> hanabi_protocol::GameOptions {
-    hanabi_protocol::GameOptions {
+) -> hanabi_protocol::TableSettings {
+    hanabi_protocol::TableSettings {
+        name: name.into(),
+        max_players: small(max_players),
+        options: wire_options(options),
         seed: extra.set_seed_suffix.clone(),
         replay_game_id: extra.replay.map(|replay| replay.game_id),
         replay_turn: replay_turn(extra),
-        ..wire_options(options)
     }
 }
 /// The turn that a replayed game starts from, counting from 1, unless it is the first turn.
@@ -195,11 +200,7 @@ pub(super) fn options_suggestion(
 ) -> Chat {
     Chat {
         recipient: Some(owner.into()),
-        suggestion: Some(hanabi_protocol::TableSuggestion {
-            name: name.into(),
-            max_players: small(max_players),
-            options: wire_table_options(options, extra),
-        }),
+        suggestion: Some(table_settings(name, max_players, options, extra)),
         ..server_chat(
             id,
             "<span class=\"cp\"><button class=\"new-options\">click to apply the suggestion</button></span>",
@@ -410,9 +411,11 @@ pub(super) async fn prepare_table(
                 return Ok((table, saved, warnings));
             }
         };
-        let mut name = crate::accounts::truncate_to_max_bytes(r.name.trim(), MAX_TABLE_NAME_LENGTH)
-            .trim_end()
-            .to_owned();
+        let settings = r.settings;
+        let mut name =
+            crate::accounts::truncate_to_max_bytes(settings.name.trim(), MAX_TABLE_NAME_LENGTH)
+                .trim_end()
+                .to_owned();
         if name.is_empty() {
             name = format!(
                 "{}{}",
@@ -421,15 +424,15 @@ pub(super) async fn prepare_table(
             );
         }
         validate_table_name(&name)?;
-        let mut options = engine_options(&r.options);
+        let mut options = engine_options(&settings.options);
         normalize_options(&mut options)?;
-        let mut extra = requested_extra(&r.options)?;
+        let mut extra = requested_extra(&settings)?;
         load_replay(store, &mut extra, id, session.user, &mut options).await?;
         let variant = hanabi_engine::get_variant(&options.variant_name)?;
         options.variant_id = Some(variant.id);
         let player = crate::stats::player(&store.primary, &session.identity, variant.id).await?;
         let max_players =
-            usize::from(r.max_players).max(extra.custom_num_players.unwrap_or(MIN_PLAYERS));
+            usize::from(settings.max_players).max(extra.custom_num_players.unwrap_or(MIN_PLAYERS));
         let password = r.password;
         let password_hash = if password.is_empty() {
             None

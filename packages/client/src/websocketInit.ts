@@ -3,6 +3,7 @@
 
 import type { ServerCommand, ServerCommandData } from "@hanabi-live/data";
 import {
+  OUTDATED_CLIENT_CODE,
   VERSION,
   errorDetails,
   httpError,
@@ -235,12 +236,6 @@ function openConnection(isReconnect: boolean) {
       ),
     );
   };
-  conn.on("outdatedClient", () => {
-    // Otherwise, the error that the server sends next explains how to update.
-    if (activeConnection === conn && !stopped && reloadOutdatedClient()) {
-      stopRecovery();
-    }
-  });
   conn.on("restart", ({ message }) => {
     if (activeConnection === conn) {
       conn.setReady(false);
@@ -330,13 +325,7 @@ function openConnection(isReconnect: boolean) {
         lobbyCommands.get("welcome")?.(data);
       }
     });
-    conn.on("error", (data) => {
-      if (activeConnection !== conn || stopped) {
-        return;
-      }
-      stopRecovery();
-      commands.get("error")?.(data);
-    });
+    conn.on("error", errorCallback(conn));
     return;
   }
 
@@ -385,18 +374,30 @@ function isCurrentConnection(conn: Connection) {
   return activeConnection === conn && !stopped;
 }
 
+/** Handles an error, after which the server closes the connection. */
+function errorCallback(conn: Connection) {
+  return (data: ServerCommandData["error"]) => {
+    if (!isCurrentConnection(conn)) {
+      return;
+    }
+    // Application errors are deliberate disconnects, not transport outages.
+    stopRecovery();
+    // A client from another release reloads to get the current one. When a reload did not help, the
+    // error explains how to update.
+    if (data.code === OUTDATED_CLIENT_CODE && reloadOutdatedClient()) {
+      return;
+    }
+    commands.get("error")?.(data);
+  };
+}
+
 function commonCallback<Command extends ServerCommand>(
   conn: Connection,
-  commandName: Command,
   commandFunction: (data: ServerCommandData[Command]) => void,
 ) {
   return (data: ServerCommandData[Command]) => {
     if (!isCurrentConnection(conn)) {
       return;
-    }
-    if (commandName === "error") {
-      // Application errors are deliberate disconnects, not transport outages.
-      stopRecovery();
     }
     commandFunction(data);
   };
@@ -447,7 +448,7 @@ function gameCallback<Command extends ServerCommand>(
 // Install the ordinary initial-connection protocol handlers.
 function initCommands(conn: Connection) {
   for (const [commandName, commandFunction] of commands.entries()) {
-    conn.on(commandName, commonCallback(conn, commandName, commandFunction));
+    conn.on(commandName, commonCallback(conn, commandFunction));
   }
   for (const [commandName, commandFunction] of lobbyCommands.entries()) {
     conn.on(commandName, lobbyCallback(conn, commandName, commandFunction));
@@ -455,4 +456,5 @@ function initCommands(conn: Connection) {
   for (const [commandName, commandFunction] of gameCommands.entries()) {
     conn.on(commandName, gameCallback(conn, commandName, commandFunction));
   }
+  conn.on("error", errorCallback(conn));
 }

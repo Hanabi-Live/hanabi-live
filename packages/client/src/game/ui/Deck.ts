@@ -354,7 +354,7 @@ function getTooltipContent(): string {
     content += tooltipField(
       "fas fa-signature",
       "Table name",
-      escapeHtml(currentTable.name),
+      escapeHtml(currentTable.settings.name),
     );
 
     const owner = globals2.userMap.get(currentTable.ownerID);

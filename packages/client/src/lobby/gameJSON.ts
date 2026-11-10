@@ -1,11 +1,11 @@
 import {
   errorDetails,
-  replayImportSchema,
+  replayGameSchema,
   validationErrorDetails,
 } from "@hanabi-live/data";
 import type { z } from "zod";
 
-export type GameJSON = z.output<typeof replayImportSchema>;
+export type GameJSON = z.output<typeof replayGameSchema>;
 
 type ParsedGameJSON =
   { readonly gameJSON: GameJSON } | { readonly error: string };
@@ -18,7 +18,7 @@ export function parseGameJSON(text: string): ParsedGameJSON {
   } catch (error) {
     return { error: errorDetails(error, "Parsing game JSON") };
   }
-  const result = replayImportSchema.safeParse(value);
+  const result = replayGameSchema.safeParse(value);
   return result.success
     ? { gameJSON: result.data }
     : { error: `Invalid game JSON: ${validationErrorDetails(result.error)}` };

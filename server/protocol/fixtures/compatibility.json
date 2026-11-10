@@ -169,56 +169,32 @@
     "valid": false
   },
   {
-    "name": "variant defaults nested options",
+    "name": "variant changes name the variant",
+    "direction": "client",
+    "command": "tableSetVariant",
+    "input": {
+      "tableID": 1,
+      "variantName": "No Variant"
+    },
+    "valid": true
+  },
+  {
+    "name": "variant changes require the variant",
     "direction": "client",
     "command": "tableSetVariant",
     "input": {
       "tableID": 1
     },
-    "valid": true,
-    "normalized": {
-      "tableID": 1,
-      "options": {
-        "variantName": ""
-      }
-    }
-  },
-  {
-    "name": "variant defaults supplied empty options",
-    "direction": "client",
-    "command": "tableSetVariant",
-    "input": {
-      "tableID": 1,
-      "options": {}
-    },
-    "valid": true,
-    "normalized": {
-      "tableID": 1,
-      "options": {
-        "variantName": ""
-      }
-    }
-  },
-  {
-    "name": "variant rejects null options",
-    "direction": "client",
-    "command": "tableSetVariant",
-    "input": {
-      "tableID": 1,
-      "options": null
-    },
     "valid": false
   },
   {
-    "name": "variant rejects unknown nested options",
+    "name": "variant changes reject unknown fields",
     "direction": "client",
     "command": "tableSetVariant",
     "input": {
       "tableID": 1,
-      "options": {
-        "variantName": "No Variant",
-        "extra": true
-      }
+      "variantName": "No Variant",
+      "options": {}
     },
     "valid": false
   },
@@ -463,23 +439,25 @@
     "command": "tableCreate",
     "input": {},
     "normalized": {
-      "name": "",
-      "options": {
-        "numPlayers": 2,
-        "variantName": "No Variant",
-        "timed": false,
-        "speedrun": false,
-        "deckPlays": false,
-        "emptyClues": false,
-        "oneExtraCard": false,
-        "oneLessCard": false,
-        "allOrNothing": false,
-        "detrimentalCharacters": false,
-        "timeBaseSeconds": 0.0,
-        "timePerTurnSeconds": 0
-      },
       "password": "",
-      "maxPlayers": 5
+      "settings": {
+        "name": "",
+        "maxPlayers": 5,
+        "options": {
+          "numPlayers": 2,
+          "variantName": "No Variant",
+          "timed": false,
+          "speedrun": false,
+          "deckPlays": false,
+          "emptyClues": false,
+          "oneExtraCard": false,
+          "oneLessCard": false,
+          "allOrNothing": false,
+          "detrimentalCharacters": false,
+          "timeBaseSeconds": 0.0,
+          "timePerTurnSeconds": 0
+        }
+      }
     },
     "valid": true
   },
@@ -669,23 +647,7 @@
     "input": {
       "tableID": 3,
       "joined": true,
-      "maxPlayers": 5,
-      "name": "Alice's game",
       "numPlayers": 1,
-      "options": {
-        "numPlayers": 2,
-        "variantName": "No Variant",
-        "timed": false,
-        "speedrun": false,
-        "deckPlays": false,
-        "emptyClues": false,
-        "oneExtraCard": false,
-        "oneLessCard": false,
-        "allOrNothing": false,
-        "detrimentalCharacters": false,
-        "timeBaseSeconds": 0.0,
-        "timePerTurnSeconds": 0
-      },
       "ownerID": 7,
       "passwordProtected": false,
       "playerNames": ["Alice"],
@@ -696,7 +658,25 @@
           "username": "Carol",
           "shadowingPlayerIndex": 1
         }
-      ]
+      ],
+      "settings": {
+        "name": "Alice's game",
+        "maxPlayers": 5,
+        "options": {
+          "numPlayers": 2,
+          "variantName": "No Variant",
+          "timed": false,
+          "speedrun": false,
+          "deckPlays": false,
+          "emptyClues": false,
+          "oneExtraCard": false,
+          "oneLessCard": false,
+          "allOrNothing": false,
+          "detrimentalCharacters": false,
+          "timeBaseSeconds": 0.0,
+          "timePerTurnSeconds": 0
+        }
+      }
     },
     "valid": true
   },

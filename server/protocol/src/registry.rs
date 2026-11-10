@@ -65,7 +65,7 @@ macro_rules! client_contracts {
             Note "note" => NoteRequest;
             Tag "tag" => TagRequest;
             TagDelete "tagDelete" => TagRequest;
-            TagsDeleteAll "tagsDeleteAll" => TagsDeleteAllRequest;
+            TagsDeleteAll "tagsDeleteAll" => TableRequest;
             ReplayAction "replayAction" => SharedReplayAction;
         }
     };
@@ -112,9 +112,8 @@ macro_rules! server_contracts {
             USER_INACTIVE "userInactive" => UserInactive;
             FRIENDS "friends" => Friends;
             BLOCKED "blocked" => Blocked;
-            ERROR "error" => ErrorNotice;
-            OUTDATED_CLIENT "outdatedClient" => Empty;
-            WARNING "warning" => Warning;
+            ERROR "error" => Notice;
+            WARNING "warning" => Notice;
             SOUND_LOBBY "soundLobby" => SoundLobby;
             WELCOME "welcome" => Welcome;
             SPECTATORS "spectators" => Spectators;
@@ -133,8 +132,8 @@ macro_rules! server_contracts {
 macro_rules! exported_types {
     ($apply:ident) => {
         $apply! {
-            TableId, GameId, UserId, ChatHistoryMessage, Settings, Spectator, GameHistory,
-            ReplayGame, ReplayImport, ReplayBoardElement, ReplaySoundEffect, Status, LoginRequest,
+            TableId, GameId, UserId, Settings, Spectator, GameHistory,
+            ReplayGame, ReplayBoardElement, ReplaySoundEffect, Status, LoginRequest,
             LoginResponse, ApiError, PasswordHashRequest, PasswordHashResponse, PublicGamePage,
             VariantNames, ScoreFrequency,
         }
@@ -300,12 +299,12 @@ macro_rules! server_messages {
 pub mod server {
     use super::{
         Blocked, CardIdentities, Chat, ChatDelete, ChatHistory, ChatList, ChatTyping, Clock,
-        Connected, Empty, ErrorNotice, FinishOngoingGame, Friends, GameAction, GameActionList,
-        GameHistory, GameHistoryList, GameHistoryOtherScores, Hypothetical, IdleWarning, Init,
-        LobbyStatus, Note, NoteList, NoteListPlayer, Pause, Pregame, ReplayLeader, Restart,
+        Connected, Empty, FinishOngoingGame, Friends, GameAction, GameActionList, GameHistory,
+        GameHistoryList, GameHistoryOtherScores, Hypothetical, IdleWarning, Init, LobbyStatus,
+        Note, NoteList, NoteListPlayer, Notice, Pause, Pregame, ReplayLeader, Restart,
         RestartDeclined, ServerMessage, SharedReplayAction, SoundLobby, Spectators, Suggestion,
         Table, TableList, TableRequest, TableStarted, User, UserInactive, UserLeft, UserList,
-        VoteChange, Warning, Welcome,
+        VoteChange, Welcome,
     };
     server_contracts!(server_messages);
 }

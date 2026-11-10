@@ -5,7 +5,7 @@ use super::{
     chat::{TABLE_CHAT_LIMIT, TABLE_CHAT_WINDOW, is_variant_discovery},
     pending::{Completed, Pending},
     pregame::remove_pregame_players,
-    setup::wire_table_options,
+    setup::table_settings,
 };
 use crate::errors::OrReject;
 use crate::errors::{CommandError, CommandResult};
@@ -26,8 +26,8 @@ use futures_util::{FutureExt, future::BoxFuture};
 use hanabi_engine::{CompletionTiming, EndCondition};
 use hanabi_protocol::{CardRank, PlayerIndex, SuitIndex};
 use hanabi_protocol::{
-    Chat, ChatTyping, ClientMessage, IdleWarning, Status, TableRequest, TableStarted, UserId,
-    Warning,
+    Chat, ChatTyping, ClientMessage, IdleWarning, Notice, Status, TableRequest, TableStarted,
+    UserId,
 };
 use serde::Serialize;
 use std::{
@@ -175,10 +175,8 @@ impl TableActor {
                 game_id: replay_game,
                 table_id: self.table.id,
                 joined: false,
-                max_players: small(self.table.max_players),
-                name: self.table.name.clone(),
+                settings: self.settings(),
                 num_players: small(self.table.players().len()),
-                options: wire_table_options(&self.table.options, &self.table.extra),
                 owner_id: self.table.owner,
                 password_protected: self.table.password_hash.is_some(),
                 player_names: self
@@ -302,6 +300,15 @@ impl TableActor {
             e.messages.push((a.session.clone(), message.clone()));
         }
     }
+    /// The table's settings, as the lobby and its players see them.
+    fn settings(&self) -> hanabi_protocol::TableSettings {
+        table_settings(
+            &self.table.name,
+            self.table.max_players,
+            &self.table.options,
+            &self.table.extra,
+        )
+    }
     pub(super) fn pregame_messages(&self, e: &mut Effects) {
         for a in self.audience() {
             let players = self
@@ -323,12 +330,10 @@ impl TableActor {
                 .collect();
             let pregame = hanabi_protocol::Pregame {
                 table_id: self.table.id,
-                name: self.table.name.clone(),
+                settings: self.settings(),
                 owner_id: self.table.owner,
                 players,
-                options: wire_table_options(&self.table.options, &self.table.extra),
                 password_protected: self.table.password_hash.is_some(),
-                max_players: small(self.table.max_players),
             };
             e.messages.push((
                 a.session.clone(),
@@ -608,10 +613,7 @@ impl TableActor {
         for warning in warnings {
             e.messages.push((
                 s.clone(),
-                frame(
-                    hanabi_protocol::server::WARNING,
-                    Warning { message: warning },
-                ),
+                frame(hanabi_protocol::server::WARNING, Notice::new(warning)),
             ));
         }
         self.publish(e).await

@@ -1,7 +1,7 @@
 // The icons that summarize a table's options in the lobby, with the tooltips that explain them.
 
+import type { ServerCommandData } from "@hanabi-live/data";
 import { SECONDS_PER_MINUTE } from "@hanabi-live/data";
-import type { Options } from "@hanabi-live/game";
 import { secondsToClockString } from "@hanabi-live/game";
 import { OptionIcons } from "../enums/OptionIcons";
 import { escapeHtml } from "../utils";
@@ -17,8 +17,9 @@ export interface OptionDescription {
 }
 
 export function getOptionDescriptions(
-  options: Options,
+  settings: ServerCommandData["table"]["settings"],
 ): readonly OptionDescription[] {
+  const { options } = settings;
   const descriptions: OptionDescription[] = [];
 
   if (options.timed) {
@@ -92,23 +93,23 @@ export function getOptionDescriptions(
     });
   }
 
-  if (options.seed !== undefined) {
+  if (settings.seed !== undefined) {
     descriptions.push({
       name: "seed",
       icon: OptionIcons.Seed,
-      tooltip: `This table deals the custom seed of: <strong>${escapeHtml(options.seed)}</strong>`,
+      tooltip: `This table deals the custom seed of: <strong>${escapeHtml(settings.seed)}</strong>`,
     });
   }
 
-  if (options.replayGameID !== undefined) {
+  if (settings.replayGameID !== undefined) {
     const turn =
-      options.replayTurn === undefined
+      settings.replayTurn === undefined
         ? ""
-        : ` (from turn ${options.replayTurn})`;
+        : ` (from turn ${settings.replayTurn})`;
     descriptions.push({
       name: "replay",
       icon: OptionIcons.Replay,
-      tooltip: `This table replays game: <strong>#${options.replayGameID}</strong>${turn}`,
+      tooltip: `This table replays game: <strong>#${settings.replayGameID}</strong>${turn}`,
     });
   }
 

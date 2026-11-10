@@ -1,11 +1,6 @@
 // The "Create Game" screen, which also changes the options of an unstarted game.
 
-import type {
-  ClientCommandData,
-  GameID,
-  ServerCommandData,
-  Settings,
-} from "@hanabi-live/data";
+import type { GameID, ServerCommandData, Settings } from "@hanabi-live/data";
 import {
   DEFAULT_TABLE_NAME_SUFFIX,
   MAX_SEED_LENGTH,
@@ -362,18 +357,22 @@ function submit() {
     : defaultSettings.createTableMaxPlayers;
   checkSettingChanged("createTableMaxPlayers", maxPlayers);
 
-  const options: Partial<ClientCommandData["tableCreate"]["options"]> = {
-    variantName: getVariantName(), // This is a hidden span field.
-    timed,
-    timeBaseSeconds,
-    timePerTurnSeconds,
-    speedrun: getCheckbox("createTableSpeedrun"),
-    deckPlays: getCheckbox("createTableDeckPlays"),
-    emptyClues: getCheckbox("createTableEmptyClues"),
-    oneExtraCard: getCheckbox("createTableOneExtraCard"),
-    oneLessCard: getCheckbox("createTableOneLessCard"),
-    allOrNothing: getCheckbox("createTableAllOrNothing"),
-    detrimentalCharacters: getCheckbox("createTableDetrimentalCharacters"),
+  const settings = {
+    name,
+    maxPlayers,
+    options: {
+      variantName: getVariantName(), // This is a hidden span field.
+      timed,
+      timeBaseSeconds,
+      timePerTurnSeconds,
+      speedrun: getCheckbox("createTableSpeedrun"),
+      deckPlays: getCheckbox("createTableDeckPlays"),
+      emptyClues: getCheckbox("createTableEmptyClues"),
+      oneExtraCard: getCheckbox("createTableOneExtraCard"),
+      oneLessCard: getCheckbox("createTableOneLessCard"),
+      allOrNothing: getCheckbox("createTableAllOrNothing"),
+      detrimentalCharacters: getCheckbox("createTableDetrimentalCharacters"),
+    },
     ...(seed !== "" && { seed }),
     ...(replayGameID !== undefined && { replayGameID: replayGameID as GameID }),
     ...(replayTurn !== undefined && { replayTurn }),
@@ -382,33 +381,19 @@ function submit() {
   lobbyPage.hide();
 
   if (isNew) {
-    globals.conn!.send("tableCreate", {
-      name,
-      options,
-      password,
-      maxPlayers,
-    });
+    globals.conn!.send("tableCreate", { settings, password });
     $("#nav-buttons-lobby-create-game").addClass("disabled");
   } else {
-    globals.conn!.send("tableUpdate", {
-      tableID: globals.tableID,
-      name,
-      options,
-      maxPlayers,
-    });
+    globals.conn!.send("tableUpdate", { tableID: globals.tableID, settings });
   }
 }
 
 export function acceptOptionsFromGuest(
   suggestion: NonNullable<ServerCommandData["chat"]["suggestion"]>,
 ): void {
-  const { name, maxPlayers, options } = suggestion;
-
   globals.conn!.send("tableUpdate", {
     tableID: globals.tableID,
-    name,
-    options,
-    maxPlayers,
+    settings: suggestion,
   });
 }
 
@@ -657,11 +642,12 @@ export function ready(): void {
     // Change Options. Use the options of the current table.
     dialogTitle = "Change Game Options";
     buttonTitle = "Change";
-    gameName = globals.game.name;
-    formValues = getFormValues(globals.game.options, globals.game.maxPlayers);
-    seed = globals.game.options.seed ?? "";
-    replayGameID = globals.game.options.replayGameID?.toString() ?? "";
-    replayTurn = globals.game.options.replayTurn?.toString() ?? "";
+    const { settings } = globals.game;
+    gameName = settings.name;
+    formValues = getFormValues(settings.options, settings.maxPlayers);
+    seed = settings.seed ?? "";
+    replayGameID = settings.replayGameID?.toString() ?? "";
+    replayTurn = settings.replayTurn?.toString() ?? "";
 
     // Can't change the password once the game is created.
     $("#password-row").addClass("hidden");

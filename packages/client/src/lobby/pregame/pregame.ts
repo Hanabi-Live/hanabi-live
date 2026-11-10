@@ -146,7 +146,7 @@ export function toggleJoinSpectateButtons(): void {
     joinSpectate.hide();
     joinGame.show();
 
-    if (globals.game.players.length < globals.game.maxPlayers) {
+    if (globals.game.players.length < globals.game.settings.maxPlayers) {
       joinGame.removeClass("disabled");
     }
   } else {

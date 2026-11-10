@@ -104,7 +104,7 @@ impl TableActor {
                 self.start(session).await
             }
             ClientMessage::TableSetVariant(r) => {
-                self.update(session, TableChange::Variant(r.options.variant_name))
+                self.update(session, TableChange::Variant(r.variant_name))
                     .await
             }
             ClientMessage::TableUpdate(r) => {
@@ -136,7 +136,13 @@ impl TableActor {
         let mut options = if variant_only {
             self.table.options.clone()
         } else {
-            engine_options(&request.as_ref().context("Missing options")?.options)
+            engine_options(
+                &request
+                    .as_ref()
+                    .context("Missing options")?
+                    .settings
+                    .options,
+            )
         };
         if let Some(variant) = &variant {
             options.variant_name.clone_from(variant);
@@ -146,7 +152,7 @@ impl TableActor {
             self.table.name.clone()
         } else {
             crate::accounts::truncate_to_max_bytes(
-                request.as_ref().map_or("", |r| r.name.as_str()),
+                request.as_ref().map_or("", |r| r.settings.name.as_str()),
                 MAX_TABLE_NAME_LENGTH,
             )
             .trim()
@@ -162,11 +168,13 @@ impl TableActor {
             usize::from(
                 request
                     .as_ref()
-                    .map_or(hanabi_protocol::DEFAULT_MAX_PLAYERS, |r| r.max_players),
+                    .map_or(hanabi_protocol::DEFAULT_MAX_PLAYERS, |r| {
+                        r.settings.max_players
+                    }),
             )
         };
         let mut extra = match &request {
-            Some(r) if !variant_only => requested_extra(&r.options)?,
+            Some(r) if !variant_only => requested_extra(&r.settings)?,
             _ => self.table.extra.clone(),
         };
         if !variant_only && session.user == self.table.owner {

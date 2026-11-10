@@ -72,6 +72,7 @@ mod tests {
                 "chatFriend" | "chatUnfriend" | "chatLink" | "chatUnlink" | "chatBlock"
                 | "chatUnblock" => json!({"username":"Alice"}),
                 "tagSearch" => json!({"tag":"test"}),
+                "tableSetVariant" => json!({"tableID":1,"variantName":"No Variant"}),
                 "sync" | "lobbyLoad" | "tableCreate" | "gameHistory" | "chatLinked"
                 | "chatBlocked" | "chatPMHistory" => json!({}),
                 _ => json!({"tableID":1}),
@@ -105,8 +106,8 @@ mod tests {
             assert!(parse(input).is_err(), "{input}");
         }
         let create = parse("tableCreate {}").unwrap().data();
-        assert_eq!(create["options"]["numPlayers"], 2);
-        assert_eq!(create["options"]["variantName"], "No Variant");
+        assert_eq!(create["settings"]["options"]["numPlayers"], 2);
+        assert_eq!(create["settings"]["options"]["variantName"], "No Variant");
     }
 
     #[test]

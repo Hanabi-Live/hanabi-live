@@ -2,6 +2,7 @@ import {
   SERVER_COMMAND_SCHEMAS,
   VERSION,
   apiErrorSchema,
+  replayGameSchema,
 } from "@hanabi-live/data";
 import { expect, test } from "bun:test";
 import { assertDefined } from "complete-common";
@@ -150,13 +151,15 @@ databaseDescribe("compiled application entry point (rust)", () => {
         );
         expect(bobWelcome.username).toBe("SmokeBob");
         alice.send("tableCreate", {
-          name: "Compiled smoke table",
           password: "synthetic-table-password",
-          options: {
-            variantName: "No Variant",
-            timed: restart,
-            timeBaseSeconds: 600,
-            timePerTurnSeconds: 2,
+          settings: {
+            name: "Compiled smoke table",
+            options: {
+              variantName: "No Variant",
+              timed: restart,
+              timeBaseSeconds: 600,
+              timePerTurnSeconds: 2,
+            },
           },
         });
         const { tableID } = await alice.receive(
@@ -550,13 +553,15 @@ databaseDescribe("compiled application entry point (rust)", () => {
       assertDefined(owner, "Missing owner.");
       assertDefined(observer, "Missing observer.");
       owner.send("tableCreate", {
-        name: "Six-player variant parity",
-        maxPlayers: 6,
-        options: {
-          variantName: "Rainbow (6 Suits)",
-          detrimentalCharacters: true,
-          oneLessCard: true,
-          emptyClues: true,
+        settings: {
+          name: "Six-player variant parity",
+          maxPlayers: 6,
+          options: {
+            variantName: "Rainbow (6 Suits)",
+            detrimentalCharacters: true,
+            oneLessCard: true,
+            emptyClues: true,
+          },
         },
       });
       const { tableID } = await owner.receive(
@@ -662,15 +667,9 @@ databaseDescribe("compiled application entry point (rust)", () => {
       ).toHaveLength(6);
       const exported = await fetch(`${address}/export/${finished.gameID}`);
       expect(exported.status).toBe(200);
-      const replayJSON: unknown = await exported.json();
-      const replay = z
-        .object({
-          playerNames: z.string().array(),
-          options: z.object({ variant: z.string() }),
-        })
-        .parse(replayJSON);
-      expect(replay.playerNames).toHaveLength(6);
-      expect(replay.options.variant).toBe("Rainbow (6 Suits)");
+      const replayJSON = replayGameSchema.parse(await exported.json());
+      expect(replayJSON.playerNames).toHaveLength(6);
+      expect(replayJSON.options?.variant).toBe("Rainbow (6 Suits)");
       for (const peer of peers) {
         peer.send("tableUnattend", { tableID });
       }
@@ -717,10 +716,12 @@ databaseDescribe("compiled application entry point (rust)", () => {
         let replayPeer: ReturnType<typeof socketClient> = owner;
         if (source === "json") {
           owner.send("tableCreate", {
-            name: "Recover this pregame",
             password: "preserved-password",
-            maxPlayers: 3,
-            options: { variantName: "Rainbow (6 Suits)" },
+            settings: {
+              name: "Recover this pregame",
+              maxPlayers: 3,
+              options: { variantName: "Rainbow (6 Suits)" },
+            },
           });
           const pending = await owner.receive(
             "joined",
@@ -741,10 +742,12 @@ databaseDescribe("compiled application entry point (rust)", () => {
             (message) => message.tableID === pending.tableID,
           );
           expect(pregame).toMatchObject({
-            name: "Recover this pregame",
             passwordProtected: true,
-            maxPlayers: 3,
-            options: { variantName: "Rainbow (6 Suits)" },
+            settings: {
+              name: "Recover this pregame",
+              maxPlayers: 3,
+              options: { variantName: "Rainbow (6 Suits)" },
+            },
           });
           const returningObserver = socketClient(address, observer.cookie);
           sockets.push(returningObserver.socket);

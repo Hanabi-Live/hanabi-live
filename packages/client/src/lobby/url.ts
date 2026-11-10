@@ -92,19 +92,21 @@ function gotoPath(data: ServerCommandData["welcome"]): boolean {
     const replayTurn = parseIntSafe(urlParams.get("replayTurn") ?? "");
 
     globals.conn!.send("tableCreate", {
-      name,
-      options: {
-        variantName,
-        timed,
-        timeBaseSeconds,
-        timePerTurnSeconds,
-        speedrun,
-        deckPlays,
-        emptyClues,
-        oneExtraCard,
-        oneLessCard,
-        allOrNothing,
-        detrimentalCharacters,
+      settings: {
+        name,
+        options: {
+          variantName,
+          timed,
+          timeBaseSeconds,
+          timePerTurnSeconds,
+          speedrun,
+          deckPlays,
+          emptyClues,
+          oneExtraCard,
+          oneLessCard,
+          allOrNothing,
+          detrimentalCharacters,
+        },
         ...(seed !== "" && { seed }),
         ...(replayGameID !== undefined && { replayGameID }),
         ...(replayTurn !== undefined && { replayTurn }),

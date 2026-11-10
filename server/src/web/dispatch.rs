@@ -19,7 +19,7 @@ use tokio::sync::mpsc;
 
 /// What a player is told about a command that failed, and the report of a failure.
 pub(super) struct CommandFailure {
-    pub(super) warning: String,
+    pub(super) warning: hanabi_protocol::Notice,
     /// Absent for a rejection, which is the server working as intended.
     pub(super) report: Option<crate::errors::Report>,
     /// Whether the failure is posted to the error alerts. For now, only failures of storage,
@@ -40,7 +40,7 @@ pub(super) fn command_failure(error: CommandError, command: &str) -> Option<Comm
         CommandError::Rejected { silent: true, .. } => return None,
         CommandError::Rejected { message, .. } => {
             return Some(CommandFailure {
-                warning: accounts::escape_html(&message),
+                warning: hanabi_protocol::Notice::new(accounts::escape_html(&message)),
                 report: None,
                 alert: false,
             });
@@ -75,7 +75,7 @@ pub(super) fn command_failure(error: CommandError, command: &str) -> Option<Comm
         }
     };
     Some(CommandFailure {
-        warning: accounts::escape_html(&report.text()),
+        warning: report.notice(),
         report: Some(report),
         alert,
     })
@@ -240,9 +240,9 @@ pub(super) async fn dispatch(
             let command = protocol::command_name(input).unwrap_or("unrecognized command");
             session.emit(&frame(
                 hanabi_protocol::server::WARNING,
-                hanabi_protocol::Warning {
-                    message: accounts::escape_html(&format!("Cannot process {command}: {detail}")),
-                },
+                hanabi_protocol::Notice::new(accounts::escape_html(&format!(
+                    "Cannot process {command}: {detail}"
+                ))),
             ));
             return Ok(());
         }
@@ -297,7 +297,7 @@ mod tests {
     fn command_failures_show_rejections_as_they_are_and_report_everything_else() {
         let command = r#"tableJoin {"tableID":1}"#;
         let rejected = command_failure(rejection!("This table is full."), command).unwrap();
-        assert_eq!(rejected.warning, "This table is full.");
+        assert_eq!(rejected.warning.message, "This table is full.");
         assert!(rejected.report.is_none() && !rejected.alert);
         let silent = CommandError::Rejected {
             message: "Not your turn.".into(),
@@ -318,7 +318,7 @@ mod tests {
         assert_eq!(report.code, crate::errors::COMMAND_FAILED);
         assert!(!unexpected.alert);
         assert_eq!(
-            unexpected.warning,
+            unexpected.warning.message,
             format!(
                 "Command tableJoin failed: Installing the table: Duplicate table installation \
                  [Reference: {}]",
@@ -338,11 +338,14 @@ mod tests {
         let report = raw.report.expect("reported failure");
         assert_eq!(report.code, crate::errors::INTERNAL_OPERATION_FAILED);
         assert!(!raw.alert);
-        assert!(!raw.warning.contains(&parse.to_string()) && !raw.warning.contains("seat"));
+        assert!(
+            !raw.warning.message.contains(&parse.to_string())
+                && !raw.warning.message.contains("seat")
+        );
 
         let storage = command_failure(sqlx::Error::PoolClosed.into(), command).unwrap();
         assert!(storage.alert && storage.report.is_some());
-        assert!(!storage.warning.contains("PoolClosed"));
+        assert!(!storage.warning.message.contains("PoolClosed"));
 
         // Storage reports a fault as the error's context, which the conversion keeps.
         let fault =
@@ -360,6 +363,7 @@ mod tests {
         assert!(
             unavailable
                 .warning
+                .message
                 .contains("The write may have been saved.")
         );
     }

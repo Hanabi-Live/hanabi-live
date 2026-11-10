@@ -87,19 +87,12 @@ pub struct TableLeaderRequest {
     pub username: String,
 }
 
-#[derive(Clone, Debug, Default, Serialize, Deserialize, JsonSchema)]
-#[serde(default, rename_all = "camelCase", deny_unknown_fields)]
-pub struct VariantChoice {
-    pub variant_name: String,
-}
-
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct TableVariantRequest {
     #[serde(rename = "tableID")]
     pub table_id: TableId,
-    #[serde(default)]
-    pub options: VariantChoice,
+    pub variant_name: String,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
@@ -221,23 +214,13 @@ pub struct TagSearchRequest {
     pub table_id: Option<TableId>,
 }
 
-const fn default_max_players() -> u8 {
-    DEFAULT_MAX_PLAYERS
-}
-
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct TableCreateRequest {
-    /// Blank uses the owner's name.
     #[serde(default)]
-    pub name: String,
-    #[serde(default)]
-    pub options: GameOptions,
+    pub settings: TableSettings,
     #[serde(default)]
     pub password: String,
-    #[serde(default = "default_max_players")]
-    #[schemars(with = "NumPlayers")]
-    pub max_players: u8,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
@@ -246,14 +229,9 @@ pub struct TableUpdateRequest {
     #[serde(rename = "tableID")]
     pub table_id: TableId,
     #[serde(default)]
-    pub name: String,
-    #[serde(default)]
-    pub options: GameOptions,
+    pub settings: TableSettings,
     #[serde(default)]
     pub password: String,
-    #[serde(default = "default_max_players")]
-    #[schemars(with = "NumPlayers")]
-    pub max_players: u8,
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
@@ -291,7 +269,7 @@ pub enum ReplayCreateRequest {
     },
     Json {
         #[serde(rename = "gameJSON")]
-        game_json: Box<ReplayImport>,
+        game_json: Box<ReplayGame>,
         visibility: ReplayVisibility,
         /// The seat to shadow, if any.
         #[serde(default, skip_serializing_if = "Option::is_none")]
@@ -373,13 +351,6 @@ pub struct TagRequest {
     #[serde(rename = "tableID")]
     pub table_id: TableId,
     pub tag: String,
-}
-
-#[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
-#[serde(rename_all = "camelCase", deny_unknown_fields)]
-pub struct TagsDeleteAllRequest {
-    #[serde(rename = "tableID")]
-    pub table_id: TableId,
 }
 
 /// A shared-replay leader's action. The leader sends it, and the server applies it and relays it to

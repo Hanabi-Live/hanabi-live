@@ -381,16 +381,10 @@ export const gameEventSchema = z.discriminatedUnion("type", [
     })
     .readonly(),
 ]);
-export const gameIdSchema = z
-  .number()
-  .int()
-  .min(0)
-  .max(2_147_483_647)
-  .brand<"GameID">();
 
 /**
- * A table's game options, as clients request them and as the server reports them. Missing fields
- * take their defaults.
+ * A game's options. Missing fields take their defaults. A table reports its current player count,
+ * and a table's owner does not choose it.
  */
 export const gameOptionsSchema = z
   .strictObject({
@@ -401,22 +395,6 @@ export const gameOptionsSchema = z
     numPlayers: z.literal([2, 3, 4, 5, 6]).default(2),
     oneExtraCard: z.boolean().default(false),
     oneLessCard: z.boolean().default(false),
-    /**
-     * A finished game that a table plays again with its deal, seats, characters, and options,
-     * which replace the others. Only tables report it.
-     */
-    replayGameID: gameIdSchema.optional(),
-    /**
-     * The turn of `replayGameID` that the game starts from, counting from 1. Absent starts from
-     * the first turn.
-     */
-    replayTurn: z.number().int().min(1).max(2_147_483_647).optional(),
-    /**
-     * The deal that a table requests, as the end of its full seed: "123" in a 3-player game of No
-     * Variant deals `p3v0s123`. Absent when the server deals the next seed that none of the
-     * players have played. Only tables report it; games report their full seed elsewhere.
-     */
-    seed: z.string().min(1).max(32).optional(),
     speedrun: z.boolean().default(false),
     timeBaseSeconds: z.number().min(0).max(604_800).default(0),
     timePerTurnSeconds: z.number().int().min(0).max(86_400).default(0),

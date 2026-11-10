@@ -1636,7 +1636,7 @@ mod tests {
             outgoing.push(frames);
         }
         let result=async{
-            send(&hub,users[0].clone(),"tableCreate",json!({"name":"auto parity","options":{}})).await?;
+            send(&hub,users[0].clone(),"tableCreate",json!({"settings":{"name":"auto parity"}})).await?;
             let id=store.load().await?[0].0.id;
             send(&hub,users[1].clone(),"tableJoin",json!({"tableID":id})).await?;
             send(&hub,users[0].clone(),"tableStart",json!({"tableID":id})).await?;
@@ -1707,7 +1707,7 @@ mod tests {
                 &hub,
                 users[0].clone(),
                 "tableCreate",
-                json!({"name":"split parity","maxPlayers":6,"options":{}}),
+                json!({"settings":{"name":"split parity","maxPlayers":6}}),
             )
             .await?;
             let id = store.load().await?[0].0.id;
@@ -1736,7 +1736,7 @@ mod tests {
                 &hub,
                 users[0].clone(),
                 "tableSetVariant",
-                json!({"tableID":id,"options":{"variantName":"Reversed (5 Suits)"}}),
+                json!({"tableID":id,"variantName":"Reversed (5 Suits)"}),
             )
             .await?;
             send(&hub, users[0].clone(), "tableStart", json!({"tableID":id})).await?;
@@ -1858,7 +1858,7 @@ mod tests {
             frames.push(outgoing);
         }
         let result=async{
-            send(&hub,users[0].clone(),"tableCreate",json!({"name":"native","maxPlayers":6,"options":{"seed":"native","variantName":"Clue Starved (6 Suits)","timed":true,"timeBaseSeconds":120,"timePerTurnSeconds":20,"oneExtraCard":true,"detrimentalCharacters":true}})).await?;
+            send(&hub,users[0].clone(),"tableCreate",json!({"settings":{"name":"native","maxPlayers":6,"seed":"native","options":{"variantName":"Clue Starved (6 Suits)","timed":true,"timeBaseSeconds":120,"timePerTurnSeconds":20,"oneExtraCard":true,"detrimentalCharacters":true}}})).await?;
             let id=store.load().await?[0].0.id;
             for user in users.iter().skip(1){send(&hub,user.clone(),"tableJoin",json!({"tableID":id,"password":""})).await?;}
             send(&hub,users[0].clone(),"tableStart",json!({"tableID":id})).await?;

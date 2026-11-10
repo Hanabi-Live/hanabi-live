@@ -30,17 +30,14 @@ const ROW_HEIGHT = 20;
 function table(id: number, name: string, fields: Partial<Table> = {}): Table {
   return {
     tableID: tableIdSchema.parse(id),
-    name,
+    settings: { name, maxPlayers: 5, options: { variantName: "No Variant" } },
     joined: false,
     phase: "pregame",
     passwordProtected: false,
     numPlayers: 1,
-    maxPlayers: 5,
     playerNames: ["alice"],
     spectators: [],
     progress: 0,
-    variant: "No Variant",
-    options: {},
     ...fields,
   } as Table;
 }
@@ -158,7 +155,7 @@ describe("TablesList", () => {
 
     fireEvent.click(screen.getByText("alice"));
     expect(tableSpectate).toHaveBeenCalledWith(
-      expect.objectContaining({ name: "open" }),
+      expect.objectContaining({ tableID: tableIdSchema.parse(1) }),
       0,
     );
     expect(tableJoin).toHaveBeenCalledOnce();

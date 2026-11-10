@@ -483,6 +483,15 @@ impl Report {
         )
     }
 
+    /// What a client shows: the escaped text, with the typed cause and the diagnostic ID.
+    pub fn notice(&self) -> hanabi_protocol::Notice {
+        hanabi_protocol::Notice {
+            message: crate::accounts::escape_html(&self.text()),
+            code: Some(self.code.into()),
+            diagnostic_id: Some(self.diagnostic_id.clone()),
+        }
+    }
+
     /// Whether this reports a failure, rather than a refusal of the server working as intended.
     pub fn is_failure(&self) -> bool {
         !REFUSALS.contains(&self.code)

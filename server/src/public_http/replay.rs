@@ -98,17 +98,19 @@ pub(super) async fn export(
         let mut characters = Vec::new();
         for p in &players {
             let name = match p.character_id {
-                None => "",
-                Some(character) => catalog::character(i64::from(character)).ok_or_else(|| {
-                    export_failure(
-                        "archive_unknown_character",
-                        "The archived game's character is not in the catalog",
-                        id,
-                    )
-                })?,
+                None => None,
+                Some(character) => {
+                    Some(catalog::character(i64::from(character)).ok_or_else(|| {
+                        export_failure(
+                            "archive_unknown_character",
+                            "The archived game's character is not in the catalog",
+                            id,
+                        )
+                    })?)
+                }
             };
             characters.push(hanabi_protocol::ReplayCharacter {
-                name: name.into(),
+                name: name.map(Into::into),
                 metadata: p.assigned_metadata.map(i32::from),
             });
         }
@@ -129,12 +131,15 @@ pub(super) async fn export(
             )
         })?;
     Ok(hanabi_protocol::ReplayGame {
-        id: GameId(game_id),
-        player_names: players.iter().map(|p| p.name.clone()).collect(),
-        deck,
-        actions,
+        id: Some(GameId(game_id)),
+        player_names: Some(players.iter().map(|p| p.name.clone()).collect()),
+        deck: Some(deck),
+        actions: Some(actions),
         options: (options != hanabi_protocol::ReplayOptions::default()).then_some(options),
-        notes: notes.iter().any(|n| !n.is_empty()).then_some(notes),
+        notes: notes
+            .iter()
+            .any(|n| !n.is_empty())
+            .then(|| notes.into_iter().map(hanabi_protocol::NoteRow).collect()),
         characters,
         seed: Some(seed),
     })

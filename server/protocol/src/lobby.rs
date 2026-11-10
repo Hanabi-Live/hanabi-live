@@ -97,20 +97,36 @@ pub struct Blocked {
     pub blocked: Vec<String>,
 }
 
-/// A problem the client shows in a modal. The text may contain HTML.
+/// A problem that the client shows in a modal: an `error`, after which the connection closes, or a
+/// recoverable `warning`. The text may contain HTML. A server failure also names its typed cause and
+/// the diagnostic ID that its log entry carries, as `ApiError` does.
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
-pub struct ErrorNotice {
+pub struct Notice {
     #[schemars(length(min = 1))]
     pub message: String,
+    /// Such as `OUTDATED_CLIENT_CODE`, which makes the client reload the page.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[schemars(with = "String", length(min = 1))]
+    pub code: Option<String>,
+    #[serde(
+        default,
+        rename = "diagnosticID",
+        skip_serializing_if = "Option::is_none"
+    )]
+    #[schemars(with = "String", length(min = 1))]
+    pub diagnostic_id: Option<String>,
 }
 
-/// A recoverable problem the client shows in a modal. The text may contain HTML.
-#[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
-#[serde(rename_all = "camelCase", deny_unknown_fields)]
-pub struct Warning {
-    #[schemars(length(min = 1))]
-    pub message: String,
+impl Notice {
+    /// A notice without a typed cause, such as a refused command.
+    pub fn new(message: impl Into<String>) -> Self {
+        Self {
+            message: message.into(),
+            code: None,
+            diagnostic_id: None,
+        }
+    }
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
@@ -241,8 +257,8 @@ pub struct SpectatedTable {
     pub shadowing_player_index: Option<PlayerIndex>,
 }
 
-/// A table's game options, as clients request them and as the server reports them. Missing fields
-/// take their defaults.
+/// A game's options. Missing fields take their defaults. A table reports its current player count,
+/// and a table's owner does not choose it.
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize, JsonSchema)]
 #[serde(default, rename_all = "camelCase", deny_unknown_fields)]
 pub struct GameOptions {
@@ -265,22 +281,6 @@ pub struct GameOptions {
     pub one_less_card: bool,
     pub all_or_nothing: bool,
     pub detrimental_characters: bool,
-    /// The deal that a table requests, as the end of its full seed: "123" in a 3-player game of No
-    /// Variant deals `p3v0s123`. Absent when the server deals the next seed that none of the
-    /// players have played. Only tables report it; games report their full seed elsewhere.
-    #[serde(skip_serializing_if = "Option::is_none")]
-    #[schemars(with = "String", length(min = 1, max = MAX_SEED_LENGTH))]
-    pub seed: Option<String>,
-    /// A finished game that a table plays again with its deal, seats, characters, and options,
-    /// which replace the others. Only tables report it.
-    #[serde(rename = "replayGameID", skip_serializing_if = "Option::is_none")]
-    #[schemars(with = "GameId")]
-    pub replay_game_id: Option<GameId>,
-    /// The turn of `replayGameID` that the game starts from, counting from 1. Absent starts from
-    /// the first turn.
-    #[serde(skip_serializing_if = "Option::is_none")]
-    #[schemars(with = "u32", range(min = 1, max = i32::MAX))]
-    pub replay_turn: Option<u32>,
 }
 
 /// Must match `hanabi_engine::Options::default()`; a server test checks this.
@@ -300,6 +300,55 @@ impl Default for GameOptions {
             one_less_card: false,
             all_or_nothing: false,
             detrimental_characters: false,
+        }
+    }
+}
+
+const fn default_max_players() -> u8 {
+    DEFAULT_MAX_PLAYERS
+}
+
+/// A table's name, player limit, options, and deal, as its owner sets them and as tables report
+/// them. Missing fields take their defaults.
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize, JsonSchema)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct TableSettings {
+    /// Blank in a request uses the owner's name.
+    #[serde(default)]
+    pub name: String,
+    #[serde(default = "default_max_players")]
+    #[schemars(with = "NumPlayers")]
+    pub max_players: u8,
+    #[serde(default)]
+    pub options: GameOptions,
+    /// The deal that the table requests, as the end of its full seed: "123" in a 3-player game of
+    /// No Variant deals `p3v0s123`. Absent when the server deals the next seed that none of the
+    /// players have played.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[schemars(with = "String", length(min = 1, max = MAX_SEED_LENGTH))]
+    pub seed: Option<String>,
+    /// A finished game that the table plays again with its deal, seats, characters, and options,
+    /// which replace the others.
+    #[serde(
+        default,
+        rename = "replayGameID",
+        skip_serializing_if = "Option::is_none"
+    )]
+    #[schemars(with = "GameId")]
+    pub replay_game_id: Option<GameId>,
+    /// The turn of `replayGameID` that the game starts from, counting from 1. Absent starts from
+    /// the first turn.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[schemars(with = "u32", range(min = 1, max = i32::MAX))]
+    pub replay_turn: Option<u32>,
+}
+
+impl Default for TableSettings {
+    fn default() -> Self {
+        Self {
+            name: String::new(),
+            max_players: DEFAULT_MAX_PLAYERS,
+            options: GameOptions::default(),
             seed: None,
             replay_game_id: None,
             replay_turn: None,
@@ -338,14 +387,10 @@ pub struct Table {
     pub table_id: TableId,
     /// Whether the recipient is one of the players.
     pub joined: bool,
-    #[schemars(with = "NumPlayers")]
-    pub max_players: u8,
-    #[schemars(length(min = 1))]
-    pub name: String,
+    pub settings: TableSettings,
     /// The current number of players, which can be below the minimum during a pregame.
     #[schemars(range(min = 0, max = MAX_PLAYERS))]
     pub num_players: u8,
-    pub options: GameOptions,
     #[serde(rename = "ownerID")]
     pub owner_id: UserId,
     pub password_protected: bool,
@@ -473,13 +518,9 @@ pub struct PregamePlayer {
 pub struct Pregame {
     #[serde(rename = "tableID")]
     pub table_id: TableId,
-    #[schemars(length(min = 1))]
-    pub name: String,
+    pub settings: TableSettings,
     #[serde(rename = "ownerID")]
     pub owner_id: UserId,
     pub players: Vec<PregamePlayer>,
-    pub options: GameOptions,
     pub password_protected: bool,
-    #[schemars(with = "NumPlayers")]
-    pub max_players: u8,
 }

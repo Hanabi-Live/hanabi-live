@@ -13,8 +13,9 @@ import * as z from "zod";
 
 /** A game in the replay format, generated from the server's contract. */
 export type GameJSON = z.input<typeof replayGameSchema>;
-type DeckCard = GameJSON["deck"][number];
-type Action = GameJSON["actions"][number];
+/** A deck card as parsing gives it, with the suit that a missing one defaults to. */
+type DeckCard = NonNullable<z.output<typeof replayGameSchema>["deck"]>[number];
+type Action = NonNullable<GameJSON["actions"]>[number];
 
 /** An action as a game's record stores it, which is the form that a compressed game holds. */
 interface CompactAction {
@@ -23,8 +24,14 @@ interface CompactAction {
   readonly value: number | undefined;
 }
 
-const actionSchema = replayGameSchema.unwrap().shape.actions.unwrap().element;
-const deckCardSchema = replayGameSchema.unwrap().shape.deck.unwrap().element;
+const actionSchema = replayGameSchema
+  .unwrap()
+  .shape.actions.unwrap()
+  .unwrap().element;
+const deckCardSchema = replayGameSchema
+  .unwrap()
+  .shape.deck.unwrap()
+  .unwrap().element;
 
 interface MinMax {
   min: number;
@@ -171,7 +178,9 @@ export function expand(data: string): string | undefined {
 }
 
 /** Compresses a `GameJSON` object into a string. Returns undefined if decompression fails. */
-function gameJSONCompress(data: GameJSON): string | undefined {
+function gameJSONCompress(
+  data: z.output<typeof replayGameSchema>,
+): string | undefined {
   // An empty last part is a game without a seed.
   const seed = data.seed ?? "";
   if (!/^[\d\-A-Za-z]*$/u.test(seed)) {
@@ -180,21 +189,21 @@ function gameJSONCompress(data: GameJSON): string | undefined {
   let out = "";
 
   // Number of players
-  const numberOfPlayers = data.playerNames.length;
+  const numberOfPlayers = data.playerNames?.length ?? 0;
   if (numberOfPlayers < MIN_PLAYERS || numberOfPlayers > MAX_PLAYERS) {
     return undefined;
   }
-  out += data.playerNames.length.toString();
+  out += numberOfPlayers.toString();
 
   // Deck
-  const deck = compressDeck(data.deck);
+  const deck = compressDeck(data.deck ?? []);
   if (deck === undefined) {
     return undefined;
   }
   out += `${deck},`;
 
   // Actions
-  const actions = compressActions(data.actions);
+  const actions = compressActions(data.actions ?? []);
   out += `${actions},`;
 
   // Variant ID

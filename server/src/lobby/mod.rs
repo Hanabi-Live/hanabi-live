@@ -130,9 +130,7 @@ fn page_error(offset: i64, amount: i64) -> Option<String> {
 fn warning(message: &str) -> Effect {
     Effect::to_self(Outgoing::new(
         hanabi_protocol::server::WARNING,
-        hanabi_protocol::Warning {
-            message: message.into(),
-        },
+        hanabi_protocol::Notice::new(message),
     ))
 }
 

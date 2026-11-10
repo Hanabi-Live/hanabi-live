@@ -819,9 +819,6 @@ pub(crate) fn wire_options(options: &Options) -> hanabi_protocol::GameOptions {
         one_less_card: *one_less_card,
         all_or_nothing: *all_or_nothing,
         detrimental_characters: *detrimental_characters,
-        seed: None,
-        replay_game_id: None,
-        replay_turn: None,
     }
 }
 
@@ -841,10 +838,6 @@ pub(crate) fn engine_options(options: &hanabi_protocol::GameOptions) -> Options 
         one_less_card,
         all_or_nothing,
         detrimental_characters,
-        // A table keeps its seed and replayed game apart from the game's rules, in `ExtraOptions`.
-        seed: _,
-        replay_game_id: _,
-        replay_turn: _,
     } = options;
     Options {
         num_players: usize::from(*num_players),

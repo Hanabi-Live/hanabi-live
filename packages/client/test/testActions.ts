@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-restricted-imports */
 
-import { gameIdSchema } from "@hanabi-live/game";
+import { gameIdSchema } from "@hanabi-live/data";
 import type {
   ActionHypotheticalAction,
   ActionHypotheticalBack,

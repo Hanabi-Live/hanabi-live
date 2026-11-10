@@ -14,6 +14,7 @@
 /* eslint-disable no-await-in-loop -- The browser visits the states one at a time. */
 
 import { SERVER_COMMAND_SCHEMAS, VERSION } from "@hanabi-live/data";
+import { START_CARD_RANK } from "@hanabi-live/game";
 import { assertDefined } from "complete-common";
 import { execFile } from "node:child_process";
 import {
@@ -554,7 +555,7 @@ async function connect(
 
 /** Plays one turn of a game between two players and ends it, so that it is saved. */
 async function playGame(alice: Peer, bob: Peer): Promise<number> {
-  alice.send("tableCreate", { name: "Seeded game" });
+  alice.send("tableCreate", { settings: { name: "Seeded game" } });
   const { tableID } = await alice.receive(
     "joined",
     SERVER_COMMAND_SCHEMAS.joined,
@@ -637,12 +638,14 @@ async function seed(address: string): Promise<Seed> {
     settings: { hGroupConventions: true, hGroupLevel: H_GROUP_LEVEL },
   });
   bob.send("tableCreate", {
-    name: "Bob's table",
-    // A long variant name with six suits, so that the screens show how they fit both.
-    options: {
-      speedrun: true,
-      deckPlays: true,
-      variantName: LONG_VARIANT_NAME,
+    settings: {
+      name: "Bob's table",
+      // A long variant name with six suits, so that the screens show how they fit both.
+      options: {
+        speedrun: true,
+        deckPlays: true,
+        variantName: LONG_VARIANT_NAME,
+      },
     },
   });
   const { tableID } = await bob.receive(
@@ -680,7 +683,11 @@ async function seed(address: string): Promise<Seed> {
     const newest = actions.findLast(
       (action) => action.type === "draw" && action.playerIndex !== 0,
     );
-    if (newest?.type !== "draw" || newest.rank === undefined) {
+    if (
+      newest?.type !== "draw"
+      || newest.rank === undefined
+      || newest.rank === START_CARD_RANK
+    ) {
       return;
     }
     // A rank clue, since the variant's clue colors do not match its suits one to one.

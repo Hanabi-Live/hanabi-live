@@ -9,7 +9,7 @@ use hanabi_engine::RecordedAction;
 use hanabi_engine::{AssignedCharacter, GameSetup, Interpretation};
 use hanabi_protocol::TableId;
 use hanabi_protocol::UserId;
-use hanabi_protocol::{NO_VALUE, RecordedActionType, ReplayImport};
+use hanabi_protocol::{NO_VALUE, RecordedActionType, ReplayGame};
 
 /// The longest seed that a replay import can name, in bytes. A table's seed is prefixed with the
 /// player count and variant ID, so this leaves room above `MAX_SEED_LENGTH`.
@@ -32,7 +32,7 @@ fn seconds(value: i64) -> f64 {
     value as f64
 }
 
-pub fn parse(input: &ReplayImport) -> CommandResult<Imported> {
+pub fn parse(input: &ReplayGame) -> CommandResult<Imported> {
     let seed = input.seed.as_deref().unwrap_or("");
     ensure_or_reject!(
         seed.len() <= MAX_IMPORTED_SEED_LENGTH
@@ -93,13 +93,11 @@ pub fn parse(input: &ReplayImport) -> CommandResult<Imported> {
         .deck
         .iter()
         .flatten()
-        .map(|card| -> CommandResult<Card> {
-            Ok(Card {
-                suit_index: usize::try_from(card.suit_index.unwrap_or(0))?,
-                rank: card.rank.unwrap_or(0),
-            })
+        .map(|card| Card {
+            suit_index: card.suit_index.index(),
+            rank: card.rank.into(),
         })
-        .collect::<CommandResult<_>>()?;
+        .collect();
     let seeded = if seed.is_empty() {
         None
     } else {

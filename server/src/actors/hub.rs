@@ -5,7 +5,6 @@ use super::{
 };
 use crate::errors::{CommandError, CommandResult, Report};
 use crate::{
-    accounts,
     integrations::IntegrationSlot,
     lobby::{OnlineUser, Publication},
     model::TableSnapshot,
@@ -20,8 +19,7 @@ use axum::http::StatusCode;
 use futures_util::FutureExt;
 use hanabi_protocol::PlayerIndex;
 use hanabi_protocol::{
-    ClientMessage, ErrorNotice, SoundLobby, Status, TableId, TableRequest, User, UserId, UserLeft,
-    UserList,
+    ClientMessage, SoundLobby, Status, TableId, TableRequest, User, UserId, UserLeft, UserList,
 };
 use std::{
     collections::{BTreeSet, HashMap},
@@ -192,12 +190,7 @@ impl Hub {
             ));
         }
         let boot = frame(hanabi_protocol::server::BOOT, TableRequest { table_id: id });
-        let warning = frame(
-            hanabi_protocol::server::WARNING,
-            hanabi_protocol::Warning {
-                message: accounts::escape_html(&report.text()),
-            },
-        );
+        let warning = frame(hanabi_protocol::server::WARNING, report.notice());
         let users = self
             .sessions
             .values_mut()
@@ -615,9 +608,9 @@ impl Hub {
             } else {
                 frame(
                     hanabi_protocol::server::ERROR,
-                    ErrorNotice {
-                        message: "The server is going down for maintenance. Your accepted game progress has been saved.<br />Please reconnect after the server restarts.".into(),
-                    },
+                    hanabi_protocol::Notice::new(
+                        "The server is going down for maintenance. Your accepted game progress has been saved.<br />Please reconnect after the server restarts.",
+                    ),
                 )
             },
         ];
