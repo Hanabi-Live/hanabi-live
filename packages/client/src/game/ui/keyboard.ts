@@ -1,6 +1,5 @@
 // Functions for handling all of the keyboard shortcuts.
 
-import { ActionType } from "@hanabi-live/data";
 import type { CardOrder } from "@hanabi-live/game";
 import {
   getClueCost,
@@ -387,14 +386,16 @@ function sharedReplaySendSound(sound: "buzz" | "clap" | "holy" | "nooo") {
 }
 
 function play() {
-  promptCardOrder(ActionType.Play);
+  promptCardOrder("play");
 }
 
 function discard() {
-  promptCardOrder(ActionType.Discard);
+  promptCardOrder("discard");
 }
 
-function promptCardOrder(actionType: ActionType.Play | ActionType.Discard) {
+type PlayOrDiscard = "play" | "discard";
+
+function promptCardOrder(actionType: PlayOrDiscard) {
   const playerIndex =
     globals.state.replay.hypothetical === undefined
       ? globals.metadata.ourPlayerIndex
@@ -414,7 +415,7 @@ function promptCardOrder(actionType: ActionType.Play | ActionType.Discard) {
   }
 
   const maxSlotIndex = hand.length;
-  const verb = ActionType[actionType];
+  const verb = actionType === "play" ? "Play" : "Discard";
 
   playDiscardTitle.textContent = `${verb} Card`;
   playDiscardMessage.textContent = `Enter the slot number (1 to ${maxSlotIndex}) of the card to ${verb.toLowerCase()}.`;
@@ -465,35 +466,26 @@ function click(element: Konva.Node) {
   };
 }
 
-function performAction(
-  actionType: ActionType.Play | ActionType.Discard,
-  target: CardOrder,
-) {
-  const card = globals.deck[target];
-  if (actionType === ActionType.Play && card !== undefined) {
+function performAction(actionType: PlayOrDiscard, order: CardOrder) {
+  const card = globals.deck[order];
+  if (actionType === "play" && card !== undefined) {
     confirmPlay(card.state, () => {
-      sendAction(actionType, target);
+      sendAction(actionType, order);
     });
     return;
   }
 
-  sendAction(actionType, target);
+  sendAction(actionType, order);
 }
 
-function sendAction(
-  actionType: ActionType.Play | ActionType.Discard,
-  target: CardOrder,
-) {
+function sendAction(actionType: PlayOrDiscard, order: CardOrder) {
   if (globals.state.replay.hypothetical === undefined) {
     globals.lobby.conn!.send(
       "action",
-      toWireAction(globals.lobby.tableID, { type: actionType, target }),
+      toWireAction(globals.lobby.tableID, { type: actionType, order }),
     );
   } else {
-    hypothetical.sendHypotheticalAction({
-      type: actionType,
-      target,
-    });
+    hypothetical.sendHypotheticalAction({ type: actionType, order });
   }
 
   arrows.hideAll();

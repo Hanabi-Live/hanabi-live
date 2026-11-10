@@ -85,16 +85,6 @@ macro_rules! wire_enum {
 }
 
 wire_enum! {
-    /// The kind of a turn that a player takes. A game's record stores it as a `RecordedActionType`.
-    pub enum ActionType {
-        Play = 0,
-        Discard = 1,
-        ColorClue = 2,
-        RankClue = 3,
-    }
-}
-
-wire_enum! {
     /// The type of an action in a game's record: a turn, or the end of the game. The database
     /// stores these values in `game_actions`.
     pub enum RecordedActionType {
@@ -120,20 +110,8 @@ impl RecordedActionType {
     }
 }
 
-/// A turn is recorded with the same type.
-impl From<ActionType> for RecordedActionType {
-    fn from(action: ActionType) -> Self {
-        match action {
-            ActionType::Play => Self::Play,
-            ActionType::Discard => Self::Discard,
-            ActionType::ColorClue => Self::ColorClue,
-            ActionType::RankClue => Self::RankClue,
-        }
-    }
-}
-
 wire_enum! {
-    /// The kind of a clue in a game event. Actions name clues with `ActionType` instead.
+    /// The kind of a clue in a game event.
     pub enum ClueType {
         Color = 0,
         Rank = 1,
@@ -210,7 +188,6 @@ wire_enum! {
 
 /// Every wire enum, for the TypeScript generator.
 pub const WIRE_ENUMS: &[WireEnum] = &[
-    ActionType::WIRE,
     ClueType::WIRE,
     EndCondition::WIRE,
     GameListColumn::WIRE,

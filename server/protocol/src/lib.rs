@@ -6,8 +6,8 @@ use serde::{Deserialize, Serialize};
 
 mod enums;
 pub use enums::{
-    ActionType, ClueType, EndCondition, GameListColumn, RecordedActionType, ReplayBoardElement,
-    SoundMove, Status, WIRE_ENUMS, WireEnum, WireEnumMember,
+    ClueType, EndCondition, GameListColumn, RecordedActionType, ReplayBoardElement, SoundMove,
+    Status, WIRE_ENUMS, WireEnum, WireEnumMember,
 };
 mod registry;
 pub use registry::{

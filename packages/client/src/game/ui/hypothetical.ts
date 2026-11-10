@@ -1,7 +1,6 @@
 // In shared replays, players can enter a hypotheticals where can perform arbitrary actions in order
 // to see what will happen.
 
-import { ActionType } from "@hanabi-live/data";
 import type {
   HypotheticalActionIntent,
   HypotheticalCardView,
@@ -100,30 +99,26 @@ export function finishHypothetical(): void {
 export function sendHypotheticalAction(hypoAction: ClientAction): void {
   let intent: HypotheticalActionIntent;
   switch (hypoAction.type) {
-    case ActionType.Play: {
-      intent = { type: "play", order: hypoAction.target };
+    case "play":
+    case "discard": {
+      intent = hypoAction;
       break;
     }
 
-    case ActionType.Discard: {
-      intent = { type: "discard", order: hypoAction.target };
-      break;
-    }
-
-    case ActionType.ColorClue: {
+    case "colorClue": {
       intent = {
         type: "colorClue",
         target: hypoAction.target,
-        value: hypoAction.value,
+        value: hypoAction.colorIndex,
       };
       break;
     }
 
-    case ActionType.RankClue: {
+    case "rankClue": {
       intent = {
         type: "rankClue",
         target: hypoAction.target,
-        value: hypoAction.value,
+        value: hypoAction.rank,
       };
       break;
     }

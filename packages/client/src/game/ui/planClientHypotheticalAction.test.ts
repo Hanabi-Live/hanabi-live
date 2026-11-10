@@ -1,4 +1,3 @@
-import { ActionType } from "@hanabi-live/data";
 import type {
   CardOrder,
   GameAction,
@@ -128,7 +127,7 @@ describe("client hypothetical planning", () => {
       });
       expect(getCardOrStackBase(bottomOrder)).toBeUndefined();
 
-      sendHypotheticalAction({ type: ActionType.Play, target: bottomOrder });
+      sendHypotheticalAction({ type: "play", order: bottomOrder });
 
       const actions = planClientHypotheticalAction(
         { type: "play", order: bottomOrder },
@@ -179,9 +178,9 @@ describe("client hypothetical planning", () => {
     });
 
     sendHypotheticalAction({
-      type: ActionType.RankClue,
+      type: "rankClue",
       target: 1 as PlayerIndex,
-      value: 1,
+      rank: 1,
     });
 
     expect(dispatch).toHaveBeenCalledWith({

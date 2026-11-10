@@ -28,16 +28,6 @@ export const OUTDATED_CLIENT_CODE = "outdated_client";
 export const NO_ACCOUNT_CODE = "no_account";
 
 /**
- * The kind of a turn that a player takes. A game's record stores it as a `RecordedActionType`.
- */
-export enum ActionType {
-  Play = 0,
-  Discard = 1,
-  ColorClue = 2,
-  RankClue = 3,
-}
-
-/**
  * A column of the public game lists, which clients sort by `col[index]` and filter by
  * `fcol[index]`.
  */

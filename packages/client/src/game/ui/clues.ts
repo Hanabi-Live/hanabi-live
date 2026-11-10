@@ -1,4 +1,3 @@
-import { ActionType } from "@hanabi-live/data";
 import type { Clue, PlayerIndex } from "@hanabi-live/game";
 import {
   ClueType,
@@ -169,9 +168,9 @@ export function give(): void {
       );
 
       const clientActionColorClue: ClientActionColorClue = {
-        type: ActionType.ColorClue,
+        type: "colorClue",
         target: playerButton.targetPlayerIndex,
-        value: colorIndex,
+        colorIndex,
       };
       turn.end(clientActionColorClue);
 
@@ -180,9 +179,9 @@ export function give(): void {
 
     case ClueType.Rank: {
       const clientActionRankClue: ClientActionRankClue = {
-        type: ActionType.RankClue,
+        type: "rankClue",
         target: playerButton.targetPlayerIndex,
-        value: clueOrRankButton.clue.value,
+        rank: clueOrRankButton.clue.value,
       };
       turn.end(clientActionRankClue);
 

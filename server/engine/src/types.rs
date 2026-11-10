@@ -1,4 +1,4 @@
-pub use hanabi_protocol::{ActionType, ClueType, EndCondition, RecordedActionType};
+pub use hanabi_protocol::{ClueType, EndCondition, RecordedActionType};
 use hanabi_protocol::{DEFAULT_VARIANT_NAME, MIN_PLAYERS};
 use serde::{Deserialize, Serialize};
 

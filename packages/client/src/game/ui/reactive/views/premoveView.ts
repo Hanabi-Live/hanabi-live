@@ -1,4 +1,3 @@
-import { ActionType } from "@hanabi-live/data";
 import type { ClientAction } from "../../../types/ClientAction";
 import type { State } from "../../../types/State";
 import { globals } from "../../UIGlobals";
@@ -26,10 +25,7 @@ export function onChanged(
     // We just canceled a premove action.
 
     // If we dragged a card, we have to make the card tween back to the hand.
-    if (
-      previousAction.type === ActionType.Play
-      || previousAction.type === ActionType.Discard
-    ) {
+    if (previousAction.type === "play" || previousAction.type === "discard") {
       ourHand.get().doLayout();
       globals.layers.card.draw();
     }
@@ -37,18 +33,18 @@ export function onChanged(
     // We just specified a premove action.
     let text = "Cancel Pre-";
     switch (action.type) {
-      case ActionType.Play: {
+      case "play": {
         text += "Play";
         break;
       }
 
-      case ActionType.Discard: {
+      case "discard": {
         text += "Discard";
         break;
       }
 
-      case ActionType.ColorClue:
-      case ActionType.RankClue: {
+      case "colorClue":
+      case "rankClue": {
         text += "Clue";
         break;
       }

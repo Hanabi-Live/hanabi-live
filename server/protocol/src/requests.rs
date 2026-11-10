@@ -344,16 +344,16 @@ impl ActionRequest {
     }
 
     /// The turn's type, target, and value, as a game's record stores them.
-    pub const fn recorded(&self) -> (ActionType, i32, i32) {
+    pub const fn recorded(&self) -> (RecordedActionType, i32, i32) {
         match *self {
-            Self::Play { order, .. } => (ActionType::Play, order, 0),
-            Self::Discard { order, .. } => (ActionType::Discard, order, 0),
+            Self::Play { order, .. } => (RecordedActionType::Play, order, 0),
+            Self::Discard { order, .. } => (RecordedActionType::Discard, order, 0),
             Self::ColorClue {
                 target,
                 color_index,
                 ..
-            } => (ActionType::ColorClue, target, color_index),
-            Self::RankClue { target, rank, .. } => (ActionType::RankClue, target, rank),
+            } => (RecordedActionType::ColorClue, target, color_index),
+            Self::RankClue { target, rank, .. } => (RecordedActionType::RankClue, target, rank),
         }
     }
 }

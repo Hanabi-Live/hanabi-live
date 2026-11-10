@@ -18,7 +18,7 @@ export const MAX_STRIKES = 3;
 export const PANICKY_MAX_CLUES = 4;
 
 /**
- * The kind of a clue in a game event. Actions name clues with `ActionType` instead.
+ * The kind of a clue in a game event.
  */
 export enum ClueType {
   Color = 0,

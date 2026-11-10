@@ -1,4 +1,4 @@
-import { ActionType, RecordedActionType, SITE_URL } from "@hanabi-live/data";
+import { RecordedActionType, SITE_URL } from "@hanabi-live/data";
 import type {
   CardOrder,
   ColorIndex,
@@ -180,18 +180,15 @@ function getGameActionsFromState(source: ReplayState): readonly ClientAction[] {
     const action = source.actions[i]!;
     switch (action.type) {
       case "play": {
-        actions.push({
-          type: ActionType.Play,
-          target: action.order,
-        });
+        actions.push({ type: "play", order: action.order });
         currentSegment++;
         continue;
       }
 
       case "discard": {
         actions.push({
-          type: action.failed ? ActionType.Play : ActionType.Discard,
-          target: action.order,
+          type: action.failed ? "play" : "discard",
+          order: action.order,
         });
         currentSegment++;
         continue;
@@ -207,18 +204,18 @@ function getGameActionsFromState(source: ReplayState): readonly ClientAction[] {
 
           case ClueType.Color: {
             actions.push({
-              type: ActionType.ColorClue,
+              type: "colorClue",
               target: action.target,
-              value: action.clue.value,
+              colorIndex: action.clue.value,
             });
             break;
           }
 
           case ClueType.Rank: {
             actions.push({
-              type: ActionType.RankClue,
+              type: "rankClue",
               target: action.target,
-              value: action.clue.value,
+              rank: action.clue.value,
             });
             break;
           }
@@ -265,7 +262,7 @@ function getActionFromLogEntry(
       if (slot !== undefined) {
         return getActionFromHypoPlayOrDiscard(
           i,
-          ActionType.Play,
+          "play",
           playerName,
           slot,
         );
@@ -281,7 +278,7 @@ function getActionFromLogEntry(
       if (slot !== undefined) {
         return getActionFromHypoPlayOrDiscard(
           i,
-          ActionType.Discard,
+          "discard",
           playerName,
           slot,
         );
@@ -302,7 +299,7 @@ function getActionFromLogEntry(
 
 function getActionFromHypoPlayOrDiscard(
   entryNumber: number,
-  actionType: ActionType.Play | ActionType.Discard,
+  actionType: "play" | "discard",
   playerName: string,
   slot: number,
 ): ClientAction {
@@ -326,10 +323,7 @@ function getActionFromHypoPlayOrDiscard(
     "Failed to get the card order from the last hypothetical state.",
   );
 
-  return {
-    type: actionType,
-    target: cardOrder,
-  };
+  return { type: actionType, order: cardOrder };
 }
 
 function getActionFromHypoClue(
@@ -360,9 +354,9 @@ function getActionFromHypoClue(
     );
 
     return {
-      type: ActionType.ColorClue,
+      type: "colorClue",
       target: playerIndex,
-      value: colorIndex,
+      colorIndex,
     };
   }
 
@@ -375,9 +369,9 @@ function getActionFromHypoClue(
 
   // It is a rank clue.
   return {
-    type: ActionType.RankClue,
+    type: "rankClue",
     target: playerIndex,
-    value: rankClueNumber,
+    rank: rankClueNumber,
   };
 }
 
@@ -422,20 +416,35 @@ function getColorIndexFromColorName(
   return colorIndex === -1 ? undefined : (colorIndex as ColorIndex);
 }
 
-/** Each turn's type in a game's record. */
-const RECORDED_ACTION_TYPES = {
-  [ActionType.Play]: RecordedActionType.Play,
-  [ActionType.Discard]: RecordedActionType.Discard,
-  [ActionType.ColorClue]: RecordedActionType.ColorClue,
-  [ActionType.RankClue]: RecordedActionType.RankClue,
-} as const satisfies Record<ActionType, RecordedActionType>;
-
 /** A turn as an exported game records it. */
 function toRecordedAction(action: ClientAction): {
   readonly type: RecordedActionType;
   readonly target: number;
   readonly value?: number;
 } {
-  const { type, ...rest } = action;
-  return { ...rest, type: RECORDED_ACTION_TYPES[type] };
+  switch (action.type) {
+    case "play": {
+      return { type: RecordedActionType.Play, target: action.order };
+    }
+
+    case "discard": {
+      return { type: RecordedActionType.Discard, target: action.order };
+    }
+
+    case "colorClue": {
+      return {
+        type: RecordedActionType.ColorClue,
+        target: action.target,
+        value: action.colorIndex,
+      };
+    }
+
+    case "rankClue": {
+      return {
+        type: RecordedActionType.RankClue,
+        target: action.target,
+        value: action.rank,
+      };
+    }
+  }
 }

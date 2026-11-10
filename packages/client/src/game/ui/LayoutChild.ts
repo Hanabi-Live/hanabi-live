@@ -1,4 +1,3 @@
-import { ActionType } from "@hanabi-live/data";
 import type { PlayerIndex } from "@hanabi-live/game";
 import { isAtMaxClueTokens } from "@hanabi-live/game";
 import Konva from "konva";
@@ -191,8 +190,8 @@ export class LayoutChild extends Konva.Group {
           this.card.state,
           () => {
             turn.end({
-              type: ActionType.Play,
-              target: this.card.order,
+              type: "play",
+              order: this.card.order,
             });
           },
           returnToHand,
@@ -202,8 +201,8 @@ export class LayoutChild extends Konva.Group {
 
       case "discardArea": {
         turn.end({
-          type: ActionType.Discard,
-          target: this.card.order,
+          type: "discard",
+          order: this.card.order,
         });
         break;
       }

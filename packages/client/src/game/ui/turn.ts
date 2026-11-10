@@ -1,4 +1,3 @@
-import { ActionType } from "@hanabi-live/data";
 import { getClueCost, isAtMaxClueTokens } from "@hanabi-live/game";
 import * as notifications from "../../notifications";
 import { toWireAction } from "../../wire";
@@ -42,8 +41,8 @@ function handlePremove() {
 
   // Perform some validation.
   switch (oldPremove.type) {
-    case ActionType.ColorClue:
-    case ActionType.RankClue: {
+    case "colorClue":
+    case "rankClue": {
       // Prevent pre-cluing if there is not a clue available.
       if (clueTokens < getClueCost(globals.variant)) {
         return;
@@ -52,7 +51,7 @@ function handlePremove() {
       break;
     }
 
-    case ActionType.Discard: {
+    case "discard": {
       // Prevent discarding if the team is at the maximum amount of clues.
       if (isAtMaxClueTokens(clueTokens, globals.variant)) {
         return;

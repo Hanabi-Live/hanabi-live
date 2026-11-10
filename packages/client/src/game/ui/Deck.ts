@@ -1,4 +1,4 @@
-import { ActionType, ReplayBoardElement } from "@hanabi-live/data";
+import { ReplayBoardElement } from "@hanabi-live/data";
 import type { CardOrder } from "@hanabi-live/game";
 import {
   getDeckPossibilities,
@@ -137,16 +137,16 @@ export class Deck extends Konva.Group {
       const totalCardsInDeck = getTotalCardsInDeck(globals.variant);
       const cardOrder = (totalCardsInDeck - 1) as CardOrder;
       turn.end({
-        type: ActionType.Play,
-        target: cardOrder,
+        type: "play",
+        order: cardOrder,
       });
     } else if (draggedTo === "discardArea" && globals.variant.hasInverted) {
       // Inverted suit needs discard whenever play is available.
       const totalCardsInDeck = getTotalCardsInDeck(globals.variant);
       const cardOrder = (totalCardsInDeck - 1) as CardOrder;
       turn.end({
-        type: ActionType.Discard,
-        target: cardOrder,
+        type: "discard",
+        order: cardOrder,
       });
     } else {
       // The card was dragged to an invalid location; tween it back to the hand.

@@ -7,7 +7,6 @@ import type {
   ClientCommandData,
   ServerCommandData,
 } from "@hanabi-live/data";
-import { ActionType } from "@hanabi-live/data";
 import type {
   ActionIncludingHypothetical,
   CardIdentity,
@@ -27,40 +26,12 @@ type WireEvent = ServerCommandData["gameAction"]["action"];
 type WireCardIdentity =
   ServerCommandData["cardIdentities"]["identities"][number];
 
-type WireAction = z.input<typeof actionRequestSchema>;
-
 /** Converts an action that we took into the "action" command's payload. */
 export function toWireAction(
   tableID: number,
   action: ClientAction,
-): WireAction {
-  switch (action.type) {
-    case ActionType.Play: {
-      return { tableID, type: "play", order: action.target };
-    }
-
-    case ActionType.Discard: {
-      return { tableID, type: "discard", order: action.target };
-    }
-
-    case ActionType.ColorClue: {
-      return {
-        tableID,
-        type: "colorClue",
-        target: action.target,
-        colorIndex: action.value,
-      };
-    }
-
-    case ActionType.RankClue: {
-      return {
-        tableID,
-        type: "rankClue",
-        target: action.target,
-        rank: action.value,
-      };
-    }
-  }
+): z.input<typeof actionRequestSchema> {
+  return { tableID, ...action };
 }
 
 /** The game state indexes some lists by seat, so each needs one entry per player. */

@@ -32,7 +32,7 @@ impl TableActor {
             ClientMessage::Action(r) => {
                 let (kind, target, value) = r.recorded();
                 let action = ReplayAction {
-                    kind: kind.into(),
+                    kind,
                     target,
                     value,
                 };

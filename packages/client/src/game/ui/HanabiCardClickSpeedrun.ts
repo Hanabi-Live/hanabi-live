@@ -1,6 +1,5 @@
 // Speedrun click functions for the HanabiCard object.
 
-import { ActionType } from "@hanabi-live/data";
 import type {
   CardState,
   Color,
@@ -59,8 +58,8 @@ function clickLeft(card: HanabiCard, event: MouseEvent) {
     && !event.metaKey
   ) {
     turn.end({
-      type: ActionType.Play,
-      target: card.order,
+      type: "play",
+      order: card.order,
     });
     return;
   }
@@ -91,9 +90,9 @@ function clickLeft(card: HanabiCard, event: MouseEvent) {
     }
 
     turn.end({
-      type: ActionType.ColorClue,
+      type: "colorClue",
       target: card.state.location,
-      value: colorIndex,
+      colorIndex,
     });
   }
 }
@@ -164,8 +163,8 @@ function clickRight(card: HanabiCard, event: MouseEvent) {
     }
 
     turn.end({
-      type: ActionType.Discard,
-      target: card.order,
+      type: "discard",
+      order: card.order,
     });
     return;
   }
@@ -194,9 +193,9 @@ function clickRight(card: HanabiCard, event: MouseEvent) {
     }
 
     turn.end({
-      type: ActionType.RankClue,
+      type: "rankClue",
       target: card.state.location,
-      value: clueRank,
+      rank: clueRank,
     });
     return;
   }
