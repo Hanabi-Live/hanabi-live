@@ -84,6 +84,9 @@
   --login-alert-border: #ebccd1;
   --login-alert-text: #a94442;
 
+  /* The corner radius of panels, buttons, and form fields */
+  --radius: 6px;
+
   /*
     Stacking order, from back to front. Other "z-index" values only order the parts of one
     component.

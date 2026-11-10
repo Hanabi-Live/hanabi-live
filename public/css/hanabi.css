@@ -350,8 +350,6 @@ body[data-screen="game"] {
 
 .lobby-games-table-joined:hover {
   background-color: var(--lobby-table-joined-hover);
-}
-.lobby-games-table-joined:hover {
   /* rejoin */
   cursor:
     url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='23.713' height='23.713' viewBox='0 0 6.274 6.274'><g stroke='%232e3436' stroke-linecap='round' stroke-linejoin='round' stroke-width='.1' transform='translate(-88.655 -55.22)'><circle cx='91.792' cy='58.356' r='3.087' fill='%23e6cf04'/><path fill='%23fff' d='m93.809 58.356-1.583.914-1.583.913v-3.655l1.583.914z'/></g></svg>")
@@ -769,16 +767,6 @@ input::-webkit-calendar-picker-indicator {
   padding: 0;
 }
 
-.resource-group + .resource-group {
-  margin-top: 1.5em;
-}
-
-.resource-group h3 {
-  color: var(--text-label);
-  font-size: 1em;
-  margin: 0 0 0.6em;
-}
-
 .resource-list {
   display: grid;
   gap: 0.75em;
@@ -790,7 +778,7 @@ input::-webkit-calendar-picker-indicator {
   align-items: flex-start;
   background-color: var(--surface-panel);
   border: 1px solid var(--border-panel);
-  border-radius: 6px;
+  border-radius: var(--radius);
   display: flex;
   gap: 1em;
   margin: 0;
@@ -857,11 +845,13 @@ input::-webkit-calendar-picker-indicator {
 /*
   Grouped rows on lobby pages ("Create Game", "Watch Replay", and "Settings")
 */
-.lobby-group + .lobby-group {
+.lobby-group + .lobby-group,
+.resource-group + .resource-group {
   margin-top: 1.5em;
 }
 
-.lobby-group h3 {
+.lobby-group h3,
+.resource-group h3 {
   color: var(--text-label);
   font-size: 1em;
   margin: 0 0 0.6em;
@@ -870,7 +860,7 @@ input::-webkit-calendar-picker-indicator {
 .lobby-rows {
   background-color: var(--surface-panel);
   border: 1px solid var(--border-panel);
-  border-radius: 6px;
+  border-radius: var(--radius);
   list-style: none;
   margin: 0;
   padding: 0;
@@ -1025,7 +1015,7 @@ input::-webkit-calendar-picker-indicator {
 /* A choice between a few options, shown as joined buttons. */
 .lobby-segmented {
   border: 1px solid var(--border);
-  border-radius: 6px;
+  border-radius: var(--radius);
   display: inline-flex;
   flex-shrink: 0;
   overflow: hidden;
@@ -1639,26 +1629,15 @@ input::-webkit-calendar-picker-indicator {
   .lobby-pregame-player {
     max-width: 200px;
   }
-}
 
-/* Hide the logo text */
-@media screen and (max-width: 980px) {
+  /* Hide the logo text */
   #logo-text {
     display: none;
   }
-}
 
-/* Make the pre-game nav bar show only the button icons on smaller resolutions */
-@media screen and (max-width: 410px) {
-  #nav-buttons-pregame .nav-icon {
-    margin-right: 0em;
-  }
-}
-
-/* Make the history nav bar show only the button icons on smaller resolutions */
-@media screen and (max-width: 410px) {
-  #nav-buttons-history .nav-icon {
-    margin-right: 0em;
+  /* make nav items in between space smaller */
+  #header nav > ul > li a:not(.button) {
+    padding: 0 0.8em;
   }
 }
 
@@ -1683,7 +1662,6 @@ input::-webkit-calendar-picker-indicator {
 /* Fix the box margins on smaller resolutions */
 @media screen and (max-width: 736px) {
   .container.max {
-    width: calc(100% - 2em);
     margin-left: 1em;
     margin-right: 1em;
   }
@@ -1692,12 +1670,6 @@ input::-webkit-calendar-picker-indicator {
 /*
   Media queries for lobby redesign on smaller screens
 */
-@media screen and (max-width: 980px) {
-  /* make nav items in between space smaller */
-  #header nav > ul > li a:not(.button) {
-    padding: 0 0.8em;
-  }
-}
 @media screen and (max-width: 840px) {
   /* make nav items in between space smaller */
   #header nav > ul > li a:not(.button) {
@@ -1730,9 +1702,7 @@ input::-webkit-calendar-picker-indicator {
   #lobby-games-table td:nth-child(7) {
     display: none;
   }
-}
 
-@media screen and (max-width: 640px) {
   /* hide 'help' nav menu */
   #header nav > ul > li a#nav-buttons-lobby-resources {
     display: none;
@@ -1803,9 +1773,6 @@ input::-webkit-calendar-picker-indicator {
   }
   #lobby-chat-pregame-container {
     margin-left: 0.5em;
-  }
-  .narrow-screen-hidden {
-    display: none !important;
   }
 }
 
@@ -1989,7 +1956,7 @@ table.history {
   height: auto;
   background-color: var(--surface);
   border: 1px solid var(--border);
-  border-radius: 6px;
+  border-radius: var(--radius);
   color: inherit;
 }
 

@@ -225,7 +225,7 @@ hr {
 
 pre {
   background: var(--surface-sunken);
-  border-radius: 6px;
+  border-radius: var(--radius);
   border: solid 1px var(--border);
   font-family: monospace;
   font-size: 0.9em;
@@ -237,7 +237,7 @@ pre {
 
 code {
   background: var(--surface-sunken);
-  border-radius: 6px;
+  border-radius: var(--radius);
   border: solid 1px var(--border);
   font-family: monospace;
   font-size: 0.9em;
@@ -341,10 +341,6 @@ code {
   width: 60em;
 }
 
-.container.max {
-  width: 100%;
-}
-
 @media screen and (max-width: 840px) {
   .container {
     width: 100%;
@@ -408,7 +404,7 @@ select,
 textarea {
   appearance: none;
   background-color: var(--surface-sunken);
-  border-radius: 6px;
+  border-radius: var(--radius);
   border: solid 1px var(--border);
   color: inherit;
   display: block;
@@ -497,7 +493,7 @@ input[type="radio"] + label:before {
   font-weight: normal;
   text-transform: none;
   background: var(--surface-sunken);
-  border-radius: 6px;
+  border-radius: var(--radius);
   border: solid 1px var(--border);
   content: "";
   display: inline-block;
@@ -525,7 +521,7 @@ input[type="radio"]:focus + label:before {
 }
 
 input[type="checkbox"] + label:before {
-  border-radius: 6px;
+  border-radius: var(--radius);
 }
 
 input[type="radio"] + label:before {
@@ -545,7 +541,7 @@ input[type="radio"]:disabled + label {
 /* Box */
 
 .box {
-  border-radius: 6px;
+  border-radius: var(--radius);
   margin: 0 0 2em 0;
   padding: 3em;
   background: var(--surface);
@@ -733,7 +729,7 @@ input[type="button"],
     background-color 0.2s ease-in-out,
     color 0.2s ease-in-out;
   background-color: #666;
-  border-radius: 6px;
+  border-radius: var(--radius);
   border: 0;
   color: #ffffff;
   cursor: pointer;
@@ -918,7 +914,7 @@ input[type="button"]:disabled,
   height: 2em;
   line-height: 2em;
   padding: 0 1em;
-  border-radius: 6px;
+  border-radius: var(--radius);
 }
 
 #header nav > ul > li a:not(.button) {
