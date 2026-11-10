@@ -251,10 +251,14 @@ export const DiscardPile = forwardRef<
 export function TableTokens({
   clues,
   maxClues,
+  atMaxClues,
   strikes,
 }: {
   readonly clues: number;
   readonly maxClues: number;
+
+  /** Whether the team has every clue token, so that no one can discard. */
+  readonly atMaxClues: boolean;
   readonly strikes: number;
 }): React.JSX.Element {
   return (
@@ -266,8 +270,20 @@ export function TableTokens({
           lines up with the other. */}
       <span className="tw:text-[13px] tw:text-game-muted">Clues</span>
       <span className="tw:text-[13px] tw:text-game-muted">Strikes</span>
-      <span className="tw:text-[22px] tw:font-bold tw:text-game-text">
-        <OutOf max={maxClues} value={clues} />
+      {/* At max clues, the count takes the color of clues, since the team must give one. */}
+      <span
+        className={`tw:text-[22px] tw:font-bold ${
+          atMaxClues ? "tw:text-clue" : "tw:text-game-text"
+        }`}
+      >
+        {atMaxClues ? (
+          <>
+            {clues}
+            <span className="tw:font-medium"> / {maxClues}</span>
+          </>
+        ) : (
+          <OutOf max={maxClues} value={clues} />
+        )}
       </span>
       <div
         aria-label={`${strikes} of ${MAX_STRIKES} strikes`}
@@ -285,6 +301,12 @@ export function TableTokens({
           />
         ))}
       </div>
+      {/* The note keeps its row when hidden, so that the panel does not change height. */}
+      <span
+        className={`tw:text-[13px] tw:text-clue ${atMaxClues ? "" : "tw:invisible"}`}
+      >
+        No discards
+      </span>
     </section>
   );
 }

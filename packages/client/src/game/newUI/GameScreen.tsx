@@ -750,6 +750,7 @@ export function GameScreen({
             />
             <ActionLog log={visibleState.log} />
             <TableTokens
+              atMaxClues={isAtMaxClueTokens(visibleState.clueTokens, variant)}
               clues={getUnadjustedClueTokens(visibleState.clueTokens, variant)}
               maxClues={MAX_CLUES}
               strikes={visibleState.strikes.length}
