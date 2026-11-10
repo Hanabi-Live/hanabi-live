@@ -402,7 +402,8 @@ pub struct TagsDeleteAllRequest {
     pub table_id: TableId,
 }
 
-/// A shared-replay leader's action, which the server applies and relays to everyone watching.
+/// A shared-replay leader's action. The leader sends it, and the server applies it and relays it to
+/// everyone watching.
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
 #[serde(
     tag = "type",
@@ -410,7 +411,7 @@ pub struct TagsDeleteAllRequest {
     rename_all_fields = "camelCase",
     deny_unknown_fields
 )]
-pub enum ReplayActionRequest {
+pub enum SharedReplayAction {
     /// Moves everyone to a segment.
     Segment {
         #[serde(rename = "tableID")]
@@ -418,12 +419,14 @@ pub enum ReplayActionRequest {
         #[schemars(range(min = 0, max = i32::MAX))]
         segment: i32,
     },
-    /// Points at a card or a part of the board, or clears the arrow.
+    /// Points at a card or a part of the board.
     Arrow {
         #[serde(rename = "tableID")]
         table_id: TableId,
+        /// Absent to clear the arrow.
+        #[serde(default, skip_serializing_if = "Option::is_none")]
         #[schemars(with = "ReplayArrowTarget")]
-        target: i64,
+        target: Option<ReplayArrowTarget>,
     },
     Sound {
         #[serde(rename = "tableID")]
@@ -462,7 +465,7 @@ pub enum ReplayActionRequest {
     },
 }
 
-impl ReplayActionRequest {
+impl SharedReplayAction {
     pub const fn table_id(&self) -> TableId {
         match self {
             Self::Segment { table_id, .. }

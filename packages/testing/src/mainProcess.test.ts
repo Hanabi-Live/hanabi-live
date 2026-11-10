@@ -421,10 +421,10 @@ databaseDescribe("compiled application entry point (rust)", () => {
           segment: 1,
         });
         const replayPosition = await replacement.receive(
-          "replaySegment",
-          SERVER_COMMAND_SCHEMAS.replaySegment,
+          "replayAction",
+          SERVER_COMMAND_SCHEMAS.replayAction,
         );
-        expect(replayPosition.segment).toBe(1);
+        expect(replayPosition).toMatchObject({ type: "segment", segment: 1 });
         replacement.send("getGameState", { tableID });
         const replayHistory = await replacement.receive(
           "gameActionList",

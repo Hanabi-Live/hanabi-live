@@ -226,39 +226,29 @@ pub struct ImportOptions {
     pub detrimental_characters: Option<bool>,
 }
 
-#[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
-#[serde(rename_all = "camelCase", deny_unknown_fields)]
-pub struct ReplaySegment {
-    #[serde(rename = "tableID")]
-    pub table_id: TableId,
-    #[schemars(range(min = 0, max = MAX_SAFE_INTEGER))]
-    pub segment: i64,
-}
-
-/// What the leader points at.
-#[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
-#[serde(rename_all = "camelCase", deny_unknown_fields)]
-pub struct ReplayIndicator {
-    #[serde(rename = "tableID")]
-    pub table_id: TableId,
-    #[schemars(with = "ReplayArrowTarget")]
-    pub target: i64,
-}
-
 /// What a shared-replay arrow points at: a card, or a part of the board.
-#[derive(JsonSchema)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
 #[serde(untagged)]
 pub enum ReplayArrowTarget {
-    Card(CardOrder),
+    Card(#[schemars(with = "CardOrder")] i64),
     Board(ReplayBoardElement),
 }
 
-#[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
-#[serde(rename_all = "camelCase", deny_unknown_fields)]
-pub struct ReplaySound {
-    #[serde(rename = "tableID")]
-    pub table_id: TableId,
-    pub sound: ReplaySoundEffect,
+/// The parts of the board that a shared-replay arrow can point at, besides cards.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
+#[serde(rename_all = "camelCase")]
+pub enum ReplayBoardElement {
+    Deck,
+    Turn,
+    Score,
+    MaxScore,
+    Clues,
+    Strike1,
+    Strike2,
+    Strike3,
+    Pace,
+    Efficiency,
+    MinEfficiency,
 }
 
 /// A sound effect that a shared-replay leader plays for everyone watching.
@@ -470,21 +460,4 @@ where
 {
     let seat = Option::<i64>::deserialize(deserializer)?;
     Ok(seat.and_then(|seat| u8::try_from(seat).ok()))
-}
-
-#[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
-#[serde(rename_all = "camelCase", deny_unknown_fields)]
-pub struct HypoShowDrawnCards {
-    #[serde(rename = "tableID")]
-    pub table_id: TableId,
-    pub show_drawn_cards: bool,
-}
-
-#[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
-#[serde(rename_all = "camelCase", deny_unknown_fields)]
-pub struct ReplayEfficiencyModifier {
-    #[serde(rename = "tableID")]
-    pub table_id: TableId,
-    #[schemars(range(min = i32::MIN, max = i32::MAX))]
-    pub efficiency_modifier: i32,
 }

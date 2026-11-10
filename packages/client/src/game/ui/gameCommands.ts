@@ -3,7 +3,6 @@
 // e.g. in-game replays.
 
 import type { ServerCommandData } from "@hanabi-live/data";
-import { ReplayBoardElement } from "@hanabi-live/data";
 import type { CardOrder, GameMetadata, NumPlayers } from "@hanabi-live/game";
 import {
   getCardsPerHand,
@@ -128,37 +127,100 @@ gameCommands.set("hypothetical", (data) => {
   });
 });
 
-gameCommands.set("hypoAction", (wireAction) => {
-  const action = toHypotheticalAction(wireAction);
-  globals.store!.dispatch({
-    type: "hypoAction",
-    shared: true,
-    action,
-  });
-  hypothetical.checkToggleRevealedButton(action);
-});
+// The shared replay leader's actions, which the server relays to everyone watching.
+gameCommands.set("replayAction", (data) => {
+  switch (data.type) {
+    case "segment": {
+      // The leader already moved to the segment that the server is broadcasting.
+      if (
+        globals.state.replay.shared === undefined
+        || globals.state.replay.shared.amLeader
+      ) {
+        return;
+      }
 
-gameCommands.set("hypoBack", () => {
-  globals.store!.dispatch({
-    type: "hypoBack",
-    shared: true,
-  });
-});
+      globals.store!.dispatch({
+        type: "replaySharedSegment",
+        segment: data.segment,
+      });
+      break;
+    }
 
-gameCommands.set("hypoEnd", () => {
-  hypothetical.finishHypothetical();
-});
+    case "arrow": {
+      if (
+        globals.state.replay.shared === undefined
+        // The leader already drew the arrow.
+        || globals.state.replay.shared.amLeader
+        // If we are not currently using the shared segments, the arrow that the leader is
+        // highlighting will not be applicable.
+        || !globals.state.replay.shared.useSharedSegments
+      ) {
+        return;
+      }
 
-gameCommands.set("hypoShowDrawnCards", (data) => {
-  globals.store!.dispatch({
-    type: "hypoShowDrawnCards",
-    shared: true,
-    showDrawnCards: data.showDrawnCards,
-  });
-});
+      arrows.hideAll();
+      if (data.target !== undefined) {
+        arrows.toggle(data.target);
+      }
+      break;
+    }
 
-gameCommands.set("hypoStart", () => {
-  hypothetical.startSharedHypothetical();
+    case "sound": {
+      globals.game!.sounds.play(toSoundType(data.sound));
+      break;
+    }
+
+    case "hypoStart": {
+      hypothetical.startSharedHypothetical();
+      break;
+    }
+
+    case "hypoEnd": {
+      hypothetical.finishHypothetical();
+      break;
+    }
+
+    case "hypoAction": {
+      const action = toHypotheticalAction(data.action);
+      globals.store!.dispatch({
+        type: "hypoAction",
+        shared: true,
+        action,
+      });
+      hypothetical.checkToggleRevealedButton(action);
+      break;
+    }
+
+    case "hypoBack": {
+      globals.store!.dispatch({
+        type: "hypoBack",
+        shared: true,
+      });
+      break;
+    }
+
+    case "hypoShowDrawnCards": {
+      globals.store!.dispatch({
+        type: "hypoShowDrawnCards",
+        shared: true,
+        showDrawnCards: data.showDrawnCards,
+      });
+      break;
+    }
+
+    case "efficiencyModifier": {
+      // The leader already set the efficiency modifier.
+      if (
+        globals.state.replay.shared === undefined
+        || globals.state.replay.shared.amLeader
+      ) {
+        return;
+      }
+
+      stats.setEfficiencyModifier(data.efficiencyModifier);
+      break;
+    }
+  }
 });
 
 gameCommands.set("init", (metadata) => {
@@ -291,42 +353,11 @@ gameCommands.set("pause", (data) => {
   });
 });
 
-gameCommands.set("replayEfficiencyModifier", (data) => {
-  if (
-    globals.state.replay.shared === undefined
-    // Shared replay leaders already set the efficiency after sending the "replayAction" message.
-    || globals.state.replay.shared.amLeader
-  ) {
-    return;
-  }
-
-  stats.setEfficiencyModifier(data.efficiencyModifier);
-});
-
 gameCommands.set("voteChange", (data) => {
   if (data.vote) {
     setSkullEnabled();
   } else {
     setSkullNormal();
-  }
-});
-
-// This is used in shared replays to highlight a specific card (or UI element).
-gameCommands.set("replayIndicator", (data) => {
-  if (
-    globals.state.replay.shared === undefined
-    // Shared replay leaders already drew the arrow after sending the "replayAction" message.
-    || globals.state.replay.shared.amLeader
-    // If we are not currently using the shared segments, the arrow that the shared replay leader is
-    // highlighting will not be applicable.
-    || !globals.state.replay.shared.useSharedSegments
-  ) {
-    return;
-  }
-
-  arrows.hideAll();
-  if (data.target !== ReplayBoardElement.Nothing) {
-    arrows.toggle(data.target);
   }
 });
 
@@ -361,33 +392,6 @@ gameCommands.set("suggestion", (data) => {
   }
 
   suggestTurn(data.username, `table${data.tableID}`, data.segment);
-});
-
-// This is used in shared replays to change the segment (e.g. turn)
-gameCommands.set("replaySegment", (data) => {
-  // If we are the replay leader, we will already have the shared segment set to be equal to what
-  // the server is broadcasting.
-  if (
-    globals.state.replay.shared === undefined
-    || globals.state.replay.shared.amLeader
-  ) {
-    return;
-  }
-
-  if (typeof data.segment !== "number" || data.segment < 0) {
-    throw new Error(
-      'Received an invalid segment from the "replaySegment" command.',
-    );
-  }
-  globals.store!.dispatch({
-    type: "replaySharedSegment",
-    segment: data.segment,
-  });
-});
-
-// This is used in shared replays to make fun sounds.
-gameCommands.set("replaySound", (data) => {
-  globals.game!.sounds.play(toSoundType(data.sound));
 });
 
 // This is used to update the names of the people currently spectating the game.

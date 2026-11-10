@@ -61,24 +61,6 @@ export enum RecordedActionType {
 }
 
 /**
- * The parts of the board that a shared-replay arrow can point at, besides cards.
- */
-export enum ReplayBoardElement {
-  Nothing = -1,
-  Deck = -2,
-  Turn = -3,
-  Score = -4,
-  MaxScore = -5,
-  Clues = -6,
-  Strike1 = -7,
-  Strike2 = -8,
-  Strike3 = -9,
-  Pace = -10,
-  Efficiency = -11,
-  MinEfficiency = -12,
-}
-
-/**
  * Which moves play a sound: every move, only the player's own, or none.
  */
 export enum SoundMove {
@@ -432,10 +414,6 @@ export const historySeedRequestSchema = z.strictObject({
     .default(0),
   seed: z.string(),
 });
-export const hypoShowDrawnCardsSchema = z.strictObject({
-  showDrawnCards: z.boolean(),
-  tableID: tableIdSchema,
-});
 
 /**
  * The active hypothetical, sent to someone joining a shared replay.
@@ -751,55 +729,20 @@ export const publicGamePageSchema = z.strictObject({
 });
 
 /**
- * What a shared-replay arrow points at: a card, or a part of the board.
+ * The parts of the board that a shared-replay arrow can point at, besides cards.
  */
-const replayArrowTargetSchema = z.union([
-  cardOrderSchema,
-  z.enum(ReplayBoardElement),
-]);
-
-/**
- * A sound effect that a shared-replay leader plays for everyone watching.
- */
-const replaySoundEffectSchema = z.enum(["buzz", "clap", "holy", "nooo"]);
-
-/**
- * A shared-replay leader's action, which the server applies and relays to everyone watching.
- */
-export const replayActionRequestSchema = z.discriminatedUnion("type", [
-  z.strictObject({
-    segment: z.number().int().min(0).max(2_147_483_647),
-    tableID: tableIdSchema,
-    type: z.literal("segment"),
-  }),
-  z.strictObject({
-    tableID: tableIdSchema,
-    target: replayArrowTargetSchema,
-    type: z.literal("arrow"),
-  }),
-  z.strictObject({
-    sound: replaySoundEffectSchema,
-    tableID: tableIdSchema,
-    type: z.literal("sound"),
-  }),
-  z.strictObject({ tableID: tableIdSchema, type: z.literal("hypoStart") }),
-  z.strictObject({ tableID: tableIdSchema, type: z.literal("hypoEnd") }),
-  z.strictObject({
-    action: hypotheticalActionSchema,
-    tableID: tableIdSchema,
-    type: z.literal("hypoAction"),
-  }),
-  z.strictObject({ tableID: tableIdSchema, type: z.literal("hypoBack") }),
-  z.strictObject({
-    showDrawnCards: z.boolean(),
-    tableID: tableIdSchema,
-    type: z.literal("hypoShowDrawnCards"),
-  }),
-  z.strictObject({
-    efficiencyModifier: z.number().int().min(-2_147_483_648).max(2_147_483_647),
-    tableID: tableIdSchema,
-    type: z.literal("efficiencyModifier"),
-  }),
+export const replayBoardElementSchema = z.enum([
+  "deck",
+  "turn",
+  "score",
+  "maxScore",
+  "clues",
+  "strike1",
+  "strike2",
+  "strike3",
+  "pace",
+  "efficiency",
+  "minEfficiency",
 ]);
 
 /**
@@ -916,10 +859,6 @@ export const replayCreateRequestSchema = z.strictObject({
   spoilerFree: z.boolean().default(false),
   visibility: replayVisibilitySchema,
 });
-export const replayEfficiencyModifierSchema = z.strictObject({
-  efficiencyModifier: z.number().int().min(-2_147_483_648).max(2_147_483_647),
-  tableID: tableIdSchema,
-});
 const replayActionSchema = z.strictObject({
   target: z.number().int().min(-2_147_483_648).max(2_147_483_647),
   type: z.enum(RecordedActionType),
@@ -986,26 +925,15 @@ export const replayGameSchema = z.strictObject({
   playerNames: z.array(z.string()),
   seed: z.string(),
 });
-
-/**
- * What the leader points at.
- */
-export const replayIndicatorSchema = z.strictObject({
-  tableID: tableIdSchema,
-  target: replayArrowTargetSchema,
-});
 export const replayLeaderSchema = z.strictObject({
   tableID: tableIdSchema,
   username: z.string(),
 });
-export const replaySegmentSchema = z.strictObject({
-  segment: z.number().int().min(0).max(9_007_199_254_740_991),
-  tableID: tableIdSchema,
-});
-export const replaySoundSchema = z.strictObject({
-  sound: replaySoundEffectSchema,
-  tableID: tableIdSchema,
-});
+
+/**
+ * A sound effect that a shared-replay leader plays for everyone watching.
+ */
+export const replaySoundEffectSchema = z.enum(["buzz", "clap", "holy", "nooo"]);
 
 /**
  * Sent before a graceful restart or stop closes the connection.
@@ -1082,6 +1010,57 @@ export const settingRequestSchema = z.strictObject({
    */
   settings: settingsSchema,
 });
+
+/**
+ * What a shared-replay arrow points at: a card, or a part of the board.
+ */
+const replayArrowTargetSchema = z.union([
+  cardOrderSchema,
+  replayBoardElementSchema,
+]);
+
+/**
+ * A shared-replay leader's action. The leader sends it, and the server applies it and relays it to
+ * everyone watching.
+ */
+export const sharedReplayActionSchema = z.discriminatedUnion("type", [
+  z.strictObject({
+    segment: z.number().int().min(0).max(2_147_483_647),
+    tableID: tableIdSchema,
+    type: z.literal("segment"),
+  }),
+  z.strictObject({
+    tableID: tableIdSchema,
+    /**
+     * Absent to clear the arrow.
+     */
+    target: replayArrowTargetSchema.optional(),
+    type: z.literal("arrow"),
+  }),
+  z.strictObject({
+    sound: replaySoundEffectSchema,
+    tableID: tableIdSchema,
+    type: z.literal("sound"),
+  }),
+  z.strictObject({ tableID: tableIdSchema, type: z.literal("hypoStart") }),
+  z.strictObject({ tableID: tableIdSchema, type: z.literal("hypoEnd") }),
+  z.strictObject({
+    action: hypotheticalActionSchema,
+    tableID: tableIdSchema,
+    type: z.literal("hypoAction"),
+  }),
+  z.strictObject({ tableID: tableIdSchema, type: z.literal("hypoBack") }),
+  z.strictObject({
+    showDrawnCards: z.boolean(),
+    tableID: tableIdSchema,
+    type: z.literal("hypoShowDrawnCards"),
+  }),
+  z.strictObject({
+    efficiencyModifier: z.number().int().min(-2_147_483_648).max(2_147_483_647),
+    tableID: tableIdSchema,
+    type: z.literal("efficiencyModifier"),
+  }),
+]);
 
 /**
  * A sound played outside of a game. The server plays "shutdown" to everyone when it is going down,
@@ -1384,7 +1363,7 @@ export const CLIENT_COMMAND_SCHEMAS = {
   lobbyLoad: emptySchema,
   note: noteRequestSchema,
   pause: pauseRequestSchema,
-  replayAction: replayActionRequestSchema,
+  replayAction: sharedReplayActionSchema,
   replayCreate: replayCreateRequestSchema,
   setting: settingRequestSchema,
   sync: emptySchema,
@@ -1427,11 +1406,6 @@ export const SERVER_COMMAND_SCHEMAS = {
   gameHistory: gameHistoryListSchema,
   gameHistoryAdded: gameHistorySchema,
   gameHistoryOtherScores: gameHistoryOtherScoresSchema,
-  hypoAction: hypotheticalActionSchema,
-  hypoBack: tableRequestSchema,
-  hypoEnd: tableRequestSchema,
-  hypoShowDrawnCards: hypoShowDrawnCardsSchema,
-  hypoStart: tableRequestSchema,
   hypothetical: hypotheticalSchema,
   idleReset: tableRequestSchema,
   idleWarning: idleWarningSchema,
@@ -1445,11 +1419,8 @@ export const SERVER_COMMAND_SCHEMAS = {
   outdatedClient: emptySchema,
   pause: pauseSchema,
   pregame: pregameSchema,
-  replayEfficiencyModifier: replayEfficiencyModifierSchema,
-  replayIndicator: replayIndicatorSchema,
+  replayAction: sharedReplayActionSchema,
   replayLeader: replayLeaderSchema,
-  replaySegment: replaySegmentSchema,
-  replaySound: replaySoundSchema,
   restart: restartSchema,
   restartDeclined: restartDeclinedSchema,
   soundLobby: soundLobbySchema,

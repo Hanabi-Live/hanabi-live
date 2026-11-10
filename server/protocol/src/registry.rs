@@ -61,7 +61,7 @@ macro_rules! client_contracts {
             Tag "tag" => TagRequest;
             TagDelete "tagDelete" => TagRequest;
             TagsDeleteAll "tagsDeleteAll" => TagsDeleteAllRequest;
-            ReplayAction "replayAction" => ReplayActionRequest;
+            ReplayAction "replayAction" => SharedReplayAction;
         }
     };
 }
@@ -78,25 +78,17 @@ macro_rules! server_contracts {
             VOTE_CHANGE "voteChange" => VoteChange;
             CARD_IDENTITIES "cardIdentities" => CardIdentities;
             FINISH_ONGOING_GAME "finishOngoingGame" => FinishOngoingGame;
-            REPLAY_SEGMENT "replaySegment" => ReplaySegment;
-            REPLAY_INDICATOR "replayIndicator" => ReplayIndicator;
-            REPLAY_SOUND "replaySound" => ReplaySound;
+            REPLAY_ACTION "replayAction" => SharedReplayAction;
             REPLAY_LEADER "replayLeader" => ReplayLeader;
             RESTART_DECLINED "restartDeclined" => RestartDeclined;
             SUGGESTION "suggestion" => Suggestion;
             HYPOTHETICAL "hypothetical" => Hypothetical;
-            HYPO_START "hypoStart" => TableRequest;
-            HYPO_END "hypoEnd" => TableRequest;
-            HYPO_BACK "hypoBack" => TableRequest;
-            HYPO_ACTION "hypoAction" => HypotheticalAction;
-            HYPO_SHOW_DRAWN_CARDS "hypoShowDrawnCards" => HypoShowDrawnCards;
             NOTE "note" => Note;
             NOTE_LIST "noteList" => NoteList;
             NOTE_LIST_PLAYER "noteListPlayer" => NoteListPlayer;
             GAME_ACTION "gameAction" => GameAction;
             GAME_ACTION_LIST "gameActionList" => GameActionList;
             INIT "init" => Init;
-            REPLAY_EFFICIENCY_MODIFIER "replayEfficiencyModifier" => ReplayEfficiencyModifier;
             BOOT "boot" => TableRequest;
             SYNCED "synced" => Empty;
             LOBBY_STATUS "lobbyStatus" => LobbyStatus;
@@ -230,10 +222,9 @@ pub mod server {
     use super::{
         Blocked, CardIdentities, Chat, ChatDelete, ChatHistory, ChatList, ChatTyping, Clock,
         Connected, Empty, ErrorNotice, FinishOngoingGame, Friends, GameAction, GameActionList,
-        GameHistory, GameHistoryList, GameHistoryOtherScores, HypoShowDrawnCards, Hypothetical,
-        HypotheticalAction, IdleWarning, Init, LobbyStatus, Note, NoteList, NoteListPlayer, Pause,
-        Pregame, ReplayEfficiencyModifier, ReplayIndicator, ReplayLeader, ReplaySegment,
-        ReplaySound, Restart, RestartDeclined, ServerMessage, SoundLobby, Spectators, Suggestion,
+        GameHistory, GameHistoryList, GameHistoryOtherScores, Hypothetical, IdleWarning, Init,
+        LobbyStatus, Note, NoteList, NoteListPlayer, Pause, Pregame, ReplayLeader, Restart,
+        RestartDeclined, ServerMessage, SharedReplayAction, SoundLobby, Spectators, Suggestion,
         Table, TableList, TableRequest, TableStarted, User, UserInactive, UserLeft, UserList,
         VoteChange, Warning, Welcome,
     };

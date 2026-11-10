@@ -52,7 +52,11 @@ export function toCardIdentity(identity: WireCardIdentity): CardIdentity {
   return { suitIndex: identity.suitIndex, rank: identity.rank };
 }
 
-type WireHypotheticalAction = ServerCommandData["hypoAction"];
+type WireReplayAction = ServerCommandData["replayAction"];
+type WireHypotheticalAction = Extract<
+  WireReplayAction,
+  { type: "hypoAction" }
+>["action"];
 type OutgoingHypotheticalAction = Extract<
   ClientCommandData["replayAction"],
   { type: "hypoAction" }
@@ -109,7 +113,7 @@ export function toGameAction(event: WireEvent): GameAction {
 }
 
 type WireSound =
-  | ServerCommandData["replaySound"]["sound"]
+  | Extract<WireReplayAction, { type: "sound" }>["sound"]
   | ServerCommandData["soundLobby"]["file"];
 
 /** The sound file for each sound the server names. Type checking requires one for every name. */

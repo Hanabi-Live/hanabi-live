@@ -148,24 +148,6 @@ wire_enum! {
 }
 
 wire_enum! {
-    /// The parts of the board that a shared-replay arrow can point at, besides cards.
-    pub enum ReplayBoardElement {
-        Nothing = -1,
-        Deck = -2,
-        Turn = -3,
-        Score = -4,
-        MaxScore = -5,
-        Clues = -6,
-        Strike1 = -7,
-        Strike2 = -8,
-        Strike3 = -9,
-        Pace = -10,
-        Efficiency = -11,
-        MinEfficiency = -12,
-    }
-}
-
-wire_enum! {
     /// Which moves play a sound: every move, only the player's own, or none.
     pub enum SoundMove {
         All = 0,
@@ -192,7 +174,6 @@ pub const WIRE_ENUMS: &[WireEnum] = &[
     EndCondition::WIRE,
     GameListColumn::WIRE,
     RecordedActionType::WIRE,
-    ReplayBoardElement::WIRE,
     SoundMove::WIRE,
     Status::WIRE,
 ];

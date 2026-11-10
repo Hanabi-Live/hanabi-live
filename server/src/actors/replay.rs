@@ -317,9 +317,9 @@ impl TableActor {
     async fn replay_action(
         &mut self,
         session: Arc<Session>,
-        r: hanabi_protocol::ReplayActionRequest,
+        r: hanabi_protocol::SharedReplayAction,
     ) -> CommandResult<()> {
-        use hanabi_protocol::ReplayActionRequest as R;
+        use hanabi_protocol::SharedReplayAction as R;
 
         ensure_or_reject!(
             self.attending(&session) && session.user == self.table.owner && self.table.visible,
@@ -334,99 +334,39 @@ impl TableActor {
         };
         // Arrows and sounds only reset the idle timer, so they skip the durable write.
         let checkpoint = !matches!(r, R::Arrow { .. } | R::Sound { .. });
-        let message = match r {
-            R::Segment { segment, .. } => {
-                replay.segment = segment;
-                Outgoing::new(
-                    hanabi_protocol::server::REPLAY_SEGMENT,
-                    hanabi_protocol::ReplaySegment {
-                        table_id: self.table.id,
-                        segment: i64::from(segment),
-                    },
-                )
-            }
-            R::Arrow { target, .. } => Outgoing::new(
-                hanabi_protocol::server::REPLAY_INDICATOR,
-                hanabi_protocol::ReplayIndicator {
-                    table_id: self.table.id,
-                    target,
-                },
-            ),
-            R::Sound { sound, .. } => Outgoing::new(
-                hanabi_protocol::server::REPLAY_SOUND,
-                hanabi_protocol::ReplaySound {
-                    table_id: self.table.id,
-                    sound,
-                },
-            ),
+        match &r {
+            R::Segment { segment, .. } => replay.segment = *segment,
+            R::Arrow { .. } | R::Sound { .. } => {}
             R::HypoStart { .. } => {
                 ensure_or_reject!(!replay.hypothetical, "Already hypothetical");
                 replay.hypothetical = true;
                 replay.show_drawn_cards = false;
-                Outgoing::new(
-                    hanabi_protocol::server::HYPO_START,
-                    TableRequest {
-                        table_id: self.table.id,
-                    },
-                )
             }
             R::HypoEnd { .. } => {
                 ensure_or_reject!(replay.hypothetical, "Not hypothetical");
                 replay.hypothetical = false;
                 replay.hypothetical_actions.clear();
-                Outgoing::new(
-                    hanabi_protocol::server::HYPO_END,
-                    TableRequest {
-                        table_id: self.table.id,
-                    },
-                )
             }
             R::HypoAction { action, .. } => {
                 ensure_or_reject!(
                     replay.hypothetical_actions.len() < crate::model::MAX_HYPOTHETICAL_ACTIONS
                         && crate::model::hypothetical_bytes(&replay.hypothetical_actions)?
-                            + serde_json::to_string(&action)?.len()
+                            + serde_json::to_string(action)?.len()
                             <= crate::model::MAX_HYPOTHETICAL_BYTES,
                     "Too many hypothetical actions"
                 );
                 replay.hypothetical_actions.push(action.clone());
-                Outgoing::new(hanabi_protocol::server::HYPO_ACTION, action)
             }
-            R::HypoBack { .. } => {
-                undo_hypothetical_turn(&mut replay.hypothetical_actions);
-                Outgoing::new(
-                    hanabi_protocol::server::HYPO_BACK,
-                    TableRequest {
-                        table_id: self.table.id,
-                    },
-                )
-            }
+            R::HypoBack { .. } => undo_hypothetical_turn(&mut replay.hypothetical_actions),
             R::HypoShowDrawnCards {
                 show_drawn_cards, ..
-            } => {
-                replay.show_drawn_cards = show_drawn_cards;
-                Outgoing::new(
-                    hanabi_protocol::server::HYPO_SHOW_DRAWN_CARDS,
-                    hanabi_protocol::HypoShowDrawnCards {
-                        table_id: self.table.id,
-                        show_drawn_cards: replay.show_drawn_cards,
-                    },
-                )
-            }
+            } => replay.show_drawn_cards = *show_drawn_cards,
             R::EfficiencyModifier {
                 efficiency_modifier,
                 ..
-            } => {
-                replay.efficiency_modifier = efficiency_modifier;
-                Outgoing::new(
-                    hanabi_protocol::server::REPLAY_EFFICIENCY_MODIFIER,
-                    hanabi_protocol::ReplayEfficiencyModifier {
-                        table_id: self.table.id,
-                        efficiency_modifier: replay.efficiency_modifier,
-                    },
-                )
-            }
-        };
+            } => replay.efficiency_modifier = *efficiency_modifier,
+        }
+        let message = Outgoing::new(hanabi_protocol::server::REPLAY_ACTION, r);
         snapshot.idle_remaining = IDLE_TIMEOUT_MS;
         if checkpoint {
             self.persist(next).await?;

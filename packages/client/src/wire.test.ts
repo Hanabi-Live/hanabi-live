@@ -1,4 +1,7 @@
-import { SERVER_COMMAND_SCHEMAS } from "@hanabi-live/data";
+import {
+  replaySoundEffectSchema,
+  SERVER_COMMAND_SCHEMAS,
+} from "@hanabi-live/data";
 import { EndCondition } from "@hanabi-live/game";
 import { describe, expect, test } from "vitest";
 import { toCardIdentity, toGameAction, toSoundType } from "./wire";
@@ -81,8 +84,7 @@ describe("card identities", () => {
 
 describe("sounds", () => {
   test("every sound a leader can send can be played", () => {
-    for (const sound of SERVER_COMMAND_SCHEMAS.replaySound.shape.sound
-      .options) {
+    for (const sound of replaySoundEffectSchema.options) {
       expect(toSoundType(sound)).toBe(sound);
     }
   });

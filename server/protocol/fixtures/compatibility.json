@@ -879,8 +879,12 @@
   {
     "name": "hypothetical actions are objects, not JSON text",
     "direction": "server",
-    "command": "hypoAction",
-    "input": "{\"type\":\"turn\",\"num\":1,\"currentPlayerIndex\":0}",
+    "command": "replayAction",
+    "input": {
+      "tableID": 1,
+      "type": "hypoAction",
+      "action": "{\"type\":\"turn\",\"num\":1,\"currentPlayerIndex\":0}"
+    },
     "valid": false
   },
   {
@@ -1179,7 +1183,28 @@
     "input": {
       "tableID": 4,
       "type": "arrow",
-      "target": -12
+      "target": "minEfficiency"
+    },
+    "valid": true
+  },
+  {
+    "name": "replay arrows point at cards by order",
+    "direction": "client",
+    "command": "replayAction",
+    "input": {
+      "tableID": 4,
+      "type": "arrow",
+      "target": 12
+    },
+    "valid": true
+  },
+  {
+    "name": "a replay arrow without a target clears the arrow",
+    "direction": "client",
+    "command": "replayAction",
+    "input": {
+      "tableID": 4,
+      "type": "arrow"
     },
     "valid": true
   },
@@ -1190,16 +1215,17 @@
     "input": {
       "tableID": 4,
       "type": "arrow",
-      "target": -13
+      "target": "nothing"
     },
     "valid": false
   },
   {
-    "name": "replay indicators point past the cards only at named parts of the board",
+    "name": "replay arrows cannot point past the cards",
     "direction": "server",
-    "command": "replayIndicator",
+    "command": "replayAction",
     "input": {
       "tableID": 4,
+      "type": "arrow",
       "target": 66
     },
     "valid": false

@@ -1,4 +1,3 @@
-import { ReplayBoardElement } from "@hanabi-live/data";
 import type { CardOrder } from "@hanabi-live/game";
 import {
   getDeckPossibilities,
@@ -119,7 +118,7 @@ export class Deck extends Konva.Group {
 
     // Right-click on the deck to highlight it with an arrow.
     this.on("click tap", (event: Konva.KonvaEventObject<MouseEvent>) => {
-      arrows.click(event, ReplayBoardElement.Deck);
+      arrows.click(event, "deck");
     });
 
     this.initDeckTooltip();

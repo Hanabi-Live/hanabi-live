@@ -1,4 +1,3 @@
-import { ReplayBoardElement } from "@hanabi-live/data";
 import { parseIntSafe } from "complete-common";
 import type Konva from "konva";
 import * as modals from "../../modals";
@@ -40,7 +39,7 @@ export function efficiencyLabelClick(
 ): void {
   // "event.evt.buttons" is always 0 here.
   if (event.evt.button === RIGHT_MOUSE_BUTTON) {
-    arrows.click(event, ReplayBoardElement.Efficiency);
+    arrows.click(event, "efficiency");
     return;
   }
 

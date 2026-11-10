@@ -791,6 +791,8 @@ fn main() -> Result<()> {
             "GameHistory",
             "ReplayGame",
             "ReplayImport",
+            "ReplayBoardElement",
+            "ReplaySoundEffect",
             "LoginRequest",
             "LoginResponse",
             "ApiError",

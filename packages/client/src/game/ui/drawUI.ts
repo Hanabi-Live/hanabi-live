@@ -1,6 +1,5 @@
 // This function draws the UI when going into a game for the first time.
 
-import { ReplayBoardElement } from "@hanabi-live/data";
 import type {
   CardOrder,
   PlayerIndex,
@@ -68,7 +67,7 @@ import {
   RIGHT_MOUSE_BUTTON,
   STAGE_FADE_OPACITY,
   STAGE_MARGIN,
-  STRIKE_ARROW_ORDERS,
+  STRIKE_ARROW_TARGETS,
   STROKE_WIDTH_UNIT,
   TEXT_SHADOW,
   THIN_STROKE_WIDTH,
@@ -1453,7 +1452,7 @@ function drawScoreArea() {
       replay.promptTurn();
     } else if (event.evt.button === RIGHT_MOUSE_BUTTON) {
       // Right-click
-      arrows.click(event, ReplayBoardElement.Turn);
+      arrows.click(event, "turn");
     }
   });
   turnTextLabel.on("dbltap", replay.promptTurn);
@@ -1476,7 +1475,7 @@ function drawScoreArea() {
         replay.promptTurn();
       } else if (event.evt.button === RIGHT_MOUSE_BUTTON) {
         // Right-click.
-        arrows.click(event, ReplayBoardElement.Turn);
+        arrows.click(event, "turn");
       }
     },
   );
@@ -1495,7 +1494,7 @@ function drawScoreArea() {
   globals.elements.scoreTextLabel.on(
     "click tap",
     (event: Konva.KonvaEventObject<MouseEvent>) => {
-      arrows.click(event, ReplayBoardElement.Score);
+      arrows.click(event, "score");
     },
   );
 
@@ -1512,7 +1511,7 @@ function drawScoreArea() {
   globals.elements.scoreNumberLabel.on(
     "click tap",
     (event: Konva.KonvaEventObject<MouseEvent>) => {
-      arrows.click(event, ReplayBoardElement.Score);
+      arrows.click(event, "score");
     },
   );
 
@@ -1530,7 +1529,7 @@ function drawScoreArea() {
   globals.elements.maxScoreNumberLabel.on(
     "click tap",
     (event: Konva.KonvaEventObject<MouseEvent>) => {
-      arrows.click(event, ReplayBoardElement.MaxScore);
+      arrows.click(event, "maxScore");
     },
   );
 
@@ -1548,7 +1547,7 @@ function drawScoreArea() {
     globals.elements.playsTextLabel.on(
       "click tap",
       (event: Konva.KonvaEventObject<MouseEvent>) => {
-        arrows.click(event, ReplayBoardElement.Clues);
+        arrows.click(event, "clues");
       },
     );
 
@@ -1562,7 +1561,7 @@ function drawScoreArea() {
     globals.elements.playsNumberLabel.on(
       "click tap",
       (event: Konva.KonvaEventObject<MouseEvent>) => {
-        arrows.click(event, ReplayBoardElement.Clues);
+        arrows.click(event, "clues");
       },
     );
   }
@@ -1577,7 +1576,7 @@ function drawScoreArea() {
   cluesTextLabel.on(
     "click tap",
     (event: Konva.KonvaEventObject<MouseEvent>) => {
-      arrows.click(event, ReplayBoardElement.Clues);
+      arrows.click(event, "clues");
     },
   );
 
@@ -1592,7 +1591,7 @@ function drawScoreArea() {
   cluesNumberLabel.on(
     "click tap",
     (event: Konva.KonvaEventObject<MouseEvent>) => {
-      arrows.click(event, ReplayBoardElement.Clues);
+      arrows.click(event, "clues");
     },
   );
 
@@ -1651,7 +1650,7 @@ function drawScoreArea() {
 
       case RIGHT_MOUSE_BUTTON: {
         // Right-clicking a strike X or a strike square shows an arrow over the strike square.
-        arrows.click(event, STRIKE_ARROW_ORDERS[this.num]);
+        arrows.click(event, STRIKE_ARROW_TARGETS[this.num]);
 
         break;
       }
@@ -1662,7 +1661,7 @@ function drawScoreArea() {
     }
   }
 
-  for (const i of tupleKeys(STRIKE_ARROW_ORDERS)) {
+  for (const i of tupleKeys(STRIKE_ARROW_TARGETS)) {
     // Draw the background square.
     const strikeSquare = new StrikeSquare(
       {
@@ -2055,12 +2054,12 @@ function drawStatistics() {
   globals.elements.paceNumberLabel = paceNumberLabel;
 
   paceTextLabel.on("click tap", (event: Konva.KonvaEventObject<MouseEvent>) => {
-    arrows.click(event, ReplayBoardElement.Pace);
+    arrows.click(event, "pace");
   });
   paceNumberLabel.on(
     "click tap",
     (event: Konva.KonvaEventObject<MouseEvent>) => {
-      arrows.click(event, ReplayBoardElement.Pace);
+      arrows.click(event, "pace");
     },
   );
 
@@ -2091,7 +2090,7 @@ function drawStatistics() {
   efficiencyTextLabel.on(
     "click tap",
     (event: Konva.KonvaEventObject<MouseEvent>) => {
-      arrows.click(event, ReplayBoardElement.Efficiency);
+      arrows.click(event, "efficiency");
     },
   );
 
@@ -2143,7 +2142,7 @@ function drawStatistics() {
   efficiencyMinNeededLabel.on(
     "click tap",
     (event: Konva.KonvaEventObject<MouseEvent>) => {
-      arrows.click(event, ReplayBoardElement.MinEfficiency);
+      arrows.click(event, "minEfficiency");
     },
   );
   globals.elements.efficiencyMinNeededLabel = efficiencyMinNeededLabel;

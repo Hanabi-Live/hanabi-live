@@ -6,8 +6,8 @@ use serde::{Deserialize, Serialize};
 
 mod enums;
 pub use enums::{
-    ClueType, EndCondition, GameListColumn, RecordedActionType, ReplayBoardElement, SoundMove,
-    Status, WIRE_ENUMS, WireEnum, WireEnumMember,
+    ClueType, EndCondition, GameListColumn, RecordedActionType, SoundMove, Status, WIRE_ENUMS,
+    WireEnum, WireEnumMember,
 };
 mod registry;
 pub use registry::{
@@ -340,22 +340,17 @@ pub fn schemas() -> std::collections::BTreeMap<String, serde_json::Value> {
         CardIdentity,
         CardIdentities,
         FinishOngoingGame,
-        ReplaySegment,
-        ReplayIndicator,
-        ReplaySound,
         ReplayLeader,
         RestartDeclined,
         Suggestion,
         Hypothetical,
         HypotheticalAction,
-        HypoShowDrawnCards,
-        ReplayEfficiencyModifier,
         ActionRequest,
         PauseRequest,
         NoteRequest,
         TagRequest,
         TagsDeleteAllRequest,
-        ReplayActionRequest,
+        SharedReplayAction,
         Chat,
         ChatDelete,
         ChatList,

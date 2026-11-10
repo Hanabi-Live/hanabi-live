@@ -1,7 +1,7 @@
 // Arrows are used to show which cards are touched by a clue (and to highlight things in shared
 // replays).
 
-import { ReplayBoardElement } from "@hanabi-live/data";
+import type { replayBoardElementSchema } from "@hanabi-live/data";
 import type {
   CardOrder,
   Clue,
@@ -17,10 +17,10 @@ import {
   isCardInPlayerHand,
   isCardPlayed,
 } from "@hanabi-live/game";
-import { assertEnumValue } from "complete-common";
 import Konva from "konva";
 import type * as KonvaContext from "konva/lib/Context";
 import type { KonvaEventObject } from "konva/lib/Node";
+import type { z } from "zod";
 import * as tooltips from "../../tooltips";
 import { CardLayout } from "./CardLayout";
 import { HanabiCard } from "./HanabiCard";
@@ -32,7 +32,7 @@ import {
   FULL_TURN_DEGREES,
   HALF_TURN_DEGREES,
   RIGHT_MOUSE_BUTTON,
-  STRIKE_ARROW_ORDERS,
+  STRIKE_ARROW_TARGETS,
 } from "./constants";
 import type { Arrow } from "./controls/Arrow";
 import type { NodeWithTooltip } from "./controls/NodeWithTooltip";
@@ -320,7 +320,6 @@ function getPos(element: Konva.Node, rot: number) {
   } else {
     switch (element) {
       case globals.elements.deck: {
-        // Order = ReplayBoardElement.Deck (-1).
         pos.x += element.width() * ARROW_ANCHOR.DECK.x;
         pos.y += element.height() * ARROW_ANCHOR.DECK.y;
 
@@ -337,7 +336,6 @@ function getPos(element: Konva.Node, rot: number) {
       }
 
       case globals.elements.maxScoreNumberLabel: {
-        // Order = ReplayBoardElement.MaxScore (-4).
         pos.x += element.width() * ARROW_ANCHOR.MAX_SCORE.x;
 
         break;
@@ -394,9 +392,15 @@ function animate(arrow: Arrow, card: HanabiCard, rot: number, giver: number) {
   arrow.hide();
 }
 
+/** A part of the board that a shared-replay arrow can point at, besides cards. */
+export type ReplayBoardElement = z.infer<typeof replayBoardElementSchema>;
+
+/** What a highlight arrow points at: a card, or a part of the board. */
+type ArrowTarget = CardOrder | ReplayBoardElement;
+
 export function click(
   event: KonvaEventObject<MouseEvent>,
-  order: CardOrder | ReplayBoardElement,
+  target: ArrowTarget,
 ): void {
   // "event.evt.buttons" is always 0 here.
   if (event.evt.button !== RIGHT_MOUSE_BUTTON) {
@@ -422,16 +426,15 @@ export function click(
     return;
   }
 
-  toggle(order);
+  toggle(target);
 }
 
 /** Toggles the "highlight" arrow on a particular element. */
 export function toggle(
-  order: CardOrder | ReplayBoardElement,
+  target: ArrowTarget,
   alwaysShow = false,
 ): void {
-  // Get the element corresponding to the "order" number.
-  const element = getElementFromOrder(order);
+  const element = getElementFromTarget(target);
   if (!element) {
     return;
   }
@@ -458,76 +461,60 @@ export function toggle(
     && globals.state.replay.shared.amLeader
     && globals.state.replay.shared.useSharedSegments
   ) {
-    globals.lobby.conn!.send("replayAction", {
-      tableID: globals.lobby.tableID,
-      type: "arrow",
-      target: show ? order : ReplayBoardElement.Nothing,
-    });
+    globals.lobby.conn!.send(
+      "replayAction",
+      show
+        ? { tableID: globals.lobby.tableID, type: "arrow", target }
+        : { tableID: globals.lobby.tableID, type: "arrow" },
+    );
   }
 }
 
-function getElementFromOrder(
-  order: CardOrder | ReplayBoardElement,
+function getElementFromTarget(
+  target: ArrowTarget,
 ): NodeWithTooltip | undefined {
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-enum-comparison
-  if (order >= 0) {
-    // This is an arrow for a card. The order corresponds to the card's order in the deck.
-    return getCardOrStackBase(order as CardOrder);
+  if (typeof target === "number") {
+    return getCardOrStackBase(target);
   }
 
-  assertEnumValue(
-    order,
-    ReplayBoardElement,
-    `Invalid replay arrow order: ${order}`,
-  );
-  return getElementFromNegativeOrder(order);
-}
-
-function getElementFromNegativeOrder(
-  order: ReplayBoardElement,
-): NodeWithTooltip | undefined {
-  switch (order) {
-    case ReplayBoardElement.Nothing: {
-      return undefined;
-    }
-
-    case ReplayBoardElement.Deck: {
+  switch (target) {
+    case "deck": {
       return globals.elements.deck!;
     }
 
-    case ReplayBoardElement.Turn: {
+    case "turn": {
       return globals.elements.turnNumberLabel!;
     }
 
-    case ReplayBoardElement.Score: {
+    case "score": {
       return globals.elements.scoreNumberLabel!;
     }
 
-    case ReplayBoardElement.MaxScore: {
+    case "maxScore": {
       return globals.elements.maxScoreNumberLabel!;
     }
 
-    case ReplayBoardElement.Clues: {
+    case "clues": {
       return globals.elements.cluesNumberLabel!;
     }
 
-    case ReplayBoardElement.Strike1:
-    case ReplayBoardElement.Strike2:
-    case ReplayBoardElement.Strike3: {
+    case "strike1":
+    case "strike2":
+    case "strike3": {
       return globals.elements.strikeSquares[
-        STRIKE_ARROW_ORDERS.indexOf(order)
+        STRIKE_ARROW_TARGETS.indexOf(target)
       ]!;
     }
 
-    case ReplayBoardElement.Pace: {
+    case "pace": {
       return globals.elements.paceNumberLabel!;
     }
 
-    case ReplayBoardElement.Efficiency: {
+    case "efficiency": {
       return globals.elements.efficiencyNumberLabel!;
     }
 
-    case ReplayBoardElement.MinEfficiency: {
+    case "minEfficiency": {
       return globals.elements.efficiencyMinNeededLabel!;
     }
   }
