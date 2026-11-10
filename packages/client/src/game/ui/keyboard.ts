@@ -117,6 +117,12 @@ function keydown(event: JQuery.KeyDownEvent) {
   }
 
   if (event.which === KeyCode.KEY_ESCAPE) {
+    // Escape = If the menu to end the game is open, close it.
+    if (globals.elements.terminateMenu?.isVisible() === true) {
+      globals.elements.terminateMenu.close();
+      return;
+    }
+
     // Escape = If the chat is open, close it.
     if ($("#game-chat-modal").is(":visible")) {
       globals.game!.chat.hide();

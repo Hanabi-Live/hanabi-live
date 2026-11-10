@@ -261,6 +261,7 @@ export function onFinishedChanged(
   // Hide the terminate button and show the last strike UI.
   if (globals.elements.terminateButton !== undefined) {
     globals.elements.terminateButton.hide();
+    globals.elements.terminateMenu?.close();
     globals.elements.strikeSquares.at(-1)!.show();
     globals.elements.strikeXs.at(-1)!.show();
   }

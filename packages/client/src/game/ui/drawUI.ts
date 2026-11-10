@@ -39,6 +39,7 @@ import { FullActionLog } from "./FullActionLog";
 import { HanabiCard } from "./HanabiCard";
 import { PlayStack } from "./PlayStack";
 import { RankButton } from "./RankButton";
+import { TerminateMenu } from "./TerminateMenu";
 import { globals } from "./UIGlobals";
 import * as arrows from "./arrows";
 import { backToLobby } from "./backToLobby";
@@ -735,6 +736,7 @@ export function drawUI(): void {
   drawHypotheticalArea();
   drawPauseArea();
   drawRestartArea();
+  drawTerminateMenu();
   drawExtraAnimations();
 
   const layersInOrder = [
@@ -750,14 +752,14 @@ export function drawUI(): void {
   }
 }
 
-export function setSkullEnabled(): void {
+/** Shows the latest votes to end the game on the skull and in its menu. */
+export function updateTerminationVotes(): void {
   globals.elements.terminateButton?.setImage(
-    globals.imageLoader!.get("skull_vtk"),
+    globals.imageLoader!.get(
+      globals.terminationVotes?.vote === true ? "skull_vtk" : "skull",
+    ),
   );
-}
-
-export function setSkullNormal(): void {
-  globals.elements.terminateButton?.setImage(globals.imageLoader!.get("skull"));
+  globals.elements.terminateMenu?.update();
 }
 
 function drawBackground() {
@@ -1744,27 +1746,8 @@ function drawScoreArea() {
       [globals.imageLoader!.get("skull")],
     );
     globals.elements.scoreArea.add(terminateButton);
-    function voteForTermination() {
-      globals.lobby.conn!.send("tableVoteForTermination", {
-        tableID: globals.lobby.tableID,
-      });
-    }
-    terminateButton.on("click", (event: Konva.KonvaEventObject<MouseEvent>) => {
-      if (event.evt.button === LEFT_MOUSE_BUTTON) {
-        voteForTermination();
-      } else if (event.evt.button === RIGHT_MOUSE_BUTTON) {
-        globals.lobby.conn!.send("tableTerminate", {
-          tableID: globals.lobby.tableID,
-        });
-      }
-    });
-    // Touch events have no mouse button, so a tap always votes.
-    terminateButton.on("tap", voteForTermination);
     terminateButton.tooltipName = "kill";
-    terminateButton.tooltipContent = `
-      <strong>Left click</strong> or <strong>tap</strong> to cast a vote to terminate the game (again to cancel the vote).<br />
-      <strong>Right click</strong> to terminate immediately.
-    `;
+    terminateButton.tooltipContent = "End the game";
     initKonvaTooltips(terminateButton, true, false);
     globals.elements.terminateButton = terminateButton;
   }
@@ -3166,6 +3149,21 @@ function drawRestartArea() {
   globals.elements.restartWaitingOnServerAnimation =
     createWaitingOnServerAnimation(waitingOnServer, globals.layers.UI2);
   restart.setPending(globals.restartPending);
+}
+
+function drawTerminateMenu() {
+  const { terminateButton } = globals.elements;
+  if (terminateButton === undefined) {
+    return;
+  }
+
+  const menu = new TerminateMenu(terminateButton, winW, winH);
+  globals.layers.UI2.add(menu);
+  globals.elements.terminateMenu = menu;
+  terminateButton.on("click tap", () => {
+    menu.open();
+  });
+  updateTerminationVotes();
 }
 
 function drawExtraAnimations() {

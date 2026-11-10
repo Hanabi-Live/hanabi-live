@@ -9,6 +9,7 @@ import type { FullActionLog } from "./FullActionLog";
 import type { NameFrame } from "./NameFrame";
 import type { PlayStack } from "./PlayStack";
 import type { RankButton } from "./RankButton";
+import type { TerminateMenu } from "./TerminateMenu";
 import type { Arrow } from "./controls/Arrow";
 import type { Button } from "./controls/Button";
 import type { CurrentPlayerArea } from "./controls/CurrentPlayerArea";
@@ -84,6 +85,7 @@ export class Elements {
   strikeXs: StrikeX[] = [];
   questionMarkLabels: Konva.Text[] = [];
   terminateButton: Button | undefined = undefined;
+  terminateMenu: TerminateMenu | undefined = undefined;
 
   // Next to the score area.
   spectatorsLabel: Konva.Image | undefined = undefined;

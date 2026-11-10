@@ -256,12 +256,7 @@ impl TableActor {
                 .filter(|(_, v)| **v)
                 .map(|(i, _)| i)
                 .collect::<Vec<_>>();
-            terminate = if s.players.len() == MIN_PLAYERS {
-                // A majority of two players would let either one end the game alone.
-                seats.len() == s.players.len()
-            } else {
-                seats.len() * 2 >= s.players.len()
-            };
+            terminate = seats.len() >= votes_needed(s.players.len());
             votes = Some(seats);
         }
         if terminate {
@@ -286,21 +281,17 @@ impl TableActor {
         }
         let outcome = self.persist_with(next, Commit::default()).await?;
         let mut e = self.effects();
-        if vote {
-            e.messages.push((
-                session,
-                frame(
-                    hanabi_protocol::server::VOTE_CHANGE,
-                    hanabi_protocol::VoteChange {
-                        // A vote that ends the game has already made it a replay.
-                        vote: self
-                            .table
-                            .game()
-                            .context("A vote was counted without a game")?
-                            .votes[seat],
-                    },
-                ),
-            ));
+        // A vote that ends the game has already made it a replay.
+        if vote && !terminate {
+            let s = self.live()?;
+            for a in self.audience().filter(|a| !a.spectator) {
+                if let Ok(seat) = self.seat(&a.session) {
+                    e.messages.push((
+                        a.session.clone(),
+                        frame(hanabi_protocol::server::VOTE_CHANGE, vote_change(s, seat)?),
+                    ));
+                }
+            }
         }
         self.publish(e).await?;
         if terminate {
@@ -615,12 +606,7 @@ impl TableActor {
                 ));
                 e.messages.push((
                     session.clone(),
-                    frame(
-                        hanabi_protocol::server::VOTE_CHANGE,
-                        hanabi_protocol::VoteChange {
-                            vote: s.votes[seat],
-                        },
-                    ),
+                    frame(hanabi_protocol::server::VOTE_CHANGE, vote_change(s, seat)?),
                 ));
             }
             e.messages.push((
@@ -677,4 +663,22 @@ impl TableActor {
         }
         self.publish(e).await
     }
+}
+
+/// How many votes end a game with this many players.
+fn votes_needed(players: usize) -> usize {
+    if players == MIN_PLAYERS {
+        // A majority of two players would let either one end the game alone.
+        players
+    } else {
+        players.div_ceil(2)
+    }
+}
+
+fn vote_change(s: &Snapshot, seat: usize) -> anyhow::Result<hanabi_protocol::VoteChange> {
+    Ok(hanabi_protocol::VoteChange {
+        vote: s.votes[seat],
+        votes: u8::try_from(s.votes.iter().filter(|v| **v).count())?,
+        votes_needed: u8::try_from(votes_needed(s.players.len()))?,
+    })
 }

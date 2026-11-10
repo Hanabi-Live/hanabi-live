@@ -1302,9 +1302,22 @@ export const userListSchema = z.array(userSchema).readonly();
 export const variantNamesSchema = z.record(z.string(), z.string());
 
 /**
- * The recipient's own vote to end the game.
+ * The votes to end the game, as one player sees them.
  */
-export const voteChangeSchema = z.strictObject({ vote: z.boolean() });
+export const voteChangeSchema = z.strictObject({
+  /**
+   * Whether the recipient voted.
+   */
+  vote: z.boolean(),
+  /**
+   * How many players voted.
+   */
+  votes: z.number().int().min(0).max(6),
+  /**
+   * How many votes end the game.
+   */
+  votesNeeded: z.number().int().min(1).max(6),
+});
 
 /**
  * A recoverable problem the client shows in a modal. The text may contain HTML.

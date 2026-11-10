@@ -32,7 +32,7 @@ import { SoundType } from "../types/SoundType";
 import type { State } from "../types/State";
 import { globals } from "./UIGlobals";
 import * as arrows from "./arrows";
-import { setSkullEnabled, setSkullNormal } from "./drawUI";
+import { updateTerminationVotes } from "./drawUI";
 import { getCardOrStackBase } from "./getCardOrStackBase";
 import * as hypothetical from "./hypothetical";
 import * as notes from "./notes";
@@ -354,11 +354,8 @@ gameCommands.set("pause", (data) => {
 });
 
 gameCommands.set("voteChange", (data) => {
-  if (data.vote) {
-    setSkullEnabled();
-  } else {
-    setSkullNormal();
-  }
+  globals.terminationVotes = data;
+  updateTerminationVotes();
 });
 
 // This is used in shared replays to specify who the leader is.

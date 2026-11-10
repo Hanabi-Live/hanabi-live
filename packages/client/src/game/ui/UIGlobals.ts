@@ -1,3 +1,4 @@
+import type { ServerCommandData } from "@hanabi-live/data";
 import type {
   GameAction,
   GameMetadata,
@@ -98,6 +99,9 @@ export class UIGlobals {
 
   restartPending = false;
 
+  /** The votes to end the game, as the server last sent them. */
+  terminationVotes: ServerCommandData["voteChange"] | undefined = undefined;
+
   globalEmpathyEnabled = false;
 
   isResizing = false;
@@ -172,6 +176,7 @@ export class UIGlobals {
     this.animateFast = true;
     this.UIClickTime = 0;
     this.restartPending = false;
+    this.terminationVotes = undefined;
     this.globalEmpathyEnabled = false;
     this.isResizing = false;
     this.playStartSound = false;

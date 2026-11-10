@@ -56,11 +56,18 @@ pub struct Pause {
     pub player_index: Option<u8>,
 }
 
-/// The recipient's own vote to end the game.
+/// The votes to end the game, as one player sees them.
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct VoteChange {
+    /// Whether the recipient voted.
     pub vote: bool,
+    /// How many players voted.
+    #[schemars(range(min = 0, max = MAX_PLAYERS))]
+    pub votes: u8,
+    /// How many votes end the game.
+    #[schemars(range(min = 1, max = MAX_PLAYERS))]
+    pub votes_needed: u8,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]

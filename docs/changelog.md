@@ -22,6 +22,9 @@ of the repository.
   distract you during a game.
 - Bots are now listed on a separate tab of the online users list, and they no
   longer count as online users.
+- Clicking the skull now opens a menu to vote to end the game or to end it now,
+  and shows how many players voted. Right-clicking the skull no longer ends the
+  game.
 
 ## November 9th, 2026
 
