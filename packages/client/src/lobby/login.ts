@@ -21,6 +21,7 @@ import { getHTMLElement, getHTMLInputElement, getURLFromPath } from "../utils";
 import { websocketInit } from "../websocketInit";
 import { scrollLobbyChatToBottom } from "./chat/LobbyChat";
 import { TEST_COOKIE_PATH, checkCookieWithRetry } from "./cookieProbe";
+import { loginRequestBody } from "./loginRequestBody";
 import * as nav from "./nav";
 import { Screen } from "./types/Screen";
 
@@ -200,11 +201,7 @@ async function requestLogin(
 ): Promise<typeof NO_ACCOUNT_CODE | { body: unknown } | undefined> {
   const response = await fetch(url, {
     method: "POST",
-    body: new URLSearchParams({
-      ...data,
-      darkMode: String(data.darkMode),
-      createAccount: String(data.createAccount),
-    }),
+    body: loginRequestBody(data),
   });
   if (!response.ok) {
     const code = await errorCode(response);
