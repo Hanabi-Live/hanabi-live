@@ -930,7 +930,7 @@ mod tests {
             // Startup does not wait for statistics, even while their table is locked.
             let mut blocked_archive = store.primary.begin().await?;
             #[expect(clippy::disallowed_methods, reason = "test SQL that sets up database state or failures directly")]
-            sqlx::query("LOCK TABLE games IN ACCESS EXCLUSIVE MODE").execute(&mut *blocked_archive).await?;
+            sqlx::query("LOCK TABLE users IN ACCESS EXCLUSIVE MODE").execute(&mut *blocked_archive).await?;
             let tasks = TaskTracker::new();
             let hub = tokio::time::timeout(
                 Duration::from_secs(1),
