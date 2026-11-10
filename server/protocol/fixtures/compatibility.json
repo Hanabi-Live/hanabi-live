@@ -895,7 +895,7 @@
       "action": {
         "type": "clue",
         "clue": {
-          "type": 1,
+          "type": "rank",
           "value": 5
         },
         "giver": 0,
@@ -943,6 +943,26 @@
     "valid": false
   },
   {
+    "name": "clue types are named, not numbered",
+    "direction": "server",
+    "command": "gameAction",
+    "input": {
+      "tableID": 3,
+      "action": {
+        "type": "clue",
+        "clue": {
+          "type": 1,
+          "value": 5
+        },
+        "giver": 0,
+        "target": 1,
+        "orders": [3, 4],
+        "turn": 2
+      }
+    },
+    "valid": false
+  },
+  {
     "name": "color clues name the first suit's color",
     "direction": "server",
     "command": "gameAction",
@@ -951,7 +971,7 @@
       "action": {
         "type": "clue",
         "clue": {
-          "type": 0,
+          "type": "color",
           "value": 0
         },
         "giver": 0,
@@ -971,7 +991,7 @@
       "action": {
         "type": "clue",
         "clue": {
-          "type": 0,
+          "type": "color",
           "value": 6
         },
         "giver": 0,
@@ -991,7 +1011,7 @@
       "action": {
         "type": "clue",
         "clue": {
-          "type": 1,
+          "type": "rank",
           "value": 0
         },
         "giver": 0,

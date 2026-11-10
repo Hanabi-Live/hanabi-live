@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 
 import type { CardOrder, PlayerIndex, StateClue } from "@hanabi-live/game";
-import { ClueType, getDefaultVariant } from "@hanabi-live/game";
+import { getDefaultVariant } from "@hanabi-live/game";
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { Provider } from "react-redux";
 import { createStore } from "redux";
@@ -27,7 +27,7 @@ function clue(
   negativeList: readonly number[],
 ): StateClue {
   return {
-    type: ClueType.Rank,
+    type: "rank",
     value: 1,
     giver: 0 as PlayerIndex,
     target: 1 as PlayerIndex,

@@ -442,14 +442,29 @@ where
     Ok(value.filter(|value| *value >= 0))
 }
 
-/// Reads a clue that may be hidden. Checkpoints written before November 10th, 2026 store a hidden
-/// clue with -1 as its type and value.
+/// Reads a clue that may be hidden. Checkpoints written before November 10th, 2026 store a clue's
+/// type as a number, and a hidden clue with -1 as its type and value.
 fn deserialize_stored_clue<'de, D>(deserializer: D) -> Result<Option<Clue>, D::Error>
 where
     D: serde::Deserializer<'de>,
 {
-    let clue = Option::<Clue>::deserialize(deserializer)?;
-    Ok(clue.filter(|clue| clue.clue_type >= 0))
+    use serde::de::Error;
+
+    let Some(mut clue) = Option::<serde_json::Value>::deserialize(deserializer)? else {
+        return Ok(None);
+    };
+    if let Some(number) = clue.get("type").and_then(serde_json::Value::as_i64) {
+        let clue_type = match number {
+            -1 => return Ok(None),
+            0 => ClueType::Color,
+            1 => ClueType::Rank,
+            _ => return Err(D::Error::custom(format!("Invalid clue type: {number}"))),
+        };
+        clue["type"] = serde_json::to_value(clue_type).map_err(D::Error::custom)?;
+    }
+    serde_json::from_value(clue)
+        .map(Some)
+        .map_err(D::Error::custom)
 }
 
 /// Reads a seat that may be absent. Checkpoints written before November 10th, 2026 store an absent

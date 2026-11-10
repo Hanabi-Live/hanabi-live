@@ -454,7 +454,7 @@ async fn duck_clue_identity_is_private_in_live_history_and_recovery_but_not_comp
             .await?;
             h.barrier(index).await?;
             let clue =
-                json!({"type":hanabi_engine::clue_type(kind).map(i32::from),"value":action.value});
+                json!({"type":hanabi_engine::clue_type(kind),"value":action.value});
             originals.push(clue.clone());
             for index in 0..5 {
                 let events = h

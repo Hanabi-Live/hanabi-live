@@ -166,25 +166,20 @@ pub struct Note {
 #[serde(deny_unknown_fields)]
 pub struct Clue {
     #[serde(rename = "type")]
-    pub clue_type: i32,
+    pub clue_type: ClueType,
     pub value: i32,
 }
 
 /// A clue's type and value: a color clue names a suit's color, and a rank clue names a rank.
 #[derive(JsonSchema)]
-#[serde(untagged, deny_unknown_fields)]
+#[serde(tag = "type", rename_all = "camelCase", deny_unknown_fields)]
 pub enum ReceivedClue {
     Color {
-        #[serde(rename = "type")]
-        #[schemars(extend("enum" = [ClueType::Color as i32], "x-enum" = "ClueType"))]
-        clue_type: i32,
-        #[schemars(range(min = 0, max = MAX_SEAT), extend("enum" = seats()))]
+        /// The index of the color in the variant's clue colors.
+        #[schemars(range(min = 0, max = MAX_SUIT_INDEX), extend("enum" = suits()))]
         value: i32,
     },
     Rank {
-        #[serde(rename = "type")]
-        #[schemars(extend("enum" = [ClueType::Rank as i32], "x-enum" = "ClueType"))]
-        clue_type: i32,
         #[schemars(range(min = MIN_RANK, max = MAX_RANK), extend("enum" = ranks()))]
         value: i32,
     },

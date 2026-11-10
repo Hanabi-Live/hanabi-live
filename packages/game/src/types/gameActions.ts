@@ -69,8 +69,8 @@ export type ActionPlayerTimes = Event<"playerTimes">;
 export type ActionTurn = Event<"turn">;
 
 /**
- * A clue's giver, target, and the card orders that it touched. The game state needs the clue's type
- * and value narrowed, which the server's events leave as plain integers.
+ * A clue's giver, target, and the card orders that it touched. Where the server omits a clue that
+ * the recipient may not see, the game state keeps a `HiddenClue`.
  */
 export type ActionClue = Readonly<
   Omit<Extract<HypotheticalWireAction, { type: "clue" }>, "clue">

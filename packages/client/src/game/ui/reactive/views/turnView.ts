@@ -1,4 +1,5 @@
-import { ClueType, getClueCost } from "@hanabi-live/game";
+import type { ClueType } from "@hanabi-live/game";
+import { getClueCost } from "@hanabi-live/game";
 import type { State } from "../../../types/State";
 import { globals } from "../../UIGlobals";
 import { DISABLED_OPACITY } from "../../constants";
@@ -97,13 +98,13 @@ export function onLastClueTypeChanged(
         break;
       }
 
-      case ClueType.Color: {
+      case "color": {
         setColorClueButtonsVisible(false);
         setRankClueButtonsVisible(true);
         break;
       }
 
-      case ClueType.Rank: {
+      case "rank": {
         setColorClueButtonsVisible(true);
         setRankClueButtonsVisible(false);
         break;

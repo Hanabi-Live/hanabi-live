@@ -3,7 +3,7 @@
 import { describe, expect, test } from "bun:test";
 import { StackDirection } from "./enums/StackDirection";
 import { getDefaultVariant, getVariant, VARIANT_NAMES } from "./gameData";
-import { ClueType, START_CARD_RANK } from "./generated/protocol";
+import { START_CARD_RANK } from "./generated/protocol";
 import type {
   HypotheticalCardInput,
   HypotheticalCardView,
@@ -532,7 +532,7 @@ describe("hypothetical planning", () => {
     );
     expect(colorActions?.[0]).toMatchObject({
       type: "clue",
-      clue: { type: ClueType.Color, value: colorIndex },
+      clue: { type: "color", value: colorIndex },
       giver: 0,
       target: 1,
     });
@@ -546,7 +546,7 @@ describe("hypothetical planning", () => {
     );
     expect(rankActions?.[0]).toMatchObject({
       type: "clue",
-      clue: { type: ClueType.Rank, value: 1 },
+      clue: { type: "rank", value: 1 },
     });
   });
 
@@ -612,7 +612,7 @@ describe("hypothetical planning", () => {
         identity: { suitIndex: undefined, rank: undefined },
       }),
     );
-    const clue = { type: ClueType.Rank, value: 1 as RankClueNumber };
+    const clue = { type: "rank" as const, value: 1 as RankClueNumber };
     expect(getHypotheticalTouchedCards([touchedCard], clue, variant)).toEqual(
       [],
     );
@@ -660,7 +660,7 @@ describe("hypothetical planning", () => {
     expect(
       getHypotheticalTouchedCards(
         [blank],
-        { type: ClueType.Rank, value: 1 as RankClueNumber },
+        { type: "rank", value: 1 as RankClueNumber },
         variant,
       ),
     ).toEqual([]);

@@ -1,7 +1,7 @@
 import { assertDefined } from "complete-common";
 import { possibleCardsFromNoteAndClues } from "./cardPresentation";
 import { StackDirection } from "./enums/StackDirection";
-import { ClueType, START_CARD_RANK } from "./generated/protocol";
+import { START_CARD_RANK } from "./generated/protocol";
 import type { HypotheticalGameAction } from "./hypotheticalState";
 import type { CardIdentity } from "./interfaces/CardIdentity";
 import type { CardNote } from "./interfaces/CardNote";
@@ -181,7 +181,7 @@ export function getHypotheticalTouchedCards(
         isCardTouchedByClue(variant, fullClue, possibleSuitIndex, possibleRank),
       )
       && card.possibilities.every(() =>
-        clue.type === ClueType.Rank
+        clue.type === "rank"
           ? card.visibleRank !== undefined
           : card.visibleSuitIndex !== undefined,
       )
@@ -391,8 +391,8 @@ export function planHypotheticalAction(
   } else {
     const clue: MsgClue =
       intent.type === "colorClue"
-        ? { type: ClueType.Color, value: intent.value }
-        : { type: ClueType.Rank, value: intent.value };
+        ? { type: "color", value: intent.value }
+        : { type: "rank", value: intent.value };
     const targetCards: HypotheticalCard[] = [];
     const targetHand = gameState.hands[intent.target];
     assertDefined(targetHand, "Expected a hand for the clue target.");

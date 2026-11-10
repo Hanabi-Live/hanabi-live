@@ -8,7 +8,6 @@ import type {
   Variant,
 } from "@hanabi-live/game";
 import {
-  ClueType,
   DEFAULT_PLAYER_NAMES,
   EVEN_RANK_CLUE,
   getCardsPerHand,
@@ -202,7 +201,7 @@ function getGameActionsFromState(source: ReplayState): readonly ClientAction[] {
             );
           }
 
-          case ClueType.Color: {
+          case "color": {
             actions.push({
               type: "colorClue",
               target: action.target,
@@ -211,7 +210,7 @@ function getGameActionsFromState(source: ReplayState): readonly ClientAction[] {
             break;
           }
 
-          case ClueType.Rank: {
+          case "rank": {
             actions.push({
               type: "rankClue",
               target: action.target,
@@ -260,12 +259,7 @@ function getActionFromLogEntry(
     if (playerName !== undefined && slotString !== undefined) {
       const slot = parseIntSafe(slotString);
       if (slot !== undefined) {
-        return getActionFromHypoPlayOrDiscard(
-          i,
-          "play",
-          playerName,
-          slot,
-        );
+        return getActionFromHypoPlayOrDiscard(i, "play", playerName, slot);
       }
     }
   }
@@ -276,12 +270,7 @@ function getActionFromLogEntry(
     if (playerName !== undefined && slotString !== undefined) {
       const slot = parseIntSafe(slotString);
       if (slot !== undefined) {
-        return getActionFromHypoPlayOrDiscard(
-          i,
-          "discard",
-          playerName,
-          slot,
-        );
+        return getActionFromHypoPlayOrDiscard(i, "discard", playerName, slot);
       }
     }
   }

@@ -10,7 +10,6 @@ import type {
   Suit,
 } from "@hanabi-live/game";
 import {
-  ClueType,
   EVEN_RANK_CLUE,
   getCharacterNameForPlayer,
   isCardDiscarded,
@@ -197,7 +196,7 @@ export function set(
       arrow.circle.show();
 
       switch (clue.type) {
-        case ClueType.Color: {
+        case "color": {
           arrow.text.hide();
 
           // The circle for color clues should have a black border and a fill matching the color.
@@ -242,7 +241,7 @@ export function set(
           break;
         }
 
-        case ClueType.Rank: {
+        case "rank": {
           let text = clue.value.toString();
           if (globals.variant.cowAndPig) {
             text = "#";
@@ -430,10 +429,7 @@ export function click(
 }
 
 /** Toggles the "highlight" arrow on a particular element. */
-export function toggle(
-  target: ArrowTarget,
-  alwaysShow = false,
-): void {
+export function toggle(target: ArrowTarget, alwaysShow = false): void {
   const element = getElementFromTarget(target);
   if (!element) {
     return;

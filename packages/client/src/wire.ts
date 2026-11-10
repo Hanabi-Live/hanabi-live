@@ -16,7 +16,7 @@ import type {
   NumPlayers,
   WireClue,
 } from "@hanabi-live/game";
-import { ClueType, isValidNumPlayers } from "@hanabi-live/game";
+import { isValidNumPlayers } from "@hanabi-live/game";
 import type { Tuple } from "complete-common";
 import type { z } from "zod";
 import type { ClientAction } from "./game/types/ClientAction";
@@ -68,14 +68,8 @@ const HIDDEN_CLUE = {
   value: undefined,
 } as const satisfies HiddenClue;
 
-/** Converts a clue from the server, naming its type with the enum. */
 function toClue(clue: WireClue | undefined): HiddenClue | MsgClue {
-  if (clue === undefined) {
-    return HIDDEN_CLUE;
-  }
-  return clue.type === 0
-    ? { type: ClueType.Color, value: clue.value }
-    : { type: ClueType.Rank, value: clue.value };
+  return clue ?? HIDDEN_CLUE;
 }
 
 /** Converts a hypothetical action from the server into the action the game state applies. */

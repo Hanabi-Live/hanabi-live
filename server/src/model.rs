@@ -1069,7 +1069,14 @@ mod tests {
         assert!(matches!(
             &replay.hypothetical_actions[..],
             [
-                HypotheticalAction::Clue { orders, clue: Some(_), .. },
+                HypotheticalAction::Clue {
+                    orders,
+                    clue: Some(hanabi_protocol::Clue {
+                        clue_type: hanabi_protocol::ClueType::Color,
+                        value: 1,
+                    }),
+                    ..
+                },
                 HypotheticalAction::Turn {
                     current_player_index: None,
                     ..

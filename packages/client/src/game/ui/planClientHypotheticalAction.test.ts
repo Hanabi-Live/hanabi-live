@@ -8,7 +8,6 @@ import type {
   Rank,
 } from "@hanabi-live/game";
 import {
-  ClueType,
   gameReducer,
   getDefaultMetadata,
   getDefaultVariant,
@@ -188,7 +187,7 @@ describe("client hypothetical planning", () => {
       shared: false,
       action: {
         type: "clue",
-        clue: { type: ClueType.Rank, value: 1 },
+        clue: { type: "rank", value: 1 },
         giver: 0,
         orders: [1],
         target: 1,

@@ -3,7 +3,7 @@
 import { newArray } from "complete-common";
 import { EVEN_CARD_RANKS, ODD_CARD_RANKS } from "../constants";
 import { getVariant } from "../gameData";
-import { ClueType, MAX_PLAYERS, ODD_RANK_CLUE } from "../generated/protocol";
+import { MAX_PLAYERS, ODD_RANK_CLUE } from "../generated/protocol";
 import type { CardState } from "../interfaces/CardState";
 import type { GameMetadata } from "../interfaces/GameMetadata";
 import { isCardTouchedByClue } from "../rules/clues";
@@ -40,7 +40,7 @@ export function cardPossibilitiesReducer(
   let { positiveColorClues } = state;
   if (
     positive
-    && clue.type === ClueType.Color
+    && clue.type === "color"
     && !positiveColorClues.includes(clue.value)
   ) {
     positiveColorClues = [...positiveColorClues, clue.value];
@@ -49,7 +49,7 @@ export function cardPossibilitiesReducer(
   let { positiveRankClues } = state;
   if (
     positive
-    && clue.type === ClueType.Rank
+    && clue.type === "rank"
     && !positiveRankClues.includes(clue.value)
   ) {
     if (variant.oddsAndEvens) {

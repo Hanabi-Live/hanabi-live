@@ -394,6 +394,7 @@ pub fn schemas() -> std::collections::BTreeMap<String, serde_json::Value> {
         NoteList,
         NoteListPlayer,
         Note,
+        ClueType,
         ReceivedClue,
         GameEvent,
         GameAction,

@@ -3,7 +3,6 @@
 import { assertDefined } from "complete-common";
 import { EVEN_CARD_RANKS, ODD_CARD_RANKS } from "../constants";
 import {
-  ClueType,
   EVEN_RANK_CLUE,
   MIN_RANK,
   ODD_RANK_CLUE,
@@ -42,11 +41,11 @@ export function getClueName(
   }
   if (variant.cowAndPig) {
     switch (clue.type) {
-      case ClueType.Color: {
+      case "color": {
         return "Moo";
       }
 
-      case ClueType.Rank: {
+      case "rank": {
         return "Oink";
       }
     }
@@ -56,7 +55,7 @@ export function getClueName(
     return "Quack";
   }
 
-  if (variant.oddsAndEvens && clue.type === ClueType.Rank) {
+  if (variant.oddsAndEvens && clue.type === "rank") {
     if (clue.value === ODD_RANK_CLUE) {
       return "Odd";
     }
@@ -67,12 +66,12 @@ export function getClueName(
   }
 
   switch (clue.type) {
-    case ClueType.Color: {
+    case "color": {
       const color = variant.clueColors[clue.value];
       return color === undefined ? "Unknown" : color.name;
     }
 
-    case ClueType.Rank: {
+    case "rank": {
       return clue.value.toString();
     }
   }
@@ -84,7 +83,7 @@ export function getClueName(
  */
 export function msgClueToClue(msgClue: MsgClue, variant: Variant): Clue {
   switch (msgClue.type) {
-    case ClueType.Color: {
+    case "color": {
       const color = variant.clueColors[msgClue.value];
       assertDefined(
         color,
@@ -94,7 +93,7 @@ export function msgClueToClue(msgClue: MsgClue, variant: Variant): Clue {
       return newColorClue(color);
     }
 
-    case ClueType.Rank: {
+    case "rank": {
       const clueValue = msgClue.value;
       return newRankClue(clueValue);
     }
@@ -113,11 +112,11 @@ export function isCardTouchedByClue(
   }
 
   switch (clue.type) {
-    case ClueType.Color: {
+    case "color": {
       return isCardTouchedByClueColor(variant, clue.value, suit, cardRank);
     }
 
-    case ClueType.Rank: {
+    case "rank": {
       return isCardTouchedByClueRank(
         variant,
         clue.value,

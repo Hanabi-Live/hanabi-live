@@ -18,14 +18,6 @@ export const MAX_STRIKES = 3;
 export const PANICKY_MAX_CLUES = 4;
 
 /**
- * The kind of a clue in a game event.
- */
-export enum ClueType {
-  Color = 0,
-  Rank = 1,
-}
-
-/**
  * How a game ended. These values are stored in the database, so changing one requires a
  * migration.
  */
@@ -43,7 +35,6 @@ export enum EndCondition {
   TerminatedByVote = 10,
 }
 
-export const clueTypeSchema = z.enum(ClueType);
 export const endConditionSchema = z.enum(EndCondition);
 
 /**
@@ -231,6 +222,11 @@ export const cardOrderSchema = z
   .brand<"CardOrder">();
 
 /**
+ * The kind of a clue.
+ */
+export const clueTypeSchema = z.enum(["color", "rank"]);
+
+/**
  * A card's rank. 7 is the rank of a stack's start card.
  */
 export const cardRankSchema = z.literal([1, 2, 3, 4, 5, 7]);
@@ -243,9 +239,18 @@ export const playerIndexSchema = z.literal([0, 1, 2, 3, 4, 5]);
 /**
  * A clue's type and value: a color clue names a suit's color, and a rank clue names a rank.
  */
-export const receivedClueSchema = z.union([
-  z.strictObject({ type: z.literal(0), value: z.literal([0, 1, 2, 3, 4, 5]) }),
-  z.strictObject({ type: z.literal(1), value: z.literal([1, 2, 3, 4, 5]) }),
+export const receivedClueSchema = z.discriminatedUnion("type", [
+  z.strictObject({
+    type: z.literal("color"),
+    /**
+     * The index of the color in the variant's clue colors.
+     */
+    value: z.literal([0, 1, 2, 3, 4, 5]),
+  }),
+  z.strictObject({
+    type: z.literal("rank"),
+    value: z.literal([1, 2, 3, 4, 5]),
+  }),
 ]);
 
 /**

@@ -7,7 +7,6 @@ import type {
 } from "@hanabi-live/game";
 import {
   canCardPossiblyBeFromCluesOnly,
-  ClueType,
   EndCondition,
   getCharacterNameForPlayer,
   getVariant,
@@ -103,11 +102,11 @@ export function getSoundType(
 
       if (variant.cowAndPig) {
         switch (action.clue.type) {
-          case ClueType.Color: {
+          case "color": {
             return SoundType.Moo;
           }
 
-          case ClueType.Rank: {
+          case "rank": {
             return SoundType.Oink;
           }
         }

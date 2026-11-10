@@ -1,14 +1,13 @@
-import { ClueType } from "../generated/protocol";
 import type { Color } from "../interfaces/Color";
 import type { RankClueNumber } from "./RankClueNumber";
 
 export interface ColorClue {
-  readonly type: ClueType.Color;
+  readonly type: "color";
   readonly value: Color;
 }
 
 export interface RankClue {
-  readonly type: ClueType.Rank;
+  readonly type: "rank";
   readonly value: RankClueNumber;
 }
 
@@ -16,14 +15,14 @@ export type Clue = ColorClue | RankClue;
 
 export function newColorClue(color: Color): ColorClue {
   return {
-    type: ClueType.Color,
+    type: "color",
     value: color,
   };
 }
 
 export function newRankClue(rank: RankClueNumber): RankClue {
   return {
-    type: ClueType.Rank,
+    type: "rank",
     value: rank,
   };
 }

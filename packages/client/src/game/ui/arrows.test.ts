@@ -1,4 +1,4 @@
-import { ClueType, getDefaultVariant } from "@hanabi-live/game";
+import { getDefaultVariant } from "@hanabi-live/game";
 import type Konva from "konva";
 import { describe, expect, test, vi } from "vitest";
 
@@ -73,7 +73,7 @@ describe("clue arrow suit pips", () => {
     });
 
     const clue = {
-      type: ClueType.Color,
+      type: "color",
       value: variant.clueColors[0]!,
     } as const;
     set(0, deck, 1, clue, false, true);

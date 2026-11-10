@@ -4,7 +4,7 @@ use std::collections::{BTreeMap, BTreeSet};
 use std::fmt::Write as _;
 
 /// The wire enums that the game library declares. The data package declares the rest.
-const GAME_LIBRARY_ENUMS: &[&str] = &["ClueType", "EndCondition"];
+const GAME_LIBRARY_ENUMS: &[&str] = &["EndCondition"];
 
 /// The game library's package, which the data package imports the game library's schemas from.
 const GAME_LIBRARY: &str = "@hanabi-live/game";
@@ -18,6 +18,7 @@ const GAME_LIBRARY_SCHEMAS: &[&str] = &[
     "CatalogVariant",
     "CardNote",
     "CardOrder",
+    "ClueType",
     "GameEvent",
     "GameOptions",
     "HypotheticalAction",
@@ -977,19 +978,19 @@ mod tests {
     #[test]
     fn union_variants_name_one_enum_member() {
         assert_eq!(
-            expression(&json!({"type":"integer","enum":[1],"x-enum":"ClueType"})).unwrap(),
+            expression(&json!({"type":"integer","enum":[1],"x-enum":"SoundMove"})).unwrap(),
             "z.literal(1)"
         );
-        assert!(expression(&json!({"type":"integer","enum":[2],"x-enum":"ClueType"})).is_err());
+        assert!(expression(&json!({"type":"integer","enum":[3],"x-enum":"SoundMove"})).is_err());
     }
 
     #[test]
     fn each_package_declares_its_own_enums() {
         let game = enum_declarations(true);
-        assert!(game.contains("export enum ClueType {\nColor = 0,\nRank = 1,\n}"));
+        assert!(game.contains("export enum EndCondition {"));
         assert!(!game.contains("enum SoundMove"));
         let data = enum_declarations(false);
         assert!(data.contains("export enum SoundMove {\nAll = 0,\nOnlyOwn = 1,\nNone = 2,\n}"));
-        assert!(!data.contains("enum ClueType"));
+        assert!(!data.contains("enum EndCondition"));
     }
 }

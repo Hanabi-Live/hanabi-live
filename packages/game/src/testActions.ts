@@ -1,4 +1,3 @@
-import { ClueType } from "./generated/protocol";
 import type { CardOrder } from "./types/CardOrder";
 import type { ColorIndex } from "./types/ColorIndex";
 import type { PlayerIndex } from "./types/PlayerIndex";
@@ -23,7 +22,7 @@ export function colorClue(
   return {
     type: "clue",
     clue: {
-      type: ClueType.Color,
+      type: "color",
       value,
     },
     giver,
@@ -43,7 +42,7 @@ export function rankClue(
   return {
     type: "clue",
     clue: {
-      type: ClueType.Rank,
+      type: "rank",
       value,
     },
     giver,

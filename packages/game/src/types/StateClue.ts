@@ -1,4 +1,3 @@
-import type { ClueType } from "../generated/protocol";
 import type { CardOrder } from "./CardOrder";
 import type { ColorIndex } from "./ColorIndex";
 import type { HiddenClue } from "./HiddenClue";
@@ -18,12 +17,12 @@ interface StateClueBase {
 }
 
 export interface StateColorClue extends StateClueBase {
-  readonly type: ClueType.Color;
+  readonly type: "color";
   readonly value: ColorIndex;
 }
 
 export interface StateRankClue extends StateClueBase {
-  readonly type: ClueType.Rank;
+  readonly type: "rank";
   readonly value: RankClueNumber;
 }
 

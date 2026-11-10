@@ -1,8 +1,4 @@
-import {
-  ClueType,
-  getDefaultMetadata,
-  getDefaultVariant,
-} from "@hanabi-live/game";
+import { getDefaultMetadata, getDefaultVariant } from "@hanabi-live/game";
 import { describe, expect, test, vi } from "vitest";
 
 vi.mock("./UIGlobals", () => ({ globals: {} }));
@@ -21,7 +17,7 @@ describe("hypothetical clue matching", () => {
   test("uses the layout card rather than its first Konva child", () => {
     const metadata = getDefaultMetadata(2);
     const variant = getDefaultVariant();
-    const clue = { type: ClueType.Rank, value: 1 } as const;
+    const clue = { type: "rank", value: 1 } as const;
     const card = {
       state: { order: 0 },
       getMorphedPossibilities: () => [[0, 1]],

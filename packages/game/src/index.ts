@@ -62,6 +62,7 @@ export * from "./rules/variants/variantIdentity";
 export * from "./testActions";
 export type * from "./types/CardOrder";
 export * from "./types/Clue";
+export type * from "./types/ClueType";
 export type * from "./types/ColorIndex";
 export type * from "./types/gameActions";
 export type * from "./types/HiddenClue";

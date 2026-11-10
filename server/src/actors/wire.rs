@@ -69,7 +69,7 @@ pub(super) fn wire_event(event: &hanabi_engine::EngineEvent) -> hanabi_protocol:
         } => G::Clue {
             // The wire omits a clue that the recipient may not see.
             clue: clue.clue_type.map(|clue_type| hanabi_protocol::Clue {
-                clue_type: i32::from(clue_type),
+                clue_type,
                 value: clue.value,
             }),
             giver: int(*giver),

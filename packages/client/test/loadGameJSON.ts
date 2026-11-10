@@ -15,7 +15,6 @@ import type {
   SuitIndex,
 } from "@hanabi-live/game";
 import {
-  ClueType,
   EndCondition,
   MAX_PLAYERS,
   MIN_PLAYERS,
@@ -354,9 +353,7 @@ function parseJSONAction(
         type: "clue",
         clue: {
           type:
-            a.type === JSONActionType.ActionTypeColorClue
-              ? ClueType.Color
-              : ClueType.Rank,
+            a.type === JSONActionType.ActionTypeColorClue ? "color" : "rank",
           value: a.value,
         },
         giver: currentPlayer,

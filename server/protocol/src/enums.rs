@@ -110,11 +110,22 @@ impl RecordedActionType {
     }
 }
 
-wire_enum! {
-    /// The kind of a clue in a game event.
-    pub enum ClueType {
-        Color = 0,
-        Rank = 1,
+/// The kind of a clue.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize, JsonSchema)]
+#[serde(rename_all = "camelCase")]
+pub enum ClueType {
+    Color,
+    Rank,
+}
+
+/// The number that a character's metadata holds for a clue type, for characters that remember the
+/// last clue they gave.
+impl From<ClueType> for i32 {
+    fn from(clue_type: ClueType) -> Self {
+        match clue_type {
+            ClueType::Color => 0,
+            ClueType::Rank => 1,
+        }
     }
 }
 
@@ -170,7 +181,6 @@ pub enum Status {
 
 /// Every wire enum, for the TypeScript generator.
 pub const WIRE_ENUMS: &[WireEnum] = &[
-    ClueType::WIRE,
     EndCondition::WIRE,
     GameListColumn::WIRE,
     RecordedActionType::WIRE,

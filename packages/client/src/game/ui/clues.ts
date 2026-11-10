@@ -1,6 +1,5 @@
 import type { Clue, PlayerIndex } from "@hanabi-live/game";
 import {
-  ClueType,
   getCharacterNameForPlayer,
   getClueCost,
   isCardTouchedByClue,
@@ -73,10 +72,10 @@ export function checkLegal(): void {
     || globals.options.emptyClues
     // Make an exception for variants where color clues are always allowed.
     || (globals.variant.colorCluesTouchNothing
-      && clueButton.clue.type === ClueType.Color)
+      && clueButton.clue.type === "color")
     // Make an exception for variants where number clues are always allowed.
     || (globals.variant.rankCluesTouchNothing
-      && clueButton.clue.type === ClueType.Rank)
+      && clueButton.clue.type === "rank")
     // Make an exception for certain characters.
     || (ourCharacterName === "Blind Spot"
       && who
@@ -129,9 +128,8 @@ function isTouched(card: HanabiCard, clue: Clue): boolean {
   return morphedPossibilities.every(
     ([suitIndex, rank]) =>
       isCardTouchedByClue(globals.variant, clue, suitIndex, rank)
-      && ((clue.type === ClueType.Rank && card.visibleRank !== undefined)
-        || (clue.type === ClueType.Color
-          && card.visibleSuitIndex !== undefined)),
+      && ((clue.type === "rank" && card.visibleRank !== undefined)
+        || (clue.type === "color" && card.visibleSuitIndex !== undefined)),
   );
 }
 
@@ -157,7 +155,7 @@ export function give(): void {
   }
 
   switch (clueOrRankButton.clue.type) {
-    case ClueType.Color: {
+    case "color": {
       const colorIndex = colorToColorIndex(
         clueOrRankButton.clue.value,
         globals.variant,
@@ -177,7 +175,7 @@ export function give(): void {
       break;
     }
 
-    case ClueType.Rank: {
+    case "rank": {
       const clientActionRankClue: ClientActionRankClue = {
         type: "rankClue",
         target: playerButton.targetPlayerIndex,

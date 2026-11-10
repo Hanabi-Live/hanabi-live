@@ -6,7 +6,7 @@ import {
   assertDefined,
 } from "complete-common";
 import { getVariant } from "../gameData";
-import { ClueType, EndCondition } from "../generated/protocol";
+import { EndCondition } from "../generated/protocol";
 import type { GameMetadata } from "../interfaces/GameMetadata";
 import type { Variant } from "../interfaces/Variant";
 import { getCharacterNameForPlayer } from "../reducers/reducerHelpers";
@@ -114,11 +114,11 @@ function getClueActionName(
   }
   if (variant.cowAndPig) {
     switch (msgClue.type) {
-      case ClueType.Color: {
+      case "color": {
         return "moos";
       }
 
-      case ClueType.Rank: {
+      case "rank": {
         return "oinks";
       }
     }

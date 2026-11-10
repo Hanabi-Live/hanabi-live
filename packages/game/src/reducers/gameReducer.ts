@@ -7,7 +7,7 @@ import type { Draft } from "immer";
 import { castDraft, original, produce } from "immer";
 import { VALID_PLAYER_INDEXES } from "../constants";
 import { getVariant } from "../gameData";
-import { ClueType, EndCondition } from "../generated/protocol";
+import { EndCondition } from "../generated/protocol";
 import type { CardNote } from "../interfaces/CardNote";
 import type { GameMetadata } from "../interfaces/GameMetadata";
 import type { GameState } from "../interfaces/GameState";
@@ -112,7 +112,7 @@ function gameReducerFunction(
             break;
           }
 
-          case ClueType.Color: {
+          case "color": {
             const clue = castDraft({
               type: action.clue.type,
               value: action.clue.value,
@@ -126,7 +126,7 @@ function gameReducerFunction(
             break;
           }
 
-          case ClueType.Rank: {
+          case "rank": {
             const clue = castDraft({
               type: action.clue.type,
               value: action.clue.value,
