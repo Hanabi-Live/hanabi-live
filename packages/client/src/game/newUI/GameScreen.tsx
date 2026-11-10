@@ -33,7 +33,7 @@ import { CluePanel } from "./CluePanel";
 import type { Seat } from "./Hands";
 import { CARD_GAP, Hands, NAME_COLUMN_WIDTH } from "./Hands";
 import type { DiscardView, StackView, ZoneState } from "./SharedCards";
-import { DiscardPile, PlayArea } from "./SharedCards";
+import { DiscardPile, PlayArea, TableTokens } from "./SharedCards";
 import { StatusStrip } from "./StatusStrip";
 import { useElementSize, useGameState, useNewUIVersion, useNow } from "./hooks";
 import * as newUIState from "./newUIState";
@@ -66,10 +66,9 @@ const HAND_BOX_HORIZONTAL_PADDING = 32;
 const HAND_ROW_GAP = 8;
 
 /**
- * The height in the play area that is not cards: its padding, its heading, the labels, the clue
- * count, the strike boxes, and the gaps between them.
+ * The height in the play area that is not cards: its padding, its heading, and the deck's label.
  */
-const PLAY_AREA_OTHER_HEIGHT = 250;
+const PLAY_AREA_OTHER_HEIGHT = 130;
 const PLAY_STACK_GAP = 8;
 
 type DropZone = "play" | "discard";
@@ -359,7 +358,7 @@ export function GameScreen({
 
   if (state?.visibleState === undefined) {
     return (
-      <div className="tw:fixed tw:inset-0 tw:flex tw:items-center tw:justify-center tw:bg-table tw:text-table-muted">
+      <div className="tw:fixed tw:inset-0 tw:flex tw:items-center tw:justify-center tw:bg-surface-sunken tw:text-text-label">
         Loading the game...
       </div>
     );
@@ -461,19 +460,16 @@ export function GameScreen({
     visibleState === ongoingGame ? state.notes.efficiencyModifier : 0;
 
   return (
-    <div className="tw:fixed tw:inset-0 tw:flex tw:bg-table tw:text-table-text">
+    <div className="tw:fixed tw:inset-0 tw:flex tw:bg-surface-sunken tw:text-text-strong">
       <main className="tw:flex tw:min-w-0 tw:flex-1 tw:flex-col">
         <div className="tw:flex tw:min-h-0 tw:flex-1 tw:justify-center tw:gap-9 tw:px-7 tw:pt-6 tw:pb-5">
           <div className="tw:flex tw:shrink-0" ref={setPlayAreaElement}>
             <PlayArea
               cardsInDeck={visibleState.cardsRemainingInTheDeck}
               cardWidth={tableCardWidth}
-              clues={getUnadjustedClueTokens(visibleState.clueTokens, variant)}
               colorblindMode={settings.colorblindMode}
-              maxClues={MAX_CLUES}
               ref={playZoneRef}
               stacks={getStacks(state)}
-              strikes={visibleState.strikes.length}
               variant={variant}
               zoneState={playZoneState}
             />
@@ -482,7 +478,7 @@ export function GameScreen({
           <div className="tw:flex tw:min-w-0 tw:max-w-[760px] tw:flex-1 tw:flex-col tw:gap-3.5">
             {inReplay && (
               <div
-                className="tw:flex tw:shrink-0 tw:items-center tw:gap-2 tw:rounded-[14px] tw:bg-clue tw:px-4 tw:py-2 tw:font-bold tw:text-table-ink"
+                className="tw:flex tw:shrink-0 tw:items-center tw:gap-2 tw:rounded-[14px] tw:bg-clue tw:px-4 tw:py-2 tw:font-bold tw:text-card-ink"
                 role="status"
               >
                 <span className="tw:mr-auto">
@@ -490,7 +486,7 @@ export function GameScreen({
                 </span>
                 <button
                   aria-label="Previous turn"
-                  className="tw:size-9 tw:cursor-pointer tw:rounded-lg tw:border-0 tw:bg-table-ink tw:text-table-text"
+                  className="tw:size-9 tw:cursor-pointer tw:rounded-lg tw:border-0 tw:bg-surface tw:text-text-strong"
                   onClick={() => {
                     replay.back();
                   }}
@@ -500,7 +496,7 @@ export function GameScreen({
                 </button>
                 <button
                   aria-label="Next turn"
-                  className="tw:size-9 tw:cursor-pointer tw:rounded-lg tw:border-0 tw:bg-table-ink tw:text-table-text"
+                  className="tw:size-9 tw:cursor-pointer tw:rounded-lg tw:border-0 tw:bg-surface tw:text-text-strong"
                   onClick={() => {
                     replay.forward();
                   }}
@@ -509,7 +505,7 @@ export function GameScreen({
                   <i aria-hidden="true" className="fas fa-chevron-right" />
                 </button>
                 <button
-                  className="tw:h-9 tw:cursor-pointer tw:rounded-lg tw:border-0 tw:bg-table-ink tw:px-3 tw:font-bold tw:text-table-text"
+                  className="tw:h-9 tw:cursor-pointer tw:rounded-lg tw:border-0 tw:bg-surface tw:px-3 tw:font-bold tw:text-text-strong"
                   onClick={() => {
                     replay.exit();
                   }}
@@ -521,7 +517,7 @@ export function GameScreen({
             )}
             {pausedBy !== undefined && (
               <div
-                className="tw:shrink-0 tw:rounded-[14px] tw:bg-table-text tw:px-4 tw:py-2 tw:font-bold tw:text-table-ink"
+                className="tw:shrink-0 tw:rounded-[14px] tw:bg-text-strong tw:px-4 tw:py-2 tw:font-bold tw:text-surface"
                 role="status"
               >
                 {pausedBy} paused the game.
@@ -595,15 +591,22 @@ export function GameScreen({
             </div>
           </div>
 
-          <DiscardPile
-            cardWidth={Math.min(tableCardWidth, TABLE_CARD_WIDTH.MAX)}
-            colorblindMode={settings.colorblindMode}
-            onShowDiscard={showDiscard}
-            ref={discardZoneRef}
-            rows={getDiscardRows(state)}
-            variant={variant}
-            zoneState={discardZoneState}
-          />
+          <div className="tw:flex tw:w-[214px] tw:shrink-0 tw:flex-col tw:gap-3">
+            <DiscardPile
+              cardWidth={Math.min(tableCardWidth, TABLE_CARD_WIDTH.MAX)}
+              colorblindMode={settings.colorblindMode}
+              onShowDiscard={showDiscard}
+              ref={discardZoneRef}
+              rows={getDiscardRows(state)}
+              variant={variant}
+              zoneState={discardZoneState}
+            />
+            <TableTokens
+              clues={getUnadjustedClueTokens(visibleState.clueTokens, variant)}
+              maxClues={MAX_CLUES}
+              strikes={visibleState.strikes.length}
+            />
+          </div>
         </div>
 
         <StatusStrip

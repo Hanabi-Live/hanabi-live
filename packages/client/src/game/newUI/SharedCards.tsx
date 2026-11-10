@@ -29,10 +29,10 @@ export interface DiscardView {
 export type ZoneState = "idle" | "available" | "hovered" | "unavailable";
 
 const zoneClasses: Record<ZoneState, string> = {
-  idle: "tw:bg-table-zone",
-  available: "tw:bg-table-zone tw:inset-ring-2 tw:inset-ring-table-faint",
+  idle: "tw:bg-surface",
+  available: "tw:bg-surface tw:inset-ring-2 tw:inset-ring-text-label",
   hovered: "tw:bg-clue/15 tw:inset-ring-3 tw:inset-ring-clue",
-  unavailable: "tw:bg-table-zone tw:opacity-60",
+  unavailable: "tw:bg-surface tw:opacity-60",
 };
 
 function ZoneLabel({
@@ -52,8 +52,8 @@ function ZoneLabel({
     <span
       className={`tw:pointer-events-none tw:absolute tw:top-1/2 tw:left-1/2 tw:-translate-1/2 tw:rounded-full tw:px-3.5 tw:py-1.5 tw:text-center tw:font-bold tw:whitespace-nowrap tw:shadow-lg ${
         state === "hovered"
-          ? "tw:bg-clue tw:text-table-ink"
-          : "tw:bg-table-text tw:text-table-ink"
+          ? "tw:bg-clue tw:text-card-ink"
+          : "tw:bg-text-strong tw:text-surface"
       }`}
     >
       {state === "unavailable" ? unavailableText : text}
@@ -61,10 +61,7 @@ function ZoneLabel({
   );
 }
 
-/**
- * The play stacks, where the player drops a card to play it. Below them are the deck, the clue
- * tokens, and the strikes, which are all things on the table in the physical game.
- */
+/** The play stacks, where the player drops a card to play it, with the deck below them. */
 export const PlayArea = forwardRef<
   HTMLElement,
   {
@@ -73,24 +70,11 @@ export const PlayArea = forwardRef<
     readonly colorblindMode: boolean;
     readonly cardWidth: number;
     readonly cardsInDeck: number;
-    readonly clues: number;
-    readonly maxClues: number;
-    readonly strikes: number;
     readonly zoneState: ZoneState;
   }
 >(
   (
-    {
-      stacks,
-      variant,
-      colorblindMode,
-      cardWidth,
-      cardsInDeck,
-      clues,
-      maxClues,
-      strikes,
-      zoneState,
-    },
+    { stacks, variant, colorblindMode, cardWidth, cardsInDeck, zoneState },
     ref,
   ): React.JSX.Element => {
     const height = cardWidth * CARD_HEIGHT_PER_WIDTH;
@@ -99,10 +83,10 @@ export const PlayArea = forwardRef<
       <div className="tw:flex tw:shrink-0 tw:flex-col tw:items-center tw:gap-3">
         <section
           aria-label="Play stacks"
-          className={`tw:relative tw:flex tw:flex-1 tw:flex-col tw:items-center tw:gap-3 tw:rounded-[18px] tw:px-4.5 tw:py-4 ${zoneClasses[zoneState]}`}
+          className={`tw:relative tw:flex tw:flex-col tw:items-center tw:gap-3 tw:rounded-[18px] tw:px-4.5 tw:py-4 ${zoneClasses[zoneState]}`}
           ref={ref}
         >
-          <h2 className="tw:m-0 tw:text-[15px] tw:font-medium tw:text-table-muted">
+          <h2 className="tw:m-0 tw:text-[15px] tw:font-medium tw:text-text-label">
             Play stacks
           </h2>
           <div className="tw:flex tw:flex-col tw:gap-2">
@@ -112,7 +96,7 @@ export const PlayArea = forwardRef<
                 return (
                   <div
                     aria-label={`${suit?.displayName ?? ""}: nothing played`}
-                    className="tw:box-border tw:flex tw:items-center tw:justify-center tw:rounded-[10px] tw:border-2 tw:border-dashed tw:border-table-line tw:opacity-60"
+                    className="tw:box-border tw:flex tw:items-center tw:justify-center tw:rounded-[10px] tw:border-2 tw:border-dashed tw:border-text-label tw:opacity-60"
                     key={stack.suitIndex}
                     role="img"
                     style={{ width: cardWidth, height }}
@@ -157,42 +141,17 @@ export const PlayArea = forwardRef<
           role="img"
         >
           <div
-            className="tw:flex tw:items-center tw:justify-center tw:rounded-[10px] tw:bg-table-raised tw:ring-1 tw:ring-table-line"
+            className="tw:flex tw:items-center tw:justify-center tw:rounded-[10px] tw:bg-border tw:ring-1 tw:ring-text-label"
             style={{ width: cardWidth, height }}
           >
             <span
-              className="tw:font-extrabold tw:text-table-text"
+              className="tw:font-extrabold tw:text-text-strong"
               style={{ fontSize: cardWidth * 0.5 }}
             >
               {cardsInDeck}
             </span>
           </div>
-          <span className="tw:text-[13px] tw:text-table-muted">In deck</span>
-        </div>
-        <div className="tw:flex tw:flex-col tw:items-center tw:gap-0.5">
-          <span className="tw:text-[13px] tw:text-table-muted">Clues</span>
-          <span className="tw:text-[22px] tw:font-bold tw:text-table-text">
-            <OutOf max={maxClues} value={clues} />
-          </span>
-        </div>
-        <div className="tw:flex tw:flex-col tw:items-center tw:gap-1.5">
-          <span className="tw:text-[13px] tw:text-table-muted">Strikes</span>
-          <div
-            aria-label={`${strikes} of ${MAX_STRIKES} strikes`}
-            className="tw:flex tw:gap-1.5"
-            role="img"
-          >
-            {[...eRange(MAX_STRIKES)].map((i) => (
-              <span
-                className={`tw:box-border tw:size-[24px] tw:rounded-md tw:border-2 ${
-                  i < strikes
-                    ? "tw:border-critical tw:bg-critical"
-                    : "tw:border-table-line"
-                }`}
-                key={i}
-              />
-            ))}
-          </div>
+          <span className="tw:text-[13px] tw:text-text-label">In deck</span>
         </div>
       </div>
     );
@@ -223,10 +182,10 @@ export const DiscardPile = forwardRef<
     return (
       <section
         aria-label="Discards"
-        className={`tw:relative tw:box-border tw:flex tw:w-[214px] tw:shrink-0 tw:flex-col tw:gap-3 tw:rounded-[18px] tw:px-4.5 tw:py-4 ${zoneClasses[zoneState]}`}
+        className={`tw:relative tw:box-border tw:flex tw:flex-1 tw:flex-col tw:gap-3 tw:rounded-[18px] tw:px-4.5 tw:py-4 ${zoneClasses[zoneState]}`}
         ref={ref}
       >
-        <h2 className="tw:m-0 tw:text-[15px] tw:font-medium tw:text-table-muted">
+        <h2 className="tw:m-0 tw:text-[15px] tw:font-medium tw:text-text-label">
           Discards
         </h2>
         <div className="tw:flex tw:flex-col">
@@ -275,3 +234,50 @@ export const DiscardPile = forwardRef<
     );
   },
 );
+
+/**
+ * The clue tokens and the strikes, below the discard pile. They are real tokens in the physical
+ * game, so they sit on the table instead of with the numbers along the bottom.
+ */
+export function TableTokens({
+  clues,
+  maxClues,
+  strikes,
+}: {
+  readonly clues: number;
+  readonly maxClues: number;
+  readonly strikes: number;
+}): React.JSX.Element {
+  return (
+    <section
+      aria-label="Clue tokens and strikes"
+      className="tw:flex tw:shrink-0 tw:items-center tw:justify-around tw:rounded-[18px] tw:bg-surface tw:px-4.5 tw:py-3.5"
+    >
+      <div className="tw:flex tw:flex-col tw:items-center tw:gap-0.5">
+        <span className="tw:text-[13px] tw:text-text-label">Clues</span>
+        <span className="tw:text-[22px] tw:font-bold tw:text-text-strong">
+          <OutOf max={maxClues} value={clues} />
+        </span>
+      </div>
+      <div className="tw:flex tw:flex-col tw:items-center tw:gap-1.5">
+        <span className="tw:text-[13px] tw:text-text-label">Strikes</span>
+        <div
+          aria-label={`${strikes} of ${MAX_STRIKES} strikes`}
+          className="tw:flex tw:gap-1.5"
+          role="img"
+        >
+          {[...eRange(MAX_STRIKES)].map((i) => (
+            <span
+              className={`tw:box-border tw:size-[24px] tw:rounded-md tw:border-2 ${
+                i < strikes
+                  ? "tw:border-critical tw:bg-critical"
+                  : "tw:border-text-label"
+              }`}
+              key={i}
+            />
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}

@@ -48,22 +48,10 @@
   --color-lobby-table-replay: var(--lobby-table-replay);
   --color-lobby-table-replay-hover: var(--lobby-table-replay-hover);
 
-  /*
-    The redesigned game screen ("New UI") has its own dark palette, which does not follow the site
-    theme, in the same way that the classic game screen is always green felt.
-  */
-  --color-table: #26313a;
-  --color-table-zone: #2b363f;
-  --color-table-panel: #1f2930;
-  --color-table-raised: #3a4752;
-  --color-table-line: #4a5864;
-  --color-table-text: #eef1f3;
-  --color-table-muted: #b3bdc5;
-  --color-table-faint: #8f9ba5;
-  --color-table-ink: #1b242b;
-  --color-card-unknown: #cbd3da;
-  --color-clue: #ff9f1c;
-  --color-critical: #d7363c;
+  --color-card-unknown: var(--card-face-unknown);
+  --color-card-ink: var(--card-ink);
+  --color-clue: var(--clue-border);
+  --color-critical: var(--critical);
 }
 
 /*

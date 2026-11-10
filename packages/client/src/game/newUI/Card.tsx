@@ -52,7 +52,7 @@ function getFaceColors(
   colorblindMode: boolean,
 ): { className: string; background?: string; ink?: string } {
   if (suit === undefined) {
-    return { className: "tw:bg-card-unknown tw:text-table-ink" };
+    return { className: "tw:bg-card-unknown tw:text-card-ink" };
   }
 
   if (suit.fill === "multi") {
@@ -60,7 +60,7 @@ function getFaceColors(
       (color) => `color-mix(in srgb, ${color} ${FACE_TINT_PERCENT}%, white)`,
     );
     return {
-      className: "tw:text-table-ink",
+      className: "tw:text-card-ink",
       background: `linear-gradient(135deg, ${stops.join(", ")})`,
     };
   }
@@ -166,7 +166,7 @@ export function CardFace({
       {(critical || trashIcon) && (
         <span
           className={`tw:absolute tw:flex tw:items-center tw:justify-center tw:rounded-full tw:font-extrabold tw:text-white ${
-            critical ? "tw:bg-critical" : "tw:bg-table-line"
+            critical ? "tw:bg-critical" : "tw:bg-text-label"
           }`}
           style={{
             right: width * 0.06,

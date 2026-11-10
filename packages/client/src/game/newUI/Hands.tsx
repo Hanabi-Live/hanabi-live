@@ -59,11 +59,11 @@ function NameChip({ seat }: { readonly seat: Seat }): React.JSX.Element {
 
   if (seat.active) {
     return (
-      <span className="tw:inline-flex tw:max-w-full tw:items-center tw:gap-2 tw:rounded-full tw:bg-table-text tw:py-1.5 tw:pr-2 tw:pl-3.5 tw:font-bold tw:text-table-ink">
+      <span className="tw:inline-flex tw:max-w-full tw:items-center tw:gap-2 tw:rounded-full tw:bg-text-strong tw:py-1.5 tw:pr-2 tw:pl-3.5 tw:font-bold tw:text-surface">
         {youIcon}
         <span className="tw:truncate">{seat.name}</span>
         {seat.clock !== undefined && (
-          <span className="tw:rounded-full tw:bg-table-ink tw:px-2.5 tw:py-0.5 tw:text-sm tw:font-medium tw:text-table-text">
+          <span className="tw:rounded-full tw:bg-surface tw:px-2.5 tw:py-0.5 tw:text-sm tw:font-medium tw:text-text-strong">
             {seat.clock}
           </span>
         )}
@@ -72,7 +72,7 @@ function NameChip({ seat }: { readonly seat: Seat }): React.JSX.Element {
   }
 
   return (
-    <span className="tw:inline-flex tw:max-w-full tw:items-center tw:gap-2 tw:rounded-full tw:bg-table-raised tw:px-3.5 tw:py-1.5 tw:font-medium tw:text-table-text">
+    <span className="tw:inline-flex tw:max-w-full tw:items-center tw:gap-2 tw:rounded-full tw:bg-border tw:px-3.5 tw:py-1.5 tw:font-medium tw:text-text-strong">
       {youIcon}
       <span className="tw:truncate">{seat.name}</span>
     </span>
@@ -96,7 +96,7 @@ function OwnCard({
   if (dragged) {
     return (
       <div
-        className="tw:box-border tw:shrink-0 tw:rounded-[10px] tw:border-2 tw:border-dashed tw:border-table-line"
+        className="tw:box-border tw:shrink-0 tw:rounded-[10px] tw:border-2 tw:border-dashed tw:border-text-label"
         style={{ width: cardWidth, height }}
       />
     );
@@ -145,9 +145,9 @@ function OwnCard({
         {face}
       </button>
       {menuOpen && (
-        <div className="tw:absolute tw:top-full tw:left-1/2 tw:z-10 tw:mt-2 tw:flex tw:-translate-x-1/2 tw:gap-1.5 tw:rounded-[10px] tw:bg-table-text tw:p-1.5 tw:shadow-lg">
+        <div className="tw:absolute tw:top-full tw:left-1/2 tw:z-10 tw:mt-2 tw:flex tw:-translate-x-1/2 tw:gap-1.5 tw:rounded-[10px] tw:bg-text-strong tw:p-1.5 tw:shadow-lg">
           <button
-            className="tw:cursor-pointer tw:rounded-lg tw:border-0 tw:bg-table-ink tw:px-3 tw:py-1.5 tw:font-bold tw:text-table-text"
+            className="tw:cursor-pointer tw:rounded-lg tw:border-0 tw:bg-surface tw:px-3 tw:py-1.5 tw:font-bold tw:text-text-strong"
             onClick={() => {
               props.onPlay(card.order);
             }}
@@ -156,7 +156,7 @@ function OwnCard({
             Play
           </button>
           <button
-            className="tw:cursor-pointer tw:rounded-lg tw:border-0 tw:bg-clue tw:px-3 tw:py-1.5 tw:font-bold tw:text-table-ink tw:disabled:cursor-default tw:disabled:opacity-50"
+            className="tw:cursor-pointer tw:rounded-lg tw:border-0 tw:bg-clue tw:px-3 tw:py-1.5 tw:font-bold tw:text-card-ink tw:disabled:cursor-default tw:disabled:opacity-50"
             disabled={!props.canDiscard}
             onClick={() => {
               props.onDiscard(card.order);
@@ -186,13 +186,13 @@ function Hand({
   const canPick = props.canChooseClueTarget && !seat.you;
   const chosen = canPick && props.clueTarget === seat.playerIndex;
 
-  let boxClass = "tw:ring-1 tw:ring-table-raised";
+  let boxClass = "tw:ring-1 tw:ring-border";
   if (seat.active) {
-    boxClass = "tw:bg-white/5 tw:ring-2 tw:ring-table-text";
+    boxClass = "tw:bg-white/5 tw:ring-2 tw:ring-text-strong";
   } else if (chosen) {
     boxClass = "tw:bg-clue/10 tw:ring-2 tw:ring-clue";
   } else if (seat.you) {
-    boxClass = "tw:bg-table-zone tw:ring-1 tw:ring-table-line";
+    boxClass = "tw:bg-surface tw:ring-1 tw:ring-text-label";
   }
 
   const chip = <NameChip seat={seat} />;

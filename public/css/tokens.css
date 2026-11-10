@@ -139,6 +139,12 @@
   --canvas-replay-shuttle: #d1d1d1;
   --canvas-surface-area: #b3b3b3;
   --canvas-loading-label-stroke: #747278;
+
+  /* The cards and clue marks of the redesigned game screen, which look the same in both themes */
+  --card-face-unknown: #cbd3da;
+  --card-ink: #1b242b;
+  --clue-border: #ff9f1c;
+  --critical: #d7363c;
 }
 
 :root[data-theme="dark"] {

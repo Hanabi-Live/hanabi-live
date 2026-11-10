@@ -106,7 +106,10 @@ async function clickNav(page: Page, id: string) {
   await page.waitForTimeout(SETTLE_MILLISECONDS);
 }
 
-function getStates(replayID: number): readonly State[] {
+function getStates({
+  replayID,
+  startGame,
+}: Pick<Seed, "replayID" | "startGame">): readonly State[] {
   return [
     { name: "login", path: "/", loggedIn: false },
     { name: "scores", path: `/scores/${USERNAME}`, loggedIn: false },
@@ -237,6 +240,33 @@ function getStates(replayID: number): readonly State[] {
           .locator("#lobby-toggle-show-game-chat")
           .dispatchEvent("click");
         await page.waitForTimeout(SETTLE_MILLISECONDS);
+      },
+    },
+    // Starting the game ends the pregame, so this state comes after the pregame states.
+    {
+      name: "new-ui-game",
+      path: "/",
+      loggedIn: true,
+      prepare: async (page) => {
+        // The settings are only in the lobby, so leave the pregame screen to turn on "New UI".
+        await joinTable(page);
+        await page.click("#nav-buttons-pregame-unattend");
+        await page.waitForTimeout(SETTLE_MILLISECONDS);
+        await clickNav(page, "settings");
+        // The checkbox itself is hidden behind its styled label.
+        await page.locator('label[for="newUi"]').first().click();
+        await page.keyboard.press("Escape");
+        await page.waitForTimeout(SETTLE_MILLISECONDS);
+        await joinTable(page);
+        // Clicking the table's row joins it as a player when there is room, but only spectates it
+        // when the account is already watching.
+        const join = page.locator("#nav-buttons-pregame-join");
+        if (await join.isVisible()) {
+          await join.click();
+          await page.waitForTimeout(SETTLE_MILLISECONDS);
+        }
+        await startGame();
+        await page.locator('#game-new-ui [aria-label="Hands"]').waitFor();
       },
     },
   ];
@@ -387,6 +417,8 @@ async function playGame(alice: Peer, bob: Peer): Promise<number> {
 
 interface Seed {
   readonly replayID: number;
+  /** Starts the game at Bob's table, where the browser's account must be a player. */
+  readonly startGame: () => Promise<void>;
   readonly cookie: string;
   readonly peers: readonly Peer[];
 }
@@ -425,9 +457,41 @@ async function seed(address: string): Promise<Seed> {
   await carol.receive("joined", SERVER_COMMAND_SCHEMAS.joined);
   const bot = await connect(address, "Robot", BOT_VERSION);
 
+  async function startGame() {
+    bob.send("tableStart", { tableID });
+    await bob.receive("tableStarted", SERVER_COMMAND_SCHEMAS.tableStarted);
+    bob.send("getGameInit", { tableID });
+    const init = await bob.receive("init", SERVER_COMMAND_SCHEMAS.init);
+    bob.send("getGameState", { tableID });
+    const { actions } = await bob.receive(
+      "gameActionList",
+      SERVER_COMMAND_SCHEMAS.gameActionList,
+    );
+    bob.send("loaded", { tableID });
+
+    // When Bob goes first, he clues the newest card of the browser's account, so that its hand
+    // shows a clued card.
+    if (init.ourPlayerIndex !== 0) {
+      return;
+    }
+    const newest = actions.findLast(
+      (action) => action.type === "draw" && action.playerIndex !== 0,
+    );
+    if (newest?.type !== "draw" || newest.suitIndex === undefined) {
+      return;
+    }
+    bob.send("action", {
+      tableID,
+      type: "colorClue",
+      target: newest.playerIndex,
+      colorIndex: newest.suitIndex,
+    });
+    await bob.receive("gameAction", SERVER_COMMAND_SCHEMAS.gameAction);
+  }
+
   // The browser logs in as Alice, with a session of its own.
   const cookie = await login(address, USERNAME);
-  return { replayID, cookie, peers: [bob, carol, bot] };
+  return { replayID, startGame, cookie, peers: [bob, carol, bot] };
 }
 
 /** Runs in the page. */
@@ -837,7 +901,7 @@ async function main() {
     const address = `http://${DOMAIN}:${port}`;
 
     seeded = await seed(localAddress);
-    const states = getStates(seeded.replayID).filter(
+    const states = getStates(seeded).filter(
       (state) =>
         options.states.length === 0 || options.states.includes(state.name),
     );
@@ -846,7 +910,9 @@ async function main() {
     );
     if (unknown.length > 0) {
       throw new Error(
-        `Unknown states: ${unknown.join(", ")}. The states are: ${getStates(0)
+        `Unknown states: ${unknown.join(", ")}. The states are: ${getStates(
+          seeded,
+        )
           .map((state) => state.name)
           .join(", ")}`,
       );

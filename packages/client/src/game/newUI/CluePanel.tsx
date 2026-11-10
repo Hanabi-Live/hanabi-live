@@ -48,7 +48,7 @@ export function CluePanel({
     return (
       <section
         aria-label="Give a clue"
-        className="tw:flex tw:h-14 tw:shrink-0 tw:items-center tw:rounded-[14px] tw:bg-table-zone tw:px-4 tw:text-table-faint"
+        className="tw:flex tw:h-14 tw:shrink-0 tw:items-center tw:rounded-[14px] tw:bg-surface tw:px-4 tw:text-text-label"
       >
         {waitingText}
       </section>
@@ -58,9 +58,9 @@ export function CluePanel({
   return (
     <section
       aria-label="Give a clue"
-      className="tw:flex tw:h-14 tw:shrink-0 tw:items-center tw:gap-2 tw:rounded-[14px] tw:bg-table-zone tw:px-4"
+      className="tw:flex tw:h-14 tw:shrink-0 tw:items-center tw:gap-2 tw:rounded-[14px] tw:bg-surface tw:px-4"
     >
-      <span className="tw:mr-1 tw:min-w-0 tw:truncate tw:text-table-muted">
+      <span className="tw:mr-1 tw:min-w-0 tw:truncate tw:text-text-label">
         {targetName === undefined ? "Pick a hand" : `Clue ${targetName}:`}
       </span>
       {variant.clueColors.map((color) => {
@@ -70,7 +70,7 @@ export function CluePanel({
           <button
             aria-label={color.name}
             aria-pressed={pressed}
-            className={`${choiceClass} ${pressed ? "tw:ring-3 tw:ring-table-text" : ""}`}
+            className={`${choiceClass} ${pressed ? "tw:ring-3 tw:ring-text-strong" : ""}`}
             disabled={targetName === undefined}
             key={color.name}
             onClick={() => {
@@ -90,7 +90,7 @@ export function CluePanel({
         return (
           <button
             aria-pressed={pressed}
-            className={`${choiceClass} tw:bg-table-text tw:text-table-ink ${pressed ? "tw:ring-3 tw:ring-clue" : ""}`}
+            className={`${choiceClass} tw:bg-text-strong tw:text-surface ${pressed ? "tw:ring-3 tw:ring-clue" : ""}`}
             disabled={targetName === undefined}
             key={rank}
             onClick={() => {
@@ -103,7 +103,7 @@ export function CluePanel({
         );
       })}
       <button
-        className="tw:ml-auto tw:h-10 tw:shrink-0 tw:cursor-pointer tw:rounded-[10px] tw:border-0 tw:bg-clue tw:px-4 tw:font-bold tw:text-table-ink tw:disabled:cursor-default tw:disabled:opacity-40"
+        className="tw:ml-auto tw:h-10 tw:shrink-0 tw:cursor-pointer tw:rounded-[10px] tw:border-0 tw:bg-clue tw:px-4 tw:font-bold tw:text-card-ink tw:disabled:cursor-default tw:disabled:opacity-40"
         disabled={!canGive}
         onClick={onGive}
         type="button"
