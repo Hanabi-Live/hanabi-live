@@ -2,7 +2,7 @@
 
 use crate::{
     game::{Game, Options},
-    model::{FORMAT, IDLE_TIMEOUT_MS, Player, Snapshot, Tag},
+    model::{Player, Snapshot, Tag},
     stats::zero_stats,
 };
 use anyhow::{Context, Result, ensure};
@@ -15,7 +15,6 @@ use hanabi_protocol::{NO_VALUE, ReplayAction};
 use serde::Deserialize;
 use sqlx::{PgPool, types::Json};
 use sqlx::{Postgres, Transaction};
-use std::collections::BTreeMap;
 #[cfg(test)]
 #[path = "archive_tests.rs"]
 mod tests;
@@ -190,38 +189,26 @@ pub(crate) async fn replay(
             characters: Some(characters),
             interpretation: Interpretation::Recorded,
         },
-        archive.actions,
+        &archive.actions,
     )?;
     ensure!(
         game.score == i32::from(row.score)
             && game.end_condition as i32 == i32::from(row.end_condition),
         "Historical replay result mismatch"
     );
-    let n = players.len();
     Ok(Snapshot {
-        format: FORMAT.into(),
-        table_id,
-        game_id: GameId(row.id),
-        owner,
-        name: row.name.clone(),
-        players,
-        seed,
-        created: Utc::now(),
         started: row.datetime_started,
         finished: Some(row.datetime_finished),
-        game,
-        clocks: vec![0; n],
-        duration: 0,
-        turn_elapsed: 0,
-        timer_started: false,
-        idle_remaining: IDLE_TIMEOUT_MS,
-        paused_by: None,
-        queued_pauses: vec![false; n],
         notes,
-        spectator_notes: BTreeMap::new(),
         tags: archive.tags,
-        votes: vec![false; n],
-        maintenance_applied: false,
+        ..Snapshot::new(
+            table_id,
+            GameId(row.id),
+            owner,
+            row.name.clone(),
+            players,
+            game,
+        )
     })
 }
 

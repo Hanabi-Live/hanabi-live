@@ -507,6 +507,45 @@ impl TableSnapshot {
     }
 }
 impl Snapshot {
+    /// A game at table `table_id` that starts now: its clocks are at zero, and it has no notes,
+    /// tags, votes, or pause.
+    pub fn new(
+        table_id: TableId,
+        game_id: GameId,
+        owner: UserId,
+        name: String,
+        players: Vec<Player>,
+        game: Game,
+    ) -> Self {
+        let now = Utc::now();
+        let n = players.len();
+        let size = game.deck.len() + game.stacks.len();
+        Self {
+            format: FORMAT.into(),
+            table_id,
+            game_id,
+            owner,
+            name,
+            players,
+            seed: game.seed.clone(),
+            created: now,
+            started: now,
+            finished: (game.end_condition != EndCondition::InProgress).then_some(now),
+            game,
+            clocks: vec![0; n],
+            duration: 0,
+            turn_elapsed: 0,
+            timer_started: false,
+            idle_remaining: IDLE_TIMEOUT_MS,
+            paused_by: None,
+            queued_pauses: vec![false; n],
+            notes: vec![vec![String::new(); size]; n],
+            spectator_notes: BTreeMap::new(),
+            tags: vec![],
+            votes: vec![false; n],
+            maintenance_applied: false,
+        }
+    }
     /// Whether the game is paused.
     pub fn paused(&self) -> bool {
         self.paused_by.is_some()

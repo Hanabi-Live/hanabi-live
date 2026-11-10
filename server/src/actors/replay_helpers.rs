@@ -2,15 +2,13 @@ use crate::errors::CommandResult;
 use crate::errors::OrReject;
 use crate::{
     game::{Card, Game, Options},
-    model::{FORMAT, IDLE_TIMEOUT_MS, Player, Snapshot},
+    model::{Player, Snapshot},
     stats::zero_stats,
 };
-use chrono::Utc;
-use hanabi_engine::{AssignedCharacter, EndCondition, GameSetup, Interpretation};
+use hanabi_engine::{AssignedCharacter, GameSetup, Interpretation};
 use hanabi_protocol::TableId;
 use hanabi_protocol::UserId;
 use hanabi_protocol::{NO_VALUE, RecordedActionType, ReplayAction, ReplayImport};
-use std::collections::BTreeMap;
 
 /// The longest seed that a replay import can name, in bytes. A table's seed is prefixed with the
 /// player count and variant ID, so this leaves room above `MAX_SEED_LENGTH`.
@@ -185,38 +183,29 @@ pub fn parse(input: &ReplayImport) -> CommandResult<Imported> {
             text.clone_into(&mut notes[i][j]);
         }
     }
-    let mut game = Game::create(GameSetup {
-        options,
-        player_names: players,
-        seed: if seed.is_empty() {
-            "JSON".into()
-        } else {
-            seed.into()
+    let (game, invalid) = Game::replay_valid(
+        GameSetup {
+            options,
+            player_names: players,
+            seed: if seed.is_empty() {
+                "JSON".into()
+            } else {
+                seed.into()
+            },
+            deck: Some(deck),
+            characters: (!characters.is_empty()).then_some(characters),
+            interpretation: Interpretation::Recorded,
         },
-        deck: Some(deck),
-        characters: (!characters.is_empty()).then_some(characters),
-        interpretation: Interpretation::Recorded,
-    })?;
-    let mut warnings = vec![];
-    for (index, a) in actions.into_iter().enumerate() {
-        if game.end_condition != EndCondition::InProgress {
-            break;
-        }
-        let active = game.active_player_index;
-        let result = if a.kind.is_game_over() {
-            EndCondition::try_from(a.value)
-                .map_err(anyhow::Error::msg)
-                .and_then(|c| game.terminate(active, c, a.target, None, None))
-        } else {
-            game.apply(active, a)
-        };
-        if let Err(e) = result {
-            warnings.push(format!(
+        &actions,
+    )?;
+    let warnings = invalid
+        .map(|(index, e)| {
+            format!(
                 "The action at index {index} was not valid. Skipping all subsequent actions. {e}"
-            ));
-            break;
-        }
-    }
+            )
+        })
+        .into_iter()
+        .collect();
     Ok(Imported {
         game,
         notes,
@@ -225,43 +214,28 @@ pub fn parse(input: &ReplayImport) -> CommandResult<Imported> {
     })
 }
 pub fn snapshot(imported: Imported, table_id: TableId, owner: UserId) -> Snapshot {
-    let now = Utc::now();
-    let n = imported.game.players.len();
+    let players = imported
+        .game
+        .players
+        .iter()
+        .enumerate()
+        .map(|(i, p)| Player {
+            id: UserId(hanabi_engine::int(i) + 1),
+            name: p.name.clone(),
+            bot: false,
+            stats: zero_stats(),
+        })
+        .collect();
     Snapshot {
-        format: FORMAT.into(),
-        table_id,
-        game_id: crate::model::UNSAVED_GAME,
-        owner,
-        name: "JSON Replay".into(),
-        players: imported
-            .game
-            .players
-            .iter()
-            .enumerate()
-            .map(|(i, p)| Player {
-                id: UserId(hanabi_engine::int(i) + 1),
-                name: p.name.clone(),
-                bot: false,
-                stats: zero_stats(),
-            })
-            .collect(),
-        seed: imported.game.seed.clone(),
-        created: now,
-        started: now,
-        finished: (imported.game.end_condition != EndCondition::InProgress).then_some(now),
-        game: imported.game,
-        clocks: vec![0; n],
-        duration: 0,
-        turn_elapsed: 0,
-        timer_started: false,
-        idle_remaining: IDLE_TIMEOUT_MS,
-        paused_by: None,
-        queued_pauses: vec![false; n],
         notes: imported.notes,
-        spectator_notes: BTreeMap::new(),
-        tags: vec![],
-        votes: vec![false; n],
-        maintenance_applied: false,
+        ..Snapshot::new(
+            table_id,
+            crate::model::UNSAVED_GAME,
+            owner,
+            "JSON Replay".into(),
+            players,
+            imported.game,
+        )
     }
 }
 

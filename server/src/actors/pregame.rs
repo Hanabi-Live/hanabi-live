@@ -13,21 +13,18 @@ use crate::errors::OrReject;
 use crate::{
     game::Game,
     model::{
-        CLOCK_UNITS_PER_SECOND, FORMAT, IDLE_TIMEOUT_MS, MAX_TABLE_NAME_LENGTH, Phase, Player,
-        Snapshot, TableChat, TableSnapshot, engine_options,
+        CLOCK_UNITS_PER_SECOND, MAX_TABLE_NAME_LENGTH, Phase, Player, Snapshot, TableChat,
+        TableSnapshot, engine_options,
     },
     transport::{Session, frame},
 };
 use anyhow::Context;
 use chrono::Utc;
-use hanabi_engine::{EndCondition, GameSetup, Interpretation};
+use hanabi_engine::{GameSetup, Interpretation};
 use hanabi_protocol::ClientMessage;
 use hanabi_protocol::UserId;
 use hanabi_protocol::{Chat, MIN_PLAYERS, Status, TableRequest, TableStarted};
-use std::{
-    collections::{BTreeMap, HashSet},
-    sync::Arc,
-};
+use std::{collections::HashSet, sync::Arc};
 
 /// Appended to the name of a table that a split creates.
 const SPLIT_SUFFIX: &str = " (split)";
@@ -343,51 +340,25 @@ impl TableActor {
         ensure_or_reject!(session.active(), "Owner disconnected during start");
         let mut options = self.table.options.clone();
         options.num_players = players.len();
-        let mut game = Game::create(GameSetup {
-            options: options.clone(),
-            player_names: players.iter().map(|p| p.name.clone()).collect(),
-            seed: seed.clone(),
-            deck: Some(deck),
-            characters: extra.custom_characters.clone(),
-            interpretation: Interpretation::Live,
-        })?;
         let emulated = if extra.set_replay {
             &extra.custom_actions[..extra.set_replay_turn.min(extra.custom_actions.len())]
         } else {
             &extra.custom_actions
         };
-        for a in emulated {
-            if game.end_condition != EndCondition::InProgress {
-                break;
-            }
-            let actor = game.active_player_index;
-            if a.kind.is_game_over() {
-                game.terminate(
-                    actor,
-                    EndCondition::try_from(a.value).map_err(anyhow::Error::msg)?,
-                    a.target,
-                    None,
-                    None,
-                )?;
-            } else {
-                game.apply(actor, *a)?;
-            }
-        }
-        let now = Utc::now();
+        let game = Game::replay(
+            GameSetup {
+                options: options.clone(),
+                player_names: players.iter().map(|p| p.name.clone()).collect(),
+                seed,
+                deck: Some(deck),
+                characters: extra.custom_characters.clone(),
+                interpretation: Interpretation::Live,
+            },
+            emulated,
+        )?;
         let n = players.len();
-        let size = game.deck.len() + game.stacks.len();
         let snapshot = Snapshot {
-            format: FORMAT.into(),
-            table_id: self.table.id,
-            game_id,
-            owner: self.table.owner,
-            name: self.table.name.clone(),
-            players,
-            seed,
             created: self.table.created,
-            started: now,
-            finished: (game.end_condition != EndCondition::InProgress).then_some(now),
-            game,
             clocks: vec![
                 if options.timed {
                     truncate(options.time_base * f64::from(CLOCK_UNITS_PER_SECOND))
@@ -396,17 +367,14 @@ impl TableActor {
                 };
                 n
             ],
-            duration: 0,
-            turn_elapsed: 0,
-            timer_started: false,
-            idle_remaining: IDLE_TIMEOUT_MS,
-            paused_by: None,
-            queued_pauses: vec![false; n],
-            notes: vec![vec![String::new(); size]; n],
-            spectator_notes: BTreeMap::new(),
-            tags: vec![],
-            votes: vec![false; n],
-            maintenance_applied: false,
+            ..Snapshot::new(
+                self.table.id,
+                game_id,
+                self.table.owner,
+                self.table.name.clone(),
+                players,
+                game,
+            )
         };
         let mut next = self.candidate();
         next.options = options;

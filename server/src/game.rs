@@ -233,30 +233,43 @@ impl Game {
             })
             .collect()
     }
-    pub fn replay(setup: GameSetup, actions: Vec<ReplayAction>) -> Result<Self> {
+    /// Creates a game and plays `actions` in turn until the game ends.
+    pub fn replay(setup: GameSetup, actions: &[ReplayAction]) -> Result<Self> {
+        match Self::replay_valid(setup, actions)? {
+            (game, None) => Ok(game),
+            (_, Some((_, error))) => Err(error),
+        }
+    }
+    /// Creates a game and plays `actions` in turn until the game ends, or until an action is not
+    /// valid. Returns the game, and the position and error of the action that was not valid.
+    pub fn replay_valid(
+        setup: GameSetup,
+        actions: &[ReplayAction],
+    ) -> Result<(Self, Option<(usize, anyhow::Error)>)> {
         ensure!(
             actions.len() <= hanabi_protocol::MAX_GAME_ACTIONS,
             "Oversized replay"
         );
         let mut game = Self::create(setup)?;
-        for action in actions {
+        for (index, action) in actions.iter().enumerate() {
             if game.end_condition != EndCondition::InProgress {
                 break;
             }
-            if action.kind.is_game_over() {
-                let condition = EndCondition::try_from(action.value).map_err(anyhow::Error::msg)?;
-                game.terminate(
-                    game.active_player_index,
-                    condition,
-                    action.target,
-                    None,
-                    None,
-                )?;
+            let actor = game.active_player_index;
+            let result = if action.kind.is_game_over() {
+                EndCondition::try_from(action.value)
+                    .map_err(anyhow::Error::msg)
+                    .and_then(|condition| {
+                        game.terminate(actor, condition, action.target, None, None)
+                    })
             } else {
-                game.apply(game.active_player_index, action)?;
+                game.apply(actor, *action)
+            };
+            if let Err(error) = result {
+                return Ok((game, Some((index, error))));
             }
         }
-        Ok(game)
+        Ok((game, None))
     }
 }
 #[cfg(test)]
