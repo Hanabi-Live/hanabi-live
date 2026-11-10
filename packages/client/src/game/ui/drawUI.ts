@@ -76,18 +76,17 @@ import {
 } from "./constants";
 import { Arrow } from "./controls/Arrow";
 import { Button } from "./controls/Button";
-import { CheckButton } from "./controls/CheckButton";
 import { CurrentPlayerArea } from "./controls/CurrentPlayerArea";
 import { FitText } from "./controls/FitText";
 import { ImageWithTooltip } from "./controls/ImageWithTooltip";
 import { PlayerButton } from "./controls/PlayerButton";
-import { ReadyButton } from "./controls/ReadyButton";
 import { RectWithTooltip } from "./controls/RectWithTooltip";
 import { SlidableGroup } from "./controls/SlidableGroup";
 import { StrikeSquare } from "./controls/StrikeSquare";
 import { StrikeX } from "./controls/StrikeX";
 import type { TextWithTooltip } from "./controls/TextWithTooltip";
 import { TimerDisplay } from "./controls/TimerDisplay";
+import { ToggleButton } from "./controls/ToggleButton";
 import * as cursor from "./cursor";
 import { drawHands } from "./drawHands";
 import { drawReplayArea } from "./drawReplayArea";
@@ -1206,7 +1205,8 @@ function drawBottomLeftButtons() {
 
   // The button for other players to tell the leader whether they will play again. (It takes the
   // place of the restart button, which only the leader sees.)
-  const restartReadyButton = new ReadyButton({
+  const restartReadyButton = new ToggleButton({
+    text: "Ready",
     x: bottomLeftButtonValues.x * winW,
     y: bottomLeftButtonValues.y * winH,
     width: bottomLeftButtonValues.w! * winW,
@@ -2920,7 +2920,7 @@ function drawHypotheticalArea() {
     x: endHypotheticalButtonValues.x,
     y: endHypotheticalButtonValues.y - hypoButtonHeight - hypoButtonSpacing,
   };
-  globals.elements.editCardsButton = new CheckButton({
+  globals.elements.editCardsButton = new ToggleButton({
     x: editCardsButtonValues.x * winW,
     y: editCardsButtonValues.y * winH,
     width: hypoButtonWidth * winW,
@@ -2946,7 +2946,7 @@ function drawHypotheticalArea() {
     x: editCardsButtonValues.x,
     y: editCardsButtonValues.y - hypoButtonHeight - hypoButtonSpacing,
   };
-  globals.elements.toggleDrawnCardsButton = new CheckButton({
+  globals.elements.toggleDrawnCardsButton = new ToggleButton({
     x: toggleDrawnCardsButtonValues.x * winW,
     y: toggleDrawnCardsButtonValues.y * winH,
     width: hypoButtonWidth * winW,

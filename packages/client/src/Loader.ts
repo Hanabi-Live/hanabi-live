@@ -15,10 +15,6 @@ const IMAGE_RETRY_BASE_DELAY_MILLISECONDS = SECOND_IN_MILLISECONDS;
  * extension.
  */
 const FILE_IDS = [
-  "checkbox-on",
-  "checkbox-off",
-  "checkbox-on-disabled",
-  "checkbox-off-disabled",
   "crown",
   "critical",
   "dda",

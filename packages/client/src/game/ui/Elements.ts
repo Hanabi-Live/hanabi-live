@@ -11,11 +11,9 @@ import type { PlayStack } from "./PlayStack";
 import type { RankButton } from "./RankButton";
 import type { Arrow } from "./controls/Arrow";
 import type { Button } from "./controls/Button";
-import type { CheckButton } from "./controls/CheckButton";
 import type { CurrentPlayerArea } from "./controls/CurrentPlayerArea";
 import type { EnterHypoButton } from "./controls/EnterHypoButton";
 import type { FitText } from "./controls/FitText";
-import type { ReadyButton } from "./controls/ReadyButton";
 import type { SharedTurnsButton } from "./controls/SharedTurnsButton";
 import type { Shuttle } from "./controls/Shuttle";
 import type { SlidableGroup } from "./controls/SlidableGroup";
@@ -23,6 +21,7 @@ import type { StrikeSquare } from "./controls/StrikeSquare";
 import type { StrikeX } from "./controls/StrikeX";
 import type { TextWithTooltip } from "./controls/TextWithTooltip";
 import type { TimerDisplay } from "./controls/TimerDisplay";
+import type { ToggleButton } from "./controls/ToggleButton";
 
 export class Elements {
   // The main screen
@@ -52,7 +51,7 @@ export class Elements {
   chatButton: Button | undefined = undefined;
   lobbyButton: Button | undefined = undefined;
   restartButton: Button | undefined = undefined;
-  restartReadyButton: ReadyButton | undefined = undefined;
+  restartReadyButton: ToggleButton | undefined = undefined;
   deck: Deck | undefined = undefined;
   gameIDLabel: FitText | undefined = undefined;
   gameInfoImage: Konva.Image | undefined = undefined;
@@ -126,10 +125,10 @@ export class Elements {
   hypoCircle: Konva.Group | undefined = undefined;
   hypoPauseSharedTurnsButton: Button | undefined = undefined;
   hypoButtonsArea: Konva.Group | undefined = undefined;
-  editCardsButton: CheckButton | undefined = undefined;
+  editCardsButton: ToggleButton | undefined = undefined;
   hypoBackButton: Button | undefined = undefined;
   hypoPassTurnButton: Button | undefined = undefined;
-  toggleDrawnCardsButton: CheckButton | undefined = undefined;
+  toggleDrawnCardsButton: ToggleButton | undefined = undefined;
   endHypotheticalButton: Button | undefined = undefined;
 
   // The pause screen

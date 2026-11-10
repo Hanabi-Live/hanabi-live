@@ -318,7 +318,9 @@ export function onRestartChanged(
   const amPlayer = playerNames.includes(ourUsername);
   const readyButton = globals.elements.restartReadyButton;
   readyButton?.visible(shared !== undefined && !amLeader && amPlayer);
-  readyButton?.setReady(shared?.restartDeclined.includes(ourUsername) !== true);
+  readyButton?.setPressed(
+    shared?.restartDeclined.includes(ourUsername) !== true,
+  );
 
   const declined = shared === undefined ? [] : restart.declinedPlayers(shared);
   globals.elements.restartGameButton?.setEnabled(declined.length === 0);

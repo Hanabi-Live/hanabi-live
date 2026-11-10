@@ -15,6 +15,8 @@ of the repository.
   the review.
 - Server restarts without a reason are no longer announced in the lobby.
 - The "New Game" page now remembers the last table name that you used.
+- The "Edit Cards" and "Show Hidden" buttons in hypotheticals now look like the
+  "Ready" button: a green border when on, and struck-through text when off.
 
 ## November 9th, 2026
 
