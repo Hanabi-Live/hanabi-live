@@ -334,9 +334,9 @@ export function hide(firstTimeUser: boolean): void {
   // Disable scroll bars. Even with height and width 100%, the scroll bar can pop up when going back
   // from a game to the lobby. It also can show up in-game if a tooltip animates off of the edge of
   // the screen. So we can set "overflow" to explicitly prevent this from occurring. We do not want
-  // to set this in "hanabi.css" because there should be scrolling enabled on the login screen. We
-  // need to scroll to the top of the screen before disabling the scroll bars or else the lobby can
-  // become misaligned when logging in from a scroll-down state. The login screen can scroll the
+  // to set this in the stylesheets because there should be scrolling enabled on the login screen.
+  // We need to scroll to the top of the screen before disabling the scroll bars or else the lobby
+  // can become misaligned when logging in from a scroll-down state. The login screen can scroll the
   // body element itself rather than the window, so reset both.
   document.documentElement.scrollTop = 0;
   document.body.scrollTop = 0;

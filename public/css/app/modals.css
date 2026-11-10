@@ -1,0 +1,196 @@
+#page-cover {
+  display: none;
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  top: 0;
+  right: 0;
+  animation: pageCoverHide 0.4s forwards 1;
+  align-items: center;
+  justify-content: center;
+  /* While it fades out, the page cover must not block clicks on the page behind it. */
+  pointer-events: none;
+}
+
+#page-cover.show {
+  animation: pageCoverShow 0.4s forwards 1;
+  pointer-events: auto;
+}
+
+@keyframes pageCoverHide {
+  0% {
+    background-color: rgba(0, 24, 5, 0.7);
+    z-index: var(--z-page-cover);
+  }
+  100% {
+    background-color: rgba(0, 0, 0, 0);
+    z-index: -1;
+  }
+}
+
+@keyframes pageCoverShow {
+  0% {
+    background-color: rgba(0, 0, 0, 0);
+    z-index: -1;
+  }
+  100% {
+    background-color: rgba(0, 24, 5, 0.7);
+    z-index: var(--z-page-cover);
+  }
+}
+
+.modal {
+  align-self: flex-start;
+  background-color: var(--surface);
+  border: 2px solid var(--modal-border);
+  border-radius: 5px;
+  max-height: calc(100% - 4em);
+  max-width: 80vw;
+  overflow-y: auto;
+  padding: 20px 30px;
+  position: absolute;
+  scrollbar-gutter: stable;
+  top: 3.5em;
+  min-width: 40vw;
+}
+
+.modal-message {
+  border: 0;
+  left: 5em;
+  max-width: 100%;
+  right: 5em;
+  overflow: auto;
+  padding: 30px 30px 0 30px;
+  scrollbar-gutter: unset;
+  top: 15vh;
+}
+
+.modal-prompt {
+  min-width: unset;
+}
+
+#set-modifier-current {
+  margin-left: 15px;
+}
+
+#play-discard-title {
+  text-transform: capitalize;
+}
+
+#morph-modal h2 {
+  margin: 0;
+}
+
+#morph-modal-description {
+  margin: 0;
+}
+
+#morph-modal form {
+  margin-bottom: 0.5em;
+}
+
+#morph-modal input[type="checkbox"] {
+  display: none;
+}
+
+#morph-modal .faded {
+  opacity: 50%;
+}
+
+#morph-modal label {
+  border: 1px solid gray;
+  padding: 10px;
+  display: block;
+  position: relative;
+  margin: 5px 10px;
+  cursor: pointer;
+  line-height: 1em;
+  max-height: 73px;
+  overflow: hidden;
+}
+
+#morph-modal label:before {
+  background-color: white;
+  color: white;
+  content: " ";
+  display: block;
+  border-radius: 50%;
+  border: 1px solid grey;
+  position: absolute;
+  top: 1px;
+  left: 1px;
+  width: 25px;
+  height: 25px;
+  text-align: center;
+  line-height: 28px;
+  transition-duration: 0.4s;
+  transform: scale(0);
+}
+
+#morph-modal label canvas {
+  height: 10vh;
+  transition-duration: 0.2s;
+  transform-origin: 50% 50%;
+}
+
+#morph-modal :checked + label {
+  border-color: orange;
+}
+
+#morph-modal :checked + label:before {
+  background-color: grey;
+  content: "✓";
+  line-height: 1.2em;
+  transform: scale(1);
+  z-index: 1;
+  border: unset;
+}
+
+#morph-modal :checked + label canvas {
+  transform: scale(0.9);
+  z-index: -1;
+}
+
+#morph-modal .row {
+  margin-top: 1em;
+  margin-bottom: 0;
+}
+
+#morph-modal form .row {
+  margin-top: 1em;
+  margin-bottom: 1em;
+}
+
+#morph-modal .input-text {
+  top: 1.5em;
+}
+
+#emoji-modal {
+  min-width: unset;
+}
+
+#emoji-picker {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  max-height: 50vh;
+  overflow-y: auto;
+}
+
+#emoji-picker > .emoji-item {
+  font-size: 1.5em;
+  cursor: pointer;
+}
+
+#emoji-picker > .chat-emote {
+  cursor: pointer;
+}
+
+@media screen and (max-width: 530px) {
+  .modal,
+  .modal-message {
+    left: 0;
+    right: 0;
+    max-width: unset;
+  }
+}

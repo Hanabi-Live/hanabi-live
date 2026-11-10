@@ -34,7 +34,6 @@
     "*.min.js",
     "*.min.css",
     // CSS files might have strange paths.
-    "hanabi.css",
     "defaults.css",
     // Emoji names are often two words without a space.
     "emojis.json",
@@ -147,6 +146,7 @@
     "keycaps",
     "knip",
     "konva",
+    "konvajs",
     "learningpath",
     "letsencrypt",
     "libpq",

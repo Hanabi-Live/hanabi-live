@@ -1,0 +1,96 @@
+/* The popover that holds a tooltip and its arrow (see "Tooltip.ts") */
+.tooltip-bubble {
+  --tooltip-background: var(--surface);
+  position: fixed;
+  inset: auto;
+  margin: 0;
+  padding: 0 0 var(--tooltip-arrow-size);
+  border: none;
+  background: none;
+  overflow: visible;
+  pointer-events: none;
+  transform: scale(0);
+  /* Grow from the arrow's tip, so that the tip stays on the anchor while the bubble overshoots. */
+  transform-origin: var(--tooltip-arrow-x) 100%;
+  transition:
+    transform var(--tooltip-duration),
+    overlay var(--tooltip-duration) allow-discrete,
+    display var(--tooltip-duration) allow-discrete;
+}
+
+.tooltip-bubble[data-side="bottom"] {
+  padding: var(--tooltip-arrow-size) 0 0;
+  transform-origin: var(--tooltip-arrow-x) 0;
+}
+
+.tooltip-bubble.tooltip-interactive {
+  pointer-events: auto;
+}
+
+/* Grow when opened, and shrink through the transition when closed. */
+.tooltip-bubble:popover-open {
+  transform: scale(1);
+  animation: tooltip-grow var(--tooltip-duration)
+    cubic-bezier(0.175, 0.885, 0.32, 1.15);
+}
+
+@keyframes tooltip-grow {
+  from {
+    transform: scale(0);
+  }
+}
+
+/* The arrow reaches 1px into the box so that no seam shows between them at fractional positions. */
+.tooltip-bubble::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: var(--tooltip-arrow-x);
+  margin-left: calc(-1 * var(--tooltip-arrow-size));
+  border: var(--tooltip-arrow-size) solid transparent;
+  border-top-color: var(--tooltip-background);
+  border-top-width: calc(var(--tooltip-arrow-size) + 1px);
+  border-bottom-width: 0;
+}
+
+.tooltip-bubble[data-side="bottom"]::after {
+  top: 0;
+  bottom: auto;
+  border-color: transparent transparent var(--tooltip-background);
+  border-width: 0 var(--tooltip-arrow-size)
+    calc(var(--tooltip-arrow-size) + 1px);
+}
+
+.tooltip-box {
+  max-width: calc(100vw - 2 * var(--tooltip-window-margin));
+  max-height: calc(
+    100vh - 2 * var(--tooltip-window-margin) - var(--tooltip-arrow-size)
+  );
+  overflow: auto;
+  padding: 0.5em;
+  border-radius: 5px;
+  background: var(--tooltip-background);
+  border: var(--tooltip-border);
+  box-shadow: 0 0 10px 6px rgb(0 0 0 / 10%);
+  color: var(--tooltip-text);
+  font-size: 1.5em;
+  line-height: 1em;
+}
+
+/* Tooltip text that is smaller than the default */
+.small-tooltip-text {
+  font-size: 0.75em;
+}
+
+/* An info icon beside a block of text, so that every line of the text starts at the same place. */
+.info-tooltip {
+  display: flex;
+  gap: 0.625em;
+  align-items: baseline;
+  line-height: 1.44;
+}
+
+.tooltip-indent {
+  display: block;
+  padding-left: 0.625em;
+}

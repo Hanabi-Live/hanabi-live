@@ -1,0 +1,187 @@
+/* source-sans-pro-300 - latin_greek_cyrillic */
+@font-face {
+  font-family: "Source Sans Pro";
+  font-style: normal;
+  font-weight: 300;
+  src: url("/public/webfonts/source-sans-pro-v14-latin_greek_cyrillic-300.woff2")
+    format("woff2");
+}
+
+/* source-sans-pro-300italic - latin_greek_cyrillic */
+@font-face {
+  font-family: "Source Sans Pro";
+  font-style: italic;
+  font-weight: 300;
+  src: url("/public/webfonts/source-sans-pro-v14-latin_greek_cyrillic-300italic.woff2")
+    format("woff2");
+}
+
+/* source-sans-pro-italic - latin_greek_cyrillic */
+@font-face {
+  font-family: "Source Sans Pro";
+  font-style: italic;
+  font-weight: 400;
+  src: url("/public/webfonts/source-sans-pro-v14-latin_greek_cyrillic-italic.woff2")
+    format("woff2");
+}
+
+/* source-sans-pro-regular - latin_greek_cyrillic */
+@font-face {
+  font-family: "Source Sans Pro";
+  font-style: normal;
+  font-weight: 400;
+  src: url("/public/webfonts/source-sans-pro-v14-latin_greek_cyrillic-regular.woff2")
+    format("woff2");
+}
+
+.name-me {
+  color: var(--name-me);
+}
+
+.friend {
+  color: var(--friend);
+}
+
+html,
+body,
+#page-wrapper {
+  height: 100%;
+}
+
+body {
+  background-color: var(--page-bg);
+  background-image: url("/public/img/dark-wood.png");
+  background-repeat: repeat;
+  background-attachment: fixed;
+}
+
+body[data-screen="game"] {
+  background-color: var(--game-bg);
+}
+
+/*
+  The "align-center" class will do horizontal centering (in "defaults.css")
+  The "align-center-v" class will do vertical centering
+*/
+.align-center-v {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.hidden {
+  display: none;
+}
+
+.margin0 {
+  margin: 0 !important;
+}
+
+.padding0 {
+  padding: 0 !important;
+}
+
+.padding0p5 {
+  padding-bottom: 0.5em;
+}
+
+.padding0p75 {
+  padding-bottom: 0.75em;
+}
+
+.slim-table {
+  margin-bottom: 0.5em;
+}
+
+.slim-table td {
+  padding: 0.25em 0.25em; /* vanilla is 0.75em 0.75em */
+}
+
+/* For text input labels */
+.input-text {
+  position: relative;
+  top: 0.75em;
+}
+
+/* An icon before its label. */
+.icon-label {
+  margin-right: 0.4em;
+}
+
+.button .icon-label {
+  margin-right: 0.625em;
+}
+
+.horizontal {
+  margin: 0;
+  padding: 0;
+}
+
+.horizontal > li {
+  list-style-type: none;
+  float: left;
+  margin-right: 1em;
+}
+
+.container.max {
+  width: calc(90% - 2em);
+}
+
+.score-modifier {
+  font-size: 0.75em;
+}
+
+.green {
+  color: var(--green-text);
+}
+
+.red {
+  color: var(--error);
+}
+
+/* Wrong input indicator */
+input[type="text"].wrong-input {
+  border: 2px solid var(--error);
+}
+
+@media screen and (max-width: 1280px) {
+  /*
+    "hidden-*" hides an element on screens this wide or narrower:
+    xl: 1280px, md: 840px, sm: 736px, and xs: 530px
+  */
+  .hidden-xl {
+    display: none !important;
+  }
+}
+
+@media screen and (max-width: 840px) {
+  .hidden-md {
+    display: none !important;
+  }
+}
+
+@media screen and (max-width: 736px) {
+  .hidden-sm {
+    display: none !important;
+  }
+}
+
+@media screen and (max-width: 530px) {
+  .hidden-xs {
+    display: none !important;
+  }
+}
+
+@media screen and (max-width: 1440px) {
+  .container.max {
+    width: calc(100% - 2em);
+  }
+}
+
+@media screen and (max-width: 736px) {
+  /* Fix the box margins on smaller resolutions */
+  .container.max {
+    margin-left: 1em;
+    margin-right: 1em;
+  }
+}

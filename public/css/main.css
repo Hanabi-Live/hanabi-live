@@ -3,7 +3,8 @@
   their specificity:
   - "defaults": element defaults and generic components.
   - "icons": Font Awesome, whose classes must beat the element defaults (such as "i { font: inherit; }").
-  - "app": the rules for the site's own screens.
+  - "app": the rules for the site's own screens, one file per screen. Their order matters: at equal
+    specificity, a rule in a later file beats one in an earlier file.
   Tailwind's utilities ("packages/client/src/tailwind.css") are not in a layer, so they beat all of
   these.
 */
@@ -14,4 +15,13 @@
 @import url("defaults.css") layer(defaults);
 @import url("lib/fontawesome.min.css") layer(icons);
 @import url("lib/solid.min.css") layer(icons);
-@import url("hanabi.css") layer(app);
+@import url("app/common.css") layer(app);
+@import url("app/header.css") layer(app);
+@import url("app/login.css") layer(app);
+@import url("app/lobby.css") layer(app);
+@import url("app/pregame.css") layer(app);
+@import url("app/lobby-pages.css") layer(app);
+@import url("app/modals.css") layer(app);
+@import url("app/tooltips.css") layer(app);
+@import url("app/game.css") layer(app);
+@import url("app/public-pages.css") layer(app);

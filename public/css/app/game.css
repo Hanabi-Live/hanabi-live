@@ -1,0 +1,139 @@
+#game {
+  height: 100%;
+}
+
+#game-tooltips > div {
+  position: absolute;
+}
+
+/* The deck plays icon sits too far left. */
+.fa-blind {
+  position: relative;
+  left: 0.2em;
+}
+
+.game-tooltips-ul {
+  list-style-type: none;
+  margin-top: 0.5em;
+  margin-bottom: 0;
+  text-indent: -0.5em;
+}
+
+.game-tooltips-ul > li {
+  margin-bottom: 0.1em;
+}
+
+.game-tooltips-icon {
+  display: inline-block;
+  width: 0.5em;
+  margin-right: 0.4em;
+  text-align: center;
+}
+
+.game-tooltips-ol {
+  margin-top: 0.5em;
+  margin-bottom: 0;
+  padding-left: 0.9em;
+}
+
+/* prevent unwanted selection when double clicking */
+.konvajs-content canvas {
+  user-select: none;
+}
+
+#game-chat-modal {
+  position: absolute;
+  z-index: 1;
+  /* The modal is automatically positioned in the "chat.js" file */
+  background-color: black;
+  border-radius: 10px;
+  border: 3px solid var(--game-chat-border);
+  touch-action: none;
+}
+
+#game-chat-modal-header {
+  height: 1.25em;
+  text-align: right;
+}
+
+#game-chat-modal-header-close {
+  cursor: pointer;
+  color: white;
+  margin-right: 0.3em;
+  padding: 0.25em; /* We want some padding so that the activation range is bigger */
+  position: relative;
+  bottom: 0.3em;
+}
+
+#game-chat-modal-white {
+  width: calc(100% - 0.3em);
+  height: calc(100% - 1.25em - 0.3em);
+  /* We have to move it further down because of the header */
+  padding: 1em;
+  margin: 0;
+  position: relative;
+  top: 0.05em;
+  left: 0.15em;
+}
+
+#game-chat-text {
+  /*
+    The height of the in-game chat text box is bigger than the lobby text boxes
+    (e.g. ".lobby-chat-text-box") because there is no title to account for
+  */
+  height: calc(100% - 4em);
+}
+
+.efficiency-description {
+  display: inline-block;
+  width: 12em;
+}
+
+.turns-description {
+  display: inline-block;
+  width: 8em;
+}
+
+#leader-placeholder {
+  display: flex;
+  justify-content: center;
+  align-content: space-evenly;
+  column-gap: 10px;
+}
+
+/* Cursors styles for game container */
+.game-cursor-default {
+  cursor: auto;
+}
+
+.game-cursor-look {
+  cursor: url("/public/img/cursors/look.png"), auto;
+}
+
+.game-cursor-edit {
+  cursor: url("/public/img/cursors/edit.png"), auto;
+}
+
+.game-cursor-hand {
+  cursor: grab;
+}
+
+.game-cursor-dragging {
+  cursor: grabbing;
+}
+
+div.note-title {
+  width: 100%;
+  height: 10px;
+  border-bottom: 1px solid var(--note-title-line);
+  text-align: center;
+  margin-bottom: 7px;
+  line-height: 10px;
+}
+
+div.note-title span {
+  font-size: 14px;
+  background-color: var(--surface);
+  text-align: center;
+  padding: 0 10px;
+}

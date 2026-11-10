@@ -1,0 +1,421 @@
+/*
+ * The password key icon is intentionally spaced wider than other icons: its solid head sits on
+ * its right edge, so the usual spacing looks cramped against the table name.
+ */
+#lobby-games-table .icon-label {
+  margin-right: 0.625em;
+}
+
+/* This icon is larger than the text of its button. */
+.button .lobby-button-icon.icon-label {
+  margin-right: 0.4em;
+}
+
+#lobby {
+  margin-top: 1.5em;
+  margin-bottom: 0.5em;
+  /* Left and right margins are handled on the rows in "defaults.css" */
+  height: calc(100% - 3em); /* The header is 3em */
+}
+
+#lobby > div > div {
+  height: 100%;
+}
+
+#lobby > div > div > section {
+  padding: 1.5em;
+  margin-bottom: 0;
+  height: 100%;
+}
+
+.lobby-half {
+  height: calc((100% - 1.5em) / 2);
+}
+
+#lobby-separator {
+  height: 1.5em;
+}
+
+.lobby-full {
+  height: 100%;
+}
+
+.lobby-table-container {
+  overflow-y: auto;
+  height: 100%;
+}
+
+.lobby-button-icon {
+  font-size: 1.5em;
+  position: relative;
+  top: 0.22em;
+}
+
+.lobby-title {
+  /* We want to make h3 elements a bit smaller */
+  font-size: 1.3em;
+}
+
+#lobby-games-table {
+  margin-bottom: 0;
+}
+
+.lobby-games-table-joined {
+  background-color: var(--lobby-table-joined);
+}
+
+.lobby-games-table-unstarted {
+  background-color: var(--lobby-table-unstarted);
+}
+
+.lobby-games-table-unstarted-password {
+  background-color: var(--lobby-table-unstarted-password);
+}
+
+.lobby-games-table-started {
+  background-color: var(--lobby-table-started);
+}
+
+.lobby-games-table-replay {
+  background-color: var(--lobby-table-replay);
+}
+
+.lobby-games-table-joined:hover {
+  background-color: var(--lobby-table-joined-hover);
+  /* rejoin */
+  cursor:
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='23.713' height='23.713' viewBox='0 0 6.274 6.274'><g stroke='%232e3436' stroke-linecap='round' stroke-linejoin='round' stroke-width='.1' transform='translate(-88.655 -55.22)'><circle cx='91.792' cy='58.356' r='3.087' fill='%23e6cf04'/><path fill='%23fff' d='m93.809 58.356-1.583.914-1.583.913v-3.655l1.583.914z'/></g></svg>")
+      12 12,
+    pointer;
+}
+
+.lobby-games-table-unstarted:hover {
+  background-color: var(--lobby-table-unstarted-hover);
+}
+
+.lobby-games-table-unstarted-password:hover {
+  background-color: var(--lobby-table-unstarted-password-hover);
+}
+
+.lobby-games-table-unstarted:hover,
+.lobby-games-table-unstarted-password:hover {
+  /* join */
+  cursor:
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='23.096' height='18.894' viewBox='0 0 6.111 4.999'><g fill='%23aad400' stroke='%23000' stroke-linejoin='round' stroke-width='.1'><path d='M.051 1.628H1.91V.06l2.444 2.444L1.91 4.949V3.382H.05z'/><path d='M3.863.05h1.52c.314 0 .678.34.678.654v3.31c0 .33-.347.724-.678.724h-1.52v-.725h1.52V.703h-1.52z'/></g></svg>")
+      12 10,
+    pointer;
+}
+
+.lobby-games-table-unstarted.full:hover,
+.lobby-games-table-unstarted-password.full:hover {
+  /* full */
+  cursor:
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='23.713' height='23.713' viewBox='0 0 6.274 6.274'><g stroke='%23000' stroke-linecap='round' stroke-width='.1' transform='translate(-105.376 -101.255)'><circle cx='108.513' cy='104.392' r='2.778' fill='%23fff'/><path fill='%238b0000' d='M108.513 101.305a3.087 3.087 0 0 0-3.087 3.087 3.087 3.087 0 0 0 3.087 3.087 3.087 3.087 0 0 0 3.087-3.087 3.087 3.087 0 0 0-3.087-3.087zm0 .644a2.443 2.443 0 0 1 2.443 2.443 2.443 2.443 0 0 1-.428 1.381l-3.581-3.256a2.443 2.443 0 0 1 1.566-.568zm-2.015 1.061 3.582 3.256a2.443 2.443 0 0 1-1.567.57 2.443 2.443 0 0 1-2.444-2.444 2.443 2.443 0 0 1 .43-1.382z'/></g></svg>")
+      12 12,
+    pointer;
+}
+
+.lobby-games-table-started:hover {
+  background-color: var(--lobby-table-started-hover);
+}
+
+.lobby-games-table-replay:hover {
+  background-color: var(--lobby-table-replay-hover);
+}
+
+.lobby-games-table-started,
+.lobby-games-table-replay,
+.lobby-games-table-unstarted .lobby-spectators,
+.lobby-games-table-unstarted-password .lobby-spectators {
+  /* eyes */
+  cursor:
+    url("data:image/svg+xml;utf8,<svg width='28.343' height='25.001' viewBox='0 0 7.499 6.615' xmlns='http://www.w3.org/2000/svg'><g stroke-dasharray='.265 .265' stroke-width='.265'><g offset='50%' transform='translate(-10.083 -12.47) scale(.17804)'><rect x='56.63' y='70.043' width='21.116' height='37.155' rx='11' ry='11'/><rect x='59.258' y='72.769' width='15.881' height='31.881' rx='8' ry='8' fill='%23fff'/><circle cx='65.925' cy='92.591' r='6.667' fill='%23060'/><circle cx='67.821' cy='90.635' r='2.044' fill='%23fff'/></g><g transform='translate(-6.343 -12.47) scale(.17804)'><rect x='56.63' y='70.043' width='21.116' height='37.155' rx='11' ry='11'/><rect x='59.258' y='72.769' width='15.881' height='31.881' rx='8' ry='8' fill='%23fff'/><circle cx='65.925' cy='92.591' r='6.667' fill='%23060'/><circle cx='67.821' cy='90.635' r='2.044' fill='%23fff'/></g></g></svg>")
+      14 12,
+    pointer;
+}
+
+.lobby-chat-text-box {
+  overflow-y: auto;
+  overflow-wrap: break-word;
+  background-color: var(--chat-bg);
+  border: 1px solid var(--border);
+  margin-bottom: 1em;
+  padding: 0 0.5em 0 0.5em;
+  height: calc(100% - 3.5em - 2.5em);
+  /* (the height of the input box is 3.5em and the height of the "Lobby Chat" text is 2.5em) */
+}
+
+.chat-emote {
+  height: 1.6em; /* This is derived from how Twitch does it */
+}
+
+.chat-input-container {
+  position: relative;
+}
+
+.chat-input-container > input[type="text"] {
+  padding-right: 2.5em;
+}
+
+.emoji-button {
+  position: absolute;
+  top: 50%;
+  right: 1em;
+  padding: 0;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--text);
+}
+
+.emoji-button:hover {
+  color: var(--text-strong);
+}
+
+.emoji-button > .fas {
+  font-size: 1.6em;
+}
+
+.istyping {
+  font-size: 0.75em;
+  position: relative;
+  bottom: 0.3em;
+}
+
+#lobby-users-container {
+  overflow-y: auto;
+  height: calc(100% - 3em); /* The height of the "Online Users" text is 3em */
+}
+
+.lobby-users-box-container {
+  padding-left: 1.5em;
+}
+
+.lobby-users-tabs {
+  display: inline-flex;
+  gap: 1.1em;
+}
+
+.lobby-users-tab {
+  appearance: none;
+  background: none;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  color: var(--text-label);
+  cursor: pointer;
+  font: inherit;
+  letter-spacing: inherit;
+  line-height: 1.3;
+  padding: 0;
+  transition:
+    color 0.2s ease-in-out,
+    border-color 0.2s ease-in-out;
+}
+
+.lobby-users-tab:hover {
+  color: var(--text-strong);
+}
+
+.lobby-users-tab[aria-selected="true"] {
+  border-bottom-color: var(--button-green);
+  color: var(--text-strong);
+  cursor: default;
+}
+
+#lobby-users-table-tbody a {
+  text-decoration-skip-ink: none;
+}
+
+.lobby-games-table-options {
+  list-style-type: none;
+  margin: 0;
+  /* Keep the icons on one line when the table is narrow. */
+  white-space: nowrap;
+}
+
+/*
+  Small screen toggle buttons
+*/
+#lobby-small-screen-buttons {
+  margin-top: 1em;
+  height: 2em;
+  display: none;
+}
+
+#lobby-small-screen-buttons nav > ul {
+  display: block;
+  list-style: none;
+  margin: 0;
+  padding-left: 0;
+}
+
+#lobby-small-screen-buttons nav > ul li:first-child {
+  padding-left: 0;
+}
+
+.only-on-narrow-screen {
+  display: none;
+}
+
+a.toggle-active {
+  background-color: var(--button-green);
+}
+
+/* The menu that opens when we click on the name of an online user (see "UserMenu.tsx") */
+.user-menu {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: 0.75em;
+}
+
+.user-menu a,
+.user-menu button {
+  display: flex;
+  gap: 0.6em;
+  align-items: center;
+  width: 100%;
+  padding: 0.4em 0.6em;
+  border: none;
+  border-radius: 3px;
+  background: none;
+  color: var(--menu-text);
+  font: inherit;
+  text-align: left;
+  text-decoration: none;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.user-menu a:hover,
+.user-menu button:hover {
+  background: var(--menu-hover-bg);
+  color: var(--menu-hover-text);
+}
+
+.user-menu i {
+  width: 1em;
+  text-align: center;
+}
+
+@media screen and (max-width: 840px) {
+  /*
+    Media queries for lobby redesign on smaller screens
+  */
+  /* hide column '# of Players' */
+  #lobby-games-table th:nth-child(2),
+  #lobby-games-table td:nth-child(2) {
+    display: none;
+  }
+}
+
+@media screen and (max-width: 736px) {
+  /* hide column 'Name' */
+  #lobby-games-table th:nth-child(1),
+  #lobby-games-table td:nth-child(1) {
+    display: none;
+  }
+
+  /* fix border of column 'Variant' */
+  #lobby-games-table th:nth-child(3),
+  #lobby-games-table td:nth-child(3) {
+    border-left-width: 1px;
+  }
+}
+
+@media screen and (max-width: 640px) {
+  /* hide column 'Spectators' */
+  #lobby-games-table th:nth-child(7),
+  #lobby-games-table td:nth-child(7) {
+    display: none;
+  }
+}
+
+@media screen and (max-width: 530px) {
+  /* hide column 'Options' */
+  #lobby-games-table th:nth-child(4),
+  #lobby-games-table td:nth-child(4) {
+    display: none;
+  }
+}
+
+@media screen and (max-width: 410px) {
+  /* hide column 'Status' */
+  #lobby-games-table th:nth-child(5),
+  #lobby-games-table td:nth-child(5) {
+    display: none;
+  }
+}
+
+@media screen and (max-height: 530px) {
+  #lobby-toggle-show-online {
+    display: none;
+  }
+}
+
+@media screen and (max-height: 530px) and (max-width: 640px) {
+  #lobby-toggle-show-online {
+    display: inline-block;
+  }
+}
+
+@media screen and (max-height: 530px), screen and (max-width: 640px) {
+  #lobby-top-half,
+  #lobby-bottom-half {
+    display: none;
+    height: calc(100% - 4em);
+  }
+
+  #lobby-separator {
+    display: none;
+  }
+
+  #lobby-top-half.toggle-active {
+    display: flex;
+  }
+
+  #lobby-bottom-half.toggle-active {
+    display: flex;
+  }
+
+  #lobby-small-screen-buttons {
+    display: block;
+  }
+
+  #lobby-top-half.hidden,
+  #lobby-bottom-half.hidden,
+  #lobby-small-screen-buttons.hidden {
+    display: none;
+  }
+
+  #lobby {
+    height: calc(100% - 1.25em); /* The header is 3em */
+  }
+}
+
+@media screen and (max-width: 640px) {
+  #small-screen-toggle-users-h3 {
+    display: none;
+  }
+
+  .only-on-narrow-screen {
+    display: inline;
+  }
+
+  .lobby-users-box-container {
+    padding-left: 2em;
+  }
+
+  .narrow-screen-hidden {
+    display: none !important;
+  }
+
+  .row > #lobby-chat-container {
+    width: 100%;
+  }
+
+  .row > #lobby-online-users {
+    width: 100%;
+  }
+}

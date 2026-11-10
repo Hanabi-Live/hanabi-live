@@ -1,0 +1,483 @@
+/*
+  Lobby pages ("Create Game", "Watch Specific Replay", and "Resources")
+*/
+/* The lobby stretches its sections to full height; these fit their content instead. */
+#lobby .lobby-page {
+  height: auto;
+  margin: 0 auto;
+  max-width: 46em;
+  max-height: 100%;
+  overflow-y: auto;
+}
+
+.lobby-page h2 {
+  margin-bottom: 1em;
+}
+
+.lobby-page .fa-fw {
+  margin-right: 0.6em;
+}
+
+/* Most games do not use the extra options, so they start out hidden behind this button. */
+.create-game-extra-options-toggle {
+  margin: 1.5em 0 0;
+  text-align: center;
+}
+
+#create-game-extra-options {
+  margin-top: 1.5em;
+}
+
+#create-game-submit {
+  margin-top: 1.5em;
+}
+
+.create-game-variant {
+  align-items: center;
+  display: flex;
+  gap: 0.9em;
+}
+
+/* The ID of the game to replay and the turn to start from share one row. */
+.create-game-replay {
+  align-items: center;
+  display: flex;
+  gap: 0.75em;
+}
+
+.create-game-replay > input {
+  flex: 1;
+  min-width: 0;
+}
+
+#create-game-replay-turn-label {
+  align-items: center;
+  display: flex;
+  gap: 0.75em;
+  margin: 0;
+  white-space: nowrap;
+}
+
+#create-game-replay-turn {
+  text-align: center;
+  width: 4em;
+}
+
+.create-game-variant-input {
+  flex: 1;
+  min-width: 0;
+  position: relative;
+}
+
+#create-game-variant-dropdown1 {
+  width: 100%;
+}
+
+#create-game-variant-dropdown2 {
+  padding-right: 2.75em;
+}
+
+#create-game-variant-dropdown2-icon {
+  pointer-events: none; /* We want to "click through" this element */
+  position: absolute;
+  right: 1em;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+#dice {
+  color: var(--green-text);
+  cursor: pointer;
+  font-size: 1.2em;
+}
+
+#dice:hover {
+  color: #00cc00;
+}
+
+.lobby-page button[type="submit"] {
+  font-size: 1em;
+}
+
+.question-mark:hover {
+  color: var(--help-icon-hover);
+}
+
+/* The default arrow on input lists */
+input::-webkit-calendar-picker-indicator {
+  /* This needs to be important since Chrome 91 */
+  display: none !important;
+}
+
+.lobby-history-table-tooltip-ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.lobby-history-table-tooltip-ul > li {
+  padding-left: 0.2em;
+  margin-bottom: 0.3em;
+}
+
+.lobby-history-table-tooltip-ul > li:last-child {
+  margin-bottom: 0;
+}
+
+/*
+  Resources screen
+*/
+#lobby #lobby-resources {
+  max-width: 64em;
+}
+
+.resources ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.resource-list {
+  display: grid;
+  gap: 0.75em;
+  grid-template-columns: repeat(auto-fill, minmax(22em, 1fr));
+}
+
+/* Each resource is one link; the title's link covers the whole element. */
+.resource {
+  align-items: flex-start;
+  background-color: var(--surface-panel);
+  border: 1px solid var(--border-panel);
+  border-radius: var(--radius);
+  display: flex;
+  gap: 1em;
+  margin: 0;
+  padding: 0.9em 1em;
+  position: relative;
+  transition:
+    background-color 0.15s ease,
+    border-color 0.15s ease;
+}
+
+.resource:hover,
+.resource:focus-within {
+  background-color: var(--surface);
+  border-color: var(--green);
+}
+
+.resource-body {
+  min-width: 0;
+}
+
+.resource-title {
+  border-bottom: 0;
+  color: var(--text-strong);
+  font-weight: 400;
+  text-decoration: none;
+}
+
+.resource-title::after {
+  content: "";
+  inset: 0;
+  position: absolute;
+}
+
+.resource:hover .resource-title,
+.resource:focus-within .resource-title {
+  color: var(--green-text);
+}
+
+.resource p {
+  font-size: 0.9em;
+  line-height: 1.5em;
+  margin: 0.2em 0 0;
+}
+
+/* Links inside a description stay clickable on their own. */
+.resource p a {
+  position: relative;
+  z-index: 1;
+}
+
+.resource-icon {
+  align-items: center;
+  background-color: var(--green-tint);
+  border-radius: 50%;
+  color: var(--green-text);
+  display: inline-flex;
+  flex-shrink: 0;
+  font-size: 1.2em;
+  height: 2.3em;
+  justify-content: center;
+  width: 2.3em;
+}
+
+/*
+  Grouped rows on lobby pages ("Create Game", "Watch Replay", and "Settings")
+*/
+.lobby-group + .lobby-group,
+.resource-group + .resource-group {
+  margin-top: 1.5em;
+}
+
+.lobby-group h3,
+.resource-group h3 {
+  color: var(--text-label);
+  font-size: 1em;
+  margin: 0 0 0.6em;
+}
+
+.lobby-rows {
+  background-color: var(--surface-panel);
+  border: 1px solid var(--border-panel);
+  border-radius: var(--radius);
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+/* A description on the left and its control on the right. */
+.lobby-row {
+  align-items: center;
+  display: flex;
+  gap: 1.5em;
+  justify-content: space-between;
+  margin: 0;
+  min-height: 3.4em;
+  padding: 0.5em 1em;
+}
+
+.lobby-row + .lobby-row {
+  border-top: 1px solid var(--border-panel);
+}
+
+/* The password cannot be changed after the table is created. */
+.lobby-row.hidden {
+  display: none;
+}
+
+/* Wrapped lines of a description line up with its text rather than its icon. */
+.lobby-row > label,
+.lobby-row-label label,
+.lobby-row-text {
+  cursor: pointer;
+  font-size: 1em;
+  line-height: 1.4em;
+  margin: 0;
+  padding-left: 2em;
+  text-indent: -2em;
+}
+
+.lobby-row > label,
+.lobby-row-label,
+.lobby-row-text {
+  flex: 1;
+}
+
+.lobby-row-text {
+  cursor: default;
+}
+
+/* A description followed by a link that explains it. */
+.lobby-row-label {
+  align-items: center;
+  display: flex;
+  gap: 0.6em;
+}
+
+/* Controls are slimmer than elsewhere so that every row is about as tall as a checkbox row. */
+.lobby-row input[type="text"],
+.lobby-row input[type="number"],
+.lobby-row select {
+  height: 2.5em;
+}
+
+/* Text fields and the variant picker share one width, so their edges line up. */
+.lobby-row > input[type="text"],
+.lobby-row > input[type="number"],
+.create-game-variant,
+.create-game-replay {
+  flex: 0 0 20em;
+  width: 20em;
+}
+
+.lobby-row .fa-fw {
+  color: var(--green-text);
+  margin-right: 0.75em;
+  text-indent: 0;
+}
+
+.lobby-row select {
+  flex-shrink: 0;
+  width: auto;
+}
+
+/* The checkbox draws its box with a label that has no text, so give it the size of the box. */
+.lobby-row-checkbox {
+  flex-shrink: 0;
+  position: relative;
+}
+
+/* Keep the theme's hidden checkbox from taking up room beside the box. */
+.lobby-row-checkbox input {
+  margin: 0;
+  position: absolute;
+}
+
+.lobby-row-checkbox input + label {
+  display: block;
+  height: 1.8em;
+  margin: 0;
+  padding: 0;
+  width: 1.8em;
+}
+
+/* "Saved" appears beside a setting when the user changes it, then fades out. */
+.setting-status {
+  color: var(--green-text);
+  flex-shrink: 0;
+  font-size: 0.9em;
+  opacity: 0;
+  transition:
+    opacity 0.4s ease,
+    visibility 0.4s;
+  visibility: hidden;
+  white-space: nowrap;
+}
+
+.setting-status.visible {
+  opacity: 1;
+  transition: none;
+  visibility: visible;
+}
+
+.setting-status .fa-check {
+  margin-right: 0.4em;
+}
+
+/* A pasted game is too long for one line, so its box goes below its description. */
+.lobby-row:has(textarea) {
+  align-items: stretch;
+  flex-direction: column;
+  gap: 0.5em;
+}
+
+#replay-json {
+  min-height: 9em;
+  resize: vertical;
+}
+
+#replay-error-row {
+  color: var(--error);
+  margin: 1em 0 0;
+}
+
+#replay-submit {
+  margin-top: 1.5em;
+}
+
+/* A choice between a few options, shown as joined buttons. */
+.lobby-segmented {
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  display: inline-flex;
+  flex-shrink: 0;
+  overflow: hidden;
+}
+
+.lobby-segmented input[type="radio"] {
+  margin: 0;
+  position: absolute;
+}
+
+.lobby-segmented input[type="radio"] + label {
+  background-color: var(--surface);
+  font-weight: 400;
+  line-height: 2.4em;
+  margin: 0;
+  padding: 0 1.2em;
+  text-align: center;
+  transition:
+    background-color 0.15s ease,
+    color 0.15s ease;
+}
+
+.lobby-segmented input[type="radio"] + label:before {
+  display: none;
+}
+
+.lobby-segmented label + input[type="radio"] + label {
+  border-left: 1px solid var(--border);
+}
+
+.lobby-segmented input[type="radio"]:checked + label {
+  background-color: var(--green);
+  color: white;
+}
+
+.lobby-segmented input[type="radio"]:focus-visible + label {
+  box-shadow: inset 0 0 0 2px var(--focus);
+}
+
+#settings-volume {
+  align-items: center;
+  display: flex;
+  flex-shrink: 0;
+  gap: 1em;
+}
+
+#settings-volume-slider {
+  background: var(--slider-track);
+  border: none;
+  border-radius: 3px;
+  height: 0.25em;
+  width: 10em;
+}
+
+#settings-volume-slider-value {
+  min-width: 2.75em;
+  text-align: right;
+}
+
+:is(.modal, .lobby-page) {
+  color: var(--modal-text);
+}
+
+:is(.modal, .lobby-page) :is(input, select, textarea) {
+  color: var(--modal-input-text);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .setting-status {
+    transition: none;
+  }
+}
+
+@media screen and (max-width: 640px) {
+  /* Put a text field, dropdown, or the volume below its description. */
+  .lobby-row:has(select),
+  .lobby-row:has(input[type="text"]),
+  .lobby-row:has(input[type="number"]),
+  .lobby-row:has(#settings-volume),
+  .lobby-row:has(.lobby-segmented) {
+    align-items: stretch;
+    flex-direction: column;
+    gap: 0.5em;
+  }
+
+  .lobby-row > input[type="text"],
+  .lobby-row > input[type="number"],
+  .create-game-variant,
+  .create-game-replay {
+    flex-basis: auto;
+    width: 100%;
+  }
+
+  #settings-volume-slider {
+    flex: 1;
+  }
+
+  .lobby-segmented input[type="radio"] + label {
+    flex: 1;
+  }
+}

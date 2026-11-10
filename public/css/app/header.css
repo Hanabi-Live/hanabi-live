@@ -1,0 +1,59 @@
+/* The logo in the header bar */
+.logo {
+  height: 3.25em;
+  vertical-align: bottom;
+}
+
+/*
+  Nav (the top bar)
+*/
+.nav-icon {
+  position: relative;
+  top: 0.05em;
+  margin-right: 0.3em;
+}
+
+#nav-buttons-history > li:first-child {
+  margin-right: 0.375em;
+}
+
+.nav-hotkey-indicator {
+  border-bottom: 1px solid #999;
+}
+
+.help-button {
+  background-color: var(--button-green);
+}
+
+.help-button:hover {
+  background-color: var(--button-green-hover);
+}
+
+@media screen and (max-width: 1280px) {
+  /* Tighter nav buttons before text disappears */
+  #header nav > ul > li .button {
+    padding-left: 0.5em;
+    padding-right: 0.5em;
+  }
+}
+
+@media screen and (max-width: 980px) {
+  /* Hide the logo text */
+  #logo-text {
+    display: none;
+  }
+}
+
+@media screen and (max-width: 840px) {
+  /* Remove extra space from nav icons */
+  .nav-icon {
+    margin-right: 0;
+  }
+}
+
+@media screen and (max-width: 640px) {
+  /* hide 'help' nav menu */
+  #header nav > ul > li a#nav-buttons-lobby-resources {
+    display: none;
+  }
+}

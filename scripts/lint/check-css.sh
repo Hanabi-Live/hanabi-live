@@ -15,7 +15,7 @@ bun "$REPO_ROOT/packages/scripts/src/buildCSS.mts" "$OUTPUT"
 
 CSS_DIR="$REPO_ROOT/public/css"
 TOKENS="$CSS_DIR/tokens.css"
-STYLESHEETS=("$CSS_DIR/defaults.css" "$CSS_DIR/hanabi.css")
+STYLESHEETS=("$CSS_DIR/defaults.css" "$CSS_DIR"/app/*.css)
 
 # The dark theme only changes the values of the variables in "tokens.css", so that each rule has
 # one set of colors for both themes.

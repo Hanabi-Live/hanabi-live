@@ -1,0 +1,214 @@
+#filter-players > li {
+  height: 3em;
+  line-height: 3em;
+}
+
+#score-frequencies {
+  width: 100%;
+  max-width: 700px;
+  margin: auto;
+}
+
+.profile-tooltip {
+  font-size: 0.75em;
+}
+
+.stat-description {
+  display: inline-block;
+  width: 19em;
+}
+
+/* History Pages */
+section.history-page {
+  padding: 0;
+}
+
+.public-table-scroll {
+  max-width: 100%;
+  overflow-x: auto;
+}
+
+.history-page > header {
+  margin: 0;
+}
+
+table.history {
+  margin-top: 2em;
+}
+
+.history th.center,
+.history td.center {
+  text-align: center;
+}
+
+.history td.hard {
+  color: white;
+  background-color: darkgoldenrod;
+}
+
+.history td.very-hard {
+  color: white;
+  background-color: darkred;
+}
+
+.pager {
+  font-size: 1em;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.pager select {
+  display: inline-block;
+  width: auto;
+  height: auto;
+  margin: 0 0.5em;
+}
+
+.pager i {
+  margin: 0 0.5em;
+  cursor: pointer;
+}
+
+.pager .pagedisplay {
+  display: inline-block;
+  padding: 0 1em;
+  font-weight: 400;
+}
+
+.history .table-filters select {
+  width: auto;
+  max-width: 150px;
+  height: auto;
+  padding: 0 2.5em 0 0.5em;
+}
+
+.history .table-filters input {
+  width: 5em;
+  height: auto;
+  background-color: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  color: inherit;
+}
+
+.history-bullets {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  width: 100%;
+  align-items: flex-start;
+  justify-content: space-around;
+}
+
+.history-bullets ul {
+  flex-direction: column;
+}
+
+/* The sort arrows use the header's text color, so that they follow the theme. */
+.history th[data-sortable] {
+  cursor: pointer;
+  position: relative;
+  white-space: normal;
+}
+
+.history th[data-sortable]::after {
+  background-color: currentColor;
+  content: "";
+  height: 9px;
+  mask: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='21' height='9'><path d='M7 4h7l-3.5-4zM7 5h7l-3.5 4z'/></svg>");
+  position: absolute;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 21px;
+}
+
+.history th[aria-sort="ascending"],
+.history th[aria-sort="descending"] {
+  background-color: var(--table-sorted-bg);
+}
+
+.history th[aria-sort="ascending"]::after {
+  height: 4px;
+  mask-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='21' height='4'><path d='M7 4h7l-3.5-4z'/></svg>");
+}
+
+.history th[aria-sort="descending"]::after {
+  height: 4px;
+  mask-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='21' height='4'><path d='M7 0h7l-3.5 4z'/></svg>");
+}
+
+/* Spinner during ajax */
+div.table-spinner {
+  position: fixed;
+  left: 0;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  display: none;
+  justify-content: center;
+  align-items: center;
+  z-index: var(--z-spinner);
+  background-color: rgba(0, 0, 0, 0.3);
+}
+
+span.table-spinner {
+  width: 48px;
+  height: 48px;
+  display: inline-block;
+  position: relative;
+  border-width: 3px 2px 3px 2px;
+  border-style: solid dotted solid dotted;
+  border-color: #de3500 rgba(255, 255, 255, 0.3) #fff rgba(151, 107, 93, 0.3);
+  border-radius: 50%;
+  box-sizing: border-box;
+  animation: 1s rotate linear infinite;
+}
+
+span.table-spinner:before,
+span.table-spinner:after {
+  content: "";
+  top: 0;
+  left: 0;
+  position: absolute;
+  border: 10px solid transparent;
+  border-bottom-color: #fff;
+  transform: translate(-10px, 19px) rotate(-35deg);
+}
+
+span.table-spinner:after {
+  border-color: #de3500 #0000 #0000 #0000;
+  transform: translate(32px, 3px) rotate(-35deg);
+}
+
+@keyframes rotate {
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+@media screen and (max-width: 840px) {
+  /* Stack the profile buttons on top of each other if they would go off screen otherwise */
+  #profile-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: stretch;
+  }
+
+  #profile-buttons li {
+    padding-top: 1em;
+  }
+}
+
+@media screen and (max-width: 640px) {
+  .history.variant th:nth-child(5),
+  .history.variant td:nth-child(5) {
+    display: none;
+  }
+
+  .history.personal-history th:nth-child(6),
+  .history.personal-history td:nth-child(6) {
+    display: none;
+  }
+}
