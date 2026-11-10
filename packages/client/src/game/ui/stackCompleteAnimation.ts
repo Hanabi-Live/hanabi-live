@@ -74,7 +74,7 @@ const SPARK_FADE_START = 0.6;
 
 /** The spark waits for the burst to open before it leaves. */
 const COMET_DELAY_SECONDS = 0.06;
-const COMET_SECONDS = 0.35;
+const COMET_SECONDS = 0.455;
 const COMET_RADIUS = 0.052;
 const COMET_GLOW = 0.13;
 /** Where the comet's path bends, relative to the midpoint of its path. */
