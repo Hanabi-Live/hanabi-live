@@ -194,10 +194,6 @@ impl TableActor {
                 running,
                 shared_replay: replay && self.table.visible,
                 spectators,
-                time_base: self.table.options.time_base,
-                time_per_turn: self.table.options.time_per_turn,
-                timed: self.table.options.timed,
-                variant: self.table.options.variant_name.clone(),
             },
         }
     }
@@ -208,10 +204,6 @@ impl TableActor {
             .map(|a| hanabi_protocol::Spectator {
                 username: a.session.name.clone(),
                 shadowing_player_index: a.shadow.map(u8::from),
-                shadowing_player_username: a
-                    .shadow
-                    .and_then(|seat| self.table.players().get(seat.index()))
-                    .map(|p| p.name.clone()),
             })
             .collect()
     }

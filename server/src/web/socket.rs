@@ -111,7 +111,6 @@ pub(super) async fn bootstrap(app: &App, account: Account, ip: &str) -> Result<B
     let welcome = hanabi_protocol::Welcome {
         user_id: id,
         username: name.clone(),
-        total_games: None,
         muted,
         first_time_user: Utc::now() - created < FIRST_TIME_USER_WINDOW,
         settings,
@@ -135,7 +134,7 @@ pub(super) async fn bootstrap(app: &App, account: Account, ip: &str) -> Result<B
         welcome,
         initial: vec![frame(
             hanabi_protocol::server::LOBBY_STATUS,
-            hanabi_protocol::LobbyStatus::Loading { total_games: () },
+            hanabi_protocol::LobbyStatus::Loading {},
         )],
     })
 }
@@ -185,7 +184,7 @@ pub(super) fn load_lobby(app: Arc<App>, session: Arc<Session>) {
     let Ok(session_slot) = session.lobby_load.clone().try_acquire_owned() else {
         session.emit(&frame(
             hanabi_protocol::server::LOBBY_STATUS,
-            hanabi_protocol::LobbyStatus::Loading { total_games: () },
+            hanabi_protocol::LobbyStatus::Loading {},
         ));
         return;
     };
@@ -239,7 +238,7 @@ pub(super) fn load_lobby(app: Arc<App>, session: Arc<Session>) {
                 report.log();
                 session.emit(&frame(
                     hanabi_protocol::server::LOBBY_STATUS,
-                    hanabi_protocol::LobbyStatus::Error { total_games: (), message: Some(report.text()) },
+                    hanabi_protocol::LobbyStatus::Error { message: Some(report.text()) },
                 ));
             }
         }

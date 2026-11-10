@@ -607,7 +607,7 @@ function addInternal(data: ChatData, fast: boolean, updateLiveState: boolean) {
       box === "pregame" ? $("#lobby-chat-pregame-text") : $("#game-chat-text"),
       html,
       fast,
-      data.suggestedOptions,
+      data.suggestion,
     );
   }
 
@@ -658,7 +658,7 @@ function appendChatLine(
   chat: JQuery,
   html: string,
   fast: boolean,
-  suggestedOptions: ChatData["suggestedOptions"],
+  suggestion: ChatData["suggestion"],
 ) {
   // Find out if we should automatically scroll down after adding the new line of chat:
   // https://stackoverflow.com/questions/6271237/detecting-when-user-scrolls-to-bottom-of-div-with-jquery
@@ -677,9 +677,9 @@ function appendChatLine(
     `<span id="chat-line-${chatLineNum}" class="${fast ? "" : "hidden"}">${html}</span>`,
   );
   $(`#chat-line-${chatLineNum}`).fadeIn(FADE_TIME_MS).css("display", "block");
-  if (suggestedOptions !== undefined) {
+  if (suggestion !== undefined) {
     $(`#chat-line-${chatLineNum} button.new-options`).on("click", (event) => {
-      acceptOptionsFromGuest(suggestedOptions);
+      acceptOptionsFromGuest(suggestion);
       $(event.currentTarget).text("sent").prop("disabled", true);
     });
   }

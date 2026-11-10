@@ -236,7 +236,7 @@ lobbyCommands.set("welcome", (data) => {
   globals.userID = data.userID;
   setTabAccount(data.userID);
   globals.username = data.username; // We might have logged-in with a different stylization
-  globals.totalGames = data.totalGames;
+  globals.totalGames = null;
   globals.muted = data.muted;
   globals.settings = data.settings;
   globals.friends = data.friends;
@@ -251,10 +251,9 @@ lobbyCommands.set("welcome", (data) => {
   }
   theme.setDarkMode(globals.settings.darkMode);
 
-  // Update various elements of the UI to reflect our settings.
-  $("#nav-buttons-history-total-games").text(
-    globals.totalGames?.toString() ?? "loading...",
-  );
+  // Update various elements of the UI to reflect our settings. The "lobbyStatus" message reports
+  // the total number of games once the statistics load.
+  $("#nav-buttons-history-total-games").text("loading...");
   playerSettings.setPlayerSettings();
   lobbyLogin.hide(data.firstTimeUser);
 

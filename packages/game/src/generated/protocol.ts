@@ -365,7 +365,6 @@ export const gameOptionsSchema = z
     deckPlays: z.boolean().default(false),
     detrimentalCharacters: z.boolean().default(false),
     emptyClues: z.boolean().default(false),
-    maxPlayers: z.literal([2, 3, 4, 5, 6]).optional(),
     numPlayers: z.literal([2, 3, 4, 5, 6]).default(2),
     oneExtraCard: z.boolean().default(false),
     oneLessCard: z.boolean().default(false),
@@ -386,14 +385,7 @@ export const gameOptionsSchema = z
      */
     seed: z.string().min(1).max(32).optional(),
     speedrun: z.boolean().default(false),
-    tableName: z.string().min(1).optional(),
-    /**
-     * Checkpoints written before November 10th, 2026 name it `timeBase`.
-     */
     timeBaseSeconds: z.number().default(0),
-    /**
-     * Checkpoints written before November 10th, 2026 name it `timePerTurn`.
-     */
     timePerTurnSeconds: z
       .number()
       .int()

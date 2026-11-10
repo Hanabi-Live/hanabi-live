@@ -420,7 +420,7 @@ export function drawSpectators(tableID: number): void {
       }
       item.html(
         // eslint-disable-next-line complete/require-ascii
-        `${item.html()} (🕵️ <em>${escapeHtml(spectator.shadowingPlayerUsername ?? "")}</em>)`,
+        `${item.html()} (🕵️ <em>${escapeHtml(table.playerNames[spectator.shadowingPlayerIndex] ?? "")}</em>)`,
       );
     }
     list.append(item);

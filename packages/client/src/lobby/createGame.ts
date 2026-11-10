@@ -1,6 +1,11 @@
 // The "Create Game" screen, which also changes the options of an unstarted game.
 
-import type { ClientCommandData, GameID, Settings } from "@hanabi-live/data";
+import type {
+  ClientCommandData,
+  GameID,
+  ServerCommandData,
+  Settings,
+} from "@hanabi-live/data";
 import {
   DEFAULT_TABLE_NAME_SUFFIX,
   MAX_SEED_LENGTH,
@@ -391,9 +396,10 @@ function submit() {
   }
 }
 
-export function acceptOptionsFromGuest(options: Options): void {
-  const name = options.tableName;
-  const { maxPlayers } = options;
+export function acceptOptionsFromGuest(
+  suggestion: NonNullable<ServerCommandData["chat"]["suggestion"]>,
+): void {
+  const { name, maxPlayers, options } = suggestion;
 
   globals.conn!.send("tableUpdate", {
     tableID: globals.tableID,

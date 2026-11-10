@@ -475,11 +475,9 @@ function initStateStore(data: InitData) {
   // Set the variant (as a helper reference).
   globals.variant = getVariant(data.options.variantName);
 
-  // Handle the special case of when players can be given assignments of `NO_VALUE` during debugging
-  // (which corresponds to a null character).
-  let characterAssignments = data.characterAssignments.map(
-    (characterAssignment) =>
-      characterAssignment === NO_VALUE ? null : characterAssignment,
+  // The list is empty unless detrimental characters are on.
+  let characterAssignments = data.characters.map(
+    (character) => character.characterID ?? null,
   ) as Tuple<number | null, NumPlayers> | [];
 
   if (characterAssignments.length === 0) {
@@ -505,11 +503,10 @@ function initStateStore(data: InitData) {
     playerNames: toPlayerTuple(data.playerNames, "player names"),
     ourPlayerIndex: data.ourPlayerIndex,
     characterAssignments,
-    // Like the assignments, the metadata is empty unless detrimental characters are on.
     characterMetadata: toPlayerTuple(
-      data.characterMetadata.length === 0
+      data.characters.length === 0
         ? newArray(data.options.numPlayers, NO_VALUE)
-        : data.characterMetadata,
+        : data.characters.map((character) => character.metadata),
       "character metadata entries",
     ),
 

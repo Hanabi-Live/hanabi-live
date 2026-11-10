@@ -16,12 +16,11 @@
     "valid": false
   },
   {
-    "name": "loading statistics are unknown, not zero",
+    "name": "loading statistics carry no total",
     "direction": "server",
     "command": "lobbyStatus",
     "input": {
-      "state": "loading",
-      "totalGames": null
+      "state": "loading"
     },
     "valid": true
   },
@@ -30,8 +29,7 @@
     "direction": "server",
     "command": "lobbyStatus",
     "input": {
-      "state": "error",
-      "totalGames": null
+      "state": "error"
     },
     "valid": true
   },
@@ -412,7 +410,6 @@
     "input": {
       "userID": 7,
       "username": "Alice",
-      "totalGames": null,
       "muted": false,
       "firstTimeUser": false,
       "friends": [],
@@ -426,7 +423,6 @@
     "normalized": {
       "userID": 7,
       "username": "Alice",
-      "totalGames": null,
       "muted": false,
       "firstTimeUser": false,
       "friends": [],
@@ -464,57 +460,12 @@
     }
   },
   {
-    "name": "welcome requires the total, even when it is not loaded",
-    "direction": "server",
-    "command": "welcome",
-    "input": {
-      "userID": 7,
-      "username": "Alice",
-      "muted": false,
-      "firstTimeUser": false,
-      "friends": [],
-      "blocked": [],
-      "playingAtTables": [3],
-      "settings": {
-        "desktopNotification": false,
-        "soundMove": 0,
-        "soundTimer": true,
-        "darkMode": false,
-        "keldonMode": false,
-        "colorblindMode": false,
-        "realLifeMode": false,
-        "reverseHands": false,
-        "styleNumbers": false,
-        "showTimerInUntimed": false,
-        "volume": 50,
-        "speedrunPreplay": false,
-        "speedrunMode": false,
-        "hGroupConventions": false,
-        "hGroupLevel": 0,
-        "createTableVariant": "No Variant",
-        "createTableTimed": false,
-        "createTableTimeBaseMinutes": 2.0,
-        "createTableTimePerTurnSeconds": 20,
-        "createTableSpeedrun": false,
-        "createTableDeckPlays": false,
-        "createTableEmptyClues": false,
-        "createTableOneExtraCard": false,
-        "createTableOneLessCard": false,
-        "createTableAllOrNothing": false,
-        "createTableDetrimentalCharacters": false,
-        "createTableMaxPlayers": 5
-      }
-    },
-    "valid": false
-  },
-  {
     "name": "welcome settings reject an unsupported player count",
     "direction": "server",
     "command": "welcome",
     "input": {
       "userID": 7,
       "username": "Alice",
-      "totalGames": null,
       "muted": false,
       "firstTimeUser": false,
       "friends": [],
@@ -681,14 +632,9 @@
       "spectators": [
         {
           "username": "Carol",
-          "shadowingPlayerIndex": 1,
-          "shadowingPlayerUsername": "Bob"
+          "shadowingPlayerIndex": 1
         }
-      ],
-      "timeBase": 0.0,
-      "timePerTurn": 0,
-      "timed": false,
-      "variant": "No Variant"
+      ]
     },
     "valid": true
   },

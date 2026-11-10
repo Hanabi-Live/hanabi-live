@@ -233,7 +233,41 @@ where
 pub struct TableChat {
     pub id: Option<i32>,
     pub user: UserId,
+    #[serde(deserialize_with = "deserialize_stored_chat")]
     pub message: Chat,
+}
+/// Reads a checkpoint's chat message. Checkpoints written before November 10th, 2026 use the old
+/// wire names, and keep a suggestion's table name and player limit among its options.
+fn deserialize_stored_chat<'de, D>(deserializer: D) -> std::result::Result<Chat, D::Error>
+where
+    D: serde::Deserializer<'de>,
+{
+    use serde::de::Error;
+    let mut stored = serde_json::Map::<String, Value>::deserialize(deserializer)?;
+    for (old, new) in [("msg", "text"), ("who", "username")] {
+        if let Some(value) = stored.remove(old) {
+            stored.insert(new.into(), value);
+        }
+    }
+    if let Some(Value::Object(mut options)) = stored.remove("suggestedOptions") {
+        for (old, new) in [
+            ("timeBase", "timeBaseSeconds"),
+            ("timePerTurn", "timePerTurnSeconds"),
+        ] {
+            if let Some(value) = options.remove(old) {
+                options.insert(new.into(), value);
+            }
+        }
+        let name = options.remove("tableName").unwrap_or_default();
+        let max_players = options
+            .remove("maxPlayers")
+            .unwrap_or_else(|| hanabi_protocol::DEFAULT_MAX_PLAYERS.into());
+        stored.insert(
+            "suggestion".into(),
+            serde_json::json!({"name": name, "maxPlayers": max_players, "options": options}),
+        );
+    }
+    serde_json::from_value(Value::Object(stored)).map_err(D::Error::custom)
 }
 impl TableChat {
     /// When the message was sent.
@@ -849,8 +883,9 @@ pub(crate) fn wire_options(options: &Options) -> hanabi_protocol::GameOptions {
         one_less_card,
         all_or_nothing,
         detrimental_characters,
-        table_name,
-        max_players,
+        // Tables report their name and player limit apart from their options.
+        table_name: _,
+        max_players: _,
     } = options;
     hanabi_protocol::GameOptions {
         num_players: small(*num_players),
@@ -866,8 +901,6 @@ pub(crate) fn wire_options(options: &Options) -> hanabi_protocol::GameOptions {
         one_less_card: *one_less_card,
         all_or_nothing: *all_or_nothing,
         detrimental_characters: *detrimental_characters,
-        table_name: table_name.clone(),
-        max_players: max_players.map(small),
         seed: None,
         replay_game_id: None,
         replay_turn: None,
@@ -890,8 +923,6 @@ pub(crate) fn engine_options(options: &hanabi_protocol::GameOptions) -> Options 
         one_less_card,
         all_or_nothing,
         detrimental_characters,
-        table_name,
-        max_players,
         // A table keeps its seed and replayed game apart from the game's rules, in `ExtraOptions`.
         seed: _,
         replay_game_id: _,
@@ -911,8 +942,8 @@ pub(crate) fn engine_options(options: &hanabi_protocol::GameOptions) -> Options 
         one_less_card: *one_less_card,
         all_or_nothing: *all_or_nothing,
         detrimental_characters: *detrimental_characters,
-        table_name: table_name.clone(),
-        max_players: max_players.map(usize::from),
+        table_name: None,
+        max_players: None,
     }
 }
 
@@ -970,7 +1001,7 @@ mod tests {
             id: Some(1),
             user: UserId(1),
             message: serde_json::from_value(serde_json::json!(
-                {"msg": "hi", "source": "user", "datetime": "2026-11-02T20:00:00.123456Z"}
+                {"text": "hi", "source": "user", "datetime": "2026-11-02T20:00:00.123456Z"}
             ))
             .unwrap(),
         };
@@ -987,15 +1018,24 @@ mod tests {
             "id": 1, "user": 1, "message": {
                 "msg": "hi", "who": "Alice", "source": "user",
                 "datetime": "2026-11-02T20:00:00.123Z",
-                "suggestedOptions": {"timeBase": 120.0, "timePerTurn": 20}
+                "suggestedOptions": {
+                    "timeBase": 120.0, "timePerTurn": 20, "tableName": "Fun", "maxPlayers": 4
+                }
             }
         }))
         .unwrap();
         assert_eq!(chat.message.text, "hi");
         assert_eq!(chat.message.username.as_deref(), Some("Alice"));
-        let options = chat.message.suggested_options.unwrap();
+        let suggestion = chat.message.suggestion.unwrap();
         assert_eq!(
-            (options.time_base_seconds, options.time_per_turn_seconds),
+            (suggestion.name.as_str(), suggestion.max_players),
+            ("Fun", 4)
+        );
+        assert_eq!(
+            (
+                suggestion.options.time_base_seconds,
+                suggestion.options.time_per_turn_seconds
+            ),
             (120.0, 20)
         );
         let clue = r#"{"type":"clue","clue":{"type":0,"value":1},"giver":0,"target":1,"list":[2],"ignoreNegative":false}"#;

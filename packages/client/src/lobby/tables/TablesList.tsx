@@ -136,7 +136,7 @@ function TableRowView({
           ? table.numPlayers
           : `${table.numPlayers} / ${table.maxPlayers}`}
       </td>
-      <td>{table.variant}</td>
+      <td>{table.options.variantName}</td>
       <td className="lobby-games-table-options">
         {getOptionDescriptions(table.options).map((description) => (
           // The space separates the icons like the spaces between words.

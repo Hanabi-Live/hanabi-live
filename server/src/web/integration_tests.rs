@@ -655,7 +655,7 @@ async fn websocket_defers_lobby_reads_without_an_opt_in_postgres() {
     let welcome = tokio::time::timeout(Duration::from_secs(1), receive(&mut socket, "welcome"))
         .await
         .expect("Archive reads blocked the welcome");
-    assert_eq!(welcome["totalGames"], Value::Null);
+    assert!(welcome.get("totalGames").is_none());
     let loading = receive(&mut socket, "lobbyStatus").await;
     assert_eq!(loading["state"], "loading");
     lock.rollback().await.unwrap();
@@ -699,13 +699,9 @@ async fn game_archive_locks_do_not_block_authentication_and_deferred_errors_are_
     .await
     .expect("Archive reads blocked the welcome")
     .unwrap();
-    assert_eq!(prepared.welcome.total_games, None);
     assert_eq!(
         prepared.initial,
-        vec![test_frame(
-            "lobbyStatus",
-            json!({"state":"loading","totalGames":null})
-        )]
+        vec![test_frame("lobbyStatus", json!({"state":"loading"}))]
     );
     let slots = fixture
         .app
@@ -728,7 +724,7 @@ async fn game_archive_locks_do_not_block_authentication_and_deferred_errors_are_
         .unwrap();
     let status: Value = serde_json::from_str(body).unwrap();
     assert_eq!(status["state"], "error");
-    assert_eq!(status["totalGames"], Value::Null);
+    assert!(status.get("totalGames").is_none());
     assert!(
         status["message"]
             .as_str()

@@ -31,11 +31,8 @@ pub struct Restart {
     deny_unknown_fields
 )]
 pub enum LobbyStatus {
-    Loading {
-        total_games: (),
-    },
+    Loading {},
     Error {
-        total_games: (),
         #[serde(default, skip_serializing_if = "Option::is_none")]
         #[schemars(with = "String")]
         message: Option<String>,
@@ -225,13 +222,6 @@ pub struct Welcome {
     pub user_id: UserId,
     #[schemars(length(min = 1))]
     pub username: String,
-    /// Always null here; `lobbyStatus` reports the total once statistics load.
-    #[schemars(
-        required,
-        range(min = 0, max = MAX_SAFE_INTEGER),
-        extend("type" = ["integer", "null"])
-    )]
-    pub total_games: Option<i64>,
     pub muted: bool,
     pub first_time_user: bool,
     pub settings: Settings,
@@ -275,11 +265,7 @@ pub struct GameOptions {
     #[schemars(with = "u32", range(min = 0, max = u32::MAX))]
     pub variant_id: Option<u32>,
     pub timed: bool,
-    /// Checkpoints written before November 10th, 2026 name it `timeBase`.
-    #[serde(alias = "timeBase")]
     pub time_base_seconds: f64,
-    /// Checkpoints written before November 10th, 2026 name it `timePerTurn`.
-    #[serde(alias = "timePerTurn")]
     #[schemars(range(min = -MAX_SAFE_INTEGER, max = MAX_SAFE_INTEGER))]
     pub time_per_turn_seconds: i64,
     pub speedrun: bool,
@@ -289,12 +275,6 @@ pub struct GameOptions {
     pub one_less_card: bool,
     pub all_or_nothing: bool,
     pub detrimental_characters: bool,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    #[schemars(with = "String", length(min = 1))]
-    pub table_name: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    #[schemars(with = "NumPlayers")]
-    pub max_players: Option<u8>,
     /// The deal that a table requests, as the end of its full seed: "123" in a 3-player game of No
     /// Variant deals `p3v0s123`. Absent when the server deals the next seed that none of the
     /// players have played. Only tables report it; games report their full seed elsewhere.
@@ -330,8 +310,6 @@ impl Default for GameOptions {
             one_less_card: false,
             all_or_nothing: false,
             detrimental_characters: false,
-            table_name: None,
-            max_players: None,
             seed: None,
             replay_game_id: None,
             replay_turn: None,
@@ -349,10 +327,6 @@ pub struct Spectator {
     #[serde(default, skip_serializing_if = "Option::is_none")]
     #[schemars(with = "PlayerIndex")]
     pub shadowing_player_index: Option<u8>,
-    /// Present only while shadowing a seat.
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    #[schemars(with = "String", length(min = 1))]
-    pub shadowing_player_username: Option<String>,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
@@ -400,12 +374,6 @@ pub struct Table {
     pub shared_replay: bool,
     #[schemars(extend("x-readonly" = true))]
     pub spectators: Vec<Spectator>,
-    pub time_base: f64,
-    #[schemars(range(min = -MAX_SAFE_INTEGER, max = MAX_SAFE_INTEGER))]
-    pub time_per_turn: i64,
-    pub timed: bool,
-    #[schemars(length(min = 1))]
-    pub variant: String,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]

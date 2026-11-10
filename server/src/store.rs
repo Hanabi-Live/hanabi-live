@@ -1237,7 +1237,7 @@ mod tests {
             id: None,
             user: UserId(1),
             message: serde_json::from_value(json!({
-                "msg": text, "who": "Alice", "source": "user",
+                "text": text, "username": "Alice", "source": "user",
                 "room": format!("table{id}"), "datetime": "2026-11-02T20:00:00.123456Z"
             }))?,
         })

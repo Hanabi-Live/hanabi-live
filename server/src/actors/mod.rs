@@ -333,10 +333,6 @@ pub(crate) fn test_table() -> hanabi_protocol::Table {
         running: false,
         shared_replay: false,
         spectators: vec![],
-        time_base: 0.0,
-        time_per_turn: 0,
-        timed: false,
-        variant: hanabi_protocol::DEFAULT_VARIANT_NAME.into(),
     }
 }
 #[cfg(test)]
@@ -344,7 +340,6 @@ pub(crate) fn test_welcome() -> hanabi_protocol::Welcome {
     hanabi_protocol::Welcome {
         user_id: UserId(1),
         username: "test".into(),
-        total_games: None,
         muted: false,
         first_time_user: false,
         settings: hanabi_protocol::Settings::default(),

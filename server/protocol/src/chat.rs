@@ -21,16 +21,13 @@ pub enum ChatSource {
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 #[schemars(extend("x-readonly" = true))]
 pub struct Chat {
-    /// Pre-escaped HTML, not an instruction to escape or normalize again. Checkpoints written before
-    /// November 10th, 2026 name it `msg`.
-    #[serde(alias = "msg")]
+    /// Pre-escaped HTML, not an instruction to escape or normalize again.
     #[schemars(length(min = 1))]
     pub text: String,
     pub source: ChatSource,
     #[schemars(with = "Timestamp")]
     pub datetime: String,
-    /// Checkpoints written before November 10th, 2026 name it `who`.
-    #[serde(default, alias = "who", skip_serializing_if = "Option::is_none")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
     #[schemars(with = "String")]
     pub username: Option<String>,
     #[serde(default, rename = "chatID", skip_serializing_if = "Option::is_none")]
@@ -42,10 +39,22 @@ pub struct Chat {
     #[serde(default, skip_serializing_if = "Option::is_none")]
     #[schemars(with = "String")]
     pub recipient: Option<String>,
-    /// Options that the message's button applies to the table, in a suggestion to its owner.
+    /// What the message's button applies to the table, in a suggestion to its owner.
     #[serde(default, skip_serializing_if = "Option::is_none")]
-    #[schemars(with = "GameOptions")]
-    pub suggested_options: Option<GameOptions>,
+    #[schemars(with = "TableSuggestion")]
+    pub suggestion: Option<TableSuggestion>,
+}
+
+/// A table's name, player limit, and options, as a suggestion to its owner proposes them.
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize, JsonSchema)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+#[schemars(extend("x-readonly" = true))]
+pub struct TableSuggestion {
+    #[schemars(length(min = 1))]
+    pub name: String,
+    #[schemars(with = "NumPlayers")]
+    pub max_players: u8,
+    pub options: GameOptions,
 }
 
 impl Chat {
@@ -58,7 +67,7 @@ impl Chat {
             chat_id: None,
             room: None,
             recipient: None,
-            suggested_options: None,
+            suggestion: None,
         }
     }
 }

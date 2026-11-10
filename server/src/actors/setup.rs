@@ -199,10 +199,10 @@ pub(super) fn options_suggestion(
 ) -> Chat {
     Chat {
         recipient: Some(owner.into()),
-        suggested_options: Some(hanabi_protocol::GameOptions {
-            table_name: Some(name.into()),
-            max_players: Some(small(max_players)),
-            ..wire_table_options(options, extra)
+        suggestion: Some(hanabi_protocol::TableSuggestion {
+            name: name.into(),
+            max_players: small(max_players),
+            options: wire_table_options(options, extra),
         }),
         ..server_chat(
             id,

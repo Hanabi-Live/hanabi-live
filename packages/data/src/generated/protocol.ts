@@ -11,7 +11,6 @@ import {
   playerIndexSchema,
   playerNotesSchema,
   rankOrUnknownSchema,
-  safeIntegerSchema,
   suitIndexOrUnknownSchema,
 } from "@hanabi-live/game";
 import * as z from "zod";
@@ -163,6 +162,17 @@ export const cardIdentitiesSchema = z.strictObject({
   tableID: tableIdSchema,
 });
 const chatSourceSchema = z.enum(["user", "server", "discord"]);
+
+/**
+ * A table's name, player limit, and options, as a suggestion to its owner proposes them.
+ */
+const tableSuggestionSchema = z
+  .strictObject({
+    maxPlayers: z.literal([2, 3, 4, 5, 6]),
+    name: z.string().min(1),
+    options: gameOptionsSchema,
+  })
+  .readonly();
 export const chatSchema = z
   .strictObject({
     chatID: z.number().int().min(1).max(9_007_199_254_740_991).optional(),
@@ -171,17 +181,13 @@ export const chatSchema = z
     room: z.string().optional(),
     source: chatSourceSchema,
     /**
-     * Options that the message's button applies to the table, in a suggestion to its owner.
+     * What the message's button applies to the table, in a suggestion to its owner.
      */
-    suggestedOptions: gameOptionsSchema.optional(),
+    suggestion: tableSuggestionSchema.optional(),
     /**
-     * Pre-escaped HTML, not an instruction to escape or normalize again. Checkpoints written before
-     * November 10th, 2026 name it `msg`.
+     * Pre-escaped HTML, not an instruction to escape or normalize again.
      */
     text: z.string().min(1),
-    /**
-     * Checkpoints written before November 10th, 2026 name it `who`.
-     */
     username: z.string().optional(),
   })
   .readonly();
@@ -414,14 +420,27 @@ export const idleWarningSchema = z.strictObject({
 export const inactiveRequestSchema = z.strictObject({ inactive: z.boolean() });
 
 /**
+ * A player's detrimental character.
+ */
+const characterAssignmentSchema = z.strictObject({
+  /**
+   * Absent when the player has no character.
+   */
+  characterID: z.number().int().min(0).max(2_147_483_647).optional(),
+  /**
+   * A value that some characters use, such as the rank or suit they may not clue.
+   */
+  metadata: z.number().int().min(-2_147_483_648).max(2_147_483_647),
+});
+
+/**
  * Everything a client needs to draw a game, before its events arrive.
  */
 export const initSchema = z.strictObject({
   /**
-   * Each player's character ID, when detrimental characters are on.
+   * Each player's character, in seat order, when detrimental characters are on.
    */
-  characterAssignments: z.array(safeIntegerSchema),
-  characterMetadata: z.array(safeIntegerSchema),
+  characters: z.array(characterAssignmentSchema).max(6),
   /**
    * The game's database ID in a replay, or -1.
    */
@@ -476,12 +495,8 @@ export const initSchema = z.strictObject({
   tableID: tableIdSchema,
 });
 export const lobbyStatusSchema = z.discriminatedUnion("state", [
-  z.strictObject({ state: z.literal("loading"), totalGames: z.null() }),
-  z.strictObject({
-    message: z.string().optional(),
-    state: z.literal("error"),
-    totalGames: z.null(),
-  }),
+  z.strictObject({ state: z.literal("loading") }),
+  z.strictObject({ message: z.string().optional(), state: z.literal("error") }),
   z.strictObject({
     state: z.literal("ready"),
     totalGames: z.number().int().min(0).max(9_007_199_254_740_991),
@@ -1023,10 +1038,6 @@ export const spectatorSchema = z
      * The seat being shadowed, if any.
      */
     shadowingPlayerIndex: playerIndexSchema.optional(),
-    /**
-     * Present only while shadowing a seat.
-     */
-    shadowingPlayerUsername: z.string().min(1).optional(),
     username: z.string().min(1),
   })
   .readonly();
@@ -1081,14 +1092,6 @@ export const tableSchema = z
     sharedReplay: z.boolean(),
     spectators: z.array(spectatorSchema).readonly(),
     tableID: tableIdSchema,
-    timeBase: z.number(),
-    timePerTurn: z
-      .number()
-      .int()
-      .min(-9_007_199_254_740_991)
-      .max(9_007_199_254_740_991),
-    timed: z.boolean(),
-    variant: z.string().min(1),
   })
   .readonly();
 export const tableCreateRequestSchema = z.strictObject({
@@ -1292,10 +1295,6 @@ export const welcomeSchema = z
      * The table the user was spectating when they disconnected, if any.
      */
     spectatingAtTable: spectatedTableSchema.optional(),
-    /**
-     * Always null here; `lobbyStatus` reports the total once statistics load.
-     */
-    totalGames: z.number().int().min(0).max(9_007_199_254_740_991).nullable(),
     userID: userIdSchema,
     username: z.string().min(1),
   })

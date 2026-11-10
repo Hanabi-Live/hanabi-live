@@ -252,7 +252,7 @@ pub(super) async fn dispatch(
     if route == Route::Connection {
         session.emit(&frame(
             hanabi_protocol::server::LOBBY_STATUS,
-            hanabi_protocol::LobbyStatus::Loading { total_games: () },
+            hanabi_protocol::LobbyStatus::Loading {},
         ));
         load_lobby(app.clone(), session);
         measurement.success();

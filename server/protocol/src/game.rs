@@ -293,6 +293,23 @@ pub struct GameActionList {
     pub actions: Vec<GameEvent>,
 }
 
+/// A player's detrimental character.
+#[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct CharacterAssignment {
+    /// Absent when the player has no character.
+    #[serde(
+        default,
+        rename = "characterID",
+        skip_serializing_if = "Option::is_none"
+    )]
+    #[schemars(with = "u32", range(min = 0, max = i32::MAX))]
+    pub character_id: Option<u32>,
+    /// A value that some characters use, such as the rank or suit they may not clue.
+    #[schemars(range(min = i32::MIN, max = i32::MAX))]
+    pub metadata: i32,
+}
+
 /// Everything a client needs to draw a game, before its events arrive.
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
@@ -318,9 +335,9 @@ pub struct Init {
     #[schemars(with = "Timestamp")]
     pub datetime_finished: String,
     pub options: GameOptions,
-    /// Each player's character ID, when detrimental characters are on.
-    pub character_assignments: Vec<SafeInteger>,
-    pub character_metadata: Vec<SafeInteger>,
+    /// Each player's character, in seat order, when detrimental characters are on.
+    #[schemars(length(max = MAX_PLAYERS))]
+    pub characters: Vec<CharacterAssignment>,
     pub shared_replay: bool,
     pub shared_replay_leader: String,
     #[schemars(range(min = -MAX_SAFE_INTEGER, max = MAX_SAFE_INTEGER))]

@@ -16,7 +16,7 @@ describe("pasted game JSON", () => {
   test("unknown fields and nulls are rejected", () => {
     for (const game of [
       { seed: "p2v0s1", options: { tableName: "x" } },
-      { seed: "p2v0s1", players: null },
+      { seed: "p2v0s1", playerNames: null },
     ]) {
       expect(parseGameJSON(JSON.stringify(game))).toHaveProperty("error");
     }

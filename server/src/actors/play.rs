@@ -17,7 +17,7 @@ use anyhow::Context;
 use hanabi_engine::{CompletionTiming, EndCondition, Recipient};
 use hanabi_protocol::ClientMessage;
 use hanabi_protocol::{
-    Chat, ChatTyping, MIN_PLAYERS, NO_VALUE, ReplayAction, SafeInteger, Status, TableRequest,
+    Chat, ChatTyping, MIN_PLAYERS, NO_VALUE, ReplayAction, Status, TableRequest,
 };
 use std::sync::Arc;
 
@@ -528,25 +528,17 @@ impl TableActor {
                     crate::model::timestamp,
                 ),
                 options: wire_options(&s.game.options),
-                character_assignments: if s.game.options.detrimental_characters {
+                characters: if s.game.options.detrimental_characters {
                     s.game
                         .players
                         .iter()
-                        .map(|p| {
-                            hanabi_engine::characters()
+                        .map(|p| hanabi_protocol::CharacterAssignment {
+                            character_id: hanabi_engine::characters()
                                 .iter()
                                 .find(|c| c.name == p.character)
-                                .map_or(SafeInteger(NO_VALUE.into()), |c| SafeInteger(c.id.into()))
+                                .map(|c| c.id),
+                            metadata: p.character_metadata,
                         })
-                        .collect()
-                } else {
-                    vec![]
-                },
-                character_metadata: if s.game.options.detrimental_characters {
-                    s.game
-                        .players
-                        .iter()
-                        .map(|p| SafeInteger(p.character_metadata.into()))
                         .collect()
                 } else {
                     vec![]

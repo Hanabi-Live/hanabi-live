@@ -588,9 +588,11 @@ databaseDescribe("compiled application entry point (rust)", () => {
           oneLessCard: true,
           emptyClues: true,
         });
-        expect(game.init.characterAssignments).toHaveLength(6);
+        expect(game.init.characters).toHaveLength(6);
         expect(
-          game.init.characterAssignments.every((value) => value >= 0),
+          game.init.characters.every(
+            (character) => character.characterID !== undefined,
+          ),
         ).toBe(true);
         const hand = game.history.actions.filter(
           (event) =>
@@ -687,8 +689,10 @@ databaseDescribe("compiled application entry point (rust)", () => {
         const original = games[0];
         assertDefined(original, "Missing original player bootstrap.");
         expect(imported.init.options).toMatchObject(original.init.options);
-        expect(imported.init.characterAssignments).toEqual(
-          original.init.characterAssignments,
+        expect(
+          imported.init.characters.map((character) => character.characterID),
+        ).toEqual(
+          original.init.characters.map((character) => character.characterID),
         );
         expect(
           imported.history.actions
@@ -755,9 +759,7 @@ databaseDescribe("compiled application entry point (rust)", () => {
             sharedReplaySegment: imported.init.sharedReplaySegment,
             datetimeStarted: imported.init.datetimeStarted,
           });
-          expect(recovered.init.characterAssignments).toEqual(
-            imported.init.characterAssignments,
-          );
+          expect(recovered.init.characters).toEqual(imported.init.characters);
           expect(recovered.history.actions).toEqual(imported.history.actions);
           returningObserver.send("tableLeave", {
             tableID: pending.tableID,

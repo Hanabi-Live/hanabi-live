@@ -2205,9 +2205,9 @@ fn browser_json(value: Value) -> Value {
 
 fn suggestion(value: &Value) -> Result<Value> {
     value
-        .get("suggestedOptions")
+        .get("suggestion")
         .cloned()
-        .context("Missing actionable options")
+        .context("Missing actionable suggestion")
 }
 async fn mark_complete(h: &Harness, user: i32, except: Option<&str>) -> Result<()> {
     let variants = hanabi_engine::variants()
@@ -2343,8 +2343,8 @@ async fn option_proposals_publish_changed_values_but_keep_apply_button_private()
             if index == 0 {
                 let button = button.context("Owner is missing the apply button")?;
                 ensure!(button["recipient"] == "Alice");
-                let options = suggestion(button)?;
-                ensure!(options["variantName"] == "6 Suits" && options["maxPlayers"] == 2 && options["tableName"] == "Proposal");
+                let suggestion = suggestion(button)?;
+                ensure!(suggestion["options"]["variantName"] == "6 Suits" && suggestion["maxPlayers"] == 2 && suggestion["name"] == "Proposal");
             } else {
                 ensure!(button.is_none(), "Apply button leaked to a non-owner");
             }
@@ -2451,11 +2451,11 @@ async fn findvariant_delivers_owner_button_and_guards_the_start_action() -> Resu
         ensure!(proposal["recipient"]=="Alice","Proposal was not private");
         ensure!(!bob.iter().any(|v|v["text"].as_str().is_some_and(|s|s.contains("new-options"))),"Non-owner received proposal");
         ensure!(bob.iter().any(|v|v["text"]=="Here is a random variant that everyone needs the 2-player max score in: Rainbow (5 Suits)"),"Wrong team discovery result");
-        let options=browser_json(suggestion(proposal)?);
-        ensure!(options["variantName"]=="Rainbow (5 Suits)"&&options["tableName"]=="Team discovery"&&options["maxPlayers"]==5&&options["deckPlays"]==true&&options["oneExtraCard"]==true,"Proposal lost table settings");
+        let suggestion=browser_json(suggestion(proposal)?);let options=&suggestion["options"];
+        ensure!(options["variantName"]=="Rainbow (5 Suits)"&&suggestion["name"]=="Team discovery"&&suggestion["maxPlayers"]==5&&options["deckPlays"]==true&&options["oneExtraCard"]==true,"Proposal lost table settings");
         let (table,_)=h.snapshot(id).await?;
         ensure!(table.chat.iter().all(|c|!c.message.text.contains("new-options")),"Private proposal entered public history");
-        h.send(0,"tableUpdate",json!({"tableID":id,"name":options["tableName"],"maxPlayers":options["maxPlayers"],"options":options})).await?;
+        h.send(0,"tableUpdate",json!({"tableID":id,"name":suggestion["name"],"maxPlayers":suggestion["maxPlayers"],"options":options})).await?;
         let before=h.snapshot(id).await?.1;
         for data in [
             json!({"tableID":id,"intendedPlayerNames":["Alice","Cathy"]}),
