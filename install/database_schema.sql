@@ -126,8 +126,6 @@ CREATE TABLE user_identity_tokens (
     datetime_updated  TIMESTAMPTZ  NOT NULL  DEFAULT NOW(),
     FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
 );
-CREATE INDEX user_identity_tokens_index_token_lookup_hash ON user_identity_tokens (token_lookup_hash);
-CREATE INDEX user_identity_tokens_index_expires_at ON user_identity_tokens (expires_at);
 
 DROP TABLE IF EXISTS games CASCADE;
 CREATE TABLE games (
@@ -390,7 +388,6 @@ CREATE TABLE banned_ips (
     datetime_banned  TIMESTAMPTZ  NOT NULL  DEFAULT NOW(),
     FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE
 );
-CREATE INDEX banned_ips_index_ip ON banned_ips (ip);
 
 DROP TABLE IF EXISTS muted_ips CASCADE;
 CREATE TABLE muted_ips (
@@ -406,7 +403,6 @@ CREATE TABLE muted_ips (
     datetime_banned  TIMESTAMPTZ  NOT NULL  DEFAULT NOW(),
     FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE
 );
-CREATE INDEX muted_ips_index_ip ON muted_ips (ip);
 
 /* The latest checkpoint of each live table. */
 DROP SEQUENCE IF EXISTS live_table_ids CASCADE;
