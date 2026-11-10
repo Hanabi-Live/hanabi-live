@@ -49,6 +49,7 @@ export class Elements {
   nameFrames: NameFrame[] = [];
   actionLog: ActionLog | undefined = undefined;
   replayButton: Button | undefined = undefined;
+  newUIButton: Button | undefined = undefined;
   chatButton: Button | undefined = undefined;
   lobbyButton: Button | undefined = undefined;
   restartButton: Button | undefined = undefined;

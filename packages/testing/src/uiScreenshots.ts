@@ -433,6 +433,16 @@ function getStates({
       loggedIn: true,
       hover: '#game-new-ui [aria-label^="About efficiency"]',
     },
+    // The same game, after the account switches to the classic screen.
+    {
+      name: "new-ui-classic",
+      path: "/",
+      loggedIn: true,
+      prepare: async (page) => {
+        await page.getByRole("button", { name: "Classic view" }).click();
+        await page.waitForTimeout(SETTLE_MILLISECONDS);
+      },
+    },
   ];
 }
 

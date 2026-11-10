@@ -257,6 +257,7 @@ export function onFinishedChanged(
 
   // Hide/show some buttons in the bottom-left-hand corner.
   globals.elements.replayButton?.hide();
+  globals.elements.newUIButton?.hide();
 
   // Hide the terminate button and show the last strike UI.
   if (globals.elements.terminateButton !== undefined) {

@@ -56,6 +56,14 @@ export function show(justStarted: boolean): void {
   });
 }
 
+/** Shows the redesigned game screen in place of the classic one, for the rest of this game. */
+function showNewUI() {
+  // The new screen has its own chat panel, which takes the chat box from the classic chat window.
+  $("#game-chat-modal").hide();
+  $("#game").hide();
+  newUI.mount();
+}
+
 function hide() {
   // Account that we could be going back to one of the history screens. (We could have entered a
   // solo replay from one of the history screens.) They are still shown inside the hidden page.
@@ -104,11 +112,13 @@ function isDisplayed(selector: string) {
 // code (e.g. hiding the UI, playing a sound).
 export interface GameExports {
   hide: () => void;
+  showNewUI: () => void;
   chat: typeof chat;
   sounds: typeof sounds;
 }
 const gameExports: GameExports = {
   hide,
+  showNewUI,
   chat,
   sounds,
 };

@@ -1181,6 +1181,31 @@ function drawBottomLeftButtons() {
   initKonvaTooltips(replayButton, true, false);
   globals.elements.replayButton = replayButton;
 
+  // The button that switches to the redesigned game screen, above the others. It shows only for
+  // players who turned on the "New UI" setting, and only in ongoing games, since that screen does
+  // not show replays. The Keldon layout has a hand in this place, so it does not show there.
+  const newUIButton = new Button({
+    x: bottomLeftButtonValues.x * winW,
+    y:
+      (bottomLeftButtonValues.y - bottomLeftButtonValues.h! - BOTTOM_LEFT_GAP)
+      * winH,
+    width: bottomLeftButtonValues.w! * winW,
+    height: bottomLeftButtonValues.h! * winH,
+    text: "New UI",
+    visible:
+      globals.lobby.settings.newUi
+      && !globals.lobby.settings.keldonMode
+      && !globals.state.finished,
+  });
+  newUIButton.on("click tap", () => {
+    globals.game!.showNewUI();
+  });
+  globals.layers.UI.add(newUIButton);
+  newUIButton.tooltipName = "new-ui";
+  newUIButton.tooltipContent = "Switch to the redesigned game screen.";
+  initKonvaTooltips(newUIButton, true, false);
+  globals.elements.newUIButton = newUIButton;
+
   // The restart button (to bring up the restart menu).
   const restartButton = new Button({
     x: bottomLeftButtonValues.x * winW,
