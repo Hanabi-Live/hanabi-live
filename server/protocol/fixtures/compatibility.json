@@ -387,7 +387,6 @@
       "status": "away",
       "tableID": 3,
       "hGroup": false,
-      "hGroupLevel": 0,
       "bot": false,
       "inactive": false
     },
@@ -410,6 +409,21 @@
       }
     ],
     "valid": true
+  },
+  {
+    "name": "a user who chose no H-Group level has none",
+    "direction": "server",
+    "command": "user",
+    "input": {
+      "userID": 7,
+      "username": "Alice",
+      "status": "lobby",
+      "hGroup": true,
+      "hGroupLevel": 0,
+      "bot": false,
+      "inactive": false
+    },
+    "valid": false
   },
   {
     "name": "welcome fills unchanged settings with the same defaults",
@@ -451,7 +465,6 @@
         "speedrunPreplay": false,
         "speedrunMode": false,
         "hGroupConventions": false,
-        "hGroupLevel": 0,
         "createTableVariant": "No Variant",
         "createTableTimed": false,
         "createTableTimeBaseMinutes": 2.0,

@@ -994,6 +994,11 @@ export const scoreFrequencySchema = z.strictObject({
 });
 
 /**
+ * A setting that a user can leave unset.
+ */
+const optionalSettingSchema = z.literal("hGroupLevel");
+
+/**
  * A user's preferences. Missing fields take their default, so stored settings only need the values
  * a user changed.
  */
@@ -1021,9 +1026,10 @@ export const settingsSchema = z
     desktopNotification: z.boolean().default(false),
     hGroupConventions: z.boolean().default(false),
     /**
-     * The highest H-Group level that this user wants to play at, or 0 if they did not choose one.
+     * The highest H-Group level that this user wants to play at. Absent when they did not choose
+     * one; `SettingRequest::cleared` removes it.
      */
-    hGroupLevel: z.number().int().min(0).max(25).default(0),
+    hGroupLevel: z.number().int().min(1).max(25).optional(),
     keldonMode: z.boolean().default(false),
     realLifeMode: z.boolean().default(false),
     reverseHands: z.boolean().default(false),
@@ -1037,6 +1043,10 @@ export const settingsSchema = z
   })
   .readonly();
 export const settingRequestSchema = z.strictObject({
+  /**
+   * The settings to leave unset.
+   */
+  cleared: z.array(optionalSettingSchema).optional(),
   /**
    * The settings to change, each with the type that `Settings` gives it.
    */
@@ -1322,9 +1332,10 @@ export const userSchema = z
     bot: z.boolean(),
     hGroup: z.boolean(),
     /**
-     * The highest H-Group level that this user wants to play at, or 0 if they did not choose one.
+     * The highest H-Group level that this user wants to play at. Absent when they did not choose
+     * one.
      */
-    hGroupLevel: z.number().int().min(0).max(25),
+    hGroupLevel: z.number().int().min(1).max(25).optional(),
     inactive: z.boolean(),
     status: statusSchema,
     tableID: tableIdSchema.optional(),

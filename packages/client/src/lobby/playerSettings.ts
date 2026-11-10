@@ -103,7 +103,7 @@ export function init(): void {
   });
 
   const hGroupLevelSelect = $("#hGroupLevel");
-  hGroupLevelSelect.append($("<option>").val(0).text("Not set"));
+  hGroupLevelSelect.append($("<option>").val("").text("Not set"));
   for (const level of iRange(1, MAX_H_GROUP_LEVEL)) {
     hGroupLevelSelect.append($("<option>").val(level).text(`Level ${level}`));
   }
@@ -115,6 +115,17 @@ export function init(): void {
       throw new TypeError(
         `The value of the "#hGroupLevel" element is not a string: ${hGroupLevelString}`,
       );
+    }
+
+    if (hGroupLevelString === "") {
+      const { hGroupLevel: _cleared, ...settings } = globals.settings;
+      globals.settings = settings;
+      globals.conn!.send("setting", {
+        settings: {},
+        cleared: ["hGroupLevel"],
+      });
+      showSaved(this);
+      return;
     }
 
     const hGroupLevel = parseIntSafe(hGroupLevelString);
@@ -135,7 +146,9 @@ export function init(): void {
 
 export function setPlayerSettings(): void {
   // The server has delivered to us a list of all of our settings. Check the checkboxes for the
-  // settings that we have enabled (and adjust the volume slider).
+  // settings that we have enabled (and adjust the volume slider). A level that we did not choose is
+  // absent from our settings.
+  $("#hGroupLevel").val(globals.settings.hGroupLevel ?? "");
   for (const [setting, value] of Object.entries(globals.settings)) {
     if (setting.startsWith("createTable")) {
       // Settings for the "Create Game" nav button are handled when the user clicks on it.

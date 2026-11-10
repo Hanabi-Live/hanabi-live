@@ -327,13 +327,13 @@ function drawPlayerBox(playerIndex: PlayerIndex) {
  * H-Group features enabled.
  */
 function getHGroupLevelBadge(name: string) {
-  let hGroupLevel = 0;
+  let hGroupLevel: number | undefined;
   for (const user of globals.userMap.values()) {
     if (user.username === name && user.hGroup) {
       ({ hGroupLevel } = user);
     }
   }
-  if (hGroupLevel === 0) {
+  if (hGroupLevel === undefined) {
     return undefined;
   }
 

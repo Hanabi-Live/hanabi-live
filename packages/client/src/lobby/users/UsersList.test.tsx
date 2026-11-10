@@ -71,7 +71,6 @@ function user(
     username: name,
     status,
     hGroup: false,
-    hGroupLevel: 0,
     bot: false,
     inactive: false,
     ...(status !== "lobby" && { tableID: TABLE_ID }),

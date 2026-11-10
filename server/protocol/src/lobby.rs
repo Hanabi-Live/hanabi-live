@@ -57,9 +57,11 @@ pub struct User {
     #[schemars(with = "TableId")]
     pub table_id: Option<TableId>,
     pub h_group: bool,
-    /// The highest H-Group level that this user wants to play at, or 0 if they did not choose one.
-    #[schemars(range(min = 0, max = MAX_H_GROUP_LEVEL))]
-    pub h_group_level: u8,
+    /// The highest H-Group level that this user wants to play at. Absent when they did not choose
+    /// one.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[schemars(with = "u8", range(min = 1, max = MAX_H_GROUP_LEVEL))]
+    pub h_group_level: Option<u8>,
     pub bot: bool,
     pub inactive: bool,
 }
@@ -158,9 +160,11 @@ pub struct Settings {
     pub speedrun_preplay: bool,
     pub speedrun_mode: bool,
     pub h_group_conventions: bool,
-    /// The highest H-Group level that this user wants to play at, or 0 if they did not choose one.
-    #[schemars(range(min = 0, max = MAX_H_GROUP_LEVEL))]
-    pub h_group_level: u8,
+    /// The highest H-Group level that this user wants to play at. Absent when they did not choose
+    /// one; `SettingRequest::cleared` removes it.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[schemars(with = "u8", range(min = 1, max = MAX_H_GROUP_LEVEL))]
+    pub h_group_level: Option<u8>,
     #[schemars(length(min = 1))]
     pub create_table_variant: String,
     pub create_table_timed: bool,
@@ -196,7 +200,7 @@ impl Default for Settings {
             speedrun_preplay: false,
             speedrun_mode: false,
             h_group_conventions: false,
-            h_group_level: 0,
+            h_group_level: None,
             create_table_variant: DEFAULT_VARIANT_NAME.into(),
             create_table_timed: false,
             create_table_time_base_minutes: DEFAULT_TIME_BASE_MINUTES,

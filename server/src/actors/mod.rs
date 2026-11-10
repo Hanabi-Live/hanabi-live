@@ -175,7 +175,7 @@ struct Presence {
     status: Status,
     table: Option<TableId>,
     h_group: bool,
-    h_group_level: u8,
+    h_group_level: Option<u8>,
     inactive: bool,
     blocks: Blocks,
 }

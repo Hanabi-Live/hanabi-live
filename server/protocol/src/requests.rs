@@ -163,6 +163,25 @@ pub struct SettingRequest {
     /// The settings to change, each with the type that `Settings` gives it.
     #[schemars(with = "Settings")]
     pub settings: serde_json::Map<String, serde_json::Value>,
+    /// The settings to leave unset.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub cleared: Vec<OptionalSetting>,
+}
+
+/// A setting that a user can leave unset.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
+#[serde(rename_all = "camelCase")]
+pub enum OptionalSetting {
+    HGroupLevel,
+}
+
+impl OptionalSetting {
+    /// The setting's name in `Settings`.
+    pub const fn name(self) -> &'static str {
+        match self {
+            Self::HGroupLevel => "hGroupLevel",
+        }
+    }
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]

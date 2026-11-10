@@ -46,7 +46,7 @@ pub enum Publication {
     },
     Broadcast(Outgoing),
     HGroup(bool),
-    HGroupLevel(u8),
+    HGroupLevel(Option<u8>),
     Inactive(bool),
     /// Whether any block remains between two users after one of them changed it.
     BlocksChanged {
@@ -195,12 +195,20 @@ pub async fn dispatch(
                         effects.push(Publication::HGroup(value == &Value::Bool(true)).into());
                     }
                     "hGroupLevel" => effects.push(
-                        Publication::HGroupLevel(u8::try_from(
+                        Publication::HGroupLevel(Some(u8::try_from(
                             value.as_u64().context("Invalid H-Group level")?,
-                        )?)
+                        )?))
                         .into(),
                     ),
                     _ => {}
+                }
+            }
+            for setting in request.cleared {
+                settings::clear_setting(pool, caller.user, setting.name()).await?;
+                match setting {
+                    hanabi_protocol::OptionalSetting::HGroupLevel => {
+                        effects.push(Publication::HGroupLevel(None).into());
+                    }
                 }
             }
             effects

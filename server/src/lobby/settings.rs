@@ -72,6 +72,19 @@ pub async fn set_setting(pool: &PgPool, id: UserId, name: &str, value: &Value) -
     Ok(())
 }
 
+/// Removes a setting that a user can leave unset.
+pub async fn clear_setting(pool: &PgPool, id: UserId, name: &str) -> Result<()> {
+    let updated = sqlx::query!(
+        "UPDATE users SET settings = settings - $2::text WHERE id=$1",
+        id.0,
+        name
+    )
+    .execute(pool)
+    .await?;
+    ensure!(updated.rows_affected() == 1, "The user does not exist.");
+    Ok(())
+}
+
 /// Checks a setting that a client sent. The wire contract gives each setting its type and limits.
 pub fn validate_setting(name: &str, value: &Value) -> crate::errors::CommandResult<()> {
     ensure_or_reject!(

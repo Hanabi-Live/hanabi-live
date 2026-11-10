@@ -1,0 +1,15 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "UPDATE users SET settings = settings - $2::text WHERE id=$1",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Int4",
+        "Text"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "c31aee5f7fd00e0b3e0977e5fa2817d58d44fe019c0a8a5cbcd3f0e7adaa520c"
+}
