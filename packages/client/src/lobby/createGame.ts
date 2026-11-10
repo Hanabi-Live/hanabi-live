@@ -432,7 +432,7 @@ function checkInputs(): boolean {
   let valid = true;
   for (const { element, tooltip, getError } of checkedInputs) {
     const error = getError();
-    element.classList.toggle("wrongInput", error !== undefined);
+    element.classList.toggle("wrong-input", error !== undefined);
     if (error === undefined) {
       tooltip.close();
     } else {

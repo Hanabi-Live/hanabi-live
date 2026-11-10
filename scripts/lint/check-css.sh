@@ -38,3 +38,10 @@ for DIMENSION in max-width max-height; do
     fi
   done < <(grep -ohE "\($DIMENSION: [0-9]+px\)" "${STYLESHEETS[@]}" | grep -oE "[0-9]+px" | sort -u)
 done
+
+# Class and ID names use kebab case, such as ".lobby-row". Prettier puts each selector on its own
+# line, which ends with "{" or ",", so only those lines are checked.
+if grep -nE "[,{]\s*$" "$TOKENS" "${STYLESHEETS[@]}" | grep -E "[.#][-_a-zA-Z0-9]*[A-Z_]"; then
+  echo "Error: Use kebab case for class and ID names, such as \".lobby-row\"." >&2
+  exit 1
+fi

@@ -54,9 +54,9 @@ function get(order: CardOrder, our: boolean, process = false) {
       if (!firstSpectator && isSpectator) {
         firstSpectator = true;
         if (content !== "") {
-          content = `<div class='noteTitle'><span>Players</span></div>${content}`;
+          content = `<div class='note-title'><span>Players</span></div>${content}`;
         }
-        content += "<div class='noteTitle'><span>Spectators</span></div>";
+        content += "<div class='note-title'><span>Spectators</span></div>";
       }
       content += `<strong>${escapeHtml(noteObject.username)}:</strong> ${text}<br />`;
     }

@@ -63,7 +63,7 @@ async function init() {
   }
   const mode = main.dataset["page"];
 
-  const chart = document.querySelector("#scoreFreqs");
+  const chart = document.querySelector("#score-frequencies");
   const frequencies =
     chart instanceof HTMLCanvasElement
       ? scoreFrequencies.parse(JSON.parse(chart.dataset["frequencies"] ?? "[]"))
@@ -244,7 +244,7 @@ function initServerTable(
     };
   }
 
-  const spinner = document.querySelector<HTMLElement>("div.tableSpinner");
+  const spinner = document.querySelector<HTMLElement>("div.table-spinner");
   let totalRows = 0;
   let latestRequest = 0;
 
@@ -337,7 +337,7 @@ function showRows(
 }
 
 function showError(message: string) {
-  const spinner = document.querySelector<HTMLElement>("div.tableSpinner");
+  const spinner = document.querySelector<HTMLElement>("div.table-spinner");
   if (spinner !== null) {
     spinner.style.display = "none";
   }

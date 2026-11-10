@@ -407,7 +407,7 @@ export function drawSpectators(tableID: number): void {
       if (spectator.username === globals.username) {
         $(`#lobby-pregame-player-${spectator.shadowingPlayerIndex + 1} .shadow`)
           .removeClass("shadow")
-          .addClass("unShadow")
+          .addClass("un-shadow")
           .on("click", (event) => {
             event.stopPropagation();
             reattend(undefined);

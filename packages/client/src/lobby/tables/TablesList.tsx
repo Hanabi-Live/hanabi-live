@@ -181,7 +181,7 @@ function TableRowView({
         })}
       </td>
       <td
-        className={canSpectateFromCells ? "lobbySpectators" : undefined}
+        className={canSpectateFromCells ? "lobby-spectators" : undefined}
         onClick={
           canSpectateFromCells
             ? (event) => {

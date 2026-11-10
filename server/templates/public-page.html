@@ -154,7 +154,7 @@
             </ul>
           </div>
           {% endif %} {% if frequencies|length > 0 %}<canvas
-            id="scoreFreqs"
+            id="score-frequencies"
             data-frequencies="{{ scoreFreqsJSON }}"
           ></canvas>
           <hr />
@@ -284,7 +284,7 @@
             </table>
           </div>
           {% endif %} {% include "public-pager.html" %} {% if apiPath %}
-          <div class="tableSpinner"><span class="tableSpinner"></span></div>
+          <div class="table-spinner"><span class="table-spinner"></span></div>
           <p id="history-error" role="alert" hidden></p>
           {% endif %} {% endif %}{% endif %}
         </section>
