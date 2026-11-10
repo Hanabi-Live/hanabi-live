@@ -309,11 +309,10 @@ CREATE TABLE chat_log (
     deleted_at          TIMESTAMPTZ  NULL,     /* Tombstone: do not show or restore removed messages. */
     message             TEXT         NOT NULL,
     room                TEXT         NOT NULL, /* Either "lobby" or "table####". */
-    datetime_sent       TIMESTAMPTZ  NOT NULL  DEFAULT NOW()
-    /**
-     * There is no foreign key for "user_id" because it would not exist for Discord messages or
-     * server messages.
-     */
+    datetime_sent       TIMESTAMPTZ  NOT NULL  DEFAULT NOW(),
+    CONSTRAINT chat_log_user_id_fkey
+        FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE,
+    CONSTRAINT chat_log_user_id_check CHECK ((source = 'user') = (user_id IS NOT NULL))
 );
 CREATE INDEX chat_log_index_user_id          ON chat_log (user_id);
 CREATE INDEX chat_log_index_room             ON chat_log (room);
@@ -334,7 +333,7 @@ INSERT INTO chat_log (
     message,
     room
 ) VALUES (
-    0,
+    NULL,
     'discord',
     'Hanab Live',
     'The Hanab Live database has been successfully initialized.',

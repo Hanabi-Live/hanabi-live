@@ -538,7 +538,7 @@ pub async fn lobby_chat(
 pub async fn lobby_history(pool: &PgPool, count: i64) -> Result<Vec<Chat>> {
     ensure!(count >= 0, "Invalid history count");
     let rows = sqlx::query!(
-        "SELECT c.id,c.user_id,c.source,c.message,c.discord_name,c.datetime_sent,
+        "SELECT c.id,c.source,c.message,c.discord_name,c.datetime_sent,
          u.username AS \"username?\" FROM chat_log c LEFT JOIN users u ON u.id=c.user_id
          WHERE c.room='lobby' AND c.deleted_at IS NULL
          ORDER BY c.datetime_sent DESC,c.id DESC LIMIT $1",
@@ -573,10 +573,7 @@ pub async fn lobby_history(pool: &PgPool, count: i64) -> Result<Vec<Chat>> {
         let who = match source.as_str() {
             "server" => "__server".into(),
             "discord" => row.discord_name.clone().unwrap_or_default(),
-            _ => row
-                .username
-                .clone()
-                .unwrap_or_else(|| format!("Deleted user #{}", row.user_id.unwrap_or_default())),
+            _ => row.username.clone().unwrap_or_default(),
         };
         result.push(Chat {
             chat_id: Some(i64::from(row.id)),

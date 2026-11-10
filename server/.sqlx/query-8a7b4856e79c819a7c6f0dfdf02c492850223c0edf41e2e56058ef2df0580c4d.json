@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "SELECT c.id,c.user_id,c.source,c.message,c.discord_name,c.datetime_sent,\n         u.username AS \"username?\" FROM chat_log c LEFT JOIN users u ON u.id=c.user_id\n         WHERE c.room='lobby' AND c.deleted_at IS NULL\n         ORDER BY c.datetime_sent DESC,c.id DESC LIMIT $1",
+  "query": "SELECT c.id,c.source,c.message,c.discord_name,c.datetime_sent,\n         u.username AS \"username?\" FROM chat_log c LEFT JOIN users u ON u.id=c.user_id\n         WHERE c.room='lobby' AND c.deleted_at IS NULL\n         ORDER BY c.datetime_sent DESC,c.id DESC LIMIT $1",
   "describe": {
     "columns": [
       {
@@ -16,17 +16,6 @@
       },
       {
         "ordinal": 1,
-        "name": "user_id",
-        "type_info": "Int4",
-        "origin": {
-          "Table": {
-            "table": "chat_log",
-            "name": "user_id"
-          }
-        }
-      },
-      {
-        "ordinal": 2,
         "name": "source",
         "type_info": "Text",
         "origin": {
@@ -37,7 +26,7 @@
         }
       },
       {
-        "ordinal": 3,
+        "ordinal": 2,
         "name": "message",
         "type_info": "Text",
         "origin": {
@@ -48,7 +37,7 @@
         }
       },
       {
-        "ordinal": 4,
+        "ordinal": 3,
         "name": "discord_name",
         "type_info": "Text",
         "origin": {
@@ -59,7 +48,7 @@
         }
       },
       {
-        "ordinal": 5,
+        "ordinal": 4,
         "name": "datetime_sent",
         "type_info": "Timestamptz",
         "origin": {
@@ -70,7 +59,7 @@
         }
       },
       {
-        "ordinal": 6,
+        "ordinal": 5,
         "name": "username?",
         "type_info": "Text",
         "origin": {
@@ -88,7 +77,6 @@
     },
     "nullable": [
       false,
-      true,
       false,
       false,
       true,
@@ -96,5 +84,5 @@
       false
     ]
   },
-  "hash": "18f7fd7a4683de6361683c2c3e043043581fb578062361fb7a4bbe07612da8a6"
+  "hash": "8a7b4856e79c819a7c6f0dfdf02c492850223c0edf41e2e56058ef2df0580c4d"
 }
