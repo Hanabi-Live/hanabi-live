@@ -5,6 +5,7 @@ import type {
   CardState,
   Color,
   NumPlayers,
+  PossibilityRowPresentation,
   Rank,
   Suit,
   SuitIndex,
@@ -137,6 +138,13 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip, UICard {
   private readonly suitPipsXMap: Map<number, Konva.Shape>;
   private readonly rankPipsMap: Map<number, RankPip>;
   private readonly rankPipsXMap: Map<number, Konva.Shape>;
+  private readonly possibilityRows: Konva.Shape;
+  private possibilityRowsToDraw:
+    readonly PossibilityRowPresentation[] | undefined;
+
+  /** Whether the suit and rank are unknown, so that a kind of pip may show. */
+  private pipsAllowed = { suit: false, rank: false };
+
   private readonly criticalIndicator: Konva.Image;
   private readonly arrow: Konva.Group | undefined = undefined;
   private readonly arrowBase: Konva.Shape | undefined = undefined;
@@ -257,6 +265,11 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip, UICard {
     this.rankPips = pips.rankPips;
     this.add(this.suitPips);
     this.add(this.rankPips);
+    this.possibilityRows = HanabiCardInit.possibilityRows(
+      this.variant,
+      () => this.possibilityRowsToDraw,
+    );
+    this.add(this.possibilityRows);
 
     this.criticalIndicator = HanabiCardInit.criticalIndicator(
       this.variant.offsetCornerElements,
@@ -675,6 +688,19 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip, UICard {
         updatePip(rankPip.state, rankPip.positive, pip, x);
       }
     }
+
+    this.possibilityRowsToDraw = presentation.possibilityRows;
+    this.updatePipVisibility();
+  }
+
+  /** Shows the possibility rows instead of the suit and rank pips when the card has them. */
+  private updatePipVisibility() {
+    const hasRows = this.possibilityRowsToDraw !== undefined;
+    this.suitPips.visible(this.pipsAllowed.suit && !hasRows);
+    this.rankPips.visible(this.pipsAllowed.rank && !hasRows);
+    this.possibilityRows.visible(
+      this.pipsAllowed.suit && this.pipsAllowed.rank && hasRows,
+    );
   }
 
   // --------------------------
@@ -687,15 +713,13 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip, UICard {
     rankToShow: Rank | undefined,
   ): void {
     // Show or hide the pips.
-    if (globals.lobby.settings.realLifeMode || morphedBlank) {
-      this.suitPips.hide();
-      this.rankPips.hide();
-    } else {
-      const suitUnknown = suitToShow === undefined;
-      const rankUnknown = rankToShow === undefined;
-      this.suitPips.visible(suitUnknown && !this.isStackBase);
-      this.rankPips.visible(rankUnknown && !this.isStackBase);
-    }
+    const pipsHidden =
+      globals.lobby.settings.realLifeMode || morphedBlank || this.isStackBase;
+    this.pipsAllowed = {
+      suit: !pipsHidden && suitToShow === undefined,
+      rank: !pipsHidden && rankToShow === undefined,
+    };
+    this.updatePipVisibility();
 
     // Show or hide the "question mark" image.
     this.questionMark.visible(

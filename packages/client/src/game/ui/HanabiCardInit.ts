@@ -1,8 +1,14 @@
 // Initialization functions for the HanabiCard object.
 
-import type { Suit, Variant } from "@hanabi-live/game";
+import type {
+  PossibilityRowPresentation,
+  Rank,
+  Suit,
+  Variant,
+} from "@hanabi-live/game";
 import {
   DEFAULT_CARD_RANKS,
+  PipState,
   START_CARD_RANK,
   hasReversedSuits,
 } from "@hanabi-live/game";
@@ -28,6 +34,7 @@ import {
   DISCARD_PERMISSION_COLOR,
   FINESSE_COLOR,
   HALF_TURN_DEGREES,
+  NO_SHADOW_COLOR,
   OFF_BLACK,
   RANK_FONT_FAMILY,
   SMALL_ICON_SIZE,
@@ -36,10 +43,15 @@ import {
   TOP_LEFT_Y,
 } from "./constants";
 import { NoteIndicator } from "./controls/NoteIndicator";
-import { RankPip } from "./controls/RankPip";
+import { CANVAS_DEFAULT_MITER_LIMIT, RankPip } from "./controls/RankPip";
 import { drawWithKonva3Shadow } from "./controls/konva3Shadow";
 import { outlinedArrow } from "./controls/outlinedArrow";
-import { SUIT_PIP_SCALE, drawPip, getSuitPipRingPosition } from "./drawPip";
+import {
+  PIP_RADIUS,
+  SUIT_PIP_SCALE,
+  drawPip,
+  getSuitPipRingPosition,
+} from "./drawPip";
 
 /** The opacity of the shadow under a card and under the pips drawn on it. */
 const CARD_SHADOW_OPACITY = 0.4;
@@ -189,6 +201,34 @@ const RANK_PIP_X_STROKE_WIDTH = 2;
 const RANK_PIP_X = {
   defaultRanks: { start: -0.14, spacing: 0.19 },
   otherRanks: { start: 0.05, spacing: 0.15 },
+} as const;
+
+/**
+ * The possibility rows, which replace the suit and rank pips when the clues leave a set of cards
+ * that they cannot show. Each row has suit pips on the left and the ranks those suits can be on the
+ * right, with each rank always in the same column.
+ */
+const POSSIBILITY_ROWS = {
+  /** The height that the rows share, centered on the card, as a fraction of the card height. */
+  areaH: 0.9,
+  /** The height of a row when there are only a few, as a fraction of the card height. */
+  maxRowH: 0.25,
+  /** The space for the suit pips, as fractions of the card width. */
+  suitsX: { start: 0.04, end: 0.3 },
+  /** The suit pips of a row go in a grid with up to this many columns. */
+  maxSuitColumns: 2,
+  /** The centers of the first and last rank columns, as fractions of the card width. */
+  ranksX: { start: 0.38, end: 0.88 },
+  /** The radius of a suit pip, as a fraction of the smaller side of its cell in the grid. */
+  pipRadiusPerCell: 0.42,
+  /** The size of a rank's digit, as a fraction of the row height. */
+  fontSizePerRowH: 0.7,
+  /** The largest digit, smaller than a rank pip so that the columns fit beside the suit pips. */
+  maxFontSize: Math.floor((RANK_PIP_FONT_SIZE * 3) / 4),
+  /** Arial's digits sit slightly high when centered on a point, so move them down this much. */
+  digitDropPerFontSize: 0.04,
+  /** The line between two rows. */
+  divider: { width: 2, color: "rgba(0, 0, 0, 0.22)" },
 } as const;
 
 function makeBorder(color: string) {
@@ -495,6 +535,200 @@ export function pips(variant: Variant): Pips {
 }
 
 /**
+ * Creates the shape that draws a card's possibility rows. It draws them all in one shape, rather
+ * than one shape for each pip, because a card can have up to six rows of pips.
+ */
+export function possibilityRows(
+  variant: Variant,
+  getRows: () => readonly PossibilityRowPresentation[] | undefined,
+): Konva.Shape {
+  // The start card's rank comes first, as it does in the rank pips.
+  const rankColumns = [...variant.ranks].toSorted(
+    (a, b) => rankColumnOrder(a) - rankColumnOrder(b),
+  );
+
+  return new Konva.Shape({
+    visible: false,
+    shadowEnabled: !globals.options.speedrun,
+    ...RANK_PIP_SHADOW,
+    listening: false,
+    sceneFunc: (ctx: KonvaContext.Context, shape: Konva.Shape) => {
+      const rows = getRows();
+      if (rows === undefined) {
+        return;
+      }
+
+      drawWithKonva3Shadow(shape, ctx, () => {
+        drawPossibilityRows(ctx, variant, rankColumns, rows);
+      });
+    },
+  });
+}
+
+function rankColumnOrder(rank: Rank): number {
+  return rank === START_CARD_RANK ? 0 : rank;
+}
+
+interface PossibilityRowLayout {
+  readonly row: PossibilityRowPresentation;
+  readonly centerY: number;
+  readonly pipScale: number;
+  readonly suitCenters: ReadonlyArray<{ x: number; y: number }>;
+}
+
+function getPossibilityRowLayouts(
+  rows: readonly PossibilityRowPresentation[],
+): { rowH: number; top: number; layouts: readonly PossibilityRowLayout[] } {
+  const { suitsX } = POSSIBILITY_ROWS;
+  const rowH = Math.min(
+    POSSIBILITY_ROWS.maxRowH * CARD_H,
+    (POSSIBILITY_ROWS.areaH * CARD_H) / rows.length,
+  );
+  const top = (CARD_H - rowH * rows.length) / 2;
+  const layouts = rows.map((row, rowIndex) => {
+    const centerY = top + rowH * (rowIndex + 0.5);
+    const numSuits = row.suitPips.length;
+    const columns = Math.min(numSuits, POSSIBILITY_ROWS.maxSuitColumns);
+    const lines = Math.ceil(numSuits / columns);
+    const cellW = ((suitsX.end - suitsX.start) * CARD_W) / columns;
+    const cellH = rowH / lines;
+    const pipRadius =
+      Math.min(cellW, cellH) * POSSIBILITY_ROWS.pipRadiusPerCell;
+    return {
+      row,
+      centerY,
+      pipScale: pipRadius / PIP_RADIUS,
+      suitCenters: row.suitPips.map((_, i) => {
+        // Center a last line that is not full.
+        const line = Math.floor(i / columns);
+        const lineColumns = Math.min(columns, numSuits - line * columns);
+        const lineStartX =
+          suitsX.start * CARD_W + (cellW * (columns - lineColumns)) / 2;
+        return {
+          x: lineStartX + cellW * ((i % columns) + 0.5),
+          y: centerY - rowH / 2 + cellH * (line + 0.5),
+        };
+      }),
+    };
+  });
+
+  return { rowH, top, layouts };
+}
+
+function drawPossibilityRows(
+  ctx: KonvaContext.Context,
+  variant: Variant,
+  rankColumns: readonly Rank[],
+  rows: readonly PossibilityRowPresentation[],
+) {
+  const { suitsX, ranksX } = POSSIBILITY_ROWS;
+  const { rowH, top, layouts } = getPossibilityRowLayouts(rows);
+  const fontSize = Math.min(
+    rowH * POSSIBILITY_ROWS.fontSizePerRowH,
+    POSSIBILITY_ROWS.maxFontSize,
+  );
+  const digitDrop = fontSize * POSSIBILITY_ROWS.digitDropPerFontSize;
+  const columnStep =
+    rankColumns.length > 1
+      ? ((ranksX.end - ranksX.start) * CARD_W) / (rankColumns.length - 1)
+      : 0;
+  const columnX = new Map(
+    rankColumns.map((rank, i) => [
+      rank,
+      ranksX.start * CARD_W + columnStep * i,
+    ]),
+  );
+
+  // First, the suit pips and the digits, which cast shadows.
+  for (const { row, centerY, pipScale, suitCenters } of layouts) {
+    for (const [i, suitPip] of row.suitPips.entries()) {
+      const suit = variant.suits[suitPip.suitIndex];
+      const center = suitCenters[i];
+      assertDefined(suit, `Failed to find suit: ${suitPip.suitIndex}`);
+      assertDefined(center, `Failed to find the center of suit pip: ${i}`);
+      ctx.save();
+      ctx.translate(center.x, center.y);
+      ctx.scale(pipScale, pipScale);
+      ctx.setAttr("strokeStyle", "black");
+      drawPip(
+        ctx as unknown as CanvasRenderingContext2D,
+        suit,
+        variant,
+        false,
+        undefined,
+        undefined,
+        suitPip.positive,
+      );
+      ctx.restore();
+    }
+
+    for (const rankPip of row.rankPips) {
+      if (rankPip.state === PipState.Hidden) {
+        continue;
+      }
+
+      const x = columnX.get(rankPip.rank) ?? 0;
+      const y = centerY + digitDrop;
+      const text =
+        rankPip.rank === START_CARD_RANK
+          ? START_CARD_RANK_LABEL.toLowerCase()
+          : rankPip.rank.toString();
+      ctx.save();
+      ctx.setAttr("font", `bold ${fontSize}px ${RANK_FONT_FAMILY}`);
+      ctx.setAttr("textAlign", "center");
+      ctx.setAttr("textBaseline", "middle");
+      ctx.setAttr("fillStyle", rankPip.positive ? CLUED_COLOR : "white");
+      ctx.fillText(text, x, y);
+      ctx.setAttr("strokeStyle", "black");
+      ctx.setAttr("lineWidth", RANK_PIP_OUTLINE_WIDTH);
+      ctx.setAttr("miterLimit", CANVAS_DEFAULT_MITER_LIMIT);
+      ctx.strokeText(text, x, y);
+      ctx.restore();
+    }
+  }
+
+  // Then the dividers and the X over each ruled-out pip, which do not.
+  ctx.setAttr("shadowColor", NO_SHADOW_COLOR);
+  for (const [rowIndex, layout] of layouts.entries()) {
+    const { row, centerY, pipScale, suitCenters } = layout;
+    if (rowIndex > 0) {
+      const y = top + rowH * rowIndex;
+      ctx.beginPath();
+      ctx.moveTo(suitsX.start * CARD_W, y);
+      ctx.lineTo((1 - suitsX.start) * CARD_W, y);
+      ctx.setAttr("strokeStyle", POSSIBILITY_ROWS.divider.color);
+      ctx.setAttr("lineWidth", POSSIBILITY_ROWS.divider.width);
+      ctx.stroke();
+    }
+
+    for (const [i, suitPip] of row.suitPips.entries()) {
+      const center = suitCenters[i];
+      if (suitPip.state === PipState.Eliminated && center !== undefined) {
+        drawCenteredX(
+          ctx,
+          center,
+          SUIT_PIP_X_SIZE * pipScale,
+          { fill: "black", stroke: "white" },
+          PIP_OUTLINE_WIDTH * pipScale,
+        );
+      }
+    }
+
+    for (const rankPip of row.rankPips) {
+      if (rankPip.state === PipState.Eliminated) {
+        drawCenteredX(
+          ctx,
+          { x: columnX.get(rankPip.rank) ?? 0, y: centerY + digitDrop },
+          (RANK_PIP_X_SIZE * fontSize) / RANK_PIP_FONT_SIZE,
+          { fill: "black", stroke: "black" },
+          RANK_PIP_X_STROKE_WIDTH,
+        );
+      }
+    }
+  }
+}
+
+/**
  * Returns where an indicator in the bottom-left corner of a card goes. If the card has triangles on
  * its corners that show the color composition, the images would overlap, so the indicator moves
  * upwards and inwards.
@@ -733,9 +967,9 @@ function scaleCardImage(
   ctx.drawImage(src, 0, 0, width, height);
 }
 
-function drawX(
+/** Traces the outline of an X. Its center is half of `width` right of `positionX`. */
+function traceX(
   ctx: KonvaContext.Context,
-  shape: Konva.Shape,
   positionX: number,
   positionY: number,
   size: number,
@@ -784,9 +1018,37 @@ function drawX(
   x -= size;
   y -= size;
   ctx.lineTo(x, y);
+}
+
+function drawX(
+  ctx: KonvaContext.Context,
+  shape: Konva.Shape,
+  positionX: number,
+  positionY: number,
+  size: number,
+  width: number,
+) {
+  traceX(ctx, positionX, positionY, size, width);
   ctx.stroke();
   ctx.closePath();
   ctx.fillStrokeShape(shape);
+}
+
+/** Draws a filled, outlined X centered on a point, without a Konva shape to style it. */
+function drawCenteredX(
+  ctx: KonvaContext.Context,
+  center: { x: number; y: number },
+  size: number,
+  colors: { fill: string; stroke: string },
+  strokeWidth: number,
+) {
+  traceX(ctx, center.x - size / 2, center.y, size, size);
+  ctx.closePath();
+  ctx.setAttr("fillStyle", colors.fill);
+  ctx.fill();
+  ctx.setAttr("strokeStyle", colors.stroke);
+  ctx.setAttr("lineWidth", strokeWidth);
+  ctx.stroke();
 }
 
 function getNewColorPip(

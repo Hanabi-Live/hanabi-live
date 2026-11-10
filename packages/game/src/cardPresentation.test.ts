@@ -12,6 +12,7 @@ import type { CardNote } from "./interfaces/CardNote";
 import type { CardState } from "./interfaces/CardState";
 import { getInitialCardState } from "./reducers/initialStates/initialCardState";
 import type { CardOrder } from "./types/CardOrder";
+import type { SuitRankTuple } from "./types/SuitRankTuple";
 
 const variant = getDefaultVariant();
 const baseCard = getInitialCardState(0 as CardOrder, variant, 2);
@@ -284,6 +285,46 @@ describe("card presentation", () => {
           positive: true,
         },
       );
+      expect(presentation.possibilityRows).toBeUndefined();
+    });
+
+    test("groups suits into rows when the pips cannot show the possible cards", () => {
+      // A red or blue 3, or any green card (other than the green 5, which is visible elsewhere).
+      const greenCards: SuitRankTuple[] = [
+        [2, 1],
+        [2, 2],
+        [2, 3],
+        [2, 4],
+        [2, 5],
+      ];
+      const state: CardState = {
+        ...baseCard,
+        possibleCardsFromClues: [[0, 3], [1, 3], ...greenCards],
+        possibleCards: [[0, 3], [1, 3], ...greenCards.slice(0, -1)],
+        positiveRankClues: [3],
+      };
+      const presentation = getCardPipPresentation(
+        variant,
+        state,
+        emptyNote,
+        false,
+      );
+
+      const rows = presentation.possibilityRows?.map((row) => ({
+        suits: row.suitPips.map((suitPip) => suitPip.suitIndex),
+        ranks: row.rankPips.map((rankPip) => rankPip.state),
+      }));
+      const { Hidden, Eliminated, Visible } = PipState;
+      expect(rows).toEqual([
+        { suits: [0, 1], ranks: [Hidden, Hidden, Visible, Hidden, Hidden] },
+        {
+          suits: [2],
+          ranks: [Visible, Visible, Visible, Visible, Eliminated],
+        },
+      ]);
+      expect(
+        presentation.possibilityRows?.[0]?.rankPips[2]?.positive,
+      ).toBeTrue();
     });
   });
 });

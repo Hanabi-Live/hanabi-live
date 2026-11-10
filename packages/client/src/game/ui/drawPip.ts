@@ -36,7 +36,7 @@ const PIP_BORDER_WIDTH = {
 } as const;
 
 /** The radius of the area around a pip's origin that its glow and gradients cover, in its units. */
-const PIP_RADIUS = 100;
+export const PIP_RADIUS = 100;
 
 /** The radius of the glow behind a pip that a positive clue has confirmed, in the pip's units. */
 const POSITIVE_PIP_HIGHLIGHT_RADIUS = PIP_RADIUS;

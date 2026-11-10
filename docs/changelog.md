@@ -25,6 +25,9 @@ of the repository.
 - Clicking the skull now opens a menu to vote to end the game or to end it now,
   and shows how many players voted. Right-clicking the skull no longer ends the
   game.
+- When the clues leave a card with possibilities that the suit and rank pips
+  cannot show, such as "any Pink card or a red 3", the card now lists each suit
+  with the ranks that it can be.
 
 ## November 9th, 2026
 

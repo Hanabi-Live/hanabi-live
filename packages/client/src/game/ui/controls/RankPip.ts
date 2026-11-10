@@ -4,7 +4,7 @@ import { CLUED_COLOR } from "../constants";
 import { drawWithKonva3Shadow } from "./konva3Shadow";
 
 /** The default miter limit of a canvas, which Konva 3 outlined text with. */
-const CANVAS_DEFAULT_MITER_LIMIT = 10;
+export const CANVAS_DEFAULT_MITER_LIMIT = 10;
 
 export class RankPip extends Konva.Text {
   private fillValue: string | CanvasGradient | undefined;

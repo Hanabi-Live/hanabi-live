@@ -44,9 +44,21 @@ interface RankPipPresentation {
   readonly positive: boolean;
 }
 
+/** One row of the possibility rows: suits that share the same possible ranks. */
+export interface PossibilityRowPresentation {
+  readonly suitPips: readonly SuitPipPresentation[];
+  readonly rankPips: readonly RankPipPresentation[];
+}
+
 interface CardPipPresentation {
   readonly suitPips: readonly SuitPipPresentation[];
   readonly rankPips: readonly RankPipPresentation[];
+
+  /**
+   * Present when the clues leave a set of cards that the separate suit and rank pips cannot show,
+   * such as "any red card, or a blue 1". Then each row lists suits with the ranks they can be.
+   */
+  readonly possibilityRows: readonly PossibilityRowPresentation[] | undefined;
 }
 
 export function getCardIdentityToShow({
@@ -197,15 +209,86 @@ export function getCardPipPresentation(
     ),
   }));
 
+  function isPositiveRank(rank: Rank) {
+    return state.positiveRankClues.some(
+      (positiveRank) => positiveRank === rank,
+    );
+  }
+
   const rankPips = variant.ranks.map((rank) => ({
     rank,
     state: rankPipStates.get(rank) ?? PipState.Hidden,
-    positive: state.positiveRankClues.some(
-      (positiveRank) => positiveRank === rank,
-    ),
+    positive: isPositiveRank(rank),
   }));
 
-  return { suitPips, rankPips };
+  const possibilityRows = getPossibilityRows(
+    variant,
+    possibleCardsFromClues,
+    possibleCards,
+    suitPips,
+    isPositiveRank,
+  );
+
+  return { suitPips, rankPips, possibilityRows };
+}
+
+/**
+ * Returns undefined when the cards that the clues allow are every combination of the suits and
+ * ranks they include, since the separate suit and rank pips show that set exactly. Otherwise,
+ * returns one row for each group of suits that can be the same ranks.
+ */
+function cardKey(suitIndex: number, rank: Rank) {
+  return `${suitIndex},${rank}`;
+}
+
+function getPossibilityRows(
+  variant: Variant,
+  possibleCardsFromClues: readonly SuitRankTuple[],
+  possibleCards: readonly SuitRankTuple[],
+  suitPips: readonly SuitPipPresentation[],
+  isPositiveRank: (rank: Rank) => boolean,
+): readonly PossibilityRowPresentation[] | undefined {
+  const fromClues = new Set(
+    possibleCardsFromClues.map(([suitIndex, rank]) => cardKey(suitIndex, rank)),
+  );
+  const possible = new Set(
+    possibleCards.map(([suitIndex, rank]) => cardKey(suitIndex, rank)),
+  );
+  const suitCount = new Set(
+    possibleCardsFromClues.map(([suitIndex]) => suitIndex),
+  ).size;
+  const rankCount = new Set(possibleCardsFromClues.map(([, rank]) => rank))
+    .size;
+  if (fromClues.size === suitCount * rankCount) {
+    return undefined;
+  }
+
+  const rows = new Map<string, PossibilityRowPresentation>();
+  for (const suitPip of suitPips) {
+    if (suitPip.state === PipState.Hidden) {
+      continue;
+    }
+
+    const rankPips = variant.ranks.map((rank) => {
+      const key = cardKey(suitPip.suitIndex, rank);
+      let pipState = PipState.Hidden;
+      if (possible.has(key)) {
+        pipState = PipState.Visible;
+      } else if (fromClues.has(key)) {
+        pipState = PipState.Eliminated;
+      }
+      return { rank, state: pipState, positive: isPositiveRank(rank) };
+    });
+    const rowKey = rankPips.map((rankPip) => rankPip.state).join(",");
+    const row = rows.get(rowKey);
+    if (row === undefined) {
+      rows.set(rowKey, { suitPips: [suitPip], rankPips });
+    } else {
+      rows.set(rowKey, { ...row, suitPips: [...row.suitPips, suitPip] });
+    }
+  }
+
+  return [...rows.values()];
 }
 
 export function possibleCardsFromNoteAndClues(
