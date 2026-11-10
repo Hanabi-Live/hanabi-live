@@ -8,20 +8,21 @@ import {
 import { isOurTurn } from "../../isOurTurn";
 
 export function onChanged(pause: PauseState): void {
-  const stageFadeOpacity = pause.active
+  const paused = pause.playerIndex !== undefined;
+  const stageFadeOpacity = paused
     ? PAUSED_STAGE_FADE_OPACITY
     : STAGE_FADE_OPACITY;
   globals.elements.stageFade?.opacity(stageFadeOpacity);
-  globals.elements.stageFade?.visible(pause.active);
+  globals.elements.stageFade?.visible(paused);
 
-  globals.elements.pauseArea?.visible(pause.active);
+  globals.elements.pauseArea?.visible(paused);
 
   // The timer elements may not be initialized under certain conditions (e.g. an untimed game)
-  globals.elements.timer1?.visible(!pause.active && globals.state.playing);
-  globals.elements.timer2?.visible(!pause.active && !isOurTurn());
+  globals.elements.timer1?.visible(!paused && globals.state.playing);
+  globals.elements.timer2?.visible(!paused && !isOurTurn());
   globals.elements.timer1Circle?.visible(pause.queued);
 
-  if (pause.active) {
+  if (pause.playerIndex !== undefined) {
     globals.elements.pauseText?.text(
       `by: ${globals.metadata.playerNames[pause.playerIndex]}`,
     );

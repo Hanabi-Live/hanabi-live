@@ -66,7 +66,11 @@ test("untimed games without timers still update the player time tooltips", () =>
   vi.stubGlobal("window", globalThis);
   const { elements, state } = globals;
   Object.assign(globals, {
-    state: { finished: false, playing: true, pause: { active: false } },
+    state: {
+      finished: false,
+      playing: true,
+      pause: { playerIndex: undefined },
+    },
     elements: { timer1: undefined, timer2: undefined, deck: undefined },
     options: { timed: false, speedrun: false },
     lobby: { settings: { speedrunMode: false, showTimerInUntimed: false } },

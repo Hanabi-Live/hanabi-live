@@ -764,7 +764,7 @@ databaseDescribe("compiled application entry point (rust)", () => {
           const recovered = await bootstrap(returning, created.tableID);
           expect(recovered.init).toMatchObject({
             mode: "sharedReplay",
-            sharedReplaySegment: imported.init.sharedReplaySegment,
+            sharedReplay: { segment: imported.init.sharedReplay?.segment },
             datetimeStarted: imported.init.datetimeStarted,
           });
           expect(recovered.init.characters).toEqual(imported.init.characters);

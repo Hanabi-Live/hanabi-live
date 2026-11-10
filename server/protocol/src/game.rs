@@ -50,8 +50,7 @@ pub struct IdleWarning {
 pub struct Pause {
     #[serde(rename = "tableID")]
     pub table_id: TableId,
-    pub active: bool,
-    /// The seat that paused, absent when the game is not paused.
+    /// The seat that paused the game. Absent when the game is not paused.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     #[schemars(with = "PlayerIndex")]
     pub player_index: Option<u8>,
@@ -99,7 +98,8 @@ pub struct FinishOngoingGame {
     #[schemars(with = "GameId")]
     pub database_id: Option<GameId>,
     pub shared_replay_leader: String,
-    /// Whether the recipient played this game and can play it again. See `Init::can_play_again`.
+    /// Whether the recipient played this game and can play it again. See
+    /// `SharedReplayInit::can_play_again`.
     pub can_play_again: bool,
 }
 
@@ -376,28 +376,36 @@ pub struct Init {
     /// Each player's character, in seat order, when detrimental characters are on.
     #[schemars(length(max = MAX_PLAYERS))]
     pub characters: Vec<CharacterAssignment>,
-    pub shared_replay_leader: String,
+    /// Present only when `mode` is `sharedReplay`.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[schemars(with = "SharedReplayInit")]
+    pub shared_replay: Option<SharedReplayInit>,
+    /// The seat that paused the game. Absent when the game is not paused.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[schemars(with = "PlayerIndex")]
+    pub pause_player_index: Option<u8>,
+    /// Whether the recipient asked to pause the game at their next turn.
+    pub pause_queued: bool,
+}
+
+/// The state of a shared replay that a client joins.
+#[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct SharedReplayInit {
+    pub leader: String,
+    #[schemars(range(min = 0, max = MAX_SAFE_INTEGER))]
+    pub segment: i64,
     #[schemars(range(min = -MAX_SAFE_INTEGER, max = MAX_SAFE_INTEGER))]
-    pub shared_replay_segment: i64,
-    #[schemars(range(min = -MAX_SAFE_INTEGER, max = MAX_SAFE_INTEGER))]
-    pub shared_replay_efficiency_modifier: i64,
+    pub efficiency_modifier: i64,
     /// Whether the shared replay hides what happens later in the game.
     pub spoiler_free: bool,
-    /// The players in a shared replay who will not play again if the leader restarts.
+    /// The players who will not play again if the leader restarts.
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     #[schemars(length(max = MAX_PLAYERS))]
     pub restart_declined: Vec<String>,
     /// Whether the recipient played the game of this shared replay at this table, so that they can
     /// play it again: the leader by restarting, and the other players by saying if they are ready.
     pub can_play_again: bool,
-    /// When the shared replay began, present only in shared replays.
-    #[serde(default, skip_serializing_if = "Option::is_none")]
     #[schemars(with = "Timestamp")]
-    pub datetime_shared_replay_started: Option<String>,
-    pub paused: bool,
-    /// The seat that paused, absent when the game is not paused.
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    #[schemars(with = "PlayerIndex")]
-    pub pause_player_index: Option<u8>,
-    pub pause_queued: bool,
+    pub datetime_started: String,
 }

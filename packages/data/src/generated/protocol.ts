@@ -335,7 +335,8 @@ export const errorNoticeSchema = z
   .readonly();
 export const finishOngoingGameSchema = z.strictObject({
   /**
-   * Whether the recipient played this game and can play it again. See `Init::can_play_again`.
+   * Whether the recipient played this game and can play it again. See
+   * `SharedReplayInit::can_play_again`.
    */
   canPlayAgain: z.boolean(),
   /**
@@ -485,6 +486,33 @@ const characterAssignmentSchema = z.strictObject({
 });
 
 /**
+ * The state of a shared replay that a client joins.
+ */
+const sharedReplayInitSchema = z.strictObject({
+  /**
+   * Whether the recipient played the game of this shared replay at this table, so that they can
+   * play it again: the leader by restarting, and the other players by saying if they are ready.
+   */
+  canPlayAgain: z.boolean(),
+  datetimeStarted: z.iso.datetime({ precision: 3 }),
+  efficiencyModifier: z
+    .number()
+    .int()
+    .min(-9_007_199_254_740_991)
+    .max(9_007_199_254_740_991),
+  leader: z.string(),
+  /**
+   * The players who will not play again if the leader restarts.
+   */
+  restartDeclined: z.array(z.string()).max(6).optional(),
+  segment: z.number().int().min(0).max(9_007_199_254_740_991),
+  /**
+   * Whether the shared replay hides what happens later in the game.
+   */
+  spoilerFree: z.boolean(),
+});
+
+/**
  * How the recipient takes part in a game: as a player or a spectator of a game in progress, as a
  * spectator who views it from a player's seat (shadowing), or as a viewer of a finished game, alone
  * (replay) or with others (shared replay).
@@ -502,11 +530,6 @@ const viewModeSchema = z.enum([
  */
 export const initSchema = z.strictObject({
   /**
-   * Whether the recipient played the game of this shared replay at this table, so that they can
-   * play it again: the leader by restarting, and the other players by saying if they are ready.
-   */
-  canPlayAgain: z.boolean(),
-  /**
    * Each player's character, in seat order, when detrimental characters are on.
    */
   characters: z.array(characterAssignmentSchema).max(6),
@@ -518,10 +541,6 @@ export const initSchema = z.strictObject({
    * Absent while the game is in progress.
    */
   datetimeFinished: z.iso.datetime({ precision: 3 }).optional(),
-  /**
-   * When the shared replay began, present only in shared replays.
-   */
-  datetimeSharedReplayStarted: z.iso.datetime({ precision: 3 }).optional(),
   datetimeStarted: z.iso.datetime({ precision: 3 }),
   hasCustomSeed: z.boolean(),
   mode: viewModeSchema,
@@ -531,32 +550,19 @@ export const initSchema = z.strictObject({
    */
   ourPlayerIndex: playerIndexSchema,
   /**
-   * The seat that paused, absent when the game is not paused.
+   * The seat that paused the game. Absent when the game is not paused.
    */
   pausePlayerIndex: playerIndexSchema.optional(),
+  /**
+   * Whether the recipient asked to pause the game at their next turn.
+   */
   pauseQueued: z.boolean(),
-  paused: z.boolean(),
   playerNames: z.array(z.string()).min(2).max(6),
-  /**
-   * The players in a shared replay who will not play again if the leader restarts.
-   */
-  restartDeclined: z.array(z.string()).max(6).optional(),
   seed: z.string(),
-  sharedReplayEfficiencyModifier: z
-    .number()
-    .int()
-    .min(-9_007_199_254_740_991)
-    .max(9_007_199_254_740_991),
-  sharedReplayLeader: z.string(),
-  sharedReplaySegment: z
-    .number()
-    .int()
-    .min(-9_007_199_254_740_991)
-    .max(9_007_199_254_740_991),
   /**
-   * Whether the shared replay hides what happens later in the game.
+   * Present only when `mode` is `sharedReplay`.
    */
-  spoilerFree: z.boolean(),
+  sharedReplay: sharedReplayInitSchema.optional(),
   tableID: tableIdSchema,
 });
 export const lobbyStatusSchema = z.discriminatedUnion("state", [
@@ -644,9 +650,8 @@ export const passwordHashRequestSchema = z.strictObject({
  */
 export const passwordHashResponseSchema = z.strictObject({ hash: z.string() });
 export const pauseSchema = z.strictObject({
-  active: z.boolean(),
   /**
-   * The seat that paused, absent when the game is not paused.
+   * The seat that paused the game. Absent when the game is not paused.
    */
   playerIndex: playerIndexSchema.optional(),
   tableID: tableIdSchema,

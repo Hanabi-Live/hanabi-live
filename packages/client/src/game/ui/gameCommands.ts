@@ -279,18 +279,15 @@ gameCommands.set("idleReset", () => {
 });
 
 gameCommands.set("pause", (data) => {
-  const soundType = data.active ? SoundType.GamePaused : SoundType.GameUnpaused;
+  const soundType =
+    data.playerIndex === undefined
+      ? SoundType.GameUnpaused
+      : SoundType.GamePaused;
   globals.game!.sounds.play(soundType);
 
   globals.store!.dispatch({
     type: "pause",
-    active: data.active,
-    // The server omits the pauser once nobody is pausing, and the pauser is only shown while
-    // paused.
-    playerIndex:
-      data.active && data.playerIndex !== undefined
-        ? data.playerIndex
-        : globals.state.pause.playerIndex,
+    playerIndex: data.playerIndex,
   });
 });
 
@@ -552,22 +549,10 @@ function initStateStore(data: InitData) {
     mode: data.mode,
     datetimeStarted: data.datetimeStarted,
     datetimeFinished: data.datetimeFinished,
-    datetimeSharedReplayStarted: data.datetimeSharedReplayStarted,
     databaseID: data.databaseID,
-    sharedReplaySegment: data.sharedReplaySegment,
-    sharedReplayLeader: data.sharedReplayLeader,
-    spoilerFree: data.spoilerFree,
-    restartDeclined: data.restartDeclined,
-    canPlayAgain: data.canPlayAgain,
-    paused: data.paused,
-    // The server omits the pauser when nobody is pausing, and the pauser is only shown while
-    // paused.
-    pausePlayerIndex:
-      data.paused && data.pausePlayerIndex !== undefined
-        ? data.pausePlayerIndex
-        : 0,
+    sharedReplay: data.sharedReplay,
+    pausePlayerIndex: data.pausePlayerIndex,
     pauseQueued: data.pauseQueued,
-    sharedReplayEfficiencyModifier: data.sharedReplayEfficiencyModifier,
   });
 
   // If we happen to be joining an ongoing hypothetical, we cannot dispatch a "hypoEnter" here. We

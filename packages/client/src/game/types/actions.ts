@@ -7,7 +7,6 @@ import type {
   ActionIncludingHypothetical,
   CardIdentity,
   GameAction,
-  PlayerIndex,
 } from "@hanabi-live/game";
 import type { ClientAction } from "./ClientAction";
 import type { UIAction } from "./UIAction";
@@ -54,23 +53,14 @@ export interface ActionInit extends Readonly<
     ServerCommandData["init"],
     | "datetimeStarted"
     | "datetimeFinished"
-    | "datetimeSharedReplayStarted"
     | "mode"
     | "databaseID"
-    | "sharedReplaySegment"
-    | "sharedReplayLeader"
-    | "sharedReplayEfficiencyModifier"
-    | "spoilerFree"
-    | "restartDeclined"
-    | "canPlayAgain"
-    | "paused"
+    | "sharedReplay"
+    | "pausePlayerIndex"
     | "pauseQueued"
   >
 > {
   readonly type: "init";
-
-  /** The server sends `NO_VALUE` when nobody is pausing; the state keeps a seat. */
-  readonly pausePlayerIndex: PlayerIndex;
 }
 
 interface ActionListReceived {
@@ -93,12 +83,9 @@ interface ActionPremove {
 }
 
 interface ActionPause extends Readonly<
-  Pick<ServerCommandData["pause"], "active">
+  Pick<ServerCommandData["pause"], "playerIndex">
 > {
   readonly type: "pause";
-
-  /** The server sends `NO_VALUE` when nobody is pausing; the state keeps a seat. */
-  readonly playerIndex: PlayerIndex;
 }
 
 interface ActionPauseQueue {

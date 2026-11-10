@@ -219,7 +219,6 @@ impl TableActor {
                     hanabi_protocol::server::PAUSE,
                     hanabi_protocol::Pause {
                         table_id: self.table.id,
-                        active: true,
                         player_index: s.paused_by.map(u8::from),
                     },
                 );
@@ -379,7 +378,6 @@ impl TableActor {
                 hanabi_protocol::server::PAUSE,
                 hanabi_protocol::Pause {
                     table_id: self.table.id,
-                    active: s.paused(),
                     player_index: s.paused_by.map(u8::from),
                 },
             );
@@ -500,22 +498,30 @@ impl TableActor {
         let display_seat = seat.or_else(|| s.players.iter().position(|p| p.name == session.name));
         let mut e = self.effects();
         if part == GameInfo::Init {
-            let (segment, efficiency, spoiler_free) =
-                if let Phase::Replay { replay, .. } = &self.table.phase {
-                    (
-                        replay.segment,
-                        replay.efficiency_modifier,
-                        replay.spoiler_free,
-                    )
-                } else {
-                    (s.game.turn, 0, false)
-                };
-            let shared_replay = replay && self.table.visible;
+            let shared_replay = match &self.table.phase {
+                Phase::Replay { replay, .. } if self.table.visible => {
+                    Some(hanabi_protocol::SharedReplayInit {
+                        leader: self.leader_name(),
+                        segment: replay.segment.into(),
+                        efficiency_modifier: replay.efficiency_modifier.into(),
+                        spoiler_free: replay.spoiler_free,
+                        restart_declined: self.restart_declined_names(),
+                        can_play_again: self.can_play_again(&session),
+                        // A review of a game just played begins when the game ends; a replay of an
+                        // older game begins when its table is created.
+                        datetime_started: crate::model::timestamp(
+                            s.finished
+                                .map_or(self.table.created, |f| f.max(self.table.created)),
+                        ),
+                    })
+                }
+                _ => None,
+            };
             let init = hanabi_protocol::Init {
                 table_id: self.table.id,
                 player_names: s.players.iter().map(|p| p.name.clone()).collect(),
                 our_player_index: int(a.shadow.map(Seat::index).or(display_seat).unwrap_or(0)),
-                mode: if shared_replay {
+                mode: if shared_replay.is_some() {
                     ViewMode::SharedReplay
                 } else if replay {
                     ViewMode::Replay
@@ -548,21 +554,7 @@ impl TableActor {
                 } else {
                     vec![]
                 },
-                shared_replay_leader: self.leader_name(),
-                shared_replay_segment: segment.into(),
-                shared_replay_efficiency_modifier: efficiency.into(),
-                spoiler_free,
-                restart_declined: self.restart_declined_names(),
-                can_play_again: shared_replay && self.can_play_again(&session),
-                // A review of a game just played begins when the game ends; a replay of an older
-                // game begins when its table is created.
-                datetime_shared_replay_started: shared_replay.then(|| {
-                    crate::model::timestamp(
-                        s.finished
-                            .map_or(self.table.created, |f| f.max(self.table.created)),
-                    )
-                }),
-                paused: s.paused(),
+                shared_replay,
                 pause_player_index: s.paused_by.map(u8::from),
                 pause_queued: seat.is_some_and(|i| s.queued_pauses[i]),
             };

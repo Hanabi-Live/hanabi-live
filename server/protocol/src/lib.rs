@@ -404,6 +404,7 @@ pub fn schemas() -> std::collections::BTreeMap<String, serde_json::Value> {
         GameAction,
         GameActionList,
         CharacterAssignment,
+        SharedReplayInit,
         Init,
         SafeInteger,
         CatalogColor,

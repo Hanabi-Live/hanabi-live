@@ -160,34 +160,28 @@ function stateReducerFunction(state: Draft<State>, action: Action) {
           state.replay.segment = 0; // In dedicated solo replays, start on the first segment
           state.replay.databaseID = action.databaseID;
 
-          if (action.mode === "sharedReplay") {
+          const shared = action.sharedReplay;
+          if (shared !== undefined) {
             // In dedicated shared replays, start on the shared replay turn.
-            state.replay.segment = action.sharedReplaySegment;
+            state.replay.segment = shared.segment;
             state.replay.shared = {
-              segment: action.sharedReplaySegment,
+              segment: shared.segment,
               useSharedSegments: true,
-              leader: action.sharedReplayLeader,
-              amLeader:
-                action.sharedReplayLeader === state.metadata.ourUsername,
-              // The server sends this in every shared replay.
-              datetimeStarted:
-                action.datetimeSharedReplayStarted ?? new Date().toISOString(),
-              spoilerFree: action.spoilerFree,
-              canPlayAgain: action.canPlayAgain,
-              restartDeclined: action.restartDeclined ?? [],
+              leader: shared.leader,
+              amLeader: shared.leader === state.metadata.ourUsername,
+              datetimeStarted: shared.datetimeStarted,
+              spoilerFree: shared.spoilerFree,
+              canPlayAgain: shared.canPlayAgain,
+              restartDeclined: castDraft(shared.restartDeclined ?? []),
               hypothetical: undefined,
             };
-            state.notes.efficiencyModifier =
-              action.sharedReplayEfficiencyModifier;
+            state.notes.efficiencyModifier = shared.efficiencyModifier;
           }
           break;
         }
       }
 
-      if (action.paused) {
-        state.pause.active = true;
-        state.pause.playerIndex = action.pausePlayerIndex;
-      }
+      state.pause.playerIndex = action.pausePlayerIndex;
       state.pause.queued = action.pauseQueued;
 
       break;
@@ -240,11 +234,10 @@ function stateReducerFunction(state: Draft<State>, action: Action) {
     }
 
     case "pause": {
-      state.pause.active = action.active;
       state.pause.playerIndex = action.playerIndex;
 
       // If the game is now paused, unqueue any queued pauses.
-      if (action.active) {
+      if (action.playerIndex !== undefined) {
         state.pause.queued = false;
       }
 

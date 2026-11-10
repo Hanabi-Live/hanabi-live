@@ -2319,7 +2319,7 @@ function drawTimers() {
 function timerClick() {
   if (
     !globals.options.timed // We do not need to pause if this is not a timed game.
-    || globals.state.pause.active // We do not need to pause if the game is already paused.
+    || globals.state.pause.playerIndex !== undefined // We do not need to pause if the game is already paused.
   ) {
     return;
   }

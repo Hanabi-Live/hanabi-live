@@ -65,8 +65,7 @@ export function initialState(metadata: GameMetadata): State {
     }),
     premove: undefined,
     pause: {
-      active: false,
-      playerIndex: 0,
+      playerIndex: undefined,
       queued: false,
     },
     spectators: [],

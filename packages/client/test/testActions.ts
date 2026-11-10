@@ -25,13 +25,14 @@ export function init(): ActionInit {
     datetimeFinished: new Date(0).toString(),
     mode: "sharedReplay",
     databaseID: gameIdSchema.parse(1),
-    sharedReplaySegment: 0,
-    sharedReplayLeader: "",
-    sharedReplayEfficiencyModifier: 0,
-    canPlayAgain: false,
-    spoilerFree: false,
-    paused: false,
-    pausePlayerIndex: 0,
+    sharedReplay: {
+      leader: "",
+      segment: 0,
+      efficiencyModifier: 0,
+      spoilerFree: false,
+      canPlayAgain: false,
+      datetimeStarted: new Date(0).toString(),
+    },
     pauseQueued: false,
   };
 }

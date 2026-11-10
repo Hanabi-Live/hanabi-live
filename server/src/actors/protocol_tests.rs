@@ -1018,12 +1018,12 @@ async fn spoiler_free_reviews_are_shared_replays_that_tell_everyone() -> Result<
         h.send(1, "getGameInit", json!({"tableID":id})).await?;
         let init = h.receive(1, "init").await?;
         ensure!(
-            init["mode"] == "sharedReplay" && init["spoilerFree"] == true,
+            init["mode"] == "sharedReplay" && init["sharedReplay"]["spoilerFree"] == true,
             "A spectator joined a spoiler-free review without being told: {init}"
         );
         // Bob has the name of a player, but he did not play this game at this table.
         ensure!(
-            init["canPlayAgain"] == false,
+            init["sharedReplay"]["canPlayAgain"] == false,
             "A replay of an imported game offered a restart: {init}"
         );
         Ok(())
@@ -1072,7 +1072,7 @@ async fn shared_replays_of_older_games_start_when_their_table_is_created() -> Re
         h.send(1, "getGameInit", json!({"tableID":id})).await?;
         let init = h.receive(1, "init").await?;
         ensure!(
-            init["datetimeSharedReplayStarted"] == crate::model::timestamp(created),
+            init["sharedReplay"]["datetimeStarted"] == crate::model::timestamp(created),
             "The shared replay did not start when its table was created: {init}"
         );
         Ok(())
@@ -1794,7 +1794,8 @@ async fn restart_leaves_out_players_who_are_done_playing() -> Result<()> {
         h.send(2, "getGameInit", json!({"tableID":id})).await?;
         let init = h.receive(2, "init").await?;
         ensure!(
-            init["restartDeclined"] == json!(["Carol"]) && init["canPlayAgain"] == true,
+            init["sharedReplay"]["restartDeclined"] == json!(["Carol"])
+                && init["sharedReplay"]["canPlayAgain"] == true,
             "{init}"
         );
         ensure!(
