@@ -47,7 +47,7 @@
   max-height: calc(100% - 4em);
   max-width: 80vw;
   overflow-y: auto;
-  padding: 20px 30px;
+  padding: 1.25em 1.875em;
   position: absolute;
   scrollbar-gutter: stable;
   top: 3.5em;
@@ -60,7 +60,7 @@
   max-width: 100%;
   right: 5em;
   overflow: auto;
-  padding: 30px 30px 0 30px;
+  padding: 1.875em 1.875em 0 1.875em;
   scrollbar-gutter: unset;
   top: 15vh;
 }
@@ -70,7 +70,7 @@
 }
 
 #set-modifier-current {
-  margin-left: 15px;
+  margin-left: 0.9em;
 }
 
 #play-discard-title {
@@ -99,13 +99,13 @@
 
 #morph-modal label {
   border: 1px solid var(--morph-option-border);
-  padding: 10px;
+  padding: 0.625em;
   display: block;
   position: relative;
-  margin: 5px 10px;
+  margin: 0.3em 0.625em;
   cursor: pointer;
   line-height: 1em;
-  max-height: 73px;
+  max-height: 4.5em;
   overflow: hidden;
 }
 
@@ -119,10 +119,10 @@
   position: absolute;
   top: 1px;
   left: 1px;
-  width: 25px;
-  height: 25px;
+  width: 1.5em;
+  height: 1.5em;
   text-align: center;
-  line-height: 28px;
+  line-height: 1.75em;
   transition-duration: 0.4s;
   transform: scale(0);
 }
@@ -172,7 +172,7 @@
 #emoji-picker {
   display: flex;
   flex-wrap: wrap;
-  gap: 5px;
+  gap: 0.3em;
   max-height: 50vh;
   overflow-y: auto;
 }

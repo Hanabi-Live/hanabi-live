@@ -11,8 +11,9 @@ const REPO_ROOT = path.resolve(import.meta.dir, "..", "..", "..");
 const ENTRY = path.resolve(REPO_ROOT, "public", "css", "main.css");
 
 /**
- * Font Awesome defines about 1,300 icons, and the site uses about 80. The bundle keeps only the
- * icons that these files name by their full class name, such as "fa-check".
+ * Font Awesome defines about 1,300 icons and many helper classes (such as "fa-spin"), and the site
+ * uses few of them. The bundle keeps only the Font Awesome classes that these files name in full,
+ * such as "fa-check".
  */
 const ICON_SOURCE_DIRECTORIES = [
   "packages/client/src",
@@ -21,6 +22,14 @@ const ICON_SOURCE_DIRECTORIES = [
   "server/templates",
 ] as const;
 const ICON_SOURCE_FILES = new Bun.Glob("**/*.{html,rs,ts,tsx}");
+
+/** A Font Awesome class: "fa", a style such as "fas", or a name such as "fa-check". */
+const FONT_AWESOME_CLASS = String.raw`fa(?:[a-z]|-[\d\-a-z]+)?`;
+const FONT_AWESOME_CLASS_IN_TEXT = new RegExp(
+  String.raw`\b${FONT_AWESOME_CLASS}\b`,
+  "gu",
+);
+const FONT_AWESOME_CLASS_NAME = new RegExp(`^${FONT_AWESOME_CLASS}$`, "u");
 
 /** An icon name that is put together at runtime, which the search for icon names cannot see. */
 const BUILT_ICON_NAME = /\bfa-(?:\$\{|\{\{)/u;
@@ -68,37 +77,37 @@ async function getUsedIcons(): Promise<ReadonlySet<string>> {
         `${files[i]}: Write icon class names in full (such as "fa-check"), so that the CSS bundle keeps their icons.`,
       );
     }
-    for (const [icon] of text.matchAll(/\bfa-[\d\-a-z]+/gu)) {
+    for (const [icon] of text.matchAll(FONT_AWESOME_CLASS_IN_TEXT)) {
       icons.add(icon);
     }
   }
   return icons;
 }
 
-/** The icon that a selector such as ".fa-check:before" draws, if it draws one. */
-function getIcon(selector: readonly SelectorComponent[]): string | undefined {
-  const [first, second, ...rest] = selector;
-  return rest.length === 0
-    && first?.type === "class"
-    && first.name.startsWith("fa-")
-    && second?.type === "pseudo-element"
-    && second.kind === "before"
-    ? first.name
-    : undefined;
+/** Whether a selector, such as ".fa-check:before", names a Font Awesome class that is not used. */
+function usesUnusedClass(
+  selector: readonly SelectorComponent[],
+  usedIcons: ReadonlySet<string>,
+): boolean {
+  return selector.some(
+    (component) =>
+      component.type === "class"
+      && FONT_AWESOME_CLASS_NAME.test(component.name)
+      && !usedIcons.has(component.name),
+  );
 }
 
-/** Removes the rules of the icons that the site does not use. */
+/** Removes the rules of the Font Awesome classes that the site does not use. */
 function getIconPruner(usedIcons: ReadonlySet<string>): Visitor<never> {
   return {
     Rule: {
       // Lightning CSS defines the types of the rule and of the returned rules.
       // eslint-disable-next-line complete/no-mutable-return
       style(rule) {
-        // eslint-disable-next-line complete/prefer-readonly-parameter-types
-        const selectors = rule.value.selectors.filter((selector) => {
-          const icon = getIcon(selector);
-          return icon === undefined || usedIcons.has(icon);
-        });
+        const selectors = rule.value.selectors.filter(
+          // eslint-disable-next-line complete/prefer-readonly-parameter-types
+          (selector) => !usesUnusedClass(selector, usedIcons),
+        );
         if (selectors.length === rule.value.selectors.length) {
           return undefined;
         }
@@ -106,6 +115,14 @@ function getIconPruner(usedIcons: ReadonlySet<string>): Visitor<never> {
         return selectors.length === 0
           ? []
           : { ...rule, value: { ...rule.value, selectors } };
+      },
+      // Font Awesome names each animation after the class that uses it, such as "fa-spin".
+      // eslint-disable-next-line complete/no-mutable-return
+      keyframes(rule) {
+        const { value: name } = rule.value.name;
+        return FONT_AWESOME_CLASS_NAME.test(name) && !usedIcons.has(name)
+          ? []
+          : undefined;
       },
     },
   };

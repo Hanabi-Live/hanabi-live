@@ -98,7 +98,7 @@
   display: flex;
   justify-content: center;
   align-content: space-evenly;
-  column-gap: 10px;
+  column-gap: 0.625em;
 }
 
 /* Cursors styles for game container */
@@ -122,18 +122,19 @@
   cursor: grabbing;
 }
 
+/* A title in a note tooltip, drawn over a line, such as "Spectators" */
 div.note-title {
   width: 100%;
-  height: 10px;
+  height: 0.4em;
   border-bottom: 1px solid var(--note-title-line);
   text-align: center;
-  margin-bottom: 7px;
-  line-height: 10px;
+  margin-bottom: 0.3em;
+  line-height: 0.4em;
 }
 
 div.note-title span {
-  font-size: 14px;
+  font-size: 0.6em;
   background-color: var(--surface);
   text-align: center;
-  padding: 0 10px;
+  padding: 0 0.65em;
 }

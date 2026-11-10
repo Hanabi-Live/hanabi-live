@@ -20,7 +20,7 @@
 #login-alert {
   color: var(--login-alert-text);
   background-color: var(--login-alert-bg);
-  padding: 15px;
+  padding: 0.9em;
   margin-bottom: 1em;
   border: 1px solid var(--login-alert-border);
   border-radius: var(--radius);

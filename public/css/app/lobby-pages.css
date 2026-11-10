@@ -128,12 +128,17 @@ input::-webkit-calendar-picker-indicator {
   grid-template-columns: repeat(auto-fill, minmax(22em, 1fr));
 }
 
-/* Each resource is one link; the title's link covers the whole element. */
+/* A panel that holds a group of settings or one resource. */
+.lobby-rows,
 .resource {
-  align-items: flex-start;
   background-color: var(--surface-panel);
   border: 1px solid var(--border-panel);
   border-radius: var(--radius);
+}
+
+/* Each resource is one link; the title's link covers the whole element. */
+.resource {
+  align-items: flex-start;
   display: flex;
   gap: 1em;
   margin: 0;
@@ -213,9 +218,6 @@ input::-webkit-calendar-picker-indicator {
 }
 
 .lobby-rows {
-  background-color: var(--surface-panel);
-  border: 1px solid var(--border-panel);
-  border-radius: var(--radius);
   list-style: none;
   margin: 0;
   padding: 0;

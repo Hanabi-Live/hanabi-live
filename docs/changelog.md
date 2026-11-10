@@ -30,6 +30,7 @@ of the repository.
   with the ranks that it can be.
 - The new flashlight button beside "Give Clue" shows the target's hand as they
   would see it after the selected clue. It turns off at the start of each turn.
+- Buttons now show an outline when you move to them with the keyboard.
 
 ## November 9th, 2026
 

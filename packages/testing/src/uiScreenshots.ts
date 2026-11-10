@@ -161,6 +161,18 @@ function getStates(replayID: number): readonly State[] {
       },
     },
     {
+      name: "button-focus",
+      path: "/",
+      loggedIn: true,
+      // A button shows its focus outline only when the keyboard moves the focus to it.
+      prepare: async (page) => {
+        await clickNav(page, "create-game");
+        await page.focus("#create-game-submit");
+        await page.keyboard.press("Shift+Tab");
+        await page.keyboard.press("Tab");
+      },
+    },
+    {
       name: "watch-replay",
       path: "/",
       loggedIn: true,

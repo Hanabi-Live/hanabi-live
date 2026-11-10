@@ -47,7 +47,7 @@ section {
 
 body {
   line-height: 1;
-  -webkit-text-size-adjust: none;
+  text-size-adjust: 100%;
 }
 
 ol,
@@ -316,7 +316,6 @@ input[type="password"],
 input[type="number"],
 select,
 textarea {
-  appearance: none;
   background-color: var(--surface-sunken);
   border-radius: var(--radius);
   border: solid 1px var(--border);
@@ -365,7 +364,6 @@ textarea {
 
 input[type="checkbox"],
 input[type="radio"] {
-  appearance: none;
   display: block;
   float: left;
   margin-right: -2em;
@@ -420,10 +418,6 @@ input[type="checkbox"]:focus + label:before,
 input[type="radio"]:focus + label:before {
   border-color: var(--focus);
   box-shadow: 0 0 0 1px var(--focus);
-}
-
-input[type="checkbox"] + label:before {
-  border-radius: var(--radius);
 }
 
 input[type="radio"] + label:before {
@@ -636,8 +630,6 @@ input[type="button"],
   font-weight: 400;
   height: 3em;
   line-height: 3em;
-  /* Disable the outline that appears when a button is clicked. */
-  outline: none;
   padding: 0 2em;
   text-align: center;
   text-decoration: none;
@@ -664,6 +656,14 @@ input[type="button"]:active,
 
 .button.icon:before {
   margin-right: 0.5em;
+}
+
+/* Show which button has the keyboard focus. A mouse click does not show it. */
+input[type="submit"]:focus-visible,
+input[type="button"]:focus-visible,
+.button:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
 }
 
 .button.fit {
