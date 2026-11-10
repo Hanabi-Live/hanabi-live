@@ -52,14 +52,14 @@ const BURST_HEIGHT = 0.8;
 const BURST = {
   sparks: 36,
   reach: 0.9,
-  seconds: 0.9,
+  seconds: 0.6,
   flashRadius: 0.4,
   ringRadius: 0.85,
 } as const satisfies BurstConfig;
 const CLUE_BURST = {
   sparks: 12,
   reach: 0.3,
-  seconds: 0.5,
+  seconds: 0.35,
   flashRadius: 0.15,
   ringRadius: 0.3,
 } as const satisfies BurstConfig;
@@ -73,8 +73,8 @@ const SPARK_FALL = 0.5;
 const SPARK_FADE_START = 0.6;
 
 /** The spark waits for the burst to open before it leaves. */
-const COMET_DELAY_SECONDS = 0.12;
-const COMET_SECONDS = 0.65;
+const COMET_DELAY_SECONDS = 0.06;
+const COMET_SECONDS = 0.35;
 const COMET_RADIUS = 0.052;
 const COMET_GLOW = 0.13;
 /** Where the comet's path bends, relative to the midpoint of its path. */
@@ -86,12 +86,12 @@ const EMBER_RADIUS = { min: 0.018, max: 0.033 } as const;
 const EMBER_FALL = 0.13;
 const EMBER_DRIFT = 0.06;
 
-const CLUE_POP_SECONDS = 0.5;
+const CLUE_POP_SECONDS = 0.35;
 const CLUE_POP_SCALE = 1.7;
 /** The part of the pop during which the clue count is green. */
 const CLUE_POP_GREEN = 0.55;
-const SCORE_GLOW_SECONDS = 0.6;
-const CARD_GLOW_SECONDS = 0.7;
+const SCORE_GLOW_SECONDS = 0.4;
+const CARD_GLOW_SECONDS = 0.5;
 
 // The perfect score finale.
 /** The first rocket leaves after the card lands. The others follow, one stack at a time. */

@@ -17,6 +17,7 @@ of the repository.
 - The "New Game" page now remembers the last table name that you used.
 - The "Edit Cards" and "Show Hidden" buttons in hypotheticals now look like the
   "Ready" button: a green border when on, and struck-through text when off.
+- The firework for completing a play stack is now shorter.
 
 ## November 9th, 2026
 
