@@ -70,11 +70,11 @@ pub fn main() -> Result<()> {
         runtime.block_on(run(config, version))?
     } else {
         runtime.block_on(tls::configuration(&config))?;
-        false
+        None
     };
     drop(runtime);
-    if replace {
-        restart::replace(&root)?;
+    if let Some(quiet) = replace {
+        restart::replace(&root, quiet)?;
     }
     Ok(())
 }
@@ -127,7 +127,8 @@ fn request_timeout(router: axum::Router) -> axum::Router {
     ))
 }
 
-async fn run(config: Config, version: String) -> Result<bool> {
+/// Runs the server. When it stops to restart, returns whether the restart has no reason.
+async fn run(config: Config, version: String) -> Result<Option<bool>> {
     let mut terminate = tokio::signal::unix::signal(tokio::signal::unix::SignalKind::terminate())?;
     let mut interrupt = tokio::signal::unix::signal(tokio::signal::unix::SignalKind::interrupt())?;
     let tls_config = tls::configuration(&config).await?;
@@ -146,7 +147,11 @@ async fn run(config: Config, version: String) -> Result<bool> {
     };
     let store = Store::connect(&config).await?;
     let tables = TaskTracker::new();
-    let info = Arc::new(ServerInfo::new(config.use_tls(), &config.domain));
+    let info = Arc::new(ServerInfo::new(
+        config.use_tls(),
+        &config.domain,
+        restart::quiet_restart(),
+    ));
     let integrations = IntegrationSlot::default();
     let (hub, unreadable) = match Hub::recover(
         store.clone(),
@@ -290,7 +295,10 @@ async fn run(config: Config, version: String) -> Result<bool> {
             service=services.join_next()=>StopReason::Failure(format!("HTTP listener exited unexpectedly: {service:?}"))
         }
     };
-    let replace = matches!(reason, StopReason::Restart(_));
+    let replace = match &reason {
+        StopReason::Restart(message) => Some(message.is_none()),
+        _ => None,
+    };
     match &reason {
         StopReason::OwnershipLost => {
             failures.push("Live-table ownership or durability was lost".into());

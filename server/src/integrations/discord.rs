@@ -534,11 +534,19 @@ impl Bridge {
         self.publish_saved(saved).await
     }
 
-    async fn announce(&self, message: &str) -> Result<()> {
+    /// Posts a lifecycle message to the development channel. With `lobby`, also saves it to the
+    /// lobby chat and posts it to the lobby channel.
+    async fn announce(&self, message: &str, lobby: bool) -> Result<()> {
         self.available()?;
+        let plain = decode_html(message);
+        if !lobby {
+            self.send_to(self.config.development, &plain, true)
+                .await
+                .context("Sending lifecycle announcement to the development channel")?;
+            return Ok(());
+        }
         let saved = lobby::server_chat(&self.pool, message).await?;
         // Poll both deliveries to completion; a slow or failed channel must not cancel the other.
-        let plain = decode_html(message);
         let (lobby, development) = tokio::join!(
             self.publish_saved(vec![saved]),
             self.send_to(self.config.development, &plain, true),
@@ -548,25 +556,32 @@ impl Bridge {
         Ok(())
     }
 
+    /// Only a restart with a reason is announced in the lobby.
     pub async fn announce_restart(&self, uptime: Duration, message: Option<&str>) -> Result<()> {
-        self.announce(&format!(
-            "{RESTART_PREFIX} {} ({}) - Uptime: {}{}",
-            Utc::now().format("%a %b %d %H:%M:%S UTC %Y"),
-            crate::restart::version(),
-            crate::lifecycle::duration(uptime.as_secs()),
-            downtime_reason(message),
-        ))
+        self.announce(
+            &format!(
+                "{RESTART_PREFIX} {} ({}) - Uptime: {}{}",
+                Utc::now().format("%a %b %d %H:%M:%S UTC %Y"),
+                crate::restart::version(),
+                crate::lifecycle::duration(uptime.as_secs()),
+                downtime_reason(message),
+            ),
+            message.is_some(),
+        )
         .await
     }
 
     pub async fn announce_stop(&self, uptime: Duration, message: Option<&str>) -> Result<()> {
-        self.announce(&format!(
-            "{STOP_PREFIX} {} ({}) - Uptime: {}{}",
-            Utc::now().format("%a %b %d %H:%M:%S UTC %Y"),
-            crate::restart::version(),
-            crate::lifecycle::duration(uptime.as_secs()),
-            downtime_reason(message),
-        ))
+        self.announce(
+            &format!(
+                "{STOP_PREFIX} {} ({}) - Uptime: {}{}",
+                Utc::now().format("%a %b %d %H:%M:%S UTC %Y"),
+                crate::restart::version(),
+                crate::lifecycle::duration(uptime.as_secs()),
+                downtime_reason(message),
+            ),
+            true,
+        )
         .await
     }
 
@@ -583,7 +598,14 @@ impl Bridge {
                         now.format("%a %b %d %H:%M:%S UTC %Y"),
                         crate::restart::version(),
                     );
-                    if let Some(down) = last_shutdown(&self.pool).await? {
+                    // A restart without a reason was not announced in the lobby, so neither is
+                    // the startup that follows it.
+                    let quiet = self.server.info.quiet_restart();
+                    let down = match quiet {
+                        Some(time) => Some(time),
+                        None => last_shutdown(&self.pool).await?,
+                    };
+                    if let Some(down) = down {
                         let seconds = (now - down).num_seconds().max(0).unsigned_abs();
                         write!(
                             message,
@@ -591,7 +613,7 @@ impl Bridge {
                             crate::lifecycle::duration(seconds)
                         )?;
                     }
-                    self.announce(&message).await?;
+                    self.announce(&message, quiet.is_none()).await?;
                 }
             }
             Event::GatewayClose(_) => {

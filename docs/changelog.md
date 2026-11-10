@@ -13,6 +13,7 @@ of the repository.
   while the leader is in a hypothetical.
 - If a game ends while you are in a hypothetical, you can now keep using it in
   the review.
+- Server restarts without a reason are no longer announced in the lobby.
 
 ## November 9th, 2026
 

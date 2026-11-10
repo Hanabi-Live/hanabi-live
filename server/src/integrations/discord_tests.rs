@@ -172,7 +172,7 @@ async fn lifecycle_announcements_reach_both_channels_despite_network_latency_pos
     };
     tokio::time::timeout(Duration::from_secs(2), async {
         integrations
-            .announce_restart(Duration::from_mins(78), None)
+            .announce_restart(Duration::from_mins(78), Some("Deploying"))
             .await;
         integrations
             .announce_stop(Duration::from_mins(78), None)
@@ -228,7 +228,7 @@ async fn failed_restart_channel_does_not_cancel_other_delivery_postgres() {
         bridge.event(Event::Resumed).await.unwrap();
         let result = tokio::time::timeout(
             Duration::from_secs(2),
-            bridge.announce_restart(Duration::from_mins(78), None),
+            bridge.announce_restart(Duration::from_mins(78), Some("Deploying")),
         )
         .await
         .unwrap();
@@ -300,40 +300,44 @@ async fn discord_lifecycle_announcements_match_across_channels_postgres() {
         .await
         .unwrap();
     let requests = mock.requests.lock().await;
-    for channel in ["555555555555555555", "666666666666666666"] {
-        let messages: Vec<_> = requests
+    let posted = |channel: &str| -> Vec<String> {
+        requests
             .iter()
             .filter_map(|(method, path, body)| {
                 if *method == Method::POST && path == &format!("/channels/{channel}/messages") {
-                    body.as_ref().and_then(|body| body["content"].as_str())
+                    body.as_ref()
+                        .and_then(|body| body["content"].as_str())
+                        .map(str::to_owned)
                 } else {
                     None
                 }
             })
-            .collect();
-        assert_eq!(
-            messages.len(),
-            3,
-            "Lifecycle messages must be sent once per channel"
-        );
-        assert!(messages[0].starts_with("The server has successfully started at: "));
-        assert!(messages[0].ends_with(&format!("({})", crate::restart::version())));
-        assert!(!messages[0].contains("(v42)"));
-        assert!(messages[1].starts_with("The server went down for a restart at: "));
-        assert!(messages[1].ends_with(&format!(
-            "({}) - Uptime: 1 hour and 18 minutes",
+            .collect()
+    };
+    let lobby = posted("555555555555555555");
+    let development = posted("666666666666666666");
+    // A restart without a reason is announced only in the development channel.
+    assert_eq!(lobby.len(), 2, "{lobby:?}");
+    assert_eq!(development.len(), 3, "{development:?}");
+    assert_eq!(lobby[0], development[0]);
+    assert_eq!(lobby[1], development[2]);
+    assert!(development[0].starts_with("The server has successfully started at: "));
+    assert!(development[0].ends_with(&format!("({})", crate::restart::version())));
+    assert!(!development[0].contains("(v42)"));
+    assert!(development[1].starts_with("The server went down for a restart at: "));
+    assert!(development[1].ends_with(&format!(
+        "({}) - Uptime: 1 hour and 18 minutes",
+        crate::restart::version()
+    )));
+    assert!(development[2].starts_with("The server is stopping gracefully at: "));
+    assert!(
+        development[2].ends_with(&format!(
+            "({}) - Uptime: 1 hour and 18 minutes Reason: Upgrading <the> database & 'more'",
             crate::restart::version()
-        )));
-        assert!(messages[2].starts_with("The server is stopping gracefully at: "));
-        assert!(
-            messages[2].ends_with(&format!(
-                "({}) - Uptime: 1 hour and 18 minutes Reason: Upgrading <the> database & 'more'",
-                crate::restart::version()
-            )),
-            "{channel}: {}",
-            messages[2]
-        );
-    }
+        )),
+        "{}",
+        development[2]
+    );
     drop(requests);
     let messages: Vec<String> =
         sqlx::query_scalar!("SELECT message FROM chat_log WHERE source='server' ORDER BY id")
@@ -342,12 +346,11 @@ async fn discord_lifecycle_announcements_match_across_channels_postgres() {
             .unwrap();
     assert_eq!(
         messages.len(),
-        3,
-        "All lifecycle notices must also remain in lobby history"
+        2,
+        "Lobby lifecycle notices must also remain in lobby history"
     );
-    assert!(messages[1].contains("Uptime: 1 hour and 18 minutes"));
     // Lobby chat is HTML, so the administrator's reason is stored escaped.
-    assert!(messages[2].ends_with("Reason: Upgrading &lt;the&gt; database &amp; &#39;more&#39;"));
+    assert!(messages[1].ends_with("Reason: Upgrading &lt;the&gt; database &amp; &#39;more&#39;"));
     sqlx::query!(
         "UPDATE chat_log SET datetime_sent=NOW()-INTERVAL '150 seconds'
          WHERE id=(SELECT MAX(id) FROM chat_log WHERE source='server')"
@@ -374,6 +377,39 @@ async fn discord_lifecycle_announcements_match_across_channels_postgres() {
         "({}) - Downtime: 3 minutes",
         crate::restart::version()
     )));
+    // After a restart without a reason, the startup is announced only in the development
+    // channel, and the downtime comes from the previous process.
+    let mut server = fixture.app.integration_server();
+    server.info = Arc::new(crate::server_info::ServerInfo::new(
+        false,
+        "localhost",
+        Some(chrono::Utc::now() - chrono::Duration::seconds(150)),
+    ));
+    let quiet_mock = Arc::new(MockDiscord::default());
+    let quiet = Bridge::start(server, configuration(), Some(quiet_mock.serve().await))
+        .await
+        .unwrap();
+    quiet.event(Event::Resumed).await.unwrap();
+    let requests = quiet_mock.requests.lock().await;
+    let posted: Vec<_> = requests
+        .iter()
+        .filter(|(method, _, _)| *method == Method::POST)
+        .map(|(_, path, body)| (path.clone(), body.as_ref().unwrap()["content"].clone()))
+        .collect();
+    assert_eq!(posted.len(), 1, "{posted:?}");
+    assert_eq!(posted[0].0, "/channels/666666666666666666/messages");
+    assert!(posted[0].1.as_str().unwrap().ends_with(&format!(
+        "({}) - Downtime: 3 minutes",
+        crate::restart::version()
+    )));
+    drop(requests);
+    let latest: String = sqlx::query_scalar!(
+        "SELECT message FROM chat_log WHERE source='server' ORDER BY id DESC LIMIT 1"
+    )
+    .fetch_one(&fixture.db.pool)
+    .await
+    .unwrap();
+    assert_eq!(latest, started);
     fixture.close().await;
 }
 

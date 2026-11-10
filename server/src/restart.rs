@@ -1,5 +1,6 @@
 use crate::{config::Config, tls};
 use anyhow::{Context, Result, ensure};
+use chrono::{DateTime, Utc};
 use std::{
     path::{Path, PathBuf},
     process::Command,
@@ -43,11 +44,30 @@ pub async fn prepare(root: &Path) -> Result<()> {
     );
     Ok(())
 }
-pub fn replace(root: &Path) -> Result<()> {
+/// Tells the replacement process when a restart without a reason began. Such a restart is
+/// announced only to the development channel, so the lobby chat has no record of it.
+const QUIET_RESTART_VARIABLE: &str = "HANABI_QUIET_RESTART_AT";
+
+/// When the previous process restarted into this one without a reason.
+pub fn quiet_restart() -> Option<DateTime<Utc>> {
+    let value = std::env::var(QUIET_RESTART_VARIABLE).ok()?;
+    DateTime::parse_from_rfc3339(&value)
+        .ok()
+        .map(|time| time.with_timezone(&Utc))
+}
+
+/// Replaces this process with the installed executable. A `quiet` restart has no reason.
+pub fn replace(root: &Path, quiet: bool) -> Result<()> {
     use std::os::unix::process::CommandExt;
     let executable = executable(root)?;
-    Err(Command::new(executable).current_dir(root).exec())
-        .context("Native process replacement failed")
+    let mut command = Command::new(executable);
+    command.current_dir(root);
+    if quiet {
+        command.env(QUIET_RESTART_VARIABLE, Utc::now().to_rfc3339());
+    } else {
+        command.env_remove(QUIET_RESTART_VARIABLE);
+    }
+    Err(command.exec()).context("Native process replacement failed")
 }
 fn executable(root: &Path) -> Result<PathBuf> {
     // Keep the original launch symlink so an atomically replaced release can be selected.

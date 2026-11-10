@@ -9,15 +9,22 @@ pub struct ServerInfo {
     base_url: String,
     came_online: DateTime<Utc>,
     started: Instant,
+    quiet_restart: Option<DateTime<Utc>>,
 }
 
 impl ServerInfo {
-    pub fn new(use_tls: bool, domain: &str) -> Self {
+    pub fn new(use_tls: bool, domain: &str, quiet_restart: Option<DateTime<Utc>>) -> Self {
         Self {
             base_url: format!("{}://{domain}", if use_tls { "https" } else { "http" }),
             came_online: Utc::now(),
             started: Instant::now(),
+            quiet_restart,
         }
+    }
+
+    /// When the previous process restarted into this one without a reason.
+    pub const fn quiet_restart(&self) -> Option<DateTime<Utc>> {
+        self.quiet_restart
     }
 
     pub fn public_url(&self, path: &str) -> String {
@@ -81,5 +88,5 @@ impl ServerInfo {
 
 #[cfg(test)]
 pub(crate) fn test_info() -> Arc<ServerInfo> {
-    Arc::new(ServerInfo::new(false, "localhost"))
+    Arc::new(ServerInfo::new(false, "localhost", None))
 }
