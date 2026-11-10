@@ -116,29 +116,6 @@ export function init(): void {
     }
   }
 
-  // Populate the emote/emoji picker.
-  const picker = $("#emoji-picker");
-  for (const [categoryName, emotesInCategory] of Object.entries(emotes)) {
-    const emoteArray = [...emotesInCategory];
-    for (const emote of emoteArray) {
-      const emoteImg = $("<img>")
-        .addClass("chat-emote")
-        .attr("src", `/public/img/emotes/${categoryName}/${emote}.png`)
-        .attr("title", emote)
-        .on("click", pickEmote);
-      picker.append(emoteImg);
-    }
-  }
-
-  for (const [emojiName, emoji] of emojiMap) {
-    const emojiSpan = $("<span>")
-      .addClass("emoji-item")
-      .attr("title", `:${emojiName}:`)
-      .text(emoji)
-      .on("click", pickEmoji);
-    picker.append(emojiSpan);
-  }
-
   // Retrieve the contents of the typed chat list from local storage (cookie).
   const typedChatHistoryString = localStorage.getItem(
     LOCAL_STORAGE_KEY.TYPED_CHAT_HISTORY,
@@ -161,6 +138,39 @@ export function init(): void {
   }
 }
 
+/**
+ * Adds the emotes and emoji to the picker the first time that it opens. Drawing them is slow, and
+ * most users never open the picker.
+ */
+function fillEmojiPicker() {
+  const picker = $("#emoji-picker");
+  if (picker.children().length > 0) {
+    return;
+  }
+
+  for (const [categoryName, emotesInCategory] of Object.entries(emotes)) {
+    for (const emote of emotesInCategory) {
+      const emoteImg = $("<img>")
+        .addClass("chat-emote")
+        .attr("loading", "lazy")
+        .attr("decoding", "async")
+        .attr("src", `/public/img/emotes/${categoryName}/${emote}.png`)
+        .attr("title", emote)
+        .on("click", pickEmote);
+      picker.append(emoteImg);
+    }
+  }
+
+  for (const [emojiName, emoji] of emojiMap) {
+    const emojiSpan = $("<span>")
+      .addClass("emoji-item")
+      .attr("title", `:${emojiName}:`)
+      .text(emoji)
+      .on("click", pickEmoji);
+    picker.append(emojiSpan);
+  }
+}
+
 function pickEmote(this: HTMLElement) {
   if (activeChatInput) {
     activeChatInput.value += `${this.title} `;
@@ -180,6 +190,7 @@ function pickEmoji(this: HTMLElement) {
 /** Opens the emote and emoji picker, which adds what we pick to a chat input. */
 export function openEmojiPicker(chatInput: HTMLInputElement): void {
   activeChatInput = chatInput;
+  fillEmojiPicker();
   modals.showPrompt("#emoji-modal");
 }
 
