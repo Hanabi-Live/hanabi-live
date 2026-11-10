@@ -43,17 +43,26 @@ describe("sending commands", () => {
       const initial = new Connection("ws://localhost/ws", false);
       initial.send("chat", { text: "allowed" });
       expect(sockets[0]?.sent).toHaveLength(1);
-      initial.send("action", { tableID: 123, type: "play", order: 1 });
+      initial.send("action", {
+        tableID: 123,
+        action: { type: "play", order: 1 },
+      });
       expect(sockets[0]?.sent[1]).toBe(
-        'action {"tableID":123,"type":"play","order":1}',
+        'action {"tableID":123,"action":{"type":"play","order":1}}',
       );
       initial.setReady(false);
-      initial.send("action", { tableID: 123, type: "play", order: 1 });
+      initial.send("action", {
+        tableID: 123,
+        action: { type: "play", order: 1 },
+      });
       expect(sockets[0]?.sent).toHaveLength(2);
       initial.send("getGameState", { tableID: 123 });
       expect(sockets[0]?.sent).toHaveLength(3);
       initial.setReady(true);
-      initial.send("action", { tableID: 123, type: "play", order: 1 });
+      initial.send("action", {
+        tableID: 123,
+        action: { type: "play", order: 1 },
+      });
       expect(sockets[0]?.sent).toHaveLength(4);
     } finally {
       globalThis.WebSocket = originalWebSocket;

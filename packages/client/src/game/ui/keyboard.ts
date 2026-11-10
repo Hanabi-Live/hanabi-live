@@ -386,8 +386,10 @@ function sharedReplaySendSound(sound: "buzz" | "clap" | "holy" | "nooo") {
   // Send it
   globals.lobby.conn!.send("replayAction", {
     tableID: globals.lobby.tableID,
-    type: "sound",
-    sound,
+    action: {
+      type: "sound",
+      sound,
+    },
   });
 }
 

@@ -316,7 +316,7 @@ impl TableActor {
         session: Arc<Session>,
         r: hanabi_protocol::SharedReplayAction,
     ) -> CommandResult<()> {
-        use hanabi_protocol::SharedReplayAction as R;
+        use hanabi_protocol::ReplayLeaderAction as R;
 
         ensure_or_reject!(
             self.attending(&session) && session.user == self.table.owner && self.table.visible,
@@ -330,21 +330,21 @@ impl TableActor {
             bail_internal!("A replay command ran outside a replay");
         };
         // Arrows and sounds only reset the idle timer, so they skip the durable write.
-        let checkpoint = !matches!(r, R::Arrow { .. } | R::Sound { .. });
-        match &r {
-            R::Segment { segment, .. } => replay.segment = *segment,
+        let checkpoint = !matches!(r.action, R::Arrow { .. } | R::Sound { .. });
+        match &r.action {
+            R::Segment { segment } => replay.segment = *segment,
             R::Arrow { .. } | R::Sound { .. } => {}
-            R::HypoStart { .. } => {
+            R::HypoStart {} => {
                 ensure_or_reject!(!replay.hypothetical, "Already hypothetical");
                 replay.hypothetical = true;
                 replay.show_drawn_cards = false;
             }
-            R::HypoEnd { .. } => {
+            R::HypoEnd {} => {
                 ensure_or_reject!(replay.hypothetical, "Not hypothetical");
                 replay.hypothetical = false;
                 replay.hypothetical_actions.clear();
             }
-            R::HypoAction { action, .. } => {
+            R::HypoAction { action } => {
                 ensure_or_reject!(
                     replay.hypothetical_actions.len() < crate::model::MAX_HYPOTHETICAL_ACTIONS
                         && crate::model::hypothetical_bytes(&replay.hypothetical_actions)?
@@ -354,13 +354,12 @@ impl TableActor {
                 );
                 replay.hypothetical_actions.push(action.clone());
             }
-            R::HypoBack { .. } => undo_hypothetical_turn(&mut replay.hypothetical_actions),
-            R::HypoShowDrawnCards {
-                show_drawn_cards, ..
-            } => replay.show_drawn_cards = *show_drawn_cards,
+            R::HypoBack {} => undo_hypothetical_turn(&mut replay.hypothetical_actions),
+            R::HypoShowDrawnCards { show_drawn_cards } => {
+                replay.show_drawn_cards = *show_drawn_cards;
+            }
             R::EfficiencyModifier {
                 efficiency_modifier,
-                ..
             } => replay.efficiency_modifier = *efficiency_modifier,
         }
         let message = Outgoing::new(hanabi_protocol::server::REPLAY_ACTION, r);

@@ -237,32 +237,28 @@ export const cardOrderSchema = z
 export const clueTypeSchema = z.enum(["color", "rank"]);
 
 /**
- * A seat in a game. The game library's `PlayerIndex` type.
- */
-export const playerIndexSchema = z.literal([0, 1, 2, 3, 4, 5]);
-
-/**
  * The index of a color in the variant's clue colors.
  */
 export const colorIndexSchema = z.literal([0, 1, 2, 3, 4, 5]);
 
 /**
- * A clue's type and value: a color clue names a suit's color, and a rank clue names a rank.
+ * A clue's type and value: a color clue names a suit's color, and a rank clue names a rank. Events
+ * hold it apart from their type because the recipient may not see it, while turns name the clue's
+ * type as their own (`colorClue` or `rankClue`).
  */
-export const receivedClueSchema = z.discriminatedUnion("type", [
+export const clueSchema = z.discriminatedUnion("type", [
   z
-    .strictObject({
-      type: z.literal("color"),
-      /**
-       * The index of the color in the variant's clue colors.
-       */
-      value: colorIndexSchema,
-    })
+    .strictObject({ type: z.literal("color"), value: colorIndexSchema })
     .readonly(),
   z
     .strictObject({ type: z.literal("rank"), value: rankClueNumberSchema })
     .readonly(),
 ]);
+
+/**
+ * A seat in a game. The game library's `PlayerIndex` type.
+ */
+export const playerIndexSchema = z.literal([0, 1, 2, 3, 4, 5]);
 
 /**
  * An integer that JavaScript represents exactly. Lists of integers use it to bound each item.
@@ -279,8 +275,7 @@ export const safeIntegerSchema = z
 export const suitIndexSchema = z.literal([0, 1, 2, 3, 4, 5]);
 
 /**
- * One game event as a particular recipient sees it. A card identity that the recipient may not see
- * is absent.
+ * One game event as a particular recipient sees it.
  */
 export const gameEventSchema = z.discriminatedUnion("type", [
   z
@@ -321,6 +316,9 @@ export const gameEventSchema = z.discriminatedUnion("type", [
     .readonly(),
   z
     .strictObject({
+      /**
+       * Whether the card was a failed play.
+       */
       failed: z.boolean(),
       order: cardOrderSchema,
       playerIndex: playerIndexSchema,
@@ -337,7 +335,7 @@ export const gameEventSchema = z.discriminatedUnion("type", [
       /**
        * Absent when the recipient may not see the clue's type and value.
        */
-      clue: receivedClueSchema.optional(),
+      clue: clueSchema.optional(),
       giver: playerIndexSchema,
       /**
        * The orders of the cards the clue touched.
@@ -459,6 +457,9 @@ export const hypotheticalActionSchema = z.discriminatedUnion("type", [
     .readonly(),
   z
     .strictObject({
+      /**
+       * Whether the card was a failed play.
+       */
       failed: z.boolean(),
       order: cardOrderSchema,
       playerIndex: playerIndexSchema,
@@ -475,7 +476,7 @@ export const hypotheticalActionSchema = z.discriminatedUnion("type", [
       /**
        * Absent when the recipient may not see the clue's type and value.
        */
-      clue: receivedClueSchema.optional(),
+      clue: clueSchema.optional(),
       giver: playerIndexSchema,
       ignoreNegative: z.boolean(),
       /**

@@ -171,124 +171,115 @@ pub struct Note {
     pub notes: Vec<CardNote>,
 }
 
-/// A clue's type and value. `ReceivedClue` describes the values it holds.
-#[derive(Clone, Copy, Debug, Serialize, Deserialize)]
-#[serde(deny_unknown_fields)]
-pub struct Clue {
-    #[serde(rename = "type")]
-    pub clue_type: ClueType,
-    pub value: i32,
-}
-
-/// A clue's type and value: a color clue names a suit's color, and a rank clue names a rank.
-#[derive(JsonSchema)]
+/// A clue's type and value: a color clue names a suit's color, and a rank clue names a rank. Events
+/// hold it apart from their type because the recipient may not see it, while turns name the clue's
+/// type as their own (`colorClue` or `rankClue`).
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
 #[serde(tag = "type", rename_all = "camelCase", deny_unknown_fields)]
-pub enum ReceivedClue {
-    Color {
-        /// The index of the color in the variant's clue colors.
-        value: ColorIndex,
-    },
-    Rank {
-        value: RankClueNumber,
-    },
+pub enum Clue {
+    Color { value: ColorIndex },
+    Rank { value: RankClueNumber },
 }
 
-/// One game event as a particular recipient sees it. A card identity that the recipient may not see
-/// is absent.
-#[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
-#[serde(
-    tag = "type",
-    rename_all = "camelCase",
-    rename_all_fields = "camelCase",
-    deny_unknown_fields
-)]
+/// A card that a player draws, plays, or learns. A card identity that the recipient may not see is
+/// absent.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct CardEvent {
+    pub player_index: PlayerIndex,
+    pub order: CardOrder,
+    /// Absent when the recipient may not see the card.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[schemars(with = "SuitIndex")]
+    pub suit_index: Option<SuitIndex>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[schemars(with = "CardRank")]
+    pub rank: Option<CardRank>,
+}
+
+/// A card that a player discards, or fails to play.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct DiscardEvent {
+    pub player_index: PlayerIndex,
+    pub order: CardOrder,
+    /// Absent when the recipient may not see the card.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[schemars(with = "SuitIndex")]
+    pub suit_index: Option<SuitIndex>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[schemars(with = "CardRank")]
+    pub rank: Option<CardRank>,
+    /// Whether the card was a failed play.
+    pub failed: bool,
+}
+
+/// The start of a turn.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct TurnEvent {
+    #[schemars(range(min = 0, max = MAX_SAFE_INTEGER))]
+    pub num: i64,
+    /// Absent once the game has ended.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[schemars(with = "PlayerIndex")]
+    pub current_player_index: Option<PlayerIndex>,
+}
+
+/// A clue that a player gives.
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct ClueEvent {
+    /// Absent when the recipient may not see the clue's type and value.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[schemars(with = "Clue")]
+    pub clue: Option<Clue>,
+    pub giver: PlayerIndex,
+    pub target: PlayerIndex,
+    /// The orders of the cards the clue touched.
+    pub orders: Vec<CardOrder>,
+    #[schemars(range(min = 0, max = MAX_SAFE_INTEGER))]
+    pub turn: i64,
+}
+
+/// The end of a game.
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct GameOverEvent {
+    pub end_condition: EndCondition,
+    /// The player whom the ending names, such as the one who timed out, if any.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[schemars(with = "PlayerIndex")]
+    pub player_index: Option<PlayerIndex>,
+    /// The players who voted to end the game, when a vote ended it.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[schemars(with = "Vec<PlayerIndex>")]
+    pub votes: Option<Vec<PlayerIndex>>,
+}
+
+/// Every player's time when a game ends.
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct PlayerTimesEvent {
+    /// Each player's time, in seat order.
+    #[schemars(with = "Vec<SafeInteger>", length(min = MIN_PLAYERS, max = MAX_PLAYERS))]
+    pub player_times_ms: Vec<i64>,
+    #[schemars(range(min = 0, max = MAX_SAFE_INTEGER))]
+    pub duration_ms: i64,
+}
+
+/// One game event as a particular recipient sees it.
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
+#[serde(tag = "type", rename_all = "camelCase")]
 pub enum GameEvent {
-    Draw {
-        player_index: PlayerIndex,
-        order: CardOrder,
-        /// Absent when the recipient may not see the card.
-        #[serde(default, skip_serializing_if = "Option::is_none")]
-        #[schemars(with = "SuitIndex")]
-        suit_index: Option<SuitIndex>,
-        #[serde(default, skip_serializing_if = "Option::is_none")]
-        #[schemars(with = "CardRank")]
-        rank: Option<CardRank>,
-    },
-    Play {
-        player_index: PlayerIndex,
-        order: CardOrder,
-        /// Absent when the recipient may not see the card.
-        #[serde(default, skip_serializing_if = "Option::is_none")]
-        #[schemars(with = "SuitIndex")]
-        suit_index: Option<SuitIndex>,
-        #[serde(default, skip_serializing_if = "Option::is_none")]
-        #[schemars(with = "CardRank")]
-        rank: Option<CardRank>,
-    },
-    CardIdentity {
-        player_index: PlayerIndex,
-        order: CardOrder,
-        /// Absent when the recipient may not see the card.
-        #[serde(default, skip_serializing_if = "Option::is_none")]
-        #[schemars(with = "SuitIndex")]
-        suit_index: Option<SuitIndex>,
-        #[serde(default, skip_serializing_if = "Option::is_none")]
-        #[schemars(with = "CardRank")]
-        rank: Option<CardRank>,
-    },
-    Discard {
-        player_index: PlayerIndex,
-        order: CardOrder,
-        /// Absent when the recipient may not see the card.
-        #[serde(default, skip_serializing_if = "Option::is_none")]
-        #[schemars(with = "SuitIndex")]
-        suit_index: Option<SuitIndex>,
-        #[serde(default, skip_serializing_if = "Option::is_none")]
-        #[schemars(with = "CardRank")]
-        rank: Option<CardRank>,
-        failed: bool,
-    },
-    Clue {
-        /// Absent when the recipient may not see the clue's type and value.
-        #[serde(default, skip_serializing_if = "Option::is_none")]
-        #[schemars(with = "ReceivedClue")]
-        clue: Option<Clue>,
-        giver: PlayerIndex,
-        target: PlayerIndex,
-        /// The orders of the cards the clue touched.
-        orders: Vec<CardOrder>,
-        #[schemars(range(min = 0, max = MAX_SAFE_INTEGER))]
-        turn: i64,
-    },
-    Turn {
-        #[schemars(range(min = 0, max = MAX_SAFE_INTEGER))]
-        num: i64,
-        /// Absent once the game has ended.
-        #[serde(default, skip_serializing_if = "Option::is_none")]
-        #[schemars(with = "PlayerIndex")]
-        current_player_index: Option<PlayerIndex>,
-    },
-    GameOver {
-        end_condition: EndCondition,
-        /// The player whom the ending names, such as the one who timed out, if any.
-        #[serde(default, skip_serializing_if = "Option::is_none")]
-        #[schemars(with = "PlayerIndex")]
-        player_index: Option<PlayerIndex>,
-        /// The players who voted to end the game, when a vote ended it.
-        #[serde(default, skip_serializing_if = "Option::is_none")]
-        #[schemars(with = "Vec<PlayerIndex>")]
-        votes: Option<Vec<PlayerIndex>>,
-    },
-    PlayerTimes {
-        /// Each player's time, in seat order.
-        #[schemars(
-            with = "Vec<SafeInteger>",
-            length(min = MIN_PLAYERS, max = MAX_PLAYERS)
-        )]
-        player_times_ms: Vec<i64>,
-        #[schemars(range(min = 0, max = MAX_SAFE_INTEGER))]
-        duration_ms: i64,
-    },
+    Draw(CardEvent),
+    Play(CardEvent),
+    CardIdentity(CardEvent),
+    Discard(DiscardEvent),
+    Clue(ClueEvent),
+    Turn(TurnEvent),
+    GameOver(GameOverEvent),
+    PlayerTimes(PlayerTimesEvent),
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]

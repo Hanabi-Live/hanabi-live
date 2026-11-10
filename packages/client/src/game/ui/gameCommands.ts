@@ -128,8 +128,8 @@ gameCommands.set("hypothetical", (data) => {
 });
 
 // The shared replay leader's actions, which the server relays to everyone watching.
-gameCommands.set("replayAction", (data) => {
-  switch (data.type) {
+gameCommands.set("replayAction", ({ action: leaderAction }) => {
+  switch (leaderAction.type) {
     case "segment": {
       // The leader already moved to the segment that the server is broadcasting.
       if (
@@ -141,7 +141,7 @@ gameCommands.set("replayAction", (data) => {
 
       globals.store!.dispatch({
         type: "replaySharedSegment",
-        segment: data.segment,
+        segment: leaderAction.segment,
       });
       break;
     }
@@ -159,14 +159,14 @@ gameCommands.set("replayAction", (data) => {
       }
 
       arrows.hideAll();
-      if (data.target !== undefined) {
-        arrows.toggle(data.target);
+      if (leaderAction.target !== undefined) {
+        arrows.toggle(leaderAction.target);
       }
       break;
     }
 
     case "sound": {
-      globals.game!.sounds.play(toSoundType(data.sound));
+      globals.game!.sounds.play(toSoundType(leaderAction.sound));
       break;
     }
 
@@ -181,7 +181,7 @@ gameCommands.set("replayAction", (data) => {
     }
 
     case "hypoAction": {
-      const action = toHypotheticalAction(data.action);
+      const action = toHypotheticalAction(leaderAction.action);
       globals.store!.dispatch({
         type: "hypoAction",
         shared: true,
@@ -203,7 +203,7 @@ gameCommands.set("replayAction", (data) => {
       globals.store!.dispatch({
         type: "hypoShowDrawnCards",
         shared: true,
-        showDrawnCards: data.showDrawnCards,
+        showDrawnCards: leaderAction.showDrawnCards,
       });
       break;
     }
@@ -217,7 +217,7 @@ gameCommands.set("replayAction", (data) => {
         return;
       }
 
-      stats.setEfficiencyModifier(data.efficiencyModifier);
+      stats.setEfficiencyModifier(leaderAction.efficiencyModifier);
       break;
     }
   }

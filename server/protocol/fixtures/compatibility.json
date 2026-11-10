@@ -315,9 +315,11 @@
     "command": "action",
     "input": {
       "tableID": 7,
-      "type": "colorClue",
-      "target": 1,
-      "colorIndex": 2
+      "action": {
+        "type": "colorClue",
+        "target": 1,
+        "colorIndex": 2
+      }
     },
     "valid": true
   },
@@ -327,9 +329,11 @@
     "command": "action",
     "input": {
       "tableID": 7,
-      "type": "rankClue",
-      "target": 1,
-      "rank": 7
+      "action": {
+        "type": "rankClue",
+        "target": 1,
+        "rank": 7
+      }
     },
     "valid": false
   },
@@ -339,8 +343,10 @@
     "command": "action",
     "input": {
       "tableID": 7,
-      "type": "pass",
-      "target": 0
+      "action": {
+        "type": "pass",
+        "target": 0
+      }
     },
     "valid": false
   },
@@ -884,11 +890,13 @@
     "command": "replayAction",
     "input": {
       "tableID": 4,
-      "type": "hypoAction",
       "action": {
-        "type": "morph",
-        "order": 3,
-        "rank": 2
+        "type": "hypoAction",
+        "action": {
+          "type": "morph",
+          "order": 3,
+          "rank": 2
+        }
       }
     },
     "valid": true
@@ -899,9 +907,11 @@
     "command": "replayAction",
     "input": {
       "tableID": 4,
-      "type": "segment",
-      "segment": 2,
-      "order": 0
+      "action": {
+        "type": "segment",
+        "segment": 2,
+        "order": 0
+      }
     },
     "valid": false
   },
@@ -911,7 +921,9 @@
     "command": "replayAction",
     "input": {
       "tableID": 4,
-      "type": "segment"
+      "action": {
+        "type": "segment"
+      }
     },
     "valid": false
   },
@@ -1159,11 +1171,13 @@
     "command": "replayAction",
     "input": {
       "tableID": 4,
-      "type": "hypoAction",
       "action": {
-        "type": "morph",
-        "order": 66,
-        "rank": 2
+        "type": "hypoAction",
+        "action": {
+          "type": "morph",
+          "order": 66,
+          "rank": 2
+        }
       }
     },
     "valid": false
@@ -1174,8 +1188,10 @@
     "command": "replayAction",
     "input": {
       "tableID": 4,
-      "type": "arrow",
-      "target": "minEfficiency"
+      "action": {
+        "type": "arrow",
+        "target": "minEfficiency"
+      }
     },
     "valid": true
   },
@@ -1185,8 +1201,10 @@
     "command": "replayAction",
     "input": {
       "tableID": 4,
-      "type": "arrow",
-      "target": 12
+      "action": {
+        "type": "arrow",
+        "target": 12
+      }
     },
     "valid": true
   },
@@ -1196,7 +1214,9 @@
     "command": "replayAction",
     "input": {
       "tableID": 4,
-      "type": "arrow"
+      "action": {
+        "type": "arrow"
+      }
     },
     "valid": true
   },
@@ -1206,8 +1226,10 @@
     "command": "replayAction",
     "input": {
       "tableID": 4,
-      "type": "arrow",
-      "target": "nothing"
+      "action": {
+        "type": "arrow",
+        "target": "nothing"
+      }
     },
     "valid": false
   },
@@ -1217,8 +1239,10 @@
     "command": "replayAction",
     "input": {
       "tableID": 4,
-      "type": "arrow",
-      "target": 66
+      "action": {
+        "type": "arrow",
+        "target": 66
+      }
     },
     "valid": false
   },

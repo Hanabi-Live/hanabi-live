@@ -36,7 +36,9 @@ export function startHypothetical(): void {
   } else if (shared.amLeader) {
     globals.lobby.conn!.send("replayAction", {
       tableID: globals.lobby.tableID,
-      type: "hypoStart",
+      action: {
+        type: "hypoStart",
+      },
     });
     startSharedHypothetical();
   }
@@ -76,7 +78,9 @@ export function endHypothetical(): void {
   if (shared?.amLeader === true) {
     globals.lobby.conn!.send("replayAction", {
       tableID: globals.lobby.tableID,
-      type: "hypoEnd",
+      action: {
+        type: "hypoEnd",
+      },
     });
   }
 }
@@ -213,8 +217,10 @@ export function sendHypotheticalActionToServer(
   if (globals.state.replay.ownHypothetical === undefined) {
     globals.lobby.conn!.send("replayAction", {
       tableID: globals.lobby.tableID,
-      type: "hypoAction",
-      action: toWireHypotheticalAction(hypoAction),
+      action: {
+        type: "hypoAction",
+        action: toWireHypotheticalAction(hypoAction),
+      },
     });
   } else {
     globals.store!.dispatch({
@@ -241,7 +247,9 @@ export function sendHypotheticalBack(): void {
   } else if (globals.state.replay.shared?.amLeader === true) {
     globals.lobby.conn!.send("replayAction", {
       tableID: globals.lobby.tableID,
-      type: "hypoBack",
+      action: {
+        type: "hypoBack",
+      },
     });
   }
 }
@@ -260,8 +268,10 @@ export function toggleRevealed(): void {
   } else if (globals.state.replay.shared?.amLeader === true) {
     globals.lobby.conn!.send("replayAction", {
       tableID: globals.lobby.tableID,
-      type: "hypoShowDrawnCards",
-      showDrawnCards: !globals.state.replay.hypothetical.showDrawnCards,
+      action: {
+        type: "hypoShowDrawnCards",
+        showDrawnCards: !globals.state.replay.hypothetical.showDrawnCards,
+      },
     });
   }
 }

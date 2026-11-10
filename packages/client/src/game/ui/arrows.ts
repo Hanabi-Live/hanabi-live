@@ -461,12 +461,10 @@ export function toggle(target: ArrowTarget, alwaysShow = false): void {
     && globals.state.replay.shared.amLeader
     && globals.state.replay.shared.useSharedSegments
   ) {
-    globals.lobby.conn!.send(
-      "replayAction",
-      show
-        ? { tableID: globals.lobby.tableID, type: "arrow", target }
-        : { tableID: globals.lobby.tableID, type: "arrow" },
-    );
+    globals.lobby.conn!.send("replayAction", {
+      tableID: globals.lobby.tableID,
+      action: show ? { type: "arrow", target } : { type: "arrow" },
+    });
   }
 }
 

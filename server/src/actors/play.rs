@@ -29,15 +29,7 @@ impl TableActor {
         message: ClientMessage,
     ) -> CommandResult<()> {
         match message {
-            ClientMessage::Action(r) => {
-                let (action_type, target, value) = r.recorded();
-                let action = RecordedAction {
-                    action_type,
-                    target,
-                    value,
-                };
-                self.action(session, action).await
-            }
+            ClientMessage::Action(r) => self.action(session, r.action.into()).await,
             ClientMessage::TableTerminate(_) => self.terminate(session, false).await,
             ClientMessage::TableVoteForTermination(_) => self.terminate(session, true).await,
             ClientMessage::Pause(r) => self.pause(session, r.setting).await,
@@ -667,6 +659,7 @@ impl TableActor {
                     frame(
                         hanabi_protocol::server::HYPOTHETICAL,
                         hanabi_protocol::Hypothetical {
+                            table_id: self.table.id,
                             show_drawn_cards: replay.show_drawn_cards,
                             actions: replay.hypothetical_actions.clone(),
                         },

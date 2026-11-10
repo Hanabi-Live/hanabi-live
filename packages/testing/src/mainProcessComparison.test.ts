@@ -159,8 +159,7 @@ databaseDescribe("normal-server protocol workload", () => {
               const start = performance.now();
               peer.send("action", {
                 tableID,
-                type: "play",
-                order,
+                action: { type: "play", order },
               });
               await peer.receive(
                 "gameAction",

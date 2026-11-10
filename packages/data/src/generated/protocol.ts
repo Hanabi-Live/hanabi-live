@@ -72,38 +72,19 @@ export enum SoundMove {
   None = 2,
 }
 
-export const tableIdSchema = z
-  .number()
-  .int()
-  .min(0)
-  .max(9_007_199_254_740_991)
-  .brand<"TableID">();
-
 /**
- * A turn in an ongoing game.
+ * A player's turn: the `action` command, and the turns of the replay format.
  */
-export const actionRequestSchema = z.discriminatedUnion("type", [
+const playerTurnSchema = z.discriminatedUnion("type", [
   z
-    .strictObject({
-      order: cardOrderSchema,
-      tableID: tableIdSchema,
-      type: z.literal("play"),
-    })
+    .strictObject({ order: cardOrderSchema, type: z.literal("play") })
+    .readonly(),
+  z
+    .strictObject({ order: cardOrderSchema, type: z.literal("discard") })
     .readonly(),
   z
     .strictObject({
-      order: cardOrderSchema,
-      tableID: tableIdSchema,
-      type: z.literal("discard"),
-    })
-    .readonly(),
-  z
-    .strictObject({
-      /**
-       * The index of the color in the variant's clue colors.
-       */
       colorIndex: colorIndexSchema,
-      tableID: tableIdSchema,
       /**
        * The player who receives the clue.
        */
@@ -114,7 +95,6 @@ export const actionRequestSchema = z.discriminatedUnion("type", [
   z
     .strictObject({
       rank: rankClueNumberSchema,
-      tableID: tableIdSchema,
       /**
        * The player who receives the clue.
        */
@@ -123,6 +103,19 @@ export const actionRequestSchema = z.discriminatedUnion("type", [
     })
     .readonly(),
 ]);
+export const tableIdSchema = z
+  .number()
+  .int()
+  .min(0)
+  .max(9_007_199_254_740_991)
+  .brand<"TableID">();
+
+/**
+ * A turn in an ongoing game.
+ */
+export const actionRequestSchema = z
+  .strictObject({ action: playerTurnSchema, tableID: tableIdSchema })
+  .readonly();
 
 /**
  * The body of a JSON HTTP error response. Server failures also name their typed cause and the
@@ -455,6 +448,7 @@ export const hypotheticalSchema = z
      */
     actions: z.array(hypotheticalActionSchema).readonly(),
     showDrawnCards: z.boolean(),
+    tableID: tableIdSchema,
   })
   .readonly();
 
@@ -879,9 +873,6 @@ const replayGameActionSchema = z.discriminatedUnion("type", [
     .readonly(),
   z
     .strictObject({
-      /**
-       * The index of the color in the variant's clue colors.
-       */
       colorIndex: colorIndexSchema,
       /**
        * The player who receives the clue.
@@ -904,8 +895,7 @@ const replayGameActionSchema = z.discriminatedUnion("type", [
     .strictObject({
       endCondition: z.enum(EndCondition),
       /**
-       * The player who ended the game, such as the one who timed out. Absent when no player
-       * did.
+       * The player who ended the game, such as the one who timed out. Absent when no player did.
        */
       playerIndex: playerIndexSchema.optional(),
       type: z.literal("gameOver"),
@@ -1175,20 +1165,17 @@ const replayArrowTargetSchema = z.union([
 ]);
 
 /**
- * A shared-replay leader's action. The leader sends it, and the server applies it and relays it to
- * everyone watching.
+ * What a shared-replay leader does.
  */
-export const sharedReplayActionSchema = z.discriminatedUnion("type", [
+const replayLeaderActionSchema = z.discriminatedUnion("type", [
   z
     .strictObject({
       segment: z.number().int().min(0).max(2_147_483_647),
-      tableID: tableIdSchema,
       type: z.literal("segment"),
     })
     .readonly(),
   z
     .strictObject({
-      tableID: tableIdSchema,
       /**
        * Absent to clear the arrow.
        */
@@ -1197,32 +1184,20 @@ export const sharedReplayActionSchema = z.discriminatedUnion("type", [
     })
     .readonly(),
   z
-    .strictObject({
-      sound: replaySoundEffectSchema,
-      tableID: tableIdSchema,
-      type: z.literal("sound"),
-    })
+    .strictObject({ sound: replaySoundEffectSchema, type: z.literal("sound") })
     .readonly(),
-  z
-    .strictObject({ tableID: tableIdSchema, type: z.literal("hypoStart") })
-    .readonly(),
-  z
-    .strictObject({ tableID: tableIdSchema, type: z.literal("hypoEnd") })
-    .readonly(),
+  z.strictObject({ type: z.literal("hypoStart") }).readonly(),
+  z.strictObject({ type: z.literal("hypoEnd") }).readonly(),
   z
     .strictObject({
       action: hypotheticalActionSchema,
-      tableID: tableIdSchema,
       type: z.literal("hypoAction"),
     })
     .readonly(),
-  z
-    .strictObject({ tableID: tableIdSchema, type: z.literal("hypoBack") })
-    .readonly(),
+  z.strictObject({ type: z.literal("hypoBack") }).readonly(),
   z
     .strictObject({
       showDrawnCards: z.boolean(),
-      tableID: tableIdSchema,
       type: z.literal("hypoShowDrawnCards"),
     })
     .readonly(),
@@ -1233,11 +1208,18 @@ export const sharedReplayActionSchema = z.discriminatedUnion("type", [
         .int()
         .min(-2_147_483_648)
         .max(2_147_483_647),
-      tableID: tableIdSchema,
       type: z.literal("efficiencyModifier"),
     })
     .readonly(),
 ]);
+
+/**
+ * A shared-replay leader's action. The leader sends it, and the server applies it and relays it to
+ * everyone watching.
+ */
+export const sharedReplayActionSchema = z
+  .strictObject({ action: replayLeaderActionSchema, tableID: tableIdSchema })
+  .readonly();
 
 /**
  * A sound played outside of a game. The server plays "shutdown" to everyone when it is going down,

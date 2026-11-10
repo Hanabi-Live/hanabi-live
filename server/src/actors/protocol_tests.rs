@@ -447,9 +447,9 @@ async fn duck_clue_identity_is_private_in_live_history_and_recovery_but_not_comp
                 index,
                 "action",
                 if kind == hanabi_protocol::RecordedActionType::ColorClue {
-                    json!({"tableID":id,"type":"colorClue","target":target,"colorIndex":action.value})
+                    json!({"tableID":id,"action":{"type":"colorClue","target":target,"colorIndex":action.value}})
                 } else {
-                    json!({"tableID":id,"type":"rankClue","target":target,"rank":action.value})
+                    json!({"tableID":id,"action":{"type":"rankClue","target":target,"rank":action.value}})
                 },
             )
             .await?;
@@ -823,9 +823,9 @@ async fn shared_review_hypothetical_actions_refresh_idle() -> Result<()> {
         actor.initialize(h.users[0].clone(), vec![]).await?;
         let action = json!({"type":"turn","num":1,"currentPlayerIndex":1});
         for request in [
-            json!({"tableID":id,"type":"hypoStart"}),
-            json!({"tableID":id,"type":"hypoAction","action":action}),
-            json!({"tableID":id,"type":"hypoBack"}),
+            json!({"tableID":id,"action":{"type":"hypoStart"}}),
+            json!({"tableID":id,"action":{"type":"hypoAction","action":action}}),
+            json!({"tableID":id,"action":{"type":"hypoBack"}}),
         ] {
             let mut next = actor.candidate();
             next.game_mut().unwrap().idle_remaining = 1000;
@@ -1241,7 +1241,7 @@ async fn pausing_a_game_is_announced_in_its_chat() -> Result<()> {
             .send(
                 index,
                 "action",
-                json!({"tableID":id,"type":"play","order":card}),
+                json!({"tableID":id,"action":{"type":"play","order":card}}),
             )
             .await
             .err()
@@ -1634,13 +1634,13 @@ async fn remade_tables_publish_fresh_statistics_for_every_player() -> Result<()>
                 card.rank == game.stacks[card.suit_index] + 1
             });
             let action = if let Some(order) = playable {
-                json!({"tableID":id,"type":"play","order":order})
+                json!({"tableID":id,"action":{"type":"play","order":order}})
             } else if game.clue_tokens == 8 {
                 let target = 1 - active;
                 let card = &game.deck[game.players[target].hand[0]];
-                json!({"tableID":id,"type":"rankClue","target":target,"rank":card.rank})
+                json!({"tableID":id,"action":{"type":"rankClue","target":target,"rank":card.rank}})
             } else {
-                json!({"tableID":id,"type":"discard","order":hand[0]})
+                json!({"tableID":id,"action":{"type":"discard","order":hand[0]}})
             };
             let actor = usize::try_from(snapshot.players[active].id.0)? - 1;
             h.send(actor, "action", action).await?;
@@ -2159,7 +2159,7 @@ async fn replay_loading_keeps_names_neutral_and_never_starts_a_game_clock() -> R
         h.send(
             0,
             "replayAction",
-            json!({"tableID":id,"type":"segment","segment":0}),
+            json!({"tableID":id,"action":{"type":"segment","segment":0}}),
         )
         .await?;
         let snapshot = h.snapshot(id).await?.0;
@@ -2706,7 +2706,7 @@ async fn playing_membership_is_separate_from_replay_attendance_and_bots_can_play
         h.send(
             0,
             "replayAction",
-            json!({"tableID":replay_id,"type":"segment","segment":1}),
+            json!({"tableID":replay_id,"action":{"type":"segment","segment":1}}),
         )
         .await?;
         h.send(0, "tableUnattend", json!({"tableID":pregame}))
@@ -2750,7 +2750,7 @@ async fn playing_membership_is_separate_from_replay_attendance_and_bots_can_play
                 session: old_alice,
                 message: client_message(
                     "replayAction",
-                    &json!({"tableID":replay_id,"type":"segment","segment":9}),
+                    &json!({"tableID":replay_id,"action":{"type":"segment","segment":9}}),
                 )?,
                 reply,
             })
@@ -2939,8 +2939,9 @@ async fn replay_arrows_sounds_and_loads_skip_durable_checkpoints() -> Result<()>
             ("arrow", json!({"target":0})),
             ("sound", json!({"sound":"clap"})),
         ] {
-            let mut data = json!({"tableID":id,"type":kind});
-            data.as_object_mut()
+            let mut data = json!({"tableID":id,"action":{"type":kind}});
+            data["action"]
+                .as_object_mut()
                 .context("object")?
                 .extend(extra.as_object().context("object")?.clone());
             h.send(0, "replayAction", data).await?;
@@ -2954,7 +2955,7 @@ async fn replay_arrows_sounds_and_loads_skip_durable_checkpoints() -> Result<()>
         h.send(
             0,
             "replayAction",
-            json!({"tableID":id,"type":"segment","segment":1}),
+            json!({"tableID":id,"action":{"type":"segment","segment":1}}),
         )
         .await?;
         let (table, saved) = h.snapshot(id).await?;
@@ -3061,7 +3062,7 @@ async fn commands_for_another_phase_are_rejected() -> Result<()> {
             .send(
                 0,
                 "action",
-                json!({"tableID": id, "type": "discard", "order": 0}),
+                json!({"tableID":id,"action":{"type": "discard", "order": 0}}),
             )
             .await
             .expect_err("A pregame accepted a game action");
@@ -3070,7 +3071,7 @@ async fn commands_for_another_phase_are_rejected() -> Result<()> {
             .send(
                 0,
                 "replayAction",
-                json!({"tableID": id, "type": "segment", "segment": 1}),
+                json!({"tableID":id,"action":{"type": "segment", "segment": 1}}),
             )
             .await
             .expect_err("A pregame accepted a replay action");
@@ -3229,7 +3230,7 @@ async fn saved_actions_store_null_for_a_missing_target_or_value() -> Result<()> 
         h.send(
             index,
             "action",
-            json!({"tableID":id,"type":"play","order":card}),
+            json!({"tableID":id,"action":{"type":"play","order":card}}),
         )
         .await?;
         for index in 0..2 {

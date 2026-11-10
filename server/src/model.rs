@@ -907,9 +907,9 @@ mod tests {
         let replay: ReplayState = serde_json::from_value(stored.clone()).unwrap();
         assert!(matches!(
             replay.hypothetical_actions[..],
-            [HypotheticalAction::Unmorph {
+            [HypotheticalAction::Unmorph(hanabi_protocol::TargetCard {
                 order: hanabi_protocol::CardOrder(3)
-            }]
+            })]
         ));
         assert_eq!(serde_json::to_value(&replay).unwrap(), stored);
     }

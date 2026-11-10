@@ -585,7 +585,10 @@ async function playGame(alice: Peer, bob: Peer): Promise<number> {
   if (card?.type !== "draw") {
     throw new Error("The first player has no cards.");
   }
-  first.peer.send("action", { tableID, type: "play", order: card.order });
+  first.peer.send("action", {
+    tableID,
+    action: { type: "play", order: card.order },
+  });
   await first.peer.receive("gameAction", SERVER_COMMAND_SCHEMAS.gameAction);
   alice.send("tableTerminate", { tableID });
   const finished = await alice.receive(
@@ -683,9 +686,11 @@ async function seed(address: string): Promise<Seed> {
     // A rank clue, since the variant's clue colors do not match its suits one to one.
     bob.send("action", {
       tableID,
-      type: "rankClue",
-      target: newest.playerIndex,
-      rank: newest.rank,
+      action: {
+        type: "rankClue",
+        target: newest.playerIndex,
+        rank: newest.rank,
+      },
     });
     await bob.receive("gameAction", SERVER_COMMAND_SCHEMAS.gameAction);
   }

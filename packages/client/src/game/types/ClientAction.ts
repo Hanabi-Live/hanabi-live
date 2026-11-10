@@ -1,12 +1,7 @@
 import type { ClientCommandData } from "@hanabi-live/data";
 
-/** Removes the table from each kind of action. */
-type WithoutTable<Action> = Action extends unknown
-  ? Omit<Action, "tableID">
-  : never;
-
-/** An in-game action that we just took: the "action" command, without its table. */
-export type ClientAction = WithoutTable<ClientCommandData["action"]>;
+/** An in-game action that we just took: the "action" command's turn. */
+export type ClientAction = ClientCommandData["action"]["action"];
 
 export type ClientActionColorClue = Extract<
   ClientAction,

@@ -229,8 +229,7 @@ databaseDescribe("compiled application entry point (rust)", () => {
         expect(card.rank).toBeUndefined();
         active.send("action", {
           tableID,
-          type: "play",
-          order: card.order,
+          action: { type: "play", order: card.order },
         });
         await active.receive("gameAction", SERVER_COMMAND_SCHEMAS.gameAction);
         active.send("getGameState", { tableID });
@@ -423,14 +422,15 @@ databaseDescribe("compiled application entry point (rust)", () => {
         );
         replacement.send("replayAction", {
           tableID,
-          type: "segment",
-          segment: 1,
+          action: { type: "segment", segment: 1 },
         });
         const replayPosition = await replacement.receive(
           "replayAction",
           SERVER_COMMAND_SCHEMAS.replayAction,
         );
-        expect(replayPosition).toMatchObject({ type: "segment", segment: 1 });
+        expect(replayPosition).toMatchObject({
+          action: { type: "segment", segment: 1 },
+        });
         replacement.send("getGameState", { tableID });
         const replayHistory = await replacement.receive(
           "gameActionList",

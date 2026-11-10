@@ -31,7 +31,7 @@ export function toWireAction(
   tableID: number,
   action: ClientAction,
 ): z.input<typeof actionRequestSchema> {
-  return { tableID, ...action };
+  return { tableID, action };
 }
 
 /** The game state indexes some lists by seat, so each needs one entry per player. */
@@ -52,13 +52,13 @@ export function toCardIdentity(identity: WireCardIdentity): CardIdentity {
   return { suitIndex: identity.suitIndex, rank: identity.rank };
 }
 
-type WireReplayAction = ServerCommandData["replayAction"];
+type WireReplayAction = ServerCommandData["replayAction"]["action"];
 type WireHypotheticalAction = Extract<
   WireReplayAction,
   { type: "hypoAction" }
 >["action"];
 type OutgoingHypotheticalAction = Extract<
-  ClientCommandData["replayAction"],
+  ClientCommandData["replayAction"]["action"],
   { type: "hypoAction" }
 >["action"];
 

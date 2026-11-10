@@ -331,70 +331,12 @@ impl ReplayCreateRequest {
 }
 
 /// A turn in an ongoing game.
-#[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
-#[serde(
-    tag = "type",
-    rename_all = "camelCase",
-    rename_all_fields = "camelCase",
-    deny_unknown_fields
-)]
-pub enum ActionRequest {
-    Play {
-        #[serde(rename = "tableID")]
-        table_id: TableId,
-        order: CardOrder,
-    },
-    Discard {
-        #[serde(rename = "tableID")]
-        table_id: TableId,
-        order: CardOrder,
-    },
-    ColorClue {
-        #[serde(rename = "tableID")]
-        table_id: TableId,
-        /// The player who receives the clue.
-        target: PlayerIndex,
-        /// The index of the color in the variant's clue colors.
-        color_index: ColorIndex,
-    },
-    RankClue {
-        #[serde(rename = "tableID")]
-        table_id: TableId,
-        /// The player who receives the clue.
-        target: PlayerIndex,
-        rank: RankClueNumber,
-    },
-}
-
-impl ActionRequest {
-    pub const fn table_id(&self) -> TableId {
-        match self {
-            Self::Play { table_id, .. }
-            | Self::Discard { table_id, .. }
-            | Self::ColorClue { table_id, .. }
-            | Self::RankClue { table_id, .. } => *table_id,
-        }
-    }
-
-    /// The turn's type, target, and value, as a game's record stores them.
-    pub fn recorded(&self) -> (RecordedActionType, i32, i32) {
-        match *self {
-            Self::Play { order, .. } => (RecordedActionType::Play, order.into(), 0),
-            Self::Discard { order, .. } => (RecordedActionType::Discard, order.into(), 0),
-            Self::ColorClue {
-                target,
-                color_index,
-                ..
-            } => (
-                RecordedActionType::ColorClue,
-                target.into(),
-                color_index.into(),
-            ),
-            Self::RankClue { target, rank, .. } => {
-                (RecordedActionType::RankClue, target.into(), rank.into())
-            }
-        }
-    }
+#[derive(Clone, Copy, Debug, Serialize, Deserialize, JsonSchema)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct ActionRequest {
+    #[serde(rename = "tableID")]
+    pub table_id: TableId,
+    pub action: PlayerTurn,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
@@ -443,78 +385,50 @@ pub struct TagsDeleteAllRequest {
 /// A shared-replay leader's action. The leader sends it, and the server applies it and relays it to
 /// everyone watching.
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct SharedReplayAction {
+    #[serde(rename = "tableID")]
+    pub table_id: TableId,
+    pub action: ReplayLeaderAction,
+}
+
+/// What a shared-replay leader does.
+#[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
 #[serde(
     tag = "type",
     rename_all = "camelCase",
     rename_all_fields = "camelCase",
     deny_unknown_fields
 )]
-pub enum SharedReplayAction {
+pub enum ReplayLeaderAction {
     /// Moves everyone to a segment.
     Segment {
-        #[serde(rename = "tableID")]
-        table_id: TableId,
         #[schemars(range(min = 0, max = i32::MAX))]
         segment: i32,
     },
     /// Points at a card or a part of the board.
     Arrow {
-        #[serde(rename = "tableID")]
-        table_id: TableId,
         /// Absent to clear the arrow.
         #[serde(default, skip_serializing_if = "Option::is_none")]
         #[schemars(with = "ReplayArrowTarget")]
         target: Option<ReplayArrowTarget>,
     },
     Sound {
-        #[serde(rename = "tableID")]
-        table_id: TableId,
         sound: ReplaySoundEffect,
     },
-    HypoStart {
-        #[serde(rename = "tableID")]
-        table_id: TableId,
-    },
-    HypoEnd {
-        #[serde(rename = "tableID")]
-        table_id: TableId,
-    },
+    HypoStart {},
+    HypoEnd {},
     HypoAction {
-        #[serde(rename = "tableID")]
-        table_id: TableId,
         action: HypotheticalAction,
     },
     /// Undoes the hypothetical's last turn.
-    HypoBack {
-        #[serde(rename = "tableID")]
-        table_id: TableId,
-    },
+    HypoBack {},
     /// Shows or hides the identities of cards drawn during the hypothetical.
     HypoShowDrawnCards {
-        #[serde(rename = "tableID")]
-        table_id: TableId,
         show_drawn_cards: bool,
     },
     EfficiencyModifier {
-        #[serde(rename = "tableID")]
-        table_id: TableId,
         #[schemars(range(min = i32::MIN, max = i32::MAX))]
         efficiency_modifier: i32,
     },
-}
-
-impl SharedReplayAction {
-    pub const fn table_id(&self) -> TableId {
-        match self {
-            Self::Segment { table_id, .. }
-            | Self::Arrow { table_id, .. }
-            | Self::Sound { table_id, .. }
-            | Self::HypoStart { table_id }
-            | Self::HypoEnd { table_id }
-            | Self::HypoAction { table_id, .. }
-            | Self::HypoBack { table_id }
-            | Self::HypoShowDrawnCards { table_id, .. }
-            | Self::EfficiencyModifier { table_id, .. } => *table_id,
-        }
-    }
 }

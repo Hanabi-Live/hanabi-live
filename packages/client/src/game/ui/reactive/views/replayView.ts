@@ -115,8 +115,10 @@ export function onSharedSegmentChanged(
       // Tell the rest of the spectators to go to the turn that we are now on.
       globals.lobby.conn!.send("replayAction", {
         tableID: globals.lobby.tableID,
-        type: "segment",
-        segment: data.sharedSegment,
+        action: {
+          type: "segment",
+          segment: data.sharedSegment,
+        },
       });
     } else {
       // Go to the turn where the shared replay leader is at. (We set force to true in case a

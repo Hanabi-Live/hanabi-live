@@ -102,14 +102,16 @@ databaseDescribe("Rust actor durability and ownership", () => {
         expect(startedState.length).toBeGreaterThan(0);
         const action = {
           tableID,
-          type: "play",
-          order: card.order,
+          action: { type: "play", order: card.order },
         };
         let replacement: Awaited<ReturnType<typeof connect>> | undefined;
         // Holds the table's checkpoint row so that the action's save waits.
         const blocker = await sql.reserve();
         try {
-          active.send("action", { ...action, order: 9999 });
+          active.send("action", {
+            tableID,
+            action: { type: "play", order: 9999 },
+          });
           await active.receive("warning", SERVER_COMMAND_SCHEMAS.warning);
           await blocker`SET idle_in_transaction_session_timeout = 0`;
           await blocker`BEGIN`;

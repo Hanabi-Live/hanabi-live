@@ -1751,7 +1751,7 @@ mod tests {
                 &hub,
                 users[0].clone(),
                 "replayAction",
-                json!({"tableID":id,"type":"hypoStart"}),
+                json!({"tableID":id,"action":{"type":"hypoStart"}}),
             )
             .await?;
             let action = json!({"type":"turn","num":7,"currentPlayerIndex":1});
@@ -1759,7 +1759,7 @@ mod tests {
                 &hub,
                 users[0].clone(),
                 "replayAction",
-                json!({"tableID":id,"type":"hypoAction","action":action}),
+                json!({"tableID":id,"action":{"type":"hypoAction","action":action}}),
             )
             .await?;
             let tables = store.load().await?;

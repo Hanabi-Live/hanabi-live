@@ -69,7 +69,7 @@ describe("hypothetical exit", () => {
 
     expect(send).toHaveBeenCalledWith("replayAction", {
       tableID: 42,
-      type: "hypoEnd",
+      action: { type: "hypoEnd" },
     });
     expect(store.getState().replay.hypothetical).not.toBeUndefined();
 
