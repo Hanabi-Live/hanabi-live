@@ -896,11 +896,9 @@ impl TableActor {
         Ok(hanabi_protocol::Clock {
             table_id: self.table.id,
             player_times_ms: times,
-            active_player_index: if live {
-                int(s.game.active_player_index)
-            } else {
-                i64::from(NO_VALUE)
-            },
+            active_player_index: live
+                .then(|| u8::try_from(s.game.active_player_index).ok())
+                .flatten(),
             time_taken_ms: if !live || s.paused() {
                 0
             } else {

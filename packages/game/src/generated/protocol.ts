@@ -236,11 +236,6 @@ export const cardOrderSchema = z
 export const playerIndexSchema = z.literal([0, 1, 2, 3, 4, 5]);
 
 /**
- * A seat, or -1 for no player.
- */
-export const playerIndexOrNoneSchema = z.literal([-1, 0, 1, 2, 3, 4, 5]);
-
-/**
  * A card's rank, or -1 when the recipient may not see it. 7 is the rank of a stack's start card.
  */
 export const rankOrUnknownSchema = z.literal([-1, 1, 2, 3, 4, 5, 7]);
@@ -318,7 +313,10 @@ export const gameEventSchema = z.discriminatedUnion("type", [
     type: z.literal("clue"),
   }),
   z.strictObject({
-    currentPlayerIndex: playerIndexOrNoneSchema,
+    /**
+     * Absent once the game has ended.
+     */
+    currentPlayerIndex: playerIndexSchema.optional(),
     num: z
       .number()
       .int()
@@ -328,12 +326,15 @@ export const gameEventSchema = z.discriminatedUnion("type", [
   }),
   z.strictObject({
     endCondition: z.enum(EndCondition),
-    playerIndex: playerIndexOrNoneSchema,
+    /**
+     * The player whom the ending names, such as the one who timed out, if any.
+     */
+    playerIndex: playerIndexSchema.optional(),
     type: z.literal("gameOver"),
     /**
-     * The players who voted to end the game, or null.
+     * The players who voted to end the game, when a vote ended it.
      */
-    votes: z.array(playerIndexSchema).readonly().nullable(),
+    votes: z.array(playerIndexSchema).readonly().optional(),
   }),
   z.strictObject({
     durationMs: z
@@ -438,7 +439,10 @@ export const hypotheticalActionSchema = z.discriminatedUnion("type", [
     type: z.literal("clue"),
   }),
   z.strictObject({
-    currentPlayerIndex: playerIndexOrNoneSchema,
+    /**
+     * Absent once the game has ended.
+     */
+    currentPlayerIndex: playerIndexSchema.optional(),
     num: z
       .number()
       .int()

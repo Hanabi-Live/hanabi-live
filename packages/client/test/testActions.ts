@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-restricted-imports */
 
+import { gameIdSchema } from "@hanabi-live/game";
 import type {
   ActionHypotheticalAction,
   ActionHypotheticalBack,
@@ -26,7 +27,7 @@ export function init(): ActionInit {
     shadowing: false,
     replay: true,
     sharedReplay: true,
-    databaseID: 1,
+    databaseID: gameIdSchema.parse(1),
     sharedReplaySegment: 0,
     sharedReplayLeader: "",
     sharedReplayEfficiencyModifier: 0,

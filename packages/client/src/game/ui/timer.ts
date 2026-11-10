@@ -35,11 +35,11 @@ export function update(
   data: Omit<ServerCommandData["clock"], "tableID">,
 ): void {
   stop();
-  // `NO_VALUE` if the game just ended.
+  // Absent if the game just ended.
   const { activePlayerIndex } = data;
 
   if (globals.state.finished) {
-    globals.clockPlayerIndex = NO_VALUE;
+    globals.clockPlayerIndex = undefined;
     globals.elements.timer1?.hide();
     globals.elements.timer2?.hide();
     globals.layers.timer.batchDraw();
@@ -59,7 +59,10 @@ export function update(
   globals.timeTaken = data.timeTakenMs;
 
   // Keep track of what the active player's time was when they started their turn.
-  globals.startingTurnTime = globals.playerTimes[activePlayerIndex]!;
+  globals.startingTurnTime =
+    activePlayerIndex === undefined
+      ? 0
+      : globals.playerTimes[activePlayerIndex]!;
 
   // Mark the time that we updated the local player times.
   globals.lastTimerUpdateTimeMS = Date.now();
@@ -80,7 +83,7 @@ export function update(
   setTickingDownTimeCurrentPlayerTooltip();
 
   // The server sends no active player when the game is over.
-  if (activePlayerIndex === NO_VALUE) {
+  if (activePlayerIndex === undefined) {
     return;
   }
 
@@ -99,7 +102,7 @@ export function update(
 function updateTimerDisplays(
   timer1: TimerDisplay,
   timer2: TimerDisplay,
-  activePlayerIndex: PlayerIndex | typeof NO_VALUE,
+  activePlayerIndex: PlayerIndex | undefined,
   ourTurn: boolean,
 ) {
   if (globals.state.playing) {
@@ -114,7 +117,7 @@ function updateTimerDisplays(
     timer1.setTimerText(text);
   }
 
-  if (!ourTurn) {
+  if (!ourTurn && activePlayerIndex !== undefined) {
     // Update the UI with the value of the timer for the active player.
     let time = globals.playerTimes[activePlayerIndex]!;
     if (!globals.options.timed) {
@@ -125,15 +128,13 @@ function updateTimerDisplays(
     const text = millisecondsToClockString(time);
     timer2.setTimerText(text);
 
-    if (activePlayerIndex !== NO_VALUE) {
-      const activePlayerName = globals.metadata.playerNames[activePlayerIndex];
-      if (activePlayerName !== undefined) {
-        timer2.setLabelText(activePlayerName);
-      }
+    const activePlayerName = globals.metadata.playerNames[activePlayerIndex];
+    if (activePlayerName !== undefined) {
+      timer2.setLabelText(activePlayerName);
     }
   }
 
-  timer2.visible(!ourTurn && activePlayerIndex !== NO_VALUE);
+  timer2.visible(!ourTurn && activePlayerIndex !== undefined);
   globals.layers.timer.batchDraw();
 
   // Clear the low-time warning from both timers.
@@ -157,7 +158,7 @@ export function resumeAfterResize(): void {
   if (
     globals.state.finished
     || globals.playerTimes.length === 0
-    || globals.clockPlayerIndex === NO_VALUE
+    || globals.clockPlayerIndex === undefined
   ) {
     return;
   }
@@ -174,22 +175,20 @@ function setTickingDownTime(timer: TimerDisplay | null) {
   const now = Date.now();
   const elapsedTime = now - globals.lastTimerUpdateTimeMS;
   globals.lastTimerUpdateTimeMS = now;
-  if (elapsedTime < 0) {
+  const { clockPlayerIndex } = globals;
+  if (elapsedTime < 0 || clockPlayerIndex === undefined) {
     return;
   }
 
   // Update the time in local array to approximate server times.
-  globals.playerTimes[globals.clockPlayerIndex]! -= elapsedTime;
-  if (
-    globals.options.timed
-    && globals.playerTimes[globals.clockPlayerIndex]! < 0
-  ) {
+  globals.playerTimes[clockPlayerIndex]! -= elapsedTime;
+  if (globals.options.timed && globals.playerTimes[clockPlayerIndex]! < 0) {
     // Do not let the timer go into negative values, or else it will mess up the display. (But in
     // non-timed games, we want this to happen.)
-    globals.playerTimes[globals.clockPlayerIndex] = 0;
+    globals.playerTimes[clockPlayerIndex] = 0;
   }
 
-  let millisecondsLeft = globals.playerTimes[globals.clockPlayerIndex]!;
+  let millisecondsLeft = globals.playerTimes[clockPlayerIndex]!;
   if (!globals.options.timed) {
     // Invert it to show how much time each player is taking.
     millisecondsLeft *= -1;
@@ -248,7 +247,11 @@ function setTickingDownTimePlayerNameTooltip(
 
 function setTickingDownTimeCurrentPlayerTooltip() {
   // This tooltip is disabled in non-timed games.
-  if (!globals.options.timed && !globals.lobby.settings.showTimerInUntimed) {
+  const { clockPlayerIndex } = globals;
+  if (
+    (!globals.options.timed && !globals.lobby.settings.showTimerInUntimed)
+    || clockPlayerIndex === undefined
+  ) {
     return;
   }
 
@@ -256,7 +259,7 @@ function setTickingDownTimeCurrentPlayerTooltip() {
   // values because time is measured in negative values in non-timed games.
   let time =
     Math.abs(globals.startingTurnTime)
-    - Math.abs(globals.playerTimes[globals.clockPlayerIndex]!);
+    - Math.abs(globals.playerTimes[clockPlayerIndex]!);
 
   // We subtract the amount of time that passed since the beginning of the turn (as reported by the
   // server in the "clock" message). This is necessary since the client will not know how much time

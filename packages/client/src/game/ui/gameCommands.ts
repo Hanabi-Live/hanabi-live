@@ -90,8 +90,8 @@ gameCommands.set("finishOngoingGame", (data) => {
     mod: 0,
   });
 
-  // Set the browser address bar.
-  setBrowserAddressBarPath(`${PATH.SHARED_REPLAY}/${data.databaseID}`);
+  // Set the browser address bar. 0 marks a game that is not in the database.
+  setBrowserAddressBarPath(`${PATH.SHARED_REPLAY}/${data.databaseID ?? 0}`);
 
   // Begin the process of converting an ongoing game to a shared replay.
   globals.store!.dispatch({
@@ -267,10 +267,10 @@ gameCommands.set("pause", (data) => {
   globals.store!.dispatch({
     type: "pause",
     active: data.active,
-    // The server sends `NO_VALUE` once nobody is pausing, and the pauser is only shown while
+    // The server omits the pauser once nobody is pausing, and the pauser is only shown while
     // paused.
     playerIndex:
-      data.active && data.playerIndex !== NO_VALUE
+      data.active && data.playerIndex !== undefined
         ? data.playerIndex
         : globals.state.pause.playerIndex,
   });
@@ -453,9 +453,9 @@ type InitData = ServerCommandData["init"];
 function setURL(data: InitData) {
   let path: string;
   if (data.sharedReplay) {
-    path = `${PATH.SHARED_REPLAY}/${data.databaseID}`;
+    path = `${PATH.SHARED_REPLAY}/${data.databaseID ?? 0}`;
   } else if (data.replay) {
-    path = `${PATH.REPLAY}/${data.databaseID}`;
+    path = `${PATH.REPLAY}/${data.databaseID ?? 0}`;
   } else {
     path = `${PATH.GAME}/${data.tableID}${
       data.shadowing ? `/shadow/${data.ourPlayerIndex}` : ""
@@ -542,10 +542,10 @@ function initStateStore(data: InitData) {
     spoilerFree: data.spoilerFree,
     restartDeclined: data.restartDeclined,
     paused: data.paused,
-    // The server sends `NO_VALUE` when nobody is pausing, and the pauser is only shown while
+    // The server omits the pauser when nobody is pausing, and the pauser is only shown while
     // paused.
     pausePlayerIndex:
-      data.paused && data.pausePlayerIndex !== NO_VALUE
+      data.paused && data.pausePlayerIndex !== undefined
         ? data.pausePlayerIndex
         : 0,
     pauseQueued: data.pauseQueued,

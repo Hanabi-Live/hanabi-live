@@ -367,8 +367,14 @@ pub enum HypotheticalAction {
     Turn {
         #[schemars(range(min = -MAX_SAFE_INTEGER, max = MAX_SAFE_INTEGER))]
         num: i64,
-        #[schemars(with = "PlayerIndexOrNone")]
-        current_player_index: i64,
+        /// Absent once the game has ended.
+        #[serde(
+            default,
+            deserialize_with = "deserialize_stored_seat",
+            skip_serializing_if = "Option::is_none"
+        )]
+        #[schemars(with = "PlayerIndex")]
+        current_player_index: Option<u8>,
     },
     /// Shows a card as another identity.
     Morph {
@@ -384,6 +390,16 @@ pub enum HypotheticalAction {
         #[schemars(with = "CardOrder")]
         order: i64,
     },
+}
+
+/// Reads a seat that may be absent. Checkpoints written before November 10th, 2026 store an absent
+/// seat as -1.
+fn deserialize_stored_seat<'de, D>(deserializer: D) -> Result<Option<u8>, D::Error>
+where
+    D: serde::Deserializer<'de>,
+{
+    let seat = Option::<i64>::deserialize(deserializer)?;
+    Ok(seat.and_then(|seat| u8::try_from(seat).ok()))
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]

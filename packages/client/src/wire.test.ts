@@ -9,23 +9,14 @@ function event(action: unknown) {
 }
 
 describe("server game events", () => {
-  test("the final turn and an unattributed game over keep their -1 seat", () => {
-    expect(
-      toGameAction({ type: "turn", num: 30, currentPlayerIndex: -1 }),
-    ).toEqual({ type: "turn", num: 30, currentPlayerIndex: -1 });
-    expect(
-      toGameAction({
-        type: "gameOver",
-        endCondition: EndCondition.Normal,
-        playerIndex: -1,
-        votes: null,
-      }),
-    ).toEqual({
-      type: "gameOver",
-      endCondition: EndCondition.Normal,
-      playerIndex: -1,
-      votes: null,
+  test("the final turn and an unattributed game over have no seat", () => {
+    expect(toGameAction({ type: "turn", num: 30 })).toEqual({
+      type: "turn",
+      num: 30,
     });
+    expect(
+      toGameAction({ type: "gameOver", endCondition: EndCondition.Normal }),
+    ).toEqual({ type: "gameOver", endCondition: EndCondition.Normal });
   });
 
   test("hidden clues stay hidden", () => {

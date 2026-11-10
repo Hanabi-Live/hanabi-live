@@ -2,7 +2,6 @@
 | TODO |
 +------+
 
-- refactor -1 to undefined or null for activePlayerIndex
 
 +-----+
 | OLD |

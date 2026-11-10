@@ -1053,12 +1053,19 @@ mod tests {
         let clue = r#"{"type":"clue","clue":{"type":0,"value":1},"giver":0,"target":1,"list":[2],"ignoreNegative":false}"#;
         let replay: ReplayState = serde_json::from_value(serde_json::json!({
             "leader": 1, "segment": 0, "efficiencyModifier": 0, "hypothetical": true,
-            "hypotheticalActions": [clue], "showDrawnCards": false
+            "hypotheticalActions": [clue, r#"{"type":"turn","num":3,"currentPlayerIndex":-1}"#],
+            "showDrawnCards": false
         }))
         .unwrap();
         assert!(matches!(
             &replay.hypothetical_actions[..],
-            [HypotheticalAction::Clue { orders, .. }] if orders.len() == 1
+            [
+                HypotheticalAction::Clue { orders, .. },
+                HypotheticalAction::Turn {
+                    current_player_index: None,
+                    ..
+                },
+            ] if orders.len() == 1
         ));
     }
 

@@ -17,9 +17,10 @@ pub struct Clock {
     pub table_id: TableId,
     #[schemars(inner(range(min = -MAX_SAFE_INTEGER, max = MAX_SAFE_INTEGER)))]
     pub player_times_ms: Vec<i64>,
-    /// -1 when the game has no active player.
-    #[schemars(with = "PlayerIndexOrNone")]
-    pub active_player_index: i64,
+    /// Absent when the game has no active player.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[schemars(with = "PlayerIndex")]
+    pub active_player_index: Option<u8>,
     #[schemars(range(min = 0, max = MAX_SAFE_INTEGER))]
     pub time_taken_ms: i64,
 }
@@ -50,9 +51,10 @@ pub struct Pause {
     #[serde(rename = "tableID")]
     pub table_id: TableId,
     pub active: bool,
-    /// The seat that paused, or -1.
-    #[schemars(with = "PlayerIndexOrNone")]
-    pub player_index: i64,
+    /// The seat that paused, absent when the game is not paused.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[schemars(with = "PlayerIndex")]
+    pub player_index: Option<u8>,
 }
 
 /// The recipient's own vote to end the game.
@@ -85,10 +87,14 @@ pub struct CardIdentities {
 pub struct FinishOngoingGame {
     #[serde(rename = "tableID")]
     pub table_id: TableId,
-    /// 0 when the game was not saved.
-    #[serde(rename = "databaseID")]
-    #[schemars(range(min = 0, max = MAX_SAFE_INTEGER))]
-    pub database_id: i64,
+    /// Absent when the game was not saved.
+    #[serde(
+        default,
+        rename = "databaseID",
+        skip_serializing_if = "Option::is_none"
+    )]
+    #[schemars(with = "GameId")]
+    pub database_id: Option<GameId>,
     pub shared_replay_leader: String,
 }
 
@@ -253,19 +259,20 @@ pub enum GameEvent {
     Turn {
         #[schemars(range(min = -MAX_SAFE_INTEGER, max = MAX_SAFE_INTEGER))]
         num: i64,
-        #[schemars(with = "PlayerIndexOrNone")]
-        current_player_index: i64,
+        /// Absent once the game has ended.
+        #[serde(default, skip_serializing_if = "Option::is_none")]
+        #[schemars(with = "PlayerIndex")]
+        current_player_index: Option<u8>,
     },
     GameOver {
         end_condition: EndCondition,
-        #[schemars(with = "PlayerIndexOrNone")]
-        player_index: i64,
-        /// The players who voted to end the game, or null.
-        #[schemars(
-            with = "Option<Vec<PlayerIndex>>",
-            required,
-            extend("type" = ["array", "null"], "x-readonly" = true)
-        )]
+        /// The player whom the ending names, such as the one who timed out, if any.
+        #[serde(default, skip_serializing_if = "Option::is_none")]
+        #[schemars(with = "PlayerIndex")]
+        player_index: Option<u8>,
+        /// The players who voted to end the game, when a vote ended it.
+        #[serde(default, skip_serializing_if = "Option::is_none")]
+        #[schemars(with = "Vec<PlayerIndex>", extend("x-readonly" = true))]
         votes: Option<Vec<SafeInteger>>,
     },
     PlayerTimes {
@@ -324,16 +331,22 @@ pub struct Init {
     pub spectating: bool,
     pub shadowing: bool,
     pub replay: bool,
-    /// The game's database ID in a replay, or -1.
-    #[serde(rename = "databaseID")]
-    #[schemars(range(min = -MAX_SAFE_INTEGER, max = MAX_SAFE_INTEGER))]
-    pub database_id: i64,
+    /// The game's database ID, present only in a replay of a saved game.
+    #[serde(
+        default,
+        rename = "databaseID",
+        skip_serializing_if = "Option::is_none"
+    )]
+    #[schemars(with = "GameId")]
+    pub database_id: Option<GameId>,
     pub has_custom_seed: bool,
     pub seed: String,
     #[schemars(with = "Timestamp")]
     pub datetime_started: String,
+    /// Absent while the game is in progress.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
     #[schemars(with = "Timestamp")]
-    pub datetime_finished: String,
+    pub datetime_finished: Option<String>,
     pub options: GameOptions,
     /// Each player's character, in seat order, when detrimental characters are on.
     #[schemars(length(max = MAX_PLAYERS))]
@@ -355,8 +368,9 @@ pub struct Init {
     #[schemars(with = "Timestamp")]
     pub datetime_shared_replay_started: Option<String>,
     pub paused: bool,
-    /// The seat that paused, or -1.
-    #[schemars(with = "PlayerIndexOrNone")]
-    pub pause_player_index: i64,
+    /// The seat that paused, absent when the game is not paused.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[schemars(with = "PlayerIndex")]
+    pub pause_player_index: Option<u8>,
     pub pause_queued: bool,
 }

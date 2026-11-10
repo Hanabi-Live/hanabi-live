@@ -191,7 +191,8 @@ impl TableActor {
                         hanabi_protocol::server::FINISH_ONGOING_GAME,
                         hanabi_protocol::FinishOngoingGame {
                             table_id: self.table.id,
-                            database_id: i64::from(s.game_id.0),
+                            database_id: (s.game_id != crate::model::UNSAVED_GAME)
+                                .then_some(s.game_id),
                             shared_replay_leader: self.leader_name(),
                         },
                     ),
@@ -217,7 +218,7 @@ impl TableActor {
                     hanabi_protocol::Pause {
                         table_id: self.table.id,
                         active: true,
-                        player_index: Seat::wire(s.paused_by),
+                        player_index: s.paused_by.map(u8::from),
                     },
                 );
             }
@@ -377,7 +378,7 @@ impl TableActor {
                 hanabi_protocol::Pause {
                     table_id: self.table.id,
                     active: s.paused(),
-                    player_index: Seat::wire(s.paused_by),
+                    player_index: s.paused_by.map(u8::from),
                 },
             );
             self.add_all(&mut e, hanabi_protocol::server::CLOCK, self.clock()?);
@@ -515,18 +516,12 @@ impl TableActor {
                 spectating: a.spectator && !replay,
                 shadowing: a.shadow.is_some() && !replay,
                 replay,
-                database_id: if replay {
-                    s.game_id.0.into()
-                } else {
-                    NO_VALUE.into()
-                },
+                database_id: (replay && s.game_id != crate::model::UNSAVED_GAME)
+                    .then_some(s.game_id),
                 has_custom_seed: self.table.extra.custom_seed.is_some(),
                 seed: s.seed.clone(),
                 datetime_started: crate::model::timestamp(s.started),
-                datetime_finished: s.finished.map_or_else(
-                    || hanabi_protocol::UNFINISHED_DATETIME.into(),
-                    crate::model::timestamp,
-                ),
+                datetime_finished: s.finished.map(crate::model::timestamp),
                 options: wire_options(&s.game.options),
                 characters: if s.game.options.detrimental_characters {
                     s.game
@@ -558,7 +553,7 @@ impl TableActor {
                     )
                 }),
                 paused: s.paused(),
-                pause_player_index: Seat::wire(s.paused_by),
+                pause_player_index: s.paused_by.map(u8::from),
                 pause_queued: seat.is_some_and(|i| s.queued_pauses[i]),
             };
             e.messages

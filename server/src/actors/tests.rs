@@ -106,10 +106,15 @@ fn typed_game_frames_preserve_wire_schema_and_projected_identities() -> Result<(
             .context("Missing protocol separator")?;
         assert_eq!(command, "gameActionList");
         let body: Value = serde_json::from_str(body)?;
-        // The engine names the touched cards `list`; the wire names them `orders`.
+        // The engine names some fields differently, and marks a missing seat or vote list with -1 or
+        // null, which the wire omits.
         let mut expected = serde_json::to_value(&list)?;
         for event in expected.as_array_mut().unwrap() {
             let event = event.as_object_mut().unwrap();
+            event.retain(|key, value| {
+                !(matches!(key.as_str(), "currentPlayerIndex" | "playerIndex") && *value == -1
+                    || key == "votes" && value.is_null())
+            });
             for (engine, wire) in [
                 ("list", "orders"),
                 ("playerTimes", "playerTimesMs"),
@@ -147,7 +152,7 @@ fn typed_game_frames_preserve_wire_schema_and_projected_identities() -> Result<(
         let events = body["actions"].as_array().unwrap();
         let ended = events.iter().find(|e| e["type"] == "gameOver").unwrap();
         assert_eq!(ended["endCondition"], 4);
-        assert!(ended.as_object().unwrap().get("votes").unwrap().is_null());
+        assert!(ended.get("votes").is_none());
         let timing = events.iter().find(|e| e["type"] == "playerTimes").unwrap();
         assert_eq!(timing["playerTimesMs"], json!([1234, -5678]));
         assert_eq!(timing["durationMs"], 6912);

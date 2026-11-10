@@ -42,8 +42,6 @@ pub const MAX_SEAT: usize = MAX_PLAYERS - 1;
 /// The value that marks a missing number, such as no seat or turn, or a suit or rank that the
 /// recipient may not see.
 pub const NO_VALUE: i32 = -1;
-/// The finish time of a game that has not finished: the start of year 1.
-pub const UNFINISHED_DATETIME: &str = "0001-01-01T00:00:00.000Z";
 /// The player limit of a table whose creator did not choose one.
 pub const DEFAULT_MAX_PLAYERS: u8 = 5;
 /// The variant of a game or table that does not choose one.
@@ -134,7 +132,7 @@ fn seats() -> Vec<i64> {
         .collect()
 }
 
-/// Every seat index after -1, which means no seat.
+/// Every seat index after -1, which means an unknown suit.
 fn seats_or_none() -> Vec<i64> {
     std::iter::once(i64::from(NO_VALUE))
         .chain(seats())
@@ -267,13 +265,6 @@ pub struct SafeInteger(#[schemars(range(min = -MAX_SAFE_INTEGER, max = MAX_SAFE_
 #[serde(transparent)]
 pub struct PlayerIndex(
     #[schemars(range(min = 0, max = MAX_SEAT), extend("enum" = seats()))] pub i64,
-);
-
-/// A seat, or -1 for no player.
-#[derive(JsonSchema)]
-#[serde(transparent)]
-pub struct PlayerIndexOrNone(
-    #[schemars(range(min = NO_VALUE, max = MAX_SEAT), extend("enum" = seats_or_none()))] pub i64,
 );
 
 /// A card's position in the initial deck, which identifies it. Stack bases follow the cards of the

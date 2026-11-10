@@ -997,28 +997,11 @@
         {
           "type": "gameOver",
           "endCondition": 1,
-          "playerIndex": 0,
-          "votes": null
-        }
-      ]
-    },
-    "valid": true
-  },
-  {
-    "name": "game over events require the votes field",
-    "direction": "server",
-    "command": "gameActionList",
-    "input": {
-      "tableID": 3,
-      "actions": [
-        {
-          "type": "gameOver",
-          "endCondition": 1,
           "playerIndex": 0
         }
       ]
     },
-    "valid": false
+    "valid": true
   },
   {
     "name": "cards can be unknown or a stack's start card",
@@ -1109,7 +1092,6 @@
       "action": {
         "type": "gameOver",
         "endCondition": 4,
-        "playerIndex": -1,
         "votes": [0, 6]
       }
     },
@@ -1124,8 +1106,7 @@
       "action": {
         "type": "gameOver",
         "endCondition": 11,
-        "playerIndex": 0,
-        "votes": null
+        "playerIndex": 0
       }
     },
     "valid": false

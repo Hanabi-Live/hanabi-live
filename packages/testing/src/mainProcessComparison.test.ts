@@ -1,6 +1,7 @@
 /* eslint-disable no-await-in-loop -- Each lane follows the actual client protocol in order. */
 import { SERVER_COMMAND_SCHEMAS } from "@hanabi-live/data";
 import { expect, test } from "bun:test";
+import { assertDefined } from "complete-common";
 import { once } from "node:events";
 import { mkdir, mkdtemp, readFile, rm } from "node:fs/promises";
 import path from "node:path";
@@ -204,6 +205,10 @@ databaseDescribe("normal-server protocol workload", () => {
             expect(
               finished.history.actions.filter((event) => event.type === "play"),
             ).toHaveLength(25);
+            assertDefined(
+              finished.init.databaseID,
+              "The finished game was not saved.",
+            );
             completed.push({
               databaseID: finished.init.databaseID,
               aliceCookie,
@@ -275,7 +280,7 @@ databaseDescribe("normal-server protocol workload", () => {
           SERVER_COMMAND_SCHEMAS.tableStart,
         );
         const replay = await bootstrap(peer, tableID);
-        expect(replay.init.databaseID).toBe(databaseID);
+        expect<number | undefined>(replay.init.databaseID).toBe(databaseID);
         expect(
           replay.history.actions.filter((event) => event.type === "play"),
         ).toHaveLength(25);

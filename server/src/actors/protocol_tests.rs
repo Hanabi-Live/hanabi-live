@@ -2095,7 +2095,7 @@ async fn finished_game_publishes_replay_leader_candidates_without_reconnecting()
             );
             let clock = h.receive(index, "clock").await?;
             ensure!(
-                clock["activePlayerIndex"] == -1 && clock["timeTakenMs"] == 0,
+                clock.get("activePlayerIndex").is_none() && clock["timeTakenMs"] == 0,
                 "Completion did not stop the active clock"
             );
         }

@@ -65,7 +65,7 @@ export type ActionPlay = Event<"play">;
 /** One time per player, in seat order. */
 export type ActionPlayerTimes = Event<"playerTimes">;
 
-/** `currentPlayerIndex` is -1 once the game has ended. */
+/** `currentPlayerIndex` is absent once the game has ended. */
 export type ActionTurn = Event<"turn">;
 
 /**

@@ -402,7 +402,8 @@ databaseDescribe("compiled application entry point (rust)", () => {
           "finishOngoingGame",
           SERVER_COMMAND_SCHEMAS.finishOngoingGame,
         );
-        expect(finished.databaseID).toBe(checkpoint.game_id);
+        assertDefined(finished.databaseID, "The finished game was not saved.");
+        expect<number>(finished.databaseID).toBe(checkpoint.game_id);
         await replacement.receive(
           "gameHistoryAdded",
           SERVER_COMMAND_SCHEMAS.gameHistoryAdded,
@@ -639,6 +640,7 @@ databaseDescribe("compiled application entry point (rust)", () => {
       expect(arrivals.indexOf("cardIdentities")).toBeLessThan(
         arrivals.indexOf("finishOngoingGame"),
       );
+      assertDefined(finished.databaseID, "The finished game was not saved.");
       expect(
         await sql`SELECT seat FROM game_participants WHERE game_id=${finished.databaseID}`,
       ).toHaveLength(6);

@@ -138,10 +138,10 @@ function getClueActionName(
 
 export function getGameOverText(
   endCondition: EndCondition,
-  playerIndex: PlayerIndex | -1,
+  playerIndex: PlayerIndex | undefined,
   score: number,
   metadata: GameMetadata,
-  votes: readonly PlayerIndex[] | null,
+  votes: readonly PlayerIndex[] | undefined,
 ): string {
   const playerName = getPlayerName(playerIndex, metadata);
 
@@ -193,10 +193,10 @@ export function getGameOverText(
 }
 
 function getPlayerNames(
-  playerIndices: readonly PlayerIndex[] | null,
+  playerIndices: readonly PlayerIndex[] | undefined,
   metadata: GameMetadata,
 ): string {
-  if (playerIndices === null) {
+  if (playerIndices === undefined) {
     return "The players";
   }
 
@@ -298,10 +298,10 @@ function getDiscardTextSuffix(touched: boolean, critical: boolean): string {
 }
 
 export function getPlayerName(
-  playerIndex: PlayerIndex | -1,
+  playerIndex: PlayerIndex | undefined,
   metadata: GameMetadata,
 ): string {
-  return playerIndex === -1
+  return playerIndex === undefined
     ? "[unknown]"
     : (metadata.playerNames[playerIndex] ?? "[unknown]");
 }

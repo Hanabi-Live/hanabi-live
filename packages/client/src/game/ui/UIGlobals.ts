@@ -4,7 +4,7 @@ import type {
   Options,
   PlayerIndex,
 } from "@hanabi-live/game";
-import { getDefaultVariant, NO_VALUE } from "@hanabi-live/game";
+import { getDefaultVariant } from "@hanabi-live/game";
 import { ReadonlyMap } from "complete-common";
 import Konva from "konva";
 import type * as Redux from "redux";
@@ -84,7 +84,7 @@ export class UIGlobals {
    * The player whose clock is running, from the last "clock" message. `NO_VALUE` when no clock is
    * running. It indexes `playerTimes` from the same message, so it is not read from the game state.
    */
-  clockPlayerIndex: PlayerIndex | typeof NO_VALUE = NO_VALUE;
+  clockPlayerIndex: PlayerIndex | undefined = undefined;
 
   timeTaken = 0;
   startingTurnTime = 0;
@@ -165,7 +165,7 @@ export class UIGlobals {
     this.lastNote = "";
     this.timerID = null;
     this.playerTimes = [];
-    this.clockPlayerIndex = NO_VALUE;
+    this.clockPlayerIndex = undefined;
     this.timeTaken = 0;
     this.startingTurnTime = 0;
     this.lastTimerUpdateTimeMS = 0;

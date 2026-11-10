@@ -77,7 +77,7 @@ pub(super) fn wire_event(event: &hanabi_engine::EngineEvent) -> hanabi_protocol:
             current_player_index,
         } => G::Turn {
             num: (*num).into(),
-            current_player_index: (*current_player_index).into(),
+            current_player_index: u8::try_from(*current_player_index).ok(),
         },
         E::GameOver {
             end_condition,
@@ -85,7 +85,7 @@ pub(super) fn wire_event(event: &hanabi_engine::EngineEvent) -> hanabi_protocol:
             votes,
         } => G::GameOver {
             end_condition: *end_condition,
-            player_index: (*player_index).into(),
+            player_index: u8::try_from(*player_index).ok(),
             votes: votes
                 .as_ref()
                 .map(|votes| votes.iter().map(|&vote| SafeInteger(int(vote))).collect()),

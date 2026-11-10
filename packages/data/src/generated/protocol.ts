@@ -7,7 +7,6 @@ import {
   gameIdSchema,
   gameOptionsSchema,
   hypotheticalActionSchema,
-  playerIndexOrNoneSchema,
   playerIndexSchema,
   playerNotesSchema,
   rankOrUnknownSchema,
@@ -282,9 +281,9 @@ export const chatUserRequestSchema = z
  */
 export const clockSchema = z.strictObject({
   /**
-   * -1 when the game has no active player.
+   * Absent when the game has no active player.
    */
-  activePlayerIndex: playerIndexOrNoneSchema,
+  activePlayerIndex: playerIndexSchema.optional(),
   playerTimesMs: z.array(
     z.number().int().min(-9_007_199_254_740_991).max(9_007_199_254_740_991),
   ),
@@ -309,9 +308,9 @@ export const errorNoticeSchema = z
   .readonly();
 export const finishOngoingGameSchema = z.strictObject({
   /**
-   * 0 when the game was not saved.
+   * Absent when the game was not saved.
    */
-  databaseID: z.number().int().min(0).max(9_007_199_254_740_991),
+  databaseID: gameIdSchema.optional(),
   sharedReplayLeader: z.string(),
   tableID: tableIdSchema,
 });
@@ -462,14 +461,13 @@ export const initSchema = z.strictObject({
    */
   characters: z.array(characterAssignmentSchema).max(6),
   /**
-   * The game's database ID in a replay, or -1.
+   * The game's database ID, present only in a replay of a saved game.
    */
-  databaseID: z
-    .number()
-    .int()
-    .min(-9_007_199_254_740_991)
-    .max(9_007_199_254_740_991),
-  datetimeFinished: z.iso.datetime({ precision: 3 }),
+  databaseID: gameIdSchema.optional(),
+  /**
+   * Absent while the game is in progress.
+   */
+  datetimeFinished: z.iso.datetime({ precision: 3 }).optional(),
   /**
    * When the shared replay began, present only in shared replays.
    */
@@ -482,9 +480,9 @@ export const initSchema = z.strictObject({
    */
   ourPlayerIndex: playerIndexSchema,
   /**
-   * The seat that paused, or -1.
+   * The seat that paused, absent when the game is not paused.
    */
-  pausePlayerIndex: playerIndexOrNoneSchema,
+  pausePlayerIndex: playerIndexSchema.optional(),
   pauseQueued: z.boolean(),
   paused: z.boolean(),
   playerNames: z.array(z.string()).min(2).max(6),
@@ -601,9 +599,9 @@ export const passwordHashResponseSchema = z.strictObject({ hash: z.string() });
 export const pauseSchema = z.strictObject({
   active: z.boolean(),
   /**
-   * The seat that paused, or -1.
+   * The seat that paused, absent when the game is not paused.
    */
-  playerIndex: playerIndexOrNoneSchema,
+  playerIndex: playerIndexSchema.optional(),
   tableID: tableIdSchema,
 });
 
