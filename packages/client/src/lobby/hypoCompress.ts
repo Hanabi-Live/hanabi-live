@@ -24,6 +24,7 @@ interface CompactAction {
 }
 
 const actionSchema = replayGameSchema.shape.actions.element;
+const deckCardSchema = replayGameSchema.shape.deck.element;
 
 interface MinMax {
   min: number;
@@ -265,6 +266,9 @@ function decompressDeck(src: string): readonly DeckCard[] | undefined {
   while (s < src.length) {
     const compressedDeckCard = src.charAt(s);
     const deckCard = stringToDeckCard(compressedDeckCard, rankRange);
+    if (deckCard === undefined) {
+      return undefined;
+    }
     deck.push(deckCard);
     s++;
   }
@@ -285,16 +289,17 @@ function deckCardToString(card: DeckCard, rankRange: MinMax): string {
  * Converts a compressed string into a `DeckCard`. The string must be one character long,
  * representing `DeckCard.suitIndex` and `DeckCard.rank`.
  */
-function stringToDeckCard(src: string, rankRange: MinMax): DeckCard {
+function stringToDeckCard(
+  src: string,
+  rankRange: MinMax,
+): DeckCard | undefined {
   const r = rankRange.max - rankRange.min + 1;
   const index = BASE62.indexOf(src);
   const rank = (index % r) + 1;
   const suitIndex = Math.floor((index - rank + 1) / r);
 
-  return {
-    suitIndex,
-    rank,
-  };
+  const result = deckCardSchema.safeParse({ suitIndex, rank });
+  return result.success ? result.data : undefined;
 }
 
 /**

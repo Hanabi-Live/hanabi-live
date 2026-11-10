@@ -43,7 +43,7 @@ struct ReplayNoteRow(Vec<String>);
 pub struct ReplayCard {
     #[schemars(range(min = 0, max = MAX_SAFE_INTEGER))]
     pub suit_index: i64,
-    #[schemars(range(min = -MAX_SAFE_INTEGER, max = MAX_SAFE_INTEGER))]
+    #[schemars(with = "CardRank")]
     pub rank: i64,
 }
 
@@ -408,7 +408,7 @@ pub struct Suggestion {
     #[serde(rename = "tableID")]
     pub table_id: TableId,
     pub username: String,
-    #[schemars(range(min = -MAX_SAFE_INTEGER, max = MAX_SAFE_INTEGER))]
+    #[schemars(range(min = 0, max = MAX_SAFE_INTEGER))]
     pub segment: i64,
 }
 
@@ -516,7 +516,7 @@ pub enum HypotheticalAction {
         ignore_negative: bool,
     },
     Turn {
-        #[schemars(range(min = -MAX_SAFE_INTEGER, max = MAX_SAFE_INTEGER))]
+        #[schemars(range(min = 0, max = MAX_SAFE_INTEGER))]
         num: i64,
         /// Absent once the game has ended.
         #[serde(

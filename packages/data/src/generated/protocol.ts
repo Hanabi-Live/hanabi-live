@@ -227,11 +227,7 @@ export const chatLinkedRequestSchema = z
 export const chatListSchema = z
   .strictObject({
     messages: z.array(chatSchema).readonly(),
-    unread: z
-      .number()
-      .int()
-      .min(-9_007_199_254_740_991)
-      .max(9_007_199_254_740_991),
+    unread: z.number().int().min(0).max(9_007_199_254_740_991),
   })
   .readonly();
 export const chatPmRequestSchema = z
@@ -897,7 +893,7 @@ export const replayCreateRequestSchema = z.discriminatedUnion("source", [
   }),
 ]);
 const replayCardSchema = z.strictObject({
-  rank: z.number().int().min(-9_007_199_254_740_991).max(9_007_199_254_740_991),
+  rank: cardRankSchema,
   suitIndex: z.number().int().min(0).max(9_007_199_254_740_991),
 });
 const replayCharacterSchema = z.strictObject({
@@ -1144,11 +1140,7 @@ export const statusSchema = z.enum([
  * A spectator suggesting a turn to the shared replay's leader.
  */
 export const suggestionSchema = z.strictObject({
-  segment: z
-    .number()
-    .int()
-    .min(-9_007_199_254_740_991)
-    .max(9_007_199_254_740_991),
+  segment: z.number().int().min(0).max(9_007_199_254_740_991),
   tableID: tableIdSchema,
   username: z.string(),
 });
@@ -1265,12 +1257,7 @@ export const tableStartedSchema = z.strictObject({
   tableID: tableIdSchema,
 });
 export const tableSuggestRequestSchema = z.strictObject({
-  segment: z
-    .number()
-    .int()
-    .min(-9_007_199_254_740_991)
-    .max(9_007_199_254_740_991)
-    .default(0),
+  segment: z.number().int().min(0).max(9_007_199_254_740_991).default(0),
   tableID: tableIdSchema,
 });
 export const tableUpdateRequestSchema = z.strictObject({

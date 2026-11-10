@@ -264,11 +264,11 @@ pub enum GameEvent {
         /// The orders of the cards the clue touched.
         #[schemars(with = "Vec<CardOrder>", extend("x-readonly" = true))]
         orders: Vec<SafeInteger>,
-        #[schemars(range(min = -MAX_SAFE_INTEGER, max = MAX_SAFE_INTEGER))]
+        #[schemars(range(min = 0, max = MAX_SAFE_INTEGER))]
         turn: i64,
     },
     Turn {
-        #[schemars(range(min = -MAX_SAFE_INTEGER, max = MAX_SAFE_INTEGER))]
+        #[schemars(range(min = 0, max = MAX_SAFE_INTEGER))]
         num: i64,
         /// Absent once the game has ended.
         #[serde(default, skip_serializing_if = "Option::is_none")]
@@ -290,7 +290,7 @@ pub enum GameEvent {
         /// Each player's time, in seat order.
         #[schemars(length(min = MIN_PLAYERS, max = MAX_PLAYERS), extend("x-readonly" = true))]
         player_times_ms: Vec<SafeInteger>,
-        #[schemars(range(min = -MAX_SAFE_INTEGER, max = MAX_SAFE_INTEGER))]
+        #[schemars(range(min = 0, max = MAX_SAFE_INTEGER))]
         duration_ms: i64,
     },
 }

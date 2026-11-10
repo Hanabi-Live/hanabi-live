@@ -324,11 +324,7 @@ export const gameEventSchema = z.discriminatedUnion("type", [
      */
     orders: z.array(cardOrderSchema).readonly(),
     target: playerIndexSchema,
-    turn: z
-      .number()
-      .int()
-      .min(-9_007_199_254_740_991)
-      .max(9_007_199_254_740_991),
+    turn: z.number().int().min(0).max(9_007_199_254_740_991),
     type: z.literal("clue"),
   }),
   z.strictObject({
@@ -336,11 +332,7 @@ export const gameEventSchema = z.discriminatedUnion("type", [
      * Absent once the game has ended.
      */
     currentPlayerIndex: playerIndexSchema.optional(),
-    num: z
-      .number()
-      .int()
-      .min(-9_007_199_254_740_991)
-      .max(9_007_199_254_740_991),
+    num: z.number().int().min(0).max(9_007_199_254_740_991),
     type: z.literal("turn"),
   }),
   z.strictObject({
@@ -356,11 +348,7 @@ export const gameEventSchema = z.discriminatedUnion("type", [
     votes: z.array(playerIndexSchema).readonly().optional(),
   }),
   z.strictObject({
-    durationMs: z
-      .number()
-      .int()
-      .min(-9_007_199_254_740_991)
-      .max(9_007_199_254_740_991),
+    durationMs: z.number().int().min(0).max(9_007_199_254_740_991),
     /**
      * Each player's time, in seat order.
      */
@@ -409,7 +397,7 @@ export const gameOptionsSchema = z
     timePerTurnSeconds: z
       .number()
       .int()
-      .min(-9_007_199_254_740_991)
+      .min(0)
       .max(9_007_199_254_740_991)
       .default(0),
     timed: z.boolean().default(false),
@@ -474,11 +462,7 @@ export const hypotheticalActionSchema = z.discriminatedUnion("type", [
      * Absent once the game has ended.
      */
     currentPlayerIndex: playerIndexSchema.optional(),
-    num: z
-      .number()
-      .int()
-      .min(-9_007_199_254_740_991)
-      .max(9_007_199_254_740_991),
+    num: z.number().int().min(0).max(9_007_199_254_740_991),
     type: z.literal("turn"),
   }),
   z.strictObject({

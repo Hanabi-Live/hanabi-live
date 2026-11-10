@@ -270,7 +270,7 @@ pub struct GameOptions {
     pub variant_id: Option<u32>,
     pub timed: bool,
     pub time_base_seconds: f64,
-    #[schemars(range(min = -MAX_SAFE_INTEGER, max = MAX_SAFE_INTEGER))]
+    #[schemars(range(min = 0, max = MAX_SAFE_INTEGER))]
     pub time_per_turn_seconds: i64,
     pub speedrun: bool,
     pub deck_plays: bool,

@@ -1425,5 +1425,28 @@
       "file": "not-a-sound"
     },
     "valid": false
+  },
+  {
+    "name": "turn numbers are never negative",
+    "direction": "server",
+    "command": "gameAction",
+    "input": {
+      "tableID": 3,
+      "action": {
+        "type": "turn",
+        "num": -1
+      }
+    },
+    "valid": false
+  },
+  {
+    "name": "unread counts are never negative",
+    "direction": "server",
+    "command": "chatList",
+    "input": {
+      "messages": [],
+      "unread": -1
+    },
+    "valid": false
   }
 ]

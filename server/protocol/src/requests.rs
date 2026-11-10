@@ -142,7 +142,7 @@ pub struct TableSuggestRequest {
     #[serde(rename = "tableID")]
     pub table_id: TableId,
     #[serde(default)]
-    #[schemars(range(min = -MAX_SAFE_INTEGER, max = MAX_SAFE_INTEGER))]
+    #[schemars(range(min = 0, max = MAX_SAFE_INTEGER))]
     pub segment: i64,
 }
 

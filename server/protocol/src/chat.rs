@@ -90,7 +90,7 @@ pub struct ChatDelete {
 pub struct ChatList {
     #[schemars(extend("x-readonly" = true))]
     pub messages: Vec<Chat>,
-    #[schemars(range(min = -MAX_SAFE_INTEGER, max = MAX_SAFE_INTEGER))]
+    #[schemars(range(min = 0, max = MAX_SAFE_INTEGER))]
     pub unread: i64,
 }
 
