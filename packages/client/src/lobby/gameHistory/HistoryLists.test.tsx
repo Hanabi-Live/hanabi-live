@@ -10,6 +10,7 @@ import { HistoryList, OtherScoresList } from "./HistoryLists";
 import {
   historyReceived,
   historyRequested,
+  moreOtherScoresRequested,
   otherScoresReceived,
   otherScoresRequested,
 } from "./historySlice";
@@ -18,6 +19,7 @@ vi.mock("../../tooltips", () => ({ attach: vi.fn() }));
 vi.mock("../history", () => ({
   hide: vi.fn(),
   showMore: vi.fn(),
+  showMoreOtherScores: vi.fn(),
   showOtherScoresFromHistory: vi.fn(),
 }));
 
@@ -39,11 +41,18 @@ function game(
   } as unknown as GameHistory;
 }
 
-function reply(seed: string, games: readonly GameHistory[]) {
+function reply(
+  seed: string,
+  games: readonly GameHistory[],
+  offset = 0,
+  total = games.length,
+) {
   return {
     seed,
     variantName: "No Variant",
     games,
+    offset,
+    total,
   } as ServerCommandData["gameHistoryOtherScores"];
 }
 
@@ -114,5 +123,38 @@ describe("OtherScoresList", () => {
     expect(screen.getByText("#7").tagName).toBe("STRONG");
     expect(screen.getByText("#8").tagName).toBe("TD");
     expect(screen.getByText("me, bob").tagName).toBe("STRONG");
+  });
+
+  test("adds each page after the games before it, until every game is shown", () => {
+    const firstPage = reply(
+      "p2v0s9",
+      [game(1, "2026-01-01T00:00:00.000Z")],
+      0,
+      3,
+    );
+    store.dispatch(otherScoresRequested("p2v0s9"));
+    store.dispatch(otherScoresReceived(firstPage));
+    renderComponent(<OtherScoresList />);
+    expect(firstCells()).toStrictEqual(["#1"]);
+    expect(screen.getByText("Show More Scores")).toBeDefined();
+
+    const secondPage = reply(
+      "p2v0s9",
+      [
+        game(2, "2026-01-01T00:00:00.000Z"),
+        game(3, "2026-01-01T00:00:00.000Z"),
+      ],
+      1,
+      3,
+    );
+    act(() => {
+      store.dispatch(moreOtherScoresRequested());
+      store.dispatch(otherScoresReceived(secondPage));
+      // A repeated reply replaces its page instead of adding it again.
+      store.dispatch(otherScoresReceived(secondPage));
+    });
+
+    expect(firstCells()).toStrictEqual(["#1", "#2", "#3"]);
+    expect(screen.queryByText("Show More Scores")).toBeNull();
   });
 });

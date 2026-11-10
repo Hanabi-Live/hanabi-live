@@ -431,13 +431,19 @@ pub struct GameHistory {
 #[schemars(extend("x-readonly" = true))]
 pub struct GameHistoryList(pub Vec<GameHistory>);
 
-/// The other games played on a seed.
+/// A page of the games played on a seed.
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 #[schemars(extend("x-readonly" = true))]
 pub struct GameHistoryOtherScores {
     #[schemars(extend("x-readonly" = true))]
     pub games: Vec<GameHistory>,
+    /// The position of the page's first game among all the games on the seed.
+    #[schemars(range(min = 0, max = MAX_SAFE_INTEGER))]
+    pub offset: i64,
+    /// The number of games on the seed.
+    #[schemars(range(min = 0, max = i32::MAX))]
+    pub total: i64,
     #[schemars(length(min = 1))]
     pub variant_name: String,
     #[schemars(length(min = 1))]

@@ -57,7 +57,7 @@ mod tests {
             let value = match command {
                 "setting" => json!({"name":"volume","setting":"50"}),
                 "inactive" => json!({"inactive":true}),
-                "historyGetSeed" => json!({"seed":"p2v0s1"}),
+                "historyGetSeed" => json!({"seed":"p2v0s1","offset":0,"amount":10}),
                 "chat" => json!({"msg":"hello","room":"lobby"}),
                 "chatPM" => json!({"msg":"hello","recipient":"Alice"}),
                 "replayCreate" => json!({"source":"id","visibility":"shared","databaseID":1}),

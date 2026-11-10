@@ -10,7 +10,12 @@ import { globals } from "../../Globals";
 import { useAppSelector } from "../../store";
 import * as tooltips from "../../tooltips";
 import { dateTimeFormatter } from "../../utils";
-import { hide, showMore, showOtherScoresFromHistory } from "../history";
+import {
+  hide,
+  showMore,
+  showMoreOtherScores,
+  showOtherScoresFromHistory,
+} from "../history";
 import { selectHistoryGames, selectShownGameCount } from "./historySlice";
 
 /** Games with more options than this show an ellipsis, with the options listed in the tooltip. */
@@ -151,8 +156,10 @@ function HistoryRow({
 }
 
 export function OtherScoresList(): React.JSX.Element {
-  const result = useAppSelector((state) => state.history.otherScores?.result);
+  const shown = useAppSelector((state) => state.history.otherScores);
   const username = useAppSelector((state) => state.session.username);
+  const variantName = shown?.variantName ?? null;
+  const maxScore = variantName === null ? 0 : getVariant(variantName).maxScore;
 
   return (
     <div className="lobby-table-container">
@@ -170,16 +177,36 @@ export function OtherScoresList(): React.JSX.Element {
           </tr>
         </thead>
         <tbody id="lobby-history-other-scores-table-tbody">
-          {result?.games.map((game) => (
+          {shown?.games.map((game) => (
             <OtherScoreRow
               game={game}
               key={game.id}
-              maxScore={getVariant(result.variantName).maxScore}
+              maxScore={maxScore}
               ourGame={game.playerNames.includes(username)}
             />
           ))}
         </tbody>
       </table>
+
+      {shown !== null
+        && shown.total !== null
+        && shown.games.length < shown.total && (
+          <div className="align-center">
+            <button
+              className={
+                shown.loading
+                  ? "button align-center disabled"
+                  : "button align-center"
+              }
+              id="lobby-history-other-scores-show-more"
+              onClick={shown.loading ? undefined : showMoreOtherScores}
+              type="submit"
+            >
+              <i className="fas fa-chevron-circle-down icon-label" />
+              Show More Scores
+            </button>
+          </div>
+        )}
     </div>
   );
 }

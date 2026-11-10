@@ -18,6 +18,34 @@ pub async fn history_ids(pool: &PgPool, id: UserId, offset: i64, amount: i64) ->
     .await?)
 }
 
+/// A page of the games on a seed, in the order that `get_history` gives them with `seed_order`.
+pub async fn seed_history_ids(
+    pool: &PgPool,
+    seed: &str,
+    offset: i64,
+    amount: i64,
+) -> Result<Vec<i32>> {
+    Ok(sqlx::query_scalar!(
+        "SELECT id FROM games WHERE seed=$1
+         ORDER BY score DESC, datetime_finished, id LIMIT $2 OFFSET $3",
+        seed,
+        amount,
+        offset
+    )
+    .fetch_all(pool)
+    .await?)
+}
+
+/// The number of games on a seed.
+pub async fn seed_game_count(pool: &PgPool, seed: &str) -> Result<i64> {
+    Ok(sqlx::query_scalar!(
+        "SELECT count(*) AS \"count!\" FROM games WHERE seed=$1",
+        seed
+    )
+    .fetch_one(pool)
+    .await?)
+}
+
 struct HistoryRow {
     game: Json<GameRecord>,
     player_names: Vec<String>,

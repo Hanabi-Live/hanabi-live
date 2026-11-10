@@ -71,6 +71,8 @@ of the repository.
   clue.
 - Click a name in the online users list to open a menu with "Profile", "Private
   Message", "Add to Friends", and "Block".
+- The "Other Scores" screen now shows 10 games at a time, with a "Show More
+  Scores" button.
 
 ## November 8th, 2026
 

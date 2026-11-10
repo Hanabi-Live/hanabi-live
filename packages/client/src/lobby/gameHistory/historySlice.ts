@@ -26,10 +26,19 @@ interface HistoryState {
   /** Whether we are waiting for a page of our history. */
   readonly loading: boolean;
 
-  /** The seed whose other scores we show, and its games once the server sends them. */
+  /** The seed whose other scores we show, and the pages of its games that the server sent. */
   readonly otherScores: {
     readonly seed: string;
-    readonly result: OtherScores | null;
+    readonly games: readonly GameHistory[];
+
+    /** The seed's variant, or null until the server sends a game. */
+    readonly variantName: string | null;
+
+    /** The number of games on the seed, or null until the server counts them. */
+    readonly total: number | null;
+
+    /** Whether we are waiting for a page of the seed's games. */
+    readonly loading: boolean;
   } | null;
 }
 
@@ -55,14 +64,38 @@ const historySlice = createSlice({
       state.totalGames = action.payload;
     },
     otherScoresRequested(state, action: PayloadAction<string>) {
-      state.otherScores = { seed: action.payload, result: null };
+      state.otherScores = {
+        seed: action.payload,
+        games: [],
+        variantName: null,
+        total: null,
+        loading: true,
+      };
+    },
+    moreOtherScoresRequested(state) {
+      if (state.otherScores !== null) {
+        state.otherScores.loading = true;
+      }
     },
     otherScoresReceived(state, action: PayloadAction<OtherScores>) {
-      const { seed } = action.payload;
+      const { games, offset, seed, total, variantName } = action.payload;
+      const shown = state.otherScores;
       // Ignore a late reply for a seed that we no longer show.
-      return state.otherScores?.seed === seed
-        ? { ...state, otherScores: { seed, result: action.payload } }
-        : state;
+      if (shown?.seed !== seed) {
+        return state;
+      }
+      return {
+        ...state,
+        otherScores: {
+          seed,
+          // A page replaces the games from its offset on, so a repeated reply does not add them
+          // twice.
+          games: [...shown.games.slice(0, offset), ...games],
+          variantName: games.length > 0 ? variantName : shown.variantName,
+          total,
+          loading: false,
+        },
+      };
     },
   },
 });
@@ -72,6 +105,7 @@ export const {
   historyReceived,
   totalGamesChanged,
   otherScoresRequested,
+  moreOtherScoresRequested,
   otherScoresReceived,
 } = historySlice.actions;
 export const historyReducer = historySlice.reducer;

@@ -12,6 +12,7 @@ pub use chat::{
     general_response, lobby_history, server_chat,
 };
 pub use history::{blocked_seeds, get_history, history_ids};
+use history::{seed_game_count, seed_history_ids};
 pub use relationships::{block_relations, blocked, blocked_between, friends};
 pub use settings::{changed_settings, get_settings, set_setting};
 
@@ -109,6 +110,20 @@ pub enum ExternalReply {
         command: String,
         args: Vec<String>,
     },
+}
+
+/// Why a page of games cannot be read, for a start or an amount out of range.
+fn page_error(offset: i64, amount: i64) -> Option<String> {
+    if offset < 0 {
+        Some("That is not a valid start value.".to_owned())
+    } else if !(1..=hanabi_protocol::MAX_PAGE_SIZE).contains(&amount) {
+        Some(format!(
+            "The amount of games must be between 1 and {}.",
+            hanabi_protocol::MAX_PAGE_SIZE
+        ))
+    } else {
+        None
+    }
 }
 
 fn warning(message: &str) -> Effect {
@@ -209,14 +224,8 @@ pub async fn dispatch(
             relationships::relationship(pool, caller, command, &request.name, &request.room).await?
         }
         ClientMessage::HistoryGet(hanabi_protocol::HistoryRequest { offset, amount }) => {
-            if offset < 0 {
-                return Ok(Some(vec![warning("That is not a valid start value.")]));
-            }
-            if !(1..=hanabi_protocol::MAX_PAGE_SIZE).contains(&amount) {
-                return Ok(Some(vec![warning(&format!(
-                    "The amount of games must be between 1 and {}.",
-                    hanabi_protocol::MAX_PAGE_SIZE
-                ))]));
+            if let Some(error) = page_error(offset, amount) {
+                return Ok(Some(vec![warning(&error)]));
             }
             let ids = history_ids(pool, caller.user, offset, amount).await?;
             vec![Effect::to_self(Outgoing::new(
@@ -238,10 +247,13 @@ pub async fn dispatch(
             if let Some(error) = error {
                 return Ok(Some(vec![warning(error)]));
             }
-            let ids: Vec<i32> = sqlx::query_scalar!("SELECT id FROM games WHERE seed=$1", seed)
-                .fetch_all(pool)
-                .await?;
+            let (offset, amount) = (request.offset, request.amount);
+            if let Some(error) = page_error(offset, amount) {
+                return Ok(Some(vec![warning(&error)]));
+            }
+            let ids = seed_history_ids(pool, seed, offset, amount).await?;
             let games = get_history(pool, &ids, true).await?;
+            let total = seed_game_count(pool, seed).await?;
             let variant_name = games
                 .first()
                 .map_or_else(|| "n/a".into(), |game| game.options.variant_name.clone());
@@ -249,6 +261,8 @@ pub async fn dispatch(
                 hanabi_protocol::server::GAME_HISTORY_OTHER_SCORES,
                 hanabi_protocol::GameHistoryOtherScores {
                     games,
+                    offset,
+                    total,
                     variant_name,
                     seed: seed.into(),
                 },

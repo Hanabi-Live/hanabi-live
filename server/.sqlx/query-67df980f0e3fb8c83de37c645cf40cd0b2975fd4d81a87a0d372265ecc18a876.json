@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "SELECT id FROM games WHERE seed=$1",
+  "query": "SELECT id FROM games WHERE seed=$1\n         ORDER BY score DESC, datetime_finished, id LIMIT $2 OFFSET $3",
   "describe": {
     "columns": [
       {
@@ -17,12 +17,14 @@
     ],
     "parameters": {
       "Left": [
-        "Text"
+        "Text",
+        "Int8",
+        "Int8"
       ]
     },
     "nullable": [
       false
     ]
   },
-  "hash": "5dcca1e8e458922f47a65136612dd0b0961615d990a6828cfeda86a314e4cdb1"
+  "hash": "67df980f0e3fb8c83de37c645cf40cd0b2975fd4d81a87a0d372265ecc18a876"
 }

@@ -320,12 +320,20 @@ export const gameHistorySchema = z
 export const gameHistoryListSchema = z.array(gameHistorySchema).readonly();
 
 /**
- * The other games played on a seed.
+ * A page of the games played on a seed.
  */
 export const gameHistoryOtherScoresSchema = z
   .strictObject({
     games: z.array(gameHistorySchema).readonly(),
+    /**
+     * The position of the page's first game among all the games on the seed.
+     */
+    offset: z.number().int().min(0).max(9_007_199_254_740_991),
     seed: z.string().min(1),
+    /**
+     * The number of games on the seed.
+     */
+    total: z.number().int().min(0).max(2_147_483_647),
     variantName: z.string().min(1),
   })
   .readonly();
@@ -350,7 +358,28 @@ export const historyRequestSchema = z.strictObject({
     .max(9_007_199_254_740_991)
     .default(0),
 });
-export const historySeedRequestSchema = z.strictObject({ seed: z.string() });
+
+/**
+ * A page of the games on a seed, best scores first. Values out of range get a friendly warning.
+ */
+export const historySeedRequestSchema = z.strictObject({
+  /**
+   * The games on the page, from 1 to `MAX_PAGE_SIZE`.
+   */
+  amount: z
+    .number()
+    .int()
+    .min(-9_007_199_254_740_991)
+    .max(9_007_199_254_740_991)
+    .default(0),
+  offset: z
+    .number()
+    .int()
+    .min(-9_007_199_254_740_991)
+    .max(9_007_199_254_740_991)
+    .default(0),
+  seed: z.string(),
+});
 export const hypoShowDrawnCardsSchema = z.strictObject({
   showDrawnCards: z.boolean(),
   tableID: tableIdSchema,

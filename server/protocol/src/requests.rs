@@ -185,10 +185,18 @@ pub struct HistoryRequest {
     pub amount: i64,
 }
 
+/// A page of the games on a seed, best scores first. Values out of range get a friendly warning.
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct HistorySeedRequest {
     pub seed: String,
+    #[serde(default)]
+    #[schemars(range(min = -MAX_SAFE_INTEGER, max = MAX_SAFE_INTEGER))]
+    pub offset: i64,
+    /// The games on the page, from 1 to `MAX_PAGE_SIZE`.
+    #[serde(default)]
+    #[schemars(range(min = -MAX_SAFE_INTEGER, max = MAX_SAFE_INTEGER))]
+    pub amount: i64,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]

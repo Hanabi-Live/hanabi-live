@@ -643,12 +643,47 @@ async fn lobby_directed_linked_seeds_and_histories_postgres() {
         &who,
         &[],
         "historyGetSeed",
-        json!({"seed":"p2v0s1"}),
+        json!({"seed":"p2v0s1","offset":0,"amount":10}),
     )
     .await;
     let history = self_data(&result, "gameHistoryOtherScores");
     assert_eq!(history["games"][0]["id"], gb);
     assert_eq!(history["games"][1]["id"], ga);
+    assert_eq!(
+        (&history["offset"], &history["total"]),
+        (&json!(0), &json!(2))
+    );
+    // Later pages continue in the same order, and count every game on the seed.
+    let result = run(
+        &db.pool,
+        &who,
+        &[],
+        "historyGetSeed",
+        json!({"seed":"p2v0s1","offset":1,"amount":1}),
+    )
+    .await;
+    let history = self_data(&result, "gameHistoryOtherScores");
+    assert_eq!(history["games"].as_array().unwrap().len(), 1);
+    assert_eq!(history["games"][0]["id"], ga);
+    assert_eq!(
+        (&history["offset"], &history["total"]),
+        (&json!(1), &json!(2))
+    );
+    let result = run(
+        &db.pool,
+        &who,
+        &[],
+        "historyGetSeed",
+        json!({"seed":"p2v0s1","offset":0,"amount":hanabi_protocol::MAX_PAGE_SIZE + 1}),
+    )
+    .await;
+    assert_eq!(
+        self_data(&result, "warning")["warning"],
+        format!(
+            "The amount of games must be between 1 and {}.",
+            hanabi_protocol::MAX_PAGE_SIZE
+        )
+    );
     sqlx::query!(
         "INSERT INTO game_tags(game_id,user_id,tag) VALUES($1,$2,$3)",
         ga,
