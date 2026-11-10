@@ -782,7 +782,7 @@ async fn roles(http: &Client, guild: Id<GuildMarker>) -> Result<HashMap<Id<RoleM
 async fn last_shutdown(pool: &PgPool) -> Result<Option<DateTime<Utc>>> {
     let row = sqlx::query!(
         "SELECT message,datetime_sent FROM chat_log WHERE table_id IS NULL AND source='server'
-         ORDER BY id DESC LIMIT 1"
+         ORDER BY datetime_sent DESC,id DESC LIMIT 1"
     )
     .fetch_optional(pool)
     .await?;

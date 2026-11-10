@@ -340,7 +340,8 @@ CREATE TABLE chat_log (
 CREATE INDEX chat_log_index_user_id          ON chat_log (user_id);
 CREATE INDEX chat_log_index_datetime_sent_id ON chat_log (datetime_sent, id);
 /* The lobby's chat, which has no table. */
-CREATE INDEX chat_log_index_lobby            ON chat_log (id) WHERE table_id IS NULL;
+CREATE INDEX chat_log_index_lobby_datetime_sent_id ON chat_log (datetime_sent, id)
+    WHERE table_id IS NULL;
 CREATE UNIQUE INDEX chat_log_index_discord_message_id ON chat_log (discord_message_id)
     WHERE discord_message_id IS NOT NULL;
 

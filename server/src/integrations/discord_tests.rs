@@ -352,8 +352,8 @@ async fn discord_lifecycle_announcements_match_across_channels_postgres() {
     // Lobby chat is HTML, so the administrator's reason is stored escaped.
     assert!(messages[1].ends_with("Reason: Upgrading &lt;the&gt; database &amp; &#39;more&#39;"));
     sqlx::query!(
-        "UPDATE chat_log SET datetime_sent=NOW()-INTERVAL '150 seconds'
-         WHERE id=(SELECT MAX(id) FROM chat_log WHERE source='server')"
+        "UPDATE chat_log SET datetime_sent=datetime_sent-INTERVAL '150 seconds'
+         WHERE source='server'"
     )
     .execute(&fixture.db.pool)
     .await

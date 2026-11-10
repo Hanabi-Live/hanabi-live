@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "SELECT message,datetime_sent FROM chat_log WHERE table_id IS NULL AND source='server'\n         ORDER BY id DESC LIMIT 1",
+  "query": "SELECT message,datetime_sent FROM chat_log WHERE table_id IS NULL AND source='server'\n         ORDER BY datetime_sent DESC,id DESC LIMIT 1",
   "describe": {
     "columns": [
       {
@@ -34,5 +34,5 @@
       false
     ]
   },
-  "hash": "21ac5e5247342ea01b87445cc9b2da13aa227e4572b3fed7e6ba4fe4a4e00824"
+  "hash": "63271b9e4404ab13133e504f1bd335e3bde7d34fe1a9fd8e973997bc688c7b6d"
 }
