@@ -3070,3 +3070,32 @@ async fn a_failed_table_creation_ends_its_seat_reservation() -> Result<()> {
     h.close().await?;
     outcome
 }
+
+#[tokio::test]
+async fn a_link_to_an_ended_table_forgets_it_without_a_warning() -> Result<()> {
+    let Some(mut h) = Harness::new(&["Alice"]).await? else {
+        return Ok(());
+    };
+    let outcome = async {
+        let error = h
+            .send(0, "tableSpectate", json!({"tableID":999_999}))
+            .await
+            .err()
+            .context("Spectating an unknown table succeeded")?;
+        ensure!(
+            matches!(
+                error.downcast_ref::<CommandError>(),
+                Some(CommandError::Rejected { silent: true, .. })
+            ),
+            "An unknown table was not rejected silently: {error:#}"
+        );
+        ensure!(
+            h.receive(0, "tableGone").await?["tableID"] == json!(999_999),
+            "The client was not told to forget the unknown table"
+        );
+        Ok::<(), anyhow::Error>(())
+    }
+    .await;
+    h.close().await?;
+    outcome
+}

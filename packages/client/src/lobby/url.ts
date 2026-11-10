@@ -238,6 +238,16 @@ function gotoPath(data: ServerCommandData["welcome"]): boolean {
   return false;
 }
 
+/** Replaces a "/game/123" or "/pre-game/123" path for the given table with the lobby path. */
+export function leaveTableLink(tableID: number): void {
+  const match = /^(?:\/game|\/pre-game)\/(\d+)(?:\/|$)/u.exec(
+    globalThis.location.pathname,
+  );
+  if (match?.[1] !== undefined && parseIntSafe(match[1]) === tableID) {
+    setBrowserAddressBarPath(PATH.LOBBY);
+  }
+}
+
 function restoreLobbyHistoryView(): boolean {
   if (globalThis.location.pathname !== PATH.LOBBY) {
     return false;

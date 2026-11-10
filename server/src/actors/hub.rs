@@ -321,7 +321,16 @@ impl Hub {
             return;
         }
         let Some(sender) = self.tables.get(&id).map(|e| e.handle.sender.clone()) else {
-            let _ = reply.send(Err(rejection!("Unknown table")));
+            // The table ended, perhaps after someone shared a link to it. The client forgets it
+            // without a warning.
+            s.emit(&frame(
+                hanabi_protocol::server::TABLE_GONE,
+                TableRequest { table_id: id },
+            ));
+            let _ = reply.send(Err(CommandError::Rejected {
+                message: "Unknown table".into(),
+                silent: true,
+            }));
             return;
         };
         let joining = matches!(&command, Command::Client(message) if matches!(**message, ClientMessage::TableJoin(_)));

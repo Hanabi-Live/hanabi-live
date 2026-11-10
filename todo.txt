@@ -11,7 +11,6 @@
 - remove type assertions from lobby + views
 
 long term:
-- linking to lobby table that doesn't exist shouldn't throw warning and should instead just redirect to /
 - make Connection.send on client type-safe
 - remove all null in @hanabi-live/game (this might need server changes)
 - server should send message about if this is the player's first initial load, then we can use that in the soundView.ts to not play the initial sound effect on first turn refresh

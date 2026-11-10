@@ -162,6 +162,11 @@ lobbyCommands.set("tableGone", (data) => {
     pregame.hide();
     globals.tableID = NO_TABLE_ID;
   }
+
+  // If we followed a link to this table, it no longer exists, so stay in the lobby.
+  if (globals.currentScreen === Screen.Lobby) {
+    url.leaveTableLink(data.tableID);
+  }
 });
 
 // Received by the client upon initial connection.

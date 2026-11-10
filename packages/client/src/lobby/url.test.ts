@@ -14,7 +14,8 @@ vi.mock("../utils", () => ({ setBrowserAddressBarPath: vi.fn() }));
 const { globals } = await import("../Globals");
 const history = await import("./history");
 const { expand } = await import("./hypoCompress");
-const { parseAndGoto } = await import("./url");
+const { leaveTableLink, parseAndGoto } = await import("./url");
+const { setBrowserAddressBarPath } = await import("../utils");
 
 function welcome(
   data: Partial<ServerCommandData["welcome"]> = {},
@@ -170,4 +171,24 @@ describe("replay URL loading", () => {
       expect(send).toHaveBeenCalledWith("tableReattend", { tableID });
     },
   );
+
+  test.each([
+    ["/game/123", true],
+    ["/game/123/shadow/1", true],
+    ["/pre-game/123", true],
+    ["/game/1234", false],
+    ["/replay/123", false],
+    ["/lobby", false],
+  ])("a gone table at %s leaves its link: %s", (pathname, leaves) => {
+    Object.defineProperty(globalThis, "location", {
+      configurable: true,
+      value: new URL(`https://hanab.live${pathname}`),
+    });
+
+    leaveTableLink(123);
+
+    expect(vi.mocked(setBrowserAddressBarPath).mock.calls).toStrictEqual(
+      leaves ? [["/lobby"]] : [],
+    );
+  });
 });
