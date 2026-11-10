@@ -1,12 +1,13 @@
-use hanabi_protocol::{NO_VALUE, SafeInteger, TableId};
+use hanabi_protocol::{CardOrder, CardRank, PlayerIndex, SuitIndex, TableId};
 
-pub(super) fn int(value: usize) -> i64 {
-    i64::try_from(value).unwrap_or(i64::MAX)
+/// A seat that the engine names. The engine only names seats that the game has.
+fn seat(index: usize) -> PlayerIndex {
+    PlayerIndex::new(index).expect("engine seats are below MAX_PLAYERS")
 }
 
-/// A suit or rank that the engine marks with `NO_VALUE` when the recipient may not see it.
-fn known(value: i32) -> Option<i64> {
-    (value != NO_VALUE).then(|| value.into())
+/// A card that the engine names. The engine only names cards that the game has.
+fn card(order: usize) -> CardOrder {
+    CardOrder::new(order).expect("engine card orders are below the largest deck")
 }
 
 /// The wire form of an engine event, which serializes identically.
@@ -20,10 +21,10 @@ pub(super) fn wire_event(event: &hanabi_engine::EngineEvent) -> hanabi_protocol:
             suit_index,
             rank,
         } => G::Draw {
-            player_index: int(*player_index),
-            order: int(*order),
-            suit_index: known(*suit_index),
-            rank: known(*rank),
+            player_index: seat(*player_index),
+            order: card(*order),
+            suit_index: SuitIndex::new(*suit_index),
+            rank: CardRank::new(*rank),
         },
         E::Play {
             player_index,
@@ -31,10 +32,10 @@ pub(super) fn wire_event(event: &hanabi_engine::EngineEvent) -> hanabi_protocol:
             suit_index,
             rank,
         } => G::Play {
-            player_index: int(*player_index),
-            order: int(*order),
-            suit_index: known(*suit_index),
-            rank: known(*rank),
+            player_index: seat(*player_index),
+            order: card(*order),
+            suit_index: SuitIndex::new(*suit_index),
+            rank: CardRank::new(*rank),
         },
         E::CardIdentity {
             player_index,
@@ -42,10 +43,10 @@ pub(super) fn wire_event(event: &hanabi_engine::EngineEvent) -> hanabi_protocol:
             suit_index,
             rank,
         } => G::CardIdentity {
-            player_index: int(*player_index),
-            order: int(*order),
-            suit_index: known(*suit_index),
-            rank: known(*rank),
+            player_index: seat(*player_index),
+            order: card(*order),
+            suit_index: SuitIndex::new(*suit_index),
+            rank: CardRank::new(*rank),
         },
         E::Discard {
             player_index,
@@ -54,10 +55,10 @@ pub(super) fn wire_event(event: &hanabi_engine::EngineEvent) -> hanabi_protocol:
             rank,
             failed,
         } => G::Discard {
-            player_index: int(*player_index),
-            order: int(*order),
-            suit_index: known(*suit_index),
-            rank: known(*rank),
+            player_index: seat(*player_index),
+            order: card(*order),
+            suit_index: SuitIndex::new(*suit_index),
+            rank: CardRank::new(*rank),
             failed: *failed,
         },
         E::Clue {
@@ -72,9 +73,9 @@ pub(super) fn wire_event(event: &hanabi_engine::EngineEvent) -> hanabi_protocol:
                 clue_type,
                 value: clue.value,
             }),
-            giver: int(*giver),
-            target: int(*target),
-            orders: list.iter().map(|&order| SafeInteger(int(order))).collect(),
+            giver: seat(*giver),
+            target: seat(*target),
+            orders: list.iter().copied().map(card).collect(),
             turn: (*turn).into(),
         },
         E::Turn {
@@ -82,7 +83,7 @@ pub(super) fn wire_event(event: &hanabi_engine::EngineEvent) -> hanabi_protocol:
             current_player_index,
         } => G::Turn {
             num: (*num).into(),
-            current_player_index: u8::try_from(*current_player_index).ok(),
+            current_player_index: PlayerIndex::new(*current_player_index),
         },
         E::GameOver {
             end_condition,
@@ -90,16 +91,16 @@ pub(super) fn wire_event(event: &hanabi_engine::EngineEvent) -> hanabi_protocol:
             votes,
         } => G::GameOver {
             end_condition: *end_condition,
-            player_index: u8::try_from(*player_index).ok(),
+            player_index: PlayerIndex::new(*player_index),
             votes: votes
                 .as_ref()
-                .map(|votes| votes.iter().map(|&vote| SafeInteger(int(vote))).collect()),
+                .map(|votes| votes.iter().copied().map(seat).collect()),
         },
         E::PlayerTimes {
             player_times,
             duration,
         } => G::PlayerTimes {
-            player_times_ms: player_times.iter().copied().map(SafeInteger).collect(),
+            player_times_ms: player_times.clone(),
             duration_ms: *duration,
         },
     }

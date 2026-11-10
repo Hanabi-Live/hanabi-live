@@ -135,9 +135,9 @@ export const catalogSuitSchema = z.strictObject({
 });
 
 /**
- * A card rank. 7 is the rank of a stack's start card.
+ * A card's rank. 7 is the rank of a stack's start card.
  */
-export const catalogRankSchema = z.literal([1, 2, 3, 4, 5, 7]);
+export const cardRankSchema = z.literal([1, 2, 3, 4, 5, 7]);
 
 /**
  * A rank that clues can name.
@@ -161,7 +161,7 @@ export const catalogVariantSchema = z.strictObject({
   clueStarved: z.literal(true).optional(),
   colorCluesTouchNothing: z.literal(true).optional(),
   cowAndPig: z.literal(true).optional(),
-  criticalRank: catalogRankSchema.optional(),
+  criticalRank: cardRankSchema.optional(),
   duck: z.literal(true).optional(),
   funnels: z.literal(true).optional(),
   /**
@@ -178,7 +178,7 @@ export const catalogVariantSchema = z.strictObject({
   oddsAndEvens: z.literal(true).optional(),
   rankCluesTouchNothing: z.literal(true).optional(),
   scarceOnes: z.literal(true).optional(),
-  specialRank: catalogRankSchema.optional(),
+  specialRank: cardRankSchema.optional(),
   specialRankAllClueColors: z.literal(true).optional(),
   specialRankAllClueRanks: z.literal(true).optional(),
   specialRankDeceptive: z.literal(true).optional(),
@@ -211,8 +211,8 @@ export const cardNoteSchema = z.strictObject({
 });
 
 /**
- * A card's position in the initial deck, which identifies it. Stack bases follow the cards of the
- * largest deck.
+ * A card's position in the initial deck, which identifies it. Stack bases follow the cards of
+ * the largest deck.
  */
 export const cardOrderSchema = z
   .number()
@@ -227,14 +227,14 @@ export const cardOrderSchema = z
 export const clueTypeSchema = z.enum(["color", "rank"]);
 
 /**
- * A card's rank. 7 is the rank of a stack's start card.
- */
-export const cardRankSchema = z.literal([1, 2, 3, 4, 5, 7]);
-
-/**
  * A seat in a game. The game library's `PlayerIndex` type.
  */
 export const playerIndexSchema = z.literal([0, 1, 2, 3, 4, 5]);
+
+/**
+ * The index of a color in the variant's clue colors.
+ */
+export const colorIndexSchema = z.literal([0, 1, 2, 3, 4, 5]);
 
 /**
  * A clue's type and value: a color clue names a suit's color, and a rank clue names a rank.
@@ -245,16 +245,13 @@ export const receivedClueSchema = z.discriminatedUnion("type", [
     /**
      * The index of the color in the variant's clue colors.
      */
-    value: z.literal([0, 1, 2, 3, 4, 5]),
+    value: colorIndexSchema,
   }),
-  z.strictObject({
-    type: z.literal("rank"),
-    value: z.literal([1, 2, 3, 4, 5]),
-  }),
+  z.strictObject({ type: z.literal("rank"), value: rankClueNumberSchema }),
 ]);
 
 /**
- * An integer that JavaScript represents exactly.
+ * An integer that JavaScript represents exactly. Lists of integers use it to bound each item.
  */
 export const safeIntegerSchema = z
   .number()

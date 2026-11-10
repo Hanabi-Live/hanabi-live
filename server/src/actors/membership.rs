@@ -4,11 +4,12 @@ use super::{
 };
 use crate::errors::CommandResult;
 use crate::{
-    model::{IDLE_TIMEOUT_MS, Phase, Seat},
+    model::{IDLE_TIMEOUT_MS, Phase},
     transport::{Session, frame},
 };
 use anyhow::Context;
 use chrono::Utc;
+use hanabi_protocol::PlayerIndex;
 use hanabi_protocol::UserId;
 use hanabi_protocol::{
     LobbySound, SoundLobby, Status, TableJoinRequest, TableRequest, TableStarted,
@@ -210,7 +211,7 @@ impl TableActor {
         session: Arc<Session>,
         blocks: &BTreeSet<UserId>,
         spectating: bool,
-        requested_shadow: Option<Seat>,
+        requested_shadow: Option<PlayerIndex>,
     ) -> CommandResult<()> {
         let replay = matches!(self.table.phase, Phase::Replay { .. });
         let seat = self

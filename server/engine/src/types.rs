@@ -1,5 +1,8 @@
+use hanabi_protocol::{
+    CardOrder, ColorIndex, DEFAULT_VARIANT_NAME, MIN_PLAYERS, NO_VALUE, PlayerIndex,
+    RankClueNumber, ReplayGameAction,
+};
 pub use hanabi_protocol::{ClueType, EndCondition, RecordedActionType};
-use hanabi_protocol::{DEFAULT_VARIANT_NAME, MIN_PLAYERS};
 use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
@@ -106,13 +109,78 @@ pub struct PlayerAction {
     pub value: i32,
 }
 pub type RecordedAction = PlayerAction;
-impl From<&hanabi_protocol::ReplayAction> for PlayerAction {
-    fn from(a: &hanabi_protocol::ReplayAction) -> Self {
+impl From<ReplayGameAction> for PlayerAction {
+    /// The action as a game's record stores it.
+    fn from(action: ReplayGameAction) -> Self {
+        let (action_type, target, value) = match action {
+            ReplayGameAction::Play { order } => (RecordedActionType::Play, order.into(), 0),
+            ReplayGameAction::Discard { order } => (RecordedActionType::Discard, order.into(), 0),
+            ReplayGameAction::ColorClue {
+                target,
+                color_index,
+            } => (
+                RecordedActionType::ColorClue,
+                target.into(),
+                color_index.into(),
+            ),
+            ReplayGameAction::RankClue { target, rank } => {
+                (RecordedActionType::RankClue, target.into(), rank.into())
+            }
+            ReplayGameAction::GameOver {
+                end_condition,
+                player_index,
+            } => (
+                if end_condition == EndCondition::TerminatedByVote {
+                    RecordedActionType::GameOverByVote
+                } else {
+                    RecordedActionType::GameOver
+                },
+                player_index.map_or(NO_VALUE, i32::from),
+                i32::from(end_condition),
+            ),
+        };
         Self {
-            action_type: a.kind,
-            target: a.target,
-            value: a.value,
+            action_type,
+            target,
+            value,
         }
+    }
+}
+
+impl TryFrom<PlayerAction> for ReplayGameAction {
+    type Error = String;
+
+    /// An action from a game's record. Fails for a value that the replay format cannot hold, such
+    /// as an unknown end condition.
+    fn try_from(action: PlayerAction) -> Result<Self, Self::Error> {
+        let PlayerAction {
+            action_type,
+            target,
+            value,
+        } = action;
+        let invalid = || format!("Invalid recorded action: {action_type:?} {target} {value}");
+        let order = || CardOrder::new(target).ok_or_else(invalid);
+        let seat = || PlayerIndex::new(target).ok_or_else(invalid);
+        Ok(match action_type {
+            RecordedActionType::Play => Self::Play { order: order()? },
+            RecordedActionType::Discard => Self::Discard { order: order()? },
+            RecordedActionType::ColorClue => Self::ColorClue {
+                target: seat()?,
+                color_index: ColorIndex::new(value).ok_or_else(invalid)?,
+            },
+            RecordedActionType::RankClue => Self::RankClue {
+                target: seat()?,
+                rank: RankClueNumber::new(value).ok_or_else(invalid)?,
+            },
+            RecordedActionType::GameOver | RecordedActionType::GameOverByVote => Self::GameOver {
+                end_condition: EndCondition::try_from(value)?,
+                player_index: if target == NO_VALUE {
+                    None
+                } else {
+                    Some(seat()?)
+                },
+            },
+        })
     }
 }
 

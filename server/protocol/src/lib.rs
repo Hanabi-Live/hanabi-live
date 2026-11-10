@@ -11,8 +11,8 @@ pub use enums::{
 };
 mod registry;
 pub use registry::{
-    ClientMessage, ServerMessage, client_contracts, decode, decode_server, server,
-    server_contracts, validate,
+    ClientMessage, ServerMessage, client_contracts, decode, decode_server, exported, schemas,
+    server, server_contracts, validate,
 };
 
 mod catalog;
@@ -127,20 +127,6 @@ pub const MAX_PROGRESS: u8 = 100;
 /// The highest card order: stack bases follow the cards of the largest deck, one for each suit.
 const MAX_CARD_ORDER: usize = MAX_DECK_SIZE + MAX_SUITS - 1;
 
-/// Every seat index, for schemas that list them.
-fn seats() -> Vec<i64> {
-    (0..=MAX_SEAT)
-        .filter_map(|seat| i64::try_from(seat).ok())
-        .collect()
-}
-
-/// Every suit index.
-fn suits() -> Vec<i64> {
-    (0..=MAX_SUIT_INDEX)
-        .filter_map(|suit| i64::try_from(suit).ok())
-        .collect()
-}
-
 /// Every normal rank, which are also the ranks that clues can name.
 fn ranks() -> Vec<i32> {
     (MIN_RANK..=MAX_RANK).collect()
@@ -252,163 +238,140 @@ impl std::fmt::Display for GameId {
     }
 }
 
-/// An integer that JavaScript represents exactly.
-#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
+/// An integer that JavaScript represents exactly. Lists of integers use it to bound each item.
+#[derive(
+    Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize, JsonSchema,
+)]
 #[serde(transparent)]
 pub struct SafeInteger(#[schemars(range(min = -MAX_SAFE_INTEGER, max = MAX_SAFE_INTEGER))] pub i64);
 
-/// A seat in a game. The game library's `PlayerIndex` type.
-#[derive(JsonSchema)]
-#[serde(transparent)]
-pub struct PlayerIndex(
-    #[schemars(range(min = 0, max = MAX_SEAT), extend("enum" = seats()))] pub i64,
-);
+/// Defines a small non-negative integer on the wire, such as a seat or a card's position. Each one
+/// is its own type, so that one cannot stand in for another, and its schema lists or bounds the
+/// values that the wire accepts.
+macro_rules! wire_index {
+    (
+        $(#[doc = $doc:literal])*
+        $name:ident, $max:expr $(, values = $values:expr)? $(, brand = $brand:literal)?
+    ) => {
+        $(#[doc = $doc])*
+        #[derive(
+            Clone, Copy, Debug, Default, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize,
+            Deserialize, JsonSchema,
+        )]
+        #[serde(transparent)]
+        $(#[schemars(extend("x-brand" = $brand))])?
+        pub struct $name(
+            #[schemars(range(min = 0, max = $max) $(, extend("enum" = $values))?)] pub u8,
+        );
 
-/// A card's position in the initial deck, which identifies it. Stack bases follow the cards of the
-/// largest deck.
-#[derive(JsonSchema)]
-#[serde(transparent)]
-#[schemars(extend("x-brand" = "CardOrder"))]
-pub struct CardOrder(#[schemars(range(min = 0, max = MAX_CARD_ORDER))] pub i64);
+        impl $name {
+            /// The largest value.
+            pub const MAX: usize = $max;
 
-/// A card's suit.
-#[derive(JsonSchema)]
-#[serde(transparent)]
-pub struct SuitIndex(
-    #[schemars(range(min = 0, max = MAX_SUIT_INDEX), extend("enum" = suits()))] pub i64,
-);
+            /// The value, if it is in range.
+            pub fn new<T: TryInto<usize>>(value: T) -> Option<Self> {
+                value
+                    .try_into()
+                    .ok()
+                    .filter(|value| *value <= Self::MAX)
+                    .and_then(|value| u8::try_from(value).ok())
+                    .map(Self)
+            }
+
+            pub const fn index(self) -> usize {
+                self.0 as usize
+            }
+        }
+
+        impl std::fmt::Display for $name {
+            fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+                self.0.fmt(f)
+            }
+        }
+
+        impl From<$name> for i32 {
+            fn from(value: $name) -> Self {
+                value.0.into()
+            }
+        }
+
+        impl From<$name> for usize {
+            fn from(value: $name) -> Self {
+                value.index()
+            }
+        }
+    };
+}
+
+/// Every value from 0 to `max`, for schemas that list them.
+fn up_to(max: usize) -> Vec<usize> {
+    (0..=max).collect()
+}
+
+wire_index! {
+    /// A seat in a game. The game library's `PlayerIndex` type.
+    PlayerIndex, MAX_SEAT, values = up_to(MAX_SEAT)
+}
+
+wire_index! {
+    /// A card's position in the initial deck, which identifies it. Stack bases follow the cards of
+    /// the largest deck.
+    CardOrder, MAX_CARD_ORDER, brand = "CardOrder"
+}
+
+wire_index! {
+    /// A card's suit.
+    SuitIndex, MAX_SUIT_INDEX, values = up_to(MAX_SUIT_INDEX)
+}
+
+wire_index! {
+    /// The index of a color in the variant's clue colors.
+    ColorIndex, MAX_SUIT_INDEX, values = up_to(MAX_SUIT_INDEX)
+}
 
 /// A card's rank. 7 is the rank of a stack's start card.
-#[derive(JsonSchema)]
+#[derive(
+    Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize, JsonSchema,
+)]
 #[serde(transparent)]
 pub struct CardRank(
     #[schemars(range(min = MIN_RANK, max = START_CARD_RANK), extend("enum" = catalog_ranks()))]
-    pub i64,
+    pub u8,
 );
 
-pub fn schemas() -> std::collections::BTreeMap<String, serde_json::Value> {
-    let mut schemas = std::collections::BTreeMap::new();
-    macro_rules! register {
-        ($($ty:ty),+ $(,)?) => {$(
-            schemas.insert(stringify!($ty).into(), serde_json::to_value(schemars::schema_for!($ty)).unwrap());
-        )+};
-    }
-    register!(
-        ReplayGame,
-        ReplayImport,
-        LoginRequest,
-        LoginResponse,
-        ApiError,
-        IdentityRequest,
-        IdentityResponse,
-        IdentityTokenResponse,
-        PasswordHashRequest,
-        PasswordHashResponse,
-        PublicGamePage,
-        PublicGameRow,
-        PublicVariant,
-        VariantNames,
-        ScoreFrequency,
-        ChatRequest,
-        ChatPmRequest,
-        ChatHistoryRequest,
-        ChatUserRequest,
-        ChatLinkedRequest,
-        TableId,
-        TableRequest,
-        TableJoinRequest,
-        TableLeaderRequest,
-        TableVariantRequest,
-        TableStartRequest,
-        TableRestartRequest,
-        TableRestartDeclineRequest,
-        TableSuggestRequest,
-        TableSpectateRequest,
-        SettingRequest,
-        InactiveRequest,
-        HistoryRequest,
-        HistorySeedRequest,
-        TagSearchRequest,
-        TableCreateRequest,
-        TableUpdateRequest,
-        ReplayCreateRequest,
-        Clock,
-        Connected,
-        IdleWarning,
-        Pause,
-        VoteChange,
-        CardIdentity,
-        CardIdentities,
-        FinishOngoingGame,
-        ReplayLeader,
-        RestartDeclined,
-        Suggestion,
-        Hypothetical,
-        HypotheticalAction,
-        ActionRequest,
-        PauseRequest,
-        NoteRequest,
-        TagRequest,
-        TagsDeleteAllRequest,
-        SharedReplayAction,
-        Chat,
-        ChatDelete,
-        ChatList,
-        ChatHistoryMessage,
-        ChatHistory,
-        ChatTyping,
-        TableSuggestion,
-        TableStarted,
-        Empty,
-        Restart,
-        LobbyStatus,
-        UserId,
-        User,
-        UserList,
-        UserLeft,
-        UserInactive,
-        Friends,
-        Blocked,
-        ErrorNotice,
-        Warning,
-        SoundLobby,
-        Settings,
-        Welcome,
-        SpectatedTable,
-        GameOptions,
-        Spectator,
-        Spectators,
-        Table,
-        TableList,
-        GameId,
-        GameHistory,
-        GameHistoryList,
-        GameHistoryOtherScores,
-        PregameBestScore,
-        PregameVariantStats,
-        PregameStats,
-        PregamePlayer,
-        Pregame,
-        PlayerNotes,
-        CardNote,
-        NoteList,
-        NoteListPlayer,
-        Note,
-        ClueType,
-        ReceivedClue,
-        GameEvent,
-        GameAction,
-        GameActionList,
-        CharacterAssignment,
-        SharedReplayInit,
-        Init,
-        SafeInteger,
-        CatalogColor,
-        CatalogSuit,
-        CatalogVariant,
-        CatalogCharacter,
-    );
-    schemas
+/// A rank that clues can name.
+#[derive(
+    Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize, JsonSchema,
+)]
+#[serde(transparent)]
+pub struct RankClueNumber(
+    #[schemars(range(min = MIN_RANK, max = MAX_RANK), extend("enum" = ranks()))] pub u8,
+);
+
+/// Converts a rank to its wire type, if it is one that the type allows.
+macro_rules! rank_conversions {
+    ($($name:ident: $allowed:expr;)+) => {$(
+        impl $name {
+            pub fn new<T: TryInto<i32>>(rank: T) -> Option<Self> {
+                rank.try_into()
+                    .ok()
+                    .filter(|rank| $allowed.contains(rank))
+                    .and_then(|rank| u8::try_from(rank).ok())
+                    .map(Self)
+            }
+        }
+
+        impl From<$name> for i32 {
+            fn from(value: $name) -> Self {
+                value.0.into()
+            }
+        }
+    )+};
+}
+
+rank_conversions! {
+    CardRank: catalog_ranks();
+    RankClueNumber: ranks();
 }
 
 #[cfg(test)]
@@ -441,6 +404,16 @@ mod tests {
                     case["name"]
                 );
             }
+        }
+    }
+
+    #[test]
+    fn every_schema_is_valid() {
+        for (name, schema) in schemas() {
+            assert!(
+                jsonschema::options().build(&schema).is_ok(),
+                "{name} has an invalid schema"
+            );
         }
     }
 

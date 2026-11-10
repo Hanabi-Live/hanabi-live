@@ -19,7 +19,7 @@ vi.mock("../../tooltips", () => ({ attach: vi.fn(() => vi.fn()) }));
 const TABLE_ID = tableIdSchema.parse(5);
 
 function player(
-  index: number,
+  index: Game["players"][number]["index"],
   username: string,
   present: boolean,
 ): Game["players"][number] {

@@ -1,7 +1,7 @@
 use crate::{
     errors::CommandResult,
     lobby::{OnlineUser, Publication},
-    model::{Seat, TableSnapshot},
+    model::TableSnapshot,
     operations::Operation,
     server_info::ServerInfo,
     store::{Saved, Store},
@@ -11,6 +11,7 @@ use crate::{
 use anyhow::Context;
 use anyhow::Result;
 use hanabi_protocol::GameId;
+use hanabi_protocol::PlayerIndex;
 use hanabi_protocol::TableId;
 use hanabi_protocol::UserId;
 use hanabi_protocol::{ClientMessage, Status};
@@ -155,7 +156,7 @@ pub struct TableView {
     replay_game: Option<GameId>,
     visible: bool,
     data: hanabi_protocol::Table,
-    reconnects: BTreeMap<UserId, Option<Seat>>,
+    reconnects: BTreeMap<UserId, Option<PlayerIndex>>,
 }
 #[derive(Clone)]
 pub struct TableHandle {
@@ -285,7 +286,7 @@ pub enum HubCommand {
         table: Box<TableSnapshot>,
         saved: Saved,
         allocation: Allocation,
-        attendees: Vec<(Arc<Session>, bool, Option<Seat>)>,
+        attendees: Vec<(Arc<Session>, bool, Option<PlayerIndex>)>,
         chat_read: HashMap<UserId, usize>,
     },
     Quiesce(oneshot::Sender<Vec<TableHandle>>),
@@ -297,7 +298,7 @@ pub enum Command {
     /// Restores a reconnecting user's attendance and view.
     Reattend {
         spectate: bool,
-        shadow: Option<Seat>,
+        shadow: Option<PlayerIndex>,
     },
 }
 pub enum TableCommand {
@@ -365,7 +366,7 @@ struct Attendance {
     session: Arc<Session>,
     loaded: bool,
     spectator: bool,
-    shadow: Option<Seat>,
+    shadow: Option<PlayerIndex>,
     typing_until: Option<Instant>,
 }
 struct TableActor {

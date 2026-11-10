@@ -15,12 +15,12 @@ use super::*;
 pub struct Clock {
     #[serde(rename = "tableID")]
     pub table_id: TableId,
-    #[schemars(inner(range(min = -MAX_SAFE_INTEGER, max = MAX_SAFE_INTEGER)))]
+    #[schemars(with = "Vec<SafeInteger>")]
     pub player_times_ms: Vec<i64>,
     /// Absent when the game has no active player.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     #[schemars(with = "PlayerIndex")]
-    pub active_player_index: Option<u8>,
+    pub active_player_index: Option<PlayerIndex>,
     #[schemars(range(min = 0, max = MAX_SAFE_INTEGER))]
     pub time_taken_ms: i64,
 }
@@ -53,7 +53,7 @@ pub struct Pause {
     /// The seat that paused the game. Absent when the game is not paused.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     #[schemars(with = "PlayerIndex")]
-    pub player_index: Option<u8>,
+    pub player_index: Option<PlayerIndex>,
 }
 
 /// The votes to end the game, as one player sees them.
@@ -78,10 +78,10 @@ pub struct CardIdentity {
     /// Absent when the recipient may not see the card.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     #[schemars(with = "SuitIndex")]
-    pub suit_index: Option<i64>,
+    pub suit_index: Option<SuitIndex>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     #[schemars(with = "CardRank")]
-    pub rank: Option<i64>,
+    pub rank: Option<CardRank>,
 }
 
 /// Every card's identity, by card order, once a game ends.
@@ -170,8 +170,7 @@ pub struct NoteListPlayer {
 pub struct Note {
     #[serde(rename = "tableID")]
     pub table_id: TableId,
-    #[schemars(with = "CardOrder")]
-    pub order: i64,
+    pub order: CardOrder,
     pub notes: Vec<CardNote>,
 }
 
@@ -190,12 +189,10 @@ pub struct Clue {
 pub enum ReceivedClue {
     Color {
         /// The index of the color in the variant's clue colors.
-        #[schemars(range(min = 0, max = MAX_SUIT_INDEX), extend("enum" = suits()))]
-        value: i32,
+        value: ColorIndex,
     },
     Rank {
-        #[schemars(range(min = MIN_RANK, max = MAX_RANK), extend("enum" = ranks()))]
-        value: i32,
+        value: RankClueNumber,
     },
 }
 
@@ -210,56 +207,48 @@ pub enum ReceivedClue {
 )]
 pub enum GameEvent {
     Draw {
-        #[schemars(with = "PlayerIndex")]
-        player_index: i64,
-        #[schemars(with = "CardOrder")]
-        order: i64,
+        player_index: PlayerIndex,
+        order: CardOrder,
         /// Absent when the recipient may not see the card.
         #[serde(default, skip_serializing_if = "Option::is_none")]
         #[schemars(with = "SuitIndex")]
-        suit_index: Option<i64>,
+        suit_index: Option<SuitIndex>,
         #[serde(default, skip_serializing_if = "Option::is_none")]
         #[schemars(with = "CardRank")]
-        rank: Option<i64>,
+        rank: Option<CardRank>,
     },
     Play {
-        #[schemars(with = "PlayerIndex")]
-        player_index: i64,
-        #[schemars(with = "CardOrder")]
-        order: i64,
+        player_index: PlayerIndex,
+        order: CardOrder,
         /// Absent when the recipient may not see the card.
         #[serde(default, skip_serializing_if = "Option::is_none")]
         #[schemars(with = "SuitIndex")]
-        suit_index: Option<i64>,
+        suit_index: Option<SuitIndex>,
         #[serde(default, skip_serializing_if = "Option::is_none")]
         #[schemars(with = "CardRank")]
-        rank: Option<i64>,
+        rank: Option<CardRank>,
     },
     CardIdentity {
-        #[schemars(with = "PlayerIndex")]
-        player_index: i64,
-        #[schemars(with = "CardOrder")]
-        order: i64,
+        player_index: PlayerIndex,
+        order: CardOrder,
         /// Absent when the recipient may not see the card.
         #[serde(default, skip_serializing_if = "Option::is_none")]
         #[schemars(with = "SuitIndex")]
-        suit_index: Option<i64>,
+        suit_index: Option<SuitIndex>,
         #[serde(default, skip_serializing_if = "Option::is_none")]
         #[schemars(with = "CardRank")]
-        rank: Option<i64>,
+        rank: Option<CardRank>,
     },
     Discard {
-        #[schemars(with = "PlayerIndex")]
-        player_index: i64,
-        #[schemars(with = "CardOrder")]
-        order: i64,
+        player_index: PlayerIndex,
+        order: CardOrder,
         /// Absent when the recipient may not see the card.
         #[serde(default, skip_serializing_if = "Option::is_none")]
         #[schemars(with = "SuitIndex")]
-        suit_index: Option<i64>,
+        suit_index: Option<SuitIndex>,
         #[serde(default, skip_serializing_if = "Option::is_none")]
         #[schemars(with = "CardRank")]
-        rank: Option<i64>,
+        rank: Option<CardRank>,
         failed: bool,
     },
     Clue {
@@ -267,13 +256,11 @@ pub enum GameEvent {
         #[serde(default, skip_serializing_if = "Option::is_none")]
         #[schemars(with = "ReceivedClue")]
         clue: Option<Clue>,
-        #[schemars(with = "PlayerIndex")]
-        giver: i64,
-        #[schemars(with = "PlayerIndex")]
-        target: i64,
+        giver: PlayerIndex,
+        target: PlayerIndex,
         /// The orders of the cards the clue touched.
-        #[schemars(with = "Vec<CardOrder>", extend("x-readonly" = true))]
-        orders: Vec<SafeInteger>,
+        #[schemars(extend("x-readonly" = true))]
+        orders: Vec<CardOrder>,
         #[schemars(range(min = 0, max = MAX_SAFE_INTEGER))]
         turn: i64,
     },
@@ -283,23 +270,27 @@ pub enum GameEvent {
         /// Absent once the game has ended.
         #[serde(default, skip_serializing_if = "Option::is_none")]
         #[schemars(with = "PlayerIndex")]
-        current_player_index: Option<u8>,
+        current_player_index: Option<PlayerIndex>,
     },
     GameOver {
         end_condition: EndCondition,
         /// The player whom the ending names, such as the one who timed out, if any.
         #[serde(default, skip_serializing_if = "Option::is_none")]
         #[schemars(with = "PlayerIndex")]
-        player_index: Option<u8>,
+        player_index: Option<PlayerIndex>,
         /// The players who voted to end the game, when a vote ended it.
         #[serde(default, skip_serializing_if = "Option::is_none")]
         #[schemars(with = "Vec<PlayerIndex>", extend("x-readonly" = true))]
-        votes: Option<Vec<SafeInteger>>,
+        votes: Option<Vec<PlayerIndex>>,
     },
     PlayerTimes {
         /// Each player's time, in seat order.
-        #[schemars(length(min = MIN_PLAYERS, max = MAX_PLAYERS), extend("x-readonly" = true))]
-        player_times_ms: Vec<SafeInteger>,
+        #[schemars(
+            with = "Vec<SafeInteger>",
+            length(min = MIN_PLAYERS, max = MAX_PLAYERS),
+            extend("x-readonly" = true)
+        )]
+        player_times_ms: Vec<i64>,
         #[schemars(range(min = 0, max = MAX_SAFE_INTEGER))]
         duration_ms: i64,
     },
@@ -362,8 +353,7 @@ pub struct Init {
     #[schemars(length(min = MIN_PLAYERS, max = MAX_PLAYERS))]
     pub player_names: Vec<String>,
     /// The seat the recipient views the game from.
-    #[schemars(with = "PlayerIndex")]
-    pub our_player_index: i64,
+    pub our_player_index: PlayerIndex,
     pub mode: ViewMode,
     /// The game's database ID, present only in a replay of a saved game.
     #[serde(
@@ -395,7 +385,7 @@ pub struct Init {
     /// The seat that paused the game. Absent when the game is not paused.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     #[schemars(with = "PlayerIndex")]
-    pub pause_player_index: Option<u8>,
+    pub pause_player_index: Option<PlayerIndex>,
     /// Whether the recipient asked to pause the game at their next turn.
     pub pause_queued: bool,
 }

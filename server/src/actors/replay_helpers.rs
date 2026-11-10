@@ -5,10 +5,11 @@ use crate::{
     model::{Player, Snapshot},
     stats::zero_stats,
 };
+use hanabi_engine::RecordedAction;
 use hanabi_engine::{AssignedCharacter, GameSetup, Interpretation};
 use hanabi_protocol::TableId;
 use hanabi_protocol::UserId;
-use hanabi_protocol::{NO_VALUE, RecordedActionType, ReplayAction, ReplayImport};
+use hanabi_protocol::{NO_VALUE, RecordedActionType, ReplayImport};
 
 /// The longest seed that a replay import can name, in bytes. A table's seed is prefixed with the
 /// player count and variant ID, so this leaves room above `MAX_SEED_LENGTH`.
@@ -145,15 +146,15 @@ pub fn parse(input: &ReplayImport) -> CommandResult<Imported> {
         !has_characters || characters.len() == players.len(),
         "The amount of characters must match the number of players"
     );
-    let actions: Vec<ReplayAction> = input
+    let actions: Vec<RecordedAction> = input
         .actions
         .iter()
         .flatten()
-        .map(|action| action.recorded())
+        .map(|action| RecordedAction::from(*action))
         .collect();
     for (i, a) in actions.iter().enumerate() {
         ensure_or_reject!(
-            match a.kind {
+            match a.action_type {
                 RecordedActionType::Play | RecordedActionType::Discard =>
                     usize::try_from(a.target).is_ok_and(|t| t < deck.len()) && a.value == 0,
                 RecordedActionType::ColorClue =>

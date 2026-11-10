@@ -10,7 +10,12 @@ use crate::*;
 use anyhow::{Context, Result, bail};
 use serde::de::DeserializeOwned;
 use serde_json::Value;
-use std::{collections::BTreeMap, marker::PhantomData, sync::LazyLock};
+use std::{
+    any::TypeId,
+    collections::{BTreeMap, BTreeSet, HashMap},
+    marker::PhantomData,
+    sync::{Arc, LazyLock, PoisonError, RwLock},
+};
 
 macro_rules! client_contracts {
     ($apply:ident) => {
@@ -123,33 +128,107 @@ macro_rules! server_contracts {
     };
 }
 
-static VALIDATORS: LazyLock<BTreeMap<String, jsonschema::Validator>> = LazyLock::new(|| {
-    schemas()
-        .into_iter()
-        .map(|(name, schema)| {
-            let validator = jsonschema::options()
-                .should_validate_formats(true)
-                .build(&schema)
-                .expect("Wire DTO schemas must be valid");
-            (name, validator)
-        })
+/// The types that the data package exports a schema for besides the command payloads: types that
+/// clients name, and the bodies of the HTTP routes that clients use.
+macro_rules! exported_types {
+    ($apply:ident) => {
+        $apply! {
+            TableId, GameId, UserId, ChatHistoryMessage, Settings, Spectator, GameHistory,
+            ReplayGame, ReplayImport, ReplayBoardElement, ReplaySoundEffect, Status, LoginRequest,
+            LoginResponse, ApiError, PasswordHashRequest, PasswordHashResponse, PublicGamePage,
+            VariantNames, ScoreFrequency,
+        }
+    };
+}
+
+/// The types that only the game library exports: the entries of the game catalog's files, and the
+/// clue types that the game state names.
+macro_rules! game_library_types {
+    ($apply:ident) => {
+        $apply! { CatalogColor, CatalogSuit, CatalogVariant, CatalogCharacter, ClueType }
+    };
+}
+
+/// Every schema that the TypeScript generator can write, keyed by type name: the command payloads,
+/// the exported types, and the game library's types, each with the schemas it references.
+pub fn schemas() -> BTreeMap<String, Value> {
+    let mut schemas = BTreeMap::new();
+    macro_rules! insert {
+        ($($ty:ty),+ $(,)?) => {$(
+            schemas.insert(
+                stringify!($ty).to_owned(),
+                serde_json::to_value(schemars::schema_for!($ty))
+                    .expect("A schema serializes to JSON"),
+            );
+        )+};
+    }
+    macro_rules! payloads {
+        ($($name:ident $command:literal => $payload:ty;)+) => { insert!($($payload),+); };
+    }
+    client_contracts!(payloads);
+    server_contracts!(payloads);
+    exported_types!(insert);
+    game_library_types!(insert);
+    schemas
+}
+
+/// The names of the types that the data package exports: the command payloads and the exported
+/// types.
+pub fn exported() -> BTreeSet<&'static str> {
+    macro_rules! names {
+        ($($ty:ident),+ $(,)?) => { [$(stringify!($ty)),+] };
+    }
+    client_contracts()
+        .into_values()
+        .chain(server_contracts().into_values())
+        .chain(exported_types!(names))
         .collect()
-});
+}
+
+/// Each type's validator, built when the type is first validated.
+static VALIDATORS: LazyLock<RwLock<HashMap<TypeId, Arc<jsonschema::Validator>>>> =
+    LazyLock::new(RwLock::default);
+
+fn validator<T: JsonSchema + 'static>() -> Arc<jsonschema::Validator> {
+    let id = TypeId::of::<T>();
+    if let Some(validator) = VALIDATORS
+        .read()
+        .unwrap_or_else(PoisonError::into_inner)
+        .get(&id)
+    {
+        return Arc::clone(validator);
+    }
+    let schema =
+        serde_json::to_value(schemars::schema_for!(T)).expect("A schema serializes to JSON");
+    let validator = Arc::new(
+        jsonschema::options()
+            .should_validate_formats(true)
+            .build(&schema)
+            .expect("Wire DTO schemas must be valid"),
+    );
+    Arc::clone(
+        VALIDATORS
+            .write()
+            .unwrap_or_else(PoisonError::into_inner)
+            .entry(id)
+            .or_insert(validator),
+    )
+}
 
 /// Validate before deserializing: serde's Option alone would accept explicit null.
-pub fn validate<T: JsonSchema>(value: &Value) -> Result<()> {
-    let name = T::schema_name();
-    let validator = VALIDATORS
-        .get(name.as_ref())
-        .context("Unregistered wire DTO")?;
-    if let Err(error) = validator.validate(value) {
+pub fn validate<T: JsonSchema + 'static>(value: &Value) -> Result<()> {
+    if let Err(error) = validator::<T>().validate(value) {
         // Do not put private message contents in parser errors or logs.
-        bail!("Invalid {name} payload at {}", error.instance_path());
+        bail!(
+            "Invalid {} payload at {}",
+            T::schema_name(),
+            error.instance_path()
+        );
     }
     Ok(())
 }
 
-pub fn decode<T: JsonSchema + DeserializeOwned>(value: &Value) -> Result<T> {
+pub fn decode<T: JsonSchema + DeserializeOwned + 'static>(value: &Value) -> Result<T> {
     validate::<T>(value)?;
     T::deserialize(value).with_context(|| format!("Invalid {} representation", T::schema_name()))
 }

@@ -6,7 +6,6 @@ use super::{
     pending::{Completed, Pending},
     pregame::remove_pregame_players,
     setup::wire_table_options,
-    wire::int,
 };
 use crate::errors::OrReject;
 use crate::errors::{CommandError, CommandResult};
@@ -14,7 +13,7 @@ use crate::routing::{Route, route};
 use crate::store::{Commit, Outcome, Saved};
 use crate::{
     model::{
-        CLOCK_UNITS_PER_SECOND, IDLE_TIMEOUT_MS, IDLE_WARNING_MS, Phase, Seat, Snapshot, TableChat,
+        CLOCK_UNITS_PER_SECOND, IDLE_TIMEOUT_MS, IDLE_WARNING_MS, Phase, Snapshot, TableChat,
         TableSnapshot, small,
     },
     server_info::ServerInfo,
@@ -25,6 +24,7 @@ use anyhow::{Context, Result};
 use chrono::Utc;
 use futures_util::{FutureExt, future::BoxFuture};
 use hanabi_engine::{CompletionTiming, EndCondition};
+use hanabi_protocol::{CardRank, PlayerIndex, SuitIndex};
 use hanabi_protocol::{
     Chat, ChatTyping, ClientMessage, IdleWarning, Status, TableRequest, TableStarted, UserId,
     Warning,
@@ -206,7 +206,7 @@ impl TableActor {
             .filter(|a| a.spectator && a.session.active())
             .map(|a| hanabi_protocol::Spectator {
                 username: a.session.name.clone(),
-                shadowing_player_index: a.shadow.map(u8::from),
+                shadowing_player_index: a.shadow,
             })
             .collect()
     }
@@ -304,9 +304,14 @@ impl TableActor {
     }
     pub(super) fn pregame_messages(&self, e: &mut Effects) {
         for a in self.audience() {
-            let players = Seat::seated(self.table.players())
+            let players = self
+                .table
+                .players()
+                .iter()
+                .enumerate()
+                .filter_map(|(seat, p)| Some((PlayerIndex::new(seat)?, p)))
                 .map(|(seat, p)| hanabi_protocol::PregamePlayer {
-                    index: seat.into(),
+                    index: seat,
                     username: p.name.clone(),
                     you: p.id == a.session.user,
                     present: self
@@ -881,8 +886,8 @@ impl TableActor {
                 .identities()
                 .iter()
                 .map(|card| hanabi_protocol::CardIdentity {
-                    suit_index: Some(int(card.suit_index)),
-                    rank: Some(i64::from(card.rank)),
+                    suit_index: SuitIndex::new(card.suit_index),
+                    rank: CardRank::new(card.rank),
                 })
                 .collect(),
         }
@@ -901,7 +906,7 @@ impl TableActor {
             table_id: self.table.id,
             player_times_ms: times,
             active_player_index: live
-                .then(|| u8::try_from(s.game.active_player_index).ok())
+                .then(|| PlayerIndex::new(s.game.active_player_index))
                 .flatten(),
             time_taken_ms: if !live || s.paused() {
                 0
@@ -974,7 +979,7 @@ impl TableActor {
                     blocks,
                     true,
                     r.shadowing_player_index
-                        .and_then(|seat| Seat::new(usize::from(seat))),
+                        .and_then(|seat| PlayerIndex::new(usize::from(seat))),
                 )
                 .await
             }

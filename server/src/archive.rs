@@ -7,11 +7,12 @@ use crate::{
 };
 use anyhow::{Context, Result, ensure};
 use chrono::{DateTime, Utc};
+use hanabi_engine::RecordedAction;
 use hanabi_engine::{AssignedCharacter, EndCondition, GameSetup, Interpretation};
 use hanabi_protocol::GameId;
 use hanabi_protocol::TableId;
 use hanabi_protocol::UserId;
-use hanabi_protocol::{NO_VALUE, RecordedActionType, ReplayAction};
+use hanabi_protocol::{NO_VALUE, RecordedActionType};
 use serde::Deserialize;
 use sqlx::{PgPool, types::Json};
 use sqlx::{Postgres, Transaction};
@@ -40,10 +41,10 @@ struct ArchiveAction {
     value: Option<i32>,
 }
 
-impl From<ArchiveAction> for ReplayAction {
+impl From<ArchiveAction> for RecordedAction {
     fn from(action: ArchiveAction) -> Self {
         Self {
-            kind: action.kind,
+            action_type: action.kind,
             target: action.target.unwrap_or(NO_VALUE),
             value: action.value.unwrap_or(0),
         }
@@ -102,7 +103,7 @@ pub struct GameRecord {
 pub(crate) struct Archive {
     pub game: GameRecord,
     pub players: Vec<ArchivePlayer>,
-    pub actions: Vec<ReplayAction>,
+    pub actions: Vec<RecordedAction>,
     pub notes: Vec<ArchiveNote>,
     pub tags: Vec<Tag>,
 }
@@ -140,7 +141,7 @@ pub(crate) async fn load(pool: &PgPool, id: GameId) -> Result<Option<Archive>> {
             .archive_actions
             .0
             .into_iter()
-            .map(ReplayAction::from)
+            .map(RecordedAction::from)
             .collect(),
         notes: row.archive_notes.0,
         tags: row.archive_tags.0,

@@ -255,7 +255,7 @@ pub struct SpectatedTable {
     pub table_id: TableId,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     #[schemars(with = "PlayerIndex")]
-    pub shadowing_player_index: Option<u8>,
+    pub shadowing_player_index: Option<PlayerIndex>,
 }
 
 /// A table's game options, as clients request them and as the server reports them. Missing fields
@@ -333,7 +333,7 @@ pub struct Spectator {
     /// The seat being shadowed, if any.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     #[schemars(with = "PlayerIndex")]
-    pub shadowing_player_index: Option<u8>,
+    pub shadowing_player_index: Option<PlayerIndex>,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
@@ -489,8 +489,7 @@ pub struct PregameStats {
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct PregamePlayer {
-    #[schemars(range(min = 0, max = MAX_SEAT))]
-    pub index: u8,
+    pub index: PlayerIndex,
     pub username: String,
     /// Whether this player is the recipient.
     pub you: bool,

@@ -2,10 +2,10 @@ use super::table::{game_mut, wrong_phase};
 use super::{
     Attendance, GameInfo, TableActor,
     chat::table_notice,
-    wire::{game_action, game_action_list, int},
+    wire::{game_action, game_action_list},
 };
 use crate::errors::CommandResult;
-use crate::model::{Seat, Snapshot, TableSnapshot};
+use crate::model::{Snapshot, TableSnapshot};
 use crate::store::Commit;
 use crate::{
     model::{
@@ -14,11 +14,11 @@ use crate::{
     transport::{Session, frame},
 };
 use anyhow::Context;
+use hanabi_engine::RecordedAction;
 use hanabi_engine::{CompletionTiming, EndCondition, Recipient};
 use hanabi_protocol::ClientMessage;
-use hanabi_protocol::{
-    Chat, ChatTyping, MIN_PLAYERS, ReplayAction, Status, TableRequest, ViewMode,
-};
+use hanabi_protocol::PlayerIndex;
+use hanabi_protocol::{CardOrder, Chat, ChatTyping, MIN_PLAYERS, Status, TableRequest, ViewMode};
 use std::sync::Arc;
 
 impl TableActor {
@@ -30,9 +30,9 @@ impl TableActor {
     ) -> CommandResult<()> {
         match message {
             ClientMessage::Action(r) => {
-                let (kind, target, value) = r.recorded();
-                let action = ReplayAction {
-                    kind,
+                let (action_type, target, value) = r.recorded();
+                let action = RecordedAction {
+                    action_type,
                     target,
                     value,
                 };
@@ -56,15 +56,11 @@ impl TableActor {
             _ => bail_internal!("A live command ran outside a live game"),
         }
     }
-    async fn action(&mut self, session: Arc<Session>, a: ReplayAction) -> CommandResult<()> {
+    async fn action(&mut self, session: Arc<Session>, a: RecordedAction) -> CommandResult<()> {
         ensure_or_reject!(self.attending(&session), "Reattend before acting");
         let seat = self.seat(&session)?;
         let old = self.live()?;
-        hanabi_engine::validate_action(
-            old.game.state(),
-            seat,
-            &hanabi_engine::PlayerAction::from(&a),
-        )?;
+        hanabi_engine::validate_action(old.game.state(), seat, &a)?;
         ensure_or_reject!(
             !old.paused(),
             "You cannot perform a game action when the game is paused."
@@ -88,7 +84,7 @@ impl TableActor {
         let mut paused_by = None;
         if s.game.end_condition == EndCondition::InProgress && s.queued_pauses[active] {
             s.queued_pauses[active] = false;
-            s.paused_by = Seat::new(active);
+            s.paused_by = PlayerIndex::new(active);
             paused_by = Some(s.players[active].name.clone());
         }
         let notice = paused_by.and_then(|name| self.pause_notice(&mut next, &name, true));
@@ -218,7 +214,7 @@ impl TableActor {
                     hanabi_protocol::server::PAUSE,
                     hanabi_protocol::Pause {
                         table_id: self.table.id,
-                        player_index: s.paused_by.map(u8::from),
+                        player_index: s.paused_by,
                     },
                 );
             }
@@ -347,7 +343,7 @@ impl TableActor {
             P::PauseQueue | P::PauseUnqueue => s.queued_pauses[seat] = setting == P::PauseQueue,
             P::Pause | P::Unpause => {
                 s.paused_by = if setting == P::Pause {
-                    Seat::new(seat)
+                    PlayerIndex::new(seat)
                 } else {
                     None
                 };
@@ -367,7 +363,7 @@ impl TableActor {
                 hanabi_protocol::server::PAUSE,
                 hanabi_protocol::Pause {
                     table_id: self.table.id,
-                    player_index: s.paused_by.map(u8::from),
+                    player_index: s.paused_by,
                 },
             );
             self.add_all(&mut e, hanabi_protocol::server::CLOCK, self.clock()?);
@@ -377,10 +373,15 @@ impl TableActor {
         }
         self.publish(e).await
     }
-    async fn note(&mut self, session: Arc<Session>, order: u64, note: &str) -> CommandResult<()> {
+    async fn note(
+        &mut self,
+        session: Arc<Session>,
+        card: CardOrder,
+        note: &str,
+    ) -> CommandResult<()> {
         ensure_or_reject!(self.attending(&session), "Not attending");
         self.live()?;
-        let order = usize::try_from(order)?;
+        let order = card.index();
         let text = crate::accounts::truncate_to_max_bytes(note, MAX_NOTE_LENGTH);
         let text = crate::accounts::remove_disallowed_characters(text)
             .trim()
@@ -428,7 +429,7 @@ impl TableActor {
                     hanabi_protocol::server::NOTE,
                     hanabi_protocol::Note {
                         table_id: self.table.id,
-                        order: i64::try_from(order)?,
+                        order: card,
                         notes,
                     },
                 ),
@@ -518,7 +519,10 @@ impl TableActor {
             let init = hanabi_protocol::Init {
                 table_id: self.table.id,
                 player_names: s.players.iter().map(|p| p.name.clone()).collect(),
-                our_player_index: int(a.shadow.map(Seat::index).or(display_seat).unwrap_or(0)),
+                our_player_index: a
+                    .shadow
+                    .or_else(|| display_seat.and_then(PlayerIndex::new))
+                    .unwrap_or_default(),
                 mode: if shared_replay.is_some() {
                     ViewMode::SharedReplay
                 } else if replay {
@@ -552,7 +556,7 @@ impl TableActor {
                     vec![]
                 },
                 shared_replay,
-                pause_player_index: s.paused_by.map(u8::from),
+                pause_player_index: s.paused_by,
                 pause_queued: seat.is_some_and(|i| s.queued_pauses[i]),
             };
             e.messages

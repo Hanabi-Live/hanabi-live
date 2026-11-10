@@ -2,12 +2,12 @@ use crate::game::{AssignedCharacter, Game, Options};
 use anyhow::{Result, ensure};
 use chrono::{DateTime, Utc};
 use hanabi_engine::EndCondition;
+use hanabi_engine::RecordedAction;
 use hanabi_protocol::GameId;
 use hanabi_protocol::TableId;
 use hanabi_protocol::UserId;
 use hanabi_protocol::{
-    CLOCK_UNITS_PER_MINUTE, Chat, HypotheticalAction, MAX_PLAYERS, NO_VALUE, PregameStats,
-    ReplayAction,
+    CLOCK_UNITS_PER_MINUTE, Chat, HypotheticalAction, PlayerIndex, PregameStats,
 };
 pub use hanabi_protocol::{CLOCK_UNITS_PER_SECOND, IDLE_TIMEOUT_MS};
 use serde::{Deserialize, Serialize};
@@ -38,7 +38,7 @@ pub struct Player {
 pub struct ExtraOptions {
     pub custom_seed: Option<String>,
     #[serde(with = "stored_turns")]
-    pub custom_actions: Vec<ReplayAction>,
+    pub custom_actions: Vec<RecordedAction>,
     pub custom_characters: Option<Vec<AssignedCharacter>>,
     pub custom_num_players: Option<usize>,
     pub no_write_to_database: bool,
@@ -91,7 +91,7 @@ pub struct Snapshot {
         default,
         skip_serializing_if = "Option::is_none"
     )]
-    pub paused_by: Option<Seat>,
+    pub paused_by: Option<PlayerIndex>,
     pub queued_pauses: Vec<bool>,
     pub notes: Vec<Vec<String>>,
     #[serde(deserialize_with = "deserialize_note_owners")]
@@ -217,7 +217,7 @@ pub struct TableSnapshot {
     pub phase: Phase,
     /// Messages without an ID are new: the next commit archives them.
     pub chat: Vec<TableChat>,
-    pub shadows: BTreeMap<UserId, Option<Seat>>,
+    pub shadows: BTreeMap<UserId, Option<PlayerIndex>>,
 }
 /// Reads a checkpoint's table options. `Options` fills in a missing option with its default, which
 /// would silently change a stored table, so every option that checkpoints always write is required.
@@ -271,16 +271,17 @@ pub fn hypothetical_bytes(actions: &[HypotheticalAction]) -> Result<usize> {
 }
 /// Stores turns in the named form of the replay format, such as `{"type":"play","order":4}`.
 pub(crate) mod stored_turns {
-    use hanabi_protocol::{ReplayAction, ReplayGameAction};
+    use hanabi_engine::RecordedAction;
+    use hanabi_protocol::ReplayGameAction;
     use serde::{Deserialize, Deserializer, Serialize, Serializer};
 
     pub fn serialize<S: Serializer>(
-        actions: &[ReplayAction],
+        actions: &[RecordedAction],
         serializer: S,
     ) -> Result<S::Ok, S::Error> {
         actions
             .iter()
-            .map(|action| ReplayGameAction::from_recorded(*action))
+            .map(|action| ReplayGameAction::try_from(*action))
             .collect::<Result<Vec<_>, _>>()
             .map_err(serde::ser::Error::custom)?
             .serialize(serializer)
@@ -288,31 +289,32 @@ pub(crate) mod stored_turns {
 
     pub fn deserialize<'de, D: Deserializer<'de>>(
         deserializer: D,
-    ) -> Result<Vec<ReplayAction>, D::Error> {
+    ) -> Result<Vec<RecordedAction>, D::Error> {
         Ok(Vec::<ReplayGameAction>::deserialize(deserializer)?
             .into_iter()
-            .map(ReplayGameAction::recorded)
+            .map(RecordedAction::from)
             .collect())
     }
 
     /// One turn, stored the same way.
     pub mod one {
-        use hanabi_protocol::{ReplayAction, ReplayGameAction};
+        use hanabi_engine::RecordedAction;
+        use hanabi_protocol::ReplayGameAction;
         use serde::{Deserialize, Deserializer, Serialize, Serializer};
 
         pub fn serialize<S: Serializer>(
-            action: &ReplayAction,
+            action: &RecordedAction,
             serializer: S,
         ) -> Result<S::Ok, S::Error> {
-            ReplayGameAction::from_recorded(*action)
+            ReplayGameAction::try_from(*action)
                 .map_err(serde::ser::Error::custom)?
                 .serialize(serializer)
         }
 
         pub fn deserialize<'de, D: Deserializer<'de>>(
             deserializer: D,
-        ) -> Result<ReplayAction, D::Error> {
-            Ok(ReplayGameAction::deserialize(deserializer)?.recorded())
+        ) -> Result<RecordedAction, D::Error> {
+            Ok(ReplayGameAction::deserialize(deserializer)?.into())
         }
     }
 }
@@ -415,7 +417,7 @@ impl TableSnapshot {
                 *shadow = shadow
                     .and_then(|seat| old_ids.get(seat.index()))
                     .and_then(|id| new_ids.iter().position(|new| new == id))
-                    .and_then(Seat::new);
+                    .and_then(PlayerIndex::new);
             }
         }
         if let Some(s) = self.game_mut()
@@ -669,71 +671,6 @@ pub(crate) fn small(value: usize) -> u8 {
     u8::try_from(value).unwrap_or(u8::MAX)
 }
 
-/// `NO_VALUE` in the one-byte fields that name a seat.
-#[expect(clippy::cast_possible_truncation, reason = "NO_VALUE fits in a byte")]
-const NO_SEAT: i8 = NO_VALUE as i8;
-
-/// A seat at a table: the index of one of its players. Seats are below `MAX_PLAYERS`, so a seat
-/// fits in every integer type that the wire and the engine use. It is stored as a number.
-#[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
-#[serde(try_from = "i64", into = "i64")]
-pub struct Seat(u8);
-
-impl Seat {
-    /// The seat at `index`, if a table can have it.
-    pub fn new(index: usize) -> Option<Self> {
-        u8::try_from(index)
-            .ok()
-            .filter(|seat| usize::from(*seat) < MAX_PLAYERS)
-            .map(Self)
-    }
-    /// The seat that a client names, or `None` for `NO_VALUE` or a seat that no table has.
-    pub fn from_wire(value: i64) -> Option<Self> {
-        usize::try_from(value).ok().and_then(Self::new)
-    }
-    pub fn index(self) -> usize {
-        usize::from(self.0)
-    }
-    /// An optional seat as the wire carries it: the seat, or `NO_VALUE`.
-    pub fn wire<T: From<i8>>(seat: Option<Self>) -> T {
-        T::from(seat.map_or(NO_SEAT, |seat| {
-            i8::try_from(seat.0).expect("seats are below MAX_PLAYERS")
-        }))
-    }
-    /// Each player with their seat.
-    pub fn seated<T>(players: &[T]) -> impl Iterator<Item = (Self, &T)> {
-        players
-            .iter()
-            .enumerate()
-            .filter_map(|(index, player)| Some((Self::new(index)?, player)))
-    }
-}
-
-impl TryFrom<i64> for Seat {
-    type Error = String;
-    fn try_from(value: i64) -> Result<Self, String> {
-        Self::from_wire(value).ok_or_else(|| format!("Invalid seat {value}"))
-    }
-}
-
-impl From<Seat> for i64 {
-    fn from(seat: Seat) -> Self {
-        Self::from(seat.0)
-    }
-}
-
-impl From<Seat> for i32 {
-    fn from(seat: Seat) -> Self {
-        Self::from(seat.0)
-    }
-}
-
-impl From<Seat> for u8 {
-    fn from(seat: Seat) -> Self {
-        seat.0
-    }
-}
-
 /// The options that keep a score from counting as a normal one. The database stores them in
 /// `user_stats` as one bit each.
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
@@ -970,7 +907,9 @@ mod tests {
         let replay: ReplayState = serde_json::from_value(stored.clone()).unwrap();
         assert!(matches!(
             replay.hypothetical_actions[..],
-            [HypotheticalAction::Unmorph { order: 3 }]
+            [HypotheticalAction::Unmorph {
+                order: hanabi_protocol::CardOrder(3)
+            }]
         ));
         assert_eq!(serde_json::to_value(&replay).unwrap(), stored);
     }

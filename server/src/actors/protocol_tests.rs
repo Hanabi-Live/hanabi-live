@@ -11,6 +11,7 @@ use crate::{
 use anyhow::{Context, Result, bail, ensure};
 use chrono::{Duration as ChronoDuration, Utc};
 use hanabi_engine::EndCondition;
+use hanabi_protocol::PlayerIndex;
 use serde_json::{Value, json};
 use std::{
     collections::BTreeSet,
@@ -338,7 +339,7 @@ async fn player_shadow_from_saved_games_is_cleared_on_reattend() -> Result<()> {
             .iter()
             .position(|p| p.id == UserId(2))
             .unwrap();
-        table.shadows.insert(UserId(2), Seat::new(alice));
+        table.shadows.insert(UserId(2), PlayerIndex::new(alice));
         h.store.save_at(&table, revision).await?;
         h.tasks = TaskTracker::new();
         h.hub = Hub::start(
@@ -1541,7 +1542,12 @@ async fn expired_pregame_owner_is_removed_but_remaining_players_and_live_games_s
             actor.initialize(user.clone(), vec![]).await?;
         }
         actor
-            .reattend(h.users[3].clone(), &BTreeSet::new(), true, Seat::new(1))
+            .reattend(
+                h.users[3].clone(),
+                &BTreeSet::new(),
+                true,
+                PlayerIndex::new(1),
+            )
             .await?;
         while notifications.try_recv().is_ok() {}
         h.users[0].cancel.cancel();
@@ -1559,7 +1565,7 @@ async fn expired_pregame_owner_is_removed_but_remaining_players_and_live_games_s
             "Ownership did not pass to a remaining player"
         );
         ensure!(
-            restored.shadows.get(&UserId(4)) == Some(&Seat::new(0)),
+            restored.shadows.get(&UserId(4)) == Some(&PlayerIndex::new(0)),
             "Departure changed the spectator's shadow target"
         );
         let mut published_owner = false;

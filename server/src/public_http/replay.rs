@@ -119,12 +119,12 @@ pub(super) async fn export(
     let actions = archive
         .actions
         .into_iter()
-        .map(hanabi_protocol::ReplayGameAction::from_recorded)
+        .map(hanabi_protocol::ReplayGameAction::try_from)
         .collect::<std::result::Result<Vec<_>, _>>()
         .map_err(|_| {
             export_failure(
-                "archive_unknown_end_condition",
-                "The archived game's end condition is unknown",
+                "archive_invalid_action",
+                "The archived game has an action that the replay format cannot hold",
                 id,
             )
         })?;

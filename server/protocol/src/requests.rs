@@ -155,7 +155,7 @@ pub struct TableSpectateRequest {
     /// The seat to shadow, if any.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     #[schemars(with = "PlayerIndex")]
-    pub shadowing_player_index: Option<u8>,
+    pub shadowing_player_index: Option<PlayerIndex>,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
@@ -288,7 +288,7 @@ pub enum ReplayCreateRequest {
         /// The seat to shadow, if any.
         #[serde(default, skip_serializing_if = "Option::is_none")]
         #[schemars(with = "PlayerIndex")]
-        shadowing_player_index: Option<u8>,
+        shadowing_player_index: Option<PlayerIndex>,
         /// For a shared replay, spectate an existing shared replay of the same game instead of
         /// creating another one, if there is one.
         #[serde(default)]
@@ -305,7 +305,7 @@ pub enum ReplayCreateRequest {
         /// The seat to shadow, if any.
         #[serde(default, skip_serializing_if = "Option::is_none")]
         #[schemars(with = "PlayerIndex")]
-        shadowing_player_index: Option<u8>,
+        shadowing_player_index: Option<PlayerIndex>,
         /// For a shared replay, hide what happens later in the game.
         #[serde(default)]
         spoiler_free: bool,
@@ -325,7 +325,7 @@ impl ReplayCreateRequest {
         }
     }
 
-    pub const fn shadowing_player_index(&self) -> Option<u8> {
+    pub const fn shadowing_player_index(&self) -> Option<PlayerIndex> {
         match self {
             Self::Id {
                 shadowing_player_index,
@@ -351,33 +351,27 @@ pub enum ActionRequest {
     Play {
         #[serde(rename = "tableID")]
         table_id: TableId,
-        #[schemars(with = "CardOrder")]
-        order: i32,
+        order: CardOrder,
     },
     Discard {
         #[serde(rename = "tableID")]
         table_id: TableId,
-        #[schemars(with = "CardOrder")]
-        order: i32,
+        order: CardOrder,
     },
     ColorClue {
         #[serde(rename = "tableID")]
         table_id: TableId,
         /// The player who receives the clue.
-        #[schemars(with = "PlayerIndex")]
-        target: i32,
+        target: PlayerIndex,
         /// The index of the color in the variant's clue colors.
-        #[schemars(range(min = 0, max = MAX_SUIT_INDEX), extend("enum" = suits()))]
-        color_index: i32,
+        color_index: ColorIndex,
     },
     RankClue {
         #[serde(rename = "tableID")]
         table_id: TableId,
         /// The player who receives the clue.
-        #[schemars(with = "PlayerIndex")]
-        target: i32,
-        #[schemars(range(min = MIN_RANK, max = MAX_RANK), extend("enum" = ranks()))]
-        rank: i32,
+        target: PlayerIndex,
+        rank: RankClueNumber,
     },
 }
 
@@ -392,16 +386,22 @@ impl ActionRequest {
     }
 
     /// The turn's type, target, and value, as a game's record stores them.
-    pub const fn recorded(&self) -> (RecordedActionType, i32, i32) {
+    pub fn recorded(&self) -> (RecordedActionType, i32, i32) {
         match *self {
-            Self::Play { order, .. } => (RecordedActionType::Play, order, 0),
-            Self::Discard { order, .. } => (RecordedActionType::Discard, order, 0),
+            Self::Play { order, .. } => (RecordedActionType::Play, order.into(), 0),
+            Self::Discard { order, .. } => (RecordedActionType::Discard, order.into(), 0),
             Self::ColorClue {
                 target,
                 color_index,
                 ..
-            } => (RecordedActionType::ColorClue, target, color_index),
-            Self::RankClue { target, rank, .. } => (RecordedActionType::RankClue, target, rank),
+            } => (
+                RecordedActionType::ColorClue,
+                target.into(),
+                color_index.into(),
+            ),
+            Self::RankClue { target, rank, .. } => {
+                (RecordedActionType::RankClue, target.into(), rank.into())
+            }
         }
     }
 }
@@ -429,8 +429,7 @@ pub enum PauseSetting {
 pub struct NoteRequest {
     #[serde(rename = "tableID")]
     pub table_id: TableId,
-    #[schemars(range(min = 0, max = MAX_SAFE_INTEGER))]
-    pub order: u64,
+    pub order: CardOrder,
     pub note: String,
 }
 

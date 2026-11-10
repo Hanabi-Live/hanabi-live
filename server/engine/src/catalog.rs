@@ -71,7 +71,10 @@ impl Variant {
 }
 
 /// Decodes a checked-in catalog file, validating each entry against its wire contract.
-fn catalog<T: hanabi_protocol::JsonSchema + DeserializeOwned>(file: &str, json: &str) -> Vec<T> {
+fn catalog<T: hanabi_protocol::JsonSchema + DeserializeOwned + 'static>(
+    file: &str,
+    json: &str,
+) -> Vec<T> {
     let entries: Vec<Value> = serde_json::from_str(json).expect("checked-in catalog JSON");
     assert!(!entries.is_empty(), "{file} is empty");
     entries

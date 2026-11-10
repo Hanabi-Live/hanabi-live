@@ -3,6 +3,7 @@ import {
   cardNoteSchema,
   cardOrderSchema,
   cardRankSchema,
+  colorIndexSchema,
   EndCondition,
   gameEventSchema,
   gameIdSchema,
@@ -10,6 +11,8 @@ import {
   hypotheticalActionSchema,
   playerIndexSchema,
   playerNotesSchema,
+  rankClueNumberSchema,
+  safeIntegerSchema,
   suitIndexSchema,
 } from "@hanabi-live/game";
 import * as z from "zod";
@@ -94,7 +97,7 @@ export const actionRequestSchema = z.discriminatedUnion("type", [
     /**
      * The index of the color in the variant's clue colors.
      */
-    colorIndex: z.literal([0, 1, 2, 3, 4, 5]),
+    colorIndex: colorIndexSchema,
     tableID: tableIdSchema,
     /**
      * The player who receives the clue.
@@ -103,7 +106,7 @@ export const actionRequestSchema = z.discriminatedUnion("type", [
     type: z.literal("colorClue"),
   }),
   z.strictObject({
-    rank: z.literal([1, 2, 3, 4, 5]),
+    rank: rankClueNumberSchema,
     tableID: tableIdSchema,
     /**
      * The player who receives the clue.
@@ -267,9 +270,7 @@ export const clockSchema = z.strictObject({
    * Absent when the game has no active player.
    */
   activePlayerIndex: playerIndexSchema.optional(),
-  playerTimesMs: z.array(
-    z.number().int().min(-9_007_199_254_740_991).max(9_007_199_254_740_991),
-  ),
+  playerTimesMs: z.array(safeIntegerSchema),
   tableID: tableIdSchema,
   timeTakenMs: z.number().int().min(0).max(9_007_199_254_740_991),
 });
@@ -587,7 +588,7 @@ export const noteListPlayerSchema = z.strictObject({
 });
 export const noteRequestSchema = z.strictObject({
   note: z.string(),
-  order: z.number().int().min(0).max(9_007_199_254_740_991),
+  order: cardOrderSchema,
   tableID: tableIdSchema,
 });
 
@@ -652,7 +653,7 @@ const pregameStatsSchema = z.strictObject({
   variant: pregameVariantStatsSchema,
 });
 const pregamePlayerSchema = z.strictObject({
-  index: z.number().int().min(0).max(5),
+  index: playerIndexSchema,
   /**
    * Whether this player is connected and at the table.
    */
@@ -797,7 +798,7 @@ const replayGameActionSchema = z.discriminatedUnion("type", [
     /**
      * The index of the color in the variant's clue colors.
      */
-    colorIndex: z.literal([0, 1, 2, 3, 4, 5]),
+    colorIndex: colorIndexSchema,
     /**
      * The player who receives the clue.
      */
@@ -805,7 +806,7 @@ const replayGameActionSchema = z.discriminatedUnion("type", [
     type: z.literal("colorClue"),
   }),
   z.strictObject({
-    rank: z.literal([1, 2, 3, 4, 5]),
+    rank: rankClueNumberSchema,
     /**
      * The player who receives the clue.
      */
@@ -888,7 +889,7 @@ export const replayCreateRequestSchema = z.discriminatedUnion("source", [
 ]);
 const replayCardSchema = z.strictObject({
   rank: cardRankSchema,
-  suitIndex: z.number().int().min(0).max(9_007_199_254_740_991),
+  suitIndex: suitIndexSchema,
 });
 const replayCharacterSchema = z.strictObject({
   /**

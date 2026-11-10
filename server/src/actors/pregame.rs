@@ -22,6 +22,7 @@ use anyhow::Context;
 use chrono::Utc;
 use hanabi_engine::{GameSetup, Interpretation};
 use hanabi_protocol::ClientMessage;
+use hanabi_protocol::PlayerIndex;
 use hanabi_protocol::UserId;
 use hanabi_protocol::{Chat, MIN_PLAYERS, Status, TableRequest, TableStarted};
 use std::{collections::HashSet, sync::Arc};
@@ -400,7 +401,7 @@ impl TableActor {
         source: TableSnapshot,
         destination: TableSnapshot,
         mut allocation: Allocation,
-        moving: Vec<(Arc<Session>, bool, Option<crate::model::Seat>)>,
+        moving: Vec<(Arc<Session>, bool, Option<PlayerIndex>)>,
         retire: bool,
         notices: Vec<Chat>,
     ) -> CommandResult<()> {

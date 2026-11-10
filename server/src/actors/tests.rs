@@ -19,8 +19,9 @@ use crate::{
 };
 use anyhow::{Context, Result, ensure};
 use chrono::{Duration as ChronoDuration, Utc};
+use hanabi_engine::RecordedAction;
 use hanabi_engine::{CompletionTiming, EndCondition, Recipient};
-use hanabi_protocol::{MAX_SEED_LENGTH, ReplayAction, Status};
+use hanabi_protocol::{MAX_SEED_LENGTH, Status};
 use serde_json::{Value, json};
 use std::{
     collections::{BTreeMap, BTreeSet, HashMap},
@@ -70,8 +71,8 @@ fn typed_game_frames_preserve_wire_schema_and_projected_identities() -> Result<(
     let rank = game.deck[game.players[1].hand[0]].rank;
     game.apply(
         0,
-        ReplayAction {
-            kind: hanabi_protocol::RecordedActionType::RankClue,
+        RecordedAction {
+            action_type: hanabi_protocol::RecordedActionType::RankClue,
             target: 1,
             value: rank,
         },

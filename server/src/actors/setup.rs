@@ -11,9 +11,10 @@ use crate::{
     transport::Session,
 };
 use chrono::Utc;
+use hanabi_engine::RecordedAction;
 use hanabi_protocol::TableId;
 use hanabi_protocol::UserId;
-use hanabi_protocol::{Chat, GameId, MAX_SEED_LENGTH, MIN_PLAYERS, ReplayAction};
+use hanabi_protocol::{Chat, GameId, MAX_SEED_LENGTH, MIN_PLAYERS};
 use std::{collections::BTreeMap, fmt::Write as _};
 
 /// The longest table password, in bytes.
@@ -158,8 +159,8 @@ pub(super) async fn load_replay(
         .game
         .actions
         .iter()
-        .map(|a| ReplayAction {
-            kind: a.action_type,
+        .map(|a| RecordedAction {
+            action_type: a.action_type,
             target: a.target,
             value: a.value,
         })

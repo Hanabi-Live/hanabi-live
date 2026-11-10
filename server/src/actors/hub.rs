@@ -8,7 +8,7 @@ use crate::{
     accounts,
     integrations::IntegrationSlot,
     lobby::{OnlineUser, Publication},
-    model::{Seat, TableSnapshot},
+    model::TableSnapshot,
     operations::Operation,
     routing::{Route, route},
     server_info::ServerInfo,
@@ -19,6 +19,7 @@ use anyhow::{Context, Result};
 use axum::http::StatusCode;
 use futures_util::FutureExt;
 use hanabi_protocol::GameId;
+use hanabi_protocol::PlayerIndex;
 use hanabi_protocol::{
     ClientMessage, ErrorNotice, SoundLobby, Status, TableId, TableRequest, User, UserId, UserLeft,
     UserList,
@@ -817,7 +818,7 @@ impl Hub {
         }) {
             welcome.spectating_at_table = Some(hanabi_protocol::SpectatedTable {
                 table_id: id,
-                shadowing_player_index: shadow.map(u8::from),
+                shadowing_player_index: shadow,
             });
         }
         self.sessions.insert(
@@ -973,7 +974,7 @@ impl Hub {
         table: TableSnapshot,
         saved: Saved,
         allocation: Allocation,
-        attendees: Vec<(Arc<Session>, bool, Option<Seat>)>,
+        attendees: Vec<(Arc<Session>, bool, Option<PlayerIndex>)>,
         chat_read: HashMap<UserId, usize>,
     ) {
         if self.closing {

@@ -540,7 +540,7 @@ impl<'a> Module<'a> {
         let schema = self
             .definitions
             .get(name)
-            .context("Missing schema definition")?;
+            .with_context(|| format!("Missing schema definition: {name}"))?;
         let mut dependencies = BTreeSet::new();
         references(schema, &mut dependencies)?;
         for dependency in dependencies {
@@ -778,32 +778,8 @@ fn main() -> Result<()> {
     }
     let client = hanabi_protocol::client_contracts();
     let server = hanabi_protocol::server_contracts();
-    let exported: BTreeSet<String> = client
-        .values()
-        .chain(server.values())
-        .copied()
-        .chain([
-            "TableId",
-            "GameId",
-            "UserId",
-            "ChatHistoryMessage",
-            "Settings",
-            "Spectator",
-            "GameHistory",
-            "ReplayGame",
-            "ReplayImport",
-            "ReplayBoardElement",
-            "ReplaySoundEffect",
-            "Status",
-            "LoginRequest",
-            "LoginResponse",
-            "ApiError",
-            "PasswordHashRequest",
-            "PasswordHashResponse",
-            "PublicGamePage",
-            "VariantNames",
-            "ScoreFrequency",
-        ])
+    let exported: BTreeSet<String> = hanabi_protocol::exported()
+        .into_iter()
         .map(String::from)
         .collect();
     let mut module = Module::new(

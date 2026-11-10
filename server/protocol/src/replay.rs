@@ -44,22 +44,8 @@ struct ReplayNoteRow(Vec<String>);
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct ReplayCard {
-    #[schemars(range(min = 0, max = MAX_SAFE_INTEGER))]
-    pub suit_index: i64,
-    #[schemars(with = "CardRank")]
-    pub rank: i64,
-}
-
-#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
-#[serde(deny_unknown_fields)]
-pub struct ReplayAction {
-    #[serde(rename = "type")]
-    pub kind: RecordedActionType,
-    #[schemars(range(min = i32::MIN, max = i32::MAX))]
-    pub target: i32,
-    #[serde(default)]
-    #[schemars(range(min = i32::MIN, max = i32::MAX))]
-    pub value: i32,
+    pub suit_index: SuitIndex,
+    pub rank: CardRank,
 }
 
 /// Only options that differ from their defaults are included.
@@ -174,27 +160,21 @@ pub struct ImportCard {
 )]
 pub enum ReplayGameAction {
     Play {
-        #[schemars(with = "CardOrder")]
-        order: i32,
+        order: CardOrder,
     },
     Discard {
-        #[schemars(with = "CardOrder")]
-        order: i32,
+        order: CardOrder,
     },
     ColorClue {
         /// The player who receives the clue.
-        #[schemars(with = "PlayerIndex")]
-        target: i32,
+        target: PlayerIndex,
         /// The index of the color in the variant's clue colors.
-        #[schemars(range(min = 0, max = MAX_SUIT_INDEX), extend("enum" = suits()))]
-        color_index: i32,
+        color_index: ColorIndex,
     },
     RankClue {
         /// The player who receives the clue.
-        #[schemars(with = "PlayerIndex")]
-        target: i32,
-        #[schemars(range(min = MIN_RANK, max = MAX_RANK), extend("enum" = ranks()))]
-        rank: i32,
+        target: PlayerIndex,
+        rank: RankClueNumber,
     },
     GameOver {
         end_condition: EndCondition,
@@ -202,65 +182,8 @@ pub enum ReplayGameAction {
         /// did.
         #[serde(default, skip_serializing_if = "Option::is_none")]
         #[schemars(with = "PlayerIndex")]
-        player_index: Option<i32>,
+        player_index: Option<PlayerIndex>,
     },
-}
-
-impl ReplayGameAction {
-    /// An action from a game's record. Fails for a game over with an unknown end condition.
-    pub fn from_recorded(action: ReplayAction) -> Result<Self, String> {
-        let ReplayAction {
-            kind,
-            target,
-            value,
-        } = action;
-        Ok(match kind {
-            RecordedActionType::Play => Self::Play { order: target },
-            RecordedActionType::Discard => Self::Discard { order: target },
-            RecordedActionType::ColorClue => Self::ColorClue {
-                target,
-                color_index: value,
-            },
-            RecordedActionType::RankClue => Self::RankClue {
-                target,
-                rank: value,
-            },
-            RecordedActionType::GameOver | RecordedActionType::GameOverByVote => Self::GameOver {
-                end_condition: EndCondition::try_from(value)?,
-                player_index: (target != NO_VALUE).then_some(target),
-            },
-        })
-    }
-
-    /// The action as a game's record stores it.
-    pub fn recorded(self) -> ReplayAction {
-        let (kind, target, value) = match self {
-            Self::Play { order } => (RecordedActionType::Play, order, 0),
-            Self::Discard { order } => (RecordedActionType::Discard, order, 0),
-            Self::ColorClue {
-                target,
-                color_index,
-            } => (RecordedActionType::ColorClue, target, color_index),
-            Self::RankClue { target, rank } => (RecordedActionType::RankClue, target, rank),
-            Self::GameOver {
-                end_condition,
-                player_index,
-            } => (
-                if end_condition == EndCondition::TerminatedByVote {
-                    RecordedActionType::GameOverByVote
-                } else {
-                    RecordedActionType::GameOver
-                },
-                player_index.unwrap_or(NO_VALUE),
-                i32::from(end_condition),
-            ),
-        };
-        ReplayAction {
-            kind,
-            target,
-            value,
-        }
-    }
 }
 
 /// A player's character in an imported game. A missing name is no character.
@@ -319,7 +242,7 @@ pub struct ImportOptions {
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
 #[serde(untagged)]
 pub enum ReplayArrowTarget {
-    Card(#[schemars(with = "CardOrder")] i64),
+    Card(CardOrder),
     Board(ReplayBoardElement),
 }
 
@@ -399,43 +322,37 @@ pub struct Hypothetical {
 )]
 pub enum HypotheticalAction {
     Draw {
-        #[schemars(with = "PlayerIndex")]
-        player_index: i64,
-        #[schemars(with = "CardOrder")]
-        order: i64,
+        player_index: PlayerIndex,
+        order: CardOrder,
         /// Absent when the recipient may not see the card.
         #[serde(default, skip_serializing_if = "Option::is_none")]
         #[schemars(with = "SuitIndex")]
-        suit_index: Option<i64>,
+        suit_index: Option<SuitIndex>,
         #[serde(default, skip_serializing_if = "Option::is_none")]
         #[schemars(with = "CardRank")]
-        rank: Option<i64>,
+        rank: Option<CardRank>,
     },
     Play {
-        #[schemars(with = "PlayerIndex")]
-        player_index: i64,
-        #[schemars(with = "CardOrder")]
-        order: i64,
+        player_index: PlayerIndex,
+        order: CardOrder,
         /// Absent when the recipient may not see the card.
         #[serde(default, skip_serializing_if = "Option::is_none")]
         #[schemars(with = "SuitIndex")]
-        suit_index: Option<i64>,
+        suit_index: Option<SuitIndex>,
         #[serde(default, skip_serializing_if = "Option::is_none")]
         #[schemars(with = "CardRank")]
-        rank: Option<i64>,
+        rank: Option<CardRank>,
     },
     Discard {
-        #[schemars(with = "PlayerIndex")]
-        player_index: i64,
-        #[schemars(with = "CardOrder")]
-        order: i64,
+        player_index: PlayerIndex,
+        order: CardOrder,
         /// Absent when the recipient may not see the card.
         #[serde(default, skip_serializing_if = "Option::is_none")]
         #[schemars(with = "SuitIndex")]
-        suit_index: Option<i64>,
+        suit_index: Option<SuitIndex>,
         #[serde(default, skip_serializing_if = "Option::is_none")]
         #[schemars(with = "CardRank")]
-        rank: Option<i64>,
+        rank: Option<CardRank>,
         failed: bool,
     },
     Clue {
@@ -443,13 +360,11 @@ pub enum HypotheticalAction {
         #[serde(default, skip_serializing_if = "Option::is_none")]
         #[schemars(with = "ReceivedClue")]
         clue: Option<Clue>,
-        #[schemars(with = "PlayerIndex")]
-        giver: i64,
-        #[schemars(with = "PlayerIndex")]
-        target: i64,
+        giver: PlayerIndex,
+        target: PlayerIndex,
         /// The orders of the cards the clue touched.
-        #[schemars(with = "Vec<CardOrder>", extend("x-readonly" = true))]
-        orders: Vec<SafeInteger>,
+        #[schemars(extend("x-readonly" = true))]
+        orders: Vec<CardOrder>,
         ignore_negative: bool,
     },
     Turn {
@@ -458,23 +373,19 @@ pub enum HypotheticalAction {
         /// Absent once the game has ended.
         #[serde(default, skip_serializing_if = "Option::is_none")]
         #[schemars(with = "PlayerIndex")]
-        current_player_index: Option<u8>,
+        current_player_index: Option<PlayerIndex>,
     },
     /// Shows a card as another identity.
     Morph {
-        #[schemars(with = "CardOrder")]
-        order: i64,
+        order: CardOrder,
         /// Absent when the recipient may not see the card.
         #[serde(default, skip_serializing_if = "Option::is_none")]
         #[schemars(with = "SuitIndex")]
-        suit_index: Option<i64>,
+        suit_index: Option<SuitIndex>,
         #[serde(default, skip_serializing_if = "Option::is_none")]
         #[schemars(with = "CardRank")]
-        rank: Option<i64>,
+        rank: Option<CardRank>,
     },
     /// Shows a morphed card as its original identity again.
-    Unmorph {
-        #[schemars(with = "CardOrder")]
-        order: i64,
-    },
+    Unmorph { order: CardOrder },
 }

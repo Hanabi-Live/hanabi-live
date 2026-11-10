@@ -1,9 +1,7 @@
 use anyhow::{Result, ensure};
+use hanabi_engine::RecordedAction;
 pub use hanabi_engine::{AssignedCharacter, DeckCard as Card, Options};
-use hanabi_engine::{
-    CompletionTiming, EndCondition, EngineState, GameSetup, PlayerAction, Termination,
-};
-use hanabi_protocol::ReplayAction;
+use hanabi_engine::{CompletionTiming, EndCondition, EngineState, GameSetup, Termination};
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
 use serde_json::Value;
 use std::ops::Deref;
@@ -35,7 +33,7 @@ enum GameStep {
     Action {
         actor: usize,
         #[serde(with = "crate::model::stored_turns::one")]
-        action: ReplayAction,
+        action: RecordedAction,
         #[serde(default, skip_serializing_if = "Option::is_none")]
         timing: Option<CompletionTiming>,
     },
@@ -127,12 +125,7 @@ impl Game {
                 action,
                 timing,
             } => {
-                hanabi_engine::apply_action(
-                    &mut self.state,
-                    *actor,
-                    &PlayerAction::from(action),
-                    timing.clone(),
-                )?;
+                hanabi_engine::apply_action(&mut self.state, *actor, action, timing.clone())?;
             }
             GameStep::Termination {
                 termination,
@@ -191,13 +184,13 @@ impl Game {
             interpretation: hanabi_engine::Interpretation::Live,
         })
     }
-    pub fn apply(&mut self, actor: usize, action: ReplayAction) -> Result<()> {
+    pub fn apply(&mut self, actor: usize, action: RecordedAction) -> Result<()> {
         self.apply_timed(actor, &action, None)
     }
     pub fn apply_timed(
         &mut self,
         actor: usize,
-        action: &ReplayAction,
+        action: &RecordedAction,
         timing: Option<CompletionTiming>,
     ) -> Result<()> {
         self.step(GameStep::Action {
@@ -234,7 +227,7 @@ impl Game {
             .collect()
     }
     /// Creates a game and plays `actions` in turn until the game ends.
-    pub fn replay(setup: GameSetup, actions: &[ReplayAction]) -> Result<Self> {
+    pub fn replay(setup: GameSetup, actions: &[RecordedAction]) -> Result<Self> {
         match Self::replay_valid(setup, actions)? {
             (game, None) => Ok(game),
             (_, Some((_, error))) => Err(error),
@@ -244,7 +237,7 @@ impl Game {
     /// valid. Returns the game, and the position and error of the action that was not valid.
     pub fn replay_valid(
         setup: GameSetup,
-        actions: &[ReplayAction],
+        actions: &[RecordedAction],
     ) -> Result<(Self, Option<(usize, anyhow::Error)>)> {
         ensure!(
             actions.len() <= hanabi_protocol::MAX_GAME_ACTIONS,
@@ -256,7 +249,7 @@ impl Game {
                 break;
             }
             let actor = game.active_player_index;
-            let result = if action.kind.is_game_over() {
+            let result = if action.action_type.is_game_over() {
                 EndCondition::try_from(action.value)
                     .map_err(anyhow::Error::msg)
                     .and_then(|condition| {
@@ -325,8 +318,8 @@ mod tests {
         let mut game = Game::new(standard_deck("p2v0s1").unwrap()).unwrap();
         let active = game.active_player_index;
         let card = game.players[active].hand[0];
-        let play = ReplayAction {
-            kind: hanabi_protocol::RecordedActionType::Play,
+        let play = RecordedAction {
+            action_type: hanabi_protocol::RecordedActionType::Play,
             target: i32::try_from(card).unwrap(),
             value: 0,
         };

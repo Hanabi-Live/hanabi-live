@@ -21,16 +21,6 @@ fn is_false(value: &bool) -> bool {
     !*value
 }
 
-/// A rank that clues can name.
-#[derive(JsonSchema)]
-#[serde(transparent)]
-pub struct RankClueNumber(#[schemars(extend("enum" = ranks()))] pub u8);
-
-/// A card rank. 7 is the rank of a stack's start card.
-#[derive(JsonSchema)]
-#[serde(transparent)]
-pub struct CatalogRank(#[schemars(extend("enum" = catalog_ranks()))] pub u8);
-
 /// An entry in `colors.json`.
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
@@ -156,15 +146,15 @@ pub struct CatalogVariant {
     /// The ranks that players can clue. When omitted, 1 through 5.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     #[schemars(with = "Vec<RankClueNumber>", extend("x-readonly" = true))]
-    pub clue_ranks: Option<Vec<u8>>,
+    pub clue_ranks: Option<Vec<RankClueNumber>>,
     /// The number of cards in each stack. When omitted, 5.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     #[schemars(with = "u8", extend("enum" = explicit_stack_sizes()))]
     pub stack_size: Option<u8>,
     // The following properties are listed in order of how they appear in "variants.md".
     #[serde(default, skip_serializing_if = "Option::is_none")]
-    #[schemars(with = "CatalogRank")]
-    pub special_rank: Option<u8>,
+    #[schemars(with = "CardRank")]
+    pub special_rank: Option<CardRank>,
     #[serde(default, skip_serializing_if = "is_false")]
     #[schemars(extend("const" = true))]
     pub special_rank_all_clue_colors: bool,
@@ -181,8 +171,8 @@ pub struct CatalogVariant {
     #[schemars(extend("const" = true))]
     pub special_rank_deceptive: bool,
     #[serde(default, skip_serializing_if = "Option::is_none")]
-    #[schemars(with = "CatalogRank")]
-    pub critical_rank: Option<u8>,
+    #[schemars(with = "CardRank")]
+    pub critical_rank: Option<CardRank>,
     #[serde(default, skip_serializing_if = "is_false")]
     #[schemars(extend("const" = true))]
     pub scarce_ones: bool,
