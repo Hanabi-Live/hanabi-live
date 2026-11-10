@@ -94,6 +94,7 @@ import { drawReplayArea } from "./drawReplayArea";
 import { getCardOrStackBase } from "./getCardOrStackBase";
 import * as hypothetical from "./hypothetical";
 import { initKonvaTooltips } from "./konvaTooltips";
+import { getGameIDLabel } from "./reactive/views/replayView";
 import * as replay from "./replay";
 import * as restart from "./restart";
 import * as stats from "./stats";
@@ -1286,7 +1287,7 @@ function drawDeck() {
   // Near the top of the deck, draw the database ID for the respective game. (In an ongoing game,
   // this will not show.)
   globals.elements.gameIDLabel = new FitText({
-    text: `ID: ${globals.state.replay.databaseID ?? 0}`,
+    text: getGameIDLabel(globals.state) ?? "",
     x: deckValues.x * winW,
     y: (deckValues.y + GAME_ID_LABEL.insetY) * winH,
     width: deckValues.w! * winW,
@@ -1295,7 +1296,7 @@ function drawDeck() {
     align: "center",
     fontSize: GAME_ID_LABEL.fontSize * winH,
     ...TEXT_SHADOW,
-    visible: globals.state.finished && globals.state.replay.databaseID !== null,
+    visible: getGameIDLabel(globals.state) !== undefined,
     listening: false,
   });
   // We draw the label on the arrow layer because it is on top of the card but not on top of the

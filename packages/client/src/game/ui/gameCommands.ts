@@ -90,8 +90,10 @@ gameCommands.set("finishOngoingGame", (data) => {
     mod: 0,
   });
 
-  // Set the browser address bar. 0 marks a game that is not in the database.
-  setBrowserAddressBarPath(`${PATH.SHARED_REPLAY}/${data.databaseID ?? 0}`);
+  // Set the browser address bar. A game that was not saved has no replay address.
+  if (data.databaseID !== undefined) {
+    setBrowserAddressBarPath(`${PATH.SHARED_REPLAY}/${data.databaseID}`);
+  }
 
   // Begin the process of converting an ongoing game to a shared replay.
   globals.store!.dispatch({
@@ -452,10 +454,12 @@ type InitData = ServerCommandData["init"];
 
 function setURL(data: InitData) {
   let path: string;
-  if (data.sharedReplay) {
-    path = `${PATH.SHARED_REPLAY}/${data.databaseID ?? 0}`;
-  } else if (data.replay) {
-    path = `${PATH.REPLAY}/${data.databaseID ?? 0}`;
+  if (data.replay) {
+    // A replay of a game that is not in the database, such as an imported game, has no address.
+    if (data.databaseID === undefined) {
+      return;
+    }
+    path = `${data.sharedReplay ? PATH.SHARED_REPLAY : PATH.REPLAY}/${data.databaseID}`;
   } else {
     path = `${PATH.GAME}/${data.tableID}${
       data.shadowing ? `/shadow/${data.ourPlayerIndex}` : ""

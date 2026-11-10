@@ -164,7 +164,7 @@ function keydown(event: JQuery.KeyDownEvent) {
       // Account for users copying text from the chat window.
       && !$("#game-chat-modal").is(":visible")
     ) {
-      if (globals.state.replay.databaseID !== null) {
+      if (globals.state.replay.databaseID !== undefined) {
         copyStringToClipboard(globals.state.replay.databaseID.toString());
       }
       return;

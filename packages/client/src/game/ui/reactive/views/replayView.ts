@@ -3,6 +3,7 @@ import Konva from "konva";
 import * as tooltips from "../../../../tooltips";
 import { escapeHtml } from "../../../../utils";
 import type { SharedReplayState } from "../../../types/SharedReplayState";
+import type { State } from "../../../types/State";
 import * as replay from "../../replay";
 import * as restart from "../../restart";
 import * as timer from "../../timer";
@@ -207,13 +208,22 @@ function playSharedReplayTween(
   }
 }
 
-export function onDatabaseIDChanged(databaseID: number | null): void {
-  if (databaseID === null) {
+/** The label near the deck: the game's database ID, or nothing while the game is ongoing. */
+export function getGameIDLabel(state: State): string | undefined {
+  if (!state.finished) {
+    return undefined;
+  }
+
+  return state.replay.databaseID === undefined
+    ? "JSON replay"
+    : `ID: ${state.replay.databaseID}`;
+}
+
+export function onGameIDLabelChanged(text: string | undefined): void {
+  if (text === undefined) {
     return;
   }
 
-  // JSON replays are hard-coded to have a database ID of 0.
-  const text = databaseID === 0 ? "JSON replay" : `ID: ${databaseID}`;
   globals.elements.gameIDLabel?.text(text);
   globals.elements.gameIDLabel?.show();
 

@@ -235,7 +235,8 @@ export class NameFrame extends Konva.Group {
       }
 
       if (globals.state.spectators.length === 1) {
-        if (globals.state.replay.databaseID === null) {
+        const { databaseID } = globals.state.replay;
+        if (databaseID === undefined) {
           setTimeout(() => {
             const msg =
               "Due to technical limitations, you cannot shift your perspective if you are the only person in a JSON replay.";
@@ -251,7 +252,7 @@ export class NameFrame extends Konva.Group {
           backToLobby();
           globals.lobby.conn!.send("replayCreate", {
             source: "id",
-            databaseID: globals.state.replay.databaseID ?? undefined,
+            databaseID,
             visibility:
               globals.state.replay.shared === null ? "solo" : "shared",
             shadowingPlayerIndex,

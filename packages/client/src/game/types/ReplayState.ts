@@ -14,7 +14,8 @@ export interface ReplayState {
   // is used so that we can re-compute the game state for each turn at the end of an ongoing game.
   readonly actions: readonly GameAction[];
 
-  readonly databaseID: number | null; // `null` if we are in an ongoing game.
+  /** Absent when the game is not in the database, such as an ongoing or imported game. */
+  readonly databaseID: number | undefined;
   readonly shared: SharedReplayState | null;
 
   /** The hypothetical that we show. In shared replays, this follows `shared.hypothetical`. */

@@ -305,7 +305,7 @@ const ongoingGameObservers: Subscriptions = [
 
 const replayObservers: Subscriptions = [
   // Database ID
-  subAfterInit((s) => s.replay.databaseID, replayView.onDatabaseIDChanged),
+  subAfterInit(replayView.getGameIDLabel, replayView.onGameIDLabelChanged),
 
   // Shared replay
   subAfterInit((s) => s.replay.shared !== null, replayView.onSharedReplayEnter),
