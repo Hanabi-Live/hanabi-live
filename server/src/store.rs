@@ -276,18 +276,21 @@ impl Store {
                 )
                 .await?;
             }
-            let seed_games = if work.count_seed {
-                let seed = &table.game().context("Missing finished game")?.seed;
-                Some(
+            let seed = if work.count_seed {
+                table.game().context("Missing finished game")?.seed.as_ref()
+            } else {
+                None
+            };
+            let seed_games = match seed {
+                Some(seed) => Some(
                     sqlx::query_scalar!(
                         "SELECT count(*) AS \"value!\" FROM games WHERE seed=$1",
                         seed
                     )
                     .fetch_one(&mut *transaction)
                     .await?,
-                )
-            } else {
-                None
+                ),
+                _ => None,
             };
             let mut written = 0;
             let after = if work.retire {
@@ -688,7 +691,7 @@ mod tests {
         let mut game = Game::create(GameSetup {
             options: table.options.clone(),
             player_names: players.iter().map(|p| p.name.clone()).collect(),
-            seed: "p2v0s1".into(),
+            seed: Some("p2v0s1".into()),
             deck: None,
             characters: None,
             interpretation: Interpretation::Live,
@@ -696,7 +699,7 @@ mod tests {
         game.terminate(
             0,
             EndCondition::TerminatedByPlayer,
-            0,
+            Some(0),
             None,
             Some(hanabi_engine::CompletionTiming {
                 player_times: vec![0, 0],
@@ -707,11 +710,11 @@ mod tests {
             snapshot: Box::new(Snapshot {
                 format: FORMAT.into(),
                 table_id: table.id,
-                game_id: GameId(1),
+                game_id: Some(GameId(1)),
                 owner: UserId(1),
                 name: table.name.clone(),
                 players,
-                seed: "p2v0s1".into(),
+                seed: Some("p2v0s1".into()),
                 created: table.created,
                 started: Utc::now(),
                 finished: Some(Utc::now()),
@@ -736,6 +739,64 @@ mod tests {
         };
         Ok(())
     }
+    #[test]
+    fn checkpoints_with_the_old_markers_for_none_still_decode() -> Result<()> {
+        let mut table = pregame(TableId(7));
+        terminal(&mut table)?;
+        let mut stored = serde_json::to_value(&table)?;
+        // How checkpoints written before November 10th, 2026 store values that are absent.
+        let snapshot = &mut stored["phase"]["snapshot"];
+        snapshot["game_id"] = serde_json::json!(0);
+        snapshot["pause_player_index"] = serde_json::json!(-1);
+        let termination = snapshot["game"]["steps"]
+            .as_array_mut()
+            .and_then(|steps| steps.last_mut())
+            .context("Missing termination")?;
+        termination["termination"]["playerIndex"] = serde_json::json!(-1);
+        stored["extra"] = serde_json::json!({
+            "setSeedSuffix": "",
+            "setReplay": true,
+            "setReplayTurn": 4,
+            "replayGameId": 9
+        });
+        let decoded: TableSnapshot = serde_json::from_value(stored)?;
+        let game = decoded.game().context("Missing game")?;
+        ensure!(game.game_id.is_none() && game.paused_by.is_none());
+        ensure!(game.game.end_player.is_none());
+        ensure!(decoded.extra.set_seed_suffix.is_none());
+        ensure!(
+            decoded.extra.replay
+                == Some(crate::model::TableReplay {
+                    game_id: GameId(9),
+                    turns: 4
+                })
+        );
+        // A checkpoint written now omits them.
+        let written = serde_json::to_value(&decoded)?;
+        let snapshot = &written["phase"]["snapshot"];
+        ensure!(snapshot.get("game_id").is_none() && snapshot.get("pause_player_index").is_none());
+        Ok(())
+    }
+
+    #[test]
+    fn game_setups_with_the_old_markers_for_none_still_decode() -> Result<()> {
+        let setup: GameSetup = serde_json::from_value(serde_json::json!({
+            "options": serde_json::to_value(Options::default())?,
+            "playerNames": ["Alice", "Bob"],
+            "seed": "JSON",
+            "deck": [{"suitIndex": 0, "rank": 1}],
+            "characters": [{"name": "n/a", "metadata": -1}, {"name": "", "metadata": -1}],
+        }))?;
+        ensure!(setup.seed.is_none());
+        let characters = setup.characters.context("Missing characters")?;
+        ensure!(
+            characters
+                .iter()
+                .all(|c| c.name.is_none() && c.metadata.is_none())
+        );
+        Ok(())
+    }
+
     #[test]
     fn checkpoints_round_trip_as_a_head_and_parts() -> Result<()> {
         let mut table = pregame(TableId(1));

@@ -273,9 +273,10 @@
                   </td>
                   <td>{{ game.datetimeFinished|history_date }}</td>
                   <td class="center">
-                    <a href="/seed/{{ game.seed|urlencode }}"
+                    {% if not game.seed %}{{ game.numGamesOnThisSeed }}{% else
+                    %}<a href="/seed/{{ game.seed|urlencode }}"
                       >{{ game.numGamesOnThisSeed }}</a
-                    >
+                    >{% endif %}
                   </td>
                   {% if title == "Tagged Games" %}
                   <td class="center">{{ game.tags|join(", ") }}</td>

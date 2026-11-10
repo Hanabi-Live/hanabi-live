@@ -934,7 +934,7 @@ async fn tables_replay_a_finished_game_from_a_chosen_turn() -> Result<()> {
         let (table, _) = h.snapshot(id).await?;
         let started = table.game().context("The replayed game did not start")?;
         ensure!(
-            started.seed == "p2v0s1" && started.game.actions.len() == 1,
+            started.seed.as_deref() == Some("p2v0s1") && started.game.actions.len() == 1,
             "The replay did not start from its second turn"
         );
         Ok(())
@@ -2602,7 +2602,14 @@ async fn tags_use_authoritative_sorted_frames_and_private_live_acknowledgements(
         h.barrier(0).await?;
         h.frames(0)?;
         h.frames(1)?;
-        let game_id = h.snapshot(id).await?.0.game().unwrap().game_id;
+        let game_id = h
+            .snapshot(id)
+            .await?
+            .0
+            .game()
+            .unwrap()
+            .game_id
+            .context("The game was not saved")?;
         sqlx::query!(
             "INSERT INTO game_tags(game_id,user_id,tag) VALUES($1,2,'zeta'),($1,2,'alpha <b>')",
             game_id.0

@@ -20,9 +20,13 @@ use std::{
 pub const FORMAT: &str = "hanabi-live-1";
 /// The author of chat that the server wrote, as `chat_log` stores it. Real users have positive IDs.
 pub const SERVER_AUTHOR: UserId = UserId(0);
-/// The game ID of a game that is not in the database, such as a replay of uploaded JSON. Games in
-/// the database have positive IDs.
-pub const UNSAVED_GAME: GameId = GameId(0);
+/// Reads a checkpoint's game ID. Checkpoints written before November 10th, 2026 store 0 for a game
+/// that is not in the database.
+fn saved_game_id<'de, D: serde::Deserializer<'de>>(
+    deserializer: D,
+) -> Result<Option<GameId>, D::Error> {
+    Ok(Option::<GameId>::deserialize(deserializer)?.filter(|id| id.0 > 0))
+}
 /// How long before an idle game ends to warn its table.
 pub const IDLE_WARNING_MS: i64 = 5 * CLOCK_UNITS_PER_MINUTE;
 
@@ -37,7 +41,7 @@ pub struct Player {
     pub stats: PregameStats,
 }
 #[derive(Clone, Debug, Default, Serialize, Deserialize)]
-#[serde(default, rename_all = "camelCase", deny_unknown_fields)]
+#[serde(rename_all = "camelCase", from = "StoredExtraOptions")]
 pub struct ExtraOptions {
     pub custom_seed: Option<String>,
     pub custom_actions: Vec<ReplayAction>,
@@ -45,25 +49,86 @@ pub struct ExtraOptions {
     pub custom_num_players: Option<usize>,
     pub no_write_to_database: bool,
     /// The seed that the table requested, without the player count and variant that prefix it.
-    /// Blank deals the next seed that none of the players have played.
-    pub set_seed_suffix: String,
-    /// Whether the table replays a finished game, which plays its first `set_replay_turn` actions.
-    pub set_replay: bool,
-    pub set_replay_turn: usize,
+    /// Absent deals the next seed that none of the players have played.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub set_seed_suffix: Option<String>,
     /// The finished game that the table replays.
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub replay_game_id: Option<GameId>,
+    pub replay: Option<TableReplay>,
+}
+
+/// A finished game that a table replays.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct TableReplay {
+    pub game_id: GameId,
+    /// How many of the game's actions the table plays before its players take over.
+    pub turns: usize,
+}
+
+/// `ExtraOptions` as checkpoints store them. Checkpoints written before November 10th, 2026 store a
+/// blank requested seed, and they store a replayed game as `setReplay`, `setReplayTurn`, and
+/// `replayGameId`.
+#[derive(Deserialize)]
+#[serde(default, rename_all = "camelCase", deny_unknown_fields)]
+#[derive(Default)]
+struct StoredExtraOptions {
+    custom_seed: Option<String>,
+    custom_actions: Vec<ReplayAction>,
+    custom_characters: Option<Vec<AssignedCharacter>>,
+    custom_num_players: Option<usize>,
+    no_write_to_database: bool,
+    set_seed_suffix: Option<String>,
+    replay: Option<TableReplay>,
+    set_replay: bool,
+    set_replay_turn: usize,
+    replay_game_id: Option<GameId>,
+}
+
+impl From<StoredExtraOptions> for ExtraOptions {
+    fn from(stored: StoredExtraOptions) -> Self {
+        Self {
+            custom_seed: stored.custom_seed,
+            custom_actions: stored.custom_actions,
+            custom_characters: stored.custom_characters,
+            custom_num_players: stored.custom_num_players,
+            no_write_to_database: stored.no_write_to_database,
+            set_seed_suffix: stored.set_seed_suffix.filter(|seed| !seed.is_empty()),
+            replay: stored.replay.or_else(|| {
+                stored
+                    .replay_game_id
+                    .filter(|_| stored.set_replay)
+                    .map(|game_id| TableReplay {
+                        game_id,
+                        turns: stored.set_replay_turn,
+                    })
+            }),
+        }
+    }
 }
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct Snapshot {
     pub format: String,
     pub table_id: TableId,
-    pub game_id: GameId,
+    /// The game's ID in the database. Absent for a game that is not saved there, such as a replay
+    /// of uploaded JSON.
+    #[serde(
+        default,
+        skip_serializing_if = "Option::is_none",
+        deserialize_with = "saved_game_id"
+    )]
+    pub game_id: Option<GameId>,
     pub owner: UserId,
     pub name: String,
     pub players: Vec<Player>,
-    pub seed: String,
+    /// Absent for a game with its own deck instead of a seed, such as an imported one.
+    #[serde(
+        default,
+        skip_serializing_if = "Option::is_none",
+        deserialize_with = "hanabi_engine::stored_seed"
+    )]
+    pub seed: Option<String>,
     pub created: DateTime<Utc>,
     pub started: DateTime<Utc>,
     pub finished: Option<DateTime<Utc>>,
@@ -76,7 +141,12 @@ pub struct Snapshot {
     pub timer_started: bool,
     pub idle_remaining: i64,
     /// The player who paused the game. A paused game takes no actions.
-    #[serde(rename = "pause_player_index", with = "optional_seat")]
+    #[serde(
+        rename = "pause_player_index",
+        default,
+        skip_serializing_if = "Option::is_none",
+        deserialize_with = "optional_seat::deserialize"
+    )]
     pub paused_by: Option<Seat>,
     pub queued_pauses: Vec<bool>,
     pub notes: Vec<Vec<String>>,
@@ -552,7 +622,7 @@ impl Snapshot {
     /// tags, votes, or pause.
     pub fn new(
         table_id: TableId,
-        game_id: GameId,
+        game_id: Option<GameId>,
         owner: UserId,
         name: String,
         players: Vec<Player>,
@@ -593,7 +663,7 @@ impl Snapshot {
     }
     pub fn validate(&self) -> Result<()> {
         ensure!(
-            self.format == FORMAT && self.table_id.0 > 0 && self.game_id >= UNSAVED_GAME,
+            self.format == FORMAT && self.table_id.0 > 0 && self.game_id.is_none_or(|id| id.0 > 0),
             "Incompatible game checkpoint"
         );
         let n = self.players.len();
@@ -648,7 +718,8 @@ impl Snapshot {
         );
         Ok(())
     }
-    pub fn history(&self, count: i64) -> hanabi_protocol::GameHistory {
+    /// The game as a player's history lists it, or `None` for a game that is not in the database.
+    pub fn history(&self, count: i64) -> Option<hanabi_protocol::GameHistory> {
         let mut names = self
             .players
             .iter()
@@ -656,8 +727,8 @@ impl Snapshot {
             .collect::<Vec<_>>();
         names.sort_by_key(|s| s.to_lowercase());
         let time = timestamp;
-        hanabi_protocol::GameHistory {
-            id: self.game_id,
+        Some(hanabi_protocol::GameHistory {
+            id: self.game_id?,
             options: wire_options(&self.game.options),
             seed: self.seed.clone(),
             score: self.game.score,
@@ -674,7 +745,7 @@ impl Snapshot {
                 .collect::<std::collections::BTreeSet<_>>()
                 .into_iter()
                 .collect(),
-        }
+        })
     }
 }
 
@@ -723,25 +794,19 @@ impl Seat {
     }
 }
 
-/// Stores an optional seat as a number: the seat, or `NO_VALUE`.
+/// Reads an optional seat. Checkpoints written before November 10th, 2026 store an absent seat as
+/// `NO_VALUE`.
 mod optional_seat {
     use super::{NO_VALUE, Seat};
-    use serde::{Deserialize, Deserializer, Serialize, Serializer};
+    use serde::{Deserialize, Deserializer};
 
-    #[expect(
-        clippy::ref_option,
-        clippy::trivially_copy_pass_by_ref,
-        reason = "serde's `with` passes the field by reference"
-    )]
-    pub fn serialize<S: Serializer>(seat: &Option<Seat>, serializer: S) -> Result<S::Ok, S::Error> {
-        Seat::wire::<i64>(*seat).serialize(serializer)
-    }
     pub fn deserialize<'de, D: Deserializer<'de>>(
         deserializer: D,
     ) -> Result<Option<Seat>, D::Error> {
-        match i64::deserialize(deserializer)? {
-            value if value == i64::from(NO_VALUE) => Ok(None),
-            value => Seat::try_from(value)
+        match Option::<i64>::deserialize(deserializer)? {
+            None => Ok(None),
+            Some(value) if value == i64::from(NO_VALUE) => Ok(None),
+            Some(value) => Seat::try_from(value)
                 .map(Some)
                 .map_err(serde::de::Error::custom),
         }

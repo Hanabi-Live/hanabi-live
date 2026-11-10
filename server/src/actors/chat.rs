@@ -408,9 +408,14 @@ impl TableActor {
                     .game()
                     .context("A replay command ran without a game")?
                     .game_id;
-                let tags = crate::archive::tags(&self.store.primary, id)
-                    .await?
-                    .unwrap_or_default()
+                // A replay of uploaded JSON has no game in the database, so it has no tags.
+                let tags = match id {
+                    Some(id) => crate::archive::tags(&self.store.primary, id)
+                        .await?
+                        .unwrap_or_default(),
+                    None => vec![],
+                };
+                let tags = tags
                     .into_iter()
                     .map(|t| t.tag)
                     .collect::<std::collections::BTreeSet<_>>();

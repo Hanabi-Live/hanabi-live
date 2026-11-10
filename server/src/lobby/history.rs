@@ -108,7 +108,7 @@ pub async fn blocked_seeds(pool: &PgPool, users: &[UserId], prefix: &str) -> Res
     // Resolve linked accounts into one list first: an `OR ... IN (subquery)` condition prevents
     // the participant index from being used and scans every game.
     Ok(sqlx::query_scalar!(
-        "SELECT DISTINCT g.seed FROM games g JOIN game_participants p ON p.game_id=g.id
+        "SELECT DISTINCT g.seed AS \"seed!\" FROM games g JOIN game_participants p ON p.game_id=g.id
          WHERE p.user_id=ANY($1::integer[] ||
            ARRAY(SELECT linked_id FROM user_linkages WHERE user_id=ANY($1)))
          AND starts_with(g.seed, $2)",

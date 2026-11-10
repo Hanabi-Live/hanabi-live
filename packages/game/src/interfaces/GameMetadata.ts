@@ -28,5 +28,6 @@ export interface GameMetadata {
   readonly hardVariant: boolean;
 
   readonly hasCustomSeed: boolean;
-  readonly seed: string;
+  /** Absent for a game with its own deck instead of a seed, such as an imported one. */
+  readonly seed: string | undefined;
 }

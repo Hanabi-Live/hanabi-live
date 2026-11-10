@@ -90,7 +90,8 @@ pub struct GameRecord {
     pub one_less_card: bool,
     pub all_or_nothing: bool,
     pub detrimental_characters: bool,
-    pub seed: String,
+    /// Absent for a game that was imported with its own deck.
+    pub seed: Option<String>,
     pub score: i16,
     pub num_turns: i16,
     pub end_condition: i16,
@@ -167,7 +168,10 @@ pub(crate) async fn replay(
     let row = archive.game;
     let options = options(&row)?;
     let variant = hanabi_engine::get_variant(&options.variant_name)?;
-    let seed: String = row.seed.clone();
+    let seed = row
+        .seed
+        .clone()
+        .context("A game without a seed has no deck to replay")?;
     let deck = hanabi_engine::create_shuffled_deck(variant, &seed);
     ensure!(
         deck.len() <= hanabi_engine::create_deck(variant).len()
@@ -200,8 +204,8 @@ pub(crate) async fn replay(
             })
             .transpose()?;
         characters.push(AssignedCharacter {
-            name: character.map_or("", |c| c.name.as_str()).into(),
-            metadata: r.assigned_metadata.map_or(NO_VALUE, i32::from),
+            name: character.map(|c| c.name.clone()),
+            metadata: r.assigned_metadata.map(i32::from),
         });
     }
     for note in archive.notes {
@@ -219,7 +223,7 @@ pub(crate) async fn replay(
         GameSetup {
             options,
             player_names: players.iter().map(|p| p.name.clone()).collect(),
-            seed: seed.clone(),
+            seed: Some(seed.clone()),
             deck: Some(deck),
             characters: Some(characters),
             interpretation: Interpretation::Recorded,
@@ -238,7 +242,7 @@ pub(crate) async fn replay(
         tags: archive.tags,
         ..Snapshot::new(
             table_id,
-            GameId(row.id),
+            Some(GameId(row.id)),
             owner,
             row.name.clone(),
             players,
@@ -270,15 +274,16 @@ pub(crate) async fn insert(
     transaction: &mut Transaction<'static, Postgres>,
     s: &Snapshot,
 ) -> Result<()> {
+    let id = s.game_id.context("Cannot archive a JSON game")?;
     ensure!(
-        s.game_id > crate::model::UNSAVED_GAME && s.game.end_condition != EndCondition::InProgress,
-        "Cannot archive an ongoing/JSON game"
+        s.game.end_condition != EndCondition::InProgress,
+        "Cannot archive an ongoing game"
     );
     let finished = s.finished.context("Missing completion time")?;
     let o = &s.game.options;
     let variant = hanabi_engine::get_variant(&o.variant_name)?;
     let tx = transaction;
-    sqlx::query!("INSERT INTO games(id,name,num_players,variant_id,timed,time_base,time_per_turn,speedrun,deck_plays,empty_clues,one_extra_card,one_less_card,all_or_nothing,detrimental_characters,seed,score,num_turns,end_condition,datetime_started,datetime_finished) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20)", s.game_id.0, &s.name, i16::try_from(o.num_players)?, i16::try_from(variant.id)?, o.timed, o.timed.then(|| stored_seconds(o.time_base)), o.timed.then(|| i32::try_from(o.time_per_turn)).transpose()?, o.speedrun, o.deck_plays, o.empty_clues, o.one_extra_card, o.one_less_card, o.all_or_nothing, o.detrimental_characters, &s.seed, i16::try_from(s.game.score)?, i16::try_from(s.game.turn)?, s.game.end_condition as i16, s.started, finished).execute(&mut **tx).await?;
+    sqlx::query!("INSERT INTO games(id,name,num_players,variant_id,timed,time_base,time_per_turn,speedrun,deck_plays,empty_clues,one_extra_card,one_less_card,all_or_nothing,detrimental_characters,seed,score,num_turns,end_condition,datetime_started,datetime_finished) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20)", id.0, &s.name, i16::try_from(o.num_players)?, i16::try_from(variant.id)?, o.timed, o.timed.then(|| stored_seconds(o.time_base)), o.timed.then(|| i32::try_from(o.time_per_turn)).transpose()?, o.speedrun, o.deck_plays, o.empty_clues, o.one_extra_card, o.one_less_card, o.all_or_nothing, o.detrimental_characters, s.seed.as_deref(), i16::try_from(s.game.score)?, i16::try_from(s.game.turn)?, s.game.end_condition as i16, s.started, finished).execute(&mut **tx).await?;
     let mut users = vec![];
     let mut seats = vec![];
     let mut character_ids = vec![];
@@ -296,7 +301,7 @@ pub(crate) async fn insert(
          FROM UNNEST($2::integer[],$3::smallint[],$4::smallint[],$5::smallint[])
          AS p(user_id,seat,character_id,assigned_metadata)
          RETURNING id,seat",
-        s.game_id.0,
+        id.0,
         &users,
         &seats,
         &character_ids as &[Option<i16>],
@@ -344,7 +349,7 @@ pub(crate) async fn insert(
         .iter()
         .map(|a| stored_value(a.action_type, a.value))
         .collect::<Result<_, _>>()?;
-    sqlx::query!("INSERT INTO game_actions(game_id,turn,type,target,value) SELECT $1,(a.turn-1)::smallint,a.kind,a.target,a.value FROM UNNEST($2::smallint[],$3::smallint[],$4::smallint[]) WITH ORDINALITY AS a(kind,target,value,turn)", s.game_id.0, &kinds, &targets as &[Option<i16>], &values as &[Option<i16>]).execute(&mut **tx).await?;
+    sqlx::query!("INSERT INTO game_actions(game_id,turn,type,target,value) SELECT $1,(a.turn-1)::smallint,a.kind,a.target,a.value FROM UNNEST($2::smallint[],$3::smallint[],$4::smallint[]) WITH ORDINALITY AS a(kind,target,value,turn)", id.0, &kinds, &targets as &[Option<i16>], &values as &[Option<i16>]).execute(&mut **tx).await?;
     let tag_users = s.tags.iter().map(|tag| tag.user.0).collect::<Vec<_>>();
     let tags = s
         .tags
@@ -353,7 +358,7 @@ pub(crate) async fn insert(
         .collect::<Vec<_>>();
     sqlx::query!(
         "INSERT INTO game_tags(game_id,user_id,tag) SELECT $1,t.user_id,t.tag FROM UNNEST($2::integer[],$3::text[]) AS t(user_id,tag)",
-        s.game_id.0,
+        id.0,
         &tag_users,
         &tags as &[&str]
     )

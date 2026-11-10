@@ -116,6 +116,7 @@ function HistoryRow({
   readonly username: string;
 }) {
   const otherGameCount = game.numGamesOnThisSeed - 1;
+  const { seed } = game;
 
   return (
     <tr>
@@ -139,16 +140,16 @@ function HistoryRow({
       <td>
         <button
           className={
-            otherGameCount === 0
+            otherGameCount === 0 || seed === undefined
               ? "button fit margin0 disabled"
               : "button fit margin0"
           }
           id={`history-other-scores-${game.id}`}
           onClick={
-            otherGameCount === 0
+            otherGameCount === 0 || seed === undefined
               ? undefined
               : () => {
-                  showOtherScoresFromHistory(game.seed);
+                  showOtherScoresFromHistory(seed);
                 }
           }
           type="button"
@@ -232,7 +233,10 @@ function OtherScoreRow({
     return ourGame ? <strong>{text}</strong> : text;
   }
 
-  const seedNumber = SEED_NUMBER_REGEX.exec(game.seed)?.[1] ?? "Unknown";
+  const seedNumber =
+    game.seed === undefined
+      ? "Unknown"
+      : (SEED_NUMBER_REGEX.exec(game.seed)?.[1] ?? "Unknown");
 
   return (
     <tr>

@@ -7,7 +7,7 @@ fn setup(options: Options, characters: Option<Vec<AssignedCharacter>>) -> GameSe
             .map(|i| format!("Player{i}"))
             .collect(),
         options,
-        seed: "p2v0s1".into(),
+        seed: Some("p2v0s1".into()),
         deck: None,
         characters,
         interpretation: Interpretation::Live,
@@ -59,8 +59,8 @@ fn assignments(first: &str, second: &str) -> Vec<AssignedCharacter> {
     [first, second]
         .iter()
         .map(|name| AssignedCharacter {
-            name: (*name).into(),
-            metadata: -1,
+            name: (!name.is_empty()).then(|| (*name).into()),
+            metadata: None,
         })
         .collect()
 }
@@ -127,7 +127,7 @@ fn rejected_actions_are_atomic_and_client_terminations_are_not_actions() {
             Termination {
                 actor_index: 0,
                 condition: EndCondition::Normal,
-                player_index: -1,
+                player_index: None,
                 votes: None,
             },
             None,
@@ -158,11 +158,11 @@ fn termination_uses_requesting_character_and_explicit_timing() {
             ..Options::default()
         },
         Some(
-            ["n/a", "Contrarian", "Stubborn"]
+            [None, Some("Contrarian"), Some("Stubborn")]
                 .iter()
                 .map(|s| AssignedCharacter {
-                    name: (*s).into(),
-                    metadata: -1,
+                    name: s.map(Into::into),
+                    metadata: None,
                 })
                 .collect(),
         ),
@@ -173,7 +173,7 @@ fn termination_uses_requesting_character_and_explicit_timing() {
         Termination {
             actor_index: 1,
             condition: EndCondition::TerminatedByPlayer,
-            player_index: 1,
+            player_index: Some(1),
             votes: None,
         },
         None,
@@ -201,7 +201,7 @@ fn termination_uses_requesting_character_and_explicit_timing() {
         Termination {
             actor_index: 1,
             condition: EndCondition::Timeout,
-            player_index: 0,
+            player_index: Some(0),
             votes: None,
         },
         timing.clone(),
@@ -219,7 +219,7 @@ fn termination_uses_requesting_character_and_explicit_timing() {
         Termination {
             actor_index: 1,
             condition: EndCondition::TerminatedByVote,
-            player_index: -1,
+            player_index: None,
             votes: Some(vec![0, 1]),
         },
         timing,
@@ -231,7 +231,7 @@ fn termination_uses_requesting_character_and_explicit_timing() {
             Termination {
                 actor_index: 0,
                 condition: EndCondition::Timeout,
-                player_index: -1,
+                player_index: None,
                 votes: None
             },
             None
@@ -244,7 +244,7 @@ fn termination_uses_requesting_character_and_explicit_timing() {
             Termination {
                 actor_index: 0,
                 condition: EndCondition::Normal,
-                player_index: -1,
+                player_index: None,
                 votes: None
             },
             None
@@ -272,7 +272,7 @@ fn privacy_is_historical_and_invalid_shadow_seats_are_omniscient() {
             detrimental_characters: true,
             ..Options::default()
         },
-        Some(assignments("Slow-Witted", "n/a")),
+        Some(assignments("Slow-Witted", "")),
     ))
     .unwrap();
     let visible =
@@ -362,7 +362,7 @@ fn custom_shortened_decks_are_preserved_without_reshuffling() {
         },
     ];
     let mut input = setup(Options::default(), None);
-    input.seed = "JSON".into();
+    input.seed = None;
     input.deck = Some(deck.clone());
     input.interpretation = Interpretation::Recorded;
     let state = create_game(input).unwrap();
@@ -539,7 +539,7 @@ fn all_or_nothing_eventually_exhausts_resources_without_final_round() {
             detrimental_characters: true,
             ..Options::default()
         },
-        Some(assignments("Slow-Witted", "n/a")),
+        Some(assignments("Slow-Witted", "")),
     );
     let mut deck = create_shuffled_deck(get_variant("6 Suits").unwrap(), "p2v0s1");
     deck.sort_by_key(|c| (c.rank, c.suit_index));

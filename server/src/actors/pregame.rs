@@ -309,9 +309,9 @@ impl TableActor {
             seed.clone()
         } else {
             let prefix = crate::game::seed_prefix(players.len(), variant.id, &next.options);
-            match next.extra.set_seed_suffix.as_str() {
-                "" => self.store.next_seed(&players, prefix).await?,
-                suffix => prefix + suffix,
+            match &next.extra.set_seed_suffix {
+                None => self.store.next_seed(&players, prefix).await?,
+                Some(suffix) => prefix + suffix,
             }
         };
         let game_id = self.store.reserve().await?;
@@ -326,16 +326,15 @@ impl TableActor {
         ensure_or_reject!(session.active(), "Owner disconnected during start");
         let mut options = next.options.clone();
         options.num_players = players.len();
-        let emulated = if extra.set_replay {
-            &extra.custom_actions[..extra.set_replay_turn.min(extra.custom_actions.len())]
-        } else {
-            &extra.custom_actions
+        let emulated = match extra.replay {
+            Some(replay) => &extra.custom_actions[..replay.turns.min(extra.custom_actions.len())],
+            None => &extra.custom_actions,
         };
         let game = Game::replay(
             GameSetup {
                 options: options.clone(),
                 player_names: players.iter().map(|p| p.name.clone()).collect(),
-                seed,
+                seed: Some(seed),
                 deck: Some(deck),
                 characters: extra.custom_characters.clone(),
                 interpretation: Interpretation::Live,
@@ -355,7 +354,7 @@ impl TableActor {
             ],
             ..Snapshot::new(
                 next.id,
-                game_id,
+                Some(game_id),
                 next.owner,
                 next.name.clone(),
                 players,

@@ -19,7 +19,7 @@ fn duck_projection_hides_both_clue_fields_from_every_player_and_shadow() -> Resu
                 variant_name: variant_name.into(),
                 ..Options::default()
             },
-            seed: "p3v0s17".into(),
+            seed: Some("p3v0s17".into()),
             deck: None,
             characters: None,
             interpretation: Interpretation::Live,

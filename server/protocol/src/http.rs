@@ -150,7 +150,10 @@ pub struct PublicGameRow {
     /// When the game finished.
     #[schemars(with = "Timestamp")]
     pub datetime: String,
-    pub seed: String,
+    /// Absent for a game with its own deck instead of a seed, such as an imported one.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[schemars(with = "String")]
+    pub seed: Option<String>,
 }
 
 /// The variant names in `/api/v1/variants`, keyed by variant ID.

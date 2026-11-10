@@ -7,7 +7,7 @@ describe("replay URL seed metadata", () => {
   // Two players, one card of each rank, one play, standard variant, and no seed.
   const payload = "215abcde,00ba,0,";
 
-  test.each(["p4v0s3", "", "A-very-long-seed-with-hyphens-1234567890"])(
+  test.each(["p4v0s3", undefined, "A-very-long-seed-with-hyphens-1234567890"])(
     "round-trips seed %s without changing the game",
     (seed) => {
       const game = {
@@ -16,7 +16,7 @@ describe("replay URL seed metadata", () => {
       };
       const compressed = shrink(JSON.stringify(game));
       expect(compressed).toBeDefined();
-      expect(compressed!.endsWith(`,${seed}`)).toBe(true);
+      expect(compressed!.endsWith(`,${seed ?? ""}`)).toBe(true);
       expect(JSON.parse(expand(compressed!)!)).toEqual(game);
     },
   );

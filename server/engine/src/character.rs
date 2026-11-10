@@ -2,9 +2,6 @@
 
 use crate::EnginePlayer;
 
-/// The character name that test accounts' players other than the first get: none.
-pub const NO_CHARACTER: &str = "n/a";
-
 /// A detrimental character. Players store the character's name, which this parses.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Character {

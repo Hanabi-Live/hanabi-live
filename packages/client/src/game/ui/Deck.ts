@@ -371,13 +371,12 @@ function getTooltipContent(): string {
   }
 
   if (globals.state.finished || globals.metadata.hasCustomSeed) {
-    const isJSON = globals.metadata.seed === "JSON";
-    const seed = isJSON ? "n/a" : globals.metadata.seed;
-    const suffix = isJSON ? " (JSON game)" : "";
+    const { seed } = globals.metadata;
+    const suffix = seed === undefined ? " (JSON game)" : "";
     content += tooltipField(
       "fas fa-seedling",
       "Seed",
-      `<strong>${escapeHtml(seed)}</strong>${suffix}`,
+      `<strong>${escapeHtml(seed ?? "n/a")}</strong>${suffix}`,
     );
   }
 

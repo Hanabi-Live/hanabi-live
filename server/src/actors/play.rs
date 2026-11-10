@@ -17,7 +17,7 @@ use anyhow::Context;
 use hanabi_engine::{CompletionTiming, EndCondition, Recipient};
 use hanabi_protocol::ClientMessage;
 use hanabi_protocol::{
-    Chat, ChatTyping, MIN_PLAYERS, NO_VALUE, ReplayAction, Status, TableRequest, ViewMode,
+    Chat, ChatTyping, MIN_PLAYERS, ReplayAction, Status, TableRequest, ViewMode,
 };
 use std::sync::Arc;
 
@@ -168,13 +168,12 @@ impl TableActor {
                     },
                     Some(self.table.id),
                 ));
-                if s.players.iter().any(|p| p.id == a.session.user) {
+                if s.players.iter().any(|p| p.id == a.session.user)
+                    && let Some(history) = s.history(count)
+                {
                     e.messages.push((
                         a.session.clone(),
-                        frame(
-                            hanabi_protocol::server::GAME_HISTORY_ADDED,
-                            s.history(count),
-                        ),
+                        frame(hanabi_protocol::server::GAME_HISTORY_ADDED, history),
                     ));
                 }
                 // The client rebuilds the game when it finishes, which needs the identities of the
@@ -192,8 +191,7 @@ impl TableActor {
                         hanabi_protocol::server::FINISH_ONGOING_GAME,
                         hanabi_protocol::FinishOngoingGame {
                             table_id: self.table.id,
-                            database_id: (s.game_id != crate::model::UNSAVED_GAME)
-                                .then_some(s.game_id),
+                            database_id: s.game_id,
                             shared_replay: self
                                 .shared_replay_init(s, &a.session)
                                 .context("A finished game is not a shared replay")?,
@@ -268,11 +266,7 @@ impl TableActor {
                 } else {
                     EndCondition::TerminatedByPlayer
                 },
-                if vote {
-                    NO_VALUE
-                } else {
-                    hanabi_engine::int(seat)
-                },
+                (!vote).then_some(seat),
                 votes,
                 Some(CompletionTiming {
                     player_times: s.clocks.clone(),
@@ -536,8 +530,7 @@ impl TableActor {
                 } else {
                     ViewMode::Playing
                 },
-                database_id: (replay && s.game_id != crate::model::UNSAVED_GAME)
-                    .then_some(s.game_id),
+                database_id: s.game_id.filter(|_| replay),
                 has_custom_seed: self.table.extra.custom_seed.is_some(),
                 seed: s.seed.clone(),
                 datetime_started: crate::model::timestamp(s.started),

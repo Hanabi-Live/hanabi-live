@@ -79,7 +79,10 @@ pub(crate) async fn refresh(pool: &PgPool, s: &Snapshot) -> Result<()> {
     let players = i32::try_from(s.players.len())?;
     let mut tx = pool.begin().await?;
     advisory_lock(&mut tx, LockSpace::VariantStats, i32::from(v)).await?;
-    sqlx::query!("INSERT INTO seeds(seed,num_games) VALUES($1,(SELECT count(*) FROM games WHERE seed=$1)) ON CONFLICT(seed) DO UPDATE SET num_games=excluded.num_games", &s.seed).execute(&mut *tx).await?;
+    // A game with its own deck instead of a seed shares no seed with other games.
+    if let Some(seed) = &s.seed {
+        sqlx::query!("INSERT INTO seeds(seed,num_games) VALUES($1,(SELECT count(*) FROM games WHERE seed=$1)) ON CONFLICT(seed) DO UPDATE SET num_games=excluded.num_games", seed).execute(&mut *tx).await?;
+    }
     sqlx::query!(
         "INSERT INTO variant_stats(variant_id,best_score2,best_score3,best_score4,best_score5,best_score6)
          VALUES($1,NULL,NULL,NULL,NULL,NULL) ON CONFLICT DO NOTHING",
@@ -90,8 +93,10 @@ pub(crate) async fn refresh(pool: &PgPool, s: &Snapshot) -> Result<()> {
     let modifier = crate::model::ScoreModifier::of(&s.game.options);
     for p in &s.players {
         sqlx::query!(
-            "INSERT INTO user_stats(user_id,variant_id,best_score2,best_score3,best_score4,best_score5,
-             best_score6) VALUES($1,$2,NULL,NULL,NULL,NULL,NULL) ON CONFLICT DO NOTHING",
+            "INSERT INTO user_stats(user_id,variant_id,best_score2,best_score2_mod,best_score3,
+             best_score3_mod,best_score4,best_score4_mod,best_score5,best_score5_mod,best_score6,
+             best_score6_mod) VALUES($1,$2,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL)
+             ON CONFLICT DO NOTHING",
             p.id.0,
             v
         )
@@ -143,7 +148,7 @@ pub(crate) async fn refresh(pool: &PgPool, s: &Snapshot) -> Result<()> {
 /// their games and best scores on the table's variant, from `user_stats` if they have played it.
 fn player_stats(num_games: i64, row: Option<&crate::database::UserStats>) -> PregameStats {
     let (variant_games, best_scores) =
-        row.map_or((0, [(None, 0); crate::database::PLAYER_COUNTS]), |row| {
+        row.map_or((0, [(None, None); crate::database::PLAYER_COUNTS]), |row| {
             (
                 i64::from(row.num_games),
                 [
@@ -162,7 +167,7 @@ fn player_stats(num_games: i64, row: Option<&crate::database::UserStats>) -> Pre
             best_scores: (hanabi_protocol::MIN_PLAYERS..=hanabi_protocol::MAX_PLAYERS)
                 .zip(best_scores)
                 .map(|(num_players, (score, modifier))| {
-                    crate::model::ScoreModifier::from_bits(modifier)
+                    crate::model::ScoreModifier::from_bits(modifier.unwrap_or_default())
                         .best_score(crate::model::small(num_players), score.map(i32::from))
                 })
                 .collect(),
@@ -202,15 +207,15 @@ mod tests {
             variant_id: 0,
             num_games: 7,
             best_score2: Some(25),
-            best_score2_mod: 0,
+            best_score2_mod: Some(0),
             best_score3: Some(24),
-            best_score3_mod: 2 + 8,
+            best_score3_mod: Some(2 + 8),
             best_score4: None,
-            best_score4_mod: 0,
+            best_score4_mod: None,
             best_score5: Some(0),
-            best_score5_mod: 0,
+            best_score5_mod: Some(0),
             best_score6: Some(30),
-            best_score6_mod: 16,
+            best_score6_mod: Some(16),
         };
         let stats = serde_json::to_value(player_stats(12, Some(&row))).unwrap();
         hanabi_protocol::validate::<PregameStats>(&stats).unwrap();

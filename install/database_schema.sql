@@ -60,16 +60,19 @@ CREATE TABLE user_stats (
     num_games        INTEGER   NOT NULL  DEFAULT 0,
     /* Their best score for 2-player games on this variant. NULL when they have played none. */
     best_score2      SMALLINT  NULL,
-    /* This stores if they used additional options to make the game easier. */
-    best_score2_mod  SMALLINT  NOT NULL  DEFAULT 0,
+    /*
+     * This stores if they used additional options to make the game easier. NULL when there is no
+     * best score.
+     */
+    best_score2_mod  SMALLINT  NULL      DEFAULT 0,
     best_score3      SMALLINT  NULL,
-    best_score3_mod  SMALLINT  NOT NULL  DEFAULT 0,
+    best_score3_mod  SMALLINT  NULL      DEFAULT 0,
     best_score4      SMALLINT  NULL,
-    best_score4_mod  SMALLINT  NOT NULL  DEFAULT 0,
+    best_score4_mod  SMALLINT  NULL      DEFAULT 0,
     best_score5      SMALLINT  NULL,
-    best_score5_mod  SMALLINT  NOT NULL  DEFAULT 0,
+    best_score5_mod  SMALLINT  NULL      DEFAULT 0,
     best_score6      SMALLINT  NULL,
-    best_score6_mod  SMALLINT  NOT NULL  DEFAULT 0,
+    best_score6_mod  SMALLINT  NULL      DEFAULT 0,
     FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE,
     PRIMARY KEY (user_id, variant_id)
 );
@@ -137,7 +140,8 @@ CREATE TABLE games (
     all_or_nothing          BOOLEAN      NOT NULL,
     detrimental_characters  BOOLEAN      NOT NULL,
 
-    seed                    TEXT         NOT NULL, /* e.g. "p2v0s1" */
+    /* e.g. "p2v0s1". NULL for a game with its own deck instead of a seed, such as an imported one. */
+    seed                    TEXT         NULL,
     score                   SMALLINT     NOT NULL,
     num_turns               SMALLINT     NOT NULL,
 

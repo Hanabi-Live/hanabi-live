@@ -164,7 +164,7 @@ export function expand(data: string): string | undefined {
     characters: [],
     id: 0,
     notes: [],
-    seed,
+    ...(seed !== "" && { seed }),
   };
 
   return JSON.stringify(original);
@@ -172,7 +172,8 @@ export function expand(data: string): string | undefined {
 
 /** Compresses a `GameJSON` object into a string. Returns undefined if decompression fails. */
 function gameJSONCompress(data: GameJSON): string | undefined {
-  const { seed } = data;
+  // An empty last part is a game without a seed.
+  const seed = data.seed ?? "";
   if (!/^[\d\-A-Za-z]*$/u.test(seed)) {
     return undefined;
   }

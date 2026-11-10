@@ -179,7 +179,7 @@ impl Game {
         Self::create(GameSetup {
             options: Options::default(),
             player_names: vec!["Alice".into(), "Bob".into()],
-            seed: "JSON".into(),
+            seed: None,
             deck: Some(deck),
             characters: None,
             interpretation: hanabi_engine::Interpretation::Live,
@@ -204,7 +204,7 @@ impl Game {
         &mut self,
         actor: usize,
         condition: EndCondition,
-        player: i32,
+        player: Option<usize>,
         votes: Option<Vec<usize>>,
         timing: Option<CompletionTiming>,
     ) -> Result<()> {
@@ -254,7 +254,13 @@ impl Game {
                 EndCondition::try_from(action.value)
                     .map_err(anyhow::Error::msg)
                     .and_then(|condition| {
-                        game.terminate(actor, condition, action.target, None, None)
+                        game.terminate(
+                            actor,
+                            condition,
+                            usize::try_from(action.target).ok(),
+                            None,
+                            None,
+                        )
                     })
             } else {
                 game.apply(actor, *action)

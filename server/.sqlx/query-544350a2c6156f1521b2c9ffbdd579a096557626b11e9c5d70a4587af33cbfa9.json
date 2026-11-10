@@ -1,0 +1,15 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO user_stats(user_id,variant_id,best_score2,best_score2_mod,best_score3,\n             best_score3_mod,best_score4,best_score4_mod,best_score5,best_score5_mod,best_score6,\n             best_score6_mod) VALUES($1,$2,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL)\n             ON CONFLICT DO NOTHING",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Int4",
+        "Int2"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "544350a2c6156f1521b2c9ffbdd579a096557626b11e9c5d70a4587af33cbfa9"
+}

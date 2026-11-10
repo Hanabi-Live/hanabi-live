@@ -374,7 +374,10 @@ pub struct Init {
     #[schemars(with = "GameId")]
     pub database_id: Option<GameId>,
     pub has_custom_seed: bool,
-    pub seed: String,
+    /// Absent for a game with its own deck instead of a seed, such as an imported one.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[schemars(with = "String")]
+    pub seed: Option<String>,
     #[schemars(with = "Timestamp")]
     pub datetime_started: String,
     /// Absent while the game is in progress.

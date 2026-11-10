@@ -4,8 +4,8 @@ use crate::errors::OrReject;
 use crate::{
     game::Options,
     model::{
-        ExtraOptions, FORMAT, MAX_TABLE_NAME_LENGTH, Phase, ReplayState, Snapshot, TableSnapshot,
-        engine_options, small, wire_options,
+        ExtraOptions, FORMAT, MAX_TABLE_NAME_LENGTH, Phase, ReplayState, Snapshot, TableReplay,
+        TableSnapshot, engine_options, small, wire_options,
     },
     store::{Saved, Store},
     transport::Session,
@@ -13,7 +13,7 @@ use crate::{
 use chrono::Utc;
 use hanabi_protocol::TableId;
 use hanabi_protocol::UserId;
-use hanabi_protocol::{Chat, GameId, MAX_SEED_LENGTH, MIN_PLAYERS, NO_VALUE, ReplayAction};
+use hanabi_protocol::{Chat, GameId, MAX_SEED_LENGTH, MIN_PLAYERS, ReplayAction};
 use std::{collections::BTreeMap, fmt::Write as _};
 
 /// The longest table password, in bytes.
@@ -53,7 +53,7 @@ pub(super) fn validate_table_name(name: &str) -> CommandResult<()> {
 }
 
 /// Reads a requested seed: blank deals the next seed that none of the players have played.
-pub(super) fn requested_seed(seed: Option<&str>) -> CommandResult<String> {
+pub(super) fn requested_seed(seed: Option<&str>) -> CommandResult<Option<String>> {
     let seed = seed.unwrap_or_default().trim();
     ensure_or_reject!(
         seed.len() <= MAX_SEED_LENGTH,
@@ -63,15 +63,15 @@ pub(super) fn requested_seed(seed: Option<&str>) -> CommandResult<String> {
         seed.bytes().all(|b| b.is_ascii_alphanumeric() || b == b'-'),
         "Seeds can only contain letters, numbers, and hyphens"
     );
-    Ok(seed.into())
+    Ok((!seed.is_empty()).then(|| seed.into()))
 }
 
 /// The seed after a requested one, counting up its trailing number: "game-9" becomes "game-10",
-/// "007" becomes "008", and "game" becomes "game1". Blank stays blank.
-pub(super) fn next_requested_seed(seed: &str) -> CommandResult<String> {
-    if seed.is_empty() {
-        return Ok(String::new());
-    }
+/// "007" becomes "008", and "game" becomes "game1". No requested seed stays none.
+pub(super) fn next_requested_seed(seed: Option<&str>) -> CommandResult<Option<String>> {
+    let Some(seed) = seed else {
+        return Ok(None);
+    };
     let split = seed
         .rfind(|c: char| !c.is_ascii_digit())
         .map_or(0, |i| i + 1);
@@ -108,18 +108,19 @@ pub(super) fn requested_extra(
         return Ok(extra);
     };
     ensure_or_reject!(
-        extra.set_seed_suffix.is_empty(),
+        extra.set_seed_suffix.is_none(),
         "A replay keeps its game's seed"
     );
-    extra.set_replay = true;
-    extra.replay_game_id = Some(GameId(game_id));
-    extra.set_replay_turn = match request.replay_turn {
-        Some(turn) => usize::try_from(turn)
-            .ok()
-            .and_then(|turn| turn.checked_sub(1))
-            .or_reject("Turn must be positive")?,
-        None => 0,
-    };
+    extra.replay = Some(TableReplay {
+        game_id: GameId(game_id),
+        turns: match request.replay_turn {
+            Some(turn) => usize::try_from(turn)
+                .ok()
+                .and_then(|turn| turn.checked_sub(1))
+                .or_reject("Turn must be positive")?,
+            None => 0,
+        },
+    });
     Ok(extra)
 }
 
@@ -131,16 +132,16 @@ pub(super) async fn load_replay(
     user: UserId,
     options: &mut Options,
 ) -> CommandResult<()> {
-    let Some(game_id) = extra.replay_game_id else {
+    let Some(TableReplay { game_id, turns }) = extra.replay else {
         return Ok(());
     };
     let historical = crate::archive::replay(&store.primary, game_id, table_id, user).await?;
     ensure_or_reject!(
-        usize::try_from(historical.game.turn).is_ok_and(|limit| extra.set_replay_turn < limit),
+        usize::try_from(historical.game.turn).is_ok_and(|limit| turns < limit),
         "Replay turn exceeds game"
     );
     *options = historical.game.options.clone();
-    extra.custom_seed = Some(historical.seed);
+    extra.custom_seed = historical.seed;
     extra.custom_num_players = Some(options.num_players);
     extra.custom_characters = Some(
         historical
@@ -148,12 +149,8 @@ pub(super) async fn load_replay(
             .players
             .iter()
             .map(|p| hanabi_engine::AssignedCharacter {
-                name: if p.character.is_empty() {
-                    "n/a".into()
-                } else {
-                    p.character.clone()
-                },
-                metadata: p.assigned_metadata().unwrap_or(NO_VALUE),
+                name: p.character().map(|c| c.name().into()),
+                metadata: p.assigned_metadata(),
             })
             .collect(),
     );
@@ -175,18 +172,16 @@ pub(super) fn wire_table_options(
     extra: &ExtraOptions,
 ) -> hanabi_protocol::GameOptions {
     hanabi_protocol::GameOptions {
-        seed: (!extra.set_seed_suffix.is_empty()).then(|| extra.set_seed_suffix.clone()),
-        replay_game_id: extra.replay_game_id,
+        seed: extra.set_seed_suffix.clone(),
+        replay_game_id: extra.replay.map(|replay| replay.game_id),
         replay_turn: replay_turn(extra),
         ..wire_options(options)
     }
 }
 /// The turn that a replayed game starts from, counting from 1, unless it is the first turn.
 fn replay_turn(extra: &ExtraOptions) -> Option<u32> {
-    if extra.replay_game_id.is_none() || extra.set_replay_turn == 0 {
-        return None;
-    }
-    u32::try_from(extra.set_replay_turn + 1).ok()
+    let replay = extra.replay.filter(|replay| replay.turns > 0)?;
+    u32::try_from(replay.turns + 1).ok()
 }
 /// A private message to a table's owner, with a button that applies the suggested options.
 pub(super) fn options_suggestion(
@@ -252,16 +247,14 @@ pub(super) fn option_changes(
     }
     let seed = &extra.set_seed_suffix;
     if *seed != table.extra.set_seed_suffix {
-        add("Seed", if seed.is_empty() { "Any" } else { seed });
+        add("Seed", seed.as_deref().unwrap_or("Any"));
     }
-    if (extra.replay_game_id, extra.set_replay_turn)
-        != (table.extra.replay_game_id, table.extra.set_replay_turn)
-    {
+    if extra.replay != table.extra.replay {
         add(
             "Replay",
-            &extra.replay_game_id.map_or_else(
+            &extra.replay.map_or_else(
                 || "No".into(),
-                |id| match replay_turn(extra) {
+                |TableReplay { game_id: id, .. }| match replay_turn(extra) {
                     Some(turn) => format!("Game #{id} from turn {turn}"),
                     None => format!("Game #{id}"),
                 },
@@ -320,14 +313,15 @@ pub(super) fn replay_table(
     let name = format!(
         "{} replay for {}",
         if shared { "Shared" } else { "Solo" },
-        if snapshot.game_id == crate::model::UNSAVED_GAME {
-            format!(
-                "{owner_name}{} JSON game",
-                if owner_name.ends_with('s') { "'" } else { "'s" }
-            )
-        } else {
-            format!("game #{}", snapshot.game_id)
-        }
+        snapshot.game_id.map_or_else(
+            || {
+                format!(
+                    "{owner_name}{} JSON game",
+                    if owner_name.ends_with('s') { "'" } else { "'s" }
+                )
+            },
+            |id| format!("game #{id}")
+        )
     );
     TableSnapshot {
         format: FORMAT.into(),
@@ -339,7 +333,7 @@ pub(super) fn replay_table(
         password_hash: None,
         extra: ExtraOptions {
             no_write_to_database: true,
-            custom_seed: Some(snapshot.seed.clone()),
+            custom_seed: snapshot.seed.clone(),
             ..ExtraOptions::default()
         },
         created: Utc::now(),

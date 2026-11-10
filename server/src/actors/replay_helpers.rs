@@ -128,9 +128,17 @@ pub fn parse(input: &ReplayImport) -> CommandResult<Imported> {
         .characters
         .iter()
         .flatten()
-        .map(|character| AssignedCharacter {
-            name: character.name.clone().unwrap_or_default(),
-            metadata: character.metadata.unwrap_or(0),
+        .map(|character| {
+            let name = character.name.clone().filter(|name| !name.is_empty());
+            // A character that has metadata gets the first value when the import leaves it out.
+            let needs_metadata = name
+                .as_deref()
+                .and_then(hanabi_engine::Character::from_name)
+                .is_some_and(hanabi_engine::Character::has_assigned_metadata);
+            AssignedCharacter {
+                metadata: character.metadata.or(needs_metadata.then_some(0)),
+                name,
+            }
         })
         .collect();
     ensure_or_reject!(
@@ -183,11 +191,7 @@ pub fn parse(input: &ReplayImport) -> CommandResult<Imported> {
         GameSetup {
             options,
             player_names: players,
-            seed: if seed.is_empty() {
-                "JSON".into()
-            } else {
-                seed.into()
-            },
+            seed: (!seed.is_empty()).then(|| seed.into()),
             deck: Some(deck),
             characters: (!characters.is_empty()).then_some(characters),
             interpretation: Interpretation::Recorded,
@@ -226,7 +230,7 @@ pub fn snapshot(imported: Imported, table_id: TableId, owner: UserId) -> Snapsho
         notes: imported.notes,
         ..Snapshot::new(
             table_id,
-            crate::model::UNSAVED_GAME,
+            None,
             owner,
             "JSON Replay".into(),
             players,

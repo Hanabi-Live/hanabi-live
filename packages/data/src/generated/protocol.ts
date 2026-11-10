@@ -350,7 +350,10 @@ export const gameHistorySchema = z
     options: gameOptionsSchema,
     playerNames: z.array(z.string()).readonly(),
     score: z.number().int().min(0).max(2_147_483_647),
-    seed: z.string(),
+    /**
+     * Absent for a game with its own deck instead of a seed, such as an imported one.
+     */
+    seed: z.string().optional(),
     /**
      * The game's tags, in alphabetical order.
      */
@@ -505,7 +508,10 @@ export const initSchema = z.strictObject({
    */
   pauseQueued: z.boolean(),
   playerNames: z.array(z.string()).min(2).max(6),
-  seed: z.string(),
+  /**
+   * Absent for a game with its own deck instead of a seed, such as an imported one.
+   */
+  seed: z.string().optional(),
   /**
    * Present only when `mode` is `sharedReplay`.
    */
@@ -687,7 +693,10 @@ const publicGameRowSchema = z.strictObject({
    */
   otherScores: z.number().int().min(0).max(4_294_967_295).optional(),
   score: z.number().int().min(0).max(2_147_483_647),
-  seed: z.string(),
+  /**
+   * Absent for a game with its own deck instead of a seed, such as an imported one.
+   */
+  seed: z.string().optional(),
   /**
    * The players' names, separated by commas.
    */
@@ -957,7 +966,10 @@ export const replayGameSchema = z.strictObject({
   notes: z.array(replayNoteRowSchema).optional(),
   options: replayOptionsSchema.optional(),
   playerNames: z.array(z.string()),
-  seed: z.string(),
+  /**
+   * Absent for a game with its own deck instead of a seed, such as an imported one.
+   */
+  seed: z.string().optional(),
 });
 export const replayLeaderSchema = z.strictObject({
   tableID: tableIdSchema,

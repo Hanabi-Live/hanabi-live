@@ -1,5 +1,5 @@
 pub use hanabi_protocol::{ClueType, EndCondition, RecordedActionType};
-use hanabi_protocol::{DEFAULT_VARIANT_NAME, MIN_PLAYERS};
+use hanabi_protocol::{DEFAULT_VARIANT_NAME, MIN_PLAYERS, NO_VALUE};
 use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
@@ -70,8 +70,52 @@ pub struct DeckCard {
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct AssignedCharacter {
-    pub name: String,
-    pub metadata: i32,
+    /// Absent when the player has no character.
+    #[serde(
+        default,
+        skip_serializing_if = "Option::is_none",
+        deserialize_with = "stored_character_name"
+    )]
+    pub name: Option<String>,
+    /// Absent when the character has no assigned metadata.
+    #[serde(
+        default,
+        skip_serializing_if = "Option::is_none",
+        deserialize_with = "stored_character_metadata"
+    )]
+    pub metadata: Option<i32>,
+}
+
+/// Reads a character's name. Checkpoints written before November 10th, 2026 store no character as
+/// an empty name or as "n/a".
+fn stored_character_name<'de, D: serde::Deserializer<'de>>(
+    deserializer: D,
+) -> Result<Option<String>, D::Error> {
+    Ok(Option::<String>::deserialize(deserializer)?
+        .filter(|name| !name.is_empty() && name != LEGACY_NO_CHARACTER))
+}
+
+/// Reads a game's seed. Checkpoints written before November 10th, 2026 store "JSON" for a game
+/// without one.
+pub fn stored_seed<'de, D: serde::Deserializer<'de>>(
+    deserializer: D,
+) -> Result<Option<String>, D::Error> {
+    Ok(Option::<String>::deserialize(deserializer)?.filter(|seed| seed != UNSEEDED))
+}
+
+/// What shuffles the characters of a game without a seed that names none. Games without a seed
+/// were once stored with this as their seed, so it keeps their characters the same.
+pub const UNSEEDED: &str = "JSON";
+
+/// The name that checkpoints written before November 10th, 2026 give no character.
+const LEGACY_NO_CHARACTER: &str = "n/a";
+
+/// Reads a character's metadata. Checkpoints written before November 10th, 2026 store no metadata as
+/// `NO_VALUE`.
+fn stored_character_metadata<'de, D: serde::Deserializer<'de>>(
+    deserializer: D,
+) -> Result<Option<i32>, D::Error> {
+    Ok(Option::<i32>::deserialize(deserializer)?.filter(|metadata| *metadata != NO_VALUE))
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
@@ -79,7 +123,14 @@ pub struct AssignedCharacter {
 pub struct GameSetup {
     pub options: Options,
     pub player_names: Vec<String>,
-    pub seed: String,
+    /// The seed that shuffled the deck. Absent for a game with its own deck, such as an imported
+    /// one.
+    #[serde(
+        default,
+        skip_serializing_if = "Option::is_none",
+        deserialize_with = "stored_seed"
+    )]
+    pub seed: Option<String>,
     pub deck: Option<Vec<DeckCard>>,
     pub characters: Option<Vec<AssignedCharacter>>,
     #[serde(default)]
@@ -258,7 +309,7 @@ impl TryFrom<i32> for StackDirection {
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct EngineState {
     pub options: Options,
-    pub seed: String,
+    pub seed: Option<String>,
     pub interpretation: Interpretation,
     pub players: Vec<EnginePlayer>,
     pub deck: Vec<EngineCard>,
@@ -296,8 +347,22 @@ pub struct CompletionTiming {
 pub struct Termination {
     pub actor_index: usize,
     pub condition: EndCondition,
-    pub player_index: i32,
+    /// The player who ended the game, such as the one who timed out. Absent when no player did.
+    #[serde(
+        default,
+        skip_serializing_if = "Option::is_none",
+        deserialize_with = "stored_player"
+    )]
+    pub player_index: Option<usize>,
     pub votes: Option<Vec<usize>>,
+}
+
+/// Reads a player who may be absent. Checkpoints written before November 10th, 2026 store an absent
+/// player as `NO_VALUE`.
+fn stored_player<'de, D: serde::Deserializer<'de>>(
+    deserializer: D,
+) -> Result<Option<usize>, D::Error> {
+    Ok(Option::<i64>::deserialize(deserializer)?.and_then(|player| usize::try_from(player).ok()))
 }
 
 #[derive(Debug)]

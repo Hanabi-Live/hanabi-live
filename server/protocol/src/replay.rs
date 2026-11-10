@@ -29,7 +29,10 @@ pub struct ReplayGame {
     #[serde(default, skip_serializing_if = "Option::is_none")]
     #[schemars(with = "Vec<ReplayCharacter>")]
     pub characters: Option<Vec<ReplayCharacter>>,
-    pub seed: String,
+    /// Absent for a game with its own deck instead of a seed, such as an imported one.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[schemars(with = "String")]
+    pub seed: Option<String>,
 }
 
 /// One player's notes, indexed by card order.

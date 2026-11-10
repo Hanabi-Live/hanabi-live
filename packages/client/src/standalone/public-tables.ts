@@ -509,11 +509,12 @@ function gameRows(
     if (mode === "seed") {
       row.push(percentile(game.score, frequencies));
     } else {
+      const text = mode === "variant" ? game.seed : game.otherScores;
+      // A game with its own deck instead of a seed has no seed page.
       row.push(
-        link(
-          `${PATH.SEED}/${encodeURIComponent(game.seed)}`,
-          mode === "variant" ? game.seed : (game.otherScores ?? ""),
-        ),
+        game.seed === undefined
+          ? String(text ?? "")
+          : link(`${PATH.SEED}/${encodeURIComponent(game.seed)}`, text ?? ""),
       );
     }
     return row;

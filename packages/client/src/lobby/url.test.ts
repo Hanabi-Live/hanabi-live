@@ -55,7 +55,7 @@ describe("replay URL loading", () => {
   test.each([
     ["shared-replay-json", "p4v0s3", "p4v0s3", "shared"],
     ["replay-json", "p4v0e3", "p4v0e3", "solo"],
-    ["replay-json", "", "", "solo"],
+    ["replay-json", "", undefined, "solo"],
   ])("%s preserves embedded seed %s", (route, suffix, seed, visibility) => {
     const setItem = vi.fn();
     const send = vi.spyOn(globals.conn!, "send");

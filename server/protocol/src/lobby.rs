@@ -405,7 +405,10 @@ pub struct TableList(pub Vec<Table>);
 pub struct GameHistory {
     pub id: GameId,
     pub options: GameOptions,
-    pub seed: String,
+    /// Absent for a game with its own deck instead of a seed, such as an imported one.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[schemars(with = "String")]
+    pub seed: Option<String>,
     #[schemars(range(min = 0, max = i32::MAX))]
     pub score: i32,
     #[schemars(range(min = 0, max = i32::MAX))]

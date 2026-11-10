@@ -110,11 +110,10 @@ impl TableActor {
         let s = next.game_mut().or_reject("No game")?;
         let escaped = crate::accounts::escape_html(&tag);
         if replay {
-            ensure_or_reject!(
-                s.game_id > crate::model::UNSAVED_GAME,
-                "JSON replays do not have a database game to tag."
-            );
-            s.tags = crate::archive::tags(&self.store.primary, s.game_id)
+            let game = s
+                .game_id
+                .or_reject("JSON replays do not have a database game to tag.")?;
+            s.tags = crate::archive::tags(&self.store.primary, game)
                 .await?
                 .or_reject("That game no longer exists in the database.")?;
             ensure_or_reject!(
@@ -154,12 +153,10 @@ impl TableActor {
             });
         }
         let edit = if replay {
-            ensure_or_reject!(
-                s.game_id > crate::model::UNSAVED_GAME,
-                "JSON replays cannot be tagged in the database"
-            );
             Some(PendingTag {
-                game_id: s.game_id,
+                game_id: s
+                    .game_id
+                    .or_reject("JSON replays cannot be tagged in the database")?,
                 user_id: session.user,
                 operation,
                 tag: tag.clone(),
@@ -389,7 +386,7 @@ impl TableActor {
         );
         self.seat(session)?;
         ensure_or_reject!(
-            !self.table.extra.set_replay,
+            self.table.extra.replay.is_none(),
             "Cannot restart replayed games"
         );
         let players = self
@@ -434,8 +431,7 @@ impl TableActor {
         self.restart_players(session, hide)?;
         let snapshot = self.table.game().context("Missing completed game")?;
         // The replay may be visible before its background statistics finish.
-        let finished = (snapshot.game_id > crate::model::UNSAVED_GAME
-            && !self.table.extra.no_write_to_database)
+        let finished = (snapshot.game_id.is_some() && !self.table.extra.no_write_to_database)
             .then(|| snapshot.clone());
         let variant = hanabi_engine::get_variant(&self.table.options.variant_name)?.id;
         let users = self
@@ -513,7 +509,7 @@ impl TableActor {
         };
         // A table that requested a seed moves on to the one after it.
         next.extra = ExtraOptions {
-            set_seed_suffix: next_requested_seed(&self.table.extra.set_seed_suffix)?,
+            set_seed_suffix: next_requested_seed(self.table.extra.set_seed_suffix.as_deref())?,
             ..ExtraOptions::default()
         };
         next.shadows.clear();

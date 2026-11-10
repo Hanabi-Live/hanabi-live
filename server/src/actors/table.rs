@@ -26,8 +26,8 @@ use chrono::Utc;
 use futures_util::{FutureExt, future::BoxFuture};
 use hanabi_engine::{CompletionTiming, EndCondition};
 use hanabi_protocol::{
-    Chat, ChatTyping, ClientMessage, IdleWarning, NO_VALUE, Status, TableRequest, TableStarted,
-    UserId, Warning,
+    Chat, ChatTyping, ClientMessage, IdleWarning, Status, TableRequest, TableStarted, UserId,
+    Warning,
 };
 use serde::Serialize;
 use std::{
@@ -156,9 +156,7 @@ impl TableActor {
         };
         let spectators = self.spectators();
         let replay_game = match &self.table.phase {
-            Phase::Replay { snapshot, .. } if snapshot.game_id > crate::model::UNSAVED_GAME => {
-                Some(snapshot.game_id)
-            }
+            Phase::Replay { snapshot, .. } => snapshot.game_id,
             _ => None,
         };
         TableView {
@@ -257,7 +255,7 @@ impl TableActor {
     /// Whether the user in `s` played the game at this table and can play it again with a restart.
     /// A replay of a saved or imported game has placeholder players, so it matches nobody.
     pub(super) fn can_play_again(&self, s: &Session) -> bool {
-        !self.table.extra.set_replay && self.seat(s).is_ok()
+        self.table.extra.replay.is_none() && self.seat(s).is_ok()
     }
     pub(super) fn audience(&self) -> impl Iterator<Item = &Attendance> {
         self.attendees.values().filter(|a| a.session.active())
@@ -518,10 +516,7 @@ impl TableActor {
             Utc::now(),
         )?;
         work.archive = finished && !next.extra.no_write_to_database;
-        work.count_seed = finished
-            && next
-                .game()
-                .is_some_and(|s| s.game_id > crate::model::UNSAVED_GAME);
+        work.count_seed = finished && next.game().is_some_and(|s| s.game_id.is_some());
         let archived = work.archive;
         let outcome = self.store.commit(&mut next, &mut self.saved, work).await?;
         if archived && let Some(s) = next.game() {
@@ -1105,11 +1100,7 @@ impl TableActor {
                 } else {
                     EndCondition::Timeout
                 },
-                if idle {
-                    NO_VALUE
-                } else {
-                    hanabi_engine::int(active)
-                },
+                (!idle).then_some(active),
                 None,
                 Some(CompletionTiming {
                     player_times: s.clocks.clone(),

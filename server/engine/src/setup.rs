@@ -1,6 +1,5 @@
 use crate::{
-    AssignedCharacter, Character, DeckCard, NO_CHARACTER, Variant, characters, int,
-    num_copies_of_card,
+    AssignedCharacter, Character, DeckCard, Variant, characters, int, num_copies_of_card,
     random::{GoRandom, seed_hash},
 };
 use anyhow::{Result, ensure};
@@ -78,20 +77,17 @@ pub fn assign_characters(
         .contains(&player.as_str())
         {
             assigned.push(AssignedCharacter {
-                name: if index == 0 {
-                    Character::Genius.name()
-                } else {
-                    NO_CHARACTER
-                }
-                .into(),
-                metadata: NO_VALUE,
+                name: (index == 0).then(|| Character::Genius.name().into()),
+                metadata: None,
             });
             continue;
         }
         let character = loop {
             let candidate = &catalog[rng.index(catalog.len())];
             if (players.len() != MIN_PLAYERS || !candidate.not_two_player)
-                && assigned.iter().all(|c| c.name != candidate.name)
+                && assigned
+                    .iter()
+                    .all(|c| c.name.as_deref() != Some(candidate.name.as_str()))
             {
                 break candidate;
             }
@@ -110,8 +106,8 @@ pub fn assign_characters(
             _ => NO_VALUE,
         };
         assigned.push(AssignedCharacter {
-            name: character.name.clone(),
-            metadata,
+            name: Some(character.name.clone()),
+            metadata: (metadata != NO_VALUE).then_some(metadata),
         });
     }
     Ok(assigned)

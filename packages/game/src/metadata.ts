@@ -61,6 +61,6 @@ export function getDefaultMetadata(
     hardVariant,
 
     hasCustomSeed: false,
-    seed: "",
+    seed: undefined,
   };
 }

@@ -42,23 +42,26 @@ fn table_names_allow_owner_defaults_but_reject_markup() {
 
 #[test]
 fn requested_seeds_are_validated_and_restarts_count_them_up() {
-    assert_eq!(requested_seed(None).unwrap(), "");
-    assert_eq!(requested_seed(Some(" match-1 ")).unwrap(), "match-1");
+    assert_eq!(requested_seed(None).unwrap(), None);
+    assert_eq!(requested_seed(Some("  ")).unwrap(), None);
+    assert_eq!(
+        requested_seed(Some(" match-1 ")).unwrap().as_deref(),
+        Some("match-1")
+    );
     let longest = "a".repeat(MAX_SEED_LENGTH);
     assert!(requested_seed(Some(&longest)).is_ok());
     for seed in ["has space", "p2v0s1!", &format!("{longest}a")] {
         assert!(requested_seed(Some(seed)).is_err(), "{seed}");
     }
-    for (seed, next) in [
-        ("", ""),
-        ("game", "game1"),
-        ("game-9", "game-10"),
-        ("007", "008"),
-    ] {
-        assert_eq!(next_requested_seed(seed).unwrap(), next);
+    assert_eq!(next_requested_seed(None).unwrap(), None);
+    for (seed, next) in [("game", "game1"), ("game-9", "game-10"), ("007", "008")] {
+        assert_eq!(
+            next_requested_seed(Some(seed)).unwrap().as_deref(),
+            Some(next)
+        );
     }
     let full = format!("{}9", "a".repeat(MAX_SEED_LENGTH - 1));
-    assert!(next_requested_seed(&full).is_err());
+    assert!(next_requested_seed(Some(&full)).is_err());
 }
 
 #[test]
@@ -76,7 +79,7 @@ fn typed_game_frames_preserve_wire_schema_and_projected_identities() -> Result<(
     game.terminate(
         0,
         EndCondition::TerminatedByPlayer,
-        0,
+        Some(0),
         None,
         Some(CompletionTiming {
             player_times: vec![1234, -5678],
@@ -236,10 +239,11 @@ fn option_summaries_include_only_changes_and_escape_values() {
     options.speedrun = true;
     options.detrimental_characters = true;
     let extra = ExtraOptions {
-        set_seed_suffix: "match-1".into(),
-        set_replay: true,
-        set_replay_turn: 4,
-        replay_game_id: Some(GameId(7)),
+        set_seed_suffix: Some("match-1".into()),
+        replay: Some(crate::model::TableReplay {
+            game_id: GameId(7),
+            turns: 4,
+        }),
         ..ExtraOptions::default()
     };
     let summary = option_changes(&table, &options, "<new>", 2, &extra);
@@ -673,7 +677,7 @@ pub(super) fn review(id: TableId, condition: EndCondition) -> Result<TableSnapsh
     let mut imported = replay_helpers::parse(&hanabi_protocol::decode(
         &json!({"playerNames":["Alice","Bob"],"seed":"p2v0s1"}),
     )?)?;
-    imported.game.terminate(0, condition, -1, None, None)?;
+    imported.game.terminate(0, condition, None, None, None)?;
     let snapshot = replay_helpers::snapshot(imported, id, UserId(1));
     let mut table = pregame(id);
     table.options = snapshot.game.options.clone();

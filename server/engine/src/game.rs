@@ -1,7 +1,7 @@
 use crate::{
     ActionRejected, AssignedCharacter, Character, Clue, ClueType, CompletionTiming, EndCondition,
-    EngineCard, EngineEvent, EnginePlayer, EngineState, GameSetup, Interpretation, NO_CHARACTER,
-    Options, PlayerAction, RecordedAction, RecordedActionType, StackDirection, Termination,
+    EngineCard, EngineEvent, EnginePlayer, EngineState, GameSetup, Interpretation, Options,
+    PlayerAction, RecordedAction, RecordedActionType, StackDirection, Termination, UNSEEDED,
     assign_characters,
     characters::{
         character_post_action, character_post_clue, check_character_softlock, has_taken_last_turn,
@@ -71,7 +71,7 @@ pub fn create_game(setup: GameSetup) -> Result<EngineState> {
         "The game options do not match the ordered players."
     );
     ensure!(
-        setup.seed.len() <= MAX_SETUP_TEXT_BYTES
+        setup.seed.as_ref().map_or(0, String::len) <= MAX_SETUP_TEXT_BYTES
             && setup
                 .player_names
                 .iter()
@@ -79,9 +79,10 @@ pub fn create_game(setup: GameSetup) -> Result<EngineState> {
         "Game text is too long."
     );
     let variant = get_variant(&setup.options.variant_name)?;
-    let identities = match setup.deck {
-        Some(deck) => deck,
-        None => create_shuffled_deck(variant, &setup.seed),
+    let identities = match (setup.deck, &setup.seed) {
+        (Some(deck), _) => deck,
+        (None, Some(seed)) => create_shuffled_deck(variant, seed),
+        (None, None) => anyhow::bail!("A game needs a seed or a deck."),
     };
     ensure!(
         !identities.is_empty()
@@ -93,15 +94,19 @@ pub fn create_game(setup: GameSetup) -> Result<EngineState> {
     let assigned = if setup.options.detrimental_characters {
         match setup.characters {
             Some(c) => c,
-            None => assign_characters(variant, &setup.seed, &setup.player_names)?,
+            None => assign_characters(
+                variant,
+                setup.seed.as_deref().unwrap_or(UNSEEDED),
+                &setup.player_names,
+            )?,
         }
     } else {
         setup
             .player_names
             .iter()
             .map(|_| AssignedCharacter {
-                name: String::new(),
-                metadata: NO_VALUE,
+                name: None,
+                metadata: None,
             })
             .collect()
     };
@@ -110,9 +115,10 @@ pub fn create_game(setup: GameSetup) -> Result<EngineState> {
         "Invalid prepared character assignments."
     );
     ensure!(
-        assigned.iter().all(|a| a.name == NO_CHARACTER
-            || a.name.is_empty()
-            || Character::from_name(&a.name).is_some()),
+        assigned.iter().all(|a| a
+            .name
+            .as_deref()
+            .is_none_or(|name| Character::from_name(name).is_some())),
         "Unknown character assignment."
     );
     let players = setup
@@ -123,8 +129,8 @@ pub fn create_game(setup: GameSetup) -> Result<EngineState> {
         .map(|(index, (name, c))| EnginePlayer {
             name,
             index,
-            character: c.name,
-            character_metadata: c.metadata,
+            character: c.name.unwrap_or_default(),
+            character_metadata: c.metadata.unwrap_or(NO_VALUE),
             hand: vec![],
         })
         .collect();
@@ -557,9 +563,10 @@ pub fn terminate_game(
     ) {
         return reject("That is not a valid value for the end game action.");
     }
-    if termination.player_index < NO_VALUE
-        || termination.player_index >= int(previous.players.len())
-        || (termination.condition == EndCondition::Timeout && termination.player_index == NO_VALUE)
+    if termination
+        .player_index
+        .is_some_and(|player| player >= previous.players.len())
+        || (termination.condition == EndCondition::Timeout && termination.player_index.is_none())
     {
         return reject("That is not a valid player for a timeout.");
     }
@@ -573,13 +580,11 @@ pub fn terminate_game(
             "Invalid termination votes."
         );
     }
-    let timed_out = if termination.condition == EndCondition::Timeout {
-        Some(usize::try_from(termination.player_index)?)
-    } else {
-        None
-    };
+    let timed_out = termination
+        .player_index
+        .filter(|_| termination.condition == EndCondition::Timeout);
     state.end_condition = termination.condition;
-    state.end_player = index(termination.player_index);
+    state.end_player = termination.player_index;
     let action = RecordedAction {
         action_type: if termination.condition == EndCondition::TerminatedByVote {
             RecordedActionType::GameOverByVote
@@ -592,7 +597,7 @@ pub fn terminate_game(
         ) {
             NO_VALUE
         } else {
-            termination.player_index
+            termination.player_index.map_or(NO_VALUE, int)
         },
         value: termination.condition as i32,
     };
