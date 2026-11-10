@@ -72,8 +72,9 @@ of the repository.
 - The "Other Scores" screen now shows 10 games at a time, with a "Show More
   Scores" button.
 - The "Settings" screen now shows "Saved" beside a setting when you change it.
-- Restarting a shared replay now keeps everyone at the same table. With "hide
-  pregame", the next game starts at once.
+- After a game, "Restart game" and "Remake table" now keep everyone at the same
+  table. "Restart game" now starts the next game without showing the pre-game
+  screen first.
 - Removed the `/s`, `/s2` to `/s6`, and `/startin` chat commands, which started
   a game automatically.
 
