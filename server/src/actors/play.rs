@@ -30,10 +30,11 @@ impl TableActor {
     ) -> CommandResult<()> {
         match message {
             ClientMessage::Action(r) => {
+                let (kind, target, value) = r.recorded();
                 let action = ReplayAction {
-                    kind: r.kind.into(),
-                    target: r.target,
-                    value: r.value,
+                    kind: kind.into(),
+                    target,
+                    value,
                 };
                 self.action(session, action).await
             }

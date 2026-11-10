@@ -85,7 +85,7 @@ macro_rules! wire_enum {
 }
 
 wire_enum! {
-    /// The kind of a turn that a player takes, in the `action` command.
+    /// The kind of a turn that a player takes. A game's record stores it as a `RecordedActionType`.
     pub enum ActionType {
         Play = 0,
         Discard = 1,

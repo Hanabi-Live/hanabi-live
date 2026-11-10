@@ -343,12 +343,36 @@
     "valid": false
   },
   {
+    "name": "color clues name their target and color",
+    "direction": "client",
+    "command": "action",
+    "input": {
+      "tableID": 7,
+      "type": "colorClue",
+      "target": 1,
+      "colorIndex": 2
+    },
+    "valid": true
+  },
+  {
+    "name": "rank clues cannot name the start card's rank",
+    "direction": "client",
+    "command": "action",
+    "input": {
+      "tableID": 7,
+      "type": "rankClue",
+      "target": 1,
+      "rank": 7
+    },
+    "valid": false
+  },
+  {
     "name": "actions reject unknown action types",
     "direction": "client",
     "command": "action",
     "input": {
       "tableID": 7,
-      "type": 4,
+      "type": "pass",
       "target": 0
     },
     "valid": false

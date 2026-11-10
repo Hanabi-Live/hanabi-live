@@ -229,8 +229,8 @@ databaseDescribe("compiled application entry point (rust)", () => {
         expect(card.rank).toBeUndefined();
         active.send("action", {
           tableID,
-          type: 0,
-          target: card.order,
+          type: "play",
+          order: card.order,
         });
         await active.receive("gameAction", SERVER_COMMAND_SCHEMAS.gameAction);
         active.send("getGameState", { tableID });

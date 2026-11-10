@@ -56,7 +56,7 @@ pub const NO_ACCOUNT_CODE: &str = "no_account";
 /// The most suits a variant can have.
 pub const MAX_SUITS: usize = 6;
 /// The highest suit index.
-const MAX_SUIT_INDEX: usize = MAX_SUITS - 1;
+pub(crate) const MAX_SUIT_INDEX: usize = MAX_SUITS - 1;
 /// The lowest rank.
 pub const MIN_RANK: i32 = 1;
 /// The highest normal rank, which is also a suit's stack size unless the variant sets one.

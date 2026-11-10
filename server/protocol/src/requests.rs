@@ -293,19 +293,69 @@ pub struct ReplayCreateRequest {
 
 /// A turn in an ongoing game.
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
-#[serde(rename_all = "camelCase", deny_unknown_fields)]
-pub struct ActionRequest {
-    #[serde(rename = "tableID")]
-    pub table_id: TableId,
-    #[serde(rename = "type")]
-    pub kind: ActionType,
-    /// The card order for a play or discard; the player index for a clue.
-    #[schemars(range(min = i32::MIN, max = i32::MAX))]
-    pub target: i32,
-    /// The clue's color index or rank.
-    #[serde(default)]
-    #[schemars(range(min = i32::MIN, max = i32::MAX))]
-    pub value: i32,
+#[serde(
+    tag = "type",
+    rename_all = "camelCase",
+    rename_all_fields = "camelCase",
+    deny_unknown_fields
+)]
+pub enum ActionRequest {
+    Play {
+        #[serde(rename = "tableID")]
+        table_id: TableId,
+        #[schemars(with = "CardOrder")]
+        order: i32,
+    },
+    Discard {
+        #[serde(rename = "tableID")]
+        table_id: TableId,
+        #[schemars(with = "CardOrder")]
+        order: i32,
+    },
+    ColorClue {
+        #[serde(rename = "tableID")]
+        table_id: TableId,
+        /// The player who receives the clue.
+        #[schemars(with = "PlayerIndex")]
+        target: i32,
+        /// The index of the color in the variant's clue colors.
+        #[schemars(range(min = 0, max = MAX_SUIT_INDEX), extend("enum" = suits()))]
+        color_index: i32,
+    },
+    RankClue {
+        #[serde(rename = "tableID")]
+        table_id: TableId,
+        /// The player who receives the clue.
+        #[schemars(with = "PlayerIndex")]
+        target: i32,
+        #[schemars(range(min = MIN_RANK, max = MAX_RANK), extend("enum" = ranks()))]
+        rank: i32,
+    },
+}
+
+impl ActionRequest {
+    pub const fn table_id(&self) -> TableId {
+        match self {
+            Self::Play { table_id, .. }
+            | Self::Discard { table_id, .. }
+            | Self::ColorClue { table_id, .. }
+            | Self::RankClue { table_id, .. } => *table_id,
+        }
+    }
+
+    /// The turn's type, target, and value, as a game's record stores them.
+    pub const fn recorded(&self) -> (ActionType, i32, i32) {
+        match *self {
+            Self::Play { order, .. } => (ActionType::Play, order, 0),
+            Self::Discard { order, .. } => (ActionType::Discard, order, 0),
+            Self::ColorClue {
+                target,
+                color_index,
+                ..
+            } => (ActionType::ColorClue, target, color_index),
+            Self::RankClue { target, rank, .. } => (ActionType::RankClue, target, rank),
+        }
+    }
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]

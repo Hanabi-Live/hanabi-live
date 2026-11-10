@@ -2,7 +2,12 @@
 // schemas, where the client represents a value differently from the server. The remaining checks
 // cover what the schemas cannot express: seat-indexed tuples.
 
-import type { ClientCommandData, ServerCommandData } from "@hanabi-live/data";
+import type {
+  actionRequestSchema,
+  ClientCommandData,
+  ServerCommandData,
+} from "@hanabi-live/data";
+import { ActionType } from "@hanabi-live/data";
 import type {
   ActionIncludingHypothetical,
   CardIdentity,
@@ -14,11 +19,49 @@ import type {
 } from "@hanabi-live/game";
 import { ClueType, isValidNumPlayers } from "@hanabi-live/game";
 import type { Tuple } from "complete-common";
+import type { z } from "zod";
+import type { ClientAction } from "./game/types/ClientAction";
 import { SoundType } from "./game/types/SoundType";
 
 type WireEvent = ServerCommandData["gameAction"]["action"];
 type WireCardIdentity =
   ServerCommandData["cardIdentities"]["identities"][number];
+
+type WireAction = z.input<typeof actionRequestSchema>;
+
+/** Converts an action that we took into the "action" command's payload. */
+export function toWireAction(
+  tableID: number,
+  action: ClientAction,
+): WireAction {
+  switch (action.type) {
+    case ActionType.Play: {
+      return { tableID, type: "play", order: action.target };
+    }
+
+    case ActionType.Discard: {
+      return { tableID, type: "discard", order: action.target };
+    }
+
+    case ActionType.ColorClue: {
+      return {
+        tableID,
+        type: "colorClue",
+        target: action.target,
+        colorIndex: action.value,
+      };
+    }
+
+    case ActionType.RankClue: {
+      return {
+        tableID,
+        type: "rankClue",
+        target: action.target,
+        rank: action.value,
+      };
+    }
+  }
+}
 
 /** The game state indexes some lists by seat, so each needs one entry per player. */
 export function toPlayerTuple<T>(

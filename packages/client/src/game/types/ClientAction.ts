@@ -1,4 +1,4 @@
-import type { ActionType, actionRequestSchema } from "@hanabi-live/data";
+import type { ActionType } from "@hanabi-live/data";
 import type {
   CardOrder,
   PlayerIndex,
@@ -6,11 +6,10 @@ import type {
   SuitIndex,
 } from "@hanabi-live/game";
 import type { CompositionTypeSatisfiesEnum } from "complete-common";
-import type { z } from "zod";
 
 /**
- * A message sent to the server that represents the in-game action that we just took. These narrow
- * the "action" command's payload, which leaves its target and value as plain integers.
+ * An in-game action that we just took, as the client handles it. `toWireAction` converts it into
+ * the "action" command's payload.
  */
 export type ClientAction =
   | ClientActionPlay
@@ -20,28 +19,23 @@ export type ClientAction =
 
 type _Test = CompositionTypeSatisfiesEnum<ClientAction, ActionType>;
 
-/** The table is added when the action is sent. */
-type WireAction = Required<
-  Omit<z.input<typeof actionRequestSchema>, "tableID">
->;
-
-interface ClientActionPlay extends Pick<WireAction, "type" | "target"> {
+interface ClientActionPlay {
   type: ActionType.Play;
   target: CardOrder;
 }
 
-interface ClientActionDiscard extends Pick<WireAction, "type" | "target"> {
+interface ClientActionDiscard {
   type: ActionType.Discard;
   target: CardOrder;
 }
 
-export interface ClientActionColorClue extends WireAction {
+export interface ClientActionColorClue {
   type: ActionType.ColorClue;
   target: PlayerIndex;
   value: SuitIndex;
 }
 
-export interface ClientActionRankClue extends WireAction {
+export interface ClientActionRankClue {
   type: ActionType.RankClue;
   target: PlayerIndex;
   value: RankClueNumber;

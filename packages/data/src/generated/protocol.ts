@@ -28,7 +28,7 @@ export const OUTDATED_CLIENT_CODE = "outdated_client";
 export const NO_ACCOUNT_CODE = "no_account";
 
 /**
- * The kind of a turn that a player takes, in the `action` command.
+ * The kind of a turn that a player takes. A game's record stores it as a `RecordedActionType`.
  */
 export enum ActionType {
   Play = 0,
@@ -119,18 +119,39 @@ export const tableIdSchema = z
 /**
  * A turn in an ongoing game.
  */
-export const actionRequestSchema = z.strictObject({
-  tableID: tableIdSchema,
-  /**
-   * The card order for a play or discard; the player index for a clue.
-   */
-  target: z.number().int().min(-2_147_483_648).max(2_147_483_647),
-  type: z.enum(ActionType),
-  /**
-   * The clue's color index or rank.
-   */
-  value: z.number().int().min(-2_147_483_648).max(2_147_483_647).default(0),
-});
+export const actionRequestSchema = z.discriminatedUnion("type", [
+  z.strictObject({
+    order: cardOrderSchema,
+    tableID: tableIdSchema,
+    type: z.literal("play"),
+  }),
+  z.strictObject({
+    order: cardOrderSchema,
+    tableID: tableIdSchema,
+    type: z.literal("discard"),
+  }),
+  z.strictObject({
+    /**
+     * The index of the color in the variant's clue colors.
+     */
+    colorIndex: z.literal([0, 1, 2, 3, 4, 5]),
+    tableID: tableIdSchema,
+    /**
+     * The player who receives the clue.
+     */
+    target: playerIndexSchema,
+    type: z.literal("colorClue"),
+  }),
+  z.strictObject({
+    rank: z.literal([1, 2, 3, 4, 5]),
+    tableID: tableIdSchema,
+    /**
+     * The player who receives the clue.
+     */
+    target: playerIndexSchema,
+    type: z.literal("rankClue"),
+  }),
+]);
 
 /**
  * The body of a JSON HTTP error response. Server failures also name their typed cause and the

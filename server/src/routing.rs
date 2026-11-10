@@ -62,7 +62,7 @@ pub fn route(message: &ClientMessage) -> Route {
         M::TableSuggest(r) => r.table_id,
         M::TableSpectate(r) => r.table_id,
         M::TableUpdate(r) => r.table_id,
-        M::Action(r) => r.table_id,
+        M::Action(r) => r.table_id(),
         M::Pause(r) => r.table_id,
         M::Note(r) => r.table_id,
         M::Tag(r) | M::TagDelete(r) => r.table_id,

@@ -61,7 +61,7 @@ mod tests {
                 "chat" => json!({"text":"hello"}),
                 "chatPM" => json!({"text":"hello","recipient":"Alice"}),
                 "replayCreate" => json!({"source":"id","visibility":"shared","databaseID":1}),
-                "action" => json!({"tableID":1,"type":3,"target":0}),
+                "action" => json!({"tableID":1,"type":"rankClue","target":0,"rank":1}),
                 "pause" => json!({"tableID":1,"setting":"pause"}),
                 "note" => json!({"tableID":1,"order":0,"note":"test"}),
                 "tag" | "tagDelete" => json!({"tableID":1,"tag":"test"}),
@@ -89,7 +89,7 @@ mod tests {
     #[test]
     fn strict_types_limits_and_defaults() {
         for input in [
-            "action {\"tableID\":1,\"type\":4,\"target\":0}",
+            "action {\"tableID\":1,\"type\":\"pass\",\"order\":0}",
             "chat {\"text\":\"x\",\"admin\":true}",
             "tableStart {\"tableID\":9007199254740992}",
             "setting {\"settings\":{\"volume\":\"50\"}}",

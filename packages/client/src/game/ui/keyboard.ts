@@ -17,6 +17,7 @@ import {
   getHTMLElement,
   getHTMLInputElement,
 } from "../../utils";
+import { toWireAction } from "../../wire";
 import { SoundType } from "../types/SoundType";
 import { HanabiCard } from "./HanabiCard";
 import { globals } from "./UIGlobals";
@@ -484,11 +485,10 @@ function sendAction(
   target: CardOrder,
 ) {
   if (globals.state.replay.hypothetical === undefined) {
-    globals.lobby.conn!.send("action", {
-      tableID: globals.lobby.tableID,
-      type: actionType,
-      target,
-    });
+    globals.lobby.conn!.send(
+      "action",
+      toWireAction(globals.lobby.tableID, { type: actionType, target }),
+    );
   } else {
     hypothetical.sendHypotheticalAction({
       type: actionType,
