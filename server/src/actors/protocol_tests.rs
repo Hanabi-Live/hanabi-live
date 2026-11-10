@@ -1811,7 +1811,8 @@ async fn chat_read_positions_survive_game_start_reconnect_and_remake() -> Result
             .as_u64()
             .map(TableId)
             .context("Missing remade table")?;
-        ensure!(remade != id);
+        // A restart keeps the table, and with a hidden pregame starts the next game at once.
+        ensure!(remade == id, "The restart moved to table {remade}");
         for (index, read) in [alice_read, bob_read].into_iter().enumerate() {
             h.replace(index).await?;
             h.send(index, "tableReattend", json!({"tableID":remade}))
@@ -1882,6 +1883,33 @@ async fn restart_leaves_out_players_who_are_done_playing() -> Result<()> {
             .collect::<Vec<_>>();
         players.sort_unstable();
         ensure!(players == ["Alice", "Bob"], "{remade}");
+        // Everyone stays at the table: they leave the replay, then join its next pregame. Carol
+        // watches it as a spectator.
+        for index in 1..3 {
+            let frames = h.frames(index)?;
+            let position = |name: &str| frames.iter().position(|(command, _)| command == name);
+            ensure!(
+                position("boot") < position("joined") && position("joined").is_some(),
+                "Did not move from the replay to the pregame: {frames:?}"
+            );
+            ensure!(
+                frames
+                    .iter()
+                    .any(|(command, data)| command == "joined" && data["tableID"] == json!(id))
+            );
+            if index == 2 {
+                ensure!(
+                    frames.iter().any(|(command, data)| command == "spectators"
+                        && data["spectators"][0]["name"] == "Carol"),
+                    "Carol is not spectating"
+                );
+            }
+        }
+        let table = h.snapshot(id).await?.0;
+        ensure!(
+            matches!(table.phase, Phase::Pregame { .. }) && table.name == "Done playing (#2)",
+            "The table did not become the next game's pregame"
+        );
         Ok::<(), anyhow::Error>(())
     }
     .await;

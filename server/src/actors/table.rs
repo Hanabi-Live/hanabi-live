@@ -392,7 +392,7 @@ impl TableActor {
                 countdown,
                 ..
             } => {
-                // A restarted game waits for its owner to arrive, which reschedules the timers.
+                // A table that `/s` filled starts at once, while its owner is here.
                 if automatic_start.is_some_and(|n| n == players.len())
                     && self
                         .attendees

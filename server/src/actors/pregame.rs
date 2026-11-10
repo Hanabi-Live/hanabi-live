@@ -1,7 +1,7 @@
 use super::request;
 use super::table::wrong_phase;
 use super::{
-    Allocation, HubCommand, TableActor, TableChange,
+    Allocation, Effects, HubCommand, TableActor, TableChange,
     chat::{push_chat, server_chat, table_notice, truncate},
     setup::{
         load_replay, normalize_options, option_changes, options_suggestion, requested_extra,
@@ -291,19 +291,31 @@ impl TableActor {
             self.attending(&session) && session.user == self.table.owner,
             "Only the attended owner can start"
         );
-        let players = self.table.players();
+        let next = self.started(self.candidate(), &session).await?;
+        self.persist(next).await?;
+        let mut e = self.effects();
+        self.start_messages(&mut e);
+        self.publish(e).await
+    }
+    /// Starts the game of pregame table `next`, which `session`, its owner, starts. Returns the
+    /// table with its game, for the caller to save.
+    pub(super) async fn started(
+        &self,
+        mut next: TableSnapshot,
+        session: &Session,
+    ) -> CommandResult<TableSnapshot> {
+        let players = next.players();
         ensure_or_reject!(
             hanabi_protocol::is_player_count(players.len()),
             "You need at least {MIN_PLAYERS} players"
         );
         ensure_or_reject!(
-            self.table
-                .extra
+            next.extra
                 .custom_num_players
                 .is_none_or(|n| n == players.len()),
             "Custom game requires its original player count"
         );
-        if self.table.extra.custom_num_players.is_some() {
+        if next.extra.custom_num_players.is_some() {
             ensure_or_reject!(
                 players.iter().all(|p| self
                     .attendees
@@ -313,18 +325,18 @@ impl TableActor {
             );
         }
         let mut players = players.to_vec();
-        let variant = hanabi_engine::get_variant(&self.table.options.variant_name)?;
-        let seed = if let Some(seed) = &self.table.extra.custom_seed {
+        let variant = hanabi_engine::get_variant(&next.options.variant_name)?;
+        let seed = if let Some(seed) = &next.extra.custom_seed {
             seed.clone()
         } else {
-            let prefix = crate::game::seed_prefix(players.len(), variant.id, &self.table.options);
-            match self.table.extra.set_seed_suffix.as_str() {
+            let prefix = crate::game::seed_prefix(players.len(), variant.id, &next.options);
+            match next.extra.set_seed_suffix.as_str() {
                 "" => self.store.next_seed(&players, prefix).await?,
                 suffix => prefix + suffix,
             }
         };
         let game_id = self.store.reserve().await?;
-        let extra = &self.table.extra;
+        let extra = &next.extra;
         // A replayed game keeps its seats; a new game shuffles them after the deck.
         let deck = hanabi_engine::prepare_deck_and_players(
             variant,
@@ -333,7 +345,7 @@ impl TableActor {
             extra.custom_seed.is_none(),
         );
         ensure_or_reject!(session.active(), "Owner disconnected during start");
-        let mut options = self.table.options.clone();
+        let mut options = next.options.clone();
         options.num_players = players.len();
         let emulated = if extra.set_replay {
             &extra.custom_actions[..extra.set_replay_turn.min(extra.custom_actions.len())]
@@ -353,7 +365,7 @@ impl TableActor {
         )?;
         let n = players.len();
         let snapshot = Snapshot {
-            created: self.table.created,
+            created: next.created,
             clocks: vec![
                 if options.timed {
                     truncate(options.time_base * f64::from(CLOCK_UNITS_PER_SECOND))
@@ -363,32 +375,30 @@ impl TableActor {
                 n
             ],
             ..Snapshot::new(
-                self.table.id,
+                next.id,
                 game_id,
-                self.table.owner,
-                self.table.name.clone(),
+                next.owner,
+                next.name.clone(),
                 players,
                 game,
             )
         };
-        let mut next = self.candidate();
         next.options = options;
         next.phase = Phase::Live {
             snapshot: Box::new(snapshot),
             runtime: crate::model::LiveRuntime::default(),
         };
-        self.persist(next).await?;
+        Ok(next)
+    }
+    /// Tells the audience that the game started. Each attendee loads it again.
+    pub(super) fn start_messages(&mut self, e: &mut Effects) {
         for a in self.attendees.values_mut() {
             a.loaded = false;
         }
-        let mut e = self.effects();
-        let replay = matches!(self.table.phase, Phase::Replay { .. });
         for a in self.audience() {
             e.statuses.push((
                 a.session.clone(),
-                if replay {
-                    Status::SharedReplay
-                } else if a.spectator {
+                if a.spectator {
                     Status::Spectating
                 } else {
                     Status::Playing
@@ -401,12 +411,11 @@ impl TableActor {
                     hanabi_protocol::server::TABLE_START,
                     TableStarted {
                         table_id: self.table.id,
-                        replay,
+                        replay: false,
                     },
                 ),
             ));
         }
-        self.publish(e).await
     }
     /// Cancels a `/startin` countdown that ran out while the owner is away.
     pub(super) async fn abort_countdown(&mut self) -> CommandResult<()> {

@@ -1,6 +1,7 @@
+use super::request;
 use super::table::wrong_phase;
 use super::{
-    Command, TableActor,
+    Command, HubCommand, TableActor,
     chat::{server_chat, table_notice},
     pending::Completed,
     setup::next_requested_seed,
@@ -17,8 +18,13 @@ use crate::{
 use anyhow::Context;
 use chrono::Utc;
 use hanabi_protocol::ClientMessage;
-use hanabi_protocol::{HypotheticalAction, MIN_PLAYERS, PregameStats, TableRequest, UserId};
-use std::{collections::BTreeMap, sync::Arc};
+use hanabi_protocol::{
+    HypotheticalAction, MIN_PLAYERS, PregameStats, Status, TableRequest, UserId,
+};
+use std::{
+    collections::{BTreeMap, HashSet},
+    sync::Arc,
+};
 
 /// Removes the moves of a hypothetical's last turn, the way clients go back. Morphs stay, since
 /// clients keep them when going back.
@@ -542,11 +548,24 @@ impl TableActor {
                 .remove(&player.id)
                 .unwrap_or_else(crate::stats::zero_stats);
         }
-        let allocation = self.allocation().await?;
-        let mut destination = self.table.clone();
-        destination.id = allocation.id;
-        destination.created = Utc::now();
-        destination.name = {
+        let humans = players
+            .iter()
+            .filter(|p| !p.bot)
+            .map(|p| p.id)
+            .collect::<Vec<_>>();
+        // Players in a replay are not seated, so they could have joined another table meanwhile.
+        // The reservation lasts until the table publishes its new players.
+        let reservation = request(&self.hub, |reply| HubCommand::ReserveSeats {
+            users: humans,
+            from: self.table.id,
+            reply,
+        })
+        .await??;
+        let seated = players.iter().map(|p| p.id).collect::<HashSet<_>>();
+        let mut next = self.candidate();
+        // The table keeps its ID and audience, but plays a new game, which its name counts.
+        next.created = Utc::now();
+        next.name = {
             let (base, count) =
                 if let Some(m) = regex!(r"^(.*) \(#(\d+)\)$").captures(&self.table.name) {
                     (m[1].to_owned(), m[2].parse::<u64>()? + 1)
@@ -560,34 +579,73 @@ impl TableActor {
             )
         };
         // A table that requested a seed moves on to the one after it.
-        destination.extra = ExtraOptions {
+        next.extra = ExtraOptions {
             set_seed_suffix: next_requested_seed(&self.table.extra.set_seed_suffix)?,
             ..ExtraOptions::default()
         };
-        destination.shadows.clear();
-        destination.phase = Phase::Pregame {
-            automatic_start: hide.then_some(players.len()),
+        next.shadows.clear();
+        next.phase = Phase::Pregame {
+            automatic_start: None,
             players,
             countdown: None,
             kicked: vec![],
             runtime: crate::model::PregameRuntime::default(),
         };
-        let moving = self
-            .audience()
-            .map(|a| {
-                let spectator = destination.players().iter().all(|p| p.id != a.session.user);
-                (a.session.clone(), spectator, None)
-            })
-            .collect();
-        self.transfer(
-            self.candidate(),
-            destination,
-            allocation,
-            moving,
-            true,
-            vec![],
-        )
-        .await
+        // Hiding the pregame starts the next game at once: every original player is here.
+        if hide {
+            next = self.started(next, &session).await?;
+        }
+        self.persist(next).await?;
+        for a in self.attendees.values_mut() {
+            a.spectator = !seated.contains(&a.session.user);
+            a.shadow = None;
+            a.loaded = false;
+        }
+        // Everyone leaves the replay first, then enters the next game or its pregame.
+        let mut e = self.effects();
+        let boot = frame(
+            hanabi_protocol::server::BOOT,
+            TableRequest {
+                table_id: self.table.id,
+            },
+        );
+        for a in self.audience() {
+            e.messages.push((a.session.clone(), boot.clone()));
+        }
+        if hide {
+            self.start_messages(&mut e);
+        } else {
+            for a in self.audience() {
+                e.statuses.push((
+                    a.session.clone(),
+                    if a.spectator {
+                        Status::Spectating
+                    } else {
+                        Status::PreGame
+                    },
+                    Some(self.table.id),
+                ));
+            }
+            self.pregame_messages(&mut e);
+            let joined = frame(
+                hanabi_protocol::server::JOINED,
+                TableRequest {
+                    table_id: self.table.id,
+                },
+            );
+            let audience = self
+                .audience()
+                .map(|a| a.session.clone())
+                .collect::<Vec<_>>();
+            for session in audience {
+                e.messages.push((session.clone(), joined.clone()));
+                self.chat_history(&mut e, &session)?;
+            }
+        }
+        self.spectator_messages(&mut e);
+        self.publish(e).await?;
+        drop(reservation);
+        Ok(())
     }
     async fn decline_restart(
         &mut self,

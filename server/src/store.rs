@@ -1715,14 +1715,16 @@ mod tests {
                         .find(|(t, _)| matches!(t.phase, Phase::Live { .. }))
                     {
                         ensure!(
-                            table.id != id
+                            table.id == id
                                 && table.options.variant_name == "Reversed (5 Suits)"
                                 && table.players().len() == 2,
                             "Restart lost rules or seats"
                         );
                         ensure!(
-                            tables.iter().all(|(t, _)| t.id != id),
-                            "Restart retained old replay"
+                            tables
+                                .iter()
+                                .all(|(t, _)| !matches!(t.phase, Phase::Replay { .. })),
+                            "Restart retained the replay"
                         );
                         return Ok::<(), anyhow::Error>(());
                     }

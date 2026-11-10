@@ -74,6 +74,8 @@ of the repository.
 - The "Other Scores" screen now shows 10 games at a time, with a "Show More
   Scores" button.
 - The "Settings" screen now shows "Saved" beside a setting when you change it.
+- Restarting a shared replay now keeps everyone at the same table. With "hide
+  pregame", the next game starts at once.
 
 ## November 8th, 2026
 
