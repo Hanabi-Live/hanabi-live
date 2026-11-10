@@ -417,6 +417,12 @@ pub(super) async fn prepare_table(
                 }
                 let mut saved = Saved::default();
                 store.save(&mut table, &mut saved).await?;
+                tracing::info!(
+                    "Created a {} replay (spoiler-free: {}) for user {}.",
+                    if shared { "shared" } else { "solo" },
+                    r.spoiler_free,
+                    session.user,
+                );
                 return Ok((table, saved, warnings));
             }
         };
