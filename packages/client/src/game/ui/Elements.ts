@@ -3,7 +3,6 @@ import type Konva from "konva";
 import type { ActionLog } from "./ActionLog";
 import type { ButtonGroup } from "./ButtonGroup";
 import type { CardLayout } from "./CardLayout";
-import type { ClueLog } from "./ClueLog";
 import type { ColorButton } from "./ColorButton";
 import type { Deck } from "./Deck";
 import type { FullActionLog } from "./FullActionLog";
@@ -64,7 +63,6 @@ export class Elements {
   variantUnderline: Konva.Line | null = null;
 
   // Extra elements on the right-hand side + the bottom.
-  clueLog: ClueLog | null = null;
   paceNumberLabel: Konva.Text | null = null;
   efficiencyNumberLabel: TextWithTooltip | null = null;
   efficiencyPipeLabel: Konva.Text | null = null;

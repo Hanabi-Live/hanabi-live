@@ -5,6 +5,7 @@ import type { Globals as LobbyGlobals } from "../../Globals";
 import { Screen } from "../../lobby/types/Screen";
 import * as tooltips from "../../tooltips";
 import type { GameExports } from "../main";
+import { unmountClueLog } from "./clueLog/mountClueLog";
 import { STAGE_ASPECT_RATIO } from "./constants";
 import * as cursor from "./cursor";
 import { drawUI } from "./drawUI";
@@ -145,6 +146,7 @@ export class HanabiUI {
       cancelAnimationFrame(this.resizeRequestAnimationFrame);
       this.resizeRequestAnimationFrame = null;
     }
+    unmountClueLog();
     keyboard.destroy();
     timer.stop();
     globals.elements.restartWaitingOnServerAnimation?.stop();

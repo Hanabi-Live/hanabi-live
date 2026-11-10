@@ -221,9 +221,6 @@ const visibleStateObservers: Subscriptions = [
   // correctly triggered.
   subVS((s) => s.deck.length, cardsView.onCardsPossiblyRemoved),
 
-  // Clue log
-  subVS((s) => s.clues, cluesView.onCluesChanged),
-
   // Clue arrows
   subVS(
     (s) => ({
