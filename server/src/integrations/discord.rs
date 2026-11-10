@@ -790,7 +790,7 @@ pub async fn insert_message(
     }
     let result = sqlx::query!(
         "INSERT INTO chat_log(user_id,source,discord_name,message,room,discord_message_id)
-         VALUES(0,'discord',$1,$2,'lobby',$3)
+         VALUES(NULL,'discord',$1,$2,'lobby',$3)
          ON CONFLICT(discord_message_id) WHERE discord_message_id IS NOT NULL DO NOTHING
          RETURNING id,datetime_sent",
         name,
@@ -811,7 +811,7 @@ pub async fn delete_message(pool: &PgPool, id: &str) -> Result<Option<i32>> {
         .await?;
     let result = sqlx::query_scalar!(
         "INSERT INTO chat_log(user_id,source,message,room,discord_message_id,deleted_at)
-         VALUES(0,'discord','','lobby',$1,NOW())
+         VALUES(NULL,'discord','','lobby',$1,NOW())
          ON CONFLICT(discord_message_id) WHERE discord_message_id IS NOT NULL
          DO UPDATE SET message='',discord_name=NULL,deleted_at=EXCLUDED.deleted_at
          WHERE chat_log.deleted_at IS NULL RETURNING id",
@@ -990,7 +990,7 @@ mod tests {
         .fetch_one(&db.pool)
         .await
         .unwrap();
-        assert_eq!(row.user_id, author);
+        assert_eq!(row.user_id, Some(author));
         assert_eq!(row.message, "");
         assert!(row.deleted_at.is_some());
         db.close().await;

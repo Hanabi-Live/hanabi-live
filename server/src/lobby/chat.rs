@@ -518,7 +518,7 @@ pub async fn lobby_chat(
         let row = sqlx::query!(
             "INSERT INTO chat_log(user_id,source,message,room) VALUES($1,$2,$3,'lobby')
              RETURNING id,datetime_sent",
-            id.0,
+            (source == "user").then_some(id.0),
             source,
             &content
         )
@@ -591,7 +591,7 @@ pub async fn lobby_history(pool: &PgPool, count: i64) -> Result<Vec<Chat>> {
             _ => row
                 .username
                 .clone()
-                .unwrap_or_else(|| format!("Deleted user #{}", row.user_id)),
+                .unwrap_or_else(|| format!("Deleted user #{}", row.user_id.unwrap_or_default())),
         };
         result.push(Chat {
             chat_id: Some(i64::from(row.id)),
@@ -610,7 +610,7 @@ pub async fn lobby_history(pool: &PgPool, count: i64) -> Result<Vec<Chat>> {
 /// Persist a runtime-generated lobby response before publishing it.
 pub async fn server_chat(pool: &PgPool, message: &str) -> Result<SavedChat> {
     let row = sqlx::query!(
-        "INSERT INTO chat_log(user_id,source,message,room) VALUES(0,'server',$1,'lobby')
+        "INSERT INTO chat_log(user_id,source,message,room) VALUES(NULL,'server',$1,'lobby')
          RETURNING id, datetime_sent",
         message
     )

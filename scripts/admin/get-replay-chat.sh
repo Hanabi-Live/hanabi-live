@@ -20,7 +20,7 @@ SELECT
   || CASE
     WHEN users.username IS NOT NULL THEN users.username
     WHEN chat_log.discord_name IS NOT NULL THEN chat_log.discord_name || ' (Discord)'
-    WHEN chat_log.user_id = 0 THEN 'Server'
+    WHEN chat_log.source = 'server' THEN 'Server'
     ELSE 'Deleted user #' || chat_log.user_id
   END
   || ': ' || chat_log.message

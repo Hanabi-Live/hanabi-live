@@ -538,7 +538,8 @@ async fn archive_chat(
         (vec![], vec![], vec![], vec![], vec![], vec![]);
     for entry in entries {
         ids.push(entry.id.context("Missing chat identity")?);
-        users.push(entry.user.0);
+        // Server messages have no author.
+        users.push((entry.message.source == ChatSource::User).then_some(entry.user.0));
         messages.push(entry.message.text.clone());
         rooms.push(
             entry
@@ -563,7 +564,8 @@ async fn archive_chat(
          FROM UNNEST($1::integer[],$2::integer[],$3::text[],$4::text[],$5::text[],
                      $6::timestamptz[]) AS c(id,user_id,message,room,source,sent)",
         &ids,
-        &users,
+        // SQLx infers `&[i32]`; the cast allows NULL elements.
+        &users as &[Option<i32>],
         &messages,
         &rooms,
         &sources as &[&str],

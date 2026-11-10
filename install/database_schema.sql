@@ -302,7 +302,7 @@ CREATE TABLE variant_stats (
 DROP TABLE IF EXISTS chat_log CASCADE;
 CREATE TABLE chat_log (
     id                  SERIAL       PRIMARY KEY,
-    user_id             INTEGER      NOT NULL, /* 0 for server or Discord messages. */
+    user_id             INTEGER      NULL,     /* NULL for server or Discord messages. */
     source              TEXT         NOT NULL CHECK (source IN ('user', 'server', 'discord')),
     discord_name        TEXT         NULL,     /* Only used if it is a Discord message. */
     discord_message_id  TEXT         NULL,     /* Discord snowflake, if the message came from Discord. */

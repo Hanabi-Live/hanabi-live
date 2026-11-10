@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "INSERT INTO chat_log(user_id,source,message,room) VALUES(0,'server',$1,'lobby')\n         RETURNING id, datetime_sent",
+  "query": "INSERT INTO chat_log(user_id,source,discord_name,message,room,discord_message_id)\n         VALUES(NULL,'discord',$1,$2,'lobby',$3)\n         ON CONFLICT(discord_message_id) WHERE discord_message_id IS NOT NULL DO NOTHING\n         RETURNING id,datetime_sent",
   "describe": {
     "columns": [
       {
@@ -28,6 +28,8 @@
     ],
     "parameters": {
       "Left": [
+        "Text",
+        "Text",
         "Text"
       ]
     },
@@ -36,5 +38,5 @@
       false
     ]
   },
-  "hash": "e9476f5bec2c93443c88b6aac7c489aea8c5676cde2e161d4936766df7cb6f97"
+  "hash": "813844c119a9027b3b9b6a4394f8ce2f33f36e1cbcdfb7ac4cccae73783f7213"
 }
