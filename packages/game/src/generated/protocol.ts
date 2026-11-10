@@ -450,8 +450,7 @@ export const hypotheticalActionSchema = z.discriminatedUnion("type", [
     giver: playerIndexSchema,
     ignoreNegative: z.boolean(),
     /**
-     * The orders of the cards the clue touched. Checkpoints written before November 10th, 2026
-     * name it `list`.
+     * The orders of the cards the clue touched.
      */
     orders: z.array(cardOrderSchema).readonly(),
     target: playerIndexSchema,

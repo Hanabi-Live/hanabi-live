@@ -20,13 +20,6 @@ use std::{
 pub const FORMAT: &str = "hanabi-live-1";
 /// The author of chat that the server wrote, as `chat_log` stores it. Real users have positive IDs.
 pub const SERVER_AUTHOR: UserId = UserId(0);
-/// Reads a checkpoint's game ID. Checkpoints written before November 10th, 2026 store 0 for a game
-/// that is not in the database.
-fn saved_game_id<'de, D: serde::Deserializer<'de>>(
-    deserializer: D,
-) -> Result<Option<GameId>, D::Error> {
-    Ok(Option::<GameId>::deserialize(deserializer)?.filter(|id| id.0 > 0))
-}
 /// How long before an idle game ends to warn its table.
 pub const IDLE_WARNING_MS: i64 = 5 * CLOCK_UNITS_PER_MINUTE;
 
@@ -41,7 +34,7 @@ pub struct Player {
     pub stats: PregameStats,
 }
 #[derive(Clone, Debug, Default, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase", from = "StoredExtraOptions")]
+#[serde(default, rename_all = "camelCase", deny_unknown_fields)]
 pub struct ExtraOptions {
     pub custom_seed: Option<String>,
     pub custom_actions: Vec<ReplayAction>,
@@ -65,47 +58,6 @@ pub struct TableReplay {
     /// How many of the game's actions the table plays before its players take over.
     pub turns: usize,
 }
-
-/// `ExtraOptions` as checkpoints store them. Checkpoints written before November 10th, 2026 store a
-/// blank requested seed, and they store a replayed game as `setReplay`, `setReplayTurn`, and
-/// `replayGameId`.
-#[derive(Deserialize)]
-#[serde(default, rename_all = "camelCase", deny_unknown_fields)]
-#[derive(Default)]
-struct StoredExtraOptions {
-    custom_seed: Option<String>,
-    custom_actions: Vec<ReplayAction>,
-    custom_characters: Option<Vec<AssignedCharacter>>,
-    custom_num_players: Option<usize>,
-    no_write_to_database: bool,
-    set_seed_suffix: Option<String>,
-    replay: Option<TableReplay>,
-    set_replay: bool,
-    set_replay_turn: usize,
-    replay_game_id: Option<GameId>,
-}
-
-impl From<StoredExtraOptions> for ExtraOptions {
-    fn from(stored: StoredExtraOptions) -> Self {
-        Self {
-            custom_seed: stored.custom_seed,
-            custom_actions: stored.custom_actions,
-            custom_characters: stored.custom_characters,
-            custom_num_players: stored.custom_num_players,
-            no_write_to_database: stored.no_write_to_database,
-            set_seed_suffix: stored.set_seed_suffix.filter(|seed| !seed.is_empty()),
-            replay: stored.replay.or_else(|| {
-                stored
-                    .replay_game_id
-                    .filter(|_| stored.set_replay)
-                    .map(|game_id| TableReplay {
-                        game_id,
-                        turns: stored.set_replay_turn,
-                    })
-            }),
-        }
-    }
-}
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct Snapshot {
@@ -113,21 +65,13 @@ pub struct Snapshot {
     pub table_id: TableId,
     /// The game's ID in the database. Absent for a game that is not saved there, such as a replay
     /// of uploaded JSON.
-    #[serde(
-        default,
-        skip_serializing_if = "Option::is_none",
-        deserialize_with = "saved_game_id"
-    )]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
     pub game_id: Option<GameId>,
     pub owner: UserId,
     pub name: String,
     pub players: Vec<Player>,
     /// Absent for a game with its own deck instead of a seed, such as an imported one.
-    #[serde(
-        default,
-        skip_serializing_if = "Option::is_none",
-        deserialize_with = "hanabi_engine::stored_seed"
-    )]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
     pub seed: Option<String>,
     pub created: DateTime<Utc>,
     pub started: DateTime<Utc>,
@@ -144,8 +88,7 @@ pub struct Snapshot {
     #[serde(
         rename = "pause_player_index",
         default,
-        skip_serializing_if = "Option::is_none",
-        deserialize_with = "optional_seat::deserialize"
+        skip_serializing_if = "Option::is_none"
     )]
     pub paused_by: Option<Seat>,
     pub queued_pauses: Vec<bool>,
@@ -303,55 +246,7 @@ where
 pub struct TableChat {
     pub id: Option<i32>,
     pub user: UserId,
-    #[serde(deserialize_with = "deserialize_stored_chat")]
     pub message: Chat,
-}
-
-/// Reads a checkpoint's chat message. Checkpoints written before November 10th, 2026 use the old
-/// wire names, name the room instead of the table, name the author of server messages, and keep a
-/// suggestion's table name and player limit among its options.
-fn deserialize_stored_chat<'de, D>(deserializer: D) -> std::result::Result<Chat, D::Error>
-where
-    D: serde::Deserializer<'de>,
-{
-    use serde::de::Error;
-    let mut stored = serde_json::Map::<String, Value>::deserialize(deserializer)?;
-    for (old, new) in [("msg", "text"), ("who", "username")] {
-        if let Some(value) = stored.remove(old) {
-            stored.insert(new.into(), value);
-        }
-    }
-    // Server messages no longer name an author.
-    if stored.get("source").and_then(Value::as_str) == Some("server") {
-        stored.remove("username");
-    }
-    if let Some(room) = stored.remove("room") {
-        let table = room
-            .as_str()
-            .and_then(|room| room.strip_prefix("table"))
-            .and_then(|id| id.parse::<u64>().ok())
-            .ok_or_else(|| D::Error::custom("Invalid checkpoint chat room"))?;
-        stored.insert("tableID".into(), table.into());
-    }
-    if let Some(Value::Object(mut options)) = stored.remove("suggestedOptions") {
-        for (old, new) in [
-            ("timeBase", "timeBaseSeconds"),
-            ("timePerTurn", "timePerTurnSeconds"),
-        ] {
-            if let Some(value) = options.remove(old) {
-                options.insert(new.into(), value);
-            }
-        }
-        let name = options.remove("tableName").unwrap_or_default();
-        let max_players = options
-            .remove("maxPlayers")
-            .unwrap_or_else(|| hanabi_protocol::DEFAULT_MAX_PLAYERS.into());
-        stored.insert(
-            "suggestion".into(),
-            serde_json::json!({"name": name, "maxPlayers": max_players, "options": options}),
-        );
-    }
-    serde_json::from_value(Value::Object(stored)).map_err(D::Error::custom)
 }
 impl TableChat {
     /// When the message was sent.
@@ -794,25 +689,6 @@ impl Seat {
     }
 }
 
-/// Reads an optional seat. Checkpoints written before November 10th, 2026 store an absent seat as
-/// `NO_VALUE`.
-mod optional_seat {
-    use super::{NO_VALUE, Seat};
-    use serde::{Deserialize, Deserializer};
-
-    pub fn deserialize<'de, D: Deserializer<'de>>(
-        deserializer: D,
-    ) -> Result<Option<Seat>, D::Error> {
-        match Option::<i64>::deserialize(deserializer)? {
-            None => Ok(None),
-            Some(value) if value == i64::from(NO_VALUE) => Ok(None),
-            Some(value) => Seat::try_from(value)
-                .map(Some)
-                .map_err(serde::de::Error::custom),
-        }
-    }
-}
-
 impl TryFrom<i64> for Seat {
     type Error = String;
     fn try_from(value: i64) -> Result<Self, String> {
@@ -1095,70 +971,6 @@ mod tests {
             "2026-11-02T20:00:00.123Z"
         );
         assert_eq!(chat.message.datetime, "2026-11-02T20:00:00.123456Z");
-    }
-
-    #[test]
-    fn checkpoints_from_before_the_protocol_renames_still_decode() {
-        let chat: TableChat = serde_json::from_value(serde_json::json!({
-            "id": 1, "user": 1, "message": {
-                "msg": "hi", "who": "Alice", "source": "user", "room": "table7",
-                "datetime": "2026-11-02T20:00:00.123Z",
-                "suggestedOptions": {
-                    "timeBase": 120.0, "timePerTurn": 20, "tableName": "Fun", "maxPlayers": 4
-                }
-            }
-        }))
-        .unwrap();
-        assert_eq!(chat.message.text, "hi");
-        assert_eq!(chat.message.username.as_deref(), Some("Alice"));
-        assert_eq!(chat.message.table_id, Some(TableId(7)));
-        let suggestion = chat.message.suggestion.unwrap();
-        assert_eq!(
-            (suggestion.name.as_str(), suggestion.max_players),
-            ("Fun", 4)
-        );
-        assert_eq!(
-            (
-                suggestion.options.time_base_seconds,
-                suggestion.options.time_per_turn_seconds
-            ),
-            (120.0, 20)
-        );
-        let clue = r#"{"type":"clue","clue":{"type":0,"value":1},"giver":0,"target":1,"list":[2],"ignoreNegative":false}"#;
-        let replay: ReplayState = serde_json::from_value(serde_json::json!({
-            "leader": 1, "segment": 0, "efficiencyModifier": 0, "hypothetical": true,
-            "hypotheticalActions": [
-                clue,
-                r#"{"type":"turn","num":3,"currentPlayerIndex":-1}"#,
-                r#"{"type":"draw","playerIndex":0,"order":3,"suitIndex":-1,"rank":-1}"#,
-                r#"{"type":"clue","clue":{"type":-1,"value":-1},"giver":0,"target":1,"list":[2],"ignoreNegative":false}"#,
-            ],
-            "showDrawnCards": false
-        }))
-        .unwrap();
-        assert!(matches!(
-            &replay.hypothetical_actions[..],
-            [
-                HypotheticalAction::Clue {
-                    orders,
-                    clue: Some(hanabi_protocol::Clue {
-                        clue_type: hanabi_protocol::ClueType::Color,
-                        value: 1,
-                    }),
-                    ..
-                },
-                HypotheticalAction::Turn {
-                    current_player_index: None,
-                    ..
-                },
-                HypotheticalAction::Draw {
-                    suit_index: None,
-                    rank: None,
-                    ..
-                },
-                HypotheticalAction::Clue { clue: None, .. },
-            ] if orders.len() == 1
-        ));
     }
 
     #[test]

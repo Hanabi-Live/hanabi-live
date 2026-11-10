@@ -442,18 +442,10 @@ pub enum HypotheticalAction {
         #[schemars(with = "CardOrder")]
         order: i64,
         /// Absent when the recipient may not see the card.
-        #[serde(
-            default,
-            deserialize_with = "deserialize_stored_identity",
-            skip_serializing_if = "Option::is_none"
-        )]
+        #[serde(default, skip_serializing_if = "Option::is_none")]
         #[schemars(with = "SuitIndex")]
         suit_index: Option<i64>,
-        #[serde(
-            default,
-            deserialize_with = "deserialize_stored_identity",
-            skip_serializing_if = "Option::is_none"
-        )]
+        #[serde(default, skip_serializing_if = "Option::is_none")]
         #[schemars(with = "CardRank")]
         rank: Option<i64>,
     },
@@ -463,18 +455,10 @@ pub enum HypotheticalAction {
         #[schemars(with = "CardOrder")]
         order: i64,
         /// Absent when the recipient may not see the card.
-        #[serde(
-            default,
-            deserialize_with = "deserialize_stored_identity",
-            skip_serializing_if = "Option::is_none"
-        )]
+        #[serde(default, skip_serializing_if = "Option::is_none")]
         #[schemars(with = "SuitIndex")]
         suit_index: Option<i64>,
-        #[serde(
-            default,
-            deserialize_with = "deserialize_stored_identity",
-            skip_serializing_if = "Option::is_none"
-        )]
+        #[serde(default, skip_serializing_if = "Option::is_none")]
         #[schemars(with = "CardRank")]
         rank: Option<i64>,
     },
@@ -484,38 +468,24 @@ pub enum HypotheticalAction {
         #[schemars(with = "CardOrder")]
         order: i64,
         /// Absent when the recipient may not see the card.
-        #[serde(
-            default,
-            deserialize_with = "deserialize_stored_identity",
-            skip_serializing_if = "Option::is_none"
-        )]
+        #[serde(default, skip_serializing_if = "Option::is_none")]
         #[schemars(with = "SuitIndex")]
         suit_index: Option<i64>,
-        #[serde(
-            default,
-            deserialize_with = "deserialize_stored_identity",
-            skip_serializing_if = "Option::is_none"
-        )]
+        #[serde(default, skip_serializing_if = "Option::is_none")]
         #[schemars(with = "CardRank")]
         rank: Option<i64>,
         failed: bool,
     },
     Clue {
         /// Absent when the recipient may not see the clue's type and value.
-        #[serde(
-            default,
-            deserialize_with = "deserialize_stored_clue",
-            skip_serializing_if = "Option::is_none"
-        )]
+        #[serde(default, skip_serializing_if = "Option::is_none")]
         #[schemars(with = "ReceivedClue")]
         clue: Option<Clue>,
         #[schemars(with = "PlayerIndex")]
         giver: i64,
         #[schemars(with = "PlayerIndex")]
         target: i64,
-        /// The orders of the cards the clue touched. Checkpoints written before November 10th, 2026
-        /// name it `list`.
-        #[serde(alias = "list")]
+        /// The orders of the cards the clue touched.
         #[schemars(with = "Vec<CardOrder>", extend("x-readonly" = true))]
         orders: Vec<SafeInteger>,
         ignore_negative: bool,
@@ -524,11 +494,7 @@ pub enum HypotheticalAction {
         #[schemars(range(min = 0, max = MAX_SAFE_INTEGER))]
         num: i64,
         /// Absent once the game has ended.
-        #[serde(
-            default,
-            deserialize_with = "deserialize_stored_seat",
-            skip_serializing_if = "Option::is_none"
-        )]
+        #[serde(default, skip_serializing_if = "Option::is_none")]
         #[schemars(with = "PlayerIndex")]
         current_player_index: Option<u8>,
     },
@@ -537,18 +503,10 @@ pub enum HypotheticalAction {
         #[schemars(with = "CardOrder")]
         order: i64,
         /// Absent when the recipient may not see the card.
-        #[serde(
-            default,
-            deserialize_with = "deserialize_stored_identity",
-            skip_serializing_if = "Option::is_none"
-        )]
+        #[serde(default, skip_serializing_if = "Option::is_none")]
         #[schemars(with = "SuitIndex")]
         suit_index: Option<i64>,
-        #[serde(
-            default,
-            deserialize_with = "deserialize_stored_identity",
-            skip_serializing_if = "Option::is_none"
-        )]
+        #[serde(default, skip_serializing_if = "Option::is_none")]
         #[schemars(with = "CardRank")]
         rank: Option<i64>,
     },
@@ -557,49 +515,4 @@ pub enum HypotheticalAction {
         #[schemars(with = "CardOrder")]
         order: i64,
     },
-}
-
-/// Reads a card's suit or rank that may be absent. Checkpoints written before November 10th, 2026
-/// store an absent value as -1.
-fn deserialize_stored_identity<'de, D>(deserializer: D) -> Result<Option<i64>, D::Error>
-where
-    D: serde::Deserializer<'de>,
-{
-    let value = Option::<i64>::deserialize(deserializer)?;
-    Ok(value.filter(|value| *value >= 0))
-}
-
-/// Reads a clue that may be hidden. Checkpoints written before November 10th, 2026 store a clue's
-/// type as a number, and a hidden clue with -1 as its type and value.
-fn deserialize_stored_clue<'de, D>(deserializer: D) -> Result<Option<Clue>, D::Error>
-where
-    D: serde::Deserializer<'de>,
-{
-    use serde::de::Error;
-
-    let Some(mut clue) = Option::<serde_json::Value>::deserialize(deserializer)? else {
-        return Ok(None);
-    };
-    if let Some(number) = clue.get("type").and_then(serde_json::Value::as_i64) {
-        let clue_type = match number {
-            -1 => return Ok(None),
-            0 => ClueType::Color,
-            1 => ClueType::Rank,
-            _ => return Err(D::Error::custom(format!("Invalid clue type: {number}"))),
-        };
-        clue["type"] = serde_json::to_value(clue_type).map_err(D::Error::custom)?;
-    }
-    serde_json::from_value(clue)
-        .map(Some)
-        .map_err(D::Error::custom)
-}
-
-/// Reads a seat that may be absent. Checkpoints written before November 10th, 2026 store an absent
-/// seat as -1.
-fn deserialize_stored_seat<'de, D>(deserializer: D) -> Result<Option<u8>, D::Error>
-where
-    D: serde::Deserializer<'de>,
-{
-    let seat = Option::<i64>::deserialize(deserializer)?;
-    Ok(seat.and_then(|seat| u8::try_from(seat).ok()))
 }

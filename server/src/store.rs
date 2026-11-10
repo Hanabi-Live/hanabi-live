@@ -740,64 +740,6 @@ mod tests {
         Ok(())
     }
     #[test]
-    fn checkpoints_with_the_old_markers_for_none_still_decode() -> Result<()> {
-        let mut table = pregame(TableId(7));
-        terminal(&mut table)?;
-        let mut stored = serde_json::to_value(&table)?;
-        // How checkpoints written before November 10th, 2026 store values that are absent.
-        let snapshot = &mut stored["phase"]["snapshot"];
-        snapshot["game_id"] = serde_json::json!(0);
-        snapshot["pause_player_index"] = serde_json::json!(-1);
-        let termination = snapshot["game"]["steps"]
-            .as_array_mut()
-            .and_then(|steps| steps.last_mut())
-            .context("Missing termination")?;
-        termination["termination"]["playerIndex"] = serde_json::json!(-1);
-        stored["extra"] = serde_json::json!({
-            "setSeedSuffix": "",
-            "setReplay": true,
-            "setReplayTurn": 4,
-            "replayGameId": 9
-        });
-        let decoded: TableSnapshot = serde_json::from_value(stored)?;
-        let game = decoded.game().context("Missing game")?;
-        ensure!(game.game_id.is_none() && game.paused_by.is_none());
-        ensure!(game.game.end_player.is_none());
-        ensure!(decoded.extra.set_seed_suffix.is_none());
-        ensure!(
-            decoded.extra.replay
-                == Some(crate::model::TableReplay {
-                    game_id: GameId(9),
-                    turns: 4
-                })
-        );
-        // A checkpoint written now omits them.
-        let written = serde_json::to_value(&decoded)?;
-        let snapshot = &written["phase"]["snapshot"];
-        ensure!(snapshot.get("game_id").is_none() && snapshot.get("pause_player_index").is_none());
-        Ok(())
-    }
-
-    #[test]
-    fn game_setups_with_the_old_markers_for_none_still_decode() -> Result<()> {
-        let setup: GameSetup = serde_json::from_value(serde_json::json!({
-            "options": serde_json::to_value(Options::default())?,
-            "playerNames": ["Alice", "Bob"],
-            "seed": "JSON",
-            "deck": [{"suitIndex": 0, "rank": 1}],
-            "characters": [{"name": "n/a", "metadata": -1}, {"name": "", "metadata": -1}],
-        }))?;
-        ensure!(setup.seed.is_none());
-        let characters = setup.characters.context("Missing characters")?;
-        ensure!(
-            characters
-                .iter()
-                .all(|c| c.name.is_none() && c.metadata.is_none())
-        );
-        Ok(())
-    }
-
-    #[test]
     fn checkpoints_round_trip_as_a_head_and_parts() -> Result<()> {
         let mut table = pregame(TableId(1));
         terminal(&mut table)?;

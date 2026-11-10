@@ -196,11 +196,6 @@ mod tests {
             serde_json::to_value(zero_stats()).unwrap(),
             json!({"numGames":0,"variant":{"numGames":0,"bestScores":best_scores}})
         );
-        // Checkpoints from before November 2026 store 0 for a player count without a game.
-        let mut stored = serde_json::to_value(zero_stats()).unwrap();
-        stored["variant"]["bestScores"][0]["score"] = json!(0);
-        let decoded: PregameStats = serde_json::from_value(stored).unwrap();
-        assert_eq!(decoded.variant.best_scores[0].score, Some(0));
 
         let row = crate::database::UserStats {
             user_id: 1,
