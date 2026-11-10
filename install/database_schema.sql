@@ -161,6 +161,8 @@ CREATE TABLE game_participants (
     seat                  SMALLINT  NOT NULL, /* 0-indexed. Orders the players and assigns their notes. */
     character_assignment  SMALLINT  NOT NULL,
     character_metadata    SMALLINT  NOT NULL,
+    character_id          SMALLINT,           /* NULL when the player has no character. */
+    assigned_metadata     SMALLINT,           /* NULL when the character has no assigned metadata. */
     FOREIGN KEY (game_id) REFERENCES games (id) ON DELETE CASCADE,
     FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE,
     CONSTRAINT game_participants_unique UNIQUE (game_id, user_id)

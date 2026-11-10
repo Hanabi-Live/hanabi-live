@@ -257,24 +257,33 @@ pub(crate) async fn insert(
     let mut seats = vec![];
     let mut assignments = vec![];
     let mut metadata = vec![];
+    let mut character_ids = vec![];
+    let mut assigned_metadata = vec![];
     for (seat, p) in s.players.iter().enumerate() {
         let (assignment, value) = stored_character(&s.game.players[seat])?;
+        let (character_id, assigned) = character_columns(&s.game.players[seat])?;
         users.push(p.id.0);
         seats.push(i16::try_from(seat)?);
         assignments.push(assignment);
         metadata.push(value);
+        character_ids.push(character_id);
+        assigned_metadata.push(assigned);
     }
     let participants = sqlx::query!(
-        "INSERT INTO game_participants(game_id,user_id,seat,character_assignment,character_metadata)
-         SELECT $1,p.user_id,p.seat,p.assignment,p.metadata
-         FROM UNNEST($2::integer[],$3::smallint[],$4::smallint[],$5::smallint[])
-         AS p(user_id,seat,assignment,metadata)
+        "INSERT INTO game_participants(game_id,user_id,seat,character_assignment,character_metadata,
+           character_id,assigned_metadata)
+         SELECT $1,p.user_id,p.seat,p.assignment,p.metadata,p.character_id,p.assigned_metadata
+         FROM UNNEST($2::integer[],$3::smallint[],$4::smallint[],$5::smallint[],$6::smallint[],
+           $7::smallint[])
+         AS p(user_id,seat,assignment,metadata,character_id,assigned_metadata)
          RETURNING id,seat",
         s.game_id.0,
         &users,
         &seats,
         &assignments,
-        &metadata
+        &metadata,
+        &character_ids as &[Option<i16>],
+        &assigned_metadata as &[Option<i16>]
     )
     .fetch_all(&mut **tx)
     .await?;
@@ -334,6 +343,18 @@ pub(crate) async fn insert(
     .execute(&mut **tx)
     .await?;
     Ok(())
+}
+
+/// A player's character and its assigned metadata, as the `character_id` and `assigned_metadata`
+/// columns store them, with `None` for none.
+fn character_columns(player: &hanabi_engine::EnginePlayer) -> Result<(Option<i16>, Option<i16>)> {
+    let character_id = hanabi_engine::characters()
+        .iter()
+        .find(|c| c.name == player.character)
+        .map(|c| i16::try_from(c.id))
+        .transpose()?;
+    let metadata = player.assigned_metadata().map(i16::try_from).transpose()?;
+    Ok((character_id, metadata))
 }
 
 /// The character assignment and metadata that `game_participants` stores for a player.

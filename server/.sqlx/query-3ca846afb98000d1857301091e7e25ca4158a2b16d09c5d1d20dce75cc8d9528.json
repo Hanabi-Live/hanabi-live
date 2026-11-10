@@ -1,0 +1,12 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "-- Copy the characters of games with detrimental characters into the new columns, about 7,200 rows.\n-- The players of other games have no character, which the new columns' NULL already says. Fuming,\n-- Dumbfounded, Inept, and Awkward are the characters with assigned metadata, which\n-- `character_metadata` stores plus 1.\nUPDATE game_participants AS p\nSET character_id = p.character_assignment,\n    assigned_metadata = CASE\n        WHEN p.character_assignment IN (0, 1, 2, 3) AND p.character_metadata > 0\n        THEN p.character_metadata - 1\n    END\nFROM games AS g\nWHERE g.id = p.game_id\n  AND g.detrimental_characters\n  AND p.character_assignment >= 0;\n",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": []
+    },
+    "nullable": []
+  },
+  "hash": "3ca846afb98000d1857301091e7e25ca4158a2b16d09c5d1d20dce75cc8d9528"
+}

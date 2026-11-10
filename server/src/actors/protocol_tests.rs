@@ -3132,3 +3132,59 @@ async fn a_link_to_an_ended_table_forgets_it_without_a_warning() -> Result<()> {
     h.close().await?;
     outcome
 }
+
+#[tokio::test]
+async fn saved_characters_are_what_the_character_backfill_copies() -> Result<()> {
+    let Some(mut h) = Harness::new(&["Alice", "Bob"]).await? else {
+        return Ok(());
+    };
+    let outcome = async {
+        let id = h
+            .create(0, "Characters", json!({"detrimentalCharacters":true}))
+            .await?;
+        h.send(1, "tableJoin", json!({"tableID":id})).await?;
+        h.send(0, "tableStart", json!({"tableID":id})).await?;
+        h.receive(0, "tableStarted").await?;
+        h.send(0, "tableTerminate", json!({"tableID":id})).await?;
+        h.barrier(0).await?;
+        let rows = async |h: &Harness| {
+            sqlx::query!(
+                "SELECT character_assignment,character_metadata,character_id,assigned_metadata
+                 FROM game_participants ORDER BY id"
+            )
+            .fetch_all(&h.store.primary)
+            .await
+            .map(|rows| {
+                rows.into_iter()
+                    .map(|r| {
+                        (
+                            r.character_assignment,
+                            r.character_metadata,
+                            r.character_id,
+                            r.assigned_metadata,
+                        )
+                    })
+                    .collect::<Vec<_>>()
+            })
+        };
+        let saved = rows(&h).await?;
+        ensure!(saved.len() == 2, "The game was not saved: {saved:?}");
+        for &(assignment, stored, character, metadata) in &saved {
+            ensure!(
+                character == Some(assignment) && metadata == (stored > 0).then(|| stored - 1),
+                "The new columns disagree with the old ones: {saved:?}"
+            );
+        }
+        sqlx::query_file!("../install/migrations/052_backfill_character_columns.sql")
+            .execute(&h.store.primary)
+            .await?;
+        ensure!(
+            rows(&h).await? == saved,
+            "The backfill changed what the server saved"
+        );
+        Ok(())
+    }
+    .await;
+    h.close().await?;
+    outcome
+}
