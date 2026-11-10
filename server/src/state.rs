@@ -207,7 +207,7 @@ impl LiveState {
         }
         // Table IDs that an earlier owner reserved but never saved are unused. This server has
         // reserved none yet.
-        sqlx::query!("DELETE FROM live_tables WHERE revision = 0")
+        sqlx::query!("DELETE FROM live_tables WHERE payload IS NULL")
             .execute(&mut lock)
             .await?;
         let owner = Arc::new(Ownership {
@@ -331,7 +331,7 @@ impl LiveState {
             r#"SELECT t.id, t.revision, t.payload AS "payload!", p.part AS "part?",
                       p.value AS "value?"
                FROM live_tables t LEFT JOIN live_table_parts p ON p.table_id = t.id
-               WHERE t.revision > 0 ORDER BY t.id"#
+               WHERE t.payload IS NOT NULL ORDER BY t.id"#
         )
         .fetch_all(&mut *transaction)
         .await?;

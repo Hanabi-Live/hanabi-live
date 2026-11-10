@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "SELECT t.id, t.revision, t.payload AS \"payload!\", p.part AS \"part?\",\n                      p.value AS \"value?\"\n               FROM live_tables t LEFT JOIN live_table_parts p ON p.table_id = t.id\n               WHERE t.revision > 0 ORDER BY t.id",
+  "query": "SELECT t.id, t.revision, t.payload AS \"payload!\", p.part AS \"part?\",\n                      p.value AS \"value?\"\n               FROM live_tables t LEFT JOIN live_table_parts p ON p.table_id = t.id\n               WHERE t.payload IS NOT NULL ORDER BY t.id",
   "describe": {
     "columns": [
       {
@@ -70,5 +70,5 @@
       false
     ]
   },
-  "hash": "3ebc8aa4e1bd8399bd6a0e197dee4ef8530d1c0ad5d7e722d599cf71b0f45f28"
+  "hash": "71960c732ff72c00201acd84a4db0c730fcecbb72ccb41aaa290251e73e5266f"
 }
