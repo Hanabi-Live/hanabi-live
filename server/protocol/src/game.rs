@@ -60,6 +60,8 @@ pub struct Pause {
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct VoteChange {
+    #[serde(rename = "tableID")]
+    pub table_id: TableId,
     /// Whether the recipient voted.
     pub vote: bool,
     /// How many players voted.
@@ -112,9 +114,17 @@ pub struct FinishOngoingGame {
 pub struct TableStarted {
     #[serde(rename = "tableID")]
     pub table_id: TableId,
-    pub replay: bool,
-    /// Whether the game started just now, rather than the recipient joining a game in progress.
-    pub just_started: bool,
+    pub stage: GameStage,
+}
+
+/// How far along a game is when the recipient enters it: it started just now, it is in progress,
+/// or it is over and the recipient watches a replay.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
+#[serde(rename_all = "camelCase")]
+pub enum GameStage {
+    JustStarted,
+    InProgress,
+    Replay,
 }
 
 /// One author's notes on every card.

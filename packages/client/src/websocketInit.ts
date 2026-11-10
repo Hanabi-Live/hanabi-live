@@ -282,7 +282,7 @@ function openConnection(isReconnect: boolean) {
           }
           if (
             table.tableID === retained
-            && !table.replay
+            && table.stage !== "replay"
             && globals.ui !== undefined
             && globals.ui.globals.store !== undefined
             && !globals.ui.globals.state.finished

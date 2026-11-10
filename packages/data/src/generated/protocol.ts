@@ -1248,12 +1248,14 @@ export const tableStartRequestSchema = z.strictObject({
   intendedPlayerNames: z.array(z.string()).max(6).optional(),
   tableID: tableIdSchema,
 });
+
+/**
+ * How far along a game is when the recipient enters it: it started just now, it is in progress,
+ * or it is over and the recipient watches a replay.
+ */
+const gameStageSchema = z.enum(["justStarted", "inProgress", "replay"]);
 export const tableStartedSchema = z.strictObject({
-  /**
-   * Whether the game started just now, rather than the recipient joining a game in progress.
-   */
-  justStarted: z.boolean(),
-  replay: z.boolean(),
+  stage: gameStageSchema,
   tableID: tableIdSchema,
 });
 export const tableSuggestRequestSchema = z.strictObject({
@@ -1347,6 +1349,7 @@ export const variantNamesSchema = z.record(z.string(), z.string());
  * The votes to end the game, as one player sees them.
  */
 export const voteChangeSchema = z.strictObject({
+  tableID: tableIdSchema,
   /**
    * Whether the recipient voted.
    */

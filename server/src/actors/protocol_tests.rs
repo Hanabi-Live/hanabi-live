@@ -301,13 +301,13 @@ async fn only_the_start_of_a_game_is_marked_as_just_started() -> Result<()> {
         h.send(0, "tableStart", json!({"tableID":id})).await?;
         let started = h.receive(1, "tableStarted").await?;
         ensure!(
-            started["justStarted"] == true,
+            started["stage"] == "justStarted",
             "A player was not told that the game started: {started}"
         );
         h.send(2, "tableSpectate", json!({"tableID":id})).await?;
         let joined = h.receive(2, "tableStarted").await?;
         ensure!(
-            joined["justStarted"] == false,
+            joined["stage"] == "inProgress",
             "A spectator who joined a game in progress was told that it started: {joined}"
         );
         Ok(())

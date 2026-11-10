@@ -326,8 +326,11 @@ impl TableActor {
                     hanabi_protocol::server::TABLE_STARTED,
                     TableStarted {
                         table_id: self.table.id,
-                        replay,
-                        just_started: false,
+                        stage: if replay {
+                            hanabi_protocol::GameStage::Replay
+                        } else {
+                            hanabi_protocol::GameStage::InProgress
+                        },
                     },
                 ),
             ));

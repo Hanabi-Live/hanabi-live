@@ -183,10 +183,10 @@ lobbyCommands.set("tableStarted", (data) => {
   // Record the table ID for later.
   globals.tableID = data.tableID;
 
-  if (!data.replay && globals.currentScreen === Screen.PreGame) {
+  if (data.stage !== "replay" && globals.currentScreen === Screen.PreGame) {
     pregame.hide(false);
   }
-  gameMain.show(data.justStarted);
+  gameMain.show(data.stage === "justStarted");
 });
 
 // Received by the client when a user connects or has a new status.

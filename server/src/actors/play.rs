@@ -289,7 +289,10 @@ impl TableActor {
                 if let Ok(seat) = self.seat(&a.session) {
                     e.messages.push((
                         a.session.clone(),
-                        frame(hanabi_protocol::server::VOTE_CHANGE, vote_change(s, seat)?),
+                        frame(
+                            hanabi_protocol::server::VOTE_CHANGE,
+                            vote_change(self.table.id, s, seat)?,
+                        ),
                     ));
                 }
             }
@@ -616,7 +619,10 @@ impl TableActor {
                 ));
                 e.messages.push((
                     session.clone(),
-                    frame(hanabi_protocol::server::VOTE_CHANGE, vote_change(s, seat)?),
+                    frame(
+                        hanabi_protocol::server::VOTE_CHANGE,
+                        vote_change(self.table.id, s, seat)?,
+                    ),
                 ));
             }
             e.messages.push((
@@ -685,8 +691,13 @@ fn votes_needed(players: usize) -> usize {
     }
 }
 
-fn vote_change(s: &Snapshot, seat: usize) -> anyhow::Result<hanabi_protocol::VoteChange> {
+fn vote_change(
+    table_id: hanabi_protocol::TableId,
+    s: &Snapshot,
+    seat: usize,
+) -> anyhow::Result<hanabi_protocol::VoteChange> {
     Ok(hanabi_protocol::VoteChange {
+        table_id,
         vote: s.votes[seat],
         votes: u8::try_from(s.votes.iter().filter(|v| **v).count())?,
         votes_needed: u8::try_from(votes_needed(s.players.len()))?,
