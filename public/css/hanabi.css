@@ -155,20 +155,17 @@ body[data-screen="game"] {
   padding: 4em 0;
 }
 
-#main-login > header,
-#main-tutorial > header {
+#main-login > header {
   text-align: center;
   margin: 0 0 3em 0;
 }
 
-#main-login > header h2,
-#main-tutorial > header h2 {
+#main-login > header h2 {
   font-size: 2.75em;
   margin: 0;
 }
 
-#main-login > header p,
-#main-tutorial > header p {
+#main-login > header p {
   border-top: solid 2px var(--border);
   color: var(--text);
   display: inline-block;
@@ -182,8 +179,7 @@ body[data-screen="game"] {
   #main-tutorial {
     padding: 0.5em 0;
   }
-  #main-login > header,
-  #main-tutorial > header {
+  #main-login > header {
     text-align: center;
     margin: 0 0 1em 0;
   }
@@ -308,20 +304,6 @@ body[data-screen="game"] {
 .lobby-title {
   /* We want to make h3 elements a bit smaller */
   font-size: 1.3em;
-}
-
-/*
-  Row overlay div
-*/
-.overlay {
-  display: none;
-  position: absolute;
-  z-index: var(--z-row-overlay);
-  opacity: 0.1;
-  cursor: pointer;
-  align-items: center;
-  justify-content: center;
-  background-color: black;
 }
 
 /*
@@ -1183,10 +1165,6 @@ input::-webkit-calendar-picker-indicator {
   min-width: 40vw;
 }
 
-.modal .row {
-  margin-bottom: 1em;
-}
-
 .modal-message {
   border: 0;
   left: 5em;
@@ -1634,11 +1612,6 @@ input::-webkit-calendar-picker-indicator {
   #logo-text {
     display: none;
   }
-
-  /* make nav items in between space smaller */
-  #header nav > ul > li a:not(.button) {
-    padding: 0 0.8em;
-  }
 }
 
 /* Stack the profile buttons on top of each other if they would go off screen otherwise */
@@ -1671,11 +1644,6 @@ input::-webkit-calendar-picker-indicator {
   Media queries for lobby redesign on smaller screens
 */
 @media screen and (max-width: 840px) {
-  /* make nav items in between space smaller */
-  #header nav > ul > li a:not(.button) {
-    padding: 0 0.5em;
-  }
-
   /* hide column '# of Players' */
   #lobby-games-table th:nth-child(2),
   #lobby-games-table td:nth-child(2) {
@@ -1717,10 +1685,6 @@ input::-webkit-calendar-picker-indicator {
   }
 }
 @media screen and (max-width: 410px) {
-  /* make nav items in between space smaller */
-  #header nav > ul > li a:not(.button) {
-    padding: 0 0.3em;
-  }
   /* hide column 'Status' */
   #lobby-games-table th:nth-child(5),
   #lobby-games-table td:nth-child(5) {

@@ -46,8 +46,6 @@
   --header-bg: #444;
   --header-border: none;
   --header-text: #bbb;
-  --header-link: #fff;
-  --header-link-hover-bg: transparent;
 
   /* Text in modals and lobby pages: the nearest gray to "--text" that meets normal-text contrast on white */
   --modal-text: #767676;
@@ -92,7 +90,6 @@
     component.
   */
   --z-spinner: 100;
-  --z-row-overlay: 999;
   --z-header: 10000;
   --z-page-cover: 99999;
 
@@ -133,8 +130,6 @@
   --header-bg: #15181c;
   --header-border: 1px solid var(--border);
   --header-text: var(--text);
-  --header-link: var(--text);
-  --header-link-hover-bg: var(--surface-sunken);
 
   --modal-text: var(--text);
   --modal-input-text: var(--text);
