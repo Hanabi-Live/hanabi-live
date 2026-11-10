@@ -901,7 +901,7 @@ input[type="submit"].alt:active,
 input[type="reset"].alt:active,
 input[type="button"].alt:active,
 .button.alt:active {
-  background-color: #f0f0f0;
+  background-color: var(--button-alt-active-bg);
 }
 
 input[type="submit"].primary,

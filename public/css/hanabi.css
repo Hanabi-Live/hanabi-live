@@ -417,7 +417,7 @@ body[data-screen="game"] {
     url("data:image/svg+xml;utf8,<svg width='23.713' height='23.713' viewBox='0 0 23.713 23.713' xmlns='http://www.w3.org/2000/svg'><text y='15'>🕵️</text></svg>")
       12 12,
     pointer;
-  color: #3350cb;
+  color: var(--name-hover);
 }
 .lobby-pregame-players .unShadow:hover {
   /* eyes */
@@ -425,7 +425,7 @@ body[data-screen="game"] {
     url("data:image/svg+xml;utf8,<svg width='23.713' height='23.713' viewBox='0 0 23.713 23.713' xmlns='http://www.w3.org/2000/svg'><text y='15'>👀</text></svg>")
       12 12,
     pointer;
-  color: #3350cb;
+  color: var(--name-hover);
 }
 
 /*
@@ -464,11 +464,11 @@ body[data-screen="game"] {
   background: none;
   border: none;
   cursor: pointer;
-  color: #777;
+  color: var(--text);
 }
 
 .emoji-button:hover {
-  color: #646464;
+  color: var(--text-strong);
 }
 
 .emoji-button > .fas {
@@ -524,7 +524,7 @@ body[data-screen="game"] {
 }
 
 .lobby-pregame-player {
-  border: 1px solid black;
+  border: 1px solid var(--pregame-player-border);
   border-radius: 5px;
   padding: 0.8em;
   flex: 1 1 160px;
@@ -697,7 +697,7 @@ body[data-screen="game"] {
 }
 
 #dice {
-  color: green;
+  color: var(--green-text);
   cursor: pointer;
   font-size: 1.2em;
 }
@@ -1538,7 +1538,7 @@ input::-webkit-calendar-picker-indicator /* Chrome */ {
 }
 
 .green {
-  color: green;
+  color: var(--green-text);
 }
 
 .red {
@@ -1970,7 +1970,7 @@ table.history {
 .history .table-filters input {
   width: 5em;
   height: auto;
-  border: 1px solid lightgray;
+  border: 1px solid var(--border);
   border-radius: 6px;
 }
 
@@ -2006,11 +2006,11 @@ table.history {
 }
 .history th[aria-sort="ascending"] {
   background-image: url(data:image/gif;base64,R0lGODlhFQAEAIAAACMtMP///yH5BAEAAAEALAAAAAAVAAQAAAINjI8Bya2wnINUMopZAQA7);
-  background-color: lightblue;
+  background-color: var(--table-sorted-bg);
 }
 .history th[aria-sort="descending"] {
   background-image: url(data:image/gif;base64,R0lGODlhFQAEAIAAACMtMP///yH5BAEAAAEALAAAAAAVAAQAAAINjB+gC+jP2ptn0WskLQA7);
-  background-color: lightblue;
+  background-color: var(--table-sorted-bg);
 }
 
 /* Spinner during ajax */
@@ -2092,7 +2092,7 @@ div.noteTitle span {
   border: none;
   border-radius: 3px;
   background: none;
-  color: #555;
+  color: var(--menu-text);
   font: inherit;
   text-align: left;
   text-decoration: none;
@@ -2102,8 +2102,8 @@ div.noteTitle span {
 
 .user-menu a:hover,
 .user-menu button:hover {
-  background: #eee;
-  color: #222;
+  background: var(--menu-hover-bg);
+  color: var(--menu-hover-text);
 }
 
 .user-menu i {

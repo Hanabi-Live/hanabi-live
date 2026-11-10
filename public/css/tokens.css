@@ -33,8 +33,10 @@
   --checkbox-checked: #666;
   --button-alt-bg: transparent;
   --button-alt-hover-bg: #f8f8f8;
+  --button-alt-active-bg: #f0f0f0;
   --name-me: #e69500;
   --friend: hotpink;
+  --name-hover: #3350cb;
 
   /* The header bar */
   --header-bg: #444;
@@ -49,6 +51,11 @@
   --modal-border: #308943;
 
   --table-header-text: #646464;
+  --table-sorted-bg: lightblue;
+  --pregame-player-border: black;
+  --menu-text: #555;
+  --menu-hover-bg: #eee;
+  --menu-hover-text: #222;
   --chat-bg: transparent;
   --game-chat-border: black;
   --slider-track: #ddd;
@@ -101,6 +108,7 @@
   --text-strong: var(--text);
   --text-label: #a9a9a9;
   --link: #7fb2ff;
+  --name-hover: var(--link);
   --focus: #7fb2ff;
   --green: #2e7d32;
   --green-text: #6fcf7a;
@@ -111,6 +119,7 @@
   --checkbox-checked: var(--green);
   --button-alt-bg: var(--surface-sunken);
   --button-alt-hover-bg: var(--surface);
+  --button-alt-active-bg: var(--surface);
 
   --header-bg: #15181c;
   --header-border: 1px solid var(--border);
@@ -123,6 +132,11 @@
   --modal-border: var(--border);
 
   --table-header-text: var(--text-label);
+  --table-sorted-bg: #2c4356;
+  --pregame-player-border: var(--border);
+  --menu-text: var(--text);
+  --menu-hover-bg: var(--surface-sunken);
+  --menu-hover-text: #fff;
   --chat-bg: var(--surface-sunken);
   --game-chat-border: var(--border);
   --slider-track: var(--border);
