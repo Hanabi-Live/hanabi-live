@@ -82,6 +82,12 @@ const SETTLE_MILLISECONDS = 400;
 /** The seed of the first seeded game: two players, the variant with ID 0, and the first seed. */
 const SEED = "p2v0s1";
 
+/** The H-Group level that the account at the open table chooses. */
+const H_GROUP_LEVEL = 3;
+
+/** The login version that makes an account a bot. */
+const BOT_VERSION = "bot";
+
 /** The account that the browser logs in with. Others play the seeded games. */
 const USERNAME = "Alice";
 
@@ -295,8 +301,12 @@ async function linkPublicFiles(directory: string) {
 
 type Peer = ReturnType<typeof socketClient>;
 
-async function connect(address: string, username: string): Promise<Peer> {
-  const peer = socketClient(address, await login(address, username));
+async function connect(
+  address: string,
+  username: string,
+  version?: string,
+): Promise<Peer> {
+  const peer = socketClient(address, await login(address, username, version));
   await peer.receive("welcome", SERVER_COMMAND_SCHEMAS.welcome);
   return peer;
 }
@@ -360,7 +370,10 @@ interface Seed {
   readonly peers: readonly Peer[];
 }
 
-/** Saves a few games, and leaves another account at an open table with a lobby chat message. */
+/**
+ * Saves a few games. Leaves another account at an open table that has options and a spectator, and
+ * a bot online, so that the lobby shows a lobby chat message and the tabs of the online users list.
+ */
 async function seed(address: string): Promise<Seed> {
   let replayID = 0;
   // Each game gets new connections, so that the server's messages about one game cannot affect the
@@ -374,14 +387,26 @@ async function seed(address: string): Promise<Seed> {
   }
 
   const bob = await connect(address, "Bob");
-  bob.send("tableCreate", { name: "Bob's table" });
-  await bob.receive("joined", SERVER_COMMAND_SCHEMAS.joined);
+  bob.send("setting", {
+    settings: { hGroupConventions: true, hGroupLevel: H_GROUP_LEVEL },
+  });
+  bob.send("tableCreate", {
+    name: "Bob's table",
+    options: { speedrun: true, deckPlays: true },
+  });
+  const { tableID } = await bob.receive(
+    "joined",
+    SERVER_COMMAND_SCHEMAS.joined,
+  );
   bob.send("chat", { text: "Hello from the seeded lobby." });
   const carol = await connect(address, "Carol");
+  carol.send("tableSpectate", { tableID });
+  await carol.receive("joined", SERVER_COMMAND_SCHEMAS.joined);
+  const bot = await connect(address, "Robot", BOT_VERSION);
 
   // The browser logs in as Alice, with a session of its own.
   const cookie = await login(address, USERNAME);
-  return { replayID, cookie, peers: [bob, carol] };
+  return { replayID, cookie, peers: [bob, carol, bot] };
 }
 
 /** Runs in the page. */

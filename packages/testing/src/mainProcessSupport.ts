@@ -266,13 +266,14 @@ export async function installSchema(directory: string): Promise<void> {
 export async function login(
   address: string,
   username: string,
+  version: string = VERSION,
 ): Promise<string> {
   const response = await fetch(`${address}/login`, {
     method: "POST",
     body: new URLSearchParams({
       username,
       password: "synthetic-smoke-password",
-      version: VERSION,
+      version,
       createAccount: "true",
     }),
     signal: AbortSignal.timeout(10_000),
