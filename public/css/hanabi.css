@@ -1812,15 +1812,6 @@ span.cp {
   display: block;
 }
 
-/* Make all chat text display as block */
-#lobby-chat-pregame-text > span {
-  display: block;
-}
-
-#lobby-chat-pregame-text > span.hidden {
-  display: none;
-}
-
 /* Wrong input indicator */
 input[type="text"].wrong-input {
   border: 2px solid var(--error);
