@@ -1473,6 +1473,8 @@ html:not([data-theme="dark"])
   overflow: visible;
   pointer-events: none;
   transform: scale(0);
+  /* Grow from the arrow's tip, so that the tip stays on the anchor while the bubble overshoots. */
+  transform-origin: var(--tooltip-arrow-x) 100%;
   transition:
     transform var(--tooltip-duration),
     overlay var(--tooltip-duration) allow-discrete,
@@ -1481,6 +1483,7 @@ html:not([data-theme="dark"])
 
 .tooltip-bubble[data-side="bottom"] {
   padding: var(--tooltip-arrow-size) 0 0;
+  transform-origin: var(--tooltip-arrow-x) 0;
 }
 
 .tooltip-bubble.tooltip-interactive {
