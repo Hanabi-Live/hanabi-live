@@ -136,6 +136,7 @@ function createGameTooltips() {
     "lobby",
     "lobby-small",
     "pace",
+    "post-clue-empathy",
     "replay",
     "restart",
     "restart-ready",
