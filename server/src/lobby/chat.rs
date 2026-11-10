@@ -4,8 +4,8 @@ use crate::transport::{Identity, Outgoing};
 use anyhow::{Context, Result, ensure};
 use chrono::SecondsFormat;
 use hanabi_protocol::{
-    Chat, ChatHistory, ChatHistoryMessage, ChatHistoryRequest, ChatSource, MAX_PLAYERS,
-    MAX_PRIVATE_HISTORY_MESSAGES, MIN_PLAYERS,
+    Chat, ChatHistory, ChatHistoryMessage, ChatHistoryRequest, ChatSource,
+    MAX_PRIVATE_HISTORY_MESSAGES,
 };
 use serde::Deserialize;
 use serde_json::json;
@@ -57,18 +57,12 @@ pub enum TableChatCommand {
     FindVariant,
     Suggest,
     Tags,
-    Split {
-        automatic: bool,
-    },
+    Split { automatic: bool },
     Kick,
-    /// Starts the game once this many players have joined: `/s4` names the count, and `/s`
-    /// takes it as an argument or defaults to one more than the current players.
-    Start(Option<usize>),
-    StartIn,
     Impostor,
 }
 
-/// The names of the table chat commands, other than `/s{MIN_PLAYERS}` to `/s{MAX_PLAYERS}`.
+/// The names of the table chat commands.
 const TABLE_COMMANDS: &[(&str, TableChatCommand)] = &[
     ("m", TableChatCommand::MissingScores),
     ("missing", TableChatCommand::MissingScores),
@@ -88,22 +82,16 @@ const TABLE_COMMANDS: &[(&str, TableChatCommand)] = &[
     ("split", TableChatCommand::Split { automatic: false }),
     ("splitauto", TableChatCommand::Split { automatic: true }),
     ("kick", TableChatCommand::Kick),
-    ("s", TableChatCommand::Start(None)),
-    ("si", TableChatCommand::StartIn),
-    ("startin", TableChatCommand::StartIn),
     ("impostor", TableChatCommand::Impostor),
 ];
 
 impl TableChatCommand {
     /// Reads a lowercase command name without its slash.
     pub fn parse(command: &str) -> Option<Self> {
-        if let Some((_, parsed)) = TABLE_COMMANDS.iter().find(|(name, _)| *name == command) {
-            return Some(*parsed);
-        }
-        let count = command.strip_prefix('s')?;
-        (MIN_PLAYERS..=MAX_PLAYERS)
-            .find(|n| count == n.to_string())
-            .map(|n| Self::Start(Some(n)))
+        TABLE_COMMANDS
+            .iter()
+            .find(|(name, _)| *name == command)
+            .map(|(_, parsed)| *parsed)
     }
 }
 
@@ -239,7 +227,6 @@ fn help() -> String {
         .chain(["random", "replay", "uptime", "token"].iter())
         .map(|s| format!("/{s}"))
         .collect();
-    names.extend((MIN_PLAYERS..=MAX_PLAYERS).map(|n| format!("/s{n}")));
     names.extend(RESPONSES.iter().map(|r| format!("/{}", r.command)));
     names.sort();
     names.dedup();

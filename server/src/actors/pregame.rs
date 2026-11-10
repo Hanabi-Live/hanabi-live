@@ -32,12 +32,6 @@ const SPLIT_SUFFIX: &str = " (split)";
 /// move to a new table.
 const SPLIT_GROUPS: usize = 2;
 
-/// Posted when a change to a pregame cancels its `/startin` countdown.
-pub(super) const AUTOMATIC_START_CANCELED: &str = "Automatic game start has been canceled.";
-/// Posted when an automatic start is due but the owner is away.
-pub(super) const AUTOMATIC_START_ABORTED: &str =
-    "Aborting automatic game start since the table creator is away.";
-
 /// Posts that a pregame has a new owner.
 pub(super) fn new_owner_notice(table: &mut TableSnapshot, name: &str) -> Option<Chat> {
     table_notice(
@@ -53,10 +47,7 @@ pub(super) fn remove_pregame_players(
     table: &mut TableSnapshot,
     removed: &HashSet<UserId>,
 ) -> Vec<Chat> {
-    let Phase::Pregame {
-        players, countdown, ..
-    } = &mut table.phase
-    else {
+    let Phase::Pregame { players, .. } = &mut table.phase else {
         return vec![];
     };
     let names = players
@@ -68,7 +59,6 @@ pub(super) fn remove_pregame_players(
         return vec![];
     }
     players.retain(|p| !removed.contains(&p.id));
-    let canceled = countdown.take().is_some();
     let Some(first) = players.first() else {
         return vec![];
     };
@@ -88,9 +78,6 @@ pub(super) fn remove_pregame_players(
             )
         })
         .collect::<Vec<_>>();
-    if canceled {
-        notices.extend(table_notice(table, AUTOMATIC_START_CANCELED));
-    }
     if let Some(owner) = new_owner {
         notices.extend(new_owner_notice(table, &owner.name));
     }
@@ -232,18 +219,10 @@ impl TableActor {
         next.options = options;
         next.max_players = max_players;
         next.extra = extra;
-        let Phase::Pregame {
-            players,
-            countdown,
-            automatic_start,
-            ..
-        } = &mut next.phase
-        else {
+        let Phase::Pregame { players, .. } = &mut next.phase else {
             bail_internal!("A pregame command ran outside a pregame");
         };
         let removed = players.split_off(players.len().min(max_players));
-        *countdown = None;
-        *automatic_start = None;
         crate::stats::refresh_players(&self.store.primary, players, variant.id).await?;
         ensure_or_reject!(
             session.active(),
@@ -417,21 +396,6 @@ impl TableActor {
             ));
         }
     }
-    /// Cancels a `/startin` countdown that ran out while the owner is away.
-    pub(super) async fn abort_countdown(&mut self) -> CommandResult<()> {
-        let mut next = self.candidate();
-        let Phase::Pregame { countdown, .. } = &mut next.phase else {
-            return Ok(());
-        };
-        *countdown = None;
-        let notice = table_notice(&mut next, AUTOMATIC_START_ABORTED);
-        self.persist(next).await?;
-        let mut e = self.effects();
-        if let Some(notice) = notice {
-            self.add_chat(&mut e, &notice);
-        }
-        self.publish(e).await
-    }
     pub(super) async fn transfer(
         &mut self,
         source: TableSnapshot,
@@ -565,18 +529,10 @@ impl TableActor {
         let allocation = self.allocation().await?;
         ensure_or_reject!(session.active(), "Owner changed while splitting");
         let mut source = self.candidate();
-        let Phase::Pregame {
-            players,
-            countdown,
-            automatic_start,
-            ..
-        } = &mut source.phase
-        else {
+        let Phase::Pregame { players, .. } = &mut source.phase else {
             bail_internal!("A pregame command ran outside a pregame");
         };
         players.retain(|p| !selected_ids.contains(&p.id));
-        let canceled = countdown.take().is_some();
-        *automatic_start = None;
         let new_owner = players
             .first()
             .filter(|_| selected_ids.contains(&source.owner))
@@ -599,9 +555,6 @@ impl TableActor {
                     crate::accounts::escape_html(&session.name)
                 ),
             ));
-            if canceled {
-                notices.extend(table_notice(&mut source, AUTOMATIC_START_CANCELED));
-            }
             if let Some(owner) = new_owner {
                 notices.extend(new_owner_notice(&mut source, &owner.name));
             }
@@ -619,8 +572,6 @@ impl TableActor {
         destination.created = Utc::now();
         destination.phase = Phase::Pregame {
             players: selected,
-            automatic_start: None,
-            countdown: None,
             kicked: vec![],
             runtime: crate::model::PregameRuntime::default(),
         };

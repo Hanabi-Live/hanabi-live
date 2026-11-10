@@ -663,8 +663,6 @@ mod tests {
                     bot: false,
                     stats: zero_stats(),
                 }],
-                automatic_start: None,
-                countdown: None,
                 kicked: vec![],
                 runtime: crate::model::PregameRuntime::default(),
             },
@@ -736,6 +734,24 @@ mod tests {
             }),
             runtime: crate::model::LiveRuntime::default(),
         };
+        Ok(())
+    }
+    #[test]
+    fn pregame_checkpoints_from_before_automatic_starts_were_removed_still_decode() -> Result<()> {
+        let mut table = pregame(TableId(1));
+        let (encoded, _) = crate::checkpoint::encode(&mut table, &SavedParts::default())?;
+        // The deployed server writes these fields in every pregame head.
+        let mut head: Value = serde_json::from_str(&encoded.head)?;
+        let phase = head["phase"]
+            .as_object_mut()
+            .context("Missing the pregame phase")?;
+        phase.insert("automatic_start".into(), json!(3));
+        phase.insert("countdown".into(), json!("2026-11-09T12:00:00Z"));
+        let decoded = crate::checkpoint::decode(&head.to_string(), &encoded.changes.written)?;
+        ensure!(
+            serde_json::to_value(&decoded)? == serde_json::to_value(&table)?,
+            "The old fields changed the decoded table"
+        );
         Ok(())
     }
     #[test]
@@ -1526,7 +1542,7 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn auto_start_archives_chat_and_last_replay_departure_retires_table() -> Result<()> {
+    async fn games_archive_chat_and_last_replay_departure_retires_table() -> Result<()> {
         let Some((db, pool)) = database().await? else {
             return Ok(());
         };
@@ -1561,13 +1577,8 @@ mod tests {
         let result=async{
             send(&hub,users[0].clone(),"tableCreate",json!({"name":"auto parity","options":{}})).await?;
             let id=store.load().await?[0].0.id;
-            send(&hub,users[0].clone(),"chat",json!({"room":format!("table{id}"),"msg":"/s2"})).await?;
-            tokio::time::timeout(Duration::from_secs(3),async{
-                while let Some(frame)=outgoing[0].recv().await{
-                    if frame.message.to_text()?.contains("as soon as 2 players have joined"){return Ok::<(),anyhow::Error>(());}
-                }anyhow::bail!("Socket closed before automatic-start notice")
-            }).await??;
             send(&hub,users[1].clone(),"tableJoin",json!({"tableID":id})).await?;
+            send(&hub,users[0].clone(),"tableStart",json!({"tableID":id})).await?;
             tokio::time::timeout(Duration::from_secs(5),async{
                 loop{if store.load().await?.iter().any(|(t,_)|t.id==id&&matches!(t.phase,Phase::Live{..})){return Ok::<(),anyhow::Error>(());}tokio::time::sleep(Duration::from_millis(20)).await;}
             }).await??;

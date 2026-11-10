@@ -585,9 +585,7 @@ impl TableActor {
         };
         next.shadows.clear();
         next.phase = Phase::Pregame {
-            automatic_start: None,
             players,
-            countdown: None,
             kicked: vec![],
             runtime: crate::model::PregameRuntime::default(),
         };

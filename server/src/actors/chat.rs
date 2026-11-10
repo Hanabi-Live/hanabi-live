@@ -1,4 +1,4 @@
-use super::{Command, TableActor, pregame::AUTOMATIC_START_CANCELED, setup::options_suggestion};
+use super::{Command, TableActor, setup::options_suggestion};
 use crate::errors::CommandResult;
 use crate::errors::OrReject;
 use crate::{
@@ -7,14 +7,12 @@ use crate::{
     transport::{Session, frame},
 };
 use anyhow::{Context, Result};
-use chrono::{Duration as ChronoDuration, Utc};
+use chrono::Utc;
 use hanabi_protocol::UserId;
 use hanabi_protocol::{
-    Chat, ChatSource, ClientMessage, MAX_PLAYERS, MIN_PLAYERS, SECONDS_PER_MINUTE, Status, TableId,
-    TableRequest,
+    Chat, ChatSource, ClientMessage, MAX_PLAYERS, MIN_PLAYERS, Status, TableId, TableRequest,
 };
 use std::{
-    cmp::Ordering,
     collections::HashSet,
     sync::Arc,
     time::{Duration, Instant},
@@ -22,8 +20,6 @@ use std::{
 
 /// How long a typing indicator lasts without another keystroke.
 const TYPING_TIMEOUT: Duration = Duration::from_millis(hanabi_protocol::TYPING_TIMEOUT_MS);
-/// The longest countdown `/startin` can set, in minutes.
-const MAX_START_IN_MINUTES: f64 = 10.0;
 /// The fewest players for the Impostor command, which needs more than one other player.
 const MIN_IMPOSTOR_PLAYERS: usize = MIN_PLAYERS + 1;
 
@@ -478,54 +474,12 @@ impl TableActor {
             "Only the table owner can use that command"
         );
         let Phase::Pregame {
-            players,
-            automatic_start,
-            countdown,
-            kicked,
-            ..
+            players, kicked, ..
         } = &mut next.phase
         else {
             reject!("This command requires a pregame table");
         };
-        let mut boot = None;
-        let mut canceled = false;
-        let notice;
-        match parsed {
-            Some(TableChatCommand::Start(count)) => {
-                let n = if let Some(arg) = args.first() {
-                    arg.parse::<usize>()
-                        .or_reject("Expected /s [number of players]")?
-                } else {
-                    count.unwrap_or(players.len() + 1)
-                };
-                ensure_or_reject!(
-                    hanabi_protocol::is_player_count(n),
-                    "Tables require {MIN_PLAYERS} to {MAX_PLAYERS} players"
-                );
-                *automatic_start = Some(n);
-                *countdown = None;
-                notice = format!("The game will start as soon as {n} players have joined.");
-            }
-            Some(TableChatCommand::StartIn) => {
-                ensure_or_reject!(args.len() == 1, "Expected /startin [minutes]");
-                let minutes = args[0]
-                    .parse::<f64>()
-                    .or_reject("Invalid countdown number")?;
-                ensure_or_reject!(
-                    minutes.is_finite() && minutes > 0.0 && minutes <= MAX_START_IN_MINUTES,
-                    "Minutes must be between zero and {MAX_START_IN_MINUTES}"
-                );
-                let seconds = truncate((minutes * f64::from(SECONDS_PER_MINUTE)).ceil());
-                *countdown = Some(Utc::now() + ChronoDuration::seconds(seconds));
-                let wait = match seconds.cmp(&i64::from(SECONDS_PER_MINUTE)) {
-                    Ordering::Less => format!("{seconds} seconds"),
-                    Ordering::Equal => "1 minute".into(),
-                    Ordering::Greater => {
-                        format!("{} minutes", crate::accounts::escape_html(args[0]))
-                    }
-                };
-                notice = format!("The game will automatically start in {wait}.");
-            }
+        let (notice, kicked_user) = match parsed {
             Some(TableChatCommand::Kick) => {
                 ensure_or_reject!(args.len() == 1, "Expected /kick [username]");
                 let index = players
@@ -540,13 +494,14 @@ impl TableActor {
                     "You cannot kick yourself"
                 );
                 let player = players.remove(index);
-                notice = format!(
-                    "Successfully kicked \"{}\" from the game.",
-                    crate::accounts::escape_html(&player.name)
-                );
                 kicked.push(player.id);
-                boot = Some(player.id);
-                canceled = countdown.take().is_some();
+                (
+                    format!(
+                        "Successfully kicked \"{}\" from the game.",
+                        crate::accounts::escape_html(&player.name)
+                    ),
+                    player.id,
+                )
             }
             Some(TableChatCommand::Impostor) => {
                 ensure_or_reject!(
@@ -575,7 +530,7 @@ impl TableActor {
                 return self.publish(e).await;
             }
             _ => reject!("Unknown table chat command: /{command}"),
-        }
+        };
         let authored = authored_chat(self.table.id, &session.name, text);
         let notice = server_chat(self.table.id, &notice);
         push_chat(
@@ -585,16 +540,9 @@ impl TableActor {
                 (crate::model::SERVER_AUTHOR, notice.clone()),
             ],
         )?;
-        let canceled = if canceled {
-            table_notice(&mut next, AUTOMATIC_START_CANCELED)
-        } else {
-            None
-        };
         self.persist(next).await?;
         let mut e = self.effects();
-        if let Some(user) = boot
-            && let Some(a) = self.attendees.remove(&user)
-        {
+        if let Some(a) = self.attendees.remove(&kicked_user) {
             e.statuses.push((a.session.clone(), Status::Lobby, None));
             e.messages.push((
                 a.session,
@@ -609,9 +557,6 @@ impl TableActor {
         self.pregame_messages(&mut e);
         self.add_chat(&mut e, &authored);
         self.add_chat(&mut e, &notice);
-        if let Some(canceled) = canceled {
-            self.add_chat(&mut e, &canceled);
-        }
         self.publish(e).await
     }
 }

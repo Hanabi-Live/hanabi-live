@@ -467,8 +467,6 @@ pub(super) async fn prepare_table(
             created: Utc::now(),
             phase: Phase::Pregame {
                 players: vec![player],
-                automatic_start: None,
-                countdown: None,
                 kicked: vec![],
                 runtime: crate::model::PregameRuntime::default(),
             },

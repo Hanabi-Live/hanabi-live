@@ -1123,7 +1123,7 @@ fn notices(table: &TableSnapshot) -> Vec<String> {
 }
 
 #[tokio::test]
-async fn pregame_changes_announce_new_owners_splits_and_canceled_starts() -> Result<()> {
+async fn pregame_changes_announce_new_owners_and_splits() -> Result<()> {
     let Some(mut h) = Harness::new(&["Alice", "Bob", "Carol", "Dave"]).await? else {
         return Ok(());
     };
@@ -1134,16 +1134,10 @@ async fn pregame_changes_announce_new_owners_splits_and_canceled_starts() -> Res
         for index in [1, 2] {
             h.send(index, "tableJoin", json!({"tableID":id})).await?;
         }
-        h.send(0, "chat", chat("/startin 5")).await?;
         h.send(3, "tableJoin", json!({"tableID":id})).await?;
-        h.send(0, "chat", chat("/startin 5")).await?;
         h.send(0, "tableLeave", json!({"tableID":id})).await?;
-        h.send(1, "chat", chat("/startin 5")).await?;
         h.send(1, "chat", chat("/kick Dave")).await?;
-        h.send(1, "chat", chat("/startin 5")).await?;
         h.send(1, "chat", chat("/split Bob")).await?;
-        let started = "The game will automatically start in 5 minutes.";
-        let canceled = "Automatic game start has been canceled.";
         let source = notices(&h.snapshot(id).await?.0);
         ensure!(
             source
@@ -1151,19 +1145,11 @@ async fn pregame_changes_announce_new_owners_splits_and_canceled_starts() -> Res
                     "Alice created the table.",
                     "Bob joined the game.",
                     "Carol joined the game.",
-                    started,
                     "Dave joined the game.",
-                    canceled,
-                    started,
                     "Alice left the game.",
-                    canceled,
                     "Bob is the new table owner.",
-                    started,
                     "Successfully kicked \"Dave\" from the game.",
-                    canceled,
-                    started,
                     "Bob split Bob into a new lobby.",
-                    canceled,
                     "Carol is the new table owner.",
                 ],
             "Unexpected notices: {source:#?}"
@@ -1181,76 +1167,6 @@ async fn pregame_changes_announce_new_owners_splits_and_canceled_starts() -> Res
             "Unexpected split notices: {:#?}",
             notices(&split)
         );
-        Ok(())
-    }
-    .await;
-    h.close().await?;
-    outcome
-}
-
-#[tokio::test]
-async fn an_automatic_start_is_aborted_while_the_owner_is_away() -> Result<()> {
-    let Some(mut h) = Harness::new(&["Alice", "Bob", "Carol", "Dave", "Erin"]).await? else {
-        return Ok(());
-    };
-    let outcome = async {
-        let aborted = "Aborting automatic game start since the table creator is away.";
-
-        // The player count of `/s` is reached.
-        let id = h.create(0, "Count", json!({})).await?;
-        h.send(
-            0,
-            "chat",
-            json!({"room":format!("table{}", id.0),"msg":"/s 3"}),
-        )
-        .await?;
-        h.send(1, "tableJoin", json!({"tableID":id})).await?;
-        h.users[0].cancel.cancel();
-        h.send(2, "tableJoin", json!({"tableID":id})).await?;
-        let (table, _) = h.snapshot(id).await?;
-        ensure!(
-            matches!(
-                table.phase,
-                Phase::Pregame {
-                    automatic_start: None,
-                    ..
-                }
-            ) && notices(&table).last().map(String::as_str) == Some(aborted),
-            "The table did not abort its start: {:#?}",
-            notices(&table)
-        );
-
-        // The `/startin` countdown runs out.
-        let id = h.create(3, "Countdown", json!({})).await?;
-        h.send(4, "tableJoin", json!({"tableID":id})).await?;
-        h.send(
-            3,
-            "chat",
-            json!({"room":format!("table{}", id.0),"msg":"/startin 0.02"}),
-        )
-        .await?;
-        h.users[3].cancel.cancel();
-        tokio::time::timeout(Duration::from_secs(10), async {
-            loop {
-                let (table, _) = h.snapshot(id).await?;
-                if notices(&table).last().map(String::as_str) == Some(aborted) {
-                    ensure!(
-                        matches!(
-                            table.phase,
-                            Phase::Pregame {
-                                countdown: None,
-                                ..
-                            }
-                        ),
-                        "The countdown was not canceled"
-                    );
-                    return Ok::<(), anyhow::Error>(());
-                }
-                tokio::time::sleep(Duration::from_millis(50)).await;
-            }
-        })
-        .await
-        .context("The countdown did not abort")??;
         Ok(())
     }
     .await;
@@ -1568,13 +1484,7 @@ async fn expired_pregame_owner_is_removed_but_remaining_players_and_live_games_s
     let outcome = async {
         let id = h.store.allocate_table().await?;
         let mut table = tests::pregame(id);
-        if let Phase::Pregame {
-            players,
-            countdown,
-            automatic_start,
-            ..
-        } = &mut table.phase
-        {
+        if let Phase::Pregame { players, .. } = &mut table.phase {
             for user in &h.users[1..3] {
                 players.push(Player {
                     id: user.user,
@@ -1583,8 +1493,6 @@ async fn expired_pregame_owner_is_removed_but_remaining_players_and_live_games_s
                     stats: crate::stats::zero_stats(),
                 });
             }
-            *countdown = Some(Utc::now() + ChronoDuration::minutes(5));
-            *automatic_start = Some(3);
         }
         let revision = h.store.save_at(&table, 0).await?;
         let capacity = Arc::new(Semaphore::new(1));
@@ -1618,16 +1526,6 @@ async fn expired_pregame_owner_is_removed_but_remaining_players_and_live_games_s
         ensure!(
             restored.owner == UserId(2),
             "Ownership did not pass to a remaining player"
-        );
-        ensure!(
-            matches!(
-                restored.phase,
-                Phase::Pregame {
-                    countdown: None,
-                    ..
-                }
-            ),
-            "Departure did not cancel the start countdown"
         );
         ensure!(
             restored.shadows.get(&UserId(4)) == Some(&Seat::new(0)),

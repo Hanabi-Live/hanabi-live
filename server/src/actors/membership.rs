@@ -1,8 +1,6 @@
 use super::{
-    Attendance, Blocks, Command, TableActor,
-    chat::table_notice,
-    pending::Completed,
-    pregame::{AUTOMATIC_START_ABORTED, AUTOMATIC_START_CANCELED, remove_pregame_players},
+    Attendance, Blocks, Command, TableActor, chat::table_notice, pending::Completed,
+    pregame::remove_pregame_players,
 };
 use crate::errors::CommandResult;
 use crate::{
@@ -131,25 +129,8 @@ impl TableActor {
             crate::stats::player(&self.store.primary, &session.identity, variant.id).await?;
         ensure_or_reject!(session.active(), "Session changed during join");
         let mut next = self.candidate();
-        let owner_away = !self
-            .attendees
-            .get(&self.table.owner)
-            .is_some_and(|a| a.session.active());
-        let mut canceled = false;
-        let mut aborted = false;
-        if let Phase::Pregame {
-            players,
-            countdown,
-            automatic_start,
-            ..
-        } = &mut next.phase
-        {
+        if let Phase::Pregame { players, .. } = &mut next.phase {
             players.push(player);
-            canceled = countdown.take().is_some();
-            if owner_away && *automatic_start == Some(players.len()) {
-                *automatic_start = None;
-                aborted = true;
-            }
         }
         next.shadows.remove(&session.user);
         let message = table_notice(
@@ -159,17 +140,10 @@ impl TableActor {
                 crate::accounts::escape_html(&session.name)
             ),
         );
-        let mut notices = vec![];
-        if canceled {
-            notices.extend(table_notice(&mut next, AUTOMATIC_START_CANCELED));
-        }
-        if aborted {
-            notices.extend(table_notice(&mut next, AUTOMATIC_START_ABORTED));
-        }
         self.persist(next).await?;
         self.initialize(session.clone(), vec![]).await?;
         let mut e = self.effects();
-        for message in message.into_iter().chain(notices) {
+        if let Some(message) = message {
             for attendee in self.audience().filter(|a| a.session.user != session.user) {
                 e.messages.push((
                     attendee.session.clone(),

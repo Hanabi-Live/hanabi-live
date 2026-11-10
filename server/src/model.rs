@@ -149,8 +149,6 @@ pub struct ReplayState {
 pub enum Phase {
     Pregame {
         players: Vec<Player>,
-        automatic_start: Option<usize>,
-        countdown: Option<DateTime<Utc>>,
         kicked: Vec<UserId>,
         #[serde(skip)]
         runtime: PregameRuntime,
@@ -466,18 +464,14 @@ impl TableSnapshot {
         );
         match &self.phase {
             Phase::Pregame {
-                players,
-                automatic_start,
-                kicked,
-                ..
+                players, kicked, ..
             } => {
                 ensure!(
                     !players.is_empty() && players.iter().any(|p| p.id == self.owner),
                     "Invalid pregame owner"
                 );
                 ensure!(
-                    automatic_start.is_none_or(hanabi_protocol::is_player_count)
-                        && kicked.len() <= MAX_KICKED_PLAYERS,
+                    kicked.len() <= MAX_KICKED_PLAYERS,
                     "Invalid pregame controls"
                 );
             }

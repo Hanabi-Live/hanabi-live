@@ -277,8 +277,6 @@ pub(super) fn pregame(id: TableId) -> TableSnapshot {
                 bot: false,
                 stats: crate::stats::zero_stats(),
             }],
-            automatic_start: None,
-            countdown: None,
             kicked: vec![],
             runtime: crate::model::PregameRuntime::default(),
         },

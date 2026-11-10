@@ -181,26 +181,12 @@ databaseDescribe("compiled application entry point (rust)", () => {
         bob.send("tableLeave", { tableID });
         const bobLeft = await bob.receive("left", SERVER_COMMAND_SCHEMAS.left);
         expect(bobLeft.tableID).toBe(tableID);
-        const automatic = signal === undefined && domain !== "localhost";
-        if (automatic) {
-          alice.send("chat", { room: `table${tableID}`, msg: "/s2" });
-          await alice.receive("chat", SERVER_COMMAND_SCHEMAS.chat, (data) =>
-            data.msg.includes("as soon as 2 players have joined"),
-          );
-        }
         bob.send("tableJoin", {
           tableID,
           password: "synthetic-table-password",
         });
         await bob.receive("joined", SERVER_COMMAND_SCHEMAS.joined);
-        if (signal === undefined && !automatic) {
-          alice.send("chat", {
-            room: `table${tableID}`,
-            msg: "/startin 0.001",
-          });
-        } else if (!automatic) {
-          alice.send("tableStart", { tableID });
-        }
+        alice.send("tableStart", { tableID });
         await alice.receive("tableStart", SERVER_COMMAND_SCHEMAS.tableStart);
         await bob.receive("tableStart", SERVER_COMMAND_SCHEMAS.tableStart);
 

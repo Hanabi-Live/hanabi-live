@@ -74,6 +74,8 @@ of the repository.
 - The "Settings" screen now shows "Saved" beside a setting when you change it.
 - Restarting a shared replay now keeps everyone at the same table. With "hide
   pregame", the next game starts at once.
+- Removed the `/s`, `/s2` to `/s6`, and `/startin` chat commands, which started
+  a game automatically.
 
 ## November 8th, 2026
 

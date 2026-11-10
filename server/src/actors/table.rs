@@ -363,13 +363,12 @@ impl TableActor {
         let live = matches!(self.table.phase, Phase::Live { .. });
         Some(Timers::of(self.table.game()?, live, self.elapsed_ms()))
     }
-    /// When the table next has timed work: an expiring typing indicator or reconnection grace, a
-    /// pregame start, an idle warning or ending, or a player running out of time.
+    /// When the table next has timed work: an expiring typing indicator or reconnection grace, an
+    /// idle warning or ending, or a player running out of time.
     pub(super) fn next_timer(&self) -> Option<Instant> {
         if self.store.check_state().is_err() {
             return None;
         }
-        let now = Instant::now();
         let anchor = self.anchor;
         let after = |ms: i64| anchor + Duration::from_millis(u64::try_from(ms).unwrap_or(0));
         let mut deadlines = self
@@ -386,25 +385,7 @@ impl TableActor {
         }
         deadlines.extend(self.timer_retry);
         match &self.table.phase {
-            Phase::Pregame {
-                players,
-                automatic_start,
-                countdown,
-                ..
-            } => {
-                // A table that `/s` filled starts at once, while its owner is here.
-                if automatic_start.is_some_and(|n| n == players.len())
-                    && self
-                        .attendees
-                        .get(&self.table.owner)
-                        .is_some_and(|a| a.session.active())
-                {
-                    deadlines.push(now);
-                }
-                if let Some(at) = countdown {
-                    deadlines.push(now + (*at - Utc::now()).to_std().unwrap_or_default());
-                }
-            }
+            Phase::Pregame { .. } => {}
             Phase::Live { snapshot: s, .. } => {
                 if s.game.end_condition == EndCondition::InProgress {
                     deadlines.push(after(s.idle_remaining));
@@ -1072,29 +1053,7 @@ impl TableActor {
             }
             self.publish(e).await?;
         }
-        if let Phase::Pregame {
-            players,
-            automatic_start,
-            countdown,
-            ..
-        } = &self.table.phase
-        {
-            let full = automatic_start.is_some_and(|n| n == players.len());
-            let countdown_over = countdown.is_some_and(|t| Utc::now() >= t);
-            if !full && !countdown_over {
-                return Ok(());
-            }
-            if let Some(owner) = self
-                .attendees
-                .get(&self.table.owner)
-                .filter(|a| a.session.active())
-            {
-                let owner = owner.session.clone();
-                return self.start(owner).await;
-            }
-            if countdown_over {
-                return self.abort_countdown().await;
-            }
+        if matches!(self.table.phase, Phase::Pregame { .. }) {
             return Ok(());
         }
         let timers = self
