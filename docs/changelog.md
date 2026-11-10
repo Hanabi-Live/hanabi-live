@@ -36,6 +36,8 @@ of the repository.
   classic screen, and a "Classic view" button switches to it at any time.
 - In replays, a misplayed card now moves to its play stack and then straight to
   the discard pile, instead of exploding on the strike tracker.
+- In the light theme, text, tooltips, and the "Apply" filter button have more
+  contrast, so that they are easier to read.
 
 ## November 9th, 2026
 

@@ -21,11 +21,15 @@
   --surface-panel: #fafafa;
   --border: #e5e5e5;
   --border-panel: #ececec;
-  --text: #777;
+  /*
+    The lightest gray with normal-text contrast on "--surface-sunken". Text that should look fainter
+    can only be lighter in the dark theme.
+  */
+  --text: #707070;
   --text-strong: #646464;
-  --text-label: #8a8a8a;
+  --text-label: var(--text);
   --text-on-accent: #fff;
-  --text-faint: #999;
+  --text-faint: var(--text);
   --link: blue;
   --focus: #e89980;
   --green: #308943;
@@ -34,9 +38,9 @@
   --button-bg: #666;
   --button-hover-bg: #737373;
   --button-active-bg: #595959;
-  --button-primary-bg: #e89980;
-  --button-primary-hover-bg: #ecaa96;
-  --button-primary-active-bg: #e4886a;
+  --button-primary-bg: #b04a2b;
+  --button-primary-hover-bg: #b8502f;
+  --button-primary-active-bg: #a3431f;
   --button-disabled-bg: #777;
   --button-disabled-text: #f5f5f5;
   --button-green: #449644;
@@ -60,9 +64,6 @@
   --header-button-hover-bg: rgba(153, 153, 153, 0.25);
   --header-button-active-bg: rgba(153, 153, 153, 0.5);
 
-  /* Text in modals and lobby pages: the nearest gray to "--text" that meets normal-text contrast on white */
-  --modal-text: #767676;
-  --modal-input-text: #707070;
   --modal-border: #308943;
 
   --table-header-text: #646464;
@@ -75,7 +76,6 @@
   --game-chat-bg: black;
   --game-chat-border: black;
   --slider-track: #ddd;
-  --tooltip-text: #8d8d8d;
   --tooltip-border: none;
   --note-title-line: #777;
   --morph-option-border: gray;
@@ -84,7 +84,7 @@
   --difficulty-very-hard: darkred;
 
   /* The arrow of a dropdown, in the color of "--text". An image cannot use a variable's color. */
-  --select-arrow: url("data:image/svg+xml;charset=utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40' preserveAspectRatio='none' viewBox='0 0 40 40'%3E%3Cpath d='M9.4,12.3l10.4,10.4l10.4-10.4c0.2-0.2,0.5-0.4,0.9-0.4c0.3,0,0.6,0.1,0.9,0.4l3.3,3.3c0.2,0.2,0.4,0.5,0.4,0.9 c0,0.4-0.1,0.6-0.4,0.9L20.7,31.9c-0.2,0.2-0.5,0.4-0.9,0.4c-0.3,0-0.6-0.1-0.9-0.4L4.3,17.3c-0.2-0.2-0.4-0.5-0.4-0.9 c0-0.4,0.1-0.6,0.4-0.9l3.3-3.3c0.2-0.2,0.5-0.4,0.9-0.4S9.1,12.1,9.4,12.3z' fill='%23777777' /%3E%3C/svg%3E");
+  --select-arrow: url("data:image/svg+xml;charset=utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40' preserveAspectRatio='none' viewBox='0 0 40 40'%3E%3Cpath d='M9.4,12.3l10.4,10.4l10.4-10.4c0.2-0.2,0.5-0.4,0.9-0.4c0.3,0,0.6,0.1,0.9,0.4l3.3,3.3c0.2,0.2,0.4,0.5,0.4,0.9 c0,0.4-0.1,0.6-0.4,0.9L20.7,31.9c-0.2,0.2-0.5,0.4-0.9,0.4c-0.3,0-0.6-0.1-0.9-0.4L4.3,17.3c-0.2-0.2-0.4-0.5-0.4-0.9 c0-0.4,0.1-0.6,0.4-0.9l3.3-3.3c0.2-0.2,0.5-0.4,0.9-0.4S9.1,12.1,9.4,12.3z' fill='%23707070' /%3E%3C/svg%3E");
 
   /* Covers the page behind a modal */
   --modal-backdrop: rgba(0, 24, 5, 0.7);
@@ -171,6 +171,7 @@
   --text: #e6e6e6;
   --text-strong: var(--text);
   --text-label: #a9a9a9;
+  --text-faint: #999;
   --link: #7fb2ff;
   --name-hover: var(--link);
   --error: #ff6b6b;
@@ -191,8 +192,6 @@
   --header-border: 1px solid var(--border);
   --header-text: var(--text);
 
-  --modal-text: var(--text);
-  --modal-input-text: var(--text);
   --modal-border: var(--border);
 
   --table-header-text: var(--text-label);
@@ -205,7 +204,6 @@
   --game-chat-border: var(--border);
   --slider-track: var(--border);
   --select-arrow: url("data:image/svg+xml;charset=utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40' preserveAspectRatio='none' viewBox='0 0 40 40'%3E%3Cpath d='M9.4,12.3l10.4,10.4l10.4-10.4c0.2-0.2,0.5-0.4,0.9-0.4c0.3,0,0.6,0.1,0.9,0.4l3.3,3.3c0.2,0.2,0.4,0.5,0.4,0.9 c0,0.4-0.1,0.6-0.4,0.9L20.7,31.9c-0.2,0.2-0.5,0.4-0.9,0.4c-0.3,0-0.6-0.1-0.9-0.4L4.3,17.3c-0.2-0.2-0.4-0.5-0.4-0.9 c0-0.4,0.1-0.6,0.4-0.9l3.3-3.3c0.2-0.2,0.5-0.4,0.9-0.4S9.1,12.1,9.4,12.3z' fill='%23e6e6e6' /%3E%3C/svg%3E");
-  --tooltip-text: var(--text);
   --tooltip-border: 1px solid var(--border);
   --note-title-line: var(--border);
 

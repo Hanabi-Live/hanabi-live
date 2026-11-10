@@ -415,14 +415,6 @@
   text-align: right;
 }
 
-:is(.modal, .lobby-page) {
-  color: var(--modal-text);
-}
-
-:is(.modal, .lobby-page) :is(input, select, textarea) {
-  color: var(--modal-input-text);
-}
-
 @media (prefers-reduced-motion: reduce) {
   .setting-status {
     transition: none;
