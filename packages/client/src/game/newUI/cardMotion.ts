@@ -32,8 +32,6 @@ const CARD_MOVE_ANIMATION_ID = "card-move";
 /** Moving cards go over the panels that they cross. */
 const MOVING_CARD_Z_INDEX = "30";
 
-const REDUCED_MOTION_QUERY = "(prefers-reduced-motion: reduce)";
-
 function cardElements(root: HTMLElement): readonly HTMLElement[] {
   return [...root.querySelectorAll<HTMLElement>("[data-card-order]")];
 }
@@ -90,6 +88,9 @@ export function measureCards(root: HTMLElement): CardPositions {
 /**
  * Animates every card that moved, from its old place to its new one. When the game moves forward, a
  * card that was not on the table before was just drawn, so it comes from the deck.
+ *
+ * Like the classic screen, it ignores the "reduced motion" preference of the operating system: the
+ * movement shows what happened on the turn, so it is part of the game and not decoration.
  */
 export function animateCardMoves(
   root: HTMLElement,
@@ -97,10 +98,6 @@ export function animateCardMoves(
   after: CardPositions,
   forward: boolean,
 ): void {
-  if (globalThis.matchMedia(REDUCED_MOTION_QUERY).matches) {
-    return;
-  }
-
   const deck = before.get(DECK_KEY)?.rect;
   for (const element of cardElements(root)) {
     const key = element.dataset["cardOrder"];
