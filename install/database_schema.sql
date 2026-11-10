@@ -316,7 +316,6 @@ CREATE TABLE chat_log (
     discord_message_id  TEXT         NULL,     /* Discord snowflake, if the message came from Discord. */
     deleted_at          TIMESTAMPTZ  NULL,     /* Tombstone: do not show or restore removed messages. */
     message             TEXT         NOT NULL,
-    room                TEXT         NULL,     /* Unused; replaced by `table_id`. */
     datetime_sent       TIMESTAMPTZ  NOT NULL  DEFAULT NOW(),
     table_id            BIGINT       NULL,     /* The table whose chat this is; NULL for the lobby. */
     CONSTRAINT chat_log_user_id_fkey
@@ -324,12 +323,9 @@ CREATE TABLE chat_log (
     CONSTRAINT chat_log_user_id_check CHECK ((source = 'user') = (user_id IS NOT NULL))
 );
 CREATE INDEX chat_log_index_user_id          ON chat_log (user_id);
-CREATE INDEX chat_log_index_room             ON chat_log (room);
 CREATE INDEX chat_log_index_datetime_sent_id ON chat_log (datetime_sent, id);
 /* The lobby's chat, which has no table. */
 CREATE INDEX chat_log_index_lobby            ON chat_log (id) WHERE table_id IS NULL;
-CREATE INDEX chat_log_index_room_datetime_sent_id ON chat_log (room, datetime_sent, id)
-    WHERE deleted_at IS NULL;
 CREATE UNIQUE INDEX chat_log_index_discord_message_id ON chat_log (discord_message_id)
     WHERE discord_message_id IS NOT NULL;
 
@@ -341,14 +337,12 @@ INSERT INTO chat_log (
     user_id,
     source,
     discord_name,
-    message,
-    room
+    message
 ) VALUES (
     NULL,
     'discord',
     'Hanab Live',
-    'The Hanab Live database has been successfully initialized.',
-    'lobby'
+    'The Hanab Live database has been successfully initialized.'
 );
 
 DROP TABLE IF EXISTS chat_log_pm CASCADE;
