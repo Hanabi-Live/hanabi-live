@@ -260,32 +260,30 @@ export function TableTokens({
   return (
     <section
       aria-label="Clue tokens and strikes"
-      className="tw:flex tw:shrink-0 tw:items-center tw:justify-around tw:rounded-[18px] tw:bg-game-zone tw:px-4.5 tw:py-3.5"
+      className="tw:grid tw:shrink-0 tw:grid-cols-2 tw:items-center tw:justify-items-center tw:gap-y-1.5 tw:rounded-[18px] tw:bg-game-zone tw:px-4.5 tw:py-3.5"
     >
-      <div className="tw:flex tw:flex-col tw:items-center tw:gap-0.5">
-        <span className="tw:text-[13px] tw:text-game-muted">Clues</span>
-        <span className="tw:text-[22px] tw:font-bold tw:text-game-text">
-          <OutOf max={maxClues} value={clues} />
-        </span>
-      </div>
-      <div className="tw:flex tw:flex-col tw:items-center tw:gap-1.5">
-        <span className="tw:text-[13px] tw:text-game-muted">Strikes</span>
-        <div
-          aria-label={`${strikes} of ${MAX_STRIKES} strikes`}
-          className="tw:flex tw:gap-1.5"
-          role="img"
-        >
-          {[...eRange(MAX_STRIKES)].map((i) => (
-            <span
-              className={`tw:box-border tw:size-[32px] tw:rounded-lg tw:border-2 ${
-                i < strikes
-                  ? "tw:border-critical tw:bg-critical"
-                  : "tw:border-game-line"
-              }`}
-              key={i}
-            />
-          ))}
-        </div>
+      {/* The labels share the first row, and the clues and strikes share the second, so that each
+          lines up with the other. */}
+      <span className="tw:text-[13px] tw:text-game-muted">Clues</span>
+      <span className="tw:text-[13px] tw:text-game-muted">Strikes</span>
+      <span className="tw:text-[22px] tw:font-bold tw:text-game-text">
+        <OutOf max={maxClues} value={clues} />
+      </span>
+      <div
+        aria-label={`${strikes} of ${MAX_STRIKES} strikes`}
+        className="tw:flex tw:gap-1.5"
+        role="img"
+      >
+        {[...eRange(MAX_STRIKES)].map((i) => (
+          <span
+            className={`tw:box-border tw:size-[32px] tw:rounded-lg tw:border-2 ${
+              i < strikes
+                ? "tw:border-critical tw:bg-critical"
+                : "tw:border-game-line"
+            }`}
+            key={i}
+          />
+        ))}
       </div>
     </section>
   );
