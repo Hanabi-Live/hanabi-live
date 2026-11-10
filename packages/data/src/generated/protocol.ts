@@ -1145,6 +1145,10 @@ export const tableStartRequestSchema = z.strictObject({
   tableID: tableIdSchema,
 });
 export const tableStartedSchema = z.strictObject({
+  /**
+   * Whether the game started just now, rather than the recipient joining a game in progress.
+   */
+  justStarted: z.boolean(),
   replay: z.boolean(),
   tableID: tableIdSchema,
 });

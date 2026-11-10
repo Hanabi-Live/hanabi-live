@@ -98,6 +98,8 @@ pub struct TableStarted {
     #[serde(rename = "tableID")]
     pub table_id: TableId,
     pub replay: bool,
+    /// Whether the game started just now, rather than the recipient joining a game in progress.
+    pub just_started: bool,
 }
 
 /// One author's notes on every card.

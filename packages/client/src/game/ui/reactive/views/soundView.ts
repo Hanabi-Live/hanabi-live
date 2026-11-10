@@ -24,11 +24,19 @@ export function onNewSoundEffect(
 ): void {
   const { soundMove } = globals.lobby.settings;
 
+  // On the first load, only play a sound if the game started just now (and not after a refresh or
+  // when joining a game in progress). Use the flag once so that observer re-registration cannot
+  // play it again.
+  const isFirstLoad = previousData === undefined;
+  const { playStartSound } = globals;
+  if (isFirstLoad) {
+    globals.playStartSound = false;
+  }
+
   if (
     // Do not play sounds during resize-driven observer re-registration.
     globals.isResizing
-    // Do not play sounds on the initial load (unless it is the first turn).
-    || (previousData === undefined && data.gameState.turn.turnNum !== 0)
+    || (isFirstLoad && !playStartSound)
     // Only make a sound when the game starts or when it is a new player's turn.
     || data.gameState.turn.currentPlayerIndex
       === previousData?.gameState.turn.currentPlayerIndex

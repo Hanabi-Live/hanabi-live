@@ -183,7 +183,7 @@ lobbyCommands.set("tableStart", (data) => {
   if (!data.replay && globals.currentScreen === Screen.PreGame) {
     pregame.hide(false);
   }
-  gameMain.show();
+  gameMain.show(data.justStarted);
 });
 
 // Received by the client when a user connects or has a new status.

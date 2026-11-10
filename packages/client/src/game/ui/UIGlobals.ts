@@ -102,6 +102,12 @@ export class UIGlobals {
 
   isResizing = false;
 
+  /**
+   * Whether the game started just now, so its first state should play the turn sound. It is false
+   * after a refresh or when joining a game in progress.
+   */
+  playStartSound = false;
+
   // State information
   store: Redux.Store<State, Action> | null = null;
   stateObserver: StateObserver | null = null;
@@ -168,6 +174,7 @@ export class UIGlobals {
     this.restartPending = false;
     this.globalEmpathyEnabled = false;
     this.isResizing = false;
+    this.playStartSound = false;
 
     this.stateObserver?.unregisterObservers();
     this.stateObserver = null;

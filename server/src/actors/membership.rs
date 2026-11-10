@@ -327,6 +327,7 @@ impl TableActor {
                     TableStarted {
                         table_id: self.table.id,
                         replay,
+                        just_started: false,
                     },
                 ),
             ));

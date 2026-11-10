@@ -22,7 +22,7 @@ export function init(): void {
   });
 }
 
-export function show(): void {
+export function show(justStarted: boolean): void {
   const { pathname, hash } = globalThis.location;
   historyHash =
     pathname === PATH.LOBBY && hash.startsWith(HISTORY_HASH) ? hash : "";
@@ -38,7 +38,7 @@ export function show(): void {
   $("#game").fadeIn(FADE_TIME_MS);
 
   // Every time a new game is opened, the UI is rebuilt from scratch.
-  globals.ui = new HanabiUI(globals, gameExports);
+  globals.ui = new HanabiUI(globals, gameExports, justStarted);
   globals.chatUnread = 0;
 
   // Request some high-level information about the game (e.g. the number of players and the variant)

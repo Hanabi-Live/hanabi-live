@@ -30,7 +30,7 @@ export class HanabiUI {
   private liveResizeBaseHeight = 0;
   private liveResizeScale = 1;
 
-  constructor(lobby: LobbyGlobals, game: GameExports) {
+  constructor(lobby: LobbyGlobals, game: GameExports, justStarted: boolean) {
     // Since the "HanabiUI" object is being reinstantiated, we need to explicitly reinitialize all
     // globals variables (or else they will retain their old values).
     globals.reset();
@@ -44,6 +44,7 @@ export class HanabiUI {
     // will eventually merge these objects to make it less confusing.
     globals.game = game; // This is the "gameExports" from the "/src/game/main.ts" file
     // We should also combine this with the UI object in the future.
+    globals.playStartSound = justStarted;
 
     initStageSize();
     cursor.set("default");

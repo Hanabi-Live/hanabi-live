@@ -292,6 +292,33 @@ async fn player_shadow_is_cleared_when_a_spectator_joins() -> Result<()> {
 }
 
 #[tokio::test]
+async fn only_the_start_of_a_game_is_marked_as_just_started() -> Result<()> {
+    let Some(mut h) = Harness::new(&["Alice", "Bob", "Cathy"]).await? else {
+        return Ok(());
+    };
+    let outcome = async {
+        let id = h.create(0, "Just started", json!({})).await?;
+        h.send(1, "tableJoin", json!({"tableID":id})).await?;
+        h.send(0, "tableStart", json!({"tableID":id})).await?;
+        let started = h.receive(1, "tableStart").await?;
+        ensure!(
+            started["justStarted"] == true,
+            "A player was not told that the game started: {started}"
+        );
+        h.send(2, "tableSpectate", json!({"tableID":id})).await?;
+        let joined = h.receive(2, "tableStart").await?;
+        ensure!(
+            joined["justStarted"] == false,
+            "A spectator who joined a game in progress was told that it started: {joined}"
+        );
+        Ok(())
+    }
+    .await;
+    h.close().await?;
+    outcome
+}
+
+#[tokio::test]
 async fn player_shadow_from_saved_games_is_cleared_on_reattend() -> Result<()> {
     let Some(mut h) = Harness::new(&["Alice", "Bob"]).await? else {
         return Ok(());
