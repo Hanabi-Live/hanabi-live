@@ -4,13 +4,19 @@ import { Status, StatusText } from "@hanabi-live/data";
 import { useEffect, useRef } from "react";
 import { globals } from "../../Globals";
 import { DIMMED_OPACITY } from "../../constants";
-import { useAppSelector } from "../../store";
+import { store, useAppSelector } from "../../store";
 import * as tooltips from "../../tooltips";
 import { tableJoin, tableSpectate } from "../tables/tableActions";
 import { Screen } from "../types/Screen";
 import { UserLink } from "./UserMenu";
 import type { UserRow } from "./usersSlice";
-import { selectUserCount, selectUserRows } from "./usersSlice";
+import {
+  botsShownChanged,
+  selectBotRows,
+  selectBotsShown,
+  selectUserCount,
+  selectUserRows,
+} from "./usersSlice";
 
 const H_GROUP_TOOLTIP =
   '<span class="small-tooltip-text">This person is a self-identified member of the H-Group.</span>';
@@ -28,7 +34,8 @@ const STATUSES_WITHOUT_TABLE: ReadonlySet<Status> = new Set([
 ]);
 
 export function UsersList(): React.JSX.Element {
-  const rows = useAppSelector(selectUserRows);
+  const botsShown = useAppSelector(selectBotsShown);
+  const rows = useAppSelector(botsShown ? selectBotRows : selectUserRows);
   // We cannot go to another table from the pre-game screen.
   const inPregame = useAppSelector(
     (state) => state.session.screen === Screen.PreGame,
@@ -53,6 +60,52 @@ export function UsersList(): React.JSX.Element {
 
 export function OnlineUserCount(): React.JSX.Element {
   return <>{useAppSelector(selectUserCount)}</>;
+}
+
+/**
+ * The title of the list. While bots are online, it is also the pair of tabs that switches between
+ * the users and the bots.
+ */
+export function UsersTitle(): React.JSX.Element {
+  const userCount = useAppSelector(selectUserCount);
+  const botCount = useAppSelector(selectBotRows).length;
+  const botsShown = useAppSelector(selectBotsShown);
+
+  const usersLabel = (
+    <>
+      Online<span id="small-screen-toggle-users-h3"> Users</span> ({userCount})
+    </>
+  );
+  if (botCount === 0) {
+    return usersLabel;
+  }
+
+  return (
+    <span className="lobby-users-tabs" role="tablist">
+      <button
+        aria-selected={!botsShown}
+        className="lobby-users-tab"
+        onClick={() => {
+          store.dispatch(botsShownChanged(false));
+        }}
+        role="tab"
+        type="button"
+      >
+        {usersLabel}
+      </button>
+      <button
+        aria-selected={botsShown}
+        className="lobby-users-tab"
+        onClick={() => {
+          store.dispatch(botsShownChanged(true));
+        }}
+        role="tab"
+        type="button"
+      >
+        Bots ({botCount})
+      </button>
+    </span>
+  );
 }
 
 function UserRowView({

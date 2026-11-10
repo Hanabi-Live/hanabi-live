@@ -16,8 +16,14 @@ import { DIMMED_OPACITY } from "../../constants";
 import { store } from "../../store";
 import { tablesCleared, tablesListed } from "../tables/tablesSlice";
 import { Screen } from "../types/Screen";
-import { OnlineUserCount, UsersList } from "./UsersList";
-import { userInactiveChanged, usersCleared, usersListed } from "./usersSlice";
+import { UsersList, UsersTitle } from "./UsersList";
+import {
+  botsShownChanged,
+  userInactiveChanged,
+  userLeft,
+  usersCleared,
+  usersListed,
+} from "./usersSlice";
 
 vi.mock("../../tooltips", () => ({
   attach: vi.fn(),
@@ -75,7 +81,9 @@ function user(
 function renderList() {
   render(
     <Provider store={store}>
-      <OnlineUserCount />
+      <h3 data-testid="title">
+        <UsersTitle />
+      </h3>
       <UsersList />
     </Provider>,
   );
@@ -94,6 +102,7 @@ beforeEach(() => {
   globals.blocked = [];
   globals.currentScreen = Screen.Lobby;
   store.dispatch(usersCleared());
+  store.dispatch(botsShownChanged(false));
   store.dispatch(tablesCleared());
 });
 
@@ -120,7 +129,7 @@ describe("UsersList", () => {
     expect(screen.getByText("Alice").getAttribute("href")).toBe(
       "/scores/Alice",
     );
-    expect(screen.getByText("5")).toBeDefined();
+    expect(screen.getByTestId("title").textContent).toBe("Online Users (5)");
   });
 
   test("re-renders when a user becomes inactive", () => {
@@ -140,7 +149,7 @@ describe("UsersList", () => {
     expect(name.textContent).toContain("\u{1F4A4}");
   });
 
-  test("marks bots with a robot instead of the H-Group icon", () => {
+  test("lists bots on a separate tab and does not count them as users", () => {
     store.dispatch(
       usersListed([
         { ...user(1, "Alice"), hGroup: true },
@@ -149,11 +158,29 @@ describe("UsersList", () => {
     );
     renderList();
 
-    const [alice, bot] = screen.getAllByRole("row").slice(1);
-    expect(alice!.querySelector(".fa-heading")).not.toBeNull();
-    expect(alice!.textContent).not.toContain("\u{1F916}");
-    expect(bot!.querySelector(".fa-heading")).toBeNull();
-    expect(bot!.textContent).toContain("\u{1F916}");
+    const [usersTab, botsTab] = screen.getAllByRole("tab");
+    expect(usersTab!.textContent).toBe("Online Users (1)");
+    expect(usersTab!.ariaSelected).toBe("true");
+    expect(botsTab!.textContent).toBe("Bots (1)");
+    expect(rowNames()).toStrictEqual(["Alice"]);
+    const alice = screen.getAllByRole("row")[1]!;
+    expect(alice.querySelector(".fa-heading")).not.toBeNull();
+    expect(alice.textContent).not.toContain("\u{1F916}");
+
+    fireEvent.click(botsTab!);
+    expect(botsTab!.ariaSelected).toBe("true");
+    expect(rowNames()).toStrictEqual(["Bot-Bob"]);
+    const bot = screen.getAllByRole("row")[1]!;
+    expect(bot.querySelector(".fa-heading")).toBeNull();
+    expect(bot.textContent).toContain("\u{1F916}");
+
+    // The tabs disappear when the last bot leaves.
+    act(() => {
+      store.dispatch(userLeft(userIdSchema.parse(2)));
+    });
+    expect(screen.queryByRole("tab")).toBeNull();
+    expect(screen.getByTestId("title").textContent).toBe("Online Users (1)");
+    expect(rowNames()).toStrictEqual(["Alice"]);
   });
 
   test("opens a menu that friends and blocks a user when we click on their name", () => {

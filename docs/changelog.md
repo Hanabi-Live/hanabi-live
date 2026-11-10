@@ -20,6 +20,8 @@ of the repository.
 - The firework for completing a play stack is now shorter.
 - The text in the action log now slides only in replays, so that it does not
   distract you during a game.
+- Bots are now listed on a separate tab of the online users list, and they no
+  longer count as online users.
 
 ## November 9th, 2026
 

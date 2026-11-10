@@ -33,7 +33,10 @@ const usersAdapter = createEntityAdapter({
 
 const usersSlice = createSlice({
   name: "users",
-  initialState: usersAdapter.getInitialState(),
+  initialState: usersAdapter.getInitialState({
+    /** Whether the list shows the bots instead of the users. */
+    botsShown: false,
+  }),
   reducers: {
     userChanged(state, action: PayloadAction<User>) {
       usersAdapter.setOne(state, action.payload);
@@ -54,6 +57,9 @@ const usersSlice = createSlice({
     usersCleared(state) {
       usersAdapter.removeAll(state);
     },
+    botsShownChanged(state, action: PayloadAction<boolean>) {
+      state.botsShown = action.payload;
+    },
   },
 });
 
@@ -63,6 +69,7 @@ export const {
   userLeft,
   userInactiveChanged,
   usersCleared,
+  botsShownChanged,
 } = usersSlice.actions;
 export const usersReducer = usersSlice.reducer;
 
@@ -70,9 +77,7 @@ const usersSelectors = usersAdapter.getSelectors(
   (state: RootState) => state.users,
 );
 
-export const selectUserCount = usersSelectors.selectTotal;
-
-export const selectUserRows = createSelector(
+const selectAllRows = createSelector(
   [
     usersSelectors.selectAll,
     (state: RootState) => state.session.username,
@@ -110,4 +115,24 @@ function getKind(
     return "self";
   }
   return friendNames.has(name) ? "friend" : "other";
+}
+
+/** Bots are listed separately, since they are not really users. */
+export const selectUserRows = createSelector(
+  [selectAllRows],
+  (rows): readonly UserRow[] => rows.filter((row) => !row.user.bot),
+);
+
+export const selectBotRows = createSelector(
+  [selectAllRows],
+  (rows): readonly UserRow[] => rows.filter((row) => row.user.bot),
+);
+
+export function selectUserCount(state: RootState): number {
+  return selectUserRows(state).length;
+}
+
+/** The bots tab exists only while bots are online. */
+export function selectBotsShown(state: RootState): boolean {
+  return state.users.botsShown && selectBotRows(state).length > 0;
 }
