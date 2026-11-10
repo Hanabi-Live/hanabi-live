@@ -1,9 +1,9 @@
 #main-login #title-sub {
-  color: #f2f2f2;
+  color: var(--login-text);
 }
 
 #title-sub strong {
-  color: white;
+  color: var(--text-on-accent);
 }
 
 .login-icon {
@@ -27,7 +27,7 @@
 }
 
 .login-text {
-  color: #f2f2f2;
+  color: var(--login-text);
   text-align: center;
 }
 

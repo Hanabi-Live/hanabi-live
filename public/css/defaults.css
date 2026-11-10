@@ -285,7 +285,7 @@ code {
 /* Section/Article */
 
 header p {
-  color: #999;
+  color: var(--text-faint);
   font-style: italic;
   margin: 0 0 1.5em 0;
   position: relative;
@@ -413,7 +413,7 @@ input[type="checkbox"]:checked + label:before,
 input[type="radio"]:checked + label:before {
   background: var(--checkbox-checked);
   border-color: var(--checkbox-checked);
-  color: #ffffff;
+  color: var(--text-on-accent);
   content: "\f00c";
 }
 
@@ -437,7 +437,7 @@ input[type="radio"]:disabled + label {
 }
 
 ::placeholder {
-  color: #999;
+  color: var(--text-faint);
   opacity: 1;
 }
 
@@ -628,10 +628,10 @@ input[type="button"],
   transition:
     background-color 0.2s ease-in-out,
     color 0.2s ease-in-out;
-  background-color: #666;
+  background-color: var(--button-bg);
   border-radius: var(--radius);
   border: 0;
-  color: #ffffff;
+  color: var(--text-on-accent);
   cursor: pointer;
   display: inline-block;
   font-weight: 400;
@@ -648,13 +648,13 @@ input[type="button"],
 input[type="submit"]:hover,
 input[type="button"]:hover,
 .button:hover {
-  background-color: #737373;
+  background-color: var(--button-hover-bg);
 }
 
 input[type="submit"]:active,
 input[type="button"]:active,
 .button:active {
-  background-color: #595959;
+  background-color: var(--button-active-bg);
 }
 
 /* Center the button around the icon and the text, instead of just the text. */
@@ -693,26 +693,26 @@ input[type="button"]:active,
 
 input[type="submit"].primary,
 .button.primary {
-  background-color: #e89980;
-  color: #ffffff;
+  background-color: var(--button-primary-bg);
+  color: var(--text-on-accent);
 }
 
 input[type="submit"].primary:hover,
 .button.primary:hover {
-  background-color: #ecaa96;
+  background-color: var(--button-primary-hover-bg);
 }
 
 input[type="submit"].primary:active,
 .button.primary:active {
-  background-color: #e4886a;
+  background-color: var(--button-primary-active-bg);
 }
 
 .button.disabled,
 .button:disabled {
   /* A disabled button looks the same everywhere, such as in the header. */
-  background-color: #777 !important;
+  background-color: var(--button-disabled-bg) !important;
   box-shadow: inset 0 -0.15em 0 0 rgba(0, 0, 0, 0.15);
-  color: #f5f5f5 !important;
+  color: var(--button-disabled-text) !important;
   cursor: default;
   opacity: 0.25;
 }

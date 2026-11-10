@@ -98,7 +98,7 @@
 }
 
 #morph-modal label {
-  border: 1px solid gray;
+  border: 1px solid var(--morph-option-border);
   padding: 10px;
   display: block;
   position: relative;
@@ -110,12 +110,12 @@
 }
 
 #morph-modal label:before {
-  background-color: white;
-  color: white;
+  background-color: var(--surface);
+  color: var(--text-on-accent);
   content: " ";
   display: block;
   border-radius: 50%;
-  border: 1px solid grey;
+  border: 1px solid var(--morph-option-border);
   position: absolute;
   top: 1px;
   left: 1px;
@@ -134,11 +134,11 @@
 }
 
 #morph-modal :checked + label {
-  border-color: orange;
+  border-color: var(--morph-option-selected);
 }
 
 #morph-modal :checked + label:before {
-  background-color: grey;
+  background-color: var(--morph-option-border);
   content: "✓";
   line-height: 1.2em;
   transform: scale(1);

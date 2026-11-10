@@ -25,11 +25,20 @@
   --text-strong: #646464;
   --text-label: #8a8a8a;
   --text-on-accent: #fff;
+  --text-faint: #999;
   --link: blue;
   --focus: #e89980;
   --green: #308943;
   --green-text: #308943;
   --green-tint: #e6f2e8;
+  --button-bg: #666;
+  --button-hover-bg: #737373;
+  --button-active-bg: #595959;
+  --button-primary-bg: #e89980;
+  --button-primary-hover-bg: #ecaa96;
+  --button-primary-active-bg: #e4886a;
+  --button-disabled-bg: #777;
+  --button-disabled-text: #f5f5f5;
   --button-green: #449644;
   --button-green-hover: #84c884;
   --checkbox-checked: #666;
@@ -41,11 +50,13 @@
   --name-hover: #3350cb;
   --error: red;
   --help-icon-hover: #6666ff;
+  --dice-hover: #00cc00;
 
   /* The header bar */
   --header-bg: #444;
   --header-border: none;
   --header-text: #bbb;
+  --header-button-border: #999;
 
   /* Text in modals and lobby pages: the nearest gray to "--text" that meets normal-text contrast on white */
   --modal-text: #767676;
@@ -59,11 +70,16 @@
   --menu-hover-bg: #eee;
   --menu-hover-text: #222;
   --chat-bg: transparent;
+  --game-chat-bg: black;
   --game-chat-border: black;
   --slider-track: #ddd;
   --tooltip-text: #8d8d8d;
   --tooltip-border: none;
   --note-title-line: #777;
+  --morph-option-border: gray;
+  --morph-option-selected: orange;
+  --difficulty-hard: darkgoldenrod;
+  --difficulty-very-hard: darkred;
 
   /* Lobby table rows */
   --lobby-table-joined: #f2f2ff;
@@ -81,6 +97,9 @@
   --login-alert-bg: #f2dede;
   --login-alert-border: #ebccd1;
   --login-alert-text: #a94442;
+
+  /* Text on the wood background of the login screen */
+  --login-text: #f2f2f2;
 
   /* The corner radius of panels, buttons, and form fields */
   --radius: 6px;

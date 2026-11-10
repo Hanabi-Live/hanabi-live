@@ -92,7 +92,7 @@
 }
 
 #dice:hover {
-  color: #00cc00;
+  color: var(--dice-hover);
 }
 
 .lobby-page button[type="submit"] {
@@ -412,7 +412,7 @@ input::-webkit-calendar-picker-indicator {
 
 .lobby-segmented input[type="radio"]:checked + label {
   background-color: var(--green);
-  color: white;
+  color: var(--text-on-accent);
 }
 
 .lobby-segmented input[type="radio"]:focus-visible + label {

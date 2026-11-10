@@ -43,13 +43,13 @@ table.history {
 }
 
 .history td.hard {
-  color: white;
-  background-color: darkgoldenrod;
+  color: var(--text-on-accent);
+  background-color: var(--difficulty-hard);
 }
 
 .history td.very-hard {
-  color: white;
-  background-color: darkred;
+  color: var(--text-on-accent);
+  background-color: var(--difficulty-very-hard);
 }
 
 .pager {

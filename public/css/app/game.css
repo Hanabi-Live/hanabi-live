@@ -45,7 +45,7 @@
   position: absolute;
   z-index: 1;
   /* The modal is automatically positioned in the "chat.js" file */
-  background-color: black;
+  background-color: var(--game-chat-bg);
   border-radius: 10px;
   border: 3px solid var(--game-chat-border);
   touch-action: none;
@@ -58,7 +58,7 @@
 
 #game-chat-modal-header-close {
   cursor: pointer;
-  color: white;
+  color: var(--text-on-accent);
   margin-right: 0.3em;
   padding: 0.25em; /* We want some padding so that the activation range is bigger */
   position: relative;
