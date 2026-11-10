@@ -1,0 +1,16 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO user_stats(user_id,variant_id,best_score2,best_score2_mod) SELECT $1,v.id,v.score,0 FROM UNNEST($2::smallint[],$3::smallint[]) AS v(id,score) ON CONFLICT(user_id,variant_id) DO UPDATE SET best_score2=excluded.best_score2,best_score2_mod=0",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Int4",
+        "Int2Array",
+        "Int2Array"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "4caf8d3fde28ee7cecf45d8703b127fbf7b01a9b98fc782ee8c4ef7d19848c3b"
+}

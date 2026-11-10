@@ -2218,7 +2218,7 @@ async fn mark_complete(h: &Harness, user: i32, except: Option<&str>) -> Result<(
         .iter()
         .filter(|v| Some(v.name.as_str()) != except)
         .collect::<Vec<_>>();
-    sqlx::query!("INSERT INTO user_stats(user_id,variant_id,best_score2) SELECT $1,v.id,v.score FROM UNNEST($2::smallint[],$3::smallint[]) AS v(id,score) ON CONFLICT(user_id,variant_id) DO UPDATE SET best_score2=excluded.best_score2", user, &variants.iter().map(|v|i16::try_from(v.id)).collect::<Result<Vec<_>,_>>()?, &variants.iter().map(|v|i16::try_from(v.max_score)).collect::<Result<Vec<_>,_>>()?).execute(&h.store.primary).await?;
+    sqlx::query!("INSERT INTO user_stats(user_id,variant_id,best_score2,best_score2_mod) SELECT $1,v.id,v.score,0 FROM UNNEST($2::smallint[],$3::smallint[]) AS v(id,score) ON CONFLICT(user_id,variant_id) DO UPDATE SET best_score2=excluded.best_score2,best_score2_mod=0", user, &variants.iter().map(|v|i16::try_from(v.id)).collect::<Result<Vec<_>,_>>()?, &variants.iter().map(|v|i16::try_from(v.max_score)).collect::<Result<Vec<_>,_>>()?).execute(&h.store.primary).await?;
     Ok(())
 }
 

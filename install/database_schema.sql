@@ -64,17 +64,27 @@ CREATE TABLE user_stats (
      * This stores if they used additional options to make the game easier. NULL when there is no
      * best score.
      */
-    best_score2_mod  SMALLINT  NULL      DEFAULT 0,
+    best_score2_mod  SMALLINT  NULL,
     best_score3      SMALLINT  NULL,
-    best_score3_mod  SMALLINT  NULL      DEFAULT 0,
+    best_score3_mod  SMALLINT  NULL,
     best_score4      SMALLINT  NULL,
-    best_score4_mod  SMALLINT  NULL      DEFAULT 0,
+    best_score4_mod  SMALLINT  NULL,
     best_score5      SMALLINT  NULL,
-    best_score5_mod  SMALLINT  NULL      DEFAULT 0,
+    best_score5_mod  SMALLINT  NULL,
     best_score6      SMALLINT  NULL,
-    best_score6_mod  SMALLINT  NULL      DEFAULT 0,
+    best_score6_mod  SMALLINT  NULL,
     FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE,
-    PRIMARY KEY (user_id, variant_id)
+    PRIMARY KEY (user_id, variant_id),
+    CONSTRAINT user_stats_best_score2_mod_check
+        CHECK ((best_score2 IS NULL) = (best_score2_mod IS NULL)),
+    CONSTRAINT user_stats_best_score3_mod_check
+        CHECK ((best_score3 IS NULL) = (best_score3_mod IS NULL)),
+    CONSTRAINT user_stats_best_score4_mod_check
+        CHECK ((best_score4 IS NULL) = (best_score4_mod IS NULL)),
+    CONSTRAINT user_stats_best_score5_mod_check
+        CHECK ((best_score5 IS NULL) = (best_score5_mod IS NULL)),
+    CONSTRAINT user_stats_best_score6_mod_check
+        CHECK ((best_score6 IS NULL) = (best_score6_mod IS NULL))
 );
 
 DROP TABLE IF EXISTS user_friends CASCADE;
@@ -284,7 +294,8 @@ CREATE TABLE game_tags (
     user_id  INTEGER  NOT NULL,
     tag      TEXT     NOT NULL,
     FOREIGN KEY (game_id) REFERENCES games (id) ON DELETE CASCADE,
-    FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
+    FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE,
+    CONSTRAINT game_tags_tag_check CHECK (tag <> '')
 );
 CREATE INDEX game_tags_index_game_id_user_id ON game_tags (game_id, user_id);
 
