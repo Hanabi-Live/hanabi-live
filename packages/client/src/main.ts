@@ -22,7 +22,8 @@ import { lobbyTutorialInit } from "./lobby/lobbyTutorialInit";
 import * as lobbyLogin from "./lobby/login";
 import * as lobbyNav from "./lobby/nav";
 import * as playerSettings from "./lobby/playerSettings";
-import * as lobbyPregame from "./lobby/pregame";
+import { mountPregame } from "./lobby/pregame/mountPregame";
+import * as lobbyPregame from "./lobby/pregame/pregame";
 import { mountTablesList } from "./lobby/tables/mountTablesList";
 import { Screen } from "./lobby/types/Screen";
 import { mountUsersList } from "./lobby/users/mountUsersList";
@@ -105,6 +106,7 @@ $(document).ready(() => {
   lobbyNav.init();
   mountHistoryLists();
   mountLobbyChat();
+  mountPregame();
   mountTablesList();
   mountUsersList();
   playerSettings.init();

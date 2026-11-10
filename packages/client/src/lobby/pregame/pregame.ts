@@ -3,21 +3,26 @@
 import type { Options, PlayerIndex } from "@hanabi-live/game";
 import { getVariant, MAX_PLAYERS, MIN_PLAYERS } from "@hanabi-live/game";
 import { assertDefined, eRange, iRange } from "complete-common";
-import { globals } from "../Globals";
-import * as chat from "../chat";
-import { H_GROUP_LEVEL_URL_PREFIX, PATH } from "../constants";
-import * as tooltips from "../tooltips";
-import { escapeHtml, getHTMLElement, setBrowserAddressBarPath } from "../utils";
-import { scrollLobbyChatToBottom } from "./chat/LobbyChat";
-import * as lobbyPage from "./lobbyPage";
-import * as nav from "./nav";
-import { getOptionDescriptions } from "./optionDescriptions";
-import { Screen } from "./types/Screen";
+import { globals } from "../../Globals";
+import * as chat from "../../chat";
+import { H_GROUP_LEVEL_URL_PREFIX, PATH } from "../../constants";
+import { store } from "../../store";
+import * as tooltips from "../../tooltips";
+import {
+  escapeHtml,
+  getHTMLInputElement,
+  setBrowserAddressBarPath,
+} from "../../utils";
+import { scrollLobbyChatToBottom } from "../chat/LobbyChat";
+import * as lobbyPage from "../lobbyPage";
+import * as nav from "../nav";
+import { getOptionDescriptions } from "../optionDescriptions";
+import { Screen } from "../types/Screen";
+import { PREGAME_CHAT_INPUT_ID } from "./PregameChat";
+import { pregameChatCleared, typingCleared } from "./pregameSlice";
 
 /** What a player's statistics show for a player count that they have not played. */
 const NO_SCORE = "&ndash;";
-
-const lobbyChatPregameText = getHTMLElement("#lobby-chat-pregame-text");
 
 /** Removes the tooltips of the H-Group level badges, which are redrawn with the player boxes. */
 const removeBadgeTooltips: Array<() => void> = [];
@@ -47,15 +52,14 @@ export function show(): void {
   $("#lobby-chat-pregame-container").show();
 
   // Clear the pregame chat box of any previous content.
-  $("#lobby-chat-pregame-text").html("");
+  store.dispatch(pregameChatCleared());
 
-  // Scroll to the bottom of both the lobby chat and the pregame chat. (Even if the lobby chat is
-  // already at the bottom, it will change size and cause it to not be scrolled all the way down.)
+  // Scroll to the bottom of the lobby chat. (Even if it is already at the bottom, it will change
+  // size and cause it to not be scrolled all the way down.)
   scrollLobbyChatToBottom();
-  lobbyChatPregameText.scrollTop = lobbyChatPregameText.scrollHeight;
 
   // Focus the pregame chat.
-  $("#lobby-chat-pregame-input").trigger("focus");
+  getHTMLInputElement(`#${PREGAME_CHAT_INPUT_ID}`).focus();
 
   // The "Create Game" button in the nav was disabled after we clicked the "Create" button, so
   // re-enable it now that we have received a message back from the server.
@@ -99,14 +103,11 @@ export function hide(updateURL = true): void {
   $("#lobby-chat-pregame-container").hide();
 
   // Clear the typing list.
-  globals.peopleTyping = [];
+  store.dispatch(typingCleared());
   chat.updatePeopleTyping();
 
   // Adjust the navigation bar.
   nav.show("lobby");
-
-  // Remove delegate handlers
-  $("#lobby-chat-pregame-text").off();
 
   // Set the browser address bar.
   if (updateURL) {

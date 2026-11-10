@@ -17,7 +17,7 @@ import {
 } from "./gameHistory/historySlice";
 import * as lobbyLogin from "./login";
 import * as playerSettings from "./playerSettings";
-import * as pregame from "./pregame";
+import * as pregame from "./pregame/pregame";
 import { tableChanged, tableGone, tablesListed } from "./tables/tablesSlice";
 import { Screen } from "./types/Screen";
 import * as url from "./url";

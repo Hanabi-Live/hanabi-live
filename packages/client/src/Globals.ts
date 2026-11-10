@@ -106,8 +106,6 @@ export class Globals {
 
   totalGamesFriends = 0;
 
-  peopleTyping: string[] = [];
-
   idleMinutes = 0;
 
   /**

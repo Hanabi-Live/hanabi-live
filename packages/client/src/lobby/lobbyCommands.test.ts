@@ -10,10 +10,10 @@ vi.mock("../sounds", () => ({}));
 vi.mock("./history", () => ({}));
 vi.mock("./login", () => ({}));
 vi.mock("./playerSettings", () => ({}));
-vi.mock("./pregame", () => ({ hide: vi.fn() }));
+vi.mock("./pregame/pregame", () => ({ hide: vi.fn() }));
 vi.mock("./url", () => ({}));
 const { globals } = await import("../Globals");
-const pregame = await import("./pregame");
+const pregame = await import("./pregame/pregame");
 const { lobbyCommands } = await import("./lobbyCommands");
 
 describe('the "left" command', () => {

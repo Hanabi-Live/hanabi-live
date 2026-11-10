@@ -1,5 +1,7 @@
 import * as chat from "../../chat";
 import { PATH } from "../../constants";
+import { typingCleared } from "../../lobby/pregame/pregameSlice";
+import { store } from "../../store";
 import * as tooltips from "../../tooltips";
 import { setBrowserAddressBarPath } from "../../utils";
 import { globals } from "./UIGlobals";
@@ -13,7 +15,7 @@ export function backToLobby(): void {
   timer.stop();
 
   // Clear the typing list.
-  globals.lobby.peopleTyping = [];
+  store.dispatch(typingCleared());
   chat.updatePeopleTyping();
 
   // Update the address bar.

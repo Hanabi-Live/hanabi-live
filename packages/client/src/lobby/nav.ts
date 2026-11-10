@@ -7,7 +7,7 @@ import { showWarning } from "../modals";
 import * as createGame from "./createGame";
 import * as history from "./history";
 import * as lobbyPage from "./lobbyPage";
-import * as pregame from "./pregame";
+import * as pregame from "./pregame/pregame";
 import { tableJoin, tableSpectate } from "./tables/tableActions";
 import * as watchReplay from "./watchReplay";
 

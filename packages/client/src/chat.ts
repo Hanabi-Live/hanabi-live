@@ -26,6 +26,10 @@ import {
   lobbyChatLineDeleted,
 } from "./lobby/chat/lobbyChatSlice";
 import { acceptOptionsFromGuest } from "./lobby/createGame";
+import {
+  pregameChatLineAdded,
+  typingStopped,
+} from "./lobby/pregame/pregameSlice";
 import { Screen } from "./lobby/types/Screen";
 import * as modals from "./modals";
 import { store } from "./store";
@@ -83,9 +87,8 @@ let tabCompleteOriginalText = "";
 let activeChatInput: HTMLInputElement | undefined;
 
 export function init(): void {
-  attachChatInput(getHTMLInputElement("#lobby-chat-pregame-input"), "table");
   attachChatInput(getHTMLInputElement("#game-chat-input"), "table");
-  // (The lobby chat input is a React component that attaches itself.)
+  // (The lobby and pre-game chat inputs are React components that attach themselves.)
   $(".emoji-button[data-target]").on("click", (event) => {
     const { target } = event.currentTarget.dataset;
     openEmojiPicker(getHTMLInputElement(`#${target}`));
@@ -607,33 +610,50 @@ function addInternal(data: ChatData, fast: boolean, updateLiveState: boolean) {
   }
   const html = formatChatLine(data, getPreparedMessage(rawMsg));
 
-  if (box === "lobby") {
-    store.dispatch(
-      lobbyChatLineAdded({
-        key: chatLineNum,
-        ...(data.tableID === undefined
-          && data.chatID !== undefined && { chatID: data.chatID }),
-        html,
-        fadeIn: !fast,
-      }),
-    );
-    chatLineNum++;
-  } else {
-    appendChatLine(
-      box === "pregame" ? $("#lobby-chat-pregame-text") : $("#game-chat-text"),
-      html,
-      fast,
-      data.suggestion,
-    );
+  const key = chatLineNum;
+  chatLineNum++;
+  switch (box) {
+    case "lobby": {
+      store.dispatch(
+        lobbyChatLineAdded({
+          key,
+          ...(data.tableID === undefined
+            && data.chatID !== undefined && { chatID: data.chatID }),
+          html,
+          fadeIn: !fast,
+        }),
+      );
+      break;
+    }
+
+    case "pregame": {
+      store.dispatch(
+        pregameChatLineAdded({
+          key,
+          html,
+          fadeIn: !fast,
+          ...(data.suggestion !== undefined && {
+            suggestion: data.suggestion,
+          }),
+        }),
+      );
+      break;
+    }
+
+    case "game": {
+      appendGameChatLine(key, html, fast, data.suggestion);
+      break;
+    }
   }
 
   // Remove the person from the typing list, if present.
-  if (updateLiveState && data.username !== undefined) {
-    const index = globals.peopleTyping.indexOf(data.username);
-    if (index !== -1) {
-      globals.peopleTyping.splice(index, 1);
-      updatePeopleTyping();
-    }
+  if (
+    updateLiveState
+    && data.username !== undefined
+    && store.getState().pregame.typing.includes(data.username)
+  ) {
+    store.dispatch(typingStopped(data.username));
+    updatePeopleTyping();
   }
 }
 
@@ -669,13 +689,14 @@ function formatChatLine(data: ChatData, msg: string): string {
   return line;
 }
 
-/** Adds a line to the pre-game chat or the game chat. */
-function appendChatLine(
-  chat: JQuery,
+/** Adds a line to the game chat. */
+function appendGameChatLine(
+  key: number,
   html: string,
   fast: boolean,
   suggestion: ChatData["suggestion"],
 ) {
+  const chat = $("#game-chat-text");
   // Find out if we should automatically scroll down after adding the new line of chat:
   // https://stackoverflow.com/questions/6271237/detecting-when-user-scrolls-to-bottom-of-div-with-jquery
   // If we are already scrolled to the bottom, then it is ok to automatically scroll. scrollTop can
@@ -690,23 +711,15 @@ function appendChatLine(
 
   // Add the new line and fade it in.
   chat.append(
-    `<span id="chat-line-${chatLineNum}" class="${fast ? "" : "hidden"}">${html}</span>`,
+    `<span id="chat-line-${key}" class="${fast ? "" : "hidden"}">${html}</span>`,
   );
-  $(`#chat-line-${chatLineNum}`).fadeIn(FADE_TIME_MS).css("display", "block");
+  $(`#chat-line-${key}`).fadeIn(FADE_TIME_MS).css("display", "block");
   if (suggestion !== undefined) {
-    $(`#chat-line-${chatLineNum} button.new-options`).on("click", (event) => {
+    $(`#chat-line-${key} button.new-options`).on("click", (event) => {
       acceptOptionsFromGuest(suggestion);
       $(event.currentTarget).text("sent").prop("disabled", true);
     });
   }
-  $(`#chat-line-${chatLineNum} a.suggestion`).each((_, element) => {
-    const chatInput = $("#lobby-chat-pregame-input");
-    $(element).on("click", () => {
-      chatInput.val(element.textContent);
-      chatInput.trigger("focus");
-    });
-  });
-  chatLineNum++;
 
   // Automatically scroll down.
   if (autoScroll) {
@@ -889,32 +902,30 @@ function fillTwitchEmotes(message: string) {
   return filledMessage;
 }
 
+/** Shows who is typing in the game chat. (The pre-game chat shows them by itself.) */
 export function updatePeopleTyping(): void {
-  const typingMessage = getTypingMessage();
-
-  const chat1 = $("#lobby-chat-pregame-istyping");
-  chat1.html(typingMessage);
-
-  const chat2 = $("#game-chat-istyping");
-  chat2.html(typingMessage);
+  $("#game-chat-istyping").html(
+    getTypingMessage(store.getState().pregame.typing),
+  );
 }
 
-function getTypingMessage(): string {
-  switch (globals.peopleTyping.length) {
+/** Returns the HTML that says who is typing. */
+export function getTypingMessage(typing: readonly string[]): string {
+  switch (typing.length) {
     case 0: {
       return "";
     }
 
     case 1: {
-      return `<strong>${textToHtml(globals.peopleTyping[0])}</strong> is typing...`;
+      return `<strong>${textToHtml(typing[0])}</strong> is typing...`;
     }
 
     case 2: {
-      return `<strong>${textToHtml(globals.peopleTyping[0])}</strong> and <strong>${textToHtml(globals.peopleTyping[1])}</strong> are typing...`;
+      return `<strong>${textToHtml(typing[0])}</strong> and <strong>${textToHtml(typing[1])}</strong> are typing...`;
     }
 
     case 3: {
-      return `<strong>${textToHtml(globals.peopleTyping[0])}</strong>, <strong>${textToHtml(globals.peopleTyping[1])}</strong>, and <strong>${textToHtml(globals.peopleTyping[2])}</strong> are typing...`;
+      return `<strong>${textToHtml(typing[0])}</strong>, <strong>${textToHtml(typing[1])}</strong>, and <strong>${textToHtml(typing[2])}</strong> are typing...`;
     }
 
     default: {

@@ -3,10 +3,12 @@
 import { globals } from "./Globals";
 import * as chat from "./chat";
 import * as gameChat from "./game/chat";
-import * as pregame from "./lobby/pregame";
+import * as pregame from "./lobby/pregame/pregame";
+import { typingStarted, typingStopped } from "./lobby/pregame/pregameSlice";
 import { Screen } from "./lobby/types/Screen";
 import * as modals from "./modals";
 import { ServerHandlers } from "./serverHandlers";
+import { store } from "./store";
 
 // Define a command handler map.
 export const commands = new ServerHandlers();
@@ -115,16 +117,9 @@ function acknowledgeChatRead(
 
 // Received by the client when someone either starts or stops typing.
 commands.set("chatTyping", (data) => {
-  if (data.typing) {
-    if (!globals.peopleTyping.includes(data.username)) {
-      globals.peopleTyping.push(data.username);
-    }
-  } else {
-    const index = globals.peopleTyping.indexOf(data.username);
-    if (index !== -1) {
-      globals.peopleTyping.splice(index, 1);
-    }
-  }
+  store.dispatch(
+    data.typing ? typingStarted(data.username) : typingStopped(data.username),
+  );
   chat.updatePeopleTyping();
 });
 
