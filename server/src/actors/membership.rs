@@ -1,5 +1,5 @@
 use super::{
-    Attendance, Blocks, Command, TableActor, chat::table_notice, pending::Completed,
+    Attendance, Blocks, TableActor, chat::table_notice, pending::Completed,
     pregame::remove_pregame_players,
 };
 use crate::errors::CommandResult;
@@ -10,7 +10,9 @@ use crate::{
 use anyhow::Context;
 use chrono::Utc;
 use hanabi_protocol::UserId;
-use hanabi_protocol::{ClientMessage, LobbySound, SoundLobby, Status, TableRequest, TableStarted};
+use hanabi_protocol::{
+    LobbySound, SoundLobby, Status, TableJoinRequest, TableRequest, TableStarted,
+};
 use std::{
     collections::{BTreeSet, HashSet},
     sync::Arc,
@@ -62,14 +64,8 @@ impl TableActor {
         &self,
         session: &Arc<Session>,
         blocks: &Blocks,
-        command: &Command,
+        request: &TableJoinRequest,
     ) -> Option<impl Future<Output = Completed> + Send + 'static> {
-        let Command::Client(message) = command else {
-            return None;
-        };
-        let ClientMessage::TableJoin(request) = &**message else {
-            return None;
-        };
         let hash = self.table.password_hash.clone()?;
         if !matches!(self.join_allowed(session, blocks), Ok(false)) {
             return None;

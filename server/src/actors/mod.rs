@@ -391,6 +391,8 @@ struct TableActor {
     chat_limit: crate::accounts::Counter<i32>,
     /// The serialized size of the table's chat, for the players' share of it.
     chat_bytes: chat::ChatBytes,
+    /// Whether a variant search is pending. A table runs one at a time.
+    discovering: bool,
     _permit: OwnedSemaphorePermit,
     info: Arc<ServerInfo>,
 }

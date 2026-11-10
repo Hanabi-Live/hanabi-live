@@ -1,7 +1,7 @@
 use super::request;
 use super::{
-    Allocation, Attendance, Command, Effects, GameInfo, HubCommand, PREGAME_RECONNECT_GRACE,
-    REPLAY_RECONNECT_GRACE, Reply, TableActor, TableCommand, TableView,
+    Allocation, Attendance, Blocks, Command, Effects, GameInfo, HubCommand,
+    PREGAME_RECONNECT_GRACE, REPLAY_RECONNECT_GRACE, Reply, TableActor, TableCommand, TableView,
     chat::{TABLE_CHAT_LIMIT, TABLE_CHAT_WINDOW, is_variant_discovery},
     pending::{Completed, Pending},
     pregame::remove_pregame_players,
@@ -23,6 +23,7 @@ use crate::{
 };
 use anyhow::{Context, Result};
 use chrono::Utc;
+use futures_util::{FutureExt, future::BoxFuture};
 use hanabi_engine::{CompletionTiming, EndCondition};
 use hanabi_protocol::{
     Chat, ChatTyping, ClientMessage, IdleWarning, NO_VALUE, Status, TableRequest, TableStarted,
@@ -133,6 +134,7 @@ impl TableActor {
             timer_retry: None,
             chat_limit: crate::accounts::Counter::new(TABLE_CHAT_LIMIT, TABLE_CHAT_WINDOW),
             chat_bytes: super::chat::ChatBytes::default(),
+            discovering: false,
             _permit: permit,
             info,
         }
@@ -642,8 +644,6 @@ impl TableActor {
         if self.store.check_state().is_ok() {
             self.run_timers().await;
         }
-        // Whether a variant search is pending. A table runs one at a time.
-        let mut discovering = false;
         loop {
             if self.retired {
                 break;
@@ -651,9 +651,6 @@ impl TableActor {
             let timer = self.next_timer();
             tokio::select! {
                 (completed, reply) = pending.next() => {
-                    if matches!(completed, Completed::Discovery { .. }) {
-                        discovering = false;
-                    }
                     let result = self.complete(completed).await;
                     match reply {
                         Some(reply) => {
@@ -673,50 +670,12 @@ impl TableActor {
                         break;
                     }
                     Some(TableCommand::Client { session, blocks, command, reply }) => {
-                        if is_variant_discovery(&command) {
-                            if discovering {
-                                let _ = reply.send(Err(rejection!("A variant search is already pending at this table.")));
-                            } else {
-                                match self.prepare_discovery(session) {
-                                    Ok((discovery, query)) => {
-                                        discovering = true;
-                                        pending.start(
-                                            async move {
-                                                Completed::Discovery { discovery, selected: query.await }
-                                            },
-                                            Some(reply),
-                                        );
-                                    }
-                                    Err(error) => {
-                                        let _ = reply.send(Err(error));
-                                    }
-                                }
+                        match self.client(session, &blocks, command).await {
+                            Ok(Some(work)) => pending.start(work, Some(reply)),
+                            result => {
+                                let _ = reply.send(result.map(|_| ()));
                             }
-                            continue;
                         }
-                        if session.active()
-                            && let Some(check) = self.start_password_check(&session, &blocks, &command)
-                        {
-                            pending.start(check, Some(reply));
-                            continue;
-                        }
-                        if session.active()
-                            && let Some(restart) = self.start_restart(&session, &command)
-                        {
-                            match restart {
-                                Ok(work) => pending.start(work, Some(reply)),
-                                Err(error) => {
-                                    let _ = reply.send(Err(error));
-                                }
-                            }
-                            continue;
-                        }
-                        let result = if session.active() {
-                            self.command(session, &blocks, command).await
-                        } else {
-                            Err(rejection!("Stale session or unavailable authority"))
-                        };
-                        let _ = reply.send(result);
                     }
                 },
                 () = self.cleanup.notified() => {
@@ -753,7 +712,10 @@ impl TableActor {
             Completed::Discovery {
                 discovery,
                 selected,
-            } => self.finish_discovery(discovery, selected).await,
+            } => {
+                self.discovering = false;
+                self.finish_discovery(discovery, selected).await
+            }
             Completed::Password {
                 session,
                 blocks,
@@ -950,12 +912,17 @@ impl TableActor {
             },
         })
     }
-    pub(super) async fn command(
+    /// Runs a client command. A command that waits for slow work, such as a database read or a
+    /// password check, only starts here: it returns the work, which the table runs while it answers
+    /// other commands, and `complete` finishes the command.
+    async fn client(
         &mut self,
         session: Arc<Session>,
-        blocks: &BTreeSet<UserId>,
+        blocks: &Blocks,
         command: Command,
-    ) -> CommandResult<()> {
+    ) -> CommandResult<Option<BoxFuture<'static, Completed>>> {
+        ensure_or_reject!(session.active(), "Stale session or unavailable authority");
+        // A game that ran out of time ends before the command runs, so the command sees the end.
         if matches!(self.table.phase, Phase::Live { .. })
             && self
                 .timers()
@@ -963,6 +930,31 @@ impl TableActor {
         {
             self.tick().await?;
         }
+        if let Command::Client(message) = &command {
+            let work = match &**message {
+                ClientMessage::Chat(r) if is_variant_discovery(&r.msg) => {
+                    Some(self.start_discovery(session.clone()).map(FutureExt::boxed))
+                }
+                ClientMessage::TableJoin(r) => self
+                    .start_password_check(&session, blocks, r)
+                    .map(|work| Ok(work.boxed())),
+                ClientMessage::TableRestart(r) => self
+                    .start_restart(&session, r.hide_pregame)
+                    .map(|work| work.map(FutureExt::boxed)),
+                _ => None,
+            };
+            if let Some(work) = work {
+                return work.map(Some);
+            }
+        }
+        self.command(session, blocks, command).await.map(|()| None)
+    }
+    async fn command(
+        &mut self,
+        session: Arc<Session>,
+        blocks: &BTreeSet<UserId>,
+        command: Command,
+    ) -> CommandResult<()> {
         let message = match command {
             Command::Client(message) => *message,
             Command::Reattend { spectate, shadow } => {
@@ -975,7 +967,7 @@ impl TableActor {
             message.name()
         );
         match message {
-            // A join to a table with a password starts its password check in `run` instead.
+            // A join to a table with a password starts its password check in `client` instead.
             ClientMessage::TableJoin(_) => self.join(session, blocks, None).await,
             ClientMessage::TableReattend(_) => self.reattend(session, blocks, false, None).await,
             ClientMessage::TableSpectate(r) => {

@@ -1,7 +1,7 @@
 use super::request;
 use super::table::wrong_phase;
 use super::{
-    Command, HubCommand, TableActor,
+    HubCommand, TableActor,
     chat::{server_chat, table_notice},
     pending::Completed,
     setup::next_requested_seed,
@@ -59,7 +59,7 @@ impl TableActor {
         match message {
             ClientMessage::ReplayAction(r) => self.replay_action(session, r).await,
             ClientMessage::TableSuggest(r) => self.suggest(session, r.segment).await,
-            // A restart starts in `run`, through `start_restart`.
+            // A restart starts in `client`, through `start_restart`.
             ClientMessage::TableRestart(_) => {
                 bail_internal!("A restart ran without its statistics")
             }
@@ -475,23 +475,17 @@ impl TableActor {
     }
     /// Starts a restart of a shared replay. Saving the finished game's statistics and reading the
     /// players' statistics can take a while, so the table keeps answering other commands while
-    /// they run; `finish_restart` does the rest. Returns `None` for any other command, and for a
-    /// restart outside a replay, which `replay_command` refuses.
+    /// they run; `finish_restart` does the rest. Returns `None` for a restart outside a replay,
+    /// which `replay_command` refuses.
     pub(super) fn start_restart(
         &self,
         session: &Arc<Session>,
-        command: &Command,
+        hide: bool,
     ) -> Option<CommandResult<impl Future<Output = Completed> + Send + 'static>> {
-        let Command::Client(message) = command else {
-            return None;
-        };
-        let ClientMessage::TableRestart(request) = &**message else {
-            return None;
-        };
         if !matches!(self.table.phase, Phase::Replay { .. }) {
             return None;
         }
-        Some(self.prepare_restart(session, request.hide_pregame))
+        Some(self.prepare_restart(session, hide))
     }
     fn prepare_restart(
         &self,

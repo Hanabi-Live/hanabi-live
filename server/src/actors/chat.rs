@@ -1,4 +1,4 @@
-use super::{Command, TableActor, setup::options_suggestion};
+use super::{TableActor, pending::Completed, setup::options_suggestion};
 use crate::errors::CommandResult;
 use crate::errors::OrReject;
 use crate::{
@@ -9,9 +9,7 @@ use crate::{
 use anyhow::{Context, Result};
 use chrono::Utc;
 use hanabi_protocol::UserId;
-use hanabi_protocol::{
-    Chat, ChatSource, ClientMessage, MAX_PLAYERS, MIN_PLAYERS, Status, TableId, TableRequest,
-};
+use hanabi_protocol::{Chat, ChatSource, MAX_PLAYERS, MIN_PLAYERS, Status, TableId, TableRequest};
 use std::{
     collections::HashSet,
     sync::Arc,
@@ -122,14 +120,9 @@ pub(super) fn table_notice(table: &mut TableSnapshot, text: &str) -> Option<Chat
 pub(super) fn truncate(value: f64) -> i64 {
     value as i64
 }
-pub(super) fn is_variant_discovery(command: &Command) -> bool {
-    let Command::Client(message) = command else {
-        return false;
-    };
-    let ClientMessage::Chat(request) = &**message else {
-        return false;
-    };
-    crate::accounts::normalize_chat(&request.msg).is_ok_and(|text| {
+/// Whether a table chat message asks for a variant search.
+pub(super) fn is_variant_discovery(message: &str) -> bool {
+    crate::accounts::normalize_chat(message).is_ok_and(|text| {
         text.split_whitespace()
             .next()
             .and_then(|word| word.strip_prefix('/'))
@@ -185,14 +178,16 @@ impl TableActor {
         );
         Ok(participants)
     }
-    /// Prepares a variant search. Returns it with the query that picks the variant.
-    pub(super) fn prepare_discovery(
+    /// Starts a variant search. Returns the query that picks the variant; `finish_discovery`
+    /// posts its result.
+    pub(super) fn start_discovery(
         &mut self,
         requester: Arc<Session>,
-    ) -> CommandResult<(
-        VariantDiscovery,
-        impl Future<Output = Result<Option<String>>> + Send + 'static,
-    )> {
+    ) -> CommandResult<impl Future<Output = Completed> + Send + 'static> {
+        ensure_or_reject!(
+            !self.discovering,
+            "A variant search is already pending at this table."
+        );
         ensure_or_reject!(
             self.attending(&requester),
             "You are not at an available table."
@@ -229,13 +224,17 @@ impl TableActor {
                 Some(missing[rand::random_range(0..missing.len())].name.clone())
             })
         };
-        Ok((
-            VariantDiscovery {
-                requester,
-                participants,
-            },
-            query,
-        ))
+        self.discovering = true;
+        let discovery = VariantDiscovery {
+            requester,
+            participants,
+        };
+        Ok(async move {
+            Completed::Discovery {
+                discovery,
+                selected: query.await,
+            }
+        })
     }
     pub(super) async fn finish_discovery(
         &mut self,
