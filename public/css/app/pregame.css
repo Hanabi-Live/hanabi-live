@@ -149,7 +149,7 @@ span.cp {
   /* Put pregame chat boxes side by side */
   #lobby-chat-container.pregame-chat-layout,
   #lobby-chat-pregame-container.pregame-chat-layout,
-  #lobby-users-box-container.pregame-chat-layout {
+  #lobby-online-users.pregame-chat-layout {
     flex: 1 1 33%;
     height: 100%;
   }
@@ -159,7 +159,7 @@ span.cp {
   /* Put pregame chat boxes on top of each other */
   #lobby-chat-container.pregame-chat-layout,
   #lobby-chat-pregame-container.pregame-chat-layout,
-  #lobby-users-box-container.pregame-chat-layout {
+  #lobby-online-users.pregame-chat-layout {
     flex: 1 1 100%;
     height: calc((100% - 1em) / 2);
   }

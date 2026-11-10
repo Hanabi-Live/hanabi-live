@@ -196,19 +196,35 @@ function getStates(replayID: number): readonly State[] {
         await page.waitForTimeout(SETTLE_MILLISECONDS);
       },
     },
-    // Joining a table keeps the account in it, so this state comes last.
+    // Joining a table keeps the account in it, so these states come last.
+    { name: "pregame", path: "/", loggedIn: true, prepare: joinTable },
     {
-      name: "pregame",
+      name: "pregame-chat",
       path: "/",
       loggedIn: true,
+      // The button only shows on narrow or short screens, but the click sets the same classes at
+      // every size.
       prepare: async (page) => {
-        // The row of the first table that can be joined animates, so it is never stable.
-        const row = page.locator("#lobby-games-table-tbody tr").first();
-        await row.waitFor();
-        await row.click({ force: true });
+        await joinTable(page);
+        await page
+          .locator("#lobby-toggle-show-game-chat")
+          .dispatchEvent("click");
+        await page.waitForTimeout(SETTLE_MILLISECONDS);
       },
     },
   ];
+}
+
+/** Joins the first table, unless the account is already at one. */
+async function joinTable(page: Page) {
+  const pregame = page.locator("#lobby-pregame");
+  // The row of the first table that can be joined animates, so it is never stable.
+  const row = page.locator("#lobby-games-table-tbody tr").first();
+  await pregame.or(row).filter({ visible: true }).first().waitFor();
+  if (!(await pregame.isVisible())) {
+    await row.click({ force: true });
+  }
+  await pregame.waitFor();
 }
 
 /** Bundles the stylesheets of the current checkout into the directory that the server serves. */
