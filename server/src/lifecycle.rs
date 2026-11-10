@@ -48,8 +48,11 @@ pub enum Refusal {
 pub struct Lifecycle {
     phase: AtomicU8,
     admission: Arc<RwLock<()>>,
-    /// Cancelled when the server stops its listeners and background work.
-    pub shutdown: CancellationToken,
+    /// Cancelled by `shut_down` when the server stops its listeners and background work.
+    shutdown: CancellationToken,
+    /// Cancelled when the server loses ownership of the live tables or shuts down. Each
+    /// connection's token is a child of it.
+    connections: CancellationToken,
     /// Cancelled when a drain begins, to end optional reads early.
     pub read_shutdown: CancellationToken,
     /// Cancelled when the server loses ownership of the live tables.
@@ -63,8 +66,23 @@ impl Lifecycle {
             admission: Arc::new(RwLock::new(())),
             shutdown: CancellationToken::new(),
             read_shutdown: CancellationToken::new(),
+            connections: ownership_lost.child_token(),
             ownership_lost,
         })
+    }
+    /// Cancelled when the server stops its listeners and background work.
+    pub fn shutdown(&self) -> &CancellationToken {
+        &self.shutdown
+    }
+    /// Stops the listeners, the background work, and every connection.
+    pub fn shut_down(&self) {
+        self.shutdown.cancel();
+        self.connections.cancel();
+    }
+    /// A token for a new connection, which is cancelled when the server loses ownership of the
+    /// live tables or shuts down.
+    pub fn connection_token(&self) -> CancellationToken {
+        self.connections.child_token()
     }
     pub fn phase(&self) -> Phase {
         match self.phase.load(Ordering::Acquire) {

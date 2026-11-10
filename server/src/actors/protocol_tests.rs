@@ -41,7 +41,7 @@ fn test_session(
     name: &str,
     generation: u64,
 ) -> (Arc<Session>, mpsc::Receiver<Outbound>) {
-    Session::with_tokens(
+    Session::with_token(
         crate::transport::Identity {
             user: UserId(user),
             name: name.into(),
@@ -50,7 +50,6 @@ fn test_session(
             bot: is_test_bot(name),
         },
         generation,
-        tokio_util::sync::CancellationToken::new(),
         tokio_util::sync::CancellationToken::new(),
         Arc::new(Semaphore::new(crate::transport::GLOBAL_OUTPUT_BYTES)),
     )
@@ -2838,7 +2837,7 @@ async fn ban_disconnects_every_session_from_the_banned_ip() -> Result<()> {
             (2, "AliceAlt", "192.0.2.1"),
             (3, "Bob", "192.0.2.2"),
         ] {
-            let (session, receiver) = Session::with_tokens(
+            let (session, receiver) = Session::with_token(
                 crate::transport::Identity {
                     user: UserId(user),
                     name: name.into(),
@@ -2847,7 +2846,6 @@ async fn ban_disconnects_every_session_from_the_banned_ip() -> Result<()> {
                     bot: false,
                 },
                 1,
-                tokio_util::sync::CancellationToken::new(),
                 tokio_util::sync::CancellationToken::new(),
                 Arc::new(Semaphore::new(crate::transport::GLOBAL_OUTPUT_BYTES)),
             );

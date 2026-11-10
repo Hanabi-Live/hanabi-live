@@ -237,7 +237,7 @@ impl Bridge {
             loop {
                 let next = tokio::select! {
                     ()=lifecycle.ownership_lost.cancelled()=>return,
-                    ()=lifecycle.shutdown.cancelled()=>break,
+                    ()=lifecycle.shutdown().cancelled()=>break,
                     next=shard.next_event(EVENTS)=>next,
                 };
                 match next {
@@ -281,7 +281,7 @@ impl Bridge {
         self.server.background.spawn(async move {
             loop {
                 let event = tokio::select! {
-                    ()=lifecycle.shutdown.cancelled()=>break,
+                    ()=lifecycle.shutdown().cancelled()=>break,
                     event=receiver.recv()=>event,
                 };
                 let Some(event) = event else {

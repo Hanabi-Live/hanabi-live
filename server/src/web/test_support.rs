@@ -90,7 +90,7 @@ impl Fixture {
         received.await.unwrap();
         self.tasks.close();
         self.tasks.wait().await;
-        self.app.lifecycle.shutdown.cancel();
+        self.app.lifecycle.shut_down();
         self.server_stop.cancel();
         self.app.connections.close();
         self.app.connections.wait().await;

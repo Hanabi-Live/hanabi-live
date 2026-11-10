@@ -33,7 +33,6 @@ use std::{
     time::Duration,
 };
 use tokio::sync::mpsc;
-use tokio_util::sync::CancellationToken;
 use tracing::Instrument;
 
 /// How long loading a connecting user's lobby statistics may take.
@@ -399,16 +398,6 @@ pub(super) async fn websocket(
         })
 }
 
-/// Completes when a connection must stop: it was closed or replaced, the server lost ownership of
-/// the live tables, or the server is shutting down.
-async fn connection_stopped(session: &Session, shutdown: &CancellationToken) {
-    tokio::select! {
-        () = session.cancel.cancelled() => {}
-        () = session.ownership_lost.cancelled() => {}
-        () = shutdown.cancelled() => {}
-    }
-}
-
 async fn connection(
     mut socket: WebSocket,
     app: Arc<App>,
@@ -438,7 +427,7 @@ async fn connection(
             return Err(error);
         }
     };
-    let (session, mut outgoing) = Session::with_tokens(
+    let (session, mut outgoing) = Session::with_token(
         Identity {
             user: id,
             name: data.name,
@@ -447,13 +436,11 @@ async fn connection(
             bot: data.bot,
         },
         generation,
-        app.lifecycle.ownership_lost.clone(),
-        app.lifecycle.shutdown.clone(),
+        app.lifecycle.connection_token(),
         app.outgoing_bytes.clone(),
     );
     let (mut sink, mut stream) = socket.split();
     let writer_session = session.clone();
-    let writer_shutdown = app.lifecycle.shutdown.clone();
     let writer = tokio::spawn(async move {
         let mut ping = tokio::time::interval_at(
             tokio::time::Instant::now() + PING_INTERVAL,
@@ -462,7 +449,7 @@ async fn connection(
         ping.set_missed_tick_behavior(tokio::time::MissedTickBehavior::Delay);
         loop {
             tokio::select! {
-                ()=connection_stopped(&writer_session,&writer_shutdown)=>break,
+                ()=writer_session.cancel.cancelled()=>break,
                 _=ping.tick()=>{
                     let sent=tokio::time::timeout(WRITE_TIMEOUT,sink.send(Message::Ping(axum::body::Bytes::new()))).await;
                     if !matches!(sent,Ok(Ok(()))) {break;}
@@ -477,7 +464,7 @@ async fn connection(
                         if writer_session.active() {send.as_mut().poll(cx).map(Some)} else {Poll::Ready(None)}
                     });
                     let result=tokio::select! {
-                        ()=connection_stopped(&writer_session,&writer_shutdown)=>None,
+                        ()=writer_session.cancel.cancelled()=>None,
                         result=tokio::time::timeout(WRITE_TIMEOUT,guarded)=>result.ok().flatten(),
                     };
                     drop(permit);
@@ -511,11 +498,10 @@ async fn connection(
     let (incoming, mut commands) = mpsc::channel::<Inbound>(INBOUND_QUEUE);
     let incoming_bytes = InboundBudget::new(app.incoming_bytes.clone());
     let reader_session = session.clone();
-    let reader_shutdown = app.lifecycle.shutdown.clone();
     let reader = tokio::spawn(async move {
         loop {
             tokio::select! {
-                ()=connection_stopped(&reader_session,&reader_shutdown)=>break,
+                ()=reader_session.cancel.cancelled()=>break,
                 next=tokio::time::timeout(RECEIVE_TIMEOUT,stream.next())=>match next {
                     Err(_)=>{
                         tracing::info!("Closing a connection that sent nothing for {} seconds.",RECEIVE_TIMEOUT.as_secs());
@@ -556,7 +542,6 @@ async fn connection(
         loop {
             let command = tokio::select! {
                 ()=session.cancel.cancelled()=>break,
-                ()=app.lifecycle.shutdown.cancelled()=>break,
                 command=commands.recv()=>command,
             };
             let Some(command) = command else {

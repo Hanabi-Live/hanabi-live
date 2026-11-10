@@ -92,11 +92,10 @@ pub struct Identity {
 pub struct Session {
     pub identity: Arc<Identity>,
     pub generation: u64,
+    /// Cancelled when the connection must stop: it was closed or replaced, the server lost
+    /// ownership of the live tables, or the server is shutting down.
     pub cancel: CancellationToken,
-    pub ownership_lost: CancellationToken,
     pub lobby_load: Arc<Semaphore>,
-    /// Cancelled when the server shuts down.
-    shutdown: CancellationToken,
     closing: AtomicBool,
     superseded: AtomicBool,
     outbound: mpsc::Sender<Outbound>,
@@ -113,14 +112,14 @@ impl std::ops::Deref for Session {
 }
 
 impl Session {
-    /// A session with no address or server tokens, for tests.
+    /// A session with no address or server token, for tests.
     #[cfg(test)]
     pub fn new(
         user: UserId,
         name: String,
         generation: u64,
     ) -> (Arc<Self>, mpsc::Receiver<Outbound>) {
-        Self::with_tokens(
+        Self::with_token(
             Identity {
                 user,
                 normalized_name: crate::accounts::normalize_username(&name),
@@ -130,18 +129,17 @@ impl Session {
             },
             generation,
             CancellationToken::new(),
-            CancellationToken::new(),
             Arc::new(Semaphore::new(GLOBAL_OUTPUT_BYTES)),
         )
     }
 
-    /// Creates a session that stops when the server loses ownership of the live tables or shuts
-    /// down. Its frames also count against `global_bytes`, the server's output budget.
-    pub fn with_tokens(
+    /// Creates a session that stops when `cancel` is cancelled, such as a token from
+    /// `Lifecycle::connection_token`. Its frames also count against `global_bytes`, the server's
+    /// output budget.
+    pub fn with_token(
         identity: Identity,
         generation: u64,
-        ownership_lost: CancellationToken,
-        shutdown: CancellationToken,
+        cancel: CancellationToken,
         global_bytes: Arc<Semaphore>,
     ) -> (Arc<Self>, mpsc::Receiver<Outbound>) {
         let (outbound, receiver) = mpsc::channel(OUTBOUND_QUEUE);
@@ -151,10 +149,8 @@ impl Session {
                 generation,
                 closing: AtomicBool::new(false),
                 superseded: AtomicBool::new(false),
-                cancel: CancellationToken::new(),
-                ownership_lost,
+                cancel,
                 lobby_load: Arc::new(Semaphore::new(1)),
-                shutdown,
                 outbound,
                 bytes: Arc::new(Semaphore::new(SESSION_OUTPUT_BYTES)),
                 global_bytes,
@@ -167,8 +163,6 @@ impl Session {
     /// session is no longer active.
     pub fn active(&self) -> bool {
         !self.cancel.is_cancelled()
-            && !self.ownership_lost.is_cancelled()
-            && !self.shutdown.is_cancelled()
     }
 
     pub fn supersede(&self) {
@@ -319,37 +313,6 @@ mod tests {
         assert!(session.active());
         session.emit(&Frame::from("x".repeat(MAX_MESSAGE_BYTES + 1)));
         assert!(!session.active());
-    }
-
-    #[test]
-    fn lost_ownership_or_shutdown_stops_a_session() {
-        for stop_by_shutdown in [false, true] {
-            let lost = CancellationToken::new();
-            let shutdown = CancellationToken::new();
-            let (session, mut receiver) = Session::with_tokens(
-                Identity {
-                    user: UserId(1),
-                    name: "Alice".into(),
-                    normalized_name: "alice".into(),
-                    ip: "127.0.0.1".into(),
-                    bot: false,
-                },
-                1,
-                lost.clone(),
-                shutdown.clone(),
-                Arc::new(Semaphore::new(GLOBAL_OUTPUT_BYTES)),
-            );
-            session.emit(&Frame::from("before {}"));
-            drop(receiver.try_recv().unwrap());
-            if stop_by_shutdown {
-                shutdown.cancel();
-            } else {
-                lost.cancel();
-            }
-            session.emit(&Frame::from("after {}"));
-            assert!(!session.active());
-            assert!(receiver.try_recv().is_err());
-        }
     }
 
     #[test]

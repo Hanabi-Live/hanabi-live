@@ -167,7 +167,7 @@ async fn lifecycle_announcements_reach_both_channels_despite_network_latency_pos
             true,
             "test".into(),
             &fixture.app.background,
-            fixture.app.lifecycle.shutdown.clone(),
+            fixture.app.lifecycle.shutdown().clone(),
         ),
     };
     tokio::time::timeout(Duration::from_secs(2), async {
@@ -399,7 +399,7 @@ async fn discord_mock_transport_public_privacy_rendering_and_status_postgres() {
             true,
             "test".into(),
             &fixture.app.background,
-            fixture.app.lifecycle.shutdown.clone(),
+            fixture.app.lifecycle.shutdown().clone(),
         ),
     );
     gateway.send(Event::Resumed).await.unwrap();

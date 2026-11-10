@@ -249,7 +249,7 @@ async fn run(config: Config, version: String) -> Result<bool> {
         let integrations = config.integrations.clone();
         app.background.spawn(async move {
             tokio::select! {
-                () = integration_app.lifecycle.shutdown.cancelled() => {},
+                () = integration_app.lifecycle.shutdown().cancelled() => {},
                 result = integration_app.start_integrations(&integrations) => {
                     match result {
                         // Recovery happened before the alerts could start.
@@ -294,7 +294,7 @@ async fn run(config: Config, version: String) -> Result<bool> {
     match &reason {
         StopReason::OwnershipLost => {
             failures.push("Live-table ownership or durability was lost".into());
-            lifecycle.shutdown.cancel();
+            lifecycle.shut_down();
         }
         StopReason::Failure(message) => failures.push(message.clone()),
         _ => {}
@@ -318,7 +318,7 @@ async fn run(config: Config, version: String) -> Result<bool> {
                 .into(),
         ),
     }
-    lifecycle.shutdown.cancel();
+    lifecycle.shut_down();
     for handle in handles {
         handle.graceful_shutdown(Some(LISTENER_SHUTDOWN_GRACE));
     }

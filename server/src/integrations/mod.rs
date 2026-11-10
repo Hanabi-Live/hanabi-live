@@ -63,7 +63,7 @@ impl Integrations {
             server.development,
             server.release.clone(),
             &server.background,
-            server.lifecycle.shutdown.clone(),
+            server.lifecycle.shutdown().clone(),
         );
         if let Some(bridge) = &discord {
             bridge.listen(alerts.clone());

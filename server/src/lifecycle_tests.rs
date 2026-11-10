@@ -132,7 +132,7 @@ async fn drains_notify_all_tables_before_waiting_for_acknowledgements() -> Resul
         }
         assert_eq!(notices.load(Ordering::Relaxed), u64::from(successful));
         assert!(tasks.is_empty());
-        app.lifecycle.shutdown.cancel();
+        app.lifecycle.shut_down();
         store.close().await?;
         db.close().await;
     }
@@ -177,4 +177,36 @@ async fn graceful_stop_does_not_wait_for_or_terminate_games() {
     assert!(h.operations.lock().unwrap().is_empty());
     assert!(h.control.graceful_stop(None).await.is_err());
     h.close().await;
+}
+
+#[test]
+fn lost_ownership_or_shutdown_stops_connections() {
+    for stop_by_shutdown in [false, true] {
+        let lost = CancellationToken::new();
+        let lifecycle = Lifecycle::new(lost.clone());
+        let (session, mut receiver) = crate::transport::Session::with_token(
+            crate::transport::Identity {
+                user: hanabi_protocol::UserId(1),
+                name: "Alice".into(),
+                normalized_name: "alice".into(),
+                ip: "127.0.0.1".into(),
+                bot: false,
+            },
+            1,
+            lifecycle.connection_token(),
+            Arc::new(tokio::sync::Semaphore::new(
+                crate::transport::GLOBAL_OUTPUT_BYTES,
+            )),
+        );
+        session.emit(&"before {}".into());
+        drop(receiver.try_recv().unwrap());
+        if stop_by_shutdown {
+            lifecycle.shut_down();
+        } else {
+            lost.cancel();
+        }
+        session.emit(&"after {}".into());
+        assert!(!session.active());
+        assert!(receiver.try_recv().is_err());
+    }
 }
