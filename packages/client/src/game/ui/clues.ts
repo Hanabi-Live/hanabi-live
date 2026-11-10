@@ -166,6 +166,10 @@ export function give(): void {
     return;
   }
 
+  // The preview shows cards as the target sees them, so it must not decide which cards the clue
+  // touches in a hypothetical.
+  cluePreview.hide();
+
   switch (clueOrRankButton.clue.type) {
     case ClueType.Color: {
       const colorIndex = colorToColorIndex(
