@@ -145,7 +145,9 @@ CREATE TABLE games (
     end_condition           SMALLINT     NOT NULL,
 
     datetime_started        TIMESTAMPTZ  NOT NULL,
-    datetime_finished       TIMESTAMPTZ  NOT NULL
+    datetime_finished       TIMESTAMPTZ  NOT NULL,
+    CONSTRAINT games_time_base_check CHECK (timed = (time_base IS NOT NULL)),
+    CONSTRAINT games_time_per_turn_check CHECK (timed = (time_per_turn IS NOT NULL))
 );
 CREATE INDEX games_index_num_players ON games (num_players);
 CREATE INDEX games_index_seed        ON games (seed);

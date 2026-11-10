@@ -78,8 +78,8 @@ pub(super) async fn export(
     let options = hanabi_protocol::ReplayOptions {
         variant: (variant_id != 0).then(|| variant.name.clone()),
         timed: flag(row.timed),
-        time_base_seconds: row.time_base.filter(|_| row.timed).map(i64::from),
-        time_per_turn_seconds: row.time_per_turn.filter(|_| row.timed).map(i64::from),
+        time_base_seconds: row.time_base.map(i64::from),
+        time_per_turn_seconds: row.time_per_turn.map(i64::from),
         speedrun: flag(row.speedrun),
         deck_plays: flag(row.deck_plays),
         empty_clues: flag(row.empty_clues),
