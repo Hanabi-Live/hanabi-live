@@ -138,10 +138,13 @@ databaseDescribe("normal-server protocol workload", () => {
             await bob.receive("joined", SERVER_COMMAND_SCHEMAS.joined);
             alice.send("tableStart", { tableID });
             await alice.receive(
-              "tableStart",
-              SERVER_COMMAND_SCHEMAS.tableStart,
+              "tableStarted",
+              SERVER_COMMAND_SCHEMAS.tableStarted,
             );
-            await bob.receive("tableStart", SERVER_COMMAND_SCHEMAS.tableStart);
+            await bob.receive(
+              "tableStarted",
+              SERVER_COMMAND_SCHEMAS.tableStarted,
+            );
             const [a, b] = await Promise.all([
               bootstrap(alice, tableID),
               bootstrap(bob, tableID),
@@ -172,8 +175,8 @@ databaseDescribe("normal-server protocol workload", () => {
                 alice = await connect(aliceCookie);
                 alice.send("tableReattend", { tableID });
                 await alice.receive(
-                  "tableStart",
-                  SERVER_COMMAND_SCHEMAS.tableStart,
+                  "tableStarted",
+                  SERVER_COMMAND_SCHEMAS.tableStarted,
                 );
                 const restored = await bootstrap(alice, tableID);
                 expect(restored.init.ourPlayerIndex).toBe(
@@ -276,8 +279,8 @@ databaseDescribe("normal-server protocol workload", () => {
           databaseID,
         });
         const { tableID } = await peer.receive(
-          "tableStart",
-          SERVER_COMMAND_SCHEMAS.tableStart,
+          "tableStarted",
+          SERVER_COMMAND_SCHEMAS.tableStarted,
         );
         const replay = await bootstrap(peer, tableID);
         expect<number | undefined>(replay.init.databaseID).toBe(databaseID);

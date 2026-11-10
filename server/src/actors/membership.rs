@@ -323,7 +323,7 @@ impl TableActor {
             e.messages.push((
                 session,
                 frame(
-                    hanabi_protocol::server::TABLE_START,
+                    hanabi_protocol::server::TABLE_STARTED,
                     TableStarted {
                         table_id: self.table.id,
                         replay,

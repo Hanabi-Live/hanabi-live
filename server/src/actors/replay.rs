@@ -413,14 +413,14 @@ impl TableActor {
                     },
                 )
             }
-            R::EfficiencyMod {
+            R::EfficiencyModifier {
                 efficiency_modifier,
                 ..
             } => {
                 replay.efficiency_modifier = efficiency_modifier;
                 Outgoing::new(
-                    hanabi_protocol::server::REPLAY_EFFICIENCY_MOD,
-                    hanabi_protocol::ReplayEfficiencyMod {
+                    hanabi_protocol::server::REPLAY_EFFICIENCY_MODIFIER,
+                    hanabi_protocol::ReplayEfficiencyModifier {
                         table_id: self.table.id,
                         efficiency_modifier: replay.efficiency_modifier,
                     },

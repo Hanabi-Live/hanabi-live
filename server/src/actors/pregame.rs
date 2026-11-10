@@ -387,7 +387,7 @@ impl TableActor {
             e.messages.push((
                 a.session.clone(),
                 frame(
-                    hanabi_protocol::server::TABLE_START,
+                    hanabi_protocol::server::TABLE_STARTED,
                     TableStarted {
                         table_id: self.table.id,
                         replay: false,

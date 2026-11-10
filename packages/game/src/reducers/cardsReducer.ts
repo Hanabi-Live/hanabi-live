@@ -258,7 +258,7 @@ export function cardsReducer(
     }
 
     // Some actions do not affect the card state.
-    case "setEffMod":
+    case "setEfficiencyModifier":
     case "editNote":
     case "noteList":
     case "noteListPlayer":

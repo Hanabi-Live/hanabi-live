@@ -412,7 +412,7 @@ pub struct HypoShowDrawnCards {
 
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
-pub struct ReplayEfficiencyMod {
+pub struct ReplayEfficiencyModifier {
     #[serde(rename = "tableID")]
     pub table_id: TableId,
     #[schemars(range(min = i32::MIN, max = i32::MAX))]

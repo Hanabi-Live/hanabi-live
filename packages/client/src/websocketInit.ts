@@ -276,7 +276,7 @@ function openConnection(isReconnect: boolean) {
         globals.blocked = data.blocked;
         theme.setDarkMode(globals.settings.darkMode);
         const retained = tableIdSchema.parse(globals.tableID);
-        conn.on("tableStart", (table) => {
+        conn.on("tableStarted", (table) => {
           if (!isCurrentConnection(conn)) {
             return;
           }
@@ -291,7 +291,7 @@ function openConnection(isReconnect: boolean) {
           } else {
             globals.ui?.destroy();
             globals.ui = null;
-            lobbyCommands.get("tableStart")?.(table);
+            lobbyCommands.get("tableStarted")?.(table);
           }
         });
         conn.on("gameActionList", (actionList) => {

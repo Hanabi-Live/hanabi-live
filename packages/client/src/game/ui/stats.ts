@@ -12,10 +12,10 @@ const setModifierButton = getHTMLElement("#set-modifier-button");
 const setModifierCurrent = getHTMLElement("#set-modifier-current");
 const setModifierNew = getHTMLInputElement("#set-modifier-new");
 
-export function setEfficiencyMod(mod: number): void {
+export function setEfficiencyModifier(efficiencyModifier: number): void {
   globals.store!.dispatch({
-    type: "setEffMod",
-    mod,
+    type: "setEfficiencyModifier",
+    efficiencyModifier,
   });
 
   if (globals.state.visibleState === null) {
@@ -28,8 +28,8 @@ export function setEfficiencyMod(mod: number): void {
   ) {
     globals.lobby.conn!.send("replayAction", {
       tableID: globals.lobby.tableID,
-      type: "efficiencyMod",
-      efficiencyModifier: mod,
+      type: "efficiencyModifier",
+      efficiencyModifier,
     });
   }
 }
@@ -76,13 +76,13 @@ export function askForEfficiency(): void {
   setModifierButton.onclick = () => {
     modals.closeModals();
 
-    const effModString = setModifierNew.value;
-    const effMod = parseIntSafe(effModString);
-    if (effMod === undefined) {
+    const efficiencyModifierString = setModifierNew.value;
+    const efficiencyModifier = parseIntSafe(efficiencyModifierString);
+    if (efficiencyModifier === undefined) {
       // Do not do anything if they entered something that is not a number.
       return;
     }
-    setEfficiencyMod(effMod);
+    setEfficiencyModifier(efficiencyModifier);
   };
 
   modals.showPrompt(

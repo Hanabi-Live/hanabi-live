@@ -30,7 +30,7 @@ export type NoteAction =
   | ActionNoteList
   | ActionNoteListPlayer
   | ActionReceiveNote
-  | ActionSetEffMod;
+  | ActionSetEfficiencyModifier;
 
 // ------------
 // Game actions
@@ -104,7 +104,7 @@ export interface ActionNoteList {
   readonly notes: readonly PlayerNotes[];
 }
 
-export interface ActionSetEffMod {
-  readonly type: "setEffMod";
-  readonly mod: number;
+export interface ActionSetEfficiencyModifier {
+  readonly type: "setEfficiencyModifier";
+  readonly efficiencyModifier: number;
 }

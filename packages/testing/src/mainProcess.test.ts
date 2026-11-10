@@ -190,8 +190,11 @@ databaseDescribe("compiled application entry point (rust)", () => {
         });
         await bob.receive("joined", SERVER_COMMAND_SCHEMAS.joined);
         alice.send("tableStart", { tableID });
-        await alice.receive("tableStart", SERVER_COMMAND_SCHEMAS.tableStart);
-        await bob.receive("tableStart", SERVER_COMMAND_SCHEMAS.tableStart);
+        await alice.receive(
+          "tableStarted",
+          SERVER_COMMAND_SCHEMAS.tableStarted,
+        );
+        await bob.receive("tableStarted", SERVER_COMMAND_SCHEMAS.tableStarted);
 
         async function bootstrap(peer: ReturnType<typeof socketClient>) {
           peer.send("getGameInit", { tableID });
@@ -324,7 +327,10 @@ databaseDescribe("compiled application entry point (rust)", () => {
             );
             expect(returning.playingAtTables).toEqual([tableID]);
             peer.send("tableReattend", { tableID });
-            await peer.receive("tableStart", SERVER_COMMAND_SCHEMAS.tableStart);
+            await peer.receive(
+              "tableStarted",
+              SERVER_COMMAND_SCHEMAS.tableStarted,
+            );
             return await bootstrap(peer);
           }),
         );
@@ -575,7 +581,10 @@ databaseDescribe("compiled application entry point (rust)", () => {
       }
       const games = await Promise.all(
         players.map(async (peer) => {
-          await peer.receive("tableStart", SERVER_COMMAND_SCHEMAS.tableStart);
+          await peer.receive(
+            "tableStarted",
+            SERVER_COMMAND_SCHEMAS.tableStarted,
+          );
           return await bootstrap(peer, tableID);
         }),
       );
@@ -605,7 +614,10 @@ databaseDescribe("compiled application entry point (rust)", () => {
         ).toBe(true);
       }
       observer.send("tableSpectate", { tableID, shadowingPlayerIndex: 0 });
-      await observer.receive("tableStart", SERVER_COMMAND_SCHEMAS.tableStart);
+      await observer.receive(
+        "tableStarted",
+        SERVER_COMMAND_SCHEMAS.tableStarted,
+      );
       const shadow = await bootstrap(observer, tableID);
       expect(shadow.init).toMatchObject({
         spectating: true,
@@ -676,8 +688,8 @@ databaseDescribe("compiled application entry point (rust)", () => {
             : { source, visibility: "shared", gameJSON: replayJSON },
         );
         const created = await owner.receive(
-          "tableStart",
-          SERVER_COMMAND_SCHEMAS.tableStart,
+          "tableStarted",
+          SERVER_COMMAND_SCHEMAS.tableStarted,
         );
         const imported = await bootstrap(owner, created.tableID);
         expect(imported.init.replay).toBe(true);
@@ -745,8 +757,8 @@ databaseDescribe("compiled application entry point (rust)", () => {
           );
           returning.send("tableReattend", { tableID: created.tableID });
           await returning.receive(
-            "tableStart",
-            SERVER_COMMAND_SCHEMAS.tableStart,
+            "tableStarted",
+            SERVER_COMMAND_SCHEMAS.tableStarted,
             (message) => message.tableID === created.tableID,
           );
           const recovered = await bootstrap(returning, created.tableID);

@@ -404,7 +404,7 @@ pub enum ReplayActionRequest {
         table_id: TableId,
         show_drawn_cards: bool,
     },
-    EfficiencyMod {
+    EfficiencyModifier {
         #[serde(rename = "tableID")]
         table_id: TableId,
         #[schemars(range(min = i32::MIN, max = i32::MAX))]
@@ -423,7 +423,7 @@ impl ReplayActionRequest {
             | Self::HypoAction { table_id, .. }
             | Self::HypoBack { table_id }
             | Self::HypoShowDrawnCards { table_id, .. }
-            | Self::EfficiencyMod { table_id, .. } => *table_id,
+            | Self::EfficiencyModifier { table_id, .. } => *table_id,
         }
     }
 }

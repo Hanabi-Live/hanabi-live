@@ -352,7 +352,7 @@ pub fn schemas() -> std::collections::BTreeMap<String, serde_json::Value> {
         Hypothetical,
         HypotheticalAction,
         HypoShowDrawnCards,
-        ReplayEfficiencyMod,
+        ReplayEfficiencyModifier,
         ActionRequest,
         PauseRequest,
         NoteRequest,

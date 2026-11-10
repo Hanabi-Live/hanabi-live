@@ -96,7 +96,7 @@ macro_rules! server_contracts {
             GAME_ACTION "gameAction" => GameAction;
             GAME_ACTION_LIST "gameActionList" => GameActionList;
             INIT "init" => Init;
-            REPLAY_EFFICIENCY_MOD "replayEfficiencyMod" => ReplayEfficiencyMod;
+            REPLAY_EFFICIENCY_MODIFIER "replayEfficiencyModifier" => ReplayEfficiencyModifier;
             BOOT "boot" => TableRequest;
             SYNCED "synced" => Empty;
             LOBBY_STATUS "lobbyStatus" => LobbyStatus;
@@ -108,7 +108,7 @@ macro_rules! server_contracts {
             JOINED "joined" => TableRequest;
             LEFT "left" => TableRequest;
             TABLE_GONE "tableGone" => TableRequest;
-            TABLE_START "tableStart" => TableStarted;
+            TABLE_STARTED "tableStarted" => TableStarted;
             USER "user" => User;
             USER_LIST "userList" => UserList;
             USER_LEFT "userLeft" => UserLeft;
@@ -232,10 +232,10 @@ pub mod server {
         Connected, Empty, ErrorNotice, FinishOngoingGame, Friends, GameAction, GameActionList,
         GameHistory, GameHistoryList, GameHistoryOtherScores, HypoShowDrawnCards, Hypothetical,
         HypotheticalAction, IdleWarning, Init, LobbyStatus, Note, NoteList, NoteListPlayer, Pause,
-        Pregame, ReplayEfficiencyMod, ReplayIndicator, ReplayLeader, ReplaySegment, ReplaySound,
-        Restart, RestartDeclined, ServerMessage, SoundLobby, Spectators, Suggestion, Table,
-        TableList, TableRequest, TableStarted, User, UserInactive, UserLeft, UserList, VoteChange,
-        Warning, Welcome,
+        Pregame, ReplayEfficiencyModifier, ReplayIndicator, ReplayLeader, ReplaySegment,
+        ReplaySound, Restart, RestartDeclined, ServerMessage, SoundLobby, Spectators, Suggestion,
+        Table, TableList, TableRequest, TableStarted, User, UserInactive, UserLeft, UserList,
+        VoteChange, Warning, Welcome,
     };
     server_contracts!(server_messages);
 }

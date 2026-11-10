@@ -759,7 +759,7 @@ export const replayActionRequestSchema = z.discriminatedUnion("type", [
   z.strictObject({
     efficiencyModifier: z.number().int().min(-2_147_483_648).max(2_147_483_647),
     tableID: tableIdSchema,
-    type: z.literal("efficiencyMod"),
+    type: z.literal("efficiencyModifier"),
   }),
 ]);
 
@@ -877,7 +877,7 @@ export const replayCreateRequestSchema = z.strictObject({
   spoilerFree: z.boolean().default(false),
   visibility: replayVisibilitySchema,
 });
-export const replayEfficiencyModSchema = z.strictObject({
+export const replayEfficiencyModifierSchema = z.strictObject({
   efficiencyModifier: z.number().int().min(-2_147_483_648).max(2_147_483_647),
   tableID: tableIdSchema,
 });
@@ -1406,7 +1406,7 @@ export const SERVER_COMMAND_SCHEMAS = {
   outdatedClient: emptySchema,
   pause: pauseSchema,
   pregame: pregameSchema,
-  replayEfficiencyMod: replayEfficiencyModSchema,
+  replayEfficiencyModifier: replayEfficiencyModifierSchema,
   replayIndicator: replayIndicatorSchema,
   replayLeader: replayLeaderSchema,
   replaySegment: replaySegmentSchema,
@@ -1420,7 +1420,7 @@ export const SERVER_COMMAND_SCHEMAS = {
   table: tableSchema,
   tableGone: tableRequestSchema,
   tableList: tableListSchema,
-  tableStart: tableStartedSchema,
+  tableStarted: tableStartedSchema,
   user: userSchema,
   userInactive: userInactiveSchema,
   userLeft: userLeftSchema,

@@ -38,8 +38,8 @@ function notesReducerFunction(
 ) {
   const variant = getVariant(metadata.options.variantName);
   switch (action.type) {
-    case "setEffMod": {
-      notes.efficiencyModifier = action.mod;
+    case "setEfficiencyModifier": {
+      notes.efficiencyModifier = action.efficiencyModifier;
       break;
     }
 

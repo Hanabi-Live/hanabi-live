@@ -464,7 +464,7 @@ function gameReducerFunction(
     }
 
     // Some actions do not affect the main state or are handled by another reducer.
-    case "setEffMod":
+    case "setEfficiencyModifier":
     case "editNote":
     case "noteList":
     case "noteListPlayer":

@@ -86,8 +86,8 @@ gameCommands.set("finishOngoingGame", (data) => {
   // Zero out the user-created efficiency modifier, if any. In a shared replay, this must be synced
   // with the shared replay leader.
   globals.store!.dispatch({
-    type: "setEffMod",
-    mod: 0,
+    type: "setEfficiencyModifier",
+    efficiencyModifier: 0,
   });
 
   // Set the browser address bar. A game that was not saved has no replay address.
@@ -278,7 +278,7 @@ gameCommands.set("pause", (data) => {
   });
 });
 
-gameCommands.set("replayEfficiencyMod", (data) => {
+gameCommands.set("replayEfficiencyModifier", (data) => {
   if (
     globals.state.replay.shared === null
     // Shared replay leaders already set the efficiency after sending the "replayAction" message.
@@ -287,7 +287,7 @@ gameCommands.set("replayEfficiencyMod", (data) => {
     return;
   }
 
-  stats.setEfficiencyMod(data.efficiencyModifier);
+  stats.setEfficiencyModifier(data.efficiencyModifier);
 });
 
 gameCommands.set("voteChange", (data) => {

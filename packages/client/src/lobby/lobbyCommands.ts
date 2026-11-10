@@ -179,7 +179,7 @@ lobbyCommands.set("tableList", (dataList) => {
   store.dispatch(tablesListed(dataList));
 });
 
-lobbyCommands.set("tableStart", (data) => {
+lobbyCommands.set("tableStarted", (data) => {
   // Record the table ID for later.
   globals.tableID = data.tableID;
 

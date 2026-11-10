@@ -184,7 +184,7 @@ impl Harness {
     }
     async fn replay(&mut self, index: usize) -> Result<TableId> {
         self.send(index,"replayCreate",json!({"source":"json","visibility":"shared","gameJSON":{"playerNames":["Alice","Bob"],"seed":"p2v0s1"}})).await?;
-        self.receive(index, "tableStart").await?["tableID"]
+        self.receive(index, "tableStarted").await?["tableID"]
             .as_u64()
             .map(TableId)
             .context("Missing replay identity")
@@ -300,13 +300,13 @@ async fn only_the_start_of_a_game_is_marked_as_just_started() -> Result<()> {
         let id = h.create(0, "Just started", json!({})).await?;
         h.send(1, "tableJoin", json!({"tableID":id})).await?;
         h.send(0, "tableStart", json!({"tableID":id})).await?;
-        let started = h.receive(1, "tableStart").await?;
+        let started = h.receive(1, "tableStarted").await?;
         ensure!(
             started["justStarted"] == true,
             "A player was not told that the game started: {started}"
         );
         h.send(2, "tableSpectate", json!({"tableID":id})).await?;
-        let joined = h.receive(2, "tableStart").await?;
+        let joined = h.receive(2, "tableStarted").await?;
         ensure!(
             joined["justStarted"] == false,
             "A spectator who joined a game in progress was told that it started: {joined}"
@@ -875,7 +875,7 @@ async fn shared_replay_spectators_return_to_the_same_replay_after_a_restart() ->
             h.send(index, "tableSpectate", json!({"tableID":id}))
                 .await?;
             ensure!(
-                h.receive(index, "tableStart").await?["tableID"] == json!(id),
+                h.receive(index, "tableStarted").await?["tableID"] == json!(id),
                 "A spectator did not rejoin the restored replay"
             );
         }
@@ -969,7 +969,7 @@ async fn shared_replay_links_join_an_existing_replay_of_the_same_game() -> Resul
         };
         let open = async |h: &mut Harness, index: usize, request: Value| -> Result<Value> {
             h.send(index, "replayCreate", request).await?;
-            Ok(h.receive(index, "tableStart").await?["tableID"].clone())
+            Ok(h.receive(index, "tableStarted").await?["tableID"].clone())
         };
 
         let shared = open(&mut h, 0, request("shared", true)).await?;
@@ -1012,7 +1012,7 @@ async fn spoiler_free_reviews_are_shared_replays_that_tell_everyone() -> Result<
             "A solo replay was created as a spoiler-free review"
         );
         h.send(0, "replayCreate", request("shared")).await?;
-        let id = h.receive(0, "tableStart").await?["tableID"].clone();
+        let id = h.receive(0, "tableStarted").await?["tableID"].clone();
         h.send(1, "tableSpectate", json!({"tableID":id})).await?;
         h.send(1, "getGameInit", json!({"tableID":id})).await?;
         let init = h.receive(1, "init").await?;
@@ -1041,7 +1041,7 @@ async fn shared_replays_of_older_games_start_when_their_table_is_created() -> Re
                 "actions":[{"type":4,"target":0,"value":4}]}}),
         )
         .await?;
-        let id = h.receive(0, "tableStart").await?["tableID"].clone();
+        let id = h.receive(0, "tableStarted").await?["tableID"].clone();
         h.stop_hub().await?;
         let (mut table, revision) = h
             .snapshot(TableId(id.as_u64().context("Missing replay identity")?))
@@ -1454,7 +1454,7 @@ async fn spectators_return_to_ongoing_games_and_shared_replays_after_reconnectin
                 // The client spectates the table it was told about.
                 h.send(index, "tableSpectate", spectating).await?;
                 ensure!(
-                    h.receive(index, "tableStart").await?["tableID"] == json!(table),
+                    h.receive(index, "tableStarted").await?["tableID"] == json!(table),
                     "A spectator did not rejoin their table (restarted: {restarted})"
                 );
             }
@@ -1725,7 +1725,7 @@ async fn chat_read_positions_survive_game_start_reconnect_and_remake() -> Result
         }
         h.send(0, "tableRestart", json!({"tableID":id,"hidePregame":true}))
             .await?;
-        let started = h.receive(0, "tableStart").await?;
+        let started = h.receive(0, "tableStarted").await?;
         let remade = started["tableID"]
             .as_u64()
             .map(TableId)
