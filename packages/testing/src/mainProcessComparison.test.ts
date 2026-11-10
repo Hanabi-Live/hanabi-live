@@ -20,7 +20,6 @@ import {
   startProcess,
   stopChild,
   summary,
-  wireHistorySchema,
 } from "./mainProcessSupport";
 
 /** The deal of this two-player seed lets the players alternate 25 plays. */
@@ -195,8 +194,10 @@ databaseDescribe("normal-server protocol workload", () => {
                 samples.liveReconnect.push(performance.now() - reconnectStart);
               }
             }
-            await alice.receive("gameHistory", wireHistorySchema, (games) =>
-              games.some((entry) => entry.score === 25),
+            await alice.receive(
+              "gameHistoryAdded",
+              SERVER_COMMAND_SCHEMAS.gameHistoryAdded,
+              (entry) => entry.score === 25,
             );
             const finished = await bootstrap(alice, tableID);
             expect(finished.init.replay).toBe(true);

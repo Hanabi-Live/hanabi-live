@@ -429,8 +429,6 @@ pub struct GameHistory {
     pub num_games_on_this_seed: i64,
     #[schemars(extend("x-readonly" = true))]
     pub player_names: Vec<String>,
-    /// Whether this game should be added to the recipient's total.
-    pub increment_num_games: bool,
     /// The game's tags, separated by commas.
     pub tags: String,
 }

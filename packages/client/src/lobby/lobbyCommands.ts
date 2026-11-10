@@ -105,14 +105,16 @@ lobbyCommands.set("game", (data) => {
 });
 
 lobbyCommands.set("gameHistory", (dataArray) => {
-  // `data` will be an array of all of the games that we have previously played.
-  for (const data of dataArray) {
-    if (data.incrementNumGames && globals.totalGames !== null) {
-      globals.totalGames++;
-    }
-  }
+  // `dataArray` is a page of the games that we have previously played.
   store.dispatch(historyReceived(dataArray));
+});
 
+lobbyCommands.set("gameHistoryAdded", (data) => {
+  // We just finished a game, so add it to our history and our total.
+  store.dispatch(historyReceived([data]));
+  if (globals.totalGames !== null) {
+    globals.totalGames++;
+  }
   $("#nav-buttons-history-total-games").text(
     globals.totalGames?.toString() ?? "loading...",
   );

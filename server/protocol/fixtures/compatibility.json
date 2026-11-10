@@ -735,7 +735,6 @@
         "datetimeFinished": "2023-12-29T18:21:43.812Z",
         "numGamesOnThisSeed": 3,
         "playerNames": ["Alice", "Bob"],
-        "incrementNumGames": false,
         "tags": ""
       }
     ],
@@ -770,7 +769,6 @@
         "datetimeFinished": "2023-12-29T18:21:43.812Z",
         "numGamesOnThisSeed": 3,
         "playerNames": ["Alice", "Bob"],
-        "incrementNumGames": false,
         "tags": ""
       }
     ],
@@ -805,7 +803,6 @@
         "datetimeFinished": "2023-12-29T18:21:43.812Z",
         "numGamesOnThisSeed": 3,
         "playerNames": ["Alice", "Bob"],
-        "incrementNumGames": false,
         "tags": ""
       }
     ],
@@ -840,7 +837,6 @@
         "datetimeFinished": "2023-12-29T18:21:43.812Z",
         "numGamesOnThisSeed": 3,
         "playerNames": ["Alice", "Bob"],
-        "incrementNumGames": false,
         "tags": ""
       }
     ],
@@ -875,7 +871,6 @@
         "datetimeFinished": "2023-12-29T18:21:43.812Z",
         "numGamesOnThisSeed": 3,
         "playerNames": ["Alice", "Bob"],
-        "incrementNumGames": false,
         "tags": ""
       }
     ],

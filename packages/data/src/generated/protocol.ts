@@ -303,10 +303,6 @@ export const gameHistorySchema = z
     datetimeStarted: z.iso.datetime({ precision: 3 }),
     endCondition: z.enum(EndCondition),
     id: gameIdSchema,
-    /**
-     * Whether this game should be added to the recipient's total.
-     */
-    incrementNumGames: z.boolean(),
     numGamesOnThisSeed: z.number().int().min(0).max(2_147_483_647),
     numTurns: z.number().int().min(0).max(2_147_483_647),
     options: gameOptionsSchema,
@@ -1360,6 +1356,7 @@ export const SERVER_COMMAND_SCHEMAS = {
   gameAction: gameActionSchema,
   gameActionList: gameActionListSchema,
   gameHistory: gameHistoryListSchema,
+  gameHistoryAdded: gameHistorySchema,
   gameHistoryOtherScores: gameHistoryOtherScoresSchema,
   hypoAction: hypotheticalActionSchema,
   hypoBack: tableRequestSchema,

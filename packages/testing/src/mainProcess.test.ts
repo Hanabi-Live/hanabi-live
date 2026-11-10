@@ -401,19 +401,10 @@ databaseDescribe("compiled application entry point (rust)", () => {
           SERVER_COMMAND_SCHEMAS.finishOngoingGame,
         );
         expect(finished.databaseID).toBe(checkpoint.game_id);
-        const historyRow = z
-          .object({
-            id: z.number().int(),
-            incrementNumGames: z.boolean(),
-          })
-          .readonly();
         await replacement.receive(
-          "gameHistory",
-          historyRow.array().readonly(),
-          (rows) =>
-            rows.some(
-              (row) => row.id === finished.databaseID && row.incrementNumGames,
-            ),
+          "gameHistoryAdded",
+          SERVER_COMMAND_SCHEMAS.gameHistoryAdded,
+          (row) => row.id === finished.databaseID,
         );
         replacement.send("replayAction", {
           tableID,

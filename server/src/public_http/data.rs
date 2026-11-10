@@ -323,7 +323,6 @@ fn game_history(row: HistoryRow) -> anyhow::Result<hanabi_protocol::GameHistory>
         datetime_finished: crate::model::timestamp(g.datetime_finished),
         num_games_on_this_seed: i64::from(row.seed_count),
         player_names: row.names,
-        increment_num_games: false,
         tags: row.tags,
     })
 }

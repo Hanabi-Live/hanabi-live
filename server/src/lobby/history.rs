@@ -95,7 +95,6 @@ pub async fn get_history(
             seed: game.seed,
             num_games_on_this_seed: i64::from(row.num_games_on_this_seed),
             player_names: row.player_names,
-            increment_num_games: false,
             tags: row.tags,
         });
     }

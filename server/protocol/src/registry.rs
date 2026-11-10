@@ -125,6 +125,7 @@ macro_rules! server_contracts {
             TABLE_LIST "tableList" => TableList;
             GAME "game" => Pregame;
             GAME_HISTORY "gameHistory" => GameHistoryList;
+            GAME_HISTORY_ADDED "gameHistoryAdded" => GameHistory;
             GAME_HISTORY_OTHER_SCORES "gameHistoryOtherScores" => GameHistoryOtherScores;
         }
     };
@@ -229,7 +230,7 @@ pub mod server {
     use super::{
         Blocked, CardIdentities, Chat, ChatDelete, ChatHistory, ChatList, ChatTyping, Clock,
         Connected, Empty, ErrorNotice, FinishOngoingGame, Friends, GameAction, GameActionList,
-        GameHistoryList, GameHistoryOtherScores, HypoShowDrawnCards, Hypothetical,
+        GameHistory, GameHistoryList, GameHistoryOtherScores, HypoShowDrawnCards, Hypothetical,
         HypotheticalAction, IdleWarning, Init, LobbyStatus, Note, NoteList, NoteListPlayer, Pause,
         Pregame, ReplayEfficiencyMod, ReplayIndicator, ReplayLeader, ReplaySegment, ReplaySound,
         Restart, RestartDeclined, ServerMessage, SoundLobby, Spectators, Suggestion, Table,

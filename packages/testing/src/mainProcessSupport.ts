@@ -1,4 +1,4 @@
-import { SERVER_COMMAND_SCHEMAS, VERSION } from "@hanabi-live/data";
+import { VERSION } from "@hanabi-live/data";
 
 import { describe, expect } from "bun:test";
 import { assertDefined } from "complete-common";
@@ -20,17 +20,6 @@ export const databaseDescribe =
   process.env["HANABI_TEST_DATABASE_URL"] === undefined
     ? describe.skip
     : describe;
-
-export const wireHistorySchema = SERVER_COMMAND_SCHEMAS.gameHistory
-  .unwrap()
-  .element.unwrap()
-  .extend({
-    datetimeStarted: z.coerce.date(),
-    datetimeFinished: z.coerce.date(),
-  })
-  .readonly()
-  .array()
-  .readonly();
 
 export interface CheckpointProgress {
   readonly game_id: number;

@@ -171,8 +171,8 @@ impl TableActor {
                     e.messages.push((
                         a.session.clone(),
                         frame(
-                            hanabi_protocol::server::GAME_HISTORY,
-                            hanabi_protocol::GameHistoryList(vec![s.history(count, true)]),
+                            hanabi_protocol::server::GAME_HISTORY_ADDED,
+                            s.history(count),
                         ),
                     ));
                 }

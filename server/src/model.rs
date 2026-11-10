@@ -600,7 +600,7 @@ impl Snapshot {
         );
         Ok(())
     }
-    pub fn history(&self, count: i64, increment: bool) -> hanabi_protocol::GameHistory {
+    pub fn history(&self, count: i64) -> hanabi_protocol::GameHistory {
         let mut names = self
             .players
             .iter()
@@ -619,7 +619,6 @@ impl Snapshot {
             datetime_finished: time(self.finished.unwrap_or(self.started)),
             num_games_on_this_seed: count,
             player_names: names,
-            increment_num_games: increment,
             tags: self
                 .tags
                 .iter()
