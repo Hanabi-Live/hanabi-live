@@ -243,14 +243,22 @@ pub struct Welcome {
     /// Ongoing games the user is a player in.
     #[schemars(extend("x-readonly" = true))]
     pub playing_at_tables: Vec<TableId>,
-    /// A table the user was spectating when they disconnected.
+    /// The table the user was spectating when they disconnected, if any.
     #[serde(default, skip_serializing_if = "Option::is_none")]
-    #[schemars(with = "TableId")]
-    pub discon_spectating_table: Option<TableId>,
-    /// The seat the user was shadowing at that table, or -1 for none.
+    #[schemars(with = "SpectatedTable")]
+    pub spectating_at_table: Option<SpectatedTable>,
+}
+
+/// A table that a user spectates, and the seat they shadow there, if any.
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+#[schemars(extend("x-readonly" = true))]
+pub struct SpectatedTable {
+    #[serde(rename = "tableID")]
+    pub table_id: TableId,
     #[serde(default, skip_serializing_if = "Option::is_none")]
-    #[schemars(with = "i8", range(min = NO_VALUE, max = MAX_SEAT))]
-    pub discon_shadowing_seat: Option<i8>,
+    #[schemars(with = "PlayerIndex")]
+    pub shadowing_player_index: Option<u8>,
 }
 
 /// A table's game options, as clients request them and as the server reports them. Missing fields
@@ -333,9 +341,10 @@ impl Default for GameOptions {
 pub struct Spectator {
     #[schemars(length(min = 1))]
     pub name: String,
-    /// The seat being shadowed, or -1 for none.
-    #[schemars(range(min = NO_VALUE, max = MAX_SEAT), extend("enum" = seats_or_none()))]
-    pub shadowing_player_index: i8,
+    /// The seat being shadowed, if any.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[schemars(with = "PlayerIndex")]
+    pub shadowing_player_index: Option<u8>,
     /// Present only while shadowing a seat.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     #[schemars(with = "String", length(min = 1))]

@@ -273,17 +273,23 @@
     "valid": false
   },
   {
-    "name": "spectate defaults legacy shadow seat",
+    "name": "spectate without a shadow seat",
     "direction": "client",
     "command": "tableSpectate",
     "input": {
       "tableID": 1
     },
-    "valid": true,
-    "normalized": {
+    "valid": true
+  },
+  {
+    "name": "spectate rejects the legacy -1 shadow seat",
+    "direction": "client",
+    "command": "tableSpectate",
+    "input": {
       "tableID": 1,
       "shadowingPlayerIndex": -1
-    }
+    },
+    "valid": false
   },
   {
     "name": "missing server chat fields stay omitted",
@@ -575,7 +581,6 @@
       },
       "joinExisting": false,
       "password": "",
-      "shadowingPlayerIndex": -1,
       "spoilerFree": false
     },
     "valid": true
@@ -695,8 +700,7 @@
       "tableID": 3,
       "spectators": [
         {
-          "name": "Carol",
-          "shadowingPlayerIndex": -1
+          "name": "Carol"
         }
       ]
     },

@@ -4,7 +4,8 @@ import {
   SECONDS_PER_MINUTE,
   tableIdSchema,
 } from "@hanabi-live/data";
-import { DEFAULT_VARIANT_NAME, NO_VALUE } from "@hanabi-live/game";
+import type { PlayerIndex } from "@hanabi-live/game";
+import { DEFAULT_VARIANT_NAME, isValidPlayerIndex } from "@hanabi-live/game";
 import { parseIntSafe } from "complete-common";
 import { HISTORY_HASH, LOCAL_STORAGE_KEY, PATH } from "../constants";
 import { globals } from "../Globals";
@@ -49,14 +50,8 @@ function reconnectToTable(data: ServerCommandData["welcome"]): boolean {
 
   // If the server has informed us that were previously spectating an ongoing shared replay,
   // automatically spectate that table.
-  if (
-    data.disconSpectatingTable !== undefined
-    && data.disconSpectatingTable > 0
-  ) {
-    globals.conn!.send("tableSpectate", {
-      tableID: data.disconSpectatingTable,
-      shadowingPlayerIndex: data.disconShadowingSeat,
-    });
+  if (data.spectatingAtTable !== undefined) {
+    globals.conn!.send("tableSpectate", data.spectatingAtTable);
     return true;
   }
 
@@ -157,19 +152,14 @@ function gotoPath(data: ServerCommandData["welcome"]): boolean {
         const shadowMatch = /\/shadow\/(\d+)/u.exec(
           globalThis.location.pathname,
         );
-        let shadowingPlayerIndex = NO_VALUE;
-        if (shadowMatch !== null) {
-          const shadowingPlayerIndexString = shadowMatch[1];
-          if (shadowingPlayerIndexString !== undefined) {
-            const shadowingPlayerIndexInt = parseIntSafe(
-              shadowingPlayerIndexString,
-            );
-            if (
-              shadowingPlayerIndexInt !== undefined
-              && shadowingPlayerIndexInt >= 0
-            ) {
-              shadowingPlayerIndex = shadowingPlayerIndexInt;
-            }
+        let shadowingPlayerIndex: PlayerIndex | undefined;
+        const shadowingPlayerIndexString = shadowMatch?.[1];
+        if (shadowingPlayerIndexString !== undefined) {
+          const shadowingPlayerIndexInt = parseIntSafe(
+            shadowingPlayerIndexString,
+          );
+          if (isValidPlayerIndex(shadowingPlayerIndexInt)) {
+            shadowingPlayerIndex = shadowingPlayerIndexInt;
           }
         }
         globals.conn!.send("tableSpectate", {
@@ -197,7 +187,6 @@ function gotoPath(data: ServerCommandData["welcome"]): boolean {
           databaseID,
           source: "id",
           visibility,
-          shadowingPlayerIndex: NO_VALUE,
           // A link to a shared replay should join the one that people are already watching.
           joinExisting: true,
         });
@@ -241,7 +230,6 @@ function gotoPath(data: ServerCommandData["welcome"]): boolean {
         source,
         gameJSON,
         visibility,
-        shadowingPlayerIndex: NO_VALUE,
       });
       return true;
     }

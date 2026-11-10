@@ -1,5 +1,5 @@
 import type { PlayerIndex } from "@hanabi-live/game";
-import { NO_VALUE } from "@hanabi-live/game";
+import { isValidPlayerIndex } from "@hanabi-live/game";
 import { assertDefined } from "complete-common";
 import Konva from "konva";
 import * as modals from "../../modals";
@@ -193,7 +193,7 @@ export class NameFrame extends Konva.Group {
     const playerName = this.playerName.text();
     const shadowingPlayerIndex =
       globals.metadata.playerNames.indexOf(playerName);
-    if (shadowingPlayerIndex === NO_VALUE) {
+    if (!isValidPlayerIndex(shadowingPlayerIndex)) {
       throw new Error(
         `Failed to find the index corresponding to player: ${playerName}`,
       );
@@ -208,15 +208,7 @@ export class NameFrame extends Konva.Group {
       const ourSpectator = globals.state.spectators.find(
         (spectator) => spectator.name === globals.metadata.ourUsername,
       );
-      let oldShadowingPlayerIndex: PlayerIndex | undefined;
-      if (
-        ourSpectator !== undefined
-        && ourSpectator.shadowingPlayerIndex !== NO_VALUE
-      ) {
-        oldShadowingPlayerIndex = ourSpectator.shadowingPlayerIndex;
-      }
-
-      if (shadowingPlayerIndex === oldShadowingPlayerIndex) {
+      if (shadowingPlayerIndex === ourSpectator?.shadowingPlayerIndex) {
         modals.showWarning(
           "You are already viewing the game from this player's perspective.",
         );

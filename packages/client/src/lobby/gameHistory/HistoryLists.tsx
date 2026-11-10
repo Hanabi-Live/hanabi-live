@@ -2,7 +2,7 @@
 
 import type { GameHistory } from "@hanabi-live/data";
 import type { Options } from "@hanabi-live/game";
-import { getVariant, NO_VALUE, secondsToClockString } from "@hanabi-live/game";
+import { getVariant, secondsToClockString } from "@hanabi-live/game";
 import { Fragment, useEffect, useRef } from "react";
 import { PATH } from "../../constants";
 import { DECK_PLAYS_ICON_STYLE, OptionIcons } from "../../enums/OptionIcons";
@@ -348,7 +348,6 @@ function ReplayButton({
           source: "id",
           databaseID,
           visibility,
-          shadowingPlayerIndex: NO_VALUE,
         });
         if (visibility === "shared") {
           hide();

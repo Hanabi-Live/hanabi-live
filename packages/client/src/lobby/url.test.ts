@@ -78,7 +78,6 @@ describe("replay URL loading", () => {
       source: "json",
       gameJSON: { ...gameJSON, seed },
       visibility,
-      shadowingPlayerIndex: -1,
     });
     expect(setItem).toHaveBeenCalledWith(
       "watchReplayJSON",
@@ -117,7 +116,7 @@ describe("replay URL loading", () => {
   });
 
   test.each([
-    ["/game/123", -1],
+    ["/game/123", undefined],
     ["/game/123/shadow/0", 0],
     ["/game/123/shadow/2", 2],
   ])("route %s => seat %i", (pathname, shadowingPlayerIndex) => {
@@ -139,10 +138,7 @@ describe("replay URL loading", () => {
 
   test.each([
     ["/replay/456", { playingAtTables: [tableID] }],
-    [
-      "/replay/456",
-      { disconSpectatingTable: tableID, disconShadowingSeat: -1 },
-    ],
+    ["/replay/456", { spectatingAtTable: { tableID } }],
   ])("route %s takes precedence over reconnecting", (pathname, data) => {
     const send = vi.spyOn(globals.conn!, "send");
     Object.defineProperty(globalThis, "location", {

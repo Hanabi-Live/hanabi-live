@@ -842,7 +842,7 @@ async fn shared_replay_spectators_return_to_the_same_replay_after_a_restart() ->
         for index in 0..3 {
             let welcome = h.receive(index, "welcome").await?;
             ensure!(
-                welcome["disconSpectatingTable"] == json!(id),
+                welcome["spectatingAtTable"] == json!({"tableID":id}),
                 "A spectator was not sent back to the restored replay: {welcome}"
             );
             // The client spectates the table it was told about.
@@ -987,12 +987,7 @@ async fn spoiler_free_reviews_are_shared_replays_that_tell_everyone() -> Result<
         );
         h.send(0, "replayCreate", request("shared")).await?;
         let id = h.receive(0, "tableStart").await?["tableID"].clone();
-        h.send(
-            1,
-            "tableSpectate",
-            json!({"tableID":id,"shadowingPlayerIndex":-1}),
-        )
-        .await?;
+        h.send(1, "tableSpectate", json!({"tableID":id})).await?;
         h.send(1, "getGameInfo1", json!({"tableID":id})).await?;
         let init = h.receive(1, "init").await?;
         ensure!(
@@ -1041,12 +1036,7 @@ async fn shared_replays_of_older_games_start_when_their_table_is_created() -> Re
         for index in 0..h.users.len() {
             h.replace(index).await?;
         }
-        h.send(
-            1,
-            "tableSpectate",
-            json!({"tableID":id,"shadowingPlayerIndex":-1}),
-        )
-        .await?;
+        h.send(1, "tableSpectate", json!({"tableID":id})).await?;
         h.send(1, "getGameInfo1", json!({"tableID":id})).await?;
         let init = h.receive(1, "init").await?;
         ensure!(
@@ -1511,20 +1501,17 @@ async fn spectators_return_to_ongoing_games_and_shared_replays_after_reconnectin
                     h.replace(index).await?;
                 }
             }
-            for (index, table, seat) in [(2, game, 1), (4, replay, -1)] {
+            for (index, table, spectating) in [
+                (2, game, json!({"tableID":game,"shadowingPlayerIndex":1})),
+                (4, replay, json!({"tableID":replay})),
+            ] {
                 let welcome = h.receive(index, "welcome").await?;
                 ensure!(
-                    welcome["disconSpectatingTable"] == json!(table)
-                        && welcome["disconShadowingSeat"] == json!(seat),
+                    welcome["spectatingAtTable"] == spectating,
                     "A spectator was not sent back to their table (restarted: {restarted}): {welcome}"
                 );
                 // The client spectates the table it was told about.
-                h.send(
-                    index,
-                    "tableSpectate",
-                    json!({"tableID":table,"shadowingPlayerIndex":seat}),
-                )
-                .await?;
+                h.send(index, "tableSpectate", spectating).await?;
                 ensure!(
                     h.receive(index, "tableStart").await?["tableID"] == json!(table),
                     "A spectator did not rejoin their table (restarted: {restarted})"

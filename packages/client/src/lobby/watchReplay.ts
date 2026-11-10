@@ -1,6 +1,5 @@
 // The "Watch Specific Replay" screen.
 
-import { NO_VALUE } from "@hanabi-live/game";
 import { assertDefined, parseIntSafe } from "complete-common";
 import { LOCAL_STORAGE_KEY } from "../constants";
 import { globals } from "../Globals";
@@ -154,7 +153,6 @@ function submit() {
       source,
       databaseID,
       visibility,
-      shadowingPlayerIndex: NO_VALUE,
       spoilerFree,
     });
   } else if (source === "json") {
@@ -162,7 +160,6 @@ function submit() {
       source,
       gameJSON,
       visibility,
-      shadowingPlayerIndex: NO_VALUE,
       spoilerFree,
     });
   }

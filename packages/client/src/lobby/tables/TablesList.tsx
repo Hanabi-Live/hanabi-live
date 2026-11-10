@@ -1,6 +1,6 @@
 // The lobby area that shows all of the current tables.
 
-import { MAX_PLAYERS } from "@hanabi-live/game";
+import { isValidPlayerIndex, MAX_PLAYERS } from "@hanabi-live/game";
 import { Fragment, useEffect, useLayoutEffect, useRef } from "react";
 import { PATH } from "../../constants";
 import { DECK_PLAYS_ICON_CSS, OptionIcons } from "../../enums/OptionIcons";
@@ -167,7 +167,7 @@ function TableRowView({
               <span
                 className={className}
                 onClick={
-                  canShadow
+                  canShadow && isValidPlayerIndex(playerIndex)
                     ? (event) => {
                         event.stopPropagation();
                         tableSpectate(table, playerIndex);

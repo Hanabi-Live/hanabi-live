@@ -827,12 +827,10 @@ export const replayCreateRequestSchema = z.strictObject({
    * Replays cannot have a password; anything else is rejected.
    */
   password: z.string().default(""),
-  shadowingPlayerIndex: z
-    .number()
-    .int()
-    .min(-9_007_199_254_740_991)
-    .max(9_007_199_254_740_991)
-    .default(-1),
+  /**
+   * The seat to shadow, if any.
+   */
+  shadowingPlayerIndex: playerIndexSchema.optional(),
   source: replaySourceSchema,
   /**
    * For a shared replay, hide what happens later in the game: the turn slider, jumping to the
@@ -1021,9 +1019,9 @@ export const spectatorSchema = z
   .strictObject({
     name: z.string().min(1),
     /**
-     * The seat being shadowed, or -1 for none.
+     * The seat being shadowed, if any.
      */
-    shadowingPlayerIndex: z.literal([-1, 0, 1, 2, 3, 4, 5]),
+    shadowingPlayerIndex: playerIndexSchema.optional(),
     /**
      * Present only while shadowing a seat.
      */
@@ -1142,12 +1140,10 @@ export const tableRestartRequestSchema = z.strictObject({
   tableID: tableIdSchema,
 });
 export const tableSpectateRequestSchema = z.strictObject({
-  shadowingPlayerIndex: z
-    .number()
-    .int()
-    .min(-9_007_199_254_740_991)
-    .max(9_007_199_254_740_991)
-    .default(-1),
+  /**
+   * The seat to shadow, if any.
+   */
+  shadowingPlayerIndex: playerIndexSchema.optional(),
   tableID: tableIdSchema,
 });
 export const tableStartRequestSchema = z.strictObject({
@@ -1261,6 +1257,16 @@ export const warningSchema = z
   .readonly();
 
 /**
+ * A table that a user spectates, and the seat they shadow there, if any.
+ */
+const spectatedTableSchema = z
+  .strictObject({
+    shadowingPlayerIndex: playerIndexSchema.optional(),
+    tableID: tableIdSchema,
+  })
+  .readonly();
+
+/**
  * The first message after connecting.
  */
 export const welcomeSchema = z
@@ -1269,14 +1275,6 @@ export const welcomeSchema = z
      * The users whom we have blocked, as in [`Blocked`].
      */
     blocked: z.array(z.string()).readonly(),
-    /**
-     * The seat the user was shadowing at that table, or -1 for none.
-     */
-    disconShadowingSeat: z.number().int().min(-1).max(5).optional(),
-    /**
-     * A table the user was spectating when they disconnected.
-     */
-    disconSpectatingTable: tableIdSchema.optional(),
     firstTimeUser: z.boolean(),
     friends: z.array(z.string()).readonly(),
     muted: z.boolean(),
@@ -1285,6 +1283,10 @@ export const welcomeSchema = z
      */
     playingAtTables: z.array(tableIdSchema).readonly(),
     settings: settingsSchema,
+    /**
+     * The table the user was spectating when they disconnected, if any.
+     */
+    spectatingAtTable: spectatedTableSchema.optional(),
     /**
      * Always null here; `lobbyStatus` reports the total once statistics load.
      */

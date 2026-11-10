@@ -144,18 +144,15 @@ pub struct TableSuggestRequest {
     pub segment: i64,
 }
 
-fn no_value() -> i64 {
-    i64::from(NO_VALUE)
-}
-
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct TableSpectateRequest {
     #[serde(rename = "tableID")]
     pub table_id: TableId,
-    #[serde(default = "no_value")]
-    #[schemars(range(min = -MAX_SAFE_INTEGER, max = MAX_SAFE_INTEGER))]
-    pub shadowing_player_index: i64,
+    /// The seat to shadow, if any.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[schemars(with = "PlayerIndex")]
+    pub shadowing_player_index: Option<u8>,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
@@ -276,9 +273,10 @@ pub struct ReplayCreateRequest {
     /// Replays cannot have a password; anything else is rejected.
     #[serde(default)]
     pub password: String,
-    #[serde(default = "no_value")]
-    #[schemars(range(min = -MAX_SAFE_INTEGER, max = MAX_SAFE_INTEGER))]
-    pub shadowing_player_index: i64,
+    /// The seat to shadow, if any.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[schemars(with = "PlayerIndex")]
+    pub shadowing_player_index: Option<u8>,
     /// For a shared replay of a database game, spectate an existing shared replay of that game
     /// instead of creating another one, if there is one.
     #[serde(default)]

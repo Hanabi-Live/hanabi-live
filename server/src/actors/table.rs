@@ -205,7 +205,7 @@ impl TableActor {
             .filter(|a| a.spectator && a.session.active())
             .map(|a| hanabi_protocol::Spectator {
                 name: a.session.name.clone(),
-                shadowing_player_index: Seat::wire(a.shadow),
+                shadowing_player_index: a.shadow.map(u8::from),
                 shadowing_player_username: a
                     .shadow
                     .and_then(|seat| self.table.players().get(seat.index()))
@@ -1002,7 +1002,8 @@ impl TableActor {
                     session,
                     blocks,
                     true,
-                    Seat::from_wire(r.shadowing_player_index),
+                    r.shadowing_player_index
+                        .and_then(|seat| Seat::new(usize::from(seat))),
                 )
                 .await
             }

@@ -1,12 +1,7 @@
 // The lobby area that shows all of the players in the current unstarted game.
 
 import type { Options, PlayerIndex } from "@hanabi-live/game";
-import {
-  getVariant,
-  MAX_PLAYERS,
-  MIN_PLAYERS,
-  NO_VALUE,
-} from "@hanabi-live/game";
+import { getVariant, MAX_PLAYERS, MIN_PLAYERS } from "@hanabi-live/game";
 import { assertNotNull, eRange, iRange } from "complete-common";
 import { globals } from "../Globals";
 import * as chat from "../chat";
@@ -411,14 +406,14 @@ export function drawSpectators(tableID: number): void {
   for (const spectator of table.spectators) {
     const nameSpan = getNameSpan(spectator.name);
     const item = $("<li>").html(`&bull; ${nameSpan.prop("outerHTML")}`);
-    if (spectator.shadowingPlayerIndex !== NO_VALUE) {
+    if (spectator.shadowingPlayerIndex !== undefined) {
       if (spectator.name === globals.username) {
         $(`#lobby-pregame-player-${spectator.shadowingPlayerIndex + 1} .shadow`)
           .removeClass("shadow")
           .addClass("unShadow")
           .on("click", (event) => {
             event.stopPropagation();
-            reattend(NO_VALUE);
+            reattend(undefined);
           })
           // eslint-disable-next-line complete/require-ascii
           .append(" 🕵️");
@@ -481,7 +476,7 @@ export function toggleJoinSpectateButtons(): void {
   }
 }
 
-function reattend(shadowingPlayerIndex: PlayerIndex | typeof NO_VALUE) {
+function reattend(shadowingPlayerIndex: PlayerIndex | undefined) {
   setTimeout(() => {
     globals.conn!.send("tableUnattend", {
       tableID: globals.tableID,

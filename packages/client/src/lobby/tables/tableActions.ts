@@ -1,6 +1,6 @@
 // Joining, spectating, and returning to the tables in the lobby.
 
-import { NO_VALUE } from "@hanabi-live/game";
+import type { PlayerIndex } from "@hanabi-live/game";
 import { globals } from "../../Globals";
 import * as modals from "../../modals";
 import * as createGame from "../createGame";
@@ -9,7 +9,7 @@ import type { Table } from "./tablesSlice";
 
 export function tableSpectate(
   table: Table,
-  shadowingPlayerIndex = NO_VALUE,
+  shadowingPlayerIndex?: PlayerIndex,
 ): void {
   if (
     globals.currentScreen !== Screen.Lobby

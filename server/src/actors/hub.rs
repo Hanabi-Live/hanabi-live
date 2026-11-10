@@ -804,8 +804,10 @@ impl Hub {
                 .get(&session.user)
                 .map(|shadow| (*id, *shadow))
         }) {
-            welcome.discon_spectating_table = Some(id);
-            welcome.discon_shadowing_seat = Some(Seat::wire(shadow));
+            welcome.spectating_at_table = Some(hanabi_protocol::SpectatedTable {
+                table_id: id,
+                shadowing_player_index: shadow.map(u8::from),
+            });
         }
         self.sessions.insert(
             session.user,

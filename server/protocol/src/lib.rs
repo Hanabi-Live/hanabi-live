@@ -388,6 +388,7 @@ pub fn schemas() -> std::collections::BTreeMap<String, serde_json::Value> {
         SoundLobby,
         Settings,
         Welcome,
+        SpectatedTable,
         GameOptions,
         Spectator,
         Spectators,

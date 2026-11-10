@@ -351,8 +351,7 @@ pub(crate) fn test_welcome() -> hanabi_protocol::Welcome {
         friends: vec![],
         blocked: vec![],
         playing_at_tables: vec![],
-        discon_spectating_table: None,
-        discon_shadowing_seat: None,
+        spectating_at_table: None,
     }
 }
 /// The part of a game that a client requests as it loads one: first the setup, then the state.
