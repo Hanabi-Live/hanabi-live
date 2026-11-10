@@ -11,7 +11,7 @@ use crate::{
     accounts,
     actors::{HubCommand, request},
     lobby,
-    transport::{Identity, Inbound, InboundBudget, Outbound, Session, frame},
+    transport::{Frame, Identity, Inbound, InboundBudget, Outbound, Session, frame},
 };
 use anyhow::{Context, Result};
 use axum::{
@@ -90,7 +90,7 @@ pub(super) struct Bootstrap {
     pub(super) bot: bool,
     pub(super) blocks: Vec<UserId>,
     pub(super) welcome: hanabi_protocol::Welcome,
-    pub(super) initial: Vec<String>,
+    pub(super) initial: Vec<Frame>,
 }
 
 pub(super) async fn bootstrap(app: &App, account: Account, ip: &str) -> Result<Bootstrap> {
@@ -140,7 +140,7 @@ pub(super) async fn bootstrap(app: &App, account: Account, ip: &str) -> Result<B
     })
 }
 
-pub(super) async fn lobby_initial(app: &App, id: UserId) -> Result<(Vec<String>, i64)> {
+pub(super) async fn lobby_initial(app: &App, id: UserId) -> Result<(Vec<Frame>, i64)> {
     let pool = &app.store.lobby_reads;
     let total = crate::database::normal_game_count(pool, id, true).await?;
     let mut initial = vec![];
@@ -366,8 +366,7 @@ pub(super) async fn websocket(
                                         frame(
                                             hanabi_protocol::server::OUTDATED_CLIENT,
                                             hanabi_protocol::Empty {},
-                                        )
-                                        .into(),
+                                        ),
                                     ))
                                     .await?;
                                 socket
@@ -375,8 +374,7 @@ pub(super) async fn websocket(
                                         frame(
                                             hanabi_protocol::server::ERROR,
                                             hanabi_protocol::ErrorNotice { error: message },
-                                        )
-                                        .into(),
+                                        ),
                                     ))
                                     .await?;
                                 socket.close().await
@@ -428,15 +426,12 @@ async fn connection(
         Err(error) => {
             let _ = tokio::time::timeout(
                 ERROR_SEND_TIMEOUT,
-                socket.send(Message::Text(
-                    frame(
-                        hanabi_protocol::server::ERROR,
-                        hanabi_protocol::ErrorNotice {
-                            error: "Account initialization failed.".into(),
-                        },
-                    )
-                    .into(),
-                )),
+                socket.send(Message::Text(frame(
+                    hanabi_protocol::server::ERROR,
+                    hanabi_protocol::ErrorNotice {
+                        error: "Account initialization failed.".into(),
+                    },
+                ))),
             )
             .await;
             return Err(error);
@@ -506,7 +501,7 @@ async fn connection(
                 },
             );
             let _ =
-                tokio::time::timeout(CLOSE_SEND_TIMEOUT, sink.send(Message::Text(message.into())))
+                tokio::time::timeout(CLOSE_SEND_TIMEOUT, sink.send(Message::Text(message)))
                     .await;
         }
         let _ = tokio::time::timeout(CLOSE_SEND_TIMEOUT, sink.send(Message::Close(None))).await;

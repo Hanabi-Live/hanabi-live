@@ -251,7 +251,7 @@ impl TableActor {
     pub(super) fn add_outgoing(&self, e: &mut Effects, message: &Outgoing) {
         for a in self.audience() {
             e.messages
-                .push((a.session.clone(), message.frame().to_owned()));
+                .push((a.session.clone(), message.frame().clone()));
         }
     }
     pub(super) fn spectating(&self, user: UserId) -> bool {

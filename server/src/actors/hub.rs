@@ -13,7 +13,7 @@ use crate::{
     routing::{Route, route},
     server_info::ServerInfo,
     store::{Saved, Store},
-    transport::{Session, frame},
+    transport::{Frame, Session, frame},
 };
 use anyhow::{Context, Result};
 use axum::http::StatusCode;
@@ -205,7 +205,7 @@ impl Hub {
             inactive: p.inactive,
         }
     }
-    fn broadcast(&self, message: &str) {
+    fn broadcast(&self, message: &Frame) {
         for p in self.sessions.values() {
             if self.current(&p.session) {
                 p.session.emit(message);
@@ -730,7 +730,7 @@ impl Hub {
         session: &Arc<Session>,
         blocks: BTreeSet<UserId>,
         mut welcome: hanabi_protocol::Welcome,
-        initial: Vec<String>,
+        initial: Vec<Frame>,
     ) -> CommandResult<()> {
         if self.closing
             || self.store.check_state().is_err()

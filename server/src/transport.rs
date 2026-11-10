@@ -177,11 +177,12 @@ impl Session {
         self.superseded.load(Ordering::Acquire)
     }
 
-    pub fn emit(&self, message: &str) {
+    /// Queues a frame. Sending one frame to many sessions shares its bytes rather than copying them.
+    pub fn emit(&self, message: &Frame) {
         if !self.active() || self.closing.load(Ordering::Acquire) {
             return;
         }
-        self.enqueue(Message::Text(message.into()), None);
+        self.enqueue(Message::Text(message.clone()), None);
     }
 
     /// Queues a frame for the writer, holding its bytes against the session's and the server's
@@ -229,12 +230,12 @@ impl Session {
 
     /// Sends `messages` and then a close frame with `code`. Nothing else is sent afterward. The
     /// receiver completes once the close frame is written.
-    pub fn close_after(&self, messages: &[String], code: u16) -> Option<oneshot::Receiver<()>> {
+    pub fn close_after(&self, messages: &[Frame], code: u16) -> Option<oneshot::Receiver<()>> {
         if !self.active() || self.closing.swap(true, Ordering::AcqRel) {
             return None;
         }
         for message in messages {
-            if !self.enqueue(Message::Text(message.as_str().into()), None) {
+            if !self.enqueue(Message::Text(message.clone()), None) {
                 return None;
             }
         }
@@ -247,22 +248,27 @@ impl Session {
     }
 }
 
+/// An encoded WebSocket text frame. Clones share its bytes.
+pub type Frame = axum::extract::ws::Utf8Bytes;
+
 /// Encodes a registered server message. Only registered messages with their payload type can be
 /// sent, so every frame matches a schema the clients validate.
-pub fn frame<T: Serialize>(message: hanabi_protocol::ServerMessage<T>, data: T) -> String {
+pub fn frame<T: Serialize>(message: hanabi_protocol::ServerMessage<T>, data: T) -> Frame {
     raw_frame(message.name(), data)
 }
 
-fn raw_frame(command: &str, data: impl Serialize) -> String {
+fn raw_frame(command: &str, data: impl Serialize) -> Frame {
     let mut buffer = command.as_bytes().to_vec();
     buffer.push(b' ');
     serde_json::to_writer(&mut buffer, &data).expect("JSON-serializable protocol payload");
-    String::from_utf8(buffer).expect("JSON protocol frames are UTF-8")
+    String::from_utf8(buffer)
+        .expect("JSON protocol frames are UTF-8")
+        .into()
 }
 
 /// A registered server message waiting to be sent, such as a lobby command's reply, encoded once.
 #[derive(Clone, Debug)]
-pub struct Outgoing(String);
+pub struct Outgoing(Frame);
 
 impl Outgoing {
     pub fn new<T: Serialize>(message: hanabi_protocol::ServerMessage<T>, data: T) -> Self {
@@ -272,21 +278,21 @@ impl Outgoing {
     pub fn command(&self) -> &str {
         self.0
             .split_once(' ')
-            .map_or(self.0.as_str(), |(command, _)| command)
+            .map_or(&*self.0, |(command, _)| command)
     }
     #[cfg(test)]
     pub fn data(&self) -> serde_json::Value {
         let (_, data) = self.0.split_once(' ').expect("frames have a payload");
         serde_json::from_str(data).expect("frames hold JSON")
     }
-    pub fn frame(&self) -> &str {
+    pub fn frame(&self) -> &Frame {
         &self.0
     }
 }
 
 /// Encodes an arbitrary frame, for tests that build expected or invalid messages.
 #[cfg(test)]
-pub fn test_frame(command: &str, data: impl Serialize) -> String {
+pub fn test_frame(command: &str, data: impl Serialize) -> Frame {
     raw_frame(command, data)
 }
 
@@ -297,18 +303,18 @@ mod tests {
     fn outbound_saturation_cancels_without_blocking() {
         let (session, _receiver) = Session::new(UserId(1), "Alice".into(), 1);
         for _ in 0..65 {
-            session.emit("name {}");
+            session.emit(&Frame::from("name {}"));
         }
         assert!(!session.active());
     }
     #[test]
     fn byte_budget_is_released_when_frames_are_dropped() {
         let (session, mut receiver) = Session::new(UserId(1), "Alice".into(), 1);
-        session.emit(&"x".repeat(131_072));
+        session.emit(&Frame::from("x".repeat(131_072)));
         drop(receiver.try_recv().unwrap());
-        session.emit(&"x".repeat(131_072));
+        session.emit(&Frame::from("x".repeat(131_072)));
         assert!(session.active());
-        session.emit(&"x".repeat(MAX_MESSAGE_BYTES + 1));
+        session.emit(&Frame::from("x".repeat(MAX_MESSAGE_BYTES + 1)));
         assert!(!session.active());
     }
 
@@ -329,14 +335,14 @@ mod tests {
                 lost.clone(),
                 shutdown.clone(),
             );
-            session.emit("before {}");
+            session.emit(&Frame::from("before {}"));
             drop(receiver.try_recv().unwrap());
             if stop_by_shutdown {
                 shutdown.cancel();
             } else {
                 lost.cancel();
             }
-            session.emit("after {}");
+            session.emit(&Frame::from("after {}"));
             assert!(!session.active());
             assert!(receiver.try_recv().is_err());
         }
@@ -345,7 +351,7 @@ mod tests {
     #[test]
     fn full_replay_frames_and_ordered_maintenance_close() {
         let (session, mut receiver) = Session::new(UserId(1), "Alice".into(), 1);
-        session.emit(&"x".repeat(300_000));
+        session.emit(&Frame::from("x".repeat(300_000)));
         assert!(session.active());
         drop(receiver.try_recv().unwrap());
         let mut completed = session
@@ -354,7 +360,7 @@ mod tests {
                 SERVICE_RESTART_CLOSE_CODE,
             )
             .unwrap();
-        session.emit("must not follow close");
+        session.emit(&Frame::from("must not follow close"));
         assert_eq!(
             receiver.try_recv().unwrap().message,
             Message::Text("soundLobby {}".into())
@@ -523,7 +529,7 @@ mod tests {
             let Message::Text(actual) = outbound.message else {
                 panic!("Unexpected replay frame");
             };
-            assert_eq!(actual.as_str(), expected);
+            assert_eq!(actual, expected);
         }
         assert_eq!(session.bytes.available_permits(), SESSION_OUTPUT_BYTES);
     }

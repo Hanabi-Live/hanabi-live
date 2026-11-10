@@ -5,7 +5,7 @@ use crate::{
     operations::Operation,
     server_info::ServerInfo,
     store::{Saved, Store},
-    transport::{Outgoing, Session},
+    transport::{Frame, Outgoing, Session},
 };
 #[cfg(test)]
 use anyhow::Context;
@@ -208,14 +208,14 @@ pub struct Effects {
     /// that the hub wakes only the tables of a user who connects or leaves.
     pub attendees: BTreeSet<UserId>,
     pub statuses: Vec<(Arc<Session>, Status, Option<TableId>)>,
-    pub messages: Vec<(Arc<Session>, String)>,
+    pub messages: Vec<(Arc<Session>, Frame)>,
 }
 pub enum HubCommand {
     Register {
         session: Arc<Session>,
         blocks: BTreeSet<UserId>,
         welcome: hanabi_protocol::Welcome,
-        initial: Vec<String>,
+        initial: Vec<Frame>,
         reply: Reply,
     },
     Logout(Arc<Session>),

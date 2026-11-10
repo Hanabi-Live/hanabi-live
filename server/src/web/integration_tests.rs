@@ -852,7 +852,7 @@ async fn full_history_bootstrap_queues_in_order_without_a_writer_postgres() {
         initial.iter().all(|message| message.len() < 262_144),
         "This regression must exercise aggregate bootstrap size, not only a large single frame"
     );
-    assert!(initial.iter().map(String::len).sum::<usize>() > 262_144);
+    assert!(initial.iter().map(|message| message.len()).sum::<usize>() > 262_144);
     let (session, mut outgoing) = Session::new(UserId(alice), prepared.name, 42);
     let (reply, received) = oneshot::channel();
     fixture
