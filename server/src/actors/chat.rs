@@ -63,18 +63,36 @@ pub(super) fn player_chat_has_room(chat: &[TableChat]) -> CommandResult<bool> {
         && serde_json::to_vec(chat)?.len() < MAX_PLAYER_CHAT_BYTES)
 }
 
-/// Adds a server notice to a table's chat and returns it, unless the chat history is full.
+/// Adds messages to a table's chat, each with its author. If they do not all fit in
+/// `MAX_TABLE_CHAT`, adds none and rejects the command. Every addition to a table's chat goes
+/// through here.
+pub(super) fn push_chat(
+    table: &mut TableSnapshot,
+    messages: impl IntoIterator<Item = (UserId, Chat)>,
+) -> CommandResult<()> {
+    let messages = messages.into_iter().collect::<Vec<_>>();
+    ensure_or_reject!(
+        table.chat.len() + messages.len() <= crate::model::MAX_TABLE_CHAT,
+        "Chat history is full"
+    );
+    table
+        .chat
+        .extend(messages.into_iter().map(|(user, message)| TableChat {
+            id: None,
+            user,
+            message,
+        }));
+    Ok(())
+}
+
+/// Adds a server notice to a table's chat and returns it, unless the chat history is full. Use it
+/// for a notice about a change that must happen even when the notice does not fit.
 pub(super) fn table_notice(table: &mut TableSnapshot, text: &str) -> Option<Chat> {
-    if table.chat.len() >= crate::model::MAX_TABLE_CHAT {
+    let message = server_chat(table.id, text);
+    if push_chat(table, [(crate::model::SERVER_AUTHOR, message.clone())]).is_err() {
         tracing::warn!("Table {} notice omitted: chat history is full.", table.id);
         return None;
     }
-    let message = server_chat(table.id, text);
-    table.chat.push(TableChat {
-        id: None,
-        user: crate::model::SERVER_AUTHOR,
-        message: message.clone(),
-    });
     Some(message)
 }
 
@@ -108,6 +126,27 @@ pub(super) struct VariantDiscovery {
 }
 
 impl TableActor {
+    /// Charges a player for a message that they cause in the table's chat. Every message rewrites
+    /// the table's checkpoint, so its cost grows with the chat.
+    pub(super) fn charge_chat(&mut self, user: UserId) -> CommandResult<()> {
+        if let Err(wait) = self.chat_limit.charge(user.0, Instant::now()) {
+            reject!(
+                "You are sending messages too quickly. Please wait {} seconds.",
+                wait.as_secs().max(1)
+            );
+        }
+        Ok(())
+    }
+    /// Admits a message that a player adds to the table's chat: charges the player, and checks
+    /// that players' messages still have room.
+    pub(super) fn admit_player_chat(&mut self, user: UserId) -> CommandResult<()> {
+        self.charge_chat(user)?;
+        ensure_or_reject!(
+            player_chat_has_room(&self.table.chat)?,
+            "Chat history is full"
+        );
+        Ok(())
+    }
     /// The users whose scores the score commands compare: everyone watching a replay, or the
     /// table's players.
     fn score_participants(&self) -> CommandResult<Vec<(UserId, String)>> {
@@ -130,7 +169,7 @@ impl TableActor {
     }
     /// Prepares a variant search. Returns it with the query that picks the variant.
     pub(super) fn prepare_discovery(
-        &self,
+        &mut self,
         requester: Arc<Session>,
     ) -> CommandResult<(
         VariantDiscovery,
@@ -141,6 +180,7 @@ impl TableActor {
             "You are not at an available table."
         );
         let participants = self.score_participants()?;
+        self.admit_player_chat(requester.user)?;
         let count = participants.len();
         let ids = participants.iter().map(|(id, _)| id.0).collect::<Vec<_>>();
         let store = self.store.clone();
@@ -193,11 +233,7 @@ impl TableActor {
             format!("Here is a random variant that everyone needs the {}-player max score in: {name}",query.participants.len()));
         let message = server_chat(self.table.id, &text);
         let mut next = self.candidate();
-        next.chat.push(TableChat {
-            id: None,
-            user: crate::model::SERVER_AUTHOR,
-            message: message.clone(),
-        });
+        push_chat(&mut next, [(crate::model::SERVER_AUTHOR, message.clone())])?;
         self.persist(next).await?;
         let mut effects = self.effects();
         self.add_chat(&mut effects, &message);
@@ -254,17 +290,7 @@ impl TableActor {
     pub(super) async fn chat(&mut self, session: Arc<Session>, msg: &str) -> CommandResult<()> {
         ensure_or_reject!(self.attending(&session), "Not attending");
         let text = crate::accounts::normalize_chat(msg).map_err(anyhow::Error::msg)?;
-        // Every message rewrites the table's checkpoint, so its cost grows with the chat.
-        if let Err(wait) = self.chat_limit.charge(session.user.0, Instant::now()) {
-            reject!(
-                "You are sending messages too quickly. Please wait {} seconds.",
-                wait.as_secs().max(1)
-            );
-        }
-        ensure_or_reject!(
-            player_chat_has_room(&self.table.chat)?,
-            "Chat history is full"
-        );
+        self.admit_player_chat(session.user)?;
         if let Some(response) = crate::lobby::general_response(&text) {
             let responses = match response {
                 crate::lobby::GeneralResponse::Private(response) => {
@@ -287,21 +313,17 @@ impl TableActor {
                     .map(|response| server_chat(self.table.id, response)),
             );
             let mut next = self.candidate();
-            ensure_or_reject!(
-                next.chat.len() + messages.len() <= crate::model::MAX_TABLE_CHAT,
-                "Chat history is full"
-            );
-            for (index, message) in messages.iter().enumerate() {
-                next.chat.push(TableChat {
-                    id: None,
-                    user: if index == 0 {
+            push_chat(
+                &mut next,
+                messages.iter().enumerate().map(|(index, message)| {
+                    let author = if index == 0 {
                         session.user
                     } else {
                         crate::model::SERVER_AUTHOR
-                    },
-                    message: message.clone(),
-                });
-            }
+                    };
+                    (author, message.clone())
+                }),
+            )?;
             self.persist(next).await?;
             let mut e = self.effects();
             for message in messages {
@@ -318,15 +340,7 @@ impl TableActor {
         }
         let message = authored_chat(self.table.id, &session.name, &text);
         let mut next = self.candidate();
-        ensure_or_reject!(
-            next.chat.len() < crate::model::MAX_TABLE_CHAT,
-            "Chat history is full"
-        );
-        next.chat.push(TableChat {
-            id: None,
-            user: session.user,
-            message: message.clone(),
-        });
+        push_chat(&mut next, [(session.user, message.clone())])?;
         self.persist(next).await?;
         let typing = self
             .attendees
@@ -364,11 +378,7 @@ impl TableActor {
                     .join("/")
             );
             let message = server_chat(self.table.id, &message);
-            next.chat.push(TableChat {
-                id: None,
-                user: crate::model::SERVER_AUTHOR,
-                message: message.clone(),
-            });
+            push_chat(&mut next, [(crate::model::SERVER_AUTHOR, message.clone())])?;
             self.persist(next).await?;
             let mut e = self.effects();
             self.add_chat(&mut e, &message);
@@ -408,13 +418,12 @@ impl TableActor {
                 .iter()
                 .map(|text| server_chat(self.table.id, text))
                 .collect::<Vec<_>>();
-            for message in &messages {
-                next.chat.push(TableChat {
-                    id: None,
-                    user: crate::model::SERVER_AUTHOR,
-                    message: message.clone(),
-                });
-            }
+            push_chat(
+                &mut next,
+                messages
+                    .iter()
+                    .map(|message| (crate::model::SERVER_AUTHOR, message.clone())),
+            )?;
             self.persist(next).await?;
             let mut e = self.effects();
             for message in messages {
@@ -547,16 +556,13 @@ impl TableActor {
         }
         let authored = authored_chat(self.table.id, &session.name, text);
         let notice = server_chat(self.table.id, &notice);
-        next.chat.push(TableChat {
-            id: None,
-            user: session.user,
-            message: authored.clone(),
-        });
-        next.chat.push(TableChat {
-            id: None,
-            user: crate::model::SERVER_AUTHOR,
-            message: notice.clone(),
-        });
+        push_chat(
+            &mut next,
+            [
+                (session.user, authored.clone()),
+                (crate::model::SERVER_AUTHOR, notice.clone()),
+            ],
+        )?;
         let canceled = if canceled {
             table_notice(&mut next, AUTOMATIC_START_CANCELED)
         } else {

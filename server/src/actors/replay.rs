@@ -1,11 +1,15 @@
 use super::table::wrong_phase;
-use super::{TableActor, chat::server_chat, setup::next_requested_seed};
+use super::{
+    TableActor,
+    chat::{server_chat, table_notice},
+    setup::next_requested_seed,
+};
 use crate::errors::CommandResult;
 use crate::errors::OrReject;
 use crate::{
     model::{
         ExtraOptions, IDLE_TIMEOUT_MS, MAX_TABLE_NAME_LENGTH, MAX_TAG_LENGTH, PendingTag, Phase,
-        TableChat, Tag, TagOperation, tag_too_long,
+        Tag, TagOperation, tag_too_long,
     },
     transport::{Outgoing, Session, frame},
 };
@@ -187,17 +191,17 @@ impl TableActor {
                 }
             )
         };
-        let mut message = server_chat(self.table.id, &text);
-        if replay {
-            next.chat.push(TableChat {
-                id: None,
-                user: crate::model::SERVER_AUTHOR,
-                message: message.clone(),
-            });
+        // A replay posts the tag to its chat, so tagging is charged like a message. The tag is still
+        // saved when its notice does not fit.
+        let message = if replay {
+            self.charge_chat(session.user)?;
+            table_notice(&mut next, &text)
         } else {
+            let mut message = server_chat(self.table.id, &text);
             message.room = Some(room.to_owned());
             message.recipient = Some(session.name.clone());
-        }
+            Some(message)
+        };
         self.persist_with(
             next,
             crate::store::Commit {
@@ -207,11 +211,12 @@ impl TableActor {
         )
         .await?;
         let mut e = self.effects();
-        if replay {
-            self.add_chat(&mut e, &message);
-        } else {
-            e.messages
-                .push((session, frame(hanabi_protocol::server::CHAT, message)));
+        match message {
+            Some(message) if replay => self.add_chat(&mut e, &message),
+            Some(message) => e
+                .messages
+                .push((session, frame(hanabi_protocol::server::CHAT, message))),
+            None => {}
         }
         self.publish(e).await
     }
@@ -255,22 +260,19 @@ impl TableActor {
         if let Phase::Replay { replay, .. } = &mut next.phase {
             replay.leader = target.0;
         }
-        let message = server_chat(
-            self.table.id,
+        let message = table_notice(
+            &mut next,
             &format!(
                 "{} has passed table ownership to: {}",
                 crate::accounts::escape_html(&session.name),
                 crate::accounts::escape_html(&target.1)
             ),
         );
-        next.chat.push(TableChat {
-            id: None,
-            user: crate::model::SERVER_AUTHOR,
-            message: message.clone(),
-        });
         self.persist(next).await?;
         let mut e = self.effects();
-        self.add_chat(&mut e, &message);
+        if let Some(message) = message {
+            self.add_chat(&mut e, &message);
+        }
         self.add_all(
             &mut e,
             hanabi_protocol::server::REPLAY_LEADER,

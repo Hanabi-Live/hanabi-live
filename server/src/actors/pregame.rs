@@ -2,7 +2,7 @@ use super::request;
 use super::table::wrong_phase;
 use super::{
     Allocation, HubCommand, TableActor, TableChange,
-    chat::{server_chat, table_notice, truncate},
+    chat::{push_chat, server_chat, table_notice, truncate},
     setup::{
         load_replay, normalize_options, option_changes, options_suggestion, requested_extra,
         validate_table_name,
@@ -13,8 +13,8 @@ use crate::errors::OrReject;
 use crate::{
     game::Game,
     model::{
-        CLOCK_UNITS_PER_SECOND, MAX_TABLE_NAME_LENGTH, Phase, Player, Snapshot, TableChat,
-        TableSnapshot, engine_options,
+        CLOCK_UNITS_PER_SECOND, MAX_TABLE_NAME_LENGTH, Phase, Player, Snapshot, TableSnapshot,
+        engine_options,
     },
     transport::{Session, frame},
 };
@@ -197,6 +197,8 @@ impl TableActor {
         if session.user != self.table.owner {
             let changes = option_changes(&self.table, &options, &name, max_players, &extra);
             ensure_or_reject!(!changes.is_empty(), "There are no new options proposed.");
+            // A proposal is a message from its player, so it counts like one.
+            self.admit_player_chat(session.user)?;
             let message = server_chat(
                 self.table.id,
                 &format!(
@@ -205,11 +207,7 @@ impl TableActor {
                 ),
             );
             let mut next = self.candidate();
-            next.chat.push(TableChat {
-                id: None,
-                user: crate::model::SERVER_AUTHOR,
-                message: message.clone(),
-            });
+            push_chat(&mut next, [(crate::model::SERVER_AUTHOR, message.clone())])?;
             self.persist(next).await?;
             let mut e = self.effects();
             self.add_chat(&mut e, &message);
@@ -254,8 +252,8 @@ impl TableActor {
         if players.iter().all(|p| p.id != next.owner) {
             next.owner = players[0].id;
         }
-        let message = server_chat(
-            self.table.id,
+        let message = table_notice(
+            &mut next,
             &format!(
                 "{} has changed {}.",
                 crate::accounts::escape_html(&session.name),
@@ -266,11 +264,6 @@ impl TableActor {
                 }
             ),
         );
-        next.chat.push(TableChat {
-            id: None,
-            user: crate::model::SERVER_AUTHOR,
-            message: message.clone(),
-        });
         self.persist(next).await?;
         let mut e = self.effects();
         for p in removed {
@@ -288,7 +281,9 @@ impl TableActor {
             }
         }
         self.pregame_messages(&mut e);
-        self.add_chat(&mut e, &message);
+        if let Some(message) = message {
+            self.add_chat(&mut e, &message);
+        }
         self.publish(e).await
     }
     pub(super) async fn start(&mut self, session: Arc<Session>) -> CommandResult<()> {

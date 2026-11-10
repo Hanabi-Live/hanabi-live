@@ -220,6 +220,10 @@ impl Harness {
     }
     async fn restart(&mut self) -> Result<()> {
         self.stop_hub().await?;
+        self.start_hub().await
+    }
+    /// Starts a hub after `stop_hub`, which recovers the saved tables, and reconnects every user.
+    async fn start_hub(&mut self) -> Result<()> {
         self.tasks = TaskTracker::new();
         self.hub = Hub::start(
             self.store.clone(),
@@ -2408,6 +2412,74 @@ async fn option_proposals_publish_changed_values_but_keep_apply_button_private()
         ensure!(h.snapshot(id).await?.0.chat.len() == before);
         Ok::<(), anyhow::Error>(())
     }.await;
+    let cleanup = h.close().await;
+    result?;
+    cleanup
+}
+
+#[tokio::test]
+async fn players_cannot_fill_a_table_chat_and_block_the_owner() -> Result<()> {
+    let Some(mut h) = Harness::new(&["Alice", "Bob"]).await? else {
+        return Ok(());
+    };
+    let result = async {
+        let id = h.create(0, "Original", json!({})).await?;
+        h.send(1, "tableJoin", json!({"tableID":id})).await?;
+        let room = format!("table{id}");
+        let proposal = json!({"tableID":id,"name":"Proposal","maxPlayers":5,"options":{}});
+        // Proposals count like chat messages.
+        for _ in 0..TABLE_CHAT_LIMIT {
+            h.send(1, "tableUpdate", proposal.clone()).await?;
+        }
+        let refused = h
+            .send(1, "tableUpdate", proposal.clone())
+            .await
+            .expect_err("A proposal past the chat limit was accepted");
+        ensure!(refused.to_string().contains("too quickly"), "{refused:#}");
+
+        // Fill the chat to its limit. Restarting also resets the rate limit.
+        h.stop_hub().await?;
+        let (mut table, revision) = h.snapshot(id).await?;
+        let filler = chat::server_chat(id, "Filler");
+        table
+            .chat
+            .resize_with(crate::model::MAX_TABLE_CHAT, || crate::model::TableChat {
+                id: None,
+                user: crate::model::SERVER_AUTHOR,
+                message: filler.clone(),
+            });
+        h.store.save_at(&table, revision).await?;
+        h.start_hub().await?;
+        for index in 0..2 {
+            h.send(index, "tableReattend", json!({"tableID":id}))
+                .await?;
+        }
+
+        for (command, data) in [
+            ("chat", json!({"room":room,"msg":"Hello"})),
+            ("tableUpdate", proposal.clone()),
+        ] {
+            let refused = h
+                .send(1, command, data)
+                .await
+                .expect_err("A player added to a full chat");
+            ensure!(refused.to_string() == "Chat history is full", "{refused:#}");
+        }
+        // The owner's changes still apply, without their notices.
+        h.send(
+            0,
+            "tableUpdate",
+            json!({"tableID":id,"name":"Changed","maxPlayers":5,"options":{}}),
+        )
+        .await?;
+        h.send(0, "tableSetLeader", json!({"tableID":id,"name":"Bob"}))
+            .await?;
+        let table = h.snapshot(id).await?.0;
+        ensure!(table.name == "Changed" && table.owner == h.users[1].user);
+        ensure!(table.chat.len() == crate::model::MAX_TABLE_CHAT);
+        Ok::<(), anyhow::Error>(())
+    }
+    .await;
     let cleanup = h.close().await;
     result?;
     cleanup
