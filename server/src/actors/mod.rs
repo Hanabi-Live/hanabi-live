@@ -261,6 +261,13 @@ pub enum HubCommand {
         command: Operation,
         reply: oneshot::Sender<Result<()>>,
     },
+    /// The tables have drained: tells every connection that the server is going down, then closes
+    /// it. `reconnect` tells clients to reconnect, and `message` is the administrator's reason.
+    Drained {
+        reconnect: bool,
+        message: Option<String>,
+        reply: oneshot::Sender<Result<()>>,
+    },
     Inspect(oneshot::Sender<Result<Inspection>>),
     Sync {
         session: Arc<Session>,

@@ -330,11 +330,9 @@ pub async fn drain_game_runtime(
             StopReason::GracefulStop(message) => app.announce_stop(message.as_deref()).await,
             _ => {}
         }
-        let closed = request(&app.hub, |reply| HubCommand::Operations {
-            command: Operation::Drained {
-                reconnect: reason.reconnect(),
-                message: reason.user_notice(),
-            },
+        let closed = request(&app.hub, |reply| HubCommand::Drained {
+            reconnect: reason.reconnect(),
+            message: reason.user_notice(),
             reply,
         })
         .await;

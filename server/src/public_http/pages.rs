@@ -634,7 +634,7 @@ async fn missing(
             if best == (max, 0) {
                 continue;
             }
-            let cards = i64::try_from((state.config.deck_size)(i32::try_from(id)?)?)?;
+            let cards = i64::try_from(hanabi_engine::create_deck(variant).len())?;
             let hand = i64::try_from(hanabi_engine::normal_hand_size(usize::try_from(p)?))?;
             let stacks = i64::try_from(variant.suits.len())?;
             let multiplier = i64::from(hanabi_engine::clue_cost_for(variant));

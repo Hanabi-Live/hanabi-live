@@ -14,8 +14,6 @@ fn config() -> PublicConfig {
         use_tls: false,
         client_version: "test-version".into(),
         is_dev: false,
-        seeded_deck: |_, _| Ok(json!([{"suitIndex":0,"rank":1},{"suitIndex":1,"rank":2}])),
-        deck_size: |_| Ok(50),
     }
 }
 async fn request(app: Router, path: &str) -> (StatusCode, String) {
@@ -459,9 +457,10 @@ async fn public_database_routes_filters_privacy_exports_and_html() {
     assert_eq!(status, StatusCode::OK, "{body}");
     let export: Value = serde_json::from_str(&body).unwrap();
     assert_eq!(export["seed"], "custom-seed");
+    // Game 3 is in variant 1.
     assert_eq!(
         export["deck"],
-        json!([{"suitIndex":0,"rank":1},{"suitIndex":1,"rank":2}])
+        crate::game::seeded_deck(1, "custom-seed").unwrap()
     );
     assert_eq!(export["actions"].as_array().unwrap().len(), 2);
     assert_eq!(export["notes"], json!([["<note>"], []]));

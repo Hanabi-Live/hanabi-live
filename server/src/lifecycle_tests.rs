@@ -70,8 +70,9 @@ async fn drains_notify_all_tables_before_waiting_for_acknowledgements() -> Resul
                         }
                         let _ = reply.send(handles);
                     }
-                    HubCommand::Operations {
-                        command: Operation::Drained { reconnect, message },
+                    HubCommand::Drained {
+                        reconnect,
+                        message,
                         reply,
                     } => {
                         // Users see the administrator's reason as escaped HTML.
@@ -103,8 +104,6 @@ async fn drains_notify_all_tables_before_waiting_for_acknowledgements() -> Resul
                 use_tls: false,
                 client_version: "1".into(),
                 is_dev: true,
-                seeded_deck: crate::game::seeded_deck,
-                deck_size: crate::game::deck_size,
             },
             Lifecycle::new(store.ownership_lost()),
             crate::server_info::test_info(),

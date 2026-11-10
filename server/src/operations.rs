@@ -3,17 +3,8 @@ use hanabi_protocol::UserId;
 /// An administrator's operation that the hub carries out.
 #[derive(Clone, Debug)]
 pub enum Operation {
-    Ban {
-        user_id: UserId,
-        ip: String,
-    },
-    Mute {
-        user_id: UserId,
-    },
-    Drained {
-        reconnect: bool,
-        message: Option<String>,
-    },
+    Ban { user_id: UserId, ip: String },
+    Mute { user_id: UserId },
 }
 
 use crate::store::PoolReport;

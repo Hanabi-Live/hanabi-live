@@ -266,7 +266,7 @@ pub(super) async fn websocket(
     };
     let version = query.get("version").unwrap_or_default().to_owned();
     let ip = address.ip();
-    let Some(id) = accounts::session_id(&headers, &app.secret, uri.query()) else {
+    let Some(id) = accounts::session_id(&headers, &app.public.session_secret, uri.query()) else {
         tracing::warn!("Rejected websocket from {ip} without a valid session.");
         return HttpError::refused(StatusCode::UNAUTHORIZED, "A valid session is required.").json();
     };
@@ -320,7 +320,7 @@ pub(super) async fn websocket(
             "The server's session identifier space is exhausted. An administrator must restart the server.",
             StatusCode::SERVICE_UNAVAILABLE).response(true);
     };
-    let version_check = accounts::validate_client_version(&version, &app.version);
+    let version_check = accounts::validate_client_version(&version, &app.public.client_version);
     if version == accounts::BOT_VERSION {
         tracing::info!("Accepted bot websocket for account {id} from IP: {ip}");
         if let Err(error) = accounts::mark_bot(&app.store.primary, id).await {
@@ -448,6 +448,7 @@ async fn connection(
         generation,
         app.lifecycle.ownership_lost.clone(),
         app.lifecycle.shutdown.clone(),
+        app.outgoing_bytes.clone(),
     );
     let (mut sink, mut stream) = socket.split();
     let writer_session = session.clone();

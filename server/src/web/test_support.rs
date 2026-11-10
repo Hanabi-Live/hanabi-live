@@ -43,8 +43,6 @@ impl Fixture {
             use_tls: false,
             client_version: Arc::from("42"),
             is_dev: true,
-            seeded_deck: crate::game::seeded_deck,
-            deck_size: crate::game::deck_size,
         };
         let lifecycle = Lifecycle::new(store.ownership_lost());
         lifecycle.activate();

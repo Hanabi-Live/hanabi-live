@@ -52,6 +52,7 @@ fn test_session(
         generation,
         tokio_util::sync::CancellationToken::new(),
         tokio_util::sync::CancellationToken::new(),
+        Arc::new(Semaphore::new(crate::transport::GLOBAL_OUTPUT_BYTES)),
     )
 }
 impl Harness {
@@ -2802,6 +2803,7 @@ async fn ban_disconnects_every_session_from_the_banned_ip() -> Result<()> {
                 1,
                 tokio_util::sync::CancellationToken::new(),
                 tokio_util::sync::CancellationToken::new(),
+                Arc::new(Semaphore::new(crate::transport::GLOBAL_OUTPUT_BYTES)),
             );
             h.register(session.clone()).await?;
             sessions.push(session);

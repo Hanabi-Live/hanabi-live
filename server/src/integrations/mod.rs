@@ -43,7 +43,7 @@ impl Integrations {
         let alerts = alerts::Alerts::start(
             discord.clone(),
             app.is_development(),
-            app.version.clone(),
+            app.client_version().to_owned(),
             &app.background,
             app.lifecycle.shutdown.clone(),
         );

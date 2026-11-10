@@ -2,7 +2,7 @@ use axum::extract::ws::{CloseFrame, Message};
 use hanabi_protocol::UserId;
 use serde::Serialize;
 use std::sync::{
-    Arc, LazyLock,
+    Arc,
     atomic::{AtomicBool, Ordering},
 };
 use tokio::sync::{OwnedSemaphorePermit, Semaphore, mpsc, oneshot};
@@ -21,9 +21,7 @@ pub const MAX_MESSAGE_BYTES: usize = crate::state::MAX_CHECKPOINT_BYTES;
 pub const GLOBAL_INPUT_BYTES: usize = 64 * crate::MIB;
 const SESSION_INPUT_BYTES: usize = 8 * crate::MIB;
 const SESSION_OUTPUT_BYTES: usize = 8 * crate::MIB;
-const GLOBAL_OUTPUT_LIMIT: usize = 128 * crate::MIB;
-static GLOBAL_OUTPUT_BYTES: LazyLock<Arc<Semaphore>> =
-    LazyLock::new(|| Arc::new(Semaphore::new(GLOBAL_OUTPUT_LIMIT)));
+pub const GLOBAL_OUTPUT_BYTES: usize = 128 * crate::MIB;
 /// The frames a session queues for its writer.
 const OUTBOUND_QUEUE: usize = 64;
 /// The WebSocket close code for "Service Restart", which tells clients to reconnect.
@@ -103,6 +101,8 @@ pub struct Session {
     superseded: AtomicBool,
     outbound: mpsc::Sender<Outbound>,
     bytes: Arc<Semaphore>,
+    /// The server's output budget, which every session shares.
+    global_bytes: Arc<Semaphore>,
 }
 
 impl std::ops::Deref for Session {
@@ -131,16 +131,18 @@ impl Session {
             generation,
             CancellationToken::new(),
             CancellationToken::new(),
+            Arc::new(Semaphore::new(GLOBAL_OUTPUT_BYTES)),
         )
     }
 
     /// Creates a session that stops when the server loses ownership of the live tables or shuts
-    /// down.
+    /// down. Its frames also count against `global_bytes`, the server's output budget.
     pub fn with_tokens(
         identity: Identity,
         generation: u64,
         ownership_lost: CancellationToken,
         shutdown: CancellationToken,
+        global_bytes: Arc<Semaphore>,
     ) -> (Arc<Self>, mpsc::Receiver<Outbound>) {
         let (outbound, receiver) = mpsc::channel(OUTBOUND_QUEUE);
         (
@@ -155,6 +157,7 @@ impl Session {
                 shutdown,
                 outbound,
                 bytes: Arc::new(Semaphore::new(SESSION_OUTPUT_BYTES)),
+                global_bytes,
             }),
             receiver,
         )
@@ -207,7 +210,7 @@ impl Session {
             self.cancel.cancel();
             return false;
         };
-        let Ok(global_permit) = GLOBAL_OUTPUT_BYTES.clone().try_acquire_many_owned(length) else {
+        let Ok(global_permit) = self.global_bytes.clone().try_acquire_many_owned(length) else {
             tracing::warn!(user = %self.user,
                 "Closing a connection because the aggregate output byte budget is exhausted."
             );
@@ -334,6 +337,7 @@ mod tests {
                 1,
                 lost.clone(),
                 shutdown.clone(),
+                Arc::new(Semaphore::new(GLOBAL_OUTPUT_BYTES)),
             );
             session.emit(&Frame::from("before {}"));
             drop(receiver.try_recv().unwrap());

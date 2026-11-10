@@ -159,7 +159,7 @@ pub(super) async fn lobby_command(
     let chat = matches!(message, ClientMessage::Chat(_)).then(|| message.clone());
     let work = lobby::dispatch(
         pool,
-        &app.secret,
+        &app.public.session_secret,
         &caller,
         &online,
         rendered.as_deref(),

@@ -24,9 +24,6 @@ pub(crate) const API_PREFIX: &str = "/api/v1";
 /// How long browsers keep a release's versioned assets, which never change under the same URL.
 const VERSIONED_ASSET_MAX_AGE_SECONDS: i32 = 365 * hanabi_protocol::SECONDS_PER_DAY;
 
-pub type DeckFactory = fn(i32, &str) -> anyhow::Result<Value>;
-pub type DeckSize = fn(i32) -> anyhow::Result<usize>;
-
 #[derive(Clone)]
 pub struct PublicConfig {
     pub root: PathBuf,
@@ -35,8 +32,6 @@ pub struct PublicConfig {
     pub use_tls: bool,
     pub client_version: Arc<str>,
     pub is_dev: bool,
-    pub seeded_deck: DeckFactory,
-    pub deck_size: DeckSize,
 }
 
 #[derive(Clone)]

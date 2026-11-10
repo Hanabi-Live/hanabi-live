@@ -52,7 +52,7 @@ pub(super) async fn export(
         )
     })?;
     let seed = row.seed.clone();
-    let deck = (state.config.seeded_deck)(i32::from(row.variant_id), &seed).map_err(|_| {
+    let deck = crate::game::seeded_deck(i32::from(row.variant_id), &seed).map_err(|_| {
         export_failure(
             "archive_invalid_seed",
             "The archived game's seed cannot produce a deck",

@@ -48,14 +48,13 @@ const LOBBY_SLOTS: usize = 64;
 pub struct App {
     pub store: Store,
     pub hub: mpsc::Sender<HubCommand>,
-    pub secret: String,
-    pub version: String,
     pub lifecycle: Arc<Lifecycle>,
     pub connections: TaskTracker,
     pub background: TaskTracker,
     generation: AtomicU64,
     sockets: Arc<Semaphore>,
     incoming_bytes: Arc<Semaphore>,
+    outgoing_bytes: Arc<Semaphore>,
     lobby_slots: Arc<Semaphore>,
     public: PublicConfig,
     pub info: Arc<crate::server_info::ServerInfo>,
@@ -68,6 +67,11 @@ pub struct App {
 impl App {
     pub fn is_development(&self) -> bool {
         self.public.is_dev
+    }
+
+    /// The client version that this server serves, which connecting clients must match.
+    pub fn client_version(&self) -> &str {
+        &self.public.client_version
     }
 
     pub async fn announce_restart(&self, message: Option<&str>) {
@@ -97,12 +101,11 @@ impl App {
         Arc::new(Self {
             store,
             hub,
-            secret: public.session_secret.to_string(),
-            version: public.client_version.to_string(),
             lifecycle,
             generation: AtomicU64::new(1),
             sockets: Arc::new(Semaphore::new(MAX_SOCKETS)),
             incoming_bytes: Arc::new(Semaphore::new(crate::transport::GLOBAL_INPUT_BYTES)),
+            outgoing_bytes: Arc::new(Semaphore::new(crate::transport::GLOBAL_OUTPUT_BYTES)),
             lobby_slots: Arc::new(Semaphore::new(LOBBY_SLOTS)),
             connections: TaskTracker::new(),
             background: TaskTracker::new(),
@@ -144,10 +147,10 @@ pub fn router(app: Arc<App>) -> Router {
     let accounts = accounts::router(
         app.store.primary.clone(),
         AccountConfig {
-            secret: app.secret.clone(),
+            secret: app.public.session_secret.to_string(),
             domain: app.public.domain.to_string(),
             use_tls: app.public.use_tls,
-            version: app.version.clone(),
+            version: app.public.client_version.to_string(),
             is_dev: app.public.is_dev,
         },
     );

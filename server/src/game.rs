@@ -299,9 +299,6 @@ pub fn seeded_deck(id: i32, seed: &str) -> Result<Value> {
         seed,
     ))?)
 }
-pub fn deck_size(id: i32) -> Result<usize> {
-    Ok(hanabi_engine::create_deck(hanabi_engine::get_variant_by_id(u32::try_from(id)?)?).len())
-}
 
 #[cfg(test)]
 mod tests {

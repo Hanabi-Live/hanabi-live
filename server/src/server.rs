@@ -1,7 +1,6 @@
 use crate::{
     actors::Hub,
     config::Config,
-    game,
     integrations::IntegrationSlot,
     lifecycle::{Control, Lifecycle, Runtime, StopReason, drain_game_runtime},
     migrations, operations,
@@ -176,8 +175,6 @@ async fn run(config: Config, version: String) -> Result<bool> {
             use_tls: config.use_tls(),
             client_version: version.into(),
             is_dev: config.is_dev(),
-            seeded_deck: game::seeded_deck,
-            deck_size: game::deck_size,
         },
         lifecycle.clone(),
         info,

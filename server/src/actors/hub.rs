@@ -389,6 +389,14 @@ impl Hub {
             let _ = reply.send(Err(rejection!("{message}")));
             return;
         }
+        // Take capacity first: a refused request then never holds a seat reservation, which would
+        // otherwise end through the hub's own queue when dropped.
+        let Ok(permit) = self.capacity.clone().try_acquire_owned() else {
+            let _ = reply.send(Err(rejection!(
+                "The server has reached its limit of {MAX_TABLES} open tables. Please try again later."
+            )));
+            return;
+        };
         let playing = matches!(creation, Creation::Table(_)) && !s.bot;
         let reservation = if playing {
             match self.reserve(
@@ -404,12 +412,6 @@ impl Hub {
             }
         } else {
             None
-        };
-        let Ok(permit) = self.capacity.clone().try_acquire_owned() else {
-            let _ = reply.send(Err(rejection!(
-                "The server has reached its limit of {MAX_TABLES} open tables. Please try again later."
-            )));
-            return;
         };
         let store = self.store.clone();
         let hub = self.sender.clone();
@@ -525,49 +527,7 @@ impl Hub {
             let _ = reply.send(Err(error));
             return;
         }
-        if let Operation::Drained { reconnect, message } = command {
-            let messages = [
-                frame(
-                    hanabi_protocol::server::SOUND_LOBBY,
-                    SoundLobby {
-                        file: hanabi_protocol::LobbySound::Shutdown,
-                    },
-                ),
-                if reconnect {
-                    frame(
-                        hanabi_protocol::server::RESTART,
-                        hanabi_protocol::Restart { message },
-                    )
-                } else {
-                    frame(
-                        hanabi_protocol::server::ERROR,
-                        ErrorNotice {
-                            error: "The server is going down for maintenance. Your accepted game progress has been saved.<br />Please reconnect after the server restarts.".into(),
-                        },
-                    )
-                },
-            ];
-            let receipts = self
-                .sessions
-                .values()
-                .filter_map(|p| {
-                    p.session
-                        .close_after(&messages, crate::transport::SERVICE_RESTART_CLOSE_CODE)
-                })
-                .collect::<Vec<_>>();
-            self.tasks.spawn(async move {
-                // Connections that do not take their closing messages in time are closed anyway.
-                let _ = tokio::time::timeout(
-                    RESTART_CLOSE_TIMEOUT,
-                    futures_util::future::join_all(receipts),
-                )
-                .await;
-                let _ = reply.send(Ok(()));
-            });
-            return;
-        }
         match command {
-            Operation::Drained { .. } => unreachable!("handled before dispatch"),
             Operation::Mute { user_id } => self.disconnect(&[user_id]),
             Operation::Ban { user_id, ip } => {
                 // Bans apply to an IP address, which is checked when connecting rather than on
@@ -585,6 +545,57 @@ impl Hub {
             }
         }
         let _ = reply.send(Ok(()));
+    }
+    /// Tells every connection that the server is going down, then closes it. Answers once the
+    /// connections have taken their closing messages, or after `RESTART_CLOSE_TIMEOUT`.
+    fn drained(
+        &self,
+        reconnect: bool,
+        message: Option<String>,
+        reply: oneshot::Sender<Result<()>>,
+    ) {
+        if let Err(error) = self.store.check_state() {
+            let _ = reply.send(Err(error));
+            return;
+        }
+        let messages = [
+            frame(
+                hanabi_protocol::server::SOUND_LOBBY,
+                SoundLobby {
+                    file: hanabi_protocol::LobbySound::Shutdown,
+                },
+            ),
+            if reconnect {
+                frame(
+                    hanabi_protocol::server::RESTART,
+                    hanabi_protocol::Restart { message },
+                )
+            } else {
+                frame(
+                    hanabi_protocol::server::ERROR,
+                    ErrorNotice {
+                        error: "The server is going down for maintenance. Your accepted game progress has been saved.<br />Please reconnect after the server restarts.".into(),
+                    },
+                )
+            },
+        ];
+        let receipts = self
+            .sessions
+            .values()
+            .filter_map(|p| {
+                p.session
+                    .close_after(&messages, crate::transport::SERVICE_RESTART_CLOSE_CODE)
+            })
+            .collect::<Vec<_>>();
+        self.tasks.spawn(async move {
+            // Connections that do not take their closing messages in time are closed anyway.
+            let _ = tokio::time::timeout(
+                RESTART_CLOSE_TIMEOUT,
+                futures_util::future::join_all(receipts),
+            )
+            .await;
+            let _ = reply.send(Ok(()));
+        });
     }
     pub(super) async fn run(mut self) {
         while let Some(command) = self.receiver.recv().await {
@@ -641,6 +652,11 @@ impl Hub {
                 }
                 HubCommand::EndReservation { id, users } => self.end_reservation_of(id, &users),
                 HubCommand::Operations { command, reply } => self.operations(command, reply),
+                HubCommand::Drained {
+                    reconnect,
+                    message,
+                    reply,
+                } => self.drained(reconnect, message, reply),
                 HubCommand::Inspect(reply) => {
                     let result = self.store.check_state().map(|()| Inspection {
                         frozen_tables: self.tables.values().filter(|e| e.view.frozen).count(),
