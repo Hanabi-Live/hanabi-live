@@ -1154,7 +1154,7 @@ async fn pregame_changes_announce_new_owners_splits_and_canceled_starts() -> Res
         ensure!(
             source
                 == [
-                    "<strong>Alice</strong> created the table.",
+                    "Alice created the table.",
                     "Bob joined the game.",
                     "Carol joined the game.",
                     started,
@@ -1974,7 +1974,7 @@ async fn pregame_history_survives_join_return_and_actor_recovery() -> Result<()>
         h.send(0, "tableUnattend", json!({"tableID":id})).await?;
         h.send(0, "tableReattend", json!({"tableID":id})).await?;
         let history = h.receive(0, "chatList").await?;
-        ensure!(history["list"][0]["msg"] == "<strong>Alice</strong> created the table.");
+        ensure!(history["list"][0]["msg"] == "Alice created the table.");
         ensure!(history["list"][0]["source"] == "server");
         ensure!(
             history["unread"] == 0,

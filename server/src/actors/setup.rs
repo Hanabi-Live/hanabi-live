@@ -480,7 +480,7 @@ pub(super) async fn prepare_table(
         table_notice(
             &mut table,
             &format!(
-                "<strong>{}</strong> created the table.",
+                "{} created the table.",
                 crate::accounts::escape_html(&session.name)
             ),
         );
