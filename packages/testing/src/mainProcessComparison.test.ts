@@ -113,7 +113,7 @@ databaseDescribe("normal-server protocol workload", () => {
           "gameActionList",
           SERVER_COMMAND_SCHEMAS.gameActionList,
         );
-        if (!init.replay) {
+        if (init.mode !== "replay" && init.mode !== "sharedReplay") {
           peer.send("loaded", { tableID });
         }
         return { init, history };
@@ -204,7 +204,7 @@ databaseDescribe("normal-server protocol workload", () => {
               (entry) => entry.score === 25,
             );
             const finished = await bootstrap(alice, tableID);
-            expect(finished.init.replay).toBe(true);
+            expect(finished.init.mode).toBe("sharedReplay");
             expect(
               finished.history.actions.filter((event) => event.type === "play"),
             ).toHaveLength(25);

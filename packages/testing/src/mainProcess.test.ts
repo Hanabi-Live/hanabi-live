@@ -335,7 +335,7 @@ databaseDescribe("compiled application entry point (rust)", () => {
           }),
         );
         assertDefined(resumed, "Missing reconnected player bootstrap.");
-        expect(resumed.init.replay).toBe(false);
+        expect(resumed.init.mode).toBe("playing");
         expect(
           resumed.history.actions.some(
             (event) => event.type === "play" || event.type === "discard",
@@ -622,8 +622,7 @@ databaseDescribe("compiled application entry point (rust)", () => {
       );
       const shadow = await bootstrap(observer, tableID);
       expect(shadow.init).toMatchObject({
-        spectating: true,
-        shadowing: true,
+        mode: "shadowing",
         ourPlayerIndex: 0,
       });
       expect(
@@ -691,7 +690,9 @@ databaseDescribe("compiled application entry point (rust)", () => {
           SERVER_COMMAND_SCHEMAS.tableStarted,
         );
         const imported = await bootstrap(owner, created.tableID);
-        expect(imported.init.replay).toBe(true);
+        expect(imported.init.mode).toBe(
+          source === "id" ? "replay" : "sharedReplay",
+        );
         expect(imported.init.playerNames).toHaveLength(6);
         expect(imported.history.actions).toEqual<unknown>(
           expect.arrayContaining([
@@ -762,8 +763,7 @@ databaseDescribe("compiled application entry point (rust)", () => {
           );
           const recovered = await bootstrap(returning, created.tableID);
           expect(recovered.init).toMatchObject({
-            replay: true,
-            sharedReplay: true,
+            mode: "sharedReplay",
             sharedReplaySegment: imported.init.sharedReplaySegment,
             datetimeStarted: imported.init.datetimeStarted,
           });

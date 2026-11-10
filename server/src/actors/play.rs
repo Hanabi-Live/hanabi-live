@@ -17,7 +17,7 @@ use anyhow::Context;
 use hanabi_engine::{CompletionTiming, EndCondition, Recipient};
 use hanabi_protocol::ClientMessage;
 use hanabi_protocol::{
-    Chat, ChatTyping, MIN_PLAYERS, NO_VALUE, ReplayAction, Status, TableRequest,
+    Chat, ChatTyping, MIN_PLAYERS, NO_VALUE, ReplayAction, Status, TableRequest, ViewMode,
 };
 use std::sync::Arc;
 
@@ -514,9 +514,17 @@ impl TableActor {
                 table_id: self.table.id,
                 player_names: s.players.iter().map(|p| p.name.clone()).collect(),
                 our_player_index: int(a.shadow.map(Seat::index).or(display_seat).unwrap_or(0)),
-                spectating: a.spectator && !replay,
-                shadowing: a.shadow.is_some() && !replay,
-                replay,
+                mode: if shared_replay {
+                    ViewMode::SharedReplay
+                } else if replay {
+                    ViewMode::Replay
+                } else if a.shadow.is_some() {
+                    ViewMode::Shadowing
+                } else if a.spectator {
+                    ViewMode::Spectating
+                } else {
+                    ViewMode::Playing
+                },
                 database_id: (replay && s.game_id != crate::model::UNSAVED_GAME)
                     .then_some(s.game_id),
                 has_custom_seed: self.table.extra.custom_seed.is_some(),
@@ -539,7 +547,6 @@ impl TableActor {
                 } else {
                     vec![]
                 },
-                shared_replay,
                 shared_replay_leader: self.leader_name(),
                 shared_replay_segment: segment.into(),
                 shared_replay_efficiency_modifier: efficiency.into(),

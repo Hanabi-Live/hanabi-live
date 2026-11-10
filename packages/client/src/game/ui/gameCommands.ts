@@ -470,15 +470,15 @@ type InitData = ServerCommandData["init"];
 
 function setURL(data: InitData) {
   let path: string;
-  if (data.replay) {
+  if (data.mode === "replay" || data.mode === "sharedReplay") {
     // A replay of a game that is not in the database, such as an imported game, has no address.
     if (data.databaseID === undefined) {
       return;
     }
-    path = `${data.sharedReplay ? PATH.SHARED_REPLAY : PATH.REPLAY}/${data.databaseID}`;
+    path = `${data.mode === "sharedReplay" ? PATH.SHARED_REPLAY : PATH.REPLAY}/${data.databaseID}`;
   } else {
     path = `${PATH.GAME}/${data.tableID}${
-      data.shadowing ? `/shadow/${data.ourPlayerIndex}` : ""
+      data.mode === "shadowing" ? `/shadow/${data.ourPlayerIndex}` : ""
     }`;
   }
   const hash = /^#\d+$/u.test(globalThis.location.hash)
@@ -549,13 +549,10 @@ function initStateStore(data: InitData) {
 
   globals.store.dispatch({
     type: "init",
-    spectating: data.spectating,
-    shadowing: data.shadowing,
+    mode: data.mode,
     datetimeStarted: data.datetimeStarted,
     datetimeFinished: data.datetimeFinished,
     datetimeSharedReplayStarted: data.datetimeSharedReplayStarted,
-    replay: data.replay,
-    sharedReplay: data.sharedReplay,
     databaseID: data.databaseID,
     sharedReplaySegment: data.sharedReplaySegment,
     sharedReplayLeader: data.sharedReplayLeader,

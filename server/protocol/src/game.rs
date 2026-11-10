@@ -327,6 +327,19 @@ pub struct CharacterAssignment {
     pub metadata: i32,
 }
 
+/// How the recipient takes part in a game: as a player or a spectator of a game in progress, as a
+/// spectator who views it from a player's seat (shadowing), or as a viewer of a finished game, alone
+/// (replay) or with others (shared replay).
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
+#[serde(rename_all = "camelCase")]
+pub enum ViewMode {
+    Playing,
+    Spectating,
+    Shadowing,
+    Replay,
+    SharedReplay,
+}
+
 /// Everything a client needs to draw a game, before its events arrive.
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
@@ -338,9 +351,7 @@ pub struct Init {
     /// The seat the recipient views the game from.
     #[schemars(with = "PlayerIndex")]
     pub our_player_index: i64,
-    pub spectating: bool,
-    pub shadowing: bool,
-    pub replay: bool,
+    pub mode: ViewMode,
     /// The game's database ID, present only in a replay of a saved game.
     #[serde(
         default,
@@ -361,7 +372,6 @@ pub struct Init {
     /// Each player's character, in seat order, when detrimental characters are on.
     #[schemars(length(max = MAX_PLAYERS))]
     pub characters: Vec<CharacterAssignment>,
-    pub shared_replay: bool,
     pub shared_replay_leader: String,
     #[schemars(range(min = -MAX_SAFE_INTEGER, max = MAX_SAFE_INTEGER))]
     pub shared_replay_segment: i64,

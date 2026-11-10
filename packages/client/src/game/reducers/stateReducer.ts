@@ -134,38 +134,51 @@ function stateReducerFunction(state: Draft<State>, action: Action) {
       state.datetimeStarted = action.datetimeStarted;
       state.datetimeFinished = action.datetimeFinished;
 
-      if (action.spectating) {
-        state.playing = false;
-      }
-      if (action.shadowing) {
-        state.shadowing = true;
-      }
+      switch (action.mode) {
+        case "playing": {
+          break;
+        }
 
-      if (action.replay) {
-        state.playing = false;
-        state.shadowing = false;
-        state.finished = true;
-        state.replay.active = true;
-        state.replay.segment = 0; // In dedicated solo replays, start on the first segment
-        state.replay.databaseID = action.databaseID;
+        case "spectating": {
+          state.playing = false;
+          break;
+        }
 
-        if (action.sharedReplay) {
-          // In dedicated shared replays, start on the shared replay turn.
-          state.replay.segment = action.sharedReplaySegment;
-          state.replay.shared = {
-            segment: action.sharedReplaySegment,
-            useSharedSegments: true,
-            leader: action.sharedReplayLeader,
-            amLeader: action.sharedReplayLeader === state.metadata.ourUsername,
-            // The server sends this in every shared replay.
-            datetimeStarted:
-              action.datetimeSharedReplayStarted ?? new Date().toISOString(),
-            spoilerFree: action.spoilerFree,
-            restartDeclined: action.restartDeclined ?? [],
-            hypothetical: undefined,
-          };
-          state.notes.efficiencyModifier =
-            action.sharedReplayEfficiencyModifier;
+        case "shadowing": {
+          state.playing = false;
+          state.shadowing = true;
+          break;
+        }
+
+        case "replay":
+        case "sharedReplay": {
+          state.playing = false;
+          state.shadowing = false;
+          state.finished = true;
+          state.replay.active = true;
+          state.replay.segment = 0; // In dedicated solo replays, start on the first segment
+          state.replay.databaseID = action.databaseID;
+
+          if (action.mode === "sharedReplay") {
+            // In dedicated shared replays, start on the shared replay turn.
+            state.replay.segment = action.sharedReplaySegment;
+            state.replay.shared = {
+              segment: action.sharedReplaySegment,
+              useSharedSegments: true,
+              leader: action.sharedReplayLeader,
+              amLeader:
+                action.sharedReplayLeader === state.metadata.ourUsername,
+              // The server sends this in every shared replay.
+              datetimeStarted:
+                action.datetimeSharedReplayStarted ?? new Date().toISOString(),
+              spoilerFree: action.spoilerFree,
+              restartDeclined: action.restartDeclined ?? [],
+              hypothetical: undefined,
+            };
+            state.notes.efficiencyModifier =
+              action.sharedReplayEfficiencyModifier;
+          }
+          break;
         }
       }
 

@@ -275,8 +275,7 @@ async fn player_shadow_is_cleared_when_a_spectator_joins() -> Result<()> {
             let init = h.receive(index, "init").await?;
             ensure!(
                 init["ourPlayerIndex"] == json!(seat)
-                    && init["spectating"] == spectator
-                    && init["shadowing"] == spectator,
+                    && init["mode"] == if spectator { "shadowing" } else { "playing" },
                 "Joining changed the player or spectator viewpoint: {init}"
             );
         }
@@ -360,9 +359,7 @@ async fn player_shadow_from_saved_games_is_cleared_on_reattend() -> Result<()> {
             h.send(1, "getGameInit", json!({"tableID":id})).await?;
             let init = h.receive(1, "init").await?;
             ensure!(
-                init["ourPlayerIndex"] == json!(bob)
-                    && init["spectating"] == false
-                    && init["shadowing"] == false,
+                init["ourPlayerIndex"] == json!(bob) && init["mode"] == "playing",
                 "A recovered player kept another player's viewpoint: {init}"
             );
             ensure!(
@@ -1021,7 +1018,7 @@ async fn spoiler_free_reviews_are_shared_replays_that_tell_everyone() -> Result<
         h.send(1, "getGameInit", json!({"tableID":id})).await?;
         let init = h.receive(1, "init").await?;
         ensure!(
-            init["sharedReplay"] == true && init["spoilerFree"] == true,
+            init["mode"] == "sharedReplay" && init["spoilerFree"] == true,
             "A spectator joined a spoiler-free review without being told: {init}"
         );
         Ok(())

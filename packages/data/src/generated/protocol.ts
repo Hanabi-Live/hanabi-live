@@ -480,6 +480,19 @@ const characterAssignmentSchema = z.strictObject({
 });
 
 /**
+ * How the recipient takes part in a game: as a player or a spectator of a game in progress, as a
+ * spectator who views it from a player's seat (shadowing), or as a viewer of a finished game, alone
+ * (replay) or with others (shared replay).
+ */
+const viewModeSchema = z.enum([
+  "playing",
+  "spectating",
+  "shadowing",
+  "replay",
+  "sharedReplay",
+]);
+
+/**
  * Everything a client needs to draw a game, before its events arrive.
  */
 export const initSchema = z.strictObject({
@@ -501,6 +514,7 @@ export const initSchema = z.strictObject({
   datetimeSharedReplayStarted: z.iso.datetime({ precision: 3 }).optional(),
   datetimeStarted: z.iso.datetime({ precision: 3 }),
   hasCustomSeed: z.boolean(),
+  mode: viewModeSchema,
   options: gameOptionsSchema,
   /**
    * The seat the recipient views the game from.
@@ -513,14 +527,11 @@ export const initSchema = z.strictObject({
   pauseQueued: z.boolean(),
   paused: z.boolean(),
   playerNames: z.array(z.string()).min(2).max(6),
-  replay: z.boolean(),
   /**
    * The players in a shared replay who will not play again if the leader restarts.
    */
   restartDeclined: z.array(z.string()).max(6).optional(),
   seed: z.string(),
-  shadowing: z.boolean(),
-  sharedReplay: z.boolean(),
   sharedReplayEfficiencyModifier: z
     .number()
     .int()
@@ -532,7 +543,6 @@ export const initSchema = z.strictObject({
     .int()
     .min(-9_007_199_254_740_991)
     .max(9_007_199_254_740_991),
-  spectating: z.boolean(),
   /**
    * Whether the shared replay hides what happens later in the game.
    */
