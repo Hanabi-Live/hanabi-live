@@ -317,7 +317,7 @@ function submit() {
   const timeBaseMinutes = timed ? getTimeBaseMinutes() : undefined;
   const timeBaseSeconds =
     timeBaseMinutes === undefined ? 0 : toSeconds(timeBaseMinutes);
-  const timePerTurn = (timed ? getTimePerTurnSeconds() : undefined) ?? 0;
+  const timePerTurnSeconds = (timed ? getTimePerTurnSeconds() : undefined) ?? 0;
 
   // Seeds and replays are not saved, so that a new game does not accidentally repeat a deal.
   const seed = getText("#create-game-seed");
@@ -363,7 +363,7 @@ function submit() {
     variantName: getVariantName(), // This is a hidden span field.
     timed,
     timeBaseSeconds,
-    timePerTurnSeconds: timePerTurn,
+    timePerTurnSeconds,
     speedrun: getCheckbox("createTableSpeedrun"),
     deckPlays: getCheckbox("createTableDeckPlays"),
     emptyClues: getCheckbox("createTableEmptyClues"),

@@ -72,11 +72,11 @@ function gotoPath(data: ServerCommandData["welcome"]): boolean {
       ?? (
         defaultSettings.createTableTimeBaseMinutes * SECONDS_PER_MINUTE
       ).toString();
-    const timeBase = parseIntSafe(timeBaseString);
+    const timeBaseSeconds = parseIntSafe(timeBaseString);
     const timePerTurnString =
       urlParams.get("timePerTurn")
       ?? defaultSettings.createTableTimePerTurnSeconds.toString();
-    const timePerTurn = parseIntSafe(timePerTurnString);
+    const timePerTurnSeconds = parseIntSafe(timePerTurnString);
     const speedrun = urlParams.get("speedrun") === "true";
     const deckPlays = urlParams.get("deckPlays") === "true";
     const emptyClues = urlParams.get("emptyClues") === "true";
@@ -96,8 +96,8 @@ function gotoPath(data: ServerCommandData["welcome"]): boolean {
       options: {
         variantName,
         timed,
-        timeBaseSeconds: timeBase,
-        timePerTurnSeconds: timePerTurn,
+        timeBaseSeconds,
+        timePerTurnSeconds,
         speedrun,
         deckPlays,
         emptyClues,
