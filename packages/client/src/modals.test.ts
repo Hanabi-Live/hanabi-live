@@ -2,7 +2,7 @@ import { JSDOM } from "jsdom";
 import { afterAll, beforeAll, expect, test, vi } from "vitest";
 
 const dom = new JSDOM(`<!doctype html><body>
-  <div id="page-cover"></div>
+  <dialog id="modal-dialog"></dialog>
   <div id="modals-container">
     <div id="warning-modal" class="hidden">
       <p id="warning-modal-description"></p>
@@ -33,8 +33,23 @@ const dom = new JSDOM(`<!doctype html><body>
     <button id="password-modal-submit"></button>
   </div>
 </body>`);
+// The "jsdom" library does not open or close dialogs.
+const { HTMLDialogElement } = dom.window;
+HTMLDialogElement.prototype.showModal = function showModal(
+  this: HTMLDialogElement,
+) {
+  this.open = true;
+};
+HTMLDialogElement.prototype.close = function close(this: HTMLDialogElement) {
+  if (this.open) {
+    this.open = false;
+    this.dispatchEvent(new dom.window.Event("close"));
+  }
+};
+
 const domGlobals = {
   document: dom.window.document,
+  HTMLDialogElement,
   HTMLElement: dom.window.HTMLElement,
   HTMLInputElement: dom.window.HTMLInputElement,
   MutationObserver: dom.window.MutationObserver,
@@ -71,15 +86,6 @@ vi.mock("./game/ui/HanabiCardClick", () => ({
 }));
 vi.mock("./lobby/nav", () => ({ show: vi.fn() }));
 
-/** Long enough for a modal to finish opening or closing. */
-const MODAL_WAIT_MILLISECONDS = 150;
-
-async function waitForModal() {
-  await new Promise((resolve) => {
-    setTimeout(resolve, MODAL_WAIT_MILLISECONDS);
-  });
-}
-
 // This must run before the error test, whose error modal cannot be closed.
 test("the idle warning counts down and only lets players keep the game going", async () => {
   const modals = await import("./modals");
@@ -88,8 +94,7 @@ test("the idle warning counts down and only lets players keep the game going", a
   const keep = document.querySelector<HTMLElement>("#idle-modal-keep");
 
   modals.showIdleWarning(299_000, undefined);
-  await waitForModal();
-  expect(idleModal?.parentElement?.id).toBe("page-cover");
+  expect(idleModal?.parentElement?.id).toBe("modal-dialog");
   expect(
     document.querySelector("#idle-modal-description strong")?.textContent,
   ).toBe("4:59");
@@ -99,7 +104,6 @@ test("the idle warning counts down and only lets players keep the game going", a
   modals.showIdleWarning(299_000, () => {
     keepPlayingCalls++;
   });
-  await waitForModal();
   expect(keep?.style.display).toBe("");
   keep?.onpointerdown?.(
     new dom.window.Event("pointerdown") as unknown as PointerEvent,
@@ -112,12 +116,12 @@ test("a confirmation runs exactly one of its callbacks", async () => {
   const modals = await import("./modals");
   modals.init();
   const { document } = dom.window;
-  const pageCover = document.querySelector<HTMLElement>("#page-cover")!;
+  const modalDialog =
+    document.querySelector<HTMLDialogElement>("#modal-dialog")!;
 
   const onConfirm = vi.fn<() => void>();
   const onCancel = vi.fn<() => void>();
   modals.askForConfirmation("Title", "Description", "OK", onConfirm, onCancel);
-  await waitForModal();
   document.querySelector<HTMLElement>("#confirm-modal-confirm")!.click();
   expect(onConfirm).toHaveBeenCalledTimes(1);
   expect(onCancel).not.toHaveBeenCalled();
@@ -133,8 +137,7 @@ test("a confirmation runs exactly one of its callbacks", async () => {
     onConfirm2,
     onCancel2,
   );
-  await waitForModal();
-  expect(pageCover.style.display).toBe("flex");
+  expect(modalDialog.open).toBe(true);
 
   // Escape closes the modal without also reaching the screen behind it.
   const screenKeydown = vi.fn<() => void>();
@@ -154,12 +157,9 @@ test("a warning shown after an error does not replace the error modal", async ()
   modals.showError("The connection was rejected.");
   // The "warning" command opens its modal after a delay, so it can arrive after an error.
   modals.showWarning("A late warning.");
-  await new Promise((resolve) => {
-    setTimeout(resolve, 150);
-  });
   const { document } = dom.window;
   expect(document.querySelector("#error-modal")?.parentElement?.id).toBe(
-    "page-cover",
+    "modal-dialog",
   );
   expect(
     document.querySelector("#error-modal")?.classList.contains("hidden"),
@@ -169,6 +169,6 @@ test("a warning shown after an error does not replace the error modal", async ()
   );
   modals.closeModals();
   expect(document.querySelector("#error-modal")?.parentElement?.id).toBe(
-    "page-cover",
+    "modal-dialog",
   );
 });

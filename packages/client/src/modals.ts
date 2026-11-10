@@ -15,12 +15,6 @@ import { morphReplayFromModal } from "./game/ui/HanabiCardClick";
 import * as lobbyNav from "./lobby/nav";
 import { getHTMLElement, getHTMLInputElement } from "./utils";
 
-/**
- * How long the modal code waits for the page cover to change before showing or focusing what is
- * behind it.
- */
-export const MODAL_DELAY_MILLISECONDS = 100;
-
 /** Used by the morph dialog. */
 type DragAreaType = "playArea" | "discardArea" | undefined;
 
@@ -42,7 +36,7 @@ const errorModalDescription = getHTMLElement("#error-modal-description");
 const idleModalClose = getHTMLElement("#idle-modal-close");
 const idleModalDescription = getHTMLElement("#idle-modal-description");
 const idleModalKeep = getHTMLElement("#idle-modal-keep");
-const pageCover = getHTMLElement("#page-cover");
+const modalDialog = getModalDialog();
 const modalsContainer = getHTMLElement("#modals-container");
 const morphModalButtonCancel = getHTMLElement("#morph-modal-button-cancel");
 const morphModalButtonOK = getHTMLElement("#morph-modal-button-ok");
@@ -55,27 +49,43 @@ const passwordModalSubmit = getHTMLElement("#password-modal-submit");
 const warningModalButton = getHTMLElement("#warning-modal-button");
 const warningModalDescription = getHTMLElement("#warning-modal-description");
 
+function getModalDialog(): HTMLDialogElement {
+  const element = document.querySelector("#modal-dialog");
+  if (!(element instanceof HTMLDialogElement)) {
+    throw new TypeError("Failed to find the modal dialog.");
+  }
+  return element;
+}
+
 export function init(): void {
-  // Close modal on escape press or by clicking outside.
-  pageCover.addEventListener("pointerdown", () => {
-    closeModals();
-  });
-  // Remove the page cover once it has faded out, unless a modal was opened in the meantime (e.g. a
-  // confirmation after a prompt).
-  pageCover.addEventListener("animationend", (event) => {
-    if (
-      event.target === pageCover
-      && !pageCover.classList.contains("show")
-      && currentModal === undefined
-    ) {
-      pageCover.style.display = "none";
+  // The dialog covers the screen, so a click on the dialog itself is a click beside the modal.
+  modalDialog.addEventListener("pointerdown", (event) => {
+    if (event.target === modalDialog) {
+      closeModals();
     }
   });
   document.addEventListener("keydown", (event) => {
     if (event.key === "Escape" && currentModal !== undefined) {
-      // The key press must not also act on the screen behind the modal (e.g. leaving a replay).
+      // The key press must not also act on the screen behind the modal (e.g. leaving a replay). It
+      // must not close the dialog either, because some modals cannot be closed.
+      event.preventDefault();
       event.stopImmediatePropagation();
       closeModals();
+    }
+  });
+  // Other requests to close the dialog, such as the back gesture on Android.
+  modalDialog.addEventListener("cancel", (event) => {
+    event.preventDefault();
+    closeModals();
+  });
+  // The browser can close the dialog without a "cancel" event that we can stop.
+  modalDialog.addEventListener("close", () => {
+    if (!modalDialog.open && currentModal !== undefined) {
+      if (allowCloseModal) {
+        closeModals();
+      } else {
+        modalDialog.showModal();
+      }
     }
   });
 
@@ -216,11 +226,10 @@ export function askForMorph(
     cardImages,
   );
 
-  showModal("#morph-modal", false);
-  setTimeout(() => {
+  showModal("#morph-modal", false, () => {
     morphModalTextbox.focus();
     morphModalTextbox.select();
-  }, MODAL_DELAY_MILLISECONDS);
+  });
 
   if (draggedTo === undefined) {
     // If action is undefined, the function was called from "HanabiCardClick.ts" during replay hypo.
@@ -475,41 +484,34 @@ export function showPrompt(
     };
   }
 
-  showModal(selector, true);
-
-  if (focusElement !== undefined) {
-    setTimeout(() => {
-      focusElement.focus();
-      const oldType = focusElement.type;
-      if (oldType === "number" || oldType === "text") {
-        const { length } = focusElement.value;
-        // Cannot put the cursor past the text unless it's a text input.
-        focusElement.type = "text";
-        focusElement.setSelectionRange(0, length);
-        focusElement.type = oldType;
-      }
-    }, MODAL_DELAY_MILLISECONDS);
-  }
+  showModal(selector, true, () => {
+    if (focusElement === undefined) {
+      return;
+    }
+    focusElement.focus();
+    const oldType = focusElement.type;
+    if (oldType === "number" || oldType === "text") {
+      const { length } = focusElement.value;
+      // Cannot put the cursor past the text unless it's a text input.
+      focusElement.type = "text";
+      focusElement.setSelectionRange(0, length);
+      focusElement.type = oldType;
+    }
+  });
 }
 
-export function closeModals(fast = false): void {
+export function closeModals(): void {
   if (!allowCloseModal) {
     return;
   }
 
-  pageCover.classList.remove("show");
   downtimeMessage = undefined;
   if (currentModal !== undefined) {
     currentModal.classList.add("hidden");
-    currentModal.remove();
     modalsContainer.append(currentModal);
     currentModal = undefined;
   }
-
-  // Otherwise, the page cover is removed when its fade-out animation ends.
-  if (fast) {
-    pageCover.style.display = "none";
-  }
+  modalDialog.close();
 
   if (globals.lastActiveElement !== undefined) {
     globals.lastActiveElement.focus();
@@ -526,7 +528,7 @@ export function isModalVisible(): boolean {
 }
 
 function showModal(selector: string, allowClose: boolean, ready?: () => void) {
-  closeModals(true);
+  closeModals();
 
   const element = getHTMLElement(selector);
 
@@ -534,25 +536,10 @@ function showModal(selector: string, allowClose: boolean, ready?: () => void) {
   allowCloseModal = allowClose;
 
   element.classList.add("modal");
-
-  // We can't use "addEventListener" because we can't easily remove the previous listener.
-  // eslint-disable-next-line unicorn/prefer-add-event-listener
-  element.onpointerdown = (event) => {
-    // Do not bubble clicks to pageCover.
-    event.stopPropagation();
-  };
-
-  pageCover.append(element);
-  pageCover.style.display = "flex";
-  pageCover.classList.add("show");
-
-  setTimeout(() => {
-    pageCover.append(element);
-    element.classList.remove("hidden");
-    if (ready !== undefined) {
-      ready();
-    }
-  }, MODAL_DELAY_MILLISECONDS);
+  element.classList.remove("hidden");
+  modalDialog.append(element);
+  modalDialog.showModal();
+  ready?.();
 }
 
 function fillMorphModalWithRadios(

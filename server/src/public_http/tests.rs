@@ -82,7 +82,6 @@ async fn rendered_shell_preserves_modal_and_game_container_nesting() {
             "modals-container",
             "game",
             "game-chat-modal",
-            "page-cover",
             "domain",
         ] {
             assert_eq!(

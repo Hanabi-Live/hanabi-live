@@ -1,42 +1,53 @@
-#page-cover {
-  display: none;
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  top: 0;
-  right: 0;
-  animation: pageCoverHide 0.4s forwards 1;
+/*
+  The dialog that holds the open modal. It covers the screen, so that a click beside the modal
+  reaches it, and its backdrop fades the page in and out. The dialog stays in the top layer while
+  the backdrop fades out.
+*/
+#modal-dialog {
+  --modal-fade: 0.4s;
   align-items: center;
+  background: none;
+  border: 0;
+  color: inherit;
+  height: 100%;
   justify-content: center;
-  /* While it fades out, the page cover must not block clicks on the page behind it. */
+  margin: 0;
+  max-height: none;
+  max-width: none;
+  overflow: visible;
+  padding: 0;
+  transition:
+    display var(--modal-fade) allow-discrete,
+    overlay var(--modal-fade) allow-discrete;
+  width: 100%;
+}
+
+#modal-dialog[open] {
+  display: flex;
+}
+
+#modal-dialog::backdrop {
+  background-color: transparent;
+  transition:
+    background-color var(--modal-fade),
+    display var(--modal-fade) allow-discrete,
+    overlay var(--modal-fade) allow-discrete;
+}
+
+#modal-dialog[open]::backdrop {
+  background-color: var(--modal-backdrop);
+}
+
+@starting-style {
+  #modal-dialog[open]::backdrop {
+    background-color: transparent;
+  }
+}
+
+/* While it fades out, the dialog must not block clicks on the page. */
+#modal-dialog:not([open]),
+#modal-dialog:not([open])::backdrop {
   pointer-events: none;
-}
-
-#page-cover.show {
-  animation: pageCoverShow 0.4s forwards 1;
-  pointer-events: auto;
-}
-
-@keyframes pageCoverHide {
-  0% {
-    background-color: var(--page-cover-bg);
-    z-index: var(--z-page-cover);
-  }
-  100% {
-    background-color: transparent;
-    z-index: -1;
-  }
-}
-
-@keyframes pageCoverShow {
-  0% {
-    background-color: transparent;
-    z-index: -1;
-  }
-  100% {
-    background-color: var(--page-cover-bg);
-    z-index: var(--z-page-cover);
-  }
 }
 
 .modal {

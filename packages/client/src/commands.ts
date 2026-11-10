@@ -16,16 +16,13 @@ export const commands = new ServerHandlers();
 commands.set("warning", (data) => {
   console.warn(data.message);
   globals.ui?.cancelPendingRestart();
-  modals.closeModals(true);
-  setTimeout(() => {
-    modals.showWarning(data.message);
-    // Re-activate some lobby elements.
-    $("#nav-buttons-lobby-create-game").removeClass("disabled");
-    if (globals.currentScreen === Screen.PreGame) {
-      pregame.toggleStartGameButton();
-      pregame.toggleJoinSpectateButtons();
-    }
-  }, modals.MODAL_DELAY_MILLISECONDS);
+  modals.showWarning(data.message);
+  // Re-activate some lobby elements.
+  $("#nav-buttons-lobby-create-game").removeClass("disabled");
+  if (globals.currentScreen === Screen.PreGame) {
+    pregame.toggleStartGameButton();
+    pregame.toggleJoinSpectateButtons();
+  }
 });
 
 commands.set("error", (data) => {
