@@ -375,10 +375,19 @@ impl Store {
             seed_games: outcome.seed_games,
         })
     }
-    /// The first seed with this prefix that none of the players have played.
+    /// The first seed with this prefix that none of the human players have played. Bots play many
+    /// games, so the server does not look up their seeds.
     pub async fn next_seed(&self, players: &[Player], prefix: String) -> Result<String> {
-        let ids = players.iter().map(|p| p.id).collect::<Vec<_>>();
-        let seeds = crate::lobby::blocked_seeds(&self.primary, &ids, &prefix).await?;
+        let ids = players
+            .iter()
+            .filter(|p| !p.bot)
+            .map(|p| p.id)
+            .collect::<Vec<_>>();
+        let seeds = if ids.is_empty() {
+            vec![]
+        } else {
+            crate::lobby::blocked_seeds(&self.primary, &ids, &prefix).await?
+        };
         let seeds = seeds.into_iter().collect::<std::collections::HashSet<_>>();
         for next in 1_u64.. {
             let seed = format!("{prefix}{next}");
@@ -1211,6 +1220,55 @@ mod tests {
                 best[1]["modifier"] == 0 && best[1]["oneExtraCard"] == false,
                 "An unmodified best score gained a modifier: {}",
                 best[1]
+            );
+            Ok::<(), anyhow::Error>(())
+        }
+        .await;
+        db.close().await;
+        result
+    }
+
+    #[tokio::test]
+    async fn new_games_skip_only_the_seeds_that_humans_played() -> Result<()> {
+        let Some((db, pool)) = database().await? else {
+            return Ok(());
+        };
+        let state = LiveState::for_test(&pool).await?;
+        let store = Store::fixture(pool, state);
+        let result = async {
+            #[expect(
+                clippy::disallowed_methods,
+                reason = "test SQL that sets up database state or failures directly"
+            )]
+            sqlx::raw_sql(
+                "INSERT INTO games(id,name,num_players,variant_id,timed,speedrun,deck_plays,
+                 empty_clues,one_extra_card,one_less_card,all_or_nothing,detrimental_characters,
+                 seed,score,num_turns,end_condition,datetime_started,datetime_finished)
+                 SELECT n,'Seeds',2,0,false,false,false,false,false,false,false,false,
+                 'p2v0s'||n,0,30,1,NOW(),NOW() FROM generate_series(1,2) n;
+                 INSERT INTO game_participants(game_id,user_id,seat) VALUES(1,1,0),(2,2,0);",
+            )
+            .execute(&store.primary)
+            .await?;
+            let player = |id, bot| Player {
+                id: UserId(id),
+                name: format!("Player {id}"),
+                bot,
+                stats: zero_stats(),
+            };
+            let human = store
+                .next_seed(&[player(1, false), player(2, true)], "p2v0s".into())
+                .await?;
+            ensure!(
+                human == "p2v0s2",
+                "A bot's seed blocked a human's game: {human}"
+            );
+            let bots = store
+                .next_seed(&[player(1, true), player(2, true)], "p2v0s".into())
+                .await?;
+            ensure!(
+                bots == "p2v0s1",
+                "Bots did not replay a played seed: {bots}"
             );
             Ok::<(), anyhow::Error>(())
         }
