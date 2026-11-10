@@ -103,8 +103,10 @@ pub struct ReplayOptions {
 pub struct ReplayCharacter {
     /// Empty when the player has no character.
     pub name: String,
-    #[schemars(range(min = i32::MIN, max = i32::MAX))]
-    pub metadata: i32,
+    /// Absent when the character has no assigned metadata.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[schemars(with = "i32", range(min = i32::MIN, max = i32::MAX))]
+    pub metadata: Option<i32>,
 }
 
 /// A game to import, in the format that `ReplayGame` exports. Every field is optional: a seed alone

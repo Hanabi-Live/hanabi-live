@@ -911,8 +911,8 @@ async fn tables_replay_a_finished_game_from_a_chosen_turn() -> Result<()> {
              RETURNING id")
         .fetch_one(&h.store.primary)
         .await?;
-        sqlx::query!("INSERT INTO game_participants(game_id,user_id,seat,character_assignment,character_metadata)
-             VALUES($1,1,0,0,0),($1,2,1,0,0)", game)
+        sqlx::query!("INSERT INTO game_participants(game_id,user_id,seat)
+             VALUES($1,1,0),($1,2,1)", game)
         .execute(&h.store.primary)
         .await?;
         // Each player plays their first card, and then the game is terminated.
@@ -957,8 +957,8 @@ async fn shared_replay_links_join_an_existing_replay_of_the_same_game() -> Resul
              RETURNING id")
         .fetch_one(&h.store.primary)
         .await?;
-        sqlx::query!("INSERT INTO game_participants(game_id,user_id,seat,character_assignment,character_metadata)
-             VALUES($1,1,0,0,0),($1,2,1,0,0)", game)
+        sqlx::query!("INSERT INTO game_participants(game_id,user_id,seat)
+             VALUES($1,1,0),($1,2,1)", game)
         .execute(&h.store.primary)
         .await?;
         // The game was terminated on its first turn.
@@ -2240,8 +2240,8 @@ async fn pregame_total_counts_only_normal_non_speedrun_games() -> Result<()> {
              FROM generate_series(1,9) n ORDER BY n RETURNING id")
         .fetch_all(&h.store.primary)
         .await?;
-        sqlx::query!("INSERT INTO game_participants(game_id,user_id,seat,character_assignment,character_metadata)
-             SELECT id,1,0,0,0 FROM unnest($1::integer[]) games(id)", &games)
+        sqlx::query!("INSERT INTO game_participants(game_id,user_id,seat)
+             SELECT id,1,0 FROM unnest($1::integer[]) games(id)", &games)
         .execute(&h.store.primary)
         .await?;
         let id = h.create(0, "Count parity", json!({})).await?;
@@ -3134,54 +3134,60 @@ async fn a_link_to_an_ended_table_forgets_it_without_a_warning() -> Result<()> {
 }
 
 #[tokio::test]
-async fn saved_characters_are_what_the_character_backfill_copies() -> Result<()> {
+async fn saved_characters_store_none_as_null() -> Result<()> {
     let Some(mut h) = Harness::new(&["Alice", "Bob"]).await? else {
         return Ok(());
     };
     let outcome = async {
-        let id = h
-            .create(0, "Characters", json!({"detrimentalCharacters":true}))
-            .await?;
-        h.send(1, "tableJoin", json!({"tableID":id})).await?;
-        h.send(0, "tableStart", json!({"tableID":id})).await?;
-        h.receive(0, "tableStarted").await?;
-        h.send(0, "tableTerminate", json!({"tableID":id})).await?;
-        h.barrier(0).await?;
-        let rows = async |h: &Harness| {
-            sqlx::query!(
-                "SELECT character_assignment,character_metadata,character_id,assigned_metadata
-                 FROM game_participants ORDER BY id"
+        for characters in [true, false] {
+            let id = h
+                .create(0, "Characters", json!({"detrimentalCharacters":characters}))
+                .await?;
+            h.send(1, "tableJoin", json!({"tableID":id})).await?;
+            h.send(0, "tableStart", json!({"tableID":id})).await?;
+            h.receive(0, "tableStarted").await?;
+            let (table, _) = h.snapshot(id).await?;
+            let expected = table
+                .game()
+                .context("Missing game")?
+                .game
+                .players
+                .iter()
+                .map(|p| {
+                    let character = hanabi_engine::characters()
+                        .iter()
+                        .find(|c| c.name == p.character)
+                        .map(|c| i16::try_from(c.id))
+                        .transpose()?;
+                    let metadata = p.assigned_metadata().map(i16::try_from).transpose()?;
+                    Ok((character, metadata))
+                })
+                .collect::<Result<Vec<_>>>()?;
+            ensure!(
+                expected.iter().all(|(c, _)| c.is_some() == characters),
+                "Unexpected characters: {expected:?}"
+            );
+            h.send(0, "tableTerminate", json!({"tableID":id})).await?;
+            h.barrier(0).await?;
+            let saved = sqlx::query!(
+                "SELECT p.character_id,p.assigned_metadata FROM game_participants p
+                 JOIN games g ON g.id=p.game_id WHERE g.detrimental_characters=$1 ORDER BY p.seat",
+                characters
             )
             .fetch_all(&h.store.primary)
-            .await
-            .map(|rows| {
-                rows.into_iter()
-                    .map(|r| {
-                        (
-                            r.character_assignment,
-                            r.character_metadata,
-                            r.character_id,
-                            r.assigned_metadata,
-                        )
-                    })
-                    .collect::<Vec<_>>()
-            })
-        };
-        let saved = rows(&h).await?;
-        ensure!(saved.len() == 2, "The game was not saved: {saved:?}");
-        for &(assignment, stored, character, metadata) in &saved {
+            .await?
+            .into_iter()
+            .map(|r| (r.character_id, r.assigned_metadata))
+            .collect::<Vec<_>>();
             ensure!(
-                character == Some(assignment) && metadata == (stored > 0).then(|| stored - 1),
-                "The new columns disagree with the old ones: {saved:?}"
+                saved == expected,
+                "Saved characters {saved:?} instead of {expected:?}"
             );
+            h.send(0, "tableLeave", json!({"tableID":id})).await?;
+            h.send(1, "tableLeave", json!({"tableID":id})).await?;
+            h.barrier(0).await?;
+            h.barrier(1).await?;
         }
-        sqlx::query_file!("../install/migrations/052_backfill_character_columns.sql")
-            .execute(&h.store.primary)
-            .await?;
-        ensure!(
-            rows(&h).await? == saved,
-            "The backfill changed what the server saved"
-        );
         Ok(())
     }
     .await;

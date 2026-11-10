@@ -24,8 +24,10 @@ pub(crate) struct ArchivePlayer {
     pub user_id: i32,
     pub name: String,
     pub seat: i16,
-    pub character_assignment: i16,
-    pub character_metadata: i16,
+    /// Absent when the player has no character.
+    pub character_id: Option<i16>,
+    /// Absent when the player's character has no assigned metadata.
+    pub assigned_metadata: Option<i16>,
 }
 
 #[derive(Debug, Deserialize)]
@@ -74,7 +76,7 @@ pub(crate) async fn load(pool: &PgPool, id: GameId) -> Result<Option<Archive>> {
         "SELECT to_jsonb(g) AS \"game!: Json<GameRecord>\",
         COALESCE((SELECT jsonb_agg(jsonb_build_object(
           'user_id',p.user_id,'name',u.username,'seat',p.seat,
-          'character_assignment',p.character_assignment,'character_metadata',p.character_metadata)
+          'character_id',p.character_id,'assigned_metadata',p.assigned_metadata)
           ORDER BY p.seat) FROM game_participants p JOIN users u ON u.id=p.user_id
           WHERE p.game_id=g.id),'[]'::jsonb) AS \"archive_players!: Json<Vec<ArchivePlayer>>\",
         COALESCE((SELECT jsonb_agg(jsonb_build_object(
@@ -113,17 +115,6 @@ fn stored_seconds(time_base: f64) -> i32 {
     time_base as i32
 }
 
-/// The stored character assignment of a player without a character.
-pub const NO_CHARACTER_ASSIGNMENT: i16 = -1;
-/// `game_participants` stores a character's assigned metadata plus this offset, so that 0 means
-/// that the character has none.
-const STORED_METADATA_OFFSET: i16 = 1;
-
-/// The character metadata that a `game_participants` value stores, or -1 for none.
-pub fn stored_metadata(stored: i16) -> i32 {
-    i32::from(stored) - i32::from(STORED_METADATA_OFFSET)
-}
-
 /// Rebuilds a finished game from the database as a replay at table `table_id`, owned by `owner`.
 pub(crate) async fn replay(
     pool: &PgPool,
@@ -158,24 +149,18 @@ pub(crate) async fn replay(
             bot: false,
             stats: zero_stats(),
         });
-        let assignment = r.character_assignment;
-        let character = hanabi_engine::characters()
-            .iter()
-            .find(|c| i16::try_from(c.id).ok() == Some(assignment));
-        ensure!(
-            assignment == NO_CHARACTER_ASSIGNMENT || character.is_some(),
-            "Unknown stored character"
-        );
-        let name = character.map_or("", |c| c.name.as_str());
+        let character = r
+            .character_id
+            .map(|id| {
+                hanabi_engine::characters()
+                    .iter()
+                    .find(|c| i16::try_from(c.id).ok() == Some(id))
+                    .context("Unknown stored character")
+            })
+            .transpose()?;
         characters.push(AssignedCharacter {
-            name: name.into(),
-            metadata: if hanabi_engine::Character::from_name(name)
-                .is_some_and(hanabi_engine::Character::has_assigned_metadata)
-            {
-                stored_metadata(r.character_metadata)
-            } else {
-                NO_VALUE
-            },
+            name: character.map_or("", |c| c.name.as_str()).into(),
+            metadata: r.assigned_metadata.map_or(NO_VALUE, i32::from),
         });
     }
     for note in archive.notes {
@@ -255,33 +240,24 @@ pub(crate) async fn insert(
     sqlx::query!("INSERT INTO games(id,name,num_players,variant_id,timed,time_base,time_per_turn,speedrun,deck_plays,empty_clues,one_extra_card,one_less_card,all_or_nothing,detrimental_characters,seed,score,num_turns,end_condition,datetime_started,datetime_finished) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20)", s.game_id.0, &s.name, i16::try_from(o.num_players)?, i16::try_from(variant.id)?, o.timed, o.timed.then(|| stored_seconds(o.time_base)), o.timed.then(|| i32::try_from(o.time_per_turn)).transpose()?, o.speedrun, o.deck_plays, o.empty_clues, o.one_extra_card, o.one_less_card, o.all_or_nothing, o.detrimental_characters, &s.seed, i16::try_from(s.game.score)?, i16::try_from(s.game.turn)?, s.game.end_condition as i16, s.started, finished).execute(&mut **tx).await?;
     let mut users = vec![];
     let mut seats = vec![];
-    let mut assignments = vec![];
-    let mut metadata = vec![];
     let mut character_ids = vec![];
     let mut assigned_metadata = vec![];
     for (seat, p) in s.players.iter().enumerate() {
-        let (assignment, value) = stored_character(&s.game.players[seat])?;
         let (character_id, assigned) = character_columns(&s.game.players[seat])?;
         users.push(p.id.0);
         seats.push(i16::try_from(seat)?);
-        assignments.push(assignment);
-        metadata.push(value);
         character_ids.push(character_id);
         assigned_metadata.push(assigned);
     }
     let participants = sqlx::query!(
-        "INSERT INTO game_participants(game_id,user_id,seat,character_assignment,character_metadata,
-           character_id,assigned_metadata)
-         SELECT $1,p.user_id,p.seat,p.assignment,p.metadata,p.character_id,p.assigned_metadata
-         FROM UNNEST($2::integer[],$3::smallint[],$4::smallint[],$5::smallint[],$6::smallint[],
-           $7::smallint[])
-         AS p(user_id,seat,assignment,metadata,character_id,assigned_metadata)
+        "INSERT INTO game_participants(game_id,user_id,seat,character_id,assigned_metadata)
+         SELECT $1,p.user_id,p.seat,p.character_id,p.assigned_metadata
+         FROM UNNEST($2::integer[],$3::smallint[],$4::smallint[],$5::smallint[])
+         AS p(user_id,seat,character_id,assigned_metadata)
          RETURNING id,seat",
         s.game_id.0,
         &users,
         &seats,
-        &assignments,
-        &metadata,
         &character_ids as &[Option<i16>],
         &assigned_metadata as &[Option<i16>]
     )
@@ -355,18 +331,6 @@ fn character_columns(player: &hanabi_engine::EnginePlayer) -> Result<(Option<i16
         .transpose()?;
     let metadata = player.assigned_metadata().map(i16::try_from).transpose()?;
     Ok((character_id, metadata))
-}
-
-/// The character assignment and metadata that `game_participants` stores for a player.
-fn stored_character(player: &hanabi_engine::EnginePlayer) -> Result<(i16, i16)> {
-    let assignment = hanabi_engine::characters()
-        .iter()
-        .find(|c| c.name == player.character)
-        .map_or(Ok(NO_CHARACTER_ASSIGNMENT), |c| i16::try_from(c.id))?;
-    let metadata = player.assigned_metadata().map_or(Ok(0), |metadata| {
-        i16::try_from(metadata).map(|metadata| metadata + STORED_METADATA_OFFSET)
-    })?;
-    Ok((assignment, metadata))
 }
 
 pub fn options(row: &GameRecord) -> Result<Options> {

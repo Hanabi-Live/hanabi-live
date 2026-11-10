@@ -302,8 +302,8 @@ async fn public_database_routes_filters_privacy_exports_and_html() {
           CASE WHEN id=3 THEN 'custom-seed' ELSE 'same' END,
           CASE WHEN id=1 THEN 25 WHEN id=2 THEN 15 ELSE 0 END,10,CASE WHEN id=2 THEN 2 ELSE 1 END,
           '2026-01-01T00:00:00Z'::timestamptz,'2026-01-01T01:00:00Z'::timestamptz FROM generate_series(1,3) id;
-        INSERT INTO game_participants(game_id,user_id,seat,character_assignment,character_metadata)
-          VALUES(1,1,0,-1,0),(1,2,1,-1,0),(2,1,0,-1,0),(2,3,1,-1,0),(3,1,0,0,2),(3,2,1,-1,0);
+        INSERT INTO game_participants(game_id,user_id,seat,character_id,assigned_metadata)
+          VALUES(1,1,0,NULL,NULL),(1,2,1,NULL,NULL),(2,1,0,NULL,NULL),(2,3,1,NULL,NULL),(3,1,0,0,1),(3,2,1,NULL,NULL);
         INSERT INTO seeds(seed,num_games) VALUES('same',2),('custom-seed',1);
         INSERT INTO game_tags(game_id,user_id,tag) VALUES(1,1,'mine'),(1,2,'other'),(3,1,'mine');
         INSERT INTO game_actions(game_id,turn,type,target,value) VALUES(3,0,0,4,0),(3,1,4,0,1);
@@ -680,9 +680,9 @@ async fn public_database_routes_filters_privacy_exports_and_html() {
         speedrun,deck_plays,empty_clues,one_extra_card,one_less_card,all_or_nothing,
         detrimental_characters,'six-player',score,num_turns,end_condition,datetime_started,datetime_finished
         FROM games WHERE id=1;
-        INSERT INTO game_participants(game_id,user_id,seat,character_assignment,character_metadata)
-        SELECT 4,id,id-3,-1,0 FROM generate_series(4,8) id;
-        INSERT INTO game_participants(game_id,user_id,seat,character_assignment,character_metadata) VALUES(4,1,0,-1,0);")
+        INSERT INTO game_participants(game_id,user_id,seat)
+        SELECT 4,id,id-3 FROM generate_series(4,8) id;
+        INSERT INTO game_participants(game_id,user_id,seat) VALUES(4,1,0);")
         .execute(&db.pool).await.unwrap();
     for path in [
         "/api/v1/history/Alice/Player4/Player5/Player6/Player7/Player8",

@@ -445,8 +445,15 @@ async fn native_browser_login_ws_bootstrap_and_command_routing_postgres() {
          speedrun,deck_plays,empty_clues,one_extra_card,one_less_card,
          all_or_nothing,detrimental_characters,seed,score,num_turns,end_condition,datetime_started,datetime_finished)
          VALUES('Authored history',3,1,true,180,30,false,false,true,false,false,false,true,'p3v1s42',30,40,1,NOW(),NOW()) RETURNING id").fetch_one(&fixture.db.pool).await.unwrap();
-    let participant:i32=sqlx::query_scalar!("INSERT INTO game_participants(game_id,user_id,seat,character_assignment,character_metadata)
-         VALUES($1,$2,0,0,0) RETURNING id", historical, alice_id).fetch_one(&fixture.db.pool).await.unwrap();
+    let participant: i32 = sqlx::query_scalar!(
+        "INSERT INTO game_participants(game_id,user_id,seat)
+         VALUES($1,$2,0) RETURNING id",
+        historical,
+        alice_id
+    )
+    .fetch_one(&fixture.db.pool)
+    .await
+    .unwrap();
     sqlx::query!("INSERT INTO game_participant_notes(game_participant_id,card_order,note) VALUES($1,0,'authored note')", participant).execute(&fixture.db.pool).await.unwrap();
     sqlx::query!(
         "INSERT INTO game_tags(game_id,user_id,tag) VALUES($1,$2,'authored')",
@@ -753,9 +760,16 @@ async fn full_history_bootstrap_queues_in_order_without_a_writer_postgres() {
          'p6v1s'||n,30,72,1,NOW(),NOW() FROM generate_series(1,200) n ORDER BY n RETURNING id").fetch_all(&fixture.db.pool).await.unwrap();
     let mut players = vec![alice];
     players.extend(&shared);
-    sqlx::query!("INSERT INTO game_participants(game_id,user_id,seat,character_assignment,character_metadata)
-             SELECT game_id,user_id,(position-1)::smallint,-1,0 FROM unnest($1::int[]) games(game_id)
-             CROSS JOIN unnest($2::int[]) WITH ORDINALITY players(user_id,position)", &games, &players).execute(&fixture.db.pool).await.unwrap();
+    sqlx::query!(
+        "INSERT INTO game_participants(game_id,user_id,seat)
+             SELECT game_id,user_id,(position-1)::smallint FROM unnest($1::int[]) games(game_id)
+             CROSS JOIN unnest($2::int[]) WITH ORDINALITY players(user_id,position)",
+        &games,
+        &players
+    )
+    .execute(&fixture.db.pool)
+    .await
+    .unwrap();
     sqlx::query!(
         "INSERT INTO game_tags(game_id,user_id,tag)
          SELECT game_id,$2,lpad(n::text,3,'0')||repeat('t',97)

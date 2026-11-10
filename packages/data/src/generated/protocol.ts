@@ -897,7 +897,10 @@ const replayCardSchema = z.strictObject({
   suitIndex: z.number().int().min(0).max(9_007_199_254_740_991),
 });
 const replayCharacterSchema = z.strictObject({
-  metadata: z.number().int().min(-2_147_483_648).max(2_147_483_647),
+  /**
+   * Absent when the character has no assigned metadata.
+   */
+  metadata: z.number().int().min(-2_147_483_648).max(2_147_483_647).optional(),
   /**
    * Empty when the player has no character.
    */

@@ -1,0 +1,15 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO game_participants(game_id,user_id,seat)\n         VALUES($1,$2,0)",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Int4",
+        "Int4"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "a741ecbe0643fb63e07f30b6c5f9a7456c2f83f65d619bee49a4b03c0b1198cd"
+}

@@ -1,0 +1,14 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO game_participants(game_id,user_id,seat)\n             SELECT id,1,0 FROM unnest($1::integer[]) games(id)",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Int4Array"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "d30835d6951743487ff27e95685f96806207c4d2fcea1cd9bb5a25db7ac8191d"
+}

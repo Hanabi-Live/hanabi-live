@@ -100,8 +100,7 @@ mod tests {
         .unwrap();
         for (seat, player) in players.iter().enumerate() {
             sqlx::query!(
-                "INSERT INTO game_participants(game_id,user_id,seat,character_assignment,
-                 character_metadata) VALUES($1,$2,$3,0,0)",
+                "INSERT INTO game_participants(game_id,user_id,seat) VALUES($1,$2,$3)",
                 id,
                 player,
                 i16::try_from(seat).unwrap(),

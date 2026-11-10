@@ -91,21 +91,19 @@ pub(super) async fn export(
     let characters = if row.detrimental_characters {
         let mut characters = Vec::new();
         for p in &players {
-            let character = i64::from(p.character_assignment);
-            let name = if character == i64::from(crate::archive::NO_CHARACTER_ASSIGNMENT) {
-                ""
-            } else {
-                catalog::character(character).ok_or_else(|| {
+            let name = match p.character_id {
+                None => "",
+                Some(character) => catalog::character(i64::from(character)).ok_or_else(|| {
                     export_failure(
                         "archive_unknown_character",
                         "The archived game's character is not in the catalog",
                         id,
                     )
-                })?
+                })?,
             };
             characters.push(hanabi_protocol::ReplayCharacter {
                 name: name.into(),
-                metadata: crate::archive::stored_metadata(p.character_metadata),
+                metadata: p.assigned_metadata.map(i32::from),
             });
         }
         Some(characters)

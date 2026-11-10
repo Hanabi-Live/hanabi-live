@@ -1,0 +1,15 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO game_participants(game_id,user_id,seat)\n             SELECT game_id,user_id,(position-1)::smallint FROM unnest($1::int[]) games(game_id)\n             CROSS JOIN unnest($2::int[]) WITH ORDINALITY players(user_id,position)",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Int4Array",
+        "Int4Array"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "d6abc17b2906007c06c5080667c61826549434400c66b040d01df6e773928c28"
+}

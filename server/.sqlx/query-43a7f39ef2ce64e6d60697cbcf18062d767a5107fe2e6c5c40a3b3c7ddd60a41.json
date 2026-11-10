@@ -1,0 +1,12 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO game_participants(game_id,user_id,seat)\n                 SELECT id,1,0 FROM games",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": []
+    },
+    "nullable": []
+  },
+  "hash": "43a7f39ef2ce64e6d60697cbcf18062d767a5107fe2e6c5c40a3b3c7ddd60a41"
+}

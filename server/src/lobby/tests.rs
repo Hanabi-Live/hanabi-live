@@ -514,8 +514,15 @@ async fn game(db: &TestDb, user: i32, seed: &str, score: i16) -> i32 {
             all_or_nothing,detrimental_characters,seed,score,num_turns,end_condition,datetime_started,datetime_finished)
          VALUES('test',2,0,false,NULL,NULL,false,false,false,false,false,false,false,$1,$2,30,1,NOW(),NOW())
          RETURNING id", seed, score).fetch_one(&db.pool).await.unwrap();
-    sqlx::query!("INSERT INTO game_participants(game_id,user_id,seat,character_assignment,character_metadata)
-         VALUES($1,$2,0,0,0)", id, user).execute(&db.pool).await.unwrap();
+    sqlx::query!(
+        "INSERT INTO game_participants(game_id,user_id,seat)
+         VALUES($1,$2,0)",
+        id,
+        user
+    )
+    .execute(&db.pool)
+    .await
+    .unwrap();
     id
 }
 
@@ -530,7 +537,14 @@ async fn lobby_history_pages_include_only_own_games_postgres() {
     let own = game(&db, a, "p2v0s1", 20).await;
     let other = game(&db, b, "p2v0s2", 20).await;
     let shared = game(&db, a, "p2v0s4", 20).await;
-    sqlx::query!("INSERT INTO game_participants(game_id,user_id,seat,character_assignment,character_metadata) VALUES($1,$2,1,0,0)", shared, b).execute(&db.pool).await.unwrap();
+    sqlx::query!(
+        "INSERT INTO game_participants(game_id,user_id,seat) VALUES($1,$2,1)",
+        shared,
+        b
+    )
+    .execute(&db.pool)
+    .await
+    .unwrap();
     relationships::change_friend(&db.pool, UserId(a), UserId(b), true)
         .await
         .unwrap();

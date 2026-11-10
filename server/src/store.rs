@@ -896,8 +896,8 @@ mod tests {
                  FROM generate_series(1,2) n")
             .execute(&store.primary)
             .await?;
-            sqlx::query!("INSERT INTO game_participants(game_id,user_id,seat,character_assignment,character_metadata)
-                 SELECT id,1,0,0,0 FROM games")
+            sqlx::query!("INSERT INTO game_participants(game_id,user_id,seat)
+                 SELECT id,1,0 FROM games")
             .execute(&store.primary)
             .await?;
             let mut table = pregame(store.allocate_table().await?);

@@ -1,0 +1,40 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT p.character_id,p.assigned_metadata FROM game_participants p\n                 JOIN games g ON g.id=p.game_id WHERE g.detrimental_characters=$1 ORDER BY p.seat",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "character_id",
+        "type_info": "Int2",
+        "origin": {
+          "Table": {
+            "table": "game_participants",
+            "name": "character_id"
+          }
+        }
+      },
+      {
+        "ordinal": 1,
+        "name": "assigned_metadata",
+        "type_info": "Int2",
+        "origin": {
+          "Table": {
+            "table": "game_participants",
+            "name": "assigned_metadata"
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Bool"
+      ]
+    },
+    "nullable": [
+      true,
+      true
+    ]
+  },
+  "hash": "519b61e2f8692438345cc6e7fdd603cdb097a4cdc4c28c462793c868724ca997"
+}
