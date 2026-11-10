@@ -18,6 +18,8 @@ of the repository.
 - The "Edit Cards" and "Show Hidden" buttons in hypotheticals now look like the
   "Ready" button: a green border when on, and struck-through text when off.
 - The firework for completing a play stack is now shorter.
+- The text in the action log now slides only in replays, so that it does not
+  distract you during a game.
 
 ## November 9th, 2026
 
