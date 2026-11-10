@@ -23,6 +23,31 @@ vi.mock("../../tooltips", () => ({
   attach: vi.fn(),
   SMALL_TOOLTIP_TEXT_STYLE: "",
 }));
+// The menu tooltip shows its content in the body, since jsdom does not support popovers.
+vi.mock("../../Tooltip", () => ({
+  Tooltip: class {
+    isOpen = false;
+    private readonly content: HTMLElement;
+
+    constructor(_anchor: HTMLElement, options: { content: HTMLElement }) {
+      this.content = options.content;
+    }
+
+    openUntilClickElsewhere() {
+      document.body.append(this.content);
+      this.isOpen = true;
+    }
+
+    close() {
+      this.content.remove();
+      this.isOpen = false;
+    }
+
+    destroy() {
+      this.close();
+    }
+  },
+}));
 vi.mock("../tables/tableActions", () => ({
   tableJoin: vi.fn(),
   tableSpectate: vi.fn(),
@@ -67,6 +92,7 @@ function rowNames(): readonly string[] {
 beforeEach(() => {
   globals.username = "me";
   globals.friends = ["zed", "Bob"];
+  globals.blocked = [];
   globals.currentScreen = Screen.Lobby;
   store.dispatch(usersCleared());
   store.dispatch(tablesCleared());
@@ -129,6 +155,36 @@ describe("UsersList", () => {
     expect(alice!.textContent).not.toContain("\u{1F916}");
     expect(bot!.querySelector(".fa-heading")).toBeNull();
     expect(bot!.textContent).toContain("\u{1F916}");
+  });
+
+  test("opens a menu that friends and blocks a user when we click on their name", () => {
+    const send = vi.fn();
+    globals.conn = { send } as unknown as NonNullable<typeof globals.conn>;
+    store.dispatch(usersListed([user(1, "me"), user(2, "Alice")]));
+    renderList();
+
+    fireEvent.click(screen.getByText("Alice"));
+    fireEvent.click(screen.getByText("Add to Friends"));
+    expect(send).toHaveBeenCalledWith("chatFriend", { name: "Alice" });
+    expect(screen.queryByText("Add to Friends")).toBeNull();
+
+    fireEvent.click(screen.getByText("Alice"));
+    fireEvent.click(screen.getByText("Block"));
+    expect(send).toHaveBeenCalledWith("chatBlock", {
+      name: "Alice",
+      room: "lobby",
+    });
+    act(() => {
+      globals.blocked = ["Alice"];
+    });
+    fireEvent.click(screen.getByText("Alice"));
+    expect(screen.getByText("Unblock")).toBeDefined();
+    fireEvent.click(screen.getByText("Unblock"));
+
+    // We cannot message, friend, or block ourselves.
+    fireEvent.click(screen.getByText("me"));
+    expect(screen.getByText("Profile")).toBeDefined();
+    expect(screen.queryByText("Private Message")).toBeNull();
   });
 
   test("links the status of users at a table, except from the pre-game", () => {

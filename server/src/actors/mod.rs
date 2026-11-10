@@ -349,6 +349,7 @@ pub(crate) fn test_welcome() -> hanabi_protocol::Welcome {
         first_time_user: false,
         settings: hanabi_protocol::Settings::default(),
         friends: vec![],
+        blocked: vec![],
         playing_at_tables: vec![],
         discon_spectating_table: None,
         discon_shadowing_seat: None,

@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "SELECT u.username FROM user_blocks b JOIN users u ON u.id=b.blocked_id\n             WHERE b.user_id=$1 ORDER BY LOWER(u.username) COLLATE \"C\"",
+  "query": "SELECT u.username FROM user_blocks b JOIN users u ON u.id=b.blocked_id\n         WHERE b.user_id=$1 ORDER BY LOWER(u.username) COLLATE \"C\"",
   "describe": {
     "columns": [
       {
@@ -24,5 +24,5 @@
       false
     ]
   },
-  "hash": "cf9fcf1b2c573f601cbaee1c9566caaaa2fda069bdb1ff56e281a041f7467d56"
+  "hash": "e85f32500f7c802a168e4874804267cb961f38e26cfa122a2c471d9c6e4fb199"
 }

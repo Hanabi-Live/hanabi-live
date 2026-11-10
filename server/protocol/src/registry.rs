@@ -114,6 +114,7 @@ macro_rules! server_contracts {
             USER_LEFT "userLeft" => UserLeft;
             USER_INACTIVE "userInactive" => UserInactive;
             FRIENDS "friends" => Friends;
+            BLOCKED "blocked" => Blocked;
             ERROR "error" => ErrorNotice;
             OUTDATED_CLIENT "outdatedClient" => Empty;
             WARNING "warning" => Warning;
@@ -226,8 +227,8 @@ macro_rules! server_messages {
 /// Every message the server can send. Building a frame requires one of these and its payload type.
 pub mod server {
     use super::{
-        CardIdentities, Chat, ChatDelete, ChatHistory, ChatList, ChatTyping, Clock, Connected,
-        Empty, ErrorNotice, FinishOngoingGame, Friends, GameAction, GameActionList,
+        Blocked, CardIdentities, Chat, ChatDelete, ChatHistory, ChatList, ChatTyping, Clock,
+        Connected, Empty, ErrorNotice, FinishOngoingGame, Friends, GameAction, GameActionList,
         GameHistoryList, GameHistoryOtherScores, HypoShowDrawnCards, Hypothetical,
         HypotheticalAction, IdleWarning, Init, LobbyStatus, Note, NoteList, NoteListPlayer, Pause,
         Pregame, ReplayEfficiencyMod, ReplayIndicator, ReplayLeader, ReplaySegment, ReplaySound,

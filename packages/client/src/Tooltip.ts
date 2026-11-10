@@ -114,6 +114,14 @@ export class Tooltip {
     this.position();
   }
 
+  /** Opens the tooltip until the next click outside of the anchor and the tooltip. */
+  openUntilClickElsewhere(): void {
+    this.open();
+    document.addEventListener("pointerdown", this.closeOnPointerDownElsewhere, {
+      capture: true,
+    });
+  }
+
   close(): void {
     document.removeEventListener(
       "pointerdown",
@@ -166,12 +174,7 @@ export class Tooltip {
         if (this.isOpen) {
           this.close();
         } else {
-          this.open();
-          document.addEventListener(
-            "pointerdown",
-            this.closeOnPointerDownElsewhere,
-            { capture: true },
-          );
+          this.openUntilClickElsewhere();
         }
       },
       { signal },
@@ -187,7 +190,11 @@ export class Tooltip {
   }
 
   private readonly closeOnPointerDownElsewhere = (event: PointerEvent) => {
-    if (!(event.target instanceof Node && this.anchor.contains(event.target))) {
+    const { target } = event;
+    if (!(
+      target instanceof Node
+      && (this.anchor.contains(target) || this.bubble.contains(target))
+    )) {
       this.close();
     }
   };

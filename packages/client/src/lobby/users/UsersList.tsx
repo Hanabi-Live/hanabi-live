@@ -8,6 +8,7 @@ import { useAppSelector } from "../../store";
 import * as tooltips from "../../tooltips";
 import { tableJoin, tableSpectate } from "../tables/tableActions";
 import { Screen } from "../types/Screen";
+import { UserLink } from "./UserMenu";
 import type { UserRow } from "./usersSlice";
 import { selectUserCount, selectUserRows } from "./usersSlice";
 
@@ -17,12 +18,6 @@ const BOT_TOOLTIP = `<span style="${tooltips.SMALL_TOOLTIP_TEXT_STYLE}">This acc
 
 const SLEEPING_EMOJI = "\u{1F4A4}";
 const ROBOT_EMOJI = "\u{1F916}";
-
-const NAME_CLASSES = {
-  self: "name-me",
-  friend: "friend",
-  other: undefined,
-} as const satisfies Record<UserRow["kind"], string | undefined>;
 
 /** In these statuses, the user is not at a table that we could join or spectate. */
 const STATUSES_WITHOUT_TABLE: ReadonlySet<Status> = new Set([
@@ -59,22 +54,14 @@ export function OnlineUserCount(): React.JSX.Element {
 }
 
 function UserRowView({
-  row: { user, kind },
+  row,
   inPregame,
 }: {
   readonly row: UserRow;
   readonly inPregame: boolean;
 }) {
-  const nameLink = (
-    <a
-      className={NAME_CLASSES[kind]}
-      href={`/scores/${encodeURIComponent(user.name)}`}
-      rel="noopener noreferrer"
-      target="_blank"
-    >
-      {user.name}
-    </a>
-  );
+  const { user, kind } = row;
+  const nameLink = <UserLink row={row} />;
   const statusText = StatusText[user.status];
 
   return (

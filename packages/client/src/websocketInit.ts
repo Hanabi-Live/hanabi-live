@@ -274,6 +274,7 @@ function openConnection(isReconnect: boolean) {
         globals.muted = data.muted;
         globals.settings = data.settings;
         globals.friends = data.friends;
+        globals.blocked = data.blocked;
         theme.setDarkMode(globals.settings.darkMode);
         const retained = tableIdSchema.parse(globals.tableID);
         conn.on("tableStart", (table) => {

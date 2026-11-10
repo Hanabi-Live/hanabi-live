@@ -97,6 +97,15 @@ pub struct Friends {
     pub friends: Vec<String>,
 }
 
+/// The users whom we have blocked. It does not include the users who have blocked us.
+#[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+#[schemars(extend("x-readonly" = true))]
+pub struct Blocked {
+    #[schemars(extend("x-readonly" = true))]
+    pub blocked: Vec<String>,
+}
+
 /// A problem the client shows in a modal. The text may contain HTML.
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
@@ -228,6 +237,9 @@ pub struct Welcome {
     pub settings: Settings,
     #[schemars(extend("x-readonly" = true))]
     pub friends: Vec<String>,
+    /// The users whom we have blocked, as in [`Blocked`].
+    #[schemars(extend("x-readonly" = true))]
+    pub blocked: Vec<String>,
     /// Ongoing games the user is a player in.
     #[schemars(extend("x-readonly" = true))]
     pub playing_at_tables: Vec<TableId>,

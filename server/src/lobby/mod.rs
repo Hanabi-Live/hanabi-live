@@ -12,7 +12,7 @@ pub use chat::{
     general_response, lobby_history, server_chat,
 };
 pub use history::{blocked_seeds, get_history, history_ids};
-pub use relationships::{block_relations, blocked_between, friends};
+pub use relationships::{block_relations, blocked, blocked_between, friends};
 pub use settings::{changed_settings, get_settings, set_setting};
 
 use crate::accounts::{escape_html, normalize_string};

@@ -15,6 +15,17 @@ pub async fn friends(pool: &PgPool, id: UserId) -> Result<Vec<String>> {
     .await?)
 }
 
+/// The users whom `id` has blocked.
+pub async fn blocked(pool: &PgPool, id: UserId) -> Result<Vec<String>> {
+    Ok(sqlx::query_scalar!(
+        "SELECT u.username FROM user_blocks b JOIN users u ON u.id=b.blocked_id
+         WHERE b.user_id=$1 ORDER BY LOWER(u.username) COLLATE \"C\"",
+        id.0
+    )
+    .fetch_all(pool)
+    .await?)
+}
+
 /// Whether `user` and any of `others` have blocked each other, in either direction.
 pub async fn blocked_between(pool: &PgPool, user: UserId, others: &[UserId]) -> Result<bool> {
     if others.is_empty() {
@@ -90,13 +101,7 @@ pub async fn relationship(
     room: &str,
 ) -> Result<Vec<Effect>> {
     if command == "chatBlocked" {
-        let names: Vec<String> = sqlx::query_scalar!(
-            "SELECT u.username FROM user_blocks b JOIN users u ON u.id=b.blocked_id
-             WHERE b.user_id=$1 ORDER BY LOWER(u.username) COLLATE \"C\"",
-            caller.user.0
-        )
-        .fetch_all(pool)
-        .await?;
+        let names = blocked(pool, caller.user).await?;
         let message = if names.is_empty() {
             "Currently, you have not blocked anyone.".into()
         } else {
@@ -266,6 +271,12 @@ async fn block(
     };
     Ok(vec![
         notice(&caller.name, &message, room),
+        Effect::to_self(Outgoing::new(
+            hanabi_protocol::server::BLOCKED,
+            hanabi_protocol::Blocked {
+                blocked: blocked(pool, caller.user).await?,
+            },
+        )),
         Publication::BlocksChanged {
             user_id: caller.user,
             target_id: target,

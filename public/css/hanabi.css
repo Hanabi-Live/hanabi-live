@@ -2348,3 +2348,40 @@ div.noteTitle span {
   text-align: center;
   padding: 0 10px;
 }
+
+/* The menu that opens when we click on the name of an online user (see "UserMenu.tsx") */
+.user-menu {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: 0.75em;
+}
+
+.user-menu a,
+.user-menu button {
+  display: flex;
+  gap: 0.6em;
+  align-items: center;
+  width: 100%;
+  padding: 0.4em 0.6em;
+  border: none;
+  border-radius: 3px;
+  background: none;
+  color: #555;
+  font: inherit;
+  text-align: left;
+  text-decoration: none;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.user-menu a:hover,
+.user-menu button:hover {
+  background: #eee;
+  color: #222;
+}
+
+.user-menu i {
+  width: 1em;
+  text-align: center;
+}

@@ -63,6 +63,10 @@ lobbyCommands.set("lobbyStatus", (data) => {
   }
 });
 
+lobbyCommands.set("blocked", (data) => {
+  globals.blocked = data.blocked;
+});
+
 lobbyCommands.set("friends", (data) => {
   // The server has sent us a new list of our friends; store this locally.
   globals.friends = [...data.friends];
@@ -226,6 +230,7 @@ lobbyCommands.set("welcome", (data) => {
   globals.muted = data.muted;
   globals.settings = data.settings;
   globals.friends = data.friends;
+  globals.blocked = data.blocked;
 
   if (theme.takeLegacyDarkMode() && !globals.settings.darkMode) {
     globals.settings = { ...globals.settings, darkMode: true };

@@ -8,12 +8,15 @@ import { Screen } from "./lobby/types/Screen";
 interface SessionState {
   readonly username: string;
   readonly friends: readonly string[];
+  /** The users whom we have blocked. */
+  readonly blocked: readonly string[];
   readonly screen: Screen;
 }
 
 const initialState: SessionState = {
   username: "",
   friends: [],
+  blocked: [],
   screen: Screen.Login,
 };
 
@@ -27,12 +30,19 @@ const sessionSlice = createSlice({
     friendsChanged(state, action: PayloadAction<readonly string[]>) {
       state.friends = [...action.payload];
     },
+    blockedChanged(state, action: PayloadAction<readonly string[]>) {
+      state.blocked = [...action.payload];
+    },
     screenChanged(state, action: PayloadAction<Screen>) {
       state.screen = action.payload;
     },
   },
 });
 
-export const { usernameChanged, friendsChanged, screenChanged } =
-  sessionSlice.actions;
+export const {
+  usernameChanged,
+  friendsChanged,
+  blockedChanged,
+  screenChanged,
+} = sessionSlice.actions;
 export const sessionReducer = sessionSlice.reducer;

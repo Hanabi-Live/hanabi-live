@@ -10,7 +10,12 @@ import { totalGamesChanged } from "./lobby/gameHistory/historySlice";
 import type { Table } from "./lobby/tables/tablesSlice";
 import { selectTable, selectTables } from "./lobby/tables/tablesSlice";
 import type { Screen } from "./lobby/types/Screen";
-import { friendsChanged, screenChanged, usernameChanged } from "./sessionSlice";
+import {
+  blockedChanged,
+  friendsChanged,
+  screenChanged,
+  usernameChanged,
+} from "./sessionSlice";
 import { store } from "./store";
 
 type Game = ServerCommandData["game"];
@@ -51,6 +56,15 @@ export class Globals {
 
   set friends(friends: readonly string[]) {
     store.dispatch(friendsChanged(friends));
+  }
+
+  /** From the "welcome" and "blocked" messages. */
+  get blocked(): readonly string[] {
+    return store.getState().session.blocked;
+  }
+
+  set blocked(blocked: readonly string[]) {
+    store.dispatch(blockedChanged(blocked));
   }
 
   get currentScreen(): Screen {

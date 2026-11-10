@@ -410,6 +410,7 @@
       "muted": false,
       "firstTimeUser": false,
       "friends": [],
+      "blocked": [],
       "playingAtTables": [3],
       "settings": {
         "volume": 70
@@ -423,6 +424,7 @@
       "muted": false,
       "firstTimeUser": false,
       "friends": [],
+      "blocked": [],
       "playingAtTables": [3],
       "settings": {
         "desktopNotification": false,
@@ -465,6 +467,7 @@
       "muted": false,
       "firstTimeUser": false,
       "friends": [],
+      "blocked": [],
       "playingAtTables": [3],
       "settings": {
         "desktopNotification": false,
@@ -509,6 +512,7 @@
       "muted": false,
       "firstTimeUser": false,
       "friends": [],
+      "blocked": [],
       "playingAtTables": [3],
       "settings": {
         "createTableMaxPlayers": 7

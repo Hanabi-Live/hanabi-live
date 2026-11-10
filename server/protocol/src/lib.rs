@@ -380,6 +380,7 @@ pub fn schemas() -> std::collections::BTreeMap<String, serde_json::Value> {
         UserLeft,
         UserInactive,
         Friends,
+        Blocked,
         ErrorNotice,
         Warning,
         SoundLobby,

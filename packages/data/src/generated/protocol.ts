@@ -141,6 +141,13 @@ export const apiErrorSchema = z.strictObject({
   diagnosticID: z.string().optional(),
   error: z.string(),
 });
+
+/**
+ * The users whom we have blocked. It does not include the users who have blocked us.
+ */
+export const blockedSchema = z
+  .strictObject({ blocked: z.array(z.string()).readonly() })
+  .readonly();
 const cardIdentitySchema = z.strictObject({
   rank: rankOrUnknownSchema,
   suitIndex: suitIndexOrUnknownSchema,
@@ -1230,6 +1237,10 @@ export const warningSchema = z
 export const welcomeSchema = z
   .strictObject({
     /**
+     * The users whom we have blocked, as in [`Blocked`].
+     */
+    blocked: z.array(z.string()).readonly(),
+    /**
      * The seat the user was shadowing at that table, or -1 for none.
      */
     disconShadowingSeat: z.number().int().min(-1).max(5).optional(),
@@ -1303,6 +1314,7 @@ export const CLIENT_COMMAND_SCHEMAS = {
   tagsDeleteAll: tagsDeleteAllRequestSchema,
 } as const;
 export const SERVER_COMMAND_SCHEMAS = {
+  blocked: blockedSchema,
   boot: tableRequestSchema,
   cardIdentities: cardIdentitiesSchema,
   chat: chatSchema,

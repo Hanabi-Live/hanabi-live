@@ -102,9 +102,10 @@ pub(super) async fn bootstrap(app: &App, account: Account, ip: &str) -> Result<B
         created,
         bot,
     } = account;
-    let (settings, friends, blocks, muted) = tokio::try_join!(
+    let (settings, friends, blocked, blocks, muted) = tokio::try_join!(
         lobby::get_settings(pool, id),
         lobby::friends(pool, id),
+        lobby::blocked(pool, id),
         lobby::block_relations(pool, id),
         accounts::is_muted(pool, ip)
     )?;
@@ -116,6 +117,7 @@ pub(super) async fn bootstrap(app: &App, account: Account, ip: &str) -> Result<B
         first_time_user: Utc::now() - created < FIRST_TIME_USER_WINDOW,
         settings,
         friends,
+        blocked,
         playing_at_tables: vec![],
         discon_spectating_table: None,
         discon_shadowing_seat: None,
