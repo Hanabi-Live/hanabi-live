@@ -153,7 +153,7 @@ textarea {
 
 /* Basic */
 
-@media screen and (max-width: 480px) {
+@media screen and (max-width: 530px) {
   html,
   body {
     min-width: 320px;
@@ -385,7 +385,7 @@ code {
   width: 100%;
 }
 
-@media screen and (max-width: 480px) {
+@media screen and (max-width: 530px) {
   .row > .col-12-mobilep {
     width: 100%;
   }
@@ -696,7 +696,7 @@ ul.actions.fit li > * {
   width: 100%;
 }
 
-@media screen and (max-width: 480px) {
+@media screen and (max-width: 530px) {
   ul.actions,
   ul.actions.fit {
     margin: 0 0 2em 0;
@@ -961,7 +961,7 @@ input[type="button"]:disabled,
   position: fixed;
   top: 0;
   width: 100%;
-  z-index: 10000;
+  z-index: var(--z-header);
 }
 
 #header a {
@@ -1173,7 +1173,7 @@ input[type="button"]:disabled,
   }
 }
 
-@media screen and (max-width: 480px) {
+@media screen and (max-width: 530px) {
   .box {
     box-shadow: none;
   }

@@ -330,7 +330,7 @@ body[data-screen="game"] {
 .overlay {
   display: none;
   position: absolute;
-  z-index: 999;
+  z-index: var(--z-row-overlay);
   opacity: 0.1;
   cursor: pointer;
   align-items: center;
@@ -1069,7 +1069,7 @@ input::-webkit-calendar-picker-indicator /* Chrome */ {
   text-align: right;
 }
 
-@media screen and (max-width: 600px) {
+@media screen and (max-width: 640px) {
   /* Put a text field, dropdown, or the volume below its description. */
   .lobby-row:has(select),
   .lobby-row:has(input[type="text"]),
@@ -1144,7 +1144,7 @@ input::-webkit-calendar-picker-indicator /* Chrome */ {
 @keyframes pageCoverHide {
   0% {
     background-color: rgba(0, 24, 5, 0.7);
-    z-index: 99999;
+    z-index: var(--z-page-cover);
   }
   100% {
     background-color: rgba(0, 0, 0, 0);
@@ -1159,7 +1159,7 @@ input::-webkit-calendar-picker-indicator /* Chrome */ {
   }
   100% {
     background-color: rgba(0, 24, 5, 0.7);
-    z-index: 99999;
+    z-index: var(--z-page-cover);
   }
 }
 
@@ -1197,7 +1197,7 @@ input::-webkit-calendar-picker-indicator /* Chrome */ {
   min-width: unset;
 }
 
-@media screen and (max-width: 510px) {
+@media screen and (max-width: 530px) {
   .modal,
   .modal-message {
     left: 0;
@@ -1562,17 +1562,8 @@ input::-webkit-calendar-picker-indicator /* Chrome */ {
 }
 
 /*
-  Media Responsive Utilities
-  Breakpoints:
-    Alpha names   Max Res   Media names
-    Wide:          1680px   xxl
-    Normal:        1280px   xl
-    Narrow:         980px   lg
-    Narrower:       840px   md
-    Mobile:         736px   sm
-    Portrait:       480px   xs
-
-    hidden-*:      hidden on this and all smaller screens
+  "hidden-*" hides an element on screens this wide or narrower:
+  xl: 1280px, md: 840px, sm: 736px, and xs: 530px
 */
 @media screen and (max-width: 1280px) {
   .hidden-xl {
@@ -1589,7 +1580,7 @@ input::-webkit-calendar-picker-indicator /* Chrome */ {
     display: none !important;
   }
 }
-@media screen and (max-width: 480px) {
+@media screen and (max-width: 530px) {
   .hidden-xs {
     display: none !important;
   }
@@ -1598,7 +1589,7 @@ input::-webkit-calendar-picker-indicator /* Chrome */ {
 /*
   Media edits
 */
-@media screen and (max-width: 1500px) {
+@media screen and (max-width: 1440px) {
   .lobby-pregame-info {
     width: 150px;
   }
@@ -1608,7 +1599,7 @@ input::-webkit-calendar-picker-indicator /* Chrome */ {
 }
 
 /* Tighter nav buttons before text disappears */
-@media screen and (max-width: 1086px) {
+@media screen and (max-width: 1280px) {
   #header nav > ul > li .button {
     padding-left: 0.5em;
     padding-right: 0.5em;
@@ -1622,21 +1613,21 @@ input::-webkit-calendar-picker-indicator /* Chrome */ {
 }
 
 /* Hide the logo text */
-@media screen and (max-width: 950px) {
+@media screen and (max-width: 980px) {
   #logo-text {
     display: none;
   }
 }
 
 /* Make the pre-game nav bar show only the button icons on smaller resolutions */
-@media screen and (max-width: 400px) {
+@media screen and (max-width: 410px) {
   #nav-buttons-pregame .nav-icon {
     margin-right: 0em;
   }
 }
 
 /* Make the history nav bar show only the button icons on smaller resolutions */
-@media screen and (max-width: 290px) {
+@media screen and (max-width: 410px) {
   #nav-buttons-history .nav-icon {
     margin-right: 0em;
   }
@@ -1690,7 +1681,7 @@ input::-webkit-calendar-picker-indicator /* Chrome */ {
     display: none;
   }
 }
-@media screen and (max-width: 670px) {
+@media screen and (max-width: 736px) {
   /* hide column 'Name' */
   #lobby-games-table th:nth-child(1),
   #lobby-games-table td:nth-child(1) {
@@ -1704,7 +1695,7 @@ input::-webkit-calendar-picker-indicator /* Chrome */ {
   }
 }
 
-@media screen and (max-width: 620px) {
+@media screen and (max-width: 640px) {
   /* hide column 'Spectators' */
   #lobby-games-table th:nth-child(7),
   #lobby-games-table td:nth-child(7) {
@@ -1712,7 +1703,7 @@ input::-webkit-calendar-picker-indicator /* Chrome */ {
   }
 }
 
-@media screen and (max-width: 570px) {
+@media screen and (max-width: 640px) {
   /* hide 'help' nav menu */
   #header nav > ul > li a#nav-buttons-lobby-resources {
     display: none;
@@ -1789,13 +1780,13 @@ input::-webkit-calendar-picker-indicator /* Chrome */ {
   }
 }
 
-@media screen and (max-height: 530px) and (max-width: 620px) {
+@media screen and (max-height: 530px) and (max-width: 640px) {
   #lobby-toggle-show-online {
     display: inline-block;
   }
 }
 
-@media screen and (max-height: 530px), screen and (max-width: 620px) {
+@media screen and (max-height: 530px), screen and (max-width: 640px) {
   #lobby-top-half,
   #lobby-bottom-half {
     display: none;
@@ -1830,7 +1821,7 @@ input::-webkit-calendar-picker-indicator /* Chrome */ {
   }
 }
 
-@media screen and (max-width: 620px) {
+@media screen and (max-width: 640px) {
   #small-screen-toggle-users-h3 {
     display: none;
   }
@@ -2032,7 +2023,7 @@ div.tableSpinner {
   display: none;
   justify-content: center;
   align-items: center;
-  z-index: 100;
+  z-index: var(--z-spinner);
   background-color: rgba(0, 0, 0, 0.3);
 }
 span.tableSpinner {

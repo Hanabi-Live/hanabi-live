@@ -1,6 +1,12 @@
 /*
-  The colors of both themes. Rules use these variables instead of literal colors, so that the dark
-  theme only has to change the values here. "packages/client/src/theme.ts" reads the canvas colors,
+  Breakpoints: media queries cannot use custom properties, so they use these values directly.
+  "max-width": 1920px, 1440px, 1280px, 980px, 840px, 736px, 640px, 530px, and 410px
+  "max-height": 530px
+*/
+
+/*
+  The colors of both themes, and the stacking order. Rules use these variables instead of literal
+  values, so that the dark theme only has to change the values here. "packages/client/src/theme.ts" reads the canvas colors,
   and "packages/client/src/tailwind.css" makes the general colors available to Tailwind.
 */
 
@@ -66,6 +72,15 @@
   --login-alert-bg: #f2dede;
   --login-alert-border: #ebccd1;
   --login-alert-text: #a94442;
+
+  /*
+    Stacking order, from back to front. Other "z-index" values only order the parts of one
+    component.
+  */
+  --z-spinner: 100;
+  --z-row-overlay: 999;
+  --z-header: 10000;
+  --z-page-cover: 99999;
 
   /* The game canvas */
   --canvas-action-log-number: #d3d3d3;
