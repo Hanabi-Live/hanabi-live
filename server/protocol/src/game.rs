@@ -104,10 +104,7 @@ pub struct FinishOngoingGame {
     )]
     #[schemars(with = "GameId")]
     pub database_id: Option<GameId>,
-    pub shared_replay_leader: String,
-    /// Whether the recipient played this game and can play it again. See
-    /// `SharedReplayInit::can_play_again`.
-    pub can_play_again: bool,
+    pub shared_replay: SharedReplayInit,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]

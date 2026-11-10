@@ -115,16 +115,18 @@ function stateReducerFunction(state: Draft<State>, action: Action) {
         state.replay.segment = penultimateSegment;
       }
 
-      // Initialize the shared replay.
+      // Initialize the shared replay. Its players stay on the penultimate segment rather than the
+      // server's shared segment.
+      const shared = action.sharedReplay;
       state.replay.shared = {
         segment: penultimateSegment,
         useSharedSegments: !inInGameReplay,
-        leader: action.sharedReplayLeader,
-        amLeader: action.sharedReplayLeader === state.metadata.ourUsername,
-        datetimeStarted: action.datetimeFinished,
-        spoilerFree: false,
-        canPlayAgain: action.canPlayAgain,
-        restartDeclined: [],
+        leader: shared.leader,
+        amLeader: shared.leader === state.metadata.ourUsername,
+        datetimeStarted: shared.datetimeStarted,
+        spoilerFree: shared.spoilerFree,
+        canPlayAgain: shared.canPlayAgain,
+        restartDeclined: castDraft(shared.restartDeclined ?? []),
         hypothetical: undefined,
       };
 

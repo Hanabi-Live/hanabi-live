@@ -99,10 +99,7 @@ interface ActionSpectators {
 }
 
 interface ActionFinishOngoingGame extends Readonly<
-  Pick<
-    ServerCommandData["finishOngoingGame"],
-    "databaseID" | "sharedReplayLeader" | "canPlayAgain"
-  >
+  Pick<ServerCommandData["finishOngoingGame"], "databaseID" | "sharedReplay">
 > {
   readonly type: "finishOngoingGame";
 

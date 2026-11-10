@@ -194,8 +194,9 @@ impl TableActor {
                             table_id: self.table.id,
                             database_id: (s.game_id != crate::model::UNSAVED_GAME)
                                 .then_some(s.game_id),
-                            shared_replay_leader: self.leader_name(),
-                            can_play_again: self.can_play_again(&a.session),
+                            shared_replay: self
+                                .shared_replay_init(s, &a.session)
+                                .context("A finished game is not a shared replay")?,
                         },
                     ),
                 ));
@@ -477,6 +478,33 @@ impl TableActor {
         }
         notes
     }
+    /// The state of the table's shared replay that `session` joins, or `None` if the table is not
+    /// a shared replay.
+    fn shared_replay_init(
+        &self,
+        s: &Snapshot,
+        session: &Session,
+    ) -> Option<hanabi_protocol::SharedReplayInit> {
+        let Phase::Replay { replay, .. } = &self.table.phase else {
+            return None;
+        };
+        self.table
+            .visible
+            .then(|| hanabi_protocol::SharedReplayInit {
+                leader: self.leader_name(),
+                segment: replay.segment.into(),
+                efficiency_modifier: replay.efficiency_modifier.into(),
+                spoiler_free: replay.spoiler_free,
+                restart_declined: self.restart_declined_names(),
+                can_play_again: self.can_play_again(session),
+                // A review of a game just played begins when the game ends; a replay of an older
+                // game begins when its table is created.
+                datetime_started: crate::model::timestamp(
+                    s.finished
+                        .map_or(self.table.created, |f| f.max(self.table.created)),
+                ),
+            })
+    }
     pub(super) async fn info(&self, session: Arc<Session>, part: GameInfo) -> CommandResult<()> {
         ensure_or_reject!(
             self.attending(&session),
@@ -489,25 +517,7 @@ impl TableActor {
         let display_seat = seat.or_else(|| s.players.iter().position(|p| p.name == session.name));
         let mut e = self.effects();
         if part == GameInfo::Init {
-            let shared_replay = match &self.table.phase {
-                Phase::Replay { replay, .. } if self.table.visible => {
-                    Some(hanabi_protocol::SharedReplayInit {
-                        leader: self.leader_name(),
-                        segment: replay.segment.into(),
-                        efficiency_modifier: replay.efficiency_modifier.into(),
-                        spoiler_free: replay.spoiler_free,
-                        restart_declined: self.restart_declined_names(),
-                        can_play_again: self.can_play_again(&session),
-                        // A review of a game just played begins when the game ends; a replay of an
-                        // older game begins when its table is created.
-                        datetime_started: crate::model::timestamp(
-                            s.finished
-                                .map_or(self.table.created, |f| f.max(self.table.created)),
-                        ),
-                    })
-                }
-                _ => None,
-            };
+            let shared_replay = self.shared_replay_init(s, &session);
             let init = hanabi_protocol::Init {
                 table_id: self.table.id,
                 player_names: s.players.iter().map(|p| p.name.clone()).collect(),

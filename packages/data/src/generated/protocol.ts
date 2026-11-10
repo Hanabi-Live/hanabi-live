@@ -293,17 +293,39 @@ export const emptySchema = z.strictObject({});
 export const errorNoticeSchema = z
   .strictObject({ message: z.string().min(1) })
   .readonly();
-export const finishOngoingGameSchema = z.strictObject({
+
+/**
+ * The state of a shared replay that a client joins.
+ */
+const sharedReplayInitSchema = z.strictObject({
   /**
-   * Whether the recipient played this game and can play it again. See
-   * `SharedReplayInit::can_play_again`.
+   * Whether the recipient played the game of this shared replay at this table, so that they can
+   * play it again: the leader by restarting, and the other players by saying if they are ready.
    */
   canPlayAgain: z.boolean(),
+  datetimeStarted: z.iso.datetime({ precision: 3 }),
+  efficiencyModifier: z
+    .number()
+    .int()
+    .min(-9_007_199_254_740_991)
+    .max(9_007_199_254_740_991),
+  leader: z.string(),
+  /**
+   * The players who will not play again if the leader restarts.
+   */
+  restartDeclined: z.array(z.string()).max(6).optional(),
+  segment: z.number().int().min(0).max(9_007_199_254_740_991),
+  /**
+   * Whether the shared replay hides what happens later in the game.
+   */
+  spoilerFree: z.boolean(),
+});
+export const finishOngoingGameSchema = z.strictObject({
   /**
    * Absent when the game was not saved.
    */
   databaseID: gameIdSchema.optional(),
-  sharedReplayLeader: z.string(),
+  sharedReplay: sharedReplayInitSchema,
   tableID: tableIdSchema,
 });
 export const friendsSchema = z
@@ -439,33 +461,6 @@ const characterAssignmentSchema = z.strictObject({
    * other characters.
    */
   metadata: z.number().int().min(-2_147_483_648).max(2_147_483_647).optional(),
-});
-
-/**
- * The state of a shared replay that a client joins.
- */
-const sharedReplayInitSchema = z.strictObject({
-  /**
-   * Whether the recipient played the game of this shared replay at this table, so that they can
-   * play it again: the leader by restarting, and the other players by saying if they are ready.
-   */
-  canPlayAgain: z.boolean(),
-  datetimeStarted: z.iso.datetime({ precision: 3 }),
-  efficiencyModifier: z
-    .number()
-    .int()
-    .min(-9_007_199_254_740_991)
-    .max(9_007_199_254_740_991),
-  leader: z.string(),
-  /**
-   * The players who will not play again if the leader restarts.
-   */
-  restartDeclined: z.array(z.string()).max(6).optional(),
-  segment: z.number().int().min(0).max(9_007_199_254_740_991),
-  /**
-   * Whether the shared replay hides what happens later in the game.
-   */
-  spoilerFree: z.boolean(),
 });
 
 /**

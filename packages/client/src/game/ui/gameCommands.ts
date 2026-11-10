@@ -98,8 +98,7 @@ gameCommands.set("finishOngoingGame", (data) => {
   globals.store!.dispatch({
     type: "finishOngoingGame",
     databaseID: data.databaseID,
-    sharedReplayLeader: data.sharedReplayLeader,
-    canPlayAgain: data.canPlayAgain,
+    sharedReplay: data.sharedReplay,
     datetimeFinished: new Date().toISOString(),
   });
   if (
