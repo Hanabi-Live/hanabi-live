@@ -1,0 +1,132 @@
+/*
+  The colors of both themes. Rules use these variables instead of literal colors, so that the dark
+  theme only has to change the values here. "packages/client/src/theme.ts" reads the canvas colors,
+  and "packages/client/src/tailwind.css" makes the general colors available to Tailwind.
+*/
+
+:root {
+  /* General colors */
+  --page-bg: #00420f;
+  --game-bg: #00420f;
+  --surface: #fff;
+  --surface-sunken: #f8f8f8;
+  --surface-panel: #fafafa;
+  --border: #e5e5e5;
+  --border-panel: #ececec;
+  --text: #777;
+  --text-strong: #646464;
+  --text-label: #8a8a8a;
+  --text-on-accent: #fff;
+  --link: blue;
+  --focus: #e89980;
+  --green: #308943;
+  --green-text: #308943;
+  --green-tint: #e6f2e8;
+  --button-green: #449644;
+  --button-green-hover: #84c884;
+  --checkbox-checked: #666;
+  --button-alt-bg: transparent;
+  --button-alt-hover-bg: #f8f8f8;
+  --name-me: #e69500;
+  --friend: hotpink;
+
+  /* The header bar */
+  --header-bg: #444;
+  --header-border: none;
+  --header-text: #bbb;
+  --header-link: #fff;
+  --header-link-hover-bg: transparent;
+
+  /* Text in modals and lobby pages: the nearest gray to "--text" that meets normal-text contrast on white */
+  --modal-text: #767676;
+  --modal-input-text: #707070;
+  --modal-border: #308943;
+
+  --table-header-text: #646464;
+  --chat-bg: transparent;
+  --game-chat-border: black;
+  --slider-track: #ddd;
+  --tooltip-text: #8d8d8d;
+  --tooltip-border: none;
+  --note-title-line: #777;
+
+  /* Lobby table rows */
+  --lobby-table-joined: #f2f2ff;
+  --lobby-table-joined-hover: #e0e0ff;
+  --lobby-table-unstarted: #fffff0;
+  --lobby-table-unstarted-hover: #ffffe1;
+  --lobby-table-unstarted-password: #ffeaea;
+  --lobby-table-unstarted-password-hover: #ffd5d5;
+  --lobby-table-started: #e6ffee;
+  --lobby-table-started-hover: #cdffdd;
+  --lobby-table-replay: #fff0ff;
+  --lobby-table-replay-hover: #ffe1ff;
+
+  /* Login alert (based on the Bootstrap alert colors) */
+  --login-alert-bg: #f2dede;
+  --login-alert-border: #ebccd1;
+  --login-alert-text: #a94442;
+
+  /* The game canvas */
+  --canvas-action-log-number: #d3d3d3;
+  --canvas-current-player-text: #ffffcc;
+  --canvas-replay-shuttle: #d1d1d1;
+  --canvas-surface-area: #b3b3b3;
+  --canvas-loading-label-stroke: #747278;
+}
+
+:root[data-theme="dark"] {
+  --page-bg: #0b1410;
+  --surface: #1c1f22;
+  --surface-sunken: #23262a;
+  --surface-panel: var(--surface-sunken);
+  --border: #3a3f45;
+  --border-panel: var(--border);
+  --text: #e6e6e6;
+  --text-strong: var(--text);
+  --text-label: #a9a9a9;
+  --link: #7fb2ff;
+  --focus: #7fb2ff;
+  --green: #2e7d32;
+  --green-text: #6fcf7a;
+  --green-tint: #1f3524;
+  /* Darker than in the light theme, so that white text has enough contrast */
+  --button-green: var(--green);
+  --button-green-hover: #256a29;
+  --checkbox-checked: var(--green);
+  --button-alt-bg: var(--surface-sunken);
+  --button-alt-hover-bg: var(--surface);
+
+  --header-bg: #15181c;
+  --header-border: 1px solid var(--border);
+  --header-text: var(--text);
+  --header-link: var(--text);
+  --header-link-hover-bg: var(--surface-sunken);
+
+  --modal-text: var(--text);
+  --modal-input-text: var(--text);
+  --modal-border: var(--border);
+
+  --table-header-text: var(--text-label);
+  --chat-bg: var(--surface-sunken);
+  --game-chat-border: var(--border);
+  --slider-track: var(--border);
+  --tooltip-text: var(--text);
+  --tooltip-border: 1px solid var(--border);
+  --note-title-line: var(--border);
+
+  --lobby-table-joined: #29294a;
+  --lobby-table-joined-hover: #33335a;
+  --lobby-table-unstarted: #3b3a24;
+  --lobby-table-unstarted-hover: #4b4a34;
+  --lobby-table-unstarted-password: #402626;
+  --lobby-table-unstarted-password-hover: #503636;
+  --lobby-table-started: #1d3a29;
+  --lobby-table-started-hover: #2d4a39;
+  --lobby-table-replay: #3a2740;
+  --lobby-table-replay-hover: #4a3750;
+
+  --login-alert-bg: #3a2020;
+  --login-alert-border: #5a3030;
+  --login-alert-text: #ffcccc;
+}

@@ -1,0 +1,17 @@
+/*
+  The stylesheets of every page. A rule in a later layer beats a rule in an earlier layer, whatever
+  their specificity:
+  - "defaults": element defaults and generic components.
+  - "icons": Font Awesome, whose classes must beat the element defaults (such as "i { font: inherit; }").
+  - "app": the rules for the site's own screens.
+  Tailwind's utilities ("packages/client/src/tailwind.css") are not in a layer, so they beat all of
+  these.
+*/
+
+@layer defaults, icons, app;
+
+@import url("tokens.css") layer(defaults);
+@import url("defaults.css") layer(defaults);
+@import url("lib/fontawesome.min.css") layer(icons);
+@import url("lib/solid.min.css") layer(icons);
+@import url("hanabi.css") layer(app);

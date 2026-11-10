@@ -57,53 +57,11 @@
 }
 
 .name-me {
-  color: var(--color-name-me);
+  color: var(--name-me);
 }
 
 .friend {
-  color: var(--color-friend);
-}
-
-/*
-  Light-mode palette custom properties.
-  Dark-mode overrides live in "dark.css" (scoped to "html[data-theme=dark]"); the canvas palette
-  in "packages/client/src/theme.ts" reads these variables so that both CSS and the Konva canvas
-  share a single source of truth for the colors.
-*/
-:root {
-  --body-bg: #00420f;
-
-  --canvas-action-log-number: #d3d3d3;
-  --canvas-current-player-text: #ffffcc;
-  --canvas-replay-shuttle: #d1d1d1;
-  --canvas-surface-area: #b3b3b3;
-  --canvas-loading-label-stroke: #747278;
-
-  /* Shared component colors */
-  --color-text-on-accent: #fff;
-  --color-name-me: #e69500;
-  --color-friend: hotpink;
-
-  /* Lobby table row variants (light-mode values) */
-  --lobby-table-joined: #f2f2ff;
-  --lobby-table-joined-hover: #e0e0ff;
-  --lobby-table-unstarted: #fffff0;
-  --lobby-table-unstarted-hover: #ffffe1;
-  --lobby-table-unstarted-password: #ffeaea;
-  --lobby-table-unstarted-password-hover: #ffd5d5;
-  --lobby-table-started: #e6ffee;
-  --lobby-table-started-hover: #cdffdd;
-  --lobby-table-replay: #fff0ff;
-  --lobby-table-replay-hover: #ffe1ff;
-
-  /* Login alert (error box; based on the Bootstrap alert color) */
-  --login-alert-bg: #f2dede;
-  --login-alert-border: #ebccd1;
-  --login-alert-text: #a94442;
-
-  --note-input-bg: #f8f8f8;
-  --note-input-border: #e5e5e5;
-  --note-input-border-focus: #e89980;
+  color: var(--friend);
 }
 
 /*
@@ -117,10 +75,14 @@ body,
 }
 
 body {
-  background-color: var(--body-bg);
+  background-color: var(--page-bg);
   background-image: url(../img/dark-wood.png);
   background-repeat: repeat;
   background-attachment: fixed;
+}
+
+body[data-screen="game"] {
+  background-color: var(--game-bg);
 }
 
 /*
@@ -171,12 +133,12 @@ body {
   Title
 */
 
-#title-sub {
-  color: #f2f2f2 !important;
+#main-login #title-sub {
+  color: #f2f2f2;
 }
 
 #title-sub strong {
-  color: white !important;
+  color: white;
 }
 
 .login-icon {
@@ -193,10 +155,9 @@ body {
 #login-alert {
   color: var(--login-alert-text);
   background-color: var(--login-alert-bg);
-  border-color: var(--login-alert-border);
   padding: 15px;
   margin-bottom: 1em;
-  border: 1px solid transparent;
+  border: 1px solid var(--login-alert-border);
   border-radius: 4px;
 }
 
@@ -228,7 +189,7 @@ body {
 
 #main-login > header p,
 #main-tutorial > header p {
-  border-top: solid 2px #e5e5e5;
+  border-top: solid 2px var(--border);
   color: #777;
   display: inline-block;
   font-style: normal;
@@ -252,8 +213,8 @@ body {
 }
 @media screen and (max-width: 640px) {
   .row > .login-box {
-    width: 90% !important;
-    margin-left: 5% !important;
+    width: 90%;
+    margin-left: 5%;
   }
 }
 
@@ -307,11 +268,11 @@ body {
 }
 
 .help-button {
-  background-color: rgb(68, 150, 68) !important;
+  background-color: var(--button-green);
 }
 
 .help-button:hover {
-  background-color: #84c884 !important;
+  background-color: var(--button-green-hover);
 }
 
 /*
@@ -386,23 +347,23 @@ body {
 }
 
 .lobby-games-table-joined {
-  background-color: var(--lobby-table-joined) !important;
+  background-color: var(--lobby-table-joined);
 }
 .lobby-games-table-unstarted {
-  background-color: var(--lobby-table-unstarted) !important;
+  background-color: var(--lobby-table-unstarted);
 }
 .lobby-games-table-unstarted-password {
-  background-color: var(--lobby-table-unstarted-password) !important;
+  background-color: var(--lobby-table-unstarted-password);
 }
 .lobby-games-table-started {
-  background-color: var(--lobby-table-started) !important;
+  background-color: var(--lobby-table-started);
 }
 .lobby-games-table-replay {
-  background-color: var(--lobby-table-replay) !important;
+  background-color: var(--lobby-table-replay);
 }
 
 .lobby-games-table-joined:hover {
-  background-color: var(--lobby-table-joined-hover) !important;
+  background-color: var(--lobby-table-joined-hover);
 }
 .lobby-games-table-joined:hover {
   /* rejoin */
@@ -412,10 +373,10 @@ body {
     pointer;
 }
 .lobby-games-table-unstarted:hover {
-  background-color: var(--lobby-table-unstarted-hover) !important;
+  background-color: var(--lobby-table-unstarted-hover);
 }
 .lobby-games-table-unstarted-password:hover {
-  background-color: var(--lobby-table-unstarted-password-hover) !important;
+  background-color: var(--lobby-table-unstarted-password-hover);
 }
 .lobby-games-table-unstarted:hover,
 .lobby-games-table-unstarted-password:hover {
@@ -434,10 +395,10 @@ body {
     pointer;
 }
 .lobby-games-table-started:hover {
-  background-color: var(--lobby-table-started-hover) !important;
+  background-color: var(--lobby-table-started-hover);
 }
 .lobby-games-table-replay:hover {
-  background-color: var(--lobby-table-replay-hover) !important;
+  background-color: var(--lobby-table-replay-hover);
 }
 .lobby-games-table-started,
 .lobby-games-table-replay,
@@ -474,9 +435,8 @@ body {
 .lobby-chat-text-box {
   overflow-y: auto;
   overflow-wrap: break-word;
-  border-style: solid !important;
-  border-color: #e5e5e5 !important;
-  border: 1px;
+  background-color: var(--chat-bg);
+  border: 1px solid var(--border);
   margin-bottom: 1em;
   padding: 0 0.5em 0 0.5em;
   height: calc(100% - 3.5em - 2.5em);
@@ -531,7 +491,7 @@ body {
 }
 
 .lobby-users-box-container {
-  padding-left: 1.5em !important;
+  padding-left: 1.5em;
 }
 
 #lobby-users-table-tbody a {
@@ -646,7 +606,7 @@ body {
 
 #lobby-chat-pregame-container {
   /* Make the pre-game chat padding match that of the user list */
-  padding-left: 1.5em !important;
+  padding-left: 1.5em;
 }
 
 /*
@@ -798,7 +758,7 @@ input::-webkit-calendar-picker-indicator /* Chrome */ {
 }
 
 .resource-group h3 {
-  color: #8a8a8a;
+  color: var(--text-label);
   font-size: 1em;
   margin: 0 0 0.6em;
 }
@@ -812,8 +772,8 @@ input::-webkit-calendar-picker-indicator /* Chrome */ {
 /* Each resource is one link; the title's link covers the whole element. */
 .resource {
   align-items: flex-start;
-  background-color: #fafafa;
-  border: 1px solid #ececec;
+  background-color: var(--surface-panel);
+  border: 1px solid var(--border-panel);
   border-radius: 6px;
   display: flex;
   gap: 1em;
@@ -827,8 +787,8 @@ input::-webkit-calendar-picker-indicator /* Chrome */ {
 
 .resource:hover,
 .resource:focus-within {
-  background-color: white;
-  border-color: #308943;
+  background-color: var(--surface);
+  border-color: var(--green);
 }
 
 .resource-body {
@@ -837,7 +797,7 @@ input::-webkit-calendar-picker-indicator /* Chrome */ {
 
 .resource-title {
   border-bottom: 0;
-  color: #646464;
+  color: var(--text-strong);
   font-weight: 400;
   text-decoration: none;
 }
@@ -850,7 +810,7 @@ input::-webkit-calendar-picker-indicator /* Chrome */ {
 
 .resource:hover .resource-title,
 .resource:focus-within .resource-title {
-  color: #308943;
+  color: var(--green-text);
 }
 
 .resource p {
@@ -867,9 +827,9 @@ input::-webkit-calendar-picker-indicator /* Chrome */ {
 
 .resource-icon {
   align-items: center;
-  background-color: #e6f2e8;
+  background-color: var(--green-tint);
   border-radius: 50%;
-  color: #308943;
+  color: var(--green-text);
   display: inline-flex;
   flex-shrink: 0;
   font-size: 1.2em;
@@ -886,14 +846,14 @@ input::-webkit-calendar-picker-indicator /* Chrome */ {
 }
 
 .lobby-group h3 {
-  color: #8a8a8a;
+  color: var(--text-label);
   font-size: 1em;
   margin: 0 0 0.6em;
 }
 
 .lobby-rows {
-  background-color: #fafafa;
-  border: 1px solid #ececec;
+  background-color: var(--surface-panel);
+  border: 1px solid var(--border-panel);
   border-radius: 6px;
   list-style: none;
   margin: 0;
@@ -912,7 +872,7 @@ input::-webkit-calendar-picker-indicator /* Chrome */ {
 }
 
 .lobby-row + .lobby-row {
-  border-top: 1px solid #ececec;
+  border-top: 1px solid var(--border-panel);
 }
 
 /* The password cannot be changed after the table is created. */
@@ -966,7 +926,7 @@ input::-webkit-calendar-picker-indicator /* Chrome */ {
 }
 
 .lobby-row .fa-fw {
-  color: #308943;
+  color: var(--green-text);
   margin-right: 0.75em;
   text-indent: 0;
 }
@@ -998,7 +958,7 @@ input::-webkit-calendar-picker-indicator /* Chrome */ {
 
 /* "Saved" appears beside a setting when the user changes it, then fades out. */
 .setting-status {
-  color: #308943;
+  color: var(--green-text);
   flex-shrink: 0;
   font-size: 0.9em;
   opacity: 0;
@@ -1048,7 +1008,7 @@ input::-webkit-calendar-picker-indicator /* Chrome */ {
 
 /* A choice between a few options, shown as joined buttons. */
 .lobby-segmented {
-  border: 1px solid #e5e5e5;
+  border: 1px solid var(--border);
   border-radius: 6px;
   display: inline-flex;
   flex-shrink: 0;
@@ -1061,7 +1021,7 @@ input::-webkit-calendar-picker-indicator /* Chrome */ {
 }
 
 .lobby-segmented input[type="radio"] + label {
-  background-color: white;
+  background-color: var(--surface);
   font-weight: 400;
   line-height: 2.4em;
   margin: 0;
@@ -1077,16 +1037,16 @@ input::-webkit-calendar-picker-indicator /* Chrome */ {
 }
 
 .lobby-segmented label + input[type="radio"] + label {
-  border-left: 1px solid #e5e5e5;
+  border-left: 1px solid var(--border);
 }
 
 .lobby-segmented input[type="radio"]:checked + label {
-  background-color: #308943;
+  background-color: var(--green);
   color: white;
 }
 
 .lobby-segmented input[type="radio"]:focus-visible + label {
-  box-shadow: inset 0 0 0 2px #e89980;
+  box-shadow: inset 0 0 0 2px var(--focus);
 }
 
 #settings-volume {
@@ -1097,7 +1057,7 @@ input::-webkit-calendar-picker-indicator /* Chrome */ {
 }
 
 #settings-volume-slider {
-  background: #ddd;
+  background: var(--slider-track);
   border: none;
   border-radius: 3px;
   height: 0.25em;
@@ -1154,15 +1114,12 @@ input::-webkit-calendar-picker-indicator /* Chrome */ {
   Modals
 */
 
-/* The nearest gray to the legacy text color that meets normal-text contrast on white. */
-html:not([data-theme="dark"]) :is(.modal, .lobby-page) {
-  color: #767676;
+:is(.modal, .lobby-page) {
+  color: var(--modal-text);
 }
 
-html:not([data-theme="dark"])
-  :is(.modal, .lobby-page)
-  :is(input, select, textarea) {
-  color: #707070;
+:is(.modal, .lobby-page) :is(input, select, textarea) {
+  color: var(--modal-input-text);
 }
 
 #page-cover {
@@ -1208,8 +1165,8 @@ html:not([data-theme="dark"])
 
 .modal {
   align-self: flex-start;
-  background-color: white;
-  border: 2px solid #308943;
+  background-color: var(--surface);
+  border: 2px solid var(--modal-border);
   border-radius: 5px;
   max-height: calc(100% - 4em);
   max-width: 80vw;
@@ -1384,7 +1341,7 @@ html:not([data-theme="dark"])
 
 /* The popover that holds a tooltip and its arrow (see "Tooltip.ts") */
 .tooltip-bubble {
-  --tooltip-background: #fff;
+  --tooltip-background: var(--surface);
   position: fixed;
   inset: auto;
   margin: 0;
@@ -1454,8 +1411,9 @@ html:not([data-theme="dark"])
   padding: 0.5em;
   border-radius: 5px;
   background: var(--tooltip-background);
+  border: var(--tooltip-border);
   box-shadow: 0 0 10px 6px rgb(0 0 0 / 10%);
-  color: #8d8d8d;
+  color: var(--tooltip-text);
   font-size: 1.5em;
   line-height: 1em;
 }
@@ -1515,7 +1473,7 @@ html:not([data-theme="dark"])
   /* The modal is automatically positioned in the "chat.js" file */
   background-color: black;
   border-radius: 10px;
-  border: 3px solid black;
+  border: 3px solid var(--game-chat-border);
   touch-action: none;
 }
 
@@ -1645,7 +1603,7 @@ html:not([data-theme="dark"])
     width: 150px;
   }
   .container.max {
-    width: calc(100% - 2em) !important;
+    width: calc(100% - 2em);
   }
 }
 
@@ -1705,7 +1663,7 @@ html:not([data-theme="dark"])
 /* Fix the box margins on smaller resolutions */
 @media screen and (max-width: 736px) {
   .container.max {
-    width: calc(100% - 2em) !important;
+    width: calc(100% - 2em);
     margin-left: 1em;
     margin-right: 1em;
   }
@@ -1824,7 +1782,7 @@ html:not([data-theme="dark"])
     height: calc((100% - 1em) / 2);
   }
   #lobby-chat-pregame-container {
-    margin-left: 0.5em !important;
+    margin-left: 0.5em;
   }
   .narrow-screen-hidden {
     display: none !important;
@@ -1880,7 +1838,7 @@ html:not([data-theme="dark"])
     display: inline;
   }
   .lobby-users-box-container {
-    padding-left: 2em !important;
+    padding-left: 2em;
   }
   .narrow-screen-hidden {
     display: none !important;
@@ -1894,7 +1852,7 @@ html:not([data-theme="dark"])
 }
 
 a.toggle-active {
-  background-color: rgb(68, 150, 68) !important;
+  background-color: var(--button-green);
 }
 
 /* Chat padding for options proposal */
@@ -1919,8 +1877,8 @@ input[type="text"].wrongInput {
 
 /* Dialogs */
 .dialog {
-  background-color: white;
-  border: 2px solid #308943;
+  background-color: var(--surface);
+  border: 2px solid var(--modal-border);
   border-radius: 5px;
   max-height: 90vh;
   max-width: 80vw;
@@ -1955,7 +1913,7 @@ input[type="text"].wrongInput {
 
 /* History Pages */
 section.history-page {
-  padding: 0 !important;
+  padding: 0;
 }
 
 .public-table-scroll {
@@ -1964,7 +1922,7 @@ section.history-page {
 }
 
 .history-page > header {
-  margin: 0 !important;
+  margin: 0;
 }
 
 table.history {
@@ -2040,11 +1998,11 @@ table.history {
 @media screen and (max-width: 640px) {
   .history.variant th:nth-child(5),
   .history.variant td:nth-child(5) {
-    display: none !important;
+    display: none;
   }
   .history.personal-history th:nth-child(6),
   .history.personal-history td:nth-child(6) {
-    display: none !important;
+    display: none;
   }
 }
 
@@ -2057,11 +2015,11 @@ table.history {
 }
 .history th[aria-sort="ascending"] {
   background-image: url(data:image/gif;base64,R0lGODlhFQAEAIAAACMtMP///yH5BAEAAAEALAAAAAAVAAQAAAINjI8Bya2wnINUMopZAQA7);
-  background-color: lightblue !important;
+  background-color: lightblue;
 }
 .history th[aria-sort="descending"] {
   background-image: url(data:image/gif;base64,R0lGODlhFQAEAIAAACMtMP///yH5BAEAAAEALAAAAAAVAAQAAAINjB+gC+jP2ptn0WskLQA7);
-  background-color: lightblue !important;
+  background-color: lightblue;
 }
 
 /* Spinner during ajax */
@@ -2112,7 +2070,7 @@ span.tableSpinner:after {
 div.noteTitle {
   width: 100%;
   height: 10px;
-  border-bottom: 1px solid #777;
+  border-bottom: 1px solid var(--note-title-line);
   text-align: center;
   margin-bottom: 7px;
   line-height: 10px;
@@ -2120,7 +2078,7 @@ div.noteTitle {
 
 div.noteTitle span {
   font-size: 14px;
-  background-color: #fff;
+  background-color: var(--surface);
   text-align: center;
   padding: 0 10px;
 }

@@ -7,8 +7,33 @@
 @import "tailwindcss/theme.css" layer(theme) prefix(tw);
 
 /*
-  The utilities are not in a layer, so that they override classic rules with the same specificity
-  that target the same element. (Rules outside of a layer always beat rules inside one.)
+  The colors are the ones in "public/css/tokens.css", so that they follow the theme. For example,
+  "tw:bg-surface" uses "--surface".
+*/
+@theme inline {
+  --color-*: initial;
+  --color-white: #fff;
+  --color-surface: var(--surface);
+  --color-surface-sunken: var(--surface-sunken);
+  --color-surface-panel: var(--surface-panel);
+  --color-border: var(--border);
+  --color-border-panel: var(--border-panel);
+  --color-text: var(--text);
+  --color-text-strong: var(--text-strong);
+  --color-text-label: var(--text-label);
+  --color-text-on-accent: var(--text-on-accent);
+  --color-link: var(--link);
+  --color-focus: var(--focus);
+  --color-green: var(--green);
+  --color-green-text: var(--green-text);
+  --color-green-tint: var(--green-tint);
+  --color-name-me: var(--name-me);
+  --color-friend: var(--friend);
+}
+
+/*
+  The utilities are not in a layer, so that they beat the site's stylesheets, which are all in
+  layers (see "public/css/main.css"). Rules outside of a layer always beat rules inside one.
 */
 @import "tailwindcss/utilities.css" source(none);
 @source "./**/*.tsx";

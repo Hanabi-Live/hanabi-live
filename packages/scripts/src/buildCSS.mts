@@ -1,68 +1,60 @@
-// Bundles the stylesheets that production pages load and minifies them with Lightning CSS, failing
-// on any CSS that it cannot parse. Usage: `bun buildCSS.mts <output>`
+// Bundles "public/css/main.css" and its imports, which every production page loads, and minifies
+// them with Lightning CSS, failing on any CSS that it cannot parse. Usage: `bun buildCSS.mts <out>`
 
-import { transform } from "lightningcss";
+import { bundle } from "lightningcss";
 import path from "node:path";
 
 const REPO_ROOT = path.resolve(import.meta.dir, "..", "..", "..");
-const CSS_DIR = path.resolve(REPO_ROOT, "public", "css");
 
-/** The stylesheets in the bundle, in order. Development pages load them separately. */
-const BUNDLE = [
-  "lib/fontawesome.min.css",
-  "lib/solid.min.css",
-  "defaults.css",
-  "hanabi.css",
-  "dark.css",
-] as const;
+/** Development pages load this file, and the browser follows its imports. */
+const ENTRY = path.resolve(REPO_ROOT, "public", "css", "main.css");
 
 function fail(message: string): never {
   console.error(message);
   process.exit(1);
 }
 
-async function minify(filename: string): Promise<string> {
-  const code = await Bun.file(path.join(CSS_DIR, filename)).bytes();
-  let result: ReturnType<typeof transform>;
-  try {
-    result = transform({ filename, code, minify: true });
-  } catch (error) {
-    // The error also holds the whole stylesheet, so report only where and what it is.
-    fail(`${filename}:${location(error)} ${String(error)}`);
-  }
-
-  const [warning] = result.warnings;
-  if (warning !== undefined) {
-    fail(
-      `${filename}:${warning.loc.line}:${warning.loc.column}: ${warning.message}`,
-    );
-  }
-  return new TextDecoder().decode(result.code);
-}
-
 function location(error: unknown): string {
+  if (typeof error !== "object" || error === null) {
+    return "";
+  }
+  const fileName =
+    "fileName" in error && typeof error.fileName === "string"
+      ? path.relative(REPO_ROOT, error.fileName)
+      : "";
   if (
-    typeof error === "object"
-    && error !== null
-    && "loc" in error
+    "loc" in error
     && typeof error.loc === "object"
     && error.loc !== null
     && "line" in error.loc
     && "column" in error.loc
   ) {
-    return `${String(error.loc.line)}:${String(error.loc.column)}:`;
+    return `${fileName}:${String(error.loc.line)}:${String(error.loc.column)}:`;
   }
-  return "";
+  return fileName === "" ? "" : `${fileName}:`;
 }
 
 async function main() {
   const [output, ...rest] = process.argv.slice(2);
   if (output === undefined || rest.length > 0) {
-    fail("Usage: bun buildCSS.mts <output>");
+    fail("Usage: bun buildCSS.mts <out>");
   }
 
-  const minified = await Promise.all(BUNDLE.map(minify));
-  await Bun.write(output, minified.join("\n"));
+  let result: ReturnType<typeof bundle>;
+  try {
+    result = bundle({ filename: ENTRY, minify: true });
+  } catch (error) {
+    // The error can also hold a whole stylesheet, so report only where and what it is.
+    fail(`${location(error)} ${String(error)}`);
+  }
+
+  const [warning] = result.warnings;
+  if (warning !== undefined) {
+    fail(
+      `${path.relative(REPO_ROOT, warning.loc.filename)}:${warning.loc.line}:${warning.loc.column}: ${warning.message}`,
+    );
+  }
+  await Bun.write(output, result.code);
 }
 
 await main();

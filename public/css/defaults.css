@@ -174,7 +174,7 @@ body,
 input,
 select,
 textarea {
-  color: #777;
+  color: var(--text);
   font-family: "Source Sans Pro", sans-serif;
   font-size: 16pt;
   font-weight: 300;
@@ -184,13 +184,13 @@ textarea {
 
 a {
   transition: color 0.2s ease-in-out;
-  color: blue;
+  color: var(--link);
   text-decoration: underline;
 }
 
 strong,
 b {
-  color: #646464;
+  color: var(--text-strong);
   font-weight: 400;
 }
 
@@ -209,7 +209,7 @@ h3,
 h4,
 h5,
 h6 {
-  color: #646464;
+  color: var(--text-strong);
   font-weight: 300;
   line-height: 1em;
   margin: 0 0 0.5em 0;
@@ -269,12 +269,12 @@ sup {
 
 hr {
   border: 0;
-  border-bottom: solid 2px #e5e5e5;
+  border-bottom: solid 2px var(--border);
   margin: 2em 0;
 }
 
 blockquote {
-  border-left: solid 4px #e5e5e5;
+  border-left: solid 4px var(--border);
   font-style: italic;
   margin: 0 0 2em 0;
   padding: 0.5em 0 0.5em 2em;
@@ -282,9 +282,9 @@ blockquote {
 
 pre {
   -webkit-overflow-scrolling: touch;
-  background: #f8f8f8;
+  background: var(--surface-sunken);
   border-radius: 6px;
-  border: solid 1px #e5e5e5;
+  border: solid 1px var(--border);
   font-family: monospace;
   font-size: 0.9em;
   line-height: 1.75em;
@@ -294,9 +294,9 @@ pre {
 }
 
 code {
-  background: #f8f8f8;
+  background: var(--surface-sunken);
   border-radius: 6px;
-  border: solid 1px #e5e5e5;
+  border: solid 1px var(--border);
   font-family: monospace;
   font-size: 0.9em;
   margin: 0 0.25em;
@@ -405,7 +405,7 @@ code {
 
 @media screen and (max-width: 840px) {
   .container {
-    width: 100% !important;
+    width: 100%;
   }
 }
 
@@ -451,7 +451,7 @@ form {
 }
 
 label {
-  color: #646464;
+  color: var(--text-strong);
   display: block;
   font-size: 0.9em;
   font-weight: 300;
@@ -465,9 +465,9 @@ input[type="number"],
 select,
 textarea {
   appearance: none;
-  background-color: #f8f8f8;
+  background-color: var(--surface-sunken);
   border-radius: 6px;
-  border: solid 1px #e5e5e5;
+  border: solid 1px var(--border);
   color: inherit;
   display: block;
   outline: 0;
@@ -491,8 +491,8 @@ input[type="email"]:focus,
 input[type="number"]:focus,
 select:focus,
 textarea:focus {
-  border-color: #e89980;
-  box-shadow: 0 0 0 2px #e89980;
+  border-color: var(--focus);
+  box-shadow: 0 0 0 2px var(--focus);
 }
 
 /* The arrow is filled with #777777. */
@@ -537,7 +537,7 @@ input[type="radio"] {
 input[type="checkbox"] + label,
 input[type="radio"] + label {
   text-decoration: none;
-  color: #777;
+  color: var(--text);
   cursor: pointer;
   display: inline-block;
   font-size: 1em;
@@ -554,10 +554,10 @@ input[type="radio"] + label:before {
   font-family: "Font Awesome 5 Free";
   font-style: normal;
   font-weight: normal;
-  text-transform: none !important;
-  background: #f8f8f8;
+  text-transform: none;
+  background: var(--surface-sunken);
   border-radius: 6px;
-  border: solid 1px #e5e5e5;
+  border: solid 1px var(--border);
   content: "";
   display: inline-block;
   height: 1.8em;
@@ -571,16 +571,16 @@ input[type="radio"] + label:before {
 
 input[type="checkbox"]:checked + label:before,
 input[type="radio"]:checked + label:before {
-  background: #666;
-  border-color: #666;
+  background: var(--checkbox-checked);
+  border-color: var(--checkbox-checked);
   color: #ffffff;
   content: "\f00c";
 }
 
 input[type="checkbox"]:focus + label:before,
 input[type="radio"]:focus + label:before {
-  border-color: #e89980;
-  box-shadow: 0 0 0 1px #e89980;
+  border-color: var(--focus);
+  box-shadow: 0 0 0 1px var(--focus);
 }
 
 input[type="checkbox"] + label:before {
@@ -592,7 +592,7 @@ input[type="radio"] + label:before {
 }
 
 ::placeholder {
-  color: #999 !important;
+  color: #999;
   opacity: 1;
 }
 
@@ -602,8 +602,8 @@ input[type="radio"] + label:before {
   border-radius: 6px;
   margin: 0 0 2em 0;
   padding: 3em;
-  background: #fff;
-  box-shadow: 0 2px 0 0 #e5e5e5;
+  background: var(--surface);
+  box-shadow: 0 2px 0 0 var(--border);
 }
 
 .box > :last-child {
@@ -623,7 +623,7 @@ input[type="radio"] + label:before {
   font-family: "Font Awesome 5 Free";
   font-style: normal;
   font-weight: normal;
-  text-transform: none !important;
+  text-transform: none;
 }
 
 /* List */
@@ -654,7 +654,7 @@ ul.alt {
 }
 
 ul.alt li {
-  border-top: solid 1px #e5e5e5;
+  border-top: solid 1px var(--border);
   padding: 0.5em 0;
 }
 
@@ -697,10 +697,11 @@ ul.actions.fit li > * {
 }
 
 @media screen and (max-width: 480px) {
-  ul.actions {
+  ul.actions,
+  ul.actions.fit {
     margin: 0 0 2em 0;
     flex-direction: column;
-    width: 100% !important;
+    width: 100%;
   }
 
   ul.actions li {
@@ -713,7 +714,7 @@ ul.actions.fit li > * {
   }
 
   ul.actions li > * {
-    margin: 0 !important;
+    margin: 0;
     width: 100%;
   }
 
@@ -750,13 +751,13 @@ table {
 }
 
 table tbody tr {
-  border: solid 1px #e5e5e5;
+  border: solid 1px var(--border);
   border-left: 0;
   border-right: 0;
 }
 
 table tbody tr:nth-child(2n + 1) {
-  background-color: #f8f8f8;
+  background-color: var(--surface-sunken);
 }
 
 table td {
@@ -766,7 +767,7 @@ table td {
 }
 
 table th {
-  color: #646464;
+  color: var(--table-header-text);
   font-size: 0.8em;
   font-weight: 300;
   padding: 0 0.75em 0.25em 0.75em;
@@ -774,11 +775,11 @@ table th {
 }
 
 table thead {
-  border-bottom: solid 2px #e5e5e5;
+  border-bottom: solid 2px var(--border);
 }
 
 table tfoot {
-  border-top: solid 2px #e5e5e5;
+  border-top: solid 2px var(--border);
 }
 
 table.alt {
@@ -786,7 +787,7 @@ table.alt {
 }
 
 table.alt tbody tr td {
-  border: solid 1px #e5e5e5;
+  border: solid 1px var(--border);
   border-left-width: 0;
   border-top-width: 0;
 }
@@ -884,16 +885,16 @@ input[type="submit"].alt,
 input[type="reset"].alt,
 input[type="button"].alt,
 .button.alt {
-  background-color: transparent;
-  box-shadow: inset 0 0 0 2px #e5e5e5;
-  color: #777;
+  background-color: var(--button-alt-bg);
+  box-shadow: inset 0 0 0 2px var(--border);
+  color: var(--text);
 }
 
 input[type="submit"].alt:hover,
 input[type="reset"].alt:hover,
 input[type="button"].alt:hover,
 .button.alt:hover {
-  background-color: #f8f8f8;
+  background-color: var(--button-alt-hover-bg);
 }
 
 input[type="submit"].alt:active,
@@ -908,7 +909,7 @@ input[type="reset"].primary,
 input[type="button"].primary,
 .button.primary {
   background-color: #e89980;
-  color: #ffffff !important;
+  color: #ffffff;
 }
 
 input[type="submit"].primary:hover,
@@ -933,6 +934,7 @@ input[type="button"].disabled,
 input[type="button"]:disabled,
 .button.disabled,
 .button:disabled {
+  /* A disabled button looks the same everywhere, such as in the header. */
   background-color: #777 !important;
   box-shadow: inset 0 -0.15em 0 0 rgba(0, 0, 0, 0.15);
   color: #f5f5f5 !important;
@@ -949,8 +951,9 @@ input[type="button"]:disabled,
 /* Header */
 
 #header {
-  background: #444;
-  color: #bbb;
+  background: var(--header-bg);
+  border-bottom: var(--header-border);
+  color: var(--header-text);
   cursor: default;
   height: 3.25em;
   left: 0;
@@ -981,7 +984,7 @@ input[type="button"]:disabled,
 }
 
 #header h1 a {
-  color: #fff;
+  color: var(--header-link);
   font-weight: 400;
   border: 0;
 }
@@ -1019,10 +1022,14 @@ input[type="button"]:disabled,
 }
 
 #header nav > ul > li a:not(.button) {
-  color: #fff;
+  color: var(--header-link);
   display: inline-block;
   text-decoration: none;
   border: 0;
+}
+
+#header nav a:not(.button):hover {
+  background-color: var(--header-link-hover-bg);
 }
 
 #header nav > ul > li a:not(.button).icon:before {
@@ -1079,7 +1086,7 @@ input[type="button"]:disabled,
 }
 
 #main > header p {
-  border-top: solid 2px #e5e5e5;
+  border-top: solid 2px var(--border);
   color: #777;
   display: inline-block;
   font-style: normal;
@@ -1145,7 +1152,7 @@ input[type="button"]:disabled,
   .box {
     margin: 0;
     overflow: hidden;
-    padding: 1.5em !important;
+    padding: 1.5em;
   }
 
   #main {

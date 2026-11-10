@@ -48,8 +48,8 @@ async function buildBundle(directory: string): Promise<string> {
 
 /**
  * Runs in the page. A rule is critical if the first element that one of its selectors matches
- * starts within the viewport. Rules inside media queries are checked the same way, and other
- * at-rules (such as font faces and keyframes) are left out.
+ * starts within the viewport. Rules inside media queries and cascade layers are checked the same
+ * way, and other at-rules (such as font faces and keyframes) are left out.
  */
 async function getCriticalCSS({
   bundle,
@@ -131,12 +131,23 @@ async function getCriticalCSS({
         if (inner.length > 0) {
           critical.push(`@media ${rule.conditionText}{${inner.join("\n")}}`);
         }
+      } else if (rule instanceof CSSLayerBlockRule) {
+        const inner = getCriticalRules(rule.cssRules);
+        if (inner.length > 0) {
+          critical.push(`@layer ${rule.name}{${inner.join("\n")}}`);
+        }
       }
     }
     return critical;
   }
 
-  return getCriticalRules(sheet.cssRules).join("\n");
+  // The critical CSS loads first, so it sets the order of the layers. It names every layer of the
+  // bundle, including one with no critical rules, which would otherwise come last.
+  const layers = [...sheet.cssRules]
+    .filter((rule) => rule instanceof CSSLayerBlockRule)
+    .map((rule) => rule.name);
+  const order = layers.length > 0 ? [`@layer ${layers.join(",")};`] : [];
+  return [...order, ...getCriticalRules(sheet.cssRules)].join("\n");
 }
 
 /** Renders the page as it first appears, before the client script runs. */

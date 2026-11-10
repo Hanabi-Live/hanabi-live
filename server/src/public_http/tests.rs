@@ -143,7 +143,7 @@ async fn shell_routes_metadata_and_static_files() {
             .values()
             .any(|v| v["stackSize"] != 5)
     );
-    let (status, body) = request(app.clone(), "/public/css/dark.css").await;
+    let (status, body) = request(app.clone(), "/public/css/tokens.css").await;
     assert_eq!(status, StatusCode::OK);
     assert!(body.contains("data-theme"));
     let immutable = format!("public, max-age={VERSIONED_ASSET_MAX_AGE_SECONDS}, immutable");
@@ -152,11 +152,15 @@ async fn shell_routes_metadata_and_static_files() {
     for (app, path, expected) in [
         (
             &app,
-            "/public/css/dark.css?test-version",
+            "/public/css/tokens.css?test-version",
             Some(immutable.as_str()),
         ),
-        (&app, "/public/css/dark.css", Some("no-cache")),
-        (&app, "/public/css/dark.css?other-version", Some("no-cache")),
+        (&app, "/public/css/tokens.css", Some("no-cache")),
+        (
+            &app,
+            "/public/css/tokens.css?other-version",
+            Some("no-cache"),
+        ),
         (
             &app,
             "/public/missing.test-version.min.js",
@@ -164,7 +168,7 @@ async fn shell_routes_metadata_and_static_files() {
         ),
         (
             &router(pool.clone(), &dev_config),
-            "/public/css/dark.css?test-version",
+            "/public/css/tokens.css?test-version",
             Some("no-cache"),
         ),
     ] {
