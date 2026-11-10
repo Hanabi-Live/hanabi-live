@@ -166,7 +166,7 @@ export function CardFace({
       {(critical || trashIcon) && (
         <span
           className={`tw:absolute tw:flex tw:items-center tw:justify-center tw:rounded-full tw:font-extrabold tw:text-white ${
-            critical ? "tw:bg-critical" : "tw:bg-text-label"
+            critical ? "tw:bg-critical" : "tw:bg-game-line"
           }`}
           style={{
             right: width * 0.06,

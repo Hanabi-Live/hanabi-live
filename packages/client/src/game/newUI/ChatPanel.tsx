@@ -5,6 +5,21 @@ import * as gameChat from "../chat";
  * While the panel holds the classic chat box, these classes make it fill the panel instead of the
  * chat window. Tailwind utilities beat the site's stylesheets, so they override its rules.
  */
+/**
+ * The chat box's stylesheet uses the theme's colors. The game screen is dark in both themes, so the
+ * panel gives the box the game screen's colors in their place.
+ */
+const CHAT_BOX_COLORS = {
+  "--text": "var(--game-screen-text)",
+  "--text-strong": "var(--game-screen-text)",
+  "--text-label": "var(--game-screen-muted)",
+  "--text-faint": "var(--game-screen-muted)",
+  "--surface": "var(--game-screen-panel)",
+  "--surface-sunken": "var(--game-screen-bg)",
+  "--border": "var(--game-screen-raised)",
+  "--link": "var(--game-screen-link)",
+} as React.CSSProperties;
+
 const BORROWED_CHAT_BOX_CLASSES = [
   "tw:static",
   "tw:m-0",
@@ -67,13 +82,13 @@ export function ChatPanel({
     return (
       <aside
         aria-label="Chat, collapsed"
-        className="tw:flex tw:w-14 tw:shrink-0 tw:flex-col tw:items-center tw:gap-2.5 tw:border-l tw:border-border tw:bg-surface-panel tw:py-3.5"
+        className="tw:flex tw:w-14 tw:shrink-0 tw:flex-col tw:items-center tw:gap-2.5 tw:border-l tw:border-game-raised tw:bg-game-panel tw:py-3.5"
       >
         <button
           aria-label={
             unread > 0 ? `Open chat, ${unread} unread messages` : "Open chat"
           }
-          className="tw:relative tw:flex tw:size-11 tw:cursor-pointer tw:items-center tw:justify-center tw:rounded-[10px] tw:border-0 tw:bg-border tw:text-text-strong tw:hover:brightness-95"
+          className="tw:relative tw:flex tw:size-11 tw:cursor-pointer tw:items-center tw:justify-center tw:rounded-[10px] tw:border-0 tw:bg-game-raised tw:text-game-text tw:hover:bg-game-line"
           onClick={() => {
             gameChat.show();
           }}
@@ -88,7 +103,7 @@ export function ChatPanel({
           )}
         </button>
         <div
-          className="tw:flex tw:flex-col tw:items-center tw:gap-0.5 tw:text-[13px] tw:text-text-label"
+          className="tw:flex tw:flex-col tw:items-center tw:gap-0.5 tw:text-[13px] tw:text-game-muted"
           title={spectatorsLabel}
         >
           <i aria-hidden="true" className="fas fa-eye" />
@@ -101,20 +116,20 @@ export function ChatPanel({
   return (
     <aside
       aria-label="Chat"
-      className={`tw:flex tw:w-[320px] tw:max-w-full tw:shrink-0 tw:flex-col tw:border-l tw:border-border tw:bg-surface-panel ${
+      className={`tw:flex tw:w-[320px] tw:max-w-full tw:shrink-0 tw:flex-col tw:border-l tw:border-game-raised tw:bg-game-panel ${
         overlay
           ? "tw:absolute tw:inset-y-0 tw:right-0 tw:z-20 tw:shadow-2xl"
           : ""
       }`}
     >
-      <header className="tw:flex tw:items-center tw:justify-between tw:border-b tw:border-border-panel tw:py-3.5 tw:pr-2 tw:pl-5 tw:text-sm tw:text-text-label">
+      <header className="tw:flex tw:items-center tw:justify-between tw:border-b tw:border-game-zone tw:py-3.5 tw:pr-2 tw:pl-5 tw:text-sm tw:text-game-muted">
         <span>
           {numPlayers} players, {spectatorsLabel}
           <i aria-hidden="true" className="fas fa-eye tw:ml-1.5" />
         </span>
         <button
           aria-label="Collapse chat"
-          className="tw:flex tw:size-9 tw:cursor-pointer tw:items-center tw:justify-center tw:rounded-lg tw:border-0 tw:bg-transparent tw:text-text-label tw:hover:bg-border tw:hover:text-text-strong"
+          className="tw:flex tw:size-9 tw:cursor-pointer tw:items-center tw:justify-center tw:rounded-lg tw:border-0 tw:bg-transparent tw:text-game-muted tw:hover:bg-game-raised tw:hover:text-game-text"
           onClick={() => {
             gameChat.hide();
           }}
@@ -124,7 +139,11 @@ export function ChatPanel({
           <i aria-hidden="true" className="fas fa-angle-double-right" />
         </button>
       </header>
-      <div className="tw:min-h-0 tw:flex-1" ref={boxRef} />
+      <div
+        className="tw:min-h-0 tw:flex-1"
+        ref={boxRef}
+        style={CHAT_BOX_COLORS}
+      />
     </aside>
   );
 }

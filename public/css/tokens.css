@@ -143,7 +143,18 @@
   --canvas-surface-area: #b3b3b3;
   --canvas-loading-label-stroke: #747278;
 
-  /* The cards and clue marks of the redesigned game screen, which look the same in both themes */
+  /*
+    The redesigned game screen ("New UI"). It is dark in both themes, like the classic game screen
+    is always green felt, so the dark theme does not change these.
+  */
+  --game-screen-bg: #26313a;
+  --game-screen-zone: #2b363f;
+  --game-screen-panel: #1f2930;
+  --game-screen-raised: #3a4752;
+  --game-screen-line: #4a5864;
+  --game-screen-text: #eef1f3;
+  --game-screen-muted: #b3bdc5;
+  --game-screen-link: #8fb2ff;
   --card-face-unknown: #cbd3da;
   --card-ink: #1b242b;
   --clue-border: #ff9f1c;

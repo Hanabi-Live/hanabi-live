@@ -48,7 +48,7 @@ export function CluePanel({
     return (
       <section
         aria-label="Give a clue"
-        className="tw:flex tw:h-14 tw:shrink-0 tw:items-center tw:rounded-[14px] tw:bg-surface tw:px-4 tw:text-text-label"
+        className="tw:flex tw:h-14 tw:shrink-0 tw:items-center tw:rounded-[14px] tw:bg-game-zone tw:px-4 tw:text-game-muted"
       >
         {waitingText}
       </section>
@@ -58,9 +58,9 @@ export function CluePanel({
   return (
     <section
       aria-label="Give a clue"
-      className="tw:flex tw:min-h-14 tw:shrink-0 tw:flex-wrap tw:items-center tw:gap-2 tw:rounded-[14px] tw:bg-surface tw:px-4 tw:py-2"
+      className="tw:flex tw:min-h-14 tw:shrink-0 tw:flex-wrap tw:items-center tw:gap-2 tw:rounded-[14px] tw:bg-game-zone tw:px-4 tw:py-2"
     >
-      <span className="tw:mr-1 tw:min-w-0 tw:truncate tw:text-text-label">
+      <span className="tw:mr-1 tw:min-w-0 tw:truncate tw:text-game-muted">
         {targetName === undefined ? "Pick a hand" : `Clue ${targetName}:`}
       </span>
       {variant.clueColors.map((color) => {
@@ -70,7 +70,7 @@ export function CluePanel({
           <button
             aria-label={color.name}
             aria-pressed={pressed}
-            className={`${choiceClass} ${pressed ? "tw:ring-3 tw:ring-text-strong" : ""}`}
+            className={`${choiceClass} ${pressed ? "tw:ring-3 tw:ring-game-text" : ""}`}
             disabled={targetName === undefined}
             key={color.name}
             onClick={() => {
@@ -90,7 +90,7 @@ export function CluePanel({
         return (
           <button
             aria-pressed={pressed}
-            className={`${choiceClass} tw:bg-text-strong tw:text-surface ${pressed ? "tw:ring-3 tw:ring-clue" : ""}`}
+            className={`${choiceClass} tw:bg-game-text tw:text-card-ink ${pressed ? "tw:ring-3 tw:ring-clue" : ""}`}
             disabled={targetName === undefined}
             key={rank}
             onClick={() => {

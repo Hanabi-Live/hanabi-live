@@ -20,9 +20,9 @@ export function ActionLog({
   return (
     <section
       aria-label="Action log"
-      className="tw:flex tw:min-h-0 tw:flex-1 tw:flex-col tw:overflow-hidden tw:rounded-[18px] tw:bg-surface tw:narrow-980:h-[220px] tw:narrow-980:flex-none"
+      className="tw:flex tw:min-h-0 tw:flex-1 tw:flex-col tw:overflow-hidden tw:rounded-[18px] tw:bg-game-zone tw:narrow-980:h-[220px] tw:narrow-980:flex-none"
     >
-      <h2 className="tw:m-0 tw:px-4.5 tw:pt-4 tw:pb-1 tw:text-[15px] tw:font-medium tw:text-text-label">
+      <h2 className="tw:m-0 tw:px-4.5 tw:pt-4 tw:pb-1 tw:text-[15px] tw:font-medium tw:text-game-muted">
         Action log
       </h2>
       <ol
@@ -34,15 +34,15 @@ export function ActionLog({
         {log.map((entry, i) => (
           <li
             className={`tw:flex tw:gap-2.5 tw:rounded-lg tw:px-2 tw:py-0.5 tw:text-[14px] tw:leading-normal ${
-              i === log.length - 1 ? "tw:bg-border" : ""
+              i === log.length - 1 ? "tw:bg-game-raised" : ""
             }`}
             // Log entries never change or move, so the index identifies them.
             key={i}
           >
-            <span className="tw:w-8 tw:shrink-0 tw:pt-px tw:text-[13px] tw:text-text-label">
+            <span className="tw:w-8 tw:shrink-0 tw:pt-px tw:text-[13px] tw:text-game-muted">
               #{entry.turn}
             </span>
-            <span className="tw:min-w-0 tw:text-text-strong">{entry.text}</span>
+            <span className="tw:min-w-0 tw:text-game-text">{entry.text}</span>
           </li>
         ))}
       </ol>

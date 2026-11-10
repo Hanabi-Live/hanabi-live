@@ -30,8 +30,10 @@ meaning is obvious from context can stay inline.
 Style React components with Tailwind utility classes (with the `tw:` prefix),
 not with new rules in `public/css`. Use the theme colors that
 `packages/client/src/tailwind.css` maps from `public/css/tokens.css` (such as
-`tw:bg-surface`), so that both themes work. When a screen moves to React, delete
-the stylesheet rules that only that screen used.
+`tw:bg-surface`), so that both themes work. The game screens are the exception:
+they look the same in both themes, so the redesigned game screen ("New UI") uses
+the `--game-screen-*` tokens, which the dark theme does not change. When a
+screen moves to React, delete the stylesheet rules that only that screen used.
 
 ## Writing style
 

@@ -402,7 +402,7 @@ export function GameScreen({
 
   if (state?.visibleState === undefined) {
     return (
-      <div className="tw:fixed tw:inset-0 tw:flex tw:items-center tw:justify-center tw:bg-surface-sunken tw:text-text-label">
+      <div className="tw:fixed tw:inset-0 tw:flex tw:items-center tw:justify-center tw:bg-game-bg tw:text-game-muted">
         Loading the game...
       </div>
     );
@@ -513,7 +513,7 @@ export function GameScreen({
     visibleState === ongoingGame ? state.notes.efficiencyModifier : 0;
 
   return (
-    <div className="tw:fixed tw:inset-0 tw:flex tw:bg-surface-sunken tw:text-text-strong">
+    <div className="tw:fixed tw:inset-0 tw:flex tw:bg-game-bg tw:text-game-text">
       <main className="tw:flex tw:min-w-0 tw:flex-1 tw:flex-col">
         <div className="tw:flex tw:min-h-0 tw:flex-1 tw:justify-center tw:gap-9 tw:px-7 tw:pt-6 tw:pb-5 tw:narrow-1440:gap-6 tw:narrow-1440:px-5 tw:narrow-980:flex-col tw:narrow-980:justify-start tw:narrow-980:gap-4 tw:narrow-980:overflow-y-auto tw:narrow-980:px-3 tw:narrow-980:pt-3">
           <div
@@ -542,7 +542,7 @@ export function GameScreen({
                 </span>
                 <button
                   aria-label="Previous turn"
-                  className="tw:size-9 tw:cursor-pointer tw:rounded-lg tw:border-0 tw:bg-surface tw:text-text-strong"
+                  className="tw:size-9 tw:cursor-pointer tw:rounded-lg tw:border-0 tw:bg-card-ink tw:text-game-text"
                   onClick={() => {
                     replay.back();
                   }}
@@ -552,7 +552,7 @@ export function GameScreen({
                 </button>
                 <button
                   aria-label="Next turn"
-                  className="tw:size-9 tw:cursor-pointer tw:rounded-lg tw:border-0 tw:bg-surface tw:text-text-strong"
+                  className="tw:size-9 tw:cursor-pointer tw:rounded-lg tw:border-0 tw:bg-card-ink tw:text-game-text"
                   onClick={() => {
                     replay.forward();
                   }}
@@ -561,7 +561,7 @@ export function GameScreen({
                   <i aria-hidden="true" className="fas fa-chevron-right" />
                 </button>
                 <button
-                  className="tw:h-9 tw:cursor-pointer tw:rounded-lg tw:border-0 tw:bg-surface tw:px-3 tw:font-bold tw:text-text-strong"
+                  className="tw:h-9 tw:cursor-pointer tw:rounded-lg tw:border-0 tw:bg-card-ink tw:px-3 tw:font-bold tw:text-game-text"
                   onClick={() => {
                     replay.exit();
                   }}
@@ -573,7 +573,7 @@ export function GameScreen({
             )}
             {pausedBy !== undefined && (
               <div
-                className="tw:shrink-0 tw:rounded-[14px] tw:bg-text-strong tw:px-4 tw:py-2 tw:font-bold tw:text-surface"
+                className="tw:shrink-0 tw:rounded-[14px] tw:bg-game-text tw:px-4 tw:py-2 tw:font-bold tw:text-card-ink"
                 role="status"
               >
                 {pausedBy} paused the game.

@@ -48,6 +48,13 @@
   --color-lobby-table-replay: var(--lobby-table-replay);
   --color-lobby-table-replay-hover: var(--lobby-table-replay-hover);
 
+  --color-game-bg: var(--game-screen-bg);
+  --color-game-zone: var(--game-screen-zone);
+  --color-game-panel: var(--game-screen-panel);
+  --color-game-raised: var(--game-screen-raised);
+  --color-game-line: var(--game-screen-line);
+  --color-game-text: var(--game-screen-text);
+  --color-game-muted: var(--game-screen-muted);
   --color-card-unknown: var(--card-face-unknown);
   --color-card-ink: var(--card-ink);
   --color-clue: var(--clue-border);

@@ -70,11 +70,11 @@ function NameChip({ seat }: { readonly seat: Seat }): React.JSX.Element {
 
   if (seat.active) {
     return (
-      <span className="tw:inline-flex tw:max-w-full tw:items-center tw:gap-2 tw:rounded-full tw:bg-text-strong tw:py-1.5 tw:pr-2 tw:pl-3.5 tw:font-bold tw:text-surface">
+      <span className="tw:inline-flex tw:max-w-full tw:items-center tw:gap-2 tw:rounded-full tw:bg-game-text tw:py-1.5 tw:pr-2 tw:pl-3.5 tw:font-bold tw:text-card-ink">
         {youIcon}
         <span className="tw:truncate">{seat.name}</span>
         {seat.clock !== undefined && (
-          <span className="tw:rounded-full tw:bg-surface tw:px-2.5 tw:py-0.5 tw:text-sm tw:font-medium tw:text-text-strong">
+          <span className="tw:rounded-full tw:bg-card-ink tw:px-2.5 tw:py-0.5 tw:text-sm tw:font-medium tw:text-game-text">
             {seat.clock}
           </span>
         )}
@@ -83,7 +83,7 @@ function NameChip({ seat }: { readonly seat: Seat }): React.JSX.Element {
   }
 
   return (
-    <span className="tw:inline-flex tw:max-w-full tw:items-center tw:gap-2 tw:rounded-full tw:bg-border tw:px-3.5 tw:py-1.5 tw:font-medium tw:text-text-strong">
+    <span className="tw:inline-flex tw:max-w-full tw:items-center tw:gap-2 tw:rounded-full tw:bg-game-raised tw:px-3.5 tw:py-1.5 tw:font-medium tw:text-game-text">
       {youIcon}
       <span className="tw:truncate">{seat.name}</span>
     </span>
@@ -107,7 +107,7 @@ function OwnCard({
   if (dragged) {
     return (
       <div
-        className="tw:box-border tw:shrink-0 tw:rounded-[10px] tw:border-2 tw:border-dashed tw:border-text-label"
+        className="tw:box-border tw:shrink-0 tw:rounded-[10px] tw:border-2 tw:border-dashed tw:border-game-line"
         style={{ width: cardWidth, height }}
       />
     );
@@ -156,9 +156,9 @@ function OwnCard({
         {face}
       </button>
       {menuOpen && (
-        <div className="tw:absolute tw:top-full tw:left-1/2 tw:z-10 tw:mt-2 tw:flex tw:-translate-x-1/2 tw:gap-1.5 tw:rounded-[10px] tw:bg-text-strong tw:p-1.5 tw:shadow-lg">
+        <div className="tw:absolute tw:top-full tw:left-1/2 tw:z-10 tw:mt-2 tw:flex tw:-translate-x-1/2 tw:gap-1.5 tw:rounded-[10px] tw:bg-game-text tw:p-1.5 tw:shadow-lg">
           <button
-            className="tw:cursor-pointer tw:rounded-lg tw:border-0 tw:bg-surface tw:px-3 tw:py-1.5 tw:font-bold tw:text-text-strong"
+            className="tw:cursor-pointer tw:rounded-lg tw:border-0 tw:bg-card-ink tw:px-3 tw:py-1.5 tw:font-bold tw:text-game-text"
             onClick={() => {
               props.onPlay(card.order);
             }}
@@ -197,13 +197,13 @@ function Hand({
   const canPick = props.canChooseClueTarget && !seat.you;
   const chosen = canPick && props.clueTarget === seat.playerIndex;
 
-  let boxClass = "tw:ring-1 tw:ring-border";
+  let boxClass = "tw:ring-1 tw:ring-game-raised";
   if (seat.active) {
-    boxClass = "tw:bg-white/5 tw:ring-2 tw:ring-text-strong";
+    boxClass = "tw:bg-white/5 tw:ring-2 tw:ring-game-text";
   } else if (chosen) {
     boxClass = "tw:bg-clue/10 tw:ring-2 tw:ring-clue";
   } else if (seat.you) {
-    boxClass = "tw:bg-surface tw:ring-1 tw:ring-text-label";
+    boxClass = "tw:bg-game-zone tw:ring-1 tw:ring-game-line";
   }
 
   const chip = <NameChip seat={seat} />;

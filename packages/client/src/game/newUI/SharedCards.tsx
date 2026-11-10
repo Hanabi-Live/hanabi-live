@@ -29,10 +29,10 @@ export interface DiscardView {
 export type ZoneState = "idle" | "available" | "hovered" | "unavailable";
 
 const zoneClasses: Record<ZoneState, string> = {
-  idle: "tw:bg-surface",
-  available: "tw:bg-surface tw:inset-ring-2 tw:inset-ring-text-label",
+  idle: "tw:bg-game-zone",
+  available: "tw:bg-game-zone tw:inset-ring-2 tw:inset-ring-game-line",
   hovered: "tw:bg-clue/15 tw:inset-ring-3 tw:inset-ring-clue",
-  unavailable: "tw:bg-surface tw:opacity-60",
+  unavailable: "tw:bg-game-zone tw:opacity-60",
 };
 
 function ZoneLabel({
@@ -53,7 +53,7 @@ function ZoneLabel({
       className={`tw:pointer-events-none tw:absolute tw:top-1/2 tw:left-1/2 tw:-translate-1/2 tw:rounded-full tw:px-3.5 tw:py-1.5 tw:text-center tw:font-bold tw:whitespace-nowrap tw:shadow-lg ${
         state === "hovered"
           ? "tw:bg-clue tw:text-card-ink"
-          : "tw:bg-text-strong tw:text-surface"
+          : "tw:bg-game-text tw:text-card-ink"
       }`}
     >
       {state === "unavailable" ? unavailableText : text}
@@ -86,7 +86,7 @@ export const PlayArea = forwardRef<
           className={`tw:relative tw:flex tw:flex-col tw:items-center tw:gap-3 tw:rounded-[18px] tw:px-4.5 tw:py-4 ${zoneClasses[zoneState]}`}
           ref={ref}
         >
-          <h2 className="tw:m-0 tw:text-[15px] tw:font-medium tw:text-text-label">
+          <h2 className="tw:m-0 tw:text-[15px] tw:font-medium tw:text-game-muted">
             Play stacks
           </h2>
           <div className="tw:flex tw:flex-col tw:gap-2 tw:narrow-980:flex-row tw:narrow-980:flex-wrap">
@@ -96,7 +96,7 @@ export const PlayArea = forwardRef<
                 return (
                   <div
                     aria-label={`${suit?.displayName ?? ""}: nothing played`}
-                    className="tw:box-border tw:flex tw:items-center tw:justify-center tw:rounded-[10px] tw:border-2 tw:border-dashed tw:border-text-label tw:opacity-60"
+                    className="tw:box-border tw:flex tw:items-center tw:justify-center tw:rounded-[10px] tw:border-2 tw:border-dashed tw:border-game-line tw:opacity-60"
                     key={stack.suitIndex}
                     role="img"
                     style={{ width: cardWidth, height }}
@@ -141,17 +141,17 @@ export const PlayArea = forwardRef<
           role="img"
         >
           <div
-            className="tw:flex tw:items-center tw:justify-center tw:rounded-[10px] tw:bg-border tw:ring-1 tw:ring-text-label"
+            className="tw:flex tw:items-center tw:justify-center tw:rounded-[10px] tw:bg-game-raised tw:ring-1 tw:ring-game-line"
             style={{ width: cardWidth, height }}
           >
             <span
-              className="tw:font-extrabold tw:text-text-strong"
+              className="tw:font-extrabold tw:text-game-text"
               style={{ fontSize: cardWidth * 0.5 }}
             >
               {cardsInDeck}
             </span>
           </div>
-          <span className="tw:text-[13px] tw:text-text-label">In deck</span>
+          <span className="tw:text-[13px] tw:text-game-muted">In deck</span>
         </div>
       </div>
     );
@@ -185,7 +185,7 @@ export const DiscardPile = forwardRef<
         className={`tw:relative tw:box-border tw:flex tw:flex-col tw:gap-3 tw:rounded-[18px] tw:px-4.5 tw:py-4 ${zoneClasses[zoneState]}`}
         ref={ref}
       >
-        <h2 className="tw:m-0 tw:text-[15px] tw:font-medium tw:text-text-label">
+        <h2 className="tw:m-0 tw:text-[15px] tw:font-medium tw:text-game-muted">
           Discards
         </h2>
         <div className="tw:flex tw:flex-col">
@@ -251,16 +251,16 @@ export function TableTokens({
   return (
     <section
       aria-label="Clue tokens and strikes"
-      className="tw:flex tw:shrink-0 tw:items-center tw:justify-around tw:rounded-[18px] tw:bg-surface tw:px-4.5 tw:py-3.5"
+      className="tw:flex tw:shrink-0 tw:items-center tw:justify-around tw:rounded-[18px] tw:bg-game-zone tw:px-4.5 tw:py-3.5"
     >
       <div className="tw:flex tw:flex-col tw:items-center tw:gap-0.5">
-        <span className="tw:text-[13px] tw:text-text-label">Clues</span>
-        <span className="tw:text-[22px] tw:font-bold tw:text-text-strong">
+        <span className="tw:text-[13px] tw:text-game-muted">Clues</span>
+        <span className="tw:text-[22px] tw:font-bold tw:text-game-text">
           <OutOf max={maxClues} value={clues} />
         </span>
       </div>
       <div className="tw:flex tw:flex-col tw:items-center tw:gap-1.5">
-        <span className="tw:text-[13px] tw:text-text-label">Strikes</span>
+        <span className="tw:text-[13px] tw:text-game-muted">Strikes</span>
         <div
           aria-label={`${strikes} of ${MAX_STRIKES} strikes`}
           className="tw:flex tw:gap-1.5"
@@ -271,7 +271,7 @@ export function TableTokens({
               className={`tw:box-border tw:size-[32px] tw:rounded-lg tw:border-2 ${
                 i < strikes
                   ? "tw:border-critical tw:bg-critical"
-                  : "tw:border-text-label"
+                  : "tw:border-game-line"
               }`}
               key={i}
             />
