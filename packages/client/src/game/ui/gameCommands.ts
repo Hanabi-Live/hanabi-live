@@ -91,14 +91,14 @@ gameCommands.set("finishOngoingGame", (data) => {
   });
 
   // Set the browser address bar. A game that was not saved has no replay address.
-  if (data.databaseID !== undefined) {
-    setBrowserAddressBarPath(`${PATH.SHARED_REPLAY}/${data.databaseID}`);
+  if (data.gameID !== undefined) {
+    setBrowserAddressBarPath(`${PATH.SHARED_REPLAY}/${data.gameID}`);
   }
 
   // Begin the process of converting an ongoing game to a shared replay.
   globals.store!.dispatch({
     type: "finishOngoingGame",
-    databaseID: data.databaseID,
+    gameID: data.gameID,
     sharedReplay: data.sharedReplay,
     datetimeFinished: new Date().toISOString(),
   });
@@ -342,14 +342,14 @@ gameCommands.set("idleReset", () => {
 
 gameCommands.set("pause", (data) => {
   const soundType =
-    data.playerIndex === undefined
+    data.pausePlayerIndex === undefined
       ? SoundType.GameUnpaused
       : SoundType.GamePaused;
   globals.game!.sounds.play(soundType);
 
   globals.store!.dispatch({
     type: "pause",
-    playerIndex: data.playerIndex,
+    pausePlayerIndex: data.pausePlayerIndex,
   });
 });
 
@@ -470,10 +470,10 @@ function setURL(data: InitData) {
   let path: string;
   if (data.mode === "replay" || data.mode === "sharedReplay") {
     // A replay of a game that is not in the database, such as an imported game, has no address.
-    if (data.databaseID === undefined) {
+    if (data.gameID === undefined) {
       return;
     }
-    path = `${data.mode === "sharedReplay" ? PATH.SHARED_REPLAY : PATH.REPLAY}/${data.databaseID}`;
+    path = `${data.mode === "sharedReplay" ? PATH.SHARED_REPLAY : PATH.REPLAY}/${data.gameID}`;
   } else {
     path = `${PATH.GAME}/${data.tableID}${
       data.mode === "shadowing" ? `/shadow/${data.ourPlayerIndex}` : ""
@@ -553,7 +553,7 @@ function initStateStore(data: InitData) {
     mode: data.mode,
     datetimeStarted: data.datetimeStarted,
     datetimeFinished: data.datetimeFinished,
-    databaseID: data.databaseID,
+    gameID: data.gameID,
     sharedReplay: data.sharedReplay,
     pausePlayerIndex: data.pausePlayerIndex,
     pauseQueued: data.pauseQueued,

@@ -171,7 +171,7 @@ function UserIcon({ user }: { readonly user: UserRow["user"] }) {
   if (user.bot) {
     return <BotIcon />;
   }
-  if (user.hGroup) {
+  if (user.hGroupConventions) {
     return <HGroupIcon />;
   }
   return <span className="tw:inline-block tw:w-3" />;

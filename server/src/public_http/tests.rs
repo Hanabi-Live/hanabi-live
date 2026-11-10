@@ -355,7 +355,7 @@ async fn public_database_routes_filters_privacy_exports_and_html() {
         assert_eq!(status, StatusCode::OK, "{path}: {body}");
         let value: Value = serde_json::from_str(&body).unwrap();
         assert_eq!(value["totalRows"], total, "{path}");
-        assert_eq!(value["rows"][0]["id"].as_i64(), first, "{path}");
+        assert_eq!(value["rows"][0]["gameID"].as_i64(), first, "{path}");
     }
     // Responses match their wire contracts, timestamps included.
     let (_, body) = request(app.clone(), "/api/v1/history/Alice").await;
@@ -387,14 +387,14 @@ async fn public_database_routes_filters_privacy_exports_and_html() {
             .as_array()
             .unwrap()
             .iter()
-            .map(|game| game["id"].as_i64().unwrap())
+            .map(|game| game["gameID"].as_i64().unwrap())
             .collect();
         assert_eq!(actual, ids, "{path}");
     }
     let (status, body) = request(app.clone(), "/api/v1/history/Alice?col%5B2%5D=0&size=1").await;
     assert_eq!(status, StatusCode::OK, "{body}");
     assert_eq!(
-        serde_json::from_str::<Value>(&body).unwrap()["rows"][0]["id"],
+        serde_json::from_str::<Value>(&body).unwrap()["rows"][0]["gameID"],
         3
     );
     let (_, body) = request(app.clone(), "/api/v1/history-full/Alice?start=3&end=3").await;
@@ -413,7 +413,7 @@ async fn public_database_routes_filters_privacy_exports_and_html() {
         assert_eq!(
             games
                 .iter()
-                .map(|game| game["id"].as_i64().unwrap())
+                .map(|game| game["gameID"].as_i64().unwrap())
                 .collect::<Vec<_>>(),
             expected
         );
@@ -691,7 +691,7 @@ async fn public_database_routes_filters_privacy_exports_and_html() {
         assert_eq!(status, StatusCode::OK, "{body}");
         let value: Value = serde_json::from_str(&body).unwrap();
         if value.is_array() {
-            assert_eq!(value[0]["id"], 4);
+            assert_eq!(value[0]["gameID"], 4);
         } else {
             assert_eq!(value["totalRows"], 1);
         }

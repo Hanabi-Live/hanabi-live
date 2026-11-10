@@ -88,7 +88,7 @@ function stateReducerFunction(state: Draft<State>, action: Action) {
       state.datetimeFinished = action.datetimeFinished;
 
       // Record the database ID of the game, if it was saved.
-      state.replay.databaseID = action.databaseID;
+      state.replay.gameID = action.gameID;
 
       // If we were in an in-game replay when the game ended, keep us at the current turn so that we
       // are not taken away from what we are looking at. Otherwise, go to the penultimate segment.
@@ -160,7 +160,7 @@ function stateReducerFunction(state: Draft<State>, action: Action) {
           state.finished = true;
           state.replay.active = true;
           state.replay.segment = 0; // In dedicated solo replays, start on the first segment
-          state.replay.databaseID = action.databaseID;
+          state.replay.gameID = action.gameID;
 
           const shared = action.sharedReplay;
           if (shared !== undefined) {
@@ -236,10 +236,10 @@ function stateReducerFunction(state: Draft<State>, action: Action) {
     }
 
     case "pause": {
-      state.pause.playerIndex = action.playerIndex;
+      state.pause.playerIndex = action.pausePlayerIndex;
 
       // If the game is now paused, unqueue any queued pauses.
-      if (action.playerIndex !== undefined) {
+      if (action.pausePlayerIndex !== undefined) {
         state.pause.queued = false;
       }
 

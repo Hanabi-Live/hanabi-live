@@ -15,6 +15,7 @@ import {
   VARIANT_MODIFIER_SET,
   VariantModifier,
 } from "@hanabi-live/game";
+import type { Writeable } from "complete-common";
 import {
   assertDefined,
   assertEnumValue,
@@ -342,7 +343,7 @@ function getVariantFromNewID(
   const suitIDsWithModifiers = suitsString.split(SUIT_DELIMITER);
   const suits = getSuitNamesFromSuitID(suitIDsWithModifiers, suitsIDMap);
 
-  const variant: VariantJSON = {
+  const variant: Writeable<VariantJSON> = {
     name,
     id: oldID,
     newID,

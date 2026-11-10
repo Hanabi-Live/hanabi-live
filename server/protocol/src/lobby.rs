@@ -46,7 +46,6 @@ pub enum LobbyStatus {
 /// A user's presence in the lobby's user list.
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
-#[schemars(extend("x-readonly" = true))]
 pub struct User {
     #[serde(rename = "userID")]
     pub user_id: UserId,
@@ -56,7 +55,7 @@ pub struct User {
     #[serde(default, rename = "tableID", skip_serializing_if = "Option::is_none")]
     #[schemars(with = "TableId")]
     pub table_id: Option<TableId>,
-    pub h_group: bool,
+    pub h_group_conventions: bool,
     /// The highest H-Group level that this user wants to play at. Absent when they did not choose
     /// one.
     #[serde(default, skip_serializing_if = "Option::is_none")]
@@ -68,12 +67,10 @@ pub struct User {
 
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
 #[serde(transparent)]
-#[schemars(extend("x-readonly" = true))]
 pub struct UserList(pub Vec<User>);
 
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
-#[schemars(extend("x-readonly" = true))]
 pub struct UserLeft {
     #[serde(rename = "userID")]
     pub user_id: UserId,
@@ -81,7 +78,6 @@ pub struct UserLeft {
 
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
-#[schemars(extend("x-readonly" = true))]
 pub struct UserInactive {
     #[serde(rename = "userID")]
     pub user_id: UserId,
@@ -90,25 +86,20 @@ pub struct UserInactive {
 
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
-#[schemars(extend("x-readonly" = true))]
 pub struct Friends {
-    #[schemars(extend("x-readonly" = true))]
     pub friends: Vec<String>,
 }
 
 /// The users whom we have blocked. It does not include the users who have blocked us.
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
-#[schemars(extend("x-readonly" = true))]
 pub struct Blocked {
-    #[schemars(extend("x-readonly" = true))]
     pub blocked: Vec<String>,
 }
 
 /// A problem the client shows in a modal. The text may contain HTML.
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
-#[schemars(extend("x-readonly" = true))]
 pub struct ErrorNotice {
     #[schemars(length(min = 1))]
     pub message: String,
@@ -117,7 +108,6 @@ pub struct ErrorNotice {
 /// A recoverable problem the client shows in a modal. The text may contain HTML.
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
-#[schemars(extend("x-readonly" = true))]
 pub struct Warning {
     #[schemars(length(min = 1))]
     pub message: String,
@@ -125,7 +115,6 @@ pub struct Warning {
 
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
-#[schemars(extend("x-readonly" = true))]
 pub struct SoundLobby {
     pub file: LobbySound,
 }
@@ -143,7 +132,6 @@ pub enum LobbySound {
 /// a user changed.
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize, JsonSchema)]
 #[serde(default, rename_all = "camelCase", deny_unknown_fields)]
-#[schemars(extend("x-readonly" = true))]
 pub struct Settings {
     pub desktop_notification: bool,
     pub sound_move: SoundMove,
@@ -223,7 +211,6 @@ impl Default for Settings {
 /// The first message after connecting.
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
-#[schemars(extend("x-readonly" = true))]
 pub struct Welcome {
     #[serde(rename = "userID")]
     pub user_id: UserId,
@@ -232,13 +219,10 @@ pub struct Welcome {
     pub muted: bool,
     pub first_time_user: bool,
     pub settings: Settings,
-    #[schemars(extend("x-readonly" = true))]
     pub friends: Vec<String>,
     /// The users whom we have blocked, as in [`Blocked`].
-    #[schemars(extend("x-readonly" = true))]
     pub blocked: Vec<String>,
     /// Ongoing games the user is a player in.
-    #[schemars(extend("x-readonly" = true))]
     pub playing_at_tables: Vec<TableId>,
     /// The table the user was spectating when they disconnected, if any.
     #[serde(default, skip_serializing_if = "Option::is_none")]
@@ -249,7 +233,6 @@ pub struct Welcome {
 /// A table that a user spectates, and the seat they shadow there, if any.
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
-#[schemars(extend("x-readonly" = true))]
 pub struct SpectatedTable {
     #[serde(rename = "tableID")]
     pub table_id: TableId,
@@ -262,7 +245,6 @@ pub struct SpectatedTable {
 /// take their defaults.
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize, JsonSchema)]
 #[serde(default, rename_all = "camelCase", deny_unknown_fields)]
-#[schemars(extend("x-readonly" = true))]
 pub struct GameOptions {
     #[schemars(with = "NumPlayers")]
     pub num_players: u8,
@@ -272,8 +254,9 @@ pub struct GameOptions {
     #[schemars(with = "u32", range(min = 0, max = u32::MAX))]
     pub variant_id: Option<u32>,
     pub timed: bool,
+    #[schemars(range(min = 0, max = MAX_TIME_BASE_SECONDS))]
     pub time_base_seconds: f64,
-    #[schemars(range(min = 0, max = MAX_SAFE_INTEGER))]
+    #[schemars(range(min = 0, max = MAX_TIME_PER_TURN_SECONDS))]
     pub time_per_turn_seconds: i64,
     pub speedrun: bool,
     pub deck_plays: bool,
@@ -326,7 +309,6 @@ impl Default for GameOptions {
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
-#[schemars(extend("x-readonly" = true))]
 pub struct Spectator {
     #[schemars(length(min = 1))]
     pub username: String,
@@ -338,7 +320,6 @@ pub struct Spectator {
 
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
-#[schemars(extend("x-readonly" = true))]
 pub struct Spectators {
     #[serde(rename = "tableID")]
     pub table_id: TableId,
@@ -348,16 +329,11 @@ pub struct Spectators {
 /// A table in the lobby's table list.
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
-#[schemars(extend("x-readonly" = true))]
 pub struct Table {
     /// The game that a replay shows, if it is stored in the database.
-    #[serde(
-        default,
-        rename = "databaseID",
-        skip_serializing_if = "Option::is_none"
-    )]
+    #[serde(default, rename = "gameID", skip_serializing_if = "Option::is_none")]
     #[schemars(with = "GameId")]
-    pub database_id: Option<GameId>,
+    pub game_id: Option<GameId>,
     #[serde(rename = "tableID")]
     pub table_id: TableId,
     /// Whether the recipient is one of the players.
@@ -378,7 +354,6 @@ pub struct Table {
     #[schemars(range(min = 0, max = MAX_PROGRESS))]
     pub progress: u8,
     pub phase: TablePhase,
-    #[schemars(extend("x-readonly" = true))]
     pub spectators: Vec<Spectator>,
 }
 
@@ -395,15 +370,14 @@ pub enum TablePhase {
 
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
 #[serde(transparent)]
-#[schemars(extend("x-readonly" = true))]
 pub struct TableList(pub Vec<Table>);
 
 /// A completed game in a player's history.
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
-#[schemars(extend("x-readonly" = true))]
 pub struct GameHistory {
-    pub id: GameId,
+    #[serde(rename = "gameID")]
+    pub game_id: GameId,
     pub options: GameOptions,
     /// Absent for a game with its own deck instead of a seed, such as an imported one.
     #[serde(default, skip_serializing_if = "Option::is_none")]
@@ -419,8 +393,7 @@ pub struct GameHistory {
     #[schemars(with = "Timestamp")]
     pub datetime_finished: String,
     #[schemars(range(min = 0, max = i32::MAX))]
-    pub num_games_on_this_seed: i64,
-    #[schemars(extend("x-readonly" = true))]
+    pub num_games_on_seed: i64,
     pub player_names: Vec<String>,
     /// The game's tags, in alphabetical order.
     pub tags: Vec<String>,
@@ -428,22 +401,18 @@ pub struct GameHistory {
 
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
 #[serde(transparent)]
-#[schemars(extend("x-readonly" = true))]
 pub struct GameHistoryList(pub Vec<GameHistory>);
 
 /// A page of the games played on a seed.
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
-#[schemars(extend("x-readonly" = true))]
 pub struct GameHistoryOtherScores {
-    #[schemars(extend("x-readonly" = true))]
     pub games: Vec<GameHistory>,
     /// The position of the page's first game among all the games on the seed.
     #[schemars(range(min = 0, max = MAX_SAFE_INTEGER))]
     pub offset: i64,
-    /// The number of games on the seed.
     #[schemars(range(min = 0, max = i32::MAX))]
-    pub total: i64,
+    pub num_games_on_seed: i64,
     #[schemars(length(min = 1))]
     pub variant_name: String,
     #[schemars(length(min = 1))]
@@ -453,7 +422,7 @@ pub struct GameHistoryOtherScores {
 #[derive(Clone, Debug, Default, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct PregameBestScore {
-    #[schemars(range(min = MIN_PLAYERS, max = MAX_PLAYERS))]
+    #[schemars(with = "NumPlayers")]
     pub num_players: u8,
     /// Absent when there is no game at this player count.
     #[serde(default, skip_serializing_if = "Option::is_none")]
@@ -504,12 +473,13 @@ pub struct PregamePlayer {
 pub struct Pregame {
     #[serde(rename = "tableID")]
     pub table_id: TableId,
+    #[schemars(length(min = 1))]
     pub name: String,
     #[serde(rename = "ownerID")]
     pub owner_id: UserId,
     pub players: Vec<PregamePlayer>,
     pub options: GameOptions,
     pub password_protected: bool,
-    #[schemars(range(min = MIN_PLAYERS, max = MAX_PLAYERS))]
+    #[schemars(with = "NumPlayers")]
     pub max_players: u8,
 }

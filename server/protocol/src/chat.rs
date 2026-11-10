@@ -19,7 +19,6 @@ pub enum ChatSource {
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
-#[schemars(extend("x-readonly" = true))]
 pub struct Chat {
     /// Pre-escaped HTML, not an instruction to escape or normalize again.
     #[schemars(length(min = 1))]
@@ -51,7 +50,6 @@ pub struct Chat {
 /// A table's name, player limit, and options, as a suggestion to its owner proposes them.
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
-#[schemars(extend("x-readonly" = true))]
 pub struct TableSuggestion {
     #[schemars(length(min = 1))]
     pub name: String,
@@ -77,7 +75,6 @@ impl Chat {
 
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
-#[schemars(extend("x-readonly" = true))]
 pub struct ChatDelete {
     #[serde(rename = "chatID")]
     #[schemars(range(min = 1, max = MAX_SAFE_INTEGER))]
@@ -86,9 +83,7 @@ pub struct ChatDelete {
 
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
-#[schemars(extend("x-readonly" = true))]
 pub struct ChatList {
-    #[schemars(extend("x-readonly" = true))]
     pub messages: Vec<Chat>,
     #[schemars(range(min = 0, max = MAX_SAFE_INTEGER))]
     pub unread: i64,
@@ -96,7 +91,6 @@ pub struct ChatList {
 
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
-#[schemars(extend("x-readonly" = true))]
 pub struct ChatHistoryMessage {
     #[schemars(length(min = 1))]
     pub text: String,
@@ -110,9 +104,7 @@ pub struct ChatHistoryMessage {
 
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
-#[schemars(extend("x-readonly" = true))]
 pub struct ChatHistory {
-    #[schemars(extend("x-readonly" = true))]
     pub messages: Vec<ChatHistoryMessage>,
     /// The table whose chat requested the history. Absent means the lobby.
     #[serde(default, rename = "tableID", skip_serializing_if = "Option::is_none")]
@@ -122,7 +114,6 @@ pub struct ChatHistory {
 
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
-#[schemars(extend("x-readonly" = true))]
 pub struct ChatTyping {
     #[serde(rename = "tableID")]
     pub table_id: TableId,

@@ -187,7 +187,7 @@ impl TableActor {
                         hanabi_protocol::server::FINISH_ONGOING_GAME,
                         hanabi_protocol::FinishOngoingGame {
                             table_id: self.table.id,
-                            database_id: s.game_id,
+                            game_id: s.game_id,
                             shared_replay: self
                                 .shared_replay_init(s, &a.session)
                                 .context("A finished game is not a shared replay")?,
@@ -214,7 +214,7 @@ impl TableActor {
                     hanabi_protocol::server::PAUSE,
                     hanabi_protocol::Pause {
                         table_id: self.table.id,
-                        player_index: s.paused_by,
+                        pause_player_index: s.paused_by,
                     },
                 );
             }
@@ -363,7 +363,7 @@ impl TableActor {
                 hanabi_protocol::server::PAUSE,
                 hanabi_protocol::Pause {
                     table_id: self.table.id,
-                    player_index: s.paused_by,
+                    pause_player_index: s.paused_by,
                 },
             );
             self.add_all(&mut e, hanabi_protocol::server::CLOCK, self.clock()?);
@@ -490,8 +490,8 @@ impl TableActor {
             .visible
             .then(|| hanabi_protocol::SharedReplayInit {
                 leader: self.leader_name(),
-                segment: replay.segment.into(),
-                efficiency_modifier: replay.efficiency_modifier.into(),
+                segment: replay.segment,
+                efficiency_modifier: replay.efficiency_modifier,
                 spoiler_free: replay.spoiler_free,
                 restart_declined: self.restart_declined_names(),
                 can_play_again: self.can_play_again(session),
@@ -534,7 +534,7 @@ impl TableActor {
                 } else {
                     ViewMode::Playing
                 },
-                database_id: s.game_id.filter(|_| replay),
+                game_id: s.game_id.filter(|_| replay),
                 has_custom_seed: self.table.extra.custom_seed.is_some(),
                 seed: s.seed.clone(),
                 datetime_started: crate::model::timestamp(s.started),

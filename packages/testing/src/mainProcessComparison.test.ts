@@ -49,7 +49,7 @@ databaseDescribe("normal-server protocol workload", () => {
     };
     let peakRSSKiB = 0;
     const completed: Array<{
-      databaseID: number;
+      gameID: number;
       aliceCookie: string;
       bobCookie: string;
     }> = [];
@@ -209,11 +209,11 @@ databaseDescribe("normal-server protocol workload", () => {
               finished.history.actions.filter((event) => event.type === "play"),
             ).toHaveLength(25);
             assertDefined(
-              finished.init.databaseID,
+              finished.init.gameID,
               "The finished game was not saved.",
             );
             completed.push({
-              databaseID: finished.init.databaseID,
+              gameID: finished.init.gameID,
               aliceCookie,
               bobCookie,
             });
@@ -271,19 +271,19 @@ databaseDescribe("normal-server protocol workload", () => {
       const readStart = performance.now();
       async function readReplay(
         peer: ReturnType<typeof socketClient>,
-        databaseID: number,
+        gameID: number,
       ) {
         peer.send("replayCreate", {
           source: "id",
           visibility: "solo",
-          databaseID,
+          gameID,
         });
         const { tableID } = await peer.receive(
           "tableStarted",
           SERVER_COMMAND_SCHEMAS.tableStarted,
         );
         const replay = await bootstrap(peer, tableID);
-        expect<number | undefined>(replay.init.databaseID).toBe(databaseID);
+        expect<number | undefined>(replay.init.gameID).toBe(gameID);
         expect(
           replay.history.actions.filter((event) => event.type === "play"),
         ).toHaveLength(25);
@@ -298,7 +298,7 @@ databaseDescribe("normal-server protocol workload", () => {
             (async () => {
               for (let index = 0; index < 20; index++) {
                 const start = performance.now();
-                const ready = await readReplay(peer, game.databaseID);
+                const ready = await readReplay(peer, game.gameID);
                 samples.replayHistoryReady.push(ready - start);
                 samples.replay.push(performance.now() - start);
               }
@@ -307,7 +307,7 @@ databaseDescribe("normal-server protocol workload", () => {
               for (let index = 0; index < 10; index++) {
                 const start = performance.now();
                 const returning = await connect(game.aliceCookie);
-                const ready = await readReplay(returning, game.databaseID);
+                const ready = await readReplay(returning, game.gameID);
                 samples.reconnectHistoryReady.push(ready - start);
                 await close(returning);
                 samples.reconnect.push(performance.now() - start);

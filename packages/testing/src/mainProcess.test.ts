@@ -414,12 +414,12 @@ databaseDescribe("compiled application entry point (rust)", () => {
           "finishOngoingGame",
           SERVER_COMMAND_SCHEMAS.finishOngoingGame,
         );
-        assertDefined(finished.databaseID, "The finished game was not saved.");
-        expect<number>(finished.databaseID).toBe(checkpoint.game_id);
+        assertDefined(finished.gameID, "The finished game was not saved.");
+        expect<number>(finished.gameID).toBe(checkpoint.game_id);
         await replacement.receive(
           "gameHistoryAdded",
           SERVER_COMMAND_SCHEMAS.gameHistoryAdded,
-          (row) => row.id === finished.databaseID,
+          (row) => row.gameID === finished.gameID,
         );
         replacement.send("replayAction", {
           tableID,
@@ -442,7 +442,7 @@ databaseDescribe("compiled application entry point (rust)", () => {
             .every((event) => event.rank !== undefined),
         ).toBe(true);
         expect(
-          await client`SELECT id FROM games WHERE id = ${finished.databaseID}`,
+          await client`SELECT id FROM games WHERE id = ${finished.gameID}`,
         ).toHaveLength(1);
         expect(await client`SELECT id FROM games`).toEqual<unknown>([
           { id: checkpoint.game_id },
@@ -656,11 +656,11 @@ databaseDescribe("compiled application entry point (rust)", () => {
       expect(arrivals.indexOf("cardIdentities")).toBeLessThan(
         arrivals.indexOf("finishOngoingGame"),
       );
-      assertDefined(finished.databaseID, "The finished game was not saved.");
+      assertDefined(finished.gameID, "The finished game was not saved.");
       expect(
-        await sql`SELECT seat FROM game_participants WHERE game_id=${finished.databaseID}`,
+        await sql`SELECT seat FROM game_participants WHERE game_id=${finished.gameID}`,
       ).toHaveLength(6);
-      const exported = await fetch(`${address}/export/${finished.databaseID}`);
+      const exported = await fetch(`${address}/export/${finished.gameID}`);
       expect(exported.status).toBe(200);
       const replayJSON: unknown = await exported.json();
       const replay = z
@@ -687,7 +687,7 @@ databaseDescribe("compiled application entry point (rust)", () => {
             ? {
                 source,
                 visibility: "solo",
-                databaseID: finished.databaseID,
+                gameID: finished.gameID,
               }
             : { source, visibility: "shared", gameJSON: replayJSON },
         );

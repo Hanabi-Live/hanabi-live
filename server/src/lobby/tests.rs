@@ -631,7 +631,7 @@ async fn lobby_directed_linked_seeds_and_histories_postgres() {
     )
     .await;
     let history = self_data(&result, "gameHistory");
-    assert_eq!(history[0]["id"], ga);
+    assert_eq!(history[0]["gameID"], ga);
     assert_eq!(history[0]["options"]["variantName"], "No Variant");
     assert_eq!(history[0]["playerNames"], json!(["Alice"]));
     // A page holds at least one game and at most `MAX_PAGE_SIZE`.
@@ -661,10 +661,10 @@ async fn lobby_directed_linked_seeds_and_histories_postgres() {
     )
     .await;
     let history = self_data(&result, "gameHistoryOtherScores");
-    assert_eq!(history["games"][0]["id"], gb);
-    assert_eq!(history["games"][1]["id"], ga);
+    assert_eq!(history["games"][0]["gameID"], gb);
+    assert_eq!(history["games"][1]["gameID"], ga);
     assert_eq!(
-        (&history["offset"], &history["total"]),
+        (&history["offset"], &history["numGamesOnSeed"]),
         (&json!(0), &json!(2))
     );
     // Later pages continue in the same order, and count every game on the seed.
@@ -678,9 +678,9 @@ async fn lobby_directed_linked_seeds_and_histories_postgres() {
     .await;
     let history = self_data(&result, "gameHistoryOtherScores");
     assert_eq!(history["games"].as_array().unwrap().len(), 1);
-    assert_eq!(history["games"][0]["id"], ga);
+    assert_eq!(history["games"][0]["gameID"], ga);
     assert_eq!(
-        (&history["offset"], &history["total"]),
+        (&history["offset"], &history["numGamesOnSeed"]),
         (&json!(1), &json!(2))
     );
     let result = run(

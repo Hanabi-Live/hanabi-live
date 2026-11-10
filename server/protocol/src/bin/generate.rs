@@ -164,7 +164,6 @@ fn expression(schema: &Value) -> Result<String> {
                 "maxItems",
                 "default",
                 "x-brand",
-                "x-readonly",
                 "x-enum",
                 "x-date",
                 "pattern",
@@ -380,7 +379,8 @@ fn expression(schema: &Value) -> Result<String> {
     if let Some(brand) = schema.get("x-brand") {
         write!(result, ".brand<{brand}>()")?;
     }
-    if schema["x-readonly"] == true {
+    // Clients do not change what they receive or send, so every object and list is readonly.
+    if matches!(schema["type"].as_str(), Some("object" | "array")) {
         result.push_str(".readonly()");
     }
     Ok(result)
@@ -844,7 +844,7 @@ mod tests {
     fn maps_become_records() {
         assert_eq!(
             expression(&json!({"type":"object","additionalProperties":{"type":"string"}})).unwrap(),
-            "z.record(z.string(), z.string())"
+            "z.record(z.string(), z.string()).readonly()"
         );
         assert!(
             expression(
@@ -905,7 +905,7 @@ mod tests {
         };
         assert_eq!(
             expression(&json!({"oneOf":[variant("draw"),variant("play")]})).unwrap(),
-            "z.discriminatedUnion(\"type\",[z.strictObject({\"type\": z.literal(\"draw\")}),z.strictObject({\"type\": z.literal(\"play\")})])"
+            "z.discriminatedUnion(\"type\",[z.strictObject({\"type\": z.literal(\"draw\")}).readonly(),z.strictObject({\"type\": z.literal(\"play\")}).readonly()])"
         );
         assert!(expression(&json!({"oneOf":[variant("draw"),variant("draw")]})).is_err());
         assert_eq!(

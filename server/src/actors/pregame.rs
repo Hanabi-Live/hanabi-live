@@ -159,11 +159,11 @@ impl TableActor {
         let mut max_players = if variant_only {
             self.table.max_players
         } else {
-            request
-                .as_ref()
-                .and_then(|r| usize::try_from(r.max_players).ok())
-                .filter(|n| hanabi_protocol::is_player_count(*n))
-                .unwrap_or(usize::from(hanabi_protocol::DEFAULT_MAX_PLAYERS))
+            usize::from(
+                request
+                    .as_ref()
+                    .map_or(hanabi_protocol::DEFAULT_MAX_PLAYERS, |r| r.max_players),
+            )
         };
         let mut extra = match &request {
             Some(r) if !variant_only => requested_extra(&r.options)?,

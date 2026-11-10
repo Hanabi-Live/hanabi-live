@@ -295,7 +295,7 @@ pub async fn dispatch(
                 hanabi_protocol::GameHistoryOtherScores {
                     games,
                     offset,
-                    total,
+                    num_games_on_seed: total,
                     variant_name,
                     seed: seed.into(),
                 },

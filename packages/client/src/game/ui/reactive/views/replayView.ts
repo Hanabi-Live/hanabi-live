@@ -214,9 +214,9 @@ export function getGameIDLabel(state: State): string | undefined {
     return undefined;
   }
 
-  return state.replay.databaseID === undefined
+  return state.replay.gameID === undefined
     ? "JSON replay"
-    : `ID: ${state.replay.databaseID}`;
+    : `ID: ${state.replay.gameID}`;
 }
 
 export function onGameIDLabelChanged(text: string | undefined): void {

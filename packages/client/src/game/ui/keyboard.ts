@@ -171,8 +171,8 @@ function keydown(event: JQuery.KeyDownEvent) {
       // Account for users copying text from the chat window.
       && !$("#game-chat-modal").is(":visible")
     ) {
-      if (globals.state.replay.databaseID !== undefined) {
-        copyStringToClipboard(globals.state.replay.databaseID.toString());
+      if (globals.state.replay.gameID !== undefined) {
+        copyStringToClipboard(globals.state.replay.gameID.toString());
       }
       return;
     }

@@ -52,23 +52,8 @@ export function createJSONFromReplay(room: string): void {
     return;
   }
 
-  // Anonymize the players
-  const game: GameJSON = {
-    playerNames: DEFAULT_PLAYER_NAMES.slice(
-      0,
-      globals.metadata.playerNames.length,
-    ),
-    deck: [],
-    actions: [],
-    options: {
-      variant: globals.options.variantName,
-    },
-    notes: [],
-    characters: [],
-    id: 0,
-  };
-
   // Copy the entire deck.
+  const deck: Array<GameJSON["deck"][number]> = [];
   for (const [i, cardIdentity] of globals.state.cardIdentities.entries()) {
     const morph = globals.state.replay.hypothetical?.morphedIdentities[i];
     if (
@@ -76,7 +61,7 @@ export function createJSONFromReplay(room: string): void {
       && morph.suitIndex !== undefined
       && morph.rank !== undefined
     ) {
-      game.deck.push({
+      deck.push({
         suitIndex: morph.suitIndex,
         rank: morph.rank,
       });
@@ -91,7 +76,7 @@ export function createJSONFromReplay(room: string): void {
       );
       return;
     } else {
-      game.deck.push({
+      deck.push({
         suitIndex: cardIdentity.suitIndex,
         rank: cardIdentity.rank,
       });
@@ -100,33 +85,45 @@ export function createJSONFromReplay(room: string): void {
 
   // A morphed deck no longer necessarily matches its original seed. Preserve seed metadata only
   // when every exported identity is unchanged.
-  if (
-    globals.metadata.seed !== undefined
-    && game.deck.every((card, i) => {
-      const original = globals.state.cardIdentities[i];
-      return (
-        card.suitIndex === original?.suitIndex && card.rank === original.rank
-      );
-    })
-  ) {
-    game.seed = globals.metadata.seed;
-  }
+  const unchanged = deck.every((card, i) => {
+    const original = globals.state.cardIdentities[i];
+    return (
+      card.suitIndex === original?.suitIndex && card.rank === original.rank
+    );
+  });
 
-  // Copy actions up to current segment.
+  // Copy actions up to current segment, then add the hypothetical from the log, after the current
+  // segment.
   const { replay } = globals.state;
-  game.actions = [...getGameActionsFromState(replay)];
-
-  // Add the hypothetical from the log, after the current segment.
+  const actions = [...getGameActionsFromState(replay)];
   if (replay.hypothetical !== undefined) {
     const { states } = replay.hypothetical;
     const { log } = states.at(-1)!;
     if (replay.segment < log.length) {
       const logLines = log.slice(replay.segment + 1);
-      const actions = getGameActionsFromLog(logLines);
-      const newActions = [...game.actions, ...actions];
-      game.actions = newActions;
+      actions.push(...getGameActionsFromLog(logLines));
     }
   }
+
+  // Anonymize the players
+  const game: GameJSON = {
+    playerNames: DEFAULT_PLAYER_NAMES.slice(
+      0,
+      globals.metadata.playerNames.length,
+    ),
+    deck,
+    actions,
+    options: {
+      variant: globals.options.variantName,
+    },
+    notes: [],
+    characters: [],
+    id: 0,
+    ...(unchanged
+      && globals.metadata.seed !== undefined && {
+        seed: globals.metadata.seed,
+      }),
+  };
 
   const json = JSON.stringify(game);
   const URLData = shrink(json);

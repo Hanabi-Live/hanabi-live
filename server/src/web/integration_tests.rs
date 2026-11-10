@@ -475,7 +475,7 @@ async fn native_browser_login_ws_bootstrap_and_command_routing_postgres() {
         .await
         .unwrap();
     let history = receive(&mut alice, "gameHistory").await;
-    assert_eq!(history[0]["id"], historical);
+    assert_eq!(history[0]["gameID"], historical);
     assert_eq!(history[0]["options"]["variantName"], "6 Suits");
     assert_eq!(history[0]["options"]["timeBaseSeconds"], 180.0);
     assert_eq!(history[0]["options"]["emptyClues"], true);
@@ -493,7 +493,7 @@ async fn native_browser_login_ws_bootstrap_and_command_routing_postgres() {
         .unwrap();
     loop {
         let user = receive(&mut alice, "user").await;
-        if user["userID"] == welcome["userID"] && user["hGroup"] == true {
+        if user["userID"] == welcome["userID"] && user["hGroupConventions"] == true {
             break;
         }
     }

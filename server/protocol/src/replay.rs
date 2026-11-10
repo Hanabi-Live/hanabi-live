@@ -14,8 +14,7 @@ use super::*;
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct ReplayGame {
-    #[schemars(range(min = 0, max = MAX_SAFE_INTEGER))]
-    pub id: i64,
+    pub id: GameId,
     pub player_names: Vec<String>,
     pub deck: Vec<ReplayCard>,
     pub actions: Vec<ReplayGameAction>,
@@ -298,8 +297,8 @@ pub struct Suggestion {
     #[serde(rename = "tableID")]
     pub table_id: TableId,
     pub username: String,
-    #[schemars(range(min = 0, max = MAX_SAFE_INTEGER))]
-    pub segment: i64,
+    #[schemars(range(min = 0, max = i32::MAX))]
+    pub segment: i32,
 }
 
 /// The active hypothetical, sent to someone joining a shared replay.
@@ -363,7 +362,6 @@ pub enum HypotheticalAction {
         giver: PlayerIndex,
         target: PlayerIndex,
         /// The orders of the cards the clue touched.
-        #[schemars(extend("x-readonly" = true))]
         orders: Vec<CardOrder>,
         ignore_negative: bool,
     },

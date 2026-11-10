@@ -592,7 +592,7 @@ async function playGame(alice: Peer, bob: Peer): Promise<number> {
     "finishOngoingGame",
     SERVER_COMMAND_SCHEMAS.finishOngoingGame,
   );
-  assertDefined(finished.databaseID, "The seeded game was not saved.");
+  assertDefined(finished.gameID, "The seeded game was not saved.");
   // The players are now in a shared replay of the game. Leave it, or the browser would join it.
   for (const peer of peers) {
     peer.send("tableUnattend", { tableID });
@@ -602,7 +602,7 @@ async function playGame(alice: Peer, bob: Peer): Promise<number> {
     SERVER_COMMAND_SCHEMAS.tableGone,
     (data) => data.tableID === tableID,
   );
-  return finished.databaseID;
+  return finished.gameID;
 }
 
 interface Seed {

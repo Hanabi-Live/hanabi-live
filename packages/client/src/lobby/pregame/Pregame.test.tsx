@@ -85,7 +85,7 @@ beforeEach(() => {
       username: "alice",
       status: "pregame",
       tableID: TABLE_ID,
-      hGroup: true,
+      hGroupConventions: true,
       hGroupLevel: 3,
       bot: false,
       inactive: false,

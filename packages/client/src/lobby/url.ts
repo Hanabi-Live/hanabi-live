@@ -176,15 +176,15 @@ function gotoPath(data: ServerCommandData["welcome"]): boolean {
     globalThis.location.pathname,
   );
   if (replayMatch !== null) {
-    const databaseIDString = replayMatch[1];
-    if (databaseIDString !== undefined) {
-      const databaseID = parseIntSafe(databaseIDString);
-      if (databaseID !== undefined && databaseID > 0) {
+    const gameIDString = replayMatch[1];
+    if (gameIDString !== undefined) {
+      const gameID = parseIntSafe(gameIDString);
+      if (gameID !== undefined && gameID > 0) {
         const visibility = globalThis.location.pathname.includes("shared-")
           ? "shared"
           : "solo";
         globals.conn!.send("replayCreate", {
-          databaseID,
+          gameID,
           source: "id",
           visibility,
           // A link to a shared replay should join the one that people are already watching.

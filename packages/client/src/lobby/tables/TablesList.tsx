@@ -312,8 +312,8 @@ function getPath(table: Table, action: TableRow["action"]): string {
 
     case "spectate": {
       // A shared replay of a stored game gets a link that lasts beyond this table.
-      return table.phase === "sharedReplay" && table.databaseID !== undefined
-        ? `${PATH.SHARED_REPLAY}/${table.databaseID}`
+      return table.phase === "sharedReplay" && table.gameID !== undefined
+        ? `${PATH.SHARED_REPLAY}/${table.gameID}`
         : `${PATH.GAME}/${table.tableID}`;
     }
   }

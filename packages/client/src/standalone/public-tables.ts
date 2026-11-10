@@ -484,14 +484,14 @@ function gameRows(
   frequencies: readonly ScoreFrequency[],
 ): ReadonlyArray<ReadonlyArray<Node | string>> {
   return page.rows.map((game) => {
-    const names = game.users.split(", ");
+    const names = game.playerNames;
     const row: Array<Node | string> = [
-      link(`${PATH.REPLAY}/${game.id}`, game.id),
+      link(`${PATH.REPLAY}/${game.gameID}`, game.gameID),
       String(game.numPlayers),
       String(game.score),
     ];
     if (mode !== "variant") {
-      const variant = String(game.variant);
+      const variant = String(game.variantID);
       row.push(
         link(
           `${PATH.VARIANT}/${encodeURIComponent(variant)}`,
@@ -502,14 +502,14 @@ function gameRows(
     row.push(
       link(
         `${PATH.HISTORY}/${names.map(encodeURIComponent).join("/")}`,
-        game.users,
+        names.join(", "),
       ),
       displayTime(game.datetime),
     );
     if (mode === "seed") {
       row.push(percentile(game.score, frequencies));
     } else {
-      const text = mode === "variant" ? game.seed : game.otherScores;
+      const text = mode === "variant" ? game.seed : game.numGamesOnSeed;
       // A game with its own deck instead of a seed has no seed page.
       row.push(
         game.seed === undefined

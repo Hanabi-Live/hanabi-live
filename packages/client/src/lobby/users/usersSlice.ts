@@ -148,5 +148,5 @@ export function selectHGroupLevel(
   const user = usersSelectors
     .selectAll(state)
     .find((loopUser) => loopUser.username === username);
-  return user?.hGroup === true ? user.hGroupLevel : undefined;
+  return user?.hGroupConventions === true ? user.hGroupLevel : undefined;
 }

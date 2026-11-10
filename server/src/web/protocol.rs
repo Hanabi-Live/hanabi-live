@@ -60,16 +60,20 @@ mod tests {
                 "gameHistoryOtherScores" => json!({"seed":"p2v0s1","offset":0,"amount":10}),
                 "chat" => json!({"text":"hello"}),
                 "chatPM" => json!({"text":"hello","recipient":"Alice"}),
-                "replayCreate" => json!({"source":"id","visibility":"shared","databaseID":1}),
+                "replayCreate" => json!({"source":"id","visibility":"shared","gameID":1}),
                 "action" => json!({"tableID":1,"type":"rankClue","target":0,"rank":1}),
                 "pause" => json!({"tableID":1,"setting":"pause"}),
                 "note" => json!({"tableID":1,"order":0,"note":"test"}),
                 "tag" | "tagDelete" => json!({"tableID":1,"tag":"test"}),
                 "replayAction" => json!({"tableID":1,"type":"hypoStart"}),
                 "tableRestartDecline" => json!({"tableID":1,"declined":true}),
+                "tableSetLeader" => json!({"tableID":1,"username":"Alice"}),
+                "tableSuggest" => json!({"tableID":1,"segment":0}),
+                "chatFriend" | "chatUnfriend" | "chatLink" | "chatUnlink" | "chatBlock"
+                | "chatUnblock" => json!({"username":"Alice"}),
+                "tagSearch" => json!({"tag":"test"}),
                 "sync" | "lobbyLoad" | "tableCreate" | "gameHistory" | "chatLinked"
-                | "chatFriend" | "chatUnfriend" | "chatLink" | "chatUnlink" | "chatBlock"
-                | "chatUnblock" | "chatBlocked" | "chatPMHistory" | "tagSearch" => json!({}),
+                | "chatBlocked" | "chatPMHistory" => json!({}),
                 _ => json!({"tableID":1}),
             };
             parse(&format!("{command} {value}")).unwrap_or_else(|e| panic!("{command}: {e}"));

@@ -18,7 +18,6 @@ use crate::{
 use anyhow::{Context, Result};
 use axum::http::StatusCode;
 use futures_util::FutureExt;
-use hanabi_protocol::GameId;
 use hanabi_protocol::PlayerIndex;
 use hanabi_protocol::{
     ClientMessage, ErrorNotice, SoundLobby, Status, TableId, TableRequest, User, UserId, UserLeft,
@@ -234,7 +233,7 @@ impl Hub {
             } else {
                 p.table
             },
-            h_group: p.h_group,
+            h_group_conventions: p.h_group,
             h_group_level: p.h_group_level,
             bot: p.session.bot,
             inactive: p.inactive,
@@ -408,7 +407,7 @@ impl Hub {
     /// A shared replay of the same database game that a link to it should join.
     fn existing_replay(&self, r: &hanabi_protocol::ReplayCreateRequest) -> Option<TableId> {
         let hanabi_protocol::ReplayCreateRequest::Id {
-            database_id: game,
+            game_id: game,
             visibility: hanabi_protocol::ReplayVisibility::Shared,
             join_existing: true,
             ..
@@ -418,9 +417,7 @@ impl Hub {
         };
         self.tables
             .iter()
-            .filter(|(_, e)| {
-                e.view.replay && e.view.visible && e.view.replay_game == Some(GameId(game))
-            })
+            .filter(|(_, e)| e.view.replay && e.view.visible && e.view.replay_game == Some(game))
             .map(|(id, _)| *id)
             .min()
     }

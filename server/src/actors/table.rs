@@ -172,7 +172,7 @@ impl TableActor {
                 .map(|(id, shadow)| (*id, *shadow))
                 .collect(),
             data: hanabi_protocol::Table {
-                database_id: replay_game,
+                game_id: replay_game,
                 table_id: self.table.id,
                 joined: false,
                 max_players: small(self.table.max_players),
@@ -905,7 +905,7 @@ impl TableActor {
         Ok(hanabi_protocol::Clock {
             table_id: self.table.id,
             player_times_ms: times,
-            active_player_index: live
+            current_player_index: live
                 .then(|| PlayerIndex::new(s.game.active_player_index))
                 .flatten(),
             time_taken_ms: if !live || s.paused() {

@@ -23,7 +23,7 @@ import {
   getStartingPace,
   getTotalCardsInDeck,
 } from "@hanabi-live/game";
-import type { Subtract } from "complete-common";
+import type { Subtract, Writeable } from "complete-common";
 import { ReadonlySet } from "complete-common";
 
 type BasicVariantSuits = ReturnType<typeof getBasicVariantSuits>;
@@ -371,7 +371,7 @@ function getVariantDescriptionForSpecialRankVariant(
   suit: SuitJSON,
   specialClueRanks: readonly RankClueNumber[],
 ): VariantDescription {
-  const variantDescription: VariantDescription = {
+  const variantDescription: Writeable<VariantDescription> = {
     name,
     suits,
     specialRank,

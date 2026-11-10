@@ -31,9 +31,9 @@ function game(
   playerNames: readonly string[] = OUR_GAME_PLAYERS,
 ) {
   return {
-    id,
+    gameID: id,
     datetimeFinished: finished,
-    numGamesOnThisSeed: 1,
+    numGamesOnSeed: 1,
     options: { numPlayers: 2, variantName: "No Variant" },
     playerNames,
     score: 20,
@@ -52,7 +52,7 @@ function reply(
     variantName: "No Variant",
     games,
     offset,
-    total,
+    numGamesOnSeed: total,
   } as ServerCommandData["gameHistoryOtherScores"];
 }
 

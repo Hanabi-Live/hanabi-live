@@ -26,7 +26,7 @@ const LOW_TIME_WARNING_MILLISECONDS = 10 * SECOND_IN_MILLISECONDS;
  * ```ts
  * {
  *   times: [100, 200], // A list of the times for each player.
- *   activePlayerIndex: 0,
+ *   currentPlayerIndex: 0,
  *   timeTaken: 500, // The amount of time that has elapsed since the turn began.
  * }
  * ```
@@ -36,7 +36,7 @@ export function update(
 ): void {
   stop();
   // Absent if the game just ended.
-  const { activePlayerIndex } = data;
+  const { currentPlayerIndex } = data;
 
   if (globals.state.finished) {
     globals.clockPlayerIndex = undefined;
@@ -54,25 +54,25 @@ export function update(
 
   // Record the data. The player name tooltips and the deck tooltip use it even when the timers are
   // not showing.
-  globals.playerTimes = data.playerTimesMs;
-  globals.clockPlayerIndex = activePlayerIndex;
+  globals.playerTimes = [...data.playerTimesMs];
+  globals.clockPlayerIndex = currentPlayerIndex;
   globals.timeTaken = data.timeTakenMs;
 
   // Keep track of what the active player's time was when they started their turn.
   globals.startingTurnTime =
-    activePlayerIndex === undefined
+    currentPlayerIndex === undefined
       ? 0
-      : globals.playerTimes[activePlayerIndex]!;
+      : globals.playerTimes[currentPlayerIndex]!;
 
   // Mark the time that we updated the local player times.
   globals.lastTimerUpdateTimeMS = Date.now();
 
   const ourTurn =
     globals.state.playing
-    && activePlayerIndex === globals.metadata.ourPlayerIndex;
+    && currentPlayerIndex === globals.metadata.ourPlayerIndex;
   const { timer1, timer2 } = globals.elements;
   if (timer1 !== undefined && timer2 !== undefined) {
-    updateTimerDisplays(timer1, timer2, activePlayerIndex, ourTurn);
+    updateTimerDisplays(timer1, timer2, currentPlayerIndex, ourTurn);
   }
 
   // Update the timer tooltips for each player.
@@ -83,7 +83,7 @@ export function update(
   setTickingDownTimeCurrentPlayerTooltip();
 
   // The server sends no active player when the game is over.
-  if (activePlayerIndex === undefined) {
+  if (currentPlayerIndex === undefined) {
     return;
   }
 
@@ -93,7 +93,7 @@ export function update(
   // eslint-disable-next-line unicorn/prefer-global-this
   globals.timerID = window.setInterval(() => {
     setTickingDownTime(activeTimer);
-    setTickingDownTimePlayerNameTooltip(activePlayerIndex);
+    setTickingDownTimePlayerNameTooltip(currentPlayerIndex);
     setTickingDownTimeCurrentPlayerTooltip();
     globals.elements.deck?.updateDeckTooltip();
   }, TICK_MILLISECONDS);
@@ -102,7 +102,7 @@ export function update(
 function updateTimerDisplays(
   timer1: TimerDisplay,
   timer2: TimerDisplay,
-  activePlayerIndex: PlayerIndex | undefined,
+  currentPlayerIndex: PlayerIndex | undefined,
   ourTurn: boolean,
 ) {
   if (globals.state.playing) {
@@ -117,9 +117,9 @@ function updateTimerDisplays(
     timer1.setTimerText(text);
   }
 
-  if (!ourTurn && activePlayerIndex !== undefined) {
+  if (!ourTurn && currentPlayerIndex !== undefined) {
     // Update the UI with the value of the timer for the active player.
-    let time = globals.playerTimes[activePlayerIndex]!;
+    let time = globals.playerTimes[currentPlayerIndex]!;
     if (!globals.options.timed) {
       // Invert it to show how much time each player is taking.
       time *= -1;
@@ -128,13 +128,13 @@ function updateTimerDisplays(
     const text = millisecondsToClockString(time);
     timer2.setTimerText(text);
 
-    const activePlayerName = globals.metadata.playerNames[activePlayerIndex];
+    const activePlayerName = globals.metadata.playerNames[currentPlayerIndex];
     if (activePlayerName !== undefined) {
       timer2.setLabelText(activePlayerName);
     }
   }
 
-  timer2.visible(!ourTurn && activePlayerIndex !== undefined);
+  timer2.visible(!ourTurn && currentPlayerIndex !== undefined);
   globals.layers.timer.batchDraw();
 
   // Clear the low-time warning from both timers.
@@ -165,7 +165,7 @@ export function resumeAfterResize(): void {
 
   update({
     playerTimesMs: globals.playerTimes,
-    activePlayerIndex: globals.clockPlayerIndex,
+    currentPlayerIndex: globals.clockPlayerIndex,
     timeTakenMs: globals.timeTaken,
   });
 }

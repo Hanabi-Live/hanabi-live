@@ -23,8 +23,8 @@ interface CompactAction {
   readonly value: number | undefined;
 }
 
-const actionSchema = replayGameSchema.shape.actions.element;
-const deckCardSchema = replayGameSchema.shape.deck.element;
+const actionSchema = replayGameSchema.unwrap().shape.actions.unwrap().element;
+const deckCardSchema = replayGameSchema.unwrap().shape.deck.unwrap().element;
 
 interface MinMax {
   min: number;

@@ -388,14 +388,8 @@ pub(super) async fn prepare_table(
                         custom_seed = Some(imported.custom_seed.clone());
                         super::replay_helpers::snapshot(imported, id, session.user)
                     }
-                    hanabi_protocol::ReplayCreateRequest::Id { database_id, .. } => {
-                        crate::archive::replay(
-                            &store.primary,
-                            GameId(*database_id),
-                            id,
-                            session.user,
-                        )
-                        .await?
+                    hanabi_protocol::ReplayCreateRequest::Id { game_id, .. } => {
+                        crate::archive::replay(&store.primary, *game_id, id, session.user).await?
                     }
                 };
                 let mut table =
@@ -434,11 +428,8 @@ pub(super) async fn prepare_table(
         let variant = hanabi_engine::get_variant(&options.variant_name)?;
         options.variant_id = Some(variant.id);
         let player = crate::stats::player(&store.primary, &session.identity, variant.id).await?;
-        let max_players = usize::try_from(r.max_players)
-            .ok()
-            .filter(|n| hanabi_protocol::is_player_count(*n))
-            .unwrap_or(usize::from(hanabi_protocol::DEFAULT_MAX_PLAYERS))
-            .max(extra.custom_num_players.unwrap_or(MIN_PLAYERS));
+        let max_players =
+            usize::from(r.max_players).max(extra.custom_num_players.unwrap_or(MIN_PLAYERS));
         let password = r.password;
         let password_hash = if password.is_empty() {
             None

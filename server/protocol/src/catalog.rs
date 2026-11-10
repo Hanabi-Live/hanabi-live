@@ -89,7 +89,7 @@ pub struct CatalogSuit {
     pub fill: Option<String>,
     /// Allows for a gradient of different colors.
     #[serde(default, skip_serializing_if = "Option::is_none")]
-    #[schemars(with = "Vec<String>", length(min = 1), extend("x-readonly" = true))]
+    #[schemars(with = "Vec<String>", length(min = 1))]
     pub fill_colors: Option<Vec<String>>,
     // -----------------------------------------
     // Optional gameplay modification properties
@@ -99,7 +99,7 @@ pub struct CatalogSuit {
     pub one_of_each: bool,
     /// The colors that touch this suit. When omitted, the color with the suit's name does.
     #[serde(default, skip_serializing_if = "Option::is_none")]
-    #[schemars(with = "Vec<String>", extend("x-readonly" = true))]
+    #[schemars(with = "Vec<String>")]
     pub clue_colors: Option<Vec<String>>,
     #[serde(default, skip_serializing_if = "is_false")]
     #[schemars(extend("const" = true))]
@@ -137,15 +137,15 @@ pub struct CatalogVariant {
     #[schemars(length(min = 1))]
     pub name: String,
     /// Suit names, which may end in " Reversed".
-    #[schemars(length(min = 1), extend("x-readonly" = true))]
+    #[schemars(length(min = 1))]
     pub suits: Vec<String>,
     /// The colors that players can clue. When omitted, the suits' clue colors.
     #[serde(default, skip_serializing_if = "Option::is_none")]
-    #[schemars(with = "Vec<String>", extend("x-readonly" = true))]
+    #[schemars(with = "Vec<String>")]
     pub clue_colors: Option<Vec<String>>,
     /// The ranks that players can clue. When omitted, 1 through 5.
     #[serde(default, skip_serializing_if = "Option::is_none")]
-    #[schemars(with = "Vec<RankClueNumber>", extend("x-readonly" = true))]
+    #[schemars(with = "Vec<RankClueNumber>")]
     pub clue_ranks: Option<Vec<RankClueNumber>>,
     /// The number of cards in each stack. When omitted, 5.
     #[serde(default, skip_serializing_if = "Option::is_none")]

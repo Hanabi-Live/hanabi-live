@@ -130,14 +130,11 @@
     "nativeValid": false
   },
   {
-    "name": "friend defaults",
+    "name": "friend requires a username",
     "direction": "client",
     "command": "chatFriend",
     "input": {},
-    "valid": true,
-    "normalized": {
-      "username": ""
-    }
+    "valid": false
   },
   {
     "name": "join defaults password without coercing table ID",
@@ -356,7 +353,7 @@
       "username": "Alice",
       "status": "away",
       "tableID": 3,
-      "hGroup": false,
+      "hGroupConventions": false,
       "bot": false,
       "inactive": false
     },
@@ -372,7 +369,7 @@
         "username": "Alice",
         "status": "playing",
         "tableID": 3,
-        "hGroup": false,
+        "hGroupConventions": false,
         "hGroupLevel": 3,
         "bot": false,
         "inactive": false
@@ -717,7 +714,7 @@
     "command": "gameHistory",
     "input": [
       {
-        "id": 12,
+        "gameID": 12,
         "options": {
           "numPlayers": 2,
           "variantName": "No Variant",
@@ -738,7 +735,7 @@
         "endCondition": 1,
         "datetimeStarted": "2023-12-29T18:00:00.000Z",
         "datetimeFinished": "2023-12-29T18:21:43.812Z",
-        "numGamesOnThisSeed": 3,
+        "numGamesOnSeed": 3,
         "playerNames": ["Alice", "Bob"],
         "tags": []
       }
@@ -751,7 +748,7 @@
     "command": "gameHistory",
     "input": [
       {
-        "id": 12,
+        "gameID": 12,
         "options": {
           "numPlayers": 2,
           "variantName": "No Variant",
@@ -772,7 +769,7 @@
         "endCondition": 1,
         "datetimeStarted": "2023-12-29T18:00:00.000+00:00",
         "datetimeFinished": "2023-12-29T18:21:43.812Z",
-        "numGamesOnThisSeed": 3,
+        "numGamesOnSeed": 3,
         "playerNames": ["Alice", "Bob"],
         "tags": []
       }
@@ -785,7 +782,7 @@
     "command": "gameHistory",
     "input": [
       {
-        "id": 12,
+        "gameID": 12,
         "options": {
           "numPlayers": 2,
           "variantName": "No Variant",
@@ -806,7 +803,7 @@
         "endCondition": 1,
         "datetimeStarted": "2023-12-29T18:00:00Z",
         "datetimeFinished": "2023-12-29T18:21:43.812Z",
-        "numGamesOnThisSeed": 3,
+        "numGamesOnSeed": 3,
         "playerNames": ["Alice", "Bob"],
         "tags": []
       }
@@ -819,7 +816,7 @@
     "command": "gameHistory",
     "input": [
       {
-        "id": 12,
+        "gameID": 12,
         "options": {
           "numPlayers": 2,
           "variantName": "No Variant",
@@ -840,7 +837,7 @@
         "endCondition": 1,
         "datetimeStarted": "2023-12-29T18:00:00.000000Z",
         "datetimeFinished": "2023-12-29T18:21:43.812Z",
-        "numGamesOnThisSeed": 3,
+        "numGamesOnSeed": 3,
         "playerNames": ["Alice", "Bob"],
         "tags": []
       }
@@ -853,7 +850,7 @@
     "command": "gameHistory",
     "input": [
       {
-        "id": 12,
+        "gameID": 12,
         "options": {
           "numPlayers": 2,
           "variantName": "No Variant",
@@ -874,7 +871,7 @@
         "endCondition": 1,
         "datetimeStarted": "yesterday",
         "datetimeFinished": "2023-12-29T18:21:43.812Z",
-        "numGamesOnThisSeed": 3,
+        "numGamesOnSeed": 3,
         "playerNames": ["Alice", "Bob"],
         "tags": []
       }

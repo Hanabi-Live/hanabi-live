@@ -645,7 +645,7 @@ impl Snapshot {
         names.sort_by_key(|s| s.to_lowercase());
         let time = timestamp;
         Some(hanabi_protocol::GameHistory {
-            id: self.game_id?,
+            game_id: self.game_id?,
             options: wire_options(&self.game.options),
             seed: self.seed.clone(),
             score: self.game.score,
@@ -653,7 +653,7 @@ impl Snapshot {
             end_condition: self.game.end_condition,
             datetime_started: time(self.started),
             datetime_finished: time(self.finished.unwrap_or(self.started)),
-            num_games_on_this_seed: count,
+            num_games_on_seed: count,
             player_names: names,
             tags: self
                 .tags

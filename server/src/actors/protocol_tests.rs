@@ -967,7 +967,7 @@ async fn shared_replay_links_join_an_existing_replay_of_the_same_game() -> Resul
             .execute(&h.store.primary)
             .await?;
         let request = |visibility: &str, join_existing: bool| {
-            json!({"source":"id","databaseID":game,"visibility":visibility,"joinExisting":join_existing})
+            json!({"source":"id","gameID":game,"visibility":visibility,"joinExisting":join_existing})
         };
         let open = async |h: &mut Harness, index: usize, request: Value| -> Result<Value> {
             h.send(index, "replayCreate", request).await?;
@@ -977,7 +977,7 @@ async fn shared_replay_links_join_an_existing_replay_of_the_same_game() -> Resul
         let shared = open(&mut h, 0, request("shared", true)).await?;
         let listed = h.receive(2, "table").await?;
         ensure!(
-            listed["databaseID"] == game,
+            listed["gameID"] == game,
             "The lobby listing of a shared replay did not name its game: {listed}"
         );
         ensure!(
@@ -2110,7 +2110,7 @@ async fn finished_game_publishes_replay_leader_candidates_without_reconnecting()
             );
             let clock = h.receive(index, "clock").await?;
             ensure!(
-                clock.get("activePlayerIndex").is_none() && clock["timeTakenMs"] == 0,
+                clock.get("currentPlayerIndex").is_none() && clock["timeTakenMs"] == 0,
                 "Completion did not stop the active clock"
             );
         }
@@ -3264,7 +3264,7 @@ async fn saved_actions_store_null_for_a_missing_target_or_value() -> Result<()> 
         h.send(
             0,
             "replayCreate",
-            json!({"source":"id","visibility":"solo","databaseID":game}),
+            json!({"source":"id","visibility":"solo","gameID":game}),
         )
         .await?;
         let replay = h.receive(0, "tableStarted").await?["tableID"].clone();

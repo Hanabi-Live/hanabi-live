@@ -83,7 +83,7 @@ pub async fn get_history(
     for row in rows {
         let game = row.game.0;
         result.push(hanabi_protocol::GameHistory {
-            id: hanabi_protocol::GameId(game.id),
+            game_id: hanabi_protocol::GameId(game.id),
             options: crate::model::wire_options(&crate::archive::options(&game)?),
             score: i32::from(game.score),
             num_turns: i32::from(game.num_turns),
@@ -93,7 +93,7 @@ pub async fn get_history(
             datetime_started: time(game.datetime_started),
             datetime_finished: time(game.datetime_finished),
             seed: game.seed,
-            num_games_on_this_seed: i64::from(row.num_games_on_this_seed),
+            num_games_on_seed: i64::from(row.num_games_on_this_seed),
             player_names: row.player_names,
             tags: row.tags,
         });

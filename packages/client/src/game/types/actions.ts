@@ -54,7 +54,7 @@ export interface ActionInit extends Readonly<
     | "datetimeStarted"
     | "datetimeFinished"
     | "mode"
-    | "databaseID"
+    | "gameID"
     | "sharedReplay"
     | "pausePlayerIndex"
     | "pauseQueued"
@@ -83,7 +83,7 @@ interface ActionPremove {
 }
 
 interface ActionPause extends Readonly<
-  Pick<ServerCommandData["pause"], "playerIndex">
+  Pick<ServerCommandData["pause"], "pausePlayerIndex">
 > {
   readonly type: "pause";
 }
@@ -99,7 +99,7 @@ interface ActionSpectators {
 }
 
 interface ActionFinishOngoingGame extends Readonly<
-  Pick<ServerCommandData["finishOngoingGame"], "databaseID" | "sharedReplay">
+  Pick<ServerCommandData["finishOngoingGame"], "gameID" | "sharedReplay">
 > {
   readonly type: "finishOngoingGame";
 

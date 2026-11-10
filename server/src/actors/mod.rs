@@ -320,7 +320,7 @@ pub(crate) fn client_message(name: &str, data: &Value) -> Result<ClientMessage> 
 #[cfg(test)]
 pub(crate) fn test_table() -> hanabi_protocol::Table {
     hanabi_protocol::Table {
-        database_id: None,
+        game_id: None,
         table_id: TableId(1),
         joined: false,
         max_players: hanabi_protocol::DEFAULT_MAX_PLAYERS,

@@ -28,10 +28,10 @@ const fn column_field(column: Column) -> &'static str {
 
 const fn column_name(column: Column) -> &'static str {
     match column {
-        Column::Id => "id",
+        Column::Id => "gameID",
         Column::NumPlayers => "numPlayers",
         Column::Score => "score",
-        Column::Variant => "variant",
+        Column::Variant => "variantID",
     }
 }
 
@@ -287,11 +287,11 @@ pub(super) async fn list(
     qb.push("), paged AS (SELECT id,num_players,score,variant_id,seed,datetime_finished FROM selected ORDER BY ").push(column_field(order))
         .push(if ascending { " ASC" } else { " DESC" }).push(", id DESC LIMIT ")
         .push_bind(size).push(" OFFSET ").push_bind(offset)
-        .push(") SELECT (SELECT count(*) FROM selected) AS total_rows,COALESCE((SELECT jsonb_agg(jsonb_build_object('id',g.id,'numPlayers',g.num_players,'score',g.score,");
+        .push(") SELECT (SELECT count(*) FROM selected) AS total_rows,COALESCE((SELECT jsonb_agg(jsonb_build_object('gameID',g.id,'numPlayers',g.num_players,'score',g.score,");
     if mode != "variants" {
-        qb.push("'variant',g.variant_id,'otherScores',COALESCE((SELECT num_games FROM seeds WHERE seed=g.seed),0),");
+        qb.push("'variantID',g.variant_id,'numGamesOnSeed',COALESCE((SELECT num_games FROM seeds WHERE seed=g.seed),0),");
     }
-    qb.push("'users',COALESCE((SELECT string_agg(u.username, ', ' ORDER BY lower(u.username), u.username) FROM game_participants gp JOIN users u ON u.id=gp.user_id WHERE gp.game_id=g.id),''),'datetime',to_char(g.datetime_finished AT TIME ZONE 'UTC','YYYY-MM-DD\"T\"HH24:MI:SS.MS\"Z\"'),'seed',g.seed) ORDER BY g.")
+    qb.push("'playerNames',COALESCE((SELECT jsonb_agg(u.username ORDER BY gp.seat) FROM game_participants gp JOIN users u ON u.id=gp.user_id WHERE gp.game_id=g.id),'[]'::jsonb),'datetime',to_char(g.datetime_finished AT TIME ZONE 'UTC','YYYY-MM-DD\"T\"HH24:MI:SS.MS\"Z\"'),'seed',g.seed) ORDER BY g.")
         .push(column_field(order)).push(if ascending { " ASC" } else { " DESC" })
         .push(",g.id DESC) FROM paged g),'[]'::jsonb) AS rows");
     let page: PageRow = qb.build_query_as().fetch_one(&state.pool).await?;
@@ -311,7 +311,7 @@ pub(super) async fn list(
 fn game_history(row: HistoryRow) -> anyhow::Result<hanabi_protocol::GameHistory> {
     let g = row.game;
     Ok(hanabi_protocol::GameHistory {
-        id: hanabi_protocol::GameId(g.id),
+        game_id: hanabi_protocol::GameId(g.id),
         options: crate::model::wire_options(&crate::archive::options(&g)?),
         seed: g.seed,
         score: i32::from(g.score),
@@ -321,7 +321,7 @@ fn game_history(row: HistoryRow) -> anyhow::Result<hanabi_protocol::GameHistory>
             .context("Invalid stored end condition")?,
         datetime_started: crate::model::timestamp(g.datetime_started),
         datetime_finished: crate::model::timestamp(g.datetime_finished),
-        num_games_on_this_seed: i64::from(row.seed_count),
+        num_games_on_seed: i64::from(row.seed_count),
         player_names: row.names,
         tags: row.tags,
     })

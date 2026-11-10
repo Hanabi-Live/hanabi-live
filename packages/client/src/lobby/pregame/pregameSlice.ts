@@ -33,9 +33,10 @@ const pregameSlice = createSlice({
   name: "pregame",
   initialState,
   reducers: {
-    gameChanged(state, action: PayloadAction<Game | undefined>) {
-      state.game = action.payload;
-    },
+    gameChanged: (state, action: PayloadAction<Game | undefined>) => ({
+      ...state,
+      game: action.payload,
+    }),
     pregameChatLineAdded(state, action: PayloadAction<PregameChatLine>) {
       state.chatLines.push(action.payload);
     },

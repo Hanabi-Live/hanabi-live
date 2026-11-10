@@ -362,11 +362,11 @@ function getTooltipContent(): string {
     content += tooltipField("fas fa-crown", "Owner", escapeHtml(ownerName));
   }
 
-  if (globals.state.finished && globals.state.replay.databaseID !== undefined) {
+  if (globals.state.finished && globals.state.replay.gameID !== undefined) {
     content += tooltipField(
       "fas fa-fingerprint",
       "Database ID",
-      `<strong>${globals.state.replay.databaseID}</strong>`,
+      `<strong>${globals.state.replay.gameID}</strong>`,
     );
   }
 

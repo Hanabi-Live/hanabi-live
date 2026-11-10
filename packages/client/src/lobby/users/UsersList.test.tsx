@@ -70,7 +70,7 @@ function user(
     userID: userIdSchema.parse(userID),
     username: name,
     status,
-    hGroup: false,
+    hGroupConventions: false,
     bot: false,
     inactive: false,
     ...(status !== "lobby" && { tableID: TABLE_ID }),
@@ -151,8 +151,8 @@ describe("UsersList", () => {
   test("lists bots on a separate tab and does not count them as users", () => {
     store.dispatch(
       usersListed([
-        { ...user(1, "Alice"), hGroup: true },
-        { ...user(2, "Bot-Bob"), hGroup: true, bot: true },
+        { ...user(1, "Alice"), hGroupConventions: true },
+        { ...user(2, "Bot-Bob"), hGroupConventions: true, bot: true },
       ]),
     );
     renderList();

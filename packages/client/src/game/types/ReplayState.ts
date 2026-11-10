@@ -15,7 +15,7 @@ export interface ReplayState {
   readonly actions: readonly GameAction[];
 
   /** Absent when the game is not in the database, such as an ongoing or imported game. */
-  readonly databaseID: number | undefined;
+  readonly gameID: number | undefined;
   readonly shared: SharedReplayState | undefined;
 
   /**

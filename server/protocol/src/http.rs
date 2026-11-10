@@ -94,7 +94,7 @@ pub struct IdentityResponse {
 
 /// A newly issued identity token, from `/api/v1/identity/token`.
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
-#[serde(deny_unknown_fields)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct IdentityTokenResponse {
     pub username: String,
     pub token: String,
@@ -132,21 +132,22 @@ pub struct PublicGamePage {
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct PublicGameRow {
-    pub id: GameId,
-    #[schemars(range(min = MIN_PLAYERS, max = MAX_PLAYERS))]
+    #[serde(rename = "gameID")]
+    pub game_id: GameId,
+    #[schemars(with = "NumPlayers")]
     pub num_players: u8,
     #[schemars(range(min = 0, max = i32::MAX))]
     pub score: i32,
-    /// The variant ID. Variant lists omit it.
-    #[serde(default, skip_serializing_if = "Option::is_none")]
+    /// Variant lists omit it.
+    #[serde(default, rename = "variantID", skip_serializing_if = "Option::is_none")]
     #[schemars(with = "u32", range(max = u32::MAX))]
-    pub variant: Option<u32>,
+    pub variant_id: Option<u32>,
     /// How many games used this seed. Variant lists omit it.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     #[schemars(with = "u32", range(max = u32::MAX))]
-    pub other_scores: Option<u32>,
-    /// The players' names, separated by commas.
-    pub users: String,
+    pub num_games_on_seed: Option<u32>,
+    /// In seat order.
+    pub player_names: Vec<String>,
     /// When the game finished.
     #[schemars(with = "Timestamp")]
     pub datetime: String,

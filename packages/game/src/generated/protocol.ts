@@ -40,99 +40,105 @@ export const endConditionSchema = z.enum(EndCondition);
 /**
  * An entry in `characters.json`: a detrimental character.
  */
-export const catalogCharacterSchema = z.strictObject({
-  description: z.string().min(1),
-  emoji: z.string().min(1),
-  /**
-   * The first character has an ID of 0.
-   */
-  id: z.number().int().min(0).max(4_294_967_295),
-  name: z.string().min(1),
-  /**
-   * Excluded from two-player games.
-   */
-  not2P: z.literal(true).optional(),
-  /**
-   * Whether the character's random color or rank is stored with the game.
-   */
-  writeMetadataToDatabase: z.literal(true).optional(),
-});
+export const catalogCharacterSchema = z
+  .strictObject({
+    description: z.string().min(1),
+    emoji: z.string().min(1),
+    /**
+     * The first character has an ID of 0.
+     */
+    id: z.number().int().min(0).max(4_294_967_295),
+    name: z.string().min(1),
+    /**
+     * Excluded from two-player games.
+     */
+    not2P: z.literal(true).optional(),
+    /**
+     * Whether the character's random color or rank is stored with the game.
+     */
+    writeMetadataToDatabase: z.literal(true).optional(),
+  })
+  .readonly();
 
 /**
  * An entry in `colors.json`.
  */
-export const catalogColorSchema = z.strictObject({
-  /**
-   * If not specified, assume that it is the first letter of the color.
-   */
-  abbreviation: z.string().min(1).max(1).optional(),
-  fill: z.string().min(1),
-  /**
-   * An alternate fill when "Colorblind Mode" is enabled. If not specified, assume that it is the
-   * same as the default fill.
-   */
-  fillColorblind: z.string().min(1).optional(),
-  name: z.string().min(1),
-});
+export const catalogColorSchema = z
+  .strictObject({
+    /**
+     * If not specified, assume that it is the first letter of the color.
+     */
+    abbreviation: z.string().min(1).max(1).optional(),
+    fill: z.string().min(1),
+    /**
+     * An alternate fill when "Colorblind Mode" is enabled. If not specified, assume that it is the
+     * same as the default fill.
+     */
+    fillColorblind: z.string().min(1).optional(),
+    name: z.string().min(1),
+  })
+  .readonly();
 
 /**
  * An entry in `suits.json`. This is similar to `Suit`, but it only has primitive types.
  */
-export const catalogSuitSchema = z.strictObject({
-  /**
-   * The one letter abbreviation to use when representing this suit as a card note. If not
-   * specified, use the abbreviation of the color with the same name, or else the first letter of
-   * the suit.
-   */
-  abbreviation: z.string().min(1).max(1).optional(),
-  allClueColors: z.literal(true).optional(),
-  allClueRanks: z.literal(true).optional(),
-  /**
-   * The colors that touch this suit. When omitted, the color with the suit's name does.
-   */
-  clueColors: z.array(z.string()).readonly().optional(),
-  /**
-   * Whether or not to create variant combinations based on this suit.
-   */
-  createVariants: z.literal(true).optional(),
-  /**
-   * A simplified version of the suit name to show to end-users. If not specified, use the normal
-   * suit name.
-   */
-  displayName: z.string().min(1).optional(),
-  /**
-   * The background color of cards of the suit.
-   */
-  fill: z.string().min(1).optional(),
-  /**
-   * Allows for a gradient of different colors.
-   */
-  fillColors: z.array(z.string()).min(1).readonly().optional(),
-  /**
-   * The suit ID is a two character string:
-   * - Normal suits have a single capital letter. (e.g. "R" for "Red")
-   * - Special suits have a two character ID with a lowercase letter. (e.g. "Bk" for "Black")
-   * - Combination suits have a four character ID. (e.g. `BrRa` for "Muddy Rainbow")
-   * - Dark suits have a capital D prefix. (e.g. `DRa` for "Dark Rainbow")
-   * - Ambiguous suits have a capital A prefix and a number suffix. (e.g. AR1 for "Tomato")
-   * - Very Ambiguous suits have a capital V prefix and a number suffix. (e.g. "VR1" for "Tomato
-   *  VA")
-   * - Extremely Ambiguous suits have a capital E prefix and a number suffix. (e.g. "EB1" for "Ice
-   *  EA")
-   * - Dual-Color suits have a capital D prefix. (e.g. "DRY" for "Tangerine D")
-   */
-  id: z.string().min(1),
-  inverted: z.literal(true).optional(),
-  name: z.string().min(1),
-  noClueColors: z.literal(true).optional(),
-  noClueRanks: z.literal(true).optional(),
-  oneOfEach: z.literal(true).optional(),
-  /**
-   * The symbol that represents this suit: a pip name, "auto", or "none".
-   */
-  pip: z.string().min(1),
-  prism: z.literal(true).optional(),
-});
+export const catalogSuitSchema = z
+  .strictObject({
+    /**
+     * The one letter abbreviation to use when representing this suit as a card note. If not
+     * specified, use the abbreviation of the color with the same name, or else the first letter of
+     * the suit.
+     */
+    abbreviation: z.string().min(1).max(1).optional(),
+    allClueColors: z.literal(true).optional(),
+    allClueRanks: z.literal(true).optional(),
+    /**
+     * The colors that touch this suit. When omitted, the color with the suit's name does.
+     */
+    clueColors: z.array(z.string()).readonly().optional(),
+    /**
+     * Whether or not to create variant combinations based on this suit.
+     */
+    createVariants: z.literal(true).optional(),
+    /**
+     * A simplified version of the suit name to show to end-users. If not specified, use the normal
+     * suit name.
+     */
+    displayName: z.string().min(1).optional(),
+    /**
+     * The background color of cards of the suit.
+     */
+    fill: z.string().min(1).optional(),
+    /**
+     * Allows for a gradient of different colors.
+     */
+    fillColors: z.array(z.string()).min(1).readonly().optional(),
+    /**
+     * The suit ID is a two character string:
+     * - Normal suits have a single capital letter. (e.g. "R" for "Red")
+     * - Special suits have a two character ID with a lowercase letter. (e.g. "Bk" for "Black")
+     * - Combination suits have a four character ID. (e.g. `BrRa` for "Muddy Rainbow")
+     * - Dark suits have a capital D prefix. (e.g. `DRa` for "Dark Rainbow")
+     * - Ambiguous suits have a capital A prefix and a number suffix. (e.g. AR1 for "Tomato")
+     * - Very Ambiguous suits have a capital V prefix and a number suffix. (e.g. "VR1" for "Tomato
+     *  VA")
+     * - Extremely Ambiguous suits have a capital E prefix and a number suffix. (e.g. "EB1" for "Ice
+     *  EA")
+     * - Dual-Color suits have a capital D prefix. (e.g. "DRY" for "Tangerine D")
+     */
+    id: z.string().min(1),
+    inverted: z.literal(true).optional(),
+    name: z.string().min(1),
+    noClueColors: z.literal(true).optional(),
+    noClueRanks: z.literal(true).optional(),
+    oneOfEach: z.literal(true).optional(),
+    /**
+     * The symbol that represents this suit: a pip name, "auto", or "none".
+     */
+    pip: z.string().min(1),
+    prism: z.literal(true).optional(),
+  })
+  .readonly();
 
 /**
  * A card's rank. 7 is the rank of a stack's start card.
@@ -147,68 +153,72 @@ export const rankClueNumberSchema = z.literal([1, 2, 3, 4, 5]);
 /**
  * An entry in `variants.json`. This is similar to `Variant`, but it only has primitive types.
  */
-export const catalogVariantSchema = z.strictObject({
-  alternatingClues: z.literal(true).optional(),
-  chimneys: z.literal(true).optional(),
-  /**
-   * The colors that players can clue. When omitted, the suits' clue colors.
-   */
-  clueColors: z.array(z.string()).readonly().optional(),
-  /**
-   * The ranks that players can clue. When omitted, 1 through 5.
-   */
-  clueRanks: z.array(rankClueNumberSchema).readonly().optional(),
-  clueStarved: z.literal(true).optional(),
-  colorCluesTouchNothing: z.literal(true).optional(),
-  cowAndPig: z.literal(true).optional(),
-  criticalRank: cardRankSchema.optional(),
-  duck: z.literal(true).optional(),
-  funnels: z.literal(true).optional(),
-  /**
-   * A number from 0 to N. For example, "No Variant" is variant 0, "6 Suits" is variant 1, and so
-   * on. This is a legacy field; we want to transition to using a more descriptive string ID,
-   * which will allow for custom user-defined variants.
-   */
-  id: z.number().int().min(0).max(4_294_967_295),
-  name: z.string().min(1),
-  /**
-   * A string that describes the variant. For example, "No Variant" is `R+Y+G+B+P`.
-   */
-  newID: z.string().min(1),
-  oddsAndEvens: z.literal(true).optional(),
-  rankCluesTouchNothing: z.literal(true).optional(),
-  scarceOnes: z.literal(true).optional(),
-  specialRank: cardRankSchema.optional(),
-  specialRankAllClueColors: z.literal(true).optional(),
-  specialRankAllClueRanks: z.literal(true).optional(),
-  specialRankDeceptive: z.literal(true).optional(),
-  specialRankNoClueColors: z.literal(true).optional(),
-  specialRankNoClueRanks: z.literal(true).optional(),
-  /**
-   * The number of cards in each stack. When omitted, 5.
-   */
-  stackSize: z.literal([1, 2, 3, 4]).optional(),
-  sudoku: z.literal(true).optional(),
-  /**
-   * Suit names, which may end in " Reversed".
-   */
-  suits: z.array(z.string()).min(1).readonly(),
-  synesthesia: z.literal(true).optional(),
-  throwItInAHole: z.literal(true).optional(),
-  upOrDown: z.literal(true).optional(),
-});
+export const catalogVariantSchema = z
+  .strictObject({
+    alternatingClues: z.literal(true).optional(),
+    chimneys: z.literal(true).optional(),
+    /**
+     * The colors that players can clue. When omitted, the suits' clue colors.
+     */
+    clueColors: z.array(z.string()).readonly().optional(),
+    /**
+     * The ranks that players can clue. When omitted, 1 through 5.
+     */
+    clueRanks: z.array(rankClueNumberSchema).readonly().optional(),
+    clueStarved: z.literal(true).optional(),
+    colorCluesTouchNothing: z.literal(true).optional(),
+    cowAndPig: z.literal(true).optional(),
+    criticalRank: cardRankSchema.optional(),
+    duck: z.literal(true).optional(),
+    funnels: z.literal(true).optional(),
+    /**
+     * A number from 0 to N. For example, "No Variant" is variant 0, "6 Suits" is variant 1, and so
+     * on. This is a legacy field; we want to transition to using a more descriptive string ID,
+     * which will allow for custom user-defined variants.
+     */
+    id: z.number().int().min(0).max(4_294_967_295),
+    name: z.string().min(1),
+    /**
+     * A string that describes the variant. For example, "No Variant" is `R+Y+G+B+P`.
+     */
+    newID: z.string().min(1),
+    oddsAndEvens: z.literal(true).optional(),
+    rankCluesTouchNothing: z.literal(true).optional(),
+    scarceOnes: z.literal(true).optional(),
+    specialRank: cardRankSchema.optional(),
+    specialRankAllClueColors: z.literal(true).optional(),
+    specialRankAllClueRanks: z.literal(true).optional(),
+    specialRankDeceptive: z.literal(true).optional(),
+    specialRankNoClueColors: z.literal(true).optional(),
+    specialRankNoClueRanks: z.literal(true).optional(),
+    /**
+     * The number of cards in each stack. When omitted, 5.
+     */
+    stackSize: z.literal([1, 2, 3, 4]).optional(),
+    sudoku: z.literal(true).optional(),
+    /**
+     * Suit names, which may end in " Reversed".
+     */
+    suits: z.array(z.string()).min(1).readonly(),
+    synesthesia: z.literal(true).optional(),
+    throwItInAHole: z.literal(true).optional(),
+    upOrDown: z.literal(true).optional(),
+  })
+  .readonly();
 
 /**
  * One author's note on a single card.
  */
-export const cardNoteSchema = z.strictObject({
-  isSpectator: z.boolean(),
-  text: z.string(),
-  /**
-   * The person setting the note.
-   */
-  username: z.string(),
-});
+export const cardNoteSchema = z
+  .strictObject({
+    isSpectator: z.boolean(),
+    text: z.string(),
+    /**
+     * The person setting the note.
+     */
+    username: z.string(),
+  })
+  .readonly();
 
 /**
  * A card's position in the initial deck, which identifies it. Stack bases follow the cards of
@@ -240,14 +250,18 @@ export const colorIndexSchema = z.literal([0, 1, 2, 3, 4, 5]);
  * A clue's type and value: a color clue names a suit's color, and a rank clue names a rank.
  */
 export const receivedClueSchema = z.discriminatedUnion("type", [
-  z.strictObject({
-    type: z.literal("color"),
-    /**
-     * The index of the color in the variant's clue colors.
-     */
-    value: colorIndexSchema,
-  }),
-  z.strictObject({ type: z.literal("rank"), value: rankClueNumberSchema }),
+  z
+    .strictObject({
+      type: z.literal("color"),
+      /**
+       * The index of the color in the variant's clue colors.
+       */
+      value: colorIndexSchema,
+    })
+    .readonly(),
+  z
+    .strictObject({ type: z.literal("rank"), value: rankClueNumberSchema })
+    .readonly(),
 ]);
 
 /**
@@ -269,89 +283,105 @@ export const suitIndexSchema = z.literal([0, 1, 2, 3, 4, 5]);
  * is absent.
  */
 export const gameEventSchema = z.discriminatedUnion("type", [
-  z.strictObject({
-    order: cardOrderSchema,
-    playerIndex: playerIndexSchema,
-    rank: cardRankSchema.optional(),
-    /**
-     * Absent when the recipient may not see the card.
-     */
-    suitIndex: suitIndexSchema.optional(),
-    type: z.literal("draw"),
-  }),
-  z.strictObject({
-    order: cardOrderSchema,
-    playerIndex: playerIndexSchema,
-    rank: cardRankSchema.optional(),
-    /**
-     * Absent when the recipient may not see the card.
-     */
-    suitIndex: suitIndexSchema.optional(),
-    type: z.literal("play"),
-  }),
-  z.strictObject({
-    order: cardOrderSchema,
-    playerIndex: playerIndexSchema,
-    rank: cardRankSchema.optional(),
-    /**
-     * Absent when the recipient may not see the card.
-     */
-    suitIndex: suitIndexSchema.optional(),
-    type: z.literal("cardIdentity"),
-  }),
-  z.strictObject({
-    failed: z.boolean(),
-    order: cardOrderSchema,
-    playerIndex: playerIndexSchema,
-    rank: cardRankSchema.optional(),
-    /**
-     * Absent when the recipient may not see the card.
-     */
-    suitIndex: suitIndexSchema.optional(),
-    type: z.literal("discard"),
-  }),
-  z.strictObject({
-    /**
-     * Absent when the recipient may not see the clue's type and value.
-     */
-    clue: receivedClueSchema.optional(),
-    giver: playerIndexSchema,
-    /**
-     * The orders of the cards the clue touched.
-     */
-    orders: z.array(cardOrderSchema).readonly(),
-    target: playerIndexSchema,
-    turn: z.number().int().min(0).max(9_007_199_254_740_991),
-    type: z.literal("clue"),
-  }),
-  z.strictObject({
-    /**
-     * Absent once the game has ended.
-     */
-    currentPlayerIndex: playerIndexSchema.optional(),
-    num: z.number().int().min(0).max(9_007_199_254_740_991),
-    type: z.literal("turn"),
-  }),
-  z.strictObject({
-    endCondition: z.enum(EndCondition),
-    /**
-     * The player whom the ending names, such as the one who timed out, if any.
-     */
-    playerIndex: playerIndexSchema.optional(),
-    type: z.literal("gameOver"),
-    /**
-     * The players who voted to end the game, when a vote ended it.
-     */
-    votes: z.array(playerIndexSchema).readonly().optional(),
-  }),
-  z.strictObject({
-    durationMs: z.number().int().min(0).max(9_007_199_254_740_991),
-    /**
-     * Each player's time, in seat order.
-     */
-    playerTimesMs: z.array(safeIntegerSchema).min(2).max(6).readonly(),
-    type: z.literal("playerTimes"),
-  }),
+  z
+    .strictObject({
+      order: cardOrderSchema,
+      playerIndex: playerIndexSchema,
+      rank: cardRankSchema.optional(),
+      /**
+       * Absent when the recipient may not see the card.
+       */
+      suitIndex: suitIndexSchema.optional(),
+      type: z.literal("draw"),
+    })
+    .readonly(),
+  z
+    .strictObject({
+      order: cardOrderSchema,
+      playerIndex: playerIndexSchema,
+      rank: cardRankSchema.optional(),
+      /**
+       * Absent when the recipient may not see the card.
+       */
+      suitIndex: suitIndexSchema.optional(),
+      type: z.literal("play"),
+    })
+    .readonly(),
+  z
+    .strictObject({
+      order: cardOrderSchema,
+      playerIndex: playerIndexSchema,
+      rank: cardRankSchema.optional(),
+      /**
+       * Absent when the recipient may not see the card.
+       */
+      suitIndex: suitIndexSchema.optional(),
+      type: z.literal("cardIdentity"),
+    })
+    .readonly(),
+  z
+    .strictObject({
+      failed: z.boolean(),
+      order: cardOrderSchema,
+      playerIndex: playerIndexSchema,
+      rank: cardRankSchema.optional(),
+      /**
+       * Absent when the recipient may not see the card.
+       */
+      suitIndex: suitIndexSchema.optional(),
+      type: z.literal("discard"),
+    })
+    .readonly(),
+  z
+    .strictObject({
+      /**
+       * Absent when the recipient may not see the clue's type and value.
+       */
+      clue: receivedClueSchema.optional(),
+      giver: playerIndexSchema,
+      /**
+       * The orders of the cards the clue touched.
+       */
+      orders: z.array(cardOrderSchema).readonly(),
+      target: playerIndexSchema,
+      turn: z.number().int().min(0).max(9_007_199_254_740_991),
+      type: z.literal("clue"),
+    })
+    .readonly(),
+  z
+    .strictObject({
+      /**
+       * Absent once the game has ended.
+       */
+      currentPlayerIndex: playerIndexSchema.optional(),
+      num: z.number().int().min(0).max(9_007_199_254_740_991),
+      type: z.literal("turn"),
+    })
+    .readonly(),
+  z
+    .strictObject({
+      endCondition: z.enum(EndCondition),
+      /**
+       * The player whom the ending names, such as the one who timed out, if any.
+       */
+      playerIndex: playerIndexSchema.optional(),
+      type: z.literal("gameOver"),
+      /**
+       * The players who voted to end the game, when a vote ended it.
+       */
+      votes: z.array(playerIndexSchema).readonly().optional(),
+    })
+    .readonly(),
+  z
+    .strictObject({
+      durationMs: z.number().int().min(0).max(9_007_199_254_740_991),
+      /**
+       * Each player's time, in seat order.
+       */
+      playerTimesMs: z.array(safeIntegerSchema).min(2).max(6).readonly(),
+      type: z.literal("playerTimes"),
+    })
+    .readonly(),
 ]);
 export const gameIdSchema = z
   .number()
@@ -390,13 +420,8 @@ export const gameOptionsSchema = z
      */
     seed: z.string().min(1).max(32).optional(),
     speedrun: z.boolean().default(false),
-    timeBaseSeconds: z.number().default(0),
-    timePerTurnSeconds: z
-      .number()
-      .int()
-      .min(0)
-      .max(9_007_199_254_740_991)
-      .default(0),
+    timeBaseSeconds: z.number().min(0).max(604_800).default(0),
+    timePerTurnSeconds: z.number().int().min(0).max(86_400).default(0),
     timed: z.boolean().default(false),
     variantID: z.number().int().min(0).max(4_294_967_295).optional(),
     variantName: z.string().min(1).default("No Variant"),
@@ -408,76 +433,92 @@ export const gameOptionsSchema = z
  * of the game. A card identity that the recipient may not see is absent.
  */
 export const hypotheticalActionSchema = z.discriminatedUnion("type", [
-  z.strictObject({
-    order: cardOrderSchema,
-    playerIndex: playerIndexSchema,
-    rank: cardRankSchema.optional(),
-    /**
-     * Absent when the recipient may not see the card.
-     */
-    suitIndex: suitIndexSchema.optional(),
-    type: z.literal("draw"),
-  }),
-  z.strictObject({
-    order: cardOrderSchema,
-    playerIndex: playerIndexSchema,
-    rank: cardRankSchema.optional(),
-    /**
-     * Absent when the recipient may not see the card.
-     */
-    suitIndex: suitIndexSchema.optional(),
-    type: z.literal("play"),
-  }),
-  z.strictObject({
-    failed: z.boolean(),
-    order: cardOrderSchema,
-    playerIndex: playerIndexSchema,
-    rank: cardRankSchema.optional(),
-    /**
-     * Absent when the recipient may not see the card.
-     */
-    suitIndex: suitIndexSchema.optional(),
-    type: z.literal("discard"),
-  }),
-  z.strictObject({
-    /**
-     * Absent when the recipient may not see the clue's type and value.
-     */
-    clue: receivedClueSchema.optional(),
-    giver: playerIndexSchema,
-    ignoreNegative: z.boolean(),
-    /**
-     * The orders of the cards the clue touched.
-     */
-    orders: z.array(cardOrderSchema).readonly(),
-    target: playerIndexSchema,
-    type: z.literal("clue"),
-  }),
-  z.strictObject({
-    /**
-     * Absent once the game has ended.
-     */
-    currentPlayerIndex: playerIndexSchema.optional(),
-    num: z.number().int().min(0).max(9_007_199_254_740_991),
-    type: z.literal("turn"),
-  }),
-  z.strictObject({
-    order: cardOrderSchema,
-    rank: cardRankSchema.optional(),
-    /**
-     * Absent when the recipient may not see the card.
-     */
-    suitIndex: suitIndexSchema.optional(),
-    type: z.literal("morph"),
-  }),
-  z.strictObject({ order: cardOrderSchema, type: z.literal("unmorph") }),
+  z
+    .strictObject({
+      order: cardOrderSchema,
+      playerIndex: playerIndexSchema,
+      rank: cardRankSchema.optional(),
+      /**
+       * Absent when the recipient may not see the card.
+       */
+      suitIndex: suitIndexSchema.optional(),
+      type: z.literal("draw"),
+    })
+    .readonly(),
+  z
+    .strictObject({
+      order: cardOrderSchema,
+      playerIndex: playerIndexSchema,
+      rank: cardRankSchema.optional(),
+      /**
+       * Absent when the recipient may not see the card.
+       */
+      suitIndex: suitIndexSchema.optional(),
+      type: z.literal("play"),
+    })
+    .readonly(),
+  z
+    .strictObject({
+      failed: z.boolean(),
+      order: cardOrderSchema,
+      playerIndex: playerIndexSchema,
+      rank: cardRankSchema.optional(),
+      /**
+       * Absent when the recipient may not see the card.
+       */
+      suitIndex: suitIndexSchema.optional(),
+      type: z.literal("discard"),
+    })
+    .readonly(),
+  z
+    .strictObject({
+      /**
+       * Absent when the recipient may not see the clue's type and value.
+       */
+      clue: receivedClueSchema.optional(),
+      giver: playerIndexSchema,
+      ignoreNegative: z.boolean(),
+      /**
+       * The orders of the cards the clue touched.
+       */
+      orders: z.array(cardOrderSchema).readonly(),
+      target: playerIndexSchema,
+      type: z.literal("clue"),
+    })
+    .readonly(),
+  z
+    .strictObject({
+      /**
+       * Absent once the game has ended.
+       */
+      currentPlayerIndex: playerIndexSchema.optional(),
+      num: z.number().int().min(0).max(9_007_199_254_740_991),
+      type: z.literal("turn"),
+    })
+    .readonly(),
+  z
+    .strictObject({
+      order: cardOrderSchema,
+      rank: cardRankSchema.optional(),
+      /**
+       * Absent when the recipient may not see the card.
+       */
+      suitIndex: suitIndexSchema.optional(),
+      type: z.literal("morph"),
+    })
+    .readonly(),
+  z
+    .strictObject({ order: cardOrderSchema, type: z.literal("unmorph") })
+    .readonly(),
 ]);
 
 /**
  * One author's notes on every card.
  */
-export const playerNotesSchema = z.strictObject({
-  isSpectator: z.boolean(),
-  notes: z.array(z.string()),
-  username: z.string(),
-});
+export const playerNotesSchema = z
+  .strictObject({
+    isSpectator: z.boolean(),
+    notes: z.array(z.string()).readonly(),
+    username: z.string(),
+  })
+  .readonly();

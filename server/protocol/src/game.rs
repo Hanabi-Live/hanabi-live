@@ -15,12 +15,12 @@ use super::*;
 pub struct Clock {
     #[serde(rename = "tableID")]
     pub table_id: TableId,
-    #[schemars(with = "Vec<SafeInteger>")]
+    #[schemars(with = "Vec<SafeInteger>", length(min = MIN_PLAYERS, max = MAX_PLAYERS))]
     pub player_times_ms: Vec<i64>,
     /// Absent when the game has no active player.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     #[schemars(with = "PlayerIndex")]
-    pub active_player_index: Option<PlayerIndex>,
+    pub current_player_index: Option<PlayerIndex>,
     #[schemars(range(min = 0, max = MAX_SAFE_INTEGER))]
     pub time_taken_ms: i64,
 }
@@ -31,6 +31,7 @@ pub struct Clock {
 pub struct Connected {
     #[serde(rename = "tableID")]
     pub table_id: TableId,
+    #[schemars(length(min = MIN_PLAYERS, max = MAX_PLAYERS))]
     pub connected: Vec<bool>,
 }
 
@@ -53,7 +54,7 @@ pub struct Pause {
     /// The seat that paused the game. Absent when the game is not paused.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     #[schemars(with = "PlayerIndex")]
-    pub player_index: Option<PlayerIndex>,
+    pub pause_player_index: Option<PlayerIndex>,
 }
 
 /// The votes to end the game, as one player sees them.
@@ -99,13 +100,9 @@ pub struct FinishOngoingGame {
     #[serde(rename = "tableID")]
     pub table_id: TableId,
     /// Absent when the game was not saved.
-    #[serde(
-        default,
-        rename = "databaseID",
-        skip_serializing_if = "Option::is_none"
-    )]
+    #[serde(default, rename = "gameID", skip_serializing_if = "Option::is_none")]
     #[schemars(with = "GameId")]
-    pub database_id: Option<GameId>,
+    pub game_id: Option<GameId>,
     pub shared_replay: SharedReplayInit,
 }
 
@@ -259,7 +256,6 @@ pub enum GameEvent {
         giver: PlayerIndex,
         target: PlayerIndex,
         /// The orders of the cards the clue touched.
-        #[schemars(extend("x-readonly" = true))]
         orders: Vec<CardOrder>,
         #[schemars(range(min = 0, max = MAX_SAFE_INTEGER))]
         turn: i64,
@@ -280,15 +276,14 @@ pub enum GameEvent {
         player_index: Option<PlayerIndex>,
         /// The players who voted to end the game, when a vote ended it.
         #[serde(default, skip_serializing_if = "Option::is_none")]
-        #[schemars(with = "Vec<PlayerIndex>", extend("x-readonly" = true))]
+        #[schemars(with = "Vec<PlayerIndex>")]
         votes: Option<Vec<PlayerIndex>>,
     },
     PlayerTimes {
         /// Each player's time, in seat order.
         #[schemars(
             with = "Vec<SafeInteger>",
-            length(min = MIN_PLAYERS, max = MAX_PLAYERS),
-            extend("x-readonly" = true)
+            length(min = MIN_PLAYERS, max = MAX_PLAYERS)
         )]
         player_times_ms: Vec<i64>,
         #[schemars(range(min = 0, max = MAX_SAFE_INTEGER))]
@@ -355,14 +350,10 @@ pub struct Init {
     /// The seat the recipient views the game from.
     pub our_player_index: PlayerIndex,
     pub mode: ViewMode,
-    /// The game's database ID, present only in a replay of a saved game.
-    #[serde(
-        default,
-        rename = "databaseID",
-        skip_serializing_if = "Option::is_none"
-    )]
+    /// The game's ID, present only in a replay of a saved game.
+    #[serde(default, rename = "gameID", skip_serializing_if = "Option::is_none")]
     #[schemars(with = "GameId")]
-    pub database_id: Option<GameId>,
+    pub game_id: Option<GameId>,
     pub has_custom_seed: bool,
     /// Absent for a game with its own deck instead of a seed, such as an imported one.
     #[serde(default, skip_serializing_if = "Option::is_none")]
@@ -395,10 +386,10 @@ pub struct Init {
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct SharedReplayInit {
     pub leader: String,
-    #[schemars(range(min = 0, max = MAX_SAFE_INTEGER))]
-    pub segment: i64,
-    #[schemars(range(min = -MAX_SAFE_INTEGER, max = MAX_SAFE_INTEGER))]
-    pub efficiency_modifier: i64,
+    #[schemars(range(min = 0, max = i32::MAX))]
+    pub segment: i32,
+    #[schemars(range(min = i32::MIN, max = i32::MAX))]
+    pub efficiency_modifier: i32,
     /// Whether the shared replay hides what happens later in the game.
     pub spoiler_free: bool,
     /// The players who will not play again if the leader restarts.

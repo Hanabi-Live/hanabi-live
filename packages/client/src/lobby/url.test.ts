@@ -152,7 +152,7 @@ describe("replay URL loading", () => {
     expect(send).toHaveBeenCalledTimes(1);
     expect(send).toHaveBeenCalledWith(
       "replayCreate",
-      expect.objectContaining({ databaseID: 456, visibility: "solo" }),
+      expect.objectContaining({ gameID: 456, visibility: "solo" }),
     );
   });
 

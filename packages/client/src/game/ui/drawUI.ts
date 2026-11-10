@@ -2343,18 +2343,18 @@ function timerClick() {
   const { currentPlayerIndex } = globals.state.ongoingGame.turn;
   const { ourPlayerIndex } = globals.metadata;
 
-  let setting: "pause" | "pause-queue" | "pause-unqueue";
+  let setting: "pause" | "pauseQueue" | "pauseUnqueue";
   if (currentPlayerIndex === ourPlayerIndex) {
     setting = "pause";
   } else if (globals.state.pause.queued) {
-    setting = "pause-unqueue";
+    setting = "pauseUnqueue";
 
     globals.store!.dispatch({
       type: "pauseQueue",
       queued: false,
     });
   } else {
-    setting = "pause-queue";
+    setting = "pauseQueue";
 
     globals.store!.dispatch({
       type: "pauseQueue",

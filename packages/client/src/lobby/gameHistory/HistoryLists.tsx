@@ -66,7 +66,7 @@ export function HistoryList(): React.JSX.Element {
         </thead>
         <tbody id="lobby-history-table-tbody">
           {games.map((game) => (
-            <HistoryRow game={game} key={game.id} username={username} />
+            <HistoryRow game={game} key={game.gameID} username={username} />
           ))}
         </tbody>
       </table>
@@ -116,12 +116,12 @@ function HistoryRow({
   readonly game: GameHistory;
   readonly username: string;
 }) {
-  const otherGameCount = game.numGamesOnThisSeed - 1;
+  const otherGameCount = game.numGamesOnSeed - 1;
   const { seed } = game;
 
   return (
     <tr>
-      <td>#{game.id}</td>
+      <td>#{game.gameID}</td>
       <td>{game.options.numPlayers}</td>
       <td>
         {game.score}/{getVariant(game.options.variantName).maxScore}
@@ -133,10 +133,10 @@ function HistoryRow({
       <td>{game.playerNames.filter((name) => name !== username).join(", ")}</td>
       <td>{formatDate(game)}</td>
       <td>
-        <ReplayButton databaseID={game.id} visibility="solo" />
+        <ReplayButton gameID={game.gameID} visibility="solo" />
       </td>
       <td>
-        <ReplayButton databaseID={game.id} visibility="shared" />
+        <ReplayButton gameID={game.gameID} visibility="shared" />
       </td>
       <td>
         <button
@@ -145,7 +145,7 @@ function HistoryRow({
               ? "button fit tw:m-0 disabled"
               : "button fit tw:m-0"
           }
-          id={`history-other-scores-${game.id}`}
+          id={`history-other-scores-${game.gameID}`}
           onClick={
             otherGameCount === 0 || seed === undefined
               ? undefined
@@ -189,7 +189,7 @@ export function OtherScoresList(): React.JSX.Element {
           {shown?.games.map((game) => (
             <OtherScoreRow
               game={game}
-              key={game.id}
+              key={game.gameID}
               maxScore={maxScore}
               ourGame={game.playerNames.includes(username)}
             />
@@ -237,7 +237,7 @@ function OtherScoreRow({
 
   return (
     <tr>
-      <td>{emphasize(`#${game.id}`)}</td>
+      <td>{emphasize(`#${game.gameID}`)}</td>
       <td>{emphasize(`${game.score}/${maxScore}`)}</td>
       <td>
         <HistoryOptions options={game.options} />
@@ -246,10 +246,10 @@ function OtherScoreRow({
       <td>{emphasize(formatDate(game))}</td>
       <td>{emphasize(seedNumber)}</td>
       <td>
-        <ReplayButton databaseID={game.id} visibility="solo" />
+        <ReplayButton gameID={game.gameID} visibility="solo" />
       </td>
       <td>
-        <ReplayButton databaseID={game.id} visibility="shared" />
+        <ReplayButton gameID={game.gameID} visibility="shared" />
       </td>
     </tr>
   );
@@ -337,20 +337,20 @@ function getOptionItems(
 }
 
 function ReplayButton({
-  databaseID,
+  gameID,
   visibility,
 }: {
-  readonly databaseID: number;
+  readonly gameID: number;
   readonly visibility: "solo" | "shared";
 }) {
   return (
     <button
       className="button fit tw:m-0 history-table enter-history-game"
-      id={`replay-${databaseID}`}
+      id={`replay-${gameID}`}
       onClick={() => {
         globals.conn!.send("replayCreate", {
           source: "id",
-          databaseID,
+          gameID,
           visibility,
         });
         if (visibility === "shared") {

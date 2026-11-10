@@ -462,11 +462,11 @@ impl TableActor {
             return self
                 .suggest(
                     session,
-                    i64::from(
-                        args[0]
-                            .parse::<i32>()
-                            .or_reject("Expected /suggest [turn]")?,
-                    ),
+                    args[0]
+                        .parse::<i32>()
+                        .ok()
+                        .filter(|turn| *turn >= 0)
+                        .or_reject("Expected /suggest [turn]")?,
                 )
                 .await;
         }
