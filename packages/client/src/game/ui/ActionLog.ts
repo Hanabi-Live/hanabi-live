@@ -81,6 +81,19 @@ export class ActionLog extends Konva.Group {
         );
       });
 
+    // A line that slides out of the visible area must keep its text until it is out of sight. Going
+    // backward, the log has no line below the new last line, so the hidden line below would be
+    // empty.
+    if (slides) {
+      for (const row of [0, this.maxLines + 1]) {
+        const oldRow = row + shift;
+        const oldText = this.texts[oldRow];
+        if (this.isVisibleRow(oldRow) && oldText !== undefined) {
+          texts[row] = oldText;
+        }
+      }
+    }
+
     for (const [i, text] of texts.entries()) {
       if (text !== this.texts[i]) {
         (this.lines.children[i] as FitText).fitText(text);

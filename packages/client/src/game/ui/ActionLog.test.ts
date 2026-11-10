@@ -40,10 +40,15 @@ describe("ActionLog", () => {
     expect(lines.y()).toBe(LINE_HEIGHT);
   });
 
-  test("slides when the last line is removed", () => {
+  test("slides the removed last line out of sight", () => {
     const { actionLog, lines } = makeActionLog();
     actionLog.update(makeLog(6));
     actionLog.update(makeLog(5));
     expect(lines.y()).toBe(-LINE_HEIGHT);
+
+    const hiddenLineBelow = lines.children[MAX_LINES + 1] as unknown as {
+      fitText: ReturnType<typeof vi.fn>;
+    };
+    expect(hiddenLineBelow.fitText).toHaveBeenLastCalledWith("line 5");
   });
 });
