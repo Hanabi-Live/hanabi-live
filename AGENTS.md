@@ -100,10 +100,12 @@ are debugging sound.
 
 Before you commit a change that adds or modifies a UI element, take a screenshot
 of each new or changed element with `bun run ui-screenshots` and show it to the
-user.
+user, so that they can decide on it. Show only these screenshots. Do not show
+screenshots that only check that a change, such as a refactor, keeps a screen
+the same. Check those yourself, and report the result in text.
 
 When running in WSL, the host app cannot display screenshots you send it. Open
-each one in the Windows image viewer instead:
+each screenshot that you show in the Windows image viewer instead:
 `explorer.exe "$(wslpath -w <file>)"`.
 
 ## Delivering changes
