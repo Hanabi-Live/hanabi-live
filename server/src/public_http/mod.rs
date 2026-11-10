@@ -53,9 +53,7 @@ fn strict_query(raw: Option<&str>, accepted: &[&str]) -> Result<Query> {
     Query::parse(raw, accepted).map_err(HttpError::bad)
 }
 
-pub(super) use hanabi_protocol::DEFAULT_PAGE_SIZE;
-/// The most rows that a page of a public listing can have.
-pub(super) const MAX_PAGE_SIZE: i64 = 100;
+pub(super) use hanabi_protocol::{DEFAULT_PAGE_SIZE, MAX_PAGE_SIZE};
 /// The page sizes that a public listing's pager offers.
 pub(super) const PAGER_SIZES: [i64; 4] = [DEFAULT_PAGE_SIZE, 20, 50, MAX_PAGE_SIZE];
 

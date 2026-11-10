@@ -172,14 +172,14 @@ pub struct InactiveRequest {
     pub inactive: bool,
 }
 
-/// A page of the player's own game history. Negative values get a friendly warning.
+/// A page of the player's own game history. Values out of range get a friendly warning.
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct HistoryRequest {
     #[serde(default)]
     #[schemars(range(min = -MAX_SAFE_INTEGER, max = MAX_SAFE_INTEGER))]
     pub offset: i64,
-    /// 0 requests every game.
+    /// The games on the page, from 1 to `MAX_PAGE_SIZE`.
     #[serde(default)]
     #[schemars(range(min = -MAX_SAFE_INTEGER, max = MAX_SAFE_INTEGER))]
     pub amount: i64,

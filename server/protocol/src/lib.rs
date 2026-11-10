@@ -114,6 +114,8 @@ pub const DEFAULT_TIME_BASE_MINUTES: f64 = 2.0;
 pub const DEFAULT_TIME_PER_TURN_SECONDS: i32 = 20;
 /// The rows on a page of a public listing when the request does not name a size.
 pub const DEFAULT_PAGE_SIZE: i64 = 10;
+/// The most rows that a page of a public listing or of a player's game history can have.
+pub const MAX_PAGE_SIZE: i64 = 100;
 /// The most private messages that one history request can ask for.
 pub const MAX_PRIVATE_HISTORY_MESSAGES: i64 = 100;
 /// A table's progress, as a percentage, once its game reaches the maximum score or its replay

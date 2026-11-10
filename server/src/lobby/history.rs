@@ -9,10 +9,10 @@ pub async fn history_ids(pool: &PgPool, id: UserId, offset: i64, amount: i64) ->
     // loading every game the player has finished to sort them by finish time.
     Ok(sqlx::query_scalar!(
         "SELECT game_id FROM game_participants WHERE user_id=$1
-         ORDER BY game_id DESC LIMIT NULLIF($2::bigint,0) OFFSET $3",
+         ORDER BY game_id DESC LIMIT $2 OFFSET $3",
         id.0,
         amount,
-        if amount == 0 { 0 } else { offset }
+        offset
     )
     .fetch_all(pool)
     .await?)

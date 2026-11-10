@@ -550,10 +550,6 @@ async fn lobby_history_pages_include_only_own_games_postgres() {
         vec![own]
     );
     assert_eq!(
-        history_ids(&db.pool, UserId(a), 99, 0).await.unwrap(),
-        vec![shared, own]
-    );
-    assert_eq!(
         history_ids(&db.pool, UserId(a), 99, 10).await.unwrap(),
         Vec::<i32>::new()
     );
@@ -624,6 +620,24 @@ async fn lobby_directed_linked_seeds_and_histories_postgres() {
     assert_eq!(history[0]["id"], ga);
     assert_eq!(history[0]["options"]["variantName"], "No Variant");
     assert_eq!(history[0]["playerNames"], json!(["Alice"]));
+    // A page holds at least one game and at most `MAX_PAGE_SIZE`.
+    for amount in [0, hanabi_protocol::MAX_PAGE_SIZE + 1] {
+        let result = run(
+            &db.pool,
+            &who,
+            &[],
+            "historyGet",
+            json!({"offset":0,"amount":amount}),
+        )
+        .await;
+        assert_eq!(
+            self_data(&result, "warning")["warning"],
+            format!(
+                "The amount of games must be between 1 and {}.",
+                hanabi_protocol::MAX_PAGE_SIZE
+            )
+        );
+    }
     let result = run(
         &db.pool,
         &who,

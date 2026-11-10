@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "SELECT game_id FROM game_participants WHERE user_id=$1\n         ORDER BY game_id DESC LIMIT NULLIF($2::bigint,0) OFFSET $3",
+  "query": "SELECT game_id FROM game_participants WHERE user_id=$1\n         ORDER BY game_id DESC LIMIT $2 OFFSET $3",
   "describe": {
     "columns": [
       {
@@ -26,5 +26,5 @@
       false
     ]
   },
-  "hash": "e5997124204dca75ce3f7eabf4d23b32e1db550d2463a284f6d1847839b0ec75"
+  "hash": "4648f29c39c99d99af9cc659f07cff92bc309fb56343553d17035858c8077a8d"
 }

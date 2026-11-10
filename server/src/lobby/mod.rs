@@ -212,8 +212,11 @@ pub async fn dispatch(
             if offset < 0 {
                 return Ok(Some(vec![warning("That is not a valid start value.")]));
             }
-            if amount < 0 {
-                return Ok(Some(vec![warning("That is not a valid end value.")]));
+            if !(1..=hanabi_protocol::MAX_PAGE_SIZE).contains(&amount) {
+                return Ok(Some(vec![warning(&format!(
+                    "The amount of games must be between 1 and {}.",
+                    hanabi_protocol::MAX_PAGE_SIZE
+                ))]));
             }
             let ids = history_ids(pool, caller.user, offset, amount).await?;
             vec![Effect::to_self(Outgoing::new(

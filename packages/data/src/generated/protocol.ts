@@ -331,11 +331,11 @@ export const gameHistoryOtherScoresSchema = z
   .readonly();
 
 /**
- * A page of the player's own game history. Negative values get a friendly warning.
+ * A page of the player's own game history. Values out of range get a friendly warning.
  */
 export const historyRequestSchema = z.strictObject({
   /**
-   * 0 requests every game.
+   * The games on the page, from 1 to `MAX_PAGE_SIZE`.
    */
   amount: z
     .number()
