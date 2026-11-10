@@ -2,3 +2,14 @@
 .hidden {
   display: none;
 }
+
+.margin0 {
+  margin: 0;
+}
+
+/* A disabled button has the same colors everywhere, such as in the header. */
+.button.disabled,
+.button:disabled {
+  background-color: var(--button-disabled-bg);
+  color: var(--button-disabled-text);
+}

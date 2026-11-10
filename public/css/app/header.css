@@ -3,9 +3,9 @@
   border-bottom: var(--header-border);
   color: var(--header-text);
   cursor: default;
-  height: 3.25em;
+  height: var(--header-height);
   left: 0;
-  line-height: 3.25em;
+  line-height: var(--header-height);
   position: fixed;
   top: 0;
   width: 100%;
@@ -84,7 +84,7 @@
 
 /* The logo in the header bar */
 .logo {
-  height: 3.25em;
+  height: var(--header-height);
   vertical-align: bottom;
 }
 

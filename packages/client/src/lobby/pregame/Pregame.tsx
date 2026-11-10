@@ -227,7 +227,7 @@ function StatRow({
   return (
     <div className="row">
       <div className="col-10">{label}</div>
-      <div className="col-2 align-right tw:p-0">{value}</div>
+      <div className="col-2 tw:p-0 tw:text-right">{value}</div>
     </div>
   );
 }

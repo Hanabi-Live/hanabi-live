@@ -66,6 +66,8 @@
 }
 
 #game-chat-modal-white {
+  display: flex;
+  flex-direction: column;
   width: calc(100% - 0.3em);
   height: calc(100% - 1.25em - 0.3em);
   /* We have to move it further down because of the header */
@@ -74,14 +76,6 @@
   position: relative;
   top: 0.05em;
   left: 0.15em;
-}
-
-#game-chat-text {
-  /*
-    The height of the in-game chat text box is bigger than the lobby text boxes
-    (e.g. ".lobby-chat-text-box") because there is no title to account for
-  */
-  height: calc(100% - 4em);
 }
 
 .efficiency-description {

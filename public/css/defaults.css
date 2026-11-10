@@ -178,10 +178,6 @@ code {
   text-align: center;
 }
 
-.align-right {
-  text-align: right;
-}
-
 /* Row: a 12-column grid */
 
 .row {
@@ -590,28 +586,6 @@ table thead {
   border-bottom: solid 2px var(--border);
 }
 
-table.alt {
-  border-collapse: separate;
-}
-
-table.alt tbody tr td {
-  border: solid 1px var(--border);
-  border-left-width: 0;
-  border-top-width: 0;
-}
-
-table.alt tbody tr td:first-child {
-  border-left-width: 1px;
-}
-
-table.alt tbody tr:first-child td {
-  border-top-width: 1px;
-}
-
-table.alt thead {
-  border-bottom: 0;
-}
-
 /* Button */
 
 input[type="submit"],
@@ -708,10 +682,7 @@ input[type="submit"].primary:active,
 
 .button.disabled,
 .button:disabled {
-  /* A disabled button looks the same everywhere, such as in the header. */
-  background-color: var(--button-disabled-bg) !important;
   box-shadow: inset 0 -0.15em 0 0 rgba(0, 0, 0, 0.15);
-  color: var(--button-disabled-text) !important;
   cursor: default;
   opacity: 0.25;
 }

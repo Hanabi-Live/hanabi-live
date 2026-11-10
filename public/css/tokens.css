@@ -118,6 +118,9 @@
   /* The corner radius of panels, modals, tooltips, buttons, and form fields */
   --radius: 6px;
 
+  /* The height of the header bar, which is fixed over the top of the page */
+  --header-height: 3.25em;
+
   /* The lobby's custom cursors, with their hot spots */
   --cursor-rejoin: url("/public/img/cursors/rejoin.svg") 12 12, pointer;
   --cursor-join: url("/public/img/cursors/join.svg") 12 10, pointer;

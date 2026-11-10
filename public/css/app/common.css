@@ -49,7 +49,7 @@ body,
 }
 
 #page-wrapper {
-  padding-top: 3em;
+  padding-top: var(--header-height);
 }
 
 body {
@@ -71,10 +71,6 @@ body[data-screen="game"] {
   display: flex;
   align-items: center;
   justify-content: center;
-}
-
-.margin0 {
-  margin: 0 !important;
 }
 
 .padding0p75 {

@@ -7,6 +7,7 @@ import { useAppSelector } from "../../store";
 import * as tooltips from "../../tooltips";
 import { copyStringToClipboard, getURLFromPath } from "../../utils";
 import { OptionIcon } from "../OptionIcon";
+import { BORDERED_TABLE } from "../borderedTable";
 import {
   FULL_CURSOR,
   JOIN_CURSOR,
@@ -69,7 +70,7 @@ export function TablesList(): React.JSX.Element {
       id="lobby-games-table-container"
     >
       <h3 className="lobby-title">List of games</h3>
-      <table className="alt tw:mb-0" id="lobby-games-table">
+      <table className={`${BORDERED_TABLE} tw:mb-0`} id="lobby-games-table">
         <thead>
           <tr>
             {Object.values(COLUMNS).map(({ title, className }) => (

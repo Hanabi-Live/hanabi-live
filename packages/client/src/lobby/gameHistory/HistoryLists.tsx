@@ -10,6 +10,7 @@ import { globals } from "../../Globals";
 import { useAppSelector } from "../../store";
 import * as tooltips from "../../tooltips";
 import { dateTimeFormatter } from "../../utils";
+import { BORDERED_TABLE } from "../borderedTable";
 import {
   hide,
   showMore,
@@ -48,7 +49,7 @@ export function HistoryList(): React.JSX.Element {
       className="tw:h-full tw:overflow-y-auto"
       id="lobby-history-table-container"
     >
-      <table className="alt">
+      <table className={BORDERED_TABLE}>
         <thead>
           <tr>
             <th>Game ID</th>
@@ -141,8 +142,8 @@ function HistoryRow({
         <button
           className={
             otherGameCount === 0 || seed === undefined
-              ? "button fit margin0 disabled"
-              : "button fit margin0"
+              ? "button fit tw:m-0 disabled"
+              : "button fit tw:m-0"
           }
           id={`history-other-scores-${game.id}`}
           onClick={
@@ -171,7 +172,7 @@ export function OtherScoresList(): React.JSX.Element {
 
   return (
     <div className="tw:h-full tw:overflow-y-auto">
-      <table className="alt">
+      <table className={BORDERED_TABLE}>
         <thead>
           <tr>
             <th>Game ID</th>
@@ -348,7 +349,7 @@ function ReplayButton({
 }) {
   return (
     <button
-      className="button fit margin0 history-table enter-history-game"
+      className="button fit tw:m-0 history-table enter-history-game"
       id={`replay-${databaseID}`}
       onClick={() => {
         globals.conn!.send("replayCreate", {

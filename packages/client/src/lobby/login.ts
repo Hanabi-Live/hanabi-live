@@ -344,7 +344,7 @@ export function hide(firstTimeUser: boolean): void {
 
   // Show the lobby
   globals.currentScreen = Screen.Lobby;
-  $("#lobby").show();
+  $("#lobby").removeClass("hidden");
   $("#lobby-history").hide();
   // We can't hide this element by default in "index.html" or else the "No game history" text will
   // not be centered.

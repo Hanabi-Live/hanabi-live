@@ -239,6 +239,7 @@ export function showLobbyHalves(visible: boolean): void {
   ]) {
     $(selector).toggleClass("hidden", !visible);
   }
+  $("#lobby-full").toggleClass("hidden", visible);
 }
 
 export function show(target: string): void {
