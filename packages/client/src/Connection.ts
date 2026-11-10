@@ -11,6 +11,15 @@ import {
 } from "@hanabi-live/data";
 import type { z } from "zod";
 
+/** The commands that `send` delivers before the client is ready. */
+const COMMANDS_BEFORE_READY: ReadonlySet<ClientCommand> = new Set([
+  "getGameInfo1",
+  "getGameInfo2",
+  "loaded",
+  "tableReattend",
+  "tableSpectate",
+]);
+
 /** Events from the WebSocket itself, rather than messages from the server. */
 type LifecycleEvent = "open" | "close" | "socketError";
 
@@ -134,14 +143,7 @@ export class Connection {
   ): void {
     if (
       this.ws.readyState !== WebSocket.OPEN
-      || (!this.ready
-        && ![
-          "getGameInfo1",
-          "getGameInfo2",
-          "loaded",
-          "tableReattend",
-          "tableSpectate",
-        ].includes(command))
+      || (!this.ready && !COMMANDS_BEFORE_READY.has(command))
     ) {
       return;
     }
