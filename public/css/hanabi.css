@@ -1094,6 +1094,35 @@ input::-webkit-calendar-picker-indicator /* Chrome */ {
   width: 1.8em;
 }
 
+/* "Saved" appears beside a setting when the user changes it, then fades out. */
+.setting-status {
+  color: #308943;
+  flex-shrink: 0;
+  font-size: 0.9em;
+  opacity: 0;
+  transition:
+    opacity 0.4s ease,
+    visibility 0.4s;
+  visibility: hidden;
+  white-space: nowrap;
+}
+
+.setting-status.visible {
+  opacity: 1;
+  transition: none;
+  visibility: visible;
+}
+
+.setting-status .fa-check {
+  margin-right: 0.4em;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .setting-status {
+    transition: none;
+  }
+}
+
 /* A pasted game is too long for one line, so its box goes below its description. */
 .lobby-row:has(textarea) {
   align-items: stretch;

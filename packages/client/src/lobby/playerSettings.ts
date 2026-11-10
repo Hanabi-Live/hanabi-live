@@ -50,6 +50,7 @@ export function init(): void {
       name: "volume",
       setting: volumeString, // The server expects all setting values as strings.
     });
+    showSaved(this);
   });
 
   $("#settings-volume-test").click(() => {
@@ -104,6 +105,7 @@ export function init(): void {
       name: "soundMove",
       setting: soundMove.toString(), // The server expects all setting values as strings.
     });
+    showSaved(this);
   });
 
   const hGroupLevelSelect = $("#hGroupLevel");
@@ -136,6 +138,7 @@ export function init(): void {
       name: "hGroupLevel",
       setting: hGroupLevelString, // The server expects all setting values as strings.
     });
+    showSaved(this);
   });
 }
 
@@ -175,6 +178,45 @@ export function setPlayerSettings(): void {
   showHGroupLevel(globals.settings.hGroupConventions);
 }
 
+/** How long "Saved" stays beside a setting before it fades out. */
+const SAVED_STATUS_MILLISECONDS = 2000;
+
+const savedStatusTimers = new Map<HTMLElement, ReturnType<typeof setTimeout>>();
+
+/** Shows "Saved" on the row of the control that the user just changed. */
+function showSaved(control: HTMLElement) {
+  const row = control.closest<HTMLElement>(".lobby-row");
+  if (row === null) {
+    return;
+  }
+
+  let status = row.querySelector<HTMLElement>(".setting-status");
+  if (status === null) {
+    status = document.createElement("span");
+    status.className = "setting-status";
+    status.setAttribute("role", "status");
+    // The status goes just before the control, at the end of the description.
+    row.lastElementChild!.before(status);
+  }
+
+  // Write the text again each time, so that screen readers announce every save.
+  const icon = document.createElement("i");
+  icon.className = "fas fa-check";
+  status.replaceChildren(icon, "Saved");
+  status.classList.add("visible");
+  const oldTimer = savedStatusTimers.get(row);
+  if (oldTimer !== undefined) {
+    clearTimeout(oldTimer);
+  }
+  savedStatusTimers.set(
+    row,
+    setTimeout(() => {
+      status.classList.remove("visible");
+      savedStatusTimers.delete(row);
+    }, SAVED_STATUS_MILLISECONDS),
+  );
+}
+
 /** The H-Group level only matters to people who use the H-Group features. */
 function showHGroupLevel(hGroupConventions: boolean) {
   $("#hGroupLevel-row").toggle(hGroupConventions);
@@ -210,6 +252,7 @@ function changeSetting(this: HTMLElement) {
     name: settingName,
     setting: checked.toString(), // The server expects all setting values as strings.
   });
+  showSaved(this);
 
   switch (settingName) {
     case "desktopNotification": {

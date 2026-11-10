@@ -73,6 +73,7 @@ of the repository.
   Message", "Add to Friends", and "Block".
 - The "Other Scores" screen now shows 10 games at a time, with a "Show More
   Scores" button.
+- The "Settings" screen now shows "Saved" beside a setting when you change it.
 
 ## November 8th, 2026
 

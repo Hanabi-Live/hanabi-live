@@ -348,6 +348,10 @@ html[data-theme="dark"] .lobby-row .fa-fw {
   color: #6fcf7a;
 }
 
+html[data-theme="dark"] .setting-status {
+  color: #6fcf7a;
+}
+
 html[data-theme="dark"] .lobby-group h3 {
   color: var(--dm-text-muted);
 }
