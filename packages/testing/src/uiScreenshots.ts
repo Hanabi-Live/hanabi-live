@@ -206,8 +206,17 @@ function getStates(replayID: number): readonly State[] {
     },
     {
       name: "replay",
-      path: `/replay/${replayID}`,
+      path: "/",
       loggedIn: true,
+      // The client ignores a "/replay/<id>" path for an account that is a few seconds old, so open
+      // the replay from the lobby.
+      prepare: async (page) => {
+        await clickNav(page, "replay");
+        await page.fill("#replay-id", replayID.toString());
+        await page.click("#replay-submit");
+        await page.waitForSelector(".konvajs-content");
+        await page.waitForTimeout(SETTLE_MILLISECONDS * 2);
+      },
       // The server keeps the account in the replay until it goes back to the lobby.
       cleanup: async (page) => {
         await page.keyboard.press("Escape");
