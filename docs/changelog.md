@@ -36,6 +36,7 @@ of the repository.
   classic screen, and a "Classic view" button switches to it at any time.
 - In replays, a misplayed card now moves to its play stack and then straight to
   the discard pile, instead of exploding on the strike tracker.
+- New installations now log PostgreSQL statements that take over 250 ms.
 
 ## November 9th, 2026
 
