@@ -306,18 +306,21 @@ export function onSharedLeaderChanged(
 /** Shows the leader whether they can restart, and the other players whether they declined. */
 export function onRestartChanged(
   shared:
-    | Pick<SharedReplayState, "leader" | "amLeader" | "restartDeclined">
+    | Pick<
+        SharedReplayState,
+        "leader" | "amLeader" | "canPlayAgain" | "restartDeclined"
+      >
     | undefined,
 ): void {
   const { playerNames, ourUsername } = globals.metadata;
   const amLeader = shared?.amLeader === true;
+  const canPlayAgain = shared?.canPlayAgain === true;
   const canRestart =
     shared !== undefined && restart.canRestart(shared, playerNames);
-  globals.elements.restartButton?.visible(amLeader);
+  globals.elements.restartButton?.visible(amLeader && canPlayAgain);
 
-  const amPlayer = playerNames.includes(ourUsername);
   const readyButton = globals.elements.restartReadyButton;
-  readyButton?.visible(shared !== undefined && !amLeader && amPlayer);
+  readyButton?.visible(!amLeader && canPlayAgain);
   readyButton?.setPressed(
     shared?.restartDeclined.includes(ourUsername) !== true,
   );

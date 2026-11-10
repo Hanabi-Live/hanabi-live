@@ -101,6 +101,7 @@ gameCommands.set("finishOngoingGame", (data) => {
     type: "finishOngoingGame",
     databaseID: data.databaseID,
     sharedReplayLeader: data.sharedReplayLeader,
+    canPlayAgain: data.canPlayAgain,
     datetimeFinished: new Date().toISOString(),
   });
   if (
@@ -558,6 +559,7 @@ function initStateStore(data: InitData) {
     sharedReplayLeader: data.sharedReplayLeader,
     spoilerFree: data.spoilerFree,
     restartDeclined: data.restartDeclined,
+    canPlayAgain: data.canPlayAgain,
     paused: data.paused,
     // The server omits the pauser when nobody is pausing, and the pauser is only shown while
     // paused.

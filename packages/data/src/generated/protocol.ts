@@ -335,6 +335,10 @@ export const errorNoticeSchema = z
   .readonly();
 export const finishOngoingGameSchema = z.strictObject({
   /**
+   * Whether the recipient played this game and can play it again. See `Init::can_play_again`.
+   */
+  canPlayAgain: z.boolean(),
+  /**
    * Absent when the game was not saved.
    */
   databaseID: gameIdSchema.optional(),
@@ -496,6 +500,11 @@ const viewModeSchema = z.enum([
  * Everything a client needs to draw a game, before its events arrive.
  */
 export const initSchema = z.strictObject({
+  /**
+   * Whether the recipient played the game of this shared replay at this table, so that they can
+   * play it again: the leader by restarting, and the other players by saying if they are ready.
+   */
+  canPlayAgain: z.boolean(),
   /**
    * Each player's character, in seat order, when detrimental characters are on.
    */

@@ -91,6 +91,7 @@ export function onActiveOrAmLeaderChanged(data: {
   active: boolean;
   amLeader: boolean;
   sharedReplay: boolean;
+  canPlayAgain: boolean;
 }): void {
   const visibleForFollowersInHypo = data.active && !data.amLeader;
   globals.elements.hypoCircle?.visible(visibleForFollowersInHypo);
@@ -102,9 +103,9 @@ export function onActiveOrAmLeaderChanged(data: {
     arrows.hideAll();
   }
 
-  const visibleForLeaderInSharedReplay =
-    !data.active && data.sharedReplay && data.amLeader;
-  globals.elements.restartButton?.visible(visibleForLeaderInSharedReplay);
+  globals.elements.restartButton?.visible(
+    !data.active && data.sharedReplay && data.amLeader && data.canPlayAgain,
+  );
 
   globals.layers.UI.batchDraw();
 }

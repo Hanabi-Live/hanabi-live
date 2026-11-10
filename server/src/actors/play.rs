@@ -195,6 +195,7 @@ impl TableActor {
                             database_id: (s.game_id != crate::model::UNSAVED_GAME)
                                 .then_some(s.game_id),
                             shared_replay_leader: self.leader_name(),
+                            can_play_again: self.can_play_again(&a.session),
                         },
                     ),
                 ));
@@ -552,6 +553,7 @@ impl TableActor {
                 shared_replay_efficiency_modifier: efficiency.into(),
                 spoiler_free,
                 restart_declined: self.restart_declined_names(),
+                can_play_again: shared_replay && self.can_play_again(&session),
                 // A review of a game just played begins when the game ends; a replay of an older
                 // game begins when its table is created.
                 datetime_shared_replay_started: shared_replay.then(|| {

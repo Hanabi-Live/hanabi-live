@@ -42,6 +42,7 @@ function setup(amLeader: boolean) {
         amLeader,
         datetimeStarted: "2026-01-01T00:00:00.000Z",
         spoilerFree: false,
+        canPlayAgain: false,
         restartDeclined: [],
         hypothetical: undefined,
       },

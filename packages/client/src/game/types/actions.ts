@@ -62,6 +62,7 @@ export interface ActionInit extends Readonly<
     | "sharedReplayEfficiencyModifier"
     | "spoilerFree"
     | "restartDeclined"
+    | "canPlayAgain"
     | "paused"
     | "pauseQueued"
   >
@@ -113,7 +114,7 @@ interface ActionSpectators {
 interface ActionFinishOngoingGame extends Readonly<
   Pick<
     ServerCommandData["finishOngoingGame"],
-    "databaseID" | "sharedReplayLeader"
+    "databaseID" | "sharedReplayLeader" | "canPlayAgain"
   >
 > {
   readonly type: "finishOngoingGame";

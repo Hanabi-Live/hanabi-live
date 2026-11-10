@@ -99,6 +99,8 @@ pub struct FinishOngoingGame {
     #[schemars(with = "GameId")]
     pub database_id: Option<GameId>,
     pub shared_replay_leader: String,
+    /// Whether the recipient played this game and can play it again. See `Init::can_play_again`.
+    pub can_play_again: bool,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
@@ -383,6 +385,9 @@ pub struct Init {
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     #[schemars(length(max = MAX_PLAYERS))]
     pub restart_declined: Vec<String>,
+    /// Whether the recipient played the game of this shared replay at this table, so that they can
+    /// play it again: the leader by restarting, and the other players by saying if they are ready.
+    pub can_play_again: bool,
     /// When the shared replay began, present only in shared replays.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     #[schemars(with = "Timestamp")]

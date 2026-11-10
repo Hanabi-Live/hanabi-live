@@ -123,6 +123,7 @@ function stateReducerFunction(state: Draft<State>, action: Action) {
         amLeader: action.sharedReplayLeader === state.metadata.ourUsername,
         datetimeStarted: action.datetimeFinished,
         spoilerFree: false,
+        canPlayAgain: action.canPlayAgain,
         restartDeclined: [],
         hypothetical: undefined,
       };
@@ -172,6 +173,7 @@ function stateReducerFunction(state: Draft<State>, action: Action) {
               datetimeStarted:
                 action.datetimeSharedReplayStarted ?? new Date().toISOString(),
               spoilerFree: action.spoilerFree,
+              canPlayAgain: action.canPlayAgain,
               restartDeclined: action.restartDeclined ?? [],
               hypothetical: undefined,
             };

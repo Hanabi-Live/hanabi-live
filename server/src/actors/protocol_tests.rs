@@ -1021,6 +1021,11 @@ async fn spoiler_free_reviews_are_shared_replays_that_tell_everyone() -> Result<
             init["mode"] == "sharedReplay" && init["spoilerFree"] == true,
             "A spectator joined a spoiler-free review without being told: {init}"
         );
+        // Bob has the name of a player, but he did not play this game at this table.
+        ensure!(
+            init["canPlayAgain"] == false,
+            "A replay of an imported game offered a restart: {init}"
+        );
         Ok(())
     }
     .await;
@@ -1788,7 +1793,10 @@ async fn restart_leaves_out_players_who_are_done_playing() -> Result<()> {
         }
         h.send(2, "getGameInit", json!({"tableID":id})).await?;
         let init = h.receive(2, "init").await?;
-        ensure!(init["restartDeclined"] == json!(["Carol"]), "{init}");
+        ensure!(
+            init["restartDeclined"] == json!(["Carol"]) && init["canPlayAgain"] == true,
+            "{init}"
+        );
         ensure!(
             h.send(0, "tableRestart", json!({"tableID":id,"hidePregame":true}))
                 .await

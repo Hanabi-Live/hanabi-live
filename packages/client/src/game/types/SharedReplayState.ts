@@ -14,6 +14,12 @@ export interface SharedReplayState {
    */
   readonly spoilerFree: boolean;
 
+  /**
+   * Whether we played this game at this table and can play it again: as the leader by restarting,
+   * and otherwise by telling the leader whether we are ready.
+   */
+  readonly canPlayAgain: boolean;
+
   /** The players who will not play again if the leader restarts. */
   readonly restartDeclined: readonly string[];
 

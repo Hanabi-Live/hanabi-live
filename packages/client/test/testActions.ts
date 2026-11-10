@@ -28,6 +28,7 @@ export function init(): ActionInit {
     sharedReplaySegment: 0,
     sharedReplayLeader: "",
     sharedReplayEfficiencyModifier: 0,
+    canPlayAgain: false,
     spoilerFree: false,
     paused: false,
     pausePlayerIndex: 0,

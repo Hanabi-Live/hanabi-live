@@ -330,6 +330,7 @@ const replayObservers: Subscriptions = [
         : {
             leader: s.replay.shared.leader,
             amLeader: s.replay.shared.amLeader,
+            canPlayAgain: s.replay.shared.canPlayAgain,
             restartDeclined: s.replay.shared.restartDeclined,
           },
     replayView.onRestartChanged,
@@ -375,6 +376,7 @@ const replayObservers: Subscriptions = [
         || s.replay.shared.amLeader
         || s.replay.ownHypothetical !== undefined,
       sharedReplay: s.replay.shared !== undefined,
+      canPlayAgain: s.replay.shared?.canPlayAgain === true,
     }),
     hypotheticalView.onActiveOrAmLeaderChanged,
   ),
