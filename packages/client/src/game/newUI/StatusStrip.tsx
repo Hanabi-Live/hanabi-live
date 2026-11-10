@@ -1,3 +1,20 @@
+import { useEffect, useRef } from "react";
+import * as tooltips from "../../tooltips";
+
+/** Explains the two efficiency numbers, in the words of the classic screen's tooltip. */
+const EFFICIENCY_HELP = `
+  <span class="small-tooltip-text">
+    The first number is the minimum amount of efficiency needed from<br />
+    this turn onward in order to win (i.e. future required efficiency).<br />
+    The second number shows the minimum possible efficiency needed<br />
+    to win with the current number of players and the current variant.
+  </span>
+`;
+
+/** The plain text of `EFFICIENCY_HELP`, for screen readers. */
+const EFFICIENCY_HELP_LABEL =
+  "About efficiency: the first number is the future required efficiency, and the second number is the minimum possible efficiency needed to win with the current number of players and the current variant.";
+
 interface StatusStripProps {
   readonly turn: number;
   readonly score: number;
@@ -16,7 +33,7 @@ function Stat({
   label,
   children,
 }: {
-  readonly label: string;
+  readonly label: React.ReactNode;
   readonly children: React.ReactNode;
 }): React.JSX.Element {
   return (
@@ -26,6 +43,31 @@ function Stat({
         {children}
       </span>
     </div>
+  );
+}
+
+/**
+ * A question mark that explains the stat beside it in a tooltip, like those on the lobby screens.
+ */
+function HelpIcon({
+  label,
+  tooltip,
+}: {
+  readonly label: string;
+  readonly tooltip: string;
+}): React.JSX.Element {
+  const ref = useRef<HTMLButtonElement>(null);
+  useEffect(() => tooltips.attach(ref.current!, tooltip), [tooltip]);
+
+  return (
+    <button
+      aria-label={label}
+      className="tw:ml-1.5 tw:cursor-help tw:border-0 tw:bg-transparent tw:p-0 tw:text-game-link tw:hover:text-game-text"
+      ref={ref}
+      type="button"
+    >
+      <i aria-hidden="true" className="fas fa-question-circle" />
+    </button>
   );
 }
 
@@ -71,11 +113,16 @@ export function StatusStrip({
         <OutOf max={maxScore} value={score} />
       </Stat>
       <Stat label="Pace">{pace}</Stat>
-      <div title="The efficiency that the rest of the game needs, and the efficiency that the whole game needed at the start">
-        <Stat label="Efficiency, needed / at start">
-          <OutOf max={minEfficiency} value={futureEfficiency} />
-        </Stat>
-      </div>
+      <Stat
+        label={
+          <>
+            Efficiency
+            <HelpIcon label={EFFICIENCY_HELP_LABEL} tooltip={EFFICIENCY_HELP} />
+          </>
+        }
+      >
+        <OutOf max={minEfficiency} value={futureEfficiency} />
+      </Stat>
       <div className="tw:min-w-0 tw:flex-auto">
         <span className="tw:text-[13px] tw:text-game-muted">Variant</span>
         <div className="tw:truncate tw:text-[22px] tw:font-bold tw:text-game-muted tw:narrow-980:text-[17px]">
