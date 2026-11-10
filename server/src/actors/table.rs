@@ -515,45 +515,11 @@ impl TableActor {
         mut work: Commit<'_>,
     ) -> CommandResult<Outcome> {
         self.store.check_state()?;
-        if next.visible
-            && next
-                .chat
-                .iter()
-                .skip(self.table.chat.len())
-                .any(|chat| chat.user > UserId(0))
-            && let Phase::Replay { snapshot, .. } = &mut next.phase
-        {
-            snapshot.idle_remaining = IDLE_TIMEOUT_MS;
-        }
-        let old_ids = self
-            .table
-            .players()
-            .iter()
-            .map(|p| p.id)
-            .collect::<Vec<_>>();
-        let new_ids = next.players().iter().map(|p| p.id).collect::<Vec<_>>();
-        if old_ids != new_ids {
-            for shadow in next.shadows.values_mut() {
-                *shadow = shadow
-                    .and_then(|seat| old_ids.get(seat.index()))
-                    .and_then(|id| new_ids.iter().position(|new| new == id))
-                    .and_then(Seat::new);
-            }
-        }
-        if let Some(s) = next.game_mut()
-            && s.game.end_condition != EndCondition::InProgress
-            && s.finished.is_none()
-        {
-            s.finished = Some(Utc::now());
-        }
-        let finished = matches!(&next.phase, Phase::Live { snapshot, .. }
-            if snapshot.game.end_condition != EndCondition::InProgress);
-        if finished {
-            next.convert_to_replay()?;
-            for a in self.audience() {
-                next.shadows.insert(a.session.user, None);
-            }
-        }
+        let finished = next.settle(
+            &self.table,
+            self.audience().map(|a| a.session.user),
+            Utc::now(),
+        )?;
         work.archive = finished && !next.extra.no_write_to_database;
         work.count_seed = finished
             && next

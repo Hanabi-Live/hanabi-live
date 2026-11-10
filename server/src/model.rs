@@ -350,6 +350,56 @@ impl TableSnapshot {
         };
         Ok(())
     }
+    /// Applies the rules that follow from changing a table from `before` to `self`, at `now`:
+    ///
+    /// - New chat from a user gives a shared replay another idle window.
+    /// - A spectator who shadowed a player keeps shadowing that player when the seats change.
+    /// - A game that ended gets its finish time and becomes a replay. Its `audience` stays to watch
+    ///   it, without shadowing anyone.
+    ///
+    /// Returns whether a game finished.
+    pub fn settle(
+        &mut self,
+        before: &Self,
+        audience: impl IntoIterator<Item = UserId>,
+        now: DateTime<Utc>,
+    ) -> Result<bool> {
+        if self.visible
+            && self
+                .chat
+                .iter()
+                .skip(before.chat.len())
+                .any(|chat| chat.user > SERVER_AUTHOR)
+            && let Phase::Replay { snapshot, .. } = &mut self.phase
+        {
+            snapshot.idle_remaining = IDLE_TIMEOUT_MS;
+        }
+        let old_ids = before.players().iter().map(|p| p.id).collect::<Vec<_>>();
+        let new_ids = self.players().iter().map(|p| p.id).collect::<Vec<_>>();
+        if old_ids != new_ids {
+            for shadow in self.shadows.values_mut() {
+                *shadow = shadow
+                    .and_then(|seat| old_ids.get(seat.index()))
+                    .and_then(|id| new_ids.iter().position(|new| new == id))
+                    .and_then(Seat::new);
+            }
+        }
+        if let Some(s) = self.game_mut()
+            && s.game.end_condition != EndCondition::InProgress
+            && s.finished.is_none()
+        {
+            s.finished = Some(now);
+        }
+        let finished = matches!(&self.phase, Phase::Live { snapshot, .. }
+            if snapshot.game.end_condition != EndCondition::InProgress);
+        if finished {
+            self.convert_to_replay()?;
+            for user in audience {
+                self.shadows.insert(user, None);
+            }
+        }
+        Ok(finished)
+    }
     pub fn validate(&self) -> Result<()> {
         ensure!(
             self.format == FORMAT
