@@ -253,7 +253,7 @@ mod tests {
         let imported = import(&json!({
             "id": 7,
             "seed": "p2v0s1",
-            "actions": [{"type": 5, "target": -1, "value": 4}],
+            "actions": [{"type": "gameOver", "endCondition": 10}],
             "notes": [["", "a"], []]
         }))
         .unwrap();
@@ -262,7 +262,7 @@ mod tests {
         for input in [
             json!({"seed":"p2v0s1","options":{"timeBaseSeconds":1.5}}),
             json!({"seed":"p2v0s1","source":"another tool"}),
-            json!({"seed":"p2v0s1","actions":[{"type":5,"target":-1,"turn":1}]}),
+            json!({"seed":"p2v0s1","actions":[{"type":"gameOver","endCondition":10,"turn":1}]}),
             json!({"seed":"p2v0s1","options":{"tableName":"x"}}),
             json!({"seed":"p2v0s1","playerNames":null}),
             json!({"seed":"p2v0s1","options":{"speedrun":null}}),

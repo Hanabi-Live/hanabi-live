@@ -130,8 +130,8 @@ pub struct ReplayImport {
     #[schemars(with = "Vec<ImportCard>", length(max = MAX_DECK_SIZE))]
     pub deck: Option<Vec<ImportCard>>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
-    #[schemars(with = "Vec<ImportAction>", length(max = MAX_GAME_ACTIONS))]
-    pub actions: Option<Vec<ImportAction>>,
+    #[schemars(with = "Vec<ReplayGameAction>", length(max = MAX_GAME_ACTIONS))]
+    pub actions: Option<Vec<ReplayGameAction>>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     #[schemars(with = "ImportOptions")]
     pub options: Option<ImportOptions>,
@@ -261,44 +261,6 @@ impl ReplayGameAction {
             value,
         }
     }
-}
-
-/// An action in an imported game: in the replay format, or as a game's record stores it, which is
-/// the form that games exported before November 10th, 2026 use.
-#[derive(Clone, Copy, Debug, Serialize, Deserialize, JsonSchema)]
-#[serde(untagged)]
-pub enum ImportAction {
-    Named(ReplayGameAction),
-    Recorded(RecordedImportAction),
-}
-
-impl ImportAction {
-    /// The action as a game's record stores it.
-    pub fn recorded(self) -> ReplayAction {
-        match self {
-            Self::Named(action) => action.recorded(),
-            Self::Recorded(action) => ReplayAction {
-                kind: action.kind.unwrap_or(RecordedActionType::Play),
-                target: action.target.unwrap_or(0),
-                value: action.value.unwrap_or(0),
-            },
-        }
-    }
-}
-
-/// An action in the form of a game's record. Missing fields are 0.
-#[derive(Clone, Copy, Debug, Default, Serialize, Deserialize, JsonSchema)]
-#[serde(deny_unknown_fields)]
-pub struct RecordedImportAction {
-    #[serde(default, rename = "type", skip_serializing_if = "Option::is_none")]
-    #[schemars(with = "RecordedActionType")]
-    pub kind: Option<RecordedActionType>,
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    #[schemars(with = "i32", range(min = i32::MIN, max = i32::MAX))]
-    pub target: Option<i32>,
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    #[schemars(with = "i32", range(min = i32::MIN, max = i32::MAX))]
-    pub value: Option<i32>,
 }
 
 /// A player's character in an imported game. A missing name is no character.

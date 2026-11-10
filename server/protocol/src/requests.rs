@@ -113,8 +113,9 @@ pub struct TableVariantRequest {
 pub struct TableStartRequest {
     #[serde(rename = "tableID")]
     pub table_id: TableId,
+    /// The players that the owner saw seated. The server ignores a start from an outdated view.
     #[serde(default, skip_serializing_if = "Option::is_none")]
-    #[schemars(with = "Vec<String>", length(max = MAX_PLAYERS))]
+    #[schemars(with = "Vec<String>", length(max = MAX_PLAYERS), inner(length(min = 1)))]
     pub intended_player_names: Option<Vec<String>>,
 }
 

@@ -737,60 +737,6 @@ export const replayBoardElementSchema = z.enum([
 ]);
 
 /**
- * An action in the form of a game's record. Missing fields are 0.
- */
-const recordedImportActionSchema = z.strictObject({
-  target: z.number().int().min(-2_147_483_648).max(2_147_483_647).optional(),
-  type: z.enum(RecordedActionType).optional(),
-  value: z.number().int().min(-2_147_483_648).max(2_147_483_647).optional(),
-});
-
-/**
- * A turn, or the end of the game, in the replay format.
- */
-const replayGameActionSchema = z.discriminatedUnion("type", [
-  z.strictObject({ order: cardOrderSchema, type: z.literal("play") }),
-  z.strictObject({ order: cardOrderSchema, type: z.literal("discard") }),
-  z.strictObject({
-    /**
-     * The index of the color in the variant's clue colors.
-     */
-    colorIndex: z.literal([0, 1, 2, 3, 4, 5]),
-    /**
-     * The player who receives the clue.
-     */
-    target: playerIndexSchema,
-    type: z.literal("colorClue"),
-  }),
-  z.strictObject({
-    rank: z.literal([1, 2, 3, 4, 5]),
-    /**
-     * The player who receives the clue.
-     */
-    target: playerIndexSchema,
-    type: z.literal("rankClue"),
-  }),
-  z.strictObject({
-    endCondition: z.enum(EndCondition),
-    /**
-     * The player who ended the game, such as the one who timed out. Absent when no player
-     * did.
-     */
-    playerIndex: playerIndexSchema.optional(),
-    type: z.literal("gameOver"),
-  }),
-]);
-
-/**
- * An action in an imported game: in the replay format, or as a game's record stores it, which is
- * the form that games exported before November 10th, 2026 use.
- */
-const importActionSchema = z.union([
-  replayGameActionSchema,
-  recordedImportActionSchema,
-]);
-
-/**
  * A card in an imported deck. A missing identity is 0.
  */
 const importCardSchema = z.strictObject({
@@ -842,12 +788,48 @@ const importOptionsSchema = z.strictObject({
 });
 
 /**
+ * A turn, or the end of the game, in the replay format.
+ */
+const replayGameActionSchema = z.discriminatedUnion("type", [
+  z.strictObject({ order: cardOrderSchema, type: z.literal("play") }),
+  z.strictObject({ order: cardOrderSchema, type: z.literal("discard") }),
+  z.strictObject({
+    /**
+     * The index of the color in the variant's clue colors.
+     */
+    colorIndex: z.literal([0, 1, 2, 3, 4, 5]),
+    /**
+     * The player who receives the clue.
+     */
+    target: playerIndexSchema,
+    type: z.literal("colorClue"),
+  }),
+  z.strictObject({
+    rank: z.literal([1, 2, 3, 4, 5]),
+    /**
+     * The player who receives the clue.
+     */
+    target: playerIndexSchema,
+    type: z.literal("rankClue"),
+  }),
+  z.strictObject({
+    endCondition: z.enum(EndCondition),
+    /**
+     * The player who ended the game, such as the one who timed out. Absent when no player
+     * did.
+     */
+    playerIndex: playerIndexSchema.optional(),
+    type: z.literal("gameOver"),
+  }),
+]);
+
+/**
  * A game to import, in the format that `ReplayGame` exports. Every field is optional: a seed alone
  * determines the deck, and missing options take their defaults. The server checks the game itself,
  * such as whether the deck matches the seed.
  */
 export const replayImportSchema = z.strictObject({
-  actions: z.array(importActionSchema).max(512).optional(),
+  actions: z.array(replayGameActionSchema).max(512).optional(),
   characters: z.array(importCharacterSchema).max(6).optional(),
   /**
    * The deck, by card order.
@@ -1267,7 +1249,10 @@ export const tableSpectateRequestSchema = z.strictObject({
   tableID: tableIdSchema,
 });
 export const tableStartRequestSchema = z.strictObject({
-  intendedPlayerNames: z.array(z.string()).max(6).optional(),
+  /**
+   * The players that the owner saw seated. The server ignores a start from an outdated view.
+   */
+  intendedPlayerNames: z.array(z.string().min(1)).max(6).optional(),
   tableID: tableIdSchema,
 });
 

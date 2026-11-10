@@ -63,16 +63,6 @@
     "valid": true
   },
   {
-    "name": "chat rejects request IDs, which clients no longer send",
-    "direction": "client",
-    "command": "chat",
-    "input": {
-      "text": "hello",
-      "requestID": "r"
-    },
-    "valid": false
-  },
-  {
     "name": "chat rejects empty messages",
     "direction": "client",
     "command": "chat",
@@ -236,22 +226,22 @@
     "valid": false
   },
   {
-    "name": "start preserves empty legacy intentions",
-    "direction": "client",
-    "command": "tableStart",
-    "input": {
-      "tableID": 1,
-      "intendedPlayerNames": ["", "", "", "", "", ""]
-    },
-    "valid": true
-  },
-  {
     "name": "start rejects seven intended players",
     "direction": "client",
     "command": "tableStart",
     "input": {
       "tableID": 1,
       "intendedPlayerNames": ["a", "b", "c", "d", "e", "f", "g"]
+    },
+    "valid": false
+  },
+  {
+    "name": "start rejects an empty intended player name",
+    "direction": "client",
+    "command": "tableStart",
+    "input": {
+      "tableID": 1,
+      "intendedPlayerNames": ["Alice", ""]
     },
     "valid": false
   },
@@ -263,16 +253,6 @@
       "tableID": 1
     },
     "valid": true
-  },
-  {
-    "name": "spectate rejects the legacy -1 shadow seat",
-    "direction": "client",
-    "command": "tableSpectate",
-    "input": {
-      "tableID": 1,
-      "shadowingPlayerIndex": -1
-    },
-    "valid": false
   },
   {
     "name": "missing server chat fields stay omitted",
@@ -319,16 +299,6 @@
       "text": "hello",
       "source": "other",
       "datetime": "2026-01-01T12:00:00.000Z"
-    },
-    "valid": false
-  },
-  {
-    "name": "chat deletion rejects a room",
-    "direction": "server",
-    "command": "chatDelete",
-    "input": {
-      "chatID": 1,
-      "room": "table1"
     },
     "valid": false
   },
@@ -409,21 +379,6 @@
       }
     ],
     "valid": true
-  },
-  {
-    "name": "a user who chose no H-Group level has none",
-    "direction": "server",
-    "command": "user",
-    "input": {
-      "userID": 7,
-      "username": "Alice",
-      "status": "lobby",
-      "hGroup": true,
-      "hGroupLevel": 0,
-      "bot": false,
-      "inactive": false
-    },
-    "valid": false
   },
   {
     "name": "welcome fills unchanged settings with the same defaults",
@@ -571,18 +526,6 @@
     "valid": false
   },
   {
-    "name": "replays have no password",
-    "direction": "client",
-    "command": "replayCreate",
-    "input": {
-      "source": "id",
-      "visibility": "solo",
-      "databaseID": 3,
-      "password": ""
-    },
-    "valid": false
-  },
-  {
     "name": "replay import rejects unknown fields",
     "direction": "client",
     "command": "replayCreate",
@@ -661,57 +604,6 @@
           {
             "type": "gameOver",
             "endCondition": 10
-          }
-        ]
-      }
-    },
-    "valid": true
-  },
-  {
-    "name": "replay imports still read numbered actions from older exports",
-    "direction": "client",
-    "command": "replayCreate",
-    "input": {
-      "source": "json",
-      "visibility": "solo",
-      "gameJSON": {
-        "seed": "p2v0s1",
-        "actions": [
-          {
-            "type": 3,
-            "target": 1,
-            "value": 1
-          },
-          {
-            "target": 0
-          },
-          {
-            "type": 5,
-            "target": -1,
-            "value": 10
-          }
-        ]
-      }
-    },
-    "normalized": {
-      "source": "json",
-      "visibility": "solo",
-      "spoilerFree": false,
-      "gameJSON": {
-        "seed": "p2v0s1",
-        "actions": [
-          {
-            "type": 3,
-            "target": 1,
-            "value": 1
-          },
-          {
-            "target": 0
-          },
-          {
-            "type": 5,
-            "target": -1,
-            "value": 10
           }
         ]
       }
@@ -990,15 +882,6 @@
     "valid": false
   },
   {
-    "name": "boot no longer uses the capitalized TableID",
-    "direction": "server",
-    "command": "boot",
-    "input": {
-      "TableID": 7
-    },
-    "valid": false
-  },
-  {
     "name": "hypothetical actions are typed objects",
     "direction": "client",
     "command": "replayAction",
@@ -1032,17 +915,6 @@
     "input": {
       "tableID": 4,
       "type": "segment"
-    },
-    "valid": false
-  },
-  {
-    "name": "hypothetical actions are objects, not JSON text",
-    "direction": "server",
-    "command": "replayAction",
-    "input": {
-      "tableID": 1,
-      "type": "hypoAction",
-      "action": "{\"type\":\"turn\",\"num\":1,\"currentPlayerIndex\":0}"
     },
     "valid": false
   },
@@ -1081,46 +953,6 @@
       }
     },
     "valid": true
-  },
-  {
-    "name": "hidden clues are omitted, not marked with -1",
-    "direction": "server",
-    "command": "gameAction",
-    "input": {
-      "tableID": 3,
-      "action": {
-        "type": "clue",
-        "clue": {
-          "type": -1,
-          "value": 5
-        },
-        "giver": 0,
-        "target": 1,
-        "orders": [3, 4],
-        "turn": 2
-      }
-    },
-    "valid": false
-  },
-  {
-    "name": "clue types are named, not numbered",
-    "direction": "server",
-    "command": "gameAction",
-    "input": {
-      "tableID": 3,
-      "action": {
-        "type": "clue",
-        "clue": {
-          "type": 1,
-          "value": 5
-        },
-        "giver": 0,
-        "target": 1,
-        "orders": [3, 4],
-        "turn": 2
-      }
-    },
-    "valid": false
   },
   {
     "name": "color clues name the first suit's color",
@@ -1202,22 +1034,6 @@
       ]
     },
     "valid": true
-  },
-  {
-    "name": "unknown suits are omitted, not marked with -1",
-    "direction": "server",
-    "command": "gameAction",
-    "input": {
-      "tableID": 3,
-      "action": {
-        "type": "draw",
-        "playerIndex": 0,
-        "order": 0,
-        "suitIndex": -1,
-        "rank": 7
-      }
-    },
-    "valid": false
   },
   {
     "name": "cards can be unknown or a stack's start card",

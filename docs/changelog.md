@@ -34,6 +34,8 @@ of the repository.
 - The new "New UI" setting shows ongoing games in a redesigned game screen. It
   is in testing and off by default. Finished games and replays still use the
   classic screen, and a "Classic view" button switches to it at any time.
+- Games exported before November 10th, 2026 can no longer be imported. Export
+  them again to get the current format.
 
 ## November 9th, 2026
 

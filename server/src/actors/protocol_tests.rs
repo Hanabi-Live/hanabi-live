@@ -1044,7 +1044,7 @@ async fn shared_replays_of_older_games_start_when_their_table_is_created() -> Re
             "replayCreate",
             json!({"source":"json","visibility":"shared","gameJSON":{
                 "playerNames":["Alice","Bob"],"seed":"p2v0s1",
-                "actions":[{"type":4,"target":0,"value":4}]}}),
+                "actions":[{"type":"gameOver","endCondition":4,"playerIndex":0}]}}),
         )
         .await?;
         let id = h.receive(0, "tableStarted").await?["tableID"].clone();
