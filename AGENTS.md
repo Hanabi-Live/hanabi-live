@@ -69,17 +69,28 @@ them focused and avoid redundant coverage.
 Chromium is the only supported browser and browser-test target. Do not add tests
 or audit requirements for Firefox, WebKit, or other browsers.
 
-When authenticated browser checks need test accounts, use the existing shared
-accounts: `test` / `test`, `test2` / `test2`, and so on (username / password).
-Choose an account that is not already in use. Do not change these accounts'
-passwords or delete them during cleanup. Keep test interactions confined to test
-accounts and their own tables.
+To see or check the site's screens, use `bun run ui-screenshots`. Do not write a
+separate browser script. The command starts this checkout's server with a
+disposable database and seeded games, tables, and chat. It saves a screenshot of
+each state at several widths in both themes to `dist/ui-screenshots`. Use
+`--state`, `--width`, and `--theme` to take fewer screenshots. For a CSS change,
+add `--compare <git ref>`: it reports every computed style that differs from the
+stylesheets of that ref. Add `--coverage` to list the selectors that match no
+element. If a screen or state that you need is missing, add it to
+`packages/testing/src/uiScreenshots.ts`.
+
+When other authenticated browser checks need test accounts, use the existing
+shared accounts: `test` / `test`, `test2` / `test2`, and so on (username /
+password). Choose an account that is not already in use. Do not change these
+accounts' passwords or delete them during cleanup. Keep test interactions
+confined to test accounts and their own tables.
 
 When driving a browser, mute its audio (for Chromium, `--mute-audio`) unless you
 are debugging sound.
 
 Before you commit a change that adds or modifies a UI element, take a screenshot
-of each new or changed element in the browser and show it to the user.
+of each new or changed element with `bun run ui-screenshots` and show it to the
+user.
 
 When running in WSL, the host app cannot display screenshots you send it. Open
 each one in the Windows image viewer instead:

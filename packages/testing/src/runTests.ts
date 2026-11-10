@@ -224,8 +224,11 @@ async function runInherited(
   return code ?? (signal === null ? 1 : 128);
 }
 
-/** The suites this runner can run. Turborepo caches each one separately. */
-const SUITES = ["rust", "bun", "critical-css"] as const;
+/**
+ * The suites this runner can run. Turborepo caches each one separately, except "ui-screenshots",
+ * which is not a test.
+ */
+const SUITES = ["rust", "bun", "critical-css", "ui-screenshots"] as const;
 type Suite = (typeof SUITES)[number];
 
 function isSuite(value: string | undefined): value is Suite {
@@ -271,6 +274,29 @@ async function runSuite(
           "--tsconfig-override",
           "tsconfig.monorepo.json",
           "packages/testing/src/criticalCSS.ts",
+          ...args,
+        ],
+        { cwd: ROOT, env },
+      );
+    }
+
+    case "ui-screenshots": {
+      await buildServer();
+      // The pages load the client, which must be from the same revision as the server.
+      const code = await runInherited(
+        "bash",
+        [path.join(ROOT, "scripts/dev/build-client.sh")],
+        { cwd: ROOT, env },
+      );
+      if (code !== 0) {
+        return code;
+      }
+      return await runInherited(
+        process.execPath,
+        [
+          "--tsconfig-override",
+          "tsconfig.monorepo.json",
+          "packages/testing/src/uiScreenshots.ts",
           ...args,
         ],
         { cwd: ROOT, env },

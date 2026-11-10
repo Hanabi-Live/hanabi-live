@@ -93,6 +93,7 @@
     "test-client": "bun run --cwd packages/client test",
     "test-critical-css": "bun packages/testing/src/runTests.ts critical-css",
     "test-rust": "bun packages/testing/src/runTests.ts rust",
+    "ui-screenshots": "bun packages/testing/src/runTests.ts ui-screenshots",
     "update": "bun --tsconfig-override tsconfig.monorepo.json ./packages/scripts/src/update.mts"
   },
   "dependencies": {

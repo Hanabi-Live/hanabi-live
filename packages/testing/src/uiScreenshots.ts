@@ -1,0 +1,856 @@
+// Takes screenshots of the site's screens at several widths in both themes. It starts this
+// checkout's server with a disposable database and seeds it through the client protocol, so that
+// every run sees the same pages. Run it through "runTests.ts", which provides the database and
+// builds the server and the client: `bun run ui-screenshots [options]`.
+
+// Options:
+// - `--state <name>`: Only this state. Repeat it for more than one.
+// - `--width <pixels>`: Only this width. Repeat it for more than one.
+// - `--theme <light|dark>`: Only this theme.
+// - `--compare <git ref>`: Also report every computed style that differs from the stylesheets of
+//   that ref, and take a screenshot with them wherever a difference shows.
+// - `--coverage`: Also list the selectors of the CSS bundle that match no element in any state.
+
+/* eslint-disable no-await-in-loop -- The browser visits the states one at a time. */
+
+import { SERVER_COMMAND_SCHEMAS, VERSION } from "@hanabi-live/data";
+import { assertDefined } from "complete-common";
+import { execFile } from "node:child_process";
+import {
+  appendFile,
+  mkdir,
+  mkdtemp,
+  readdir,
+  rm,
+  symlink,
+  writeFile,
+} from "node:fs/promises";
+import path from "node:path";
+import { parseArgs, promisify } from "node:util";
+import type { BrowserContext, Page } from "playwright";
+import { chromium } from "playwright";
+import { evaluationDatabase } from "./database";
+import {
+  ROOT,
+  buildRust,
+  installSchema,
+  login,
+  prepareRoot,
+  socketClient,
+  startProcess,
+  stopChild,
+} from "./mainProcessSupport";
+
+// eslint-disable-next-line @typescript-eslint/strict-void-return -- promisify ignores the ChildProcess return value.
+const run = promisify(execFile);
+
+const OUTPUT_DIRECTORY = path.join(ROOT, "dist/ui-screenshots");
+
+/**
+ * A domain that is not local, so that the server renders the pages as it does in production. The
+ * browser resolves it to the server's address.
+ */
+const DOMAIN = "ui-screenshots.example";
+
+/** The name that production pages load the CSS bundle with. */
+const BUNDLE_FILENAME = `main.${VERSION}.min.css`;
+
+/** The path that serves the stylesheets of the ref given with `--compare`. */
+const COMPARE_BUNDLE_PATH = "/public/css/compare.min.css";
+
+/** One size within each range of the breakpoints in "public/css/tokens.css". */
+const SIZES = [
+  { width: 1600, height: 900 },
+  { width: 1200, height: 800 },
+  { width: 800, height: 800 },
+  { width: 600, height: 800 },
+  { width: 375, height: 700 },
+] as const;
+
+const THEMES = ["light", "dark"] as const;
+type Theme = (typeof THEMES)[number];
+
+/** States are set up at this size, so that every button is visible. */
+const SETUP_SIZE = SIZES[0];
+
+/** Long enough for the transitions of the stylesheets to finish. */
+const SETTLE_MILLISECONDS = 400;
+
+/** The seed of the first seeded game: two players, the variant with ID 0, and the first seed. */
+const SEED = "p2v0s1";
+
+/** The account that the browser logs in with. Others play the seeded games. */
+const USERNAME = "Alice";
+
+interface State {
+  readonly name: string;
+  readonly path: string;
+  readonly loggedIn: boolean;
+  /** Runs at the setup size, after the page loads. */
+  readonly prepare?: (page: Page) => Promise<void>;
+  /** Runs after the screenshots, so that the next state starts from the lobby. */
+  readonly cleanup?: (page: Page) => Promise<void>;
+}
+
+async function clickNav(page: Page, id: string) {
+  await page.click(`#nav-buttons-lobby-${id}`);
+  await page.waitForTimeout(SETTLE_MILLISECONDS);
+}
+
+function getStates(replayID: number): readonly State[] {
+  return [
+    { name: "login", path: "/", loggedIn: false },
+    { name: "scores", path: `/scores/${USERNAME}`, loggedIn: false },
+    {
+      name: "history",
+      path: `/history/${USERNAME}`,
+      loggedIn: false,
+      // Sort one column, so that the sort arrows show both states.
+      prepare: async (page) => {
+        await page.locator("th[data-sortable]").first().click();
+      },
+    },
+    {
+      name: "missing-scores",
+      path: `/missing-scores/${USERNAME}`,
+      loggedIn: false,
+    },
+    {
+      name: "shared-missing-scores",
+      path: `/shared-missing-scores/2/${USERNAME}/Bob`,
+      loggedIn: false,
+      prepare: async (page) => {
+        await page.click("#advanced-filters-toggle");
+      },
+    },
+    { name: "variant", path: "/variant/0", loggedIn: false },
+    { name: "seed", path: `/seed/${SEED}`, loggedIn: false },
+    { name: "password-reset", path: "/password-reset", loggedIn: false },
+    { name: "lobby", path: "/", loggedIn: true },
+    {
+      name: "user-menu",
+      path: "/",
+      loggedIn: true,
+      prepare: async (page) => {
+        await page.locator("#lobby-users-table-tbody a").first().click();
+      },
+    },
+    {
+      name: "emoji-picker",
+      path: "/",
+      loggedIn: true,
+      prepare: async (page) => {
+        await page.click(".emoji-button");
+      },
+    },
+    {
+      name: "create-game",
+      path: "/",
+      loggedIn: true,
+      prepare: async (page) => {
+        await clickNav(page, "create-game");
+      },
+    },
+    {
+      name: "watch-replay",
+      path: "/",
+      loggedIn: true,
+      prepare: async (page) => {
+        await clickNav(page, "replay");
+      },
+    },
+    {
+      name: "resources",
+      path: "/",
+      loggedIn: true,
+      prepare: async (page) => {
+        await clickNav(page, "resources");
+      },
+    },
+    {
+      name: "settings",
+      path: "/",
+      loggedIn: true,
+      prepare: async (page) => {
+        await clickNav(page, "settings");
+      },
+    },
+    {
+      name: "lobby-history",
+      path: "/",
+      loggedIn: true,
+      prepare: async (page) => {
+        await clickNav(page, "history");
+      },
+    },
+    {
+      name: "replay",
+      path: `/replay/${replayID}`,
+      loggedIn: true,
+      // The server keeps the account in the replay until it goes back to the lobby.
+      cleanup: async (page) => {
+        await page.keyboard.press("Escape");
+        await page.waitForTimeout(SETTLE_MILLISECONDS);
+      },
+    },
+    // Joining a table keeps the account in it, so this state comes last.
+    {
+      name: "pregame",
+      path: "/",
+      loggedIn: true,
+      prepare: async (page) => {
+        // The row of the first table that can be joined animates, so it is never stable.
+        const row = page.locator("#lobby-games-table-tbody tr").first();
+        await row.waitFor();
+        await row.click({ force: true });
+      },
+    },
+  ];
+}
+
+/** Bundles the stylesheets of the current checkout into the directory that the server serves. */
+async function buildBundle(directory: string) {
+  const bundlePath = path.join(directory, "public/css", BUNDLE_FILENAME);
+  await mkdir(path.dirname(bundlePath), { recursive: true });
+  await run(process.execPath, [
+    path.join(ROOT, "packages/scripts/src/buildCSS.mts"),
+    bundlePath,
+  ]);
+}
+
+/** Bundles the stylesheets of a Git ref, with the bundler of that ref. */
+async function buildRefBundle(ref: string, directory: string): Promise<string> {
+  const source = path.join(directory, "compare-source");
+  await mkdir(source);
+  // The bundler reads the stylesheets, and searches these directories for icon names.
+  const paths = [
+    "public/css",
+    "packages/scripts/src/buildCSS.mts",
+    "packages/client/src",
+    "public/standalone",
+    "server/src",
+    "server/templates",
+  ];
+  const archive = path.join(directory, "compare.tar");
+  await run("git", ["archive", "--output", archive, ref, "--", ...paths], {
+    cwd: ROOT,
+  });
+  await run("tar", ["-xf", archive, "-C", source]);
+  await symlink(
+    path.join(ROOT, "node_modules"),
+    path.join(source, "node_modules"),
+  );
+  const bundlePath = path.join(directory, "compare.min.css");
+  await run(process.execPath, [
+    path.join(source, "packages/scripts/src/buildCSS.mts"),
+    bundlePath,
+  ]);
+  return await Bun.file(bundlePath).text();
+}
+
+/** Serves the client and the static files of the current checkout, as a deployment does. */
+async function linkPublicFiles(directory: string) {
+  const links: Array<readonly [string, string]> = [
+    ["public/css/critical.min.css", "public/css/critical.min.css"],
+    ["public/js/lib", "public/js/lib"],
+    ["public/sounds", "public/sounds"],
+    ["public/standalone", "public/standalone"],
+    ["public/webfonts", "public/webfonts"],
+  ];
+  for (const name of await readdir(path.join(ROOT, "public/img"))) {
+    if (name !== "favicon.ico") {
+      links.push([`public/img/${name}`, `public/img/${name}`]);
+    }
+  }
+  for (const name of await readdir(path.join(ROOT, "public/js/bundles"))) {
+    if (name !== "version.txt") {
+      links.push([`public/js/bundles/${name}`, `public/js/bundles/${name}`]);
+    }
+  }
+  await Promise.all(
+    links.map(async ([from, to]) => {
+      await symlink(path.join(ROOT, from), path.join(directory, to));
+    }),
+  );
+}
+
+type Peer = ReturnType<typeof socketClient>;
+
+async function connect(address: string, username: string): Promise<Peer> {
+  const peer = socketClient(address, await login(address, username));
+  await peer.receive("welcome", SERVER_COMMAND_SCHEMAS.welcome);
+  return peer;
+}
+
+/** Plays one turn of a game between two players and ends it, so that it is saved. */
+async function playGame(alice: Peer, bob: Peer): Promise<number> {
+  alice.send("tableCreate", { name: "Seeded game" });
+  const { tableID } = await alice.receive(
+    "joined",
+    SERVER_COMMAND_SCHEMAS.joined,
+  );
+  bob.send("tableJoin", { tableID });
+  await bob.receive("joined", SERVER_COMMAND_SCHEMAS.joined);
+  alice.send("tableStart", { tableID });
+  const peers = [alice, bob];
+  const games = await Promise.all(
+    peers.map(async (peer) => {
+      await peer.receive("tableStarted", SERVER_COMMAND_SCHEMAS.tableStarted);
+      peer.send("getGameInit", { tableID });
+      const init = await peer.receive("init", SERVER_COMMAND_SCHEMAS.init);
+      peer.send("getGameState", { tableID });
+      const history = await peer.receive(
+        "gameActionList",
+        SERVER_COMMAND_SCHEMAS.gameActionList,
+      );
+      peer.send("loaded", { tableID });
+      return { peer, init, history };
+    }),
+  );
+  const first = games.find((game) => game.init.ourPlayerIndex === 0);
+  assertDefined(first, "Neither player goes first.");
+  const card = first.history.actions.find(
+    (action) => action.type === "draw" && action.playerIndex === 0,
+  );
+  if (card?.type !== "draw") {
+    throw new Error("The first player has no cards.");
+  }
+  first.peer.send("action", { tableID, type: "play", order: card.order });
+  await first.peer.receive("gameAction", SERVER_COMMAND_SCHEMAS.gameAction);
+  alice.send("tableTerminate", { tableID });
+  const finished = await alice.receive(
+    "finishOngoingGame",
+    SERVER_COMMAND_SCHEMAS.finishOngoingGame,
+  );
+  assertDefined(finished.databaseID, "The seeded game was not saved.");
+  // The players are now in a shared replay of the game. Leave it, or the browser would join it.
+  for (const peer of peers) {
+    peer.send("tableUnattend", { tableID });
+  }
+  await bob.receive(
+    "tableGone",
+    SERVER_COMMAND_SCHEMAS.tableGone,
+    (data) => data.tableID === tableID,
+  );
+  return finished.databaseID;
+}
+
+interface Seed {
+  readonly replayID: number;
+  readonly cookie: string;
+  readonly peers: readonly Peer[];
+}
+
+/** Saves a few games, and leaves another account at an open table with a lobby chat message. */
+async function seed(address: string): Promise<Seed> {
+  let replayID = 0;
+  // Each game gets new connections, so that the server's messages about one game cannot affect the
+  // next.
+  for (let i = 0; i < 3; i++) {
+    const alice = await connect(address, USERNAME);
+    const bob = await connect(address, "Bob");
+    replayID = await playGame(alice, bob);
+    alice.socket.close();
+    bob.socket.close();
+  }
+
+  const bob = await connect(address, "Bob");
+  bob.send("tableCreate", { name: "Bob's table" });
+  await bob.receive("joined", SERVER_COMMAND_SCHEMAS.joined);
+  bob.send("chat", { text: "Hello from the seeded lobby." });
+  const carol = await connect(address, "Carol");
+
+  // The browser logs in as Alice, with a session of its own.
+  const cookie = await login(address, USERNAME);
+  return { replayID, cookie, peers: [bob, carol] };
+}
+
+/** Runs in the page. */
+function setTheme(theme: Theme) {
+  document.documentElement.dataset["theme"] = theme;
+}
+
+/** Runs in the page. Loads a bundle in place of the page's stylesheets, or restores them. */
+async function useStylesheet(href: string | undefined) {
+  for (const link of document.querySelectorAll<HTMLLinkElement>(
+    'link[href*="/public/css/"]',
+  )) {
+    link.remove();
+  }
+  document.querySelector("#ui-screenshots-stylesheet")?.remove();
+  if (href === undefined) {
+    return;
+  }
+  const link = document.createElement("link");
+  link.id = "ui-screenshots-stylesheet";
+  link.rel = "stylesheet";
+  const loaded = new Promise((resolve, reject) => {
+    link.addEventListener("load", resolve);
+    link.addEventListener("error", reject);
+  });
+  link.href = href;
+  document.head.append(link);
+  await loaded;
+  await document.fonts.ready;
+}
+
+/**
+ * Runs in the page. Reads the computed styles of every rendered element and its generated content.
+ * Custom properties are left out, because the properties that use them show their effect. The first
+ * call keeps them in the page. The second call returns how its styles differ from the kept ones, so
+ * that the styles themselves never leave the page.
+ */
+function compareStyles(compare: boolean): readonly string[] {
+  type Styles = Record<string, Record<string, string>>;
+  const store = globalThis as unknown as { uiScreenshotsStyles?: Styles };
+  const styles: Styles = {};
+  // eslint-disable-next-line unicorn/consistent-function-scoping -- This runs in the page.
+  function getPath(element: Element): string {
+    const parts: string[] = [];
+    for (
+      let current: Element | null = element;
+      current !== null && current !== document.documentElement;
+      current = current.parentElement
+    ) {
+      const index =
+        current.parentElement === null
+          ? 0
+          : [...current.parentElement.children].indexOf(current);
+      const id = current.id === "" ? "" : `#${current.id}`;
+      parts.unshift(`${current.tagName.toLowerCase()}${id}:${index}`);
+    }
+    return parts.join(" > ");
+  }
+  for (const element of [
+    document.documentElement,
+    ...document.querySelectorAll("body *"),
+  ]) {
+    if (!element.checkVisibility()) {
+      continue;
+    }
+    for (const pseudo of [undefined, "::before", "::after"]) {
+      const computed = getComputedStyle(element, pseudo);
+      if (
+        pseudo !== undefined
+        && (computed.content === "none" || computed.content === "normal")
+      ) {
+        continue;
+      }
+      const properties: Record<string, string> = {};
+      for (const property of computed) {
+        if (!property.startsWith("--")) {
+          properties[property] = computed.getPropertyValue(property);
+        }
+      }
+      styles[`${getPath(element)}${pseudo ?? ""}`] = properties;
+    }
+  }
+
+  const kept = store.uiScreenshotsStyles;
+  if (!compare || kept === undefined) {
+    store.uiScreenshotsStyles = styles;
+    return [];
+  }
+  delete store.uiScreenshotsStyles;
+  const differences: string[] = [];
+  for (const [key, properties] of Object.entries(kept)) {
+    const other = styles[key];
+    if (other === undefined) {
+      differences.push(`${key}: only with the current stylesheets`);
+      continue;
+    }
+    for (const [property, value] of Object.entries(properties)) {
+      if (other[property] !== value) {
+        differences.push(
+          `${key} ${property}: ${String(other[property])} -> ${value}`,
+        );
+      }
+    }
+  }
+  for (const key of Object.keys(styles)) {
+    if (kept[key] === undefined) {
+      differences.push(`${key}: only with the compared stylesheets`);
+    }
+  }
+  return differences;
+}
+
+/**
+ * Runs in the page. Every selector of the CSS bundle, and the ones that match an element now, each
+ * after the condition of its media query. User actions (such as hovering) and pseudo-elements are
+ * left out of the match, so that a selector counts when the element that it styles exists.
+ */
+function getSelectors(): {
+  readonly all: readonly string[];
+  readonly matched: readonly string[];
+} {
+  const sheet = [...document.styleSheets].find(
+    (stylesheet) =>
+      stylesheet.ownerNode instanceof HTMLLinkElement
+      && stylesheet.ownerNode.id === "ui-screenshots-stylesheet",
+  );
+  if (sheet === undefined) {
+    throw new Error("The CSS bundle is not loaded.");
+  }
+
+  // eslint-disable-next-line unicorn/consistent-function-scoping -- This runs in the page.
+  function splitSelectors(selectorText: string): readonly string[] {
+    const selectors: string[] = [];
+    let depth = 0;
+    let start = 0;
+    for (let i = 0; i < selectorText.length; i++) {
+      const character = selectorText.charAt(i);
+      if (character === "(") {
+        depth++;
+      } else if (character === ")") {
+        depth--;
+      } else if (character === "," && depth === 0) {
+        selectors.push(selectorText.slice(start, i).trim());
+        start = i + 1;
+      }
+    }
+    selectors.push(selectorText.slice(start).trim());
+    return selectors;
+  }
+
+  // eslint-disable-next-line unicorn/consistent-function-scoping -- This runs in the page.
+  function matches(selector: string): boolean {
+    const elementSelector = selector
+      .replaceAll(/::?(?:after|before)\b|::[\w-]+/gu, "")
+      .replaceAll(
+        /:(?:hover|active|focus|focus-visible|focus-within|popover-open)\b/gu,
+        "",
+      )
+      .trim();
+    try {
+      return (
+        document.querySelector(elementSelector === "" ? "*" : elementSelector)
+        !== null
+      );
+    } catch {
+      return false;
+    }
+  }
+
+  const all: string[] = [];
+  const matched: string[] = [];
+  function visit(rules: CSSRuleList, condition: string, active: boolean) {
+    for (const rule of rules) {
+      if (rule instanceof CSSStyleRule) {
+        for (const selector of splitSelectors(rule.selectorText)) {
+          all.push(`${condition}${selector}`);
+          if (active && matches(selector)) {
+            matched.push(`${condition}${selector}`);
+          }
+        }
+      } else if (rule instanceof CSSMediaRule) {
+        visit(
+          rule.cssRules,
+          `@media ${rule.conditionText} `,
+          active && globalThis.matchMedia(rule.conditionText).matches,
+        );
+      } else if (rule instanceof CSSLayerBlockRule) {
+        visit(rule.cssRules, condition, active);
+      }
+    }
+  }
+  visit(sheet.cssRules, "", true);
+  return { all, matched };
+}
+
+interface Options {
+  readonly states: readonly string[];
+  readonly widths: readonly number[];
+  readonly themes: readonly Theme[];
+  readonly compare: string | undefined;
+  readonly coverage: boolean;
+}
+
+function parseOptions(): Options {
+  const { values } = parseArgs({
+    options: {
+      state: { type: "string", multiple: true },
+      width: { type: "string", multiple: true },
+      theme: { type: "string" },
+      compare: { type: "string" },
+      coverage: { type: "boolean" },
+    },
+  });
+  const widths = (values.width ?? []).map(Number);
+  const allowedWidths = SIZES.map((size) => size.width);
+  for (const width of widths) {
+    if (!allowedWidths.includes(width as (typeof allowedWidths)[number])) {
+      throw new Error(`The width must be one of: ${allowedWidths.join(", ")}`);
+    }
+  }
+  const { theme } = values;
+  if (theme !== undefined && !THEMES.includes(theme as Theme)) {
+    throw new Error(`The theme must be one of: ${THEMES.join(", ")}`);
+  }
+  return {
+    states: values.state ?? [],
+    widths,
+    themes: theme === undefined ? THEMES : [theme as Theme],
+    compare: values.compare,
+    coverage: values.coverage ?? false,
+  };
+}
+
+interface Results {
+  /** The lines of the comparison report. */
+  readonly comparison: string[];
+  readonly allSelectors: Set<string>;
+  readonly matchedSelectors: Set<string>;
+  readonly errors: string[];
+}
+
+async function capture(
+  context: BrowserContext,
+  address: string,
+  states: readonly State[],
+  options: Options,
+  compareBundle: string | undefined,
+  results: Results,
+) {
+  const page = await context.newPage();
+  page.on("pageerror", (error) => {
+    results.errors.push(error.message);
+  });
+  if (compareBundle !== undefined) {
+    await page.route(`**${COMPARE_BUNDLE_PATH}`, async (route) => {
+      await route.fulfill({ contentType: "text/css", body: compareBundle });
+    });
+  }
+
+  const bundleHref = `/public/css/${BUNDLE_FILENAME}`;
+  const sizes = SIZES.filter(
+    (size) =>
+      options.widths.length === 0 || options.widths.includes(size.width),
+  );
+
+  for (const state of states) {
+    await page.setViewportSize(SETUP_SIZE);
+    const response = await page.goto(`${address}${state.path}`);
+    if (response === null || !response.ok()) {
+      throw new Error(
+        `Failed to load "${state.path}" (HTTP ${String(response?.status())}).`,
+      );
+    }
+    // The critical CSS is a copy of some of the bundle's rules, so leave it out. Otherwise, it
+    // would hide the rules that only it applies.
+    await page.evaluate(useStylesheet, bundleHref);
+    await page.waitForTimeout(SETTLE_MILLISECONDS * 2);
+    // The server shows a tutorial to accounts that were created a few seconds ago.
+    const skipTutorial = page.locator("#tutorial-no");
+    if (await skipTutorial.isVisible()) {
+      await skipTutorial.click();
+      await page.waitForTimeout(SETTLE_MILLISECONDS * 2);
+    }
+    await state.prepare?.(page);
+    // Keep the pointer off of the page, so that no element shows its hover style.
+    await page.mouse.move(0, SETUP_SIZE.height - 1);
+    await page.waitForTimeout(SETTLE_MILLISECONDS);
+
+    for (const size of sizes) {
+      await page.setViewportSize(size);
+      for (const theme of options.themes) {
+        await page.evaluate(setTheme, theme);
+        await page.waitForTimeout(SETTLE_MILLISECONDS);
+        const file = path.join(
+          OUTPUT_DIRECTORY,
+          `${state.name}-${size.width}-${theme}`,
+        );
+        await page.screenshot({ path: `${file}.png` });
+
+        if (options.coverage) {
+          const { all, matched } = await page.evaluate(getSelectors);
+          for (const selector of all) {
+            results.allSelectors.add(selector);
+          }
+          for (const selector of matched) {
+            results.matchedSelectors.add(selector);
+          }
+        }
+
+        if (compareBundle !== undefined) {
+          // A difference counts only if it shows twice, because a page can still change on its own
+          // (for example, when the server sends an update).
+          let differences: readonly string[] | undefined;
+          for (let i = 0; i < 2 && differences?.length !== 0; i++) {
+            await page.evaluate(compareStyles, false);
+            await page.evaluate(useStylesheet, COMPARE_BUNDLE_PATH);
+            await page.waitForTimeout(SETTLE_MILLISECONDS);
+            const found = await page.evaluate(compareStyles, true);
+            if (found.length > 0) {
+              await page.screenshot({ path: `${file}.compare.png` });
+            }
+            differences =
+              differences === undefined
+                ? found
+                : differences.filter((line) => found.includes(line));
+            await page.evaluate(useStylesheet, bundleHref);
+            await page.waitForTimeout(SETTLE_MILLISECONDS);
+          }
+          if (differences === undefined || differences.length === 0) {
+            await rm(`${file}.compare.png`, { force: true });
+          } else {
+            results.comparison.push(
+              `## ${state.name} ${size.width} ${theme}`,
+              ...differences,
+              "",
+            );
+          }
+        }
+      }
+    }
+    await state.cleanup?.(page);
+    console.info(`Captured: ${state.name}`);
+  }
+
+  await page.close();
+}
+
+async function writeReports(options: Options, results: Results) {
+  if (options.compare !== undefined) {
+    const report = path.join(OUTPUT_DIRECTORY, "compare.txt");
+    await writeFile(report, results.comparison.join("\n"));
+    const count = results.comparison.filter((line) =>
+      line.startsWith("## "),
+    ).length;
+    console.info(
+      count === 0
+        ? `No computed style differs from "${options.compare}".`
+        : `Computed styles differ in ${count} screenshots: ${report}`,
+    );
+  }
+
+  if (options.coverage) {
+    const unused = [...results.allSelectors].filter(
+      (selector) => !results.matchedSelectors.has(selector),
+    );
+    const report = path.join(OUTPUT_DIRECTORY, "unused-selectors.txt");
+    await writeFile(
+      report,
+      [
+        "# Selectors of the CSS bundle that matched no element in any state. States that the",
+        "# script does not visit (such as modals and error messages) can still use them.",
+        ...unused,
+      ].join("\n"),
+    );
+    console.info(`${unused.length} selectors matched nothing: ${report}`);
+  }
+
+  if (results.errors.length > 0) {
+    console.warn(`Errors in the pages:\n${results.errors.join("\n")}`);
+  }
+}
+
+async function main() {
+  const options = parseOptions();
+  await rm(OUTPUT_DIRECTORY, { recursive: true, force: true });
+  await mkdir(OUTPUT_DIRECTORY, { recursive: true });
+  await mkdir(path.join(ROOT, "dist"), { recursive: true });
+  const directory = await mkdtemp(path.join(ROOT, "dist/ui-screenshots-"));
+  const database = await evaluationDatabase();
+  let server: ReturnType<typeof startProcess> | undefined;
+  let seeded: Seed | undefined;
+  try {
+    await prepareRoot(directory, database, DOMAIN);
+    // A production domain makes the server listen on every interface unless told otherwise.
+    await appendFile(path.join(directory, ".env"), "LISTEN_HOST=127.0.0.1\n");
+    await buildBundle(directory);
+    const compareBundle =
+      options.compare === undefined
+        ? undefined
+        : await buildRefBundle(options.compare, directory);
+    await linkPublicFiles(directory);
+    await buildRust(directory);
+    await installSchema(directory);
+    server = startProcess(directory);
+    const localAddress = await server.ready;
+    const { port } = new URL(localAddress);
+    const address = `http://${DOMAIN}:${port}`;
+
+    seeded = await seed(localAddress);
+    const states = getStates(seeded.replayID).filter(
+      (state) =>
+        options.states.length === 0 || options.states.includes(state.name),
+    );
+    const unknown = options.states.filter((name) =>
+      states.every((state) => state.name !== name),
+    );
+    if (unknown.length > 0) {
+      throw new Error(
+        `Unknown states: ${unknown.join(", ")}. The states are: ${getStates(0)
+          .map((state) => state.name)
+          .join(", ")}`,
+      );
+    }
+
+    await run(process.execPath, [
+      "x",
+      "--bun",
+      "--no-install",
+      "playwright",
+      "install",
+      "--only-shell",
+      "chromium",
+    ]);
+    await using browser = await chromium.launch({
+      args: ["--mute-audio", `--host-resolver-rules=MAP ${DOMAIN} 127.0.0.1`],
+    });
+    const [name = "", value] = seeded.cookie.split("=", 2);
+    assertDefined(value, "The session cookie has no value.");
+    const contexts = {
+      loggedOut: await browser.newContext({ colorScheme: "light" }),
+      // Without the permission, the lobby shows a modal that asks for it.
+      loggedIn: await browser.newContext({
+        colorScheme: "light",
+        permissions: ["notifications"],
+      }),
+    };
+    await contexts.loggedIn.addCookies([
+      { name, value, domain: DOMAIN, path: "/" },
+    ]);
+    const results: Results = {
+      comparison: [],
+      allSelectors: new Set(),
+      matchedSelectors: new Set(),
+      errors: [],
+    };
+    await capture(
+      contexts.loggedOut,
+      address,
+      states.filter((state) => !state.loggedIn),
+      options,
+      compareBundle,
+      results,
+    );
+    await capture(
+      contexts.loggedIn,
+      address,
+      states.filter((state) => state.loggedIn),
+      options,
+      compareBundle,
+      results,
+    );
+    await writeReports(options, results);
+    console.info(`Screenshots: ${OUTPUT_DIRECTORY}`);
+  } finally {
+    if (seeded !== undefined) {
+      for (const peer of seeded.peers) {
+        peer.socket.close();
+      }
+    }
+    if (server !== undefined) {
+      await stopChild(server.child);
+    }
+    await database.close();
+    await rm(directory, { recursive: true, force: true });
+  }
+}
+
+main().catch((error: unknown) => {
+  console.error("Failed to take the screenshots:", error);
+  process.exitCode = 1;
+});
