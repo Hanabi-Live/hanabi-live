@@ -729,13 +729,58 @@ export const replayBoardElementSchema = z.enum([
 ]);
 
 /**
- * An action in an imported game. Missing fields are 0.
+ * An action in the form of a game's record. Missing fields are 0.
  */
-const importActionSchema = z.strictObject({
+const recordedImportActionSchema = z.strictObject({
   target: z.number().int().min(-2_147_483_648).max(2_147_483_647).optional(),
   type: z.enum(RecordedActionType).optional(),
   value: z.number().int().min(-2_147_483_648).max(2_147_483_647).optional(),
 });
+
+/**
+ * A turn, or the end of the game, in the replay format.
+ */
+const replayGameActionSchema = z.discriminatedUnion("type", [
+  z.strictObject({ order: cardOrderSchema, type: z.literal("play") }),
+  z.strictObject({ order: cardOrderSchema, type: z.literal("discard") }),
+  z.strictObject({
+    /**
+     * The index of the color in the variant's clue colors.
+     */
+    colorIndex: z.literal([0, 1, 2, 3, 4, 5]),
+    /**
+     * The player who receives the clue.
+     */
+    target: playerIndexSchema,
+    type: z.literal("colorClue"),
+  }),
+  z.strictObject({
+    rank: z.literal([1, 2, 3, 4, 5]),
+    /**
+     * The player who receives the clue.
+     */
+    target: playerIndexSchema,
+    type: z.literal("rankClue"),
+  }),
+  z.strictObject({
+    endCondition: z.enum(EndCondition),
+    /**
+     * The player who ended the game, such as the one who timed out. Absent when no player
+     * did.
+     */
+    playerIndex: playerIndexSchema.optional(),
+    type: z.literal("gameOver"),
+  }),
+]);
+
+/**
+ * An action in an imported game: in the replay format, or as a game's record stores it, which is
+ * the form that games exported before November 10th, 2026 use.
+ */
+const importActionSchema = z.union([
+  replayGameActionSchema,
+  recordedImportActionSchema,
+]);
 
 /**
  * A card in an imported deck. A missing identity is 0.
@@ -851,11 +896,6 @@ export const replayCreateRequestSchema = z.discriminatedUnion("source", [
     visibility: replayVisibilitySchema,
   }),
 ]);
-const replayActionSchema = z.strictObject({
-  target: z.number().int().min(-2_147_483_648).max(2_147_483_647),
-  type: z.enum(RecordedActionType),
-  value: z.number().int().min(-2_147_483_648).max(2_147_483_647).default(0),
-});
 const replayCardSchema = z.strictObject({
   rank: z.number().int().min(-9_007_199_254_740_991).max(9_007_199_254_740_991),
   suitIndex: z.number().int().min(0).max(9_007_199_254_740_991),
@@ -905,7 +945,7 @@ const replayOptionsSchema = z.strictObject({
  * reads it back.
  */
 export const replayGameSchema = z.strictObject({
-  actions: z.array(replayActionSchema),
+  actions: z.array(replayGameActionSchema),
   characters: z.array(replayCharacterSchema).optional(),
   deck: z.array(replayCardSchema),
   id: z.number().int().min(0).max(9_007_199_254_740_991),

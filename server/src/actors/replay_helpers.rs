@@ -141,11 +141,7 @@ pub fn parse(input: &ReplayImport) -> CommandResult<Imported> {
         .actions
         .iter()
         .flatten()
-        .map(|action| ReplayAction {
-            kind: action.kind.unwrap_or(RecordedActionType::Play),
-            target: action.target.unwrap_or(0),
-            value: action.value.unwrap_or(0),
-        })
+        .map(|action| action.recorded())
         .collect();
     for (i, a) in actions.iter().enumerate() {
         ensure_or_reject!(

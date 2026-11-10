@@ -1,6 +1,7 @@
 import { RecordedActionType, replayGameSchema } from "@hanabi-live/data";
 import {
   DEFAULT_PLAYER_NAMES,
+  EndCondition,
   MAX_PLAYERS,
   MIN_PLAYERS,
   getVariant,
@@ -14,6 +15,15 @@ import * as z from "zod";
 export type GameJSON = z.input<typeof replayGameSchema>;
 type DeckCard = GameJSON["deck"][number];
 type Action = GameJSON["actions"][number];
+
+/** An action as a game's record stores it, which is the form that a compressed game holds. */
+interface CompactAction {
+  readonly type: RecordedActionType;
+  readonly target: number;
+  readonly value: number | undefined;
+}
+
+const actionSchema = replayGameSchema.shape.actions.element;
 
 interface MinMax {
   min: number;
@@ -293,14 +303,16 @@ function stringToDeckCard(src: string, rankRange: MinMax): DeckCard {
  * strings two characters long, each representing an `Action`.
  */
 function compressActions(actions: readonly Action[]): string {
+  const compactActions = actions.map(toCompactAction);
+
   // Find min/max values of Action.type.
-  const typeRange = getMinMax(actions.map((action) => action.type));
+  const typeRange = getMinMax(compactActions.map((action) => action.type));
   if (typeRange === undefined || !isMinMaxValid(typeRange)) {
     // Empty actions still require min/max values.
     return "00";
   }
 
-  const actionStrings = actions.map((action) =>
+  const actionStrings = compactActions.map((action) =>
     actionToString(action, typeRange),
   );
   return `${typeRange.min}${typeRange.max}${actionStrings.join("")}`;
@@ -352,7 +364,7 @@ function decompressActions(src: string): readonly Action[] | undefined {
  * Converts an `Action` into a string. The returned string is two characters long, the first one
  * representing `Action.type` and `Action.value` and the second representing the `Action.target`.
  */
-function actionToString(action: Action, typeRange: MinMax): string {
+function actionToString(action: CompactAction, typeRange: MinMax): string {
   const r = typeRange.max - typeRange.min + 1;
   const val = action.value === undefined ? 0 : action.value + 1;
   const index = val * r + action.type - typeRange.min;
@@ -377,11 +389,100 @@ function stringToAction(src: string, typeRange: MinMax): Action | undefined {
     return undefined;
   }
 
-  return {
+  return fromCompactAction({
     type: recordedType.data,
     target,
     value: val === 0 ? undefined : val - 1,
-  };
+  });
+}
+
+/**
+ * The compact form of an action. A game over without a player stores 0 as its target, which only a
+ * vote to end the game reads back as no player.
+ */
+function toCompactAction(action: Action): CompactAction {
+  switch (action.type) {
+    case "play": {
+      return {
+        type: RecordedActionType.Play,
+        target: action.order,
+        value: undefined,
+      };
+    }
+
+    case "discard": {
+      return {
+        type: RecordedActionType.Discard,
+        target: action.order,
+        value: undefined,
+      };
+    }
+
+    case "colorClue": {
+      return {
+        type: RecordedActionType.ColorClue,
+        target: action.target,
+        value: action.colorIndex,
+      };
+    }
+
+    case "rankClue": {
+      return {
+        type: RecordedActionType.RankClue,
+        target: action.target,
+        value: action.rank,
+      };
+    }
+
+    case "gameOver": {
+      return {
+        type:
+          action.endCondition === EndCondition.TerminatedByVote
+            ? RecordedActionType.GameOverByVote
+            : RecordedActionType.GameOver,
+        target: action.playerIndex ?? 0,
+        value: action.endCondition,
+      };
+    }
+  }
+}
+
+function fromCompactAction(action: CompactAction): Action | undefined {
+  const { target, value } = action;
+  let named: unknown;
+  switch (action.type) {
+    case RecordedActionType.Play: {
+      named = { type: "play", order: target };
+      break;
+    }
+
+    case RecordedActionType.Discard: {
+      named = { type: "discard", order: target };
+      break;
+    }
+
+    case RecordedActionType.ColorClue: {
+      named = { type: "colorClue", target, colorIndex: value };
+      break;
+    }
+
+    case RecordedActionType.RankClue: {
+      named = { type: "rankClue", target, rank: value };
+      break;
+    }
+
+    case RecordedActionType.GameOver: {
+      named = { type: "gameOver", endCondition: value, playerIndex: target };
+      break;
+    }
+
+    case RecordedActionType.GameOverByVote: {
+      named = { type: "gameOver", endCondition: value };
+      break;
+    }
+  }
+  const result = actionSchema.safeParse(named);
+  return result.success ? result.data : undefined;
 }
 
 /** Returns a string array of hypothetical players (Alice, Bob, etc). */

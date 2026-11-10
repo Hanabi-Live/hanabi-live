@@ -112,11 +112,23 @@ pub(super) async fn export(
     } else {
         None
     };
+    let actions = archive
+        .actions
+        .into_iter()
+        .map(hanabi_protocol::ReplayGameAction::from_recorded)
+        .collect::<std::result::Result<Vec<_>, _>>()
+        .map_err(|_| {
+            export_failure(
+                "archive_unknown_end_condition",
+                "The archived game's end condition is unknown",
+                id,
+            )
+        })?;
     Ok(hanabi_protocol::ReplayGame {
         id,
         player_names: players.iter().map(|p| p.name.clone()).collect(),
         deck,
-        actions: archive.actions,
+        actions,
         options: (options != hanabi_protocol::ReplayOptions::default()).then_some(options),
         notes: notes.iter().any(|n| !n.is_empty()).then_some(notes),
         characters,

@@ -603,6 +603,128 @@
     "valid": false
   },
   {
+    "name": "replay imports name their actions",
+    "direction": "client",
+    "command": "replayCreate",
+    "input": {
+      "source": "json",
+      "visibility": "solo",
+      "gameJSON": {
+        "seed": "p2v0s1",
+        "actions": [
+          {
+            "type": "rankClue",
+            "target": 1,
+            "rank": 1
+          },
+          {
+            "type": "play",
+            "order": 0
+          },
+          {
+            "type": "gameOver",
+            "endCondition": 10
+          }
+        ]
+      }
+    },
+    "normalized": {
+      "source": "json",
+      "visibility": "solo",
+      "spoilerFree": false,
+      "gameJSON": {
+        "seed": "p2v0s1",
+        "actions": [
+          {
+            "type": "rankClue",
+            "target": 1,
+            "rank": 1
+          },
+          {
+            "type": "play",
+            "order": 0
+          },
+          {
+            "type": "gameOver",
+            "endCondition": 10
+          }
+        ]
+      }
+    },
+    "valid": true
+  },
+  {
+    "name": "replay imports still read numbered actions from older exports",
+    "direction": "client",
+    "command": "replayCreate",
+    "input": {
+      "source": "json",
+      "visibility": "solo",
+      "gameJSON": {
+        "seed": "p2v0s1",
+        "actions": [
+          {
+            "type": 3,
+            "target": 1,
+            "value": 1
+          },
+          {
+            "target": 0
+          },
+          {
+            "type": 5,
+            "target": -1,
+            "value": 10
+          }
+        ]
+      }
+    },
+    "normalized": {
+      "source": "json",
+      "visibility": "solo",
+      "spoilerFree": false,
+      "gameJSON": {
+        "seed": "p2v0s1",
+        "actions": [
+          {
+            "type": 3,
+            "target": 1,
+            "value": 1
+          },
+          {
+            "target": 0
+          },
+          {
+            "type": 5,
+            "target": -1,
+            "value": 10
+          }
+        ]
+      }
+    },
+    "valid": true
+  },
+  {
+    "name": "named replay actions carry only their own fields",
+    "direction": "client",
+    "command": "replayCreate",
+    "input": {
+      "source": "json",
+      "visibility": "solo",
+      "gameJSON": {
+        "seed": "p2v0s1",
+        "actions": [
+          {
+            "type": "play",
+            "order": 0,
+            "value": 0
+          }
+        ]
+      }
+    },
+    "valid": false
+  },
+  {
     "name": "replay import rejects null for an absent field",
     "direction": "client",
     "command": "replayCreate",

@@ -18,7 +18,7 @@ pub struct ReplayGame {
     pub id: i64,
     pub player_names: Vec<String>,
     pub deck: Vec<ReplayCard>,
-    pub actions: Vec<ReplayAction>,
+    pub actions: Vec<ReplayGameAction>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     #[schemars(with = "ReplayOptions")]
     pub options: Option<ReplayOptions>,
@@ -159,10 +159,132 @@ pub struct ImportCard {
     pub rank: Option<i32>,
 }
 
-/// An action in an imported game. Missing fields are 0.
+/// A turn, or the end of the game, in the replay format.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
+#[serde(
+    tag = "type",
+    rename_all = "camelCase",
+    rename_all_fields = "camelCase",
+    deny_unknown_fields
+)]
+pub enum ReplayGameAction {
+    Play {
+        #[schemars(with = "CardOrder")]
+        order: i32,
+    },
+    Discard {
+        #[schemars(with = "CardOrder")]
+        order: i32,
+    },
+    ColorClue {
+        /// The player who receives the clue.
+        #[schemars(with = "PlayerIndex")]
+        target: i32,
+        /// The index of the color in the variant's clue colors.
+        #[schemars(range(min = 0, max = MAX_SUIT_INDEX), extend("enum" = suits()))]
+        color_index: i32,
+    },
+    RankClue {
+        /// The player who receives the clue.
+        #[schemars(with = "PlayerIndex")]
+        target: i32,
+        #[schemars(range(min = MIN_RANK, max = MAX_RANK), extend("enum" = ranks()))]
+        rank: i32,
+    },
+    GameOver {
+        end_condition: EndCondition,
+        /// The player who ended the game, such as the one who timed out. Absent when no player
+        /// did.
+        #[serde(default, skip_serializing_if = "Option::is_none")]
+        #[schemars(with = "PlayerIndex")]
+        player_index: Option<i32>,
+    },
+}
+
+impl ReplayGameAction {
+    /// An action from a game's record. Fails for a game over with an unknown end condition.
+    pub fn from_recorded(action: ReplayAction) -> Result<Self, String> {
+        let ReplayAction {
+            kind,
+            target,
+            value,
+        } = action;
+        Ok(match kind {
+            RecordedActionType::Play => Self::Play { order: target },
+            RecordedActionType::Discard => Self::Discard { order: target },
+            RecordedActionType::ColorClue => Self::ColorClue {
+                target,
+                color_index: value,
+            },
+            RecordedActionType::RankClue => Self::RankClue {
+                target,
+                rank: value,
+            },
+            RecordedActionType::GameOver | RecordedActionType::GameOverByVote => Self::GameOver {
+                end_condition: EndCondition::try_from(value)?,
+                player_index: (target != NO_VALUE).then_some(target),
+            },
+        })
+    }
+
+    /// The action as a game's record stores it.
+    pub fn recorded(self) -> ReplayAction {
+        let (kind, target, value) = match self {
+            Self::Play { order } => (RecordedActionType::Play, order, 0),
+            Self::Discard { order } => (RecordedActionType::Discard, order, 0),
+            Self::ColorClue {
+                target,
+                color_index,
+            } => (RecordedActionType::ColorClue, target, color_index),
+            Self::RankClue { target, rank } => (RecordedActionType::RankClue, target, rank),
+            Self::GameOver {
+                end_condition,
+                player_index,
+            } => (
+                if end_condition == EndCondition::TerminatedByVote {
+                    RecordedActionType::GameOverByVote
+                } else {
+                    RecordedActionType::GameOver
+                },
+                player_index.unwrap_or(NO_VALUE),
+                i32::from(end_condition),
+            ),
+        };
+        ReplayAction {
+            kind,
+            target,
+            value,
+        }
+    }
+}
+
+/// An action in an imported game: in the replay format, or as a game's record stores it, which is
+/// the form that games exported before November 10th, 2026 use.
+#[derive(Clone, Copy, Debug, Serialize, Deserialize, JsonSchema)]
+#[serde(untagged)]
+pub enum ImportAction {
+    Named(ReplayGameAction),
+    Recorded(RecordedImportAction),
+}
+
+impl ImportAction {
+    /// The action as a game's record stores it.
+    pub fn recorded(self) -> ReplayAction {
+        match self {
+            Self::Named(action) => action.recorded(),
+            Self::Recorded(action) => ReplayAction {
+                kind: action.kind.unwrap_or(RecordedActionType::Play),
+                target: action.target.unwrap_or(0),
+                value: action.value.unwrap_or(0),
+            },
+        }
+    }
+}
+
+/// An action in the form of a game's record. Missing fields are 0.
 #[derive(Clone, Copy, Debug, Default, Serialize, Deserialize, JsonSchema)]
 #[serde(deny_unknown_fields)]
-pub struct ImportAction {
+pub struct RecordedImportAction {
     #[serde(default, rename = "type", skip_serializing_if = "Option::is_none")]
     #[schemars(with = "RecordedActionType")]
     pub kind: Option<RecordedActionType>,

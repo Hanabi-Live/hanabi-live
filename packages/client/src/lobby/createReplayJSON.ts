@@ -1,4 +1,4 @@
-import { RecordedActionType, SITE_URL } from "@hanabi-live/data";
+import { SITE_URL } from "@hanabi-live/data";
 import type {
   CardOrder,
   ColorIndex,
@@ -115,7 +115,7 @@ export function createJSONFromReplay(room: string): void {
 
   // Copy actions up to current segment.
   const { replay } = globals.state;
-  game.actions = getGameActionsFromState(replay).map(toRecordedAction);
+  game.actions = [...getGameActionsFromState(replay)];
 
   // Add the hypothetical from the log, after the current segment.
   if (replay.hypothetical !== undefined) {
@@ -123,7 +123,7 @@ export function createJSONFromReplay(room: string): void {
     const { log } = states.at(-1)!;
     if (replay.segment < log.length) {
       const logLines = log.slice(replay.segment + 1);
-      const actions = getGameActionsFromLog(logLines).map(toRecordedAction);
+      const actions = getGameActionsFromLog(logLines);
       const newActions = [...game.actions, ...actions];
       game.actions = newActions;
     }
@@ -403,37 +403,4 @@ function getColorIndexFromColorName(
   );
 
   return colorIndex === -1 ? undefined : (colorIndex as ColorIndex);
-}
-
-/** A turn as an exported game records it. */
-function toRecordedAction(action: ClientAction): {
-  readonly type: RecordedActionType;
-  readonly target: number;
-  readonly value?: number;
-} {
-  switch (action.type) {
-    case "play": {
-      return { type: RecordedActionType.Play, target: action.order };
-    }
-
-    case "discard": {
-      return { type: RecordedActionType.Discard, target: action.order };
-    }
-
-    case "colorClue": {
-      return {
-        type: RecordedActionType.ColorClue,
-        target: action.target,
-        value: action.colorIndex,
-      };
-    }
-
-    case "rankClue": {
-      return {
-        type: RecordedActionType.RankClue,
-        target: action.target,
-        value: action.rank,
-      };
-    }
-  }
 }

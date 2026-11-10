@@ -1,4 +1,5 @@
 import { replayGameSchema } from "@hanabi-live/data";
+import { EndCondition } from "@hanabi-live/game";
 import { describe, expect, test } from "vitest";
 import { expand, shrink } from "./hypoCompress";
 
@@ -28,4 +29,36 @@ describe("replay URL seed metadata", () => {
       expect(expand(`${payload}${seed}`)).toBeUndefined();
     },
   );
+});
+
+describe("replay URL actions", () => {
+  // Two players, one card of each rank, one play, standard variant, and no seed.
+  const payload = "215abcde,00ba,0,";
+
+  test("links made before actions had names still read as named actions", () => {
+    const game: unknown = JSON.parse(expand(payload)!);
+    expect(replayGameSchema.parse(game).actions).toEqual([
+      { type: "play", order: 0 },
+    ]);
+  });
+
+  test("round-trips every kind of action", () => {
+    const game = {
+      ...replayGameSchema.parse(JSON.parse(expand(payload)!)),
+      actions: [
+        { type: "rankClue", target: 1, rank: 1 },
+        { type: "colorClue", target: 0, colorIndex: 2 },
+        { type: "play", order: 0 },
+        { type: "discard", order: 1 },
+        {
+          type: "gameOver",
+          endCondition: EndCondition.TerminatedByPlayer,
+          playerIndex: 1,
+        },
+      ],
+    };
+    const compressed = shrink(JSON.stringify(game));
+    expect(compressed).toBeDefined();
+    expect(JSON.parse(expand(compressed!)!)).toEqual(game);
+  });
 });
