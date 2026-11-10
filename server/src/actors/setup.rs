@@ -417,6 +417,8 @@ pub(super) async fn prepare_table(
                 }
                 let mut saved = Saved::default();
                 store.save(&mut table, &mut saved).await?;
+                // Temporary: measures how often spoiler-free reviews are used, to decide whether
+                // to remove them.
                 tracing::info!(
                     "Created a {} replay (spoiler-free: {}) for user {}.",
                     if shared { "shared" } else { "solo" },
