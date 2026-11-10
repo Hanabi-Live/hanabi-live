@@ -75,6 +75,22 @@ const EXTRA_OPTIONS = [
   "createTableDetrimentalCharacters",
 ] as const satisfies ReadonlyArray<keyof Settings>;
 
+/** The checkboxes on the form, each named after the setting that remembers it. */
+const FORM_CHECKBOXES = [
+  "createTableTimed",
+  ...EXTRA_OPTIONS,
+] as const satisfies ReadonlyArray<keyof Settings>;
+
+/** The values that fill in the form, named after the settings that remember them. */
+type FormValues = Pick<
+  Settings,
+  | (typeof FORM_CHECKBOXES)[number]
+  | "createTableMaxPlayers"
+  | "createTableTimeBaseMinutes"
+  | "createTableTimePerTurnSeconds"
+  | "createTableVariant"
+>;
+
 let dropdown1: JQuery<Element>;
 let dropdown2: JQuery<Element>;
 
@@ -127,11 +143,7 @@ export function init(): void {
 
   // Make the extra time fields appear and disappear depending on whether the checkbox is checked.
   $("#createTableTimed").on("change", () => {
-    if ($("#createTableTimed").prop("checked") === true) {
-      $(".create-game-timed-option").show();
-    } else {
-      $(".create-game-timed-option").hide();
-    }
+    updateCheckboxRows();
 
     // Remember the new setting.
     getCheckbox("createTableTimed");
@@ -139,9 +151,7 @@ export function init(): void {
   });
 
   $("#createTableSpeedrun").on("change", () => {
-    $("#create-game-timed-row").toggle(
-      $("#createTableSpeedrun").prop("checked") !== true,
-    );
+    updateCheckboxRows();
 
     // Remember the new setting.
     getCheckbox("createTableSpeedrun");
@@ -155,26 +165,14 @@ export function init(): void {
 
   // Disable some checkboxes if a checkbox is checked.
   $("#createTableOneExtraCard").on("change", () => {
-    if ($("#createTableOneExtraCard").is(":checked")) {
-      $("#createTableOneLessCardRow").fadeTo(0, DIMMED_OPACITY);
-      $("#createTableOneLessCard").prop("disabled", true);
-    } else {
-      $("#createTableOneLessCardRow").fadeTo(0, 1);
-      $("#createTableOneLessCard").prop("disabled", false);
-    }
+    updateCheckboxRows();
 
     // Remember the new setting.
     getCheckbox("createTableOneExtraCard");
   });
 
   $("#createTableOneLessCard").on("change", () => {
-    if ($("#createTableOneLessCard").is(":checked")) {
-      $("#createTableOneExtraCardRow").fadeTo(0, DIMMED_OPACITY);
-      $("#createTableOneExtraCard").prop("disabled", true);
-    } else {
-      $("#createTableOneExtraCardRow").fadeTo(0, 1);
-      $("#createTableOneExtraCard").prop("disabled", false);
-    }
+    updateCheckboxRows();
 
     // Remember the new setting.
     getCheckbox("createTableOneLessCard");
@@ -605,23 +603,50 @@ export function show(): void {
   $("#create-game-variant-dropdown1").trigger("focus");
 }
 
+/**
+ * Converts the options of a table into form values. An untimed table keeps our own time values, so
+ * that they are ready if the timer is turned on.
+ */
+function getFormValues(options: Options, maxPlayers: number): FormValues {
+  return {
+    createTableVariant: options.variantName,
+    createTableTimed: options.timed,
+    createTableTimeBaseMinutes: options.timed
+      ? options.timeBaseSeconds / SECONDS_PER_MINUTE
+      : globals.settings.createTableTimeBaseMinutes,
+    createTableTimePerTurnSeconds: options.timed
+      ? options.timePerTurnSeconds
+      : globals.settings.createTableTimePerTurnSeconds,
+    createTableSpeedrun: options.speedrun,
+    createTableDeckPlays: options.deckPlays,
+    createTableEmptyClues: options.emptyClues,
+    createTableOneExtraCard: options.oneExtraCard,
+    createTableOneLessCard: options.oneLessCard,
+    createTableAllOrNothing: options.allOrNothing,
+    createTableDetrimentalCharacters: options.detrimentalCharacters,
+    createTableMaxPlayers: isValidNumPlayers(maxPlayers)
+      ? maxPlayers
+      : defaultSettings.createTableMaxPlayers,
+  };
+}
+
 /** Fills in the form for a new game or for the options of the current game. */
 export function ready(): void {
   // Change the UI if we are in a pre-game screen.
   let dialogTitle = "Create a New Game";
   let buttonTitle = "Create";
   let gameName: string;
-  let dialogOptions: Options | Settings;
+  let formValues: FormValues;
   let seed = "";
   let replayGameID = "";
   let replayTurn = "";
 
   if (globals.game === undefined || globals.currentScreen === Screen.Lobby) {
-    // Create New Game
+    // Create New Game. Use the settings that we used last time (which are stored on the server).
     gameName =
       localStorage.getItem(LOCAL_STORAGE_KEY.CREATE_TABLE_NAME)
       ?? getDefaultTableName();
-    dialogOptions = globals.settings;
+    formValues = globals.settings;
 
     // Show the password row.
     $("#password-row").removeClass("hidden");
@@ -629,11 +654,11 @@ export function ready(): void {
     // Ensure create-game-table-number is empty.
     $("#create-game-table-number").val("");
   } else {
-    // Change Options
+    // Change Options. Use the options of the current table.
     dialogTitle = "Change Game Options";
     buttonTitle = "Change";
     gameName = globals.game.name;
-    dialogOptions = globals.game.options;
+    formValues = getFormValues(globals.game.options, globals.game.maxPlayers);
     seed = globals.game.options.seed ?? "";
     replayGameID = globals.game.options.replayGameID?.toString() ?? "";
     replayTurn = globals.game.options.replayTurn?.toString() ?? "";
@@ -653,23 +678,17 @@ export function ready(): void {
   $("#create-game-replay-game-id").val(replayGameID);
   $("#create-game-replay-turn").val(replayTurn);
 
-  // Fill in the rest of form with the settings that we used last time (which is stored on the
-  // server).
-  for (const [key, value] of Object.entries(dialogOptions)) {
-    const element = $(`#${key}`);
-    if (key === "createTableVariant") {
-      // Setting the variant dropdown is a special case; it is more complicated than simply filling
-      // in the value with what we used last time.
-      readyVariant(value as string);
-    } else if (typeof value === "boolean") {
-      // Checkboxes
-      element.prop("checked", value);
-      element.change();
-    } else {
-      // Input fields and text fields.
-      element.val(value as string);
-    }
+  // Setting the variant dropdown is more complicated than filling in a value.
+  readyVariant(formValues.createTableVariant);
+  // Do not trigger the "change" events, since they would remember the values in our settings.
+  for (const setting of FORM_CHECKBOXES) {
+    $(`#${setting}`).prop("checked", formValues[setting]);
   }
+  updateCheckboxRows();
+  $("#createTableTimeBaseMinutes").val(formValues.createTableTimeBaseMinutes);
+  $("#createTableTimePerTurnSeconds").val(
+    formValues.createTableTimePerTurnSeconds,
+  );
 
   // Fill in the "Password" box. (This is not stored on the server so we have to retrieve the last
   // password from a cookie.)
@@ -680,7 +699,7 @@ export function ready(): void {
     $("#createTablePassword").val(password);
   }
 
-  let maxPlayers = globals.settings.createTableMaxPlayers;
+  let maxPlayers = formValues.createTableMaxPlayers;
   if (maxPlayers < MIN_PLAYERS || maxPlayers > MAX_PLAYERS) {
     maxPlayers = defaultSettings.createTableMaxPlayers;
   }
@@ -691,14 +710,31 @@ export function ready(): void {
   showExtraOptions(
     seed !== ""
       || replayGameID !== ""
-      || EXTRA_OPTIONS.some(
-        (setting) => getHTMLInputElement(`#${setting}`).checked,
-      ),
+      || EXTRA_OPTIONS.some((setting) => isChecked(setting)),
   );
 }
 
 function getDefaultTableName(): string {
   return `${globals.username}${DEFAULT_TABLE_NAME_SUFFIX}`;
+}
+
+function isChecked(setting: keyof Settings): boolean {
+  return getHTMLInputElement(`#${setting}`).checked;
+}
+
+/** Shows, hides, or disables the rows that depend on the state of a checkbox. */
+function updateCheckboxRows() {
+  // The time fields only apply to a timed game, and a speedrun is never timed.
+  $(".create-game-timed-option").toggle(isChecked("createTableTimed"));
+  $("#create-game-timed-row").toggle(!isChecked("createTableSpeedrun"));
+
+  // A game cannot have both one extra card and one less card.
+  const oneExtraCard = isChecked("createTableOneExtraCard");
+  const oneLessCard = isChecked("createTableOneLessCard");
+  $("#createTableOneLessCardRow").fadeTo(0, oneExtraCard ? DIMMED_OPACITY : 1);
+  $("#createTableOneLessCard").prop("disabled", oneExtraCard);
+  $("#createTableOneExtraCardRow").fadeTo(0, oneLessCard ? DIMMED_OPACITY : 1);
+  $("#createTableOneExtraCard").prop("disabled", oneLessCard);
 }
 
 function showExtraOptions(visible: boolean) {
