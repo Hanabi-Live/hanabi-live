@@ -1,16 +1,3 @@
-/*
- * The password key icon is intentionally spaced wider than other icons: its solid head sits on
- * its right edge, so the usual spacing looks cramped against the table name.
- */
-#lobby-games-table .icon-label {
-  margin-right: 0.625em;
-}
-
-/* This icon is larger than the text of its button. */
-.button .lobby-button-icon.icon-label {
-  margin-right: 0.4em;
-}
-
 #lobby {
   margin-top: 1.5em;
   margin-bottom: 0.5em;
@@ -211,46 +198,8 @@
   padding-left: 1.5em;
 }
 
-.lobby-users-tabs {
-  display: inline-flex;
-  gap: 1.1em;
-}
-
-.lobby-users-tab {
-  appearance: none;
-  background: none;
-  border: 0;
-  border-bottom: 2px solid transparent;
-  color: var(--text-label);
-  cursor: pointer;
-  font: inherit;
-  letter-spacing: inherit;
-  line-height: 1.3;
-  padding: 0;
-  transition:
-    color 0.2s ease-in-out,
-    border-color 0.2s ease-in-out;
-}
-
-.lobby-users-tab:hover {
-  color: var(--text-strong);
-}
-
-.lobby-users-tab[aria-selected="true"] {
-  border-bottom-color: var(--button-green);
-  color: var(--text-strong);
-  cursor: default;
-}
-
 #lobby-users-table-tbody a {
   text-decoration-skip-ink: none;
-}
-
-.lobby-games-table-options {
-  list-style-type: none;
-  margin: 0;
-  /* Keep the icons on one line when the table is narrow. */
-  white-space: nowrap;
 }
 
 /*
@@ -279,43 +228,6 @@
 
 a.toggle-active {
   background-color: var(--button-green);
-}
-
-/* The menu that opens when we click on the name of an online user (see "UserMenu.tsx") */
-.user-menu {
-  margin: 0;
-  padding: 0;
-  list-style: none;
-  font-size: 0.75em;
-}
-
-.user-menu a,
-.user-menu button {
-  display: flex;
-  gap: 0.6em;
-  align-items: center;
-  width: 100%;
-  padding: 0.4em 0.6em;
-  border: none;
-  border-radius: 3px;
-  background: none;
-  color: var(--menu-text);
-  font: inherit;
-  text-align: left;
-  text-decoration: none;
-  white-space: nowrap;
-  cursor: pointer;
-}
-
-.user-menu a:hover,
-.user-menu button:hover {
-  background: var(--menu-hover-bg);
-  color: var(--menu-hover-text);
-}
-
-.user-menu i {
-  width: 1em;
-  text-align: center;
 }
 
 @media screen and (max-width: 840px) {

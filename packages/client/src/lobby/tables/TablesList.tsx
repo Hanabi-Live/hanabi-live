@@ -126,7 +126,8 @@ function TableRowView({
     >
       <td>
         {table.passwordProtected && table.phase === "pregame" && (
-          <i className="fas fa-key fa-sm icon-label" />
+          // The key's solid head is on its right, so it needs more room than other icons.
+          <i className="fas fa-key fa-sm tw:mr-[0.625em]" />
         )}
         {table.name}
       </td>
@@ -136,14 +137,12 @@ function TableRowView({
           : table.numPlayers}
       </td>
       <td>{table.options.variantName}</td>
-      <td className="lobby-games-table-options">
+      {/* The icons stay on one line when the table is narrow. */}
+      <td className="tw:whitespace-nowrap">
         {getOptionDescriptions(table.options).map((description) => (
           // The space separates the icons like the spaces between words.
           <Fragment key={description.name}>
-            <OptionIcon
-              description={description}
-              tooltipClassName="lobby-games-table-tooltip-icon"
-            />{" "}
+            <OptionIcon description={description} />{" "}
           </Fragment>
         ))}
       </td>

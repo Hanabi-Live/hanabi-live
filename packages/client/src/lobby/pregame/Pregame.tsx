@@ -18,8 +18,6 @@ import type { Game } from "./pregameSlice";
 /** What a player's statistics show for a player count that they have not played. */
 const NO_SCORE = "\u{2013}";
 
-const TOOLTIP_CLASS_NAME = "lobby-pregame-tooltip-icon";
-
 const PASSWORD_DESCRIPTION = {
   icon: "fas fa-key",
   tooltip: "This is a password-protected game.",
@@ -49,63 +47,71 @@ export function Pregame(): React.JSX.Element | undefined {
   const hasOptions = game.passwordProtected || optionDescriptions.length > 0;
 
   return (
-    <div className="lobby-pregame-container">
-      <div className="lobby-pregame-info" id="lobby-pregame-left">
-        <h4 className="padding0p5">
+    <div className="tw:flex tw:h-full">
+      <div
+        className="tw:w-[200px] tw:overflow-y-auto tw:pr-[0.5em] tw:text-[0.85em] tw:narrow-1440:w-[150px]"
+        id="lobby-pregame-left"
+      >
+        <h4 className="tw:pb-[0.5em]">
           <strong>
             <i className="fas fa-signature icon-label" />
             Name:
           </strong>
           <br />
-          <span id="lobby-pregame-name">{game.name}</span>
+          <span className="tw:block" id="lobby-pregame-name">
+            {game.name}
+          </span>
         </h4>
-        <h4 className="padding0p5">
+        <h4 className="tw:pb-[0.5em]">
           <strong>
             <i className="fas fa-rainbow icon-label" />
             Variant:
           </strong>
           <br />
-          <span id="lobby-pregame-variant">{game.options.variantName}</span>
+          <span className="tw:block" id="lobby-pregame-variant">
+            {game.options.variantName}
+          </span>
         </h4>
-        <h4 className="padding0p5">
+        <h4 className="tw:pb-[0.5em]">
           <strong>
             <i className="fas fa-users icon-label" />
             Players:
           </strong>
           <br />
-          <span id="lobby-pregame-seats">
+          <span className="tw:block" id="lobby-pregame-seats">
             {game.players.length} / {game.maxPlayers}
           </span>
         </h4>
         {hasOptions && (
-          <h4 className="padding0p5" id="lobby-pregame-options-container">
-            <span id="lobby-pregame-options-title">Options:</span>
+          <h4 className="tw:pb-[0.5em]" id="lobby-pregame-options-container">
+            <span className="tw:font-normal" id="lobby-pregame-options-title">
+              Options:
+            </span>
             <br />
-            <ul id="lobby-pregame-options">
+            <ul
+              className="tw:m-0 tw:list-none tw:p-0"
+              id="lobby-pregame-options"
+            >
               {game.passwordProtected && (
-                <OptionIcon
-                  description={PASSWORD_DESCRIPTION}
-                  tooltipClassName={TOOLTIP_CLASS_NAME}
-                />
+                <OptionIcon description={PASSWORD_DESCRIPTION} />
               )}
               {optionDescriptions.map((description) => (
-                <OptionIcon
-                  description={description}
-                  key={description.name}
-                  tooltipClassName={TOOLTIP_CLASS_NAME}
-                />
+                <OptionIcon description={description} key={description.name} />
               ))}
             </ul>
           </h4>
         )}
         {spectators.length > 0 && (
-          <h4 className="padding0p5" id="lobby-pregame-spectators-container">
+          <h4 className="tw:pb-[0.5em]" id="lobby-pregame-spectators-container">
             <strong>
               <i className="fas fa-glasses icon-label" />
               Spectators:
             </strong>
             <br />
-            <ul id="lobby-pregame-spectators">
+            <ul
+              className="tw:m-0 tw:list-none tw:p-0"
+              id="lobby-pregame-spectators"
+            >
               {spectators.map((spectator) => (
                 <li key={spectator.username}>
                   &bull; <Name name={spectator.username} />
@@ -126,7 +132,7 @@ export function Pregame(): React.JSX.Element | undefined {
           </h4>
         )}
       </div>
-      <div className="lobby-pregame-players">
+      <div className="tw:flex tw:h-full tw:flex-[1_1_100%] tw:flex-wrap tw:justify-start tw:overflow-y-auto">
         {game.players.map((player, i) => (
           <PlayerBox
             game={game}
@@ -161,10 +167,14 @@ function PlayerBox({
 
   return (
     <div
-      className="lobby-pregame-player"
+      className={[
+        "tw:mr-[0.5em] tw:mb-[0.5em] tw:max-h-[calc(100%-0.5em)] tw:max-w-[300px] tw:flex-[1_1_160px]",
+        "tw:overflow-y-auto tw:rounded-[5px] tw:border tw:border-solid tw:border-(--pregame-player-border)",
+        "tw:p-[0.8em] tw:narrow-980:max-w-[200px]",
+      ].join(" ")}
       id={`lobby-pregame-player-${playerIndex + 1}`}
     >
-      <p className="margin0 padding0p5">
+      <p className="tw:m-0 tw:pb-[0.5em]">
         <strong>
           {isSpectator ? (
             <ShadowName
@@ -198,7 +208,7 @@ function PlayerBox({
         }
       />
       {!player.present && (
-        <p className="lobby-pregame-player-away">
+        <p className="tw:mt-[1em] tw:mb-0">
           <strong>AWAY</strong>
         </p>
       )}
@@ -216,7 +226,7 @@ function StatRow({
   return (
     <div className="row">
       <div className="col-10">{label}</div>
-      <div className="col-2 align-right padding0">{value}</div>
+      <div className="col-2 align-right tw:p-0">{value}</div>
     </div>
   );
 }
@@ -240,7 +250,7 @@ function getBestScoresTooltip(
   variantName: string,
 ): string {
   const { maxScore } = getVariant(variantName);
-  let html = '<div class="lobby-pregame-tooltip">';
+  let html = '<div class="tw:w-[8em] tw:text-[0.75em]">';
   for (const bestScorePlayer of iRange(MIN_PLAYERS, MAX_PLAYERS)) {
     const bestScore = bestScores[bestScorePlayer - MIN_PLAYERS];
     if (bestScore === undefined) {
@@ -248,9 +258,10 @@ function getBestScoresTooltip(
     }
     const { score, modifier } = bestScore;
 
-    html += '<div class="row">';
-    html += `<div class="col-6">${bestScorePlayer}-player:</div>`;
-    html += '<div class="col-6">';
+    // The grid's negative margin and gutter would push the rows out of the tooltip.
+    html += '<div class="row tw:ml-0 tw:text-left">';
+    html += `<div class="col-6 tw:pl-0">${bestScorePlayer}-player:</div>`;
+    html += '<div class="col-6 tw:pl-0">';
     if (score === undefined) {
       html += ` ${NO_SCORE}`;
     } else if (score === maxScore) {
@@ -339,7 +350,11 @@ function HGroupLevelBadge({ name }: { readonly name: string }) {
 
   return (
     <a
-      className="h-group-level-badge"
+      className={[
+        "tw:ml-[0.5em] tw:inline-block tw:rounded-[1em] tw:border tw:border-solid tw:border-current",
+        "tw:px-[0.6em] tw:py-[0.1em] tw:align-[0.1em] tw:text-[0.8em] tw:leading-[1.3] tw:font-normal",
+        "tw:whitespace-nowrap tw:text-inherit tw:no-underline tw:hover:underline",
+      ].join(" ")}
       href={`${H_GROUP_LEVEL_URL_PREFIX}${level}`}
       ref={ref}
       rel="noopener noreferrer"

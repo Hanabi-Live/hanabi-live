@@ -32,6 +32,13 @@
 }
 
 /*
+  Breakpoints from "public/css/tokens.css", for screens this wide or narrower. For example,
+  "tw:narrow-980:hidden" hides an element on screens that are at most 980px wide.
+*/
+@custom-variant narrow-1440 (@media screen and (max-width: 1440px));
+@custom-variant narrow-980 (@media screen and (max-width: 980px));
+
+/*
   The utilities are not in a layer, so that they beat the site's stylesheets, which are all in
   layers (see "public/css/main.css"). Rules outside of a layer always beat rules inside one.
 */

@@ -14,6 +14,16 @@ const NAME_CLASSES = {
   other: undefined,
 } as const satisfies Record<UserRow["kind"], string | undefined>;
 
+/** The link or button of each item in the menu. */
+const ITEM_CLASS_NAME = [
+  "tw:flex tw:w-full tw:cursor-pointer tw:items-center tw:gap-[0.6em] tw:rounded-[3px] tw:border-none",
+  "tw:bg-transparent tw:px-[0.6em] tw:py-[0.4em] tw:text-left tw:whitespace-nowrap tw:no-underline",
+  "tw:[font-family:inherit] tw:[font-size:inherit] tw:[font-weight:inherit] tw:[line-height:inherit] tw:text-(--menu-text)",
+  "tw:hover:bg-(--menu-hover-bg) tw:hover:text-(--menu-hover-text)",
+].join(" ");
+
+const ICON_CLASS_NAME = "tw:w-[1em] tw:text-center";
+
 /** The name of a user, which opens a menu of the things that we can do with them. */
 export function UserLink({
   row: { user, kind },
@@ -67,15 +77,16 @@ export function UserLink({
         {user.username}
       </a>
       {createPortal(
-        <ul className="user-menu">
+        <ul className="tw:m-0 tw:list-none tw:p-0 tw:text-[0.75em]">
           <li>
             <a
+              className={ITEM_CLASS_NAME}
               href={profileURL}
               onClick={closeMenu}
               rel="noopener noreferrer"
               target="_blank"
             >
-              <i className="fas fa-user" />
+              <i className={`fas fa-user ${ICON_CLASS_NAME}`} />
               Profile
             </a>
           </li>
@@ -151,8 +162,8 @@ function MenuButton({
   readonly children: React.ReactNode;
 }) {
   return (
-    <button onClick={onClick} type="button">
-      <i className={`fas ${icon}`} />
+    <button className={ITEM_CLASS_NAME} onClick={onClick} type="button">
+      <i className={`fas ${icon} ${ICON_CLASS_NAME}`} />
       {children}
     </button>
   );

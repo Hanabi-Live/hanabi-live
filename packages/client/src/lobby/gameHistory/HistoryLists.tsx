@@ -147,7 +147,7 @@ function HistoryRow({
           }
           type="button"
         >
-          <i className="fas fa-chart-bar lobby-button-icon icon-label" />
+          <i className="fas fa-chart-bar lobby-button-icon tw:mr-[0.4em]" />
           {otherGameCount}
         </button>
       </td>

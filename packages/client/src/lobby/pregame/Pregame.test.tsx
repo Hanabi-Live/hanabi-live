@@ -113,7 +113,7 @@ describe("Pregame", () => {
       document.querySelectorAll("#lobby-pregame-options > li"),
     ).toHaveLength(2);
 
-    const boxes = document.querySelectorAll(".lobby-pregame-player");
+    const boxes = document.querySelectorAll('[id^="lobby-pregame-player-"]');
     expect(boxes).toHaveLength(2);
     expect(boxes[0]!.textContent).toContain("2-player best score:25");
     expect(screen.getByText("Level 3").getAttribute("href")).toContain(

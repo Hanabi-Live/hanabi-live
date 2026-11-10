@@ -24,7 +24,9 @@ if grep -n "data-theme" "${STYLESHEETS[@]}"; then
   exit 1
 fi
 
-# Media queries use only the breakpoints that "tokens.css" lists.
+# Media queries, including the Tailwind variants of the React components, use only the breakpoints
+# that "tokens.css" lists.
+TAILWIND="$REPO_ROOT/packages/client/src/tailwind.css"
 for DIMENSION in max-width max-height; do
   ALLOWED=$(grep -E "^\s*\"$DIMENSION\":" "$TOKENS" | grep -oE "[0-9]+px" || true)
   if [[ -z $ALLOWED ]]; then
@@ -36,7 +38,7 @@ for DIMENSION in max-width max-height; do
       echo "Error: A media query uses \"$DIMENSION: $VALUE\", which is not a breakpoint in \"public/css/tokens.css\"." >&2
       exit 1
     fi
-  done < <(grep -ohE "\($DIMENSION: [0-9]+px\)" "${STYLESHEETS[@]}" | grep -oE "[0-9]+px" | sort -u)
+  done < <(grep -ohE "\($DIMENSION: [0-9]+px\)" "${STYLESHEETS[@]}" "$TAILWIND" | grep -oE "[0-9]+px" | sort -u)
 done
 
 # Class and ID names use kebab case, such as ".lobby-row". Prettier puts each selector on its own

@@ -25,6 +25,13 @@ const H_GROUP_TOOLTIP =
 const BOT_TOOLTIP =
   '<span class="small-tooltip-text">This account is a bot.</span>';
 
+const TAB_CLASS_NAME = [
+  "tw:cursor-pointer tw:appearance-none tw:border-0 tw:border-b-2 tw:border-solid tw:border-transparent tw:bg-transparent tw:p-0",
+  "tw:[font-family:inherit] tw:[font-size:inherit] tw:[font-weight:inherit] tw:leading-[1.3] tw:tracking-[inherit] tw:text-text-label",
+  "tw:transition-[color,border-color] tw:duration-200 tw:ease-in-out tw:hover:text-text-strong",
+  "tw:aria-selected:cursor-default tw:aria-selected:border-b-(--button-green) tw:aria-selected:text-text-strong",
+].join(" ");
+
 const SLEEPING_EMOJI = "\u{1F4A4}";
 const ROBOT_EMOJI = "\u{1F916}";
 
@@ -82,10 +89,10 @@ export function UsersTitle(): React.JSX.Element {
   }
 
   return (
-    <span className="lobby-users-tabs" role="tablist">
+    <span className="tw:inline-flex tw:gap-[1.1em]" role="tablist">
       <button
         aria-selected={!botsShown}
-        className="lobby-users-tab"
+        className={TAB_CLASS_NAME}
         onClick={() => {
           store.dispatch(botsShownChanged(false));
         }}
@@ -96,7 +103,7 @@ export function UsersTitle(): React.JSX.Element {
       </button>
       <button
         aria-selected={botsShown}
-        className="lobby-users-tab"
+        className={TAB_CLASS_NAME}
         onClick={() => {
           store.dispatch(botsShownChanged(true));
         }}
