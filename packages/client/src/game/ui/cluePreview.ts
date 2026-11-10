@@ -1,4 +1,4 @@
-// While the "Show Post-Clue Empathy" button is on, shows how the target's hand would look to them
+// While the post-clue empathy checkbox is checked, shows how the target's hand would look to them
 // after the clue that the player has selected.
 
 import type {
@@ -33,19 +33,19 @@ export function setPotentialClue(clue: PotentialClue | null): void {
   }
 }
 
-/** Turns the "Show Post-Clue Empathy" button on or off. */
+/** Checks or unchecks the post-clue empathy checkbox. */
 export function toggle(): void {
   setEnabled(!enabled);
 }
 
-/** Turns the "Show Post-Clue Empathy" button off at the start of each turn. */
+/** Unchecks the post-clue empathy checkbox at the start of each turn. */
 export function reset(): void {
   setEnabled(false);
 }
 
 function setEnabled(newEnabled: boolean) {
   enabled = newEnabled;
-  globals.elements.postClueEmpathyButton?.setPressed(enabled);
+  globals.elements.postClueEmpathyCheckbox?.setChecked(enabled);
   if (enabled) {
     show();
   } else {

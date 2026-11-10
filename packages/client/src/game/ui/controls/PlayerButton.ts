@@ -44,6 +44,12 @@ export class PlayerButton extends Button {
       visible: false,
     });
     this.add(this.radioDot);
+
+    // Center the name in the space to the right of the radio button, so that they do not overlap.
+    const textX = 2 * x;
+    this.textElement?.x(textX);
+    this.textElement?.width(this.width() - textX - x / 2);
+    this.textElement?.fitText(this.textElement.text());
   }
 
   override setPressed(pressed: boolean): void {

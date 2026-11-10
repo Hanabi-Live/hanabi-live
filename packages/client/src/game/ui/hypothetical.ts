@@ -26,7 +26,7 @@ export function startHypothetical(): void {
   }
 
   if (shared === undefined) {
-    globals.elements.toggleDrawnCardsButton!.setEnabled(true);
+    globals.elements.showDrawnCardsCheckbox!.setEnabled(true);
     globals.store!.dispatch({
       type: "hypoStart",
       shared: false,
@@ -49,7 +49,7 @@ export function startSharedHypothetical(): void {
     return;
   }
 
-  globals.elements.toggleDrawnCardsButton!.setEnabled(true);
+  globals.elements.showDrawnCardsCheckbox!.setEnabled(true);
   globals.store!.dispatch({
     type: "hypoStart",
     shared: true,
@@ -282,7 +282,7 @@ export function checkToggleRevealedButton(
     case "discard": {
       const cardOrder = actionMessage.order;
       if (hypothetical.drawnCardsInHypothetical.includes(cardOrder)) {
-        globals.elements.toggleDrawnCardsButton?.setEnabled(false);
+        globals.elements.showDrawnCardsCheckbox?.setEnabled(false);
       }
 
       break;
@@ -291,7 +291,7 @@ export function checkToggleRevealedButton(
     case "clue": {
       for (const cardOrder of actionMessage.orders) {
         if (hypothetical.drawnCardsInHypothetical.includes(cardOrder)) {
-          globals.elements.toggleDrawnCardsButton?.setEnabled(false);
+          globals.elements.showDrawnCardsCheckbox?.setEnabled(false);
           return;
         }
       }

@@ -83,7 +83,7 @@ export function shouldShowToggleDrawnCards(state: State): boolean {
 }
 
 export function shouldShowToggleDrawnCardsChanged(shouldShow: boolean): void {
-  globals.elements.toggleDrawnCardsButton?.setEnabled(shouldShow);
+  globals.elements.showDrawnCardsCheckbox?.setEnabled(shouldShow);
   globals.layers.UI.batchDraw();
 }
 
@@ -156,7 +156,7 @@ export function shouldEnableHypoPassTurnButtonChanged(enabled: boolean): void {
 export function onDrawnCardsInHypotheticalChanged(
   drawnCardsInHypothetical: boolean,
 ): void {
-  globals.elements.toggleDrawnCardsButton?.setPressed(drawnCardsInHypothetical);
+  globals.elements.showDrawnCardsCheckbox?.setChecked(drawnCardsInHypothetical);
 
   // Check if the ability to give a clue changed.
   clues.checkLegal();

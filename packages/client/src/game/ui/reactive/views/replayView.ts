@@ -321,9 +321,9 @@ export function onRestartChanged(
     shared !== undefined && restart.canRestart(shared, playerNames);
   globals.elements.restartButton?.visible(amLeader && canPlayAgain);
 
-  const readyButton = globals.elements.restartReadyButton;
-  readyButton?.visible(!amLeader && canPlayAgain);
-  readyButton?.setPressed(
+  const { readyCheckbox } = globals.elements;
+  readyCheckbox?.visible(!amLeader && canPlayAgain);
+  readyCheckbox?.setChecked(
     shared?.restartDeclined.includes(ourUsername) !== true,
   );
 

@@ -38,6 +38,9 @@ of the repository.
   the discard pile, instead of exploding on the strike tracker.
 - Tooltips now fade in quickly instead of growing with a bounce, and their lines
   have more space between them.
+- In the old game UI, the "Ready", "Edit Cards", "Show Hidden", and post-clue
+  empathy buttons are now checkboxes, so you can see whether each one is on.
+  "Show Hidden" is now "Show drawn cards".
 
 ## November 9th, 2026
 

@@ -64,8 +64,8 @@ function clickLeft(card: HanabiCard, event: MouseEvent) {
 
   // If we are in "edit cards" mode, left clicking a card morphs it.
   if (
-    globals.elements.editCardsButton !== undefined
-    && globals.elements.editCardsButton.pressed
+    globals.elements.editCardsCheckbox !== undefined
+    && globals.elements.editCardsCheckbox.checked
     && globals.state.replay.hypothetical !== undefined
   ) {
     clickMorph(card);

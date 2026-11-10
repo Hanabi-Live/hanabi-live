@@ -12,6 +12,7 @@ import type { RankButton } from "./RankButton";
 import type { TerminateMenu } from "./TerminateMenu";
 import type { Arrow } from "./controls/Arrow";
 import type { Button } from "./controls/Button";
+import type { Checkbox } from "./controls/Checkbox";
 import type { CurrentPlayerArea } from "./controls/CurrentPlayerArea";
 import type { EnterHypoButton } from "./controls/EnterHypoButton";
 import type { FitText } from "./controls/FitText";
@@ -22,7 +23,6 @@ import type { StrikeSquare } from "./controls/StrikeSquare";
 import type { StrikeX } from "./controls/StrikeX";
 import type { TextWithTooltip } from "./controls/TextWithTooltip";
 import type { TimerDisplay } from "./controls/TimerDisplay";
-import type { ToggleButton } from "./controls/ToggleButton";
 
 export class Elements {
   // The main screen
@@ -53,7 +53,7 @@ export class Elements {
   chatButton: Button | undefined = undefined;
   lobbyButton: Button | undefined = undefined;
   restartButton: Button | undefined = undefined;
-  restartReadyButton: ToggleButton | undefined = undefined;
+  readyCheckbox: Checkbox | undefined = undefined;
   deck: Deck | undefined = undefined;
   gameIDLabel: FitText | undefined = undefined;
   gameInfoImage: Konva.Image | undefined = undefined;
@@ -105,7 +105,7 @@ export class Elements {
   rankClueButtons: RankButton[] = [];
   colorClueButtons: ColorButton[] = [];
   giveClueButton: Button | undefined = undefined;
-  postClueEmpathyButton: ToggleButton | undefined = undefined;
+  postClueEmpathyCheckbox: Checkbox | undefined = undefined;
   clueAreaDisabled: SlidableGroup | undefined = undefined;
   waitingOnServer: Konva.Group | undefined = undefined;
   waitingOnServerAnimation: Konva.Animation | undefined = undefined;
@@ -129,10 +129,10 @@ export class Elements {
   hypoCircle: Konva.Group | undefined = undefined;
   hypoPauseSharedTurnsButton: Button | undefined = undefined;
   hypoButtonsArea: Konva.Group | undefined = undefined;
-  editCardsButton: ToggleButton | undefined = undefined;
+  editCardsCheckbox: Checkbox | undefined = undefined;
   hypoBackButton: Button | undefined = undefined;
   hypoPassTurnButton: Button | undefined = undefined;
-  toggleDrawnCardsButton: ToggleButton | undefined = undefined;
+  showDrawnCardsCheckbox: Checkbox | undefined = undefined;
   endHypotheticalButton: Button | undefined = undefined;
 
   // The pause screen

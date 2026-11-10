@@ -123,8 +123,8 @@ function mouseDown(
   }
 
   const editMode =
-    globals.elements.editCardsButton !== undefined
-    && globals.elements.editCardsButton.pressed
+    globals.elements.editCardsCheckbox !== undefined
+    && globals.elements.editCardsCheckbox.checked
     && globals.state.replay.hypothetical !== undefined;
   // Empathy
   if (
@@ -195,8 +195,8 @@ function getCursorType(card: HanabiCard) {
   }
 
   if (
-    globals.elements.editCardsButton !== undefined
-    && globals.elements.editCardsButton.pressed
+    globals.elements.editCardsCheckbox !== undefined
+    && globals.elements.editCardsCheckbox.checked
     && globals.state.replay.hypothetical !== undefined
   ) {
     return "edit";

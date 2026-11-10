@@ -77,6 +77,7 @@ import {
 } from "./constants";
 import { Arrow } from "./controls/Arrow";
 import { Button } from "./controls/Button";
+import { Checkbox } from "./controls/Checkbox";
 import { CurrentPlayerArea } from "./controls/CurrentPlayerArea";
 import { FitText } from "./controls/FitText";
 import { ImageWithTooltip } from "./controls/ImageWithTooltip";
@@ -87,7 +88,6 @@ import { StrikeSquare } from "./controls/StrikeSquare";
 import { StrikeX } from "./controls/StrikeX";
 import type { TextWithTooltip } from "./controls/TextWithTooltip";
 import { TimerDisplay } from "./controls/TimerDisplay";
-import { ToggleButton } from "./controls/ToggleButton";
 import * as cursor from "./cursor";
 import { drawHands } from "./drawHands";
 import { drawReplayArea } from "./drawReplayArea";
@@ -125,6 +125,11 @@ let lowerClueAreaValues: Values;
  * How far the lower part of the clue area slides left in a hypo, in fractions of the stage width.
  */
 let lowerClueAreaSlideX: number;
+/**
+ * The width of the widest row of the lower part of the clue area (the color buttons, the rank
+ * buttons, or the "Give Clue" row), in fractions of the stage width. The rows are centered.
+ */
+let lowerClueAreaRowsW: number;
 let giveClueValues: Values;
 let spectatorsLabelValues: Values;
 
@@ -547,14 +552,14 @@ const CLUE_TYPE_BUTTON = {
   spacingY: 0.002,
 } as const;
 
-/** The row with the "Give Clue" and "Show Post-Clue Empathy" buttons, in fractions of the stage. */
+/** The "Give Clue" row, which has the post-clue empathy checkbox, in fractions of the stage. */
 const GIVE_CLUE_BUTTON = {
   w: 0.236,
   h: 0.051,
 } as const;
 
-/** The share of the "Give Clue" row that the "Show Post-Clue Empathy" button takes. */
-const POST_CLUE_EMPATHY_BUTTON_SHARE = 1 / 5;
+/** The share of the "Give Clue" row that the post-clue empathy checkbox takes. */
+const POST_CLUE_EMPATHY_CHECKBOX_SHARE = 1 / 4;
 
 /**
  * How far the cross over a disabled clue area is inset from its corners, in fractions of the stage.
@@ -622,13 +627,11 @@ const HYPO_INDICATOR = {
 
 /** The buttons used in a hypothetical, in fractions of the stage. */
 const HYPO_BUTTON = {
-  w: 0.075,
+  w: 0.095,
   /** The narrower "Back" button. */
   backW: 0.035,
   spacing: 0.008,
   fontSize: 0.019,
-  /** The "Show Hidden" button, which has a longer label. */
-  showHiddenFontSize: 0.016,
 } as const;
 
 /**
@@ -1235,23 +1238,25 @@ function drawBottomLeftButtons() {
 
   // The button for other players to tell the leader whether they will play again. (It takes the
   // place of the restart button, which only the leader sees.)
-  const restartReadyButton = new ToggleButton({
-    text: "Ready",
-    x: bottomLeftButtonValues.x * winW,
-    y: bottomLeftButtonValues.y * winH,
-    width: bottomLeftButtonValues.w! * winW,
-    height: bottomLeftButtonValues.h! * winH,
-    visible: false,
+  const readyCheckbox = new Checkbox(
+    {
+      x: bottomLeftButtonValues.x * winW,
+      y: bottomLeftButtonValues.y * winH,
+      width: bottomLeftButtonValues.w! * winW,
+      height: bottomLeftButtonValues.h! * winH,
+      visible: false,
+    },
+    "Ready",
+  );
+  globals.layers.UI.add(readyCheckbox);
+  readyCheckbox.on("click tap", () => {
+    restart.decline(readyCheckbox.checked);
   });
-  globals.layers.UI.add(restartReadyButton);
-  restartReadyButton.on("click tap", () => {
-    restart.decline(restartReadyButton.pressed);
-  });
-  restartReadyButton.tooltipName = "restart-ready";
-  restartReadyButton.tooltipContent =
-    "Click this to tell the shared replay leader whether you will play another game.";
-  initKonvaTooltips(restartReadyButton, true, false);
-  globals.elements.restartReadyButton = restartReadyButton;
+  readyCheckbox.tooltipName = "restart-ready";
+  readyCheckbox.tooltipContent =
+    "Tells the shared replay leader whether you will play another game.";
+  initKonvaTooltips(readyCheckbox, true, false);
+  globals.elements.readyCheckbox = readyCheckbox;
 
   // The chat button.
   const chatButton = new Button({
@@ -2547,6 +2552,11 @@ function drawClueArea() {
   totalRankWidth += buttonXSpacing * (numRanks - 1);
   const rankX = (clueAreaValues.w! - totalRankWidth) / 2;
   const rankY = colorY + buttonH + buttonYSpacing;
+  lowerClueAreaRowsW = Math.max(
+    totalColorWidth,
+    totalRankWidth,
+    GIVE_CLUE_BUTTON.w,
+  );
   for (const [i, rank] of globals.variant.clueRanks.entries()) {
     const button = new RankButton({
       x: (rankX + i * (buttonW + buttonXSpacing)) * winW,
@@ -2570,12 +2580,12 @@ function drawClueArea() {
   globals.elements.lowerClueArea.add(globals.elements.clueTypeButtonGroup);
 
   // The "Give Clue" button.
-  const postClueEmpathyButtonW =
-    GIVE_CLUE_BUTTON.w * POST_CLUE_EMPATHY_BUTTON_SHARE;
+  const postClueEmpathyCheckboxW =
+    GIVE_CLUE_BUTTON.w * POST_CLUE_EMPATHY_CHECKBOX_SHARE;
   giveClueValues = {
     x: (clueAreaValues.w! - GIVE_CLUE_BUTTON.w) / 2,
     y: rankY + buttonH + buttonYSpacing,
-    w: GIVE_CLUE_BUTTON.w - postClueEmpathyButtonW,
+    w: GIVE_CLUE_BUTTON.w - postClueEmpathyCheckboxW,
     h: GIVE_CLUE_BUTTON.h,
   };
 
@@ -2590,31 +2600,23 @@ function drawClueArea() {
   globals.elements.lowerClueArea.add(globals.elements.giveClueButton);
   globals.elements.giveClueButton.on("click tap", clues.give);
 
-  // The "Show Post-Clue Empathy" button, to the right of the "Give Clue" button.
-  const postClueEmpathyButton = new ToggleButton(
+  // The post-clue empathy checkbox, to the right of the "Give Clue" button.
+  const postClueEmpathyCheckbox = new Checkbox(
     {
       x: (giveClueValues.x + giveClueValues.w! + buttonXSpacing) * winW,
       y: giveClueValues.y * winH,
-      width: (postClueEmpathyButtonW - buttonXSpacing) * winW,
+      width: (postClueEmpathyCheckboxW - buttonXSpacing) * winW,
       height: giveClueValues.h! * winH,
     },
-    [globals.imageLoader!.get("flashlight")],
+    globals.imageLoader!.get("flashlight"),
   );
-  // The icon is square, so keep it square instead of stretching it to the shape of the button.
-  const icon = postClueEmpathyButton.imageElement!;
-  const iconSize = Math.min(icon.width(), icon.height());
-  icon.size({ width: iconSize, height: iconSize });
-  icon.position({
-    x: (postClueEmpathyButton.width() - iconSize) / 2,
-    y: (postClueEmpathyButton.height() - iconSize) / 2,
-  });
-  globals.elements.lowerClueArea.add(postClueEmpathyButton);
-  postClueEmpathyButton.on("click tap", cluePreview.toggle);
-  postClueEmpathyButton.tooltipName = "post-clue-empathy";
-  postClueEmpathyButton.tooltipContent =
-    "Show Post-Clue Empathy: show the target's hand as they would see it after the selected clue.";
-  initKonvaTooltips(postClueEmpathyButton, true, false);
-  globals.elements.postClueEmpathyButton = postClueEmpathyButton;
+  globals.elements.lowerClueArea.add(postClueEmpathyCheckbox);
+  postClueEmpathyCheckbox.on("click tap", cluePreview.toggle);
+  postClueEmpathyCheckbox.tooltipName = "post-clue-empathy";
+  postClueEmpathyCheckbox.tooltipContent =
+    "Show post-clue empathy: show the target's hand as they would see it after the selected clue.";
+  initKonvaTooltips(postClueEmpathyCheckbox, true, false);
+  globals.elements.postClueEmpathyCheckbox = postClueEmpathyCheckbox;
 
   globals.layers.UI.add(globals.elements.clueArea);
 
@@ -2879,14 +2881,14 @@ function drawHypotheticalArea() {
   const hypoButtonWidth = HYPO_BUTTON.w;
   const hypoButtonSpacing = HYPO_BUTTON.spacing;
 
-  // The "Back 1 Turn" button (to the right of the give clue button, after it slides left).
+  // The "Back 1 Turn" button (to the right of the widest row of the clue area, after it slides
+  // left).
   const hypoBackButtonValues = {
     x:
       clueAreaValues.x
       + lowerClueAreaValues.x
       - lowerClueAreaSlideX
-      + giveClueValues.x
-      + giveClueValues.w!
+      + (clueAreaValues.w! + lowerClueAreaRowsW) / 2
       + hypoButtonSpacing,
     y: clueAreaValues.y + lowerClueAreaValues.y + giveClueValues.y,
     w: HYPO_BUTTON.backW,
@@ -2954,55 +2956,59 @@ function drawHypotheticalArea() {
   });
   globals.elements.endHypotheticalButton = endHypotheticalButton;
 
-  // The "Edit Cards" button (above the exit hypo button).
-  const editCardsButtonValues = {
+  // The "Edit cards" checkbox (above the exit hypo button).
+  const editCardsValues = {
     x: endHypotheticalButtonValues.x,
     y: endHypotheticalButtonValues.y - hypoButtonHeight - hypoButtonSpacing,
   };
-  globals.elements.editCardsButton = new ToggleButton({
-    x: editCardsButtonValues.x * winW,
-    y: editCardsButtonValues.y * winH,
-    width: hypoButtonWidth * winW,
-    height: hypoButtonHeight * winH,
-    text: "Edit Cards",
-    fontSize: hypoButtonFontSize * winH,
-  });
+  globals.elements.editCardsCheckbox = new Checkbox(
+    {
+      x: editCardsValues.x * winW,
+      y: editCardsValues.y * winH,
+      width: hypoButtonWidth * winW,
+      height: hypoButtonHeight * winH,
+    },
+    "Edit cards",
+    hypoButtonFontSize * winH,
+  );
 
-  globals.elements.editCardsButton.tooltipName = "hypo-edit-cards";
-  globals.elements.editCardsButton.tooltipContent =
-    "Turn this on and then click on cards to change them into other cards.";
-  initKonvaTooltips(globals.elements.editCardsButton, true, false);
+  globals.elements.editCardsCheckbox.tooltipName = "hypo-edit-cards";
+  globals.elements.editCardsCheckbox.tooltipContent =
+    "While this is checked, click on a card to change it into another card.";
+  initKonvaTooltips(globals.elements.editCardsCheckbox, true, false);
 
-  globals.elements.editCardsButton.on("click tap", () => {
-    globals.elements.editCardsButton?.setPressed(
-      !globals.elements.editCardsButton.pressed,
+  globals.elements.editCardsCheckbox.on("click tap", () => {
+    globals.elements.editCardsCheckbox?.setChecked(
+      !globals.elements.editCardsCheckbox.checked,
     );
   });
-  globals.elements.hypoButtonsArea.add(globals.elements.editCardsButton);
+  globals.elements.hypoButtonsArea.add(globals.elements.editCardsCheckbox);
 
-  // The "Show Drawn Cards" / "Hide Drawn Cards" button (above the edit cards button).
-  const toggleDrawnCardsButtonValues = {
-    x: editCardsButtonValues.x,
-    y: editCardsButtonValues.y - hypoButtonHeight - hypoButtonSpacing,
+  // The "Show drawn cards" checkbox (above the edit cards checkbox).
+  const showDrawnCardsValues = {
+    x: editCardsValues.x,
+    y: editCardsValues.y - hypoButtonHeight - hypoButtonSpacing,
   };
-  globals.elements.toggleDrawnCardsButton = new ToggleButton({
-    x: toggleDrawnCardsButtonValues.x * winW,
-    y: toggleDrawnCardsButtonValues.y * winH,
-    width: hypoButtonWidth * winW,
-    height: hypoButtonHeight * winH,
-    text: "Show Hidden",
-    fontSize: HYPO_BUTTON.showHiddenFontSize * winH,
-  });
-  globals.elements.toggleDrawnCardsButton.tooltipName = "hypo-show-drawn";
-  globals.elements.toggleDrawnCardsButton.tooltipContent =
+  globals.elements.showDrawnCardsCheckbox = new Checkbox(
+    {
+      x: showDrawnCardsValues.x * winW,
+      y: showDrawnCardsValues.y * winH,
+      width: hypoButtonWidth * winW,
+      height: hypoButtonHeight * winH,
+    },
+    "Show drawn cards",
+    hypoButtonFontSize * winH,
+  );
+  globals.elements.showDrawnCardsCheckbox.tooltipName = "hypo-show-drawn";
+  globals.elements.showDrawnCardsCheckbox.tooltipContent =
     "Show the front faces of cards drawn during the hypothetical.";
-  initKonvaTooltips(globals.elements.toggleDrawnCardsButton, true, false);
+  initKonvaTooltips(globals.elements.showDrawnCardsCheckbox, true, false);
 
-  globals.elements.toggleDrawnCardsButton.on(
+  globals.elements.showDrawnCardsCheckbox.on(
     "click tap",
     hypothetical.toggleRevealed,
   );
-  globals.elements.hypoButtonsArea.add(globals.elements.toggleDrawnCardsButton);
+  globals.elements.hypoButtonsArea.add(globals.elements.showDrawnCardsCheckbox);
 }
 
 function drawPauseArea() {

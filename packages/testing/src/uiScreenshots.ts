@@ -207,6 +207,17 @@ async function hoverCanvasElement(
   await page.mouse.move(x, y);
 }
 
+/** Clicks an element of the classic game screen. */
+async function clickCanvasElement(
+  page: Page,
+  elementPath: ReadonlyArray<string | number>,
+) {
+  await hoverCanvasElement(page, elementPath);
+  await page.mouse.down();
+  await page.mouse.up();
+  await page.waitForTimeout(SETTLE_MILLISECONDS);
+}
+
 function getStates({
   replayID,
   startGame,
@@ -355,6 +366,18 @@ function getStates({
         await page.waitForTimeout(SETTLE_MILLISECONDS);
         await leaveReplay(page);
       },
+    },
+    // A hypothetical in the replay, with "Edit cards" checked and the other checkboxes not.
+    {
+      name: "hypothetical",
+      path: "/",
+      loggedIn: true,
+      prepare: async (page) => {
+        await openReplay(page, replayID);
+        await clickCanvasElement(page, ["enterHypoButton"]);
+        await clickCanvasElement(page, ["editCardsCheckbox"]);
+      },
+      cleanup: leaveReplay,
     },
     // Joining a table keeps the account in it, so these states come last.
     { name: "pregame", path: "/", loggedIn: true, prepare: joinTable },

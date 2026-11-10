@@ -144,7 +144,7 @@ function pressCard() {
     state: { replay: { hypothetical: { startingPlayerIndex: undefined } } },
     options: { speedrun: false },
     lobby: { settings: { speedrunMode: false, keldonMode: true } },
-    elements: { editCardsButton: undefined, playerHands: [], arrows: [] },
+    elements: { editCardsCheckbox: undefined, playerHands: [], arrows: [] },
     layers: { card: { batchDraw: vi.fn() } },
     store: { dispatch: vi.fn() },
   });

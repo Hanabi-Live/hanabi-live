@@ -37,8 +37,8 @@ describe("clue preview", () => {
       turn: { ...gameState.turn, currentPlayerIndex: 0 },
     };
 
-    const postClueEmpathyButton = {
-      setPressed: vi.fn<(pressed: boolean) => void>(),
+    const postClueEmpathyCheckbox = {
+      setChecked: vi.fn<(checked: boolean) => void>(),
     };
     const cards = [RED_ONE, BLUE_TWO].map((order) => ({
       order,
@@ -49,7 +49,7 @@ describe("clue preview", () => {
       variant,
       state: { visibleState: gameState },
       elements: {
-        postClueEmpathyButton,
+        postClueEmpathyCheckbox,
         playerHands: [
           { children: [] },
           { children: cards.map((card) => ({ card })) },
@@ -68,7 +68,7 @@ describe("clue preview", () => {
 
     cluePreview.toggle();
 
-    expect(postClueEmpathyButton.setPressed).toHaveBeenLastCalledWith(true);
+    expect(postClueEmpathyCheckbox.setChecked).toHaveBeenLastCalledWith(true);
     const [redOne, blueTwo] = cards.map(
       (card) => card.setCluePreview.mock.lastCall?.[0],
     );
@@ -99,7 +99,7 @@ describe("clue preview", () => {
 
     // A new turn turns the button off and restores the hand.
     cluePreview.reset();
-    expect(postClueEmpathyButton.setPressed).toHaveBeenLastCalledWith(false);
+    expect(postClueEmpathyCheckbox.setChecked).toHaveBeenLastCalledWith(false);
     for (const card of cards) {
       expect(card.setCluePreview).toHaveBeenLastCalledWith(null);
     }
