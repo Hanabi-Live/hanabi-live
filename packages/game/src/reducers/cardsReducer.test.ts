@@ -1,12 +1,11 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 
-import { describe, expect, spyOn, test } from "bun:test";
+import { describe, expect, test } from "bun:test";
 import type { Tuple } from "complete-common";
 import { getVariant } from "../gameData";
 import type { CardState } from "../interfaces/CardState";
 import type { GameState } from "../interfaces/GameState";
 import { getDefaultMetadata } from "../metadata";
-import * as deckRules from "../rules/deck";
 import {
   actionCardIdentity,
   colorClue,
@@ -39,8 +38,6 @@ const SECOND_CARD = getInitialCardState(1 as CardOrder, VARIANT, NUM_PLAYERS);
 const THIRD_CARD = getInitialCardState(2 as CardOrder, VARIANT, NUM_PLAYERS);
 const FOURTH_CARD = getInitialCardState(3 as CardOrder, VARIANT, NUM_PLAYERS);
 const FIFTH_CARD = getInitialCardState(4 as CardOrder, VARIANT, NUM_PLAYERS);
-
-spyOn(deckRules, "isInitialDealFinished").mockReturnValue(true);
 
 describe("cardsReducer", () => {
   describe("location", () => {
