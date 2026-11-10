@@ -8,16 +8,12 @@ use serde::{Deserialize, Deserializer, Serialize, Serializer};
 use serde_json::Value;
 use std::ops::Deref;
 
-/// A game: the engine's state, the log that checkpoints store, from which the engine rebuilds
-/// that state, and the timer and pause flags, which the server sets outside the engine's rules.
+/// A game: the engine's state, and the log that checkpoints store, from which the engine rebuilds
+/// that state.
 #[derive(Clone, Debug)]
 pub struct Game {
     state: EngineState,
     log: GameLog,
-    /// Whether a player's clock has started: an action was taken, or the first player loaded the
-    /// game.
-    started_timer: bool,
-    paused: bool,
 }
 
 /// What a game started from and what happened in it.
@@ -49,22 +45,24 @@ enum GameStep {
     },
 }
 
-/// A game as checkpoints store it: its log, and the timer and pause flags.
+/// A game as checkpoints store it: its log.
 #[derive(Serialize)]
 #[serde(rename_all = "camelCase")]
 struct StoredGameRef<'a> {
     setup: &'a GameSetup,
     steps: &'a [GameStep],
-    started_timer: bool,
-    paused: bool,
 }
 #[derive(Deserialize)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 struct StoredGame {
     setup: GameSetup,
     steps: Vec<GameStep>,
-    started_timer: bool,
-    paused: bool,
+    /// Older servers also stored these flags. The game's `Snapshot` holds them now, so they are
+    /// read and ignored.
+    #[serde(default, rename = "startedTimer")]
+    _started_timer: Option<bool>,
+    #[serde(default, rename = "paused")]
+    _paused: Option<bool>,
 }
 
 /// A game's steps, taken out of it while a checkpoint stores the rest of the game.
@@ -86,8 +84,6 @@ impl Serialize for Game {
         StoredGameRef {
             setup: &self.log.setup,
             steps: &self.log.steps,
-            started_timer: self.started_timer,
-            paused: self.paused,
         }
         .serialize(serializer)
     }
@@ -114,8 +110,6 @@ impl Game {
                 setup,
                 steps: vec![],
             },
-            started_timer: false,
-            paused: false,
         })
     }
     /// Replays a stored game through the engine.
@@ -128,8 +122,6 @@ impl Game {
         for step in stored.steps {
             game.step(step)?;
         }
-        game.started_timer = stored.started_timer;
-        game.paused = stored.paused;
         Ok(game)
     }
     /// Applies a step to the game. A rejected step changes nothing, as the engine guarantees.
@@ -141,7 +133,6 @@ impl Game {
                 timing,
             } => {
                 hanabi_engine::apply_action(&mut self.state, *actor, action, timing.clone())?;
-                self.started_timer = true;
             }
             GameStep::Termination {
                 termination,
@@ -167,18 +158,16 @@ impl Game {
         self.log.steps = steps.0;
     }
     /// Plays steps that a checkpoint stored apart from the rest of the game. The game must have
-    /// none. The timer and pause flags keep the values that the checkpoint stored with the game.
+    /// none.
     pub(crate) fn restore_steps(&mut self, steps: &[&str]) -> Result<()> {
         ensure!(self.log.steps.is_empty(), "The game already has steps");
         ensure!(
             steps.len() <= hanabi_protocol::MAX_GAME_ACTIONS,
             "Oversized stored game"
         );
-        let started_timer = self.started_timer;
         for step in steps {
             self.step(serde_json::from_str(step)?)?;
         }
-        self.started_timer = started_timer;
         Ok(())
     }
     /// The engine's state, for engine functions that read it.
@@ -211,13 +200,6 @@ impl Game {
         action: &ReplayAction,
         timing: Option<CompletionTiming>,
     ) -> Result<()> {
-        if self.paused {
-            return Err(hanabi_engine::ActionRejected {
-                message: "You cannot perform a game action when the game is paused.".into(),
-                silent: false,
-            }
-            .into());
-        }
         self.step(GameStep::Action {
             actor,
             action: PlayerAction::from(action),
@@ -241,20 +223,6 @@ impl Game {
             },
             timing,
         })
-    }
-    /// Records that the active player's clock started.
-    pub fn start_timer(&mut self) {
-        self.started_timer = true;
-    }
-    pub fn started_timer(&self) -> bool {
-        self.started_timer
-    }
-    /// Whether the game is paused. A paused game takes no actions.
-    pub fn paused(&self) -> bool {
-        self.paused
-    }
-    pub fn set_paused(&mut self, paused: bool) {
-        self.paused = paused;
     }
     pub fn identities(&self) -> Vec<Card> {
         self.deck
@@ -336,13 +304,19 @@ mod tests {
             value: 0,
         };
         game.apply(active, play).unwrap();
-        game.set_paused(true);
 
         let stored = serde_json::to_value(&game).unwrap();
         assert_eq!(stored["steps"].as_array().unwrap().len(), 1);
         assert!(stored.get("events").is_none());
         let restored: Game = serde_json::from_value(stored.clone()).unwrap();
         assert_eq!(restored.state(), game.state());
+        assert_eq!(serde_json::to_value(&restored).unwrap(), stored);
+
+        // Older servers stored the timer and pause flags with the game.
+        let mut legacy = stored.clone();
+        legacy["startedTimer"] = true.into();
+        legacy["paused"] = true.into();
+        let restored: Game = serde_json::from_value(legacy).unwrap();
         assert_eq!(serde_json::to_value(&restored).unwrap(), stored);
     }
 

@@ -2201,7 +2201,7 @@ async fn replay_loading_keeps_names_neutral_and_never_starts_a_game_clock() -> R
         let snapshot = h.snapshot(id).await?.0;
         let replay = snapshot.game().unwrap();
         let before = initial.game().unwrap();
-        ensure!(!replay.timer_started && !replay.game.started_timer());
+        ensure!(!replay.timer_started);
         ensure!(
             replay.clocks == before.clocks
                 && replay.turn_elapsed == before.turn_elapsed

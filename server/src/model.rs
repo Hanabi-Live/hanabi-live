@@ -71,9 +71,13 @@ pub struct Snapshot {
     pub clocks: Vec<i64>,
     pub duration: i64,
     pub turn_elapsed: i64,
+    /// Whether the active player's clock has started: an action was taken, or the active player
+    /// loaded the game.
     pub timer_started: bool,
     pub idle_remaining: i64,
-    pub pause_player_index: i32,
+    /// The player who paused the game. A paused game takes no actions.
+    #[serde(rename = "pause_player_index", with = "optional_seat")]
+    pub paused_by: Option<Seat>,
     pub queued_pauses: Vec<bool>,
     pub notes: Vec<Vec<String>>,
     #[serde(deserialize_with = "deserialize_note_owners")]
@@ -503,6 +507,10 @@ impl TableSnapshot {
     }
 }
 impl Snapshot {
+    /// Whether the game is paused.
+    pub fn paused(&self) -> bool {
+        self.paused_by.is_some()
+    }
     pub fn validate(&self) -> Result<()> {
         ensure!(
             self.format == FORMAT && self.table_id.0 > 0 && self.game_id >= UNSAVED_GAME,
@@ -555,8 +563,7 @@ impl Snapshot {
             "Invalid runtime timing"
         );
         ensure!(
-            (NO_VALUE..hanabi_engine::int(n)).contains(&self.pause_player_index)
-                && self.game.paused() == (self.pause_player_index >= 0),
+            self.paused_by.is_none_or(|seat| seat.index() < n),
             "Invalid pause state"
         );
         Ok(())
@@ -633,6 +640,31 @@ impl Seat {
             .iter()
             .enumerate()
             .filter_map(|(index, player)| Some((Self::new(index)?, player)))
+    }
+}
+
+/// Stores an optional seat as a number: the seat, or `NO_VALUE`.
+mod optional_seat {
+    use super::{NO_VALUE, Seat};
+    use serde::{Deserialize, Deserializer, Serialize, Serializer};
+
+    #[expect(
+        clippy::ref_option,
+        clippy::trivially_copy_pass_by_ref,
+        reason = "serde's `with` passes the field by reference"
+    )]
+    pub fn serialize<S: Serializer>(seat: &Option<Seat>, serializer: S) -> Result<S::Ok, S::Error> {
+        Seat::wire::<i64>(*seat).serialize(serializer)
+    }
+    pub fn deserialize<'de, D: Deserializer<'de>>(
+        deserializer: D,
+    ) -> Result<Option<Seat>, D::Error> {
+        match i64::deserialize(deserializer)? {
+            value if value == i64::from(NO_VALUE) => Ok(None),
+            value => Seat::try_from(value)
+                .map(Some)
+                .map_err(serde::de::Error::custom),
+        }
     }
 }
 

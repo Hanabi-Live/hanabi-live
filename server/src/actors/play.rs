@@ -64,6 +64,10 @@ impl TableActor {
             seat,
             &hanabi_engine::PlayerAction::from(&a),
         )?;
+        ensure_or_reject!(
+            !old.paused(),
+            "You cannot perform a game action when the game is paused."
+        );
         let from = old.game.events.len();
         let mut next = self.candidate();
         let s = game_mut(&mut next)?;
@@ -83,8 +87,7 @@ impl TableActor {
         let mut paused_by = None;
         if s.game.end_condition == EndCondition::InProgress && s.queued_pauses[active] {
             s.queued_pauses[active] = false;
-            s.pause_player_index = hanabi_engine::int(active);
-            s.game.set_paused(true);
+            s.paused_by = Seat::new(active);
             paused_by = Some(s.players[active].name.clone());
         }
         let notice = paused_by.and_then(|name| self.pause_notice(&mut next, &name, true));
@@ -207,14 +210,14 @@ impl TableActor {
             self.add_all(&mut e, hanabi_protocol::server::CLOCK, self.clock()?);
         } else {
             self.add_all(&mut e, hanabi_protocol::server::CLOCK, self.clock()?);
-            if s.game.paused() {
+            if s.paused() {
                 self.add_all(
                     &mut e,
                     hanabi_protocol::server::PAUSE,
                     hanabi_protocol::Pause {
                         table_id: self.table.id,
                         active: true,
-                        player_index: i64::from(s.pause_player_index),
+                        player_index: Seat::wire(s.paused_by),
                     },
                 );
             }
@@ -342,8 +345,8 @@ impl TableActor {
         }
         ensure_or_reject!(
             match setting {
-                P::Pause => !old.game.paused(),
-                P::Unpause => old.game.paused(),
+                P::Pause => !old.paused(),
+                P::Unpause => old.paused(),
                 P::PauseQueue => !old.queued_pauses[seat],
                 P::PauseUnqueue => old.queued_pauses[seat],
             },
@@ -355,16 +358,15 @@ impl TableActor {
         match setting {
             P::PauseQueue | P::PauseUnqueue => s.queued_pauses[seat] = setting == P::PauseQueue,
             P::Pause | P::Unpause => {
-                s.game.set_paused(setting == P::Pause);
-                s.pause_player_index = if s.game.paused() {
-                    hanabi_engine::int(seat)
+                s.paused_by = if setting == P::Pause {
+                    Seat::new(seat)
                 } else {
-                    NO_VALUE
+                    None
                 };
-                if !s.game.paused() {
+                if !s.paused() {
                     s.turn_elapsed = 0;
                 }
-                let paused = s.game.paused();
+                let paused = s.paused();
                 notice = self.pause_notice(&mut next, &session.name, paused);
             }
         }
@@ -377,8 +379,8 @@ impl TableActor {
                 hanabi_protocol::server::PAUSE,
                 hanabi_protocol::Pause {
                     table_id: self.table.id,
-                    active: s.game.paused(),
-                    player_index: i64::from(s.pause_player_index),
+                    active: s.paused(),
+                    player_index: Seat::wire(s.paused_by),
                 },
             );
             self.add_all(&mut e, hanabi_protocol::server::CLOCK, self.clock()?);
@@ -566,8 +568,8 @@ impl TableActor {
                             .map_or(self.table.created, |f| f.max(self.table.created)),
                     )
                 }),
-                paused: s.game.paused(),
-                pause_player_index: s.pause_player_index.into(),
+                paused: s.paused(),
+                pause_player_index: Seat::wire(s.paused_by),
                 pause_queued: seat.is_some_and(|i| s.queued_pauses[i]),
             };
             e.messages

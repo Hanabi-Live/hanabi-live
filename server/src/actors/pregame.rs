@@ -23,7 +23,7 @@ use chrono::Utc;
 use hanabi_engine::{EndCondition, GameSetup, Interpretation};
 use hanabi_protocol::ClientMessage;
 use hanabi_protocol::UserId;
-use hanabi_protocol::{Chat, MIN_PLAYERS, NO_VALUE, Status, TableRequest, TableStarted};
+use hanabi_protocol::{Chat, MIN_PLAYERS, Status, TableRequest, TableStarted};
 use std::{
     collections::{BTreeMap, HashSet},
     sync::Arc,
@@ -400,7 +400,7 @@ impl TableActor {
             turn_elapsed: 0,
             timer_started: false,
             idle_remaining: IDLE_TIMEOUT_MS,
-            pause_player_index: NO_VALUE,
+            paused_by: None,
             queued_pauses: vec![false; n],
             notes: vec![vec![String::new(); size]; n],
             spectator_notes: BTreeMap::new(),

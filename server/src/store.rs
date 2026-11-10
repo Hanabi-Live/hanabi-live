@@ -613,7 +613,6 @@ mod tests {
     };
     use chrono::Utc;
     use hanabi_engine::{EndCondition, GameSetup, Interpretation};
-    use hanabi_protocol::NO_VALUE;
     use std::{
         collections::{BTreeMap, BTreeSet},
         sync::Arc,
@@ -699,7 +698,7 @@ mod tests {
                 turn_elapsed: 0,
                 timer_started: true,
                 idle_remaining: IDLE_TIMEOUT_MS,
-                pause_player_index: NO_VALUE,
+                paused_by: None,
                 queued_pauses: vec![false, false],
                 notes: vec![vec![String::new(); 55]; 2],
                 spectator_notes: BTreeMap::new(),
@@ -1716,7 +1715,7 @@ mod tests {
             send(&hub,users[actor].clone(),"pause",json!({"tableID":id,"setting":"pause"})).await?;
             send(&hub,users[actor].clone(),"note",json!({"tableID":id,"order":0,"note":"private"})).await?;
             send(&hub,users[actor].clone(),"tag",json!({"tableID":id,"msg":"native-live"})).await?;
-            let loaded=store.load().await?;let s=loaded[0].0.game().unwrap();ensure!(s.game.paused()&&s.notes[active][0]=="private"&&s.tags.len()==1,"Runtime mutations not durable");
+            let loaded=store.load().await?;let s=loaded[0].0.game().unwrap();ensure!(s.paused()&&s.notes[active][0]=="private"&&s.tags.len()==1,"Runtime mutations not durable");
             let (reply,received)=oneshot::channel();hub.send(HubCommand::Quiesce(reply)).await?;let handles=received.await?;
             for handle in handles{let (reply,received)=oneshot::channel();handle.sender.send(TableCommand::Drain(reply)).await?;received.await??;}
             let stored=store.load().await?;ensure!(stored[0].0.game().unwrap().maintenance_applied,"Maintenance allowance was not persisted");

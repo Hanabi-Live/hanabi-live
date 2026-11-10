@@ -255,7 +255,7 @@ pub fn snapshot(imported: Imported, table_id: TableId, owner: UserId) -> Snapsho
         turn_elapsed: 0,
         timer_started: false,
         idle_remaining: IDLE_TIMEOUT_MS,
-        pause_player_index: NO_VALUE,
+        paused_by: None,
         queued_pauses: vec![false; n],
         notes: imported.notes,
         spectator_notes: BTreeMap::new(),

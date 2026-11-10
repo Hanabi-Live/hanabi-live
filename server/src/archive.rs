@@ -215,7 +215,7 @@ pub(crate) async fn replay(
         turn_elapsed: 0,
         timer_started: false,
         idle_remaining: IDLE_TIMEOUT_MS,
-        pause_player_index: NO_VALUE,
+        paused_by: None,
         queued_pauses: vec![false; n],
         notes,
         spectator_notes: BTreeMap::new(),
