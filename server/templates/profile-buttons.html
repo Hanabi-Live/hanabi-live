@@ -3,14 +3,14 @@
   <!-- Keep Jinja string literals intact rather than wrapping their contents. -->
   <!-- prettier-ignore -->
   {% for route, label, icon, selected_title in [
-    ["scores", "Scores & Statistics", "chart-area", "Scores"],
-    ["history", "Full Game History", "history", "History"],
-    ["missing-scores", "Missing Scores", "question", "Missing Scores"],
-    ["tags", "Tagged Games", "tag", "Tagged Games"]
+    ["scores", "Scores & Statistics", "fa-chart-area", "Scores"],
+    ["history", "Full Game History", "fa-history", "History"],
+    ["missing-scores", "Missing Scores", "fa-question", "Missing Scores"],
+    ["tags", "Tagged Games", "fa-tag", "Tagged Games"]
   ] %}
   <li>
     <!-- prettier-ignore -->
-    <a class="button fit icon fa-{{ icon }}{% if title == selected_title %} disabled{% endif %}"
+    <a class="button fit icon {{ icon }}{% if title == selected_title %} disabled{% endif %}"
       {% if title != selected_title %}href="/{{ route }}/{{ name|urlencode }}"{% endif %}>{{ label }}</a>
   </li>
   {% endfor %}
