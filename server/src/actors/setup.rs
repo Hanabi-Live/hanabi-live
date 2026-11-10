@@ -378,40 +378,33 @@ pub(super) async fn prepare_table(
         let r = match creation {
             Creation::Table(r) => r,
             Creation::Replay(r) => {
+                let shared = r.visibility() == hanabi_protocol::ReplayVisibility::Shared;
+                let spoiler_free = r.spoiler_free();
                 ensure_or_reject!(
-                    r.password.is_empty(),
-                    "You cannot create a replay with a password."
-                );
-                let shared = r.visibility == hanabi_protocol::ReplayVisibility::Shared;
-                ensure_or_reject!(
-                    shared || !r.spoiler_free,
+                    shared || !spoiler_free,
                     "Only a shared replay can be a spoiler-free review."
                 );
                 let mut warnings = vec![];
                 let mut custom_seed = None;
-                let snapshot = if r.source == hanabi_protocol::ReplaySource::Json {
-                    let imported = super::replay_helpers::parse(
-                        r.game_json.as_ref().or_reject("Missing game JSON")?,
-                    )?;
-                    warnings.clone_from(&imported.warnings);
-                    custom_seed = Some(imported.custom_seed.clone());
-                    super::replay_helpers::snapshot(imported, id, session.user)
-                } else {
-                    crate::archive::replay(
-                        &store.primary,
-                        GameId(r.database_id.or_reject("Missing databaseID")?),
-                        id,
-                        session.user,
-                    )
-                    .await?
+                let snapshot = match &r {
+                    hanabi_protocol::ReplayCreateRequest::Json { game_json, .. } => {
+                        let imported = super::replay_helpers::parse(game_json)?;
+                        warnings.clone_from(&imported.warnings);
+                        custom_seed = Some(imported.custom_seed.clone());
+                        super::replay_helpers::snapshot(imported, id, session.user)
+                    }
+                    hanabi_protocol::ReplayCreateRequest::Id { database_id, .. } => {
+                        crate::archive::replay(
+                            &store.primary,
+                            GameId(*database_id),
+                            id,
+                            session.user,
+                        )
+                        .await?
+                    }
                 };
-                let mut table = replay_table(
-                    snapshot,
-                    shared,
-                    r.spoiler_free,
-                    session.user,
-                    &session.name,
-                );
+                let mut table =
+                    replay_table(snapshot, shared, spoiler_free, session.user, &session.name);
                 if let Some(seed) = custom_seed {
                     table.extra.custom_seed = seed;
                 }
@@ -422,7 +415,7 @@ pub(super) async fn prepare_table(
                 tracing::info!(
                     "Created a {} replay (spoiler-free: {}) for user {}.",
                     if shared { "shared" } else { "solo" },
-                    r.spoiler_free,
+                    spoiler_free,
                     session.user,
                 );
                 return Ok((table, saved, warnings));

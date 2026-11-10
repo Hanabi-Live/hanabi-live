@@ -406,13 +406,15 @@ impl Hub {
     }
     /// A shared replay of the same database game that a link to it should join.
     fn existing_replay(&self, r: &hanabi_protocol::ReplayCreateRequest) -> Option<TableId> {
-        if !r.join_existing
-            || r.visibility != hanabi_protocol::ReplayVisibility::Shared
-            || r.source != hanabi_protocol::ReplaySource::Id
-        {
+        let hanabi_protocol::ReplayCreateRequest::Id {
+            database_id: game,
+            visibility: hanabi_protocol::ReplayVisibility::Shared,
+            join_existing: true,
+            ..
+        } = *r
+        else {
             return None;
-        }
-        let game = r.database_id?;
+        };
         self.tables
             .iter()
             .filter(|(_, e)| {
@@ -884,7 +886,7 @@ impl Hub {
                     let spectate =
                         ClientMessage::TableSpectate(hanabi_protocol::TableSpectateRequest {
                             table_id: id,
-                            shadowing_player_index: r.shadowing_player_index,
+                            shadowing_player_index: r.shadowing_player_index(),
                         });
                     self.route(session, id, Command::Client(Box::new(spectate)), reply);
                 } else {

@@ -148,14 +148,14 @@ function submit() {
   );
   const spoilerFree = visibility === "shared" && spoilerFreeChecked;
 
-  if (source === "id") {
+  if (source === "id" && databaseID !== undefined) {
     globals.conn!.send("replayCreate", {
       source,
       databaseID,
       visibility,
       spoilerFree,
     });
-  } else if (source === "json") {
+  } else if (source === "json" && gameJSON !== undefined) {
     globals.conn!.send("replayCreate", {
       source,
       gameJSON,

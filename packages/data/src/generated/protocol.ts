@@ -817,36 +817,45 @@ export const replayImportSchema = z.strictObject({
   playerNames: z.array(z.string()).max(6).optional(),
   seed: z.string().optional(),
 });
+const replayVisibilitySchema = z.enum(["solo", "shared"]);
 
 /**
- * `id` replays a finished game from the database; `json` imports a game in the replay format.
+ * A request to watch a finished game: one from the database, or one imported in the replay format.
  */
-const replaySourceSchema = z.enum(["id", "json"]);
-const replayVisibilitySchema = z.enum(["solo", "shared"]);
-export const replayCreateRequestSchema = z.strictObject({
-  databaseID: z.number().int().min(1).max(2_147_483_647).optional(),
-  gameJSON: replayImportSchema.optional(),
-  /**
-   * For a shared replay of a database game, spectate an existing shared replay of that game
-   * instead of creating another one, if there is one.
-   */
-  joinExisting: z.boolean().default(false),
-  /**
-   * Replays cannot have a password; anything else is rejected.
-   */
-  password: z.string().default(""),
-  /**
-   * The seat to shadow, if any.
-   */
-  shadowingPlayerIndex: playerIndexSchema.optional(),
-  source: replaySourceSchema,
-  /**
-   * For a shared replay, hide what happens later in the game: the turn slider, jumping to the
-   * end, and future strikes.
-   */
-  spoilerFree: z.boolean().default(false),
-  visibility: replayVisibilitySchema,
-});
+export const replayCreateRequestSchema = z.discriminatedUnion("source", [
+  z.strictObject({
+    databaseID: z.number().int().min(1).max(2_147_483_647),
+    /**
+     * For a shared replay, spectate an existing shared replay of the same game instead of
+     * creating another one, if there is one.
+     */
+    joinExisting: z.boolean().default(false),
+    /**
+     * The seat to shadow, if any.
+     */
+    shadowingPlayerIndex: playerIndexSchema.optional(),
+    source: z.literal("id"),
+    /**
+     * For a shared replay, hide what happens later in the game: the turn slider, jumping to
+     * the end, and future strikes.
+     */
+    spoilerFree: z.boolean().default(false),
+    visibility: replayVisibilitySchema,
+  }),
+  z.strictObject({
+    gameJSON: replayImportSchema,
+    /**
+     * The seat to shadow, if any.
+     */
+    shadowingPlayerIndex: playerIndexSchema.optional(),
+    source: z.literal("json"),
+    /**
+     * For a shared replay, hide what happens later in the game.
+     */
+    spoilerFree: z.boolean().default(false),
+    visibility: replayVisibilitySchema,
+  }),
+]);
 const replayActionSchema = z.strictObject({
   target: z.number().int().min(-2_147_483_648).max(2_147_483_647),
   type: z.enum(RecordedActionType),

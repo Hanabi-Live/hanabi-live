@@ -538,11 +538,35 @@
           "variant": "No Variant"
         }
       },
-      "joinExisting": false,
-      "password": "",
       "spoilerFree": false
     },
     "valid": true
+  },
+  {
+    "name": "only replays of stored games can join an existing replay",
+    "direction": "client",
+    "command": "replayCreate",
+    "input": {
+      "source": "json",
+      "visibility": "shared",
+      "joinExisting": true,
+      "gameJSON": {
+        "seed": "p2v0s1"
+      }
+    },
+    "valid": false
+  },
+  {
+    "name": "replays have no password",
+    "direction": "client",
+    "command": "replayCreate",
+    "input": {
+      "source": "id",
+      "visibility": "solo",
+      "databaseID": 3,
+      "password": ""
+    },
+    "valid": false
   },
   {
     "name": "replay import rejects unknown fields",

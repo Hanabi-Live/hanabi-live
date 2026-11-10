@@ -244,14 +244,6 @@ pub struct TableUpdateRequest {
     pub max_players: i64,
 }
 
-/// `id` replays a finished game from the database; `json` imports a game in the replay format.
-#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
-#[serde(rename_all = "lowercase")]
-pub enum ReplaySource {
-    Id,
-    Json,
-}
-
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "lowercase")]
 pub enum ReplayVisibility {
@@ -259,36 +251,72 @@ pub enum ReplayVisibility {
     Shared,
 }
 
+/// A request to watch a finished game: one from the database, or one imported in the replay format.
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
-#[serde(rename_all = "camelCase", deny_unknown_fields)]
-pub struct ReplayCreateRequest {
-    pub source: ReplaySource,
-    pub visibility: ReplayVisibility,
-    #[serde(
-        default,
-        rename = "databaseID",
-        skip_serializing_if = "Option::is_none"
-    )]
-    #[schemars(with = "i32", range(min = 1, max = i32::MAX))]
-    pub database_id: Option<i32>,
-    #[serde(default, rename = "gameJSON", skip_serializing_if = "Option::is_none")]
-    #[schemars(with = "ReplayImport")]
-    pub game_json: Option<ReplayImport>,
-    /// Replays cannot have a password; anything else is rejected.
-    #[serde(default)]
-    pub password: String,
-    /// The seat to shadow, if any.
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    #[schemars(with = "PlayerIndex")]
-    pub shadowing_player_index: Option<u8>,
-    /// For a shared replay of a database game, spectate an existing shared replay of that game
-    /// instead of creating another one, if there is one.
-    #[serde(default)]
-    pub join_existing: bool,
-    /// For a shared replay, hide what happens later in the game: the turn slider, jumping to the
-    /// end, and future strikes.
-    #[serde(default)]
-    pub spoiler_free: bool,
+#[serde(
+    tag = "source",
+    rename_all = "camelCase",
+    rename_all_fields = "camelCase",
+    deny_unknown_fields
+)]
+pub enum ReplayCreateRequest {
+    Id {
+        #[serde(rename = "databaseID")]
+        #[schemars(range(min = 1, max = i32::MAX))]
+        database_id: i32,
+        visibility: ReplayVisibility,
+        /// The seat to shadow, if any.
+        #[serde(default, skip_serializing_if = "Option::is_none")]
+        #[schemars(with = "PlayerIndex")]
+        shadowing_player_index: Option<u8>,
+        /// For a shared replay, spectate an existing shared replay of the same game instead of
+        /// creating another one, if there is one.
+        #[serde(default)]
+        join_existing: bool,
+        /// For a shared replay, hide what happens later in the game: the turn slider, jumping to
+        /// the end, and future strikes.
+        #[serde(default)]
+        spoiler_free: bool,
+    },
+    Json {
+        #[serde(rename = "gameJSON")]
+        game_json: Box<ReplayImport>,
+        visibility: ReplayVisibility,
+        /// The seat to shadow, if any.
+        #[serde(default, skip_serializing_if = "Option::is_none")]
+        #[schemars(with = "PlayerIndex")]
+        shadowing_player_index: Option<u8>,
+        /// For a shared replay, hide what happens later in the game.
+        #[serde(default)]
+        spoiler_free: bool,
+    },
+}
+
+impl ReplayCreateRequest {
+    pub const fn visibility(&self) -> ReplayVisibility {
+        match self {
+            Self::Id { visibility, .. } | Self::Json { visibility, .. } => *visibility,
+        }
+    }
+
+    pub const fn spoiler_free(&self) -> bool {
+        match self {
+            Self::Id { spoiler_free, .. } | Self::Json { spoiler_free, .. } => *spoiler_free,
+        }
+    }
+
+    pub const fn shadowing_player_index(&self) -> Option<u8> {
+        match self {
+            Self::Id {
+                shadowing_player_index,
+                ..
+            }
+            | Self::Json {
+                shadowing_player_index,
+                ..
+            } => *shadowing_player_index,
+        }
+    }
 }
 
 /// A turn in an ongoing game.
