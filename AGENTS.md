@@ -25,6 +25,14 @@ including in error messages that state it. Derive related values (such as
 clients or the game catalog in `server/protocol`. A literal used once whose
 meaning is obvious from context can stay inline.
 
+## Styling
+
+Style React components with Tailwind utility classes (with the `tw:` prefix),
+not with new rules in `public/css`. Use the theme colors that
+`packages/client/src/tailwind.css` maps from `public/css/tokens.css` (such as
+`tw:bg-surface`), so that both themes work. When a screen moves to React, delete
+the stylesheet rules that only that screen used.
+
 ## Writing style
 
 Write prose for people (replies, commit messages, pull request descriptions,
