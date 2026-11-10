@@ -39,6 +39,8 @@
   --name-me: #e69500;
   --friend: hotpink;
   --name-hover: #3350cb;
+  --error: red;
+  --help-icon-hover: #6666ff;
 
   /* The header bar */
   --header-bg: #444;
@@ -111,6 +113,8 @@
   --text-label: #a9a9a9;
   --link: #7fb2ff;
   --name-hover: var(--link);
+  --error: #ff6b6b;
+  --help-icon-hover: var(--link);
   --focus: #7fb2ff;
   --green: #2e7d32;
   --green-text: #6fcf7a;

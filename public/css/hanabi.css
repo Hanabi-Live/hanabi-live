@@ -170,7 +170,7 @@ body[data-screen="game"] {
 #main-login > header p,
 #main-tutorial > header p {
   border-top: solid 2px var(--border);
-  color: #777;
+  color: var(--text);
   display: inline-block;
   font-style: normal;
   margin: 0;
@@ -728,7 +728,7 @@ body[data-screen="game"] {
 }
 
 .question-mark:hover {
-  color: #6666ff;
+  color: var(--help-icon-hover);
 }
 
 /* The default arrow on input lists */
@@ -1015,7 +1015,7 @@ input::-webkit-calendar-picker-indicator /* Chrome */ {
 }
 
 #replay-error-row {
-  color: red;
+  color: var(--error);
   margin: 1em 0 0;
 }
 
@@ -1121,7 +1121,6 @@ input::-webkit-calendar-picker-indicator /* Chrome */ {
 }
 
 .horizontal > li {
-  vertical-align: center;
   list-style-type: none;
   float: left;
   margin-right: 1em;
@@ -1576,7 +1575,7 @@ input::-webkit-calendar-picker-indicator /* Chrome */ {
 }
 
 .red {
-  color: red;
+  color: var(--error);
 }
 
 .profile-tooltip {
@@ -1745,7 +1744,7 @@ input::-webkit-calendar-picker-indicator /* Chrome */ {
 }
 
 @media screen and (max-width: 530px) {
-  /* hide column 'Spectators' */
+  /* hide column 'Options' */
   #lobby-games-table th:nth-child(4),
   #lobby-games-table td:nth-child(4) {
     display: none;
@@ -1897,7 +1896,7 @@ span.cp {
 
 /* Wrong input indicator */
 input[type="text"].wrong-input {
-  border: 2px solid red;
+  border: 2px solid var(--error);
 }
 
 /* Dialogs */
@@ -2033,20 +2032,34 @@ table.history {
   }
 }
 
+/* The sort arrows use the header's text color, so that they follow the theme. */
 .history th[data-sortable] {
-  background-image: url(data:image/gif;base64,R0lGODlhFQAJAIAAACMtMP///yH5BAEAAAEALAAAAAAVAAkAAAIXjI+AywnaYnhUMoqt3gZXPmVg94yJVQAAOw==);
-  background-position: center right;
-  background-repeat: no-repeat;
   cursor: pointer;
+  position: relative;
   white-space: normal;
 }
-.history th[aria-sort="ascending"] {
-  background-image: url(data:image/gif;base64,R0lGODlhFQAEAIAAACMtMP///yH5BAEAAAEALAAAAAAVAAQAAAINjI8Bya2wnINUMopZAQA7);
+.history th[data-sortable]::after {
+  background-color: currentColor;
+  content: "";
+  height: 9px;
+  mask: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='21' height='9'><path d='M7 4h7l-3.5-4zM7 5h7l-3.5 4z'/></svg>");
+  position: absolute;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 21px;
+}
+.history th[aria-sort="ascending"],
+.history th[aria-sort="descending"] {
   background-color: var(--table-sorted-bg);
 }
-.history th[aria-sort="descending"] {
-  background-image: url(data:image/gif;base64,R0lGODlhFQAEAIAAACMtMP///yH5BAEAAAEALAAAAAAVAAQAAAINjB+gC+jP2ptn0WskLQA7);
-  background-color: var(--table-sorted-bg);
+.history th[aria-sort="ascending"]::after {
+  height: 4px;
+  mask-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='21' height='4'><path d='M7 4h7l-3.5-4z'/></svg>");
+}
+.history th[aria-sort="descending"]::after {
+  height: 4px;
+  mask-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='21' height='4'><path d='M7 0h7l-3.5 4z'/></svg>");
 }
 
 /* Spinner during ajax */

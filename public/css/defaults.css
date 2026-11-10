@@ -507,8 +507,8 @@ select {
 }
 
 select option {
-  color: #777;
-  background: #f5f5f5;
+  color: var(--text);
+  background: var(--surface-sunken);
 }
 
 input[type="text"],
@@ -1092,7 +1092,7 @@ input[type="button"]:disabled,
 
 #main > header p {
   border-top: solid 2px var(--border);
-  color: #777;
+  color: var(--text);
   display: inline-block;
   font-style: normal;
   margin: 1em 0 0 0;
