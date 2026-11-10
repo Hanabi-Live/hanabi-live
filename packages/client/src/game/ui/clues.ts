@@ -1,5 +1,5 @@
 import { ActionType } from "@hanabi-live/data";
-import type { CardOrder, Clue, PlayerIndex } from "@hanabi-live/game";
+import type { Clue, PlayerIndex } from "@hanabi-live/game";
 import {
   ClueType,
   getCharacterNameForPlayer,
@@ -17,7 +17,6 @@ import type { LayoutChild } from "./LayoutChild";
 import type { RankButton } from "./RankButton";
 import { globals } from "./UIGlobals";
 import * as arrows from "./arrows";
-import * as cluePreview from "./cluePreview";
 import type { PlayerButton } from "./controls/PlayerButton";
 import { colorToColorIndex } from "./convert";
 import * as cluesView from "./reactive/views/cluesView";
@@ -105,7 +104,7 @@ function showClueMatch(target: PlayerIndex, clue: Clue): boolean {
   }
 
   const hand = cardLayout.children;
-  const touchedCards: CardOrder[] = [];
+  let touchedAtLeastOneCard = false;
   for (const i of eRange(hand.length)) {
     const child = hand[i];
     if (child === undefined) {
@@ -114,14 +113,12 @@ function showClueMatch(target: PlayerIndex, clue: Clue): boolean {
 
     const { card } = child as unknown as LayoutChild;
     if (isTouched(card, clue)) {
-      touchedCards.push(card.order);
+      touchedAtLeastOneCard = true;
       arrows.set(i, card, null, clue, true);
     }
   }
 
-  cluePreview.setPotentialClue({ target, clue, touchedCards });
-
-  return touchedCards.length > 0;
+  return touchedAtLeastOneCard;
 }
 
 /** Restores the normal view after the player deselects a potential clue. */
@@ -165,10 +162,6 @@ export function give(): void {
     // They have not selected a player or a clue type, or a clue cannot be given.
     return;
   }
-
-  // The preview shows cards as the target sees them, so it must not decide which cards the clue
-  // touches in a hypothetical.
-  cluePreview.hide();
 
   switch (clueOrRankButton.clue.type) {
     case ClueType.Color: {

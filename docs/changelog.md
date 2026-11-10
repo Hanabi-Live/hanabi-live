@@ -67,8 +67,6 @@ of the repository.
   ranks can still be in it.
 - The direction arrow on Rainbow and Omni cards (including their dark, muddy,
   and cocoa versions) now shows all of their colors.
-- Hover over "Give Clue" to see the target's hand as they would see it after the
-  clue.
 - Click a name in the online users list to open a menu with "Profile", "Private
   Message", "Add to Friends", and "Block".
 - The "Other Scores" screen now shows 10 games at a time, with a "Show More
