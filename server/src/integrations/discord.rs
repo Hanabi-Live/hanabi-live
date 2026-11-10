@@ -1,3 +1,6 @@
+//! The bridge between the lobby chat and a Discord server. Twilight's gateway receives Discord's
+//! events, and its HTTP client sends the requests.
+
 use super::{Server, alerts::Alerts};
 use crate::transport::Outgoing;
 use crate::{
@@ -7,9 +10,6 @@ use crate::{
 };
 use anyhow::{Context, Result, ensure};
 use chrono::{DateTime, Utc};
-use futures_util::{SinkExt, StreamExt, future::BoxFuture};
-use reqwest::Method;
-use serde_json::{Value, json};
 use sqlx::PgPool;
 use std::{
     collections::{HashMap, HashSet},
@@ -21,83 +21,72 @@ use std::{
     },
     time::Duration,
 };
-use tokio::sync::{Mutex, Semaphore, mpsc};
-use tokio_util::sync::CancellationToken;
+use tokio::sync::{Mutex, mpsc};
+use twilight_gateway::{
+    CloseFrame, Event, EventTypeFlags, Intents, Shard, ShardId, StreamExt as _,
+};
+use twilight_http::Client;
+use twilight_model::{
+    channel::{ChannelType, message::AllowedMentions},
+    id::{
+        Id,
+        marker::{ChannelMarker, GenericMarker, GuildMarker, RoleMarker, UserMarker},
+    },
+};
 
 const RESTART_PREFIX: &str = "The server went down for a restart at:";
 const STOP_PREFIX: &str = "The server is stopping gracefully at:";
 /// The digits in a Discord identifier (a snowflake).
 const SNOWFLAKE_DIGITS: RangeInclusive<usize> = 17..=20;
-/// The largest Discord HTTP response or gateway message we accept, in bytes.
-const MAX_PAYLOAD_BYTES: usize = crate::MIB;
-/// The Discord API version that both the REST requests and the gateway connection use.
-macro_rules! discord_api_version {
-    () => {
-        "10"
-    };
-}
-const GATEWAY_URL: &str = concat!(
-    "wss://gateway.discord.gg/?v=",
-    discord_api_version!(),
-    "&encoding=json"
-);
-const DISCORD_API: &str = concat!("https://discord.com/api/v", discord_api_version!());
-/// Discord requires bots to identify themselves with their URL and version.
-const DISCORD_USER_AGENT: &str = "DiscordBot (https://github.com/Hanabi-Live/hanabi-live, 1)";
 /// How long a Discord HTTP request may take.
 const REQUEST_TIMEOUT: Duration = Duration::from_secs(10);
-/// The most Discord HTTP requests in flight at once.
-const MAX_CONCURRENT_REQUESTS: usize = 4;
-/// How long the gateway may take to send its greeting.
-const HELLO_TIMEOUT: Duration = Duration::from_secs(20);
 /// How long closing the gateway connection may take during shutdown.
 const CLOSE_TIMEOUT: Duration = Duration::from_secs(1);
-/// How long to wait before reconnecting to the gateway.
-const RECONNECT_DELAY: Duration = Duration::from_secs(5);
 /// The gateway events queued before the gateway reader waits.
 const EVENT_QUEUE: usize = 1000;
-/// The gateway heartbeat intervals we accept.
-const HEARTBEAT_INTERVAL: RangeInclusive<Duration> =
-    Duration::from_secs(1)..=Duration::from_mins(2);
 /// How long resolving Discord mentions in a message may take before the raw text is used.
 const RENDER_TIMEOUT: Duration = Duration::from_secs(5);
-/// Discord's channel type for a guild text channel.
-const GUILD_TEXT_CHANNEL: i64 = 0;
-/// Discord's channel type for a guild announcement channel.
-const GUILD_ANNOUNCEMENT_CHANNEL: i64 = 5;
-/// Discord gateway intent flags.
-mod intent {
-    pub const GUILDS: u64 = 1 << 0;
-    pub const GUILD_MESSAGES: u64 = 1 << 9;
-    pub const DIRECT_MESSAGES: u64 = 1 << 12;
-    pub const MESSAGE_CONTENT: u64 = 1 << 15;
-}
 /// The gateway intents we identify with.
-const INTENTS: u64 =
-    intent::GUILDS | intent::GUILD_MESSAGES | intent::DIRECT_MESSAGES | intent::MESSAGE_CONTENT;
-
-/// Discord gateway opcodes.
-mod opcode {
-    pub const DISPATCH: i64 = 0;
-    pub const HEARTBEAT: i64 = 1;
-    pub const IDENTIFY: i64 = 2;
-    pub const RESUME: i64 = 6;
-    pub const RECONNECT: i64 = 7;
-    pub const INVALID_SESSION: i64 = 9;
-    pub const HELLO: i64 = 10;
-    pub const HEARTBEAT_ACK: i64 = 11;
-}
+const INTENTS: Intents = Intents::GUILDS
+    .union(Intents::GUILD_MESSAGES)
+    .union(Intents::DIRECT_MESSAGES)
+    .union(Intents::MESSAGE_CONTENT);
+/// The gateway events that the bridge handles. The gateway always sends its close events.
+const EVENTS: EventTypeFlags = EventTypeFlags::READY
+    .union(EventTypeFlags::RESUMED)
+    .union(EventTypeFlags::MESSAGE_CREATE)
+    .union(EventTypeFlags::MESSAGE_DELETE)
+    .union(EventTypeFlags::MESSAGE_DELETE_BULK);
 
 fn is_snowflake(id: &str) -> bool {
     SNOWFLAKE_DIGITS.contains(&id.len()) && id.bytes().all(|b| b.is_ascii_digit())
 }
 
+/// The Discord identifier that configuration field `key` holds.
+fn configured_id<T>(key: &str, value: &str) -> Result<Id<T>> {
+    value
+        .parse()
+        .ok()
+        .filter(|_| is_snowflake(value))
+        .with_context(|| {
+            crate::errors::Fault::new(
+                "discord_configuration",
+                format!(
+                    "{key} must contain a {}-{} digit Discord identifier.",
+                    SNOWFLAKE_DIGITS.start(),
+                    SNOWFLAKE_DIGITS.end()
+                ),
+                axum::http::StatusCode::INTERNAL_SERVER_ERROR,
+            )
+        })
+}
+
 #[derive(Clone)]
 pub struct Configuration {
     token: String,
-    guild: String,
-    lobby: String,
-    development: String,
+    guild: Id<GuildMarker>,
+    lobby: Id<ChannelMarker>,
+    development: Id<ChannelMarker>,
     ping_role: String,
     teacher_role: String,
 }
@@ -130,212 +119,22 @@ impl Configuration {
                     )
                 })
         };
-        let config = Self {
+        Ok(Some(Self {
             token: value(TOKEN)?,
-            guild: value(GUILD)?,
-            lobby: value(LOBBY)?,
-            development: value(DEVELOPMENT)?,
+            guild: configured_id(GUILD, &value(GUILD)?)?,
+            lobby: configured_id(LOBBY, &value(LOBBY)?)?,
+            development: configured_id(DEVELOPMENT, &value(DEVELOPMENT)?)?,
             ping_role: value(PING_ROLE)?,
             teacher_role: value(TEACHER_ROLE)?,
-        };
-        for (key, id) in [
-            (GUILD, &config.guild),
-            (LOBBY, &config.lobby),
-            (DEVELOPMENT, &config.development),
-        ] {
-            if !is_snowflake(id) {
-                return Err(crate::errors::Fault::new(
-                    "discord_configuration",
-                    format!(
-                        "{key} must contain a {}-{} digit Discord identifier.",
-                        SNOWFLAKE_DIGITS.start(),
-                        SNOWFLAKE_DIGITS.end()
-                    ),
-                    axum::http::StatusCode::INTERNAL_SERVER_ERROR,
-                )
-                .into());
-            }
-        }
-        Ok(Some(config))
-    }
-}
-
-pub trait Transport: Send + Sync {
-    fn request(
-        &self,
-        method: Method,
-        path: String,
-        body: Option<Value>,
-    ) -> BoxFuture<'_, Result<Value>>;
-    fn gateway(
-        &self,
-        events: mpsc::Sender<Value>,
-        cancel: CancellationToken,
-    ) -> BoxFuture<'_, Result<()>>;
-}
-
-struct NativeTransport {
-    client: reqwest::Client,
-    token: String,
-    requests: Arc<Semaphore>,
-}
-
-impl NativeTransport {
-    fn new(token: String) -> Result<Self> {
-        Ok(Self {
-            client: reqwest::Client::builder()
-                .no_proxy()
-                .redirect(reqwest::redirect::Policy::none())
-                .timeout(REQUEST_TIMEOUT)
-                .build()?,
-            token,
-            requests: Arc::new(Semaphore::new(MAX_CONCURRENT_REQUESTS)),
-        })
-    }
-}
-
-impl Transport for NativeTransport {
-    fn request(
-        &self,
-        method: Method,
-        path: String,
-        body: Option<Value>,
-    ) -> BoxFuture<'_, Result<Value>> {
-        Box::pin(async move {
-            let _permit = self.requests.clone().try_acquire_owned()?;
-            ensure!(
-                path.starts_with('/') && !path.contains(".."),
-                "Invalid Discord resource"
-            );
-            let mut request = self
-                .client
-                .request(method, format!("{DISCORD_API}{path}"))
-                .header("Authorization", format!("Bot {}", self.token))
-                .header("User-Agent", DISCORD_USER_AGENT);
-            if let Some(body) = body {
-                request = request.json(&body);
-            }
-            let mut response = request.send().await?;
-            if !response.status().is_success() {
-                return Err(crate::errors::Fault::new(
-                    "discord_http_error",
-                    format!(
-                        "Discord returned HTTP status: {}{}",
-                        response.status().as_u16(),
-                        if response.status() == reqwest::StatusCode::TOO_MANY_REQUESTS {
-                            " (rate limited)"
-                        } else {
-                            ""
-                        }
-                    ),
-                    axum::http::StatusCode::BAD_GATEWAY,
-                )
-                .into());
-            }
-            let mut bytes = Vec::new();
-            while let Some(chunk) = response.chunk().await? {
-                ensure!(
-                    bytes.len() + chunk.len() <= MAX_PAYLOAD_BYTES,
-                    "Oversized Discord response"
-                );
-                bytes.extend(chunk);
-            }
-            if bytes.is_empty() {
-                Ok(Value::Null)
-            } else {
-                Ok(serde_json::from_slice(&bytes)?)
-            }
-        })
+        }))
     }
 
-    fn gateway(
-        &self,
-        events: mpsc::Sender<Value>,
-        cancel: CancellationToken,
-    ) -> BoxFuture<'_, Result<()>> {
-        Box::pin(async move {
-            let mut sequence: Option<i64> = None;
-            let mut session = String::new();
-            while !cancel.is_cancelled() {
-                let attempt = async {
-                    use tokio_tungstenite::tungstenite::{Message, protocol::WebSocketConfig};
-                    let config = WebSocketConfig::default()
-                        .max_message_size(Some(MAX_PAYLOAD_BYTES))
-                        .max_frame_size(Some(MAX_PAYLOAD_BYTES));
-                    let (mut socket, _) = tokio_tungstenite::connect_async_with_config(
-                        GATEWAY_URL,
-                        Some(config),
-                        false,
-                    )
-                    .await?;
-                    let first = tokio::time::timeout(HELLO_TIMEOUT, socket.next())
-                        .await?
-                        .context("Missing Discord greeting")??;
-                    let hello: Value = serde_json::from_str(first.to_text()?)?;
-                    ensure!(hello["op"] == opcode::HELLO, "Invalid Discord greeting");
-                    let interval = Duration::from_millis(
-                        hello["d"]["heartbeat_interval"]
-                            .as_u64()
-                            .context("Missing heartbeat")?,
-                    );
-                    ensure!(HEARTBEAT_INTERVAL.contains(&interval), "Invalid heartbeat");
-                    let identify = if session.is_empty() {
-                        json!({"op":opcode::IDENTIFY,"d":{"token":self.token,"intents":INTENTS,
-                            "properties":{"os":"linux","browser":"hanab-live","device":"hanab-live"}}})
-                    } else {
-                        json!({"op":opcode::RESUME,"d":{"token":self.token,"session_id":session,"seq":sequence}})
-                    };
-                    socket
-                        .send(Message::Text(identify.to_string().into()))
-                        .await?;
-                    let mut heartbeat = tokio::time::interval(interval);
-                    heartbeat.set_missed_tick_behavior(tokio::time::MissedTickBehavior::Delay);
-                    let mut acknowledged = true;
-                    loop {
-                        tokio::select! {
-                            ()=cancel.cancelled()=>{let _=tokio::time::timeout(CLOSE_TIMEOUT,socket.close(None)).await;return Ok::<(),anyhow::Error>(());}
-                            _=heartbeat.tick()=>{
-                                ensure!(acknowledged,"Discord heartbeat was not acknowledged");
-                                socket.send(Message::Text(json!({"op":opcode::HEARTBEAT,"d":sequence}).to_string().into())).await?;
-                                acknowledged=false;
-                            }
-                            next=socket.next()=>{
-                                let message=next.context("Discord disconnected")??;
-                                match message {
-                                    Message::Text(text)=>{
-                                        let value:Value=serde_json::from_str(&text)?;
-                                        if let Some(seq)=value["s"].as_i64() {sequence=Some(seq);}
-                                        match value["op"].as_i64() {
-                                            Some(opcode::DISPATCH)=>{
-                                                if value["t"]=="READY" {session=value["d"]["session_id"].as_str().context("Missing session")?.into();}
-                                                events.try_send(value).map_err(|_|anyhow::anyhow!("Discord event capacity exhausted"))?;
-                                            }
-                                            Some(opcode::HEARTBEAT)=>socket.send(Message::Text(json!({"op":opcode::HEARTBEAT,"d":sequence}).to_string().into())).await?,
-                                            Some(opcode::RECONNECT)=>break,
-                                            Some(opcode::INVALID_SESSION)=>{if value["d"]!=true {session.clear();sequence=None;}break;}
-                                            Some(opcode::HEARTBEAT_ACK)=>acknowledged=true,
-                                            _=>{},
-                                        }
-                                    }
-                                    Message::Ping(bytes)=>socket.send(Message::Pong(bytes)).await?,
-                                    Message::Close(_)=>break,
-                                    _=>{},
-                                }
-                            }
-                        }
-                    }
-                    Ok(())
-                };
-                let result =
-                    tokio::select! {()=cancel.cancelled()=>return Ok(()),result=attempt=>result};
-                let _ = events.try_send(json!({"t":"TRANSPORT_DISCONNECTED"}));
-                if let Err(error) = result {
-                    crate::errors::Report::from_error("Reconnecting Discord gateway", &error).log();
-                }
-                tokio::select! {()=cancel.cancelled()=>break,()=tokio::time::sleep(RECONNECT_DELAY)=>{}}
-            }
-            Ok(())
-        })
+    /// An HTTP client for Discord that uses the configured token.
+    fn client(&self) -> Client {
+        Client::builder()
+            .token(self.token.clone())
+            .timeout(REQUEST_TIMEOUT)
+            .build()
     }
 }
 
@@ -365,8 +164,8 @@ pub struct Bridge {
     server: Server,
     pool: PgPool,
     config: Configuration,
-    transport: Arc<dyn Transport>,
-    bot_id: String,
+    http: Client,
+    bot_id: Id<UserMarker>,
     outbound: Mutex<()>,
     incoming: Mutex<()>,
     status: AtomicU8,
@@ -375,33 +174,15 @@ pub struct Bridge {
 
 impl Bridge {
     /// Connects to Discord and checks the configured roles and channels. `listen` then starts
-    /// receiving its events.
+    /// receiving its events. Tests pass their own `http` client.
     pub async fn start(
         server: Server,
         config: Configuration,
-        transport: Option<Arc<dyn Transport>>,
+        http: Option<Client>,
     ) -> Result<Arc<Self>> {
-        let transport = match transport {
-            Some(transport) => transport,
-            None => Arc::new(NativeTransport::new(config.token.clone())?),
-        };
-        let bot = transport
-            .request(Method::GET, "/users/@me".into(), None)
-            .await?;
-        let bot_id = bot["id"]
-            .as_str()
-            .context("Discord bot identity missing")?
-            .to_owned();
-        let values = transport
-            .request(Method::GET, format!("/guilds/{}/roles", config.guild), None)
-            .await?;
-        let mut roles: HashMap<String, String> = HashMap::new();
-        for role in values.as_array().context("Discord roles missing")? {
-            roles.insert(
-                role["id"].as_str().context("Role identity missing")?.into(),
-                role["name"].as_str().context("Role name missing")?.into(),
-            );
-        }
+        let http = http.unwrap_or_else(|| config.client());
+        let bot_id = http.current_user().await?.model().await?.id;
+        let roles = roles(&http, config.guild).await?;
         for (key, configured) in [
             ("DISCORD_PING_CREW_ROLE_NAME", &config.ping_role),
             ("DISCORD_TRUSTED_TEACHER_ROLE_NAME", &config.teacher_role),
@@ -416,16 +197,14 @@ impl Bridge {
             }
         }
         for (key, channel) in [
-            ("DISCORD_CHANNEL_SYNC_WITH_LOBBY", &config.lobby),
-            ("DISCORD_CHANNEL_WEBSITE_DEVELOPMENT", &config.development),
+            ("DISCORD_CHANNEL_SYNC_WITH_LOBBY", config.lobby),
+            ("DISCORD_CHANNEL_WEBSITE_DEVELOPMENT", config.development),
         ] {
-            let data = transport
-                .request(Method::GET, format!("/channels/{channel}"), None)
-                .await?;
-            if data["guild_id"] != config.guild
+            let channel = http.channel(channel).await?.model().await?;
+            if channel.guild_id != Some(config.guild)
                 || !matches!(
-                    data["type"].as_i64(),
-                    Some(GUILD_TEXT_CHANNEL | GUILD_ANNOUNCEMENT_CHANNEL)
+                    channel.kind,
+                    ChannelType::GuildText | ChannelType::GuildAnnouncement
                 )
             {
                 return Err(crate::errors::Fault::new("discord_channel_invalid",
@@ -437,7 +216,7 @@ impl Bridge {
             pool: server.pool.clone(),
             server,
             config,
-            transport,
+            http,
             bot_id,
             outbound: Mutex::new(()),
             incoming: Mutex::new(()),
@@ -446,25 +225,60 @@ impl Bridge {
         }))
     }
 
-    /// Receives Discord's events until the server shuts down. A failed event is reported to
-    /// `alerts`.
+    /// Connects to Discord's gateway and handles its events until the server shuts down. A failed
+    /// event is reported to `alerts`.
     pub fn listen(self: &Arc<Self>, alerts: Arc<Alerts>) {
         let server = &self.server;
-        let (events, mut receiver) = mpsc::channel(EVENT_QUEUE);
-        let gateway = self.transport.clone();
-        let cancel = server.lifecycle.shutdown.child_token();
-        let lost = server.lifecycle.ownership_lost.clone();
-        server.background.spawn(async move {
-            tokio::select! {
-                ()=lost.cancelled()=>{},
-                result=gateway.gateway(events,cancel)=>{if let Err(error)=result {
-                    crate::errors::Report::from_error("Discord gateway", &error).log();
-                }}
-            }
-        });
-        let inbound = self.clone();
+        let (events, receiver) = mpsc::channel(EVENT_QUEUE);
+        let mut shard = Shard::new(ShardId::ONE, self.config.token.clone(), INTENTS);
         let lifecycle = server.lifecycle.clone();
+        // The shard reconnects and resumes by itself.
         server.background.spawn(async move {
+            loop {
+                let next = tokio::select! {
+                    ()=lifecycle.ownership_lost.cancelled()=>return,
+                    ()=lifecycle.shutdown.cancelled()=>break,
+                    next=shard.next_event(EVENTS)=>next,
+                };
+                match next {
+                    None => return,
+                    Some(Ok(event)) => {
+                        if events.try_send(event).is_err() {
+                            tracing::error!("Discord event capacity exhausted; dropping an event.");
+                        }
+                    }
+                    Some(Err(error)) => {
+                        crate::errors::Report::from_error(
+                            "Receiving a Discord gateway event",
+                            &error.into(),
+                        )
+                        .log();
+                    }
+                }
+            }
+            shard.close(CloseFrame::NORMAL);
+            // The shard sends its close frame as it is polled.
+            let _ = tokio::time::timeout(CLOSE_TIMEOUT, async {
+                while let Some(next) = shard.next_event(EventTypeFlags::empty()).await {
+                    if matches!(next, Ok(Event::GatewayClose(_))) {
+                        break;
+                    }
+                }
+            })
+            .await;
+        });
+        self.handle(receiver, alerts);
+    }
+
+    /// Handles the gateway's events from `receiver` until the server shuts down.
+    pub(super) fn handle(
+        self: &Arc<Self>,
+        mut receiver: mpsc::Receiver<Event>,
+        alerts: Arc<Alerts>,
+    ) {
+        let inbound = self.clone();
+        let lifecycle = self.server.lifecycle.clone();
+        self.server.background.spawn(async move {
             loop {
                 let event = tokio::select! {
                     ()=lifecycle.shutdown.cancelled()=>break,
@@ -514,55 +328,28 @@ impl Bridge {
         self.set_status(Status::Degraded);
     }
 
-    async fn lookup(&self, path: String, field: &str, fallback: &str) -> String {
-        self.transport
-            .request(Method::GET, path, None)
-            .await
-            .ok()
-            .and_then(|v| v[field].as_str().map(str::to_owned))
-            .unwrap_or_else(|| fallback.into())
+    async fn channel_name(&self, id: Id<ChannelMarker>) -> Option<String> {
+        self.http.channel(id).await.ok()?.model().await.ok()?.name
     }
 
-    async fn nickname(&self, id: &str) -> String {
-        let response = self
-            .transport
-            .request(
-                Method::GET,
-                format!("/guilds/{}/members/{id}", self.config.guild),
-                None,
-            )
-            .await;
-        response
-            .ok()
-            .and_then(|v| {
-                v["nick"]
-                    .as_str()
-                    .or_else(|| v["user"]["username"].as_str())
-                    .map(str::to_owned)
-            })
-            .unwrap_or_else(|| "[error]".into())
+    async fn nickname(&self, id: Id<UserMarker>) -> String {
+        let member = async {
+            self.http
+                .guild_member(self.config.guild, id)
+                .await
+                .ok()?
+                .model()
+                .await
+                .ok()
+        };
+        member.await.map_or_else(
+            || "[error]".into(),
+            |member| member.nick.unwrap_or(member.user.name),
+        )
     }
 
-    async fn current_roles(&self) -> Result<HashMap<String, String>> {
-        let value = self
-            .transport
-            .request(
-                Method::GET,
-                format!("/guilds/{}/roles", self.config.guild),
-                None,
-            )
-            .await?;
-        value
-            .as_array()
-            .context("Discord roles unavailable")?
-            .iter()
-            .map(|role| {
-                Ok((
-                    role["id"].as_str().context("Role identity missing")?.into(),
-                    role["name"].as_str().context("Role name missing")?.into(),
-                ))
-            })
-            .collect()
+    async fn current_roles(&self) -> Result<HashMap<Id<RoleMarker>, String>> {
+        roles(&self.http, self.config.guild).await
     }
 
     pub async fn render(&self, text: &str) -> String {
@@ -579,26 +366,32 @@ impl Bridge {
         let mut offset = 0;
         for capture in regex!(r"<(@!?|@&|#)([0-9]+)>").captures_iter(text) {
             let id = &capture[2];
-            if !is_snowflake(id) {
+            let Some(id) = id
+                .parse()
+                .ok()
+                .filter(|_| is_snowflake(id))
+                .and_then(Id::<GenericMarker>::new_checked)
+            else {
                 continue;
-            }
+            };
             let matched = capture.get(0).expect("group 0 is the whole match");
             result.push_str(&escape_html(&text[offset..matched.start()]));
             let name = match &capture[1] {
                 "#" => format!(
                     "#{}",
-                    self.lookup(format!("/channels/{id}"), "name", "[error]")
+                    self.channel_name(id.cast())
                         .await
+                        .unwrap_or_else(|| "[error]".into())
                 ),
                 "@&" => format!(
                     "@{}",
                     self.current_roles()
                         .await
                         .ok()
-                        .and_then(|roles| roles.get(id).cloned())
+                        .and_then(|mut roles| roles.remove(&id.cast()))
                         .unwrap_or_else(|| "[unknown role]".into())
                 ),
-                _ => format!("@{}", self.nickname(id).await),
+                _ => format!("@{}", self.nickname(id.cast()).await),
             };
             result.push_str(&escape_html(&name));
             offset = matched.end();
@@ -608,37 +401,45 @@ impl Bridge {
     }
 
     async fn send(&self, text: &str, roles: bool) -> Result<String> {
-        self.send_to(&self.config.lobby, text, roles).await
+        self.send_to(self.config.lobby, text, roles).await
     }
 
-    async fn send_to(&self, channel: &str, text: &str, roles: bool) -> Result<String> {
-        let current = if roles {
-            self.current_roles().await?
+    /// Posts `text` to `channel`, and returns the message's ID. With `roles`, the message can
+    /// mention the ping and teacher roles; it never mentions anyone else.
+    async fn send_to(&self, channel: Id<ChannelMarker>, text: &str, roles: bool) -> Result<String> {
+        let roles = if roles {
+            self.current_roles()
+                .await?
+                .into_iter()
+                .filter(|(_, name)| {
+                    *name == self.config.ping_role || *name == self.config.teacher_role
+                })
+                .map(|(id, _)| id)
+                .collect()
         } else {
-            HashMap::new()
+            Vec::new()
         };
-        let role_ids: Vec<&String> = current
-            .iter()
-            .filter(|(_, name)| {
-                *name == &self.config.ping_role || *name == &self.config.teacher_role
-            })
-            .map(|(id, _)| id)
-            .collect();
+        let mentions = AllowedMentions {
+            roles,
+            ..AllowedMentions::default()
+        };
         self.available()?;
-        let response=self.transport.request(Method::POST,format!("/channels/{channel}/messages"),
-            Some(json!({"content":text,"allowed_mentions":{"parse":[],"roles":if roles {json!(role_ids)} else {json!([])},"users":[],"replied_user":false}}))).await?;
-        Ok(response["id"]
-            .as_str()
-            .context("Discord message identity missing")?
-            .into())
+        let message = self
+            .http
+            .create_message(channel)
+            .content(text)
+            .allowed_mentions(Some(&mentions))
+            .await?
+            .model()
+            .await?;
+        Ok(message.id.to_string())
     }
 
     /// Posts a server error alert to the development channel, without mentions.
     pub async fn alert(&self, text: &str) -> Result<()> {
-        self.send_to(&self.config.development, text, false).await?;
+        self.send_to(self.config.development, text, false).await?;
         Ok(())
     }
-
     pub async fn mirror(&self, chat_id: i32, supplied: Option<&str>) -> Result<()> {
         let _guard = self.outbound.lock().await;
         self.available()?;
@@ -741,7 +542,7 @@ impl Bridge {
         let plain = decode_html(message);
         let (lobby, development) = tokio::join!(
             self.publish_saved(vec![saved]),
-            self.send_to(&self.config.development, &plain, true),
+            self.send_to(self.config.development, &plain, true),
         );
         lobby.context("Sending lifecycle announcement to the lobby channel")?;
         development.context("Sending lifecycle announcement to the development channel")?;
@@ -770,12 +571,11 @@ impl Bridge {
         .await
     }
 
-    pub async fn event(&self, event: Value) -> Result<()> {
+    pub async fn event(&self, event: Event) -> Result<()> {
         let _guard = self.incoming.lock().await;
         self.available()?;
-        let data = &event["d"];
-        match event["t"].as_str() {
-            Some("READY" | "RESUMED") => {
+        match event {
+            Event::Ready(_) | Event::Resumed => {
                 self.set_status(Status::Ready);
                 if !self.announced.swap(true, Ordering::AcqRel) {
                     let now = Utc::now();
@@ -795,26 +595,19 @@ impl Bridge {
                     self.announce(&message).await?;
                 }
             }
-            Some("TRANSPORT_DISCONNECTED") => {
+            Event::GatewayClose(_) => {
                 self.set_status(Status::Degraded);
             }
-            Some("MESSAGE_CREATE") => {
-                if data["guild_id"] != self.config.guild
-                    || data["channel_id"] != self.config.lobby
-                    || data["author"]["id"] == self.bot_id
+            Event::MessageCreate(message) => {
+                if message.guild_id != Some(self.config.guild)
+                    || message.channel_id != self.config.lobby
+                    || message.author.id == self.bot_id
                 {
                     return Ok(());
                 }
-                let id = data["id"]
-                    .as_str()
-                    .filter(|id| !id.is_empty())
-                    .context("Missing message identity")?;
-                let author = data["author"]["id"].as_str().context("Missing author")?;
-                ensure!(
-                    is_snowflake(id) && is_snowflake(author),
-                    "Invalid Discord identity"
-                );
-                let content = data["content"].as_str().unwrap_or("");
+                let id = message.id.to_string();
+                let author = message.author.id;
+                let content = message.content.as_str();
                 let subscription = content
                     .lines()
                     .map(|line| line.split(' ').next().unwrap_or("").to_ascii_lowercase())
@@ -833,7 +626,7 @@ impl Bridge {
                 }
                 let name = self.nickname(author).await;
                 let rendered = self.render(&text).await;
-                let inserted = insert_message(&self.pool, &name, &rendered, Some(id)).await?;
+                let inserted = insert_message(&self.pool, &name, &rendered, Some(&id)).await?;
                 let Some((chat_id, time)) = inserted else {
                     return Ok(());
                 };
@@ -861,54 +654,60 @@ impl Bridge {
                     }
                 }
             }
-            Some("MESSAGE_DELETE" | "MESSAGE_DELETE_BULK") => {
-                if data["channel_id"] != self.config.lobby {
-                    return Ok(());
-                }
-                let ids: HashSet<&str> = if let Some(ids) = data["ids"].as_array() {
-                    ids.iter().filter_map(Value::as_str).collect()
-                } else {
-                    data["id"].as_str().into_iter().collect()
-                };
-                for id in ids {
-                    if let Some(chat_id) = delete_message(&self.pool, id).await? {
-                        self.broadcast(vec![Outgoing::new(
-                            hanabi_protocol::server::CHAT_DELETE,
-                            hanabi_protocol::ChatDelete {
-                                chat_id: i64::from(chat_id),
-                                room: hanabi_protocol::LobbyRoom::Lobby,
-                            },
-                        )])
-                        .await?;
-                    }
-                }
+            Event::MessageDelete(deleted) if deleted.channel_id == self.config.lobby => {
+                self.delete(&[deleted.id.to_string()]).await?;
+            }
+            Event::MessageDeleteBulk(deleted) if deleted.channel_id == self.config.lobby => {
+                let ids = deleted
+                    .ids
+                    .iter()
+                    .map(ToString::to_string)
+                    .collect::<HashSet<_>>();
+                self.delete(&ids.into_iter().collect::<Vec<_>>()).await?;
             }
             _ => {}
         }
         Ok(())
     }
 
-    async fn subscribe(&self, author: &str, name: &str, add: bool) -> Result<()> {
+    /// Removes the lobby copies of Discord messages that were deleted.
+    async fn delete(&self, ids: &[String]) -> Result<()> {
+        for id in ids {
+            if let Some(chat_id) = delete_message(&self.pool, id).await? {
+                self.broadcast(vec![Outgoing::new(
+                    hanabi_protocol::server::CHAT_DELETE,
+                    hanabi_protocol::ChatDelete {
+                        chat_id: i64::from(chat_id),
+                        room: hanabi_protocol::LobbyRoom::Lobby,
+                    },
+                )])
+                .await?;
+            }
+        }
+        Ok(())
+    }
+
+    async fn subscribe(&self, author: Id<UserMarker>, name: &str, add: bool) -> Result<()> {
         let current = self.current_roles().await?;
         let role = current
             .iter()
             .find(|(_, name)| *name == &self.config.ping_role)
-            .map(|(id, _)| id)
+            .map(|(id, _)| *id)
             .context("Subscription role missing")?;
-        let response = self
-            .transport
-            .request(
-                if add { Method::PUT } else { Method::DELETE },
-                format!(
-                    "/guilds/{}/members/{author}/roles/{role}",
-                    self.config.guild
-                ),
-                None,
-            )
-            .await;
+        let response = if add {
+            self.http
+                .add_guild_member_role(self.config.guild, author, role)
+                .await
+        } else {
+            self.http
+                .remove_guild_member_role(self.config.guild, author, role)
+                .await
+        };
         if let Err(error) = response {
-            let report =
-                crate::errors::Report::from_error("Updating Discord subscription role", &error);
+            let report = crate::errors::Report::from_error(
+                "Updating Discord subscription role",
+                &error.into(),
+            );
             report.log();
             self.send(
                 &format!(
@@ -948,6 +747,18 @@ impl Bridge {
             .await?;
         Ok(())
     }
+}
+
+/// The roles of `guild`, by ID.
+async fn roles(http: &Client, guild: Id<GuildMarker>) -> Result<HashMap<Id<RoleMarker>, String>> {
+    Ok(http
+        .roles(guild)
+        .await?
+        .model()
+        .await?
+        .into_iter()
+        .map(|role| (role.id, role.name))
+        .collect())
 }
 
 /// When the most recent server announcement is a graceful shutdown, returns when it was sent.

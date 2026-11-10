@@ -88,11 +88,6 @@ minijinja = { version = "3", features = ["serde", "json", "urlencode"] }
 percent-encoding = "2"
 rand = "0.10"
 regex = "1"
-reqwest = { version = "0.13", default-features = false, features = [
-  "form",
-  "json",
-  "rustls-no-provider"
-] }
 rustls = { version = "0.23", default-features = false, features = [
   "ring",
   "std",
@@ -112,9 +107,16 @@ sqlx = { version = "0.9", default-features = false, features = [
 ] }
 tokio = { version = "1", features = ["full"] }
 tokio-util = { version = "0.7", features = ["rt"] }
-tokio-tungstenite = { version = "0.30", features = ["rustls-tls-webpki-roots"] }
+
 unicode-normalization = "0.1"
 tower-http = { version = "0.7", features = ["fs", "timeout"] }
+twilight-gateway = { version = "0.17.1", default-features = false, features = [
+  "rustls-webpki-roots"
+] }
+twilight-http = { version = "0.17.1", default-features = false, features = [
+  "rustls-webpki-roots"
+] }
+twilight-model = "0.17.1"
 tracing = "0.1"
 tracing-subscriber = { version = "0.3", default-features = false, features = [
   "fmt",
@@ -124,6 +126,12 @@ url = "2"
 
 [dev-dependencies]
 rcgen = "0.14"
+reqwest = { version = "0.13", default-features = false, features = [
+  "form",
+  "json",
+  "rustls-no-provider"
+] }
+tokio-tungstenite = { version = "0.30", features = ["rustls-tls-webpki-roots"] }
 tokio-rustls = { version = "0.26", default-features = false, features = [
   "ring",
   "tls12"

@@ -345,56 +345,45 @@ impl Report {
                 sqlx::Error::RowNotFound => ("record_not_found", "The requested database record no longer exists.".into(), StatusCode::NOT_FOUND),
                 _ => ("database_result_invalid", "The database response could not be decoded or did not match the expected schema.".into(), StatusCode::INTERNAL_SERVER_ERROR),
             }
-        } else if let Some(http) = error.downcast_ref::<reqwest::Error>() {
-            if http.is_timeout() {
-                (
+        } else if let Some(discord) = error.downcast_ref::<twilight_http::Error>() {
+            use twilight_http::error::ErrorType;
+            match discord.kind() {
+                ErrorType::RequestTimedOut => (
                     "upstream_timeout",
-                    "The external service did not respond before the request deadline.".into(),
+                    "Discord did not respond before the request deadline.".into(),
                     StatusCode::GATEWAY_TIMEOUT,
-                )
-            } else if http.is_connect() {
-                (
-                    "upstream_connection_failed",
-                    "The server could not connect to the external service.".into(),
-                    StatusCode::BAD_GATEWAY,
-                )
-            } else if let Some(status) = http.status() {
-                (
-                    "upstream_http_error",
-                    format!(
-                        "The external service returned HTTP status: {}",
-                        status.as_u16()
-                    ),
-                    StatusCode::BAD_GATEWAY,
-                )
-            } else {
-                (
-                    "upstream_response_invalid",
-                    "The external service response could not be read or decoded.".into(),
-                    StatusCode::BAD_GATEWAY,
-                )
-            }
-        } else if let Some(socket) = error.downcast_ref::<tokio_tungstenite::tungstenite::Error>() {
-            use tokio_tungstenite::tungstenite::Error as SocketError;
-            let description = match socket {
-                SocketError::Http(response) => format!(
-                    "The WebSocket handshake was rejected with HTTP {}.",
-                    response.status().as_u16()
                 ),
-                SocketError::Io(error) => {
-                    format!("The WebSocket transport failed ({:?}).", error.kind())
-                }
-                SocketError::Tls(_) => "The WebSocket TLS handshake failed.".into(),
-                SocketError::ConnectionClosed | SocketError::AlreadyClosed => {
-                    "The remote WebSocket connection closed.".into()
-                }
-                _ => {
-                    "The remote WebSocket sent an invalid or unsupported protocol response.".into()
-                }
-            };
+                ErrorType::RequestError | ErrorType::RequestCanceled => (
+                    "upstream_connection_failed",
+                    "The server could not reach Discord.".into(),
+                    StatusCode::BAD_GATEWAY,
+                ),
+                ErrorType::Response { status, .. } => (
+                    "upstream_http_error",
+                    format!("Discord returned HTTP status: {}", status.get()),
+                    StatusCode::BAD_GATEWAY,
+                ),
+                ErrorType::Unauthorized => (
+                    "upstream_unauthorized",
+                    "Discord rejected the bot token.".into(),
+                    StatusCode::BAD_GATEWAY,
+                ),
+                _ => (
+                    "upstream_request_invalid",
+                    "The Discord request could not be built or sent.".into(),
+                    StatusCode::BAD_GATEWAY,
+                ),
+            }
+        } else if error
+            .downcast_ref::<twilight_http::response::DeserializeBodyError>()
+            .is_some()
+            || error
+                .downcast_ref::<twilight_gateway::error::ReceiveMessageError>()
+                .is_some()
+        {
             (
-                "websocket_transport_failed",
-                description,
+                "upstream_response_invalid",
+                "A Discord response or gateway event could not be read.".into(),
                 StatusCode::BAD_GATEWAY,
             )
         } else if let Some(limited) = error.downcast_ref::<crate::accounts::TooMuchPasswordWork>() {

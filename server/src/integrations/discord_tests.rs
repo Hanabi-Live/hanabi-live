@@ -1,8 +1,11 @@
 use super::discord::*;
 use crate::{accounts::escape_html, web::test_support::Fixture};
-use anyhow::Result;
-use futures_util::future::BoxFuture;
-use reqwest::Method;
+use axum::{
+    body::Bytes,
+    extract::State,
+    http::{Method, StatusCode, Uri},
+    response::{IntoResponse, Response},
+};
 use serde_json::{Value, json};
 use std::{
     collections::HashMap,
@@ -12,11 +15,14 @@ use std::{
     },
     time::Duration,
 };
-use tokio::sync::{Mutex, mpsc};
-use tokio_util::sync::CancellationToken;
+use tokio::sync::Mutex;
+use twilight_gateway::Event;
+use twilight_model::{channel::Message, gateway::payload::incoming::MessageCreate};
 
+/// A Discord HTTP API that records each request and answers with synthetic data.
 #[derive(Default)]
-struct MockTransport {
+struct MockDiscord {
+    /// Each request's method, path below the API version, and JSON body.
     requests: Mutex<Vec<(Method, String, Option<Value>)>>,
     next: AtomicU64,
     restart_delay: Duration,
@@ -24,64 +30,114 @@ struct MockTransport {
     failed_restart_channel: Option<&'static str>,
 }
 
-impl Transport for MockTransport {
-    fn request(
-        &self,
-        method: Method,
-        path: String,
-        body: Option<Value>,
-    ) -> BoxFuture<'_, Result<Value>> {
-        Box::pin(async move {
-            let restart = method == Method::POST
-                && body
-                    .as_ref()
-                    .and_then(|body| body["content"].as_str())
-                    .is_some_and(|text| {
-                        text.starts_with("The server went down for a restart at:")
-                            || text.starts_with("The server is stopping gracefully at:")
-                    });
-            self.requests
-                .lock()
-                .await
-                .push((method.clone(), path.clone(), body));
-            if restart {
-                if let Some(barrier) = &self.restart_barrier {
-                    barrier.wait().await;
-                }
-                tokio::time::sleep(self.restart_delay).await;
-                anyhow::ensure!(
-                    self.failed_restart_channel
-                        .is_none_or(|channel| path != format!("/channels/{channel}/messages")),
-                    "Synthetic channel delivery failure"
-                );
-            }
-            Ok(if path == "/users/@me" {
-                json!({"id":"999999999999999999"})
-            } else if path.ends_with("/roles") {
-                json!([
-                    {"id":"111111111111111111","name":"Ping Crew"},
-                    {"id":"222222222222222222","name":"Trusted Teacher"}
-                ])
-            } else if path.contains("/members/") {
-                json!({"nick":"Nick <@333333333333333333>","user":{"username":"Nick"}})
-            } else if method == Method::POST {
-                json!({"id":format!("{}",700_000_000_000_000_000_u64+self.next.fetch_add(1,Ordering::Relaxed))})
-            } else {
-                json!({"guild_id":"444444444444444444","type":0,"name":"general"})
-            })
-        })
-    }
+const BOT: &str = "999999999999999999";
 
-    fn gateway(
-        &self,
-        events: mpsc::Sender<Value>,
-        cancel: CancellationToken,
-    ) -> BoxFuture<'_, Result<()>> {
-        Box::pin(async move {
-            events.send(json!({"t":"READY"})).await?;
-            cancel.cancelled().await;
-            Ok(())
-        })
+fn user(id: &str, name: &str) -> Value {
+    json!({"id":id,"username":name,"discriminator":"0","avatar":null})
+}
+
+fn message(id: &str, channel: &str, author: &str, content: &str) -> Value {
+    json!({
+        "id":id,"channel_id":channel,"guild_id":"444444444444444444","author":user(author,"Author"),
+        "content":content,"timestamp":"2026-01-01T00:00:00.000000+00:00","edited_timestamp":null,
+        "tts":false,"mention_everyone":false,"mentions":[],"mention_roles":[],"attachments":[],
+        "embeds":[],"pinned":false,"type":0
+    })
+}
+
+/// A message that a Discord user posted in the lobby channel.
+fn posted(id: &str, content: &str) -> Event {
+    let message: Message = serde_json::from_value(message(
+        id,
+        "555555555555555555",
+        "888888888888888888",
+        content,
+    ))
+    .unwrap();
+    Event::MessageCreate(Box::new(MessageCreate(message)))
+}
+
+async fn answer(
+    State(mock): State<Arc<MockDiscord>>,
+    method: Method,
+    uri: Uri,
+    body: Bytes,
+) -> Response {
+    let path = uri
+        .path()
+        .strip_prefix("/api/v10")
+        .unwrap_or(uri.path())
+        .to_owned();
+    let body: Option<Value> = serde_json::from_slice(&body).ok();
+    let restart = method == Method::POST
+        && body
+            .as_ref()
+            .and_then(|body| body["content"].as_str())
+            .is_some_and(|text| {
+                text.starts_with("The server went down for a restart at:")
+                    || text.starts_with("The server is stopping gracefully at:")
+            });
+    mock.requests
+        .lock()
+        .await
+        .push((method.clone(), path.clone(), body));
+    if restart {
+        if let Some(barrier) = &mock.restart_barrier {
+            barrier.wait().await;
+        }
+        tokio::time::sleep(mock.restart_delay).await;
+        if mock
+            .failed_restart_channel
+            .is_some_and(|channel| path == format!("/channels/{channel}/messages"))
+        {
+            return StatusCode::INTERNAL_SERVER_ERROR.into_response();
+        }
+    }
+    let data = if path == "/users/@me" {
+        json!({"id":BOT,"username":"bot","discriminator":"0","avatar":null,"bot":true,"mfa_enabled":false})
+    } else if path.ends_with("/roles") {
+        let role = |id: &str, name: &str| {
+            json!({"id":id,"name":name,"color":0,"hoist":false,"managed":false,"mentionable":true,
+                   "permissions":"0","position":1,"flags":0,
+                   "colors":{"primary_color":0,"secondary_color":null,"tertiary_color":null}})
+        };
+        json!([
+            role("111111111111111111", "Ping Crew"),
+            role("222222222222222222", "Trusted Teacher")
+        ])
+    } else if path.contains("/roles/") {
+        return StatusCode::NO_CONTENT.into_response();
+    } else if path.contains("/members/") {
+        json!({"nick":"Nick <@333333333333333333>","user":user("888888888888888888","Nick"),
+               "roles":[],"joined_at":null,"deaf":false,"mute":false,"flags":0})
+    } else if method == Method::POST {
+        let id = format!(
+            "{}",
+            700_000_000_000_000_000_u64 + mock.next.fetch_add(1, Ordering::Relaxed)
+        );
+        let channel = path.split('/').nth(2).unwrap_or_default();
+        message(&id, channel, BOT, "")
+    } else {
+        let channel = path.split('/').nth(2).unwrap_or_default();
+        json!({"id":channel,"guild_id":"444444444444444444","type":0,"name":"general"})
+    };
+    axum::Json(data).into_response()
+}
+
+impl MockDiscord {
+    /// Serves this mock, and returns an HTTP client for Discord that sends its requests to it.
+    async fn serve(self: &Arc<Self>) -> twilight_http::Client {
+        let listener = tokio::net::TcpListener::bind("127.0.0.1:0").await.unwrap();
+        let address = listener.local_addr().unwrap();
+        let router = axum::Router::new()
+            .fallback(answer)
+            .with_state(self.clone());
+        tokio::spawn(async move { axum::serve(listener, router).await });
+        twilight_http::Client::builder()
+            .token("synthetic-never-networked".into())
+            .proxy(address.to_string(), true)
+            .ratelimiter(None)
+            .build()
     }
 }
 
@@ -90,19 +146,19 @@ async fn lifecycle_announcements_reach_both_channels_despite_network_latency_pos
     let Some(fixture) = Fixture::start().await else {
         return;
     };
-    let mock = Arc::new(MockTransport {
+    let mock = Arc::new(MockDiscord {
         restart_delay: Duration::from_millis(350),
         restart_barrier: Some(Arc::new(tokio::sync::Barrier::new(2))),
-        ..MockTransport::default()
+        ..MockDiscord::default()
     });
     let bridge = Bridge::start(
         fixture.app.integration_server(),
         configuration(),
-        Some(mock.clone()),
+        Some(mock.serve().await),
     )
     .await
     .unwrap();
-    bridge.event(json!({"t":"READY"})).await.unwrap();
+    bridge.event(Event::Resumed).await.unwrap();
     let integrations = super::Integrations {
         discord: Some(bridge.clone()),
         discord_failed: false,
@@ -157,19 +213,19 @@ async fn failed_restart_channel_does_not_cancel_other_delivery_postgres() {
         let Some(fixture) = Fixture::start().await else {
             return;
         };
-        let mock = Arc::new(MockTransport {
+        let mock = Arc::new(MockDiscord {
             failed_restart_channel: Some(channel),
             restart_barrier: Some(Arc::new(tokio::sync::Barrier::new(2))),
-            ..MockTransport::default()
+            ..MockDiscord::default()
         });
         let bridge = Bridge::start(
             fixture.app.integration_server(),
             configuration(),
-            Some(mock.clone()),
+            Some(mock.serve().await),
         )
         .await
         .unwrap();
-        bridge.event(json!({"t":"READY"})).await.unwrap();
+        bridge.event(Event::Resumed).await.unwrap();
         let result = tokio::time::timeout(
             Duration::from_secs(2),
             bridge.announce_restart(Duration::from_mins(78), None),
@@ -213,16 +269,16 @@ async fn discord_lifecycle_announcements_match_across_channels_postgres() {
     let Some(fixture) = Fixture::start().await else {
         return;
     };
-    let mock = Arc::new(MockTransport::default());
+    let mock = Arc::new(MockDiscord::default());
     let bridge = Bridge::start(
         fixture.app.integration_server(),
         configuration(),
-        Some(mock.clone()),
+        Some(mock.serve().await),
     )
     .await
     .unwrap();
-    bridge.event(json!({"t":"READY"})).await.unwrap();
-    bridge.event(json!({"t":"RESUMED"})).await.unwrap();
+    bridge.event(Event::Resumed).await.unwrap();
+    bridge.event(Event::Resumed).await.unwrap();
     fixture.app.lifecycle.stop_admitting();
     let (reply, quiesced) = tokio::sync::oneshot::channel();
     fixture
@@ -302,11 +358,11 @@ async fn discord_lifecycle_announcements_match_across_channels_postgres() {
     let replacement = Bridge::start(
         fixture.app.integration_server(),
         configuration(),
-        Some(mock.clone()),
+        Some(mock.serve().await),
     )
     .await
     .unwrap();
-    replacement.event(json!({"t":"READY"})).await.unwrap();
+    replacement.event(Event::Resumed).await.unwrap();
     let started: String = sqlx::query_scalar!(
         "SELECT message FROM chat_log WHERE source='server' ORDER BY id DESC LIMIT 1"
     )
@@ -326,22 +382,27 @@ async fn discord_mock_transport_public_privacy_rendering_and_status_postgres() {
     let Some(fixture) = Fixture::start().await else {
         return;
     };
-    let mock = Arc::new(MockTransport::default());
+    let mock = Arc::new(MockDiscord::default());
     let bridge = Bridge::start(
         fixture.app.integration_server(),
         configuration(),
-        Some(mock.clone()),
+        Some(mock.serve().await),
     )
     .await
     .unwrap();
-    // The mock gateway sends READY once the bridge listens.
-    bridge.listen(super::alerts::Alerts::start(
-        None,
-        true,
-        "test".into(),
-        &fixture.app.background,
-        fixture.app.lifecycle.shutdown.clone(),
-    ));
+    // The bridge handles the gateway's events as they arrive.
+    let (gateway, events) = tokio::sync::mpsc::channel(1);
+    bridge.handle(
+        events,
+        super::alerts::Alerts::start(
+            None,
+            true,
+            "test".into(),
+            &fixture.app.background,
+            fixture.app.lifecycle.shutdown.clone(),
+        ),
+    );
+    gateway.send(Event::Resumed).await.unwrap();
     tokio::time::timeout(Duration::from_secs(2), async {
         while bridge.status() != "ready" {
             tokio::time::sleep(Duration::from_millis(5)).await;
@@ -349,17 +410,11 @@ async fn discord_mock_transport_public_privacy_rendering_and_status_postgres() {
     })
     .await
     .unwrap();
-    let event = |id: &str, content: &str| {
-        json!({
-            "t":"MESSAGE_CREATE","d":{"id":id,"guild_id":"444444444444444444",
-            "channel_id":"555555555555555555","author":{"id":"888888888888888888"},"content":content}
-        })
-    };
     for (id, text) in [
         ("111111111111111110", "/token"),
         ("111111111111111112", "/unknown secret"),
     ] {
-        bridge.event(event(id, text)).await.unwrap();
+        bridge.event(posted(id, text)).await.unwrap();
     }
     assert_eq!(
         sqlx::query_scalar!("SELECT COUNT(*) AS \"v!\" FROM chat_log WHERE source='discord' AND discord_message_id IS NOT NULL")
@@ -369,7 +424,7 @@ async fn discord_mock_transport_public_privacy_rendering_and_status_postgres() {
         0
     );
     bridge
-        .event(event(
+        .event(posted(
             "111111111111111113",
             "hello <@888888888888888888> ||hidden||",
         ))
@@ -394,7 +449,7 @@ async fn discord_mock_transport_public_privacy_rendering_and_status_postgres() {
             .any(|(_, path, _)| path.ends_with("/members/333333333333333333"))
     );
     bridge
-        .event(event("111111111111111113", "duplicate"))
+        .event(posted("111111111111111113", "duplicate"))
         .await
         .unwrap();
     assert_eq!(
@@ -432,12 +487,9 @@ async fn discord_mock_transport_public_privacy_rendering_and_status_postgres() {
         json!([])
     );
     drop(requests);
-    bridge
-        .event(json!({"t":"TRANSPORT_DISCONNECTED"}))
-        .await
-        .unwrap();
+    bridge.event(Event::GatewayClose(None)).await.unwrap();
     assert_eq!(bridge.status(), "degraded");
-    bridge.event(json!({"t":"RESUMED"})).await.unwrap();
+    bridge.event(Event::Resumed).await.unwrap();
     assert_eq!(bridge.status(), "ready");
     fixture.close().await;
     assert_eq!(bridge.status(), "closed");
