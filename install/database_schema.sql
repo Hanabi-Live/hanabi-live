@@ -335,7 +335,8 @@ CREATE TABLE chat_log (
     table_id            BIGINT       NULL,     /* The table whose chat this is; NULL for the lobby. */
     CONSTRAINT chat_log_user_id_fkey
         FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE,
-    CONSTRAINT chat_log_user_id_check CHECK ((source = 'user') = (user_id IS NOT NULL))
+    CONSTRAINT chat_log_user_id_check CHECK ((source = 'user') = (user_id IS NOT NULL)),
+    CONSTRAINT chat_log_discord_name_check CHECK (discord_name <> '')
 );
 CREATE INDEX chat_log_index_user_id          ON chat_log (user_id);
 CREATE INDEX chat_log_index_datetime_sent_id ON chat_log (datetime_sent, id);

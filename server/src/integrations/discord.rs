@@ -647,7 +647,8 @@ impl Bridge {
                 }
                 let name = self.nickname(author).await;
                 let rendered = self.render(&text).await;
-                let inserted = insert_message(&self.pool, &name, &rendered, Some(&id)).await?;
+                let inserted =
+                    insert_message(&self.pool, Some(&name), &rendered, Some(&id)).await?;
                 let Some((chat_id, time)) = inserted else {
                     return Ok(());
                 };
@@ -746,7 +747,7 @@ impl Bridge {
         };
         let notice = format!("@{name} {action} the @Ping Crew.");
         let rendered = self.render(&notice).await;
-        if let Some((id, time)) = insert_message(&self.pool, "", &rendered, None).await? {
+        if let Some((id, time)) = insert_message(&self.pool, None, &rendered, None).await? {
             self.broadcast(vec![Outgoing::new(
                 hanabi_protocol::server::CHAT,
                 hanabi_protocol::Chat {
@@ -795,7 +796,7 @@ async fn last_shutdown(pool: &PgPool) -> Result<Option<DateTime<Utc>>> {
 
 pub async fn insert_message(
     pool: &PgPool,
-    name: &str,
+    name: Option<&str>,
     text: &str,
     message_id: Option<&str>,
 ) -> Result<Option<(i32, DateTime<Utc>)>> {
@@ -985,7 +986,7 @@ mod tests {
         let id = "111111111111111111";
         assert!(delete_message(&db.pool, id).await.unwrap().is_some());
         assert!(
-            insert_message(&db.pool, "name", "must not resurrect", Some(id))
+            insert_message(&db.pool, Some("name"), "must not resurrect", Some(id))
                 .await
                 .unwrap()
                 .is_none()
@@ -993,8 +994,8 @@ mod tests {
         assert!(delete_message(&db.pool, id).await.unwrap().is_none());
         let live = "222222222222222222";
         let (one, two) = tokio::join!(
-            insert_message(&db.pool, "name", "one", Some(live)),
-            insert_message(&db.pool, "name", "two", Some(live))
+            insert_message(&db.pool, Some("name"), "one", Some(live)),
+            insert_message(&db.pool, Some("name"), "two", Some(live))
         );
         assert_ne!(one.unwrap().is_some(), two.unwrap().is_some());
         let author = db.user("Alice").await;

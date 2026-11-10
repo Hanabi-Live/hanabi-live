@@ -565,7 +565,7 @@ pub async fn lobby_history(pool: &PgPool, count: i64) -> Result<Vec<Chat>> {
         }
         let who = match source.as_str() {
             "server" => None,
-            "discord" => row.discord_name.clone().filter(|name| !name.is_empty()),
+            "discord" => row.discord_name.clone(),
             _ => row.username.clone(),
         };
         result.push(Chat {
