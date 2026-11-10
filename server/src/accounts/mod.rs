@@ -322,13 +322,9 @@ async fn login_inner(state: &Accounts, ip: &str, input: LoginRequest) -> Result<
             return Ok(unauthorized("That is not the correct password."));
         }
         let automatic_upgrade =
-            input.new_password.is_empty() && crypto::password_needs_upgrade(&original)?;
-        if !input.new_password.is_empty() || automatic_upgrade {
-            let password = if input.new_password.is_empty() {
-                input.password
-            } else {
-                input.new_password
-            };
+            input.new_password.is_none() && crypto::password_needs_upgrade(&original)?;
+        if input.new_password.is_some() || automatic_upgrade {
+            let password = input.new_password.unwrap_or(input.password);
             let hash = hash_password(ip, password).await?;
             // Do not let a concurrent login overwrite a newer password change.
             let changed = update_password_if_unchanged(&state.pool, id, &hash, &original).await?;
@@ -373,7 +369,7 @@ async fn login_inner(state: &Accounts, ip: &str, input: LoginRequest) -> Result<
             };
             return Ok((StatusCode::UNAUTHORIZED, Json(error)).into_response());
         }
-        if !input.new_password.is_empty() {
+        if input.new_password.is_some() {
             return Ok(unauthorized(
                 "You requested an account creation. You cannot ask for a password change at the same time.",
             ));

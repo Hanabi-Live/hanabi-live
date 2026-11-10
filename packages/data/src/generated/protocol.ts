@@ -540,9 +540,9 @@ export const loginRequestSchema = z.strictObject({
    */
   darkMode: z.boolean().default(false),
   /**
-   * Sets a new password after the current one is verified.
+   * Sets a new password after the current one is verified. A form's empty field is absent.
    */
-  newPassword: z.string().default(""),
+  newPassword: z.string().min(1).optional(),
   password: z.string().default(""),
   username: z.string().default(""),
   version: z.string().default(""),

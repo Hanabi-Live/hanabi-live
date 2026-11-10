@@ -15,8 +15,13 @@ use super::*;
 pub struct LoginRequest {
     pub username: String,
     pub password: String,
-    /// Sets a new password after the current one is verified.
-    pub new_password: String,
+    /// Sets a new password after the current one is verified. A form's empty field is absent.
+    #[serde(
+        deserialize_with = "deserialize_form_text",
+        skip_serializing_if = "Option::is_none"
+    )]
+    #[schemars(with = "String", length(min = 1))]
+    pub new_password: Option<String>,
     pub version: String,
     /// Whether the client's system prefers a dark theme. A new account starts with this as its
     /// dark mode setting.
@@ -24,6 +29,15 @@ pub struct LoginRequest {
     /// Creates the account if the username is free. Without it, an unknown username fails with
     /// `NO_ACCOUNT_CODE`, so that a typo does not create an account. Bots do not need it.
     pub create_account: bool,
+}
+
+/// Reads a form field that is absent when it is empty, as forms send a blank input.
+fn deserialize_form_text<'de, D>(deserializer: D) -> Result<Option<String>, D::Error>
+where
+    D: serde::Deserializer<'de>,
+{
+    let text = Option::<String>::deserialize(deserializer)?;
+    Ok(text.filter(|text| !text.is_empty()))
 }
 
 /// The body of a successful `/login` response.
