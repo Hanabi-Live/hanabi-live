@@ -13,6 +13,7 @@ vi.mock("./HanabiCardTouchActions", () => ({
   HanabiCardTap: vi.fn(),
 }));
 vi.mock("./arrows", () => ({}));
+vi.mock("./clueLog/mountClueLog", () => ({ showClueMatches: vi.fn() }));
 vi.mock("./cursor", () => ({ set: vi.fn() }));
 vi.mock("./konvaTooltips", () => ({
   setActiveHover: vi.fn(),
@@ -205,8 +206,6 @@ describe("touching a card", () => {
       editingNote: null,
       globalEmpathyEnabled: true,
       state: { replay: { hypothetical: null } },
-      elements: { clueLog: { showMatches: vi.fn() } },
-      layers: { UI: { batchDraw: vi.fn() } },
     });
 
     registerMouseHandlers.call(card);

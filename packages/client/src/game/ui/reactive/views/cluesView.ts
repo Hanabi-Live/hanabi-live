@@ -1,15 +1,8 @@
 import type { StateClue } from "@hanabi-live/game";
 import { msgClueToClue, NO_VALUE } from "@hanabi-live/game";
-import equal from "fast-deep-equal";
-import { ClueEntry } from "../../ClueEntry";
-import { CLUE_ENTRY_HEIGHT } from "../../ClueLog";
 import { globals } from "../../UIGlobals";
 import * as arrows from "../../arrows";
 import { getCardOrStackBase } from "../../getCardOrStackBase";
-
-export function onCluesChanged(clues: readonly StateClue[]): void {
-  updateLog(clues);
-}
 
 export function onLastClueOrSegmentChanged(data: {
   clues: readonly StateClue[];
@@ -67,43 +60,4 @@ function getClueForSegment(
   // any) would have `clue.segment === segment - 1`.
   const targetSegment = segment - 1;
   return clues.findLast((clue) => clue.segment === targetSegment);
-}
-
-function updateLog(clues: readonly StateClue[]) {
-  const { clueLog } = globals.elements;
-  if (clueLog === null) {
-    return;
-  }
-
-  const startingIndex = Math.max(0, clues.length - clueLog.maxLength);
-  for (const [i, clue] of clues.slice(startingIndex).entries()) {
-    if (i < clueLog.children.length) {
-      const clueEntry = clueLog.children[i] as unknown as ClueEntry;
-      if (equal(clue, clueEntry.clue)) {
-        // No change
-        continue;
-      }
-    }
-
-    const entry = new ClueEntry(clue, {
-      width: clueLog.width(),
-      height: CLUE_ENTRY_HEIGHT * globals.stage.height(),
-    });
-    if (i < clueLog.children.length) {
-      clueLog.updateClue(i, entry);
-    } else {
-      clueLog.addClue(entry);
-    }
-  }
-
-  // Delete any left over clues.
-  if (clueLog.children.length > clues.length) {
-    clueLog.children.splice(
-      clues.length,
-      clueLog.children.length - clues.length,
-    );
-  }
-  clueLog.refresh();
-
-  globals.layers.UI.batchDraw();
 }

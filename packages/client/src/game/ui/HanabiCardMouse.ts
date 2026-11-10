@@ -8,6 +8,7 @@ import { HanabiCardDblTap, HanabiCardTap } from "./HanabiCardTouchActions";
 import type { LayoutChild } from "./LayoutChild";
 import { globals } from "./UIGlobals";
 import * as arrows from "./arrows";
+import { showClueMatches } from "./clueLog/mountClueLog";
 import {
   DOUBLE_TAP_DELAY_MILLISECONDS,
   LEFT_MOUSE_BUTTON_HELD,
@@ -41,8 +42,7 @@ function mouseEnter(this: HanabiCard) {
 
   // When we hover over a card, the relevant positive and negative clues will be highlighted in the
   // clue log.
-  globals.elements.clueLog!.showMatches(this.order);
-  globals.layers.UI.batchDraw();
+  showClueMatches(this.order);
 
   // When we hover over a card, the cursor can change.
   this.setCursor();
@@ -55,8 +55,7 @@ function mouseLeave(this: HanabiCard) {
   checkHideNoteTooltip(this);
 
   // When we stop hovering over a card, the clue log will return to normal.
-  globals.elements.clueLog!.showMatches(null);
-  globals.layers.UI.batchDraw();
+  showClueMatches(null);
 
   // When we stop hovering over a card, the cursor should change back to normal.
   cursor.set("default");

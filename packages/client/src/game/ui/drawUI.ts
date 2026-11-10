@@ -33,7 +33,6 @@ import { getHTMLElement } from "../../utils";
 import { ActionLog } from "./ActionLog";
 import { ButtonGroup } from "./ButtonGroup";
 import { CardLayout } from "./CardLayout";
-import { ClueLog } from "./ClueLog";
 import { ColorButton } from "./ColorButton";
 import { Deck } from "./Deck";
 import { Elements } from "./Elements";
@@ -44,6 +43,7 @@ import { RankButton } from "./RankButton";
 import { globals } from "./UIGlobals";
 import * as arrows from "./arrows";
 import { backToLobby } from "./backToLobby";
+import { drawClueLog } from "./clueLog/mountClueLog";
 import * as cluePreview from "./cluePreview";
 import * as clues from "./clues";
 import {
@@ -125,7 +125,6 @@ let lowerClueAreaValues: Values;
  * How far the lower part of the clue area slides left in a hypo, in fractions of the stage width.
  */
 let lowerClueAreaSlideX: number;
-let clueLogValues: Values;
 let giveClueValues: Values;
 let spectatorsLabelValues: Values;
 
@@ -175,9 +174,6 @@ const HOLE_COUNTER_WIDEST_COUNT = "99";
  * of the play stacks, in fractions of the stage.
  */
 const PLAY_AREA_OVERHANG = 0.03;
-
-/** How far the clue log's text is inset from each edge of its panel, in fractions of the stage. */
-const CLUE_LOG_TEXT_INSET = 0.01;
 
 /** The number of recent actions shown in the action log. */
 const ACTION_LOG_LINES = 8;
@@ -1964,30 +1960,6 @@ function drawYourTurn() {
   });
   text.offset({ x: text.width() / 2, y: text.height() / 2 });
   globals.elements.yourTurn.add(text);
-}
-
-function drawClueLog() {
-  clueLogValues = CLUE_LOG;
-  const clueLogRect = new Konva.Rect({
-    x: clueLogValues.x * winW,
-    y: clueLogValues.y * winH,
-    width: clueLogValues.w! * winW,
-    height: clueLogValues.h! * winH,
-    fill: "black",
-    opacity: PANEL_OPACITY,
-    cornerRadius: PANEL_CORNER_RADIUS * winW,
-    listening: false,
-  });
-  globals.layers.UI.add(clueLogRect);
-
-  const spacing = CLUE_LOG_TEXT_INSET;
-  globals.elements.clueLog = new ClueLog({
-    x: (clueLogValues.x + spacing) * winW,
-    y: (clueLogValues.y + spacing) * winH,
-    width: (clueLogValues.w! - spacing * 2) * winW,
-    height: (clueLogValues.h! - spacing * 2) * winH,
-  });
-  globals.layers.UI.add(globals.elements.clueLog);
 }
 
 // Statistics are shown on the right-hand side of the screen (at the bottom of the clue log).
