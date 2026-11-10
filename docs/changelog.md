@@ -38,8 +38,6 @@ of the repository.
   the discard pile, instead of exploding on the strike tracker.
 - Tooltips now fade in quickly instead of growing with a bounce, and their lines
   have more space between them.
-- Bots can now get a seed that they have already played. Only the human players
-  at a table now block a seed.
 
 ## November 9th, 2026
 
