@@ -181,9 +181,10 @@ impl Hub {
             self.broadcast_user(user);
         }
     }
+    /// Whether `s` is the user's newest connection and still open. A session closes when the
+    /// server loses ownership of the live tables, so this also checks ownership.
     fn current(&self, s: &Session) -> bool {
-        self.store.check_state().is_ok()
-            && s.active()
+        s.active()
             && self
                 .sessions
                 .get(&s.user)
@@ -205,11 +206,10 @@ impl Hub {
             inactive: p.inactive,
         }
     }
+    /// Sends a frame to every connection. `emit` skips connections that have closed.
     fn broadcast(&self, message: &Frame) {
         for p in self.sessions.values() {
-            if self.current(&p.session) {
-                p.session.emit(message);
-            }
+            p.session.emit(message);
         }
     }
     fn table_for(v: &TableView, user: UserId) -> hanabi_protocol::Table {
@@ -746,7 +746,6 @@ impl Hub {
         initial: Vec<Frame>,
     ) -> CommandResult<()> {
         if self.closing
-            || self.store.check_state().is_err()
             || !session.active()
             || self
                 .sessions
@@ -949,9 +948,6 @@ impl Hub {
     }
     /// Records a table's new view, updates its users' statuses, and sends its messages.
     fn publish_table(&mut self, effects: Effects) {
-        if self.store.check_state().is_err() {
-            return;
-        }
         let Some(entry) = self.tables.get_mut(&effects.table) else {
             return;
         };
