@@ -1100,6 +1100,17 @@ export const suggestionSchema = z.strictObject({
 });
 
 /**
+ * What a table is doing: waiting for its game to start, playing it, or showing a finished game to
+ * its owner (replay) or to everyone (shared replay).
+ */
+const tablePhaseSchema = z.enum([
+  "pregame",
+  "playing",
+  "replay",
+  "sharedReplay",
+]);
+
+/**
  * A table in the lobby's table list.
  */
 export const tableSchema = z
@@ -1121,13 +1132,12 @@ export const tableSchema = z
     options: gameOptionsSchema,
     ownerID: userIdSchema,
     passwordProtected: z.boolean(),
+    phase: tablePhaseSchema,
     playerNames: z.array(z.string()),
     /**
      * The percentage of the maximum score reached, or of a replay watched.
      */
     progress: z.number().int().min(0).max(100),
-    running: z.boolean(),
-    sharedReplay: z.boolean(),
     spectators: z.array(spectatorSchema).readonly(),
     tableID: tableIdSchema,
   })

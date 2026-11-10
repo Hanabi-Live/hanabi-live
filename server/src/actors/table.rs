@@ -141,7 +141,6 @@ impl TableActor {
     }
     pub(super) fn view(&self) -> TableView {
         let replay = matches!(self.table.phase, Phase::Replay { .. });
-        let running = !matches!(self.table.phase, Phase::Pregame { .. });
         let max_progress = i32::from(hanabi_protocol::MAX_PROGRESS);
         let progress = if let Some(s) = self.table.game() {
             if let Phase::Replay { replay, .. } = &self.table.phase {
@@ -191,8 +190,14 @@ impl TableActor {
                     .map(|p| p.name.clone())
                     .collect(),
                 progress: u8::try_from(progress.clamp(0, max_progress)).unwrap_or(0),
-                running,
-                shared_replay: replay && self.table.visible,
+                phase: match self.table.phase {
+                    Phase::Pregame { .. } => hanabi_protocol::TablePhase::Pregame,
+                    Phase::Replay { .. } if self.table.visible => {
+                        hanabi_protocol::TablePhase::SharedReplay
+                    }
+                    Phase::Replay { .. } => hanabi_protocol::TablePhase::Replay,
+                    Phase::Live { .. } => hanabi_protocol::TablePhase::Playing,
+                },
                 spectators,
             },
         }

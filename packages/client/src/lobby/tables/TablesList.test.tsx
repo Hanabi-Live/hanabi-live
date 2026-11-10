@@ -32,8 +32,7 @@ function table(id: number, name: string, fields: Partial<Table> = {}): Table {
     tableID: tableIdSchema.parse(id),
     name,
     joined: false,
-    running: false,
-    sharedReplay: false,
+    phase: "pregame",
     passwordProtected: false,
     numPlayers: 1,
     maxPlayers: 5,
@@ -103,12 +102,16 @@ describe("TablesList", () => {
   test("lists our game, then our friends' tables, then each kind of table", () => {
     store.dispatch(
       tablesListed([
-        table(1, "replay", { running: true, sharedReplay: true }),
-        table(2, "ongoing", { running: true }),
+        table(1, "replay", { phase: "sharedReplay" }),
+        table(2, "ongoing", { phase: "playing" }),
         table(3, "locked", { passwordProtected: true }),
         table(4, "open"),
-        table(5, "friend's", { running: true, playerNames: ["bob"] }),
-        table(6, "ours", { joined: true, running: true, playerNames: ["me"] }),
+        table(5, "friend's", { phase: "playing", playerNames: ["bob"] }),
+        table(6, "ours", {
+          joined: true,
+          phase: "playing",
+          playerNames: ["me"],
+        }),
         table(7, "open later"),
       ]),
     );
@@ -162,7 +165,7 @@ describe("TablesList", () => {
   });
 
   test("ignores clicks on rows that just appeared or moved", () => {
-    store.dispatch(tablesListed([table(1, "ongoing", { running: true })]));
+    store.dispatch(tablesListed([table(1, "ongoing", { phase: "playing" })]));
     renderList();
     waitForRowsToSettle();
 

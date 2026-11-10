@@ -370,10 +370,20 @@ pub struct Table {
     /// The percentage of the maximum score reached, or of a replay watched.
     #[schemars(range(min = 0, max = MAX_PROGRESS))]
     pub progress: u8,
-    pub running: bool,
-    pub shared_replay: bool,
+    pub phase: TablePhase,
     #[schemars(extend("x-readonly" = true))]
     pub spectators: Vec<Spectator>,
+}
+
+/// What a table is doing: waiting for its game to start, playing it, or showing a finished game to
+/// its owner (replay) or to everyone (shared replay).
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
+#[serde(rename_all = "camelCase")]
+pub enum TablePhase {
+    Pregame,
+    Playing,
+    Replay,
+    SharedReplay,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]

@@ -85,7 +85,7 @@ function TableRowView({
 
   const status = getStatus(table);
   const canSpectateFromCells = !table.joined;
-  const canShadow = !table.joined && !table.sharedReplay;
+  const canShadow = !table.joined && table.phase !== "sharedReplay";
 
   return (
     <tr
@@ -125,15 +125,15 @@ function TableRowView({
       ref={ref}
     >
       <td>
-        {table.passwordProtected && !table.running && !table.sharedReplay && (
+        {table.passwordProtected && table.phase === "pregame" && (
           <i className="fas fa-key fa-sm icon-label" />
         )}
         {table.name}
       </td>
       <td>
-        {table.running || table.sharedReplay
-          ? table.numPlayers
-          : `${table.numPlayers} / ${table.maxPlayers}`}
+        {table.phase === "pregame"
+          ? `${table.numPlayers} / ${table.maxPlayers}`
+          : table.numPlayers}
       </td>
       <td>{table.options.variantName}</td>
       <td className="lobby-games-table-options">
@@ -153,7 +153,10 @@ function TableRowView({
           let className: string | undefined;
           if (player === username) {
             className = "name-me";
-          } else if (friends.includes(player) && !table.sharedReplay) {
+          } else if (
+            friends.includes(player)
+            && table.phase !== "sharedReplay"
+          ) {
             className = "friend";
           }
           if (canShadow) {
@@ -267,23 +270,23 @@ function OptionIcon({
 
 /** Decides the background color of the row. */
 function getKind(table: Table) {
-  if (table.sharedReplay) {
+  if (table.phase === "sharedReplay") {
     return "replay";
   }
   if (table.joined) {
     return "joined";
   }
-  if (table.running) {
+  if (table.phase !== "pregame") {
     return "started";
   }
   return table.passwordProtected ? "unstarted-password" : "unstarted";
 }
 
 function getStatus(table: Table) {
-  if (table.sharedReplay) {
+  if (table.phase === "sharedReplay") {
     return "Reviewing";
   }
-  return table.running ? "Running" : "Not Started";
+  return table.phase === "pregame" ? "Not Started" : "Running";
 }
 
 function getPath(table: Table, action: TableRow["action"]): string {
@@ -298,7 +301,7 @@ function getPath(table: Table, action: TableRow["action"]): string {
 
     case "spectate": {
       // A shared replay of a stored game gets a link that lasts beyond this table.
-      return table.sharedReplay && table.databaseID !== undefined
+      return table.phase === "sharedReplay" && table.databaseID !== undefined
         ? `${PATH.SHARED_REPLAY}/${table.databaseID}`
         : `${PATH.GAME}/${table.tableID}`;
     }

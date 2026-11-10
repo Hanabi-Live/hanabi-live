@@ -635,8 +635,7 @@
       "passwordProtected": false,
       "playerNames": ["Alice"],
       "progress": 0,
-      "running": false,
-      "sharedReplay": false,
+      "phase": "pregame",
       "spectators": [
         {
           "username": "Carol",

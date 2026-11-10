@@ -154,10 +154,10 @@ export function init(): void {
     }
 
     const oldTable = globals.tables.find(
-      (value) => value.joined && !value.sharedReplay,
+      (value) => value.joined && value.phase !== "sharedReplay",
     );
     if (oldTable !== undefined) {
-      if (oldTable.running) {
+      if (oldTable.phase !== "pregame") {
         showWarning(
           "You cannot join more than one table at a time. Terminate your other game before joining a new one.",
         );

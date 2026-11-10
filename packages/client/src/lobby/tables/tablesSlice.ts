@@ -122,14 +122,14 @@ function compareSortKeys(a: readonly number[], b: readonly number[]): number {
 
 /** Whether we are one of the players of the table (rather than reviewing a shared replay). */
 function isOurGame(table: Table): boolean {
-  return table.joined && !table.sharedReplay;
+  return table.joined && table.phase !== "sharedReplay";
 }
 
 function getGroup(table: Table): TableGroup {
-  if (table.sharedReplay) {
+  if (table.phase === "sharedReplay") {
     return TableGroup.SharedReplay;
   }
-  if (table.running) {
+  if (table.phase !== "pregame") {
     return TableGroup.Ongoing;
   }
   return table.passwordProtected
@@ -141,7 +141,7 @@ function getAction(table: Table): TableAction {
   if (isOurGame(table)) {
     return "resume";
   }
-  return table.running || table.sharedReplay ? "spectate" : "join";
+  return table.phase === "pregame" ? "join" : "spectate";
 }
 
 /** Our friends' spectating counts, but not their playing in a shared replay. */
@@ -150,7 +150,7 @@ function tableHasFriends(
   friendNames: ReadonlySet<string>,
 ): boolean {
   return (
-    (!table.sharedReplay
+    (table.phase !== "sharedReplay"
       && table.playerNames.some((player) => friendNames.has(player)))
     || table.spectators.some((spectator) => friendNames.has(spectator.username))
   );
