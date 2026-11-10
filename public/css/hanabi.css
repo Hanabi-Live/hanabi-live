@@ -1500,6 +1500,7 @@ html:not([data-theme="dark"])
   }
 }
 
+/* The arrow reaches 1px into the box so that no seam shows between them at fractional positions. */
 .tooltip-bubble::after {
   content: "";
   position: absolute;
@@ -1508,6 +1509,7 @@ html:not([data-theme="dark"])
   margin-left: calc(-1 * var(--tooltip-arrow-size));
   border: var(--tooltip-arrow-size) solid transparent;
   border-top-color: var(--tooltip-background);
+  border-top-width: calc(var(--tooltip-arrow-size) + 1px);
   border-bottom-width: 0;
 }
 
@@ -1515,7 +1517,8 @@ html:not([data-theme="dark"])
   top: 0;
   bottom: auto;
   border-color: transparent transparent var(--tooltip-background);
-  border-width: 0 var(--tooltip-arrow-size) var(--tooltip-arrow-size);
+  border-width: 0 var(--tooltip-arrow-size)
+    calc(var(--tooltip-arrow-size) + 1px);
 }
 
 .tooltip-box {
