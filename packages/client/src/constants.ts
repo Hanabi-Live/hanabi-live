@@ -41,6 +41,7 @@ export const LOCAL_STORAGE_KEY = {
   CHAT_WINDOW_HEIGHT: "chatWindowHeight",
   CHAT_WINDOW_RIGHT: "chatWindowRight",
   CHAT_WINDOW_TOP: "chatWindowTop",
+  CREATE_TABLE_NAME: "createTableName",
   CREATE_TABLE_PASSWORD: "createTablePassword",
   JOIN_TABLE_PASSWORD: "joinTablePassword",
   TYPED_CHAT_HISTORY: "typedChatHistory",

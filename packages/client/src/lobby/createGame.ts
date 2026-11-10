@@ -323,12 +323,21 @@ function submit() {
       ? undefined
       : parseIntSafe(getText("#create-game-replay-turn"));
 
-  // Table names are not saved.
   const name = $("#createTableName").val();
   if (typeof name !== "string") {
     throw new TypeError(
       'The value of the "createTableName" element was not a string.',
     );
+  }
+
+  // Table names are stored locally. The default name is not stored, so that it follows the current
+  // username.
+  if (isNew) {
+    if (name.trim() === "" || name === getDefaultTableName()) {
+      localStorage.removeItem(LOCAL_STORAGE_KEY.CREATE_TABLE_NAME);
+    } else {
+      localStorage.setItem(LOCAL_STORAGE_KEY.CREATE_TABLE_NAME, name);
+    }
   }
 
   // Passwords are not stored on the server; instead, they are stored locally as cookies.
@@ -609,7 +618,9 @@ export function ready(): void {
 
   if (globals.game === undefined || globals.currentScreen === Screen.Lobby) {
     // Create New Game
-    gameName = `${globals.username}${DEFAULT_TABLE_NAME_SUFFIX}`;
+    gameName =
+      localStorage.getItem(LOCAL_STORAGE_KEY.CREATE_TABLE_NAME)
+      ?? getDefaultTableName();
     dialogOptions = globals.settings;
 
     // Show the password row.
@@ -684,6 +695,10 @@ export function ready(): void {
         (setting) => getHTMLInputElement(`#${setting}`).checked,
       ),
   );
+}
+
+function getDefaultTableName(): string {
+  return `${globals.username}${DEFAULT_TABLE_NAME_SUFFIX}`;
 }
 
 function showExtraOptions(visible: boolean) {

@@ -14,6 +14,7 @@ of the repository.
 - If a game ends while you are in a hypothetical, you can now keep using it in
   the review.
 - Server restarts without a reason are no longer announced in the lobby.
+- The "New Game" page now remembers the last table name that you used.
 
 ## November 9th, 2026
 
