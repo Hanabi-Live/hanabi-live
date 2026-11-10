@@ -162,14 +162,11 @@ pub(super) async fn lobby_initial(app: &App, id: UserId) -> Result<(Vec<Frame>, 
     match tokio::fs::read_to_string(motd).await {
         Ok(text) if !text.trim().is_empty() => initial.push(frame(
             hanabi_protocol::server::CHAT,
-            hanabi_protocol::Chat {
-                username: Some(String::new()),
-                ..hanabi_protocol::Chat::new(
-                    format!("[Server Notice] {}", text.trim()),
-                    hanabi_protocol::ChatSource::Server,
-                    crate::model::timestamp(Utc::now()),
-                )
-            },
+            hanabi_protocol::Chat::new(
+                format!("[Server Notice] {}", text.trim()),
+                hanabi_protocol::ChatSource::Server,
+                crate::model::timestamp(Utc::now()),
+            ),
         )),
         Ok(_) => {}
         Err(error) if error.kind() == std::io::ErrorKind::NotFound => {}

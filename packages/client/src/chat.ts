@@ -642,7 +642,7 @@ function formatChatLine(data: ChatData, msg: string): string {
   if (data.recipient !== undefined && data.recipient !== "") {
     line +=
       data.recipient === globals.username
-        ? `<span class="red">[PM from <strong>${textToHtml(data.username)}</strong>]</span>&nbsp; `
+        ? `<span class="red">[PM from <strong>${textToHtml(data.username ?? PROJECT_NAME)}</strong>]</span>&nbsp; `
         : `<span class="red">[PM to <strong>${textToHtml(data.recipient)}</strong>]</span>&nbsp; `;
   }
   if (
@@ -650,7 +650,7 @@ function formatChatLine(data: ChatData, msg: string): string {
     || (data.recipient !== undefined && data.recipient !== "")
   ) {
     line += msg;
-  } else if (data.username === "") {
+  } else if (data.username === undefined) {
     line += msg;
   } else {
     line += `&lt;<strong>${textToHtml(data.username)}</strong>&gt;&nbsp; `;
@@ -930,7 +930,6 @@ export function sendSelfPMFromServer(
   add(
     {
       text: message,
-      username: PROJECT_NAME,
       source: "server",
       datetime: new Date().toISOString(),
       ...(roomTableID(room) !== undefined && { tableID: roomTableID(room) }),

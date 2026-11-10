@@ -149,7 +149,6 @@ pub(crate) fn notice_publication(
     Publication::ToSelf(Outgoing::new(
         hanabi_protocol::server::CHAT,
         hanabi_protocol::Chat {
-            username: Some("Hanab Live".into()),
             table_id: table,
             recipient: Some(recipient.into()),
             ..hanabi_protocol::Chat::new(

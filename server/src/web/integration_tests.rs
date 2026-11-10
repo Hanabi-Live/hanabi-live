@@ -354,7 +354,7 @@ async fn uptime_replies_only_to_requester_in_lobby_and_table_postgres() {
             .unwrap();
         for prefix in ["The server came online at:", "Uptime:"] {
             let reply = receive(&mut alice, "chat").await;
-            assert_eq!(reply["username"], "Hanab Live");
+            assert!(reply.get("username").is_none());
             assert_eq!(reply["recipient"], "Alice");
             assert_eq!(reply.get("tableID").and_then(Value::as_u64), table);
             assert_eq!(reply["source"], "server");

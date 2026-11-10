@@ -238,8 +238,8 @@ pub struct TableChat {
 }
 
 /// Reads a checkpoint's chat message. Checkpoints written before November 10th, 2026 use the old
-/// wire names, name the room instead of the table, and keep a suggestion's table name and player
-/// limit among its options.
+/// wire names, name the room instead of the table, name the author of server messages, and keep a
+/// suggestion's table name and player limit among its options.
 fn deserialize_stored_chat<'de, D>(deserializer: D) -> std::result::Result<Chat, D::Error>
 where
     D: serde::Deserializer<'de>,
@@ -250,6 +250,10 @@ where
         if let Some(value) = stored.remove(old) {
             stored.insert(new.into(), value);
         }
+    }
+    // Server messages no longer name an author.
+    if stored.get("source").and_then(Value::as_str) == Some("server") {
+        stored.remove("username");
     }
     if let Some(room) = stored.remove("room") {
         let table = room

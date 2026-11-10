@@ -23,7 +23,6 @@ const MIN_IMPOSTOR_PLAYERS: usize = MIN_PLAYERS + 1;
 
 pub(super) fn server_chat(id: TableId, message: &str) -> Chat {
     Chat {
-        username: Some("Hanab Live".into()),
         table_id: Some(id),
         ..Chat::new(message, ChatSource::Server, chat_time())
     }

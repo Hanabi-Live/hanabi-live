@@ -729,7 +729,6 @@ impl Bridge {
                 hanabi_protocol::server::CHAT,
                 hanabi_protocol::Chat {
                     chat_id: Some(i64::from(id)),
-                    username: Some(String::new()),
                     ..hanabi_protocol::Chat::new(
                         rendered,
                         hanabi_protocol::ChatSource::Discord,

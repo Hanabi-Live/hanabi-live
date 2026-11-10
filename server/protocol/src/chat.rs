@@ -27,6 +27,7 @@ pub struct Chat {
     pub source: ChatSource,
     #[schemars(with = "Timestamp")]
     pub datetime: String,
+    /// The author. Absent when nobody wrote the message, such as a server message.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     #[schemars(with = "String")]
     pub username: Option<String>,

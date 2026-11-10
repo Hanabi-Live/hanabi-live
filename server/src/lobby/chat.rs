@@ -488,19 +488,12 @@ pub async fn lobby_chat(
     for (id, source, who, content, raw) in std::iter::once((
         caller.user,
         "user",
-        caller.name.as_str(),
+        Some(caller.name.as_str()),
         rendered.map_or_else(|| escape_html(&message), str::to_owned),
         message.clone(),
     ))
-    .chain(public_response.map(|r| {
-        (
-            crate::model::SERVER_AUTHOR,
-            "server",
-            "Hanab Live",
-            r.clone(),
-            r,
-        )
-    })) {
+    .chain(public_response.map(|r| (crate::model::SERVER_AUTHOR, "server", None, r.clone(), r)))
+    {
         let row = sqlx::query!(
             "INSERT INTO chat_log(user_id,source,message,room) VALUES($1,$2,$3,'lobby')
              RETURNING id,datetime_sent",
@@ -514,7 +507,7 @@ pub async fn lobby_chat(
         effects.push(Effect::broadcast(Outgoing::new(
             hanabi_protocol::server::CHAT,
             Chat {
-                username: Some(who.into()),
+                username: who.map(Into::into),
                 chat_id: Some(i64::from(chat_id)),
                 ..Chat::new(
                     content,
@@ -571,13 +564,13 @@ pub async fn lobby_history(pool: &PgPool, count: i64) -> Result<Vec<Chat>> {
             }
         }
         let who = match source.as_str() {
-            "server" => "__server".into(),
-            "discord" => row.discord_name.clone().unwrap_or_default(),
-            _ => row.username.clone().unwrap_or_default(),
+            "server" => None,
+            "discord" => row.discord_name.clone().filter(|name| !name.is_empty()),
+            _ => row.username.clone(),
         };
         result.push(Chat {
             chat_id: Some(i64::from(row.id)),
-            username: Some(who),
+            username: who,
             ..Chat::new(
                 message,
                 serde_json::from_value(json!(source))?,
@@ -603,7 +596,6 @@ pub async fn server_chat(pool: &PgPool, message: &str) -> Result<SavedChat> {
         broadcast: Outgoing::new(
             hanabi_protocol::server::CHAT,
             Chat {
-                username: Some("Hanab Live".into()),
                 chat_id: Some(i64::from(chat_id)),
                 ..Chat::new(
                     message,

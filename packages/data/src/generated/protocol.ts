@@ -191,6 +191,9 @@ export const chatSchema = z
      * Pre-escaped HTML, not an instruction to escape or normalize again.
      */
     text: z.string().min(1),
+    /**
+     * The author. Absent when nobody wrote the message, such as a server message.
+     */
     username: z.string().optional(),
   })
   .readonly();
