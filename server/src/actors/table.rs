@@ -69,19 +69,40 @@ pub(super) fn game_mut(table: &mut TableSnapshot) -> CommandResult<&mut Snapshot
     }
 }
 
-/// A running game's timers as they stand now.
+/// A game's timers at some time after they were last brought up to date.
 struct Timers {
     idle_remaining: i64,
     /// The active player's clock.
     active_clock: i64,
     /// How long the active player has taken this turn.
     turn_elapsed: i64,
+    duration: i64,
     /// Whether the active player's clock is counting down.
     counting: bool,
     timed: bool,
 }
 
 impl Timers {
+    /// The timers of game `s` `elapsed` milliseconds after they were last brought up to date.
+    /// The idle timer always runs. A `live` game in progress also counts its duration, and its
+    /// active player's clock once the clock has started, unless the game is paused.
+    fn of(s: &Snapshot, live: bool, elapsed: i64) -> Self {
+        let in_progress = live && s.game.end_condition == EndCondition::InProgress;
+        let counting = in_progress && s.timer_started && !s.paused();
+        let running = if counting { elapsed } else { 0 };
+        Self {
+            idle_remaining: (s.idle_remaining - elapsed).max(0),
+            active_clock: s.clocks[s.game.active_player_index] - running,
+            turn_elapsed: s.turn_elapsed + running,
+            duration: if in_progress {
+                s.duration.saturating_add(elapsed)
+            } else {
+                s.duration
+            },
+            counting,
+            timed: s.game.options.timed,
+        }
+    }
     fn timed_out(&self) -> bool {
         self.timed && self.counting && self.active_clock <= 0
     }
@@ -111,6 +132,7 @@ impl TableActor {
             anchor: Instant::now(),
             timer_retry: None,
             chat_limit: crate::accounts::Counter::new(TABLE_CHAT_LIMIT, TABLE_CHAT_WINDOW),
+            chat_bytes: super::chat::ChatBytes::default(),
             _permit: permit,
             info,
         }
@@ -338,34 +360,14 @@ impl TableActor {
     }
     /// The game's timers as they stand now, read without copying the table.
     fn timers(&self) -> Option<Timers> {
-        let s = self.table.game()?;
-        let elapsed = self.elapsed_ms();
-        let counting = matches!(self.table.phase, Phase::Live { .. })
-            && s.game.end_condition == EndCondition::InProgress
-            && s.timer_started
-            && !s.paused();
-        let running = if counting { elapsed } else { 0 };
-        Some(Timers {
-            idle_remaining: (s.idle_remaining - elapsed).max(0),
-            active_clock: s.clocks[s.game.active_player_index] - running,
-            turn_elapsed: s.turn_elapsed + running,
-            counting,
-            timed: s.game.options.timed,
-        })
+        let live = matches!(self.table.phase, Phase::Live { .. });
+        Some(Timers::of(self.table.game()?, live, self.elapsed_ms()))
     }
     /// When the table next has timed work: an expiring typing indicator or reconnection grace, a
-    /// pregame start, an idle warning or ending, or a player running out of time. Once a turn or
-    /// an idle reset restarts the idle timer, this also lets the idle warning be sent again.
-    pub(super) fn next_timer(&mut self) -> Option<Instant> {
+    /// pregame start, an idle warning or ending, or a player running out of time.
+    pub(super) fn next_timer(&self) -> Option<Instant> {
         if self.store.check_state().is_err() {
             return None;
-        }
-        if self
-            .timers()
-            .is_some_and(|t| t.idle_remaining > IDLE_WARNING_MS)
-            && let Some(warned) = self.idle_warned()
-        {
-            *warned = false;
         }
         let now = Instant::now();
         let anchor = self.anchor;
@@ -471,27 +473,36 @@ impl TableActor {
     pub(super) fn candidate(&self) -> TableSnapshot {
         let mut next = self.table.clone();
         let live = matches!(next.phase, Phase::Live { .. });
-        let delta = self.elapsed_ms();
+        let elapsed = self.elapsed_ms();
         if let Some(s) = next.game_mut() {
-            s.idle_remaining = (s.idle_remaining - delta).max(0);
-            if live && s.game.end_condition == EndCondition::InProgress {
-                s.duration = s.duration.saturating_add(delta);
-                if s.timer_started && !s.paused() {
-                    let active = s.game.active_player_index;
-                    s.clocks[active] -= delta;
-                    s.turn_elapsed += delta;
-                }
-            }
+            let timers = Timers::of(s, live, elapsed);
+            s.idle_remaining = timers.idle_remaining;
+            s.clocks[s.game.active_player_index] = timers.active_clock;
+            s.turn_elapsed = timers.turn_elapsed;
+            s.duration = timers.duration;
         }
         next
+    }
+    /// Makes `next` the table's state, with its timers up to date as of now. A turn or an idle
+    /// reset that restarts the idle timer lets the idle warning be sent again.
+    fn install(&mut self, next: TableSnapshot) {
+        self.table = next;
+        self.anchor = Instant::now();
+        if self
+            .table
+            .game()
+            .is_some_and(|s| s.idle_remaining > IDLE_WARNING_MS)
+            && let Some(warned) = self.idle_warned()
+        {
+            *warned = false;
+        }
     }
     /// Keeps a change that is not worth a durable write, such as an idle-timer reset, in memory.
     /// The next checkpoint saves it, including the one written when the server drains; a crash
     /// before then only loses this change.
     pub(super) fn apply_without_checkpoint(&mut self, next: TableSnapshot) -> CommandResult<()> {
         self.store.check_state()?;
-        self.table = next;
-        self.anchor = Instant::now();
+        self.install(next);
         Ok(())
     }
     pub(super) async fn persist(&mut self, next: TableSnapshot) -> CommandResult<()> {
@@ -533,7 +544,7 @@ impl TableActor {
         }
         let became_replay = matches!(self.table.phase, Phase::Live { .. })
             && matches!(next.phase, Phase::Replay { .. });
-        self.table = next;
+        self.install(next);
         for a in self.attendees.values_mut() {
             if became_replay {
                 a.spectator = true;
@@ -543,7 +554,6 @@ impl TableActor {
                 a.shadow = *shadow;
             }
         }
-        self.anchor = Instant::now();
         Ok(outcome)
     }
     pub(super) async fn initialize(
@@ -709,6 +719,17 @@ impl TableActor {
                             pending.start(check, Some(reply));
                             continue;
                         }
+                        if session.active()
+                            && let Some(restart) = self.start_restart(&session, &command)
+                        {
+                            match restart {
+                                Ok(work) => pending.start(work, Some(reply)),
+                                Err(error) => {
+                                    let _ = reply.send(Err(error));
+                                }
+                            }
+                            continue;
+                        }
                         let result = if session.active() {
                             self.command(session, &blocks, command).await
                         } else {
@@ -761,6 +782,11 @@ impl TableActor {
                 self.finish_password_check(session, &blocks, hash, valid)
                     .await
             }
+            Completed::Restart {
+                session,
+                hide,
+                stats,
+            } => self.finish_restart(session, hide, stats).await,
         }
     }
     /// Updates the cached game totals of pregame players after a recovery.
@@ -1087,13 +1113,10 @@ impl TableActor {
             return Ok(());
         }
         let idle = timers.idle_remaining == 0;
-        // Warn the table once before the game ends for inactivity. The warning is sent again after
-        // a turn or an idle reset restarts the timer.
-        if timers.idle_remaining > IDLE_WARNING_MS {
-            if let Some(warned) = self.idle_warned() {
-                *warned = false;
-            }
-        } else if !idle
+        // Warn the table once before the game ends for inactivity. `install` lets the warning be
+        // sent again after a turn or an idle reset restarts the timer.
+        if timers.idle_remaining <= IDLE_WARNING_MS
+            && !idle
             // Marks the table warned, and goes on only if it was not before.
             && self
                 .idle_warned()

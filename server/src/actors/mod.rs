@@ -390,6 +390,8 @@ struct TableActor {
     timer_retry: Option<Instant>,
     /// Each player's recent table chat. Kept in memory: a restart forgives it.
     chat_limit: crate::accounts::Counter<i32>,
+    /// The serialized size of the table's chat, for the players' share of it.
+    chat_bytes: chat::ChatBytes,
     _permit: OwnedSemaphorePermit,
     info: Arc<ServerInfo>,
 }

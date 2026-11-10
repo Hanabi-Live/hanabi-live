@@ -19,7 +19,6 @@ use std::{collections::BTreeMap, fmt::Write as _};
 /// The longest table password, in bytes.
 const MAX_TABLE_PASSWORD_BYTES: usize = 1024;
 
-/// Whether an untimed game, or a timed game within the clock limits.
 /// Clears the clock of an untimed or speedrun game and the hand-size options when both are set,
 /// then checks that a timed game is within the clock limits.
 pub(super) fn normalize_options(options: &mut Options) -> CommandResult<()> {

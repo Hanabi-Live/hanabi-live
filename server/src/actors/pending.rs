@@ -5,7 +5,7 @@ use super::{Blocks, Reply, chat::VariantDiscovery};
 use crate::transport::Session;
 use anyhow::Result;
 use futures_util::{StreamExt, future::BoxFuture, stream::FuturesUnordered};
-use hanabi_protocol::UserId;
+use hanabi_protocol::{PregameStats, UserId};
 use std::{
     collections::{BTreeMap, HashMap},
     sync::Arc,
@@ -19,6 +19,13 @@ pub(super) enum Completed {
     Discovery {
         discovery: VariantDiscovery,
         selected: Result<Option<String>>,
+    },
+    /// The statistics of a shared replay's restart: saved for its finished game, then read for
+    /// its original players.
+    Restart {
+        session: Arc<Session>,
+        hide: bool,
+        stats: Result<BTreeMap<UserId, PregameStats>>,
     },
     /// The password check of a join.
     Password {

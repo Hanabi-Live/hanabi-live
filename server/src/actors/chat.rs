@@ -57,10 +57,32 @@ pub(super) const TABLE_CHAT_WINDOW: Duration = Duration::from_mins(1);
 pub(super) const MAX_PLAYER_CHAT_MESSAGES: usize = crate::model::MAX_TABLE_CHAT / 2;
 pub(super) const MAX_PLAYER_CHAT_BYTES: usize = crate::state::MAX_CHECKPOINT_BYTES / 2;
 
-/// Whether players can add to a table's chat. One message or command can go past the budget.
-pub(super) fn player_chat_has_room(chat: &[TableChat]) -> CommandResult<bool> {
-    Ok(chat.len() < MAX_PLAYER_CHAT_MESSAGES
-        && serde_json::to_vec(chat)?.len() < MAX_PLAYER_CHAT_BYTES)
+/// The serialized size of a table's chat. Messages are only added at the end of the chat, so this
+/// measures each message once, instead of the whole chat for every new message.
+#[derive(Default)]
+pub(super) struct ChatBytes {
+    /// The messages measured so far.
+    counted: usize,
+    bytes: usize,
+}
+
+impl ChatBytes {
+    /// The serialized size of `chat`. A save gives each new message an archive ID after it was
+    /// measured; those few bytes are not counted.
+    fn of(&mut self, chat: &[TableChat]) -> Result<usize> {
+        if chat.len() < self.counted {
+            *self = Self::default();
+        }
+        for message in &chat[self.counted..] {
+            self.bytes += serde_json::to_vec(message)?.len();
+        }
+        self.counted = chat.len();
+        Ok(self.bytes)
+    }
+    /// Whether players can add to `chat`. One message or command can go past the budget.
+    pub(super) fn player_room(&mut self, chat: &[TableChat]) -> Result<bool> {
+        Ok(chat.len() < MAX_PLAYER_CHAT_MESSAGES && self.of(chat)? < MAX_PLAYER_CHAT_BYTES)
+    }
 }
 
 /// Adds messages to a table's chat, each with its author. If they do not all fit in
@@ -142,7 +164,7 @@ impl TableActor {
     pub(super) fn admit_player_chat(&mut self, user: UserId) -> CommandResult<()> {
         self.charge_chat(user)?;
         ensure_or_reject!(
-            player_chat_has_room(&self.table.chat)?,
+            self.chat_bytes.player_room(&self.table.chat)?,
             "Chat history is full"
         );
         Ok(())

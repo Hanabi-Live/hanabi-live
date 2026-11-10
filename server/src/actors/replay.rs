@@ -1,7 +1,8 @@
 use super::table::wrong_phase;
 use super::{
-    TableActor,
+    Command, TableActor,
     chat::{server_chat, table_notice},
+    pending::Completed,
     setup::next_requested_seed,
 };
 use crate::errors::CommandResult;
@@ -9,15 +10,15 @@ use crate::errors::OrReject;
 use crate::{
     model::{
         ExtraOptions, IDLE_TIMEOUT_MS, MAX_TABLE_NAME_LENGTH, MAX_TAG_LENGTH, PendingTag, Phase,
-        Tag, TagOperation, tag_too_long,
+        Player, Tag, TagOperation, tag_too_long,
     },
     transport::{Outgoing, Session, frame},
 };
 use anyhow::Context;
 use chrono::Utc;
 use hanabi_protocol::ClientMessage;
-use hanabi_protocol::{HypotheticalAction, MIN_PLAYERS, TableRequest};
-use std::sync::Arc;
+use hanabi_protocol::{HypotheticalAction, MIN_PLAYERS, PregameStats, TableRequest, UserId};
+use std::{collections::BTreeMap, sync::Arc};
 
 /// Removes the moves of a hypothetical's last turn, the way clients go back. Morphs stay, since
 /// clients keep them when going back.
@@ -52,7 +53,10 @@ impl TableActor {
         match message {
             ClientMessage::ReplayAction(r) => self.replay_action(session, r).await,
             ClientMessage::TableSuggest(r) => self.suggest(session, r.segment).await,
-            ClientMessage::TableRestart(r) => self.restart(session, r.hide_pregame).await,
+            // A restart starts in `run`, through `start_restart`.
+            ClientMessage::TableRestart(_) => {
+                bail_internal!("A restart ran without its statistics")
+            }
             ClientMessage::TableRestartDecline(r) => {
                 self.decline_restart(session, r.declined).await
             }
@@ -428,27 +432,28 @@ impl TableActor {
         self.add_outgoing(&mut e, &message);
         self.publish(e).await
     }
-    async fn restart(&mut self, session: Arc<Session>, hide: bool) -> CommandResult<()> {
+    /// The players who play again if the leader in `session` restarts the shared replay, with the
+    /// pregame hidden if `hide`.
+    fn restart_players(&self, session: &Session, hide: bool) -> CommandResult<Vec<Player>> {
+        let Phase::Replay { replay, .. } = &self.table.phase else {
+            reject!("Only the shared replay leader can restart");
+        };
         ensure_or_reject!(
-            self.attending(&session) && session.user == self.table.owner && self.table.visible,
+            self.attending(session) && session.user == self.table.owner && self.table.visible,
             "Only the shared replay leader can restart"
         );
-        self.seat(&session)?;
+        self.seat(session)?;
         ensure_or_reject!(
             !self.table.extra.set_replay,
             "Cannot restart replayed games"
         );
-        let declined = match &self.table.phase {
-            Phase::Replay { replay, .. } => replay.restart_declined.as_slice(),
-            _ => &[],
-        };
-        let mut players = self
+        let players = self
             .table
             .players()
             .iter()
             .filter(|p| {
                 // Restarting means the leader is playing again.
-                (p.id == session.user || !declined.contains(&p.id))
+                (p.id == session.user || !replay.restart_declined.contains(&p.id))
                     && self
                         .attendees
                         .get(&p.id)
@@ -460,17 +465,83 @@ impl TableActor {
             players.len() >= MIN_PLAYERS && (!hide || players.len() == self.table.players().len()),
             "Original players must attend to restart"
         );
-        let snapshot = self.table.game().context("Missing completed game")?;
-        if snapshot.game_id > crate::model::UNSAVED_GAME && !self.table.extra.no_write_to_database {
-            // The replay may be visible before its background statistics finish.
-            crate::stats::refresh(&self.store.primary, snapshot).await?;
+        Ok(players)
+    }
+    /// Starts a restart of a shared replay. Saving the finished game's statistics and reading the
+    /// players' statistics can take a while, so the table keeps answering other commands while
+    /// they run; `finish_restart` does the rest. Returns `None` for any other command, and for a
+    /// restart outside a replay, which `replay_command` refuses.
+    pub(super) fn start_restart(
+        &self,
+        session: &Arc<Session>,
+        command: &Command,
+    ) -> Option<CommandResult<impl Future<Output = Completed> + Send + 'static>> {
+        let Command::Client(message) = command else {
+            return None;
+        };
+        let ClientMessage::TableRestart(request) = &**message else {
+            return None;
+        };
+        if !matches!(self.table.phase, Phase::Replay { .. }) {
+            return None;
         }
-        let variant = hanabi_engine::get_variant(&self.table.options.variant_name)?;
-        crate::stats::refresh_players(&self.store.primary, &mut players, variant.id).await?;
+        Some(self.prepare_restart(session, request.hide_pregame))
+    }
+    fn prepare_restart(
+        &self,
+        session: &Arc<Session>,
+        hide: bool,
+    ) -> CommandResult<impl Future<Output = Completed> + Send + 'static> {
+        self.restart_players(session, hide)?;
+        let snapshot = self.table.game().context("Missing completed game")?;
+        // The replay may be visible before its background statistics finish.
+        let finished = (snapshot.game_id > crate::model::UNSAVED_GAME
+            && !self.table.extra.no_write_to_database)
+            .then(|| snapshot.clone());
+        let variant = hanabi_engine::get_variant(&self.table.options.variant_name)?.id;
+        let users = self
+            .table
+            .players()
+            .iter()
+            .map(|p| p.id)
+            .collect::<Vec<_>>();
+        let pool = self.store.primary.clone();
+        let session = session.clone();
+        Ok(async move {
+            let stats = async {
+                if let Some(finished) = finished {
+                    crate::stats::refresh(&pool, &finished).await?;
+                }
+                crate::stats::pregame_stats_of(&pool, &users, variant).await
+            }
+            .await;
+            Completed::Restart {
+                session,
+                hide,
+                stats,
+            }
+        })
+    }
+    /// Finishes a restart once its statistics are saved and read. `stats` holds each original
+    /// player's statistics on the variant.
+    pub(super) async fn finish_restart(
+        &mut self,
+        session: Arc<Session>,
+        hide: bool,
+        stats: anyhow::Result<BTreeMap<UserId, PregameStats>>,
+    ) -> CommandResult<()> {
+        let mut stats = stats?;
         ensure_or_reject!(
             session.active(),
             "Session changed while refreshing restart statistics"
         );
+        // The table kept running while the statistics were saved, so check the restart again.
+        let mut players = self.restart_players(&session, hide)?;
+        for player in &mut players {
+            player.stats = stats
+                .remove(&player.id)
+                .unwrap_or_else(crate::stats::zero_stats);
+        }
         let allocation = self.allocation().await?;
         let mut destination = self.table.clone();
         destination.id = allocation.id;

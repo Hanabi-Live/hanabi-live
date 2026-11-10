@@ -43,7 +43,7 @@ pub(crate) async fn refresh_players(
 }
 
 /// The statistics on `variant` of the users in `ids`, as pregame tables show them.
-async fn pregame_stats_of(
+pub(crate) async fn pregame_stats_of(
     pool: &PgPool,
     ids: &[UserId],
     variant: u32,

@@ -20,9 +20,12 @@ macro_rules! rejection {
 }
 
 /// An unexpected failure of a player's request (`CommandError::Internal`), built like `anyhow!`.
+/// The player sees its message, so it must not include raw errors or private data.
 macro_rules! internal {
     ($($message:tt)+) => {
-        $crate::errors::CommandError::Internal(anyhow::anyhow!($($message)+))
+        $crate::errors::CommandError::Internal(anyhow::Error::new(
+            $crate::errors::Described(format!($($message)+)),
+        ))
     };
 }
 

@@ -1,6 +1,6 @@
 use super::*;
 use super::{
-    chat::{authored_chat, player_chat_has_room, server_chat},
+    chat::{ChatBytes, authored_chat, server_chat},
     replay::undo_hypothetical_turn,
     setup::{next_requested_seed, option_changes, requested_seed, validate_table_name},
     wire::{game_action, game_action_list},
@@ -500,13 +500,15 @@ async fn live_tables_wake_at_their_next_deadline() -> Result<()> {
         capacity.try_acquire_owned()?,
         crate::server_info::test_info(),
     );
+    // The idle warning comes first, and a restarted idle timer lets it be sent again.
+    *actor.idle_warned().unwrap() = true;
+    actor.apply_without_checkpoint(actor.candidate())?;
+    ensure!(!*actor.idle_warned().unwrap());
     let anchor = actor.anchor;
     let at = |ms: i64| anchor + Duration::from_millis(u64::try_from(ms).unwrap());
-
-    // The idle warning comes first, and a restarted idle timer lets it be sent again.
+    let lead = actor.table.game().unwrap().idle_remaining - IDLE_WARNING_MS;
     let warning = at(lead);
-    *actor.idle_warned().unwrap() = true;
-    ensure!(actor.next_timer() == Some(warning) && !*actor.idle_warned().unwrap());
+    ensure!(actor.next_timer() == Some(warning));
 
     // Once warned, the table wakes when the game would end for inactivity.
     actor.table.game_mut().unwrap().idle_remaining = IDLE_WARNING_MS - lead;
@@ -1130,7 +1132,8 @@ fn a_table_chat_that_players_filled_still_fits_in_a_checkpoint() -> Result<()> {
     let text = crate::accounts::normalize_chat(&"\"".repeat(1000)).map_err(anyhow::Error::msg)?;
     // Checking after each batch instead of each message overshoots the budget, which only makes
     // the table larger.
-    while player_chat_has_room(&table.chat)? {
+    let mut bytes = ChatBytes::default();
+    while bytes.player_room(&table.chat)? {
         for _ in 0..CHAT_BATCH {
             table.chat.push(TableChat {
                 id: None,

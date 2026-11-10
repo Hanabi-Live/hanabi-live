@@ -51,7 +51,9 @@ pub(super) fn command_failure(error: CommandError, command: &str) -> Option<Comm
         ),
         CommandError::Internal(error) => {
             let report = crate::errors::Report::from_error(operation.clone(), &error);
-            if report.code == crate::errors::INTERNAL_OPERATION_FAILED {
+            if report.code != crate::errors::INTERNAL_OPERATION_FAILED {
+                (report, true)
+            } else if error.root_cause().is::<crate::errors::Described>() {
                 // The server wrote this description, so the player sees all of it.
                 (
                     crate::errors::Report::known(
@@ -63,7 +65,12 @@ pub(super) fn command_failure(error: CommandError, command: &str) -> Option<Comm
                     false,
                 )
             } else {
-                (report, true)
+                // The cause could hold anything, so only the log shows it.
+                tracing::error!(
+                    diagnostic_id = %report.diagnostic_id,
+                    "{operation} failed: {error:#}"
+                );
+                (report, false)
             }
         }
     };
@@ -299,9 +306,11 @@ mod tests {
         assert!(command_failure(silent, command).is_none());
 
         let unexpected = command_failure(
-            anyhow::anyhow!("Duplicate table installation")
-                .context("Installing the table")
-                .into(),
+            anyhow::Error::new(crate::errors::Described(
+                "Duplicate table installation".into(),
+            ))
+            .context("Installing the table")
+            .into(),
             command,
         )
         .unwrap();
@@ -316,6 +325,20 @@ mod tests {
                 report.diagnostic_id
             )
         );
+
+        // A cause that the server did not write stays out of the warning.
+        let parse = "x".parse::<i32>().expect_err("not a number");
+        let raw = command_failure(
+            anyhow::Error::from(parse.clone())
+                .context("Reading the seat")
+                .into(),
+            command,
+        )
+        .unwrap();
+        let report = raw.report.expect("reported failure");
+        assert_eq!(report.code, crate::errors::INTERNAL_OPERATION_FAILED);
+        assert!(!raw.alert);
+        assert!(!raw.warning.contains(&parse.to_string()) && !raw.warning.contains("seat"));
 
         let storage = command_failure(sqlx::Error::PoolClosed.into(), command).unwrap();
         assert!(storage.alert && storage.report.is_some());

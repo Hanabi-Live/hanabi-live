@@ -239,6 +239,19 @@ impl<T, E> OrReject<T> for Result<T, E> {
     }
 }
 
+/// The description of an unexpected failure, which the server wrote for the player to see, such as
+/// one from `internal!`. A failure that the report does not recognize shows its whole error chain to
+/// the player only when the chain starts from one of these.
+#[derive(Debug)]
+pub struct Described(pub String);
+
+impl fmt::Display for Described {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.write_str(&self.0)
+    }
+}
+impl std::error::Error for Described {}
+
 /// The code of a failure that the report does not recognize.
 pub const INTERNAL_OPERATION_FAILED: &str = "internal_operation_failed";
 

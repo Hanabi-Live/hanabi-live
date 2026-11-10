@@ -317,9 +317,6 @@ impl TableActor {
         // Like arrows and sounds, an idle reset only restarts the idle timer, so it skips the durable
         // write.
         self.apply_without_checkpoint(next)?;
-        if let Some(warned) = self.idle_warned() {
-            *warned = false;
-        }
         let mut e = self.effects();
         self.add_all(
             &mut e,
