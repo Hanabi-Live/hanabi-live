@@ -11,7 +11,7 @@ use hanabi_engine::{AssignedCharacter, EndCondition, GameSetup, Interpretation};
 use hanabi_protocol::GameId;
 use hanabi_protocol::TableId;
 use hanabi_protocol::UserId;
-use hanabi_protocol::{NO_VALUE, ReplayAction};
+use hanabi_protocol::{NO_VALUE, RecordedActionType, ReplayAction};
 use serde::Deserialize;
 use sqlx::{PgPool, types::Json};
 use sqlx::{Postgres, Transaction};
@@ -28,6 +28,42 @@ pub(crate) struct ArchivePlayer {
     pub character_id: Option<i16>,
     /// Absent when the player's character has no assigned metadata.
     pub assigned_metadata: Option<i16>,
+}
+
+/// An action as `game_actions` stores it: NULL for a game over's target when no player caused it,
+/// and for a play's or a discard's value. Rows from before November 2026 store -1 and 0 instead.
+#[derive(Debug, Deserialize)]
+struct ArchiveAction {
+    #[serde(rename = "type")]
+    kind: RecordedActionType,
+    target: Option<i32>,
+    value: Option<i32>,
+}
+
+impl From<ArchiveAction> for ReplayAction {
+    fn from(action: ArchiveAction) -> Self {
+        Self {
+            kind: action.kind,
+            target: action.target.unwrap_or(NO_VALUE),
+            value: action.value.unwrap_or(0),
+        }
+    }
+}
+
+/// The target that `game_actions` stores: NULL for a game over that no player caused.
+fn stored_target(target: i32) -> Result<Option<i16>> {
+    Ok((target != NO_VALUE)
+        .then(|| i16::try_from(target))
+        .transpose()?)
+}
+
+/// The value that `game_actions` stores: NULL for a play or a discard, which has none.
+fn stored_value(kind: RecordedActionType, value: i32) -> Result<Option<i16>> {
+    Ok(
+        (!matches!(kind, RecordedActionType::Play | RecordedActionType::Discard))
+            .then(|| i16::try_from(value))
+            .transpose()?,
+    )
 }
 
 #[derive(Debug, Deserialize)]
@@ -81,7 +117,7 @@ pub(crate) async fn load(pool: &PgPool, id: GameId) -> Result<Option<Archive>> {
           WHERE p.game_id=g.id),'[]'::jsonb) AS \"archive_players!: Json<Vec<ArchivePlayer>>\",
         COALESCE((SELECT jsonb_agg(jsonb_build_object(
           'type',a.type,'target',a.target,'value',a.value) ORDER BY a.turn)
-          FROM game_actions a WHERE a.game_id=g.id),'[]'::jsonb) AS \"archive_actions!: Json<Vec<ReplayAction>>\",
+          FROM game_actions a WHERE a.game_id=g.id),'[]'::jsonb) AS \"archive_actions!: Json<Vec<ArchiveAction>>\",
         COALESCE((SELECT jsonb_agg(jsonb_build_object('seat',p.seat,'order',n.card_order,'note',n.note)
           ORDER BY p.seat,n.card_order) FROM game_participant_notes n
           JOIN game_participants p ON p.id=n.game_participant_id
@@ -99,7 +135,12 @@ pub(crate) async fn load(pool: &PgPool, id: GameId) -> Result<Option<Archive>> {
     };
     Ok(Some(Archive {
         players: row.archive_players.0,
-        actions: row.archive_actions.0,
+        actions: row
+            .archive_actions
+            .0
+            .into_iter()
+            .map(ReplayAction::from)
+            .collect(),
         notes: row.archive_notes.0,
         tags: row.archive_tags.0,
         game: row.game.0,
@@ -291,19 +332,19 @@ pub(crate) async fn insert(
         .iter()
         .map(|a| i16::try_from(i32::from(a.action_type)))
         .collect::<Result<_, _>>()?;
-    let targets: Vec<i16> = s
+    let targets: Vec<Option<i16>> = s
         .game
         .actions
         .iter()
-        .map(|a| i16::try_from(a.target))
+        .map(|a| stored_target(a.target))
         .collect::<Result<_, _>>()?;
-    let values: Vec<i16> = s
+    let values: Vec<Option<i16>> = s
         .game
         .actions
         .iter()
-        .map(|a| i16::try_from(a.value))
+        .map(|a| stored_value(a.action_type, a.value))
         .collect::<Result<_, _>>()?;
-    sqlx::query!("INSERT INTO game_actions(game_id,turn,type,target,value) SELECT $1,(a.turn-1)::smallint,a.kind,a.target,a.value FROM UNNEST($2::smallint[],$3::smallint[],$4::smallint[]) WITH ORDINALITY AS a(kind,target,value,turn)", s.game_id.0, &kinds, &targets, &values).execute(&mut **tx).await?;
+    sqlx::query!("INSERT INTO game_actions(game_id,turn,type,target,value) SELECT $1,(a.turn-1)::smallint,a.kind,a.target,a.value FROM UNNEST($2::smallint[],$3::smallint[],$4::smallint[]) WITH ORDINALITY AS a(kind,target,value,turn)", s.game_id.0, &kinds, &targets as &[Option<i16>], &values as &[Option<i16>]).execute(&mut **tx).await?;
     let tag_users = s.tags.iter().map(|tag| tag.user.0).collect::<Vec<_>>();
     let tags = s
         .tags

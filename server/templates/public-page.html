@@ -124,7 +124,8 @@
                 <span class="stat-description"
                   >{{ loop.index + 1 }}-player best score:</span
                 >
-                {{ score }} / {{ stats.maxScore }}
+                {% if score is none %}&ndash;{% else %}{{ score }} / {{
+                stats.maxScore }}{% endif %}
               </li>
               {% endfor %}
             </ul>
@@ -198,7 +199,8 @@
                   <td class="center">{{ row.numGames }}</td>
                   {% for best in row.bestScores %}
                   <td class="center">
-                    {% if best.score == row.maxScore %}<strong
+                    {% if best.score is none %}&ndash;{% elif best.score ==
+                    row.maxScore %}<strong
                       >{{ best.score }} / {{ row.maxScore }}</strong
                     >
                     {% if best.modifierName %}<i

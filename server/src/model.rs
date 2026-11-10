@@ -828,8 +828,13 @@ impl ScoreModifier {
             .map(|(_, name)| *name)
     }
 
-    /// A best score with this modifier and one flag per option, as the wire carries it.
-    pub fn best_score(self, num_players: u8, score: i32) -> hanabi_protocol::PregameBestScore {
+    /// A best score with this modifier and one flag per option, as the wire carries it. `score` is
+    /// `None` when there is no game at this player count.
+    pub fn best_score(
+        self,
+        num_players: u8,
+        score: Option<i32>,
+    ) -> hanabi_protocol::PregameBestScore {
         let has = |flag: i16| self.0 & flag != 0;
         hanabi_protocol::PregameBestScore {
             num_players,
@@ -981,7 +986,7 @@ mod tests {
             ScoreModifier::from_bits(16 + 1).shown(),
             Some("allornothing")
         );
-        let best = modifier.best_score(3, 20);
+        let best = modifier.best_score(3, Some(20));
         assert_eq!(best.modifier, 10);
         assert!(best.empty_clues && best.one_less_card);
         assert!(!best.deck_plays && !best.one_extra_card && !best.all_or_nothing);

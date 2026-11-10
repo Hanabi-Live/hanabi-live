@@ -54,15 +54,15 @@ pub(crate) struct UserStats {
     pub user_id: i32,
     pub variant_id: i16,
     pub num_games: i32,
-    pub best_score2: i16,
+    pub best_score2: Option<i16>,
     pub best_score2_mod: i16,
-    pub best_score3: i16,
+    pub best_score3: Option<i16>,
     pub best_score3_mod: i16,
-    pub best_score4: i16,
+    pub best_score4: Option<i16>,
     pub best_score4_mod: i16,
-    pub best_score5: i16,
+    pub best_score5: Option<i16>,
     pub best_score5_mod: i16,
-    pub best_score6: i16,
+    pub best_score6: Option<i16>,
     pub best_score6_mod: i16,
 }
 
@@ -70,11 +70,11 @@ pub(crate) struct UserStats {
 pub(crate) struct VariantStats {
     pub variant_id: i16,
     pub num_games: i32,
-    pub best_score2: i16,
-    pub best_score3: i16,
-    pub best_score4: i16,
-    pub best_score5: i16,
-    pub best_score6: i16,
+    pub best_score2: Option<i16>,
+    pub best_score3: Option<i16>,
+    pub best_score4: Option<i16>,
+    pub best_score5: Option<i16>,
+    pub best_score6: Option<i16>,
     pub num_max_scores: i32,
 }
 

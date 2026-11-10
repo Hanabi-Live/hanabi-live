@@ -449,8 +449,10 @@ pub struct GameHistoryOtherScores {
 pub struct PregameBestScore {
     #[schemars(range(min = MIN_PLAYERS, max = MAX_PLAYERS))]
     pub num_players: u8,
-    #[schemars(range(min = 0, max = i32::MAX))]
-    pub score: i32,
+    /// Absent when there is no game at this player count.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[schemars(with = "i32", range(min = 0, max = i32::MAX))]
+    pub score: Option<i32>,
     #[schemars(range(min = 0, max = i32::MAX))]
     pub modifier: i32,
     pub deck_plays: bool,

@@ -14,6 +14,9 @@ import * as nav from "./nav";
 import { getOptionDescriptions } from "./optionDescriptions";
 import { Screen } from "./types/Screen";
 
+/** What a player's statistics show for a player count that they have not played. */
+const NO_SCORE = "&ndash;";
+
 const lobbyChatPregameText = getHTMLElement("#lobby-chat-pregame-text");
 
 /** Removes the tooltips of the H-Group level badges, which are redrawn with the player boxes. */
@@ -260,7 +263,7 @@ function drawPlayerBox(playerIndex: PlayerIndex) {
           ${numPlayers}-player best score:
         </div>
         <div class="col-2 align-right padding0">
-          ${variantStats.bestScores[numPlayers - MIN_PLAYERS]!.score}
+          ${variantStats.bestScores[numPlayers - MIN_PLAYERS]!.score ?? NO_SCORE}
         </div>
       </div>
     `;
@@ -295,6 +298,10 @@ function drawPlayerBox(playerIndex: PlayerIndex) {
     html += '<div class="row">';
     html += `<div class="col-6">${bestScorePlayer}-player:</div>`;
     html += '<div class="col-6">';
+    if (score === undefined) {
+      html += ` ${NO_SCORE}</div></div>`;
+      continue;
+    }
     if (score === maxScore) {
       html += "<strong>";
     }

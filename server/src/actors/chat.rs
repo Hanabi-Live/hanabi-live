@@ -199,7 +199,7 @@ impl TableActor {
         let query = async move {
             let rows = sqlx::query!(
                 r#"SELECT variant_id,CASE $2::smallint WHEN 2 THEN best_score2 WHEN 3 THEN best_score3
-                   WHEN 4 THEN best_score4 WHEN 5 THEN best_score5 ELSE best_score6 END AS "score!"
+                   WHEN 4 THEN best_score4 WHEN 5 THEN best_score5 ELSE best_score6 END AS score
                    FROM user_stats WHERE user_id=ANY($1)"#,
                 &ids,
                 i16::try_from(count)?,
@@ -209,7 +209,8 @@ impl TableActor {
             let mut completed = HashSet::new();
             for row in rows {
                 let id = u32::try_from(row.variant_id)?;
-                if i32::from(row.score) == hanabi_engine::get_variant_by_id(id)?.max_score {
+                if row.score.map(i32::from) == Some(hanabi_engine::get_variant_by_id(id)?.max_score)
+                {
                     completed.insert(id);
                 }
             }

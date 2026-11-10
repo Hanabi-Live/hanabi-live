@@ -58,17 +58,17 @@ CREATE TABLE user_stats (
     user_id          INTEGER   NOT NULL,
     variant_id       SMALLINT  NOT NULL,
     num_games        INTEGER   NOT NULL  DEFAULT 0,
-    /* Their best score for 2-player games on this variant. */
-    best_score2      SMALLINT  NOT NULL  DEFAULT 0,
+    /* Their best score for 2-player games on this variant. NULL when they have played none. */
+    best_score2      SMALLINT  NULL      DEFAULT 0,
     /* This stores if they used additional options to make the game easier. */
     best_score2_mod  SMALLINT  NOT NULL  DEFAULT 0,
-    best_score3      SMALLINT  NOT NULL  DEFAULT 0,
+    best_score3      SMALLINT  NULL      DEFAULT 0,
     best_score3_mod  SMALLINT  NOT NULL  DEFAULT 0,
-    best_score4      SMALLINT  NOT NULL  DEFAULT 0,
+    best_score4      SMALLINT  NULL      DEFAULT 0,
     best_score4_mod  SMALLINT  NOT NULL  DEFAULT 0,
-    best_score5      SMALLINT  NOT NULL  DEFAULT 0,
+    best_score5      SMALLINT  NULL      DEFAULT 0,
     best_score5_mod  SMALLINT  NOT NULL  DEFAULT 0,
-    best_score6      SMALLINT  NOT NULL  DEFAULT 0,
+    best_score6      SMALLINT  NULL      DEFAULT 0,
     best_score6_mod  SMALLINT  NOT NULL  DEFAULT 0,
     FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE,
     PRIMARY KEY (user_id, variant_id)
@@ -240,33 +240,32 @@ CREATE TABLE game_actions (
     turn     SMALLINT  NOT NULL,
 
     /**
-     * Corresponds to the "DatabaseGameActionType" enum.
+     * Corresponds to the "RecordedActionType" enum.
      *
      * - 0 - play
      * - 1 - discard
      * - 2 - color clue
      * - 3 - rank clue
      * - 4 - game over
+     * - 5 - game over by vote
      */
     type     SMALLINT  NOT NULL,
 
     /**
      * - If a play or a discard, corresponds to the order of the the card that was played/discarded.
      * - If a clue, corresponds to the index of the player that received the clue.
-     * - If a game over, corresponds to the index of the player that caused the game to end or -1 if
-     *   the game was terminated by the server.
+     * - If a game over, corresponds to the index of the player that caused the game to end, or NULL
+     *   if no player did. (Rows from before November 2026 store -1 instead.)
      */
-    target   SMALLINT  NOT NULL,
+    target   SMALLINT  NULL,
 
     /**
-     * - If a play or discard, then 0 (as NULL). It uses less database space and reduces code
-     *   complexity to use a value of 0 for NULL than to use a SQL NULL:
-     *   https://dev.mysql.com/doc/refman/8.0/en/data-size.html
+     * - If a play or discard, then NULL. (Rows from before November 2026 store 0 instead.)
      * - If a color clue, then 0 if red, 1 if yellow, etc.
      * - If a rank clue, then 1 if 1, 2 if 2, etc.
      * - If a game over, then the value corresponds to "EndCondition" in "server/engine/src/types.rs".
      */
-    value    SMALLINT  NOT NULL,
+    value    SMALLINT  NULL,
 
     FOREIGN KEY (game_id) REFERENCES games (id) ON DELETE CASCADE,
     PRIMARY KEY (game_id, turn)
@@ -293,12 +292,15 @@ CREATE TABLE variant_stats (
     /* The ID for a particular variant can be found in the "variants.json" file. */
     variant_id      SMALLINT  NOT NULL  PRIMARY KEY,
     num_games       INTEGER   NOT NULL  DEFAULT 0,
-    /* The best score from any team for a 2-player game on this variant. */
-    best_score2     SMALLINT  NOT NULL  DEFAULT 0,
-    best_score3     SMALLINT  NOT NULL  DEFAULT 0,
-    best_score4     SMALLINT  NOT NULL  DEFAULT 0,
-    best_score5     SMALLINT  NOT NULL  DEFAULT 0,
-    best_score6     SMALLINT  NOT NULL  DEFAULT 0,
+    /*
+     * The best score from any team for a 2-player game on this variant without options. NULL when
+     * there is no such game.
+     */
+    best_score2     SMALLINT  NULL      DEFAULT 0,
+    best_score3     SMALLINT  NULL      DEFAULT 0,
+    best_score4     SMALLINT  NULL      DEFAULT 0,
+    best_score5     SMALLINT  NULL      DEFAULT 0,
+    best_score6     SMALLINT  NULL      DEFAULT 0,
     num_max_scores  INTEGER   NOT NULL  DEFAULT 0
 );
 
@@ -313,6 +315,7 @@ CREATE TABLE chat_log (
     message             TEXT         NOT NULL,
     room                TEXT         NOT NULL, /* Either "lobby" or "table####". */
     datetime_sent       TIMESTAMPTZ  NOT NULL  DEFAULT NOW(),
+    table_id            BIGINT       NULL,     /* The table whose chat this is; NULL for the lobby. */
     CONSTRAINT chat_log_user_id_fkey
         FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE,
     CONSTRAINT chat_log_user_id_check CHECK ((source = 'user') = (user_id IS NOT NULL))

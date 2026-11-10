@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "SELECT count(*) AS \"v!\" FROM chat_log WHERE user_id=1 AND source='user' AND room=$1 AND message='retained authored chat'",
+  "query": "SELECT count(*) AS \"v!\" FROM chat_log WHERE user_id=1 AND source='user' AND room=$1 AND table_id=$2 AND message='retained authored chat'",
   "describe": {
     "columns": [
       {
@@ -12,12 +12,13 @@
     ],
     "parameters": {
       "Left": [
-        "Text"
+        "Text",
+        "Int8"
       ]
     },
     "nullable": [
       null
     ]
   },
-  "hash": "21af2e7f2642051a78dd6528e1d491a7ca8d14b27a0c68b36a2057b9d15b1c43"
+  "hash": "d7ba685a139c4b28a8e1650fb1bb5dbfd22c5ed222dd1d8553478e15df1bd44e"
 }

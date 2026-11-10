@@ -299,7 +299,7 @@ pub(super) async fn page(
             statistics["maxScoreRate"] = json!(percentage(number(&row, "num_max_scores"), games));
             statistics["bestScores"] = json!(
                 (hanabi_protocol::MIN_PLAYERS..=hanabi_protocol::MAX_PLAYERS)
-                    .map(|p| number(&row, &format!("best_score{p}")))
+                    .map(|p| row[format!("best_score{p}")].as_i64())
                     .collect::<Vec<_>>()
             );
             statistics["maxScore"] = json!(variant.max_score);
@@ -640,8 +640,8 @@ async fn score_summary(state: &PublicState, id: i32) -> Result<Value> {
         let max = i64::from(variant.max_score);
         let mut best = Vec::new();
         for p in hanabi_protocol::MIN_PLAYERS..=hanabi_protocol::MAX_PLAYERS {
-            let score = number(&row, &format!("best_score{p}"));
-            if score == max {
+            let score = row[format!("best_score{p}")].as_i64();
+            if score == Some(max) {
                 totals[p - hanabi_protocol::MIN_PLAYERS] += 1;
             }
             let modifier = number(&row, &format!("best_score{p}_mod"));

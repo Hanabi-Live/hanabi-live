@@ -625,7 +625,10 @@ const pregameBestScoreSchema = z.strictObject({
   numPlayers: z.number().int().min(2).max(6),
   oneExtraCard: z.boolean(),
   oneLessCard: z.boolean(),
-  score: z.number().int().min(0).max(2_147_483_647),
+  /**
+   * Absent when there is no game at this player count.
+   */
+  score: z.number().int().min(0).max(2_147_483_647).optional(),
 });
 const pregameVariantStatsSchema = z.strictObject({
   /**

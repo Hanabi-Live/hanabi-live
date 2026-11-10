@@ -1676,7 +1676,7 @@ async fn remade_tables_publish_fresh_statistics_for_every_player() -> Result<()>
         let (saved, _) = h.snapshot(remade).await?;
         for player in saved.players() {
             ensure!(
-                player.stats.variant.best_scores[0].score == score,
+                player.stats.variant.best_scores[0].score == Some(score),
                 "Fresh statistics were not persisted"
             );
         }
@@ -3188,6 +3188,86 @@ async fn saved_characters_store_none_as_null() -> Result<()> {
             h.barrier(0).await?;
             h.barrier(1).await?;
         }
+        Ok(())
+    }
+    .await;
+    h.close().await?;
+    outcome
+}
+
+#[tokio::test]
+async fn saved_actions_store_null_for_a_missing_target_or_value() -> Result<()> {
+    let Some(mut h) = Harness::new(&["Alice", "Bob"]).await? else {
+        return Ok(());
+    };
+    let outcome = async {
+        let id = h.create(0, "Votes", json!({})).await?;
+        h.send(1, "tableJoin", json!({"tableID":id})).await?;
+        h.send(0, "tableStart", json!({"tableID":id})).await?;
+        h.receive(0, "tableStarted").await?;
+        let (table, _) = h.snapshot(id).await?;
+        let game = &table.game().context("Missing game")?.game;
+        let active = game.active_player_index;
+        let index = h
+            .users
+            .iter()
+            .position(|user| user.user == table.players()[active].id)
+            .context("Missing active player")?;
+        let card = game.players[active].hand[0];
+        h.send(
+            index,
+            "action",
+            json!({"tableID":id,"type":"play","order":card}),
+        )
+        .await?;
+        for index in 0..2 {
+            h.send(index, "tableVoteForTermination", json!({"tableID":id}))
+                .await?;
+        }
+        h.barrier(0).await?;
+        let actions = sqlx::query!(
+            "SELECT a.game_id,a.type,a.target,a.value FROM game_actions a ORDER BY a.game_id,a.turn"
+        )
+        .fetch_all(&h.store.primary)
+        .await?;
+        let stored = actions
+            .iter()
+            .map(|a| (a.r#type, a.target, a.value))
+            .collect::<Vec<_>>();
+        let play = i16::try_from(i32::from(hanabi_protocol::RecordedActionType::Play))?;
+        let vote = i16::try_from(i32::from(
+            hanabi_protocol::RecordedActionType::GameOverByVote,
+        ))?;
+        let end = i16::try_from(EndCondition::TerminatedByVote as i32)?;
+        ensure!(
+            stored
+                == [
+                    (play, i16::try_from(card).ok(), None),
+                    (vote, None, Some(end))
+                ],
+            "Unexpected stored actions: {stored:?}"
+        );
+        // A replay of the saved game reads the actions back.
+        let game = actions.first().context("Missing saved game")?.game_id;
+        h.send(
+            0,
+            "replayCreate",
+            json!({"source":"id","visibility":"solo","databaseID":game}),
+        )
+        .await?;
+        let replay = h.receive(0, "tableStarted").await?["tableID"].clone();
+        h.send(0, "getGameState", json!({"tableID":replay})).await?;
+        let history = h.receive(0, "gameActionList").await?;
+        let events = history["actions"].as_array().context("Missing actions")?;
+        ensure!(
+            // A misplay shows as a failed discard.
+            events.iter().any(|event| {
+                (event["type"] == "play" || event["type"] == "discard") && event["order"] == card
+            }) && events
+                .iter()
+                .any(|event| event["type"] == "gameOver" && event.get("playerIndex").is_none()),
+            "The replay lost the saved actions: {history}"
+        );
         Ok(())
     }
     .await;
