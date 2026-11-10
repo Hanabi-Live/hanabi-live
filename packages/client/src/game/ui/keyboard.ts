@@ -242,7 +242,10 @@ function keydown(event: JQuery.KeyDownEvent) {
   }
 
   // Replay hotkeys
-  if (globals.state.replay.hypothetical === null) {
+  if (
+    globals.state.replay.hypothetical === null
+    || replay.isSpectatingHypothetical()
+  ) {
     switch (event.which) {
       case KeyCode.KEY_LEFT: {
         globals.store!.dispatch({ type: "dragReset" });

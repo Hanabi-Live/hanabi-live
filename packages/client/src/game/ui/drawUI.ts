@@ -606,6 +606,8 @@ const HYPO_INDICATOR = {
   fontSize: 0.06,
   /** The horizontal radius of the ellipse, as a fraction of the action log's width. */
   radiusX: 0.4,
+  /** The gap between the bottom of the ellipse and the spectators' "Pause Shared Turns" button. */
+  buttonGapY: 0.01,
 } as const;
 
 /** The buttons used in a hypothetical, in fractions of the stage. */
@@ -2798,6 +2800,26 @@ function drawHypotheticalArea() {
     listening: false,
   });
   globals.elements.hypoCircle.add(text);
+
+  // The replay area is hidden during hypotheticals, so spectators need another "Pause Shared Turns"
+  // button to leave the leader's hypothetical. It is the same size as the one in the replay area.
+  const replayPauseButton = globals.elements.pauseSharedTurnsButton!;
+  const ellipseBottomY =
+    hypoValues.y + hypoTextY + hypoFontSize / 2 + hypoValues.h;
+  globals.elements.hypoPauseSharedTurnsButton = new Button({
+    x:
+      (hypoValues.x + hypoValues.w! / 2) * winW - replayPauseButton.width() / 2,
+    y: (ellipseBottomY + HYPO_INDICATOR.buttonGapY) * winH,
+    width: replayPauseButton.width(),
+    height: replayPauseButton.height(),
+    text: "Pause Shared Turns",
+    visible: false,
+  });
+  globals.elements.hypoPauseSharedTurnsButton.on(
+    "click tap",
+    replay.toggleSharedSegments,
+  );
+  globals.layers.UI.add(globals.elements.hypoPauseSharedTurnsButton);
 
   globals.elements.hypoButtonsArea = new Konva.Group({
     visible: false,

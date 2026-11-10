@@ -58,6 +58,12 @@ export function isSpoilerFree(): boolean {
   return globals.state.replay.shared?.spoilerFree === true;
 }
 
+/** Spectators watch the leader's hypothetical, but do not control it. */
+export function isSpectatingHypothetical(): boolean {
+  const { hypothetical, shared } = globals.state.replay;
+  return hypothetical !== null && shared !== null && !shared.amLeader;
+}
+
 function getCurrentReplaySegment() {
   const finalSegment = globals.state.ongoingGame.turn.segment!;
   return globals.state.replay.active
@@ -87,8 +93,13 @@ export function goToSegment(
   }
 
   // Disable replay navigation while we are in a hypothetical. (Hypothetical navigation functions
-  // will set "force" equal to true.)
-  if (globals.state.replay.hypothetical !== null && !force) {
+  // will set "force" equal to true.) Spectators can leave the leader's hypothetical by breaking
+  // free from the shared segments.
+  if (
+    globals.state.replay.hypothetical !== null
+    && !force
+    && !(breakFree && isSpectatingHypothetical())
+  ) {
     return;
   }
 

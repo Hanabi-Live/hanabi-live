@@ -124,6 +124,7 @@ export class Elements {
   useSharedTurnsButton: SharedTurnsButton | null = null;
   enterHypoButton: EnterHypoButton | null = null;
   hypoCircle: Konva.Group | null = null;
+  hypoPauseSharedTurnsButton: Button | null = null;
   hypoButtonsArea: Konva.Group | null = null;
   editCardsButton: CheckButton | null = null;
   hypoBackButton: Button | null = null;

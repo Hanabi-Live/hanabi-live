@@ -100,6 +100,9 @@ export function onActiveOrAmLeaderChanged(data: {
 }): void {
   const visibleForFollowersInHypo = data.active && !data.amLeader;
   globals.elements.hypoCircle?.visible(visibleForFollowersInHypo);
+  globals.elements.hypoPauseSharedTurnsButton?.visible(
+    visibleForFollowersInHypo,
+  );
 
   if (visibleForFollowersInHypo) {
     arrows.hideAll();
