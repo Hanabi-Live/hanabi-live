@@ -1285,6 +1285,29 @@ async fn pausing_a_game_is_announced_in_its_chat() -> Result<()> {
         }
         h.send(1, "pause", json!({"tableID":id,"setting":"pause"}))
             .await?;
+        // A paused game takes no actions, even from the active player.
+        let (table, _) = h.snapshot(id).await?;
+        let game = &table.game().context("Missing game")?.game;
+        let active = game.active_player_index;
+        let index = h
+            .users
+            .iter()
+            .position(|user| user.user == table.players()[active].id)
+            .context("Missing active player")?;
+        let card = game.players[active].hand[0];
+        let error = h
+            .send(
+                index,
+                "action",
+                json!({"tableID":id,"type":0,"target":card,"value":0}),
+            )
+            .await
+            .err()
+            .context("A paused game took an action")?;
+        ensure!(
+            error.to_string().contains("paused"),
+            "Unexpected error: {error}"
+        );
         h.send(0, "pause", json!({"tableID":id,"setting":"unpause"}))
             .await?;
         let (table, _) = h.snapshot(id).await?;
@@ -2178,7 +2201,7 @@ async fn replay_loading_keeps_names_neutral_and_never_starts_a_game_clock() -> R
         let snapshot = h.snapshot(id).await?.0;
         let replay = snapshot.game().unwrap();
         let before = initial.game().unwrap();
-        ensure!(!replay.timer_started && !replay.game.started_timer);
+        ensure!(!replay.timer_started && !replay.game.started_timer());
         ensure!(
             replay.clocks == before.clocks
                 && replay.turn_elapsed == before.turn_elapsed

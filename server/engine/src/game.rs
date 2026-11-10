@@ -174,12 +174,10 @@ pub fn create_game(setup: GameSetup) -> Result<EngineState> {
         score: 0,
         max_score: variant.max_score,
         strikes: 0,
-        last_clue_type_given: NO_VALUE,
+        last_clue_type_given: None,
         end_condition: EndCondition::InProgress,
-        end_player: NO_VALUE,
-        end_turn: NO_VALUE,
-        started_timer: false,
-        paused: false,
+        end_player: None,
+        end_turn: None,
         events: vec![],
         actions: vec![],
     };
@@ -220,9 +218,6 @@ pub fn validate_action(state: &EngineState, actor: usize, action: &PlayerAction)
     }
     if actor != state.active_player_index {
         return reject("It is not your turn, so you cannot perform an action.");
-    }
-    if state.paused {
-        return reject("You cannot perform a game action when the game is paused.");
     }
     if action.action_type.is_game_over() {
         return reject("That is not a valid action type.");
@@ -281,7 +276,8 @@ pub fn validate_action(state: &EngineState, actor: usize, action: &PlayerAction)
             ));
         }
         if variant.alternating_clues
-            && clue_type(action.action_type).map(i32::from) == Some(state.last_clue_type_given)
+            && clue_type(action.action_type).is_some()
+            && clue_type(action.action_type) == state.last_clue_type_given
         {
             return reject("You cannot give two clues of the same time in a row in this variant.");
         }
@@ -366,7 +362,7 @@ fn give_clue(state: &mut EngineState, actor: usize, action: &PlayerAction, clue_
     let touched = touched_orders(state, action);
     state.actions.push(*action);
     state.clue_tokens -= clue_cost(state);
-    state.last_clue_type_given = i32::from(clue_type);
+    state.last_clue_type_given = Some(clue_type);
     for &order in &touched {
         state.deck[order].touched = true;
     }
@@ -406,8 +402,8 @@ fn check_end(state: &mut EngineState) -> bool {
         && state.clue_tokens < clue_cost(state)
     {
         state.end_condition = AllOrNothingSoftlock;
-        state.end_player = int(state.active_player_index);
-    } else if state.turn == state.end_turn
+        state.end_player = Some(state.active_player_index);
+    } else if Some(state.turn) == state.end_turn
         || state.score == state.max_score
         || !has_remaining_play(state)
     {
@@ -442,7 +438,7 @@ fn finish_action(
     if game_over {
         state.events.push(EngineEvent::GameOver {
             end_condition: state.end_condition,
-            player_index: state.end_player,
+            player_index: state.end_player.map_or(NO_VALUE, int),
             votes,
         });
     }
@@ -534,7 +530,6 @@ pub fn apply_action(
             draw_card(state, actor);
         }
     }
-    state.started_timer = true;
     finish_action(state, actor, action, timing, None);
     Ok(())
 }
@@ -584,7 +579,7 @@ pub fn terminate_game(
         None
     };
     state.end_condition = termination.condition;
-    state.end_player = termination.player_index;
+    state.end_player = index(termination.player_index);
     let action = RecordedAction {
         action_type: if termination.condition == EndCondition::TerminatedByVote {
             RecordedActionType::GameOverByVote

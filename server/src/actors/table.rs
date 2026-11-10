@@ -343,7 +343,7 @@ impl TableActor {
         let counting = matches!(self.table.phase, Phase::Live { .. })
             && s.game.end_condition == EndCondition::InProgress
             && s.timer_started
-            && !s.game.paused;
+            && !s.game.paused();
         let running = if counting { elapsed } else { 0 };
         Some(Timers {
             idle_remaining: (s.idle_remaining - elapsed).max(0),
@@ -410,7 +410,7 @@ impl TableActor {
                     {
                         deadlines.push(after(s.idle_remaining - IDLE_WARNING_MS));
                     }
-                    if s.game.options.timed && s.timer_started && !s.game.paused {
+                    if s.game.options.timed && s.timer_started && !s.game.paused() {
                         deadlines.push(after(s.clocks[s.game.active_player_index]));
                     }
                 }
@@ -476,7 +476,7 @@ impl TableActor {
             s.idle_remaining = (s.idle_remaining - delta).max(0);
             if live && s.game.end_condition == EndCondition::InProgress {
                 s.duration = s.duration.saturating_add(delta);
-                if s.timer_started && !s.game.paused {
+                if s.timer_started && !s.game.paused() {
                     let active = s.game.active_player_index;
                     s.clocks[active] -= delta;
                     s.turn_elapsed += delta;
@@ -936,7 +936,7 @@ impl TableActor {
             } else {
                 i64::from(NO_VALUE)
             },
-            time_taken: if !live || s.game.paused {
+            time_taken: if !live || s.game.paused() {
                 0
             } else {
                 now.turn_elapsed
@@ -992,7 +992,7 @@ impl TableActor {
                     && s.game.end_condition == EndCondition::InProgress
                     && s.players[s.game.active_player_index].id == session.user
                 {
-                    starts_clock = !s.timer_started || !s.game.started_timer;
+                    starts_clock = !s.timer_started || !s.game.started_timer();
                     s.timer_started = true;
                     s.game.start_timer();
                 }

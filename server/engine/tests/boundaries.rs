@@ -134,19 +134,6 @@ fn rejected_actions_are_atomic_and_client_terminations_are_not_actions() {
         )
         .is_err()
     );
-    let mut paused = state.clone();
-    paused.paused = true;
-    assert!(
-        apply_action(
-            &mut paused,
-            0,
-            &action(RecordedActionType::Play, 0, 0),
-            None
-        )
-        .unwrap_err()
-        .to_string()
-        .contains("paused")
-    );
     let result = applied(&state, 0, &action(RecordedActionType::RankClue, 1, 1), None).unwrap();
     assert_eq!(serde_json::to_value(&state).unwrap(), before);
     assert_eq!(
@@ -573,7 +560,7 @@ fn all_or_nothing_eventually_exhausts_resources_without_final_round() {
     }
     assert_eq!(state.end_condition, EndCondition::AllOrNothingFail);
     assert_eq!(state.deck_index, state.deck.len());
-    assert_eq!(state.end_turn, -1);
+    assert_eq!(state.end_turn, None);
     assert_eq!(state.score, 0);
     assert!(state.actions.len() > 60 && state.actions.len() <= 2 * state.deck.len() + 9);
 }

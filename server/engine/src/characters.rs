@@ -322,15 +322,15 @@ pub(crate) fn needs_second_action(
     false
 }
 pub(crate) fn has_taken_last_turn(state: &EngineState) -> bool {
-    if state.end_turn == NO_VALUE {
+    let Some(end_turn) = state.end_turn else {
         return false;
-    }
+    };
     if !state.options.detrimental_characters {
-        return state.end_turn != state.turn + int(state.players.len()) + 1;
+        return end_turn != state.turn + int(state.players.len()) + 1;
     }
     let mut active = state.active_player_index;
     let mut inverted = state.turns_inverted;
-    for _ in state.turn + 1..=state.end_turn {
+    for _ in state.turn + 1..=end_turn {
         active =
             (active + state.players.len() + if inverted { state.players.len() - 1 } else { 1 })
                 % state.players.len();
@@ -352,6 +352,6 @@ pub(crate) fn check_character_softlock(state: &mut EngineState) {
             || p.character() == Some(Character::Insistent))
     {
         state.end_condition = EndCondition::CharacterSoftlock;
-        state.end_player = int(p.index);
+        state.end_player = Some(p.index);
     }
 }

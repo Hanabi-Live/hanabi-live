@@ -207,7 +207,7 @@ impl TableActor {
             self.add_all(&mut e, hanabi_protocol::server::CLOCK, self.clock()?);
         } else {
             self.add_all(&mut e, hanabi_protocol::server::CLOCK, self.clock()?);
-            if s.game.paused {
+            if s.game.paused() {
                 self.add_all(
                     &mut e,
                     hanabi_protocol::server::PAUSE,
@@ -342,8 +342,8 @@ impl TableActor {
         }
         ensure_or_reject!(
             match setting {
-                P::Pause => !old.game.paused,
-                P::Unpause => old.game.paused,
+                P::Pause => !old.game.paused(),
+                P::Unpause => old.game.paused(),
                 P::PauseQueue => !old.queued_pauses[seat],
                 P::PauseUnqueue => old.queued_pauses[seat],
             },
@@ -356,15 +356,15 @@ impl TableActor {
             P::PauseQueue | P::PauseUnqueue => s.queued_pauses[seat] = setting == P::PauseQueue,
             P::Pause | P::Unpause => {
                 s.game.set_paused(setting == P::Pause);
-                s.pause_player_index = if s.game.paused {
+                s.pause_player_index = if s.game.paused() {
                     hanabi_engine::int(seat)
                 } else {
                     NO_VALUE
                 };
-                if !s.game.paused {
+                if !s.game.paused() {
                     s.turn_elapsed = 0;
                 }
-                let paused = s.game.paused;
+                let paused = s.game.paused();
                 notice = self.pause_notice(&mut next, &session.name, paused);
             }
         }
@@ -377,7 +377,7 @@ impl TableActor {
                 hanabi_protocol::server::PAUSE,
                 hanabi_protocol::Pause {
                     table_id: self.table.id,
-                    active: s.game.paused,
+                    active: s.game.paused(),
                     player_index: i64::from(s.pause_player_index),
                 },
             );
@@ -566,7 +566,7 @@ impl TableActor {
                             .map_or(self.table.created, |f| f.max(self.table.created)),
                     )
                 }),
-                paused: s.game.paused,
+                paused: s.game.paused(),
                 pause_player_index: s.pause_player_index.into(),
                 pause_queued: seat.is_some_and(|i| s.queued_pauses[i]),
             };

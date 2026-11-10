@@ -556,7 +556,7 @@ impl Snapshot {
         );
         ensure!(
             (NO_VALUE..hanabi_engine::int(n)).contains(&self.pause_player_index)
-                && self.game.paused == (self.pause_player_index >= 0),
+                && self.game.paused() == (self.pause_player_index >= 0),
             "Invalid pause state"
         );
         Ok(())

@@ -102,7 +102,7 @@ pub(crate) fn draw_card(state: &mut EngineState, player: usize) {
         } else {
             int(state.players.len())
         };
-        state.end_turn = state.turn + final_turns + 1;
+        state.end_turn = Some(state.turn + final_turns + 1);
     }
 }
 

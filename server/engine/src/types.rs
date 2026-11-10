@@ -273,12 +273,13 @@ pub struct EngineState {
     pub score: i32,
     pub max_score: i32,
     pub strikes: i32,
-    pub last_clue_type_given: i32,
+    /// The type of the last clue, which alternating-clue variants need to differ.
+    pub last_clue_type_given: Option<ClueType>,
     pub end_condition: EndCondition,
-    pub end_player: i32,
-    pub end_turn: i32,
-    pub started_timer: bool,
-    pub paused: bool,
+    /// The player whom the game's end names, such as the one who timed out.
+    pub end_player: Option<usize>,
+    /// The turn after the final round, once the deck has run out.
+    pub end_turn: Option<i32>,
     pub events: Vec<EngineEvent>,
     pub actions: Vec<RecordedAction>,
 }
