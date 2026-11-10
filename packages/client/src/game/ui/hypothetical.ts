@@ -15,70 +15,85 @@ import type { ActionIncludingHypothetical } from "../types/actions";
 import { setEmpathyOnHand } from "./HanabiCardMouse";
 import type { LayoutChild } from "./LayoutChild";
 import { globals } from "./UIGlobals";
+import { controlsHypothetical } from "./controlsHypothetical";
 import { getCardOrStackBase } from "./getCardOrStackBase";
 import { planClientHypotheticalAction } from "./planClientHypotheticalAction";
 
 export function startHypothetical(): void {
-  if (hypotheticalExists()) {
+  const { hypothetical, shared } = globals.state.replay;
+  if (hypothetical !== undefined) {
     return;
   }
 
-  if (
-    globals.state.replay.shared !== undefined
-    && globals.state.replay.shared.amLeader
-  ) {
+  if (shared === undefined) {
+    globals.elements.toggleDrawnCardsButton!.setEnabled(true);
+    globals.store!.dispatch({
+      type: "hypoStart",
+      shared: false,
+      showDrawnCards: false,
+      actions: [],
+    });
+  } else if (shared.amLeader) {
     globals.lobby.conn!.send("replayAction", {
       tableID: globals.lobby.tableID,
       type: "hypoStart",
     });
+    startSharedHypothetical();
+  }
+}
+
+/** The leader starts the shared hypothetical without waiting for the server. */
+export function startSharedHypothetical(): void {
+  const { shared } = globals.state.replay;
+  if (shared === undefined || shared.hypothetical !== undefined) {
+    return;
   }
 
   globals.elements.toggleDrawnCardsButton!.setEnabled(true);
-
   globals.store!.dispatch({
     type: "hypoStart",
+    shared: true,
     showDrawnCards: false,
     actions: [],
   });
 }
 
 export function endHypothetical(): void {
-  if (globals.state.replay.hypothetical === undefined) {
+  const { hypothetical, ownHypothetical, shared } = globals.state.replay;
+  if (hypothetical === undefined) {
     return;
   }
 
-  if (globals.state.replay.shared !== undefined) {
-    if (globals.state.replay.shared.amLeader) {
-      globals.lobby.conn!.send("replayAction", {
-        tableID: globals.lobby.tableID,
-        type: "hypoEnd",
-      });
-    }
-
-    // Wait for the server's hypoEnd event so pending actions are processed first.
+  if (ownHypothetical !== undefined) {
+    globals.store!.dispatch({
+      type: "hypoEnd",
+      shared: false,
+    });
     return;
   }
 
-  finishHypothetical();
+  // Wait for the server's hypoEnd event so pending actions are processed first.
+  if (shared?.amLeader === true) {
+    globals.lobby.conn!.send("replayAction", {
+      tableID: globals.lobby.tableID,
+      type: "hypoEnd",
+    });
+  }
 }
 
-/** Apply the server-confirmed end (or immediately end a local hypothetical). */
+/** Apply the server's end of the shared hypothetical. */
 export function finishHypothetical(): void {
-  if (!hypotheticalExists()) {
+  if (
+    globals.state.replay.shared === undefined
+    || globals.state.replay.shared.hypothetical === undefined
+  ) {
     return;
   }
 
   globals.store!.dispatch({
     type: "hypoEnd",
+    shared: true,
   });
-}
-
-/** In shared replays, the leader's hypothetical exists even while we do not show it. */
-function hypotheticalExists(): boolean {
-  const { hypothetical, shared } = globals.state.replay;
-  return (
-    (shared === undefined ? hypothetical : shared.hypothetical) !== undefined
-  );
 }
 
 export function sendHypotheticalAction(hypoAction: ClientAction): void {
@@ -127,10 +142,10 @@ export function sendHypotheticalPassTurn(): void {
 
 /** The leader (or a solo viewer) can pass when a clue could be given. */
 export function canPassTurnInHypothetical(state: State): boolean {
-  const { hypothetical, shared } = state.replay;
+  const { hypothetical } = state.replay;
   return (
     hypothetical !== undefined
-    && (shared === undefined || shared.amLeader)
+    && controlsHypothetical(state)
     && hypothetical.ongoing.turn.currentPlayerIndex !== undefined
     && hypothetical.ongoing.clueTokens >= getClueCost(globals.variant)
   );
@@ -199,15 +214,16 @@ function planAndSendHypotheticalAction(intent: HypotheticalActionIntent) {
 export function sendHypotheticalActionToServer(
   hypoAction: ActionIncludingHypothetical,
 ): void {
-  if (globals.state.replay.shared === undefined) {
-    globals.store!.dispatch({
+  if (globals.state.replay.ownHypothetical === undefined) {
+    globals.lobby.conn!.send("replayAction", {
+      tableID: globals.lobby.tableID,
       type: "hypoAction",
       action: hypoAction,
     });
   } else {
-    globals.lobby.conn!.send("replayAction", {
-      tableID: globals.lobby.tableID,
+    globals.store!.dispatch({
       type: "hypoAction",
+      shared: false,
       action: hypoAction,
     });
   }
@@ -221,11 +237,12 @@ export function sendHypotheticalBack(): void {
     return;
   }
 
-  if (globals.state.replay.shared === undefined) {
+  if (globals.state.replay.ownHypothetical !== undefined) {
     globals.store!.dispatch({
       type: "hypoBack",
+      shared: false,
     });
-  } else if (globals.state.replay.shared.amLeader) {
+  } else if (globals.state.replay.shared?.amLeader === true) {
     globals.lobby.conn!.send("replayAction", {
       tableID: globals.lobby.tableID,
       type: "hypoBack",
@@ -238,12 +255,13 @@ export function toggleRevealed(): void {
     return;
   }
 
-  if (globals.state.replay.shared === undefined) {
+  if (globals.state.replay.ownHypothetical !== undefined) {
     globals.store!.dispatch({
       type: "hypoShowDrawnCards",
+      shared: false,
       showDrawnCards: !globals.state.replay.hypothetical.showDrawnCards,
     });
-  } else if (globals.state.replay.shared.amLeader) {
+  } else if (globals.state.replay.shared?.amLeader === true) {
     globals.lobby.conn!.send("replayAction", {
       tableID: globals.lobby.tableID,
       type: "hypoShowDrawnCards",
@@ -257,7 +275,9 @@ export function toggleRevealed(): void {
 export function checkToggleRevealedButton(
   actionMessage: ActionIncludingHypothetical,
 ): void {
-  if (globals.state.replay.hypothetical === undefined) {
+  // The server only sends actions for the shared hypothetical, so skip them while we show our own.
+  const { hypothetical, shared } = globals.state.replay;
+  if (hypothetical === undefined || hypothetical !== shared?.hypothetical) {
     return;
   }
 
@@ -265,11 +285,7 @@ export function checkToggleRevealedButton(
     case "play":
     case "discard": {
       const cardOrder = actionMessage.order;
-      if (
-        globals.state.replay.hypothetical.drawnCardsInHypothetical.includes(
-          cardOrder,
-        )
-      ) {
+      if (hypothetical.drawnCardsInHypothetical.includes(cardOrder)) {
         globals.elements.toggleDrawnCardsButton?.setEnabled(false);
       }
 
@@ -278,11 +294,7 @@ export function checkToggleRevealedButton(
 
     case "clue": {
       for (const cardOrder of actionMessage.orders) {
-        if (
-          globals.state.replay.hypothetical.drawnCardsInHypothetical.includes(
-            cardOrder,
-          )
-        ) {
+        if (hypothetical.drawnCardsInHypothetical.includes(cardOrder)) {
           globals.elements.toggleDrawnCardsButton?.setEnabled(false);
           return;
         }

@@ -3,6 +3,7 @@ import type {
   CardOrder,
   GameAction,
   GameState,
+  HypotheticalState,
   PlanHypotheticalActionContext,
   PlayerIndex,
   Rank,
@@ -94,6 +95,15 @@ function applyPlan(
   return state;
 }
 
+/** A hypothetical in a solo replay is our own, and we show it. */
+function soloHypothetical(ongoing: GameState) {
+  const hypothetical = {
+    ongoing,
+    morphedIdentities: [],
+  } as unknown as HypotheticalState;
+  return { ownHypothetical: hypothetical, hypothetical };
+}
+
 describe("client hypothetical planning", () => {
   test.each([1, 2] as const)(
     "sends a bottom-deck rank %s play through the real client handoff without a UI card",
@@ -111,10 +121,7 @@ describe("client hypothetical planning", () => {
           cardIdentities: context.cardIdentities,
           replay: {
             ...state.replay,
-            hypothetical: {
-              ongoing: context.gameState,
-              morphedIdentities: [],
-            },
+            ...soloHypothetical(context.gameState),
           },
         },
         store: { dispatch },
@@ -132,6 +139,7 @@ describe("client hypothetical planning", () => {
       for (const [index, action] of actions!.entries()) {
         expect(dispatch).toHaveBeenNthCalledWith(index + 1, {
           type: "hypoAction",
+          shared: false,
           action,
         });
       }
@@ -164,10 +172,7 @@ describe("client hypothetical planning", () => {
         notes: { ...state.notes, ourNotes: context.notes },
         replay: {
           ...state.replay,
-          hypothetical: {
-            ongoing: context.gameState,
-            morphedIdentities: [],
-          },
+          ...soloHypothetical(context.gameState),
         },
       },
       store: { dispatch },
@@ -181,6 +186,7 @@ describe("client hypothetical planning", () => {
 
     expect(dispatch).toHaveBeenCalledWith({
       type: "hypoAction",
+      shared: false,
       action: {
         type: "clue",
         clue: { type: ClueType.Rank, value: 1 },

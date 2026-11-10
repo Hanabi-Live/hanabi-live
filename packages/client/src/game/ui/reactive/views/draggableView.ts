@@ -1,14 +1,13 @@
 import type { PlayerIndex } from "@hanabi-live/game";
 import type { State } from "../../../types/State";
 import { globals } from "../../UIGlobals";
+import { controlsHypothetical } from "../../controlsHypothetical";
 
 /** Returns the index of the player whose cards can be dragged, or undefined if no cards can be. */
 export function draggablePlayerIndex(state: State): PlayerIndex | undefined {
-  const { hypothetical, shared } = state.replay;
-
-  // In a hypothetical, the replay leader drags the cards of whoever's turn it is.
-  if (hypothetical !== undefined) {
-    return shared === undefined || shared.amLeader
+  // In a hypothetical, whoever controls it drags the cards of whoever's turn it is.
+  if (state.replay.hypothetical !== undefined) {
+    return controlsHypothetical(state)
       ? (state.visibleState?.turn.currentPlayerIndex ?? undefined)
       : undefined;
   }

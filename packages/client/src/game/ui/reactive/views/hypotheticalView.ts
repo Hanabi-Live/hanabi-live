@@ -4,6 +4,7 @@ import { globals } from "../../UIGlobals";
 import * as arrows from "../../arrows";
 import * as clues from "../../clues";
 import type { PlayerButton } from "../../controls/PlayerButton";
+import { controlsHypothetical } from "../../controlsHypothetical";
 import { changeStartingHandVisibility } from "../../hypothetical";
 import * as turn from "../../turn";
 
@@ -58,10 +59,7 @@ export function onActiveChanged(data: {
 }
 
 export function shouldShowHypoControls(state: State): boolean {
-  return (
-    state.replay.hypothetical !== undefined
-    && (state.replay.shared === undefined || state.replay.shared.amLeader)
-  );
+  return controlsHypothetical(state);
 }
 
 export function shouldShowHypoControlsChanged(shouldShow: boolean): void {
@@ -81,11 +79,7 @@ export function shouldShowHypoControlsChanged(shouldShow: boolean): void {
 }
 
 export function shouldShowToggleDrawnCards(state: State): boolean {
-  return (
-    state.finished
-    && state.replay.hypothetical !== undefined
-    && (state.replay.shared === undefined || state.replay.shared.amLeader)
-  );
+  return state.finished && controlsHypothetical(state);
 }
 
 export function shouldShowToggleDrawnCardsChanged(shouldShow: boolean): void {
@@ -142,7 +136,7 @@ export function onStatesLengthChanged(): void {
 
 export function shouldShowHypoBackButton(state: State): boolean {
   return (
-    (state.replay.shared === undefined || state.replay.shared.amLeader)
+    controlsHypothetical(state)
     && state.replay.hypothetical !== undefined
     && state.replay.hypothetical.states.length > 1
   );

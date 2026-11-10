@@ -51,7 +51,12 @@ function setup(shared: boolean) {
     configurable: true,
     get: () => store.getState(),
   });
-  store.dispatch({ type: "hypoStart", showDrawnCards: false, actions: [] });
+  store.dispatch({
+    type: "hypoStart",
+    shared,
+    showDrawnCards: false,
+    actions: [],
+  });
   return { store, send };
 }
 
@@ -70,6 +75,7 @@ describe("hypothetical exit", () => {
     // An earlier action can arrive after Exit was clicked but before hypoEnd.
     store.dispatch({
       type: "hypoAction",
+      shared: true,
       action: { type: "morph", order: 0 as CardOrder, suitIndex: 0, rank: 1 },
     });
     expect(store.getState().replay.hypothetical?.morphedIdentities[0]).toEqual({

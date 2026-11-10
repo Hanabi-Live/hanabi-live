@@ -38,25 +38,29 @@ export function init(): ActionInit {
   };
 }
 
-export function hypoStart(): ActionHypotheticalStart {
+export function hypoStart(shared = false): ActionHypotheticalStart {
   return {
     type: "hypoStart",
+    shared,
     showDrawnCards: false,
     actions: [],
   };
 }
 
-export function hypoEnd(): ActionHypotheticalEnd {
+export function hypoEnd(shared = false): ActionHypotheticalEnd {
   return {
     type: "hypoEnd",
+    shared,
   };
 }
 
 export function hypoAction(
   action: ActionIncludingHypothetical,
+  shared = false,
 ): ActionHypotheticalAction {
   return {
     type: "hypoAction",
+    shared,
     action,
   };
 }
@@ -64,5 +68,6 @@ export function hypoAction(
 export function hypoBack(): ActionHypotheticalBack {
   return {
     type: "hypoBack",
+    shared: false,
   };
 }

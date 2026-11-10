@@ -372,3 +372,11 @@ export function onLeaderOrSpectatorsChanged(data: {
   }
   tooltips.setContent("#tooltip-leader", content);
 }
+
+/** Paused spectators can see that the leader is in a hypothetical, and join it. */
+export function onSharedHypotheticalChanged(active: boolean): void {
+  globals.elements.useSharedTurnsButton?.text(
+    active ? "Join Hypothetical" : "Use Shared Turns",
+  );
+  globals.layers.UI.batchDraw();
+}

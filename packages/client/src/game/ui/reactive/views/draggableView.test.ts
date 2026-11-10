@@ -16,12 +16,14 @@ function makeState({
   playing = true,
   premove,
   hypothetical,
+  ownHypothetical,
   shared,
 }: {
   currentPlayerIndex?: number;
   playing?: boolean;
   premove?: unknown;
   hypothetical?: unknown;
+  ownHypothetical?: unknown;
   shared?: unknown;
 } = {}): State {
   return {
@@ -33,7 +35,7 @@ function makeState({
     },
     ongoingGame: { turn: { currentPlayerIndex } },
     visibleState: { turn: { currentPlayerIndex: OTHER_PLAYER_INDEX } },
-    replay: { hypothetical, shared },
+    replay: { hypothetical, ownHypothetical, shared },
   } as unknown as State;
 }
 
@@ -63,9 +65,11 @@ describe("draggablePlayerIndex", () => {
 
   test("allows only the hypothetical leader to drag the current player's cards", () => {
     const hypothetical = {};
-    expect(draggablePlayerIndex(makeState({ hypothetical }))).toBe(
-      OTHER_PLAYER_INDEX,
-    );
+    expect(
+      draggablePlayerIndex(
+        makeState({ hypothetical, ownHypothetical: hypothetical }),
+      ),
+    ).toBe(OTHER_PLAYER_INDEX);
     expect(
       draggablePlayerIndex(
         makeState({ hypothetical, shared: { amLeader: false } }),

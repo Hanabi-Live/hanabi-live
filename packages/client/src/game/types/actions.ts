@@ -174,24 +174,34 @@ interface ActionRestartDeclined extends Readonly<
 
 export interface ActionHypotheticalStart {
   readonly type: "hypoStart";
+  /** Whether this is for the shared replay's hypothetical, rather than our own. */
+  readonly shared: boolean;
   readonly showDrawnCards: boolean;
   readonly actions: readonly ActionIncludingHypothetical[];
 }
 
 export interface ActionHypotheticalEnd {
   readonly type: "hypoEnd";
+  /** Whether this is for the shared replay's hypothetical, rather than our own. */
+  readonly shared: boolean;
 }
 
 export interface ActionHypotheticalAction {
   readonly type: "hypoAction";
+  /** Whether this is for the shared replay's hypothetical, rather than our own. */
+  readonly shared: boolean;
   readonly action: ActionIncludingHypothetical;
 }
 
 export interface ActionHypotheticalBack {
   readonly type: "hypoBack";
+  /** Whether this is for the shared replay's hypothetical, rather than our own. */
+  readonly shared: boolean;
 }
 
 interface ActionHypotheticalShowDrawnCards {
   readonly type: "hypoShowDrawnCards";
+  /** Whether this is for the shared replay's hypothetical, rather than our own. */
+  readonly shared: boolean;
   readonly showDrawnCards: boolean;
 }

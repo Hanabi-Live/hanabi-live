@@ -18,6 +18,14 @@ export interface ReplayState {
   readonly databaseID: number | undefined;
   readonly shared: SharedReplayState | undefined;
 
-  /** The hypothetical that we show. In shared replays, this follows `shared.hypothetical`. */
+  /**
+   * Our own hypothetical, which only we control. This is any hypothetical outside of a shared
+   * replay. It can also be one that we were in when our game ended.
+   */
+  readonly ownHypothetical: HypotheticalState | undefined;
+
+  /**
+   * The hypothetical that we show: our own, or else the leader's while we use the shared segments.
+   */
   readonly hypothetical: HypotheticalState | undefined;
 }

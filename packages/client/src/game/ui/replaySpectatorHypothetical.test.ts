@@ -52,7 +52,12 @@ function setup(amLeader: boolean) {
     configurable: true,
     get: () => store.getState(),
   });
-  store.dispatch({ type: "hypoStart", showDrawnCards: false, actions: [] });
+  store.dispatch({
+    type: "hypoStart",
+    shared: true,
+    showDrawnCards: false,
+    actions: [],
+  });
   return store;
 }
 

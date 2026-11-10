@@ -2,6 +2,7 @@ import { ClueType, getClueCost } from "@hanabi-live/game";
 import type { State } from "../../../types/State";
 import { globals } from "../../UIGlobals";
 import { DISABLED_OPACITY } from "../../constants";
+import { controlsHypothetical } from "../../controlsHypothetical";
 import { isOurTurn } from "../../isOurTurn";
 import * as turn from "../../turn";
 
@@ -20,8 +21,7 @@ export function shouldShowYourTurnIndicatorChanged(shouldShow: boolean): void {
 
 export function shouldShowTurnUI(state: State): boolean {
   return (
-    (state.replay.hypothetical !== undefined
-      && (state.replay.shared === undefined || state.replay.shared.amLeader))
+    controlsHypothetical(state)
     || (state.playing
       && !state.replay.active
       && state.ongoingGame.turn.currentPlayerIndex

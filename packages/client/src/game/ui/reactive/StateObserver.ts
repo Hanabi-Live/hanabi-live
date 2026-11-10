@@ -369,7 +369,11 @@ const replayObservers: Subscriptions = [
   subAfterInit(
     (s) => ({
       active: s.replay.hypothetical !== undefined,
-      amLeader: s.replay.shared === undefined || s.replay.shared.amLeader,
+      // We control our own hypothetical like a leader.
+      amLeader:
+        s.replay.shared === undefined
+        || s.replay.shared.amLeader
+        || s.replay.ownHypothetical !== undefined,
       sharedReplay: s.replay.shared !== undefined,
     }),
     hypotheticalView.onActiveOrAmLeaderChanged,
@@ -412,6 +416,12 @@ const replayObservers: Subscriptions = [
       amLeader: s.replay.shared?.amLeader,
     }),
     replayView.onSharedSegmentChanged,
+  ),
+  subAfterInit(
+    (s) =>
+      s.replay.shared !== undefined
+      && s.replay.shared.hypothetical !== undefined,
+    replayView.onSharedHypotheticalChanged,
   ),
 
   // Replay button

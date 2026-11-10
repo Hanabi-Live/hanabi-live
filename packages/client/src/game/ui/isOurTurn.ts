@@ -1,4 +1,5 @@
 import { globals } from "./UIGlobals";
+import { controlsHypothetical } from "./controlsHypothetical";
 
 /**
  * Used to determine if it is our turn in the present. (For example, it can be our turn in the
@@ -7,11 +8,8 @@ import { globals } from "./UIGlobals";
 export function isOurTurn(): boolean {
   // First, handle the special case of a hypothetical.
   if (globals.state.replay.hypothetical !== undefined) {
-    // It is always the replay leader's turn in a hypothetical.
-    return (
-      globals.state.replay.shared === undefined
-      || globals.state.replay.shared.amLeader
-    );
+    // It is always the turn of whoever controls the hypothetical.
+    return controlsHypothetical(globals.state);
   }
 
   // Handle the case of an ongoing game.

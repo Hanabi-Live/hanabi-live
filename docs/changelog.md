@@ -7,6 +7,13 @@ listed here. You can see those from
 [the commit history](https://github.com/Hanabi-Live/hanabi-live/commits/main/)
 of the repository.
 
+## November 10th, 2026
+
+- In shared replays, the "Use Shared Turns" button now says "Join Hypothetical"
+  while the leader is in a hypothetical.
+- If a game ends while you are in a hypothetical, you can now keep using it in
+  the review.
+
 ## November 9th, 2026
 
 - Added the current global BetterTTV emotes that were missing, including `:tf:`.

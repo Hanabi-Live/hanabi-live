@@ -187,7 +187,7 @@ describe("replayReducer", () => {
       const ongoing = state.hypothetical?.ongoing;
       state = replayReducer(
         state,
-        { type: "hypoShowDrawnCards", showDrawnCards: true },
+        { type: "hypoShowDrawnCards", shared: false, showDrawnCards: true },
         false,
         metadata,
       );
@@ -204,7 +204,7 @@ describe("replayReducer", () => {
       expect(afterDraw).not.toBe(ongoing);
       state = replayReducer(
         state,
-        { type: "hypoShowDrawnCards", showDrawnCards: false },
+        { type: "hypoShowDrawnCards", shared: false, showDrawnCards: false },
         false,
         metadata,
       );
@@ -305,10 +305,10 @@ describe("replayReducer", () => {
         },
       };
 
-      state = replayReducer(state, hypoStart(), true, metadata);
+      state = replayReducer(state, hypoStart(true), true, metadata);
       state = replayReducer(
         state,
-        hypoAction(rankClue(3, 0, [], 1)),
+        hypoAction(rankClue(3, 0, [], 1), true),
         true,
         metadata,
       );
@@ -326,9 +326,65 @@ describe("replayReducer", () => {
       );
       expect(state.hypothetical).toBe(hidden);
 
-      state = replayReducer(state, hypoEnd(), true, metadata);
+      state = replayReducer(state, hypoEnd(true), true, metadata);
       expect(state.hypothetical).toBeUndefined();
       expect(state.shared?.hypothetical).toBeUndefined();
+    });
+
+    test("keeps our own hypothetical when the game ends and a shared replay starts", () => {
+      let state = replayReducer(
+        { ...testState.replay, active: true },
+        hypoStart(),
+        false,
+        metadata,
+      );
+      const own = state.ownHypothetical;
+      assertDefined(own, "Failed to start our own hypothetical.");
+
+      // The game ends while we are in an in-game replay.
+      state = {
+        ...state,
+        shared: {
+          segment: 1,
+          useSharedSegments: false,
+          leader: "leader",
+          amLeader: false,
+          datetimeStarted: "2026-01-01T00:00:00.000Z",
+          spoilerFree: false,
+          restartDeclined: [],
+          hypothetical: undefined,
+        },
+      };
+      state = replayReducer(
+        state,
+        { type: "replayLeader", username: "leader" },
+        true,
+        metadata,
+      );
+      state = replayReducer(state, hypoStart(true), true, metadata);
+      expect(state.hypothetical).toBe(own);
+
+      state = replayReducer(
+        state,
+        hypoAction(rankClue(3, 0, [], 1)),
+        true,
+        metadata,
+      );
+      expect(state.hypothetical).toBe(state.ownHypothetical);
+      expect(state.hypothetical?.states).toHaveLength(2);
+      expect(state.shared?.hypothetical?.states).toHaveLength(1);
+
+      state = replayReducer(state, hypoEnd(), true, metadata);
+      expect(state.ownHypothetical).toBeUndefined();
+      expect(state.hypothetical).toBeUndefined();
+
+      state = replayReducer(
+        state,
+        { type: "replayUseSharedSegments", useSharedSegments: true },
+        true,
+        metadata,
+      );
+      expect(state.hypothetical).toBe(state.shared?.hypothetical);
     });
 
     test("can end hypothetical after giving a clue", () => {

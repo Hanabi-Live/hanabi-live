@@ -24,6 +24,7 @@ import * as arrows from "./arrows";
 import { backToLobby } from "./backToLobby";
 import * as clues from "./clues";
 import { confirmPlay } from "./confirmPlay";
+import { controlsHypothetical } from "./controlsHypothetical";
 import * as hypothetical from "./hypothetical";
 import * as replay from "./replay";
 import { setGlobalEmpathy } from "./setGlobalEmpathy";
@@ -322,12 +323,11 @@ function getNormalGameplayHotkeyFunction(
   const { ourPlayerIndex } = globals.metadata;
   const ourTurnInOngoingGame =
     !globals.state.replay.active && currentPlayerIndex === ourPlayerIndex;
-  const amSharedReplayLeaderInHypothetical =
+  const controlHypotheticalInSharedReplay =
     globals.state.replay.shared !== undefined
-    && globals.state.replay.shared.amLeader
-    && globals.state.replay.hypothetical !== undefined;
+    && controlsHypothetical(globals.state);
   const shouldHaveKeyboardHotkeysForActions =
-    ourTurnInOngoingGame || amSharedReplayLeaderInHypothetical;
+    ourTurnInOngoingGame || controlHypotheticalInSharedReplay;
   if (!shouldHaveKeyboardHotkeysForActions) {
     return undefined;
   }

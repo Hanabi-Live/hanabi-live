@@ -121,6 +121,7 @@ gameCommands.set("hypothetical", (data) => {
 
   globals.store!.dispatch({
     type: "hypoStart",
+    shared: true,
     showDrawnCards: data.showDrawnCards,
     actions: data.actions,
   });
@@ -129,6 +130,7 @@ gameCommands.set("hypothetical", (data) => {
 gameCommands.set("hypoAction", (action) => {
   globals.store!.dispatch({
     type: "hypoAction",
+    shared: true,
     action,
   });
   hypothetical.checkToggleRevealedButton(action);
@@ -137,6 +139,7 @@ gameCommands.set("hypoAction", (action) => {
 gameCommands.set("hypoBack", () => {
   globals.store!.dispatch({
     type: "hypoBack",
+    shared: true,
   });
 });
 
@@ -147,12 +150,13 @@ gameCommands.set("hypoEnd", () => {
 gameCommands.set("hypoShowDrawnCards", (data) => {
   globals.store!.dispatch({
     type: "hypoShowDrawnCards",
+    shared: true,
     showDrawnCards: data.showDrawnCards,
   });
 });
 
 gameCommands.set("hypoStart", () => {
-  hypothetical.startHypothetical();
+  hypothetical.startSharedHypothetical();
 });
 
 gameCommands.set("init", (metadata) => {
