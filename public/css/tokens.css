@@ -57,6 +57,8 @@
   --header-border: none;
   --header-text: #bbb;
   --header-button-border: #999;
+  --header-button-hover-bg: rgba(153, 153, 153, 0.25);
+  --header-button-active-bg: rgba(153, 153, 153, 0.5);
 
   /* Text in modals and lobby pages: the nearest gray to "--text" that meets normal-text contrast on white */
   --modal-text: #767676;
@@ -81,6 +83,18 @@
   --difficulty-hard: darkgoldenrod;
   --difficulty-very-hard: darkred;
 
+  /* The arrow of a dropdown, in the color of "--text". An image cannot use a variable's color. */
+  --select-arrow: url("data:image/svg+xml;charset=utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40' preserveAspectRatio='none' viewBox='0 0 40 40'%3E%3Cpath d='M9.4,12.3l10.4,10.4l10.4-10.4c0.2-0.2,0.5-0.4,0.9-0.4c0.3,0,0.6,0.1,0.9,0.4l3.3,3.3c0.2,0.2,0.4,0.5,0.4,0.9 c0,0.4-0.1,0.6-0.4,0.9L20.7,31.9c-0.2,0.2-0.5,0.4-0.9,0.4c-0.3,0-0.6-0.1-0.9-0.4L4.3,17.3c-0.2-0.2-0.4-0.5-0.4-0.9 c0-0.4,0.1-0.6,0.4-0.9l3.3-3.3c0.2-0.2,0.5-0.4,0.9-0.4S9.1,12.1,9.4,12.3z' fill='%23777777' /%3E%3C/svg%3E");
+
+  /* Covers the page behind a modal */
+  --page-cover-bg: rgba(0, 24, 5, 0.7);
+
+  /* The spinner on the public pages, and the backdrop behind it */
+  --spinner-backdrop: rgba(0, 0, 0, 0.3);
+  --spinner-red: #de3500;
+  --spinner-white: #fff;
+  --spinner-brown: rgba(151, 107, 93, 0.3);
+
   /* Lobby table rows */
   --lobby-table-joined: #f2f2ff;
   --lobby-table-joined-hover: #e0e0ff;
@@ -101,7 +115,7 @@
   /* Text on the wood background of the login screen */
   --login-text: #f2f2f2;
 
-  /* The corner radius of panels, buttons, and form fields */
+  /* The corner radius of panels, modals, tooltips, buttons, and form fields */
   --radius: 6px;
 
   /*
@@ -163,6 +177,7 @@
   --chat-bg: var(--surface-sunken);
   --game-chat-border: var(--border);
   --slider-track: var(--border);
+  --select-arrow: url("data:image/svg+xml;charset=utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40' preserveAspectRatio='none' viewBox='0 0 40 40'%3E%3Cpath d='M9.4,12.3l10.4,10.4l10.4-10.4c0.2-0.2,0.5-0.4,0.9-0.4c0.3,0,0.6,0.1,0.9,0.4l3.3,3.3c0.2,0.2,0.4,0.5,0.4,0.9 c0,0.4-0.1,0.6-0.4,0.9L20.7,31.9c-0.2,0.2-0.5,0.4-0.9,0.4c-0.3,0-0.6-0.1-0.9-0.4L4.3,17.3c-0.2-0.2-0.4-0.5-0.4-0.9 c0-0.4,0.1-0.6,0.4-0.9l3.3-3.3c0.2-0.2,0.5-0.4,0.9-0.4S9.1,12.1,9.4,12.3z' fill='%23e6e6e6' /%3E%3C/svg%3E");
   --tooltip-text: var(--text);
   --tooltip-border: 1px solid var(--border);
   --note-title-line: var(--border);

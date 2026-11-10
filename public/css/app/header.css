@@ -75,11 +75,11 @@
 }
 
 #header .button:hover {
-  background-color: rgba(153, 153, 153, 0.25);
+  background-color: var(--header-button-hover-bg);
 }
 
 #header .button:active {
-  background-color: rgba(153, 153, 153, 0.5);
+  background-color: var(--header-button-active-bg);
 }
 
 /* The logo in the header bar */

@@ -171,7 +171,7 @@ div.table-spinner {
   justify-content: center;
   align-items: center;
   z-index: var(--z-spinner);
-  background-color: rgba(0, 0, 0, 0.3);
+  background-color: var(--spinner-backdrop);
 }
 
 span.table-spinner {
@@ -181,7 +181,9 @@ span.table-spinner {
   position: relative;
   border-width: 3px 2px 3px 2px;
   border-style: solid dotted solid dotted;
-  border-color: #de3500 rgba(255, 255, 255, 0.3) #fff rgba(151, 107, 93, 0.3);
+  border-color: var(--spinner-red)
+    color-mix(in srgb, var(--spinner-white) 30%, transparent)
+    var(--spinner-white) var(--spinner-brown);
   border-radius: 50%;
   box-sizing: border-box;
   animation: 1s rotate linear infinite;
@@ -194,12 +196,12 @@ span.table-spinner:after {
   left: 0;
   position: absolute;
   border: 10px solid transparent;
-  border-bottom-color: #fff;
+  border-bottom-color: var(--spinner-white);
   transform: translate(-10px, 19px) rotate(-35deg);
 }
 
 span.table-spinner:after {
-  border-color: #de3500 #0000 #0000 #0000;
+  border-color: var(--spinner-red) transparent transparent;
   transform: translate(32px, 3px) rotate(-35deg);
 }
 

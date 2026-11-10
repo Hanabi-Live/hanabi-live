@@ -19,22 +19,22 @@
 
 @keyframes pageCoverHide {
   0% {
-    background-color: rgba(0, 24, 5, 0.7);
+    background-color: var(--page-cover-bg);
     z-index: var(--z-page-cover);
   }
   100% {
-    background-color: rgba(0, 0, 0, 0);
+    background-color: transparent;
     z-index: -1;
   }
 }
 
 @keyframes pageCoverShow {
   0% {
-    background-color: rgba(0, 0, 0, 0);
+    background-color: transparent;
     z-index: -1;
   }
   100% {
-    background-color: rgba(0, 24, 5, 0.7);
+    background-color: var(--page-cover-bg);
     z-index: var(--z-page-cover);
   }
 }
@@ -43,7 +43,7 @@
   align-self: flex-start;
   background-color: var(--surface);
   border: 2px solid var(--modal-border);
-  border-radius: 5px;
+  border-radius: var(--radius);
   max-height: calc(100% - 4em);
   max-width: 80vw;
   overflow-y: auto;
