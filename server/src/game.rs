@@ -34,7 +34,8 @@ struct GameLog {
 enum GameStep {
     Action {
         actor: usize,
-        action: PlayerAction,
+        #[serde(with = "crate::model::stored_turns::one")]
+        action: ReplayAction,
         #[serde(default, skip_serializing_if = "Option::is_none")]
         timing: Option<CompletionTiming>,
     },
@@ -126,7 +127,12 @@ impl Game {
                 action,
                 timing,
             } => {
-                hanabi_engine::apply_action(&mut self.state, *actor, action, timing.clone())?;
+                hanabi_engine::apply_action(
+                    &mut self.state,
+                    *actor,
+                    &PlayerAction::from(action),
+                    timing.clone(),
+                )?;
             }
             GameStep::Termination {
                 termination,
@@ -196,7 +202,7 @@ impl Game {
     ) -> Result<()> {
         self.step(GameStep::Action {
             actor,
-            action: PlayerAction::from(action),
+            action: *action,
             timing,
         })
     }
@@ -306,6 +312,21 @@ pub fn seeded_deck(id: i32, seed: &str) -> Result<Value> {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn steps_store_turns_in_the_replay_format() {
+        // Checkpoints written before November 10th, 2026 store a game record's form.
+        for stored in [
+            serde_json::json!({"step": "action", "actor": 0, "action": {"type": 0, "target": 4, "value": 0}}),
+            serde_json::json!({"step": "action", "actor": 0, "action": {"type": "play", "order": 4}}),
+        ] {
+            let step: GameStep = serde_json::from_value(stored).unwrap();
+            assert_eq!(
+                serde_json::to_value(&step).unwrap(),
+                serde_json::json!({"step": "action", "actor": 0, "action": {"type": "play", "order": 4}})
+            );
+        }
+    }
 
     #[test]
     fn games_store_their_steps() {
