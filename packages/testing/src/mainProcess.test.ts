@@ -131,8 +131,8 @@ databaseDescribe("compiled application entry point (rust)", () => {
           .parse(await metrics.json());
         expect(reports.database.maxConnections).toBe(14);
         expect(reports.database.totalConnections).toBeLessThanOrEqual(14);
-        expect(reports.lobbyDatabase.maxConnections).toBe(4);
-        expect(reports.lobbyDatabase.totalConnections).toBeLessThanOrEqual(4);
+        expect(reports.lobbyDatabase.maxConnections).toBe(2);
+        expect(reports.lobbyDatabase.totalConnections).toBeLessThanOrEqual(2);
         const aliceCookie = await login(address, "SmokeAlice");
         const alice = socketClient(address, aliceCookie);
         sockets.push(alice.socket);
