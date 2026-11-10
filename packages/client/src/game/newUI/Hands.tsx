@@ -1,4 +1,5 @@
 import type { CardOrder, PlayerIndex, Variant } from "@hanabi-live/game";
+import { useEffect, useRef } from "react";
 import { CARD_HEIGHT_PER_WIDTH, CardFace, describeCard } from "./Card";
 import type { CardView } from "./tableView";
 
@@ -55,8 +56,11 @@ interface HandsProps {
 /** The space between cards in a hand, in CSS pixels. */
 export const CARD_GAP = 10;
 
-/** The width of the column with each player's name, in CSS pixels. */
-export const NAME_COLUMN_WIDTH = {
+/**
+ * The most width that the column with each player's name takes, in CSS pixels. Below it, the column
+ * is as wide as the widest name. A longer name is cut short.
+ */
+export const NAME_COLUMN_MAX_WIDTH = {
   WIDE: 150,
 
   /** For windows up to the 1440 px breakpoint, where the side columns are narrower too. */
@@ -87,6 +91,56 @@ function NameChip({ seat }: { readonly seat: Seat }): React.JSX.Element {
       {youIcon}
       <span className="tw:truncate">{seat.name}</span>
     </span>
+  );
+}
+
+/** The widest text that a clock usually shows, which the name column leaves room for. */
+const CLOCK_PLACEHOLDER = "00:00";
+
+/**
+ * Measures the width that the name column needs. It draws every player's name, hidden, as it looks
+ * at its widest: bold for the current player, and with a clock when the clocks show. So the column
+ * does not change size as the turn moves from player to player.
+ */
+export function NameColumnSizer({
+  seats,
+  showClock,
+  onWidthChange,
+}: {
+  readonly seats: readonly Seat[];
+  readonly showClock: boolean;
+  readonly onWidthChange: (width: number) => void;
+}): React.JSX.Element {
+  const ref = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const element = ref.current!;
+    // Round up, so that the widest name is not cut short by a fraction of a pixel.
+    const observer = new ResizeObserver(() => {
+      onWidthChange(Math.ceil(element.getBoundingClientRect().width));
+    });
+    observer.observe(element);
+    return () => {
+      observer.disconnect();
+    };
+  }, [onWidthChange]);
+
+  return (
+    <div
+      aria-hidden="true"
+      className="tw:invisible tw:absolute tw:top-0 tw:left-0 tw:flex tw:w-max tw:flex-col tw:items-start"
+      ref={ref}
+    >
+      {seats.map((seat) => (
+        <NameChip
+          key={seat.playerIndex}
+          seat={{
+            ...seat,
+            active: true,
+            clock: showClock ? CLOCK_PLACEHOLDER : undefined,
+          }}
+        />
+      ))}
+    </div>
   );
 }
 

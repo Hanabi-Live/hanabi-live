@@ -33,7 +33,12 @@ import { CARD_HEIGHT_PER_WIDTH, CardFace } from "./Card";
 import { ChatPanel } from "./ChatPanel";
 import { CluePanel } from "./CluePanel";
 import type { Seat } from "./Hands";
-import { CARD_GAP, Hands, NAME_COLUMN_WIDTH } from "./Hands";
+import {
+  CARD_GAP,
+  Hands,
+  NAME_COLUMN_MAX_WIDTH,
+  NameColumnSizer,
+} from "./Hands";
 import type { DiscardView, StackView, ZoneState } from "./SharedCards";
 import { DiscardPile, PlayArea, TableTokens } from "./SharedCards";
 import { StatusStrip } from "./StatusStrip";
@@ -82,7 +87,7 @@ const DRAG_THRESHOLD_PIXELS = 6;
 const CLOCK_TICK_MILLISECONDS = 500;
 
 /** The smallest and largest card in a hand, in CSS pixels of width. */
-const HAND_CARD_WIDTH = { MIN: 36, MAX: 104 } as const;
+const HAND_CARD_WIDTH = { MIN: 36, MAX: 150 } as const;
 
 /** The smallest and largest card on the play stacks and in the discard pile. */
 const TABLE_CARD_WIDTH = { MIN: 30, MAX: 64 } as const;
@@ -322,6 +327,7 @@ export function GameScreen({
   );
   const handsSize = useElementSize(handsElement);
   const playAreaSize = useElementSize(playAreaElement);
+  const [nameWidth, setNameWidth] = useState(0);
 
   // On a window too narrow for the chat panel beside the table, the chat starts collapsed.
   useEffect(() => {
@@ -541,9 +547,10 @@ export function GameScreen({
 
   let nameColumnWidth: number | undefined;
   if (!stacked) {
-    nameColumnWidth = mediumWidth
-      ? NAME_COLUMN_WIDTH.MEDIUM
-      : NAME_COLUMN_WIDTH.WIDE;
+    nameColumnWidth = Math.min(
+      nameWidth,
+      mediumWidth ? NAME_COLUMN_MAX_WIDTH.MEDIUM : NAME_COLUMN_MAX_WIDTH.WIDE,
+    );
   }
   const handCardWidth = getHandCardWidth(
     handsSize.width,
@@ -674,9 +681,16 @@ export function GameScreen({
               />
             )}
             <div
-              className="tw:flex tw:min-h-0 tw:flex-1 tw:flex-col tw:justify-center tw:narrow-980:flex-none"
+              className="tw:relative tw:flex tw:min-h-0 tw:flex-1 tw:flex-col tw:justify-center tw:narrow-980:flex-none"
               ref={setHandsElement}
             >
+              <NameColumnSizer
+                onWidthChange={setNameWidth}
+                seats={seats}
+                showClock={
+                  metadata.options.timed || settings.showTimerInUntimed
+                }
+              />
               <Hands
                 canChooseClueTarget={canClue}
                 canDiscard={canDiscard}
