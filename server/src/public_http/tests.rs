@@ -296,7 +296,8 @@ async fn public_database_routes_filters_privacy_exports_and_html() {
         INSERT INTO games(id,name,num_players,variant_id,timed,time_base,time_per_turn,speedrun,
           deck_plays,empty_clues,one_extra_card,one_less_card,all_or_nothing,detrimental_characters,
           seed,score,num_turns,end_condition,datetime_started,datetime_finished)
-        SELECT id,'test',2,CASE WHEN id=3 THEN 1 ELSE 0 END,id=3,120,20,id=3,
+        SELECT id,'test',2,CASE WHEN id=3 THEN 1 ELSE 0 END,id=3,
+          CASE WHEN id=3 THEN 120 END,CASE WHEN id=3 THEN 20 END,id=3,
           id=3,id=3,id=3,id=3,id=3,id=3,
           CASE WHEN id=3 THEN 'custom-seed' ELSE 'same' END,
           CASE WHEN id=1 THEN 25 WHEN id=2 THEN 15 ELSE 0 END,10,CASE WHEN id=2 THEN 2 ELSE 1 END,
@@ -728,7 +729,7 @@ async fn seed_page_ranks_the_seed_among_seeds_with_its_prefix() {
         "INSERT INTO games(id,name,num_players,variant_id,timed,time_base,time_per_turn,speedrun,
           deck_plays,empty_clues,one_extra_card,one_less_card,all_or_nothing,detrimental_characters,
           seed,score,num_turns,end_condition,datetime_started,datetime_finished)
-        SELECT id,'test',2,0,false,0,0,false,false,false,false,false,false,false,seed,score,10,1,
+        SELECT id,'test',2,0,false,NULL,NULL,false,false,false,false,false,false,false,seed,score,10,1,
           '2026-01-01T00:00:00Z','2026-01-01T01:00:00Z'
         FROM (VALUES(1,'p2v0s1',25),(2,'p2v0s2',15),(3,'p2v0s2',25),(4,'p2v0s3',20),(5,'p2v0s4',10),
           (6,'p2v0e1',0)) AS g(id,seed,score);",

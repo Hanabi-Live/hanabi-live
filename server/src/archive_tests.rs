@@ -14,7 +14,7 @@ async fn archive_reads_use_one_fresh_snapshot_across_concurrent_edits_postgres()
         sqlx::query!("INSERT INTO games(id,name,num_players,variant_id,timed,time_base,time_per_turn,speedrun,
              deck_plays,empty_clues,one_extra_card,one_less_card,all_or_nothing,detrimental_characters,
              seed,score,num_turns,end_condition,datetime_started,datetime_finished)
-             VALUES(1,'Archive snapshot',2,0,false,0,0,false,false,false,false,false,false,false,
+             VALUES(1,'Archive snapshot',2,0,false,NULL,NULL,false,false,false,false,false,false,false,
              'p2v0s1',0,1,4,NOW(),NOW())").execute(&db.pool).await?;
         sqlx::query!("INSERT INTO game_participants(game_id,user_id,seat,character_assignment,character_metadata)
              VALUES(1,$1,0,-1,0),(1,$2,1,-1,0)", alice, bob).execute(&db.pool).await?;

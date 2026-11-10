@@ -126,8 +126,9 @@ CREATE TABLE games (
     variant_id              SMALLINT     NOT NULL,
 
     timed                   BOOLEAN      NOT NULL,
-    time_base               INTEGER      NOT NULL, /* in seconds */
-    time_per_turn           INTEGER      NOT NULL, /* in seconds */
+    /* In seconds. NULL when the game is untimed. */
+    time_base               INTEGER      NULL,
+    time_per_turn           INTEGER      NULL,
     speedrun                BOOLEAN      NOT NULL,
     deck_plays              BOOLEAN      NOT NULL,
     empty_clues             BOOLEAN      NOT NULL,

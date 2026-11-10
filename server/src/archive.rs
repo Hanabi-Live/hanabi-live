@@ -42,8 +42,9 @@ pub struct GameRecord {
     pub num_players: i16,
     pub variant_id: i16,
     pub timed: bool,
-    pub time_base: i32,
-    pub time_per_turn: i32,
+    /// NULL when the game is untimed.
+    pub time_base: Option<i32>,
+    pub time_per_turn: Option<i32>,
     pub speedrun: bool,
     pub deck_plays: bool,
     pub empty_clues: bool,
@@ -251,7 +252,7 @@ pub(crate) async fn insert(
     let o = &s.game.options;
     let variant = hanabi_engine::get_variant(&o.variant_name)?;
     let tx = transaction;
-    sqlx::query!("INSERT INTO games(id,name,num_players,variant_id,timed,time_base,time_per_turn,speedrun,deck_plays,empty_clues,one_extra_card,one_less_card,all_or_nothing,detrimental_characters,seed,score,num_turns,end_condition,datetime_started,datetime_finished) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20)", s.game_id.0, &s.name, i16::try_from(o.num_players)?, i16::try_from(variant.id)?, o.timed, stored_seconds(o.time_base), i32::try_from(o.time_per_turn)?, o.speedrun, o.deck_plays, o.empty_clues, o.one_extra_card, o.one_less_card, o.all_or_nothing, o.detrimental_characters, &s.seed, i16::try_from(s.game.score)?, i16::try_from(s.game.turn)?, s.game.end_condition as i16, s.started, finished).execute(&mut **tx).await?;
+    sqlx::query!("INSERT INTO games(id,name,num_players,variant_id,timed,time_base,time_per_turn,speedrun,deck_plays,empty_clues,one_extra_card,one_less_card,all_or_nothing,detrimental_characters,seed,score,num_turns,end_condition,datetime_started,datetime_finished) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20)", s.game_id.0, &s.name, i16::try_from(o.num_players)?, i16::try_from(variant.id)?, o.timed, o.timed.then(|| stored_seconds(o.time_base)), o.timed.then(|| i32::try_from(o.time_per_turn)).transpose()?, o.speedrun, o.deck_plays, o.empty_clues, o.one_extra_card, o.one_less_card, o.all_or_nothing, o.detrimental_characters, &s.seed, i16::try_from(s.game.score)?, i16::try_from(s.game.turn)?, s.game.end_condition as i16, s.started, finished).execute(&mut **tx).await?;
     let mut users = vec![];
     let mut seats = vec![];
     let mut assignments = vec![];
@@ -354,8 +355,8 @@ pub fn options(row: &GameRecord) -> Result<Options> {
         variant_name: variant.name.clone(),
         variant_id: Some(variant.id),
         timed: row.timed,
-        time_base: f64::from(row.time_base),
-        time_per_turn: i64::from(row.time_per_turn),
+        time_base: row.time_base.map_or(0.0, f64::from),
+        time_per_turn: row.time_per_turn.map_or(0, i64::from),
         speedrun: row.speedrun,
         deck_plays: row.deck_plays,
         empty_clues: row.empty_clues,

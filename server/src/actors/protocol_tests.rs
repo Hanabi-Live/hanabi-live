@@ -952,7 +952,7 @@ async fn shared_replay_links_join_an_existing_replay_of_the_same_game() -> Resul
         let game: i32 = sqlx::query_scalar!("INSERT INTO games(name,num_players,variant_id,timed,time_base,time_per_turn,
              speedrun,deck_plays,empty_clues,one_extra_card,one_less_card,
              all_or_nothing,detrimental_characters,seed,score,num_turns,end_condition,datetime_started,datetime_finished)
-             VALUES('Linked game',2,0,false,120,20,false,false,false,false,false,false,false,'p2v0s1',0,1,4,NOW(),NOW())
+             VALUES('Linked game',2,0,false,NULL,NULL,false,false,false,false,false,false,false,'p2v0s1',0,1,4,NOW(),NOW())
              RETURNING id")
         .fetch_one(&h.store.primary)
         .await?;
@@ -2222,7 +2222,7 @@ async fn pregame_total_counts_only_normal_non_speedrun_games() -> Result<()> {
         let games: Vec<i32> = sqlx::query_scalar!("INSERT INTO games(name,num_players,variant_id,timed,time_base,time_per_turn,
              speedrun,deck_plays,empty_clues,one_extra_card,one_less_card,
              all_or_nothing,detrimental_characters,seed,score,num_turns,end_condition,datetime_started,datetime_finished)
-             SELECT 'Stats fixture',2,CASE WHEN n=2 THEN 1 ELSE 0 END,false,120,20,
+             SELECT 'Stats fixture',2,CASE WHEN n=2 THEN 1 ELSE 0 END,false,NULL,NULL,
              n IN (8,9),false,false,false,false,false,false,
              'stats-'||n,CASE WHEN n IN (1,8) THEN 25 ELSE 0 END,30,
              CASE n WHEN 3 THEN 2 WHEN 4 THEN 3 WHEN 5 THEN 4 WHEN 6 THEN 6

@@ -891,7 +891,7 @@ mod tests {
             sqlx::query!("INSERT INTO games(name,num_players,variant_id,timed,time_base,time_per_turn,
                  speedrun,deck_plays,empty_clues,one_extra_card,one_less_card,
                  all_or_nothing,detrimental_characters,seed,score,num_turns,end_condition,datetime_started,datetime_finished)
-                 SELECT 'Recovery stats',2,0,false,120,20,false,false,false,false,false,
+                 SELECT 'Recovery stats',2,0,false,NULL,NULL,false,false,false,false,false,
                  false,false,'recovery-'||n,0,30,CASE n WHEN 1 THEN 1 ELSE 4 END,NOW(),NOW()
                  FROM generate_series(1,2) n")
             .execute(&store.primary)
