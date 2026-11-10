@@ -20,6 +20,7 @@ const FILE_IDS = [
   "dda",
   "exclamation-mark",
   "eyes",
+  "flashlight",
   "ghost",
   "home",
   "note",

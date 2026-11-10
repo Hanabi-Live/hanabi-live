@@ -117,6 +117,9 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip, UICard {
   private vortexTween: Konva.Tween | undefined = undefined;
   cursor: CursorType = "default";
   private empathy = false;
+
+  /** How this card would look after a clue that the player is considering giving. */
+  private cluePreviewState: CardState | null = null;
   dragging = false;
   wasRecentlyTapped = false;
   touchstartTimeout: ReturnType<typeof setTimeout> | undefined = undefined;
@@ -175,12 +178,13 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip, UICard {
   private readonly fallbackState: CardState;
 
   /**
-   * The card's entry in the visible deck. Otherwise, the fixed state of a card that is not in the
-   * deck.
+   * The clue preview state if one is shown. Otherwise, the card's entry in the visible deck.
+   * Otherwise, the fixed state of a card that is not in the deck.
    */
   get state(): CardState {
     return (
-      globals.store?.getState().visibleState?.deck[this.order]
+      this.cluePreviewState
+      ?? globals.store?.getState().visibleState?.deck[this.order]
       ?? this.fallbackState
     );
   }
@@ -466,7 +470,7 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip, UICard {
       cardIdentity,
       state: this.state,
       note: this.note,
-      empathy: this.empathy,
+      empathy: this.showsEmpathy,
       morphedIdentity: this.isMorphed() ? this.getMorph() : undefined,
       isStackBase: this.isStackBase,
       finished: globals.state.finished,
@@ -599,7 +603,7 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip, UICard {
     // If a card has a "blank" note on it, the user wants to force the card to appear blank.
     if (
       this.note.blank
-      && !this.empathy
+      && !this.showsEmpathy
       && !isCardPlayed(this.state)
       && !isCardDiscarded(this.state)
       && !globals.state.finished
@@ -669,7 +673,7 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip, UICard {
       this.variant,
       this.state,
       this.note,
-      this.empathy,
+      this.showsEmpathy,
     );
 
     for (const suitPip of presentation.suitPips) {
@@ -724,7 +728,7 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip, UICard {
     // Show or hide the "question mark" image.
     this.questionMark.visible(
       this.note.questionMark
-        && !this.empathy
+        && !this.showsEmpathy
         && !isCardPlayed(this.state)
         && !isCardDiscarded(this.state)
         && !globals.state.finished,
@@ -733,7 +737,7 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip, UICard {
     // Show or hide the "exclamation mark" image.
     this.exclamationMark.visible(
       this.note.exclamationMark
-        && !this.empathy
+        && !this.showsEmpathy
         && !isCardPlayed(this.state)
         && !isCardDiscarded(this.state)
         && !globals.state.finished,
@@ -742,7 +746,7 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip, UICard {
     // Show or hide the "ghost" image.
     this.ghost.visible(
       this.note.spook
-        && !this.empathy
+        && !this.showsEmpathy
         && !isCardPlayed(this.state)
         && !isCardDiscarded(this.state)
         && !globals.state.finished,
@@ -751,7 +755,7 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip, UICard {
     // Show or hide the "trash" image.
     this.trashcan.visible(
       this.note.knownTrash
-        && !this.empathy
+        && !this.showsEmpathy
         && !isCardPlayed(this.state)
         && !isCardDiscarded(this.state)
         && !globals.state.finished,
@@ -760,7 +764,7 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip, UICard {
     // Show or hide the "fix" image.
     this.wrench.visible(
       this.note.needsFix
-        && !this.empathy
+        && !this.showsEmpathy
         && !isCardPlayed(this.state)
         && !isCardDiscarded(this.state)
         && !globals.state.finished,
@@ -1404,6 +1408,25 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip, UICard {
     this.empathy = enabled;
     this.setBareImage();
     this.updatePips();
+  }
+
+  /**
+   * Shows the card from its holder's perspective as it would be after a potential clue, or restores
+   * the normal view when passed null.
+   */
+  setCluePreview(state: CardState | null): void {
+    if (this.cluePreviewState === state) {
+      return;
+    }
+
+    this.cluePreviewState = state;
+    this.setBareImage();
+    this.updatePips();
+    this.setBorder();
+  }
+
+  private get showsEmpathy(): boolean {
+    return this.empathy || this.cluePreviewState !== null;
   }
 
   suitDescriptionNote(): string {

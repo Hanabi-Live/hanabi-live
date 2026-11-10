@@ -44,6 +44,7 @@ import { globals } from "./UIGlobals";
 import * as arrows from "./arrows";
 import { backToLobby } from "./backToLobby";
 import { drawClueLog } from "./clueLog/mountClueLog";
+import * as cluePreview from "./cluePreview";
 import * as clues from "./clues";
 import {
   ACTIVE_INDICATOR_COLOR,
@@ -546,11 +547,14 @@ const CLUE_TYPE_BUTTON = {
   spacingY: 0.002,
 } as const;
 
-/** The "Give Clue" button, in fractions of the stage. */
+/** The row with the "Give Clue" and "Show Post-Clue Empathy" buttons, in fractions of the stage. */
 const GIVE_CLUE_BUTTON = {
   w: 0.236,
   h: 0.051,
 } as const;
+
+/** The share of the "Give Clue" row that the "Show Post-Clue Empathy" button takes. */
+const POST_CLUE_EMPATHY_BUTTON_SHARE = 1 / 5;
 
 /**
  * How far the cross over a disabled clue area is inset from its corners, in fractions of the stage.
@@ -2541,10 +2545,12 @@ function drawClueArea() {
   globals.elements.lowerClueArea.add(globals.elements.clueTypeButtonGroup);
 
   // The "Give Clue" button.
+  const postClueEmpathyButtonW =
+    GIVE_CLUE_BUTTON.w * POST_CLUE_EMPATHY_BUTTON_SHARE;
   giveClueValues = {
     x: (clueAreaValues.w! - GIVE_CLUE_BUTTON.w) / 2,
     y: rankY + buttonH + buttonYSpacing,
-    w: GIVE_CLUE_BUTTON.w,
+    w: GIVE_CLUE_BUTTON.w - postClueEmpathyButtonW,
     h: GIVE_CLUE_BUTTON.h,
   };
 
@@ -2558,6 +2564,32 @@ function drawClueArea() {
   globals.elements.giveClueButton.setEnabled(false);
   globals.elements.lowerClueArea.add(globals.elements.giveClueButton);
   globals.elements.giveClueButton.on("click tap", clues.give);
+
+  // The "Show Post-Clue Empathy" button, to the right of the "Give Clue" button.
+  const postClueEmpathyButton = new ToggleButton(
+    {
+      x: (giveClueValues.x + giveClueValues.w! + buttonXSpacing) * winW,
+      y: giveClueValues.y * winH,
+      width: (postClueEmpathyButtonW - buttonXSpacing) * winW,
+      height: giveClueValues.h! * winH,
+    },
+    [globals.imageLoader!.get("flashlight")],
+  );
+  // The icon is square, so keep it square instead of stretching it to the shape of the button.
+  const icon = postClueEmpathyButton.imageElement!;
+  const iconSize = Math.min(icon.width(), icon.height());
+  icon.size({ width: iconSize, height: iconSize });
+  icon.position({
+    x: (postClueEmpathyButton.width() - iconSize) / 2,
+    y: (postClueEmpathyButton.height() - iconSize) / 2,
+  });
+  globals.elements.lowerClueArea.add(postClueEmpathyButton);
+  postClueEmpathyButton.on("click tap", cluePreview.toggle);
+  postClueEmpathyButton.tooltipName = "post-clue-empathy";
+  postClueEmpathyButton.tooltipContent =
+    "Show Post-Clue Empathy: show the target's hand as they would see it after the selected clue.";
+  initKonvaTooltips(postClueEmpathyButton, true, false);
+  globals.elements.postClueEmpathyButton = postClueEmpathyButton;
 
   globals.layers.UI.add(globals.elements.clueArea);
 

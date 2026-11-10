@@ -28,6 +28,8 @@ of the repository.
 - When the clues leave a card with possibilities that the suit and rank pips
   cannot show, such as "any Pink card or a red 3", the card now lists each suit
   with the ranks that it can be.
+- The new flashlight button beside "Give Clue" shows the target's hand as they
+  would see it after the selected clue. It turns off at the start of each turn.
 
 ## November 9th, 2026
 

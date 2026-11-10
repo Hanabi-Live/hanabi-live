@@ -104,6 +104,7 @@ export class Elements {
   rankClueButtons: RankButton[] = [];
   colorClueButtons: ColorButton[] = [];
   giveClueButton: Button | undefined = undefined;
+  postClueEmpathyButton: ToggleButton | undefined = undefined;
   clueAreaDisabled: SlidableGroup | undefined = undefined;
   waitingOnServer: Konva.Group | undefined = undefined;
   waitingOnServerAnimation: Konva.Animation | undefined = undefined;

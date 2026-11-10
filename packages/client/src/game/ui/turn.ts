@@ -4,6 +4,7 @@ import { toWireAction } from "../../wire";
 import type { ClientAction } from "../types/ClientAction";
 import { globals } from "./UIGlobals";
 import * as arrows from "./arrows";
+import * as cluePreview from "./cluePreview";
 import { PREPLAY_DELAY_MILLISECONDS } from "./constants";
 import * as hypothetical from "./hypothetical";
 import { isOurTurn } from "./isOurTurn";
@@ -84,6 +85,7 @@ function handlePremove() {
 export function resetSelectedClue(): void {
   // Reset the clue UI, leaving the last target player selected.
   globals.elements.clueTypeButtonGroup!.clearPressed();
+  cluePreview.reset();
 
   globals.layers.UI.batchDraw();
 }
