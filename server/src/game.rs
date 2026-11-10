@@ -315,17 +315,9 @@ mod tests {
 
     #[test]
     fn steps_store_turns_in_the_replay_format() {
-        // Checkpoints written before November 10th, 2026 store a game record's form.
-        for stored in [
-            serde_json::json!({"step": "action", "actor": 0, "action": {"type": 0, "target": 4, "value": 0}}),
-            serde_json::json!({"step": "action", "actor": 0, "action": {"type": "play", "order": 4}}),
-        ] {
-            let step: GameStep = serde_json::from_value(stored).unwrap();
-            assert_eq!(
-                serde_json::to_value(&step).unwrap(),
-                serde_json::json!({"step": "action", "actor": 0, "action": {"type": "play", "order": 4}})
-            );
-        }
+        let stored = serde_json::json!({"step": "action", "actor": 0, "action": {"type": "play", "order": 4}});
+        let step: GameStep = serde_json::from_value(stored.clone()).unwrap();
+        assert_eq!(serde_json::to_value(&step).unwrap(), stored);
     }
 
     #[test]

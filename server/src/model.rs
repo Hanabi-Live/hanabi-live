@@ -147,7 +147,6 @@ pub struct ReplayState {
     pub efficiency_modifier: i32,
     /// Whether the leader is exploring a hypothetical.
     pub hypothetical: bool,
-    #[serde(deserialize_with = "stored_hypothetical_actions")]
     pub hypothetical_actions: Vec<HypotheticalAction>,
     pub show_drawn_cards: bool,
     /// Whether the shared replay hides what happens later in the game.
@@ -271,29 +270,9 @@ pub fn hypothetical_bytes(actions: &[HypotheticalAction]) -> Result<usize> {
     })
 }
 /// Stores turns in the named form of the replay format, such as `{"type":"play","order":4}`.
-/// Checkpoints written before November 10th, 2026 store a game record's form instead, such as
-/// `{"type":0,"target":4,"value":0}`.
 pub(crate) mod stored_turns {
     use hanabi_protocol::{ReplayAction, ReplayGameAction};
     use serde::{Deserialize, Deserializer, Serialize, Serializer};
-
-    #[derive(Clone, Copy, Deserialize)]
-    #[serde(untagged)]
-    enum StoredTurn {
-        Named(ReplayGameAction),
-        Recorded(ReplayAction),
-    }
-
-    fn named(action: ReplayAction) -> Result<ReplayGameAction, String> {
-        ReplayGameAction::from_recorded(action)
-    }
-
-    fn recorded(stored: StoredTurn) -> ReplayAction {
-        match stored {
-            StoredTurn::Named(action) => action.recorded(),
-            StoredTurn::Recorded(action) => action,
-        }
-    }
 
     pub fn serialize<S: Serializer>(
         actions: &[ReplayAction],
@@ -301,7 +280,7 @@ pub(crate) mod stored_turns {
     ) -> Result<S::Ok, S::Error> {
         actions
             .iter()
-            .map(|action| named(*action))
+            .map(|action| ReplayGameAction::from_recorded(*action))
             .collect::<Result<Vec<_>, _>>()
             .map_err(serde::ser::Error::custom)?
             .serialize(serializer)
@@ -310,23 +289,22 @@ pub(crate) mod stored_turns {
     pub fn deserialize<'de, D: Deserializer<'de>>(
         deserializer: D,
     ) -> Result<Vec<ReplayAction>, D::Error> {
-        Ok(Vec::<StoredTurn>::deserialize(deserializer)?
+        Ok(Vec::<ReplayGameAction>::deserialize(deserializer)?
             .into_iter()
-            .map(recorded)
+            .map(ReplayGameAction::recorded)
             .collect())
     }
 
     /// One turn, stored the same way.
     pub mod one {
-        use super::{StoredTurn, named, recorded};
-        use hanabi_protocol::ReplayAction;
+        use hanabi_protocol::{ReplayAction, ReplayGameAction};
         use serde::{Deserialize, Deserializer, Serialize, Serializer};
 
         pub fn serialize<S: Serializer>(
             action: &ReplayAction,
             serializer: S,
         ) -> Result<S::Ok, S::Error> {
-            named(*action)
+            ReplayGameAction::from_recorded(*action)
                 .map_err(serde::ser::Error::custom)?
                 .serialize(serializer)
         }
@@ -334,24 +312,9 @@ pub(crate) mod stored_turns {
         pub fn deserialize<'de, D: Deserializer<'de>>(
             deserializer: D,
         ) -> Result<ReplayAction, D::Error> {
-            Ok(recorded(StoredTurn::deserialize(deserializer)?))
+            Ok(ReplayGameAction::deserialize(deserializer)?.recorded())
         }
     }
-}
-
-/// Reads a hypothetical's actions. Checkpoints written before November 10th, 2026 store each one
-/// as JSON text.
-fn stored_hypothetical_actions<'de, D: serde::Deserializer<'de>>(
-    deserializer: D,
-) -> std::result::Result<Vec<HypotheticalAction>, D::Error> {
-    Vec::<Value>::deserialize(deserializer)?
-        .into_iter()
-        .map(|value| match value {
-            Value::String(text) => serde_json::from_str(&text),
-            value => serde_json::from_value(value),
-        })
-        .collect::<std::result::Result<_, _>>()
-        .map_err(serde::de::Error::custom)
 }
 impl TableSnapshot {
     /// Updates the cached game totals of the pregame players in `users`, whose totals `counts`
@@ -1000,28 +963,16 @@ mod tests {
 
     #[test]
     fn checkpoints_store_hypothetical_actions_as_objects() {
-        let action = serde_json::json!({"type": "unmorph", "order": 3});
-        let stored = |actions| {
-            serde_json::json!({
-                "leader": 1, "segment": 0, "efficiencyModifier": 0, "hypothetical": true,
-                "hypotheticalActions": actions, "showDrawnCards": false
-            })
-        };
-        // Checkpoints written before November 10th, 2026 store each action as JSON text.
-        for actions in [
-            serde_json::json!([action.to_string()]),
-            serde_json::json!([action]),
-        ] {
-            let replay: ReplayState = serde_json::from_value(stored(actions)).unwrap();
-            assert!(matches!(
-                replay.hypothetical_actions[..],
-                [HypotheticalAction::Unmorph { order: 3 }]
-            ));
-            assert_eq!(
-                serde_json::to_value(&replay).unwrap(),
-                stored(serde_json::json!([action]))
-            );
-        }
+        let stored = serde_json::json!({
+            "leader": 1, "segment": 0, "efficiencyModifier": 0, "hypothetical": true,
+            "hypotheticalActions": [{"type": "unmorph", "order": 3}], "showDrawnCards": false
+        });
+        let replay: ReplayState = serde_json::from_value(stored.clone()).unwrap();
+        assert!(matches!(
+            replay.hypothetical_actions[..],
+            [HypotheticalAction::Unmorph { order: 3 }]
+        ));
+        assert_eq!(serde_json::to_value(&replay).unwrap(), stored);
     }
 
     #[test]
