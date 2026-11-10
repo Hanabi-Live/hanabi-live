@@ -8,6 +8,7 @@ import Konva from "konva";
 import type { LayoutChild } from "./LayoutChild";
 import { globals } from "./UIGlobals";
 import {
+  CARD_ANIMATION_LENGTH_SECONDS,
   FULL_TURN_DEGREES,
   HALF_TURN_DEGREES,
   QUARTER_TURN_DEGREES,
@@ -48,10 +49,10 @@ const MISPLAY_ANIMATION_SECONDS =
   + RECOIL_SECONDS
   + FALL_SECONDS;
 
-/** In a replay, the card moves to its play stack. */
-const REPLAY_TO_STACK_SECONDS = 0.25;
+/** In a replay, the card moves to its play stack at the speed of a normal card move. */
+const REPLAY_TO_STACK_SECONDS = CARD_ANIMATION_LENGTH_SECONDS;
 /** In a replay, the card then moves from its play stack to the discard pile. */
-const REPLAY_TO_DISCARD_SECONDS = 0.25;
+const REPLAY_TO_DISCARD_SECONDS = CARD_ANIMATION_LENGTH_SECONDS;
 const REPLAY_MISPLAY_ANIMATION_SECONDS =
   REPLAY_TO_STACK_SECONDS + REPLAY_TO_DISCARD_SECONDS;
 
