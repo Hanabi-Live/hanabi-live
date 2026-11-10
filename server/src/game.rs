@@ -57,12 +57,6 @@ struct StoredGameRef<'a> {
 struct StoredGame {
     setup: GameSetup,
     steps: Vec<GameStep>,
-    /// Older servers also stored these flags. The game's `Snapshot` holds them now, so they are
-    /// read and ignored.
-    #[serde(default, rename = "startedTimer")]
-    _started_timer: Option<bool>,
-    #[serde(default, rename = "paused")]
-    _paused: Option<bool>,
 }
 
 /// A game's steps, taken out of it while a checkpoint stores the rest of the game.
@@ -323,13 +317,6 @@ mod tests {
         assert!(stored.get("events").is_none());
         let restored: Game = serde_json::from_value(stored.clone()).unwrap();
         assert_eq!(restored.state(), game.state());
-        assert_eq!(serde_json::to_value(&restored).unwrap(), stored);
-
-        // Older servers stored the timer and pause flags with the game.
-        let mut legacy = stored.clone();
-        legacy["startedTimer"] = true.into();
-        legacy["paused"] = true.into();
-        let restored: Game = serde_json::from_value(legacy).unwrap();
         assert_eq!(serde_json::to_value(&restored).unwrap(), stored);
     }
 

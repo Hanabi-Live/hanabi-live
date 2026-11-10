@@ -23,8 +23,6 @@ const STEP: &str = "step";
 const NOTES: &str = "notes";
 /// The prefix of the parts that hold each spectator's notes, by user ID.
 const SPECTATOR_NOTES: &str = "spectatorNotes";
-/// Pregame fields that checkpoints from older servers hold, which reading drops.
-const LEGACY_PREGAME_FIELDS: [&str; 2] = ["automatic_start", "countdown"];
 /// The key of the part that holds a game's start: its players and its setup.
 const GAME_START: &str = "game/start";
 /// Where the head of a table with a game holds the game's start: the game's players, and the setup
@@ -298,12 +296,6 @@ fn positional<'a>(prefix: &str, entries: Vec<(&str, &'a str)>) -> Result<Vec<&'a
 pub fn decode(head: &str, parts: &[(String, String)]) -> Result<TableSnapshot> {
     ensure!(head.len() <= MAX_CHECKPOINT_BYTES, "Oversized checkpoint");
     let mut head: Value = serde_json::from_str(head)?;
-    // Servers before the automatic start commands were removed wrote these pregame fields.
-    if let Some(phase) = head.get_mut("phase").and_then(Value::as_object_mut) {
-        for field in LEGACY_PREGAME_FIELDS {
-            phase.remove(field);
-        }
-    }
     if let Some((_, start)) = parts.iter().find(|(key, _)| key == GAME_START) {
         put_start(&mut head, start)?;
     }

@@ -737,24 +737,6 @@ mod tests {
         Ok(())
     }
     #[test]
-    fn pregame_checkpoints_from_before_automatic_starts_were_removed_still_decode() -> Result<()> {
-        let mut table = pregame(TableId(1));
-        let (encoded, _) = crate::checkpoint::encode(&mut table, &SavedParts::default())?;
-        // The deployed server writes these fields in every pregame head.
-        let mut head: Value = serde_json::from_str(&encoded.head)?;
-        let phase = head["phase"]
-            .as_object_mut()
-            .context("Missing the pregame phase")?;
-        phase.insert("automatic_start".into(), json!(3));
-        phase.insert("countdown".into(), json!("2026-11-09T12:00:00Z"));
-        let decoded = crate::checkpoint::decode(&head.to_string(), &encoded.changes.written)?;
-        ensure!(
-            serde_json::to_value(&decoded)? == serde_json::to_value(&table)?,
-            "The old fields changed the decoded table"
-        );
-        Ok(())
-    }
-    #[test]
     fn checkpoints_round_trip_as_a_head_and_parts() -> Result<()> {
         let mut table = pregame(TableId(1));
         terminal(&mut table)?;

@@ -231,7 +231,6 @@ where
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct TableChat {
-    #[serde(default)]
     pub id: Option<i32>,
     pub user: UserId,
     pub message: Chat,
