@@ -27,7 +27,7 @@ export function colorClue(
       value,
     },
     giver,
-    list: list as CardOrder[],
+    orders: list as CardOrder[],
     target,
     ignoreNegative: false,
   };
@@ -47,7 +47,7 @@ export function rankClue(
       value,
     },
     giver,
-    list: list as CardOrder[],
+    orders: list as CardOrder[],
     target,
     ignoreNegative: false,
   };

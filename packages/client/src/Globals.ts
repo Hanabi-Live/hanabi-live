@@ -18,7 +18,7 @@ import {
 } from "./sessionSlice";
 import { store } from "./store";
 
-type Game = ServerCommandData["game"];
+type Game = ServerCommandData["pregame"];
 
 export class Globals {
   /** The WebSocket connection (set in "websocketInit.ts"). */

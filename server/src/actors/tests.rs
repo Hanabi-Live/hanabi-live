@@ -106,8 +106,22 @@ fn typed_game_frames_preserve_wire_schema_and_projected_identities() -> Result<(
             .context("Missing protocol separator")?;
         assert_eq!(command, "gameActionList");
         let body: Value = serde_json::from_str(body)?;
-        assert_eq!(body, json!({"tableID":42,"list":list}));
-        for (event, expected) in list.iter().zip(body["list"].as_array().unwrap()) {
+        // The engine names the touched cards `list`; the wire names them `orders`.
+        let mut expected = serde_json::to_value(&list)?;
+        for event in expected.as_array_mut().unwrap() {
+            let event = event.as_object_mut().unwrap();
+            for (engine, wire) in [
+                ("list", "orders"),
+                ("playerTimes", "playerTimesMs"),
+                ("duration", "durationMs"),
+            ] {
+                if let Some(value) = event.remove(engine) {
+                    event.insert(wire.into(), value);
+                }
+            }
+        }
+        assert_eq!(body, json!({"tableID":42,"actions":expected}));
+        for (event, expected) in list.iter().zip(body["actions"].as_array().unwrap()) {
             let encoded = test_frame("gameAction", game_action(TableId(42), event));
             let (command, body) = encoded
                 .split_once(' ')
@@ -130,13 +144,13 @@ fn typed_game_frames_preserve_wire_schema_and_projected_identities() -> Result<(
                 assert_eq!(expected["rank"], rank);
             }
         }
-        let events = body["list"].as_array().unwrap();
+        let events = body["actions"].as_array().unwrap();
         let ended = events.iter().find(|e| e["type"] == "gameOver").unwrap();
         assert_eq!(ended["endCondition"], 4);
         assert!(ended.as_object().unwrap().get("votes").unwrap().is_null());
         let timing = events.iter().find(|e| e["type"] == "playerTimes").unwrap();
-        assert_eq!(timing["playerTimes"], json!([1234, -5678]));
-        assert_eq!(timing["duration"], 6912);
+        assert_eq!(timing["playerTimesMs"], json!([1234, -5678]));
+        assert_eq!(timing["durationMs"], 6912);
     }
     Ok(())
 }
@@ -476,7 +490,7 @@ async fn live_tables_wake_at_their_next_deadline() -> Result<()> {
     };
     let id = store.allocate_table().await?;
     let imported = replay_helpers::parse(&hanabi_protocol::decode(
-        &json!({"players":["Alice","Bob"],"seed":"p2v0s1"}),
+        &json!({"playerNames":["Alice","Bob"],"seed":"p2v0s1"}),
     )?)?;
     let mut snapshot = replay_helpers::snapshot(imported, id, UserId(1));
     let lead = 1000;
@@ -530,7 +544,7 @@ async fn idle_live_games_warn_once_and_players_can_keep_them_going() -> Result<(
     };
     let id = store.allocate_table().await?;
     let imported = replay_helpers::parse(&hanabi_protocol::decode(
-        &json!({"players":["Alice","Bob"],"seed":"p2v0s1"}),
+        &json!({"playerNames":["Alice","Bob"],"seed":"p2v0s1"}),
     )?)?;
     let mut snapshot = replay_helpers::snapshot(imported, id, UserId(1));
     snapshot.idle_remaining = IDLE_WARNING_MS;
@@ -610,7 +624,7 @@ async fn spectating_a_live_game_does_not_refresh_its_idle_deadline() -> Result<(
     };
     let id = store.allocate_table().await?;
     let imported = replay_helpers::parse(&hanabi_protocol::decode(
-        &json!({"players":["Alice","Bob"],"seed":"p2v0s1"}),
+        &json!({"playerNames":["Alice","Bob"],"seed":"p2v0s1"}),
     )?)?;
     let mut snapshot = replay_helpers::snapshot(imported, id, UserId(1));
     snapshot.idle_remaining = 1000;
@@ -648,7 +662,7 @@ async fn spectating_a_live_game_does_not_refresh_its_idle_deadline() -> Result<(
 
 pub(super) fn review(id: TableId, condition: EndCondition) -> Result<TableSnapshot> {
     let mut imported = replay_helpers::parse(&hanabi_protocol::decode(
-        &json!({"players":["Alice","Bob"],"seed":"p2v0s1"}),
+        &json!({"playerNames":["Alice","Bob"],"seed":"p2v0s1"}),
     )?)?;
     imported.game.terminate(0, condition, -1, None, None)?;
     let snapshot = replay_helpers::snapshot(imported, id, UserId(1));
@@ -951,7 +965,7 @@ async fn full_table_mailboxes_do_not_block_hub_and_replacements_fence_private_ef
     sender
         .send(HubCommand::Client {
             session: old.clone(),
-            message: client_message("getGameInfo1", &json!({"tableID":42}))?,
+            message: client_message("getGameInit", &json!({"tableID":42}))?,
             reply,
         })
         .await?;

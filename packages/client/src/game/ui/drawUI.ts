@@ -1,6 +1,6 @@
 // This function draws the UI when going into a game for the first time.
 
-import { ReplayArrowOrder } from "@hanabi-live/data";
+import { ReplayBoardElement } from "@hanabi-live/data";
 import type {
   CardOrder,
   PlayerIndex,
@@ -1442,7 +1442,7 @@ function drawScoreArea() {
       replay.promptTurn();
     } else if (event.evt.button === RIGHT_MOUSE_BUTTON) {
       // Right-click
-      arrows.click(event, ReplayArrowOrder.Turn);
+      arrows.click(event, ReplayBoardElement.Turn);
     }
   });
   turnTextLabel.on("dbltap", replay.promptTurn);
@@ -1465,7 +1465,7 @@ function drawScoreArea() {
         replay.promptTurn();
       } else if (event.evt.button === RIGHT_MOUSE_BUTTON) {
         // Right-click.
-        arrows.click(event, ReplayArrowOrder.Turn);
+        arrows.click(event, ReplayBoardElement.Turn);
       }
     },
   );
@@ -1484,7 +1484,7 @@ function drawScoreArea() {
   globals.elements.scoreTextLabel.on(
     "click tap",
     (event: Konva.KonvaEventObject<MouseEvent>) => {
-      arrows.click(event, ReplayArrowOrder.Score);
+      arrows.click(event, ReplayBoardElement.Score);
     },
   );
 
@@ -1501,7 +1501,7 @@ function drawScoreArea() {
   globals.elements.scoreNumberLabel.on(
     "click tap",
     (event: Konva.KonvaEventObject<MouseEvent>) => {
-      arrows.click(event, ReplayArrowOrder.Score);
+      arrows.click(event, ReplayBoardElement.Score);
     },
   );
 
@@ -1519,7 +1519,7 @@ function drawScoreArea() {
   globals.elements.maxScoreNumberLabel.on(
     "click tap",
     (event: Konva.KonvaEventObject<MouseEvent>) => {
-      arrows.click(event, ReplayArrowOrder.MaxScore);
+      arrows.click(event, ReplayBoardElement.MaxScore);
     },
   );
 
@@ -1537,7 +1537,7 @@ function drawScoreArea() {
     globals.elements.playsTextLabel.on(
       "click tap",
       (event: Konva.KonvaEventObject<MouseEvent>) => {
-        arrows.click(event, ReplayArrowOrder.Clues);
+        arrows.click(event, ReplayBoardElement.Clues);
       },
     );
 
@@ -1551,7 +1551,7 @@ function drawScoreArea() {
     globals.elements.playsNumberLabel.on(
       "click tap",
       (event: Konva.KonvaEventObject<MouseEvent>) => {
-        arrows.click(event, ReplayArrowOrder.Clues);
+        arrows.click(event, ReplayBoardElement.Clues);
       },
     );
   }
@@ -1566,7 +1566,7 @@ function drawScoreArea() {
   cluesTextLabel.on(
     "click tap",
     (event: Konva.KonvaEventObject<MouseEvent>) => {
-      arrows.click(event, ReplayArrowOrder.Clues);
+      arrows.click(event, ReplayBoardElement.Clues);
     },
   );
 
@@ -1581,7 +1581,7 @@ function drawScoreArea() {
   cluesNumberLabel.on(
     "click tap",
     (event: Konva.KonvaEventObject<MouseEvent>) => {
-      arrows.click(event, ReplayArrowOrder.Clues);
+      arrows.click(event, ReplayBoardElement.Clues);
     },
   );
 
@@ -1890,15 +1890,15 @@ function drawSharedReplay() {
     leaderPlaceholder.replaceChildren();
 
     for (const spectator of globals.state.spectators) {
-      if (spectator.name === globals.state.replay.shared.leader) {
+      if (spectator.username === globals.state.replay.shared.leader) {
         continue;
       }
 
       const button = document.createElement("button");
 
-      button.textContent = spectator.name;
+      button.textContent = spectator.username;
       button.classList.add("button");
-      button.dataset["player"] = spectator.name;
+      button.dataset["player"] = spectator.username;
       button.addEventListener("click", (event) => {
         const element = event.target as HTMLElement;
         setLeader(element.dataset["player"]);
@@ -1921,7 +1921,7 @@ function setLeader(player: string | null | undefined) {
 
   globals.lobby.conn!.send("tableSetLeader", {
     tableID: globals.lobby.tableID,
-    name: player,
+    username: player,
   });
 }
 
@@ -2044,12 +2044,12 @@ function drawStatistics() {
   globals.elements.paceNumberLabel = paceNumberLabel;
 
   paceTextLabel.on("click tap", (event: Konva.KonvaEventObject<MouseEvent>) => {
-    arrows.click(event, ReplayArrowOrder.Pace);
+    arrows.click(event, ReplayBoardElement.Pace);
   });
   paceNumberLabel.on(
     "click tap",
     (event: Konva.KonvaEventObject<MouseEvent>) => {
-      arrows.click(event, ReplayArrowOrder.Pace);
+      arrows.click(event, ReplayBoardElement.Pace);
     },
   );
 
@@ -2080,7 +2080,7 @@ function drawStatistics() {
   efficiencyTextLabel.on(
     "click tap",
     (event: Konva.KonvaEventObject<MouseEvent>) => {
-      arrows.click(event, ReplayArrowOrder.Efficiency);
+      arrows.click(event, ReplayBoardElement.Efficiency);
     },
   );
 
@@ -2132,7 +2132,7 @@ function drawStatistics() {
   efficiencyMinNeededLabel.on(
     "click tap",
     (event: Konva.KonvaEventObject<MouseEvent>) => {
-      arrows.click(event, ReplayArrowOrder.MinEfficiency);
+      arrows.click(event, ReplayBoardElement.MinEfficiency);
     },
   );
   globals.elements.efficiencyMinNeededLabel = efficiencyMinNeededLabel;

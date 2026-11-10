@@ -114,7 +114,7 @@ export function cardsReducer(
       };
 
       // Positive clues
-      for (const order of action.list) {
+      for (const order of action.orders) {
         const card = getCard(newDeck, order);
         newDeck[order] = {
           ...card,
@@ -130,7 +130,7 @@ export function cardsReducer(
       // Negative clues
       const negativeClues = action.ignoreNegative
         ? []
-        : hand.filter((order) => !action.list.includes(order));
+        : hand.filter((order) => !action.orders.includes(order));
       for (const order of negativeClues) {
         const card = getCard(newDeck, order);
         newDeck[order] = {

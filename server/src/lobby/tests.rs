@@ -38,7 +38,7 @@ async fn uptime_is_private_before_history_or_discord_publication_postgres() {
     let history_before = lobby_history(&db.pool, 100).await.unwrap();
     for room in ["lobby", "table42"] {
         let message =
-            crate::actors::client_message("chat", &json!({"msg":"/UpTiMe","room":room})).unwrap();
+            crate::actors::client_message("chat", &json!({"text":"/UpTiMe","room":room})).unwrap();
         let effects = dispatch(&db.pool, "secret", &who, &[], None, message)
             .await
             .unwrap()
@@ -101,12 +101,12 @@ async fn lobby_relationships_atomic_settings_and_parameterization_postgres() {
     let a = db.user("Alice").await;
     let b = db.user("Bob").await;
     let who = caller(a, "Alice");
-    let data = json!({"name":"bób","room":"lobby"});
+    let data = json!({"username":"bób","room":"lobby"});
     let result = run(&db.pool, &who, &[], "chatFriend", data.clone()).await;
     assert_eq!(self_data(&result, "friends"), json!({"friends":["Bob"]}));
     let repeated = run(&db.pool, &who, &[], "chatFriend", data.clone()).await;
     assert!(
-        self_data(&repeated, "warning")["warning"]
+        self_data(&repeated, "warning")["message"]
             .as_str()
             .unwrap()
             .contains("already")
@@ -221,18 +221,18 @@ async fn blocked_players_cannot_message_each_other_postgres() {
     };
     let online = vec![online_user(a, "Alice"), online_user(b, "Bob")];
     let warning_of = |effects: &[Effect]| {
-        self_data(effects, "warning")["warning"]
+        self_data(effects, "warning")["message"]
             .as_str()
             .unwrap()
             .to_owned()
     };
     let notice_of = |effects: &[Effect]| {
-        self_data(effects, "chat")["msg"]
+        self_data(effects, "chat")["text"]
             .as_str()
             .unwrap()
             .to_owned()
     };
-    let bob_name = json!({"name":"bob","room":"lobby"});
+    let bob_name = json!({"username":"bob","room":"lobby"});
 
     let blocked = run(&db.pool, &alice, &[], "chatBlock", bob_name.clone()).await;
     assert!(notice_of(&blocked).contains("Successfully blocked"));
@@ -248,7 +248,14 @@ async fn blocked_players_cannot_message_each_other_postgres() {
     )
     .await;
     assert_eq!(notice_of(&list), "Currently blocked players: Bob");
-    let own = run(&db.pool, &alice, &[], "chatBlock", json!({"name":"Alice"})).await;
+    let own = run(
+        &db.pool,
+        &alice,
+        &[],
+        "chatBlock",
+        json!({"username":"Alice"}),
+    )
+    .await;
     assert!(warning_of(&own).contains("cannot block yourself"));
 
     // Messages are refused in both directions, and nothing is stored.
@@ -258,7 +265,7 @@ async fn blocked_players_cannot_message_each_other_postgres() {
             from,
             &online,
             "chatPM",
-            json!({"msg":"hello","recipient":to}),
+            json!({"text":"hello","recipient":to}),
         )
         .await;
         assert!(warning_of(&result).contains("cannot send a private message"));
@@ -288,10 +295,10 @@ async fn blocked_players_cannot_message_each_other_postgres() {
         &bob,
         &online,
         "chatPM",
-        json!({"msg":"hello again","recipient":"Alice"}),
+        json!({"text":"hello again","recipient":"Alice"}),
     )
     .await;
-    assert_eq!(self_data(&result, "chat")["msg"], "hello again");
+    assert_eq!(self_data(&result, "chat")["text"], "hello again");
     db.close().await;
 }
 
@@ -314,11 +321,11 @@ async fn lobby_private_messages_and_command_privacy_postgres() {
         &who,
         &online,
         "chatPM",
-        json!({"msg":" <secret> ","recipient":"bób"}),
+        json!({"text":" <secret> ","recipient":"bób"}),
     )
     .await;
     let message = self_data(&effects, "chat");
-    assert_eq!(message["msg"], "&lt;secret&gt;");
+    assert_eq!(message["text"], "&lt;secret&gt;");
     assert_eq!(message["recipient"], "Bob");
     assert!(message.get("chatID").is_none());
     assert_eq!(effects.len(), 2);
@@ -350,30 +357,30 @@ async fn lobby_private_messages_and_command_privacy_postgres() {
         &db.pool,
         &who,
         &[],
-        "chatPMHistoryGet",
+        "chatPMHistory",
         json!({"amount":1,"username":"BOB","room":"pmBob"}),
     )
     .await;
     let history = self_data(&result, "chatPMHistory");
-    assert_eq!(history["list"].as_array().unwrap().len(), 1);
-    assert_eq!(history["list"][0]["msg"], "&lt;secret&gt;");
+    assert_eq!(history["messages"].as_array().unwrap().len(), 1);
+    assert_eq!(history["messages"][0]["text"], "&lt;secret&gt;");
     let carol = caller(c, "Carol");
     let result = run(
         &db.pool,
         &carol,
         &[],
-        "chatPMHistoryGet",
+        "chatPMHistory",
         json!({"amount":10,"username":"Alice"}),
     )
     .await;
-    assert_eq!(self_data(&result, "chatPMHistory")["list"], json!([]));
+    assert_eq!(self_data(&result, "chatPMHistory")["messages"], json!([]));
     for text in ["/not-a-command private", "/token extra", "/help"] {
         let result = run(
             &db.pool,
             &who,
             &[],
             "chat",
-            json!({"msg":text,"room":"lobby"}),
+            json!({"text":text,"room":"lobby"}),
         )
         .await;
         assert!(
@@ -387,11 +394,11 @@ async fn lobby_private_messages_and_command_privacy_postgres() {
         &who,
         &[],
         "chat",
-        json!({"msg":"/ToKeN","room":"table42"}),
+        json!({"text":"/ToKeN","room":"table42"}),
     )
     .await;
     assert!(
-        self_data(&result, "chat")["msg"]
+        self_data(&result, "chat")["text"]
             .as_str()
             .unwrap()
             .contains("<code>")
@@ -403,7 +410,7 @@ async fn lobby_private_messages_and_command_privacy_postgres() {
             &who,
             &[],
             None,
-            crate::actors::client_message("chat", &json!({"msg":"not lobby","room":"table42"}))
+            crate::actors::client_message("chat", &json!({"text":"not lobby","room":"table42"}))
                 .unwrap()
         )
         .await
@@ -417,7 +424,7 @@ async fn lobby_private_messages_and_command_privacy_postgres() {
             &who,
             &[],
             None,
-            crate::actors::client_message("chat", &json!({"msg":"/findvariant","room":"table42"}))
+            crate::actors::client_message("chat", &json!({"text":"/findvariant","room":"table42"}))
                 .unwrap()
         )
         .await
@@ -436,7 +443,7 @@ async fn lobby_private_messages_and_command_privacy_postgres() {
         &who,
         &[],
         "chat",
-        json!({"msg":"/rules","room":"lobby"}),
+        json!({"text":"/rules","room":"lobby"}),
     )
     .await;
     assert_eq!(
@@ -451,12 +458,12 @@ async fn lobby_private_messages_and_command_privacy_postgres() {
         &who,
         &[],
         "chat",
-        json!({"msg":"<plain>","room":"lobby"}),
+        json!({"text":"<plain>","room":"lobby"}),
     )
     .await;
     assert!(
         result.iter().any(
-            |e| matches!(e,Effect::Publish(Publication::Broadcast(message)) if message.data()["msg"]=="&lt;plain&gt;")
+            |e| matches!(e,Effect::Publish(Publication::Broadcast(message)) if message.data()["text"]=="&lt;plain&gt;")
         )
     );
     let before: i64 = sqlx::query_scalar!("SELECT COUNT(*) AS \"v!\" FROM chat_log")
@@ -472,11 +479,11 @@ async fn lobby_private_messages_and_command_privacy_postgres() {
         &who,
         &online,
         "chatPM",
-        json!({"msg":"muted","recipient":"Bob"}),
+        json!({"text":"muted","recipient":"Bob"}),
     )
     .await;
     assert!(
-        self_data(&result, "warning")["warning"]
+        self_data(&result, "warning")["message"]
             .as_str()
             .unwrap()
             .contains("muted")
@@ -486,11 +493,11 @@ async fn lobby_private_messages_and_command_privacy_postgres() {
         &who,
         &[],
         "chat",
-        json!({"msg":"muted","room":"lobby"}),
+        json!({"text":"muted","room":"lobby"}),
     )
     .await;
     assert!(
-        self_data(&result, "warning")["warning"]
+        self_data(&result, "warning")["message"]
             .as_str()
             .unwrap()
             .contains("muted")
@@ -504,7 +511,7 @@ async fn lobby_private_messages_and_command_privacy_postgres() {
     );
     sqlx::query!("INSERT INTO chat_log(user_id,source,message,room) VALUES($1,'user','/token legacy-secret','lobby'),($1,'user','/unknown secret','lobby')", a).execute(&db.pool).await.unwrap();
     let history = lobby_history(&db.pool, 100).await.unwrap();
-    assert!(!history.iter().any(|r| r.msg.contains("secret")));
+    assert!(!history.iter().any(|r| r.text.contains("secret")));
     db.close().await;
 }
 
@@ -572,13 +579,13 @@ async fn lobby_directed_linked_seeds_and_histories_postgres() {
     let ga = game(&db, a, "p2v0s1", 20).await;
     let gb = game(&db, b, "p2v0s1", 25).await;
     let _gc = game(&db, c, "p2v0s2", 15).await;
-    let _ = run(&db.pool, &who, &[], "chatLink", json!({"name":"Bob"})).await;
+    let _ = run(&db.pool, &who, &[], "chatLink", json!({"username":"Bob"})).await;
     let _ = run(
         &db.pool,
         &caller(b, "Bob"),
         &[],
         "chatLink",
-        json!({"name":"Carol"}),
+        json!({"username":"Carol"}),
     )
     .await;
     assert_eq!(
@@ -603,7 +610,7 @@ async fn lobby_directed_linked_seeds_and_histories_postgres() {
         self_data(
             &run(&db.pool, &who, &[], "chatLinked", json!({})).await,
             "chat"
-        )["msg"]
+        )["text"]
             .as_str()
             .unwrap()
             .ends_with("Bob")
@@ -612,7 +619,7 @@ async fn lobby_directed_linked_seeds_and_histories_postgres() {
         &db.pool,
         &who,
         &[],
-        "historyGet",
+        "gameHistory",
         json!({"offset":0,"amount":10}),
     )
     .await;
@@ -626,12 +633,12 @@ async fn lobby_directed_linked_seeds_and_histories_postgres() {
             &db.pool,
             &who,
             &[],
-            "historyGet",
+            "gameHistory",
             json!({"offset":0,"amount":amount}),
         )
         .await;
         assert_eq!(
-            self_data(&result, "warning")["warning"],
+            self_data(&result, "warning")["message"],
             format!(
                 "The amount of games must be between 1 and {}.",
                 hanabi_protocol::MAX_PAGE_SIZE
@@ -642,7 +649,7 @@ async fn lobby_directed_linked_seeds_and_histories_postgres() {
         &db.pool,
         &who,
         &[],
-        "historyGetSeed",
+        "gameHistoryOtherScores",
         json!({"seed":"p2v0s1","offset":0,"amount":10}),
     )
     .await;
@@ -658,7 +665,7 @@ async fn lobby_directed_linked_seeds_and_histories_postgres() {
         &db.pool,
         &who,
         &[],
-        "historyGetSeed",
+        "gameHistoryOtherScores",
         json!({"seed":"p2v0s1","offset":1,"amount":1}),
     )
     .await;
@@ -673,12 +680,12 @@ async fn lobby_directed_linked_seeds_and_histories_postgres() {
         &db.pool,
         &who,
         &[],
-        "historyGetSeed",
+        "gameHistoryOtherScores",
         json!({"seed":"p2v0s1","offset":0,"amount":hanabi_protocol::MAX_PAGE_SIZE + 1}),
     )
     .await;
     assert_eq!(
-        self_data(&result, "warning")["warning"],
+        self_data(&result, "warning")["message"],
         format!(
             "The amount of games must be between 1 and {}.",
             hanabi_protocol::MAX_PAGE_SIZE
@@ -702,7 +709,7 @@ async fn lobby_directed_linked_seeds_and_histories_postgres() {
     )
     .await;
     assert!(
-        self_data(&result, "chat")["msg"]
+        self_data(&result, "chat")["text"]
             .as_str()
             .unwrap()
             .ends_with(&ga.to_string())
@@ -714,12 +721,12 @@ async fn lobby_directed_linked_seeds_and_histories_postgres() {
             .unwrap(),
         3
     );
-    let _ = run(&db.pool, &who, &[], "chatUnlink", json!({"name":"Bob"})).await;
+    let _ = run(&db.pool, &who, &[], "chatUnlink", json!({"username":"Bob"})).await;
     assert!(
         self_data(
             &run(&db.pool, &who, &[], "chatLinked", json!({})).await,
             "chat"
-        )["msg"]
+        )["text"]
             .as_str()
             .unwrap()
             .contains("do not have")

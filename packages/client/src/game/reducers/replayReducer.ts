@@ -121,8 +121,8 @@ function replayReducerFunction(
         `A "${action.type}" action was dispatched, but we are not in a shared replay.`,
       );
 
-      state.shared.leader = action.name;
-      state.shared.amLeader = action.name === metadata.ourUsername;
+      state.shared.leader = action.username;
+      state.shared.amLeader = action.username === metadata.ourUsername;
       break;
     }
 
@@ -132,7 +132,7 @@ function replayReducerFunction(
         `A "${action.type}" action was dispatched, but we are not in a shared replay.`,
       );
 
-      state.shared.restartDeclined = castDraft(action.names);
+      state.shared.restartDeclined = castDraft(action.usernames);
       break;
     }
 

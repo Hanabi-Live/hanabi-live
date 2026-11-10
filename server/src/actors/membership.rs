@@ -301,7 +301,7 @@ impl TableActor {
             } else if spectating {
                 Status::Spectating
             } else if pregame {
-                Status::PreGame
+                Status::Pregame
             } else {
                 Status::Playing
             },

@@ -36,7 +36,7 @@ describe("stateReducer", () => {
   test("joining a shared replay applies its efficiency modifier", () => {
     const state = stateReducer(initialState(defaultMetadata), {
       ...init(),
-      sharedReplayEffMod: 3,
+      sharedReplayEfficiencyModifier: 3,
     });
     expect(state.notes.efficiencyModifier).toBe(3);
   });

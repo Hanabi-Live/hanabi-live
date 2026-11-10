@@ -36,7 +36,7 @@ function friend(room: string, args: readonly string[]) {
   }
 
   globals.conn!.send("chatFriend", {
-    name,
+    username: name,
   });
 }
 chatCommands.set("friend", friend);
@@ -70,7 +70,7 @@ function link(room: string, args: readonly string[]) {
   }
 
   globals.conn!.send("chatLink", {
-    name,
+    username: name,
   });
 }
 
@@ -93,7 +93,7 @@ function unlink(room: string, args: readonly string[]) {
   }
 
   globals.conn!.send("chatUnlink", {
-    name,
+    username: name,
   });
 }
 
@@ -119,7 +119,7 @@ function blockCommand(command: "block" | "unblock") {
     }
 
     globals.conn!.send(command === "block" ? "chatBlock" : "chatUnblock", {
-      name: args.join(" "),
+      username: args.join(" "),
       room,
     });
   };
@@ -161,7 +161,7 @@ function pm(room: string, args: readonly string[]) {
   // Validate that the recipient is online.
   const users = [...globals.userMap.values()];
   const matchingUser = users.find(
-    (user) => user.name.toLowerCase() === recipient.toLowerCase(),
+    (user) => user.username.toLowerCase() === recipient.toLowerCase(),
   );
   if (matchingUser === undefined) {
     sendSelfPMFromServer(`User "${recipient}" is not currently online.`, room);
@@ -169,8 +169,8 @@ function pm(room: string, args: readonly string[]) {
   }
 
   globals.conn!.send("chatPM", {
-    msg,
-    recipient: matchingUser.name,
+    text: msg,
+    recipient: matchingUser.username,
   });
 }
 chatCommands.set("pm", pm);
@@ -240,7 +240,7 @@ function pmHistory(room: string, args: readonly string[]) {
     return;
   }
 
-  globals.conn!.send("chatPMHistoryGet", { ...data, room });
+  globals.conn!.send("chatPMHistory", { ...data, room });
 }
 chatCommands.set("pmhistory", pmHistory);
 
@@ -258,7 +258,7 @@ function setLeader(room: string, args: readonly string[]) {
   const username = args.join(" ");
   globals.conn!.send("tableSetLeader", {
     tableID: globals.tableID,
-    name: username,
+    username,
   });
 }
 chatCommands.set("setleader", setLeader);
@@ -442,7 +442,7 @@ chatCommands.set("unfriend", (room: string, args: readonly string[]) => {
   }
 
   globals.conn!.send("chatUnfriend", {
-    name,
+    username: name,
   });
 });
 

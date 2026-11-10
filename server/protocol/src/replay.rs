@@ -16,7 +16,7 @@ use super::*;
 pub struct ReplayGame {
     #[schemars(range(min = 0, max = MAX_SAFE_INTEGER))]
     pub id: i64,
-    pub players: Vec<String>,
+    pub player_names: Vec<String>,
     pub deck: Vec<ReplayCard>,
     pub actions: Vec<ReplayAction>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
@@ -71,10 +71,10 @@ pub struct ReplayOptions {
     pub timed: Option<bool>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     #[schemars(with = "i64", range(min = -MAX_SAFE_INTEGER, max = MAX_SAFE_INTEGER))]
-    pub time_base: Option<i64>,
+    pub time_base_seconds: Option<i64>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     #[schemars(with = "i64", range(min = -MAX_SAFE_INTEGER, max = MAX_SAFE_INTEGER))]
-    pub time_per_turn: Option<i64>,
+    pub time_per_turn_seconds: Option<i64>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     #[schemars(with = "bool")]
     pub speedrun: Option<bool>,
@@ -119,7 +119,7 @@ pub struct ReplayImport {
     pub id: Option<i64>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     #[schemars(with = "Vec<String>", length(max = MAX_PLAYERS))]
-    pub players: Option<Vec<String>>,
+    pub player_names: Option<Vec<String>>,
     /// The deck, by card order.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     #[schemars(with = "Vec<ImportCard>", length(max = MAX_DECK_SIZE))]
@@ -198,10 +198,10 @@ pub struct ImportOptions {
     pub timed: Option<bool>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     #[schemars(with = "i64", range(min = -MAX_SAFE_INTEGER, max = MAX_SAFE_INTEGER))]
-    pub time_base: Option<i64>,
+    pub time_base_seconds: Option<i64>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     #[schemars(with = "i64", range(min = -MAX_SAFE_INTEGER, max = MAX_SAFE_INTEGER))]
-    pub time_per_turn: Option<i64>,
+    pub time_per_turn_seconds: Option<i64>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     #[schemars(with = "bool")]
     pub speedrun: Option<bool>,
@@ -242,7 +242,7 @@ pub struct ReplayIndicator {
     #[serde(rename = "tableID")]
     pub table_id: TableId,
     #[schemars(with = "ReplayArrowTarget")]
-    pub order: i64,
+    pub target: i64,
 }
 
 /// What a shared-replay arrow points at: a card, or a part of the board.
@@ -250,7 +250,7 @@ pub struct ReplayIndicator {
 #[serde(untagged)]
 pub enum ReplayArrowTarget {
     Card(CardOrder),
-    Board(ReplayArrowOrder),
+    Board(ReplayBoardElement),
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
@@ -276,7 +276,7 @@ pub enum ReplaySoundEffect {
 pub struct ReplayLeader {
     #[serde(rename = "tableID")]
     pub table_id: TableId,
-    pub name: String,
+    pub username: String,
 }
 
 /// The players in a shared replay who will not play again if the leader restarts.
@@ -286,7 +286,7 @@ pub struct RestartDeclined {
     #[serde(rename = "tableID")]
     pub table_id: TableId,
     #[schemars(length(max = MAX_PLAYERS))]
-    pub names: Vec<String>,
+    pub usernames: Vec<String>,
 }
 
 /// A spectator suggesting a turn to the shared replay's leader.
@@ -295,7 +295,7 @@ pub struct RestartDeclined {
 pub struct Suggestion {
     #[serde(rename = "tableID")]
     pub table_id: TableId,
-    pub user_name: String,
+    pub username: String,
     #[schemars(range(min = -MAX_SAFE_INTEGER, max = MAX_SAFE_INTEGER))]
     pub segment: i64,
 }
@@ -357,9 +357,11 @@ pub enum HypotheticalAction {
         giver: i64,
         #[schemars(with = "PlayerIndex")]
         target: i64,
-        /// The orders of the cards the clue touched.
+        /// The orders of the cards the clue touched. Checkpoints written before November 10th, 2026
+        /// name it `list`.
+        #[serde(alias = "list")]
         #[schemars(with = "Vec<CardOrder>", extend("x-readonly" = true))]
-        list: Vec<SafeInteger>,
+        orders: Vec<SafeInteger>,
         ignore_negative: bool,
     },
     Turn {
@@ -398,5 +400,5 @@ pub struct ReplayEfficiencyMod {
     #[serde(rename = "tableID")]
     pub table_id: TableId,
     #[schemars(range(min = i32::MIN, max = i32::MAX))]
-    pub r#mod: i32,
+    pub efficiency_modifier: i32,
 }

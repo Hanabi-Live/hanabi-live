@@ -55,7 +55,7 @@ export function TablesList(): React.JSX.Element {
         </thead>
         <tbody id="lobby-games-table-tbody">
           {rows.map((row) => (
-            <TableRowView key={row.table.id} row={row} />
+            <TableRowView key={row.table.tableID} row={row} />
           ))}
         </tbody>
       </table>
@@ -91,7 +91,7 @@ function TableRowView({
   return (
     <tr
       className={classNames.join(" ")}
-      id={`${action}-${table.id}`}
+      id={`${action}-${table.tableID}`}
       onClick={(event) => {
         if (event.ctrlKey) {
           // Copy the URL that clicking on this row would go to.
@@ -150,7 +150,7 @@ function TableRowView({
         {status !== "Not Started" && hasFriends && ` (${table.progress}%)`}
       </td>
       <td>
-        {table.players.map((player, playerIndex) => {
+        {table.playerNames.map((player, playerIndex) => {
           let className: string | undefined;
           if (player === username) {
             className = "name-me";
@@ -192,7 +192,7 @@ function TableRowView({
             : undefined
         }
       >
-        {table.spectators.map(({ name }, i) => (
+        {table.spectators.map(({ username: name }, i) => (
           <Fragment key={name}>
             {i > 0 && ", "}
             {friends.includes(name) ? (
@@ -291,18 +291,18 @@ function getStatus(table: Table) {
 function getPath(table: Table, action: TableRow["action"]): string {
   switch (action) {
     case "join": {
-      return `${PATH.PRE_GAME}/${table.id}`;
+      return `${PATH.PRE_GAME}/${table.tableID}`;
     }
 
     case "resume": {
-      return `${PATH.GAME}/${table.id}`;
+      return `${PATH.GAME}/${table.tableID}`;
     }
 
     case "spectate": {
       // A shared replay of a stored game gets a link that lasts beyond this table.
       return table.sharedReplay && table.databaseID !== undefined
         ? `${PATH.SHARED_REPLAY}/${table.databaseID}`
-        : `${PATH.GAME}/${table.id}`;
+        : `${PATH.GAME}/${table.tableID}`;
     }
   }
 }

@@ -26,11 +26,11 @@ export function onSpectatorsChanged(data: {
     // Build the string that shows all the names.
     let nameEntries = "";
     for (const spectator of data.spectators) {
-      const name = escapeHtml(spectator.name);
+      const name = escapeHtml(spectator.username);
       let nameEntry = "<li>";
-      if (spectator.name === globals.metadata.ourUsername) {
+      if (spectator.username === globals.metadata.ourUsername) {
         nameEntry += `<span class="name-me">${name}</span>`;
-      } else if (globals.lobby.friends.includes(spectator.name)) {
+      } else if (globals.lobby.friends.includes(spectator.username)) {
         nameEntry += `<span class="friend">${name}</span>`;
       } else {
         nameEntry += name;
@@ -46,7 +46,7 @@ export function onSpectatorsChanged(data: {
           `Failed to find the player name at index: ${spectator.shadowingPlayerIndex}`,
         );
 
-        if (playerName !== spectator.name) {
+        if (playerName !== spectator.username) {
           // eslint-disable-next-line complete/require-ascii
           nameEntry += ` (🕵️ <em>${escapeHtml(playerName)}</em>)`;
         }

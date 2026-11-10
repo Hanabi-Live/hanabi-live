@@ -206,7 +206,7 @@ export class NameFrame extends Konva.Group {
 
       // Validate that we are not shifting to the perspective that we are already at.
       const ourSpectator = globals.state.spectators.find(
-        (spectator) => spectator.name === globals.metadata.ourUsername,
+        (spectator) => spectator.username === globals.metadata.ourUsername,
       );
       if (shadowingPlayerIndex === ourSpectator?.shadowingPlayerIndex) {
         modals.showWarning(

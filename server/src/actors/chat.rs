@@ -23,14 +23,14 @@ const MIN_IMPOSTOR_PLAYERS: usize = MIN_PLAYERS + 1;
 
 pub(super) fn server_chat(id: TableId, message: &str) -> Chat {
     Chat {
-        who: Some("Hanab Live".into()),
+        username: Some("Hanab Live".into()),
         room: Some(format!("table{id}")),
         ..Chat::new(message, ChatSource::Server, chat_time())
     }
 }
 pub(super) fn authored_chat(id: TableId, name: &str, message: &str) -> Chat {
     Chat {
-        who: Some(name.into()),
+        username: Some(name.into()),
         room: Some(format!("table{id}")),
         ..Chat::new(
             crate::accounts::escape_html(message),

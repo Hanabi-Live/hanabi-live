@@ -22,15 +22,15 @@ export function getOptionDescriptions(
   const descriptions: OptionDescription[] = [];
 
   if (options.timed) {
-    const timeBase = secondsToClockString(options.timeBase);
+    const timeBase = secondsToClockString(options.timeBaseSeconds);
     descriptions.push({
       name: "timer",
       icon: OptionIcons.Timed,
-      label: `(${timeBase} + ${secondsToClockString(options.timePerTurn)})`,
+      label: `(${timeBase} + ${secondsToClockString(options.timePerTurnSeconds)})`,
       tooltip: `This is a <strong>Timed Game</strong>. The base time is <strong>${timeBase} minute${
-        options.timeBase === SECONDS_PER_MINUTE ? "" : "s"
-      }</strong> plus <strong>${options.timePerTurn} second${
-        options.timePerTurn === 1 ? "" : "s"
+        options.timeBaseSeconds === SECONDS_PER_MINUTE ? "" : "s"
+      }</strong> plus <strong>${options.timePerTurnSeconds} second${
+        options.timePerTurnSeconds === 1 ? "" : "s"
       }</strong> per turn.`,
     });
   }

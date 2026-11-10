@@ -126,7 +126,7 @@ function finishedDownloadingImages() {
 
   // Tell the server that we are finished loading the UI and we now need the specific actions that
   // have taken place in this game so far.
-  globals.lobby.conn!.send("getGameInfo2", {
+  globals.lobby.conn!.send("getGameState", {
     tableID: globals.lobby.tableID,
   });
 }

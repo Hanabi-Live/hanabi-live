@@ -320,7 +320,7 @@ pub(crate) fn client_message(name: &str, data: &Value) -> Result<ClientMessage> 
 pub(crate) fn test_table() -> hanabi_protocol::Table {
     hanabi_protocol::Table {
         database_id: None,
-        id: TableId(1),
+        table_id: TableId(1),
         joined: false,
         max_players: hanabi_protocol::DEFAULT_MAX_PLAYERS,
         name: "test".into(),
@@ -328,7 +328,7 @@ pub(crate) fn test_table() -> hanabi_protocol::Table {
         options: hanabi_protocol::GameOptions::default(),
         owner_id: UserId(1),
         password_protected: false,
-        players: vec!["test".into()],
+        player_names: vec!["test".into()],
         progress: 0,
         running: false,
         shared_replay: false,

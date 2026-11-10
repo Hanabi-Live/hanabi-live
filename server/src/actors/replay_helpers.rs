@@ -48,8 +48,8 @@ pub fn parse(input: &ReplayImport) -> CommandResult<Imported> {
     let mut options = Options {
         variant_name,
         timed: raw.timed.unwrap_or(defaults.timed),
-        time_base: raw.time_base.map_or(defaults.time_base, seconds),
-        time_per_turn: raw.time_per_turn.unwrap_or(defaults.time_per_turn),
+        time_base: raw.time_base_seconds.map_or(defaults.time_base, seconds),
+        time_per_turn: raw.time_per_turn_seconds.unwrap_or(defaults.time_per_turn),
         speedrun: raw.speedrun.unwrap_or(defaults.speedrun),
         deck_plays: raw.deck_plays.unwrap_or(defaults.deck_plays),
         empty_clues: raw.empty_clues.unwrap_or(defaults.empty_clues),
@@ -61,7 +61,7 @@ pub fn parse(input: &ReplayImport) -> CommandResult<Imported> {
             .unwrap_or(defaults.detrimental_characters),
         ..defaults
     };
-    let mut players = input.players.clone().unwrap_or_default();
+    let mut players = input.player_names.clone().unwrap_or_default();
     if players.is_empty() {
         let pattern = regex!(crate::game::SEED_PATTERN);
         let count: usize = pattern
@@ -260,11 +260,11 @@ mod tests {
         assert_eq!(imported.game.players.len(), 2);
         assert_eq!(imported.notes[0][1], "a");
         for input in [
-            json!({"seed":"p2v0s1","options":{"timeBase":1.5}}),
+            json!({"seed":"p2v0s1","options":{"timeBaseSeconds":1.5}}),
             json!({"seed":"p2v0s1","source":"another tool"}),
             json!({"seed":"p2v0s1","actions":[{"type":5,"target":-1,"turn":1}]}),
             json!({"seed":"p2v0s1","options":{"tableName":"x"}}),
-            json!({"seed":"p2v0s1","players":null}),
+            json!({"seed":"p2v0s1","playerNames":null}),
             json!({"seed":"p2v0s1","options":{"speedrun":null}}),
             json!({"seed":"p2v0s1","notes":[[null,"a"],[]]}),
         ] {
@@ -315,7 +315,7 @@ mod tests {
         let different = (1..other.len()).find(|&i| other[i] != other[0]).unwrap();
         other.swap(0, different);
         let input = |seed: &str, deck: Option<&[Card]>| {
-            let mut input = json!({"players":["Alice","Bob"],"seed":seed});
+            let mut input = json!({"playerNames":["Alice","Bob"],"seed":seed});
             if let Some(deck) = deck {
                 input["deck"] = json!(deck);
             }

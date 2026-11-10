@@ -21,7 +21,7 @@ export function UserLink({
   readonly row: UserRow;
 }): React.JSX.Element {
   const blocked = useAppSelector((state) =>
-    state.session.blocked.includes(user.name),
+    state.session.blocked.includes(user.username),
   );
   const anchorRef = useRef<HTMLAnchorElement>(null);
   const [menu] = useState(() => document.createElement("div"));
@@ -37,7 +37,7 @@ export function UserLink({
     };
   }, [menu]);
 
-  const profileURL = `/scores/${encodeURIComponent(user.name)}`;
+  const profileURL = `/scores/${encodeURIComponent(user.username)}`;
   function closeMenu() {
     tooltipRef.current?.close();
   }
@@ -64,7 +64,7 @@ export function UserLink({
         rel="noopener noreferrer"
         target="_blank"
       >
-        {user.name}
+        {user.username}
       </a>
       {createPortal(
         <ul className="user-menu">
@@ -86,7 +86,7 @@ export function UserLink({
                   icon="fa-envelope"
                   onClick={() => {
                     closeMenu();
-                    startPrivateMessage(user.name);
+                    startPrivateMessage(user.username);
                   }}
                 >
                   Private Message
@@ -98,7 +98,9 @@ export function UserLink({
                     icon="fa-user-minus"
                     onClick={() => {
                       closeMenu();
-                      globals.conn!.send("chatUnfriend", { name: user.name });
+                      globals.conn!.send("chatUnfriend", {
+                        username: user.username,
+                      });
                     }}
                   >
                     Remove from Friends
@@ -108,7 +110,9 @@ export function UserLink({
                     icon="fa-user-plus"
                     onClick={() => {
                       closeMenu();
-                      globals.conn!.send("chatFriend", { name: user.name });
+                      globals.conn!.send("chatFriend", {
+                        username: user.username,
+                      });
                     }}
                   >
                     Add to Friends
@@ -121,7 +125,7 @@ export function UserLink({
                   onClick={() => {
                     closeMenu();
                     globals.conn!.send(blocked ? "chatUnblock" : "chatBlock", {
-                      name: user.name,
+                      username: user.username,
                       room: "lobby",
                     });
                   }}

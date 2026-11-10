@@ -63,7 +63,7 @@ function user(
 ): ServerCommandData["user"] {
   return {
     userID: userIdSchema.parse(userID),
-    name,
+    username: name,
     status,
     hGroup: false,
     hGroupLevel: 0,
@@ -165,13 +165,13 @@ describe("UsersList", () => {
 
     fireEvent.click(screen.getByText("Alice"));
     fireEvent.click(screen.getByText("Add to Friends"));
-    expect(send).toHaveBeenCalledWith("chatFriend", { name: "Alice" });
+    expect(send).toHaveBeenCalledWith("chatFriend", { username: "Alice" });
     expect(screen.queryByText("Add to Friends")).toBeNull();
 
     fireEvent.click(screen.getByText("Alice"));
     fireEvent.click(screen.getByText("Block"));
     expect(send).toHaveBeenCalledWith("chatBlock", {
-      name: "Alice",
+      username: "Alice",
       room: "lobby",
     });
     act(() => {
@@ -188,10 +188,10 @@ describe("UsersList", () => {
   });
 
   test("links the status of users at a table, except from the pre-game", () => {
-    const table = { id: TABLE_ID } as ServerCommandData["table"];
+    const table = { tableID: TABLE_ID } as ServerCommandData["table"];
     store.dispatch(tablesListed([table]));
     store.dispatch(
-      usersListed([user(1, "Alice", Status.PreGame), user(2, "Bob")]),
+      usersListed([user(1, "Alice", Status.Pregame), user(2, "Bob")]),
     );
     renderList();
 

@@ -288,7 +288,7 @@ impl TableActor {
             hanabi_protocol::server::REPLAY_LEADER,
             hanabi_protocol::ReplayLeader {
                 table_id: self.table.id,
-                name: target.1.clone(),
+                username: target.1.clone(),
             },
         );
         if matches!(self.table.phase, Phase::Pregame { .. }) {
@@ -313,7 +313,7 @@ impl TableActor {
                 hanabi_protocol::server::SUGGESTION,
                 hanabi_protocol::Suggestion {
                     table_id: self.table.id,
-                    user_name: session.name.clone(),
+                    username: session.name.clone(),
                     segment,
                 },
             ),
@@ -351,11 +351,11 @@ impl TableActor {
                     },
                 )
             }
-            R::Arrow { order, .. } => Outgoing::new(
+            R::Arrow { target, .. } => Outgoing::new(
                 hanabi_protocol::server::REPLAY_INDICATOR,
                 hanabi_protocol::ReplayIndicator {
                     table_id: self.table.id,
-                    order,
+                    target,
                 },
             ),
             R::Sound { sound, .. } => Outgoing::new(
@@ -407,8 +407,10 @@ impl TableActor {
                     },
                 )
             }
-            R::HypoToggleRevealed { .. } => {
-                replay.show_drawn_cards = !replay.show_drawn_cards;
+            R::HypoShowDrawnCards {
+                show_drawn_cards, ..
+            } => {
+                replay.show_drawn_cards = show_drawn_cards;
                 Outgoing::new(
                     hanabi_protocol::server::HYPO_SHOW_DRAWN_CARDS,
                     hanabi_protocol::HypoShowDrawnCards {
@@ -417,13 +419,16 @@ impl TableActor {
                     },
                 )
             }
-            R::EfficiencyMod { r#mod, .. } => {
-                replay.efficiency_modifier = r#mod;
+            R::EfficiencyMod {
+                efficiency_modifier,
+                ..
+            } => {
+                replay.efficiency_modifier = efficiency_modifier;
                 Outgoing::new(
                     hanabi_protocol::server::REPLAY_EFFICIENCY_MOD,
                     hanabi_protocol::ReplayEfficiencyMod {
                         table_id: self.table.id,
-                        r#mod: replay.efficiency_modifier,
+                        efficiency_modifier: replay.efficiency_modifier,
                     },
                 )
             }
@@ -613,7 +618,7 @@ impl TableActor {
                     if a.spectator {
                         Status::Spectating
                     } else {
-                        Status::PreGame
+                        Status::Pregame
                     },
                     Some(self.table.id),
                 ));
@@ -668,7 +673,7 @@ impl TableActor {
             hanabi_protocol::server::RESTART_DECLINED,
             hanabi_protocol::RestartDeclined {
                 table_id: self.table.id,
-                names: self.restart_declined_names(),
+                usernames: self.restart_declined_names(),
             },
         );
         self.publish(e).await

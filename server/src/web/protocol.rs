@@ -57,9 +57,9 @@ mod tests {
             let value = match command {
                 "setting" => json!({"name":"volume","setting":"50"}),
                 "inactive" => json!({"inactive":true}),
-                "historyGetSeed" => json!({"seed":"p2v0s1","offset":0,"amount":10}),
-                "chat" => json!({"msg":"hello","room":"lobby"}),
-                "chatPM" => json!({"msg":"hello","recipient":"Alice"}),
+                "gameHistoryOtherScores" => json!({"seed":"p2v0s1","offset":0,"amount":10}),
+                "chat" => json!({"text":"hello","room":"lobby"}),
+                "chatPM" => json!({"text":"hello","recipient":"Alice"}),
                 "replayCreate" => json!({"source":"id","visibility":"shared","databaseID":1}),
                 "action" => json!({"tableID":1,"type":3,"target":0}),
                 "pause" => json!({"tableID":1,"setting":"pause"}),
@@ -67,9 +67,9 @@ mod tests {
                 "tag" | "tagDelete" => json!({"tableID":1,"msg":"test"}),
                 "replayAction" => json!({"tableID":1,"type":"hypoStart"}),
                 "tableRestartDecline" => json!({"tableID":1,"declined":true}),
-                "sync" | "lobbyLoad" | "tableCreate" | "historyGet" | "chatLinked"
+                "sync" | "lobbyLoad" | "tableCreate" | "gameHistory" | "chatLinked"
                 | "chatFriend" | "chatUnfriend" | "chatLink" | "chatUnlink" | "chatBlock"
-                | "chatUnblock" | "chatBlocked" | "chatPMHistoryGet" | "tagSearch" => json!({}),
+                | "chatUnblock" | "chatBlocked" | "chatPMHistory" | "tagSearch" => json!({}),
                 _ => json!({"tableID":1}),
             };
             parse(&format!("{command} {value}")).unwrap_or_else(|e| panic!("{command}: {e}"));
@@ -77,10 +77,10 @@ mod tests {
     }
     #[test]
     fn private_messages_take_only_a_message_and_recipient() {
-        assert!(parse(r#"chatPM {"msg":"hello","recipient":"Alice"}"#).is_ok());
+        assert!(parse(r#"chatPM {"text":"hello","recipient":"Alice"}"#).is_ok());
         for data in [
-            json!({"msg":"hello","recipient":"Alice","room":"lobby"}),
-            json!({"msg":"hello","recipient":"Alice","admin":true}),
+            json!({"text":"hello","recipient":"Alice","room":"lobby"}),
+            json!({"text":"hello","recipient":"Alice","admin":true}),
         ] {
             assert!(parse(&format!("chatPM {data}")).is_err());
         }

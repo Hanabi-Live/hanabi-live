@@ -10,7 +10,7 @@ import { SoundType } from "./game/types/SoundType";
 
 type WireEvent = ServerCommandData["gameAction"]["action"];
 type WireCardIdentity =
-  ServerCommandData["cardIdentities"]["cardIdentities"][number];
+  ServerCommandData["cardIdentities"]["identities"][number];
 
 /** The game state indexes some lists by seat, so each needs one entry per player. */
 export function toPlayerTuple<T>(

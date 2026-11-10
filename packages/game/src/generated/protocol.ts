@@ -212,11 +212,11 @@ export const catalogVariantSchema = z.strictObject({
  */
 export const cardNoteSchema = z.strictObject({
   isSpectator: z.boolean(),
-  /**
-   * The username of the person setting the note.
-   */
-  name: z.string(),
   text: z.string(),
+  /**
+   * The person setting the note.
+   */
+  username: z.string(),
 });
 
 /**
@@ -308,7 +308,7 @@ export const gameEventSchema = z.discriminatedUnion("type", [
     /**
      * The orders of the cards the clue touched.
      */
-    list: z.array(cardOrderSchema).readonly(),
+    orders: z.array(cardOrderSchema).readonly(),
     target: playerIndexSchema,
     turn: z
       .number()
@@ -336,7 +336,7 @@ export const gameEventSchema = z.discriminatedUnion("type", [
     votes: z.array(playerIndexSchema).readonly().nullable(),
   }),
   z.strictObject({
-    duration: z
+    durationMs: z
       .number()
       .int()
       .min(-9_007_199_254_740_991)
@@ -344,7 +344,7 @@ export const gameEventSchema = z.discriminatedUnion("type", [
     /**
      * Each player's time, in seat order.
      */
-    playerTimes: z.array(safeIntegerSchema).min(2).max(6).readonly(),
+    playerTimesMs: z.array(safeIntegerSchema).min(2).max(6).readonly(),
     type: z.literal("playerTimes"),
   }),
 ]);
@@ -387,8 +387,14 @@ export const gameOptionsSchema = z
     seed: z.string().min(1).max(32).optional(),
     speedrun: z.boolean().default(false),
     tableName: z.string().min(1).optional(),
-    timeBase: z.number().default(0),
-    timePerTurn: z
+    /**
+     * Checkpoints written before November 10th, 2026 name it `timeBase`.
+     */
+    timeBaseSeconds: z.number().default(0),
+    /**
+     * Checkpoints written before November 10th, 2026 name it `timePerTurn`.
+     */
+    timePerTurnSeconds: z
       .number()
       .int()
       .min(-9_007_199_254_740_991)
@@ -432,9 +438,10 @@ export const hypotheticalActionSchema = z.discriminatedUnion("type", [
     giver: playerIndexSchema,
     ignoreNegative: z.boolean(),
     /**
-     * The orders of the cards the clue touched.
+     * The orders of the cards the clue touched. Checkpoints written before November 10th, 2026
+     * name it `list`.
      */
-    list: z.array(cardOrderSchema).readonly(),
+    orders: z.array(cardOrderSchema).readonly(),
     target: playerIndexSchema,
     type: z.literal("clue"),
   }),
@@ -461,6 +468,6 @@ export const hypotheticalActionSchema = z.discriminatedUnion("type", [
  */
 export const playerNotesSchema = z.strictObject({
   isSpectator: z.boolean(),
-  name: z.string(),
   notes: z.array(z.string()),
+  username: z.string(),
 });

@@ -12,11 +12,11 @@ import { ServerHandlers } from "./serverHandlers";
 export const commands = new ServerHandlers();
 
 commands.set("warning", (data) => {
-  console.warn(data.warning);
+  console.warn(data.message);
   globals.ui?.cancelPendingRestart();
   modals.closeModals(true);
   setTimeout(() => {
-    modals.showWarning(data.warning);
+    modals.showWarning(data.message);
     // Re-activate some lobby elements.
     $("#nav-buttons-lobby-create-game").removeClass("disabled");
     if (globals.currentScreen === Screen.PreGame) {
@@ -27,8 +27,8 @@ commands.set("warning", (data) => {
 });
 
 commands.set("error", (data) => {
-  console.error(data.error);
-  modals.showError(data.error);
+  console.error(data.message);
+  modals.showError(data.message);
 
   // Disconnect from the server, if connected.
   if (globals.conn !== null) {
@@ -50,7 +50,7 @@ commands.set("chatDelete", (data) => {
 commands.set("chatPMHistory", (data) => {
   const room = data.room ?? "lobby";
 
-  if (data.list.length === 0) {
+  if (data.messages.length === 0) {
     chat.sendSelfPMFromServer(
       "No private messages found.",
       room,
@@ -59,7 +59,7 @@ commands.set("chatPMHistory", (data) => {
     return;
   }
 
-  for (const line of data.list) {
+  for (const line of data.messages) {
     chat.addPMHistory(line, room);
   }
 });
@@ -113,11 +113,11 @@ function acknowledgeChatRead(
 // Received by the client when someone either starts or stops typing.
 commands.set("chatTyping", (data) => {
   if (data.typing) {
-    if (!globals.peopleTyping.includes(data.name)) {
-      globals.peopleTyping.push(data.name);
+    if (!globals.peopleTyping.includes(data.username)) {
+      globals.peopleTyping.push(data.username);
     }
   } else {
-    const index = globals.peopleTyping.indexOf(data.name);
+    const index = globals.peopleTyping.indexOf(data.username);
     if (index !== -1) {
       globals.peopleTyping.splice(index, 1);
     }
@@ -129,7 +129,7 @@ commands.set("chatTyping", (data) => {
 // chat messages. It is also sent upon connecting to a game to give a list of past in-game chat
 // messages.
 commands.set("chatList", (data) => {
-  for (const line of data.list) {
+  for (const line of data.messages) {
     chat.add(line, true); // The second argument is "fast"
   }
   if (globals.ui !== null && !$("#game-chat-modal").is(":visible")) {

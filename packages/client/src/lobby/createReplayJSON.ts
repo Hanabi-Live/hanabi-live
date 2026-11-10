@@ -56,7 +56,10 @@ export function createJSONFromReplay(room: string): void {
 
   // Anonymize the players
   const game: GameJSON = {
-    players: DEFAULT_PLAYER_NAMES.slice(0, globals.metadata.playerNames.length),
+    playerNames: DEFAULT_PLAYER_NAMES.slice(
+      0,
+      globals.metadata.playerNames.length,
+    ),
     deck: [],
     actions: [],
     options: {

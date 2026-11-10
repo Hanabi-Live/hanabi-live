@@ -95,7 +95,7 @@ impl TableActor {
             ClientMessage::TableStart(r) => {
                 let players = self.table.players();
                 // A start based on a stale view of the table does nothing.
-                if r.intended_players.as_ref().is_some_and(|names| {
+                if r.intended_player_names.as_ref().is_some_and(|names| {
                     names.len() != players.len() || players.iter().any(|p| !names.contains(&p.name))
                 }) {
                     return Ok(());

@@ -60,7 +60,7 @@
     "direction": "client",
     "command": "chat",
     "input": {
-      "msg": "&lt;hello&gt;",
+      "text": "&lt;hello&gt;",
       "room": "lobby"
     },
     "valid": true
@@ -70,7 +70,7 @@
     "direction": "client",
     "command": "chat",
     "input": {
-      "msg": "hello",
+      "text": "hello",
       "room": "lobby",
       "requestID": "r"
     },
@@ -81,7 +81,7 @@
     "direction": "client",
     "command": "chat",
     "input": {
-      "msg": "",
+      "text": "",
       "room": "lobby"
     },
     "valid": false
@@ -91,7 +91,7 @@
     "direction": "client",
     "command": "chat",
     "input": {
-      "msg": "hello"
+      "text": "hello"
     },
     "valid": false
   },
@@ -100,7 +100,7 @@
     "direction": "client",
     "command": "chat",
     "input": {
-      "msg": "hello",
+      "text": "hello",
       "room": "lobby",
       "admin": true
     },
@@ -109,7 +109,7 @@
   {
     "name": "private history defaults amount but preserves absent filters",
     "direction": "client",
-    "command": "chatPMHistoryGet",
+    "command": "chatPMHistory",
     "input": {},
     "valid": true,
     "normalized": {
@@ -119,7 +119,7 @@
   {
     "name": "private history accepts signed safe boundaries",
     "direction": "client",
-    "command": "chatPMHistoryGet",
+    "command": "chatPMHistory",
     "input": {
       "amount": -9007199254740991,
       "room": "",
@@ -130,7 +130,7 @@
   {
     "name": "private history rejects unsafe integers",
     "direction": "client",
-    "command": "chatPMHistoryGet",
+    "command": "chatPMHistory",
     "input": {
       "amount": 9007199254740992
     },
@@ -139,7 +139,7 @@
   {
     "name": "private history rejects null filters",
     "direction": "client",
-    "command": "chatPMHistoryGet",
+    "command": "chatPMHistory",
     "input": {
       "username": null
     },
@@ -148,7 +148,7 @@
   {
     "name": "native parser retains integral float token rejection",
     "direction": "client",
-    "command": "chatPMHistoryGet",
+    "command": "chatPMHistory",
     "input": {
       "amount": 1.0
     },
@@ -162,7 +162,7 @@
     "input": {},
     "valid": true,
     "normalized": {
-      "name": "",
+      "username": "",
       "room": ""
     }
   },
@@ -258,7 +258,7 @@
     "command": "tableStart",
     "input": {
       "tableID": 1,
-      "intendedPlayers": ["", "", "", "", "", ""]
+      "intendedPlayerNames": ["", "", "", "", "", ""]
     },
     "valid": true
   },
@@ -268,7 +268,7 @@
     "command": "tableStart",
     "input": {
       "tableID": 1,
-      "intendedPlayers": ["a", "b", "c", "d", "e", "f", "g"]
+      "intendedPlayerNames": ["a", "b", "c", "d", "e", "f", "g"]
     },
     "valid": false
   },
@@ -296,7 +296,7 @@
     "direction": "server",
     "command": "chat",
     "input": {
-      "msg": "&amp;",
+      "text": "&amp;",
       "source": "server",
       "datetime": "2026-01-01T12:00:00.000Z"
     },
@@ -307,10 +307,10 @@
     "direction": "server",
     "command": "chat",
     "input": {
-      "msg": "hello",
+      "text": "hello",
       "source": "user",
       "datetime": "2026-01-01T12:00:00.000Z",
-      "who": "",
+      "username": "",
       "room": "",
       "recipient": "",
       "chatID": 9007199254740991
@@ -322,10 +322,10 @@
     "direction": "server",
     "command": "chat",
     "input": {
-      "msg": "hello",
+      "text": "hello",
       "source": "server",
       "datetime": "2026-01-01T12:00:00.000Z",
-      "who": null
+      "username": null
     },
     "valid": false
   },
@@ -334,7 +334,7 @@
     "direction": "server",
     "command": "chat",
     "input": {
-      "msg": "hello",
+      "text": "hello",
       "source": "other",
       "datetime": "2026-01-01T12:00:00.000Z"
     },
@@ -355,7 +355,7 @@
     "direction": "server",
     "command": "chatPMHistory",
     "input": {
-      "list": [],
+      "messages": [],
       "room": ""
     },
     "valid": false
@@ -377,7 +377,7 @@
     "command": "user",
     "input": {
       "userID": 7,
-      "name": "Alice",
+      "username": "Alice",
       "status": 6,
       "tableID": 3,
       "hGroup": false,
@@ -394,7 +394,7 @@
     "input": [
       {
         "userID": 7,
-        "name": "Alice",
+        "username": "Alice",
         "status": 2,
         "tableID": 3,
         "hGroup": false,
@@ -537,15 +537,15 @@
         "numPlayers": 2,
         "variantName": "No Variant",
         "timed": false,
-        "timeBase": 0.0,
-        "timePerTurn": 0,
         "speedrun": false,
         "deckPlays": false,
         "emptyClues": false,
         "oneExtraCard": false,
         "oneLessCard": false,
         "allOrNothing": false,
-        "detrimentalCharacters": false
+        "detrimentalCharacters": false,
+        "timeBaseSeconds": 0.0,
+        "timePerTurnSeconds": 0
       },
       "password": "",
       "maxPlayers": 5
@@ -562,7 +562,7 @@
       "gameJSON": {
         "id": 7,
         "seed": "p2v0s1",
-        "players": ["Alice", "Bob"],
+        "playerNames": ["Alice", "Bob"],
         "options": {
           "variant": "No Variant"
         }
@@ -574,7 +574,7 @@
       "gameJSON": {
         "id": 7,
         "seed": "p2v0s1",
-        "players": ["Alice", "Bob"],
+        "playerNames": ["Alice", "Bob"],
         "options": {
           "variant": "No Variant"
         }
@@ -638,7 +638,7 @@
   {
     "name": "history accepts negative values so the server can explain them",
     "direction": "client",
-    "command": "historyGet",
+    "command": "gameHistory",
     "input": {
       "offset": -1
     },
@@ -653,7 +653,7 @@
     "direction": "server",
     "command": "table",
     "input": {
-      "id": 3,
+      "tableID": 3,
       "joined": true,
       "maxPlayers": 5,
       "name": "Alice's game",
@@ -662,25 +662,25 @@
         "numPlayers": 2,
         "variantName": "No Variant",
         "timed": false,
-        "timeBase": 0.0,
-        "timePerTurn": 0,
         "speedrun": false,
         "deckPlays": false,
         "emptyClues": false,
         "oneExtraCard": false,
         "oneLessCard": false,
         "allOrNothing": false,
-        "detrimentalCharacters": false
+        "detrimentalCharacters": false,
+        "timeBaseSeconds": 0.0,
+        "timePerTurnSeconds": 0
       },
       "ownerID": 7,
       "passwordProtected": false,
-      "players": ["Alice"],
+      "playerNames": ["Alice"],
       "progress": 0,
       "running": false,
       "sharedReplay": false,
       "spectators": [
         {
-          "name": "Carol",
+          "username": "Carol",
           "shadowingPlayerIndex": 1,
           "shadowingPlayerUsername": "Bob"
         }
@@ -700,7 +700,7 @@
       "tableID": 3,
       "spectators": [
         {
-          "name": "Carol"
+          "username": "Carol"
         }
       ]
     },
@@ -717,15 +717,15 @@
           "numPlayers": 2,
           "variantName": "No Variant",
           "timed": false,
-          "timeBase": 0.0,
-          "timePerTurn": 0,
           "speedrun": false,
           "deckPlays": false,
           "emptyClues": false,
           "oneExtraCard": false,
           "oneLessCard": false,
           "allOrNothing": false,
-          "detrimentalCharacters": false
+          "detrimentalCharacters": false,
+          "timeBaseSeconds": 0.0,
+          "timePerTurnSeconds": 0
         },
         "seed": "p2v0s1",
         "score": 25,
@@ -751,15 +751,15 @@
           "numPlayers": 2,
           "variantName": "No Variant",
           "timed": false,
-          "timeBase": 0.0,
-          "timePerTurn": 0,
           "speedrun": false,
           "deckPlays": false,
           "emptyClues": false,
           "oneExtraCard": false,
           "oneLessCard": false,
           "allOrNothing": false,
-          "detrimentalCharacters": false
+          "detrimentalCharacters": false,
+          "timeBaseSeconds": 0.0,
+          "timePerTurnSeconds": 0
         },
         "seed": "p2v0s1",
         "score": 25,
@@ -785,15 +785,15 @@
           "numPlayers": 2,
           "variantName": "No Variant",
           "timed": false,
-          "timeBase": 0.0,
-          "timePerTurn": 0,
           "speedrun": false,
           "deckPlays": false,
           "emptyClues": false,
           "oneExtraCard": false,
           "oneLessCard": false,
           "allOrNothing": false,
-          "detrimentalCharacters": false
+          "detrimentalCharacters": false,
+          "timeBaseSeconds": 0.0,
+          "timePerTurnSeconds": 0
         },
         "seed": "p2v0s1",
         "score": 25,
@@ -819,15 +819,15 @@
           "numPlayers": 2,
           "variantName": "No Variant",
           "timed": false,
-          "timeBase": 0.0,
-          "timePerTurn": 0,
           "speedrun": false,
           "deckPlays": false,
           "emptyClues": false,
           "oneExtraCard": false,
           "oneLessCard": false,
           "allOrNothing": false,
-          "detrimentalCharacters": false
+          "detrimentalCharacters": false,
+          "timeBaseSeconds": 0.0,
+          "timePerTurnSeconds": 0
         },
         "seed": "p2v0s1",
         "score": 25,
@@ -853,15 +853,15 @@
           "numPlayers": 2,
           "variantName": "No Variant",
           "timed": false,
-          "timeBase": 0.0,
-          "timePerTurn": 0,
           "speedrun": false,
           "deckPlays": false,
           "emptyClues": false,
           "oneExtraCard": false,
           "oneLessCard": false,
           "allOrNothing": false,
-          "detrimentalCharacters": false
+          "detrimentalCharacters": false,
+          "timeBaseSeconds": 0.0,
+          "timePerTurnSeconds": 0
         },
         "seed": "p2v0s1",
         "score": 25,
@@ -944,7 +944,7 @@
         },
         "giver": 0,
         "target": 1,
-        "list": [3, 4],
+        "orders": [3, 4],
         "turn": 2
       }
     },
@@ -964,7 +964,7 @@
         },
         "giver": 0,
         "target": 1,
-        "list": [3, 4],
+        "orders": [3, 4],
         "turn": 2
       }
     },
@@ -984,7 +984,7 @@
         },
         "giver": 0,
         "target": 1,
-        "list": [3, 4],
+        "orders": [3, 4],
         "turn": 2
       }
     },
@@ -1004,7 +1004,7 @@
         },
         "giver": 0,
         "target": 1,
-        "list": [3, 4],
+        "orders": [3, 4],
         "turn": 2
       }
     },
@@ -1024,7 +1024,7 @@
         },
         "giver": 0,
         "target": 1,
-        "list": [3, 4],
+        "orders": [3, 4],
         "turn": 2
       }
     },
@@ -1044,7 +1044,7 @@
         },
         "giver": 0,
         "target": 1,
-        "list": [3, 4],
+        "orders": [3, 4],
         "turn": 2
       }
     },
@@ -1056,7 +1056,7 @@
     "command": "gameActionList",
     "input": {
       "tableID": 3,
-      "list": [
+      "actions": [
         {
           "type": "draw",
           "playerIndex": 0,
@@ -1080,7 +1080,7 @@
     "command": "gameActionList",
     "input": {
       "tableID": 3,
-      "list": [
+      "actions": [
         {
           "type": "gameOver",
           "endCondition": 1,
@@ -1208,8 +1208,8 @@
       "tableID": 3,
       "action": {
         "type": "playerTimes",
-        "playerTimes": [1000],
-        "duration": 1000
+        "playerTimesMs": [1000],
+        "durationMs": 1000
       }
     },
     "valid": false
@@ -1237,7 +1237,7 @@
     "input": {
       "tableID": 4,
       "type": "arrow",
-      "order": -12
+      "target": -12
     },
     "valid": true
   },
@@ -1248,7 +1248,7 @@
     "input": {
       "tableID": 4,
       "type": "arrow",
-      "order": -13
+      "target": -13
     },
     "valid": false
   },
@@ -1258,7 +1258,7 @@
     "command": "replayIndicator",
     "input": {
       "tableID": 4,
-      "order": 66
+      "target": 66
     },
     "valid": false
   },

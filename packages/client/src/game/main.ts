@@ -44,7 +44,7 @@ export function show(justStarted: boolean): void {
   // Request some high-level information about the game (e.g. the number of players and the variant)
   // The server will send us back an "init" message, which will contain enough information to start
   // drawing the UI (we will request the specific actions for the game later on)
-  globals.conn!.send("getGameInfo1", {
+  globals.conn!.send("getGameInit", {
     tableID: globals.tableID,
   });
 }

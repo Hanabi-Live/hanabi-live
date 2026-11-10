@@ -171,7 +171,7 @@ wire_enum! {
 
 wire_enum! {
     /// The parts of the board that a shared-replay arrow can point at, besides cards.
-    pub enum ReplayArrowOrder {
+    pub enum ReplayBoardElement {
         Nothing = -1,
         Deck = -2,
         Turn = -3,
@@ -200,7 +200,7 @@ wire_enum! {
     /// The activity that a user is currently performing.
     pub enum Status {
         Lobby = 0,
-        PreGame = 1,
+        Pregame = 1,
         Playing = 2,
         Spectating = 3,
         Replay = 4,
@@ -215,7 +215,7 @@ pub const WIRE_ENUMS: &[WireEnum] = &[
     EndCondition::WIRE,
     GameListColumn::WIRE,
     RecordedActionType::WIRE,
-    ReplayArrowOrder::WIRE,
+    ReplayBoardElement::WIRE,
     SoundMove::WIRE,
     Status::WIRE,
 ];

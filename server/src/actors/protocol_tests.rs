@@ -183,7 +183,7 @@ impl Harness {
             .context("Missing table identity")
     }
     async fn replay(&mut self, index: usize) -> Result<TableId> {
-        self.send(index,"replayCreate",json!({"source":"json","visibility":"shared","gameJSON":{"players":["Alice","Bob"],"seed":"p2v0s1"}})).await?;
+        self.send(index,"replayCreate",json!({"source":"json","visibility":"shared","gameJSON":{"playerNames":["Alice","Bob"],"seed":"p2v0s1"}})).await?;
         self.receive(index, "tableStart").await?["tableID"]
             .as_u64()
             .map(TableId)
@@ -271,7 +271,7 @@ async fn player_shadow_is_cleared_when_a_spectator_joins() -> Result<()> {
                 .iter()
                 .position(|p| p.id == UserId(player_id))
                 .unwrap();
-            h.send(index, "getGameInfo1", json!({"tableID":id})).await?;
+            h.send(index, "getGameInit", json!({"tableID":id})).await?;
             let init = h.receive(index, "init").await?;
             ensure!(
                 init["ourPlayerIndex"] == json!(seat)
@@ -357,7 +357,7 @@ async fn player_shadow_from_saved_games_is_cleared_on_reattend() -> Result<()> {
                 h.restart().await?;
             }
             h.send(1, "tableReattend", json!({"tableID":id})).await?;
-            h.send(1, "getGameInfo1", json!({"tableID":id})).await?;
+            h.send(1, "getGameInit", json!({"tableID":id})).await?;
             let init = h.receive(1, "init").await?;
             ensure!(
                 init["ourPlayerIndex"] == json!(bob)
@@ -473,7 +473,7 @@ async fn duck_clue_identity_is_private_in_live_history_and_recovery_but_not_comp
                     "Live clue identity leaked or spectator view changed"
                 );
                 ensure!(
-                    events[0]["list"]
+                    events[0]["orders"]
                         .as_array()
                         .is_some_and(|list| !list.is_empty()),
                     "Public touched cards were lost"
@@ -496,9 +496,9 @@ async fn duck_clue_identity_is_private_in_live_history_and_recovery_but_not_comp
                 .await?;
             }
             for index in 0..5 {
-                h.send(index, "getGameInfo2", json!({"tableID":id})).await?;
+                h.send(index, "getGameState", json!({"tableID":id})).await?;
                 let history = h.receive(index, "gameActionList").await?;
-                let clues = history["list"]
+                let clues = history["actions"]
                     .as_array()
                     .unwrap()
                     .iter()
@@ -531,9 +531,9 @@ async fn duck_clue_identity_is_private_in_live_history_and_recovery_but_not_comp
         );
         h.send(0, "tableTerminate", json!({"tableID":id})).await?;
         for index in 0..5 {
-            h.send(index, "getGameInfo2", json!({"tableID":id})).await?;
+            h.send(index, "getGameState", json!({"tableID":id})).await?;
             let history = h.receive(index, "gameActionList").await?;
-            let clues = history["list"]
+            let clues = history["actions"]
                 .as_array()
                 .unwrap()
                 .iter()
@@ -573,7 +573,7 @@ async fn leader_transfers_announce_the_actor_and_target_once_to_the_table() -> R
             let before = h.snapshot(id).await?.0.chat.len();
             let actor = usize::from(phase == 1);
             let target = 1 - actor;
-            let data = json!({"tableID":id,"name":h.users[target].name});
+            let data = json!({"tableID":id,"username":h.users[target].name});
             h.send(actor, "tableSetLeader", data).await?;
             let expected = format!(
                 "{} has passed table ownership to: {}",
@@ -587,7 +587,7 @@ async fn leader_transfers_announce_the_actor_and_target_once_to_the_table() -> R
                     messages.len() == 1,
                     "Expected one leader-change announcement"
                 );
-                ensure!(messages[0]["msg"] == expected && messages[0]["source"] == "server");
+                ensure!(messages[0]["text"] == expected && messages[0]["source"] == "server");
                 ensure!(messages[0].get("recipient").is_none());
             }
             ensure!(
@@ -595,12 +595,12 @@ async fn leader_transfers_announce_the_actor_and_target_once_to_the_table() -> R
                 "Leader notice leaked outside the table"
             );
             let table = h.snapshot(id).await?.0;
-            ensure!(table.chat.len() == before + 1 && table.chat[before].message.msg == expected);
+            ensure!(table.chat.len() == before + 1 && table.chat[before].message.text == expected);
             ensure!(
                 h.send(
                     2,
                     "tableSetLeader",
-                    json!({"tableID":id,"name":h.users[actor].name})
+                    json!({"tableID":id,"username":h.users[actor].name})
                 )
                 .await
                 .is_err()
@@ -609,7 +609,7 @@ async fn leader_transfers_announce_the_actor_and_target_once_to_the_table() -> R
                 h.send(
                     actor,
                     "tableSetLeader",
-                    json!({"tableID":id,"name":"Absent"})
+                    json!({"tableID":id,"username":"Absent"})
                 )
                 .await
                 .is_err()
@@ -618,7 +618,7 @@ async fn leader_transfers_announce_the_actor_and_target_once_to_the_table() -> R
                 h.send(
                     actor,
                     "tableSetLeader",
-                    json!({"tableID":id,"name":h.users[target].name})
+                    json!({"tableID":id,"username":h.users[target].name})
                 )
                 .await
                 .is_err()
@@ -1005,7 +1005,7 @@ async fn spoiler_free_reviews_are_shared_replays_that_tell_everyone() -> Result<
     let outcome = async {
         let request = |visibility: &str| {
             json!({"source":"json","visibility":visibility,"spoilerFree":true,
-                "gameJSON":{"players":["Alice","Bob"],"seed":"p2v0s1"}})
+                "gameJSON":{"playerNames":["Alice","Bob"],"seed":"p2v0s1"}})
         };
         ensure!(
             h.send(0, "replayCreate", request("solo")).await.is_err(),
@@ -1014,7 +1014,7 @@ async fn spoiler_free_reviews_are_shared_replays_that_tell_everyone() -> Result<
         h.send(0, "replayCreate", request("shared")).await?;
         let id = h.receive(0, "tableStart").await?["tableID"].clone();
         h.send(1, "tableSpectate", json!({"tableID":id})).await?;
-        h.send(1, "getGameInfo1", json!({"tableID":id})).await?;
+        h.send(1, "getGameInit", json!({"tableID":id})).await?;
         let init = h.receive(1, "init").await?;
         ensure!(
             init["sharedReplay"] == true && init["spoilerFree"] == true,
@@ -1037,7 +1037,7 @@ async fn shared_replays_of_older_games_start_when_their_table_is_created() -> Re
             0,
             "replayCreate",
             json!({"source":"json","visibility":"shared","gameJSON":{
-                "players":["Alice","Bob"],"seed":"p2v0s1",
+                "playerNames":["Alice","Bob"],"seed":"p2v0s1",
                 "actions":[{"type":4,"target":0,"value":4}]}}),
         )
         .await?;
@@ -1063,7 +1063,7 @@ async fn shared_replays_of_older_games_start_when_their_table_is_created() -> Re
             h.replace(index).await?;
         }
         h.send(1, "tableSpectate", json!({"tableID":id})).await?;
-        h.send(1, "getGameInfo1", json!({"tableID":id})).await?;
+        h.send(1, "getGameInit", json!({"tableID":id})).await?;
         let init = h.receive(1, "init").await?;
         ensure!(
             init["datetimeSharedReplayStarted"] == crate::model::timestamp(created),
@@ -1144,7 +1144,7 @@ fn notices(table: &TableSnapshot) -> Vec<String> {
         .chat
         .iter()
         .filter(|c| c.user == crate::model::SERVER_AUTHOR)
-        .map(|c| c.message.msg.clone())
+        .map(|c| c.message.text.clone())
         .collect()
 }
 
@@ -1156,7 +1156,7 @@ async fn pregame_changes_announce_new_owners_and_splits() -> Result<()> {
     let outcome = async {
         let id = h.create(0, "Notices", json!({})).await?;
         let room = format!("table{}", id.0);
-        let chat = |msg: &str| json!({"room":room,"msg":msg});
+        let chat = |msg: &str| json!({"room":room,"text":msg});
         for index in [1, 2] {
             h.send(index, "tableJoin", json!({"tableID":id})).await?;
         }
@@ -1210,7 +1210,7 @@ async fn pausing_a_game_is_announced_in_its_chat() -> Result<()> {
             .create(
                 0,
                 "Pause",
-                json!({"timed":true,"timeBase":120,"timePerTurn":20}),
+                json!({"timed":true,"timeBaseSeconds":120,"timePerTurnSeconds":20}),
             )
             .await?;
         h.send(1, "tableJoin", json!({"tableID":id})).await?;
@@ -1290,7 +1290,7 @@ async fn trying_to_join_a_full_table_tells_its_players_once() -> Result<()> {
         }
         let chat = h.receive(0, "chat").await?;
         ensure!(
-            chat["msg"] == "Carol tried to join, but the table is full.",
+            chat["text"] == "Carol tried to join, but the table is full.",
             "Unexpected chat: {chat}"
         );
         let (table, _) = h
@@ -1299,7 +1299,7 @@ async fn trying_to_join_a_full_table_tells_its_players_once() -> Result<()> {
         let notices = table
             .chat
             .iter()
-            .filter(|c| c.message.msg.contains("tried to join"))
+            .filter(|c| c.message.text.contains("tried to join"))
             .count();
         ensure!(notices == 1, "The table was told {notices} times");
         Ok(())
@@ -1370,7 +1370,7 @@ async fn blocked_players_cannot_join_or_spectate_each_others_tables() -> Result<
                 &caller,
                 &[],
                 None,
-                client_message(command, &json!({"name":name,"room":"lobby"}))?,
+                client_message(command, &json!({"username":name,"room":"lobby"}))?,
             )
             .await?
             .context("Missing lobby effects")?
@@ -1562,10 +1562,10 @@ async fn expired_pregame_owner_is_removed_but_remaining_players_and_live_games_s
             if let HubCommand::Effects(effects) = notification {
                 for (session, message) in effects.messages {
                     if session.user == UserId(2)
-                        && let Some(body) = message.strip_prefix("game ")
+                        && let Some(body) = message.strip_prefix("pregame ")
                     {
                         let game: Value = serde_json::from_str(body)?;
-                        published_owner |= game["owner"] == 2
+                        published_owner |= game["ownerID"] == 2
                             && game["players"].as_array().is_some_and(|p| p.len() == 2);
                     }
                 }
@@ -1655,7 +1655,7 @@ async fn remade_tables_publish_fresh_statistics_for_every_player() -> Result<()>
         pending.await??;
         let mut remade = TableId(0);
         for index in 0..3 {
-            let frame = h.receive(index, "game").await?;
+            let frame = h.receive(index, "pregame").await?;
             remade = TableId(frame["tableID"].as_u64().context("Missing remade table")?);
             let players = frame["players"].as_array().context("Missing players")?;
             ensure!(players.len() == 2, "Spectator became a player");
@@ -1695,7 +1695,7 @@ async fn chat_read_positions_survive_game_start_reconnect_and_remake() -> Result
         h.send(
             0,
             "chat",
-            json!({"room":format!("table{id}"),"msg":"One unread message"}),
+            json!({"room":format!("table{id}"),"text":"One unread message"}),
         )
         .await?;
         h.send(0, "chatRead", json!({"tableID":id})).await?;
@@ -1706,7 +1706,7 @@ async fn chat_read_positions_survive_game_start_reconnect_and_remake() -> Result
             h.frames(index)?;
             h.send(index, "tableReattend", json!({"tableID":id}))
                 .await?;
-            h.send(index, "getGameInfo2", json!({"tableID":id})).await?;
+            h.send(index, "getGameState", json!({"tableID":id})).await?;
             let history = h.receive(index, "chatList").await?;
             ensure!(
                 history["unread"] == i32::from(index != 0),
@@ -1717,7 +1717,7 @@ async fn chat_read_positions_survive_game_start_reconnect_and_remake() -> Result
         h.send(1, "tableUnattend", json!({"tableID":id})).await?;
         h.replace(1).await?;
         h.send(1, "tableReattend", json!({"tableID":id})).await?;
-        h.send(1, "getGameInfo2", json!({"tableID":id})).await?;
+        h.send(1, "getGameState", json!({"tableID":id})).await?;
         ensure!(
             h.receive(1, "chatList").await?["unread"] == 1,
             "Reconnect reset the chat read position"
@@ -1741,10 +1741,13 @@ async fn chat_read_positions_survive_game_start_reconnect_and_remake() -> Result
             h.replace(index).await?;
             h.send(index, "tableReattend", json!({"tableID":remade}))
                 .await?;
-            h.send(index, "getGameInfo2", json!({"tableID":remade}))
+            h.send(index, "getGameState", json!({"tableID":remade}))
                 .await?;
             let history = h.receive(index, "chatList").await?;
-            let total = history["list"].as_array().context("Missing history")?.len();
+            let total = history["messages"]
+                .as_array()
+                .context("Missing history")?
+                .len();
             ensure!(
                 history["unread"] == total - read,
                 "Remake reset the chat read position: {history}"
@@ -1785,9 +1788,9 @@ async fn restart_leaves_out_players_who_are_done_playing() -> Result<()> {
         .await?;
         for index in 0..3 {
             let declined = h.receive(index, "restartDeclined").await?;
-            ensure!(declined["names"] == json!(["Carol"]), "{declined}");
+            ensure!(declined["usernames"] == json!(["Carol"]), "{declined}");
         }
-        h.send(2, "getGameInfo1", json!({"tableID":id})).await?;
+        h.send(2, "getGameInit", json!({"tableID":id})).await?;
         let init = h.receive(2, "init").await?;
         ensure!(init["restartDeclined"] == json!(["Carol"]), "{init}");
         ensure!(
@@ -1798,12 +1801,12 @@ async fn restart_leaves_out_players_who_are_done_playing() -> Result<()> {
         );
         h.send(0, "tableRestart", json!({"tableID":id,"hidePregame":false}))
             .await?;
-        let remade = h.receive(0, "game").await?;
+        let remade = h.receive(0, "pregame").await?;
         let mut players = remade["players"]
             .as_array()
             .context("Missing players")?
             .iter()
-            .filter_map(|p| p["name"].as_str())
+            .filter_map(|p| p["username"].as_str())
             .collect::<Vec<_>>();
         players.sort_unstable();
         ensure!(players == ["Alice", "Bob"], "{remade}");
@@ -1824,7 +1827,7 @@ async fn restart_leaves_out_players_who_are_done_playing() -> Result<()> {
             if index == 2 {
                 ensure!(
                     frames.iter().any(|(command, data)| command == "spectators"
-                        && data["spectators"][0]["name"] == "Carol"),
+                        && data["spectators"][0]["username"] == "Carol"),
                     "Carol is not spectating"
                 );
             }
@@ -1851,12 +1854,12 @@ async fn pregame_announces_spectators() -> Result<()> {
         let id = h.create(0, "Spectator notices", json!({})).await?;
         h.send(1, "tableSpectate", json!({"tableID":id})).await?;
         let history = h.receive(1, "chatList").await?;
-        ensure!(history["list"][1]["msg"] == "Bob joined the game (as a spectator).");
+        ensure!(history["messages"][1]["text"] == "Bob joined the game (as a spectator).");
         h.send(1, "tableSpectate", json!({"tableID":id})).await?;
         h.send(1, "tableUnattend", json!({"tableID":id})).await?;
         let notices = chat_messages(&h.frames(0)?)
             .into_iter()
-            .map(|m| m["msg"].clone())
+            .map(|m| m["text"].clone())
             .collect::<Vec<_>>();
         ensure!(
             notices
@@ -1917,39 +1920,39 @@ async fn pregame_history_survives_join_return_and_actor_recovery() -> Result<()>
         h.send(0, "tableUnattend", json!({"tableID":id})).await?;
         h.send(0, "tableReattend", json!({"tableID":id})).await?;
         let history = h.receive(0, "chatList").await?;
-        ensure!(history["list"][0]["msg"] == "Alice created the table.");
-        ensure!(history["list"][0]["source"] == "server");
+        ensure!(history["messages"][0]["text"] == "Alice created the table.");
+        ensure!(history["messages"][0]["source"] == "server");
         ensure!(
             history["unread"] == 0,
             "The creator has unread chat: {history}"
         );
-        h.send(0, "chat", json!({"room":room,"msg":"Before Bob joined"}))
+        h.send(0, "chat", json!({"room":room,"text":"Before Bob joined"}))
             .await?;
         h.send(1, "tableJoin", json!({"tableID":id})).await?;
         let history = h.receive(1, "chatList").await?;
-        ensure!(history["list"][1]["msg"] == "Before Bob joined");
-        ensure!(history["list"][2]["msg"] == "Bob joined the game.");
-        ensure!(history["list"][2]["source"] == "server");
+        ensure!(history["messages"][1]["text"] == "Before Bob joined");
+        ensure!(history["messages"][2]["text"] == "Bob joined the game.");
+        ensure!(history["messages"][2]["source"] == "server");
         ensure!(
             chat_messages(&h.frames(0)?)
                 .iter()
-                .any(|m| m["msg"] == "Bob joined the game.")
+                .any(|m| m["text"] == "Bob joined the game.")
         );
-        h.send(1, "chat", json!({"room":room,"msg":"Bob's message"}))
+        h.send(1, "chat", json!({"room":room,"text":"Bob's message"}))
             .await?;
         h.send(1, "tableUnattend", json!({"tableID":id})).await?;
         h.frames(1)?;
-        h.send(0, "chat", json!({"room":room,"msg":"While Bob was away"}))
+        h.send(0, "chat", json!({"room":room,"text":"While Bob was away"}))
             .await?;
         h.send(1, "tableReattend", json!({"tableID":id})).await?;
         let history = h.receive(1, "chatList").await?;
-        ensure!(history["list"].as_array().unwrap().len() == 5);
-        ensure!(history["list"][4]["msg"] == "While Bob was away");
+        ensure!(history["messages"].as_array().unwrap().len() == 5);
+        ensure!(history["messages"][4]["text"] == "While Bob was away");
         h.send(1, "tableLeave", json!({"tableID":id})).await?;
         h.send(1, "tableJoin", json!({"tableID":id})).await?;
         let history = h.receive(1, "chatList").await?;
-        ensure!(history["list"][5]["msg"] == "Bob left the game.");
-        ensure!(history["list"][6]["msg"] == "Bob joined the game.");
+        ensure!(history["messages"][5]["text"] == "Bob left the game.");
+        ensure!(history["messages"][6]["text"] == "Bob joined the game.");
         ensure!(
             h.frames(2)?
                 .iter()
@@ -1969,7 +1972,7 @@ async fn pregame_history_survives_join_return_and_actor_recovery() -> Result<()>
         h.send(0, "tableReattend", json!({"tableID":id})).await?;
         let restored = h.receive(0, "chatList").await?;
         ensure!(
-            restored["list"] == history["list"],
+            restored["messages"] == history["messages"],
             "Recovery changed pregame history"
         );
         Ok::<(), anyhow::Error>(())
@@ -2002,15 +2005,19 @@ async fn pregame_leader_moves_to_first_seat_without_reordering_live_players() ->
         for index in 0..3 {
             h.frames(index)?;
         }
-        h.send(0, "tableSetLeader", json!({"tableID":id,"name":"Carol"}))
-            .await?;
+        h.send(
+            0,
+            "tableSetLeader",
+            json!({"tableID":id,"username":"Carol"}),
+        )
+        .await?;
         for index in 0..3 {
-            let game = h.receive(index, "game").await?;
-            ensure!(game["owner"] == 3);
+            let game = h.receive(index, "pregame").await?;
+            ensure!(game["ownerID"] == 3);
             let players = game["players"].as_array().context("Missing players")?;
             for (seat, name) in ["Carol", "Bob", "Alice"].iter().enumerate() {
                 ensure!(
-                    players[seat]["name"] == *name && players[seat]["index"] == seat,
+                    players[seat]["username"] == *name && players[seat]["index"] == seat,
                     "Leader transfer did not swap the new leader into the first seat"
                 );
                 ensure!(players[seat]["you"] == (*name == h.users[index].name));
@@ -2037,8 +2044,12 @@ async fn pregame_leader_moves_to_first_seat_without_reordering_live_players() ->
             .iter()
             .map(|p| p.id)
             .collect::<Vec<_>>();
-        h.send(2, "tableSetLeader", json!({"tableID":id,"name":"Alice"}))
-            .await?;
+        h.send(
+            2,
+            "tableSetLeader",
+            json!({"tableID":id,"username":"Alice"}),
+        )
+        .await?;
         let table = h.snapshot(id).await?.0;
         ensure!(table.owner == UserId(1));
         ensure!(
@@ -2073,7 +2084,7 @@ async fn finished_game_publishes_replay_leader_candidates_without_reconnecting()
         h.send(0, "tableTerminate", json!({"tableID":id})).await?;
         for index in 0..3 {
             ensure!(
-                h.receive(index, "connected").await?["list"] == json!([true, true]),
+                h.receive(index, "connected").await?["connected"] == json!([true, true]),
                 "Finished-game names must not be shown as disconnected"
             );
             let roster = h.receive(index, "spectators").await?;
@@ -2081,7 +2092,7 @@ async fn finished_game_publishes_replay_leader_candidates_without_reconnecting()
                 .as_array()
                 .context("Missing roster")?
                 .iter()
-                .map(|p| p["name"].as_str().unwrap())
+                .map(|p| p["username"].as_str().unwrap())
                 .collect::<BTreeSet<_>>();
             ensure!(
                 names == BTreeSet::from(["Alice", "Bob", "Observer"]),
@@ -2089,7 +2100,7 @@ async fn finished_game_publishes_replay_leader_candidates_without_reconnecting()
             );
             let clock = h.receive(index, "clock").await?;
             ensure!(
-                clock["activePlayerIndex"] == -1 && clock["timeTaken"] == 0,
+                clock["activePlayerIndex"] == -1 && clock["timeTakenMs"] == 0,
                 "Completion did not stop the active clock"
             );
         }
@@ -2097,9 +2108,9 @@ async fn finished_game_publishes_replay_leader_candidates_without_reconnecting()
             h.frames(3)?.iter().all(|(name, _)| name != "spectators"),
             "Replay roster was sent to a non-attendee"
         );
-        h.send(0, "tableSetLeader", json!({"tableID":id,"name":"Bob"}))
+        h.send(0, "tableSetLeader", json!({"tableID":id,"username":"Bob"}))
             .await?;
-        ensure!(h.receive(0, "replayLeader").await?["name"] == "Bob");
+        ensure!(h.receive(0, "replayLeader").await?["username"] == "Bob");
         ensure!(h.snapshot(id).await?.0.owner == UserId(2));
         h.send(2, "tableUnattend", json!({"tableID":id})).await?;
         let roster = h.receive(0, "spectators").await?;
@@ -2109,7 +2120,7 @@ async fn finished_game_publishes_replay_leader_candidates_without_reconnecting()
                 .as_array()
                 .unwrap()
                 .iter()
-                .all(|p| p["name"] != "Observer"),
+                .all(|p| p["username"] != "Observer"),
             "Departed attendee remained a leader candidate"
         );
         Ok::<(), anyhow::Error>(())
@@ -2131,7 +2142,7 @@ async fn replay_loading_keeps_names_neutral_and_never_starts_a_game_clock() -> R
         h.barrier(0).await?;
         h.frames(0)?;
         h.send(0, "loaded", json!({"tableID":id})).await?;
-        ensure!(h.receive(0, "connected").await?["list"] == json!([true, true]));
+        ensure!(h.receive(0, "connected").await?["connected"] == json!([true, true]));
         h.barrier(0).await?;
         ensure!(h.frames(0)?.iter().all(|(command, _)| command != "clock"));
         tokio::time::sleep(Duration::from_millis(25)).await;
@@ -2152,8 +2163,8 @@ async fn replay_loading_keeps_names_neutral_and_never_starts_a_game_clock() -> R
             "Replay navigation advanced game clocks"
         );
         h.send(1, "tableSpectate", json!({"tableID":id})).await?;
-        h.send(1, "getGameInfo2", json!({"tableID":id})).await?;
-        ensure!(h.receive(1, "connected").await?["list"] == json!([true, true]));
+        h.send(1, "getGameState", json!({"tableID":id})).await?;
+        ensure!(h.receive(1, "connected").await?["connected"] == json!([true, true]));
         h.send(1, "loaded", json!({"tableID":id})).await?;
         h.barrier(0).await?;
         for index in 0..2 {
@@ -2163,7 +2174,7 @@ async fn replay_loading_keeps_names_neutral_and_never_starts_a_game_clock() -> R
                 "Loading another replay viewer sent a live clock"
             );
             for (_, data) in frames.iter().filter(|(command, _)| command == "connected") {
-                ensure!(data["list"] == json!([true, true]));
+                ensure!(data["connected"] == json!([true, true]));
             }
         }
         Ok::<(), anyhow::Error>(())
@@ -2273,11 +2284,11 @@ async fn unknown_table_commands_are_persisted_and_delivered_to_bots() -> Result<
                 ("/custom-bot <level>", "/custom-bot &lt;level&gt;"),
             ] {
                 let before = h.snapshot(id).await?.0.chat.len();
-                h.send(1, "chat", json!({"room":room,"msg":text})).await?;
+                h.send(1, "chat", json!({"room":room,"text":text})).await?;
                 let messages = chat_messages(&h.frames(0)?);
                 ensure!(
-                    messages.iter().any(|message| message["msg"] == expected
-                        && message["who"] == "Alice"
+                    messages.iter().any(|message| message["text"] == expected
+                        && message["username"] == "Alice"
                         && message["source"] == "user"),
                     "Bot did not receive table command"
                 );
@@ -2286,7 +2297,7 @@ async fn unknown_table_commands_are_persisted_and_delivered_to_bots() -> Result<
                     snapshot.chat.len() == before + 1,
                     "Command was not persisted"
                 );
-                ensure!(snapshot.chat[before].message.msg == expected);
+                ensure!(snapshot.chat[before].message.text == expected);
                 ensure!(
                     chat_messages(&h.frames(2)?).is_empty(),
                     "Outsider received chat"
@@ -2317,18 +2328,18 @@ async fn option_proposals_publish_changed_values_but_keep_apply_button_private()
         }
         h.send(1, "tableUpdate", json!({
             "tableID":id,"name":"Proposal","maxPlayers":2,
-            "options":{"variantName":"6 Suits","timed":true,"timeBase":120,"timePerTurn":20,"emptyClues":true}
+            "options":{"variantName":"6 Suits","timed":true,"timeBaseSeconds":120,"timePerTurnSeconds":20,"emptyClues":true}
         })).await?;
         h.barrier(0).await?;
         for index in 0..3 {
             let messages = chat_messages(&h.frames(index)?);
             let summary = messages.iter().find(|m| m.get("recipient").is_none()).context("Missing public summary")?;
-            let text = summary["msg"].as_str().context("Missing summary text")?;
+            let text = summary["text"].as_str().context("Missing summary text")?;
             for expected in ["Bob&lt;&amp;&gt; proposes the following options:", "Table Name: <b>Proposal</b>", "Variant: <b>6 Suits</b>", "Timed: <b>120 / 20</b>", "Max Players: <b>2</b>", "Empty Clues: <b>Yes</b>", "Players above the new limit will be removed."] {
                 ensure!(text.contains(expected), "Missing proposal detail: {expected}");
             }
             ensure!(!text.contains("Speedrun:") && !text.contains("Bottom-Deck:"));
-            let button = messages.iter().find(|m| m["msg"].as_str().is_some_and(|s| s.contains("new-options")));
+            let button = messages.iter().find(|m| m["text"].as_str().is_some_and(|s| s.contains("new-options")));
             if index == 0 {
                 let button = button.context("Owner is missing the apply button")?;
                 ensure!(button["recipient"] == "Alice");
@@ -2342,7 +2353,7 @@ async fn option_proposals_publish_changed_values_but_keep_apply_button_private()
         let table = h.snapshot(id).await?.0;
         ensure!(table.options.variant_name == "No Variant" && table.name == "Original" && table.max_players == 5);
         let message = &table.chat.last().context("Summary was not persisted")?.message;
-        ensure!(message.msg.contains("Variant: <b>6 Suits</b>"));
+        ensure!(message.text.contains("Variant: <b>6 Suits</b>"));
         ensure!(message.recipient.is_none());
         let before = table.chat.len();
         let error = h.send(1, "tableUpdate", json!({"tableID":id,"name":"Original","maxPlayers":5,"options":{}}))
@@ -2395,7 +2406,7 @@ async fn players_cannot_fill_a_table_chat_and_block_the_owner() -> Result<()> {
         }
 
         for (command, data) in [
-            ("chat", json!({"room":room,"msg":"Hello"})),
+            ("chat", json!({"room":room,"text":"Hello"})),
             ("tableUpdate", proposal.clone()),
         ] {
             let refused = h
@@ -2411,7 +2422,7 @@ async fn players_cannot_fill_a_table_chat_and_block_the_owner() -> Result<()> {
             json!({"tableID":id,"name":"Changed","maxPlayers":5,"options":{}}),
         )
         .await?;
-        h.send(0, "tableSetLeader", json!({"tableID":id,"name":"Bob"}))
+        h.send(0, "tableSetLeader", json!({"tableID":id,"username":"Bob"}))
             .await?;
         let table = h.snapshot(id).await?.0;
         ensure!(table.name == "Changed" && table.owner == h.users[1].user);
@@ -2434,23 +2445,23 @@ async fn findvariant_delivers_owner_button_and_guards_the_start_action() -> Resu
         let id=h.create(0,"Team discovery",json!({"deckPlays":true,"oneExtraCard":true})).await?;
         h.send(1,"tableJoin",json!({"tableID":id})).await?;h.barrier(0).await?;
         h.frames(0)?;h.frames(1)?;
-        h.send(1,"chat",json!({"room":format!("table{id}"),"msg":"/findvariant"})).await?;h.barrier(0).await?;
+        h.send(1,"chat",json!({"room":format!("table{id}"),"text":"/findvariant"})).await?;h.barrier(0).await?;
         let alice=chat_messages(&h.frames(0)?);let bob=chat_messages(&h.frames(1)?);
-        let proposal=alice.iter().find(|v|v["msg"].as_str().is_some_and(|s|s.contains("new-options"))).context("Owner did not receive proposal")?;
+        let proposal=alice.iter().find(|v|v["text"].as_str().is_some_and(|s|s.contains("new-options"))).context("Owner did not receive proposal")?;
         ensure!(proposal["recipient"]=="Alice","Proposal was not private");
-        ensure!(!bob.iter().any(|v|v["msg"].as_str().is_some_and(|s|s.contains("new-options"))),"Non-owner received proposal");
-        ensure!(bob.iter().any(|v|v["msg"]=="Here is a random variant that everyone needs the 2-player max score in: Rainbow (5 Suits)"),"Wrong team discovery result");
+        ensure!(!bob.iter().any(|v|v["text"].as_str().is_some_and(|s|s.contains("new-options"))),"Non-owner received proposal");
+        ensure!(bob.iter().any(|v|v["text"]=="Here is a random variant that everyone needs the 2-player max score in: Rainbow (5 Suits)"),"Wrong team discovery result");
         let options=browser_json(suggestion(proposal)?);
         ensure!(options["variantName"]=="Rainbow (5 Suits)"&&options["tableName"]=="Team discovery"&&options["maxPlayers"]==5&&options["deckPlays"]==true&&options["oneExtraCard"]==true,"Proposal lost table settings");
         let (table,_)=h.snapshot(id).await?;
-        ensure!(table.chat.iter().all(|c|!c.message.msg.contains("new-options")),"Private proposal entered public history");
+        ensure!(table.chat.iter().all(|c|!c.message.text.contains("new-options")),"Private proposal entered public history");
         h.send(0,"tableUpdate",json!({"tableID":id,"name":options["tableName"],"maxPlayers":options["maxPlayers"],"options":options})).await?;
         let before=h.snapshot(id).await?.1;
         for data in [
-            json!({"tableID":id,"intendedPlayers":["Alice","Cathy"]}),
-            json!({"tableID":id,"intendedPlayers":["Alice"]}),
+            json!({"tableID":id,"intendedPlayerNames":["Alice","Cathy"]}),
+            json!({"tableID":id,"intendedPlayerNames":["Alice"]}),
         ]{h.send(0,"tableStart",data).await?;ensure!(h.snapshot(id).await?.1==before,"Stale start intent mutated the game");}
-        h.send(0,"tableStart",json!({"tableID":id,"intendedPlayers":["Bob","Alice"]})).await?;
+        h.send(0,"tableStart",json!({"tableID":id,"intendedPlayerNames":["Bob","Alice"]})).await?;
         ensure!(matches!(h.snapshot(id).await?.0.phase,Phase::Live{..}),"Valid guarded start failed");
         Ok::<(),anyhow::Error>(())
     }.await;
@@ -2471,7 +2482,7 @@ async fn findvariant_rechecks_roster_after_lookup_without_blocking_table_command
         let mut lock=h.store.primary.begin().await?;
         #[expect(clippy::disallowed_methods, reason = "test SQL that sets up database state or failures directly")]
         sqlx::query("LOCK TABLE user_stats IN ACCESS EXCLUSIVE MODE").execute(&mut *lock).await?;
-        let finding=h.begin(1,"chat",json!({"room":format!("table{id}"),"msg":"/fv"})).await?;
+        let finding=h.begin(1,"chat",json!({"room":format!("table{id}"),"text":"/fv"})).await?;
         h.wait_locks(1).await?;
         h.send(0,"tableLeave",json!({"tableID":id})).await?;
         let joining=h.begin(2,"tableJoin",json!({"tableID":id})).await?;
@@ -2481,8 +2492,8 @@ async fn findvariant_rechecks_roster_after_lookup_without_blocking_table_command
         ensure!(table.players().iter().map(|p|p.id).collect::<Vec<_>>()==vec![UserId(2),UserId(3)],"Concurrent roster change was blocked");
         for index in 0..3{
             let chats=chat_messages(&h.frames(index)?);
-            ensure!(!chats.iter().any(|v|v["msg"].as_str().unwrap_or("").contains("new-options")),"Stale roster received an actionable proposal");
-            if index==1{ensure!(chats.iter().any(|v|v["msg"]=="Here is a random variant that everyone needs the 2-player max score in: Rainbow (5 Suits)"),"Lookup did not preserve its captured team");}
+            ensure!(!chats.iter().any(|v|v["text"].as_str().unwrap_or("").contains("new-options")),"Stale roster received an actionable proposal");
+            if index==1{ensure!(chats.iter().any(|v|v["text"]=="Here is a random variant that everyone needs the 2-player max score in: Rainbow (5 Suits)"),"Lookup did not preserve its captured team");}
         }
         Ok::<(),anyhow::Error>(())
     }.await;
@@ -2511,7 +2522,7 @@ async fn findvariant_targets_only_the_current_owner_generation() -> Result<()> {
             .execute(&mut *lock)
             .await?;
         let finding = h
-            .begin(1, "chat", json!({"room":format!("table{id}"),"msg":"/fv"}))
+            .begin(1, "chat", json!({"room":format!("table{id}"),"text":"/fv"}))
             .await?;
         h.wait_locks(1).await?;
         let (old, mut old_frames) = h.replace(0).await?;
@@ -2524,7 +2535,7 @@ async fn findvariant_targets_only_the_current_owner_generation() -> Result<()> {
             chat_messages(&h.frames(0)?)
                 .iter()
                 .any(|v| v["recipient"] == "Alice"
-                    && v["msg"].as_str().unwrap_or("").contains("new-options")),
+                    && v["text"].as_str().unwrap_or("").contains("new-options")),
             "Current owner did not get the button"
         );
         while let Ok(frame) = old_frames.try_recv() {
@@ -2536,7 +2547,7 @@ async fn findvariant_targets_only_the_current_owner_generation() -> Result<()> {
         ensure!(
             !chat_messages(&h.frames(1)?)
                 .iter()
-                .any(|v| v["msg"].as_str().unwrap_or("").contains("new-options")),
+                .any(|v| v["text"].as_str().unwrap_or("").contains("new-options")),
             "Requester received owner-only action"
         );
         Ok::<(), anyhow::Error>(())
@@ -2570,7 +2581,7 @@ async fn tags_use_authoritative_sorted_frames_and_private_live_acknowledgements(
         let private = chat_messages(&h.frames(0)?);
         ensure!(
             private.len() == 2
-                && private.iter().all(|v| v["msg"]
+                && private.iter().all(|v| v["text"]
                     == "Successfully added a tag of \"alpha &lt;b&gt;\"."
                     && v["recipient"] == "Alice"),
             "Unexpected live tag acknowledgements"
@@ -2601,14 +2612,14 @@ async fn tags_use_authoritative_sorted_frames_and_private_live_acknowledgements(
         .execute(&h.store.primary)
         .await?;
         for alias in ["/tags", "/taglist"] {
-            h.send(0, "chat", json!({"room":format!("table{id}"),"msg":alias}))
+            h.send(0, "chat", json!({"room":format!("table{id}"),"text":alias}))
                 .await?;
             h.barrier(0).await?;
             for index in 0..2 {
                 let chats = chat_messages(&h.frames(index)?);
                 let lines = chats
                     .iter()
-                    .map(|v| v["msg"].as_str().unwrap_or(""))
+                    .map(|v| v["text"].as_str().unwrap_or(""))
                     .collect::<Vec<_>>();
                 ensure!(
                     lines
@@ -2631,7 +2642,7 @@ async fn tags_use_authoritative_sorted_frames_and_private_live_acknowledgements(
         ensure!(
             chat_messages(&h.frames(0)?)
                 .iter()
-                .any(|v| v["msg"] == "Bob has deleted a game tag of \"zeta\"."),
+                .any(|v| v["text"] == "Bob has deleted a game tag of \"zeta\"."),
             "Replay tag action was not published"
         );
         h.frames(1)?;
@@ -2643,14 +2654,14 @@ async fn tags_use_authoritative_sorted_frames_and_private_live_acknowledgements(
         h.send(
             1,
             "chat",
-            json!({"room":format!("table{id}"),"msg":"/tags"}),
+            json!({"room":format!("table{id}"),"text":"/tags"}),
         )
         .await?;
         h.barrier(0).await?;
         ensure!(
             chat_messages(&h.frames(0)?)
                 .iter()
-                .map(|v| v["msg"].as_str().unwrap_or(""))
+                .map(|v| v["text"].as_str().unwrap_or(""))
                 .collect::<Vec<_>>()
                 == vec!["There are not yet any tags for this game."],
             "Empty tag list differs"
@@ -2918,7 +2929,7 @@ async fn replay_arrows_sounds_and_loads_skip_durable_checkpoints() -> Result<()>
         let (_, revision) = h.snapshot(id).await?;
         h.send(0, "loaded", json!({"tableID":id})).await?;
         for (kind, extra) in [
-            ("arrow", json!({"order":0})),
+            ("arrow", json!({"target":0})),
             ("sound", json!({"sound":"clap"})),
         ] {
             let mut data = json!({"tableID":id,"type":kind});
@@ -2967,14 +2978,14 @@ async fn table_chat_commands_link_to_the_server_url() -> Result<()> {
         ] {
             h.barrier(0).await?;
             h.frames(0)?;
-            h.send(0, "chat", json!({"msg":command,"room":room}))
+            h.send(0, "chat", json!({"text":command,"room":room}))
                 .await?;
             h.barrier(0).await?;
             let messages = chat_messages(&h.frames(0)?);
             ensure!(
                 messages
                     .iter()
-                    .any(|m| m["msg"].as_str().is_some_and(|msg| msg.contains(expected))),
+                    .any(|m| m["text"].as_str().is_some_and(|msg| msg.contains(expected))),
                 "{command} did not reply with {expected}: {messages:?}"
             );
         }
@@ -2998,12 +3009,12 @@ async fn table_chat_is_rate_limited_per_player() -> Result<()> {
             h.send(
                 0,
                 "chat",
-                json!({"room":room,"msg":format!("Message {index}")}),
+                json!({"room":room,"text":format!("Message {index}")}),
             )
             .await?;
         }
         let refused = h
-            .send(0, "chat", json!({"room":room,"msg":"One too many"}))
+            .send(0, "chat", json!({"room":room,"text":"One too many"}))
             .await
             .expect_err("Chat past the limit was accepted");
         ensure!(
@@ -3013,7 +3024,7 @@ async fn table_chat_is_rate_limited_per_player() -> Result<()> {
         h.send(
             1,
             "chat",
-            json!({"room":room,"msg":"Players have separate limits"}),
+            json!({"room":room,"text":"Players have separate limits"}),
         )
         .await?;
         Ok(())

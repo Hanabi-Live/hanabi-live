@@ -1,6 +1,6 @@
 // The "Create Game" screen, which also changes the options of an unstarted game.
 
-import type { Settings } from "@hanabi-live/data";
+import type { ClientCommandData, GameID, Settings } from "@hanabi-live/data";
 import {
   DEFAULT_TABLE_NAME_SUFFIX,
   MAX_SEED_LENGTH,
@@ -354,11 +354,11 @@ function submit() {
     : defaultSettings.createTableMaxPlayers;
   checkSettingChanged("createTableMaxPlayers", maxPlayers);
 
-  const options = {
+  const options: Partial<ClientCommandData["tableCreate"]["options"]> = {
     variantName: getVariantName(), // This is a hidden span field.
     timed,
-    timeBase: timeBaseSeconds,
-    timePerTurn,
+    timeBaseSeconds,
+    timePerTurnSeconds: timePerTurn,
     speedrun: getCheckbox("createTableSpeedrun"),
     deckPlays: getCheckbox("createTableDeckPlays"),
     emptyClues: getCheckbox("createTableEmptyClues"),
@@ -367,7 +367,7 @@ function submit() {
     allOrNothing: getCheckbox("createTableAllOrNothing"),
     detrimentalCharacters: getCheckbox("createTableDetrimentalCharacters"),
     ...(seed !== "" && { seed }),
-    ...(replayGameID !== undefined && { replayGameID }),
+    ...(replayGameID !== undefined && { replayGameID: replayGameID as GameID }),
     ...(replayTurn !== undefined && { replayTurn }),
   };
 

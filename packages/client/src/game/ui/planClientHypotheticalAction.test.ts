@@ -185,7 +185,7 @@ describe("client hypothetical planning", () => {
         type: "clue",
         clue: { type: ClueType.Rank, value: 1 },
         giver: 0,
-        list: [1],
+        orders: [1],
         target: 1,
         ignoreNegative: false,
       },

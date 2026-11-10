@@ -54,9 +54,9 @@ export function update(
 
   // Record the data. The player name tooltips and the deck tooltip use it even when the timers are
   // not showing.
-  globals.playerTimes = data.times;
+  globals.playerTimes = data.playerTimesMs;
   globals.clockPlayerIndex = activePlayerIndex;
-  globals.timeTaken = data.timeTaken;
+  globals.timeTaken = data.timeTakenMs;
 
   // Keep track of what the active player's time was when they started their turn.
   globals.startingTurnTime = globals.playerTimes[activePlayerIndex]!;
@@ -163,9 +163,9 @@ export function resumeAfterResize(): void {
   }
 
   update({
-    times: globals.playerTimes,
+    playerTimesMs: globals.playerTimes,
     activePlayerIndex: globals.clockPlayerIndex,
-    timeTaken: globals.timeTaken,
+    timeTakenMs: globals.timeTaken,
   });
 }
 

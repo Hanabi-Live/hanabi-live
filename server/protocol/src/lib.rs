@@ -6,7 +6,7 @@ use serde::{Deserialize, Serialize};
 
 mod enums;
 pub use enums::{
-    ActionType, ClueType, EndCondition, GameListColumn, RecordedActionType, ReplayArrowOrder,
+    ActionType, ClueType, EndCondition, GameListColumn, RecordedActionType, ReplayBoardElement,
     SoundMove, Status, WIRE_ENUMS, WireEnum, WireEnumMember,
 };
 mod registry;
@@ -331,7 +331,6 @@ pub fn schemas() -> std::collections::BTreeMap<String, serde_json::Value> {
         TableJoinRequest,
         TableLeaderRequest,
         TableVariantRequest,
-        TableCommand,
         TableStartRequest,
         TableRestartRequest,
         TableRestartDeclineRequest,
@@ -461,14 +460,14 @@ mod tests {
     #[test]
     fn optional_values_are_omitted_not_null() {
         let error = decode::<ChatRequest>(&json!({
-            "msg": "private text", "room": null
+            "text": "private text", "room": null
         }))
         .unwrap_err();
         assert!(!format!("{error:#}").contains("private text"));
-        let data = decode::<ChatRequest>(&json!({"msg":"hello","room":"lobby"})).unwrap();
+        let data = decode::<ChatRequest>(&json!({"text":"hello","room":"lobby"})).unwrap();
         assert_eq!(
             serde_json::to_value(data).unwrap(),
-            json!({"msg":"hello","room":"lobby"})
+            json!({"text":"hello","room":"lobby"})
         );
     }
 }

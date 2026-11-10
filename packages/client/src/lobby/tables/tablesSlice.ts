@@ -32,7 +32,7 @@ enum TableGroup {
 }
 
 const tablesAdapter = createEntityAdapter({
-  selectId: (table: Table): number => table.id,
+  selectId: (table: Table): number => table.tableID,
 });
 
 const tablesSlice = createSlice({
@@ -106,7 +106,7 @@ function getSortKey({
     isOurGame(table) ? 0 : 1,
     hasFriends ? 0 : 1,
     getGroup(table),
-    table.id,
+    table.tableID,
   ];
 }
 
@@ -151,7 +151,7 @@ function tableHasFriends(
 ): boolean {
   return (
     (!table.sharedReplay
-      && table.players.some((player) => friendNames.has(player)))
-    || table.spectators.some((spectator) => friendNames.has(spectator.name))
+      && table.playerNames.some((player) => friendNames.has(player)))
+    || table.spectators.some((spectator) => friendNames.has(spectator.username))
   );
 }

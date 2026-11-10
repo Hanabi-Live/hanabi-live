@@ -638,7 +638,7 @@ impl Bridge {
                         hanabi_protocol::server::CHAT,
                         hanabi_protocol::Chat {
                             chat_id: Some(i64::from(chat_id)),
-                            who: Some(name.clone()),
+                            username: Some(name.clone()),
                             room: Some("lobby".into()),
                             ..hanabi_protocol::Chat::new(
                                 rendered,
@@ -732,7 +732,7 @@ impl Bridge {
                 hanabi_protocol::server::CHAT,
                 hanabi_protocol::Chat {
                     chat_id: Some(i64::from(id)),
-                    who: Some(String::new()),
+                    username: Some(String::new()),
                     room: Some("lobby".into()),
                     ..hanabi_protocol::Chat::new(
                         rendered,

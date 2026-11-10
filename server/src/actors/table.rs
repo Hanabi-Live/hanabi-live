@@ -176,7 +176,7 @@ impl TableActor {
                 .collect(),
             data: hanabi_protocol::Table {
                 database_id: replay_game,
-                id: self.table.id,
+                table_id: self.table.id,
                 joined: false,
                 max_players: small(self.table.max_players),
                 name: self.table.name.clone(),
@@ -184,7 +184,7 @@ impl TableActor {
                 options: wire_table_options(&self.table.options, &self.table.extra),
                 owner_id: self.table.owner,
                 password_protected: self.table.password_hash.is_some(),
-                players: self
+                player_names: self
                     .table
                     .players()
                     .iter()
@@ -206,7 +206,7 @@ impl TableActor {
             .values()
             .filter(|a| a.spectator && a.session.active())
             .map(|a| hanabi_protocol::Spectator {
-                name: a.session.name.clone(),
+                username: a.session.name.clone(),
                 shadowing_player_index: a.shadow.map(u8::from),
                 shadowing_player_username: a
                     .shadow
@@ -294,7 +294,7 @@ impl TableActor {
             hanabi_protocol::server::CHAT_TYPING,
             ChatTyping {
                 table_id: self.table.id,
-                name: name.into(),
+                username: name.into(),
                 typing,
             },
         );
@@ -307,7 +307,7 @@ impl TableActor {
             let players = Seat::seated(self.table.players())
                 .map(|(seat, p)| hanabi_protocol::PregamePlayer {
                     index: seat.into(),
-                    name: p.name.clone(),
+                    username: p.name.clone(),
                     you: p.id == a.session.user,
                     present: self
                         .attendees
@@ -319,7 +319,7 @@ impl TableActor {
             let pregame = hanabi_protocol::Pregame {
                 table_id: self.table.id,
                 name: self.table.name.clone(),
-                owner: self.table.owner,
+                owner_id: self.table.owner,
                 players,
                 options: wire_table_options(&self.table.options, &self.table.extra),
                 password_protected: self.table.password_hash.is_some(),
@@ -327,7 +327,7 @@ impl TableActor {
             };
             e.messages.push((
                 a.session.clone(),
-                frame(hanabi_protocol::server::GAME, pregame),
+                frame(hanabi_protocol::server::PREGAME, pregame),
             ));
         }
     }
@@ -342,7 +342,7 @@ impl TableActor {
             frame(
                 hanabi_protocol::server::CHAT_LIST,
                 hanabi_protocol::ChatList {
-                    list: self
+                    messages: self
                         .table
                         .chat
                         .iter()
@@ -570,7 +570,7 @@ impl TableActor {
         let mut e = self.effects();
         if matches!(self.table.phase, Phase::Pregame { .. }) {
             e.statuses
-                .push((s.clone(), Status::PreGame, Some(self.table.id)));
+                .push((s.clone(), Status::Pregame, Some(self.table.id)));
             self.pregame_messages(&mut e);
             e.messages.push((
                 s.clone(),
@@ -607,7 +607,10 @@ impl TableActor {
         for warning in warnings {
             e.messages.push((
                 s.clone(),
-                frame(hanabi_protocol::server::WARNING, Warning { warning }),
+                frame(
+                    hanabi_protocol::server::WARNING,
+                    Warning { message: warning },
+                ),
             ));
         }
         self.publish(e).await
@@ -860,7 +863,7 @@ impl TableActor {
         let replay = matches!(self.table.phase, Phase::Replay { .. });
         hanabi_protocol::Connected {
             table_id: self.table.id,
-            list: self
+            connected: self
                 .table
                 .players()
                 .iter()
@@ -877,7 +880,7 @@ impl TableActor {
     pub(super) fn card_identities(&self, s: &Snapshot) -> hanabi_protocol::CardIdentities {
         hanabi_protocol::CardIdentities {
             table_id: self.table.id,
-            card_identities: s
+            identities: s
                 .game
                 .identities()
                 .iter()
@@ -900,13 +903,13 @@ impl TableActor {
         times[s.game.active_player_index] = now.active_clock;
         Ok(hanabi_protocol::Clock {
             table_id: self.table.id,
-            times,
+            player_times_ms: times,
             active_player_index: if live {
                 int(s.game.active_player_index)
             } else {
                 i64::from(NO_VALUE)
             },
-            time_taken: if !live || s.paused() {
+            time_taken_ms: if !live || s.paused() {
                 0
             } else {
                 now.turn_elapsed
@@ -933,7 +936,7 @@ impl TableActor {
         }
         if let Command::Client(message) = &command {
             let work = match &**message {
-                ClientMessage::Chat(r) if is_variant_discovery(&r.msg) => {
+                ClientMessage::Chat(r) if is_variant_discovery(&r.text) => {
                     Some(self.start_discovery(session.clone()).map(FutureExt::boxed))
                 }
                 ClientMessage::TableJoin(r) => self
@@ -983,8 +986,8 @@ impl TableActor {
             }
             ClientMessage::TableUnattend(_) => self.leave(session, false).await,
             ClientMessage::TableLeave(_) => self.leave(session, true).await,
-            ClientMessage::GetGameInfo1(_) => self.info(session, GameInfo::Init).await,
-            ClientMessage::GetGameInfo2(_) => self.info(session, GameInfo::State).await,
+            ClientMessage::GetGameInit(_) => self.info(session, GameInfo::Init).await,
+            ClientMessage::GetGameState(_) => self.info(session, GameInfo::State).await,
             ClientMessage::Loaded(_) => {
                 ensure_or_reject!(self.attending(&session), "Reattend before loading");
                 let mut next = self.candidate();
@@ -1012,10 +1015,10 @@ impl TableActor {
                 }
                 self.publish(e).await
             }
-            ClientMessage::Chat(r) => self.chat(session, &r.msg).await,
+            ClientMessage::Chat(r) => self.chat(session, &r.text).await,
             ClientMessage::ChatRead(_) => self.chat_presence(session, false).await,
             ClientMessage::ChatTyping(_) => self.chat_presence(session, true).await,
-            ClientMessage::TableSetLeader(r) => self.leader(session, &r.name).await,
+            ClientMessage::TableSetLeader(r) => self.leader(session, &r.username).await,
             // The rest depend on the table's phase.
             message => match self.table.phase {
                 Phase::Pregame { .. } => self.pregame_command(session, message).await,

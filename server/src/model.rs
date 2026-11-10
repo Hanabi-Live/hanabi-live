@@ -857,8 +857,8 @@ pub(crate) fn wire_options(options: &Options) -> hanabi_protocol::GameOptions {
         variant_name: variant_name.clone(),
         variant_id: *variant_id,
         timed: *timed,
-        time_base: *time_base,
-        time_per_turn: *time_per_turn,
+        time_base_seconds: *time_base,
+        time_per_turn_seconds: *time_per_turn,
         speedrun: *speedrun,
         deck_plays: *deck_plays,
         empty_clues: *empty_clues,
@@ -881,8 +881,8 @@ pub(crate) fn engine_options(options: &hanabi_protocol::GameOptions) -> Options 
         variant_name,
         variant_id,
         timed,
-        time_base,
-        time_per_turn,
+        time_base_seconds: time_base,
+        time_per_turn_seconds: time_per_turn,
         speedrun,
         deck_plays,
         empty_clues,
@@ -979,6 +979,35 @@ mod tests {
             "2026-11-02T20:00:00.123Z"
         );
         assert_eq!(chat.message.datetime, "2026-11-02T20:00:00.123456Z");
+    }
+
+    #[test]
+    fn checkpoints_from_before_the_protocol_renames_still_decode() {
+        let chat: TableChat = serde_json::from_value(serde_json::json!({
+            "id": 1, "user": 1, "message": {
+                "msg": "hi", "who": "Alice", "source": "user",
+                "datetime": "2026-11-02T20:00:00.123Z",
+                "suggestedOptions": {"timeBase": 120.0, "timePerTurn": 20}
+            }
+        }))
+        .unwrap();
+        assert_eq!(chat.message.text, "hi");
+        assert_eq!(chat.message.username.as_deref(), Some("Alice"));
+        let options = chat.message.suggested_options.unwrap();
+        assert_eq!(
+            (options.time_base_seconds, options.time_per_turn_seconds),
+            (120.0, 20)
+        );
+        let clue = r#"{"type":"clue","clue":{"type":0,"value":1},"giver":0,"target":1,"list":[2],"ignoreNegative":false}"#;
+        let replay: ReplayState = serde_json::from_value(serde_json::json!({
+            "leader": 1, "segment": 0, "efficiencyModifier": 0, "hypothetical": true,
+            "hypotheticalActions": [clue], "showDrawnCards": false
+        }))
+        .unwrap();
+        assert!(matches!(
+            &replay.hypothetical_actions[..],
+            [HypotheticalAction::Clue { orders, .. }] if orders.len() == 1
+        ));
     }
 
     #[test]

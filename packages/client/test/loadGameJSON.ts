@@ -154,7 +154,7 @@ export function loadGameJSON(gameJSON: JSONGame): State {
             jsonCard.rank as Rank,
           );
         });
-        action = { ...a, list };
+        action = { ...a, orders: list };
         break;
       }
 
@@ -368,7 +368,7 @@ function parseJSONAction(
         giver: currentPlayer,
         target: a.target,
         turn,
-        list: [],
+        orders: [],
         ignoreNegative: false,
       } as ActionClue;
     }

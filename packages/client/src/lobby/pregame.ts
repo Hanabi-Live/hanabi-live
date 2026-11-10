@@ -220,7 +220,7 @@ function drawPlayerBox(playerIndex: PlayerIndex) {
 
   div.show();
 
-  const span = getNameSpan(player.name);
+  const span = getNameSpan(player.username);
   if (isSpectator()) {
     span.addClass("shadow").on("click", (event) => {
       event.stopPropagation();
@@ -230,7 +230,7 @@ function drawPlayerBox(playerIndex: PlayerIndex) {
   const strong = $("<strong>");
   strong.append(span);
   const p = $("<p>").addClass("margin0 padding0p5").append(strong);
-  const hGroupLevelBadge = getHGroupLevelBadge(player.name);
+  const hGroupLevelBadge = getHGroupLevelBadge(player.username);
   if (hGroupLevelBadge !== undefined) {
     p.append(hGroupLevelBadge);
   }
@@ -332,7 +332,7 @@ function drawPlayerBox(playerIndex: PlayerIndex) {
 function getHGroupLevelBadge(name: string) {
   let hGroupLevel = 0;
   for (const user of globals.userMap.values()) {
-    if (user.name === name && user.hGroup) {
+    if (user.username === name && user.hGroup) {
       ({ hGroupLevel } = user);
     }
   }
@@ -362,7 +362,7 @@ export function userChanged(name: string): void {
   if (
     globals.currentScreen === Screen.PreGame
     && globals.game !== null
-    && globals.game.players.some((player) => player.name === name)
+    && globals.game.players.some((player) => player.username === name)
   ) {
     draw();
   }
@@ -380,7 +380,7 @@ function getNameSpan(name: string) {
 
 function isSpectator() {
   for (const loopPlayer of globals.game!.players) {
-    if (loopPlayer.name === globals.username) {
+    if (loopPlayer.username === globals.username) {
       return false;
     }
   }
@@ -404,10 +404,10 @@ export function drawSpectators(tableID: number): void {
   container.toggle(table.spectators.length > 0);
 
   for (const spectator of table.spectators) {
-    const nameSpan = getNameSpan(spectator.name);
+    const nameSpan = getNameSpan(spectator.username);
     const item = $("<li>").html(`&bull; ${nameSpan.prop("outerHTML")}`);
     if (spectator.shadowingPlayerIndex !== undefined) {
-      if (spectator.name === globals.username) {
+      if (spectator.username === globals.username) {
         $(`#lobby-pregame-player-${spectator.shadowingPlayerIndex + 1} .shadow`)
           .removeClass("shadow")
           .addClass("unShadow")
@@ -437,7 +437,7 @@ export function toggleStartGameButton(): void {
   }
 
   if (
-    globals.game.owner === globals.userID
+    globals.game.ownerID === globals.userID
     && globals.game.players.length >= MIN_PLAYERS
     && globals.game.players.length <= MAX_PLAYERS
     // If this field is not equal to null it means that we are waiting a short time to re-enable the

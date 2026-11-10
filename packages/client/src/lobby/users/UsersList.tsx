@@ -144,7 +144,7 @@ function goToTable(user: UserRow["user"]) {
   }
 
   switch (user.status) {
-    case Status.PreGame: {
+    case Status.Pregame: {
       tableJoin(table);
       break;
     }

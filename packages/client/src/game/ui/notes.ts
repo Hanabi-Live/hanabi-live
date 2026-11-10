@@ -58,7 +58,7 @@ function get(order: CardOrder, our: boolean, process = false) {
         }
         content += "<div class='noteTitle'><span>Spectators</span></div>";
       }
-      content += `<strong>${escapeHtml(noteObject.name)}:</strong> ${text}<br />`;
+      content += `<strong>${escapeHtml(noteObject.username)}:</strong> ${text}<br />`;
     }
   }
 

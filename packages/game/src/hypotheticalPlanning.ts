@@ -384,7 +384,7 @@ export function planHypotheticalAction(
       type: "clue",
       clue: { type: NO_VALUE, value: NO_VALUE },
       giver: playerIndex,
-      list: [],
+      orders: [],
       target: playerIndex,
       ignoreNegative: true,
     });
@@ -407,7 +407,7 @@ export function planHypotheticalAction(
       type: "clue",
       clue,
       giver: playerIndex,
-      list: getHypotheticalTouchedCards(targetCards, clue, variant),
+      orders: getHypotheticalTouchedCards(targetCards, clue, variant),
       target: intent.target,
       // While drawn cards are hidden, negative information could reveal the starting player's
       // hidden cards.

@@ -57,7 +57,7 @@ export function getClueText(
 ): string {
   const giver = metadata.playerNames[action.giver] ?? "unknown";
   const target = metadata.playerNames[action.target] ?? "unknown";
-  const word = NUMBER_WORDS[action.list.length] ?? "unknown";
+  const word = NUMBER_WORDS[action.orders.length] ?? "unknown";
   const variant = getVariant(metadata.options.variantName);
   const hypoPrefix = hypothetical ? HYPO_PREFIX : "";
 
@@ -81,7 +81,7 @@ export function getClueText(
 
     // Create a list of slot numbers that correspond to the cards touched.
     const slots: number[] = [];
-    for (const order of action.list) {
+    for (const order of action.orders) {
       const slot = getCardSlot(order, targetHand);
       assertDefined(slot, `Failed to get the slot for card: ${order}`);
 
@@ -102,7 +102,7 @@ export function getClueText(
     variant,
     characterName,
   );
-  if (action.list.length !== 1) {
+  if (action.orders.length !== 1) {
     clueName += "s";
   }
 

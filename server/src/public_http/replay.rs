@@ -78,8 +78,8 @@ pub(super) async fn export(
     let options = hanabi_protocol::ReplayOptions {
         variant: (variant_id != 0).then(|| variant.name.clone()),
         timed: flag(row.timed),
-        time_base: row.timed.then_some(i64::from(row.time_base)),
-        time_per_turn: row.timed.then_some(i64::from(row.time_per_turn)),
+        time_base_seconds: row.timed.then_some(i64::from(row.time_base)),
+        time_per_turn_seconds: row.timed.then_some(i64::from(row.time_per_turn)),
         speedrun: flag(row.speedrun),
         deck_plays: flag(row.deck_plays),
         empty_clues: flag(row.empty_clues),
@@ -114,7 +114,7 @@ pub(super) async fn export(
     };
     Ok(hanabi_protocol::ReplayGame {
         id,
-        players: players.iter().map(|p| p.name.clone()).collect(),
+        player_names: players.iter().map(|p| p.name.clone()).collect(),
         deck,
         actions: archive.actions,
         options: (options != hanabi_protocol::ReplayOptions::default()).then_some(options),

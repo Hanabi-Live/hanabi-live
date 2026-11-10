@@ -84,7 +84,7 @@ lobbyCommands.set("friends", (data) => {
   }
 });
 
-lobbyCommands.set("game", (data) => {
+lobbyCommands.set("pregame", (data) => {
   const previousPlayers = globals.game?.players;
   globals.game = data;
   globals.tableID = data.tableID;
@@ -147,8 +147,11 @@ lobbyCommands.set("soundLobby", (data) => {
 // Received by the client when a table is created or modified.
 lobbyCommands.set("table", (data) => {
   store.dispatch(tableChanged(data));
-  if (globals.currentScreen === Screen.PreGame && globals.tableID === data.id) {
-    pregame.drawSpectators(data.id);
+  if (
+    globals.currentScreen === Screen.PreGame
+    && globals.tableID === data.tableID
+  ) {
+    pregame.drawSpectators(data.tableID);
   }
 });
 
@@ -195,7 +198,7 @@ lobbyCommands.set("user", (data) => {
     previous?.hGroup !== data.hGroup
     || previous.hGroupLevel !== data.hGroupLevel
   ) {
-    pregame.userChanged(data.name);
+    pregame.userChanged(data.username);
   }
 });
 

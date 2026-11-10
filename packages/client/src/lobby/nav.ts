@@ -134,7 +134,9 @@ export function init(): void {
     if (!$("#nav-buttons-pregame-start").hasClass("disabled")) {
       globals.conn!.send("tableStart", {
         tableID: globals.tableID,
-        intendedPlayers: globals.game?.players.map((player) => player.name),
+        intendedPlayerNames: globals.game?.players.map(
+          (player) => player.username,
+        ),
       });
       $("#nav-buttons-pregame-start").addClass("disabled");
     }
@@ -161,7 +163,7 @@ export function init(): void {
         );
         return;
       }
-      globals.conn!.send("tableLeave", { tableID: oldTable.id });
+      globals.conn!.send("tableLeave", { tableID: oldTable.tableID });
     }
     tableJoin(table);
   });
@@ -199,7 +201,9 @@ export function init(): void {
     }
 
     if (
-      table.spectators.some((spectator) => spectator.name === globals.username)
+      table.spectators.some(
+        (spectator) => spectator.username === globals.username,
+      )
     ) {
       // We are a spectator.
       pregame.hide();

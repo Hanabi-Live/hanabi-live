@@ -96,8 +96,8 @@ function gotoPath(data: ServerCommandData["welcome"]): boolean {
       options: {
         variantName,
         timed,
-        timeBase,
-        timePerTurn,
+        timeBaseSeconds: timeBase,
+        timePerTurnSeconds: timePerTurn,
         speedrun,
         deckPlays,
         emptyClues,

@@ -49,7 +49,7 @@ export function showMore(): void {
 
 function requestPage(offset: number) {
   store.dispatch(historyRequested());
-  globals.conn!.send("historyGet", {
+  globals.conn!.send("gameHistory", {
     offset,
     amount: HISTORY_PAGE_SIZE,
   });
@@ -99,7 +99,7 @@ export function showMoreOtherScores(): void {
 }
 
 function requestOtherScoresPage(seed: string, offset: number) {
-  globals.conn!.send("historyGetSeed", {
+  globals.conn!.send("gameHistoryOtherScores", {
     seed,
     offset,
     amount: HISTORY_PAGE_SIZE,

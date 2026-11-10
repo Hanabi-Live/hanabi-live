@@ -195,7 +195,7 @@ impl Hub {
         let warning = frame(
             hanabi_protocol::server::WARNING,
             hanabi_protocol::Warning {
-                warning: accounts::escape_html(&report.text()),
+                message: accounts::escape_html(&report.text()),
             },
         );
         let users = self
@@ -226,7 +226,7 @@ impl Hub {
     fn user(p: &Presence) -> User {
         User {
             user_id: p.session.user,
-            name: p.session.name.clone(),
+            username: p.session.name.clone(),
             status: p.status,
             table_id: if p.status == Status::Replay {
                 Some(TableId(0))
@@ -616,7 +616,7 @@ impl Hub {
                 frame(
                     hanabi_protocol::server::ERROR,
                     ErrorNotice {
-                        error: "The server is going down for maintenance. Your accepted game progress has been saved.<br />Please reconnect after the server restarts.".into(),
+                        message: "The server is going down for maintenance. Your accepted game progress has been saved.<br />Please reconnect after the server restarts.".into(),
                     },
                 )
             },

@@ -1,4 +1,4 @@
-import { ReplayArrowOrder } from "@hanabi-live/data";
+import { ReplayBoardElement } from "@hanabi-live/data";
 import type { MAX_STRIKES } from "@hanabi-live/game";
 import type { Tuple } from "complete-common";
 
@@ -335,7 +335,7 @@ export type StrikeIndex = Exclude<
 
 /** The shared-replay arrow targets for each strike square, in strike order. */
 export const STRIKE_ARROW_ORDERS = [
-  ReplayArrowOrder.Strike1,
-  ReplayArrowOrder.Strike2,
-  ReplayArrowOrder.Strike3,
-] as const satisfies Tuple<ReplayArrowOrder, typeof MAX_STRIKES>;
+  ReplayBoardElement.Strike1,
+  ReplayBoardElement.Strike2,
+  ReplayBoardElement.Strike3,
+] as const satisfies Tuple<ReplayBoardElement, typeof MAX_STRIKES>;

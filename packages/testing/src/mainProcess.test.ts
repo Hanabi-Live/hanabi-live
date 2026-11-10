@@ -155,8 +155,8 @@ databaseDescribe("compiled application entry point (rust)", () => {
           options: {
             variantName: "No Variant",
             timed: restart,
-            timeBase: 600,
-            timePerTurn: 2,
+            timeBaseSeconds: 600,
+            timePerTurnSeconds: 2,
           },
         });
         const { tableID } = await alice.receive(
@@ -172,8 +172,11 @@ databaseDescribe("compiled application entry point (rust)", () => {
           SERVER_COMMAND_SCHEMAS.joined,
         );
         expect(bobJoined.tableID).toBe(tableID);
-        const game = await bob.receive("game", SERVER_COMMAND_SCHEMAS.game);
-        expect(game.players.map((player) => player.name)).toEqual([
+        const game = await bob.receive(
+          "pregame",
+          SERVER_COMMAND_SCHEMAS.pregame,
+        );
+        expect(game.players.map((player) => player.username)).toEqual([
           "SmokeAlice",
           "SmokeBob",
         ]);
@@ -191,9 +194,9 @@ databaseDescribe("compiled application entry point (rust)", () => {
         await bob.receive("tableStart", SERVER_COMMAND_SCHEMAS.tableStart);
 
         async function bootstrap(peer: ReturnType<typeof socketClient>) {
-          peer.send("getGameInfo1", { tableID });
+          peer.send("getGameInit", { tableID });
           const init = await peer.receive("init", SERVER_COMMAND_SCHEMAS.init);
-          peer.send("getGameInfo2", { tableID });
+          peer.send("getGameState", { tableID });
           const history = await peer.receive(
             "gameActionList",
             SERVER_COMMAND_SCHEMAS.gameActionList,
@@ -202,7 +205,7 @@ databaseDescribe("compiled application entry point (rust)", () => {
           await peer.receive(
             "connected",
             SERVER_COMMAND_SCHEMAS.connected,
-            (data) => data.list.every(Boolean),
+            (data) => data.connected.every(Boolean),
           );
           return { init, history };
         }
@@ -213,7 +216,7 @@ databaseDescribe("compiled application entry point (rust)", () => {
         const active = aliceGame.init.ourPlayerIndex === 0 ? alice : bob;
         const activeGame =
           aliceGame.init.ourPlayerIndex === 0 ? aliceGame : bobGame;
-        const card = activeGame.history.list.find(
+        const card = activeGame.history.actions.find(
           (event) => event.type === "draw" && event.playerIndex === 0,
         );
         assertDefined(card, "Missing first player's initial draw.");
@@ -227,7 +230,7 @@ databaseDescribe("compiled application entry point (rust)", () => {
           target: card.order,
         });
         await active.receive("gameAction", SERVER_COMMAND_SCHEMAS.gameAction);
-        active.send("getGameInfo2", { tableID });
+        active.send("getGameState", { tableID });
         const acknowledged = await active.receive(
           "gameActionList",
           SERVER_COMMAND_SCHEMAS.gameActionList,
@@ -328,7 +331,7 @@ databaseDescribe("compiled application entry point (rust)", () => {
         assertDefined(resumed, "Missing reconnected player bootstrap.");
         expect(resumed.init.replay).toBe(false);
         expect(
-          resumed.history.list.some(
+          resumed.history.actions.some(
             (event) => event.type === "play" || event.type === "discard",
           ),
         ).toBe(true);
@@ -342,7 +345,7 @@ databaseDescribe("compiled application entry point (rust)", () => {
           );
           const restoredActive =
             aliceGame.init.ourPlayerIndex === 0 ? resumed : recoveredBob;
-          expect(restoredActive.history.list).toEqual(acknowledged.list);
+          expect(restoredActive.history.actions).toEqual(acknowledged.actions);
           expect(resumed.init.datetimeStarted).toBe(
             aliceGame.init.datetimeStarted,
           );
@@ -377,7 +380,7 @@ databaseDescribe("compiled application entry point (rust)", () => {
         });
         replacement.send("chat", {
           room: `table${tableID}`,
-          msg: "retained authored chat",
+          text: "retained authored chat",
         });
         if (signal === undefined && domain === "localhost") {
           replacement.send("tableVoteForTermination", {
@@ -416,13 +419,13 @@ databaseDescribe("compiled application entry point (rust)", () => {
           SERVER_COMMAND_SCHEMAS.replaySegment,
         );
         expect(replayPosition.segment).toBe(1);
-        replacement.send("getGameInfo2", { tableID });
+        replacement.send("getGameState", { tableID });
         const replayHistory = await replacement.receive(
           "gameActionList",
           SERVER_COMMAND_SCHEMAS.gameActionList,
         );
         expect(
-          replayHistory.list
+          replayHistory.actions
             .filter((event) => event.type === "draw")
             .every((event) => event.rank > 0),
         ).toBe(true);
@@ -560,9 +563,9 @@ databaseDescribe("compiled application entry point (rust)", () => {
         peer: ReturnType<typeof socketClient>,
         id: number,
       ) {
-        peer.send("getGameInfo1", { tableID: id });
+        peer.send("getGameInit", { tableID: id });
         const init = await peer.receive("init", SERVER_COMMAND_SCHEMAS.init);
-        peer.send("getGameInfo2", { tableID: id });
+        peer.send("getGameState", { tableID: id });
         const history = await peer.receive(
           "gameActionList",
           SERVER_COMMAND_SCHEMAS.gameActionList,
@@ -589,7 +592,7 @@ databaseDescribe("compiled application entry point (rust)", () => {
         expect(
           game.init.characterAssignments.every((value) => value >= 0),
         ).toBe(true);
-        const hand = game.history.list.filter(
+        const hand = game.history.actions.filter(
           (event) =>
             event.type === "draw"
             && event.playerIndex === game.init.ourPlayerIndex,
@@ -608,7 +611,7 @@ databaseDescribe("compiled application entry point (rust)", () => {
         ourPlayerIndex: 0,
       });
       expect(
-        shadow.history.list.filter(
+        shadow.history.actions.filter(
           (event) => event.type === "draw" && event.playerIndex === 0,
         ),
       ).toEqual<unknown>([
@@ -643,11 +646,11 @@ databaseDescribe("compiled application entry point (rust)", () => {
       const replayJSON: unknown = await exported.json();
       const replay = z
         .object({
-          players: z.string().array(),
+          playerNames: z.string().array(),
           options: z.object({ variant: z.string() }),
         })
         .parse(replayJSON);
-      expect(replay.players).toHaveLength(6);
+      expect(replay.playerNames).toHaveLength(6);
       expect(replay.options.variant).toBe("Rainbow (6 Suits)");
       for (const peer of peers) {
         peer.send("tableUnattend", { tableID });
@@ -676,7 +679,7 @@ databaseDescribe("compiled application entry point (rust)", () => {
         const imported = await bootstrap(owner, created.tableID);
         expect(imported.init.replay).toBe(true);
         expect(imported.init.playerNames).toHaveLength(6);
-        expect(imported.history.list).toEqual<unknown>(
+        expect(imported.history.actions).toEqual<unknown>(
           expect.arrayContaining([
             expect.objectContaining({ type: "gameOver" }),
           ]),
@@ -688,7 +691,7 @@ databaseDescribe("compiled application entry point (rust)", () => {
           original.init.characterAssignments,
         );
         expect(
-          imported.history.list
+          imported.history.actions
             .filter((event) => event.type === "draw")
             .every((event) => event.rank > 0),
         ).toBe(true);
@@ -714,8 +717,8 @@ databaseDescribe("compiled application entry point (rust)", () => {
           await returning.receive("welcome", SERVER_COMMAND_SCHEMAS.welcome);
           returning.send("tableReattend", { tableID: pending.tableID });
           const pregame = await returning.receive(
-            "game",
-            SERVER_COMMAND_SCHEMAS.game,
+            "pregame",
+            SERVER_COMMAND_SCHEMAS.pregame,
             (message) => message.tableID === pending.tableID,
           );
           expect(pregame).toMatchObject({
@@ -755,7 +758,7 @@ databaseDescribe("compiled application entry point (rust)", () => {
           expect(recovered.init.characterAssignments).toEqual(
             imported.init.characterAssignments,
           );
-          expect(recovered.history.list).toEqual(imported.history.list);
+          expect(recovered.history.actions).toEqual(imported.history.actions);
           returningObserver.send("tableLeave", {
             tableID: pending.tableID,
           });

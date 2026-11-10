@@ -299,7 +299,7 @@ function getOptionItems(
   if (options.timed) {
     items.push({
       icon: OptionIcons.Timed,
-      text: `Timed (${secondsToClockString(options.timeBase)} + ${secondsToClockString(options.timePerTurn)})`,
+      text: `Timed (${secondsToClockString(options.timeBaseSeconds)} + ${secondsToClockString(options.timePerTurnSeconds)})`,
     });
   }
   if (options.speedrun) {

@@ -29,7 +29,7 @@ const ROW_HEIGHT = 20;
 
 function table(id: number, name: string, fields: Partial<Table> = {}): Table {
   return {
-    id: tableIdSchema.parse(id),
+    tableID: tableIdSchema.parse(id),
     name,
     joined: false,
     running: false,
@@ -37,7 +37,7 @@ function table(id: number, name: string, fields: Partial<Table> = {}): Table {
     passwordProtected: false,
     numPlayers: 1,
     maxPlayers: 5,
-    players: ["alice"],
+    playerNames: ["alice"],
     spectators: [],
     progress: 0,
     variant: "No Variant",
@@ -107,8 +107,8 @@ describe("TablesList", () => {
         table(2, "ongoing", { running: true }),
         table(3, "locked", { passwordProtected: true }),
         table(4, "open"),
-        table(5, "friend's", { running: true, players: ["bob"] }),
-        table(6, "ours", { joined: true, running: true, players: ["me"] }),
+        table(5, "friend's", { running: true, playerNames: ["bob"] }),
+        table(6, "ours", { joined: true, running: true, playerNames: ["me"] }),
         table(7, "open later"),
       ]),
     );
@@ -144,7 +144,9 @@ describe("TablesList", () => {
   });
 
   test("joins a table from its row and shadows a player from their name", () => {
-    store.dispatch(tablesListed([table(1, "open", { players: ["alice"] })]));
+    store.dispatch(
+      tablesListed([table(1, "open", { playerNames: ["alice"] })]),
+    );
     renderList();
     waitForRowsToSettle();
 

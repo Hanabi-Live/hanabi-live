@@ -87,13 +87,15 @@ export const selectUserRows = createSelector(
     return users
       .map((user) => ({
         user,
-        kind: getKind(user.name, username, friendNames),
+        kind: getKind(user.username, username, friendNames),
       }))
       .toSorted((a, b) => {
         const kindOrder = KIND_ORDER[a.kind] - KIND_ORDER[b.kind];
         return kindOrder === 0
           ? // Sort case-insensitively, which does not happen by default.
-            a.user.name.toLowerCase().localeCompare(b.user.name.toLowerCase())
+            a.user.username
+              .toLowerCase()
+              .localeCompare(b.user.username.toLowerCase())
           : kindOrder;
       });
   },

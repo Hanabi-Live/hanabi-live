@@ -14,7 +14,7 @@ use super::*;
 #[schemars(extend("x-readonly" = true))]
 pub struct ChatRequest {
     #[schemars(length(min = 1))]
-    pub msg: String,
+    pub text: String,
     #[schemars(length(min = 1))]
     pub room: String,
 }
@@ -24,7 +24,7 @@ pub struct ChatRequest {
 #[schemars(extend("x-readonly" = true))]
 pub struct ChatPmRequest {
     #[schemars(length(min = 1))]
-    pub msg: String,
+    pub text: String,
     #[schemars(length(min = 1))]
     pub recipient: String,
 }
@@ -48,7 +48,7 @@ pub struct ChatHistoryRequest {
 #[serde(default, rename_all = "camelCase", deny_unknown_fields)]
 #[schemars(extend("x-readonly" = true))]
 pub struct ChatUserRequest {
-    pub name: String,
+    pub username: String,
     pub room: String,
 }
 
@@ -81,7 +81,7 @@ pub struct TableLeaderRequest {
     #[serde(rename = "tableID")]
     pub table_id: TableId,
     #[serde(default)]
-    pub name: String,
+    pub username: String,
 }
 
 #[derive(Clone, Debug, Default, Serialize, Deserialize, JsonSchema)]
@@ -101,19 +101,12 @@ pub struct TableVariantRequest {
 
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
-pub struct TableCommand {
-    #[serde(rename = "tableID")]
-    pub table_id: TableId,
-}
-
-#[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
-#[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct TableStartRequest {
     #[serde(rename = "tableID")]
     pub table_id: TableId,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     #[schemars(with = "Vec<String>", length(max = MAX_PLAYERS))]
-    pub intended_players: Option<Vec<String>>,
+    pub intended_player_names: Option<Vec<String>>,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
@@ -373,7 +366,7 @@ pub enum ReplayActionRequest {
         #[serde(rename = "tableID")]
         table_id: TableId,
         #[schemars(with = "ReplayArrowTarget")]
-        order: i64,
+        target: i64,
     },
     Sound {
         #[serde(rename = "tableID")]
@@ -399,15 +392,16 @@ pub enum ReplayActionRequest {
         table_id: TableId,
     },
     /// Shows or hides the identities of cards drawn during the hypothetical.
-    HypoToggleRevealed {
+    HypoShowDrawnCards {
         #[serde(rename = "tableID")]
         table_id: TableId,
+        show_drawn_cards: bool,
     },
     EfficiencyMod {
         #[serde(rename = "tableID")]
         table_id: TableId,
         #[schemars(range(min = i32::MIN, max = i32::MAX))]
-        r#mod: i32,
+        efficiency_modifier: i32,
     },
 }
 
@@ -421,7 +415,7 @@ impl ReplayActionRequest {
             | Self::HypoEnd { table_id }
             | Self::HypoAction { table_id, .. }
             | Self::HypoBack { table_id }
-            | Self::HypoToggleRevealed { table_id }
+            | Self::HypoShowDrawnCards { table_id, .. }
             | Self::EfficiencyMod { table_id, .. } => *table_id,
         }
     }

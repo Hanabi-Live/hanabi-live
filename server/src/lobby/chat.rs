@@ -312,7 +312,7 @@ pub async fn private_message(
     .fetch_one(pool)
     .await?;
     let data = Chat {
-        who: Some(caller.name.clone()),
+        username: Some(caller.name.clone()),
         recipient: Some(target.identity.name.clone()),
         ..Chat::new(
             message,
@@ -379,8 +379,8 @@ pub async fn private_history(
     let mut list = Vec::new();
     for row in rows.iter().rev() {
         list.push(ChatHistoryMessage {
-            msg: row.message.clone(),
-            who: row.who.clone().context("Missing private message author")?,
+            text: row.message.clone(),
+            username: row.who.clone().context("Missing private message author")?,
             recipient: row
                 .recipient
                 .clone()
@@ -389,7 +389,7 @@ pub async fn private_history(
         });
     }
     let response = ChatHistory {
-        list,
+        messages: list,
         room: data.room.clone().filter(|room| !room.is_empty()),
     };
     Ok(vec![Effect::to_self(Outgoing::new(
@@ -528,7 +528,7 @@ pub async fn lobby_chat(
         effects.push(Effect::broadcast(Outgoing::new(
             hanabi_protocol::server::CHAT,
             Chat {
-                who: Some(who.into()),
+                username: Some(who.into()),
                 room: Some("lobby".into()),
                 chat_id: Some(i64::from(chat_id)),
                 ..Chat::new(
@@ -595,7 +595,7 @@ pub async fn lobby_history(pool: &PgPool, count: i64) -> Result<Vec<Chat>> {
         };
         result.push(Chat {
             chat_id: Some(i64::from(row.id)),
-            who: Some(who),
+            username: Some(who),
             room: Some("lobby".into()),
             ..Chat::new(
                 message,
@@ -622,7 +622,7 @@ pub async fn server_chat(pool: &PgPool, message: &str) -> Result<SavedChat> {
         broadcast: Outgoing::new(
             hanabi_protocol::server::CHAT,
             Chat {
-                who: Some("Hanab Live".into()),
+                username: Some("Hanab Live".into()),
                 room: Some("lobby".into()),
                 chat_id: Some(i64::from(chat_id)),
                 ..Chat::new(

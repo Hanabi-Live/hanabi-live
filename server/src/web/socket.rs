@@ -148,7 +148,7 @@ pub(super) async fn lobby_initial(app: &App, id: UserId) -> Result<(Vec<Frame>, 
     initial.push(frame(
         hanabi_protocol::server::CHAT_LIST,
         hanabi_protocol::ChatList {
-            list: chat,
+            messages: chat,
             unread: 0,
         },
     ));
@@ -165,7 +165,7 @@ pub(super) async fn lobby_initial(app: &App, id: UserId) -> Result<(Vec<Frame>, 
         Ok(text) if !text.trim().is_empty() => initial.push(frame(
             hanabi_protocol::server::CHAT,
             hanabi_protocol::Chat {
-                who: Some(String::new()),
+                username: Some(String::new()),
                 room: Some("lobby".into()),
                 ..hanabi_protocol::Chat::new(
                     format!("[Server Notice] {}", text.trim()),
@@ -373,7 +373,7 @@ pub(super) async fn websocket(
                                     .send(Message::Text(
                                         frame(
                                             hanabi_protocol::server::ERROR,
-                                            hanabi_protocol::ErrorNotice { error: message },
+                                            hanabi_protocol::ErrorNotice { message },
                                         ),
                                     ))
                                     .await?;
@@ -419,7 +419,7 @@ async fn connection(
                 socket.send(Message::Text(frame(
                     hanabi_protocol::server::ERROR,
                     hanabi_protocol::ErrorNotice {
-                        error: "Account initialization failed.".into(),
+                        message: "Account initialization failed.".into(),
                     },
                 ))),
             )
@@ -486,7 +486,7 @@ async fn connection(
             let message = frame(
                 hanabi_protocol::server::ERROR,
                 hanabi_protocol::ErrorNotice {
-                    error: report.text(),
+                    message: report.text(),
                 },
             );
             let _ =
@@ -562,7 +562,7 @@ async fn connection(
                 let warning = failure.warning;
                 session.emit(&frame(
                     hanabi_protocol::server::WARNING,
-                    hanabi_protocol::Warning { warning },
+                    hanabi_protocol::Warning { message: warning },
                 ));
             }
         }

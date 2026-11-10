@@ -33,11 +33,11 @@ async fn websocket_errors_explain_invalid_fields_and_database_failures_postgres(
     receive(&mut socket, "welcome").await;
     for (request, expected) in [
         (
-            "historyGet {\"offset\":\"bad\",\"amount\":10}",
+            "gameHistory {\"offset\":\"bad\",\"amount\":10}",
             "Invalid HistoryRequest payload at /offset",
         ),
         (
-            "historyGet {\"offset\":0,\"amount\":10}",
+            "gameHistory {\"offset\":0,\"amount\":10}",
             "database connection pool is closed",
         ),
     ] {
@@ -54,7 +54,7 @@ async fn websocket_errors_explain_invalid_fields_and_database_failures_postgres(
                 if let WireMessage::Text(text) = message
                     && let Some(body) = text.strip_prefix("warning ")
                 {
-                    break serde_json::from_str::<Value>(body).unwrap()["warning"]
+                    break serde_json::from_str::<Value>(body).unwrap()["message"]
                         .as_str()
                         .unwrap()
                         .to_owned();
@@ -254,7 +254,12 @@ async fn websocket_checks_client_version_with_existing_cookie_postgres() {
             };
             let body = text.strip_prefix("error ").unwrap();
             let payload: Value = serde_json::from_str(body).unwrap();
-            assert!(payload["error"].as_str().unwrap().contains("hard-refresh"));
+            assert!(
+                payload["message"]
+                    .as_str()
+                    .unwrap()
+                    .contains("hard-refresh")
+            );
             assert!(matches!(
                 socket.next().await.unwrap().unwrap(),
                 WireMessage::Close(_)
@@ -339,18 +344,18 @@ async fn uptime_replies_only_to_requester_in_lobby_and_table_postgres() {
         .unwrap();
     let tables_before = fixture.app.store.load().await.unwrap();
     for room in ["lobby".to_owned(), format!("table{table}")] {
-        let payload = json!({"msg":"/UpTiMe","room":room});
+        let payload = json!({"text":"/UpTiMe","room":room});
         alice
             .send(WireMessage::Text(format!("chat {payload}").into()))
             .await
             .unwrap();
         for prefix in ["The server came online at:", "Uptime:"] {
             let reply = receive(&mut alice, "chat").await;
-            assert_eq!(reply["who"], "Hanab Live");
+            assert_eq!(reply["username"], "Hanab Live");
             assert_eq!(reply["recipient"], "Alice");
             assert_eq!(reply["room"], room);
             assert_eq!(reply["source"], "server");
-            assert!(reply["msg"].as_str().unwrap().starts_with(prefix));
+            assert!(reply["text"].as_str().unwrap().starts_with(prefix));
             assert!(reply.get("chatID").is_none());
         }
         bob.send(WireMessage::Text("sync {}".into())).await.unwrap();
@@ -451,18 +456,18 @@ async fn native_browser_login_ws_bootstrap_and_command_routing_postgres() {
     let mut alice = connect(&fixture, &alice_cookie).await;
     let welcome = receive(&mut alice, "welcome").await;
     assert_eq!(welcome["username"], "Alicè");
-    assert!(receive(&mut alice, "chatList").await["list"].is_array());
+    assert!(receive(&mut alice, "chatList").await["messages"].is_array());
     assert_eq!(receive(&mut alice, "lobbyStatus").await["state"], "ready");
     alice
         .send(WireMessage::Text(
-            "historyGet {\"offset\":0,\"amount\":10}".into(),
+            "gameHistory {\"offset\":0,\"amount\":10}".into(),
         ))
         .await
         .unwrap();
     let history = receive(&mut alice, "gameHistory").await;
     assert_eq!(history[0]["id"], historical);
     assert_eq!(history[0]["options"]["variantName"], "6 Suits");
-    assert_eq!(history[0]["options"]["timeBase"], 180.0);
+    assert_eq!(history[0]["options"]["timeBaseSeconds"], 180.0);
     assert_eq!(history[0]["options"]["emptyClues"], true);
     assert_eq!(history[0]["tags"], "authored");
     let mut bob = connect(&fixture, &bob_cookie).await;
@@ -484,27 +489,27 @@ async fn native_browser_login_ws_bootstrap_and_command_routing_postgres() {
     }
     alice
         .send(WireMessage::Text(
-            r#"chatPM {"msg":"private <content>","recipient":"Bob"}"#.into(),
+            r#"chatPM {"text":"private <content>","recipient":"Bob"}"#.into(),
         ))
         .await
         .unwrap();
     let pm = receive(&mut bob, "chat").await;
-    assert_eq!(pm["who"], "Alicè");
+    assert_eq!(pm["username"], "Alicè");
     assert_eq!(pm["recipient"], "Bob");
-    assert_eq!(pm["msg"], "private &lt;content&gt;");
+    assert_eq!(pm["text"], "private &lt;content&gt;");
     assert!(pm.get("chatID").is_none());
     assert!(pm.get("room").is_none());
     let echo = receive(&mut alice, "chat").await;
     assert_eq!(echo, pm);
     alice
         .send(WireMessage::Text(
-            "chat {\"msg\":\"/token\",\"room\":\"lobby\"}".into(),
+            "chat {\"text\":\"/token\",\"room\":\"lobby\"}".into(),
         ))
         .await
         .unwrap();
     let token = receive(&mut alice, "chat").await;
     assert_eq!(token["recipient"], "Alicè");
-    assert!(token["msg"].as_str().unwrap().contains("<code>"));
+    assert!(token["text"].as_str().unwrap().contains("<code>"));
     assert_eq!(
         sqlx::query_scalar!("SELECT COUNT(*) AS \"v!\" FROM chat_log WHERE source='user'")
             .fetch_one(&fixture.db.pool)
@@ -514,13 +519,13 @@ async fn native_browser_login_ws_bootstrap_and_command_routing_postgres() {
     );
     alice
         .send(WireMessage::Text(
-            "chat {\"msg\":\"/findvariant\",\"room\":\"lobby\"}".into(),
+            "chat {\"text\":\"/findvariant\",\"room\":\"lobby\"}".into(),
         ))
         .await
         .unwrap();
     let _ = receive(&mut alice, "chat").await;
     assert_eq!(
-        receive(&mut alice, "chat").await["msg"],
+        receive(&mut alice, "chat").await["text"],
         "You can only perform this command while in a game."
     );
     alice
@@ -532,7 +537,7 @@ async fn native_browser_login_ws_bootstrap_and_command_routing_postgres() {
         .unwrap();
     let table = receive(&mut alice, "table").await;
     assert!(
-        table["id"]
+        table["tableID"]
             .as_u64()
             .unwrap_or_else(|| table["tableID"].as_u64().unwrap())
             > 0
@@ -888,7 +893,7 @@ async fn full_history_bootstrap_queues_in_order_without_a_writer_postgres() {
         actual.push(command.to_owned());
         let data: Value = serde_json::from_str(body).unwrap();
         match command {
-            "chatList" => assert_eq!(data["list"].as_array().unwrap().len(), 50),
+            "chatList" => assert_eq!(data["messages"].as_array().unwrap().len(), 50),
             "gameHistory" => {
                 assert_eq!(data.as_array().unwrap().len(), 100);
                 assert_eq!(data[0]["playerNames"].as_array().unwrap().len(), 6);

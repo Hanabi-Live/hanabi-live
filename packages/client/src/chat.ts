@@ -38,7 +38,7 @@ const chatTimeFormatter = new Intl.DateTimeFormat("en-US", {
 });
 
 type ChatData = ServerCommandData["chat"];
-type PMHistoryMessage = ServerCommandData["chatPMHistory"]["list"][number];
+type PMHistoryMessage = ServerCommandData["chatPMHistory"]["messages"][number];
 
 export enum SelfChatMessageType {
   Normal,
@@ -328,7 +328,7 @@ function sendText(room: string, msgRaw: string) {
 
   // This is not a command, so send a the chat message to the server.
   globals.conn!.send("chat", {
-    msg,
+    text: msg,
     room: roomID,
   });
 }
@@ -453,7 +453,7 @@ function tabInitAutoCompleteList(shiftKey: boolean, finalWord: string) {
   // Make a list of the currently connected users.
   const userList: string[] = Array.from(
     globals.userMap.values(),
-    (user) => user.name,
+    (user) => user.username,
   );
 
   // Combine it with the list of emotes and the list of emoji.
@@ -574,9 +574,9 @@ function addInternal(data: ChatData, fast: boolean, updateLiveState: boolean) {
     updateLiveState
     && data.source === "user"
     && data.recipient === globals.username
-    && data.who !== undefined
+    && data.username !== undefined
   ) {
-    lastPM = data.who;
+    lastPM = data.username;
   }
 
   const box = getChatBox(data);
@@ -584,7 +584,7 @@ function addInternal(data: ChatData, fast: boolean, updateLiveState: boolean) {
     return;
   }
 
-  let rawMsg = data.msg;
+  let rawMsg = data.text;
   // Replace chat suggestions with anchors which, when clicked, are chat commands.
   if (box === "pregame") {
     rawMsg = mapTextSegments(rawMsg, fillChatSuggestions);
@@ -612,8 +612,8 @@ function addInternal(data: ChatData, fast: boolean, updateLiveState: boolean) {
   }
 
   // Remove the person from the typing list, if present.
-  if (updateLiveState && data.who !== undefined) {
-    const index = globals.peopleTyping.indexOf(data.who);
+  if (updateLiveState && data.username !== undefined) {
+    const index = globals.peopleTyping.indexOf(data.username);
     if (index !== -1) {
       globals.peopleTyping.splice(index, 1);
       updatePeopleTyping();
@@ -629,7 +629,7 @@ function formatChatLine(data: ChatData, msg: string): string {
   if (data.recipient !== undefined && data.recipient !== "") {
     line +=
       data.recipient === globals.username
-        ? `<span class="red">[PM from <strong>${textToHtml(data.who)}</strong>]</span>&nbsp; `
+        ? `<span class="red">[PM from <strong>${textToHtml(data.username)}</strong>]</span>&nbsp; `
         : `<span class="red">[PM to <strong>${textToHtml(data.recipient)}</strong>]</span>&nbsp; `;
   }
   if (
@@ -637,10 +637,10 @@ function formatChatLine(data: ChatData, msg: string): string {
     || (data.recipient !== undefined && data.recipient !== "")
   ) {
     line += msg;
-  } else if (data.who === "") {
+  } else if (data.username === "") {
     line += msg;
   } else {
-    line += `&lt;<strong>${textToHtml(data.who)}</strong>&gt;&nbsp; `;
+    line += `&lt;<strong>${textToHtml(data.username)}</strong>&gt;&nbsp; `;
     line += msg;
   }
   if (data.source === "server" && line.includes("[Server Notice]")) {
@@ -920,8 +920,8 @@ export function sendSelfPMFromServer(
   const message = formatChatMessage(msg, type);
   add(
     {
-      msg: message,
-      who: PROJECT_NAME,
+      text: message,
+      username: PROJECT_NAME,
       source: "server",
       datetime: new Date().toISOString(),
       room,

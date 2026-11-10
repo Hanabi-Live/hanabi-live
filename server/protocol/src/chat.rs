@@ -21,15 +21,18 @@ pub enum ChatSource {
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 #[schemars(extend("x-readonly" = true))]
 pub struct Chat {
-    /// Pre-escaped HTML, not an instruction to escape or normalize again.
+    /// Pre-escaped HTML, not an instruction to escape or normalize again. Checkpoints written before
+    /// November 10th, 2026 name it `msg`.
+    #[serde(alias = "msg")]
     #[schemars(length(min = 1))]
-    pub msg: String,
+    pub text: String,
     pub source: ChatSource,
     #[schemars(with = "Timestamp")]
     pub datetime: String,
-    #[serde(default, skip_serializing_if = "Option::is_none")]
+    /// Checkpoints written before November 10th, 2026 name it `who`.
+    #[serde(default, alias = "who", skip_serializing_if = "Option::is_none")]
     #[schemars(with = "String")]
-    pub who: Option<String>,
+    pub username: Option<String>,
     #[serde(default, rename = "chatID", skip_serializing_if = "Option::is_none")]
     #[schemars(with = "i64", range(min = 1, max = MAX_SAFE_INTEGER))]
     pub chat_id: Option<i64>,
@@ -46,12 +49,12 @@ pub struct Chat {
 }
 
 impl Chat {
-    pub fn new(msg: impl Into<String>, source: ChatSource, datetime: impl Into<String>) -> Self {
+    pub fn new(text: impl Into<String>, source: ChatSource, datetime: impl Into<String>) -> Self {
         Self {
-            msg: msg.into(),
+            text: text.into(),
             source,
             datetime: datetime.into(),
-            who: None,
+            username: None,
             chat_id: None,
             room: None,
             recipient: None,
@@ -81,7 +84,7 @@ pub enum LobbyRoom {
 #[schemars(extend("x-readonly" = true))]
 pub struct ChatList {
     #[schemars(extend("x-readonly" = true))]
-    pub list: Vec<Chat>,
+    pub messages: Vec<Chat>,
     #[schemars(range(min = -MAX_SAFE_INTEGER, max = MAX_SAFE_INTEGER))]
     pub unread: i64,
 }
@@ -91,9 +94,9 @@ pub struct ChatList {
 #[schemars(extend("x-readonly" = true))]
 pub struct ChatHistoryMessage {
     #[schemars(length(min = 1))]
-    pub msg: String,
+    pub text: String,
     #[schemars(length(min = 1))]
-    pub who: String,
+    pub username: String,
     #[schemars(length(min = 1))]
     pub recipient: String,
     #[schemars(with = "Timestamp")]
@@ -105,7 +108,7 @@ pub struct ChatHistoryMessage {
 #[schemars(extend("x-readonly" = true))]
 pub struct ChatHistory {
     #[schemars(extend("x-readonly" = true))]
-    pub list: Vec<ChatHistoryMessage>,
+    pub messages: Vec<ChatHistoryMessage>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     #[schemars(with = "String", length(min = 1))]
     pub room: Option<String>,
@@ -117,6 +120,6 @@ pub struct ChatHistory {
 pub struct ChatTyping {
     #[serde(rename = "tableID")]
     pub table_id: TableId,
-    pub name: String,
+    pub username: String,
     pub typing: bool,
 }

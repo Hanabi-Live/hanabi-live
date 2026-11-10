@@ -428,7 +428,7 @@ impl TableActor {
                 .into_iter()
                 .map(|n| hanabi_protocol::CardNote {
                     text: n.notes.get(order).cloned().unwrap_or_default(),
-                    name: n.name,
+                    username: n.username,
                     is_spectator: n.is_spectator,
                 })
                 .collect();
@@ -456,7 +456,7 @@ impl TableActor {
                 || matches!(self.table.phase, Phase::Replay { .. })
             {
                 notes.push(hanabi_protocol::PlayerNotes {
-                    name: p.name.clone(),
+                    username: p.name.clone(),
                     notes: s.notes[i].clone(),
                     is_spectator: false,
                 });
@@ -465,7 +465,7 @@ impl TableActor {
         for (id, n) in &s.spectator_notes {
             if *id == a.session.user || a.shadow.is_none() {
                 notes.push(hanabi_protocol::PlayerNotes {
-                    name: n.name.clone(),
+                    username: n.name.clone(),
                     notes: n.notes.clone(),
                     is_spectator: true,
                 });
@@ -477,7 +477,7 @@ impl TableActor {
         {
             if a.shadow.is_none() || spectator.session.user == a.session.user {
                 notes.push(hanabi_protocol::PlayerNotes {
-                    name: spectator.session.name.clone(),
+                    username: spectator.session.name.clone(),
                     notes: vec![String::new(); s.game.deck.len() + s.game.stacks.len()],
                     is_spectator: true,
                 });
@@ -554,7 +554,7 @@ impl TableActor {
                 shared_replay,
                 shared_replay_leader: self.leader_name(),
                 shared_replay_segment: segment.into(),
-                shared_replay_eff_mod: efficiency.into(),
+                shared_replay_efficiency_modifier: efficiency.into(),
                 spoiler_free,
                 restart_declined: self.restart_declined_names(),
                 // A review of a game just played begins when the game ends; a replay of an older
@@ -665,7 +665,7 @@ impl TableActor {
                         hanabi_protocol::server::CHAT_TYPING,
                         ChatTyping {
                             table_id: self.table.id,
-                            name: a.session.name.clone(),
+                            username: a.session.name.clone(),
                             typing: true,
                         },
                     ),

@@ -3,7 +3,7 @@
 // e.g. in-game replays.
 
 import type { ServerCommandData } from "@hanabi-live/data";
-import { ReplayArrowOrder } from "@hanabi-live/data";
+import { ReplayBoardElement } from "@hanabi-live/data";
 import type { CardOrder, GameMetadata, NumPlayers } from "@hanabi-live/game";
 import {
   getCardsPerHand,
@@ -63,7 +63,7 @@ gameCommands.set("clock", (data) => {
 });
 
 gameCommands.set("connected", (data) => {
-  for (const [i, connected] of data.list.entries()) {
+  for (const [i, connected] of data.connected.entries()) {
     const nameFrame = globals.elements.nameFrames[i];
     if (nameFrame !== undefined) {
       nameFrame.setConnected(connected);
@@ -76,7 +76,7 @@ gameCommands.set("connected", (data) => {
 gameCommands.set("cardIdentities", (data) => {
   globals.store!.dispatch({
     type: "cardIdentities",
-    cardIdentities: data.cardIdentities.map(toCardIdentity),
+    cardIdentities: data.identities.map(toCardIdentity),
   });
 });
 
@@ -106,7 +106,7 @@ gameCommands.set("finishOngoingGame", (data) => {
     )
   ) {
     // Completed replays may reveal clues; replace the restricted history before exporting it.
-    globals.lobby.conn!.send("getGameInfo2", {
+    globals.lobby.conn!.send("getGameState", {
       tableID: globals.lobby.tableID,
     });
   }
@@ -229,10 +229,10 @@ gameCommands.set("gameActionList", (data) => {
   }
 
   // The server has sent us the list of the game actions that have occurred in the game thus far (in
-  // response to the "getGameInfo2" command). Send this list to the reducers.
+  // response to the "getGameState" command). Send this list to the reducers.
   globals.store!.dispatch({
     type: "gameActionList",
-    actions: data.list.map(toGameAction),
+    actions: data.actions.map(toGameAction),
   });
 
   // We might need to go to a specific turn if we loaded a URL of e.g.:
@@ -285,7 +285,7 @@ gameCommands.set("replayEfficiencyMod", (data) => {
     return;
   }
 
-  stats.setEfficiencyMod(data.mod);
+  stats.setEfficiencyMod(data.efficiencyModifier);
 });
 
 gameCommands.set("voteChange", (data) => {
@@ -310,8 +310,8 @@ gameCommands.set("replayIndicator", (data) => {
   }
 
   arrows.hideAll();
-  if (data.order !== ReplayArrowOrder.Nothing) {
-    arrows.toggle(data.order);
+  if (data.target !== ReplayBoardElement.Nothing) {
+    arrows.toggle(data.target);
   }
 });
 
@@ -323,7 +323,7 @@ gameCommands.set("replayLeader", (data) => {
 
   globals.store!.dispatch({
     type: "replayLeader",
-    name: data.name,
+    username: data.username,
   });
 });
 
@@ -335,7 +335,7 @@ gameCommands.set("restartDeclined", (data) => {
 
   globals.store!.dispatch({
     type: "restartDeclined",
-    names: data.names,
+    usernames: data.usernames,
   });
 });
 
@@ -345,7 +345,7 @@ gameCommands.set("suggestion", (data) => {
     return;
   }
 
-  suggestTurn(data.userName, `table${data.tableID}`, data.segment);
+  suggestTurn(data.username, `table${data.tableID}`, data.segment);
 });
 
 // This is used in shared replays to change the segment (e.g. turn)
@@ -552,7 +552,7 @@ function initStateStore(data: InitData) {
         ? data.pausePlayerIndex
         : 0,
     pauseQueued: data.pauseQueued,
-    sharedReplayEffMod: data.sharedReplayEffMod,
+    sharedReplayEfficiencyModifier: data.sharedReplayEfficiencyModifier,
   });
 
   // If we happen to be joining an ongoing hypothetical, we cannot dispatch a "hypoEnter" here. We

@@ -1,4 +1,4 @@
-import { ActionType, ReplayArrowOrder } from "@hanabi-live/data";
+import { ActionType, ReplayBoardElement } from "@hanabi-live/data";
 import type { CardOrder } from "@hanabi-live/game";
 import {
   getDeckPossibilities,
@@ -119,7 +119,7 @@ export class Deck extends Konva.Group {
 
     // Right-click on the deck to highlight it with an arrow.
     this.on("click tap", (event: Konva.KonvaEventObject<MouseEvent>) => {
-      arrows.click(event, ReplayArrowOrder.Deck);
+      arrows.click(event, ReplayBoardElement.Deck);
     });
 
     this.initDeckTooltip();
@@ -359,7 +359,7 @@ function getTooltipContent(): string {
     );
 
     const owner = globals2.userMap.get(currentTable.ownerID);
-    const ownerName = owner?.name ?? "Unknown";
+    const ownerName = owner?.username ?? "Unknown";
     content += tooltipField("fas fa-crown", "Owner", escapeHtml(ownerName));
   }
 
@@ -436,8 +436,10 @@ function getTooltipContent(): string {
   );
 
   if (globals.options.timed) {
-    const timeBase = secondsToClockString(globals.options.timeBase);
-    const timePerTurn = secondsToClockString(globals.options.timePerTurn);
+    const timeBase = secondsToClockString(globals.options.timeBaseSeconds);
+    const timePerTurn = secondsToClockString(
+      globals.options.timePerTurnSeconds,
+    );
     content += tooltipItem(
       OptionIcons.Timed,
       `Timed: ${timeBase} + ${timePerTurn}`,

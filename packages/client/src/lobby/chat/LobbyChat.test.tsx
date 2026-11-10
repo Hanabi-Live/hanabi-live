@@ -19,8 +19,8 @@ function message(
   fields: Partial<ServerCommandData["chat"]>,
 ): ServerCommandData["chat"] {
   return {
-    msg: "hello",
-    who: "alice",
+    text: "hello",
+    username: "alice",
     source: "user",
     datetime: "2026-11-09T12:34:00.000Z",
     room: "lobby",
@@ -49,11 +49,11 @@ afterEach(cleanup);
 describe("LobbyChat", () => {
   test("shows lobby messages and private messages, and removes deleted messages", () => {
     act(() => {
-      add(message({ chatID: 1, msg: "first" }), true);
-      add(message({ chatID: 2, msg: "second" }), true);
-      add(message({ room: "", recipient: "me", msg: "psst" }), true);
+      add(message({ chatID: 1, text: "first" }), true);
+      add(message({ chatID: 2, text: "second" }), true);
+      add(message({ room: "", recipient: "me", text: "psst" }), true);
       // Table chat goes to the pre-game or game chat, never the lobby chat.
-      add(message({ room: "table5", msg: "table" }), true);
+      add(message({ room: "table5", text: "table" }), true);
     });
 
     const lines = lineTexts();
@@ -68,7 +68,7 @@ describe("LobbyChat", () => {
     act(() => {
       removeDeletedLobbyMessage(1);
       // A deleted message stays deleted if it arrives again.
-      add(message({ chatID: 1, msg: "first" }), true);
+      add(message({ chatID: 1, text: "first" }), true);
     });
 
     expect(lineTexts().map((line) => line.split(" ").at(-1))).toStrictEqual([

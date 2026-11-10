@@ -31,8 +31,8 @@ pub(super) struct CommandFailure {
 pub(super) fn command_failure(error: CommandError, command: &str) -> Option<CommandFailure> {
     let name = protocol::command_name(command).unwrap_or("unknown command");
     let operation = match name {
-        "historyGet" => "Loading game history".to_owned(),
-        "historyGetSeed" => "Loading seed history".to_owned(),
+        "gameHistory" => "Loading game history".to_owned(),
+        "gameHistoryOtherScores" => "Loading seed history".to_owned(),
         "setting" => "Saving preferences".to_owned(),
         _ => format!("Command {name}"),
     };
@@ -145,7 +145,7 @@ pub(super) async fn lobby_command(
     let caller = session.identity.clone();
     let rendered = match &message {
         ClientMessage::Chat(request) if request.room == "lobby" => {
-            discord_rendering(app, &request.msg).await
+            discord_rendering(app, &request.text).await
         }
         _ => None,
     };
@@ -195,7 +195,7 @@ async fn discord_rendering(app: &App, text: &str) -> Option<String> {
 fn history_command(message: &ClientMessage) -> bool {
     matches!(
         message,
-        ClientMessage::HistoryGet(_) | ClientMessage::HistoryGetSeed(_)
+        ClientMessage::GameHistory(_) | ClientMessage::GameHistoryOtherScores(_)
     )
 }
 
@@ -241,7 +241,7 @@ pub(super) async fn dispatch(
             session.emit(&frame(
                 hanabi_protocol::server::WARNING,
                 hanabi_protocol::Warning {
-                    warning: accounts::escape_html(&format!("Cannot process {command}: {detail}")),
+                    message: accounts::escape_html(&format!("Cannot process {command}: {detail}")),
                 },
             ));
             return Ok(());

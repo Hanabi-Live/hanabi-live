@@ -42,7 +42,7 @@ test.each(cases)("$direction: $name", (entry) => {
 });
 
 test("hidden clue frames require both identity fields to be concealed", () => {
-  const action = { type: "clue", giver: 0, target: 1, list: [5], turn: 0 };
+  const action = { type: "clue", giver: 0, target: 1, orders: [5], turn: 0 };
   const schema = SERVER_COMMAND_SCHEMAS.gameAction;
   expect(
     schema.safeParse({

@@ -75,7 +75,7 @@ export enum RecordedActionType {
 /**
  * The parts of the board that a shared-replay arrow can point at, besides cards.
  */
-export enum ReplayArrowOrder {
+export enum ReplayBoardElement {
   Nothing = -1,
   Deck = -2,
   Turn = -3,
@@ -104,7 +104,7 @@ export enum SoundMove {
  */
 export enum Status {
   Lobby = 0,
-  PreGame = 1,
+  Pregame = 1,
   Playing = 2,
   Spectating = 3,
   Replay = 4,
@@ -159,7 +159,7 @@ const cardIdentitySchema = z.strictObject({
  * Every card's identity, by card order, once a game ends.
  */
 export const cardIdentitiesSchema = z.strictObject({
-  cardIdentities: z.array(cardIdentitySchema),
+  identities: z.array(cardIdentitySchema),
   tableID: tableIdSchema,
 });
 const chatSourceSchema = z.enum(["user", "server", "discord"]);
@@ -167,10 +167,6 @@ export const chatSchema = z
   .strictObject({
     chatID: z.number().int().min(1).max(9_007_199_254_740_991).optional(),
     datetime: z.iso.datetime({ precision: 3 }),
-    /**
-     * Pre-escaped HTML, not an instruction to escape or normalize again.
-     */
-    msg: z.string().min(1),
     recipient: z.string().optional(),
     room: z.string().optional(),
     source: chatSourceSchema,
@@ -178,7 +174,15 @@ export const chatSchema = z
      * Options that the message's button applies to the table, in a suggestion to its owner.
      */
     suggestedOptions: gameOptionsSchema.optional(),
-    who: z.string().optional(),
+    /**
+     * Pre-escaped HTML, not an instruction to escape or normalize again. Checkpoints written before
+     * November 10th, 2026 name it `msg`.
+     */
+    text: z.string().min(1),
+    /**
+     * Checkpoints written before November 10th, 2026 name it `who`.
+     */
+    username: z.string().optional(),
   })
   .readonly();
 const lobbyRoomSchema = z.literal("lobby");
@@ -191,14 +195,14 @@ export const chatDeleteSchema = z
 export const chatHistoryMessageSchema = z
   .strictObject({
     datetime: z.iso.datetime({ precision: 3 }),
-    msg: z.string().min(1),
     recipient: z.string().min(1),
-    who: z.string().min(1),
+    text: z.string().min(1),
+    username: z.string().min(1),
   })
   .readonly();
 export const chatHistorySchema = z
   .strictObject({
-    list: z.array(chatHistoryMessageSchema).readonly(),
+    messages: z.array(chatHistoryMessageSchema).readonly(),
     room: z.string().min(1).optional(),
   })
   .readonly();
@@ -219,7 +223,7 @@ export const chatLinkedRequestSchema = z
   .readonly();
 export const chatListSchema = z
   .strictObject({
-    list: z.array(chatSchema).readonly(),
+    messages: z.array(chatSchema).readonly(),
     unread: z
       .number()
       .int()
@@ -228,20 +232,23 @@ export const chatListSchema = z
   })
   .readonly();
 export const chatPmRequestSchema = z
-  .strictObject({ msg: z.string().min(1), recipient: z.string().min(1) })
+  .strictObject({ recipient: z.string().min(1), text: z.string().min(1) })
   .readonly();
 export const chatRequestSchema = z
-  .strictObject({ msg: z.string().min(1), room: z.string().min(1) })
+  .strictObject({ room: z.string().min(1), text: z.string().min(1) })
   .readonly();
 export const chatTypingSchema = z
   .strictObject({
-    name: z.string(),
     tableID: tableIdSchema,
     typing: z.boolean(),
+    username: z.string(),
   })
   .readonly();
 export const chatUserRequestSchema = z
-  .strictObject({ name: z.string().default(""), room: z.string().default("") })
+  .strictObject({
+    room: z.string().default(""),
+    username: z.string().default(""),
+  })
   .readonly();
 
 /**
@@ -252,18 +259,18 @@ export const clockSchema = z.strictObject({
    * -1 when the game has no active player.
    */
   activePlayerIndex: playerIndexOrNoneSchema,
-  tableID: tableIdSchema,
-  timeTaken: z.number().int().min(0).max(9_007_199_254_740_991),
-  times: z.array(
+  playerTimesMs: z.array(
     z.number().int().min(-9_007_199_254_740_991).max(9_007_199_254_740_991),
   ),
+  tableID: tableIdSchema,
+  timeTakenMs: z.number().int().min(0).max(9_007_199_254_740_991),
 });
 
 /**
  * Whether each player has loaded the game, in seat order.
  */
 export const connectedSchema = z.strictObject({
-  list: z.array(z.boolean()),
+  connected: z.array(z.boolean()),
   tableID: tableIdSchema,
 });
 export const emptySchema = z.strictObject({});
@@ -272,7 +279,7 @@ export const emptySchema = z.strictObject({});
  * A problem the client shows in a modal. The text may contain HTML.
  */
 export const errorNoticeSchema = z
-  .strictObject({ error: z.string().min(1) })
+  .strictObject({ message: z.string().min(1) })
   .readonly();
 export const finishOngoingGameSchema = z.strictObject({
   /**
@@ -290,7 +297,7 @@ export const gameActionSchema = z.strictObject({
   tableID: tableIdSchema,
 });
 export const gameActionListSchema = z.strictObject({
-  list: z.array(gameEventSchema),
+  actions: z.array(gameEventSchema),
   tableID: tableIdSchema,
 });
 
@@ -450,7 +457,7 @@ export const initSchema = z.strictObject({
   seed: z.string(),
   shadowing: z.boolean(),
   sharedReplay: z.boolean(),
-  sharedReplayEffMod: z
+  sharedReplayEfficiencyModifier: z
     .number()
     .int()
     .min(-9_007_199_254_740_991)
@@ -605,12 +612,12 @@ const pregameStatsSchema = z.strictObject({
 });
 const pregamePlayerSchema = z.strictObject({
   index: z.number().int().min(0).max(5),
-  name: z.string(),
   /**
    * Whether this player is connected and at the table.
    */
   present: z.boolean(),
   stats: pregameStatsSchema,
+  username: z.string(),
   /**
    * Whether this player is the recipient.
    */
@@ -624,7 +631,7 @@ export const pregameSchema = z.strictObject({
   maxPlayers: z.number().int().min(2).max(6),
   name: z.string(),
   options: gameOptionsSchema,
-  owner: userIdSchema,
+  ownerID: userIdSchema,
   passwordProtected: z.boolean(),
   players: z.array(pregamePlayerSchema),
   tableID: tableIdSchema,
@@ -673,7 +680,7 @@ export const publicGamePageSchema = z.strictObject({
  */
 const replayArrowTargetSchema = z.union([
   cardOrderSchema,
-  z.enum(ReplayArrowOrder),
+  z.enum(ReplayBoardElement),
 ]);
 
 /**
@@ -691,8 +698,8 @@ export const replayActionRequestSchema = z.discriminatedUnion("type", [
     type: z.literal("segment"),
   }),
   z.strictObject({
-    order: replayArrowTargetSchema,
     tableID: tableIdSchema,
+    target: replayArrowTargetSchema,
     type: z.literal("arrow"),
   }),
   z.strictObject({
@@ -709,11 +716,12 @@ export const replayActionRequestSchema = z.discriminatedUnion("type", [
   }),
   z.strictObject({ tableID: tableIdSchema, type: z.literal("hypoBack") }),
   z.strictObject({
+    showDrawnCards: z.boolean(),
     tableID: tableIdSchema,
-    type: z.literal("hypoToggleRevealed"),
+    type: z.literal("hypoShowDrawnCards"),
   }),
   z.strictObject({
-    mod: z.number().int().min(-2_147_483_648).max(2_147_483_647),
+    efficiencyModifier: z.number().int().min(-2_147_483_648).max(2_147_483_647),
     tableID: tableIdSchema,
     type: z.literal("efficiencyMod"),
   }),
@@ -763,13 +771,13 @@ const importOptionsSchema = z.strictObject({
   oneExtraCard: z.boolean().optional(),
   oneLessCard: z.boolean().optional(),
   speedrun: z.boolean().optional(),
-  timeBase: z
+  timeBaseSeconds: z
     .number()
     .int()
     .min(-9_007_199_254_740_991)
     .max(9_007_199_254_740_991)
     .optional(),
-  timePerTurn: z
+  timePerTurnSeconds: z
     .number()
     .int()
     .min(-9_007_199_254_740_991)
@@ -800,7 +808,7 @@ export const replayImportSchema = z.strictObject({
    */
   notes: z.array(importNoteRowSchema).max(6).optional(),
   options: importOptionsSchema.optional(),
-  players: z.array(z.string()).max(6).optional(),
+  playerNames: z.array(z.string()).max(6).optional(),
   seed: z.string().optional(),
 });
 
@@ -834,7 +842,7 @@ export const replayCreateRequestSchema = z.strictObject({
   visibility: replayVisibilitySchema,
 });
 export const replayEfficiencyModSchema = z.strictObject({
-  mod: z.number().int().min(-2_147_483_648).max(2_147_483_647),
+  efficiencyModifier: z.number().int().min(-2_147_483_648).max(2_147_483_647),
   tableID: tableIdSchema,
 });
 const replayActionSchema = z.strictObject({
@@ -870,13 +878,13 @@ const replayOptionsSchema = z.strictObject({
   oneExtraCard: z.boolean().optional(),
   oneLessCard: z.boolean().optional(),
   speedrun: z.boolean().optional(),
-  timeBase: z
+  timeBaseSeconds: z
     .number()
     .int()
     .min(-9_007_199_254_740_991)
     .max(9_007_199_254_740_991)
     .optional(),
-  timePerTurn: z
+  timePerTurnSeconds: z
     .number()
     .int()
     .min(-9_007_199_254_740_991)
@@ -900,7 +908,7 @@ export const replayGameSchema = z.strictObject({
    */
   notes: z.array(replayNoteRowSchema).optional(),
   options: replayOptionsSchema.optional(),
-  players: z.array(z.string()),
+  playerNames: z.array(z.string()),
   seed: z.string(),
 });
 
@@ -908,12 +916,12 @@ export const replayGameSchema = z.strictObject({
  * What the leader points at.
  */
 export const replayIndicatorSchema = z.strictObject({
-  order: replayArrowTargetSchema,
   tableID: tableIdSchema,
+  target: replayArrowTargetSchema,
 });
 export const replayLeaderSchema = z.strictObject({
-  name: z.string(),
   tableID: tableIdSchema,
+  username: z.string(),
 });
 export const replaySegmentSchema = z.strictObject({
   segment: z.number().int().min(0).max(9_007_199_254_740_991),
@@ -938,8 +946,8 @@ export const restartSchema = z.strictObject({
  * The players in a shared replay who will not play again if the leader restarts.
  */
 export const restartDeclinedSchema = z.strictObject({
-  names: z.array(z.string()).max(6),
   tableID: tableIdSchema,
+  usernames: z.array(z.string()).max(6),
 });
 
 /**
@@ -1011,7 +1019,6 @@ export const soundLobbySchema = z
   .readonly();
 export const spectatorSchema = z
   .strictObject({
-    name: z.string().min(1),
     /**
      * The seat being shadowed, if any.
      */
@@ -1020,6 +1027,7 @@ export const spectatorSchema = z
      * Present only while shadowing a seat.
      */
     shadowingPlayerUsername: z.string().min(1).optional(),
+    username: z.string().min(1),
   })
   .readonly();
 export const spectatorsSchema = z
@@ -1039,7 +1047,7 @@ export const suggestionSchema = z.strictObject({
     .min(-9_007_199_254_740_991)
     .max(9_007_199_254_740_991),
   tableID: tableIdSchema,
-  userName: z.string(),
+  username: z.string(),
 });
 
 /**
@@ -1051,7 +1059,6 @@ export const tableSchema = z
      * The game that a replay shows, if it is stored in the database.
      */
     databaseID: gameIdSchema.optional(),
-    id: tableIdSchema,
     /**
      * Whether the recipient is one of the players.
      */
@@ -1065,7 +1072,7 @@ export const tableSchema = z
     options: gameOptionsSchema,
     ownerID: userIdSchema,
     passwordProtected: z.boolean(),
-    players: z.array(z.string()),
+    playerNames: z.array(z.string()),
     /**
      * The percentage of the maximum score reached, or of a replay watched.
      */
@@ -1073,6 +1080,7 @@ export const tableSchema = z
     running: z.boolean(),
     sharedReplay: z.boolean(),
     spectators: z.array(spectatorSchema).readonly(),
+    tableID: tableIdSchema,
     timeBase: z.number(),
     timePerTurn: z
       .number()
@@ -1083,7 +1091,6 @@ export const tableSchema = z
     variant: z.string().min(1),
   })
   .readonly();
-export const tableCommandSchema = z.strictObject({ tableID: tableIdSchema });
 export const tableCreateRequestSchema = z.strictObject({
   maxPlayers: z
     .number()
@@ -1104,8 +1111,8 @@ export const tableCreateRequestSchema = z.strictObject({
     oneExtraCard: false,
     oneLessCard: false,
     speedrun: false,
-    timeBase: 0,
-    timePerTurn: 0,
+    timeBaseSeconds: 0,
+    timePerTurnSeconds: 0,
     timed: false,
     variantName: "No Variant",
   }),
@@ -1116,8 +1123,8 @@ export const tableJoinRequestSchema = z.strictObject({
   tableID: tableIdSchema,
 });
 export const tableLeaderRequestSchema = z.strictObject({
-  name: z.string().default(""),
   tableID: tableIdSchema,
+  username: z.string().default(""),
 });
 export const tableListSchema = z.array(tableSchema).readonly();
 export const tableRequestSchema = z.strictObject({ tableID: tableIdSchema });
@@ -1141,7 +1148,7 @@ export const tableSpectateRequestSchema = z.strictObject({
   tableID: tableIdSchema,
 });
 export const tableStartRequestSchema = z.strictObject({
-  intendedPlayers: z.array(z.string()).max(6).optional(),
+  intendedPlayerNames: z.array(z.string()).max(6).optional(),
   tableID: tableIdSchema,
 });
 export const tableStartedSchema = z.strictObject({
@@ -1178,8 +1185,8 @@ export const tableUpdateRequestSchema = z.strictObject({
     oneExtraCard: false,
     oneLessCard: false,
     speedrun: false,
-    timeBase: 0,
-    timePerTurn: 0,
+    timeBaseSeconds: 0,
+    timePerTurnSeconds: 0,
     timed: false,
     variantName: "No Variant",
   }),
@@ -1223,10 +1230,10 @@ export const userSchema = z
      */
     hGroupLevel: z.number().int().min(0).max(25),
     inactive: z.boolean(),
-    name: z.string().min(1),
     status: z.enum(Status),
     tableID: tableIdSchema.optional(),
     userID: userIdSchema,
+    username: z.string().min(1),
   })
   .readonly();
 export const userInactiveSchema = z
@@ -1251,7 +1258,7 @@ export const voteChangeSchema = z.strictObject({ vote: z.boolean() });
  * A recoverable problem the client shows in a modal. The text may contain HTML.
  */
 export const warningSchema = z
-  .strictObject({ warning: z.string().min(1) })
+  .strictObject({ message: z.string().min(1) })
   .readonly();
 
 /**
@@ -1302,19 +1309,19 @@ export const CLIENT_COMMAND_SCHEMAS = {
   chatLink: chatUserRequestSchema,
   chatLinked: chatLinkedRequestSchema,
   chatPM: chatPmRequestSchema,
-  chatPMHistoryGet: chatHistoryRequestSchema,
+  chatPMHistory: chatHistoryRequestSchema,
   chatRead: tableRequestSchema,
   chatTyping: tableRequestSchema,
   chatUnblock: chatUserRequestSchema,
   chatUnfriend: chatUserRequestSchema,
   chatUnlink: chatUserRequestSchema,
-  getGameInfo1: tableCommandSchema,
-  getGameInfo2: tableCommandSchema,
-  historyGet: historyRequestSchema,
-  historyGetSeed: historySeedRequestSchema,
+  gameHistory: historyRequestSchema,
+  gameHistoryOtherScores: historySeedRequestSchema,
+  getGameInit: tableRequestSchema,
+  getGameState: tableRequestSchema,
   idleReset: tableRequestSchema,
   inactive: inactiveRequestSchema,
-  loaded: tableCommandSchema,
+  loaded: tableRequestSchema,
   lobbyLoad: emptySchema,
   note: noteRequestSchema,
   pause: pauseRequestSchema,
@@ -1333,10 +1340,10 @@ export const CLIENT_COMMAND_SCHEMAS = {
   tableSpectate: tableSpectateRequestSchema,
   tableStart: tableStartRequestSchema,
   tableSuggest: tableSuggestRequestSchema,
-  tableTerminate: tableCommandSchema,
-  tableUnattend: tableCommandSchema,
+  tableTerminate: tableRequestSchema,
+  tableUnattend: tableRequestSchema,
   tableUpdate: tableUpdateRequestSchema,
-  tableVoteForTermination: tableCommandSchema,
+  tableVoteForTermination: tableRequestSchema,
   tag: tagRequestSchema,
   tagDelete: tagRequestSchema,
   tagSearch: tagSearchRequestSchema,
@@ -1356,7 +1363,6 @@ export const SERVER_COMMAND_SCHEMAS = {
   error: errorNoticeSchema,
   finishOngoingGame: finishOngoingGameSchema,
   friends: friendsSchema,
-  game: pregameSchema,
   gameAction: gameActionSchema,
   gameActionList: gameActionListSchema,
   gameHistory: gameHistoryListSchema,
@@ -1379,6 +1385,7 @@ export const SERVER_COMMAND_SCHEMAS = {
   noteListPlayer: noteListPlayerSchema,
   outdatedClient: emptySchema,
   pause: pauseSchema,
+  pregame: pregameSchema,
   replayEfficiencyMod: replayEfficiencyModSchema,
   replayIndicator: replayIndicatorSchema,
   replayLeader: replayLeaderSchema,

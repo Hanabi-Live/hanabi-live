@@ -65,7 +65,7 @@ export interface ActionInit extends Readonly<
     | "databaseID"
     | "sharedReplaySegment"
     | "sharedReplayLeader"
-    | "sharedReplayEffMod"
+    | "sharedReplayEfficiencyModifier"
     | "spoilerFree"
     | "restartDeclined"
     | "paused"
@@ -157,13 +157,13 @@ interface ActionReplayUseSharedSegments {
 }
 
 interface ActionReplayLeader extends Readonly<
-  Pick<ServerCommandData["replayLeader"], "name">
+  Pick<ServerCommandData["replayLeader"], "username">
 > {
   readonly type: "replayLeader";
 }
 
 interface ActionRestartDeclined extends Readonly<
-  Pick<ServerCommandData["restartDeclined"], "names">
+  Pick<ServerCommandData["restartDeclined"], "usernames">
 > {
   readonly type: "restartDeclined";
 }

@@ -42,9 +42,9 @@ test("a late live clock cannot restart timers in a finished replay", () => {
   const hideFirst = vi.spyOn(first, "hide");
   const hideSecond = vi.spyOn(second, "hide");
   update({
-    times: [10_000, 20_000],
+    playerTimesMs: [10_000, 20_000],
     activePlayerIndex: 0,
-    timeTaken: 100,
+    timeTakenMs: 100,
   });
   expect(clear).toHaveBeenCalledWith(123);
   expect(start).not.toHaveBeenCalled();
@@ -73,7 +73,7 @@ test("untimed games without timers still update the player time tooltips", () =>
     metadata: { ourPlayerIndex: 1 },
   });
   try {
-    update({ times: [-5000, 0], activePlayerIndex: 0, timeTaken: 0 });
+    update({ playerTimesMs: [-5000, 0], activePlayerIndex: 0, timeTakenMs: 0 });
     expect(globals.playerTimes).toEqual([-5000, 0]);
     expect(tooltips.setContent).toHaveBeenCalledWith(
       "#tooltip-player-0",

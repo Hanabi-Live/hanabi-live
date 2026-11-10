@@ -69,7 +69,7 @@ pub(super) fn wire_event(event: &hanabi_engine::EngineEvent) -> hanabi_protocol:
             },
             giver: int(*giver),
             target: int(*target),
-            list: list.iter().map(|&order| SafeInteger(int(order))).collect(),
+            orders: list.iter().map(|&order| SafeInteger(int(order))).collect(),
             turn: (*turn).into(),
         },
         E::Turn {
@@ -94,8 +94,8 @@ pub(super) fn wire_event(event: &hanabi_engine::EngineEvent) -> hanabi_protocol:
             player_times,
             duration,
         } => G::PlayerTimes {
-            player_times: player_times.iter().copied().map(SafeInteger).collect(),
-            duration: *duration,
+            player_times_ms: player_times.iter().copied().map(SafeInteger).collect(),
+            duration_ms: *duration,
         },
     }
 }
@@ -116,6 +116,6 @@ pub(crate) fn game_action_list(
 ) -> hanabi_protocol::GameActionList {
     hanabi_protocol::GameActionList {
         table_id: table,
-        list: list.iter().map(wire_event).collect(),
+        actions: list.iter().map(wire_event).collect(),
     }
 }

@@ -54,7 +54,7 @@ pub struct User {
     #[serde(rename = "userID")]
     pub user_id: UserId,
     #[schemars(length(min = 1))]
-    pub name: String,
+    pub username: String,
     pub status: Status,
     #[serde(default, rename = "tableID", skip_serializing_if = "Option::is_none")]
     #[schemars(with = "TableId")]
@@ -112,7 +112,7 @@ pub struct Blocked {
 #[schemars(extend("x-readonly" = true))]
 pub struct ErrorNotice {
     #[schemars(length(min = 1))]
-    pub error: String,
+    pub message: String,
 }
 
 /// A recoverable problem the client shows in a modal. The text may contain HTML.
@@ -121,7 +121,7 @@ pub struct ErrorNotice {
 #[schemars(extend("x-readonly" = true))]
 pub struct Warning {
     #[schemars(length(min = 1))]
-    pub warning: String,
+    pub message: String,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
@@ -275,9 +275,13 @@ pub struct GameOptions {
     #[schemars(with = "u32", range(min = 0, max = u32::MAX))]
     pub variant_id: Option<u32>,
     pub timed: bool,
-    pub time_base: f64,
+    /// Checkpoints written before November 10th, 2026 name it `timeBase`.
+    #[serde(alias = "timeBase")]
+    pub time_base_seconds: f64,
+    /// Checkpoints written before November 10th, 2026 name it `timePerTurn`.
+    #[serde(alias = "timePerTurn")]
     #[schemars(range(min = -MAX_SAFE_INTEGER, max = MAX_SAFE_INTEGER))]
-    pub time_per_turn: i64,
+    pub time_per_turn_seconds: i64,
     pub speedrun: bool,
     pub deck_plays: bool,
     pub empty_clues: bool,
@@ -317,8 +321,8 @@ impl Default for GameOptions {
             variant_name: DEFAULT_VARIANT_NAME.into(),
             variant_id: None,
             timed: false,
-            time_base: 0.0,
-            time_per_turn: 0,
+            time_base_seconds: 0.0,
+            time_per_turn_seconds: 0,
             speedrun: false,
             deck_plays: false,
             empty_clues: false,
@@ -340,7 +344,7 @@ impl Default for GameOptions {
 #[schemars(extend("x-readonly" = true))]
 pub struct Spectator {
     #[schemars(length(min = 1))]
-    pub name: String,
+    pub username: String,
     /// The seat being shadowed, if any.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     #[schemars(with = "PlayerIndex")]
@@ -373,7 +377,8 @@ pub struct Table {
     )]
     #[schemars(with = "GameId")]
     pub database_id: Option<GameId>,
-    pub id: TableId,
+    #[serde(rename = "tableID")]
+    pub table_id: TableId,
     /// Whether the recipient is one of the players.
     pub joined: bool,
     #[schemars(with = "NumPlayers")]
@@ -387,7 +392,7 @@ pub struct Table {
     #[serde(rename = "ownerID")]
     pub owner_id: UserId,
     pub password_protected: bool,
-    pub players: Vec<String>,
+    pub player_names: Vec<String>,
     /// The percentage of the maximum score reached, or of a replay watched.
     #[schemars(range(min = 0, max = MAX_PROGRESS))]
     pub progress: u8,
@@ -496,7 +501,7 @@ pub struct PregameStats {
 pub struct PregamePlayer {
     #[schemars(range(min = 0, max = MAX_SEAT))]
     pub index: u8,
-    pub name: String,
+    pub username: String,
     /// Whether this player is the recipient.
     pub you: bool,
     /// Whether this player is connected and at the table.
@@ -511,7 +516,8 @@ pub struct Pregame {
     #[serde(rename = "tableID")]
     pub table_id: TableId,
     pub name: String,
-    pub owner: UserId,
+    #[serde(rename = "ownerID")]
+    pub owner_id: UserId,
     pub players: Vec<PregamePlayer>,
     pub options: GameOptions,
     pub password_protected: bool,

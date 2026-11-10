@@ -51,7 +51,7 @@ function notesReducerFunction(
         const spectatorNotes = notes.allNotes[action.order];
         if (spectatorNotes !== undefined) {
           for (const spectatorNote of spectatorNotes) {
-            if (spectatorNote.name === metadata.ourUsername) {
+            if (spectatorNote.username === metadata.ourUsername) {
               spectatorNote.text = action.text;
             }
           }
@@ -82,9 +82,13 @@ function notesReducerFunction(
       }
 
       // Set the new notes.
-      for (const { name, notes: noteTextList, isSpectator } of action.notes) {
+      for (const {
+        username,
+        notes: noteTextList,
+        isSpectator,
+      } of action.notes) {
         // If we are a spectator, copy our notes from combined list.
-        if (name === metadata.ourUsername && !playing && !finished) {
+        if (username === metadata.ourUsername && !playing && !finished) {
           for (const [order, text] of noteTextList.entries()) {
             const newNote = parseNote(variant, text);
             notes.ourNotes[order] = castDraft(newNote);
@@ -95,7 +99,7 @@ function notesReducerFunction(
           const spectatorNotes = notes.allNotes[order];
           if (spectatorNotes !== undefined) {
             spectatorNotes.push({
-              name,
+              username,
               text,
               isSpectator,
             });

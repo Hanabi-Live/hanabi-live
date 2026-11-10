@@ -162,7 +162,8 @@ function stateReducerFunction(state: Draft<State>, action: Action) {
             spoilerFree: action.spoilerFree,
             restartDeclined: action.restartDeclined ?? [],
           };
-          state.notes.efficiencyModifier = action.sharedReplayEffMod;
+          state.notes.efficiencyModifier =
+            action.sharedReplayEfficiencyModifier;
         }
       }
 

@@ -63,9 +63,9 @@ databaseDescribe("Rust actor durability and ownership", () => {
         await alice.receive("tableStart", SERVER_COMMAND_SCHEMAS.tableStart);
         await bob.receive("tableStart", SERVER_COMMAND_SCHEMAS.tableStart);
         async function bootstrap(peer: ReturnType<typeof socketClient>) {
-          peer.send("getGameInfo1", { tableID });
+          peer.send("getGameInit", { tableID });
           const init = await peer.receive("init", SERVER_COMMAND_SCHEMAS.init);
-          peer.send("getGameInfo2", { tableID });
+          peer.send("getGameState", { tableID });
           const history = await peer.receive(
             "gameActionList",
             SERVER_COMMAND_SCHEMAS.gameActionList,
@@ -77,18 +77,18 @@ databaseDescribe("Rust actor durability and ownership", () => {
         await alice.receive(
           "connected",
           SERVER_COMMAND_SCHEMAS.connected,
-          (data) => data.list.every(Boolean),
+          (data) => data.connected.every(Boolean),
         );
         await bob.receive(
           "connected",
           SERVER_COMMAND_SCHEMAS.connected,
-          (data) => data.list.every(Boolean),
+          (data) => data.connected.every(Boolean),
         );
         const activeIsAlice = a.init.ourPlayerIndex === 0;
         const active = activeIsAlice ? alice : bob;
         const other = activeIsAlice ? bob : alice;
         const initial = activeIsAlice ? a : b;
-        const card = initial.history.list.find(
+        const card = initial.history.actions.find(
           (event) => event.type === "draw" && event.playerIndex === 0,
         );
         assertDefined(card, "Missing active player's initial hand.");
@@ -170,13 +170,13 @@ databaseDescribe("Rust actor durability and ownership", () => {
         // Resending the applied move is rejected: it is no longer this player's turn.
         replacement.send("action", action);
         await replacement.receive("warning", SERVER_COMMAND_SCHEMAS.warning);
-        replacement.send("getGameInfo2", { tableID });
+        replacement.send("getGameState", { tableID });
         const onceOnly = await replacement.receive(
           "gameActionList",
           SERVER_COMMAND_SCHEMAS.gameActionList,
         );
         expect(
-          onceOnly.list.filter(
+          onceOnly.actions.filter(
             (event) => event.type === "play" || event.type === "discard",
           ),
         ).toHaveLength(1);
@@ -209,12 +209,12 @@ databaseDescribe("Rust actor durability and ownership", () => {
         const restored = await bootstrap(returning);
         expect(restored.init.ourPlayerIndex).toBe(0);
         expect(
-          restored.history.list.filter(
+          restored.history.actions.filter(
             (event) => event.type === "play" || event.type === "discard",
           ),
         ).toHaveLength(1);
         expect(
-          restored.history.list.some(
+          restored.history.actions.some(
             (event) =>
               event.type === "draw"
               && event.playerIndex === 0
@@ -223,13 +223,13 @@ databaseDescribe("Rust actor durability and ownership", () => {
         ).toBe(true);
         returning.send("action", action);
         await returning.receive("warning", SERVER_COMMAND_SCHEMAS.warning);
-        returning.send("getGameInfo2", { tableID });
+        returning.send("getGameState", { tableID });
         const duplicate = await returning.receive(
           "gameActionList",
           SERVER_COMMAND_SCHEMAS.gameActionList,
         );
         expect(
-          duplicate.list.filter(
+          duplicate.actions.filter(
             (event) => event.type === "play" || event.type === "discard",
           ),
         ).toHaveLength(1);

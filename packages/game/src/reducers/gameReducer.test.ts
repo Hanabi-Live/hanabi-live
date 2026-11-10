@@ -49,7 +49,7 @@ describe("gameReducer", () => {
       clue: { type: -1, value: -1 },
       giver: 0,
       target: 1,
-      list: [first.order],
+      orders: [first.order],
       ignoreNegative: false,
     };
     const updated = gameReducer(

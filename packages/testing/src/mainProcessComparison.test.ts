@@ -105,9 +105,9 @@ databaseDescribe("normal-server protocol workload", () => {
         peer: ReturnType<typeof socketClient>,
         tableID: number,
       ) {
-        peer.send("getGameInfo1", { tableID });
+        peer.send("getGameInit", { tableID });
         const init = await peer.receive("init", SERVER_COMMAND_SCHEMAS.init);
-        peer.send("getGameInfo2", { tableID });
+        peer.send("getGameState", { tableID });
         const history = await peer.receive(
           "gameActionList",
           SERVER_COMMAND_SCHEMAS.gameActionList,
@@ -179,12 +179,12 @@ databaseDescribe("normal-server protocol workload", () => {
                   a.init.ourPlayerIndex,
                 );
                 expect(
-                  restored.history.list.filter(
+                  restored.history.actions.filter(
                     (event) => event.type === "play",
                   ),
                 ).toHaveLength(5);
                 expect(
-                  restored.history.list.some(
+                  restored.history.actions.some(
                     (event) =>
                       event.type === "draw"
                       && event.playerIndex === a.init.ourPlayerIndex
@@ -202,7 +202,7 @@ databaseDescribe("normal-server protocol workload", () => {
             const finished = await bootstrap(alice, tableID);
             expect(finished.init.replay).toBe(true);
             expect(
-              finished.history.list.filter((event) => event.type === "play"),
+              finished.history.actions.filter((event) => event.type === "play"),
             ).toHaveLength(25);
             completed.push({
               databaseID: finished.init.databaseID,
@@ -277,7 +277,7 @@ databaseDescribe("normal-server protocol workload", () => {
         const replay = await bootstrap(peer, tableID);
         expect(replay.init.databaseID).toBe(databaseID);
         expect(
-          replay.history.list.filter((event) => event.type === "play"),
+          replay.history.actions.filter((event) => event.type === "play"),
         ).toHaveLength(25);
         const historyReady = performance.now();
         await unattend(peer, tableID);

@@ -238,7 +238,8 @@ export function toggleRevealed(): void {
   } else if (globals.state.replay.shared.amLeader) {
     globals.lobby.conn!.send("replayAction", {
       tableID: globals.lobby.tableID,
-      type: "hypoToggleRevealed",
+      type: "hypoShowDrawnCards",
+      showDrawnCards: !globals.state.replay.hypothetical.showDrawnCards,
     });
   }
 }
@@ -268,7 +269,7 @@ export function checkToggleRevealedButton(
     }
 
     case "clue": {
-      for (const cardOrder of actionMessage.list) {
+      for (const cardOrder of actionMessage.orders) {
         if (
           globals.state.replay.hypothetical.drawnCardsInHypothetical.includes(
             cardOrder,

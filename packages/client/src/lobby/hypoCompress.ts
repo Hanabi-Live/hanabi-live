@@ -144,7 +144,7 @@ export function expand(data: string): string | undefined {
   const variant = getVariantByID(variantID);
 
   const original: GameJSON = {
-    players: [...players],
+    playerNames: [...players],
     deck: [...deck],
     actions: [...actions],
     options: {
@@ -168,11 +168,11 @@ function gameJSONCompress(data: GameJSON): string | undefined {
   let out = "";
 
   // Number of players
-  const numberOfPlayers = data.players.length;
+  const numberOfPlayers = data.playerNames.length;
   if (numberOfPlayers < MIN_PLAYERS || numberOfPlayers > MAX_PLAYERS) {
     return undefined;
   }
-  out += data.players.length.toString();
+  out += data.playerNames.length.toString();
 
   // Deck
   const deck = compressDeck(data.deck);

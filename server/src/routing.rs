@@ -25,10 +25,10 @@ pub fn route(message: &ClientMessage) -> Route {
         M::Sync(_) | M::TableCreate(_) | M::ReplayCreate(_) => return Route::Hub,
         M::Setting(_)
         | M::Inactive(_)
-        | M::HistoryGet(_)
-        | M::HistoryGetSeed(_)
+        | M::GameHistory(_)
+        | M::GameHistoryOtherScores(_)
         | M::ChatPM(_)
-        | M::ChatPMHistoryGet(_)
+        | M::ChatPMHistory(_)
         | M::ChatFriend(_)
         | M::ChatUnfriend(_)
         | M::ChatLink(_)
@@ -51,12 +51,12 @@ pub fn route(message: &ClientMessage) -> Route {
         | M::ChatTyping(r)
         | M::TableLeave(r)
         | M::TableReattend(r)
-        | M::IdleReset(r) => r.table_id,
-        M::TableUnattend(r)
+        | M::IdleReset(r)
+        | M::TableUnattend(r)
         | M::TableTerminate(r)
         | M::TableVoteForTermination(r)
-        | M::GetGameInfo1(r)
-        | M::GetGameInfo2(r)
+        | M::GetGameInit(r)
+        | M::GetGameState(r)
         | M::Loaded(r) => r.table_id,
         M::TableJoin(r) => r.table_id,
         M::TableSetLeader(r) => r.table_id,

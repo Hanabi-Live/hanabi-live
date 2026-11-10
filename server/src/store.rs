@@ -539,7 +539,7 @@ async fn archive_chat(
     for entry in entries {
         ids.push(entry.id.context("Missing chat identity")?);
         users.push(entry.user.0);
-        messages.push(entry.message.msg.clone());
+        messages.push(entry.message.text.clone());
         rooms.push(
             entry
                 .message
@@ -1565,7 +1565,7 @@ mod tests {
                 loop{if store.load().await?.iter().any(|(t,_)|t.id==id&&matches!(t.phase,Phase::Live{..})){return Ok::<(),anyhow::Error>(());}tokio::time::sleep(Duration::from_millis(20)).await;}
             }).await??;
             send(&hub,users[2].clone(),"tableSpectate",json!({"tableID":id,"shadowingPlayerIndex":0})).await?;
-            send(&hub,users[0].clone(),"chat",json!({"room":format!("table{id}"),"msg":"retained authored chat"})).await?;
+            send(&hub,users[0].clone(),"chat",json!({"room":format!("table{id}"),"text":"retained authored chat"})).await?;
             send(&hub,users[0].clone(),"tableTerminate",json!({"tableID":id})).await?;
             let rows:i64=sqlx::query_scalar!("SELECT count(*) AS \"v!\" FROM chat_log WHERE user_id=1 AND source='user' AND room=$1 AND message='retained authored chat'", format!("table{id}")).fetch_one(&store.primary).await?;
             ensure!(rows==1,"Accepted authored chat was omitted or duplicated in PostgreSQL");
@@ -1639,7 +1639,7 @@ mod tests {
                 &hub,
                 users[0].clone(),
                 "chat",
-                json!({"room":format!("table{id}"),"msg":"/split Bob"}),
+                json!({"room":format!("table{id}"),"text":"/split Bob"}),
             )
             .await?;
             let tables = store.load().await?;
@@ -1779,7 +1779,7 @@ mod tests {
             frames.push(outgoing);
         }
         let result=async{
-            send(&hub,users[0].clone(),"tableCreate",json!({"name":"native","maxPlayers":6,"options":{"seed":"native","variantName":"Clue Starved (6 Suits)","timed":true,"timeBase":120,"timePerTurn":20,"oneExtraCard":true,"detrimentalCharacters":true}})).await?;
+            send(&hub,users[0].clone(),"tableCreate",json!({"name":"native","maxPlayers":6,"options":{"seed":"native","variantName":"Clue Starved (6 Suits)","timed":true,"timeBaseSeconds":120,"timePerTurnSeconds":20,"oneExtraCard":true,"detrimentalCharacters":true}})).await?;
             let id=store.load().await?[0].0.id;
             for user in users.iter().skip(1){send(&hub,user.clone(),"tableJoin",json!({"tableID":id,"password":""})).await?;}
             send(&hub,users[0].clone(),"tableStart",json!({"tableID":id})).await?;

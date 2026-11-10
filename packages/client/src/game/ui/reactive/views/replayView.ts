@@ -349,7 +349,7 @@ export function onLeaderOrSpectatorsChanged(data: {
   // Find out if the leader is away.
   let away = true;
   for (const spectator of data.spectators) {
-    if (spectator.name === data.leader) {
+    if (spectator.username === data.leader) {
       away = false;
       break;
     }

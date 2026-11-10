@@ -130,7 +130,7 @@ fn warning(message: &str) -> Effect {
     Effect::to_self(Outgoing::new(
         hanabi_protocol::server::WARNING,
         hanabi_protocol::Warning {
-            warning: message.into(),
+            message: message.into(),
         },
     ))
 }
@@ -144,7 +144,7 @@ pub(crate) fn notice_publication(recipient: &str, message: &str, room: &str) -> 
     Publication::ToSelf(Outgoing::new(
         hanabi_protocol::server::CHAT,
         hanabi_protocol::Chat {
-            who: Some("Hanab Live".into()),
+            username: Some("Hanab Live".into()),
             room: Some(room.into()),
             recipient: Some(recipient.into()),
             ..hanabi_protocol::Chat::new(
@@ -202,14 +202,14 @@ pub async fn dispatch(
             ]
         }
         ClientMessage::Chat(request) => {
-            return chat::lobby_chat(pool, secret, caller, &request.msg, &request.room, rendered)
+            return chat::lobby_chat(pool, secret, caller, &request.text, &request.room, rendered)
                 .await;
         }
 
         ClientMessage::ChatPM(request) => {
-            chat::private_message(pool, caller, online, &request.msg, &request.recipient).await?
+            chat::private_message(pool, caller, online, &request.text, &request.recipient).await?
         }
-        ClientMessage::ChatPMHistoryGet(request) => {
+        ClientMessage::ChatPMHistory(request) => {
             chat::private_history(pool, caller, &request).await?
         }
         ClientMessage::ChatLinked(request) | ClientMessage::ChatBlocked(request) => {
@@ -221,9 +221,10 @@ pub async fn dispatch(
         | ClientMessage::ChatUnlink(request)
         | ClientMessage::ChatBlock(request)
         | ClientMessage::ChatUnblock(request) => {
-            relationships::relationship(pool, caller, command, &request.name, &request.room).await?
+            relationships::relationship(pool, caller, command, &request.username, &request.room)
+                .await?
         }
-        ClientMessage::HistoryGet(hanabi_protocol::HistoryRequest { offset, amount }) => {
+        ClientMessage::GameHistory(hanabi_protocol::HistoryRequest { offset, amount }) => {
             if let Some(error) = page_error(offset, amount) {
                 return Ok(Some(vec![warning(&error)]));
             }
@@ -233,7 +234,7 @@ pub async fn dispatch(
                 hanabi_protocol::GameHistoryList(get_history(pool, &ids, false).await?),
             ))]
         }
-        ClientMessage::HistoryGetSeed(request) => {
+        ClientMessage::GameHistoryOtherScores(request) => {
             let seed = request.seed.as_str();
             let error = if seed.is_empty() {
                 Some("You must provide a seed.")

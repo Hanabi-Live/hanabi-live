@@ -42,7 +42,7 @@ describe("sending commands", () => {
     });
     try {
       const initial = new Connection("ws://localhost/ws", false);
-      initial.send("chat", { room: "lobby", msg: "allowed" });
+      initial.send("chat", { room: "lobby", text: "allowed" });
       expect(sockets[0]?.sent).toHaveLength(1);
       initial.send("action", {
         tableID: 123,
@@ -59,7 +59,7 @@ describe("sending commands", () => {
         target: 1,
       });
       expect(sockets[0]?.sent).toHaveLength(2);
-      initial.send("getGameInfo2", { tableID: 123 });
+      initial.send("getGameState", { tableID: 123 });
       expect(sockets[0]?.sent).toHaveLength(3);
       initial.setReady(true);
       initial.send("action", {
@@ -94,10 +94,10 @@ describe("received messages", () => {
       conn.invalidMessage = (command) => {
         invalid.push(command);
       };
-      conn.onMessage({ data: 'warning {"warning":"Careful"}' } as MessageEvent);
-      conn.onMessage({ data: 'warning {"warning":""}' } as MessageEvent);
+      conn.onMessage({ data: 'warning {"message":"Careful"}' } as MessageEvent);
+      conn.onMessage({ data: 'warning {"message":""}' } as MessageEvent);
       conn.onMessage({ data: 'warning {"text":"Careful"}' } as MessageEvent);
-      expect(warnings).toEqual([{ warning: "Careful" }]);
+      expect(warnings).toEqual([{ message: "Careful" }]);
       expect(Object.isFrozen(warnings[0])).toBe(false);
       expect(invalid).toEqual(["warning", "warning"]);
     } finally {

@@ -16,12 +16,12 @@ pub struct Clock {
     #[serde(rename = "tableID")]
     pub table_id: TableId,
     #[schemars(inner(range(min = -MAX_SAFE_INTEGER, max = MAX_SAFE_INTEGER)))]
-    pub times: Vec<i64>,
+    pub player_times_ms: Vec<i64>,
     /// -1 when the game has no active player.
     #[schemars(with = "PlayerIndexOrNone")]
     pub active_player_index: i64,
     #[schemars(range(min = 0, max = MAX_SAFE_INTEGER))]
-    pub time_taken: i64,
+    pub time_taken_ms: i64,
 }
 
 /// Whether each player has loaded the game, in seat order.
@@ -30,7 +30,7 @@ pub struct Clock {
 pub struct Connected {
     #[serde(rename = "tableID")]
     pub table_id: TableId,
-    pub list: Vec<bool>,
+    pub connected: Vec<bool>,
 }
 
 /// Sent when an ongoing game is about to end because nobody has taken a turn for too long.
@@ -77,7 +77,7 @@ pub struct CardIdentity {
 pub struct CardIdentities {
     #[serde(rename = "tableID")]
     pub table_id: TableId,
-    pub card_identities: Vec<CardIdentity>,
+    pub identities: Vec<CardIdentity>,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
@@ -106,7 +106,7 @@ pub struct TableStarted {
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct PlayerNotes {
-    pub name: String,
+    pub username: String,
     pub notes: Vec<String>,
     pub is_spectator: bool,
 }
@@ -115,8 +115,8 @@ pub struct PlayerNotes {
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct CardNote {
-    /// The username of the person setting the note.
-    pub name: String,
+    /// The person setting the note.
+    pub username: String,
     pub text: String,
     pub is_spectator: bool,
 }
@@ -246,7 +246,7 @@ pub enum GameEvent {
         target: i64,
         /// The orders of the cards the clue touched.
         #[schemars(with = "Vec<CardOrder>", extend("x-readonly" = true))]
-        list: Vec<SafeInteger>,
+        orders: Vec<SafeInteger>,
         #[schemars(range(min = -MAX_SAFE_INTEGER, max = MAX_SAFE_INTEGER))]
         turn: i64,
     },
@@ -271,9 +271,9 @@ pub enum GameEvent {
     PlayerTimes {
         /// Each player's time, in seat order.
         #[schemars(length(min = MIN_PLAYERS, max = MAX_PLAYERS), extend("x-readonly" = true))]
-        player_times: Vec<SafeInteger>,
+        player_times_ms: Vec<SafeInteger>,
         #[schemars(range(min = -MAX_SAFE_INTEGER, max = MAX_SAFE_INTEGER))]
-        duration: i64,
+        duration_ms: i64,
     },
 }
 
@@ -290,7 +290,7 @@ pub struct GameAction {
 pub struct GameActionList {
     #[serde(rename = "tableID")]
     pub table_id: TableId,
-    pub list: Vec<GameEvent>,
+    pub actions: Vec<GameEvent>,
 }
 
 /// Everything a client needs to draw a game, before its events arrive.
@@ -326,7 +326,7 @@ pub struct Init {
     #[schemars(range(min = -MAX_SAFE_INTEGER, max = MAX_SAFE_INTEGER))]
     pub shared_replay_segment: i64,
     #[schemars(range(min = -MAX_SAFE_INTEGER, max = MAX_SAFE_INTEGER))]
-    pub shared_replay_eff_mod: i64,
+    pub shared_replay_efficiency_modifier: i64,
     /// Whether the shared replay hides what happens later in the game.
     pub spoiler_free: bool,
     /// The players in a shared replay who will not play again if the leader restarts.

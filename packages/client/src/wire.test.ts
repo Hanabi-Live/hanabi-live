@@ -35,7 +35,7 @@ describe("server game events", () => {
         clue: { type: -1, value: -1 },
         giver: 0,
         target: 1,
-        list: [3, 4],
+        orders: [3, 4],
         turn: 2,
       }),
     );
@@ -43,7 +43,7 @@ describe("server game events", () => {
       throw new Error("Expected a clue action");
     }
     expect(action.clue).toEqual({ type: -1, value: -1 });
-    expect(action.list.map(Number)).toEqual([3, 4]);
+    expect(action.orders.map(Number)).toEqual([3, 4]);
   });
 
   test("values outside the game's types are rejected", () => {
@@ -60,7 +60,7 @@ describe("server game events", () => {
         clue: { type: 1, value: 6 },
         giver: 0,
         target: 1,
-        list: [3],
+        orders: [3],
         turn: 2,
       }),
     ).toThrow();
@@ -80,8 +80,8 @@ describe("card identities", () => {
   test("unknown suits and ranks become null", () => {
     const [identity] = SERVER_COMMAND_SCHEMAS.cardIdentities.parse({
       tableID: 1,
-      cardIdentities: [{ suitIndex: -1, rank: 7 }],
-    }).cardIdentities;
+      identities: [{ suitIndex: -1, rank: 7 }],
+    }).identities;
     expect(toCardIdentity(identity!)).toEqual({ suitIndex: null, rank: 7 });
   });
 });

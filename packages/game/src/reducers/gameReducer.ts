@@ -69,7 +69,7 @@ function gameReducerFunction(
      *   type: "clue",
      *   clue: { type: 0, value: 1 },
      *   giver: 1,
-     *   list: [11],
+     *   orders: [11],
      *   target: 2,
      *   turn: 0,
      * }
@@ -91,7 +91,7 @@ function gameReducerFunction(
 
       const negativeList = action.ignoreNegative
         ? []
-        : targetHand.filter((i) => !action.list.includes(i));
+        : targetHand.filter((i) => !action.orders.includes(i));
 
       // A pass touches no cards, so it does not belong in the clue log.
       if (!isPassTurnClue(action)) {
@@ -106,7 +106,7 @@ function gameReducerFunction(
                 giver: action.giver,
                 target: action.target,
                 segment: gameState.turn.segment,
-                list: action.list,
+                list: action.orders,
                 negativeList,
               }),
             );
@@ -120,7 +120,7 @@ function gameReducerFunction(
               giver: action.giver,
               target: action.target,
               segment: gameState.turn.segment,
-              list: action.list,
+              list: action.orders,
               negativeList,
             });
             gameState.clues.push(clue);
@@ -134,7 +134,7 @@ function gameReducerFunction(
               giver: action.giver,
               target: action.target,
               segment: gameState.turn.segment,
-              list: action.list,
+              list: action.orders,
               negativeList,
             });
             gameState.clues.push(clue);
@@ -433,7 +433,7 @@ function gameReducerFunction(
 
     case "playerTimes": {
       for (const playerIndex of VALID_PLAYER_INDEXES) {
-        const playerTime = action.playerTimes[playerIndex];
+        const playerTime = action.playerTimesMs[playerIndex];
         if (playerTime === undefined) {
           break;
         }
@@ -453,7 +453,7 @@ function gameReducerFunction(
         });
       }
 
-      const clockString = millisecondsToClockString(action.duration);
+      const clockString = millisecondsToClockString(action.durationMs);
       const text = `The total game duration was: ${clockString}`;
       gameState.log.push({
         turn: gameState.turn.turnNum + 1,
