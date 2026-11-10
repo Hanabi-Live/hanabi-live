@@ -114,6 +114,14 @@ fn stored_seconds(time_base: f64) -> i32 {
 
 /// The stored character assignment of a player without a character.
 pub const NO_CHARACTER_ASSIGNMENT: i16 = -1;
+/// `game_participants` stores a character's assigned metadata plus this offset, so that 0 means
+/// that the character has none.
+const STORED_METADATA_OFFSET: i16 = 1;
+
+/// The character metadata that a `game_participants` value stores, or -1 for none.
+pub fn stored_metadata(stored: i16) -> i32 {
+    i32::from(stored) - i32::from(STORED_METADATA_OFFSET)
+}
 
 /// Rebuilds a finished game from the database as a replay at table `table_id`, owned by `owner`.
 pub(crate) async fn replay(
@@ -163,7 +171,7 @@ pub(crate) async fn replay(
             metadata: if hanabi_engine::Character::from_name(name)
                 .is_some_and(hanabi_engine::Character::has_assigned_metadata)
             {
-                i32::from(r.character_metadata)
+                stored_metadata(r.character_metadata)
             } else {
                 NO_VALUE
             },
@@ -333,7 +341,9 @@ fn stored_character(player: &hanabi_engine::EnginePlayer) -> Result<(i16, i16)> 
         .iter()
         .find(|c| c.name == player.character)
         .map_or(Ok(NO_CHARACTER_ASSIGNMENT), |c| i16::try_from(c.id))?;
-    let metadata = player.assigned_metadata().map_or(Ok(0), i16::try_from)?;
+    let metadata = player.assigned_metadata().map_or(Ok(0), |metadata| {
+        i16::try_from(metadata).map(|metadata| metadata + STORED_METADATA_OFFSET)
+    })?;
     Ok((assignment, metadata))
 }
 

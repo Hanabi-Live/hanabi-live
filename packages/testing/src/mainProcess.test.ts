@@ -690,11 +690,7 @@ databaseDescribe("compiled application entry point (rust)", () => {
         const original = games[0];
         assertDefined(original, "Missing original player bootstrap.");
         expect(imported.init.options).toMatchObject(original.init.options);
-        expect(
-          imported.init.characters.map((character) => character.characterID),
-        ).toEqual(
-          original.init.characters.map((character) => character.characterID),
-        );
+        expect(imported.init.characters).toEqual(original.init.characters);
         expect(
           imported.history.actions
             .filter((event) => event.type === "draw")

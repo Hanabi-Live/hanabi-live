@@ -105,7 +105,7 @@ pub(super) async fn export(
             };
             characters.push(hanabi_protocol::ReplayCharacter {
                 name: name.into(),
-                metadata: i32::from(p.character_metadata) - 1,
+                metadata: crate::archive::stored_metadata(p.character_metadata),
             });
         }
         Some(characters)
