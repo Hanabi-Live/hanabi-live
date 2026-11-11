@@ -151,8 +151,8 @@ pub fn create_game(setup: GameSetup) -> Result<EngineState> {
             })
             .collect(),
         deck_index: 0,
-        stacks: vec![0; variant.suits.len()],
-        stack_starts: vec![0; variant.suits.len()],
+        stacks: vec![None; variant.suits.len()],
+        stack_starts: vec![None; variant.suits.len()],
         play_stack_directions: variant
             .suits
             .iter()
@@ -330,7 +330,7 @@ fn play(state: &mut EngineState, player: usize, order: usize) {
     let card = &mut state.deck[order];
     card.played = true;
     state.score += 1;
-    state.stacks[card.suit_index] = card.rank;
+    state.stacks[card.suit_index] = Some(card.rank);
     state.events.push(EngineEvent::Play {
         player_index: player,
         order,
@@ -497,7 +497,7 @@ pub fn apply_action(
                 !(is_play
                     && variant_for(state).sudoku
                     && state.deck[order].rank == START_CARD_RANK
-                    && state.stacks[state.deck[order].suit_index] == 0),
+                    && state.stacks[state.deck[order].suit_index].is_none()),
                 "The prepared card cannot start a Sudoku stack."
             );
             if !is_play && state.clue_tokens < MAX_CLUES * clue_cost(state) {

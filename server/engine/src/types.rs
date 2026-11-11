@@ -502,8 +502,10 @@ pub struct EngineState {
     pub players: Vec<EnginePlayer>,
     pub deck: Vec<EngineCard>,
     pub deck_index: usize,
-    pub stacks: Vec<i32>,
-    pub stack_starts: Vec<i32>,
+    /// The rank on top of each play stack. `None` while a stack is empty.
+    pub stacks: Vec<Option<i32>>,
+    /// The first rank played on each Sudoku stack. `None` until the stack starts.
+    pub stack_starts: Vec<Option<i32>>,
     pub play_stack_directions: Vec<StackDirection>,
     pub turn: i32,
     pub turns_inverted: bool,

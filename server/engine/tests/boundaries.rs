@@ -612,7 +612,7 @@ fn sudoku_started_stack_cannot_count_available_ranks_before_its_start() {
         None,
     ))
     .unwrap();
-    state.stack_starts[0] = 3;
+    state.stack_starts[0] = Some(3);
     for card in &mut state.deck {
         if card.suit_index == 0 && card.rank == 5 {
             card.discarded = true;

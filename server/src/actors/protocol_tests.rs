@@ -1654,7 +1654,9 @@ async fn remade_tables_publish_fresh_statistics_for_every_player() -> Result<()>
             let hand = &game.players[active].hand;
             let playable = hand.iter().find(|&&order| {
                 let card = &game.deck[order];
-                card.rank == game.stacks[card.suit_index] + 1
+                card.rank
+                    == game.stacks[card.suit_index]
+                        .map_or(hanabi_protocol::MIN_RANK, |rank| rank + 1)
             });
             let action = if let Some(order) = playable {
                 json!({"tableId":id,"action":{"type":"play","order":order}})

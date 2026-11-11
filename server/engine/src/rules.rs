@@ -138,38 +138,34 @@ fn needed_ranks(state: &EngineState, suit: usize) -> Vec<i32> {
     if v.has_reversed_suits() {
         return match direction {
             StackDirection::Undecided => {
-                if stack == 0 {
+                if stack.is_none() {
                     vec![MIN_RANK, MAX_RANK, START_CARD_RANK]
                 } else {
                     vec![MIN_RANK + 1, MAX_RANK - 1]
                 }
             }
-            StackDirection::Up => vec![stack + 1],
-            StackDirection::Down => vec![if !v.up_or_down && stack == 0 {
-                MAX_RANK
-            } else {
-                stack - 1
-            }],
+            StackDirection::Up => vec![stack.map_or(MIN_RANK, |rank| rank + 1)],
+            // Only a reversed suit outside "Up or Down" goes down from an empty stack.
+            StackDirection::Down => vec![stack.map_or(MAX_RANK, |rank| rank - 1)],
             StackDirection::Finished => vec![],
         };
     }
     if v.sudoku {
         return if direction == StackDirection::Finished {
             vec![]
-        } else if stack == 0 {
+        } else if let Some(stack) = stack {
+            vec![stack % v.stack_size + 1]
+        } else {
             v.ranks
                 .iter()
                 .copied()
-                .filter(|r| !state.stack_starts.contains(r))
+                .filter(|r| !state.stack_starts.contains(&Some(*r)))
                 .collect()
-        } else {
-            vec![stack % v.stack_size + 1]
         };
     }
-    if stack == MAX_RANK {
-        vec![]
-    } else {
-        vec![stack + 1]
+    match stack {
+        Some(MAX_RANK) => vec![],
+        _ => vec![stack.map_or(MIN_RANK, |rank| rank + 1)],
     }
 }
 
@@ -181,21 +177,20 @@ pub(crate) fn try_play(state: &mut EngineState, order: usize) -> bool {
     let stack = state.stacks[suit];
     let direction = state.play_stack_directions[suit];
     if v.sudoku {
-        if stack == 0 {
-            if state.stack_starts.contains(&rank) {
-                return false;
-            }
-            state.stack_starts[suit] = rank;
-        } else {
+        if let (Some(stack), Some(start)) = (stack, state.stack_starts[suit]) {
             if direction == StackDirection::Finished
                 || rank != next_sudoku_rank(stack, v.stack_size)
             {
                 return false;
             }
-            let final_rank = previous_sudoku_rank(state.stack_starts[suit], v.stack_size);
-            if rank == final_rank {
+            if rank == previous_sudoku_rank(start, v.stack_size) {
                 state.play_stack_directions[suit] = StackDirection::Finished;
             }
+        } else {
+            if state.stack_starts.contains(&Some(rank)) {
+                return false;
+            }
+            state.stack_starts[suit] = Some(rank);
         }
         return true;
     }
@@ -230,14 +225,12 @@ pub(crate) fn follower_misplays(state: &EngineState, player: usize, card: &Engin
         .stacks
         .iter()
         .enumerate()
-        .filter(|&(suit, &stack)| {
-            if v.sudoku {
-                stack != 0
-                    && (stack - state.stack_starts[suit] + size) % size
-                        >= (card.rank - state.stack_starts[suit] + size) % size
-            } else {
-                stack >= card.rank
+        .filter(|&(suit, &stack)| match (stack, state.stack_starts[suit]) {
+            (Some(stack), Some(start)) if v.sudoku => {
+                (stack - start + size) % size >= (card.rank - start + size) % size
             }
+            _ if v.sudoku => false,
+            _ => stack.is_some_and(|stack| stack >= card.rank),
         })
         .count();
     reached < FOLLOWER_MIN_STACKS
@@ -320,17 +313,17 @@ pub fn calculate_max_score(state: &EngineState) -> i32 {
             let scores = sudoku_scores(&available_ranks(state, suit), v.stack_size);
             if scores.iter().all(|s| *s == v.stack_size) {
                 independent += v.stack_size;
-            } else if start == 0 {
-                unassigned.push(scores);
-            } else {
+            } else if let Some(start) = start {
                 independent += scores[slot(start - 1)];
+            } else {
+                unassigned.push(scores);
             }
         }
         let free: Vec<i32> = v
             .ranks
             .iter()
             .copied()
-            .filter(|r| !state.stack_starts.contains(r))
+            .filter(|r| !state.stack_starts.contains(&Some(*r)))
             .collect();
         return independent + best_assignment(&unassigned, &free, 0);
     }
