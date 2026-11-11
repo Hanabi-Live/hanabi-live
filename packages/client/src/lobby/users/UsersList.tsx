@@ -6,6 +6,7 @@ import { useEffect, useRef } from "react";
 import { globals } from "../../Globals";
 import { DIMMED_OPACITY } from "../../constants";
 import { store, useAppSelector } from "../../store";
+import { TAB_CLASS_NAME } from "../../tabClassName";
 import * as tooltips from "../../tooltips";
 import { tableJoin, tableSpectate } from "../tables/tableActions";
 import { Screen } from "../types/Screen";
@@ -24,13 +25,6 @@ const H_GROUP_TOOLTIP =
 
 const BOT_TOOLTIP =
   '<span class="small-tooltip-text">This account is a bot.</span>';
-
-const TAB_CLASS_NAME = [
-  "tw:cursor-pointer tw:appearance-none tw:border-0 tw:border-b-2 tw:border-solid tw:border-transparent tw:bg-transparent tw:p-0",
-  "tw:[font-family:inherit] tw:[font-size:inherit] tw:[font-weight:inherit] tw:leading-[1.3] tw:tracking-[inherit] tw:text-text-label",
-  "tw:transition-[color,border-color] tw:duration-200 tw:ease-in-out tw:hover:text-text-strong",
-  "tw:aria-selected:cursor-default tw:aria-selected:border-b-(--button-green) tw:aria-selected:text-text-strong",
-].join(" ");
 
 const SLEEPING_EMOJI = "\u{1F4A4}";
 const ROBOT_EMOJI = "\u{1F916}";

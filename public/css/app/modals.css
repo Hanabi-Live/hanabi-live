@@ -180,23 +180,6 @@
   min-width: unset;
 }
 
-#emoji-picker {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.3em;
-  max-height: 50vh;
-  overflow-y: auto;
-}
-
-#emoji-picker > .emoji-item {
-  font-size: 1.5em;
-  cursor: pointer;
-}
-
-#emoji-picker > .chat-emote {
-  cursor: pointer;
-}
-
 @media screen and (max-width: 530px) {
   .modal,
   .modal-message {

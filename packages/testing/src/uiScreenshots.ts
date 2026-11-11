@@ -269,6 +269,15 @@ function getStates({
       },
     },
     {
+      name: "emoji-picker-search",
+      path: "/",
+      loggedIn: true,
+      prepare: async (page) => {
+        await page.click("#lobby-chat-input + button");
+        await page.fill("#emoji-picker input", "cat");
+      },
+    },
+    {
       name: "create-game",
       path: "/",
       loggedIn: true,

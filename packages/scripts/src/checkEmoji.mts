@@ -1,7 +1,8 @@
-// Checks that "emojis.json" and "emotes.json" are in alphabetical order, that each emote list in
-// "emotes.json" matches the images in its directory, and that the Twitch, BetterTTV, and
-// FrankerFaceZ directories hold exactly the global emotes of those services, each showing the same
-// pixels as the PNG that the service serves. It exits with an error if any check fails.
+// Checks that each group in "emojis.json", and "emotes.json", are in alphabetical order, that no
+// emoji name is in two groups, that each emote list in "emotes.json" matches the images in its
+// directory, and that the Twitch, BetterTTV, and FrankerFaceZ directories hold exactly the global
+// emotes of those services, each showing the same pixels as the PNG that the service serves. It
+// exits with an error if any check fails.
 
 import { CHAT_EMOTES, CHAT_SPECIAL_EMOTES } from "@hanabi-live/data";
 import type { DecodedPng } from "fast-png";
@@ -25,6 +26,8 @@ const EMOJIS_JSON_PATH = path.join(JSON_DIR, "emojis.json");
 const EMOTES_JSON_PATH = path.join(JSON_DIR, "emotes.json");
 /** A key of the root object, which Prettier indents by two spaces. */
 const ROOT_KEY = /^ {2}("(?:[^"\\]|\\.)*"):/gmu;
+/** A key of an object in the root object, which Prettier indents by four spaces. */
+const NESTED_KEY = /^ {4}("(?:[^"\\]|\\.)*"):/gmu;
 /** Chat matches emotes at word boundaries, so it cannot match other codes (such as ":)"). */
 const MATCHABLE_CODE = /^\w+$/u;
 const RGBA_CHANNELS = 4;
@@ -93,11 +96,15 @@ const SERVICES = [
 const specialEmotePaths: ReadonlyMap<string, string> = new Map(
   Object.entries(CHAT_SPECIAL_EMOTES),
 );
+const emojiGroups = await readEmojiGroups();
+const emojiNames = [...emojiGroups.values()].flat();
 const orderFailures = [
-  checkAlphabetical(
-    'The keys of "emojis.json"',
-    await readRootKeys(EMOJIS_JSON_PATH),
+  ...[...emojiGroups].map(([group, names]) =>
+    checkAlphabetical(`The "${group}" group in "emojis.json"`, names),
   ),
+  emojiNames.length === new Set(emojiNames).size
+    ? undefined
+    : 'An emoji name is in more than one group in "emojis.json".',
   checkAlphabetical(
     'The keys of "emotes.json"',
     await readRootKeys(EMOTES_JSON_PATH),
@@ -125,7 +132,7 @@ if (failures.length > 0) {
 }
 
 console.log(
-  "The emoji and emotes are in alphabetical order, every emote list matches its directory, and the Twitch, BetterTTV, and FrankerFaceZ emotes match their global emotes.",
+  "The emoji and emotes are in alphabetical order, no emoji is in two groups, every emote list matches its directory, and the Twitch, BetterTTV, and FrankerFaceZ emotes match their global emotes.",
 );
 
 /**
@@ -165,6 +172,30 @@ async function readRootKeys(filePath: string): Promise<readonly string[]> {
   }
 
   return keys;
+}
+
+/** Reads the emoji names of each group in "emojis.json", in the order of the file. */
+async function readEmojiGroups(): Promise<
+  ReadonlyMap<string, readonly string[]>
+> {
+  const text = await Bun.file(EMOJIS_JSON_PATH).text();
+  const groupKeys = await readRootKeys(EMOJIS_JSON_PATH);
+  const groupTexts = text
+    .split(ROOT_KEY)
+    .filter((_part, i) => i % 2 === 0)
+    .slice(1);
+  if (groupTexts.length !== groupKeys.length) {
+    throw new Error(`Failed to find every group in "${EMOJIS_JSON_PATH}".`);
+  }
+
+  return new Map(
+    groupKeys.map((group, i) => [
+      group,
+      Array.from((groupTexts[i] ?? "").matchAll(NESTED_KEY), (match) =>
+        String(JSON.parse(match[1] ?? "")),
+      ),
+    ]),
+  );
 }
 
 function compareAlphabetically(a: string, b: string): number {

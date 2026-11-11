@@ -13,6 +13,7 @@ import {
 import { eRange, isArray, trimPrefix } from "complete-common";
 import linkifyHtml from "linkify-html";
 import { find as linkifyFind } from "linkifyjs";
+import { mountEmojiPicker } from "./EmojiPicker";
 import { globals } from "./Globals";
 import { chatCommands } from "./chatCommands";
 import { LobbyChatDeletionState } from "./chatDeletion";
@@ -33,7 +34,7 @@ import {
 import { Screen } from "./lobby/types/Screen";
 import * as modals from "./modals";
 import { store } from "./store";
-import { getHTMLInputElement } from "./utils";
+import { getHTMLElement, getHTMLInputElement } from "./utils";
 
 /** Formats chat timestamps as 24-hour "HH:MM" regardless of the browser's locale. */
 const chatTimeFormatter = new Intl.DateTimeFormat("en-US", {
@@ -85,6 +86,7 @@ let tabCompleteWordListIndex: number | undefined;
 let tabCompleteWordList: string[] = [];
 let tabCompleteOriginalText = "";
 let activeChatInput: HTMLInputElement | undefined;
+let emojiPickerMounted = false;
 
 export function init(): void {
   attachChatInput(getHTMLInputElement("#game-chat-input"), "table");
@@ -138,50 +140,9 @@ export function init(): void {
   }
 }
 
-/**
- * Adds the emotes and emoji to the picker the first time that it opens. Drawing them is slow, and
- * most users never open the picker.
- */
-function fillEmojiPicker() {
-  const picker = $("#emoji-picker");
-  if (picker.children().length > 0) {
-    return;
-  }
-
-  for (const [categoryName, emotesInCategory] of Object.entries(emotes)) {
-    for (const emote of emotesInCategory) {
-      const emoteImg = $("<img>")
-        .addClass("chat-emote")
-        .attr("loading", "lazy")
-        .attr("decoding", "async")
-        .attr("src", `/public/img/emotes/${categoryName}/${emote}.png`)
-        .attr("title", emote)
-        .on("click", pickEmote);
-      picker.append(emoteImg);
-    }
-  }
-
-  for (const [emojiName, emoji] of emojiMap) {
-    const emojiSpan = $("<span>")
-      .addClass("emoji-item")
-      .attr("title", `:${emojiName}:`)
-      .text(emoji)
-      .on("click", pickEmoji);
-    picker.append(emojiSpan);
-  }
-}
-
-function pickEmote(this: HTMLElement) {
+function pickChatSymbol(text: string) {
   if (activeChatInput) {
-    activeChatInput.value += `${this.title} `;
-    activeChatInput.focus();
-  }
-  modals.closeModals();
-}
-
-function pickEmoji(this: HTMLElement) {
-  if (activeChatInput) {
-    activeChatInput.value += this.textContent;
+    activeChatInput.value += text;
     activeChatInput.focus();
   }
   modals.closeModals();
@@ -190,7 +151,11 @@ function pickEmoji(this: HTMLElement) {
 /** Opens the emote and emoji picker, which adds what we pick to a chat input. */
 export function openEmojiPicker(chatInput: HTMLInputElement): void {
   activeChatInput = chatInput;
-  fillEmojiPicker();
+  // Most users never open the picker, so it is drawn when it first opens.
+  if (!emojiPickerMounted) {
+    mountEmojiPicker(getHTMLElement("#emoji-picker"), pickChatSymbol);
+    emojiPickerMounted = true;
+  }
   modals.showPrompt("#emoji-modal");
 }
 

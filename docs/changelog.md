@@ -44,6 +44,8 @@ of the repository.
 - When a card shows rows of possibilities, a suit that is ruled out now shares a
   row with the other suits that the clues allowed the same ranks, with its pip
   crossed out.
+- The emote and emoji picker now opens quickly. It shows one category at a time,
+  and it has a search box. Flag emoji were removed.
 
 ## November 9th, 2026
 
