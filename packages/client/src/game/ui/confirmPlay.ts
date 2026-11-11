@@ -1,6 +1,7 @@
 import type { CardState, SuitRankTuple } from "@hanabi-live/game";
 import { MAX_STRIKES, isCardPotentiallyPlayable } from "@hanabi-live/game";
 import { askForConfirmation } from "../../modals.ts";
+import { isOurSeat } from "../ourSeat.ts";
 import { globals } from "./UiGlobals.ts";
 
 /**
@@ -17,7 +18,6 @@ export function confirmPlay(
   cancel?: () => void,
 ): void {
   const { currentPlayerIndex } = globals.state.ongoingGame.turn;
-  const { ourPlayerIndex } = globals.metadata;
   const { ongoingGame } = globals.state;
 
   const shouldWarn =
@@ -25,7 +25,7 @@ export function confirmPlay(
     && !globals.options.speedrun
     && !globals.variant.throwItInAHole
     // Do not use warnings for preplays unless the next strike would end the game.
-    && (currentPlayerIndex === ourPlayerIndex
+    && (isOurSeat(currentPlayerIndex, globals.metadata)
       || ongoingGame.strikes.length === MAX_STRIKES - 1);
   if (!shouldWarn) {
     play();

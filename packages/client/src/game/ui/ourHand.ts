@@ -12,7 +12,10 @@ export function get(): CardLayout {
   }
 
   const { ourPlayerIndex } = globals.metadata;
-  const ourHand = globals.elements.playerHands[ourPlayerIndex];
+  const ourHand =
+    ourPlayerIndex === undefined
+      ? undefined
+      : globals.elements.playerHands[ourPlayerIndex];
   assertDefined(
     ourHand,
     `Failed to get our hand with an index of: ${ourPlayerIndex}`,

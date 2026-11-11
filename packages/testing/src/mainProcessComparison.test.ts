@@ -151,13 +151,15 @@ databaseDescribe("normal-server protocol workload", () => {
               bootstrap(alice, tableId),
               bootstrap(bob, tableId),
             ]);
+            const aliceSeat = a.init.ourPlayerIndex;
+            const bobSeat = b.init.ourPlayerIndex;
+            assertDefined(aliceSeat, "Alice has no seat.");
+            assertDefined(bobSeat, "Bob has no seat.");
             expect(
-              [a.init.ourPlayerIndex, b.init.ourPlayerIndex].toSorted(
-                (left, right) => left - right,
-              ),
+              [aliceSeat, bobSeat].toSorted((left, right) => left - right),
             ).toEqual([0, 1]);
             for (const [turn, order] of PLAYS.entries()) {
-              const peer = turn % 2 === a.init.ourPlayerIndex ? alice : bob;
+              const peer = turn % 2 === aliceSeat ? alice : bob;
               const start = performance.now();
               peer.send("playerAction", {
                 tableId,
@@ -180,9 +182,7 @@ databaseDescribe("normal-server protocol workload", () => {
                   SERVER_COMMAND_SCHEMAS.tableStarted,
                 );
                 const restored = await bootstrap(alice, tableId);
-                expect(restored.init.ourPlayerIndex).toBe(
-                  a.init.ourPlayerIndex,
-                );
+                expect(restored.init.ourPlayerIndex).toBe(aliceSeat);
                 expect(
                   restored.history.events.filter(
                     (event) => event.type === "play",
@@ -192,7 +192,7 @@ databaseDescribe("normal-server protocol workload", () => {
                   restored.history.events.some(
                     (event) =>
                       event.type === "draw"
-                      && event.playerIndex === a.init.ourPlayerIndex
+                      && event.playerIndex === aliceSeat
                       && event.identity === undefined,
                   ),
                 ).toBe(true);

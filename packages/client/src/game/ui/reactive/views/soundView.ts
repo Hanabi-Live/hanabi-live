@@ -1,5 +1,6 @@
 import type { GameAction, GameState } from "@hanabi-live/game";
 import { includes } from "complete-common";
+import { isOurSeat } from "../../../ourSeat.ts";
 import { SoundType } from "../../../types/SoundType.ts";
 import { isOurTurn } from "../../isOurTurn.ts";
 import { globals } from "../../UiGlobals.ts";
@@ -65,8 +66,10 @@ export function onNewSoundEffect(
     globals.metadata,
   );
 
-  const ourTurn =
-    globals.metadata.ourPlayerIndex === data.gameState.turn.currentPlayerIndex;
+  const ourTurn = isOurSeat(
+    data.gameState.turn.currentPlayerIndex,
+    globals.metadata,
+  );
   const adjustedSoundType = getAdjustedSoundType(soundType, ourTurn);
   // The turn sound and the game finished sound will be played back-to-back, so we want to mute the
   // former.

@@ -37,6 +37,7 @@ import {
 import { assertDefined } from "complete-common";
 import Konva from "konva";
 import * as tooltips from "../../tooltips.ts";
+import { getViewPlayerIndex } from "../ourSeat.ts";
 import {
   noteEqual,
   noteHasMeaning,
@@ -1003,7 +1004,7 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip, UiCard {
   private shouldBeRaisedFromClues() {
     // On Keldon mode, only the player should see the cards raised on their own hand.
     const shouldShowOnKeldonMode =
-      this.state.location === globals.metadata.ourPlayerIndex
+      this.state.location === getViewPlayerIndex(globals.metadata)
       && !globals.state.finished;
 
     return (

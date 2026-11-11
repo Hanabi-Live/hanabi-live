@@ -2,6 +2,7 @@ import type { NumPlayers, PlayerIndex } from "@hanabi-live/game";
 import { MAX_PLAYERS, getCardsPerHand, getCharacter } from "@hanabi-live/game";
 import { eRange } from "complete-common";
 import Konva from "konva";
+import { getViewPlayerIndex } from "../ourSeat.ts";
 import { CardLayout } from "./CardLayout.ts";
 import { NameFrame } from "./NameFrame.ts";
 import { globals } from "./UiGlobals.ts";
@@ -658,7 +659,7 @@ export function drawHands(winW: number, winH: number): void {
 
   // Draw the hands
   for (const i of eRange(numPlayers)) {
-    let j = i - globals.metadata.ourPlayerIndex;
+    let j = i - getViewPlayerIndex(globals.metadata);
 
     if (j < 0) {
       j += numPlayers;

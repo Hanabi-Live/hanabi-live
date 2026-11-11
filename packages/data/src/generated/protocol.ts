@@ -467,9 +467,10 @@ export const initSchema = z
     mode: viewModeSchema,
     options: gameOptionsSchema,
     /**
-     * The seat the recipient views the game from.
+     * The recipient's seat: the one they play in, the one they shadow, or, in a replay, the one
+     * they played in. Absent when they have none, such as for a spectator who does not shadow.
      */
-    ourPlayerIndex: playerIndexSchema,
+    ourPlayerIndex: playerIndexSchema.optional(),
     /**
      * The seat that paused the game. Absent when the game is not paused.
      */

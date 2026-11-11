@@ -5,6 +5,7 @@ import {
   isCardTouchedByClue,
 } from "@hanabi-live/game";
 import { SECOND_IN_MILLISECONDS, assertDefined, eRange } from "complete-common";
+import { isOurSeat } from "../ourSeat.ts";
 import type { ClientActionClue } from "../types/ClientAction.ts";
 import type { ColorButton } from "./ColorButton.ts";
 import type { HanabiCard } from "./HanabiCard.ts";
@@ -57,8 +58,10 @@ export function checkLegal(): void {
 
   const touchedAtLeastOneCard = showClueMatch(who, clueButton.clue);
 
+  const { ourPlayerIndex } = globals.metadata;
+  const { numPlayers } = globals.options;
   const ourCharacterName = getCharacterNameForPlayer(
-    globals.metadata.ourPlayerIndex,
+    ourPlayerIndex,
     globals.metadata.characterAssignments,
   );
 
@@ -75,13 +78,12 @@ export function checkLegal(): void {
     || (globals.variant.rankCluesTouchNothing
       && clueButton.clue.type === "rank")
     // Make an exception for certain characters.
-    || (ourCharacterName === "Blind Spot"
-      && who
-        === (globals.metadata.ourPlayerIndex + 1) % globals.options.numPlayers)
-    || (ourCharacterName === "Oblivious"
-      && who
-        === (globals.metadata.ourPlayerIndex - 1 + globals.options.numPlayers)
-          % globals.options.numPlayers);
+    || (ourPlayerIndex !== undefined
+      && ourCharacterName === "Blind Spot"
+      && who === (ourPlayerIndex + 1) % numPlayers)
+    || (ourPlayerIndex !== undefined
+      && ourCharacterName === "Oblivious"
+      && who === (ourPlayerIndex - 1 + numPlayers) % numPlayers);
 
   globals.elements.giveClueButton!.setEnabled(enabled);
 }
@@ -194,13 +196,12 @@ export function give(): void {
 
 function shouldGiveClue() {
   const { currentPlayerIndex } = globals.state.ongoingGame.turn;
-  const { ourPlayerIndex } = globals.metadata;
   const ongoingGameState =
     globals.state.replay.hypothetical === undefined
       ? globals.state.ongoingGame
       : globals.state.replay.hypothetical.ongoing;
   const ourTurn =
-    currentPlayerIndex === ourPlayerIndex
+    isOurSeat(currentPlayerIndex, globals.metadata)
     || globals.state.replay.hypothetical !== undefined;
   const clueTokenAvailable =
     ongoingGameState.clueTokens >= getClueCost(globals.variant);

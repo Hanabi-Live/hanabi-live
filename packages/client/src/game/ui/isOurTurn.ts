@@ -1,3 +1,4 @@
+import { isOurSeat } from "../ourSeat.ts";
 import { globals } from "./UiGlobals.ts";
 import { controlsHypothetical } from "./controlsHypothetical.ts";
 
@@ -15,7 +16,9 @@ export function isOurTurn(): boolean {
   // Handle the case of an ongoing game.
   return (
     globals.state.playing
-    && globals.state.ongoingGame.turn.currentPlayerIndex
-      === globals.metadata.ourPlayerIndex
+    && isOurSeat(
+      globals.state.ongoingGame.turn.currentPlayerIndex,
+      globals.metadata,
+    )
   );
 }

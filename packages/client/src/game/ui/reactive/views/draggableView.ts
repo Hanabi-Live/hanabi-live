@@ -1,4 +1,5 @@
 import type { PlayerIndex } from "@hanabi-live/game";
+import { isOurSeat } from "../../../ourSeat.ts";
 import type { State } from "../../../types/State.ts";
 import { globals } from "../../UiGlobals.ts";
 import { controlsHypothetical } from "../../controlsHypothetical.ts";
@@ -14,7 +15,10 @@ export function draggablePlayerIndex(state: State): PlayerIndex | undefined {
 
   const { ourPlayerIndex, options } = state.metadata;
   const { speedrunMode, speedrunPreplay } = globals.lobby.settings;
-  const ourTurn = state.ongoingGame.turn.currentPlayerIndex === ourPlayerIndex;
+  const ourTurn = isOurSeat(
+    state.ongoingGame.turn.currentPlayerIndex,
+    state.metadata,
+  );
 
   return (
     // Spectators and replays cannot drag cards.

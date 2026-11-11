@@ -10,10 +10,11 @@ export interface GameMetadata {
   readonly playerNames: Readonly<Tuple<string, NumPlayers>>;
 
   /**
-   * If in a game, equal to the player index that we correspond to. If spectating an ongoing game or
-   * a replay, equal to the player index that we are observing from.
+   * Our seat: the one that we play in, the one that we shadow, or, in a replay, the one that we
+   * played in. Absent when we have none, such as when we spectate without shadowing. Then we see
+   * every card.
    */
-  readonly ourPlayerIndex: PlayerIndex;
+  readonly ourPlayerIndex: PlayerIndex | undefined;
 
   readonly characterAssignments: Readonly<
     Tuple<number | undefined, NumPlayers>

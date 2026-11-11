@@ -10,7 +10,10 @@ import { colorClue, discard, draw, play, rankClue } from "../testActions.ts";
 import type { ActionClue, GameAction } from "../types/gameActions.ts";
 import type { PlayerIndex } from "../types/PlayerIndex.ts";
 import type { Rank } from "../types/Rank.ts";
-import { recalculateDeductions } from "./cardDeductionReducer.ts";
+import {
+  getDeckPossibilities,
+  recalculateDeductions,
+} from "./cardDeductionReducer.ts";
 import { gameReducer } from "./gameReducer.ts";
 import { getInitialGameState } from "./initialStates/initialGameState.ts";
 import { getInitialGameStateTest } from "./initialStates/initialGameStateTest.ts";
@@ -958,13 +961,18 @@ function expectFullyDeduced(state: GameState, metadata: GameMetadata) {
 
 describe("card deduction", () => {
   const SEATS = [0, 1, 2] as const;
+  /** Each seat, and a spectator without a seat. */
+  const VIEWS = [...SEATS, undefined] as const;
 
   function getMetadataForSeat(
-    ourPlayerIndex: (typeof SEATS)[number],
+    ourPlayerIndex: (typeof VIEWS)[number],
   ): GameMetadata {
     return {
       ...getDefaultMetadata(NUM_PLAYERS),
-      ourUsername: DEFAULT_PLAYER_NAMES[ourPlayerIndex],
+      ourUsername:
+        ourPlayerIndex === undefined
+          ? "Observer"
+          : DEFAULT_PLAYER_NAMES[ourPlayerIndex],
       ourPlayerIndex,
     };
   }
@@ -973,7 +981,9 @@ describe("card deduction", () => {
    * Player `p` holds the 1 to 5 of suit `p`, in card orders `p * 5` to `p * 5 + 4`. The cards that
    * we draw ourselves carry no identity.
    */
-  function getDealActions(ourPlayerIndex: PlayerIndex): readonly GameAction[] {
+  function getDealActions(
+    ourPlayerIndex: PlayerIndex | undefined,
+  ): readonly GameAction[] {
     const actions: GameAction[] = [];
     for (const playerIndex of SEATS) {
       for (const rank of [1, 2, 3, 4, 5] as const) {
@@ -1025,8 +1035,23 @@ describe("card deduction", () => {
     },
   );
 
-  test.each(SEATS)(
-    "incremental deduction equals a full recalculation from seat %i",
+  test("a spectator without a seat sees every card", () => {
+    const metadata = getMetadataForSeat(undefined);
+    const state = deal(metadata);
+    for (const card of state.deck) {
+      const { suitIndex, rank } = card;
+      assertDefined(suitIndex, `Card ${card.order} has no suit.`);
+      assertDefined(rank, `Card ${card.order} has no rank.`);
+      expect(card.possibleCards).toEqual([[suitIndex, rank]]);
+    }
+    // Each suit's 1 to 5 are in the hands, so only the other copies can be in the deck.
+    expect(getDeckPossibilities(state.deck, metadata)).not.toContainEqual([
+      0, 5,
+    ]);
+  });
+
+  test.each(VIEWS)(
+    "incremental deduction equals a full recalculation from seat %p",
     (ourPlayerIndex) => {
       const metadata = getMetadataForSeat(ourPlayerIndex);
       let state = getInitialGameState(metadata);

@@ -27,6 +27,7 @@ import {
 } from "complete-common";
 import Konva from "konva";
 import { getCanvasColors } from "../../theme.ts";
+import { getViewPlayerIndex, isOurSeat } from "../ourSeat.ts";
 import { ActionLog } from "./ActionLog.ts";
 import { ButtonGroup } from "./ButtonGroup.ts";
 import { CardLayout } from "./CardLayout.ts";
@@ -2289,10 +2290,9 @@ function timerClick() {
   }
 
   const { currentPlayerIndex } = globals.state.ongoingGame.turn;
-  const { ourPlayerIndex } = globals.metadata;
 
   let setting: "pause" | "pauseQueue" | "pauseUnqueue";
-  if (currentPlayerIndex === ourPlayerIndex) {
+  if (isOurSeat(currentPlayerIndex, globals.metadata)) {
     setting = "pause";
   } else if (globals.state.pause.queued) {
     setting = "pauseUnqueue";
@@ -2359,7 +2359,7 @@ function drawClueArea() {
     const playerButtonW = totalPlayerW / totalPlayerButtons;
 
     for (const i of eRange(totalPlayerButtons)) {
-      const playerIndex = ((globals.metadata.ourPlayerIndex + i + 1)
+      const playerIndex = ((getViewPlayerIndex(globals.metadata) + i + 1)
         % numPlayers) as PlayerIndex;
       const button = new PlayerButton(
         {
@@ -2395,7 +2395,7 @@ function drawClueArea() {
     for (const i of eRange(totalPlayerButtons)) {
       // We change the calculation of `playerIndex` from the above code block because we want the
       // buttons to follow the order of players from top to bottom (in BGA mode).
-      const playerIndex = ((globals.metadata.ourPlayerIndex + i)
+      const playerIndex = ((getViewPlayerIndex(globals.metadata) + i)
         % numPlayers) as PlayerIndex;
       const button = new PlayerButton(
         {

@@ -297,8 +297,10 @@ pub struct Init {
     pub table_id: TableId,
     #[schemars(length(min = MIN_PLAYERS, max = MAX_PLAYERS))]
     pub player_names: Vec<Username>,
-    /// The seat the recipient views the game from.
-    pub our_player_index: PlayerIndex,
+    /// The recipient's seat: the one they play in, the one they shadow, or, in a replay, the one
+    /// they played in. Absent when they have none, such as for a spectator who does not shadow.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub our_player_index: Option<PlayerIndex>,
     pub mode: ViewMode,
     /// The game's ID, present only in a replay of a saved game.
     #[serde(skip_serializing_if = "Option::is_none")]

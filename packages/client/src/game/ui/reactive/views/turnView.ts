@@ -1,5 +1,6 @@
 import type { ClueType } from "@hanabi-live/game";
 import { getClueCost } from "@hanabi-live/game";
+import { isOurSeat } from "../../../ourSeat.ts";
 import type { State } from "../../../types/State.ts";
 import { globals } from "../../UiGlobals.ts";
 import { DISABLED_OPACITY } from "../../constants.ts";
@@ -10,8 +11,7 @@ import * as turn from "../../turn.ts";
 export function shouldShowYourTurnIndicator(state: State): boolean {
   return (
     state.playing
-    && state.ongoingGame.turn.currentPlayerIndex
-      === globals.metadata.ourPlayerIndex
+    && isOurSeat(state.ongoingGame.turn.currentPlayerIndex, state.metadata)
   );
 }
 
@@ -25,8 +25,7 @@ export function shouldShowTurnUi(state: State): boolean {
     controlsHypothetical(state)
     || (state.playing
       && !state.replay.active
-      && state.ongoingGame.turn.currentPlayerIndex
-        === state.metadata.ourPlayerIndex)
+      && isOurSeat(state.ongoingGame.turn.currentPlayerIndex, state.metadata))
   );
 }
 

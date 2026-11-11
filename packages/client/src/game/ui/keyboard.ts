@@ -17,6 +17,7 @@ import {
   getHtmlInputElement,
 } from "../../utils.ts";
 import { toWireAction } from "../../wire.ts";
+import { isOurSeat } from "../ourSeat.ts";
 import { SoundType } from "../types/SoundType.ts";
 import { HanabiCard } from "./HanabiCard.ts";
 import { globals } from "./UiGlobals.ts";
@@ -326,9 +327,9 @@ function getNormalGameplayHotkeyFunction(
 ): Callback | undefined {
   // Do nothing if we are not in a normal game situation.
   const { currentPlayerIndex } = globals.state.ongoingGame.turn;
-  const { ourPlayerIndex } = globals.metadata;
   const ourTurnInOngoingGame =
-    !globals.state.replay.active && currentPlayerIndex === ourPlayerIndex;
+    !globals.state.replay.active
+    && isOurSeat(currentPlayerIndex, globals.metadata);
   const controlHypotheticalInSharedReplay =
     globals.state.replay.shared !== undefined
     && controlsHypothetical(globals.state);

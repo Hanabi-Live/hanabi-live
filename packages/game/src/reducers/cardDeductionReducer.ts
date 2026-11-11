@@ -49,16 +49,18 @@ function makeDeductions(
   const cardCountMap = getCardCountMap(variant);
 
   // We need to calculate our own unknown cards first because those possibilities will be needed for
-  // pretending like we know what the other players see.
-  updateAllCardPossibilities(
-    metadata.ourPlayerIndex,
-    metadata.ourPlayerIndex,
-    hands,
-    newDeck,
-    oldDeck,
-    cardCountMap,
-    metadata,
-  );
+  // pretending like we know what the other players see. Without a seat, we see every card.
+  if (metadata.ourPlayerIndex !== undefined) {
+    updateAllCardPossibilities(
+      metadata.ourPlayerIndex,
+      metadata.ourPlayerIndex,
+      hands,
+      newDeck,
+      oldDeck,
+      cardCountMap,
+      metadata,
+    );
+  }
 
   for (const playerIndex of tupleKeys(hands)) {
     if (playerIndex !== metadata.ourPlayerIndex) {
@@ -121,12 +123,13 @@ export function recalculateDeductions(
 
   // Our own possibilities come first, because they are needed to pretend like we know what the
   // other players see. Possibilities only shrink, so repeat until nothing changes.
-  const playerIndexes = [
-    ourPlayerIndex,
-    ...[...tupleKeys(hands)].filter(
-      (playerIndex) => playerIndex !== ourPlayerIndex,
-    ),
-  ];
+  const otherPlayerIndexes = [...tupleKeys(hands)].filter(
+    (playerIndex) => playerIndex !== ourPlayerIndex,
+  );
+  const playerIndexes =
+    ourPlayerIndex === undefined
+      ? otherPlayerIndexes
+      : [ourPlayerIndex, ...otherPlayerIndexes];
   let changed = true;
   while (changed) {
     changed = false;
@@ -193,8 +196,8 @@ export function recalculateDeductions(
 
 /**
  * Returns the identities that a card in the deck can have, as far as the player at
- * `metadata.ourPlayerIndex` knows. One list covers every card in the deck, since no clue can touch
- * them.
+ * `metadata.ourPlayerIndex` knows, or, without a seat, as far as we know from every card that has
+ * left the deck. One list covers every card in the deck, since no clue can touch them.
  */
 export function getDeckPossibilities(
   deck: readonly CardState[],
@@ -208,13 +211,18 @@ export function getDeckPossibilities(
       .map((rank): SuitRankTuple => [suitIndex as SuitIndex, rank]),
   );
   const { ourPlayerIndex } = metadata;
-  const deckPossibilities = generateDeckPossibilities(
-    undefined,
-    deck,
-    ourPlayerIndex,
-    ourPlayerIndex,
-    metadata,
-  );
+  const deckPossibilities =
+    ourPlayerIndex === undefined
+      ? deck
+          .filter((card) => card.location !== "deck")
+          .map((card) => card.possibleCards)
+      : generateDeckPossibilities(
+          undefined,
+          deck,
+          ourPlayerIndex,
+          ourPlayerIndex,
+          metadata,
+        );
 
   return filterCardPossibilities(
     allIdentities,
@@ -249,7 +257,7 @@ function possibilitiesEqual(
 /** Mutates the deck in-place. */
 function updateAllCardPossibilities(
   playerIndex: PlayerIndex,
-  ourPlayerIndex: PlayerIndex,
+  ourPlayerIndex: PlayerIndex | undefined,
   hands: GameState["hands"],
   // eslint-disable-next-line complete/prefer-readonly-parameter-types
   deck: CardState[],
@@ -289,7 +297,7 @@ function updateAllCardPossibilities(
 function shouldUpdateCardPossibilities(
   card: CardState,
   playerIndex: PlayerIndex,
-  ourPlayerIndex: PlayerIndex,
+  ourPlayerIndex: PlayerIndex | undefined,
   deck: readonly CardState[],
   oldDeck: readonly CardState[],
 ): boolean {
@@ -338,7 +346,7 @@ function shouldUpdateCardPossibilities(
 function updateCardPossibilities(
   card: CardState,
   playerIndex: PlayerIndex,
-  ourPlayerIndex: PlayerIndex,
+  ourPlayerIndex: PlayerIndex | undefined,
   // eslint-disable-next-line complete/prefer-readonly-parameter-types
   deck: CardState[],
   cardCountMap: readonly number[][],
@@ -381,7 +389,7 @@ function updateCardPossibilities(
 function getCardPossibilitiesForPlayer(
   card: CardState | undefined,
   playerIndex: PlayerIndex,
-  ourPlayerIndex: PlayerIndex,
+  ourPlayerIndex: PlayerIndex | undefined,
 ): readonly SuitRankTuple[] {
   if (card === undefined) {
     return [];
@@ -435,7 +443,7 @@ function generateDeckPossibilities(
   excludeCardOrder: CardOrder | undefined,
   deck: readonly CardState[],
   playerIndex: PlayerIndex,
-  ourPlayerIndex: PlayerIndex,
+  ourPlayerIndex: PlayerIndex | undefined,
   metadata: GameMetadata,
 ): ReadonlyArray<readonly SuitRankTuple[]> {
   const deckPossibilities: Array<readonly SuitRankTuple[]> = [];
@@ -539,7 +547,7 @@ function deckPossibilitiesDifferent(
   deck: readonly CardState[],
   oldDeck: readonly CardState[],
   playerIndex: PlayerIndex,
-  ourPlayerIndex: PlayerIndex,
+  ourPlayerIndex: PlayerIndex | undefined,
 ): boolean {
   for (const [order, card] of deck.entries()) {
     const oldCard = oldDeck[order];

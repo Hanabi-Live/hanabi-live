@@ -248,7 +248,7 @@ impl Harness {
 }
 #[tokio::test]
 async fn player_shadow_is_cleared_when_a_spectator_joins() -> Result<()> {
-    let Some(mut h) = Harness::new(&["Alice", "Bob", "Observer"]).await? else {
+    let Some(mut h) = Harness::new(&["Alice", "Bob", "Observer", "Watcher"]).await? else {
         return Ok(());
     };
     let outcome = async {
@@ -281,6 +281,14 @@ async fn player_shadow_is_cleared_when_a_spectator_joins() -> Result<()> {
         ensure!(
             table.shadows.get(&UserId(2)).copied().flatten().is_none(),
             "Joining retained a durable shadow selection"
+        );
+        // A spectator who does not shadow has no seat.
+        h.send(3, "tableSpectate", json!({"tableId":id})).await?;
+        h.send(3, "gameInitLoad", json!({"tableId":id})).await?;
+        let init = h.receive(3, "init").await?;
+        ensure!(
+            init.get("ourPlayerIndex").is_none() && init["mode"] == "spectating",
+            "A spectator without a shadow received a seat: {init}"
         );
         Ok(())
     }

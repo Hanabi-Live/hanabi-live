@@ -21,6 +21,7 @@ import type * as KonvaContext from "konva/lib/Context";
 import type { KonvaEventObject } from "konva/lib/Node";
 import type { z } from "zod";
 import * as tooltips from "../../tooltips.ts";
+import { getViewPlayerIndex } from "../ourSeat.ts";
 import { CardLayout } from "./CardLayout.ts";
 import { HanabiCard } from "./HanabiCard.ts";
 import { globals } from "./UiGlobals.ts";
@@ -153,9 +154,9 @@ export function set(
     }
     if (
       (!globals.lobby.settings.keldonMode
-        && element.state.location === globals.metadata.ourPlayerIndex)
+        && element.state.location === getViewPlayerIndex(globals.metadata))
       || (globals.lobby.settings.keldonMode
-        && element.state.location !== globals.metadata.ourPlayerIndex
+        && element.state.location !== getViewPlayerIndex(globals.metadata)
         && isCardInPlayerHand(element.state))
     ) {
       // In BGA mode, invert the arrows on our hand (so that it doesn't get cut off by the top of

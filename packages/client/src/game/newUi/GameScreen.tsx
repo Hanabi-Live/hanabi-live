@@ -24,6 +24,7 @@ import { clamp } from "complete-common";
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import * as modals from "../../modals.ts";
 import * as gameChat from "../chat.ts";
+import { getViewPlayerIndex } from "../ourSeat.ts";
 import type { ClientAction, ClientClue } from "../types/ClientAction.ts";
 import type { State } from "../types/State.ts";
 import { globals } from "../ui/UiGlobals.ts";
@@ -189,11 +190,7 @@ function getSeats(state: State): readonly Seat[] {
   const { numPlayers } = metadata.options;
   const hasSeat = state.playing || state.shadowing;
   // In the replay of a game that we played, our hand stays first.
-  const firstPlayerIndex =
-    hasSeat
-    || (state.finished && metadata.playerNames.includes(metadata.ourUsername))
-      ? metadata.ourPlayerIndex
-      : 0;
+  const firstPlayerIndex = getViewPlayerIndex(metadata);
   const showClock =
     metadata.options.timeControl !== undefined || settings.showTimerInUntimed;
   const hypo = state.replay.hypothetical;

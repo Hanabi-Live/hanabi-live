@@ -515,10 +515,7 @@ impl TableActor {
             let init = hanabi_protocol::Init {
                 table_id: self.table.id,
                 player_names: s.players.iter().map(|p| p.name.as_str().into()).collect(),
-                our_player_index: a
-                    .shadow
-                    .or_else(|| display_seat.and_then(PlayerIndex::new))
-                    .unwrap_or_default(),
+                our_player_index: a.shadow.or_else(|| display_seat.and_then(PlayerIndex::new)),
                 mode: if shared_replay.is_some() {
                     ViewMode::SharedReplay
                 } else if replay {

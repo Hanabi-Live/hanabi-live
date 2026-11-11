@@ -3,8 +3,9 @@
 import type { ServerCommandData } from "@hanabi-live/data";
 import type { PlayerIndex } from "@hanabi-live/game";
 import { millisecondsToClockString } from "@hanabi-live/game";
-import { SECOND_IN_MILLISECONDS } from "complete-common";
+import { SECOND_IN_MILLISECONDS, assertDefined } from "complete-common";
 import * as tooltips from "../../tooltips.ts";
+import { isOurSeat } from "../ourSeat.ts";
 import { SoundType } from "../types/SoundType.ts";
 import { globals } from "./UiGlobals.ts";
 import type { TimerDisplay } from "./controls/TimerDisplay.ts";
@@ -68,8 +69,7 @@ export function update(
   globals.lastTimerUpdateTimeMs = Date.now();
 
   const ourTurn =
-    globals.state.playing
-    && currentPlayerIndex === globals.metadata.ourPlayerIndex;
+    globals.state.playing && isOurSeat(currentPlayerIndex, globals.metadata);
   const { timer1, timer2 } = globals.elements;
   if (timer1 !== undefined && timer2 !== undefined) {
     updateTimerDisplays(timer1, timer2, currentPlayerIndex, ourTurn);
@@ -107,7 +107,9 @@ function updateTimerDisplays(
 ) {
   if (globals.state.playing) {
     // The visibility of the first timer does not change during a game.
-    let time = globals.playerTimes[globals.metadata.ourPlayerIndex]!;
+    const { ourPlayerIndex } = globals.metadata;
+    assertDefined(ourPlayerIndex, "A player has no seat.");
+    let time = globals.playerTimes[ourPlayerIndex]!;
     if (globals.options.timeControl === undefined) {
       // Invert it to show how much time each player is taking.
       time *= -1;

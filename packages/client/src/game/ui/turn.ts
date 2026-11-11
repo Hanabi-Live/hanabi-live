@@ -1,6 +1,7 @@
 import { getClueCost, isAtMaxClueTokens } from "@hanabi-live/game";
 import * as notifications from "../../notifications.ts";
 import { toWireAction } from "../../wire.ts";
+import { isOurSeat } from "../ourSeat.ts";
 import type { ClientAction } from "../types/ClientAction.ts";
 import { globals } from "./UiGlobals.ts";
 import * as arrows from "./arrows.ts";
@@ -96,9 +97,8 @@ export function end(clientAction: ClientAction): void {
   }
 
   const { currentPlayerIndex } = globals.state.ongoingGame.turn;
-  const { ourPlayerIndex } = globals.metadata;
 
-  if (currentPlayerIndex === ourPlayerIndex) {
+  if (isOurSeat(currentPlayerIndex, globals.metadata)) {
     replay.exit(); // Close the in-game replay in case we preplayed a card in the replay.
     arrows.hideAll();
     showWaitingOnServerAnimation();

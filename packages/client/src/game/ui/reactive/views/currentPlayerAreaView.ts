@@ -7,6 +7,7 @@ import {
 } from "@hanabi-live/game";
 import { assertDefined, eRange } from "complete-common";
 import Konva from "konva";
+import { getViewPlayerIndex, isOurSeat } from "../../../ourSeat.ts";
 import type { State } from "../../../types/State.ts";
 import { globals } from "../../UiGlobals.ts";
 import {
@@ -49,8 +50,7 @@ export function isVisible(state: State): boolean {
     // Do not show it we happen to have the in-game replay open.
     !state.replay.active
     // The clue UI should take precedence over the "Current Player" area.
-    && (state.ongoingGame.turn.currentPlayerIndex
-      !== state.metadata.ourPlayerIndex
+    && (!isOurSeat(state.ongoingGame.turn.currentPlayerIndex, state.metadata)
       || !state.playing)
     // The premove cancel button should take precedence over the "Current Player" area.
     && state.premove === undefined
@@ -246,7 +246,7 @@ function getArrowRotationCorrespondingToPlayer(playerIndex: PlayerIndex) {
     const winH = globals.stage.height();
     const distanceToImaginaryPlayer = IMAGINARY_PLAYER_DISTANCE * winH;
     const handRotation =
-      globals.metadata.ourPlayerIndex === playerIndex
+      getViewPlayerIndex(globals.metadata) === playerIndex
         ? HALF_TURN_DEGREES
         : hand.origRotation;
     const rot = degreesToRadians(-handRotation);

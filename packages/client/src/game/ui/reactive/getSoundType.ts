@@ -14,6 +14,7 @@ import {
   isHandLocked,
 } from "@hanabi-live/game";
 import { includes } from "complete-common";
+import { isOurSeat } from "../../ourSeat.ts";
 import { SoundType } from "../../types/SoundType.ts";
 
 /** The sound for each consecutive blind play, starting from the first. */
@@ -60,7 +61,7 @@ export function getSoundType(
   originalAction: GameAction | undefined,
   metadata: GameMetadata,
 ): SoundType {
-  const ourTurn = gameState.turn.currentPlayerIndex === metadata.ourPlayerIndex;
+  const ourTurn = isOurSeat(gameState.turn.currentPlayerIndex, metadata);
   const standardSoundType = getStandardSoundType(ourTurn);
 
   if (previousGameState === undefined || originalAction === undefined) {

@@ -437,8 +437,8 @@ macro_rules! wire_index {
     ) => {
         $(#[doc = $doc])*
         #[derive(
-            Clone, Copy, Debug, Default, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize,
-            Deserialize, JsonSchema,
+            Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize,
+            JsonSchema,
         )]
         #[serde(transparent)]
         $(#[schemars(extend("x-brand" = $brand))])?
