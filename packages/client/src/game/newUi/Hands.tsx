@@ -90,6 +90,15 @@ interface HandsProps {
    */
   readonly onViewAs: ((playerIndex: PlayerIndex) => void) | undefined;
 
+  /**
+   * The hands that show their player's view of them ("empathy"): only what the clues have told the
+   * player. A hand shows it while the viewer holds the pointer down on it, or while its eye button
+   * is on.
+   */
+  readonly empathyToggled: ReadonlySet<PlayerIndex>;
+  readonly onToggleEmpathy: (playerIndex: PlayerIndex) => void;
+  readonly onHoldEmpathy: (playerIndex: PlayerIndex | undefined) => void;
+
   /** The mouse moved onto a card in a hand, or off every card (`undefined`). */
   readonly onHoverCard: (order: CardOrder | undefined) => void;
 }
@@ -256,6 +265,15 @@ function ClueRail({
     </svg>
   );
 }
+
+/**
+ * How long the pointer must stay down on another player's hand before the hand shows their view of
+ * it. A shorter press is a click, which picks the player for a clue.
+ */
+const EMPATHY_HOLD_MILLISECONDS = 150;
+
+/** The width that the eye button takes beside a name, with its gap, in CSS pixels. */
+export const EMPATHY_TOGGLE_SPACE = 34;
 
 /** The space between cards in a hand, in CSS pixels. */
 export const CARD_GAP = 10;
@@ -536,6 +554,17 @@ function Hand({
   }
 
   const chip = <NameChip seat={seat} />;
+
+  // Holding the pointer down on another player's cards shows their view of them until it lifts.
+  const holdTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
+  const heldRef = useRef(false);
+  function endHold() {
+    clearTimeout(holdTimer.current);
+    holdTimer.current = undefined;
+    if (heldRef.current) {
+      props.onHoldEmpathy(undefined);
+    }
+  }
   const giverColor =
     props.shownClue?.giver === seat.playerIndex
       ? getClueMarkerColor(props.shownClue.marker)
@@ -566,7 +595,7 @@ function Hand({
         {/* The name of the player who gave the clue on the turn that shows keeps a ring in the
             clue's color. */}
         <span
-          className="tw:relative tw:inline-flex tw:max-w-full tw:rounded-full"
+          className="tw:relative tw:inline-flex tw:max-w-full tw:min-w-0 tw:rounded-full"
           data-name-chip={seat.playerIndex}
           // Right-clicking a name views the game from that seat, as on the classic screen.
           onContextMenu={(event) => {
@@ -607,18 +636,55 @@ function Hand({
             />
           )}
         </span>
+        {!seat.you && (
+          <button
+            aria-label={`Show ${seat.name}'s view of their hand`}
+            aria-pressed={props.empathyToggled.has(seat.playerIndex)}
+            className={`tw:ml-1.5 tw:flex tw:size-7 tw:shrink-0 tw:cursor-pointer tw:items-center tw:justify-center tw:self-center tw:rounded-full tw:border-0 tw:text-[13px] ${
+              props.empathyToggled.has(seat.playerIndex)
+                ? "tw:bg-game-text tw:text-card-ink"
+                : "tw:bg-transparent tw:text-game-muted tw:hover:bg-white/10 tw:hover:text-game-text"
+            }`}
+            onClick={() => {
+              props.onToggleEmpathy(seat.playerIndex);
+            }}
+            ref={tooltipRef(
+              `Show ${seat.name}'s hand as they see it. You can also hold the mouse button down on their cards.`,
+            )}
+            type="button"
+          >
+            <i aria-hidden="true" className="fas fa-eye" />
+          </button>
+        )}
       </div>
       {/* Clicking another player's cards also picks them for a clue. The name button does the
           same for the keyboard. */}
       <div
         className={`tw:flex ${canPick ? "tw:cursor-pointer" : ""}`}
-        onClick={
-          canPick
-            ? () => {
-                props.onChooseClueTarget(seat.playerIndex);
-              }
-            : undefined
-        }
+        onClick={() => {
+          // A press that was held long enough to show the player's view is not a click.
+          if (heldRef.current) {
+            heldRef.current = false;
+            return;
+          }
+          if (canPick) {
+            props.onChooseClueTarget(seat.playerIndex);
+          }
+        }}
+        onPointerCancel={endHold}
+        onPointerDown={(event) => {
+          if (seat.you || event.button !== 0) {
+            return;
+          }
+          heldRef.current = false;
+          clearTimeout(holdTimer.current);
+          holdTimer.current = setTimeout(() => {
+            heldRef.current = true;
+            props.onHoldEmpathy(seat.playerIndex);
+          }, EMPATHY_HOLD_MILLISECONDS);
+        }}
+        onPointerLeave={endHold}
+        onPointerUp={endHold}
         style={{ gap: CARD_GAP }}
       >
         {seat.cards.map((card, i) => {

@@ -24,6 +24,8 @@ of the repository.
   watch from a seat, the button shows whose, and its menu can stop it.
 - In the new game screen, at max clues, the discard pile has a dashed orange
   border and says that no one can discard.
+- In the new game screen, you can now see another player's hand as they see it:
+  hold the mouse button down on their cards, or click the eye beside their name.
 
 ## November 10th, 2026
 

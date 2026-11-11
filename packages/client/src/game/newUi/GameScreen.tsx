@@ -46,6 +46,7 @@ import { CluePanel } from "./CluePanel.tsx";
 import type { Seat } from "./Hands.tsx";
 import {
   CARD_GAP,
+  EMPATHY_TOGGLE_SPACE,
   Hands,
   NAME_COLUMN_MAX_WIDTH,
   NameColumnSizer,
@@ -187,7 +188,14 @@ function editCard(order: CardOrder) {
   }
 }
 
-function getSeats(state: State): readonly Seat[] {
+/**
+ * Returns the seats in the order that the screen shows them. The hands of the players in
+ * `empathyPlayers` show their player's view of them, as the viewer's own hand always does.
+ */
+function getSeats(
+  state: State,
+  empathyPlayers: ReadonlySet<PlayerIndex>,
+): readonly Seat[] {
   const visibleState = state.visibleState!;
   const { metadata } = state;
   const { settings } = globals.lobby;
@@ -213,6 +221,7 @@ function getSeats(state: State): readonly Seat[] {
     // only as the clues show it, as in the game.
     const empathy =
       you
+      || empathyPlayers.has(playerIndex)
       || (hypo !== undefined
         && !hypo.showDrawnCards
         && playerIndex === hypo.startingPlayerIndex);
@@ -542,6 +551,13 @@ export function GameScreen({
   const playAreaSize = useElementSize(playAreaElement);
   const [nameWidth, setNameWidth] = useState(0);
 
+  // The hands that show their player's view of them: those whose eye button is on, and the one that
+  // the viewer holds the pointer down on.
+  const [empathyToggled, setEmpathyToggled] = useState<
+    ReadonlySet<PlayerIndex>
+  >(new Set());
+  const [heldEmpathy, setHeldEmpathy] = useState<PlayerIndex>();
+
   // On a window too narrow for the chat panel beside the table, the chat starts collapsed.
   useEffect(() => {
     if (chatOverlay) {
@@ -762,7 +778,11 @@ export function GameScreen({
   const showCluePanel =
     hypo === undefined ? state.playing && !inReplay : controlsHypo;
 
-  const seats = getSeats(state);
+  const empathyPlayers = new Set(empathyToggled);
+  if (heldEmpathy !== undefined) {
+    empathyPlayers.add(heldEmpathy);
+  }
+  const seats = getSeats(state, empathyPlayers);
   const shownClue = getClueForTurn(visibleState);
   const targetHand =
     clueTarget === undefined ? undefined : visibleState.hands[clueTarget];
@@ -823,10 +843,12 @@ export function GameScreen({
 
   let nameColumnWidth: number | undefined;
   if (!stacked) {
-    nameColumnWidth = Math.min(
-      nameWidth,
-      mediumWidth ? NAME_COLUMN_MAX_WIDTH.MEDIUM : NAME_COLUMN_MAX_WIDTH.WIDE,
-    );
+    // The column also holds the eye button that shows a player's view of their hand.
+    nameColumnWidth =
+      Math.min(
+        nameWidth,
+        mediumWidth ? NAME_COLUMN_MAX_WIDTH.MEDIUM : NAME_COLUMN_MAX_WIDTH.WIDE,
+      ) + EMPATHY_TOGGLE_SPACE;
   }
   const handCardWidth = getHandCardWidth(
     handsSize.width,
@@ -945,6 +967,7 @@ export function GameScreen({
                 clueTarget={clueTarget}
                 colorblindMode={settings.colorblindMode}
                 draggedCard={drag?.order}
+                empathyToggled={empathyToggled}
                 emptyClueTarget={
                   shownClue !== undefined && shownClue.list.length === 0
                     ? shownClue.target
@@ -979,10 +1002,22 @@ export function GameScreen({
                   }
                 }}
                 onEditCard={editingCards ? editCard : undefined}
+                onHoldEmpathy={setHeldEmpathy}
                 onHoverCard={setHoveredCard}
                 onPlay={(order) => {
                   setMenuCard(undefined);
                   sendAction({ type: "play", order });
+                }}
+                onToggleEmpathy={(playerIndex) => {
+                  setEmpathyToggled((current) => {
+                    const next = new Set(current);
+                    if (next.has(playerIndex)) {
+                      next.delete(playerIndex);
+                    } else {
+                      next.add(playerIndex);
+                    }
+                    return next;
+                  });
                 }}
                 onViewAs={canChooseSeat() ? viewAs : undefined}
                 seats={seats}
