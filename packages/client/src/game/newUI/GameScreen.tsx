@@ -259,14 +259,19 @@ function getStacks(state: State): readonly StackView[] {
   const identities = getShownIdentities(state);
   return globals.variant.suits.map((_suit, i) => {
     const suitIndex = i as SuitIndex;
-    const top = visibleState.playStacks[suitIndex]?.at(-1);
+    const stack = visibleState.playStacks[suitIndex] ?? [];
+    function rankOf(order: CardOrder | undefined) {
+      return order === undefined
+        ? undefined
+        : (identities[order]?.rank ?? visibleState.deck[order]?.rank);
+    }
+
+    const top = stack.at(-1);
     return {
       suitIndex,
       topOrder: top,
-      topRank:
-        top === undefined
-          ? undefined
-          : (identities[top]?.rank ?? visibleState.deck[top]?.rank),
+      topRank: rankOf(top),
+      belowRank: rankOf(stack.at(-2)),
     };
   });
 }

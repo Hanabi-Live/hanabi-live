@@ -20,6 +20,12 @@ export interface StackView {
 
   /** The card on top of the stack, so that a card can move between a hand and the stack. */
   readonly topOrder: CardOrder | undefined;
+
+  /**
+   * The rank of the card under the top card, or `undefined` when the top card is the first. It
+   * shows while a newly played card moves onto the stack.
+   */
+  readonly belowRank: Rank | undefined;
 }
 
 export interface DiscardView {
@@ -95,13 +101,14 @@ export const PlayArea = forwardRef<
           <div className="tw:flex tw:flex-col tw:gap-2 tw:narrow-980:flex-row tw:narrow-980:flex-wrap">
             {stacks.map((stack) => {
               const suit = variant.suits[stack.suitIndex];
-              if (stack.topRank === undefined) {
-                return (
+              const name = suit?.displayName ?? "";
+
+              // What lies under the top card: the card below it, or else the empty stack. It stays
+              // in place while a newly played card moves on top of it.
+              const below =
+                stack.belowRank === undefined ? (
                   <div
-                    aria-label={`${suit?.displayName ?? ""}: nothing played`}
                     className="tw:box-border tw:flex tw:items-center tw:justify-center tw:rounded-[10px] tw:border-2 tw:border-dashed tw:border-game-line tw:opacity-60"
-                    key={stack.suitIndex}
-                    role="img"
                     style={{ width: cardWidth, height }}
                   >
                     {suit !== undefined && (
@@ -112,29 +119,44 @@ export const PlayArea = forwardRef<
                       />
                     )}
                   </div>
-                );
-              }
-
-              return (
-                <div
-                  aria-label={describeCard(
-                    variant,
-                    stack.suitIndex,
-                    stack.topRank,
-                  )}
-                  data-card-order={stack.topOrder}
-                  data-card-place={`stack-${stack.suitIndex}`}
-                  data-play-stack
-                  key={stack.suitIndex}
-                  role="img"
-                >
+                ) : (
                   <CardFace
                     colorblindMode={colorblindMode}
-                    rank={stack.topRank}
+                    rank={stack.belowRank}
                     suitIndex={stack.suitIndex}
                     variant={variant}
                     width={cardWidth}
                   />
+                );
+
+              return (
+                <div
+                  aria-label={
+                    stack.topRank === undefined
+                      ? `${name}: nothing played`
+                      : describeCard(variant, stack.suitIndex, stack.topRank)
+                  }
+                  className="tw:relative"
+                  key={stack.suitIndex}
+                  role="img"
+                >
+                  {below}
+                  {stack.topRank !== undefined && (
+                    <div
+                      className="tw:absolute tw:inset-0"
+                      data-card-order={stack.topOrder}
+                      data-card-place={`stack-${stack.suitIndex}`}
+                      data-play-stack
+                    >
+                      <CardFace
+                        colorblindMode={colorblindMode}
+                        rank={stack.topRank}
+                        suitIndex={stack.suitIndex}
+                        variant={variant}
+                        width={cardWidth}
+                      />
+                    </div>
+                  )}
                 </div>
               );
             })}
