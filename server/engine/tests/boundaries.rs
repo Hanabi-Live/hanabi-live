@@ -641,3 +641,12 @@ fn stored_time_bases_with_a_fraction_load_as_whole_seconds() {
     stored["timeBase"] = json!(f64::MAX);
     assert!(serde_json::from_value::<Options>(stored).is_err());
 }
+
+#[test]
+fn stored_end_conditions_load_from_their_numbers() {
+    // Servers before named end conditions stored their numbers in checkpoints.
+    let stored: EndCondition = serde_json::from_value(json!(10)).unwrap();
+    assert_eq!(stored, EndCondition::TerminatedByVote);
+    assert_eq!(serde_json::to_value(stored).unwrap(), json!("terminatedByVote"));
+    assert!(serde_json::from_value::<EndCondition>(json!(11)).is_err());
+}

@@ -51,7 +51,7 @@ fn enum_declarations(game: bool) -> String {
                     "{}{} = {},",
                     jsdoc(member.description),
                     member.name,
-                    member.value
+                    member.value.json()
                 )
             })
             .collect::<Vec<_>>()
@@ -222,14 +222,12 @@ fn expression(schema: &Value) -> Result<String> {
         let members = wire
             .members
             .iter()
-            .map(|member| i64::from(member.value))
+            .map(|member| member.value.json())
             .collect::<Vec<_>>();
         let values = schema["enum"]
             .as_array()
-            .context("Wire enums list their integer values")?
-            .iter()
-            .map(|value| value.as_i64().context("Wire enum values must be integers"))
-            .collect::<Result<Vec<_>>>()?;
+            .context("Wire enums list their values")?
+            .clone();
         if let [member] = values.as_slice() {
             // One member of the enum: its value is assignable to that member's type.
             ensure!(
@@ -445,7 +443,7 @@ fn default_literal(property: &Value, default: &Value) -> Result<String> {
     let member = wire
         .members
         .iter()
-        .find(|member| default.as_i64() == Some(i64::from(member.value)))
+        .find(|member| member.value.json() == *default)
         .with_context(|| format!("{name} has no member for the default {default}"))?;
     Ok(format!("{name}.{}", member.name))
 }

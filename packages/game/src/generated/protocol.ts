@@ -22,17 +22,17 @@ export const PANICKY_MAX_CLUES = 4;
  * migration.
  */
 export enum EndCondition {
-  InProgress = 0,
-  Normal = 1,
-  Strikeout = 2,
-  Timeout = 3,
-  TerminatedByPlayer = 4,
-  SpeedrunFail = 5,
-  IdleTimeout = 6,
-  CharacterSoftlock = 7,
-  AllOrNothingFail = 8,
-  AllOrNothingSoftlock = 9,
-  TerminatedByVote = 10,
+  InProgress = "inProgress",
+  Normal = "normal",
+  Strikeout = "strikeout",
+  Timeout = "timeout",
+  TerminatedByPlayer = "terminatedByPlayer",
+  SpeedrunFail = "speedrunFail",
+  IdleTimeout = "idleTimeout",
+  CharacterSoftlock = "characterSoftlock",
+  AllOrNothingFail = "allOrNothingFail",
+  AllOrNothingSoftlock = "allOrNothingSoftlock",
+  TerminatedByVote = "terminatedByVote",
 }
 
 export const endConditionSchema = z.enum(EndCondition);

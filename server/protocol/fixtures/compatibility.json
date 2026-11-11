@@ -572,7 +572,7 @@
           },
           {
             "type": "gameOver",
-            "endCondition": 10
+            "endCondition": "terminatedByVote"
           }
         ]
       }
@@ -595,7 +595,7 @@
           },
           {
             "type": "gameOver",
-            "endCondition": 10
+            "endCondition": "terminatedByVote"
           }
         ]
       }
@@ -726,7 +726,7 @@
         "seed": "p2v0s1",
         "score": 25,
         "numTurns": 40,
-        "endCondition": 1,
+        "endCondition": "normal",
         "datetimeStarted": "2023-12-29T18:00:00.000Z",
         "datetimeFinished": "2023-12-29T18:21:43.812Z",
         "numGamesOnSeed": 3,
@@ -759,7 +759,7 @@
         "seed": "p2v0s1",
         "score": 25,
         "numTurns": 40,
-        "endCondition": 1,
+        "endCondition": "normal",
         "datetimeStarted": "2023-12-29T18:00:00.000+00:00",
         "datetimeFinished": "2023-12-29T18:21:43.812Z",
         "numGamesOnSeed": 3,
@@ -792,7 +792,7 @@
         "seed": "p2v0s1",
         "score": 25,
         "numTurns": 40,
-        "endCondition": 1,
+        "endCondition": "normal",
         "datetimeStarted": "2023-12-29T18:00:00Z",
         "datetimeFinished": "2023-12-29T18:21:43.812Z",
         "numGamesOnSeed": 3,
@@ -825,7 +825,7 @@
         "seed": "p2v0s1",
         "score": 25,
         "numTurns": 40,
-        "endCondition": 1,
+        "endCondition": "normal",
         "datetimeStarted": "2023-12-29T18:00:00.000000Z",
         "datetimeFinished": "2023-12-29T18:21:43.812Z",
         "numGamesOnSeed": 3,
@@ -858,7 +858,7 @@
         "seed": "p2v0s1",
         "score": 25,
         "numTurns": 40,
-        "endCondition": 1,
+        "endCondition": "normal",
         "datetimeStarted": "yesterday",
         "datetimeFinished": "2023-12-29T18:21:43.812Z",
         "numGamesOnSeed": 3,
@@ -1016,7 +1016,7 @@
         },
         {
           "type": "gameOver",
-          "endCondition": 1,
+          "endCondition": "normal",
           "playerIndex": 0
         }
       ]
@@ -1110,7 +1110,7 @@
       "tableID": 3,
       "event": {
         "type": "gameOver",
-        "endCondition": 4,
+        "endCondition": "terminatedByPlayer",
         "votes": [0, 6]
       }
     },
@@ -1124,7 +1124,7 @@
       "tableID": 3,
       "event": {
         "type": "gameOver",
-        "endCondition": 11,
+        "endCondition": "victory",
         "playerIndex": 0
       }
     },

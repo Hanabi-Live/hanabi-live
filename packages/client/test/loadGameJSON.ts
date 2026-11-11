@@ -365,14 +365,12 @@ function parseJSONAction(
     }
 
     case JSONActionType.ActionTypeGameOver: {
-      assertEnumValue(
-        a.value,
-        EndCondition,
-        `Invalid end condition: ${a.value}`,
-      );
+      // The test games store an end condition as its position in the enum.
+      const endCondition = Object.values(EndCondition)[a.value];
+      assertDefined(endCondition, `Invalid end condition: ${a.value}`);
       return {
         type: "gameOver",
-        endCondition: a.value,
+        endCondition,
         playerIndex: a.target as PlayerIndex,
         votes: [],
       };

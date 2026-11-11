@@ -341,7 +341,7 @@ function gameReducerFunction(
      * ```ts
      * {
      *   type: "gameOver",
-     *   endCondition: 1,
+     *   endCondition: "normal",
      *   playerIndex: 0,
      * }
      * ```ts

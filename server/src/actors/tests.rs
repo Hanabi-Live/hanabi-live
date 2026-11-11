@@ -162,7 +162,7 @@ fn typed_game_frames_preserve_wire_schema_and_projected_identities() -> Result<(
         }
         let events = body["events"].as_array().unwrap();
         let ended = events.iter().find(|e| e["type"] == "gameOver").unwrap();
-        assert_eq!(ended["endCondition"], 4);
+        assert_eq!(ended["endCondition"], "terminatedByPlayer");
         assert!(ended.get("votes").is_none());
         let timing = events.iter().find(|e| e["type"] == "playerTimes").unwrap();
         assert_eq!(timing["playerTimesMs"], json!([1234, -5678]));
