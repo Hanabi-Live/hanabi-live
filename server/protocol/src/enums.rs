@@ -118,17 +118,6 @@ pub enum ClueType {
     Rank,
 }
 
-/// The number that a character's metadata holds for a clue type, for characters that remember the
-/// last clue they gave.
-impl From<ClueType> for i32 {
-    fn from(clue_type: ClueType) -> Self {
-        match clue_type {
-            ClueType::Color => 0,
-            ClueType::Rank => 1,
-        }
-    }
-}
-
 wire_enum! {
     /// How a game ended. These values are stored in the database, so changing one requires a
     /// migration.

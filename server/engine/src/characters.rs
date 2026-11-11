@@ -7,6 +7,15 @@ use crate::{
 use anyhow::Result;
 use hanabi_protocol::{MAX_RANK, NO_VALUE, PANICKY_MAX_CLUES};
 
+/// The number that a character's metadata holds for a clue type, for characters that remember the
+/// last clue they gave.
+const fn clue_type_metadata(clue_type: ClueType) -> i32 {
+    match clue_type {
+        ClueType::Color => 0,
+        ClueType::Rank => 1,
+    }
+}
+
 /// The clues that a Miser needs before giving one.
 const MISER_MIN_CLUES: i32 = 4;
 /// The clues that a Genius needs before giving one.
@@ -197,7 +206,7 @@ pub(crate) fn validate_character_clue(
             )
         }
         // The metadata is the type of the player's previous clue.
-        Some(Character::MoodSwings) if clue.map(i32::from) == Some(m) => {
+        Some(Character::MoodSwings) if clue.map(clue_type_metadata) == Some(m) => {
             Some("so cannot give the same clue type twice in a row.")
         }
         Some(Character::Insistent)
@@ -248,7 +257,7 @@ pub(crate) fn character_post_clue(
     }
     let p = &mut state.players[actor];
     if p.character() == Some(Character::MoodSwings) {
-        p.character_metadata = clue_type(action.action_type).map_or(NO_VALUE, i32::from);
+        p.character_metadata = clue_type(action.action_type).map_or(NO_VALUE, clue_type_metadata);
     } else if p.character() == Some(Character::Insistent) && p.character_metadata == NO_VALUE {
         for o in touched {
             state.deck[*o].insistent_touched = true;
