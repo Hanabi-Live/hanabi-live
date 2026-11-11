@@ -253,15 +253,7 @@ async function runSuite(
       await buildServer();
       return await runInherited(
         process.execPath,
-        [
-          "test",
-          "--parallel=4",
-          "--isolate",
-          "--tsconfig-override",
-          "tsconfig.monorepo.json",
-          ...TEST_DIRECTORIES,
-          ...args,
-        ],
+        ["test", "--parallel=4", "--isolate", ...TEST_DIRECTORIES, ...args],
         { cwd: ROOT, env },
       );
     }
@@ -270,12 +262,7 @@ async function runSuite(
       await buildServer();
       return await runInherited(
         process.execPath,
-        [
-          "--tsconfig-override",
-          "tsconfig.monorepo.json",
-          "packages/testing/src/criticalCSS.ts",
-          ...args,
-        ],
+        ["packages/testing/src/criticalCSS.ts", ...args],
         { cwd: ROOT, env },
       );
     }
@@ -293,12 +280,7 @@ async function runSuite(
       }
       return await runInherited(
         process.execPath,
-        [
-          "--tsconfig-override",
-          "tsconfig.monorepo.json",
-          "packages/testing/src/uiScreenshots.ts",
-          ...args,
-        ],
+        ["packages/testing/src/uiScreenshots.ts", ...args],
         { cwd: ROOT, env },
       );
     }
