@@ -3,16 +3,10 @@
 import {
   MAX_H_GROUP_LEVEL,
   MAX_VOLUME,
-  SoundMove,
   defaultSettings,
+  soundMoveSchema,
 } from "@hanabi-live/data";
-import {
-  assertDefined,
-  assertEnumValue,
-  iRange,
-  isKeyOf,
-  parseIntSafe,
-} from "complete-common";
+import { assertDefined, iRange, isKeyOf, parseIntSafe } from "complete-common";
 import { globals } from "../Globals";
 import { SoundType } from "../game/types/SoundType";
 import * as notifications from "../notifications";
@@ -74,24 +68,13 @@ export function init(): void {
 
   $("#soundMove").change(function settingsSoundMoveChange(this: HTMLElement) {
     const element = $(this);
-    const soundMoveString = element.val();
-    if (typeof soundMoveString !== "string") {
+    const parsed = soundMoveSchema.safeParse(element.val());
+    if (!parsed.success) {
       throw new TypeError(
-        `The value of the "#soundMove" element is not a string: ${soundMoveString}`,
+        `The value of the "#soundMove" element is not a sound setting: ${String(element.val())}`,
       );
     }
-
-    const soundMove = parseIntSafe(soundMoveString);
-    assertDefined(
-      soundMove,
-      `The value of the "#soundMove" element could not be converted to a number: ${soundMoveString}`,
-    );
-
-    assertEnumValue(
-      soundMove,
-      SoundMove,
-      `The value of "#soundMove" element was not a valid SoundMove enum: ${soundMove}`,
-    );
+    const soundMove = parsed.data;
 
     globals.settings = {
       ...globals.settings,

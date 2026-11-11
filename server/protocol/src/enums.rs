@@ -147,13 +147,13 @@ wire_enum! {
     }
 }
 
-wire_enum! {
-    /// Which moves play a sound: every move, only the player's own, or none.
-    pub enum SoundMove {
-        All = 0,
-        OnlyOwn = 1,
-        None = 2,
-    }
+/// Which moves play a sound: every move, only the moves that start the player's turn, or none.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize, JsonSchema)]
+#[serde(rename_all = "camelCase")]
+pub enum SoundMove {
+    All,
+    OnlyOwn,
+    None,
 }
 
 /// The activity that a user is currently performing.
@@ -173,5 +173,4 @@ pub const WIRE_ENUMS: &[WireEnum] = &[
     EndCondition::WIRE,
     GameListColumn::WIRE,
     RecordedActionType::WIRE,
-    SoundMove::WIRE,
 ];

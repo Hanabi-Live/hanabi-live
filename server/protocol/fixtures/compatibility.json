@@ -398,7 +398,7 @@
       "playingAtTables": [3],
       "settings": {
         "desktopNotification": false,
-        "soundMove": 0,
+        "soundMove": "all",
         "soundTimer": true,
         "darkMode": false,
         "keldonMode": false,

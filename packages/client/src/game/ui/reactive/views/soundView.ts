@@ -1,4 +1,3 @@
-import { SoundMove } from "@hanabi-live/data";
 import type { GameAction, GameState } from "@hanabi-live/game";
 import { includes } from "complete-common";
 import { SoundType } from "../../../types/SoundType";
@@ -45,9 +44,9 @@ export function onNewSoundEffect(
     || globals.state.finished
     // Do not play sounds if it is not the user's turn and the user only wants sounds on their own
     // moves.
-    || (!isOurTurn() && soundMove === SoundMove.OnlyOwn)
+    || (!isOurTurn() && soundMove === "onlyOwn")
     // Do not play sounds if the user does not have sound effects enabled.
-    || soundMove === SoundMove.None
+    || soundMove === "none"
   ) {
     return;
   }

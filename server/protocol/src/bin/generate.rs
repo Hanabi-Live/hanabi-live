@@ -911,20 +911,22 @@ mod tests {
             "2.5"
         );
         assert_eq!(
-            default_literal(&json!({"x-enum":"SoundMove"}), &json!(0)).unwrap(),
-            "SoundMove.All"
+            default_literal(&json!({"x-enum":"GameListColumn"}), &json!(0)).unwrap(),
+            "GameListColumn.Id"
         );
-        assert!(default_literal(&json!({"x-enum":"SoundMove"}), &json!(7)).is_err());
+        assert!(default_literal(&json!({"x-enum":"GameListColumn"}), &json!(7)).is_err());
     }
 
     #[test]
     fn wire_enums_use_the_generated_typescript_enum() {
-        let sound_move = json!({"type":"integer","enum":[0,1,2],"x-enum":"SoundMove"});
-        assert_eq!(expression(&sound_move).unwrap(), "z.enum(SoundMove)");
+        let column = json!({"type":"integer","enum":[0,1,2,3],"x-enum":"GameListColumn"});
+        assert_eq!(expression(&column).unwrap(), "z.enum(GameListColumn)");
         // A field cannot list other values than the enum has.
-        assert!(expression(&json!({"type":"integer","enum":[0,1],"x-enum":"SoundMove"})).is_err());
+        assert!(
+            expression(&json!({"type":"integer","enum":[0,1],"x-enum":"GameListColumn"})).is_err()
+        );
         assert!(expression(&json!({"type":"integer","enum":[0,1],"x-enum":"Other"})).is_err());
-        assert!(expression(&json!({"type":"integer","x-enum":"SoundMove"})).is_err());
+        assert!(expression(&json!({"type":"integer","x-enum":"GameListColumn"})).is_err());
     }
 
     #[test]
@@ -940,19 +942,23 @@ mod tests {
     #[test]
     fn union_variants_name_one_enum_member() {
         assert_eq!(
-            expression(&json!({"type":"integer","enum":[1],"x-enum":"SoundMove"})).unwrap(),
+            expression(&json!({"type":"integer","enum":[1],"x-enum":"GameListColumn"})).unwrap(),
             "z.literal(1)"
         );
-        assert!(expression(&json!({"type":"integer","enum":[3],"x-enum":"SoundMove"})).is_err());
+        assert!(
+            expression(&json!({"type":"integer","enum":[9],"x-enum":"GameListColumn"})).is_err()
+        );
     }
 
     #[test]
     fn each_package_declares_its_own_enums() {
         let game = enum_declarations(true);
         assert!(game.contains("export enum EndCondition {"));
-        assert!(!game.contains("enum SoundMove"));
+        assert!(!game.contains("enum GameListColumn"));
         let data = enum_declarations(false);
-        assert!(data.contains("export enum SoundMove {\nAll = 0,\nOnlyOwn = 1,\nNone = 2,\n}"));
+        assert!(data.contains(
+            "export enum GameListColumn {\nId = 0,\nNumPlayers = 1,\nScore = 2,\nVariant = 3,\n}"
+        ));
         assert!(!data.contains("enum EndCondition"));
     }
 }

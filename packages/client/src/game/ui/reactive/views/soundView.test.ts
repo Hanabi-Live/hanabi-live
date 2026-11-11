@@ -10,7 +10,7 @@ vi.mock("../getSoundType", () => ({
 }));
 vi.mock("../../UIGlobals", () => ({
   globals: {
-    lobby: { settings: { soundMove: 0, hGroupConventions: false } },
+    lobby: { settings: { soundMove: "all", hGroupConventions: false } },
     isResizing: false,
     playStartSound: false,
     state: { replay: { hypothetical: undefined, states: [] }, finished: false },

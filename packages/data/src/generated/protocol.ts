@@ -63,15 +63,6 @@ export enum RecordedActionType {
 }
 
 /**
- * Which moves play a sound: every move, only the player's own, or none.
- */
-export enum SoundMove {
-  All = 0,
-  OnlyOwn = 1,
-  None = 2,
-}
-
-/**
  * The users whom we have blocked. It does not include the users who have blocked us.
  */
 export const blockedSchema = z
@@ -1052,6 +1043,11 @@ export const scoreFrequencySchema = z
 const optionalSettingSchema = z.literal("hGroupLevel");
 
 /**
+ * Which moves play a sound: every move, only the moves that start the player's turn, or none.
+ */
+export const soundMoveSchema = z.enum(["all", "onlyOwn", "none"]);
+
+/**
  * A user's preferences. Missing fields take their default, so stored settings only need the values
  * a user changed.
  */
@@ -1091,7 +1087,7 @@ export const settingsSchema = z
     realLifeMode: z.boolean().default(false),
     reverseHands: z.boolean().default(false),
     showTimerInUntimed: z.boolean().default(false),
-    soundMove: z.enum(SoundMove).default(SoundMove.All),
+    soundMove: soundMoveSchema.default("all"),
     soundTimer: z.boolean().default(true),
     speedrunMode: z.boolean().default(false),
     speedrunPreplay: z.boolean().default(false),

@@ -761,6 +761,7 @@ async fn every_setting_round_trips_and_only_changes_are_stored_postgres() {
             Value::Bool(flag) => json!(!flag),
             Value::Number(number) if number.is_f64() => json!(7.5),
             Value::Number(_) => json!(2),
+            _ if name == "soundMove" => json!("none"),
             _ => json!("Rainbow (6 Suits)"),
         };
         assert_ne!(default, expected, "{name} must change");
@@ -806,7 +807,7 @@ async fn settings_outside_the_wire_contract_are_not_sent_or_saved_postgres() {
     assert_eq!(settings.volume, 70);
     for (name, value) in [
         ("createTableMaxPlayers", json!(7)),
-        ("soundMove", json!(3)),
+        ("soundMove", json!(2)),
         ("createTableVariant", json!("")),
     ] {
         assert!(
