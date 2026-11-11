@@ -27,7 +27,7 @@ test("concealed Duck clues play the quack sound", () => {
         type: "clue",
         clue: { type: undefined, value: undefined },
         playerIndex: 0,
-        target: 1,
+        receiverIndex: 1,
         orders: [],
         ignoreNegative: false,
       },

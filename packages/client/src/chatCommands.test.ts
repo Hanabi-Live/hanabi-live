@@ -23,18 +23,18 @@ const brownFivesPrism6Suits = "Brown-Fives & Prism (6 Suits)";
 describe("functions", () => {
   describe("parsing PM history arguments", () => {
     test("uses five messages by default", () => {
-      expect(parsePmHistoryCommandArgs([])).toEqual({ amount: 5 });
+      expect(parsePmHistoryCommandArgs([])).toEqual({ limit: 5 });
       expect(parsePmHistoryCommandArgs(["Alice"])).toEqual({
-        username: "Alice",
-        amount: 5,
+        recipient: "Alice",
+        limit: 5,
       });
     });
 
     test("accepts an amount with or without a username", () => {
-      expect(parsePmHistoryCommandArgs(["15"])).toEqual({ amount: 15 });
+      expect(parsePmHistoryCommandArgs(["15"])).toEqual({ limit: 15 });
       expect(parsePmHistoryCommandArgs(["Alice", "15"])).toEqual({
-        username: "Alice",
-        amount: 15,
+        recipient: "Alice",
+        limit: 15,
       });
     });
 

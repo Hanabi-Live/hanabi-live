@@ -203,7 +203,7 @@ describe("hypothetical planning", () => {
     expect(state.turn.currentPlayerIndex).toBe(1);
   });
 
-  test("draws the bottom card before a failed discard", () => {
+  test("draws the bottom card before a misplay", () => {
     const base = makeBottomDeckContext();
     const context = {
       ...base,
@@ -224,11 +224,10 @@ describe("hypothetical planning", () => {
         identity: { suitIndex: 0, rank: 2 },
       },
       {
-        type: "discard",
+        type: "misplay",
         order: 2,
         playerIndex: 0,
         identity: { suitIndex: 0, rank: 2 },
-        failed: true,
       },
       { type: "turn", turn: 7, currentPlayerIndex: 1 },
     ]);
@@ -390,7 +389,7 @@ describe("hypothetical planning", () => {
       { type: "discard", order: 0 as CardOrder },
       makeContext(),
     );
-    expect(actions?.[0]).toMatchObject({ type: "discard", failed: false });
+    expect(actions?.[0]).toMatchObject({ type: "discard" });
   });
 
   test("inverts play and discard for inverted suits", () => {
@@ -430,7 +429,7 @@ describe("hypothetical planning", () => {
     ).toBe("play");
   });
 
-  test("turns a misplay into a failed discard", () => {
+  test("turns a failed play into a misplay", () => {
     const actions = planHypotheticalAction(
       { type: "play", order: 0 as CardOrder },
       makeContext({
@@ -439,11 +438,10 @@ describe("hypothetical planning", () => {
     );
     expect(actions?.slice(0, 1)).toEqual<unknown>([
       {
-        type: "discard",
+        type: "misplay",
         playerIndex: 0,
         order: 0,
         identity: { suitIndex: 0, rank: 2 },
-        failed: true,
       },
     ]);
   });
@@ -535,7 +533,7 @@ describe("hypothetical planning", () => {
     const colorActions = planHypotheticalAction(
       {
         type: "clue",
-        target: 1 as PlayerIndex,
+        receiverIndex: 1 as PlayerIndex,
         clue: { type: "color", value: colorIndex },
       },
       makeContext(),
@@ -544,12 +542,12 @@ describe("hypothetical planning", () => {
       type: "clue",
       clue: { type: "color", value: colorIndex },
       playerIndex: 0,
-      target: 1,
+      receiverIndex: 1,
     });
     const rankActions = planHypotheticalAction(
       {
         type: "clue",
-        target: 1 as PlayerIndex,
+        receiverIndex: 1 as PlayerIndex,
         clue: { type: "rank", value: 1 as RankClueNumber },
       },
       makeContext(),
@@ -582,7 +580,7 @@ describe("hypothetical planning", () => {
       const actions = planHypotheticalAction(
         {
           type: "clue",
-          target: target as PlayerIndex,
+          receiverIndex: target as PlayerIndex,
           clue: { type: "rank", value: 3 as RankClueNumber },
         },
         context,
@@ -797,10 +795,7 @@ function playRedFour(
 }
 
 function isStrike(actions: readonly GameAction[] | undefined) {
-  return (
-    actions?.some((action) => action.type === "discard" && action.failed)
-    === true
-  );
+  return actions?.some((action) => action.type === "misplay") === true;
 }
 
 describe("hypothetical plays on a morphed stack base", () => {

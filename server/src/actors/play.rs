@@ -263,7 +263,7 @@ impl TableActor {
                     e.messages.push((
                         a.session.clone(),
                         frame(
-                            hanabi_protocol::server::VOTE_CHANGE,
+                            hanabi_protocol::server::VOTE_CHANGED,
                             vote_change(self.table.id, s, seat)?,
                         ),
                     ));
@@ -401,7 +401,7 @@ impl TableActor {
                 .map(|n| hanabi_protocol::CardNote {
                     text: n.notes.get(order).cloned().unwrap_or_default(),
                     username: n.username,
-                    is_spectator: n.is_spectator,
+                    spectator: n.spectator,
                 })
                 .collect();
             e.messages.push((
@@ -430,7 +430,7 @@ impl TableActor {
                 notes.push(hanabi_protocol::PlayerNotes {
                     username: p.name.clone().into(),
                     notes: s.notes[i].clone(),
-                    is_spectator: false,
+                    spectator: false,
                 });
             }
         }
@@ -439,7 +439,7 @@ impl TableActor {
                 notes.push(hanabi_protocol::PlayerNotes {
                     username: n.name.clone().into(),
                     notes: n.notes.clone(),
-                    is_spectator: true,
+                    spectator: true,
                 });
             }
         }
@@ -451,7 +451,7 @@ impl TableActor {
                 notes.push(hanabi_protocol::PlayerNotes {
                     username: spectator.session.name.clone().into(),
                     notes: vec![String::new(); s.game.deck.len() + s.game.stacks.len()],
-                    is_spectator: true,
+                    spectator: true,
                 });
             }
         }
@@ -595,7 +595,7 @@ impl TableActor {
                 e.messages.push((
                     session.clone(),
                     frame(
-                        hanabi_protocol::server::VOTE_CHANGE,
+                        hanabi_protocol::server::VOTE_CHANGED,
                         vote_change(self.table.id, s, seat)?,
                     ),
                 ));
@@ -671,8 +671,8 @@ fn vote_change(
     table_id: hanabi_protocol::TableId,
     s: &Snapshot,
     seat: usize,
-) -> anyhow::Result<hanabi_protocol::VoteChange> {
-    Ok(hanabi_protocol::VoteChange {
+) -> anyhow::Result<hanabi_protocol::VoteChanged> {
+    Ok(hanabi_protocol::VoteChanged {
         table_id,
         voted: s.votes[seat],
         num_votes: u8::try_from(s.votes.iter().filter(|v| **v).count())?,

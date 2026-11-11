@@ -15,7 +15,7 @@ use std::{
     time::Instant,
 };
 
-pub const FORMAT: &str = "hanabi-live-12";
+pub const FORMAT: &str = "hanabi-live-13";
 /// How long before an idle game ends to warn its table.
 pub const IDLE_WARNING_MS: i64 = 5 * CLOCK_UNITS_PER_MINUTE;
 
@@ -599,7 +599,7 @@ impl Snapshot {
             options: wire_options(&self.game.options),
             seed: self.seed.clone(),
             score: hanabi_protocol::Score(self.game.score),
-            num_turns: hanabi_protocol::Turn::new(self.game.turn)?,
+            num_turns: u16::try_from(self.game.turn).ok()?,
             end_condition: self.game.end?.condition,
             started_at: time(self.started),
             finished_at: time(self.finished.unwrap_or(self.started)),

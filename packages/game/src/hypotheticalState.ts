@@ -16,6 +16,7 @@ import type {
   ActionClue,
   ActionDiscard,
   ActionDraw,
+  ActionMisplay,
   ActionPlay,
   ActionTurn,
   HypotheticalWireEvent,
@@ -59,7 +60,12 @@ export type ActionHypotheticalUnmorph = Readonly<
 
 /** A game action that a hypothetical move can produce. */
 export type HypotheticalGameAction =
-  ActionClue | ActionDiscard | ActionDraw | ActionPlay | ActionTurn;
+  | ActionClue
+  | ActionDiscard
+  | ActionDraw
+  | ActionMisplay
+  | ActionPlay
+  | ActionTurn;
 
 /** An action that a hypothetical can contain: a move's game actions, or a changed identity. */
 export type ActionIncludingHypothetical =
@@ -215,7 +221,11 @@ function hypotheticalStateReducerFunction(
 
   // Validate persisted replay actions, which bypass the local action planner. A card outside the
   // acting player's hand would end up in two collections, or does not exist yet.
-  if (action.type === "play" || action.type === "discard") {
+  if (
+    action.type === "play"
+    || action.type === "discard"
+    || action.type === "misplay"
+  ) {
     if (
       state.ongoing.hands[action.playerIndex]?.includes(action.order) !== true
     ) {

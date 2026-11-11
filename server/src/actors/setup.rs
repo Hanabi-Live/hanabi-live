@@ -191,7 +191,7 @@ pub(super) fn options_suggestion(
 ) -> Chat {
     Chat {
         recipient: Some(owner.into()),
-        suggestion: Some(table_settings(name, max_players, options, extra)),
+        suggested_settings: Some(table_settings(name, max_players, options, extra)),
         ..server_chat(
             id,
             "<span class=\"cp\"><button class=\"new-options\">click to apply the suggestion</button></span>",

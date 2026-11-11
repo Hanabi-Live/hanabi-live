@@ -5,7 +5,7 @@ import { MAX_CLUES } from "../generated/protocol.ts";
 import { discard, play } from "../testActions.ts";
 import { getNewClueTokensAfterAction } from "./clueTokens.ts";
 
-const DISCARD_ACTION = discard(0, 0, 0, 1, false);
+const DISCARD_ACTION = discard(0, 0, 0, 1);
 const DEFAULT_VARIANT = getDefaultVariant();
 const THROW_IT_IN_A_HOLE_VARIANT = getVariant("Throw It in a Hole (6 Suits)");
 

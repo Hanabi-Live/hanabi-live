@@ -481,8 +481,8 @@ impl Bridge {
         let id = self.send(&outbound_text(username, raw), true).await?;
         if link_copy(&self.pool, chat_id, &id).await? {
             self.broadcast(vec![Outgoing::new(
-                hanabi_protocol::server::CHAT_DELETE,
-                hanabi_protocol::ChatDelete {
+                hanabi_protocol::server::CHAT_DELETED,
+                hanabi_protocol::ChatDeleted {
                     chat_id: hanabi_protocol::ChatId(i64::from(chat_id)),
                 },
             )])
@@ -697,8 +697,8 @@ impl Bridge {
         for id in ids {
             if let Some(chat_id) = delete_message(&self.pool, id).await? {
                 self.broadcast(vec![Outgoing::new(
-                    hanabi_protocol::server::CHAT_DELETE,
-                    hanabi_protocol::ChatDelete {
+                    hanabi_protocol::server::CHAT_DELETED,
+                    hanabi_protocol::ChatDeleted {
                         chat_id: hanabi_protocol::ChatId(i64::from(chat_id)),
                     },
                 )])

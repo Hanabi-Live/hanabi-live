@@ -5,6 +5,7 @@ pub use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
 mod enums;
+pub(crate) use enums::named_enum;
 pub use enums::{
     ClueType, EndCondition, GameListColumn, NoticeCode, SoundMove, WIRE_ENUMS, WireEnum,
     WireEnumMember,
@@ -118,6 +119,14 @@ pub const MAX_PRIVATE_HISTORY_MESSAGES: i64 = 100;
 /// A table's progress, as a percentage, once its game reaches the maximum score or its replay
 /// reaches the last turn.
 pub const MAX_PROGRESS: u8 = 100;
+/// How far a shared replay's leader can move the count of cards that the efficiency uses, either way.
+/// It never needs to be larger than a deck.
+#[expect(
+    clippy::cast_possible_truncation,
+    clippy::cast_possible_wrap,
+    reason = "the largest deck is far below i32::MAX"
+)]
+pub const MAX_EFFICIENCY_MODIFIER: i32 = MAX_DECK_SIZE as i32;
 /// The highest card order: stack bases follow the cards of the largest deck, one for each suit.
 const MAX_CARD_ORDER: usize = MAX_DECK_SIZE + MAX_SUITS - 1;
 
@@ -604,13 +613,6 @@ mod tests {
                     case["name"]
                 );
             }
-        }
-    }
-
-    #[test]
-    fn game_list_column_names_match_the_wire() {
-        for column in GameListColumn::ALL {
-            assert_eq!(serde_json::to_value(column).unwrap(), column.name());
         }
     }
 

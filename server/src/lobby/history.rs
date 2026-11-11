@@ -86,8 +86,7 @@ pub async fn get_history(
             game_id: hanabi_protocol::GameId(game.id),
             options: crate::model::wire_options(&crate::archive::options(&game)?),
             score: hanabi_protocol::Score(i32::from(game.score)),
-            num_turns: hanabi_protocol::Turn::new(game.num_turns)
-                .context("Invalid stored turn count")?,
+            num_turns: game.turn_count()?,
             end_condition: hanabi_protocol::EndCondition::try_from(i32::from(game.end_condition))
                 .map_err(anyhow::Error::msg)
                 .context("Invalid stored end condition")?,

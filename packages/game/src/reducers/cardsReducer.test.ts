@@ -11,6 +11,7 @@ import {
   colorClue,
   discard,
   draw,
+  misplay,
   play,
   rankClue,
 } from "../testActions.ts";
@@ -68,7 +69,7 @@ describe("cardsReducer", () => {
       let deck: readonly CardState[] = [FIRST_CARD];
       deck = cardsReducer(deck, draw(0, 0), GAME_STATE, DEFAULT_METADATA);
 
-      const discardAction = discard(0, 0, 1, 2, false);
+      const discardAction = discard(0, 0, 1, 2);
       const newDeck = cardsReducer(
         deck,
         discardAction,
@@ -103,7 +104,7 @@ describe("cardsReducer", () => {
       let deck: readonly CardState[] = [FIRST_CARD];
       deck = cardsReducer(deck, draw(0, 0), GAME_STATE, DEFAULT_METADATA);
 
-      const discardAction = discard(0, 0, 1, 2, false);
+      const discardAction = discard(0, 0, 1, 2);
       const newDeck = cardsReducer(
         deck,
         discardAction,
@@ -131,8 +132,13 @@ describe("cardsReducer", () => {
       let deck: readonly CardState[] = [FIRST_CARD];
       deck = cardsReducer(deck, draw(0, 0), GAME_STATE, DEFAULT_METADATA);
 
-      const misplay = discard(0, 0, 1, 2, true); // A misplay is a discard with "failed = true"
-      const newDeck = cardsReducer(deck, misplay, GAME_STATE, DEFAULT_METADATA);
+      const misplayAction = misplay(0, 0, 1, 2);
+      const newDeck = cardsReducer(
+        deck,
+        misplayAction,
+        GAME_STATE,
+        DEFAULT_METADATA,
+      );
       expect(newDeck[0]!.segmentDiscarded).toBe(GAME_STATE.turn.segment);
     });
   });
@@ -180,7 +186,7 @@ describe("cardsReducer", () => {
       let deck: readonly CardState[] = [FIRST_CARD];
       deck = cardsReducer(deck, draw(0, 0), GAME_STATE, DEFAULT_METADATA);
 
-      const discardAction = discard(0, 0, 1, 2, false);
+      const discardAction = discard(0, 0, 1, 2);
       const newDeck = cardsReducer(
         deck,
         discardAction,
@@ -208,8 +214,13 @@ describe("cardsReducer", () => {
       let deck: readonly CardState[] = [FIRST_CARD];
       deck = cardsReducer(deck, draw(0, 0), GAME_STATE, DEFAULT_METADATA);
 
-      const misplay = discard(0, 0, 1, 2, true); // A misplay is a discard with `failed = true`.
-      const newDeck = cardsReducer(deck, misplay, GAME_STATE, DEFAULT_METADATA);
+      const misplayAction = misplay(0, 0, 1, 2);
+      const newDeck = cardsReducer(
+        deck,
+        misplayAction,
+        GAME_STATE,
+        DEFAULT_METADATA,
+      );
       expect(newDeck[0]!.isMisplayed).toBe(true);
     });
   });
@@ -454,7 +465,7 @@ describe("cardsReducer", () => {
       deck = cardsReducer(deck, draw(0, 1), GAME_STATE, DEFAULT_METADATA);
 
       const gameStateWithCorrectHands = getGameStateWithHands([[0, 1], []]);
-      const discardRed5 = discard(0, 1, 0, 5, false);
+      const discardRed5 = discard(0, 1, 0, 5);
       deck = cardsReducer(
         deck,
         discardRed5,
@@ -472,7 +483,7 @@ describe("cardsReducer", () => {
       deck = cardsReducer(deck, draw(0, 1), GAME_STATE, DEFAULT_METADATA);
 
       const gameStateWithCorrectHands = getGameStateWithHands([[0, 1], []]);
-      const discardRedOne = discard(0, 1, 0, 1, false);
+      const discardRedOne = discard(0, 1, 0, 1);
       deck = cardsReducer(
         deck,
         discardRedOne,
@@ -509,7 +520,7 @@ describe("cardsReducer", () => {
       nextGameState = getGameStateWithHands([[], [0, 1]]);
       deck = cardsReducer(
         deck,
-        discard(1, 1, undefined, undefined, false),
+        discard(1, 1, undefined, undefined),
         nextGameState,
         THROW_IT_IN_A_HOLE_METADATA,
       );
@@ -562,7 +573,7 @@ describe("cardsReducer", () => {
               deck,
               type === "play"
                 ? play(player, 0, 0, 5)
-                : discard(player, 0, 0, 5, true),
+                : misplay(player, 0, 0, 5),
               hand([0, 1]),
               THROW_IT_IN_A_HOLE_METADATA,
             );
@@ -631,7 +642,7 @@ describe("cardsReducer", () => {
       // Discard red 4.
       deck = cardsReducer(
         deck,
-        discard(0, 0, 0, 4, false),
+        discard(0, 0, 0, 4),
         nextGameState,
         DEFAULT_METADATA,
       );

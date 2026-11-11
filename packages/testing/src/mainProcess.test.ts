@@ -184,7 +184,6 @@ databaseDescribe("compiled application entry point (rust)", () => {
           "SmokeAlice",
           "SmokeBob",
         ]);
-        expect(game.players.map((player) => player.you)).toEqual([false, true]);
         bob.send("tableLeave", { tableId });
         const bobLeft = await bob.receive(
           "tableLeft",
@@ -344,7 +343,10 @@ databaseDescribe("compiled application entry point (rust)", () => {
         expect(resumed.init.mode.type).toBe("playing");
         expect(
           resumed.history.events.some(
-            (event) => event.type === "play" || event.type === "discard",
+            (event) =>
+              event.type === "play"
+              || event.type === "discard"
+              || event.type === "misplay",
           ),
         ).toBe(true);
         if (restart) {
@@ -396,14 +398,14 @@ databaseDescribe("compiled application entry point (rust)", () => {
             tableId,
           });
           await replacement.receive(
-            "voteChange",
-            SERVER_COMMAND_SCHEMAS.voteChange,
+            "voteChanged",
+            SERVER_COMMAND_SCHEMAS.voteChanged,
             (data) => data.voted,
           );
           // The other player sees the vote without having cast one.
           await bob.receive(
-            "voteChange",
-            SERVER_COMMAND_SCHEMAS.voteChange,
+            "voteChanged",
+            SERVER_COMMAND_SCHEMAS.voteChanged,
             (data) =>
               !data.voted && data.numVotes === 1 && data.numVotesNeeded === 2,
           );
@@ -460,8 +462,8 @@ databaseDescribe("compiled application entry point (rust)", () => {
         bob.send("tableUnattend", { tableId });
         replacement.send("tableUnattend", { tableId });
         const gone = await replacement.receive(
-          "tableGone",
-          SERVER_COMMAND_SCHEMAS.tableGone,
+          "tableRemoved",
+          SERVER_COMMAND_SCHEMAS.tableRemoved,
         );
         expect(gone.tableId).toBe(tableId);
         if (signal === undefined && domain === "localhost") {
@@ -673,8 +675,8 @@ databaseDescribe("compiled application entry point (rust)", () => {
         peer.send("tableUnattend", { tableId });
       }
       await owner.receive(
-        "tableGone",
-        SERVER_COMMAND_SCHEMAS.tableGone,
+        "tableRemoved",
+        SERVER_COMMAND_SCHEMAS.tableRemoved,
         (message) => message.tableId === tableId,
       );
       /* eslint-disable no-await-in-loop -- One client's replay imports must complete in wire order. */
@@ -789,8 +791,8 @@ databaseDescribe("compiled application entry point (rust)", () => {
           });
           returning.send("tableLeave", { tableId: pending.tableId });
           await returning.receive(
-            "tableGone",
-            SERVER_COMMAND_SCHEMAS.tableGone,
+            "tableRemoved",
+            SERVER_COMMAND_SCHEMAS.tableRemoved,
             (message) => message.tableId === pending.tableId,
           );
           replayPeer = returning;

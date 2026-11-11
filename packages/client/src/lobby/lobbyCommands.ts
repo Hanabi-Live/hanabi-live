@@ -21,12 +21,7 @@ import { startGameCooldownChanged } from "./pregame/pregameSlice.ts";
 import { tableChanged, tableGone, tablesListed } from "./tables/tablesSlice.ts";
 import { Screen } from "./types/Screen.ts";
 import * as url from "./url.ts";
-import {
-  userChanged,
-  userInactiveChanged,
-  userLeft,
-  usersListed,
-} from "./users/usersSlice.ts";
+import { userChanged, userLeft, usersListed } from "./users/usersSlice.ts";
 
 /** How long the start game button stays disabled after the player count changes. */
 const START_GAME_BUTTON_DISABLED_MILLISECONDS = 500;
@@ -117,7 +112,7 @@ lobbyCommands.set("table", (data) => {
 });
 
 // Received by the client when a table no longer has any members present.
-lobbyCommands.set("tableGone", (data) => {
+lobbyCommands.set("tableRemoved", (data) => {
   store.dispatch(tableGone(data.tableId));
 
   // If we were spectating the pre-game of this table, return to the lobby.
@@ -163,25 +158,9 @@ lobbyCommands.set("userList", (data) => {
   store.dispatch(usersListed(data.users));
 });
 
-lobbyCommands.set("userLeft", (data) => {
+lobbyCommands.set("userRemoved", (data) => {
   globals.userMap.delete(data.userId);
   store.dispatch(userLeft(data.userId));
-});
-
-lobbyCommands.set("userInactive", (data) => {
-  const { userId, inactive } = data;
-
-  const user = globals.userMap.get(userId);
-  if (user === undefined) {
-    return;
-  }
-
-  const newUser = {
-    ...user,
-    inactive,
-  };
-  globals.userMap.set(userId, newUser);
-  store.dispatch(userInactiveChanged(data));
 });
 
 // Received by the client upon first connecting.

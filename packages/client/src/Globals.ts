@@ -108,7 +108,7 @@ export class Globals {
     store.dispatch(totalGamesChanged(totalGames));
   }
 
-  /** From the "tableList", "table", and "tableGone" messages. */
+  /** From the "tableList", "table", and "tableRemoved" messages. */
   get tables(): readonly Table[] {
     return selectTables(store.getState());
   }

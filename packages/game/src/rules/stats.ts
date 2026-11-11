@@ -179,8 +179,8 @@ export function getCardsGotten(
         && variant.throwItInAHole
         && (playing || shadowing))
     ) {
-      // A card is considered to be gotten if it is already played (and failed discards count as
-      // played for the purposes of "Throw It in a Hole" variants).
+      // A card is considered to be gotten if it is already played (and misplays count as played for
+      // the purposes of "Throw It in a Hole" variants).
       currentCardsGotten++;
     } else if (
       isCardInPlayerHand(cardState)

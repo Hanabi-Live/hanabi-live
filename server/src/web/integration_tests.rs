@@ -33,11 +33,11 @@ async fn websocket_errors_explain_invalid_fields_and_database_failures_postgres(
     receive(&mut socket, "welcome").await;
     for (request, expected) in [
         (
-            "gameHistory {\"offset\":\"bad\",\"amount\":10}",
+            "gameHistory {\"offset\":\"bad\",\"limit\":10}",
             "Invalid GameHistoryRequest payload at /offset",
         ),
         (
-            "gameHistory {\"offset\":0,\"amount\":10}",
+            "gameHistory {\"offset\":0,\"limit\":10}",
             "database connection pool is closed",
         ),
     ] {
@@ -482,7 +482,7 @@ async fn native_browser_login_ws_bootstrap_and_command_routing_postgres() {
     assert_eq!(receive(&mut alice, "lobbyStatus").await["type"], "ready");
     alice
         .send(WireMessage::Text(
-            "gameHistory {\"offset\":0,\"amount\":10}".into(),
+            "gameHistory {\"offset\":0,\"limit\":10}".into(),
         ))
         .await
         .unwrap();

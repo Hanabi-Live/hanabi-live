@@ -8,7 +8,9 @@ import type { ChatLine } from "../chat/ChatBox.tsx";
 
 interface PregameChatLine extends ChatLine {
   /** What the line's button applies to the table, in a suggestion to its owner. */
-  readonly suggestion?: NonNullable<ServerCommandData["chat"]["suggestion"]>;
+  readonly suggestion?: NonNullable<
+    ServerCommandData["chat"]["suggestedSettings"]
+  >;
 }
 
 export type Game = ServerCommandData["pregame"];

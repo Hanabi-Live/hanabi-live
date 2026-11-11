@@ -649,8 +649,8 @@ function addInternal(data: ChatData, fast: boolean, updateLiveState: boolean) {
           key,
           html,
           fadeIn: !fast,
-          ...(data.suggestion !== undefined && {
-            suggestion: data.suggestion,
+          ...(data.suggestedSettings !== undefined && {
+            suggestion: data.suggestedSettings,
           }),
         }),
       );
@@ -658,7 +658,7 @@ function addInternal(data: ChatData, fast: boolean, updateLiveState: boolean) {
     }
 
     case "game": {
-      appendGameChatLine(key, html, fast, data.suggestion);
+      appendGameChatLine(key, html, fast, data.suggestedSettings);
       break;
     }
   }
@@ -708,7 +708,7 @@ function appendGameChatLine(
   key: number,
   html: string,
   fast: boolean,
-  suggestion: ChatData["suggestion"],
+  suggestion: ChatData["suggestedSettings"],
 ) {
   const chat = $("#game-chat-text");
   // Find out if we should automatically scroll down after adding the new line of chat:

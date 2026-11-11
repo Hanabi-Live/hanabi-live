@@ -192,7 +192,11 @@ describe("replayReducer", () => {
       const ongoing = state.hypothetical?.ongoing;
       state = replayReducer(
         state,
-        { type: "hypoShowDrawnCards", shared: false, showDrawnCards: true },
+        {
+          type: "hypotheticalShowDrawnCards",
+          shared: false,
+          showDrawnCards: true,
+        },
         false,
         metadata,
       );
@@ -209,7 +213,11 @@ describe("replayReducer", () => {
       expect(afterDraw).not.toBe(ongoing);
       state = replayReducer(
         state,
-        { type: "hypoShowDrawnCards", shared: false, showDrawnCards: false },
+        {
+          type: "hypotheticalShowDrawnCards",
+          shared: false,
+          showDrawnCards: false,
+        },
         false,
         metadata,
       );

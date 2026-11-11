@@ -32,14 +32,14 @@ pub struct ChatPmRequest {
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct ChatPmHistoryRequest {
     #[schemars(range(min = 1, max = MAX_PRIVATE_HISTORY_MESSAGES))]
-    pub amount: i64,
+    pub limit: i64,
     /// The table whose chat the command was typed in. Absent means the lobby.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub table_id: Option<TableId>,
     /// The other user in the conversation. Absent shows the messages with everyone.
     #[serde(skip_serializing_if = "Option::is_none")]
     #[schemars(length(min = 1))]
-    pub username: Option<String>,
+    pub recipient: Option<String>,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
@@ -79,7 +79,7 @@ pub struct TableJoinRequest {
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct TableSetOwnerRequest {
     pub table_id: TableId,
-    pub user_id: UserId,
+    pub owner_id: UserId,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
@@ -143,19 +143,10 @@ pub struct SettingRequest {
     pub cleared: Vec<OptionalSetting>,
 }
 
-/// A setting that a user can leave unset.
-#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
-#[serde(rename_all = "camelCase")]
-pub enum OptionalSetting {
-    HGroupLevel,
-}
-
-impl OptionalSetting {
-    /// The setting's name in `Settings`.
-    pub const fn name(self) -> &'static str {
-        match self {
-            Self::HGroupLevel => "hGroupLevel",
-        }
+named_enum! {
+    /// A setting that a user can leave unset, by its name in `Settings`.
+    pub enum OptionalSetting {
+        HGroupLevel => "hGroupLevel",
     }
 }
 
@@ -171,7 +162,7 @@ pub struct InactiveRequest {
 pub struct GameHistoryRequest {
     pub offset: Count,
     #[schemars(range(min = 1, max = MAX_PAGE_SIZE))]
-    pub amount: i64,
+    pub limit: i64,
 }
 
 /// A page of the games on a seed, best scores first.
@@ -181,7 +172,7 @@ pub struct GameHistoryOtherScoresRequest {
     pub seed: String,
     pub offset: Count,
     #[schemars(range(min = 1, max = MAX_PAGE_SIZE))]
-    pub amount: i64,
+    pub limit: i64,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
@@ -329,19 +320,19 @@ pub enum ReplayLeaderAction {
     Sound {
         sound: ReplaySoundEffect,
     },
-    HypoStart {},
-    HypoEnd {},
-    HypoAction {
+    HypotheticalStart {},
+    HypotheticalEnd {},
+    HypotheticalAction {
         action: HypotheticalEvent,
     },
     /// Undoes the hypothetical's last turn.
-    HypoBack {},
+    HypotheticalBack {},
     /// Shows or hides the identities of cards drawn during the hypothetical.
-    HypoShowDrawnCards {
+    HypotheticalShowDrawnCards {
         show_drawn_cards: bool,
     },
     EfficiencyModifier {
-        #[schemars(range(min = i32::MIN, max = i32::MAX))]
+        #[schemars(range(min = -MAX_EFFICIENCY_MODIFIER, max = MAX_EFFICIENCY_MODIFIER))]
         efficiency_modifier: i32,
     },
 }

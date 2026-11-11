@@ -173,7 +173,7 @@ export function give(): void {
 
       const clientActionClue: ClientActionClue = {
         type: "clue",
-        target: playerButton.targetPlayerIndex,
+        receiverIndex: playerButton.targetPlayerIndex,
         clue: { type: "color", value: colorIndex },
       };
       turn.end(clientActionClue);
@@ -184,7 +184,7 @@ export function give(): void {
     case "rank": {
       const clientActionClue: ClientActionClue = {
         type: "clue",
-        target: playerButton.targetPlayerIndex,
+        receiverIndex: playerButton.targetPlayerIndex,
         clue: { type: "rank", value: clueOrRankButton.clue.value },
       };
       turn.end(clientActionClue);

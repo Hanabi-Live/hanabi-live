@@ -1045,8 +1045,8 @@ async function playGame(alice: Peer, bob: Peer): Promise<number> {
     peer.send("tableUnattend", { tableId });
   }
   await bob.receive(
-    "tableGone",
-    SERVER_COMMAND_SCHEMAS.tableGone,
+    "tableRemoved",
+    SERVER_COMMAND_SCHEMAS.tableRemoved,
     (data) => data.tableId === tableId,
   );
   return finished.gameId;
@@ -1163,7 +1163,7 @@ async function seed(address: string): Promise<Seed> {
       tableId,
       action: {
         type: "clue",
-        target: newest.playerIndex,
+        receiverIndex: newest.playerIndex,
         clue: { type: "rank", value: rank },
       },
     });
@@ -1178,7 +1178,7 @@ async function seed(address: string): Promise<Seed> {
   }
 
   function passLeader() {
-    bob.send("tableSetOwner", { tableId, userId: cookieUserId(cookie) });
+    bob.send("tableSetOwner", { tableId, ownerId: cookieUserId(cookie) });
   }
 
   /** The events of the game, as a peer sees them. A spectator sees every card. */
@@ -1224,7 +1224,11 @@ async function seed(address: string): Promise<Seed> {
     const gone = new Set<CardOrder>();
     const stacks = new Map<number, number>();
     for (const event of events) {
-      if (event.type === "play" || event.type === "discard") {
+      if (
+        event.type === "play"
+        || event.type === "discard"
+        || event.type === "misplay"
+      ) {
         gone.add(event.order);
       }
       if (event.type === "play" && event.identity !== undefined) {
@@ -1287,7 +1291,11 @@ async function seed(address: string): Promise<Seed> {
 
     const gone = new Set<CardOrder>();
     for (const event of events) {
-      if (event.type === "play" || event.type === "discard") {
+      if (
+        event.type === "play"
+        || event.type === "discard"
+        || event.type === "misplay"
+      ) {
         gone.add(event.order);
       }
     }
@@ -1327,7 +1335,7 @@ async function seed(address: string): Promise<Seed> {
       tableId,
       action: {
         type: "clue",
-        target: card.target,
+        receiverIndex: card.target,
         clue: { type: "rank", value: card.rank },
       },
     });
@@ -1363,18 +1371,18 @@ async function seed(address: string): Promise<Seed> {
     leader.send("loaded", { tableId: replayTableId });
     leader.send("replayAction", {
       tableId: replayTableId,
-      action: { type: "hypoStart" },
+      action: { type: "hypotheticalStart" },
     });
     await leader.receive(
       "replayAction",
       SERVER_COMMAND_SCHEMAS.replayAction,
-      (data) => data.action.type === "hypoStart",
+      (data) => data.action.type === "hypotheticalStart",
     );
 
     leader.send("replayAction", {
       tableId: replayTableId,
       action: {
-        type: "hypoAction",
+        type: "hypotheticalAction",
         action: {
           type: "morph",
           order: PRISM_MORPH_ORDER,
@@ -1385,7 +1393,7 @@ async function seed(address: string): Promise<Seed> {
     await leader.receive(
       "replayAction",
       SERVER_COMMAND_SCHEMAS.replayAction,
-      (data) => data.action.type === "hypoAction",
+      (data) => data.action.type === "hypotheticalAction",
     );
 
     return () => {

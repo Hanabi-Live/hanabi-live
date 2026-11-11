@@ -1,4 +1,6 @@
-use super::{HttpError, Params, PublicState, Query, Result, catalog, integer, pagination};
+use super::{
+    HttpError, PAGE_PARAMETERS, Params, PublicState, Query, Result, catalog, integer, pagination,
+};
 use crate::archive::GameRecord;
 use anyhow::Context;
 use hanabi_protocol::GameListColumn as Column;
@@ -23,28 +25,32 @@ const fn column_field(column: Column) -> &'static str {
 /// The columns that a game list filters by.
 const fn filterable_columns(mode: &str) -> &'static [Column] {
     match mode.as_bytes() {
-        b"history" => &Column::ALL,
+        b"history" => Column::ALL,
         b"variants" => SORTABLE_COLUMNS,
         _ => &[Column::Id, Column::Score],
     }
 }
 
-/// The query parameters that a game list takes.
+/// The query parameters that a game list takes: paging, `sort` with a column's name, `order` with
+/// `asc` or `desc`, and `filter[name]` with a column's value.
 pub(super) fn list_parameters(mode: &str) -> Vec<String> {
-    ["page".to_owned(), "size".to_owned()]
+    PAGE_PARAMETERS
         .into_iter()
-        .chain(
-            SORTABLE_COLUMNS
-                .iter()
-                .map(|&c| format!("col[{}]", c.name())),
-        )
+        .chain(["sort", "order"])
+        .map(str::to_owned)
         .chain(
             filterable_columns(mode)
                 .iter()
-                .map(|&c| format!("fcol[{}]", c.name())),
+                .map(|&c| format!("filter[{}]", c.name())),
         )
         .collect()
 }
+
+/// The order of a player's history: the most recently finished game first.
+pub(super) const FINISHED_ORDER: &str = "g.datetime_finished DESC,g.id DESC";
+
+/// The order of the games on a seed: the best score first, and the earliest of equal scores.
+pub(super) const SEED_ORDER: &str = "g.score DESC,g.datetime_finished ASC,g.id ASC";
 
 #[derive(sqlx::FromRow)]
 struct HistoryRow {
@@ -55,15 +61,7 @@ struct HistoryRow {
     tags: Vec<String>,
 }
 
-/// The rows are built in SQL, so that counting and paging stay in one statement, and decoded into
-/// their wire type.
-#[derive(sqlx::FromRow)]
-struct PageRow {
-    total_rows: i64,
-    rows: sqlx::types::Json<Vec<hanabi_protocol::PublicGameRow>>,
-}
-
-#[derive(Default)]
+#[derive(Clone, Default)]
 pub(super) struct Selection {
     pub users: Vec<i32>,
     pub seed: Option<String>,
@@ -72,6 +70,8 @@ pub(super) struct Selection {
     pub end: Option<i64>,
     pub tag: Option<String>,
     pub tag_user: Option<i32>,
+    /// Each column's required value.
+    pub filters: Vec<(&'static str, i64)>,
     pub page: Option<(i64, i64)>,
 }
 
@@ -210,67 +210,59 @@ fn selected(s: Selection) -> QueryBuilder<Postgres> {
             .push_bind(user)
             .push(")");
     }
+    for (column, value) in s.filters {
+        push_compare(&mut qb, column, "=", value);
+    }
     qb
 }
 
 pub(super) async fn list(
     state: &PublicState,
-    s: Selection,
+    mut s: Selection,
     q: &Query,
     mode: &str,
 ) -> Result<hanabi_protocol::PublicGamePage> {
-    let (size, offset) = pagination(q)?.unwrap_or((super::DEFAULT_PAGE_SIZE, 0));
-    let mut order = if mode == "history" {
-        Column::Id
-    } else {
-        Column::Score
+    let (limit, offset) = pagination(q)?.unwrap_or((super::DEFAULT_PAGE_SIZE, 0));
+    s.page = Some((limit, offset));
+    let column = match q.get("sort") {
+        None if mode == "history" => Column::Id,
+        None => Column::Score,
+        Some(name) => Column::from_name(name)
+            .filter(|column| SORTABLE_COLUMNS.contains(column))
+            .ok_or_else(|| {
+                HttpError::bad(format!(
+                    "Sort by one of: {}.",
+                    SORTABLE_COLUMNS
+                        .iter()
+                        .map(|c| c.name())
+                        .collect::<Vec<_>>()
+                        .join(", ")
+                ))
+            })?,
     };
-    let mut ascending = false;
-    let mut sorted = false;
-    let mut qb = selected(s);
-    // The URL's accepted parameters limit the names to the columns that it sorts and filters by.
-    let parse_column = |key: &str, prefix: &str| {
-        key.strip_prefix(prefix)
-            .and_then(|k| k.strip_suffix(']'))
-            .and_then(|k| Column::ALL.into_iter().find(|c| c.name() == k))
+    let direction = match q.get("order") {
+        None | Some("desc") => "DESC",
+        Some("asc") => "ASC",
+        Some(_) => return Err(HttpError::bad("The order must be asc or desc.")),
     };
-    for (key, value) in q.iter() {
-        if let Some(column) = parse_column(key, "col[") {
-            if sorted {
-                return Err(HttpError::bad("Sort by one column at a time."));
-            }
-            ascending = match value {
-                "0" => true,
-                "1" => false,
-                _ => {
-                    return Err(HttpError::bad(
-                        "A sort direction must be 0 (ascending) or 1 (descending).",
-                    ));
-                }
-            };
-            order = column;
-            sorted = true;
-        } else if let Some(column) = parse_column(key, "fcol[") {
+    let mut filters = Vec::new();
+    for column in filterable_columns(mode) {
+        if let Some(value) = q.get(&format!("filter[{}]", column.name())) {
             let value = integer(value).ok_or_else(|| {
                 HttpError::bad(format!("Invalid numeric filter for: {}", column.name()))
             })?;
-            push_compare(&mut qb, column_field(column), "=", value);
+            filters.push((column_field(*column), value));
         }
     }
-    qb.push("), paged AS (SELECT id,num_players,score,variant_id,seed,datetime_finished FROM selected ORDER BY ").push(column_field(order))
-        .push(if ascending { " ASC" } else { " DESC" }).push(", id DESC LIMIT ")
-        .push_bind(size).push(" OFFSET ").push_bind(offset)
-        .push(") SELECT (SELECT count(*) FROM selected) AS total_rows,COALESCE((SELECT jsonb_agg(jsonb_build_object('gameId',g.id,'score',g.score,");
-    if mode != "variants" {
-        qb.push("'variantId',g.variant_id,'numGamesOnSeed',(SELECT num_games FROM seeds WHERE seed=g.seed),");
-    }
-    qb.push("'playerNames',COALESCE((SELECT jsonb_agg(u.username ORDER BY gp.seat) FROM game_participants gp JOIN users u ON u.id=gp.user_id WHERE gp.game_id=g.id),'[]'::jsonb),'finishedAt',to_char(g.datetime_finished AT TIME ZONE 'UTC','YYYY-MM-DD\"T\"HH24:MI:SS.MS\"Z\"'),'seed',g.seed) ORDER BY g.")
-        .push(column_field(order)).push(if ascending { " ASC" } else { " DESC" })
-        .push(",g.id DESC) FROM paged g),'[]'::jsonb) AS rows");
-    let page: PageRow = qb.build_query_as().fetch_one(&state.pool).await?;
+    s.filters = filters;
+    let mut count = selected(s.clone());
+    count.push(") SELECT count(*) FROM selected");
+    let total: i64 = count.build_query_scalar().fetch_one(&state.pool).await?;
+    let order = format!("g.{} {direction},g.id DESC", column_field(column));
     Ok(hanabi_protocol::PublicGamePage {
-        games: page.rows.0,
-        total: hanabi_protocol::Count(page.total_rows),
+        games: history(state, s, &order).await?,
+        offset: hanabi_protocol::Count(offset),
+        total: hanabi_protocol::Count(total),
     })
 }
 
@@ -279,6 +271,7 @@ fn game_history(row: HistoryRow) -> anyhow::Result<hanabi_protocol::GameHistoryE
     let g = row.game;
     Ok(hanabi_protocol::GameHistoryEntry {
         game_id: hanabi_protocol::GameId(g.id),
+        num_turns: g.turn_count()?,
         options: crate::model::wire_options(&crate::archive::options(&g)?),
         num_games_on_seed: g
             .seed
@@ -286,7 +279,6 @@ fn game_history(row: HistoryRow) -> anyhow::Result<hanabi_protocol::GameHistoryE
             .then(|| hanabi_protocol::Count(i64::from(row.seed_count))),
         seed: g.seed,
         score: hanabi_protocol::Score(i32::from(g.score)),
-        num_turns: hanabi_protocol::Turn::new(g.num_turns).context("Invalid stored turn count")?,
         end_condition: hanabi_protocol::EndCondition::try_from(i32::from(g.end_condition))
             .map_err(anyhow::Error::msg)
             .context("Invalid stored end condition")?,
@@ -297,10 +289,11 @@ fn game_history(row: HistoryRow) -> anyhow::Result<hanabi_protocol::GameHistoryE
     })
 }
 
+/// The selected games, in `order`, which is SQL that sorts `g`.
 pub(super) async fn history(
     state: &PublicState,
     s: Selection,
-    seed_sort: bool,
+    order: &str,
 ) -> Result<Vec<hanabi_protocol::GameHistoryEntry>> {
     let tag_user = s.tag_user;
     let page = s.page;
@@ -312,11 +305,7 @@ pub(super) async fn history(
         qb.push(" AND user_id=").push_bind(user);
     }
     qb.push("),'{}') AS tags FROM selected g ORDER BY ");
-    qb.push(if seed_sort {
-        "g.score DESC,g.datetime_finished ASC,g.id ASC"
-    } else {
-        "g.datetime_finished DESC,g.id DESC"
-    });
+    qb.push(order);
     if let Some((size, offset)) = page {
         qb.push(" LIMIT ")
             .push_bind(size)
@@ -362,5 +351,5 @@ pub(super) async fn tagged(
     } else {
         s.tag_user = Some(players(state, params, false).await?[0].0);
     }
-    history(state, s, false).await
+    history(state, s, FINISHED_ORDER).await
 }

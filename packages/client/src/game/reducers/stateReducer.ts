@@ -195,11 +195,11 @@ function stateReducerFunction(state: Draft<State>, action: Action) {
     case "replayUseSharedSegments":
     case "replayLeader":
     case "restartDeclined":
-    case "hypoStart":
-    case "hypoBack":
-    case "hypoEnd":
-    case "hypoAction":
-    case "hypoShowDrawnCards": {
+    case "hypotheticalStart":
+    case "hypotheticalBack":
+    case "hypotheticalEnd":
+    case "hypotheticalAction":
+    case "hypotheticalShowDrawnCards": {
       state.replay = castDraft(
         replayReducer(state.replay, action, state.finished, state.metadata),
       );

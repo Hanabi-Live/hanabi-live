@@ -34,6 +34,7 @@ export const SOUND_TYPE_ACTIONS = [
   "clue",
   "discard",
   "gameOver",
+  "misplay",
   "play",
 ] as const;
 
@@ -72,9 +73,7 @@ export function getSoundType(
 
   // In some variants, failed plays are treated as normal plays.
   const action: GameAction =
-    originalAction.type === "discard"
-    && originalAction.failed
-    && variant.throwItInAHole
+    originalAction.type === "misplay" && variant.throwItInAHole
       ? {
           ...originalAction,
           type: "play",
@@ -120,15 +119,15 @@ export function getSoundType(
       return standardSoundType;
     }
 
-    case "discard": {
-      if (action.failed) {
-        return getConsecutiveSoundType(
-          MISPLAY_SOUND_TYPES,
-          gameState.stats.numSubsequentMisplays,
-          "misplay",
-        );
-      }
+    case "misplay": {
+      return getConsecutiveSoundType(
+        MISPLAY_SOUND_TYPES,
+        gameState.stats.numSubsequentMisplays,
+        "misplay",
+      );
+    }
 
+    case "discard": {
       if (
         gameState.stats.maxScore < previousGameState.stats.maxScore
         && !variant.throwItInAHole

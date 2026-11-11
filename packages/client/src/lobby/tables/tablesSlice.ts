@@ -1,4 +1,4 @@
-// The tables in the lobby, from the "tableList", "table", and "tableGone" server messages.
+// The tables in the lobby, from the "tableList", "table", and "tableRemoved" server messages.
 
 import type { ServerCommandData } from "@hanabi-live/data";
 import { MAX_PLAYERS } from "@hanabi-live/game";

@@ -58,13 +58,13 @@ impl TryFrom<ArchiveAction> for RecordedAction {
             RecordedActionType::Play => Self::Play(card()?),
             RecordedActionType::Discard => Self::Discard(card()?),
             RecordedActionType::ColorClue => Self::Clue(ClueTurn {
-                target: seat()?,
+                receiver_index: seat()?,
                 clue: Clue::Color {
                     value: action.value.and_then(ColorIndex::new).ok_or_else(invalid)?,
                 },
             }),
             RecordedActionType::RankClue => Self::Clue(ClueTurn {
-                target: seat()?,
+                receiver_index: seat()?,
                 clue: Clue::Rank {
                     value: action
                         .value
@@ -89,7 +89,10 @@ fn stored_action(action: RecordedAction) -> Result<(i16, Option<i16>, Option<i16
         RecordedAction::Play(card) | RecordedAction::Discard(card) => {
             (Some(i32::from(card.order)), None)
         }
-        RecordedAction::Clue(ClueTurn { target, clue }) => (
+        RecordedAction::Clue(ClueTurn {
+            receiver_index: target,
+            clue,
+        }) => (
             Some(i32::from(target)),
             Some(match clue {
                 Clue::Color { value } => i32::from(value),
@@ -139,6 +142,16 @@ pub struct GameRecord {
     pub end_condition: i16,
     pub datetime_started: DateTime<Utc>,
     pub datetime_finished: DateTime<Utc>,
+}
+
+impl GameRecord {
+    /// The number of turns, which is at most `MAX_GAME_ACTIONS`.
+    pub fn turn_count(&self) -> Result<u16> {
+        u16::try_from(self.num_turns)
+            .ok()
+            .filter(|count| usize::from(*count) <= hanabi_protocol::MAX_GAME_ACTIONS)
+            .context("Invalid stored turn count")
+    }
 }
 
 pub(crate) struct Archive {

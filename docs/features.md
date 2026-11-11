@@ -778,24 +778,25 @@ move for the current situation.
 | `/api/v1/seed-full/[seed]`                    | Lists all the games played on a specific seed.                                                              |
 
 Notes: The following query parameters can be used by adding a `?` at the end of
-the URL (e.g. `/api/v1/variants/1?size=50&page=2`). Group 1 applies to the
-paginated lists, and `size` and `page` also to `/api/v1/seed-full`. Group 2
+the URL (e.g. `/api/v1/variants/1?limit=50&offset=100`). Group 1 applies to the
+paginated lists, and `limit` and `offset` also to `/api/v1/seed-full`. Group 2
 applies to `/api/v1/history-full`. A request with any other parameter, or with a
 parameter repeated, is rejected.
 
-| Group | Parameter | Type    | Explanation                             | Values                    |
-| ----- | --------- | ------- | --------------------------------------- | ------------------------- |
-| 1     | size      | integer | controls the number of results          | 1 to 100                  |
-| 1     | page      | integer | displays a specific page of the results | 0 to ...                  |
-| 1     | col[x]    | integer | sorts by one column x (see below)       | 0 ascending, 1 descending |
-| 1     | fcol[x]   | integer | filters by column x (see below)         | filter value              |
-| 2     | start     | integer | sets the starting ID of the data        | ...                       |
-| 2     | end       | integer | sets the ending ID of the data          | ...                       |
+| Group | Parameter | Type    | Explanation                      | Values          |
+| ----- | --------- | ------- | -------------------------------- | --------------- |
+| 1     | limit     | integer | controls the number of results   | 1 to 100        |
+| 1     | offset    | integer | skips this many results          | 0 to ...        |
+| 1     | sort      | string  | sorts by one column (see below)  | a column name   |
+| 1     | order     | string  | sets the direction of the sort   | `asc` or `desc` |
+| 1     | filter[x] | integer | filters by column x (see below)  | filter value    |
+| 2     | start     | integer | sets the starting ID of the data | ...             |
+| 2     | end       | integer | sets the ending ID of the data   | ...             |
 
 The columns are `id`, `numPlayers`, `score`, and `variant` (for example,
-`?col[score]=1`). Every list sorts by `id`, `numPlayers`, or `score`. History
-lists filter by any column, variant lists by `id`, `numPlayers`, or `score`, and
-seed lists by `id` or `score`.
+`?sort=score&order=desc`). Every list sorts by `id`, `numPlayers`, or `score`.
+History lists filter by any column, variant lists by `id`, `numPlayers`, or
+`score`, and seed lists by `id` or `score`.
 
 ## Bots
 

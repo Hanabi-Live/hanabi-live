@@ -57,30 +57,30 @@ mod tests {
             let value = match command {
                 "setting" => json!({"settings":{"volume":50}}),
                 "userInactive" => json!({"inactive":true}),
-                "gameHistoryOtherScores" => json!({"seed":"p2v0s1","offset":0,"amount":10}),
+                "gameHistoryOtherScores" => json!({"seed":"p2v0s1","offset":0,"limit":10}),
                 "chat" => json!({"text":"hello"}),
                 "chatPm" => json!({"text":"hello","recipient":"Alice"}),
                 "replayCreate" => {
                     json!({"source":{"type":"saved","gameId":1},"visibility":{"type":"shared"}})
                 }
                 "playerAction" => {
-                    json!({"tableId":1,"action":{"type":"clue","target":0,"clue":{"type":"rank","value":1}}})
+                    json!({"tableId":1,"action":{"type":"clue","receiverIndex":0,"clue":{"type":"rank","value":1}}})
                 }
                 "pause" => json!({"tableId":1,"setting":"pause"}),
                 "note" => json!({"tableId":1,"order":0,"text":"test"}),
                 "tag" | "tagDelete" => json!({"tableId":1,"tag":"test"}),
-                "replayAction" => json!({"tableId":1,"action":{"type":"hypoStart"}}),
+                "replayAction" => json!({"tableId":1,"action":{"type":"hypotheticalStart"}}),
                 "tableRestartDecline" => json!({"tableId":1,"declined":true}),
-                "tableSetOwner" => json!({"tableId":1,"userId":1}),
+                "tableSetOwner" => json!({"tableId":1,"ownerId":1}),
                 "tableSuggest" => json!({"tableId":1,"turn":0}),
                 "friendAdd" | "friendRemove" | "linkAdd" | "linkRemove" | "blockAdd"
                 | "blockRemove" => json!({"username":"Alice"}),
                 "tagSearch" => json!({"tag":"test"}),
                 "tableSetVariant" => json!({"tableId":1,"variantName":"No Variant"}),
-                "gameHistory" => json!({"offset":0,"amount":10}),
+                "gameHistory" => json!({"offset":0,"limit":10}),
                 "tableCreate" => json!({"settings":{"name":"Table"}}),
                 "tableUpdate" => json!({"tableId":1,"settings":{"name":"Table"}}),
-                "chatPmHistory" => json!({"amount":10}),
+                "chatPmHistory" => json!({"limit":10}),
                 "sync" | "lobbyLoad" | "linkList" | "blockList" => json!({}),
                 _ => json!({"tableId":1}),
             };
@@ -140,7 +140,7 @@ mod tests {
         assert!(
             parse(&format!(
                 "replayAction {}",
-                json!({"tableId":1,"action":{"type":"hypoAction","action":"{\"type\":\"turn\"}"}})
+                json!({"tableId":1,"action":{"type":"hypotheticalAction","action":"{\"type\":\"turn\"}"}})
             ))
             .is_err()
         );

@@ -443,9 +443,9 @@ async fn duck_clue_identity_is_private_in_live_history_and_recovery_but_not_comp
             let (action, value) = values
                 .map(|value| {
                     let action = if clue_type == hanabi_engine::ClueType::Color {
-                        json!({"type":"clue","target":target,"clue":{"type":"color","value":value}})
+                        json!({"type":"clue","receiverIndex":target,"clue":{"type":"color","value":value}})
                     } else {
-                        json!({"type":"clue","target":target,"clue":{"type":"rank","value":value}})
+                        json!({"type":"clue","receiverIndex":target,"clue":{"type":"rank","value":value}})
                     };
                     (action, value)
                 })
@@ -585,7 +585,7 @@ async fn leader_transfers_announce_the_actor_and_target_once_to_the_table() -> R
             let before = h.snapshot(id).await?.0.chat.len();
             let actor = usize::from(phase == 1);
             let target = 1 - actor;
-            let data = json!({"tableId":id,"userId":h.users[target].user});
+            let data = json!({"tableId":id,"ownerId":h.users[target].user});
             h.send(actor, "tableSetOwner", data).await?;
             let expected = format!(
                 "{} has passed table ownership to: {}",
@@ -612,13 +612,13 @@ async fn leader_transfers_announce_the_actor_and_target_once_to_the_table() -> R
                 h.send(
                     2,
                     "tableSetOwner",
-                    json!({"tableId":id,"userId":h.users[actor].user})
+                    json!({"tableId":id,"ownerId":h.users[actor].user})
                 )
                 .await
                 .is_err()
             );
             ensure!(
-                h.send(actor, "tableSetOwner", json!({"tableId":id,"userId":99}))
+                h.send(actor, "tableSetOwner", json!({"tableId":id,"ownerId":99}))
                     .await
                     .is_err()
             );
@@ -626,7 +626,7 @@ async fn leader_transfers_announce_the_actor_and_target_once_to_the_table() -> R
                 h.send(
                     actor,
                     "tableSetOwner",
-                    json!({"tableId":id,"userId":h.users[target].user})
+                    json!({"tableId":id,"ownerId":h.users[target].user})
                 )
                 .await
                 .is_err()
@@ -829,9 +829,9 @@ async fn shared_review_hypothetical_actions_refresh_idle() -> Result<()> {
         actor.initialize(h.users[0].clone(), vec![]).await?;
         let action = json!({"type":"turn","turn":1,"currentPlayerIndex":1});
         for request in [
-            json!({"tableId":id,"action":{"type":"hypoStart"}}),
-            json!({"tableId":id,"action":{"type":"hypoAction","action":action}}),
-            json!({"tableId":id,"action":{"type":"hypoBack"}}),
+            json!({"tableId":id,"action":{"type":"hypotheticalStart"}}),
+            json!({"tableId":id,"action":{"type":"hypotheticalAction","action":action}}),
+            json!({"tableId":id,"action":{"type":"hypotheticalBack"}}),
         ] {
             let mut next = actor.candidate();
             next.game_mut().unwrap().idle_remaining = 1000;
@@ -1657,7 +1657,7 @@ async fn remade_tables_publish_fresh_statistics_for_every_player() -> Result<()>
             } else if game.clue_tokens == 8 {
                 let target = 1 - active;
                 let card = &game.deck[game.players[target].hand[0]];
-                json!({"tableId":id,"action":{"type":"clue","target":target,"clue":{"type":"rank","value":card.rank}}})
+                json!({"tableId":id,"action":{"type":"clue","receiverIndex":target,"clue":{"type":"rank","value":card.rank}}})
             } else {
                 json!({"tableId":id,"action":{"type":"discard","order":hand[0]}})
             };
@@ -2035,7 +2035,7 @@ async fn pregame_leader_moves_to_first_seat_without_reordering_live_players() ->
         for index in 0..3 {
             h.frames(index)?;
         }
-        h.send(0, "tableSetOwner", json!({"tableId":id,"userId":3}))
+        h.send(0, "tableSetOwner", json!({"tableId":id,"ownerId":3}))
             .await?;
         for index in 0..3 {
             let game = h.receive(index, "pregame").await?;
@@ -2043,10 +2043,9 @@ async fn pregame_leader_moves_to_first_seat_without_reordering_live_players() ->
             let players = game["players"].as_array().context("Missing players")?;
             for (seat, name) in ["Carol", "Bob", "Alice"].iter().enumerate() {
                 ensure!(
-                    players[seat]["username"] == *name && players[seat]["index"] == seat,
+                    players[seat]["username"] == *name,
                     "Leader transfer did not swap the new leader into the first seat"
                 );
-                ensure!(players[seat]["you"] == (*name == h.users[index].name));
             }
         }
         let expected = vec![UserId(3), UserId(2), UserId(1)];
@@ -2056,7 +2055,7 @@ async fn pregame_leader_moves_to_first_seat_without_reordering_live_players() ->
         );
         h.send(2, "tableStart", json!({"tableId":id})).await?;
         let live_players = h.snapshot(id).await?.0.seated_users().collect::<Vec<_>>();
-        h.send(2, "tableSetOwner", json!({"tableId":id,"userId":1}))
+        h.send(2, "tableSetOwner", json!({"tableId":id,"ownerId":1}))
             .await?;
         let table = h.snapshot(id).await?.0;
         ensure!(table.owner == UserId(1));
@@ -2147,7 +2146,7 @@ async fn finished_game_publishes_replay_leader_candidates_without_reconnecting()
             h.frames(3)?.iter().all(|(name, _)| name != "spectators"),
             "Replay roster was sent to a non-attendee"
         );
-        h.send(0, "tableSetOwner", json!({"tableId":id,"userId":2}))
+        h.send(0, "tableSetOwner", json!({"tableId":id,"ownerId":2}))
             .await?;
         ensure!(h.receive(0, "tableOwner").await?["ownerId"] == 2);
         ensure!(h.snapshot(id).await?.0.owner == UserId(2));
@@ -2244,7 +2243,7 @@ fn browser_json(value: Value) -> Value {
 
 fn suggestion(value: &Value) -> Result<Value> {
     value
-        .get("suggestion")
+        .get("suggestedSettings")
         .cloned()
         .context("Missing actionable suggestion")
 }
@@ -2459,7 +2458,7 @@ async fn players_cannot_fill_a_table_chat_and_block_the_owner() -> Result<()> {
             json!({"tableId":id,"settings":{"name":"Changed"}}),
         )
         .await?;
-        h.send(0, "tableSetOwner", json!({"tableId":id,"userId":2}))
+        h.send(0, "tableSetOwner", json!({"tableId":id,"ownerId":2}))
             .await?;
         let table = h.snapshot(id).await?.0;
         ensure!(table.name == "Changed" && table.owner == h.users[1].user);
@@ -3165,7 +3164,7 @@ async fn a_link_to_an_ended_table_forgets_it_without_a_warning() -> Result<()> {
             "An unknown table was not rejected silently: {error:#}"
         );
         ensure!(
-            h.receive(0, "tableGone").await?["tableId"] == json!(999_999),
+            h.receive(0, "tableRemoved").await?["tableId"] == json!(999_999),
             "The client was not told to forget the unknown table"
         );
         Ok::<(), anyhow::Error>(())
@@ -3308,9 +3307,9 @@ async fn saved_actions_store_null_for_a_missing_target_or_value() -> Result<()> 
         let history = h.receive(0, "gameEventList").await?;
         let events = history["events"].as_array().context("Missing actions")?;
         ensure!(
-            // A misplay shows as a failed discard.
             events.iter().any(|event| {
-                (event["type"] == "play" || event["type"] == "discard") && event["order"] == card
+                ["play", "misplay"].contains(&event["type"].as_str().unwrap_or_default())
+                    && event["order"] == card
             }) && events
                 .iter()
                 .any(|event| event["type"] == "gameOver" && event.get("playerIndex").is_none()),

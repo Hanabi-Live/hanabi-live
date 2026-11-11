@@ -142,7 +142,7 @@ function replayReducerFunction(
     // Hypothetical actions
     // --------------------
 
-    case "hypoStart": {
+    case "hypotheticalStart": {
       if (getHypothetical(state, action.shared) !== undefined) {
         throw new Error(
           `A "${action.type}" action was dispatched with a non-null hypothetical state.`,
@@ -176,7 +176,7 @@ function replayReducerFunction(
       break;
     }
 
-    case "hypoEnd": {
+    case "hypotheticalEnd": {
       assertDefined(
         getHypothetical(state, action.shared),
         `A "${action.type}" action was dispatched with a undefined hypothetical state.`,
@@ -186,9 +186,9 @@ function replayReducerFunction(
       break;
     }
 
-    case "hypoBack":
-    case "hypoShowDrawnCards":
-    case "hypoAction": {
+    case "hypotheticalBack":
+    case "hypotheticalShowDrawnCards":
+    case "hypotheticalAction": {
       const hypotheticalDraft = getHypothetical(state, action.shared);
       assertDefined(
         hypotheticalDraft,
@@ -197,9 +197,9 @@ function replayReducerFunction(
 
       const hypothetical = original(hypotheticalDraft);
       let coreAction: HypotheticalStateAction;
-      if (action.type === "hypoAction") {
+      if (action.type === "hypotheticalAction") {
         coreAction = action.action;
-      } else if (action.type === "hypoBack") {
+      } else if (action.type === "hypotheticalBack") {
         coreAction = { type: "back" };
       } else {
         coreAction = {

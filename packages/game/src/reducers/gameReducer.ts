@@ -37,6 +37,7 @@ import {
 import { hasReversedSuits } from "../rules/variants/variantIdentity.ts";
 import type {
   ActionDiscard,
+  ActionMisplay,
   ActionPlay,
   GameAction,
 } from "../types/gameActions.ts";
@@ -94,7 +95,7 @@ function gameReducerFunction(
      *   clue: { type: 0, value: 1 },
      *   playerIndex: 1,
      *   orders: [11],
-     *   target: 2,
+     *   receiverIndex: 2,
      *   turn: 0,
      * }
      * ```
@@ -107,10 +108,10 @@ function gameReducerFunction(
         `A "${action.type}" action happened before all of the initial cards were dealt.`,
       );
 
-      const targetHand = gameState.hands[action.target];
+      const targetHand = gameState.hands[action.receiverIndex];
       assertDefined(
         targetHand,
-        `Failed to find the hand at index: ${action.target}`,
+        `Failed to find the hand at index: ${action.receiverIndex}`,
       );
 
       const negativeList =
@@ -129,7 +130,7 @@ function gameReducerFunction(
                 type: undefined,
                 value: undefined,
                 giver: action.playerIndex,
-                target: action.target,
+                target: action.receiverIndex,
                 segment: gameState.turn.segment,
                 list: action.orders,
                 negativeList,
@@ -143,7 +144,7 @@ function gameReducerFunction(
               type: action.clue.type,
               value: action.clue.value,
               giver: action.playerIndex,
-              target: action.target,
+              target: action.receiverIndex,
               segment: gameState.turn.segment,
               list: action.orders,
               negativeList,
@@ -157,7 +158,7 @@ function gameReducerFunction(
               type: action.clue.type,
               value: action.clue.value,
               giver: action.playerIndex,
-              target: action.target,
+              target: action.receiverIndex,
               segment: gameState.turn.segment,
               list: action.orders,
               negativeList,
@@ -178,20 +179,19 @@ function gameReducerFunction(
     }
 
     /**
-     * A player just discarded a card.
+     * A player just discarded a card, or failed to play it.
      *
      * ```ts
      * {
      *   type: "discard",
      *   playerIndex: 0,
      *   order: 4,
-     *   suitIndex: 2,
-     *   rank: 1,
-     *   failed: false,
+     *   identity: { suitIndex: 2, rank: 1 },
      * }
      * ```
      */
-    case "discard": {
+    case "discard":
+    case "misplay": {
       // Remove it from the hand.
       const hand = gameState.hands[action.playerIndex];
       assertDefined(
@@ -207,7 +207,7 @@ function gameReducerFunction(
         hand.splice(handIndex, 1);
       }
 
-      if (action.failed) {
+      if (action.type === "misplay") {
         // We intentionally do not validate the size of the strikes array because we allow more than
         // 3 strikes in hypotheticals.
         gameState.strikes.push({
@@ -274,16 +274,27 @@ function gameReducerFunction(
           variant,
         );
 
-      const text = getDiscardText(
-        action,
-        slot,
-        touched,
-        critical,
-        playing,
-        shadowing,
-        hypothetical,
-        metadata,
-      );
+      const text =
+        action.type === "misplay"
+          ? getPlayText(
+              action,
+              slot,
+              touched,
+              playing,
+              shadowing,
+              hypothetical,
+              metadata,
+            )
+          : getDiscardText(
+              action,
+              slot,
+              touched,
+              critical,
+              playing,
+              shadowing,
+              hypothetical,
+              metadata,
+            );
       gameState.log.push({
         turn: gameState.turn.turnNum + 1,
         text,
@@ -551,7 +562,9 @@ function gameReducerFunction(
   // Discarding or playing cards can make other card cards in that suit not playable anymore and can
   // make other cards critical.
   if (
-    (action.type === "play" || action.type === "discard")
+    (action.type === "play"
+      || action.type === "discard"
+      || action.type === "misplay")
     && action.identity !== undefined
   ) {
     // For a no-variant game, we would only have to iterate over cards of the same suit to check for
@@ -619,7 +632,7 @@ function gameReducerFunction(
 
 function throwItInAHolePlayedOrMisplayed(
   gameState: Draft<GameState>,
-  action: ActionPlay | ActionDiscard,
+  action: ActionPlay | ActionDiscard | ActionMisplay,
   variant: Variant,
   playing: boolean,
   shadowing: boolean,
@@ -629,7 +642,7 @@ function throwItInAHolePlayedOrMisplayed(
     return false;
   }
 
-  if ((action.type === "discard" && action.failed) || action.type === "play") {
+  if (action.type === "misplay" || action.type === "play") {
     // In "Throw It in a Hole" variants, plays and unknown misplayed cards go the hole instead of
     // the play stack / discard pile.
     gameState.hole.push(action.order);

@@ -1,5 +1,5 @@
-// The users who are currently online, from the "userList", "user", "userLeft", and "userInactive"
-// server messages.
+// The users who are currently online, from the "userList", "user", and "userRemoved" server
+// messages.
 
 import type { ServerCommandData, UserId } from "@hanabi-live/data";
 import type { PayloadAction } from "@reduxjs/toolkit";
@@ -47,13 +47,6 @@ const usersSlice = createSlice({
     userLeft(state, action: PayloadAction<UserId>) {
       usersAdapter.removeOne(state, action.payload);
     },
-    userInactiveChanged(
-      state,
-      action: PayloadAction<{ userId: UserId; inactive: boolean }>,
-    ) {
-      const { userId, inactive } = action.payload;
-      usersAdapter.updateOne(state, { id: userId, changes: { inactive } });
-    },
     usersCleared(state) {
       usersAdapter.removeAll(state);
     },
@@ -67,7 +60,6 @@ export const {
   userChanged,
   usersListed,
   userLeft,
-  userInactiveChanged,
   usersCleared,
   botsShownChanged,
 } = usersSlice.actions;

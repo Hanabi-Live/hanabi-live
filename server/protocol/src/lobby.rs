@@ -79,15 +79,8 @@ pub struct UserList {
 
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
-pub struct UserLeft {
+pub struct UserRemoved {
     pub user_id: UserId,
-}
-
-#[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
-#[serde(rename_all = "camelCase", deny_unknown_fields)]
-pub struct UserInactive {
-    pub user_id: UserId,
-    pub inactive: bool,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
@@ -413,26 +406,30 @@ pub struct GameHistoryEntry {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub seed: Option<String>,
     pub score: Score,
-    pub num_turns: Turn,
+    #[schemars(range(min = 0, max = MAX_GAME_ACTIONS))]
+    pub num_turns: u16,
     pub end_condition: EndCondition,
     pub started_at: Timestamp,
     pub finished_at: Timestamp,
     /// How many games used this seed. Absent when the game has no seed.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub num_games_on_seed: Option<Count>,
+    /// In alphabetical order, ignoring case.
     #[schemars(length(min = MIN_PLAYERS, max = MAX_PLAYERS))]
     pub player_names: Vec<Username>,
     /// The game's tags, in alphabetical order.
     pub tags: Vec<String>,
 }
 
-/// A page of the player's own game history, newest first. The lobby status gives the total.
+/// A page of the player's own game history, newest first.
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct GameHistory {
     pub games: Vec<GameHistoryEntry>,
     /// The position of the page's first game among all of the player's games.
     pub offset: Count,
+    /// How many games the player has finished.
+    pub total: Count,
 }
 
 /// A page of the games played on a seed.
@@ -489,10 +486,7 @@ pub struct PregameStats {
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct PregamePlayer {
-    pub index: PlayerIndex,
     pub username: Username,
-    /// Whether this player is the recipient.
-    pub you: bool,
     /// Whether this player is connected and at the table.
     pub present: bool,
     pub stats: PregameStats,

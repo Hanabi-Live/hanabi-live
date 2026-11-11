@@ -50,7 +50,7 @@ function requestPage(offset: number) {
   store.dispatch(historyRequested());
   globals.conn!.send("gameHistory", {
     offset,
-    amount: HISTORY_PAGE_SIZE,
+    limit: HISTORY_PAGE_SIZE,
   });
 }
 
@@ -95,7 +95,7 @@ function requestOtherScoresPage(seed: string, offset: number) {
   globals.conn!.send("gameHistoryOtherScores", {
     seed,
     offset,
-    amount: HISTORY_PAGE_SIZE,
+    limit: HISTORY_PAGE_SIZE,
   });
 }
 

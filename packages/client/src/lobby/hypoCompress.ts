@@ -464,7 +464,7 @@ function toCompactAction(action: Action): CompactAction {
           action.clue.type === "color"
             ? CompactType.ColorClue
             : CompactType.RankClue,
-        target: action.target,
+        target: action.receiverIndex,
         value: action.clue.value,
       };
     }
@@ -494,12 +494,20 @@ function fromCompactAction(action: CompactAction): Action | undefined {
     }
 
     case CompactType.ColorClue: {
-      named = { type: "clue", target, clue: { type: "color", value } };
+      named = {
+        type: "clue",
+        receiverIndex: target,
+        clue: { type: "color", value },
+      };
       break;
     }
 
     case CompactType.RankClue: {
-      named = { type: "clue", target, clue: { type: "rank", value } };
+      named = {
+        type: "clue",
+        receiverIndex: target,
+        clue: { type: "rank", value },
+      };
       break;
     }
 

@@ -375,6 +375,7 @@ const UPGRADES: &[(&str, &str, Upgrade)] = &[
     ("hanabi-live-9", "hanabi-live-10", wire_renames),
     ("hanabi-live-10", "hanabi-live-11", untimed_clocks),
     ("hanabi-live-11", "hanabi-live-12", clue_player_index),
+    ("hanabi-live-12", "hanabi-live-13", consistent_wire_names),
 ];
 
 /// Rewrites a table that an older server saved, one format at a time, into the current format.
@@ -705,6 +706,45 @@ fn clue_player_index(head: &mut Value, _: &mut [(String, String)]) -> Result<()>
         }
     }
     Ok(())
+}
+
+/// Format 12 named the player who receives a clue `target`, gave a failed play the type `discard`
+/// with `"failed": true` (and other discards `"failed": false`), named a chat message's suggested
+/// table `suggestion`, and did not bound a shared replay's efficiency modifier.
+fn consistent_wire_names(head: &mut Value, parts: &mut [(String, String)]) -> Result<()> {
+    let receiver = |clue: &mut Value| {
+        if clue.get("type").is_some_and(|kind| kind == "clue") {
+            rename(Some(clue), "target", "receiverIndex");
+        }
+    };
+    if let Some(Value::Array(actions)) = head.pointer_mut("/extra/customActions") {
+        actions.iter_mut().for_each(receiver);
+    }
+    if let Some(Value::Array(events)) = head.pointer_mut("/phase/replay/hypotheticalActions") {
+        for event in events.iter_mut() {
+            receiver(event);
+            if let Some(event) = event.as_object_mut()
+                && event.get("type").is_some_and(|kind| kind == "discard")
+                && event.remove("failed") == Some(Value::Bool(true))
+            {
+                event.insert("type".into(), "misplay".into());
+            }
+        }
+    }
+    if let Some(modifier) = head.pointer_mut("/phase/replay/efficiencyModifier")
+        && let Some(value) = modifier.as_i64()
+    {
+        let limit = i64::from(hanabi_protocol::MAX_EFFICIENCY_MODIFIER);
+        *modifier = value.clamp(-limit, limit).into();
+    }
+    edit_parts(parts, STEP, |step| {
+        if let Some(action) = step.get_mut("action") {
+            receiver(action);
+        }
+    })?;
+    edit_parts(parts, CHAT, |chat| {
+        rename(chat.get_mut("message"), "suggestion", "suggestedSettings");
+    })
 }
 
 /// Rewrites a clue that a turn of format 3 gives.

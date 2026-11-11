@@ -321,8 +321,8 @@ pub async fn private_history(
     caller: &Identity,
     data: &ChatPmHistoryRequest,
 ) -> Result<Vec<Effect>> {
-    let amount = data.amount;
-    let peer: Option<i32> = if let Some(username) = data.username.as_deref() {
+    let amount = data.limit;
+    let peer: Option<i32> = if let Some(username) = data.recipient.as_deref() {
         let found = sqlx::query_scalar!(
             "SELECT id FROM users WHERE normalized_username=$1",
             normalize_string(username)

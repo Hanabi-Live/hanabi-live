@@ -2,11 +2,15 @@
 
 import { MAX_CLUES } from "../generated/protocol.ts";
 import type { Variant } from "../interfaces/Variant.ts";
-import type { ActionDiscard, ActionPlay } from "../types/gameActions.ts";
+import type {
+  ActionDiscard,
+  ActionMisplay,
+  ActionPlay,
+} from "../types/gameActions.ts";
 
 /** Gain a clue by discarding or finishing a stack. */
 export function getNewClueTokensAfterAction(
-  action: ActionPlay | ActionDiscard,
+  action: ActionPlay | ActionDiscard | ActionMisplay,
   clueTokens: number,
   variant: Variant,
   playStackComplete = false,
@@ -26,7 +30,7 @@ export function getNewClueTokensAfterAction(
 }
 
 function shouldActionGenerateClueToken(
-  action: ActionPlay | ActionDiscard,
+  action: ActionPlay | ActionDiscard | ActionMisplay,
   clueTokens: number,
   variant: Variant,
   playStackComplete: boolean,
@@ -42,8 +46,13 @@ function shouldActionGenerateClueToken(
     }
 
     case "discard": {
-      // Discarding a card grants an extra clue. But misplayed cards do not grant extra clues.
-      return !action.failed;
+      // Discarding a card grants an extra clue.
+      return true;
+    }
+
+    case "misplay": {
+      // Misplayed cards do not grant extra clues.
+      return false;
     }
   }
 }

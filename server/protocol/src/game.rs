@@ -56,7 +56,7 @@ pub struct Pause {
 /// The votes to end the game, as one player sees them.
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
-pub struct VoteChange {
+pub struct VoteChanged {
     pub table_id: TableId,
     /// Whether the recipient voted.
     pub voted: bool,
@@ -119,7 +119,7 @@ pub struct PlayerNotes {
     pub username: Username,
     #[schemars(with = "Notes")]
     pub notes: Vec<String>,
-    pub is_spectator: bool,
+    pub spectator: bool,
 }
 
 /// One author's note on a single card.
@@ -129,7 +129,7 @@ pub struct CardNote {
     /// The person setting the note.
     pub username: Username,
     pub text: String,
-    pub is_spectator: bool,
+    pub spectator: bool,
 }
 
 /// Everyone's notes that the recipient may see, sent to spectators and replay viewers.
@@ -167,7 +167,7 @@ pub enum Clue {
     Rank { value: RankClueNumber },
 }
 
-/// A card that a player draws, plays, or learns.
+/// A card that a player draws, plays, discards, misplays, or learns.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct CardEvent {
@@ -176,19 +176,6 @@ pub struct CardEvent {
     /// Absent when the recipient may not see the card.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub identity: Option<CardIdentity>,
-}
-
-/// A card that a player discards, or fails to play.
-#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
-#[serde(rename_all = "camelCase", deny_unknown_fields)]
-pub struct DiscardEvent {
-    pub player_index: PlayerIndex,
-    pub order: CardOrder,
-    /// Absent when the recipient may not see the card.
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub identity: Option<CardIdentity>,
-    /// Whether the card was a failed play.
-    pub failed: bool,
 }
 
 /// The start of a turn.
@@ -210,7 +197,8 @@ pub struct ClueEvent {
     pub clue: Option<Clue>,
     /// The player who gives the clue.
     pub player_index: PlayerIndex,
-    pub target: PlayerIndex,
+    /// The player who receives the clue.
+    pub receiver_index: PlayerIndex,
     /// The orders of the cards the clue touched.
     pub orders: Vec<CardOrder>,
     /// Whether the cards that the clue does not touch learn nothing from it. Only a hypothetical's
@@ -251,7 +239,9 @@ pub enum GameEvent {
     Draw(CardEvent),
     Play(CardEvent),
     CardIdentity(CardEvent),
-    Discard(DiscardEvent),
+    Discard(CardEvent),
+    /// A play that fails, which discards the card and adds a strike.
+    Misplay(CardEvent),
     Clue(ClueEvent),
     Turn(TurnEvent),
     GameOver(GameOverEvent),

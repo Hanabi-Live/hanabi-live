@@ -140,7 +140,10 @@ pub fn parse(input: &ReplayGame) -> CommandResult<Imported> {
             match a {
                 RecordedAction::Play(card) | RecordedAction::Discard(card) =>
                     card.order.index() < deck.len(),
-                RecordedAction::Clue(ClueTurn { target, clue }) =>
+                RecordedAction::Clue(ClueTurn {
+                    receiver_index: target,
+                    clue,
+                }) =>
                     target.index() < players.len()
                         && match clue {
                             Clue::Color { value } => value.index() <= variant.clue_colors.len(),

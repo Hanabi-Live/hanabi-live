@@ -127,7 +127,7 @@ gameCommands.set("hypothetical", (data) => {
   // have taken place.
 
   globals.store!.dispatch({
-    type: "hypoStart",
+    type: "hypotheticalStart",
     shared: true,
     showDrawnCards: data.showDrawnCards,
     actions: data.events.map(toHypotheticalAction),
@@ -177,20 +177,20 @@ gameCommands.set("replayAction", ({ action: leaderAction }) => {
       break;
     }
 
-    case "hypoStart": {
+    case "hypotheticalStart": {
       hypothetical.startSharedHypothetical();
       break;
     }
 
-    case "hypoEnd": {
+    case "hypotheticalEnd": {
       hypothetical.finishHypothetical();
       break;
     }
 
-    case "hypoAction": {
+    case "hypotheticalAction": {
       const action = toHypotheticalAction(leaderAction.action);
       globals.store!.dispatch({
-        type: "hypoAction",
+        type: "hypotheticalAction",
         shared: true,
         action,
       });
@@ -198,17 +198,17 @@ gameCommands.set("replayAction", ({ action: leaderAction }) => {
       break;
     }
 
-    case "hypoBack": {
+    case "hypotheticalBack": {
       globals.store!.dispatch({
-        type: "hypoBack",
+        type: "hypotheticalBack",
         shared: true,
       });
       break;
     }
 
-    case "hypoShowDrawnCards": {
+    case "hypotheticalShowDrawnCards": {
       globals.store!.dispatch({
-        type: "hypoShowDrawnCards",
+        type: "hypotheticalShowDrawnCards",
         shared: true,
         showDrawnCards: leaderAction.showDrawnCards,
       });
@@ -360,7 +360,7 @@ gameCommands.set("pause", (data) => {
   });
 });
 
-gameCommands.set("voteChange", (data) => {
+gameCommands.set("voteChanged", (data) => {
   globals.terminationVotes = data;
   updateTerminationVotes();
 });

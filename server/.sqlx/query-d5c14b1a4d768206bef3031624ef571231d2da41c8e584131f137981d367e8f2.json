@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "SELECT jsonb_build_object('score',score,'numTimes',count(*)) AS \"value!\" FROM games WHERE seed=$1 GROUP BY score ORDER BY score",
+  "query": "SELECT jsonb_build_object('score',score,'numGames',count(*)) AS \"value!\" FROM games WHERE seed=$1 GROUP BY score ORDER BY score",
   "describe": {
     "columns": [
       {
@@ -19,5 +19,5 @@
       null
     ]
   },
-  "hash": "87de26d6a7c4f6b085d98ca058fb4539633edcc9e8d4f31811696be06a066f37"
+  "hash": "d5c14b1a4d768206bef3031624ef571231d2da41c8e584131f137981d367e8f2"
 }

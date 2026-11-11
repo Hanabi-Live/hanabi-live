@@ -19,7 +19,7 @@ use axum::http::StatusCode;
 use futures_util::FutureExt;
 use hanabi_protocol::PlayerIndex;
 use hanabi_protocol::{
-    ClientMessage, LobbySoundMessage, TableId, TableRef, User, UserId, UserLeft, UserList,
+    ClientMessage, LobbySoundMessage, TableId, TableRef, User, UserId, UserList, UserRemoved,
 };
 use std::{
     collections::{BTreeSet, HashMap},
@@ -185,7 +185,7 @@ impl Hub {
         }
         if self.tables.remove(&id).is_some_and(|e| e.view.visible) {
             self.broadcast(&frame(
-                hanabi_protocol::server::TABLE_GONE,
+                hanabi_protocol::server::TABLE_REMOVED,
                 TableRef { table_id: id },
             ));
         }
@@ -315,7 +315,7 @@ impl Hub {
             // The table ended, perhaps after someone shared a link to it. The client forgets it
             // without a warning.
             s.emit(&frame(
-                hanabi_protocol::server::TABLE_GONE,
+                hanabi_protocol::server::TABLE_REMOVED,
                 TableRef { table_id: id },
             ));
             let _ = reply.send(Err(CommandError::Rejected {
@@ -549,8 +549,8 @@ impl Hub {
             if let Some(p) = self.sessions.remove(user) {
                 p.session.cancel.cancel();
                 self.broadcast(&frame(
-                    hanabi_protocol::server::USER_LEFT,
-                    UserLeft { user_id: *user },
+                    hanabi_protocol::server::USER_REMOVED,
+                    UserRemoved { user_id: *user },
                 ));
             }
         }
@@ -754,7 +754,7 @@ impl Hub {
                 HubCommand::Retire(id) => {
                     if self.tables.remove(&id).is_some_and(|e| e.view.visible) {
                         self.broadcast(&frame(
-                            hanabi_protocol::server::TABLE_GONE,
+                            hanabi_protocol::server::TABLE_REMOVED,
                             TableRef { table_id: id },
                         ));
                     }
@@ -850,8 +850,8 @@ impl Hub {
         {
             self.sessions.remove(&session.user);
             self.broadcast(&frame(
-                hanabi_protocol::server::USER_LEFT,
-                UserLeft {
+                hanabi_protocol::server::USER_REMOVED,
+                UserRemoved {
                     user_id: session.user,
                 },
             ));
@@ -999,7 +999,7 @@ impl Hub {
         entry.published = true;
         if hidden {
             self.broadcast(&frame(
-                hanabi_protocol::server::TABLE_GONE,
+                hanabi_protocol::server::TABLE_REMOVED,
                 TableRef {
                     table_id: effects.table,
                 },

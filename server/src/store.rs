@@ -848,7 +848,7 @@ mod tests {
     /// Replaces a format's name in a head that `checkpoint::encode` wrote, as an older server
     /// wrote it.
     fn older_head(head: &str, format: &str) -> Result<String> {
-        let mut head: Value = serde_json::from_str(head)?;
+        let mut head: Value = serde_json::from_str(&format_12(head))?;
         head["format"] = format.into();
         if let Some(snapshot) = head.pointer_mut("/phase/snapshot") {
             snapshot["format"] = format.into();
@@ -865,7 +865,7 @@ mod tests {
         );
         message.chat_id = Some(hanabi_protocol::ChatId(3));
         message.table_id = Some(TableId(1));
-        message.suggestion = Some(hanabi_protocol::TableSettings {
+        message.suggested_settings = Some(hanabi_protocol::TableSettings {
             options: hanabi_protocol::GameOptions {
                 time_control: Some(hanabi_protocol::TimeControl {
                     base_seconds: 120,
@@ -895,7 +895,7 @@ mod tests {
             .changes
             .written
             .iter()
-            .map(|(key, part)| (key.clone(), older(part)))
+            .map(|(key, part)| (key.clone(), older(&format_12(part))))
             .collect::<Vec<_>>();
         ensure!(
             parts != encoded.changes.written,
@@ -904,6 +904,19 @@ mod tests {
         let decoded = crate::checkpoint::decode(&older_head(&encoded.head, format)?, &parts)?;
         ensure!(serde_json::to_value(&decoded)? == expected);
         Ok(())
+    }
+    /// Rewrites a head or a part from format 13 into format 12, for the tables that these tests
+    /// build, which have no failed plays.
+    fn format_12(text: &str) -> String {
+        text.replace("\"receiverIndex\"", "\"target\"")
+            .replace("\"suggestedSettings\"", "\"suggestion\"")
+    }
+    /// The parts of a table as format 12 holds them.
+    fn format_12_parts(parts: &[(String, String)]) -> Vec<(String, String)> {
+        parts
+            .iter()
+            .map(|(key, part)| (key.clone(), format_12(part)))
+            .collect()
     }
     /// Rewrites a part from format 6 into format 5.
     fn format_5(part: &str) -> String {
@@ -974,7 +987,7 @@ mod tests {
         let mut table = pregame(TableId(1));
         table.options.variant_id = Some(0);
         let clue = |rank| hanabi_protocol::ClueTurn {
-            target: hanabi_protocol::PlayerIndex(1),
+            receiver_index: hanabi_protocol::PlayerIndex(1),
             clue: hanabi_protocol::Clue::Rank {
                 value: hanabi_protocol::RankClueNumber(rank),
             },
@@ -1016,7 +1029,7 @@ mod tests {
         each_object(&mut head, &format_3);
         let mut parts = Vec::new();
         for (key, part) in &encoded.changes.written {
-            let mut part: Value = serde_json::from_str(part)?;
+            let mut part: Value = serde_json::from_str(&format_12(part))?;
             each_object(&mut part, &format_3);
             parts.push((key.clone(), part.to_string()));
         }
@@ -1034,7 +1047,7 @@ mod tests {
         let mut table = replayed()?;
         let expected = serde_json::to_value(&table)?;
         let (encoded, _) = crate::checkpoint::encode(&mut table, &SavedParts::default())?;
-        let older = |text: &str| text.replace("\"variantId\"", "\"variantID\"");
+        let older = |text: &str| format_12(text).replace("\"variantId\"", "\"variantID\"");
         let head = older(&older_head(&encoded.head, "hanabi-live-6")?);
         let parts = encoded
             .changes
@@ -1078,7 +1091,10 @@ mod tests {
             }
             entry.insert("emptyClues".into(), json!(modified));
         }
-        let decoded = crate::checkpoint::decode(&head.to_string(), &encoded.changes.written)?;
+        let decoded = crate::checkpoint::decode(
+            &head.to_string(),
+            &format_12_parts(&encoded.changes.written),
+        )?;
         ensure!(serde_json::to_value(&decoded)? == expected);
         Ok(())
     }
@@ -1139,7 +1155,7 @@ mod tests {
                 head["phase"]["snapshot"]["clocks"] = json!([-4000, -7000]);
             }
             for (key, part) in &mut parts {
-                let mut value: Value = serde_json::from_str(part)?;
+                let mut value: Value = serde_json::from_str(&format_12(part))?;
                 if key == "game/start" {
                     format_10_options(&mut value["setup"]["options"], time_base.clone())?;
                 } else if !timed && let Some(times) = value.pointer_mut("/timing/playerTimes") {
@@ -1167,7 +1183,7 @@ mod tests {
                 "type": "clue",
                 "clue": {"type": "rank", "value": 1},
                 "playerIndex": 0,
-                "target": 1,
+                "receiverIndex": 1,
                 "orders": [5],
             }))?);
         let expected = serde_json::to_value(&table)?;
@@ -1175,7 +1191,65 @@ mod tests {
         let head = older_head(&encoded.head, "hanabi-live-11")?;
         ensure!(head.contains("\"playerIndex\":0,\"target\""));
         let head = head.replace("\"playerIndex\":0,\"target\"", "\"giver\":0,\"target\"");
-        let decoded = crate::checkpoint::decode(&head, &encoded.changes.written)?;
+        let decoded = crate::checkpoint::decode(&head, &format_12_parts(&encoded.changes.written))?;
+        ensure!(serde_json::to_value(&decoded)? == expected);
+        Ok(())
+    }
+    #[test]
+    fn checkpoints_of_format_12_use_the_older_wire_names() -> Result<()> {
+        let mut table = replayed()?;
+        table.chat = suggested().chat;
+        let Phase::Replay { replay, .. } = &mut table.phase else {
+            bail!("The table is not a replay");
+        };
+        for event in [
+            json!({"type": "discard", "playerIndex": 0, "order": 1}),
+            json!({"type": "misplay", "playerIndex": 0, "order": 2}),
+            json!({
+                "type": "clue",
+                "clue": {"type": "rank", "value": 1},
+                "playerIndex": 0,
+                "receiverIndex": 1,
+                "orders": [5],
+            }),
+        ] {
+            replay
+                .hypothetical_actions
+                .push(serde_json::from_value(event)?);
+        }
+        replay.efficiency_modifier = -hanabi_protocol::MAX_EFFICIENCY_MODIFIER;
+        let expected = serde_json::to_value(&table)?;
+        let (encoded, _) = crate::checkpoint::encode(&mut table, &SavedParts::default())?;
+        let mut head: Value = serde_json::from_str(&older_head(&encoded.head, "hanabi-live-12")?)?;
+        head["phase"]["replay"]["efficiencyModifier"] = json!(-1000);
+        let events = head
+            .pointer_mut("/phase/replay/hypotheticalActions")
+            .and_then(Value::as_array_mut)
+            .context("Missing hypothetical")?;
+        for event in events.iter_mut().filter_map(Value::as_object_mut) {
+            match event.get("type").and_then(Value::as_str) {
+                Some("discard") => {
+                    event.insert("failed".into(), json!(false));
+                }
+                Some("misplay") => {
+                    event.insert("type".into(), json!("discard"));
+                    event.insert("failed".into(), json!(true));
+                }
+                _ => {}
+            }
+        }
+        let head = head.to_string();
+        let parts = format_12_parts(&encoded.changes.written);
+        ensure!(
+            head.contains("\"failed\":true")
+                && head.contains("\"target\"")
+                && parts
+                    .iter()
+                    .any(|(_, part)| part.contains("\"suggestion\""))
+                && parts.iter().any(|(_, part)| part.contains("\"target\"")),
+            "The older format has no old names"
+        );
+        let decoded = crate::checkpoint::decode(&head, &parts)?;
         ensure!(serde_json::to_value(&decoded)? == expected);
         Ok(())
     }
@@ -1199,7 +1273,12 @@ mod tests {
             .changes
             .written
             .iter()
-            .map(|(key, part)| (key.clone(), part.replace("\"sentAt\"", "\"datetime\"")))
+            .map(|(key, part)| {
+                (
+                    key.clone(),
+                    format_12(part).replace("\"sentAt\"", "\"datetime\""),
+                )
+            })
             .collect::<Vec<_>>();
         let (_, start) = parts
             .iter_mut()
@@ -1249,8 +1328,10 @@ mod tests {
             player["id"] = json!(-1 - i64::try_from(seat)?);
         }
         *start = value.to_string();
-        let decoded =
-            crate::checkpoint::decode(&older_head(&encoded.head, "hanabi-live-7")?, &parts)?;
+        let decoded = crate::checkpoint::decode(
+            &older_head(&encoded.head, "hanabi-live-7")?,
+            &format_12_parts(&parts),
+        )?;
         ensure!(serde_json::to_value(&decoded)? == expected);
         Ok(())
     }
@@ -2067,8 +2148,8 @@ mod tests {
             for user in &users{send(&hub,user.clone(),"tableUnattend",json!({"tableId":id})).await?;}
             tokio::time::timeout(Duration::from_secs(3),async{
                 while let Some(frame)=outgoing[2].recv().await{
-                    if frame.message.to_text()?.starts_with("tableGone "){return Ok::<(),anyhow::Error>(());}
-                }anyhow::bail!("Socket closed before tableGone")
+                    if frame.message.to_text()?.starts_with("tableRemoved "){return Ok::<(),anyhow::Error>(());}
+                }anyhow::bail!("Socket closed before tableRemoved")
             }).await??;
             ensure!(store.load().await?.is_empty(),"Departed replay remained recoverable");
             Ok::<(),anyhow::Error>(())
@@ -2164,7 +2245,7 @@ mod tests {
                 &hub,
                 users[0].clone(),
                 "replayAction",
-                json!({"tableId":id,"action":{"type":"hypoStart"}}),
+                json!({"tableId":id,"action":{"type":"hypotheticalStart"}}),
             )
             .await?;
             let action = json!({"type":"turn","turn":7,"currentPlayerIndex":1});
@@ -2172,7 +2253,7 @@ mod tests {
                 &hub,
                 users[0].clone(),
                 "replayAction",
-                json!({"tableId":id,"action":{"type":"hypoAction","action":action}}),
+                json!({"tableId":id,"action":{"type":"hypotheticalAction","action":action}}),
             )
             .await?;
             let tables = store.load().await?;

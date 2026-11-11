@@ -219,7 +219,7 @@ export const catalogVariantSchema = z
  */
 export const cardNoteSchema = z
   .strictObject({
-    isSpectator: z.boolean(),
+    spectator: z.boolean(),
     text: z.string(),
     /**
      * The person setting the note.
@@ -334,16 +334,23 @@ export const gameEventSchema = z.discriminatedUnion("type", [
   z
     .strictObject({
       /**
-       * Whether the card was a failed play.
-       */
-      failed: z.boolean(),
-      /**
        * Absent when the recipient may not see the card.
        */
       identity: cardIdentitySchema.optional(),
       order: cardOrderSchema,
       playerIndex: playerIndexSchema,
       type: z.literal("discard"),
+    })
+    .readonly(),
+  z
+    .strictObject({
+      /**
+       * Absent when the recipient may not see the card.
+       */
+      identity: cardIdentitySchema.optional(),
+      order: cardOrderSchema,
+      playerIndex: playerIndexSchema,
+      type: z.literal("misplay"),
     })
     .readonly(),
   z
@@ -365,7 +372,10 @@ export const gameEventSchema = z.discriminatedUnion("type", [
        * The player who gives the clue.
        */
       playerIndex: playerIndexSchema,
-      target: playerIndexSchema,
+      /**
+       * The player who receives the clue.
+       */
+      receiverIndex: playerIndexSchema,
       type: z.literal("clue"),
     })
     .readonly(),
@@ -474,16 +484,23 @@ export const hypotheticalEventSchema = z.discriminatedUnion("type", [
   z
     .strictObject({
       /**
-       * Whether the card was a failed play.
-       */
-      failed: z.boolean(),
-      /**
        * Absent when the recipient may not see the card.
        */
       identity: cardIdentitySchema.optional(),
       order: cardOrderSchema,
       playerIndex: playerIndexSchema,
       type: z.literal("discard"),
+    })
+    .readonly(),
+  z
+    .strictObject({
+      /**
+       * Absent when the recipient may not see the card.
+       */
+      identity: cardIdentitySchema.optional(),
+      order: cardOrderSchema,
+      playerIndex: playerIndexSchema,
+      type: z.literal("misplay"),
     })
     .readonly(),
   z
@@ -505,7 +522,10 @@ export const hypotheticalEventSchema = z.discriminatedUnion("type", [
        * The player who gives the clue.
        */
       playerIndex: playerIndexSchema,
-      target: playerIndexSchema,
+      /**
+       * The player who receives the clue.
+       */
+      receiverIndex: playerIndexSchema,
       type: z.literal("clue"),
     })
     .readonly(),
@@ -538,8 +558,8 @@ export const notesSchema = z.array(z.string()).readonly();
  */
 export const playerNotesSchema = z
   .strictObject({
-    isSpectator: z.boolean(),
     notes: notesSchema,
+    spectator: z.boolean(),
     username: z.string().min(1),
   })
   .readonly();

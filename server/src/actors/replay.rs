@@ -321,17 +321,17 @@ impl TableActor {
         match &r.action {
             R::Turn { turn } => replay.segment = *turn,
             R::Arrow { .. } | R::Sound { .. } => {}
-            R::HypoStart {} => {
+            R::HypotheticalStart {} => {
                 ensure_or_reject!(!replay.hypothetical, "Already hypothetical");
                 replay.hypothetical = true;
                 replay.show_drawn_cards = false;
             }
-            R::HypoEnd {} => {
+            R::HypotheticalEnd {} => {
                 ensure_or_reject!(replay.hypothetical, "Not hypothetical");
                 replay.hypothetical = false;
                 replay.hypothetical_actions.clear();
             }
-            R::HypoAction { action } => {
+            R::HypotheticalAction { action } => {
                 ensure_or_reject!(
                     replay.hypothetical_actions.len() < crate::model::MAX_HYPOTHETICAL_ACTIONS
                         && crate::model::hypothetical_bytes(&replay.hypothetical_actions)?
@@ -341,8 +341,8 @@ impl TableActor {
                 );
                 replay.hypothetical_actions.push(action.clone());
             }
-            R::HypoBack {} => undo_hypothetical_turn(&mut replay.hypothetical_actions),
-            R::HypoShowDrawnCards { show_drawn_cards } => {
+            R::HypotheticalBack {} => undo_hypothetical_turn(&mut replay.hypothetical_actions),
+            R::HypotheticalShowDrawnCards { show_drawn_cards } => {
                 replay.show_drawn_cards = *show_drawn_cards;
             }
             R::EfficiencyModifier {

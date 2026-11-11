@@ -75,13 +75,10 @@ function statsReducerFunction(
       break;
     }
 
-    case "discard": {
+    case "misplay": {
       // A strike is equivalent to losing a clue. But do not reveal that a strike has happened to
       // players in an ongoing "Throw It in a Hole" game.
-      if (
-        action.failed
-        && (!variant.throwItInAHole || (!playing && !shadowing))
-      ) {
+      if (!variant.throwItInAHole || (!playing && !shadowing)) {
         statsState.potentialCluesLost += getDiscardClueTokenValue(variant);
       }
 
@@ -118,7 +115,11 @@ function statsReducerFunction(
   );
 
   // Handle max score calculation.
-  if (action.type === "play" || action.type === "discard") {
+  if (
+    action.type === "play"
+    || action.type === "discard"
+    || action.type === "misplay"
+  ) {
     statsState.maxScorePerStack = getMaxScorePerStack(
       gameState.deck,
       gameState.playStackDirections,
@@ -130,7 +131,7 @@ function statsReducerFunction(
   }
 
   // Handle "numAttemptedCardsPlayed". (This needs to be before the pace calculation.)
-  if ((action.type === "discard" && action.failed) || action.type === "play") {
+  if (action.type === "misplay" || action.type === "play") {
     statsState.numAttemptedCardsPlayed++;
   }
 
@@ -216,7 +217,7 @@ function statsReducerFunction(
     || statsState.cluesStillUsable < 1;
 
   // Handle double discard calculation.
-  if (action.type === "discard") {
+  if (action.type === "discard" || action.type === "misplay") {
     statsState.doubleDiscardCard = getDoubleDiscardCard(
       action.order,
       gameState,
@@ -234,7 +235,7 @@ function statsReducerFunction(
   }
 
   // Handle `numSubsequentMisplays`.
-  if (action.type === "discard" && action.failed) {
+  if (action.type === "misplay") {
     statsState.numSubsequentMisplays++;
   } else if (isOneOfThreeMainActions(action)) {
     statsState.numSubsequentMisplays = 0;
@@ -249,7 +250,7 @@ function isBlindPlay(
   // In "Throw it in a Hole" variants, bombs should appear as successful plays.
   const possiblePlay =
     action.type === "play"
-    || (variant.throwItInAHole && action.type === "discard" && action.failed);
+    || (variant.throwItInAHole && action.type === "misplay");
 
   if (!possiblePlay) {
     return false;
@@ -261,11 +262,12 @@ function isBlindPlay(
   return !cardClued;
 }
 
-/** Whether the action was a clue, a discard, or a play. */
+/** Whether the action was a clue, a discard, or a play (including a misplay). */
 function isOneOfThreeMainActions(action: GameAction) {
   return (
     action.type === "clue"
     || action.type === "discard"
+    || action.type === "misplay"
     || action.type === "play"
   );
 }

@@ -43,7 +43,7 @@ commands.set("chat", (data) => {
   acknowledgeChatRead(data.tableId, data.recipient);
 });
 
-commands.set("chatDelete", (data) => {
+commands.set("chatDeleted", (data) => {
   chat.removeDeletedLobbyMessage(data.chatId);
 });
 

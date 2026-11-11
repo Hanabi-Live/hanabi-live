@@ -189,10 +189,13 @@ function getGameActionsFromState(
       }
 
       case "discard": {
-        actions.push({
-          type: action.failed ? "play" : "discard",
-          order: action.order,
-        });
+        actions.push({ type: "discard", order: action.order });
+        currentSegment++;
+        continue;
+      }
+
+      case "misplay": {
+        actions.push({ type: "play", order: action.order });
         currentSegment++;
         continue;
       }
@@ -209,7 +212,7 @@ function getGameActionsFromState(
           case "rank": {
             actions.push({
               type: "clue",
-              target: action.target,
+              receiverIndex: action.receiverIndex,
               clue: action.clue,
             });
             break;
@@ -340,7 +343,7 @@ function getActionFromHypoClue(
 
     return {
       type: "clue",
-      target: playerIndex,
+      receiverIndex: playerIndex,
       clue: { type: "color", value: colorIndex },
     };
   }
@@ -355,7 +358,7 @@ function getActionFromHypoClue(
   // It is a rank clue.
   return {
     type: "clue",
-    target: playerIndex,
+    receiverIndex: playerIndex,
     clue: { type: "rank", value: rankClueNumber },
   };
 }

@@ -1,8 +1,8 @@
 use hanabi_engine::ClueType;
 use hanabi_protocol::{
-    CardEvent, CardIdentity, CardOrder, CardRank, Clue, ClueEvent, ColorIndex, DiscardEvent,
-    GameEvent, GameOverEvent, PlayerIndex, PlayerTimesEvent, RankClueNumber, SuitIndex, TableId,
-    Turn, TurnEvent,
+    CardEvent, CardIdentity, CardOrder, CardRank, Clue, ClueEvent, ColorIndex, GameEvent,
+    GameOverEvent, PlayerIndex, PlayerTimesEvent, RankClueNumber, SuitIndex, TableId, Turn,
+    TurnEvent,
 };
 
 /// A seat that the engine names. The engine only names seats that the game has.
@@ -81,12 +81,14 @@ pub(super) fn wire_event(event: &hanabi_engine::EngineEvent) -> GameEvent {
             suit_index,
             rank,
             failed,
-        } => GameEvent::Discard(DiscardEvent {
-            player_index: seat(player_index),
-            order: card(order),
-            identity: identity(suit_index, rank),
-            failed,
-        }),
+        } => {
+            let card = card_event(player_index, order, suit_index, rank);
+            if failed {
+                GameEvent::Misplay(card)
+            } else {
+                GameEvent::Discard(card)
+            }
+        }
         E::Clue {
             clue,
             giver,
@@ -105,7 +107,7 @@ pub(super) fn wire_event(event: &hanabi_engine::EngineEvent) -> GameEvent {
                 },
             }),
             player_index: seat(giver),
-            target: seat(target),
+            receiver_index: seat(target),
             orders: list.iter().copied().map(card).collect(),
             ignore_negative: false,
         }),

@@ -94,7 +94,7 @@ export class UiGlobals {
   restartPending = false;
 
   /** The votes to end the game, as the server last sent them. */
-  terminationVotes: ServerCommandData["voteChange"] | undefined = undefined;
+  terminationVotes: ServerCommandData["voteChanged"] | undefined = undefined;
 
   globalEmpathyEnabled = false;
 

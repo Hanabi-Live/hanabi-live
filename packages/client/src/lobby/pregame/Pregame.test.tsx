@@ -16,17 +16,11 @@ import type { Game } from "./pregameSlice.ts";
 
 const TABLE_ID = tableIdSchema.parse(5);
 
-function player(
-  index: Game["players"][number]["index"],
-  username: string,
-  present: boolean,
-): Game["players"][number] {
+function player(username: string, present: boolean): Game["players"][number] {
   const best = { score: 25, modified: false };
   return {
-    index,
     username,
     present,
-    you: false,
     stats: {
       numGames: 10,
       variant: {
@@ -50,7 +44,7 @@ const game: Game = {
   },
   ownerId: userIdSchema.parse(1),
   passwordProtected: true,
-  players: [player(0, "alice", true), player(1, "bob", false)],
+  players: [player("alice", true), player("bob", false)],
 };
 
 const table = {

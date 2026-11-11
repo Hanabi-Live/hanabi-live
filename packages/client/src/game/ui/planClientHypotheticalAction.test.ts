@@ -137,7 +137,7 @@ describe("client hypothetical planning", () => {
       expect(dispatch).toHaveBeenCalledTimes(3);
       for (const [index, action] of actions!.entries()) {
         expect(dispatch).toHaveBeenNthCalledWith(index + 1, {
-          type: "hypoAction",
+          type: "hypotheticalAction",
           shared: false,
           action,
         });
@@ -179,19 +179,19 @@ describe("client hypothetical planning", () => {
 
     sendHypotheticalAction({
       type: "clue",
-      target: 1 as PlayerIndex,
+      receiverIndex: 1 as PlayerIndex,
       clue: { type: "rank", value: 1 },
     });
 
     expect(dispatch).toHaveBeenCalledWith({
-      type: "hypoAction",
+      type: "hypotheticalAction",
       shared: false,
       action: {
         type: "clue",
         clue: { type: "rank", value: 1 },
         playerIndex: 0,
         orders: [1],
-        target: 1,
+        receiverIndex: 1,
         ignoreNegative: false,
       },
     });
@@ -231,7 +231,7 @@ describe("client hypothetical planning", () => {
     expect(context.gameState.deck).toHaveLength(2);
   });
 
-  test("draws before a failed discard without an existing UI card", () => {
+  test("draws before a misplay without an existing UI card", () => {
     const context = makeContext(2);
     const actions = planClientHypotheticalAction(
       { type: "play", order: bottomOrder },
@@ -245,11 +245,10 @@ describe("client hypothetical planning", () => {
         identity: { suitIndex: 0, rank: 2 },
       },
       {
-        type: "discard",
+        type: "misplay",
         order: 2,
         playerIndex: 0,
         identity: { suitIndex: 0, rank: 2 },
-        failed: true,
       },
       { type: "turn", turn: 7, currentPlayerIndex: 1 },
     ]);

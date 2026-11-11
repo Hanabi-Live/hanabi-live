@@ -84,7 +84,7 @@ describe("PregameChat", () => {
         message({
           source: "server",
           text: '<button class="new-options">click to apply the suggestion</button>',
-          suggestion,
+          suggestedSettings: suggestion,
         }),
         true,
       );

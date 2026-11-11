@@ -42,7 +42,7 @@ export function init(): ActionInit {
 
 export function hypoStart(shared = false): ActionHypotheticalStart {
   return {
-    type: "hypoStart",
+    type: "hypotheticalStart",
     shared,
     showDrawnCards: false,
     actions: [],
@@ -51,7 +51,7 @@ export function hypoStart(shared = false): ActionHypotheticalStart {
 
 export function hypoEnd(shared = false): ActionHypotheticalEnd {
   return {
-    type: "hypoEnd",
+    type: "hypotheticalEnd",
     shared,
   };
 }
@@ -61,7 +61,7 @@ export function hypoAction(
   shared = false,
 ): ActionHypotheticalAction {
   return {
-    type: "hypoAction",
+    type: "hypotheticalAction",
     shared,
     action,
   };
@@ -69,7 +69,7 @@ export function hypoAction(
 
 export function hypoBack(): ActionHypotheticalBack {
   return {
-    type: "hypoBack",
+    type: "hypotheticalBack",
     shared: false,
   };
 }

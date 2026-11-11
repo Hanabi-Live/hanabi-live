@@ -20,6 +20,7 @@ export type GameAction =
   | ActionDiscard
   | ActionDraw
   | ActionGameOver
+  | ActionMisplay
   | ActionPlay
   | ActionPlayerTimes
   | ActionTurn
@@ -62,6 +63,9 @@ export type ActionGameOver = Event<"gameOver">;
 
 export type ActionPlay = Event<"play">;
 
+/** A play that fails, which discards the card and adds a strike. */
+export type ActionMisplay = Event<"misplay">;
+
 /** One time per player, in seat order. */
 export type ActionPlayerTimes = Event<"playerTimes">;
 
@@ -69,7 +73,7 @@ export type ActionPlayerTimes = Event<"playerTimes">;
 export type ActionTurn = Event<"turn">;
 
 /**
- * A clue's giver, target, and the card orders that it touched. Where the server omits a clue that
+ * A clue's giver, receiver, and the card orders that it touched. Where the server omits a clue that
  * the recipient may not see, the game state keeps a `HiddenClue`.
  */
 export type ActionClue = Readonly<

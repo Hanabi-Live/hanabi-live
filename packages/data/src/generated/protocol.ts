@@ -17,7 +17,6 @@ import {
   safeIntegerSchema,
   timeControlSchema,
   turnSchema,
-  variantIdSchema,
 } from "@hanabi-live/game";
 import * as z from "zod";
 
@@ -31,6 +30,7 @@ export const MAX_TIME_PER_TURN_SECONDS = 86_400;
 export const TYPING_TIMEOUT_MS = 2000;
 export const MAX_SEED_LENGTH = 32;
 export const MAX_CHAT_LENGTH = 300;
+export const MAX_EFFICIENCY_MODIFIER = 60;
 export const DEFAULT_TABLE_NAME_SUFFIX = "'s table";
 
 export const tableIdSchema = z
@@ -82,6 +82,10 @@ export const cardIdentitiesSchema = z
  * A chat message's ID in `chat_log`.
  */
 const chatIdSchema = z.number().int().min(1).max(9_007_199_254_740_991);
+
+/**
+ * Who wrote a chat message. The wire and the database's chat log both use these names.
+ */
 const chatSourceSchema = z.enum(["user", "server", "discord"]);
 export const gameIdSchema = z
   .number()
@@ -134,7 +138,7 @@ export const chatSchema = z
     /**
      * What the message's button applies to the table, in a suggestion to its owner.
      */
-    suggestion: tableSettingsSchema.optional(),
+    suggestedSettings: tableSettingsSchema.optional(),
     /**
      * The table whose chat shows the message. Absent means the lobby, or the recipient's current
      * chat for a private message.
@@ -150,7 +154,7 @@ export const chatSchema = z
     username: z.string().min(1).optional(),
   })
   .readonly();
-export const chatDeleteSchema = z
+export const chatDeletedSchema = z
   .strictObject({ chatId: chatIdSchema })
   .readonly();
 
@@ -175,15 +179,15 @@ export const chatPmHistorySchema = z
   .readonly();
 export const chatPmHistoryRequestSchema = z
   .strictObject({
-    amount: z.number().int().min(1).max(100),
+    limit: z.number().int().min(1).max(100),
+    /**
+     * The other user in the conversation. Absent shows the messages with everyone.
+     */
+    recipient: z.string().min(1).optional(),
     /**
      * The table whose chat the command was typed in. Absent means the lobby.
      */
     tableId: tableIdSchema.optional(),
-    /**
-     * The other user in the conversation. Absent shows the messages with everyone.
-     */
-    username: z.string().min(1).optional(),
   })
   .readonly();
 export const chatPmRequestSchema = z
@@ -330,8 +334,11 @@ export const gameHistoryEntrySchema = z
      * How many games used this seed. Absent when the game has no seed.
      */
     numGamesOnSeed: countSchema.optional(),
-    numTurns: turnSchema,
+    numTurns: z.number().int().min(0).max(512),
     options: gameOptionsSchema,
+    /**
+     * In alphabetical order, ignoring case.
+     */
     playerNames: z.array(z.string().min(1)).min(2).max(6).readonly(),
     score: scoreSchema,
     /**
@@ -347,7 +354,7 @@ export const gameHistoryEntrySchema = z
   .readonly();
 
 /**
- * A page of the player's own game history, newest first. The lobby status gives the total.
+ * A page of the player's own game history, newest first.
  */
 export const gameHistorySchema = z
   .strictObject({
@@ -356,6 +363,10 @@ export const gameHistorySchema = z
      * The position of the page's first game among all of the player's games.
      */
     offset: countSchema,
+    /**
+     * How many games the player has finished.
+     */
+    total: countSchema,
   })
   .readonly();
 
@@ -383,7 +394,7 @@ export const gameHistoryOtherScoresSchema = z
  */
 export const gameHistoryOtherScoresRequestSchema = z
   .strictObject({
-    amount: z.number().int().min(1).max(100),
+    limit: z.number().int().min(1).max(100),
     offset: countSchema,
     seed: z.string(),
   })
@@ -394,14 +405,14 @@ export const gameHistoryOtherScoresRequestSchema = z
  */
 export const gameHistoryRequestSchema = z
   .strictObject({
-    amount: z.number().int().min(1).max(100),
+    limit: z.number().int().min(1).max(100),
     offset: countSchema,
   })
   .readonly();
 
 /**
- * A column of the public game lists, which clients sort by `col[name]` and filter by
- * `fcol[name]`.
+ * A column of the public game lists, which clients sort by `sort` and filter by
+ * `filter[name]`.
  */
 export const gameListColumnSchema = z.enum([
   "id",
@@ -556,7 +567,8 @@ export const lobbySoundMessageSchema = z
   .readonly();
 
 /**
- * The typed cause of a failure that a notice reports.
+ * The typed cause of a failure that a notice reports. The clients' schema cannot describe each
+ * code, so their descriptions are comments.
  */
 export const noticeCodeSchema = z.enum([
   "archiveInconsistentPlayers",
@@ -775,7 +787,7 @@ const playerActionSchema = z.discriminatedUnion("type", [
       /**
        * The player who receives the clue.
        */
-      target: playerIndexSchema,
+      receiverIndex: playerIndexSchema,
       type: z.literal("clue"),
     })
     .readonly(),
@@ -828,17 +840,12 @@ const pregameStatsSchema = z
   .readonly();
 const pregamePlayerSchema = z
   .strictObject({
-    index: playerIndexSchema,
     /**
      * Whether this player is connected and at the table.
      */
     present: z.boolean(),
     stats: pregameStatsSchema,
     username: z.string().min(1),
-    /**
-     * Whether this player is the recipient.
-     */
-    you: z.boolean(),
   })
   .readonly();
 
@@ -856,38 +863,15 @@ export const pregameSchema = z
   .readonly();
 
 /**
- * One game in a public game list.
- */
-const publicGameRowSchema = z
-  .strictObject({
-    finishedAt: z.iso.datetime({ precision: 3 }),
-    gameId: gameIdSchema,
-    /**
-     * How many games used this seed. Absent in variant lists and for a game with no seed.
-     */
-    numGamesOnSeed: countSchema.optional(),
-    /**
-     * In seat order.
-     */
-    playerNames: z.array(z.string().min(1)).min(2).max(6).readonly(),
-    score: scoreSchema,
-    /**
-     * Absent for a game with its own deck instead of a seed, such as an imported one.
-     */
-    seed: z.string().optional(),
-    /**
-     * Variant lists omit it.
-     */
-    variantId: variantIdSchema.optional(),
-  })
-  .readonly();
-
-/**
  * A page of games from the public `/api/v1/history`, `/seed`, and `/variants/{id}` lists.
  */
 export const publicGamePageSchema = z
   .strictObject({
-    games: z.array(publicGameRowSchema).readonly(),
+    games: z.array(gameHistoryEntrySchema).readonly(),
+    /**
+     * The position of the page's first game in the list.
+     */
+    offset: countSchema,
     /**
      * How many games the list has on all of its pages.
      */
@@ -942,28 +926,24 @@ const replayLeaderActionSchema = z.discriminatedUnion("type", [
   z
     .strictObject({ sound: replaySoundEffectSchema, type: z.literal("sound") })
     .readonly(),
-  z.strictObject({ type: z.literal("hypoStart") }).readonly(),
-  z.strictObject({ type: z.literal("hypoEnd") }).readonly(),
+  z.strictObject({ type: z.literal("hypotheticalStart") }).readonly(),
+  z.strictObject({ type: z.literal("hypotheticalEnd") }).readonly(),
   z
     .strictObject({
       action: hypotheticalEventSchema,
-      type: z.literal("hypoAction"),
+      type: z.literal("hypotheticalAction"),
     })
     .readonly(),
-  z.strictObject({ type: z.literal("hypoBack") }).readonly(),
+  z.strictObject({ type: z.literal("hypotheticalBack") }).readonly(),
   z
     .strictObject({
       showDrawnCards: z.boolean(),
-      type: z.literal("hypoShowDrawnCards"),
+      type: z.literal("hypotheticalShowDrawnCards"),
     })
     .readonly(),
   z
     .strictObject({
-      efficiencyModifier: z
-        .number()
-        .int()
-        .min(-2_147_483_648)
-        .max(2_147_483_647),
+      efficiencyModifier: z.number().int().min(-60).max(60),
       type: z.literal("efficiencyModifier"),
     })
     .readonly(),
@@ -993,7 +973,7 @@ const replayGameActionSchema = z.discriminatedUnion("type", [
       /**
        * The player who receives the clue.
        */
-      target: playerIndexSchema,
+      receiverIndex: playerIndexSchema,
       type: z.literal("clue"),
     })
     .readonly(),
@@ -1116,11 +1096,11 @@ export const restartDeclinedSchema = z
  * How many games with a seed reached a score, as the seed page's chart shows them.
  */
 export const scoreFrequencySchema = z
-  .strictObject({ numTimes: countSchema, score: scoreSchema })
+  .strictObject({ numGames: countSchema, score: scoreSchema })
   .readonly();
 
 /**
- * A setting that a user can leave unset.
+ * A setting that a user can leave unset, by its name in `Settings`.
  */
 const optionalSettingSchema = z.literal("hGroupLevel");
 
@@ -1325,7 +1305,7 @@ export const tableRestartRequestSchema = z
   })
   .readonly();
 export const tableSetOwnerRequestSchema = z
-  .strictObject({ tableId: tableIdSchema, userId: userIdSchema })
+  .strictObject({ ownerId: userIdSchema, tableId: tableIdSchema })
   .readonly();
 export const tableSetVariantRequestSchema = z
   .strictObject({ tableId: tableIdSchema, variantName: z.string().min(1) })
@@ -1402,14 +1382,11 @@ export const userSchema = z
     username: z.string().min(1),
   })
   .readonly();
-export const userInactiveSchema = z
-  .strictObject({ inactive: z.boolean(), userId: userIdSchema })
-  .readonly();
-export const userLeftSchema = z
-  .strictObject({ userId: userIdSchema })
-  .readonly();
 export const userListSchema = z
   .strictObject({ users: z.array(userSchema).readonly() })
+  .readonly();
+export const userRemovedSchema = z
+  .strictObject({ userId: userIdSchema })
   .readonly();
 
 /**
@@ -1420,7 +1397,7 @@ export const variantNamesSchema = z.record(z.string(), z.string()).readonly();
 /**
  * The votes to end the game, as one player sees them.
  */
-export const voteChangeSchema = z
+export const voteChangedSchema = z
   .strictObject({
     numVotes: z.number().int().min(0).max(6),
     /**
@@ -1523,7 +1500,7 @@ export const SERVER_COMMAND_SCHEMAS = {
   blocked: blockedSchema,
   cardIdentities: cardIdentitiesSchema,
   chat: chatSchema,
-  chatDelete: chatDeleteSchema,
+  chatDeleted: chatDeletedSchema,
   chatList: chatListSchema,
   chatPmHistory: chatPmHistorySchema,
   chatTyping: chatTypingSchema,
@@ -1556,17 +1533,16 @@ export const SERVER_COMMAND_SCHEMAS = {
   synced: emptySchema,
   table: tableSchema,
   tableBoot: tableRefSchema,
-  tableGone: tableRefSchema,
   tableJoined: tableRefSchema,
   tableLeft: tableRefSchema,
   tableList: tableListSchema,
   tableOwner: tableOwnerSchema,
+  tableRemoved: tableRefSchema,
   tableStarted: tableStartedSchema,
   user: userSchema,
-  userInactive: userInactiveSchema,
-  userLeft: userLeftSchema,
   userList: userListSchema,
-  voteChange: voteChangeSchema,
+  userRemoved: userRemovedSchema,
+  voteChanged: voteChangedSchema,
   warning: noticeSchema,
   welcome: welcomeSchema,
 } as const;

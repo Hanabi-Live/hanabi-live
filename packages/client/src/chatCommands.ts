@@ -194,15 +194,15 @@ chatCommands.set("tell", pm);
 const DEFAULT_PM_HISTORY_AMOUNT = 5;
 
 interface PmHistoryCommandArgs {
-  readonly username?: string;
-  readonly amount: number;
+  readonly recipient?: string;
+  readonly limit: number;
 }
 
 export function parsePmHistoryCommandArgs(
   args: readonly string[],
 ): PmHistoryCommandArgs | undefined {
   if (args.length === 0) {
-    return { amount: DEFAULT_PM_HISTORY_AMOUNT };
+    return { limit: DEFAULT_PM_HISTORY_AMOUNT };
   }
   if (args.length > 2) {
     return undefined;
@@ -234,7 +234,9 @@ export function parsePmHistoryCommandArgs(
     return undefined;
   }
 
-  return username === undefined ? { amount } : { username, amount };
+  return username === undefined
+    ? { limit: amount }
+    : { recipient: username, limit: amount };
 }
 
 // Request private message history with an optional username and amount.
@@ -280,7 +282,7 @@ function setLeader(room: string, args: readonly string[]) {
   }
   globals.conn!.send("tableSetOwner", {
     tableId: globals.tableId,
-    userId,
+    ownerId: userId,
   });
 }
 chatCommands.set("setleader", setLeader);

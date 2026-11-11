@@ -112,21 +112,21 @@
     "valid": false
   },
   {
-    "name": "private history rejects an amount below 1",
+    "name": "private history rejects a limit below 1",
     "direction": "client",
     "command": "chatPmHistory",
     "input": {
-      "amount": 0
+      "limit": 0
     },
     "valid": false
   },
   {
-    "name": "private history rejects a blank username",
+    "name": "private history rejects a blank recipient",
     "direction": "client",
     "command": "chatPmHistory",
     "input": {
-      "amount": 1,
-      "username": ""
+      "limit": 1,
+      "recipient": ""
     },
     "valid": false
   },
@@ -135,7 +135,7 @@
     "direction": "client",
     "command": "chatPmHistory",
     "input": {
-      "amount": 9007199254740992
+      "limit": 9007199254740992
     },
     "valid": false
   },
@@ -144,8 +144,8 @@
     "direction": "client",
     "command": "chatPmHistory",
     "input": {
-      "amount": 1,
-      "username": null
+      "limit": 1,
+      "recipient": null
     },
     "valid": false
   },
@@ -154,7 +154,7 @@
     "direction": "client",
     "command": "chatPmHistory",
     "input": {
-      "amount": 1.0
+      "limit": 1.0
     },
     "valid": true,
     "nativeValid": false
@@ -324,14 +324,14 @@
     "valid": false
   },
   {
-    "name": "color clues name their target and color",
+    "name": "color clues name their receiver and color",
     "direction": "client",
     "command": "playerAction",
     "input": {
       "tableId": 7,
       "action": {
         "type": "clue",
-        "target": 1,
+        "receiverIndex": 1,
         "clue": {
           "type": "color",
           "value": 2
@@ -348,7 +348,7 @@
       "tableId": 7,
       "action": {
         "type": "clue",
-        "target": 1,
+        "receiverIndex": 1,
         "clue": {
           "type": "rank",
           "value": 7
@@ -734,7 +734,7 @@
           "actions": [
             {
               "type": "clue",
-              "target": 1,
+              "receiverIndex": 1,
               "clue": {
                 "type": "rank",
                 "value": 1
@@ -763,7 +763,7 @@
           "actions": [
             {
               "type": "clue",
-              "target": 1,
+              "receiverIndex": 1,
               "clue": {
                 "type": "rank",
                 "value": 1
@@ -836,7 +836,7 @@
     "command": "gameHistory",
     "input": {
       "offset": -1,
-      "amount": 10
+      "limit": 10
     },
     "valid": false
   },
@@ -846,7 +846,7 @@
     "command": "gameHistory",
     "input": {
       "offset": 0,
-      "amount": 101
+      "limit": 101
     },
     "valid": false
   },
@@ -928,7 +928,8 @@
           "tags": []
         }
       ],
-      "offset": 0
+      "offset": 0,
+      "total": 3
     },
     "valid": true
   },
@@ -961,7 +962,8 @@
           "tags": []
         }
       ],
-      "offset": 0
+      "offset": 0,
+      "total": 3
     },
     "valid": false
   },
@@ -994,7 +996,8 @@
           "tags": []
         }
       ],
-      "offset": 0
+      "offset": 0,
+      "total": 3
     },
     "valid": false
   },
@@ -1027,7 +1030,8 @@
           "tags": []
         }
       ],
-      "offset": 0
+      "offset": 0,
+      "total": 3
     },
     "valid": false
   },
@@ -1060,7 +1064,8 @@
           "tags": []
         }
       ],
-      "offset": 0
+      "offset": 0,
+      "total": 3
     },
     "valid": false
   },
@@ -1071,7 +1076,7 @@
     "input": {
       "tableId": 4,
       "action": {
-        "type": "hypoAction",
+        "type": "hypotheticalAction",
         "action": {
           "type": "morph",
           "order": 3,
@@ -1120,7 +1125,7 @@
           "type": "rank",
           "value": 5
         },
-        "target": 1,
+        "receiverIndex": 1,
         "orders": [3, 4],
         "playerIndex": 0
       }
@@ -1135,7 +1140,7 @@
       "tableId": 3,
       "event": {
         "type": "clue",
-        "target": 1,
+        "receiverIndex": 1,
         "orders": [3, 4],
         "playerIndex": 0
       }
@@ -1154,7 +1159,7 @@
           "type": "color",
           "value": 0
         },
-        "target": 1,
+        "receiverIndex": 1,
         "orders": [3, 4],
         "playerIndex": 0
       }
@@ -1173,7 +1178,7 @@
           "type": "color",
           "value": 6
         },
-        "target": 1,
+        "receiverIndex": 1,
         "orders": [3, 4],
         "playerIndex": 0
       }
@@ -1192,7 +1197,7 @@
           "type": "rank",
           "value": 0
         },
-        "target": 1,
+        "receiverIndex": 1,
         "orders": [3, 4],
         "playerIndex": 0
       }
@@ -1359,7 +1364,7 @@
     "input": {
       "tableId": 4,
       "action": {
-        "type": "hypoAction",
+        "type": "hypotheticalAction",
         "action": {
           "type": "morph",
           "order": 66,

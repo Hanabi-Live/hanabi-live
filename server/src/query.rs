@@ -59,12 +59,6 @@ impl Query {
             value => Ok(value),
         }
     }
-
-    pub fn iter(&self) -> impl Iterator<Item = (&str, &str)> {
-        self.0
-            .iter()
-            .map(|(name, value)| (name.as_str(), value.as_str()))
-    }
 }
 
 #[cfg(test)]

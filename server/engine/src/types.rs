@@ -193,7 +193,10 @@ impl Move {
                 order: card.order.index(),
                 play: false,
             },
-            PlayerAction::Clue(ClueTurn { target, clue }) => Self::Clue {
+            PlayerAction::Clue(ClueTurn {
+                receiver_index: target,
+                clue,
+            }) => Self::Clue {
                 target: target.index(),
                 clue: match clue {
                     WireClue::Color { value } => Clue {

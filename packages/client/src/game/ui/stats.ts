@@ -1,3 +1,4 @@
+import { MAX_EFFICIENCY_MODIFIER } from "@hanabi-live/data";
 import { parseIntSafe } from "complete-common";
 import type Konva from "konva";
 import * as modals from "../../modals.ts";
@@ -81,6 +82,12 @@ export function askForEfficiency(): void {
     const efficiencyModifier = parseIntSafe(efficiencyModifierString);
     if (efficiencyModifier === undefined) {
       // Do not do anything if they entered something that is not a number.
+      return;
+    }
+    if (Math.abs(efficiencyModifier) > MAX_EFFICIENCY_MODIFIER) {
+      modals.showWarning(
+        `The modifier must be between -${MAX_EFFICIENCY_MODIFIER} and ${MAX_EFFICIENCY_MODIFIER}.`,
+      );
       return;
     }
     setEfficiencyModifier(efficiencyModifier);

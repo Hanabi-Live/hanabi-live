@@ -81,7 +81,7 @@ macro_rules! server_contracts {
             PAUSE "pause" => Pause;
             IDLE_WARNING "idleWarning" => IdleWarning;
             IDLE_RESET "idleReset" => TableRef;
-            VOTE_CHANGE "voteChange" => VoteChange;
+            VOTE_CHANGED "voteChanged" => VoteChanged;
             CARD_IDENTITIES "cardIdentities" => CardIdentities;
             GAME_FINISHED "gameFinished" => GameFinished;
             REPLAY_ACTION "replayAction" => ReplayAction;
@@ -99,18 +99,17 @@ macro_rules! server_contracts {
             SYNCED "synced" => Empty;
             LOBBY_STATUS "lobbyStatus" => LobbyStatus;
             CHAT "chat" => Chat;
-            CHAT_DELETE "chatDelete" => ChatDelete;
+            CHAT_DELETED "chatDeleted" => ChatDeleted;
             CHAT_LIST "chatList" => ChatList;
             CHAT_PM_HISTORY "chatPmHistory" => ChatPmHistory;
             CHAT_TYPING "chatTyping" => ChatTyping;
             TABLE_JOINED "tableJoined" => TableRef;
             TABLE_LEFT "tableLeft" => TableRef;
-            TABLE_GONE "tableGone" => TableRef;
+            TABLE_REMOVED "tableRemoved" => TableRef;
             TABLE_STARTED "tableStarted" => TableStarted;
             USER "user" => User;
             USER_LIST "userList" => UserList;
-            USER_LEFT "userLeft" => UserLeft;
-            USER_INACTIVE "userInactive" => UserInactive;
+            USER_REMOVED "userRemoved" => UserRemoved;
             FRIENDS "friends" => Friends;
             BLOCKED "blocked" => Blocked;
             ERROR "error" => Notice;
@@ -334,13 +333,13 @@ macro_rules! server_messages {
 /// Every message the server can send. Building a frame requires one of these and its payload type.
 pub mod server {
     use super::{
-        Blocked, CardIdentities, Chat, ChatDelete, ChatList, ChatPmHistory, ChatTyping, Clock,
+        Blocked, CardIdentities, Chat, ChatDeleted, ChatList, ChatPmHistory, ChatTyping, Clock,
         Connected, Empty, Friends, GameEventList, GameEventMessage, GameFinished, GameHistory,
         GameHistoryEntry, GameHistoryOtherScores, Hypothetical, IdleWarning, Init,
         LobbySoundMessage, LobbyStatus, Note, NoteList, NoteListPlayer, Notice, Pause, Pregame,
         ReplayAction, Restart, RestartDeclined, ServerMessage, Spectators, Suggestion, Table,
-        TableList, TableOwner, TableRef, TableStarted, User, UserInactive, UserLeft, UserList,
-        VoteChange, Welcome,
+        TableList, TableOwner, TableRef, TableStarted, User, UserList, UserRemoved, VoteChanged,
+        Welcome,
     };
     server_contracts!(server_messages);
 }

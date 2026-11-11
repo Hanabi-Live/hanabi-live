@@ -460,7 +460,7 @@ mod tests {
         let all_notes: Vec<_> = (0..6)
             .map(|index| {
                 serde_json::json!({
-                    "username":format!("Player{index}"),"notes":notes,"isSpectator":false
+                    "username":format!("Player{index}"),"notes":notes,"spectator":false
                 })
             })
             .collect();

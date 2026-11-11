@@ -29,7 +29,7 @@ export type HypotheticalActionIntent =
   | { readonly type: "discard"; readonly order: CardOrder }
   | {
       readonly type: "clue";
-      readonly target: PlayerIndex;
+      readonly receiverIndex: PlayerIndex;
       readonly clue: MsgClue;
     }
   | { readonly type: "passTurn" };
@@ -328,26 +328,19 @@ export function planHypotheticalAction(
               variant,
             );
       if (!nextRanks.includes(rank)) {
-        actionType = "discard";
         failed = true;
       }
     }
 
-    if (actionType === "play") {
-      actions.push({
-        type: "play",
-        playerIndex,
-        order: intent.order,
-        ...identityField({ suitIndex, rank }),
-      });
+    const movedCard = {
+      playerIndex,
+      order: intent.order,
+      ...identityField({ suitIndex, rank }),
+    };
+    if (failed) {
+      actions.push({ type: "misplay", ...movedCard });
     } else {
-      actions.push({
-        type: "discard",
-        playerIndex,
-        order: intent.order,
-        ...identityField({ suitIndex, rank }),
-        failed,
-      });
+      actions.push({ type: actionType, ...movedCard });
     }
 
     if (gameState.deck.length < context.cardIdentities.length) {
@@ -379,13 +372,13 @@ export function planHypotheticalAction(
       clue: { type: undefined, value: undefined },
       playerIndex,
       orders: [],
-      target: playerIndex,
+      receiverIndex: playerIndex,
       ignoreNegative: true,
     });
   } else {
     const { clue } = intent;
     const targetCards: HypotheticalCard[] = [];
-    const targetHand = gameState.hands[intent.target];
+    const targetHand = gameState.hands[intent.receiverIndex];
     assertDefined(targetHand, "Expected a hand for the clue target.");
     for (const order of targetHand) {
       const card = cardAt(order);
@@ -399,12 +392,12 @@ export function planHypotheticalAction(
       clue,
       playerIndex,
       orders: getHypotheticalTouchedCards(targetCards, clue, variant),
-      target: intent.target,
+      receiverIndex: intent.receiverIndex,
       // While drawn cards are hidden, negative information could reveal the starting player's
       // hidden cards.
       ignoreNegative:
         !context.showDrawnCards
-        && intent.target === context.startingPlayerIndex,
+        && intent.receiverIndex === context.startingPlayerIndex,
     });
   }
 

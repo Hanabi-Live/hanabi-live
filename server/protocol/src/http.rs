@@ -32,29 +32,18 @@ pub struct LoginRequest {
     pub client: ClientKind,
 }
 
-/// The kind of program that logs in, in the `/login` form and the `/ws` query. Only the website
-/// (`web`) sends `version`, and the server rejects a version from another release. A `bot` login
-/// marks the account as a bot, which other players see and which can play at several tables at
-/// once. An `app` is a program for people, such as a mobile client. Its account is a normal
-/// account.
-#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
-#[serde(rename_all = "lowercase")]
-pub enum ClientKind {
-    #[default]
-    Web,
-    Bot,
-    App,
-}
-
-impl ClientKind {
-    /// The kind with this name on the wire.
-    pub fn from_name(name: &str) -> Option<Self> {
-        match name {
-            "web" => Some(Self::Web),
-            "bot" => Some(Self::Bot),
-            "app" => Some(Self::App),
-            _ => None,
-        }
+named_enum! {
+    /// The kind of program that logs in, in the `/login` form and the `/ws` query. Only the website
+    /// (`web`) sends `version`, and the server rejects a version from another release. A `bot` login
+    /// marks the account as a bot, which other players see and which can play at several tables at
+    /// once. An `app` is a program for people, such as a mobile client. Its account is a normal
+    /// account.
+    #[derive(Default)]
+    pub enum ClientKind {
+        #[default]
+        Web => "web",
+        Bot => "bot",
+        App => "app",
     }
 }
 
@@ -117,30 +106,11 @@ pub struct PasswordHashResponse {
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct PublicGamePage {
-    pub games: Vec<PublicGameRow>,
+    pub games: Vec<GameHistoryEntry>,
+    /// The position of the page's first game in the list.
+    pub offset: Count,
     /// How many games the list has on all of its pages.
     pub total: Count,
-}
-
-/// One game in a public game list.
-#[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
-#[serde(rename_all = "camelCase", deny_unknown_fields)]
-pub struct PublicGameRow {
-    pub game_id: GameId,
-    pub score: Score,
-    /// Variant lists omit it.
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub variant_id: Option<VariantId>,
-    /// How many games used this seed. Absent in variant lists and for a game with no seed.
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub num_games_on_seed: Option<Count>,
-    /// In seat order.
-    #[schemars(length(min = MIN_PLAYERS, max = MAX_PLAYERS))]
-    pub player_names: Vec<Username>,
-    pub finished_at: Timestamp,
-    /// Absent for a game with its own deck instead of a seed, such as an imported one.
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub seed: Option<String>,
 }
 
 /// The variant names in `/api/v1/variants`, keyed by variant ID.
@@ -153,7 +123,7 @@ pub struct VariantNames(pub std::collections::BTreeMap<String, String>);
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct ScoreFrequency {
     pub score: Score,
-    pub num_times: Count,
+    pub num_games: Count,
 }
 
 /// A variant in `/api/v1/variants-full`, keyed by its ID.

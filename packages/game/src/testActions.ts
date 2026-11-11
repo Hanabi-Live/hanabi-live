@@ -10,6 +10,7 @@ import type {
   ActionClue,
   ActionDiscard,
   ActionDraw,
+  ActionMisplay,
   ActionPlay,
 } from "./types/gameActions.ts";
 
@@ -28,7 +29,7 @@ export function colorClue(
     },
     playerIndex: giver,
     orders: list as CardOrder[],
-    target,
+    receiverIndex: target,
     ignoreNegative: false,
   };
 }
@@ -48,7 +49,7 @@ export function rankClue(
     },
     playerIndex: giver,
     orders: list as CardOrder[],
-    target,
+    receiverIndex: target,
     ignoreNegative: false,
   };
 }
@@ -74,14 +75,27 @@ export function discard(
   order: number, // We do not want to force the consumer to brand their numbers.
   suitIndex: SuitIndex | undefined,
   rank: Rank | undefined,
-  failed: boolean,
 ): ActionDiscard {
   return {
     type: "discard",
     playerIndex,
     order: order as CardOrder,
     ...identityField({ suitIndex, rank }),
-    failed,
+  };
+}
+
+/** Helper functions to build a `ActionMisplay` with a compact syntax. For use in tests. */
+export function misplay(
+  playerIndex: PlayerIndex,
+  order: number, // We do not want to force the consumer to brand their numbers.
+  suitIndex: SuitIndex | undefined,
+  rank: Rank | undefined,
+): ActionMisplay {
+  return {
+    type: "misplay",
+    playerIndex,
+    order: order as CardOrder,
+    ...identityField({ suitIndex, rank }),
   };
 }
 

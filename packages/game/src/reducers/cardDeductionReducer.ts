@@ -27,6 +27,7 @@ export function cardDeductionReducer(
     case "cardIdentity":
     case "clue":
     case "discard":
+    case "misplay":
     case "play":
     case "draw": {
       return makeDeductions(deck, oldDeck, hands, metadata);

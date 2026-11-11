@@ -19,7 +19,7 @@ import { Screen } from "../types/Screen.ts";
 import { UsersList, UsersTitle } from "./UsersList.tsx";
 import {
   botsShownChanged,
-  userInactiveChanged,
+  userChanged,
   userLeft,
   usersCleared,
   usersListed,
@@ -142,9 +142,7 @@ describe("UsersList", () => {
     expect(name.textContent).not.toContain("\u{1F4A4}");
 
     act(() => {
-      store.dispatch(
-        userInactiveChanged({ userId: userIdSchema.parse(1), inactive: true }),
-      );
+      store.dispatch(userChanged({ ...user(1, "Alice"), inactive: true }));
     });
 
     expect(name.style.opacity).toBe(String(DIMMED_OPACITY));

@@ -54,7 +54,7 @@ function setup(shared: boolean) {
     get: () => store.getState(),
   });
   store.dispatch({
-    type: "hypoStart",
+    type: "hypotheticalStart",
     shared,
     showDrawnCards: false,
     actions: [],
@@ -70,13 +70,13 @@ describe("hypothetical exit", () => {
 
     expect(send).toHaveBeenCalledWith("replayAction", {
       tableId: 42,
-      action: { type: "hypoEnd" },
+      action: { type: "hypotheticalEnd" },
     });
     expect(store.getState().replay.hypothetical).not.toBeUndefined();
 
-    // An earlier action can arrive after Exit was clicked but before hypoEnd.
+    // An earlier action can arrive after Exit was clicked but before hypotheticalEnd.
     store.dispatch({
-      type: "hypoAction",
+      type: "hypotheticalAction",
       shared: true,
       action: { type: "morph", order: 0 as CardOrder, suitIndex: 0, rank: 1 },
     });

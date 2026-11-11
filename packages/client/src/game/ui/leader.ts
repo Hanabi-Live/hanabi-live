@@ -54,6 +54,6 @@ function setLeader(player: string | undefined) {
 
   globals.lobby.conn!.send("tableSetOwner", {
     tableId: globals.lobby.joinedTableId,
-    userId,
+    ownerId: userId,
   });
 }

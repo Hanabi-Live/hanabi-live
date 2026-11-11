@@ -77,7 +77,7 @@ function show() {
     clue: msgClue,
     playerIndex: visibleState.turn.currentPlayerIndex,
     orders: touchedCards,
-    target,
+    receiverIndex: target,
     ignoreNegative: false,
   };
   const deck = cardsReducer(

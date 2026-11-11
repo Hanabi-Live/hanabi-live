@@ -73,7 +73,7 @@ fn typed_game_frames_preserve_wire_schema_and_projected_identities() -> Result<(
     game.apply(
         0,
         PlayerAction::Clue(hanabi_protocol::ClueTurn {
-            target: PlayerIndex::new(1_usize).unwrap(),
+            receiver_index: PlayerIndex::new(1_usize).unwrap(),
             clue: hanabi_protocol::Clue::Rank {
                 value: hanabi_protocol::RankClueNumber::new(rank).unwrap(),
             },
@@ -136,9 +136,13 @@ fn typed_game_frames_preserve_wire_schema_and_projected_identities() -> Result<(
                 );
             }
             event.retain(|_, value| !value.is_null());
+            if event.remove("failed") == Some(json!(true)) {
+                event.insert("type".into(), json!("misplay"));
+            }
             for (engine, wire) in [
                 ("list", "orders"),
                 ("giver", "playerIndex"),
+                ("target", "receiverIndex"),
                 ("playerTimes", "playerTimesMs"),
                 ("duration", "durationMs"),
             ] {
@@ -1158,7 +1162,7 @@ async fn a_table_that_panics_is_removed_and_frees_its_players() -> Result<()> {
     let result = async {
         let mut seen = Vec::new();
         tokio::time::timeout(Duration::from_secs(3), async {
-            while !(seen.iter().any(|f: &String| f.starts_with("tableGone "))
+            while !(seen.iter().any(|f: &String| f.starts_with("tableRemoved "))
                 && seen.iter().any(|f| f.starts_with("tableBoot "))
                 && seen.iter().any(|f| f.starts_with("warning "))
                 && seen.iter().any(|f| f.starts_with("user ")))
@@ -1254,7 +1258,6 @@ fn hypothetical_back_keeps_morphs() {
             "turn" => json!({"turn":n,"currentPlayerIndex":0}),
             "morph" => json!({"order":n,"suitIndex":0,"rank":1}),
             "unmorph" => json!({"order":n}),
-            "discard" => json!({"playerIndex":0,"order":n,"identity":identity,"failed":false}),
             _ => card,
         };
         value["type"] = json!(kind);

@@ -198,17 +198,7 @@ pub async fn dispatch(
             effects
         }
         ClientMessage::UserInactive(request) => {
-            let inactive = request.inactive;
-            vec![
-                Publication::Inactive(inactive).into(),
-                Effect::broadcast(Outgoing::new(
-                    hanabi_protocol::server::USER_INACTIVE,
-                    hanabi_protocol::UserInactive {
-                        user_id: caller.user,
-                        inactive,
-                    },
-                )),
-            ]
+            vec![Publication::Inactive(request.inactive).into()]
         }
         ClientMessage::Chat(request) => {
             return chat::lobby_chat(
@@ -294,13 +284,15 @@ pub async fn dispatch(
             )
             .await?
         }
-        ClientMessage::GameHistory(hanabi_protocol::GameHistoryRequest { offset, amount }) => {
-            let ids = history_ids(pool, caller.user, offset.0, amount).await?;
+        ClientMessage::GameHistory(hanabi_protocol::GameHistoryRequest { offset, limit }) => {
+            let ids = history_ids(pool, caller.user, offset.0, limit).await?;
+            let total = crate::database::normal_game_count(pool, caller.user, true).await?;
             vec![Effect::to_self(Outgoing::new(
                 hanabi_protocol::server::GAME_HISTORY,
                 hanabi_protocol::GameHistory {
                     games: get_history(pool, &ids, false).await?,
                     offset,
+                    total: hanabi_protocol::Count(total),
                 },
             ))]
         }
@@ -318,8 +310,8 @@ pub async fn dispatch(
             if let Some(error) = error {
                 return Ok(Some(vec![warning(error)]));
             }
-            let (offset, amount) = (request.offset, request.amount);
-            let ids = seed_history_ids(pool, seed, offset.0, amount).await?;
+            let offset = request.offset;
+            let ids = seed_history_ids(pool, seed, offset.0, request.limit).await?;
             let games = get_history(pool, &ids, true).await?;
             let total = seed_game_count(pool, seed).await?;
             let variant_name = games

@@ -148,7 +148,9 @@ databaseDescribe("Rust actor durability and ownership", () => {
             "gameEvent",
             SERVER_COMMAND_SCHEMAS.gameEvent,
             (event) =>
-              event.event.type === "play" || event.event.type === "discard",
+              event.event.type === "play"
+              || event.event.type === "discard"
+              || event.event.type === "misplay",
           );
           expect(
             active.frames.some((message) => message.startsWith("gameEvent ")),
@@ -183,7 +185,10 @@ databaseDescribe("Rust actor durability and ownership", () => {
         );
         expect(
           onceOnly.events.filter(
-            (event) => event.type === "play" || event.type === "discard",
+            (event) =>
+              event.type === "play"
+              || event.type === "discard"
+              || event.type === "misplay",
           ),
         ).toHaveLength(1);
         const acknowledged = await liveTables(sql);
@@ -216,7 +221,10 @@ databaseDescribe("Rust actor durability and ownership", () => {
         expect(ourPlayerIndex(restored.init)).toBe(0);
         expect(
           restored.history.events.filter(
-            (event) => event.type === "play" || event.type === "discard",
+            (event) =>
+              event.type === "play"
+              || event.type === "discard"
+              || event.type === "misplay",
           ),
         ).toHaveLength(1);
         expect(
@@ -236,7 +244,10 @@ databaseDescribe("Rust actor durability and ownership", () => {
         );
         expect(
           duplicate.events.filter(
-            (event) => event.type === "play" || event.type === "discard",
+            (event) =>
+              event.type === "play"
+              || event.type === "discard"
+              || event.type === "misplay",
           ),
         ).toHaveLength(1);
       } catch (error) {

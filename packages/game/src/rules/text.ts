@@ -17,6 +17,7 @@ import type { PlayerIndex } from "../types/PlayerIndex.ts";
 import type {
   ActionClue,
   ActionDiscard,
+  ActionMisplay,
   ActionPlay,
 } from "../types/gameActions.ts";
 import { getCardName } from "./card.ts";
@@ -56,7 +57,7 @@ export function getClueText(
   metadata: GameMetadata,
 ): string {
   const giver = metadata.playerNames[action.playerIndex] ?? "unknown";
-  const target = metadata.playerNames[action.target] ?? "unknown";
+  const target = metadata.playerNames[action.receiverIndex] ?? "unknown";
   const word = NUMBER_WORDS[action.orders.length] ?? "unknown";
   const variant = getVariant(metadata.options.variantName);
   const hypoPrefix = hypothetical ? HYPO_PREFIX : "";
@@ -206,7 +207,7 @@ function getPlayerNames(
 }
 
 export function getPlayText(
-  action: ActionPlay | ActionDiscard,
+  action: ActionPlay | ActionMisplay,
   slot: number | undefined,
   touched: boolean,
   playing: boolean,
@@ -229,9 +230,7 @@ export function getPlayText(
   const suffix = touched ? "" : " (blind)";
   const hypoPrefix = hypothetical ? HYPO_PREFIX : "";
   const playText =
-    action.type === "discard" && action.failed && !cardIsHidden
-      ? "fails to play"
-      : "plays";
+    action.type === "misplay" && !cardIsHidden ? "fails to play" : "plays";
 
   return `${hypoPrefix}${playerName} ${playText} ${cardName} from ${location}${suffix}`;
 }
@@ -246,18 +245,6 @@ export function getDiscardText(
   hypothetical: boolean,
   metadata: GameMetadata,
 ): string {
-  if (action.failed) {
-    return getPlayText(
-      action,
-      slot,
-      touched,
-      playing,
-      shadowing,
-      hypothetical,
-      metadata,
-    );
-  }
-
   const variant = getVariant(metadata.options.variantName);
   const playerName = getPlayerName(action.playerIndex, metadata);
 

@@ -58,30 +58,34 @@ pub(super) use hanabi_protocol::{DEFAULT_PAGE_SIZE, MAX_PAGE_SIZE};
 /// The page sizes that a public listing's pager offers.
 pub(super) const PAGER_SIZES: [i64; 4] = [DEFAULT_PAGE_SIZE, 20, 50, MAX_PAGE_SIZE];
 
-/// The page size and offset that a request asks for, or `None` when it names neither.
+/// The query parameters that page a list.
+const PAGE_PARAMETERS: [&str; 2] = ["offset", "limit"];
+
+/// The limit and offset that a request asks for, or `None` when it names neither.
 fn pagination(q: &Query) -> Result<Option<(i64, i64)>> {
-    if q.get("size").is_none() && q.get("page").is_none() {
+    if PAGE_PARAMETERS.iter().all(|name| q.get(name).is_none()) {
         return Ok(None);
     }
-    let size = match q.get("size") {
+    let limit = match q.get("limit") {
         None => DEFAULT_PAGE_SIZE,
-        Some(size) => integer(size)
+        Some(limit) => integer(limit)
             .filter(|n| (1..=MAX_PAGE_SIZE).contains(n))
             .ok_or_else(|| {
-                HttpError::bad(format!("Page size must be between 1 and {MAX_PAGE_SIZE}."))
+                HttpError::bad(format!("The limit must be between 1 and {MAX_PAGE_SIZE}."))
             })?,
     };
-    let page = match q.get("page") {
+    let offset = match q.get("offset") {
         None => 0,
-        Some(page) => integer(page)
-            .filter(|n| *n >= 0)
-            .ok_or_else(|| HttpError::bad("Page must be a nonnegative integer."))?,
+        Some(offset) => integer(offset)
+            .filter(|n| (0..=hanabi_protocol::MAX_SAFE_INTEGER).contains(n))
+            .ok_or_else(|| {
+                HttpError::bad(format!(
+                    "The offset must be an integer from 0 to {}.",
+                    hanabi_protocol::MAX_SAFE_INTEGER
+                ))
+            })?,
     };
-    let offset = page
-        .checked_mul(size)
-        .filter(|n| *n <= hanabi_protocol::MAX_SAFE_INTEGER)
-        .ok_or_else(|| HttpError::bad("Pagination offset is too large."))?;
-    Ok(Some((size, offset)))
+    Ok(Some((limit, offset)))
 }
 fn integer(s: &str) -> Option<i64> {
     let digits = s.strip_prefix(['+', '-']).unwrap_or(s);
@@ -278,7 +282,7 @@ async fn api_response(
     let list_parameters: Vec<&str> = list_parameters.iter().map(String::as_str).collect();
     let accepted: &[&str] = match mode {
         "history-full" => &["start", "end"],
-        "seed-full" => &["page", "size"],
+        "seed-full" => &PAGE_PARAMETERS,
         _ => &list_parameters,
     };
     let q = strict_query(raw.as_deref(), accepted)?;
@@ -308,7 +312,12 @@ async fn api_response(
                 s.start = bound("start")?;
                 s.end = bound("end")?;
             }
-            Json(data::history(state, s, seed).await?).into_response()
+            let order = if seed {
+                data::SEED_ORDER
+            } else {
+                data::FINISHED_ORDER
+            };
+            Json(data::history(state, s, order).await?).into_response()
         }
         "tags" => Json(data::tagged(state, params, false).await?).into_response(),
         "tag" => Json(data::tagged(state, params, true).await?).into_response(),

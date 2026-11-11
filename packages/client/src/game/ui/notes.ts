@@ -43,9 +43,9 @@ function get(order: CardOrder, our: boolean, process = false) {
   let firstSpectator = false;
   for (const noteObject of noteObjectArray) {
     const text = processFunc(noteObject.text);
-    const { isSpectator } = noteObject;
+    const { spectator } = noteObject;
     if (noteObject.text !== "") {
-      if (!firstSpectator && isSpectator) {
+      if (!firstSpectator && spectator) {
         firstSpectator = true;
         if (content !== "") {
           content = `<div class='note-title'><span>Players</span></div>${content}`;

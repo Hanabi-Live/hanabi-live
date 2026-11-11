@@ -88,8 +88,11 @@ export function cardsReducer(
           ? undefined
           : msgClueToClue(action.clue, variant);
 
-      const hand = game.hands[action.target];
-      assertDefined(hand, `Failed to find the hand at index: ${action.target}`);
+      const hand = game.hands[action.receiverIndex];
+      assertDefined(
+        hand,
+        `Failed to find the hand at index: ${action.receiverIndex}`,
+      );
 
       // eslint-disable-next-line func-style
       const applyClue = (order: CardOrder, positive: boolean) => {
@@ -143,6 +146,7 @@ export function cardsReducer(
     }
 
     case "discard":
+    case "misplay":
     case "play": {
       const { order } = action;
       const card = getCard(deck, order);
@@ -165,16 +169,21 @@ export function cardsReducer(
         case "discard": {
           location = "discard";
           segmentDiscarded = game.turn.segment;
-          if (action.failed) {
-            isMisplayed = true;
-          }
+          break;
+        }
+
+        case "misplay": {
+          location = "discard";
+          segmentDiscarded = game.turn.segment;
+          isMisplayed = true;
           break;
         }
       }
 
       // Cards that go into the hole stay hidden from the players, even when a replay knows them.
       const goesIntoHole =
-        variant.throwItInAHole && (action.type === "play" || action.failed);
+        variant.throwItInAHole
+        && (action.type === "play" || action.type === "misplay");
       const revealedToPlayer =
         action.identity === undefined || goesIntoHole
           ? card.revealedToPlayer

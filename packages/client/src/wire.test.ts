@@ -28,7 +28,7 @@ describe("server game events", () => {
       event({
         type: "clue",
         playerIndex: 0,
-        target: 1,
+        receiverIndex: 1,
         orders: [3, 4],
       }),
     );
@@ -52,7 +52,7 @@ describe("server game events", () => {
         type: "clue",
         clue: { type: 1, value: 6 },
         playerIndex: 0,
-        target: 1,
+        receiverIndex: 1,
         orders: [3],
         turn: 2,
       }),

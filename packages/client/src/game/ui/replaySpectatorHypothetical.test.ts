@@ -54,7 +54,7 @@ function setup(amLeader: boolean) {
     get: () => store.getState(),
   });
   store.dispatch({
-    type: "hypoStart",
+    type: "hypotheticalStart",
     shared: true,
     showDrawnCards: false,
     actions: [],

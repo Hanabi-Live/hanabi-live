@@ -366,7 +366,6 @@ describe("hypothetical state", () => {
             playerIndex: 0,
             order: order as CardOrder,
             identity: { suitIndex: 0, rank: 1 },
-            failed: false,
           } as const);
     }
 

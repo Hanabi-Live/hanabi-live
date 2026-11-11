@@ -132,8 +132,11 @@ export function loadGameJson(gameJson: JsonGame): State {
         }
         const clue = msgClueToClue(a.clue, variant);
         // Fix the list of touched cards.
-        const hand = s.hands[a.target];
-        assertDefined(hand, `Failed to find the hand at index: ${a.target}`);
+        const hand = s.hands[a.receiverIndex];
+        assertDefined(
+          hand,
+          `Failed to find the hand at index: ${a.receiverIndex}`,
+        );
 
         const list: CardOrder[] = hand.filter((order) => {
           const jsonCard = gameJson.deck[order];
@@ -190,13 +193,12 @@ export function loadGameJson(gameJson: JsonGame): State {
           s.deck,
         );
         if (!nextPlayableRanks.includes(jsonCard.rank)) {
-          // Send a failed discard.
+          // Send a misplay.
           action = {
-            type: "discard",
+            type: "misplay",
             playerIndex: a.playerIndex,
             order: a.order,
             ...(a.identity !== undefined && { identity: a.identity }),
-            failed: true,
           };
         }
 
@@ -355,7 +357,7 @@ function parseJsonAction(
           value: a.value,
         },
         playerIndex: currentPlayer,
-        target: a.target,
+        receiverIndex: a.target,
         turn,
         orders: [],
         ignoreNegative: false,

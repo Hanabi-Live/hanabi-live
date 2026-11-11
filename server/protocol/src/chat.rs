@@ -9,23 +9,12 @@
 )]
 use super::*;
 
-#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
-#[serde(rename_all = "lowercase")]
-pub enum ChatSource {
-    User,
-    Server,
-    Discord,
-}
-
-impl ChatSource {
-    /// The source with this name, which the wire and the database's chat log both use.
-    pub fn from_name(name: &str) -> Option<Self> {
-        match name {
-            "user" => Some(Self::User),
-            "server" => Some(Self::Server),
-            "discord" => Some(Self::Discord),
-            _ => None,
-        }
+named_enum! {
+    /// Who wrote a chat message. The wire and the database's chat log both use these names.
+    pub enum ChatSource {
+        User => "user",
+        Server => "server",
+        Discord => "discord",
     }
 }
 
@@ -50,7 +39,7 @@ pub struct Chat {
     pub recipient: Option<Username>,
     /// What the message's button applies to the table, in a suggestion to its owner.
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub suggestion: Option<TableSettings>,
+    pub suggested_settings: Option<TableSettings>,
 }
 
 impl Chat {
@@ -63,14 +52,14 @@ impl Chat {
             chat_id: None,
             table_id: None,
             recipient: None,
-            suggestion: None,
+            suggested_settings: None,
         }
     }
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
-pub struct ChatDelete {
+pub struct ChatDeleted {
     pub chat_id: ChatId,
 }
 

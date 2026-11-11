@@ -44,14 +44,14 @@ fn game_with_deck(
 
 fn color_clue(target: usize, color: usize) -> PlayerAction {
     serde_json::from_value(
-        json!({"type": "clue", "target": target, "clue": {"type": "color", "value": color}}),
+        json!({"type": "clue", "receiverIndex": target, "clue": {"type": "color", "value": color}}),
     )
     .expect("a valid clue")
 }
 
 fn rank_clue(target: usize, rank: i32) -> PlayerAction {
     serde_json::from_value(
-        json!({"type": "clue", "target": target, "clue": {"type": "rank", "value": rank}}),
+        json!({"type": "clue", "receiverIndex": target, "clue": {"type": "rank", "value": rank}}),
     )
     .expect("a valid clue")
 }

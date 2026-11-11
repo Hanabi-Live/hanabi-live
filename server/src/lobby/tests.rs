@@ -393,7 +393,7 @@ async fn lobby_private_messages_and_command_privacy_postgres() {
         &who,
         &[],
         "chatPmHistory",
-        json!({"amount":1,"username":"BOB","tableId":7}),
+        json!({"limit":1,"recipient":"BOB","tableId":7}),
     )
     .await;
     let history = self_data(&result, "chatPmHistory");
@@ -405,7 +405,7 @@ async fn lobby_private_messages_and_command_privacy_postgres() {
         &carol,
         &[],
         "chatPmHistory",
-        json!({"amount":10,"username":"Alice"}),
+        json!({"limit":10,"recipient":"Alice"}),
     )
     .await;
     assert_eq!(self_data(&result, "chatPmHistory")["messages"], json!([]));
@@ -641,7 +641,7 @@ async fn lobby_directed_linked_seeds_and_histories_postgres() {
         &who,
         &[],
         "gameHistory",
-        json!({"offset":0,"amount":10}),
+        json!({"offset":0,"limit":10}),
     )
     .await;
     let history = self_data(&result, "gameHistory");
@@ -651,9 +651,9 @@ async fn lobby_directed_linked_seeds_and_histories_postgres() {
     // A page holds at least one game and at most `MAX_PAGE_SIZE`, from a start that is not
     // negative.
     for page in [
-        json!({"offset":0,"amount":0}),
-        json!({"offset":0,"amount":hanabi_protocol::MAX_PAGE_SIZE + 1}),
-        json!({"offset":-1,"amount":1}),
+        json!({"offset":0,"limit":0}),
+        json!({"offset":0,"limit":hanabi_protocol::MAX_PAGE_SIZE + 1}),
+        json!({"offset":-1,"limit":1}),
     ] {
         assert!(ClientMessage::decode("gameHistory", &page).is_err());
         let mut other = page;
@@ -665,7 +665,7 @@ async fn lobby_directed_linked_seeds_and_histories_postgres() {
         &who,
         &[],
         "gameHistoryOtherScores",
-        json!({"seed":"p2v0s1","offset":0,"amount":10}),
+        json!({"seed":"p2v0s1","offset":0,"limit":10}),
     )
     .await;
     let history = self_data(&result, "gameHistoryOtherScores");
@@ -681,7 +681,7 @@ async fn lobby_directed_linked_seeds_and_histories_postgres() {
         &who,
         &[],
         "gameHistoryOtherScores",
-        json!({"seed":"p2v0s1","offset":1,"amount":1}),
+        json!({"seed":"p2v0s1","offset":1,"limit":1}),
     )
     .await;
     let history = self_data(&result, "gameHistoryOtherScores");

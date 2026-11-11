@@ -136,10 +136,10 @@ describe("Sudoku hypothetical from public game 1663033 (issue #3040)", () => {
     );
 
     const intents = [
-      { type: "clue", target: 0, clue: { type: "color", value: 3 } },
-      { type: "clue", target: 1, clue: { type: "color", value: 1 } },
-      { type: "clue", target: 0, clue: { type: "rank", value: 4 } },
-      { type: "clue", target: 1, clue: { type: "color", value: 0 } },
+      { type: "clue", receiverIndex: 0, clue: { type: "color", value: 3 } },
+      { type: "clue", receiverIndex: 1, clue: { type: "color", value: 1 } },
+      { type: "clue", receiverIndex: 0, clue: { type: "rank", value: 4 } },
+      { type: "clue", receiverIndex: 1, clue: { type: "color", value: 0 } },
       { type: "play", order: 6 as CardOrder },
       { type: "play", order: 47 as CardOrder },
     ] as const;
@@ -147,7 +147,9 @@ describe("Sudoku hypothetical from public game 1663033 (issue #3040)", () => {
     for (const intent of intents) {
       const { ongoing } = hypothetical;
       const orders =
-        intent.type === "play" ? [intent.order] : ongoing.hands[intent.target];
+        intent.type === "play"
+          ? [intent.order]
+          : ongoing.hands[intent.receiverIndex];
       const cardViews = orders.map((order) => {
         const state: CardState | undefined = ongoing.deck[order];
         const identity = cardIdentities[order];

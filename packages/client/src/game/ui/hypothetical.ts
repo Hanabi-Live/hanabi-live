@@ -28,7 +28,7 @@ export function startHypothetical(): void {
   if (shared === undefined) {
     globals.elements.showDrawnCardsCheckbox!.setEnabled(true);
     globals.store!.dispatch({
-      type: "hypoStart",
+      type: "hypotheticalStart",
       shared: false,
       showDrawnCards: false,
       actions: [],
@@ -37,7 +37,7 @@ export function startHypothetical(): void {
     globals.lobby.conn!.send("replayAction", {
       tableId: globals.lobby.joinedTableId,
       action: {
-        type: "hypoStart",
+        type: "hypotheticalStart",
       },
     });
     startSharedHypothetical();
@@ -53,7 +53,7 @@ export function startSharedHypothetical(): void {
 
   globals.elements.showDrawnCardsCheckbox!.setEnabled(true);
   globals.store!.dispatch({
-    type: "hypoStart",
+    type: "hypotheticalStart",
     shared: true,
     showDrawnCards: false,
     actions: [],
@@ -68,18 +68,18 @@ export function endHypothetical(): void {
 
   if (ownHypothetical !== undefined) {
     globals.store!.dispatch({
-      type: "hypoEnd",
+      type: "hypotheticalEnd",
       shared: false,
     });
     return;
   }
 
-  // Wait for the server's hypoEnd event so pending actions are processed first.
+  // Wait for the server's hypotheticalEnd action so pending actions are processed first.
   if (shared?.amLeader === true) {
     globals.lobby.conn!.send("replayAction", {
       tableId: globals.lobby.joinedTableId,
       action: {
-        type: "hypoEnd",
+        type: "hypotheticalEnd",
       },
     });
   }
@@ -95,7 +95,7 @@ export function finishHypothetical(): void {
   }
 
   globals.store!.dispatch({
-    type: "hypoEnd",
+    type: "hypotheticalEnd",
     shared: true,
   });
 }
@@ -145,7 +145,7 @@ function planAndSendHypotheticalAction(intent: HypotheticalActionIntent) {
       }
 
       case "clue": {
-        const hand = globals.elements.playerHands[intent.target]!;
+        const hand = globals.elements.playerHands[intent.receiverIndex]!;
         for (const child of hand.children) {
           const { card } = child as unknown as LayoutChild;
           cardViews.push({
@@ -190,13 +190,13 @@ export function sendHypotheticalActionToServer(
     globals.lobby.conn!.send("replayAction", {
       tableId: globals.lobby.joinedTableId,
       action: {
-        type: "hypoAction",
+        type: "hypotheticalAction",
         action: toWireHypotheticalAction(hypoAction),
       },
     });
   } else {
     globals.store!.dispatch({
-      type: "hypoAction",
+      type: "hypotheticalAction",
       shared: false,
       action: hypoAction,
     });
@@ -213,14 +213,14 @@ export function sendHypotheticalBack(): void {
 
   if (globals.state.replay.ownHypothetical !== undefined) {
     globals.store!.dispatch({
-      type: "hypoBack",
+      type: "hypotheticalBack",
       shared: false,
     });
   } else if (globals.state.replay.shared?.amLeader === true) {
     globals.lobby.conn!.send("replayAction", {
       tableId: globals.lobby.joinedTableId,
       action: {
-        type: "hypoBack",
+        type: "hypotheticalBack",
       },
     });
   }
@@ -233,7 +233,7 @@ export function toggleRevealed(): void {
 
   if (globals.state.replay.ownHypothetical !== undefined) {
     globals.store!.dispatch({
-      type: "hypoShowDrawnCards",
+      type: "hypotheticalShowDrawnCards",
       shared: false,
       showDrawnCards: !globals.state.replay.hypothetical.showDrawnCards,
     });
@@ -241,7 +241,7 @@ export function toggleRevealed(): void {
     globals.lobby.conn!.send("replayAction", {
       tableId: globals.lobby.joinedTableId,
       action: {
-        type: "hypoShowDrawnCards",
+        type: "hypotheticalShowDrawnCards",
         showDrawnCards: !globals.state.replay.hypothetical.showDrawnCards,
       },
     });

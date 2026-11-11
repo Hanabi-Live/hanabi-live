@@ -62,9 +62,10 @@ function turnReducerFunction(
       break;
     }
 
-    case "discard": {
+    case "discard":
+    case "misplay": {
       turn.cardsPlayedOrDiscardedThisTurn++;
-      if (!action.failed) {
+      if (action.type === "discard") {
         turn.cardsDiscardedThisTurn++;
       }
 

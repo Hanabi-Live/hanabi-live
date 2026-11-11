@@ -61,7 +61,7 @@ pub struct TargetCard {
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct ClueTurn {
     /// The player who receives the clue.
-    pub target: PlayerIndex,
+    pub receiver_index: PlayerIndex,
     pub clue: Clue,
 }
 
@@ -206,7 +206,9 @@ pub struct MorphedCard {
 pub enum HypotheticalEvent {
     Draw(CardEvent),
     Play(CardEvent),
-    Discard(DiscardEvent),
+    Discard(CardEvent),
+    /// A play that fails, which discards the card and adds a strike.
+    Misplay(CardEvent),
     Clue(ClueEvent),
     Turn(TurnEvent),
     /// Shows a card as another identity.

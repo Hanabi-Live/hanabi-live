@@ -62,7 +62,7 @@ pub(crate) fn validate_character_action(
             second_clue_target: Some(second),
         } => match action {
             PlayerAction::Clue(ClueTurn {
-                target,
+                receiver_index: target,
                 clue: WireClue::Rank { .. },
             }) if target.index() == second => None,
             PlayerAction::Clue(ClueTurn {
@@ -319,7 +319,7 @@ pub(crate) fn needs_second_action(
     match &mut state.players[actor].character_state {
         Some(CharacterState::Genius { second_clue_target }) => match action {
             RecordedAction::Clue(ClueTurn {
-                target,
+                receiver_index: target,
                 clue: WireClue::Color { .. },
             }) => {
                 *second_clue_target = Some(target.index());

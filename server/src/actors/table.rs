@@ -357,35 +357,31 @@ impl TableActor {
         )
     }
     pub(super) fn pregame_messages(&self, e: &mut Effects) {
-        for a in self.audience() {
-            let players = self
-                .table
-                .players()
-                .iter()
-                .enumerate()
-                .filter_map(|(seat, p)| Some((PlayerIndex::new(seat)?, p)))
-                .map(|(seat, p)| hanabi_protocol::PregamePlayer {
-                    index: seat,
-                    username: p.name.clone().into(),
-                    you: p.is(a.session.user),
-                    present: p
-                        .id
-                        .and_then(|id| self.attendees.get(&id))
-                        .is_some_and(|a| a.session.active() && !a.spectator),
-                    stats: p.stats.clone(),
-                })
-                .collect();
-            let pregame = hanabi_protocol::Pregame {
+        let players = self
+            .table
+            .players()
+            .iter()
+            .map(|p| hanabi_protocol::PregamePlayer {
+                username: p.name.clone().into(),
+                present: p
+                    .id
+                    .and_then(|id| self.attendees.get(&id))
+                    .is_some_and(|a| a.session.active() && !a.spectator),
+                stats: p.stats.clone(),
+            })
+            .collect();
+        let pregame = frame(
+            hanabi_protocol::server::PREGAME,
+            hanabi_protocol::Pregame {
                 table_id: self.table.id,
                 settings: self.settings(),
                 owner_id: self.table.owner,
                 players,
                 password_protected: self.table.password_hash.is_some(),
-            };
-            e.messages.push((
-                a.session.clone(),
-                frame(hanabi_protocol::server::PREGAME, pregame),
-            ));
+            },
+        );
+        for a in self.audience() {
+            e.messages.push((a.session.clone(), pregame.clone()));
         }
     }
     pub(super) fn chat_history(
@@ -1062,7 +1058,7 @@ impl TableActor {
             ClientMessage::Chat(r) => self.chat(session, &r.text).await,
             ClientMessage::ChatRead(_) => self.chat_presence(session, false).await,
             ClientMessage::ChatTyping(_) => self.chat_presence(session, true).await,
-            ClientMessage::TableSetOwner(r) => self.leader(session, r.user_id).await,
+            ClientMessage::TableSetOwner(r) => self.leader(session, r.owner_id).await,
             // The rest depend on the table's phase.
             message => match self.table.phase {
                 Phase::Pregame { .. } => self.pregame_command(session, message).await,

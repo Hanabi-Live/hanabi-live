@@ -333,7 +333,7 @@ function submit() {
 }
 
 export function acceptOptionsFromGuest(
-  suggestion: NonNullable<ServerCommandData["chat"]["suggestion"]>,
+  suggestion: NonNullable<ServerCommandData["chat"]["suggestedSettings"]>,
 ): void {
   globals.conn!.send("tableUpdate", {
     tableId: globals.joinedTableId,

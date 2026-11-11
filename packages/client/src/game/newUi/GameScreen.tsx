@@ -881,13 +881,13 @@ export function GameScreen({
       ) as Extract<ClientClue, { type: "color" }>["value"];
       sendAction({
         type: "clue",
-        target: clueTarget,
+        receiverIndex: clueTarget,
         clue: { type: "color", value: colorIndex },
       });
     } else {
       sendAction({
         type: "clue",
-        target: clueTarget,
+        receiverIndex: clueTarget,
         clue: { type: "rank", value: clue.value },
       });
     }

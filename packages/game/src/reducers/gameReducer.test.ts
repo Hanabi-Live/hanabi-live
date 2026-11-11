@@ -6,7 +6,14 @@ import { MAX_CLUES } from "../generated/protocol.ts";
 import type { GameMetadata } from "../interfaces/GameMetadata.ts";
 import type { GameState } from "../interfaces/GameState.ts";
 import { getDefaultMetadata } from "../metadata.ts";
-import { colorClue, discard, draw, play, rankClue } from "../testActions.ts";
+import {
+  colorClue,
+  discard,
+  draw,
+  misplay,
+  play,
+  rankClue,
+} from "../testActions.ts";
 import type { ActionClue, GameAction } from "../types/gameActions.ts";
 import type { PlayerIndex } from "../types/PlayerIndex.ts";
 import type { Rank } from "../types/Rank.ts";
@@ -56,7 +63,7 @@ describe("gameReducer", () => {
       type: "clue",
       clue: { type: undefined, value: undefined },
       playerIndex: 0,
-      target: 1,
+      receiverIndex: 1,
       orders: [first.order],
       ignoreNegative: false,
     };
@@ -195,7 +202,7 @@ describe("gameReducer", () => {
       );
 
       // Misplay the red 1.
-      const discardAction = discard(0, 0, 0, 1, true);
+      const discardAction = misplay(0, 0, 0, 1);
       state = gameReducer(
         state,
         discardAction,
@@ -297,7 +304,7 @@ describe("gameReducer", () => {
       );
 
       // Misplay the yellow 2.
-      const discardAction = discard(0, 0, 1, 2, true);
+      const discardAction = misplay(0, 0, 1, 2);
       state = gameReducer(
         state,
         discardAction,
@@ -440,7 +447,7 @@ describe("gameReducer", () => {
       );
 
       // Player 1 discards the other red 1.
-      const discardAction = discard(1, 5, 0, 1, false);
+      const discardAction = discard(1, 5, 0, 1);
       state = gameReducer(
         state,
         discardAction,
@@ -610,7 +617,7 @@ describe("gameReducer", () => {
         );
 
         // Player 1 discards the other two red 1s.
-        const discardAction1 = discard(1, 5, 0, 1, false);
+        const discardAction1 = discard(1, 5, 0, 1);
         state = gameReducer(
           state,
           discardAction1,
@@ -620,7 +627,7 @@ describe("gameReducer", () => {
           false,
           CLUE_STARVED_METADATA,
         );
-        const discardAction2 = discard(1, 6, 0, 1, false);
+        const discardAction2 = discard(1, 6, 0, 1);
         state = gameReducer(
           state,
           discardAction2,
@@ -758,7 +765,7 @@ describe("gameReducer", () => {
       );
       state = gameReducer(
         state,
-        discard(playerIndex, 4, PURPLE, 2, false),
+        discard(playerIndex, 4, PURPLE, 2),
         true,
         false,
         false,
@@ -778,7 +785,7 @@ describe("gameReducer", () => {
       );
       state = gameReducer(
         state,
-        discard(playerIndex, 5, PURPLE, 2, false),
+        discard(playerIndex, 5, PURPLE, 2),
         true,
         false,
         false,
@@ -835,7 +842,7 @@ describe("gameReducer", () => {
 
       expect(state.clues.length).toBe(initialState.clues.length + 1);
       expect(clue.giver).toBe(testClue.playerIndex);
-      expect(clue.target).toBe(testClue.target);
+      expect(clue.target).toBe(testClue.receiverIndex);
       expect(clue.type).toBe(testClue.clue.type);
       expect(clue.value).toBe(testClue.clue.value);
       expect(clue.list).toEqual([]);
@@ -1077,7 +1084,7 @@ describe("card deduction", () => {
       expectFullyDeduced(state, metadata);
 
       // Player 2 discards their green 1 and draws a purple 5.
-      state = applyAction(state, discard(2, 10, 2, 1, false), metadata);
+      state = applyAction(state, discard(2, 10, 2, 1), metadata);
       expectFullyDeduced(state, metadata);
       state = applyAction(
         state,

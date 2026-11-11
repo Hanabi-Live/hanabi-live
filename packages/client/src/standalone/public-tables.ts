@@ -266,18 +266,16 @@ function initServerTable(
 
   function query(): string {
     const params = new URLSearchParams({
-      page: String(pagers.page),
-      size: String(pagers.size),
+      offset: String(pagers.page * pagers.size),
+      limit: String(pagers.size),
     });
     const sort = controls.sort();
     if (sort !== undefined) {
-      params.append(
-        `col[${serverColumn(sort.column)}]`,
-        sort.descending ? "1" : "0",
-      );
+      params.append("sort", serverColumn(sort.column));
+      params.append("order", sort.descending ? "desc" : "asc");
     }
     for (const [column, value] of controls.filters()) {
-      params.append(`fcol[${serverColumn(column)}]`, value);
+      params.append(`filter[${serverColumn(column)}]`, value);
     }
     return params.toString();
   }
@@ -458,7 +456,7 @@ function drawScoreChart(
       labels: frequencies.map((row) => row.score),
       datasets: [
         {
-          data: frequencies.map((row) => row.numTimes),
+          data: frequencies.map((row) => row.numGames),
           backgroundColor: frequencies.map((row, i) =>
             barColor(row, i === frequencies.length - 1, i),
           ),
@@ -502,6 +500,9 @@ function gameRows(
   variants: Readonly<Record<string, string>>,
   frequencies: readonly ScoreFrequency[],
 ): ReadonlyArray<ReadonlyArray<Node | string>> {
+  const variantIds = new Map(
+    Object.entries(variants).map(([id, name]) => [name, id]),
+  );
   return page.games.map((game) => {
     const names = game.playerNames;
     const row: Array<Node | string> = [
@@ -510,12 +511,12 @@ function gameRows(
       String(game.score),
     ];
     if (mode !== "variant") {
-      const variant = String(game.variantId);
+      const { variantName } = game.options;
+      const variantId = variantIds.get(variantName);
       row.push(
-        link(
-          `${PATH.VARIANT}/${encodeURIComponent(variant)}`,
-          variants[variant] ?? variant,
-        ),
+        variantId === undefined
+          ? variantName
+          : link(`${PATH.VARIANT}/${variantId}`, variantName),
       );
     }
     row.push(
@@ -551,11 +552,11 @@ function percentile(
   let beaten = 0;
   let others = -1;
   for (const row of frequencies) {
-    others += row.numTimes;
+    others += row.numGames;
     if (row.score < score) {
-      beaten += row.numTimes;
+      beaten += row.numGames;
     } else if (row.score === score) {
-      beaten += (row.numTimes - 1) / 2;
+      beaten += (row.numGames - 1) / 2;
     }
   }
   return others > 0 ? String(Math.round((beaten * 100) / others)) : "-";
