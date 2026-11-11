@@ -1,5 +1,4 @@
-import { useEffect, useRef } from "react";
-import * as tooltips from "../../tooltips.ts";
+import { useTooltip } from "../../useTooltip.ts";
 
 /**
  * Explains the two efficiency numbers, in the words of the classic screen's tooltip. The text wraps
@@ -63,8 +62,7 @@ function HelpIcon({
   readonly label: string;
   readonly tooltip: string;
 }): React.JSX.Element {
-  const ref = useRef<HTMLButtonElement>(null);
-  useEffect(() => tooltips.attach(ref.current!, tooltip), [tooltip]);
+  const ref = useTooltip<HTMLButtonElement>(tooltip);
 
   return (
     <button

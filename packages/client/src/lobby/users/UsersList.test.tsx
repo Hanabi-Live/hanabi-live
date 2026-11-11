@@ -25,18 +25,17 @@ import {
   usersListed,
 } from "./usersSlice.ts";
 
-vi.mock("../../tooltips.ts", () => ({
-  attach: vi.fn(),
-}));
 // The menu tooltip shows its content in the body, since jsdom does not support popovers.
 vi.mock("../../Tooltip.ts", () => ({
   Tooltip: class {
     isOpen = false;
-    private readonly content: HTMLElement;
+    private readonly content: Node | string;
 
-    constructor(_anchor: HTMLElement, options: { content: HTMLElement }) {
+    constructor(_anchor: HTMLElement, options: { content: Node | string }) {
       this.content = options.content;
     }
+
+    openOnHover = vi.fn();
 
     openUntilClickElsewhere() {
       document.body.append(this.content);
@@ -44,7 +43,9 @@ vi.mock("../../Tooltip.ts", () => ({
     }
 
     close() {
-      this.content.remove();
+      if (this.content instanceof Element) {
+        this.content.remove();
+      }
       this.isOpen = false;
     }
 

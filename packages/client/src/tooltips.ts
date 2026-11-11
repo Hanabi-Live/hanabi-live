@@ -27,18 +27,6 @@ export function initGame(): void {
   createCardTooltips();
 }
 
-/**
- * Adds a tooltip with HTML content that opens on hover to an element that React renders. Returns a
- * function that removes it.
- */
-export function attach(element: HTMLElement, content: string): () => void {
-  const tooltip = new Tooltip(element, { content });
-  tooltip.openOnHover();
-  return () => {
-    tooltip.destroy();
-  };
-}
-
 /** Briefly shows, beside an element, that a URL was copied to the clipboard. */
 export function showCopied(element: HTMLElement): void {
   const tooltip = new Tooltip(element, { content: CLIPBOARD_CONTENT });

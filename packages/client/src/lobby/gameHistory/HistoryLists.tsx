@@ -3,12 +3,12 @@
 import type { GameHistoryEntry } from "@hanabi-live/data";
 import type { GameOptions } from "@hanabi-live/game";
 import { getVariant, secondsToClockString } from "@hanabi-live/game";
-import { Fragment, useEffect, useRef } from "react";
+import { Fragment } from "react";
 import { PATH } from "../../constants.ts";
 import { OptionIcons } from "../../enums/OptionIcons.ts";
 import { globals } from "../../Globals.ts";
 import { useAppSelector } from "../../store.ts";
-import * as tooltips from "../../tooltips.ts";
+import { useTooltip } from "../../useTooltip.ts";
 import { dateTimeFormatter } from "../../utils.ts";
 import { BORDERED_TABLE } from "../borderedTable.ts";
 import {
@@ -259,7 +259,6 @@ function OtherScoreRow({
 
 /** A few icons for the options of a game, with a tooltip that lists all of them. */
 function HistoryOptions({ options }: { readonly options: GameOptions }) {
-  const ref = useRef<HTMLDivElement>(null);
   const items = getOptionItems(options);
   const tooltip = items
     .map(
@@ -267,15 +266,10 @@ function HistoryOptions({ options }: { readonly options: GameOptions }) {
         `<li class="tw:mb-[0.3em] tw:pl-[0.2em] tw:last:mb-0"><i class="${icon} icon-label"></i>${text}</li>`,
     )
     .join("");
-  useEffect(
-    () =>
-      tooltip === ""
-        ? undefined
-        : tooltips.attach(
-            ref.current!,
-            `<ul class="tw:m-0 tw:list-none tw:p-0">${tooltip}</ul>`,
-          ),
-    [tooltip],
+  const ref = useTooltip<HTMLDivElement>(
+    tooltip === ""
+      ? undefined
+      : `<ul class="tw:m-0 tw:list-none tw:p-0">${tooltip}</ul>`,
   );
 
   if (items.length === 0) {

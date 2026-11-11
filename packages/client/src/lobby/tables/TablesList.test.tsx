@@ -17,7 +17,7 @@ import { TablesList } from "./TablesList.tsx";
 import type { Table } from "./tablesSlice.ts";
 import { tableChanged, tablesCleared, tablesListed } from "./tablesSlice.ts";
 
-vi.mock("../../tooltips.ts", () => ({ attach: vi.fn(), showCopied: vi.fn() }));
+vi.mock("../../tooltips.ts", () => ({ showCopied: vi.fn() }));
 vi.mock("./tableActions.ts", () => ({
   tableJoin: vi.fn(),
   tableReattend: vi.fn(),

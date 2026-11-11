@@ -1,12 +1,11 @@
 // The lobby area that shows all of the current logged-in users.
 
 import { StatusText } from "@hanabi-live/data";
-import { useEffect, useRef } from "react";
 import { globals } from "../../Globals.ts";
 import { DIMMED_OPACITY } from "../../constants.ts";
 import { store, useAppSelector } from "../../store.ts";
 import { TAB_CLASS_NAME } from "../../tabClassName.ts";
-import * as tooltips from "../../tooltips.ts";
+import { useTooltip } from "../../useTooltip.ts";
 import { tableJoin, tableSpectate } from "../tables/tableActions.ts";
 import { Screen } from "../types/Screen.ts";
 import { UserLink } from "./UserMenu.tsx";
@@ -144,8 +143,7 @@ function UserRowView({
 }
 
 function HGroupIcon() {
-  const ref = useRef<HTMLSpanElement>(null);
-  useEffect(() => tooltips.attach(ref.current!, H_GROUP_TOOLTIP), []);
+  const ref = useTooltip<HTMLSpanElement>(H_GROUP_TOOLTIP);
 
   return (
     <span ref={ref}>
@@ -165,8 +163,7 @@ function UserIcon({ user }: { readonly user: UserRow["user"] }) {
 }
 
 function BotIcon() {
-  const ref = useRef<HTMLSpanElement>(null);
-  useEffect(() => tooltips.attach(ref.current!, BOT_TOOLTIP), []);
+  const ref = useTooltip<HTMLSpanElement>(BOT_TOOLTIP);
 
   return (
     // The slot has the width of the other icons, which keeps the names aligned.

@@ -4,11 +4,10 @@
 import type { PlayerIndex } from "@hanabi-live/game";
 import { getVariant, MAX_PLAYERS, MIN_PLAYERS } from "@hanabi-live/game";
 import { iRange } from "complete-common";
-import { useEffect, useRef } from "react";
 import { globals } from "../../Globals.ts";
 import { H_GROUP_LEVEL_URL_PREFIX } from "../../constants.ts";
 import { useAppSelector } from "../../store.ts";
-import * as tooltips from "../../tooltips.ts";
+import { useTooltip } from "../../useTooltip.ts";
 import { OptionIcon } from "../OptionIcon.tsx";
 import { SHADOW_NAME, UN_SHADOW_NAME } from "../cursorClasses.ts";
 import { getOptionDescriptions } from "../optionDescriptions.ts";
@@ -240,9 +239,9 @@ function BestScoresIcon({
   readonly bestScores: BestScores;
   readonly variantName: string;
 }) {
-  const ref = useRef<HTMLElement>(null);
-  const content = getBestScoresTooltip(bestScores, variantName);
-  useEffect(() => tooltips.attach(ref.current!, content), [content]);
+  const ref = useTooltip<HTMLElement>(
+    getBestScoresTooltip(bestScores, variantName),
+  );
 
   return <i className="fas fa-chart-bar green" ref={ref} />;
 }
@@ -334,16 +333,11 @@ function useNameClassName(name: string): string | undefined {
 /** A link to the highest H-Group level that an online player chose, if they chose one. */
 function HGroupLevelBadge({ name }: { readonly name: string }) {
   const level = useAppSelector((state) => selectHGroupLevel(state, name));
-  const ref = useRef<HTMLAnchorElement>(null);
-  useEffect(() => {
-    if (level === undefined) {
-      return undefined;
-    }
-    return tooltips.attach(
-      ref.current!,
-      `<span class="small-tooltip-text">This player wants to play with H-Group conventions up to level ${level}.</span>`,
-    );
-  }, [level]);
+  const ref = useTooltip<HTMLAnchorElement>(
+    level === undefined
+      ? undefined
+      : `<span class="small-tooltip-text">This player wants to play with H-Group conventions up to level ${level}.</span>`,
+  );
 
   if (level === undefined) {
     return undefined;

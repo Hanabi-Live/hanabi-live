@@ -15,7 +15,6 @@ import {
   otherScoresRequested,
 } from "./historySlice.ts";
 
-vi.mock("../../tooltips.ts", () => ({ attach: vi.fn() }));
 vi.mock("../history.ts", () => ({
   hide: vi.fn(),
   showMore: vi.fn(),

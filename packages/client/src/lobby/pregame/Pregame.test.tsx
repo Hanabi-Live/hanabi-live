@@ -14,8 +14,6 @@ import { userChanged } from "../users/usersSlice.ts";
 import { Pregame } from "./Pregame.tsx";
 import type { Game } from "./pregameSlice.ts";
 
-vi.mock("../../tooltips.ts", () => ({ attach: vi.fn(() => vi.fn()) }));
-
 const TABLE_ID = tableIdSchema.parse(5);
 
 function player(
