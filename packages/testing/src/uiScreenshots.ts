@@ -311,6 +311,25 @@ function getStates({
       },
     },
     {
+      // The other source, a shared replay (which can be a spoiler-free review), and an error.
+      name: "watch-replay-json",
+      path: "/",
+      loggedIn: true,
+      prepare: async (page) => {
+        await clickNav(page, "replay");
+        await page.click('label[for="replay-source-json"]');
+        await page.click('label[for="replay-visibility-shared"]');
+        await page.click("#replay-submit");
+        await page.waitForTimeout(SETTLE_MILLISECONDS);
+      },
+      // The form remembers its source, which the replay states need to be the ID.
+      cleanup: async (page) => {
+        await page.evaluate(() => {
+          globalThis.localStorage.removeItem("watchReplaySource");
+        });
+      },
+    },
+    {
       name: "resources",
       path: "/",
       loggedIn: true,

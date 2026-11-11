@@ -28,7 +28,7 @@ import { mountSettings } from "./lobby/settings/mountSettings.tsx";
 import { mountTablesList } from "./lobby/tables/mountTablesList.tsx";
 import { Screen } from "./lobby/types/Screen.ts";
 import { mountUsersList } from "./lobby/users/mountUsersList.tsx";
-import * as lobbyWatchReplay from "./lobby/watchReplay.ts";
+import { mountWatchReplay } from "./lobby/watchReplay/mountWatchReplay.tsx";
 import * as modals from "./modals.ts";
 import * as sounds from "./sounds.ts";
 import * as tooltips from "./tooltips.ts";
@@ -112,8 +112,8 @@ $(document).ready(() => {
   mountSettings();
   mountTablesList();
   mountUsersList();
+  mountWatchReplay();
   lobbyTutorialInit();
-  lobbyWatchReplay.init();
   sounds.init();
 
   // Start preloading some images that we will need for when a game starts.

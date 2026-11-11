@@ -1,0 +1,253 @@
+// The "Watch Specific Replay" page. It starts with what was used last time.
+
+import { parseIntSafe } from "complete-common";
+import { Fragment, useEffect, useRef, useState } from "react";
+import { LOCAL_STORAGE_KEY } from "../../constants.ts";
+import { globals } from "../../Globals.ts";
+import { useAppSelector } from "../../store.ts";
+import type { GameJSON } from "../gameJSON.ts";
+import { parseGameJSON } from "../gameJSON.ts";
+import * as lobbyPage from "../lobbyPage.ts";
+
+const SECTION = "#lobby-replay";
+const SUBMIT_BUTTON_ID = "replay-submit";
+
+export function show(): void {
+  lobbyPage.show(SECTION, `#${SUBMIT_BUTTON_ID}`);
+}
+
+/** The form starts again each time that the page shows. */
+export function WatchReplay(): React.JSX.Element | undefined {
+  const shown = useAppSelector((state) => state.session.lobbyPage === SECTION);
+  return shown ? <WatchReplayForm /> : undefined;
+}
+
+function WatchReplayForm() {
+  type Visibility = "solo" | "shared";
+  type Source = "id" | "json";
+  const [source, setSource] = useState<Source>(() =>
+    localStorage.getItem(LOCAL_STORAGE_KEY.WATCH_REPLAY_SOURCE) === "json"
+      ? "json"
+      : "id",
+  );
+  const [gameID, setGameID] = useState(
+    () => localStorage.getItem(LOCAL_STORAGE_KEY.WATCH_REPLAY_ID) ?? "",
+  );
+  const [json, setJSON] = useState(
+    () => localStorage.getItem(LOCAL_STORAGE_KEY.WATCH_REPLAY_JSON) ?? "",
+  );
+  const [visibility, setVisibility] = useState<Visibility>(() =>
+    localStorage.getItem(LOCAL_STORAGE_KEY.WATCH_REPLAY_VISIBILITY) === "shared"
+      ? "shared"
+      : "solo",
+  );
+  const [spoilerFree, setSpoilerFree] = useState(
+    () =>
+      localStorage.getItem(LOCAL_STORAGE_KEY.WATCH_REPLAY_SPOILER_FREE)
+      === "true",
+  );
+  const [error, setError] = useState<string>();
+  const gameIDRef = useRef<HTMLInputElement>(null);
+  const jsonRef = useRef<HTMLTextAreaElement>(null);
+
+  // Select the field of the source, so that typing replaces what was used last time.
+  useEffect(() => {
+    (source === "id" ? gameIDRef : jsonRef).current!.select();
+  }, [source]);
+
+  function submit() {
+    localStorage.setItem(LOCAL_STORAGE_KEY.WATCH_REPLAY_SOURCE, source);
+    setError(undefined);
+
+    let replay:
+      { type: "id"; gameID: number } | { type: "json"; gameJSON: GameJSON };
+    if (source === "id") {
+      const id = parseIntSafe(gameID);
+      if (id === undefined) {
+        setError("Error: The database ID must be a number.");
+        return;
+      }
+      if (id < 1) {
+        setError("Error: The database ID must be a positive number.");
+        return;
+      }
+      localStorage.setItem(LOCAL_STORAGE_KEY.WATCH_REPLAY_ID, gameID);
+      replay = { type: "id", gameID: id };
+    } else {
+      const parsed = parseGameJSON(json);
+      if ("error" in parsed) {
+        setError(parsed.error);
+        return;
+      }
+      localStorage.setItem(LOCAL_STORAGE_KEY.WATCH_REPLAY_JSON, json);
+      replay = { type: "json", gameJSON: parsed.gameJSON };
+    }
+
+    localStorage.setItem(LOCAL_STORAGE_KEY.WATCH_REPLAY_VISIBILITY, visibility);
+    localStorage.setItem(
+      LOCAL_STORAGE_KEY.WATCH_REPLAY_SPOILER_FREE,
+      spoilerFree.toString(),
+    );
+
+    globals.conn!.send("replayCreate", {
+      ...replay,
+      visibility,
+      // Only shared replays can be spoiler-free reviews.
+      spoilerFree: visibility === "shared" && spoilerFree,
+    });
+    lobbyPage.hide();
+  }
+
+  return (
+    <>
+      <h2>Watch a Specific Replay</h2>
+
+      <div className="lobby-group">
+        <h3>Replay</h3>
+        <ul className="lobby-rows">
+          <li className="lobby-row">
+            <span className="lobby-row-text">
+              <i className="fas fa-database fa-fw" />
+              Source
+            </span>
+            <Segmented
+              name="replay-source"
+              onChange={setSource}
+              options={[
+                ["id", "Database ID"],
+                ["json", "JSON Data"],
+              ]}
+              value={source}
+            />
+          </li>
+          {source === "id" ? (
+            <li className="lobby-row">
+              <label htmlFor="replay-id">
+                <i className="fas fa-fingerprint fa-fw" />
+                ID
+              </label>
+              <input
+                id="replay-id"
+                inputMode="numeric"
+                onChange={(event) => {
+                  setGameID(event.target.value);
+                }}
+                placeholder="Game ID"
+                ref={gameIDRef}
+                type="text"
+                value={gameID}
+              />
+            </li>
+          ) : (
+            // A pasted game is too long for one line, so its box goes below its description.
+            <li className="lobby-row tw:flex-col tw:items-stretch tw:gap-2">
+              <label htmlFor="replay-json">
+                <i className="fas fa-table fa-fw" />
+                JSON
+              </label>
+              <textarea
+                className="tw:min-h-[9em] tw:resize-y"
+                id="replay-json"
+                onChange={(event) => {
+                  setJSON(event.target.value);
+                }}
+                placeholder="Paste the game's JSON data"
+                ref={jsonRef}
+                value={json}
+              />
+            </li>
+          )}
+        </ul>
+      </div>
+
+      <div className="lobby-group">
+        <h3>Viewing</h3>
+        <ul className="lobby-rows">
+          <li className="lobby-row">
+            <span className="lobby-row-text">
+              <i className="fas fa-users fa-fw" />
+              Visibility
+            </span>
+            <Segmented
+              name="replay-visibility"
+              onChange={setVisibility}
+              options={[
+                ["solo", "Solo"],
+                ["shared", "Shared"],
+              ]}
+              value={visibility}
+            />
+          </li>
+          {visibility === "shared" && (
+            <li className="lobby-row">
+              <label htmlFor="replay-spoiler-free">
+                <i className="fas fa-eye-slash fa-fw" />
+                Spoiler-free review
+              </label>
+              <span className="lobby-row-checkbox">
+                <input
+                  checked={spoilerFree}
+                  id="replay-spoiler-free"
+                  onChange={(event) => {
+                    setSpoilerFree(event.target.checked);
+                  }}
+                  type="checkbox"
+                />
+                <label htmlFor="replay-spoiler-free" />
+              </span>
+            </li>
+          )}
+        </ul>
+      </div>
+
+      {error !== undefined && (
+        <p className="tw:mx-0 tw:mt-4 tw:mb-0 tw:text-(--error)">{error}</p>
+      )}
+
+      <button
+        className="button fit tw:mt-6"
+        id={SUBMIT_BUTTON_ID}
+        onClick={submit}
+        type="submit"
+      >
+        Watch
+      </button>
+    </>
+  );
+}
+
+/** A choice between a few options, shown as joined buttons. */
+function Segmented<T extends string>({
+  name,
+  onChange,
+  options,
+  value,
+}: {
+  readonly name: string;
+  readonly onChange: (value: T) => void;
+  readonly options: ReadonlyArray<readonly [T, string]>;
+  readonly value: T;
+}) {
+  return (
+    <span className="lobby-segmented">
+      {options.map(([option, label]) => {
+        const id = `${name}-${option}`;
+        return (
+          <Fragment key={option}>
+            <input
+              checked={value === option}
+              id={id}
+              name={name}
+              onChange={() => {
+                onChange(option);
+              }}
+              type="radio"
+              value={option}
+            />
+            <label htmlFor={id}>{label}</label>
+          </Fragment>
+        );
+      })}
+    </span>
+  );
+}

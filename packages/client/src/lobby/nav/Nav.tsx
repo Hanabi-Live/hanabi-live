@@ -16,7 +16,7 @@ import { startGameSentChanged } from "../pregame/pregameSlice.ts";
 import { signOut } from "../signOut.ts";
 import { tableJoin, tableSpectate } from "../tables/tableActions.ts";
 import { Screen } from "../types/Screen.ts";
-import * as watchReplay from "../watchReplay.ts";
+import * as watchReplay from "../watchReplay/WatchReplay.tsx";
 
 const LIST_ITEM_CLASS_NAME = "tw:inline-block tw:pl-0";
 
@@ -43,7 +43,7 @@ function selectNavBar(state: RootState): NavBar | undefined {
     return undefined;
   }
 
-  if (state.session.lobbyPageShown) {
+  if (state.session.lobbyPage !== undefined) {
     return "page";
   }
 

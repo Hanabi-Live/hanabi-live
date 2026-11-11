@@ -17,7 +17,7 @@ vi.mock("../createGame.ts", () => ({ show: vi.fn() }));
 vi.mock("../history.ts", () => ({}));
 vi.mock("../lobbyPage.ts", () => ({}));
 vi.mock("../pregame/pregame.ts", () => ({}));
-vi.mock("../watchReplay.ts", () => ({}));
+vi.mock("../watchReplay/WatchReplay.tsx", () => ({}));
 vi.mock("../tables/tableActions.ts", () => ({}));
 
 const TABLE_ID = tableIdSchema.parse(5);

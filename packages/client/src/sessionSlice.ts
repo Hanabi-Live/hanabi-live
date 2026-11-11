@@ -17,8 +17,10 @@ interface SessionState {
   readonly blocked: readonly string[];
   readonly settings: Settings;
   readonly screen: Screen;
-  /** Whether a lobby page, such as "Create Game" or "Settings", replaces the lobby. */
-  readonly lobbyPageShown: boolean;
+  /**
+   * The section of the lobby page, such as "Create Game" or "Settings", that replaces the lobby.
+   */
+  readonly lobbyPage: string | undefined;
   /** Whether we asked the server to create a table and it has not answered yet. */
   readonly creatingTable: boolean;
   /** Whether the error modal is showing, which the page cannot recover from. */
@@ -32,7 +34,7 @@ const initialState: SessionState = {
   blocked: [],
   settings: defaultSettings,
   screen: Screen.Login,
-  lobbyPageShown: false,
+  lobbyPage: undefined,
   creatingTable: false,
   errorOccurred: false,
 };
@@ -59,8 +61,8 @@ const sessionSlice = createSlice({
     screenChanged(state, action: PayloadAction<Screen>) {
       state.screen = action.payload;
     },
-    lobbyPageShownChanged(state, action: PayloadAction<boolean>) {
-      state.lobbyPageShown = action.payload;
+    lobbyPageChanged(state, action: PayloadAction<string | undefined>) {
+      state.lobbyPage = action.payload;
     },
     creatingTableChanged(state, action: PayloadAction<boolean>) {
       state.creatingTable = action.payload;
@@ -78,7 +80,7 @@ export const {
   blockedChanged,
   settingsChanged,
   screenChanged,
-  lobbyPageShownChanged,
+  lobbyPageChanged,
   creatingTableChanged,
   errorOccurredChanged,
 } = sessionSlice.actions;

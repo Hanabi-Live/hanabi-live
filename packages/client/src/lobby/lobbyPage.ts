@@ -1,7 +1,7 @@
 // Full pages in the lobby (such as "Create Game" and "Resources"), which replace the lobby until
 // the user submits them or returns.
 
-import { lobbyPageShownChanged } from "../sessionSlice.ts";
+import { lobbyPageChanged } from "../sessionSlice.ts";
 import { store } from "../store.ts";
 import { showLobbyHalves } from "./lobbyLayout.ts";
 
@@ -28,7 +28,7 @@ export function show(
 
   $(section).show();
   showLobbyHalves(false);
-  store.dispatch(lobbyPageShownChanged(true));
+  store.dispatch(lobbyPageChanged(section));
 }
 
 export function hide(): void {
@@ -40,7 +40,7 @@ export function hide(): void {
   current.onHide?.();
   current = undefined;
   showLobbyHalves(true);
-  store.dispatch(lobbyPageShownChanged(false));
+  store.dispatch(lobbyPageChanged(undefined));
 }
 
 export function isShown(): boolean {

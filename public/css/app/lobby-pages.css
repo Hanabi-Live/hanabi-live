@@ -308,27 +308,6 @@
   width: 1.8em;
 }
 
-/* A pasted game is too long for one line, so its box goes below its description. */
-.lobby-row:has(textarea) {
-  align-items: stretch;
-  flex-direction: column;
-  gap: 0.5em;
-}
-
-#replay-json {
-  min-height: 9em;
-  resize: vertical;
-}
-
-#replay-error-row {
-  color: var(--error);
-  margin: 1em 0 0;
-}
-
-#replay-submit {
-  margin-top: 1.5em;
-}
-
 /* A choice between a few options, shown as joined buttons. */
 .lobby-segmented {
   border: 1px solid var(--border);
