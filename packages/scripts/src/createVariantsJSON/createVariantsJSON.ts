@@ -225,17 +225,12 @@ function getNextUnusedVariantID(
   }
 
   // Otherwise, find the lowest unused variant ID.
-  let foundUnusedVariantID = false;
-  let variantId = -1;
-  do {
+  let variantId = 0;
+  while (oldVariantsIDToNameMap.has(variantId)) {
     variantId++;
-    const existingVariantName = oldVariantsIDToNameMap.get(variantId);
-    if (existingVariantName === undefined) {
-      foundUnusedVariantID = true;
-      oldVariantsIDToNameMap.set(variantId, variantName);
-      oldVariantsNameToIDMap.set(variantName, variantId);
-    }
-  } while (!foundUnusedVariantID);
+  }
+  oldVariantsIDToNameMap.set(variantId, variantName);
+  oldVariantsNameToIDMap.set(variantName, variantId);
 
   return variantId;
 }

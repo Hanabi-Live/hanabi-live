@@ -474,11 +474,11 @@ impl Bridge {
             return Ok(());
         }
         let username = if source == "server" {
-            String::new()
+            None
         } else {
-            row.username.clone().unwrap_or_default()
+            row.username.as_deref()
         };
-        let id = self.send(&outbound_text(&username, raw), true).await?;
+        let id = self.send(&outbound_text(username, raw), true).await?;
         if link_copy(&self.pool, chat_id, &id).await? {
             self.broadcast(vec![Outgoing::new(
                 hanabi_protocol::server::CHAT_DELETE,
@@ -885,7 +885,8 @@ fn decode_html(text: &str) -> String {
         .into_owned()
 }
 
-fn outbound_text(name: &str, text: &str) -> String {
+/// A message as Discord shows it, after its author's name, if it has one.
+fn outbound_text(name: Option<&str>, text: &str) -> String {
     let content = text
         .split(' ')
         .map(|word| {
@@ -899,6 +900,9 @@ fn outbound_text(name: &str, text: &str) -> String {
         })
         .collect::<Vec<_>>()
         .join(" ");
+    let Some(name) = name else {
+        return content;
+    };
     let mut safe = String::new();
     for ch in name.chars().filter(|c| !matches!(c, '\n' | '\r')) {
         if "*\\_`|~".contains(ch) {
@@ -906,11 +910,7 @@ fn outbound_text(name: &str, text: &str) -> String {
         }
         safe.push(ch);
     }
-    if name.is_empty() {
-        content
-    } else {
-        format!("<**{safe}**> {content}")
-    }
+    format!("<**{safe}**> {content}")
 }
 
 /// Discord's delimiter on each side of a spoiler.
@@ -967,7 +967,7 @@ mod tests {
             "x <span class=\"spoiler\">&lt;safe&gt;</span> y"
         );
         assert_eq!(
-            outbound_text("a*\\\nb", "https://example.invalid/path"),
+            outbound_text(Some("a*\\\nb"), "https://example.invalid/path"),
             "<**a\\*\\\\b**> <https://example.invalid/path>"
         );
         assert!(Configuration::read(&HashMap::new()).unwrap().is_none());
