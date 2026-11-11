@@ -180,12 +180,12 @@ impl TableActor {
                 e.messages.push((
                     a.session.clone(),
                     frame(
-                        hanabi_protocol::server::FINISH_ONGOING_GAME,
-                        hanabi_protocol::FinishOngoingGame {
+                        hanabi_protocol::server::GAME_FINISHED,
+                        hanabi_protocol::GameFinished {
                             table_id: self.table.id,
                             game_id: s.game_id,
                             shared_replay: self
-                                .shared_replay_init(s, &a.session)?
+                                .shared_replay_init(s, &a.session)
                                 .context("A finished game is not a shared replay")?,
                         },
                     ),
@@ -216,16 +216,6 @@ impl TableActor {
             }
         }
         self.publish(e).await
-    }
-    /// The name of the replay's leader, who is always at the table.
-    pub(super) fn leader_name(&self) -> CommandResult<String> {
-        Ok(self
-            .attendees
-            .get(&self.table.owner)
-            .context("The replay leader is not at the table")?
-            .session
-            .name
-            .clone())
     }
     async fn terminate(&mut self, session: Arc<Session>, vote: bool) -> CommandResult<()> {
         ensure_or_reject!(self.attending(&session), "You are not attending");
@@ -473,15 +463,15 @@ impl TableActor {
         &self,
         s: &Snapshot,
         session: &Session,
-    ) -> CommandResult<Option<hanabi_protocol::SharedReplayInit>> {
+    ) -> Option<hanabi_protocol::SharedReplayInit> {
         let Phase::Replay { replay, .. } = &self.table.phase else {
-            return Ok(None);
+            return None;
         };
         if !self.table.visible {
-            return Ok(None);
+            return None;
         }
-        Ok(Some(hanabi_protocol::SharedReplayInit {
-            leader: self.leader_name()?.into(),
+        Some(hanabi_protocol::SharedReplayInit {
+            owner_id: self.table.owner,
             turn: replay.segment,
             efficiency_modifier: replay.efficiency_modifier,
             spoiler_free: replay.spoiler_free,
@@ -493,7 +483,7 @@ impl TableActor {
                 s.finished
                     .map_or(self.table.created, |f| f.max(self.table.created)),
             ),
-        }))
+        })
     }
     pub(super) async fn info(&self, session: Arc<Session>, part: GameInfo) -> CommandResult<()> {
         ensure_or_reject!(
@@ -507,23 +497,27 @@ impl TableActor {
         let display_seat = seat.or_else(|| s.players.iter().position(|p| p.name == session.name));
         let mut e = self.effects();
         if part == GameInfo::Init {
-            let shared_replay = self.shared_replay_init(s, &session)?;
+            let shared_replay = self.shared_replay_init(s, &session);
+            let our_player_index = a.shadow.or_else(|| display_seat.and_then(PlayerIndex::new));
             let init = hanabi_protocol::Init {
                 table_id: self.table.id,
                 player_names: s.players.iter().map(|p| p.name.as_str().into()).collect(),
-                our_player_index: a.shadow.or_else(|| display_seat.and_then(PlayerIndex::new)),
-                mode: if shared_replay.is_some() {
-                    ViewMode::SharedReplay
-                } else if replay {
-                    ViewMode::Replay
-                } else if a.shadow.is_some() {
-                    ViewMode::Shadowing
-                } else if a.spectator {
-                    ViewMode::Spectating
-                } else {
-                    ViewMode::Playing
+                mode: match (shared_replay, a.shadow) {
+                    (Some(shared_replay), _) => ViewMode::SharedReplay {
+                        game_id: s.game_id,
+                        our_player_index,
+                        shared_replay,
+                    },
+                    (None, _) if replay => ViewMode::Replay {
+                        game_id: s.game_id,
+                        our_player_index,
+                    },
+                    (None, Some(our_player_index)) => ViewMode::Shadowing { our_player_index },
+                    (None, None) if a.spectator => ViewMode::Spectating {},
+                    (None, None) => ViewMode::Playing {
+                        our_player_index: our_player_index.context("Missing player")?,
+                    },
                 },
-                game_id: s.game_id.filter(|_| replay),
                 has_custom_seed: self.table.extra.custom_seed.is_some(),
                 seed: s.seed.clone(),
                 started_at: hanabi_protocol::Timestamp::from(s.started),
@@ -544,7 +538,6 @@ impl TableActor {
                 } else {
                     vec![]
                 },
-                shared_replay,
                 pause_player_index: s.paused_by,
                 pause_queued: seat.is_some_and(|i| s.queued_pauses[i]),
             };
@@ -685,8 +678,8 @@ fn vote_change(
 ) -> anyhow::Result<hanabi_protocol::VoteChange> {
     Ok(hanabi_protocol::VoteChange {
         table_id,
-        vote: s.votes[seat],
-        votes: u8::try_from(s.votes.iter().filter(|v| **v).count())?,
-        votes_needed: u8::try_from(votes_needed(s.players.len()))?,
+        voted: s.votes[seat],
+        num_votes: u8::try_from(s.votes.iter().filter(|v| **v).count())?,
+        num_votes_needed: u8::try_from(votes_needed(s.players.len()))?,
     })
 }

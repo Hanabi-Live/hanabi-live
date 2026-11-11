@@ -42,7 +42,7 @@ export function tableJoin(table: Table): void {
 
     // Prepare the Change Options dialog for guest.
     createGame.ready();
-    // (We will get a "joined" response back from the server.)
+    // (We will get a "tableJoined" response back from the server.)
   }
 }
 

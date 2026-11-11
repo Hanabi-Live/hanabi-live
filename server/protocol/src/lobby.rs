@@ -72,8 +72,10 @@ pub enum Activity {
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
-#[serde(transparent)]
-pub struct UserList(pub Vec<User>);
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct UserList {
+    pub users: Vec<User>,
+}
 
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
@@ -131,8 +133,8 @@ impl Notice {
 
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
-pub struct SoundLobby {
-    pub file: LobbySound,
+pub struct LobbySoundMessage {
+    pub sound: LobbySound,
 }
 
 /// A sound played outside of a game. The server plays "shutdown" to everyone when it is going down,
@@ -396,8 +398,10 @@ pub enum TablePhase {
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
-#[serde(transparent)]
-pub struct TableList(pub Vec<Table>);
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct TableList {
+    pub tables: Vec<Table>,
+}
 
 /// A completed game in a player's history.
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
@@ -422,10 +426,14 @@ pub struct GameHistoryEntry {
     pub tags: Vec<String>,
 }
 
-/// A page of the player's own game history, newest first.
+/// A page of the player's own game history, newest first. The lobby status gives the total.
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
-#[serde(transparent)]
-pub struct GameHistory(pub Vec<GameHistoryEntry>);
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct GameHistory {
+    pub games: Vec<GameHistoryEntry>,
+    /// The position of the page's first game among all of the player's games.
+    pub offset: Count,
+}
 
 /// A page of the games played on a seed.
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
@@ -434,7 +442,8 @@ pub struct GameHistoryOtherScores {
     pub games: Vec<GameHistoryEntry>,
     /// The position of the page's first game among all the games on the seed.
     pub offset: Count,
-    pub num_games_on_seed: Count,
+    /// How many games were played on the seed.
+    pub total: Count,
     #[schemars(length(min = 1))]
     pub variant_name: String,
     #[schemars(length(min = 1))]

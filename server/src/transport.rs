@@ -323,14 +323,14 @@ mod tests {
         drop(receiver.try_recv().unwrap());
         let mut completed = session
             .close_after(
-                &["soundLobby {}".into(), "error {}".into()],
+                &["lobbySound {}".into(), "error {}".into()],
                 SERVICE_RESTART_CLOSE_CODE,
             )
             .unwrap();
         session.emit(&Frame::from("must not follow close"));
         assert_eq!(
             receiver.try_recv().unwrap().message,
-            Message::Text("soundLobby {}".into())
+            Message::Text("lobbySound {}".into())
         );
         assert_eq!(
             receiver.try_recv().unwrap().message,
@@ -421,7 +421,7 @@ mod tests {
         let (session, _) = Session::new(UserId(1), "Alice".into(), 1);
         let text = format!(
             "replayCreate {}",
-            serde_json::json!({"visibility":"solo","source":{"type":"imported","game":{
+            serde_json::json!({"visibility":{"type":"solo"},"source":{"type":"imported","game":{
                 "seed":"p2v0s1","notes":[["n".repeat(65536)],[]]
             }}})
         );
@@ -460,12 +460,15 @@ mod tests {
         let all_notes: Vec<_> = (0..6)
             .map(|index| {
                 serde_json::json!({
-                    "name":format!("Player{index}"),"notes":notes,"isSpectator":false
+                    "username":format!("Player{index}"),"notes":notes,"isSpectator":false
                 })
             })
             .collect();
         let messages = [
-            test_frame("gameEventList", serde_json::json!({"tableId":42,"list":[]})),
+            test_frame(
+                "gameEventList",
+                serde_json::json!({"tableId":42,"events":[]}),
+            ),
             test_frame(
                 "noteList",
                 serde_json::json!({"tableId":42,"notes":all_notes}),

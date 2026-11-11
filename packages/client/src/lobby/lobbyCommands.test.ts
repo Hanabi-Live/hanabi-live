@@ -16,10 +16,10 @@ const { globals } = await import("../Globals.ts");
 const pregame = await import("./pregame/pregame.ts");
 const { lobbyCommands } = await import("./lobbyCommands.ts");
 
-describe('the "left" command', () => {
+describe('the "tableLeft" command', () => {
   test.each([
     ["PreGame", 1],
-    // The server also sends "left" after we leave a game or replay, which may return us to a
+    // The server also sends "tableLeft" after we leave a game or replay, which may return us to a
     // history screen rather than the lobby.
     ["History", 0],
     ["HistoryOtherScores", 0],
@@ -30,7 +30,7 @@ describe('the "left" command', () => {
       vi.mocked(pregame.hide).mockClear();
       globals.currentScreen = Screen[screen];
 
-      lobbyCommands.get("left")?.({ tableId: tableIdSchema.parse(1) });
+      lobbyCommands.get("tableLeft")?.({ tableId: tableIdSchema.parse(1) });
 
       expect(pregame.hide).toHaveBeenCalledTimes(calls);
     },

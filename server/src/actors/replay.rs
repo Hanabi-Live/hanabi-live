@@ -219,23 +219,21 @@ impl TableActor {
         }
         self.publish(e).await
     }
-    pub(super) async fn leader(&mut self, session: Arc<Session>, name: &str) -> CommandResult<()> {
+    pub(super) async fn leader(
+        &mut self,
+        session: Arc<Session>,
+        user: UserId,
+    ) -> CommandResult<()> {
         ensure_or_reject!(self.attending(&session), "Not attending");
         let target = if matches!(self.table.phase, Phase::Replay { .. }) {
             self.audience()
-                .find(|a| {
-                    crate::accounts::normalize_string(&a.session.name)
-                        == crate::accounts::normalize_string(name)
-                })
+                .find(|a| a.session.user == user)
                 .map(|a| (a.session.user, a.session.name.clone()))
         } else {
             self.table
                 .players()
                 .iter()
-                .find(|p| {
-                    crate::accounts::normalize_string(&p.name)
-                        == crate::accounts::normalize_string(name)
-                })
+                .find(|p| p.is(user))
                 .and_then(|p| Some((p.id?, p.name.clone())))
         }
         .or_reject("That player is not at this table")?;
@@ -274,10 +272,10 @@ impl TableActor {
         }
         self.add_all(
             &mut e,
-            hanabi_protocol::server::REPLAY_LEADER,
-            hanabi_protocol::ReplayLeader {
+            hanabi_protocol::server::TABLE_OWNER,
+            hanabi_protocol::TableOwner {
                 table_id: self.table.id,
-                username: target.1.clone().into(),
+                owner_id: target.0,
             },
         );
         if matches!(self.table.phase, Phase::Pregame { .. }) {
@@ -526,7 +524,7 @@ impl TableActor {
         // Everyone leaves the replay first, then enters the next game or its pregame.
         let mut e = self.effects();
         let boot = frame(
-            hanabi_protocol::server::BOOT,
+            hanabi_protocol::server::TABLE_BOOT,
             TableRef {
                 table_id: self.table.id,
             },
@@ -550,7 +548,7 @@ impl TableActor {
             }
             self.pregame_messages(&mut e);
             let joined = frame(
-                hanabi_protocol::server::JOINED,
+                hanabi_protocol::server::TABLE_JOINED,
                 TableRef {
                     table_id: self.table.id,
                 },

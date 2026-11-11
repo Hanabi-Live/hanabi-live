@@ -92,7 +92,7 @@ function gameReducerFunction(
      * {
      *   type: "clue",
      *   clue: { type: 0, value: 1 },
-     *   giver: 1,
+     *   playerIndex: 1,
      *   orders: [11],
      *   target: 2,
      *   turn: 0,
@@ -128,7 +128,7 @@ function gameReducerFunction(
               castDraft({
                 type: undefined,
                 value: undefined,
-                giver: action.giver,
+                giver: action.playerIndex,
                 target: action.target,
                 segment: gameState.turn.segment,
                 list: action.orders,
@@ -142,7 +142,7 @@ function gameReducerFunction(
             const clue = castDraft({
               type: action.clue.type,
               value: action.clue.value,
-              giver: action.giver,
+              giver: action.playerIndex,
               target: action.target,
               segment: gameState.turn.segment,
               list: action.orders,
@@ -156,7 +156,7 @@ function gameReducerFunction(
             const clue = castDraft({
               type: action.clue.type,
               value: action.clue.value,
-              giver: action.giver,
+              giver: action.playerIndex,
               target: action.target,
               segment: gameState.turn.segment,
               list: action.orders,

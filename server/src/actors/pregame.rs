@@ -250,7 +250,7 @@ impl TableActor {
                 e.messages.push((
                     a.session,
                     frame(
-                        hanabi_protocol::server::BOOT,
+                        hanabi_protocol::server::TABLE_BOOT,
                         TableRef {
                             table_id: self.table.id,
                         },
@@ -435,7 +435,7 @@ impl TableActor {
             effects.messages.push((
                 session.clone(),
                 frame(
-                    hanabi_protocol::server::BOOT,
+                    hanabi_protocol::server::TABLE_BOOT,
                     TableRef {
                         table_id: self.table.id,
                     },

@@ -65,7 +65,6 @@ pub(super) async fn export(
             id,
         )
     })?;
-    let deck: Vec<hanabi_protocol::CardIdentity> = serde_json::from_value(deck)?;
     let deck_len = deck.len();
     let mut notes = vec![vec![String::new(); deck_len + variant.suits.len()]; players.len()];
     for note in archive.notes {
@@ -80,18 +79,16 @@ pub(super) async fn export(
             notes.pop();
         }
     }
-    let flag = |enabled: bool| enabled.then_some(true);
-    let options = hanabi_protocol::ReplayOptions {
-        variant_name: (variant.name != hanabi_protocol::DEFAULT_VARIANT_NAME)
-            .then(|| variant.name.clone()),
+    let options = hanabi_protocol::GameOptions {
+        variant_name: variant.name.clone(),
         time_control: row.time_control(),
-        speedrun: flag(row.speedrun),
-        deck_plays: flag(row.deck_plays),
-        empty_clues: flag(row.empty_clues),
-        one_extra_card: flag(row.one_extra_card),
-        one_less_card: flag(row.one_less_card),
-        all_or_nothing: flag(row.all_or_nothing),
-        detrimental_characters: flag(row.detrimental_characters),
+        speedrun: row.speedrun,
+        deck_plays: row.deck_plays,
+        empty_clues: row.empty_clues,
+        one_extra_card: row.one_extra_card,
+        one_less_card: row.one_less_card,
+        all_or_nothing: row.all_or_nothing,
+        detrimental_characters: row.detrimental_characters,
     };
     let characters = if row.detrimental_characters {
         let mut characters = Vec::new();
@@ -117,9 +114,9 @@ pub(super) async fn export(
                 metadata: p.assigned_metadata.map(i32::from),
             });
         }
-        Some(characters)
+        characters
     } else {
-        None
+        Vec::new()
     };
     let actions = archive
         .actions
@@ -138,7 +135,7 @@ pub(super) async fn export(
         player_names: Some(players.iter().map(|p| p.name.clone()).collect()),
         deck: Some(deck),
         actions: Some(actions),
-        options: (options != hanabi_protocol::ReplayOptions::default()).then_some(options),
+        options,
         notes: notes.iter().any(|n| !n.is_empty()).then_some(notes),
         characters,
         seed: Some(seed),

@@ -189,7 +189,7 @@ describe("client hypothetical planning", () => {
       action: {
         type: "clue",
         clue: { type: "rank", value: 1 },
-        giver: 0,
+        playerIndex: 0,
         orders: [1],
         target: 1,
         ignoreNegative: false,

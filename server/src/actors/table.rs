@@ -266,12 +266,12 @@ impl TableActor {
         self.attendees.values().filter(|a| a.session.active())
     }
     /// Gives a replay whose leader has left a leader who is present: the first of the audience, or
-    /// else `joining`, a user who is joining it. Returns the new leader's ID and name.
+    /// else `joining`, a user who is joining it. Returns the new leader.
     pub(super) fn present_leader(
         &self,
         next: &mut TableSnapshot,
         joining: Option<&Session>,
-    ) -> Option<(UserId, String)> {
+    ) -> Option<UserId> {
         if self.attendees.contains_key(&next.owner)
             || joining.is_some_and(|session| session.user == next.owner)
         {
@@ -280,26 +280,26 @@ impl TableActor {
         let Phase::Replay { replay, .. } = &mut next.phase else {
             return None;
         };
-        let (successor, name) = self
+        let successor = self
             .audience()
             .map(|a| a.session.as_ref())
             .chain(joining)
-            .map(|session| (session.user, session.name.clone()))
+            .map(|session| session.user)
             .next()?;
         replay.leader = successor;
         next.owner = successor;
-        Some((successor, name))
+        Some(successor)
     }
     /// Tells the audience, apart from `except`, who leads the replay now.
-    pub(super) fn leader_messages(&self, e: &mut Effects, name: &str, except: Option<UserId>) {
+    pub(super) fn leader_messages(&self, e: &mut Effects, owner: UserId, except: Option<UserId>) {
         for a in self.audience().filter(|a| Some(a.session.user) != except) {
             e.messages.push((
                 a.session.clone(),
                 frame(
-                    hanabi_protocol::server::REPLAY_LEADER,
-                    hanabi_protocol::ReplayLeader {
+                    hanabi_protocol::server::TABLE_OWNER,
+                    hanabi_protocol::TableOwner {
                         table_id: self.table.id,
-                        username: name.into(),
+                        owner_id: owner,
                     },
                 ),
             ));
@@ -634,7 +634,7 @@ impl TableActor {
             e.messages.push((
                 s.clone(),
                 frame(
-                    hanabi_protocol::server::JOINED,
+                    hanabi_protocol::server::TABLE_JOINED,
                     TableRef {
                         table_id: self.table.id,
                     },
@@ -846,8 +846,8 @@ impl TableActor {
         }
         if before != self.attendees.len() {
             let mut e = self.effects();
-            if let Some((_, name)) = leader {
-                self.leader_messages(&mut e, &name, None);
+            if let Some(owner) = leader {
+                self.leader_messages(&mut e, owner, None);
             }
             for (id, name) in expired {
                 self.typing_messages(&mut e, id, &name, false);
@@ -930,7 +930,7 @@ impl TableActor {
     pub(super) fn card_identities(&self, s: &Snapshot) -> hanabi_protocol::CardIdentities {
         hanabi_protocol::CardIdentities {
             table_id: self.table.id,
-            identities: s
+            deck: s
                 .game
                 .identities()
                 .iter()
@@ -1062,7 +1062,7 @@ impl TableActor {
             ClientMessage::Chat(r) => self.chat(session, &r.text).await,
             ClientMessage::ChatRead(_) => self.chat_presence(session, false).await,
             ClientMessage::ChatTyping(_) => self.chat_presence(session, true).await,
-            ClientMessage::TableSetLeader(r) => self.leader(session, &r.username).await,
+            ClientMessage::TableSetOwner(r) => self.leader(session, r.user_id).await,
             // The rest depend on the table's phase.
             message => match self.table.phase {
                 Phase::Pregame { .. } => self.pregame_command(session, message).await,
@@ -1169,7 +1169,7 @@ impl TableActor {
             e.messages.push((
                 a.session.clone(),
                 frame(
-                    hanabi_protocol::server::BOOT,
+                    hanabi_protocol::server::TABLE_BOOT,
                     TableRef {
                         table_id: self.table.id,
                     },

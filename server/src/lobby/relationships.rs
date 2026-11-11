@@ -99,59 +99,90 @@ pub async fn change_friend(pool: &PgPool, id: UserId, target: UserId, add: bool)
     Ok(true)
 }
 
+/// A change to who the caller has as a friend, a linked account, or a blocked user. Each is also a
+/// chat command, which the messages name.
+#[derive(Clone, Copy, PartialEq, Eq)]
+pub enum Change {
+    Friend,
+    Unfriend,
+    Link,
+    Unlink,
+    Block,
+    Unblock,
+}
+
+impl Change {
+    /// The chat command that makes the change.
+    const fn verb(self) -> &'static str {
+        match self {
+            Self::Friend => "friend",
+            Self::Unfriend => "unfriend",
+            Self::Link => "link",
+            Self::Unlink => "unlink",
+            Self::Block => "block",
+            Self::Unblock => "unblock",
+        }
+    }
+}
+
+/// Tells the caller whom they have blocked.
+pub async fn blocked_list(
+    pool: &PgPool,
+    caller: &Identity,
+    table: Option<TableId>,
+) -> Result<Vec<Effect>> {
+    let names = blocked(pool, caller.user).await?;
+    let message = if names.is_empty() {
+        "Currently, you have not blocked anyone.".into()
+    } else {
+        format!(
+            "Currently blocked players: {}",
+            names
+                .iter()
+                .map(|n| escape_html(n))
+                .collect::<Vec<_>>()
+                .join(", ")
+        )
+    };
+    Ok(vec![notice(&caller.name, &message, table)])
+}
+
+/// Tells the caller which accounts they have linked.
+pub async fn linked_list(
+    pool: &PgPool,
+    caller: &Identity,
+    table: Option<TableId>,
+) -> Result<Vec<Effect>> {
+    let names: Vec<String> = sqlx::query_scalar!(
+        "SELECT u.username FROM user_linkages l JOIN users u ON u.id=l.linked_id
+             WHERE l.user_id=$1 ORDER BY LOWER(u.username) COLLATE \"C\"",
+        caller.user.0
+    )
+    .fetch_all(pool)
+    .await?;
+    let message = if names.is_empty() {
+        "Currently, you do not have any linked accounts.".into()
+    } else {
+        format!(
+            "Currently linked accounts: {}",
+            names
+                .iter()
+                .map(|n| escape_html(n))
+                .collect::<Vec<_>>()
+                .join(", ")
+        )
+    };
+    Ok(vec![notice(&caller.name, &message, table)])
+}
+
 pub async fn relationship(
     pool: &PgPool,
     caller: &Identity,
-    command: &str,
+    change: Change,
     name: &str,
     table: Option<TableId>,
 ) -> Result<Vec<Effect>> {
-    if command == "chatBlocked" {
-        let names = blocked(pool, caller.user).await?;
-        let message = if names.is_empty() {
-            "Currently, you have not blocked anyone.".into()
-        } else {
-            format!(
-                "Currently blocked players: {}",
-                names
-                    .iter()
-                    .map(|n| escape_html(n))
-                    .collect::<Vec<_>>()
-                    .join(", ")
-            )
-        };
-        return Ok(vec![notice(&caller.name, &message, table)]);
-    }
-    if command == "chatLinked" {
-        let names: Vec<String> = sqlx::query_scalar!(
-            "SELECT u.username FROM user_linkages l JOIN users u ON u.id=l.linked_id
-             WHERE l.user_id=$1 ORDER BY LOWER(u.username) COLLATE \"C\"",
-            caller.user.0
-        )
-        .fetch_all(pool)
-        .await?;
-        let message = if names.is_empty() {
-            "Currently, you do not have any linked accounts.".into()
-        } else {
-            format!(
-                "Currently linked accounts: {}",
-                names
-                    .iter()
-                    .map(|n| escape_html(n))
-                    .collect::<Vec<_>>()
-                    .join(", ")
-            )
-        };
-        return Ok(vec![notice(&caller.name, &message, table)]);
-    }
-    let verb = match command {
-        "chatFriend" => "friend",
-        "chatUnfriend" => "unfriend",
-        "chatLink" => "link",
-        "chatUnlink" => "unlink",
-        "chatBlock" => "block",
-        _ => "unblock",
-    };
+    let verb = change.verb();
     let normalized = normalize_string(name);
     if name.is_empty() {
         return Ok(vec![warning(&format!(
@@ -174,11 +205,19 @@ pub async fn relationship(
         ))]);
     };
     let escaped = escape_html(name);
-    if matches!(verb, "block" | "unblock") {
-        return block(pool, caller, target, &escaped, verb == "block", table).await;
+    if matches!(change, Change::Block | Change::Unblock) {
+        return block(
+            pool,
+            caller,
+            target,
+            &escaped,
+            change == Change::Block,
+            table,
+        )
+        .await;
     }
-    let add = matches!(verb, "friend" | "link");
-    let friend = matches!(verb, "friend" | "unfriend");
+    let add = matches!(change, Change::Friend | Change::Link);
+    let friend = matches!(change, Change::Friend | Change::Unfriend);
     let changed = if friend {
         change_friend(pool, caller.user, target, add).await?
     } else {

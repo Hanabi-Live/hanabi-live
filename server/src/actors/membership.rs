@@ -11,7 +11,7 @@ use anyhow::Context;
 use chrono::Utc;
 use hanabi_protocol::PlayerIndex;
 use hanabi_protocol::UserId;
-use hanabi_protocol::{LobbySound, SoundLobby, TableJoinRequest, TableRef, TableStarted};
+use hanabi_protocol::{LobbySound, LobbySoundMessage, TableJoinRequest, TableRef, TableStarted};
 use std::{
     collections::{BTreeSet, HashSet},
     sync::Arc,
@@ -157,9 +157,9 @@ impl TableActor {
         if since_last_join > JOIN_SOUND_INTERVAL {
             let players: HashSet<UserId> = self.table.seated_users().collect();
             let sound = frame(
-                hanabi_protocol::server::SOUND_LOBBY,
-                SoundLobby {
-                    file: LobbySound::SomeoneJoined,
+                hanabi_protocol::server::LOBBY_SOUND,
+                LobbySoundMessage {
+                    sound: LobbySound::SomeoneJoined,
                 },
             );
             for attendee in self
@@ -277,8 +277,8 @@ impl TableActor {
             *absent = None;
         }
         let mut e = self.effects();
-        if let Some((_, name)) = leader {
-            self.leader_messages(&mut e, &name, Some(session.user));
+        if let Some(owner) = leader {
+            self.leader_messages(&mut e, owner, Some(session.user));
         }
         if let Some(notice) = notice {
             for attendee in self.audience().filter(|a| a.session.user != session.user) {
@@ -310,7 +310,7 @@ impl TableActor {
             e.messages.push((
                 session.clone(),
                 frame(
-                    hanabi_protocol::server::JOINED,
+                    hanabi_protocol::server::TABLE_JOINED,
                     TableRef {
                         table_id: self.table.id,
                     },
@@ -382,7 +382,7 @@ impl TableActor {
             e.messages.push((
                 session,
                 frame(
-                    hanabi_protocol::server::LEFT,
+                    hanabi_protocol::server::TABLE_LEFT,
                     TableRef {
                         table_id: self.table.id,
                     },

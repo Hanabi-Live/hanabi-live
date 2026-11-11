@@ -91,9 +91,11 @@ function WatchReplayForm() {
 
     globals.conn!.send("replayCreate", {
       source: replay,
-      visibility,
       // Only shared replays can be spoiler-free reviews.
-      spoilerFree: visibility === "shared" && spoilerFree,
+      visibility:
+        visibility === "shared"
+          ? { type: "shared", spoilerFree }
+          : { type: "solo" },
     });
     lobbyPage.hide();
   }

@@ -55,7 +55,7 @@ describe("gameReducer", () => {
     const action: ActionClue = {
       type: "clue",
       clue: { type: undefined, value: undefined },
-      giver: 0,
+      playerIndex: 0,
       target: 1,
       orders: [first.order],
       ignoreNegative: false,
@@ -834,7 +834,7 @@ describe("gameReducer", () => {
       assertDefined(clue, "Failed to get the clue.");
 
       expect(state.clues.length).toBe(initialState.clues.length + 1);
-      expect(clue.giver).toBe(testClue.giver);
+      expect(clue.giver).toBe(testClue.playerIndex);
       expect(clue.target).toBe(testClue.target);
       expect(clue.type).toBe(testClue.clue.type);
       expect(clue.value).toBe(testClue.clue.value);

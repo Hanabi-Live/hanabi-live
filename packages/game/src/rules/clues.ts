@@ -28,7 +28,7 @@ import type { ActionClue } from "../types/gameActions.ts";
  * as a hidden clue that the player gives to themselves, which a real game cannot contain.
  */
 export function isPassTurnClue(action: ActionClue): boolean {
-  return action.giver === action.target;
+  return action.playerIndex === action.target;
 }
 
 export function getClueName(

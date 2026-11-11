@@ -26,20 +26,20 @@ macro_rules! client_contracts {
             Chat "chat" => ChatRequest;
             ChatPm "chatPm" => ChatPmRequest;
             ChatPmHistory "chatPmHistory" => ChatPmHistoryRequest;
-            ChatFriend "chatFriend" => ChatUserRequest;
-            ChatUnfriend "chatUnfriend" => ChatUserRequest;
-            ChatLink "chatLink" => ChatUserRequest;
-            ChatUnlink "chatUnlink" => ChatUserRequest;
-            ChatLinked "chatLinked" => ChatRoomRequest;
-            ChatBlock "chatBlock" => ChatUserRequest;
-            ChatUnblock "chatUnblock" => ChatUserRequest;
-            ChatBlocked "chatBlocked" => ChatRoomRequest;
+            FriendAdd "friendAdd" => ChatUserRequest;
+            FriendRemove "friendRemove" => ChatUserRequest;
+            LinkAdd "linkAdd" => ChatUserRequest;
+            LinkRemove "linkRemove" => ChatUserRequest;
+            LinkList "linkList" => ChatRoomRequest;
+            BlockAdd "blockAdd" => ChatUserRequest;
+            BlockRemove "blockRemove" => ChatUserRequest;
+            BlockList "blockList" => ChatRoomRequest;
             ChatRead "chatRead" => TableRef;
             ChatTyping "chatTyping" => TableRef;
             TableJoin "tableJoin" => TableJoinRequest;
             TableLeave "tableLeave" => TableRef;
             TableReattend "tableReattend" => TableRef;
-            TableSetLeader "tableSetLeader" => TableSetLeaderRequest;
+            TableSetOwner "tableSetOwner" => TableSetOwnerRequest;
             TableSetVariant "tableSetVariant" => TableSetVariantRequest;
             TableStart "tableStart" => TableStartRequest;
             TableRestart "tableRestart" => TableRestartRequest;
@@ -53,7 +53,7 @@ macro_rules! client_contracts {
             GameStateLoad "gameStateLoad" => TableRef;
             Loaded "loaded" => TableRef;
             Setting "setting" => SettingRequest;
-            Inactive "inactive" => InactiveRequest;
+            UserInactive "userInactive" => InactiveRequest;
             GameHistory "gameHistory" => GameHistoryRequest;
             GameHistoryOtherScores "gameHistoryOtherScores" => GameHistoryOtherScoresRequest;
             TagSearch "tagSearch" => TagSearchRequest;
@@ -83,9 +83,9 @@ macro_rules! server_contracts {
             IDLE_RESET "idleReset" => TableRef;
             VOTE_CHANGE "voteChange" => VoteChange;
             CARD_IDENTITIES "cardIdentities" => CardIdentities;
-            FINISH_ONGOING_GAME "finishOngoingGame" => FinishOngoingGame;
+            GAME_FINISHED "gameFinished" => GameFinished;
             REPLAY_ACTION "replayAction" => ReplayAction;
-            REPLAY_LEADER "replayLeader" => ReplayLeader;
+            TABLE_OWNER "tableOwner" => TableOwner;
             RESTART_DECLINED "restartDeclined" => RestartDeclined;
             SUGGESTION "suggestion" => Suggestion;
             HYPOTHETICAL "hypothetical" => Hypothetical;
@@ -95,7 +95,7 @@ macro_rules! server_contracts {
             GAME_EVENT "gameEvent" => GameEventMessage;
             GAME_EVENT_LIST "gameEventList" => GameEventList;
             INIT "init" => Init;
-            BOOT "boot" => TableRef;
+            TABLE_BOOT "tableBoot" => TableRef;
             SYNCED "synced" => Empty;
             LOBBY_STATUS "lobbyStatus" => LobbyStatus;
             CHAT "chat" => Chat;
@@ -103,8 +103,8 @@ macro_rules! server_contracts {
             CHAT_LIST "chatList" => ChatList;
             CHAT_PM_HISTORY "chatPmHistory" => ChatPmHistory;
             CHAT_TYPING "chatTyping" => ChatTyping;
-            JOINED "joined" => TableRef;
-            LEFT "left" => TableRef;
+            TABLE_JOINED "tableJoined" => TableRef;
+            TABLE_LEFT "tableLeft" => TableRef;
             TABLE_GONE "tableGone" => TableRef;
             TABLE_STARTED "tableStarted" => TableStarted;
             USER "user" => User;
@@ -115,7 +115,7 @@ macro_rules! server_contracts {
             BLOCKED "blocked" => Blocked;
             ERROR "error" => Notice;
             WARNING "warning" => Notice;
-            SOUND_LOBBY "soundLobby" => SoundLobby;
+            LOBBY_SOUND "lobbySound" => LobbySoundMessage;
             WELCOME "welcome" => Welcome;
             SPECTATORS "spectators" => Spectators;
             TABLE "table" => Table;
@@ -335,12 +335,12 @@ macro_rules! server_messages {
 pub mod server {
     use super::{
         Blocked, CardIdentities, Chat, ChatDelete, ChatList, ChatPmHistory, ChatTyping, Clock,
-        Connected, Empty, FinishOngoingGame, Friends, GameEventList, GameEventMessage, GameHistory,
-        GameHistoryEntry, GameHistoryOtherScores, Hypothetical, IdleWarning, Init, LobbyStatus,
-        Note, NoteList, NoteListPlayer, Notice, Pause, Pregame, ReplayAction, ReplayLeader,
-        Restart, RestartDeclined, ServerMessage, SoundLobby, Spectators, Suggestion, Table,
-        TableList, TableRef, TableStarted, User, UserInactive, UserLeft, UserList, VoteChange,
-        Welcome,
+        Connected, Empty, Friends, GameEventList, GameEventMessage, GameFinished, GameHistory,
+        GameHistoryEntry, GameHistoryOtherScores, Hypothetical, IdleWarning, Init,
+        LobbySoundMessage, LobbyStatus, Note, NoteList, NoteListPlayer, Notice, Pause, Pregame,
+        ReplayAction, Restart, RestartDeclined, ServerMessage, Spectators, Suggestion, Table,
+        TableList, TableOwner, TableRef, TableStarted, User, UserInactive, UserLeft, UserList,
+        VoteChange, Welcome,
     };
     server_contracts!(server_messages);
 }

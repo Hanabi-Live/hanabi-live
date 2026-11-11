@@ -138,6 +138,7 @@ fn typed_game_frames_preserve_wire_schema_and_projected_identities() -> Result<(
             event.retain(|_, value| !value.is_null());
             for (engine, wire) in [
                 ("list", "orders"),
+                ("giver", "playerIndex"),
                 ("playerTimes", "playerTimesMs"),
                 ("duration", "durationMs"),
             ] {
@@ -807,7 +808,7 @@ async fn abandoned_pregames_expire_durably_even_with_a_password_or_spectator() -
                 HubCommand::Retire(table) => removed |= table == id,
                 HubCommand::Effects(effects) => {
                     observer_booted |= effects.messages.iter().any(|(session, message)| {
-                        session.user == UserId(2) && message.starts_with("boot ")
+                        session.user == UserId(2) && message.starts_with("tableBoot ")
                     });
                 }
                 _ => {}
@@ -1158,7 +1159,7 @@ async fn a_table_that_panics_is_removed_and_frees_its_players() -> Result<()> {
         let mut seen = Vec::new();
         tokio::time::timeout(Duration::from_secs(3), async {
             while !(seen.iter().any(|f: &String| f.starts_with("tableGone "))
-                && seen.iter().any(|f| f.starts_with("boot "))
+                && seen.iter().any(|f| f.starts_with("tableBoot "))
                 && seen.iter().any(|f| f.starts_with("warning "))
                 && seen.iter().any(|f| f.starts_with("user ")))
             {

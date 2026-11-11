@@ -55,7 +55,7 @@ export function getClueText(
   hypothetical: boolean,
   metadata: GameMetadata,
 ): string {
-  const giver = metadata.playerNames[action.giver] ?? "unknown";
+  const giver = metadata.playerNames[action.playerIndex] ?? "unknown";
   const target = metadata.playerNames[action.target] ?? "unknown";
   const word = NUMBER_WORDS[action.orders.length] ?? "unknown";
   const variant = getVariant(metadata.options.variantName);
@@ -67,7 +67,7 @@ export function getClueText(
 
   // First, handle the case of clue text in some special variants.
   const characterName = getCharacterNameForPlayer(
-    action.giver,
+    action.playerIndex,
     metadata.characterAssignments,
   );
   if (

@@ -27,7 +27,7 @@ describe("server game events", () => {
     const action = toGameAction(
       event({
         type: "clue",
-        giver: 0,
+        playerIndex: 0,
         target: 1,
         orders: [3, 4],
       }),
@@ -51,7 +51,7 @@ describe("server game events", () => {
       event({
         type: "clue",
         clue: { type: 1, value: 6 },
-        giver: 0,
+        playerIndex: 0,
         target: 1,
         orders: [3],
         turn: 2,
@@ -88,13 +88,13 @@ describe("card identities", () => {
   test("every identity names a suit and a rank", () => {
     const [identity] = SERVER_COMMAND_SCHEMAS.cardIdentities.parse({
       tableId: 1,
-      identities: [{ suitIndex: 2, rank: 7 }],
-    }).identities;
+      deck: [{ suitIndex: 2, rank: 7 }],
+    }).deck;
     expect(toCardIdentity(identity!)).toEqual({ suitIndex: 2, rank: 7 });
     expect(
       SERVER_COMMAND_SCHEMAS.cardIdentities.safeParse({
         tableId: 1,
-        identities: [{ rank: 7 }],
+        deck: [{ rank: 7 }],
       }).success,
     ).toBe(false);
   });
@@ -108,12 +108,12 @@ describe("sounds", () => {
   });
 
   test("the lobby plays the shutdown sound", () => {
-    const { file } = SERVER_COMMAND_SCHEMAS.soundLobby.parse({
-      file: "shutdown",
+    const { sound } = SERVER_COMMAND_SCHEMAS.lobbySound.parse({
+      sound: "shutdown",
     });
-    expect(toSoundType(file)).toBe("shutdown");
+    expect(toSoundType(sound)).toBe("shutdown");
     expect(() =>
-      SERVER_COMMAND_SCHEMAS.soundLobby.parse({ file: "not-a-sound" }),
+      SERVER_COMMAND_SCHEMAS.lobbySound.parse({ sound: "not-a-sound" }),
     ).toThrow();
   });
 });

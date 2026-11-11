@@ -181,13 +181,13 @@ export const catalogVariantSchema = z
     funnels: z.literal(true).optional(),
     /**
      * A number from 0 to N. For example, "No Variant" is variant 0, "6 Suits" is variant 1, and so
-     * on. This is a legacy field; we want to transition to using a more descriptive string ID,
-     * which will allow for custom user-defined variants.
+     * on. The database and seeds name a variant by this number.
      */
     id: variantIdSchema,
     name: z.string().min(1),
     /**
-     * A string that describes the variant. For example, "No Variant" is `R+Y+G+B+P`.
+     * The variant's suits and modifiers, from which the catalog generator checks the entry. For
+     * example, "No Variant" is `R+Y+G+B+P`.
      */
     newId: z.string().min(1),
     oddsAndEvens: z.literal(true).optional(),
@@ -352,7 +352,6 @@ export const gameEventSchema = z.discriminatedUnion("type", [
        * Absent when the recipient may not see the clue's type and value.
        */
       clue: clueSchema.optional(),
-      giver: playerIndexSchema,
       /**
        * Whether the cards that the clue does not touch learn nothing from it. Only a hypothetical's
        * clue can set it.
@@ -362,6 +361,10 @@ export const gameEventSchema = z.discriminatedUnion("type", [
        * The orders of the cards the clue touched.
        */
       orders: z.array(cardOrderSchema).readonly(),
+      /**
+       * The player who gives the clue.
+       */
+      playerIndex: playerIndexSchema,
       target: playerIndexSchema,
       type: z.literal("clue"),
     })
@@ -489,7 +492,6 @@ export const hypotheticalEventSchema = z.discriminatedUnion("type", [
        * Absent when the recipient may not see the clue's type and value.
        */
       clue: clueSchema.optional(),
-      giver: playerIndexSchema,
       /**
        * Whether the cards that the clue does not touch learn nothing from it. Only a hypothetical's
        * clue can set it.
@@ -499,6 +501,10 @@ export const hypotheticalEventSchema = z.discriminatedUnion("type", [
        * The orders of the cards the clue touched.
        */
       orders: z.array(cardOrderSchema).readonly(),
+      /**
+       * The player who gives the clue.
+       */
+      playerIndex: playerIndexSchema,
       target: playerIndexSchema,
       type: z.literal("clue"),
     })

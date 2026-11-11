@@ -9,6 +9,8 @@ import {
 } from "./chat.ts";
 import * as createGame from "./lobby/createGame.ts";
 import { createJsonFromReplay } from "./lobby/createReplayJson.ts";
+import { getOnlineUserId } from "./onlineUsers.ts";
+import { escapeHtml } from "./utils.ts";
 
 // Define a command handler map.
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -44,7 +46,7 @@ function friend(room: string, args: readonly string[]) {
     sendSelfPmFromServer("You cannot friend yourself.", room);
   }
 
-  globals.conn!.send("chatFriend", {
+  globals.conn!.send("friendAdd", {
     username,
   });
 }
@@ -78,7 +80,7 @@ function link(room: string, args: readonly string[]) {
     sendSelfPmFromServer("You cannot link yourself.", room);
   }
 
-  globals.conn!.send("chatLink", {
+  globals.conn!.send("linkAdd", {
     username,
   });
 }
@@ -101,14 +103,14 @@ function unlink(room: string, args: readonly string[]) {
     sendSelfPmFromServer("You cannot unlink yourself.", room);
   }
 
-  globals.conn!.send("chatUnlink", {
+  globals.conn!.send("linkRemove", {
     username,
   });
 }
 
 // /links
 function links() {
-  globals.conn!.send("chatLinked", {});
+  globals.conn!.send("linkList", {});
 }
 
 chatCommands.set("link", link);
@@ -127,7 +129,7 @@ function blockCommand(command: "block" | "unblock") {
       return;
     }
 
-    globals.conn!.send(command === "block" ? "chatBlock" : "chatUnblock", {
+    globals.conn!.send(command === "block" ? "blockAdd" : "blockRemove", {
       username: args.join(" "),
       ...roomField(room),
     });
@@ -139,7 +141,7 @@ chatCommands.set("unblock", blockCommand("unblock"));
 
 // /blocked
 chatCommands.set("blocked", (room: string) => {
-  globals.conn!.send("chatBlocked", roomField(room));
+  globals.conn!.send("blockList", roomField(room));
 });
 
 // /pm [username] [msg]
@@ -265,9 +267,20 @@ function setLeader(room: string, args: readonly string[]) {
   }
 
   const username = args.join(" ");
-  globals.conn!.send("tableSetLeader", {
+  const userId = getOnlineUserId(username);
+  if (userId === undefined) {
+    sendSelfPmFromServer(
+      username === ""
+        ? "The format of the <code>/setleader</code> command is: <code>/setleader [username]</code>"
+        : `User "${escapeHtml(username)}" is not currently online.`,
+      room,
+      SelfChatMessageType.Error,
+    );
+    return;
+  }
+  globals.conn!.send("tableSetOwner", {
     tableId: globals.tableId,
-    username,
+    userId,
   });
 }
 chatCommands.set("setleader", setLeader);
@@ -448,7 +461,7 @@ chatCommands.set("unfriend", (room: string, args: readonly string[]) => {
     );
   }
 
-  globals.conn!.send("chatUnfriend", {
+  globals.conn!.send("friendRemove", {
     username,
   });
 });

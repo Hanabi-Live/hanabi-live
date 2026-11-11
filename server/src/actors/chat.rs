@@ -536,7 +536,7 @@ impl TableActor {
             e.messages.push((
                 a.session,
                 frame(
-                    hanabi_protocol::server::LEFT,
+                    hanabi_protocol::server::TABLE_LEFT,
                     TableRef {
                         table_id: self.table.id,
                     },

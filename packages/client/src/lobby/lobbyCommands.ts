@@ -75,9 +75,9 @@ lobbyCommands.set("pregame", (data) => {
   }
 });
 
-lobbyCommands.set("gameHistory", (dataArray) => {
-  // `dataArray` is a page of the games that we have previously played.
-  store.dispatch(historyReceived(dataArray));
+lobbyCommands.set("gameHistory", (data) => {
+  // A page of the games that we have previously played.
+  store.dispatch(historyReceived(data.games));
 });
 
 lobbyCommands.set("gameHistoryAdded", (data) => {
@@ -92,14 +92,14 @@ lobbyCommands.set("gameHistoryOtherScores", (data) => {
   store.dispatch(otherScoresReceived(data));
 });
 
-lobbyCommands.set("joined", (data) => {
+lobbyCommands.set("tableJoined", (data) => {
   globals.tableId = data.tableId;
 
   // We joined a new game, so transition between screens.
   pregame.show();
 });
 
-lobbyCommands.set("left", () => {
+lobbyCommands.set("tableLeft", () => {
   // We left a table, so transition between screens. (The server also sends this after we leave a
   // game or replay, by which point we have already returned to the lobby or a history screen.)
   if (globals.currentScreen === Screen.PreGame) {
@@ -107,8 +107,8 @@ lobbyCommands.set("left", () => {
   }
 });
 
-lobbyCommands.set("soundLobby", (data) => {
-  sounds.play(toSoundType(data.file));
+lobbyCommands.set("lobbySound", (data) => {
+  sounds.play(toSoundType(data.sound));
 });
 
 // Received by the client when a table is created or modified.
@@ -136,8 +136,8 @@ lobbyCommands.set("tableGone", (data) => {
 });
 
 // Received by the client upon initial connection.
-lobbyCommands.set("tableList", (dataList) => {
-  store.dispatch(tablesListed(dataList));
+lobbyCommands.set("tableList", (data) => {
+  store.dispatch(tablesListed(data.tables));
 });
 
 lobbyCommands.set("tableStarted", (data) => {
@@ -156,11 +156,11 @@ lobbyCommands.set("user", (data) => {
   store.dispatch(userChanged(data));
 });
 
-lobbyCommands.set("userList", (dataList) => {
-  for (const data of dataList) {
-    globals.userMap.set(data.userId, data);
+lobbyCommands.set("userList", (data) => {
+  for (const user of data.users) {
+    globals.userMap.set(user.userId, user);
   }
-  store.dispatch(usersListed(dataList));
+  store.dispatch(usersListed(data.users));
 });
 
 lobbyCommands.set("userLeft", (data) => {

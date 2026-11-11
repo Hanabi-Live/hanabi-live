@@ -347,7 +347,7 @@ function ReplayButton({
       onClick={() => {
         globals.conn!.send("replayCreate", {
           source: { type: "saved", gameId },
-          visibility,
+          visibility: { type: visibility },
         });
         if (visibility === "shared") {
           hide();

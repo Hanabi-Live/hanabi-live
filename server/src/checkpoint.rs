@@ -374,6 +374,7 @@ const UPGRADES: &[(&str, &str, Upgrade)] = &[
     ("hanabi-live-8", "hanabi-live-9", nested_best_scores),
     ("hanabi-live-9", "hanabi-live-10", wire_renames),
     ("hanabi-live-10", "hanabi-live-11", untimed_clocks),
+    ("hanabi-live-11", "hanabi-live-12", clue_player_index),
 ];
 
 /// Rewrites a table that an older server saved, one format at a time, into the current format.
@@ -687,6 +688,23 @@ fn negate_all(values: &mut Value) {
             }
         }
     }
+}
+
+/// Format 11 named the player who gives a hypothetical's clue `giver`.
+#[expect(
+    clippy::unnecessary_wraps,
+    reason = "every upgrade has the signature of `Upgrade`"
+)]
+fn clue_player_index(head: &mut Value, _: &mut [(String, String)]) -> Result<()> {
+    if let Some(Value::Array(events)) = head.pointer_mut("/phase/replay/hypotheticalActions") {
+        for event in events
+            .iter_mut()
+            .filter(|event| event.get("type").is_some_and(|kind| kind == "clue"))
+        {
+            rename(Some(event), "giver", "playerIndex");
+        }
+    }
+    Ok(())
 }
 
 /// Rewrites a clue that a turn of format 3 gives.

@@ -51,7 +51,7 @@ function reply(
     variantName: "No Variant",
     games,
     offset,
-    numGamesOnSeed: total,
+    total,
   } as ServerCommandData["gameHistoryOtherScores"];
 }
 

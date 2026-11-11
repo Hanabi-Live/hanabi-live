@@ -17,6 +17,18 @@ pub enum ChatSource {
     Discord,
 }
 
+impl ChatSource {
+    /// The source with this name, which the wire and the database's chat log both use.
+    pub fn from_name(name: &str) -> Option<Self> {
+        match name {
+            "user" => Some(Self::User),
+            "server" => Some(Self::Server),
+            "discord" => Some(Self::Discord),
+            _ => None,
+        }
+    }
+}
+
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct Chat {

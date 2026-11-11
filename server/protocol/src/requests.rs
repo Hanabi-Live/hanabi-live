@@ -77,9 +77,9 @@ pub struct TableJoinRequest {
 
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
-pub struct TableSetLeaderRequest {
+pub struct TableSetOwnerRequest {
     pub table_id: TableId,
-    pub username: String,
+    pub user_id: UserId,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
@@ -210,11 +210,26 @@ pub struct TableUpdateRequest {
     pub settings: TableSettings,
 }
 
+/// Who watches a replay: its creator alone, or anyone who joins it.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
-#[serde(rename_all = "lowercase")]
+#[serde(
+    tag = "type",
+    rename_all = "camelCase",
+    rename_all_fields = "camelCase",
+    deny_unknown_fields
+)]
 pub enum ReplayVisibility {
-    Solo,
-    Shared,
+    Solo {},
+    Shared {
+        /// For a saved game, spectate an existing shared replay of the same game instead of
+        /// creating another one, if there is one.
+        #[serde(default)]
+        join_existing: bool,
+        /// Hide what happens later in the game: the turn slider, jumping to the end, and future
+        /// strikes.
+        #[serde(default)]
+        spoiler_free: bool,
+    },
 }
 
 /// A request to watch a finished game.
@@ -226,14 +241,6 @@ pub struct ReplayCreateRequest {
     /// The seat to shadow, if any.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub shadowing_player_index: Option<PlayerIndex>,
-    /// For a shared replay of a saved game, spectate an existing shared replay of the same game
-    /// instead of creating another one, if there is one.
-    #[serde(default)]
-    pub join_existing: bool,
-    /// For a shared replay, hide what happens later in the game: the turn slider, jumping to the
-    /// end, and future strikes.
-    #[serde(default)]
-    pub spoiler_free: bool,
 }
 
 /// The finished game that a replay shows: one from the database, or one imported in the replay

@@ -10,13 +10,14 @@ import type { WebSocket } from "ws";
 import { z } from "zod";
 import { evaluationDatabase, liveTables } from "./database.ts";
 import {
-  ROOT,
   bounded,
   buildRust,
   databaseDescribe,
   installSchema,
   login,
+  ourPlayerIndex,
   prepareRoot,
+  ROOT,
   socketClient,
   startProcess,
   stopChild,
@@ -54,11 +55,11 @@ databaseDescribe("Rust actor durability and ownership", () => {
         let bob = await connect(bobCookie);
         alice.send("tableCreate", { settings: { name: "Recovery" } });
         const { tableId } = await alice.receive(
-          "joined",
-          SERVER_COMMAND_SCHEMAS.joined,
+          "tableJoined",
+          SERVER_COMMAND_SCHEMAS.tableJoined,
         );
         bob.send("tableJoin", { tableId });
-        await bob.receive("joined", SERVER_COMMAND_SCHEMAS.joined);
+        await bob.receive("tableJoined", SERVER_COMMAND_SCHEMAS.tableJoined);
         alice.send("tableStart", { tableId });
         await alice.receive(
           "tableStarted",
@@ -87,7 +88,7 @@ databaseDescribe("Rust actor durability and ownership", () => {
           SERVER_COMMAND_SCHEMAS.connected,
           (data) => data.connected.every(Boolean),
         );
-        const activeIsAlice = a.init.ourPlayerIndex === 0;
+        const activeIsAlice = ourPlayerIndex(a.init) === 0;
         const active = activeIsAlice ? alice : bob;
         const other = activeIsAlice ? bob : alice;
         const initial = activeIsAlice ? a : b;
@@ -212,7 +213,7 @@ databaseDescribe("Rust actor durability and ownership", () => {
           SERVER_COMMAND_SCHEMAS.tableStarted,
         );
         const restored = await bootstrap(returning);
-        expect(restored.init.ourPlayerIndex).toBe(0);
+        expect(ourPlayerIndex(restored.init)).toBe(0);
         expect(
           restored.history.events.filter(
             (event) => event.type === "play" || event.type === "discard",

@@ -24,19 +24,19 @@ pub fn route(message: &ClientMessage) -> Route {
         M::LobbyLoad(_) => return Route::Connection,
         M::Sync(_) | M::TableCreate(_) | M::ReplayCreate(_) => return Route::Hub,
         M::Setting(_)
-        | M::Inactive(_)
+        | M::UserInactive(_)
         | M::GameHistory(_)
         | M::GameHistoryOtherScores(_)
         | M::ChatPm(_)
         | M::ChatPmHistory(_)
-        | M::ChatFriend(_)
-        | M::ChatUnfriend(_)
-        | M::ChatLink(_)
-        | M::ChatUnlink(_)
-        | M::ChatLinked(_)
-        | M::ChatBlock(_)
-        | M::ChatUnblock(_)
-        | M::ChatBlocked(_)
+        | M::FriendAdd(_)
+        | M::FriendRemove(_)
+        | M::LinkAdd(_)
+        | M::LinkRemove(_)
+        | M::LinkList(_)
+        | M::BlockAdd(_)
+        | M::BlockRemove(_)
+        | M::BlockList(_)
         | M::TagSearch(_) => return Route::Lobby,
         M::Chat(r) => match r.table_id {
             Some(id) => return Route::TableChat(id),
@@ -55,7 +55,7 @@ pub fn route(message: &ClientMessage) -> Route {
         | M::TagDeleteAll(r)
         | M::Loaded(r) => r.table_id,
         M::TableJoin(r) => r.table_id,
-        M::TableSetLeader(r) => r.table_id,
+        M::TableSetOwner(r) => r.table_id,
         M::TableSetVariant(r) => r.table_id,
         M::TableStart(r) => r.table_id,
         M::TableRestart(r) => r.table_id,

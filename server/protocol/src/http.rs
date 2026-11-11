@@ -93,8 +93,9 @@ pub struct PasswordHashResponse {
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct PublicGamePage {
-    pub total_rows: Count,
-    pub rows: Vec<PublicGameRow>,
+    pub games: Vec<PublicGameRow>,
+    /// How many games the list has on all of its pages.
+    pub total: Count,
 }
 
 /// One game in a public game list.
@@ -102,8 +103,6 @@ pub struct PublicGamePage {
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct PublicGameRow {
     pub game_id: GameId,
-    #[schemars(with = "NumPlayers")]
-    pub num_players: u8,
     pub score: Score,
     /// Variant lists omit it.
     #[serde(skip_serializing_if = "Option::is_none")]

@@ -1,6 +1,7 @@
 // Passing the lead of a shared replay to someone else.
 
 import * as modals from "../../modals.ts";
+import { getOnlineUserId } from "../../onlineUsers.ts";
 import { getHtmlElement } from "../../utils.ts";
 import { globals } from "./UiGlobals.ts";
 
@@ -46,12 +47,13 @@ export function showPassLeaderDialog(): void {
 function setLeader(player: string | undefined) {
   modals.closeModals();
 
-  if (player === undefined) {
+  const userId = player === undefined ? undefined : getOnlineUserId(player);
+  if (userId === undefined) {
     return;
   }
 
-  globals.lobby.conn!.send("tableSetLeader", {
+  globals.lobby.conn!.send("tableSetOwner", {
     tableId: globals.lobby.joinedTableId,
-    username: player,
+    userId,
   });
 }

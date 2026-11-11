@@ -59,13 +59,12 @@ pub struct Pause {
 pub struct VoteChange {
     pub table_id: TableId,
     /// Whether the recipient voted.
-    pub vote: bool,
-    /// How many players voted.
+    pub voted: bool,
     #[schemars(range(min = 0, max = MAX_PLAYERS))]
-    pub votes: u8,
+    pub num_votes: u8,
     /// How many votes end the game.
     #[schemars(range(min = 1, max = MAX_PLAYERS))]
-    pub votes_needed: u8,
+    pub num_votes_needed: u8,
 }
 
 /// A card's suit and rank.
@@ -82,12 +81,13 @@ pub struct CardIdentity {
 pub struct CardIdentities {
     pub table_id: TableId,
     #[schemars(length(max = MAX_DECK_SIZE))]
-    pub identities: Vec<CardIdentity>,
+    pub deck: Vec<CardIdentity>,
 }
 
+/// Sent when a game ends: its players and spectators now watch its shared replay.
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
-pub struct FinishOngoingGame {
+pub struct GameFinished {
     pub table_id: TableId,
     /// Absent when the game was not saved.
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -208,7 +208,8 @@ pub struct ClueEvent {
     /// Absent when the recipient may not see the clue's type and value.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub clue: Option<Clue>,
-    pub giver: PlayerIndex,
+    /// The player who gives the clue.
+    pub player_index: PlayerIndex,
     pub target: PlayerIndex,
     /// The orders of the cards the clue touched.
     pub orders: Vec<CardOrder>,
@@ -285,17 +286,59 @@ pub struct CharacterAssignment {
     pub metadata: Option<i32>,
 }
 
-/// How the recipient takes part in a game: as a player or a spectator of a game in progress, as a
-/// spectator who views it from a player's seat (shadowing), or as a viewer of a finished game, alone
-/// (replay) or with others (shared replay).
-#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
-#[serde(rename_all = "camelCase")]
+/// How the recipient takes part in a game, and what that needs. `ourPlayerIndex` is the seat that
+/// the recipient sees the game from.
+#[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
+#[serde(
+    tag = "type",
+    rename_all = "camelCase",
+    rename_all_fields = "camelCase",
+    deny_unknown_fields
+)]
 pub enum ViewMode {
-    Playing,
-    Spectating,
-    Shadowing,
-    Replay,
-    SharedReplay,
+    /// A player of a game in progress.
+    Playing { our_player_index: PlayerIndex },
+    /// A spectator of a game in progress who does not view it from a seat.
+    Spectating {},
+    /// A spectator of a game in progress who views it from a player's seat.
+    Shadowing { our_player_index: PlayerIndex },
+    /// A viewer of a finished game, alone.
+    Replay {
+        /// Absent when the game is not saved, such as an imported one.
+        #[serde(skip_serializing_if = "Option::is_none")]
+        game_id: Option<GameId>,
+        /// The seat that the recipient played in or shadows, if any.
+        #[serde(skip_serializing_if = "Option::is_none")]
+        our_player_index: Option<PlayerIndex>,
+    },
+    /// A viewer of a finished game, with others.
+    SharedReplay {
+        /// Absent when the game is not saved, such as an imported one.
+        #[serde(skip_serializing_if = "Option::is_none")]
+        game_id: Option<GameId>,
+        /// The seat that the recipient played in or shadows, if any.
+        #[serde(skip_serializing_if = "Option::is_none")]
+        our_player_index: Option<PlayerIndex>,
+        shared_replay: SharedReplayInit,
+    },
+}
+
+impl ViewMode {
+    /// The seat that the recipient sees the game from, if any.
+    pub const fn our_player_index(&self) -> Option<PlayerIndex> {
+        match self {
+            Self::Playing { our_player_index } | Self::Shadowing { our_player_index } => {
+                Some(*our_player_index)
+            }
+            Self::Replay {
+                our_player_index, ..
+            }
+            | Self::SharedReplay {
+                our_player_index, ..
+            } => *our_player_index,
+            Self::Spectating {} => None,
+        }
+    }
 }
 
 /// Everything a client needs to draw a game, before its events arrive.
@@ -305,14 +348,7 @@ pub struct Init {
     pub table_id: TableId,
     #[schemars(length(min = MIN_PLAYERS, max = MAX_PLAYERS))]
     pub player_names: Vec<Username>,
-    /// The recipient's seat: the one they play in, the one they shadow, or, in a replay, the one
-    /// they played in. Absent when they have none, such as for a spectator who does not shadow.
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub our_player_index: Option<PlayerIndex>,
     pub mode: ViewMode,
-    /// The game's ID, present only in a replay of a saved game.
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub game_id: Option<GameId>,
     pub has_custom_seed: bool,
     /// Absent for a game with its own deck instead of a seed, such as an imported one.
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -325,9 +361,6 @@ pub struct Init {
     /// Each player's character, in seat order, when detrimental characters are on.
     #[schemars(length(max = MAX_PLAYERS))]
     pub characters: Vec<CharacterAssignment>,
-    /// Present only when `mode` is `sharedReplay`.
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub shared_replay: Option<SharedReplayInit>,
     /// The seat that paused the game. Absent when the game is not paused.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub pause_player_index: Option<PlayerIndex>,
@@ -339,7 +372,8 @@ pub struct Init {
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct SharedReplayInit {
-    pub leader: Username,
+    /// The table's owner, who leads the replay.
+    pub owner_id: UserId,
     pub turn: Turn,
     #[schemars(range(min = i32::MIN, max = i32::MAX))]
     pub efficiency_modifier: i32,

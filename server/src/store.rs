@@ -948,6 +948,13 @@ mod tests {
         if card_event && let Some(Value::Object(identity)) = object.remove("identity") {
             object.extend(identity);
         }
+        // A clue event, which formats before 12 named the player who gives it in.
+        if object.get("type") == Some(&json!("clue"))
+            && object.contains_key("orders")
+            && let Some(giver) = object.remove("playerIndex")
+        {
+            object.insert("giver".into(), giver);
+        }
         // A turn's clue, which, unlike a clue event, has no giver.
         if object.get("type") == Some(&json!("clue"))
             && !object.contains_key("giver")
@@ -1146,6 +1153,30 @@ mod tests {
                 "A format 10 table that is timed: {timed} did not upgrade"
             );
         }
+        Ok(())
+    }
+    #[test]
+    fn checkpoints_of_format_11_name_a_hypothetical_clue_giver() -> Result<()> {
+        let mut table = replayed()?;
+        let Phase::Replay { replay, .. } = &mut table.phase else {
+            bail!("The table is not a replay");
+        };
+        replay
+            .hypothetical_actions
+            .push(serde_json::from_value(json!({
+                "type": "clue",
+                "clue": {"type": "rank", "value": 1},
+                "playerIndex": 0,
+                "target": 1,
+                "orders": [5],
+            }))?);
+        let expected = serde_json::to_value(&table)?;
+        let (encoded, _) = crate::checkpoint::encode(&mut table, &SavedParts::default())?;
+        let head = older_head(&encoded.head, "hanabi-live-11")?;
+        ensure!(head.contains("\"playerIndex\":0,\"target\""));
+        let head = head.replace("\"playerIndex\":0,\"target\"", "\"giver\":0,\"target\"");
+        let decoded = crate::checkpoint::decode(&head, &encoded.changes.written)?;
+        ensure!(serde_json::to_value(&decoded)? == expected);
         Ok(())
     }
     #[test]

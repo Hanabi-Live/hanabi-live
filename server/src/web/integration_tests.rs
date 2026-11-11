@@ -322,7 +322,7 @@ async fn uptime_replies_only_to_requester_in_lobby_and_table_postgres() {
         ))
         .await
         .unwrap();
-    let table = receive(&mut alice, "joined").await["tableId"]
+    let table = receive(&mut alice, "tableJoined").await["tableId"]
         .as_u64()
         .unwrap();
     bob.send(WireMessage::Text(
@@ -330,7 +330,7 @@ async fn uptime_replies_only_to_requester_in_lobby_and_table_postgres() {
     ))
     .await
     .unwrap();
-    receive(&mut bob, "joined").await;
+    receive(&mut bob, "tableJoined").await;
     alice
         .send(WireMessage::Text("sync {}".into()))
         .await
@@ -475,11 +475,14 @@ async fn native_browser_login_ws_bootstrap_and_command_routing_postgres() {
         .await
         .unwrap();
     let history = receive(&mut alice, "gameHistory").await;
-    assert_eq!(history[0]["gameId"], historical);
-    assert_eq!(history[0]["options"]["variantName"], "6 Suits");
-    assert_eq!(history[0]["options"]["timeControl"]["baseSeconds"], 180);
-    assert_eq!(history[0]["options"]["emptyClues"], true);
-    assert_eq!(history[0]["tags"], json!(["authored"]));
+    assert_eq!(history["games"][0]["gameId"], historical);
+    assert_eq!(history["games"][0]["options"]["variantName"], "6 Suits");
+    assert_eq!(
+        history["games"][0]["options"]["timeControl"]["baseSeconds"],
+        180
+    );
+    assert_eq!(history["games"][0]["options"]["emptyClues"], true);
+    assert_eq!(history["games"][0]["tags"], json!(["authored"]));
     let mut bob = connect(&fixture, &bob_cookie).await;
     let bob_welcome = receive(&mut bob, "welcome").await;
     let _ = receive(&mut bob, "user").await;

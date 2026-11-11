@@ -162,7 +162,7 @@
   {
     "name": "friend requires a username",
     "direction": "client",
-    "command": "chatFriend",
+    "command": "friendAdd",
     "input": {},
     "valid": false
   },
@@ -388,23 +388,25 @@
     "valid": false
   },
   {
-    "name": "user list is an array of presences",
+    "name": "user list holds presences",
     "direction": "server",
     "command": "userList",
-    "input": [
-      {
-        "userId": 7,
-        "username": "Alice",
-        "activity": {
-          "type": "playing",
-          "tableId": 3
-        },
-        "hGroupConventions": false,
-        "hGroupLevel": 3,
-        "bot": false,
-        "inactive": false
-      }
-    ],
+    "input": {
+      "users": [
+        {
+          "userId": 7,
+          "username": "Alice",
+          "activity": {
+            "type": "playing",
+            "tableId": 3
+          },
+          "hGroupConventions": false,
+          "hGroupLevel": 3,
+          "bot": false,
+          "inactive": false
+        }
+      ]
+    },
     "valid": true
   },
   {
@@ -645,11 +647,13 @@
           "seed": "p2v0s1",
           "playerNames": ["Alice", "Bob"],
           "options": {
-            "variantName": "No Variant"
+            "variantName": "6 Suits"
           }
         }
       },
-      "visibility": "solo"
+      "visibility": {
+        "type": "solo"
+      }
     },
     "normalized": {
       "source": {
@@ -659,13 +663,20 @@
           "seed": "p2v0s1",
           "playerNames": ["Alice", "Bob"],
           "options": {
-            "variantName": "No Variant"
+            "variantName": "6 Suits",
+            "speedrun": false,
+            "deckPlays": false,
+            "emptyClues": false,
+            "oneExtraCard": false,
+            "oneLessCard": false,
+            "allOrNothing": false,
+            "detrimentalCharacters": false
           }
         }
       },
-      "visibility": "solo",
-      "spoilerFree": false,
-      "joinExisting": false
+      "visibility": {
+        "type": "solo"
+      }
     },
     "valid": true
   },
@@ -681,7 +692,9 @@
           "source": "another tool"
         }
       },
-      "visibility": "solo"
+      "visibility": {
+        "type": "solo"
+      }
     },
     "valid": false
   },
@@ -703,7 +716,9 @@
           ]
         }
       },
-      "visibility": "solo"
+      "visibility": {
+        "type": "solo"
+      }
     },
     "valid": false
   },
@@ -736,7 +751,9 @@
           ]
         }
       },
-      "visibility": "solo"
+      "visibility": {
+        "type": "solo"
+      }
     },
     "normalized": {
       "source": {
@@ -763,9 +780,9 @@
           ]
         }
       },
-      "visibility": "solo",
-      "spoilerFree": false,
-      "joinExisting": false
+      "visibility": {
+        "type": "solo"
+      }
     },
     "valid": true
   },
@@ -787,7 +804,9 @@
           ]
         }
       },
-      "visibility": "solo"
+      "visibility": {
+        "type": "solo"
+      }
     },
     "valid": false
   },
@@ -805,7 +824,9 @@
           }
         }
       },
-      "visibility": "solo"
+      "visibility": {
+        "type": "solo"
+      }
     },
     "valid": false
   },
@@ -882,150 +903,165 @@
     "name": "history accepts timestamps in UTC with milliseconds",
     "direction": "server",
     "command": "gameHistory",
-    "input": [
-      {
-        "gameId": 12,
-        "options": {
-          "variantName": "No Variant",
-          "speedrun": false,
-          "deckPlays": false,
-          "emptyClues": false,
-          "oneExtraCard": false,
-          "oneLessCard": false,
-          "allOrNothing": false,
-          "detrimentalCharacters": false
-        },
-        "seed": "p2v0s1",
-        "score": 25,
-        "numTurns": 40,
-        "endCondition": "normal",
-        "startedAt": "2023-12-29T18:00:00.000Z",
-        "finishedAt": "2023-12-29T18:21:43.812Z",
-        "numGamesOnSeed": 3,
-        "playerNames": ["Alice", "Bob"],
-        "tags": []
-      }
-    ],
+    "input": {
+      "games": [
+        {
+          "gameId": 12,
+          "options": {
+            "variantName": "No Variant",
+            "speedrun": false,
+            "deckPlays": false,
+            "emptyClues": false,
+            "oneExtraCard": false,
+            "oneLessCard": false,
+            "allOrNothing": false,
+            "detrimentalCharacters": false
+          },
+          "seed": "p2v0s1",
+          "score": 25,
+          "numTurns": 40,
+          "endCondition": "normal",
+          "startedAt": "2023-12-29T18:00:00.000Z",
+          "finishedAt": "2023-12-29T18:21:43.812Z",
+          "numGamesOnSeed": 3,
+          "playerNames": ["Alice", "Bob"],
+          "tags": []
+        }
+      ],
+      "offset": 0
+    },
     "valid": true
   },
   {
     "name": "history rejects a timestamp with an offset",
     "direction": "server",
     "command": "gameHistory",
-    "input": [
-      {
-        "gameId": 12,
-        "options": {
-          "variantName": "No Variant",
-          "speedrun": false,
-          "deckPlays": false,
-          "emptyClues": false,
-          "oneExtraCard": false,
-          "oneLessCard": false,
-          "allOrNothing": false,
-          "detrimentalCharacters": false
-        },
-        "seed": "p2v0s1",
-        "score": 25,
-        "numTurns": 40,
-        "endCondition": "normal",
-        "startedAt": "2023-12-29T18:00:00.000+00:00",
-        "finishedAt": "2023-12-29T18:21:43.812Z",
-        "numGamesOnSeed": 3,
-        "playerNames": ["Alice", "Bob"],
-        "tags": []
-      }
-    ],
+    "input": {
+      "games": [
+        {
+          "gameId": 12,
+          "options": {
+            "variantName": "No Variant",
+            "speedrun": false,
+            "deckPlays": false,
+            "emptyClues": false,
+            "oneExtraCard": false,
+            "oneLessCard": false,
+            "allOrNothing": false,
+            "detrimentalCharacters": false
+          },
+          "seed": "p2v0s1",
+          "score": 25,
+          "numTurns": 40,
+          "endCondition": "normal",
+          "startedAt": "2023-12-29T18:00:00.000+00:00",
+          "finishedAt": "2023-12-29T18:21:43.812Z",
+          "numGamesOnSeed": 3,
+          "playerNames": ["Alice", "Bob"],
+          "tags": []
+        }
+      ],
+      "offset": 0
+    },
     "valid": false
   },
   {
     "name": "history rejects a timestamp without milliseconds",
     "direction": "server",
     "command": "gameHistory",
-    "input": [
-      {
-        "gameId": 12,
-        "options": {
-          "variantName": "No Variant",
-          "speedrun": false,
-          "deckPlays": false,
-          "emptyClues": false,
-          "oneExtraCard": false,
-          "oneLessCard": false,
-          "allOrNothing": false,
-          "detrimentalCharacters": false
-        },
-        "seed": "p2v0s1",
-        "score": 25,
-        "numTurns": 40,
-        "endCondition": "normal",
-        "startedAt": "2023-12-29T18:00:00Z",
-        "finishedAt": "2023-12-29T18:21:43.812Z",
-        "numGamesOnSeed": 3,
-        "playerNames": ["Alice", "Bob"],
-        "tags": []
-      }
-    ],
+    "input": {
+      "games": [
+        {
+          "gameId": 12,
+          "options": {
+            "variantName": "No Variant",
+            "speedrun": false,
+            "deckPlays": false,
+            "emptyClues": false,
+            "oneExtraCard": false,
+            "oneLessCard": false,
+            "allOrNothing": false,
+            "detrimentalCharacters": false
+          },
+          "seed": "p2v0s1",
+          "score": 25,
+          "numTurns": 40,
+          "endCondition": "normal",
+          "startedAt": "2023-12-29T18:00:00Z",
+          "finishedAt": "2023-12-29T18:21:43.812Z",
+          "numGamesOnSeed": 3,
+          "playerNames": ["Alice", "Bob"],
+          "tags": []
+        }
+      ],
+      "offset": 0
+    },
     "valid": false
   },
   {
     "name": "history rejects a timestamp with microseconds",
     "direction": "server",
     "command": "gameHistory",
-    "input": [
-      {
-        "gameId": 12,
-        "options": {
-          "variantName": "No Variant",
-          "speedrun": false,
-          "deckPlays": false,
-          "emptyClues": false,
-          "oneExtraCard": false,
-          "oneLessCard": false,
-          "allOrNothing": false,
-          "detrimentalCharacters": false
-        },
-        "seed": "p2v0s1",
-        "score": 25,
-        "numTurns": 40,
-        "endCondition": "normal",
-        "startedAt": "2023-12-29T18:00:00.000000Z",
-        "finishedAt": "2023-12-29T18:21:43.812Z",
-        "numGamesOnSeed": 3,
-        "playerNames": ["Alice", "Bob"],
-        "tags": []
-      }
-    ],
+    "input": {
+      "games": [
+        {
+          "gameId": 12,
+          "options": {
+            "variantName": "No Variant",
+            "speedrun": false,
+            "deckPlays": false,
+            "emptyClues": false,
+            "oneExtraCard": false,
+            "oneLessCard": false,
+            "allOrNothing": false,
+            "detrimentalCharacters": false
+          },
+          "seed": "p2v0s1",
+          "score": 25,
+          "numTurns": 40,
+          "endCondition": "normal",
+          "startedAt": "2023-12-29T18:00:00.000000Z",
+          "finishedAt": "2023-12-29T18:21:43.812Z",
+          "numGamesOnSeed": 3,
+          "playerNames": ["Alice", "Bob"],
+          "tags": []
+        }
+      ],
+      "offset": 0
+    },
     "valid": false
   },
   {
     "name": "history rejects a date that cannot be parsed",
     "direction": "server",
     "command": "gameHistory",
-    "input": [
-      {
-        "gameId": 12,
-        "options": {
-          "variantName": "No Variant",
-          "speedrun": false,
-          "deckPlays": false,
-          "emptyClues": false,
-          "oneExtraCard": false,
-          "oneLessCard": false,
-          "allOrNothing": false,
-          "detrimentalCharacters": false
-        },
-        "seed": "p2v0s1",
-        "score": 25,
-        "numTurns": 40,
-        "endCondition": "normal",
-        "startedAt": "yesterday",
-        "finishedAt": "2023-12-29T18:21:43.812Z",
-        "numGamesOnSeed": 3,
-        "playerNames": ["Alice", "Bob"],
-        "tags": []
-      }
-    ],
+    "input": {
+      "games": [
+        {
+          "gameId": 12,
+          "options": {
+            "variantName": "No Variant",
+            "speedrun": false,
+            "deckPlays": false,
+            "emptyClues": false,
+            "oneExtraCard": false,
+            "oneLessCard": false,
+            "allOrNothing": false,
+            "detrimentalCharacters": false
+          },
+          "seed": "p2v0s1",
+          "score": 25,
+          "numTurns": 40,
+          "endCondition": "normal",
+          "startedAt": "yesterday",
+          "finishedAt": "2023-12-29T18:21:43.812Z",
+          "numGamesOnSeed": 3,
+          "playerNames": ["Alice", "Bob"],
+          "tags": []
+        }
+      ],
+      "offset": 0
+    },
     "valid": false
   },
   {
@@ -1084,9 +1120,9 @@
           "type": "rank",
           "value": 5
         },
-        "giver": 0,
         "target": 1,
-        "orders": [3, 4]
+        "orders": [3, 4],
+        "playerIndex": 0
       }
     },
     "valid": true
@@ -1099,9 +1135,9 @@
       "tableId": 3,
       "event": {
         "type": "clue",
-        "giver": 0,
         "target": 1,
-        "orders": [3, 4]
+        "orders": [3, 4],
+        "playerIndex": 0
       }
     },
     "valid": true
@@ -1118,9 +1154,9 @@
           "type": "color",
           "value": 0
         },
-        "giver": 0,
         "target": 1,
-        "orders": [3, 4]
+        "orders": [3, 4],
+        "playerIndex": 0
       }
     },
     "valid": true
@@ -1137,9 +1173,9 @@
           "type": "color",
           "value": 6
         },
-        "giver": 0,
         "target": 1,
-        "orders": [3, 4]
+        "orders": [3, 4],
+        "playerIndex": 0
       }
     },
     "valid": false
@@ -1156,9 +1192,9 @@
           "type": "rank",
           "value": 0
         },
-        "giver": 0,
         "target": 1,
-        "orders": [3, 4]
+        "orders": [3, 4],
+        "playerIndex": 0
       }
     },
     "valid": false
@@ -1401,18 +1437,18 @@
   {
     "name": "lobby sounds are named",
     "direction": "server",
-    "command": "soundLobby",
+    "command": "lobbySound",
     "input": {
-      "file": "shutdown"
+      "sound": "shutdown"
     },
     "valid": true
   },
   {
     "name": "lobby sounds the client cannot play are rejected",
     "direction": "server",
-    "command": "soundLobby",
+    "command": "lobbySound",
     "input": {
-      "file": "not-a-sound"
+      "sound": "not-a-sound"
     },
     "valid": false
   },

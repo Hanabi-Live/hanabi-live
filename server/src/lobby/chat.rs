@@ -5,7 +5,6 @@ use anyhow::{Context, Result, ensure};
 use chrono::SecondsFormat;
 use hanabi_protocol::{Chat, ChatPmHistory, ChatPmHistoryRequest, ChatSource, TableId};
 use serde::Deserialize;
-use serde_json::json;
 use sqlx::PgPool;
 use std::sync::LazyLock;
 
@@ -512,7 +511,7 @@ pub async fn lobby_chat(
                 chat_id: Some(hanabi_protocol::ChatId(i64::from(chat_id))),
                 ..Chat::new(
                     content,
-                    serde_json::from_value(json!(source))?,
+                    ChatSource::from_name(source).context("Unknown chat source")?,
                     hanabi_protocol::Timestamp::from(row.datetime_sent),
                 )
             },
@@ -574,7 +573,7 @@ pub async fn lobby_history(pool: &PgPool, count: i64) -> Result<Vec<Chat>> {
             username: who.map(Into::into),
             ..Chat::new(
                 message,
-                serde_json::from_value(json!(source))?,
+                ChatSource::from_name(&source).context("Unknown chat source")?,
                 hanabi_protocol::Timestamp::from(row.datetime_sent),
             )
         });

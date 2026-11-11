@@ -75,7 +75,7 @@ function show() {
   const action: ActionClue = {
     type: "clue",
     clue: msgClue,
-    giver: visibleState.turn.currentPlayerIndex,
+    playerIndex: visibleState.turn.currentPlayerIndex,
     orders: touchedCards,
     target,
     ignoreNegative: false,

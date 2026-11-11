@@ -23,9 +23,9 @@ import {
 } from "@hanabi-live/data";
 import type { CardOrder, PlayerIndex, RankClueNumber } from "@hanabi-live/game";
 import {
-  START_CARD_RANK,
   getVariant,
   isValidRankClueNumber,
+  START_CARD_RANK,
 } from "@hanabi-live/game";
 import { assertDefined } from "complete-common";
 import { execFile } from "node:child_process";
@@ -45,11 +45,13 @@ import type { BrowserContext, Page } from "playwright";
 import { chromium } from "playwright";
 import { evaluationDatabase } from "./database.ts";
 import {
-  ROOT,
   buildRust,
+  cookieUserId,
   installSchema,
   login,
+  ourPlayerIndex,
   prepareRoot,
+  ROOT,
   socketClient,
   startProcess,
   stopChild,
@@ -764,7 +766,7 @@ function getStates({
       path: "/",
       loggedIn: true,
       prepare: async (page) => {
-        passLeader(USERNAME);
+        passLeader();
         await page.getByRole("button", { name: "Pass leader" }).waitFor();
       },
     },
@@ -776,7 +778,7 @@ function getStates({
       path: "/",
       loggedIn: true,
       prepare: async (page) => {
-        passLeader(USERNAME);
+        passLeader();
         // Only the leader can start a hypothetical, so wait until the lead reaches the account.
         await page.getByRole("button", { name: "Pass leader" }).waitFor();
         // The button is disabled when the replay already shows the first turn.
@@ -910,11 +912,11 @@ async function connect(
 async function playGame(alice: Peer, bob: Peer): Promise<number> {
   alice.send("tableCreate", { settings: { name: "Seeded game" } });
   const { tableId } = await alice.receive(
-    "joined",
-    SERVER_COMMAND_SCHEMAS.joined,
+    "tableJoined",
+    SERVER_COMMAND_SCHEMAS.tableJoined,
   );
   bob.send("tableJoin", { tableId });
-  await bob.receive("joined", SERVER_COMMAND_SCHEMAS.joined);
+  await bob.receive("tableJoined", SERVER_COMMAND_SCHEMAS.tableJoined);
   alice.send("tableStart", { tableId });
   const peers = [alice, bob];
   const games = await Promise.all(
@@ -931,7 +933,7 @@ async function playGame(alice: Peer, bob: Peer): Promise<number> {
       return { peer, init, history };
     }),
   );
-  const first = games.find((game) => game.init.ourPlayerIndex === 0);
+  const first = games.find((game) => ourPlayerIndex(game.init) === 0);
   assertDefined(first, "Neither player goes first.");
   const card = first.history.events.find(
     (action) => action.type === "draw" && action.playerIndex === 0,
@@ -946,8 +948,8 @@ async function playGame(alice: Peer, bob: Peer): Promise<number> {
   await first.peer.receive("gameEvent", SERVER_COMMAND_SCHEMAS.gameEvent);
   alice.send("tableTerminate", { tableId });
   const finished = await alice.receive(
-    "finishOngoingGame",
-    SERVER_COMMAND_SCHEMAS.finishOngoingGame,
+    "gameFinished",
+    SERVER_COMMAND_SCHEMAS.gameFinished,
   );
   assertDefined(finished.gameId, "The seeded game was not saved.");
   // The players are now in a shared replay of the game. Leave it, or the browser would join it.
@@ -968,8 +970,8 @@ interface Seed {
   readonly startGame: () => Promise<void>;
   /** Ends the game at Bob's table, which turns it into a shared replay that Bob leads. */
   readonly endGame: () => Promise<void>;
-  /** Makes another account the leader of the shared replay at Bob's table. */
-  readonly passLeader: (username: string) => void;
+  /** Makes the browser's account the leader of the shared replay at Bob's table. */
+  readonly passLeader: () => void;
   /**
    * When it is his turn, Bob gives the browser's account a rank clue. The first clue touches its
    * newest card, and later clues miss that card. Returns that card, if Bob could give the clue.
@@ -1023,8 +1025,8 @@ async function seed(address: string): Promise<Seed> {
     },
   });
   const { tableId } = await bob.receive(
-    "joined",
-    SERVER_COMMAND_SCHEMAS.joined,
+    "tableJoined",
+    SERVER_COMMAND_SCHEMAS.tableJoined,
   );
   bob.send("chat", { text: "Hello from the seeded lobby." });
   // More spectators than the game screen's chat header names, so that it offers to show the rest.
@@ -1032,7 +1034,7 @@ async function seed(address: string): Promise<Seed> {
   for (const name of SPECTATOR_NAMES) {
     const spectator = await connect(address, name);
     spectator.send("tableSpectate", { tableId });
-    await spectator.receive("joined", SERVER_COMMAND_SCHEMAS.joined);
+    await spectator.receive("tableJoined", SERVER_COMMAND_SCHEMAS.tableJoined);
     spectators.push(spectator);
   }
   const bot = await connect(address, "Robot", true);
@@ -1045,7 +1047,7 @@ async function seed(address: string): Promise<Seed> {
     await bob.receive("tableStarted", SERVER_COMMAND_SCHEMAS.tableStarted);
     bob.send("gameInitLoad", { tableId });
     const init = await bob.receive("init", SERVER_COMMAND_SCHEMAS.init);
-    bobIndex = init.ourPlayerIndex;
+    bobIndex = ourPlayerIndex(init);
     bob.send("gameStateLoad", { tableId });
     const { events } = await bob.receive(
       "gameEventList",
@@ -1055,7 +1057,7 @@ async function seed(address: string): Promise<Seed> {
 
     // When Bob goes first, he clues the newest card of the browser's account, so that its hand
     // shows a clued card.
-    if (init.ourPlayerIndex !== 0) {
+    if (ourPlayerIndex(init) !== 0) {
       return;
     }
     const newest = events.findLast(
@@ -1084,14 +1086,11 @@ async function seed(address: string): Promise<Seed> {
   const cookie = await login(address, USERNAME);
   async function endGame() {
     bob.send("tableTerminate", { tableId });
-    await bob.receive(
-      "finishOngoingGame",
-      SERVER_COMMAND_SCHEMAS.finishOngoingGame,
-    );
+    await bob.receive("gameFinished", SERVER_COMMAND_SCHEMAS.gameFinished);
   }
 
-  function passLeader(username: string) {
-    bob.send("tableSetLeader", { tableId, username });
+  function passLeader() {
+    bob.send("tableSetOwner", { tableId, userId: cookieUserId(cookie) });
   }
 
   /** The events of the game, as a peer sees them. A spectator sees every card. */
@@ -1247,7 +1246,8 @@ async function seed(address: string): Promise<Seed> {
     await bob.receive(
       "gameEvent",
       SERVER_COMMAND_SCHEMAS.gameEvent,
-      (data) => data.event.type === "clue" && data.event.giver === bobIndex,
+      (data) =>
+        data.event.type === "clue" && data.event.playerIndex === bobIndex,
     );
     return clueTarget?.order;
   }
@@ -1264,7 +1264,7 @@ async function seed(address: string): Promise<Seed> {
           options: { variantName: PRISM_VARIANT_NAME },
         },
       },
-      visibility: "shared",
+      visibility: { type: "shared" },
     });
     const { tableId: replayTableId } = await leader.receive(
       "tableStarted",

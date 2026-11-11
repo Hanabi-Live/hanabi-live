@@ -1,9 +1,8 @@
-use anyhow::{Result, ensure};
+use anyhow::{Context, Result, ensure};
 pub use hanabi_engine::{AssignedCharacter, DeckCard as Card, Options};
 use hanabi_engine::{CompletionTiming, EndCondition, EngineState, GameSetup, Termination};
 use hanabi_engine::{PlayerAction, RecordedAction};
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
-use serde_json::Value;
 use std::ops::Deref;
 
 /// A game: the engine's state, and the log that checkpoints store, from which the engine rebuilds
@@ -289,11 +288,18 @@ pub fn seed_prefix(num_players: usize, variant_id: u32, options: &Options) -> St
     };
     format!("p{num_players}v{variant_id}{letter}")
 }
-pub fn seeded_deck(id: i32, seed: &str) -> Result<Value> {
-    Ok(serde_json::to_value(hanabi_engine::create_shuffled_deck(
-        hanabi_engine::get_variant_by_id(u32::try_from(id)?)?,
-        seed,
-    ))?)
+/// The deck that a seed deals in a variant, by card order.
+pub fn seeded_deck(id: i32, seed: &str) -> Result<Vec<hanabi_protocol::CardIdentity>> {
+    hanabi_engine::create_shuffled_deck(hanabi_engine::get_variant_by_id(u32::try_from(id)?)?, seed)
+        .iter()
+        .map(|card| {
+            Ok(hanabi_protocol::CardIdentity {
+                suit_index: hanabi_protocol::SuitIndex::new(card.suit_index)
+                    .context("Invalid suit index")?,
+                rank: hanabi_protocol::CardRank::new(card.rank).context("Invalid rank")?,
+            })
+        })
+        .collect()
 }
 
 #[cfg(test)]

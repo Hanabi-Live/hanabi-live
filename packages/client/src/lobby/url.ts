@@ -198,9 +198,11 @@ function gotoPath(data: ServerCommandData["welcome"]): boolean {
           : "solo";
         globals.conn!.send("replayCreate", {
           source: { type: "saved", gameId },
-          visibility,
           // A link to a shared replay should join the one that people are already watching.
-          joinExisting: true,
+          visibility:
+            visibility === "shared"
+              ? { type: "shared", joinExisting: true }
+              : { type: "solo" },
         });
         return true;
       }
@@ -239,7 +241,7 @@ function gotoPath(data: ServerCommandData["welcome"]): boolean {
 
       globals.conn!.send("replayCreate", {
         source: { type: "imported", game: gameJson },
-        visibility,
+        visibility: { type: visibility },
       });
       return true;
     }

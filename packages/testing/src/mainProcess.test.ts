@@ -1,8 +1,8 @@
 import {
-  SERVER_COMMAND_SCHEMAS,
-  VERSION,
   noticeSchema,
   replayGameSchema,
+  SERVER_COMMAND_SCHEMAS,
+  VERSION,
 } from "@hanabi-live/data";
 import { expect, test } from "bun:test";
 import { assertDefined } from "complete-common";
@@ -15,13 +15,14 @@ import { z } from "zod";
 import { evaluationDatabase, liveTables } from "./database.ts";
 import type { CheckpointProgress } from "./mainProcessSupport.ts";
 import {
-  ROOT,
   bounded,
   buildRust,
   databaseDescribe,
   installSchema,
   login,
+  ourPlayerIndex,
   prepareRoot,
+  ROOT,
   rustProgressTableSchema,
   socketClient,
   startProcess,
@@ -163,16 +164,16 @@ databaseDescribe("compiled application entry point (rust)", () => {
           },
         });
         const { tableId } = await alice.receive(
-          "joined",
-          SERVER_COMMAND_SCHEMAS.joined,
+          "tableJoined",
+          SERVER_COMMAND_SCHEMAS.tableJoined,
         );
         bob.send("tableJoin", {
           tableId,
           password: "synthetic-table-password",
         });
         const bobJoined = await bob.receive(
-          "joined",
-          SERVER_COMMAND_SCHEMAS.joined,
+          "tableJoined",
+          SERVER_COMMAND_SCHEMAS.tableJoined,
         );
         expect(bobJoined.tableId).toBe(tableId);
         const game = await bob.receive(
@@ -185,13 +186,16 @@ databaseDescribe("compiled application entry point (rust)", () => {
         ]);
         expect(game.players.map((player) => player.you)).toEqual([false, true]);
         bob.send("tableLeave", { tableId });
-        const bobLeft = await bob.receive("left", SERVER_COMMAND_SCHEMAS.left);
+        const bobLeft = await bob.receive(
+          "tableLeft",
+          SERVER_COMMAND_SCHEMAS.tableLeft,
+        );
         expect(bobLeft.tableId).toBe(tableId);
         bob.send("tableJoin", {
           tableId,
           password: "synthetic-table-password",
         });
-        await bob.receive("joined", SERVER_COMMAND_SCHEMAS.joined);
+        await bob.receive("tableJoined", SERVER_COMMAND_SCHEMAS.tableJoined);
         alice.send("tableStart", { tableId });
         await alice.receive(
           "tableStarted",
@@ -219,9 +223,9 @@ databaseDescribe("compiled application entry point (rust)", () => {
           bootstrap(alice),
           bootstrap(bob),
         ]);
-        const active = aliceGame.init.ourPlayerIndex === 0 ? alice : bob;
+        const active = ourPlayerIndex(aliceGame.init) === 0 ? alice : bob;
         const activeGame =
-          aliceGame.init.ourPlayerIndex === 0 ? aliceGame : bobGame;
+          ourPlayerIndex(aliceGame.init) === 0 ? aliceGame : bobGame;
         const card = activeGame.history.events.find(
           (event) => event.type === "draw" && event.playerIndex === 0,
         );
@@ -337,7 +341,7 @@ databaseDescribe("compiled application entry point (rust)", () => {
           }),
         );
         assertDefined(resumed, "Missing reconnected player bootstrap.");
-        expect(resumed.init.mode).toBe("playing");
+        expect(resumed.init.mode.type).toBe("playing");
         expect(
           resumed.history.events.some(
             (event) => event.type === "play" || event.type === "discard",
@@ -345,14 +349,14 @@ databaseDescribe("compiled application entry point (rust)", () => {
         ).toBe(true);
         if (restart) {
           assertDefined(recoveredBob, "Missing recovered second player.");
-          expect(resumed.init.ourPlayerIndex).toBe(
-            aliceGame.init.ourPlayerIndex,
+          expect(ourPlayerIndex(resumed.init)).toBe(
+            ourPlayerIndex(aliceGame.init),
           );
-          expect(recoveredBob.init.ourPlayerIndex).toBe(
-            bobGame.init.ourPlayerIndex,
+          expect(ourPlayerIndex(recoveredBob.init)).toBe(
+            ourPlayerIndex(bobGame.init),
           );
           const restoredActive =
-            aliceGame.init.ourPlayerIndex === 0 ? resumed : recoveredBob;
+            ourPlayerIndex(aliceGame.init) === 0 ? resumed : recoveredBob;
           expect(restoredActive.history.events).toEqual(acknowledged.events);
           expect(resumed.init.startedAt).toBe(aliceGame.init.startedAt);
           const [recovered] = await checkpointProgress();
@@ -394,13 +398,14 @@ databaseDescribe("compiled application entry point (rust)", () => {
           await replacement.receive(
             "voteChange",
             SERVER_COMMAND_SCHEMAS.voteChange,
-            (data) => data.vote,
+            (data) => data.voted,
           );
           // The other player sees the vote without having cast one.
           await bob.receive(
             "voteChange",
             SERVER_COMMAND_SCHEMAS.voteChange,
-            (data) => !data.vote && data.votes === 1 && data.votesNeeded === 2,
+            (data) =>
+              !data.voted && data.numVotes === 1 && data.numVotesNeeded === 2,
           );
           bob.send("tableTerminateVote", {
             tableId,
@@ -411,8 +416,8 @@ databaseDescribe("compiled application entry point (rust)", () => {
           });
         }
         const finished = await replacement.receive(
-          "finishOngoingGame",
-          SERVER_COMMAND_SCHEMAS.finishOngoingGame,
+          "gameFinished",
+          SERVER_COMMAND_SCHEMAS.gameFinished,
         );
         assertDefined(finished.gameId, "The finished game was not saved.");
         expect<number>(finished.gameId).toBe(checkpoint.game_id);
@@ -563,14 +568,14 @@ databaseDescribe("compiled application entry point (rust)", () => {
         },
       });
       const { tableId } = await owner.receive(
-        "joined",
-        SERVER_COMMAND_SCHEMAS.joined,
+        "tableJoined",
+        SERVER_COMMAND_SCHEMAS.tableJoined,
       );
       const players = peers.slice(0, 6);
       await Promise.all(
         players.slice(1).map(async (peer) => {
           peer.send("tableJoin", { tableId });
-          await peer.receive("joined", SERVER_COMMAND_SCHEMAS.joined);
+          await peer.receive("tableJoined", SERVER_COMMAND_SCHEMAS.tableJoined);
         }),
       );
       owner.send("tableStart", { tableId });
@@ -614,7 +619,7 @@ databaseDescribe("compiled application entry point (rust)", () => {
         const hand = game.history.events.filter(
           (event) =>
             event.type === "draw"
-            && event.playerIndex === game.init.ourPlayerIndex,
+            && event.playerIndex === ourPlayerIndex(game.init),
         );
         expect(hand).toHaveLength(2);
         expect(
@@ -630,8 +635,7 @@ databaseDescribe("compiled application entry point (rust)", () => {
       );
       const shadow = await bootstrap(observer, tableId);
       expect(shadow.init).toMatchObject({
-        mode: "shadowing",
-        ourPlayerIndex: 0,
+        mode: { type: "shadowing", ourPlayerIndex: 0 },
       });
       expect(
         shadow.history.events
@@ -648,15 +652,15 @@ databaseDescribe("compiled application entry point (rust)", () => {
       });
       owner.send("tableTerminate", { tableId });
       const finished = await owner.receive(
-        "finishOngoingGame",
-        SERVER_COMMAND_SCHEMAS.finishOngoingGame,
+        "gameFinished",
+        SERVER_COMMAND_SCHEMAS.gameFinished,
       );
       await owner.receive(
         "cardIdentities",
         SERVER_COMMAND_SCHEMAS.cardIdentities,
       );
       expect(arrivals.indexOf("cardIdentities")).toBeLessThan(
-        arrivals.indexOf("finishOngoingGame"),
+        arrivals.indexOf("gameFinished"),
       );
       assertDefined(finished.gameId, "The finished game was not saved.");
       expect(
@@ -682,11 +686,11 @@ databaseDescribe("compiled application entry point (rust)", () => {
           source === "id"
             ? {
                 source: { type: "saved", gameId: finished.gameId },
-                visibility: "solo",
+                visibility: { type: "solo" },
               }
             : {
                 source: { type: "imported", game: replayJson },
-                visibility: "shared",
+                visibility: { type: "shared" },
               },
         );
         const created = await owner.receive(
@@ -694,7 +698,7 @@ databaseDescribe("compiled application entry point (rust)", () => {
           SERVER_COMMAND_SCHEMAS.tableStarted,
         );
         const imported = await bootstrap(owner, created.tableId);
-        expect(imported.init.mode).toBe(
+        expect(imported.init.mode.type).toBe(
           source === "id" ? "replay" : "sharedReplay",
         );
         expect(imported.init.playerNames).toHaveLength(6);
@@ -723,8 +727,8 @@ databaseDescribe("compiled application entry point (rust)", () => {
             },
           });
           const pending = await owner.receive(
-            "joined",
-            SERVER_COMMAND_SCHEMAS.joined,
+            "tableJoined",
+            SERVER_COMMAND_SCHEMAS.tableJoined,
           );
           const crashed = once(state.child, "close");
           state.child.kill("SIGKILL");
@@ -759,8 +763,8 @@ databaseDescribe("compiled application entry point (rust)", () => {
             password: "preserved-password",
           });
           await returningObserver.receive(
-            "joined",
-            SERVER_COMMAND_SCHEMAS.joined,
+            "tableJoined",
+            SERVER_COMMAND_SCHEMAS.tableJoined,
             (message) => message.tableId === pending.tableId,
           );
           returning.send("tableReattend", { tableId: created.tableId });
@@ -770,9 +774,14 @@ databaseDescribe("compiled application entry point (rust)", () => {
             (message) => message.tableId === created.tableId,
           );
           const recovered = await bootstrap(returning, created.tableId);
+          if (imported.init.mode.type !== "sharedReplay") {
+            throw new Error("The imported game is not a shared replay.");
+          }
           expect(recovered.init).toMatchObject({
-            mode: "sharedReplay",
-            sharedReplay: { turn: imported.init.sharedReplay?.turn },
+            mode: {
+              type: "sharedReplay",
+              sharedReplay: { turn: imported.init.mode.sharedReplay.turn },
+            },
             startedAt: imported.init.startedAt,
           });
           expect(recovered.init.characters).toEqual(imported.init.characters);

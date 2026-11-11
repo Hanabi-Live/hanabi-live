@@ -298,7 +298,7 @@ function initServerTable(
       if (request !== latestRequest) {
         return;
       }
-      ({ totalRows } = result);
+      totalRows = result.total;
       showRows(table, gameRows(result, mode, variants, frequencies));
       pagers.draw(totalRows, String(totalRows));
       const error = document.querySelector<HTMLElement>("#history-error");
@@ -502,11 +502,11 @@ function gameRows(
   variants: Readonly<Record<string, string>>,
   frequencies: readonly ScoreFrequency[],
 ): ReadonlyArray<ReadonlyArray<Node | string>> {
-  return page.rows.map((game) => {
+  return page.games.map((game) => {
     const names = game.playerNames;
     const row: Array<Node | string> = [
       link(`${PATH.REPLAY}/${game.gameId}`, game.gameId),
-      String(game.numPlayers),
+      String(game.playerNames.length),
       String(game.score),
     ];
     if (mode !== "variant") {

@@ -3,6 +3,11 @@ import { EndCondition } from "@hanabi-live/game";
 import { describe, expect, test } from "vitest";
 import { expand, shrink } from "./hypoCompress.ts";
 
+/** Expands a replay URL's game, with the defaults that the replay format fills in. */
+function expandGame(compressed: string) {
+  return replayGameSchema.parse(JSON.parse(expand(compressed)!));
+}
+
 describe("replay URL seed metadata", () => {
   // Two players, one card of each rank, one play, standard variant, and no seed.
   const payload = "215abcde,00ab,0,";
@@ -17,7 +22,7 @@ describe("replay URL seed metadata", () => {
       const compressed = shrink(JSON.stringify(game));
       expect(compressed).toBeDefined();
       expect(compressed!.endsWith(`,${seed ?? ""}`)).toBe(true);
-      expect(JSON.parse(expand(compressed!)!)).toEqual(game);
+      expect(expandGame(compressed!)).toEqual(game);
     },
   );
 
@@ -59,7 +64,7 @@ describe("replay URL actions", () => {
     };
     const compressed = shrink(JSON.stringify(game));
     expect(compressed).toBeDefined();
-    expect(JSON.parse(expand(compressed!)!)).toEqual(game);
+    expect(expandGame(compressed!)).toEqual(game);
   });
 
   test.each([EndCondition.TerminatedByVote, EndCondition.IdleTimeout])(
@@ -71,7 +76,7 @@ describe("replay URL actions", () => {
       };
       const compressed = shrink(JSON.stringify(game));
       expect(compressed).toBeDefined();
-      expect(JSON.parse(expand(compressed!)!)).toEqual(game);
+      expect(expandGame(compressed!)).toEqual(game);
     },
   );
 });

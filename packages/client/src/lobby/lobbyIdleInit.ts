@@ -19,7 +19,7 @@ function mousemoveOrKeypress() {
   }
 
   if (globals.idleMinutes >= MINUTES_TO_TRIGGER_IDLE) {
-    globals.conn.send("inactive", {
+    globals.conn.send("userInactive", {
       inactive: false,
     });
   }
@@ -35,7 +35,7 @@ function timerIncrement() {
   if (globals.idleMinutes === MINUTES_TO_TRIGGER_IDLE) {
     // We do not want to keep sending "inactive" messages every minute, so we check for being
     // exactly at the cutoff.
-    globals.conn.send("inactive", {
+    globals.conn.send("userInactive", {
       inactive: true,
     });
   }

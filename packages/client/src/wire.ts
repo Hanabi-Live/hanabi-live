@@ -23,8 +23,7 @@ import type { ClientAction } from "./game/types/ClientAction.ts";
 import { SoundType } from "./game/types/SoundType.ts";
 
 type WireEvent = ServerCommandData["gameEvent"]["event"];
-type WireCardIdentity =
-  ServerCommandData["cardIdentities"]["identities"][number];
+type WireCardIdentity = ServerCommandData["cardIdentities"]["deck"][number];
 
 /** Converts an action that we took into the "playerAction" command's payload. */
 export function toWireAction(
@@ -107,7 +106,7 @@ export function toGameAction(event: WireEvent): GameAction {
 
 type WireSound =
   | Extract<WireReplayAction, { type: "sound" }>["sound"]
-  | ServerCommandData["soundLobby"]["file"];
+  | ServerCommandData["lobbySound"]["sound"];
 
 /** The sound file for each sound the server names. Type checking requires one for every name. */
 const WIRE_SOUNDS = {

@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-restricted-imports */
 
-import { gameIdSchema } from "@hanabi-live/data";
+import { gameIdSchema, userIdSchema } from "@hanabi-live/data";
 import type {
   ActionHypotheticalAction,
   ActionHypotheticalBack,
@@ -23,16 +23,19 @@ export function init(): ActionInit {
     type: "init",
     startedAt: new Date(0).toString(),
     finishedAt: new Date(0).toString(),
-    mode: "sharedReplay",
-    gameId: gameIdSchema.parse(1),
-    sharedReplay: {
-      leader: "",
-      turn: 0,
-      efficiencyModifier: 0,
-      spoilerFree: false,
-      canPlayAgain: false,
-      startedAt: new Date(0).toString(),
+    mode: {
+      type: "sharedReplay",
+      gameId: gameIdSchema.parse(1),
+      sharedReplay: {
+        ownerId: userIdSchema.parse(1),
+        turn: 0,
+        efficiencyModifier: 0,
+        spoilerFree: false,
+        canPlayAgain: false,
+        startedAt: new Date(0).toString(),
+      },
     },
+    leader: "",
     pauseQueued: false,
   };
 }

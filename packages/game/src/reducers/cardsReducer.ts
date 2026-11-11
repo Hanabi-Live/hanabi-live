@@ -96,7 +96,7 @@ export function cardsReducer(
         // Clues do not have to be applied in certain situations.
         if (
           clue === undefined
-          || !shouldApplyClue(action.giver, metadata, variant)
+          || !shouldApplyClue(action.playerIndex, metadata, variant)
         ) {
           return;
         }

@@ -29,46 +29,24 @@ pub struct ReplayGame {
     #[serde(skip_serializing_if = "Option::is_none")]
     #[schemars(length(max = MAX_GAME_ACTIONS))]
     pub actions: Option<Vec<ReplayGameAction>>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub options: Option<ReplayOptions>,
+    #[serde(default, skip_serializing_if = "is_default")]
+    pub options: GameOptions,
     /// Each player's notes.
     #[serde(skip_serializing_if = "Option::is_none")]
     #[schemars(with = "Option<Vec<Notes>>", length(max = MAX_PLAYERS))]
     pub notes: Option<Vec<Vec<String>>>,
-    /// One for each player. Required when `detrimentalCharacters` is on.
-    #[serde(skip_serializing_if = "Option::is_none")]
+    /// One for each player when `detrimentalCharacters` is on, and empty otherwise.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
     #[schemars(length(max = MAX_PLAYERS))]
-    pub characters: Option<Vec<CharacterAssignment>>,
+    pub characters: Vec<CharacterAssignment>,
     /// Absent for a game with its own deck instead of a seed, such as an imported one.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub seed: Option<String>,
 }
 
-/// A game's options in the replay format. Only options that differ from their defaults are
-/// included, and missing options take their defaults.
-#[derive(Clone, Debug, Default, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
-#[serde(rename_all = "camelCase", deny_unknown_fields)]
-pub struct ReplayOptions {
-    #[serde(skip_serializing_if = "Option::is_none")]
-    #[schemars(length(min = 1))]
-    pub variant_name: Option<String>,
-    /// Absent when the game is untimed.
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub time_control: Option<TimeControl>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub speedrun: Option<bool>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub deck_plays: Option<bool>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub empty_clues: Option<bool>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub one_extra_card: Option<bool>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub one_less_card: Option<bool>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub all_or_nothing: Option<bool>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub detrimental_characters: Option<bool>,
+/// Whether every option is the default, so that the replay format omits them.
+fn is_default(options: &GameOptions) -> bool {
+    *options == GameOptions::default()
 }
 
 /// The card that an action names, such as the card that a turn plays.
@@ -173,11 +151,12 @@ pub enum ReplaySoundEffect {
     Nooo,
 }
 
+/// A table's new owner, who also leads its shared replay.
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
-pub struct ReplayLeader {
+pub struct TableOwner {
     pub table_id: TableId,
-    pub username: Username,
+    pub owner_id: UserId,
 }
 
 /// The players in a shared replay who will not play again if the leader restarts.

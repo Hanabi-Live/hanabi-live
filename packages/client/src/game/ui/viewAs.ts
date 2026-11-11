@@ -76,8 +76,9 @@ export function viewAs(playerIndex: PlayerIndex | undefined): void {
       backToLobby();
       globals.lobby.conn!.send("replayCreate", {
         source: { type: "saved", gameId },
-        visibility:
-          globals.state.replay.shared === undefined ? "solo" : "shared",
+        visibility: {
+          type: globals.state.replay.shared === undefined ? "solo" : "shared",
+        },
         shadowingPlayerIndex: playerIndex,
       });
     }, 0);

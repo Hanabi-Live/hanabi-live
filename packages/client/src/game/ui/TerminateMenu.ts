@@ -207,13 +207,13 @@ export class TerminateMenu extends Konva.Group {
       return;
     }
     this.countText.text(
-      votes.votes === 0
+      votes.numVotes === 0
         ? "No votes yet"
-        : `Votes so far: ${votes.votes} of ${votes.votesNeeded}`,
+        : `Votes so far: ${votes.numVotes} of ${votes.numVotesNeeded}`,
     );
-    this.voteName.text(votes.vote ? "Take back my vote" : "Vote to end");
+    this.voteName.text(votes.voted ? "Take back my vote" : "Vote to end");
     this.voteDetail.text(
-      `Ends when ${votersText(votes.votesNeeded, globals.options.numPlayers)} vote`,
+      `Ends when ${votersText(votes.numVotesNeeded, globals.options.numPlayers)} vote`,
     );
     this.getLayer()?.batchDraw();
   }

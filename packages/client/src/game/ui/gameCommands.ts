@@ -22,6 +22,7 @@ import { createStore } from "redux";
 import { sendSelfPmFromServer } from "../../chat.ts";
 import { PATH } from "../../constants.ts";
 import * as modals from "../../modals.ts";
+import { getOnlineUsername } from "../../onlineUsers.ts";
 import { ServerHandlers } from "../../serverHandlers.ts";
 import { setBrowserAddressBarPath } from "../../utils.ts";
 import {
@@ -56,7 +57,7 @@ export const gameCommands = new ServerHandlers();
 // ----------------
 
 // Received when the server wants to force the client to go back to the lobby
-gameCommands.set("boot", () => {
+gameCommands.set("tableBoot", () => {
   modals.closeIdleWarning();
   timer.stop();
   globals.game!.hide();
@@ -81,11 +82,11 @@ gameCommands.set("connected", (data) => {
 gameCommands.set("cardIdentities", (data) => {
   globals.store!.dispatch({
     type: "cardIdentities",
-    cardIdentities: data.identities.map(toCardIdentity),
+    cardIdentities: data.deck.map(toCardIdentity),
   });
 });
 
-gameCommands.set("finishOngoingGame", (data) => {
+gameCommands.set("gameFinished", (data) => {
   modals.closeIdleWarning();
 
   // Zero out the user-created efficiency modifier, if any. In a shared replay, this must be synced
@@ -102,10 +103,11 @@ gameCommands.set("finishOngoingGame", (data) => {
 
   // Begin the process of converting an ongoing game to a shared replay.
   globals.store!.dispatch({
-    type: "finishOngoingGame",
+    type: "gameFinished",
     gameId: data.gameId,
     sharedReplay: data.sharedReplay,
     datetimeFinished: new Date().toISOString(),
+    leader: getOnlineUsername(data.sharedReplay.ownerId) ?? "",
   });
   if (
     globals.state.replay.actions.some(
@@ -363,15 +365,15 @@ gameCommands.set("voteChange", (data) => {
   updateTerminationVotes();
 });
 
-// This is used in shared replays to specify who the leader is.
-gameCommands.set("replayLeader", (data) => {
+// The table's owner leads its shared replay.
+gameCommands.set("tableOwner", (data) => {
   if (globals.state.replay.shared === undefined) {
     return;
   }
 
   globals.store!.dispatch({
     type: "replayLeader",
-    username: data.username,
+    username: getOnlineUsername(data.ownerId) ?? "",
   });
 });
 
@@ -472,16 +474,17 @@ function suggestTurn(who: string, room: string, segment: number) {
 type InitData = ServerCommandData["init"];
 
 function setUrl(data: InitData) {
+  const { mode } = data;
   let path: string;
-  if (data.mode === "replay" || data.mode === "sharedReplay") {
+  if (mode.type === "replay" || mode.type === "sharedReplay") {
     // A replay of a game that is not in the database, such as an imported game, has no address.
-    if (data.gameId === undefined) {
+    if (mode.gameId === undefined) {
       return;
     }
-    path = `${data.mode === "sharedReplay" ? PATH.SHARED_REPLAY : PATH.REPLAY}/${data.gameId}`;
+    path = `${mode.type === "sharedReplay" ? PATH.SHARED_REPLAY : PATH.REPLAY}/${mode.gameId}`;
   } else {
     path = `${PATH.GAME}/${data.tableId}${
-      data.mode === "shadowing" ? `/shadow/${data.ourPlayerIndex}` : ""
+      mode.type === "shadowing" ? `/shadow/${mode.ourPlayerIndex}` : ""
     }`;
   }
   const hash = /^#\d+$/u.test(globalThis.location.hash)
@@ -530,7 +533,8 @@ function initStateStore(data: InitData) {
     ourUsername: globals.lobby.username,
     options,
     playerNames,
-    ourPlayerIndex: data.ourPlayerIndex,
+    ourPlayerIndex:
+      "ourPlayerIndex" in data.mode ? data.mode.ourPlayerIndex : undefined,
     characterAssignments,
     characterMetadata: toPlayerTuple(
       data.characters.length === 0
@@ -564,8 +568,10 @@ function initStateStore(data: InitData) {
     mode: data.mode,
     startedAt: data.startedAt,
     finishedAt: data.finishedAt,
-    gameId: data.gameId,
-    sharedReplay: data.sharedReplay,
+    leader:
+      data.mode.type === "sharedReplay"
+        ? getOnlineUsername(data.mode.sharedReplay.ownerId)
+        : undefined,
     pausePlayerIndex: data.pausePlayerIndex,
     pauseQueued: data.pauseQueued,
   });

@@ -13,6 +13,7 @@ pub use chat::{
 };
 pub use history::{blocked_seeds, get_history, history_ids};
 use history::{seed_game_count, seed_history_ids};
+use relationships::Change;
 pub use relationships::{block_relations, blocked, blocked_between, friends};
 pub use settings::{changed_settings, get_settings, set_setting};
 
@@ -161,7 +162,6 @@ pub async fn dispatch(
         message.name()
     );
     ensure!(caller.user > UserId(0), "Invalid caller");
-    let command = message.name();
     let effects = match message {
         ClientMessage::Setting(request) => {
             let changes = request.settings;
@@ -197,7 +197,7 @@ pub async fn dispatch(
             }
             effects
         }
-        ClientMessage::Inactive(request) => {
+        ClientMessage::UserInactive(request) => {
             let inactive = request.inactive;
             vec![
                 Publication::Inactive(inactive).into(),
@@ -228,23 +228,80 @@ pub async fn dispatch(
         ClientMessage::ChatPmHistory(request) => {
             chat::private_history(pool, caller, &request).await?
         }
-        ClientMessage::ChatLinked(request) | ClientMessage::ChatBlocked(request) => {
-            relationships::relationship(pool, caller, command, "", request.table_id).await?
+        ClientMessage::LinkList(request) => {
+            relationships::linked_list(pool, caller, request.table_id).await?
         }
-        ClientMessage::ChatFriend(request)
-        | ClientMessage::ChatUnfriend(request)
-        | ClientMessage::ChatLink(request)
-        | ClientMessage::ChatUnlink(request)
-        | ClientMessage::ChatBlock(request)
-        | ClientMessage::ChatUnblock(request) => {
-            relationships::relationship(pool, caller, command, &request.username, request.table_id)
-                .await?
+        ClientMessage::BlockList(request) => {
+            relationships::blocked_list(pool, caller, request.table_id).await?
+        }
+        ClientMessage::FriendAdd(request) => {
+            relationships::relationship(
+                pool,
+                caller,
+                Change::Friend,
+                &request.username,
+                request.table_id,
+            )
+            .await?
+        }
+        ClientMessage::FriendRemove(request) => {
+            relationships::relationship(
+                pool,
+                caller,
+                Change::Unfriend,
+                &request.username,
+                request.table_id,
+            )
+            .await?
+        }
+        ClientMessage::LinkAdd(request) => {
+            relationships::relationship(
+                pool,
+                caller,
+                Change::Link,
+                &request.username,
+                request.table_id,
+            )
+            .await?
+        }
+        ClientMessage::LinkRemove(request) => {
+            relationships::relationship(
+                pool,
+                caller,
+                Change::Unlink,
+                &request.username,
+                request.table_id,
+            )
+            .await?
+        }
+        ClientMessage::BlockAdd(request) => {
+            relationships::relationship(
+                pool,
+                caller,
+                Change::Block,
+                &request.username,
+                request.table_id,
+            )
+            .await?
+        }
+        ClientMessage::BlockRemove(request) => {
+            relationships::relationship(
+                pool,
+                caller,
+                Change::Unblock,
+                &request.username,
+                request.table_id,
+            )
+            .await?
         }
         ClientMessage::GameHistory(hanabi_protocol::GameHistoryRequest { offset, amount }) => {
             let ids = history_ids(pool, caller.user, offset.0, amount).await?;
             vec![Effect::to_self(Outgoing::new(
                 hanabi_protocol::server::GAME_HISTORY,
-                hanabi_protocol::GameHistory(get_history(pool, &ids, false).await?),
+                hanabi_protocol::GameHistory {
+                    games: get_history(pool, &ids, false).await?,
+                    offset,
+                },
             ))]
         }
         ClientMessage::GameHistoryOtherScores(request) => {
@@ -273,7 +330,7 @@ pub async fn dispatch(
                 hanabi_protocol::GameHistoryOtherScores {
                     games,
                     offset,
-                    num_games_on_seed: hanabi_protocol::Count(total),
+                    total: hanabi_protocol::Count(total),
                     variant_name,
                     seed: seed.into(),
                 },

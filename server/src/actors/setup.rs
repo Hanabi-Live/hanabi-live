@@ -358,12 +358,12 @@ pub(super) async fn prepare_table(
         let r = match creation {
             Creation::Table(r) => r,
             Creation::Replay(r) => {
-                let shared = r.visibility == hanabi_protocol::ReplayVisibility::Shared;
-                let spoiler_free = r.spoiler_free;
-                ensure_or_reject!(
-                    shared || !spoiler_free,
-                    "Only a shared replay can be a spoiler-free review."
-                );
+                let (shared, spoiler_free) = match r.visibility {
+                    hanabi_protocol::ReplayVisibility::Solo {} => (false, false),
+                    hanabi_protocol::ReplayVisibility::Shared { spoiler_free, .. } => {
+                        (true, spoiler_free)
+                    }
+                };
                 let mut warnings = vec![];
                 let mut custom_seed = None;
                 let snapshot = match &r.source {

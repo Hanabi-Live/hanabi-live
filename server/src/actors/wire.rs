@@ -104,7 +104,7 @@ pub(super) fn wire_event(event: &hanabi_engine::EngineEvent) -> GameEvent {
                     value: RankClueNumber::new(clue.value).expect("engine clue ranks are 1 to 5"),
                 },
             }),
-            giver: seat(giver),
+            player_index: seat(giver),
             target: seat(target),
             orders: list.iter().copied().map(card).collect(),
             ignore_negative: false,

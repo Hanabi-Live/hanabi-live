@@ -92,7 +92,7 @@ export function getSoundType(
       }
       if (metadata.options.detrimentalCharacters) {
         const giverCharacterName = getCharacterNameForPlayer(
-          action.giver,
+          action.playerIndex,
           metadata.characterAssignments,
         );
 

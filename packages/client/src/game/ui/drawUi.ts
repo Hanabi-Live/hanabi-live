@@ -764,7 +764,7 @@ export function drawUi(): void {
 export function updateTerminationVotes(): void {
   globals.elements.terminateButton?.setImage(
     globals.imageLoader!.get(
-      globals.terminationVotes?.vote === true ? "skull_vtk" : "skull",
+      globals.terminationVotes?.voted === true ? "skull_vtk" : "skull",
     ),
   );
   globals.elements.terminateMenu?.update();

@@ -193,12 +193,12 @@ describe("UsersList", () => {
 
     fireEvent.click(screen.getByText("Alice"));
     fireEvent.click(screen.getByText("Add to Friends"));
-    expect(send).toHaveBeenCalledWith("chatFriend", { username: "Alice" });
+    expect(send).toHaveBeenCalledWith("friendAdd", { username: "Alice" });
     expect(screen.queryByText("Add to Friends")).toBeNull();
 
     fireEvent.click(screen.getByText("Alice"));
     fireEvent.click(screen.getByText("Block"));
-    expect(send).toHaveBeenCalledWith("chatBlock", {
+    expect(send).toHaveBeenCalledWith("blockAdd", {
       username: "Alice",
     });
     act(() => {

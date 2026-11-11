@@ -92,13 +92,7 @@ const historySlice = createSlice({
       }
     },
     otherScoresReceived(state, action: PayloadAction<OtherScores>) {
-      const {
-        games,
-        offset,
-        seed,
-        numGamesOnSeed: total,
-        variantName,
-      } = action.payload;
+      const { games, offset, seed, total, variantName } = action.payload;
       const shown = state.otherScores;
       // Ignore a late reply for a seed that we no longer show.
       if (shown?.seed !== seed) {

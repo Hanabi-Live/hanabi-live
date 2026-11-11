@@ -354,7 +354,7 @@ function parseJsonAction(
             a.type === JsonActionType.ActionTypeColorClue ? "color" : "rank",
           value: a.value,
         },
-        giver: currentPlayer,
+        playerIndex: currentPlayer,
         target: a.target,
         turn,
         orders: [],

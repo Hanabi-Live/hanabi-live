@@ -1,7 +1,7 @@
 use crate::errors::CommandResult;
 use crate::errors::OrReject;
 use crate::{
-    game::{Card, Game, Options},
+    game::{Card, Game},
     model::{Player, Snapshot},
     stats::zero_stats,
 };
@@ -30,27 +30,9 @@ pub fn parse(input: &ReplayGame) -> CommandResult<Imported> {
             && seed.bytes().all(|b| b.is_ascii_alphanumeric() || b == b'-'),
         "Invalid seed"
     );
-    let raw = input.options.clone().unwrap_or_default();
-    let variant_name = raw
-        .variant_name
-        .unwrap_or_else(|| hanabi_protocol::DEFAULT_VARIANT_NAME.into());
-    let variant = hanabi_engine::get_variant(&variant_name)?;
-    let has_characters = raw.detrimental_characters == Some(true) || input.characters.is_some();
-    let defaults = Options::default();
-    let mut options = Options {
-        variant_name,
-        time_control: raw.time_control,
-        speedrun: raw.speedrun.unwrap_or(defaults.speedrun),
-        deck_plays: raw.deck_plays.unwrap_or(defaults.deck_plays),
-        empty_clues: raw.empty_clues.unwrap_or(defaults.empty_clues),
-        one_extra_card: raw.one_extra_card.unwrap_or(defaults.one_extra_card),
-        one_less_card: raw.one_less_card.unwrap_or(defaults.one_less_card),
-        all_or_nothing: raw.all_or_nothing.unwrap_or(defaults.all_or_nothing),
-        detrimental_characters: raw
-            .detrimental_characters
-            .unwrap_or(defaults.detrimental_characters),
-        ..defaults
-    };
+    let mut options = crate::model::engine_options(&input.options);
+    let variant = hanabi_engine::get_variant(&options.variant_name)?;
+    let has_characters = options.detrimental_characters || !input.characters.is_empty();
     let mut players = input.player_names.clone().unwrap_or_default();
     if players.is_empty() {
         let pattern = regex!(crate::game::SEED_PATTERN);
@@ -113,7 +95,7 @@ pub fn parse(input: &ReplayGame) -> CommandResult<Imported> {
         "The deck does not match the seed"
     );
     let mut characters: Vec<AssignedCharacter> = vec![];
-    for character in input.characters.iter().flatten() {
+    for character in &input.characters {
         let name = match character.character_id {
             None => None,
             Some(id) => Some(

@@ -60,7 +60,7 @@ function stateReducerFunction(state: Draft<State>, action: Action) {
       break;
     }
 
-    case "finishOngoingGame": {
+    case "gameFinished": {
       if (state.playing || state.shadowing) {
         // We were playing in a game that just ended. Recalculate the whole game as a spectator to
         // fix card possibilities.
@@ -121,8 +121,8 @@ function stateReducerFunction(state: Draft<State>, action: Action) {
       state.replay.shared = {
         segment: penultimateSegment,
         useSharedSegments: !inInGameReplay,
-        leader: shared.leader,
-        amLeader: shared.leader === state.metadata.ourUsername,
+        leader: action.leader,
+        amLeader: action.leader === state.metadata.ourUsername,
         datetimeStarted: shared.startedAt,
         spoilerFree: shared.spoilerFree,
         canPlayAgain: shared.canPlayAgain,
@@ -137,7 +137,8 @@ function stateReducerFunction(state: Draft<State>, action: Action) {
       state.datetimeStarted = action.startedAt;
       state.datetimeFinished = action.finishedAt;
 
-      switch (action.mode) {
+      const { mode } = action;
+      switch (mode.type) {
         case "playing": {
           break;
         }
@@ -160,17 +161,17 @@ function stateReducerFunction(state: Draft<State>, action: Action) {
           state.finished = true;
           state.replay.active = true;
           state.replay.segment = 0; // In dedicated solo replays, start on the first segment
-          state.replay.gameId = action.gameId;
+          state.replay.gameId = mode.gameId;
 
-          const shared = action.sharedReplay;
-          if (shared !== undefined) {
+          if (mode.type === "sharedReplay") {
+            const shared = mode.sharedReplay;
             // In dedicated shared replays, start on the shared replay turn.
             state.replay.segment = shared.turn;
             state.replay.shared = {
               segment: shared.turn,
               useSharedSegments: true,
-              leader: shared.leader,
-              amLeader: shared.leader === state.metadata.ourUsername,
+              leader: action.leader ?? "",
+              amLeader: action.leader === state.metadata.ourUsername,
               datetimeStarted: shared.startedAt,
               spoilerFree: shared.spoilerFree,
               canPlayAgain: shared.canPlayAgain,

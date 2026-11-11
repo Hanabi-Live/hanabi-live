@@ -108,16 +108,16 @@ async fn lobby_relationships_atomic_settings_and_parameterization_postgres() {
     let b = db.user("Bob").await;
     let who = caller(a, "Alice");
     let data = json!({"username":"bób"});
-    let result = run(&db.pool, &who, &[], "chatFriend", data.clone()).await;
+    let result = run(&db.pool, &who, &[], "friendAdd", data.clone()).await;
     assert_eq!(self_data(&result, "friends"), json!({"friends":["Bob"]}));
-    let repeated = run(&db.pool, &who, &[], "chatFriend", data.clone()).await;
+    let repeated = run(&db.pool, &who, &[], "friendAdd", data.clone()).await;
     assert!(
         self_data(&repeated, "warning")["message"]
             .as_str()
             .unwrap()
             .contains("already")
     );
-    let _ = run(&db.pool, &who, &[], "chatUnfriend", data.clone()).await;
+    let _ = run(&db.pool, &who, &[], "friendRemove", data.clone()).await;
     assert_eq!(
         friends(&db.pool, UserId(a)).await.unwrap(),
         Vec::<hanabi_protocol::Username>::new()
@@ -240,7 +240,14 @@ async fn lobby_relationships_atomic_settings_and_parameterization_postgres() {
     let settings = serde_json::to_value(get_settings(&db.pool, UserId(b)).await.unwrap()).unwrap();
     assert_eq!(settings["soundTimer"], false);
     assert_eq!(settings["volume"], 25);
-    let result = run(&db.pool, &who, &[], "inactive", json!({"inactive":true})).await;
+    let result = run(
+        &db.pool,
+        &who,
+        &[],
+        "userInactive",
+        json!({"inactive":true}),
+    )
+    .await;
     assert!(matches!(
         result.first(),
         Some(Effect::Publish(Publication::Inactive(true)))
@@ -276,18 +283,18 @@ async fn blocked_players_cannot_message_each_other_postgres() {
     };
     let bob_name = json!({"username":"bob"});
 
-    let blocked = run(&db.pool, &alice, &[], "chatBlock", bob_name.clone()).await;
+    let blocked = run(&db.pool, &alice, &[], "blockAdd", bob_name.clone()).await;
     assert!(notice_of(&blocked).contains("Successfully blocked"));
     assert_eq!(self_data(&blocked, "blocked"), json!({"blocked":["Bob"]}));
-    let repeated = run(&db.pool, &alice, &[], "chatBlock", bob_name.clone()).await;
+    let repeated = run(&db.pool, &alice, &[], "blockAdd", bob_name.clone()).await;
     assert!(warning_of(&repeated).contains("already blocked"));
-    let list = run(&db.pool, &alice, &[], "chatBlocked", json!({})).await;
+    let list = run(&db.pool, &alice, &[], "blockList", json!({})).await;
     assert_eq!(notice_of(&list), "Currently blocked players: Bob");
     let own = run(
         &db.pool,
         &alice,
         &[],
-        "chatBlock",
+        "blockAdd",
         json!({"username":"Alice"}),
     )
     .await;
@@ -311,12 +318,12 @@ async fn blocked_players_cannot_message_each_other_postgres() {
         .unwrap();
     assert_eq!(stored, 0);
 
-    let unblocked = run(&db.pool, &alice, &[], "chatUnblock", bob_name.clone()).await;
+    let unblocked = run(&db.pool, &alice, &[], "blockRemove", bob_name.clone()).await;
     assert!(notice_of(&unblocked).contains("Successfully unblocked"));
     assert_eq!(self_data(&unblocked, "blocked"), json!({"blocked":[]}));
-    let missing = run(&db.pool, &alice, &[], "chatUnblock", bob_name).await;
+    let missing = run(&db.pool, &alice, &[], "blockRemove", bob_name).await;
     assert!(warning_of(&missing).contains("not blocked"));
-    let list = run(&db.pool, &alice, &[], "chatBlocked", json!({})).await;
+    let list = run(&db.pool, &alice, &[], "blockList", json!({})).await;
     assert_eq!(notice_of(&list), "Currently, you have not blocked anyone.");
     let result = run(
         &db.pool,
@@ -593,12 +600,12 @@ async fn lobby_directed_linked_seeds_and_histories_postgres() {
     let ga = game(&db, a, "p2v0s1", 20).await;
     let gb = game(&db, b, "p2v0s1", 25).await;
     let _gc = game(&db, c, "p2v0s2", 15).await;
-    let _ = run(&db.pool, &who, &[], "chatLink", json!({"username":"Bob"})).await;
+    let _ = run(&db.pool, &who, &[], "linkAdd", json!({"username":"Bob"})).await;
     let _ = run(
         &db.pool,
         &caller(b, "Bob"),
         &[],
-        "chatLink",
+        "linkAdd",
         json!({"username":"Carol"}),
     )
     .await;
@@ -622,7 +629,7 @@ async fn lobby_directed_linked_seeds_and_histories_postgres() {
     );
     assert!(
         self_data(
-            &run(&db.pool, &who, &[], "chatLinked", json!({})).await,
+            &run(&db.pool, &who, &[], "linkList", json!({})).await,
             "chat"
         )["text"]
             .as_str()
@@ -638,9 +645,9 @@ async fn lobby_directed_linked_seeds_and_histories_postgres() {
     )
     .await;
     let history = self_data(&result, "gameHistory");
-    assert_eq!(history[0]["gameId"], ga);
-    assert_eq!(history[0]["options"]["variantName"], "No Variant");
-    assert_eq!(history[0]["playerNames"], json!(["Alice"]));
+    assert_eq!(history["games"][0]["gameId"], ga);
+    assert_eq!(history["games"][0]["options"]["variantName"], "No Variant");
+    assert_eq!(history["games"][0]["playerNames"], json!(["Alice"]));
     // A page holds at least one game and at most `MAX_PAGE_SIZE`, from a start that is not
     // negative.
     for page in [
@@ -665,7 +672,7 @@ async fn lobby_directed_linked_seeds_and_histories_postgres() {
     assert_eq!(history["games"][0]["gameId"], gb);
     assert_eq!(history["games"][1]["gameId"], ga);
     assert_eq!(
-        (&history["offset"], &history["numGamesOnSeed"]),
+        (&history["offset"], &history["total"]),
         (&json!(0), &json!(2))
     );
     // Later pages continue in the same order, and count every game on the seed.
@@ -681,7 +688,7 @@ async fn lobby_directed_linked_seeds_and_histories_postgres() {
     assert_eq!(history["games"].as_array().unwrap().len(), 1);
     assert_eq!(history["games"][0]["gameId"], ga);
     assert_eq!(
-        (&history["offset"], &history["numGamesOnSeed"]),
+        (&history["offset"], &history["total"]),
         (&json!(1), &json!(2))
     );
     sqlx::query!(
@@ -714,10 +721,10 @@ async fn lobby_directed_linked_seeds_and_histories_postgres() {
             .unwrap(),
         3
     );
-    let _ = run(&db.pool, &who, &[], "chatUnlink", json!({"username":"Bob"})).await;
+    let _ = run(&db.pool, &who, &[], "linkRemove", json!({"username":"Bob"})).await;
     assert!(
         self_data(
-            &run(&db.pool, &who, &[], "chatLinked", json!({})).await,
+            &run(&db.pool, &who, &[], "linkList", json!({})).await,
             "chat"
         )["text"]
             .as_str()

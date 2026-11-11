@@ -9,13 +9,14 @@ import { setTimeout as delay } from "node:timers/promises";
 import type { WebSocket } from "ws";
 import { evaluationDatabase } from "./database.ts";
 import {
-  ROOT,
   bounded,
   buildRust,
   databaseDescribe,
   installSchema,
   login,
+  ourPlayerIndex,
   prepareRoot,
+  ROOT,
   settleLanes,
   socketClient,
   startProcess,
@@ -113,7 +114,7 @@ databaseDescribe("normal-server protocol workload", () => {
           "gameEventList",
           SERVER_COMMAND_SCHEMAS.gameEventList,
         );
-        if (init.mode !== "replay" && init.mode !== "sharedReplay") {
+        if (init.mode.type !== "replay" && init.mode.type !== "sharedReplay") {
           peer.send("loaded", { tableId });
         }
         return { init, history };
@@ -133,11 +134,14 @@ databaseDescribe("normal-server protocol workload", () => {
               settings: { name: "Benchmark", seedSuffix: SEED_SUFFIX },
             });
             const { tableId } = await alice.receive(
-              "joined",
-              SERVER_COMMAND_SCHEMAS.joined,
+              "tableJoined",
+              SERVER_COMMAND_SCHEMAS.tableJoined,
             );
             bob.send("tableJoin", { tableId });
-            await bob.receive("joined", SERVER_COMMAND_SCHEMAS.joined);
+            await bob.receive(
+              "tableJoined",
+              SERVER_COMMAND_SCHEMAS.tableJoined,
+            );
             alice.send("tableStart", { tableId });
             await alice.receive(
               "tableStarted",
@@ -151,8 +155,8 @@ databaseDescribe("normal-server protocol workload", () => {
               bootstrap(alice, tableId),
               bootstrap(bob, tableId),
             ]);
-            const aliceSeat = a.init.ourPlayerIndex;
-            const bobSeat = b.init.ourPlayerIndex;
+            const aliceSeat = ourPlayerIndex(a.init);
+            const bobSeat = ourPlayerIndex(b.init);
             assertDefined(aliceSeat, "Alice has no seat.");
             assertDefined(bobSeat, "Bob has no seat.");
             expect(
@@ -182,7 +186,7 @@ databaseDescribe("normal-server protocol workload", () => {
                   SERVER_COMMAND_SCHEMAS.tableStarted,
                 );
                 const restored = await bootstrap(alice, tableId);
-                expect(restored.init.ourPlayerIndex).toBe(aliceSeat);
+                expect(ourPlayerIndex(restored.init)).toBe(aliceSeat);
                 expect(
                   restored.history.events.filter(
                     (event) => event.type === "play",
@@ -205,16 +209,17 @@ databaseDescribe("normal-server protocol workload", () => {
               (entry) => entry.score === 25,
             );
             const finished = await bootstrap(alice, tableId);
-            expect(finished.init.mode).toBe("sharedReplay");
+            expect(finished.init.mode.type).toBe("sharedReplay");
             expect(
               finished.history.events.filter((event) => event.type === "play"),
             ).toHaveLength(25);
-            assertDefined(
-              finished.init.gameId,
-              "The finished game was not saved.",
-            );
+            const gameId =
+              finished.init.mode.type === "sharedReplay"
+                ? finished.init.mode.gameId
+                : undefined;
+            assertDefined(gameId, "The finished game was not saved.");
             completed.push({
-              gameId: finished.init.gameId,
+              gameId,
               aliceCookie,
               bobCookie,
             });
@@ -276,14 +281,14 @@ databaseDescribe("normal-server protocol workload", () => {
       ) {
         peer.send("replayCreate", {
           source: { type: "saved", gameId },
-          visibility: "solo",
+          visibility: { type: "solo" },
         });
         const { tableId } = await peer.receive(
           "tableStarted",
           SERVER_COMMAND_SCHEMAS.tableStarted,
         );
         const replay = await bootstrap(peer, tableId);
-        expect<number | undefined>(replay.init.gameId).toBe(gameId);
+        expect(replay.init.mode).toMatchObject({ type: "replay", gameId });
         expect(
           replay.history.events.filter((event) => event.type === "play"),
         ).toHaveLength(25);

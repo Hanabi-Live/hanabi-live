@@ -56,12 +56,12 @@ mod tests {
         for command in hanabi_protocol::client_contracts().into_keys() {
             let value = match command {
                 "setting" => json!({"settings":{"volume":50}}),
-                "inactive" => json!({"inactive":true}),
+                "userInactive" => json!({"inactive":true}),
                 "gameHistoryOtherScores" => json!({"seed":"p2v0s1","offset":0,"amount":10}),
                 "chat" => json!({"text":"hello"}),
                 "chatPm" => json!({"text":"hello","recipient":"Alice"}),
                 "replayCreate" => {
-                    json!({"source":{"type":"saved","gameId":1},"visibility":"shared"})
+                    json!({"source":{"type":"saved","gameId":1},"visibility":{"type":"shared"}})
                 }
                 "playerAction" => {
                     json!({"tableId":1,"action":{"type":"clue","target":0,"clue":{"type":"rank","value":1}}})
@@ -71,17 +71,17 @@ mod tests {
                 "tag" | "tagDelete" => json!({"tableId":1,"tag":"test"}),
                 "replayAction" => json!({"tableId":1,"action":{"type":"hypoStart"}}),
                 "tableRestartDecline" => json!({"tableId":1,"declined":true}),
-                "tableSetLeader" => json!({"tableId":1,"username":"Alice"}),
+                "tableSetOwner" => json!({"tableId":1,"userId":1}),
                 "tableSuggest" => json!({"tableId":1,"turn":0}),
-                "chatFriend" | "chatUnfriend" | "chatLink" | "chatUnlink" | "chatBlock"
-                | "chatUnblock" => json!({"username":"Alice"}),
+                "friendAdd" | "friendRemove" | "linkAdd" | "linkRemove" | "blockAdd"
+                | "blockRemove" => json!({"username":"Alice"}),
                 "tagSearch" => json!({"tag":"test"}),
                 "tableSetVariant" => json!({"tableId":1,"variantName":"No Variant"}),
                 "gameHistory" => json!({"offset":0,"amount":10}),
                 "tableCreate" => json!({"settings":{"name":"Table"}}),
                 "tableUpdate" => json!({"tableId":1,"settings":{"name":"Table"}}),
                 "chatPmHistory" => json!({"amount":10}),
-                "sync" | "lobbyLoad" | "chatLinked" | "chatBlocked" => json!({}),
+                "sync" | "lobbyLoad" | "linkList" | "blockList" => json!({}),
                 _ => json!({"tableId":1}),
             };
             parse(&format!("{command} {value}")).unwrap_or_else(|e| panic!("{command}: {e}"));
@@ -124,7 +124,7 @@ mod tests {
         let note = "n".repeat(65536);
         let input = format!(
             "replayCreate {}",
-            json!({"visibility":"solo","source":{"type":"imported","game":{
+            json!({"visibility":{"type":"solo"},"source":{"type":"imported","game":{
                 "seed":"p2v0s1","notes":[[note],[]]
             }}})
         );

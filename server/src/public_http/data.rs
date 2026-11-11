@@ -260,7 +260,7 @@ pub(super) async fn list(
     qb.push("), paged AS (SELECT id,num_players,score,variant_id,seed,datetime_finished FROM selected ORDER BY ").push(column_field(order))
         .push(if ascending { " ASC" } else { " DESC" }).push(", id DESC LIMIT ")
         .push_bind(size).push(" OFFSET ").push_bind(offset)
-        .push(") SELECT (SELECT count(*) FROM selected) AS total_rows,COALESCE((SELECT jsonb_agg(jsonb_build_object('gameId',g.id,'numPlayers',g.num_players,'score',g.score,");
+        .push(") SELECT (SELECT count(*) FROM selected) AS total_rows,COALESCE((SELECT jsonb_agg(jsonb_build_object('gameId',g.id,'score',g.score,");
     if mode != "variants" {
         qb.push("'variantId',g.variant_id,'numGamesOnSeed',(SELECT num_games FROM seeds WHERE seed=g.seed),");
     }
@@ -269,8 +269,8 @@ pub(super) async fn list(
         .push(",g.id DESC) FROM paged g),'[]'::jsonb) AS rows");
     let page: PageRow = qb.build_query_as().fetch_one(&state.pool).await?;
     Ok(hanabi_protocol::PublicGamePage {
-        total_rows: hanabi_protocol::Count(page.total_rows),
-        rows: page.rows.0,
+        games: page.rows.0,
+        total: hanabi_protocol::Count(page.total_rows),
     })
 }
 

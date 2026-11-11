@@ -326,8 +326,8 @@ async fn public_database_routes_filters_privacy_exports_and_html() {
         let (status, body) = request(app.clone(), path).await;
         assert_eq!(status, StatusCode::OK, "{path}: {body}");
         let value: Value = serde_json::from_str(&body).unwrap();
-        assert_eq!(value["totalRows"], total, "{path}");
-        assert_eq!(value["rows"].as_array().unwrap().len(), len, "{path}");
+        assert_eq!(value["total"], total, "{path}");
+        assert_eq!(value["games"].as_array().unwrap().len(), len, "{path}");
     }
     // Each sort column, direction, and filter assembles different SQL; exercise every one.
     for (path, total, first) in [
@@ -354,8 +354,8 @@ async fn public_database_routes_filters_privacy_exports_and_html() {
         let (status, body) = request(app.clone(), path).await;
         assert_eq!(status, StatusCode::OK, "{path}: {body}");
         let value: Value = serde_json::from_str(&body).unwrap();
-        assert_eq!(value["totalRows"], total, "{path}");
-        assert_eq!(value["rows"][0]["gameId"].as_i64(), first, "{path}");
+        assert_eq!(value["total"], total, "{path}");
+        assert_eq!(value["games"][0]["gameId"].as_i64(), first, "{path}");
     }
     // Responses match their wire contracts, timestamps included.
     let (_, body) = request(app.clone(), "/api/v1/history/Alice").await;
@@ -394,7 +394,7 @@ async fn public_database_routes_filters_privacy_exports_and_html() {
     let (status, body) = request(app.clone(), "/api/v1/history/Alice?col[score]=0&size=1").await;
     assert_eq!(status, StatusCode::OK, "{body}");
     assert_eq!(
-        serde_json::from_str::<Value>(&body).unwrap()["rows"][0]["gameId"],
+        serde_json::from_str::<Value>(&body).unwrap()["games"][0]["gameId"],
         3
     );
     let (_, body) = request(app.clone(), "/api/v1/history-full/Alice?start=3&end=3").await;
@@ -464,7 +464,7 @@ async fn public_database_routes_filters_privacy_exports_and_html() {
     // Game 3 is in variant 1.
     assert_eq!(
         export["deck"],
-        crate::game::seeded_deck(1, "custom-seed").unwrap()
+        serde_json::to_value(crate::game::seeded_deck(1, "custom-seed").unwrap()).unwrap()
     );
     assert_eq!(export["actions"].as_array().unwrap().len(), 2);
     assert_eq!(export["notes"], json!([["<note>"], []]));
@@ -693,7 +693,7 @@ async fn public_database_routes_filters_privacy_exports_and_html() {
         if value.is_array() {
             assert_eq!(value[0]["gameId"], 4);
         } else {
-            assert_eq!(value["totalRows"], 1);
+            assert_eq!(value["total"], 1);
         }
     }
     let (status, body) = request(

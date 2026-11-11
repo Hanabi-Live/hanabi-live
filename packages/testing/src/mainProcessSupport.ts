@@ -1,4 +1,9 @@
-import type { CLIENT_COMMAND_SCHEMAS, ClientCommand } from "@hanabi-live/data";
+import type {
+  CLIENT_COMMAND_SCHEMAS,
+  ClientCommand,
+  ServerCommandData,
+  UserId,
+} from "@hanabi-live/data";
 import { VERSION } from "@hanabi-live/data";
 
 import { describe, expect } from "bun:test";
@@ -16,6 +21,16 @@ import type { evaluationDatabase } from "./database.ts";
 import { serverFrameViolation } from "./serverFrames.ts";
 
 export const ROOT = path.resolve(import.meta.dirname, "../../..");
+
+/** The key that the test server signs session cookies with. */
+const SESSION_SECRET = "synthetic-process-smoke-secret-".repeat(8);
+
+/** The seat that an "init" message's recipient sees the game from, if any. */
+export function ourPlayerIndex(
+  init: ServerCommandData["init"],
+): number | undefined {
+  return "ourPlayerIndex" in init.mode ? init.mode.ourPlayerIndex : undefined;
+}
 
 export const databaseDescribe =
   process.env["HANABI_TEST_DATABASE_URL"] === undefined
@@ -65,7 +80,7 @@ const rustProgressPhaseSchema = z.discriminatedUnion("phase", [
 ]);
 
 export const rustProgressTableSchema = z.object({
-  format: z.literal("hanabi-live-11"),
+  format: z.literal("hanabi-live-12"),
   phase: rustProgressPhaseSchema,
 });
 
@@ -121,7 +136,7 @@ export async function prepareRoot(
   const { connection } = database;
   const environment = {
     DOMAIN: domain,
-    SESSION_SECRET: "synthetic-process-smoke-secret-".repeat(8),
+    SESSION_SECRET,
     PORT: "0",
     LOCALHOST_PORT: "0",
     DB_HOST: connection.host,
@@ -289,13 +304,18 @@ export async function login(
     .find((value) => value.startsWith("hanabi.sid="))
     ?.split(";", 1)[0];
   assertDefined(cookie, "Login did not return a session cookie.");
+  expect(body).toEqual({ userId: cookieUserId(cookie) });
+  return cookie;
+}
+
+/** The user whom a session cookie from `login` signs in. */
+export function cookieUserId(cookie: string): UserId {
   const userId = decodeSessionCookie(
     cookie.slice("hanabi.sid=".length),
-    "synthetic-process-smoke-secret-".repeat(8),
+    SESSION_SECRET,
   );
-  expect(userId).toBeGreaterThan(0);
-  expect(body).toEqual({ userId });
-  return cookie;
+  assertDefined(userId, "The session cookie is not valid.");
+  return userId;
 }
 
 export function socketClient(address: string, cookie: string): SocketClient {

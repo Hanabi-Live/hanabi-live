@@ -543,7 +543,7 @@ describe("hypothetical planning", () => {
     expect(colorActions?.[0]).toMatchObject({
       type: "clue",
       clue: { type: "color", value: colorIndex },
-      giver: 0,
+      playerIndex: 0,
       target: 1,
     });
     const rankActions = planHypotheticalAction(

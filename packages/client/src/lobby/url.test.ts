@@ -77,7 +77,7 @@ describe("replay URL loading", () => {
     );
     expect(send).toHaveBeenCalledWith("replayCreate", {
       source: { type: "imported", game: { ...gameJson, seed } },
-      visibility,
+      visibility: { type: visibility },
     });
     expect(setItem).toHaveBeenCalledWith(
       "watchReplayJson",
@@ -153,7 +153,7 @@ describe("replay URL loading", () => {
       "replayCreate",
       expect.objectContaining({
         source: { type: "saved", gameId: 456 },
-        visibility: "solo",
+        visibility: { type: "solo" },
       }),
     );
   });

@@ -19,7 +19,7 @@ use axum::http::StatusCode;
 use futures_util::FutureExt;
 use hanabi_protocol::PlayerIndex;
 use hanabi_protocol::{
-    ClientMessage, SoundLobby, TableId, TableRef, User, UserId, UserLeft, UserList,
+    ClientMessage, LobbySoundMessage, TableId, TableRef, User, UserId, UserLeft, UserList,
 };
 use std::{
     collections::{BTreeSet, HashMap},
@@ -189,7 +189,10 @@ impl Hub {
                 TableRef { table_id: id },
             ));
         }
-        let boot = frame(hanabi_protocol::server::BOOT, TableRef { table_id: id });
+        let boot = frame(
+            hanabi_protocol::server::TABLE_BOOT,
+            TableRef { table_id: id },
+        );
         let warning = frame(hanabi_protocol::server::WARNING, report.notice());
         let users = self
             .sessions
@@ -396,8 +399,11 @@ impl Hub {
     fn existing_replay(&self, r: &hanabi_protocol::ReplayCreateRequest) -> Option<TableId> {
         let hanabi_protocol::ReplayCreateRequest {
             source: hanabi_protocol::ReplaySource::Saved { game_id: game },
-            visibility: hanabi_protocol::ReplayVisibility::Shared,
-            join_existing: true,
+            visibility:
+                hanabi_protocol::ReplayVisibility::Shared {
+                    join_existing: true,
+                    ..
+                },
             ..
         } = *r
         else {
@@ -590,9 +596,9 @@ impl Hub {
         }
         let messages = [
             frame(
-                hanabi_protocol::server::SOUND_LOBBY,
-                SoundLobby {
-                    file: hanabi_protocol::LobbySound::Shutdown,
+                hanabi_protocol::server::LOBBY_SOUND,
+                LobbySoundMessage {
+                    sound: hanabi_protocol::LobbySound::Shutdown,
                 },
             ),
             if reconnect {
@@ -813,17 +819,20 @@ impl Hub {
         session.emit(&frame(hanabi_protocol::server::WELCOME, welcome));
         session.emit(&frame(
             hanabi_protocol::server::USER_LIST,
-            UserList(self.sessions.values().map(Self::user).collect()),
+            UserList {
+                users: self.sessions.values().map(Self::user).collect(),
+            },
         ));
         session.emit(&frame(
             hanabi_protocol::server::TABLE_LIST,
-            hanabi_protocol::TableList(
-                self.tables
+            hanabi_protocol::TableList {
+                tables: self
+                    .tables
                     .values()
                     .filter(|e| e.view.visible)
                     .map(|e| Self::table_for(&e.view, session.user))
                     .collect(),
-            ),
+            },
         ));
         for message in initial {
             session.emit(&message);

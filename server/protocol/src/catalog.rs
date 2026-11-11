@@ -125,10 +125,10 @@ pub struct CatalogSuit {
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct CatalogVariant {
     /// A number from 0 to N. For example, "No Variant" is variant 0, "6 Suits" is variant 1, and so
-    /// on. This is a legacy field; we want to transition to using a more descriptive string ID,
-    /// which will allow for custom user-defined variants.
+    /// on. The database and seeds name a variant by this number.
     pub id: VariantId,
-    /// A string that describes the variant. For example, "No Variant" is `R+Y+G+B+P`.
+    /// The variant's suits and modifiers, from which the catalog generator checks the entry. For
+    /// example, "No Variant" is `R+Y+G+B+P`.
     #[schemars(length(min = 1))]
     pub new_id: String,
     #[schemars(length(min = 1))]

@@ -21,7 +21,7 @@ export type Action =
   | ActionPause
   | ActionPauseQueue
   | ActionSpectators
-  | ActionFinishOngoingGame
+  | ActionGameFinished
   | UiAction;
 
 export type { ActionIncludingHypothetical } from "@hanabi-live/game";
@@ -51,16 +51,13 @@ type HypotheticalAction =
 export interface ActionInit extends Readonly<
   Pick<
     ServerCommandData["init"],
-    | "startedAt"
-    | "finishedAt"
-    | "mode"
-    | "gameId"
-    | "sharedReplay"
-    | "pausePlayerIndex"
-    | "pauseQueued"
+    "startedAt" | "finishedAt" | "mode" | "pausePlayerIndex" | "pauseQueued"
   >
 > {
   readonly type: "init";
+
+  /** The name of the shared replay's leader, which the server sends as a user ID. */
+  readonly leader: string | undefined;
 }
 
 interface ActionListReceived {
@@ -98,13 +95,16 @@ interface ActionSpectators {
   readonly spectators: readonly Spectator[];
 }
 
-interface ActionFinishOngoingGame extends Readonly<
-  Pick<ServerCommandData["finishOngoingGame"], "gameId" | "sharedReplay">
+interface ActionGameFinished extends Readonly<
+  Pick<ServerCommandData["gameFinished"], "gameId" | "sharedReplay">
 > {
-  readonly type: "finishOngoingGame";
+  readonly type: "gameFinished";
 
   /** The server does not send this; the client records when it received the message. */
   readonly datetimeFinished: string;
+
+  /** The name of the shared replay's leader, which the server sends as a user ID. */
+  readonly leader: string;
 }
 
 // --------------
@@ -135,10 +135,9 @@ interface ActionReplayUseSharedSegments {
   readonly useSharedSegments: boolean;
 }
 
-interface ActionReplayLeader extends Readonly<
-  Pick<ServerCommandData["replayLeader"], "username">
-> {
+interface ActionReplayLeader {
   readonly type: "replayLeader";
+  readonly username: string;
 }
 
 interface ActionRestartDeclined extends Readonly<
