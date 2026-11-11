@@ -1,6 +1,12 @@
 import type { CardOrder, PlayerIndex, Variant } from "@hanabi-live/game";
-import { useEffect, useRef } from "react";
-import { CARD_HEIGHT_PER_WIDTH, CardFace, describeCard } from "./Card.tsx";
+import { useEffect, useLayoutEffect, useRef } from "react";
+import type { ClueMarkerView } from "./Card.tsx";
+import {
+  CARD_HEIGHT_PER_WIDTH,
+  CardFace,
+  describeCard,
+  getClueMarkerColor,
+} from "./Card.tsx";
 import type { CardView } from "./tableView.ts";
 
 export interface Seat {
@@ -45,6 +51,21 @@ interface HandsProps {
   /** The cards that the clue being chosen would touch. */
   readonly touchedCards: ReadonlySet<CardOrder>;
 
+  /** The cards that the clue on the turn that shows touched, with the clue to mark them with. */
+  readonly clueMarkers: ReadonlyMap<CardOrder, ClueMarkerView>;
+
+  /** The player who got the clue on the turn that shows, when it touched no cards. */
+  readonly emptyClueTarget: PlayerIndex | undefined;
+
+  /** The clue on the turn that shows: who gave it to whom, and how it is marked. */
+  readonly shownClue:
+    | {
+        readonly giver: PlayerIndex;
+        readonly target: PlayerIndex;
+        readonly marker: ClueMarkerView;
+      }
+    | undefined;
+
   /** Whether the viewer can play or discard their own cards now. */
   readonly canMoveCards: boolean;
   readonly canDiscard: boolean;
@@ -60,6 +81,169 @@ interface HandsProps {
 
   /** In a hypothetical, while the viewer edits cards, clicking a card changes it into another. */
   readonly onEditCard: ((order: CardOrder) => void) | undefined;
+}
+
+/**
+ * How far the rail that joins a clue's giver and receiver runs to the left of the hands, in CSS
+ * pixels, when the play stacks are not beside the hands (on a narrow window, where the columns
+ * stack). Otherwise, the rail runs halfway between the play stacks and the hands.
+ */
+const CLUE_RAIL_OFFSET = 16;
+
+/**
+ * The least space between the rail and the left edge of the window. On a narrow window, where the
+ * hands reach almost to that edge, the rail moves closer to the hands to keep it.
+ */
+const CLUE_RAIL_WINDOW_MARGIN = 6;
+
+/** The radius of the rail's corners, in CSS pixels. */
+const CLUE_RAIL_CORNER = 6;
+
+/** The width of the rail's colored line, and of the ring around the giver's name. */
+const CLUE_RAIL_WIDTH = 4;
+const CLUE_RING_WIDTH = 3;
+
+/** The width of the edge around the rail and around the ring, which keeps them visible. */
+const CLUE_EDGE_WIDTH = 2;
+
+/**
+ * The rail's arrowhead, in CSS pixels: a broad head with a notch in its back, so that it reads as
+ * an arrow at a glance.
+ */
+const CLUE_RAIL_HEAD = { length: 15, halfHeight: 10, notch: 4 } as const;
+
+/**
+ * A rail to the left of the hands, from the name of the player who gave the clue on the turn that
+ * shows to the name of the player who got it, with an arrowhead at the receiver. At a crowded
+ * table, it shows who clued whom at a glance. It draws itself from the giver when the clue is given
+ * (see "cardMotion.ts").
+ */
+function ClueRail({
+  giver,
+  target,
+  color,
+}: {
+  readonly giver: PlayerIndex;
+  readonly target: PlayerIndex;
+  readonly color: string;
+}): React.JSX.Element {
+  const ref = useRef<SVGSVGElement>(null);
+  const edgeClass = color === "white" ? "tw:stroke-[black]" : "tw:stroke-white";
+
+  // The rail follows the names, which move when the window or the cards change size. The shapes are
+  // set here instead of through state, so that they are in place before the screen's own layout
+  // effect animates them.
+  useLayoutEffect(() => {
+    const rail = ref.current;
+    const hands = rail?.parentElement;
+    if (rail === null || hands === null || hands === undefined) {
+      return undefined;
+    }
+
+    function place() {
+      if (rail === null || hands === null || hands === undefined) {
+        return;
+      }
+
+      const box = hands.getBoundingClientRect();
+      const from = hands
+        .querySelector(`[data-name-chip="${CSS.escape(giver.toString())}"]`)
+        ?.getBoundingClientRect();
+      const to = hands
+        .querySelector(`[data-name-chip="${CSS.escape(target.toString())}"]`)
+        ?.getBoundingClientRect();
+      if (from === undefined || to === undefined) {
+        return;
+      }
+
+      // The line starts on the ring around the giver's name, so that the two join into one shape:
+      // the colored line meets the ring's color, and the line's edge meets the ring's edge.
+      const chipX = from.left - box.left;
+      const coreStartX = chipX - CLUE_RING_WIDTH + 1;
+      const edgeStartX = chipX - CLUE_RING_WIDTH - CLUE_EDGE_WIDTH + 1;
+      const fromY = from.top - box.top + from.height / 2;
+      const toX = to.left - box.left - 3;
+      const toY = to.top - box.top + to.height / 2;
+      const stacks = document
+        .querySelector("[data-play-stacks]")
+        ?.getBoundingClientRect();
+      const railX =
+        stacks !== undefined && stacks.right < box.left
+          ? -(box.left - stacks.right) / 2
+          : -Math.min(CLUE_RAIL_OFFSET, box.left - CLUE_RAIL_WINDOW_MARGIN);
+      const corner = Math.min(CLUE_RAIL_CORNER, Math.abs(toY - fromY) / 2);
+      const down = toY > fromY ? 1 : -1;
+      const { length, halfHeight, notch } = CLUE_RAIL_HEAD;
+      const backX = toX - length;
+      const route = [
+        `H ${railX + corner}`,
+        `Q ${railX} ${fromY} ${railX} ${fromY + down * corner}`,
+        `V ${toY - down * corner}`,
+        `Q ${railX} ${toY} ${railX + corner} ${toY}`,
+        `H ${backX + notch + 1}`,
+      ].join(" ");
+      rail
+        .querySelector("[data-clue-rail-edge]")
+        ?.setAttribute("d", `M ${edgeStartX} ${fromY} ${route}`);
+      rail
+        .querySelector("[data-clue-rail-core]")
+        ?.setAttribute("d", `M ${coreStartX} ${fromY} ${route}`);
+      rail
+        .querySelector("[data-clue-rail-head]")
+        ?.setAttribute(
+          "points",
+          [
+            `${backX},${toY - halfHeight}`,
+            `${toX},${toY}`,
+            `${backX},${toY + halfHeight}`,
+            `${backX + notch},${toY}`,
+          ].join(" "),
+        );
+    }
+
+    place();
+    const observer = new ResizeObserver(place);
+    observer.observe(hands);
+    return () => {
+      observer.disconnect();
+    };
+  });
+
+  return (
+    <svg
+      aria-hidden="true"
+      className="tw:pointer-events-none tw:absolute tw:inset-0 tw:z-10 tw:size-full tw:overflow-visible"
+      ref={ref}
+    >
+      {/* The edge keeps the rail visible on the dark table: white, or dark around a white rail. */}
+      <path
+        className={edgeClass}
+        data-clue-rail-edge
+        data-clue-rail-line
+        fill="none"
+        pathLength={1}
+        strokeDasharray={1}
+        strokeWidth={CLUE_RAIL_WIDTH + 2 * CLUE_EDGE_WIDTH}
+      />
+      <path
+        data-clue-rail-core
+        data-clue-rail-line
+        fill="none"
+        pathLength={1}
+        stroke={color}
+        strokeDasharray={1}
+        strokeWidth={CLUE_RAIL_WIDTH}
+      />
+      {/* The arrowhead grows from its own center when it pops in. */}
+      <polygon
+        className={`${edgeClass} tw:origin-center tw:[transform-box:fill-box]`}
+        data-clue-rail-head
+        fill={color}
+        strokeLinejoin="round"
+        strokeWidth={CLUE_EDGE_WIDTH}
+      />
+    </svg>
+  );
 }
 
 /** The space between cards in a hand, in CSS pixels. */
@@ -199,6 +383,7 @@ function OwnCard({
   const face = (
     <CardFace
       clued={card.clued}
+      clueMarker={props.clueMarkers.get(card.order)}
       colorblindMode={colorblindMode}
       critical={card.critical}
       possibleRanks={card.possibleRanks}
@@ -302,6 +487,7 @@ function EditableCard({
     >
       <CardFace
         clued={card.clued}
+        clueMarker={props.clueMarkers.get(card.order)}
         colorblindMode={props.colorblindMode}
         critical={card.critical}
         possibleRanks={card.possibleRanks}
@@ -339,36 +525,65 @@ function Hand({
   }
 
   const chip = <NameChip seat={seat} />;
+  const giverColor =
+    props.shownClue?.giver === seat.playerIndex
+      ? getClueMarkerColor(props.shownClue.marker)
+      : undefined;
 
   return (
     <div
       aria-label={`${seat.name}'s hand`}
-      className={`tw:flex tw:rounded-2xl tw:px-4 tw:pt-4 tw:pb-2 ${
+      className={`tw:relative tw:flex tw:rounded-2xl tw:px-4 tw:pt-4 tw:pb-2 ${
         props.nameColumnWidth === undefined
           ? "tw:flex-col tw:items-start tw:gap-2"
           : "tw:items-center tw:gap-4"
       } ${boxClass}`}
+      data-hand={seat.playerIndex}
       role="group"
     >
       <div
         className="tw:flex tw:max-w-full tw:shrink-0"
         style={{ width: props.nameColumnWidth }}
       >
-        {canPick ? (
-          <button
-            aria-pressed={chosen}
-            className="tw:max-w-full tw:cursor-pointer tw:rounded-full tw:border-0 tw:bg-transparent tw:p-0 tw:text-left"
-            onClick={() => {
-              props.onChooseClueTarget(seat.playerIndex);
-            }}
-            title={`Give ${seat.name} a clue`}
-            type="button"
-          >
-            {chip}
-          </button>
-        ) : (
-          chip
-        )}
+        {/* The name of the player who gave the clue on the turn that shows keeps a ring in the
+            clue's color. */}
+        <span
+          className="tw:relative tw:inline-flex tw:max-w-full tw:rounded-full"
+          data-name-chip={seat.playerIndex}
+          style={
+            giverColor === undefined
+              ? undefined
+              : {
+                  boxShadow: `0 0 0 ${CLUE_RING_WIDTH}px ${giverColor}, 0 0 0 ${
+                    CLUE_RING_WIDTH + CLUE_EDGE_WIDTH
+                  }px ${giverColor === "white" ? "black" : "white"}`,
+                }
+          }
+        >
+          {canPick ? (
+            <button
+              aria-pressed={chosen}
+              className="tw:max-w-full tw:cursor-pointer tw:rounded-full tw:border-0 tw:bg-transparent tw:p-0 tw:text-left"
+              onClick={() => {
+                props.onChooseClueTarget(seat.playerIndex);
+              }}
+              title={`Give ${seat.name} a clue`}
+              type="button"
+            >
+              {chip}
+            </button>
+          ) : (
+            chip
+          )}
+          {giverColor !== undefined && (
+            // A ring that spreads from the name as the clue goes out (see "cardMotion.ts").
+            <span
+              className="tw:pointer-events-none tw:absolute tw:-inset-1 tw:rounded-full tw:border-[3px] tw:border-solid tw:opacity-0"
+              data-clue-ping
+              style={{ borderColor: giverColor }}
+            />
+          )}
+        </span>
       </div>
       {/* Clicking another player's cards also picks them for a clue. The name button does the
           same for the keyboard. */}
@@ -423,9 +638,12 @@ function Hand({
             >
               <CardFace
                 clued={card.clued}
+                clueMarker={props.clueMarkers.get(card.order)}
                 colorblindMode={props.colorblindMode}
                 critical={card.critical}
                 highlighted={props.touchedCards.has(card.order)}
+                possibleRanks={card.possibleRanks}
+                possibleSuitIndexes={card.possibleSuitIndexes}
                 raiseClued
                 rank={card.rank}
                 suitIndex={card.suitIndex}
@@ -438,6 +656,15 @@ function Hand({
           );
         })}
       </div>
+      {props.emptyClueTarget === seat.playerIndex && (
+        // A badge on the top edge of the hand, where the markers would be.
+        <span
+          className="tw:absolute tw:top-0 tw:left-1/2 tw:-translate-x-1/2 tw:-translate-y-1/2 tw:rounded-lg tw:bg-clue tw:px-2.5 tw:py-1 tw:text-sm tw:font-bold tw:whitespace-nowrap tw:text-card-ink tw:shadow-md tw:ring-2 tw:ring-card-ink"
+          data-clue-empty
+        >
+          The clue touched no cards
+        </span>
+      )}
     </div>
   );
 }
@@ -449,11 +676,18 @@ export function Hands(props: HandsProps): React.JSX.Element {
   return (
     <section
       aria-label="Hands"
-      className="tw:flex tw:flex-col tw:justify-center tw:gap-2"
+      className="tw:relative tw:flex tw:flex-col tw:justify-center tw:gap-2"
     >
       {props.seats.map((seat) => (
         <Hand key={seat.playerIndex} props={props} seat={seat} />
       ))}
+      {props.shownClue !== undefined && (
+        <ClueRail
+          color={getClueMarkerColor(props.shownClue.marker)}
+          giver={props.shownClue.giver}
+          target={props.shownClue.target}
+        />
+      )}
     </section>
   );
 }

@@ -93,6 +93,8 @@ export const PlayArea = forwardRef<
         <section
           aria-label="Play stacks"
           className={`tw:relative tw:flex tw:flex-col tw:items-center tw:gap-3 tw:rounded-[18px] tw:px-4.5 tw:py-4 ${zoneClasses[zoneState]}`}
+          // The clue rail runs halfway between this box and the hands (see "Hands.tsx").
+          data-play-stacks
           ref={ref}
         >
           <h2 className="tw:m-0 tw:text-[15px] tw:font-medium tw:text-game-muted">

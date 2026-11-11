@@ -7,6 +7,7 @@ import type {
   Clue,
   GameState,
   PlayerIndex,
+  StateClue,
   SuitIndex,
 } from "@hanabi-live/game";
 import {
@@ -32,6 +33,7 @@ import * as hypothetical from "../ui/hypothetical.ts";
 import * as replay from "../ui/replay.ts";
 import * as turn from "../ui/turn.ts";
 import { ActionLog } from "./ActionLog.tsx";
+import type { ClueMarkerView } from "./Card.tsx";
 import { CARD_HEIGHT_PER_WIDTH, CardFace } from "./Card.tsx";
 import { ChatPanel } from "./ChatPanel.tsx";
 import { CluePanel } from "./CluePanel.tsx";
@@ -51,6 +53,7 @@ import {
   MAX_ANIMATED_SEGMENT_CHANGE,
   MOVE_BATCH_MILLISECONDS,
   animateCardMoves,
+  animateClue,
   areCardsMoving,
   measureCards,
   stopCardMoves,
@@ -299,6 +302,54 @@ function getDiscardRows(state: State): ReadonlyArray<readonly DiscardView[]> {
     .filter((row: readonly DiscardView[]) => row.length > 0);
 }
 
+/** The clue that led to the turn that shows, if the last move was a clue. */
+function getClueForTurn(gameState: GameState): StateClue | undefined {
+  const { segment } = gameState.turn;
+  if (segment === undefined) {
+    return undefined;
+  }
+
+  return gameState.clues.findLast((clue) => clue.segment === segment - 1);
+}
+
+/** How a clue shows on the arrows and beside the name of the player who gave it. */
+function getClueMarker(
+  clue: StateClue,
+  colorblindMode: boolean,
+): ClueMarkerView {
+  if (clue.type === "color") {
+    const color = globals.variant.clueColors[clue.value];
+    if (color !== undefined) {
+      return {
+        type: "color",
+        name: color.name,
+        fill: colorblindMode ? color.fillColorblind : color.fill,
+      };
+    }
+  } else if (clue.type === "rank") {
+    return { type: "rank", label: clue.value.toString() };
+  }
+
+  return { type: "hidden" };
+}
+
+/** The markers for the cards that a clue touched. */
+function getClueMarkers(
+  clue: StateClue | undefined,
+  colorblindMode: boolean,
+): ReadonlyMap<CardOrder, ClueMarkerView> {
+  const markers = new Map<CardOrder, ClueMarkerView>();
+  if (clue === undefined) {
+    return markers;
+  }
+
+  const marker = getClueMarker(clue, colorblindMode);
+  for (const order of clue.list) {
+    markers.set(order, marker);
+  }
+  return markers;
+}
+
 /** Shows the turn on which a discarded card left its hand, in the in-game replay. */
 function showDiscard(order: CardOrder) {
   const segment = globals.state.ongoingGame.deck[order]?.segmentDiscarded;
@@ -494,6 +545,8 @@ export function GameScreen({
     /** Where the cards were the last time that nothing was moving. */
     readonly settledPositions: CardPositions;
     readonly shownState: GameState | undefined;
+    /** The clue whose markers show, so that they fly in only once. */
+    readonly shownClue: StateClue | undefined;
     readonly move:
       | {
           readonly startPositions: CardPositions;
@@ -501,7 +554,12 @@ export function GameScreen({
           readonly startedAt: number;
         }
       | undefined;
-  }>({ settledPositions: new Map(), shownState: undefined, move: undefined });
+  }>({
+    settledPositions: new Map(),
+    shownState: undefined,
+    shownClue: undefined,
+    move: undefined,
+  });
   useLayoutEffect(() => {
     const root = rootRef.current;
     const shownState = state?.visibleState;
@@ -514,6 +572,7 @@ export function GameScreen({
       shown.current = {
         settledPositions: measureCards(root),
         shownState,
+        shownClue: getClueForTurn(shownState),
         move: undefined,
       };
       return;
@@ -544,7 +603,23 @@ export function GameScreen({
     if (Math.abs(segmentChange) <= MAX_ANIMATED_SEGMENT_CHANGE) {
       animateCardMoves(root, move.startPositions, positions, segmentChange > 0);
     }
-    shown.current = { settledPositions: positions, shownState, move };
+
+    // A clue that was just given flies in from its giver, when the game moves forward a turn.
+    const newClue = getClueForTurn(shownState);
+    if (
+      newClue !== undefined
+      && newClue !== previous.shownClue
+      && segmentChange > 0
+      && segmentChange <= MAX_ANIMATED_SEGMENT_CHANGE
+    ) {
+      animateClue(root, newClue.giver, newClue.target);
+    }
+    shown.current = {
+      settledPositions: positions,
+      shownState,
+      shownClue: newClue,
+      move,
+    };
   });
 
   if (state?.visibleState === undefined) {
@@ -585,6 +660,7 @@ export function GameScreen({
     hypo === undefined ? state.playing && !inReplay : controlsHypo;
 
   const seats = getSeats(state);
+  const shownClue = getClueForTurn(visibleState);
   const targetHand =
     clueTarget === undefined ? undefined : visibleState.hands[clueTarget];
   const touched =
@@ -761,9 +837,15 @@ export function GameScreen({
                 canDiscard={canDiscard}
                 canMoveCards={canMoveCards}
                 cardWidth={handCardWidth}
+                clueMarkers={getClueMarkers(shownClue, settings.colorblindMode)}
                 clueTarget={clueTarget}
                 colorblindMode={settings.colorblindMode}
                 draggedCard={drag?.order}
+                emptyClueTarget={
+                  shownClue !== undefined && shownClue.list.length === 0
+                    ? shownClue.target
+                    : undefined
+                }
                 menuCard={menuCard}
                 nameColumnWidth={nameColumnWidth}
                 onCardClick={(order) => {
@@ -798,6 +880,18 @@ export function GameScreen({
                   sendAction({ type: "play", order });
                 }}
                 seats={seats}
+                shownClue={
+                  shownClue === undefined
+                    ? undefined
+                    : {
+                        giver: shownClue.giver,
+                        target: shownClue.target,
+                        marker: getClueMarker(
+                          shownClue,
+                          settings.colorblindMode,
+                        ),
+                      }
+                }
                 touchedCards={new Set(touched)}
                 variant={variant}
               />

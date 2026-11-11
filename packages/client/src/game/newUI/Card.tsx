@@ -10,6 +10,20 @@ export const CARD_HEIGHT_PER_WIDTH = CARD_H / CARD_W;
 /** How far a clued card in a hand sits above the others, as a fraction of the card's width. */
 const CLUED_RAISE_PER_WIDTH = 0.12;
 
+/**
+ * The width of the token that marks a card that a clue touched, as a fraction of the card's width.
+ */
+const CLUE_TOKEN_SIZE_PER_WIDTH = 0.46;
+
+/**
+ * The clue that a marker on a card shows: a color, a rank, or a clue that the viewer may not see
+ * (in some variants).
+ */
+export type ClueMarkerView =
+  | { readonly type: "color"; readonly name: string; readonly fill: string }
+  | { readonly type: "rank"; readonly label: string }
+  | { readonly type: "hidden" };
+
 /** Trash cards fade far enough to stand apart from the cards that still matter. */
 const TRASH_OPACITY = 0.25;
 
@@ -41,6 +55,76 @@ interface CardFaceProps {
 
   readonly possibleSuitIndexes?: readonly SuitIndex[];
   readonly possibleRanks?: readonly Rank[];
+
+  /** The clue that touched the card on the turn that shows, like the classic screen's arrows. */
+  readonly clueMarker?: ClueMarkerView;
+}
+
+/** The color that stands for a clue on the screen: its own color, or white for a rank. */
+export function getClueMarkerColor(marker: ClueMarkerView): string {
+  return marker.type === "color" ? marker.fill : "white";
+}
+
+/**
+ * A token that sits on the top edge of a card that a clue touched, with a point toward the card. It
+ * shows the clue: a disc of the clue's color, or a white disc with the clue's number. The "data-"
+ * attributes let it land on the card with a burst when the clue is given (see "cardMotion.ts").
+ */
+function ClueMarker({
+  marker,
+  width,
+}: {
+  readonly marker: ClueMarkerView;
+  readonly width: number;
+}): React.JSX.Element {
+  const size = width * CLUE_TOKEN_SIZE_PER_WIDTH;
+  const point = size * 0.34;
+  const color = getClueMarkerColor(marker);
+  let label = "";
+  if (marker.type === "rank") {
+    ({ label } = marker);
+  } else if (marker.type === "hidden") {
+    label = "?";
+  }
+
+  return (
+    <span
+      aria-hidden="true"
+      className="tw:pointer-events-none tw:absolute tw:left-1/2 tw:z-10"
+      data-clue-marker
+      style={{
+        top: -size * 0.8,
+        width: size,
+        height: size,
+        marginLeft: -size / 2,
+      }}
+    >
+      <span
+        className="tw:absolute tw:inset-0 tw:box-border tw:rounded-full tw:border-solid tw:opacity-0"
+        data-clue-burst
+        style={{ borderWidth: size * 0.1, borderColor: color }}
+      />
+      <span
+        className="tw:absolute tw:left-1/2 tw:rotate-45 tw:bg-white tw:shadow-[0_0_0_2px_var(--card-ink)]"
+        style={{
+          width: point,
+          height: point,
+          bottom: -point * 0.38,
+          marginLeft: -point / 2,
+        }}
+      />
+      <span
+        className="tw:absolute tw:inset-0 tw:box-border tw:flex tw:items-center tw:justify-center tw:rounded-full tw:border-solid tw:border-white tw:font-extrabold tw:leading-none tw:text-card-ink tw:shadow-[0_0_0_2px_var(--card-ink),0_3px_8px_rgb(0_0_0/60%)]"
+        style={{
+          borderWidth: size * 0.1,
+          background: color,
+          fontSize: size * 0.66,
+        }}
+      >
+        {label}
+      </span>
+    </span>
+  );
 }
 
 /**
@@ -108,6 +192,7 @@ export function CardFace({
   highlighted = false,
   possibleSuitIndexes = [],
   possibleRanks = [],
+  clueMarker,
 }: CardFaceProps): React.JSX.Element {
   const suit = suitIndex === undefined ? undefined : variant.suits[suitIndex];
   const faceColors = getFaceColors(suit, colorblindMode);
@@ -142,6 +227,16 @@ export function CardFace({
         opacity: trash ? TRASH_OPACITY : 1,
       }}
     >
+      {clueMarker !== undefined && (
+        <>
+          <ClueMarker marker={clueMarker} width={width} />
+          {/* The card flashes as the token lands on it. */}
+          <span
+            className="tw:pointer-events-none tw:absolute tw:inset-0 tw:rounded-[inherit] tw:bg-white tw:opacity-0"
+            data-clue-flash
+          />
+        </>
+      )}
       {rank !== undefined && (
         <span
           className="tw:absolute tw:font-extrabold tw:leading-none"
