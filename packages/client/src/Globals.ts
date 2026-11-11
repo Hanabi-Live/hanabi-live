@@ -1,7 +1,6 @@
 // These are exported global variables to be shared between all of the TypeScript code.
 
-import type { ServerCommandData, UserID } from "@hanabi-live/data";
-import { defaultSettings } from "@hanabi-live/data";
+import type { ServerCommandData, Settings, UserID } from "@hanabi-live/data";
 import type { Connection } from "./Connection";
 import type { Loader } from "./Loader";
 import { NO_TABLE_ID } from "./constants";
@@ -17,6 +16,7 @@ import {
   errorOccurredChanged,
   friendsChanged,
   screenChanged,
+  settingsChanged,
   userIDChanged,
   usernameChanged,
 } from "./sessionSlice";
@@ -31,9 +31,6 @@ export class Globals {
   // ----------------------------------------
 
   muted = false;
-
-  /** Contains the settings for the "Settings" modal and the "Create Game" screen. */
-  settings = defaultSettings;
 
   // ----------------------------------------------------------------
   // Values that React components read (which are stored in "store.ts")
@@ -75,6 +72,18 @@ export class Globals {
 
   set blocked(blocked: readonly string[]) {
     store.dispatch(blockedChanged(blocked));
+  }
+
+  /**
+   * From the "welcome" message. The "Settings" page and the "Create Game" page change them. Replace
+   * the whole object to change one, because the store freezes it.
+   */
+  get settings(): Settings {
+    return store.getState().session.settings;
+  }
+
+  set settings(settings: Settings) {
+    store.dispatch(settingsChanged(settings));
   }
 
   get currentScreen(): Screen {

@@ -1,5 +1,5 @@
 /*
-  Lobby pages ("Create Game", "Watch Specific Replay", and "Resources")
+  Lobby pages ("Create Game", "Watch Specific Replay", "Resources", and "Settings")
 */
 /* The lobby stretches its sections to full height; these fit their content instead. */
 #lobby .lobby-page {
@@ -308,29 +308,6 @@
   width: 1.8em;
 }
 
-/* "Saved" appears beside a setting when the user changes it, then fades out. */
-.setting-status {
-  color: var(--green-text);
-  flex-shrink: 0;
-  font-size: 0.9em;
-  opacity: 0;
-  transition:
-    opacity 0.4s ease,
-    visibility 0.4s;
-  visibility: hidden;
-  white-space: nowrap;
-}
-
-.setting-status.visible {
-  opacity: 1;
-  transition: none;
-  visibility: visible;
-}
-
-.setting-status .fa-check {
-  margin-right: 0.4em;
-}
-
 /* A pasted game is too long for one line, so its box goes below its description. */
 .lobby-row:has(textarea) {
   align-items: stretch;
@@ -395,38 +372,11 @@
   box-shadow: inset 0 0 0 2px var(--focus);
 }
 
-#settings-volume {
-  align-items: center;
-  display: flex;
-  flex-shrink: 0;
-  gap: 1em;
-}
-
-#settings-volume-slider {
-  background: var(--slider-track);
-  border: none;
-  border-radius: 3px;
-  height: 0.25em;
-  width: 10em;
-}
-
-#settings-volume-slider-value {
-  min-width: 2.75em;
-  text-align: right;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .setting-status {
-    transition: none;
-  }
-}
-
 @media screen and (max-width: 640px) {
   /* Put a text field, dropdown, or the volume below its description. */
   .lobby-row:has(select),
   .lobby-row:has(input[type="text"]),
   .lobby-row:has(input[type="number"]),
-  .lobby-row:has(#settings-volume),
   .lobby-row:has(.lobby-segmented) {
     align-items: stretch;
     flex-direction: column;
@@ -439,10 +389,6 @@
   .create-game-replay {
     flex-basis: auto;
     width: 100%;
-  }
-
-  #settings-volume-slider {
-    flex: 1;
   }
 
   .lobby-segmented input[type="radio"] + label {

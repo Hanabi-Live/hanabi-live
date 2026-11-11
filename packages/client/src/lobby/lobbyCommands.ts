@@ -17,7 +17,6 @@ import {
   otherScoresReceived,
 } from "./gameHistory/historySlice";
 import * as lobbyLogin from "./login";
-import * as playerSettings from "./playerSettings";
 import * as pregame from "./pregame/pregame";
 import { startGameCooldownChanged } from "./pregame/pregameSlice";
 import { tableChanged, tableGone, tablesListed } from "./tables/tablesSlice";
@@ -204,9 +203,7 @@ lobbyCommands.set("welcome", (data) => {
   }
   theme.setDarkMode(globals.settings.darkMode);
 
-  // Update various elements of the UI to reflect our settings. The "lobbyStatus" message reports
-  // the total number of games once the statistics load.
-  playerSettings.setPlayerSettings();
+  // The "lobbyStatus" message reports the total number of games once the statistics load.
   lobbyLogin.hide(data.firstTimeUser);
 
   // Go to the table that we were at before we disconnected, or somewhere specific if we have

@@ -327,6 +327,21 @@ function getStates({
       },
     },
     {
+      // The level row only shows with the H-Group features. "Saved" shows for a short time, so only
+      // the first screenshots have it.
+      name: "settings-h-group",
+      path: "/",
+      loggedIn: true,
+      prepare: async (page) => {
+        await clickNav(page, "settings");
+        await page.locator('label[for="hGroupConventions"]').last().click();
+      },
+      cleanup: async (page) => {
+        await page.locator('label[for="hGroupConventions"]').last().click();
+        await page.waitForTimeout(SETTLE_MILLISECONDS);
+      },
+    },
+    {
       name: "lobby-history",
       path: "/",
       loggedIn: true,

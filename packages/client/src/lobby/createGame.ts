@@ -576,7 +576,7 @@ export function checkSettingChanged<T extends keyof Settings>(
   value: Settings[T],
 ): void {
   if (value !== globals.settings[settingName]) {
-    globals.settings[settingName] = value;
+    globals.settings = { ...globals.settings, [settingName]: value };
     globals.conn!.send("setting", { settings: { [settingName]: value } });
   }
 }
