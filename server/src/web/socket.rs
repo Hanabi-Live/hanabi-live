@@ -24,7 +24,7 @@ use axum::{
 };
 use chrono::{DateTime, Utc};
 use futures_util::{SinkExt, StreamExt};
-use hanabi_protocol::UserId;
+use hanabi_protocol::{ClientKind, UserId};
 use std::{
     future::Future,
     net::SocketAddr,
@@ -252,15 +252,24 @@ pub(super) async fn websocket(
             if app.lifecycle.healthy() { "The server is not accepting connections while it starts or drains for maintenance." } else { "Live-state recovery or ownership is unavailable. Wait for recovery before reconnecting." },
             StatusCode::SERVICE_UNAVAILABLE).response(true);
     }
-    let query = match accounts::account_query(uri.query(), &["account", "version", "bot"]) {
+    let query = match accounts::account_query(uri.query(), &["account", "version", "client"]) {
         Ok(query) => query,
         Err(message) => {
             return HttpError::refused(StatusCode::BAD_REQUEST, message).json();
         }
     };
     let version = query.get("version").unwrap_or_default().to_owned();
-    // Bots do not send a version.
-    let bot = query.get("bot") == Some("true");
+    let Some(client) = query
+        .get("client")
+        .map_or(Some(ClientKind::Web), ClientKind::from_name)
+    else {
+        return HttpError::refused(
+            StatusCode::BAD_REQUEST,
+            "The client must be \"web\", \"bot\", or \"app\".",
+        )
+        .json();
+    };
+    let bot = client == ClientKind::Bot;
     let ip = address.ip();
     let Some(id) = accounts::session_id(&headers, &app.public.session_secret, uri.query()) else {
         tracing::warn!("Rejected websocket from {ip} without a valid session.");
@@ -316,10 +325,11 @@ pub(super) async fn websocket(
             "The server's session identifier space is exhausted. An administrator must restart the server.",
             StatusCode::SERVICE_UNAVAILABLE).response(true);
     };
-    let version_check = if bot {
-        Ok(())
-    } else {
+    // Only the website sends a version.
+    let version_check = if client == ClientKind::Web {
         accounts::validate_client_version(&version, &app.public.client_version)
+    } else {
+        Ok(())
     };
     if bot {
         tracing::info!("Accepted bot websocket for account {id} from IP: {ip}");

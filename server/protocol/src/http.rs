@@ -29,9 +29,33 @@ pub struct LoginRequest {
     /// Creates the account if the username is free. Without it, an unknown username fails with
     /// `NoticeCode::NoAccount`, so that a typo does not create an account.
     pub create_account: bool,
-    /// Marks the account as a bot, which other players see and which can play at several tables at
-    /// once. A bot does not send `version`.
-    pub bot: bool,
+    pub client: ClientKind,
+}
+
+/// The kind of program that logs in, in the `/login` form and the `/ws` query. Only the website
+/// (`web`) sends `version`, and the server rejects a version from another release. A `bot` login
+/// marks the account as a bot, which other players see and which can play at several tables at
+/// once. An `app` is a program for people, such as a mobile client. Its account is a normal
+/// account.
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
+#[serde(rename_all = "lowercase")]
+pub enum ClientKind {
+    #[default]
+    Web,
+    Bot,
+    App,
+}
+
+impl ClientKind {
+    /// The kind with this name on the wire.
+    pub fn from_name(name: &str) -> Option<Self> {
+        match name {
+            "web" => Some(Self::Web),
+            "bot" => Some(Self::Bot),
+            "app" => Some(Self::App),
+            _ => None,
+        }
+    }
 }
 
 /// Reads a form field that is absent when it is empty, as forms send a blank input.

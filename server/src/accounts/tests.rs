@@ -126,7 +126,7 @@ async fn login_requires_matching_release_sha_or_bot_postgres() {
             ..config()
         },
     );
-    for submitted in [format!("version={version}"), "bot=true".into()] {
+    for submitted in [format!("version={version}"), "client=bot".into()] {
         let (status, _, _) = request(
             &app,
             "POST",
@@ -145,7 +145,7 @@ async fn login_requires_matching_release_sha_or_bot_postgres() {
         is_bot("Alice").await.unwrap(),
         "a bot login flags an existing account"
     );
-    let bob = "username=Bob&password=test&bot=true&createAccount=true";
+    let bob = "username=Bob&password=test&client=bot&createAccount=true";
     let (status, _, _) = request(&app, "POST", "/login", bob, None, false).await;
     assert_eq!(status, StatusCode::OK);
     assert!(
@@ -170,7 +170,7 @@ async fn login_requires_matching_release_sha_or_bot_postgres() {
         &app,
         "POST",
         "/login",
-        "username=Alice&password=test&bot=true",
+        "username=Alice&password=test&client=bot",
         None,
         false,
     )
@@ -179,6 +179,13 @@ async fn login_requires_matching_release_sha_or_bot_postgres() {
     assert!(
         is_bot("Alice").await.unwrap(),
         "the bot flags the account again"
+    );
+    let dana = "username=Dana&password=test&client=app&createAccount=true";
+    let (status, _, _) = request(&app, "POST", "/login", dana, None, false).await;
+    assert_eq!(status, StatusCode::OK, "an app sends no version");
+    assert!(
+        !is_bot("Dana").await.unwrap(),
+        "an app login does not flag an account"
     );
     for submitted in ["b".repeat(40), "42".into(), version[..12].into()] {
         let (status, _, body) = request(
@@ -367,7 +374,7 @@ async fn native_accounts_http_and_identity_postgres() {
             &app,
             "POST",
             "/login",
-            "username=Alice&password=old&newPassword=new&bot=true&createAccount=true",
+            "username=Alice&password=old&newPassword=new&client=bot&createAccount=true",
             None,
             false
         )

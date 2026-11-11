@@ -7,8 +7,8 @@ const request = {
   version: "1",
   darkMode: false,
   createAccount: false,
-  bot: false,
-};
+  client: "web",
+} as const;
 
 describe("loginRequestBody", () => {
   test("leaves out an absent new password", () => {

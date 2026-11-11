@@ -34,8 +34,8 @@ use axum::{
 };
 use chrono::{DateTime, Utc};
 use hanabi_protocol::{
-    IdentityRequest, IdentityResponse, IdentityTokenResponse, LoginRequest, LoginResponse, Notice,
-    PasswordHashRequest, PasswordHashResponse,
+    ClientKind, IdentityRequest, IdentityResponse, IdentityTokenResponse, LoginRequest,
+    LoginResponse, Notice, PasswordHashRequest, PasswordHashResponse,
 };
 use sqlx::PgPool;
 use std::{net::SocketAddr, sync::Arc};
@@ -182,9 +182,6 @@ fn unauthorized(message: impl Into<String>) -> Response {
     HttpError::refused(StatusCode::UNAUTHORIZED, message).json()
 }
 
-/// Rejects a client from a different release. Current clients reload the page instead of showing
-/// this explanation, so players only see it when the reload served the same client again, such as
-/// from a stale cache; hence the hard-refresh advice.
 /// Flags an account that authenticated as a bot, so bot privileges can later depend on the flag.
 pub async fn mark_bot(pool: &PgPool, id: i32) -> Result<()> {
     sqlx::query!(
@@ -205,6 +202,9 @@ pub async fn clear_bot(pool: &PgPool, id: i32) -> Result<()> {
     Ok(())
 }
 
+/// Rejects a client from a different release. Current clients reload the page instead of showing
+/// this explanation, so players only see it when the reload served the same client again, such as
+/// from a stale cache; hence the hard-refresh advice.
 pub fn validate_client_version(version: &str, current: &str) -> Result<(), String> {
     if !version.is_empty() && version == current {
         return Ok(());
@@ -284,8 +284,8 @@ async fn login_inner(state: &Accounts, ip: &str, input: LoginRequest) -> Result<
         ("password", &input.password),
         ("version", &input.version),
     ] {
-        // Bots do not send a version.
-        if value.is_empty() && !(input.bot && name == "version") {
+        // Only the website sends a version.
+        if value.is_empty() && !(input.client != ClientKind::Web && name == "version") {
             return Ok(unauthorized(format!(
                 "You must provide the \"{name}\" parameter to log in."
             )));
@@ -296,7 +296,7 @@ async fn login_inner(state: &Accounts, ip: &str, input: LoginRequest) -> Result<
         Err(message) => return Ok(unauthorized(message)),
     };
     if let Err(message) = validate_client_version(&input.version, &state.config.version)
-        && !input.bot
+        && input.client == ClientKind::Web
     {
         let error = Notice {
             code: Some(hanabi_protocol::NoticeCode::OutdatedClient),
@@ -346,7 +346,7 @@ async fn login_inner(state: &Accounts, ip: &str, input: LoginRequest) -> Result<
                 );
             }
         }
-        if input.bot {
+        if input.client == ClientKind::Bot {
             mark_bot(&state.pool, id).await?;
         } else {
             clear_bot(&state.pool, id).await?;
@@ -399,14 +399,18 @@ async fn login_inner(state: &Accounts, ip: &str, input: LoginRequest) -> Result<
             normalized,
             hash,
             ip,
-            input.bot,
+            input.client == ClientKind::Bot,
             settings
         )
         .fetch_one(&state.pool)
         .await?;
     }
-    let bot = if input.bot { " as a bot" } else { "" };
-    tracing::info!("Successful login for account {id}{bot} from IP: {ip}");
+    let client = match input.client {
+        ClientKind::Web => "",
+        ClientKind::Bot => " as a bot",
+        ClientKind::App => " from an app",
+    };
+    tracing::info!("Successful login for account {id}{client} from IP: {ip}");
     let signed = cookie::encode(id, &state.config.secret, Utc::now().timestamp())?;
     Ok(with_cookies(
         Json(LoginResponse {
