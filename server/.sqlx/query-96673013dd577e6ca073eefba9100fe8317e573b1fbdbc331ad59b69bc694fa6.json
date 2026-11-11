@@ -1,0 +1,17 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "UPDATE users SET settings = CASE WHEN $3::jsonb IS NULL THEN settings - $2::text\n           ELSE settings || jsonb_build_object($2::text, $3::jsonb) END - $4::text[]\n         WHERE id=$1",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Int4",
+        "Text",
+        "Jsonb",
+        "TextArray"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "96673013dd577e6ca073eefba9100fe8317e573b1fbdbc331ad59b69bc694fa6"
+}

@@ -75,10 +75,10 @@ function gotoPath(data: ServerCommandData["welcome"]): boolean {
         ? {
             baseSeconds:
               parseIntSafe(urlParams.get("timeBaseSeconds") ?? "")
-              ?? defaultSettings.createTableTimeBaseSeconds,
+              ?? defaultSettings.createTable.timeControl.baseSeconds,
             perTurnSeconds:
               parseIntSafe(urlParams.get("timePerTurnSeconds") ?? "")
-              ?? defaultSettings.createTableTimePerTurnSeconds,
+              ?? defaultSettings.createTable.timeControl.perTurnSeconds,
           }
         : undefined;
     const speedrun = urlParams.get("speedrun") === "true";

@@ -24,6 +24,7 @@ import {
   parseFloatSafe,
   parseIntSafe,
 } from "complete-common";
+import equal from "fast-deep-equal";
 import { DIMMED_OPACITY, LOCAL_STORAGE_KEY } from "../constants.ts";
 import { globals } from "../Globals.ts";
 import { creatingTableChanged } from "../sessionSlice.ts";
@@ -58,35 +59,30 @@ interface CheckedInput {
 
 const checkedInputs: CheckedInput[] = [];
 
+/** The table that the form starts from, which our settings remember. */
+type CreateTable = Settings["createTable"];
+
+/** The options that a checkbox under "Extra Options" sets. */
+type ExtraOption = Exclude<keyof GameOptions, "variantName" | "timeControl">;
+
 /**
- * The checkboxes under "Extra Options", which stay collapsed unless one of them is selected, a seed
- * is entered, or a game is replayed.
+ * The checkboxes under "Extra Options", by the option that each one sets. They stay collapsed
+ * unless one of them is selected, a seed is entered, or a game is replayed.
  */
-const EXTRA_OPTIONS = [
-  "createTableSpeedrun",
-  "createTableDeckPlays",
-  "createTableEmptyClues",
-  "createTableOneExtraCard",
-  "createTableOneLessCard",
-  "createTableAllOrNothing",
-  "createTableDetrimentalCharacters",
-] as const satisfies ReadonlyArray<keyof Settings>;
+const EXTRA_OPTIONS = {
+  speedrun: "#createTableSpeedrun",
+  deckPlays: "#createTableDeckPlays",
+  emptyClues: "#createTableEmptyClues",
+  oneExtraCard: "#createTableOneExtraCard",
+  oneLessCard: "#createTableOneLessCard",
+  allOrNothing: "#createTableAllOrNothing",
+  detrimentalCharacters: "#createTableDetrimentalCharacters",
+} as const satisfies Record<ExtraOption, string>;
 
-/** The checkboxes on the form, each named after the setting that remembers it. */
-const FORM_CHECKBOXES = [
-  "createTableTimed",
-  ...EXTRA_OPTIONS,
-] as const satisfies ReadonlyArray<keyof Settings>;
+const EXTRA_OPTION_NAMES = Object.keys(EXTRA_OPTIONS) as readonly ExtraOption[];
 
-/** The values that fill in the form, named after the settings that remember them. */
-type FormValues = Pick<
-  Settings,
-  | (typeof FORM_CHECKBOXES)[number]
-  | "createTableMaxPlayers"
-  | "createTableTimeBaseSeconds"
-  | "createTableTimePerTurnSeconds"
-  | "createTableVariant"
->;
+/** The checkbox that makes the table timed. */
+const TIMED = "#createTableTimed";
 
 let dropdown1: JQuery<Element>;
 let dropdown2: JQuery<Element>;
@@ -98,7 +94,7 @@ export function init(): void {
   $("#createTableMaxPlayers").attr({
     min: MIN_PLAYERS,
     max: MAX_PLAYERS,
-    placeholder: defaultSettings.createTableMaxPlayers,
+    placeholder: defaultSettings.createTable.maxPlayers,
   });
 
   getHtmlInputElement("#create-game-seed").maxLength = MAX_SEED_LENGTH;
@@ -127,7 +123,7 @@ export function init(): void {
       || maxPlayers < MIN_PLAYERS
       || maxPlayers > MAX_PLAYERS
     ) {
-      element.val(defaultSettings.createTableMaxPlayers);
+      element.val(defaultSettings.createTable.maxPlayers);
     }
   });
 
@@ -138,69 +134,35 @@ export function init(): void {
     dropdown2.val(randomVariant);
   });
 
-  // Make the extra time fields appear and disappear depending on whether the checkbox is checked.
-  $("#createTableTimed").on("change", () => {
-    updateCheckboxRows();
-
-    // Remember the new setting.
-    getCheckbox("createTableTimed");
-    checkInputs();
-  });
-
-  $("#createTableSpeedrun").on("change", () => {
-    updateCheckboxRows();
-
-    // Remember the new setting.
-    getCheckbox("createTableSpeedrun");
-    checkInputs();
-  });
+  // Some rows depend on a checkbox, and the time fields only apply to a timed table.
+  for (const selector of [
+    TIMED,
+    EXTRA_OPTIONS.speedrun,
+    EXTRA_OPTIONS.oneExtraCard,
+    EXTRA_OPTIONS.oneLessCard,
+  ]) {
+    $(selector).on("change", () => {
+      updateCheckboxRows();
+      checkInputs();
+    });
+  }
 
   $("#create-game-show-extra-options").on("click", () => {
     const button = $("#create-game-show-extra-options");
     showExtraOptions(button.attr("aria-expanded") !== "true");
   });
 
-  // Disable some checkboxes if a checkbox is checked.
-  $("#createTableOneExtraCard").on("change", () => {
-    updateCheckboxRows();
-
-    // Remember the new setting.
-    getCheckbox("createTableOneExtraCard");
-  });
-
-  $("#createTableOneLessCard").on("change", () => {
-    updateCheckboxRows();
-
-    // Remember the new setting.
-    getCheckbox("createTableOneLessCard");
-  });
-
-  // Check for changes in the various input fields so that we can remember their respective
-  // settings.
-  $("#create-game-variant-dropdown1").on("change", () => {
-    getVariantName();
-  });
-  $("#create-game-variant-dropdown2").on("change", () => {
-    getVariantName();
-  });
-  $("#createTableTimeBaseMinutes").on("change", () => {
-    getTimeBaseSeconds();
-  });
-  $("#createTableTimePerTurnSeconds").on("change", () => {
-    getTimePerTurnSeconds();
-  });
-  $("#createTableDeckPlays").on("change", () => {
-    getCheckbox("createTableDeckPlays");
-  });
-  $("#createTableEmptyClues").on("change", () => {
-    getCheckbox("createTableEmptyClues");
-  });
-  $("#createTableAllOrNothing").on("change", () => {
-    getCheckbox("createTableAllOrNothing");
-  });
-  $("#createTableDetrimentalCharacters").on("change", () => {
-    getCheckbox("createTableDetrimentalCharacters");
-  });
+  // Remember each change to the form in our settings.
+  for (const selector of [
+    TIMED,
+    ...Object.values(EXTRA_OPTIONS),
+    "#create-game-variant-dropdown1",
+    "#create-game-variant-dropdown2",
+    "#createTableTimeBaseMinutes",
+    "#createTableTimePerTurnSeconds",
+  ]) {
+    $(selector).on("change", rememberForm);
+  }
 
   $("#create-game-submit").on("click", submit);
 }
@@ -304,14 +266,8 @@ function submit() {
     return;
   }
 
-  const baseSeconds = getTimeBaseSeconds();
-  const perTurnSeconds = getTimePerTurnSeconds();
-  const timeControl =
-    getCheckbox("createTableTimed")
-    && baseSeconds !== undefined
-    && perTurnSeconds !== undefined
-      ? { baseSeconds, perTurnSeconds }
-      : undefined;
+  const createTable = readForm();
+  remember(createTable);
 
   // Seeds and replays are not saved, so that a new game does not accidentally repeat a deal.
   const seed = getText("#create-game-seed");
@@ -351,33 +307,10 @@ function submit() {
     localStorage.setItem(LOCAL_STORAGE_KEY.CREATE_TABLE_PASSWORD, password);
   }
 
-  // Max players must be a valid number.
-  const maxPlayersString = $("#createTableMaxPlayers").val();
-  if (typeof maxPlayersString !== "string") {
-    throw new TypeError(
-      'The value of the "createTableMaxPlayers" element was not a string.',
-    );
-  }
-  const maxPlayersInt = parseIntSafe(maxPlayersString);
-  const maxPlayers = isValidNumPlayers(maxPlayersInt)
-    ? maxPlayersInt
-    : defaultSettings.createTableMaxPlayers;
-  checkSettingChanged("createTableMaxPlayers", maxPlayers);
-
   const settings = {
     name: name.trim() === "" ? getDefaultTableName() : name,
-    maxPlayers,
-    options: {
-      variantName: getVariantName(), // This is a hidden span field.
-      timeControl,
-      speedrun: getCheckbox("createTableSpeedrun"),
-      deckPlays: getCheckbox("createTableDeckPlays"),
-      emptyClues: getCheckbox("createTableEmptyClues"),
-      oneExtraCard: getCheckbox("createTableOneExtraCard"),
-      oneLessCard: getCheckbox("createTableOneLessCard"),
-      allOrNothing: getCheckbox("createTableAllOrNothing"),
-      detrimentalCharacters: getCheckbox("createTableDetrimentalCharacters"),
-    },
+    maxPlayers: createTable.maxPlayers,
+    options: createTable.options,
     ...(seed !== "" && { seedSuffix: seed }),
     ...(replayGameId !== undefined && { replayGameId: replayGameId as GameId }),
     ...(replayTurn !== undefined && { replayTurn }),
@@ -459,10 +392,7 @@ function getText(selector: string): string {
 
 /** Whether the clock options apply, since a speedrun is never timed. */
 function isTimed(): boolean {
-  return (
-    getHtmlInputElement("#createTableTimed").checked
-    && !getHtmlInputElement("#createTableSpeedrun").checked
-  );
+  return isChecked(TIMED) && !isChecked(EXTRA_OPTIONS.speedrun);
 }
 
 function toSeconds(minutes: number): number {
@@ -540,55 +470,78 @@ function isPositiveInteger(text: string): boolean {
   return value !== undefined && value > 0 && value <= MAX_INTEGER_FIELD;
 }
 
-function getCheckbox(setting: keyof Settings): boolean {
-  const selector = `#${setting}`;
-  const element = getHtmlInputElement(selector);
-  const value = element.checked;
-  checkSettingChanged(setting, value);
-  return value;
-}
-
-/** Returns the base time in seconds and remembers it, if it is valid. The form asks for minutes. */
+/** Returns the base time in seconds, if it is valid. The form asks for minutes. */
 function getTimeBaseSeconds(): number | undefined {
   const minutes = parseFloatSafe(getText("#createTableTimeBaseMinutes"));
-  if (minutes === undefined || getTimeBaseError() !== undefined) {
-    return undefined;
-  }
-  const seconds = toSeconds(minutes);
-  checkSettingChanged("createTableTimeBaseSeconds", seconds);
-  return seconds;
+  return minutes === undefined || getTimeBaseError() !== undefined
+    ? undefined
+    : toSeconds(minutes);
 }
 
-/** Returns the time per turn and remembers it, if it is valid. */
+/** Returns the time per turn, if it is valid. */
 function getTimePerTurnSeconds(): number | undefined {
   const seconds = parseIntSafe(getText("#createTableTimePerTurnSeconds"));
-  if (seconds === undefined || getTimePerTurnError() !== undefined) {
-    return undefined;
-  }
-  checkSettingChanged("createTableTimePerTurnSeconds", seconds);
-  return seconds;
+  return seconds === undefined || getTimePerTurnError() !== undefined
+    ? undefined
+    : seconds;
+}
+
+function getMaxPlayers(): CreateTable["maxPlayers"] {
+  const maxPlayers = parseIntSafe(getText("#createTableMaxPlayers"));
+  return isValidNumPlayers(maxPlayers)
+    ? maxPlayers
+    : defaultSettings.createTable.maxPlayers;
 }
 
 function getVariantName(): string {
-  const setting = "createTableVariant";
-  const element = $(`#${setting}`);
-  let value = element.text();
-  value = value.trim(); // Remove all leading and trailing whitespace
-  if (value === "") {
-    value = "No Variant";
-  }
-  checkSettingChanged(setting, value);
-  return value;
+  // This is a hidden span field.
+  const value = $("#createTableVariant").text().trim();
+  return value === "" ? DEFAULT_VARIANT_NAME : value;
 }
 
-export function checkSettingChanged<T extends keyof Settings>(
-  settingName: T,
-  value: Settings[T],
-): void {
-  if (value !== globals.settings[settingName]) {
-    globals.settings = { ...globals.settings, [settingName]: value };
-    globals.conn!.send("setting", { settings: { [settingName]: value } });
+/** Reads the table that the form shows. An invalid time keeps the one that we remember. */
+function readForm(): CreateTable {
+  const remembered = globals.settings.createTable.timeControl;
+  const timeControl = {
+    baseSeconds: getTimeBaseSeconds() ?? remembered.baseSeconds,
+    perTurnSeconds: getTimePerTurnSeconds() ?? remembered.perTurnSeconds,
+  };
+  const extraOptions = Object.fromEntries(
+    EXTRA_OPTION_NAMES.map((option) => [
+      option,
+      isChecked(EXTRA_OPTIONS[option]),
+    ]),
+  ) as Record<ExtraOption, boolean>;
+  return {
+    maxPlayers: getMaxPlayers(),
+    options: {
+      variantName: getVariantName(),
+      ...(isChecked(TIMED) && { timeControl }),
+      ...extraOptions,
+    },
+    timeControl,
+  };
+}
+
+function rememberForm() {
+  remember(readForm());
+}
+
+/** Remembers the table that the form starts from next time, if it changed. */
+function remember(createTable: CreateTable) {
+  if (!equal(createTable, globals.settings.createTable)) {
+    globals.settings = { ...globals.settings, createTable };
+    globals.conn!.send("setting", { settings: { createTable } });
   }
+}
+
+/** Remembers a variant that a chat command chose. */
+export function rememberVariant(variantName: string): void {
+  const { createTable } = globals.settings;
+  remember({
+    ...createTable,
+    options: { ...createTable.options, variantName },
+  });
 }
 
 /**
@@ -601,29 +554,17 @@ export function show(): void {
 }
 
 /**
- * Converts the options of a table into form values. An untimed table keeps our own time values, so
- * that they are ready if the timer is turned on.
+ * Converts the options of a table into the form's values. An untimed table keeps our own clock, so
+ * that it is ready if the timer is turned on.
  */
-function getFormValues(options: GameOptions, maxPlayers: number): FormValues {
+function getFormValues(options: GameOptions, maxPlayers: number): CreateTable {
   return {
-    createTableVariant: options.variantName,
-    createTableTimed: options.timeControl !== undefined,
-    createTableTimeBaseSeconds:
-      options.timeControl?.baseSeconds
-      ?? globals.settings.createTableTimeBaseSeconds,
-    createTableTimePerTurnSeconds:
-      options.timeControl?.perTurnSeconds
-      ?? globals.settings.createTableTimePerTurnSeconds,
-    createTableSpeedrun: options.speedrun,
-    createTableDeckPlays: options.deckPlays,
-    createTableEmptyClues: options.emptyClues,
-    createTableOneExtraCard: options.oneExtraCard,
-    createTableOneLessCard: options.oneLessCard,
-    createTableAllOrNothing: options.allOrNothing,
-    createTableDetrimentalCharacters: options.detrimentalCharacters,
-    createTableMaxPlayers: isValidNumPlayers(maxPlayers)
+    maxPlayers: isValidNumPlayers(maxPlayers)
       ? maxPlayers
-      : defaultSettings.createTableMaxPlayers,
+      : defaultSettings.createTable.maxPlayers,
+    options,
+    timeControl:
+      options.timeControl ?? globals.settings.createTable.timeControl,
   };
 }
 
@@ -633,7 +574,7 @@ export function ready(): void {
   let dialogTitle = "Create a New Game";
   let buttonTitle = "Create";
   let gameName: string;
-  let formValues: FormValues;
+  let formValues: CreateTable;
   let seed = "";
   let replayGameId = "";
   let replayTurn = "";
@@ -643,7 +584,7 @@ export function ready(): void {
     gameName =
       localStorage.getItem(LOCAL_STORAGE_KEY.CREATE_TABLE_NAME)
       ?? getDefaultTableName();
-    formValues = globals.settings;
+    formValues = globals.settings.createTable;
 
     // Show the password row.
     $("#password-row").removeClass("hidden");
@@ -680,18 +621,18 @@ export function ready(): void {
   $("#create-game-replay-turn").val(replayTurn);
 
   // Setting the variant dropdown is more complicated than filling in a value.
-  readyVariant(formValues.createTableVariant);
+  const { options, timeControl } = formValues;
+  readyVariant(options.variantName);
   // Do not trigger the "change" events, since they would remember the values in our settings.
-  for (const setting of FORM_CHECKBOXES) {
-    $(`#${setting}`).prop("checked", formValues[setting]);
+  $(TIMED).prop("checked", options.timeControl !== undefined);
+  for (const option of EXTRA_OPTION_NAMES) {
+    $(EXTRA_OPTIONS[option]).prop("checked", options[option]);
   }
   updateCheckboxRows();
   $("#createTableTimeBaseMinutes").val(
-    formValues.createTableTimeBaseSeconds / SECONDS_PER_MINUTE,
+    timeControl.baseSeconds / SECONDS_PER_MINUTE,
   );
-  $("#createTableTimePerTurnSeconds").val(
-    formValues.createTableTimePerTurnSeconds,
-  );
+  $("#createTableTimePerTurnSeconds").val(timeControl.perTurnSeconds);
 
   // Fill in the "Password" box. (This is not stored on the server so we have to retrieve the last
   // password from a cookie.)
@@ -702,18 +643,14 @@ export function ready(): void {
     $("#createTablePassword").val(password);
   }
 
-  let maxPlayers = formValues.createTableMaxPlayers;
-  if (maxPlayers < MIN_PLAYERS || maxPlayers > MAX_PLAYERS) {
-    maxPlayers = defaultSettings.createTableMaxPlayers;
-  }
-  $("#createTableMaxPlayers").val(maxPlayers);
+  $("#createTableMaxPlayers").val(formValues.maxPlayers);
   checkInputs();
 
   // Only show the extra options when one of them is selected or when the user asks for them.
   showExtraOptions(
     seed !== ""
       || replayGameId !== ""
-      || EXTRA_OPTIONS.some((setting) => isChecked(setting)),
+      || Object.values(EXTRA_OPTIONS).some((selector) => isChecked(selector)),
   );
 }
 
@@ -721,19 +658,19 @@ function getDefaultTableName(): string {
   return `${globals.username}${DEFAULT_TABLE_NAME_SUFFIX}`;
 }
 
-function isChecked(setting: keyof Settings): boolean {
-  return getHtmlInputElement(`#${setting}`).checked;
+function isChecked(selector: string): boolean {
+  return getHtmlInputElement(selector).checked;
 }
 
 /** Shows, hides, or disables the rows that depend on the state of a checkbox. */
 function updateCheckboxRows() {
   // The time fields only apply to a timed game, and a speedrun is never timed.
-  $(".create-game-timed-option").toggle(isChecked("createTableTimed"));
-  $("#create-game-timed-row").toggle(!isChecked("createTableSpeedrun"));
+  $(".create-game-timed-option").toggle(isChecked(TIMED));
+  $("#create-game-timed-row").toggle(!isChecked(EXTRA_OPTIONS.speedrun));
 
   // A game cannot have both one extra card and one less card.
-  const oneExtraCard = isChecked("createTableOneExtraCard");
-  const oneLessCard = isChecked("createTableOneLessCard");
+  const oneExtraCard = isChecked(EXTRA_OPTIONS.oneExtraCard);
+  const oneLessCard = isChecked(EXTRA_OPTIONS.oneLessCard);
   $("#createTableOneLessCardRow").fadeTo(0, oneExtraCard ? DIMMED_OPACITY : 1);
   $("#createTableOneLessCard").prop("disabled", oneExtraCard);
   $("#createTableOneExtraCardRow").fadeTo(0, oneLessCard ? DIMMED_OPACITY : 1);
@@ -762,9 +699,13 @@ function readyVariant(value: string) {
     variantName = DEFAULT_VARIANT_NAME;
 
     // Since the variant name is not valid, update our settings.
+    const { createTable } = globals.settings;
     globals.settings = {
       ...globals.settings,
-      createTableVariant: variantName,
+      createTable: {
+        ...createTable,
+        options: { ...createTable.options, variantName },
+      },
     };
   }
 

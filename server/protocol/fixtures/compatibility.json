@@ -481,18 +481,96 @@
         "speedrunPreplay": false,
         "speedrunMode": false,
         "hGroupConventions": false,
-        "createTableVariant": "No Variant",
-        "createTableTimed": false,
-        "createTableTimeBaseSeconds": 120,
-        "createTableTimePerTurnSeconds": 20,
-        "createTableSpeedrun": false,
-        "createTableDeckPlays": false,
-        "createTableEmptyClues": false,
-        "createTableOneExtraCard": false,
-        "createTableOneLessCard": false,
-        "createTableAllOrNothing": false,
-        "createTableDetrimentalCharacters": false,
-        "createTableMaxPlayers": 5
+        "createTable": {
+          "maxPlayers": 5,
+          "options": {
+            "variantName": "No Variant",
+            "speedrun": false,
+            "deckPlays": false,
+            "emptyClues": false,
+            "oneExtraCard": false,
+            "oneLessCard": false,
+            "allOrNothing": false,
+            "detrimentalCharacters": false
+          },
+          "timeControl": {
+            "baseSeconds": 120,
+            "perTurnSeconds": 20
+          }
+        }
+      }
+    }
+  },
+  {
+    "name": "welcome fills a partly stored create-table form with defaults",
+    "direction": "server",
+    "command": "welcome",
+    "input": {
+      "userId": 7,
+      "username": "Alice",
+      "muted": false,
+      "firstTimeUser": false,
+      "friends": [],
+      "blocked": [],
+      "playingAtTables": [3],
+      "settings": {
+        "createTable": {
+          "options": {
+            "deckPlays": true,
+            "timeControl": {
+              "baseSeconds": 300,
+              "perTurnSeconds": 10
+            }
+          }
+        }
+      }
+    },
+    "valid": true,
+    "normalized": {
+      "userId": 7,
+      "username": "Alice",
+      "muted": false,
+      "firstTimeUser": false,
+      "friends": [],
+      "blocked": [],
+      "playingAtTables": [3],
+      "settings": {
+        "desktopNotification": false,
+        "soundMove": "all",
+        "soundTimer": true,
+        "darkMode": false,
+        "keldonMode": false,
+        "newUi": false,
+        "colorblindMode": false,
+        "realLifeMode": false,
+        "reverseHands": false,
+        "styleNumbers": false,
+        "showTimerInUntimed": false,
+        "volume": 50,
+        "speedrunPreplay": false,
+        "speedrunMode": false,
+        "hGroupConventions": false,
+        "createTable": {
+          "maxPlayers": 5,
+          "options": {
+            "variantName": "No Variant",
+            "speedrun": false,
+            "deckPlays": true,
+            "emptyClues": false,
+            "oneExtraCard": false,
+            "oneLessCard": false,
+            "allOrNothing": false,
+            "detrimentalCharacters": false,
+            "timeControl": {
+              "baseSeconds": 300,
+              "perTurnSeconds": 10
+            }
+          },
+          "timeControl": {
+            "baseSeconds": 120,
+            "perTurnSeconds": 20
+          }
+        }
       }
     }
   },
@@ -509,7 +587,9 @@
       "blocked": [],
       "playingAtTables": [3],
       "settings": {
-        "createTableMaxPlayers": 7
+        "createTable": {
+          "maxPlayers": 7
+        }
       }
     },
     "valid": false

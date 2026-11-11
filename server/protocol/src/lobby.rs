@@ -171,22 +171,7 @@ pub struct Settings {
     #[serde(skip_serializing_if = "Option::is_none")]
     #[schemars(range(min = 1, max = MAX_H_GROUP_LEVEL))]
     pub h_group_level: Option<u8>,
-    #[schemars(length(min = 1))]
-    pub create_table_variant: String,
-    pub create_table_timed: bool,
-    #[schemars(range(min = 1, max = MAX_TIME_BASE_SECONDS))]
-    pub create_table_time_base_seconds: i64,
-    #[schemars(range(min = 0, max = MAX_TIME_PER_TURN_SECONDS))]
-    pub create_table_time_per_turn_seconds: i64,
-    pub create_table_speedrun: bool,
-    pub create_table_deck_plays: bool,
-    pub create_table_empty_clues: bool,
-    pub create_table_one_extra_card: bool,
-    pub create_table_one_less_card: bool,
-    pub create_table_all_or_nothing: bool,
-    pub create_table_detrimental_characters: bool,
-    #[schemars(with = "NumPlayers")]
-    pub create_table_max_players: u8,
+    pub create_table: CreateTableSettings,
 }
 
 impl Default for Settings {
@@ -208,18 +193,33 @@ impl Default for Settings {
             speedrun_mode: false,
             h_group_conventions: false,
             h_group_level: None,
-            create_table_variant: DEFAULT_VARIANT_NAME.into(),
-            create_table_timed: false,
-            create_table_time_base_seconds: DEFAULT_TIME_BASE_SECONDS,
-            create_table_time_per_turn_seconds: DEFAULT_TIME_PER_TURN_SECONDS,
-            create_table_speedrun: false,
-            create_table_deck_plays: false,
-            create_table_empty_clues: false,
-            create_table_one_extra_card: false,
-            create_table_one_less_card: false,
-            create_table_all_or_nothing: false,
-            create_table_detrimental_characters: false,
-            create_table_max_players: DEFAULT_MAX_PLAYERS,
+            create_table: CreateTableSettings::default(),
+        }
+    }
+}
+
+/// The table that the "Create Game" form starts from: the one that the user last chose. Missing
+/// fields take their defaults.
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize, JsonSchema)]
+#[serde(default, rename_all = "camelCase", deny_unknown_fields)]
+pub struct CreateTableSettings {
+    #[schemars(with = "NumPlayers")]
+    pub max_players: u8,
+    /// The options of the next table. Their `timeControl` is present when the table is timed.
+    pub options: GameOptions,
+    /// The clock that the form offers. The form keeps it while the table is untimed.
+    pub time_control: TimeControl,
+}
+
+impl Default for CreateTableSettings {
+    fn default() -> Self {
+        Self {
+            max_players: DEFAULT_MAX_PLAYERS,
+            options: GameOptions::default(),
+            time_control: TimeControl {
+                base_seconds: DEFAULT_TIME_BASE_SECONDS,
+                per_turn_seconds: DEFAULT_TIME_PER_TURN_SECONDS,
+            },
         }
     }
 }

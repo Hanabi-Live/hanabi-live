@@ -1074,6 +1074,36 @@ export const scoreFrequencySchema = z
 const optionalSettingSchema = z.literal("hGroupLevel");
 
 /**
+ * The table that the "Create Game" form starts from: the one that the user last chose. Missing
+ * fields take their defaults.
+ */
+const createTableSettingsSchema = z
+  .strictObject({
+    maxPlayers: z.literal([2, 3, 4, 5, 6]).default(5),
+    /**
+     * The options of the next table. Their `timeControl` is present when the table is timed.
+     */
+    options: gameOptionsSchema.default({
+      allOrNothing: false,
+      deckPlays: false,
+      detrimentalCharacters: false,
+      emptyClues: false,
+      oneExtraCard: false,
+      oneLessCard: false,
+      speedrun: false,
+      variantName: "No Variant",
+    }),
+    /**
+     * The clock that the form offers. The form keeps it while the table is untimed.
+     */
+    timeControl: timeControlSchema.default({
+      baseSeconds: 120,
+      perTurnSeconds: 20,
+    }),
+  })
+  .readonly();
+
+/**
  * Which moves play a sound: every move, only the moves that start the player's turn, or none.
  */
 export const soundMoveSchema = z.enum(["all", "onlyOwn", "none"]);
@@ -1085,28 +1115,20 @@ export const soundMoveSchema = z.enum(["all", "onlyOwn", "none"]);
 export const settingsSchema = z
   .strictObject({
     colorblindMode: z.boolean().default(false),
-    createTableAllOrNothing: z.boolean().default(false),
-    createTableDeckPlays: z.boolean().default(false),
-    createTableDetrimentalCharacters: z.boolean().default(false),
-    createTableEmptyClues: z.boolean().default(false),
-    createTableMaxPlayers: z.literal([2, 3, 4, 5, 6]).default(5),
-    createTableOneExtraCard: z.boolean().default(false),
-    createTableOneLessCard: z.boolean().default(false),
-    createTableSpeedrun: z.boolean().default(false),
-    createTableTimeBaseSeconds: z
-      .number()
-      .int()
-      .min(1)
-      .max(604_800)
-      .default(120),
-    createTableTimePerTurnSeconds: z
-      .number()
-      .int()
-      .min(0)
-      .max(86_400)
-      .default(20),
-    createTableTimed: z.boolean().default(false),
-    createTableVariant: z.string().min(1).default("No Variant"),
+    createTable: createTableSettingsSchema.default({
+      maxPlayers: 5,
+      options: {
+        allOrNothing: false,
+        deckPlays: false,
+        detrimentalCharacters: false,
+        emptyClues: false,
+        oneExtraCard: false,
+        oneLessCard: false,
+        speedrun: false,
+        variantName: "No Variant",
+      },
+      timeControl: { baseSeconds: 120, perTurnSeconds: 20 },
+    }),
     darkMode: z.boolean().default(false),
     desktopNotification: z.boolean().default(false),
     hGroupConventions: z.boolean().default(false),

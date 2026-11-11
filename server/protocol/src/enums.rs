@@ -22,7 +22,6 @@ pub struct WireEnumMember {
 
 /// Defines an enum that the database stores as an integer, with a schema that names it so that
 /// clients use the generated TypeScript enum. The wire carries the name after each member's `=>`.
-/// The enum still reads the integer, which state that older servers stored holds.
 macro_rules! wire_enum {
     (
         $(#[doc = $doc:literal])*
@@ -99,22 +98,9 @@ macro_rules! wire_enum {
                             ))),
                         }
                     }
-
-                    // State that older servers stored holds the integer.
-                    fn visit_i64<E: serde::de::Error>(self, value: i64) -> Result<$name, E> {
-                        i32::try_from(value)
-                            .map_err(E::custom)
-                            .and_then(|value| $name::try_from(value).map_err(E::custom))
-                    }
-
-                    fn visit_u64<E: serde::de::Error>(self, value: u64) -> Result<$name, E> {
-                        i32::try_from(value)
-                            .map_err(E::custom)
-                            .and_then(|value| $name::try_from(value).map_err(E::custom))
-                    }
                 }
 
-                deserializer.deserialize_any(Visitor)
+                deserializer.deserialize_str(Visitor)
             }
         }
 

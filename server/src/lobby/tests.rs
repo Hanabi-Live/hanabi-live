@@ -200,9 +200,14 @@ async fn lobby_relationships_atomic_settings_and_parameterization_postgres() {
             .is_err()
     );
     assert!(
-        set_setting(&db.pool, UserId(a), "createTableTimeBaseSeconds", &json!(0))
-            .await
-            .is_err()
+        set_setting(
+            &db.pool,
+            UserId(a),
+            "createTable",
+            &json!({"maxPlayers": 7})
+        )
+        .await
+        .is_err()
     );
     assert!(
         set_setting(
@@ -215,11 +220,13 @@ async fn lobby_relationships_atomic_settings_and_parameterization_postgres() {
         .is_err()
     );
     let literal = "x'; DROP TABLE users; --";
-    set_setting(&db.pool, UserId(a), "createTableVariant", &json!(literal))
+    let create = json!({"options": {"variantName": literal}});
+    set_setting(&db.pool, UserId(a), "createTable", &create)
         .await
         .unwrap();
     assert_eq!(
-        serde_json::to_value(get_settings(&db.pool, UserId(a)).await.unwrap()).unwrap()["createTableVariant"],
+        serde_json::to_value(get_settings(&db.pool, UserId(a)).await.unwrap()).unwrap()["createTable"]
+            ["options"]["variantName"],
         literal
     );
     let (sound_timer, volume) = (json!(false), json!(25));
@@ -741,6 +748,12 @@ async fn every_setting_round_trips_and_only_changes_are_stored_postgres() {
             Value::Number(number) if number.is_f64() => json!(7.5),
             Value::Number(_) => json!(2),
             _ if name == "soundMove" => json!("none"),
+            _ if name == "createTable" => {
+                let mut changed = default.clone();
+                changed["options"]["variantName"] = json!("Rainbow (6 Suits)");
+                changed["options"]["timeControl"] = json!({"baseSeconds": 60, "perTurnSeconds": 5});
+                changed
+            }
             _ => json!("Rainbow (6 Suits)"),
         };
         assert_ne!(default, expected, "{name} must change");
@@ -767,6 +780,45 @@ async fn every_setting_round_trips_and_only_changes_are_stored_postgres() {
 }
 
 #[tokio::test]
+async fn create_table_settings_replace_the_settings_that_held_the_form_postgres() {
+    let Some(db) = TestDb::create().await else {
+        return;
+    };
+    let id = db.user("Alice").await;
+    sqlx::query!(
+        "UPDATE users SET settings=$2 WHERE id=$1",
+        id,
+        json!({"createTableVariant": "Rainbow (6 Suits)", "createTableTimed": true,
+            "createTableTimeBaseSeconds": 300, "createTableTimePerTurnSeconds": -1,
+            "createTableDeckPlays": true, "createTableMaxPlayers": 3, "volume": 70})
+    )
+    .execute(&db.pool)
+    .await
+    .unwrap();
+    let settings = get_settings(&db.pool, UserId(id)).await.unwrap();
+    // The invalid time per turn takes its default.
+    let expected = json!({"maxPlayers": 3,
+        "options": {"variantName": "Rainbow (6 Suits)", "deckPlays": true,
+            "timeControl": {"baseSeconds": 300, "perTurnSeconds": 20}},
+        "timeControl": {"baseSeconds": 300, "perTurnSeconds": 20}});
+    assert_eq!(
+        settings.create_table,
+        serde_json::from_value::<hanabi_protocol::CreateTableSettings>(expected).unwrap()
+    );
+    let mut create = serde_json::to_value(&settings.create_table).unwrap();
+    create["maxPlayers"] = json!(4);
+    set_setting(&db.pool, UserId(id), "createTable", &create)
+        .await
+        .unwrap();
+    let stored = sqlx::query_scalar!("SELECT settings FROM users WHERE id=$1", id)
+        .fetch_one(&db.pool)
+        .await
+        .unwrap();
+    assert_eq!(stored, json!({"createTable": create, "volume": 70}));
+    db.close().await;
+}
+
+#[tokio::test]
 async fn settings_outside_the_wire_contract_are_not_sent_or_saved_postgres() {
     let Some(db) = TestDb::create().await else {
         return;
@@ -781,13 +833,15 @@ async fn settings_outside_the_wire_contract_are_not_sent_or_saved_postgres() {
     .await
     .unwrap();
     let settings = get_settings(&db.pool, UserId(id)).await.unwrap();
-    assert_eq!(settings.create_table_variant, "No Variant");
-    assert_eq!(settings.create_table_max_players, 5);
+    assert_eq!(
+        settings.create_table,
+        hanabi_protocol::CreateTableSettings::default()
+    );
     assert_eq!(settings.volume, 70);
     for (name, value) in [
-        ("createTableMaxPlayers", json!(7)),
+        ("createTable", json!({"maxPlayers": 7})),
         ("soundMove", json!(2)),
-        ("createTableVariant", json!("")),
+        ("createTable", json!({"options": {"variantName": ""}})),
     ] {
         assert!(
             set_setting(&db.pool, UserId(id), name, &value)
