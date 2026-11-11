@@ -9,15 +9,13 @@
   "include": ["./src/**/*.ts"],
   "compilerOptions": {
     "types": ["bun"],
-    // The Node.js libraries, plus the DOM for the code that "buildCriticalCSS.mts" runs in a page.
+    // The Node.js libraries.
     "lib": [
       "es2024",
       "ESNext.Array",
       "ESNext.Collection",
       "ESNext.Iterator",
       "ESNext.Promise",
-      "DOM",
-      "DOM.Iterable",
     ],
   },
 }

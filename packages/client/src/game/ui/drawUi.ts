@@ -2276,7 +2276,7 @@ function drawTimers() {
     || globals.lobby.settings.showTimerInUntimed
   ) {
     globals.elements.timer2.tooltipName = "time-taken";
-    // (The content will be updated in the "setTickingDownTimeCPTooltip()" function.)
+    // (The content will be updated in the "setTickingDownTimeCurrentPlayerTooltip()" function.)
     initKonvaTooltips(globals.elements.timer2, true, false);
   }
 }
