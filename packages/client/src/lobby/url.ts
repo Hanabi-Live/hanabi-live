@@ -48,10 +48,11 @@ function reconnectToTable(data: ServerCommandData["welcome"]): boolean {
     return true;
   }
 
-  // If the server has informed us that were previously spectating an ongoing shared replay,
-  // automatically spectate that table.
-  if (data.spectatingAtTable !== undefined) {
-    globals.conn!.send("tableSpectate", data.spectatingAtTable);
+  // If the server has informed us that we were previously spectating a table, automatically
+  // spectate the newest one.
+  const spectatedTable = data.spectatingAtTables[0];
+  if (spectatedTable !== undefined) {
+    globals.conn!.send("tableSpectate", spectatedTable);
     return true;
   }
 
@@ -129,8 +130,12 @@ function gotoPath(data: ServerCommandData["welcome"]): boolean {
     if (tableIdString !== undefined) {
       const tableId = parseIntSafe(tableIdString);
       if (tableId !== undefined && tableId > 0) {
-        if (data.spectatingAtTable?.tableId === tableId) {
-          globals.conn!.send("tableSpectate", data.spectatingAtTable);
+        // We can be listed at other tables that we spectated, so look for this one.
+        const spectatedTable = data.spectatingAtTables.find(
+          (table) => table.tableId === tableId,
+        );
+        if (spectatedTable !== undefined) {
+          globals.conn!.send("tableSpectate", spectatedTable);
           return true;
         }
 
@@ -140,7 +145,7 @@ function gotoPath(data: ServerCommandData["welcome"]): boolean {
           localStorage.getItem(LOCAL_STORAGE_KEY.JOIN_TABLE_PASSWORD) ?? "";
         globals.conn!.send("tableJoin", {
           tableId,
-          password,
+          ...(password !== "" && { password }),
         });
         return true;
       }

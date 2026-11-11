@@ -117,7 +117,7 @@ pub(super) async fn bootstrap(app: &App, account: Account, ip: &str) -> Result<B
         friends,
         blocked,
         playing_at_tables: vec![],
-        spectating_at_table: None,
+        spectating_at_tables: vec![],
     };
     sqlx::query!(
         "UPDATE users SET datetime_last_login=NOW(),last_ip=$2 WHERE id=$1",

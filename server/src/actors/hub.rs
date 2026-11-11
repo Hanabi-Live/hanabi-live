@@ -801,17 +801,21 @@ impl Hub {
             .filter(|(_, e)| !e.view.replay && e.view.players.contains(&session.user))
             .map(|(id, _)| *id)
             .collect();
-        if let Some((id, shadow)) = self.tables.iter().find_map(|(id, e)| {
-            e.view
-                .reconnects
-                .get(&session.user)
-                .map(|shadow| (*id, *shadow))
-        }) {
-            welcome.spectating_at_table = Some(hanabi_protocol::SpectatedTable {
-                table_id: id,
-                shadowing_player_index: shadow,
-            });
-        }
+        welcome.spectating_at_tables =
+            self.tables
+                .iter()
+                .filter_map(|(id, e)| {
+                    e.view.reconnects.get(&session.user).map(|shadow| {
+                        hanabi_protocol::SpectatedTable {
+                            table_id: *id,
+                            shadowing_player_index: *shadow,
+                        }
+                    })
+                })
+                .collect();
+        welcome
+            .spectating_at_tables
+            .sort_by_key(|table| std::cmp::Reverse(table.table_id));
         self.sessions.insert(
             session.user,
             Presence::new(session.clone(), &welcome.settings, Arc::new(blocks)),

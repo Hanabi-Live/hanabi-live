@@ -233,9 +233,9 @@ pub struct Welcome {
     pub blocked: Vec<Username>,
     /// Ongoing games the user is a player in.
     pub playing_at_tables: Vec<TableId>,
-    /// The table the user was spectating when they disconnected, if any.
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub spectating_at_table: Option<SpectatedTable>,
+    /// The tables that the user spectated and did not leave, newest table first. A user who closes
+    /// the page while spectating stays at that table, so this can list more than one.
+    pub spectating_at_tables: Vec<SpectatedTable>,
 }
 
 /// A table that a user spectates, and the seat they shadow there, if any.

@@ -454,6 +454,7 @@
       "friends": [],
       "blocked": [],
       "playingAtTables": [3],
+      "spectatingAtTables": [],
       "settings": {
         "volume": 70
       }
@@ -467,6 +468,7 @@
       "friends": [],
       "blocked": [],
       "playingAtTables": [3],
+      "spectatingAtTables": [],
       "settings": {
         "desktopNotification": false,
         "soundMove": "all",
@@ -515,6 +517,7 @@
       "friends": [],
       "blocked": [],
       "playingAtTables": [3],
+      "spectatingAtTables": [],
       "settings": {
         "createTable": {
           "options": {
@@ -536,6 +539,7 @@
       "friends": [],
       "blocked": [],
       "playingAtTables": [3],
+      "spectatingAtTables": [],
       "settings": {
         "desktopNotification": false,
         "soundMove": "all",
@@ -588,6 +592,7 @@
       "friends": [],
       "blocked": [],
       "playingAtTables": [3],
+      "spectatingAtTables": [],
       "settings": {
         "createTable": {
           "maxPlayers": 7

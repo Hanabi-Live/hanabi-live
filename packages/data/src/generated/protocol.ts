@@ -1440,9 +1440,10 @@ export const welcomeSchema = z
     playingAtTables: z.array(tableIdSchema).readonly(),
     settings: settingsSchema,
     /**
-     * The table the user was spectating when they disconnected, if any.
+     * The tables that the user spectated and did not leave, newest table first. A user who closes
+     * the page while spectating stays at that table, so this can list more than one.
      */
-    spectatingAtTable: spectatedTableSchema.optional(),
+    spectatingAtTables: z.array(spectatedTableSchema).readonly(),
     userId: userIdSchema,
     username: z.string().min(1),
   })

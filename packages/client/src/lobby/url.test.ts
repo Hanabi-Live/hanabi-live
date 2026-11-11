@@ -23,6 +23,7 @@ function welcome(
   return {
     firstTimeUser: false,
     playingAtTables: [],
+    spectatingAtTables: [],
     ...data,
   } as ServerCommandData["welcome"];
 }
@@ -138,7 +139,7 @@ describe("replay URL loading", () => {
 
   test.each([
     ["/replay/456", { playingAtTables: [tableId] }],
-    ["/replay/456", { spectatingAtTable: { tableId } }],
+    ["/replay/456", { spectatingAtTables: [{ tableId }] }],
   ])("route %s takes precedence over reconnecting", (pathname, data) => {
     const send = vi.spyOn(globals.conn!, "send");
     Object.defineProperty(globalThis, "location", {
@@ -159,8 +160,19 @@ describe("replay URL loading", () => {
   });
 
   test.each([
-    [{}, "tableJoin", { tableId: 123, password: "" }],
-    [{ spectatingAtTable: { tableId } }, "tableSpectate", { tableId }],
+    [{}, "tableJoin", { tableId: 123 }],
+    [{ spectatingAtTables: [{ tableId }] }, "tableSpectate", { tableId }],
+    // A spectator who closed another table's page is still listed there.
+    [
+      {
+        spectatingAtTables: [
+          { tableId: tableIdSchema.parse(456) },
+          { tableId },
+        ],
+      },
+      "tableSpectate",
+      { tableId },
+    ],
   ])("route /pre-game/123 with %o sends %s", (data, command, commandData) => {
     const send = vi.spyOn(globals.conn!, "send");
     Object.defineProperties(globalThis, {
