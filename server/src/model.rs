@@ -1,5 +1,5 @@
 use crate::game::{AssignedCharacter, Game, Options};
-use anyhow::{Result, ensure};
+use anyhow::{Context, Result, ensure};
 use chrono::{DateTime, Utc};
 use hanabi_engine::EndCondition;
 use hanabi_engine::RecordedAction;
@@ -141,7 +141,7 @@ pub enum TagOperation {
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct ReplayState {
     pub leader: UserId,
-    pub segment: i32,
+    pub segment: hanabi_protocol::Turn,
     pub efficiency_modifier: i32,
     /// Whether the leader is exploring a hypothetical.
     pub hypothetical: bool,
@@ -367,7 +367,8 @@ impl TableSnapshot {
         if snapshot.game.end_condition != EndCondition::IdleTimeout {
             snapshot.idle_remaining = IDLE_TIMEOUT_MS;
         }
-        let segment = snapshot.game.turn;
+        let segment =
+            hanabi_protocol::Turn::new(snapshot.game.turn).context("Invalid turn count")?;
         self.phase = Phase::Replay {
             snapshot,
             replay: ReplayState {
@@ -521,8 +522,7 @@ impl TableSnapshot {
         }
         if let Phase::Replay { replay, .. } = &self.phase {
             ensure!(
-                replay.segment >= 0
-                    && replay.hypothetical_actions.len() <= MAX_HYPOTHETICAL_ACTIONS
+                replay.hypothetical_actions.len() <= MAX_HYPOTHETICAL_ACTIONS
                     && hypothetical_bytes(&replay.hypothetical_actions)? <= MAX_HYPOTHETICAL_BYTES,
                 "Invalid replay controls"
             );
@@ -645,7 +645,7 @@ impl Snapshot {
             options: wire_options(&self.game.options),
             seed: self.seed.clone(),
             score: self.game.score,
-            num_turns: self.game.turn,
+            num_turns: hanabi_protocol::Turn::new(self.game.turn)?,
             end_condition: self.game.end_condition,
             datetime_started: time(self.started),
             datetime_finished: time(self.finished.unwrap_or(self.started)),

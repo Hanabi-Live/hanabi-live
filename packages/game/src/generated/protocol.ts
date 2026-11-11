@@ -38,6 +38,11 @@ export enum EndCondition {
 export const endConditionSchema = z.enum(EndCondition);
 
 /**
+ * A detrimental character's number in `characters.json`.
+ */
+export const characterIdSchema = z.number().int().min(0).max(4_294_967_295);
+
+/**
  * An entry in `characters.json`: a detrimental character.
  */
 export const catalogCharacterSchema = z
@@ -47,7 +52,7 @@ export const catalogCharacterSchema = z
     /**
      * The first character has an ID of 0.
      */
-    id: z.number().int().min(0).max(4_294_967_295),
+    id: characterIdSchema,
     name: z.string().min(1),
     /**
      * Excluded from two-player games.
@@ -151,6 +156,11 @@ export const cardRankSchema = z.literal([1, 2, 3, 4, 5, 7]);
 export const rankClueNumberSchema = z.literal([1, 2, 3, 4, 5]);
 
 /**
+ * A variant's number in `variants.json`. "No Variant" is 0.
+ */
+export const variantIdSchema = z.number().int().min(0).max(4_294_967_295);
+
+/**
  * An entry in `variants.json`. This is similar to `Variant`, but it only has primitive types.
  */
 export const catalogVariantSchema = z
@@ -176,7 +186,7 @@ export const catalogVariantSchema = z
      * on. This is a legacy field; we want to transition to using a more descriptive string ID,
      * which will allow for custom user-defined variants.
      */
-    id: z.number().int().min(0).max(4_294_967_295),
+    id: variantIdSchema,
     name: z.string().min(1),
     /**
      * A string that describes the variant. For example, "No Variant" is `R+Y+G+B+P`.

@@ -688,7 +688,7 @@ pub(super) fn review(id: TableId, condition: EndCondition) -> Result<TableSnapsh
     table.phase = Phase::Replay {
         replay: ReplayState {
             leader: UserId(1),
-            segment: snapshot.game.turn,
+            segment: hanabi_protocol::Turn::new(snapshot.game.turn).unwrap(),
             efficiency_modifier: 0,
             hypothetical: false,
             hypothetical_actions: vec![],

@@ -321,7 +321,7 @@ pub struct TableSettings {
     /// The turn of `replayGameID` that the game starts from, counting from 1. Absent starts from
     /// the first turn.
     #[serde(skip_serializing_if = "Option::is_none")]
-    #[schemars(range(min = 1, max = i32::MAX))]
+    #[schemars(range(min = 1, max = MAX_GAME_ACTIONS))]
     pub replay_turn: Option<u32>,
 }
 
@@ -407,8 +407,7 @@ pub struct GameHistoryEntry {
     pub seed: Option<String>,
     #[schemars(range(min = 0, max = i32::MAX))]
     pub score: i32,
-    #[schemars(range(min = 0, max = i32::MAX))]
-    pub num_turns: i32,
+    pub num_turns: Turn,
     pub end_condition: EndCondition,
     #[schemars(with = "Timestamp")]
     pub datetime_started: String,

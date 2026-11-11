@@ -259,6 +259,76 @@ impl std::fmt::Display for GameId {
     }
 }
 
+/// Defines the ID of a catalog entry, which the catalog's files and the database both number.
+macro_rules! catalog_id {
+    ($(#[doc = $doc:literal])* $name:ident) => {
+        $(#[doc = $doc])*
+        #[derive(
+            Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize,
+            JsonSchema,
+        )]
+        #[serde(transparent)]
+        pub struct $name(#[schemars(range(min = 0, max = u32::MAX))] pub u32);
+
+        impl std::fmt::Display for $name {
+            fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+                self.0.fmt(f)
+            }
+        }
+    };
+}
+
+catalog_id! {
+    /// A variant's number in `variants.json`. "No Variant" is 0.
+    VariantId
+}
+
+catalog_id! {
+    /// A detrimental character's number in `characters.json`.
+    CharacterId
+}
+
+/// A turn of a game, or a position in its replay, counting from 0. A game records at most
+/// `MAX_GAME_ACTIONS` actions, so it has no more turns than that.
+#[derive(
+    Clone,
+    Copy,
+    Debug,
+    Default,
+    PartialEq,
+    Eq,
+    PartialOrd,
+    Ord,
+    Hash,
+    Serialize,
+    Deserialize,
+    JsonSchema,
+)]
+#[serde(transparent)]
+pub struct Turn(#[schemars(range(min = 0, max = MAX_GAME_ACTIONS))] pub u16);
+
+impl Turn {
+    /// The turn, if a game can have it.
+    pub fn new<T: TryInto<usize>>(value: T) -> Option<Self> {
+        value
+            .try_into()
+            .ok()
+            .filter(|value| *value <= MAX_GAME_ACTIONS)
+            .and_then(|value| u16::try_from(value).ok())
+            .map(Self)
+    }
+
+    pub const fn index(self) -> usize {
+        self.0 as usize
+    }
+}
+
+impl From<Turn> for i32 {
+    fn from(value: Turn) -> Self {
+        value.0.into()
+    }
+}
+
 /// An integer that JavaScript represents exactly. Lists of integers use it to bound each item.
 #[derive(
     Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize, JsonSchema,

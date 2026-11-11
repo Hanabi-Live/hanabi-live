@@ -339,7 +339,7 @@ pub(super) fn replay_table(
             snapshot: Box::new(snapshot),
             replay: ReplayState {
                 leader: owner,
-                segment: 0,
+                segment: hanabi_protocol::Turn::default(),
                 efficiency_modifier: 0,
                 hypothetical: false,
                 hypothetical_actions: vec![],

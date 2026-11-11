@@ -2964,7 +2964,7 @@ async fn replay_arrows_sounds_and_loads_skip_durable_checkpoints() -> Result<()>
         let Phase::Replay { replay, .. } = &table.phase else {
             bail!("Not a replay");
         };
-        ensure!(replay.segment == 1, "The saved segment is stale");
+        ensure!(replay.segment.0 == 1, "The saved segment is stale");
         Ok(())
     }
     .await;
@@ -3175,7 +3175,7 @@ async fn saved_characters_store_none_as_null() -> Result<()> {
                     let character = hanabi_engine::characters()
                         .iter()
                         .find(|c| c.name == p.character)
-                        .map(|c| i16::try_from(c.id))
+                        .map(|c| i16::try_from(c.id.0))
                         .transpose()?;
                     let metadata = p.assigned_metadata().map(i16::try_from).transpose()?;
                     Ok((character, metadata))

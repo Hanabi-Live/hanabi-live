@@ -192,7 +192,7 @@ pub(crate) async fn replay(
             .map(|id| {
                 hanabi_engine::characters()
                     .iter()
-                    .find(|c| i16::try_from(c.id).ok() == Some(id))
+                    .find(|c| i16::try_from(c.id.0).ok() == Some(id))
                     .context("Unknown stored character")
             })
             .transpose()?;
@@ -401,7 +401,7 @@ fn character_columns(player: &hanabi_engine::EnginePlayer) -> Result<(Option<i16
     let character_id = hanabi_engine::characters()
         .iter()
         .find(|c| c.name == player.character)
-        .map(|c| i16::try_from(c.id))
+        .map(|c| i16::try_from(c.id.0))
         .transpose()?;
     let metadata = player.assigned_metadata().map(i16::try_from).transpose()?;
     Ok((character_id, metadata))

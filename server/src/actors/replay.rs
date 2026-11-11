@@ -285,7 +285,11 @@ impl TableActor {
         }
         self.publish(e).await
     }
-    pub(super) async fn suggest(&self, session: Arc<Session>, segment: i32) -> CommandResult<()> {
+    pub(super) async fn suggest(
+        &self,
+        session: Arc<Session>,
+        segment: hanabi_protocol::Turn,
+    ) -> CommandResult<()> {
         ensure_or_reject!(
             self.attending(&session) && self.table.visible,
             "Not a shared replay"

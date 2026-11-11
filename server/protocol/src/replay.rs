@@ -232,8 +232,7 @@ pub struct Suggestion {
     pub table_id: TableId,
     #[schemars(with = "Username")]
     pub username: String,
-    #[schemars(range(min = 0, max = i32::MAX))]
-    pub segment: i32,
+    pub segment: Turn,
 }
 
 /// The active hypothetical, sent to someone joining a shared replay.

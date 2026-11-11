@@ -113,8 +113,7 @@ pub struct PublicGameRow {
     pub score: i32,
     /// Variant lists omit it.
     #[serde(rename = "variantID", skip_serializing_if = "Option::is_none")]
-    #[schemars(range(min = 0, max = u32::MAX))]
-    pub variant_id: Option<u32>,
+    pub variant_id: Option<VariantId>,
     /// How many games used this seed. Variant lists omit it.
     #[serde(skip_serializing_if = "Option::is_none")]
     #[schemars(range(min = 0, max = MAX_SAFE_INTEGER))]

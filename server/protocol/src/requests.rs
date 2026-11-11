@@ -124,8 +124,7 @@ pub struct TableRestartDeclineRequest {
 pub struct TableSuggestRequest {
     #[serde(rename = "tableID")]
     pub table_id: TableId,
-    #[schemars(range(min = 0, max = i32::MAX))]
-    pub segment: i32,
+    pub segment: Turn,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
@@ -365,8 +364,7 @@ pub struct ReplayAction {
 pub enum ReplayLeaderAction {
     /// Moves everyone to a segment.
     Segment {
-        #[schemars(range(min = 0, max = i32::MAX))]
-        segment: i32,
+        segment: Turn,
     },
     /// Points at a card or a part of the board.
     Arrow {

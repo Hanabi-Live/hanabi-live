@@ -456,9 +456,9 @@ impl TableActor {
                 .suggest(
                     session,
                     args[0]
-                        .parse::<i32>()
+                        .parse::<usize>()
                         .ok()
-                        .filter(|turn| *turn >= 0)
+                        .and_then(hanabi_protocol::Turn::new)
                         .or_reject("Expected /suggest [turn]")?,
                 )
                 .await;

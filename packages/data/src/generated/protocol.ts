@@ -3,6 +3,7 @@ import {
   cardNoteSchema,
   cardOrderSchema,
   cardRankSchema,
+  characterIdSchema,
   colorIndexSchema,
   EndCondition,
   gameEventSchema,
@@ -13,6 +14,7 @@ import {
   rankClueNumberSchema,
   safeIntegerSchema,
   suitIndexSchema,
+  variantIdSchema,
 } from "@hanabi-live/game";
 import * as z from "zod";
 
@@ -112,7 +114,7 @@ const tableSettingsSchema = z
      * The turn of `replayGameID` that the game starts from, counting from 1. Absent starts from
      * the first turn.
      */
-    replayTurn: z.number().int().min(1).max(2_147_483_647).optional(),
+    replayTurn: z.number().int().min(1).max(512).optional(),
     /**
      * The deal that the table requests, as the end of its full seed: "123" in a 3-player game of
      * No Variant deals `p3v0s123`. Absent when the server deals the next seed that none of the
@@ -243,6 +245,12 @@ export const connectedSchema = z
 export const emptySchema = z.strictObject({}).readonly();
 
 /**
+ * A turn of a game, or a position in its replay, counting from 0. A game records at most
+ * `MAX_GAME_ACTIONS` actions, so it has no more turns than that.
+ */
+const turnSchema = z.number().int().min(0).max(512);
+
+/**
  * The state of a shared replay that a client joins.
  */
 const sharedReplayInitSchema = z
@@ -259,7 +267,7 @@ const sharedReplayInitSchema = z
      * The players who will not play again if the leader restarts.
      */
     restartDeclined: z.array(z.string().min(1)).max(6).readonly().optional(),
-    segment: z.number().int().min(0).max(2_147_483_647),
+    segment: turnSchema,
     /**
      * Whether the shared replay hides what happens later in the game.
      */
@@ -299,7 +307,7 @@ export const gameHistoryEntrySchema = z
     endCondition: z.enum(EndCondition),
     gameID: gameIdSchema,
     numGamesOnSeed: z.number().int().min(0).max(9_007_199_254_740_991),
-    numTurns: z.number().int().min(0).max(2_147_483_647),
+    numTurns: turnSchema,
     options: gameOptionsSchema,
     playerNames: z.array(z.string().min(1)).readonly(),
     score: z.number().int().min(0).max(2_147_483_647),
@@ -420,7 +428,7 @@ const characterAssignmentSchema = z
     /**
      * Absent when the player has no character.
      */
-    characterID: z.number().int().min(0).max(4_294_967_295).optional(),
+    characterID: characterIdSchema.optional(),
     /**
      * A value that some characters use, such as the rank or suit they may not clue. Absent for
      * other characters.
@@ -772,7 +780,7 @@ const publicGameRowSchema = z
     /**
      * Variant lists omit it.
      */
-    variantID: z.number().int().min(0).max(4_294_967_295).optional(),
+    variantID: variantIdSchema.optional(),
   })
   .readonly();
 
@@ -825,10 +833,7 @@ export const replaySoundEffectSchema = z.enum(["buzz", "clap", "holy", "nooo"]);
  */
 const replayLeaderActionSchema = z.discriminatedUnion("type", [
   z
-    .strictObject({
-      segment: z.number().int().min(0).max(2_147_483_647),
-      type: z.literal("segment"),
-    })
+    .strictObject({ segment: turnSchema, type: z.literal("segment") })
     .readonly(),
   z
     .strictObject({
@@ -1201,7 +1206,7 @@ export const statusSchema = z.enum([
  */
 export const suggestionSchema = z
   .strictObject({
-    segment: z.number().int().min(0).max(2_147_483_647),
+    segment: turnSchema,
     tableID: tableIdSchema,
     username: z.string().min(1),
   })
@@ -1324,10 +1329,7 @@ export const tableStartedSchema = z
   .strictObject({ stage: gameStageSchema, tableID: tableIdSchema })
   .readonly();
 export const tableSuggestRequestSchema = z
-  .strictObject({
-    segment: z.number().int().min(0).max(2_147_483_647),
-    tableID: tableIdSchema,
-  })
+  .strictObject({ segment: turnSchema, tableID: tableIdSchema })
   .readonly();
 export const tableUpdateRequestSchema = z
   .strictObject({

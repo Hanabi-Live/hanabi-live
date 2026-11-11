@@ -315,7 +315,7 @@ fn game_history(row: HistoryRow) -> anyhow::Result<hanabi_protocol::GameHistoryE
         options: crate::model::wire_options(&crate::archive::options(&g)?),
         seed: g.seed,
         score: i32::from(g.score),
-        num_turns: i32::from(g.num_turns),
+        num_turns: hanabi_protocol::Turn::new(g.num_turns).context("Invalid stored turn count")?,
         end_condition: hanabi_protocol::EndCondition::try_from(i32::from(g.end_condition))
             .map_err(anyhow::Error::msg)
             .context("Invalid stored end condition")?,

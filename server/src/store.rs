@@ -930,7 +930,7 @@ mod tests {
                 snapshot: Box::new(replay.game().unwrap().clone()),
                 replay: crate::model::ReplayState {
                     leader: UserId(1),
-                    segment: 0,
+                    segment: hanabi_protocol::Turn::default(),
                     efficiency_modifier: 0,
                     hypothetical: false,
                     hypothetical_actions: vec![],

@@ -127,8 +127,7 @@ pub struct CatalogVariant {
     /// A number from 0 to N. For example, "No Variant" is variant 0, "6 Suits" is variant 1, and so
     /// on. This is a legacy field; we want to transition to using a more descriptive string ID,
     /// which will allow for custom user-defined variants.
-    #[schemars(range(min = 0, max = u32::MAX))]
-    pub id: u32,
+    pub id: VariantId,
     /// A string that describes the variant. For example, "No Variant" is `R+Y+G+B+P`.
     #[serde(rename = "newID")]
     #[schemars(length(min = 1))]
@@ -219,8 +218,7 @@ pub struct CatalogCharacter {
     #[schemars(length(min = 1))]
     pub name: String,
     /// The first character has an ID of 0.
-    #[schemars(range(min = 0, max = u32::MAX))]
-    pub id: u32,
+    pub id: CharacterId,
     #[schemars(length(min = 1))]
     pub description: String,
     #[schemars(length(min = 1))]

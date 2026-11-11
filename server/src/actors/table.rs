@@ -143,7 +143,8 @@ impl TableActor {
         let max_progress = i32::from(hanabi_protocol::MAX_PROGRESS);
         let progress = if let Some(s) = self.table.game() {
             if let Phase::Replay { replay, .. } = &self.table.phase {
-                (replay.segment * max_progress / s.game.turn.max(1)).clamp(0, max_progress)
+                (i32::from(replay.segment) * max_progress / s.game.turn.max(1))
+                    .clamp(0, max_progress)
             } else {
                 s.game.score * max_progress
                     / hanabi_engine::get_variant(&self.table.options.variant_name)
