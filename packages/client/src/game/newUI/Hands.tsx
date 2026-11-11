@@ -98,9 +98,10 @@ function NameChip({ seat }: { readonly seat: Seat }): React.JSX.Element {
 const CLOCK_PLACEHOLDER = "00:00";
 
 /**
- * Measures the width that the name column needs. It draws every player's name, hidden, as it looks
- * at its widest: bold for the current player, and with a clock when the clocks show. So the column
- * does not change size as the turn moves from player to player.
+ * Measures the width that the name column needs. It draws every player's name, hidden, in both of
+ * its styles: bold for the current player (with a clock when the clocks show), and plain for the
+ * others. The column fits the widest, so it does not change size as the turn moves from player to
+ * player.
  */
 export function NameColumnSizer({
   seats,
@@ -130,16 +131,20 @@ export function NameColumnSizer({
       className="tw:invisible tw:absolute tw:top-0 tw:left-0 tw:flex tw:w-max tw:flex-col tw:items-start"
       ref={ref}
     >
-      {seats.map((seat) => (
+      {seats.flatMap((seat) => [
         <NameChip
-          key={seat.playerIndex}
+          key={`${seat.playerIndex}-active`}
           seat={{
             ...seat,
             active: true,
             clock: showClock ? CLOCK_PLACEHOLDER : undefined,
           }}
-        />
-      ))}
+        />,
+        <NameChip
+          key={`${seat.playerIndex}-waiting`}
+          seat={{ ...seat, active: false }}
+        />,
+      ])}
     </div>
   );
 }
