@@ -134,7 +134,7 @@ function replayReducerFunction(
         `A "${action.type}" action was dispatched, but we are not in a shared replay.`,
       );
 
-      state.shared.restartDeclined = castDraft(action.usernames);
+      state.shared.restartDeclined = castDraft(action.restartDeclined);
       break;
     }
 

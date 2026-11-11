@@ -77,9 +77,9 @@ impl TableActor {
             ClientMessage::TableRestartDecline(r) => {
                 self.decline_restart(session, r.declined).await
             }
-            message @ (ClientMessage::Tag(_)
-            | ClientMessage::TagDelete(_)
-            | ClientMessage::TagDeleteAll(_)) => self.tag_message(session, message).await,
+            message @ (ClientMessage::TagAdd(_)
+            | ClientMessage::TagRemove(_)
+            | ClientMessage::TagRemoveAll(_)) => self.tag_message(session, message).await,
             message => Err(wrong_phase(&message)),
         }
     }
@@ -90,9 +90,9 @@ impl TableActor {
         message: ClientMessage,
     ) -> CommandResult<()> {
         let edit = match message {
-            ClientMessage::Tag(r) => TagEdit::Add(normalize_tag(&r.tag)?),
-            ClientMessage::TagDelete(r) => TagEdit::Delete(normalize_tag(&r.tag)?),
-            ClientMessage::TagDeleteAll(_) => TagEdit::DeleteAll,
+            ClientMessage::TagAdd(r) => TagEdit::Add(normalize_tag(&r.tag)?),
+            ClientMessage::TagRemove(r) => TagEdit::Delete(normalize_tag(&r.tag)?),
+            ClientMessage::TagRemoveAll(_) => TagEdit::DeleteAll,
             message => return Err(wrong_phase(&message)),
         };
         self.tag(session, edit).await
@@ -511,7 +511,7 @@ impl TableActor {
         // Everyone leaves the replay first, then enters the next game or its pregame.
         let mut e = self.effects();
         let boot = frame(
-            hanabi_protocol::server::TABLE_BOOT,
+            hanabi_protocol::server::TABLE_BOOTED,
             TableRef {
                 table_id: self.table.id,
             },
@@ -583,7 +583,7 @@ impl TableActor {
             hanabi_protocol::server::RESTART_DECLINED,
             hanabi_protocol::RestartDeclined {
                 table_id: self.table.id,
-                usernames: self.restart_declined_names(),
+                restart_declined: self.restart_declined_names(),
             },
         );
         self.publish(e).await

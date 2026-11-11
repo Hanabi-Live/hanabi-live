@@ -141,7 +141,7 @@ interface ActionReplayLeader {
 }
 
 interface ActionRestartDeclined extends Readonly<
-  Pick<ServerCommandData["restartDeclined"], "usernames">
+  Pick<ServerCommandData["restartDeclined"], "restartDeclined">
 > {
   readonly type: "restartDeclined";
 }

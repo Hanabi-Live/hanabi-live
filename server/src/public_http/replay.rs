@@ -131,11 +131,15 @@ pub(super) async fn export(
         })?;
     Ok(hanabi_protocol::ReplayGame {
         game_id: Some(GameId(game_id)),
-        player_names: Some(players.iter().map(|p| p.name.clone()).collect()),
-        deck: Some(deck),
-        actions: Some(actions),
+        player_names: players.iter().map(|p| p.name.clone()).collect(),
+        deck,
+        actions,
         options,
-        notes: notes.iter().any(|n| !n.is_empty()).then_some(notes),
+        notes: if notes.iter().any(|n| !n.is_empty()) {
+            notes
+        } else {
+            vec![]
+        },
         characters,
         seed: Some(seed),
     })

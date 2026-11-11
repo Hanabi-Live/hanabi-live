@@ -221,7 +221,7 @@ pub(super) async fn list(
     mut s: Selection,
     q: &Query,
     mode: &str,
-) -> Result<hanabi_protocol::PublicGamePage> {
+) -> Result<hanabi_protocol::GamePage> {
     let (limit, offset) = pagination(q)?.unwrap_or((super::DEFAULT_PAGE_SIZE, 0));
     s.page = Some((limit, offset));
     let column = match q.get("sort") {
@@ -259,7 +259,7 @@ pub(super) async fn list(
     count.push(") SELECT count(*) FROM selected");
     let total: i64 = count.build_query_scalar().fetch_one(&state.pool).await?;
     let order = format!("g.{} {direction},g.id DESC", column_field(column));
-    Ok(hanabi_protocol::PublicGamePage {
+    Ok(hanabi_protocol::GamePage {
         games: history(state, s, &order).await?,
         offset: hanabi_protocol::Count(offset),
         total: hanabi_protocol::Count(total),

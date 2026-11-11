@@ -60,7 +60,7 @@ export function getDefaultMetadata(
     minEfficiency,
     hardVariant,
 
-    hasCustomSeed: false,
+    customSeed: false,
     seed: undefined,
   };
 }

@@ -311,9 +311,21 @@ function setVariant(room: string, args: readonly string[]) {
     return;
   }
 
-  globals.conn!.send("tableSetVariant", {
+  const { game } = globals;
+  if (game === undefined) {
+    sendSelfPmFromServer(
+      "You can only change the variant before the game starts.",
+      room,
+      SelfChatMessageType.Error,
+    );
+    return;
+  }
+  globals.conn!.send("tableUpdate", {
     tableId: globals.tableId,
-    variantName,
+    settings: {
+      ...game.settings,
+      options: { ...game.settings.options, variantName },
+    },
   });
 
   // Update our stored create table setting to be equal to this variant.
@@ -375,7 +387,7 @@ chatCommands.set("tag", (room: string, args: readonly string[]) => {
   }
 
   const tag = args.join(" ");
-  globals.conn!.send("tag", {
+  globals.conn!.send("tagAdd", {
     tableId: globals.tableId,
     tag,
   });
@@ -392,7 +404,7 @@ function untag(room: string, args: readonly string[]) {
   }
 
   const tag = args.join(" ");
-  globals.conn!.send("tagDelete", {
+  globals.conn!.send("tagRemove", {
     tableId: globals.tableId,
     tag,
   });
@@ -420,7 +432,7 @@ chatCommands.set("tagsdeleteall", (room: string) => {
     );
     return;
   }
-  globals.conn!.send("tagDeleteAll", {
+  globals.conn!.send("tagRemoveAll", {
     tableId: globals.tableId,
   });
 });

@@ -22,7 +22,13 @@ pub struct LoginRequest {
     )]
     #[schemars(length(min = 1))]
     pub new_password: Option<String>,
-    pub version: String,
+    /// The client's release. Only the website sends it. A form's empty field is absent.
+    #[serde(
+        deserialize_with = "deserialize_form_text",
+        skip_serializing_if = "Option::is_none"
+    )]
+    #[schemars(length(min = 1))]
+    pub version: Option<String>,
     /// Whether the client's system prefers a dark theme. A new account starts with this as its
     /// dark mode setting.
     pub dark_mode: bool,
@@ -100,17 +106,6 @@ pub struct PasswordHashRequest {
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct PasswordHashResponse {
     pub hash: String,
-}
-
-/// A page of games from the public `/api/v1/history`, `/seed`, and `/variants/{id}` lists.
-#[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
-#[serde(rename_all = "camelCase", deny_unknown_fields)]
-pub struct PublicGamePage {
-    pub games: Vec<GameHistoryEntry>,
-    /// The position of the page's first game in the list.
-    pub offset: Count,
-    /// How many games the list has on all of its pages.
-    pub total: Count,
 }
 
 /// The variant names in `/api/v1/variants`, keyed by variant ID.

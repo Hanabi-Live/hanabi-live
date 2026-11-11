@@ -1,9 +1,9 @@
 import { identityField } from "./cardEventIdentity.ts";
 import type { CardOrder } from "./types/CardOrder.ts";
+import type { ClueRank } from "./types/ClueRank.ts";
 import type { ColorIndex } from "./types/ColorIndex.ts";
 import type { PlayerIndex } from "./types/PlayerIndex.ts";
 import type { Rank } from "./types/Rank.ts";
-import type { RankClueNumber } from "./types/RankClueNumber.ts";
 import type { SuitIndex } from "./types/SuitIndex.ts";
 import type {
   ActionCardIdentity,
@@ -36,7 +36,7 @@ export function colorClue(
 
 /** Helper functions to build a rank `ActionClue` with a compact syntax. For use in tests. */
 export function rankClue(
-  value: RankClueNumber,
+  value: ClueRank,
   giver: PlayerIndex,
   list: readonly number[], // We do not want to force the consumer to brand their numbers.
   target: PlayerIndex,

@@ -44,7 +44,7 @@ test("a late live clock cannot restart timers in a finished replay", () => {
   update({
     playerTimesMs: [10_000, 20_000],
     currentPlayerIndex: 0,
-    timeTakenMs: 100,
+    turnElapsedMs: 100,
   });
   expect(clear).toHaveBeenCalledWith(123);
   expect(start).not.toHaveBeenCalled();
@@ -80,7 +80,7 @@ test("untimed games without timers still update the player time tooltips", () =>
     update({
       playerTimesMs: [5000, 0],
       currentPlayerIndex: 0,
-      timeTakenMs: 0,
+      turnElapsedMs: 0,
     });
     expect(globals.playerTimes).toEqual([5000, 0]);
     expect(tooltips.setContent).toHaveBeenCalledWith(

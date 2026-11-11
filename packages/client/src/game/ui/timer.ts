@@ -58,7 +58,7 @@ export function update(
   // not showing.
   globals.playerTimes = [...data.playerTimesMs];
   globals.clockPlayerIndex = currentPlayerIndex;
-  globals.timeTaken = data.timeTakenMs;
+  globals.timeTaken = data.turnElapsedMs;
 
   // Keep track of what the active player's time was when they started their turn.
   globals.startingTurnTime =
@@ -161,7 +161,7 @@ export function resumeAfterResize(): void {
   update({
     playerTimesMs: globals.playerTimes,
     currentPlayerIndex: globals.clockPlayerIndex,
-    timeTakenMs: globals.timeTaken,
+    turnElapsedMs: globals.timeTaken,
   });
 }
 

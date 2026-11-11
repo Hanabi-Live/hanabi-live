@@ -45,7 +45,7 @@ pub(super) fn wrong_phase(message: &ClientMessage) -> CommandError {
     use ClientMessage as M;
     let reason = match message {
         M::TableStart(_) => "Already started",
-        M::TableSetVariant(_) | M::TableUpdate(_) => "Game already started",
+        M::TableUpdate(_) => "Game already started",
         M::PlayerAction(_)
         | M::Pause(_)
         | M::IdleReset(_)
@@ -55,7 +55,7 @@ pub(super) fn wrong_phase(message: &ClientMessage) -> CommandError {
         M::ReplayAction(_) => "Not a replay",
         M::TableSuggest(_) | M::TableRestartDecline(_) => "Not a shared replay",
         M::TableRestart(_) => "Only the shared replay leader can restart",
-        M::Tag(_) | M::TagDelete(_) | M::TagDeleteAll(_) => "No game",
+        M::TagAdd(_) | M::TagRemove(_) | M::TagRemoveAll(_) => "No game",
         _ => "This table does not accept that command now",
     };
     rejection!("{reason}")
@@ -949,7 +949,7 @@ impl TableActor {
             current_player_index: live
                 .then(|| PlayerIndex::new(s.game.active_player_index))
                 .flatten(),
-            time_taken_ms: if !live || s.paused() {
+            turn_elapsed_ms: if !live || s.paused() {
                 0
             } else {
                 now.turn_elapsed
@@ -1165,7 +1165,7 @@ impl TableActor {
             e.messages.push((
                 a.session.clone(),
                 frame(
-                    hanabi_protocol::server::TABLE_BOOT,
+                    hanabi_protocol::server::TABLE_BOOTED,
                     TableRef {
                         table_id: self.table.id,
                     },

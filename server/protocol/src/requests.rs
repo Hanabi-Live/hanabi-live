@@ -84,14 +84,6 @@ pub struct TableSetOwnerRequest {
 
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
-pub struct TableSetVariantRequest {
-    pub table_id: TableId,
-    #[schemars(length(min = 1))]
-    pub variant_name: String,
-}
-
-#[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
-#[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct TableStartRequest {
     pub table_id: TableId,
     /// The players that the owner saw seated. The server ignores a start from an outdated view.

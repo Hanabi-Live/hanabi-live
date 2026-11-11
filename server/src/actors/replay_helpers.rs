@@ -34,7 +34,7 @@ pub fn parse(input: &ReplayGame) -> CommandResult<Imported> {
     let mut options = crate::model::engine_options(&input.options);
     let variant = hanabi_engine::get_variant(&options.variant_name)?;
     let has_characters = options.detrimental_characters || !input.characters.is_empty();
-    let mut players = input.player_names.clone().unwrap_or_default();
+    let mut players = input.player_names.clone();
     if players.is_empty() {
         let pattern = regex!(crate::game::SEED_PATTERN);
         let count: usize = pattern
@@ -64,7 +64,6 @@ pub fn parse(input: &ReplayGame) -> CommandResult<Imported> {
     let mut deck: Vec<Card> = input
         .deck
         .iter()
-        .flatten()
         .map(|card| Card {
             suit_index: card.suit_index.index(),
             rank: card.rank.into(),
@@ -134,7 +133,7 @@ pub fn parse(input: &ReplayGame) -> CommandResult<Imported> {
         !has_characters || characters.len() == players.len(),
         "The amount of characters must match the number of players"
     );
-    let actions: Vec<RecordedAction> = input.actions.iter().flatten().copied().collect();
+    let actions: Vec<RecordedAction> = input.actions.clone();
     for (i, a) in actions.iter().enumerate() {
         ensure_or_reject!(
             match a {
@@ -160,7 +159,7 @@ pub fn parse(input: &ReplayGame) -> CommandResult<Imported> {
         );
     }
     let size = deck.len() + variant.suits.len();
-    let raw_notes = input.notes.as_deref().unwrap_or_default();
+    let raw_notes = &input.notes;
     ensure_or_reject!(
         raw_notes.is_empty() || raw_notes.len() == players.len(),
         "Invalid note rows"

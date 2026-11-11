@@ -141,7 +141,7 @@ pub struct CatalogVariant {
     pub clue_colors: Option<Vec<String>>,
     /// The ranks that players can clue. When omitted, 1 through 5.
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub clue_ranks: Option<Vec<RankClueNumber>>,
+    pub clue_ranks: Option<Vec<ClueRank>>,
     /// The number of cards in each stack. When omitted, 5.
     #[serde(skip_serializing_if = "Option::is_none")]
     #[schemars(extend("enum" = explicit_stack_sizes()))]

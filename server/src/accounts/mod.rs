@@ -279,13 +279,16 @@ async fn login_inner(state: &Accounts, ip: &str, input: LoginRequest) -> Result<
     if is_banned(&state.pool, ip).await? {
         return Ok(banned());
     }
-    for (name, value) in [
-        ("username", &input.username),
-        ("password", &input.password),
-        ("version", &input.version),
-    ] {
+    for (name, missing) in [
+        ("username", input.username.is_empty()),
+        ("password", input.password.is_empty()),
         // Only the website sends a version.
-        if value.is_empty() && !(input.client != ClientKind::Web && name == "version") {
+        (
+            "version",
+            input.client == ClientKind::Web && input.version.is_none(),
+        ),
+    ] {
+        if missing {
             return Ok(unauthorized(format!(
                 "You must provide the \"{name}\" parameter to log in."
             )));
@@ -295,8 +298,10 @@ async fn login_inner(state: &Accounts, ip: &str, input: LoginRequest) -> Result<
         Ok(username) => username,
         Err(message) => return Ok(unauthorized(message)),
     };
-    if let Err(message) = validate_client_version(&input.version, &state.config.version)
-        && input.client == ClientKind::Web
+    if let Err(message) = validate_client_version(
+        input.version.as_deref().unwrap_or_default(),
+        &state.config.version,
+    ) && input.client == ClientKind::Web
     {
         let error = Notice {
             code: Some(hanabi_protocol::NoticeCode::OutdatedClient),
@@ -453,7 +458,7 @@ async fn test_login(
     let input = LoginRequest {
         username: TEST_ACCOUNT.into(),
         password: TEST_ACCOUNT.into(),
-        version: state.config.version.clone(),
+        version: Some(state.config.version.clone()),
         create_account: true,
         ..LoginRequest::default()
     };

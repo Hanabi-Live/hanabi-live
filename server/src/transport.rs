@@ -474,8 +474,11 @@ mod tests {
                 serde_json::json!({"tableId":42,"notes":all_notes}),
             ),
             test_frame(
-                "noteListPlayer",
-                serde_json::json!({"tableId":42,"notes":notes}),
+                "noteList",
+                serde_json::json!({
+                    "tableId":42,
+                    "notes":[{"username":"Player0","notes":notes,"spectator":false}],
+                }),
             ),
         ];
         assert!(messages[1].len() > 262_144);

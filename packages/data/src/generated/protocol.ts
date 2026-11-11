@@ -4,6 +4,7 @@ import {
   cardNoteSchema,
   cardOrderSchema,
   characterIdSchema,
+  clueRankSchema,
   clueSchema,
   colorIndexSchema,
   EndCondition,
@@ -13,7 +14,6 @@ import {
   notesSchema,
   playerIndexSchema,
   playerNotesSchema,
-  rankClueNumberSchema,
   safeIntegerSchema,
   timeControlSchema,
   turnSchema,
@@ -242,7 +242,11 @@ export const clockSchema = z
      */
     playerTimesMs: z.array(safeIntegerSchema).min(2).max(6).readonly(),
     tableId: tableIdSchema,
-    timeTakenMs: z.number().int().min(0).max(9_007_199_254_740_991),
+    /**
+     * How long the current turn has taken, in milliseconds. 0 when no turn is running, such as
+     * while the game is paused.
+     */
+    turnElapsedMs: z.number().int().min(0).max(9_007_199_254_740_991),
   })
   .readonly();
 
@@ -285,7 +289,7 @@ const sharedReplayInitSchema = z
      * play it again: the leader by restarting, and the other players by saying if they are ready.
      */
     canPlayAgain: z.boolean(),
-    efficiencyModifier: z.number().int().min(-2_147_483_648).max(2_147_483_647),
+    efficiencyModifier: z.number().int().min(-60).max(60),
     /**
      * The table's owner, who leads the replay.
      */
@@ -354,24 +358,7 @@ export const gameHistoryEntrySchema = z
   .readonly();
 
 /**
- * A page of the player's own game history, newest first.
- */
-export const gameHistorySchema = z
-  .strictObject({
-    games: z.array(gameHistoryEntrySchema).readonly(),
-    /**
-     * The position of the page's first game among all of the player's games.
-     */
-    offset: countSchema,
-    /**
-     * How many games the player has finished.
-     */
-    total: countSchema,
-  })
-  .readonly();
-
-/**
- * A page of the games played on a seed.
+ * A page of the games played on a seed, best scores first.
  */
 export const gameHistoryOtherScoresSchema = z
   .strictObject({
@@ -380,12 +367,14 @@ export const gameHistoryOtherScoresSchema = z
      * The position of the page's first game among all the games on the seed.
      */
     offset: countSchema,
+    /**
+     * The seed of the request, so that a client can ignore a reply for a seed it no longer shows.
+     */
     seed: z.string().min(1),
     /**
      * How many games were played on the seed.
      */
     total: countSchema,
-    variantName: z.string().min(1),
   })
   .readonly();
 
@@ -420,6 +409,23 @@ export const gameListColumnSchema = z.enum([
   "score",
   "variant",
 ]);
+
+/**
+ * A page of a list of games: a player's own history, the games on a seed, or a public list.
+ */
+export const gamePageSchema = z
+  .strictObject({
+    games: z.array(gameHistoryEntrySchema).readonly(),
+    /**
+     * The position of the page's first game in the list.
+     */
+    offset: countSchema,
+    /**
+     * How many games the list has on all of its pages.
+     */
+    total: countSchema,
+  })
+  .readonly();
 
 /**
  * The active hypothetical, sent to someone joining a shared replay.
@@ -470,7 +476,7 @@ const characterAssignmentSchema = z.discriminatedUnion("type", [
   z
     .strictObject({
       characterId: characterIdSchema,
-      rank: rankClueNumberSchema,
+      rank: clueRankSchema,
       type: z.literal("rank"),
     })
     .readonly(),
@@ -533,10 +539,13 @@ export const initSchema = z
      */
     characters: z.array(characterAssignmentSchema).max(6).readonly(),
     /**
+     * Whether the table chose its deal, so that the deck does not count down to a new seed.
+     */
+    customSeed: z.boolean(),
+    /**
      * Absent while the game is in progress.
      */
     finishedAt: z.iso.datetime({ precision: 3 }).optional(),
-    hasCustomSeed: z.boolean(),
     mode: viewModeSchema,
     options: gameOptionsSchema,
     /**
@@ -672,7 +681,10 @@ export const loginRequestSchema = z
     newPassword: z.string().min(1).optional(),
     password: z.string().default(""),
     username: z.string().default(""),
-    version: z.string().default(""),
+    /**
+     * The client's release. Only the website sends it. A form's empty field is absent.
+     */
+    version: z.string().min(1).optional(),
   })
   .readonly();
 
@@ -695,20 +707,14 @@ export const noteSchema = z
   .readonly();
 
 /**
- * Everyone's notes that the recipient may see, sent to spectators and replay viewers.
+ * The notes that the recipient may see: everyone's for spectators and replay viewers, and their own
+ * for a player.
  */
 export const noteListSchema = z
   .strictObject({
     notes: z.array(playerNotesSchema).readonly(),
     tableId: tableIdSchema,
   })
-  .readonly();
-
-/**
- * A player's own notes.
- */
-export const noteListPlayerSchema = z
-  .strictObject({ notes: notesSchema, tableId: tableIdSchema })
   .readonly();
 export const noteRequestSchema = z
   .strictObject({
@@ -863,23 +869,6 @@ export const pregameSchema = z
   .readonly();
 
 /**
- * A page of games from the public `/api/v1/history`, `/seed`, and `/variants/{id}` lists.
- */
-export const publicGamePageSchema = z
-  .strictObject({
-    games: z.array(gameHistoryEntrySchema).readonly(),
-    /**
-     * The position of the page's first game in the list.
-     */
-    offset: countSchema,
-    /**
-     * How many games the list has on all of its pages.
-     */
-    total: countSchema,
-  })
-  .readonly();
-
-/**
  * The parts of the board that a shared-replay arrow can point at, besides cards.
  */
 export const replayBoardElementSchema = z.enum([
@@ -1003,7 +992,7 @@ export const replayGameSchema = z
      */
     characters: z.array(characterAssignmentSchema).max(6).readonly().optional(),
     /**
-     * The deck, by card order.
+     * The deck, by card order. Empty deals the seed's deck.
      */
     deck: z.array(cardIdentitySchema).max(60).readonly().optional(),
     /**
@@ -1015,6 +1004,9 @@ export const replayGameSchema = z
      */
     notes: z.array(notesSchema).max(6).readonly().optional(),
     options: gameOptionsSchema.optional(),
+    /**
+     * Empty takes the player count from the seed and names the players "Alice", "Bob", and so on.
+     */
     playerNames: z.array(z.string()).max(6).readonly().optional(),
     /**
      * Absent for a game with its own deck instead of a seed, such as an imported one.
@@ -1071,24 +1063,12 @@ export const replayCreateRequestSchema = z
   .readonly();
 
 /**
- * Sent before a graceful restart or stop closes the connection.
- */
-export const restartSchema = z
-  .strictObject({
-    /**
-     * HTML explaining the downtime, present only when an administrator gave a reason.
-     */
-    message: z.string().min(1).optional(),
-  })
-  .readonly();
-
-/**
  * The players in a shared replay who will not play again if the leader restarts.
  */
 export const restartDeclinedSchema = z
   .strictObject({
+    restartDeclined: z.array(z.string().min(1)).max(6).readonly(),
     tableId: tableIdSchema,
-    usernames: z.array(z.string().min(1)).max(6).readonly(),
   })
   .readonly();
 
@@ -1097,6 +1077,18 @@ export const restartDeclinedSchema = z
  */
 export const scoreFrequencySchema = z
   .strictObject({ numGames: countSchema, score: scoreSchema })
+  .readonly();
+
+/**
+ * Sent before a graceful restart or stop closes the connection.
+ */
+export const serverRestartSchema = z
+  .strictObject({
+    /**
+     * HTML explaining the downtime, present only when an administrator gave a reason.
+     */
+    message: z.string().min(1).optional(),
+  })
   .readonly();
 
 /**
@@ -1307,9 +1299,6 @@ export const tableRestartRequestSchema = z
 export const tableSetOwnerRequestSchema = z
   .strictObject({ ownerId: userIdSchema, tableId: tableIdSchema })
   .readonly();
-export const tableSetVariantRequestSchema = z
-  .strictObject({ tableId: tableIdSchema, variantName: z.string().min(1) })
-  .readonly();
 export const tableSpectateRequestSchema = z
   .strictObject({
     /**
@@ -1483,7 +1472,6 @@ export const CLIENT_COMMAND_SCHEMAS = {
   tableRestart: tableRestartRequestSchema,
   tableRestartDecline: tableRestartDeclineRequestSchema,
   tableSetOwner: tableSetOwnerRequestSchema,
-  tableSetVariant: tableSetVariantRequestSchema,
   tableSpectate: tableSpectateRequestSchema,
   tableStart: tableStartRequestSchema,
   tableSuggest: tableSuggestRequestSchema,
@@ -1491,9 +1479,9 @@ export const CLIENT_COMMAND_SCHEMAS = {
   tableTerminateVote: tableRefSchema,
   tableUnattend: tableRefSchema,
   tableUpdate: tableUpdateRequestSchema,
-  tag: tagRequestSchema,
-  tagDelete: tagRequestSchema,
-  tagDeleteAll: tableRefSchema,
+  tagAdd: tagRequestSchema,
+  tagRemove: tagRequestSchema,
+  tagRemoveAll: tableRefSchema,
   tagSearch: tagSearchRequestSchema,
   userInactive: inactiveRequestSchema,
 } as const;
@@ -1512,7 +1500,7 @@ export const SERVER_COMMAND_SCHEMAS = {
   gameEvent: gameEventMessageSchema,
   gameEventList: gameEventListSchema,
   gameFinished: gameFinishedSchema,
-  gameHistory: gameHistorySchema,
+  gameHistory: gamePageSchema,
   gameHistoryAdded: gameHistoryEntrySchema,
   gameHistoryOtherScores: gameHistoryOtherScoresSchema,
   hypothetical: hypotheticalSchema,
@@ -1523,17 +1511,16 @@ export const SERVER_COMMAND_SCHEMAS = {
   lobbyStatus: lobbyStatusSchema,
   note: noteSchema,
   noteList: noteListSchema,
-  noteListPlayer: noteListPlayerSchema,
   pause: pauseSchema,
   pregame: pregameSchema,
   replayAction: replayActionSchema,
-  restart: restartSchema,
   restartDeclined: restartDeclinedSchema,
+  serverRestart: serverRestartSchema,
   spectators: spectatorsSchema,
   suggestion: suggestionSchema,
   synced: emptySchema,
   table: tableSchema,
-  tableBoot: tableRefSchema,
+  tableBooted: tableRefSchema,
   tableJoined: tableRefSchema,
   tableLeft: tableRefSchema,
   tableList: tableListSchema,

@@ -40,7 +40,6 @@ macro_rules! client_contracts {
             TableLeave "tableLeave" => TableRef;
             TableReattend "tableReattend" => TableRef;
             TableSetOwner "tableSetOwner" => TableSetOwnerRequest;
-            TableSetVariant "tableSetVariant" => TableSetVariantRequest;
             TableStart "tableStart" => TableStartRequest;
             TableRestart "tableRestart" => TableRestartRequest;
             TableRestartDecline "tableRestartDecline" => TableRestartDeclineRequest;
@@ -64,9 +63,9 @@ macro_rules! client_contracts {
             Pause "pause" => PauseRequest;
             IdleReset "idleReset" => TableRef;
             Note "note" => NoteRequest;
-            Tag "tag" => TagRequest;
-            TagDelete "tagDelete" => TagRequest;
-            TagDeleteAll "tagDeleteAll" => TableRef;
+            TagAdd "tagAdd" => TagRequest;
+            TagRemove "tagRemove" => TagRequest;
+            TagRemoveAll "tagRemoveAll" => TableRef;
             ReplayAction "replayAction" => ReplayAction;
         }
     };
@@ -75,7 +74,7 @@ macro_rules! client_contracts {
 macro_rules! server_contracts {
     ($apply:ident) => {
         $apply! {
-            RESTART "restart" => Restart;
+            SERVER_RESTART "serverRestart" => ServerRestart;
             CLOCK "clock" => Clock;
             CONNECTED "connected" => Connected;
             PAUSE "pause" => Pause;
@@ -91,11 +90,10 @@ macro_rules! server_contracts {
             HYPOTHETICAL "hypothetical" => Hypothetical;
             NOTE "note" => Note;
             NOTE_LIST "noteList" => NoteList;
-            NOTE_LIST_PLAYER "noteListPlayer" => NoteListPlayer;
             GAME_EVENT "gameEvent" => GameEventMessage;
             GAME_EVENT_LIST "gameEventList" => GameEventList;
             INIT "init" => Init;
-            TABLE_BOOT "tableBoot" => TableRef;
+            TABLE_BOOTED "tableBooted" => TableRef;
             SYNCED "synced" => Empty;
             LOBBY_STATUS "lobbyStatus" => LobbyStatus;
             CHAT "chat" => Chat;
@@ -120,7 +118,7 @@ macro_rules! server_contracts {
             TABLE "table" => Table;
             TABLE_LIST "tableList" => TableList;
             PREGAME "pregame" => Pregame;
-            GAME_HISTORY "gameHistory" => GameHistory;
+            GAME_HISTORY "gameHistory" => GamePage;
             GAME_HISTORY_ADDED "gameHistoryAdded" => GameHistoryEntry;
             GAME_HISTORY_OTHER_SCORES "gameHistoryOtherScores" => GameHistoryOtherScores;
         }
@@ -134,7 +132,7 @@ macro_rules! exported_types {
         $apply! {
             TableId, GameId, UserId, Settings, Spectator, GameHistoryEntry,
             ReplayGame, ReplayBoardElement, ReplaySoundEffect, SoundMove, Activity, LoginRequest,
-            LoginResponse, NoticeCode, PasswordHashRequest, PasswordHashResponse, PublicGamePage,
+            LoginResponse, NoticeCode, PasswordHashRequest, PasswordHashResponse,
             VariantNames, ScoreFrequency, GameListColumn,
         }
     };
@@ -334,12 +332,11 @@ macro_rules! server_messages {
 pub mod server {
     use super::{
         Blocked, CardIdentities, Chat, ChatDeleted, ChatList, ChatPmHistory, ChatTyping, Clock,
-        Connected, Empty, Friends, GameEventList, GameEventMessage, GameFinished, GameHistory,
-        GameHistoryEntry, GameHistoryOtherScores, Hypothetical, IdleWarning, Init,
-        LobbySoundMessage, LobbyStatus, Note, NoteList, NoteListPlayer, Notice, Pause, Pregame,
-        ReplayAction, Restart, RestartDeclined, ServerMessage, Spectators, Suggestion, Table,
-        TableList, TableOwner, TableRef, TableStarted, User, UserList, UserRemoved, VoteChanged,
-        Welcome,
+        Connected, Empty, Friends, GameEventList, GameEventMessage, GameFinished, GameHistoryEntry,
+        GameHistoryOtherScores, GamePage, Hypothetical, IdleWarning, Init, LobbySoundMessage,
+        LobbyStatus, Note, NoteList, Notice, Pause, Pregame, ReplayAction, RestartDeclined,
+        ServerMessage, ServerRestart, Spectators, Suggestion, Table, TableList, TableOwner,
+        TableRef, TableStarted, User, UserList, UserRemoved, VoteChanged, Welcome,
     };
     server_contracts!(server_messages);
 }

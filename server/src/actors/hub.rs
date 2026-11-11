@@ -190,7 +190,7 @@ impl Hub {
             ));
         }
         let boot = frame(
-            hanabi_protocol::server::TABLE_BOOT,
+            hanabi_protocol::server::TABLE_BOOTED,
             TableRef { table_id: id },
         );
         let warning = frame(hanabi_protocol::server::WARNING, report.notice());
@@ -603,8 +603,8 @@ impl Hub {
             ),
             if reconnect {
                 frame(
-                    hanabi_protocol::server::RESTART,
-                    hanabi_protocol::Restart { message },
+                    hanabi_protocol::server::SERVER_RESTART,
+                    hanabi_protocol::ServerRestart { message },
                 )
             } else {
                 frame(

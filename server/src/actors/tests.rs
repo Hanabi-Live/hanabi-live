@@ -75,7 +75,7 @@ fn typed_game_frames_preserve_wire_schema_and_projected_identities() -> Result<(
         PlayerAction::Clue(hanabi_protocol::ClueTurn {
             receiver_index: PlayerIndex::new(1_usize).unwrap(),
             clue: hanabi_protocol::Clue::Rank {
-                value: hanabi_protocol::RankClueNumber::new(rank).unwrap(),
+                value: hanabi_protocol::ClueRank::new(rank).unwrap(),
             },
         }),
     )?;
@@ -812,7 +812,7 @@ async fn abandoned_pregames_expire_durably_even_with_a_password_or_spectator() -
                 HubCommand::Retire(table) => removed |= table == id,
                 HubCommand::Effects(effects) => {
                     observer_booted |= effects.messages.iter().any(|(session, message)| {
-                        session.user == UserId(2) && message.starts_with("tableBoot ")
+                        session.user == UserId(2) && message.starts_with("tableBooted ")
                     });
                 }
                 _ => {}
@@ -1163,7 +1163,7 @@ async fn a_table_that_panics_is_removed_and_frees_its_players() -> Result<()> {
         let mut seen = Vec::new();
         tokio::time::timeout(Duration::from_secs(3), async {
             while !(seen.iter().any(|f: &String| f.starts_with("tableRemoved "))
-                && seen.iter().any(|f| f.starts_with("tableBoot "))
+                && seen.iter().any(|f| f.starts_with("tableBooted "))
                 && seen.iter().any(|f| f.starts_with("warning "))
                 && seen.iter().any(|f| f.starts_with("user ")))
             {

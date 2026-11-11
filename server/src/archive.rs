@@ -12,8 +12,8 @@ use hanabi_engine::{
     recorded_action_type,
 };
 use hanabi_protocol::{
-    CardOrder, Clue, ClueTurn, ColorIndex, GameId, GameOverTurn, PlayerIndex, RankClueNumber,
-    TableId, TargetCard, UserId,
+    CardOrder, Clue, ClueRank, ClueTurn, ColorIndex, GameId, GameOverTurn, PlayerIndex, TableId,
+    TargetCard, UserId,
 };
 use serde::Deserialize;
 use sqlx::{PgPool, types::Json};
@@ -66,10 +66,7 @@ impl TryFrom<ArchiveAction> for RecordedAction {
             RecordedActionType::RankClue => Self::Clue(ClueTurn {
                 receiver_index: seat()?,
                 clue: Clue::Rank {
-                    value: action
-                        .value
-                        .and_then(RankClueNumber::new)
-                        .ok_or_else(invalid)?,
+                    value: action.value.and_then(ClueRank::new).ok_or_else(invalid)?,
                 },
             }),
             RecordedActionType::GameOver | RecordedActionType::GameOverByVote => {

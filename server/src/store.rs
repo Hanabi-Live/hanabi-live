@@ -989,7 +989,7 @@ mod tests {
         let clue = |rank| hanabi_protocol::ClueTurn {
             receiver_index: hanabi_protocol::PlayerIndex(1),
             clue: hanabi_protocol::Clue::Rank {
-                value: hanabi_protocol::RankClueNumber(rank),
+                value: hanabi_protocol::ClueRank(rank),
             },
         };
         // A clue must touch a card, so give the first rank that Bob holds.
@@ -2229,8 +2229,11 @@ mod tests {
             send(
                 &hub,
                 users[0].clone(),
-                "tableSetVariant",
-                json!({"tableId":id,"variantName":"Reversed (5 Suits)"}),
+                "tableUpdate",
+                json!({
+                    "tableId":id,
+                    "settings":{"name":"Split","options":{"variantName":"Reversed (5 Suits)"}},
+                }),
             )
             .await?;
             send(&hub, users[0].clone(), "tableStart", json!({"tableId":id})).await?;
@@ -2361,7 +2364,7 @@ mod tests {
             send(&hub,users[actor].clone(),"loaded",json!({"tableId":id})).await?;
             send(&hub,users[actor].clone(),"pause",json!({"tableId":id,"setting":"pause"})).await?;
             send(&hub,users[actor].clone(),"note",json!({"tableId":id,"order":0,"text":"private"})).await?;
-            send(&hub,users[actor].clone(),"tag",json!({"tableId":id,"tag":"native-live"})).await?;
+            send(&hub,users[actor].clone(),"tagAdd",json!({"tableId":id,"tag":"native-live"})).await?;
             let loaded=store.load().await?;let s=loaded[0].0.game().unwrap();ensure!(s.paused()&&s.notes[active][0]=="private"&&s.tags.len()==1,"Runtime mutations not durable");
             let (reply,received)=oneshot::channel();hub.send(HubCommand::Quiesce(reply)).await?;let handles=received.await?;
             for handle in handles{let (reply,received)=oneshot::channel();handle.sender.send(TableCommand::Drain(reply)).await?;received.await??;}

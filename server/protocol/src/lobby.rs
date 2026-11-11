@@ -16,7 +16,7 @@ pub struct Empty {}
 /// Sent before a graceful restart or stop closes the connection.
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
-pub struct Restart {
+pub struct ServerRestart {
     /// HTML explaining the downtime, present only when an administrator gave a reason.
     #[serde(skip_serializing_if = "Option::is_none")]
     #[schemars(length(min = 1))]
@@ -421,30 +421,29 @@ pub struct GameHistoryEntry {
     pub tags: Vec<String>,
 }
 
-/// A page of the player's own game history, newest first.
+/// A page of a list of games: a player's own history, the games on a seed, or a public list.
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
-pub struct GameHistory {
+pub struct GamePage {
     pub games: Vec<GameHistoryEntry>,
-    /// The position of the page's first game among all of the player's games.
+    /// The position of the page's first game in the list.
     pub offset: Count,
-    /// How many games the player has finished.
+    /// How many games the list has on all of its pages.
     pub total: Count,
 }
 
-/// A page of the games played on a seed.
+/// A page of the games played on a seed, best scores first.
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct GameHistoryOtherScores {
+    /// The seed of the request, so that a client can ignore a reply for a seed it no longer shows.
+    #[schemars(length(min = 1))]
+    pub seed: String,
     pub games: Vec<GameHistoryEntry>,
     /// The position of the page's first game among all the games on the seed.
     pub offset: Count,
     /// How many games were played on the seed.
     pub total: Count,
-    #[schemars(length(min = 1))]
-    pub variant_name: String,
-    #[schemars(length(min = 1))]
-    pub seed: String,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]

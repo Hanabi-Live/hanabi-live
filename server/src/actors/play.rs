@@ -35,9 +35,9 @@ impl TableActor {
             ClientMessage::Pause(r) => self.pause(session, r.setting).await,
             ClientMessage::IdleReset(_) => self.idle_reset(session).await,
             ClientMessage::Note(r) => self.note(session, r.order, &r.text).await,
-            message @ (ClientMessage::Tag(_)
-            | ClientMessage::TagDelete(_)
-            | ClientMessage::TagDeleteAll(_)) => self.tag_message(session, message).await,
+            message @ (ClientMessage::TagAdd(_)
+            | ClientMessage::TagRemove(_)
+            | ClientMessage::TagRemoveAll(_)) => self.tag_message(session, message).await,
             message => Err(wrong_phase(&message)),
         }
     }
@@ -518,7 +518,7 @@ impl TableActor {
                         our_player_index: our_player_index.context("Missing player")?,
                     },
                 },
-                has_custom_seed: self.table.extra.custom_seed.is_some(),
+                custom_seed: self.table.extra.custom_seed.is_some(),
                 seed: s.seed.clone(),
                 started_at: hanabi_protocol::Timestamp::from(s.started),
                 finished_at: s.finished.map(hanabi_protocol::Timestamp::from),
@@ -585,10 +585,14 @@ impl TableActor {
                 e.messages.push((
                     session.clone(),
                     frame(
-                        hanabi_protocol::server::NOTE_LIST_PLAYER,
-                        hanabi_protocol::NoteListPlayer {
+                        hanabi_protocol::server::NOTE_LIST,
+                        hanabi_protocol::NoteList {
                             table_id: self.table.id,
-                            notes: s.notes[seat].clone(),
+                            notes: vec![hanabi_protocol::PlayerNotes {
+                                username: s.players[seat].name.as_str().into(),
+                                notes: s.notes[seat].clone(),
+                                spectator: false,
+                            }],
                         },
                     ),
                 ));

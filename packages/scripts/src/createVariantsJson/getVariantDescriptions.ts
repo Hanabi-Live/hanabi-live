@@ -1,9 +1,9 @@
 /* eslint-disable perfectionist/sort-arrays */
 
 import type {
+  ClueRank,
   Color,
   Rank,
-  RankClueNumber,
   Suit,
   SuitJson,
   Variant,
@@ -358,9 +358,7 @@ function getVariantsForSpecialRanks(
   return variantDescriptions;
 }
 
-export function getSpecialClueRanks(
-  specialRank: Rank,
-): readonly RankClueNumber[] {
+export function getSpecialClueRanks(specialRank: Rank): readonly ClueRank[] {
   return DEFAULT_CLUE_RANKS.filter((clueRank) => clueRank !== specialRank);
 }
 
@@ -369,7 +367,7 @@ function getVariantDescriptionForSpecialRankVariant(
   suits: readonly string[],
   specialRank: Rank,
   suit: SuitJson,
-  specialClueRanks: readonly RankClueNumber[],
+  specialClueRanks: readonly ClueRank[],
 ): VariantDescription {
   const variantDescription: Writeable<VariantDescription> = {
     name,

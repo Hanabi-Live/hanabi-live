@@ -4,8 +4,8 @@
 import {
   errorDetails,
   gameListColumnSchema,
+  gamePageSchema,
   httpError,
-  publicGamePageSchema,
   scoreFrequencySchema,
   variantNamesSchema,
 } from "@hanabi-live/data";
@@ -24,7 +24,7 @@ declare const Chart: {
 declare const ChartDataLabels: unknown;
 
 type GameListColumn = z.infer<typeof gameListColumnSchema>;
-type PublicGamePage = z.infer<typeof publicGamePageSchema>;
+type GamePage = z.infer<typeof gamePageSchema>;
 type ScoreFrequency = z.infer<typeof scoreFrequencySchema>;
 
 const scoreFrequencies = z.array(scoreFrequencySchema);
@@ -292,7 +292,7 @@ function initServerTable(
       if (!response.ok) {
         throw await httpError(response, "Loading games");
       }
-      const result = publicGamePageSchema.parse(await response.json());
+      const result = gamePageSchema.parse(await response.json());
       if (request !== latestRequest) {
         return;
       }
@@ -495,7 +495,7 @@ function barColor(row: ScoreFrequency, best: boolean, index: number): string {
 
 /** Each game's table cells. */
 function gameRows(
-  page: PublicGamePage,
+  page: GamePage,
   mode: string | undefined,
   variants: Readonly<Record<string, string>>,
   frequencies: readonly ScoreFrequency[],

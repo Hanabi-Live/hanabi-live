@@ -21,8 +21,10 @@ pub struct Clock {
     /// Absent when the game has no active player.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub current_player_index: Option<PlayerIndex>,
+    /// How long the current turn has taken, in milliseconds. 0 when no turn is running, such as
+    /// while the game is paused.
     #[schemars(range(min = 0, max = MAX_SAFE_INTEGER))]
-    pub time_taken_ms: i64,
+    pub turn_elapsed_ms: i64,
 }
 
 /// Whether each player has loaded the game, in seat order.
@@ -132,21 +134,13 @@ pub struct CardNote {
     pub spectator: bool,
 }
 
-/// Everyone's notes that the recipient may see, sent to spectators and replay viewers.
+/// The notes that the recipient may see: everyone's for spectators and replay viewers, and their own
+/// for a player.
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct NoteList {
     pub table_id: TableId,
     pub notes: Vec<PlayerNotes>,
-}
-
-/// A player's own notes.
-#[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
-#[serde(rename_all = "camelCase", deny_unknown_fields)]
-pub struct NoteListPlayer {
-    pub table_id: TableId,
-    #[schemars(with = "Notes")]
-    pub notes: Vec<String>,
 }
 
 /// The notes on one card after someone changes theirs, sent to spectators.
@@ -164,7 +158,7 @@ pub struct Note {
 #[serde(tag = "type", rename_all = "camelCase", deny_unknown_fields)]
 pub enum Clue {
     Color { value: ColorIndex },
-    Rank { value: RankClueNumber },
+    Rank { value: ClueRank },
 }
 
 /// A card that a player draws, plays, discards, misplays, or learns.
@@ -216,8 +210,9 @@ pub struct GameOverEvent {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub player_index: Option<PlayerIndex>,
     /// The players who voted to end the game, when a vote ended it.
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub votes: Option<Vec<PlayerIndex>>,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    #[schemars(length(max = MAX_PLAYERS))]
+    pub votes: Vec<PlayerIndex>,
 }
 
 /// Every player's time when a game ends.
@@ -285,7 +280,7 @@ pub enum CharacterAssignment {
     /// A character that is assigned a rank, such as Awkward.
     Rank {
         character_id: CharacterId,
-        rank: RankClueNumber,
+        rank: ClueRank,
     },
 }
 
@@ -364,7 +359,8 @@ pub struct Init {
     #[schemars(length(min = MIN_PLAYERS, max = MAX_PLAYERS))]
     pub player_names: Vec<Username>,
     pub mode: ViewMode,
-    pub has_custom_seed: bool,
+    /// Whether the table chose its deal, so that the deck does not count down to a new seed.
+    pub custom_seed: bool,
     /// Absent for a game with its own deck instead of a seed, such as an imported one.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub seed: Option<String>,
@@ -390,7 +386,7 @@ pub struct SharedReplayInit {
     /// The table's owner, who leads the replay.
     pub owner_id: UserId,
     pub turn: Turn,
-    #[schemars(range(min = i32::MIN, max = i32::MAX))]
+    #[schemars(range(min = -MAX_EFFICIENCY_MODIFIER, max = MAX_EFFICIENCY_MODIFIER))]
     pub efficiency_modifier: i32,
     /// Whether the shared replay hides what happens later in the game.
     pub spoiler_free: bool,

@@ -52,11 +52,10 @@ pub fn route(message: &ClientMessage) -> Route {
         | M::TableTerminateVote(r)
         | M::GameInitLoad(r)
         | M::GameStateLoad(r)
-        | M::TagDeleteAll(r)
+        | M::TagRemoveAll(r)
         | M::Loaded(r) => r.table_id,
         M::TableJoin(r) => r.table_id,
         M::TableSetOwner(r) => r.table_id,
-        M::TableSetVariant(r) => r.table_id,
         M::TableStart(r) => r.table_id,
         M::TableRestart(r) => r.table_id,
         M::TableRestartDecline(r) => r.table_id,
@@ -66,7 +65,7 @@ pub fn route(message: &ClientMessage) -> Route {
         M::PlayerAction(r) => r.table_id,
         M::Pause(r) => r.table_id,
         M::Note(r) => r.table_id,
-        M::Tag(r) | M::TagDelete(r) => r.table_id,
+        M::TagAdd(r) | M::TagRemove(r) => r.table_id,
         M::ReplayAction(r) => r.table_id,
     };
     Route::Table(id)

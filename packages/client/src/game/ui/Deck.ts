@@ -370,7 +370,7 @@ function getTooltipContent(): string {
     );
   }
 
-  if (globals.state.finished || globals.metadata.hasCustomSeed) {
+  if (globals.state.finished || globals.metadata.customSeed) {
     const { seed } = globals.metadata;
     const suffix = seed === undefined ? " (JSON game)" : "";
     content += tooltipField(

@@ -1,10 +1,10 @@
 import { SITE_URL } from "@hanabi-live/data";
 import type {
   CardOrder,
+  ClueRank,
   ColorIndex,
   LogEntry,
   PlayerIndex,
-  RankClueNumber,
   Variant,
 } from "@hanabi-live/game";
 import {
@@ -353,13 +353,13 @@ function getActionFromHypoClue(
       `The clue rank of ${clueNumber} is not valid for this variant.`,
     );
   }
-  const rankClueNumber = clueNumber as RankClueNumber;
+  const clueRank = clueNumber as ClueRank;
 
   // It is a rank clue.
   return {
     type: "clue",
     receiverIndex: playerIndex,
-    clue: { type: "rank", value: rankClueNumber },
+    clue: { type: "rank", value: clueRank },
   };
 }
 

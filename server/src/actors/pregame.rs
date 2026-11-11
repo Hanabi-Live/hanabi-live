@@ -1,7 +1,7 @@
 use super::request;
 use super::table::wrong_phase;
 use super::{
-    Allocation, Effects, HubCommand, Status, TableActor, TableChange,
+    Allocation, Effects, HubCommand, Status, TableActor,
     chat::{push_chat, server_chat, table_notice},
     setup::{
         load_replay, normalize_options, option_changes, options_suggestion, requested_extra,
@@ -103,14 +103,7 @@ impl TableActor {
                 }
                 self.start(session).await
             }
-            ClientMessage::TableSetVariant(r) => {
-                self.update(session, TableChange::Variant(r.variant_name))
-                    .await
-            }
-            ClientMessage::TableUpdate(r) => {
-                self.update(session, TableChange::Options(Box::new(r)))
-                    .await
-            }
+            ClientMessage::TableUpdate(r) => self.update(session, r).await,
             ClientMessage::TableTerminate(_) => {
                 ensure_or_reject!(
                     self.attending(&session) && session.user == self.table.owner,
@@ -121,53 +114,19 @@ impl TableActor {
             message => Err(wrong_phase(&message)),
         }
     }
-    async fn update(&mut self, session: Arc<Session>, change: TableChange) -> CommandResult<()> {
-        let (variant, request) = match change {
-            TableChange::Variant(name) => (Some(name), None),
-            TableChange::Options(request) => (None, Some(*request)),
-        };
-        let variant_only = variant.is_some();
+    async fn update(
+        &mut self,
+        session: Arc<Session>,
+        request: hanabi_protocol::TableUpdateRequest,
+    ) -> CommandResult<()> {
         ensure_or_reject!(self.attending(&session), "You must attend this table");
         self.seat(&session)?;
-        ensure_or_reject!(
-            !variant_only || session.user == self.table.owner,
-            "Only owner can change variant"
-        );
-        let mut options = if variant_only {
-            self.table.options.clone()
-        } else {
-            engine_options(
-                &request
-                    .as_ref()
-                    .context("Missing options")?
-                    .settings
-                    .options,
-            )
-        };
-        if let Some(variant) = &variant {
-            options.variant_name.clone_from(variant);
-        }
+        let mut options = engine_options(&request.settings.options);
         normalize_options(&mut options)?;
-        let name = match &request {
-            Some(request) => table_name(&request.settings.name)?,
-            None => self.table.name.clone(),
-        };
-        let mut max_players = if variant_only {
-            self.table.max_players
-        } else {
-            usize::from(
-                request
-                    .as_ref()
-                    .map_or(hanabi_protocol::DEFAULT_MAX_PLAYERS, |r| {
-                        r.settings.max_players
-                    }),
-            )
-        };
-        let mut extra = match &request {
-            Some(r) if !variant_only => requested_extra(&r.settings)?,
-            _ => self.table.extra.clone(),
-        };
-        if !variant_only && session.user == self.table.owner {
+        let name = table_name(&request.settings.name)?;
+        let mut max_players = usize::from(request.settings.max_players);
+        let mut extra = requested_extra(&request.settings)?;
+        if session.user == self.table.owner {
             load_replay(
                 &self.store,
                 &mut extra,
@@ -233,13 +192,8 @@ impl TableActor {
         let message = table_notice(
             &mut next,
             &format!(
-                "{} has changed {}.",
+                "{} has changed game options.",
                 crate::accounts::escape_html(&session.name),
-                if variant_only {
-                    "the variant"
-                } else {
-                    "game options"
-                }
             ),
         );
         self.persist(next).await?;
@@ -250,7 +204,7 @@ impl TableActor {
                 e.messages.push((
                     a.session,
                     frame(
-                        hanabi_protocol::server::TABLE_BOOT,
+                        hanabi_protocol::server::TABLE_BOOTED,
                         TableRef {
                             table_id: self.table.id,
                         },
@@ -435,7 +389,7 @@ impl TableActor {
             effects.messages.push((
                 session.clone(),
                 frame(
-                    hanabi_protocol::server::TABLE_BOOT,
+                    hanabi_protocol::server::TABLE_BOOTED,
                     TableRef {
                         table_id: self.table.id,
                     },

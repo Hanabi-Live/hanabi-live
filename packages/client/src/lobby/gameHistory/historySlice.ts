@@ -92,7 +92,7 @@ const historySlice = createSlice({
       }
     },
     otherScoresReceived(state, action: PayloadAction<OtherScores>) {
-      const { games, offset, seed, total, variantName } = action.payload;
+      const { games, offset, seed, total } = action.payload;
       const shown = state.otherScores;
       // Ignore a late reply for a seed that we no longer show.
       if (shown?.seed !== seed) {
@@ -105,7 +105,7 @@ const historySlice = createSlice({
           // A page replaces the games from its offset on, so a repeated reply does not add them
           // twice.
           games: [...shown.games.slice(0, offset), ...games],
-          variantName: games.length > 0 ? variantName : shown.variantName,
+          variantName: games[0]?.options.variantName ?? shown.variantName,
           total,
           loading: false,
         },

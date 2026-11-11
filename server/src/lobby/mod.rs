@@ -289,7 +289,7 @@ pub async fn dispatch(
             let total = crate::database::normal_game_count(pool, caller.user, true).await?;
             vec![Effect::to_self(Outgoing::new(
                 hanabi_protocol::server::GAME_HISTORY,
-                hanabi_protocol::GameHistory {
+                hanabi_protocol::GamePage {
                     games: get_history(pool, &ids, false).await?,
                     offset,
                     total: hanabi_protocol::Count(total),
@@ -314,16 +314,12 @@ pub async fn dispatch(
             let ids = seed_history_ids(pool, seed, offset.0, request.limit).await?;
             let games = get_history(pool, &ids, true).await?;
             let total = seed_game_count(pool, seed).await?;
-            let variant_name = games
-                .first()
-                .map_or_else(|| "n/a".into(), |game| game.options.variant_name.clone());
             vec![Effect::to_self(Outgoing::new(
                 hanabi_protocol::server::GAME_HISTORY_OTHER_SCORES,
                 hanabi_protocol::GameHistoryOtherScores {
                     games,
                     offset,
                     total: hanabi_protocol::Count(total),
-                    variant_name,
                     seed: seed.into(),
                 },
             ))]

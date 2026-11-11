@@ -1,5 +1,5 @@
 import type { Color } from "../interfaces/Color.ts";
-import type { RankClueNumber } from "./RankClueNumber.ts";
+import type { ClueRank } from "./ClueRank.ts";
 
 export interface ColorClue {
   readonly type: "color";
@@ -8,7 +8,7 @@ export interface ColorClue {
 
 export interface RankClue {
   readonly type: "rank";
-  readonly value: RankClueNumber;
+  readonly value: ClueRank;
 }
 
 export type Clue = ColorClue | RankClue;
@@ -20,7 +20,7 @@ export function newColorClue(color: Color): ColorClue {
   };
 }
 
-export function newRankClue(rank: RankClueNumber): RankClue {
+export function newRankClue(rank: ClueRank): RankClue {
   return {
     type: "rank",
     value: rank,

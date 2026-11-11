@@ -553,7 +553,7 @@ pub struct CardRank(
     Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize, JsonSchema,
 )]
 #[serde(transparent)]
-pub struct RankClueNumber(
+pub struct ClueRank(
     #[schemars(range(min = MIN_RANK, max = MAX_RANK), extend("enum" = ranks()))] pub u8,
 );
 
@@ -580,7 +580,7 @@ macro_rules! rank_conversions {
 
 rank_conversions! {
     CardRank: catalog_ranks();
-    RankClueNumber: ranks();
+    ClueRank: ranks();
 }
 
 #[cfg(test)]

@@ -367,10 +367,8 @@ async fn public_database_routes_filters_privacy_exports_and_html() {
     }
     // Responses match their wire contracts, timestamps included.
     let (_, body) = request(app.clone(), "/api/v1/history/Alice").await;
-    hanabi_protocol::validate::<hanabi_protocol::PublicGamePage>(
-        &serde_json::from_str(&body).unwrap(),
-    )
-    .unwrap();
+    hanabi_protocol::validate::<hanabi_protocol::GamePage>(&serde_json::from_str(&body).unwrap())
+        .unwrap();
     let (_, body) = request(app.clone(), "/api/v1/history-full/Alice").await;
     let games: Vec<Value> = serde_json::from_str(&body).unwrap();
     assert_ne!(games, Vec::<Value>::new());

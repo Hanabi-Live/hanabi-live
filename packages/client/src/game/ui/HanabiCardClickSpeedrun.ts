@@ -1,11 +1,6 @@
 // Speedrun click functions for the HanabiCard object.
 
-import type {
-  CardState,
-  Color,
-  RankClueNumber,
-  Variant,
-} from "@hanabi-live/game";
+import type { CardState, ClueRank, Color, Variant } from "@hanabi-live/game";
 import {
   START_CARD_RANK,
   getClueCost,
@@ -14,7 +9,7 @@ import {
   isCardInPlayerHand,
   isCardTouchedByClueColor,
   isCardTouchedByClueRank,
-  isValidRankClueNumber,
+  isValidClueRank,
 } from "@hanabi-live/game";
 import * as sounds from "../../sounds.ts";
 import { SoundType } from "../types/SoundType.ts";
@@ -214,9 +209,7 @@ function rejectClueTokenAction() {
 }
 
 /** A card may be clueable by more than one rank, so we need to figure out which rank to use. */
-function getRankForSpeedrunClue(
-  cardState: CardState,
-): RankClueNumber | undefined {
+function getRankForSpeedrunClue(cardState: CardState): ClueRank | undefined {
   if (cardState.suitIndex === undefined || cardState.rank === undefined) {
     return undefined;
   }
@@ -245,7 +238,7 @@ function getRankForSpeedrunClue(
   }
 
   // Otherwise, assume that they want to use the real rank of the card.
-  if (isValidRankClueNumber(cardState.rank)) {
+  if (isValidClueRank(cardState.rank)) {
     return cardState.rank;
   }
 

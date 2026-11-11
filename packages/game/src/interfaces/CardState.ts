@@ -1,7 +1,7 @@
 import type { CardOrder } from "../types/CardOrder.ts";
+import type { ClueRank } from "../types/ClueRank.ts";
 import type { PlayerIndex } from "../types/PlayerIndex.ts";
 import type { Rank } from "../types/Rank.ts";
-import type { RankClueNumber } from "../types/RankClueNumber.ts";
 import type { SuitIndex } from "../types/SuitIndex.ts";
 import type { SuitRankTuple } from "../types/SuitRankTuple.ts";
 import type { Color } from "./Color.ts";
@@ -48,7 +48,7 @@ export interface CardState {
    *
    * The elements of this array will always be unique.
    */
-  readonly positiveRankClues: RankClueNumber[];
+  readonly positiveRankClues: ClueRank[];
 
   readonly suitDetermined: boolean;
   readonly rankDetermined: boolean;

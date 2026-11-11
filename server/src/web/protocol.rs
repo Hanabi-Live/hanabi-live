@@ -68,7 +68,7 @@ mod tests {
                 }
                 "pause" => json!({"tableId":1,"setting":"pause"}),
                 "note" => json!({"tableId":1,"order":0,"text":"test"}),
-                "tag" | "tagDelete" => json!({"tableId":1,"tag":"test"}),
+                "tagAdd" | "tagRemove" => json!({"tableId":1,"tag":"test"}),
                 "replayAction" => json!({"tableId":1,"action":{"type":"hypotheticalStart"}}),
                 "tableRestartDecline" => json!({"tableId":1,"declined":true}),
                 "tableSetOwner" => json!({"tableId":1,"ownerId":1}),
@@ -76,7 +76,6 @@ mod tests {
                 "friendAdd" | "friendRemove" | "linkAdd" | "linkRemove" | "blockAdd"
                 | "blockRemove" => json!({"username":"Alice"}),
                 "tagSearch" => json!({"tag":"test"}),
-                "tableSetVariant" => json!({"tableId":1,"variantName":"No Variant"}),
                 "gameHistory" => json!({"offset":0,"limit":10}),
                 "tableCreate" => json!({"settings":{"name":"Table"}}),
                 "tableUpdate" => json!({"tableId":1,"settings":{"name":"Table"}}),

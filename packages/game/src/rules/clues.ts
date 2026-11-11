@@ -15,11 +15,11 @@ import type { Variant } from "../interfaces/Variant.ts";
 import { getCharacterNameForPlayer } from "../reducers/reducerHelpers.ts";
 import type { Clue } from "../types/Clue.ts";
 import { newColorClue, newRankClue } from "../types/Clue.ts";
+import type { ClueRank } from "../types/ClueRank.ts";
 import type { HiddenClue } from "../types/HiddenClue.ts";
 import type { MsgClue } from "../types/MsgClue.ts";
 import type { PlayerIndex } from "../types/PlayerIndex.ts";
 import type { Rank } from "../types/Rank.ts";
-import type { RankClueNumber } from "../types/RankClueNumber.ts";
 import type { SuitIndex } from "../types/SuitIndex.ts";
 import type { ActionClue } from "../types/gameActions.ts";
 
@@ -204,7 +204,7 @@ export function getColorForPrismCard(variant: Variant, rank: number): Color {
 
 export function isCardTouchedByClueRank(
   variant: Variant,
-  clueRank: RankClueNumber,
+  clueRank: ClueRank,
   cardSuitIndex: SuitIndex,
   cardSuit: Suit,
   cardRank: Rank,

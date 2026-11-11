@@ -2,8 +2,8 @@
 
 import type {
   CardOrder,
+  ClueRank,
   PlayerIndex,
-  RankClueNumber,
   Suit,
   SuitIndex,
 } from "@hanabi-live/game";
@@ -2577,7 +2577,7 @@ function drawClueArea() {
   drawClueAreaWaitingForServer();
 }
 
-function rankTextFromVariant(rank: RankClueNumber): string {
+function rankTextFromVariant(rank: ClueRank): string {
   if (globals.variant.oddsAndEvens) {
     return rank === ODD_RANK_CLUE ? "O" : "E";
   }

@@ -151,7 +151,7 @@ export const cardRankSchema = z.literal([1, 2, 3, 4, 5, 7]);
 /**
  * A rank that clues can name.
  */
-export const rankClueNumberSchema = z.literal([1, 2, 3, 4, 5]);
+export const clueRankSchema = z.literal([1, 2, 3, 4, 5]);
 
 /**
  * A variant's number in `variants.json`. "No Variant" is 0.
@@ -172,7 +172,7 @@ export const catalogVariantSchema = z
     /**
      * The ranks that players can clue. When omitted, 1 through 5.
      */
-    clueRanks: z.array(rankClueNumberSchema).readonly().optional(),
+    clueRanks: z.array(clueRankSchema).readonly().optional(),
     clueStarved: z.literal(true).optional(),
     colorCluesTouchNothing: z.literal(true).optional(),
     cowAndPig: z.literal(true).optional(),
@@ -269,9 +269,7 @@ export const clueSchema = z.discriminatedUnion("type", [
   z
     .strictObject({ type: z.literal("color"), value: colorIndexSchema })
     .readonly(),
-  z
-    .strictObject({ type: z.literal("rank"), value: rankClueNumberSchema })
-    .readonly(),
+  z.strictObject({ type: z.literal("rank"), value: clueRankSchema }).readonly(),
 ]);
 
 /**
@@ -400,7 +398,7 @@ export const gameEventSchema = z.discriminatedUnion("type", [
       /**
        * The players who voted to end the game, when a vote ended it.
        */
-      votes: z.array(playerIndexSchema).readonly().optional(),
+      votes: z.array(playerIndexSchema).max(6).readonly().optional(),
     })
     .readonly(),
   z

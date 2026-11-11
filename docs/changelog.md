@@ -29,6 +29,8 @@ of the repository.
   Hold the spacebar to see every hand this way.
 - A card now also lists each suit's ranks when cards that were seen elsewhere
   leave possibilities that the separate suit and rank pips cannot show.
+- The `/setvariant` command now works for every player at a pre-game table. A
+  player who is not the owner proposes the variant to the owner.
 
 ## November 10th, 2026
 

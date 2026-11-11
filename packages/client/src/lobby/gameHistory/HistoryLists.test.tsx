@@ -1,6 +1,7 @@
 // @vitest-environment jsdom
 
 import type { GameHistoryEntry, ServerCommandData } from "@hanabi-live/data";
+import { gameHistoryEntrySchema } from "@hanabi-live/data";
 import { act, cleanup, render, screen } from "@testing-library/react";
 import { Provider } from "react-redux";
 import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
@@ -29,15 +30,19 @@ function game(
   finished: string,
   playerNames: readonly string[] = OUR_GAME_PLAYERS,
 ) {
-  return {
+  return gameHistoryEntrySchema.parse({
     gameId: id,
+    options: {},
+    seed: `p2v0s${id}`,
+    score: 20,
+    numTurns: 30,
+    endCondition: "normal",
+    startedAt: finished,
     finishedAt: finished,
     numGamesOnSeed: 1,
-    options: { numPlayers: 2, variantName: "No Variant" },
     playerNames,
-    score: 20,
-    seed: `p2v0s${id}`,
-  } as unknown as GameHistoryEntry;
+    tags: [],
+  });
 }
 
 function reply(
@@ -48,7 +53,6 @@ function reply(
 ) {
   return {
     seed,
-    variantName: "No Variant",
     games,
     offset,
     total,

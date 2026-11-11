@@ -3,7 +3,7 @@ pub use hanabi_engine::{AssignedCharacter, DeckCard as Card, Options};
 use hanabi_engine::{Character, ClueType};
 use hanabi_engine::{CompletionTiming, EndCondition, EngineState, GameSetup, Termination};
 use hanabi_engine::{PlayerAction, RecordedAction};
-use hanabi_protocol::{CharacterAssignment, ColorIndex, RankClueNumber};
+use hanabi_protocol::{CharacterAssignment, ClueRank, ColorIndex};
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
 use std::ops::Deref;
 
@@ -319,9 +319,7 @@ pub fn character_assignment(
         },
         Some(ClueType::Rank) => CharacterAssignment::Rank {
             character_id,
-            rank: assigned
-                .and_then(RankClueNumber::new)
-                .with_context(missing)?,
+            rank: assigned.and_then(ClueRank::new).with_context(missing)?,
         },
     })
 }

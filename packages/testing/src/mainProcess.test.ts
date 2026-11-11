@@ -271,8 +271,8 @@ databaseDescribe("compiled application entry point (rust)", () => {
                 [alice, bob].map(
                   async (peer) =>
                     await peer.receive(
-                      "restart",
-                      SERVER_COMMAND_SCHEMAS.restart,
+                      "serverRestart",
+                      SERVER_COMMAND_SCHEMAS.serverRestart,
                     ),
                 ),
               );
@@ -385,7 +385,7 @@ databaseDescribe("compiled application entry point (rust)", () => {
           order: 0,
           text: "retained note",
         });
-        replacement.send("tag", {
+        replacement.send("tagAdd", {
           tableId,
           tag: "compiled smoke",
         });

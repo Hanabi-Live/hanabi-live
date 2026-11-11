@@ -195,36 +195,6 @@
     "valid": false
   },
   {
-    "name": "variant changes name the variant",
-    "direction": "client",
-    "command": "tableSetVariant",
-    "input": {
-      "tableId": 1,
-      "variantName": "No Variant"
-    },
-    "valid": true
-  },
-  {
-    "name": "variant changes require the variant",
-    "direction": "client",
-    "command": "tableSetVariant",
-    "input": {
-      "tableId": 1
-    },
-    "valid": false
-  },
-  {
-    "name": "variant changes reject unknown fields",
-    "direction": "client",
-    "command": "tableSetVariant",
-    "input": {
-      "tableId": 1,
-      "variantName": "No Variant",
-      "options": {}
-    },
-    "valid": false
-  },
-  {
     "name": "start rejects seven intended players",
     "direction": "client",
     "command": "tableStart",

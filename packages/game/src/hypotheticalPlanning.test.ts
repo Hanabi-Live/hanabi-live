@@ -25,9 +25,9 @@ import { getInitialCardState } from "./reducers/initialStates/initialCardState.t
 import { getInitialGameStateTest } from "./reducers/initialStates/initialGameStateTest.ts";
 import { getTotalCardsInDeck } from "./rules/deck.ts";
 import type { CardOrder } from "./types/CardOrder.ts";
+import type { ClueRank } from "./types/ClueRank.ts";
 import type { ColorIndex } from "./types/ColorIndex.ts";
 import type { PlayerIndex } from "./types/PlayerIndex.ts";
-import type { RankClueNumber } from "./types/RankClueNumber.ts";
 import type { SuitIndex } from "./types/SuitIndex.ts";
 import type { GameAction } from "./types/gameActions.ts";
 
@@ -548,7 +548,7 @@ describe("hypothetical planning", () => {
       {
         type: "clue",
         receiverIndex: 1 as PlayerIndex,
-        clue: { type: "rank", value: 1 as RankClueNumber },
+        clue: { type: "rank", value: 1 as ClueRank },
       },
       makeContext(),
     );
@@ -581,7 +581,7 @@ describe("hypothetical planning", () => {
         {
           type: "clue",
           receiverIndex: target as PlayerIndex,
-          clue: { type: "rank", value: 3 as RankClueNumber },
+          clue: { type: "rank", value: 3 as ClueRank },
         },
         context,
       );
@@ -620,7 +620,7 @@ describe("hypothetical planning", () => {
         identity: { suitIndex: undefined, rank: undefined },
       }),
     );
-    const clue = { type: "rank" as const, value: 1 as RankClueNumber };
+    const clue = { type: "rank" as const, value: 1 as ClueRank };
     expect(getHypotheticalTouchedCards([touchedCard], clue, variant)).toEqual(
       [],
     );
@@ -668,7 +668,7 @@ describe("hypothetical planning", () => {
     expect(
       getHypotheticalTouchedCards(
         [blank],
-        { type: "rank", value: 1 as RankClueNumber },
+        { type: "rank", value: 1 as ClueRank },
         variant,
       ),
     ).toEqual([]);

@@ -1822,7 +1822,10 @@ async fn restart_leaves_out_players_who_are_done_playing() -> Result<()> {
         .await?;
         for index in 0..3 {
             let declined = h.receive(index, "restartDeclined").await?;
-            ensure!(declined["usernames"] == json!(["Carol"]), "{declined}");
+            ensure!(
+                declined["restartDeclined"] == json!(["Carol"]),
+                "{declined}"
+            );
         }
         h.send(2, "gameInitLoad", json!({"tableId":id})).await?;
         let init = h.receive(2, "init").await?;
@@ -1854,7 +1857,7 @@ async fn restart_leaves_out_players_who_are_done_playing() -> Result<()> {
             let frames = h.frames(index)?;
             let position = |name: &str| frames.iter().position(|(command, _)| command == name);
             ensure!(
-                position("tableBoot") < position("tableJoined")
+                position("tableBooted") < position("tableJoined")
                     && position("tableJoined").is_some(),
                 "Did not move from the replay to the pregame: {frames:?}"
             );
@@ -2144,7 +2147,7 @@ async fn finished_game_publishes_replay_leader_candidates_without_reconnecting()
             );
             let clock = h.receive(index, "clock").await?;
             ensure!(
-                clock.get("currentPlayerIndex").is_none() && clock["timeTakenMs"] == 0,
+                clock.get("currentPlayerIndex").is_none() && clock["turnElapsedMs"] == 0,
                 "Completion did not stop the active clock"
             );
         }
@@ -2612,7 +2615,7 @@ async fn tags_use_authoritative_sorted_frames_and_private_live_acknowledgements(
         h.frames(0)?;
         h.frames(1)?;
         for _ in 0..2 {
-            h.send(0, "tag", json!({"tableId":id,"tag":" ALPHA <b> "}))
+            h.send(0, "tagAdd", json!({"tableId":id,"tag":" ALPHA <b> "}))
                 .await?;
         }
         h.barrier(0).await?;
@@ -2633,7 +2636,7 @@ async fn tags_use_authoritative_sorted_frames_and_private_live_acknowledgements(
             "Live tag map duplicated an entry"
         );
         ensure!(
-            h.send(1, "tagDelete", json!({"tableId":id,"tag":"alpha <b>"}))
+            h.send(1, "tagRemove", json!({"tableId":id,"tag":"alpha <b>"}))
                 .await
                 .is_err(),
             "Another author deleted a live tag"
@@ -2681,7 +2684,7 @@ async fn tags_use_authoritative_sorted_frames_and_private_live_acknowledgements(
                 );
             }
         }
-        h.send(1, "tagDelete", json!({"tableId":id,"tag":"zeta"}))
+        h.send(1, "tagRemove", json!({"tableId":id,"tag":"zeta"}))
             .await?;
         h.barrier(0).await?;
         ensure!(
@@ -2691,8 +2694,8 @@ async fn tags_use_authoritative_sorted_frames_and_private_live_acknowledgements(
             "Replay tag action was not published"
         );
         h.frames(1)?;
-        h.send(0, "tagDeleteAll", json!({"tableId":id})).await?;
-        h.send(1, "tagDeleteAll", json!({"tableId":id})).await?;
+        h.send(0, "tagRemoveAll", json!({"tableId":id})).await?;
+        h.send(1, "tagRemoveAll", json!({"tableId":id})).await?;
         h.barrier(0).await?;
         h.frames(0)?;
         h.frames(1)?;

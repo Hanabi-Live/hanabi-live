@@ -19,22 +19,23 @@ pub struct ReplayGame {
     /// The game's ID, when it is exported from the database. Importing does not use it.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub game_id: Option<GameId>,
-    #[serde(skip_serializing_if = "Option::is_none")]
+    /// Empty takes the player count from the seed and names the players "Alice", "Bob", and so on.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
     #[schemars(length(max = MAX_PLAYERS))]
-    pub player_names: Option<Vec<String>>,
-    /// The deck, by card order.
-    #[serde(skip_serializing_if = "Option::is_none")]
+    pub player_names: Vec<String>,
+    /// The deck, by card order. Empty deals the seed's deck.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
     #[schemars(length(max = MAX_DECK_SIZE))]
-    pub deck: Option<Vec<CardIdentity>>,
-    #[serde(skip_serializing_if = "Option::is_none")]
+    pub deck: Vec<CardIdentity>,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
     #[schemars(length(max = MAX_GAME_ACTIONS))]
-    pub actions: Option<Vec<ReplayGameAction>>,
+    pub actions: Vec<ReplayGameAction>,
     #[serde(default, skip_serializing_if = "is_default")]
     pub options: GameOptions,
     /// Each player's notes.
-    #[serde(skip_serializing_if = "Option::is_none")]
-    #[schemars(with = "Option<Vec<Notes>>", length(max = MAX_PLAYERS))]
-    pub notes: Option<Vec<Vec<String>>>,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    #[schemars(with = "Vec<Notes>", length(max = MAX_PLAYERS))]
+    pub notes: Vec<Vec<String>>,
     /// One for each player when `detrimentalCharacters` is on, and empty otherwise.
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     #[schemars(length(max = MAX_PLAYERS))]
@@ -165,7 +166,7 @@ pub struct TableOwner {
 pub struct RestartDeclined {
     pub table_id: TableId,
     #[schemars(length(max = MAX_PLAYERS))]
-    pub usernames: Vec<Username>,
+    pub restart_declined: Vec<Username>,
 }
 
 /// A spectator suggesting a turn to the shared replay's leader.

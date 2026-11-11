@@ -363,12 +363,6 @@ enum GameInfo {
     State,
 }
 
-/// A pregame change to a table: only its variant, or every option.
-enum TableChange {
-    Variant(String),
-    Options(Box<hanabi_protocol::TableUpdateRequest>),
-}
-
 struct Attendance {
     session: Arc<Session>,
     loaded: bool,

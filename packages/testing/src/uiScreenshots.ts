@@ -21,10 +21,10 @@ import {
   SERVER_COMMAND_SCHEMAS,
   VERSION,
 } from "@hanabi-live/data";
-import type { CardOrder, PlayerIndex, RankClueNumber } from "@hanabi-live/game";
+import type { CardOrder, ClueRank, PlayerIndex } from "@hanabi-live/game";
 import {
   getVariant,
-  isValidRankClueNumber,
+  isValidClueRank,
   START_CARD_RANK,
 } from "@hanabi-live/game";
 import { assertDefined } from "complete-common";
@@ -1128,7 +1128,7 @@ async function seed(address: string): Promise<Seed> {
   const bot = await connect(address, "Robot", true);
 
   let bobIndex: number | undefined;
-  let clueTarget: { order: CardOrder; rank: RankClueNumber } | undefined;
+  let clueTarget: { order: CardOrder; rank: ClueRank } | undefined;
 
   async function startGame() {
     bob.send("tableStart", { tableId });
@@ -1301,7 +1301,7 @@ async function seed(address: string): Promise<Seed> {
     }
     const hand: Array<{
       order: CardOrder;
-      rank: RankClueNumber;
+      rank: ClueRank;
       target: PlayerIndex;
     }> = [];
     for (const event of events) {
@@ -1309,7 +1309,7 @@ async function seed(address: string): Promise<Seed> {
         event.type === "draw"
         && event.playerIndex !== bobIndex
         && !gone.has(event.order)
-        && isValidRankClueNumber(event.identity?.rank)
+        && isValidClueRank(event.identity?.rank)
       ) {
         hand.push({
           order: event.order,

@@ -57,7 +57,7 @@ export const gameCommands = new ServerHandlers();
 // ----------------
 
 // Received when the server wants to force the client to go back to the lobby
-gameCommands.set("tableBoot", () => {
+gameCommands.set("tableBooted", () => {
   modals.closeIdleWarning();
   timer.stop();
   globals.game!.hide();
@@ -269,30 +269,23 @@ gameCommands.set("note", (data) => {
 });
 
 /**
- * Received when:
- * - joining a replay
- * - joining a shared replay
- * - joining an existing game as a spectator
- *
- * (It gives the notes of all the players & spectators.)
+ * Received when loading a game. A spectator or a replay viewer gets the notes of all the players
+ * and spectators. A player in a game in progress gets only their own notes.
  */
 gameCommands.set("noteList", (data) => {
-  globals.store!.dispatch({
-    type: "noteList",
-    notes: data.notes,
-  });
-
-  setNoteIndicatorAndCheckForSpecialNote();
-});
-
-// Received when reconnecting to an existing game as a player. (It only gets the notes of one
-// specific player).
-gameCommands.set("noteListPlayer", (data) => {
-  // Store our notes
-  globals.store!.dispatch({
-    type: "noteListPlayer",
-    texts: data.notes,
-  });
+  const state = globals.store!.getState();
+  if (state.playing && !state.finished) {
+    // A player gets only their own notes.
+    globals.store!.dispatch({
+      type: "noteListPlayer",
+      texts: data.notes[0]?.notes ?? [],
+    });
+  } else {
+    globals.store!.dispatch({
+      type: "noteList",
+      notes: data.notes,
+    });
+  }
 
   setNoteIndicatorAndCheckForSpecialNote();
 });
@@ -385,7 +378,7 @@ gameCommands.set("restartDeclined", (data) => {
 
   globals.store!.dispatch({
     type: "restartDeclined",
-    usernames: data.usernames,
+    restartDeclined: data.restartDeclined,
   });
 });
 
@@ -556,7 +549,7 @@ function initStateStore(data: InitData) {
     minEfficiency,
     hardVariant,
 
-    hasCustomSeed: data.hasCustomSeed,
+    customSeed: data.customSeed,
     seed: data.seed,
   };
   globals.store = createStore(stateReducer, initialState(metadata));
