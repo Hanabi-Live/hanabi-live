@@ -39,46 +39,45 @@ pub enum Character {
 }
 
 impl Character {
-    /// Each character with its name in `characters.json`.
-    pub const ALL: [(Self, &'static str); 31] = [
-        (Self::Fuming, "Fuming"),
-        (Self::Dumbfounded, "Dumbfounded"),
-        (Self::Inept, "Inept"),
-        (Self::Awkward, "Awkward"),
-        (Self::Conservative, "Conservative"),
-        (Self::Greedy, "Greedy"),
-        (Self::Picky, "Picky"),
-        (Self::Spiteful, "Spiteful"),
-        (Self::Insolent, "Insolent"),
-        (Self::Vindictive, "Vindictive"),
-        (Self::Miser, "Miser"),
-        (Self::Compulsive, "Compulsive"),
-        (Self::MoodSwings, "Mood Swings"),
-        (Self::Insistent, "Insistent"),
-        (Self::Vulnerable, "Vulnerable"),
-        (Self::ColorBlind, "Color-Blind"),
-        (Self::Impulsive, "Impulsive"),
-        (Self::Indolent, "Indolent"),
-        (Self::Hesitant, "Hesitant"),
-        (Self::Anxious, "Anxious"),
-        (Self::Traumatized, "Traumatized"),
-        (Self::Wasteful, "Wasteful"),
-        (Self::Genius, "Genius"),
-        (Self::Panicky, "Panicky"),
-        (Self::Contrarian, "Contrarian"),
-        (Self::Stubborn, "Stubborn"),
-        (Self::BlindSpot, "Blind Spot"),
-        (Self::Oblivious, "Oblivious"),
-        (Self::Follower, "Follower"),
-        (Self::SlowWitted, "Slow-Witted"),
-        (Self::Quacker, "Quacker"),
+    /// Each character, in the order of `characters.json`.
+    pub const ALL: [Self; 31] = [
+        Self::Fuming,
+        Self::Dumbfounded,
+        Self::Inept,
+        Self::Awkward,
+        Self::Conservative,
+        Self::Greedy,
+        Self::Picky,
+        Self::Spiteful,
+        Self::Insolent,
+        Self::Vindictive,
+        Self::Miser,
+        Self::Compulsive,
+        Self::MoodSwings,
+        Self::Insistent,
+        Self::Vulnerable,
+        Self::ColorBlind,
+        Self::Impulsive,
+        Self::Indolent,
+        Self::Hesitant,
+        Self::Anxious,
+        Self::Traumatized,
+        Self::Wasteful,
+        Self::Genius,
+        Self::Panicky,
+        Self::Contrarian,
+        Self::Stubborn,
+        Self::BlindSpot,
+        Self::Oblivious,
+        Self::Follower,
+        Self::SlowWitted,
+        Self::Quacker,
     ];
 
     pub fn from_name(name: &str) -> Option<Self> {
         Self::ALL
-            .iter()
-            .find(|(_, known)| *known == name)
-            .map(|(character, _)| *character)
+            .into_iter()
+            .find(|character| character.name() == name)
     }
 
     /// Whether the character's metadata is chosen when it is assigned, such as Fuming's color, and
@@ -90,11 +89,41 @@ impl Character {
         )
     }
 
-    pub fn name(self) -> &'static str {
-        Self::ALL
-            .iter()
-            .find(|(character, _)| *character == self)
-            .map_or("", |(_, name)| name)
+    /// The character's name in `characters.json`.
+    pub const fn name(self) -> &'static str {
+        match self {
+            Self::Fuming => "Fuming",
+            Self::Dumbfounded => "Dumbfounded",
+            Self::Inept => "Inept",
+            Self::Awkward => "Awkward",
+            Self::Conservative => "Conservative",
+            Self::Greedy => "Greedy",
+            Self::Picky => "Picky",
+            Self::Spiteful => "Spiteful",
+            Self::Insolent => "Insolent",
+            Self::Vindictive => "Vindictive",
+            Self::Miser => "Miser",
+            Self::Compulsive => "Compulsive",
+            Self::MoodSwings => "Mood Swings",
+            Self::Insistent => "Insistent",
+            Self::Vulnerable => "Vulnerable",
+            Self::ColorBlind => "Color-Blind",
+            Self::Impulsive => "Impulsive",
+            Self::Indolent => "Indolent",
+            Self::Hesitant => "Hesitant",
+            Self::Anxious => "Anxious",
+            Self::Traumatized => "Traumatized",
+            Self::Wasteful => "Wasteful",
+            Self::Genius => "Genius",
+            Self::Panicky => "Panicky",
+            Self::Contrarian => "Contrarian",
+            Self::Stubborn => "Stubborn",
+            Self::BlindSpot => "Blind Spot",
+            Self::Oblivious => "Oblivious",
+            Self::Follower => "Follower",
+            Self::SlowWitted => "Slow-Witted",
+            Self::Quacker => "Quacker",
+        }
     }
 }
 
@@ -119,11 +148,10 @@ mod tests {
             .iter()
             .map(|c| c.name.as_str())
             .collect();
-        let known: Vec<_> = Character::ALL.iter().map(|(_, name)| *name).collect();
+        let known: Vec<_> = Character::ALL.iter().map(|c| c.name()).collect();
         assert_eq!(catalog, known);
-        for (character, name) in Character::ALL {
-            assert_eq!(Character::from_name(name), Some(character));
-            assert_eq!(character.name(), name);
+        for character in Character::ALL {
+            assert_eq!(Character::from_name(character.name()), Some(character));
         }
     }
 }
