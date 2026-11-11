@@ -390,6 +390,9 @@ const DISCARD_STACK_SPACING = {
 /** The height of each discard stack, in fractions of the stage height. */
 const DISCARD_STACK_H = 0.15;
 
+/** The rows of buttons in the bottom-left corner: replay (or restart), chat, and lobby. */
+const BOTTOM_LEFT_BUTTON_ROWS = 3;
+
 /**
  * The buttons stacked in the bottom-left corner (replay or restart, chat, and lobby), in fractions
  * of the stage. `y` is the top of the first button.
@@ -1156,13 +1159,35 @@ function drawBottomLeftButtons() {
     ...BOTTOM_LEFT_BUTTON,
   };
 
+  // The "New UI" button goes above the column. The Keldon layout has a hand in that place, so there
+  // it goes at the top of the column instead, and the four buttons share the height of three.
+  const { newUi, keldonMode } = globals.lobby.settings;
+  const newUIInColumn = newUi && keldonMode;
+  const columnH =
+    BOTTOM_LEFT_BUTTON.h * BOTTOM_LEFT_BUTTON_ROWS
+    + BOTTOM_LEFT_GAP * (BOTTOM_LEFT_BUTTON_ROWS - 1);
+  const rowH = newUIInColumn
+    ? (columnH - BOTTOM_LEFT_GAP * BOTTOM_LEFT_BUTTON_ROWS)
+      / (BOTTOM_LEFT_BUTTON_ROWS + 1)
+    : BOTTOM_LEFT_BUTTON.h;
+  const firstRow = newUIInColumn ? 1 : 0;
+
+  /** The place of a button in the column, counting from the replay button's row. */
+  function row(index: number) {
+    return {
+      x: bottomLeftButtonValues.x * winW,
+      y:
+        (BOTTOM_LEFT_BUTTON.y + (firstRow + index) * (rowH + BOTTOM_LEFT_GAP))
+        * winH,
+      width: BOTTOM_LEFT_BUTTON.w * winW,
+      height: rowH * winH,
+    };
+  }
+
   // The toggle in-game replay button.
   const replayButton = new Button(
     {
-      x: bottomLeftButtonValues.x * winW,
-      y: bottomLeftButtonValues.y * winH,
-      width: bottomLeftButtonValues.w! * winW,
-      height: bottomLeftButtonValues.h! * winH,
+      ...row(0),
       visible: !globals.state.finished,
     },
     [globals.imageLoader!.get("replay")],
@@ -1181,18 +1206,12 @@ function drawBottomLeftButtons() {
   initKonvaTooltips(replayButton, true, false);
   globals.elements.replayButton = replayButton;
 
-  // The button that switches to the redesigned game screen, above the others. It shows only for
-  // players who turned on the "New UI" setting. The Keldon layout has a hand in this place, so it
-  // does not show there.
+  // The button that switches to the redesigned game screen. It shows only for players who turned on
+  // the "New UI" setting.
   const newUIButton = new Button({
-    x: bottomLeftButtonValues.x * winW,
-    y:
-      (bottomLeftButtonValues.y - bottomLeftButtonValues.h! - BOTTOM_LEFT_GAP)
-      * winH,
-    width: bottomLeftButtonValues.w! * winW,
-    height: bottomLeftButtonValues.h! * winH,
+    ...row(-1),
     text: "New UI",
-    visible: globals.lobby.settings.newUi && !globals.lobby.settings.keldonMode,
+    visible: newUi,
   });
   newUIButton.on("click tap", () => {
     globals.game!.showNewUI();
@@ -1205,10 +1224,7 @@ function drawBottomLeftButtons() {
 
   // The restart button (to bring up the restart menu).
   const restartButton = new Button({
-    x: bottomLeftButtonValues.x * winW,
-    y: bottomLeftButtonValues.y * winH,
-    width: bottomLeftButtonValues.w! * winW,
-    height: bottomLeftButtonValues.h! * winH,
+    ...row(0),
     text: "Restart",
     visible: false,
   });
@@ -1234,10 +1250,7 @@ function drawBottomLeftButtons() {
   // place of the restart button, which only the leader sees.)
   const readyCheckbox = new Checkbox(
     {
-      x: bottomLeftButtonValues.x * winW,
-      y: bottomLeftButtonValues.y * winH,
-      width: bottomLeftButtonValues.w! * winW,
-      height: bottomLeftButtonValues.h! * winH,
+      ...row(0),
       visible: false,
     },
     "Ready",
@@ -1254,12 +1267,7 @@ function drawBottomLeftButtons() {
 
   // The chat button.
   const chatButton = new Button({
-    x: bottomLeftButtonValues.x * winW,
-    y:
-      (bottomLeftButtonValues.y + bottomLeftButtonValues.h! + BOTTOM_LEFT_GAP)
-      * winH,
-    width: bottomLeftButtonValues.w! * winW,
-    height: bottomLeftButtonValues.h! * winH,
+    ...row(1),
     // eslint-disable-next-line complete/require-ascii
     text: "💬",
     visible:
@@ -1279,18 +1287,8 @@ function drawBottomLeftButtons() {
   globals.elements.chatButton = chatButton;
 
   // The lobby button (which takes the user back to the lobby).
-  const lobbyButtonValues = {
-    x: bottomLeftButtonValues.x,
-    y:
-      bottomLeftButtonValues.y
-      + 2 * (bottomLeftButtonValues.h! + BOTTOM_LEFT_GAP),
-    h: bottomLeftButtonValues.h,
-  };
   const lobbyButton = new Button({
-    x: lobbyButtonValues.x * winW,
-    y: lobbyButtonValues.y * winH,
-    width: bottomLeftButtonValues.w! * winW,
-    height: lobbyButtonValues.h! * winH,
+    ...row(2),
     text: "Lobby",
   });
   globals.layers.UI.add(lobbyButton);
