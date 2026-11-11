@@ -279,13 +279,14 @@ async fn login_inner(state: &Accounts, ip: &str, input: LoginRequest) -> Result<
     if is_banned(&state.pool, ip).await? {
         return Ok(banned());
     }
+    let no_version = input.bot || input.api;
     for (name, value) in [
         ("username", &input.username),
         ("password", &input.password),
         ("version", &input.version),
     ] {
-        // Bots do not send a version.
-        if value.is_empty() && !(input.bot && name == "version") {
+        // Bots and API clients do not send a version.
+        if value.is_empty() && !(no_version && name == "version") {
             return Ok(unauthorized(format!(
                 "You must provide the \"{name}\" parameter to log in."
             )));
@@ -296,7 +297,7 @@ async fn login_inner(state: &Accounts, ip: &str, input: LoginRequest) -> Result<
         Err(message) => return Ok(unauthorized(message)),
     };
     if let Err(message) = validate_client_version(&input.version, &state.config.version)
-        && !input.bot
+        && !no_version
     {
         let error = Notice {
             code: Some(hanabi_protocol::NoticeCode::OutdatedClient),
@@ -405,8 +406,14 @@ async fn login_inner(state: &Accounts, ip: &str, input: LoginRequest) -> Result<
         .fetch_one(&state.pool)
         .await?;
     }
-    let bot = if input.bot { " as a bot" } else { "" };
-    tracing::info!("Successful login for account {id}{bot} from IP: {ip}");
+    let kind = if input.bot {
+        " as a bot"
+    } else if input.api {
+        " as an API client"
+    } else {
+        ""
+    };
+    tracing::info!("Successful login for account {id}{kind} from IP: {ip}");
     let signed = cookie::encode(id, &state.config.secret, Utc::now().timestamp())?;
     Ok(with_cookies(
         Json(LoginResponse {

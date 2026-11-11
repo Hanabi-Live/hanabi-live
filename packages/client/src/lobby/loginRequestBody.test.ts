@@ -8,6 +8,7 @@ const request = {
   darkMode: false,
   createAccount: false,
   bot: false,
+  api: false,
 };
 
 describe("loginRequestBody", () => {

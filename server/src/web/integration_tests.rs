@@ -268,6 +268,18 @@ async fn websocket_checks_client_version_with_existing_cookie_postgres() {
         .await
         .unwrap();
     }
+    let mut socket = connect_query(&fixture, &cookie, "api=true").await;
+    receive(&mut socket, "welcome").await;
+    socket.close(None).await.unwrap();
+    let flagged: Vec<bool> = sqlx::query_scalar!("SELECT is_bot FROM users")
+        .fetch_all(&fixture.db.pool)
+        .await
+        .unwrap();
+    assert_eq!(
+        flagged,
+        [false],
+        "an API connection does not flag its account"
+    );
     for query in ["version=42", "bot=true"] {
         let mut socket = connect_query(&fixture, &cookie, query).await;
         receive(&mut socket, "welcome").await;

@@ -630,6 +630,11 @@ export const lobbyStatusSchema = z.discriminatedUnion("type", [
 export const loginRequestSchema = z
   .strictObject({
     /**
+     * Logs in as an API client, such as an app. It is not a bot: the account is not marked. An API
+     * client does not send `version`.
+     */
+    api: z.boolean().default(false),
+    /**
      * Marks the account as a bot, which other players see and which can play at several tables at
      * once. A bot does not send `version`.
      */

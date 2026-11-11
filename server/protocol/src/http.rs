@@ -32,6 +32,9 @@ pub struct LoginRequest {
     /// Marks the account as a bot, which other players see and which can play at several tables at
     /// once. A bot does not send `version`.
     pub bot: bool,
+    /// Logs in as an API client, such as an app. It is not a bot: the account is not marked. An API
+    /// client does not send `version`.
+    pub api: bool,
 }
 
 /// Reads a form field that is absent when it is empty, as forms send a blank input.

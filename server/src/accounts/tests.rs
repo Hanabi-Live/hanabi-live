@@ -180,6 +180,13 @@ async fn login_requires_matching_release_sha_or_bot_postgres() {
         is_bot("Alice").await.unwrap(),
         "the bot flags the account again"
     );
+    let dana = "username=Dana&password=test&api=true&createAccount=true";
+    let (status, _, _) = request(&app, "POST", "/login", dana, None, false).await;
+    assert_eq!(status, StatusCode::OK, "an API client sends no version");
+    assert!(
+        !is_bot("Dana").await.unwrap(),
+        "an API login does not flag an account"
+    );
     for submitted in ["b".repeat(40), "42".into(), version[..12].into()] {
         let (status, _, body) = request(
             &app,

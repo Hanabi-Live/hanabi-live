@@ -252,15 +252,16 @@ pub(super) async fn websocket(
             if app.lifecycle.healthy() { "The server is not accepting connections while it starts or drains for maintenance." } else { "Live-state recovery or ownership is unavailable. Wait for recovery before reconnecting." },
             StatusCode::SERVICE_UNAVAILABLE).response(true);
     }
-    let query = match accounts::account_query(uri.query(), &["account", "version", "bot"]) {
+    let query = match accounts::account_query(uri.query(), &["account", "version", "bot", "api"]) {
         Ok(query) => query,
         Err(message) => {
             return HttpError::refused(StatusCode::BAD_REQUEST, message).json();
         }
     };
     let version = query.get("version").unwrap_or_default().to_owned();
-    // Bots do not send a version.
+    // Bots and API clients do not send a version. Only a bot marks its account.
     let bot = query.get("bot") == Some("true");
+    let api = query.get("api") == Some("true");
     let ip = address.ip();
     let Some(id) = accounts::session_id(&headers, &app.public.session_secret, uri.query()) else {
         tracing::warn!("Rejected websocket from {ip} without a valid session.");
@@ -316,7 +317,7 @@ pub(super) async fn websocket(
             "The server's session identifier space is exhausted. An administrator must restart the server.",
             StatusCode::SERVICE_UNAVAILABLE).response(true);
     };
-    let version_check = if bot {
+    let version_check = if bot || api {
         Ok(())
     } else {
         accounts::validate_client_version(&version, &app.public.client_version)
