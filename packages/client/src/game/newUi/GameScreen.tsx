@@ -529,7 +529,7 @@ export function GameScreen({
   const chatOverlay = useMediaQuery(CHAT_OVERLAY_WIDTH_QUERY);
   const stacked = useMediaQuery(STACKED_WIDTH_QUERY);
 
-  const [clueTarget, setClueTarget] = useState<PlayerIndex>();
+  const [chosenClueTarget, setClueTarget] = useState<PlayerIndex>();
   const [clue, setClue] = useState<Clue>();
   const [menuCard, setMenuCard] = useState<CardOrder>();
   const [hoveredCard, setHoveredCard] = useState<CardOrder>();
@@ -834,6 +834,15 @@ export function GameScreen({
   }
   const seats = getSeats(state, empathyPlayers);
   const shownClue = getClueForTurn(visibleState);
+
+  // With only one other player, such as in a 2-player game, the clue can only go to them, so they
+  // do not need to be picked.
+  const otherPlayers = seats.filter(
+    (seat) => seat.playerIndex !== actingPlayerIndex,
+  );
+  const onlyClueTarget =
+    otherPlayers.length === 1 ? otherPlayers[0]?.playerIndex : undefined;
+  const clueTarget = chosenClueTarget ?? onlyClueTarget;
   const targetHand =
     clueTarget === undefined ? undefined : visibleState.hands[clueTarget];
   const touched =
