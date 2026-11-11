@@ -284,7 +284,7 @@ function getPossibilityRows(
       const rankPips = variant.ranks.map((rank) => {
         const key = cardKey(suitPip.suitIndex, rank);
         let pipState = PipState.Hidden;
-        if (possible.has(key)) {
+        if (fromClues.has(key) && possible.has(key)) {
           pipState = PipState.Visible;
         } else if (fromClues.has(key)) {
           pipState = PipState.Eliminated;

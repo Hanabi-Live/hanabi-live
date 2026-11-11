@@ -12,6 +12,7 @@ import type { CardNote } from "./interfaces/CardNote.ts";
 import type { CardState } from "./interfaces/CardState.ts";
 import { getInitialCardState } from "./reducers/initialStates/initialCardState.ts";
 import type { CardOrder } from "./types/CardOrder.ts";
+import type { SuitIndex } from "./types/SuitIndex.ts";
 import type { SuitRankTuple } from "./types/SuitRankTuple.ts";
 
 const variant = getDefaultVariant();
@@ -358,6 +359,54 @@ describe("card presentation", () => {
       expect(rows).toEqual([
         { suits: [0], ranks: [Hidden, Hidden, Hidden, Visible, Eliminated] },
         { suits: [1], ranks: [Hidden, Hidden, Hidden, Visible, Visible] },
+      ]);
+    });
+
+    test("shows only the ranks that a note allows in each row", () => {
+      // The note "2,b" allows any 2 or any blue card. Both green 2s are visible elsewhere.
+      const allCards: SuitRankTuple[] = variant.suits.flatMap((_, suitIndex) =>
+        variant.ranks.map((rank): SuitRankTuple => [
+          suitIndex as SuitIndex,
+          rank,
+        ]),
+      );
+      const note: CardNote = {
+        ...emptyNote,
+        possibilities: allCards.filter(
+          ([suitIndex, rank]) => suitIndex === 3 || rank === 2,
+        ),
+      };
+      const state: CardState = {
+        ...baseCard,
+        possibleCardsFromClues: allCards,
+        possibleCards: allCards.filter(
+          ([suitIndex, rank]) => suitIndex !== 2 || rank !== 2,
+        ),
+      };
+      const presentation = getCardPipPresentation(variant, state, note, false);
+
+      const rows = presentation.possibilityRows?.map((row) => ({
+        suits: row.suitPips.map((suitPip) => [
+          suitPip.suitIndex,
+          suitPip.state,
+        ]),
+        ranks: row.rankPips.map((rankPip) => rankPip.state),
+      }));
+      const { Hidden, Eliminated, Visible } = PipState;
+      expect(rows).toEqual([
+        {
+          suits: [
+            [0, Visible],
+            [1, Visible],
+            [2, Eliminated],
+            [4, Visible],
+          ],
+          ranks: [Hidden, Visible, Hidden, Hidden, Hidden],
+        },
+        {
+          suits: [[3, Visible]],
+          ranks: [Visible, Visible, Visible, Visible, Visible],
+        },
       ]);
     });
 
