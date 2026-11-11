@@ -8,11 +8,12 @@ use crate::{
 use anyhow::{Context, Result, ensure};
 use chrono::{DateTime, Utc};
 use hanabi_engine::RecordedAction;
+use hanabi_engine::RecordedActionType;
 use hanabi_engine::{AssignedCharacter, EndCondition, GameSetup, Interpretation};
 use hanabi_protocol::GameId;
+use hanabi_protocol::NO_VALUE;
 use hanabi_protocol::TableId;
 use hanabi_protocol::UserId;
-use hanabi_protocol::{NO_VALUE, RecordedActionType};
 use serde::Deserialize;
 use sqlx::{PgPool, types::Json};
 use sqlx::{Postgres, Transaction};

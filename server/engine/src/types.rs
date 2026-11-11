@@ -2,7 +2,7 @@ use hanabi_protocol::{
     CardOrder, ColorClueTurn, ColorIndex, DEFAULT_VARIANT_NAME, GameOverTurn, MIN_PLAYERS,
     NO_VALUE, PlayerIndex, RankClueNumber, RankClueTurn, ReplayGameAction, TargetCard,
 };
-pub use hanabi_protocol::{ClueType, EndCondition, RecordedActionType};
+pub use hanabi_protocol::{ClueType, EndCondition};
 use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
@@ -119,6 +119,55 @@ pub struct GameSetup {
     pub characters: Option<Vec<AssignedCharacter>>,
     #[serde(default)]
     pub interpretation: Interpretation,
+}
+
+/// The type of an action in a game's record: a turn, or the end of the game. The database stores
+/// these values in `game_actions`.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[serde(try_from = "i32", into = "i32")]
+#[repr(i32)]
+pub enum RecordedActionType {
+    Play = 0,
+    Discard = 1,
+    ColorClue = 2,
+    RankClue = 3,
+    /// The game ended. The value is its `EndCondition`, and the target is the player who ended it,
+    /// or -1.
+    GameOver = 4,
+    /// The players voted to end the game.
+    GameOverByVote = 5,
+}
+
+impl RecordedActionType {
+    pub const fn is_clue(self) -> bool {
+        matches!(self, Self::ColorClue | Self::RankClue)
+    }
+
+    pub const fn is_game_over(self) -> bool {
+        matches!(self, Self::GameOver | Self::GameOverByVote)
+    }
+}
+
+impl TryFrom<i32> for RecordedActionType {
+    type Error = String;
+
+    fn try_from(value: i32) -> Result<Self, Self::Error> {
+        Ok(match value {
+            0 => Self::Play,
+            1 => Self::Discard,
+            2 => Self::ColorClue,
+            3 => Self::RankClue,
+            4 => Self::GameOver,
+            5 => Self::GameOverByVote,
+            _ => return Err(format!("Invalid RecordedActionType: {value}")),
+        })
+    }
+}
+
+impl From<RecordedActionType> for i32 {
+    fn from(value: RecordedActionType) -> Self {
+        value as Self
+    }
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]

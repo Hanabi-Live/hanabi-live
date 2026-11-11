@@ -205,32 +205,6 @@ macro_rules! wire_enum {
     };
 }
 
-wire_enum! {
-    /// The type of an action in a game's record: a turn, or the end of the game. The database
-    /// stores these values in `game_actions`.
-    pub enum RecordedActionType {
-        Play = 0,
-        Discard = 1,
-        ColorClue = 2,
-        RankClue = 3,
-        /// The game ended. The value is its `EndCondition`, and the target is the player who ended
-        /// it, or -1.
-        GameOver = 4,
-        /// The players voted to end the game.
-        GameOverByVote = 5,
-    }
-}
-
-impl RecordedActionType {
-    pub const fn is_clue(self) -> bool {
-        matches!(self, Self::ColorClue | Self::RankClue)
-    }
-
-    pub const fn is_game_over(self) -> bool {
-        matches!(self, Self::GameOver | Self::GameOverByVote)
-    }
-}
-
 /// The kind of a clue.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase")]
@@ -290,8 +264,4 @@ pub enum Status {
 }
 
 /// Every wire enum, for the TypeScript generator.
-pub const WIRE_ENUMS: &[WireEnum] = &[
-    EndCondition::WIRE,
-    GameListColumn::WIRE,
-    RecordedActionType::WIRE,
-];
+pub const WIRE_ENUMS: &[WireEnum] = &[EndCondition::WIRE, GameListColumn::WIRE];

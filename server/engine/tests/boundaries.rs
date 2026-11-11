@@ -647,6 +647,9 @@ fn stored_end_conditions_load_from_their_numbers() {
     // Servers before named end conditions stored their numbers in checkpoints.
     let stored: EndCondition = serde_json::from_value(json!(10)).unwrap();
     assert_eq!(stored, EndCondition::TerminatedByVote);
-    assert_eq!(serde_json::to_value(stored).unwrap(), json!("terminatedByVote"));
+    assert_eq!(
+        serde_json::to_value(stored).unwrap(),
+        json!("terminatedByVote")
+    );
     assert!(serde_json::from_value::<EndCondition>(json!(11)).is_err());
 }

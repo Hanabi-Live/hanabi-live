@@ -319,7 +319,7 @@ mod tests {
         let active = game.active_player_index;
         let card = game.players[active].hand[0];
         let play = RecordedAction {
-            action_type: hanabi_protocol::RecordedActionType::Play,
+            action_type: hanabi_engine::RecordedActionType::Play,
             target: i32::try_from(card).unwrap(),
             value: 0,
         };

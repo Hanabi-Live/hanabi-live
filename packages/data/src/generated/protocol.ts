@@ -41,28 +41,6 @@ export enum GameListColumn {
 }
 
 /**
- * The type of an action in a game's record: a turn, or the end of the game. The database
- * stores these values in `game_actions`.
- */
-export enum RecordedActionType {
-  Play = 0,
-  Discard = 1,
-  ColorClue = 2,
-  RankClue = 3,
-
-  /**
-   * The game ended. The value is its `EndCondition`, and the target is the player who ended
-   * it, or -1.
-   */
-  GameOver = 4,
-
-  /**
-   * The players voted to end the game.
-   */
-  GameOverByVote = 5,
-}
-
-/**
  * The users whom we have blocked. It does not include the users who have blocked us.
  */
 export const blockedSchema = z

@@ -420,14 +420,14 @@ async fn duck_clue_identity_is_private_in_live_history_and_recovery_but_not_comp
         }
         let mut originals = vec![];
         for kind in [
-            hanabi_protocol::RecordedActionType::ColorClue,
-            hanabi_protocol::RecordedActionType::RankClue,
+            hanabi_engine::RecordedActionType::ColorClue,
+            hanabi_engine::RecordedActionType::RankClue,
         ] {
             let (table, _) = h.snapshot(id).await?;
             let game = table.game().unwrap().game.state();
             let seat = game.active_player_index;
             let target = (seat + 1) % game.players.len();
-            let values = if kind == hanabi_protocol::RecordedActionType::ColorClue {
+            let values = if kind == hanabi_engine::RecordedActionType::ColorClue {
                 0..5
             } else {
                 1..6
@@ -448,7 +448,7 @@ async fn duck_clue_identity_is_private_in_live_history_and_recovery_but_not_comp
             h.send(
                 index,
                 "playerAction",
-                if kind == hanabi_protocol::RecordedActionType::ColorClue {
+                if kind == hanabi_engine::RecordedActionType::ColorClue {
                     json!({"tableID":id,"action":{"type":"colorClue","target":target,"colorIndex":action.value}})
                 } else {
                     json!({"tableID":id,"action":{"type":"rankClue","target":target,"rank":action.value}})
@@ -3252,10 +3252,8 @@ async fn saved_actions_store_null_for_a_missing_target_or_value() -> Result<()> 
             .iter()
             .map(|a| (a.r#type, a.target, a.value))
             .collect::<Vec<_>>();
-        let play = i16::try_from(i32::from(hanabi_protocol::RecordedActionType::Play))?;
-        let vote = i16::try_from(i32::from(
-            hanabi_protocol::RecordedActionType::GameOverByVote,
-        ))?;
+        let play = i16::try_from(i32::from(hanabi_engine::RecordedActionType::Play))?;
+        let vote = i16::try_from(i32::from(hanabi_engine::RecordedActionType::GameOverByVote))?;
         let end = i16::try_from(EndCondition::TerminatedByVote as i32)?;
         ensure!(
             stored

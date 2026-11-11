@@ -72,7 +72,7 @@ fn typed_game_frames_preserve_wire_schema_and_projected_identities() -> Result<(
     game.apply(
         0,
         RecordedAction {
-            action_type: hanabi_protocol::RecordedActionType::RankClue,
+            action_type: hanabi_engine::RecordedActionType::RankClue,
             target: 1,
             value: rank,
         },

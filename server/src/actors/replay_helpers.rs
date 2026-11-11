@@ -6,10 +6,11 @@ use crate::{
     stats::zero_stats,
 };
 use hanabi_engine::RecordedAction;
+use hanabi_engine::RecordedActionType;
 use hanabi_engine::{AssignedCharacter, GameSetup, Interpretation};
 use hanabi_protocol::TableId;
 use hanabi_protocol::UserId;
-use hanabi_protocol::{NO_VALUE, RecordedActionType, ReplayGame};
+use hanabi_protocol::{NO_VALUE, ReplayGame};
 
 /// The longest seed that a replay import can name, in bytes. A table's seed is prefixed with the
 /// player count and variant ID, so this leaves room above `MAX_SEED_LENGTH`.

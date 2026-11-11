@@ -1,4 +1,4 @@
-import { RecordedActionType, replayGameSchema } from "@hanabi-live/data";
+import { replayGameSchema } from "@hanabi-live/data";
 import {
   DEFAULT_PLAYER_NAMES,
   EndCondition,
@@ -17,9 +17,21 @@ export type GameJSON = z.input<typeof replayGameSchema>;
 type DeckCard = NonNullable<z.output<typeof replayGameSchema>["deck"]>[number];
 type Action = NonNullable<GameJSON["actions"]>[number];
 
-/** An action as a game's record stores it, which is the form that a compressed game holds. */
+/** The type of an action in a compressed game. */
+enum CompactType {
+  Play,
+  Discard,
+  ColorClue,
+  RankClue,
+  GameOver,
+  GameOverByVote,
+}
+
+/**
+ * An action with numbers for its type and value, which is the form that a compressed game holds.
+ */
 interface CompactAction {
-  readonly type: RecordedActionType;
+  readonly type: CompactType;
   readonly target: number;
   readonly value: number | undefined;
 }
@@ -401,7 +413,7 @@ function stringToAction(src: string, typeRange: MinMax): Action | undefined {
   const val = Math.floor((index - type) / r);
   type += typeRange.min;
   const target = BASE62.indexOf(src.charAt(1));
-  const recordedType = z.enum(RecordedActionType).safeParse(type);
+  const recordedType = z.enum(CompactType).safeParse(type);
   if (!recordedType.success) {
     return undefined;
   }
@@ -421,7 +433,7 @@ function toCompactAction(action: Action): CompactAction {
   switch (action.type) {
     case "play": {
       return {
-        type: RecordedActionType.Play,
+        type: CompactType.Play,
         target: action.order,
         value: undefined,
       };
@@ -429,7 +441,7 @@ function toCompactAction(action: Action): CompactAction {
 
     case "discard": {
       return {
-        type: RecordedActionType.Discard,
+        type: CompactType.Discard,
         target: action.order,
         value: undefined,
       };
@@ -437,7 +449,7 @@ function toCompactAction(action: Action): CompactAction {
 
     case "colorClue": {
       return {
-        type: RecordedActionType.ColorClue,
+        type: CompactType.ColorClue,
         target: action.target,
         value: action.colorIndex,
       };
@@ -445,7 +457,7 @@ function toCompactAction(action: Action): CompactAction {
 
     case "rankClue": {
       return {
-        type: RecordedActionType.RankClue,
+        type: CompactType.RankClue,
         target: action.target,
         value: action.rank,
       };
@@ -455,8 +467,8 @@ function toCompactAction(action: Action): CompactAction {
       return {
         type:
           action.endCondition === EndCondition.TerminatedByVote
-            ? RecordedActionType.GameOverByVote
-            : RecordedActionType.GameOver,
+            ? CompactType.GameOverByVote
+            : CompactType.GameOver,
         target: action.playerIndex ?? 0,
         value: END_CONDITIONS.indexOf(action.endCondition),
       };
@@ -468,27 +480,27 @@ function fromCompactAction(action: CompactAction): Action | undefined {
   const { target, value } = action;
   let named: unknown;
   switch (action.type) {
-    case RecordedActionType.Play: {
+    case CompactType.Play: {
       named = { type: "play", order: target };
       break;
     }
 
-    case RecordedActionType.Discard: {
+    case CompactType.Discard: {
       named = { type: "discard", order: target };
       break;
     }
 
-    case RecordedActionType.ColorClue: {
+    case CompactType.ColorClue: {
       named = { type: "colorClue", target, colorIndex: value };
       break;
     }
 
-    case RecordedActionType.RankClue: {
+    case CompactType.RankClue: {
       named = { type: "rankClue", target, rank: value };
       break;
     }
 
-    case RecordedActionType.GameOver: {
+    case CompactType.GameOver: {
       named = {
         type: "gameOver",
         endCondition: END_CONDITIONS[value ?? -1],
@@ -497,7 +509,7 @@ function fromCompactAction(action: CompactAction): Action | undefined {
       break;
     }
 
-    case RecordedActionType.GameOverByVote: {
+    case CompactType.GameOverByVote: {
       named = { type: "gameOver", endCondition: END_CONDITIONS[value ?? -1] };
       break;
     }
