@@ -351,6 +351,8 @@ function getClueLogEntries(state: State): readonly ClueLogEntry[] {
       getCharacterNameForPlayer(clue.giver, characterAssignments),
     ),
     marker: getClueMarker(clue, colorblindMode),
+    touchedCards: clue.list,
+    missedCards: clue.negativeList,
   }));
 }
 
@@ -472,6 +474,7 @@ export function GameScreen({
   const [clueTarget, setClueTarget] = useState<PlayerIndex>();
   const [clue, setClue] = useState<Clue>();
   const [menuCard, setMenuCard] = useState<CardOrder>();
+  const [hoveredCard, setHoveredCard] = useState<CardOrder>();
   const [drag, setDrag] = useState<Drag>();
   const [editingCards, setEditingCards] = useState(false);
 
@@ -921,6 +924,7 @@ export function GameScreen({
                   }
                 }}
                 onEditCard={editingCards ? editCard : undefined}
+                onHoverCard={setHoveredCard}
                 onPlay={(order) => {
                   setMenuCard(undefined);
                   sendAction({ type: "play", order });
@@ -956,6 +960,15 @@ export function GameScreen({
             />
             <ClueLog
               entries={getClueLogEntries(state)}
+              // A card that left the hands under the mouse, such as one just played, no longer
+              // counts.
+              hoveredCard={
+                seats.some((seat) =>
+                  seat.cards.some((card) => card.order === hoveredCard),
+                )
+                  ? hoveredCard
+                  : undefined
+              }
               onShowClue={showClue}
               shownSegment={shownClue?.segment}
             />

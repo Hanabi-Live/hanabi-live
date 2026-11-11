@@ -11,6 +11,9 @@ of the repository.
 
 - The "Missing Scores" page now shows a dash instead of 0 for a variant that no
   one in the list has played.
+- In the new game screen, when you put the mouse on a card in a hand, the clue
+  log shows only the clues about that card, with a cross on the clues that did
+  not touch it.
 
 ## November 10th, 2026
 

@@ -18,7 +18,8 @@ import {
   SERVER_COMMAND_SCHEMAS,
   VERSION,
 } from "@hanabi-live/data";
-import { START_CARD_RANK } from "@hanabi-live/game";
+import type { CardOrder, PlayerIndex, RankClueNumber } from "@hanabi-live/game";
+import { START_CARD_RANK, isValidRankClueNumber } from "@hanabi-live/game";
 import { assertDefined } from "complete-common";
 import { execFile } from "node:child_process";
 import {
@@ -31,6 +32,7 @@ import {
   writeFile,
 } from "node:fs/promises";
 import path from "node:path";
+import { setTimeout } from "node:timers/promises";
 import { parseArgs, promisify } from "node:util";
 import type { BrowserContext, Page } from "playwright";
 import { chromium } from "playwright";
@@ -98,6 +100,10 @@ const LONG_VARIANT_NAME = "Rainbow-Ones & Orange (6 Suits)";
 
 /** The H-Group level that the account at the open table chooses. */
 const H_GROUP_LEVEL = 3;
+
+/** How many times to check whether it is Bob's turn, and how long to wait between checks. */
+const MAX_TURN_CHECKS = 50;
+const TURN_CHECK_MILLISECONDS = 100;
 
 /** The login version that makes an account a bot. */
 const BOT_VERSION = "bot";
@@ -241,10 +247,14 @@ function getStates({
   startGame,
   endGame,
   passLeader,
+  clueAccount,
 }: Pick<
   Seed,
-  "replayId" | "startGame" | "endGame" | "passLeader"
+  "replayId" | "startGame" | "endGame" | "passLeader" | "clueAccount"
 >): readonly State[] {
+  // The card in the account's hand that the clue log shows the clues about.
+  let cluedCard: CardOrder | undefined;
+
   return [
     { name: "login", path: "/", loggedIn: false },
     { name: "scores", path: `/scores/${USERNAME}`, loggedIn: false },
@@ -579,6 +589,36 @@ function getStates({
         await page.getByRole("button", { name: "Previous turn" }).click();
       },
     },
+    // The game from the previous state, after Bob clues the account twice, with the account's
+    // discard between the clues. The pointer rests on the card that the first clue touched and the
+    // second missed, so the clue log shows only those two clues.
+    {
+      name: "new-ui-clue-log-hover",
+      path: "/",
+      loggedIn: true,
+      prepare: async (page) => {
+        await page.locator('#game-new-ui [aria-label="Hands"]').waitFor();
+        cluedCard = await clueAccount();
+        const hand = page.locator(
+          `#game-new-ui [aria-label="${USERNAME}'s hand"]`,
+        );
+        // The oldest card, which the first clue did not touch.
+        await hand.locator("button").last().click();
+        await page
+          .getByRole("button", { name: "Discard", exact: true })
+          .click();
+        await clueAccount();
+        await page.waitForTimeout(SETTLE_MILLISECONDS);
+      },
+      hover: async (page) => {
+        if (cluedCard !== undefined) {
+          await hoverIfVisible(
+            page,
+            `#game-new-ui [data-card-order="${cluedCard}"]`,
+          );
+        }
+      },
+    },
     {
       name: "new-ui-tooltip",
       path: "/",
@@ -822,6 +862,11 @@ interface Seed {
   readonly endGame: () => Promise<void>;
   /** Makes another account the leader of the shared replay at Bob's table. */
   readonly passLeader: (username: string) => void;
+  /**
+   * When it is his turn, Bob gives the browser's account a rank clue. The first clue touches its
+   * newest card, and later clues miss that card. Returns that card, if Bob could give the clue.
+   */
+  readonly clueAccount: () => Promise<CardOrder | undefined>;
   readonly cookie: string;
   readonly peers: readonly Peer[];
 }
@@ -872,11 +917,15 @@ async function seed(address: string): Promise<Seed> {
   }
   const bot = await connect(address, "Robot", BOT_VERSION);
 
+  let bobIndex: number | undefined;
+  let clueTarget: { order: CardOrder; rank: RankClueNumber } | undefined;
+
   async function startGame() {
     bob.send("tableStart", { tableId });
     await bob.receive("tableStarted", SERVER_COMMAND_SCHEMAS.tableStarted);
     bob.send("gameInitLoad", { tableId });
     const init = await bob.receive("init", SERVER_COMMAND_SCHEMAS.init);
+    bobIndex = init.ourPlayerIndex;
     bob.send("gameStateLoad", { tableId });
     const { events } = await bob.receive(
       "gameEventList",
@@ -925,11 +974,92 @@ async function seed(address: string): Promise<Seed> {
     bob.send("tableSetLeader", { tableId, username });
   }
 
+  async function clueAccount(): Promise<CardOrder | undefined> {
+    async function loadEvents() {
+      bob.send("gameStateLoad", { tableId });
+      const { events } = await bob.receive(
+        "gameEventList",
+        SERVER_COMMAND_SCHEMAS.gameEventList,
+      );
+      return events;
+    }
+
+    function isBobsTurn(events: Awaited<ReturnType<typeof loadEvents>>) {
+      const turn = events.findLast((event) => event.type === "turn");
+      return turn?.type === "turn" && turn.currentPlayerIndex === bobIndex;
+    }
+
+    // The account's last move reaches Bob on another connection, so wait for his turn.
+    let events = await loadEvents();
+    for (
+      let attempt = 1;
+      attempt < MAX_TURN_CHECKS && !isBobsTurn(events);
+      attempt++
+    ) {
+      await setTimeout(TURN_CHECK_MILLISECONDS);
+      events = await loadEvents();
+    }
+
+    const gone = new Set<CardOrder>();
+    for (const event of events) {
+      if (event.type === "play" || event.type === "discard") {
+        gone.add(event.order);
+      }
+    }
+    const hand: Array<{
+      order: CardOrder;
+      rank: RankClueNumber;
+      target: PlayerIndex;
+    }> = [];
+    for (const event of events) {
+      if (
+        event.type === "draw"
+        && event.playerIndex !== bobIndex
+        && !gone.has(event.order)
+        && isValidRankClueNumber(event.identity?.rank)
+      ) {
+        hand.push({
+          order: event.order,
+          rank: event.identity.rank,
+          target: event.playerIndex,
+        });
+      }
+    }
+    let card: (typeof hand)[number] | undefined;
+    if (clueTarget === undefined) {
+      card = hand.at(-1);
+      if (card !== undefined) {
+        clueTarget = card;
+      }
+    } else {
+      const { rank } = clueTarget;
+      card = hand.find((other) => other.rank !== rank);
+    }
+    if (card === undefined) {
+      return undefined;
+    }
+    bob.send("playerAction", {
+      tableId,
+      action: {
+        type: "clue",
+        target: card.target,
+        clue: { type: "rank", value: card.rank },
+      },
+    });
+    await bob.receive(
+      "gameEvent",
+      SERVER_COMMAND_SCHEMAS.gameEvent,
+      (data) => data.event.type === "clue" && data.event.giver === bobIndex,
+    );
+    return clueTarget?.order;
+  }
+
   return {
     replayId,
     startGame,
     endGame,
     passLeader,
+    clueAccount,
     cookie,
     peers: [bob, ...spectators, bot],
   };

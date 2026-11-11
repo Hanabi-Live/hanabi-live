@@ -82,6 +82,9 @@ interface HandsProps {
 
   /** In a hypothetical, while the viewer edits cards, clicking a card changes it into another. */
   readonly onEditCard: ((order: CardOrder) => void) | undefined;
+
+  /** The mouse moved onto a card in a hand, or off every card (`undefined`). */
+  readonly onHoverCard: (order: CardOrder | undefined) => void;
 }
 
 /**
@@ -685,6 +688,15 @@ export function Hands(props: HandsProps): React.JSX.Element {
     <section
       aria-label="Hands"
       className="tw:relative tw:flex tw:flex-col tw:justify-center tw:gap-2"
+      onPointerLeave={() => {
+        props.onHoverCard(undefined);
+      }}
+      onPointerOver={(event) => {
+        // Touch screens have no hover.
+        if (event.pointerType === "mouse") {
+          props.onHoverCard(getCardOrderAt(event.target));
+        }
+      }}
     >
       {props.seats.map((seat) => (
         <Hand key={seat.playerIndex} props={props} seat={seat} />
@@ -698,4 +710,14 @@ export function Hands(props: HandsProps): React.JSX.Element {
       )}
     </section>
   );
+}
+
+/** The card that an element is part of, if any. */
+function getCardOrderAt(target: EventTarget): CardOrder | undefined {
+  if (!(target instanceof Element)) {
+    return undefined;
+  }
+  const order =
+    target.closest<HTMLElement>("[data-card-order]")?.dataset["cardOrder"];
+  return order === undefined ? undefined : (Number(order) as CardOrder);
 }
