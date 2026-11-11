@@ -24,7 +24,7 @@ export function onCardsRemainingChanged(
     cardsRemainingInTheDeck === 0
     && previousCardsRemaining === 1
     && !globals.animateFast
-    && !globals.state.replay.active
+    && globals.state.replay.segment === undefined
   ) {
     startEmptyDeckAnimation(CARD_ANIMATION_LENGTH_SECONDS);
   }

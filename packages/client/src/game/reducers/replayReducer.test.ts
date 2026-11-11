@@ -27,7 +27,9 @@ describe("replayReducer", () => {
     testState = loadGameJson(testGame);
     testState = stateReducer(testState, init());
     metadata = testState.metadata; // eslint-disable-line @typescript-eslint/prefer-destructuring
-    const selected = testState.replay.states[testState.replay.segment];
+    const { segment } = testState.replay;
+    assertDefined(segment, "The test game did not start a replay.");
+    const selected = testState.replay.states[segment];
     assertDefined(selected, "Failed to get the starting replay state.");
     startingState = selected;
   });
@@ -43,9 +45,7 @@ describe("replayReducer", () => {
 
       assertDefined(state.hypothetical, "Failed to start the hypothetical.");
 
-      expect(state.hypothetical.ongoing).toBe<unknown>(
-        testState.replay.states[testState.replay.segment],
-      );
+      expect(state.hypothetical.ongoing).toBe<unknown>(startingState);
       expect(state.hypothetical.states.length).toBe(1);
       expect(state.hypothetical.states[0]).toBe(state.hypothetical.ongoing);
       expect(state.hypothetical.startingPlayerIndex).toBe(
@@ -270,13 +270,7 @@ describe("replayReducer", () => {
       const hypoClue = hypoAction(rankClue(3, 0, [], 1));
       state = replayReducer(state, hypoClue, false, testState.metadata);
 
-      const gameState = testState.replay.states[testState.replay.segment];
-      assertDefined(
-        gameState,
-        `Failed to get the game state at segment: ${testState.replay.segment}`,
-      );
-
-      const expectedClues = gameState.clueTokens - 1;
+      const expectedClues = startingState.clueTokens - 1;
       expect(state.hypothetical?.ongoing.clueTokens).toBe(expectedClues);
     });
 
@@ -296,7 +290,6 @@ describe("replayReducer", () => {
       const ourSegment = 3;
       let state: ReplayState = {
         ...testState.replay,
-        active: true,
         segment: ourSegment,
         shared: {
           segment: sharedSegment,
@@ -338,12 +331,7 @@ describe("replayReducer", () => {
     });
 
     test("keeps our own hypothetical when the game ends and a shared replay starts", () => {
-      let state = replayReducer(
-        { ...testState.replay, active: true },
-        hypoStart(),
-        false,
-        metadata,
-      );
+      let state = replayReducer(testState.replay, hypoStart(), false, metadata);
       const own = state.ownHypothetical;
       assertDefined(own, "Failed to start our own hypothetical.");
 

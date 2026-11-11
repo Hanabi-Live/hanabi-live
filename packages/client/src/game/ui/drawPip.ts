@@ -121,7 +121,7 @@ export function drawPip(
     ctx.shadowColor = CARD_IMAGE_SHADOW_COLOR;
   }
 
-  const hasCustomFill = customFill !== undefined && customFill !== "";
+  const hasCustomFill = customFill !== undefined;
 
   // In some variants, there can be two suits with the same pip, like "Rainbow & Muddy Rainbow". To
   // disambiguate the suits, we draw a circle around the second suit that has the same pip.
@@ -139,7 +139,9 @@ export function drawPip(
 
     if (hasCustomFill) {
       ctx.fillStyle = customFill!;
-    } else if (suit.fill === "multi") {
+    } else if (suit.fillColors === undefined) {
+      ctx.fillStyle = suit.fill;
+    } else {
       const colors = suit.fillColors;
       const grad = ctx.createLinearGradient(
         0,
@@ -151,8 +153,6 @@ export function drawPip(
         grad.addColorStop(i / (colors.length - 1), color);
       }
       ctx.fillStyle = grad;
-    } else {
-      ctx.fillStyle = suit.fill;
     }
 
     // Workaround for Konva.Shape's Context not supporting `evenodd`. This is used in e.g. Empathy
@@ -182,16 +182,16 @@ export function drawPip(
     ctx.fillStyle = customFill!;
     drawPipFunction(ctx);
     ctx.fill();
-  } else if (suit.fill === "multi") {
-    // Rainbow and omni cards have a multiple color fill which is passed as an array to the drawing
-    // function; the drawing function will handle the filling.
-    drawPipFunction(ctx, suit.fillColors);
-  } else {
-    // All other suits have a solid fill.
+  } else if (suit.fillColors === undefined) {
+    // Most suits have a solid fill.
     const fill = suit.name === BLACK_SUIT_NAME ? BLACK_PIP_FILL : suit.fill;
     ctx.fillStyle = fill;
     drawPipFunction(ctx);
     ctx.fill();
+  } else {
+    // Rainbow and omni cards have a multiple color fill which is passed as an array to the drawing
+    // function; the drawing function will handle the filling.
+    drawPipFunction(ctx, suit.fillColors);
   }
 
   // Draw a black border around the shape.

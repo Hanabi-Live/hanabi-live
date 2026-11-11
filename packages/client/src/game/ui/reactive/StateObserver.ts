@@ -363,7 +363,8 @@ const replayObservers: Subscriptions = [
   subAfterInit(
     (s) => ({
       hypotheticalActive: s.replay.hypothetical !== undefined,
-      replayActive: s.replay.shared !== undefined || s.replay.active,
+      replayActive:
+        s.replay.shared !== undefined || s.replay.segment !== undefined,
     }),
     hypotheticalView.onActiveChanged,
   ),
@@ -399,12 +400,15 @@ const replayObservers: Subscriptions = [
 
   // Replay entered or exited. Note that this needs to go after `onActiveOrAmLeaderChanged` so that
   // the clue area is shown at game start.
-  subAfterInit((s) => s.replay.active, replayView.onActiveChanged),
+  subAfterInit(
+    (s) => s.replay.segment !== undefined,
+    replayView.onActiveChanged,
+  ),
 
   // Replay sliders and buttons.
   subAfterInit(
     (s) => ({
-      active: s.replay.active,
+      active: s.replay.segment !== undefined,
       replaySegment: s.replay.segment,
       ongoingGameSegment: s.ongoingGame.turn.segment,
     }),
@@ -412,7 +416,7 @@ const replayObservers: Subscriptions = [
   ),
   subAfterInit(
     (s) => ({
-      active: s.replay.active,
+      active: s.replay.segment !== undefined,
       sharedSegment: s.replay.shared?.segment,
       useSharedSegments: s.replay.shared?.useSharedSegments,
       amLeader: s.replay.shared?.amLeader,

@@ -1194,10 +1194,10 @@ function drawBottomLeftButtons() {
     [globals.imageLoader!.get("replay")],
   );
   replayButton.on("click tap", () => {
-    if (globals.state.replay.active) {
-      replay.exit();
-    } else {
+    if (globals.state.replay.segment === undefined) {
       replay.enter();
+    } else {
+      replay.exit();
     }
   });
   globals.layers.UI.add(replayButton);

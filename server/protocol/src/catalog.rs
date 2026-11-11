@@ -83,13 +83,13 @@ pub struct CatalogSuit {
     #[serde(skip_serializing_if = "Option::is_none")]
     #[schemars(length(min = 1))]
     pub display_name: Option<String>,
-    /// The background color of cards of the suit.
+    /// The background color of cards of the suit. A suit with `fill_colors` has none.
     #[serde(skip_serializing_if = "Option::is_none")]
     #[schemars(length(min = 1))]
     pub fill: Option<String>,
-    /// Allows for a gradient of different colors.
+    /// The colors of a gradient background, used instead of `fill`.
     #[serde(skip_serializing_if = "Option::is_none")]
-    #[schemars(length(min = 1))]
+    #[schemars(length(min = 2))]
     pub fill_colors: Option<Vec<String>>,
     // -----------------------------------------
     // Optional gameplay modification properties

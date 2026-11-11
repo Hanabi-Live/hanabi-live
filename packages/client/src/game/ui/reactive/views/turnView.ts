@@ -24,7 +24,7 @@ export function shouldShowTurnUi(state: State): boolean {
   return (
     controlsHypothetical(state)
     || (state.playing
-      && !state.replay.active
+      && state.replay.segment === undefined
       && isOurSeat(state.ongoingGame.turn.currentPlayerIndex, state.metadata))
   );
 }

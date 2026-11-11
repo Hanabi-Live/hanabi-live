@@ -48,7 +48,7 @@ const LINE_OFFSETS = {
 export function isVisible(state: State): boolean {
   return (
     // Do not show it we happen to have the in-game replay open.
-    !state.replay.active
+    state.replay.segment === undefined
     // The clue UI should take precedence over the "Current Player" area.
     && (!isOurSeat(state.ongoingGame.turn.currentPlayerIndex, state.metadata)
       || !state.playing)

@@ -1,6 +1,6 @@
 use crate::{
     checkpoint::{PartChanges, SavedParts},
-    model::{PendingTag, Player, Snapshot, TableChat, TableSnapshot, Tag, TagOperation},
+    model::{PendingTag, Player, Snapshot, TableChat, TableSnapshot, Tag, TagEdit},
     state::LiveState,
 };
 use anyhow::{Context, Result, bail, ensure};
@@ -597,21 +597,21 @@ async fn apply_tag(
     )
     .fetch_one(&mut **transaction)
     .await?;
-    match edit.operation {
-        TagOperation::Tag => {
-            sqlx::query!("INSERT INTO game_tags(game_id,user_id,tag) SELECT $1,$2,$3 WHERE NOT EXISTS(SELECT 1 FROM game_tags WHERE game_id=$1 AND user_id=$2 AND tag=$3)", edit.game_id.0, edit.user_id.0, &edit.tag).execute(&mut **transaction).await?;
+    match &edit.edit {
+        TagEdit::Add(tag) => {
+            sqlx::query!("INSERT INTO game_tags(game_id,user_id,tag) SELECT $1,$2,$3 WHERE NOT EXISTS(SELECT 1 FROM game_tags WHERE game_id=$1 AND user_id=$2 AND tag=$3)", edit.game_id.0, edit.user_id.0, tag).execute(&mut **transaction).await?;
         }
-        TagOperation::TagDelete => {
+        TagEdit::Delete(tag) => {
             sqlx::query!(
                 "DELETE FROM game_tags WHERE game_id=$1 AND user_id=$2 AND tag=$3",
                 edit.game_id.0,
                 edit.user_id.0,
-                &edit.tag
+                tag
             )
             .execute(&mut **transaction)
             .await?;
         }
-        TagOperation::TagsDeleteAll => {
+        TagEdit::DeleteAll => {
             sqlx::query!(
                 "DELETE FROM game_tags WHERE game_id=$1 AND user_id=$2",
                 edit.game_id.0,
@@ -1838,8 +1838,7 @@ mod tests {
             let edit = PendingTag {
                 game_id: GameId(1),
                 user_id: UserId(1),
-                operation: TagOperation::Tag,
-                tag: "added".into(),
+                edit: TagEdit::Add("added".into()),
             };
             let tagging = || Commit {
                 tag: Some(&edit),

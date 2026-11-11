@@ -3,7 +3,7 @@ import { ALL_RESERVED_NOTES } from "./abbreviations.ts";
 import { SUIT_REVERSED_SUFFIX, UNKNOWN_SUIT_NAME } from "./constants.ts";
 import { Pip } from "./enums/Pip.ts";
 import type { Color } from "./interfaces/Color.ts";
-import type { Suit } from "./interfaces/Suit.ts";
+import type { Suit, SuitFill } from "./interfaces/Suit.ts";
 import type { SuitJson } from "./interfaces/SuitJson.ts";
 import suitsJson from "./json/suits.json" with { type: "json" };
 
@@ -55,14 +55,7 @@ export function suitsInit(
     // (This has to be before the fill validation.)
     const clueColors = getSuitClueColors(suitJson, COLORS);
 
-    // Validate the fill.
-    const { fill, fillColorblind } = getSuitFillAndFillColorblind(
-      suitJson,
-      COLORS,
-      clueColors,
-    );
-
-    const fillColors = suitJson.fillColors ?? [];
+    const fill = getSuitFill(suitJson, COLORS, clueColors);
 
     // Optional gameplay modification properties. If these are not specified, the suit functions
     // normally.
@@ -85,9 +78,7 @@ export function suitsInit(
       abbreviation,
       createVariants,
       displayName,
-      fill,
-      fillColorblind,
-      fillColors,
+      ...fill,
 
       // Optional gameplay modification properties.
       oneOfEach,
@@ -154,21 +145,27 @@ function getSuitClueColors(
 }
 
 /**
- * If the fill is not specified, use the fill of the color with the same name (specifically, the
- * same display name, in the case of a dual-color suit). Otherwise, assume the fill of the first
- * clue color. (For example, "Red" does not have any clue colors specified, so the intermediate
- * condition is necessary.)
+ * A suit with "fillColors" has a gradient. Otherwise, if the fill is not specified, use the fill of
+ * the color with the same name (specifically, the same display name, in the case of a dual-color
+ * suit). Otherwise, assume the fill of the first clue color. (For example, "Red" does not have any
+ * clue colors specified, so the intermediate condition is necessary.)
  *
- * We also need to compute a "fillColorblind" property for the suit.
+ * We also need to compute a "fillColorblind" property for a suit with one color.
  */
-function getSuitFillAndFillColorblind(
+function getSuitFill(
   suitJson: SuitJson,
   COLORS: ReadonlyMap<string, Color>,
   clueColors: readonly Color[],
-): {
-  fill: string;
-  fillColorblind: string;
-} {
+): SuitFill {
+  if (suitJson.fillColors !== undefined) {
+    if (suitJson.fill !== undefined) {
+      throw new Error(
+        `The "${suitJson.name}" suit has both a "fill" and "fillColors".`,
+      );
+    }
+    return { fillColors: suitJson.fillColors };
+  }
+
   if (suitJson.fill !== undefined) {
     return {
       fill: suitJson.fill,

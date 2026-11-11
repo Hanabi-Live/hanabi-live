@@ -7,10 +7,7 @@ import * as modals from "../../modals.ts";
 import type { HanabiCard } from "./HanabiCard.ts";
 import { globals } from "./UiGlobals.ts";
 import * as arrows from "./arrows.ts";
-import {
-  clickRightCheckAddNote,
-  preOpenNoteEditTooltip,
-} from "./clickNotes.ts";
+import { clickRightCheckAddNote } from "./clickNotes.ts";
 import {
   LEFT_MOUSE_BUTTON,
   MIDDLE_MOUSE_BUTTON,
@@ -18,6 +15,7 @@ import {
 } from "./constants.ts";
 import { controlsHypothetical } from "./controlsHypothetical.ts";
 import * as hypothetical from "./hypothetical.ts";
+import * as notes from "./notes.ts";
 import * as replay from "./replay.ts";
 
 export function HanabiCardClick(
@@ -84,7 +82,7 @@ function clickLeft(card: HanabiCard, event: MouseEvent) {
     && !event.metaKey
     && !globals.state.finished
   ) {
-    preOpenNoteEditTooltip(card);
+    notes.openEditTooltip(card);
     return;
   }
 

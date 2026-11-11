@@ -206,9 +206,9 @@ export function formatFutureEfficiency(
     cardsNotGotten,
     Math.floor(stats.cluesStillUsableNotRounded),
   );
-  return Number.isFinite(futureEfficiency)
-    ? futureEfficiency.toFixed(EFFICIENCY_DECIMAL_PLACES)
-    : "-";
+  return futureEfficiency === undefined
+    ? "-"
+    : futureEfficiency.toFixed(EFFICIENCY_DECIMAL_PLACES);
 }
 
 /** The note on a card that has none. */

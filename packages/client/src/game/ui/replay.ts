@@ -28,7 +28,7 @@ const setTurnInput = getHtmlInputElement("#set-turn-input");
 // ---------------------
 
 export function enter(customSegment?: number): void {
-  if (globals.state.replay.active) {
+  if (globals.state.replay.segment !== undefined) {
     return;
   }
 
@@ -42,7 +42,7 @@ export function enter(customSegment?: number): void {
 }
 
 export function exit(): void {
-  if (!globals.state.replay.active) {
+  if (globals.state.replay.segment === undefined) {
     return;
   }
 
@@ -70,10 +70,9 @@ export function isSpectatingHypothetical(): boolean {
 }
 
 function getCurrentReplaySegment() {
-  const finalSegment = globals.state.ongoingGame.turn.segment!;
-  return globals.state.replay.active
-    ? globals.state.replay.segment
-    : finalSegment;
+  return (
+    globals.state.replay.segment ?? globals.state.ongoingGame.turn.segment!
+  );
 }
 
 export function goToSegment(
@@ -351,13 +350,16 @@ export function adjustShuttles(fast: boolean): void {
   const draggingShuttle = globals.elements.replayShuttle!.isDragging();
 
   // Adjust the replay shuttle along the bar based on the current segment. If it is smaller, we need
-  // to nudge it to the right a bit in order to center it.
-  positionReplayShuttle(
-    globals.elements.replayShuttle!,
-    globals.state.replay.segment,
-    smaller,
-    fast || draggingShuttle,
-  );
+  // to nudge it to the right a bit in order to center it. Outside of a replay, it has no segment
+  // and stays where it is.
+  if (globals.state.replay.segment !== undefined) {
+    positionReplayShuttle(
+      globals.elements.replayShuttle!,
+      globals.state.replay.segment,
+      smaller,
+      fast || draggingShuttle,
+    );
+  }
 
   // Adjust the shared replay shuttle along the bar based on the shared segment.
   globals.elements.replayShuttleShared!.visible(

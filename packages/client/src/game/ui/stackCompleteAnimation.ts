@@ -243,7 +243,7 @@ export function startStackCompleteAnimation(
 }
 
 function suitColors(suit: Suit): readonly string[] {
-  return suit.fillColors.length > 0 ? suit.fillColors : [suit.fill];
+  return suit.fillColors ?? [suit.fill];
 }
 
 function burstColors(colors: readonly string[]): readonly string[] {

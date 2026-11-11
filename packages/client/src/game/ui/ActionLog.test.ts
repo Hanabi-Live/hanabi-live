@@ -2,10 +2,10 @@ import type { LogEntry } from "@hanabi-live/game";
 import Konva from "konva";
 import { beforeEach, describe, expect, test, vi } from "vitest";
 
-const globals = vi.hoisted(() => ({
-  animateFast: false,
-  state: { replay: { active: true } },
-}));
+const globals = vi.hoisted(() => {
+  const replay: { segment: number | undefined } = { segment: 0 };
+  return { animateFast: false, state: { replay } };
+});
 vi.mock("./UiGlobals.ts", () => ({ globals }));
 vi.mock("./controls/FitText.ts", async () => {
   const { default: KonvaModule } = await import("konva");
@@ -38,7 +38,7 @@ function makeActionLog() {
 
 describe("ActionLog", () => {
   beforeEach(() => {
-    globals.state.replay.active = true;
+    globals.state.replay.segment = 0;
   });
 
   test("slides when a new line arrives", () => {
@@ -49,7 +49,7 @@ describe("ActionLog", () => {
   });
 
   test("does not slide during an ongoing game", () => {
-    globals.state.replay.active = false;
+    globals.state.replay.segment = undefined;
     const { actionLog, lines } = makeActionLog();
     actionLog.update(makeLog(5));
     actionLog.update(makeLog(6));

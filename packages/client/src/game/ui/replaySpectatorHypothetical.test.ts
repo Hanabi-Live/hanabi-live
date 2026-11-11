@@ -33,7 +33,6 @@ function setup(amLeader: boolean) {
     },
     replay: {
       ...initial.replay,
-      active: true,
       segment: sharedSegment,
       states: [initial.ongoingGame, initial.ongoingGame],
       shared: {

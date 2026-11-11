@@ -70,7 +70,7 @@ export class ActionLog extends Konva.Group {
     const shift = firstIndex - this.firstIndex;
     const slides =
       Math.abs(shift) === 1
-      && globals.state.replay.active
+      && globals.state.replay.segment !== undefined
       && !globals.animateFast
       && this.texts.every((text, i) => {
         // Every visible line that stays on the screen must keep its text. Do not check the hidden

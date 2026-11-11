@@ -1,7 +1,7 @@
 // Script to generate a visualization of all Hanabi pips. This can be compiled and served as a
 // standalone page.
 
-import type { Suit, Variant } from "@hanabi-live/game";
+import type { Suit, SuitFill, Variant } from "@hanabi-live/game";
 import { Pip, SUITS_MAP } from "@hanabi-live/game";
 import { assertEnumValue, assertNotNull, getEnumValues } from "complete-common";
 import { drawPip } from "../game/ui/drawPip.ts";
@@ -13,10 +13,7 @@ const PIP_CANVAS_SIZE = 200;
 const DEFAULT_PIP_FILL = "#cccccc";
 
 document.addEventListener("DOMContentLoaded", () => {
-  const uniquePips = new Map<
-    string,
-    { name: string; fill?: string; fillColors?: readonly string[] }
-  >();
+  const uniquePips = new Map<string, { name: string; fill?: SuitFill }>();
 
   for (const suit of SUITS_MAP.values()) {
     if (
@@ -26,8 +23,10 @@ document.addEventListener("DOMContentLoaded", () => {
     ) {
       uniquePips.set(suit.pip, {
         name: suit.name,
-        fill: suit.fill,
-        fillColors: suit.fillColors,
+        fill:
+          suit.fillColors === undefined
+            ? { fill: suit.fill, fillColorblind: suit.fillColorblind }
+            : { fillColors: suit.fillColors },
       });
     }
   }
@@ -72,8 +71,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const mockSuit: Partial<Suit> = {
       pip,
-      fill: info.fill ?? DEFAULT_PIP_FILL,
-      fillColors: info.fillColors ?? [],
+      ...(info.fill ?? {
+        fill: DEFAULT_PIP_FILL,
+        fillColorblind: DEFAULT_PIP_FILL,
+      }),
     };
 
     const mockVariant: Partial<Variant> = {

@@ -48,7 +48,6 @@
     "id": "Ra",
     "abbreviation": "M",
     "createVariants": true,
-    "fill": "multi",
     "fillColors": ["#ff0000", "#ffff00", "#02ec00", "#0037ff", "#8000ff"],
     "pip": "rainbow",
     "allClueColors": true
@@ -79,7 +78,6 @@
     "name": "Omni",
     "id": "Om",
     "createVariants": true,
-    "fill": "multi",
     "fillColors": [
       "#ffffff",
       "#8000ff",
@@ -108,7 +106,6 @@
     "id": "BrRa",
     "abbreviation": "M",
     "createVariants": true,
-    "fill": "multi",
     "fillColors": ["#bb4321", "#bb8021", "#808000", "#8080ff", "#500030"],
     "pip": "rainbow",
     "allClueColors": true,
@@ -145,7 +142,6 @@
     "id": "Ra1",
     "abbreviation": "M",
     "createVariants": true,
-    "fill": "multi",
     "fillColors": ["#a00000", "#a0a000", "#00a000", "#0000a0", "#5000a0"],
     "pip": "rainbow",
     "oneOfEach": true,
@@ -188,7 +184,6 @@
     "id": "Om1",
     "abbreviation": "O",
     "createVariants": true,
-    "fill": "multi",
     "fillColors": [
       "#000000",
       "#5000a0",
@@ -219,7 +214,6 @@
     "id": "BrRa1",
     "abbreviation": "M",
     "createVariants": true,
-    "fill": "multi",
     "fillColors": ["#662211", "#664011", "#404000", "#404080", "#280018"],
     "pip": "rainbow",
     "oneOfEach": true,

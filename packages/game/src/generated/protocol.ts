@@ -109,13 +109,13 @@ export const catalogSuitSchema = z
      */
     displayName: z.string().min(1).optional(),
     /**
-     * The background color of cards of the suit.
+     * The background color of cards of the suit. A suit with `fill_colors` has none.
      */
     fill: z.string().min(1).optional(),
     /**
-     * Allows for a gradient of different colors.
+     * The colors of a gradient background, used instead of `fill`.
      */
-    fillColors: z.array(z.string()).min(1).readonly().optional(),
+    fillColors: z.array(z.string()).min(2).readonly().optional(),
     /**
      * The suit ID is a two character string:
      * - Normal suits have a single capital letter. (e.g. "R" for "Red")

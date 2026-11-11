@@ -31,7 +31,12 @@ const DISCARD_REGEX = /^(?:\[Hypo\] )?(.*) discards .* slot #(\d).*$/u;
 const CLUE_REGEX = /^.+ tells (.*) about \w+ ([A-Za-z]+|\d)s?$/u;
 
 export function createJsonFromReplay(room: string): void {
-  if (globals.store === undefined || !globals.state.finished) {
+  const { segment } = globals.state.replay;
+  if (
+    globals.store === undefined
+    || !globals.state.finished
+    || segment === undefined
+  ) {
     sendSelfPmFromServer(
       "You can only use the <code>/copy</code> command during the review of a game.",
       room,
@@ -97,12 +102,12 @@ export function createJsonFromReplay(room: string): void {
   // Copy actions up to current segment, then add the hypothetical from the log, after the current
   // segment.
   const { replay } = globals.state;
-  const actions = [...getGameActionsFromState(replay)];
+  const actions = [...getGameActionsFromState(replay, segment)];
   if (replay.hypothetical !== undefined) {
     const { states } = replay.hypothetical;
     const { log } = states.at(-1)!;
-    if (replay.segment < log.length) {
-      const logLines = log.slice(replay.segment + 1);
+    if (segment < log.length) {
+      const logLines = log.slice(segment + 1);
       actions.push(...getGameActionsFromLog(logLines));
     }
   }
@@ -164,9 +169,11 @@ export function createJsonFromReplay(room: string): void {
     });
 }
 
-function getGameActionsFromState(source: ReplayState): readonly ClientAction[] {
+function getGameActionsFromState(
+  source: ReplayState,
+  maxSegment: number,
+): readonly ClientAction[] {
   let currentSegment = 0;
-  const maxSegment = source.segment;
   const actions: ClientAction[] = [];
   for (
     let i = 0;

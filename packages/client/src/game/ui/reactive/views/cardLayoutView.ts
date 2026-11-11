@@ -127,7 +127,7 @@ export function onStackCompletionDataChanged(
   if (
     previousData === undefined
     || globals.animateFast
-    || globals.state.replay.active
+    || globals.state.replay.segment !== undefined
   ) {
     return;
   }

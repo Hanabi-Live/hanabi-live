@@ -132,21 +132,21 @@ pub struct Tag {
     pub user: UserId,
     pub tag: String,
 }
-#[derive(Clone, Debug, Serialize, Deserialize)]
-#[serde(deny_unknown_fields)]
+/// A change to the tags of a replay's database game, which the database applies with the table's
+/// next save.
+#[derive(Clone, Debug)]
 pub struct PendingTag {
     pub game_id: GameId,
     pub user_id: UserId,
-    pub operation: TagOperation,
-    pub tag: String,
+    pub edit: TagEdit,
 }
-/// A change to a replay's tags that a checkpoint records until the database applies it.
-#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub enum TagOperation {
-    Tag,
-    TagDelete,
-    TagsDeleteAll,
+/// A change to a game's tags by one user.
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub enum TagEdit {
+    Add(String),
+    Delete(String),
+    /// Deletes every tag of the user.
+    DeleteAll,
 }
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]

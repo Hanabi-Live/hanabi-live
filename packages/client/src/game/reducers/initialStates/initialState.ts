@@ -20,8 +20,7 @@ export function initialState(metadata: GameMetadata): State {
     visibleState: undefined,
     ongoingGame: gameState,
     replay: {
-      active: false,
-      segment: 0,
+      segment: undefined,
       states: [],
       actions: [],
 

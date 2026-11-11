@@ -271,10 +271,10 @@ function keydown(event: JQuery.KeyDownEvent) {
         if (globals.state.replay.shared !== undefined) {
           replay.toggleSharedSegments();
         } else if (!globals.state.finished) {
-          if (globals.state.replay.active) {
-            replay.exit();
-          } else {
+          if (globals.state.replay.segment === undefined) {
             replay.enter();
+          } else {
+            replay.exit();
           }
         }
         return;
@@ -328,7 +328,7 @@ function getNormalGameplayHotkeyFunction(
   // Do nothing if we are not in a normal game situation.
   const { currentPlayerIndex } = globals.state.ongoingGame.turn;
   const ourTurnInOngoingGame =
-    !globals.state.replay.active
+    globals.state.replay.segment === undefined
     && isOurSeat(currentPlayerIndex, globals.metadata);
   const controlHypotheticalInSharedReplay =
     globals.state.replay.shared !== undefined

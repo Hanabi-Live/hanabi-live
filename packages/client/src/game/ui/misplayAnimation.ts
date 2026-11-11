@@ -181,13 +181,16 @@ export function startMisplayAnimation(
 
   // The card explodes on the square of the strike that it caused, unless the strikes are hidden
   // from this player.
-  const strikeIndex = areStrikesHidden()
-    ? -1
-    : globals.state.visibleState!.strikes.findIndex(
-        (strike) => strike.order === card.order,
-      );
-  const strikeSquare = globals.elements.strikeSquares[strikeIndex];
-  const strikeX = globals.elements.strikeXs[strikeIndex];
+  const strikeIndex = globals.state.visibleState!.strikes.findIndex(
+    (strike) => strike.order === card.order,
+  );
+  const showStrike = strikeIndex !== -1 && !areStrikesHidden();
+  const strikeSquare = showStrike
+    ? globals.elements.strikeSquares[strikeIndex]
+    : undefined;
+  const strikeX = showStrike
+    ? globals.elements.strikeXs[strikeIndex]
+    : undefined;
   const blast =
     strikeSquare === undefined ? hover : absoluteCenter(strikeSquare);
 
@@ -213,7 +216,7 @@ export function startMisplayAnimation(
   }
 
   // In a replay, the card only bounces off its play stack into the discard pile.
-  if (globals.state.replay.active) {
+  if (globals.state.replay.segment !== undefined) {
     const stackPose: Pose = { ...stackCenter, scale: 1, rotation: 0 };
     timeline.add(0, REPLAY_TO_STACK_SECONDS, (t) => {
       const out = easeOut(t);

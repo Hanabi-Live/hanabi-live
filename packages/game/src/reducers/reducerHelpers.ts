@@ -29,7 +29,9 @@ function getCharacterIdForPlayer(
   return characterAssignments[playerIndex];
 }
 
-export function getEfficiencyFromGameState(gameState: GameState): number {
+export function getEfficiencyFromGameState(
+  gameState: GameState,
+): number | undefined {
   return getEfficiency(
     gameState.stats.cardsGotten,
     gameState.stats.potentialCluesLost,

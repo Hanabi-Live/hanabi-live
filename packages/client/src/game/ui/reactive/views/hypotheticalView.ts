@@ -11,7 +11,7 @@ import * as turn from "../../turn.ts";
 // For replay leaders, we want to disable entering a hypothetical during certain situations.
 export function shouldEnableEnterHypoButton(state: State): boolean {
   return (
-    (state.replay.shared === undefined && state.replay.active)
+    (state.replay.shared === undefined && state.replay.segment !== undefined)
     || (state.replay.shared !== undefined
       && state.replay.shared.useSharedSegments
       && state.replay.shared.amLeader
@@ -28,7 +28,7 @@ export function shouldEnableEnterHypoButtonChanged(enabled: boolean): void {
 
 export function shouldShowReplayArea(state: State): boolean {
   return (
-    (state.replay.active || state.replay.shared !== undefined)
+    (state.replay.segment !== undefined || state.replay.shared !== undefined)
     && state.replay.hypothetical === undefined
   );
 }

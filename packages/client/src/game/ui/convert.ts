@@ -20,6 +20,14 @@ export function suitIndexToSuit(
   return variant.suits[suitIndex];
 }
 
+export function suitToSuitIndex(
+  suit: Suit,
+  variant: Variant,
+): SuitIndex | undefined {
+  const suitIndex = variant.suits.indexOf(suit);
+  return suitIndex === -1 ? undefined : (suitIndex as SuitIndex);
+}
+
 export function colorToColorIndex(
   color: Color,
   variant: Variant,

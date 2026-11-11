@@ -442,11 +442,14 @@ export function getStartingCluesUsable(
   return startingClues;
 }
 
+/** The cards gotten for each clue spent. `undefined` when no clue was spent. */
 export function getEfficiency(
   numCardsGotten: number,
   potentialCluesLost: number,
-): number {
-  return numCardsGotten / potentialCluesLost;
+): number | undefined {
+  return potentialCluesLost === 0
+    ? undefined
+    : numCardsGotten / potentialCluesLost;
 }
 
 export function getFutureEfficiency(gameState: GameState): number | undefined {
@@ -455,7 +458,7 @@ export function getFutureEfficiency(gameState: GameState): number | undefined {
   }
 
   const cardsNotGotten = gameState.stats.maxScore - gameState.stats.cardsGotten;
-  return cardsNotGotten / gameState.stats.cluesStillUsable;
+  return getEfficiency(cardsNotGotten, gameState.stats.cluesStillUsable);
 }
 
 /**

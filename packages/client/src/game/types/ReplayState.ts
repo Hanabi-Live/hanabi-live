@@ -6,8 +6,8 @@ import type {
 import type { SharedReplayState } from "./SharedReplayState.ts";
 
 export interface ReplayState {
-  readonly active: boolean;
-  readonly segment: number;
+  /** The segment that the replay shows. Absent when we are not in a replay. */
+  readonly segment: number | undefined;
   readonly states: readonly GameState[]; // Indexed by segment.
 
   // All of the individual game actions are stored alongside the computed states for each turn. This

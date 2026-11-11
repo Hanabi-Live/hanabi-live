@@ -27,7 +27,7 @@ function setup(shared: boolean) {
     finished: true,
     replay: {
       ...initial.replay,
-      active: true,
+      segment: 0,
       states: [initial.ongoingGame],
       shared: shared
         ? {

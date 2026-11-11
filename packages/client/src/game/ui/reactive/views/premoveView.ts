@@ -4,7 +4,7 @@ import { globals } from "../../UiGlobals.ts";
 import * as ourHand from "../../ourHand.ts";
 
 export function shouldShowCancelButton(state: State): boolean {
-  return !state.replay.active && state.premove !== undefined;
+  return state.replay.segment === undefined && state.premove !== undefined;
 }
 
 export function shouldShowCancelButtonChanged(shouldShow: boolean): void {

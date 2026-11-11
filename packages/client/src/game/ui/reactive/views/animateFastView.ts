@@ -11,12 +11,9 @@ export function onObserversStarted(
   }
 
   // Find out how many segments we are jumping through in this state change.
-  const currentSegment = state.replay.active
-    ? state.replay.segment
-    : state.ongoingGame.turn.segment;
-  const oldSegment = previousState.replay.active
-    ? previousState.replay.segment
-    : previousState.ongoingGame.turn.segment;
+  const currentSegment = state.replay.segment ?? state.ongoingGame.turn.segment;
+  const oldSegment =
+    previousState.replay.segment ?? previousState.ongoingGame.turn.segment;
   let segmentDifference = 0;
   if (currentSegment !== undefined && oldSegment !== undefined) {
     segmentDifference = Math.abs(currentSegment - oldSegment);

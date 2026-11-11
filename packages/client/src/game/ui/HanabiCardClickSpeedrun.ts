@@ -136,7 +136,7 @@ function getColorForSpeedrunClue(
 
   // Handle the cases where the "suit.clueColors" array is empty.
   if (suit.allClueColors) {
-    return variant.suits[0];
+    return variant.clueColors[0];
   }
   if (suit.prism) {
     return getColorForPrismCard(globals.variant, cardState.rank);

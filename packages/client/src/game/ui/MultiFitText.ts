@@ -39,7 +39,7 @@ export class MultiFitText extends Konva.Group {
     // Performance optimization: setText on the children is slow, so do not actually do it until its
     // time to display things. We also have to call refreshText after any time we manipulate replay
     // position.
-    if (!globals.state.replay.active || !globals.animateFast) {
+    if (globals.state.replay.segment === undefined || !globals.animateFast) {
       this.refreshText();
     }
   }

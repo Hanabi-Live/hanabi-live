@@ -60,9 +60,6 @@ export class UiGlobals {
   /** Contains all of the "gameEvent" messages for the game. */
   replayLog: GameAction[] = [];
 
-  finalReplayPos = 0;
-  finalReplayTurn = 0;
-
   /**
    * Used to keep track of which card the user is editing. Users can only update one note at a time
    * to prevent bugs. Equal to the selector of the tooltip or undefined.

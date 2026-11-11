@@ -23,8 +23,28 @@ function replayReducerFunction(
   finished: boolean,
   metadata: GameMetadata,
 ) {
+  if (action.type === "replayEnter") {
+    if (state.segment !== undefined) {
+      throw new Error(
+        `A "${action.type}" action was dispatched, but we are already in a replay.`,
+      );
+    }
+
+    if (typeof action.segment !== "number") {
+      throw new TypeError(
+        `The "${action.type}" action segment was not a number.`,
+      );
+    }
+    if (action.segment < 0) {
+      throw new Error(`The "${action.type}" action segment was less than 0.`);
+    }
+    state.segment = action.segment;
+    return;
+  }
+
   // Validate current state
-  if (!state.active && action.type !== "replayEnter") {
+  const { segment } = state;
+  if (segment === undefined) {
     throw new Error(
       `A "${action.type}" action was dispatched, but we are not in a replay.`,
     );
@@ -35,30 +55,8 @@ function replayReducerFunction(
     // Replay actions
     // --------------
 
-    case "replayEnter": {
-      if (state.active) {
-        throw new Error(
-          `A "${action.type}" action was dispatched, but we are already in a replay.`,
-        );
-      }
-      state.active = true;
-
-      if (typeof action.segment !== "number") {
-        throw new TypeError(
-          `The "${action.type}" action segment was not a number.`,
-        );
-      }
-      if (action.segment < 0) {
-        throw new Error(`The "${action.type}" action segment was less than 0.`);
-      }
-      state.segment = action.segment;
-
-      break;
-    }
-
     case "replayExit": {
-      state.active = false;
-      state.segment = 0;
+      state.segment = undefined;
 
       break;
     }
@@ -113,7 +111,7 @@ function replayReducerFunction(
       // If we are the replay leader and we are re-enabling shared segments, we also want to update
       // the shared segment to our current segment.
       if (state.shared.amLeader && state.shared.useSharedSegments) {
-        state.shared.segment = state.segment;
+        state.shared.segment = segment;
       }
 
       break;
@@ -153,17 +151,17 @@ function replayReducerFunction(
 
       // The leader's hypothetical starts on the shared segment, even if we are looking at a
       // different segment.
-      let { segment } = state;
+      let startSegment = segment;
       if (action.shared && state.shared !== undefined) {
-        ({ segment } = state.shared);
+        startSegment = state.shared.segment;
         if (state.shared.useSharedSegments) {
-          state.segment = segment;
+          state.segment = startSegment;
         }
       }
-      const ongoing = state.states[segment];
+      const ongoing = state.states[startSegment];
       assertDefined(
         ongoing,
-        `Failed to get the game state for segment: ${segment}`,
+        `Failed to get the game state for segment: ${startSegment}`,
       );
 
       const hypothetical = initializeHypotheticalState(

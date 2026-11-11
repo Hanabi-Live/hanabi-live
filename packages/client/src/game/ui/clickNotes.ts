@@ -3,8 +3,6 @@ import type { HanabiCard } from "./HanabiCard.ts";
 import { globals } from "./UiGlobals.ts";
 import * as notes from "./notes.ts";
 
-let lastNote = "";
-
 export function clickRightCheckAddNote(
   event: MouseEvent,
   card: HanabiCard,
@@ -18,8 +16,7 @@ export function clickRightCheckAddNote(
   // Ctrl + shift + alt + right-click is a "kt" note. (This is a common abbreviation for "this card
   // is known trash".)
   if (event.ctrlKey && event.shiftKey && event.altKey && !event.metaKey) {
-    lastNote = "kt";
-    card.appendNote(lastNote);
+    card.appendNote("kt");
     return;
   }
 
@@ -32,31 +29,27 @@ export function clickRightCheckAddNote(
 
   // Ctrl + alt + right-click is prepend turn count.
   if (event.ctrlKey && !event.shiftKey && event.altKey && !event.metaKey) {
-    lastNote = `#${globals.elements.turnNumberLabel?.text()}`;
-    card.prependTurnCountNote(lastNote);
+    card.prependTurnCountNote(`#${globals.elements.turnNumberLabel?.text()}`);
     return;
   }
 
   // Shift + right-click is a "f" note. (This is a common abbreviation for "this card is Finessed".)
   if (!event.ctrlKey && event.shiftKey && !event.altKey && !event.metaKey) {
-    lastNote = "f";
-    card.appendNote(lastNote);
+    card.appendNote("f");
     return;
   }
 
   // Alt + right-click is a "cm" note. (This is a common abbreviation for "this card is chop
   // moved".)
   if (!event.ctrlKey && !event.shiftKey && event.altKey && !event.metaKey) {
-    lastNote = "cm";
-    card.appendNote(lastNote);
+    card.appendNote("cm");
     return;
   }
 
   // Shift + alt + right-click is a "ptd" note. (This is a common abbreviation for "this card has
   // permission to discard").
   if (!event.ctrlKey && event.shiftKey && event.altKey && !event.metaKey) {
-    lastNote = "ptd";
-    card.appendNote(lastNote);
+    card.appendNote("ptd");
     return;
   }
 
@@ -67,15 +60,10 @@ export function clickRightCheckAddNote(
     && !event.altKey
     && !event.metaKey
   ) {
-    preOpenNoteEditTooltip(card);
+    notes.openEditTooltip(card);
     return;
   }
 
   // Do nothing in the default case. (We need a function to satisfy the early return pattern.)
   noop();
-}
-
-export function preOpenNoteEditTooltip(card: HanabiCard): void {
-  lastNote = "";
-  notes.openEditTooltip(card);
 }

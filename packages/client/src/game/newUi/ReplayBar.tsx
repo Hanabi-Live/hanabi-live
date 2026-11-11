@@ -413,7 +413,10 @@ export function ReplayBar({
   readonly onToggleEditCards: () => void;
 }): React.JSX.Element | undefined {
   const { replay: replayState, finished, visibleState, ongoingGame } = state;
-  if (visibleState === undefined || (!replayState.active && !finished)) {
+  if (
+    visibleState === undefined
+    || (replayState.segment === undefined && !finished)
+  ) {
     return undefined;
   }
 

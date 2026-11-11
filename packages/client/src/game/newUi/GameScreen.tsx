@@ -199,7 +199,7 @@ function getSeats(state: State): readonly Seat[] {
   // is not the one whose clock runs.
   const showClock =
     (metadata.options.timeControl !== undefined || settings.showTimerInUntimed)
-    && !state.replay.active
+    && state.replay.segment === undefined
     && !state.finished;
   const hypo = state.replay.hypothetical;
   const controlsHypo = controlsHypothetical(state);
@@ -418,14 +418,14 @@ function getMoveEffects(
 
   return {
     // A play or a misplay comes a moment before its turn, so the segment does not change yet.
-    live: !state.replay.active && segmentChange >= 0,
+    live: state.replay.segment === undefined && segmentChange >= 0,
     misplays,
     getSuitColors: (suitIndex) => {
       const suit = variant.suits[suitIndex];
       if (suit === undefined) {
         return [];
       }
-      if (suit.fill === "multi") {
+      if (suit.fillColors !== undefined) {
         return suit.fillColors;
       }
       return [
@@ -453,10 +453,10 @@ function getStrikeSegments(state: State): ReadonlyArray<number | undefined> {
 
 /** Shows a turn in the in-game replay. */
 function showReplayTurn(segment: number) {
-  if (globals.state.replay.active) {
-    replay.goToSegment(segment, true);
-  } else {
+  if (globals.state.replay.segment === undefined) {
     replay.enter(segment);
+  } else {
+    replay.goToSegment(segment, true);
   }
 }
 
@@ -737,7 +737,7 @@ export function GameScreen({
   const { variant } = globals;
   const { settings } = globals.lobby;
   const { options } = metadata;
-  const inReplay = state.replay.active;
+  const inReplay = state.replay.segment !== undefined;
   const hypo = state.replay.hypothetical;
   // In a hypothetical that the viewer controls, they make every player's moves in turn.
   const controlsHypo = controlsHypothetical(state);

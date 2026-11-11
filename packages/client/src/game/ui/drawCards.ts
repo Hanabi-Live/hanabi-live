@@ -12,6 +12,7 @@ import {
   getSuit,
   getSuitAbbreviationForVariant,
 } from "@hanabi-live/game";
+import { assertDefined } from "complete-common";
 import { START_CARD_RANK_LABEL } from "../../constants.ts";
 import type { CardRendererBackend } from "./cardRendererBackend.ts";
 import {
@@ -739,7 +740,9 @@ function getSuitStyle(
       // Stack bases and cards of unknown rank have no rank color. If the suit does not get clued by
       // its rank, then coloring the rank is misleading, so use the suit color.
       if (typeof rank !== "number" || suit.noClueRanks) {
-        return suit.fill;
+        return suit.fillColors === undefined
+          ? suit.fill
+          : evenLinearGradient(ctx, suit.fillColors, RANK_LABEL_GRADIENT);
       }
       return getColorForRank(variant, rank)!.fill;
     }
@@ -764,7 +767,7 @@ function getSuitStyle(
           const rainbow = getSuit(dark ? DARK_OMNI_SUIT_NAME : OMNI_SUIT_NAME);
           return evenLinearGradient(
             ctx,
-            rainbow.fillColors,
+            gradientColors(rainbow),
             RANK_LABEL_GRADIENT,
           );
         }
@@ -773,33 +776,37 @@ function getSuitStyle(
           const rainbow = getSuit(dark ? "Cocoa Rainbow" : "Muddy Rainbow");
           return evenLinearGradient(
             ctx,
-            rainbow.fillColors,
+            gradientColors(rainbow),
             RANK_LABEL_GRADIENT,
           );
         }
 
         const rainbow = getSuit(dark ? "Dark Rainbow" : "Rainbow");
-        return evenLinearGradient(ctx, rainbow.fillColors, RANK_LABEL_GRADIENT);
+        return evenLinearGradient(
+          ctx,
+          gradientColors(rainbow),
+          RANK_LABEL_GRADIENT,
+        );
       }
 
       if (noClueColors) {
         if (allClueRanks) {
-          return getSuit(dark ? "Gray Pink" : "Light Pink").fill;
+          return solidFill(getSuit(dark ? "Gray Pink" : "Light Pink"));
         }
 
         if (noClueRanks) {
-          return getSuit(dark ? "Dark Null" : "Null").fill;
+          return solidFill(getSuit(dark ? "Dark Null" : "Null"));
         }
 
-        return getSuit(dark ? "Gray" : "White").fill;
+        return solidFill(getSuit(dark ? "Gray" : "White"));
       }
 
       if (allClueRanks) {
-        return getSuit(dark ? "Dark Pink" : "Pink").fill;
+        return solidFill(getSuit(dark ? "Dark Pink" : "Pink"));
       }
 
       if (noClueRanks) {
-        return getSuit(dark ? "Dark Brown" : "Brown").fill;
+        return solidFill(getSuit(dark ? "Dark Brown" : "Brown"));
       }
     }
   }
@@ -808,13 +815,13 @@ function getSuitStyle(
     // Prism cards have a custom color depending on their rank. A stack base and a card of unknown
     // rank have no rank, so they use the suit color.
     if (typeof rank !== "number") {
-      return suit.fill;
+      return solidFill(suit);
     }
 
     const fillToMixHex = getColorForPrismCard(variant, rank).fill;
     const fillToMixRgb = hexToRgb(fillToMixHex);
     if (fillToMixRgb === undefined) {
-      return suit.fill;
+      return solidFill(suit);
     }
 
     const fillToMixArray = [fillToMixRgb.r, fillToMixRgb.g, fillToMixRgb.b];
@@ -824,7 +831,7 @@ function getSuitStyle(
   }
 
   // Nearly all other suits have a solid fill.
-  if (suit.fill !== "multi") {
+  if (suit.fillColors === undefined) {
     return colorblindMode ? suit.fillColorblind : suit.fill;
   }
 
@@ -848,6 +855,22 @@ function getSuitStyle(
       return evenLinearGradient(ctx, suit.fillColors, [0, 0, CARD_W, CARD_H]);
     }
   }
+}
+
+function solidFill(suit: Suit): string {
+  assertDefined(
+    suit.fill,
+    `The "${suit.name}" suit has a gradient, not one color.`,
+  );
+  return suit.fill;
+}
+
+function gradientColors(suit: Suit): readonly string[] {
+  assertDefined(
+    suit.fillColors,
+    `The "${suit.name}" suit has one color, not a gradient.`,
+  );
+  return suit.fillColors;
 }
 
 /** Generates a vertical gradient that is evenly distributed between its component colors. */

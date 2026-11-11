@@ -65,20 +65,20 @@ export function onEfficiencyChanged(data: {
   const cardsNotGotten = Math.max(data.maxScore - cardsGotten, 0);
 
   const efficiency = getEfficiency(cardsGotten, data.potentialCluesLost);
-  const shouldShowEfficiency =
-    Number.isFinite(efficiency) && !data.finalRoundEffectivelyStarted;
+  const shownEfficiency = data.finalRoundEffectivelyStarted
+    ? undefined
+    : efficiency;
   const futureEfficiency =
     cluesStillUsable === undefined
-      ? NaN
+      ? undefined
       : getEfficiency(cardsNotGotten, cluesStillUsable);
-  const shouldShowFutureEfficiency = Number.isFinite(futureEfficiency);
 
-  if (shouldShowFutureEfficiency) {
-    // Show the efficiency and round it to 2 decimal places.
-    effLabel.text(futureEfficiency.toFixed(EFFICIENCY_DECIMAL_PLACES));
-  } else {
+  if (futureEfficiency === undefined) {
     // Handle the case in which there are 0 possible clues remaining or the game has ended.
     effLabel.text("-");
+  } else {
+    // Show the efficiency and round it to 2 decimal places.
+    effLabel.text(futureEfficiency.toFixed(EFFICIENCY_DECIMAL_PLACES));
   }
 
   const text = effLabel.text();
@@ -124,9 +124,9 @@ export function onEfficiencyChanged(data: {
     ${formatLine("Potential clues lost", data.potentialCluesLost)}
     ${formatLine(
       "Current efficiency",
-      shouldShowEfficiency
-        ? efficiency.toFixed(EFFICIENCY_DECIMAL_PLACES)
-        : "-",
+      shownEfficiency === undefined
+        ? "-"
+        : shownEfficiency.toFixed(EFFICIENCY_DECIMAL_PLACES),
     )}
     <br />
     ${formatLine("Cards remaining to get", cardsNotGotten)}
@@ -136,9 +136,9 @@ export function onEfficiencyChanged(data: {
     )}
     ${formatLine(
       "Future required efficiency",
-      shouldShowFutureEfficiency
-        ? futureEfficiency.toFixed(EFFICIENCY_DECIMAL_PLACES)
-        : "-",
+      futureEfficiency === undefined
+        ? "-"
+        : futureEfficiency.toFixed(EFFICIENCY_DECIMAL_PLACES),
     )}
     ${formatLine(
       "Spare clues",

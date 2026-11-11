@@ -49,7 +49,7 @@ export function efficiencyLabelClick(
 }
 
 export function askForEfficiency(): void {
-  if (globals.state.replay.active && !globals.state.finished) {
+  if (globals.state.replay.segment !== undefined && !globals.state.finished) {
     modals.showWarning(
       "You can not modify the future efficiency during in-game replays.",
     );

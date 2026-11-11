@@ -226,7 +226,7 @@ function shouldShowLookCursor(card: HanabiCard) {
 
   // If we are in an in-game replay or we are not a player in an ongoing game, always show the
   // cursor.
-  if (globals.state.replay.active || !globals.state.playing) {
+  if (globals.state.replay.segment !== undefined || !globals.state.playing) {
     return true;
   }
 

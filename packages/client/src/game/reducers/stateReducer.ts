@@ -95,7 +95,7 @@ function stateReducerFunction(state: Draft<State>, action: Action) {
       // We want to use the penultimate segment instead of the final segment, because the final
       // segment will contain the times for all of the players, and this will drown out the reason
       // that the game ended.
-      const inInGameReplay = state.replay.active;
+      const inInGameReplay = state.replay.segment !== undefined;
 
       assertDefined(
         state.ongoingGame.turn.segment,
@@ -111,7 +111,6 @@ function stateReducerFunction(state: Draft<State>, action: Action) {
       const penultimateSegment = state.ongoingGame.turn.segment - 1;
 
       if (!inInGameReplay) {
-        state.replay.active = true;
         state.replay.segment = penultimateSegment;
       }
 
@@ -159,7 +158,6 @@ function stateReducerFunction(state: Draft<State>, action: Action) {
           state.playing = false;
           state.shadowing = false;
           state.finished = true;
-          state.replay.active = true;
           state.replay.segment = 0; // In dedicated solo replays, start on the first segment
           state.replay.gameId = mode.gameId;
 
@@ -417,7 +415,7 @@ function visualStateToShow(
     return undefined;
   }
 
-  if (state.replay.active) {
+  if (state.replay.segment !== undefined) {
     if (state.replay.hypothetical === undefined) {
       // Show the current replay segment.
       const currentReplayState = state.replay.states[state.replay.segment];

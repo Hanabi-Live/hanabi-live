@@ -328,7 +328,7 @@ function getFaceColors(
     return { className: "tw:bg-card-unknown tw:text-card-ink" };
   }
 
-  if (suit.fill === "multi") {
+  if (suit.fillColors !== undefined) {
     const stops = suit.fillColors.map(
       (color) => `color-mix(in srgb, ${color} ${FACE_TINT_PERCENT}%, white)`,
     );

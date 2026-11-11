@@ -11,7 +11,7 @@ use crate::errors::OrReject;
 use crate::{
     model::{
         ExtraOptions, IDLE_TIMEOUT_MS, MAX_TABLE_NAME_LENGTH, MAX_TAG_LENGTH, PendingTag, Phase,
-        Player, Tag, TagOperation, tag_too_long,
+        Player, Tag, TagEdit, tag_too_long,
     },
     transport::{Outgoing, Session, frame},
 };
@@ -23,6 +23,19 @@ use std::{
     collections::{BTreeMap, HashSet},
     sync::Arc,
 };
+
+/// Normalizes the text of a tag that a client sends, which may not be blank.
+fn normalize_tag(raw: &str) -> CommandResult<String> {
+    ensure_or_reject!(raw.len() <= MAX_TAG_LENGTH, "{}", tag_too_long());
+    let tag = crate::accounts::normalize_string(
+        raw.chars()
+            .map(|c| if c.is_whitespace() { ' ' } else { c })
+            .collect::<String>()
+            .trim(),
+    );
+    ensure_or_reject!(!tag.is_empty(), "Tags cannot be blank.");
+    Ok(tag)
+}
 
 /// Removes the moves of a hypothetical's last turn, the way clients go back. Morphs stay, since
 /// clients keep them when going back.
@@ -76,37 +89,19 @@ impl TableActor {
         session: Arc<Session>,
         message: ClientMessage,
     ) -> CommandResult<()> {
-        match message {
-            ClientMessage::Tag(r) => self.tag(session, &r.tag, TagOperation::Tag).await,
-            ClientMessage::TagDelete(r) => self.tag(session, &r.tag, TagOperation::TagDelete).await,
-            ClientMessage::TagDeleteAll(_) => {
-                self.tag(session, "", TagOperation::TagsDeleteAll).await
-            }
-            message => Err(wrong_phase(&message)),
-        }
+        let edit = match message {
+            ClientMessage::Tag(r) => TagEdit::Add(normalize_tag(&r.tag)?),
+            ClientMessage::TagDelete(r) => TagEdit::Delete(normalize_tag(&r.tag)?),
+            ClientMessage::TagDeleteAll(_) => TagEdit::DeleteAll,
+            message => return Err(wrong_phase(&message)),
+        };
+        self.tag(session, edit).await
     }
-    async fn tag(
-        &mut self,
-        session: Arc<Session>,
-        raw: &str,
-        operation: TagOperation,
-    ) -> CommandResult<()> {
+    async fn tag(&mut self, session: Arc<Session>, edit: TagEdit) -> CommandResult<()> {
         ensure_or_reject!(self.attending(&session), "Not attending");
-        ensure_or_reject!(raw.len() <= MAX_TAG_LENGTH, "{}", tag_too_long());
-        let tag = crate::accounts::normalize_string(
-            raw.chars()
-                .map(|c| if c.is_whitespace() { ' ' } else { c })
-                .collect::<String>()
-                .trim(),
-        );
-        ensure_or_reject!(
-            operation == TagOperation::TagsDeleteAll || !tag.is_empty(),
-            "Tags cannot be blank."
-        );
         let mut next = self.candidate();
         let replay = matches!(next.phase, Phase::Replay { .. });
         let s = next.game_mut().or_reject("No game")?;
-        let escaped = crate::accounts::escape_html(&tag);
         if replay {
             let game = s
                 .game_id
@@ -119,77 +114,69 @@ impl TableActor {
                 "Tag author is no longer at this table."
             );
         }
-        let exists = s
-            .tags
-            .iter()
-            .any(|t| t.user == session.user && t.tag == tag);
-        if operation == TagOperation::Tag {
-            ensure_or_reject!(
-                !replay || !exists,
-                "You have already tagged this game with \"{escaped}\"."
-            );
-            if !replay {
-                s.tags.retain(|t| t.tag != tag);
-            }
-            s.tags.push(Tag {
-                user: session.user,
-                tag: tag.clone(),
-            });
-        } else {
-            ensure_or_reject!(
-                operation == TagOperation::TagsDeleteAll || exists,
-                "The tag of \"{escaped}\" does not exist on this game yet."
-            );
-            s.tags.retain(|t| {
-                if operation == TagOperation::TagsDeleteAll {
-                    t.user != session.user
-                } else if replay {
-                    t.user != session.user || t.tag != tag
-                } else {
-                    t.tag != tag
+        let exists =
+            |tags: &[Tag], tag: &str| tags.iter().any(|t| t.user == session.user && t.tag == tag);
+        match &edit {
+            TagEdit::Add(tag) => {
+                ensure_or_reject!(
+                    !replay || !exists(&s.tags, tag),
+                    "You have already tagged this game with \"{}\".",
+                    crate::accounts::escape_html(tag)
+                );
+                if !replay {
+                    s.tags.retain(|t| t.tag != *tag);
                 }
-            });
+                s.tags.push(Tag {
+                    user: session.user,
+                    tag: tag.clone(),
+                });
+            }
+            TagEdit::Delete(tag) => {
+                ensure_or_reject!(
+                    exists(&s.tags, tag),
+                    "The tag of \"{}\" does not exist on this game yet.",
+                    crate::accounts::escape_html(tag)
+                );
+                s.tags
+                    .retain(|t| t.tag != *tag || (replay && t.user != session.user));
+            }
+            TagEdit::DeleteAll => s.tags.retain(|t| t.user != session.user),
         }
+        let name = crate::accounts::escape_html(&session.name);
+        let text = match (&edit, replay) {
+            (TagEdit::Add(tag), true) => format!(
+                "{name} has added a game tag of \"{}\".",
+                crate::accounts::escape_html(tag)
+            ),
+            (TagEdit::Delete(tag), true) => format!(
+                "{name} has deleted a game tag of \"{}\".",
+                crate::accounts::escape_html(tag)
+            ),
+            (TagEdit::DeleteAll, true) => {
+                format!("{name} has deleted all their tags for this game.")
+            }
+            (TagEdit::Add(tag), false) => format!(
+                "Successfully added a tag of \"{}\".",
+                crate::accounts::escape_html(tag)
+            ),
+            (TagEdit::Delete(tag), false) => format!(
+                "Successfully deleted the tag of \"{}\".",
+                crate::accounts::escape_html(tag)
+            ),
+            (TagEdit::DeleteAll, false) => {
+                "Successfully deleted all your tags for this game.".into()
+            }
+        };
         let edit = if replay {
             Some(PendingTag {
                 game_id: s
                     .game_id
                     .or_reject("JSON replays cannot be tagged in the database")?,
                 user_id: session.user,
-                operation,
-                tag: tag.clone(),
+                edit,
             })
         } else {
             None
-        };
-        let verb = if operation == TagOperation::Tag {
-            "added"
-        } else {
-            "deleted"
-        };
-        let text = if replay {
-            if operation == TagOperation::TagsDeleteAll {
-                format!(
-                    "{} has deleted all their tags for this game.",
-                    crate::accounts::escape_html(&session.name)
-                )
-            } else {
-                format!(
-                    "{} has {verb} a game tag of \"{escaped}\".",
-                    crate::accounts::escape_html(&session.name)
-                )
-            }
-        } else if operation == TagOperation::TagsDeleteAll {
-            "Successfully deleted all your tags for this game.".into()
-        } else {
-            format!(
-                "Successfully {verb} {} tag of \"{escaped}\".",
-                if operation == TagOperation::Tag {
-                    "a"
-                } else {
-                    "the"
-                }
-            )
         };
         // A replay posts the tag to its chat, so tagging is charged like a message. The tag is still
         // saved when its notice does not fit.

@@ -62,7 +62,7 @@ import {
 import type { NodeWithTooltip } from "./controls/NodeWithTooltip.ts";
 import type { NoteIndicator } from "./controls/NoteIndicator.ts";
 import { RankPip } from "./controls/RankPip.ts";
-import { suitIndexToSuit } from "./convert.ts";
+import { suitIndexToSuit, suitToSuitIndex } from "./convert.ts";
 import type { CursorType } from "./cursor.ts";
 import {
   CARD_IMAGE_STACK_BASE_RANK_NAME,
@@ -413,14 +413,10 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip, UiCard {
     this.layout.checkSetDraggable();
 
     // Set the visible state. (This must be after the morphed blank check.)
-    if (suitToShow === undefined) {
-      this._visibleSuitIndex = undefined;
-    } else {
-      const suitIndexToShow = this.variant.suits.indexOf(suitToShow) as
-        SuitIndex | -1;
-      this._visibleSuitIndex =
-        suitIndexToShow === -1 ? undefined : suitIndexToShow;
-    }
+    this._visibleSuitIndex =
+      suitToShow === undefined
+        ? undefined
+        : suitToSuitIndex(suitToShow, this.variant);
     this._visibleRank = rankToShow;
 
     // Setting "this.bareName" will automatically update how the card appears the next time that the
@@ -827,7 +823,10 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip, UiCard {
     this.arrow!.rotation(
       direction === StackDirection.Up ? HALF_TURN_DEGREES : 0,
     );
-    if (suit.fill === "multi") {
+    if (suit.fillColors === undefined) {
+      this.arrowBase!.fill(suit.fill);
+      this.arrowBase!.fillPriority("color");
+    } else {
       // Show the colors in the same order as on the card, from top to bottom, in either direction.
       const { y, height } = this.arrowBase!.getSelfRect();
       const top = direction === StackDirection.Up ? y + height : y;
@@ -839,9 +838,6 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip, UiCard {
         suit.fillColors.flatMap((color, i) => [i / lastColorIndex, color]),
       );
       this.arrowBase!.fillPriority("linear-gradient");
-    } else {
-      this.arrowBase!.fill(suit.fill);
-      this.arrowBase!.fillPriority("color");
     }
     if (this.rankPips.isVisible() === true) {
       this.setArrowMiddleRight();
