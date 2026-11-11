@@ -123,7 +123,7 @@ function stateReducerFunction(state: Draft<State>, action: Action) {
         useSharedSegments: !inInGameReplay,
         leader: shared.leader,
         amLeader: shared.leader === state.metadata.ourUsername,
-        datetimeStarted: shared.datetimeStarted,
+        datetimeStarted: shared.startedAt,
         spoilerFree: shared.spoilerFree,
         canPlayAgain: shared.canPlayAgain,
         restartDeclined: castDraft(shared.restartDeclined ?? []),
@@ -134,8 +134,8 @@ function stateReducerFunction(state: Draft<State>, action: Action) {
     }
 
     case "init": {
-      state.datetimeStarted = action.datetimeStarted;
-      state.datetimeFinished = action.datetimeFinished;
+      state.datetimeStarted = action.startedAt;
+      state.datetimeFinished = action.finishedAt;
 
       switch (action.mode) {
         case "playing": {
@@ -165,13 +165,13 @@ function stateReducerFunction(state: Draft<State>, action: Action) {
           const shared = action.sharedReplay;
           if (shared !== undefined) {
             // In dedicated shared replays, start on the shared replay turn.
-            state.replay.segment = shared.segment;
+            state.replay.segment = shared.turn;
             state.replay.shared = {
-              segment: shared.segment,
+              segment: shared.turn,
               useSharedSegments: true,
               leader: shared.leader,
               amLeader: shared.leader === state.metadata.ourUsername,
-              datetimeStarted: shared.datetimeStarted,
+              datetimeStarted: shared.startedAt,
               spoilerFree: shared.spoilerFree,
               canPlayAgain: shared.canPlayAgain,
               restartDeclined: castDraft(shared.restartDeclined ?? []),

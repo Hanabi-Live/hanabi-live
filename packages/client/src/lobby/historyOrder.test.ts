@@ -2,8 +2,8 @@ import type { GameId } from "@hanabi-live/data";
 import { compareGameHistory } from "@hanabi-live/data";
 import { expect, test } from "vitest";
 
-function game(id: number, datetimeFinished: string) {
-  return { gameId: id as GameId, datetimeFinished };
+function game(id: number, finishedAt: string) {
+  return { gameId: id as GameId, finishedAt };
 }
 
 test("history follows completion time rather than ID allocation order", () => {

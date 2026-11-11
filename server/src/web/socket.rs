@@ -252,13 +252,15 @@ pub(super) async fn websocket(
             if app.lifecycle.healthy() { "The server is not accepting connections while it starts or drains for maintenance." } else { "Live-state recovery or ownership is unavailable. Wait for recovery before reconnecting." },
             StatusCode::SERVICE_UNAVAILABLE).response(true);
     }
-    let query = match accounts::account_query(uri.query(), &["account", "version"]) {
+    let query = match accounts::account_query(uri.query(), &["account", "version", "bot"]) {
         Ok(query) => query,
         Err(message) => {
             return HttpError::refused(StatusCode::BAD_REQUEST, message).json();
         }
     };
     let version = query.get("version").unwrap_or_default().to_owned();
+    // Bots do not send a version.
+    let bot = query.get("bot") == Some("true");
     let ip = address.ip();
     let Some(id) = accounts::session_id(&headers, &app.public.session_secret, uri.query()) else {
         tracing::warn!("Rejected websocket from {ip} without a valid session.");
@@ -278,7 +280,7 @@ pub(super) async fn websocket(
     let account = match Account::read(&app.store.primary, id).await {
         Ok(Some(account)) => Account {
             // A bot's first connection marks the account below.
-            bot: account.bot || version == accounts::BOT_VERSION,
+            bot: account.bot || bot,
             ..account
         },
         Ok(None) => {
@@ -314,8 +316,12 @@ pub(super) async fn websocket(
             "The server's session identifier space is exhausted. An administrator must restart the server.",
             StatusCode::SERVICE_UNAVAILABLE).response(true);
     };
-    let version_check = accounts::validate_client_version(&version, &app.public.client_version);
-    if version == accounts::BOT_VERSION {
+    let version_check = if bot {
+        Ok(())
+    } else {
+        accounts::validate_client_version(&version, &app.public.client_version)
+    };
+    if bot {
         tracing::info!("Accepted bot websocket for account {id} from IP: {ip}");
         if let Err(error) = accounts::mark_bot(&app.store.primary, id).await {
             return crate::errors::Report::from_error("Recording a bot connection", &error)
@@ -352,20 +358,16 @@ pub(super) async fn websocket(
                                     .collect::<String>()
                             );
                             // Browsers cannot read HTTP errors from a failed WebSocket upgrade.
-                            // Clients reload on "outdatedClient"; the error that follows explains
-                            // the problem when a reload did not help. Clients of every earlier
-                            // release read these two messages, so they must keep this form.
+                            // Clients reload on this error's code, and show its message when a
+                            // reload did not help.
                             tokio::time::timeout(ERROR_SEND_TIMEOUT, async {
                                 socket
                                     .send(Message::Text(frame(
-                                        hanabi_protocol::server::OUTDATED_CLIENT,
-                                        hanabi_protocol::Empty {},
-                                    )))
-                                    .await?;
-                                socket
-                                    .send(Message::Text(frame(
                                         hanabi_protocol::server::ERROR,
-                                        hanabi_protocol::Notice::new(message),
+                                        hanabi_protocol::Notice {
+                                            code: Some(hanabi_protocol::NoticeCode::OutdatedClient),
+                                            ..hanabi_protocol::Notice::new(message)
+                                        },
                                     )))
                                     .await?;
                                 socket.close().await

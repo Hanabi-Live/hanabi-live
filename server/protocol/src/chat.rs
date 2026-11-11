@@ -24,7 +24,7 @@ pub struct Chat {
     #[schemars(length(min = 1))]
     pub text: String,
     pub source: ChatSource,
-    pub datetime: Timestamp,
+    pub sent_at: Timestamp,
     /// The author. Absent when nobody wrote the message, such as a server message.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub username: Option<Username>,
@@ -42,15 +42,11 @@ pub struct Chat {
 }
 
 impl Chat {
-    pub fn new(
-        text: impl Into<String>,
-        source: ChatSource,
-        datetime: impl Into<Timestamp>,
-    ) -> Self {
+    pub fn new(text: impl Into<String>, source: ChatSource, sent_at: impl Into<Timestamp>) -> Self {
         Self {
             text: text.into(),
             source,
-            datetime: datetime.into(),
+            sent_at: sent_at.into(),
             username: None,
             chat_id: None,
             table_id: None,

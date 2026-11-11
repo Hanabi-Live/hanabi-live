@@ -482,14 +482,14 @@ impl TableActor {
         }
         Ok(Some(hanabi_protocol::SharedReplayInit {
             leader: self.leader_name()?.into(),
-            segment: replay.segment,
+            turn: replay.segment,
             efficiency_modifier: replay.efficiency_modifier,
             spoiler_free: replay.spoiler_free,
             restart_declined: self.restart_declined_names(),
             can_play_again: self.can_play_again(session),
             // A review of a game just played begins when the game ends; a replay of an older
             // game begins when its table is created.
-            datetime_started: hanabi_protocol::Timestamp::from(
+            started_at: hanabi_protocol::Timestamp::from(
                 s.finished
                     .map_or(self.table.created, |f| f.max(self.table.created)),
             ),
@@ -526,8 +526,8 @@ impl TableActor {
                 game_id: s.game_id.filter(|_| replay),
                 has_custom_seed: self.table.extra.custom_seed.is_some(),
                 seed: s.seed.clone(),
-                datetime_started: hanabi_protocol::Timestamp::from(s.started),
-                datetime_finished: s.finished.map(hanabi_protocol::Timestamp::from),
+                started_at: hanabi_protocol::Timestamp::from(s.started),
+                finished_at: s.finished.map(hanabi_protocol::Timestamp::from),
                 options: wire_options(&s.game.options),
                 characters: if s.game.options.detrimental_characters {
                     s.game

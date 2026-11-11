@@ -107,12 +107,13 @@ pub(super) fn wire_event(event: &hanabi_engine::EngineEvent) -> GameEvent {
             giver: seat(giver),
             target: seat(target),
             orders: list.iter().copied().map(card).collect(),
+            ignore_negative: false,
         }),
         E::Turn {
             num,
             current_player_index,
         } => GameEvent::Turn(TurnEvent {
-            num: Turn::new(num).expect("engine turns are below MAX_GAME_ACTIONS"),
+            turn: Turn::new(num).expect("engine turns are below MAX_GAME_ACTIONS"),
             current_player_index: current_player_index.map(seat),
         }),
         E::GameOver {

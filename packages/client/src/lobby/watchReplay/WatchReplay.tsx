@@ -60,7 +60,7 @@ function WatchReplayForm() {
     setError(undefined);
 
     let replay:
-      { type: "id"; gameId: number } | { type: "json"; gameJson: GameJson };
+      { type: "saved"; gameId: number } | { type: "imported"; game: GameJson };
     if (source === "id") {
       const id = parseIntSafe(gameId);
       if (id === undefined) {
@@ -72,7 +72,7 @@ function WatchReplayForm() {
         return;
       }
       localStorage.setItem(LOCAL_STORAGE_KEY.WATCH_REPLAY_ID, gameId);
-      replay = { type: "id", gameId: id };
+      replay = { type: "saved", gameId: id };
     } else {
       const parsed = parseGameJson(json);
       if ("error" in parsed) {
@@ -80,7 +80,7 @@ function WatchReplayForm() {
         return;
       }
       localStorage.setItem(LOCAL_STORAGE_KEY.WATCH_REPLAY_JSON, json);
-      replay = { type: "json", gameJson: parsed.gameJson };
+      replay = { type: "imported", game: parsed.gameJson };
     }
 
     localStorage.setItem(LOCAL_STORAGE_KEY.WATCH_REPLAY_VISIBILITY, visibility);
@@ -90,7 +90,7 @@ function WatchReplayForm() {
     );
 
     globals.conn!.send("replayCreate", {
-      ...replay,
+      source: replay,
       visibility,
       // Only shared replays can be spoiler-free reviews.
       spoilerFree: visibility === "shared" && spoilerFree,

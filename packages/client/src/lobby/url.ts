@@ -197,8 +197,7 @@ function gotoPath(data: ServerCommandData["welcome"]): boolean {
           ? "shared"
           : "solo";
         globals.conn!.send("replayCreate", {
-          gameId,
-          type: "id",
+          source: { type: "saved", gameId },
           visibility,
           // A link to a shared replay should join the one that people are already watching.
           joinExisting: true,
@@ -232,7 +231,6 @@ function gotoPath(data: ServerCommandData["welcome"]): boolean {
         ? "shared"
         : "solo";
 
-      const source = "json";
       localStorage.setItem(LOCAL_STORAGE_KEY.WATCH_REPLAY_JSON, gameJsonString);
       localStorage.setItem(
         LOCAL_STORAGE_KEY.WATCH_REPLAY_VISIBILITY,
@@ -240,8 +238,7 @@ function gotoPath(data: ServerCommandData["welcome"]): boolean {
       );
 
       globals.conn!.send("replayCreate", {
-        type: source,
-        gameJson,
+        source: { type: "imported", game: gameJson },
         visibility,
       });
       return true;

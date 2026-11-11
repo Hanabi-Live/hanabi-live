@@ -513,7 +513,7 @@ async fn seed_stats(
     seed: &str,
     frequencies: &[hanabi_protocol::ScoreFrequency],
 ) -> Result<Value> {
-    let games: i64 = frequencies.iter().map(|row| row.num_times).sum();
+    let games: i64 = frequencies.iter().map(|row| row.num_times.0).sum();
     let Some(game) = sqlx::query!(
         "SELECT variant_id,num_players FROM games WHERE seed=$1 LIMIT 1",
         seed
@@ -528,13 +528,13 @@ async fn seed_stats(
     };
     let total: i64 = frequencies
         .iter()
-        .map(|row| i64::from(row.score) * row.num_times)
+        .map(|row| i64::from(row.score.0) * row.num_times.0)
         .sum();
     let average = float(total) / float(games);
     let max_scores: i64 = frequencies
         .iter()
-        .filter(|row| i64::from(row.score) == i64::from(variant.max_score))
-        .map(|row| row.num_times)
+        .filter(|row| i64::from(row.score.0) == i64::from(variant.max_score))
+        .map(|row| row.num_times.0)
         .sum();
     let mut statistics = json!({
         "numGames": games,

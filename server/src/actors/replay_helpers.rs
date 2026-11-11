@@ -112,23 +112,28 @@ pub fn parse(input: &ReplayGame) -> CommandResult<Imported> {
         seeded.as_ref().is_none_or(|d| *d == deck),
         "The deck does not match the seed"
     );
-    let characters: Vec<AssignedCharacter> = input
-        .characters
-        .iter()
-        .flatten()
-        .map(|character| {
-            let name = character.name.clone();
-            // A character that has metadata gets the first value when the import leaves it out.
-            let needs_metadata = name
-                .as_deref()
-                .and_then(hanabi_engine::Character::from_name)
-                .is_some_and(hanabi_engine::Character::has_assigned_metadata);
-            AssignedCharacter {
-                metadata: character.metadata.or(needs_metadata.then_some(0)),
-                name,
-            }
-        })
-        .collect();
+    let mut characters: Vec<AssignedCharacter> = vec![];
+    for character in input.characters.iter().flatten() {
+        let name = match character.character_id {
+            None => None,
+            Some(id) => Some(
+                hanabi_engine::characters()
+                    .iter()
+                    .find(|known| known.id == id)
+                    .map(|known| known.name.clone())
+                    .or_reject("Unknown character assignment.")?,
+            ),
+        };
+        // A character that has metadata gets the first value when the import leaves it out.
+        let needs_metadata = name
+            .as_deref()
+            .and_then(hanabi_engine::Character::from_name)
+            .is_some_and(hanabi_engine::Character::has_assigned_metadata);
+        characters.push(AssignedCharacter {
+            metadata: character.metadata.or(needs_metadata.then_some(0)),
+            name,
+        });
+    }
     ensure_or_reject!(
         !has_characters || characters.len() == players.len(),
         "The amount of characters must match the number of players"

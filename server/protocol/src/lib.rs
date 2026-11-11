@@ -7,7 +7,7 @@ use serde::{Deserialize, Serialize};
 mod enums;
 pub use enums::{
     ClueType, EndCondition, GameListColumn, NoticeCode, SoundMove, WIRE_ENUMS, WireEnum,
-    WireEnumMember, WireValue,
+    WireEnumMember,
 };
 mod registry;
 pub use registry::{
@@ -369,6 +369,24 @@ pub struct ChatId(#[schemars(range(min = 1, max = MAX_SAFE_INTEGER))] pub i64);
 #[serde(transparent)]
 pub struct Count(#[schemars(range(min = 0, max = MAX_SAFE_INTEGER))] pub i64);
 
+/// A game's score: the cards played, or less in a variant that scores some cards lower.
+#[derive(
+    Clone,
+    Copy,
+    Debug,
+    Default,
+    PartialEq,
+    Eq,
+    PartialOrd,
+    Ord,
+    Hash,
+    Serialize,
+    Deserialize,
+    JsonSchema,
+)]
+#[serde(transparent)]
+pub struct Score(#[schemars(range(min = 0, max = i32::MAX))] pub i32);
+
 catalog_id! {
     /// A variant's number in `variants.json`. "No Variant" is 0.
     VariantId
@@ -586,6 +604,13 @@ mod tests {
                     case["name"]
                 );
             }
+        }
+    }
+
+    #[test]
+    fn game_list_column_names_match_the_wire() {
+        for column in GameListColumn::ALL {
+            assert_eq!(serde_json::to_value(column).unwrap(), column.name());
         }
     }
 

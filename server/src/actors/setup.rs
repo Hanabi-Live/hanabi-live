@@ -358,22 +358,22 @@ pub(super) async fn prepare_table(
         let r = match creation {
             Creation::Table(r) => r,
             Creation::Replay(r) => {
-                let shared = r.visibility() == hanabi_protocol::ReplayVisibility::Shared;
-                let spoiler_free = r.spoiler_free();
+                let shared = r.visibility == hanabi_protocol::ReplayVisibility::Shared;
+                let spoiler_free = r.spoiler_free;
                 ensure_or_reject!(
                     shared || !spoiler_free,
                     "Only a shared replay can be a spoiler-free review."
                 );
                 let mut warnings = vec![];
                 let mut custom_seed = None;
-                let snapshot = match &r {
-                    hanabi_protocol::ReplayCreateRequest::Json { game_json, .. } => {
-                        let imported = super::replay_helpers::parse(game_json)?;
+                let snapshot = match &r.source {
+                    hanabi_protocol::ReplaySource::Imported { game } => {
+                        let imported = super::replay_helpers::parse(game)?;
                         warnings.clone_from(&imported.warnings);
                         custom_seed = Some(imported.custom_seed.clone());
                         super::replay_helpers::snapshot(imported, id, session.user)
                     }
-                    hanabi_protocol::ReplayCreateRequest::Id { game_id, .. } => {
+                    hanabi_protocol::ReplaySource::Saved { game_id } => {
                         crate::archive::replay(&store.primary, *game_id, id, session.user).await?
                     }
                 };

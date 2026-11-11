@@ -375,6 +375,7 @@ pub struct Table {
     pub settings: TableSettings,
     pub owner_id: UserId,
     pub password_protected: bool,
+    #[schemars(length(max = MAX_PLAYERS))]
     pub player_names: Vec<Username>,
     /// The percentage of the maximum score reached, or of a replay watched.
     #[schemars(range(min = 0, max = MAX_PROGRESS))]
@@ -407,16 +408,15 @@ pub struct GameHistoryEntry {
     /// Absent for a game with its own deck instead of a seed, such as an imported one.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub seed: Option<String>,
-    #[schemars(range(min = 0, max = i32::MAX))]
-    pub score: i32,
+    pub score: Score,
     pub num_turns: Turn,
     pub end_condition: EndCondition,
-    pub datetime_started: Timestamp,
-    pub datetime_finished: Timestamp,
+    pub started_at: Timestamp,
+    pub finished_at: Timestamp,
     /// How many games used this seed. Absent when the game has no seed.
     #[serde(skip_serializing_if = "Option::is_none")]
-    #[schemars(range(min = 1, max = MAX_SAFE_INTEGER))]
-    pub num_games_on_seed: Option<i64>,
+    pub num_games_on_seed: Option<Count>,
+    #[schemars(length(min = MIN_PLAYERS, max = MAX_PLAYERS))]
     pub player_names: Vec<Username>,
     /// The game's tags, in alphabetical order.
     pub tags: Vec<String>,
@@ -451,20 +451,14 @@ pub struct PregameBestScore {
     pub best: Option<BestScore>,
 }
 
-/// A best score, with the options of its game that make a game easier.
+/// A best score, and whether it counts as a normal one.
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct BestScore {
-    #[schemars(range(min = 0, max = i32::MAX))]
-    pub score: i32,
-    /// The options as bits, which is 0 when the game used none of them.
-    #[schemars(range(min = 0, max = i32::MAX))]
-    pub modifier: i32,
-    pub deck_plays: bool,
-    pub empty_clues: bool,
-    pub one_extra_card: bool,
-    pub one_less_card: bool,
-    pub all_or_nothing: bool,
+    pub score: Score,
+    /// Whether the game used an option that keeps its score from counting as a normal one, such as
+    /// "One Extra Card".
+    pub modified: bool,
 }
 
 #[derive(Clone, Debug, Default, Serialize, Deserialize, JsonSchema)]
@@ -502,6 +496,7 @@ pub struct Pregame {
     pub table_id: TableId,
     pub settings: TableSettings,
     pub owner_id: UserId,
+    #[schemars(length(max = MAX_PLAYERS))]
     pub players: Vec<PregamePlayer>,
     pub password_protected: bool,
 }

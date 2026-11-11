@@ -105,9 +105,6 @@ const H_GROUP_LEVEL = 3;
 const MAX_TURN_CHECKS = 50;
 const TURN_CHECK_MILLISECONDS = 100;
 
-/** The login version that makes an account a bot. */
-const BOT_VERSION = "bot";
-
 /** The account that the browser logs in with. Others play the seeded games. */
 const USERNAME = "Alice";
 
@@ -791,9 +788,9 @@ type Peer = ReturnType<typeof socketClient>;
 async function connect(
   address: string,
   username: string,
-  version?: string,
+  bot = false,
 ): Promise<Peer> {
-  const peer = socketClient(address, await login(address, username, version));
+  const peer = socketClient(address, await login(address, username, bot));
   await peer.receive("welcome", SERVER_COMMAND_SCHEMAS.welcome);
   return peer;
 }
@@ -915,7 +912,7 @@ async function seed(address: string): Promise<Seed> {
     await spectator.receive("joined", SERVER_COMMAND_SCHEMAS.joined);
     spectators.push(spectator);
   }
-  const bot = await connect(address, "Robot", BOT_VERSION);
+  const bot = await connect(address, "Robot", true);
 
   let bobIndex: number | undefined;
   let clueTarget: { order: CardOrder; rank: RankClueNumber } | undefined;

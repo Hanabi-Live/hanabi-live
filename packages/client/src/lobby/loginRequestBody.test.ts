@@ -7,6 +7,7 @@ const request = {
   version: "1",
   darkMode: false,
   createAccount: false,
+  bot: false,
 };
 
 describe("loginRequestBody", () => {

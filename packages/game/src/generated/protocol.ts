@@ -355,6 +355,11 @@ export const gameEventSchema = z.discriminatedUnion("type", [
       clue: clueSchema.optional(),
       giver: playerIndexSchema,
       /**
+       * Whether the cards that the clue does not touch learn nothing from it. Only a hypothetical's
+       * clue can set it.
+       */
+      ignoreNegative: z.boolean().optional(),
+      /**
        * The orders of the cards the clue touched.
        */
       orders: z.array(cardOrderSchema).readonly(),
@@ -368,7 +373,7 @@ export const gameEventSchema = z.discriminatedUnion("type", [
        * Absent once the game has ended.
        */
       currentPlayerIndex: playerIndexSchema.optional(),
-      num: turnSchema,
+      turn: turnSchema,
       type: z.literal("turn"),
     })
     .readonly(),
@@ -485,7 +490,11 @@ export const hypotheticalEventSchema = z.discriminatedUnion("type", [
        */
       clue: clueSchema.optional(),
       giver: playerIndexSchema,
-      ignoreNegative: z.boolean(),
+      /**
+       * Whether the cards that the clue does not touch learn nothing from it. Only a hypothetical's
+       * clue can set it.
+       */
+      ignoreNegative: z.boolean().optional(),
       /**
        * The orders of the cards the clue touched.
        */
@@ -500,7 +509,7 @@ export const hypotheticalEventSchema = z.discriminatedUnion("type", [
        * Absent once the game has ended.
        */
       currentPlayerIndex: playerIndexSchema.optional(),
-      num: turnSchema,
+      turn: turnSchema,
       type: z.literal("turn"),
     })
     .readonly(),

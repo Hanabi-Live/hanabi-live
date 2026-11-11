@@ -116,8 +116,8 @@ export function onSharedSegmentChanged(
       globals.lobby.conn!.send("replayAction", {
         tableId: globals.lobby.joinedTableId,
         action: {
-          type: "segment",
-          segment: data.sharedSegment,
+          type: "turn",
+          turn: data.sharedSegment,
         },
       });
     } else {

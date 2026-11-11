@@ -271,7 +271,7 @@
                       >{{ game.playerNames|join(", ") }}</a
                     >
                   </td>
-                  <td>{{ game.datetimeFinished|history_date }}</td>
+                  <td>{{ game.finishedAt|history_date }}</td>
                   <td class="center">
                     {% if not game.seed %}{{ game.numGamesOnThisSeed }}{% else
                     %}<a href="/seed/{{ game.seed|urlencode }}"

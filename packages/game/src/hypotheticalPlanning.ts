@@ -414,7 +414,7 @@ export function planHypotheticalAction(
   }
   actions.push({
     type: "turn",
-    num: gameState.turn.turnNum + 1,
+    turn: gameState.turn.turnNum + 1,
     currentPlayerIndex: nextPlayerIndex as PlayerIndex,
   });
 

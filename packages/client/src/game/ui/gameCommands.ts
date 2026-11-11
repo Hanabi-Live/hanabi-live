@@ -135,8 +135,8 @@ gameCommands.set("hypothetical", (data) => {
 // The shared replay leader's actions, which the server relays to everyone watching.
 gameCommands.set("replayAction", ({ action: leaderAction }) => {
   switch (leaderAction.type) {
-    case "segment": {
-      // The leader already moved to the segment that the server is broadcasting.
+    case "turn": {
+      // The leader already moved to the turn that the server is broadcasting.
       if (
         globals.state.replay.shared === undefined
         || globals.state.replay.shared.amLeader
@@ -146,7 +146,7 @@ gameCommands.set("replayAction", ({ action: leaderAction }) => {
 
       globals.store!.dispatch({
         type: "replaySharedSegment",
-        segment: leaderAction.segment,
+        segment: leaderAction.turn,
       });
       break;
     }
@@ -393,7 +393,7 @@ gameCommands.set("suggestion", (data) => {
     return;
   }
 
-  suggestTurn(data.username, `table${data.tableId}`, data.segment);
+  suggestTurn(data.username, `table${data.tableId}`, data.turn);
 });
 
 // This is used to update the names of the people currently spectating the game.
@@ -562,8 +562,8 @@ function initStateStore(data: InitData) {
   globals.store.dispatch({
     type: "init",
     mode: data.mode,
-    datetimeStarted: data.datetimeStarted,
-    datetimeFinished: data.datetimeFinished,
+    startedAt: data.startedAt,
+    finishedAt: data.finishedAt,
     gameId: data.gameId,
     sharedReplay: data.sharedReplay,
     pausePlayerIndex: data.pausePlayerIndex,

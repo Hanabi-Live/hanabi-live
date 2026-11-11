@@ -23,15 +23,7 @@ function player(
   username: string,
   present: boolean,
 ): Game["players"][number] {
-  const best = {
-    score: 25,
-    allOrNothing: false,
-    deckPlays: false,
-    emptyClues: false,
-    modifier: 0,
-    oneExtraCard: false,
-    oneLessCard: false,
-  };
+  const best = { score: 25, modified: false };
   return {
     index,
     username,

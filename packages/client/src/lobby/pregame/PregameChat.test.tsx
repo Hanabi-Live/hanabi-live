@@ -30,7 +30,7 @@ function message(
     text: "hello",
     username: "alice",
     source: "user",
-    datetime: "2026-11-09T12:34:00.000Z",
+    sentAt: "2026-11-09T12:34:00.000Z",
     tableId: TABLE_ID,
     ...fields,
   };

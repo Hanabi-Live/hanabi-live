@@ -14,9 +14,9 @@ function event(data: unknown) {
 
 describe("server game events", () => {
   test("the final turn and an unattributed game over have no seat", () => {
-    expect(toGameAction({ type: "turn", num: 30 })).toEqual({
+    expect(toGameAction({ type: "turn", turn: 30 })).toEqual({
       type: "turn",
-      num: 30,
+      turn: 30,
     });
     expect(
       toGameAction({ type: "gameOver", endCondition: EndCondition.Normal }),

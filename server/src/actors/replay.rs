@@ -56,7 +56,7 @@ impl TableActor {
     ) -> CommandResult<()> {
         match message {
             ClientMessage::ReplayAction(r) => self.replay_action(session, r).await,
-            ClientMessage::TableSuggest(r) => self.suggest(session, r.segment).await,
+            ClientMessage::TableSuggest(r) => self.suggest(session, r.turn).await,
             // A restart starts in `client`, through `start_restart`.
             ClientMessage::TableRestart(_) => {
                 bail_internal!("A restart ran without its statistics")
@@ -307,7 +307,7 @@ impl TableActor {
                 hanabi_protocol::Suggestion {
                     table_id: self.table.id,
                     username: session.name.clone().into(),
-                    segment,
+                    turn: segment,
                 },
             ),
         ));
@@ -334,7 +334,7 @@ impl TableActor {
         // Arrows and sounds only reset the idle timer, so they skip the durable write.
         let checkpoint = !matches!(r.action, R::Arrow { .. } | R::Sound { .. });
         match &r.action {
-            R::Segment { segment } => replay.segment = *segment,
+            R::Turn { turn } => replay.segment = *turn,
             R::Arrow { .. } | R::Sound { .. } => {}
             R::HypoStart {} => {
                 ensure_or_reject!(!replay.hypothetical, "Already hypothetical");

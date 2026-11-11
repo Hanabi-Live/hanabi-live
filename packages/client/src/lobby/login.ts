@@ -173,7 +173,7 @@ function send(
       if (login === undefined) {
         return;
       }
-      if (login === "no_account") {
+      if (login === "noAccount") {
         if (newPassword === undefined) {
           $("#login-ajax").hide();
           $("#login-button").removeClass("disabled");
@@ -194,23 +194,23 @@ function send(
 }
 
 /**
- * Resolves to undefined when the page is reloading to update an outdated client, and to
- * "no_account" when the username has no account and we did not ask to create one.
+ * Resolves to undefined when the page is reloading to update an outdated client, and to "noAccount"
+ * when the username has no account and we did not ask to create one.
  */
 async function requestLogin(
   url: string,
   data: z.output<typeof loginRequestSchema>,
-): Promise<"no_account" | { body: unknown } | undefined> {
+): Promise<"noAccount" | { body: unknown } | undefined> {
   const response = await fetch(url, {
     method: "POST",
     body: loginRequestBody(data),
   });
   if (!response.ok) {
     const code = await errorCode(response);
-    if (code === "outdated_client" && reloadOutdatedClient()) {
+    if (code === "outdatedClient" && reloadOutdatedClient()) {
       return undefined;
     }
-    if (code === "no_account") {
+    if (code === "noAccount") {
       return code;
     }
     throw await httpError(response, "Logging in");

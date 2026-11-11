@@ -185,9 +185,6 @@ fn unauthorized(message: impl Into<String>) -> Response {
 /// Rejects a client from a different release. Current clients reload the page instead of showing
 /// this explanation, so players only see it when the reload served the same client again, such as
 /// from a stale cache; hence the hard-refresh advice.
-/// The client version that bots send instead of the current client version.
-pub const BOT_VERSION: &str = "bot";
-
 /// Flags an account that authenticated as a bot, so bot privileges can later depend on the flag.
 pub async fn mark_bot(pool: &PgPool, id: i32) -> Result<()> {
     sqlx::query!(
@@ -200,7 +197,7 @@ pub async fn mark_bot(pool: &PgPool, id: i32) -> Result<()> {
 }
 
 pub fn validate_client_version(version: &str, current: &str) -> Result<(), String> {
-    if !version.is_empty() && (version == BOT_VERSION || version == current) {
+    if !version.is_empty() && version == current {
         return Ok(());
     }
     Err(format!(
@@ -278,7 +275,8 @@ async fn login_inner(state: &Accounts, ip: &str, input: LoginRequest) -> Result<
         ("password", &input.password),
         ("version", &input.version),
     ] {
-        if value.is_empty() {
+        // Bots do not send a version.
+        if value.is_empty() && !(input.bot && name == "version") {
             return Ok(unauthorized(format!(
                 "You must provide the \"{name}\" parameter to log in."
             )));
@@ -288,7 +286,9 @@ async fn login_inner(state: &Accounts, ip: &str, input: LoginRequest) -> Result<
         Ok(username) => username,
         Err(message) => return Ok(unauthorized(message)),
     };
-    if let Err(message) = validate_client_version(&input.version, &state.config.version) {
+    if let Err(message) = validate_client_version(&input.version, &state.config.version)
+        && !input.bot
+    {
         let error = Notice {
             code: Some(hanabi_protocol::NoticeCode::OutdatedClient),
             ..Notice::new(message)
@@ -337,7 +337,7 @@ async fn login_inner(state: &Accounts, ip: &str, input: LoginRequest) -> Result<
                 );
             }
         }
-        if input.version == BOT_VERSION {
+        if input.bot {
             mark_bot(&state.pool, id).await?;
         }
     } else {
@@ -359,7 +359,7 @@ async fn login_inner(state: &Accounts, ip: &str, input: LoginRequest) -> Result<
                 escape_html(&similar)
             )));
         }
-        if !input.create_account && input.version != BOT_VERSION {
+        if !input.create_account {
             let error = Notice {
                 code: Some(hanabi_protocol::NoticeCode::NoAccount),
                 ..Notice::new(format!(
@@ -388,17 +388,13 @@ async fn login_inner(state: &Accounts, ip: &str, input: LoginRequest) -> Result<
             normalized,
             hash,
             ip,
-            input.version == BOT_VERSION,
+            input.bot,
             settings
         )
         .fetch_one(&state.pool)
         .await?;
     }
-    let bot = if input.version == BOT_VERSION {
-        " as a bot"
-    } else {
-        ""
-    };
+    let bot = if input.bot { " as a bot" } else { "" };
     tracing::info!("Successful login for account {id}{bot} from IP: {ip}");
     let signed = cookie::encode(id, &state.config.secret, Utc::now().timestamp())?;
     Ok(with_cookies(

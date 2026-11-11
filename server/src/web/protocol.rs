@@ -60,7 +60,9 @@ mod tests {
                 "gameHistoryOtherScores" => json!({"seed":"p2v0s1","offset":0,"amount":10}),
                 "chat" => json!({"text":"hello"}),
                 "chatPm" => json!({"text":"hello","recipient":"Alice"}),
-                "replayCreate" => json!({"type":"id","visibility":"shared","gameId":1}),
+                "replayCreate" => {
+                    json!({"source":{"type":"saved","gameId":1},"visibility":"shared"})
+                }
                 "playerAction" => {
                     json!({"tableId":1,"action":{"type":"clue","target":0,"clue":{"type":"rank","value":1}}})
                 }
@@ -70,7 +72,7 @@ mod tests {
                 "replayAction" => json!({"tableId":1,"action":{"type":"hypoStart"}}),
                 "tableRestartDecline" => json!({"tableId":1,"declined":true}),
                 "tableSetLeader" => json!({"tableId":1,"username":"Alice"}),
-                "tableSuggest" => json!({"tableId":1,"segment":0}),
+                "tableSuggest" => json!({"tableId":1,"turn":0}),
                 "chatFriend" | "chatUnfriend" | "chatLink" | "chatUnlink" | "chatBlock"
                 | "chatUnblock" => json!({"username":"Alice"}),
                 "tagSearch" => json!({"tag":"test"}),
@@ -122,14 +124,17 @@ mod tests {
         let note = "n".repeat(65536);
         let input = format!(
             "replayCreate {}",
-            json!({"type":"json","visibility":"solo","gameJson":{
+            json!({"visibility":"solo","source":{"type":"imported","game":{
                 "seed":"p2v0s1","notes":[[note],[]]
-            }})
+            }}})
         );
         assert!(input.len() > 8192);
         let parsed = parse(&input).unwrap().data();
         assert_eq!(
-            parsed["gameJson"]["notes"][0][0].as_str().unwrap().len(),
+            parsed["source"]["game"]["notes"][0][0]
+                .as_str()
+                .unwrap()
+                .len(),
             65536
         );
         assert!(

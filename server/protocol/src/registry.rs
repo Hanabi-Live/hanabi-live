@@ -114,7 +114,6 @@ macro_rules! server_contracts {
             FRIENDS "friends" => Friends;
             BLOCKED "blocked" => Blocked;
             ERROR "error" => Notice;
-            OUTDATED_CLIENT "outdatedClient" => Empty;
             WARNING "warning" => Notice;
             SOUND_LOBBY "soundLobby" => SoundLobby;
             WELCOME "welcome" => Welcome;
@@ -137,7 +136,7 @@ macro_rules! exported_types {
             TableId, GameId, UserId, Settings, Spectator, GameHistoryEntry,
             ReplayGame, ReplayBoardElement, ReplaySoundEffect, SoundMove, Activity, LoginRequest,
             LoginResponse, NoticeCode, PasswordHashRequest, PasswordHashResponse, PublicGamePage,
-            VariantNames, ScoreFrequency,
+            VariantNames, ScoreFrequency, GameListColumn,
         }
     };
 }

@@ -21,17 +21,17 @@ export function replayEnter(): ActionReplayEnter {
 export function init(): ActionInit {
   return {
     type: "init",
-    datetimeStarted: new Date(0).toString(),
-    datetimeFinished: new Date(0).toString(),
+    startedAt: new Date(0).toString(),
+    finishedAt: new Date(0).toString(),
     mode: "sharedReplay",
     gameId: gameIdSchema.parse(1),
     sharedReplay: {
       leader: "",
-      segment: 0,
+      turn: 0,
       efficiencyModifier: 0,
       spoilerFree: false,
       canPlayAgain: false,
-      datetimeStarted: new Date(0).toString(),
+      startedAt: new Date(0).toString(),
     },
     pauseQueued: false,
   };

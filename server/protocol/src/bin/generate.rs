@@ -51,7 +51,7 @@ fn enum_declarations(game: bool) -> String {
                     "{}{} = {},",
                     jsdoc(member.description),
                     member.name,
-                    member.value.json()
+                    Value::from(member.value)
                 )
             })
             .collect::<Vec<_>>()
@@ -222,7 +222,7 @@ fn expression(schema: &Value) -> Result<String> {
         let members = wire
             .members
             .iter()
-            .map(|member| member.value.json())
+            .map(|member| Value::from(member.value))
             .collect::<Vec<_>>();
         let values = schema["enum"]
             .as_array()
@@ -443,7 +443,7 @@ fn default_literal(property: &Value, default: &Value) -> Result<String> {
     let member = wire
         .members
         .iter()
-        .find(|member| member.value.json() == *default)
+        .find(|member| default.as_str() == Some(member.value))
         .with_context(|| format!("{name} has no member for the default {default}"))?;
     Ok(format!("{name}.{}", member.name))
 }
@@ -903,22 +903,30 @@ mod tests {
             "2.5"
         );
         assert_eq!(
-            default_literal(&json!({"x-enum":"GameListColumn"}), &json!(0)).unwrap(),
-            "GameListColumn.Id"
+            default_literal(&json!({"x-enum":"EndCondition"}), &json!("normal")).unwrap(),
+            "EndCondition.Normal"
         );
-        assert!(default_literal(&json!({"x-enum":"GameListColumn"}), &json!(7)).is_err());
+        assert!(default_literal(&json!({"x-enum":"EndCondition"}), &json!("other")).is_err());
     }
 
     #[test]
     fn wire_enums_use_the_generated_typescript_enum() {
-        let column = json!({"type":"integer","enum":[0,1,2,3],"x-enum":"GameListColumn"});
-        assert_eq!(expression(&column).unwrap(), "z.enum(GameListColumn)");
+        let names = hanabi_protocol::EndCondition::WIRE
+            .members
+            .iter()
+            .map(|member| member.value)
+            .collect::<Vec<_>>();
+        let condition = json!({"type":"string","enum":names,"x-enum":"EndCondition"});
+        assert_eq!(expression(&condition).unwrap(), "z.enum(EndCondition)");
         // A field cannot list other values than the enum has.
         assert!(
-            expression(&json!({"type":"integer","enum":[0,1],"x-enum":"GameListColumn"})).is_err()
+            expression(
+                &json!({"type":"string","enum":["normal","timeout"],"x-enum":"EndCondition"})
+            )
+            .is_err()
         );
-        assert!(expression(&json!({"type":"integer","enum":[0,1],"x-enum":"Other"})).is_err());
-        assert!(expression(&json!({"type":"integer","x-enum":"GameListColumn"})).is_err());
+        assert!(expression(&json!({"type":"string","enum":["normal"],"x-enum":"Other"})).is_err());
+        assert!(expression(&json!({"type":"string","x-enum":"EndCondition"})).is_err());
     }
 
     #[test]
@@ -934,11 +942,12 @@ mod tests {
     #[test]
     fn union_variants_name_one_enum_member() {
         assert_eq!(
-            expression(&json!({"type":"integer","enum":[1],"x-enum":"GameListColumn"})).unwrap(),
-            "z.literal(1)"
+            expression(&json!({"type":"string","enum":["normal"],"x-enum":"EndCondition"}))
+                .unwrap(),
+            "z.literal(\"normal\")"
         );
         assert!(
-            expression(&json!({"type":"integer","enum":[9],"x-enum":"GameListColumn"})).is_err()
+            expression(&json!({"type":"string","enum":["other"],"x-enum":"EndCondition"})).is_err()
         );
     }
 
@@ -946,11 +955,7 @@ mod tests {
     fn each_package_declares_its_own_enums() {
         let game = enum_declarations(true);
         assert!(game.contains("export enum EndCondition {"));
-        assert!(!game.contains("enum GameListColumn"));
-        let data = enum_declarations(false);
-        assert!(data.contains(
-            "export enum GameListColumn {\nId = 0,\nNumPlayers = 1,\nScore = 2,\nVariant = 3,\n}"
-        ));
-        assert!(!data.contains("enum EndCondition"));
+        assert!(game.contains("Normal = \"normal\","));
+        assert_eq!(enum_declarations(false), "");
     }
 }

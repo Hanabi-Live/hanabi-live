@@ -237,17 +237,19 @@ describe("initial WebSocket handshake watchdog", () => {
   test("reloads an outdated client once per client version", async () => {
     websocketInit();
     sockets[0]?.emit("open");
-    globals.conn?.callbacks.get("outdatedClient")?.({} as never);
+    const error = { message: "Outdated client.", code: "outdatedClient" };
+    globals.conn?.callbacks.get("error")?.(error as never);
     sockets[0]?.emit("close");
 
     await clock.tickAsync(30_000);
     expect(reload).toHaveBeenCalledTimes(1);
+    expect(commands.get("error")).not.toHaveBeenCalled();
     expect(sockets).toHaveLength(1);
 
     // A reload that served the same client again must not repeat forever.
     websocketInit();
     sockets[1]?.emit("open");
-    globals.conn?.callbacks.get("outdatedClient")?.({} as never);
+    globals.conn?.callbacks.get("error")?.(error as never);
     expect(reload).toHaveBeenCalledTimes(1);
   });
 

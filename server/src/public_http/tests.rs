@@ -317,10 +317,10 @@ async fn public_database_routes_filters_privacy_exports_and_html() {
         .unwrap();
     for (path, total, len) in [
         ("/api/v1/history/Alice?size=1", 3, 1),
-        ("/api/v1/history/Alice/Bob?fcol%5B2%5D=25", 1, 1),
-        ("/api/v1/history/Alice?fcol%5B3%5D=1", 1, 1),
-        ("/api/v1/seed/same?fcol%5B2%5D=15", 1, 1),
-        ("/api/v1/variants/0?fcol%5B2%5D=25", 1, 1),
+        ("/api/v1/history/Alice/Bob?fcol[score]=25", 1, 1),
+        ("/api/v1/history/Alice?fcol[variant]=1", 1, 1),
+        ("/api/v1/seed/same?fcol[score]=15", 1, 1),
+        ("/api/v1/variants/0?fcol[score]=25", 1, 1),
         ("/api/v1/history/Alice?page=2&size=2", 3, 0),
     ] {
         let (status, body) = request(app.clone(), path).await;
@@ -331,25 +331,25 @@ async fn public_database_routes_filters_privacy_exports_and_html() {
     }
     // Each sort column, direction, and filter assembles different SQL; exercise every one.
     for (path, total, first) in [
-        ("/api/v1/history/Alice?col%5B0%5D=0", 3, Some(1)),
-        ("/api/v1/history/Alice?col%5B0%5D=1", 3, Some(3)),
-        ("/api/v1/history/Alice?col%5B1%5D=0", 3, Some(3)),
-        ("/api/v1/history/Alice?col%5B1%5D=1", 3, Some(3)),
-        ("/api/v1/history/Alice?col%5B2%5D=0", 3, Some(3)),
-        ("/api/v1/history/Alice?col%5B2%5D=1", 3, Some(1)),
-        ("/api/v1/history/Alice?fcol%5B0%5D=2", 1, Some(2)),
-        ("/api/v1/history/Alice?fcol%5B1%5D=2", 3, Some(3)),
-        ("/api/v1/history/Alice?fcol%5B1%5D=3", 0, None),
-        ("/api/v1/history/Alice?fcol%5B2%5D=15", 1, Some(2)),
-        ("/api/v1/history/Alice?fcol%5B3%5D=0", 2, Some(2)),
-        ("/api/v1/seed/same?col%5B2%5D=0", 2, Some(2)),
-        ("/api/v1/seed/same?fcol%5B0%5D=1", 1, Some(1)),
-        ("/api/v1/variants/0?col%5B0%5D=0", 2, Some(1)),
-        ("/api/v1/variants/0?fcol%5B0%5D=2", 1, Some(2)),
-        ("/api/v1/variants/0?fcol%5B1%5D=2", 2, Some(1)),
+        ("/api/v1/history/Alice?col[id]=0", 3, Some(1)),
+        ("/api/v1/history/Alice?col[id]=1", 3, Some(3)),
+        ("/api/v1/history/Alice?col[numPlayers]=0", 3, Some(3)),
+        ("/api/v1/history/Alice?col[numPlayers]=1", 3, Some(3)),
+        ("/api/v1/history/Alice?col[score]=0", 3, Some(3)),
+        ("/api/v1/history/Alice?col[score]=1", 3, Some(1)),
+        ("/api/v1/history/Alice?fcol[id]=2", 1, Some(2)),
+        ("/api/v1/history/Alice?fcol[numPlayers]=2", 3, Some(3)),
+        ("/api/v1/history/Alice?fcol[numPlayers]=3", 0, None),
+        ("/api/v1/history/Alice?fcol[score]=15", 1, Some(2)),
+        ("/api/v1/history/Alice?fcol[variant]=0", 2, Some(2)),
+        ("/api/v1/seed/same?col[score]=0", 2, Some(2)),
+        ("/api/v1/seed/same?fcol[id]=1", 1, Some(1)),
+        ("/api/v1/variants/0?col[id]=0", 2, Some(1)),
+        ("/api/v1/variants/0?fcol[id]=2", 1, Some(2)),
+        ("/api/v1/variants/0?fcol[numPlayers]=2", 2, Some(1)),
         // Values outside a column's type match nothing instead of failing in PostgreSQL.
-        ("/api/v1/history/Alice?fcol%5B2%5D=70000", 0, None),
-        ("/api/v1/history/Alice?fcol%5B0%5D=99999999999", 0, None),
+        ("/api/v1/history/Alice?fcol[score]=70000", 0, None),
+        ("/api/v1/history/Alice?fcol[id]=99999999999", 0, None),
     ] {
         let (status, body) = request(app.clone(), path).await;
         assert_eq!(status, StatusCode::OK, "{path}: {body}");
@@ -391,7 +391,7 @@ async fn public_database_routes_filters_privacy_exports_and_html() {
             .collect();
         assert_eq!(actual, ids, "{path}");
     }
-    let (status, body) = request(app.clone(), "/api/v1/history/Alice?col%5B2%5D=0&size=1").await;
+    let (status, body) = request(app.clone(), "/api/v1/history/Alice?col[score]=0&size=1").await;
     assert_eq!(status, StatusCode::OK, "{body}");
     assert_eq!(
         serde_json::from_str::<Value>(&body).unwrap()["rows"][0]["gameId"],
@@ -400,8 +400,8 @@ async fn public_database_routes_filters_privacy_exports_and_html() {
     let (_, body) = request(app.clone(), "/api/v1/history-full/Alice?start=3&end=3").await;
     let full: Value = serde_json::from_str(&body).unwrap();
     assert_eq!(full.as_array().unwrap().len(), 1);
-    assert_eq!(full[0]["datetimeStarted"], "2026-01-01T00:00:00.123Z");
-    assert_eq!(full[0]["datetimeFinished"], "2026-01-01T01:00:00.000Z");
+    assert_eq!(full[0]["startedAt"], "2026-01-01T00:00:00.123Z");
+    assert_eq!(full[0]["finishedAt"], "2026-01-01T01:00:00.000Z");
     for (page, expected) in [(0, vec![1]), (1, vec![2]), (2, vec![])] {
         let (status, body) = request(
             app.clone(),
@@ -470,7 +470,7 @@ async fn public_database_routes_filters_privacy_exports_and_html() {
     assert_eq!(export["notes"], json!([["<note>"], []]));
     assert_eq!(
         export["characters"][0],
-        json!({"name":"Fuming","metadata":1})
+        json!({"characterId":0,"metadata":1})
     );
     assert_eq!(export["options"]["variantName"], "6 Suits");
     let (_, body) = request(app.clone(), "/export/1").await;
@@ -551,7 +551,7 @@ async fn public_database_routes_filters_privacy_exports_and_html() {
         ("/history/Missing/Alice/alice", 404, "does not exist"),
         ("/api/v1/history/Alice/alice", 404, "same player twice"),
         (
-            "/api/v1/history/Alice?fcol%5B2%5D=no",
+            "/api/v1/history/Alice?fcol[score]=no",
             400,
             "Invalid numeric filter",
         ),
@@ -571,19 +571,19 @@ async fn public_database_routes_filters_privacy_exports_and_html() {
             "This URL takes: page",
         ),
         ("/api/v1/history/Alice?size=1&size=2", 400, "more than once"),
-        ("/api/v1/history/Alice?col%5B2%5D=2", 400, "sort direction"),
+        ("/api/v1/history/Alice?col[score]=2", 400, "sort direction"),
         (
-            "/api/v1/history/Alice?col%5B0%5D=0&col%5B2%5D=1",
+            "/api/v1/history/Alice?col[id]=0&col[score]=1",
             400,
             "one column at a time",
         ),
         (
-            "/api/v1/history/Alice?fcol%5B2%5D=",
+            "/api/v1/history/Alice?fcol[score]=",
             400,
             "Invalid numeric filter",
         ),
         (
-            "/api/v1/seed/same?fcol%5B1%5D=2",
+            "/api/v1/seed/same?fcol[numPlayers]=2",
             400,
             "Unknown query parameter",
         ),

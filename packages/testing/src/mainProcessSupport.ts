@@ -65,7 +65,7 @@ const rustProgressPhaseSchema = z.discriminatedUnion("phase", [
 ]);
 
 export const rustProgressTableSchema = z.object({
-  format: z.literal("hanabi-live-9"),
+  format: z.literal("hanabi-live-10"),
   phase: rustProgressPhaseSchema,
 });
 
@@ -270,14 +270,14 @@ export async function installSchema(directory: string): Promise<void> {
 export async function login(
   address: string,
   username: string,
-  version: string = VERSION,
+  bot = false,
 ): Promise<string> {
   const response = await fetch(`${address}/login`, {
     method: "POST",
     body: new URLSearchParams({
       username,
       password: "synthetic-smoke-password",
-      version,
+      ...(bot ? { bot: "true" } : { version: VERSION }),
       createAccount: "true",
     }),
     signal: AbortSignal.timeout(10_000),

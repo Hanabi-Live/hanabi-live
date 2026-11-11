@@ -27,8 +27,11 @@ pub struct LoginRequest {
     /// dark mode setting.
     pub dark_mode: bool,
     /// Creates the account if the username is free. Without it, an unknown username fails with
-    /// `NoticeCode::NoAccount`, so that a typo does not create an account. Bots do not need it.
+    /// `NoticeCode::NoAccount`, so that a typo does not create an account.
     pub create_account: bool,
+    /// Marks the account as a bot, which other players see and which can play at several tables at
+    /// once. A bot does not send `version`.
+    pub bot: bool,
 }
 
 /// Reads a form field that is absent when it is empty, as forms send a blank input.
@@ -91,8 +94,6 @@ pub struct PasswordHashResponse {
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct PublicGamePage {
     pub total_rows: Count,
-    /// The accepted parameters.
-    pub info: String,
     pub rows: Vec<PublicGameRow>,
 }
 
@@ -103,18 +104,17 @@ pub struct PublicGameRow {
     pub game_id: GameId,
     #[schemars(with = "NumPlayers")]
     pub num_players: u8,
-    #[schemars(range(min = 0, max = i32::MAX))]
-    pub score: i32,
+    pub score: Score,
     /// Variant lists omit it.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub variant_id: Option<VariantId>,
     /// How many games used this seed. Absent in variant lists and for a game with no seed.
     #[serde(skip_serializing_if = "Option::is_none")]
-    #[schemars(range(min = 1, max = MAX_SAFE_INTEGER))]
-    pub num_games_on_seed: Option<i64>,
+    pub num_games_on_seed: Option<Count>,
     /// In seat order.
+    #[schemars(length(min = MIN_PLAYERS, max = MAX_PLAYERS))]
     pub player_names: Vec<Username>,
-    pub datetime_finished: Timestamp,
+    pub finished_at: Timestamp,
     /// Absent for a game with its own deck instead of a seed, such as an imported one.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub seed: Option<String>,
@@ -129,10 +129,8 @@ pub struct VariantNames(pub std::collections::BTreeMap<String, String>);
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct ScoreFrequency {
-    #[schemars(range(min = 0, max = i32::MAX))]
-    pub score: i32,
-    #[schemars(range(min = 1, max = MAX_SAFE_INTEGER))]
-    pub num_times: i64,
+    pub score: Score,
+    pub num_times: Count,
 }
 
 /// A variant in `/api/v1/variants-full`, keyed by its ID.
@@ -143,6 +141,5 @@ pub struct PublicVariant {
     pub suits: Vec<String>,
     #[schemars(range(min = 1, max = MAX_RANK))]
     pub stack_size: u8,
-    #[schemars(range(min = 0, max = i32::MAX))]
-    pub max_score: i32,
+    pub max_score: Score,
 }

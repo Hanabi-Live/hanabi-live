@@ -344,7 +344,7 @@ chatCommands.set("suggest", (room: string, args: readonly string[]) => {
 
   globals.conn!.send("tableSuggest", {
     tableId: globals.tableId,
-    segment,
+    turn: segment,
   });
 });
 

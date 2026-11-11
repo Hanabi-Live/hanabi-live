@@ -120,7 +120,7 @@ mod tests {
         let start = Instant::now();
         let first = report("Loading game history", "password-token-SQL-private-chat");
         let message = throttle.message(&first, "v1", start).unwrap();
-        assert!(message.contains("`internal_operation_failed` in `Loading game history`"));
+        assert!(message.contains("`internalOperationFailed` in `Loading game history`"));
         assert!(message.contains(&first.diagnostic_id));
         assert!(!message.contains("password-token-SQL-private-chat"));
         assert!(!message.contains(&first.description));

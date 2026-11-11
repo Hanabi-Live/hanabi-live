@@ -363,7 +363,7 @@ async fn lobby_private_messages_and_command_privacy_postgres() {
         .await
         .unwrap();
     assert_eq!(
-        message["datetime"],
+        message["sentAt"],
         hanabi_protocol::Timestamp::from(stored.datetime_sent).as_str()
     );
     sqlx::query!(

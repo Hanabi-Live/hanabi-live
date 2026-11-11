@@ -38,7 +38,7 @@ pub struct ReplayGame {
     /// One for each player. Required when `detrimentalCharacters` is on.
     #[serde(skip_serializing_if = "Option::is_none")]
     #[schemars(length(max = MAX_PLAYERS))]
-    pub characters: Option<Vec<ReplayCharacter>>,
+    pub characters: Option<Vec<CharacterAssignment>>,
     /// Absent for a game with its own deck instead of a seed, such as an imported one.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub seed: Option<String>,
@@ -69,20 +69,6 @@ pub struct ReplayOptions {
     pub all_or_nothing: Option<bool>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub detrimental_characters: Option<bool>,
-}
-
-/// A player's detrimental character in the replay format.
-#[derive(Clone, Debug, Default, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
-#[serde(rename_all = "camelCase", deny_unknown_fields)]
-pub struct ReplayCharacter {
-    /// Absent when the player has no character.
-    #[serde(skip_serializing_if = "Option::is_none")]
-    #[schemars(length(min = 1))]
-    pub name: Option<String>,
-    /// Absent when the character has no assigned metadata.
-    #[serde(skip_serializing_if = "Option::is_none")]
-    #[schemars(range(min = i32::MIN, max = i32::MAX))]
-    pub metadata: Option<i32>,
 }
 
 /// The card that an action names, such as the card that a turn plays.
@@ -209,7 +195,7 @@ pub struct RestartDeclined {
 pub struct Suggestion {
     pub table_id: TableId,
     pub username: Username,
-    pub segment: Turn,
+    pub turn: Turn,
 }
 
 /// The active hypothetical, sent to someone joining a shared replay.
@@ -220,20 +206,6 @@ pub struct Hypothetical {
     pub show_drawn_cards: bool,
     /// The hypothetical's events so far, in order.
     pub events: Vec<HypotheticalEvent>,
-}
-
-/// A clue in a hypothetical.
-#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
-#[serde(rename_all = "camelCase", deny_unknown_fields)]
-pub struct HypotheticalClue {
-    /// Absent when the recipient may not see the clue's type and value.
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub clue: Option<Clue>,
-    pub giver: PlayerIndex,
-    pub target: PlayerIndex,
-    /// The orders of the cards the clue touched.
-    pub orders: Vec<CardOrder>,
-    pub ignore_negative: bool,
 }
 
 /// A card that a hypothetical shows as another identity. A player can name only its suit or only
@@ -256,7 +228,7 @@ pub enum HypotheticalEvent {
     Draw(CardEvent),
     Play(CardEvent),
     Discard(DiscardEvent),
-    Clue(HypotheticalClue),
+    Clue(ClueEvent),
     Turn(TurnEvent),
     /// Shows a card as another identity.
     Morph(MorphedCard),

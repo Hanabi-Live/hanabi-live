@@ -421,9 +421,9 @@ mod tests {
         let (session, _) = Session::new(UserId(1), "Alice".into(), 1);
         let text = format!(
             "replayCreate {}",
-            serde_json::json!({"type":"json","visibility":"solo","gameJson":{
+            serde_json::json!({"visibility":"solo","source":{"type":"imported","game":{
                 "seed":"p2v0s1","notes":[["n".repeat(65536)],[]]
-            }})
+            }}})
         );
         let message = budget.admit(&session, &text).unwrap();
         assert_eq!(message.text, text);

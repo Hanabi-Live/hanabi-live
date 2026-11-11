@@ -79,6 +79,7 @@ pub struct CardIdentity {
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct CardIdentities {
     pub table_id: TableId,
+    #[schemars(length(max = MAX_DECK_SIZE))]
     pub identities: Vec<CardIdentity>,
 }
 
@@ -192,7 +193,7 @@ pub struct DiscardEvent {
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct TurnEvent {
-    pub num: Turn,
+    pub turn: Turn,
     /// Absent once the game has ended.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub current_player_index: Option<PlayerIndex>,
@@ -209,6 +210,10 @@ pub struct ClueEvent {
     pub target: PlayerIndex,
     /// The orders of the cards the clue touched.
     pub orders: Vec<CardOrder>,
+    /// Whether the cards that the clue does not touch learn nothing from it. Only a hypothetical's
+    /// clue can set it.
+    #[serde(default, skip_serializing_if = "std::ops::Not::not")]
+    pub ignore_negative: bool,
 }
 
 /// The end of a game.
@@ -263,8 +268,8 @@ pub struct GameEventList {
     pub events: Vec<GameEvent>,
 }
 
-/// A player's detrimental character.
-#[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
+/// A player's detrimental character, in a game and in the replay format.
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct CharacterAssignment {
     /// Absent when the player has no character.
@@ -309,10 +314,10 @@ pub struct Init {
     /// Absent for a game with its own deck instead of a seed, such as an imported one.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub seed: Option<String>,
-    pub datetime_started: Timestamp,
+    pub started_at: Timestamp,
     /// Absent while the game is in progress.
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub datetime_finished: Option<Timestamp>,
+    pub finished_at: Option<Timestamp>,
     pub options: GameOptions,
     /// Each player's character, in seat order, when detrimental characters are on.
     #[schemars(length(max = MAX_PLAYERS))]
@@ -332,7 +337,7 @@ pub struct Init {
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct SharedReplayInit {
     pub leader: Username,
-    pub segment: Turn,
+    pub turn: Turn,
     #[schemars(range(min = i32::MIN, max = i32::MAX))]
     pub efficiency_modifier: i32,
     /// Whether the shared replay hides what happens later in the game.
@@ -344,5 +349,5 @@ pub struct SharedReplayInit {
     /// Whether the recipient played the game of this shared replay at this table, so that they can
     /// play it again: the leader by restarting, and the other players by saying if they are ready.
     pub can_play_again: bool,
-    pub datetime_started: Timestamp,
+    pub started_at: Timestamp,
 }

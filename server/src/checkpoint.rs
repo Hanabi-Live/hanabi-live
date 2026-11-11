@@ -372,6 +372,7 @@ const UPGRADES: &[(&str, &str, Upgrade)] = &[
     ("hanabi-live-6", "hanabi-live-7", camel_case_variant_id),
     ("hanabi-live-7", "hanabi-live-8", seats_without_users),
     ("hanabi-live-8", "hanabi-live-9", nested_best_scores),
+    ("hanabi-live-9", "hanabi-live-10", wire_renames),
 ];
 
 /// Rewrites a table that an older server saved, one format at a time, into the current format.
@@ -568,6 +569,52 @@ fn nested_best_scores(head: &mut Value, _: &mut [(String, String)]) -> Result<()
         }
     }
     Ok(())
+}
+
+/// Format 9 gave a best score its modifier and option flags instead of whether it is modified,
+/// named a chat message's time `datetime`, and named a hypothetical turn's number `num`.
+fn wire_renames(head: &mut Value, parts: &mut [(String, String)]) -> Result<()> {
+    const MODIFIER_FIELDS: [&str; 6] = [
+        "modifier",
+        "deckPlays",
+        "emptyClues",
+        "oneExtraCard",
+        "oneLessCard",
+        "allOrNothing",
+    ];
+    for path in ["/phase/players", "/phase/snapshot/players"] {
+        let Some(Value::Array(players)) = head.pointer_mut(path) else {
+            continue;
+        };
+        for player in players {
+            let Some(Value::Array(scores)) = player.pointer_mut("/stats/variant/bestScores") else {
+                continue;
+            };
+            for best in scores
+                .iter_mut()
+                .filter_map(|entry| entry.get_mut("best"))
+                .filter_map(Value::as_object_mut)
+            {
+                if let Some(modifier) = best.get("modifier").and_then(Value::as_i64) {
+                    best.insert("modified".into(), (modifier != 0).into());
+                }
+                for field in MODIFIER_FIELDS {
+                    best.remove(field);
+                }
+            }
+        }
+    }
+    if let Some(Value::Array(events)) = head.pointer_mut("/phase/replay/hypotheticalActions") {
+        for event in events
+            .iter_mut()
+            .filter(|event| event.get("type").is_some_and(|kind| kind == "turn"))
+        {
+            rename(Some(event), "num", "turn");
+        }
+    }
+    edit_parts(parts, CHAT, |chat| {
+        rename(chat.get_mut("message"), "datetime", "sentAt");
+    })
 }
 
 /// Rewrites a clue that a turn of format 3 gives.

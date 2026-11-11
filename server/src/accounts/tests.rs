@@ -126,12 +126,12 @@ async fn login_requires_matching_release_sha_or_bot_postgres() {
             ..config()
         },
     );
-    for submitted in [&version, BOT_VERSION] {
+    for submitted in [format!("version={version}"), "bot=true".into()] {
         let (status, _, _) = request(
             &app,
             "POST",
             "/login",
-            &format!("username=Alice&password=test&version={submitted}&createAccount=true"),
+            &format!("username=Alice&password=test&{submitted}&createAccount=true"),
             None,
             false,
         )
@@ -145,8 +145,8 @@ async fn login_requires_matching_release_sha_or_bot_postgres() {
         is_bot("Alice").await.unwrap(),
         "a bot login flags an existing account"
     );
-    let bob = format!("username=Bob&password=test&version={BOT_VERSION}");
-    let (status, _, _) = request(&app, "POST", "/login", &bob, None, false).await;
+    let bob = "username=Bob&password=test&bot=true&createAccount=true";
+    let (status, _, _) = request(&app, "POST", "/login", bob, None, false).await;
     assert_eq!(status, StatusCode::OK);
     assert!(
         is_bot("Bob").await.unwrap(),
@@ -346,7 +346,7 @@ async fn native_accounts_http_and_identity_postgres() {
             &app,
             "POST",
             "/login",
-            "username=Alice&password=old&newPassword=new&version=bot&createAccount=true",
+            "username=Alice&password=old&newPassword=new&bot=true&createAccount=true",
             None,
             false
         )

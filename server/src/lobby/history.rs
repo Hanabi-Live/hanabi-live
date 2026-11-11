@@ -85,18 +85,18 @@ pub async fn get_history(
         result.push(hanabi_protocol::GameHistoryEntry {
             game_id: hanabi_protocol::GameId(game.id),
             options: crate::model::wire_options(&crate::archive::options(&game)?),
-            score: i32::from(game.score),
+            score: hanabi_protocol::Score(i32::from(game.score)),
             num_turns: hanabi_protocol::Turn::new(game.num_turns)
                 .context("Invalid stored turn count")?,
             end_condition: hanabi_protocol::EndCondition::try_from(i32::from(game.end_condition))
                 .map_err(anyhow::Error::msg)
                 .context("Invalid stored end condition")?,
-            datetime_started: time(game.datetime_started),
-            datetime_finished: time(game.datetime_finished),
+            started_at: time(game.datetime_started),
+            finished_at: time(game.datetime_finished),
             num_games_on_seed: game
                 .seed
                 .is_some()
-                .then(|| i64::from(row.num_games_on_this_seed)),
+                .then(|| hanabi_protocol::Count(i64::from(row.num_games_on_this_seed))),
             seed: game.seed,
             player_names: row.player_names.into_iter().map(Into::into).collect(),
             tags: row.tags,

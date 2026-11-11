@@ -268,10 +268,9 @@ function getBestScoresTooltip(
       html += ` ${NO_SCORE}`;
     } else if (best.score === maxScore) {
       html += `<strong> ${best.score} / ${maxScore}</strong> &nbsp; `;
-      html +=
-        best.modifier === 0
-          ? '<i class="fas fa-check score-modifier green"></i>'
-          : '<i class="fas fa-times score-modifier red"></i>';
+      html += best.modified
+        ? '<i class="fas fa-times score-modifier red"></i>'
+        : '<i class="fas fa-check score-modifier green"></i>';
     } else {
       html += ` ${best.score} / ${maxScore}`;
     }

@@ -192,7 +192,7 @@ describe("hypothetical planning", () => {
         playerIndex: 0,
         identity: { suitIndex: 0, rank: 1 },
       },
-      { type: "turn", num: 7, currentPlayerIndex: 1 },
+      { type: "turn", turn: 7, currentPlayerIndex: 1 },
     ]);
     const state = applyPlan(actions, context);
     expect(state.hands).toEqual(context.gameState.hands);
@@ -230,7 +230,7 @@ describe("hypothetical planning", () => {
         identity: { suitIndex: 0, rank: 2 },
         failed: true,
       },
-      { type: "turn", num: 7, currentPlayerIndex: 1 },
+      { type: "turn", turn: 7, currentPlayerIndex: 1 },
     ]);
     const state = applyPlan(actions, context);
     expect(state.hands).toEqual(context.gameState.hands);
@@ -724,7 +724,7 @@ describe("hypothetical planning", () => {
     );
     expect(actions?.at(-1)).toEqual({
       type: "turn",
-      num: 7,
+      turn: 7,
       currentPlayerIndex: 1,
     });
   });

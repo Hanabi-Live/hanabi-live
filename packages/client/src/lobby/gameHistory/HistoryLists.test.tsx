@@ -32,7 +32,7 @@ function game(
 ) {
   return {
     gameId: id,
-    datetimeFinished: finished,
+    finishedAt: finished,
     numGamesOnSeed: 1,
     options: { numPlayers: 2, variantName: "No Variant" },
     playerNames,

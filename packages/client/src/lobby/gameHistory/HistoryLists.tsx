@@ -352,8 +352,7 @@ function ReplayButton({
       id={`replay-${gameId}`}
       onClick={() => {
         globals.conn!.send("replayCreate", {
-          type: "id",
-          gameId,
+          source: { type: "saved", gameId },
           visibility,
         });
         if (visibility === "shared") {
@@ -370,5 +369,5 @@ function ReplayButton({
 }
 
 function formatDate(game: GameHistoryEntry): string {
-  return dateTimeFormatter.format(new Date(game.datetimeFinished));
+  return dateTimeFormatter.format(new Date(game.finishedAt));
 }

@@ -121,6 +121,11 @@ fn typed_game_frames_preserve_wire_schema_and_projected_identities() -> Result<(
             if event["type"] == "clue" {
                 event.remove("turn");
             }
+            if event["type"] == "turn"
+                && let Some(turn) = event.remove("num")
+            {
+                event.insert("turn".into(), turn);
+            }
             if let (Some(suit_index), Some(rank)) =
                 (event.remove("suitIndex"), event.remove("rank"))
                 && !suit_index.is_null()
@@ -1218,7 +1223,7 @@ fn hypothetical_back_keeps_morphs() {
         let identity = json!({"suitIndex":0,"rank":1});
         let card = json!({"playerIndex":0,"order":n,"identity":identity});
         let mut value = match kind {
-            "turn" => json!({"num":n,"currentPlayerIndex":0}),
+            "turn" => json!({"turn":n,"currentPlayerIndex":0}),
             "morph" => json!({"order":n,"suitIndex":0,"rank":1}),
             "unmorph" => json!({"order":n}),
             "discard" => json!({"playerIndex":0,"order":n,"identity":identity,"failed":false}),

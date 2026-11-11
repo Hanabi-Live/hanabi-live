@@ -113,9 +113,10 @@ function gameReducerFunction(
         `Failed to find the hand at index: ${action.target}`,
       );
 
-      const negativeList = action.ignoreNegative
-        ? []
-        : targetHand.filter((i) => !action.orders.includes(i));
+      const negativeList =
+        action.ignoreNegative === true
+          ? []
+          : targetHand.filter((i) => !action.orders.includes(i));
 
       // A pass touches no cards, so it does not belong in the clue log.
       if (!isPassTurnClue(action)) {

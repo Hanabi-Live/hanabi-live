@@ -3,7 +3,7 @@
 
 import {
   errorDetails,
-  GameListColumn,
+  gameListColumnSchema,
   httpError,
   publicGamePageSchema,
   scoreFrequencySchema,
@@ -23,10 +23,26 @@ declare const Chart: {
 };
 declare const ChartDataLabels: unknown;
 
+type GameListColumn = z.infer<typeof gameListColumnSchema>;
 type PublicGamePage = z.infer<typeof publicGamePageSchema>;
 type ScoreFrequency = z.infer<typeof scoreFrequencySchema>;
 
 const scoreFrequencies = z.array(scoreFrequencySchema);
+
+/** The server's name for each of a game table's first columns, in order. */
+const SERVER_COLUMNS: readonly GameListColumn[] = gameListColumnSchema.options;
+
+function position(column: GameListColumn): number {
+  return SERVER_COLUMNS.indexOf(column);
+}
+
+function serverColumn(index: number): GameListColumn {
+  const column = SERVER_COLUMNS[index];
+  if (column === undefined) {
+    throw new Error(`The server does not sort or filter column ${index}.`);
+  }
+  return column;
+}
 
 /** The font size of the count drawn above each bar of the score chart, in pixels. */
 const SCORE_CHART_LABEL_FONT_SIZE = 16;
@@ -231,14 +247,14 @@ function initServerTable(
   const columns: Column[] = [...(table.tHead?.rows[0]?.cells ?? [])].map(
     () => ({ sortable: false, filter: "none" }),
   );
-  columns[GameListColumn.Id] = { sortable: true, filter: "none" };
-  columns[GameListColumn.NumPlayers] = {
+  columns[position("id")] = { sortable: true, filter: "none" };
+  columns[position("numPlayers")] = {
     sortable: mode === "history",
     filter: mode === "seed" ? "none" : playerCounts,
   };
-  columns[GameListColumn.Score] = { sortable: true, filter: "text" };
+  columns[position("score")] = { sortable: true, filter: "text" };
   if (mode === "history") {
-    columns[GameListColumn.Variant] = {
+    columns[position("variant")] = {
       sortable: false,
       filter: variantChoices,
     };
@@ -255,10 +271,13 @@ function initServerTable(
     });
     const sort = controls.sort();
     if (sort !== undefined) {
-      params.append(`col[${sort.column}]`, sort.descending ? "1" : "0");
+      params.append(
+        `col[${serverColumn(sort.column)}]`,
+        sort.descending ? "1" : "0",
+      );
     }
     for (const [column, value] of controls.filters()) {
-      params.append(`fcol[${column}]`, value);
+      params.append(`fcol[${serverColumn(column)}]`, value);
     }
     return params.toString();
   }
@@ -307,7 +326,7 @@ function initServerTable(
     table,
     columns,
     {
-      column: mode === "history" ? GameListColumn.Id : GameListColumn.Score,
+      column: position(mode === "history" ? "id" : "score"),
       descending: true,
     },
     () => {
@@ -504,7 +523,7 @@ function gameRows(
         `${PATH.HISTORY}/${names.map(encodeURIComponent).join("/")}`,
         names.join(", "),
       ),
-      displayTime(game.datetimeFinished),
+      displayTime(game.finishedAt),
     );
     if (mode === "seed") {
       row.push(percentile(game.score, frequencies));

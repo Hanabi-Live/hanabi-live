@@ -9,12 +9,6 @@ const GAME_COLUMNS: &str = "g.id,g.name,g.num_players,g.variant_id,
     g.one_extra_card,g.one_less_card,g.all_or_nothing,g.detrimental_characters,
     g.seed,g.score,g.num_turns,g.end_condition,g.datetime_started,g.datetime_finished";
 
-const ALL_COLUMNS: [Column; 4] = [
-    Column::Id,
-    Column::NumPlayers,
-    Column::Score,
-    Column::Variant,
-];
 const SORTABLE_COLUMNS: &[Column] = &[Column::Id, Column::NumPlayers, Column::Score];
 
 const fn column_field(column: Column) -> &'static str {
@@ -26,30 +20,13 @@ const fn column_field(column: Column) -> &'static str {
     }
 }
 
-const fn column_name(column: Column) -> &'static str {
-    match column {
-        Column::Id => "gameId",
-        Column::NumPlayers => "numPlayers",
-        Column::Score => "score",
-        Column::Variant => "variantId",
-    }
-}
-
 /// The columns that a game list filters by.
 const fn filterable_columns(mode: &str) -> &'static [Column] {
     match mode.as_bytes() {
-        b"history" => &ALL_COLUMNS,
+        b"history" => &Column::ALL,
         b"variants" => SORTABLE_COLUMNS,
         _ => &[Column::Id, Column::Score],
     }
-}
-
-fn describe_columns(columns: &[Column]) -> String {
-    columns
-        .iter()
-        .map(|&c| format!("{} {}", c as usize, column_name(c)))
-        .collect::<Vec<_>>()
-        .join(", ")
 }
 
 /// The query parameters that a game list takes.
@@ -59,12 +36,12 @@ pub(super) fn list_parameters(mode: &str) -> Vec<String> {
         .chain(
             SORTABLE_COLUMNS
                 .iter()
-                .map(|&c| format!("col[{}]", c as usize)),
+                .map(|&c| format!("col[{}]", c.name())),
         )
         .chain(
             filterable_columns(mode)
                 .iter()
-                .map(|&c| format!("fcol[{}]", c as usize)),
+                .map(|&c| format!("fcol[{}]", c.name())),
         )
         .collect()
 }
@@ -251,12 +228,11 @@ pub(super) async fn list(
     let mut ascending = false;
     let mut sorted = false;
     let mut qb = selected(s);
-    // The URL's accepted parameters limit the indexes to the columns that it sorts and filters by.
+    // The URL's accepted parameters limit the names to the columns that it sorts and filters by.
     let parse_column = |key: &str, prefix: &str| {
         key.strip_prefix(prefix)
             .and_then(|k| k.strip_suffix(']'))
-            .and_then(|k| k.parse::<i32>().ok())
-            .and_then(|k| Column::try_from(k).ok())
+            .and_then(|k| Column::ALL.into_iter().find(|c| c.name() == k))
     };
     for (key, value) in q.iter() {
         if let Some(column) = parse_column(key, "col[") {
@@ -276,10 +252,7 @@ pub(super) async fn list(
             sorted = true;
         } else if let Some(column) = parse_column(key, "fcol[") {
             let value = integer(value).ok_or_else(|| {
-                HttpError::bad(format!(
-                    "Invalid numeric filter for: {}",
-                    column_name(column)
-                ))
+                HttpError::bad(format!("Invalid numeric filter for: {}", column.name()))
             })?;
             push_compare(&mut qb, column_field(column), "=", value);
         }
@@ -291,18 +264,12 @@ pub(super) async fn list(
     if mode != "variants" {
         qb.push("'variantId',g.variant_id,'numGamesOnSeed',(SELECT num_games FROM seeds WHERE seed=g.seed),");
     }
-    qb.push("'playerNames',COALESCE((SELECT jsonb_agg(u.username ORDER BY gp.seat) FROM game_participants gp JOIN users u ON u.id=gp.user_id WHERE gp.game_id=g.id),'[]'::jsonb),'datetimeFinished',to_char(g.datetime_finished AT TIME ZONE 'UTC','YYYY-MM-DD\"T\"HH24:MI:SS.MS\"Z\"'),'seed',g.seed) ORDER BY g.")
+    qb.push("'playerNames',COALESCE((SELECT jsonb_agg(u.username ORDER BY gp.seat) FROM game_participants gp JOIN users u ON u.id=gp.user_id WHERE gp.game_id=g.id),'[]'::jsonb),'finishedAt',to_char(g.datetime_finished AT TIME ZONE 'UTC','YYYY-MM-DD\"T\"HH24:MI:SS.MS\"Z\"'),'seed',g.seed) ORDER BY g.")
         .push(column_field(order)).push(if ascending { " ASC" } else { " DESC" })
         .push(",g.id DESC) FROM paged g),'[]'::jsonb) AS rows");
     let page: PageRow = qb.build_query_as().fetch_one(&state.pool).await?;
     Ok(hanabi_protocol::PublicGamePage {
         total_rows: hanabi_protocol::Count(page.total_rows),
-        info: format!(
-            "Params: size=1...{}, page=0..., col[x]=0|1 (sort ascending or descending by one column: {}), fcol[x]=integer (filter by {})",
-            super::MAX_PAGE_SIZE,
-            describe_columns(SORTABLE_COLUMNS),
-            describe_columns(filterable_columns(mode)),
-        ),
         rows: page.rows.0,
     })
 }
@@ -313,15 +280,18 @@ fn game_history(row: HistoryRow) -> anyhow::Result<hanabi_protocol::GameHistoryE
     Ok(hanabi_protocol::GameHistoryEntry {
         game_id: hanabi_protocol::GameId(g.id),
         options: crate::model::wire_options(&crate::archive::options(&g)?),
-        num_games_on_seed: g.seed.is_some().then(|| i64::from(row.seed_count)),
+        num_games_on_seed: g
+            .seed
+            .is_some()
+            .then(|| hanabi_protocol::Count(i64::from(row.seed_count))),
         seed: g.seed,
-        score: i32::from(g.score),
+        score: hanabi_protocol::Score(i32::from(g.score)),
         num_turns: hanabi_protocol::Turn::new(g.num_turns).context("Invalid stored turn count")?,
         end_condition: hanabi_protocol::EndCondition::try_from(i32::from(g.end_condition))
             .map_err(anyhow::Error::msg)
             .context("Invalid stored end condition")?,
-        datetime_started: hanabi_protocol::Timestamp::from(g.datetime_started),
-        datetime_finished: hanabi_protocol::Timestamp::from(g.datetime_finished),
+        started_at: hanabi_protocol::Timestamp::from(g.datetime_started),
+        finished_at: hanabi_protocol::Timestamp::from(g.datetime_finished),
         player_names: row.names.into_iter().map(Into::into).collect(),
         tags: row.tags,
     })

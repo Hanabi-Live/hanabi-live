@@ -15,7 +15,7 @@ use std::{
     time::Instant,
 };
 
-pub const FORMAT: &str = "hanabi-live-9";
+pub const FORMAT: &str = "hanabi-live-10";
 /// How long before an idle game ends to warn its table.
 pub const IDLE_WARNING_MS: i64 = 5 * CLOCK_UNITS_PER_MINUTE;
 
@@ -259,7 +259,7 @@ pub struct TableChat {
 impl TableChat {
     /// When the message was sent.
     pub fn sent(&self) -> Result<DateTime<Utc>> {
-        Ok(DateTime::parse_from_rfc3339(self.message.datetime.as_str())
+        Ok(DateTime::parse_from_rfc3339(self.message.sent_at.as_str())
             .map_err(|_| anyhow::anyhow!("Invalid checkpoint chat timestamp"))?
             .with_timezone(&Utc))
     }
@@ -267,7 +267,7 @@ impl TableChat {
     /// archived, which messages from before timestamps had one form may write with microseconds.
     pub fn wire_message(&self) -> Result<Chat> {
         Ok(Chat {
-            datetime: hanabi_protocol::Timestamp::from(self.sent()?),
+            sent_at: hanabi_protocol::Timestamp::from(self.sent()?),
             ..self.message.clone()
         })
     }
@@ -600,12 +600,12 @@ impl Snapshot {
             game_id: self.game_id?,
             options: wire_options(&self.game.options),
             seed: self.seed.clone(),
-            score: self.game.score,
+            score: hanabi_protocol::Score(self.game.score),
             num_turns: hanabi_protocol::Turn::new(self.game.turn)?,
             end_condition: self.game.end_condition,
-            datetime_started: time(self.started),
-            datetime_finished: time(self.finished.unwrap_or(self.started)),
-            num_games_on_seed: count,
+            started_at: time(self.started),
+            finished_at: time(self.finished.unwrap_or(self.started)),
+            num_games_on_seed: count.map(hanabi_protocol::Count),
             player_names: names.into_iter().map(Into::into).collect(),
             tags: self
                 .tags
@@ -678,17 +678,11 @@ impl ScoreModifier {
             .map(|(_, name)| *name)
     }
 
-    /// A best score with this modifier and one flag per option, as the wire carries it.
+    /// A best score with this modifier, as the wire carries it.
     pub fn best_score(self, score: i32) -> hanabi_protocol::BestScore {
-        let has = |flag: i16| self.0 & flag != 0;
         hanabi_protocol::BestScore {
-            score,
-            modifier: i32::from(self.0),
-            deck_plays: has(Self::DECK_PLAYS),
-            empty_clues: has(Self::EMPTY_CLUES),
-            one_extra_card: has(Self::ONE_EXTRA_CARD),
-            one_less_card: has(Self::ONE_LESS_CARD),
-            all_or_nothing: has(Self::ALL_OR_NOTHING),
+            score: hanabi_protocol::Score(score),
+            modified: self.0 != 0,
         }
     }
 }
@@ -802,10 +796,8 @@ mod tests {
             ScoreModifier::from_bits(16 + 1).shown(),
             Some("allornothing")
         );
-        let best = modifier.best_score(20);
-        assert_eq!(best.modifier, 10);
-        assert!(best.empty_clues && best.one_less_card);
-        assert!(!best.deck_plays && !best.one_extra_card && !best.all_or_nothing);
+        assert!(modifier.best_score(20).modified);
+        assert!(!ScoreModifier::default().best_score(20).modified);
     }
 
     #[test]
@@ -830,18 +822,15 @@ mod tests {
             id: Some(1),
             user: Some(UserId(1)),
             message: serde_json::from_value(serde_json::json!(
-                {"text": "hi", "source": "user", "datetime": "2026-11-02T20:00:00.123456Z"}
+                {"text": "hi", "source": "user", "sentAt": "2026-11-02T20:00:00.123456Z"}
             ))
             .unwrap(),
         };
         assert_eq!(
-            chat.wire_message().unwrap().datetime.as_str(),
+            chat.wire_message().unwrap().sent_at.as_str(),
             "2026-11-02T20:00:00.123Z"
         );
-        assert_eq!(
-            chat.message.datetime.as_str(),
-            "2026-11-02T20:00:00.123456Z"
-        );
+        assert_eq!(chat.message.sent_at.as_str(), "2026-11-02T20:00:00.123456Z");
     }
 
     #[test]

@@ -536,7 +536,7 @@ async fn reserve_chat(
     );
     for (&index, id) in pending.iter().zip(ids) {
         let chat = &mut table.chat[index];
-        chat.message.datetime = hanabi_protocol::Timestamp::from(chat.sent()?);
+        chat.message.sent_at = hanabi_protocol::Timestamp::from(chat.sent()?);
         chat.id = Some(i32::try_from(id)?);
     }
     Ok(pending)
@@ -1059,22 +1059,65 @@ mod tests {
             .and_then(Value::as_array_mut)
             .context("Missing best scores")?;
         for entry in scores.iter_mut().filter_map(Value::as_object_mut) {
-            if let Some(Value::Object(best)) = entry.remove("best") {
-                entry.extend(best);
-            } else {
-                entry.insert("modifier".into(), json!(0));
-                for flag in [
-                    "deckPlays",
-                    "emptyClues",
-                    "oneExtraCard",
-                    "oneLessCard",
-                    "allOrNothing",
-                ] {
-                    entry.insert(flag.into(), json!(false));
-                }
+            // The only modified score has "Empty Clues", which is bit 2.
+            let best = entry.remove("best");
+            let modified = best.as_ref().is_some_and(|best| best["modified"] == true);
+            if let Some(best) = best {
+                entry.insert("score".into(), best["score"].clone());
             }
+            entry.insert("modifier".into(), json!(if modified { 2 } else { 0 }));
+            for flag in ["deckPlays", "oneExtraCard", "oneLessCard", "allOrNothing"] {
+                entry.insert(flag.into(), json!(false));
+            }
+            entry.insert("emptyClues".into(), json!(modified));
         }
         let decoded = crate::checkpoint::decode(&head.to_string(), &encoded.changes.written)?;
+        ensure!(serde_json::to_value(&decoded)? == expected);
+        Ok(())
+    }
+    #[test]
+    fn checkpoints_of_format_9_use_the_older_wire_names() -> Result<()> {
+        let mut table = replayed()?;
+        table.chat = suggested().chat;
+        let snapshot = table.game_mut().context("Missing replay")?;
+        snapshot.players[0].stats.variant.best_scores[1].best =
+            Some(crate::model::ScoreModifier::from_bits(2).best_score(20));
+        let Phase::Replay { replay, .. } = &mut table.phase else {
+            bail!("The table is not a replay");
+        };
+        replay.hypothetical_actions.push(serde_json::from_value(
+            json!({"type": "turn", "turn": 1, "currentPlayerIndex": 1}),
+        )?);
+        let expected = serde_json::to_value(&table)?;
+        let (encoded, _) = crate::checkpoint::encode(&mut table, &SavedParts::default())?;
+        let head = older_head(&encoded.head, "hanabi-live-9")?.replace("\"turn\":1,", "\"num\":1,");
+        let mut parts = encoded
+            .changes
+            .written
+            .iter()
+            .map(|(key, part)| (key.clone(), part.replace("\"sentAt\"", "\"datetime\"")))
+            .collect::<Vec<_>>();
+        let (_, start) = parts
+            .iter_mut()
+            .find(|(key, _)| key == "game/start")
+            .context("Missing game start")?;
+        let mut value: Value = serde_json::from_str(start)?;
+        let best = value
+            .pointer_mut("/players/0/stats/variant/bestScores/1/best")
+            .and_then(Value::as_object_mut)
+            .context("Missing best score")?;
+        best.remove("modified");
+        best.insert("modifier".into(), json!(2));
+        for flag in ["deckPlays", "oneExtraCard", "oneLessCard", "allOrNothing"] {
+            best.insert(flag.into(), json!(false));
+        }
+        best.insert("emptyClues".into(), json!(true));
+        *start = value.to_string();
+        ensure!(
+            head.contains("\"num\":1") && parts.iter().any(|(_, part)| part.contains("datetime")),
+            "The older format has no turn or chat"
+        );
+        let decoded = crate::checkpoint::decode(&head, &parts)?;
         ensure!(serde_json::to_value(&decoded)? == expected);
         Ok(())
     }
@@ -1480,15 +1523,12 @@ mod tests {
             let carol = crate::stats::pregame_stats(&store.primary, UserId(9001), 0).await?;
             let best = serde_json::to_value(&carol.variant.best_scores)?;
             ensure!(
-                best[0]["best"]["score"] == 25
-                    && best[0]["best"]["modifier"] == 4
-                    && best[0]["best"]["oneExtraCard"] == true
-                    && best[0]["best"]["deckPlays"] == false,
+                best[0]["best"]["score"] == 25 && best[0]["best"]["modified"] == true,
                 "A modified best score lost its modifier: {}",
                 best[0]
             );
             ensure!(
-                best[1]["best"]["modifier"] == 0 && best[1]["best"]["oneExtraCard"] == false,
+                best[1]["best"]["modified"] == false,
                 "An unmodified best score gained a modifier: {}",
                 best[1]
             );
@@ -1571,7 +1611,7 @@ mod tests {
             user: Some(UserId(1)),
             message: serde_json::from_value(json!({
                 "text": text, "username": "Alice", "source": "user",
-                "tableId":id, "datetime": "2026-11-02T20:00:00.123456Z"
+                "tableId":id, "sentAt": "2026-11-02T20:00:00.123456Z"
             }))?,
         })
     }
@@ -1791,7 +1831,7 @@ mod tests {
                 .revision;
             ensure!(
                 table.chat.iter().all(|chat| chat.id.is_some())
-                    && table.chat[0].message.datetime.as_str() == "2026-11-02T20:00:00.123Z",
+                    && table.chat[0].message.sent_at.as_str() == "2026-11-02T20:00:00.123Z",
                 "Archived messages lack their identities or stored timestamps"
             );
             store
@@ -2024,7 +2064,7 @@ mod tests {
                 json!({"tableId":id,"action":{"type":"hypoStart"}}),
             )
             .await?;
-            let action = json!({"type":"turn","num":7,"currentPlayerIndex":1});
+            let action = json!({"type":"turn","turn":7,"currentPlayerIndex":1});
             send(
                 &hub,
                 users[0].clone(),

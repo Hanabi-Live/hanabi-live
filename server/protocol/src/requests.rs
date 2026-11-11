@@ -86,6 +86,7 @@ pub struct TableSetLeaderRequest {
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct TableSetVariantRequest {
     pub table_id: TableId,
+    #[schemars(length(min = 1))]
     pub variant_name: String,
 }
 
@@ -119,7 +120,7 @@ pub struct TableRestartDeclineRequest {
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct TableSuggestRequest {
     pub table_id: TableId,
-    pub segment: Turn,
+    pub turn: Turn,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
@@ -216,7 +217,27 @@ pub enum ReplayVisibility {
     Shared,
 }
 
-/// A request to watch a finished game: one from the database, or one imported in the replay format.
+/// A request to watch a finished game.
+#[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct ReplayCreateRequest {
+    pub source: ReplaySource,
+    pub visibility: ReplayVisibility,
+    /// The seat to shadow, if any.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub shadowing_player_index: Option<PlayerIndex>,
+    /// For a shared replay of a saved game, spectate an existing shared replay of the same game
+    /// instead of creating another one, if there is one.
+    #[serde(default)]
+    pub join_existing: bool,
+    /// For a shared replay, hide what happens later in the game: the turn slider, jumping to the
+    /// end, and future strikes.
+    #[serde(default)]
+    pub spoiler_free: bool,
+}
+
+/// The finished game that a replay shows: one from the database, or one imported in the replay
+/// format.
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
 #[serde(
     tag = "type",
@@ -224,59 +245,9 @@ pub enum ReplayVisibility {
     rename_all_fields = "camelCase",
     deny_unknown_fields
 )]
-pub enum ReplayCreateRequest {
-    Id {
-        game_id: GameId,
-        visibility: ReplayVisibility,
-        /// The seat to shadow, if any.
-        #[serde(skip_serializing_if = "Option::is_none")]
-        shadowing_player_index: Option<PlayerIndex>,
-        /// For a shared replay, spectate an existing shared replay of the same game instead of
-        /// creating another one, if there is one.
-        #[serde(default)]
-        join_existing: bool,
-        /// For a shared replay, hide what happens later in the game: the turn slider, jumping to
-        /// the end, and future strikes.
-        #[serde(default)]
-        spoiler_free: bool,
-    },
-    Json {
-        game_json: Box<ReplayGame>,
-        visibility: ReplayVisibility,
-        /// The seat to shadow, if any.
-        #[serde(skip_serializing_if = "Option::is_none")]
-        shadowing_player_index: Option<PlayerIndex>,
-        /// For a shared replay, hide what happens later in the game.
-        #[serde(default)]
-        spoiler_free: bool,
-    },
-}
-
-impl ReplayCreateRequest {
-    pub const fn visibility(&self) -> ReplayVisibility {
-        match self {
-            Self::Id { visibility, .. } | Self::Json { visibility, .. } => *visibility,
-        }
-    }
-
-    pub const fn spoiler_free(&self) -> bool {
-        match self {
-            Self::Id { spoiler_free, .. } | Self::Json { spoiler_free, .. } => *spoiler_free,
-        }
-    }
-
-    pub const fn shadowing_player_index(&self) -> Option<PlayerIndex> {
-        match self {
-            Self::Id {
-                shadowing_player_index,
-                ..
-            }
-            | Self::Json {
-                shadowing_player_index,
-                ..
-            } => *shadowing_player_index,
-        }
-    }
+pub enum ReplaySource {
+    Saved { game_id: GameId },
+    Imported { game: Box<ReplayGame> },
 }
 
 /// A turn in an ongoing game.
@@ -338,9 +309,9 @@ pub struct ReplayAction {
     deny_unknown_fields
 )]
 pub enum ReplayLeaderAction {
-    /// Moves everyone to a segment.
-    Segment {
-        segment: Turn,
+    /// Moves everyone to a turn.
+    Turn {
+        turn: Turn,
     },
     /// Points at a card or a part of the board.
     Arrow {

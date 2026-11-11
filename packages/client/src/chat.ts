@@ -676,7 +676,7 @@ function addInternal(data: ChatData, fast: boolean, updateLiveState: boolean) {
 
 /** Returns the HTML of a chat line: its time, its author, and the prepared message. */
 function formatChatLine(data: ChatData, msg: string): string {
-  const datetime = chatTimeFormatter.format(new Date(data.datetime));
+  const datetime = chatTimeFormatter.format(new Date(data.sentAt));
 
   let line = `[${datetime}]&nbsp; `;
   if (data.recipient !== undefined && data.recipient !== "") {
@@ -962,7 +962,7 @@ export function sendSelfPmFromServer(
     {
       text: message,
       source: "server",
-      datetime: new Date().toISOString(),
+      sentAt: new Date().toISOString(),
       ...(roomTableId(room) !== undefined && { tableId: roomTableId(room) }),
       recipient: globals.username,
     },

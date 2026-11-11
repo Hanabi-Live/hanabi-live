@@ -819,10 +819,15 @@ parameter repeated, is rejected.
 | ----- | --------- | ------- | --------------------------------------- | ------------------------- |
 | 1     | size      | integer | controls the number of results          | 1 to 100                  |
 | 1     | page      | integer | displays a specific page of the results | 0 to ...                  |
-| 1     | col[x]    | integer | sorts by one column x (0, 1, 2)         | 0 ascending, 1 descending |
-| 1     | fcol[x]   | integer | filters by column x (0, 1, ...)         | filter value              |
+| 1     | col[x]    | integer | sorts by one column x (see below)       | 0 ascending, 1 descending |
+| 1     | fcol[x]   | integer | filters by column x (see below)         | filter value              |
 | 2     | start     | integer | sets the starting ID of the data        | ...                       |
 | 2     | end       | integer | sets the ending ID of the data          | ...                       |
+
+The columns are `id`, `numPlayers`, `score`, and `variant` (for example,
+`?col[score]=1`). Every list sorts by `id`, `numPlayers`, or `score`. History
+lists filter by any column, variant lists by `id`, `numPlayers`, or `score`, and
+seed lists by `id` or `score`.
 
 <br />
 
@@ -834,9 +839,10 @@ parameter repeated, is rejected.
   in exactly the same way that a real player would. A reference bot
   implementation can be found at
   [`hanabi-live-bot`](https://github.com/Hanabi-Live/hanabi-live-bot).
-- To mark an account as a bot, send `bot` as the client version: the `version`
-  field when you log in to `/login`, or `?version=bot` in the WebSocket URL. The
-  account stays a bot after that. Other players see a robot icon next to it.
+- To mark an account as a bot, send `bot=true` instead of a client version: in
+  the form when you log in to `/login`, or as `?bot=true` in the WebSocket URL.
+  The account stays a bot after that. Other players see a robot icon next to it.
+  To create the account on its first login, also send `createAccount=true`.
 - Unlike human players, bots can play at more than one table at a time.
 
 <br />

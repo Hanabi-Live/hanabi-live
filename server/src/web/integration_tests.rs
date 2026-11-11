@@ -246,16 +246,14 @@ async fn websocket_checks_client_version_with_existing_cookie_postgres() {
         let mut socket = connect_query(&fixture, &cookie, query).await;
         tokio::time::timeout(Duration::from_secs(5), async {
             let WireMessage::Text(text) = socket.next().await.unwrap().unwrap() else {
-                panic!("Expected a version rejection before any bootstrap messages");
-            };
-            assert_eq!(text.as_str(), "outdatedClient {}");
-            let WireMessage::Text(text) = socket.next().await.unwrap().unwrap() else {
-                panic!("Expected a version error after the version rejection");
+                panic!("Expected a version error before any bootstrap messages");
             };
             let body = text.strip_prefix("error ").unwrap();
             let payload: Value = serde_json::from_str(body).unwrap();
-            // Earlier clients reject an error with fields that they do not know.
-            assert_eq!(payload.as_object().unwrap().len(), 1);
+            assert_eq!(
+                payload["code"],
+                hanabi_protocol::NoticeCode::OutdatedClient.name()
+            );
             assert!(
                 payload["message"]
                     .as_str()
@@ -270,7 +268,7 @@ async fn websocket_checks_client_version_with_existing_cookie_postgres() {
         .await
         .unwrap();
     }
-    for query in ["version=42", "version=bot"] {
+    for query in ["version=42", "bot=true"] {
         let mut socket = connect_query(&fixture, &cookie, query).await;
         receive(&mut socket, "welcome").await;
         socket.close(None).await.unwrap();

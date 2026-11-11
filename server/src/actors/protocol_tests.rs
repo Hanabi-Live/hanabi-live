@@ -182,7 +182,7 @@ impl Harness {
             .context("Missing table identity")
     }
     async fn replay(&mut self, index: usize) -> Result<TableId> {
-        self.send(index,"replayCreate",json!({"type":"json","visibility":"shared","gameJson":{"playerNames":["Alice","Bob"],"seed":"p2v0s1"}})).await?;
+        self.send(index,"replayCreate",json!({"source":{"type":"imported","game":{"playerNames":["Alice","Bob"],"seed":"p2v0s1"}},"visibility":"shared"})).await?;
         self.receive(index, "tableStarted").await?["tableId"]
             .as_u64()
             .map(TableId)
@@ -831,7 +831,7 @@ async fn shared_review_hypothetical_actions_refresh_idle() -> Result<()> {
             crate::server_info::test_info(),
         );
         actor.initialize(h.users[0].clone(), vec![]).await?;
-        let action = json!({"type":"turn","num":1,"currentPlayerIndex":1});
+        let action = json!({"type":"turn","turn":1,"currentPlayerIndex":1});
         for request in [
             json!({"tableId":id,"action":{"type":"hypoStart"}}),
             json!({"tableId":id,"action":{"type":"hypoAction","action":action}}),
@@ -977,7 +977,7 @@ async fn shared_replay_links_join_an_existing_replay_of_the_same_game() -> Resul
             .execute(&h.store.primary)
             .await?;
         let request = |visibility: &str, join_existing: bool| {
-            json!({"type":"id","gameId":game,"visibility":visibility,"joinExisting":join_existing})
+            json!({"source":{"type":"saved","gameId":game},"visibility":visibility,"joinExisting":join_existing})
         };
         let open = async |h: &mut Harness, index: usize, request: Value| -> Result<Value> {
             h.send(index, "replayCreate", request).await?;
@@ -1016,8 +1016,8 @@ async fn spoiler_free_reviews_are_shared_replays_that_tell_everyone() -> Result<
     };
     let outcome = async {
         let request = |visibility: &str| {
-            json!({"type":"json","visibility":visibility,"spoilerFree":true,
-                "gameJson":{"playerNames":["Alice","Bob"],"seed":"p2v0s1"}})
+            json!({"visibility":visibility,"spoilerFree":true,
+                "source":{"type":"imported","game":{"playerNames":["Alice","Bob"],"seed":"p2v0s1"}}})
         };
         ensure!(
             h.send(0, "replayCreate", request("solo")).await.is_err(),
@@ -1053,9 +1053,9 @@ async fn shared_replays_of_older_games_start_when_their_table_is_created() -> Re
         h.send(
             0,
             "replayCreate",
-            json!({"type":"json","visibility":"shared","gameJson":{
+            json!({"visibility":"shared","source":{"type":"imported","game":{
                 "playerNames":["Alice","Bob"],"seed":"p2v0s1",
-                "actions":[{"type":"gameOver","endCondition":"terminatedByPlayer","playerIndex":0}]}}),
+                "actions":[{"type":"gameOver","endCondition":"terminatedByPlayer","playerIndex":0}]}}}),
         )
         .await?;
         let id = h.receive(0, "tableStarted").await?["tableId"].clone();
@@ -1083,7 +1083,7 @@ async fn shared_replays_of_older_games_start_when_their_table_is_created() -> Re
         h.send(1, "gameInitLoad", json!({"tableId":id})).await?;
         let init = h.receive(1, "init").await?;
         ensure!(
-            init["sharedReplay"]["datetimeStarted"]
+            init["sharedReplay"]["startedAt"]
                     == hanabi_protocol::Timestamp::from(created).as_str(),
             "The shared replay did not start when its table was created: {init}"
         );
@@ -1705,7 +1705,8 @@ async fn remade_tables_publish_fresh_statistics_for_every_player() -> Result<()>
         let (saved, _) = h.snapshot(remade).await?;
         for player in saved.players() {
             ensure!(
-                player.stats.variant.best_scores[0].best.as_ref().map(|best| best.score) == Some(score),
+                player.stats.variant.best_scores[0].best.as_ref().map(|best| best.score)
+                    == Some(hanabi_protocol::Score(score)),
                 "Fresh statistics were not persisted"
             );
         }
@@ -2200,7 +2201,7 @@ async fn replay_loading_keeps_names_neutral_and_never_starts_a_game_clock() -> R
         h.send(
             0,
             "replayAction",
-            json!({"tableId":id,"action":{"type":"segment","segment":0}}),
+            json!({"tableId":id,"action":{"type":"turn","turn":0}}),
         )
         .await?;
         let snapshot = h.snapshot(id).await?.0;
@@ -2747,7 +2748,7 @@ async fn playing_membership_is_separate_from_replay_attendance_and_bots_can_play
         h.send(
             0,
             "replayAction",
-            json!({"tableId":replay_id,"action":{"type":"segment","segment":1}}),
+            json!({"tableId":replay_id,"action":{"type":"turn","turn":1}}),
         )
         .await?;
         h.send(0, "tableUnattend", json!({"tableId":pregame}))
@@ -2791,7 +2792,7 @@ async fn playing_membership_is_separate_from_replay_attendance_and_bots_can_play
                 session: old_alice,
                 message: client_message(
                     "replayAction",
-                    &json!({"tableId":replay_id,"action":{"type":"segment","segment":9}}),
+                    &json!({"tableId":replay_id,"action":{"type":"turn","turn":9}}),
                 )?,
                 reply,
             })
@@ -2996,7 +2997,7 @@ async fn replay_arrows_sounds_and_loads_skip_durable_checkpoints() -> Result<()>
         h.send(
             0,
             "replayAction",
-            json!({"tableId":id,"action":{"type":"segment","segment":1}}),
+            json!({"tableId":id,"action":{"type":"turn","turn":1}}),
         )
         .await?;
         let (table, saved) = h.snapshot(id).await?;
@@ -3112,7 +3113,7 @@ async fn commands_for_another_phase_are_rejected() -> Result<()> {
             .send(
                 0,
                 "replayAction",
-                json!({"tableId":id,"action":{"type": "segment", "segment": 1}}),
+                json!({"tableId":id,"action":{"type":"turn","turn":1}}),
             )
             .await
             .expect_err("A pregame accepted a replay action");
@@ -3308,7 +3309,7 @@ async fn saved_actions_store_null_for_a_missing_target_or_value() -> Result<()> 
         h.send(
             0,
             "replayCreate",
-            json!({"type":"id","visibility":"solo","gameId":game}),
+            json!({"source":{"type":"saved","gameId":game},"visibility":"solo"}),
         )
         .await?;
         let replay = h.receive(0, "tableStarted").await?["tableId"].clone();

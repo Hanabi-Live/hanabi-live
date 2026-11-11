@@ -275,9 +275,8 @@ databaseDescribe("normal-server protocol workload", () => {
         gameId: number,
       ) {
         peer.send("replayCreate", {
-          type: "id",
+          source: { type: "saved", gameId },
           visibility: "solo",
-          gameId,
         });
         const { tableId } = await peer.receive(
           "tableStarted",

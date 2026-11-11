@@ -214,12 +214,11 @@ mod tests {
         assert_eq!(best[0]["best"]["score"], 25);
         assert_eq!(
             best[1],
-            json!({"numPlayers":3,"best":{"score":24,"modifier":10,"deckPlays":false,
-                "emptyClues":true,"oneExtraCard":false,"oneLessCard":true,"allOrNothing":false}})
+            json!({"numPlayers":3,"best":{"score":24,"modified":true}})
         );
         assert_eq!(best[2], json!({ "numPlayers": 4 }));
         assert_eq!(best[3]["best"]["score"], 0);
         assert_eq!(best[4]["numPlayers"], 6);
-        assert_eq!(best[4]["best"]["allOrNothing"], true);
+        assert_eq!(best[4]["best"]["modified"], true);
     }
 }

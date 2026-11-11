@@ -354,9 +354,7 @@ databaseDescribe("compiled application entry point (rust)", () => {
           const restoredActive =
             aliceGame.init.ourPlayerIndex === 0 ? resumed : recoveredBob;
           expect(restoredActive.history.events).toEqual(acknowledged.events);
-          expect(resumed.init.datetimeStarted).toBe(
-            aliceGame.init.datetimeStarted,
-          );
+          expect(resumed.init.startedAt).toBe(aliceGame.init.startedAt);
           const [recovered] = await checkpointProgress();
           assertDefined(recovered, "Missing recovered checkpoint.");
           expect(recovered.game_id).toBe(checkpoint.game_id);
@@ -425,14 +423,14 @@ databaseDescribe("compiled application entry point (rust)", () => {
         );
         replacement.send("replayAction", {
           tableId,
-          action: { type: "segment", segment: 1 },
+          action: { type: "turn", turn: 1 },
         });
         const replayPosition = await replacement.receive(
           "replayAction",
           SERVER_COMMAND_SCHEMAS.replayAction,
         );
         expect(replayPosition).toMatchObject({
-          action: { type: "segment", segment: 1 },
+          action: { type: "turn", turn: 1 },
         });
         replacement.send("gameStateLoad", { tableId });
         const replayHistory = await replacement.receive(
@@ -683,11 +681,13 @@ databaseDescribe("compiled application entry point (rust)", () => {
           "replayCreate",
           source === "id"
             ? {
-                type: source,
+                source: { type: "saved", gameId: finished.gameId },
                 visibility: "solo",
-                gameId: finished.gameId,
               }
-            : { type: source, visibility: "shared", gameJson: replayJson },
+            : {
+                source: { type: "imported", game: replayJson },
+                visibility: "shared",
+              },
         );
         const created = await owner.receive(
           "tableStarted",
@@ -772,8 +772,8 @@ databaseDescribe("compiled application entry point (rust)", () => {
           const recovered = await bootstrap(returning, created.tableId);
           expect(recovered.init).toMatchObject({
             mode: "sharedReplay",
-            sharedReplay: { segment: imported.init.sharedReplay?.segment },
-            datetimeStarted: imported.init.datetimeStarted,
+            sharedReplay: { turn: imported.init.sharedReplay?.turn },
+            startedAt: imported.init.startedAt,
           });
           expect(recovered.init.characters).toEqual(imported.init.characters);
           expect(recovered.history.events).toEqual(imported.history.events);

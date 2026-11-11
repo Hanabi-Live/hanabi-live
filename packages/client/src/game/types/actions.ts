@@ -51,8 +51,8 @@ type HypotheticalAction =
 export interface ActionInit extends Readonly<
   Pick<
     ServerCommandData["init"],
-    | "datetimeStarted"
-    | "datetimeFinished"
+    | "startedAt"
+    | "finishedAt"
     | "mode"
     | "gameId"
     | "sharedReplay"

@@ -31,7 +31,7 @@
     "input": {
       "type": "error",
       "message": "Loading lobby statistics failed",
-      "code": "lobby_queue_full",
+      "code": "lobbyQueueFull",
       "diagnosticId": "1"
     },
     "valid": true
@@ -260,7 +260,7 @@
     "input": {
       "text": "&amp;",
       "source": "server",
-      "datetime": "2026-01-01T12:00:00.000Z"
+      "sentAt": "2026-01-01T12:00:00.000Z"
     },
     "valid": true
   },
@@ -271,7 +271,7 @@
     "input": {
       "text": "hello",
       "source": "user",
-      "datetime": "2026-01-01T12:00:00.000Z",
+      "sentAt": "2026-01-01T12:00:00.000Z",
       "username": "Alice",
       "recipient": "Bob",
       "chatId": 9007199254740991
@@ -285,7 +285,7 @@
     "input": {
       "text": "hello",
       "source": "user",
-      "datetime": "2026-01-01T12:00:00.000Z",
+      "sentAt": "2026-01-01T12:00:00.000Z",
       "username": ""
     },
     "valid": false
@@ -297,7 +297,7 @@
     "input": {
       "text": "hello",
       "source": "server",
-      "datetime": "2026-01-01T12:00:00.000Z",
+      "sentAt": "2026-01-01T12:00:00.000Z",
       "username": null
     },
     "valid": false
@@ -309,7 +309,7 @@
     "input": {
       "text": "hello",
       "source": "other",
-      "datetime": "2026-01-01T12:00:00.000Z"
+      "sentAt": "2026-01-01T12:00:00.000Z"
     },
     "valid": false
   },
@@ -377,7 +377,10 @@
     "input": {
       "userId": 7,
       "username": "Alice",
-      "activity": { "type": "away", "tableId": 3 },
+      "activity": {
+        "type": "away",
+        "tableId": 3
+      },
       "hGroupConventions": false,
       "bot": false,
       "inactive": false
@@ -392,7 +395,10 @@
       {
         "userId": 7,
         "username": "Alice",
-        "activity": { "type": "playing", "tableId": 3 },
+        "activity": {
+          "type": "playing",
+          "tableId": 3
+        },
         "hGroupConventions": false,
         "hGroupLevel": 3,
         "bot": false,
@@ -408,7 +414,9 @@
     "input": {
       "userId": 7,
       "username": "Alice",
-      "activity": { "type": "pregame" },
+      "activity": {
+        "type": "pregame"
+      },
       "hGroupConventions": false,
       "bot": false,
       "inactive": false
@@ -422,7 +430,10 @@
     "input": {
       "userId": 7,
       "username": "Alice",
-      "activity": { "type": "lobby", "tableId": 3 },
+      "activity": {
+        "type": "lobby",
+        "tableId": 3
+      },
       "hGroupConventions": false,
       "bot": false,
       "inactive": false
@@ -547,57 +558,50 @@
     "direction": "client",
     "command": "replayCreate",
     "input": {
-      "type": "json",
-      "visibility": "solo",
-      "gameJson": {
-        "gameId": 7,
-        "seed": "p2v0s1",
-        "playerNames": ["Alice", "Bob"],
-        "options": {
-          "variantName": "No Variant"
-        }
-      }
-    },
-    "normalized": {
-      "type": "json",
-      "visibility": "solo",
-      "gameJson": {
-        "gameId": 7,
-        "seed": "p2v0s1",
-        "playerNames": ["Alice", "Bob"],
-        "options": {
-          "variantName": "No Variant"
+      "source": {
+        "type": "imported",
+        "game": {
+          "gameId": 7,
+          "seed": "p2v0s1",
+          "playerNames": ["Alice", "Bob"],
+          "options": {
+            "variantName": "No Variant"
+          }
         }
       },
-      "spoilerFree": false
+      "visibility": "solo"
+    },
+    "normalized": {
+      "source": {
+        "type": "imported",
+        "game": {
+          "gameId": 7,
+          "seed": "p2v0s1",
+          "playerNames": ["Alice", "Bob"],
+          "options": {
+            "variantName": "No Variant"
+          }
+        }
+      },
+      "visibility": "solo",
+      "spoilerFree": false,
+      "joinExisting": false
     },
     "valid": true
-  },
-  {
-    "name": "only replays of stored games can join an existing replay",
-    "direction": "client",
-    "command": "replayCreate",
-    "input": {
-      "type": "json",
-      "visibility": "shared",
-      "joinExisting": true,
-      "gameJson": {
-        "seed": "p2v0s1"
-      }
-    },
-    "valid": false
   },
   {
     "name": "replay import rejects unknown fields",
     "direction": "client",
     "command": "replayCreate",
     "input": {
-      "type": "json",
-      "visibility": "solo",
-      "gameJson": {
-        "seed": "p2v0s1",
-        "source": "another tool"
-      }
+      "source": {
+        "type": "imported",
+        "game": {
+          "seed": "p2v0s1",
+          "source": "another tool"
+        }
+      },
+      "visibility": "solo"
     },
     "valid": false
   },
@@ -606,18 +610,20 @@
     "direction": "client",
     "command": "replayCreate",
     "input": {
-      "type": "json",
-      "visibility": "solo",
-      "gameJson": {
-        "seed": "p2v0s1",
-        "actions": [
-          {
-            "type": 0,
-            "target": 0,
-            "turn": 1
-          }
-        ]
-      }
+      "source": {
+        "type": "imported",
+        "game": {
+          "seed": "p2v0s1",
+          "actions": [
+            {
+              "type": 0,
+              "target": 0,
+              "turn": 1
+            }
+          ]
+        }
+      },
+      "visibility": "solo"
     },
     "valid": false
   },
@@ -626,55 +632,60 @@
     "direction": "client",
     "command": "replayCreate",
     "input": {
-      "type": "json",
-      "visibility": "solo",
-      "gameJson": {
-        "seed": "p2v0s1",
-        "actions": [
-          {
-            "type": "clue",
-            "target": 1,
-            "clue": {
-              "type": "rank",
-              "value": 1
+      "source": {
+        "type": "imported",
+        "game": {
+          "seed": "p2v0s1",
+          "actions": [
+            {
+              "type": "clue",
+              "target": 1,
+              "clue": {
+                "type": "rank",
+                "value": 1
+              }
+            },
+            {
+              "type": "play",
+              "order": 0
+            },
+            {
+              "type": "gameOver",
+              "endCondition": "terminatedByVote"
             }
-          },
-          {
-            "type": "play",
-            "order": 0
-          },
-          {
-            "type": "gameOver",
-            "endCondition": "terminatedByVote"
-          }
-        ]
-      }
+          ]
+        }
+      },
+      "visibility": "solo"
     },
     "normalized": {
-      "type": "json",
+      "source": {
+        "type": "imported",
+        "game": {
+          "seed": "p2v0s1",
+          "actions": [
+            {
+              "type": "clue",
+              "target": 1,
+              "clue": {
+                "type": "rank",
+                "value": 1
+              }
+            },
+            {
+              "type": "play",
+              "order": 0
+            },
+            {
+              "type": "gameOver",
+              "endCondition": "terminatedByVote"
+            }
+          ]
+        }
+      },
       "visibility": "solo",
       "spoilerFree": false,
-      "gameJson": {
-        "seed": "p2v0s1",
-        "actions": [
-          {
-            "type": "clue",
-            "target": 1,
-            "clue": {
-              "type": "rank",
-              "value": 1
-            }
-          },
-          {
-            "type": "play",
-            "order": 0
-          },
-          {
-            "type": "gameOver",
-            "endCondition": "terminatedByVote"
-          }
-        ]
-      }
+      "joinExisting": false
     },
     "valid": true
   },
@@ -683,18 +694,20 @@
     "direction": "client",
     "command": "replayCreate",
     "input": {
-      "type": "json",
-      "visibility": "solo",
-      "gameJson": {
-        "seed": "p2v0s1",
-        "actions": [
-          {
-            "type": "play",
-            "order": 0,
-            "value": 0
-          }
-        ]
-      }
+      "source": {
+        "type": "imported",
+        "game": {
+          "seed": "p2v0s1",
+          "actions": [
+            {
+              "type": "play",
+              "order": 0,
+              "value": 0
+            }
+          ]
+        }
+      },
+      "visibility": "solo"
     },
     "valid": false
   },
@@ -703,14 +716,16 @@
     "direction": "client",
     "command": "replayCreate",
     "input": {
-      "type": "json",
-      "visibility": "solo",
-      "gameJson": {
-        "seed": "p2v0s1",
-        "options": {
-          "speedrun": null
+      "source": {
+        "type": "imported",
+        "game": {
+          "seed": "p2v0s1",
+          "options": {
+            "speedrun": null
+          }
         }
-      }
+      },
+      "visibility": "solo"
     },
     "valid": false
   },
@@ -804,8 +819,8 @@
         "score": 25,
         "numTurns": 40,
         "endCondition": "normal",
-        "datetimeStarted": "2023-12-29T18:00:00.000Z",
-        "datetimeFinished": "2023-12-29T18:21:43.812Z",
+        "startedAt": "2023-12-29T18:00:00.000Z",
+        "finishedAt": "2023-12-29T18:21:43.812Z",
         "numGamesOnSeed": 3,
         "playerNames": ["Alice", "Bob"],
         "tags": []
@@ -834,8 +849,8 @@
         "score": 25,
         "numTurns": 40,
         "endCondition": "normal",
-        "datetimeStarted": "2023-12-29T18:00:00.000+00:00",
-        "datetimeFinished": "2023-12-29T18:21:43.812Z",
+        "startedAt": "2023-12-29T18:00:00.000+00:00",
+        "finishedAt": "2023-12-29T18:21:43.812Z",
         "numGamesOnSeed": 3,
         "playerNames": ["Alice", "Bob"],
         "tags": []
@@ -864,8 +879,8 @@
         "score": 25,
         "numTurns": 40,
         "endCondition": "normal",
-        "datetimeStarted": "2023-12-29T18:00:00Z",
-        "datetimeFinished": "2023-12-29T18:21:43.812Z",
+        "startedAt": "2023-12-29T18:00:00Z",
+        "finishedAt": "2023-12-29T18:21:43.812Z",
         "numGamesOnSeed": 3,
         "playerNames": ["Alice", "Bob"],
         "tags": []
@@ -894,8 +909,8 @@
         "score": 25,
         "numTurns": 40,
         "endCondition": "normal",
-        "datetimeStarted": "2023-12-29T18:00:00.000000Z",
-        "datetimeFinished": "2023-12-29T18:21:43.812Z",
+        "startedAt": "2023-12-29T18:00:00.000000Z",
+        "finishedAt": "2023-12-29T18:21:43.812Z",
         "numGamesOnSeed": 3,
         "playerNames": ["Alice", "Bob"],
         "tags": []
@@ -924,8 +939,8 @@
         "score": 25,
         "numTurns": 40,
         "endCondition": "normal",
-        "datetimeStarted": "yesterday",
-        "datetimeFinished": "2023-12-29T18:21:43.812Z",
+        "startedAt": "yesterday",
+        "finishedAt": "2023-12-29T18:21:43.812Z",
         "numGamesOnSeed": 3,
         "playerNames": ["Alice", "Bob"],
         "tags": []
@@ -958,9 +973,9 @@
     "input": {
       "tableId": 4,
       "action": {
-        "type": "segment",
-        "segment": 2,
-        "order": 0
+        "type": "turn",
+        "order": 0,
+        "turn": 2
       }
     },
     "valid": false
@@ -972,7 +987,7 @@
     "input": {
       "tableId": 4,
       "action": {
-        "type": "segment"
+        "type": "turn"
       }
     },
     "valid": false
@@ -1329,7 +1344,7 @@
       "tableId": 3,
       "event": {
         "type": "turn",
-        "num": -1
+        "turn": -1
       }
     },
     "valid": false
