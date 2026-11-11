@@ -21,12 +21,20 @@ interface PregameState {
 
   /** The people at our table who are typing. The game chat shows them too. */
   readonly typing: readonly string[];
+
+  /** Whether we asked the server to start the game since its last "pregame" message. */
+  readonly startGameSent: boolean;
+
+  /** Whether the player count changed a short time ago, which disables "Start Game". */
+  readonly startGameCooldown: boolean;
 }
 
 const initialState: PregameState = {
   game: undefined,
   chatLines: [],
   typing: [],
+  startGameSent: false,
+  startGameCooldown: false,
 };
 
 const pregameSlice = createSlice({
@@ -36,6 +44,7 @@ const pregameSlice = createSlice({
     gameChanged: (state, action: PayloadAction<Game | undefined>) => ({
       ...state,
       game: action.payload,
+      startGameSent: false,
     }),
     pregameChatLineAdded(state, action: PayloadAction<PregameChatLine>) {
       state.chatLines.push(action.payload);
@@ -54,6 +63,12 @@ const pregameSlice = createSlice({
     typingCleared(state) {
       state.typing = [];
     },
+    startGameSentChanged(state, action: PayloadAction<boolean>) {
+      state.startGameSent = action.payload;
+    },
+    startGameCooldownChanged(state, action: PayloadAction<boolean>) {
+      state.startGameCooldown = action.payload;
+    },
   },
 });
 
@@ -64,5 +79,7 @@ export const {
   typingStarted,
   typingStopped,
   typingCleared,
+  startGameSentChanged,
+  startGameCooldownChanged,
 } = pregameSlice.actions;
 export const pregameReducer = pregameSlice.reducer;

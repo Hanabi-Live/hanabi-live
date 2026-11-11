@@ -26,6 +26,8 @@ import {
 } from "complete-common";
 import { DIMMED_OPACITY, LOCAL_STORAGE_KEY } from "../constants";
 import { globals } from "../Globals";
+import { creatingTableChanged } from "../sessionSlice";
+import { store } from "../store";
 import { Tooltip } from "../Tooltip";
 import { escapeHtml, getHTMLInputElement } from "../utils";
 import * as lobbyPage from "./lobbyPage";
@@ -382,7 +384,7 @@ function submit() {
 
   if (isNew) {
     globals.conn!.send("tableCreate", { settings, password });
-    $("#nav-buttons-lobby-create-game").addClass("disabled");
+    store.dispatch(creatingTableChanged(true));
   } else {
     globals.conn!.send("tableUpdate", { tableID: globals.tableID, settings });
   }

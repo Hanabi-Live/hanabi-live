@@ -12,6 +12,7 @@ import {
 import type { RootState } from "../../store";
 
 type OtherScores = ServerCommandData["gameHistoryOtherScores"];
+type LobbyStatus = ServerCommandData["lobbyStatus"];
 
 const gamesAdapter = createEntityAdapter({
   selectId: (game: GameHistory): number => game.gameID,
@@ -22,6 +23,9 @@ interface HistoryState {
 
   /** The number of games that we have played, or undefined until the server counts them. */
   readonly totalGames: number | undefined;
+
+  /** Whether the server failed to count our games. */
+  readonly totalGamesFailed: boolean;
 
   /** Whether we are waiting for a page of our history. */
   readonly loading: boolean;
@@ -47,6 +51,7 @@ interface HistoryState {
 const initialState: HistoryState = {
   games: gamesAdapter.getInitialState(),
   totalGames: undefined,
+  totalGamesFailed: false,
   loading: false,
   otherScores: undefined,
 };
@@ -64,6 +69,13 @@ const historySlice = createSlice({
     },
     totalGamesChanged(state, action: PayloadAction<number | undefined>) {
       state.totalGames = action.payload;
+      state.totalGamesFailed = false;
+    },
+    lobbyStatusReceived(state, action: PayloadAction<LobbyStatus>) {
+      const status = action.payload;
+      state.totalGames =
+        status.type === "ready" ? status.totalGames : undefined;
+      state.totalGamesFailed = status.type === "error";
     },
     otherScoresRequested(state, action: PayloadAction<string>) {
       state.otherScores = {
@@ -112,6 +124,7 @@ export const {
   historyRequested,
   historyReceived,
   totalGamesChanged,
+  lobbyStatusReceived,
   otherScoresRequested,
   moreOtherScoresRequested,
   otherScoresReceived,

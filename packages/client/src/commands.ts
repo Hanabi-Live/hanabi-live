@@ -3,11 +3,15 @@
 import { globals } from "./Globals";
 import * as chat from "./chat";
 import * as gameChat from "./game/chat";
-import * as pregame from "./lobby/pregame/pregame";
-import { typingStarted, typingStopped } from "./lobby/pregame/pregameSlice";
+import {
+  startGameSentChanged,
+  typingStarted,
+  typingStopped,
+} from "./lobby/pregame/pregameSlice";
 import { Screen } from "./lobby/types/Screen";
 import * as modals from "./modals";
 import { ServerHandlers } from "./serverHandlers";
+import { creatingTableChanged } from "./sessionSlice";
 import { store } from "./store";
 
 // Define a command handler map.
@@ -18,11 +22,8 @@ commands.set("warning", (data) => {
   globals.ui?.cancelPendingRestart();
   modals.showWarning(data.message);
   // Re-activate some lobby elements.
-  $("#nav-buttons-lobby-create-game").removeClass("disabled");
-  if (globals.currentScreen === Screen.PreGame) {
-    pregame.toggleStartGameButton();
-    pregame.toggleJoinSpectateButtons();
-  }
+  store.dispatch(creatingTableChanged(false));
+  store.dispatch(startGameSentChanged(false));
 });
 
 commands.set("error", (data) => {

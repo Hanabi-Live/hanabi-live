@@ -22,7 +22,6 @@ import { websocketInit } from "../websocketInit";
 import { scrollLobbyChatToBottom } from "./chat/LobbyChat";
 import { TEST_COOKIE_PATH, checkCookieWithRetry } from "./cookieProbe";
 import { loginRequestBody } from "./loginRequestBody";
-import * as nav from "./nav";
 import { Screen } from "./types/Screen";
 
 /** How long the change-password form and the scroll to an error take to animate. */
@@ -342,13 +341,15 @@ export function hide(firstTimeUser: boolean): void {
   document.body.scrollTop = 0;
   $("body").css("overflow", "hidden");
 
-  // Show the lobby
-  globals.currentScreen = Screen.Lobby;
+  // Show the lobby. During the tutorial, the server can already have sent us to a pre-game screen,
+  // so only leave the login screen.
+  if (globals.currentScreen === Screen.Login) {
+    globals.currentScreen = Screen.Lobby;
+  }
   $("#lobby").removeClass("hidden");
   $("#lobby-history").hide();
   // We can't hide this element by default in "index.html" or else the "No game history" text will
   // not be centered.
-  nav.show("lobby");
   $("#lobby-chat-input").trigger("focus");
 
   // Scroll to the bottom of the chat. (This is necessary if we are going to the lobby after the

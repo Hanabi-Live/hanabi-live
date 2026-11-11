@@ -123,7 +123,7 @@ async fn shell_routes_metadata_and_static_files() {
         for hook in [
             "id=\"page-wrapper\"",
             "id=\"domain\"",
-            "id=\"nav-buttons-lobby\"",
+            "id=\"lobby\"",
             "/public/js/bundles/main.test-version.min.js",
             "data-authenticated=\"false\"",
         ] {

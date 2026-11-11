@@ -3,33 +3,9 @@
   display: none;
 }
 
-/* "hidden-<width>" hides an element on screens that are this wide or narrower. */
-@media screen and (max-width: 1280px) {
-  .hidden-1280 {
-    display: none;
-  }
-}
-
-@media screen and (max-width: 840px) {
-  .hidden-840 {
-    display: none;
-  }
-}
-
-@media screen and (max-width: 736px) {
-  .hidden-736 {
-    display: none;
-  }
-}
-
+/* "hidden-640" hides an element on screens that are this wide or narrower. */
 @media screen and (max-width: 640px) {
   .hidden-640 {
-    display: none;
-  }
-}
-
-@media screen and (max-width: 530px) {
-  .hidden-530 {
     display: none;
   }
 }

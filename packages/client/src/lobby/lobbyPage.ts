@@ -1,9 +1,9 @@
 // Full pages in the lobby (such as "Create Game" and "Resources"), which replace the lobby until
 // the user submits them or returns.
 
-import { globals } from "../Globals";
-import * as nav from "./nav";
-import { Screen } from "./types/Screen";
+import { lobbyPageShownChanged } from "../sessionSlice";
+import { store } from "../store";
+import { showLobbyHalves } from "./lobbyLayout";
 
 interface LobbyPage {
   readonly section: string;
@@ -27,11 +27,8 @@ export function show(
   current = { section, submitButton, onHide };
 
   $(section).show();
-  nav.showLobbyHalves(false);
-  $("#nav-buttons-page-return-target").text(
-    globals.currentScreen === Screen.PreGame ? "Game" : "Lobby",
-  );
-  nav.show("page");
+  showLobbyHalves(false);
+  store.dispatch(lobbyPageShownChanged(true));
 }
 
 export function hide(): void {
@@ -42,8 +39,8 @@ export function hide(): void {
   $(current.section).hide();
   current.onHide?.();
   current = undefined;
-  nav.showLobbyHalves(true);
-  nav.show(globals.currentScreen === Screen.PreGame ? "pregame" : "lobby");
+  showLobbyHalves(true);
+  store.dispatch(lobbyPageShownChanged(false));
 }
 
 export function isShown(): boolean {

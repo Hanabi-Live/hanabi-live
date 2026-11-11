@@ -17,6 +17,7 @@ const dom = new JSDOM(`<!doctype html><body>
     <div id="error-modal" class="hidden">
       <p id="error-modal-description"></p>
       <button id="error-modal-button"></button>
+      <button id="error-modal-signout"></button>
     </div>
     <div id="idle-modal" class="hidden">
       <p id="idle-modal-description"></p>
@@ -84,7 +85,6 @@ vi.mock("./game/reducers/noteIdentity", () => ({}));
 vi.mock("./game/ui/HanabiCardClick", () => ({
   morphReplayFromModal: vi.fn(),
 }));
-vi.mock("./lobby/nav", () => ({ show: vi.fn() }));
 
 // This must run before the error test, whose error modal cannot be closed.
 test("the idle warning counts down and only lets players keep the game going", async () => {

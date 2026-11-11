@@ -1,14 +1,13 @@
-// Shows and hides the pre-game screen, and enables its buttons in the navigation bar.
+// Shows and hides the pre-game screen.
 
-import { MAX_PLAYERS, MIN_PLAYERS } from "@hanabi-live/game";
 import { globals } from "../../Globals";
 import * as chat from "../../chat";
 import { PATH } from "../../constants";
+import { creatingTableChanged } from "../../sessionSlice";
 import { store } from "../../store";
 import { getHTMLInputElement, setBrowserAddressBarPath } from "../../utils";
 import { scrollLobbyChatToBottom } from "../chat/LobbyChat";
 import * as lobbyPage from "../lobbyPage";
-import * as nav from "../nav";
 import { Screen } from "../types/Screen";
 import { PREGAME_CHAT_INPUT_ID } from "./PregameChat";
 import { pregameChatCleared, typingCleared } from "./pregameSlice";
@@ -49,12 +48,7 @@ export function show(): void {
 
   // The "Create Game" button in the nav was disabled after we clicked the "Create" button, so
   // re-enable it now that we have received a message back from the server.
-  $("#nav-buttons-lobby-create-game").removeClass("disabled");
-
-  // Adjust the top navigation bar.
-  nav.show("pregame");
-  toggleStartGameButton();
-  toggleJoinSpectateButtons();
+  store.dispatch(creatingTableChanged(false));
 
   // Set the browser address bar.
   setBrowserAddressBarPath(
@@ -92,69 +86,8 @@ export function hide(updateURL = true): void {
   store.dispatch(typingCleared());
   chat.updatePeopleTyping();
 
-  // Adjust the navigation bar.
-  nav.show("lobby");
-
   // Set the browser address bar.
   if (updateURL) {
     setBrowserAddressBarPath(PATH.LOBBY);
-  }
-}
-
-function isSpectator() {
-  for (const loopPlayer of globals.game!.players) {
-    if (loopPlayer.username === globals.username) {
-      return false;
-    }
-  }
-  return true;
-}
-
-export function toggleStartGameButton(): void {
-  // Enable or disable the "Start Game" button. "Start Game" enabled if game owner and enough
-  // players.
-  $("#nav-buttons-pregame-start").addClass("disabled");
-
-  if (globals.game === undefined) {
-    return;
-  }
-
-  if (
-    globals.game.ownerID === globals.userID
-    && globals.game.players.length >= MIN_PLAYERS
-    && globals.game.players.length <= MAX_PLAYERS
-    // If this field is not equal to undefined it means that we are waiting a short time to
-    // re-enable the button after a player joined.
-    && globals.enableStartGameButtonTimeout === undefined
-  ) {
-    $("#nav-buttons-pregame-start").removeClass("disabled");
-  }
-}
-
-export function toggleJoinSpectateButtons(): void {
-  if (globals.game === undefined) {
-    return;
-  }
-
-  const joinGame = $("#nav-buttons-pregame-join");
-  const joinSpectate = $("#nav-buttons-pregame-spectate");
-
-  joinGame.addClass("disabled");
-  joinSpectate.addClass("disabled");
-
-  if (isSpectator()) {
-    joinSpectate.hide();
-    joinGame.show();
-
-    if (globals.game.players.length < globals.game.settings.maxPlayers) {
-      joinGame.removeClass("disabled");
-    }
-  } else {
-    joinGame.hide();
-    joinSpectate.show();
-
-    if (globals.game.players.length >= MIN_PLAYERS) {
-      joinSpectate.removeClass("disabled");
-    }
   }
 }

@@ -13,11 +13,13 @@ import * as theme from "../theme";
 import { toSoundType } from "../wire";
 import {
   historyReceived,
+  lobbyStatusReceived,
   otherScoresReceived,
 } from "./gameHistory/historySlice";
 import * as lobbyLogin from "./login";
 import * as playerSettings from "./playerSettings";
 import * as pregame from "./pregame/pregame";
+import { startGameCooldownChanged } from "./pregame/pregameSlice";
 import { tableChanged, tableGone, tablesListed } from "./tables/tablesSlice";
 import { Screen } from "./types/Screen";
 import * as url from "./url";
@@ -31,28 +33,15 @@ import {
 /** How long the start game button stays disabled after the player count changes. */
 const START_GAME_BUTTON_DISABLED_MILLISECONDS = 500;
 
+let startGameCooldownTimeout: ReturnType<typeof setTimeout> | undefined;
+
 // Define a command handler map.
 export const lobbyCommands = new ServerHandlers();
 
 lobbyCommands.set("lobbyStatus", (data) => {
-  const total = $("#nav-buttons-history-total-games");
-  total.off("click.lobbyRetry").removeAttr("title");
-  if (data.type === "ready") {
-    globals.totalGames = data.totalGames;
-    $("#nav-buttons-history-total-games").text(data.totalGames.toString());
-  } else {
-    $("#nav-buttons-history-total-games").text(
-      data.type === "error" ? "unavailable" : "loading...",
-    );
-    if (data.type === "error") {
-      total
-        .text("unavailable (click to retry)")
-        .attr("title", "Loading lobby statistics failed.")
-        .on("click.lobbyRetry", () => {
-          globals.conn?.send("lobbyLoad", {});
-        });
-      modals.showWarning(data.message);
-    }
+  store.dispatch(lobbyStatusReceived(data));
+  if (data.type === "error") {
+    modals.showWarning(data.message);
   }
 });
 
@@ -78,17 +67,12 @@ lobbyCommands.set("pregame", (data) => {
   const previousPlayers = globals.game?.players;
   globals.game = data;
   globals.tableID = data.tableID;
-  pregame.toggleStartGameButton();
-  pregame.toggleJoinSpectateButtons();
   if (previousPlayers?.length !== data.players.length) {
     // Disable the start game button for a short time after the player count changes.
-    if (globals.enableStartGameButtonTimeout !== undefined) {
-      clearTimeout(globals.enableStartGameButtonTimeout);
-    }
-    $("#nav-buttons-pregame-start").addClass("disabled");
-    globals.enableStartGameButtonTimeout = setTimeout(() => {
-      globals.enableStartGameButtonTimeout = undefined;
-      pregame.toggleStartGameButton();
+    clearTimeout(startGameCooldownTimeout);
+    store.dispatch(startGameCooldownChanged(true));
+    startGameCooldownTimeout = setTimeout(() => {
+      store.dispatch(startGameCooldownChanged(false));
     }, START_GAME_BUTTON_DISABLED_MILLISECONDS);
   }
 });
@@ -104,9 +88,6 @@ lobbyCommands.set("gameHistoryAdded", (data) => {
   if (globals.totalGames !== undefined) {
     globals.totalGames++;
   }
-  $("#nav-buttons-history-total-games").text(
-    globals.totalGames?.toString() ?? "loading...",
-  );
 });
 
 lobbyCommands.set("gameHistoryOtherScores", (data) => {
@@ -225,7 +206,6 @@ lobbyCommands.set("welcome", (data) => {
 
   // Update various elements of the UI to reflect our settings. The "lobbyStatus" message reports
   // the total number of games once the statistics load.
-  $("#nav-buttons-history-total-games").text("loading...");
   playerSettings.setPlayerSettings();
   lobbyLogin.hide(data.firstTimeUser);
 

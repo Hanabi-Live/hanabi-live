@@ -36,104 +36,15 @@
   vertical-align: middle;
 }
 
-#header nav > ul {
-  list-style: none;
-  margin: 0;
-  padding-left: 0;
-}
-
-#header nav > ul > li {
-  display: inline-block;
-  padding-left: 0;
-}
-
-#header nav > ul > li a {
-  display: inline-block;
-  height: 2em;
-  line-height: 2em;
-  padding: 0 1em;
-  border-radius: var(--radius);
-}
-
-#header nav > ul > li:first-child {
-  margin-left: 0;
-}
-
-#header nav > ul > li .button {
-  margin: 0 0 0 0.5em;
-  position: relative;
-}
-
-#header .button {
-  background-color: transparent;
-  box-shadow: inset 0 0 0 2px var(--header-button-border);
-  color: var(--text-on-accent);
-}
-
-#header .button:hover {
-  background-color: var(--header-button-hover-bg);
-}
-
-#header .button:active {
-  background-color: var(--header-button-active-bg);
-}
-
 /* The logo in the header bar */
 .logo {
   height: var(--header-height);
   vertical-align: bottom;
 }
 
-/*
-  Nav (the top bar)
-*/
-.nav-icon {
-  position: relative;
-  top: 0.05em;
-  margin-right: 0.3em;
-}
-
-#nav-buttons-history > li:first-child {
-  margin-right: 0.375em;
-}
-
-.nav-hotkey-indicator {
-  border-bottom: 1px solid var(--header-button-border);
-}
-
-#header .help-button {
-  background-color: var(--button-green);
-}
-
-#header .help-button:hover {
-  background-color: var(--button-green-hover);
-}
-
-@media screen and (max-width: 1280px) {
-  /* Tighter nav buttons before text disappears */
-  #header nav > ul > li .button {
-    padding-left: 0.5em;
-    padding-right: 0.5em;
-  }
-}
-
 @media screen and (max-width: 980px) {
   /* Hide the logo text */
   #logo-text {
-    display: none;
-  }
-}
-
-@media screen and (max-width: 840px) {
-  /* Remove extra space from nav icons */
-  .nav-icon {
-    margin-right: 0;
-  }
-}
-
-@media screen and (max-width: 640px) {
-  /* hide 'help' nav menu */
-  #header nav > ul > li a#nav-buttons-lobby-resources {
     display: none;
   }
 }

@@ -67,6 +67,7 @@
   "tw:narrow-980:hidden" hides an element on screens that are at most 980px wide.
 */
 @custom-variant narrow-1440 (@media screen and (max-width: 1440px));
+@custom-variant narrow-1280 (@media screen and (max-width: 1280px));
 @custom-variant narrow-980 (@media screen and (max-width: 980px));
 @custom-variant narrow-840 (@media screen and (max-width: 840px));
 @custom-variant narrow-736 (@media screen and (max-width: 736px));

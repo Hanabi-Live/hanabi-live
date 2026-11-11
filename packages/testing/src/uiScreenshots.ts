@@ -335,6 +335,19 @@ function getStates({
       },
     },
     {
+      name: "lobby-other-scores",
+      path: "/",
+      loggedIn: true,
+      prepare: async (page) => {
+        // The lobby opens the other scores of a seed when its address changes to their hash.
+        await page.evaluate((otherScoresSeed) => {
+          globalThis.history.replaceState(undefined, "", "/lobby");
+          globalThis.location.hash = `#history-other-scores-${otherScoresSeed}`;
+        }, SEED);
+        await page.waitForTimeout(SETTLE_MILLISECONDS);
+      },
+    },
+    {
       name: "replay",
       path: "/",
       loggedIn: true,
@@ -418,11 +431,7 @@ function getStates({
       prepare: async (page) => {
         // The settings are only in the lobby, so leave the pregame screen to turn on "New UI".
         await joinTable(page);
-        // When the account was already at the table, the header can still show the lobby's buttons,
-        // but the click works the same.
-        await page
-          .locator("#nav-buttons-pregame-unattend")
-          .dispatchEvent("click");
+        await page.click("#nav-buttons-pregame-unattend");
         await page.waitForTimeout(SETTLE_MILLISECONDS);
         await clickNav(page, "settings");
         // The checkbox itself is hidden behind its styled label.

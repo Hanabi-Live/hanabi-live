@@ -4,7 +4,7 @@ import type { ServerCommandData, UserID } from "@hanabi-live/data";
 import { defaultSettings } from "@hanabi-live/data";
 import type { Connection } from "./Connection";
 import type { Loader } from "./Loader";
-import { NO_TABLE_ID, NO_USER_ID } from "./constants";
+import { NO_TABLE_ID } from "./constants";
 import type { HanabiUI } from "./game/ui/HanabiUI";
 import { totalGamesChanged } from "./lobby/gameHistory/historySlice";
 import type { Game } from "./lobby/pregame/pregameSlice";
@@ -14,8 +14,10 @@ import { selectTable, selectTables } from "./lobby/tables/tablesSlice";
 import type { Screen } from "./lobby/types/Screen";
 import {
   blockedChanged,
+  errorOccurredChanged,
   friendsChanged,
   screenChanged,
+  userIDChanged,
   usernameChanged,
 } from "./sessionSlice";
 import { store } from "./store";
@@ -28,7 +30,6 @@ export class Globals {
   // Values from the server "welcome" message
   // ----------------------------------------
 
-  userID = NO_USER_ID;
   muted = false;
 
   /** Contains the settings for the "Settings" modal and the "Create Game" screen. */
@@ -39,6 +40,15 @@ export class Globals {
   // ----------------------------------------------------------------
 
   /* eslint-disable @typescript-eslint/class-methods-use-this -- These delegate to the store. */
+
+  /** From the "welcome" message, or `NO_USER_ID` before it. */
+  get userID(): number {
+    return store.getState().session.userID;
+  }
+
+  set userID(userID: number) {
+    store.dispatch(userIDChanged(userID));
+  }
 
   /** From the "welcome" message. */
   get username(): string {
@@ -102,6 +112,14 @@ export class Globals {
     store.dispatch(gameChanged(game));
   }
 
+  get errorOccurred(): boolean {
+    return store.getState().session.errorOccurred;
+  }
+
+  set errorOccurred(errorOccurred: boolean) {
+    store.dispatch(errorOccurredChanged(errorOccurred));
+  }
+
   /* eslint-enable @typescript-eslint/class-methods-use-this */
 
   // -----------------------
@@ -117,17 +135,8 @@ export class Globals {
 
   idleMinutes = 0;
 
-  /**
-   * If the start game button is disabled due to a player leaving or joining, stores the ID of a
-   * timeout designed to re-enable it.
-   */
-  enableStartGameButtonTimeout: ReturnType<typeof setTimeout> | undefined =
-    undefined;
-
   /** Equal to the table we are joined to or `NO_TABLE_ID` if no table. */
   tableID = NO_TABLE_ID;
-
-  errorOccurred = false;
 
   // ------------
   // UI variables

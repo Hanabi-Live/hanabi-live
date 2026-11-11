@@ -12,7 +12,7 @@ import { LOCAL_STORAGE_KEY, START_CARD_RANK_LABEL } from "./constants";
 import * as noteIdentity from "./game/reducers/noteIdentity";
 import type { HanabiCard } from "./game/ui/HanabiCard";
 import { morphReplayFromModal } from "./game/ui/HanabiCardClick";
-import * as lobbyNav from "./lobby/nav";
+import { signOut } from "./lobby/signOut";
 import { getHTMLElement, getHTMLInputElement } from "./utils";
 
 /** Used by the morph dialog. */
@@ -33,6 +33,7 @@ const confirmModalDescription = getHTMLElement("#confirm-modal-description");
 const confirmModalTitle = getHTMLElement("#confirm-modal-title");
 const errorModalButton = getHTMLElement("#error-modal-button");
 const errorModalDescription = getHTMLElement("#error-modal-description");
+const errorModalSignOut = getHTMLElement("#error-modal-signout");
 const idleModalClose = getHTMLElement("#idle-modal-close");
 const idleModalDescription = getHTMLElement("#idle-modal-description");
 const idleModalKeep = getHTMLElement("#idle-modal-keep");
@@ -129,6 +130,7 @@ export function init(): void {
   errorModalButton.addEventListener("pointerdown", () => {
     globalThis.location.reload();
   });
+  errorModalSignOut.addEventListener("click", signOut);
 
   // Morph modal textbox.
   const morphTextboxObserver = new MutationObserver(() => {
@@ -449,10 +451,8 @@ export function showError(msg: string): void {
   if (globals.errorOccurred) {
     return;
   }
+  // This also clears the buttons of the navigation bar.
   globals.errorOccurred = true;
-
-  // Clear out the top navigation buttons.
-  lobbyNav.show("nothing");
 
   // Error messages include the formatted stack trace from "errors.ts".
   // eslint-disable-next-line unicorn/no-unsafe-dom-html
