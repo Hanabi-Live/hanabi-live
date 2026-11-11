@@ -527,14 +527,10 @@ impl TableActor {
                     s.game
                         .players
                         .iter()
-                        .map(|p| hanabi_protocol::CharacterAssignment {
-                            character_id: hanabi_engine::characters()
-                                .iter()
-                                .find(|c| p.character.is_some_and(|known| c.name == known.name()))
-                                .map(|c| c.id),
-                            metadata: p.assigned_metadata(),
+                        .map(|p| {
+                            crate::game::character_assignment(p.character(), p.assigned_value())
                         })
-                        .collect()
+                        .collect::<anyhow::Result<_>>()?
                 } else {
                     vec![]
                 },

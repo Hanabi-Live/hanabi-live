@@ -209,7 +209,7 @@ notice_codes! {
     ArchiveInvalidAction => "archiveInvalidAction",
     ArchiveInvalidSeed => "archiveInvalidSeed",
     ArchiveMissingSeed => "archiveMissingSeed",
-    ArchiveUnknownCharacter => "archiveUnknownCharacter",
+    ArchiveInvalidCharacter => "archiveInvalidCharacter",
     ArchiveUnknownVariant => "archiveUnknownVariant",
     // A command that failed for a reason the server did not anticipate. Its report keeps the
     // server's own description, so the player can pass it on with the reference.

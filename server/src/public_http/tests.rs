@@ -469,8 +469,8 @@ async fn public_database_routes_filters_privacy_exports_and_html() {
     assert_eq!(export["actions"].as_array().unwrap().len(), 2);
     assert_eq!(export["notes"], json!([["<note>"], []]));
     assert_eq!(
-        export["characters"][0],
-        json!({"characterId":0,"metadata":1})
+        export["characters"],
+        json!([{"type":"color","characterId":0,"color":1},{"type":"none"}])
     );
     assert_eq!(export["options"]["variantName"], "6 Suits");
     let (_, body) = request(app.clone(), "/export/1").await;

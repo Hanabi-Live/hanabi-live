@@ -79,7 +79,7 @@ fn accepted(state: &EngineState, action: PlayerAction) -> EngineState {
 /// Whether the active player's character rules out the action.
 fn refused(state: &EngineState, action: PlayerAction) -> bool {
     let player = &state.players[state.active_player_index];
-    let character = player.character.expect("a character").name();
+    let character = player.character().expect("a character").name();
     after(state, action).is_err_and(|error| error.to_string().contains(character))
 }
 

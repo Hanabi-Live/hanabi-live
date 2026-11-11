@@ -1,7 +1,8 @@
 use crate::{
-    ActionRejected, AssignedCharacter, Character, Clue, ClueType, CompletionTiming, EndCondition,
-    EngineCard, EngineEvent, EnginePlayer, EngineState, GameSetup, Interpretation, Options,
-    PlayerAction, RecordedAction, StackDirection, Termination, UNSEEDED, assign_characters,
+    ActionRejected, AssignedCharacter, Character, CharacterState, Clue, ClueType, CompletionTiming,
+    EndCondition, EngineCard, EngineEvent, EnginePlayer, EngineState, GameSetup, Interpretation,
+    Options, PlayerAction, RecordedAction, StackDirection, Termination, UNSEEDED,
+    assign_characters,
     characters::{
         character_post_action, character_post_clue, check_character_softlock, has_taken_last_turn,
         needs_second_action, validate_character_action, validate_character_clue,
@@ -14,7 +15,7 @@ use crate::{
     },
     types::{GameEnd, Move, reject, seat, target_card},
 };
-use anyhow::{Result, ensure};
+use anyhow::{Context, Result, ensure};
 use hanabi_protocol::{
     GameOverTurn, MAX_CLUES, MAX_PLAYERS, MAX_RANK, MAX_STRIKES, MIN_PLAYERS, MIN_RANK,
     START_CARD_RANK,
@@ -109,26 +110,29 @@ pub fn create_game(setup: GameSetup) -> Result<EngineState> {
         assigned.len() == setup.player_names.len(),
         "Invalid prepared character assignments."
     );
-    ensure!(
-        assigned.iter().all(|a| a
-            .name
-            .as_deref()
-            .is_none_or(|name| Character::from_name(name).is_some())),
-        "Unknown character assignment."
-    );
     let players = setup
         .player_names
         .into_iter()
         .zip(assigned)
         .enumerate()
-        .map(|(index, (name, c))| EnginePlayer {
-            name,
-            index,
-            character: c.name.as_deref().and_then(Character::from_name),
-            character_metadata: c.metadata,
-            hand: vec![],
+        .map(|(index, (name, c))| {
+            let character_state = c
+                .name
+                .as_deref()
+                .map(|name| {
+                    let character =
+                        Character::from_name(name).context("Unknown character assignment.")?;
+                    CharacterState::new(character, c.metadata, variant)
+                })
+                .transpose()?;
+            Ok(EnginePlayer {
+                name,
+                index,
+                character_state,
+                hand: vec![],
+            })
         })
-        .collect();
+        .collect::<Result<_>>()?;
     let mut state = EngineState {
         active_player_index: 0,
         options: setup.options,

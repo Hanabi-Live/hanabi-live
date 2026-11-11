@@ -5,6 +5,7 @@ import {
   cardOrderSchema,
   characterIdSchema,
   clueSchema,
+  colorIndexSchema,
   EndCondition,
   gameEventSchema,
   gameOptionsSchema,
@@ -12,6 +13,7 @@ import {
   notesSchema,
   playerIndexSchema,
   playerNotesSchema,
+  rankClueNumberSchema,
   safeIntegerSchema,
   timeControlSchema,
   turnSchema,
@@ -439,26 +441,29 @@ export const inactiveRequestSchema = z
   .readonly();
 
 /**
- * A player's detrimental character, in a game and in the replay format.
+ * A player's detrimental character, in a game and in the replay format, with the value that some
+ * characters are assigned.
  */
-const characterAssignmentSchema = z
-  .strictObject({
-    /**
-     * Absent when the player has no character.
-     */
-    characterId: characterIdSchema.optional(),
-    /**
-     * A value that some characters use, such as the rank or suit they may not clue. Absent for
-     * other characters.
-     */
-    metadata: z
-      .number()
-      .int()
-      .min(-2_147_483_648)
-      .max(2_147_483_647)
-      .optional(),
-  })
-  .readonly();
+const characterAssignmentSchema = z.discriminatedUnion("type", [
+  z.strictObject({ type: z.literal("none") }).readonly(),
+  z
+    .strictObject({ characterId: characterIdSchema, type: z.literal("plain") })
+    .readonly(),
+  z
+    .strictObject({
+      characterId: characterIdSchema,
+      color: colorIndexSchema,
+      type: z.literal("color"),
+    })
+    .readonly(),
+  z
+    .strictObject({
+      characterId: characterIdSchema,
+      rank: rankClueNumberSchema,
+      type: z.literal("rank"),
+    })
+    .readonly(),
+]);
 
 /**
  * How the recipient takes part in a game, and what that needs. `ourPlayerIndex` is the seat that
@@ -558,7 +563,7 @@ export const noticeCodeSchema = z.enum([
   "archiveInvalidAction",
   "archiveInvalidSeed",
   "archiveMissingSeed",
-  "archiveUnknownCharacter",
+  "archiveInvalidCharacter",
   "archiveUnknownVariant",
   "commandFailed",
   "connectionLimit",

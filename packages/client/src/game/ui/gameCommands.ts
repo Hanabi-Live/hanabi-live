@@ -497,6 +497,16 @@ function setUrl(data: InitData) {
   );
 }
 
+/** The clue color index or rank that a character was assigned, if it has one. */
+function assignedValue(
+  character: InitData["characters"][number],
+): number | undefined {
+  if (character.type === "color") {
+    return character.color;
+  }
+  return character.type === "rank" ? character.rank : undefined;
+}
+
 function initStateStore(data: InitData) {
   // Set the variant (as a helper reference).
   globals.variant = getVariant(data.options.variantName);
@@ -508,8 +518,8 @@ function initStateStore(data: InitData) {
   };
 
   // The list is empty unless detrimental characters are on.
-  let characterAssignments = data.characters.map(
-    (character) => character.characterId ?? undefined,
+  let characterAssignments = data.characters.map((character) =>
+    character.type === "none" ? undefined : character.characterId,
   ) as Tuple<number | undefined, NumPlayers> | [];
 
   if (characterAssignments.length === 0) {
@@ -539,7 +549,7 @@ function initStateStore(data: InitData) {
     characterMetadata: toPlayerTuple(
       data.characters.length === 0
         ? newArray(options.numPlayers, undefined)
-        : data.characters.map((character) => character.metadata),
+        : data.characters.map(assignedValue),
       "character metadata entries",
     ),
 

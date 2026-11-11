@@ -3200,12 +3200,15 @@ async fn saved_characters_store_none_as_null() -> Result<()> {
                 .players
                 .iter()
                 .map(|p| {
-                    let character = hanabi_engine::characters()
-                        .iter()
-                        .find(|c| p.character.is_some_and(|known| c.name == known.name()))
-                        .map(|c| i16::try_from(c.id.0))
+                    let character = p
+                        .character()
+                        .map(|c| {
+                            Ok::<_, anyhow::Error>(i16::try_from(
+                                crate::game::catalog_character(c)?.id.0,
+                            )?)
+                        })
                         .transpose()?;
-                    let metadata = p.assigned_metadata().map(i16::try_from).transpose()?;
+                    let metadata = p.assigned_value().map(i16::try_from).transpose()?;
                     Ok((character, metadata))
                 })
                 .collect::<Result<Vec<_>>>()?;

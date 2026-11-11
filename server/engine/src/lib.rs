@@ -29,7 +29,7 @@ mod random;
 
 pub use anyhow::Result;
 pub use catalog::*;
-pub use character::Character;
+pub use character::{Character, CharacterState};
 pub use game::*;
 pub use rules::{
     calculate_max_score, clue_cost, clue_cost_for, has_remaining_play, touched_orders,

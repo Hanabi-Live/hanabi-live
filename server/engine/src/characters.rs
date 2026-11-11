@@ -1,20 +1,11 @@
 use crate::{
-    Character, Clue, ClueType, EndCondition, EngineState, GameEnd, PlayerAction, RecordedAction,
-    RecordedActionType, int, is_card_touched, recorded_action_type,
+    Character, CharacterState, Clue, ClueType, EndCondition, EnginePlayer, EngineState, GameEnd,
+    PlayerAction, RecordedAction, RecordedActionType, int, is_card_touched, recorded_action_type,
     rules::{clue_cost, touched_by, variant_for},
     types::reject,
 };
 use anyhow::Result;
 use hanabi_protocol::{Clue as WireClue, ClueTurn, MAX_RANK, PANICKY_MAX_CLUES};
-
-/// The number that a character's metadata holds for a clue type, for characters that remember the
-/// last clue they gave.
-const fn clue_type_metadata(clue_type: ClueType) -> i32 {
-    match clue_type {
-        ClueType::Color => 0,
-        ClueType::Rank => 1,
-    }
-}
 
 /// The clues that a Miser needs before giving one.
 const MISER_MIN_CLUES: i32 = 4;
@@ -40,57 +31,49 @@ pub(crate) fn validate_character_action(
         return Ok(());
     }
     let p = &state.players[actor];
+    let Some(character) = p.character_state else {
+        return Ok(());
+    };
     let action_type = recorded_action_type(&RecordedAction::from(action));
     let clue = action_type.is_clue();
-    let m = p.character_metadata;
-    let previous = m.and_then(|m| RecordedActionType::try_from(m).ok());
-    let reason = match p.character {
-        Some(Character::Vindictive) if m == Some(0) && !clue => {
+    let reason = match character {
+        CharacterState::Vindictive { clued: true } if !clue => {
             Some("so you must give a clue if you have been given a clue on this go-around.")
         }
-        Some(Character::Insistent) if m.is_some() && !clue => {
+        CharacterState::Insistent { cluing: true } if !clue => {
             Some("so you must continue to clue the same card until it is played or discarded.")
         }
-        Some(Character::Impulsive)
-            if m == Some(0)
-                && !matches!(action, PlayerAction::Play(card)
-                    if p.hand.last() == Some(&card.order.index())) =>
+        CharacterState::Impulsive {
+            slot_one_clued: true,
+        } if !matches!(action, PlayerAction::Play(card)
+            if p.hand.last() == Some(&card.order.index())) =>
         {
             Some("so you must play your slot 1 card after it has been clued.")
         }
-        Some(Character::Indolent) if action_type == RecordedActionType::Play && m == Some(0) => {
+        CharacterState::Indolent { played: true } if action_type == RecordedActionType::Play => {
             Some("so you cannot play a card if you played one in the last round.")
         }
-        // The metadata is the type of the previous player's action, and every clue counts as one.
-        Some(Character::Stubborn)
-            if previous == Some(action_type)
-                || (clue && previous.is_some_and(RecordedActionType::is_clue)) =>
-        {
+        CharacterState::Stubborn {
+            previous_action: Some(previous),
+        } if previous == action_type || (clue && previous.is_clue()) => {
             Some("so you cannot perform the same kind of action that the previous player did.")
         }
-        _ => None,
-    };
-    if let (Some(reason), Some(character)) = (reason, p.character) {
-        return reject_character(character, reason);
-    }
-    if let Some(m) = m {
-        if p.character == Some(Character::Genius) {
-            let PlayerAction::Clue(ClueTurn {
+        CharacterState::Genius {
+            second_clue_target: Some(second),
+        } => match action {
+            PlayerAction::Clue(ClueTurn {
                 target,
                 clue: WireClue::Rank { .. },
-            }) = action
-            else {
-                return reject_character(Character::Genius, "so you must now give a rank clue.");
-            };
-            if int(target.index()) != m {
-                return reject_character(
-                    Character::Genius,
-                    "so you must give the second clue to the same player.",
-                );
-            }
-        } else if p.character == Some(Character::Panicky)
-            && action_type != RecordedActionType::Discard
-        {
+            }) if target.index() == second => None,
+            PlayerAction::Clue(ClueTurn {
+                clue: WireClue::Rank { .. },
+                ..
+            }) => Some("so you must give the second clue to the same player."),
+            _ => Some("so you must now give a rank clue."),
+        },
+        CharacterState::Panicky {
+            discarding_again: true,
+        } if action_type != RecordedActionType::Discard => {
             return reject_character(
                 Character::Panicky,
                 &format!(
@@ -98,8 +81,12 @@ pub(crate) fn validate_character_action(
                 ),
             );
         }
+        _ => None,
+    };
+    match reason {
+        Some(reason) => reject_character(character.character(), reason),
+        None => Ok(()),
     }
-    Ok(())
 }
 pub(crate) fn validate_character_play(
     state: &EngineState,
@@ -108,7 +95,7 @@ pub(crate) fn validate_character_play(
 ) -> Result<()> {
     let p = &state.players[actor];
     if state.options.detrimental_characters
-        && p.character == Some(Character::Hesitant)
+        && p.is(Character::Hesitant)
         && p.hand.last() == Some(&order)
     {
         return reject("You cannot play that card since you are a Hesitant character.");
@@ -120,7 +107,7 @@ pub(crate) fn validate_character_discard(state: &EngineState, actor: usize) -> R
         return Ok(());
     }
     let p = &state.players[actor];
-    let reason = match p.character {
+    let reason = match p.character() {
         Some(Character::Anxious) if state.clue_tokens % 2 == 0 => {
             Some("so you cannot discard when there is an even number of clues available.")
         }
@@ -137,7 +124,7 @@ pub(crate) fn validate_character_discard(state: &EngineState, actor: usize) -> R
         }
         _ => None,
     };
-    if let (Some(reason), Some(character)) = (reason, p.character) {
+    if let (Some(reason), Some(character)) = (reason, p.character()) {
         return reject_character(character, reason);
     }
     Ok(())
@@ -154,62 +141,59 @@ pub(crate) fn validate_character_clue(
     let p = &state.players[actor];
     let target = &state.players[target_index];
     let touched = touched_by(state, target_index, given);
-    let m = p.character_metadata;
     let clue = given.clue_type;
-    let reason = match p.character {
-        Some(Character::Fuming) if clue == ClueType::Color && Some(given.value) != m => {
+    let Some(character) = p.character_state else {
+        return validate_clue_target(target, clue, given.value);
+    };
+    let reason = match character {
+        CharacterState::Fuming { color } if clue == ClueType::Color && given.value != color => {
             Some("so you can not give that type of clue.")
         }
-        Some(Character::Dumbfounded) if clue == ClueType::Rank && Some(given.value) != m => {
+        CharacterState::Dumbfounded { rank } if clue == ClueType::Rank && given.value != rank => {
             Some("so you can not give that type of clue.")
         }
-        // The metadata is a clue color, and Inept cannot touch any card that it would touch.
-        Some(Character::Inept)
-            if m.is_some_and(|color| {
-                touched.iter().any(|o| {
-                    let card = &state.deck[*o];
-                    is_card_touched(
-                        variant_for(state),
-                        ClueType::Color,
-                        color,
-                        card.suit_index,
-                        card.rank,
-                    )
-                })
+        // Inept cannot touch any card that a clue of their color would touch.
+        CharacterState::Inept { color }
+            if touched.iter().any(|o| {
+                let card = &state.deck[*o];
+                is_card_touched(
+                    variant_for(state),
+                    ClueType::Color,
+                    color,
+                    card.suit_index,
+                    card.rank,
+                )
             }) =>
         {
             Some("so you cannot give clues that touch cards of a specific color.")
         }
-        Some(Character::Awkward) => match m {
-            Some(rank) if touched.iter().any(|o| state.deck[*o].rank == rank) => {
-                return reject_character(
-                    Character::Awkward,
-                    &format!("so you cannot give clues that touch cards with a rank of {rank}."),
-                );
-            }
-            _ => None,
-        },
-        Some(Character::Conservative) if touched.len() != 1 => {
+        CharacterState::Awkward { rank } if touched.iter().any(|o| state.deck[*o].rank == rank) => {
+            return reject_character(
+                Character::Awkward,
+                &format!("so you cannot give clues that touch cards with a rank of {rank}."),
+            );
+        }
+        CharacterState::Conservative if touched.len() != 1 => {
             Some("so you can only give clues that touch a single card.")
         }
-        Some(Character::Greedy) if touched.len() < GREEDY_MIN_TOUCHED => {
+        CharacterState::Greedy if touched.len() < GREEDY_MIN_TOUCHED => {
             return reject_character(
                 Character::Greedy,
                 &format!("so you can only give clues that touch {GREEDY_MIN_TOUCHED}+ cards."),
             );
         }
-        Some(Character::Picky) if (given.value + i32::from(clue == ClueType::Color)) % 2 == 0 => {
+        CharacterState::Picky if (given.value + i32::from(clue == ClueType::Color)) % 2 == 0 => {
             Some("so you can only clue odd numbers or odd colors.")
         }
-        Some(Character::Spiteful) if target_index == (actor + 1) % state.players.len() => {
+        CharacterState::Spiteful if target_index == (actor + 1) % state.players.len() => {
             Some("so you cannot clue the player to your left.")
         }
-        Some(Character::Insolent)
+        CharacterState::Insolent
             if target_index == (actor + state.players.len() - 1) % state.players.len() =>
         {
             Some("so you cannot clue the player to your right.")
         }
-        Some(Character::Miser) if state.clue_tokens < MISER_MIN_CLUES * clue_cost(state) => {
+        CharacterState::Miser if state.clue_tokens < MISER_MIN_CLUES * clue_cost(state) => {
             return reject_character(
                 Character::Miser,
                 &format!(
@@ -217,7 +201,7 @@ pub(crate) fn validate_character_clue(
                 ),
             );
         }
-        Some(Character::Compulsive)
+        CharacterState::Compulsive
             if touched
                 .iter()
                 .all(|o| Some(o) != target.hand.first() && Some(o) != target.hand.last()) =>
@@ -226,18 +210,17 @@ pub(crate) fn validate_character_clue(
                 "so you can only give a clue if it touches either the newest or oldest card in a hand.",
             )
         }
-        // The metadata is the type of the player's previous clue.
-        Some(Character::MoodSwings) if Some(clue_type_metadata(clue)) == m => {
+        CharacterState::MoodSwings { previous_clue } if previous_clue == Some(clue) => {
             Some("so cannot give the same clue type twice in a row.")
         }
-        Some(Character::Insistent)
-            if m.is_some() && touched.iter().all(|o| !state.deck[*o].insistent_touched) =>
+        CharacterState::Insistent { cluing: true }
+            if touched.iter().all(|o| !state.deck[*o].insistent_touched) =>
         {
             Some("so you must continue to clue a card until it is played or discarded.")
         }
-        Some(Character::Genius)
-            if m.is_none() && state.clue_tokens < GENIUS_MIN_CLUES * clue_cost(state) =>
-        {
+        CharacterState::Genius {
+            second_clue_target: None,
+        } if state.clue_tokens < GENIUS_MIN_CLUES * clue_cost(state) => {
             return reject_character(
                 Character::Genius,
                 &format!(
@@ -245,24 +228,29 @@ pub(crate) fn validate_character_clue(
                 ),
             );
         }
-        Some(Character::Genius) if m.is_none() && clue != ClueType::Color => {
-            Some("so you must give a color clue first.")
-        }
+        CharacterState::Genius {
+            second_clue_target: None,
+        } if clue != ClueType::Color => Some("so you must give a color clue first."),
         _ => None,
     };
-    if let (Some(reason), Some(character)) = (reason, p.character) {
-        return reject_character(character, reason);
+    if let Some(reason) = reason {
+        return reject_character(character.character(), reason);
     }
-    if target.character == Some(Character::Vulnerable)
+    validate_clue_target(target, clue, given.value)
+}
+
+/// Checks a clue against the character of the player who receives it.
+fn validate_clue_target(target: &EnginePlayer, clue: ClueType, value: i32) -> Result<()> {
+    if target.is(Character::Vulnerable)
         && clue == ClueType::Rank
-        && VULNERABLE_RANKS.contains(&given.value)
+        && VULNERABLE_RANKS.contains(&value)
     {
         let [low, high] = VULNERABLE_RANKS;
         return reject(format!(
             "You cannot give a number {low} or number {high} clue to a Vulnerable character."
         ));
     }
-    if target.character == Some(Character::ColorBlind) && clue == ClueType::Color {
+    if target.is(Character::ColorBlind) && clue == ClueType::Color {
         return reject("You cannot give that color clue to a Color-Blind character.");
     }
     Ok(())
@@ -277,21 +265,26 @@ pub(crate) fn character_post_clue(
     if !state.options.detrimental_characters {
         return;
     }
-    let p = &mut state.players[actor];
-    if p.character == Some(Character::MoodSwings) {
-        p.character_metadata = Some(clue_type_metadata(clue.clue_type));
-    } else if p.character == Some(Character::Insistent) && p.character_metadata.is_none() {
-        for o in touched {
-            state.deck[*o].insistent_touched = true;
+    match &mut state.players[actor].character_state {
+        Some(CharacterState::MoodSwings { previous_clue }) => {
+            *previous_clue = Some(clue.clue_type);
         }
-        p.character_metadata = Some(0);
+        Some(CharacterState::Insistent { cluing }) if !*cluing => {
+            *cluing = true;
+            for o in touched {
+                state.deck[*o].insistent_touched = true;
+            }
+        }
+        _ => {}
     }
     let target = &mut state.players[target];
-    if target.character == Some(Character::Vindictive)
-        || (target.character == Some(Character::Impulsive)
-            && target.hand.last().is_some_and(|o| touched.contains(o)))
-    {
-        target.character_metadata = Some(0);
+    let slot_one_touched = target.hand.last().is_some_and(|o| touched.contains(o));
+    match &mut target.character_state {
+        Some(CharacterState::Vindictive { clued }) => *clued = true,
+        Some(CharacterState::Impulsive { slot_one_clued }) if slot_one_touched => {
+            *slot_one_clued = true;
+        }
+        _ => {}
     }
 }
 pub(crate) fn character_post_action(state: &mut EngineState, actor: usize, action: RecordedAction) {
@@ -299,18 +292,18 @@ pub(crate) fn character_post_action(state: &mut EngineState, actor: usize, actio
         return;
     }
     let action_type = recorded_action_type(&action);
-    let p = &mut state.players[actor];
-    match p.character {
-        Some(Character::Vindictive | Character::Impulsive) => p.character_metadata = None,
-        Some(Character::Indolent) => {
-            p.character_metadata = (action_type == RecordedActionType::Play).then_some(0);
+    match &mut state.players[actor].character_state {
+        Some(CharacterState::Vindictive { clued }) => *clued = false,
+        Some(CharacterState::Impulsive { slot_one_clued }) => *slot_one_clued = false,
+        Some(CharacterState::Indolent { played }) => {
+            *played = action_type == RecordedActionType::Play;
         }
-        Some(Character::Contrarian) => state.turns_inverted = !state.turns_inverted,
+        Some(CharacterState::Contrarian) => state.turns_inverted = !state.turns_inverted,
         _ => {}
     }
     for other in &mut state.players {
-        if other.character == Some(Character::Stubborn) {
-            other.character_metadata = Some(i32::from(action_type));
+        if let Some(CharacterState::Stubborn { previous_action }) = &mut other.character_state {
+            *previous_action = Some(action_type);
         }
     }
 }
@@ -322,38 +315,34 @@ pub(crate) fn needs_second_action(
     if !state.options.detrimental_characters {
         return false;
     }
-    let cost = clue_cost(state);
-    let p = &mut state.players[actor];
-    if p.character == Some(Character::Genius) {
-        if let RecordedAction::Clue(ClueTurn {
-            target,
-            clue: WireClue::Color { .. },
-        }) = action
-        {
-            p.character_metadata = Some(int(target.index()));
-            return true;
-        }
-        if matches!(
-            action,
+    let low_on_clues = state.clue_tokens <= PANICKY_MAX_CLUES * clue_cost(state);
+    match &mut state.players[actor].character_state {
+        Some(CharacterState::Genius { second_clue_target }) => match action {
+            RecordedAction::Clue(ClueTurn {
+                target,
+                clue: WireClue::Color { .. },
+            }) => {
+                *second_clue_target = Some(target.index());
+                true
+            }
             RecordedAction::Clue(ClueTurn {
                 clue: WireClue::Rank { .. },
                 ..
-            })
-        ) {
-            p.character_metadata = None;
+            }) => {
+                *second_clue_target = None;
+                false
+            }
+            _ => false,
+        },
+        // The first discard with few clues left needs a second one, which ends the turn.
+        Some(CharacterState::Panicky { discarding_again })
+            if matches!(action, RecordedAction::Discard(_)) =>
+        {
+            *discarding_again = !*discarding_again && low_on_clues;
+            *discarding_again
         }
-    } else if p.character == Some(Character::Panicky)
-        && matches!(action, RecordedAction::Discard(_))
-    {
-        if p.character_metadata.is_none() && state.clue_tokens <= PANICKY_MAX_CLUES * cost {
-            p.character_metadata = Some(0);
-            return true;
-        }
-        if p.character_metadata == Some(0) {
-            p.character_metadata = None;
-        }
+        _ => false,
     }
-    false
 }
 pub(crate) fn has_taken_last_turn(state: &EngineState) -> bool {
     let Some(end_turn) = state.end_turn else {
@@ -371,7 +360,7 @@ pub(crate) fn has_taken_last_turn(state: &EngineState) -> bool {
         if active == state.active_player_index {
             return false;
         }
-        if state.players[active].character == Some(Character::Contrarian) {
+        if state.players[active].is(Character::Contrarian) {
             inverted = !inverted;
         }
     }
@@ -381,8 +370,13 @@ pub(crate) fn check_character_softlock(state: &mut EngineState) {
     let p = &state.players[state.active_player_index];
     if state.options.detrimental_characters
         && state.clue_tokens < clue_cost(state)
-        && p.character_metadata == Some(0)
-        && (p.character == Some(Character::Vindictive) || p.character == Some(Character::Insistent))
+        && matches!(
+            p.character_state,
+            Some(
+                CharacterState::Vindictive { clued: true }
+                    | CharacterState::Insistent { cluing: true }
+            )
+        )
     {
         state.end = Some(GameEnd {
             condition: EndCondition::CharacterSoftlock,

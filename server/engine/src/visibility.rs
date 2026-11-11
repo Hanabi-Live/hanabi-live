@@ -59,10 +59,10 @@ pub fn events_for_recipient(
                 } => {
                     let hidden = *player_index == index
                         || (state.options.detrimental_characters
-                            && (player.character == Some(Character::SlowWitted)
-                                || (player.character == Some(Character::BlindSpot)
+                            && (player.is(Character::SlowWitted)
+                                || (player.is(Character::BlindSpot)
                                     && *player_index == (index + 1) % count)
-                                || (player.character == Some(Character::Oblivious)
+                                || (player.is(Character::Oblivious)
                                     && *player_index == (index + count - 1) % count)));
                     if hidden {
                         *suit_index = None;

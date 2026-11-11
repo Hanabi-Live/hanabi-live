@@ -150,8 +150,8 @@ pub(super) async fn load_replay(
             .players
             .iter()
             .map(|p| hanabi_engine::AssignedCharacter {
-                name: p.character.map(|c| c.name().into()),
-                metadata: p.assigned_metadata(),
+                name: p.character().map(|c| c.name().into()),
+                metadata: p.assigned_value(),
             })
             .collect(),
     );

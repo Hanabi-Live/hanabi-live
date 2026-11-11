@@ -5,11 +5,12 @@ use crate::{
     model::{Player, Snapshot},
     stats::zero_stats,
 };
+use hanabi_engine::ClueType;
 use hanabi_engine::RecordedAction;
 use hanabi_engine::{AssignedCharacter, EndCondition, GameSetup, Interpretation};
 use hanabi_protocol::TableId;
 use hanabi_protocol::UserId;
-use hanabi_protocol::{Clue, ClueTurn, ReplayGame};
+use hanabi_protocol::{CharacterAssignment, Clue, ClueTurn, ReplayGame};
 
 /// The longest seed that a replay import can name, in bytes. A table's seed is prefixed with the
 /// player count and variant ID, so this leaves room above `MAX_SEED_LENGTH`.
@@ -95,25 +96,38 @@ pub fn parse(input: &ReplayGame) -> CommandResult<Imported> {
         "The deck does not match the seed"
     );
     let mut characters: Vec<AssignedCharacter> = vec![];
-    for character in &input.characters {
-        let name = match character.character_id {
-            None => None,
-            Some(id) => Some(
-                hanabi_engine::characters()
-                    .iter()
-                    .find(|known| known.id == id)
-                    .map(|known| known.name.clone())
-                    .or_reject("Unknown character assignment.")?,
-            ),
+    for &assignment in &input.characters {
+        let Some(id) = assignment.character_id() else {
+            characters.push(AssignedCharacter {
+                name: None,
+                metadata: None,
+            });
+            continue;
         };
-        // A character that has metadata gets the first value when the import leaves it out.
-        let needs_metadata = name
-            .as_deref()
-            .and_then(hanabi_engine::Character::from_name)
-            .is_some_and(hanabi_engine::Character::has_assigned_metadata);
+        let name = hanabi_engine::characters()
+            .iter()
+            .find(|known| known.id == id)
+            .map(|known| known.name.clone())
+            .or_reject("Unknown character assignment.")?;
+        let character = hanabi_engine::Character::from_name(&name)
+            .or_reject("Unknown character assignment.")?;
+        let metadata = match (assignment, character.assigned_value_type()) {
+            (CharacterAssignment::Plain { .. }, None) => None,
+            (CharacterAssignment::Color { color, .. }, Some(ClueType::Color)) => {
+                ensure_or_reject!(
+                    color.index() < variant.clue_colors.len(),
+                    "The color of {name} must be one of the variant's clue colors."
+                );
+                Some(i32::from(color))
+            }
+            (CharacterAssignment::Rank { rank, .. }, Some(ClueType::Rank)) => Some(i32::from(rank)),
+            (_, Some(ClueType::Color)) => reject!("{name} must be assigned a color."),
+            (_, Some(ClueType::Rank)) => reject!("{name} must be assigned a rank."),
+            (_, None) => reject!("{name} is not assigned a color or a rank."),
+        };
         characters.push(AssignedCharacter {
-            metadata: character.metadata.or(needs_metadata.then_some(0)),
-            name,
+            name: Some(name),
+            metadata,
         });
     }
     ensure_or_reject!(
@@ -255,6 +269,40 @@ mod tests {
         let imported =
             import(&json!({"seed": seed, "options": {"variantName": variant.name}})).unwrap();
         assert_eq!(imported.custom_seed.as_deref(), Some(seed.as_str()));
+    }
+
+    #[test]
+    fn imported_characters_have_the_kind_of_value_that_they_are_assigned() {
+        // Fuming (0) is assigned a clue color, Dumbfounded (1) a rank, and Conservative (4) none.
+        let game = |characters: Value| {
+            import(&json!({
+                "seed": "p2v0s1",
+                "options": {"detrimentalCharacters": true},
+                "characters": characters,
+            }))
+        };
+        let imported = game(json!([
+            {"type": "color", "characterId": 0, "color": 4},
+            {"type": "rank", "characterId": 1, "rank": 2},
+        ]))
+        .unwrap();
+        let assigned: Vec<_> = imported
+            .game
+            .players
+            .iter()
+            .map(hanabi_engine::EnginePlayer::assigned_value)
+            .collect();
+        assert_eq!(assigned, [Some(4), Some(2)]);
+        game(json!([{"type": "plain", "characterId": 4}, {"type": "none"}])).unwrap();
+        for characters in [
+            // No Variant has 5 clue colors.
+            json!([{"type": "color", "characterId": 0, "color": 5}, {"type": "none"}]),
+            json!([{"type": "rank", "characterId": 0, "rank": 2}, {"type": "none"}]),
+            json!([{"type": "plain", "characterId": 1}, {"type": "none"}]),
+            json!([{"type": "color", "characterId": 4, "color": 0}, {"type": "none"}]),
+        ] {
+            assert!(game(characters.clone()).is_err(), "{characters}");
+        }
     }
 
     #[test]

@@ -426,12 +426,11 @@ async fn count_game(
 /// A player's character and its assigned metadata, as the `character_id` and `assigned_metadata`
 /// columns store them, with `None` for none.
 fn character_columns(player: &hanabi_engine::EnginePlayer) -> Result<(Option<i16>, Option<i16>)> {
-    let character_id = hanabi_engine::characters()
-        .iter()
-        .find(|c| player.character.is_some_and(|known| c.name == known.name()))
-        .map(|c| i16::try_from(c.id.0))
+    let character_id = player
+        .character()
+        .map(|c| Ok::<_, anyhow::Error>(i16::try_from(crate::game::catalog_character(c)?.id.0)?))
         .transpose()?;
-    let metadata = player.assigned_metadata().map(i16::try_from).transpose()?;
+    let metadata = player.assigned_value().map(i16::try_from).transpose()?;
     Ok((character_id, metadata))
 }
 

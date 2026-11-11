@@ -272,18 +272,43 @@ pub struct GameEventList {
     pub events: Vec<GameEvent>,
 }
 
-/// A player's detrimental character, in a game and in the replay format.
-#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
-#[serde(rename_all = "camelCase", deny_unknown_fields)]
-pub struct CharacterAssignment {
-    /// Absent when the player has no character.
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub character_id: Option<CharacterId>,
-    /// A value that some characters use, such as the rank or suit they may not clue. Absent for
-    /// other characters.
-    #[serde(skip_serializing_if = "Option::is_none")]
-    #[schemars(range(min = i32::MIN, max = i32::MAX))]
-    pub metadata: Option<i32>,
+/// A player's detrimental character, in a game and in the replay format, with the value that some
+/// characters are assigned.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
+#[serde(
+    tag = "type",
+    rename_all = "camelCase",
+    rename_all_fields = "camelCase",
+    deny_unknown_fields
+)]
+pub enum CharacterAssignment {
+    /// A player without a character.
+    None {},
+    /// A character without an assigned value.
+    Plain { character_id: CharacterId },
+    /// A character that is assigned a clue color, such as Fuming. The color is an index into the
+    /// variant's clue colors.
+    Color {
+        character_id: CharacterId,
+        color: ColorIndex,
+    },
+    /// A character that is assigned a rank, such as Awkward.
+    Rank {
+        character_id: CharacterId,
+        rank: RankClueNumber,
+    },
+}
+
+impl CharacterAssignment {
+    /// The character, if the player has one.
+    pub const fn character_id(self) -> Option<CharacterId> {
+        match self {
+            Self::None {} => None,
+            Self::Plain { character_id }
+            | Self::Color { character_id, .. }
+            | Self::Rank { character_id, .. } => Some(character_id),
+        }
+    }
 }
 
 /// How the recipient takes part in a game, and what that needs. `ourPlayerIndex` is the seat that

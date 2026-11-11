@@ -182,7 +182,12 @@ fn termination_uses_requesting_character_and_explicit_timing() {
     .unwrap();
     assert!(ended.state.turns_inverted);
     assert_eq!(ended.state.active_player_index, 2);
-    assert_eq!(ended.state.players[2].character_metadata, Some(4));
+    assert_eq!(
+        ended.state.players[2].character_state,
+        Some(CharacterState::Stubborn {
+            previous_action: Some(RecordedActionType::GameOver)
+        })
+    );
     assert!(
         applied(
             &ended.state,
@@ -509,7 +514,7 @@ fn long_character_histories_are_bounded() {
                 .filter(|o| **o != 0)
                 .map(|o| action(RecordedActionType::Discard, int(*o), 0))
                 .collect();
-            let candidates = if p.character == Some(Character::Panicky) {
+            let candidates = if p.is(Character::Panicky) {
                 [discards, clues].concat()
             } else {
                 [clues, discards].concat()

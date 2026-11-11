@@ -612,9 +612,7 @@ databaseDescribe("compiled application entry point (rust)", () => {
         });
         expect(game.init.characters).toHaveLength(6);
         expect(
-          game.init.characters.every(
-            (character) => character.characterId !== undefined,
-          ),
+          game.init.characters.every((character) => character.type !== "none"),
         ).toBe(true);
         const hand = game.history.events.filter(
           (event) =>
