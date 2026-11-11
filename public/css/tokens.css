@@ -168,6 +168,9 @@
   --game-screen-text: #eef1f3;
   --game-screen-muted: #b3bdc5;
   --game-screen-link: #8fb2ff;
+  /* The accents of the bar above the hands: looking back in a replay, or trying moves in a hypothetical. */
+  --game-screen-replay: #8fb2ff;
+  --game-screen-hypothetical: #c3a6ff;
   --card-face-unknown: #cbd3da;
   --card-ink: #1b242b;
   --clue-border: #ff9f1c;

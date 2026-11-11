@@ -624,7 +624,9 @@ function getStates({
         if (await firstTurn.isEnabled()) {
           await firstTurn.click();
         }
-        await page.getByText(/^Turn 1 of/u).waitFor();
+        await page
+          .locator('#game-new-ui button[aria-label="First turn"]:disabled')
+          .waitFor();
         await page.getByRole("button", { name: "Enter hypothetical" }).click();
         // Whoever goes first plays the first card in their hand. When the game ended before anyone
         // moved (without the "new-ui-replay" state), the hypothetical is already over.
@@ -634,7 +636,7 @@ function getStates({
         if (await card.isVisible()) {
           await card.click();
           await page.getByRole("button", { name: "Play", exact: true }).click();
-          await page.getByText("Hypothetical: turn 2").waitFor();
+          await page.getByText("Turn 2", { exact: true }).waitFor();
         }
         await page.getByRole("button", { name: "Edit cards" }).click();
         await page.waitForTimeout(SETTLE_MILLISECONDS);

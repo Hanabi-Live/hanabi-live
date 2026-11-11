@@ -56,6 +56,8 @@
   --color-game-text: var(--game-screen-text);
   --color-game-muted: var(--game-screen-muted);
   --color-game-link: var(--game-screen-link);
+  --color-game-replay: var(--game-screen-replay);
+  --color-game-hypothetical: var(--game-screen-hypothetical);
   --color-card-unknown: var(--card-face-unknown);
   --color-card-ink: var(--card-ink);
   --color-clue: var(--clue-border);
