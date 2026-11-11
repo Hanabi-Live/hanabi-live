@@ -17,7 +17,8 @@ use std::{
 };
 
 /// How long a typing indicator lasts without another keystroke.
-const TYPING_TIMEOUT: Duration = Duration::from_millis(hanabi_protocol::TYPING_TIMEOUT_MS);
+const TYPING_TIMEOUT: Duration =
+    Duration::from_millis(hanabi_protocol::TYPING_TIMEOUT_MS.unsigned_abs());
 /// The fewest players for the Impostor command, which needs more than one other player.
 const MIN_IMPOSTOR_PLAYERS: usize = MIN_PLAYERS + 1;
 

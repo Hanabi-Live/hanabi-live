@@ -168,7 +168,7 @@ pub struct Settings {
     #[schemars(length(min = 1))]
     pub create_table_variant: String,
     pub create_table_timed: bool,
-    #[schemars(range(min = 0, max = MAX_TIME_BASE_SECONDS / i64::from(SECONDS_PER_MINUTE)))]
+    #[schemars(range(min = 0, max = MAX_TIME_BASE_SECONDS / SECONDS_PER_MINUTE))]
     pub create_table_time_base_minutes: f64,
     #[schemars(range(min = 0, max = MAX_TIME_PER_TURN_SECONDS))]
     pub create_table_time_per_turn_seconds: i64,

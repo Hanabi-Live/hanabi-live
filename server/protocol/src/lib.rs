@@ -84,27 +84,27 @@ pub const MAX_SEED_LENGTH: usize = 32;
 /// The longest note, in bytes, that an imported game can give a card.
 pub const MAX_IMPORTED_NOTE_LENGTH: usize = 65536;
 /// The number of seconds in a minute.
-pub const SECONDS_PER_MINUTE: i32 = 60;
+pub const SECONDS_PER_MINUTE: i64 = 60;
 /// Player clocks and idle timers hold milliseconds; time options hold seconds.
-pub const CLOCK_UNITS_PER_SECOND: i32 = 1000;
+pub const CLOCK_UNITS_PER_SECOND: i64 = 1000;
 /// The clock units in a minute.
-pub const CLOCK_UNITS_PER_MINUTE: i64 = (SECONDS_PER_MINUTE * CLOCK_UNITS_PER_SECOND) as i64;
+pub const CLOCK_UNITS_PER_MINUTE: i64 = SECONDS_PER_MINUTE * CLOCK_UNITS_PER_SECOND;
 /// How long a game can go without a move before it ends.
 pub const IDLE_TIMEOUT_MS: i64 = 30 * CLOCK_UNITS_PER_MINUTE;
 /// How long a typing indicator lasts without another keystroke, in milliseconds.
-pub const TYPING_TIMEOUT_MS: u64 = 2000;
+pub const TYPING_TIMEOUT_MS: i64 = 2 * CLOCK_UNITS_PER_SECOND;
 /// The number of minutes in an hour.
-pub const MINUTES_PER_HOUR: i32 = 60;
+pub const MINUTES_PER_HOUR: i64 = 60;
 /// The number of seconds in an hour.
-pub const SECONDS_PER_HOUR: i32 = MINUTES_PER_HOUR * SECONDS_PER_MINUTE;
+pub const SECONDS_PER_HOUR: i64 = MINUTES_PER_HOUR * SECONDS_PER_MINUTE;
 /// The number of hours in a day.
-pub const HOURS_PER_DAY: i32 = 24;
+pub const HOURS_PER_DAY: i64 = 24;
 /// The number of seconds in a day.
-pub const SECONDS_PER_DAY: i32 = HOURS_PER_DAY * SECONDS_PER_HOUR;
+pub const SECONDS_PER_DAY: i64 = HOURS_PER_DAY * SECONDS_PER_HOUR;
 /// The longest starting clock a timed game can have, in seconds (one week).
-pub const MAX_TIME_BASE_SECONDS: i64 = 7 * SECONDS_PER_DAY as i64;
+pub const MAX_TIME_BASE_SECONDS: i64 = 7 * SECONDS_PER_DAY;
 /// The most time a timed game can add each turn, in seconds (one day).
-pub const MAX_TIME_PER_TURN_SECONDS: i64 = SECONDS_PER_DAY as i64;
+pub const MAX_TIME_PER_TURN_SECONDS: i64 = SECONDS_PER_DAY;
 /// The loudest volume setting.
 pub const MAX_VOLUME: u8 = 100;
 /// The highest level of the H-Group convention guide's learning path.

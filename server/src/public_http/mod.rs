@@ -22,7 +22,7 @@ use std::{collections::HashMap, net::SocketAddr, path::PathBuf, sync::Arc};
 pub(crate) const API_PREFIX: &str = "/api/v1";
 
 /// How long browsers keep a release's versioned assets, which never change under the same URL.
-const VERSIONED_ASSET_MAX_AGE_SECONDS: i32 = 365 * hanabi_protocol::SECONDS_PER_DAY;
+const VERSIONED_ASSET_MAX_AGE_SECONDS: i64 = 365 * hanabi_protocol::SECONDS_PER_DAY;
 
 #[derive(Clone)]
 pub struct PublicConfig {

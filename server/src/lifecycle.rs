@@ -274,9 +274,9 @@ impl Control {
 /// Formats a duration in words, such as "2 hours and 5 minutes", rounding to the minute after the
 /// first minute.
 pub fn duration(seconds: u64) -> String {
-    const MINUTE: u64 = hanabi_protocol::SECONDS_PER_MINUTE.unsigned_abs() as u64;
-    const HOUR: u64 = hanabi_protocol::SECONDS_PER_HOUR.unsigned_abs() as u64;
-    const HOURS_PER_DAY: u64 = hanabi_protocol::HOURS_PER_DAY.unsigned_abs() as u64;
+    const MINUTE: u64 = hanabi_protocol::SECONDS_PER_MINUTE.unsigned_abs();
+    const HOUR: u64 = hanabi_protocol::SECONDS_PER_HOUR.unsigned_abs();
+    const HOURS_PER_DAY: u64 = hanabi_protocol::HOURS_PER_DAY.unsigned_abs();
     let unit = |n, label| format!("{n} {label}{}", if n == 1 { "" } else { "s" });
     if seconds < MINUTE {
         return unit(seconds, "second");

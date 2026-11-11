@@ -355,7 +355,7 @@ impl TableActor {
             created: next.created,
             clocks: vec![
                 if options.timed {
-                    options.time_base * i64::from(CLOCK_UNITS_PER_SECOND)
+                    options.time_base * CLOCK_UNITS_PER_SECOND
                 } else {
                     0
                 };

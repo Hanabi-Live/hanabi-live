@@ -761,7 +761,7 @@ impl TableActor {
             && !s.maintenance_applied
         {
             for clock in &mut s.clocks {
-                *clock += MAINTENANCE_CLOCK_ALLOWANCE_SECONDS * i64::from(CLOCK_UNITS_PER_SECOND);
+                *clock += MAINTENANCE_CLOCK_ALLOWANCE_SECONDS * CLOCK_UNITS_PER_SECOND;
             }
             s.maintenance_applied = true;
         }

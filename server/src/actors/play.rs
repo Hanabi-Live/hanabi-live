@@ -61,7 +61,7 @@ impl TableActor {
         let mut next = self.candidate();
         let s = game_mut(&mut next)?;
         if s.game.options.timed {
-            s.clocks[seat] += s.game.options.time_per_turn * i64::from(CLOCK_UNITS_PER_SECOND);
+            s.clocks[seat] += s.game.options.time_per_turn * CLOCK_UNITS_PER_SECOND;
         }
         let timing = CompletionTiming {
             player_times: s.clocks.clone(),
