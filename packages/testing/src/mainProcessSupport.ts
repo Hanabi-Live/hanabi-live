@@ -292,7 +292,7 @@ export async function login(
     body: new URLSearchParams({
       username,
       password: "synthetic-smoke-password",
-      ...(bot ? { bot: "true" } : { version: VERSION }),
+      ...(bot ? { client: "bot" } : { version: VERSION }),
       createAccount: "true",
     }),
     signal: AbortSignal.timeout(10_000),
