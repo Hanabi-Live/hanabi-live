@@ -13,6 +13,12 @@ export interface Seat {
   /** Whether this is the viewer's own seat. */
   readonly you: boolean;
 
+  /**
+   * Whether the viewer plays and clues as this player: their own seat in a game, or the current
+   * player in a hypothetical that they control.
+   */
+  readonly acting: boolean;
+
   readonly cards: readonly CardView[];
 
   /** The time on the current player's clock, if the clocks show. */
@@ -51,6 +57,9 @@ interface HandsProps {
   readonly onCardClick: (order: CardOrder) => void;
   readonly onPlay: (order: CardOrder) => void;
   readonly onDiscard: (order: CardOrder) => void;
+
+  /** In a hypothetical, while the viewer edits cards, clicking a card changes it into another. */
+  readonly onEditCard: ((order: CardOrder) => void) | undefined;
 }
 
 /** The space between cards in a hand, in CSS pixels. */
@@ -153,6 +162,7 @@ function OwnCard({
   card,
   slot,
   place,
+  movable,
   props,
 }: {
   readonly card: CardView;
@@ -160,9 +170,12 @@ function OwnCard({
 
   /** Where the card is, so that it moves only when this changes (see "cardMotion.ts"). */
   readonly place: string;
+
+  /** Whether the viewer can play or discard the card now. */
+  readonly movable: boolean;
   readonly props: HandsProps;
 }): React.JSX.Element {
-  const { variant, colorblindMode, cardWidth, canMoveCards } = props;
+  const { variant, colorblindMode, cardWidth } = props;
   const height = cardWidth * CARD_HEIGHT_PER_WIDTH;
   const dragged = props.draggedCard === card.order;
   const menuOpen = props.menuCard === card.order;
@@ -196,7 +209,7 @@ function OwnCard({
   );
   const label = `Slot ${slot}: ${describeCard(variant, card.suitIndex, card.rank)}`;
 
-  if (!canMoveCards) {
+  if (!movable) {
     return (
       <div
         aria-label={label}
@@ -261,6 +274,45 @@ function OwnCard({
   );
 }
 
+/** A card in a hypothetical, while the viewer edits cards: clicking it changes it into another. */
+function EditableCard({
+  card,
+  place,
+  props,
+}: {
+  readonly card: CardView;
+  readonly place: string;
+  readonly props: HandsProps;
+}): React.JSX.Element {
+  return (
+    <button
+      aria-label={`${describeCard(props.variant, card.suitIndex, card.rank)}. Change it into another card`}
+      className="tw:cursor-pointer tw:rounded-[10px] tw:border-0 tw:bg-transparent tw:p-0"
+      data-card-order={card.order}
+      data-card-place={place}
+      onClick={() => {
+        props.onEditCard?.(card.order);
+      }}
+      type="button"
+    >
+      <CardFace
+        clued={card.clued}
+        colorblindMode={props.colorblindMode}
+        critical={card.critical}
+        possibleRanks={card.possibleRanks}
+        possibleSuitIndexes={card.possibleSuitIndexes}
+        raiseClued
+        rank={card.rank}
+        suitIndex={card.suitIndex}
+        trash={card.trash}
+        trashIcon={card.trashIcon}
+        variant={props.variant}
+        width={props.cardWidth}
+      />
+    </button>
+  );
+}
+
 function Hand({
   seat,
   props,
@@ -268,7 +320,8 @@ function Hand({
   readonly seat: Seat;
   readonly props: HandsProps;
 }): React.JSX.Element {
-  const canPick = props.canChooseClueTarget && !seat.you;
+  const editing = props.onEditCard !== undefined;
+  const canPick = props.canChooseClueTarget && !seat.acting && !editing;
   const chosen = canPick && props.clueTarget === seat.playerIndex;
 
   let boxClass = "tw:ring-1 tw:ring-game-raised";
@@ -325,16 +378,33 @@ function Hand({
         }
         style={{ gap: CARD_GAP }}
       >
-        {seat.cards.map((card, i) =>
-          seat.you ? (
-            <OwnCard
-              card={card}
-              key={card.order}
-              place={`hand-${seat.playerIndex}-${i}`}
-              props={props}
-              slot={i + 1}
-            />
-          ) : (
+        {seat.cards.map((card, i) => {
+          const place = `hand-${seat.playerIndex}-${i}`;
+          if (editing) {
+            return (
+              <EditableCard
+                card={card}
+                key={card.order}
+                place={place}
+                props={props}
+              />
+            );
+          }
+
+          if (seat.you || seat.acting) {
+            return (
+              <OwnCard
+                card={card}
+                key={card.order}
+                movable={props.canMoveCards && seat.acting}
+                place={place}
+                props={props}
+                slot={i + 1}
+              />
+            );
+          }
+
+          return (
             <div
               aria-label={describeCard(
                 props.variant,
@@ -342,7 +412,7 @@ function Hand({
                 card.rank,
               )}
               data-card-order={card.order}
-              data-card-place={`hand-${seat.playerIndex}-${i}`}
+              data-card-place={place}
               key={card.order}
               role="img"
             >
@@ -360,8 +430,8 @@ function Hand({
                 width={props.cardWidth}
               />
             </div>
-          ),
-        )}
+          );
+        })}
       </div>
     </div>
   );

@@ -1,6 +1,8 @@
-// The redesigned game screen. It draws an ongoing game from the same store as the classic screen.
+// The redesigned game screen. It draws a game, or its replay, from the same store as the classic
+// screen.
 
 import type {
+  CardIdentity,
   CardOrder,
   Clue,
   GameState,
@@ -17,6 +19,7 @@ import {
 } from "@hanabi-live/game";
 import { clamp } from "complete-common";
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import * as modals from "../../modals";
 import * as gameChat from "../chat";
 import type {
   ClientAction,
@@ -26,6 +29,9 @@ import type { State } from "../types/State";
 import { globals } from "../ui/UIGlobals";
 import { backToLobby } from "../ui/backToLobby";
 import { EFFICIENCY_DECIMAL_PLACES } from "../ui/constants";
+import { controlsHypothetical } from "../ui/controlsHypothetical";
+import { getCardOrStackBase } from "../ui/getCardOrStackBase";
+import * as hypothetical from "../ui/hypothetical";
 import * as replay from "../ui/replay";
 import * as turn from "../ui/turn";
 import { ActionLog } from "./ActionLog";
@@ -39,6 +45,7 @@ import {
   NAME_COLUMN_MAX_WIDTH,
   NameColumnSizer,
 } from "./Hands";
+import { ReplayBar } from "./ReplayBar";
 import type { DiscardView, StackView, ZoneState } from "./SharedCards";
 import { DiscardPile, PlayArea, TableTokens } from "./SharedCards";
 import { StatusStrip } from "./StatusStrip";
@@ -124,15 +131,52 @@ function isInside(element: HTMLElement | null, x: number, y: number): boolean {
   return x >= rect.left && x <= rect.right && y >= rect.top && y <= rect.bottom;
 }
 
+/** Plays the move in the game, or in the hypothetical when there is one. */
 function sendAction(action: ClientAction) {
-  turn.end(action);
+  if (globals.state.replay.hypothetical === undefined) {
+    turn.end(action);
+  } else {
+    hypothetical.sendHypotheticalAction(action);
+  }
+}
+
+/** The state that the player's moves change: the hypothetical's, or else the game's. */
+function getActionState(state: State): GameState {
+  return state.replay.hypothetical?.ongoing ?? state.ongoingGame;
 }
 
 function canDiscardNow(): boolean {
   return !isAtMaxClueTokens(
-    globals.state.ongoingGame.clueTokens,
+    getActionState(globals.state).clueTokens,
     globals.variant,
   );
+}
+
+/**
+ * The identity of each card, as the screen shows it. In a hypothetical, an edited card shows its
+ * new identity, and a drawn card shows nothing while the drawn cards are hidden.
+ */
+function getShownIdentities(state: State): readonly CardIdentity[] {
+  const morphs = state.replay.hypothetical?.morphedIdentities;
+  if (morphs === undefined || morphs.length === 0) {
+    return state.cardIdentities;
+  }
+
+  // The array is sparse, with no entry for the cards that keep their identities.
+  const identities = [...state.cardIdentities];
+  for (const key of Object.keys(morphs)) {
+    const order = Number(key);
+    identities[order] = morphs[order]!;
+  }
+  return identities;
+}
+
+/** In a hypothetical with the cards turned on for editing, a card changes into another. */
+function editCard(order: CardOrder) {
+  const card = getCardOrStackBase(order);
+  if (card !== undefined) {
+    modals.askForMorph(card, globals.variant, globals.cardImages);
+  }
 }
 
 function getSeats(state: State): readonly Seat[] {
@@ -141,13 +185,28 @@ function getSeats(state: State): readonly Seat[] {
   const { settings } = globals.lobby;
   const { numPlayers } = metadata.options;
   const hasSeat = state.playing || state.shadowing;
-  const firstPlayerIndex = hasSeat ? metadata.ourPlayerIndex : 0;
+  // In the replay of a game that we played, our hand stays first.
+  const firstPlayerIndex =
+    hasSeat
+    || (state.finished && metadata.playerNames.includes(metadata.ourUsername))
+      ? metadata.ourPlayerIndex
+      : 0;
   const showClock = metadata.options.timed || settings.showTimerInUntimed;
+  const hypo = state.replay.hypothetical;
+  const controlsHypo = controlsHypothetical(state);
+  const identities = getShownIdentities(state);
 
   const seats: Seat[] = [];
   for (let i = 0; i < numPlayers; i++) {
     const playerIndex = ((firstPlayerIndex + i) % numPlayers) as PlayerIndex;
     const you = hasSeat && playerIndex === metadata.ourPlayerIndex;
+    // In a hypothetical that hides the drawn cards, the player who started it sees their own hand
+    // only as the clues show it, as in the game.
+    const empathy =
+      you
+      || (hypo !== undefined
+        && !hypo.showDrawnCards
+        && playerIndex === hypo.startingPlayerIndex);
     const hand = visibleState.hands[playerIndex] ?? [];
     const cards: CardView[] = [];
     for (const order of getHandDisplayOrder(hand, settings.reverseHands)) {
@@ -160,13 +219,13 @@ function getSeats(state: State): readonly Seat[] {
         getCardView({
           gameState: visibleState,
           cardState,
-          cardIdentity: state.cardIdentities[order] ?? {
+          cardIdentity: identities[order] ?? {
             suitIndex: undefined,
             rank: undefined,
           },
           note: state.notes.ourNotes[order] ?? BLANK_NOTE,
           variant: globals.variant,
-          empathy: you,
+          empathy,
           finished: state.finished,
           realLifeMode: settings.realLifeMode,
         }),
@@ -186,6 +245,7 @@ function getSeats(state: State): readonly Seat[] {
       name: metadata.playerNames[playerIndex] ?? "",
       active,
       you,
+      acting: hypo === undefined ? you : controlsHypo && active,
       cards,
       clock,
     });
@@ -196,6 +256,7 @@ function getSeats(state: State): readonly Seat[] {
 
 function getStacks(state: State): readonly StackView[] {
   const visibleState = state.visibleState!;
+  const identities = getShownIdentities(state);
   return globals.variant.suits.map((_suit, i) => {
     const suitIndex = i as SuitIndex;
     const top = visibleState.playStacks[suitIndex]?.at(-1);
@@ -205,7 +266,7 @@ function getStacks(state: State): readonly StackView[] {
       topRank:
         top === undefined
           ? undefined
-          : (state.cardIdentities[top]?.rank ?? visibleState.deck[top]?.rank),
+          : (identities[top]?.rank ?? visibleState.deck[top]?.rank),
     };
   });
 }
@@ -219,11 +280,12 @@ function compareDiscards(a: DiscardView, b: DiscardView): number {
 
 function getDiscardRows(state: State): ReadonlyArray<readonly DiscardView[]> {
   const visibleState = state.visibleState!;
+  const identities = getShownIdentities(state);
   return visibleState.discardStacks
     .map((stack) =>
       stack
         .map((order): DiscardView => {
-          const identity = state.cardIdentities[order];
+          const identity = identities[order];
           return {
             order,
             suitIndex: identity?.suitIndex,
@@ -313,6 +375,7 @@ export function GameScreen({
   const [clue, setClue] = useState<Clue>();
   const [menuCard, setMenuCard] = useState<CardOrder>();
   const [drag, setDrag] = useState<Drag>();
+  const [editingCards, setEditingCards] = useState(false);
 
   const pendingDrag = useRef<{ order: CardOrder; x: number; y: number }>(
     undefined,
@@ -336,21 +399,23 @@ export function GameScreen({
     }
   }, [chatOverlay]);
 
-  // A new turn clears the clue being chosen and any open card menu.
-  const turnNum = state?.ongoingGame.turn.turnNum;
+  // A new turn clears the clue being chosen and any open card menu. In a hypothetical, its own
+  // turns count.
+  const turnNum =
+    state === undefined ? undefined : getActionState(state).turn.turnNum;
   useEffect(() => {
     setClueTarget(undefined);
     setClue(undefined);
     setMenuCard(undefined);
   }, [turnNum]);
 
-  // The new screen does not show replays yet, so a finished game goes to the classic screen.
-  const finished = state?.finished === true;
+  // Editing cards ends with the hypothetical.
+  const inHypothetical = state?.replay.hypothetical !== undefined;
   useEffect(() => {
-    if (finished) {
-      onSwitchToClassic();
+    if (!inHypothetical) {
+      setEditingCards(false);
     }
-  }, [finished, onSwitchToClassic]);
+  }, [inHypothetical]);
 
   // Move a card with the pointer, and play or discard it where the player drops it.
   useEffect(() => {
@@ -493,15 +558,29 @@ export function GameScreen({
   const { settings } = globals.lobby;
   const { options } = metadata;
   const inReplay = state.replay.active;
+  const hypo = state.replay.hypothetical;
+  // In a hypothetical that the viewer controls, they make every player's moves in turn.
+  const controlsHypo = controlsHypothetical(state);
+  const actionState = getActionState(state);
+  const actingPlayerIndex =
+    hypo === undefined
+      ? metadata.ourPlayerIndex
+      : actionState.turn.currentPlayerIndex;
   const ourTurn =
-    state.playing
-    && !inReplay
-    && ongoingGame.turn.currentPlayerIndex === metadata.ourPlayerIndex;
+    hypo === undefined
+      ? state.playing
+        && !inReplay
+        && ongoingGame.turn.currentPlayerIndex === metadata.ourPlayerIndex
+      : controlsHypo && actingPlayerIndex !== undefined;
   const canMoveCards =
-    state.playing && !inReplay && (ourTurn || settings.speedrunPreplay);
+    hypo === undefined
+      ? state.playing && !inReplay && (ourTurn || settings.speedrunPreplay)
+      : ourTurn && !editingCards;
   const canDiscard = canDiscardNow();
-  const clueAvailable = ongoingGame.clueTokens >= getClueCost(variant);
-  const canClue = ourTurn && clueAvailable;
+  const clueAvailable = actionState.clueTokens >= getClueCost(variant);
+  const canClue = ourTurn && clueAvailable && !editingCards;
+  const showCluePanel =
+    hypo === undefined ? state.playing && !inReplay : controlsHypo;
 
   const seats = getSeats(state);
   const targetHand =
@@ -509,7 +588,7 @@ export function GameScreen({
   const touched =
     targetHand === undefined || clue === undefined
       ? []
-      : getTouchedCards(variant, targetHand, state.cardIdentities, clue);
+      : getTouchedCards(variant, targetHand, getShownIdentities(state), clue);
   const canGive =
     canClue
     && clueTarget !== undefined
@@ -532,7 +611,15 @@ export function GameScreen({
   }
 
   let waitingText = "";
-  if (!ourTurn) {
+  if (hypo !== undefined) {
+    if (editingCards) {
+      waitingText = 'Turn off "Edit cards" to make a move.';
+    } else if (actingPlayerIndex === undefined) {
+      waitingText = "The hypothetical game is over.";
+    } else if (!clueAvailable) {
+      waitingText = "The team has no clues. Play or discard a card.";
+    }
+  } else if (!ourTurn) {
     const currentName =
       ongoingGame.turn.currentPlayerIndex === undefined
         ? undefined
@@ -581,7 +668,7 @@ export function GameScreen({
     drag === undefined
       ? undefined
       : seats
-          .find((seat) => seat.you)
+          .find((seat) => seat.acting)
           ?.cards.find((card) => card.order === drag.order);
 
   const pausedBy =
@@ -616,50 +703,13 @@ export function GameScreen({
           </div>
 
           <div className="tw:flex tw:min-w-0 tw:max-w-[760px] tw:flex-1 tw:flex-col tw:gap-3.5 tw:narrow-980:order-first tw:narrow-980:max-w-none tw:narrow-980:flex-none">
-            {inReplay && (
-              <div
-                className="tw:flex tw:shrink-0 tw:items-center tw:gap-2 tw:rounded-[14px] tw:bg-clue tw:px-4 tw:py-2 tw:font-bold tw:text-card-ink"
-                role="status"
-              >
-                <span className="tw:mr-auto">
-                  Replay: turn {visibleState.turn.turnNum + 1} of{" "}
-                  {ongoingGame.turn.turnNum + 1}
-                </span>
-                <button
-                  aria-label="Previous turn"
-                  className="tw:size-9 tw:cursor-pointer tw:rounded-lg tw:border-0 tw:bg-card-ink tw:text-game-text tw:disabled:cursor-default tw:disabled:opacity-50"
-                  disabled={visibleState.turn.turnNum === 0}
-                  onClick={() => {
-                    replay.back();
-                  }}
-                  type="button"
-                >
-                  <i aria-hidden="true" className="fas fa-chevron-left" />
-                </button>
-                <button
-                  aria-label="Next turn"
-                  className="tw:size-9 tw:cursor-pointer tw:rounded-lg tw:border-0 tw:bg-card-ink tw:text-game-text tw:disabled:cursor-default tw:disabled:opacity-50"
-                  disabled={
-                    visibleState.turn.turnNum >= ongoingGame.turn.turnNum
-                  }
-                  onClick={() => {
-                    replay.forward();
-                  }}
-                  type="button"
-                >
-                  <i aria-hidden="true" className="fas fa-chevron-right" />
-                </button>
-                <button
-                  className="tw:h-9 tw:cursor-pointer tw:rounded-lg tw:border-0 tw:bg-card-ink tw:px-3 tw:font-bold tw:text-game-text"
-                  onClick={() => {
-                    replay.exit();
-                  }}
-                  type="button"
-                >
-                  Back to the game
-                </button>
-              </div>
-            )}
+            <ReplayBar
+              editingCards={editingCards}
+              onToggleEditCards={() => {
+                setEditingCards(!editingCards);
+              }}
+              state={state}
+            />
             {pausedBy !== undefined && (
               <div
                 className="tw:shrink-0 tw:rounded-[14px] tw:bg-game-text tw:px-4 tw:py-2 tw:font-bold tw:text-card-ink"
@@ -668,7 +718,7 @@ export function GameScreen({
                 {pausedBy} paused the game.
               </div>
             )}
-            {state.playing && (
+            {showCluePanel && (
               <CluePanel
                 canClue={canClue}
                 canGive={canGive}
@@ -732,6 +782,7 @@ export function GameScreen({
                     sendAction({ type: "discard", order });
                   }
                 }}
+                onEditCard={editingCards ? editCard : undefined}
                 onPlay={(order) => {
                   setMenuCard(undefined);
                   sendAction({ type: "play", order });
@@ -765,6 +816,7 @@ export function GameScreen({
 
         <StatusStrip
           canOpenReplay={!inReplay}
+          finished={state.finished}
           futureEfficiency={formatFutureEfficiency(
             visibleState.stats,
             efficiencyModifier,

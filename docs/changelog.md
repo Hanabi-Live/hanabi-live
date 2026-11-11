@@ -31,9 +31,9 @@ of the repository.
 - The new flashlight button beside "Give Clue" shows the target's hand as they
   would see it after the selected clue. It turns off at the start of each turn.
 - Buttons now show an outline when you move to them with the keyboard.
-- The new "New UI" setting shows ongoing games in a redesigned game screen. It
-  is in testing and off by default. Finished games and replays still use the
-  classic screen, and a "Classic view" button switches to it at any time.
+- The new "New UI" setting shows games and replays in a redesigned game screen.
+  It is in testing and off by default. A "Classic view" button switches to the
+  classic screen at any time, and a "New UI" button switches back.
 - In replays, a misplayed card now moves to its play stack and then straight to
   the discard pile, instead of exploding on the strike tracker.
 - Tooltips now fade in quickly instead of growing with a bounce, and their lines

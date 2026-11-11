@@ -26,9 +26,7 @@ import {
   tupleKeys,
 } from "complete-common";
 import Konva from "konva";
-import * as modals from "../../modals";
 import { getCanvasColors } from "../../theme";
-import { getHTMLElement } from "../../utils";
 import { ActionLog } from "./ActionLog";
 import { ButtonGroup } from "./ButtonGroup";
 import { CardLayout } from "./CardLayout";
@@ -94,6 +92,7 @@ import { drawReplayArea } from "./drawReplayArea";
 import { getCardOrStackBase } from "./getCardOrStackBase";
 import * as hypothetical from "./hypothetical";
 import { initKonvaTooltips } from "./konvaTooltips";
+import { showPassLeaderDialog } from "./leader";
 import { getGameIDLabel } from "./reactive/views/replayView";
 import * as replay from "./replay";
 import * as restart from "./restart";
@@ -132,8 +131,6 @@ let lowerClueAreaSlideX: number;
 let lowerClueAreaRowsW: number;
 let giveClueValues: Values;
 let spectatorsLabelValues: Values;
-
-const leaderPlaceholder = getHTMLElement("#leader-placeholder");
 
 /**
  * The gap between the stacked buttons in the bottom-left corner, and between them and the deck,
@@ -1185,8 +1182,8 @@ function drawBottomLeftButtons() {
   globals.elements.replayButton = replayButton;
 
   // The button that switches to the redesigned game screen, above the others. It shows only for
-  // players who turned on the "New UI" setting, and only in ongoing games, since that screen does
-  // not show replays. The Keldon layout has a hand in this place, so it does not show there.
+  // players who turned on the "New UI" setting. The Keldon layout has a hand in this place, so it
+  // does not show there.
   const newUIButton = new Button({
     x: bottomLeftButtonValues.x * winW,
     y:
@@ -1195,10 +1192,7 @@ function drawBottomLeftButtons() {
     width: bottomLeftButtonValues.w! * winW,
     height: bottomLeftButtonValues.h! * winH,
     text: "New UI",
-    visible:
-      globals.lobby.settings.newUi
-      && !globals.lobby.settings.keldonMode
-      && !globals.state.finished,
+    visible: globals.lobby.settings.newUi && !globals.lobby.settings.keldonMode,
   });
   newUIButton.on("click tap", () => {
     globals.game!.showNewUI();
@@ -1902,54 +1896,7 @@ function drawSharedReplay() {
 
   // The user can click on the crown to pass the replay leader to an arbitrary person. Require a
   // double tap to prevent accidentally opening the dialog when hovering over the crown.
-  sharedReplayLeaderLabel.on("click dbltap", () => {
-    if (globals.state.replay.shared === undefined) {
-      return;
-    }
-
-    if (globals.state.spectators.length === 1) {
-      modals.showWarning(
-        "You are the only person in the shared replay, so you cannot pass the leader to someone else.",
-      );
-      return;
-    }
-
-    leaderPlaceholder.replaceChildren();
-
-    for (const spectator of globals.state.spectators) {
-      if (spectator.username === globals.state.replay.shared.leader) {
-        continue;
-      }
-
-      const button = document.createElement("button");
-
-      button.textContent = spectator.username;
-      button.classList.add("button");
-      button.dataset["player"] = spectator.username;
-      button.addEventListener("click", (event) => {
-        const element = event.target as HTMLElement;
-        setLeader(element.dataset["player"]);
-      });
-      button.type = "submit";
-
-      leaderPlaceholder.append(button);
-    }
-
-    modals.showPrompt("#set-leader-modal");
-  });
-}
-
-function setLeader(player: string | undefined) {
-  modals.closeModals();
-
-  if (player === undefined) {
-    return;
-  }
-
-  globals.lobby.conn!.send("tableSetLeader", {
-    tableID: globals.lobby.tableID,
-    username: player,
-  });
+  sharedReplayLeaderLabel.on("click dbltap", showPassLeaderDialog);
 }
 
 // A notification that shows it is your turn.

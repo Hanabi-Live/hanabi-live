@@ -222,7 +222,12 @@ async function clickCanvasElement(
 function getStates({
   replayID,
   startGame,
-}: Pick<Seed, "replayID" | "startGame">): readonly State[] {
+  endGame,
+  passLeader,
+}: Pick<
+  Seed,
+  "replayID" | "startGame" | "endGame" | "passLeader"
+>): readonly State[] {
   return [
     { name: "login", path: "/", loggedIn: false },
     { name: "scores", path: `/scores/${USERNAME}`, loggedIn: false },
@@ -469,6 +474,52 @@ function getStates({
         await page.waitForTimeout(SETTLE_MILLISECONDS);
       },
     },
+    // The same game, back in the new screen, after Bob ends it. It is now a shared replay that Bob
+    // leads.
+    {
+      name: "new-ui-shared-replay",
+      path: "/",
+      loggedIn: true,
+      prepare: async (page) => {
+        const hands = page.locator('#game-new-ui [aria-label="Hands"]');
+        if (!(await hands.isVisible())) {
+          await clickCanvasElement(page, ["newUIButton"]);
+        }
+        await hands.waitFor();
+        await endGame();
+        await page.getByRole("button", { name: "Ready" }).waitFor();
+      },
+    },
+    {
+      name: "new-ui-shared-replay-leader",
+      path: "/",
+      loggedIn: true,
+      prepare: async (page) => {
+        passLeader(USERNAME);
+        await page.getByRole("button", { name: "Pass leader" }).waitFor();
+      },
+    },
+    // A hypothetical that the account leads, from the first turn, after Alice plays a card in it,
+    // with "Edit cards" on. Loading the page leaves the shared replay for a moment, which passes
+    // the lead back to Bob, so he passes it again.
+    {
+      name: "new-ui-hypothetical",
+      path: "/",
+      loggedIn: true,
+      prepare: async (page) => {
+        passLeader(USERNAME);
+        await page.getByRole("button", { name: "First turn" }).click();
+        await page.getByRole("button", { name: "Enter hypothetical" }).click();
+        const hand = page.locator(
+          `#game-new-ui [aria-label="${USERNAME}'s hand"]`,
+        );
+        await hand.locator("button").first().click();
+        await page.getByRole("button", { name: "Play", exact: true }).click();
+        await page.getByText("Hypothetical: turn 2").waitFor();
+        await page.getByRole("button", { name: "Edit cards" }).click();
+        await page.waitForTimeout(SETTLE_MILLISECONDS);
+      },
+    },
   ];
 }
 
@@ -622,6 +673,10 @@ interface Seed {
   readonly replayID: number;
   /** Starts the game at Bob's table, where the browser's account must be a player. */
   readonly startGame: () => Promise<void>;
+  /** Ends the game at Bob's table, which turns it into a shared replay that Bob leads. */
+  readonly endGame: () => Promise<void>;
+  /** Makes another account the leader of the shared replay at Bob's table. */
+  readonly passLeader: (username: string) => void;
   readonly cookie: string;
   readonly peers: readonly Peer[];
 }
@@ -713,7 +768,26 @@ async function seed(address: string): Promise<Seed> {
 
   // The browser logs in as Alice, with a session of its own.
   const cookie = await login(address, USERNAME);
-  return { replayID, startGame, cookie, peers: [bob, ...spectators, bot] };
+  async function endGame() {
+    bob.send("tableTerminate", { tableID });
+    await bob.receive(
+      "finishOngoingGame",
+      SERVER_COMMAND_SCHEMAS.finishOngoingGame,
+    );
+  }
+
+  function passLeader(username: string) {
+    bob.send("tableSetLeader", { tableID, username });
+  }
+
+  return {
+    replayID,
+    startGame,
+    endGame,
+    passLeader,
+    cookie,
+    peers: [bob, ...spectators, bot],
+  };
 }
 
 /** Runs in the page. */

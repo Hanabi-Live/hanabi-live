@@ -1,9 +1,8 @@
 // Shows a game in the redesigned game screen, for players who turned on the "New UI" setting.
 
 // The classic Konva screen still runs, hidden, for every game. It keeps handling the timers, the
-// sounds, the hotkeys, and the in-game replay, which change the store that both screens draw from.
-// A player can switch to the classic screen at any time, and a game that ends switches to it, since
-// the new screen does not show replays yet.
+// sounds, the hotkeys, the replays, and the hypotheticals, which change the store that both screens
+// draw from. A player can switch to the classic screen at any time.
 
 import type { Root } from "react-dom/client";
 import { FADE_TIME_MS } from "../../constants";

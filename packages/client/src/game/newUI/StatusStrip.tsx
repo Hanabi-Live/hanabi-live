@@ -24,6 +24,9 @@ interface StatusStripProps {
   readonly minEfficiency: string;
   readonly variantName: string;
   readonly canOpenReplay: boolean;
+
+  /** A finished game is all replay, so it has no button to open one. */
+  readonly finished: boolean;
   readonly onOpenReplay: () => void;
   readonly onClassicView: () => void;
   readonly onLobby: () => void;
@@ -102,6 +105,7 @@ export function StatusStrip({
   minEfficiency,
   variantName,
   canOpenReplay,
+  finished,
   onOpenReplay,
   onClassicView,
   onLobby,
@@ -130,15 +134,17 @@ export function StatusStrip({
         </div>
       </div>
       <div className="tw:ml-auto tw:flex tw:shrink-0 tw:flex-wrap tw:gap-2.5">
-        <button
-          className={buttonClass}
-          disabled={!canOpenReplay}
-          onClick={onOpenReplay}
-          type="button"
-        >
-          <i aria-hidden="true" className="fas fa-undo" />
-          Replay
-        </button>
+        {!finished && (
+          <button
+            className={buttonClass}
+            disabled={!canOpenReplay}
+            onClick={onOpenReplay}
+            type="button"
+          >
+            <i aria-hidden="true" className="fas fa-undo" />
+            Replay
+          </button>
+        )}
         <button className={buttonClass} onClick={onClassicView} type="button">
           Classic view
         </button>
