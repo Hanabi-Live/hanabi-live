@@ -352,18 +352,20 @@ pub(super) async fn websocket(
                                     .collect::<String>()
                             );
                             // Browsers cannot read HTTP errors from a failed WebSocket upgrade.
-                            // Clients reload once for this code, and show the message when a
-                            // reload did not help.
+                            // Clients reload on "outdatedClient"; the error that follows explains
+                            // the problem when a reload did not help. Clients of every earlier
+                            // release read these two messages, so they must keep this form.
                             tokio::time::timeout(ERROR_SEND_TIMEOUT, async {
                                 socket
                                     .send(Message::Text(frame(
+                                        hanabi_protocol::server::OUTDATED_CLIENT,
+                                        hanabi_protocol::Empty {},
+                                    )))
+                                    .await?;
+                                socket
+                                    .send(Message::Text(frame(
                                         hanabi_protocol::server::ERROR,
-                                        hanabi_protocol::Notice {
-                                            code: Some(
-                                                hanabi_protocol::OUTDATED_CLIENT_CODE.into(),
-                                            ),
-                                            ..hanabi_protocol::Notice::new(message)
-                                        },
+                                        hanabi_protocol::Notice::new(message),
                                     )))
                                     .await?;
                                 socket.close().await

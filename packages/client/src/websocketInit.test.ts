@@ -1,4 +1,4 @@
-import { OUTDATED_CLIENT_CODE, VERSION } from "@hanabi-live/data";
+import { VERSION } from "@hanabi-live/data";
 import type { Clock } from "@sinonjs/fake-timers";
 import { install } from "@sinonjs/fake-timers";
 import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
@@ -237,11 +237,7 @@ describe("initial WebSocket handshake watchdog", () => {
   test("reloads an outdated client once per client version", async () => {
     websocketInit();
     sockets[0]?.emit("open");
-    const outdated = {
-      message: "Outdated client. Please hard-refresh.",
-      code: OUTDATED_CLIENT_CODE,
-    };
-    globals.conn?.callbacks.get("error")?.(outdated as never);
+    globals.conn?.callbacks.get("outdatedClient")?.({} as never);
     sockets[0]?.emit("close");
 
     await clock.tickAsync(30_000);
@@ -251,7 +247,7 @@ describe("initial WebSocket handshake watchdog", () => {
     // A reload that served the same client again must not repeat forever.
     websocketInit();
     sockets[1]?.emit("open");
-    globals.conn?.callbacks.get("error")?.(outdated as never);
+    globals.conn?.callbacks.get("outdatedClient")?.({} as never);
     expect(reload).toHaveBeenCalledTimes(1);
   });
 

@@ -668,7 +668,7 @@ export const noteRequestSchema = z
 export const noticeSchema = z
   .strictObject({
     /**
-     * Such as `OUTDATED_CLIENT_CODE`, which makes the client reload the page.
+     * The typed cause of a server failure.
      */
     code: z.string().min(1).optional(),
     diagnosticID: z.string().min(1).optional(),
@@ -1570,6 +1570,7 @@ export const SERVER_COMMAND_SCHEMAS = {
   note: noteSchema,
   noteList: noteListSchema,
   noteListPlayer: noteListPlayerSchema,
+  outdatedClient: emptySchema,
   pause: pauseSchema,
   pregame: pregameSchema,
   replayAction: sharedReplayActionSchema,

@@ -113,6 +113,7 @@ macro_rules! server_contracts {
             FRIENDS "friends" => Friends;
             BLOCKED "blocked" => Blocked;
             ERROR "error" => Notice;
+            OUTDATED_CLIENT "outdatedClient" => Empty;
             WARNING "warning" => Notice;
             SOUND_LOBBY "soundLobby" => SoundLobby;
             WELCOME "welcome" => Welcome;

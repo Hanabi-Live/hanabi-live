@@ -248,9 +248,14 @@ async fn websocket_checks_client_version_with_existing_cookie_postgres() {
             let WireMessage::Text(text) = socket.next().await.unwrap().unwrap() else {
                 panic!("Expected a version rejection before any bootstrap messages");
             };
+            assert_eq!(text.as_str(), "outdatedClient {}");
+            let WireMessage::Text(text) = socket.next().await.unwrap().unwrap() else {
+                panic!("Expected a version error after the version rejection");
+            };
             let body = text.strip_prefix("error ").unwrap();
             let payload: Value = serde_json::from_str(body).unwrap();
-            assert_eq!(payload["code"], hanabi_protocol::OUTDATED_CLIENT_CODE);
+            // Earlier clients reject an error with fields that they do not know.
+            assert_eq!(payload.as_object().unwrap().len(), 1);
             assert!(
                 payload["message"]
                     .as_str()

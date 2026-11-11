@@ -105,7 +105,7 @@ pub struct Blocked {
 pub struct Notice {
     #[schemars(length(min = 1))]
     pub message: String,
-    /// Such as `OUTDATED_CLIENT_CODE`, which makes the client reload the page.
+    /// The typed cause of a server failure.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     #[schemars(with = "String", length(min = 1))]
     pub code: Option<String>,

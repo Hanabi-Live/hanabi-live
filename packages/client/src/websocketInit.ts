@@ -3,7 +3,6 @@
 
 import type { ServerCommand, ServerCommandData } from "@hanabi-live/data";
 import {
-  OUTDATED_CLIENT_CODE,
   VERSION,
   errorDetails,
   httpError,
@@ -236,6 +235,12 @@ function openConnection(isReconnect: boolean) {
       ),
     );
   };
+  conn.on("outdatedClient", () => {
+    // Otherwise, the error that the server sends next explains how to update.
+    if (isCurrentConnection(conn) && reloadOutdatedClient()) {
+      stopRecovery();
+    }
+  });
   conn.on("restart", ({ message }) => {
     if (activeConnection === conn) {
       conn.setReady(false);
@@ -382,11 +387,6 @@ function errorCallback(conn: Connection) {
     }
     // Application errors are deliberate disconnects, not transport outages.
     stopRecovery();
-    // A client from another release reloads to get the current one. When a reload did not help, the
-    // error explains how to update.
-    if (data.code === OUTDATED_CLIENT_CODE && reloadOutdatedClient()) {
-      return;
-    }
     commands.get("error")?.(data);
   };
 }
