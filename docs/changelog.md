@@ -25,6 +25,9 @@ of the repository.
 - In the new game screen, at max clues, the discard pile has a dashed orange
   border and says that no one can discard.
 
+- When a person logs in to an account that a bot used, the account is a normal
+  account again. The bot marks it again when it logs in.
+
 ## November 10th, 2026
 
 - In shared replays, the "Use Shared Turns" button now says "Join Hypothetical"
