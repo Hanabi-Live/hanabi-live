@@ -14,6 +14,9 @@ of the repository.
 - In the new game screen, when you put the mouse on a card in a hand, the clue
   log shows only the clues about that card, with a cross on the clues that did
   not touch it.
+- In the new game screen, a played card now lifts out of its hand, flies to its
+  stack (turning face up if its holder did not know it), and lands with a burst.
+  A misplayed card explodes on its strike box, as on the classic screen.
 
 ## November 10th, 2026
 

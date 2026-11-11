@@ -140,6 +140,8 @@ export const PlayArea = forwardRef<
                       : describeCard(variant, stack.suitIndex, stack.topRank)
                   }
                   className="tw:relative"
+                  // A misplayed card launches over its stack (see "playMotion.ts").
+                  data-stack-slot={stack.suitIndex}
                   key={stack.suitIndex}
                   role="img"
                 >
@@ -353,11 +355,12 @@ export function TableTokens({
                 : "tw:border-game-line tw:bg-transparent"
             }`;
             return segment === undefined ? (
-              <span className={className} key={i} />
+              <span className={className} data-strike-box={i} key={i} />
             ) : (
               <button
                 aria-label={`Show the turn of strike ${i + 1}`}
                 className={`${className} tw:cursor-pointer tw:hover:brightness-125`}
+                data-strike-box={i}
                 key={i}
                 onClick={() => {
                   onShowStrike(segment);

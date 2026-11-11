@@ -52,7 +52,7 @@ import { ReplayBar } from "./ReplayBar.tsx";
 import type { DiscardView, StackView, ZoneState } from "./SharedCards.tsx";
 import { DiscardPile, PlayArea, TableTokens } from "./SharedCards.tsx";
 import { StatusStrip } from "./StatusStrip.tsx";
-import type { CardPositions } from "./cardMotion.ts";
+import type { CardPositions, MoveEffects } from "./cardMotion.ts";
 import {
   MAX_ANIMATED_SEGMENT_CHANGE,
   MOVE_BATCH_MILLISECONDS,
@@ -70,6 +70,7 @@ import {
   useNow,
 } from "./hooks.ts";
 import * as newUiState from "./newUiState.ts";
+import type { Misplay } from "./playMotion.ts";
 import type { CardView } from "./tableView.ts";
 import {
   BLANK_NOTE,
@@ -387,6 +388,51 @@ function showDiscard(order: CardOrder) {
 }
 
 /**
+ * Returns what the cards did on a move from one state to the next: the cards that were misplayed,
+ * and whether plays and misplays show in full. They show only in a game in progress, as on the
+ * classic screen, and not when the viewer steps through a replay.
+ */
+function getMoveEffects(
+  state: State,
+  before: GameState,
+  after: GameState,
+  segmentChange: number,
+): MoveEffects {
+  const { variant } = globals;
+  const misplays = new Map<string, Misplay>();
+  const earlierStrikes = new Set(before.strikes.map((strike) => strike.order));
+  for (const [strikeIndex, strike] of after.strikes.entries()) {
+    const suitIndex = after.deck[strike.order]?.suitIndex;
+    if (earlierStrikes.has(strike.order) || suitIndex === undefined) {
+      continue;
+    }
+    misplays.set(strike.order.toString(), {
+      suitIndex,
+      // The strikes are hidden in the "Throw It in a Hole" variant.
+      strikeIndex: variant.throwItInAHole ? undefined : strikeIndex,
+    });
+  }
+
+  return {
+    // A play or a misplay comes a moment before its turn, so the segment does not change yet.
+    live: !state.replay.active && segmentChange >= 0,
+    misplays,
+    getSuitColors: (suitIndex) => {
+      const suit = variant.suits[suitIndex];
+      if (suit === undefined) {
+        return [];
+      }
+      if (suit.fill === "multi") {
+        return suit.fillColors;
+      }
+      return [
+        globals.lobby.settings.colorblindMode ? suit.fillColorblind : suit.fill,
+      ];
+    },
+  };
+}
+
+/**
  * For each strike box, the segment of its strike, as the classic screen's strike boxes have them.
  * In a replay, the boxes also stand for the strikes that come later, except in a spoiler-free
  * review. The strikes are hidden in the "Throw It in a Hole" variant.
@@ -610,10 +656,10 @@ export function GameScreen({
   });
   useLayoutEffect(() => {
     const root = rootRef.current;
-    const shownState = state?.visibleState;
-    if (root === null || shownState === undefined) {
+    if (root === null || state?.visibleState === undefined) {
       return;
     }
+    const shownState = state.visibleState;
 
     const previous = shown.current;
     if (previous.shownState === undefined) {
@@ -649,7 +695,13 @@ export function GameScreen({
     const segmentChange =
       (shownState.turn.segment ?? 0) - (move.startState.turn.segment ?? 0);
     if (Math.abs(segmentChange) <= MAX_ANIMATED_SEGMENT_CHANGE) {
-      animateCardMoves(root, move.startPositions, positions, segmentChange > 0);
+      animateCardMoves(
+        root,
+        move.startPositions,
+        positions,
+        segmentChange > 0,
+        getMoveEffects(state, move.startState, shownState, segmentChange),
+      );
     }
 
     // A clue that was just given flies in from its giver, when the game moves forward a turn.

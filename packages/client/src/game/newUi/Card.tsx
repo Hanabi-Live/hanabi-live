@@ -275,6 +275,12 @@ export function CardFace({
   return (
     <div
       className={`tw:relative tw:shrink-0 tw:select-none ${border} ${outline} ${faceColors.className}`}
+      // A played card that its holder did not know turns over on its way to the stack (see
+      // "playMotion.ts").
+      data-card-face
+      data-card-unknown={
+        suitIndex === undefined || rank === undefined ? true : undefined
+      }
       style={{
         width,
         height,

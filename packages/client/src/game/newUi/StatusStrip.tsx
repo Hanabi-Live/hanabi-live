@@ -37,15 +37,21 @@ interface StatusStripProps {
 
 function Stat({
   label,
+  truncate = true,
   children,
 }: {
   readonly label: React.ReactNode;
+
+  /** Whether a long value ends with an ellipsis. A value that pops must not be cut off. */
+  readonly truncate?: boolean;
   readonly children: React.ReactNode;
 }): React.JSX.Element {
   return (
     <div className="tw:flex tw:min-w-0 tw:flex-col tw:gap-0.5">
       <span className="tw:text-[13px] tw:text-game-muted">{label}</span>
-      <span className="tw:truncate tw:text-[22px] tw:font-bold tw:text-game-text tw:narrow-980:text-[17px]">
+      <span
+        className={`${truncate ? "tw:truncate" : ""} tw:text-[22px] tw:font-bold tw:text-game-text tw:narrow-980:text-[17px]`}
+      >
         {children}
       </span>
     </div>
@@ -115,8 +121,11 @@ export function StatusStrip({
   return (
     <footer className="tw:flex tw:h-[76px] tw:shrink-0 tw:items-center tw:gap-8 tw:border-t tw:border-game-raised tw:bg-game-panel tw:px-7 tw:narrow-980:h-auto tw:narrow-980:flex-wrap tw:narrow-980:gap-x-5 tw:narrow-980:gap-y-2 tw:narrow-980:px-3 tw:narrow-980:py-3">
       <Stat label="Turn">{turn}</Stat>
-      <Stat label="Score">
-        <OutOf max={maxScore} value={score} />
+      <Stat label="Score" truncate={false}>
+        {/* The score pops when a card lands on a stack (see "playMotion.ts"). */}
+        <span className="tw:inline-block" data-score>
+          <OutOf max={maxScore} value={score} />
+        </span>
       </Stat>
       <Stat label="Pace">{pace}</Stat>
       <Stat

@@ -1,21 +1,56 @@
 // Moves cards from where they were to where they are when the game advances or the replay steps
 // through a turn, as the classic game screen does.
 
+import { MAX_STRIKES } from "@hanabi-live/game";
 import { SECOND_IN_MILLISECONDS } from "complete-common";
 import {
   CARD_ANIMATION_LENGTH_SECONDS,
   PLAY_ANIMATION_SECONDS,
 } from "../ui/constants.ts";
+import type { Misplay } from "./playMotion.ts";
+import {
+  CARD_MOVE_ANIMATION_ID,
+  EASE_OUT_BACK,
+  animateMisplay,
+  animatePlay,
+  animateReplayMisplay,
+  isShowingPlay,
+  raiseMovingCard,
+} from "./playMotion.ts";
 
 /**
  * Where each card is, by card order, and where the deck is. The place names the hand and slot, the
  * stack, or the row of the discard pile (from the "data-card-place" attribute). A card moves only
- * when its place changes, and not when the panels around it change size and push it along.
+ * when its place changes, and not when the panels around it change size and push it along. The
+ * element is kept so that a played card can show its old face as it turns over.
  */
-export type CardPositions = ReadonlyMap<
-  string,
-  { readonly rect: DOMRect; readonly place: string }
->;
+export type CardPositions = ReadonlyMap<string, CardPosition>;
+
+interface CardPosition {
+  readonly rect: DOMRect;
+  readonly place: string;
+  readonly element: HTMLElement;
+}
+
+/** What the cards that move on a turn did, so that plays and misplays can show. */
+export interface MoveEffects {
+  /**
+   * Whether this is a game in progress that moved forward one turn. Only then do plays and misplays
+   * show in full, as on the classic screen. In a replay, a misplayed card only bounces off its
+   * stack.
+   */
+  readonly live: boolean;
+
+  /** The cards that were misplayed on the turn, by card order. */
+  readonly misplays: ReadonlyMap<string, Misplay>;
+
+  /** The colors of a suit, for the burst when a card lands on its stack. */
+  readonly getSuitColors: (suitIndex: number) => readonly string[];
+}
+
+/** The prefixes of the places of a card in a hand and on a play stack (see "data-card-place"). */
+const HAND_PLACE_PREFIX = "hand-";
+const STACK_PLACE_PREFIX = "stack-";
 
 /** The key of the deck in `CardPositions`, which a newly drawn card moves from. */
 const DECK_KEY = "deck";
@@ -26,17 +61,11 @@ const DECK_KEY = "deck";
  */
 export const MAX_ANIMATED_SEGMENT_CHANGE = 1;
 
-/** The ID of every card movement, so that the page can tell them from other animations. */
-const CARD_MOVE_ANIMATION_ID = "card-move";
-
 /**
  * How long a move takes here, as a fraction of the classic screen's time for the same move. The
  * same times looked slower here than on the classic screen, so the moves are 40% shorter.
  */
 const CARD_MOVE_TIME_FRACTION = 0.6;
-
-/** Moving cards go over the panels that they cross. */
-const MOVING_CARD_Z_INDEX = "30";
 
 function cardElements(root: HTMLElement): readonly HTMLElement[] {
   return [...root.querySelectorAll<HTMLElement>("[data-card-order]")];
@@ -67,17 +96,18 @@ export function stopCardMoves(): void {
 
 /** Returns where the cards and the deck are now. */
 export function measureCards(root: HTMLElement): CardPositions {
-  const positions = new Map<
-    string,
-    { readonly rect: DOMRect; readonly place: string }
-  >();
+  const positions = new Map<string, CardPosition>();
   for (const element of cardElements(root)) {
     const key = element.dataset["cardOrder"];
     const place = element.dataset["cardPlace"] ?? "";
     if (key === undefined) {
       continue;
     }
-    positions.set(key, { rect: element.getBoundingClientRect(), place });
+    positions.set(key, {
+      rect: element.getBoundingClientRect(),
+      place,
+      element,
+    });
   }
 
   const deck = root.querySelector<HTMLElement>("[data-deck]");
@@ -85,6 +115,7 @@ export function measureCards(root: HTMLElement): CardPositions {
     positions.set(DECK_KEY, {
       rect: deck.getBoundingClientRect(),
       place: DECK_KEY,
+      element: deck,
     });
   }
 
@@ -103,12 +134,16 @@ export function animateCardMoves(
   before: CardPositions,
   after: CardPositions,
   forward: boolean,
+  effects: MoveEffects,
 ): void {
   const deck = before.get(DECK_KEY)?.rect;
   for (const element of cardElements(root)) {
     const key = element.dataset["cardOrder"];
-    const now = key === undefined ? undefined : after.get(key);
-    const was = key === undefined ? undefined : before.get(key);
+    if (key === undefined) {
+      continue;
+    }
+    const now = after.get(key);
+    const was = before.get(key);
     if (now === undefined || now.rect.width === 0 || was?.place === now.place) {
       continue;
     }
@@ -129,14 +164,14 @@ export function animateCardMoves(
       continue;
     }
 
+    if (animateSpecialMove(root, element, key, was, now, from, to, effects)) {
+      continue;
+    }
+
     const seconds = Object.hasOwn(element.dataset, "playStack")
       ? PLAY_ANIMATION_SECONDS
       : CARD_ANIMATION_LENGTH_SECONDS;
-    const { position, zIndex } = element.style;
-    if (getComputedStyle(element).position === "static") {
-      element.style.position = "relative";
-    }
-    element.style.zIndex = MOVING_CARD_Z_INDEX;
+    const restore = raiseMovingCard(element);
 
     // The card also changes size between a hand and the smaller cards on the table.
     const animation = element.animate(
@@ -153,11 +188,80 @@ export function animateCardMoves(
         easing: "ease-out",
       },
     );
-    animation.addEventListener("finish", () => {
-      element.style.position = position;
-      element.style.zIndex = zIndex;
-    });
+    animation.addEventListener("finish", restore);
   }
+}
+
+/** Shows a play or a misplay from a hand, if the card made one. Returns whether it did. */
+function animateSpecialMove(
+  root: HTMLElement,
+  element: HTMLElement,
+  order: string,
+  was: CardPosition | undefined,
+  now: CardPosition,
+  from: DOMRect,
+  to: DOMRect,
+  effects: MoveEffects,
+): boolean {
+  if (was?.place.startsWith(HAND_PLACE_PREFIX) !== true) {
+    return false;
+  }
+  if (isShowingPlay(element)) {
+    return true;
+  }
+
+  const misplay = effects.misplays.get(order);
+  if (misplay !== undefined) {
+    const stackSlot = root.querySelector<HTMLElement>(
+      `[data-stack-slot="${CSS.escape(misplay.suitIndex.toString())}"]`,
+    );
+    if (stackSlot === null) {
+      return false;
+    }
+    if (effects.live) {
+      const strikeBox =
+        misplay.strikeIndex === undefined
+          ? undefined
+          : (root.querySelector<HTMLElement>(
+              `[data-strike-box="${CSS.escape(misplay.strikeIndex.toString())}"]`,
+            ) ?? undefined);
+      animateMisplay(
+        root,
+        element,
+        from,
+        to,
+        stackSlot,
+        strikeBox,
+        misplay.strikeIndex === MAX_STRIKES - 1,
+      );
+    } else {
+      animateReplayMisplay(
+        element,
+        from,
+        to,
+        stackSlot,
+        CARD_ANIMATION_LENGTH_SECONDS
+          * CARD_MOVE_TIME_FRACTION
+          * SECOND_IN_MILLISECONDS,
+      );
+    }
+    return true;
+  }
+
+  if (effects.live && now.place.startsWith(STACK_PLACE_PREFIX)) {
+    const suitIndex = Number(now.place.slice(STACK_PLACE_PREFIX.length));
+    animatePlay(
+      root,
+      element,
+      was.element,
+      from,
+      to,
+      effects.getSuitColors(suitIndex),
+    );
+    return true;
+  }
+
+  return false;
 }
 
 /**
@@ -199,9 +303,6 @@ const CLUE_BYSTANDER_OPACITY = 0.45;
 
 /** The ID of every clue animation, so that a new clue can stop the last one. */
 const CLUE_ANIMATION_ID = "clue";
-
-/** An ease that overshoots its end and settles back, for things that pop. */
-const EASE_OUT_BACK = "cubic-bezier(0.34, 1.56, 0.64, 1)";
 
 /**
  * Shows a clue that was just given. The parts are in the page already (see "Hands.tsx" and
