@@ -1,7 +1,7 @@
 // The animations of a play and of a misplay in a game in progress. A played card lifts out of its
 // hand, flies to its stack in an arc (turning face up on the way if its holder did not know it),
 // and lands with a burst. A misplayed card is a "dud rocket", as on the classic screen (see
-// "../ui/misplayAnimation.ts"): it launches over its stack, sputters, misfires into its strike box,
+// "../ui/misplayAnimation.ts"): it launches onto its stack, sputters, misfires into its strike box,
 // explodes there, and tumbles into the discard pile.
 
 // These animations last longer than a normal card move, so the next update of the game does not
@@ -96,7 +96,6 @@ const RECOIL_SECONDS = 0.12;
 const FALL_SECONDS = 0.5;
 
 // Distances and sizes are fractions of the height of a card on the play stacks.
-const HOVER_HEIGHT = 0.375;
 const FLIGHT_CONTROL_POINT = { x: 0.5, y: -1.125 } as const;
 const FALL_LIFT = 0.325;
 const SPUTTER_JITTER = 0.019;
@@ -685,7 +684,9 @@ export function animateMisplay(
   const end = center(to);
   const endScale = 1 / stackScale;
   const stackCenter = center(stackRect);
-  const hover = { x: stackCenter.x, y: stackCenter.y - HOVER_HEIGHT * unit };
+  // Unlike on the classic screen, the card sputters on its stack, not above it: the stacks are in a
+  // column, so above a stack is the stack before it.
+  const hover = stackCenter;
   const fuse = { x: hover.x, y: hover.y - unit / 2 };
   const blast =
     strikeBox === undefined ? hover : center(strikeBox.getBoundingClientRect());
@@ -798,7 +799,7 @@ export function animateMisplay(
     return stepStart + duration;
   }
 
-  // 1. Launch over the stack.
+  // 1. Launch onto the stack.
   let time = addStep(LAUNCH_SECONDS, (t) => {
     const out = easeOut(t);
     return {
