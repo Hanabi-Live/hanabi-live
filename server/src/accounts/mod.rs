@@ -290,7 +290,7 @@ async fn login_inner(state: &Accounts, ip: &str, input: LoginRequest) -> Result<
     };
     if let Err(message) = validate_client_version(&input.version, &state.config.version) {
         let error = Notice {
-            code: Some(hanabi_protocol::OUTDATED_CLIENT_CODE.into()),
+            code: Some(hanabi_protocol::NoticeCode::OutdatedClient),
             ..Notice::new(message)
         };
         return Ok((StatusCode::UNAUTHORIZED, Json(error)).into_response());
@@ -361,7 +361,7 @@ async fn login_inner(state: &Accounts, ip: &str, input: LoginRequest) -> Result<
         }
         if !input.create_account && input.version != BOT_VERSION {
             let error = Notice {
-                code: Some(hanabi_protocol::NO_ACCOUNT_CODE.into()),
+                code: Some(hanabi_protocol::NoticeCode::NoAccount),
                 ..Notice::new(format!(
                     "There is no account named \"{}\".",
                     escape_html(username)

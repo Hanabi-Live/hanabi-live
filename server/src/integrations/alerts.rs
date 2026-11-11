@@ -26,7 +26,7 @@ pub struct Alerts {
 /// Holds one entry per operation and error code, both of which are server-defined.
 #[derive(Default)]
 struct Throttle {
-    recent: HashMap<(String, &'static str), (Instant, u32)>,
+    recent: HashMap<(String, hanabi_protocol::NoticeCode), (Instant, u32)>,
 }
 
 impl Throttle {
@@ -148,9 +148,9 @@ mod tests {
     #[test]
     fn refusals_are_not_posted() {
         for code in [
-            crate::errors::PASSWORD_RATE_LIMITED,
-            crate::errors::SERVER_DRAINING,
-            crate::errors::SESSION_REPLACED,
+            hanabi_protocol::NoticeCode::PasswordRateLimited,
+            hanabi_protocol::NoticeCode::ServerDraining,
+            hanabi_protocol::NoticeCode::SessionReplaced,
         ] {
             let refusal = Report::known(
                 "Command note",

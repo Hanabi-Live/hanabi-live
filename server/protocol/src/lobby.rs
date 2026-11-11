@@ -96,8 +96,7 @@ pub struct Notice {
     pub message: String,
     /// The typed cause of a server failure.
     #[serde(skip_serializing_if = "Option::is_none")]
-    #[schemars(length(min = 1))]
-    pub code: Option<String>,
+    pub code: Option<NoticeCode>,
     #[serde(skip_serializing_if = "Option::is_none")]
     #[schemars(length(min = 1))]
     pub diagnostic_id: Option<String>,

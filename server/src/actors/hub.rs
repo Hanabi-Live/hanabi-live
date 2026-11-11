@@ -84,7 +84,7 @@ impl Hub {
             .map(|(id, error)| {
                 let report = Report::known(
                     "Recovering a table",
-                    "table_unreadable",
+                    hanabi_protocol::NoticeCode::TableUnreadable,
                     format!(
                         "Table {id} could not be read from its checkpoint, so it was not restored. Its checkpoint stays in the database, and the next start reads it again."
                     ),
@@ -173,7 +173,7 @@ impl Hub {
     fn table_failed(&mut self, id: TableId) {
         let report = Report::known(
             "Running a table",
-            "table_failed",
+            hanabi_protocol::NoticeCode::TableFailed,
             format!(
                 "Table {id} stopped after an internal error. Its last saved state comes back when the server restarts."
             ),

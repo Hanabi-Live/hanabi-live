@@ -259,7 +259,7 @@ impl LiveState {
         if let Err(error) = transaction.commit().await {
             self.owner.lost.cancel();
             return Err(anyhow::Error::from(error).context(Fault::new(
-                "persistence_uncertain",
+                hanabi_protocol::NoticeCode::PersistenceUncertain,
                 "The live-state write may have been saved, but the database could not confirm it. Do not repeat game actions; wait for recovery.",
                 StatusCode::SERVICE_UNAVAILABLE,
             )));

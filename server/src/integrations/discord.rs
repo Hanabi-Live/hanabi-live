@@ -70,7 +70,7 @@ fn configured_id<T>(key: &str, value: &str) -> Result<Id<T>> {
         .filter(|_| is_snowflake(value))
         .with_context(|| {
             crate::errors::Fault::new(
-                "discord_configuration",
+                hanabi_protocol::NoticeCode::DiscordConfiguration,
                 format!(
                     "{key} must contain a {}-{} digit Discord identifier.",
                     SNOWFLAKE_DIGITS.start(),
@@ -113,7 +113,7 @@ impl Configuration {
                 .filter(|v| !v.is_empty())
                 .with_context(|| {
                     crate::errors::Fault::new(
-                        "discord_configuration",
+                        hanabi_protocol::NoticeCode::DiscordConfiguration,
                         format!("Required configuration field {key} is missing or empty."),
                         axum::http::StatusCode::INTERNAL_SERVER_ERROR,
                     )
@@ -189,7 +189,7 @@ impl Bridge {
         ] {
             if !roles.values().any(|name| name == configured) {
                 return Err(crate::errors::Fault::new(
-                    "discord_role_missing",
+                    hanabi_protocol::NoticeCode::DiscordRoleMissing,
                     format!("The role configured by {key} was not found in the Discord guild."),
                     axum::http::StatusCode::BAD_GATEWAY,
                 )
@@ -207,7 +207,7 @@ impl Bridge {
                     ChannelType::GuildText | ChannelType::GuildAnnouncement
                 )
             {
-                return Err(crate::errors::Fault::new("discord_channel_invalid",
+                return Err(crate::errors::Fault::new(hanabi_protocol::NoticeCode::DiscordChannelInvalid,
                     format!("The channel configured by {key} is not a text/announcement channel in the configured guild."),
                     axum::http::StatusCode::BAD_GATEWAY).into());
             }

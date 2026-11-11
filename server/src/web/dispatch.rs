@@ -51,14 +51,14 @@ pub(super) fn command_failure(error: CommandError, command: &str) -> Option<Comm
         ),
         CommandError::Internal(error) => {
             let report = crate::errors::Report::from_error(operation.clone(), &error);
-            if report.code != crate::errors::INTERNAL_OPERATION_FAILED {
+            if report.code != hanabi_protocol::NoticeCode::InternalOperationFailed {
                 (report, true)
             } else if error.root_cause().is::<crate::errors::Described>() {
                 // The server wrote this description, so the player sees all of it.
                 (
                     crate::errors::Report::known(
                         operation,
-                        crate::errors::COMMAND_FAILED,
+                        hanabi_protocol::NoticeCode::CommandFailed,
                         format!("{error:#}"),
                         StatusCode::INTERNAL_SERVER_ERROR,
                     ),
@@ -208,13 +208,13 @@ pub(super) async fn dispatch(
     let _admission = match app.lifecycle.admit().await {
         Ok(admission) => admission,
         Err(Refusal::Unavailable) => {
-            return Err(crate::errors::Fault::new("live_state_unavailable",
+            return Err(crate::errors::Fault::new(hanabi_protocol::NoticeCode::LiveStateUnavailable,
                 "Live-state recovery or ownership is unavailable. Do not repeat game actions; wait for recovery.",
                 StatusCode::SERVICE_UNAVAILABLE).into());
         }
         Err(Refusal::NotAccepting) => {
             return Err(crate::errors::Fault::new(
-                crate::errors::SERVER_DRAINING,
+                hanabi_protocol::NoticeCode::ServerDraining,
                 "The server is not accepting new commands during startup or maintenance.",
                 StatusCode::SERVICE_UNAVAILABLE,
             )
@@ -315,7 +315,7 @@ mod tests {
         )
         .unwrap();
         let report = unexpected.report.expect("reported failure");
-        assert_eq!(report.code, crate::errors::COMMAND_FAILED);
+        assert_eq!(report.code, hanabi_protocol::NoticeCode::CommandFailed);
         assert!(!unexpected.alert);
         assert_eq!(
             unexpected.warning.message,
@@ -336,7 +336,10 @@ mod tests {
         )
         .unwrap();
         let report = raw.report.expect("reported failure");
-        assert_eq!(report.code, crate::errors::INTERNAL_OPERATION_FAILED);
+        assert_eq!(
+            report.code,
+            hanabi_protocol::NoticeCode::InternalOperationFailed
+        );
         assert!(!raw.alert);
         assert!(
             !raw.warning.message.contains(&parse.to_string())
@@ -350,14 +353,17 @@ mod tests {
         // Storage reports a fault as the error's context, which the conversion keeps.
         let fault =
             anyhow::Error::from(sqlx::Error::PoolClosed).context(crate::errors::Fault::new(
-                "persistence_uncertain",
+                hanabi_protocol::NoticeCode::PersistenceUncertain,
                 "The write may have been saved.",
                 StatusCode::SERVICE_UNAVAILABLE,
             ));
         let CommandError::Unavailable(fault) = CommandError::from(fault) else {
             panic!("A fault was not unavailable");
         };
-        assert_eq!(fault.code, "persistence_uncertain");
+        assert_eq!(
+            fault.code,
+            hanabi_protocol::NoticeCode::PersistenceUncertain
+        );
         let unavailable = command_failure(CommandError::Unavailable(fault), command).unwrap();
         assert!(unavailable.alert && unavailable.report.is_some());
         assert!(

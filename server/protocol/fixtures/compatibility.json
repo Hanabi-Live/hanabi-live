@@ -31,10 +31,21 @@
     "input": {
       "type": "error",
       "message": "Loading lobby statistics failed",
-      "code": "lobby_read",
+      "code": "lobby_queue_full",
       "diagnosticId": "1"
     },
     "valid": true
+  },
+  {
+    "name": "notices name only known causes",
+    "direction": "server",
+    "command": "lobbyStatus",
+    "input": {
+      "type": "error",
+      "message": "Loading lobby statistics failed",
+      "code": "lobby_read"
+    },
+    "valid": false
   },
   {
     "name": "failed lobby reads cannot omit their explanation",

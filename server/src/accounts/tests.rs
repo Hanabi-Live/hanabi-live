@@ -173,7 +173,10 @@ async fn login_requires_matching_release_sha_or_bot_postgres() {
         assert!(body.contains("outdated version"));
         assert!(body.contains(&version));
         let payload: Value = serde_json::from_str(&body).unwrap();
-        assert_eq!(payload["code"], hanabi_protocol::OUTDATED_CLIENT_CODE);
+        assert_eq!(
+            payload["code"],
+            hanabi_protocol::NoticeCode::OutdatedClient.name()
+        );
     }
     db.close().await;
 }
@@ -656,7 +659,7 @@ async fn an_unknown_username_creates_an_account_only_when_asked_postgres() {
     let (status, _, body) = request(&app, "POST", "/login", login, None, false).await;
     assert_eq!(status, StatusCode::UNAUTHORIZED, "{body}");
     let error: Value = serde_json::from_str(&body).unwrap();
-    assert_eq!(error["code"], hanabi_protocol::NO_ACCOUNT_CODE);
+    assert_eq!(error["code"], hanabi_protocol::NoticeCode::NoAccount.name());
     let exists = async || {
         sqlx::query_scalar!("SELECT id FROM users WHERE username=$1", "Newcomer")
             .fetch_optional(&db.pool)

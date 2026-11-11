@@ -28,8 +28,6 @@ export const MAX_TIME_PER_TURN_SECONDS = 86_400;
 export const TYPING_TIMEOUT_MS = 2000;
 export const MAX_SEED_LENGTH = 32;
 export const DEFAULT_TABLE_NAME_SUFFIX = "'s table";
-export const OUTDATED_CLIENT_CODE = "outdated_client";
-export const NO_ACCOUNT_CODE = "no_account";
 
 /**
  * A column of the public game lists, which clients sort by `col[index]` and filter by
@@ -476,6 +474,63 @@ export const initSchema = z
     tableId: tableIdSchema,
   })
   .readonly();
+
+/**
+ * The typed cause of a failure that a notice reports.
+ */
+export const noticeCodeSchema = z.enum([
+  "archive_inconsistent_players",
+  "archive_invalid_action",
+  "archive_invalid_seed",
+  "archive_missing_seed",
+  "archive_unknown_character",
+  "archive_unknown_variant",
+  "command_failed",
+  "connection_limit",
+  "database_connection_failed",
+  "database_constraint_failed",
+  "database_duplicate",
+  "database_error",
+  "database_lock_timeout",
+  "database_pool_timeout",
+  "database_query_cancelled",
+  "database_query_timeout",
+  "database_reference_conflict",
+  "database_result_invalid",
+  "database_transaction_conflict",
+  "database_unavailable",
+  "discord_announcement_timeout",
+  "discord_channel_invalid",
+  "discord_configuration",
+  "discord_role_missing",
+  "internal_operation_failed",
+  "live_state_unavailable",
+  "lobby_load_timeout",
+  "lobby_queue_full",
+  "no_account",
+  "operation_timeout",
+  "outdated_client",
+  "password_processing_busy",
+  "password_processing_failed",
+  "password_rate_limited",
+  "persistence_uncertain",
+  "record_not_found",
+  "server_data_invalid",
+  "server_draining",
+  "server_io_error",
+  "server_unavailable",
+  "session_generation_exhausted",
+  "session_replaced",
+  "table_failed",
+  "table_unreadable",
+  "upstream_connection_failed",
+  "upstream_http_error",
+  "upstream_request_invalid",
+  "upstream_response_invalid",
+  "upstream_timeout",
+  "upstream_unauthorized",
+  "worker_failed",
+]);
 export const lobbyStatusSchema = z.discriminatedUnion("type", [
   z.strictObject({ type: z.literal("loading") }).readonly(),
   z
@@ -483,7 +538,7 @@ export const lobbyStatusSchema = z.discriminatedUnion("type", [
       /**
        * The typed cause of a server failure.
        */
-      code: z.string().min(1).optional(),
+      code: noticeCodeSchema.optional(),
       diagnosticId: z.string().min(1).optional(),
       message: z.string().min(1),
       type: z.literal("error"),
@@ -501,7 +556,7 @@ export const loginRequestSchema = z
   .strictObject({
     /**
      * Creates the account if the username is free. Without it, an unknown username fails with
-     * `NO_ACCOUNT_CODE`, so that a typo does not create an account. Bots do not need it.
+     * `NoticeCode::NoAccount`, so that a typo does not create an account. Bots do not need it.
      */
     createAccount: z.boolean().default(false),
     /**
@@ -578,7 +633,7 @@ export const noticeSchema = z
     /**
      * The typed cause of a server failure.
      */
-    code: z.string().min(1).optional(),
+    code: noticeCodeSchema.optional(),
     diagnosticId: z.string().min(1).optional(),
     message: z.string().min(1),
   })

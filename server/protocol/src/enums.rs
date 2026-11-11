@@ -263,5 +263,95 @@ pub enum Status {
     SharedReplay,
 }
 
+/// Defines `NoticeCode` and the name of each code on the wire. The clients' schema cannot describe
+/// each code, so their descriptions are comments.
+macro_rules! notice_codes {
+    ($($variant:ident => $name:literal,)+) => {
+        /// The typed cause of a failure that a notice reports.
+        #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize, JsonSchema)]
+        pub enum NoticeCode {
+            $(#[serde(rename = $name)] $variant,)+
+        }
+
+        impl NoticeCode {
+            /// The code's name on the wire.
+            pub const fn name(self) -> &'static str {
+                match self {
+                    $(Self::$variant => $name,)+
+                }
+            }
+        }
+    };
+}
+
+notice_codes! {
+    ArchiveInconsistentPlayers => "archive_inconsistent_players",
+    ArchiveInvalidAction => "archive_invalid_action",
+    ArchiveInvalidSeed => "archive_invalid_seed",
+    ArchiveMissingSeed => "archive_missing_seed",
+    ArchiveUnknownCharacter => "archive_unknown_character",
+    ArchiveUnknownVariant => "archive_unknown_variant",
+    // A command that failed for a reason the server did not anticipate. Its report keeps the
+    // server's own description, so the player can pass it on with the reference.
+    CommandFailed => "command_failed",
+    ConnectionLimit => "connection_limit",
+    DatabaseConnectionFailed => "database_connection_failed",
+    DatabaseConstraintFailed => "database_constraint_failed",
+    DatabaseDuplicate => "database_duplicate",
+    DatabaseError => "database_error",
+    DatabaseLockTimeout => "database_lock_timeout",
+    DatabasePoolTimeout => "database_pool_timeout",
+    DatabaseQueryCancelled => "database_query_cancelled",
+    DatabaseQueryTimeout => "database_query_timeout",
+    DatabaseReferenceConflict => "database_reference_conflict",
+    DatabaseResultInvalid => "database_result_invalid",
+    DatabaseTransactionConflict => "database_transaction_conflict",
+    DatabaseUnavailable => "database_unavailable",
+    DiscordAnnouncementTimeout => "discord_announcement_timeout",
+    DiscordChannelInvalid => "discord_channel_invalid",
+    DiscordConfiguration => "discord_configuration",
+    DiscordRoleMissing => "discord_role_missing",
+    // A failure that the report does not recognize.
+    InternalOperationFailed => "internal_operation_failed",
+    LiveStateUnavailable => "live_state_unavailable",
+    LobbyLoadTimeout => "lobby_load_timeout",
+    LobbyQueueFull => "lobby_queue_full",
+    // A login for a username that has no account, when the client did not ask to create one. The
+    // client asks the player to confirm before it creates the account.
+    NoAccount => "no_account",
+    OperationTimeout => "operation_timeout",
+    // A login or connection from a client of a different release. The client reloads the page.
+    OutdatedClient => "outdated_client",
+    PasswordProcessingBusy => "password_processing_busy",
+    PasswordProcessingFailed => "password_processing_failed",
+    // A password check that waits for earlier ones from the same address.
+    PasswordRateLimited => "password_rate_limited",
+    PersistenceUncertain => "persistence_uncertain",
+    RecordNotFound => "record_not_found",
+    ServerDataInvalid => "server_data_invalid",
+    // A command or request that arrives while the server starts or drains.
+    ServerDraining => "server_draining",
+    ServerIoError => "server_io_error",
+    ServerUnavailable => "server_unavailable",
+    SessionGenerationExhausted => "session_generation_exhausted",
+    // The same account connected somewhere else.
+    SessionReplaced => "session_replaced",
+    TableFailed => "table_failed",
+    TableUnreadable => "table_unreadable",
+    UpstreamConnectionFailed => "upstream_connection_failed",
+    UpstreamHttpError => "upstream_http_error",
+    UpstreamRequestInvalid => "upstream_request_invalid",
+    UpstreamResponseInvalid => "upstream_response_invalid",
+    UpstreamTimeout => "upstream_timeout",
+    UpstreamUnauthorized => "upstream_unauthorized",
+    WorkerFailed => "worker_failed",
+}
+
+impl std::fmt::Display for NoticeCode {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.write_str(self.name())
+    }
+}
+
 /// Every wire enum, for the TypeScript generator.
 pub const WIRE_ENUMS: &[WireEnum] = &[EndCondition::WIRE, GameListColumn::WIRE];

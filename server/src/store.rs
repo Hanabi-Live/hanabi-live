@@ -1183,7 +1183,8 @@ mod tests {
             )
             .await?;
             ensure!(
-                unreadable.len() == 1 && unreadable[0].code == "table_unreadable",
+                unreadable.len() == 1
+                    && unreadable[0].code == hanabi_protocol::NoticeCode::TableUnreadable,
                 "The unreadable table was not reported"
             );
             let (stop, stopped) = oneshot::channel();

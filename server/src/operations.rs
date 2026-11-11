@@ -68,14 +68,14 @@ async fn guard(State(control): State<Arc<Control>>, request: Request, next: Next
         if let Some(Err(Refusal::Unavailable)) = admission {
             crate::errors::Report::known(
                 crate::errors::http_operation("Localhost operation"),
-                "live_state_unavailable",
+                hanabi_protocol::NoticeCode::LiveStateUnavailable,
                 "Live-state recovery is unhealthy or ownership was lost. No new operation was admitted; inspect recovery before retrying.",
                 StatusCode::SERVICE_UNAVAILABLE,
             ).response(true)
         } else if let Some(Err(Refusal::NotAccepting)) = admission {
             crate::errors::Report::known(
                 crate::errors::http_operation("Localhost operation"),
-                crate::errors::SERVER_DRAINING,
+                hanabi_protocol::NoticeCode::ServerDraining,
                 "The server is draining for maintenance. Wait for the restart to complete.",
                 StatusCode::SERVICE_UNAVAILABLE,
             )

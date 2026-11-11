@@ -189,7 +189,7 @@ pub(super) fn load_lobby(app: Arc<App>, session: Arc<Session>) {
         let _session_slot = session_slot;
         let result = async {
             let _slot = slot.map_err(|_| crate::errors::Fault::new(
-                "lobby_queue_full", "The lobby read queue is full. Please retry statistics shortly.",
+                hanabi_protocol::NoticeCode::LobbyQueueFull, "The lobby read queue is full. Please retry statistics shortly.",
                 StatusCode::SERVICE_UNAVAILABLE))?;
             tokio::time::timeout(
                 LOBBY_LOAD_DEADLINE,
@@ -197,7 +197,7 @@ pub(super) fn load_lobby(app: Arc<App>, session: Arc<Session>) {
             )
             .await
             .map_err(|_| crate::errors::Fault::new(
-                "lobby_load_timeout",
+                hanabi_protocol::NoticeCode::LobbyLoadTimeout,
                 format!(
                     "Loading lobby statistics exceeded the {}-second deadline. Please retry statistics.",
                     LOBBY_LOAD_DEADLINE.as_secs()
@@ -248,7 +248,7 @@ pub(super) async fn websocket(
     upgrade: WebSocketUpgrade,
 ) -> Response {
     if !app.lifecycle.healthy() || !app.lifecycle.accepting() {
-        return crate::errors::Report::known("Opening a live connection", "server_unavailable",
+        return crate::errors::Report::known("Opening a live connection", hanabi_protocol::NoticeCode::ServerUnavailable,
             if app.lifecycle.healthy() { "The server is not accepting connections while it starts or drains for maintenance." } else { "Live-state recovery or ownership is unavailable. Wait for recovery before reconnecting." },
             StatusCode::SERVICE_UNAVAILABLE).response(true);
     }
@@ -300,7 +300,7 @@ pub(super) async fn websocket(
     let Ok(slot) = app.sockets.clone().try_acquire_owned() else {
         return crate::errors::Report::known(
             "Opening a live connection",
-            "connection_limit",
+            hanabi_protocol::NoticeCode::ConnectionLimit,
             "The server has reached its live-connection limit. Please retry shortly.",
             StatusCode::SERVICE_UNAVAILABLE,
         )
@@ -310,7 +310,7 @@ pub(super) async fn websocket(
         .generation
         .try_update(Ordering::Relaxed, Ordering::Relaxed, |id| id.checked_add(1))
     else {
-        return crate::errors::Report::known("Opening a live connection", "session_generation_exhausted",
+        return crate::errors::Report::known("Opening a live connection", hanabi_protocol::NoticeCode::SessionGenerationExhausted,
             "The server's session identifier space is exhausted. An administrator must restart the server.",
             StatusCode::SERVICE_UNAVAILABLE).response(true);
     };
@@ -467,7 +467,7 @@ async fn connection(
         if writer_session.was_superseded() {
             let report = crate::errors::Report::known(
                 "Keeping the live connection",
-                crate::errors::SESSION_REPLACED,
+                hanabi_protocol::NoticeCode::SessionReplaced,
                 "This account connected in another browser tab or window. Reconnect here only if you want to move the connection back.",
                 StatusCode::CONFLICT,
             );

@@ -27,7 +27,7 @@ pub struct LoginRequest {
     /// dark mode setting.
     pub dark_mode: bool,
     /// Creates the account if the username is free. Without it, an unknown username fails with
-    /// `NO_ACCOUNT_CODE`, so that a typo does not create an account. Bots do not need it.
+    /// `NoticeCode::NoAccount`, so that a typo does not create an account. Bots do not need it.
     pub create_account: bool,
 }
 

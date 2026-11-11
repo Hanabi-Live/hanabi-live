@@ -672,15 +672,6 @@ fn data_constants() -> String {
             serde_json::to_string(hanabi_protocol::DEFAULT_TABLE_NAME_SUFFIX)
                 .expect("a string serializes"),
         ),
-        (
-            "OUTDATED_CLIENT_CODE",
-            serde_json::to_string(hanabi_protocol::OUTDATED_CLIENT_CODE)
-                .expect("a string serializes"),
-        ),
-        (
-            "NO_ACCOUNT_CODE",
-            serde_json::to_string(hanabi_protocol::NO_ACCOUNT_CODE).expect("a string serializes"),
-        ),
     ])
 }
 

@@ -1,8 +1,7 @@
 // The initial login page.
 
+import type { noticeCodeSchema } from "@hanabi-live/data";
 import {
-  NO_ACCOUNT_CODE,
-  OUTDATED_CLIENT_CODE,
   VERSION,
   errorDetails,
   httpError,
@@ -174,7 +173,7 @@ function send(
       if (login === undefined) {
         return;
       }
-      if (login === NO_ACCOUNT_CODE) {
+      if (login === "no_account") {
         if (newPassword === undefined) {
           $("#login-ajax").hide();
           $("#login-button").removeClass("disabled");
@@ -196,23 +195,23 @@ function send(
 
 /**
  * Resolves to undefined when the page is reloading to update an outdated client, and to
- * `NO_ACCOUNT_CODE` when the username has no account and we did not ask to create one.
+ * "no_account" when the username has no account and we did not ask to create one.
  */
 async function requestLogin(
   url: string,
   data: z.output<typeof loginRequestSchema>,
-): Promise<typeof NO_ACCOUNT_CODE | { body: unknown } | undefined> {
+): Promise<"no_account" | { body: unknown } | undefined> {
   const response = await fetch(url, {
     method: "POST",
     body: loginRequestBody(data),
   });
   if (!response.ok) {
     const code = await errorCode(response);
-    if (code === OUTDATED_CLIENT_CODE && reloadOutdatedClient()) {
+    if (code === "outdated_client" && reloadOutdatedClient()) {
       return undefined;
     }
-    if (code === NO_ACCOUNT_CODE) {
-      return NO_ACCOUNT_CODE;
+    if (code === "no_account") {
+      return code;
     }
     throw await httpError(response, "Logging in");
   }
@@ -220,7 +219,9 @@ async function requestLogin(
 }
 
 /** The `code` of an HTTP error response, if it has one. */
-async function errorCode(response: Response): Promise<string | undefined> {
+async function errorCode(
+  response: Response,
+): Promise<z.output<typeof noticeCodeSchema> | undefined> {
   try {
     const parsed = noticeSchema.safeParse(await response.clone().json());
     return parsed.success ? parsed.data.code : undefined;

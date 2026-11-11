@@ -5,6 +5,7 @@ use axum::{
     middleware::Next,
     response::{IntoResponse, Response},
 };
+use hanabi_protocol::NoticeCode;
 use serde_json::json;
 use std::{fmt, io};
 
@@ -31,15 +32,13 @@ tokio::task_local! {
     static LOBBY_READS: ();
 }
 
-/// The code of a password check that waits for earlier ones from the same address.
-pub const PASSWORD_RATE_LIMITED: &str = "password_rate_limited";
-/// The code of a command or request that arrives while the server starts or drains.
-pub const SERVER_DRAINING: &str = "server_draining";
-/// The code that tells a connection that the same account connected somewhere else.
-pub const SESSION_REPLACED: &str = "session_replaced";
 /// Codes that report the server working as intended, such as refusing work during a restart, so
 /// they are neither logged as failures nor posted as alerts.
-const REFUSALS: [&str; 3] = [PASSWORD_RATE_LIMITED, SERVER_DRAINING, SESSION_REPLACED];
+const REFUSALS: [NoticeCode; 3] = [
+    NoticeCode::PasswordRateLimited,
+    NoticeCode::ServerDraining,
+    NoticeCode::SessionReplaced,
+];
 
 pub async fn http_context(request: Request, next: Next) -> Response {
     let path = request
@@ -267,23 +266,16 @@ impl fmt::Display for Described {
 }
 impl std::error::Error for Described {}
 
-/// The code of a failure that the report does not recognize.
-pub const INTERNAL_OPERATION_FAILED: &str = "internal_operation_failed";
-
-/// The code of a command that failed for a reason the server did not anticipate. Its report keeps
-/// the server's own description, so the player can pass it on with the reference.
-pub const COMMAND_FAILED: &str = "command_failed";
-
 /// Only construct this with server-defined descriptions, never request values or raw errors.
 #[derive(Debug)]
 pub struct Fault {
-    pub code: &'static str,
+    pub code: NoticeCode,
     pub description: String,
     pub status: StatusCode,
 }
 
 impl Fault {
-    pub fn new(code: &'static str, description: impl Into<String>, status: StatusCode) -> Self {
+    pub fn new(code: NoticeCode, description: impl Into<String>, status: StatusCode) -> Self {
         Self {
             code,
             description: description.into(),
@@ -302,7 +294,7 @@ impl std::error::Error for Fault {}
 #[derive(Clone, Debug)]
 pub struct Report {
     pub operation: String,
-    pub code: &'static str,
+    pub code: NoticeCode,
     pub description: String,
     pub diagnostic_id: String,
     pub status: StatusCode,
@@ -311,7 +303,7 @@ pub struct Report {
 impl Report {
     pub fn known(
         operation: impl Into<String>,
-        code: &'static str,
+        code: NoticeCode,
         description: impl Into<String>,
         status: StatusCode,
     ) -> Self {
@@ -339,54 +331,54 @@ impl Report {
             (fault.code, fault.description.clone(), fault.status)
         } else if let Some(database) = error.downcast_ref::<sqlx::Error>() {
             match database {
-                sqlx::Error::PoolTimedOut => ("database_pool_timeout", format!("Waiting for an available database connection timed out{limit}. Please try again."), StatusCode::SERVICE_UNAVAILABLE),
-                sqlx::Error::PoolClosed => ("database_unavailable", "The database connection pool is closed. Please try again after the server recovers.".into(), StatusCode::SERVICE_UNAVAILABLE),
+                sqlx::Error::PoolTimedOut => (NoticeCode::DatabasePoolTimeout, format!("Waiting for an available database connection timed out{limit}. Please try again."), StatusCode::SERVICE_UNAVAILABLE),
+                sqlx::Error::PoolClosed => (NoticeCode::DatabaseUnavailable, "The database connection pool is closed. Please try again after the server recovers.".into(), StatusCode::SERVICE_UNAVAILABLE),
                 sqlx::Error::Database(database) => {
                     match database.code().as_deref() {
                         Some(sqlstate::QUERY_CANCELED) if database.message().contains("statement timeout") =>
-                            ("database_query_timeout", format!("The database query timed out{limit}. Please try again."), StatusCode::GATEWAY_TIMEOUT),
-                        Some(sqlstate::QUERY_CANCELED) => ("database_query_cancelled", "The database query was cancelled before it finished.".into(), StatusCode::SERVICE_UNAVAILABLE),
-                        Some(sqlstate::LOCK_NOT_AVAILABLE) => ("database_lock_timeout", "The database could not acquire the required lock in time.".into(), StatusCode::SERVICE_UNAVAILABLE),
-                        Some(sqlstate::UNIQUE_VIOLATION) => ("database_duplicate", "An existing record already uses a value that must be unique.".into(), StatusCode::CONFLICT),
-                        Some(sqlstate::FOREIGN_KEY_VIOLATION) => ("database_reference_conflict", "A related database record is missing or is still in use.".into(), StatusCode::CONFLICT),
-                        Some(sqlstate::CHECK_VIOLATION) => ("database_constraint_failed", "The requested change violates a database validation rule.".into(), StatusCode::CONFLICT),
-                        Some(sqlstate::SERIALIZATION_FAILURE | sqlstate::DEADLOCK_DETECTED) => ("database_transaction_conflict", "The database transaction was rolled back because another operation conflicted with it. Please try again.".into(), StatusCode::CONFLICT),
-                        Some(sqlstate::TOO_MANY_CONNECTIONS | sqlstate::ADMIN_SHUTDOWN | sqlstate::CRASH_SHUTDOWN | sqlstate::CANNOT_CONNECT_NOW) => ("database_unavailable", "The database is restarting or cannot accept connections.".into(), StatusCode::SERVICE_UNAVAILABLE),
+                            (NoticeCode::DatabaseQueryTimeout, format!("The database query timed out{limit}. Please try again."), StatusCode::GATEWAY_TIMEOUT),
+                        Some(sqlstate::QUERY_CANCELED) => (NoticeCode::DatabaseQueryCancelled, "The database query was cancelled before it finished.".into(), StatusCode::SERVICE_UNAVAILABLE),
+                        Some(sqlstate::LOCK_NOT_AVAILABLE) => (NoticeCode::DatabaseLockTimeout, "The database could not acquire the required lock in time.".into(), StatusCode::SERVICE_UNAVAILABLE),
+                        Some(sqlstate::UNIQUE_VIOLATION) => (NoticeCode::DatabaseDuplicate, "An existing record already uses a value that must be unique.".into(), StatusCode::CONFLICT),
+                        Some(sqlstate::FOREIGN_KEY_VIOLATION) => (NoticeCode::DatabaseReferenceConflict, "A related database record is missing or is still in use.".into(), StatusCode::CONFLICT),
+                        Some(sqlstate::CHECK_VIOLATION) => (NoticeCode::DatabaseConstraintFailed, "The requested change violates a database validation rule.".into(), StatusCode::CONFLICT),
+                        Some(sqlstate::SERIALIZATION_FAILURE | sqlstate::DEADLOCK_DETECTED) => (NoticeCode::DatabaseTransactionConflict, "The database transaction was rolled back because another operation conflicted with it. Please try again.".into(), StatusCode::CONFLICT),
+                        Some(sqlstate::TOO_MANY_CONNECTIONS | sqlstate::ADMIN_SHUTDOWN | sqlstate::CRASH_SHUTDOWN | sqlstate::CANNOT_CONNECT_NOW) => (NoticeCode::DatabaseUnavailable, "The database is restarting or cannot accept connections.".into(), StatusCode::SERVICE_UNAVAILABLE),
                         _ => {
                             let state = database.code().filter(|code| code.len() == sqlstate::LENGTH && code.bytes().all(|c| c.is_ascii_alphanumeric()));
-                            ("database_error", format!("The database rejected the operation (SQLSTATE {}).", state.as_deref().unwrap_or("unavailable")), StatusCode::INTERNAL_SERVER_ERROR)
+                            (NoticeCode::DatabaseError, format!("The database rejected the operation (SQLSTATE {}).", state.as_deref().unwrap_or("unavailable")), StatusCode::INTERNAL_SERVER_ERROR)
                         }
                     }
                 }
-                sqlx::Error::Io(_) | sqlx::Error::Tls(_) => ("database_connection_failed", "The server could not communicate with the database. The result of a write may be unconfirmed; do not repeat game actions.".into(), StatusCode::SERVICE_UNAVAILABLE),
-                sqlx::Error::RowNotFound => ("record_not_found", "The requested database record no longer exists.".into(), StatusCode::NOT_FOUND),
-                _ => ("database_result_invalid", "The database response could not be decoded or did not match the expected schema.".into(), StatusCode::INTERNAL_SERVER_ERROR),
+                sqlx::Error::Io(_) | sqlx::Error::Tls(_) => (NoticeCode::DatabaseConnectionFailed, "The server could not communicate with the database. The result of a write may be unconfirmed; do not repeat game actions.".into(), StatusCode::SERVICE_UNAVAILABLE),
+                sqlx::Error::RowNotFound => (NoticeCode::RecordNotFound, "The requested database record no longer exists.".into(), StatusCode::NOT_FOUND),
+                _ => (NoticeCode::DatabaseResultInvalid, "The database response could not be decoded or did not match the expected schema.".into(), StatusCode::INTERNAL_SERVER_ERROR),
             }
         } else if let Some(discord) = error.downcast_ref::<twilight_http::Error>() {
             use twilight_http::error::ErrorType;
             match discord.kind() {
                 ErrorType::RequestTimedOut => (
-                    "upstream_timeout",
+                    NoticeCode::UpstreamTimeout,
                     "Discord did not respond before the request deadline.".into(),
                     StatusCode::GATEWAY_TIMEOUT,
                 ),
                 ErrorType::RequestError | ErrorType::RequestCanceled => (
-                    "upstream_connection_failed",
+                    NoticeCode::UpstreamConnectionFailed,
                     "The server could not reach Discord.".into(),
                     StatusCode::BAD_GATEWAY,
                 ),
                 ErrorType::Response { status, .. } => (
-                    "upstream_http_error",
+                    NoticeCode::UpstreamHttpError,
                     format!("Discord returned HTTP status: {}", status.get()),
                     StatusCode::BAD_GATEWAY,
                 ),
                 ErrorType::Unauthorized => (
-                    "upstream_unauthorized",
+                    NoticeCode::UpstreamUnauthorized,
                     "Discord rejected the bot token.".into(),
                     StatusCode::BAD_GATEWAY,
                 ),
                 _ => (
-                    "upstream_request_invalid",
+                    NoticeCode::UpstreamRequestInvalid,
                     "The Discord request could not be built or sent.".into(),
                     StatusCode::BAD_GATEWAY,
                 ),
@@ -399,19 +391,19 @@ impl Report {
                 .is_some()
         {
             (
-                "upstream_response_invalid",
+                NoticeCode::UpstreamResponseInvalid,
                 "A Discord response or gateway event could not be read.".into(),
                 StatusCode::BAD_GATEWAY,
             )
         } else if let Some(limited) = error.downcast_ref::<crate::accounts::TooMuchPasswordWork>() {
             (
-                PASSWORD_RATE_LIMITED,
+                NoticeCode::PasswordRateLimited,
                 limited.to_string(),
                 StatusCode::TOO_MANY_REQUESTS,
             )
         } else if let Some(overload) = error.downcast_ref::<crate::accounts::HashOverload>() {
             (
-                "password_processing_busy",
+                NoticeCode::PasswordProcessingBusy,
                 format!(
                     "Password processing is temporarily busy: {}. Please try again.",
                     overload.diagnostic()
@@ -420,7 +412,7 @@ impl Report {
             )
         } else if let Some(failure) = error.downcast_ref::<crate::accounts::HashFailure>() {
             (
-                "password_processing_failed",
+                NoticeCode::PasswordProcessingFailed,
                 format!(
                     "Password verification or storage failed: {}",
                     failure.diagnostic()
@@ -432,7 +424,7 @@ impl Report {
             .is_some()
         {
             (
-                "operation_timeout",
+                NoticeCode::OperationTimeout,
                 "The operation exceeded its processing deadline.".into(),
                 StatusCode::GATEWAY_TIMEOUT,
             )
@@ -454,24 +446,24 @@ impl Report {
                 _ => "A server input/output operation failed.",
             };
             (
-                "server_io_error",
+                NoticeCode::ServerIoError,
                 description.into(),
                 StatusCode::INTERNAL_SERVER_ERROR,
             )
         } else if error.downcast_ref::<serde_json::Error>().is_some() {
             (
-                "server_data_invalid",
+                NoticeCode::ServerDataInvalid,
                 "Stored data or a service response contains invalid JSON.".into(),
                 StatusCode::INTERNAL_SERVER_ERROR,
             )
         } else if error.downcast_ref::<tokio::task::JoinError>().is_some() {
             (
-                "worker_failed",
+                NoticeCode::WorkerFailed,
                 "A server worker stopped before completing the operation.".into(),
                 StatusCode::INTERNAL_SERVER_ERROR,
             )
         } else {
-            (INTERNAL_OPERATION_FAILED, "An unexpected server failure prevented completion. Report the diagnostic ID to an administrator.".into(), StatusCode::INTERNAL_SERVER_ERROR)
+            (NoticeCode::InternalOperationFailed, "An unexpected server failure prevented completion. Report the diagnostic ID to an administrator.".into(), StatusCode::INTERNAL_SERVER_ERROR)
         };
         Self::known(operation, code, description, status)
     }
@@ -487,7 +479,7 @@ impl Report {
     pub fn notice(&self) -> hanabi_protocol::Notice {
         hanabi_protocol::Notice {
             message: crate::accounts::escape_html(&self.text()),
-            code: Some(self.code.into()),
+            code: Some(self.code),
             diagnostic_id: Some(self.diagnostic_id.clone()),
         }
     }
@@ -521,7 +513,7 @@ impl Report {
                 self.status,
                 Json(hanabi_protocol::Notice {
                     message: self.text(),
-                    code: Some(self.code.into()),
+                    code: Some(self.code),
                     diagnostic_id: Some(self.diagnostic_id.clone()),
                 }),
             )
@@ -549,7 +541,7 @@ mod tests {
             "Loading game history",
             &anyhow::Error::from(sqlx::Error::PoolTimedOut).context(LobbyRead),
         );
-        assert_eq!(report.code, "database_pool_timeout");
+        assert_eq!(report.code, NoticeCode::DatabasePoolTimeout);
         assert!(
             report
                 .text()
@@ -576,7 +568,7 @@ mod tests {
             .extensions()
             .get::<Report>()
             .expect("attached report");
-        assert_eq!(attached.code, "database_pool_timeout");
+        assert_eq!(attached.code, NoticeCode::DatabasePoolTimeout);
         assert_eq!(attached.operation, "GET /api/v1/variants/{id}");
         assert_eq!(attached.diagnostic_id, report.diagnostic_id);
     }
@@ -584,13 +576,13 @@ mod tests {
     #[test]
     fn persistence_uncertainty_is_not_reported_as_safe_to_repeat() {
         let fault = Fault::new(
-            "persistence_uncertain",
+            NoticeCode::PersistenceUncertain,
             "The write may have been saved; do not repeat game actions.",
             StatusCode::SERVICE_UNAVAILABLE,
         );
         let error = anyhow::anyhow!("private checkpoint payload").context(fault);
         let report = Report::from_error("Playing a card", &error);
-        assert_eq!(report.code, "persistence_uncertain");
+        assert_eq!(report.code, NoticeCode::PersistenceUncertain);
         assert!(report.text().contains("may have been saved"));
         assert!(!report.text().contains("private checkpoint"));
     }
@@ -621,7 +613,7 @@ mod tests {
             "Loading game history",
             &anyhow::Error::from(error).context(LobbyRead),
         );
-        assert_eq!(report.code, "database_query_timeout");
+        assert_eq!(report.code, NoticeCode::DatabaseQueryTimeout);
         assert_eq!(report.status, StatusCode::GATEWAY_TIMEOUT);
         assert!(report.text().contains("timed out after 2 seconds"));
         #[expect(
@@ -659,7 +651,7 @@ mod tests {
             .await
             .unwrap_err();
         let report = Report::from_error("Loading data", &error.into());
-        assert_eq!(report.code, "database_query_cancelled");
+        assert_eq!(report.code, NoticeCode::DatabaseQueryCancelled);
         assert!(!report.text().contains("timed out"));
         drop(connection);
         db.close().await;
