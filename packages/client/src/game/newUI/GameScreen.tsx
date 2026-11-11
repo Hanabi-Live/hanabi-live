@@ -622,11 +622,13 @@ export function GameScreen({
                 role="status"
               >
                 <span className="tw:mr-auto">
-                  Showing turn {visibleState.turn.turnNum + 1}, in the past
+                  Replay: turn {visibleState.turn.turnNum + 1} of{" "}
+                  {ongoingGame.turn.turnNum + 1}
                 </span>
                 <button
                   aria-label="Previous turn"
-                  className="tw:size-9 tw:cursor-pointer tw:rounded-lg tw:border-0 tw:bg-card-ink tw:text-game-text"
+                  className="tw:size-9 tw:cursor-pointer tw:rounded-lg tw:border-0 tw:bg-card-ink tw:text-game-text tw:disabled:cursor-default tw:disabled:opacity-50"
+                  disabled={visibleState.turn.turnNum === 0}
                   onClick={() => {
                     replay.back();
                   }}
@@ -636,7 +638,10 @@ export function GameScreen({
                 </button>
                 <button
                   aria-label="Next turn"
-                  className="tw:size-9 tw:cursor-pointer tw:rounded-lg tw:border-0 tw:bg-card-ink tw:text-game-text"
+                  className="tw:size-9 tw:cursor-pointer tw:rounded-lg tw:border-0 tw:bg-card-ink tw:text-game-text tw:disabled:cursor-default tw:disabled:opacity-50"
+                  disabled={
+                    visibleState.turn.turnNum >= ongoingGame.turn.turnNum
+                  }
                   onClick={() => {
                     replay.forward();
                   }}
