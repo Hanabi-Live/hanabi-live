@@ -50,11 +50,11 @@ pub(super) fn wrong_phase(message: &ClientMessage) -> CommandError {
         | M::IdleReset(_)
         | M::Note(_)
         | M::TableTerminate(_)
-        | M::TableVoteForTermination(_) => "Not an ongoing game",
+        | M::TableTerminateVote(_) => "Not an ongoing game",
         M::ReplayAction(_) => "Not a replay",
         M::TableSuggest(_) | M::TableRestartDecline(_) => "Not a shared replay",
         M::TableRestart(_) => "Only the shared replay leader can restart",
-        M::Tag(_) | M::TagDelete(_) | M::TagsDeleteAll(_) => "No game",
+        M::Tag(_) | M::TagDelete(_) | M::TagDeleteAll(_) => "No game",
         _ => "This table does not accept that command now",
     };
     rejection!("{reason}")
@@ -985,8 +985,8 @@ impl TableActor {
             }
             ClientMessage::TableUnattend(_) => self.leave(session, false).await,
             ClientMessage::TableLeave(_) => self.leave(session, true).await,
-            ClientMessage::GetGameInit(_) => self.info(session, GameInfo::Init).await,
-            ClientMessage::GetGameState(_) => self.info(session, GameInfo::State).await,
+            ClientMessage::GameInitLoad(_) => self.info(session, GameInfo::Init).await,
+            ClientMessage::GameStateLoad(_) => self.info(session, GameInfo::State).await,
             ClientMessage::Loaded(_) => {
                 ensure_or_reject!(self.attending(&session), "Reattend before loading");
                 let mut next = self.candidate();

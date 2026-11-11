@@ -402,7 +402,7 @@ chatCommands.set("tagsdeleteall", (room: string) => {
     );
     return;
   }
-  globals.conn!.send("tagsDeleteAll", {
+  globals.conn!.send("tagDeleteAll", {
     tableID: globals.tableID,
   });
 });

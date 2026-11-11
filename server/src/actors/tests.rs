@@ -982,7 +982,7 @@ async fn full_table_mailboxes_do_not_block_hub_and_replacements_fence_private_ef
     sender
         .send(HubCommand::Client {
             session: old.clone(),
-            message: client_message("getGameInit", &json!({"tableID":42}))?,
+            message: client_message("gameInitLoad", &json!({"tableID":42}))?,
             reply,
         })
         .await?;

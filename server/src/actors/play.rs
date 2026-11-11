@@ -31,13 +31,13 @@ impl TableActor {
         match message {
             ClientMessage::PlayerAction(r) => self.action(session, r.action.into()).await,
             ClientMessage::TableTerminate(_) => self.terminate(session, false).await,
-            ClientMessage::TableVoteForTermination(_) => self.terminate(session, true).await,
+            ClientMessage::TableTerminateVote(_) => self.terminate(session, true).await,
             ClientMessage::Pause(r) => self.pause(session, r.setting).await,
             ClientMessage::IdleReset(_) => self.idle_reset(session).await,
             ClientMessage::Note(r) => self.note(session, r.order, &r.note).await,
             message @ (ClientMessage::Tag(_)
             | ClientMessage::TagDelete(_)
-            | ClientMessage::TagsDeleteAll(_)) => self.tag_message(session, message).await,
+            | ClientMessage::TagDeleteAll(_)) => self.tag_message(session, message).await,
             message => Err(wrong_phase(&message)),
         }
     }

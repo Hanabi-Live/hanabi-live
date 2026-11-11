@@ -106,9 +106,9 @@ databaseDescribe("normal-server protocol workload", () => {
         peer: ReturnType<typeof socketClient>,
         tableID: number,
       ) {
-        peer.send("getGameInit", { tableID });
+        peer.send("gameInitLoad", { tableID });
         const init = await peer.receive("init", SERVER_COMMAND_SCHEMAS.init);
-        peer.send("getGameState", { tableID });
+        peer.send("gameStateLoad", { tableID });
         const history = await peer.receive(
           "gameEventList",
           SERVER_COMMAND_SCHEMAS.gameEventList,

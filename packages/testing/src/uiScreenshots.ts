@@ -647,9 +647,9 @@ async function playGame(alice: Peer, bob: Peer): Promise<number> {
   const games = await Promise.all(
     peers.map(async (peer) => {
       await peer.receive("tableStarted", SERVER_COMMAND_SCHEMAS.tableStarted);
-      peer.send("getGameInit", { tableID });
+      peer.send("gameInitLoad", { tableID });
       const init = await peer.receive("init", SERVER_COMMAND_SCHEMAS.init);
-      peer.send("getGameState", { tableID });
+      peer.send("gameStateLoad", { tableID });
       const history = await peer.receive(
         "gameEventList",
         SERVER_COMMAND_SCHEMAS.gameEventList,
@@ -750,9 +750,9 @@ async function seed(address: string): Promise<Seed> {
   async function startGame() {
     bob.send("tableStart", { tableID });
     await bob.receive("tableStarted", SERVER_COMMAND_SCHEMAS.tableStarted);
-    bob.send("getGameInit", { tableID });
+    bob.send("gameInitLoad", { tableID });
     const init = await bob.receive("init", SERVER_COMMAND_SCHEMAS.init);
-    bob.send("getGameState", { tableID });
+    bob.send("gameStateLoad", { tableID });
     const { events } = await bob.receive(
       "gameEventList",
       SERVER_COMMAND_SCHEMAS.gameEventList,

@@ -49,10 +49,10 @@ pub fn route(message: &ClientMessage) -> Route {
         | M::IdleReset(r)
         | M::TableUnattend(r)
         | M::TableTerminate(r)
-        | M::TableVoteForTermination(r)
-        | M::GetGameInit(r)
-        | M::GetGameState(r)
-        | M::TagsDeleteAll(r)
+        | M::TableTerminateVote(r)
+        | M::GameInitLoad(r)
+        | M::GameStateLoad(r)
+        | M::TagDeleteAll(r)
         | M::Loaded(r) => r.table_id,
         M::TableJoin(r) => r.table_id,
         M::TableSetLeader(r) => r.table_id,

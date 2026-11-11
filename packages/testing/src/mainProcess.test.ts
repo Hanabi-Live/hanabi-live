@@ -200,9 +200,9 @@ databaseDescribe("compiled application entry point (rust)", () => {
         await bob.receive("tableStarted", SERVER_COMMAND_SCHEMAS.tableStarted);
 
         async function bootstrap(peer: ReturnType<typeof socketClient>) {
-          peer.send("getGameInit", { tableID });
+          peer.send("gameInitLoad", { tableID });
           const init = await peer.receive("init", SERVER_COMMAND_SCHEMAS.init);
-          peer.send("getGameState", { tableID });
+          peer.send("gameStateLoad", { tableID });
           const history = await peer.receive(
             "gameEventList",
             SERVER_COMMAND_SCHEMAS.gameEventList,
@@ -235,7 +235,7 @@ databaseDescribe("compiled application entry point (rust)", () => {
           action: { type: "play", order: card.order },
         });
         await active.receive("gameEvent", SERVER_COMMAND_SCHEMAS.gameEvent);
-        active.send("getGameState", { tableID });
+        active.send("gameStateLoad", { tableID });
         const acknowledged = await active.receive(
           "gameEventList",
           SERVER_COMMAND_SCHEMAS.gameEventList,
@@ -390,7 +390,7 @@ databaseDescribe("compiled application entry point (rust)", () => {
           text: "retained authored chat",
         });
         if (signal === undefined && domain === "localhost") {
-          replacement.send("tableVoteForTermination", {
+          replacement.send("tableTerminateVote", {
             tableID,
           });
           await replacement.receive(
@@ -404,7 +404,7 @@ databaseDescribe("compiled application entry point (rust)", () => {
             SERVER_COMMAND_SCHEMAS.voteChange,
             (data) => !data.vote && data.votes === 1 && data.votesNeeded === 2,
           );
-          bob.send("tableVoteForTermination", {
+          bob.send("tableTerminateVote", {
             tableID,
           });
         } else {
@@ -434,7 +434,7 @@ databaseDescribe("compiled application entry point (rust)", () => {
         expect(replayPosition).toMatchObject({
           action: { type: "segment", segment: 1 },
         });
-        replacement.send("getGameState", { tableID });
+        replacement.send("gameStateLoad", { tableID });
         const replayHistory = await replacement.receive(
           "gameEventList",
           SERVER_COMMAND_SCHEMAS.gameEventList,
@@ -580,9 +580,9 @@ databaseDescribe("compiled application entry point (rust)", () => {
         peer: ReturnType<typeof socketClient>,
         id: number,
       ) {
-        peer.send("getGameInit", { tableID: id });
+        peer.send("gameInitLoad", { tableID: id });
         const init = await peer.receive("init", SERVER_COMMAND_SCHEMAS.init);
-        peer.send("getGameState", { tableID: id });
+        peer.send("gameStateLoad", { tableID: id });
         const history = await peer.receive(
           "gameEventList",
           SERVER_COMMAND_SCHEMAS.gameEventList,

@@ -270,7 +270,7 @@ async fn player_shadow_is_cleared_when_a_spectator_joins() -> Result<()> {
                 .iter()
                 .position(|p| p.id == UserId(player_id))
                 .unwrap();
-            h.send(index, "getGameInit", json!({"tableID":id})).await?;
+            h.send(index, "gameInitLoad", json!({"tableID":id})).await?;
             let init = h.receive(index, "init").await?;
             ensure!(
                 init["ourPlayerIndex"] == json!(seat)
@@ -355,7 +355,7 @@ async fn player_shadow_from_saved_games_is_cleared_on_reattend() -> Result<()> {
                 h.restart().await?;
             }
             h.send(1, "tableReattend", json!({"tableID":id})).await?;
-            h.send(1, "getGameInit", json!({"tableID":id})).await?;
+            h.send(1, "gameInitLoad", json!({"tableID":id})).await?;
             let init = h.receive(1, "init").await?;
             ensure!(
                 init["ourPlayerIndex"] == json!(bob) && init["mode"] == "playing",
@@ -500,7 +500,7 @@ async fn duck_clue_identity_is_private_in_live_history_and_recovery_but_not_comp
                 .await?;
             }
             for index in 0..5 {
-                h.send(index, "getGameState", json!({"tableID":id})).await?;
+                h.send(index, "gameStateLoad", json!({"tableID":id})).await?;
                 let history = h.receive(index, "gameEventList").await?;
                 let clues = history["events"]
                     .as_array()
@@ -535,7 +535,7 @@ async fn duck_clue_identity_is_private_in_live_history_and_recovery_but_not_comp
         );
         h.send(0, "tableTerminate", json!({"tableID":id})).await?;
         for index in 0..5 {
-            h.send(index, "getGameState", json!({"tableID":id})).await?;
+            h.send(index, "gameStateLoad", json!({"tableID":id})).await?;
             let history = h.receive(index, "gameEventList").await?;
             let clues = history["events"]
                 .as_array()
@@ -1018,7 +1018,7 @@ async fn spoiler_free_reviews_are_shared_replays_that_tell_everyone() -> Result<
         h.send(0, "replayCreate", request("shared")).await?;
         let id = h.receive(0, "tableStarted").await?["tableID"].clone();
         h.send(1, "tableSpectate", json!({"tableID":id})).await?;
-        h.send(1, "getGameInit", json!({"tableID":id})).await?;
+        h.send(1, "gameInitLoad", json!({"tableID":id})).await?;
         let init = h.receive(1, "init").await?;
         ensure!(
             init["mode"] == "sharedReplay" && init["sharedReplay"]["spoilerFree"] == true,
@@ -1072,7 +1072,7 @@ async fn shared_replays_of_older_games_start_when_their_table_is_created() -> Re
             h.replace(index).await?;
         }
         h.send(1, "tableSpectate", json!({"tableID":id})).await?;
-        h.send(1, "getGameInit", json!({"tableID":id})).await?;
+        h.send(1, "gameInitLoad", json!({"tableID":id})).await?;
         let init = h.receive(1, "init").await?;
         ensure!(
             init["sharedReplay"]["datetimeStarted"] == crate::model::timestamp(created),
@@ -1713,7 +1713,8 @@ async fn chat_read_positions_survive_game_start_reconnect_and_remake() -> Result
             h.frames(index)?;
             h.send(index, "tableReattend", json!({"tableID":id}))
                 .await?;
-            h.send(index, "getGameState", json!({"tableID":id})).await?;
+            h.send(index, "gameStateLoad", json!({"tableID":id}))
+                .await?;
             let history = h.receive(index, "chatList").await?;
             ensure!(
                 history["unread"] == i32::from(index != 0),
@@ -1724,7 +1725,7 @@ async fn chat_read_positions_survive_game_start_reconnect_and_remake() -> Result
         h.send(1, "tableUnattend", json!({"tableID":id})).await?;
         h.replace(1).await?;
         h.send(1, "tableReattend", json!({"tableID":id})).await?;
-        h.send(1, "getGameState", json!({"tableID":id})).await?;
+        h.send(1, "gameStateLoad", json!({"tableID":id})).await?;
         ensure!(
             h.receive(1, "chatList").await?["unread"] == 1,
             "Reconnect reset the chat read position"
@@ -1748,7 +1749,7 @@ async fn chat_read_positions_survive_game_start_reconnect_and_remake() -> Result
             h.replace(index).await?;
             h.send(index, "tableReattend", json!({"tableID":remade}))
                 .await?;
-            h.send(index, "getGameState", json!({"tableID":remade}))
+            h.send(index, "gameStateLoad", json!({"tableID":remade}))
                 .await?;
             let history = h.receive(index, "chatList").await?;
             let total = history["messages"]
@@ -1797,7 +1798,7 @@ async fn restart_leaves_out_players_who_are_done_playing() -> Result<()> {
             let declined = h.receive(index, "restartDeclined").await?;
             ensure!(declined["usernames"] == json!(["Carol"]), "{declined}");
         }
-        h.send(2, "getGameInit", json!({"tableID":id})).await?;
+        h.send(2, "gameInitLoad", json!({"tableID":id})).await?;
         let init = h.receive(2, "init").await?;
         ensure!(
             init["sharedReplay"]["restartDeclined"] == json!(["Carol"])
@@ -2173,7 +2174,7 @@ async fn replay_loading_keeps_names_neutral_and_never_starts_a_game_clock() -> R
             "Replay navigation advanced game clocks"
         );
         h.send(1, "tableSpectate", json!({"tableID":id})).await?;
-        h.send(1, "getGameState", json!({"tableID":id})).await?;
+        h.send(1, "gameStateLoad", json!({"tableID":id})).await?;
         ensure!(h.receive(1, "connected").await?["connected"] == json!([true, true]));
         h.send(1, "loaded", json!({"tableID":id})).await?;
         h.barrier(0).await?;
@@ -2657,8 +2658,8 @@ async fn tags_use_authoritative_sorted_frames_and_private_live_acknowledgements(
             "Replay tag action was not published"
         );
         h.frames(1)?;
-        h.send(0, "tagsDeleteAll", json!({"tableID":id})).await?;
-        h.send(1, "tagsDeleteAll", json!({"tableID":id})).await?;
+        h.send(0, "tagDeleteAll", json!({"tableID":id})).await?;
+        h.send(1, "tagDeleteAll", json!({"tableID":id})).await?;
         h.barrier(0).await?;
         h.frames(0)?;
         h.frames(1)?;
@@ -3238,7 +3239,7 @@ async fn saved_actions_store_null_for_a_missing_target_or_value() -> Result<()> 
         )
         .await?;
         for index in 0..2 {
-            h.send(index, "tableVoteForTermination", json!({"tableID":id}))
+            h.send(index, "tableTerminateVote", json!({"tableID":id}))
                 .await?;
         }
         h.barrier(0).await?;
@@ -3273,7 +3274,8 @@ async fn saved_actions_store_null_for_a_missing_target_or_value() -> Result<()> 
         )
         .await?;
         let replay = h.receive(0, "tableStarted").await?["tableID"].clone();
-        h.send(0, "getGameState", json!({"tableID":replay})).await?;
+        h.send(0, "gameStateLoad", json!({"tableID":replay}))
+            .await?;
         let history = h.receive(0, "gameEventList").await?;
         let events = history["events"].as_array().context("Missing actions")?;
         ensure!(

@@ -48,9 +48,9 @@ macro_rules! client_contracts {
             TableSpectate "tableSpectate" => TableSpectateRequest;
             TableUnattend "tableUnattend" => TableRef;
             TableTerminate "tableTerminate" => TableRef;
-            TableVoteForTermination "tableVoteForTermination" => TableRef;
-            GetGameInit "getGameInit" => TableRef;
-            GetGameState "getGameState" => TableRef;
+            TableTerminateVote "tableTerminateVote" => TableRef;
+            GameInitLoad "gameInitLoad" => TableRef;
+            GameStateLoad "gameStateLoad" => TableRef;
             Loaded "loaded" => TableRef;
             Setting "setting" => SettingRequest;
             Inactive "inactive" => InactiveRequest;
@@ -66,7 +66,7 @@ macro_rules! client_contracts {
             Note "note" => NoteRequest;
             Tag "tag" => TagRequest;
             TagDelete "tagDelete" => TagRequest;
-            TagsDeleteAll "tagsDeleteAll" => TableRef;
+            TagDeleteAll "tagDeleteAll" => TableRef;
             ReplayAction "replayAction" => ReplayAction;
         }
     };

@@ -56,7 +56,7 @@ describe("sending commands", () => {
         action: { type: "play", order: 1 },
       });
       expect(sockets[0]?.sent).toHaveLength(2);
-      initial.send("getGameState", { tableID: 123 });
+      initial.send("gameStateLoad", { tableID: 123 });
       expect(sockets[0]?.sent).toHaveLength(3);
       initial.setReady(true);
       initial.send("playerAction", {

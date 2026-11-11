@@ -287,7 +287,7 @@ function openConnection(isReconnect: boolean) {
             && globals.ui.globals.store !== undefined
             && !globals.ui.globals.state.finished
           ) {
-            conn.send("getGameState", { tableID: retained });
+            conn.send("gameStateLoad", { tableID: retained });
           } else {
             globals.ui?.destroy();
             globals.ui = undefined;

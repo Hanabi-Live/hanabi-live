@@ -66,7 +66,7 @@ impl TableActor {
             }
             message @ (ClientMessage::Tag(_)
             | ClientMessage::TagDelete(_)
-            | ClientMessage::TagsDeleteAll(_)) => self.tag_message(session, message).await,
+            | ClientMessage::TagDeleteAll(_)) => self.tag_message(session, message).await,
             message => Err(wrong_phase(&message)),
         }
     }
@@ -79,7 +79,7 @@ impl TableActor {
         match message {
             ClientMessage::Tag(r) => self.tag(session, &r.tag, TagOperation::Tag).await,
             ClientMessage::TagDelete(r) => self.tag(session, &r.tag, TagOperation::TagDelete).await,
-            ClientMessage::TagsDeleteAll(_) => {
+            ClientMessage::TagDeleteAll(_) => {
                 self.tag(session, "", TagOperation::TagsDeleteAll).await
             }
             message => Err(wrong_phase(&message)),

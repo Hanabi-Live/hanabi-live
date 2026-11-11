@@ -66,9 +66,9 @@ databaseDescribe("Rust actor durability and ownership", () => {
         );
         await bob.receive("tableStarted", SERVER_COMMAND_SCHEMAS.tableStarted);
         async function bootstrap(peer: ReturnType<typeof socketClient>) {
-          peer.send("getGameInit", { tableID });
+          peer.send("gameInitLoad", { tableID });
           const init = await peer.receive("init", SERVER_COMMAND_SCHEMAS.init);
-          peer.send("getGameState", { tableID });
+          peer.send("gameStateLoad", { tableID });
           const history = await peer.receive(
             "gameEventList",
             SERVER_COMMAND_SCHEMAS.gameEventList,
@@ -175,7 +175,7 @@ databaseDescribe("Rust actor durability and ownership", () => {
         // Resending the applied move is rejected: it is no longer this player's turn.
         replacement.send("playerAction", action);
         await replacement.receive("warning", SERVER_COMMAND_SCHEMAS.warning);
-        replacement.send("getGameState", { tableID });
+        replacement.send("gameStateLoad", { tableID });
         const onceOnly = await replacement.receive(
           "gameEventList",
           SERVER_COMMAND_SCHEMAS.gameEventList,
@@ -228,7 +228,7 @@ databaseDescribe("Rust actor durability and ownership", () => {
         ).toBe(true);
         returning.send("playerAction", action);
         await returning.receive("warning", SERVER_COMMAND_SCHEMAS.warning);
-        returning.send("getGameState", { tableID });
+        returning.send("gameStateLoad", { tableID });
         const duplicate = await returning.receive(
           "gameEventList",
           SERVER_COMMAND_SCHEMAS.gameEventList,

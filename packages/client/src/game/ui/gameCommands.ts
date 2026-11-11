@@ -113,7 +113,7 @@ gameCommands.set("finishOngoingGame", (data) => {
     )
   ) {
     // Completed replays may reveal clues; replace the restricted history before exporting it.
-    globals.lobby.conn!.send("getGameState", {
+    globals.lobby.conn!.send("gameStateLoad", {
       tableID: globals.lobby.tableID,
     });
   }
@@ -314,7 +314,7 @@ gameCommands.set("gameEventList", (data) => {
   }
 
   // The server has sent us the list of the game events that have occurred in the game thus far (in
-  // response to the "getGameState" command). Send this list to the reducers.
+  // response to the "gameStateLoad" command). Send this list to the reducers.
   globals.store!.dispatch({
     type: "gameActionList",
     actions: data.events.map(toGameAction),

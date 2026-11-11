@@ -173,7 +173,7 @@ export class TerminateMenu extends Konva.Group {
     this.voteName = vote.nameText;
     this.voteDetail = vote.detailText;
     vote.group.on("click tap", () => {
-      globals.lobby.conn!.send("tableVoteForTermination", {
+      globals.lobby.conn!.send("tableTerminateVote", {
         tableID: globals.lobby.tableID,
       });
       this.close();
