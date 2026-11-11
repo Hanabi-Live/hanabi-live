@@ -4,8 +4,8 @@ const MAX_REMEMBERED_DELETIONS = 10_000;
 export class LobbyChatDeletionState {
   private readonly deletedChatIDs = new Set<number>();
 
-  public markDeleted(chatID: number): void {
-    this.deletedChatIDs.add(chatID);
+  public markDeleted(chatId: number): void {
+    this.deletedChatIDs.add(chatId);
     if (this.deletedChatIDs.size > MAX_REMEMBERED_DELETIONS) {
       const oldestID = this.deletedChatIDs.values().next().value;
       if (oldestID !== undefined) {
@@ -15,13 +15,13 @@ export class LobbyChatDeletionState {
   }
 
   public shouldSkipMessage(
-    tableID: number | undefined,
-    chatID: number | undefined,
+    tableId: number | undefined,
+    chatId: number | undefined,
   ): boolean {
     return (
-      tableID === undefined
-      && chatID !== undefined
-      && this.deletedChatIDs.has(chatID)
+      tableId === undefined
+      && chatId !== undefined
+      && this.deletedChatIDs.has(chatId)
     );
   }
 }

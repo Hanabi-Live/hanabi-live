@@ -310,9 +310,9 @@ function submit() {
 
   // Seeds and replays are not saved, so that a new game does not accidentally repeat a deal.
   const seed = getText("#create-game-seed");
-  const replayGameID = parseIntSafe(getText("#create-game-replay-game-id"));
+  const replayGameId = parseIntSafe(getText("#create-game-replay-game-id"));
   const replayTurn =
-    replayGameID === undefined
+    replayGameId === undefined
       ? undefined
       : parseIntSafe(getText("#create-game-replay-turn"));
 
@@ -374,7 +374,7 @@ function submit() {
       detrimentalCharacters: getCheckbox("createTableDetrimentalCharacters"),
     },
     ...(seed !== "" && { seed }),
-    ...(replayGameID !== undefined && { replayGameID: replayGameID as GameID }),
+    ...(replayGameId !== undefined && { replayGameId: replayGameId as GameID }),
     ...(replayTurn !== undefined && { replayTurn }),
   };
 
@@ -384,7 +384,7 @@ function submit() {
     globals.conn!.send("tableCreate", { settings, password });
     store.dispatch(creatingTableChanged(true));
   } else {
-    globals.conn!.send("tableUpdate", { tableID: globals.tableID, settings });
+    globals.conn!.send("tableUpdate", { tableId: globals.tableId, settings });
   }
 }
 
@@ -392,7 +392,7 @@ export function acceptOptionsFromGuest(
   suggestion: NonNullable<ServerCommandData["chat"]["suggestion"]>,
 ): void {
   globals.conn!.send("tableUpdate", {
-    tableID: globals.tableID,
+    tableId: globals.tableId,
     settings: suggestion,
   });
 }
@@ -624,7 +624,7 @@ export function ready(): void {
   let gameName: string;
   let formValues: FormValues;
   let seed = "";
-  let replayGameID = "";
+  let replayGameId = "";
   let replayTurn = "";
 
   if (globals.game === undefined || globals.currentScreen === Screen.Lobby) {
@@ -647,14 +647,14 @@ export function ready(): void {
     gameName = settings.name;
     formValues = getFormValues(settings.options, settings.maxPlayers);
     seed = settings.seed ?? "";
-    replayGameID = settings.replayGameID?.toString() ?? "";
+    replayGameId = settings.replayGameId?.toString() ?? "";
     replayTurn = settings.replayTurn?.toString() ?? "";
 
     // Can't change the password once the game is created.
     $("#password-row").addClass("hidden");
 
     // Ensure create-game-table-number has a value.
-    $("#create-game-table-number").val(globals.tableID);
+    $("#create-game-table-number").val(globals.tableId);
   }
 
   // Set UI Elements and values.
@@ -662,7 +662,7 @@ export function ready(): void {
   $("#create-game-submit").text(buttonTitle);
   $("#createTableName").val(gameName);
   $("#create-game-seed").val(seed);
-  $("#create-game-replay-game-id").val(replayGameID);
+  $("#create-game-replay-game-id").val(replayGameId);
   $("#create-game-replay-turn").val(replayTurn);
 
   // Setting the variant dropdown is more complicated than filling in a value.
@@ -698,7 +698,7 @@ export function ready(): void {
   // Only show the extra options when one of them is selected or when the user asks for them.
   showExtraOptions(
     seed !== ""
-      || replayGameID !== ""
+      || replayGameId !== ""
       || EXTRA_OPTIONS.some((setting) => isChecked(setting)),
   );
 }

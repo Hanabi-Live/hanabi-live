@@ -10,7 +10,7 @@ import { Screen } from "./lobby/types/Screen.ts";
 
 interface SessionState {
   /** `NO_USER_ID` until the server's "welcome" message arrives. */
-  readonly userID: number;
+  readonly userId: number;
   readonly username: string;
   readonly friends: readonly string[];
   /** The users whom we have blocked. */
@@ -28,7 +28,7 @@ interface SessionState {
 }
 
 const initialState: SessionState = {
-  userID: NO_USER_ID,
+  userId: NO_USER_ID,
   username: "",
   friends: [],
   blocked: [],
@@ -44,7 +44,7 @@ const sessionSlice = createSlice({
   initialState,
   reducers: {
     userIDChanged(state, action: PayloadAction<number>) {
-      state.userID = action.payload;
+      state.userId = action.payload;
     },
     usernameChanged(state, action: PayloadAction<string>) {
       state.username = action.payload;

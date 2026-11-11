@@ -31,7 +31,7 @@ function message(
     username: "alice",
     source: "user",
     datetime: "2026-11-09T12:34:00.000Z",
-    tableID: TABLE_ID,
+    tableId: TABLE_ID,
     ...fields,
   };
 }

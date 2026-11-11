@@ -114,7 +114,7 @@ export function onSharedSegmentChanged(
     if (data.amLeader === true && previousData !== undefined) {
       // Tell the rest of the spectators to go to the turn that we are now on.
       globals.lobby.conn!.send("replayAction", {
-        tableID: globals.lobby.tableID,
+        tableId: globals.lobby.tableId,
         action: {
           type: "segment",
           segment: data.sharedSegment,
@@ -216,9 +216,9 @@ export function getGameIDLabel(state: State): string | undefined {
     return undefined;
   }
 
-  return state.replay.gameID === undefined
+  return state.replay.gameId === undefined
     ? "JSON replay"
-    : `ID: ${state.replay.gameID}`;
+    : `ID: ${state.replay.gameId}`;
 }
 
 export function onGameIDLabelChanged(text: string | undefined): void {

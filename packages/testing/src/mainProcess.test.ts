@@ -162,19 +162,19 @@ databaseDescribe("compiled application entry point (rust)", () => {
             },
           },
         });
-        const { tableID } = await alice.receive(
+        const { tableId } = await alice.receive(
           "joined",
           SERVER_COMMAND_SCHEMAS.joined,
         );
         bob.send("tableJoin", {
-          tableID,
+          tableId,
           password: "synthetic-table-password",
         });
         const bobJoined = await bob.receive(
           "joined",
           SERVER_COMMAND_SCHEMAS.joined,
         );
-        expect(bobJoined.tableID).toBe(tableID);
+        expect(bobJoined.tableId).toBe(tableId);
         const game = await bob.receive(
           "pregame",
           SERVER_COMMAND_SCHEMAS.pregame,
@@ -184,15 +184,15 @@ databaseDescribe("compiled application entry point (rust)", () => {
           "SmokeBob",
         ]);
         expect(game.players.map((player) => player.you)).toEqual([false, true]);
-        bob.send("tableLeave", { tableID });
+        bob.send("tableLeave", { tableId });
         const bobLeft = await bob.receive("left", SERVER_COMMAND_SCHEMAS.left);
-        expect(bobLeft.tableID).toBe(tableID);
+        expect(bobLeft.tableId).toBe(tableId);
         bob.send("tableJoin", {
-          tableID,
+          tableId,
           password: "synthetic-table-password",
         });
         await bob.receive("joined", SERVER_COMMAND_SCHEMAS.joined);
-        alice.send("tableStart", { tableID });
+        alice.send("tableStart", { tableId });
         await alice.receive(
           "tableStarted",
           SERVER_COMMAND_SCHEMAS.tableStarted,
@@ -200,14 +200,14 @@ databaseDescribe("compiled application entry point (rust)", () => {
         await bob.receive("tableStarted", SERVER_COMMAND_SCHEMAS.tableStarted);
 
         async function bootstrap(peer: ReturnType<typeof socketClient>) {
-          peer.send("gameInitLoad", { tableID });
+          peer.send("gameInitLoad", { tableId });
           const init = await peer.receive("init", SERVER_COMMAND_SCHEMAS.init);
-          peer.send("gameStateLoad", { tableID });
+          peer.send("gameStateLoad", { tableId });
           const history = await peer.receive(
             "gameEventList",
             SERVER_COMMAND_SCHEMAS.gameEventList,
           );
-          peer.send("loaded", { tableID });
+          peer.send("loaded", { tableId });
           await peer.receive(
             "connected",
             SERVER_COMMAND_SCHEMAS.connected,
@@ -231,11 +231,11 @@ databaseDescribe("compiled application entry point (rust)", () => {
         }
         expect(card.rank).toBeUndefined();
         active.send("playerAction", {
-          tableID,
+          tableId,
           action: { type: "play", order: card.order },
         });
         await active.receive("gameEvent", SERVER_COMMAND_SCHEMAS.gameEvent);
-        active.send("gameStateLoad", { tableID });
+        active.send("gameStateLoad", { tableId });
         const acknowledged = await active.receive(
           "gameEventList",
           SERVER_COMMAND_SCHEMAS.gameEventList,
@@ -327,8 +327,8 @@ databaseDescribe("compiled application entry point (rust)", () => {
               "welcome",
               SERVER_COMMAND_SCHEMAS.welcome,
             );
-            expect(returning.playingAtTables).toEqual([tableID]);
-            peer.send("tableReattend", { tableID });
+            expect(returning.playingAtTables).toEqual([tableId]);
+            peer.send("tableReattend", { tableId });
             await peer.receive(
               "tableStarted",
               SERVER_COMMAND_SCHEMAS.tableStarted,
@@ -377,21 +377,21 @@ databaseDescribe("compiled application entry point (rust)", () => {
           }
         }
         replacement.send("note", {
-          tableID,
+          tableId,
           order: 0,
           note: "retained note",
         });
         replacement.send("tag", {
-          tableID,
+          tableId,
           tag: "compiled smoke",
         });
         replacement.send("chat", {
-          tableID,
+          tableId,
           text: "retained authored chat",
         });
         if (signal === undefined && domain === "localhost") {
           replacement.send("tableTerminateVote", {
-            tableID,
+            tableId,
           });
           await replacement.receive(
             "voteChange",
@@ -405,26 +405,26 @@ databaseDescribe("compiled application entry point (rust)", () => {
             (data) => !data.vote && data.votes === 1 && data.votesNeeded === 2,
           );
           bob.send("tableTerminateVote", {
-            tableID,
+            tableId,
           });
         } else {
           replacement.send("tableTerminate", {
-            tableID,
+            tableId,
           });
         }
         const finished = await replacement.receive(
           "finishOngoingGame",
           SERVER_COMMAND_SCHEMAS.finishOngoingGame,
         );
-        assertDefined(finished.gameID, "The finished game was not saved.");
-        expect<number>(finished.gameID).toBe(checkpoint.game_id);
+        assertDefined(finished.gameId, "The finished game was not saved.");
+        expect<number>(finished.gameId).toBe(checkpoint.game_id);
         await replacement.receive(
           "gameHistoryAdded",
           SERVER_COMMAND_SCHEMAS.gameHistoryAdded,
-          (row) => row.gameID === finished.gameID,
+          (row) => row.gameId === finished.gameId,
         );
         replacement.send("replayAction", {
-          tableID,
+          tableId,
           action: { type: "segment", segment: 1 },
         });
         const replayPosition = await replacement.receive(
@@ -434,7 +434,7 @@ databaseDescribe("compiled application entry point (rust)", () => {
         expect(replayPosition).toMatchObject({
           action: { type: "segment", segment: 1 },
         });
-        replacement.send("gameStateLoad", { tableID });
+        replacement.send("gameStateLoad", { tableId });
         const replayHistory = await replacement.receive(
           "gameEventList",
           SERVER_COMMAND_SCHEMAS.gameEventList,
@@ -445,7 +445,7 @@ databaseDescribe("compiled application entry point (rust)", () => {
             .every((event) => event.rank !== undefined),
         ).toBe(true);
         expect(
-          await client`SELECT id FROM games WHERE id = ${finished.gameID}`,
+          await client`SELECT id FROM games WHERE id = ${finished.gameId}`,
         ).toHaveLength(1);
         expect(await client`SELECT id FROM games`).toEqual<unknown>([
           { id: checkpoint.game_id },
@@ -454,13 +454,13 @@ databaseDescribe("compiled application entry point (rust)", () => {
         expect(
           await client`SELECT user_id FROM chat_log WHERE message = 'retained authored chat'`,
         ).toHaveLength(1);
-        bob.send("tableUnattend", { tableID });
-        replacement.send("tableUnattend", { tableID });
+        bob.send("tableUnattend", { tableId });
+        replacement.send("tableUnattend", { tableId });
         const gone = await replacement.receive(
           "tableGone",
           SERVER_COMMAND_SCHEMAS.tableGone,
         );
-        expect(gone.tableID).toBe(tableID);
+        expect(gone.tableId).toBe(tableId);
         if (signal === undefined && domain === "localhost") {
           const banned = await fetch(`${operationsAddress}/ban`, {
             method: "POST",
@@ -564,30 +564,30 @@ databaseDescribe("compiled application entry point (rust)", () => {
           },
         },
       });
-      const { tableID } = await owner.receive(
+      const { tableId } = await owner.receive(
         "joined",
         SERVER_COMMAND_SCHEMAS.joined,
       );
       const players = peers.slice(0, 6);
       await Promise.all(
         players.slice(1).map(async (peer) => {
-          peer.send("tableJoin", { tableID });
+          peer.send("tableJoin", { tableId });
           await peer.receive("joined", SERVER_COMMAND_SCHEMAS.joined);
         }),
       );
-      owner.send("tableStart", { tableID });
+      owner.send("tableStart", { tableId });
       async function bootstrap(
         peer: ReturnType<typeof socketClient>,
         id: number,
       ) {
-        peer.send("gameInitLoad", { tableID: id });
+        peer.send("gameInitLoad", { tableId: id });
         const init = await peer.receive("init", SERVER_COMMAND_SCHEMAS.init);
-        peer.send("gameStateLoad", { tableID: id });
+        peer.send("gameStateLoad", { tableId: id });
         const history = await peer.receive(
           "gameEventList",
           SERVER_COMMAND_SCHEMAS.gameEventList,
         );
-        peer.send("loaded", { tableID: id });
+        peer.send("loaded", { tableId: id });
         return { init, history };
       }
       const games = await Promise.all(
@@ -596,7 +596,7 @@ databaseDescribe("compiled application entry point (rust)", () => {
             "tableStarted",
             SERVER_COMMAND_SCHEMAS.tableStarted,
           );
-          return await bootstrap(peer, tableID);
+          return await bootstrap(peer, tableId);
         }),
       );
       for (const game of games) {
@@ -610,7 +610,7 @@ databaseDescribe("compiled application entry point (rust)", () => {
         expect(game.init.characters).toHaveLength(6);
         expect(
           game.init.characters.every(
-            (character) => character.characterID !== undefined,
+            (character) => character.characterId !== undefined,
           ),
         ).toBe(true);
         const hand = game.history.events.filter(
@@ -625,12 +625,12 @@ databaseDescribe("compiled application entry point (rust)", () => {
           ),
         ).toBe(true);
       }
-      observer.send("tableSpectate", { tableID, shadowingPlayerIndex: 0 });
+      observer.send("tableSpectate", { tableId, shadowingPlayerIndex: 0 });
       await observer.receive(
         "tableStarted",
         SERVER_COMMAND_SCHEMAS.tableStarted,
       );
-      const shadow = await bootstrap(observer, tableID);
+      const shadow = await bootstrap(observer, tableId);
       expect(shadow.init).toMatchObject({
         mode: "shadowing",
         ourPlayerIndex: 0,
@@ -648,7 +648,7 @@ databaseDescribe("compiled application entry point (rust)", () => {
           arrivals.push(raw.toString().split(" ", 1)[0] ?? "");
         }
       });
-      owner.send("tableTerminate", { tableID });
+      owner.send("tableTerminate", { tableId });
       const finished = await owner.receive(
         "finishOngoingGame",
         SERVER_COMMAND_SCHEMAS.finishOngoingGame,
@@ -660,22 +660,22 @@ databaseDescribe("compiled application entry point (rust)", () => {
       expect(arrivals.indexOf("cardIdentities")).toBeLessThan(
         arrivals.indexOf("finishOngoingGame"),
       );
-      assertDefined(finished.gameID, "The finished game was not saved.");
+      assertDefined(finished.gameId, "The finished game was not saved.");
       expect(
-        await sql`SELECT seat FROM game_participants WHERE game_id=${finished.gameID}`,
+        await sql`SELECT seat FROM game_participants WHERE game_id=${finished.gameId}`,
       ).toHaveLength(6);
-      const exported = await fetch(`${address}/export/${finished.gameID}`);
+      const exported = await fetch(`${address}/export/${finished.gameId}`);
       expect(exported.status).toBe(200);
       const replayJSON = replayGameSchema.parse(await exported.json());
       expect(replayJSON.playerNames).toHaveLength(6);
       expect(replayJSON.options?.variantName).toBe("Rainbow (6 Suits)");
       for (const peer of peers) {
-        peer.send("tableUnattend", { tableID });
+        peer.send("tableUnattend", { tableId });
       }
       await owner.receive(
         "tableGone",
         SERVER_COMMAND_SCHEMAS.tableGone,
-        (message) => message.tableID === tableID,
+        (message) => message.tableId === tableId,
       );
       /* eslint-disable no-await-in-loop -- One client's replay imports must complete in wire order. */
       for (const source of ["id", "json"] as const) {
@@ -685,15 +685,15 @@ databaseDescribe("compiled application entry point (rust)", () => {
             ? {
                 type: source,
                 visibility: "solo",
-                gameID: finished.gameID,
+                gameId: finished.gameId,
               }
-            : { type: source, visibility: "shared", gameJSON: replayJSON },
+            : { type: source, visibility: "shared", gameJson: replayJSON },
         );
         const created = await owner.receive(
           "tableStarted",
           SERVER_COMMAND_SCHEMAS.tableStarted,
         );
-        const imported = await bootstrap(owner, created.tableID);
+        const imported = await bootstrap(owner, created.tableId);
         expect(imported.init.mode).toBe(
           source === "id" ? "replay" : "sharedReplay",
         );
@@ -734,11 +734,11 @@ databaseDescribe("compiled application entry point (rust)", () => {
           const returning = socketClient(address, owner.cookie);
           sockets.push(returning.socket);
           await returning.receive("welcome", SERVER_COMMAND_SCHEMAS.welcome);
-          returning.send("tableReattend", { tableID: pending.tableID });
+          returning.send("tableReattend", { tableId: pending.tableId });
           const pregame = await returning.receive(
             "pregame",
             SERVER_COMMAND_SCHEMAS.pregame,
-            (message) => message.tableID === pending.tableID,
+            (message) => message.tableId === pending.tableId,
           );
           expect(pregame).toMatchObject({
             passwordProtected: true,
@@ -755,21 +755,21 @@ databaseDescribe("compiled application entry point (rust)", () => {
             SERVER_COMMAND_SCHEMAS.welcome,
           );
           returningObserver.send("tableJoin", {
-            tableID: pending.tableID,
+            tableId: pending.tableId,
             password: "preserved-password",
           });
           await returningObserver.receive(
             "joined",
             SERVER_COMMAND_SCHEMAS.joined,
-            (message) => message.tableID === pending.tableID,
+            (message) => message.tableId === pending.tableId,
           );
-          returning.send("tableReattend", { tableID: created.tableID });
+          returning.send("tableReattend", { tableId: created.tableId });
           await returning.receive(
             "tableStarted",
             SERVER_COMMAND_SCHEMAS.tableStarted,
-            (message) => message.tableID === created.tableID,
+            (message) => message.tableId === created.tableId,
           );
-          const recovered = await bootstrap(returning, created.tableID);
+          const recovered = await bootstrap(returning, created.tableId);
           expect(recovered.init).toMatchObject({
             mode: "sharedReplay",
             sharedReplay: { segment: imported.init.sharedReplay?.segment },
@@ -778,17 +778,17 @@ databaseDescribe("compiled application entry point (rust)", () => {
           expect(recovered.init.characters).toEqual(imported.init.characters);
           expect(recovered.history.events).toEqual(imported.history.events);
           returningObserver.send("tableLeave", {
-            tableID: pending.tableID,
+            tableId: pending.tableId,
           });
-          returning.send("tableLeave", { tableID: pending.tableID });
+          returning.send("tableLeave", { tableId: pending.tableId });
           await returning.receive(
             "tableGone",
             SERVER_COMMAND_SCHEMAS.tableGone,
-            (message) => message.tableID === pending.tableID,
+            (message) => message.tableId === pending.tableId,
           );
           replayPeer = returning;
         }
-        replayPeer.send("tableUnattend", { tableID: created.tableID });
+        replayPeer.send("tableUnattend", { tableId: created.tableId });
         replayPeer.send("sync", {});
         await replayPeer.receive("synced", SERVER_COMMAND_SCHEMAS.synced);
       }

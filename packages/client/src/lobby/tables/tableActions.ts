@@ -19,7 +19,7 @@ export function tableSpectate(
   }
 
   globals.conn!.send("tableSpectate", {
-    tableID: table.tableID,
+    tableId: table.tableId,
     shadowingPlayerIndex,
   });
   // (We will get a "tableStart" response back from the server.)
@@ -34,10 +34,10 @@ export function tableJoin(table: Table): void {
   }
 
   if (table.passwordProtected) {
-    modals.askForPassword(table.tableID);
+    modals.askForPassword(table.tableId);
   } else {
     globals.conn!.send("tableJoin", {
-      tableID: table.tableID,
+      tableId: table.tableId,
     });
 
     // Prepare the Change Options dialog for guest.
@@ -52,7 +52,7 @@ export function tableReattend(table: Table): void {
   }
 
   globals.conn!.send("tableReattend", {
-    tableID: table.tableID,
+    tableId: table.tableId,
   });
   // (We will get either a "game" or a "tableStart" response back from the server, depending on if
   // the game has started or not.)

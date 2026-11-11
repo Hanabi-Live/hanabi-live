@@ -15,7 +15,7 @@ pub struct ChatRequest {
     #[schemars(length(min = 1))]
     pub text: String,
     /// The table whose chat the message is for. Absent means the lobby.
-    #[serde(rename = "tableID", skip_serializing_if = "Option::is_none")]
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub table_id: Option<TableId>,
 }
 
@@ -35,7 +35,7 @@ pub struct ChatPmHistoryRequest {
     #[schemars(range(min = -MAX_SAFE_INTEGER, max = MAX_SAFE_INTEGER))]
     pub amount: i64,
     /// The table whose chat the command was typed in. Absent means the lobby.
-    #[serde(rename = "tableID", skip_serializing_if = "Option::is_none")]
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub table_id: Option<TableId>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub username: Option<String>,
@@ -46,7 +46,7 @@ pub struct ChatPmHistoryRequest {
 pub struct ChatUserRequest {
     pub username: String,
     /// The table whose chat the command was typed in. Absent means the lobby.
-    #[serde(rename = "tableID", skip_serializing_if = "Option::is_none")]
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub table_id: Option<TableId>,
 }
 
@@ -54,21 +54,19 @@ pub struct ChatUserRequest {
 #[serde(default, rename_all = "camelCase", deny_unknown_fields)]
 pub struct ChatRoomRequest {
     /// The table whose chat the command was typed in. Absent means the lobby.
-    #[serde(rename = "tableID", skip_serializing_if = "Option::is_none")]
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub table_id: Option<TableId>,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct TableRef {
-    #[serde(rename = "tableID")]
     pub table_id: TableId,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct TableJoinRequest {
-    #[serde(rename = "tableID")]
     pub table_id: TableId,
     #[serde(default)]
     pub password: String,
@@ -77,7 +75,6 @@ pub struct TableJoinRequest {
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct TableSetLeaderRequest {
-    #[serde(rename = "tableID")]
     pub table_id: TableId,
     pub username: String,
 }
@@ -85,7 +82,6 @@ pub struct TableSetLeaderRequest {
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct TableSetVariantRequest {
-    #[serde(rename = "tableID")]
     pub table_id: TableId,
     pub variant_name: String,
 }
@@ -93,7 +89,6 @@ pub struct TableSetVariantRequest {
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct TableStartRequest {
-    #[serde(rename = "tableID")]
     pub table_id: TableId,
     /// The players that the owner saw seated. The server ignores a start from an outdated view.
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -104,7 +99,6 @@ pub struct TableStartRequest {
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct TableRestartRequest {
-    #[serde(rename = "tableID")]
     pub table_id: TableId,
     #[serde(default)]
     pub hide_pregame: bool,
@@ -114,7 +108,6 @@ pub struct TableRestartRequest {
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct TableRestartDeclineRequest {
-    #[serde(rename = "tableID")]
     pub table_id: TableId,
     pub declined: bool,
 }
@@ -122,7 +115,6 @@ pub struct TableRestartDeclineRequest {
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct TableSuggestRequest {
-    #[serde(rename = "tableID")]
     pub table_id: TableId,
     pub segment: Turn,
 }
@@ -130,7 +122,6 @@ pub struct TableSuggestRequest {
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct TableSpectateRequest {
-    #[serde(rename = "tableID")]
     pub table_id: TableId,
     /// The seat to shadow, if any.
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -202,7 +193,7 @@ pub struct GameHistoryOtherScoresRequest {
 pub struct TagSearchRequest {
     pub tag: String,
     /// The table whose chat the command was typed in. Absent means the lobby.
-    #[serde(rename = "tableID", skip_serializing_if = "Option::is_none")]
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub table_id: Option<TableId>,
 }
 
@@ -218,7 +209,6 @@ pub struct TableCreateRequest {
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct TableUpdateRequest {
-    #[serde(rename = "tableID")]
     pub table_id: TableId,
     #[serde(default)]
     pub settings: TableSettings,
@@ -243,7 +233,6 @@ pub enum ReplayVisibility {
 )]
 pub enum ReplayCreateRequest {
     Id {
-        #[serde(rename = "gameID")]
         game_id: GameId,
         visibility: ReplayVisibility,
         /// The seat to shadow, if any.
@@ -259,7 +248,6 @@ pub enum ReplayCreateRequest {
         spoiler_free: bool,
     },
     Json {
-        #[serde(rename = "gameJSON")]
         game_json: Box<ReplayGame>,
         visibility: ReplayVisibility,
         /// The seat to shadow, if any.
@@ -302,7 +290,6 @@ impl ReplayCreateRequest {
 #[derive(Clone, Copy, Debug, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct PlayerActionRequest {
-    #[serde(rename = "tableID")]
     pub table_id: TableId,
     pub action: PlayerAction,
 }
@@ -310,7 +297,6 @@ pub struct PlayerActionRequest {
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct PauseRequest {
-    #[serde(rename = "tableID")]
     pub table_id: TableId,
     pub setting: PauseSetting,
 }
@@ -328,7 +314,6 @@ pub enum PauseSetting {
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct NoteRequest {
-    #[serde(rename = "tableID")]
     pub table_id: TableId,
     pub order: CardOrder,
     pub note: String,
@@ -338,7 +323,6 @@ pub struct NoteRequest {
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct TagRequest {
-    #[serde(rename = "tableID")]
     pub table_id: TableId,
     pub tag: String,
 }
@@ -348,7 +332,6 @@ pub struct TagRequest {
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct ReplayAction {
-    #[serde(rename = "tableID")]
     pub table_id: TableId,
     pub action: ReplayLeaderAction,
 }

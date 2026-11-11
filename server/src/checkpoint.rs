@@ -6,7 +6,7 @@
 
 use crate::{
     game::Steps,
-    model::{NoteOwner, TableChat, TableSnapshot},
+    model::{FORMAT, NoteOwner, TableChat, TableSnapshot},
     state::MAX_CHECKPOINT_BYTES,
 };
 use anyhow::{Context, Result, bail, ensure};
@@ -299,6 +299,15 @@ pub fn decode(head: &str, parts: &[(String, String)]) -> Result<TableSnapshot> {
     if let Some((_, start)) = parts.iter().find(|(key, _)| key == GAME_START) {
         put_start(&mut head, start)?;
     }
+    let upgraded;
+    let parts = if head["format"] == FORMAT {
+        parts
+    } else {
+        let mut owned = parts.to_vec();
+        upgrade(&mut head, &mut owned)?;
+        upgraded = owned;
+        &upgraded
+    };
     let mut table: TableSnapshot = serde_json::from_value(head)?;
     let mut grouped: HashMap<&str, Vec<(&str, &str)>> = HashMap::new();
     for (key, part) in parts.iter().filter(|(key, _)| key != GAME_START) {
@@ -346,6 +355,72 @@ pub fn decode(head: &str, parts: &[(String, String)]) -> Result<TableSnapshot> {
     );
     table.validate()?;
     Ok(table)
+}
+
+/// Rewrites a table's head and parts in one format into the next one.
+type Upgrade = fn(&mut Value, &mut [(String, String)]) -> Result<()>;
+
+/// The formats that older servers wrote, each with the format after it and the upgrade between
+/// them. A graceful restart keeps the live tables that the deployed server saved, so remove a step
+/// only once no deployed server writes its format.
+const UPGRADES: &[(&str, &str, Upgrade)] = &[("hanabi-live-1", "hanabi-live-2", camel_case_ids)];
+
+/// Rewrites a table that an older server saved, one format at a time, into the current format.
+/// `head` holds the game's start.
+fn upgrade(head: &mut Value, parts: &mut [(String, String)]) -> Result<()> {
+    while head["format"] != FORMAT {
+        let (_, next, step) = UPGRADES
+            .iter()
+            .find(|(format, ..)| head["format"] == *format)
+            .with_context(|| format!("Unknown checkpoint format {}", head["format"]))?;
+        step(head, parts)?;
+        head["format"] = (*next).into();
+        if let Some(snapshot) = head.pointer_mut("/phase/snapshot") {
+            snapshot["format"] = (*next).into();
+        }
+    }
+    Ok(())
+}
+
+/// Applies `edit` to each of the parts with this prefix.
+fn edit_parts(
+    parts: &mut [(String, String)],
+    prefix: &str,
+    edit: impl Fn(&mut Value),
+) -> Result<()> {
+    for (key, part) in parts {
+        if key
+            .split_once('/')
+            .is_some_and(|(found, _)| found == prefix)
+        {
+            let mut value: Value = serde_json::from_str(part)?;
+            edit(&mut value);
+            *part = serde_json::to_string(&value)?;
+        }
+    }
+    Ok(())
+}
+
+/// Renames a field of an object, if it has it.
+fn rename(object: Option<&mut Value>, from: &str, to: &str) {
+    if let Some(object) = object.and_then(Value::as_object_mut)
+        && let Some(value) = object.remove(from)
+    {
+        object.insert(to.to_owned(), value);
+    }
+}
+
+/// Format 1 spelled the "ID" of the wire's ID fields in capitals, such as `tableID`.
+fn camel_case_ids(_: &mut Value, parts: &mut [(String, String)]) -> Result<()> {
+    edit_parts(parts, CHAT, |chat| {
+        rename(chat.get_mut("message"), "tableID", "tableId");
+        rename(chat.get_mut("message"), "chatID", "chatId");
+        rename(
+            chat.pointer_mut("/message/suggestion"),
+            "replayGameID",
+            "replayGameId",
+        );
+    })
 }
 
 /// What a save changes among a table's parts.

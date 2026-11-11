@@ -72,12 +72,12 @@ describe("replay URL loading", () => {
 
     parseAndGoto(welcome());
 
-    const gameJSON = replayGameSchema.parse(
+    const gameJson = replayGameSchema.parse(
       JSON.parse(expand(`${payload}${suffix}`)!),
     );
     expect(send).toHaveBeenCalledWith("replayCreate", {
       type: "json",
-      gameJSON: { ...gameJSON, seed },
+      gameJson: { ...gameJson, seed },
       visibility,
     });
     expect(setItem).toHaveBeenCalledWith(
@@ -130,16 +130,16 @@ describe("replay URL loading", () => {
     parseAndGoto(welcome());
 
     expect(send).toHaveBeenCalledWith("tableSpectate", {
-      tableID: 123,
+      tableId: 123,
       shadowingPlayerIndex,
     });
   });
 
-  const tableID = tableIdSchema.parse(123);
+  const tableId = tableIdSchema.parse(123);
 
   test.each([
-    ["/replay/456", { playingAtTables: [tableID] }],
-    ["/replay/456", { spectatingAtTable: { tableID } }],
+    ["/replay/456", { playingAtTables: [tableId] }],
+    ["/replay/456", { spectatingAtTable: { tableId } }],
   ])("route %s takes precedence over reconnecting", (pathname, data) => {
     const send = vi.spyOn(globals.conn!, "send");
     Object.defineProperty(globalThis, "location", {
@@ -152,7 +152,7 @@ describe("replay URL loading", () => {
     expect(send).toHaveBeenCalledTimes(1);
     expect(send).toHaveBeenCalledWith(
       "replayCreate",
-      expect.objectContaining({ gameID: 456, visibility: "solo" }),
+      expect.objectContaining({ gameId: 456, visibility: "solo" }),
     );
   });
 
@@ -165,10 +165,10 @@ describe("replay URL loading", () => {
         value: new URL(`https://hanab.live${pathname}`),
       });
 
-      parseAndGoto(welcome({ playingAtTables: [tableID] }));
+      parseAndGoto(welcome({ playingAtTables: [tableId] }));
 
       expect(send).toHaveBeenCalledTimes(1);
-      expect(send).toHaveBeenCalledWith("tableReattend", { tableID });
+      expect(send).toHaveBeenCalledWith("tableReattend", { tableId });
     },
   );
 

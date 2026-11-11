@@ -8,7 +8,7 @@ import type { z } from "zod";
 export type GameJSON = z.output<typeof replayGameSchema>;
 
 type ParsedGameJSON =
-  { readonly gameJSON: GameJSON } | { readonly error: string };
+  { readonly gameJson: GameJSON } | { readonly error: string };
 
 /** Parses game JSON that someone pasted or linked, in the format the server imports. */
 export function parseGameJSON(text: string): ParsedGameJSON {
@@ -20,6 +20,6 @@ export function parseGameJSON(text: string): ParsedGameJSON {
   }
   const result = replayGameSchema.safeParse(value);
   return result.success
-    ? { gameJSON: result.data }
+    ? { gameJson: result.data }
     : { error: `Invalid game JSON: ${validationErrorDetails(result.error)}` };
 }

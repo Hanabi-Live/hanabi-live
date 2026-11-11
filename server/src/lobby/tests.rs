@@ -41,7 +41,7 @@ async fn uptime_is_private_before_history_or_discord_publication_postgres() {
             "chat",
             &table.map_or_else(
                 || json!({"text":"/UpTiMe"}),
-                |table| json!({"text":"/UpTiMe","tableID":table}),
+                |table| json!({"text":"/UpTiMe","tableId":table}),
             ),
         )
         .unwrap();
@@ -292,7 +292,7 @@ async fn blocked_players_cannot_message_each_other_postgres() {
             &db.pool,
             from,
             &online,
-            "chatPM",
+            "chatPm",
             json!({"text":"hello","recipient":to}),
         )
         .await;
@@ -315,7 +315,7 @@ async fn blocked_players_cannot_message_each_other_postgres() {
         &db.pool,
         &bob,
         &online,
-        "chatPM",
+        "chatPm",
         json!({"text":"hello again","recipient":"Alice"}),
     )
     .await;
@@ -341,14 +341,14 @@ async fn lobby_private_messages_and_command_privacy_postgres() {
         &db.pool,
         &who,
         &online,
-        "chatPM",
+        "chatPm",
         json!({"text":" <secret> ","recipient":"bób"}),
     )
     .await;
     let message = self_data(&effects, "chat");
     assert_eq!(message["text"], "&lt;secret&gt;");
     assert_eq!(message["recipient"], "Bob");
-    assert!(message.get("chatID").is_none());
+    assert!(message.get("chatId").is_none());
     assert_eq!(effects.len(), 2);
     assert!(effects.iter().all(|effect| match effect {
         Effect::Publish(Publication::ToSelf(_)) => true,
@@ -378,11 +378,11 @@ async fn lobby_private_messages_and_command_privacy_postgres() {
         &db.pool,
         &who,
         &[],
-        "chatPMHistory",
-        json!({"amount":1,"username":"BOB","tableID":7}),
+        "chatPmHistory",
+        json!({"amount":1,"username":"BOB","tableId":7}),
     )
     .await;
-    let history = self_data(&result, "chatPMHistory");
+    let history = self_data(&result, "chatPmHistory");
     assert_eq!(history["messages"].as_array().unwrap().len(), 1);
     assert_eq!(history["messages"][0]["text"], "&lt;secret&gt;");
     let carol = caller(c, "Carol");
@@ -390,11 +390,11 @@ async fn lobby_private_messages_and_command_privacy_postgres() {
         &db.pool,
         &carol,
         &[],
-        "chatPMHistory",
+        "chatPmHistory",
         json!({"amount":10,"username":"Alice"}),
     )
     .await;
-    assert_eq!(self_data(&result, "chatPMHistory")["messages"], json!([]));
+    assert_eq!(self_data(&result, "chatPmHistory")["messages"], json!([]));
     for text in ["/not-a-command private", "/token extra", "/help"] {
         let result = run(&db.pool, &who, &[], "chat", json!({"text":text})).await;
         assert!(
@@ -408,7 +408,7 @@ async fn lobby_private_messages_and_command_privacy_postgres() {
         &who,
         &[],
         "chat",
-        json!({"text":"/ToKeN","tableID":42}),
+        json!({"text":"/ToKeN","tableId":42}),
     )
     .await;
     assert!(
@@ -424,7 +424,7 @@ async fn lobby_private_messages_and_command_privacy_postgres() {
             &who,
             &[],
             None,
-            crate::actors::client_message("chat", &json!({"text":"not lobby","tableID":42}))
+            crate::actors::client_message("chat", &json!({"text":"not lobby","tableId":42}))
                 .unwrap()
         )
         .await
@@ -438,7 +438,7 @@ async fn lobby_private_messages_and_command_privacy_postgres() {
             &who,
             &[],
             None,
-            crate::actors::client_message("chat", &json!({"text":"/findvariant","tableID":42}))
+            crate::actors::client_message("chat", &json!({"text":"/findvariant","tableId":42}))
                 .unwrap()
         )
         .await
@@ -478,7 +478,7 @@ async fn lobby_private_messages_and_command_privacy_postgres() {
         &db.pool,
         &who,
         &online,
-        "chatPM",
+        "chatPm",
         json!({"text":"muted","recipient":"Bob"}),
     )
     .await;
@@ -631,7 +631,7 @@ async fn lobby_directed_linked_seeds_and_histories_postgres() {
     )
     .await;
     let history = self_data(&result, "gameHistory");
-    assert_eq!(history[0]["gameID"], ga);
+    assert_eq!(history[0]["gameId"], ga);
     assert_eq!(history[0]["options"]["variantName"], "No Variant");
     assert_eq!(history[0]["playerNames"], json!(["Alice"]));
     // A page holds at least one game and at most `MAX_PAGE_SIZE`.
@@ -661,8 +661,8 @@ async fn lobby_directed_linked_seeds_and_histories_postgres() {
     )
     .await;
     let history = self_data(&result, "gameHistoryOtherScores");
-    assert_eq!(history["games"][0]["gameID"], gb);
-    assert_eq!(history["games"][1]["gameID"], ga);
+    assert_eq!(history["games"][0]["gameId"], gb);
+    assert_eq!(history["games"][1]["gameId"], ga);
     assert_eq!(
         (&history["offset"], &history["numGamesOnSeed"]),
         (&json!(0), &json!(2))
@@ -678,7 +678,7 @@ async fn lobby_directed_linked_seeds_and_histories_postgres() {
     .await;
     let history = self_data(&result, "gameHistoryOtherScores");
     assert_eq!(history["games"].as_array().unwrap().len(), 1);
-    assert_eq!(history["games"][0]["gameID"], ga);
+    assert_eq!(history["games"][0]["gameId"], ga);
     assert_eq!(
         (&history["offset"], &history["numGamesOnSeed"]),
         (&json!(1), &json!(2))

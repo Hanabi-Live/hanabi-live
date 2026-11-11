@@ -62,18 +62,18 @@ const { tableJoin } = await import("../tables/tableActions.ts");
 const TABLE_ID = tableIdSchema.parse(7);
 
 function user(
-  userID: number,
+  userId: number,
   name: string,
   status: Status = "lobby",
 ): ServerCommandData["user"] {
   return {
-    userID: userIdSchema.parse(userID),
+    userId: userIdSchema.parse(userId),
     username: name,
     status,
     hGroupConventions: false,
     bot: false,
     inactive: false,
-    ...(status !== "lobby" && { tableID: TABLE_ID }),
+    ...(status !== "lobby" && { tableId: TABLE_ID }),
   };
 }
 
@@ -140,7 +140,7 @@ describe("UsersList", () => {
 
     act(() => {
       store.dispatch(
-        userInactiveChanged({ userID: userIdSchema.parse(1), inactive: true }),
+        userInactiveChanged({ userId: userIdSchema.parse(1), inactive: true }),
       );
     });
 
@@ -212,7 +212,7 @@ describe("UsersList", () => {
   });
 
   test("links the status of users at a table, except from the pre-game", () => {
-    const table = { tableID: TABLE_ID } as ServerCommandData["table"];
+    const table = { tableId: TABLE_ID } as ServerCommandData["table"];
     store.dispatch(tablesListed([table]));
     store.dispatch(usersListed([user(1, "Alice", "pregame"), user(2, "Bob")]));
     renderList();

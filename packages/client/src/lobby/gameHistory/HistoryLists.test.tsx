@@ -31,7 +31,7 @@ function game(
   playerNames: readonly string[] = OUR_GAME_PLAYERS,
 ) {
   return {
-    gameID: id,
+    gameId: id,
     datetimeFinished: finished,
     numGamesOnSeed: 1,
     options: { numPlayers: 2, variantName: "No Variant" },

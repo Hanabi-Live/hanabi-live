@@ -65,7 +65,7 @@ const rustProgressPhaseSchema = z.discriminatedUnion("phase", [
 ]);
 
 export const rustProgressTableSchema = z.object({
-  format: z.literal("hanabi-live-1"),
+  format: z.literal("hanabi-live-2"),
   phase: rustProgressPhaseSchema,
 });
 
@@ -289,12 +289,12 @@ export async function login(
     .find((value) => value.startsWith("hanabi.sid="))
     ?.split(";", 1)[0];
   assertDefined(cookie, "Login did not return a session cookie.");
-  const userID = decodeSessionCookie(
+  const userId = decodeSessionCookie(
     cookie.slice("hanabi.sid=".length),
     "synthetic-process-smoke-secret-".repeat(8),
   );
-  expect(userID).toBeGreaterThan(0);
-  expect(body).toEqual({ userID });
+  expect(userId).toBeGreaterThan(0);
+  expect(body).toEqual({ userId });
   return cookie;
 }
 

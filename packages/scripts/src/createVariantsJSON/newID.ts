@@ -288,23 +288,23 @@ export function validateNewVariantIDs(
   const newVariantIDs = new Set();
 
   for (const variantJSON of variantsJSON) {
-    if (variantJSON.newID === "") {
+    if (variantJSON.newId === "") {
       throw new Error(
-        `Variant "${variantJSON.name}" is missing a "newID" property.`,
+        `Variant "${variantJSON.name}" is missing a "newId" property.`,
       );
     }
 
-    if (newVariantIDs.has(variantJSON.newID)) {
+    if (newVariantIDs.has(variantJSON.newId)) {
       console.error("variantJSON:", variantJSON);
       throw new Error(
-        `Variant "${variantJSON.name}" has a duplicate "newID" property of "${variantJSON.newID}". (See the previous object log.)`,
+        `Variant "${variantJSON.name}" has a duplicate "newId" property of "${variantJSON.newId}". (See the previous object log.)`,
       );
     }
 
-    newVariantIDs.add(variantJSON.newID);
+    newVariantIDs.add(variantJSON.newId);
 
     const reconstructedVariant = getVariantFromNewID(
-      variantJSON.newID,
+      variantJSON.newId,
       variantJSON.name,
       variantJSON.id,
       suitsIDMap,
@@ -317,7 +317,7 @@ export function validateNewVariantIDs(
       console.error("reconstructedVariant:", reconstructedVariant);
       console.error("--------------------------------------------------------");
       throw new Error(
-        `Variant "${variantJSON.name}" has a new ID of "${variantJSON.newID}" that was parsed incorrectly. (See the previous object logs.)`,
+        `Variant "${variantJSON.name}" has a new ID of "${variantJSON.newId}" that was parsed incorrectly. (See the previous object logs.)`,
       );
     }
   }
@@ -329,15 +329,15 @@ export function validateNewVariantIDs(
  * It cannot compute the name of the old ID, so those must be provided.
  */
 function getVariantFromNewID(
-  newID: string,
+  newId: string,
   name: string,
   oldID: number,
   suitsIDMap: ReadonlyMap<string, SuitJSON>,
 ): VariantJSON {
-  const [suitsString, ...variantModifiers] = newID.split(VARIANT_DELIMITER);
+  const [suitsString, ...variantModifiers] = newId.split(VARIANT_DELIMITER);
   assertDefined(
     suitsString,
-    `Failed to parse the suits string from the variant ID of: ${newID}`,
+    `Failed to parse the suits string from the variant ID of: ${newId}`,
   );
 
   const suitIDsWithModifiers = suitsString.split(SUIT_DELIMITER);
@@ -346,7 +346,7 @@ function getVariantFromNewID(
   const variant: Writeable<VariantJSON> = {
     name,
     id: oldID,
-    newID,
+    newId,
     suits,
   };
 
@@ -354,7 +354,7 @@ function getVariantFromNewID(
     const secondCharacter = variantModifier[1];
     assertDefined(
       secondCharacter,
-      `Failed to get the second character of the variant modifier for variant "${name}" with a "newID" of "${newID}" and a variant modifier of "${variantModifier}".`,
+      `Failed to get the second character of the variant modifier for variant "${name}" with a "newId" of "${newId}" and a variant modifier of "${variantModifier}".`,
     );
 
     const variantModifierRank = parseIntSafe(secondCharacter);
@@ -368,14 +368,14 @@ function getVariantFromNewID(
       && variantModifierRank !== START_CARD_RANK
     ) {
       throw new Error(
-        `The number in the variant modifier for variant "${name}" with a "newID" of "${newID}" and a variant modifier of "${variantModifier}" was not 1, 2, 3, 4, 5, or ${START_CARD_RANK}.`,
+        `The number in the variant modifier for variant "${name}" with a "newId" of "${newId}" and a variant modifier of "${variantModifier}" was not 1, 2, 3, 4, 5, or ${START_CARD_RANK}.`,
       );
     }
 
     assertEnumValue(
       variantModifier,
       VariantModifier,
-      `Unknown variant modifier of "${variantModifier}" in a variant ID of "${newID}".`,
+      `Unknown variant modifier of "${variantModifier}" in a variant ID of "${newId}".`,
       VARIANT_MODIFIER_SET,
     );
 

@@ -32,7 +32,7 @@
       "type": "error",
       "message": "Loading lobby statistics failed",
       "code": "lobby_read",
-      "diagnosticID": "1"
+      "diagnosticId": "1"
     },
     "valid": true
   },
@@ -96,7 +96,7 @@
   {
     "name": "private history defaults amount but preserves absent filters",
     "direction": "client",
-    "command": "chatPMHistory",
+    "command": "chatPmHistory",
     "input": {},
     "valid": true,
     "normalized": {
@@ -106,7 +106,7 @@
   {
     "name": "private history accepts signed safe boundaries",
     "direction": "client",
-    "command": "chatPMHistory",
+    "command": "chatPmHistory",
     "input": {
       "amount": -9007199254740991,
       "username": ""
@@ -116,7 +116,7 @@
   {
     "name": "private history rejects unsafe integers",
     "direction": "client",
-    "command": "chatPMHistory",
+    "command": "chatPmHistory",
     "input": {
       "amount": 9007199254740992
     },
@@ -125,7 +125,7 @@
   {
     "name": "private history rejects null filters",
     "direction": "client",
-    "command": "chatPMHistory",
+    "command": "chatPmHistory",
     "input": {
       "username": null
     },
@@ -134,7 +134,7 @@
   {
     "name": "native parser retains integral float token rejection",
     "direction": "client",
-    "command": "chatPMHistory",
+    "command": "chatPmHistory",
     "input": {
       "amount": 1.0
     },
@@ -153,11 +153,11 @@
     "direction": "client",
     "command": "tableJoin",
     "input": {
-      "tableID": 0
+      "tableId": 0
     },
     "valid": true,
     "normalized": {
-      "tableID": 0,
+      "tableId": 0,
       "password": ""
     }
   },
@@ -166,7 +166,7 @@
     "direction": "client",
     "command": "tableJoin",
     "input": {
-      "tableID": "1"
+      "tableId": "1"
     },
     "valid": false
   },
@@ -175,7 +175,7 @@
     "direction": "client",
     "command": "tableJoin",
     "input": {
-      "tableID": 1,
+      "tableId": 1,
       "password": null
     },
     "valid": false
@@ -185,7 +185,7 @@
     "direction": "client",
     "command": "tableSetVariant",
     "input": {
-      "tableID": 1,
+      "tableId": 1,
       "variantName": "No Variant"
     },
     "valid": true
@@ -195,7 +195,7 @@
     "direction": "client",
     "command": "tableSetVariant",
     "input": {
-      "tableID": 1
+      "tableId": 1
     },
     "valid": false
   },
@@ -204,7 +204,7 @@
     "direction": "client",
     "command": "tableSetVariant",
     "input": {
-      "tableID": 1,
+      "tableId": 1,
       "variantName": "No Variant",
       "options": {}
     },
@@ -215,7 +215,7 @@
     "direction": "client",
     "command": "tableStart",
     "input": {
-      "tableID": 1,
+      "tableId": 1,
       "intendedPlayerNames": ["a", "b", "c", "d", "e", "f", "g"]
     },
     "valid": false
@@ -225,7 +225,7 @@
     "direction": "client",
     "command": "tableStart",
     "input": {
-      "tableID": 1,
+      "tableId": 1,
       "intendedPlayerNames": ["Alice", ""]
     },
     "valid": false
@@ -235,7 +235,7 @@
     "direction": "client",
     "command": "tableSpectate",
     "input": {
-      "tableID": 1
+      "tableId": 1
     },
     "valid": true
   },
@@ -260,7 +260,7 @@
       "datetime": "2026-01-01T12:00:00.000Z",
       "username": "",
       "recipient": "",
-      "chatID": 9007199254740991
+      "chatId": 9007199254740991
     },
     "valid": true
   },
@@ -290,10 +290,10 @@
   {
     "name": "private history rejects an invalid table",
     "direction": "server",
-    "command": "chatPMHistory",
+    "command": "chatPmHistory",
     "input": {
       "messages": [],
-      "tableID": -1
+      "tableId": -1
     },
     "valid": false
   },
@@ -302,7 +302,7 @@
     "direction": "client",
     "command": "playerAction",
     "input": {
-      "tableID": 7,
+      "tableId": 7,
       "action": {
         "type": "colorClue",
         "target": 1,
@@ -316,7 +316,7 @@
     "direction": "client",
     "command": "playerAction",
     "input": {
-      "tableID": 7,
+      "tableId": 7,
       "action": {
         "type": "rankClue",
         "target": 1,
@@ -330,7 +330,7 @@
     "direction": "client",
     "command": "playerAction",
     "input": {
-      "tableID": 7,
+      "tableId": 7,
       "action": {
         "type": "pass",
         "target": 0
@@ -343,10 +343,10 @@
     "direction": "server",
     "command": "user",
     "input": {
-      "userID": 7,
+      "userId": 7,
       "username": "Alice",
       "status": "away",
-      "tableID": 3,
+      "tableId": 3,
       "hGroupConventions": false,
       "bot": false,
       "inactive": false
@@ -359,10 +359,10 @@
     "command": "userList",
     "input": [
       {
-        "userID": 7,
+        "userId": 7,
         "username": "Alice",
         "status": "playing",
-        "tableID": 3,
+        "tableId": 3,
         "hGroupConventions": false,
         "hGroupLevel": 3,
         "bot": false,
@@ -376,7 +376,7 @@
     "direction": "server",
     "command": "welcome",
     "input": {
-      "userID": 7,
+      "userId": 7,
       "username": "Alice",
       "muted": false,
       "firstTimeUser": false,
@@ -389,7 +389,7 @@
     },
     "valid": true,
     "normalized": {
-      "userID": 7,
+      "userId": 7,
       "username": "Alice",
       "muted": false,
       "firstTimeUser": false,
@@ -432,7 +432,7 @@
     "direction": "server",
     "command": "welcome",
     "input": {
-      "userID": 7,
+      "userId": 7,
       "username": "Alice",
       "muted": false,
       "firstTimeUser": false,
@@ -479,8 +479,8 @@
     "input": {
       "type": "json",
       "visibility": "solo",
-      "gameJSON": {
-        "gameID": 7,
+      "gameJson": {
+        "gameId": 7,
         "seed": "p2v0s1",
         "playerNames": ["Alice", "Bob"],
         "options": {
@@ -491,8 +491,8 @@
     "normalized": {
       "type": "json",
       "visibility": "solo",
-      "gameJSON": {
-        "gameID": 7,
+      "gameJson": {
+        "gameId": 7,
         "seed": "p2v0s1",
         "playerNames": ["Alice", "Bob"],
         "options": {
@@ -511,7 +511,7 @@
       "type": "json",
       "visibility": "shared",
       "joinExisting": true,
-      "gameJSON": {
+      "gameJson": {
         "seed": "p2v0s1"
       }
     },
@@ -524,7 +524,7 @@
     "input": {
       "type": "json",
       "visibility": "solo",
-      "gameJSON": {
+      "gameJson": {
         "seed": "p2v0s1",
         "source": "another tool"
       }
@@ -538,7 +538,7 @@
     "input": {
       "type": "json",
       "visibility": "solo",
-      "gameJSON": {
+      "gameJson": {
         "seed": "p2v0s1",
         "actions": [
           {
@@ -558,7 +558,7 @@
     "input": {
       "type": "json",
       "visibility": "solo",
-      "gameJSON": {
+      "gameJson": {
         "seed": "p2v0s1",
         "actions": [
           {
@@ -581,7 +581,7 @@
       "type": "json",
       "visibility": "solo",
       "spoilerFree": false,
-      "gameJSON": {
+      "gameJson": {
         "seed": "p2v0s1",
         "actions": [
           {
@@ -609,7 +609,7 @@
     "input": {
       "type": "json",
       "visibility": "solo",
-      "gameJSON": {
+      "gameJson": {
         "seed": "p2v0s1",
         "actions": [
           {
@@ -629,7 +629,7 @@
     "input": {
       "type": "json",
       "visibility": "solo",
-      "gameJSON": {
+      "gameJson": {
         "seed": "p2v0s1",
         "options": {
           "speedrun": null
@@ -656,9 +656,9 @@
     "direction": "server",
     "command": "table",
     "input": {
-      "tableID": 3,
+      "tableId": 3,
       "joined": true,
-      "ownerID": 7,
+      "ownerId": 7,
       "passwordProtected": false,
       "playerNames": ["Alice"],
       "progress": 0,
@@ -694,7 +694,7 @@
     "direction": "server",
     "command": "spectators",
     "input": {
-      "tableID": 3,
+      "tableId": 3,
       "spectators": [
         {
           "username": "Carol"
@@ -709,7 +709,7 @@
     "command": "gameHistory",
     "input": [
       {
-        "gameID": 12,
+        "gameId": 12,
         "options": {
           "variantName": "No Variant",
           "timed": false,
@@ -742,7 +742,7 @@
     "command": "gameHistory",
     "input": [
       {
-        "gameID": 12,
+        "gameId": 12,
         "options": {
           "variantName": "No Variant",
           "timed": false,
@@ -775,7 +775,7 @@
     "command": "gameHistory",
     "input": [
       {
-        "gameID": 12,
+        "gameId": 12,
         "options": {
           "variantName": "No Variant",
           "timed": false,
@@ -808,7 +808,7 @@
     "command": "gameHistory",
     "input": [
       {
-        "gameID": 12,
+        "gameId": 12,
         "options": {
           "variantName": "No Variant",
           "timed": false,
@@ -841,7 +841,7 @@
     "command": "gameHistory",
     "input": [
       {
-        "gameID": 12,
+        "gameId": 12,
         "options": {
           "variantName": "No Variant",
           "timed": false,
@@ -873,7 +873,7 @@
     "direction": "client",
     "command": "replayAction",
     "input": {
-      "tableID": 4,
+      "tableId": 4,
       "action": {
         "type": "hypoAction",
         "action": {
@@ -890,7 +890,7 @@
     "direction": "client",
     "command": "replayAction",
     "input": {
-      "tableID": 4,
+      "tableId": 4,
       "action": {
         "type": "segment",
         "segment": 2,
@@ -904,7 +904,7 @@
     "direction": "client",
     "command": "replayAction",
     "input": {
-      "tableID": 4,
+      "tableId": 4,
       "action": {
         "type": "segment"
       }
@@ -916,7 +916,7 @@
     "direction": "server",
     "command": "gameEvent",
     "input": {
-      "tableID": 3,
+      "tableId": 3,
       "event": {
         "type": "clue",
         "clue": {
@@ -935,7 +935,7 @@
     "direction": "server",
     "command": "gameEvent",
     "input": {
-      "tableID": 3,
+      "tableId": 3,
       "event": {
         "type": "clue",
         "giver": 0,
@@ -950,7 +950,7 @@
     "direction": "server",
     "command": "gameEvent",
     "input": {
-      "tableID": 3,
+      "tableId": 3,
       "event": {
         "type": "clue",
         "clue": {
@@ -969,7 +969,7 @@
     "direction": "server",
     "command": "gameEvent",
     "input": {
-      "tableID": 3,
+      "tableId": 3,
       "event": {
         "type": "clue",
         "clue": {
@@ -988,7 +988,7 @@
     "direction": "server",
     "command": "gameEvent",
     "input": {
-      "tableID": 3,
+      "tableId": 3,
       "event": {
         "type": "clue",
         "clue": {
@@ -1007,7 +1007,7 @@
     "direction": "server",
     "command": "gameEventList",
     "input": {
-      "tableID": 3,
+      "tableId": 3,
       "events": [
         {
           "type": "draw",
@@ -1028,7 +1028,7 @@
     "direction": "server",
     "command": "gameEvent",
     "input": {
-      "tableID": 3,
+      "tableId": 3,
       "event": {
         "type": "draw",
         "playerIndex": 0,
@@ -1043,7 +1043,7 @@
     "direction": "server",
     "command": "gameEvent",
     "input": {
-      "tableID": 3,
+      "tableId": 3,
       "event": {
         "type": "draw",
         "playerIndex": 6,
@@ -1059,7 +1059,7 @@
     "direction": "server",
     "command": "gameEvent",
     "input": {
-      "tableID": 3,
+      "tableId": 3,
       "event": {
         "type": "draw",
         "playerIndex": 0,
@@ -1075,7 +1075,7 @@
     "direction": "server",
     "command": "gameEvent",
     "input": {
-      "tableID": 3,
+      "tableId": 3,
       "event": {
         "type": "draw",
         "playerIndex": 0,
@@ -1091,7 +1091,7 @@
     "direction": "server",
     "command": "gameEvent",
     "input": {
-      "tableID": 3,
+      "tableId": 3,
       "event": {
         "type": "draw",
         "playerIndex": 0,
@@ -1107,7 +1107,7 @@
     "direction": "server",
     "command": "gameEvent",
     "input": {
-      "tableID": 3,
+      "tableId": 3,
       "event": {
         "type": "gameOver",
         "endCondition": "terminatedByPlayer",
@@ -1121,7 +1121,7 @@
     "direction": "server",
     "command": "gameEvent",
     "input": {
-      "tableID": 3,
+      "tableId": 3,
       "event": {
         "type": "gameOver",
         "endCondition": "victory",
@@ -1135,7 +1135,7 @@
     "direction": "server",
     "command": "gameEvent",
     "input": {
-      "tableID": 3,
+      "tableId": 3,
       "event": {
         "type": "playerTimes",
         "playerTimesMs": [1000],
@@ -1149,7 +1149,7 @@
     "direction": "client",
     "command": "replayAction",
     "input": {
-      "tableID": 4,
+      "tableId": 4,
       "action": {
         "type": "hypoAction",
         "action": {
@@ -1166,7 +1166,7 @@
     "direction": "client",
     "command": "replayAction",
     "input": {
-      "tableID": 4,
+      "tableId": 4,
       "action": {
         "type": "arrow",
         "target": "minEfficiency"
@@ -1179,7 +1179,7 @@
     "direction": "client",
     "command": "replayAction",
     "input": {
-      "tableID": 4,
+      "tableId": 4,
       "action": {
         "type": "arrow",
         "target": 12
@@ -1192,7 +1192,7 @@
     "direction": "client",
     "command": "replayAction",
     "input": {
-      "tableID": 4,
+      "tableId": 4,
       "action": {
         "type": "arrow"
       }
@@ -1204,7 +1204,7 @@
     "direction": "client",
     "command": "replayAction",
     "input": {
-      "tableID": 4,
+      "tableId": 4,
       "action": {
         "type": "arrow",
         "target": "nothing"
@@ -1217,7 +1217,7 @@
     "direction": "server",
     "command": "replayAction",
     "input": {
-      "tableID": 4,
+      "tableId": 4,
       "action": {
         "type": "arrow",
         "target": 66
@@ -1248,7 +1248,7 @@
     "direction": "server",
     "command": "gameEvent",
     "input": {
-      "tableID": 3,
+      "tableId": 3,
       "event": {
         "type": "turn",
         "num": -1

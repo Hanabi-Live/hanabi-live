@@ -25,7 +25,7 @@ export function initialState(metadata: GameMetadata): State {
       states: [],
       actions: [],
 
-      gameID: undefined,
+      gameId: undefined,
       shared: undefined,
       ownHypothetical: undefined,
       hypothetical: undefined,

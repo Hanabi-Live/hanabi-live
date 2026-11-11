@@ -51,7 +51,7 @@ function setLeader(player: string | undefined) {
   }
 
   globals.lobby.conn!.send("tableSetLeader", {
-    tableID: globals.lobby.tableID,
+    tableId: globals.lobby.tableId,
     username: player,
   });
 }

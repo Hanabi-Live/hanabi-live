@@ -32,7 +32,7 @@ enum TableGroup {
 }
 
 const tablesAdapter = createEntityAdapter({
-  selectId: (table: Table): number => table.tableID,
+  selectId: (table: Table): number => table.tableId,
 });
 
 const tablesSlice = createSlice({
@@ -108,7 +108,7 @@ function getSortKey({
     isOurGame(table) ? 0 : 1,
     hasFriends ? 0 : 1,
     getGroup(table),
-    table.tableID,
+    table.tableId,
   ];
 }
 

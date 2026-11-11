@@ -13,7 +13,6 @@ use super::*;
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct Clock {
-    #[serde(rename = "tableID")]
     pub table_id: TableId,
     #[schemars(with = "Vec<SafeInteger>", length(min = MIN_PLAYERS, max = MAX_PLAYERS))]
     pub player_times_ms: Vec<i64>,
@@ -28,7 +27,6 @@ pub struct Clock {
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct Connected {
-    #[serde(rename = "tableID")]
     pub table_id: TableId,
     #[schemars(length(min = MIN_PLAYERS, max = MAX_PLAYERS))]
     pub connected: Vec<bool>,
@@ -38,7 +36,6 @@ pub struct Connected {
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct IdleWarning {
-    #[serde(rename = "tableID")]
     pub table_id: TableId,
     /// How long until the game ends, unless someone takes a turn or keeps it going.
     #[schemars(range(min = 0, max = IDLE_TIMEOUT_MS))]
@@ -48,7 +45,6 @@ pub struct IdleWarning {
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct Pause {
-    #[serde(rename = "tableID")]
     pub table_id: TableId,
     /// The seat that paused the game. Absent when the game is not paused.
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -59,7 +55,6 @@ pub struct Pause {
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct VoteChange {
-    #[serde(rename = "tableID")]
     pub table_id: TableId,
     /// Whether the recipient voted.
     pub vote: bool,
@@ -85,7 +80,6 @@ pub struct CardIdentity {
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct CardIdentities {
-    #[serde(rename = "tableID")]
     pub table_id: TableId,
     pub identities: Vec<CardIdentity>,
 }
@@ -93,10 +87,9 @@ pub struct CardIdentities {
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct FinishOngoingGame {
-    #[serde(rename = "tableID")]
     pub table_id: TableId,
     /// Absent when the game was not saved.
-    #[serde(rename = "gameID", skip_serializing_if = "Option::is_none")]
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub game_id: Option<GameId>,
     pub shared_replay: SharedReplayInit,
 }
@@ -104,7 +97,6 @@ pub struct FinishOngoingGame {
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct TableStarted {
-    #[serde(rename = "tableID")]
     pub table_id: TableId,
     pub stage: GameStage,
 }
@@ -144,7 +136,6 @@ pub struct CardNote {
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct NoteList {
-    #[serde(rename = "tableID")]
     pub table_id: TableId,
     pub notes: Vec<PlayerNotes>,
 }
@@ -153,7 +144,6 @@ pub struct NoteList {
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct NoteListPlayer {
-    #[serde(rename = "tableID")]
     pub table_id: TableId,
     pub notes: Vec<String>,
 }
@@ -162,7 +152,6 @@ pub struct NoteListPlayer {
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct Note {
-    #[serde(rename = "tableID")]
     pub table_id: TableId,
     pub order: CardOrder,
     pub notes: Vec<CardNote>,
@@ -272,7 +261,6 @@ pub enum GameEvent {
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct GameEventMessage {
-    #[serde(rename = "tableID")]
     pub table_id: TableId,
     pub event: GameEvent,
 }
@@ -280,7 +268,6 @@ pub struct GameEventMessage {
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct GameEventList {
-    #[serde(rename = "tableID")]
     pub table_id: TableId,
     pub events: Vec<GameEvent>,
 }
@@ -290,7 +277,7 @@ pub struct GameEventList {
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct CharacterAssignment {
     /// Absent when the player has no character.
-    #[serde(rename = "characterID", skip_serializing_if = "Option::is_none")]
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub character_id: Option<CharacterId>,
     /// A value that some characters use, such as the rank or suit they may not clue. Absent for
     /// other characters.
@@ -316,7 +303,6 @@ pub enum ViewMode {
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct Init {
-    #[serde(rename = "tableID")]
     pub table_id: TableId,
     #[schemars(with = "Vec<Username>", length(min = MIN_PLAYERS, max = MAX_PLAYERS))]
     pub player_names: Vec<String>,
@@ -324,7 +310,7 @@ pub struct Init {
     pub our_player_index: PlayerIndex,
     pub mode: ViewMode,
     /// The game's ID, present only in a replay of a saved game.
-    #[serde(rename = "gameID", skip_serializing_if = "Option::is_none")]
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub game_id: Option<GameId>,
     pub has_custom_seed: bool,
     /// Absent for a game with its own deck instead of a seed, such as an imported one.

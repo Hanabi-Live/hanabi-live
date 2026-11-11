@@ -74,7 +74,7 @@ export function set(order: CardOrder, text: string): void {
   // Send the note to the server.
   if (!globals.state.finished && text !== oldNote) {
     globals.lobby.conn!.send("note", {
-      tableID: globals.lobby.tableID,
+      tableId: globals.lobby.tableId,
       order,
       note: text,
     });

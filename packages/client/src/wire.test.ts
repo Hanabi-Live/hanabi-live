@@ -8,7 +8,7 @@ import { toCardIdentity, toGameAction, toSoundType } from "./wire.ts";
 
 /** Validates a game event as the connection does. */
 function event(data: unknown) {
-  return SERVER_COMMAND_SCHEMAS.gameEvent.parse({ tableID: 1, event: data })
+  return SERVER_COMMAND_SCHEMAS.gameEvent.parse({ tableId: 1, event: data })
     .event;
 }
 
@@ -42,7 +42,7 @@ describe("server game events", () => {
   test("values outside the game's types are rejected", () => {
     expect(() =>
       SERVER_COMMAND_SCHEMAS.pause.parse({
-        tableID: 1,
+        tableId: 1,
         active: true,
         playerIndex: 6,
       }),
@@ -72,7 +72,7 @@ describe("server game events", () => {
 describe("card identities", () => {
   test("unknown suits and ranks stay undefined", () => {
     const [identity] = SERVER_COMMAND_SCHEMAS.cardIdentities.parse({
-      tableID: 1,
+      tableId: 1,
       identities: [{ rank: 7 }],
     }).identities;
     expect(toCardIdentity(identity!)).toEqual({

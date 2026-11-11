@@ -133,7 +133,7 @@ pub(super) async fn lobby_command(
     message: ClientMessage,
 ) -> CommandResult<Option<ClientMessage>> {
     // Only private messages need the list of online users.
-    let online = if matches!(message, ClientMessage::ChatPM(_)) {
+    let online = if matches!(message, ClientMessage::ChatPm(_)) {
         request(&app.hub, |reply| HubCommand::Directory {
             session: session.clone(),
             reply,
@@ -195,7 +195,7 @@ async fn discord_rendering(app: &App, text: &str) -> Option<String> {
 fn history_command(message: &ClientMessage) -> bool {
     matches!(
         message,
-        ClientMessage::GameHistoryEntry(_) | ClientMessage::GameHistoryOtherScores(_)
+        ClientMessage::GameHistory(_) | ClientMessage::GameHistoryOtherScores(_)
     )
 }
 
@@ -295,7 +295,7 @@ mod tests {
     use super::*;
     #[test]
     fn command_failures_show_rejections_as_they_are_and_report_everything_else() {
-        let command = r#"tableJoin {"tableID":1}"#;
+        let command = r#"tableJoin {"tableId":1}"#;
         let rejected = command_failure(rejection!("This table is full."), command).unwrap();
         assert_eq!(rejected.warning.message, "This table is full.");
         assert!(rejected.report.is_none() && !rejected.alert);

@@ -97,7 +97,7 @@ describe("WatchReplay", () => {
 
     expect(send).toHaveBeenCalledWith("replayCreate", {
       type: "id",
-      gameID: 42,
+      gameId: 42,
       visibility: "shared",
       spoilerFree: true,
     });

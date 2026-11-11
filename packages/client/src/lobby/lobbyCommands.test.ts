@@ -30,7 +30,7 @@ describe('the "left" command', () => {
       vi.mocked(pregame.hide).mockClear();
       globals.currentScreen = Screen[screen];
 
-      lobbyCommands.get("left")?.({ tableID: tableIdSchema.parse(1) });
+      lobbyCommands.get("left")?.({ tableId: tableIdSchema.parse(1) });
 
       expect(pregame.hide).toHaveBeenCalledTimes(calls);
     },

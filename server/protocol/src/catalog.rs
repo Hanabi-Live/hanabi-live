@@ -129,7 +129,6 @@ pub struct CatalogVariant {
     /// which will allow for custom user-defined variants.
     pub id: VariantId,
     /// A string that describes the variant. For example, "No Variant" is `R+Y+G+B+P`.
-    #[serde(rename = "newID")]
     #[schemars(length(min = 1))]
     pub new_id: String,
     #[schemars(length(min = 1))]
@@ -228,7 +227,7 @@ pub struct CatalogCharacter {
     #[schemars(extend("const" = true))]
     pub write_metadata_to_database: bool,
     /// Excluded from two-player games.
-    #[serde(default, rename = "not2P", skip_serializing_if = "is_false")]
+    #[serde(default, skip_serializing_if = "is_false")]
     #[schemars(extend("const" = true))]
     pub not_two_player: bool,
 }

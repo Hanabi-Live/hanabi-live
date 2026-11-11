@@ -1,6 +1,6 @@
 import type { GameHistoryEntry } from "../interfaces/GameHistoryEntry.ts";
 
-type CompletedGame = Pick<GameHistoryEntry, "gameID" | "datetimeFinished">;
+type CompletedGame = Pick<GameHistoryEntry, "gameId" | "datetimeFinished">;
 
 export function compareGameHistory(
   left: CompletedGame,
@@ -14,5 +14,5 @@ export function compareGameHistory(
       "Cannot sort game history with an invalid completion time.",
     );
   }
-  return difference === 0 ? right.gameID - left.gameID : difference;
+  return difference === 0 ? right.gameId - left.gameId : difference;
 }

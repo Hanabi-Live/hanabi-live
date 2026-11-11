@@ -170,11 +170,11 @@ export function expand(data: string): string | undefined {
     return undefined;
   }
 
-  const variantID = parseIntSafe(variantIDString);
-  if (variantID === undefined) {
+  const variantId = parseIntSafe(variantIDString);
+  if (variantId === undefined) {
     return undefined;
   }
-  const variant = getVariantByID(variantID);
+  const variant = getVariantByID(variantId);
 
   const original: GameJSON = {
     playerNames: [...players],

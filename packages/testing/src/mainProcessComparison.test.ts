@@ -49,7 +49,7 @@ databaseDescribe("normal-server protocol workload", () => {
     };
     let peakRSSKiB = 0;
     const completed: Array<{
-      gameID: number;
+      gameId: number;
       aliceCookie: string;
       bobCookie: string;
     }> = [];
@@ -94,9 +94,9 @@ databaseDescribe("normal-server protocol workload", () => {
 
       async function unattend(
         peer: ReturnType<typeof socketClient>,
-        tableID: number,
+        tableId: number,
       ) {
-        peer.send("tableUnattend", { tableID });
+        peer.send("tableUnattend", { tableId });
         // Unattend has no direct acknowledgement; use an ordinary ordered command.
         peer.send("sync", {});
         await peer.receive("synced", SERVER_COMMAND_SCHEMAS.synced);
@@ -104,17 +104,17 @@ databaseDescribe("normal-server protocol workload", () => {
 
       async function bootstrap(
         peer: ReturnType<typeof socketClient>,
-        tableID: number,
+        tableId: number,
       ) {
-        peer.send("gameInitLoad", { tableID });
+        peer.send("gameInitLoad", { tableId });
         const init = await peer.receive("init", SERVER_COMMAND_SCHEMAS.init);
-        peer.send("gameStateLoad", { tableID });
+        peer.send("gameStateLoad", { tableId });
         const history = await peer.receive(
           "gameEventList",
           SERVER_COMMAND_SCHEMAS.gameEventList,
         );
         if (init.mode !== "replay" && init.mode !== "sharedReplay") {
-          peer.send("loaded", { tableID });
+          peer.send("loaded", { tableId });
         }
         return { init, history };
       }
@@ -130,13 +130,13 @@ databaseDescribe("normal-server protocol workload", () => {
             let alice = await connect(aliceCookie);
             const bob = await connect(bobCookie);
             alice.send("tableCreate", { settings: { seed: SEED_SUFFIX } });
-            const { tableID } = await alice.receive(
+            const { tableId } = await alice.receive(
               "joined",
               SERVER_COMMAND_SCHEMAS.joined,
             );
-            bob.send("tableJoin", { tableID });
+            bob.send("tableJoin", { tableId });
             await bob.receive("joined", SERVER_COMMAND_SCHEMAS.joined);
-            alice.send("tableStart", { tableID });
+            alice.send("tableStart", { tableId });
             await alice.receive(
               "tableStarted",
               SERVER_COMMAND_SCHEMAS.tableStarted,
@@ -146,8 +146,8 @@ databaseDescribe("normal-server protocol workload", () => {
               SERVER_COMMAND_SCHEMAS.tableStarted,
             );
             const [a, b] = await Promise.all([
-              bootstrap(alice, tableID),
-              bootstrap(bob, tableID),
+              bootstrap(alice, tableId),
+              bootstrap(bob, tableId),
             ]);
             expect(
               [a.init.ourPlayerIndex, b.init.ourPlayerIndex].toSorted(
@@ -158,7 +158,7 @@ databaseDescribe("normal-server protocol workload", () => {
               const peer = turn % 2 === a.init.ourPlayerIndex ? alice : bob;
               const start = performance.now();
               peer.send("playerAction", {
-                tableID,
+                tableId,
                 action: { type: "play", order },
               });
               await peer.receive(
@@ -172,12 +172,12 @@ databaseDescribe("normal-server protocol workload", () => {
                 const reconnectStart = performance.now();
                 await close(alice);
                 alice = await connect(aliceCookie);
-                alice.send("tableReattend", { tableID });
+                alice.send("tableReattend", { tableId });
                 await alice.receive(
                   "tableStarted",
                   SERVER_COMMAND_SCHEMAS.tableStarted,
                 );
-                const restored = await bootstrap(alice, tableID);
+                const restored = await bootstrap(alice, tableId);
                 expect(restored.init.ourPlayerIndex).toBe(
                   a.init.ourPlayerIndex,
                 );
@@ -202,22 +202,22 @@ databaseDescribe("normal-server protocol workload", () => {
               SERVER_COMMAND_SCHEMAS.gameHistoryAdded,
               (entry) => entry.score === 25,
             );
-            const finished = await bootstrap(alice, tableID);
+            const finished = await bootstrap(alice, tableId);
             expect(finished.init.mode).toBe("sharedReplay");
             expect(
               finished.history.events.filter((event) => event.type === "play"),
             ).toHaveLength(25);
             assertDefined(
-              finished.init.gameID,
+              finished.init.gameId,
               "The finished game was not saved.",
             );
             completed.push({
-              gameID: finished.init.gameID,
+              gameId: finished.init.gameId,
               aliceCookie,
               bobCookie,
             });
             for (const peer of [alice, bob]) {
-              await unattend(peer, tableID);
+              await unattend(peer, tableId);
               await close(peer);
             }
           }
@@ -270,24 +270,24 @@ databaseDescribe("normal-server protocol workload", () => {
       const readStart = performance.now();
       async function readReplay(
         peer: ReturnType<typeof socketClient>,
-        gameID: number,
+        gameId: number,
       ) {
         peer.send("replayCreate", {
           type: "id",
           visibility: "solo",
-          gameID,
+          gameId,
         });
-        const { tableID } = await peer.receive(
+        const { tableId } = await peer.receive(
           "tableStarted",
           SERVER_COMMAND_SCHEMAS.tableStarted,
         );
-        const replay = await bootstrap(peer, tableID);
-        expect<number | undefined>(replay.init.gameID).toBe(gameID);
+        const replay = await bootstrap(peer, tableId);
+        expect<number | undefined>(replay.init.gameId).toBe(gameId);
         expect(
           replay.history.events.filter((event) => event.type === "play"),
         ).toHaveLength(25);
         const historyReady = performance.now();
-        await unattend(peer, tableID);
+        await unattend(peer, tableId);
         return historyReady;
       }
       await settleLanes(
@@ -297,7 +297,7 @@ databaseDescribe("normal-server protocol workload", () => {
             (async () => {
               for (let index = 0; index < 20; index++) {
                 const start = performance.now();
-                const ready = await readReplay(peer, game.gameID);
+                const ready = await readReplay(peer, game.gameId);
                 samples.replayHistoryReady.push(ready - start);
                 samples.replay.push(performance.now() - start);
               }
@@ -306,7 +306,7 @@ databaseDescribe("normal-server protocol workload", () => {
               for (let index = 0; index < 10; index++) {
                 const start = performance.now();
                 const returning = await connect(game.aliceCookie);
-                const ready = await readReplay(returning, game.gameID);
+                const ready = await readReplay(returning, game.gameId);
                 samples.reconnectHistoryReady.push(ready - start);
                 await close(returning);
                 samples.reconnect.push(performance.now() - start);

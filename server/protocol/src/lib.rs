@@ -511,7 +511,7 @@ mod tests {
     #[test]
     fn optional_values_are_omitted_not_null() {
         let error = decode::<ChatRequest>(&json!({
-            "text": "private text", "tableID": null
+            "text": "private text", "tableId": null
         }))
         .unwrap_err();
         assert!(!format!("{error:#}").contains("private text"));

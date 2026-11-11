@@ -486,12 +486,12 @@ function gameRows(
   return page.rows.map((game) => {
     const names = game.playerNames;
     const row: Array<Node | string> = [
-      link(`${PATH.REPLAY}/${game.gameID}`, game.gameID),
+      link(`${PATH.REPLAY}/${game.gameId}`, game.gameId),
       String(game.numPlayers),
       String(game.score),
     ];
     if (mode !== "variant") {
-      const variant = String(game.variantID);
+      const variant = String(game.variantId);
       row.push(
         link(
           `${PATH.VARIANT}/${encodeURIComponent(variant)}`,

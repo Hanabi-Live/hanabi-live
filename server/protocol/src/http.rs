@@ -42,15 +42,14 @@ where
 
 /// The body of a successful `/login` response.
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
-#[serde(deny_unknown_fields)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct LoginResponse {
-    #[serde(rename = "userID")]
     pub user_id: UserId,
 }
 
 /// The `/api/v1/identity` request.
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
-#[serde(deny_unknown_fields)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct IdentityRequest {
     #[schemars(length(min = 1))]
     pub token: String,
@@ -58,7 +57,7 @@ pub struct IdentityRequest {
 
 /// The account that an identity token belongs to.
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
-#[serde(deny_unknown_fields)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct IdentityResponse {
     #[schemars(with = "Username")]
     pub username: String,
@@ -77,7 +76,7 @@ pub struct IdentityTokenResponse {
 
 /// The `/password-reset` request: a new password for an administrator to set.
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
-#[serde(deny_unknown_fields)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct PasswordHashRequest {
     #[schemars(length(min = 1))]
     pub password: String,
@@ -85,7 +84,7 @@ pub struct PasswordHashRequest {
 
 /// The hash of a `/password-reset` request's password.
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
-#[serde(deny_unknown_fields)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct PasswordHashResponse {
     pub hash: String,
 }
@@ -105,14 +104,13 @@ pub struct PublicGamePage {
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct PublicGameRow {
-    #[serde(rename = "gameID")]
     pub game_id: GameId,
     #[schemars(with = "NumPlayers")]
     pub num_players: u8,
     #[schemars(range(min = 0, max = i32::MAX))]
     pub score: i32,
     /// Variant lists omit it.
-    #[serde(rename = "variantID", skip_serializing_if = "Option::is_none")]
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub variant_id: Option<VariantId>,
     /// How many games used this seed. Variant lists omit it.
     #[serde(skip_serializing_if = "Option::is_none")]

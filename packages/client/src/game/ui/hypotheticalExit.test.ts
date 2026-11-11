@@ -47,7 +47,7 @@ function setup(shared: boolean) {
   const send = vi.fn();
   Object.assign(globals, {
     store,
-    lobby: { tableID: 42, conn: { send } },
+    lobby: { tableId: 42, conn: { send } },
   });
   Object.defineProperty(globals, "state", {
     configurable: true,
@@ -69,7 +69,7 @@ describe("hypothetical exit", () => {
     endHypothetical();
 
     expect(send).toHaveBeenCalledWith("replayAction", {
-      tableID: 42,
+      tableId: 42,
       action: { type: "hypoEnd" },
     });
     expect(store.getState().replay.hypothetical).not.toBeUndefined();

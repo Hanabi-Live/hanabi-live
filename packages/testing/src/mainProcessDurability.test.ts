@@ -53,27 +53,27 @@ databaseDescribe("Rust actor durability and ownership", () => {
         let alice = await connect(aliceCookie);
         let bob = await connect(bobCookie);
         alice.send("tableCreate", { settings: { name: "Recovery" } });
-        const { tableID } = await alice.receive(
+        const { tableId } = await alice.receive(
           "joined",
           SERVER_COMMAND_SCHEMAS.joined,
         );
-        bob.send("tableJoin", { tableID });
+        bob.send("tableJoin", { tableId });
         await bob.receive("joined", SERVER_COMMAND_SCHEMAS.joined);
-        alice.send("tableStart", { tableID });
+        alice.send("tableStart", { tableId });
         await alice.receive(
           "tableStarted",
           SERVER_COMMAND_SCHEMAS.tableStarted,
         );
         await bob.receive("tableStarted", SERVER_COMMAND_SCHEMAS.tableStarted);
         async function bootstrap(peer: ReturnType<typeof socketClient>) {
-          peer.send("gameInitLoad", { tableID });
+          peer.send("gameInitLoad", { tableId });
           const init = await peer.receive("init", SERVER_COMMAND_SCHEMAS.init);
-          peer.send("gameStateLoad", { tableID });
+          peer.send("gameStateLoad", { tableId });
           const history = await peer.receive(
             "gameEventList",
             SERVER_COMMAND_SCHEMAS.gameEventList,
           );
-          peer.send("loaded", { tableID });
+          peer.send("loaded", { tableId });
           return { init, history };
         }
         const [a, b] = await Promise.all([bootstrap(alice), bootstrap(bob)]);
@@ -101,7 +101,7 @@ databaseDescribe("Rust actor durability and ownership", () => {
         const startedState = await liveTables(sql);
         expect(startedState.length).toBeGreaterThan(0);
         const action = {
-          tableID,
+          tableId,
           action: { type: "play", order: card.order },
         } as const;
         let replacement: Awaited<ReturnType<typeof connect>> | undefined;
@@ -109,13 +109,13 @@ databaseDescribe("Rust actor durability and ownership", () => {
         const blocker = await sql.reserve();
         try {
           active.send("playerAction", {
-            tableID,
+            tableId,
             action: { type: "play", order: 9999 },
           });
           await active.receive("warning", SERVER_COMMAND_SCHEMAS.warning);
           await blocker`SET idle_in_transaction_session_timeout = 0`;
           await blocker`BEGIN`;
-          await blocker`SELECT id FROM live_tables WHERE id = ${tableID} FOR UPDATE`;
+          await blocker`SELECT id FROM live_tables WHERE id = ${tableId} FOR UPDATE`;
           active.send("playerAction", action);
           const deadline = performance.now() + 1500;
           for (;;) {
@@ -166,7 +166,7 @@ databaseDescribe("Rust actor durability and ownership", () => {
         } else {
           bob = replacement;
         }
-        replacement.send("tableReattend", { tableID });
+        replacement.send("tableReattend", { tableId });
         await replacement.receive(
           "tableStarted",
           SERVER_COMMAND_SCHEMAS.tableStarted,
@@ -175,7 +175,7 @@ databaseDescribe("Rust actor durability and ownership", () => {
         // Resending the applied move is rejected: it is no longer this player's turn.
         replacement.send("playerAction", action);
         await replacement.receive("warning", SERVER_COMMAND_SCHEMAS.warning);
-        replacement.send("gameStateLoad", { tableID });
+        replacement.send("gameStateLoad", { tableId });
         const onceOnly = await replacement.receive(
           "gameEventList",
           SERVER_COMMAND_SCHEMAS.gameEventList,
@@ -206,7 +206,7 @@ databaseDescribe("Rust actor durability and ownership", () => {
         const returning = await connect(
           activeIsAlice ? aliceCookie : bobCookie,
         );
-        returning.send("tableReattend", { tableID });
+        returning.send("tableReattend", { tableId });
         await returning.receive(
           "tableStarted",
           SERVER_COMMAND_SCHEMAS.tableStarted,
@@ -228,7 +228,7 @@ databaseDescribe("Rust actor durability and ownership", () => {
         ).toBe(true);
         returning.send("playerAction", action);
         await returning.receive("warning", SERVER_COMMAND_SCHEMAS.warning);
-        returning.send("gameStateLoad", { tableID });
+        returning.send("gameStateLoad", { tableId });
         const duplicate = await returning.receive(
           "gameEventList",
           SERVER_COMMAND_SCHEMAS.gameEventList,

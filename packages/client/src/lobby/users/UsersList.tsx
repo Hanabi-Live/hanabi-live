@@ -53,7 +53,7 @@ export function UsersList(): React.JSX.Element {
       </thead>
       <tbody id="lobby-users-table-tbody">
         {rows.map((row) => (
-          <UserRowView inPregame={inPregame} key={row.user.userID} row={row} />
+          <UserRowView inPregame={inPregame} key={row.user.userId} row={row} />
         ))}
       </tbody>
     </table>
@@ -192,10 +192,10 @@ function BotIcon() {
 
 /** Joins or spectates the table that a user is at. */
 function goToTable(user: UserRow["user"]) {
-  if (user.tableID === undefined) {
+  if (user.tableId === undefined) {
     return;
   }
-  const table = globals.getTable(user.tableID);
+  const table = globals.getTable(user.tableId);
   if (table === undefined) {
     return;
   }

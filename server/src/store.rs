@@ -837,6 +837,55 @@ mod tests {
         ensure!(crate::checkpoint::decode(&encoded.head, &invalid).is_err());
         Ok(())
     }
+    /// Replaces a format's name in a head that `checkpoint::encode` wrote, as an older server
+    /// wrote it.
+    fn older_head(head: &str, format: &str) -> Result<String> {
+        let mut head: Value = serde_json::from_str(head)?;
+        head["format"] = format.into();
+        if let Some(snapshot) = head.pointer_mut("/phase/snapshot") {
+            snapshot["format"] = format.into();
+        }
+        Ok(head.to_string())
+    }
+    #[test]
+    fn checkpoints_from_format_1_spell_ids_in_capitals() -> Result<()> {
+        let mut table = pregame(TableId(1));
+        let mut message = hanabi_protocol::Chat::new(
+            "suggestion",
+            ChatSource::Server,
+            crate::model::timestamp(Utc::now()),
+        );
+        message.chat_id = Some(3);
+        message.table_id = Some(TableId(1));
+        message.suggestion = Some(hanabi_protocol::TableSettings {
+            replay_game_id: Some(GameId(5)),
+            ..hanabi_protocol::TableSettings::default()
+        });
+        table.chat.push(TableChat {
+            id: Some(3),
+            user: UserId(1),
+            message,
+        });
+        let expected = serde_json::to_value(&table)?;
+        let (encoded, _) = crate::checkpoint::encode(&mut table, &SavedParts::default())?;
+        let parts = encoded
+            .changes
+            .written
+            .iter()
+            .map(|(key, part)| {
+                let part = part
+                    .replace("\"tableId\"", "\"tableID\"")
+                    .replace("\"chatId\"", "\"chatID\"")
+                    .replace("\"replayGameId\"", "\"replayGameID\"");
+                (key.clone(), part)
+            })
+            .collect::<Vec<_>>();
+        ensure!(parts.iter().any(|(_, part)| part.contains("replayGameID")));
+        let head = older_head(&encoded.head, "hanabi-live-1")?;
+        let decoded = crate::checkpoint::decode(&head, &parts)?;
+        ensure!(serde_json::to_value(&decoded)? == expected);
+        Ok(())
+    }
     #[test]
     fn saves_write_only_new_entries_and_rewrite_lists_that_do_not_continue() -> Result<()> {
         let mut table = pregame(TableId(1));
@@ -1300,7 +1349,7 @@ mod tests {
             user: UserId(1),
             message: serde_json::from_value(json!({
                 "text": text, "username": "Alice", "source": "user",
-                "tableID":id, "datetime": "2026-11-02T20:00:00.123456Z"
+                "tableId":id, "datetime": "2026-11-02T20:00:00.123456Z"
             }))?,
         })
     }
@@ -1638,19 +1687,19 @@ mod tests {
         let result=async{
             send(&hub,users[0].clone(),"tableCreate",json!({"settings":{"name":"auto parity"}})).await?;
             let id=store.load().await?[0].0.id;
-            send(&hub,users[1].clone(),"tableJoin",json!({"tableID":id})).await?;
-            send(&hub,users[0].clone(),"tableStart",json!({"tableID":id})).await?;
+            send(&hub,users[1].clone(),"tableJoin",json!({"tableId":id})).await?;
+            send(&hub,users[0].clone(),"tableStart",json!({"tableId":id})).await?;
             tokio::time::timeout(Duration::from_secs(5),async{
                 loop{if store.load().await?.iter().any(|(t,_)|t.id==id&&matches!(t.phase,Phase::Live{..})){return Ok::<(),anyhow::Error>(());}tokio::time::sleep(Duration::from_millis(20)).await;}
             }).await??;
-            send(&hub,users[2].clone(),"tableSpectate",json!({"tableID":id,"shadowingPlayerIndex":0})).await?;
-            send(&hub,users[0].clone(),"chat",json!({"tableID":id,"text":"retained authored chat"})).await?;
-            send(&hub,users[0].clone(),"tableTerminate",json!({"tableID":id})).await?;
+            send(&hub,users[2].clone(),"tableSpectate",json!({"tableId":id,"shadowingPlayerIndex":0})).await?;
+            send(&hub,users[0].clone(),"chat",json!({"tableId":id,"text":"retained authored chat"})).await?;
+            send(&hub,users[0].clone(),"tableTerminate",json!({"tableId":id})).await?;
             let rows:i64=sqlx::query_scalar!("SELECT count(*) AS \"v!\" FROM chat_log WHERE user_id=1 AND source='user' AND table_id=$1 AND message='retained authored chat'", i64::try_from(id.0)?).fetch_one(&store.primary).await?;
             ensure!(rows==1,"Accepted authored chat was omitted or duplicated in PostgreSQL");
             let restored=store.load().await?;
             ensure!(restored[0].0.chat.iter().all(|chat|chat.id.is_some()),"Chat was not archived with its checkpoint");
-            for user in &users{send(&hub,user.clone(),"tableUnattend",json!({"tableID":id})).await?;}
+            for user in &users{send(&hub,user.clone(),"tableUnattend",json!({"tableId":id})).await?;}
             tokio::time::timeout(Duration::from_secs(3),async{
                 while let Some(frame)=outgoing[2].recv().await{
                     if frame.message.to_text()?.starts_with("tableGone "){return Ok::<(),anyhow::Error>(());}
@@ -1712,13 +1761,13 @@ mod tests {
             .await?;
             let id = store.load().await?[0].0.id;
             for user in users.iter().skip(1) {
-                send(&hub, user.clone(), "tableJoin", json!({"tableID":id})).await?;
+                send(&hub, user.clone(), "tableJoin", json!({"tableId":id})).await?;
             }
             send(
                 &hub,
                 users[0].clone(),
                 "chat",
-                json!({"tableID":id,"text":"/split Bob"}),
+                json!({"tableId":id,"text":"/split Bob"}),
             )
             .await?;
             let tables = store.load().await?;
@@ -1736,22 +1785,22 @@ mod tests {
                 &hub,
                 users[0].clone(),
                 "tableSetVariant",
-                json!({"tableID":id,"variantName":"Reversed (5 Suits)"}),
+                json!({"tableId":id,"variantName":"Reversed (5 Suits)"}),
             )
             .await?;
-            send(&hub, users[0].clone(), "tableStart", json!({"tableID":id})).await?;
+            send(&hub, users[0].clone(), "tableStart", json!({"tableId":id})).await?;
             send(
                 &hub,
                 users[0].clone(),
                 "tableTerminate",
-                json!({"tableID":id}),
+                json!({"tableId":id}),
             )
             .await?;
             send(
                 &hub,
                 users[0].clone(),
                 "replayAction",
-                json!({"tableID":id,"action":{"type":"hypoStart"}}),
+                json!({"tableId":id,"action":{"type":"hypoStart"}}),
             )
             .await?;
             let action = json!({"type":"turn","num":7,"currentPlayerIndex":1});
@@ -1759,7 +1808,7 @@ mod tests {
                 &hub,
                 users[0].clone(),
                 "replayAction",
-                json!({"tableID":id,"action":{"type":"hypoAction","action":action}}),
+                json!({"tableId":id,"action":{"type":"hypoAction","action":action}}),
             )
             .await?;
             let tables = store.load().await?;
@@ -1776,7 +1825,7 @@ mod tests {
                 &hub,
                 users[0].clone(),
                 "tableRestart",
-                json!({"tableID":id,"hidePregame":true}),
+                json!({"tableId":id,"hidePregame":true}),
             )
             .await?;
             tokio::time::timeout(Duration::from_secs(5), async {
@@ -1860,14 +1909,14 @@ mod tests {
         let result=async{
             send(&hub,users[0].clone(),"tableCreate",json!({"settings":{"name":"native","maxPlayers":6,"seed":"native","options":{"variantName":"Clue Starved (6 Suits)","timed":true,"timeBaseSeconds":120,"timePerTurnSeconds":20,"oneExtraCard":true,"detrimentalCharacters":true}}})).await?;
             let id=store.load().await?[0].0.id;
-            for user in users.iter().skip(1){send(&hub,user.clone(),"tableJoin",json!({"tableID":id,"password":""})).await?;}
-            send(&hub,users[0].clone(),"tableStart",json!({"tableID":id})).await?;
+            for user in users.iter().skip(1){send(&hub,user.clone(),"tableJoin",json!({"tableId":id,"password":""})).await?;}
+            send(&hub,users[0].clone(),"tableStart",json!({"tableId":id})).await?;
             let loaded=store.load().await?;let s=loaded[0].0.game().unwrap();ensure!(s.players.len()==3&&s.game.stacks.len()==6&&s.game.clue_tokens==16,"Native variant ignored");
             let active=s.game.active_player_index;let actor=usize::try_from(s.players[active].id.0)?-1;
-            send(&hub,users[actor].clone(),"loaded",json!({"tableID":id})).await?;
-            send(&hub,users[actor].clone(),"pause",json!({"tableID":id,"setting":"pause"})).await?;
-            send(&hub,users[actor].clone(),"note",json!({"tableID":id,"order":0,"note":"private"})).await?;
-            send(&hub,users[actor].clone(),"tag",json!({"tableID":id,"tag":"native-live"})).await?;
+            send(&hub,users[actor].clone(),"loaded",json!({"tableId":id})).await?;
+            send(&hub,users[actor].clone(),"pause",json!({"tableId":id,"setting":"pause"})).await?;
+            send(&hub,users[actor].clone(),"note",json!({"tableId":id,"order":0,"note":"private"})).await?;
+            send(&hub,users[actor].clone(),"tag",json!({"tableId":id,"tag":"native-live"})).await?;
             let loaded=store.load().await?;let s=loaded[0].0.game().unwrap();ensure!(s.paused()&&s.notes[active][0]=="private"&&s.tags.len()==1,"Runtime mutations not durable");
             let (reply,received)=oneshot::channel();hub.send(HubCommand::Quiesce(reply)).await?;let handles=received.await?;
             for handle in handles{let (reply,received)=oneshot::channel();handle.sender.send(TableCommand::Drain(reply)).await?;received.await??;}

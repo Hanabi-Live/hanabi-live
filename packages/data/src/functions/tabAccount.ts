@@ -15,9 +15,9 @@ export function getTabAccount(): number | undefined {
   }
 }
 
-export function setTabAccount(userID: number): void {
+export function setTabAccount(userId: number): void {
   try {
-    sessionStorage.setItem(STORAGE_KEY, String(userID));
+    sessionStorage.setItem(STORAGE_KEY, String(userId));
   } catch {
     // Without sessionStorage, the tab uses the latest account like before.
   }
@@ -35,7 +35,7 @@ export function clearTabAccount(): void {
 export function setTabAccountFromLogin(body: unknown): void {
   const result = loginResponseSchema.safeParse(body);
   if (result.success) {
-    setTabAccount(result.data.userID);
+    setTabAccount(result.data.userId);
   }
 }
 

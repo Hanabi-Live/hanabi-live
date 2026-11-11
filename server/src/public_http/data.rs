@@ -28,10 +28,10 @@ const fn column_field(column: Column) -> &'static str {
 
 const fn column_name(column: Column) -> &'static str {
     match column {
-        Column::Id => "gameID",
+        Column::Id => "gameId",
         Column::NumPlayers => "numPlayers",
         Column::Score => "score",
-        Column::Variant => "variantID",
+        Column::Variant => "variantId",
     }
 }
 
@@ -287,9 +287,9 @@ pub(super) async fn list(
     qb.push("), paged AS (SELECT id,num_players,score,variant_id,seed,datetime_finished FROM selected ORDER BY ").push(column_field(order))
         .push(if ascending { " ASC" } else { " DESC" }).push(", id DESC LIMIT ")
         .push_bind(size).push(" OFFSET ").push_bind(offset)
-        .push(") SELECT (SELECT count(*) FROM selected) AS total_rows,COALESCE((SELECT jsonb_agg(jsonb_build_object('gameID',g.id,'numPlayers',g.num_players,'score',g.score,");
+        .push(") SELECT (SELECT count(*) FROM selected) AS total_rows,COALESCE((SELECT jsonb_agg(jsonb_build_object('gameId',g.id,'numPlayers',g.num_players,'score',g.score,");
     if mode != "variants" {
-        qb.push("'variantID',g.variant_id,'numGamesOnSeed',COALESCE((SELECT num_games FROM seeds WHERE seed=g.seed),0),");
+        qb.push("'variantId',g.variant_id,'numGamesOnSeed',COALESCE((SELECT num_games FROM seeds WHERE seed=g.seed),0),");
     }
     qb.push("'playerNames',COALESCE((SELECT jsonb_agg(u.username ORDER BY gp.seat) FROM game_participants gp JOIN users u ON u.id=gp.user_id WHERE gp.game_id=g.id),'[]'::jsonb),'datetimeFinished',to_char(g.datetime_finished AT TIME ZONE 'UTC','YYYY-MM-DD\"T\"HH24:MI:SS.MS\"Z\"'),'seed',g.seed) ORDER BY g.")
         .push(column_field(order)).push(if ascending { " ASC" } else { " DESC" })

@@ -185,7 +185,7 @@ async fn loopback_routes_admission() {
         app.clone().oneshot(with_body).await.unwrap().status(),
         StatusCode::BAD_REQUEST
     );
-    for removed in ["/getLongTables", "/terminate?tableID=7"] {
+    for removed in ["/getLongTables", "/terminate?tableId=7"] {
         assert_eq!(
             request(app.clone(), removed, None).await.0,
             StatusCode::NOT_FOUND

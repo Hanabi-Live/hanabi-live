@@ -545,7 +545,7 @@ async fn tabs_sign_in_and_out_of_separate_accounts_postgres() {
         let body = format!("username={name}&password=secret&version=42&createAccount=true");
         let (status, headers, body) = request(&app, "POST", "/login", &body, None, false).await;
         assert_eq!(status, StatusCode::OK);
-        let id = serde_json::from_str::<Value>(&body).unwrap()["userID"]
+        let id = serde_json::from_str::<Value>(&body).unwrap()["userId"]
             .as_i64()
             .unwrap();
         let cookies = set_cookies(&headers);

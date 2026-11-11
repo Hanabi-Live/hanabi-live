@@ -171,8 +171,8 @@ function keydown(event: JQuery.KeyDownEvent) {
       // Account for users copying text from the chat window.
       && !$("#game-chat-modal").is(":visible")
     ) {
-      if (globals.state.replay.gameID !== undefined) {
-        copyStringToClipboard(globals.state.replay.gameID.toString());
+      if (globals.state.replay.gameId !== undefined) {
+        copyStringToClipboard(globals.state.replay.gameId.toString());
       }
       return;
     }
@@ -385,7 +385,7 @@ function sharedReplaySendSound(sound: "buzz" | "clap" | "holy" | "nooo") {
 
   // Send it
   globals.lobby.conn!.send("replayAction", {
-    tableID: globals.lobby.tableID,
+    tableId: globals.lobby.tableId,
     action: {
       type: "sound",
       sound,
@@ -490,7 +490,7 @@ function sendAction(actionType: PlayOrDiscard, order: CardOrder) {
   if (globals.state.replay.hypothetical === undefined) {
     globals.lobby.conn!.send(
       "playerAction",
-      toWireAction(globals.lobby.tableID, { type: actionType, order }),
+      toWireAction(globals.lobby.tableId, { type: actionType, order }),
     );
   } else {
     hypothetical.sendHypotheticalAction({ type: actionType, order });

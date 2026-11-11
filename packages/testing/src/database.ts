@@ -140,10 +140,10 @@ export async function liveTables(
   ]);
   const parts = new Map<number, Map<string, string>>();
   for (const row of partRows) {
-    const { table_id: tableID, part, value } = livePartSchema.parse(row);
-    const tableParts = parts.get(tableID) ?? new Map<string, string>();
+    const { table_id: tableId, part, value } = livePartSchema.parse(row);
+    const tableParts = parts.get(tableId) ?? new Map<string, string>();
     tableParts.set(part, value);
-    parts.set(tableID, tableParts);
+    parts.set(tableId, tableParts);
   }
   return rows.map((row) => {
     const { id, revision, payload } = liveTableSchema.parse(row);

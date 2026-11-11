@@ -32,7 +32,7 @@ pub struct Suit {
 #[serde(rename_all = "camelCase")]
 pub struct Variant {
     pub id: u32,
-    #[serde(rename = "newID")]
+    #[serde(rename = "newId")]
     pub new_id: String,
     pub name: String,
     pub suits: Vec<Suit>,

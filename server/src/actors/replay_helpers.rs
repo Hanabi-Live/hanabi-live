@@ -242,7 +242,7 @@ mod tests {
     #[test]
     fn imports_accept_only_the_replay_format() {
         let imported = import(&json!({
-            "gameID": 7,
+            "gameId": 7,
             "seed": "p2v0s1",
             "actions": [{"type": "gameOver", "endCondition": "terminatedByVote"}],
             "notes": [["", "a"], []]

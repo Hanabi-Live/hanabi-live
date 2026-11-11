@@ -8,13 +8,13 @@ export const DIMMED_OPACITY = 0.3;
 
 export const TYPED_HISTORY_MAX_LENGTH = 250;
 
-/** The value of `globals.tableID` when we are not joined to a table. */
+/** The value of `globals.tableId` when we are not joined to a table. */
 export const NO_TABLE_ID = -1;
 
 /** Where each level of the H-Group convention guide is, followed by the level number. */
 export const H_GROUP_LEVEL_URL_PREFIX = "https://hanabi.github.io/level-";
 
-/** The value of `globals.userID` before the server's "welcome" message arrives. */
+/** The value of `globals.userId` before the server's "welcome" message arrives. */
 export const NO_USER_ID = -1;
 
 /** The HTTP status codes that the client handles specially. */

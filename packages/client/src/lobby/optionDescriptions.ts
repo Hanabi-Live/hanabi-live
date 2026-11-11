@@ -101,7 +101,7 @@ export function getOptionDescriptions(
     });
   }
 
-  if (settings.replayGameID !== undefined) {
+  if (settings.replayGameId !== undefined) {
     const turn =
       settings.replayTurn === undefined
         ? ""
@@ -109,7 +109,7 @@ export function getOptionDescriptions(
     descriptions.push({
       name: "replay",
       icon: OptionIcons.Replay,
-      tooltip: `This table replays game: <strong>#${settings.replayGameID}</strong>${turn}`,
+      tooltip: `This table replays game: <strong>#${settings.replayGameId}</strong>${turn}`,
     });
   }
 

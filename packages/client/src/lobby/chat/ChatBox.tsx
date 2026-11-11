@@ -12,7 +12,7 @@ export interface ChatLine {
   readonly key: number;
 
   /** The database ID of a lobby message, which a moderator can delete. */
-  readonly chatID?: number;
+  readonly chatId?: number;
 
   /** The whole line as HTML, which the client builds from text that the server escaped. */
   readonly html: string;
@@ -74,7 +74,7 @@ function ChatLineView({ line }: { readonly line: ChatLine }) {
       className="tw:block"
       // The client builds the line from text that the server already escaped.
       dangerouslySetInnerHTML={{ __html: line.html }}
-      data-chat-id={line.chatID}
+      data-chat-id={line.chatId}
       data-key={line.key}
       ref={ref}
     />

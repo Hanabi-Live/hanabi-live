@@ -156,15 +156,15 @@ export function init(): void {
 
 function passwordSubmit() {
   const tableIDString = passwordModalID.value;
-  const tableID = parseIntSafe(tableIDString); // The server expects this as a number
-  if (tableID === undefined) {
+  const tableId = parseIntSafe(tableIDString); // The server expects this as a number
+  if (tableId === undefined) {
     return;
   }
 
   const password = passwordModalPassword.value;
 
   globals.conn!.send("tableJoin", {
-    tableID,
+    tableId,
     password,
   });
 
@@ -174,10 +174,10 @@ function passwordSubmit() {
   closeModals();
 }
 
-export function askForPassword(tableID: number): void {
+export function askForPassword(tableId: number): void {
   allowCloseModal = true;
 
-  passwordModalID.setAttribute("value", tableID.toString());
+  passwordModalID.setAttribute("value", tableId.toString());
 
   // We want to fill in the text field with the player's last typed-in password.
   const password = localStorage.getItem(LOCAL_STORAGE_KEY.JOIN_TABLE_PASSWORD);

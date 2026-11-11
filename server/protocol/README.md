@@ -12,8 +12,8 @@ write TypeScript interfaces for these payloads.
 
 ## Changing a contract
 
-1. Update the Rust DTO and its schema annotations in `src/lib.rs`. Register new
-   message names in `src/registry.rs`.
+1. Update the Rust DTO and its schema annotations in the module of its area
+   (such as `src/game.rs`). Register new message names in `src/registry.rs`.
 1. If the contract relies on a default, null handling, union, bound, or
    rejection rule that `fixtures/compatibility.json` does not cover yet, add a
    case for it. Rust and Bun both run these cases.

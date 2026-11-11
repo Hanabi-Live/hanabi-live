@@ -39,7 +39,7 @@ function reconnectToTable(data: ServerCommandData["welcome"]): boolean {
   const firstTableID = data.playingAtTables[0];
   if (firstTableID !== undefined) {
     globals.conn!.send("tableReattend", {
-      tableID: firstTableID,
+      tableId: firstTableID,
     });
     return true;
   }
@@ -82,7 +82,7 @@ function gotoPath(data: ServerCommandData["welcome"]): boolean {
     const password = urlParams.get("password") ?? "";
     // A blank seed deals one that none of the players have played.
     const seed = urlParams.get("seed") ?? "";
-    const replayGameID = parseIntSafe(urlParams.get("replayGameID") ?? "");
+    const replayGameId = parseIntSafe(urlParams.get("replayGameId") ?? "");
     const replayTurn = parseIntSafe(urlParams.get("replayTurn") ?? "");
 
     globals.conn!.send("tableCreate", {
@@ -102,7 +102,7 @@ function gotoPath(data: ServerCommandData["welcome"]): boolean {
           detrimentalCharacters,
         },
         ...(seed !== "" && { seed }),
-        ...(replayGameID !== undefined && { replayGameID }),
+        ...(replayGameId !== undefined && { replayGameId }),
         ...(replayTurn !== undefined && { replayTurn }),
       },
       password,
@@ -115,14 +115,14 @@ function gotoPath(data: ServerCommandData["welcome"]): boolean {
   if (preGameMatch !== null) {
     const tableIDString = preGameMatch[1];
     if (tableIDString !== undefined) {
-      const tableID = parseIntSafe(tableIDString);
-      if (tableID !== undefined && tableID > 0) {
+      const tableId = parseIntSafe(tableIDString);
+      if (tableId !== undefined && tableId > 0) {
         // Here we unconditionally send password from cookies. If the game has no password, the
         // server will ignore it.
         const password =
           localStorage.getItem(LOCAL_STORAGE_KEY.JOIN_TABLE_PASSWORD) ?? "";
         globals.conn!.send("tableJoin", {
-          tableID,
+          tableId,
           password,
         });
         return true;
@@ -136,11 +136,11 @@ function gotoPath(data: ServerCommandData["welcome"]): boolean {
   if (gameMatch !== null) {
     const tableIDString = gameMatch[1];
     if (tableIDString !== undefined) {
-      const tableID = parseIntSafe(tableIDString);
-      if (tableID !== undefined && tableID > 0) {
-        if (data.playingAtTables.includes(tableIdSchema.parse(tableID))) {
+      const tableId = parseIntSafe(tableIDString);
+      if (tableId !== undefined && tableId > 0) {
+        if (data.playingAtTables.includes(tableIdSchema.parse(tableId))) {
           globals.conn!.send("tableReattend", {
-            tableID,
+            tableId,
           });
           return true;
         }
@@ -159,7 +159,7 @@ function gotoPath(data: ServerCommandData["welcome"]): boolean {
           }
         }
         globals.conn!.send("tableSpectate", {
-          tableID,
+          tableId,
           shadowingPlayerIndex,
         });
         return true;
@@ -174,13 +174,13 @@ function gotoPath(data: ServerCommandData["welcome"]): boolean {
   if (replayMatch !== null) {
     const gameIDString = replayMatch[1];
     if (gameIDString !== undefined) {
-      const gameID = parseIntSafe(gameIDString);
-      if (gameID !== undefined && gameID > 0) {
+      const gameId = parseIntSafe(gameIDString);
+      if (gameId !== undefined && gameId > 0) {
         const visibility = globalThis.location.pathname.includes("shared-")
           ? "shared"
           : "solo";
         globals.conn!.send("replayCreate", {
-          gameID,
+          gameId,
           type: "id",
           visibility,
           // A link to a shared replay should join the one that people are already watching.
@@ -209,7 +209,7 @@ function gotoPath(data: ServerCommandData["welcome"]): boolean {
       if ("error" in parsed) {
         return false;
       }
-      const { gameJSON } = parsed;
+      const { gameJson } = parsed;
 
       const visibility = globalThis.location.pathname.includes("shared-")
         ? "shared"
@@ -224,7 +224,7 @@ function gotoPath(data: ServerCommandData["welcome"]): boolean {
 
       globals.conn!.send("replayCreate", {
         type: source,
-        gameJSON,
+        gameJson,
         visibility,
       });
       return true;
@@ -235,11 +235,11 @@ function gotoPath(data: ServerCommandData["welcome"]): boolean {
 }
 
 /** Replaces a "/game/123" or "/pre-game/123" path for the given table with the lobby path. */
-export function leaveTableLink(tableID: number): void {
+export function leaveTableLink(tableId: number): void {
   const match = /^(?:\/game|\/pre-game)\/(\d+)(?:\/|$)/u.exec(
     globalThis.location.pathname,
   );
-  if (match?.[1] !== undefined && parseIntSafe(match[1]) === tableID) {
+  if (match?.[1] !== undefined && parseIntSafe(match[1]) === tableId) {
     setBrowserAddressBarPath(PATH.LOBBY);
   }
 }

@@ -11,7 +11,7 @@ const show = vi.fn();
 vi.mock("./UIGlobals.ts", () => ({
   globals: {
     restartPending: false,
-    lobby: { tableID: 42, conn: { send } },
+    lobby: { tableId: 42, conn: { send } },
     elements: {
       restartButton: { setEnabled },
       restartContents: { visible: contentsVisible },
@@ -46,7 +46,7 @@ test.each([true, false])(
 
     expect(send).toHaveBeenCalledTimes(1);
     expect(send).toHaveBeenCalledWith("tableRestart", {
-      tableID: 42,
+      tableId: 42,
       hidePregame,
     });
     expect(setEnabled).toHaveBeenLastCalledWith(false);
@@ -67,7 +67,7 @@ test("a rejected restart restores the controls and allows retrying", () => {
 
   expect(send).toHaveBeenCalledTimes(2);
   expect(send).toHaveBeenLastCalledWith("tableRestart", {
-    tableID: 42,
+    tableId: 42,
     hidePregame: false,
   });
 });

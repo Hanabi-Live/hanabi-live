@@ -39,12 +39,12 @@ export class Globals {
   /* eslint-disable @typescript-eslint/class-methods-use-this -- These delegate to the store. */
 
   /** From the "welcome" message, or `NO_USER_ID` before it. */
-  get userID(): number {
-    return store.getState().session.userID;
+  get userId(): number {
+    return store.getState().session.userId;
   }
 
-  set userID(userID: number) {
-    store.dispatch(userIDChanged(userID));
+  set userId(userId: number) {
+    store.dispatch(userIDChanged(userId));
   }
 
   /** From the "welcome" message. */
@@ -108,8 +108,8 @@ export class Globals {
     return selectTables(store.getState());
   }
 
-  getTable(tableID: number): Table | undefined {
-    return selectTable(store.getState(), tableID);
+  getTable(tableId: number): Table | undefined {
+    return selectTable(store.getState(), tableId);
   }
 
   /** From the "pregame" message. */
@@ -145,7 +145,7 @@ export class Globals {
   idleMinutes = 0;
 
   /** Equal to the table we are joined to or `NO_TABLE_ID` if no table. */
-  tableID = NO_TABLE_ID;
+  tableId = NO_TABLE_ID;
 
   // ------------
   // UI variables

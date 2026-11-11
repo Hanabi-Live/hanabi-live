@@ -5,12 +5,12 @@ describe("pasted game JSON", () => {
   test("exported games are accepted", () => {
     const parsed = parseGameJSON(
       JSON.stringify({
-        gameID: 7,
+        gameId: 7,
         seed: "p2v0s1",
         options: { variantName: "No Variant" },
       }),
     );
-    expect(parsed).toHaveProperty("gameJSON.seed", "p2v0s1");
+    expect(parsed).toHaveProperty("gameJson.seed", "p2v0s1");
   });
 
   test("unknown fields and nulls are rejected", () => {

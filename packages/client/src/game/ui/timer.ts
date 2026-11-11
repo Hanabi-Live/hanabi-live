@@ -32,7 +32,7 @@ const LOW_TIME_WARNING_MILLISECONDS = 10 * SECOND_IN_MILLISECONDS;
  * ```
  */
 export function update(
-  data: Omit<ServerCommandData["clock"], "tableID">,
+  data: Omit<ServerCommandData["clock"], "tableId">,
 ): void {
   stop();
   // Absent if the game just ended.

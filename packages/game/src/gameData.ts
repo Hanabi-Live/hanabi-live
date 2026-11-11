@@ -51,18 +51,18 @@ export function getVariant(variantName: string): Variant {
   return variant;
 }
 
-export function getVariantByID(variantID: number): Variant {
-  const variant = VARIANTS_MAP_BY_ID.get(variantID);
+export function getVariantByID(variantId: number): Variant {
+  const variant = VARIANTS_MAP_BY_ID.get(variantId);
   assertDefined(
     variant,
-    `Failed to find the "${variantID}" variant in the "VARIANTS_BY_ID" map.`,
+    `Failed to find the "${variantId}" variant in the "VARIANTS_BY_ID" map.`,
   );
 
   return variant;
 }
 
-export function doesVariantIDExist(variantID: number): boolean {
-  return VARIANTS_MAP_BY_ID.has(variantID);
+export function doesVariantIDExist(variantId: number): boolean {
+  return VARIANTS_MAP_BY_ID.has(variantId);
 }
 
 export function getDefaultVariant(): Variant {
@@ -73,11 +73,11 @@ export function doesVariantExist(variantName: string): boolean {
   return VARIANTS_MAP_BY_NAME.has(variantName);
 }
 
-export function getCharacter(characterID: number): Character {
-  const character = CHARACTERS_MAP.get(characterID);
+export function getCharacter(characterId: number): Character {
+  const character = CHARACTERS_MAP.get(characterId);
   assertDefined(
     character,
-    `Failed to find the character corresponding to ID ${characterID} in the "CHARACTERS" map.`,
+    `Failed to find the character corresponding to ID ${characterId} in the "CHARACTERS" map.`,
   );
 
   return character;

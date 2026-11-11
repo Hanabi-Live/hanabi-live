@@ -22,7 +22,7 @@ const lobbyChatSlice = createSlice({
     },
     lobbyChatLineDeleted(state, action: PayloadAction<number>) {
       state.lines = state.lines.filter(
-        (line) => line.chatID !== action.payload,
+        (line) => line.chatId !== action.payload,
       );
     },
   },

@@ -52,10 +52,10 @@ export function roomTableID(room: string): TableID | undefined {
 }
 
 /** The chat room of a table, or the lobby when there is no table. */
-export function tableRoom(tableID: number | undefined): string {
-  return tableID === undefined ? "lobby" : `table${tableID}`;
+export function tableRoom(tableId: number | undefined): string {
+  return tableId === undefined ? "lobby" : `table${tableId}`;
 }
-type PMHistoryMessage = ServerCommandData["chatPMHistory"]["messages"][number];
+type PMHistoryMessage = ServerCommandData["chatPmHistory"]["messages"][number];
 
 export enum SelfChatMessageType {
   Normal,
@@ -212,7 +212,7 @@ function input(element: HTMLInputElement, room: "lobby" | "table") {
     if (datetimeNow - datetimeLastChatInput >= TYPING_REPORT_INTERVAL_MS) {
       datetimeLastChatInput = datetimeNow;
       globals.conn!.send("chatTyping", {
-        tableID: globals.tableID,
+        tableId: globals.tableId,
       });
     }
   }
@@ -276,7 +276,7 @@ function sendText(room: string, msgRaw: string) {
   // table number appended (e.g. "table123").
   let roomID = room;
   if (roomID.startsWith("table")) {
-    roomID = `table${globals.tableID}`;
+    roomID = `table${globals.tableId}`;
   }
 
   // Add the chat message to the typed history so that we can use the up arrow later. (But only if
@@ -318,10 +318,10 @@ function sendText(room: string, msgRaw: string) {
   }
 
   // This is not a command, so send a the chat message to the server.
-  const tableID = roomTableID(roomID);
+  const tableId = roomTableID(roomID);
   globals.conn!.send("chat", {
     text: msg,
-    ...(tableID !== undefined && { tableID }),
+    ...(tableId !== undefined && { tableId }),
   });
 }
 
@@ -541,10 +541,10 @@ export function add(data: ChatData, fast: boolean): void {
   addInternal(data, fast, true);
 }
 
-export function removeDeletedLobbyMessage(chatID: number): void {
+export function removeDeletedLobbyMessage(chatId: number): void {
   // Retain recent deletions so a late live message or chatList cannot revive one.
-  lobbyChatDeletionState.markDeleted(chatID);
-  store.dispatch(lobbyChatLineDeleted(chatID));
+  lobbyChatDeletionState.markDeleted(chatId);
+  store.dispatch(lobbyChatLineDeleted(chatId));
 }
 
 export function addPMHistory(data: PMHistoryMessage, room?: string): void {
@@ -560,7 +560,7 @@ export function addPMHistory(data: PMHistoryMessage, room?: string): void {
 }
 
 function addInternal(data: ChatData, fast: boolean, updateLiveState: boolean) {
-  if (lobbyChatDeletionState.shouldSkipMessage(data.tableID, data.chatID)) {
+  if (lobbyChatDeletionState.shouldSkipMessage(data.tableId, data.chatId)) {
     return;
   }
 
@@ -593,8 +593,8 @@ function addInternal(data: ChatData, fast: boolean, updateLiveState: boolean) {
       store.dispatch(
         lobbyChatLineAdded({
           key,
-          ...(data.tableID === undefined
-            && data.chatID !== undefined && { chatID: data.chatID }),
+          ...(data.tableId === undefined
+            && data.chatId !== undefined && { chatId: data.chatId }),
           html,
           fadeIn: !fast,
         }),
@@ -715,8 +715,8 @@ function appendGameChatLine(
 function getChatBox(data: ChatData): "lobby" | "pregame" | "game" | undefined {
   // A private message (PM) or private notice outside of a table has no room, so we display it on
   // the chat window that the user currently has open.
-  const isPM = data.tableID === undefined && data.recipient !== undefined;
-  if (data.tableID === undefined && !isPM) {
+  const isPM = data.tableId === undefined && data.recipient !== undefined;
+  if (data.tableId === undefined && !isPM) {
     return "lobby";
   }
 
@@ -922,7 +922,7 @@ export function sendSelfPMFromServer(
       text: message,
       source: "server",
       datetime: new Date().toISOString(),
-      ...(roomTableID(room) !== undefined && { tableID: roomTableID(room) }),
+      ...(roomTableID(room) !== undefined && { tableId: roomTableID(room) }),
       recipient: globals.username,
     },
     false,

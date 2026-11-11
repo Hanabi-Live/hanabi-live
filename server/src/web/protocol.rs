@@ -59,51 +59,51 @@ mod tests {
                 "inactive" => json!({"inactive":true}),
                 "gameHistoryOtherScores" => json!({"seed":"p2v0s1","offset":0,"amount":10}),
                 "chat" => json!({"text":"hello"}),
-                "chatPM" => json!({"text":"hello","recipient":"Alice"}),
-                "replayCreate" => json!({"type":"id","visibility":"shared","gameID":1}),
+                "chatPm" => json!({"text":"hello","recipient":"Alice"}),
+                "replayCreate" => json!({"type":"id","visibility":"shared","gameId":1}),
                 "playerAction" => {
-                    json!({"tableID":1,"action":{"type":"rankClue","target":0,"rank":1}})
+                    json!({"tableId":1,"action":{"type":"rankClue","target":0,"rank":1}})
                 }
-                "pause" => json!({"tableID":1,"setting":"pause"}),
-                "note" => json!({"tableID":1,"order":0,"note":"test"}),
-                "tag" | "tagDelete" => json!({"tableID":1,"tag":"test"}),
-                "replayAction" => json!({"tableID":1,"action":{"type":"hypoStart"}}),
-                "tableRestartDecline" => json!({"tableID":1,"declined":true}),
-                "tableSetLeader" => json!({"tableID":1,"username":"Alice"}),
-                "tableSuggest" => json!({"tableID":1,"segment":0}),
+                "pause" => json!({"tableId":1,"setting":"pause"}),
+                "note" => json!({"tableId":1,"order":0,"note":"test"}),
+                "tag" | "tagDelete" => json!({"tableId":1,"tag":"test"}),
+                "replayAction" => json!({"tableId":1,"action":{"type":"hypoStart"}}),
+                "tableRestartDecline" => json!({"tableId":1,"declined":true}),
+                "tableSetLeader" => json!({"tableId":1,"username":"Alice"}),
+                "tableSuggest" => json!({"tableId":1,"segment":0}),
                 "chatFriend" | "chatUnfriend" | "chatLink" | "chatUnlink" | "chatBlock"
                 | "chatUnblock" => json!({"username":"Alice"}),
                 "tagSearch" => json!({"tag":"test"}),
-                "tableSetVariant" => json!({"tableID":1,"variantName":"No Variant"}),
+                "tableSetVariant" => json!({"tableId":1,"variantName":"No Variant"}),
                 "sync" | "lobbyLoad" | "tableCreate" | "gameHistory" | "chatLinked"
-                | "chatBlocked" | "chatPMHistory" => json!({}),
-                _ => json!({"tableID":1}),
+                | "chatBlocked" | "chatPmHistory" => json!({}),
+                _ => json!({"tableId":1}),
             };
             parse(&format!("{command} {value}")).unwrap_or_else(|e| panic!("{command}: {e}"));
         }
     }
     #[test]
     fn private_messages_take_only_a_message_and_recipient() {
-        assert!(parse(r#"chatPM {"text":"hello","recipient":"Alice"}"#).is_ok());
+        assert!(parse(r#"chatPm {"text":"hello","recipient":"Alice"}"#).is_ok());
         for data in [
-            json!({"text":"hello","recipient":"Alice","tableID":1}),
+            json!({"text":"hello","recipient":"Alice","tableId":1}),
             json!({"text":"hello","recipient":"Alice","admin":true}),
         ] {
-            assert!(parse(&format!("chatPM {data}")).is_err());
+            assert!(parse(&format!("chatPm {data}")).is_err());
         }
     }
 
     #[test]
     fn strict_types_limits_and_defaults() {
         for input in [
-            "action {\"tableID\":1,\"type\":\"pass\",\"order\":0}",
+            "action {\"tableId\":1,\"type\":\"pass\",\"order\":0}",
             "chat {\"text\":\"x\",\"admin\":true}",
-            "tableStart {\"tableID\":9007199254740992}",
+            "tableStart {\"tableId\":9007199254740992}",
             "setting {\"settings\":{\"volume\":\"50\"}}",
             "sync []",
             "unknown {}",
             "historyFriendsGet {\"offset\":0,\"amount\":10}",
-            "loaded {\"tableID\":1,\"requestID\":\"r\"}",
+            "loaded {\"tableId\":1,\"requestID\":\"r\"}",
         ] {
             assert!(parse(input).is_err(), "{input}");
         }
@@ -117,20 +117,20 @@ mod tests {
         let note = "n".repeat(65536);
         let input = format!(
             "replayCreate {}",
-            json!({"type":"json","visibility":"solo","gameJSON":{
+            json!({"type":"json","visibility":"solo","gameJson":{
                 "seed":"p2v0s1","notes":[[note],[]]
             }})
         );
         assert!(input.len() > 8192);
         let parsed = parse(&input).unwrap().data();
         assert_eq!(
-            parsed["gameJSON"]["notes"][0][0].as_str().unwrap().len(),
+            parsed["gameJson"]["notes"][0][0].as_str().unwrap().len(),
             65536
         );
         assert!(
             parse(&format!(
                 "replayAction {}",
-                json!({"tableID":1,"action":{"type":"hypoAction","action":"{\"type\":\"turn\"}"}})
+                json!({"tableId":1,"action":{"type":"hypoAction","action":"{\"type\":\"turn\"}"}})
             ))
             .is_err()
         );

@@ -695,25 +695,25 @@ async function connect(
 /** Plays one turn of a game between two players and ends it, so that it is saved. */
 async function playGame(alice: Peer, bob: Peer): Promise<number> {
   alice.send("tableCreate", { settings: { name: "Seeded game" } });
-  const { tableID } = await alice.receive(
+  const { tableId } = await alice.receive(
     "joined",
     SERVER_COMMAND_SCHEMAS.joined,
   );
-  bob.send("tableJoin", { tableID });
+  bob.send("tableJoin", { tableId });
   await bob.receive("joined", SERVER_COMMAND_SCHEMAS.joined);
-  alice.send("tableStart", { tableID });
+  alice.send("tableStart", { tableId });
   const peers = [alice, bob];
   const games = await Promise.all(
     peers.map(async (peer) => {
       await peer.receive("tableStarted", SERVER_COMMAND_SCHEMAS.tableStarted);
-      peer.send("gameInitLoad", { tableID });
+      peer.send("gameInitLoad", { tableId });
       const init = await peer.receive("init", SERVER_COMMAND_SCHEMAS.init);
-      peer.send("gameStateLoad", { tableID });
+      peer.send("gameStateLoad", { tableId });
       const history = await peer.receive(
         "gameEventList",
         SERVER_COMMAND_SCHEMAS.gameEventList,
       );
-      peer.send("loaded", { tableID });
+      peer.send("loaded", { tableId });
       return { peer, init, history };
     }),
   );
@@ -726,26 +726,26 @@ async function playGame(alice: Peer, bob: Peer): Promise<number> {
     throw new Error("The first player has no cards.");
   }
   first.peer.send("playerAction", {
-    tableID,
+    tableId,
     action: { type: "play", order: card.order },
   });
   await first.peer.receive("gameEvent", SERVER_COMMAND_SCHEMAS.gameEvent);
-  alice.send("tableTerminate", { tableID });
+  alice.send("tableTerminate", { tableId });
   const finished = await alice.receive(
     "finishOngoingGame",
     SERVER_COMMAND_SCHEMAS.finishOngoingGame,
   );
-  assertDefined(finished.gameID, "The seeded game was not saved.");
+  assertDefined(finished.gameId, "The seeded game was not saved.");
   // The players are now in a shared replay of the game. Leave it, or the browser would join it.
   for (const peer of peers) {
-    peer.send("tableUnattend", { tableID });
+    peer.send("tableUnattend", { tableId });
   }
   await bob.receive(
     "tableGone",
     SERVER_COMMAND_SCHEMAS.tableGone,
-    (data) => data.tableID === tableID,
+    (data) => data.tableId === tableId,
   );
-  return finished.gameID;
+  return finished.gameId;
 }
 
 interface Seed {
@@ -791,7 +791,7 @@ async function seed(address: string): Promise<Seed> {
       },
     },
   });
-  const { tableID } = await bob.receive(
+  const { tableId } = await bob.receive(
     "joined",
     SERVER_COMMAND_SCHEMAS.joined,
   );
@@ -800,23 +800,23 @@ async function seed(address: string): Promise<Seed> {
   const spectators: Peer[] = [];
   for (const name of SPECTATOR_NAMES) {
     const spectator = await connect(address, name);
-    spectator.send("tableSpectate", { tableID });
+    spectator.send("tableSpectate", { tableId });
     await spectator.receive("joined", SERVER_COMMAND_SCHEMAS.joined);
     spectators.push(spectator);
   }
   const bot = await connect(address, "Robot", BOT_VERSION);
 
   async function startGame() {
-    bob.send("tableStart", { tableID });
+    bob.send("tableStart", { tableId });
     await bob.receive("tableStarted", SERVER_COMMAND_SCHEMAS.tableStarted);
-    bob.send("gameInitLoad", { tableID });
+    bob.send("gameInitLoad", { tableId });
     const init = await bob.receive("init", SERVER_COMMAND_SCHEMAS.init);
-    bob.send("gameStateLoad", { tableID });
+    bob.send("gameStateLoad", { tableId });
     const { events } = await bob.receive(
       "gameEventList",
       SERVER_COMMAND_SCHEMAS.gameEventList,
     );
-    bob.send("loaded", { tableID });
+    bob.send("loaded", { tableId });
 
     // When Bob goes first, he clues the newest card of the browser's account, so that its hand
     // shows a clued card.
@@ -835,7 +835,7 @@ async function seed(address: string): Promise<Seed> {
     }
     // A rank clue, since the variant's clue colors do not match its suits one to one.
     bob.send("playerAction", {
-      tableID,
+      tableId,
       action: {
         type: "rankClue",
         target: newest.playerIndex,
@@ -848,7 +848,7 @@ async function seed(address: string): Promise<Seed> {
   // The browser logs in as Alice, with a session of its own.
   const cookie = await login(address, USERNAME);
   async function endGame() {
-    bob.send("tableTerminate", { tableID });
+    bob.send("tableTerminate", { tableId });
     await bob.receive(
       "finishOngoingGame",
       SERVER_COMMAND_SCHEMAS.finishOngoingGame,
@@ -856,7 +856,7 @@ async function seed(address: string): Promise<Seed> {
   }
 
   function passLeader(username: string) {
-    bob.send("tableSetLeader", { tableID, username });
+    bob.send("tableSetLeader", { tableId, username });
   }
 
   return {

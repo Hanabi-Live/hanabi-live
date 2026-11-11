@@ -49,11 +49,11 @@ afterEach(cleanup);
 describe("LobbyChat", () => {
   test("shows lobby messages and private messages, and removes deleted messages", () => {
     act(() => {
-      add(message({ chatID: 1, text: "first" }), true);
-      add(message({ chatID: 2, text: "second" }), true);
+      add(message({ chatId: 1, text: "first" }), true);
+      add(message({ chatId: 2, text: "second" }), true);
       add(message({ recipient: "me", text: "psst" }), true);
       // Table chat goes to the pre-game or game chat, never the lobby chat.
-      add(message({ tableID: tableIdSchema.parse(5), text: "table" }), true);
+      add(message({ tableId: tableIdSchema.parse(5), text: "table" }), true);
     });
 
     const lines = lineTexts();
@@ -68,7 +68,7 @@ describe("LobbyChat", () => {
     act(() => {
       removeDeletedLobbyMessage(1);
       // A deleted message stays deleted if it arrives again.
-      add(message({ chatID: 1, text: "first" }), true);
+      add(message({ chatId: 1, text: "first" }), true);
     });
 
     expect(lineTexts().map((line) => line.split(" ").at(-1))).toStrictEqual([

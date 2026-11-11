@@ -30,7 +30,7 @@ function WatchReplayForm() {
       ? "json"
       : "id",
   );
-  const [gameID, setGameID] = useState(
+  const [gameId, setGameID] = useState(
     () => localStorage.getItem(LOCAL_STORAGE_KEY.WATCH_REPLAY_ID) ?? "",
   );
   const [json, setJSON] = useState(
@@ -60,9 +60,9 @@ function WatchReplayForm() {
     setError(undefined);
 
     let replay:
-      { type: "id"; gameID: number } | { type: "json"; gameJSON: GameJSON };
+      { type: "id"; gameId: number } | { type: "json"; gameJson: GameJSON };
     if (source === "id") {
-      const id = parseIntSafe(gameID);
+      const id = parseIntSafe(gameId);
       if (id === undefined) {
         setError("Error: The database ID must be a number.");
         return;
@@ -71,8 +71,8 @@ function WatchReplayForm() {
         setError("Error: The database ID must be a positive number.");
         return;
       }
-      localStorage.setItem(LOCAL_STORAGE_KEY.WATCH_REPLAY_ID, gameID);
-      replay = { type: "id", gameID: id };
+      localStorage.setItem(LOCAL_STORAGE_KEY.WATCH_REPLAY_ID, gameId);
+      replay = { type: "id", gameId: id };
     } else {
       const parsed = parseGameJSON(json);
       if ("error" in parsed) {
@@ -80,7 +80,7 @@ function WatchReplayForm() {
         return;
       }
       localStorage.setItem(LOCAL_STORAGE_KEY.WATCH_REPLAY_JSON, json);
-      replay = { type: "json", gameJSON: parsed.gameJSON };
+      replay = { type: "json", gameJson: parsed.gameJson };
     }
 
     localStorage.setItem(LOCAL_STORAGE_KEY.WATCH_REPLAY_VISIBILITY, visibility);
@@ -135,7 +135,7 @@ function WatchReplayForm() {
                 placeholder="Game ID"
                 ref={gameIDRef}
                 type="text"
-                value={gameID}
+                value={gameId}
               />
             </li>
           ) : (

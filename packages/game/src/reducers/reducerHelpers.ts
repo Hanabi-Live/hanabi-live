@@ -9,12 +9,12 @@ export function getCharacterNameForPlayer(
   playerIndex: PlayerIndex | undefined,
   characterAssignments: Readonly<Array<number | undefined>>,
 ): string {
-  const characterID = getCharacterIDForPlayer(
+  const characterId = getCharacterIDForPlayer(
     playerIndex,
     characterAssignments,
   );
 
-  return characterID === undefined ? "" : getCharacter(characterID).name;
+  return characterId === undefined ? "" : getCharacter(characterId).name;
 }
 
 function getCharacterIDForPlayer(

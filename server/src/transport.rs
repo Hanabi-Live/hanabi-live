@@ -421,7 +421,7 @@ mod tests {
         let (session, _) = Session::new(UserId(1), "Alice".into(), 1);
         let text = format!(
             "replayCreate {}",
-            serde_json::json!({"type":"json","visibility":"solo","gameJSON":{
+            serde_json::json!({"type":"json","visibility":"solo","gameJson":{
                 "seed":"p2v0s1","notes":[["n".repeat(65536)],[]]
             }})
         );
@@ -465,14 +465,14 @@ mod tests {
             })
             .collect();
         let messages = [
-            test_frame("gameEventList", serde_json::json!({"tableID":42,"list":[]})),
+            test_frame("gameEventList", serde_json::json!({"tableId":42,"list":[]})),
             test_frame(
                 "noteList",
-                serde_json::json!({"tableID":42,"notes":all_notes}),
+                serde_json::json!({"tableId":42,"notes":all_notes}),
             ),
             test_frame(
                 "noteListPlayer",
-                serde_json::json!({"tableID":42,"notes":notes}),
+                serde_json::json!({"tableId":42,"notes":notes}),
             ),
         ];
         assert!(messages[1].len() > 262_144);

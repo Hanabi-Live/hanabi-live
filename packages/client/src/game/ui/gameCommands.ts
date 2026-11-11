@@ -96,14 +96,14 @@ gameCommands.set("finishOngoingGame", (data) => {
   });
 
   // Set the browser address bar. A game that was not saved has no replay address.
-  if (data.gameID !== undefined) {
-    setBrowserAddressBarPath(`${PATH.SHARED_REPLAY}/${data.gameID}`);
+  if (data.gameId !== undefined) {
+    setBrowserAddressBarPath(`${PATH.SHARED_REPLAY}/${data.gameId}`);
   }
 
   // Begin the process of converting an ongoing game to a shared replay.
   globals.store!.dispatch({
     type: "finishOngoingGame",
-    gameID: data.gameID,
+    gameId: data.gameId,
     sharedReplay: data.sharedReplay,
     datetimeFinished: new Date().toISOString(),
   });
@@ -114,7 +114,7 @@ gameCommands.set("finishOngoingGame", (data) => {
   ) {
     // Completed replays may reveal clues; replace the restricted history before exporting it.
     globals.lobby.conn!.send("gameStateLoad", {
-      tableID: globals.lobby.tableID,
+      tableId: globals.lobby.tableId,
     });
   }
 });
@@ -333,7 +333,7 @@ gameCommands.set("idleWarning", (data) => {
     globals.state.playing
       ? () => {
           globals.lobby.conn!.send("idleReset", {
-            tableID: globals.lobby.tableID,
+            tableId: globals.lobby.tableId,
           });
         }
       : undefined,
@@ -393,7 +393,7 @@ gameCommands.set("suggestion", (data) => {
     return;
   }
 
-  suggestTurn(data.username, `table${data.tableID}`, data.segment);
+  suggestTurn(data.username, `table${data.tableId}`, data.segment);
 });
 
 // This is used to update the names of the people currently spectating the game.
@@ -475,12 +475,12 @@ function setURL(data: InitData) {
   let path: string;
   if (data.mode === "replay" || data.mode === "sharedReplay") {
     // A replay of a game that is not in the database, such as an imported game, has no address.
-    if (data.gameID === undefined) {
+    if (data.gameId === undefined) {
       return;
     }
-    path = `${data.mode === "sharedReplay" ? PATH.SHARED_REPLAY : PATH.REPLAY}/${data.gameID}`;
+    path = `${data.mode === "sharedReplay" ? PATH.SHARED_REPLAY : PATH.REPLAY}/${data.gameId}`;
   } else {
-    path = `${PATH.GAME}/${data.tableID}${
+    path = `${PATH.GAME}/${data.tableId}${
       data.mode === "shadowing" ? `/shadow/${data.ourPlayerIndex}` : ""
     }`;
   }
@@ -506,7 +506,7 @@ function initStateStore(data: InitData) {
 
   // The list is empty unless detrimental characters are on.
   let characterAssignments = data.characters.map(
-    (character) => character.characterID ?? undefined,
+    (character) => character.characterId ?? undefined,
   ) as Tuple<number | undefined, NumPlayers> | [];
 
   if (characterAssignments.length === 0) {
@@ -564,7 +564,7 @@ function initStateStore(data: InitData) {
     mode: data.mode,
     datetimeStarted: data.datetimeStarted,
     datetimeFinished: data.datetimeFinished,
-    gameID: data.gameID,
+    gameId: data.gameId,
     sharedReplay: data.sharedReplay,
     pausePlayerIndex: data.pausePlayerIndex,
     pauseQueued: data.pauseQueued,

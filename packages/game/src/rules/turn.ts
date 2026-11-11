@@ -80,9 +80,9 @@ export function getEndGameLength(
 ): number {
   // The Contrarian detrimental character has a 2-turn end game.
   if (options.detrimentalCharacters) {
-    for (const characterID of characterAssignments) {
-      if (characterID !== undefined) {
-        const character = getCharacter(characterID);
+    for (const characterId of characterAssignments) {
+      if (characterId !== undefined) {
+        const character = getCharacter(characterId);
         if (character.name === "Contrarian") {
           return 2;
         }

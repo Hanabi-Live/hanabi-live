@@ -3,7 +3,7 @@ import { compareGameHistory } from "@hanabi-live/data";
 import { expect, test } from "vitest";
 
 function game(id: number, datetimeFinished: string) {
-  return { gameID: id as GameID, datetimeFinished };
+  return { gameId: id as GameID, datetimeFinished };
 }
 
 test("history follows completion time rather than ID allocation order", () => {
@@ -13,7 +13,7 @@ test("history follows completion time rather than ID allocation order", () => {
     game(30, "2026-01-01T07:00:00-05:00"),
   ];
   expect(
-    games.toSorted(compareGameHistory).map(({ gameID }) => gameID),
+    games.toSorted(compareGameHistory).map(({ gameId }) => gameId),
   ).toEqual([10, 30, 20]);
 });
 

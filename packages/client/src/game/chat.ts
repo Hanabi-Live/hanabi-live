@@ -239,7 +239,7 @@ function markRead() {
   // We need to notify the server that we have read everything.
   assertDefined(globals.conn, 'The "globals.conn" object is not initialized.');
   globals.conn.send("chatRead", {
-    tableID: globals.tableID,
+    tableId: globals.tableId,
   });
 
   // Reset the "Chat" UI button back to normal.

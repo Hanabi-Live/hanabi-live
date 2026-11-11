@@ -218,7 +218,7 @@ export class NameFrame extends Konva.Group {
       setTimeout(() => {
         backToLobby();
         globals.lobby.conn!.send("tableSpectate", {
-          tableID: globals.lobby.tableID,
+          tableId: globals.lobby.tableId,
           shadowingPlayerIndex,
         });
       }, 0);
@@ -235,8 +235,8 @@ export class NameFrame extends Konva.Group {
       }
 
       if (globals.state.spectators.length === 1) {
-        const { gameID } = globals.state.replay;
-        if (gameID === undefined) {
+        const { gameId } = globals.state.replay;
+        if (gameId === undefined) {
           setTimeout(() => {
             const msg =
               "Due to technical limitations, you cannot shift your perspective if you are the only person in a JSON replay.";
@@ -252,7 +252,7 @@ export class NameFrame extends Konva.Group {
           backToLobby();
           globals.lobby.conn!.send("replayCreate", {
             type: "id",
-            gameID,
+            gameId,
             visibility:
               globals.state.replay.shared === undefined ? "solo" : "shared",
             shadowingPlayerIndex,
@@ -268,7 +268,7 @@ export class NameFrame extends Konva.Group {
       setTimeout(() => {
         backToLobby();
         globals.lobby.conn!.send("tableSpectate", {
-          tableID: globals.lobby.tableID,
+          tableId: globals.lobby.tableId,
           shadowingPlayerIndex,
         });
       }, 0);

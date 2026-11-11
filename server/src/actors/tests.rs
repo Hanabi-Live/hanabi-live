@@ -136,7 +136,7 @@ fn typed_game_frames_preserve_wire_schema_and_projected_identities() -> Result<(
                 }
             }
         }
-        assert_eq!(body, json!({"tableID":42,"events":expected}));
+        assert_eq!(body, json!({"tableId":42,"events":expected}));
         for (event, expected) in list.iter().zip(body["events"].as_array().unwrap()) {
             let encoded = test_frame("gameEvent", game_event(TableId(42), event));
             let (command, body) = encoded
@@ -144,7 +144,7 @@ fn typed_game_frames_preserve_wire_schema_and_projected_identities() -> Result<(
                 .context("Missing action separator")?;
             assert_eq!(command, "gameEvent");
             let body: Value = serde_json::from_str(body)?;
-            assert_eq!(body, json!({"tableID":42,"event":expected}));
+            assert_eq!(body, json!({"tableId":42,"event":expected}));
             if expected["type"] == "draw" {
                 let player = usize::try_from(expected["playerIndex"].as_u64().unwrap()).unwrap();
                 let order = usize::try_from(expected["order"].as_u64().unwrap()).unwrap();
@@ -603,7 +603,7 @@ async fn idle_live_games_warn_once_and_players_can_keep_them_going() -> Result<(
     );
 
     // Only players can keep the game going.
-    let idle_reset = || client_message("idleReset", &json!({"tableID":id}));
+    let idle_reset = || client_message("idleReset", &json!({"tableId":id}));
     ensure!(
         actor
             .live_command(viewer.clone(), idle_reset()?)
@@ -982,7 +982,7 @@ async fn full_table_mailboxes_do_not_block_hub_and_replacements_fence_private_ef
     sender
         .send(HubCommand::Client {
             session: old.clone(),
-            message: client_message("gameInitLoad", &json!({"tableID":42}))?,
+            message: client_message("gameInitLoad", &json!({"tableId":42}))?,
             reply,
         })
         .await?;

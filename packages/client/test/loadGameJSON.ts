@@ -48,14 +48,14 @@ interface JSONAction {
   value: number;
 }
 
-export function loadGameJSON(gameJSON: JSONGame): State {
-  const potentialNumPlayers = gameJSON.players.length;
+export function loadGameJSON(gameJson: JSONGame): State {
+  const potentialNumPlayers = gameJson.players.length;
   if (potentialNumPlayers < MIN_PLAYERS || potentialNumPlayers > MAX_PLAYERS) {
     throw new Error("The game JSON does not have a valid amount of players.");
   }
   const numPlayers = potentialNumPlayers as NumPlayers;
 
-  const metadata = getDefaultMetadata(numPlayers, gameJSON.options.variant);
+  const metadata = getDefaultMetadata(numPlayers, gameJson.options.variant);
   const variant = getVariant(metadata.options.variantName);
 
   const cardsPerHand = getCardsPerHand(metadata.options);
@@ -64,7 +64,7 @@ export function loadGameJSON(gameJSON: JSONGame): State {
    * The type of `number` in the JSON is too loose for the types of `SuitIndex` and `Rank`, so we
    * must use a type assertion.
    */
-  const deck = gameJSON.deck as CardIdentity[];
+  const deck = gameJson.deck as CardIdentity[];
 
   const actions: GameAction[] = [];
   let topOfDeck = dealInitialCards(numPlayers, cardsPerHand, actions, deck);
@@ -73,12 +73,12 @@ export function loadGameJSON(gameJSON: JSONGame): State {
   let turn = 0; // Start on the 0th turn.
   let currentPlayerIndex: PlayerIndex = 0; // The player at index 0 goes first.
 
-  for (const actionJSON of gameJSON.actions) {
+  for (const actionJSON of gameJson.actions) {
     const action = parseJSONAction(currentPlayerIndex, turn, deck, actionJSON);
     if (action !== undefined) {
       actions.push(action);
       if (
-        topOfDeck < gameJSON.deck.length
+        topOfDeck < gameJson.deck.length
         && (action.type === "discard" || action.type === "play")
       ) {
         actions.push(drawCard(currentPlayerIndex, topOfDeck, deck));
@@ -93,7 +93,7 @@ export function loadGameJSON(gameJSON: JSONGame): State {
   // If the game was exported from the server and it ended in a specific way, the final action will
   // be a "gameOver" action. Otherwise, we need to insert one at the end, which matches what the
   // server would do when emulating all of the database actions.
-  const finalGameJSONAction = gameJSON.actions.at(-1);
+  const finalGameJSONAction = gameJson.actions.at(-1);
   assertDefined(
     finalGameJSONAction,
     "Failed to get the final action of the JSON.",
@@ -135,7 +135,7 @@ export function loadGameJSON(gameJSON: JSONGame): State {
         assertDefined(hand, `Failed to find the hand at index: ${a.target}`);
 
         const list: CardOrder[] = hand.filter((order) => {
-          const jsonCard = gameJSON.deck[order];
+          const jsonCard = gameJson.deck[order];
           assertDefined(
             jsonCard,
             `Failed to find the JSON card at index: ${order}`,
@@ -154,7 +154,7 @@ export function loadGameJSON(gameJSON: JSONGame): State {
 
       case "play": {
         // Check if this is actually a play or a misplay.
-        const jsonCard = gameJSON.deck[a.order] as CardIdentity | undefined;
+        const jsonCard = gameJson.deck[a.order] as CardIdentity | undefined;
         assertDefined(
           jsonCard,
           `Failed to get the card at order ${a.order} in the JSON deck.`,

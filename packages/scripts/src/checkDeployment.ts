@@ -62,7 +62,7 @@ async function checkoutRevision(): Promise<string> {
 async function signIn(
   version: string,
   validate: boolean,
-): Promise<{ userID: number; cookie: string }> {
+): Promise<{ userId: number; cookie: string }> {
   const response = await fetch(`https://${SITE}/login`, {
     method: "POST",
     body: new URLSearchParams({
@@ -77,7 +77,7 @@ async function signIn(
       `Signing in as "${ACCOUNT}" returned HTTP ${response.status}: ${await response.text()}`,
     );
   }
-  const body = (await response.json()) as { userID?: unknown };
+  const body = (await response.json()) as { userId?: unknown };
   if (validate) {
     const result = loginResponseSchema.safeParse(body);
     if (!result.success) {
@@ -90,19 +90,19 @@ async function signIn(
     .getSetCookie()
     .map((header) => header.split(";", 1)[0])
     .join("; ");
-  if (typeof body.userID !== "number" || cookie === "") {
+  if (typeof body.userId !== "number" || cookie === "") {
     fail("Signing in did not return a user ID and a session cookie.");
   }
-  return { userID: body.userID, cookie };
+  return { userId: body.userId, cookie };
 }
 
 async function joinLobby(
   version: string,
-  userID: number,
+  userId: number,
   cookie: string,
   validate: boolean,
 ) {
-  const url = `wss://${SITE}/ws?account=${userID}&version=${encodeURIComponent(version)}`;
+  const url = `wss://${SITE}/ws?account=${userId}&version=${encodeURIComponent(version)}`;
   const socket = new BunWebSocket(url, { headers: { Cookie: cookie } });
   const received = new Set<string>();
   const { promise, resolve, reject } = Promise.withResolvers<undefined>();
@@ -168,9 +168,9 @@ if (!validate) {
     `The site serves ${version}, but this checkout is at ${revision}, so payloads are not validated against its schemas.`,
   );
 }
-const { userID, cookie } = await signIn(version, validate);
+const { userId, cookie } = await signIn(version, validate);
 try {
-  await joinLobby(version, userID, cookie, validate);
+  await joinLobby(version, userId, cookie, validate);
 } catch (error) {
   fail(error instanceof Error ? error.message : String(error));
 }

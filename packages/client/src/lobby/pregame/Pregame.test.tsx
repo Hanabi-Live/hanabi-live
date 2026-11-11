@@ -51,19 +51,19 @@ function player(
 }
 
 const game: Game = {
-  tableID: TABLE_ID,
+  tableId: TABLE_ID,
   settings: {
     name: "my table",
     maxPlayers: 5,
     options: { ...defaultOptions, variantName: "No Variant", speedrun: true },
   },
-  ownerID: userIdSchema.parse(1),
+  ownerId: userIdSchema.parse(1),
   passwordProtected: true,
   players: [player(0, "alice", true), player(1, "bob", false)],
 };
 
 const table = {
-  tableID: TABLE_ID,
+  tableId: TABLE_ID,
   settings: game.settings,
   playerNames: ["alice", "bob"],
   spectators: [
@@ -77,16 +77,16 @@ const send = vi.fn();
 beforeEach(() => {
   globals.username = "me";
   globals.friends = ["dave"];
-  globals.tableID = TABLE_ID;
+  globals.tableId = TABLE_ID;
   globals.conn = { send } as unknown as Connection;
   send.mockClear();
   store.dispatch(tableChanged(table));
   store.dispatch(
     userChanged({
-      userID: userIdSchema.parse(1),
+      userId: userIdSchema.parse(1),
       username: "alice",
       status: "pregame",
-      tableID: TABLE_ID,
+      tableId: TABLE_ID,
       hGroupConventions: true,
       hGroupLevel: 3,
       bot: false,
@@ -133,7 +133,7 @@ describe("Pregame", () => {
       screen.getByText("alice").click();
     });
     expect(send).toHaveBeenLastCalledWith("tableSpectate", {
-      tableID: TABLE_ID,
+      tableId: TABLE_ID,
       shadowingPlayerIndex: 0,
     });
 
@@ -142,7 +142,7 @@ describe("Pregame", () => {
       screen.getByText("bob \u{1F575}\u{FE0F}").click();
     });
     expect(send).toHaveBeenLastCalledWith("tableSpectate", {
-      tableID: TABLE_ID,
+      tableId: TABLE_ID,
       shadowingPlayerIndex: undefined,
     });
   });

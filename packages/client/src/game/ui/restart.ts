@@ -5,7 +5,7 @@ import { globals } from "./UIGlobals.ts";
 /** Tells the leader whether we will play again if they restart. */
 export function decline(declined: boolean): void {
   globals.lobby.conn!.send("tableRestartDecline", {
-    tableID: globals.lobby.tableID,
+    tableId: globals.lobby.tableId,
     declined,
   });
 }
@@ -34,7 +34,7 @@ export function request(hidePregame: boolean): void {
 
   setPending(true);
   globals.lobby.conn!.send("tableRestart", {
-    tableID: globals.lobby.tableID,
+    tableId: globals.lobby.tableId,
     hidePregame,
   });
 }

@@ -153,9 +153,9 @@
     { "name": "Picky", "metadata": -1 }
   ],
 
-  // "gameID" is an integer that corresponds to the database ID of the game on the "Hanab Live"
+  // "gameId" is an integer that corresponds to the database ID of the game on the "Hanab Live"
   // website. This field is optional.
-  "gameID": 12345,
+  "gameId": 12345,
 
   // "seed" is a string corresponding to the seed of the game on the "Hanab Live" website. This
   // field is optional.

@@ -17,7 +17,7 @@ use super::*;
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct ReplayGame {
     /// The game's ID, when it is exported from the database. Importing does not use it.
-    #[serde(rename = "gameID", skip_serializing_if = "Option::is_none")]
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub game_id: Option<GameId>,
     #[serde(skip_serializing_if = "Option::is_none")]
     #[schemars(length(max = MAX_PLAYERS))]
@@ -92,7 +92,7 @@ pub struct ReplayOptions {
 
 /// A player's detrimental character in the replay format.
 #[derive(Clone, Debug, Default, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
-#[serde(deny_unknown_fields)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct ReplayCharacter {
     /// Absent, or empty, when the player has no character.
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -208,7 +208,6 @@ pub enum ReplaySoundEffect {
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct ReplayLeader {
-    #[serde(rename = "tableID")]
     pub table_id: TableId,
     #[schemars(with = "Username")]
     pub username: String,
@@ -218,7 +217,6 @@ pub struct ReplayLeader {
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct RestartDeclined {
-    #[serde(rename = "tableID")]
     pub table_id: TableId,
     #[schemars(with = "Vec<Username>", length(max = MAX_PLAYERS))]
     pub usernames: Vec<String>,
@@ -228,7 +226,6 @@ pub struct RestartDeclined {
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct Suggestion {
-    #[serde(rename = "tableID")]
     pub table_id: TableId,
     #[schemars(with = "Username")]
     pub username: String,
@@ -239,7 +236,6 @@ pub struct Suggestion {
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct Hypothetical {
-    #[serde(rename = "tableID")]
     pub table_id: TableId,
     pub show_drawn_cards: bool,
     /// The hypothetical's events so far, in order.

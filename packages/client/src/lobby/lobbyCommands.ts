@@ -65,7 +65,7 @@ lobbyCommands.set("friends", (data) => {
 lobbyCommands.set("pregame", (data) => {
   const previousPlayers = globals.game?.players;
   globals.game = data;
-  globals.tableID = data.tableID;
+  globals.tableId = data.tableId;
   if (previousPlayers?.length !== data.players.length) {
     // Disable the start game button for a short time after the player count changes.
     clearTimeout(startGameCooldownTimeout);
@@ -94,7 +94,7 @@ lobbyCommands.set("gameHistoryOtherScores", (data) => {
 });
 
 lobbyCommands.set("joined", (data) => {
-  globals.tableID = data.tableID;
+  globals.tableId = data.tableId;
 
   // We joined a new game, so transition between screens.
   pregame.show();
@@ -119,20 +119,20 @@ lobbyCommands.set("table", (data) => {
 
 // Received by the client when a table no longer has any members present.
 lobbyCommands.set("tableGone", (data) => {
-  store.dispatch(tableGone(data.tableID));
+  store.dispatch(tableGone(data.tableId));
 
   // If we were spectating the pre-game of this table, return to the lobby.
   if (
     globals.currentScreen === Screen.PreGame
-    && globals.tableID === data.tableID
+    && globals.tableId === data.tableId
   ) {
     pregame.hide();
-    globals.tableID = NO_TABLE_ID;
+    globals.tableId = NO_TABLE_ID;
   }
 
   // If we followed a link to this table, it no longer exists, so stay in the lobby.
   if (globals.currentScreen === Screen.Lobby) {
-    url.leaveTableLink(data.tableID);
+    url.leaveTableLink(data.tableId);
   }
 });
 
@@ -143,7 +143,7 @@ lobbyCommands.set("tableList", (dataList) => {
 
 lobbyCommands.set("tableStarted", (data) => {
   // Record the table ID for later.
-  globals.tableID = data.tableID;
+  globals.tableId = data.tableId;
 
   if (data.stage !== "replay" && globals.currentScreen === Screen.PreGame) {
     pregame.hide(false);
@@ -153,26 +153,26 @@ lobbyCommands.set("tableStarted", (data) => {
 
 // Received by the client when a user connects or has a new status.
 lobbyCommands.set("user", (data) => {
-  globals.userMap.set(data.userID, data);
+  globals.userMap.set(data.userId, data);
   store.dispatch(userChanged(data));
 });
 
 lobbyCommands.set("userList", (dataList) => {
   for (const data of dataList) {
-    globals.userMap.set(data.userID, data);
+    globals.userMap.set(data.userId, data);
   }
   store.dispatch(usersListed(dataList));
 });
 
 lobbyCommands.set("userLeft", (data) => {
-  globals.userMap.delete(data.userID);
-  store.dispatch(userLeft(data.userID));
+  globals.userMap.delete(data.userId);
+  store.dispatch(userLeft(data.userId));
 });
 
 lobbyCommands.set("userInactive", (data) => {
-  const { userID, inactive } = data;
+  const { userId, inactive } = data;
 
-  const user = globals.userMap.get(userID);
+  const user = globals.userMap.get(userId);
   if (user === undefined) {
     return;
   }
@@ -181,15 +181,15 @@ lobbyCommands.set("userInactive", (data) => {
     ...user,
     inactive,
   };
-  globals.userMap.set(userID, newUser);
+  globals.userMap.set(userId, newUser);
   store.dispatch(userInactiveChanged(data));
 });
 
 // Received by the client upon first connecting.
 lobbyCommands.set("welcome", (data) => {
   // Store some variables (mostly relating to our user account).
-  globals.userID = data.userID;
-  setTabAccount(data.userID);
+  globals.userId = data.userId;
+  setTabAccount(data.userId);
   globals.username = data.username; // We might have logged-in with a different stylization
   globals.totalGames = undefined;
   globals.muted = data.muted;

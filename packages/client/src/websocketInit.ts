@@ -268,26 +268,26 @@ function openConnection(isReconnect: boolean) {
       if (
         globals.currentScreen === Screen.Game
         && globals.ui !== undefined
-        && data.userID === globals.userID
+        && data.userId === globals.userId
       ) {
         globals.muted = data.muted;
         globals.settings = data.settings;
         globals.friends = data.friends;
         globals.blocked = data.blocked;
         theme.setDarkMode(globals.settings.darkMode);
-        const retained = tableIdSchema.parse(globals.tableID);
+        const retained = tableIdSchema.parse(globals.tableId);
         conn.on("tableStarted", (table) => {
           if (!isCurrentConnection(conn)) {
             return;
           }
           if (
-            table.tableID === retained
+            table.tableId === retained
             && table.stage !== "replay"
             && globals.ui !== undefined
             && globals.ui.globals.store !== undefined
             && !globals.ui.globals.state.finished
           ) {
-            conn.send("gameStateLoad", { tableID: retained });
+            conn.send("gameStateLoad", { tableId: retained });
           } else {
             globals.ui?.destroy();
             globals.ui = undefined;
@@ -302,7 +302,7 @@ function openConnection(isReconnect: boolean) {
           gameCommands.get("gameEventList")?.(eventList);
           conn.setReady(true);
           if (!rebuilding) {
-            conn.send("loaded", { tableID: globals.tableID });
+            conn.send("loaded", { tableId: globals.tableId });
           }
           initCommands(conn);
         });
@@ -311,7 +311,7 @@ function openConnection(isReconnect: boolean) {
             ? "tableReattend"
             : "tableSpectate",
           {
-            tableID: retained,
+            tableId: retained,
             ...(!data.playingAtTables.includes(retained) && {
               shadowingPlayerIndex:
                 globals.ui.globals.store !== undefined

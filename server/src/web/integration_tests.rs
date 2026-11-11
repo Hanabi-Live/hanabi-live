@@ -324,11 +324,11 @@ async fn uptime_replies_only_to_requester_in_lobby_and_table_postgres() {
         ))
         .await
         .unwrap();
-    let table = receive(&mut alice, "joined").await["tableID"]
+    let table = receive(&mut alice, "joined").await["tableId"]
         .as_u64()
         .unwrap();
     bob.send(WireMessage::Text(
-        format!("tableJoin {{\"tableID\":{table}}}").into(),
+        format!("tableJoin {{\"tableId\":{table}}}").into(),
     ))
     .await
     .unwrap();
@@ -348,7 +348,7 @@ async fn uptime_replies_only_to_requester_in_lobby_and_table_postgres() {
     for table in [None, Some(table)] {
         let payload = table.map_or_else(
             || json!({"text":"/UpTiMe"}),
-            |table| json!({"text":"/UpTiMe","tableID":table}),
+            |table| json!({"text":"/UpTiMe","tableId":table}),
         );
         alice
             .send(WireMessage::Text(format!("chat {payload}").into()))
@@ -358,10 +358,10 @@ async fn uptime_replies_only_to_requester_in_lobby_and_table_postgres() {
             let reply = receive(&mut alice, "chat").await;
             assert!(reply.get("username").is_none());
             assert_eq!(reply["recipient"], "Alice");
-            assert_eq!(reply.get("tableID").and_then(Value::as_u64), table);
+            assert_eq!(reply.get("tableId").and_then(Value::as_u64), table);
             assert_eq!(reply["source"], "server");
             assert!(reply["text"].as_str().unwrap().starts_with(prefix));
-            assert!(reply.get("chatID").is_none());
+            assert!(reply.get("chatId").is_none());
         }
         bob.send(WireMessage::Text("sync {}".into())).await.unwrap();
         tokio::time::timeout(Duration::from_secs(5), async {
@@ -477,7 +477,7 @@ async fn native_browser_login_ws_bootstrap_and_command_routing_postgres() {
         .await
         .unwrap();
     let history = receive(&mut alice, "gameHistory").await;
-    assert_eq!(history[0]["gameID"], historical);
+    assert_eq!(history[0]["gameId"], historical);
     assert_eq!(history[0]["options"]["variantName"], "6 Suits");
     assert_eq!(history[0]["options"]["timeBaseSeconds"], 180);
     assert_eq!(history[0]["options"]["emptyClues"], true);
@@ -495,13 +495,13 @@ async fn native_browser_login_ws_bootstrap_and_command_routing_postgres() {
         .unwrap();
     loop {
         let user = receive(&mut alice, "user").await;
-        if user["userID"] == welcome["userID"] && user["hGroupConventions"] == true {
+        if user["userId"] == welcome["userId"] && user["hGroupConventions"] == true {
             break;
         }
     }
     alice
         .send(WireMessage::Text(
-            r#"chatPM {"text":"private <content>","recipient":"Bob"}"#.into(),
+            r#"chatPm {"text":"private <content>","recipient":"Bob"}"#.into(),
         ))
         .await
         .unwrap();
@@ -509,8 +509,8 @@ async fn native_browser_login_ws_bootstrap_and_command_routing_postgres() {
     assert_eq!(pm["username"], "Alicè");
     assert_eq!(pm["recipient"], "Bob");
     assert_eq!(pm["text"], "private &lt;content&gt;");
-    assert!(pm.get("chatID").is_none());
-    assert!(pm.get("tableID").is_none());
+    assert!(pm.get("chatId").is_none());
+    assert!(pm.get("tableId").is_none());
     let echo = receive(&mut alice, "chat").await;
     assert_eq!(echo, pm);
     alice
@@ -545,15 +545,15 @@ async fn native_browser_login_ws_bootstrap_and_command_routing_postgres() {
         .unwrap();
     let table = receive(&mut alice, "table").await;
     assert!(
-        table["tableID"]
+        table["tableId"]
             .as_u64()
-            .unwrap_or_else(|| table["tableID"].as_u64().unwrap())
+            .unwrap_or_else(|| table["tableId"].as_u64().unwrap())
             > 0
     );
     let mut replacement = connect(&fixture, &bob_cookie).await;
     receive(&mut replacement, "welcome").await;
     let alice_generation = Session::new(
-        UserId(i32::try_from(welcome["userID"].as_i64().unwrap()).unwrap()),
+        UserId(i32::try_from(welcome["userId"].as_i64().unwrap()).unwrap()),
         "Alicè".into(),
         1,
     )
@@ -565,7 +565,7 @@ async fn native_browser_login_ws_bootstrap_and_command_routing_postgres() {
         .send(HubCommand::LobbyEffects {
             session: alice_generation,
             effects: vec![Publication::ToUser {
-                id: UserId(i32::try_from(bob_welcome["userID"].as_i64().unwrap()).unwrap()),
+                id: UserId(i32::try_from(bob_welcome["userId"].as_i64().unwrap()).unwrap()),
                 generation: 2,
                 message: Outgoing::new(
                     hanabi_protocol::server::CHAT,

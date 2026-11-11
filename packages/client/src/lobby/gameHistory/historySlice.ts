@@ -15,7 +15,7 @@ type OtherScores = ServerCommandData["gameHistoryOtherScores"];
 type LobbyStatus = ServerCommandData["lobbyStatus"];
 
 const gamesAdapter = createEntityAdapter({
-  selectId: (game: GameHistoryEntry): number => game.gameID,
+  selectId: (game: GameHistoryEntry): number => game.gameId,
 });
 
 interface HistoryState {

@@ -10,7 +10,7 @@
 use super::*;
 
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
-#[serde(deny_unknown_fields)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct Empty {}
 
 /// Sent before a graceful restart or stop closes the connection.
@@ -43,12 +43,11 @@ pub enum LobbyStatus {
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct User {
-    #[serde(rename = "userID")]
     pub user_id: UserId,
     #[schemars(with = "Username")]
     pub username: String,
     pub status: Status,
-    #[serde(rename = "tableID", skip_serializing_if = "Option::is_none")]
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub table_id: Option<TableId>,
     pub h_group_conventions: bool,
     /// The highest H-Group level that this user wants to play at. Absent when they did not choose
@@ -67,14 +66,12 @@ pub struct UserList(pub Vec<User>);
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct UserLeft {
-    #[serde(rename = "userID")]
     pub user_id: UserId,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct UserInactive {
-    #[serde(rename = "userID")]
     pub user_id: UserId,
     pub inactive: bool,
 }
@@ -107,7 +104,7 @@ pub struct Notice {
     #[serde(skip_serializing_if = "Option::is_none")]
     #[schemars(length(min = 1))]
     pub code: Option<String>,
-    #[serde(rename = "diagnosticID", skip_serializing_if = "Option::is_none")]
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[schemars(length(min = 1))]
     pub diagnostic_id: Option<String>,
 }
@@ -222,7 +219,6 @@ impl Default for Settings {
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct Welcome {
-    #[serde(rename = "userID")]
     pub user_id: UserId,
     #[schemars(with = "Username")]
     pub username: String,
@@ -245,7 +241,6 @@ pub struct Welcome {
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct SpectatedTable {
-    #[serde(rename = "tableID")]
     pub table_id: TableId,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub shadowing_player_index: Option<PlayerIndex>,
@@ -316,9 +311,9 @@ pub struct TableSettings {
     pub seed: Option<String>,
     /// A finished game that the table plays again with its deal, seats, characters, and options,
     /// which replace the others.
-    #[serde(rename = "replayGameID", skip_serializing_if = "Option::is_none")]
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub replay_game_id: Option<GameId>,
-    /// The turn of `replayGameID` that the game starts from, counting from 1. Absent starts from
+    /// The turn of `replayGameId` that the game starts from, counting from 1. Absent starts from
     /// the first turn.
     #[serde(skip_serializing_if = "Option::is_none")]
     #[schemars(range(min = 1, max = MAX_GAME_ACTIONS))]
@@ -351,7 +346,6 @@ pub struct Spectator {
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct Spectators {
-    #[serde(rename = "tableID")]
     pub table_id: TableId,
     pub spectators: Vec<Spectator>,
 }
@@ -361,14 +355,12 @@ pub struct Spectators {
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct Table {
     /// The game that a replay shows, if it is stored in the database.
-    #[serde(rename = "gameID", skip_serializing_if = "Option::is_none")]
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub game_id: Option<GameId>,
-    #[serde(rename = "tableID")]
     pub table_id: TableId,
     /// Whether the recipient is one of the players.
     pub joined: bool,
     pub settings: TableSettings,
-    #[serde(rename = "ownerID")]
     pub owner_id: UserId,
     pub password_protected: bool,
     #[schemars(with = "Vec<Username>")]
@@ -399,7 +391,6 @@ pub struct TableList(pub Vec<Table>);
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct GameHistoryEntry {
-    #[serde(rename = "gameID")]
     pub game_id: GameId,
     pub options: GameOptions,
     /// Absent for a game with its own deck instead of a seed, such as an imported one.
@@ -495,10 +486,8 @@ pub struct PregamePlayer {
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct Pregame {
-    #[serde(rename = "tableID")]
     pub table_id: TableId,
     pub settings: TableSettings,
-    #[serde(rename = "ownerID")]
     pub owner_id: UserId,
     pub players: Vec<PregamePlayer>,
     pub password_protected: bool,

@@ -28,7 +28,7 @@ const KIND_ORDER = {
 } as const satisfies Record<UserKind, number>;
 
 const usersAdapter = createEntityAdapter({
-  selectId: (user: User) => user.userID,
+  selectId: (user: User) => user.userId,
 });
 
 const usersSlice = createSlice({
@@ -49,10 +49,10 @@ const usersSlice = createSlice({
     },
     userInactiveChanged(
       state,
-      action: PayloadAction<{ userID: UserID; inactive: boolean }>,
+      action: PayloadAction<{ userId: UserID; inactive: boolean }>,
     ) {
-      const { userID, inactive } = action.payload;
-      usersAdapter.updateOne(state, { id: userID, changes: { inactive } });
+      const { userId, inactive } = action.payload;
+      usersAdapter.updateOne(state, { id: userId, changes: { inactive } });
     },
     usersCleared(state) {
       usersAdapter.removeAll(state);

@@ -349,7 +349,7 @@ function getTooltipContent(): string {
   let content = "<strong>Game Info:</strong>";
   content += '<ul class="game-tooltips-ul">';
 
-  const currentTable = globals.lobby.getTable(globals.lobby.tableID);
+  const currentTable = globals.lobby.getTable(globals.lobby.tableId);
   if (currentTable !== undefined) {
     content += tooltipField(
       "fas fa-signature",
@@ -357,16 +357,16 @@ function getTooltipContent(): string {
       escapeHtml(currentTable.settings.name),
     );
 
-    const owner = globals2.userMap.get(currentTable.ownerID);
+    const owner = globals2.userMap.get(currentTable.ownerId);
     const ownerName = owner?.username ?? "Unknown";
     content += tooltipField("fas fa-crown", "Owner", escapeHtml(ownerName));
   }
 
-  if (globals.state.finished && globals.state.replay.gameID !== undefined) {
+  if (globals.state.finished && globals.state.replay.gameId !== undefined) {
     content += tooltipField(
       "fas fa-fingerprint",
       "Database ID",
-      `<strong>${globals.state.replay.gameID}</strong>`,
+      `<strong>${globals.state.replay.gameId}</strong>`,
     );
   }
 

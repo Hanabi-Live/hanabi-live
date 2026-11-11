@@ -205,7 +205,7 @@ function getVariantsFromVariantDescriptions(
       oldVariantsNameToIDMap,
       oldVariantsIDToNameMap,
     ),
-    newID: getNewVariantID(variantDescription, suitsNameMap),
+    newId: getNewVariantID(variantDescription, suitsNameMap),
     ...variantDescription,
   }));
 }
@@ -226,18 +226,18 @@ function getNextUnusedVariantID(
 
   // Otherwise, find the lowest unused variant ID.
   let foundUnusedVariantID = false;
-  let variantID = -1;
+  let variantId = -1;
   do {
-    variantID++;
-    const existingVariantName = oldVariantsIDToNameMap.get(variantID);
+    variantId++;
+    const existingVariantName = oldVariantsIDToNameMap.get(variantId);
     if (existingVariantName === undefined) {
       foundUnusedVariantID = true;
-      oldVariantsIDToNameMap.set(variantID, variantName);
-      oldVariantsNameToIDMap.set(variantName, variantID);
+      oldVariantsIDToNameMap.set(variantId, variantName);
+      oldVariantsNameToIDMap.set(variantName, variantId);
     }
   } while (!foundUnusedVariantID);
 
-  return variantID;
+  return variantId;
 }
 
 function hasMissingVariants(

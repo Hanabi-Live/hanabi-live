@@ -32,8 +32,8 @@ export function variantsInit(
 
   // A test validates the file against the server's catalog contract.
   for (const variantJSON of variantsJSON as readonly VariantJSON[]) {
-    const { id, newID } = variantJSON;
-    const variant = createVariant(colorsMap, suitsMap, variantJSON, id, newID);
+    const { id, newId } = variantJSON;
+    const variant = createVariant(colorsMap, suitsMap, variantJSON, id, newId);
 
     variants.set(variantJSON.name, variant);
   }
@@ -46,7 +46,7 @@ export function createVariant(
   suitsMap: ReadonlyMap<string, Suit>,
   variantDescription: VariantDescription,
   id: number,
-  newID: string,
+  newId: string,
 ): Variant {
   // Fields are validated in the order that they appear in `CatalogVariant` (in
   // "server/protocol/src/lib.rs").
@@ -293,7 +293,7 @@ export function createVariant(
     hasInverted,
 
     id,
-    newID,
+    newId,
 
     maxScore,
     offsetCornerElements,

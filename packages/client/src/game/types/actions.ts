@@ -54,7 +54,7 @@ export interface ActionInit extends Readonly<
     | "datetimeStarted"
     | "datetimeFinished"
     | "mode"
-    | "gameID"
+    | "gameId"
     | "sharedReplay"
     | "pausePlayerIndex"
     | "pauseQueued"
@@ -99,7 +99,7 @@ interface ActionSpectators {
 }
 
 interface ActionFinishOngoingGame extends Readonly<
-  Pick<ServerCommandData["finishOngoingGame"], "gameID" | "sharedReplay">
+  Pick<ServerCommandData["finishOngoingGame"], "gameId" | "sharedReplay">
 > {
   readonly type: "finishOngoingGame";
 

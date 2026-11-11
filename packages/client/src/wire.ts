@@ -28,10 +28,10 @@ type WireCardIdentity =
 
 /** Converts an action that we took into the "playerAction" command's payload. */
 export function toWireAction(
-  tableID: number,
+  tableId: number,
   action: ClientAction,
 ): z.input<typeof playerActionRequestSchema> {
-  return { tableID, action };
+  return { tableId, action };
 }
 
 /** The game state indexes some lists by seat, so each needs one entry per player. */

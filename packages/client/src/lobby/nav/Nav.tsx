@@ -411,7 +411,7 @@ function selectCanStartGame(state: RootState): boolean {
   const { game, startGameSent, startGameCooldown } = state.pregame;
   return (
     game !== undefined
-    && game.ownerID === state.session.userID
+    && game.ownerId === state.session.userId
     && game.players.length >= MIN_PLAYERS
     && game.players.length <= MAX_PLAYERS
     && !startGameSent
@@ -442,14 +442,14 @@ function selectJoinButton(state: RootState): {
 
 function startGame() {
   globals.conn!.send("tableStart", {
-    tableID: globals.tableID,
+    tableId: globals.tableId,
     intendedPlayerNames: globals.game?.players.map((player) => player.username),
   });
   store.dispatch(startGameSentChanged(true));
 }
 
 function joinGame() {
-  const table = globals.getTable(globals.tableID);
+  const table = globals.getTable(globals.tableId);
   if (table === undefined) {
     return;
   }
@@ -464,30 +464,30 @@ function joinGame() {
       );
       return;
     }
-    globals.conn!.send("tableLeave", { tableID: oldTable.tableID });
+    globals.conn!.send("tableLeave", { tableId: oldTable.tableId });
   }
   tableJoin(table);
 }
 
 function spectateGame() {
-  const table = globals.getTable(globals.tableID);
+  const table = globals.getTable(globals.tableId);
   if (table === undefined) {
     return;
   }
 
-  globals.conn!.send("tableLeave", { tableID: globals.tableID });
+  globals.conn!.send("tableLeave", { tableId: globals.tableId });
   tableSpectate(table);
 }
 
 function returnToLobby() {
   pregame.hide();
-  globals.conn!.send("tableUnattend", { tableID: globals.tableID });
-  globals.tableID = NO_TABLE_ID;
+  globals.conn!.send("tableUnattend", { tableId: globals.tableId });
+  globals.tableId = NO_TABLE_ID;
 }
 
 function leaveGame() {
   // "Leave Game" and "Return to Lobby" are the same for spectators.
-  const table = globals.getTable(globals.tableID);
+  const table = globals.getTable(globals.tableId);
   if (table === undefined) {
     return;
   }
@@ -499,6 +499,6 @@ function leaveGame() {
   ) {
     returnToLobby();
   } else {
-    globals.conn!.send("tableLeave", { tableID: globals.tableID });
+    globals.conn!.send("tableLeave", { tableId: globals.tableId });
   }
 }

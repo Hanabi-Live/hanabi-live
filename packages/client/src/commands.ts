@@ -40,15 +40,15 @@ commands.set("error", (data) => {
 // Received by the client when a new chat message arrives.
 commands.set("chat", (data) => {
   chat.add(data, false); // The second argument is "fast".
-  acknowledgeChatRead(data.tableID, data.recipient);
+  acknowledgeChatRead(data.tableId, data.recipient);
 });
 
 commands.set("chatDelete", (data) => {
-  chat.removeDeletedLobbyMessage(data.chatID);
+  chat.removeDeletedLobbyMessage(data.chatId);
 });
 
-commands.set("chatPMHistory", (data) => {
-  const room = chat.tableRoom(data.tableID);
+commands.set("chatPmHistory", (data) => {
+  const room = chat.tableRoom(data.tableId);
 
   if (data.messages.length === 0) {
     chat.sendSelfPMFromServer(
@@ -65,11 +65,11 @@ commands.set("chatPMHistory", (data) => {
 });
 
 function acknowledgeChatRead(
-  tableID: number | undefined,
+  tableId: number | undefined,
   recipient: string | undefined,
 ) {
   const isPM = recipient !== undefined && recipient !== "";
-  const isTableRoom = tableID !== undefined;
+  const isTableRoom = tableId !== undefined;
   const isLobbyChat = !isPM && !isTableRoom;
   if (isLobbyChat) {
     return;
@@ -78,7 +78,7 @@ function acknowledgeChatRead(
   if (globals.currentScreen === Screen.PreGame) {
     // Notify the server that we have read the chat message that was just received.
     globals.conn!.send("chatRead", {
-      tableID: globals.tableID,
+      tableId: globals.tableId,
     });
   } else if (
     globals.currentScreen === Screen.Game
@@ -88,7 +88,7 @@ function acknowledgeChatRead(
       // The chat window was open; notify the server that we have read the chat message that was
       // just received.
       globals.conn!.send("chatRead", {
-        tableID: globals.tableID,
+        tableId: globals.tableId,
       });
       return;
     }
@@ -107,7 +107,7 @@ function acknowledgeChatRead(
       // The chat window was not open; pop open the chat window every time for spectators.
       gameChat.toggle(false);
       globals.conn!.send("chatRead", {
-        tableID: globals.tableID,
+        tableId: globals.tableId,
       });
     }
   }

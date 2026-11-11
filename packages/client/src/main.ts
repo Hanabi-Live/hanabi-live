@@ -69,8 +69,8 @@ $(document).ready(() => {
       setBrowserAddressBarPath(PATH.LOBBY, hash);
     } else if (globals.currentScreen === Screen.PreGame) {
       lobbyPregame.hide(false);
-      globals.conn!.send("tableUnattend", { tableID: globals.tableID });
-      globals.tableID = NO_TABLE_ID;
+      globals.conn!.send("tableUnattend", { tableId: globals.tableId });
+      globals.tableId = NO_TABLE_ID;
     }
 
     if (hash.startsWith(HISTORY_HASH)) {

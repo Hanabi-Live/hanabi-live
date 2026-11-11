@@ -16,10 +16,10 @@ import { createJSONFromReplay } from "./lobby/createReplayJSON.ts";
 type Callback = (...args: any) => void;
 export const chatCommands = new Map<string, Callback>();
 
-/** The `tableID` field that tells the server which room a command was typed in. */
-function roomField(room: string): { tableID?: number } {
-  const tableID = roomTableID(room);
-  return tableID === undefined ? {} : { tableID };
+/** The `tableId` field that tells the server which room a command was typed in. */
+function roomField(room: string): { tableId?: number } {
+  const tableId = roomTableID(room);
+  return tableId === undefined ? {} : { tableId };
 }
 
 // /copy
@@ -178,7 +178,7 @@ function pm(room: string, args: readonly string[]) {
     return;
   }
 
-  globals.conn!.send("chatPM", {
+  globals.conn!.send("chatPm", {
     text: msg,
     recipient: matchingUser.username,
   });
@@ -250,13 +250,13 @@ function pmHistory(room: string, args: readonly string[]) {
     return;
   }
 
-  globals.conn!.send("chatPMHistory", { ...data, ...roomField(room) });
+  globals.conn!.send("chatPmHistory", { ...data, ...roomField(room) });
 }
 chatCommands.set("pmhistory", pmHistory);
 
 // /setleader [username]
 function setLeader(room: string, args: readonly string[]) {
-  if (globals.tableID === NO_TABLE_ID) {
+  if (globals.tableId === NO_TABLE_ID) {
     sendSelfPMFromServer(
       "You are not currently at a table, so you cannot use the <code>/setleader</code> command.",
       room,
@@ -267,7 +267,7 @@ function setLeader(room: string, args: readonly string[]) {
 
   const username = args.join(" ");
   globals.conn!.send("tableSetLeader", {
-    tableID: globals.tableID,
+    tableId: globals.tableId,
     username,
   });
 }
@@ -275,7 +275,7 @@ chatCommands.set("setleader", setLeader);
 
 // /setvariant [variant]
 function setVariant(room: string, args: readonly string[]) {
-  if (globals.tableID === NO_TABLE_ID) {
+  if (globals.tableId === NO_TABLE_ID) {
     sendSelfPMFromServer(
       "You are not currently at a table, so you cannot use the <code>/setvariant</code> command.",
       room,
@@ -298,7 +298,7 @@ function setVariant(room: string, args: readonly string[]) {
   }
 
   globals.conn!.send("tableSetVariant", {
-    tableID: globals.tableID,
+    tableId: globals.tableId,
     variantName,
   });
 
@@ -310,7 +310,7 @@ chatCommands.set("setvariant", setVariant);
 
 // /suggest [turn]
 chatCommands.set("suggest", (room: string, args: readonly string[]) => {
-  if (globals.tableID === NO_TABLE_ID) {
+  if (globals.tableId === NO_TABLE_ID) {
     sendSelfPMFromServer(
       "You are not currently at a table, so you cannot use the <code>/suggest</code> command.",
       room,
@@ -344,14 +344,14 @@ chatCommands.set("suggest", (room: string, args: readonly string[]) => {
   }
 
   globals.conn!.send("tableSuggest", {
-    tableID: globals.tableID,
+    tableId: globals.tableId,
     segment,
   });
 });
 
 // /tag [tag]
 chatCommands.set("tag", (room: string, args: readonly string[]) => {
-  if (globals.tableID === NO_TABLE_ID) {
+  if (globals.tableId === NO_TABLE_ID) {
     sendSelfPMFromServer(
       "You are not currently at a table, so you cannot use the <code>/tag</code> command.",
       room,
@@ -362,13 +362,13 @@ chatCommands.set("tag", (room: string, args: readonly string[]) => {
 
   const tag = args.join(" ");
   globals.conn!.send("tag", {
-    tableID: globals.tableID,
+    tableId: globals.tableId,
     tag,
   });
 });
 
 function untag(room: string, args: readonly string[]) {
-  if (globals.tableID === NO_TABLE_ID) {
+  if (globals.tableId === NO_TABLE_ID) {
     sendSelfPMFromServer(
       "You are not currently at a table, so you cannot use the <code>/untag</code> command.",
       room,
@@ -379,7 +379,7 @@ function untag(room: string, args: readonly string[]) {
 
   const tag = args.join(" ");
   globals.conn!.send("tagDelete", {
-    tableID: globals.tableID,
+    tableId: globals.tableId,
     tag,
   });
 }
@@ -398,7 +398,7 @@ chatCommands.set("tagsearch", (room: string, args: readonly string[]) => {
 });
 
 chatCommands.set("tagsdeleteall", (room: string) => {
-  if (globals.tableID === NO_TABLE_ID) {
+  if (globals.tableId === NO_TABLE_ID) {
     sendSelfPMFromServer(
       "You are not currently at a table, so you cannot use the <code>/tagsdeleteall</code> command.",
       room,
@@ -407,14 +407,14 @@ chatCommands.set("tagsdeleteall", (room: string) => {
     return;
   }
   globals.conn!.send("tagDeleteAll", {
-    tableID: globals.tableID,
+    tableId: globals.tableId,
   });
 });
 
 // /terminate
 chatCommands.set("terminate", (room: string) => {
   // Terminates the ongoing game. This is the same as right-clicking the skull button.
-  if (globals.tableID === NO_TABLE_ID) {
+  if (globals.tableId === NO_TABLE_ID) {
     sendSelfPMFromServer(
       "You are not currently at a table, so you cannot use the <code>/terminate</code> command.",
       room,
@@ -423,7 +423,7 @@ chatCommands.set("terminate", (room: string) => {
     return;
   }
   globals.conn!.send("tableTerminate", {
-    tableID: globals.tableID,
+    tableId: globals.tableId,
   });
 });
 

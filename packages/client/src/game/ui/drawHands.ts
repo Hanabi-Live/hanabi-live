@@ -806,11 +806,11 @@ function drawDetrimentalCharacters(
     return;
   }
 
-  const characterID = globals.metadata.characterAssignments[i];
+  const characterId = globals.metadata.characterAssignments[i];
   const character =
-    characterID === undefined
+    characterId === undefined
       ? UNASSIGNED_CHARACTER
-      : getCharacter(characterID);
+      : getCharacter(characterId);
 
   const iconW = CHARACTER_ICON_SIZE * winW;
   const iconH = CHARACTER_ICON_SIZE * winH;

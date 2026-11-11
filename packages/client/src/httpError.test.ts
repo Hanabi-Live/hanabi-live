@@ -8,7 +8,7 @@ describe("httpError", () => {
         message:
           "Account test-cookie failed: The database is unavailable. [Reference: abc123]",
         code: "database_unavailable",
-        diagnosticID: "abc123",
+        diagnosticId: "abc123",
       },
       { status: 503, headers: { "x-error-id": "abc123" } },
     );

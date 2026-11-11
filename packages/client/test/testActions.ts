@@ -24,7 +24,7 @@ export function init(): ActionInit {
     datetimeStarted: new Date(0).toString(),
     datetimeFinished: new Date(0).toString(),
     mode: "sharedReplay",
-    gameID: gameIdSchema.parse(1),
+    gameId: gameIdSchema.parse(1),
     sharedReplay: {
       leader: "",
       segment: 0,

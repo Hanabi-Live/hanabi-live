@@ -25,10 +25,10 @@ pub fn route(message: &ClientMessage) -> Route {
         M::Sync(_) | M::TableCreate(_) | M::ReplayCreate(_) => return Route::Hub,
         M::Setting(_)
         | M::Inactive(_)
-        | M::GameHistoryEntry(_)
+        | M::GameHistory(_)
         | M::GameHistoryOtherScores(_)
-        | M::ChatPM(_)
-        | M::ChatPMHistory(_)
+        | M::ChatPm(_)
+        | M::ChatPmHistory(_)
         | M::ChatFriend(_)
         | M::ChatUnfriend(_)
         | M::ChatLink(_)

@@ -509,7 +509,7 @@ impl Report {
                 "operation": self.operation,
                 "code": self.code,
                 "description": self.description,
-                "diagnosticID": self.diagnostic_id
+                "diagnosticId": self.diagnostic_id
             })
         );
     }

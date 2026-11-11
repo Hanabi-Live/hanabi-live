@@ -31,7 +31,7 @@ export function Pregame(): React.JSX.Element | undefined {
   const game = useAppSelector((state) => state.pregame.game);
   const username = useAppSelector((state) => state.session.username);
   const table = useAppSelector((state) =>
-    game === undefined ? undefined : selectTable(state, game.tableID),
+    game === undefined ? undefined : selectTable(state, game.tableId),
   );
   if (game === undefined) {
     return undefined;
@@ -369,10 +369,10 @@ function HGroupLevelBadge({ name }: { readonly name: string }) {
 /** Spectates the table again, shadowing a player or no one. */
 function reattend(shadowingPlayerIndex: PlayerIndex | undefined) {
   globals.conn!.send("tableUnattend", {
-    tableID: globals.tableID,
+    tableId: globals.tableId,
   });
   globals.conn!.send("tableSpectate", {
-    tableID: globals.tableID,
+    tableId: globals.tableId,
     shadowingPlayerIndex,
   });
 }

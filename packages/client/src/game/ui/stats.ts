@@ -26,7 +26,7 @@ export function setEfficiencyModifier(efficiencyModifier: number): void {
     && globals.state.replay.shared.amLeader
   ) {
     globals.lobby.conn!.send("replayAction", {
-      tableID: globals.lobby.tableID,
+      tableId: globals.lobby.tableId,
       action: {
         type: "efficiencyModifier",
         efficiencyModifier,

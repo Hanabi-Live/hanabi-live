@@ -236,10 +236,10 @@ pub async fn dispatch(
             .await;
         }
 
-        ClientMessage::ChatPM(request) => {
+        ClientMessage::ChatPm(request) => {
             chat::private_message(pool, caller, online, &request.text, &request.recipient).await?
         }
-        ClientMessage::ChatPMHistory(request) => {
+        ClientMessage::ChatPmHistory(request) => {
             chat::private_history(pool, caller, &request).await?
         }
         ClientMessage::ChatLinked(request) | ClientMessage::ChatBlocked(request) => {
@@ -254,7 +254,7 @@ pub async fn dispatch(
             relationships::relationship(pool, caller, command, &request.username, request.table_id)
                 .await?
         }
-        ClientMessage::GameHistoryEntry(hanabi_protocol::GameHistoryRequest { offset, amount }) => {
+        ClientMessage::GameHistory(hanabi_protocol::GameHistoryRequest { offset, amount }) => {
             if let Some(error) = page_error(offset, amount) {
                 return Ok(Some(vec![warning(&error)]));
             }

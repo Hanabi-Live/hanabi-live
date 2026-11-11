@@ -24,9 +24,9 @@ const TABLE_ID = tableIdSchema.parse(5);
 
 function makeGame(maxPlayers: number): Game {
   return {
-    tableID: TABLE_ID,
+    tableId: TABLE_ID,
     settings: { maxPlayers },
-    ownerID: userIdSchema.parse(1),
+    ownerId: userIdSchema.parse(1),
     players: [{ username: "alice" }, { username: "bob" }],
   } as unknown as Game;
 }
@@ -38,9 +38,9 @@ function button(id: string) {
 }
 
 beforeEach(() => {
-  globals.userID = 1;
+  globals.userId = 1;
   globals.username = "alice";
-  globals.tableID = TABLE_ID;
+  globals.tableId = TABLE_ID;
   globals.conn = { send } as unknown as Connection;
   globals.currentScreen = Screen.PreGame;
   send.mockClear();
@@ -71,7 +71,7 @@ describe("Nav", () => {
     });
     expect(send).toHaveBeenCalledOnce();
     expect(send).toHaveBeenCalledWith("tableStart", {
-      tableID: TABLE_ID,
+      tableId: TABLE_ID,
       intendedPlayerNames: ["alice", "bob"],
     });
     expect(button("start")!.classList).toContain("disabled");
@@ -84,7 +84,7 @@ describe("Nav", () => {
 
   test("a spectator can join only while the table has room", () => {
     act(() => {
-      globals.userID = 2;
+      globals.userId = 2;
       globals.username = "me";
     });
     expect(button("start")!.classList).toContain("disabled");

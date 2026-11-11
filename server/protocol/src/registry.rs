@@ -24,8 +24,8 @@ macro_rules! client_contracts {
             LobbyLoad "lobbyLoad" => Empty;
             Sync "sync" => Empty;
             Chat "chat" => ChatRequest;
-            ChatPM "chatPM" => ChatPmRequest;
-            ChatPMHistory "chatPMHistory" => ChatPmHistoryRequest;
+            ChatPm "chatPm" => ChatPmRequest;
+            ChatPmHistory "chatPmHistory" => ChatPmHistoryRequest;
             ChatFriend "chatFriend" => ChatUserRequest;
             ChatUnfriend "chatUnfriend" => ChatUserRequest;
             ChatLink "chatLink" => ChatUserRequest;
@@ -54,7 +54,7 @@ macro_rules! client_contracts {
             Loaded "loaded" => TableRef;
             Setting "setting" => SettingRequest;
             Inactive "inactive" => InactiveRequest;
-            GameHistoryEntry "gameHistory" => GameHistoryRequest;
+            GameHistory "gameHistory" => GameHistoryRequest;
             GameHistoryOtherScores "gameHistoryOtherScores" => GameHistoryOtherScoresRequest;
             TagSearch "tagSearch" => TagSearchRequest;
             TableCreate "tableCreate" => TableCreateRequest;
@@ -101,7 +101,7 @@ macro_rules! server_contracts {
             CHAT "chat" => Chat;
             CHAT_DELETE "chatDelete" => ChatDelete;
             CHAT_LIST "chatList" => ChatList;
-            CHAT_PM_HISTORY "chatPMHistory" => ChatPmHistory;
+            CHAT_PM_HISTORY "chatPmHistory" => ChatPmHistory;
             CHAT_TYPING "chatTyping" => ChatTyping;
             JOINED "joined" => TableRef;
             LEFT "left" => TableRef;
