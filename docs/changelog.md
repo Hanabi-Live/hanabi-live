@@ -26,6 +26,7 @@ of the repository.
   border and says that no one can discard.
 - In the new game screen, you can now see another player's hand as they see it:
   hold the mouse button down on their cards, or click the eye beside their name.
+  Hold the spacebar to see every hand this way.
 
 ## November 10th, 2026
 

@@ -558,6 +558,52 @@ export function GameScreen({
   >(new Set());
   const [heldEmpathy, setHeldEmpathy] = useState<PlayerIndex>();
 
+  // Holding the spacebar shows every hand as its player sees it, as on the classic screen.
+  const [globalEmpathy, setGlobalEmpathy] = useState(false);
+  useEffect(() => {
+    function isTyping(target: EventTarget | null) {
+      return (
+        target instanceof HTMLElement
+        && (target.isContentEditable
+          || target instanceof HTMLInputElement
+          || target instanceof HTMLTextAreaElement)
+      );
+    }
+
+    function onKeyDown(event: KeyboardEvent) {
+      if (event.key !== " " || isTyping(event.target)) {
+        return;
+      }
+      // Otherwise, the spacebar would also press the button that has the focus.
+      event.preventDefault();
+      setGlobalEmpathy(true);
+    }
+
+    function onKeyUp(event: KeyboardEvent) {
+      if (event.key !== " ") {
+        return;
+      }
+      if (!isTyping(event.target)) {
+        event.preventDefault();
+      }
+      setGlobalEmpathy(false);
+    }
+
+    // A window that loses the focus never gets the key's release.
+    function onBlur() {
+      setGlobalEmpathy(false);
+    }
+
+    globalThis.addEventListener("keydown", onKeyDown);
+    globalThis.addEventListener("keyup", onKeyUp);
+    globalThis.addEventListener("blur", onBlur);
+    return () => {
+      globalThis.removeEventListener("keydown", onKeyDown);
+      globalThis.removeEventListener("keyup", onKeyUp);
+      globalThis.removeEventListener("blur", onBlur);
+    };
+  }, []);
+
   // On a window too narrow for the chat panel beside the table, the chat starts collapsed.
   useEffect(() => {
     if (chatOverlay) {
@@ -778,7 +824,11 @@ export function GameScreen({
   const showCluePanel =
     hypo === undefined ? state.playing && !inReplay : controlsHypo;
 
-  const empathyPlayers = new Set(empathyToggled);
+  const empathyPlayers = new Set<PlayerIndex>(
+    globalEmpathy
+      ? metadata.playerNames.map((_name, i) => i as PlayerIndex)
+      : empathyToggled,
+  );
   if (heldEmpathy !== undefined) {
     empathyPlayers.add(heldEmpathy);
   }
