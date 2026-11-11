@@ -514,13 +514,20 @@ pub struct EngineState {
     pub strikes: i32,
     /// The type of the last clue, which alternating-clue variants need to differ.
     pub last_clue_type_given: Option<ClueType>,
-    pub end_condition: EndCondition,
-    /// The player whom the game's end names, such as the one who timed out.
-    pub end_player: Option<usize>,
+    /// How the game ended. `None` while it is in progress.
+    pub end: Option<GameEnd>,
     /// The turn after the final round, once the deck has run out.
     pub end_turn: Option<i32>,
     pub events: Vec<EngineEvent>,
     pub actions: Vec<RecordedAction>,
+}
+
+/// How a game ended.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub struct GameEnd {
+    pub condition: EndCondition,
+    /// The player whom the end names, such as the one who timed out.
+    pub player: Option<usize>,
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]

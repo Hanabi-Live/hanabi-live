@@ -178,10 +178,7 @@ export function getSoundType(
     }
 
     case "gameOver": {
-      if (
-        action.endCondition !== EndCondition.Normal
-        && action.endCondition !== EndCondition.InProgress
-      ) {
+      if (action.endCondition !== EndCondition.Normal) {
         return SoundType.FinishedFail;
       }
 

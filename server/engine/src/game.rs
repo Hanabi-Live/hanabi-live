@@ -12,7 +12,7 @@ use crate::{
         calculate_max_score, clue_cost, clue_cost_for, draw_card, follower_misplays,
         has_remaining_play, remove_card, sees_card, touched_by, try_play, variant_for,
     },
-    types::{Move, reject, seat, target_card},
+    types::{GameEnd, Move, reject, seat, target_card},
 };
 use anyhow::{Result, ensure};
 use hanabi_protocol::{
@@ -175,8 +175,7 @@ pub fn create_game(setup: GameSetup) -> Result<EngineState> {
         max_score: variant.max_score,
         strikes: 0,
         last_clue_type_given: None,
-        end_condition: EndCondition::InProgress,
-        end_player: None,
+        end: None,
         end_turn: None,
         events: vec![],
         actions: vec![],
@@ -205,7 +204,7 @@ pub const fn normal_hand_size(num_players: usize) -> usize {
 }
 
 fn check_ongoing(state: &EngineState) -> Result<()> {
-    if state.end_condition != EndCondition::InProgress {
+    if state.end.is_some() {
         return reject("The game is already ending.");
     }
     Ok(())
@@ -380,33 +379,35 @@ fn check_end(state: &mut EngineState) -> bool {
         AllOrNothingFail, AllOrNothingSoftlock, CharacterSoftlock, IdleTimeout, Normal,
         SpeedrunFail, Strikeout, TerminatedByPlayer, TerminatedByVote, Timeout,
     };
-    if matches!(
-        state.end_condition,
-        Timeout | TerminatedByPlayer | TerminatedByVote | IdleTimeout | CharacterSoftlock
-    ) {
+    if state.end.is_some_and(|end| {
+        matches!(
+            end.condition,
+            Timeout | TerminatedByPlayer | TerminatedByVote | IdleTimeout | CharacterSoftlock
+        )
+    }) {
         return true;
     }
     let v = variant_for(state);
-    if state.strikes == MAX_STRIKES {
-        state.end_condition = Strikeout;
+    let (condition, player) = if state.strikes == MAX_STRIKES {
+        (Strikeout, None)
     } else if state.options.speedrun && state.max_score < v.max_score {
-        state.end_condition = SpeedrunFail;
+        (SpeedrunFail, None)
     } else if state.options.all_or_nothing && state.max_score < v.max_score {
-        state.end_condition = AllOrNothingFail;
+        (AllOrNothingFail, None)
     } else if state.options.all_or_nothing
         && state.players[state.active_player_index].hand.is_empty()
         && state.clue_tokens < clue_cost(state)
     {
-        state.end_condition = AllOrNothingSoftlock;
-        state.end_player = Some(state.active_player_index);
+        (AllOrNothingSoftlock, Some(state.active_player_index))
     } else if Some(state.turn) == state.end_turn
         || state.score == state.max_score
         || !has_remaining_play(state)
     {
-        state.end_condition = Normal;
+        (Normal, None)
     } else {
         return false;
-    }
+    };
+    state.end = Some(GameEnd { condition, player });
     true
 }
 fn finish_action(
@@ -430,20 +431,19 @@ fn finish_action(
     }
     check_character_softlock(state);
     let game_over = check_end(state);
-    let ended = state.end_condition != EndCondition::InProgress;
-    if game_over {
+    if game_over && let Some(end) = state.end {
         state.events.push(EngineEvent::GameOver {
-            end_condition: state.end_condition,
-            player_index: state.end_player,
+            end_condition: end.condition,
+            player_index: end.player,
             votes,
         });
     }
     state.events.push(EngineEvent::Turn {
         num: state.turn,
-        current_player_index: (!ended).then_some(state.active_player_index),
+        current_player_index: state.end.is_none().then_some(state.active_player_index),
     });
-    if ended {
-        if state.end_condition as i32 > EndCondition::Normal as i32 {
+    if let Some(end) = state.end {
+        if end.condition != EndCondition::Normal {
             state.score = 0;
         }
         if state.interpretation == Interpretation::Live
@@ -564,8 +564,10 @@ pub fn terminate_game(
     let timed_out = termination
         .player_index
         .filter(|_| termination.condition == EndCondition::Timeout);
-    state.end_condition = termination.condition;
-    state.end_player = termination.player_index;
+    state.end = Some(GameEnd {
+        condition: termination.condition,
+        player: termination.player_index,
+    });
     let action = RecordedAction::GameOver(GameOverTurn {
         end_condition: termination.condition,
         player_index: termination

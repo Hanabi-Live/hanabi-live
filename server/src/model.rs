@@ -324,13 +324,10 @@ impl TableSnapshot {
         let Phase::Live { snapshot, .. } = &self.phase else {
             anyhow::bail!("Only a completed live game can become a review");
         };
-        ensure!(
-            snapshot.game.end_condition != EndCondition::InProgress,
-            "Game is not finished"
-        );
+        ensure!(snapshot.game.end.is_some(), "Game is not finished");
         let mut snapshot = snapshot.clone();
         // An idle-ended game must still expire rather than gain another idle window.
-        if snapshot.game.end_condition != EndCondition::IdleTimeout {
+        if snapshot.game.end.map(|end| end.condition) != Some(EndCondition::IdleTimeout) {
             snapshot.idle_remaining = IDLE_TIMEOUT_MS;
         }
         let segment =
@@ -386,13 +383,13 @@ impl TableSnapshot {
             }
         }
         if let Some(s) = self.game_mut()
-            && s.game.end_condition != EndCondition::InProgress
+            && s.game.end.is_some()
             && s.finished.is_none()
         {
             s.finished = Some(now);
         }
         let finished = matches!(&self.phase, Phase::Live { snapshot, .. }
-            if snapshot.game.end_condition != EndCondition::InProgress);
+            if snapshot.game.end.is_some());
         if finished {
             self.convert_to_replay()?;
             for user in audience {
@@ -466,8 +463,7 @@ impl TableSnapshot {
                 snapshot.validate()?;
                 // A game becomes a replay in the same commit that ends it.
                 ensure!(
-                    matches!(self.phase, Phase::Replay { .. })
-                        || snapshot.game.end_condition == EndCondition::InProgress,
+                    matches!(self.phase, Phase::Replay { .. }) || snapshot.game.end.is_none(),
                     "A finished game is stored as a live game"
                 );
                 ensure!(
@@ -510,7 +506,7 @@ impl Snapshot {
             seed: game.seed.clone(),
             created: now,
             started: now,
-            finished: (game.end_condition != EndCondition::InProgress).then_some(now),
+            finished: (game.end.is_some()).then_some(now),
             game,
             clocks: vec![0; n],
             duration: 0,
@@ -546,7 +542,7 @@ impl Snapshot {
             "Game roster mismatch"
         );
         ensure!(
-            self.finished.is_some() == (self.game.end_condition != EndCondition::InProgress),
+            self.finished.is_some() == (self.game.end.is_some()),
             "Invalid completion timestamp"
         );
         ensure!(
@@ -602,7 +598,7 @@ impl Snapshot {
             seed: self.seed.clone(),
             score: hanabi_protocol::Score(self.game.score),
             num_turns: hanabi_protocol::Turn::new(self.game.turn)?,
-            end_condition: self.game.end_condition,
+            end_condition: self.game.end?.condition,
             started_at: time(self.started),
             finished_at: time(self.finished.unwrap_or(self.started)),
             num_games_on_seed: count.map(hanabi_protocol::Count),

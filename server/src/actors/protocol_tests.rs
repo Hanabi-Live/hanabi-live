@@ -1645,7 +1645,7 @@ async fn remade_tables_publish_fresh_statistics_for_every_player() -> Result<()>
             let (table, _) = h.snapshot(id).await?;
             let snapshot = table.game().context("Missing game")?;
             let game = &snapshot.game;
-            if game.end_condition != EndCondition::InProgress {
+            if game.end.is_some() {
                 ensure!(game.score > 0, "Expected an improved personal best");
                 break game.score;
             }

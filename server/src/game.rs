@@ -244,7 +244,7 @@ impl Game {
         );
         let mut game = Self::create(setup)?;
         for (index, action) in actions.iter().enumerate() {
-            if game.end_condition != EndCondition::InProgress {
+            if game.end.is_some() {
                 break;
             }
             let actor = game.active_player_index;

@@ -88,7 +88,7 @@ impl Timers {
     /// The idle timer always runs. A `live` game in progress also counts its duration, and its
     /// active player's clock once the clock has started, unless the game is paused.
     fn of(s: &Snapshot, live: bool, elapsed: i64) -> Self {
-        let in_progress = live && s.game.end_condition == EndCondition::InProgress;
+        let in_progress = live && s.game.end.is_none();
         let counting = in_progress && s.timer_started && !s.paused();
         let running = if counting { elapsed } else { 0 };
         Self {
@@ -441,7 +441,7 @@ impl TableActor {
         match &self.table.phase {
             Phase::Pregame { .. } => {}
             Phase::Live { snapshot: s, .. } => {
-                if s.game.end_condition == EndCondition::InProgress {
+                if s.game.end.is_none() {
                     deadlines.push(after(s.idle_remaining));
                     if !matches!(&self.table.phase, Phase::Live { runtime, .. } if runtime.idle_warned)
                     {
@@ -798,7 +798,7 @@ impl TableActor {
     async fn drain(&mut self) -> CommandResult<()> {
         let mut next = self.candidate();
         if let Some(s) = next.game_mut()
-            && s.game.end_condition == EndCondition::InProgress
+            && s.game.end.is_none()
             && s.game.options.time_control.is_some()
             && !s.maintenance_applied
         {
@@ -937,8 +937,7 @@ impl TableActor {
             .game()
             .context("A clock was read without a game")?;
         let now = self.timers().context("A clock was read without a game")?;
-        let live = matches!(self.table.phase, Phase::Live { .. })
-            && s.game.end_condition == EndCondition::InProgress;
+        let live = matches!(self.table.phase, Phase::Live { .. }) && s.game.end.is_none();
         let mut times = s.clocks.clone();
         times[s.game.active_player_index] = now.active_clock;
         Ok(hanabi_protocol::Clock {
@@ -1031,7 +1030,7 @@ impl TableActor {
                 let mut next = self.candidate();
                 let mut starts_clock = false;
                 if let Phase::Live { snapshot: s, .. } = &mut next.phase
-                    && s.game.end_condition == EndCondition::InProgress
+                    && s.game.end.is_none()
                     && s.players[s.game.active_player_index].is(session.user)
                 {
                     starts_clock = !s.timer_started;
@@ -1099,11 +1098,7 @@ impl TableActor {
             }
             return Ok(());
         }
-        if self
-            .table
-            .game()
-            .is_some_and(|s| s.game.end_condition != EndCondition::InProgress)
-        {
+        if self.table.game().is_some_and(|s| s.game.end.is_some()) {
             return Ok(());
         }
         let idle = timers.idle_remaining == 0;

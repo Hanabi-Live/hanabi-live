@@ -21,7 +21,6 @@ export const PANICKY_MAX_CLUES = 4;
  * migration.
  */
 export enum EndCondition {
-  InProgress = "inProgress",
   Normal = "normal",
   Strikeout = "strikeout",
   Timeout = "timeout",

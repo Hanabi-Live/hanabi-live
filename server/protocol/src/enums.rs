@@ -150,7 +150,6 @@ wire_enum! {
     /// How a game ended. These values are stored in the database, so changing one requires a
     /// migration.
     pub enum EndCondition {
-        InProgress = 0 => "inProgress",
         Normal = 1 => "normal",
         Strikeout = 2 => "strikeout",
         Timeout = 3 => "timeout",

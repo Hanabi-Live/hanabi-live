@@ -74,7 +74,7 @@ impl TableActor {
         s.maintenance_applied = false;
         let active = s.game.active_player_index;
         let mut paused_by = None;
-        if s.game.end_condition == EndCondition::InProgress && s.queued_pauses[active] {
+        if s.game.end.is_none() && s.queued_pauses[active] {
             s.queued_pauses[active] = false;
             s.paused_by = PlayerIndex::new(active);
             paused_by = Some(s.players[active].name.clone());

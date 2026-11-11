@@ -495,7 +495,7 @@ fn long_character_histories_are_bounded() {
         input.deck = Some(deck);
         let mut state = create_game(input).unwrap();
         for _ in 0..129 {
-            if state.end_condition != EndCondition::InProgress {
+            if state.end.is_some() {
                 break;
             }
             let p = &state.players[state.active_player_index];
@@ -519,7 +519,11 @@ fn long_character_histories_are_bounded() {
             assert!(potential(&state) <= before - 1.0, "{variant_name}");
             assert_eq!(state.score, 0);
         }
-        assert_eq!(state.end_condition, EndCondition::Normal, "{variant_name}");
+        assert_eq!(
+            state.end.map(|end| end.condition),
+            Some(EndCondition::Normal),
+            "{variant_name}"
+        );
         assert_eq!(state.deck_index, state.deck.len());
         assert!(state.actions.len() > 60 && state.turn < int(state.actions.len()));
         assert!(
@@ -547,7 +551,7 @@ fn all_or_nothing_eventually_exhausts_resources_without_final_round() {
     input.deck = Some(deck);
     let mut state = create_game(input).unwrap();
     for _ in 0..129 {
-        if state.end_condition != EndCondition::InProgress {
+        if state.end.is_some() {
             break;
         }
         let p = &state.players[state.active_player_index];
@@ -559,7 +563,10 @@ fn all_or_nothing_eventually_exhausts_resources_without_final_round() {
         state = first_accepted(&state, candidates, true);
         assert!(potential(&state) <= before - 1.0);
     }
-    assert_eq!(state.end_condition, EndCondition::AllOrNothingFail);
+    assert_eq!(
+        state.end.map(|end| end.condition),
+        Some(EndCondition::AllOrNothingFail)
+    );
     assert_eq!(state.deck_index, state.deck.len());
     assert_eq!(state.end_turn, None);
     assert_eq!(state.score, 0);

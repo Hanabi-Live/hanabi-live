@@ -1,5 +1,5 @@
 use crate::{
-    Character, Clue, ClueType, EndCondition, EngineState, PlayerAction, RecordedAction,
+    Character, Clue, ClueType, EndCondition, EngineState, GameEnd, PlayerAction, RecordedAction,
     RecordedActionType, int, recorded_action_type,
     rules::{clue_cost, touched_by},
     types::reject,
@@ -374,7 +374,9 @@ pub(crate) fn check_character_softlock(state: &mut EngineState) {
         && p.character_metadata == Some(0)
         && (p.character == Some(Character::Vindictive) || p.character == Some(Character::Insistent))
     {
-        state.end_condition = EndCondition::CharacterSoftlock;
-        state.end_player = Some(p.index);
+        state.end = Some(GameEnd {
+            condition: EndCondition::CharacterSoftlock,
+            player: Some(p.index),
+        });
     }
 }
