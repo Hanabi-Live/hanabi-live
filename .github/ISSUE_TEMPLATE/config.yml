@@ -1,0 +1,6 @@
+contact_links:
+  - name: Variant idea
+    url: https://github.com/Hanabi-Live/hanabi-live/discussions/categories/variant-ideas
+    about:
+      Suggest a new variant in Discussions. Open an issue only when a variant
+      is ready to build.
