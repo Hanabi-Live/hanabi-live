@@ -404,6 +404,20 @@ function getStates({
       },
       cleanup: leaveReplay,
     },
+    // The tooltip of the spectators icon in the classic game screen, which lists their names.
+    {
+      name: "replay-spectators-tooltip",
+      path: "/",
+      loggedIn: true,
+      prepare: async (page) => {
+        await openReplay(page, replayID);
+      },
+      hover: async (page) => {
+        await hoverCanvasElement(page, ["spectatorsLabel"]);
+        await page.locator(".game-tooltips-ol").waitFor();
+      },
+      cleanup: leaveReplay,
+    },
     // The modal that changes a card into another during a hypothetical.
     {
       name: "morph-modal",
