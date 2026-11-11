@@ -805,10 +805,13 @@ seed lists by `id` or `score`.
   in exactly the same way that a real player would. A reference bot
   implementation can be found at
   [`hanabi-live-bot`](https://github.com/Hanabi-Live/hanabi-live-bot).
-- To mark an account as a bot, send `bot=true` instead of a client version: in
-  the form when you log in to `/login`, or as `?bot=true` in the WebSocket URL.
-  The account stays a bot after that. Other players see a robot icon next to it.
-  To create the account on its first login, also send `createAccount=true`.
+- To mark an account as a bot, send `client=bot` instead of a client version: in
+  the form when you log in to `/login`, or as `?client=bot` in the WebSocket URL.
+  Other players see a robot icon next to it. If a person logs in to the account
+  without `client=bot`, it becomes a normal account until the bot logs in again.
+  A program that people use, such as a mobile client, sends `client=app`
+  instead. To create the account on its first login, also send
+  `createAccount=true`.
 - Unlike human players, bots can play at more than one table at a time.
 
 ## Password Reset
