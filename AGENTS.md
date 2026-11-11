@@ -97,6 +97,10 @@ stylesheets of that ref. Add `--coverage` to list the selectors that match no
 element. If a screen or state that you need is missing, add it to
 `packages/testing/src/uiScreenshots.ts`.
 
+To show an animation, show a video, not still frames. Give the state a `record`
+step that starts the animation and waits for it to end. The command then saves a
+video of that step to `dist/ui-screenshots/<state>.webm`.
+
 When other authenticated browser checks need test accounts, use the existing
 shared accounts: `test` / `test`, `test2` / `test2`, and so on (username /
 password). Choose an account that is not already in use. Do not change these
@@ -115,12 +119,13 @@ result in text.
 
 Before you commit a change that adds or modifies a UI element, take a screenshot
 of each new or changed element with `bun run ui-screenshots` and show it to the
-user, so that they can decide on it. Show only these screenshots. Do not show
-screenshots that only check that a change, such as a refactor, keeps a screen
-the same. Check those yourself, and report the result in text.
+user, so that they can decide on it. For a new or changed animation, show its
+video. Show only these screenshots. Do not show screenshots that only check that
+a change, such as a refactor, keeps a screen the same. Check those yourself, and
+report the result in text.
 
-When running in WSL, the host app cannot display screenshots you send it. Open
-each screenshot that you show in the Windows image viewer instead:
+When running in WSL, the host app cannot display screenshots or videos you send
+it. Open each one that you show in its Windows app instead:
 `explorer.exe "$(wslpath -w <file>)"`.
 
 ## Delivering changes

@@ -11,6 +11,9 @@
 //   that ref, and take a screenshot with them wherever a difference shows.
 // - `--coverage`: Also list the selectors of the CSS bundle that match no element in any state.
 
+// A state with a `record` step also saves a video of that step, at the first width, such as
+// "new-ui-play.webm".
+
 /* eslint-disable no-await-in-loop -- The browser visits the states one at a time. */
 
 import {
@@ -19,7 +22,11 @@ import {
   VERSION,
 } from "@hanabi-live/data";
 import type { CardOrder, PlayerIndex, RankClueNumber } from "@hanabi-live/game";
-import { START_CARD_RANK, isValidRankClueNumber } from "@hanabi-live/game";
+import {
+  START_CARD_RANK,
+  getVariant,
+  isValidRankClueNumber,
+} from "@hanabi-live/game";
 import { assertDefined } from "complete-common";
 import { execFile } from "node:child_process";
 import {
@@ -121,6 +128,11 @@ interface State {
    * selector, or a function that moves the pointer.
    */
   readonly hover?: string | ((page: Page) => Promise<void>);
+  /**
+   * Runs after `prepare`, while a video records the page, so that an animation can be seen. It
+   * should wait until the animation ends.
+   */
+  readonly record?: (page: Page) => Promise<void>;
 }
 
 /** Hovers over an element, unless the screen is too small to show it, such as a chat in a tab. */
@@ -239,15 +251,38 @@ async function clickCanvasElement(
   await page.waitForTimeout(SETTLE_MILLISECONDS);
 }
 
+/** Long enough for a play or a misplay to finish its animation. */
+const PLAY_ANIMATION_MILLISECONDS = 3000;
+
+/** Plays a card from the account's hand, if it has one of the kind. */
+async function playAccountCard(page: Page, order: CardOrder | undefined) {
+  if (order === undefined) {
+    throw new Error("The account has no card of the kind to play.");
+  }
+  await page
+    .locator(`#game-new-ui [data-card-order="${order}"] button`)
+    .click();
+  await page.getByRole("button", { name: "Play", exact: true }).click();
+  await page.waitForTimeout(PLAY_ANIMATION_MILLISECONDS);
+}
+
 function getStates({
   replayId,
   startGame,
   endGame,
   passLeader,
   clueAccount,
+  findAccountCard,
+  playBobCard,
 }: Pick<
   Seed,
-  "replayId" | "startGame" | "endGame" | "passLeader" | "clueAccount"
+  | "replayId"
+  | "startGame"
+  | "endGame"
+  | "passLeader"
+  | "clueAccount"
+  | "findAccountCard"
+  | "playBobCard"
 >): readonly State[] {
   // The card in the account's hand that the clue log shows the clues about.
   let cluedCard: CardOrder | undefined;
@@ -569,6 +604,37 @@ function getStates({
         await hoverIfVisible(page, "#game-chat-length-counter > span");
       },
     },
+    // The game from the previous state, after the account plays a card that it does not know. Its
+    // video shows the play.
+    {
+      name: "new-ui-play",
+      path: "/",
+      loggedIn: true,
+      prepare: async (page) => {
+        await page.locator('#game-new-ui [aria-label="Hands"]').waitFor();
+      },
+      record: async (page) => {
+        await playAccountCard(page, await findAccountCard(true));
+      },
+    },
+    // The game from the previous state, after Bob plays a card and the account misplays one. Its
+    // video shows the misplay. Bob then plays another card, so that it is the account's turn again.
+    {
+      name: "new-ui-misplay",
+      path: "/",
+      loggedIn: true,
+      prepare: async (page) => {
+        await page.locator('#game-new-ui [aria-label="Hands"]').waitFor();
+        await playBobCard();
+        await page.waitForTimeout(PLAY_ANIMATION_MILLISECONDS);
+      },
+      record: async (page) => {
+        await playAccountCard(page, await findAccountCard(false));
+      },
+      cleanup: async () => {
+        await playBobCard();
+      },
+    },
     // The game from the previous state, after the account plays a card and steps back over it in
     // the in-game replay.
     {
@@ -576,12 +642,8 @@ function getStates({
       path: "/",
       loggedIn: true,
       prepare: async (page) => {
-        const hand = page.locator(
-          `#game-new-ui [aria-label="${USERNAME}'s hand"]`,
-        );
-        await hand.locator("button").first().click();
-        await page.getByRole("button", { name: "Play", exact: true }).click();
-        await page.waitForTimeout(SETTLE_MILLISECONDS);
+        // A card that the team can play, so that the game does not reach its last strike.
+        await playAccountCard(page, await findAccountCard(true));
         await page.getByRole("button", { name: "Replay" }).click();
         await page.getByRole("button", { name: "Previous turn" }).click();
       },
@@ -605,7 +667,8 @@ function getStates({
           .getByRole("button", { name: "Discard", exact: true })
           .click();
         await clueAccount();
-        await page.waitForTimeout(SETTLE_MILLISECONDS);
+        // The card is orange, which is inverted, so the discard is a misplay, which takes a while.
+        await page.waitForTimeout(PLAY_ANIMATION_MILLISECONDS);
       },
       hover: async (page) => {
         if (cluedCard !== undefined) {
@@ -864,6 +927,12 @@ interface Seed {
    * newest card, and later clues miss that card. Returns that card, if Bob could give the clue.
    */
   readonly clueAccount: () => Promise<CardOrder | undefined>;
+  /** Returns a card in the account's hand that the team can play now, or one that it cannot. */
+  readonly findAccountCard: (
+    playable: boolean,
+  ) => Promise<CardOrder | undefined>;
+  /** When it is his turn, Bob plays a card that the team can play. */
+  readonly playBobCard: () => Promise<void>;
   readonly cookie: string;
   readonly peers: readonly Peer[];
 }
@@ -971,22 +1040,24 @@ async function seed(address: string): Promise<Seed> {
     bob.send("tableSetLeader", { tableId, username });
   }
 
-  async function clueAccount(): Promise<CardOrder | undefined> {
-    async function loadEvents() {
-      bob.send("gameStateLoad", { tableId });
-      const { events } = await bob.receive(
-        "gameEventList",
-        SERVER_COMMAND_SCHEMAS.gameEventList,
-      );
-      return events;
-    }
+  /** The events of the game, as a peer sees them. A spectator sees every card. */
+  async function loadEvents(peer: Peer = bob) {
+    peer.send("gameStateLoad", { tableId });
+    const { events } = await peer.receive(
+      "gameEventList",
+      SERVER_COMMAND_SCHEMAS.gameEventList,
+    );
+    return events;
+  }
+  type GameEvents = Awaited<ReturnType<typeof loadEvents>>;
 
-    function isBobsTurn(events: Awaited<ReturnType<typeof loadEvents>>) {
-      const turn = events.findLast((event) => event.type === "turn");
-      return turn?.type === "turn" && turn.currentPlayerIndex === bobIndex;
-    }
+  function isBobsTurn(events: GameEvents) {
+    const turn = events.findLast((event) => event.type === "turn");
+    return turn?.type === "turn" && turn.currentPlayerIndex === bobIndex;
+  }
 
-    // The account's last move reaches Bob on another connection, so wait for his turn.
+  /** The account's last move reaches Bob on another connection, so this waits for his turn. */
+  async function waitForBobsTurn() {
     let events = await loadEvents();
     for (
       let attempt = 1;
@@ -996,6 +1067,82 @@ async function seed(address: string): Promise<Seed> {
       await setTimeout(TURN_CHECK_MILLISECONDS);
       events = await loadEvents();
     }
+    return events;
+  }
+
+  /**
+   * Returns a card in a hand that the team can play now, or one that it cannot, from the events
+   * that show it.
+   */
+  function findCard(
+    events: GameEvents,
+    inHand: (playerIndex: number) => boolean,
+    playable: boolean,
+  ): CardOrder | undefined {
+    const variant = getVariant(LONG_VARIANT_NAME);
+    const gone = new Set<CardOrder>();
+    const stacks = new Map<number, number>();
+    for (const event of events) {
+      if (event.type === "play" || event.type === "discard") {
+        gone.add(event.order);
+      }
+      if (event.type === "play" && event.identity !== undefined) {
+        stacks.set(event.identity.suitIndex, event.identity.rank);
+      }
+    }
+    for (const event of events) {
+      if (
+        event.type !== "draw"
+        || !inHand(event.playerIndex)
+        || gone.has(event.order)
+        || event.identity === undefined
+      ) {
+        continue;
+      }
+      const { suitIndex, rank } = event.identity;
+      // A play of a card of an inverted suit, such as orange, discards it instead.
+      if (variant.suits[suitIndex]?.inverted === true) {
+        continue;
+      }
+      if ((rank === (stacks.get(suitIndex) ?? 0) + 1) === playable) {
+        return event.order;
+      }
+    }
+    return undefined;
+  }
+
+  async function findAccountCard(
+    playable: boolean,
+  ): Promise<CardOrder | undefined> {
+    return findCard(
+      await loadEvents(),
+      (playerIndex) => playerIndex !== bobIndex,
+      playable,
+    );
+  }
+
+  /** When it is his turn, Bob plays a card that the team can play. */
+  async function playBobCard() {
+    await waitForBobsTurn();
+    // Bob does not see his own cards, but a spectator does.
+    const spectator = spectators[0];
+    assertDefined(spectator, "There is no spectator to see Bob's cards.");
+    const order = findCard(
+      await loadEvents(spectator),
+      (playerIndex) => playerIndex === bobIndex,
+      true,
+    );
+    assertDefined(order, "Bob has no card that the team can play.");
+    bob.send("playerAction", { tableId, action: { type: "play", order } });
+    await bob.receive(
+      "gameEvent",
+      SERVER_COMMAND_SCHEMAS.gameEvent,
+      (data) => data.event.type === "play" && data.event.order === order,
+    );
+  }
+
+  async function clueAccount(): Promise<CardOrder | undefined> {
+    const events = await waitForBobsTurn();
 
     const gone = new Set<CardOrder>();
     for (const event of events) {
@@ -1057,6 +1204,8 @@ async function seed(address: string): Promise<Seed> {
     endGame,
     passLeader,
     clueAccount,
+    findAccountCard,
+    playBobCard,
     cookie,
     peers: [bob, ...spectators, bot],
   };
@@ -1344,6 +1493,12 @@ async function capture(
       await page.waitForTimeout(SETTLE_MILLISECONDS * 2);
     }
     await state.prepare?.(page);
+    if (state.record !== undefined) {
+      const video = path.join(OUTPUT_DIRECTORY, `${state.name}.webm`);
+      await page.screencast.start({ path: video, size: SETUP_SIZE });
+      await state.record(page);
+      await page.screencast.stop();
+    }
     // Keep the pointer off of the page, so that no element shows its hover style.
     await page.mouse.move(0, SETUP_SIZE.height - 1);
     await page.waitForTimeout(SETTLE_MILLISECONDS);
