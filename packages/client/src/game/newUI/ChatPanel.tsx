@@ -110,19 +110,17 @@ export function ChatPanel({
             </span>
           )}
         </button>
+        {/* Only a count: the open panel's header names the people watching. */}
         {spectators.length > 0 && (
-          <button
-            aria-label={`${spectatorsLabel}. Open chat to see who`}
-            className="tw:flex tw:cursor-pointer tw:flex-col tw:items-center tw:gap-0.5 tw:rounded-lg tw:border-0 tw:bg-transparent tw:px-2 tw:py-1 tw:text-[13px] tw:text-game-muted tw:hover:bg-game-raised tw:hover:text-game-text"
-            onClick={() => {
-              gameChat.show(false);
-            }}
+          <div
+            aria-label={spectatorsLabel}
+            className="tw:flex tw:flex-col tw:items-center tw:gap-0.5 tw:px-2 tw:py-1 tw:text-[13px] tw:text-game-muted"
+            role="img"
             title={spectatorsLabel}
-            type="button"
           >
             <i aria-hidden="true" className="fas fa-eye" />
             {spectators.length}
-          </button>
+          </div>
         )}
       </aside>
     );
