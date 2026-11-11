@@ -10,7 +10,7 @@ const OPEN_DURATION_IN_MILLISECONDS = 120;
 /** How long a tooltip takes to fade out. It is quicker than opening, to get out of the way. */
 const CLOSE_DURATION_IN_MILLISECONDS = 80;
 
-/** How far a tooltip slides away from its anchor as it opens. */
+/** How far a tooltip slides toward its anchor as it opens. */
 const SLIDE_IN_PIXELS = 4;
 
 /** The closest that a tooltip comes to the edge of the window. */

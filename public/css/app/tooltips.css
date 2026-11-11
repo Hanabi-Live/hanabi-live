@@ -9,9 +9,9 @@
   background: none;
   overflow: visible;
   pointer-events: none;
-  /* Closed, the bubble sits a little closer to its anchor, and fades out as it moves there. */
+  /* Closed, the bubble sits a little away from its anchor, so that its arrow never covers it. */
   opacity: 0;
-  transform: translateY(var(--tooltip-slide));
+  transform: translateY(calc(-1 * var(--tooltip-slide)));
   transition:
     opacity var(--tooltip-close-duration) ease-in,
     transform var(--tooltip-close-duration) ease-in,
@@ -21,14 +21,14 @@
 
 .tooltip-bubble[data-side="bottom"] {
   padding: var(--tooltip-arrow-size) 0 0;
-  transform: translateY(calc(-1 * var(--tooltip-slide)));
+  transform: translateY(var(--tooltip-slide));
 }
 
 .tooltip-bubble.tooltip-interactive {
   pointer-events: auto;
 }
 
-/* Opened, the bubble fades in as it slides away from its anchor into place. */
+/* Opened, the bubble fades in as it slides toward its anchor into place. */
 .tooltip-bubble:popover-open {
   opacity: 1;
   transform: none;
@@ -42,11 +42,11 @@
 @starting-style {
   .tooltip-bubble:popover-open {
     opacity: 0;
-    transform: translateY(var(--tooltip-slide));
+    transform: translateY(calc(-1 * var(--tooltip-slide)));
   }
 
   .tooltip-bubble[data-side="bottom"]:popover-open {
-    transform: translateY(calc(-1 * var(--tooltip-slide)));
+    transform: translateY(var(--tooltip-slide));
   }
 }
 
