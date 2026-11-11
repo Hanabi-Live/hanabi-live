@@ -84,7 +84,7 @@ impl ChatBytes {
 /// through here.
 pub(super) fn push_chat(
     table: &mut TableSnapshot,
-    messages: impl IntoIterator<Item = (UserId, Chat)>,
+    messages: impl IntoIterator<Item = (Option<UserId>, Chat)>,
 ) -> CommandResult<()> {
     let messages = messages.into_iter().collect::<Vec<_>>();
     ensure_or_reject!(
@@ -105,7 +105,7 @@ pub(super) fn push_chat(
 /// for a notice about a change that must happen even when the notice does not fit.
 pub(super) fn table_notice(table: &mut TableSnapshot, text: &str) -> Option<Chat> {
     let message = server_chat(table.id, text);
-    if push_chat(table, [(crate::model::SERVER_AUTHOR, message.clone())]).is_err() {
+    if push_chat(table, [(None, message.clone())]).is_err() {
         tracing::warn!("Table {} notice omitted: chat history is full.", table.id);
         return None;
     }
@@ -243,7 +243,7 @@ impl TableActor {
             format!("Here is a random variant that everyone needs the {}-player max score in: {name}",query.participants.len()));
         let message = server_chat(self.table.id, &text);
         let mut next = self.candidate();
-        push_chat(&mut next, [(crate::model::SERVER_AUTHOR, message.clone())])?;
+        push_chat(&mut next, [(None, message.clone())])?;
         self.persist(next).await?;
         let mut effects = self.effects();
         self.add_chat(&mut effects, &message);
@@ -326,11 +326,7 @@ impl TableActor {
             push_chat(
                 &mut next,
                 messages.iter().enumerate().map(|(index, message)| {
-                    let author = if index == 0 {
-                        session.user
-                    } else {
-                        crate::model::SERVER_AUTHOR
-                    };
+                    let author = (index == 0).then_some(session.user);
                     (author, message.clone())
                 }),
             )?;
@@ -350,7 +346,7 @@ impl TableActor {
         }
         let message = authored_chat(self.table.id, &session.name, &text);
         let mut next = self.candidate();
-        push_chat(&mut next, [(session.user, message.clone())])?;
+        push_chat(&mut next, [(Some(session.user), message.clone())])?;
         self.persist(next).await?;
         let typing = self
             .attendees
@@ -388,7 +384,7 @@ impl TableActor {
                     .join("/")
             );
             let message = server_chat(self.table.id, &message);
-            push_chat(&mut next, [(crate::model::SERVER_AUTHOR, message.clone())])?;
+            push_chat(&mut next, [(None, message.clone())])?;
             self.persist(next).await?;
             let mut e = self.effects();
             self.add_chat(&mut e, &message);
@@ -435,9 +431,7 @@ impl TableActor {
                 .collect::<Vec<_>>();
             push_chat(
                 &mut next,
-                messages
-                    .iter()
-                    .map(|message| (crate::model::SERVER_AUTHOR, message.clone())),
+                messages.iter().map(|message| (None, message.clone())),
             )?;
             self.persist(next).await?;
             let mut e = self.effects();
@@ -533,8 +527,8 @@ impl TableActor {
         push_chat(
             &mut next,
             [
-                (session.user, authored.clone()),
-                (crate::model::SERVER_AUTHOR, notice.clone()),
+                (Some(session.user), authored.clone()),
+                (None, notice.clone()),
             ],
         )?;
         self.persist(next).await?;

@@ -551,7 +551,7 @@ async fn archive_chat(
     for entry in entries {
         ids.push(entry.id.context("Missing chat identity")?);
         // Server messages have no author.
-        users.push((entry.message.source == ChatSource::User).then_some(entry.user.0));
+        users.push(entry.user.map(|user| user.0));
         messages.push(entry.message.text.clone());
         let table = entry
             .message
@@ -773,7 +773,7 @@ mod tests {
         table.game_mut().unwrap().notes[1][2] = "note".into();
         table.chat.push(TableChat {
             id: Some(7),
-            user: UserId(1),
+            user: Some(UserId(1)),
             message: hanabi_protocol::Chat::new(
                 "hello",
                 ChatSource::User,
@@ -880,7 +880,7 @@ mod tests {
         });
         table.chat.push(TableChat {
             id: Some(3),
-            user: UserId(1),
+            user: None,
             message,
         });
         table
@@ -904,6 +904,10 @@ mod tests {
         let decoded = crate::checkpoint::decode(&older_head(&encoded.head, format)?, &parts)?;
         ensure!(serde_json::to_value(&decoded)? == expected);
         Ok(())
+    }
+    /// Rewrites a part from format 6 into format 5.
+    fn format_5(part: &str) -> String {
+        part.replace("{\"id\":3,\"message\"", "{\"id\":3,\"user\":0,\"message\"")
     }
     /// Rewrites a part from format 5 into format 4.
     fn format_4(part: &str) -> String {
@@ -991,9 +995,12 @@ mod tests {
     }
     #[test]
     fn checkpoints_from_older_formats_are_upgraded() -> Result<()> {
-        upgrades("hanabi-live-4", format_4)?;
-        upgrades("hanabi-live-2", |part| format_2(&format_4(part)))?;
-        upgrades("hanabi-live-1", |part| format_1(&format_2(&format_4(part))))?;
+        upgrades("hanabi-live-5", format_5)?;
+        upgrades("hanabi-live-4", |part| format_4(&format_5(part)))?;
+        upgrades("hanabi-live-2", |part| format_2(&format_4(&format_5(part))))?;
+        upgrades("hanabi-live-1", |part| {
+            format_1(&format_2(&format_4(&format_5(part))))
+        })?;
         let mut table = replayed()?;
         let expected = serde_json::to_value(&table)?;
         let (encoded, _) = crate::checkpoint::encode(&mut table, &SavedParts::default())?;
@@ -1021,7 +1028,7 @@ mod tests {
         table.convert_to_replay()?;
         let message = |id: i32| TableChat {
             id: Some(id),
-            user: UserId(1),
+            user: Some(UserId(1)),
             message: hanabi_protocol::Chat::new(
                 format!("message {id}"),
                 ChatSource::User,
@@ -1475,7 +1482,7 @@ mod tests {
     fn chat(id: TableId, text: &str) -> Result<TableChat> {
         Ok(TableChat {
             id: None,
-            user: UserId(1),
+            user: Some(UserId(1)),
             message: serde_json::from_value(json!({
                 "text": text, "username": "Alice", "source": "user",
                 "tableId":id, "datetime": "2026-11-02T20:00:00.123456Z"

@@ -368,6 +368,7 @@ const UPGRADES: &[(&str, &str, Upgrade)] = &[
     ("hanabi-live-2", "hanabi-live-3", seed_suffix_and_turn),
     ("hanabi-live-3", "hanabi-live-4", clues_and_identities),
     ("hanabi-live-4", "hanabi-live-5", time_control),
+    ("hanabi-live-5", "hanabi-live-6", server_chat_authors),
 ];
 
 /// Rewrites a table that an older server saved, one format at a time, into the current format.
@@ -492,6 +493,17 @@ fn time_control(_: &mut Value, parts: &mut [(String, String)]) -> Result<()> {
                     "perTurnSeconds": per_turn_seconds.unwrap_or_else(|| 0.into()),
                 }),
             );
+        }
+    })
+}
+
+/// Format 5 gave the chat that the server wrote the user 0.
+fn server_chat_authors(_: &mut Value, parts: &mut [(String, String)]) -> Result<()> {
+    edit_parts(parts, CHAT, |chat| {
+        if let Some(chat) = chat.as_object_mut()
+            && chat.get("user") == Some(&Value::from(0))
+        {
+            chat.remove("user");
         }
     })
 }

@@ -15,9 +15,7 @@ use std::{
     time::Instant,
 };
 
-pub const FORMAT: &str = "hanabi-live-5";
-/// The author of chat that the server wrote, as `chat_log` stores it. Real users have positive IDs.
-pub const SERVER_AUTHOR: UserId = UserId(0);
+pub const FORMAT: &str = "hanabi-live-6";
 /// How long before an idle game ends to warn its table.
 pub const IDLE_WARNING_MS: i64 = 5 * CLOCK_UNITS_PER_MINUTE;
 
@@ -241,7 +239,9 @@ where
 #[serde(deny_unknown_fields)]
 pub struct TableChat {
     pub id: Option<i32>,
-    pub user: UserId,
+    /// The user who wrote the message. `None` for a message that the server wrote.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub user: Option<UserId>,
     pub message: Chat,
 }
 impl TableChat {
@@ -354,7 +354,7 @@ impl TableSnapshot {
                 .chat
                 .iter()
                 .skip(before.chat.len())
-                .any(|chat| chat.user > SERVER_AUTHOR)
+                .any(|chat| chat.user.is_some())
             && let Phase::Replay { snapshot, .. } = &mut self.phase
         {
             snapshot.idle_remaining = IDLE_TIMEOUT_MS;
@@ -834,7 +834,7 @@ mod tests {
     fn checkpoint_chat_keeps_its_archived_timestamp_but_sends_the_wire_form() {
         let chat = TableChat {
             id: Some(1),
-            user: UserId(1),
+            user: Some(UserId(1)),
             message: serde_json::from_value(serde_json::json!(
                 {"text": "hi", "source": "user", "datetime": "2026-11-02T20:00:00.123456Z"}
             ))

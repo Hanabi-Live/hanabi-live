@@ -1174,7 +1174,7 @@ fn a_table_chat_that_players_filled_still_fits_in_a_checkpoint() -> Result<()> {
         for _ in 0..CHAT_BATCH {
             table.chat.push(TableChat {
                 id: None,
-                user: UserId(1),
+                user: Some(UserId(1)),
                 message: authored_chat(
                     TableId(hanabi_protocol::MAX_SAFE_INTEGER.unsigned_abs()),
                     &name,
@@ -1187,7 +1187,7 @@ fn a_table_chat_that_players_filled_still_fits_in_a_checkpoint() -> Result<()> {
     while table.chat.len() < crate::model::MAX_TABLE_CHAT {
         table.chat.push(TableChat {
             id: None,
-            user: UserId(0),
+            user: None,
             message: server_chat(
                 TableId(hanabi_protocol::MAX_SAFE_INTEGER.unsigned_abs()),
                 &notice,

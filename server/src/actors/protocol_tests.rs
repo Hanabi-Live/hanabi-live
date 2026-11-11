@@ -1153,7 +1153,7 @@ fn notices(table: &TableSnapshot) -> Vec<String> {
     table
         .chat
         .iter()
-        .filter(|c| c.user == crate::model::SERVER_AUTHOR)
+        .filter(|c| c.user.is_none())
         .map(|c| c.message.text.clone())
         .collect()
 }
@@ -2405,7 +2405,7 @@ async fn players_cannot_fill_a_table_chat_and_block_the_owner() -> Result<()> {
             .chat
             .resize_with(crate::model::MAX_TABLE_CHAT, || crate::model::TableChat {
                 id: None,
-                user: crate::model::SERVER_AUTHOR,
+                user: None,
                 message: filler.clone(),
             });
         h.store.save_at(&table, revision).await?;

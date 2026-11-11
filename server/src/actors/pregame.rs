@@ -193,7 +193,7 @@ impl TableActor {
                 ),
             );
             let mut next = self.candidate();
-            push_chat(&mut next, [(crate::model::SERVER_AUTHOR, message.clone())])?;
+            push_chat(&mut next, [(None, message.clone())])?;
             self.persist(next).await?;
             let mut e = self.effects();
             self.add_chat(&mut e, &message);

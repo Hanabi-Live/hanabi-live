@@ -487,18 +487,18 @@ pub async fn lobby_chat(
     let mut tx = pool.begin().await?;
     let mut effects = Vec::new();
     for (id, source, who, content, raw) in std::iter::once((
-        caller.user,
+        Some(caller.user),
         "user",
         Some(caller.name.as_str()),
         rendered.map_or_else(|| escape_html(&message), str::to_owned),
         message.clone(),
     ))
-    .chain(public_response.map(|r| (crate::model::SERVER_AUTHOR, "server", None, r.clone(), r)))
+    .chain(public_response.map(|r| (None, "server", None, r.clone(), r)))
     {
         let row = sqlx::query!(
             "INSERT INTO chat_log(user_id,source,message) VALUES($1,$2,$3)
              RETURNING id,datetime_sent",
-            (source == "user").then_some(id.0),
+            id.map(|user| user.0),
             source,
             &content
         )
