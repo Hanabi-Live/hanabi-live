@@ -1,12 +1,12 @@
 import type { z } from "zod";
-import type { hypotheticalActionSchema } from "../generated/protocol";
+import type { hypotheticalEventSchema } from "../generated/protocol";
 
 /**
  * A clue as the server sends it in game events and hypothetical moves. The server omits a clue that
  * the recipient may not see.
  */
 export type WireClue = NonNullable<
-  Extract<z.output<typeof hypotheticalActionSchema>, { type: "clue" }>["clue"]
+  Extract<z.output<typeof hypotheticalEventSchema>, { type: "clue" }>["clue"]
 >;
 
 /**

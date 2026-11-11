@@ -465,10 +465,7 @@ mod tests {
             })
             .collect();
         let messages = [
-            test_frame(
-                "gameActionList",
-                serde_json::json!({"tableID":42,"list":[]}),
-            ),
+            test_frame("gameEventList", serde_json::json!({"tableID":42,"list":[]})),
             test_frame(
                 "noteList",
                 serde_json::json!({"tableID":42,"notes":all_notes}),

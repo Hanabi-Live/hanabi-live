@@ -21,7 +21,7 @@ const GAME_LIBRARY_SCHEMAS: &[&str] = &[
     "ClueType",
     "GameEvent",
     "GameOptions",
-    "HypotheticalAction",
+    "HypotheticalEvent",
     "PlayerNotes",
 ];
 

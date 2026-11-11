@@ -70,8 +70,8 @@ databaseDescribe("Rust actor durability and ownership", () => {
           const init = await peer.receive("init", SERVER_COMMAND_SCHEMAS.init);
           peer.send("getGameState", { tableID });
           const history = await peer.receive(
-            "gameActionList",
-            SERVER_COMMAND_SCHEMAS.gameActionList,
+            "gameEventList",
+            SERVER_COMMAND_SCHEMAS.gameEventList,
           );
           peer.send("loaded", { tableID });
           return { init, history };
@@ -91,7 +91,7 @@ databaseDescribe("Rust actor durability and ownership", () => {
         const active = activeIsAlice ? alice : bob;
         const other = activeIsAlice ? bob : alice;
         const initial = activeIsAlice ? a : b;
-        const card = initial.history.actions.find(
+        const card = initial.history.events.find(
           (event) => event.type === "draw" && event.playerIndex === 0,
         );
         assertDefined(card, "Missing active player's initial hand.");
@@ -108,7 +108,7 @@ databaseDescribe("Rust actor durability and ownership", () => {
         // Holds the table's checkpoint row so that the action's save waits.
         const blocker = await sql.reserve();
         try {
-          active.send("action", {
+          active.send("playerAction", {
             tableID,
             action: { type: "play", order: 9999 },
           });
@@ -116,7 +116,7 @@ databaseDescribe("Rust actor durability and ownership", () => {
           await blocker`SET idle_in_transaction_session_timeout = 0`;
           await blocker`BEGIN`;
           await blocker`SELECT id FROM live_tables WHERE id = ${tableID} FOR UPDATE`;
-          active.send("action", action);
+          active.send("playerAction", action);
           const deadline = performance.now() + 1500;
           for (;;) {
             const rows = await sql`
@@ -139,22 +139,22 @@ databaseDescribe("Rust actor durability and ownership", () => {
             await delay(10);
           }
           expect(
-            active.frames.some((message) => message.startsWith("gameAction ")),
+            active.frames.some((message) => message.startsWith("gameEvent ")),
           ).toBe(false);
           replacement = await connect(activeIsAlice ? aliceCookie : bobCookie);
           await blocker`ROLLBACK`;
           await other.receive(
-            "gameAction",
-            SERVER_COMMAND_SCHEMAS.gameAction,
+            "gameEvent",
+            SERVER_COMMAND_SCHEMAS.gameEvent,
             (event) =>
-              event.action.type === "play" || event.action.type === "discard",
+              event.event.type === "play" || event.event.type === "discard",
           );
           expect(
-            active.frames.some((message) => message.startsWith("gameAction ")),
+            active.frames.some((message) => message.startsWith("gameEvent ")),
           ).toBe(false);
           expect(
             replacement.frames.some((message) =>
-              message.startsWith("gameAction "),
+              message.startsWith("gameEvent "),
             ),
           ).toBe(false);
         } finally {
@@ -173,15 +173,15 @@ databaseDescribe("Rust actor durability and ownership", () => {
         );
         await bootstrap(replacement);
         // Resending the applied move is rejected: it is no longer this player's turn.
-        replacement.send("action", action);
+        replacement.send("playerAction", action);
         await replacement.receive("warning", SERVER_COMMAND_SCHEMAS.warning);
         replacement.send("getGameState", { tableID });
         const onceOnly = await replacement.receive(
-          "gameActionList",
-          SERVER_COMMAND_SCHEMAS.gameActionList,
+          "gameEventList",
+          SERVER_COMMAND_SCHEMAS.gameEventList,
         );
         expect(
-          onceOnly.actions.filter(
+          onceOnly.events.filter(
             (event) => event.type === "play" || event.type === "discard",
           ),
         ).toHaveLength(1);
@@ -214,27 +214,27 @@ databaseDescribe("Rust actor durability and ownership", () => {
         const restored = await bootstrap(returning);
         expect(restored.init.ourPlayerIndex).toBe(0);
         expect(
-          restored.history.actions.filter(
+          restored.history.events.filter(
             (event) => event.type === "play" || event.type === "discard",
           ),
         ).toHaveLength(1);
         expect(
-          restored.history.actions.some(
+          restored.history.events.some(
             (event) =>
               event.type === "draw"
               && event.playerIndex === 0
               && event.rank === undefined,
           ),
         ).toBe(true);
-        returning.send("action", action);
+        returning.send("playerAction", action);
         await returning.receive("warning", SERVER_COMMAND_SCHEMAS.warning);
         returning.send("getGameState", { tableID });
         const duplicate = await returning.receive(
-          "gameActionList",
-          SERVER_COMMAND_SCHEMAS.gameActionList,
+          "gameEventList",
+          SERVER_COMMAND_SCHEMAS.gameEventList,
         );
         expect(
-          duplicate.actions.filter(
+          duplicate.events.filter(
             (event) => event.type === "play" || event.type === "discard",
           ),
         ).toHaveLength(1);

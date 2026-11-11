@@ -3,7 +3,7 @@ use super::{
     chat::{ChatBytes, authored_chat, server_chat},
     replay::undo_hypothetical_turn,
     setup::{next_requested_seed, option_changes, requested_seed, validate_table_name},
-    wire::{game_action, game_action_list},
+    wire::{game_event, game_event_list},
 };
 use crate::errors::CommandError;
 use crate::transport::test_frame;
@@ -104,11 +104,11 @@ fn typed_game_frames_preserve_wire_schema_and_projected_identities() -> Result<(
         ),
     ] {
         let list = hanabi_engine::events_for_recipient(game.state(), recipient, None)?;
-        let encoded = test_frame("gameActionList", game_action_list(TableId(42), &list));
+        let encoded = test_frame("gameEventList", game_event_list(TableId(42), &list));
         let (command, body) = encoded
             .split_once(' ')
             .context("Missing protocol separator")?;
-        assert_eq!(command, "gameActionList");
+        assert_eq!(command, "gameEventList");
         let body: Value = serde_json::from_str(body)?;
         // The engine names some fields differently, and marks a missing seat or vote list with -1 or
         // null, which the wire omits.
@@ -133,15 +133,15 @@ fn typed_game_frames_preserve_wire_schema_and_projected_identities() -> Result<(
                 }
             }
         }
-        assert_eq!(body, json!({"tableID":42,"actions":expected}));
-        for (event, expected) in list.iter().zip(body["actions"].as_array().unwrap()) {
-            let encoded = test_frame("gameAction", game_action(TableId(42), event));
+        assert_eq!(body, json!({"tableID":42,"events":expected}));
+        for (event, expected) in list.iter().zip(body["events"].as_array().unwrap()) {
+            let encoded = test_frame("gameEvent", game_event(TableId(42), event));
             let (command, body) = encoded
                 .split_once(' ')
                 .context("Missing action separator")?;
-            assert_eq!(command, "gameAction");
+            assert_eq!(command, "gameEvent");
             let body: Value = serde_json::from_str(body)?;
-            assert_eq!(body, json!({"tableID":42,"action":expected}));
+            assert_eq!(body, json!({"tableID":42,"event":expected}));
             if expected["type"] == "draw" {
                 let player = usize::try_from(expected["playerIndex"].as_u64().unwrap()).unwrap();
                 let order = usize::try_from(expected["order"].as_u64().unwrap()).unwrap();
@@ -157,7 +157,7 @@ fn typed_game_frames_preserve_wire_schema_and_projected_identities() -> Result<(
                 assert_eq!(expected["rank"], rank);
             }
         }
-        let events = body["actions"].as_array().unwrap();
+        let events = body["events"].as_array().unwrap();
         let ended = events.iter().find(|e| e["type"] == "gameOver").unwrap();
         assert_eq!(ended["endCondition"], 4);
         assert!(ended.get("votes").is_none());
@@ -1194,7 +1194,7 @@ fn a_table_chat_that_players_filled_still_fits_in_a_checkpoint() -> Result<()> {
 
 #[test]
 fn hypothetical_back_keeps_morphs() {
-    let action = |kind: &str, n: i64| -> hanabi_protocol::HypotheticalAction {
+    let action = |kind: &str, n: i64| -> hanabi_protocol::HypotheticalEvent {
         let card = json!({"playerIndex":0,"order":n,"suitIndex":0,"rank":1});
         let mut value = match kind {
             "turn" => json!({"num":n,"currentPlayerIndex":0}),
@@ -1206,7 +1206,7 @@ fn hypothetical_back_keeps_morphs() {
         value["type"] = json!(kind);
         serde_json::from_value(value).unwrap()
     };
-    let text = |actions: &[hanabi_protocol::HypotheticalAction]| {
+    let text = |actions: &[hanabi_protocol::HypotheticalEvent]| {
         actions
             .iter()
             .map(|action| serde_json::to_string(action).unwrap())

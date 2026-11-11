@@ -1,7 +1,7 @@
 import type { z } from "zod";
 import type {
   gameEventSchema,
-  hypotheticalActionSchema,
+  hypotheticalEventSchema,
 } from "../generated/protocol";
 import type { PlayerNotes } from "../interfaces/PlayerNotes";
 import type { SpectatorNote } from "../interfaces/SpectatorNote";
@@ -42,7 +42,7 @@ export type NoteAction =
 type GameEvent = z.output<typeof gameEventSchema>;
 
 /** A move in a hypothetical, as the server relays it. */
-export type HypotheticalWireAction = z.output<typeof hypotheticalActionSchema>;
+export type HypotheticalWireEvent = z.output<typeof hypotheticalEventSchema>;
 
 type Event<Type extends GameEvent["type"]> = Readonly<
   Extract<GameEvent, { type: Type }>
@@ -73,7 +73,7 @@ export type ActionTurn = Event<"turn">;
  * the recipient may not see, the game state keeps a `HiddenClue`.
  */
 export type ActionClue = Readonly<
-  Omit<Extract<HypotheticalWireAction, { type: "clue" }>, "clue">
+  Omit<Extract<HypotheticalWireEvent, { type: "clue" }>, "clue">
 > & {
   readonly clue: MsgClue | HiddenClue;
 };

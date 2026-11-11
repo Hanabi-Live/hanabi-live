@@ -1,6 +1,6 @@
 use hanabi_protocol::{
     CardOrder, ColorClueTurn, ColorIndex, DEFAULT_VARIANT_NAME, GameOverTurn, MIN_PLAYERS,
-    NO_VALUE, PlayerIndex, PlayerTurn, RankClueNumber, RankClueTurn, ReplayGameAction, TargetCard,
+    NO_VALUE, PlayerIndex, RankClueNumber, RankClueTurn, ReplayGameAction, TargetCard,
 };
 pub use hanabi_protocol::{ClueType, EndCondition, RecordedActionType};
 use serde::{Deserialize, Serialize};
@@ -143,9 +143,9 @@ impl From<ReplayGameAction> for PlayerAction {
     }
 }
 
-impl From<PlayerTurn> for PlayerAction {
-    fn from(turn: PlayerTurn) -> Self {
-        ReplayGameAction::from(turn).into()
+impl From<hanabi_protocol::PlayerAction> for PlayerAction {
+    fn from(action: hanabi_protocol::PlayerAction) -> Self {
+        ReplayGameAction::from(action).into()
     }
 }
 

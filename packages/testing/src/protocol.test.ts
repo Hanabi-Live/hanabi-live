@@ -42,13 +42,13 @@ test.each(cases)("$direction: $name", (entry) => {
 });
 
 test("hidden clue frames omit the clue instead of marking it with -1", () => {
-  const action = { type: "clue", giver: 0, target: 1, orders: [5], turn: 0 };
-  const schema = SERVER_COMMAND_SCHEMAS.gameAction;
-  expect(schema.safeParse({ tableID: 1, action }).success).toBe(true);
+  const event = { type: "clue", giver: 0, target: 1, orders: [5], turn: 0 };
+  const schema = SERVER_COMMAND_SCHEMAS.gameEvent;
+  expect(schema.safeParse({ tableID: 1, event }).success).toBe(true);
   expect(
     schema.safeParse({
       tableID: 1,
-      action: { ...action, clue: { type: -1, value: -1 } },
+      event: { ...event, clue: { type: -1, value: -1 } },
     }).success,
   ).toBe(false);
 });

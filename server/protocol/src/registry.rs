@@ -59,7 +59,7 @@ macro_rules! client_contracts {
             TableCreate "tableCreate" => TableCreateRequest;
             TableUpdate "tableUpdate" => TableUpdateRequest;
             ReplayCreate "replayCreate" => ReplayCreateRequest;
-            Action "action" => ActionRequest;
+            PlayerAction "playerAction" => PlayerActionRequest;
             Pause "pause" => PauseRequest;
             IdleReset "idleReset" => TableRequest;
             Note "note" => NoteRequest;
@@ -91,8 +91,8 @@ macro_rules! server_contracts {
             NOTE "note" => Note;
             NOTE_LIST "noteList" => NoteList;
             NOTE_LIST_PLAYER "noteListPlayer" => NoteListPlayer;
-            GAME_ACTION "gameAction" => GameAction;
-            GAME_ACTION_LIST "gameActionList" => GameActionList;
+            GAME_EVENT "gameEvent" => GameEventMessage;
+            GAME_EVENT_LIST "gameEventList" => GameEventList;
             INIT "init" => Init;
             BOOT "boot" => TableRequest;
             SYNCED "synced" => Empty;
@@ -300,7 +300,7 @@ macro_rules! server_messages {
 pub mod server {
     use super::{
         Blocked, CardIdentities, Chat, ChatDelete, ChatHistory, ChatList, ChatTyping, Clock,
-        Connected, Empty, FinishOngoingGame, Friends, GameAction, GameActionList, GameHistory,
+        Connected, Empty, FinishOngoingGame, Friends, GameEventList, GameEventMessage, GameHistory,
         GameHistoryList, GameHistoryOtherScores, Hypothetical, IdleWarning, Init, LobbyStatus,
         Note, NoteList, NoteListPlayer, Notice, Pause, Pregame, ReplayLeader, Restart,
         RestartDeclined, ServerMessage, SharedReplayAction, SoundLobby, Spectators, Suggestion,

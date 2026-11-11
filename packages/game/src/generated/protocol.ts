@@ -405,10 +405,10 @@ export const gameOptionsSchema = z
   .readonly();
 
 /**
- * One action in a hypothetical. The server relays these; each client applies them to its own copy
+ * One event in a hypothetical. The server relays these; each client applies them to its own copy
  * of the game. A card identity that the recipient may not see is absent.
  */
-export const hypotheticalActionSchema = z.discriminatedUnion("type", [
+export const hypotheticalEventSchema = z.discriminatedUnion("type", [
   z
     .strictObject({
       order: cardOrderSchema,

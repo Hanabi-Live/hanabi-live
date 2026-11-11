@@ -123,7 +123,7 @@ gameCommands.set("hypothetical", (data) => {
     type: "hypoStart",
     shared: true,
     showDrawnCards: data.showDrawnCards,
-    actions: data.actions.map(toHypotheticalAction),
+    actions: data.events.map(toHypotheticalAction),
   });
 });
 
@@ -291,15 +291,15 @@ gameCommands.set("noteListPlayer", (data) => {
 });
 
 // Used when the game state changes.
-gameCommands.set("gameAction", (data) => {
+gameCommands.set("gameEvent", (data) => {
   // A turn restarts the server's idle timer.
   modals.closeIdleWarning();
 
   // Update the game state.
-  globals.store!.dispatch(toGameAction(data.action));
+  globals.store!.dispatch(toGameAction(data.event));
 });
 
-gameCommands.set("gameActionList", (data) => {
+gameCommands.set("gameEventList", (data) => {
   // Users can load a specific turn in a replay by using a URL hash
   // (e.g. "/replay/123#5"). Record the hash before we load the UI (which will overwrite the hash
   // with "#1", corresponding to the first turn).
@@ -308,11 +308,11 @@ gameCommands.set("gameActionList", (data) => {
     specificTurnString = globalThis.location.hash.replace("#", ""); // Strip the leading "#".
   }
 
-  // The server has sent us the list of the game actions that have occurred in the game thus far (in
+  // The server has sent us the list of the game events that have occurred in the game thus far (in
   // response to the "getGameState" command). Send this list to the reducers.
   globals.store!.dispatch({
     type: "gameActionList",
-    actions: data.actions.map(toGameAction),
+    actions: data.events.map(toGameAction),
   });
 
   // We might need to go to a specific turn if we loaded a URL of e.g.:

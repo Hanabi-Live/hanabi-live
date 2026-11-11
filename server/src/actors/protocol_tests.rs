@@ -447,7 +447,7 @@ async fn duck_clue_identity_is_private_in_live_history_and_recovery_but_not_comp
                 .unwrap();
             h.send(
                 index,
-                "action",
+                "playerAction",
                 if kind == hanabi_protocol::RecordedActionType::ColorClue {
                     json!({"tableID":id,"action":{"type":"colorClue","target":target,"colorIndex":action.value}})
                 } else {
@@ -463,8 +463,8 @@ async fn duck_clue_identity_is_private_in_live_history_and_recovery_but_not_comp
                 let events = h
                     .frames(index)?
                     .into_iter()
-                    .filter(|(name, body)| name == "gameAction" && body["action"]["type"] == "clue")
-                    .map(|(_, body)| body["action"].clone())
+                    .filter(|(name, body)| name == "gameEvent" && body["event"]["type"] == "clue")
+                    .map(|(_, body)| body["event"].clone())
                     .collect::<Vec<_>>();
                 ensure!(events.len() == 1, "Missing live clue event");
                 ensure!(
@@ -501,8 +501,8 @@ async fn duck_clue_identity_is_private_in_live_history_and_recovery_but_not_comp
             }
             for index in 0..5 {
                 h.send(index, "getGameState", json!({"tableID":id})).await?;
-                let history = h.receive(index, "gameActionList").await?;
-                let clues = history["actions"]
+                let history = h.receive(index, "gameEventList").await?;
+                let clues = history["events"]
                     .as_array()
                     .unwrap()
                     .iter()
@@ -536,8 +536,8 @@ async fn duck_clue_identity_is_private_in_live_history_and_recovery_but_not_comp
         h.send(0, "tableTerminate", json!({"tableID":id})).await?;
         for index in 0..5 {
             h.send(index, "getGameState", json!({"tableID":id})).await?;
-            let history = h.receive(index, "gameActionList").await?;
-            let clues = history["actions"]
+            let history = h.receive(index, "gameEventList").await?;
+            let clues = history["events"]
                 .as_array()
                 .unwrap()
                 .iter()
@@ -1242,7 +1242,7 @@ async fn pausing_a_game_is_announced_in_its_chat() -> Result<()> {
         let error = h
             .send(
                 index,
-                "action",
+                "playerAction",
                 json!({"tableID":id,"action":{"type":"play","order":card}}),
             )
             .await
@@ -1643,7 +1643,7 @@ async fn remade_tables_publish_fresh_statistics_for_every_player() -> Result<()>
                 json!({"tableID":id,"action":{"type":"discard","order":hand[0]}})
             };
             let actor = usize::try_from(snapshot.players[active].id.0)? - 1;
-            h.send(actor, "action", action).await?;
+            h.send(actor, "playerAction", action).await?;
             for index in 0..3 {
                 h.frames(index)?;
             }
@@ -3061,7 +3061,7 @@ async fn commands_for_another_phase_are_rejected() -> Result<()> {
         let error = h
             .send(
                 0,
-                "action",
+                "playerAction",
                 json!({"tableID":id,"action":{"type": "discard", "order": 0}}),
             )
             .await
@@ -3233,7 +3233,7 @@ async fn saved_actions_store_null_for_a_missing_target_or_value() -> Result<()> 
         let card = game.players[active].hand[0];
         h.send(
             index,
-            "action",
+            "playerAction",
             json!({"tableID":id,"action":{"type":"play","order":card}}),
         )
         .await?;
@@ -3274,8 +3274,8 @@ async fn saved_actions_store_null_for_a_missing_target_or_value() -> Result<()> 
         .await?;
         let replay = h.receive(0, "tableStarted").await?["tableID"].clone();
         h.send(0, "getGameState", json!({"tableID":replay})).await?;
-        let history = h.receive(0, "gameActionList").await?;
-        let events = history["actions"].as_array().context("Missing actions")?;
+        let history = h.receive(0, "gameEventList").await?;
+        let events = history["events"].as_array().context("Missing actions")?;
         ensure!(
             // A misplay shows as a failed discard.
             events.iter().any(|event| {

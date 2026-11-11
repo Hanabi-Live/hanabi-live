@@ -1,5 +1,5 @@
 // These represent actions that can modify the state store. (They cause a state duplication to occur
-// and the state reducers to fire.) All of the sub-actions from the "gameAction" command are listed
+// and the state reducers to fire.) All of the sub-actions from the "gameEvent" command are listed
 // here.
 
 import type { ServerCommandData, Spectator } from "@hanabi-live/data";

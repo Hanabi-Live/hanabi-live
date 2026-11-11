@@ -60,7 +60,7 @@ export class UIGlobals {
 
   // Replay feature
 
-  /** Contains all of the "action" messages for the game. */
+  /** Contains all of the "gameEvent" messages for the game. */
   replayLog: GameAction[] = [];
 
   finalReplayPos = 0;

@@ -46,7 +46,7 @@ pub(super) fn wrong_phase(message: &ClientMessage) -> CommandError {
     let reason = match message {
         M::TableStart(_) => "Already started",
         M::TableSetVariant(_) | M::TableUpdate(_) => "Game already started",
-        M::Action(_)
+        M::PlayerAction(_)
         | M::Pause(_)
         | M::IdleReset(_)
         | M::Note(_)

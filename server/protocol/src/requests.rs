@@ -311,10 +311,10 @@ impl ReplayCreateRequest {
 /// A turn in an ongoing game.
 #[derive(Clone, Copy, Debug, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
-pub struct ActionRequest {
+pub struct PlayerActionRequest {
     #[serde(rename = "tableID")]
     pub table_id: TableId,
-    pub action: PlayerTurn,
+    pub action: PlayerAction,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
@@ -390,7 +390,7 @@ pub enum ReplayLeaderAction {
     HypoStart {},
     HypoEnd {},
     HypoAction {
-        action: HypotheticalAction,
+        action: HypotheticalEvent,
     },
     /// Undoes the hypothetical's last turn.
     HypoBack {},

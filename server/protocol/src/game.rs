@@ -284,18 +284,18 @@ pub enum GameEvent {
 
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
-pub struct GameAction {
+pub struct GameEventMessage {
     #[serde(rename = "tableID")]
     pub table_id: TableId,
-    pub action: GameEvent,
+    pub event: GameEvent,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
-pub struct GameActionList {
+pub struct GameEventList {
     #[serde(rename = "tableID")]
     pub table_id: TableId,
-    pub actions: Vec<GameEvent>,
+    pub events: Vec<GameEvent>,
 }
 
 /// A player's detrimental character.

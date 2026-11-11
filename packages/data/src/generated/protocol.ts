@@ -7,7 +7,7 @@ import {
   EndCondition,
   gameEventSchema,
   gameOptionsSchema,
-  hypotheticalActionSchema,
+  hypotheticalEventSchema,
   playerIndexSchema,
   playerNotesSchema,
   rankClueNumberSchema,
@@ -72,51 +72,6 @@ export enum SoundMove {
 }
 
 /**
- * A player's turn: the `action` command, and the turns of the replay format.
- */
-const playerTurnSchema = z.discriminatedUnion("type", [
-  z
-    .strictObject({ order: cardOrderSchema, type: z.literal("play") })
-    .readonly(),
-  z
-    .strictObject({ order: cardOrderSchema, type: z.literal("discard") })
-    .readonly(),
-  z
-    .strictObject({
-      colorIndex: colorIndexSchema,
-      /**
-       * The player who receives the clue.
-       */
-      target: playerIndexSchema,
-      type: z.literal("colorClue"),
-    })
-    .readonly(),
-  z
-    .strictObject({
-      rank: rankClueNumberSchema,
-      /**
-       * The player who receives the clue.
-       */
-      target: playerIndexSchema,
-      type: z.literal("rankClue"),
-    })
-    .readonly(),
-]);
-export const tableIdSchema = z
-  .number()
-  .int()
-  .min(0)
-  .max(9_007_199_254_740_991)
-  .brand<"TableID">();
-
-/**
- * A turn in an ongoing game.
- */
-export const actionRequestSchema = z
-  .strictObject({ action: playerTurnSchema, tableID: tableIdSchema })
-  .readonly();
-
-/**
  * The body of a JSON HTTP error response. Server failures also name their typed cause and the
  * diagnostic ID that their log entry carries.
  */
@@ -143,6 +98,12 @@ const cardIdentitySchema = z
     suitIndex: suitIndexSchema.optional(),
   })
   .readonly();
+export const tableIdSchema = z
+  .number()
+  .int()
+  .min(0)
+  .max(9_007_199_254_740_991)
+  .brand<"TableID">();
 
 /**
  * Every card's identity, by card order, once a game ends.
@@ -362,14 +323,14 @@ export const finishOngoingGameSchema = z
 export const friendsSchema = z
   .strictObject({ friends: z.array(z.string()).readonly() })
   .readonly();
-export const gameActionSchema = z
-  .strictObject({ action: gameEventSchema, tableID: tableIdSchema })
-  .readonly();
-export const gameActionListSchema = z
+export const gameEventListSchema = z
   .strictObject({
-    actions: z.array(gameEventSchema).readonly(),
+    events: z.array(gameEventSchema).readonly(),
     tableID: tableIdSchema,
   })
+  .readonly();
+export const gameEventMessageSchema = z
+  .strictObject({ event: gameEventSchema, tableID: tableIdSchema })
   .readonly();
 
 /**
@@ -467,9 +428,9 @@ export const historySeedRequestSchema = z
 export const hypotheticalSchema = z
   .strictObject({
     /**
-     * The hypothetical's actions so far, in order.
+     * The hypothetical's events so far, in order.
      */
-    actions: z.array(hypotheticalActionSchema).readonly(),
+    events: z.array(hypotheticalEventSchema).readonly(),
     showDrawnCards: z.boolean(),
     tableID: tableIdSchema,
   })
@@ -710,6 +671,45 @@ const pauseSettingSchema = z.enum([
 ]);
 export const pauseRequestSchema = z
   .strictObject({ setting: pauseSettingSchema, tableID: tableIdSchema })
+  .readonly();
+
+/**
+ * What a player does on their turn: the `playerAction` command, and the turns of the replay format.
+ */
+const playerActionSchema = z.discriminatedUnion("type", [
+  z
+    .strictObject({ order: cardOrderSchema, type: z.literal("play") })
+    .readonly(),
+  z
+    .strictObject({ order: cardOrderSchema, type: z.literal("discard") })
+    .readonly(),
+  z
+    .strictObject({
+      colorIndex: colorIndexSchema,
+      /**
+       * The player who receives the clue.
+       */
+      target: playerIndexSchema,
+      type: z.literal("colorClue"),
+    })
+    .readonly(),
+  z
+    .strictObject({
+      rank: rankClueNumberSchema,
+      /**
+       * The player who receives the clue.
+       */
+      target: playerIndexSchema,
+      type: z.literal("rankClue"),
+    })
+    .readonly(),
+]);
+
+/**
+ * A turn in an ongoing game.
+ */
+export const playerActionRequestSchema = z
+  .strictObject({ action: playerActionSchema, tableID: tableIdSchema })
   .readonly();
 const pregameBestScoreSchema = z
   .strictObject({
@@ -1158,7 +1158,7 @@ const replayLeaderActionSchema = z.discriminatedUnion("type", [
   z.strictObject({ type: z.literal("hypoEnd") }).readonly(),
   z
     .strictObject({
-      action: hypotheticalActionSchema,
+      action: hypotheticalEventSchema,
       type: z.literal("hypoAction"),
     })
     .readonly(),
@@ -1493,7 +1493,6 @@ export const welcomeSchema = z
   })
   .readonly();
 export const CLIENT_COMMAND_SCHEMAS = {
-  action: actionRequestSchema,
   chat: chatRequestSchema,
   chatBlock: chatUserRequestSchema,
   chatBlocked: chatLinkedRequestSchema,
@@ -1517,6 +1516,7 @@ export const CLIENT_COMMAND_SCHEMAS = {
   lobbyLoad: emptySchema,
   note: noteRequestSchema,
   pause: pauseRequestSchema,
+  playerAction: playerActionRequestSchema,
   replayAction: sharedReplayActionSchema,
   replayCreate: replayCreateRequestSchema,
   setting: settingRequestSchema,
@@ -1555,8 +1555,8 @@ export const SERVER_COMMAND_SCHEMAS = {
   error: noticeSchema,
   finishOngoingGame: finishOngoingGameSchema,
   friends: friendsSchema,
-  gameAction: gameActionSchema,
-  gameActionList: gameActionListSchema,
+  gameEvent: gameEventMessageSchema,
+  gameEventList: gameEventListSchema,
   gameHistory: gameHistoryListSchema,
   gameHistoryAdded: gameHistorySchema,
   gameHistoryOtherScores: gameHistoryOtherScoresSchema,

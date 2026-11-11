@@ -18,9 +18,7 @@ use crate::{
 use anyhow::Context;
 use chrono::Utc;
 use hanabi_protocol::ClientMessage;
-use hanabi_protocol::{
-    HypotheticalAction, MIN_PLAYERS, PregameStats, Status, TableRequest, UserId,
-};
+use hanabi_protocol::{HypotheticalEvent, MIN_PLAYERS, PregameStats, Status, TableRequest, UserId};
 use std::{
     collections::{BTreeMap, HashSet},
     sync::Arc,
@@ -28,8 +26,8 @@ use std::{
 
 /// Removes the moves of a hypothetical's last turn, the way clients go back. Morphs stay, since
 /// clients keep them when going back.
-pub(super) fn undo_hypothetical_turn(actions: &mut Vec<HypotheticalAction>) {
-    let is_turn = |action: &HypotheticalAction| matches!(action, HypotheticalAction::Turn { .. });
+pub(super) fn undo_hypothetical_turn(actions: &mut Vec<HypotheticalEvent>) {
+    let is_turn = |action: &HypotheticalEvent| matches!(action, HypotheticalEvent::Turn { .. });
     let Some(last_turn) = actions.iter().rposition(is_turn) else {
         return;
     };
@@ -42,7 +40,7 @@ pub(super) fn undo_hypothetical_turn(actions: &mut Vec<HypotheticalAction>) {
         let keep = !(start..=last_turn).contains(&index)
             || matches!(
                 action,
-                HypotheticalAction::Morph { .. } | HypotheticalAction::Unmorph { .. }
+                HypotheticalEvent::Morph { .. } | HypotheticalEvent::Unmorph { .. }
             );
         index += 1;
         keep

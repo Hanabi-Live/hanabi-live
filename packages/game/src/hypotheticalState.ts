@@ -18,7 +18,7 @@ import type {
   ActionDraw,
   ActionPlay,
   ActionTurn,
-  HypotheticalWireAction,
+  HypotheticalWireEvent,
 } from "./types/gameActions";
 
 export interface HypotheticalState {
@@ -49,12 +49,12 @@ export interface HypotheticalState {
 
 /** Shows a card as another identity, or as blank when its suit and rank are -1. */
 export type ActionHypotheticalMorph = Readonly<
-  Extract<HypotheticalWireAction, { type: "morph" }>
+  Extract<HypotheticalWireEvent, { type: "morph" }>
 >;
 
 /** Shows a morphed card as its original identity again. */
 export type ActionHypotheticalUnmorph = Readonly<
-  Extract<HypotheticalWireAction, { type: "unmorph" }>
+  Extract<HypotheticalWireEvent, { type: "unmorph" }>
 >;
 
 /** A game action that a hypothetical move can produce. */

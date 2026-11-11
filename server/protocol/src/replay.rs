@@ -151,10 +151,10 @@ pub struct GameOverTurn {
     pub player_index: Option<PlayerIndex>,
 }
 
-/// A player's turn: the `action` command, and the turns of the replay format.
+/// What a player does on their turn: the `playerAction` command, and the turns of the replay format.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
 #[serde(tag = "type", rename_all = "camelCase")]
-pub enum PlayerTurn {
+pub enum PlayerAction {
     Play(TargetCard),
     Discard(TargetCard),
     ColorClue(ColorClueTurn),
@@ -172,13 +172,13 @@ pub enum ReplayGameAction {
     GameOver(GameOverTurn),
 }
 
-impl From<PlayerTurn> for ReplayGameAction {
-    fn from(turn: PlayerTurn) -> Self {
-        match turn {
-            PlayerTurn::Play(card) => Self::Play(card),
-            PlayerTurn::Discard(card) => Self::Discard(card),
-            PlayerTurn::ColorClue(clue) => Self::ColorClue(clue),
-            PlayerTurn::RankClue(clue) => Self::RankClue(clue),
+impl From<PlayerAction> for ReplayGameAction {
+    fn from(action: PlayerAction) -> Self {
+        match action {
+            PlayerAction::Play(card) => Self::Play(card),
+            PlayerAction::Discard(card) => Self::Discard(card),
+            PlayerAction::ColorClue(clue) => Self::ColorClue(clue),
+            PlayerAction::RankClue(clue) => Self::RankClue(clue),
         }
     }
 }
@@ -254,8 +254,8 @@ pub struct Hypothetical {
     #[serde(rename = "tableID")]
     pub table_id: TableId,
     pub show_drawn_cards: bool,
-    /// The hypothetical's actions so far, in order.
-    pub actions: Vec<HypotheticalAction>,
+    /// The hypothetical's events so far, in order.
+    pub events: Vec<HypotheticalEvent>,
 }
 
 /// A clue in a hypothetical.
@@ -287,11 +287,11 @@ pub struct MorphedCard {
     pub rank: Option<CardRank>,
 }
 
-/// One action in a hypothetical. The server relays these; each client applies them to its own copy
+/// One event in a hypothetical. The server relays these; each client applies them to its own copy
 /// of the game. A card identity that the recipient may not see is absent.
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
 #[serde(tag = "type", rename_all = "camelCase")]
-pub enum HypotheticalAction {
+pub enum HypotheticalEvent {
     Draw(CardEvent),
     Play(CardEvent),
     Discard(DiscardEvent),

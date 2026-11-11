@@ -8,7 +8,8 @@ import { toCardIdentity, toGameAction, toSoundType } from "./wire";
 
 /** Validates a game event as the connection does. */
 function event(action: unknown) {
-  return SERVER_COMMAND_SCHEMAS.gameAction.parse({ tableID: 1, action }).action;
+  return SERVER_COMMAND_SCHEMAS.gameEvent.parse({ tableID: 1, event: action })
+    .event;
 }
 
 describe("server game events", () => {

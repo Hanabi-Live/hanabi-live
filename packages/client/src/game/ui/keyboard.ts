@@ -489,7 +489,7 @@ function performAction(actionType: PlayOrDiscard, order: CardOrder) {
 function sendAction(actionType: PlayOrDiscard, order: CardOrder) {
   if (globals.state.replay.hypothetical === undefined) {
     globals.lobby.conn!.send(
-      "action",
+      "playerAction",
       toWireAction(globals.lobby.tableID, { type: actionType, order }),
     );
   } else {

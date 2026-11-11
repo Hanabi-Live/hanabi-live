@@ -110,8 +110,8 @@ databaseDescribe("normal-server protocol workload", () => {
         const init = await peer.receive("init", SERVER_COMMAND_SCHEMAS.init);
         peer.send("getGameState", { tableID });
         const history = await peer.receive(
-          "gameActionList",
-          SERVER_COMMAND_SCHEMAS.gameActionList,
+          "gameEventList",
+          SERVER_COMMAND_SCHEMAS.gameEventList,
         );
         if (init.mode !== "replay" && init.mode !== "sharedReplay") {
           peer.send("loaded", { tableID });
@@ -157,15 +157,15 @@ databaseDescribe("normal-server protocol workload", () => {
             for (const [turn, order] of PLAYS.entries()) {
               const peer = turn % 2 === a.init.ourPlayerIndex ? alice : bob;
               const start = performance.now();
-              peer.send("action", {
+              peer.send("playerAction", {
                 tableID,
                 action: { type: "play", order },
               });
               await peer.receive(
-                "gameAction",
-                SERVER_COMMAND_SCHEMAS.gameAction,
+                "gameEvent",
+                SERVER_COMMAND_SCHEMAS.gameEvent,
                 (event) =>
-                  event.action.type === "play" && event.action.order === order,
+                  event.event.type === "play" && event.event.order === order,
               );
               samples.action.push(performance.now() - start);
               if (turn === 4) {
@@ -182,12 +182,12 @@ databaseDescribe("normal-server protocol workload", () => {
                   a.init.ourPlayerIndex,
                 );
                 expect(
-                  restored.history.actions.filter(
+                  restored.history.events.filter(
                     (event) => event.type === "play",
                   ),
                 ).toHaveLength(5);
                 expect(
-                  restored.history.actions.some(
+                  restored.history.events.some(
                     (event) =>
                       event.type === "draw"
                       && event.playerIndex === a.init.ourPlayerIndex
@@ -205,7 +205,7 @@ databaseDescribe("normal-server protocol workload", () => {
             const finished = await bootstrap(alice, tableID);
             expect(finished.init.mode).toBe("sharedReplay");
             expect(
-              finished.history.actions.filter((event) => event.type === "play"),
+              finished.history.events.filter((event) => event.type === "play"),
             ).toHaveLength(25);
             assertDefined(
               finished.init.gameID,
@@ -284,7 +284,7 @@ databaseDescribe("normal-server protocol workload", () => {
         const replay = await bootstrap(peer, tableID);
         expect<number | undefined>(replay.init.gameID).toBe(gameID);
         expect(
-          replay.history.actions.filter((event) => event.type === "play"),
+          replay.history.events.filter((event) => event.type === "play"),
         ).toHaveLength(25);
         const historyReady = performance.now();
         await unattend(peer, tableID);

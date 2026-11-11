@@ -580,8 +580,8 @@ async function playGame(alice: Peer, bob: Peer): Promise<number> {
       const init = await peer.receive("init", SERVER_COMMAND_SCHEMAS.init);
       peer.send("getGameState", { tableID });
       const history = await peer.receive(
-        "gameActionList",
-        SERVER_COMMAND_SCHEMAS.gameActionList,
+        "gameEventList",
+        SERVER_COMMAND_SCHEMAS.gameEventList,
       );
       peer.send("loaded", { tableID });
       return { peer, init, history };
@@ -589,17 +589,17 @@ async function playGame(alice: Peer, bob: Peer): Promise<number> {
   );
   const first = games.find((game) => game.init.ourPlayerIndex === 0);
   assertDefined(first, "Neither player goes first.");
-  const card = first.history.actions.find(
+  const card = first.history.events.find(
     (action) => action.type === "draw" && action.playerIndex === 0,
   );
   if (card?.type !== "draw") {
     throw new Error("The first player has no cards.");
   }
-  first.peer.send("action", {
+  first.peer.send("playerAction", {
     tableID,
     action: { type: "play", order: card.order },
   });
-  await first.peer.receive("gameAction", SERVER_COMMAND_SCHEMAS.gameAction);
+  await first.peer.receive("gameEvent", SERVER_COMMAND_SCHEMAS.gameEvent);
   alice.send("tableTerminate", { tableID });
   const finished = await alice.receive(
     "finishOngoingGame",
@@ -678,9 +678,9 @@ async function seed(address: string): Promise<Seed> {
     bob.send("getGameInit", { tableID });
     const init = await bob.receive("init", SERVER_COMMAND_SCHEMAS.init);
     bob.send("getGameState", { tableID });
-    const { actions } = await bob.receive(
-      "gameActionList",
-      SERVER_COMMAND_SCHEMAS.gameActionList,
+    const { events } = await bob.receive(
+      "gameEventList",
+      SERVER_COMMAND_SCHEMAS.gameEventList,
     );
     bob.send("loaded", { tableID });
 
@@ -689,8 +689,8 @@ async function seed(address: string): Promise<Seed> {
     if (init.ourPlayerIndex !== 0) {
       return;
     }
-    const newest = actions.findLast(
-      (action) => action.type === "draw" && action.playerIndex !== 0,
+    const newest = events.findLast(
+      (event) => event.type === "draw" && event.playerIndex !== 0,
     );
     if (
       newest?.type !== "draw"
@@ -700,7 +700,7 @@ async function seed(address: string): Promise<Seed> {
       return;
     }
     // A rank clue, since the variant's clue colors do not match its suits one to one.
-    bob.send("action", {
+    bob.send("playerAction", {
       tableID,
       action: {
         type: "rankClue",
@@ -708,7 +708,7 @@ async function seed(address: string): Promise<Seed> {
         rank: newest.rank,
       },
     });
-    await bob.receive("gameAction", SERVER_COMMAND_SCHEMAS.gameAction);
+    await bob.receive("gameEvent", SERVER_COMMAND_SCHEMAS.gameEvent);
   }
 
   // The browser logs in as Alice, with a session of its own.

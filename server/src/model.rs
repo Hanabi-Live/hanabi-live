@@ -6,9 +6,7 @@ use hanabi_engine::RecordedAction;
 use hanabi_protocol::GameId;
 use hanabi_protocol::TableId;
 use hanabi_protocol::UserId;
-use hanabi_protocol::{
-    CLOCK_UNITS_PER_MINUTE, Chat, HypotheticalAction, PlayerIndex, PregameStats,
-};
+use hanabi_protocol::{CLOCK_UNITS_PER_MINUTE, Chat, HypotheticalEvent, PlayerIndex, PregameStats};
 pub use hanabi_protocol::{CLOCK_UNITS_PER_SECOND, IDLE_TIMEOUT_MS};
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
@@ -147,7 +145,7 @@ pub struct ReplayState {
     pub efficiency_modifier: i32,
     /// Whether the leader is exploring a hypothetical.
     pub hypothetical: bool,
-    pub hypothetical_actions: Vec<HypotheticalAction>,
+    pub hypothetical_actions: Vec<HypotheticalEvent>,
     pub show_drawn_cards: bool,
     /// Whether the shared replay hides what happens later in the game.
     #[serde(default, skip_serializing_if = "std::ops::Not::not")]
@@ -264,7 +262,7 @@ impl TableChat {
     }
 }
 /// The serialized size of a hypothetical's actions, which checkpoints store as JSON text.
-pub fn hypothetical_bytes(actions: &[HypotheticalAction]) -> Result<usize> {
+pub fn hypothetical_bytes(actions: &[HypotheticalEvent]) -> Result<usize> {
     actions.iter().try_fold(0, |total, action| {
         Ok(total + serde_json::to_string(action)?.len())
     })
@@ -900,7 +898,7 @@ mod tests {
         let replay: ReplayState = serde_json::from_value(stored.clone()).unwrap();
         assert!(matches!(
             replay.hypothetical_actions[..],
-            [HypotheticalAction::Unmorph(hanabi_protocol::TargetCard {
+            [HypotheticalEvent::Unmorph(hanabi_protocol::TargetCard {
                 order: hanabi_protocol::CardOrder(3)
             })]
         ));

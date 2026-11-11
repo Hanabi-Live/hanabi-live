@@ -61,7 +61,9 @@ mod tests {
                 "chat" => json!({"text":"hello"}),
                 "chatPM" => json!({"text":"hello","recipient":"Alice"}),
                 "replayCreate" => json!({"source":"id","visibility":"shared","gameID":1}),
-                "action" => json!({"tableID":1,"action":{"type":"rankClue","target":0,"rank":1}}),
+                "playerAction" => {
+                    json!({"tableID":1,"action":{"type":"rankClue","target":0,"rank":1}})
+                }
                 "pause" => json!({"tableID":1,"setting":"pause"}),
                 "note" => json!({"tableID":1,"order":0,"note":"test"}),
                 "tag" | "tagDelete" => json!({"tableID":1,"tag":"test"}),

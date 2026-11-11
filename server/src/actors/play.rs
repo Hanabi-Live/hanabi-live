@@ -2,7 +2,7 @@ use super::table::{game_mut, wrong_phase};
 use super::{
     Attendance, GameInfo, TableActor,
     chat::table_notice,
-    wire::{game_action, game_action_list},
+    wire::{game_event, game_event_list},
 };
 use crate::errors::CommandResult;
 use crate::model::{Snapshot, TableSnapshot};
@@ -29,7 +29,7 @@ impl TableActor {
         message: ClientMessage,
     ) -> CommandResult<()> {
         match message {
-            ClientMessage::Action(r) => self.action(session, r.action.into()).await,
+            ClientMessage::PlayerAction(r) => self.action(session, r.action.into()).await,
             ClientMessage::TableTerminate(_) => self.terminate(session, false).await,
             ClientMessage::TableVoteForTermination(_) => self.terminate(session, true).await,
             ClientMessage::Pause(r) => self.pause(session, r.setting).await,
@@ -136,8 +136,8 @@ impl TableActor {
                 e.messages.push((
                     a.session.clone(),
                     frame(
-                        hanabi_protocol::server::GAME_ACTION,
-                        game_action(self.table.id, &event),
+                        hanabi_protocol::server::GAME_EVENT,
+                        game_event(self.table.id, &event),
                     ),
                 ));
             }
@@ -571,8 +571,8 @@ impl TableActor {
             e.messages.push((
                 session.clone(),
                 frame(
-                    hanabi_protocol::server::GAME_ACTION_LIST,
-                    game_action_list(self.table.id, &list),
+                    hanabi_protocol::server::GAME_EVENT_LIST,
+                    game_event_list(self.table.id, &list),
                 ),
             ));
             if replay {
@@ -661,7 +661,7 @@ impl TableActor {
                         hanabi_protocol::Hypothetical {
                             table_id: self.table.id,
                             show_drawn_cards: replay.show_drawn_cards,
-                            actions: replay.hypothetical_actions.clone(),
+                            events: replay.hypothetical_actions.clone(),
                         },
                     ),
                 ));

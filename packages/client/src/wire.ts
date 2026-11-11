@@ -3,8 +3,8 @@
 // cover what the schemas cannot express: seat-indexed tuples.
 
 import type {
-  actionRequestSchema,
   ClientCommandData,
+  playerActionRequestSchema,
   ServerCommandData,
 } from "@hanabi-live/data";
 import type {
@@ -22,15 +22,15 @@ import type { z } from "zod";
 import type { ClientAction } from "./game/types/ClientAction";
 import { SoundType } from "./game/types/SoundType";
 
-type WireEvent = ServerCommandData["gameAction"]["action"];
+type WireEvent = ServerCommandData["gameEvent"]["event"];
 type WireCardIdentity =
   ServerCommandData["cardIdentities"]["identities"][number];
 
-/** Converts an action that we took into the "action" command's payload. */
+/** Converts an action that we took into the "playerAction" command's payload. */
 export function toWireAction(
   tableID: number,
   action: ClientAction,
-): z.input<typeof actionRequestSchema> {
+): z.input<typeof playerActionRequestSchema> {
   return { tableID, action };
 }
 
@@ -53,11 +53,11 @@ export function toCardIdentity(identity: WireCardIdentity): CardIdentity {
 }
 
 type WireReplayAction = ServerCommandData["replayAction"]["action"];
-type WireHypotheticalAction = Extract<
+type WireHypotheticalEvent = Extract<
   WireReplayAction,
   { type: "hypoAction" }
 >["action"];
-type OutgoingHypotheticalAction = Extract<
+type OutgoingHypotheticalEvent = Extract<
   ClientCommandData["replayAction"]["action"],
   { type: "hypoAction" }
 >["action"];
@@ -74,7 +74,7 @@ function toClue(clue: WireClue | undefined): HiddenClue | MsgClue {
 
 /** Converts a hypothetical action from the server into the action the game state applies. */
 export function toHypotheticalAction(
-  action: WireHypotheticalAction,
+  action: WireHypotheticalEvent,
 ): ActionIncludingHypothetical {
   if (action.type !== "clue") {
     return action;
@@ -85,7 +85,7 @@ export function toHypotheticalAction(
 /** Converts a hypothetical action for the server, which omits a hidden clue. */
 export function toWireHypotheticalAction(
   action: ActionIncludingHypothetical,
-): OutgoingHypotheticalAction {
+): OutgoingHypotheticalEvent {
   if (action.type !== "clue") {
     return action;
   }

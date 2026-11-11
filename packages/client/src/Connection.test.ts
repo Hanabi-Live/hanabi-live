@@ -43,15 +43,15 @@ describe("sending commands", () => {
       const initial = new Connection("ws://localhost/ws", false);
       initial.send("chat", { text: "allowed" });
       expect(sockets[0]?.sent).toHaveLength(1);
-      initial.send("action", {
+      initial.send("playerAction", {
         tableID: 123,
         action: { type: "play", order: 1 },
       });
       expect(sockets[0]?.sent[1]).toBe(
-        'action {"tableID":123,"action":{"type":"play","order":1}}',
+        'playerAction {"tableID":123,"action":{"type":"play","order":1}}',
       );
       initial.setReady(false);
-      initial.send("action", {
+      initial.send("playerAction", {
         tableID: 123,
         action: { type: "play", order: 1 },
       });
@@ -59,7 +59,7 @@ describe("sending commands", () => {
       initial.send("getGameState", { tableID: 123 });
       expect(sockets[0]?.sent).toHaveLength(3);
       initial.setReady(true);
-      initial.send("action", {
+      initial.send("playerAction", {
         tableID: 123,
         action: { type: "play", order: 1 },
       });

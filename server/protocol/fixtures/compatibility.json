@@ -288,7 +288,7 @@
   {
     "name": "color clues name their target and color",
     "direction": "client",
-    "command": "action",
+    "command": "playerAction",
     "input": {
       "tableID": 7,
       "action": {
@@ -302,7 +302,7 @@
   {
     "name": "rank clues cannot name the start card's rank",
     "direction": "client",
-    "command": "action",
+    "command": "playerAction",
     "input": {
       "tableID": 7,
       "action": {
@@ -316,7 +316,7 @@
   {
     "name": "actions reject unknown action types",
     "direction": "client",
-    "command": "action",
+    "command": "playerAction",
     "input": {
       "tableID": 7,
       "action": {
@@ -910,10 +910,10 @@
   {
     "name": "visible clues carry their type and value",
     "direction": "server",
-    "command": "gameAction",
+    "command": "gameEvent",
     "input": {
       "tableID": 3,
-      "action": {
+      "event": {
         "type": "clue",
         "clue": {
           "type": "rank",
@@ -930,10 +930,10 @@
   {
     "name": "hidden clues omit their type and value",
     "direction": "server",
-    "command": "gameAction",
+    "command": "gameEvent",
     "input": {
       "tableID": 3,
-      "action": {
+      "event": {
         "type": "clue",
         "giver": 0,
         "target": 1,
@@ -946,10 +946,10 @@
   {
     "name": "color clues name the first suit's color",
     "direction": "server",
-    "command": "gameAction",
+    "command": "gameEvent",
     "input": {
       "tableID": 3,
-      "action": {
+      "event": {
         "type": "clue",
         "clue": {
           "type": "color",
@@ -966,10 +966,10 @@
   {
     "name": "color clues cannot name a seventh color",
     "direction": "server",
-    "command": "gameAction",
+    "command": "gameEvent",
     "input": {
       "tableID": 3,
-      "action": {
+      "event": {
         "type": "clue",
         "clue": {
           "type": "color",
@@ -986,10 +986,10 @@
   {
     "name": "rank clues cannot name rank 0",
     "direction": "server",
-    "command": "gameAction",
+    "command": "gameEvent",
     "input": {
       "tableID": 3,
-      "action": {
+      "event": {
         "type": "clue",
         "clue": {
           "type": "rank",
@@ -1006,10 +1006,10 @@
   {
     "name": "game over events allow no votes",
     "direction": "server",
-    "command": "gameActionList",
+    "command": "gameEventList",
     "input": {
       "tableID": 3,
-      "actions": [
+      "events": [
         {
           "type": "draw",
           "playerIndex": 0,
@@ -1027,10 +1027,10 @@
   {
     "name": "cards can be unknown or a stack's start card",
     "direction": "server",
-    "command": "gameAction",
+    "command": "gameEvent",
     "input": {
       "tableID": 3,
-      "action": {
+      "event": {
         "type": "draw",
         "playerIndex": 0,
         "order": 0,
@@ -1042,10 +1042,10 @@
   {
     "name": "seats stop at the sixth player",
     "direction": "server",
-    "command": "gameAction",
+    "command": "gameEvent",
     "input": {
       "tableID": 3,
-      "action": {
+      "event": {
         "type": "draw",
         "playerIndex": 6,
         "order": 0,
@@ -1058,10 +1058,10 @@
   {
     "name": "card orders stop after the stack bases of the largest deck",
     "direction": "server",
-    "command": "gameAction",
+    "command": "gameEvent",
     "input": {
       "tableID": 3,
-      "action": {
+      "event": {
         "type": "draw",
         "playerIndex": 0,
         "order": 66,
@@ -1074,10 +1074,10 @@
   {
     "name": "suits stop at the sixth suit",
     "direction": "server",
-    "command": "gameAction",
+    "command": "gameEvent",
     "input": {
       "tableID": 3,
-      "action": {
+      "event": {
         "type": "draw",
         "playerIndex": 0,
         "order": 0,
@@ -1090,10 +1090,10 @@
   {
     "name": "ranks skip 6",
     "direction": "server",
-    "command": "gameAction",
+    "command": "gameEvent",
     "input": {
       "tableID": 3,
-      "action": {
+      "event": {
         "type": "draw",
         "playerIndex": 0,
         "order": 0,
@@ -1106,10 +1106,10 @@
   {
     "name": "game over votes are seats",
     "direction": "server",
-    "command": "gameAction",
+    "command": "gameEvent",
     "input": {
       "tableID": 3,
-      "action": {
+      "event": {
         "type": "gameOver",
         "endCondition": 4,
         "votes": [0, 6]
@@ -1120,10 +1120,10 @@
   {
     "name": "game over events name a known end condition",
     "direction": "server",
-    "command": "gameAction",
+    "command": "gameEvent",
     "input": {
       "tableID": 3,
-      "action": {
+      "event": {
         "type": "gameOver",
         "endCondition": 11,
         "playerIndex": 0
@@ -1134,10 +1134,10 @@
   {
     "name": "player times have one entry per player",
     "direction": "server",
-    "command": "gameAction",
+    "command": "gameEvent",
     "input": {
       "tableID": 3,
-      "action": {
+      "event": {
         "type": "playerTimes",
         "playerTimesMs": [1000],
         "durationMs": 1000
@@ -1247,10 +1247,10 @@
   {
     "name": "turn numbers are never negative",
     "direction": "server",
-    "command": "gameAction",
+    "command": "gameEvent",
     "input": {
       "tableID": 3,
-      "action": {
+      "event": {
         "type": "turn",
         "num": -1
       }
