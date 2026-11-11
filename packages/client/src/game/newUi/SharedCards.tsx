@@ -11,7 +11,7 @@ import { tooltipRef } from "./tooltipRef.ts";
 const DISCARD_OVERLAP_PER_WIDTH = 0.4;
 
 /** How far each row of the discard pile covers the row above, as a fraction of a card's height. */
-const DISCARD_ROW_OVERLAP_PER_HEIGHT = 0.35;
+const DISCARD_ROW_OVERLAP_PER_HEIGHT = 0.42;
 
 export interface StackView {
   readonly suitIndex: SuitIndex;
@@ -194,8 +194,8 @@ export const PlayArea = forwardRef<
 
 /**
  * The discarded cards, one row for each suit, where the player drops a card to discard it. Each
- * card is a button that shows the turn on which it was discarded. The pile keeps room for a row of
- * every suit, so that it stays the same size as cards are discarded.
+ * card is a button that shows the turn on which it was discarded. The pile has a row only for each
+ * suit with a discard, and is at least one card tall, so that the clue log below it has more room.
  */
 export const DiscardPile = forwardRef<
   HTMLElement,
@@ -215,7 +215,7 @@ export const DiscardPile = forwardRef<
     const height = cardWidth * CARD_HEIGHT_PER_WIDTH;
     const rowsHeight =
       height
-      + (variant.suits.length - 1)
+      + (Math.max(rows.length, 1) - 1)
         * height
         * (1 - DISCARD_ROW_OVERLAP_PER_HEIGHT);
 

@@ -1,5 +1,5 @@
 import type { CardOrder } from "@hanabi-live/game";
-import { useLayoutEffect, useRef } from "react";
+import { useLayoutEffect, useRef, useState } from "react";
 import type { ClueMarkerView } from "./Card.tsx";
 import { getClueMarkerColor } from "./Card.tsx";
 import { tooltipRef } from "./tooltipRef.ts";
@@ -74,6 +74,10 @@ export function ClueLog({
     atBottom: true,
   });
 
+  // Whether older clues are scrolled out of view above, which the top edge of the list fades to
+  // show.
+  const [scrolledDown, setScrolledDown] = useState(false);
+
   const filtered = hoveredCard !== undefined;
   const rows = entries
     .map((entry) => ({ entry, match: getMatch(entry, hoveredCard) }))
@@ -87,6 +91,7 @@ export function ClueLog({
     }
     const saved = savedScroll.current;
     list.scrollTop = filtered || saved.atBottom ? list.scrollHeight : saved.top;
+    setScrolledDown(list.scrollTop > 0);
   }, [entries.length, filtered, hoveredCard]);
 
   return (
@@ -103,8 +108,13 @@ export function ClueLog({
         </p>
       ) : (
         <ol
-          className="tw:m-0 tw:flex tw:min-h-0 tw:flex-1 tw:list-none tw:flex-col tw:gap-px tw:overflow-y-auto tw:px-2 tw:py-1.5 tw:[mask-image:linear-gradient(to_bottom,transparent_0,#000_28px)]"
+          className={`tw:m-0 tw:flex tw:min-h-0 tw:flex-1 tw:list-none tw:flex-col tw:gap-px tw:overflow-y-auto tw:px-2 tw:py-1.5 ${
+            scrolledDown
+              ? "tw:[mask-image:linear-gradient(to_bottom,transparent_0,#000_28px)]"
+              : ""
+          }`}
           onScroll={(event) => {
+            setScrolledDown(event.currentTarget.scrollTop > 0);
             if (!filtered) {
               const list = event.currentTarget;
               savedScroll.current = {
@@ -117,8 +127,6 @@ export function ClueLog({
           }}
           ref={listRef}
         >
-          {/* The first clue sits at the bottom until the log fills up. */}
-          <li aria-hidden="true" className="tw:mt-auto" />
           {rows.map(({ entry, match }) => {
             const shown = entry.segment === shownSegment;
             const color = getClueMarkerColor(entry.marker);

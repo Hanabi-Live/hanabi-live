@@ -17,6 +17,8 @@ of the repository.
 - In the new game screen, a played card now lifts out of its hand, flies to its
   stack (turning face up if its holder did not know it), and lands with a burst.
   A misplayed card explodes on its strike box, as on the classic screen.
+- In the new game screen, the discard pile now takes only the room that its
+  cards need, so the clue log has more room.
 
 ## November 10th, 2026
 
