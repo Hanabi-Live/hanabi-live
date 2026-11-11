@@ -13,7 +13,11 @@
 
 /* eslint-disable no-await-in-loop -- The browser visits the states one at a time. */
 
-import { SERVER_COMMAND_SCHEMAS, VERSION } from "@hanabi-live/data";
+import {
+  MAX_CHAT_LENGTH,
+  SERVER_COMMAND_SCHEMAS,
+  VERSION,
+} from "@hanabi-live/data";
 import { START_CARD_RANK } from "@hanabi-live/game";
 import { assertDefined } from "complete-common";
 import { execFile } from "node:child_process";
@@ -114,6 +118,19 @@ interface State {
    * selector, or a function that moves the pointer.
    */
   readonly hover?: string | ((page: Page) => Promise<void>);
+}
+
+/** Hovers over an element, unless the screen is too small to show it, such as a chat in a tab. */
+async function hoverIfVisible(page: Page, selector: string) {
+  const element = page.locator(selector);
+  if (await element.isVisible()) {
+    await element.hover();
+  }
+}
+
+/** A chat message of the given length in characters. */
+function longChat(length: number) {
+  return "The quick brown fox. ".repeat(length).slice(0, length);
 }
 
 async function clickNav(page: Page, id: string) {
@@ -280,6 +297,25 @@ function getStates({
       prepare: async (page) => {
         await page.click("#lobby-chat-input + button");
         await page.fill("#emoji-picker input", "cat");
+      },
+    },
+    {
+      name: "chat-length-near-limit",
+      path: "/",
+      loggedIn: true,
+      prepare: async (page) => {
+        await page.fill("#lobby-chat-input", longChat(MAX_CHAT_LENGTH - 20));
+      },
+    },
+    {
+      name: "chat-length-over-limit",
+      path: "/",
+      loggedIn: true,
+      prepare: async (page) => {
+        await page.fill("#lobby-chat-input", longChat(MAX_CHAT_LENGTH + 20));
+      },
+      hover: async (page) => {
+        await hoverIfVisible(page, "#lobby-chat-input ~ span");
       },
     },
     {
@@ -496,6 +532,22 @@ function getStates({
         }
         await startGame();
         await page.locator('#game-new-ui [aria-label="Hands"]').waitFor();
+      },
+    },
+    // The game from the previous state, with a message that is too long in its chat.
+    {
+      name: "new-ui-chat-length-over-limit",
+      path: "/",
+      loggedIn: true,
+      prepare: async (page) => {
+        await page.fill("#game-chat-input", longChat(MAX_CHAT_LENGTH + 20));
+      },
+      // The input is hidden at the last width, where the chat panel is closed.
+      cleanup: async (page) => {
+        await page.locator("#game-chat-input").fill("", { force: true });
+      },
+      hover: async (page) => {
+        await hoverIfVisible(page, "#game-chat-length-counter > span");
       },
     },
     // The game from the previous state, after the account plays a card and steps back over it in

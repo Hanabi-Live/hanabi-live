@@ -28,6 +28,7 @@ export const MAX_TIME_BASE_SECONDS = 604_800;
 export const MAX_TIME_PER_TURN_SECONDS = 86_400;
 export const TYPING_TIMEOUT_MS = 2000;
 export const MAX_SEED_LENGTH = 32;
+export const MAX_CHAT_LENGTH = 300;
 export const DEFAULT_TABLE_NAME_SUFFIX = "'s table";
 
 /**

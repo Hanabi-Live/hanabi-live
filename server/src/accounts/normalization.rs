@@ -1,3 +1,4 @@
+use hanabi_protocol::MAX_CHAT_LENGTH;
 use unicode_normalization::UnicodeNormalization;
 
 /// Transliterates to lower-case ASCII, dropping characters that have no transliteration.
@@ -53,9 +54,6 @@ fn truncate_to_max_chars(input: &str, max: usize) -> &str {
         .nth(max)
         .map_or(input, |(end, _)| &input[..end])
 }
-
-/// The longest chat message, in characters.
-pub const MAX_CHAT_LENGTH: usize = 300;
 
 /// Cleans a chat message from a player. Rejects it if it is longer than `MAX_CHAT_LENGTH`, so that
 /// it never arrives changed without the player knowing.

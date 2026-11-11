@@ -668,6 +668,10 @@ fn data_constants() -> String {
             hanabi_protocol::MAX_SEED_LENGTH.to_string(),
         ),
         (
+            "MAX_CHAT_LENGTH",
+            hanabi_protocol::MAX_CHAT_LENGTH.to_string(),
+        ),
+        (
             "DEFAULT_TABLE_NAME_SUFFIX",
             serde_json::to_string(hanabi_protocol::DEFAULT_TABLE_NAME_SUFFIX)
                 .expect("a string serializes"),

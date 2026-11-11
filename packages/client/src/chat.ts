@@ -6,6 +6,7 @@ import {
   CHAT_SPECIAL_EMOTES,
   CHAT_EMOJIS as emojis,
   CHAT_EMOTES as emotes,
+  MAX_CHAT_LENGTH,
   PROJECT_NAME,
   tableIdSchema,
   TYPING_TIMEOUT_MS,
@@ -13,6 +14,7 @@ import {
 import { eRange, isArray, trimPrefix } from "complete-common";
 import linkifyHtml from "linkify-html";
 import { find as linkifyFind } from "linkifyjs";
+import { mountChatLengthCounter } from "./ChatLengthCounter.tsx";
 import { mountEmojiPicker } from "./EmojiPicker.tsx";
 import { globals } from "./Globals.ts";
 import { chatCommands } from "./chatCommands.ts";
@@ -69,6 +71,11 @@ export enum SelfChatMessageType {
  */
 const TYPING_REPORT_INTERVAL_MS = TYPING_TIMEOUT_MS / 2;
 
+/**
+ * The event that a chat input receives when the player tries to send a message that is too long.
+ */
+export const CHAT_TOO_LONG_EVENT = "chat-too-long";
+
 // The heart matches anywhere, but the emotes with colons must be surrounded by whitespace.
 const { "<3": HEART_EMOTE_PATH, ...COLON_EMOTE_PATHS } = CHAT_SPECIAL_EMOTES;
 
@@ -94,7 +101,12 @@ let activeChatInput: HTMLInputElement | undefined;
 let emojiPickerMounted = false;
 
 export function init(): void {
-  attachChatInput(getHTMLInputElement("#game-chat-input"), "table");
+  const gameChatInput = getHTMLInputElement("#game-chat-input");
+  attachChatInput(gameChatInput, "table");
+  mountChatLengthCounter(
+    getHTMLElement("#game-chat-length-counter"),
+    gameChatInput,
+  );
   // (The lobby and pre-game chat inputs are React components that attach themselves.)
   $(".emoji-button[data-target]").on("click", (event) => {
     const { target } = event.currentTarget.dataset;
@@ -255,10 +267,27 @@ function send(room: string, element: HTMLInputElement) {
     return;
   }
 
+  // Keep a message that is too long, so that the player can shorten it.
+  if (chatLengthLeft(msg) < 0) {
+    element.dispatchEvent(new Event(CHAT_TOO_LONG_EVENT));
+    return;
+  }
+
   // Clear the chat box.
   element.value = "";
 
   sendText(room, msg);
+}
+
+/**
+ * How many more characters a chat message can have, as the server counts them. It is negative for a
+ * message that is too long.
+ */
+export function chatLengthLeft(text: string): number {
+  // Count code points, as the server does, so that most emoji count as one character. (An emoji
+  // made of several code points counts as several, on the server too.)
+  // eslint-disable-next-line @typescript-eslint/no-misused-spread
+  return MAX_CHAT_LENGTH - [...fillEmojis(text.trim())].length;
 }
 
 function sendText(room: string, msgRaw: string) {

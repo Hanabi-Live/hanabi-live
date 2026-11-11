@@ -73,6 +73,8 @@ pub const MAX_GAME_ACTIONS: usize = 512;
 /// The longest seed that a table can request, in bytes. The full seed also names the player count
 /// and variant, such as "p3v0s" before "123".
 pub const MAX_SEED_LENGTH: usize = 32;
+/// The longest chat message, in characters.
+pub const MAX_CHAT_LENGTH: usize = 300;
 /// The longest note, in bytes, that an imported game can give a card.
 pub const MAX_IMPORTED_NOTE_LENGTH: usize = 65536;
 /// The number of seconds in a minute.
