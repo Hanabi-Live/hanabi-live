@@ -119,10 +119,11 @@ export function CardFace({
   const showRankPips = possibleRanks.length > 1;
   const smallPipSize = width * 0.17;
 
-  // Clued cards get a thick border in the clue color, and cards that a chosen clue would touch get
-  // a white outline outside of it.
+  // Clued cards get a thick border in the clue color, with a dark line inside it so that it stands
+  // out against faces of a similar color. Cards that a chosen clue would touch get a white outline
+  // outside of it.
   const border = clued
-    ? "tw:ring-4 tw:ring-clue"
+    ? "tw:ring-4 tw:ring-clue tw:inset-ring-2 tw:inset-ring-card-ink"
     : "tw:ring-1 tw:ring-black/35";
   const outline = highlighted
     ? "tw:outline-4 tw:outline-offset-4 tw:outline-white"
