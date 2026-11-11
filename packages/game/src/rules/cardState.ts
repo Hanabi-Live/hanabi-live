@@ -1,6 +1,6 @@
 // Functions relating to the `CardState` interface.
 
-import type { CardState } from "../interfaces/CardState";
+import type { CardState } from "../interfaces/CardState.js";
 
 export function isCardClued(cardState: CardState): boolean {
   return cardState.numPositiveClues > 0;

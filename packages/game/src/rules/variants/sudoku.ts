@@ -1,12 +1,12 @@
 import type { Tuple } from "complete-common";
 import { assertDefined, eRange, iRange, newArray } from "complete-common";
-import type { CardState } from "../../interfaces/CardState";
-import type { GameState } from "../../interfaces/GameState";
-import type { Variant } from "../../interfaces/Variant";
-import type { NumSuits } from "../../types/NumSuits";
-import type { Rank } from "../../types/Rank";
-import type { SuitIndex } from "../../types/SuitIndex";
-import { getAllDiscardedSetForSuit } from "../deck";
+import type { CardState } from "../../interfaces/CardState.js";
+import type { GameState } from "../../interfaces/GameState.js";
+import type { Variant } from "../../interfaces/Variant.js";
+import type { NumSuits } from "../../types/NumSuits.js";
+import type { Rank } from "../../types/Rank.js";
+import type { SuitIndex } from "../../types/SuitIndex.js";
+import { getAllDiscardedSetForSuit } from "../deck.js";
 
 /** Check if the card can still be played in a Sudoku variant. */
 export function sudokuIsCardNeededForMaxScore(

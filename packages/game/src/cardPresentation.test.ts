@@ -5,14 +5,14 @@ import {
   getCardIdentityToShow,
   getCardPipPresentation,
   isCardIdentityFromNote,
-} from "./cardPresentation";
-import { getDefaultVariant } from "./gameData";
-import type { CardIdentity } from "./interfaces/CardIdentity";
-import type { CardNote } from "./interfaces/CardNote";
-import type { CardState } from "./interfaces/CardState";
-import { getInitialCardState } from "./reducers/initialStates/initialCardState";
-import type { CardOrder } from "./types/CardOrder";
-import type { SuitRankTuple } from "./types/SuitRankTuple";
+} from "./cardPresentation.js";
+import { getDefaultVariant } from "./gameData.js";
+import type { CardIdentity } from "./interfaces/CardIdentity.js";
+import type { CardNote } from "./interfaces/CardNote.js";
+import type { CardState } from "./interfaces/CardState.js";
+import { getInitialCardState } from "./reducers/initialStates/initialCardState.js";
+import type { CardOrder } from "./types/CardOrder.js";
+import type { SuitRankTuple } from "./types/SuitRankTuple.js";
 
 const variant = getDefaultVariant();
 const baseCard = getInitialCardState(0 as CardOrder, variant, 2);

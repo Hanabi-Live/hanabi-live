@@ -1,9 +1,9 @@
 // Miscellaneous helpers used by several reducers.
 
-import { getCharacter } from "../gameData";
-import type { GameState } from "../interfaces/GameState";
-import { getEfficiency } from "../rules/stats";
-import type { PlayerIndex } from "../types/PlayerIndex";
+import { getCharacter } from "../gameData.js";
+import type { GameState } from "../interfaces/GameState.js";
+import { getEfficiency } from "../rules/stats.js";
+import type { PlayerIndex } from "../types/PlayerIndex.js";
 
 export function getCharacterNameForPlayer(
   playerIndex: PlayerIndex | undefined,

@@ -1,16 +1,19 @@
 import { assertDefined, parseIntSafe } from "complete-common";
-import { getUppercaseSuitAbbreviationsForVariant } from "./abbreviations";
-import { DEFAULT_CLUE_RANKS, DEFAULT_FINISHED_STACK_LENGTH } from "./constants";
-import { Pip } from "./enums/Pip";
-import { DEFAULT_CARD_RANKS, START_CARD_RANK } from "./generated/protocol";
-import type { Color } from "./interfaces/Color";
-import type { Suit } from "./interfaces/Suit";
-import type { Variant } from "./interfaces/Variant";
-import type { VariantDescription } from "./interfaces/VariantDescription";
-import type { VariantJSON } from "./interfaces/VariantJSON";
-import variantsJSON from "./json/variants.json";
-import { getIdentityNotePatternForVariant } from "./notes";
-import type { Rank } from "./types/Rank";
+import { getUppercaseSuitAbbreviationsForVariant } from "./abbreviations.js";
+import {
+  DEFAULT_CLUE_RANKS,
+  DEFAULT_FINISHED_STACK_LENGTH,
+} from "./constants.js";
+import { Pip } from "./enums/Pip.js";
+import { DEFAULT_CARD_RANKS, START_CARD_RANK } from "./generated/protocol.js";
+import type { Color } from "./interfaces/Color.js";
+import type { Suit } from "./interfaces/Suit.js";
+import type { Variant } from "./interfaces/Variant.js";
+import type { VariantDescription } from "./interfaces/VariantDescription.js";
+import type { VariantJSON } from "./interfaces/VariantJSON.js";
+import variantsJSON from "./json/variants.json" with { type: "json" };
+import { getIdentityNotePatternForVariant } from "./notes.js";
+import type { Rank } from "./types/Rank.js";
 
 const AUTO_PIP_PRIORITY = [
   Pip.hanabiRed1,

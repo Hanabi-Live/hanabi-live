@@ -1,6 +1,7 @@
 {
   "name": "@hanabi-live/scripts",
   "private": true,
+  "type": "module",
   "scripts": {
     "lint": "bash ../../scripts/lint/check-typescript.sh"
   },

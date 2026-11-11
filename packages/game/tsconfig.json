@@ -5,4 +5,10 @@
     "complete-tsconfig/tsconfig.base.json",
     "../../tsconfig.monorepo.json",
   ],
+
+  "compilerOptions": {
+    // The published package is an ES module for Node.js, so relative imports need extensions.
+    "module": "nodenext",
+    "moduleResolution": "nodenext",
+  },
 }

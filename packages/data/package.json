@@ -2,6 +2,7 @@
   "name": "@hanabi-live/data",
   "private": true,
   "sideEffects": false,
+  "type": "module",
   "exports": "./src/index.ts",
   "scripts": {
     "lint": "bash ../../scripts/lint/check-typescript.sh"

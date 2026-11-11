@@ -1,5 +1,5 @@
-import type { ALL_CARD_RANKS } from "../constants";
-import type { DEFAULT_CARD_RANKS } from "../generated/protocol";
+import type { ALL_CARD_RANKS } from "../constants.js";
+import type { DEFAULT_CARD_RANKS } from "../generated/protocol.js";
 
 /** The normal ranks of 1 through 5 (corresponding to the `DEFAULT_CARD_RANKS` constant). */
 export type BasicRank = (typeof DEFAULT_CARD_RANKS)[number];

@@ -15,7 +15,7 @@ import { decodeSessionCookie } from "./cookie";
 import type { evaluationDatabase } from "./database";
 import { serverFrameViolation } from "./serverFrames";
 
-export const ROOT = path.resolve(__dirname, "../../..");
+export const ROOT = path.resolve(import.meta.dirname, "../../..");
 
 export const databaseDescribe =
   process.env["HANABI_TEST_DATABASE_URL"] === undefined

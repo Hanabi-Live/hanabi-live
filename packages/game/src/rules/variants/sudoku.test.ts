@@ -1,7 +1,7 @@
 import { describe, expect, test } from "bun:test";
-import { getVariant } from "../../gameData";
-import type { Rank } from "../../types/Rank";
-import { sudokuWalkUpAll } from "./sudoku";
+import { getVariant } from "../../gameData.js";
+import type { Rank } from "../../types/Rank.js";
+import { sudokuWalkUpAll } from "./sudoku.js";
 
 describe("sudokuWalkUpAll5", () => {
   const variant = getVariant("Sudoku (5 Suits)");

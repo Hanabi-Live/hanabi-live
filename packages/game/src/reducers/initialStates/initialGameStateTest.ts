@@ -1,7 +1,7 @@
-import type { GameMetadata } from "../../interfaces/GameMetadata";
-import type { GameState } from "../../interfaces/GameState";
-import { getInitialGameState } from "./initialGameState";
-import { getInitialTurnState } from "./initialTurnState";
+import type { GameMetadata } from "../../interfaces/GameMetadata.js";
+import type { GameState } from "../../interfaces/GameState.js";
+import { getInitialGameState } from "./initialGameState.js";
+import { getInitialTurnState } from "./initialTurnState.js";
 
 export function getInitialGameStateTest(metadata: GameMetadata): GameState {
   return {

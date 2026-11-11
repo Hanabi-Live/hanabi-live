@@ -40,7 +40,7 @@ async function buildBundle(directory: string): Promise<string> {
   const bundlePath = path.join(directory, "public/css", BUNDLE_FILENAME);
   await mkdir(path.dirname(bundlePath), { recursive: true });
   await run(process.execPath, [
-    path.join(ROOT, "packages/scripts/src/buildCSS.mts"),
+    path.join(ROOT, "packages/scripts/src/buildCSS.ts"),
     bundlePath,
   ]);
   return await Bun.file(bundlePath).text();

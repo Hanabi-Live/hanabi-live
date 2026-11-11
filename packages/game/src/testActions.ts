@@ -1,16 +1,16 @@
-import type { CardOrder } from "./types/CardOrder";
-import type { ColorIndex } from "./types/ColorIndex";
-import type { PlayerIndex } from "./types/PlayerIndex";
-import type { Rank } from "./types/Rank";
-import type { RankClueNumber } from "./types/RankClueNumber";
-import type { SuitIndex } from "./types/SuitIndex";
+import type { CardOrder } from "./types/CardOrder.js";
+import type { ColorIndex } from "./types/ColorIndex.js";
+import type { PlayerIndex } from "./types/PlayerIndex.js";
+import type { Rank } from "./types/Rank.js";
+import type { RankClueNumber } from "./types/RankClueNumber.js";
+import type { SuitIndex } from "./types/SuitIndex.js";
 import type {
   ActionCardIdentity,
   ActionClue,
   ActionDiscard,
   ActionDraw,
   ActionPlay,
-} from "./types/gameActions";
+} from "./types/gameActions.js";
 
 /** Helper functions to build a color `ActionClue` with a compact syntax. For use in tests. */
 export function colorClue(

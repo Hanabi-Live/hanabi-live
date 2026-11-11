@@ -7,25 +7,25 @@ import {
   newArray,
   tupleKeys,
 } from "complete-common";
-import { getVariant } from "../gameData";
-import { MAX_PLAYERS } from "../generated/protocol";
-import type { CardState } from "../interfaces/CardState";
-import type { GameMetadata } from "../interfaces/GameMetadata";
-import type { GameState } from "../interfaces/GameState";
-import { msgClueToClue, shouldApplyClue } from "../rules/clues";
-import { isCardOnChop } from "../rules/hand";
-import { shouldSeeSlot2CardIdentity } from "../rules/variants/characters";
-import type { CardOrder } from "../types/CardOrder";
-import type { NumPlayers } from "../types/NumPlayers";
-import type { PlayerIndex } from "../types/PlayerIndex";
-import type { Rank } from "../types/Rank";
-import type { SuitIndex } from "../types/SuitIndex";
-import type { SuitRankTuple } from "../types/SuitRankTuple";
-import type { GameAction } from "../types/gameActions";
-import { cardDeductionReducer } from "./cardDeductionReducer";
-import { cardPossibilitiesReducer } from "./cardPossibilitiesReducer";
-import { getInitialCardState } from "./initialStates/initialCardState";
-import { getCharacterNameForPlayer } from "./reducerHelpers";
+import { getVariant } from "../gameData.js";
+import { MAX_PLAYERS } from "../generated/protocol.js";
+import type { CardState } from "../interfaces/CardState.js";
+import type { GameMetadata } from "../interfaces/GameMetadata.js";
+import type { GameState } from "../interfaces/GameState.js";
+import { msgClueToClue, shouldApplyClue } from "../rules/clues.js";
+import { isCardOnChop } from "../rules/hand.js";
+import { shouldSeeSlot2CardIdentity } from "../rules/variants/characters.js";
+import type { CardOrder } from "../types/CardOrder.js";
+import type { NumPlayers } from "../types/NumPlayers.js";
+import type { PlayerIndex } from "../types/PlayerIndex.js";
+import type { Rank } from "../types/Rank.js";
+import type { SuitIndex } from "../types/SuitIndex.js";
+import type { SuitRankTuple } from "../types/SuitRankTuple.js";
+import type { GameAction } from "../types/gameActions.js";
+import { cardDeductionReducer } from "./cardDeductionReducer.js";
+import { cardPossibilitiesReducer } from "./cardPossibilitiesReducer.js";
+import { getInitialCardState } from "./initialStates/initialCardState.js";
+import { getCharacterNameForPlayer } from "./reducerHelpers.js";
 
 export function cardsReducer(
   deck: readonly CardState[],

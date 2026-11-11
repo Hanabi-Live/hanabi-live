@@ -24,7 +24,7 @@ const config = {
     },
     "packages/scripts": {
       entry: [
-        "src/buildCSS.mts", // Run from shell scripts.
+        "src/buildCSS.ts", // Run from shell scripts.
       ],
     },
     "packages/game": {

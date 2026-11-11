@@ -1,7 +1,7 @@
-import type { Pip } from "../enums/Pip";
-import type { CatalogFlags } from "./CatalogFlags";
-import type { Color } from "./Color";
-import type { SuitJSON } from "./SuitJSON";
+import type { Pip } from "../enums/Pip.js";
+import type { CatalogFlags } from "./CatalogFlags.js";
+import type { Color } from "./Color.js";
+import type { SuitJSON } from "./SuitJSON.js";
 
 /** `clueColors` is an object array instead of a string array. */
 type SuitJSONModified = CatalogFlags<Omit<SuitJSON, "clueColors">>;

@@ -1,5 +1,5 @@
 // Bundles "public/css/main.css" and its imports, which every production page loads, and minifies
-// them with Lightning CSS, failing on any CSS that it cannot parse. Usage: `bun buildCSS.mts <out>`
+// them with Lightning CSS, failing on any CSS that it cannot parse. Usage: `bun buildCSS.ts <out>`
 
 import type { SelectorComponent, Visitor } from "lightningcss";
 import { bundle } from "lightningcss";
@@ -131,7 +131,7 @@ function getIconPruner(usedIcons: ReadonlySet<string>): Visitor<never> {
 async function main() {
   const [output, ...rest] = process.argv.slice(2);
   if (output === undefined || rest.length > 0) {
-    fail("Usage: bun buildCSS.mts <out>");
+    fail("Usage: bun buildCSS.ts <out>");
   }
 
   const usedIcons = await getUsedIcons();

@@ -1,6 +1,6 @@
 import type { z } from "zod";
-import { MIN_PLAYERS, gameOptionsSchema } from "../generated/protocol";
-import type { NumPlayers } from "../types/NumPlayers";
+import { MIN_PLAYERS, gameOptionsSchema } from "../generated/protocol.js";
+import type { NumPlayers } from "../types/NumPlayers.js";
 
 /** A game's options, as the server's wire contract defines them. */
 export type GameOptions = z.infer<typeof gameOptionsSchema>;

@@ -1,6 +1,7 @@
 {
   "name": "@hanabi-live/client",
   "private": true,
+  "type": "module",
   "scripts": {
     "lint": "bash ../../scripts/lint/check-typescript.sh",
     "test": "vitest run"

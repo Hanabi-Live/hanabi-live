@@ -1,9 +1,9 @@
 import { describe, expect, test } from "bun:test";
 import { eRange } from "complete-common";
-import { getDefaultVariant, getVariant } from "../gameData";
-import { MAX_CLUES } from "../generated/protocol";
-import { discard, play } from "../testActions";
-import { getNewClueTokensAfterAction } from "./clueTokens";
+import { getDefaultVariant, getVariant } from "../gameData.js";
+import { MAX_CLUES } from "../generated/protocol.js";
+import { discard, play } from "../testActions.js";
+import { getNewClueTokensAfterAction } from "./clueTokens.js";
 
 const DISCARD_ACTION = discard(0, 0, 0, 1, false);
 const DEFAULT_VARIANT = getDefaultVariant();

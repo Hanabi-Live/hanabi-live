@@ -1,35 +1,35 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 
 import { describe, expect, test } from "bun:test";
-import { StackDirection } from "./enums/StackDirection";
-import { getDefaultVariant, getVariant, VARIANT_NAMES } from "./gameData";
-import { START_CARD_RANK } from "./generated/protocol";
+import { StackDirection } from "./enums/StackDirection.js";
+import { getDefaultVariant, getVariant, VARIANT_NAMES } from "./gameData.js";
+import { START_CARD_RANK } from "./generated/protocol.js";
 import type {
   HypotheticalCardInput,
   HypotheticalCardView,
   PlanHypotheticalActionContext,
-} from "./hypotheticalPlanning";
+} from "./hypotheticalPlanning.js";
 import {
   getHypotheticalCard,
   getHypotheticalTouchedCards,
   planHypotheticalAction,
-} from "./hypotheticalPlanning";
-import type { CardIdentity } from "./interfaces/CardIdentity";
-import type { CardNote } from "./interfaces/CardNote";
-import type { CardState } from "./interfaces/CardState";
-import type { GameState } from "./interfaces/GameState";
-import type { Variant } from "./interfaces/Variant";
-import { getDefaultMetadata } from "./metadata";
-import { gameReducer } from "./reducers/gameReducer";
-import { getInitialCardState } from "./reducers/initialStates/initialCardState";
-import { getInitialGameStateTest } from "./reducers/initialStates/initialGameStateTest";
-import { getTotalCardsInDeck } from "./rules/deck";
-import type { CardOrder } from "./types/CardOrder";
-import type { ColorIndex } from "./types/ColorIndex";
-import type { PlayerIndex } from "./types/PlayerIndex";
-import type { RankClueNumber } from "./types/RankClueNumber";
-import type { SuitIndex } from "./types/SuitIndex";
-import type { GameAction } from "./types/gameActions";
+} from "./hypotheticalPlanning.js";
+import type { CardIdentity } from "./interfaces/CardIdentity.js";
+import type { CardNote } from "./interfaces/CardNote.js";
+import type { CardState } from "./interfaces/CardState.js";
+import type { GameState } from "./interfaces/GameState.js";
+import type { Variant } from "./interfaces/Variant.js";
+import { getDefaultMetadata } from "./metadata.js";
+import { gameReducer } from "./reducers/gameReducer.js";
+import { getInitialCardState } from "./reducers/initialStates/initialCardState.js";
+import { getInitialGameStateTest } from "./reducers/initialStates/initialGameStateTest.js";
+import { getTotalCardsInDeck } from "./rules/deck.js";
+import type { CardOrder } from "./types/CardOrder.js";
+import type { ColorIndex } from "./types/ColorIndex.js";
+import type { PlayerIndex } from "./types/PlayerIndex.js";
+import type { RankClueNumber } from "./types/RankClueNumber.js";
+import type { SuitIndex } from "./types/SuitIndex.js";
+import type { GameAction } from "./types/gameActions.js";
 
 const variant = getDefaultVariant();
 const metadata = getDefaultMetadata(2);

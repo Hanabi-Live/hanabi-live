@@ -1,6 +1,6 @@
 import { describe, expect, test } from "bun:test";
-import { getDefaultVariant, getVariant } from "../../gameData";
-import { hasReversedSuits } from "./variantIdentity";
+import { getDefaultVariant, getVariant } from "../../gameData.js";
+import { hasReversedSuits } from "./variantIdentity.js";
 
 const DEFAULT_VARIANT = getDefaultVariant();
 

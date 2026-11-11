@@ -1,12 +1,12 @@
 import { assertDefined } from "complete-common";
-import { charactersInit } from "./charactersInit";
-import { colorsInit } from "./colorsInit";
-import { DEFAULT_VARIANT_NAME } from "./generated/protocol";
-import type { Character } from "./interfaces/Character";
-import type { Suit } from "./interfaces/Suit";
-import type { Variant } from "./interfaces/Variant";
-import { suitsInit } from "./suitsInit";
-import { variantsInit } from "./variantsInit";
+import { charactersInit } from "./charactersInit.js";
+import { colorsInit } from "./colorsInit.js";
+import { DEFAULT_VARIANT_NAME } from "./generated/protocol.js";
+import type { Character } from "./interfaces/Character.js";
+import type { Suit } from "./interfaces/Suit.js";
+import type { Variant } from "./interfaces/Variant.js";
+import { suitsInit } from "./suitsInit.js";
+import { variantsInit } from "./variantsInit.js";
 
 /** Indexed by character ID. */
 const CHARACTERS_MAP = charactersInit();

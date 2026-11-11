@@ -1,6 +1,6 @@
 import { describe, expect, test } from "bun:test";
-import { COLORS_MAP, SUITS_MAP } from "./gameData";
-import { createVariant } from "./variantsInit";
+import { COLORS_MAP, SUITS_MAP } from "./gameData.js";
+import { createVariant } from "./variantsInit.js";
 
 describe("createVariant identity notes", () => {
   test("detects Up or Down from metadata instead of the variant name", () => {

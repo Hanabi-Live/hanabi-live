@@ -2,16 +2,16 @@
 
 import type { Draft } from "immer";
 import { castDraft, produce } from "immer";
-import { getVariant } from "./gameData";
-import type { CardIdentity } from "./interfaces/CardIdentity";
-import type { GameMetadata } from "./interfaces/GameMetadata";
-import type { GameState } from "./interfaces/GameState";
-import { recalculateDeductions } from "./reducers/cardDeductionReducer";
-import { gameReducer } from "./reducers/gameReducer";
-import { isCardPotentiallyPlayable } from "./rules/card";
-import { getTotalCardsInDeck } from "./rules/deck";
-import { isGameOver } from "./rules/gameOver";
-import type { PlayerIndex } from "./types/PlayerIndex";
+import { getVariant } from "./gameData.js";
+import type { CardIdentity } from "./interfaces/CardIdentity.js";
+import type { GameMetadata } from "./interfaces/GameMetadata.js";
+import type { GameState } from "./interfaces/GameState.js";
+import { recalculateDeductions } from "./reducers/cardDeductionReducer.js";
+import { gameReducer } from "./reducers/gameReducer.js";
+import { isCardPotentiallyPlayable } from "./rules/card.js";
+import { getTotalCardsInDeck } from "./rules/deck.js";
+import { isGameOver } from "./rules/gameOver.js";
+import type { PlayerIndex } from "./types/PlayerIndex.js";
 import type {
   ActionClue,
   ActionDiscard,
@@ -19,7 +19,7 @@ import type {
   ActionPlay,
   ActionTurn,
   HypotheticalWireEvent,
-} from "./types/gameActions";
+} from "./types/gameActions.js";
 
 export interface HypotheticalState {
   readonly ongoing: GameState;

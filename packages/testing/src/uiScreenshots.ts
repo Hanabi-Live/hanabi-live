@@ -540,7 +540,7 @@ async function buildBundle(directory: string) {
   const bundlePath = path.join(directory, "public/css", BUNDLE_FILENAME);
   await mkdir(path.dirname(bundlePath), { recursive: true });
   await run(process.execPath, [
-    path.join(ROOT, "packages/scripts/src/buildCSS.mts"),
+    path.join(ROOT, "packages/scripts/src/buildCSS.ts"),
     bundlePath,
   ]);
 }
@@ -549,10 +549,24 @@ async function buildBundle(directory: string) {
 async function buildRefBundle(ref: string, directory: string): Promise<string> {
   const source = path.join(directory, "compare-source");
   await mkdir(source);
+  // Refs before the switch to ES modules name the bundler "buildCSS.mts".
+  const { stdout: bundler } = await run(
+    "git",
+    [
+      "ls-tree",
+      "--name-only",
+      ref,
+      "--",
+      "packages/scripts/src/buildCSS.ts",
+      "packages/scripts/src/buildCSS.mts",
+    ],
+    { cwd: ROOT },
+  );
+  const bundlerPath = bundler.trim();
   // The bundler reads the stylesheets, and searches these directories for icon names.
   const paths = [
     "public/css",
-    "packages/scripts/src/buildCSS.mts",
+    bundlerPath,
     "packages/client/src",
     "public/standalone",
     "server/src",
@@ -568,10 +582,7 @@ async function buildRefBundle(ref: string, directory: string): Promise<string> {
     path.join(source, "node_modules"),
   );
   const bundlePath = path.join(directory, "compare.min.css");
-  await run(process.execPath, [
-    path.join(source, "packages/scripts/src/buildCSS.mts"),
-    bundlePath,
-  ]);
+  await run(process.execPath, [path.join(source, bundlerPath), bundlePath]);
   return await Bun.file(bundlePath).text();
 }
 

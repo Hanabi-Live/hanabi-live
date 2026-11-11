@@ -1,6 +1,6 @@
 import { describe, expect, test } from "bun:test";
-import { PaceRisk } from "../enums/PaceRisk";
-import { getDefaultVariant, getVariant } from "../gameData";
+import { PaceRisk } from "../enums/PaceRisk.js";
+import { getDefaultVariant, getVariant } from "../gameData.js";
 import {
   getCluesStillUsable,
   getMinEfficiency,
@@ -9,7 +9,7 @@ import {
   getStartingCluesUsable,
   getStartingDeckSize,
   getStartingPace,
-} from "./stats";
+} from "./stats.js";
 
 const DEFAULT_VARIANT = getDefaultVariant();
 const BLACK_VARIANT = getVariant("Black (6 Suits)");

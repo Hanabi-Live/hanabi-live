@@ -1,17 +1,17 @@
 import { describe, expect, spyOn, test } from "bun:test";
-import { MAX_STRIKES } from "./generated/protocol";
+import { MAX_STRIKES } from "./generated/protocol.js";
 import {
   hypotheticalStateReducer,
   initializeHypotheticalState,
-} from "./hypotheticalState";
-import { getDefaultMetadata } from "./metadata";
-import * as gameReducerModule from "./reducers/gameReducer";
-import { gameReducer } from "./reducers/gameReducer";
-import { getInitialGameState } from "./reducers/initialStates/initialGameState";
-import { draw, rankClue } from "./testActions";
-import type { CardOrder } from "./types/CardOrder";
-import type { PlayerIndex } from "./types/PlayerIndex";
-import type { SuitRankTuple } from "./types/SuitRankTuple";
+} from "./hypotheticalState.js";
+import { getDefaultMetadata } from "./metadata.js";
+import * as gameReducerModule from "./reducers/gameReducer.js";
+import { gameReducer } from "./reducers/gameReducer.js";
+import { getInitialGameState } from "./reducers/initialStates/initialGameState.js";
+import { draw, rankClue } from "./testActions.js";
+import type { CardOrder } from "./types/CardOrder.js";
+import type { PlayerIndex } from "./types/PlayerIndex.js";
+import type { SuitRankTuple } from "./types/SuitRankTuple.js";
 
 const metadata = getDefaultMetadata(2);
 let startingState = getInitialGameState(metadata);

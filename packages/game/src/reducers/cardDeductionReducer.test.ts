@@ -1,16 +1,16 @@
 import { describe, expect, test } from "bun:test";
-import { getVariant } from "../gameData";
-import type { CardState } from "../interfaces/CardState";
-import { getDefaultMetadata } from "../metadata";
-import type { CardOrder } from "../types/CardOrder";
-import type { Rank } from "../types/Rank";
-import type { SuitIndex } from "../types/SuitIndex";
-import type { SuitRankTuple } from "../types/SuitRankTuple";
+import { getVariant } from "../gameData.js";
+import type { CardState } from "../interfaces/CardState.js";
+import { getDefaultMetadata } from "../metadata.js";
+import type { CardOrder } from "../types/CardOrder.js";
+import type { Rank } from "../types/Rank.js";
+import type { SuitIndex } from "../types/SuitIndex.js";
+import type { SuitRankTuple } from "../types/SuitRankTuple.js";
 import {
   filterCardPossibilities,
   getDeckPossibilities,
-} from "./cardDeductionReducer";
-import { getInitialCardState } from "./initialStates/initialCardState";
+} from "./cardDeductionReducer.js";
+import { getInitialCardState } from "./initialStates/initialCardState.js";
 
 const TEAL = 0 as SuitIndex;
 const RANKS = [1, 2, 3, 4, 5] as const satisfies readonly Rank[];

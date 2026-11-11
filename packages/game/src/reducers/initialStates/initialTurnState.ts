@@ -1,4 +1,4 @@
-import type { TurnState } from "../../interfaces/TurnState";
+import type { TurnState } from "../../interfaces/TurnState.js";
 
 export function getInitialTurnState(): TurnState {
   return {

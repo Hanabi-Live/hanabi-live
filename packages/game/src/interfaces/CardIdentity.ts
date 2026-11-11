@@ -1,5 +1,5 @@
-import type { Rank } from "../types/Rank";
-import type { SuitIndex } from "../types/SuitIndex";
+import type { Rank } from "../types/Rank.js";
+import type { SuitIndex } from "../types/SuitIndex.js";
 
 /** A card's suit and rank, as far as a player knows them. */
 export interface CardIdentity {

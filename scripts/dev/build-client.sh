@@ -41,7 +41,7 @@ echo
 # to end-users
 echo "Packing the CSS using Lightning CSS..."
 CSS_DIR="$REPO_ROOT/public/css"
-bun "$REPO_ROOT/packages/scripts/src/buildCSS.mts" "$CSS_DIR/main.$VERSION.min.css"
+bun "$REPO_ROOT/packages/scripts/src/buildCSS.ts" "$CSS_DIR/main.$VERSION.min.css"
 echo
 
 echo "$VERSION" > "$JS_BUNDLES_DIR/version.txt"

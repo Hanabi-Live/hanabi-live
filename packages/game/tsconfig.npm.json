@@ -4,8 +4,6 @@
   "extends": "./tsconfig.json",
 
   "compilerOptions": {
-    "module": "node16",
-    "moduleResolution": "node16",
     // Because of the monorepo "rootDir" setting, the compiled output will be in a subdirectory.
     // Thus, we need to manually revert the setting.
     "rootDir": "./src",

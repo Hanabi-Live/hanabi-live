@@ -9,7 +9,7 @@ import * as prettier from "prettier";
 import { getVariantDescriptions } from "./getVariantDescriptions";
 import { getNewVariantID, validateNewVariantIDs } from "./newID";
 
-const PACKAGE_ROOT = path.resolve(__dirname, "..", "..");
+const PACKAGE_ROOT = path.resolve(import.meta.dirname, "..", "..");
 const REPO_ROOT = path.resolve(PACKAGE_ROOT, "..", "..");
 
 /** The generated variant files: each one's path and the contents that belong there. */

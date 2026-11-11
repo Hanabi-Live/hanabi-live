@@ -1,11 +1,11 @@
-import { getVariant } from "../gameData";
-import { MAX_STRIKES } from "../generated/protocol";
-import type { CardState } from "../interfaces/CardState";
-import type { GameMetadata } from "../interfaces/GameMetadata";
-import type { GameState } from "../interfaces/GameState";
-import { isCardPotentiallyPlayable } from "./card";
-import { getClueCost } from "./clueTokens";
-import { getNextPlayerIndex } from "./turn";
+import { getVariant } from "../gameData.js";
+import { MAX_STRIKES } from "../generated/protocol.js";
+import type { CardState } from "../interfaces/CardState.js";
+import type { GameMetadata } from "../interfaces/GameMetadata.js";
+import type { GameState } from "../interfaces/GameState.js";
+import { isCardPotentiallyPlayable } from "./card.js";
+import { getClueCost } from "./clueTokens.js";
+import { getNextPlayerIndex } from "./turn.js";
 
 /**
  * Whether the game ends in this state, mirroring `check_end` in the server engine. (Terminations

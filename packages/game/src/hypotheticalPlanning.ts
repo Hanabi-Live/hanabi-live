@@ -1,29 +1,29 @@
 import { assertDefined } from "complete-common";
-import { possibleCardsFromNoteAndClues } from "./cardPresentation";
-import { StackDirection } from "./enums/StackDirection";
-import { START_CARD_RANK } from "./generated/protocol";
-import type { HypotheticalGameAction } from "./hypotheticalState";
-import type { CardIdentity } from "./interfaces/CardIdentity";
-import type { CardNote } from "./interfaces/CardNote";
-import type { CardState } from "./interfaces/CardState";
-import type { GameMetadata } from "./interfaces/GameMetadata";
-import type { GameState } from "./interfaces/GameState";
-import type { Variant } from "./interfaces/Variant";
-import { isCardTouchedByClue, msgClueToClue } from "./rules/clues";
-import { getTotalCardsInDeck } from "./rules/deck";
+import { possibleCardsFromNoteAndClues } from "./cardPresentation.js";
+import { StackDirection } from "./enums/StackDirection.js";
+import { START_CARD_RANK } from "./generated/protocol.js";
+import type { HypotheticalGameAction } from "./hypotheticalState.js";
+import type { CardIdentity } from "./interfaces/CardIdentity.js";
+import type { CardNote } from "./interfaces/CardNote.js";
+import type { CardState } from "./interfaces/CardState.js";
+import type { GameMetadata } from "./interfaces/GameMetadata.js";
+import type { GameState } from "./interfaces/GameState.js";
+import type { Variant } from "./interfaces/Variant.js";
+import { isCardTouchedByClue, msgClueToClue } from "./rules/clues.js";
+import { getTotalCardsInDeck } from "./rules/deck.js";
 import {
   getNextPlayableRanks,
   getNextPlayableRanksAfter,
-} from "./rules/playStacks";
-import type { CardOrder } from "./types/CardOrder";
-import type { ColorIndex } from "./types/ColorIndex";
-import type { ActionDraw } from "./types/gameActions";
-import type { MsgClue } from "./types/MsgClue";
-import type { PlayerIndex } from "./types/PlayerIndex";
-import type { Rank } from "./types/Rank";
-import type { RankClueNumber } from "./types/RankClueNumber";
-import type { SuitIndex } from "./types/SuitIndex";
-import type { SuitRankTuple } from "./types/SuitRankTuple";
+} from "./rules/playStacks.js";
+import type { CardOrder } from "./types/CardOrder.js";
+import type { ColorIndex } from "./types/ColorIndex.js";
+import type { ActionDraw } from "./types/gameActions.js";
+import type { MsgClue } from "./types/MsgClue.js";
+import type { PlayerIndex } from "./types/PlayerIndex.js";
+import type { Rank } from "./types/Rank.js";
+import type { RankClueNumber } from "./types/RankClueNumber.js";
+import type { SuitIndex } from "./types/SuitIndex.js";
+import type { SuitRankTuple } from "./types/SuitRankTuple.js";
 
 export type HypotheticalActionIntent =
   | { readonly type: "play"; readonly order: CardOrder }

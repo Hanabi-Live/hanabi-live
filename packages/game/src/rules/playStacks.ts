@@ -1,11 +1,11 @@
-import { StackDirection } from "../enums/StackDirection";
-import { START_CARD_RANK } from "../generated/protocol";
-import type { CardState } from "../interfaces/CardState";
-import type { GameState } from "../interfaces/GameState";
-import type { Variant } from "../interfaces/Variant";
-import type { Rank } from "../types/Rank";
-import type { SuitIndex } from "../types/SuitIndex";
-import { hasReversedSuits } from "./variants/variantIdentity";
+import { StackDirection } from "../enums/StackDirection.js";
+import { START_CARD_RANK } from "../generated/protocol.js";
+import type { CardState } from "../interfaces/CardState.js";
+import type { GameState } from "../interfaces/GameState.js";
+import type { Variant } from "../interfaces/Variant.js";
+import type { Rank } from "../types/Rank.js";
+import type { SuitIndex } from "../types/SuitIndex.js";
+import { hasReversedSuits } from "./variants/variantIdentity.js";
 
 /**
  * Returns an array since it is possible in some variants to have two or more possible cards that

@@ -5,23 +5,26 @@
 import { assertDefined } from "complete-common";
 import type { Draft } from "immer";
 import { castDraft, original, produce } from "immer";
-import { VALID_PLAYER_INDEXES } from "../constants";
-import { getVariant } from "../gameData";
-import { EndCondition } from "../generated/protocol";
-import type { CardNote } from "../interfaces/CardNote";
-import type { GameMetadata } from "../interfaces/GameMetadata";
-import type { GameState } from "../interfaces/GameState";
-import type { Variant } from "../interfaces/Variant";
+import { VALID_PLAYER_INDEXES } from "../constants.js";
+import { getVariant } from "../gameData.js";
+import { EndCondition } from "../generated/protocol.js";
+import type { CardNote } from "../interfaces/CardNote.js";
+import type { GameMetadata } from "../interfaces/GameMetadata.js";
+import type { GameState } from "../interfaces/GameState.js";
+import type { Variant } from "../interfaces/Variant.js";
 import {
   getCardStatus,
   isCardCritical,
   isCardNeededForMaxScore,
-} from "../rules/card";
-import { isCardClued } from "../rules/cardState";
-import { isPassTurnClue } from "../rules/clues";
-import { getClueCost, getNewClueTokensAfterAction } from "../rules/clueTokens";
-import { isInitialDealFinished } from "../rules/deck";
-import { getStackDirection, getStackStartRank } from "../rules/playStacks";
+} from "../rules/card.js";
+import { isCardClued } from "../rules/cardState.js";
+import { isPassTurnClue } from "../rules/clues.js";
+import {
+  getClueCost,
+  getNewClueTokensAfterAction,
+} from "../rules/clueTokens.js";
+import { isInitialDealFinished } from "../rules/deck.js";
+import { getStackDirection, getStackStartRank } from "../rules/playStacks.js";
 import {
   getClueText,
   getDiscardText,
@@ -30,19 +33,19 @@ import {
   getPlayText,
   getPlayerName,
   millisecondsToClockString,
-} from "../rules/text";
-import { hasReversedSuits } from "../rules/variants/variantIdentity";
+} from "../rules/text.js";
+import { hasReversedSuits } from "../rules/variants/variantIdentity.js";
 import type {
   ActionDiscard,
   ActionPlay,
   GameAction,
-} from "../types/gameActions";
-import type { SuitIndex } from "../types/SuitIndex";
-import { cardsReducer } from "./cardsReducer";
-import { ddaReducer } from "./ddaReducer";
-import { knownTrashReducer } from "./knownTrashReducer";
-import { statsReducer } from "./statsReducer";
-import { turnReducer } from "./turnReducer";
+} from "../types/gameActions.js";
+import type { SuitIndex } from "../types/SuitIndex.js";
+import { cardsReducer } from "./cardsReducer.js";
+import { ddaReducer } from "./ddaReducer.js";
+import { knownTrashReducer } from "./knownTrashReducer.js";
+import { statsReducer } from "./statsReducer.js";
+import { turnReducer } from "./turnReducer.js";
 
 /** Computes the next game state from a given action. */
 export const gameReducer = produce(gameReducerFunction, {} as GameState);

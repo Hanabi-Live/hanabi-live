@@ -1,13 +1,17 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 
-import type { CardIdentity } from "./interfaces/CardIdentity";
-import type { CardNote } from "./interfaces/CardNote";
-import type { CardState } from "./interfaces/CardState";
-import type { Variant } from "./interfaces/Variant";
-import { isCardClued, isCardDiscarded, isCardPlayed } from "./rules/cardState";
-import type { Rank } from "./types/Rank";
-import type { SuitIndex } from "./types/SuitIndex";
-import type { SuitRankTuple } from "./types/SuitRankTuple";
+import type { CardIdentity } from "./interfaces/CardIdentity.js";
+import type { CardNote } from "./interfaces/CardNote.js";
+import type { CardState } from "./interfaces/CardState.js";
+import type { Variant } from "./interfaces/Variant.js";
+import {
+  isCardClued,
+  isCardDiscarded,
+  isCardPlayed,
+} from "./rules/cardState.js";
+import type { Rank } from "./types/Rank.js";
+import type { SuitIndex } from "./types/SuitIndex.js";
+import type { SuitRankTuple } from "./types/SuitRankTuple.js";
 
 export enum PipState {
   Hidden,

@@ -3,16 +3,20 @@
 
 import type { Tuple } from "complete-common";
 import { iRange, newArray } from "complete-common";
-import { StackDirection } from "../../enums/StackDirection";
-import { MAX_RANK, MIN_RANK, START_CARD_RANK } from "../../generated/protocol";
-import type { CardState } from "../../interfaces/CardState";
-import type { GameState } from "../../interfaces/GameState";
-import type { Variant } from "../../interfaces/Variant";
-import type { NumSuits } from "../../types/NumSuits";
-import type { Rank } from "../../types/Rank";
-import type { SuitIndex } from "../../types/SuitIndex";
-import { getAllDiscardedSetForSuit, getDiscardHelpers } from "../deck";
-import { getLastPlayedRank } from "../playStacks";
+import { StackDirection } from "../../enums/StackDirection.js";
+import {
+  MAX_RANK,
+  MIN_RANK,
+  START_CARD_RANK,
+} from "../../generated/protocol.js";
+import type { CardState } from "../../interfaces/CardState.js";
+import type { GameState } from "../../interfaces/GameState.js";
+import type { Variant } from "../../interfaces/Variant.js";
+import type { NumSuits } from "../../types/NumSuits.js";
+import type { Rank } from "../../types/Rank.js";
+import type { SuitIndex } from "../../types/SuitIndex.js";
+import { getAllDiscardedSetForSuit, getDiscardHelpers } from "../deck.js";
+import { getLastPlayedRank } from "../playStacks.js";
 
 /**
  * Returns true if this card still needs to be played in order to get the maximum score (taking the

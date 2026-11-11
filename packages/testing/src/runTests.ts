@@ -15,7 +15,7 @@ import { setTimeout as delay } from "node:timers/promises";
 import { promisify } from "node:util";
 import postgres from "postgres";
 
-const ROOT = path.resolve(__dirname, "../../..");
+const ROOT = path.resolve(import.meta.dirname, "../../..");
 // eslint-disable-next-line @typescript-eslint/strict-void-return -- promisify ignores the ChildProcess return value.
 const run = promisify(execFile);
 

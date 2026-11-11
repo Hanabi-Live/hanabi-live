@@ -14,7 +14,7 @@
   "license": "GPL-3.0",
   "author": "Zamiell",
   "sideEffects": false,
-  "type": "commonjs",
+  "type": "module",
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",

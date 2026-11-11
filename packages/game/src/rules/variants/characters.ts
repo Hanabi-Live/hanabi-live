@@ -1,5 +1,5 @@
-import type { GameMetadata } from "../../interfaces/GameMetadata";
-import { getCharacterNameForPlayer } from "../../reducers/reducerHelpers";
+import type { GameMetadata } from "../../interfaces/GameMetadata.js";
+import { getCharacterNameForPlayer } from "../../reducers/reducerHelpers.js";
 
 /**
  * In games with "Detrimental Characters", not all players may necessarily see the cards of other

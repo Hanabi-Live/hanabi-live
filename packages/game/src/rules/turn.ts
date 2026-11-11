@@ -1,11 +1,11 @@
-import { getCharacter } from "../gameData";
-import { PANICKY_MAX_CLUES } from "../generated/protocol";
-import type { GameMetadata } from "../interfaces/GameMetadata";
-import type { Options } from "../interfaces/Options";
-import type { Variant } from "../interfaces/Variant";
-import type { NumPlayers } from "../types/NumPlayers";
-import type { PlayerIndex } from "../types/PlayerIndex";
-import { getAdjustedClueTokens } from "./clueTokens";
+import { getCharacter } from "../gameData.js";
+import { PANICKY_MAX_CLUES } from "../generated/protocol.js";
+import type { GameMetadata } from "../interfaces/GameMetadata.js";
+import type { Options } from "../interfaces/Options.js";
+import type { Variant } from "../interfaces/Variant.js";
+import type { NumPlayers } from "../types/NumPlayers.js";
+import type { PlayerIndex } from "../types/PlayerIndex.js";
+import { getAdjustedClueTokens } from "./clueTokens.js";
 
 /** The clues that a Genius gives on each turn: a color clue, then a rank clue. */
 const GENIUS_CLUES_PER_TURN = 2;

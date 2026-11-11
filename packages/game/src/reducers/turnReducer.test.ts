@@ -1,11 +1,11 @@
 import { describe, expect, test } from "bun:test";
 import { eRange } from "complete-common";
-import type { TurnState } from "../interfaces/TurnState";
-import { getDefaultMetadata } from "../metadata";
-import { draw, play } from "../testActions";
-import { getInitialGameState } from "./initialStates/initialGameState";
-import { getInitialTurnState } from "./initialStates/initialTurnState";
-import { turnReducer } from "./turnReducer";
+import type { TurnState } from "../interfaces/TurnState.js";
+import { getDefaultMetadata } from "../metadata.js";
+import { draw, play } from "../testActions.js";
+import { getInitialGameState } from "./initialStates/initialGameState.js";
+import { getInitialTurnState } from "./initialStates/initialTurnState.js";
+import { turnReducer } from "./turnReducer.js";
 
 const NUM_PLAYERS = 3;
 const DEFAULT_METADATA = getDefaultMetadata(NUM_PLAYERS);

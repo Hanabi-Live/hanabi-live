@@ -1,5 +1,5 @@
-import type { Character } from "./interfaces/Character";
-import charactersJSON from "./json/characters.json";
+import type { Character } from "./interfaces/Character.js";
+import charactersJSON from "./json/characters.json" with { type: "json" };
 
 export function charactersInit(): ReadonlyMap<number, Character> {
   // A test validates the file against the server's catalog contract.

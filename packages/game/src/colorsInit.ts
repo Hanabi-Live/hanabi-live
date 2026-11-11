@@ -1,7 +1,7 @@
 import type { z } from "zod";
-import type { catalogColorSchema } from "./generated/protocol";
-import type { Color } from "./interfaces/Color";
-import colorsJSON from "./json/colors.json";
+import type { catalogColorSchema } from "./generated/protocol.js";
+import type { Color } from "./interfaces/Color.js";
+import colorsJSON from "./json/colors.json" with { type: "json" };
 
 export function colorsInit(): ReadonlyMap<string, Color> {
   const colors = new Map<string, Color>();

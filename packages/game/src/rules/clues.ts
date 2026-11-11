@@ -1,27 +1,27 @@
 // Functions related to the clue objects themselves: converting, getting names, etc.
 
 import { assertDefined } from "complete-common";
-import { EVEN_CARD_RANKS, ODD_CARD_RANKS } from "../constants";
+import { EVEN_CARD_RANKS, ODD_CARD_RANKS } from "../constants.js";
 import {
   EVEN_RANK_CLUE,
   MIN_RANK,
   ODD_RANK_CLUE,
   START_CARD_RANK,
-} from "../generated/protocol";
-import type { Color } from "../interfaces/Color";
-import type { GameMetadata } from "../interfaces/GameMetadata";
-import type { Suit } from "../interfaces/Suit";
-import type { Variant } from "../interfaces/Variant";
-import { getCharacterNameForPlayer } from "../reducers/reducerHelpers";
-import type { Clue } from "../types/Clue";
-import { newColorClue, newRankClue } from "../types/Clue";
-import type { HiddenClue } from "../types/HiddenClue";
-import type { MsgClue } from "../types/MsgClue";
-import type { PlayerIndex } from "../types/PlayerIndex";
-import type { Rank } from "../types/Rank";
-import type { RankClueNumber } from "../types/RankClueNumber";
-import type { SuitIndex } from "../types/SuitIndex";
-import type { ActionClue } from "../types/gameActions";
+} from "../generated/protocol.js";
+import type { Color } from "../interfaces/Color.js";
+import type { GameMetadata } from "../interfaces/GameMetadata.js";
+import type { Suit } from "../interfaces/Suit.js";
+import type { Variant } from "../interfaces/Variant.js";
+import { getCharacterNameForPlayer } from "../reducers/reducerHelpers.js";
+import type { Clue } from "../types/Clue.js";
+import { newColorClue, newRankClue } from "../types/Clue.js";
+import type { HiddenClue } from "../types/HiddenClue.js";
+import type { MsgClue } from "../types/MsgClue.js";
+import type { PlayerIndex } from "../types/PlayerIndex.js";
+import type { Rank } from "../types/Rank.js";
+import type { RankClueNumber } from "../types/RankClueNumber.js";
+import type { SuitIndex } from "../types/SuitIndex.js";
+import type { ActionClue } from "../types/gameActions.js";
 
 /**
  * In a hypothetical, a player can pass the turn, spending a clue without giving one. It is recorded

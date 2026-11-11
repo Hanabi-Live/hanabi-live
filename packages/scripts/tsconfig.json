@@ -4,10 +4,9 @@
   "extends": [
     "complete-tsconfig/tsconfig.base.json",
     "../../tsconfig.monorepo.json",
-    "complete-tsconfig/tsconfig.node.json",
   ],
 
-  "include": ["./src/**/*.ts", "./src/**/*.mts"],
+  "include": ["./src/**/*.ts"],
   "compilerOptions": {
     "types": ["bun"],
     // The Node.js libraries, plus the DOM for the code that "buildCriticalCSS.mts" runs in a page.

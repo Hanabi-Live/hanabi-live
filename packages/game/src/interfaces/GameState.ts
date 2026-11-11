@@ -1,17 +1,17 @@
 import type { Tuple } from "complete-common";
-import type { CardStatus } from "../enums/CardStatus";
-import type { StackDirection } from "../enums/StackDirection";
-import type { CardOrder } from "../types/CardOrder";
-import type { NumPlayers } from "../types/NumPlayers";
-import type { NumSuits } from "../types/NumSuits";
-import type { Rank } from "../types/Rank";
-import type { StateClue } from "../types/StateClue";
-import type { SuitRankMap } from "../types/SuitRankMap";
-import type { CardState } from "./CardState";
-import type { LogEntry } from "./LogEntry";
-import type { StateStrike } from "./StateStrike";
-import type { StatsState } from "./StatsState";
-import type { TurnState } from "./TurnState";
+import type { CardStatus } from "../enums/CardStatus.js";
+import type { StackDirection } from "../enums/StackDirection.js";
+import type { CardOrder } from "../types/CardOrder.js";
+import type { NumPlayers } from "../types/NumPlayers.js";
+import type { NumSuits } from "../types/NumSuits.js";
+import type { Rank } from "../types/Rank.js";
+import type { StateClue } from "../types/StateClue.js";
+import type { SuitRankMap } from "../types/SuitRankMap.js";
+import type { CardState } from "./CardState.js";
+import type { LogEntry } from "./LogEntry.js";
+import type { StateStrike } from "./StateStrike.js";
+import type { StatsState } from "./StatsState.js";
+import type { TurnState } from "./TurnState.js";
 
 export interface GameState {
   readonly turn: TurnState;

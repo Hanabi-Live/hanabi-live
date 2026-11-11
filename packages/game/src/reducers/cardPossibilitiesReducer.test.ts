@@ -1,15 +1,15 @@
 import { describe, expect, test } from "bun:test";
 import { assertDefined } from "complete-common";
-import { getVariant } from "../gameData";
-import type { CardState } from "../interfaces/CardState";
-import { getDefaultMetadata } from "../metadata";
-import type { CardOrder } from "../types/CardOrder";
-import { newColorClue, newRankClue } from "../types/Clue";
-import type { Rank } from "../types/Rank";
-import type { SuitIndex } from "../types/SuitIndex";
-import type { SuitRankTuple } from "../types/SuitRankTuple";
-import { cardPossibilitiesReducer } from "./cardPossibilitiesReducer";
-import { getInitialCardState } from "./initialStates/initialCardState";
+import { getVariant } from "../gameData.js";
+import type { CardState } from "../interfaces/CardState.js";
+import { getDefaultMetadata } from "../metadata.js";
+import type { CardOrder } from "../types/CardOrder.js";
+import { newColorClue, newRankClue } from "../types/Clue.js";
+import type { Rank } from "../types/Rank.js";
+import type { SuitIndex } from "../types/SuitIndex.js";
+import type { SuitRankTuple } from "../types/SuitRankTuple.js";
+import { cardPossibilitiesReducer } from "./cardPossibilitiesReducer.js";
+import { getInitialCardState } from "./initialStates/initialCardState.js";
 
 const NUM_PLAYERS = 3;
 const DEFAULT_METADATA = getDefaultMetadata(NUM_PLAYERS);

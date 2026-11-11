@@ -12,7 +12,7 @@
   },
   "license": "GPL-3.0",
   "author": "Zamiell",
-  "type": "commonjs",
+  "type": "module",
   "workspaces": {
     "packages": [
       "packages/*"
@@ -76,16 +76,16 @@
     "build-critical-css": "bun packages/testing/src/runTests.ts critical-css --write",
     "build-standalone": "bash scripts/dev/build-standalone.sh",
     "check-css": "bash scripts/lint/check-css.sh",
-    "check-deployment": "bun --tsconfig-override tsconfig.monorepo.json ./packages/scripts/src/checkDeployment.mts",
-    "check-emoji": "bun --tsconfig-override tsconfig.monorepo.json ./packages/scripts/src/checkEmoji.mts",
+    "check-deployment": "bun --tsconfig-override tsconfig.monorepo.json ./packages/scripts/src/checkDeployment.ts",
+    "check-emoji": "bun --tsconfig-override tsconfig.monorepo.json ./packages/scripts/src/checkEmoji.ts",
     "check-knip": "bunx --bun --no-install knip --treat-config-hints-as-errors",
     "check-shellcheck": "bash scripts/lint/check-shellcheck.sh",
     "check-templates": "bash scripts/lint/check-templates.sh",
     "check-variant-files": "bun --tsconfig-override tsconfig.monorepo.json ./packages/scripts/src/createVariantsJSON/checkVariantFiles.ts",
     "create-variants-json": "bun --tsconfig-override tsconfig.monorepo.json ./packages/scripts/src/createVariantsJSON/createVariantsJSONScript.ts",
-    "dev": "bun --tsconfig-override tsconfig.monorepo.json ./packages/scripts/src/dev.mts",
+    "dev": "bun --tsconfig-override tsconfig.monorepo.json ./packages/scripts/src/dev.ts",
     "lint": "bash ./lint.sh",
-    "lint-package-json": "bun --tsconfig-override tsconfig.monorepo.json ./packages/scripts/src/lintPackageJSON.mts",
+    "lint-package-json": "bun --tsconfig-override tsconfig.monorepo.json ./packages/scripts/src/lintPackageJSON.ts",
     "lint-rust": "bash scripts/lint/check-rust.sh",
     "prepare": "husky",
     "test": "bunx --bun --no-install turbo run test-client test-rust test-bun test-critical-css --cache=local:rw --output-logs=new-only --concurrency=1",
@@ -94,7 +94,7 @@
     "test-critical-css": "bun packages/testing/src/runTests.ts critical-css",
     "test-rust": "bun packages/testing/src/runTests.ts rust",
     "ui-screenshots": "bun packages/testing/src/runTests.ts ui-screenshots",
-    "update": "bun --tsconfig-override tsconfig.monorepo.json ./packages/scripts/src/update.mts"
+    "update": "bun --tsconfig-override tsconfig.monorepo.json ./packages/scripts/src/update.ts"
   },
   "dependencies": {
     "@types/bun": "catalog:",

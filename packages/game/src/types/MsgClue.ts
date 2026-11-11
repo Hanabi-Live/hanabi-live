@@ -1,4 +1,4 @@
-import type { WireClue } from "./HiddenClue";
+import type { WireClue } from "./HiddenClue.js";
 
 /** A clue as the server sends it. On the client, the color is a rich object. */
 export type MsgClue = Readonly<WireClue>;

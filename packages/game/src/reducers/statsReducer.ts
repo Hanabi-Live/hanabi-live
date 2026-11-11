@@ -6,18 +6,18 @@
 import { sumArray } from "complete-common";
 import type { Draft } from "immer";
 import { produce } from "immer";
-import { getVariant } from "../gameData";
-import type { CardNote } from "../interfaces/CardNote";
-import type { GameMetadata } from "../interfaces/GameMetadata";
-import type { GameState } from "../interfaces/GameState";
-import type { StatsState } from "../interfaces/StatsState";
-import type { Variant } from "../interfaces/Variant";
-import { isCardClued } from "../rules/cardState";
+import { getVariant } from "../gameData.js";
+import type { CardNote } from "../interfaces/CardNote.js";
+import type { GameMetadata } from "../interfaces/GameMetadata.js";
+import type { GameState } from "../interfaces/GameState.js";
+import type { StatsState } from "../interfaces/StatsState.js";
+import type { Variant } from "../interfaces/Variant.js";
+import { isCardClued } from "../rules/cardState.js";
 import {
   getDiscardClueTokenValue,
   getSuitCompleteClueTokenValue,
   getUnadjustedClueTokens,
-} from "../rules/clueTokens";
+} from "../rules/clueTokens.js";
 import {
   getCardsGotten,
   getCardsGottenByNotes,
@@ -27,9 +27,9 @@ import {
   getMaxScorePerStack,
   getPace,
   getPaceRisk,
-} from "../rules/stats";
-import { getEndGameLength } from "../rules/turn";
-import type { GameAction } from "../types/gameActions";
+} from "../rules/stats.js";
+import { getEndGameLength } from "../rules/turn.js";
+import type { GameAction } from "../types/gameActions.js";
 
 export const statsReducer = produce(statsReducerFunction, {} as StatsState);
 

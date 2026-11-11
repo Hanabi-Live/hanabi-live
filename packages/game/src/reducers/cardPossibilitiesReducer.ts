@@ -1,14 +1,14 @@
 // Calculates the state of a card after a clue.
 
 import { newArray } from "complete-common";
-import { EVEN_CARD_RANKS, ODD_CARD_RANKS } from "../constants";
-import { getVariant } from "../gameData";
-import { MAX_PLAYERS, ODD_RANK_CLUE } from "../generated/protocol";
-import type { CardState } from "../interfaces/CardState";
-import type { GameMetadata } from "../interfaces/GameMetadata";
-import { isCardTouchedByClue } from "../rules/clues";
-import type { Clue } from "../types/Clue";
-import type { SuitRankTuple } from "../types/SuitRankTuple";
+import { EVEN_CARD_RANKS, ODD_CARD_RANKS } from "../constants.js";
+import { getVariant } from "../gameData.js";
+import { MAX_PLAYERS, ODD_RANK_CLUE } from "../generated/protocol.js";
+import type { CardState } from "../interfaces/CardState.js";
+import type { GameMetadata } from "../interfaces/GameMetadata.js";
+import { isCardTouchedByClue } from "../rules/clues.js";
+import type { Clue } from "../types/Clue.js";
+import type { SuitRankTuple } from "../types/SuitRankTuple.js";
 
 export function cardPossibilitiesReducer(
   state: CardState,

@@ -1,7 +1,7 @@
 import type { Tuple } from "complete-common";
-import type { PaceRisk } from "../enums/PaceRisk";
-import type { CardOrder } from "../types/CardOrder";
-import type { NumSuits } from "../types/NumSuits";
+import type { PaceRisk } from "../enums/PaceRisk.js";
+import type { CardOrder } from "../types/CardOrder.js";
+import type { NumSuits } from "../types/NumSuits.js";
 
 export interface StatsState {
   // For max score.

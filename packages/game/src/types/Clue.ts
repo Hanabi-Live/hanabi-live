@@ -1,5 +1,5 @@
-import type { Color } from "../interfaces/Color";
-import type { RankClueNumber } from "./RankClueNumber";
+import type { Color } from "../interfaces/Color.js";
+import type { RankClueNumber } from "./RankClueNumber.js";
 
 export interface ColorClue {
   readonly type: "color";
