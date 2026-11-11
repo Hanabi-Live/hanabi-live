@@ -199,6 +199,12 @@ jobs:
       - uses: ./.github/workflows/setup-rust
       - name: Prepare static Rust release toolchain
         run: |
+          # Temporary: the runner's resolver cannot resolve security.ubuntu.com
+          # (2026-11-11), so look it up through 1.1.1.1. Remove after the outage.
+          if ! getent hosts security.ubuntu.com >/dev/null; then
+            address=$(dig +short A security.ubuntu.com @1.1.1.1 | grep -E '^[0-9.]+$' | head -1)
+            echo "$address security.ubuntu.com" | sudo tee -a /etc/hosts
+          fi
           sudo apt-get update
           sudo apt-get install -y musl-tools
           cd server
