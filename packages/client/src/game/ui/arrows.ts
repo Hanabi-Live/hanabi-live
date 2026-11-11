@@ -100,7 +100,7 @@ export function hideAll(potentialClue = false): void {
   potentialClueShown = potentialClue;
 
   // A potential clue can be previewed only while its arrows are shown.
-  cluePreview.setPotentialClue(null);
+  cluePreview.setPotentialClue(undefined);
 
   let changed = false;
   for (const arrow of globals.elements.arrows) {

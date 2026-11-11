@@ -119,7 +119,7 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip, UICard {
   private empathy = false;
 
   /** How this card would look after a clue that the player is considering giving. */
-  private cluePreviewState: CardState | null = null;
+  private cluePreviewState: CardState | undefined;
   dragging = false;
   wasRecentlyTapped = false;
   touchstartTimeout: ReturnType<typeof setTimeout> | undefined = undefined;
@@ -1417,9 +1417,9 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip, UICard {
 
   /**
    * Shows the card from its holder's perspective as it would be after a potential clue, or restores
-   * the normal view when passed null.
+   * the normal view when passed undefined.
    */
-  setCluePreview(state: CardState | null): void {
+  setCluePreview(state: CardState | undefined): void {
     if (this.cluePreviewState === state) {
       return;
     }
@@ -1431,7 +1431,7 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip, UICard {
   }
 
   private get showsEmpathy(): boolean {
-    return this.empathy || this.cluePreviewState !== null;
+    return this.empathy || this.cluePreviewState !== undefined;
   }
 
   suitDescriptionNote(): string {

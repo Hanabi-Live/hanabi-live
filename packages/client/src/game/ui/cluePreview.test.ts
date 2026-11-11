@@ -42,7 +42,7 @@ describe("clue preview", () => {
     };
     const cards = [RED_ONE, BLUE_TWO].map((order) => ({
       order,
-      setCluePreview: vi.fn<(state: CardState | null) => void>(),
+      setCluePreview: vi.fn<(state: CardState | undefined) => void>(),
     }));
     Object.assign(globals, {
       metadata,
@@ -83,9 +83,9 @@ describe("clue preview", () => {
     expect(cluePreview.isShown()).toBe(true);
 
     // Deselecting the clue restores the hand, but leaves the button on.
-    cluePreview.setPotentialClue(null);
+    cluePreview.setPotentialClue(undefined);
     for (const card of cards) {
-      expect(card.setCluePreview).toHaveBeenLastCalledWith(null);
+      expect(card.setCluePreview).toHaveBeenLastCalledWith(undefined);
     }
     expect(cluePreview.isShown()).toBe(false);
 
@@ -101,7 +101,7 @@ describe("clue preview", () => {
     cluePreview.reset();
     expect(postClueEmpathyCheckbox.setChecked).toHaveBeenLastCalledWith(false);
     for (const card of cards) {
-      expect(card.setCluePreview).toHaveBeenLastCalledWith(null);
+      expect(card.setCluePreview).toHaveBeenLastCalledWith(undefined);
     }
     expect(cluePreview.isShown()).toBe(false);
   });

@@ -21,11 +21,11 @@ interface PotentialClue {
 }
 
 let enabled = false;
-let potentialClue: PotentialClue | null = null;
+let potentialClue: PotentialClue | undefined;
 let previewedCards: readonly HanabiCard[] = [];
 
-/** Records the clue that the player selected, or null when there is none. */
-export function setPotentialClue(clue: PotentialClue | null): void {
+/** Records the clue that the player selected, or undefined when there is none. */
+export function setPotentialClue(clue: PotentialClue | undefined): void {
   hide();
   potentialClue = clue;
   if (enabled) {
@@ -55,7 +55,7 @@ function setEnabled(newEnabled: boolean) {
 
 function show() {
   hide();
-  if (potentialClue === null) {
+  if (potentialClue === undefined) {
     return;
   }
   const { target, clue, touchedCards } = potentialClue;
@@ -91,7 +91,7 @@ function show() {
     (child) => (child as unknown as LayoutChild).card,
   );
   for (const card of previewedCards) {
-    card.setCluePreview(deck[card.order] ?? null);
+    card.setCluePreview(deck[card.order]);
   }
 
   globals.layers.card.batchDraw();
@@ -108,7 +108,7 @@ export function hide(): void {
   }
 
   for (const card of previewedCards) {
-    card.setCluePreview(null);
+    card.setCluePreview(undefined);
   }
   previewedCards = [];
 
