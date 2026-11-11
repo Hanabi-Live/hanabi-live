@@ -216,9 +216,9 @@ async fn accounts_without_password_hash_require_reset_before_login_postgres() {
         .await;
         assert_eq!(status, StatusCode::UNAUTHORIZED);
         assert!(!headers.contains_key(header::SET_COOKIE));
-        let error: ApiError = serde_json::from_str(&body).unwrap();
-        assert!(error.error.contains("requires a password reset"));
-        assert!(error.error.contains("href=\"/password-reset\""));
+        let error: Notice = serde_json::from_str(&body).unwrap();
+        assert!(error.message.contains("requires a password reset"));
+        assert!(error.message.contains("href=\"/password-reset\""));
     }
     let stored: Option<String> =
         sqlx::query_scalar!("SELECT password_hash FROM users WHERE id=$1", id)
@@ -449,7 +449,7 @@ async fn native_accounts_http_and_identity_postgres() {
         let (status, _, response) =
             request(&app, "POST", "/api/v1/identity", &body, None, true).await;
         assert_eq!(status, StatusCode::BAD_REQUEST, "{body}");
-        serde_json::from_str::<ApiError>(&response).unwrap();
+        serde_json::from_str::<Notice>(&response).unwrap();
     }
     sqlx::query!("INSERT INTO banned_ips(ip) VALUES('127.0.0.1')")
         .execute(&db.pool)
@@ -752,8 +752,8 @@ async fn login_rejects_unknown_form_fields() {
     )
     .await;
     assert_eq!(status, StatusCode::BAD_REQUEST, "{body}");
-    let error: ApiError = serde_json::from_str(&body).unwrap();
-    assert!(error.error.contains("only a username"));
+    let error: Notice = serde_json::from_str(&body).unwrap();
+    assert!(error.message.contains("only a username"));
 }
 
 #[tokio::test]
@@ -792,8 +792,8 @@ async fn password_reset_hashes_only_a_password() {
         let (status, _, response) =
             request(&app, "POST", "/password-reset", body, None, true).await;
         assert_eq!(status, StatusCode::BAD_REQUEST, "{body}");
-        let error: ApiError = serde_json::from_str(&response).unwrap();
-        assert_eq!(error.error, "You must specify a password.");
+        let error: Notice = serde_json::from_str(&response).unwrap();
+        assert_eq!(error.message, "You must specify a password.");
     }
 }
 
@@ -804,8 +804,8 @@ async fn too_much_password_work_is_rate_limited() {
     assert_eq!(response.status(), StatusCode::TOO_MANY_REQUESTS);
     assert_eq!(response.headers()[header::RETRY_AFTER], "90");
     let body = to_bytes(response.into_body(), 1024).await.unwrap();
-    let error: ApiError = serde_json::from_slice(&body).unwrap();
-    assert!(error.error.contains("try again in 2 minutes"));
+    let error: Notice = serde_json::from_slice(&body).unwrap();
+    assert!(error.message.contains("try again in 2 minutes"));
 }
 
 #[tokio::test]
@@ -819,8 +819,8 @@ async fn password_overload_is_retryable_and_diagnostics_are_redacted() {
         assert_eq!(response.status(), StatusCode::SERVICE_UNAVAILABLE);
         assert_eq!(response.headers()[header::RETRY_AFTER], "1");
         let body = to_bytes(response.into_body(), 1024).await.unwrap();
-        let error: ApiError = serde_json::from_slice(&body).unwrap();
-        assert!(error.error.contains("temporarily busy"));
+        let error: Notice = serde_json::from_slice(&body).unwrap();
+        assert!(error.message.contains("temporarily busy"));
     }
     let error = anyhow::anyhow!("synthetic-sensitive-password-token-and-query");
     assert!(!failure_diagnostic(&error).contains("synthetic-sensitive"));

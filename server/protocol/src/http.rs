@@ -48,29 +48,6 @@ pub struct LoginResponse {
     pub user_id: UserId,
 }
 
-/// The body of a JSON HTTP error response. Server failures also name their typed cause and the
-/// diagnostic ID that their log entry carries.
-#[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
-#[serde(deny_unknown_fields)]
-pub struct ApiError {
-    pub error: String,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub code: Option<String>,
-    #[serde(rename = "diagnosticID", skip_serializing_if = "Option::is_none")]
-    pub diagnostic_id: Option<String>,
-}
-
-impl ApiError {
-    /// An error without a typed cause, such as a refused request.
-    pub fn new(error: impl Into<String>) -> Self {
-        Self {
-            error: error.into(),
-            code: None,
-            diagnostic_id: None,
-        }
-    }
-}
-
 /// The `/api/v1/identity` request.
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
 #[serde(deny_unknown_fields)]

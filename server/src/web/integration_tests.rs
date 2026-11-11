@@ -167,8 +167,8 @@ async fn http_routes_reject_parameters_and_bodies_they_do_not_take_postgres() {
             .unwrap();
         let url = response.url().clone();
         assert_eq!(response.status(), StatusCode::BAD_REQUEST, "{url}");
-        let error: hanabi_protocol::ApiError = response.json().await.unwrap();
-        assert!(!error.error.is_empty(), "{url}");
+        let error: hanabi_protocol::Notice = response.json().await.unwrap();
+        assert!(!error.message.is_empty(), "{url}");
     }
     // Errors that the router itself produces take the same form as the URL's other errors.
     let oversized = "a".repeat(9000);
@@ -198,7 +198,7 @@ async fn http_routes_reject_parameters_and_bodies_they_do_not_take_postgres() {
         assert_eq!(response.status().as_u16(), status, "{url}");
         let body = response.text().await.unwrap();
         assert_eq!(
-            serde_json::from_str::<hanabi_protocol::ApiError>(&body).is_ok(),
+            serde_json::from_str::<hanabi_protocol::Notice>(&body).is_ok(),
             json,
             "{url}: {body}"
         );

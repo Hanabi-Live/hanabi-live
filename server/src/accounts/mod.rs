@@ -34,8 +34,8 @@ use axum::{
 };
 use chrono::{DateTime, Utc};
 use hanabi_protocol::{
-    ApiError, IdentityRequest, IdentityResponse, IdentityTokenResponse, LoginRequest,
-    LoginResponse, PasswordHashRequest, PasswordHashResponse,
+    IdentityRequest, IdentityResponse, IdentityTokenResponse, LoginRequest, LoginResponse, Notice,
+    PasswordHashRequest, PasswordHashResponse,
 };
 use sqlx::PgPool;
 use std::{net::SocketAddr, sync::Arc};
@@ -289,9 +289,9 @@ async fn login_inner(state: &Accounts, ip: &str, input: LoginRequest) -> Result<
         Err(message) => return Ok(unauthorized(message)),
     };
     if let Err(message) = validate_client_version(&input.version, &state.config.version) {
-        let error = ApiError {
+        let error = Notice {
             code: Some(hanabi_protocol::OUTDATED_CLIENT_CODE.into()),
-            ..ApiError::new(message)
+            ..Notice::new(message)
         };
         return Ok((StatusCode::UNAUTHORIZED, Json(error)).into_response());
     }
@@ -360,9 +360,9 @@ async fn login_inner(state: &Accounts, ip: &str, input: LoginRequest) -> Result<
             )));
         }
         if !input.create_account && input.version != BOT_VERSION {
-            let error = ApiError {
+            let error = Notice {
                 code: Some(hanabi_protocol::NO_ACCOUNT_CODE.into()),
-                ..ApiError::new(format!(
+                ..Notice::new(format!(
                     "There is no account named \"{}\".",
                     escape_html(username)
                 ))

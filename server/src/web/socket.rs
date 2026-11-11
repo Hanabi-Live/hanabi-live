@@ -233,7 +233,7 @@ pub(super) fn load_lobby(app: Arc<App>, session: Arc<Session>) {
                 report.log();
                 session.emit(&frame(
                     hanabi_protocol::server::LOBBY_STATUS,
-                    hanabi_protocol::LobbyStatus::Error { message: Some(report.text()) },
+                    hanabi_protocol::LobbyStatus::Error(report.notice()),
                 ));
             }
         }

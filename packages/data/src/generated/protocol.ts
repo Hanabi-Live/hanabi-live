@@ -72,18 +72,6 @@ export enum SoundMove {
 }
 
 /**
- * The body of a JSON HTTP error response. Server failures also name their typed cause and the
- * diagnostic ID that their log entry carries.
- */
-export const apiErrorSchema = z
-  .strictObject({
-    code: z.string().optional(),
-    diagnosticID: z.string().optional(),
-    error: z.string(),
-  })
-  .readonly();
-
-/**
  * The users whom we have blocked. It does not include the users who have blocked us.
  */
 export const blockedSchema = z
@@ -535,7 +523,15 @@ export const initSchema = z
 export const lobbyStatusSchema = z.discriminatedUnion("state", [
   z.strictObject({ state: z.literal("loading") }).readonly(),
   z
-    .strictObject({ message: z.string().optional(), state: z.literal("error") })
+    .strictObject({
+      /**
+       * The typed cause of a server failure.
+       */
+      code: z.string().min(1).optional(),
+      diagnosticID: z.string().min(1).optional(),
+      message: z.string().min(1),
+      state: z.literal("error"),
+    })
     .readonly(),
   z
     .strictObject({
@@ -622,9 +618,10 @@ export const noteRequestSchema = z
   .readonly();
 
 /**
- * A problem that the client shows in a modal: an `error`, after which the connection closes, or a
- * recoverable `warning`. The text may contain HTML. A server failure also names its typed cause and
- * the diagnostic ID that its log entry carries, as `ApiError` does.
+ * A problem that the client shows: an `error` message, after which the connection closes, a
+ * recoverable `warning`, a lobby statistics failure, or the body of a JSON HTTP error response. The
+ * text may contain HTML. A server failure also names its typed cause and the diagnostic ID that its
+ * log entry carries.
  */
 export const noticeSchema = z
   .strictObject({

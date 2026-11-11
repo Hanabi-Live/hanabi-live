@@ -1,5 +1,5 @@
 import type { z } from "zod";
-import { apiErrorSchema } from "../generated/protocol";
+import { noticeSchema } from "../generated/protocol";
 
 export function validationErrorDetails(error: z.ZodError): string {
   return error.issues
@@ -43,9 +43,9 @@ export async function httpError(
   const contentType = response.headers.get("content-type") ?? "";
   if (contentType.includes("application/json") && body !== "") {
     try {
-      const parsed = apiErrorSchema.safeParse(JSON.parse(body));
+      const parsed = noticeSchema.safeParse(JSON.parse(body));
       if (parsed.success) {
-        detail = parsed.data.error;
+        detail = parsed.data.message;
       }
     } catch {
       detail = "The server returned an invalid JSON error response.";

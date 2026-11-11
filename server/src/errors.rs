@@ -86,7 +86,7 @@ impl HttpError {
     pub fn json(self) -> Response {
         match self {
             Self::Refused(status, message) => {
-                (status, Json(hanabi_protocol::ApiError::new(message))).into_response()
+                (status, Json(hanabi_protocol::Notice::new(message))).into_response()
             }
             Self::Failed(report) => report.response(true),
         }
@@ -519,8 +519,8 @@ impl Report {
         let mut response = if json_response {
             (
                 self.status,
-                Json(hanabi_protocol::ApiError {
-                    error: self.text(),
+                Json(hanabi_protocol::Notice {
+                    message: self.text(),
                     code: Some(self.code.into()),
                     diagnostic_id: Some(self.diagnostic_id.clone()),
                 }),

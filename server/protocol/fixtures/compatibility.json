@@ -25,13 +25,25 @@
     "valid": true
   },
   {
-    "name": "failed lobby reads remain explicitly unavailable",
+    "name": "failed lobby reads explain the failure",
+    "direction": "server",
+    "command": "lobbyStatus",
+    "input": {
+      "state": "error",
+      "message": "Loading lobby statistics failed",
+      "code": "lobby_read",
+      "diagnosticID": "1"
+    },
+    "valid": true
+  },
+  {
+    "name": "failed lobby reads cannot omit their explanation",
     "direction": "server",
     "command": "lobbyStatus",
     "input": {
       "state": "error"
     },
-    "valid": true
+    "valid": false
   },
   {
     "name": "ready statistics can accurately report zero games",

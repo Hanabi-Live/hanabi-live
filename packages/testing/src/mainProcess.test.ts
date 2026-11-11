@@ -1,7 +1,7 @@
 import {
   SERVER_COMMAND_SCHEMAS,
   VERSION,
-  apiErrorSchema,
+  noticeSchema,
   replayGameSchema,
 } from "@hanabi-live/data";
 import { expect, test } from "bun:test";
@@ -477,7 +477,7 @@ databaseDescribe("compiled application entry point (rust)", () => {
             }),
           });
           expect(denied.status).toBe(403);
-          expect(apiErrorSchema.parse(await denied.json()).error).toContain(
+          expect(noticeSchema.parse(await denied.json()).message).toContain(
             "banned",
           );
           const stopped = once(processState.child, "close");

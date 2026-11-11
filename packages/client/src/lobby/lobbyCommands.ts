@@ -47,18 +47,11 @@ lobbyCommands.set("lobbyStatus", (data) => {
     if (data.state === "error") {
       total
         .text("unavailable (click to retry)")
-        .attr(
-          "title",
-          data.message
-            ?? "Loading lobby statistics failed without a server explanation.",
-        )
+        .attr("title", "Loading lobby statistics failed.")
         .on("click.lobbyRetry", () => {
           globals.conn?.send("lobbyLoad", {});
         });
-      modals.showWarning(
-        data.message
-          ?? "Loading lobby statistics failed without a server explanation. Click the statistics total to retry.",
-      );
+      modals.showWarning(data.message);
     }
   }
 });

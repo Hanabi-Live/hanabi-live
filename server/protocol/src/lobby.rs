@@ -32,10 +32,7 @@ pub struct Restart {
 )]
 pub enum LobbyStatus {
     Loading {},
-    Error {
-        #[serde(skip_serializing_if = "Option::is_none")]
-        message: Option<String>,
-    },
+    Error(Notice),
     Ready {
         #[schemars(range(min = 0, max = MAX_SAFE_INTEGER))]
         total_games: i64,
@@ -95,9 +92,10 @@ pub struct Blocked {
     pub blocked: Vec<String>,
 }
 
-/// A problem that the client shows in a modal: an `error`, after which the connection closes, or a
-/// recoverable `warning`. The text may contain HTML. A server failure also names its typed cause and
-/// the diagnostic ID that its log entry carries, as `ApiError` does.
+/// A problem that the client shows: an `error` message, after which the connection closes, a
+/// recoverable `warning`, a lobby statistics failure, or the body of a JSON HTTP error response. The
+/// text may contain HTML. A server failure also names its typed cause and the diagnostic ID that its
+/// log entry carries.
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct Notice {

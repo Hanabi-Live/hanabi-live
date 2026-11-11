@@ -4,10 +4,10 @@ import {
   NO_ACCOUNT_CODE,
   OUTDATED_CLIENT_CODE,
   VERSION,
-  apiErrorSchema,
   errorDetails,
   httpError,
   loginRequestSchema,
+  noticeSchema,
   setTabAccountFromLogin,
 } from "@hanabi-live/data";
 import { assertDefined } from "complete-common";
@@ -219,7 +219,7 @@ async function requestLogin(
 /** The `code` of an HTTP error response, if it has one. */
 async function errorCode(response: Response): Promise<string | undefined> {
   try {
-    const parsed = apiErrorSchema.safeParse(await response.clone().json());
+    const parsed = noticeSchema.safeParse(await response.clone().json());
     return parsed.success ? parsed.data.code : undefined;
   } catch {
     return undefined;
