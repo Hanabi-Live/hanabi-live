@@ -98,6 +98,13 @@ confined to test accounts and their own tables.
 When driving a browser, mute its audio (for Chromium, `--mute-audio`) unless you
 are debugging sound.
 
+When you port a legacy screen or element to React, it must still look almost the
+same. Before the change, take detailed screenshots of every state that the port
+touches, at every width and in both themes. Take them again after the change,
+and compare each pair. Fix every difference that is more than a pixel or two.
+Also run `--compare <git ref>` against the commit before the port. Report the
+result in text.
+
 Before you commit a change that adds or modifies a UI element, take a screenshot
 of each new or changed element with `bun run ui-screenshots` and show it to the
 user, so that they can decide on it. Show only these screenshots. Do not show
