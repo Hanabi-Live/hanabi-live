@@ -1,13 +1,17 @@
 import { useEffect, useRef } from "react";
 import * as tooltips from "../../tooltips.ts";
 
-/** Explains the two efficiency numbers, in the words of the classic screen's tooltip. */
+/**
+ * Explains the two efficiency numbers, in the words of the classic screen's tooltip. The text wraps
+ * in a narrow box: the icon is near the left edge of the window, and a wide tooltip would not fit
+ * centered over it.
+ */
 const EFFICIENCY_HELP = `
-  <span class="small-tooltip-text">
-    The first number is the minimum amount of efficiency needed from<br />
-    this turn onward in order to win (i.e. future required efficiency).<br />
-    The second number shows the minimum possible efficiency needed<br />
-    to win with the current number of players and the current variant.
+  <span class="small-tooltip-text tw:max-w-[19em] tw:narrow-980:max-w-[15em]">
+    The first number is the minimum amount of efficiency needed from this turn
+    onward in order to win (i.e. future required efficiency).<br />
+    The second number shows the minimum possible efficiency needed to win with
+    the current number of players and the current variant.
   </span>
 `;
 
