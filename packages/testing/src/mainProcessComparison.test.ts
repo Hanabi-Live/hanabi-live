@@ -273,7 +273,7 @@ databaseDescribe("normal-server protocol workload", () => {
         gameID: number,
       ) {
         peer.send("replayCreate", {
-          source: "id",
+          type: "id",
           visibility: "solo",
           gameID,
         });

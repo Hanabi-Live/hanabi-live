@@ -150,14 +150,14 @@ function submit() {
 
   if (source === "id" && gameID !== undefined) {
     globals.conn!.send("replayCreate", {
-      source,
+      type: source,
       gameID,
       visibility,
       spoilerFree,
     });
   } else if (source === "json" && gameJSON !== undefined) {
     globals.conn!.send("replayCreate", {
-      source,
+      type: source,
       gameJSON,
       visibility,
       spoilerFree,

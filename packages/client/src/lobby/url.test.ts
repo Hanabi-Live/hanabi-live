@@ -76,7 +76,7 @@ describe("replay URL loading", () => {
       JSON.parse(expand(`${payload}${suffix}`)!),
     );
     expect(send).toHaveBeenCalledWith("replayCreate", {
-      source: "json",
+      type: "json",
       gameJSON: { ...gameJSON, seed },
       visibility,
     });

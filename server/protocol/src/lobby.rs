@@ -25,7 +25,7 @@ pub struct Restart {
 
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
 #[serde(
-    tag = "state",
+    tag = "type",
     rename_all = "camelCase",
     rename_all_fields = "camelCase",
     deny_unknown_fields
@@ -128,9 +128,9 @@ pub struct SoundLobby {
 }
 
 /// A sound played outside of a game. The server plays "shutdown" to everyone when it is going down,
-/// and "someone-joined" to the players at a pre-game table when another player joins it.
+/// and "someoneJoined" to the players at a pre-game table when another player joins it.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
-#[serde(rename_all = "kebab-case")]
+#[serde(rename_all = "camelCase")]
 pub enum LobbySound {
     Shutdown,
     SomeoneJoined,

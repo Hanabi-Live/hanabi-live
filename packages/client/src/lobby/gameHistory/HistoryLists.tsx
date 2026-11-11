@@ -349,7 +349,7 @@ function ReplayButton({
       id={`replay-${gameID}`}
       onClick={() => {
         globals.conn!.send("replayCreate", {
-          source: "id",
+          type: "id",
           gameID,
           visibility,
         });

@@ -421,7 +421,7 @@ mod tests {
         let (session, _) = Session::new(UserId(1), "Alice".into(), 1);
         let text = format!(
             "replayCreate {}",
-            serde_json::json!({"source":"json","visibility":"solo","gameJSON":{
+            serde_json::json!({"type":"json","visibility":"solo","gameJSON":{
                 "seed":"p2v0s1","notes":[["n".repeat(65536)],[]]
             }})
         );

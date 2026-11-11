@@ -37,14 +37,14 @@ export const lobbyCommands = new ServerHandlers();
 lobbyCommands.set("lobbyStatus", (data) => {
   const total = $("#nav-buttons-history-total-games");
   total.off("click.lobbyRetry").removeAttr("title");
-  if (data.state === "ready") {
+  if (data.type === "ready") {
     globals.totalGames = data.totalGames;
     $("#nav-buttons-history-total-games").text(data.totalGames.toString());
   } else {
     $("#nav-buttons-history-total-games").text(
-      data.state === "error" ? "unavailable" : "loading...",
+      data.type === "error" ? "unavailable" : "loading...",
     );
-    if (data.state === "error") {
+    if (data.type === "error") {
       total
         .text("unavailable (click to retry)")
         .attr("title", "Loading lobby statistics failed.")

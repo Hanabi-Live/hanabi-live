@@ -60,7 +60,7 @@ mod tests {
                 "gameHistoryOtherScores" => json!({"seed":"p2v0s1","offset":0,"amount":10}),
                 "chat" => json!({"text":"hello"}),
                 "chatPM" => json!({"text":"hello","recipient":"Alice"}),
-                "replayCreate" => json!({"source":"id","visibility":"shared","gameID":1}),
+                "replayCreate" => json!({"type":"id","visibility":"shared","gameID":1}),
                 "playerAction" => {
                     json!({"tableID":1,"action":{"type":"rankClue","target":0,"rank":1}})
                 }
@@ -117,7 +117,7 @@ mod tests {
         let note = "n".repeat(65536);
         let input = format!(
             "replayCreate {}",
-            json!({"source":"json","visibility":"solo","gameJSON":{
+            json!({"type":"json","visibility":"solo","gameJSON":{
                 "seed":"p2v0s1","notes":[[note],[]]
             }})
         );

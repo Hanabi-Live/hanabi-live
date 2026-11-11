@@ -316,7 +316,7 @@ async fn uptime_replies_only_to_requester_in_lobby_and_table_postgres() {
     receive(&mut bob, "welcome").await;
     for socket in [&mut alice, &mut bob] {
         receive(socket, "chatList").await;
-        assert_eq!(receive(socket, "lobbyStatus").await["state"], "ready");
+        assert_eq!(receive(socket, "lobbyStatus").await["type"], "ready");
     }
     alice
         .send(WireMessage::Text(
@@ -469,7 +469,7 @@ async fn native_browser_login_ws_bootstrap_and_command_routing_postgres() {
     let welcome = receive(&mut alice, "welcome").await;
     assert_eq!(welcome["username"], "Alicè");
     assert!(receive(&mut alice, "chatList").await["messages"].is_array());
-    assert_eq!(receive(&mut alice, "lobbyStatus").await["state"], "ready");
+    assert_eq!(receive(&mut alice, "lobbyStatus").await["type"], "ready");
     alice
         .send(WireMessage::Text(
             "gameHistory {\"offset\":0,\"amount\":10}".into(),
@@ -486,7 +486,7 @@ async fn native_browser_login_ws_bootstrap_and_command_routing_postgres() {
     let bob_welcome = receive(&mut bob, "welcome").await;
     let _ = receive(&mut bob, "user").await;
     receive(&mut bob, "chatList").await;
-    assert_eq!(receive(&mut bob, "lobbyStatus").await["state"], "ready");
+    assert_eq!(receive(&mut bob, "lobbyStatus").await["type"], "ready");
     alice
         .send(WireMessage::Text(
             "setting {\"settings\":{\"hGroupConventions\":true}}".into(),
@@ -665,10 +665,10 @@ async fn websocket_defers_lobby_reads_without_an_opt_in_postgres() {
         .expect("Archive reads blocked the welcome");
     assert!(welcome.get("totalGames").is_none());
     let loading = receive(&mut socket, "lobbyStatus").await;
-    assert_eq!(loading["state"], "loading");
+    assert_eq!(loading["type"], "loading");
     lock.rollback().await.unwrap();
     let ready = receive(&mut socket, "lobbyStatus").await;
-    assert_eq!(ready["state"], "ready");
+    assert_eq!(ready["type"], "ready");
     assert_eq!(ready["totalGames"], 0);
     socket.close(None).await.unwrap();
     fixture.close().await;
@@ -709,7 +709,7 @@ async fn game_archive_locks_do_not_block_authentication_and_deferred_errors_are_
     .unwrap();
     assert_eq!(
         prepared.initial,
-        vec![test_frame("lobbyStatus", json!({"state":"loading"}))]
+        vec![test_frame("lobbyStatus", json!({"type":"loading"}))]
     );
     let slots = fixture
         .app
@@ -731,7 +731,7 @@ async fn game_archive_locks_do_not_block_authentication_and_deferred_errors_are_
         .strip_prefix("lobbyStatus ")
         .unwrap();
     let status: Value = serde_json::from_str(body).unwrap();
-    assert_eq!(status["state"], "error");
+    assert_eq!(status["type"], "error");
     assert!(status.get("totalGames").is_none());
     assert!(
         status["message"]

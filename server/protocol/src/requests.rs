@@ -237,7 +237,7 @@ pub enum ReplayVisibility {
 /// A request to watch a finished game: one from the database, or one imported in the replay format.
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
 #[serde(
-    tag = "source",
+    tag = "type",
     rename_all = "camelCase",
     rename_all_fields = "camelCase",
     deny_unknown_fields

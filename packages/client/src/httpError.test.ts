@@ -5,7 +5,7 @@ describe("httpError", () => {
   test("shows the message from a server failure's JSON body", async () => {
     const response = Response.json(
       {
-        error:
+        message:
           "Account test-cookie failed: The database is unavailable. [Reference: abc123]",
         code: "database_unavailable",
         diagnosticID: "abc123",

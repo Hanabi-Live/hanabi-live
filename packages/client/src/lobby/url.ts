@@ -187,7 +187,7 @@ function gotoPath(data: ServerCommandData["welcome"]): boolean {
           : "solo";
         globals.conn!.send("replayCreate", {
           gameID,
-          source: "id",
+          type: "id",
           visibility,
           // A link to a shared replay should join the one that people are already watching.
           joinExisting: true,
@@ -229,7 +229,7 @@ function gotoPath(data: ServerCommandData["welcome"]): boolean {
       );
 
       globals.conn!.send("replayCreate", {
-        source,
+        type: source,
         gameJSON,
         visibility,
       });

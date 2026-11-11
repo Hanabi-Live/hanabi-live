@@ -182,7 +182,7 @@ impl Harness {
             .context("Missing table identity")
     }
     async fn replay(&mut self, index: usize) -> Result<TableId> {
-        self.send(index,"replayCreate",json!({"source":"json","visibility":"shared","gameJSON":{"playerNames":["Alice","Bob"],"seed":"p2v0s1"}})).await?;
+        self.send(index,"replayCreate",json!({"type":"json","visibility":"shared","gameJSON":{"playerNames":["Alice","Bob"],"seed":"p2v0s1"}})).await?;
         self.receive(index, "tableStarted").await?["tableID"]
             .as_u64()
             .map(TableId)
@@ -969,7 +969,7 @@ async fn shared_replay_links_join_an_existing_replay_of_the_same_game() -> Resul
             .execute(&h.store.primary)
             .await?;
         let request = |visibility: &str, join_existing: bool| {
-            json!({"source":"id","gameID":game,"visibility":visibility,"joinExisting":join_existing})
+            json!({"type":"id","gameID":game,"visibility":visibility,"joinExisting":join_existing})
         };
         let open = async |h: &mut Harness, index: usize, request: Value| -> Result<Value> {
             h.send(index, "replayCreate", request).await?;
@@ -1008,7 +1008,7 @@ async fn spoiler_free_reviews_are_shared_replays_that_tell_everyone() -> Result<
     };
     let outcome = async {
         let request = |visibility: &str| {
-            json!({"source":"json","visibility":visibility,"spoilerFree":true,
+            json!({"type":"json","visibility":visibility,"spoilerFree":true,
                 "gameJSON":{"playerNames":["Alice","Bob"],"seed":"p2v0s1"}})
         };
         ensure!(
@@ -1045,7 +1045,7 @@ async fn shared_replays_of_older_games_start_when_their_table_is_created() -> Re
         h.send(
             0,
             "replayCreate",
-            json!({"source":"json","visibility":"shared","gameJSON":{
+            json!({"type":"json","visibility":"shared","gameJSON":{
                 "playerNames":["Alice","Bob"],"seed":"p2v0s1",
                 "actions":[{"type":"gameOver","endCondition":4,"playerIndex":0}]}}),
         )
@@ -1137,7 +1137,7 @@ async fn joining_a_table_plays_a_sound_for_its_other_players_once_per_burst() ->
             sounds.push(heard);
         }
         ensure!(
-            sounds == vec![vec![(UserId(1), json!({"file":"someone-joined"}))], vec![]],
+            sounds == vec![vec![(UserId(1), json!({"file":"someoneJoined"}))], vec![]],
             "Unexpected join sounds: {sounds:?}"
         );
         Ok(())
@@ -3269,7 +3269,7 @@ async fn saved_actions_store_null_for_a_missing_target_or_value() -> Result<()> 
         h.send(
             0,
             "replayCreate",
-            json!({"source":"id","visibility":"solo","gameID":game}),
+            json!({"type":"id","visibility":"solo","gameID":game}),
         )
         .await?;
         let replay = h.receive(0, "tableStarted").await?["tableID"].clone();

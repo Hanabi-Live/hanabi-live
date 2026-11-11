@@ -20,7 +20,7 @@
     "direction": "server",
     "command": "lobbyStatus",
     "input": {
-      "state": "loading"
+      "type": "loading"
     },
     "valid": true
   },
@@ -29,7 +29,7 @@
     "direction": "server",
     "command": "lobbyStatus",
     "input": {
-      "state": "error",
+      "type": "error",
       "message": "Loading lobby statistics failed",
       "code": "lobby_read",
       "diagnosticID": "1"
@@ -41,7 +41,7 @@
     "direction": "server",
     "command": "lobbyStatus",
     "input": {
-      "state": "error"
+      "type": "error"
     },
     "valid": false
   },
@@ -50,7 +50,7 @@
     "direction": "server",
     "command": "lobbyStatus",
     "input": {
-      "state": "ready",
+      "type": "ready",
       "totalGames": 0
     },
     "valid": true
@@ -60,7 +60,7 @@
     "direction": "server",
     "command": "lobbyStatus",
     "input": {
-      "state": "ready",
+      "type": "ready",
       "totalGames": null
     },
     "valid": false
@@ -478,7 +478,7 @@
     "direction": "client",
     "command": "replayCreate",
     "input": {
-      "source": "json",
+      "type": "json",
       "visibility": "solo",
       "gameJSON": {
         "gameID": 7,
@@ -490,7 +490,7 @@
       }
     },
     "normalized": {
-      "source": "json",
+      "type": "json",
       "visibility": "solo",
       "gameJSON": {
         "gameID": 7,
@@ -509,7 +509,7 @@
     "direction": "client",
     "command": "replayCreate",
     "input": {
-      "source": "json",
+      "type": "json",
       "visibility": "shared",
       "joinExisting": true,
       "gameJSON": {
@@ -523,7 +523,7 @@
     "direction": "client",
     "command": "replayCreate",
     "input": {
-      "source": "json",
+      "type": "json",
       "visibility": "solo",
       "gameJSON": {
         "seed": "p2v0s1",
@@ -537,7 +537,7 @@
     "direction": "client",
     "command": "replayCreate",
     "input": {
-      "source": "json",
+      "type": "json",
       "visibility": "solo",
       "gameJSON": {
         "seed": "p2v0s1",
@@ -557,7 +557,7 @@
     "direction": "client",
     "command": "replayCreate",
     "input": {
-      "source": "json",
+      "type": "json",
       "visibility": "solo",
       "gameJSON": {
         "seed": "p2v0s1",
@@ -579,7 +579,7 @@
       }
     },
     "normalized": {
-      "source": "json",
+      "type": "json",
       "visibility": "solo",
       "spoilerFree": false,
       "gameJSON": {
@@ -608,7 +608,7 @@
     "direction": "client",
     "command": "replayCreate",
     "input": {
-      "source": "json",
+      "type": "json",
       "visibility": "solo",
       "gameJSON": {
         "seed": "p2v0s1",
@@ -628,7 +628,7 @@
     "direction": "client",
     "command": "replayCreate",
     "input": {
-      "source": "json",
+      "type": "json",
       "visibility": "solo",
       "gameJSON": {
         "seed": "p2v0s1",

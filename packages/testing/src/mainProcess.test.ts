@@ -684,11 +684,11 @@ databaseDescribe("compiled application entry point (rust)", () => {
           "replayCreate",
           source === "id"
             ? {
-                source,
+                type: source,
                 visibility: "solo",
                 gameID: finished.gameID,
               }
-            : { source, visibility: "shared", gameJSON: replayJSON },
+            : { type: source, visibility: "shared", gameJSON: replayJSON },
         );
         const created = await owner.receive(
           "tableStarted",

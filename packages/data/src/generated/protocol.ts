@@ -520,8 +520,8 @@ export const initSchema = z
     tableID: tableIdSchema,
   })
   .readonly();
-export const lobbyStatusSchema = z.discriminatedUnion("state", [
-  z.strictObject({ state: z.literal("loading") }).readonly(),
+export const lobbyStatusSchema = z.discriminatedUnion("type", [
+  z.strictObject({ type: z.literal("loading") }).readonly(),
   z
     .strictObject({
       /**
@@ -530,13 +530,13 @@ export const lobbyStatusSchema = z.discriminatedUnion("state", [
       code: z.string().min(1).optional(),
       diagnosticID: z.string().min(1).optional(),
       message: z.string().min(1),
-      state: z.literal("error"),
+      type: z.literal("error"),
     })
     .readonly(),
   z
     .strictObject({
-      state: z.literal("ready"),
       totalGames: z.number().int().min(0).max(9_007_199_254_740_991),
+      type: z.literal("ready"),
     })
     .readonly(),
 ]);
@@ -973,7 +973,7 @@ const replayVisibilitySchema = z.enum(["solo", "shared"]);
 /**
  * A request to watch a finished game: one from the database, or one imported in the replay format.
  */
-export const replayCreateRequestSchema = z.discriminatedUnion("source", [
+export const replayCreateRequestSchema = z.discriminatedUnion("type", [
   z
     .strictObject({
       gameID: gameIdSchema,
@@ -986,12 +986,12 @@ export const replayCreateRequestSchema = z.discriminatedUnion("source", [
        * The seat to shadow, if any.
        */
       shadowingPlayerIndex: playerIndexSchema.optional(),
-      source: z.literal("id"),
       /**
        * For a shared replay, hide what happens later in the game: the turn slider, jumping to
        * the end, and future strikes.
        */
       spoilerFree: z.boolean().default(false),
+      type: z.literal("id"),
       visibility: replayVisibilitySchema,
     })
     .readonly(),
@@ -1002,11 +1002,11 @@ export const replayCreateRequestSchema = z.discriminatedUnion("source", [
        * The seat to shadow, if any.
        */
       shadowingPlayerIndex: playerIndexSchema.optional(),
-      source: z.literal("json"),
       /**
        * For a shared replay, hide what happens later in the game.
        */
       spoilerFree: z.boolean().default(false),
+      type: z.literal("json"),
       visibility: replayVisibilitySchema,
     })
     .readonly(),
@@ -1185,9 +1185,9 @@ export const sharedReplayActionSchema = z
 
 /**
  * A sound played outside of a game. The server plays "shutdown" to everyone when it is going down,
- * and "someone-joined" to the players at a pre-game table when another player joins it.
+ * and "someoneJoined" to the players at a pre-game table when another player joins it.
  */
-const lobbySoundSchema = z.enum(["shutdown", "someone-joined"]);
+const lobbySoundSchema = z.enum(["shutdown", "someoneJoined"]);
 export const soundLobbySchema = z
   .strictObject({ file: lobbySoundSchema })
   .readonly();

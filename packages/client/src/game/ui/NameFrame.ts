@@ -251,7 +251,7 @@ export class NameFrame extends Konva.Group {
         setTimeout(() => {
           backToLobby();
           globals.lobby.conn!.send("replayCreate", {
-            source: "id",
+            type: "id",
             gameID,
             visibility:
               globals.state.replay.shared === undefined ? "solo" : "shared",
