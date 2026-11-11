@@ -1109,7 +1109,12 @@ export const settingsSchema = z
     createTableOneExtraCard: z.boolean().default(false),
     createTableOneLessCard: z.boolean().default(false),
     createTableSpeedrun: z.boolean().default(false),
-    createTableTimeBaseMinutes: z.number().min(0).max(10_080).default(2),
+    createTableTimeBaseSeconds: z
+      .number()
+      .int()
+      .min(1)
+      .max(604_800)
+      .default(120),
     createTableTimePerTurnSeconds: z
       .number()
       .int()

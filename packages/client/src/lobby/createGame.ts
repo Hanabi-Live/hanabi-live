@@ -83,7 +83,7 @@ type FormValues = Pick<
   Settings,
   | (typeof FORM_CHECKBOXES)[number]
   | "createTableMaxPlayers"
-  | "createTableTimeBaseMinutes"
+  | "createTableTimeBaseSeconds"
   | "createTableTimePerTurnSeconds"
   | "createTableVariant"
 >;
@@ -184,7 +184,7 @@ export function init(): void {
     getVariantName();
   });
   $("#createTableTimeBaseMinutes").on("change", () => {
-    getTimeBaseMinutes();
+    getTimeBaseSeconds();
   });
   $("#createTableTimePerTurnSeconds").on("change", () => {
     getTimePerTurnSeconds();
@@ -305,9 +305,7 @@ function submit() {
   }
 
   const timed = getCheckbox("createTableTimed");
-  const timeBaseMinutes = timed ? getTimeBaseMinutes() : undefined;
-  const timeBaseSeconds =
-    timeBaseMinutes === undefined ? 0 : toSeconds(timeBaseMinutes);
+  const timeBaseSeconds = (timed ? getTimeBaseSeconds() : undefined) ?? 0;
   const timePerTurnSeconds = (timed ? getTimePerTurnSeconds() : undefined) ?? 0;
 
   // Seeds and replays are not saved, so that a new game does not accidentally repeat a deal.
@@ -539,14 +537,15 @@ function getCheckbox(setting: keyof Settings): boolean {
   return value;
 }
 
-/** Returns the base time and remembers it, if it is valid. */
-function getTimeBaseMinutes(): number | undefined {
+/** Returns the base time in seconds and remembers it, if it is valid. The form asks for minutes. */
+function getTimeBaseSeconds(): number | undefined {
   const minutes = parseFloatSafe(getText("#createTableTimeBaseMinutes"));
   if (minutes === undefined || getTimeBaseError() !== undefined) {
     return undefined;
   }
-  checkSettingChanged("createTableTimeBaseMinutes", minutes);
-  return minutes;
+  const seconds = toSeconds(minutes);
+  checkSettingChanged("createTableTimeBaseSeconds", seconds);
+  return seconds;
 }
 
 /** Returns the time per turn and remembers it, if it is valid. */
@@ -598,9 +597,9 @@ function getFormValues(options: GameOptions, maxPlayers: number): FormValues {
   return {
     createTableVariant: options.variantName,
     createTableTimed: options.timed,
-    createTableTimeBaseMinutes: options.timed
-      ? options.timeBaseSeconds / SECONDS_PER_MINUTE
-      : globals.settings.createTableTimeBaseMinutes,
+    createTableTimeBaseSeconds: options.timed
+      ? options.timeBaseSeconds
+      : globals.settings.createTableTimeBaseSeconds,
     createTableTimePerTurnSeconds: options.timed
       ? options.timePerTurnSeconds
       : globals.settings.createTableTimePerTurnSeconds,
@@ -673,7 +672,9 @@ export function ready(): void {
     $(`#${setting}`).prop("checked", formValues[setting]);
   }
   updateCheckboxRows();
-  $("#createTableTimeBaseMinutes").val(formValues.createTableTimeBaseMinutes);
+  $("#createTableTimeBaseMinutes").val(
+    formValues.createTableTimeBaseSeconds / SECONDS_PER_MINUTE,
+  );
   $("#createTableTimePerTurnSeconds").val(
     formValues.createTableTimePerTurnSeconds,
   );

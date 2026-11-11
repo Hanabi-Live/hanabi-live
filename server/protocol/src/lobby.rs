@@ -168,8 +168,8 @@ pub struct Settings {
     #[schemars(length(min = 1))]
     pub create_table_variant: String,
     pub create_table_timed: bool,
-    #[schemars(range(min = 0, max = MAX_TIME_BASE_SECONDS / SECONDS_PER_MINUTE))]
-    pub create_table_time_base_minutes: f64,
+    #[schemars(range(min = 1, max = MAX_TIME_BASE_SECONDS))]
+    pub create_table_time_base_seconds: i64,
     #[schemars(range(min = 0, max = MAX_TIME_PER_TURN_SECONDS))]
     pub create_table_time_per_turn_seconds: i64,
     pub create_table_speedrun: bool,
@@ -204,7 +204,7 @@ impl Default for Settings {
             h_group_level: None,
             create_table_variant: DEFAULT_VARIANT_NAME.into(),
             create_table_timed: false,
-            create_table_time_base_minutes: DEFAULT_TIME_BASE_MINUTES,
+            create_table_time_base_seconds: DEFAULT_TIME_BASE_SECONDS,
             create_table_time_per_turn_seconds: DEFAULT_TIME_PER_TURN_SECONDS,
             create_table_speedrun: false,
             create_table_deck_plays: false,

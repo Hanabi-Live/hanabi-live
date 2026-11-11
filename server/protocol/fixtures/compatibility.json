@@ -414,7 +414,7 @@
         "hGroupConventions": false,
         "createTableVariant": "No Variant",
         "createTableTimed": false,
-        "createTableTimeBaseMinutes": 2.0,
+        "createTableTimeBaseSeconds": 120,
         "createTableTimePerTurnSeconds": 20,
         "createTableSpeedrun": false,
         "createTableDeckPlays": false,

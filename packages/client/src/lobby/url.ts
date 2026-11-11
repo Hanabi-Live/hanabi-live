@@ -1,9 +1,5 @@
 import type { ServerCommandData } from "@hanabi-live/data";
-import {
-  defaultSettings,
-  SECONDS_PER_MINUTE,
-  tableIdSchema,
-} from "@hanabi-live/data";
+import { defaultSettings, tableIdSchema } from "@hanabi-live/data";
 import type { PlayerIndex } from "@hanabi-live/game";
 import { DEFAULT_VARIANT_NAME, isValidPlayerIndex } from "@hanabi-live/game";
 import { parseIntSafe } from "complete-common";
@@ -69,9 +65,7 @@ function gotoPath(data: ServerCommandData["welcome"]): boolean {
     const timed = urlParams.get("timed") === "true";
     const timeBaseSecondsString =
       urlParams.get("timeBaseSeconds")
-      ?? (
-        defaultSettings.createTableTimeBaseMinutes * SECONDS_PER_MINUTE
-      ).toString();
+      ?? defaultSettings.createTableTimeBaseSeconds.toString();
     const timeBaseSeconds = parseIntSafe(timeBaseSecondsString);
     const timePerTurnSecondsString =
       urlParams.get("timePerTurnSeconds")

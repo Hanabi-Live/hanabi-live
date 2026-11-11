@@ -200,7 +200,7 @@ async fn lobby_relationships_atomic_settings_and_parameterization_postgres() {
             .is_err()
     );
     assert!(
-        set_setting(&db.pool, UserId(a), "createTableTimeBaseMinutes", &json!(0))
+        set_setting(&db.pool, UserId(a), "createTableTimeBaseSeconds", &json!(0))
             .await
             .is_err()
     );

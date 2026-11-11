@@ -92,9 +92,5 @@ pub fn validate_setting(name: &str, value: &Value) -> crate::errors::CommandResu
         "The setting of \"{}\" is not an allowed value.",
         crate::accounts::escape_html(name)
     );
-    ensure_or_reject!(
-        name != "createTableTimeBaseMinutes" || value.as_f64().is_some_and(|minutes| minutes > 0.0),
-        "The setting of \"{name}\" must be positive."
-    );
     Ok(())
 }

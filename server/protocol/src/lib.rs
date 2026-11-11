@@ -111,8 +111,8 @@ pub const MAX_VOLUME: u8 = 100;
 pub const MAX_H_GROUP_LEVEL: u8 = 25;
 /// The volume setting of a new user.
 pub const DEFAULT_VOLUME: u8 = MAX_VOLUME / 2;
-/// The starting clock that a new user's timed tables have, in minutes.
-pub const DEFAULT_TIME_BASE_MINUTES: f64 = 2.0;
+/// The starting clock that a new user's timed tables have, in seconds.
+pub const DEFAULT_TIME_BASE_SECONDS: i64 = 2 * SECONDS_PER_MINUTE;
 /// The time that a new user's timed tables add each turn, in seconds.
 pub const DEFAULT_TIME_PER_TURN_SECONDS: i64 = 20;
 /// The rows on a page of a public listing when the request does not name a size.
