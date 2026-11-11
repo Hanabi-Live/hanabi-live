@@ -17,7 +17,7 @@ import * as restart from "./restart";
 import { setGlobalEmpathy } from "./setGlobalEmpathy";
 import * as timer from "./timer";
 import type { UIGlobals } from "./UIGlobals";
-import { globals } from "./UIGlobals";
+import { globals, resetGlobals } from "./UIGlobals";
 
 export class HanabiUI {
   globals: UIGlobals;
@@ -32,9 +32,8 @@ export class HanabiUI {
   private liveResizeScale = 1;
 
   constructor(lobby: LobbyGlobals, game: GameExports, justStarted: boolean) {
-    // Since the "HanabiUI" object is being reinstantiated, we need to explicitly reinitialize all
-    // globals variables (or else they will retain their old values).
-    globals.reset();
+    // Each game starts with new globals.
+    resetGlobals();
 
     // Expose the globals to functions in the "game" directory.
     this.globals = globals;

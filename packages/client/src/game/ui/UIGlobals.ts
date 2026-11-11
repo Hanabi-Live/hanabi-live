@@ -24,8 +24,8 @@ import type { StateObserver } from "./reactive/StateObserver";
 Konva.legacyTextRendering = true;
 
 /**
- * This object contains global variables for the game UI. Every class variable must also be reset in
- * the "reset()" function.
+ * This object contains global variables for the game UI. Each game gets a new instance from
+ * "resetGlobals()".
  */
 export class UIGlobals {
   // Objects sent upon UI initialization.
@@ -44,10 +44,7 @@ export class UIGlobals {
 
   // UI elements
   imageLoader: Loader | undefined = undefined;
-  stage: Konva.Stage = new Konva.Stage({
-    container: "game",
-    listening: false,
-  });
+  stage: Konva.Stage = newStage();
 
   layers: Layers = new Layers();
   elements: Elements = new Elements();
@@ -135,65 +132,34 @@ export class UIGlobals {
   get options(): Options {
     return this.state.metadata.options;
   }
-
-  /**
-   * We provide a method to reset every class variable to its initial value. This is called when the
-   * user goes into a new game. We cannot just create a new instantiation of the class, because then
-   * the references in the other files would point to the outdated version.
-   */
-  reset(): void {
-    this.lobby = new LobbyGlobals();
-    this.game = undefined;
-    this.loading = true;
-    this.variant = getDefaultVariant();
-    this.deck = [];
-    this.stackBases = [];
-    this.imageLoader = undefined;
-    this.stage = new Konva.Stage({
-      container: "game",
-      listening: true,
-    });
-    this.stage.on("mouseenter mouseleave", () => {
-      cursor.set("default");
-    });
-    this.layers = new Layers();
-    this.elements = new Elements();
-    this.activeHover = undefined;
-    this.cardImages = new Map<string, HTMLCanvasElement>();
-    this.scaledCardImages = new Map<string, HTMLCanvasElement[]>();
-    this.replayLog = [];
-    this.finalReplayPos = 0;
-    this.finalReplayTurn = 0;
-    this.editingNote = undefined;
-    this.actionOccurred = false;
-    this.lastNote = "";
-    this.timerID = undefined;
-    this.playerTimes = [];
-    this.clockPlayerIndex = undefined;
-    this.timeTaken = 0;
-    this.startingTurnTime = 0;
-    this.lastTimerUpdateTimeMS = 0;
-    this.animateFast = true;
-    this.UIClickTime = 0;
-    this.restartPending = false;
-    this.terminationVotes = undefined;
-    this.globalEmpathyEnabled = false;
-    this.isResizing = false;
-    this.playStartSound = false;
-
-    this.stateObserver?.unregisterObservers();
-    this.stateObserver = undefined;
-
-    for (const unsubscribeFunc of this.cardSubscriptions) {
-      unsubscribeFunc();
-    }
-
-    this.cardSubscriptions = [];
-    this.store = undefined;
-  }
 }
 
-export const globals = new UIGlobals();
+function newStage(): Konva.Stage {
+  const stage = new Konva.Stage({
+    container: "game",
+    listening: true,
+  });
+  stage.on("mouseenter mouseleave", () => {
+    cursor.set("default");
+  });
+
+  return stage;
+}
+
+// Importers read this live binding, so they see the new object after "resetGlobals()".
+// eslint-disable-next-line import-x/no-mutable-exports -- "resetGlobals()" replaces it for each game.
+export let globals = new UIGlobals();
+
+/** Releases the previous game's subscriptions and replaces the globals for a new game. */
+export function resetGlobals(): void {
+  globals.stateObserver?.unregisterObservers();
+  for (const unsubscribeFunc of globals.cardSubscriptions) {
+    unsubscribeFunc();
+  }
+
+  globals = new UIGlobals();
+  window.globals = globals; // eslint-disable-line unicorn/prefer-global-this
+}
 
 // Also make the globals available to the window (so that we can access them from the JavaScript
 // console for debugging purposes).
