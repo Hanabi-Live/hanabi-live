@@ -13,7 +13,10 @@ vi.mock("./HanabiCardTouchActions.ts", () => ({
   HanabiCardTap: vi.fn(),
 }));
 vi.mock("./arrows.ts", () => ({}));
-vi.mock("./clueLog/mountClueLog.tsx", () => ({ showClueMatches: vi.fn() }));
+vi.mock("./clueLog/mountClueLog.tsx", () => ({
+  CLUE_LOG_Z_INDEX: 1,
+  showClueMatches: vi.fn(),
+}));
 vi.mock("./cursor.ts", () => ({ set: vi.fn() }));
 vi.mock("./konvaTooltips.ts", () => ({
   setActiveHover: vi.fn(),
@@ -120,18 +123,10 @@ function pressCard() {
     children: [],
     moveToTop: vi.fn(),
   };
-  let layerOrder = 2;
+  const cardCanvas = { style: { zIndex: "" } };
   const cardLayer = {
     batchDraw: vi.fn(),
-    zIndex: (value?: number) => {
-      if (value !== undefined) {
-        layerOrder = value;
-      }
-      return layerOrder;
-    },
-    moveToTop: () => {
-      layerOrder = 4;
-    },
+    getNativeCanvasElement: () => cardCanvas,
   };
   const card = {
     tooltipName: "card-0",
@@ -171,7 +166,7 @@ function pressCard() {
   vi.unstubAllGlobals();
   return {
     getRotation: () => rotation,
-    getLayerOrder: () => layerOrder,
+    getCardCanvasOrder: () => cardCanvas.style.zIndex,
     position,
     release: () => window.dispatchEvent(new Event("pointerup")),
   };
@@ -198,14 +193,14 @@ describe("hypothetical card rotation in Keldon mode", () => {
 });
 
 describe("dragging a card", () => {
-  test("draws the cards above the other layers until the card is released", () => {
-    const { getLayerOrder, release } = pressCard();
-    expect(getLayerOrder()).toBe(4);
+  test("draws the cards above the clue log until the card is released", () => {
+    const { getCardCanvasOrder, release } = pressCard();
+    expect(getCardCanvasOrder()).toBe("2");
     expect(tooltips.close).toHaveBeenCalledWith("#tooltip-card-0");
 
     release();
 
-    expect(getLayerOrder()).toBe(2);
+    expect(getCardCanvasOrder()).toBe("");
   });
 });
 

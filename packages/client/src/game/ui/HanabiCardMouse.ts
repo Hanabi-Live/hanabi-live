@@ -8,7 +8,7 @@ import { HanabiCardDblTap, HanabiCardTap } from "./HanabiCardTouchActions.ts";
 import type { LayoutChild } from "./LayoutChild.ts";
 import { globals } from "./UiGlobals.ts";
 import * as arrows from "./arrows.ts";
-import { showClueMatches } from "./clueLog/mountClueLog.tsx";
+import { CLUE_LOG_Z_INDEX, showClueMatches } from "./clueLog/mountClueLog.tsx";
 import {
   DOUBLE_TAP_DELAY_MILLISECONDS,
   LEFT_MOUSE_BUTTON_HELD,
@@ -393,17 +393,17 @@ function dragStart(card: HanabiCard) {
   hand.moveToTop();
 }
 
-// Draw the cards above the other layers (such as the stats and the arrows) for the duration of the
-// drag. The card is not always under the pointer when it is released (see the rotation above), so
-// restore the layer order on any release.
+// Draw the cards above everything else for the duration of the drag: the other layers (such as the
+// stats and the arrows) and the clue log, which is HTML on top of the stage. The card is not always
+// under the pointer when it is released (see the rotation above), so restore the order on any
+// release.
 function raiseCardLayer() {
-  const layer = globals.layers.card;
-  const zIndex = layer.zIndex();
-  layer.moveToTop();
+  const canvas = globals.layers.card.getNativeCanvasElement();
+  canvas.style.zIndex = String(CLUE_LOG_Z_INDEX + 1);
   globalThis.addEventListener(
     "pointerup",
     () => {
-      layer.zIndex(zIndex);
+      canvas.style.zIndex = "";
     },
     { capture: true, once: true },
   );

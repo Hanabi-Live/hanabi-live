@@ -8,6 +8,9 @@ import { Provider } from "react-redux";
 import { globals } from "../UiGlobals.ts";
 import { ClueLog } from "./ClueLog.tsx";
 
+/** The clue log sits above the canvases of the stage, which have no z-index. */
+export const CLUE_LOG_Z_INDEX = 1;
+
 let rootElement: HTMLDivElement | undefined;
 let root: Root | undefined;
 let hoveredCardOrder: CardOrder | undefined;
@@ -26,7 +29,7 @@ export function drawClueLog(): void {
     element.style.position = "absolute";
     element.style.top = "0";
     element.style.left = "0";
-    element.style.zIndex = "1";
+    element.style.zIndex = String(CLUE_LOG_Z_INDEX);
     content.append(element);
     rootElement = element;
     root = createRoot(element);

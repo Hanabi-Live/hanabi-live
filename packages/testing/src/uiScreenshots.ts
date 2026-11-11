@@ -235,6 +235,30 @@ function getCanvasElementCenter(elementPath: ReadonlyArray<string | number>): {
   };
 }
 
+/**
+ * Runs in the page. The index of the hand in the classic game screen whose cards can be dragged.
+ */
+function getDraggableHandIndex(): number {
+  const hands = (
+    globalThis as unknown as {
+      globals: {
+        elements: {
+          playerHands: ReadonlyArray<{
+            children: ReadonlyArray<{ draggable: () => boolean }>;
+          }>;
+        };
+      };
+    }
+  ).globals.elements.playerHands;
+  const index = hands.findIndex(
+    (hand) => hand.children.at(0)?.draggable() === true,
+  );
+  if (index === -1) {
+    throw new Error("No hand has a card that can be dragged.");
+  }
+  return index;
+}
+
 /** Runs in the page. Whether the classic game screen has finished drawing itself for a new size. */
 function isGameScreenResized(): boolean {
   return (
@@ -566,6 +590,44 @@ function getStates({
         await clickCanvasElement(page, ["editCardsCheckbox"]);
       },
       cleanup: leaveReplay,
+    },
+    // A card that is dragged over the clue log in a hypothetical. It must be drawn above
+    // everything.
+    {
+      name: "hypothetical-drag",
+      path: "/",
+      loggedIn: true,
+      prepare: async (page) => {
+        await openReplay(page, replayId);
+        await clickCanvasElement(page, ["enterHypoButton"]);
+      },
+      hover: async (page) => {
+        await page.mouse.up();
+        await page.waitForTimeout(SETTLE_MILLISECONDS);
+        const handIndex = await page.evaluate(getDraggableHandIndex);
+        await hoverCanvasElement(page, [
+          "playerHands",
+          handIndex,
+          "children",
+          0,
+        ]);
+        await page.mouse.down();
+        // The clue log is in the top right of the screen.
+        const box = await page.locator(".konvajs-content").boundingBox();
+        if (box === null) {
+          throw new Error("The game screen is not drawn.");
+        }
+        await page.mouse.move(
+          box.x + box.width * 0.9,
+          box.y + box.height * 0.2,
+          { steps: 10 },
+        );
+        await page.waitForTimeout(SETTLE_MILLISECONDS);
+      },
+      cleanup: async (page) => {
+        await page.mouse.up();
+        await leaveReplay(page);
+      },
     },
     // A shared replay of a Prism game in the classic screen, in a hypothetical where the leader
     // morphed a card to the Prism suit without a rank.
