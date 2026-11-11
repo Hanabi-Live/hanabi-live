@@ -469,11 +469,11 @@
       "source": "json",
       "visibility": "solo",
       "gameJSON": {
-        "id": 7,
+        "gameID": 7,
         "seed": "p2v0s1",
         "playerNames": ["Alice", "Bob"],
         "options": {
-          "variant": "No Variant"
+          "variantName": "No Variant"
         }
       }
     },
@@ -481,11 +481,11 @@
       "source": "json",
       "visibility": "solo",
       "gameJSON": {
-        "id": 7,
+        "gameID": 7,
         "seed": "p2v0s1",
         "playerNames": ["Alice", "Bob"],
         "options": {
-          "variant": "No Variant"
+          "variantName": "No Variant"
         }
       },
       "spoilerFree": false

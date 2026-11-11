@@ -472,7 +472,7 @@ async fn public_database_routes_filters_privacy_exports_and_html() {
         export["characters"][0],
         json!({"name":"Fuming","metadata":1})
     );
-    assert_eq!(export["options"]["variant"], "6 Suits");
+    assert_eq!(export["options"]["variantName"], "6 Suits");
     let (_, body) = request(app.clone(), "/export/1").await;
     assert_eq!(
         serde_json::from_str::<Value>(&body).unwrap()["seed"],

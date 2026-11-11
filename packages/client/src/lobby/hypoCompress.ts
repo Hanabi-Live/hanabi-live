@@ -166,10 +166,9 @@ export function expand(data: string): string | undefined {
     deck: [...deck],
     actions: [...actions],
     options: {
-      variant: variant.name,
+      variantName: variant.name,
     },
     characters: [],
-    id: 0,
     notes: [],
     ...(seed !== "" && { seed }),
   };
@@ -207,7 +206,7 @@ function gameJSONCompress(
   out += `${actions},`;
 
   // Variant ID
-  const variantName = data.options?.variant;
+  const variantName = data.options?.variantName;
   if (variantName === undefined) {
     return undefined;
   }

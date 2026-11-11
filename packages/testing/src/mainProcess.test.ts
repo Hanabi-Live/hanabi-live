@@ -669,7 +669,7 @@ databaseDescribe("compiled application entry point (rust)", () => {
       expect(exported.status).toBe(200);
       const replayJSON = replayGameSchema.parse(await exported.json());
       expect(replayJSON.playerNames).toHaveLength(6);
-      expect(replayJSON.options?.variant).toBe("Rainbow (6 Suits)");
+      expect(replayJSON.options?.variantName).toBe("Rainbow (6 Suits)");
       for (const peer of peers) {
         peer.send("tableUnattend", { tableID });
       }

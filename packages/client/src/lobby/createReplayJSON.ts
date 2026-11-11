@@ -116,11 +116,10 @@ export function createJSONFromReplay(room: string): void {
     deck,
     actions,
     options: {
-      variant: globals.options.variantName,
+      variantName: globals.options.variantName,
     },
     notes: [],
     characters: [],
-    id: 0,
     ...(unchanged
       && globals.metadata.seed !== undefined && {
         seed: globals.metadata.seed,

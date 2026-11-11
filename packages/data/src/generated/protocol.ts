@@ -940,7 +940,7 @@ const replayOptionsSchema = z
       .max(9_007_199_254_740_991)
       .optional(),
     timed: z.boolean().optional(),
-    variant: z.string().optional(),
+    variantName: z.string().min(1).optional(),
   })
   .readonly();
 
@@ -961,7 +961,7 @@ export const replayGameSchema = z
     /**
      * The game's ID, when it is exported from the database. Importing does not use it.
      */
-    id: gameIdSchema.optional(),
+    gameID: gameIdSchema.optional(),
     /**
      * Each player's notes.
      */

@@ -41,7 +41,7 @@ pub fn parse(input: &ReplayGame) -> CommandResult<Imported> {
     );
     let raw = input.options.clone().unwrap_or_default();
     let variant_name = raw
-        .variant
+        .variant_name
         .unwrap_or_else(|| hanabi_protocol::DEFAULT_VARIANT_NAME.into());
     let variant = hanabi_engine::get_variant(&variant_name)?;
     let has_characters = raw.detrimental_characters.is_some();
@@ -250,7 +250,7 @@ mod tests {
     #[test]
     fn imports_accept_only_the_replay_format() {
         let imported = import(&json!({
-            "id": 7,
+            "gameID": 7,
             "seed": "p2v0s1",
             "actions": [{"type": "gameOver", "endCondition": 10}],
             "notes": [["", "a"], []]
@@ -280,7 +280,7 @@ mod tests {
         let suffix = "a".repeat(hanabi_protocol::MAX_SEED_LENGTH);
         let seed = format!("p{}v{}s{suffix}", hanabi_protocol::MAX_PLAYERS, variant.id);
         let imported =
-            import(&json!({"seed": seed, "options": {"variant": variant.name}})).unwrap();
+            import(&json!({"seed": seed, "options": {"variantName": variant.name}})).unwrap();
         assert_eq!(imported.custom_seed.as_deref(), Some(seed.as_str()));
     }
 
@@ -292,7 +292,7 @@ mod tests {
             ("characters", json!([5])),
             ("notes", json!([[42], []])),
             ("seed", json!(42)),
-            ("options", json!({"variant":42})),
+            ("options", json!({"variantName":42})),
         ] {
             let mut input = json!({"seed":"p2v0s1"});
             input[field] = value;

@@ -17,9 +17,9 @@ use super::*;
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct ReplayGame {
     /// The game's ID, when it is exported from the database. Importing does not use it.
-    #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[serde(default, rename = "gameID", skip_serializing_if = "Option::is_none")]
     #[schemars(with = "GameId")]
-    pub id: Option<GameId>,
+    pub game_id: Option<GameId>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     #[schemars(with = "Vec<String>", length(max = MAX_PLAYERS))]
     pub player_names: Option<Vec<String>>,
@@ -66,8 +66,8 @@ pub struct ReplayCard {
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct ReplayOptions {
     #[serde(default, skip_serializing_if = "Option::is_none")]
-    #[schemars(with = "String")]
-    pub variant: Option<String>,
+    #[schemars(with = "String", length(min = 1))]
+    pub variant_name: Option<String>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     #[schemars(with = "bool")]
     pub timed: Option<bool>,

@@ -82,7 +82,7 @@ pub(super) async fn export(
     }
     let flag = |enabled: bool| enabled.then_some(true);
     let options = hanabi_protocol::ReplayOptions {
-        variant: (variant_id != 0).then(|| variant.name.clone()),
+        variant_name: (variant_id != 0).then(|| variant.name.clone()),
         timed: flag(row.timed),
         time_base_seconds: row.time_base.map(i64::from),
         time_per_turn_seconds: row.time_per_turn.map(i64::from),
@@ -131,7 +131,7 @@ pub(super) async fn export(
             )
         })?;
     Ok(hanabi_protocol::ReplayGame {
-        id: Some(GameId(game_id)),
+        game_id: Some(GameId(game_id)),
         player_names: Some(players.iter().map(|p| p.name.clone()).collect()),
         deck: Some(deck),
         actions: Some(actions),
