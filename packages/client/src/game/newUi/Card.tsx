@@ -2,7 +2,7 @@ import type { Rank, Suit, SuitIndex, Variant } from "@hanabi-live/game";
 import { START_CARD_RANK } from "@hanabi-live/game";
 import { useEffect, useRef } from "react";
 import { START_CARD_RANK_LABEL } from "../../constants.ts";
-import * as tooltips from "../../tooltips.ts";
+import { Tooltip } from "../../Tooltip.ts";
 import { CARD_H, CARD_W } from "../ui/constants.ts";
 import { Pip } from "./Pip.tsx";
 
@@ -162,7 +162,15 @@ function StatusBadge({
 }): React.JSX.Element {
   const ref = useRef<HTMLSpanElement>(null);
   const tooltip = critical ? STATUS_TOOLTIP.critical : STATUS_TOOLTIP.trash;
-  useEffect(() => tooltips.attach(ref.current!, tooltip), [tooltip]);
+  // The tooltip class on its own, rather than the "tooltips" module, which also loads the classic
+  // game screen.
+  useEffect(() => {
+    const badgeTooltip = new Tooltip(ref.current!, { content: tooltip });
+    badgeTooltip.openOnHover();
+    return () => {
+      badgeTooltip.destroy();
+    };
+  }, [tooltip]);
 
   return (
     <span
