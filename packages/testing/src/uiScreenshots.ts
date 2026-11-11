@@ -523,23 +523,34 @@ function getStates({
         await page.getByRole("button", { name: "Pass leader" }).waitFor();
       },
     },
-    // A hypothetical that the account leads, from the first turn, after Alice plays a card in it,
-    // with "Edit cards" on. Loading the page leaves the shared replay for a moment, which passes
-    // the lead back to Bob, so he passes it again.
+    // A hypothetical that the account leads, from the first turn, after a player plays a card in
+    // it, with "Edit cards" on. Loading the page leaves the shared replay for a moment, which
+    // passes the lead back to Bob, so he passes it again.
     {
       name: "new-ui-hypothetical",
       path: "/",
       loggedIn: true,
       prepare: async (page) => {
         passLeader(USERNAME);
-        await page.getByRole("button", { name: "First turn" }).click();
+        // Only the leader can start a hypothetical, so wait until the lead reaches the account.
+        await page.getByRole("button", { name: "Pass leader" }).waitFor();
+        // The button is disabled when the replay already shows the first turn.
+        const firstTurn = page.getByRole("button", { name: "First turn" });
+        if (await firstTurn.isEnabled()) {
+          await firstTurn.click();
+        }
+        await page.getByText(/^Turn 1 of/u).waitFor();
         await page.getByRole("button", { name: "Enter hypothetical" }).click();
-        const hand = page.locator(
-          `#game-new-ui [aria-label="${USERNAME}'s hand"]`,
-        );
-        await hand.locator("button").first().click();
-        await page.getByRole("button", { name: "Play", exact: true }).click();
-        await page.getByText("Hypothetical: turn 2").waitFor();
+        // Whoever goes first plays the first card in their hand. When the game ended before anyone
+        // moved (without the "new-ui-replay" state), the hypothetical is already over.
+        const card = page
+          .locator('#game-new-ui button[aria-label$="Play or discard"]')
+          .first();
+        if (await card.isVisible()) {
+          await card.click();
+          await page.getByRole("button", { name: "Play", exact: true }).click();
+          await page.getByText("Hypothetical: turn 2").waitFor();
+        }
         await page.getByRole("button", { name: "Edit cards" }).click();
         await page.waitForTimeout(SETTLE_MILLISECONDS);
       },
