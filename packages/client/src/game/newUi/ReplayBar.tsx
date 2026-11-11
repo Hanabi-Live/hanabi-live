@@ -13,6 +13,7 @@ import * as hypothetical from "../ui/hypothetical.ts";
 import { showPassLeaderDialog } from "../ui/leader.ts";
 import * as replay from "../ui/replay.ts";
 import * as restart from "../ui/restart.ts";
+import { tooltipRef } from "./tooltipRef.ts";
 
 type Mode = "replay" | "hypothetical";
 
@@ -174,7 +175,7 @@ function IconButton({
       className={ICON_BUTTON_CLASS}
       disabled={disabled}
       onClick={onClick}
-      title={label}
+      ref={tooltipRef(label)}
       type="button"
     >
       <i aria-hidden="true" className={`fas ${icon}`} />
@@ -187,13 +188,14 @@ function ToggleButton({
   label,
   pressed,
   disabled = false,
-  title,
+  tooltip,
   onClick,
 }: {
   readonly label: string;
   readonly pressed: boolean;
   readonly disabled?: boolean;
-  readonly title: string;
+  /** What the button does, in the site's tooltip. */
+  readonly tooltip: string;
   readonly onClick: () => void;
 }): React.JSX.Element {
   return (
@@ -202,7 +204,7 @@ function ToggleButton({
       className={BUTTON_CLASS}
       disabled={disabled}
       onClick={onClick}
-      title={title}
+      ref={tooltipRef(tooltip)}
       type="button"
     >
       {/* The site only bundles the solid icons, so the box is drawn instead of using an icon. */}
@@ -263,7 +265,9 @@ function PlayAgain(): React.JSX.Element | undefined {
               setOpen(false);
               restart.request(true);
             }}
-            title="Start a new game right away, with the same players and options."
+            ref={tooltipRef(
+              "Start a new game right away, with the same players and options.",
+            )}
             type="button"
           >
             Restart game
@@ -275,7 +279,9 @@ function PlayAgain(): React.JSX.Element | undefined {
               setOpen(false);
               restart.request(false);
             }}
-            title="Make a new table with the same players and options, so that people can join or leave first."
+            ref={tooltipRef(
+              "Make a new table with the same players and options, so that people can join or leave first.",
+            )}
             type="button"
           >
             Remake table
@@ -329,7 +335,9 @@ function HypotheticalBar({
         <button
           className={`${PRIMARY_BUTTON_CLASS} tw:ml-auto`}
           onClick={replay.toggleSharedSegments}
-          title="Leave the leader's hypothetical, and look at the turns on your own."
+          ref={tooltipRef(
+            "Leave the leader's hypothetical, and look at the turns on your own.",
+          )}
           type="button"
         >
           Pause shared turns
@@ -358,7 +366,9 @@ function HypotheticalBar({
           className={BUTTON_CLASS}
           disabled={!hypothetical.canPassTurnInHypothetical(state)}
           onClick={hypothetical.sendHypotheticalPassTurn}
-          title="Spend a clue to pass the turn to the next player without giving a clue."
+          ref={tooltipRef(
+            "Spend a clue to pass the turn to the next player without giving a clue.",
+          )}
           type="button"
         >
           Pass
@@ -369,13 +379,13 @@ function HypotheticalBar({
           label="Show drawn cards"
           onClick={hypothetical.toggleRevealed}
           pressed={hypo.showDrawnCards}
-          title="Show the faces of the cards drawn during the hypothetical."
+          tooltip="Show the faces of the cards drawn during the hypothetical."
         />
         <ToggleButton
           label="Edit cards"
           onClick={onToggleEditCards}
           pressed={editingCards}
-          title="While this is on, click a card in a hand to change it into another card."
+          tooltip="While this is on, click a card in a hand to change it into another card."
         />
         <button
           className={PRIMARY_BUTTON_CLASS}
@@ -494,7 +504,9 @@ export function ReplayBar({
             <button
               className={BUTTON_CLASS}
               onClick={showPassLeaderDialog}
-              title="Pass the lead of the shared replay to someone else."
+              ref={tooltipRef(
+                "Pass the lead of the shared replay to someone else.",
+              )}
               type="button"
             >
               Pass leader
@@ -512,7 +524,7 @@ export function ReplayBar({
           <button
             className={BUTTON_CLASS}
             onClick={hypothetical.startHypothetical}
-            title="Try out other moves from this turn."
+            ref={tooltipRef("Try out other moves from this turn.")}
             type="button"
           >
             <i
@@ -538,7 +550,7 @@ export function ReplayBar({
               pressed={
                 !shared.restartDeclined.includes(globals.metadata.ourUsername)
               }
-              title="Whether you will play again if the leader restarts the game."
+              tooltip="Whether you will play again if the leader restarts the game."
             />
           ))}
         {!finished && (

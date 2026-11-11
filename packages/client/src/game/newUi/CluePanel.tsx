@@ -1,6 +1,7 @@
 import type { Clue, Variant } from "@hanabi-live/game";
 import { newColorClue, newRankClue } from "@hanabi-live/game";
 import { getRankLabel } from "./Card.tsx";
+import { tooltipRef } from "./tooltipRef.ts";
 
 interface CluePanelProps {
   readonly variant: Variant;
@@ -76,10 +77,10 @@ export function CluePanel({
             onClick={() => {
               onChooseClue(colorClue);
             }}
+            ref={tooltipRef(color.name)}
             style={{
               background: colorblindMode ? color.fillColorblind : color.fill,
             }}
-            title={color.name}
             type="button"
           />
         );

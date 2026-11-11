@@ -5,6 +5,7 @@ import { forwardRef } from "react";
 import { CARD_HEIGHT_PER_WIDTH, CardFace, describeCard } from "./Card.tsx";
 import { Pip } from "./Pip.tsx";
 import { OutOf } from "./StatusStrip.tsx";
+import { tooltipRef } from "./tooltipRef.ts";
 
 /** How far each discarded card covers the one before it in its row, as a fraction of its width. */
 const DISCARD_OVERLAP_PER_WIDTH = 0.4;
@@ -245,11 +246,11 @@ export const DiscardPile = forwardRef<
                   onClick={() => {
                     onShowDiscard(card.order);
                   }}
+                  ref={tooltipRef("Show the turn this card was discarded")}
                   style={{
                     marginLeft:
                       i === 0 ? 0 : -cardWidth * DISCARD_OVERLAP_PER_WIDTH,
                   }}
-                  title="Show the turn this card was discarded"
                   type="button"
                 >
                   <CardFace
@@ -361,7 +362,7 @@ export function TableTokens({
                 onClick={() => {
                   onShowStrike(segment);
                 }}
-                title="Show the turn of this strike"
+                ref={tooltipRef("Show the turn of this strike")}
                 type="button"
               />
             );

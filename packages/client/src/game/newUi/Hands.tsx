@@ -9,6 +9,7 @@ import {
   getClueMarkerColor,
 } from "./Card.tsx";
 import type { CardView } from "./tableView.ts";
+import { tooltipRef } from "./tooltipRef.ts";
 
 export interface Seat {
   readonly playerIndex: PlayerIndex;
@@ -453,11 +454,11 @@ function OwnCard({
             onClick={() => {
               props.onDiscard(card.order);
             }}
-            title={
+            ref={tooltipRef(
               props.canDiscard
                 ? undefined
-                : "The team cannot discard at the maximum number of clues."
-            }
+                : "The team cannot discard at the maximum number of clues.",
+            )}
             type="button"
           >
             Discard
@@ -578,7 +579,7 @@ function Hand({
               onClick={() => {
                 props.onChooseClueTarget(seat.playerIndex);
               }}
-              title={`Give ${seat.name} a clue`}
+              ref={tooltipRef(`Give ${seat.name} a clue`)}
               type="button"
             >
               {chip}

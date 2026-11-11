@@ -35,6 +35,11 @@ they look the same in both themes, so the redesigned game screen ("New UI") uses
 the `--game-screen-*` tokens, which the dark theme does not change. When a
 screen moves to React, delete the stylesheet rules that only that screen used.
 
+Do not use the HTML `title` attribute for tooltips. The browser draws it as a
+plain box that does not match the site's tooltips. Use the site's tooltip
+instead: the `useTooltip` hook in React components, or `tooltipRef` in the new
+game screen where a hook cannot be called, such as inside a loop.
+
 Before you design a new button or animation for the New UI, load the
 `frontend-design`, `game-feel`, and `game-ui-ux` skills, and follow them.
 

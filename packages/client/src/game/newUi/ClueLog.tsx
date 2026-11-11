@@ -2,6 +2,7 @@ import type { CardOrder } from "@hanabi-live/game";
 import { useLayoutEffect, useRef } from "react";
 import type { ClueMarkerView } from "./Card.tsx";
 import { getClueMarkerColor } from "./Card.tsx";
+import { tooltipRef } from "./tooltipRef.ts";
 
 /** The size of the disc that shows each clue in the log, in CSS pixels. */
 const CLUE_DISC_SIZE = 20;
@@ -132,8 +133,8 @@ export function ClueLog({
                   onClick={() => {
                     onShowClue(entry.segment);
                   }}
+                  ref={tooltipRef("Show the turn after this clue")}
                   style={{ borderLeftColor: shown ? color : "transparent" }}
-                  title="Show the turn after this clue"
                   type="button"
                 >
                   <span className="tw:w-8 tw:shrink-0 tw:text-[13px] tw:text-game-muted">

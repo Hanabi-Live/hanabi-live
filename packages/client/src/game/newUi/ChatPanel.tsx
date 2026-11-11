@@ -1,5 +1,6 @@
 import { useLayoutEffect, useRef, useState } from "react";
 import * as gameChat from "../chat.ts";
+import { tooltipRef } from "./tooltipRef.ts";
 
 /**
  * While the panel holds the classic chat box, these classes make it fill the panel instead of the
@@ -100,7 +101,7 @@ export function ChatPanel({
           onClick={() => {
             gameChat.show();
           }}
-          title="Open chat"
+          ref={tooltipRef("Open chat")}
           type="button"
         >
           <i aria-hidden="true" className="fas fa-comment" />
@@ -115,8 +116,8 @@ export function ChatPanel({
           <div
             aria-label={spectatorsLabel}
             className="tw:flex tw:flex-col tw:items-center tw:gap-0.5 tw:px-2 tw:py-1 tw:text-[13px] tw:text-game-muted"
+            ref={tooltipRef(spectatorsLabel)}
             role="img"
-            title={spectatorsLabel}
           >
             <i aria-hidden="true" className="fas fa-eye" />
             {spectators.length}
@@ -168,7 +169,7 @@ export function ChatPanel({
           onClick={() => {
             gameChat.hide();
           }}
-          title="Collapse chat"
+          ref={tooltipRef("Collapse chat")}
           type="button"
         >
           <i aria-hidden="true" className="fas fa-angle-double-right" />
