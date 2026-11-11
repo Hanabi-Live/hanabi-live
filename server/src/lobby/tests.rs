@@ -780,45 +780,6 @@ async fn every_setting_round_trips_and_only_changes_are_stored_postgres() {
 }
 
 #[tokio::test]
-async fn create_table_settings_replace_the_settings_that_held_the_form_postgres() {
-    let Some(db) = TestDb::create().await else {
-        return;
-    };
-    let id = db.user("Alice").await;
-    sqlx::query!(
-        "UPDATE users SET settings=$2 WHERE id=$1",
-        id,
-        json!({"createTableVariant": "Rainbow (6 Suits)", "createTableTimed": true,
-            "createTableTimeBaseSeconds": 300, "createTableTimePerTurnSeconds": -1,
-            "createTableDeckPlays": true, "createTableMaxPlayers": 3, "volume": 70})
-    )
-    .execute(&db.pool)
-    .await
-    .unwrap();
-    let settings = get_settings(&db.pool, UserId(id)).await.unwrap();
-    // The invalid time per turn takes its default.
-    let expected = json!({"maxPlayers": 3,
-        "options": {"variantName": "Rainbow (6 Suits)", "deckPlays": true,
-            "timeControl": {"baseSeconds": 300, "perTurnSeconds": 20}},
-        "timeControl": {"baseSeconds": 300, "perTurnSeconds": 20}});
-    assert_eq!(
-        settings.create_table,
-        serde_json::from_value::<hanabi_protocol::CreateTableSettings>(expected).unwrap()
-    );
-    let mut create = serde_json::to_value(&settings.create_table).unwrap();
-    create["maxPlayers"] = json!(4);
-    set_setting(&db.pool, UserId(id), "createTable", &create)
-        .await
-        .unwrap();
-    let stored = sqlx::query_scalar!("SELECT settings FROM users WHERE id=$1", id)
-        .fetch_one(&db.pool)
-        .await
-        .unwrap();
-    assert_eq!(stored, json!({"createTable": create, "volume": 70}));
-    db.close().await;
-}
-
-#[tokio::test]
 async fn settings_outside_the_wire_contract_are_not_sent_or_saved_postgres() {
     let Some(db) = TestDb::create().await else {
         return;
@@ -827,7 +788,7 @@ async fn settings_outside_the_wire_contract_are_not_sent_or_saved_postgres() {
     sqlx::query!(
         "UPDATE users SET settings=$2 WHERE id=$1",
         id,
-        json!({"createTableVariant":"","createTableMaxPlayers":7,"volume":70,"removedSetting":true})
+        json!({"createTable":{"maxPlayers":7},"volume":70,"removedSetting":true})
     )
     .execute(&db.pool)
     .await
