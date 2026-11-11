@@ -13,7 +13,9 @@ import type {
 import {
   MAX_CLUES,
   getCardsPerHand,
+  getCharacterNameForPlayer,
   getClueCost,
+  getClueName,
   getUnadjustedClueTokens,
   isAtMaxClueTokens,
   millisecondsToClockString,
@@ -32,10 +34,11 @@ import { getCardOrStackBase } from "../ui/getCardOrStackBase.ts";
 import * as hypothetical from "../ui/hypothetical.ts";
 import * as replay from "../ui/replay.ts";
 import * as turn from "../ui/turn.ts";
-import { ActionLog } from "./ActionLog.tsx";
 import type { ClueMarkerView } from "./Card.tsx";
 import { CARD_HEIGHT_PER_WIDTH, CardFace } from "./Card.tsx";
 import { ChatPanel } from "./ChatPanel.tsx";
+import type { ClueLogEntry } from "./ClueLog.tsx";
+import { ClueLog } from "./ClueLog.tsx";
 import { CluePanel } from "./CluePanel.tsx";
 import type { Seat } from "./Hands.tsx";
 import {
@@ -331,6 +334,29 @@ function getClueMarker(
   }
 
   return { type: "hidden" };
+}
+
+/** The clues of the game so far, for the clue log. */
+function getClueLogEntries(state: State): readonly ClueLogEntry[] {
+  const { playerNames, characterAssignments } = state.metadata;
+  const { colorblindMode } = globals.lobby.settings;
+  return state.visibleState!.clues.map((clue) => ({
+    segment: clue.segment,
+    turn: clue.segment + 1,
+    giverName: playerNames[clue.giver] ?? "",
+    targetName: playerNames[clue.target] ?? "",
+    clueName: getClueName(
+      clue,
+      globals.variant,
+      getCharacterNameForPlayer(clue.giver, characterAssignments),
+    ),
+    marker: getClueMarker(clue, colorblindMode),
+  }));
+}
+
+/** Shows the turn just after a clue, in the in-game replay. */
+function showClue(segment: number) {
+  replay.goToSegment(segment + 1, true);
 }
 
 /** The markers for the cards that a clue touched. */
@@ -908,7 +934,11 @@ export function GameScreen({
               variant={variant}
               zoneState={discardZoneState}
             />
-            <ActionLog log={visibleState.log} />
+            <ClueLog
+              entries={getClueLogEntries(state)}
+              onShowClue={showClue}
+              shownSegment={shownClue?.segment}
+            />
             <TableTokens
               atMaxClues={isAtMaxClueTokens(visibleState.clueTokens, variant)}
               clues={getUnadjustedClueTokens(visibleState.clueTokens, variant)}
