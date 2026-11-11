@@ -1,7 +1,7 @@
 use super::request;
 use super::table::wrong_phase;
 use super::{
-    HubCommand, TableActor,
+    HubCommand, Status, TableActor,
     chat::{server_chat, table_notice},
     pending::Completed,
     setup::next_requested_seed,
@@ -18,7 +18,7 @@ use crate::{
 use anyhow::Context;
 use chrono::Utc;
 use hanabi_protocol::ClientMessage;
-use hanabi_protocol::{HypotheticalEvent, MIN_PLAYERS, PregameStats, Status, TableRef, UserId};
+use hanabi_protocol::{HypotheticalEvent, MIN_PLAYERS, PregameStats, TableRef, UserId};
 use std::{
     collections::{BTreeMap, HashSet},
     sync::Arc,

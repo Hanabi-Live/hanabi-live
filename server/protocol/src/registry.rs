@@ -135,7 +135,7 @@ macro_rules! exported_types {
     ($apply:ident) => {
         $apply! {
             TableId, GameId, UserId, Settings, Spectator, GameHistoryEntry,
-            ReplayGame, ReplayBoardElement, ReplaySoundEffect, SoundMove, Status, LoginRequest,
+            ReplayGame, ReplayBoardElement, ReplaySoundEffect, SoundMove, Activity, LoginRequest,
             LoginResponse, NoticeCode, PasswordHashRequest, PasswordHashResponse, PublicGamePage,
             VariantNames, ScoreFrequency,
         }

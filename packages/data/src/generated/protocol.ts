@@ -40,18 +40,40 @@ export enum GameListColumn {
   Variant = 3,
 }
 
-/**
- * The users whom we have blocked. It does not include the users who have blocked us.
- */
-export const blockedSchema = z
-  .strictObject({ blocked: z.array(z.string().min(1)).readonly() })
-  .readonly();
 export const tableIdSchema = z
   .number()
   .int()
   .min(0)
   .max(9_007_199_254_740_991)
   .brand<"TableID">();
+
+/**
+ * What a user is doing, and at which table. A solo replay is private, so it does not name its
+ * table.
+ */
+export const activitySchema = z.discriminatedUnion("type", [
+  z.strictObject({ type: z.literal("lobby") }).readonly(),
+  z
+    .strictObject({ tableId: tableIdSchema, type: z.literal("pregame") })
+    .readonly(),
+  z
+    .strictObject({ tableId: tableIdSchema, type: z.literal("playing") })
+    .readonly(),
+  z
+    .strictObject({ tableId: tableIdSchema, type: z.literal("spectating") })
+    .readonly(),
+  z.strictObject({ type: z.literal("replay") }).readonly(),
+  z
+    .strictObject({ tableId: tableIdSchema, type: z.literal("sharedReplay") })
+    .readonly(),
+]);
+
+/**
+ * The users whom we have blocked. It does not include the users who have blocked us.
+ */
+export const blockedSchema = z
+  .strictObject({ blocked: z.array(z.string().min(1)).readonly() })
+  .readonly();
 
 /**
  * Every card's identity, by card order, once a game ends.
@@ -1180,18 +1202,6 @@ export const spectatorsSchema = z
   .readonly();
 
 /**
- * The activity that a user is currently performing.
- */
-export const statusSchema = z.enum([
-  "lobby",
-  "pregame",
-  "playing",
-  "spectating",
-  "replay",
-  "sharedReplay",
-]);
-
-/**
  * A spectator suggesting a turn to the shared replay's leader.
  */
 export const suggestionSchema = z
@@ -1366,6 +1376,7 @@ export const tagSearchRequestSchema = z
  */
 export const userSchema = z
   .strictObject({
+    activity: activitySchema,
     bot: z.boolean(),
     hGroupConventions: z.boolean(),
     /**
@@ -1374,8 +1385,6 @@ export const userSchema = z
      */
     hGroupLevel: z.number().int().min(1).max(25).optional(),
     inactive: z.boolean(),
-    status: statusSchema,
-    tableId: tableIdSchema.optional(),
     userId: userIdSchema,
     username: z.string().min(1),
   })

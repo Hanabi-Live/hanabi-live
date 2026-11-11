@@ -85,8 +85,7 @@ beforeEach(() => {
     userChanged({
       userId: userIdSchema.parse(1),
       username: "alice",
-      status: "pregame",
-      tableId: TABLE_ID,
+      activity: { type: "pregame", tableId: TABLE_ID },
       hGroupConventions: true,
       hGroupLevel: 3,
       bot: false,

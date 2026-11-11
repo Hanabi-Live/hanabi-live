@@ -10,11 +10,11 @@ use crate::{
 #[cfg(test)]
 use anyhow::Context;
 use anyhow::Result;
+use hanabi_protocol::ClientMessage;
 use hanabi_protocol::GameId;
 use hanabi_protocol::PlayerIndex;
 use hanabi_protocol::TableId;
 use hanabi_protocol::UserId;
-use hanabi_protocol::{ClientMessage, Status};
 #[cfg(test)]
 use serde_json::Value;
 use std::{
@@ -169,6 +169,16 @@ struct Entry {
     /// The table's attendees, as it last published them.
     attendees: BTreeSet<UserId>,
     published: bool,
+}
+/// What a connected user is doing. The hub keeps it with the user's table.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum Status {
+    Lobby,
+    Pregame,
+    Playing,
+    Spectating,
+    Replay,
+    SharedReplay,
 }
 /// A connected user, as the hub keeps them.
 struct Presence {

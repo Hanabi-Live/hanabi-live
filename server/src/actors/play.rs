@@ -1,6 +1,6 @@
 use super::table::{game_mut, wrong_phase};
 use super::{
-    Attendance, GameInfo, TableActor,
+    Attendance, GameInfo, Status, TableActor,
     chat::table_notice,
     wire::{game_event, game_event_list},
 };
@@ -18,7 +18,7 @@ use hanabi_engine::PlayerAction;
 use hanabi_engine::{CompletionTiming, EndCondition, Recipient};
 use hanabi_protocol::ClientMessage;
 use hanabi_protocol::PlayerIndex;
-use hanabi_protocol::{CardOrder, Chat, ChatTyping, MIN_PLAYERS, Status, TableRef, ViewMode};
+use hanabi_protocol::{CardOrder, Chat, ChatTyping, MIN_PLAYERS, TableRef, ViewMode};
 use std::sync::Arc;
 
 impl TableActor {

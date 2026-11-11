@@ -1,5 +1,6 @@
 use super::*;
 use super::{
+    Status,
     chat::{ChatBytes, authored_chat, server_chat},
     replay::undo_hypothetical_turn,
     setup::{next_requested_seed, option_changes, requested_seed, validate_table_name},
@@ -21,7 +22,7 @@ use anyhow::{Context, Result, ensure};
 use chrono::{Duration as ChronoDuration, Utc};
 use hanabi_engine::PlayerAction;
 use hanabi_engine::{CompletionTiming, EndCondition, Recipient};
-use hanabi_protocol::{MAX_SEED_LENGTH, Status};
+use hanabi_protocol::MAX_SEED_LENGTH;
 use serde_json::{Value, json};
 use std::{
     collections::{BTreeMap, BTreeSet, HashMap},
@@ -1128,7 +1129,7 @@ async fn a_table_that_panics_is_removed_and_frees_its_players() -> Result<()> {
             .rfind(|f| f.starts_with("user "))
             .context("Missing user update")?;
         ensure!(
-            user.contains(r#""status":"lobby""#),
+            user.contains(r#""activity":{"type":"lobby"}"#),
             "The player did not return to the lobby: {user}"
         );
         let (reply, replied) = oneshot::channel();

@@ -1,5 +1,5 @@
 use super::{
-    Attendance, Blocks, TableActor, chat::table_notice, pending::Completed,
+    Attendance, Blocks, Status, TableActor, chat::table_notice, pending::Completed,
     pregame::remove_pregame_players,
 };
 use crate::errors::CommandResult;
@@ -11,7 +11,7 @@ use anyhow::Context;
 use chrono::Utc;
 use hanabi_protocol::PlayerIndex;
 use hanabi_protocol::UserId;
-use hanabi_protocol::{LobbySound, SoundLobby, Status, TableJoinRequest, TableRef, TableStarted};
+use hanabi_protocol::{LobbySound, SoundLobby, TableJoinRequest, TableRef, TableStarted};
 use std::{
     collections::{BTreeSet, HashSet},
     sync::Arc,

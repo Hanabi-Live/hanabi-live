@@ -1,7 +1,7 @@
 use super::request;
 use super::table::wrong_phase;
 use super::{
-    Allocation, Effects, HubCommand, TableActor, TableChange,
+    Allocation, Effects, HubCommand, Status, TableActor, TableChange,
     chat::{push_chat, server_chat, table_notice},
     setup::{
         load_replay, normalize_options, option_changes, options_suggestion, requested_extra,
@@ -24,7 +24,7 @@ use hanabi_engine::{GameSetup, Interpretation};
 use hanabi_protocol::ClientMessage;
 use hanabi_protocol::PlayerIndex;
 use hanabi_protocol::UserId;
-use hanabi_protocol::{Chat, MIN_PLAYERS, Status, TableRef, TableStarted};
+use hanabi_protocol::{Chat, MIN_PLAYERS, TableRef, TableStarted};
 use std::{collections::HashSet, sync::Arc};
 
 /// Appended to the name of a table that a split creates.

@@ -1,6 +1,5 @@
 // The lobby area that shows all of the current logged-in users.
 
-import type { Status } from "@hanabi-live/data";
 import { StatusText } from "@hanabi-live/data";
 import { useEffect, useRef } from "react";
 import { globals } from "../../Globals.ts";
@@ -28,12 +27,6 @@ const BOT_TOOLTIP =
 
 const SLEEPING_EMOJI = "\u{1F4A4}";
 const ROBOT_EMOJI = "\u{1F916}";
-
-/** In these statuses, the user is not at a table that we could join or spectate. */
-const STATUSES_WITHOUT_TABLE: ReadonlySet<Status> = new Set([
-  "lobby",
-  "replay",
-]);
 
 export function UsersList(): React.JSX.Element {
   const botsShown = useAppSelector(selectBotsShown);
@@ -119,7 +112,7 @@ function UserRowView({
 }) {
   const { user, kind } = row;
   const nameLink = <UserLink row={row} />;
-  const statusText = StatusText[user.status];
+  const statusText = StatusText[user.activity.type];
 
   return (
     <tr>
@@ -132,7 +125,7 @@ function UserRowView({
         </span>
       </td>
       <td>
-        {inPregame || STATUSES_WITHOUT_TABLE.has(user.status) ? (
+        {inPregame || !("tableId" in user.activity) ? (
           statusText
         ) : (
           <a
@@ -192,30 +185,18 @@ function BotIcon() {
 
 /** Joins or spectates the table that a user is at. */
 function goToTable(user: UserRow["user"]) {
-  if (user.tableId === undefined) {
+  const { activity } = user;
+  if (!("tableId" in activity)) {
     return;
   }
-  const table = globals.getTable(user.tableId);
+  const table = globals.getTable(activity.tableId);
   if (table === undefined) {
     return;
   }
 
-  switch (user.status) {
-    case "pregame": {
-      tableJoin(table);
-      break;
-    }
-
-    case "playing":
-    case "spectating":
-    case "sharedReplay": {
-      tableSpectate(table);
-      break;
-    }
-
-    case "lobby":
-    case "replay": {
-      break;
-    }
+  if (activity.type === "pregame") {
+    tableJoin(table);
+  } else {
+    tableSpectate(table);
   }
 }

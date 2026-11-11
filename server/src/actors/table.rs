@@ -1,7 +1,8 @@
 use super::request;
 use super::{
     Allocation, Attendance, Blocks, Command, Effects, GameInfo, HubCommand,
-    PREGAME_RECONNECT_GRACE, REPLAY_RECONNECT_GRACE, Reply, TableActor, TableCommand, TableView,
+    PREGAME_RECONNECT_GRACE, REPLAY_RECONNECT_GRACE, Reply, Status, TableActor, TableCommand,
+    TableView,
     chat::{TABLE_CHAT_LIMIT, TABLE_CHAT_WINDOW, is_variant_discovery},
     pending::{Completed, Pending},
     pregame::remove_pregame_players,
@@ -26,7 +27,7 @@ use futures_util::{FutureExt, future::BoxFuture};
 use hanabi_engine::{CompletionTiming, EndCondition};
 use hanabi_protocol::PlayerIndex;
 use hanabi_protocol::{
-    Chat, ChatTyping, ClientMessage, IdleWarning, Notice, Status, TableRef, TableStarted, UserId,
+    Chat, ChatTyping, ClientMessage, IdleWarning, Notice, TableRef, TableStarted, UserId,
 };
 use serde::Serialize;
 use std::{

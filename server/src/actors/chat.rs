@@ -1,4 +1,4 @@
-use super::{TableActor, pending::Completed, setup::options_suggestion};
+use super::{Status, TableActor, pending::Completed, setup::options_suggestion};
 use crate::errors::OrReject;
 use crate::errors::{CommandError, CommandResult};
 use crate::{
@@ -9,7 +9,7 @@ use crate::{
 use anyhow::{Context, Result};
 use chrono::Utc;
 use hanabi_protocol::UserId;
-use hanabi_protocol::{Chat, ChatSource, MAX_PLAYERS, MIN_PLAYERS, Status, TableId, TableRef};
+use hanabi_protocol::{Chat, ChatSource, MAX_PLAYERS, MIN_PLAYERS, TableId, TableRef};
 use std::{
     collections::HashSet,
     sync::Arc,

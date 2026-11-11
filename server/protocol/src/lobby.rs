@@ -42,9 +42,7 @@ pub enum LobbyStatus {
 pub struct User {
     pub user_id: UserId,
     pub username: Username,
-    pub status: Status,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub table_id: Option<TableId>,
+    pub activity: Activity,
     pub h_group_conventions: bool,
     /// The highest H-Group level that this user wants to play at. Absent when they did not choose
     /// one.
@@ -53,6 +51,24 @@ pub struct User {
     pub h_group_level: Option<u8>,
     pub bot: bool,
     pub inactive: bool,
+}
+
+/// What a user is doing, and at which table. A solo replay is private, so it does not name its
+/// table.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
+#[serde(
+    tag = "type",
+    rename_all = "camelCase",
+    rename_all_fields = "camelCase",
+    deny_unknown_fields
+)]
+pub enum Activity {
+    Lobby {},
+    Pregame { table_id: TableId },
+    Playing { table_id: TableId },
+    Spectating { table_id: TableId },
+    Replay {},
+    SharedReplay { table_id: TableId },
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]

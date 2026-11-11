@@ -1,6 +1,6 @@
 use super::{
     Allocation, Blocks, Command, Effects, Entry, HubCommand, Presence, Reply, SeatReservation,
-    TableActor, TableCommand, TableHandle, TableView,
+    Status, TableActor, TableCommand, TableHandle, TableView,
     setup::{Creation, prepare_table},
 };
 use crate::errors::{CommandError, CommandResult, Report};
@@ -19,7 +19,7 @@ use axum::http::StatusCode;
 use futures_util::FutureExt;
 use hanabi_protocol::PlayerIndex;
 use hanabi_protocol::{
-    ClientMessage, SoundLobby, Status, TableId, TableRef, User, UserId, UserLeft, UserList,
+    ClientMessage, SoundLobby, TableId, TableRef, User, UserId, UserLeft, UserList,
 };
 use std::{
     collections::{BTreeSet, HashMap},
@@ -220,9 +220,7 @@ impl Hub {
         User {
             user_id: p.session.user,
             username: p.session.name.clone().into(),
-            status: p.status,
-            // A solo replay is private, so its table is not named.
-            table_id: p.table.filter(|_| p.status != Status::Replay),
+            activity: activity(p.status, p.table),
             h_group_conventions: p.h_group,
             h_group_level: p.h_group_level,
             bot: p.session.bot,
@@ -1041,5 +1039,18 @@ async fn send_install(hub: &mpsc::Sender<HubCommand>, install: HubCommand) {
         && let HubCommand::Install { reply, .. } = error.0
     {
         let _ = reply.send(Err(internal!("Coordinator stopped; table is recoverable")));
+    }
+}
+
+/// A user's activity as the wire carries it. A solo replay is private, so its table is not named.
+fn activity(status: Status, table: Option<TableId>) -> hanabi_protocol::Activity {
+    use hanabi_protocol::Activity;
+    match (status, table) {
+        (Status::Pregame, Some(table_id)) => Activity::Pregame { table_id },
+        (Status::Playing, Some(table_id)) => Activity::Playing { table_id },
+        (Status::Spectating, Some(table_id)) => Activity::Spectating { table_id },
+        (Status::SharedReplay, Some(table_id)) => Activity::SharedReplay { table_id },
+        (Status::Replay, _) => Activity::Replay {},
+        (Status::Lobby, _) | (_, None) => Activity::Lobby {},
     }
 }

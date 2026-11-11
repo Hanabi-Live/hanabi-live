@@ -251,18 +251,6 @@ pub enum SoundMove {
     None,
 }
 
-/// The activity that a user is currently performing.
-#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize, JsonSchema)]
-#[serde(rename_all = "camelCase")]
-pub enum Status {
-    Lobby,
-    Pregame,
-    Playing,
-    Spectating,
-    Replay,
-    SharedReplay,
-}
-
 /// Defines `NoticeCode` and the name of each code on the wire. The clients' schema cannot describe
 /// each code, so their descriptions are comments.
 macro_rules! notice_codes {

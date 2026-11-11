@@ -368,14 +368,13 @@
     "valid": false
   },
   {
-    "name": "user presence rejects an unknown status",
+    "name": "user presence rejects an unknown activity",
     "direction": "server",
     "command": "user",
     "input": {
       "userId": 7,
       "username": "Alice",
-      "status": "away",
-      "tableId": 3,
+      "activity": { "type": "away", "tableId": 3 },
       "hGroupConventions": false,
       "bot": false,
       "inactive": false
@@ -390,8 +389,7 @@
       {
         "userId": 7,
         "username": "Alice",
-        "status": "playing",
-        "tableId": 3,
+        "activity": { "type": "playing", "tableId": 3 },
         "hGroupConventions": false,
         "hGroupLevel": 3,
         "bot": false,
@@ -399,6 +397,34 @@
       }
     ],
     "valid": true
+  },
+  {
+    "name": "a user at a table names it",
+    "direction": "server",
+    "command": "user",
+    "input": {
+      "userId": 7,
+      "username": "Alice",
+      "activity": { "type": "pregame" },
+      "hGroupConventions": false,
+      "bot": false,
+      "inactive": false
+    },
+    "valid": false
+  },
+  {
+    "name": "a user in the lobby names no table",
+    "direction": "server",
+    "command": "user",
+    "input": {
+      "userId": 7,
+      "username": "Alice",
+      "activity": { "type": "lobby", "tableId": 3 },
+      "hGroupConventions": false,
+      "bot": false,
+      "inactive": false
+    },
+    "valid": false
   },
   {
     "name": "welcome fills unchanged settings with the same defaults",

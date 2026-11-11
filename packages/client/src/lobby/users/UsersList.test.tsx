@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 
-import type { ServerCommandData, Status } from "@hanabi-live/data";
+import type { ServerCommandData } from "@hanabi-live/data";
 import { tableIdSchema, userIdSchema } from "@hanabi-live/data";
 import {
   act,
@@ -64,16 +64,18 @@ const TABLE_ID = tableIdSchema.parse(7);
 function user(
   userId: number,
   name: string,
-  status: Status = "lobby",
+  status: "lobby" | "pregame" = "lobby",
 ): ServerCommandData["user"] {
   return {
     userId: userIdSchema.parse(userId),
     username: name,
-    status,
+    activity:
+      status === "lobby"
+        ? { type: status }
+        : { type: status, tableId: TABLE_ID },
     hGroupConventions: false,
     bot: false,
     inactive: false,
-    ...(status !== "lobby" && { tableId: TABLE_ID }),
   };
 }
 
