@@ -1161,7 +1161,8 @@ fn a_table_chat_that_players_filled_still_fits_in_a_checkpoint() -> Result<()> {
     let mut table = review(TableId(1), EndCondition::TerminatedByPlayer)?;
     let name = "x".repeat(crate::accounts::MAX_USERNAME_LENGTH);
     // Quotes are the characters that grow the most when escaped as HTML.
-    let text = crate::accounts::normalize_chat(&"\"".repeat(1000)).map_err(anyhow::Error::msg)?;
+    let text = crate::accounts::normalize_chat(&"\"".repeat(crate::accounts::MAX_CHAT_LENGTH))
+        .map_err(anyhow::Error::msg)?;
     // Checking after each batch instead of each message overshoots the budget, which only makes
     // the table larger.
     let mut bytes = ChatBytes::default();

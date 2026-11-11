@@ -4,7 +4,7 @@
 use super::{Server, alerts::Alerts};
 use crate::transport::Outgoing;
 use crate::{
-    accounts::{escape_html, normalize_chat},
+    accounts::{escape_html, normalize_discord_chat},
     actors::{HubCommand, request},
     lobby::{self, ExternalReply, SavedChat},
 };
@@ -633,7 +633,8 @@ impl Bridge {
                     .lines()
                     .map(|line| line.split(' ').next().unwrap_or("").to_ascii_lowercase())
                     .find(|cmd| cmd == "/subscribe" || cmd == "/unsubscribe");
-                let Ok(text) = normalize_chat(subscription.as_deref().unwrap_or(content)) else {
+                let Ok(text) = normalize_discord_chat(subscription.as_deref().unwrap_or(content))
+                else {
                     return Ok(());
                 };
                 let class = lobby::classify_chat(&text);

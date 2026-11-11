@@ -54,12 +54,29 @@ fn truncate_to_max_chars(input: &str, max: usize) -> &str {
         .map_or(input, |(end, _)| &input[..end])
 }
 
-/// The longest chat message, in characters; longer messages are truncated.
-const MAX_CHAT_LENGTH: usize = 300;
+/// The longest chat message, in characters.
+pub const MAX_CHAT_LENGTH: usize = 300;
 
+/// Cleans a chat message from a player. Rejects it if it is longer than `MAX_CHAT_LENGTH`, so that
+/// it never arrives changed without the player knowing.
 pub fn normalize_chat(input: &str) -> Result<String, String> {
-    let truncated = truncate_to_max_chars(input, MAX_CHAT_LENGTH);
-    let cleaned = remove_disallowed_characters(truncated);
+    let message = clean_chat(input)?;
+    if message.chars().count() > MAX_CHAT_LENGTH {
+        return Err(format!(
+            "Chat messages cannot be longer than {MAX_CHAT_LENGTH} characters."
+        ));
+    }
+    Ok(message)
+}
+
+/// Cleans a chat message from Discord. Discord allows longer messages and does not show our limit,
+/// so this truncates the message to `MAX_CHAT_LENGTH` instead of rejecting it.
+pub fn normalize_discord_chat(input: &str) -> Result<String, String> {
+    clean_chat(truncate_to_max_chars(input, MAX_CHAT_LENGTH))
+}
+
+fn clean_chat(input: &str) -> Result<String, String> {
+    let cleaned = remove_disallowed_characters(input);
     let message = cleaned.trim();
     if message.is_empty() {
         return Err("Chat messages cannot be blank.".into());
@@ -146,6 +163,15 @@ mod tests {
         assert_eq!(truncate_to_max_bytes("éé", 3), "é");
         assert_eq!(truncate_to_max_chars("éé", 1), "é");
         assert_eq!(truncate_to_max_chars("éé", 3), "éé");
+    }
+
+    #[test]
+    fn long_chat_is_rejected_from_players_and_truncated_from_discord() {
+        let longest = "é".repeat(MAX_CHAT_LENGTH);
+        assert_eq!(normalize_chat(&longest), Ok(longest.clone()));
+        let too_long = format!("{longest}é");
+        assert!(normalize_chat(&too_long).is_err());
+        assert_eq!(normalize_discord_chat(&too_long), Ok(longest));
     }
 
     #[test]

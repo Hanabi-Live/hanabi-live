@@ -46,6 +46,8 @@ of the repository.
   crossed out.
 - The emote and emoji picker now opens quickly. It shows one category at a time,
   and it has a search box. Flag emoji were removed.
+- Chat messages longer than 300 characters are now refused with a warning,
+  instead of being cut short.
 
 ## November 9th, 2026
 

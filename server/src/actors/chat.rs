@@ -1,6 +1,6 @@
 use super::{TableActor, pending::Completed, setup::options_suggestion};
-use crate::errors::CommandResult;
 use crate::errors::OrReject;
+use crate::errors::{CommandError, CommandResult};
 use crate::{
     lobby::TableChatCommand,
     model::{Phase, TableChat, TableSnapshot},
@@ -299,7 +299,7 @@ impl TableActor {
     }
     pub(super) async fn chat(&mut self, session: Arc<Session>, msg: &str) -> CommandResult<()> {
         ensure_or_reject!(self.attending(&session), "Not attending");
-        let text = crate::accounts::normalize_chat(msg).map_err(anyhow::Error::msg)?;
+        let text = crate::accounts::normalize_chat(msg).map_err(CommandError::rejected)?;
         self.admit_player_chat(session.user)?;
         if let Some(response) = crate::lobby::general_response(&text) {
             let responses = match response {
