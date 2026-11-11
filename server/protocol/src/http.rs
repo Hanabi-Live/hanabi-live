@@ -60,6 +60,7 @@ pub struct IdentityRequest {
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
 #[serde(deny_unknown_fields)]
 pub struct IdentityResponse {
+    #[schemars(with = "Username")]
     pub username: String,
 }
 
@@ -67,6 +68,7 @@ pub struct IdentityResponse {
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct IdentityTokenResponse {
+    #[schemars(with = "Username")]
     pub username: String,
     pub token: String,
     #[schemars(with = "Timestamp")]
@@ -118,6 +120,7 @@ pub struct PublicGameRow {
     #[schemars(range(min = 0, max = MAX_SAFE_INTEGER))]
     pub num_games_on_seed: Option<i64>,
     /// In seat order.
+    #[schemars(with = "Vec<Username>")]
     pub player_names: Vec<String>,
     #[schemars(with = "Timestamp")]
     pub datetime_finished: String,

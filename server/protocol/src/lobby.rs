@@ -45,7 +45,7 @@ pub enum LobbyStatus {
 pub struct User {
     #[serde(rename = "userID")]
     pub user_id: UserId,
-    #[schemars(length(min = 1))]
+    #[schemars(with = "Username")]
     pub username: String,
     pub status: Status,
     #[serde(rename = "tableID", skip_serializing_if = "Option::is_none")]
@@ -82,6 +82,7 @@ pub struct UserInactive {
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct Friends {
+    #[schemars(with = "Vec<Username>")]
     pub friends: Vec<String>,
 }
 
@@ -89,6 +90,7 @@ pub struct Friends {
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct Blocked {
+    #[schemars(with = "Vec<Username>")]
     pub blocked: Vec<String>,
 }
 
@@ -222,13 +224,15 @@ impl Default for Settings {
 pub struct Welcome {
     #[serde(rename = "userID")]
     pub user_id: UserId,
-    #[schemars(length(min = 1))]
+    #[schemars(with = "Username")]
     pub username: String,
     pub muted: bool,
     pub first_time_user: bool,
     pub settings: Settings,
+    #[schemars(with = "Vec<Username>")]
     pub friends: Vec<String>,
     /// The users whom we have blocked, as in [`Blocked`].
+    #[schemars(with = "Vec<Username>")]
     pub blocked: Vec<String>,
     /// Ongoing games the user is a player in.
     pub playing_at_tables: Vec<TableId>,
@@ -337,7 +341,7 @@ impl Default for TableSettings {
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct Spectator {
-    #[schemars(length(min = 1))]
+    #[schemars(with = "Username")]
     pub username: String,
     /// The seat being shadowed, if any.
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -367,6 +371,7 @@ pub struct Table {
     #[serde(rename = "ownerID")]
     pub owner_id: UserId,
     pub password_protected: bool,
+    #[schemars(with = "Vec<Username>")]
     pub player_names: Vec<String>,
     /// The percentage of the maximum score reached, or of a replay watched.
     #[schemars(range(min = 0, max = MAX_PROGRESS))]
@@ -411,6 +416,7 @@ pub struct GameHistory {
     pub datetime_finished: String,
     #[schemars(range(min = 0, max = MAX_SAFE_INTEGER))]
     pub num_games_on_seed: i64,
+    #[schemars(with = "Vec<Username>")]
     pub player_names: Vec<String>,
     /// The game's tags, in alphabetical order.
     pub tags: Vec<String>,
@@ -476,6 +482,7 @@ pub struct PregameStats {
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct PregamePlayer {
     pub index: PlayerIndex,
+    #[schemars(with = "Username")]
     pub username: String,
     /// Whether this player is the recipient.
     pub you: bool,

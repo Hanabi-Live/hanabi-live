@@ -216,7 +216,7 @@ export const cardNoteSchema = z
     /**
      * The person setting the note.
      */
-    username: z.string(),
+    username: z.string().min(1),
   })
   .readonly();
 
@@ -495,6 +495,6 @@ export const playerNotesSchema = z
   .strictObject({
     isSpectator: z.boolean(),
     notes: z.array(z.string()).readonly(),
-    username: z.string(),
+    username: z.string().min(1),
   })
   .readonly();

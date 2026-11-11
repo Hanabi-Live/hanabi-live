@@ -123,6 +123,7 @@ pub enum GameStage {
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct PlayerNotes {
+    #[schemars(with = "Username")]
     pub username: String,
     pub notes: Vec<String>,
     pub is_spectator: bool,
@@ -133,6 +134,7 @@ pub struct PlayerNotes {
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct CardNote {
     /// The person setting the note.
+    #[schemars(with = "Username")]
     pub username: String,
     pub text: String,
     pub is_spectator: bool,
@@ -317,7 +319,7 @@ pub enum ViewMode {
 pub struct Init {
     #[serde(rename = "tableID")]
     pub table_id: TableId,
-    #[schemars(length(min = MIN_PLAYERS, max = MAX_PLAYERS))]
+    #[schemars(with = "Vec<Username>", length(min = MIN_PLAYERS, max = MAX_PLAYERS))]
     pub player_names: Vec<String>,
     /// The seat the recipient views the game from.
     pub our_player_index: PlayerIndex,
@@ -353,6 +355,7 @@ pub struct Init {
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct SharedReplayInit {
+    #[schemars(with = "Username")]
     pub leader: String,
     #[schemars(range(min = 0, max = i32::MAX))]
     pub segment: i32,
@@ -362,7 +365,7 @@ pub struct SharedReplayInit {
     pub spoiler_free: bool,
     /// The players who will not play again if the leader restarts.
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
-    #[schemars(length(max = MAX_PLAYERS))]
+    #[schemars(with = "Vec<Username>", length(max = MAX_PLAYERS))]
     pub restart_declined: Vec<String>,
     /// Whether the recipient played the game of this shared replay at this table, so that they can
     /// play it again: the leader by restarting, and the other players by saying if they are ready.

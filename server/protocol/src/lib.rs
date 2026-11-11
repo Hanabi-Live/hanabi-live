@@ -172,6 +172,27 @@ impl JsonSchema for NumPlayers {
     }
 }
 
+/// A username that the server sends, which is never empty. Requests carry plain strings instead, so
+/// that the server can answer a missing name, such as in a chat command, with a helpful warning.
+pub struct Username;
+
+impl JsonSchema for Username {
+    fn inline_schema() -> bool {
+        true
+    }
+
+    fn schema_name() -> std::borrow::Cow<'static, str> {
+        "Username".into()
+    }
+
+    fn json_schema(_: &mut schemars::SchemaGenerator) -> schemars::Schema {
+        schemars::json_schema!({
+            "type": "string",
+            "minLength": 1,
+        })
+    }
+}
+
 /// A timestamp on the wire: RFC 3339 in UTC, with milliseconds, such as
 /// "2026-01-01T12:00:00.000Z". Both the server's and the clients' schemas accept only this form.
 pub struct Timestamp;

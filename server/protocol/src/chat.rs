@@ -88,6 +88,7 @@ pub struct ChatHistory {
 pub struct ChatTyping {
     #[serde(rename = "tableID")]
     pub table_id: TableId,
+    #[schemars(with = "Username")]
     pub username: String,
     pub typing: bool,
 }

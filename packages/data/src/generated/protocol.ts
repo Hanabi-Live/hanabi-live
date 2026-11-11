@@ -75,7 +75,7 @@ export enum SoundMove {
  * The users whom we have blocked. It does not include the users who have blocked us.
  */
 export const blockedSchema = z
-  .strictObject({ blocked: z.array(z.string()).readonly() })
+  .strictObject({ blocked: z.array(z.string().min(1)).readonly() })
   .readonly();
 const cardIdentitySchema = z
   .strictObject({
@@ -234,7 +234,7 @@ export const chatTypingSchema = z
   .strictObject({
     tableID: tableIdSchema,
     typing: z.boolean(),
-    username: z.string(),
+    username: z.string().min(1),
   })
   .readonly();
 export const chatUserRequestSchema = z
@@ -285,11 +285,11 @@ const sharedReplayInitSchema = z
     canPlayAgain: z.boolean(),
     datetimeStarted: z.iso.datetime({ precision: 3 }),
     efficiencyModifier: z.number().int().min(-2_147_483_648).max(2_147_483_647),
-    leader: z.string(),
+    leader: z.string().min(1),
     /**
      * The players who will not play again if the leader restarts.
      */
-    restartDeclined: z.array(z.string()).max(6).readonly().optional(),
+    restartDeclined: z.array(z.string().min(1)).max(6).readonly().optional(),
     segment: z.number().int().min(0).max(2_147_483_647),
     /**
      * Whether the shared replay hides what happens later in the game.
@@ -308,7 +308,7 @@ export const finishOngoingGameSchema = z
   })
   .readonly();
 export const friendsSchema = z
-  .strictObject({ friends: z.array(z.string()).readonly() })
+  .strictObject({ friends: z.array(z.string().min(1)).readonly() })
   .readonly();
 export const gameEventListSchema = z
   .strictObject({
@@ -332,7 +332,7 @@ export const gameHistorySchema = z
     numGamesOnSeed: z.number().int().min(0).max(9_007_199_254_740_991),
     numTurns: z.number().int().min(0).max(2_147_483_647),
     options: gameOptionsSchema,
-    playerNames: z.array(z.string()).readonly(),
+    playerNames: z.array(z.string().min(1)).readonly(),
     score: z.number().int().min(0).max(2_147_483_647),
     /**
      * Absent for a game with its own deck instead of a seed, such as an imported one.
@@ -507,7 +507,7 @@ export const initSchema = z
      * Whether the recipient asked to pause the game at their next turn.
      */
     pauseQueued: z.boolean(),
-    playerNames: z.array(z.string()).min(2).max(6).readonly(),
+    playerNames: z.array(z.string().min(1)).min(2).max(6).readonly(),
     /**
      * Absent for a game with its own deck instead of a seed, such as an imported one.
      */
@@ -749,7 +749,7 @@ const pregamePlayerSchema = z
      */
     present: z.boolean(),
     stats: pregameStatsSchema,
-    username: z.string(),
+    username: z.string().min(1),
     /**
      * Whether this player is the recipient.
      */
@@ -790,7 +790,7 @@ const publicGameRowSchema = z
     /**
      * In seat order.
      */
-    playerNames: z.array(z.string()).readonly(),
+    playerNames: z.array(z.string().min(1)).readonly(),
     score: z.number().int().min(0).max(2_147_483_647),
     /**
      * Absent for a game with its own deck instead of a seed, such as an imported one.
@@ -1006,7 +1006,7 @@ export const replayCreateRequestSchema = z.discriminatedUnion("type", [
     .readonly(),
 ]);
 export const replayLeaderSchema = z
-  .strictObject({ tableID: tableIdSchema, username: z.string() })
+  .strictObject({ tableID: tableIdSchema, username: z.string().min(1) })
   .readonly();
 
 /**
@@ -1032,7 +1032,7 @@ export const restartSchema = z
 export const restartDeclinedSchema = z
   .strictObject({
     tableID: tableIdSchema,
-    usernames: z.array(z.string()).max(6).readonly(),
+    usernames: z.array(z.string().min(1)).max(6).readonly(),
   })
   .readonly();
 
@@ -1220,7 +1220,7 @@ export const suggestionSchema = z
   .strictObject({
     segment: z.number().int().min(0).max(2_147_483_647),
     tableID: tableIdSchema,
-    username: z.string(),
+    username: z.string().min(1),
   })
   .readonly();
 
@@ -1251,7 +1251,7 @@ export const tableSchema = z
     ownerID: userIdSchema,
     passwordProtected: z.boolean(),
     phase: tablePhaseSchema,
-    playerNames: z.array(z.string()).readonly(),
+    playerNames: z.array(z.string().min(1)).readonly(),
     /**
      * The percentage of the maximum score reached, or of a replay watched.
      */
@@ -1457,9 +1457,9 @@ export const welcomeSchema = z
     /**
      * The users whom we have blocked, as in [`Blocked`].
      */
-    blocked: z.array(z.string()).readonly(),
+    blocked: z.array(z.string().min(1)).readonly(),
     firstTimeUser: z.boolean(),
-    friends: z.array(z.string()).readonly(),
+    friends: z.array(z.string().min(1)).readonly(),
     muted: z.boolean(),
     /**
      * Ongoing games the user is a player in.

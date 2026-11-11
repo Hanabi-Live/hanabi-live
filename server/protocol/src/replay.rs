@@ -210,6 +210,7 @@ pub enum ReplaySoundEffect {
 pub struct ReplayLeader {
     #[serde(rename = "tableID")]
     pub table_id: TableId,
+    #[schemars(with = "Username")]
     pub username: String,
 }
 
@@ -219,7 +220,7 @@ pub struct ReplayLeader {
 pub struct RestartDeclined {
     #[serde(rename = "tableID")]
     pub table_id: TableId,
-    #[schemars(length(max = MAX_PLAYERS))]
+    #[schemars(with = "Vec<Username>", length(max = MAX_PLAYERS))]
     pub usernames: Vec<String>,
 }
 
@@ -229,6 +230,7 @@ pub struct RestartDeclined {
 pub struct Suggestion {
     #[serde(rename = "tableID")]
     pub table_id: TableId,
+    #[schemars(with = "Username")]
     pub username: String,
     #[schemars(range(min = 0, max = i32::MAX))]
     pub segment: i32,
