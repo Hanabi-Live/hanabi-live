@@ -34,6 +34,7 @@ import { controlsHypothetical } from "../ui/controlsHypothetical.ts";
 import { getCardOrStackBase } from "../ui/getCardOrStackBase.ts";
 import * as hypothetical from "../ui/hypothetical.ts";
 import * as replay from "../ui/replay.ts";
+import { getSpectatorsTooltip } from "../ui/spectatorsTooltip.ts";
 import * as turn from "../ui/turn.ts";
 import { canChooseSeat, getViewedSeat, viewAs } from "../ui/viewAs.ts";
 import type { ClueMarkerView } from "./Card.tsx";
@@ -1075,6 +1076,10 @@ export function GameScreen({
         open={newUiState.isChatOpen()}
         overlay={chatOverlay}
         spectators={state.spectators.map((spectator) => spectator.username)}
+        spectatorsTooltip={getSpectatorsTooltip(
+          state.spectators,
+          state.finished,
+        )}
         unread={globals.lobby.chatUnread}
       />
 

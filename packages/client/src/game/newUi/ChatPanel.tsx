@@ -1,5 +1,5 @@
 import { useLayoutEffect, useRef, useState } from "react";
-import { tooltipRef } from "../../tooltipRef.ts";
+import { tooltipRef, tooltipRefHtml } from "../../tooltipRef.ts";
 import * as gameChat from "../chat.ts";
 
 /**
@@ -46,6 +46,7 @@ export function ChatPanel({
   open,
   unread,
   spectators,
+  spectatorsTooltip,
   overlay,
 }: {
   readonly open: boolean;
@@ -56,6 +57,9 @@ export function ChatPanel({
 
   /** The names of the people watching the game. */
   readonly spectators: readonly string[];
+
+  /** The tooltip of the spectator count, which lists the people watching, one per line. */
+  readonly spectatorsTooltip: string;
 }): React.JSX.Element {
   const boxRef = useRef<HTMLDivElement>(null);
   const [showAllSpectators, setShowAllSpectators] = useState(false);
@@ -118,7 +122,7 @@ export function ChatPanel({
           <div
             aria-label={spectatorsLabel}
             className="tw:flex tw:flex-col tw:items-center tw:gap-0.5 tw:px-2 tw:py-1 tw:text-[13px] tw:text-game-muted"
-            ref={tooltipRef(spectatorsLabel)}
+            ref={tooltipRefHtml(spectatorsTooltip)}
             role="img"
           >
             <i aria-hidden="true" className="fas fa-eye" />
