@@ -85,3 +85,70 @@ describe("isMorphedBlank", () => {
     expect(isBlank(PRESENT_DECK_LENGTH, RED_ONE)).toBe(false);
   });
 });
+
+interface MockShape {
+  readonly visible: (value?: boolean) => boolean;
+}
+
+function mockShape(): MockShape {
+  let visible = false;
+  return {
+    visible: (value?: boolean) => {
+      if (value !== undefined) {
+        visible = value;
+      }
+      return visible;
+    },
+  };
+}
+
+function visiblePips(suitShown: boolean, rankShown: boolean) {
+  const card = Object.assign(Object.create(HanabiCard.prototype), {
+    suitPips: mockShape(),
+    rankPips: mockShape(),
+    possibilityRows: mockShape(),
+    // A Pink card clued 3 can be any 3 or any Pink card, so the card has possibility rows.
+    possibilityRowsToDraw: [],
+    pipsAllowed: { suit: !suitShown, rank: !rankShown },
+  }) as {
+    suitPips: MockShape;
+    rankPips: MockShape;
+    possibilityRows: MockShape;
+  };
+
+  (
+    HanabiCard.prototype as unknown as { updatePipVisibility: () => void }
+  ).updatePipVisibility.call(card);
+
+  return {
+    suit: card.suitPips.visible(),
+    rank: card.rankPips.visible(),
+    rows: card.possibilityRows.visible(),
+  };
+}
+
+describe("updatePipVisibility", () => {
+  test("shows the possibility rows when the card shows neither suit nor rank", () => {
+    expect(visiblePips(false, false)).toEqual({
+      suit: false,
+      rank: false,
+      rows: true,
+    });
+  });
+
+  test("shows the rank pips when the card shows its suit", () => {
+    expect(visiblePips(true, false)).toEqual({
+      suit: false,
+      rank: true,
+      rows: false,
+    });
+  });
+
+  test("shows the suit pips when the card shows its rank", () => {
+    expect(visiblePips(false, true)).toEqual({
+      suit: true,
+      rank: false,
+      rows: false,
+    });
+  });
+});

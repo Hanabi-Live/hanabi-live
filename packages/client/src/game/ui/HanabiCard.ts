@@ -697,14 +697,19 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip, UICard {
     this.updatePipVisibility();
   }
 
-  /** Shows the possibility rows instead of the suit and rank pips when the card has them. */
+  /**
+   * Shows the possibility rows instead of the suit and rank pips when the card has them. The rows
+   * need both the suit and the rank pips, so a card that shows its suit or its rank (such as a card
+   * in our hand whose identity we learn later in the game) keeps the other pips.
+   */
   private updatePipVisibility() {
-    const hasRows = this.possibilityRowsToDraw !== undefined;
-    this.suitPips.visible(this.pipsAllowed.suit && !hasRows);
-    this.rankPips.visible(this.pipsAllowed.rank && !hasRows);
-    this.possibilityRows.visible(
-      this.pipsAllowed.suit && this.pipsAllowed.rank && hasRows,
-    );
+    const showRows =
+      this.possibilityRowsToDraw !== undefined
+      && this.pipsAllowed.suit
+      && this.pipsAllowed.rank;
+    this.suitPips.visible(this.pipsAllowed.suit && !showRows);
+    this.rankPips.visible(this.pipsAllowed.rank && !showRows);
+    this.possibilityRows.visible(showRows);
   }
 
   // --------------------------
