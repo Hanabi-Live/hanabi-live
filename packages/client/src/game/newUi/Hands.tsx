@@ -84,6 +84,12 @@ interface HandsProps {
   /** In a hypothetical, while the viewer edits cards, clicking a card changes it into another. */
   readonly onEditCard: ((order: CardOrder) => void) | undefined;
 
+  /**
+   * Views the game from a player's seat, when the viewer does not play in it. Right-clicking a name
+   * does this, as on the classic screen.
+   */
+  readonly onViewAs: ((playerIndex: PlayerIndex) => void) | undefined;
+
   /** The mouse moved onto a card in a hand, or off every card (`undefined`). */
   readonly onHoverCard: (order: CardOrder | undefined) => void;
 }
@@ -562,6 +568,11 @@ function Hand({
         <span
           className="tw:relative tw:inline-flex tw:max-w-full tw:rounded-full"
           data-name-chip={seat.playerIndex}
+          // Right-clicking a name views the game from that seat, as on the classic screen.
+          onContextMenu={(event) => {
+            event.preventDefault();
+            props.onViewAs?.(seat.playerIndex);
+          }}
           style={
             giverColor === undefined
               ? undefined

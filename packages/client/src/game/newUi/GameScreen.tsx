@@ -35,6 +35,7 @@ import { getCardOrStackBase } from "../ui/getCardOrStackBase.ts";
 import * as hypothetical from "../ui/hypothetical.ts";
 import * as replay from "../ui/replay.ts";
 import * as turn from "../ui/turn.ts";
+import { canChooseSeat, getViewedSeat, viewAs } from "../ui/viewAs.ts";
 import type { ClueMarkerView } from "./Card.tsx";
 import { CARD_HEIGHT_PER_WIDTH, CardFace } from "./Card.tsx";
 import { ChatPanel } from "./ChatPanel.tsx";
@@ -52,6 +53,7 @@ import { ReplayBar } from "./ReplayBar.tsx";
 import type { DiscardView, StackView, ZoneState } from "./SharedCards.tsx";
 import { DiscardPile, PlayArea, TableTokens } from "./SharedCards.tsx";
 import { StatusStrip } from "./StatusStrip.tsx";
+import { ViewAsMenu } from "./ViewAsMenu.tsx";
 import type { CardPositions, MoveEffects } from "./cardMotion.ts";
 import {
   MAX_ANIMATED_SEGMENT_CHANGE,
@@ -981,6 +983,7 @@ export function GameScreen({
                   setMenuCard(undefined);
                   sendAction({ type: "play", order });
                 }}
+                onViewAs={canChooseSeat() ? viewAs : undefined}
                 seats={seats}
                 shownClue={
                   shownClue === undefined
@@ -1059,6 +1062,16 @@ export function GameScreen({
           score={visibleState.score}
           turn={visibleState.turn.turnNum + 1}
           variantName={options.variantName}
+          viewAsMenu={
+            canChooseSeat() && (
+              <ViewAsMenu
+                finished={state.finished}
+                onViewAs={viewAs}
+                playerNames={metadata.playerNames}
+                viewedSeat={getViewedSeat()}
+              />
+            )
+          }
         />
       </main>
 

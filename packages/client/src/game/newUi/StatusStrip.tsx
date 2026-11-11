@@ -31,6 +31,9 @@ interface StatusStripProps {
   /** A finished game is all replay, so it has no button to open one. */
   readonly finished: boolean;
   readonly onOpenReplay: () => void;
+
+  /** The menu to view the game from a seat, for anyone who does not play in it. */
+  readonly viewAsMenu: React.ReactNode;
   readonly onClassicView: () => void;
   readonly onLobby: () => void;
 }
@@ -113,6 +116,7 @@ export function StatusStrip({
   canOpenReplay,
   finished,
   onOpenReplay,
+  viewAsMenu,
   onClassicView,
   onLobby,
 }: StatusStripProps): React.JSX.Element {
@@ -154,6 +158,7 @@ export function StatusStrip({
             Replay
           </button>
         )}
+        {viewAsMenu}
         <button className={buttonClass} onClick={onClassicView} type="button">
           Classic view
         </button>

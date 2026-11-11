@@ -19,6 +19,9 @@ of the repository.
   A misplayed card explodes on its strike box, as on the classic screen.
 - In the new game screen, the discard pile now takes only the room that its
   cards need, so the clue log has more room.
+- In the new game screen, spectators can now watch the game from a player's seat
+  with the new "View as" button, or by right-clicking a player's name. While you
+  watch from a seat, the button shows whose, and its menu can stop it.
 
 ## November 10th, 2026
 
