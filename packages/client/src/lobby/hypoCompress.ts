@@ -24,7 +24,6 @@ enum CompactType {
   ColorClue,
   RankClue,
   GameOver,
-  GameOverByVote,
 }
 
 /**
@@ -32,7 +31,7 @@ enum CompactType {
  */
 interface CompactAction {
   readonly type: CompactType;
-  readonly target: number;
+  readonly target: number | undefined;
   readonly value: number | undefined;
 }
 
@@ -400,10 +399,17 @@ function decompressActions(src: string): readonly Action[] | undefined {
  */
 function actionToString(action: CompactAction, typeRange: MinMax): string {
   const r = typeRange.max - typeRange.min + 1;
-  const val = action.value === undefined ? 0 : action.value + 1;
-  const index = val * r + action.type - typeRange.min;
-  const char = BASE62.charAt(index);
-  return char + BASE62.charAt(action.target);
+  const index = encodeOptional(action.value) * r + action.type - typeRange.min;
+  return BASE62.charAt(index) + BASE62.charAt(encodeOptional(action.target));
+}
+
+/** A compressed action stores a number that may be absent as 0 when absent, or as one more. */
+function encodeOptional(value: number | undefined): number {
+  return value === undefined ? 0 : value + 1;
+}
+
+function decodeOptional(encoded: number): number | undefined {
+  return encoded === 0 ? undefined : encoded - 1;
 }
 
 /**
@@ -418,6 +424,9 @@ function stringToAction(src: string, typeRange: MinMax): Action | undefined {
   const val = Math.floor((index - type) / r);
   type += typeRange.min;
   const target = BASE62.indexOf(src.charAt(1));
+  if (target === -1) {
+    return undefined;
+  }
   const recordedType = z.enum(CompactType).safeParse(type);
   if (!recordedType.success) {
     return undefined;
@@ -425,15 +434,12 @@ function stringToAction(src: string, typeRange: MinMax): Action | undefined {
 
   return fromCompactAction({
     type: recordedType.data,
-    target,
-    value: val === 0 ? undefined : val - 1,
+    target: decodeOptional(target),
+    value: decodeOptional(val),
   });
 }
 
-/**
- * The compact form of an action. A game over without a player stores 0 as its target, which only a
- * vote to end the game reads back as no player.
- */
+/** The compact form of an action. */
 function toCompactAction(action: Action): CompactAction {
   switch (action.type) {
     case "play": {
@@ -465,11 +471,8 @@ function toCompactAction(action: Action): CompactAction {
 
     case "gameOver": {
       return {
-        type:
-          action.endCondition === EndCondition.TerminatedByVote
-            ? CompactType.GameOverByVote
-            : CompactType.GameOver,
-        target: action.playerIndex ?? 0,
+        type: CompactType.GameOver,
+        target: action.playerIndex,
         value: END_CONDITIONS.indexOf(action.endCondition),
       };
     }
@@ -504,13 +507,8 @@ function fromCompactAction(action: CompactAction): Action | undefined {
       named = {
         type: "gameOver",
         endCondition: endCondition(value),
-        playerIndex: target,
+        ...(target !== undefined && { playerIndex: target }),
       };
-      break;
-    }
-
-    case CompactType.GameOverByVote: {
-      named = { type: "gameOver", endCondition: endCondition(value) };
       break;
     }
   }

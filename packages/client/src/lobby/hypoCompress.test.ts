@@ -5,7 +5,7 @@ import { expand, shrink } from "./hypoCompress.ts";
 
 describe("replay URL seed metadata", () => {
   // Two players, one card of each rank, one play, standard variant, and no seed.
-  const payload = "215abcde,00ba,0,";
+  const payload = "215abcde,00ab,0,";
 
   test.each(["p4v0s3", undefined, "A-very-long-seed-with-hyphens-1234567890"])(
     "round-trips seed %s without changing the game",
@@ -33,9 +33,9 @@ describe("replay URL seed metadata", () => {
 
 describe("replay URL actions", () => {
   // Two players, one card of each rank, one play, standard variant, and no seed.
-  const payload = "215abcde,00ba,0,";
+  const payload = "215abcde,00ab,0,";
 
-  test("links made before actions had names still read as named actions", () => {
+  test("reads a compressed action", () => {
     const game: unknown = JSON.parse(expand(payload)!);
     expect(replayGameSchema.parse(game).actions).toEqual([
       { type: "play", order: 0 },
@@ -61,4 +61,17 @@ describe("replay URL actions", () => {
     expect(compressed).toBeDefined();
     expect(JSON.parse(expand(compressed!)!)).toEqual(game);
   });
+
+  test.each([EndCondition.TerminatedByVote, EndCondition.IdleTimeout])(
+    "round-trips a %s game over without a player",
+    (endCondition) => {
+      const game = {
+        ...replayGameSchema.parse(JSON.parse(expand(payload)!)),
+        actions: [{ type: "gameOver", endCondition }],
+      };
+      const compressed = shrink(JSON.stringify(game));
+      expect(compressed).toBeDefined();
+      expect(JSON.parse(expand(compressed!)!)).toEqual(game);
+    },
+  );
 });

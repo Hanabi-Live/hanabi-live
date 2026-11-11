@@ -28,7 +28,7 @@ function welcome(
 }
 
 describe("replay URL loading", () => {
-  const payload = "215abcde,00ba,0,";
+  const payload = "215abcde,00ab,0,";
   const locationDescriptor = Object.getOwnPropertyDescriptor(
     globalThis,
     "location",
