@@ -291,7 +291,7 @@ pub(super) async fn list(
     if mode != "variants" {
         qb.push("'variantID',g.variant_id,'numGamesOnSeed',COALESCE((SELECT num_games FROM seeds WHERE seed=g.seed),0),");
     }
-    qb.push("'playerNames',COALESCE((SELECT jsonb_agg(u.username ORDER BY gp.seat) FROM game_participants gp JOIN users u ON u.id=gp.user_id WHERE gp.game_id=g.id),'[]'::jsonb),'datetime',to_char(g.datetime_finished AT TIME ZONE 'UTC','YYYY-MM-DD\"T\"HH24:MI:SS.MS\"Z\"'),'seed',g.seed) ORDER BY g.")
+    qb.push("'playerNames',COALESCE((SELECT jsonb_agg(u.username ORDER BY gp.seat) FROM game_participants gp JOIN users u ON u.id=gp.user_id WHERE gp.game_id=g.id),'[]'::jsonb),'datetimeFinished',to_char(g.datetime_finished AT TIME ZONE 'UTC','YYYY-MM-DD\"T\"HH24:MI:SS.MS\"Z\"'),'seed',g.seed) ORDER BY g.")
         .push(column_field(order)).push(if ascending { " ASC" } else { " DESC" })
         .push(",g.id DESC) FROM paged g),'[]'::jsonb) AS rows");
     let page: PageRow = qb.build_query_as().fetch_one(&state.pool).await?;

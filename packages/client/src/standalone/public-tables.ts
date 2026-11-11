@@ -504,7 +504,7 @@ function gameRows(
         `${PATH.HISTORY}/${names.map(encodeURIComponent).join("/")}`,
         names.join(", "),
       ),
-      displayTime(game.datetime),
+      displayTime(game.datetimeFinished),
     );
     if (mode === "seed") {
       row.push(percentile(game.score, frequencies));

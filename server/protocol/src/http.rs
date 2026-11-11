@@ -119,9 +119,8 @@ pub struct PublicGameRow {
     pub num_games_on_seed: Option<u32>,
     /// In seat order.
     pub player_names: Vec<String>,
-    /// When the game finished.
     #[schemars(with = "Timestamp")]
-    pub datetime: String,
+    pub datetime_finished: String,
     /// Absent for a game with its own deck instead of a seed, such as an imported one.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub seed: Option<String>,

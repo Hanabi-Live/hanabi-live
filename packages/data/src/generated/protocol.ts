@@ -776,10 +776,7 @@ export const pregameSchema = z
  */
 const publicGameRowSchema = z
   .strictObject({
-    /**
-     * When the game finished.
-     */
-    datetime: z.iso.datetime({ precision: 3 }),
+    datetimeFinished: z.iso.datetime({ precision: 3 }),
     gameID: gameIdSchema,
     /**
      * How many games used this seed. Variant lists omit it.
