@@ -391,7 +391,7 @@ pub struct Clue {
 
 /// Converts a count or index, which a game bounds to a few hundred, to a wire integer.
 pub fn int(value: usize) -> i32 {
-    i32::try_from(value).unwrap_or(i32::MAX)
+    i32::try_from(value).expect("game counts and indexes are a few hundred at most")
 }
 
 /// The index that a wire integer refers to, or `None` if it is negative.

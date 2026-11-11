@@ -616,7 +616,7 @@ impl Snapshot {
 
 /// Converts a player count, which validation keeps at most `MAX_PLAYERS`, to its wire form.
 pub(crate) fn small(value: usize) -> u8 {
-    u8::try_from(value).unwrap_or(u8::MAX)
+    u8::try_from(value).expect("player counts are at most MAX_PLAYERS")
 }
 
 /// The options that keep a score from counting as a normal one. The database stores them in

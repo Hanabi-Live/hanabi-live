@@ -82,7 +82,8 @@ pub(super) async fn export(
     }
     let flag = |enabled: bool| enabled.then_some(true);
     let options = hanabi_protocol::ReplayOptions {
-        variant_name: (variant_id != 0).then(|| variant.name.clone()),
+        variant_name: (variant.name != hanabi_protocol::DEFAULT_VARIANT_NAME)
+            .then(|| variant.name.clone()),
         time_control: row.time_control(),
         speedrun: flag(row.speedrun),
         deck_plays: flag(row.deck_plays),

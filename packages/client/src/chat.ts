@@ -84,7 +84,8 @@ const emojiList: string[] = [];
 const emoteList: string[] = [];
 let chatLineNum = 1;
 const lobbyChatDeletionState = new LobbyChatDeletionState();
-let lastPm = "";
+/** Who sent us the most recent private message. */
+let lastPm: string | undefined;
 let datetimeLastChatInput = Date.now();
 let typedChatHistory: string[] = [];
 /**
@@ -235,7 +236,7 @@ function input(element: HTMLInputElement, room: "lobby" | "table") {
   }
 
   // /r - A PM reply.
-  if (text === "/r " && lastPm !== "") {
+  if (text === "/r " && lastPm !== undefined) {
     element.value = `/pm ${lastPm} `;
     return;
   }
@@ -679,16 +680,13 @@ function formatChatLine(data: ChatData, msg: string): string {
   const datetime = chatTimeFormatter.format(new Date(data.sentAt));
 
   let line = `[${datetime}]&nbsp; `;
-  if (data.recipient !== undefined && data.recipient !== "") {
+  if (data.recipient !== undefined) {
     line +=
       data.recipient === globals.username
         ? `<span class="red">[PM from <strong>${textToHtml(data.username ?? PROJECT_NAME)}</strong>]</span>&nbsp; `
         : `<span class="red">[PM to <strong>${textToHtml(data.recipient)}</strong>]</span>&nbsp; `;
   }
-  if (
-    data.source === "server"
-    || (data.recipient !== undefined && data.recipient !== "")
-  ) {
+  if (data.source === "server" || data.recipient !== undefined) {
     line += msg;
   } else if (data.username === undefined) {
     line += msg;

@@ -68,7 +68,7 @@ function acknowledgeChatRead(
   tableId: number | undefined,
   recipient: string | undefined,
 ) {
-  const isPm = recipient !== undefined && recipient !== "";
+  const isPm = recipient !== undefined;
   const isTableRoom = tableId !== undefined;
   const isLobbyChat = !isPm && !isTableRoom;
   if (isLobbyChat) {
