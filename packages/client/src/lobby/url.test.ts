@@ -156,6 +156,28 @@ describe("replay URL loading", () => {
     );
   });
 
+  test.each([
+    [{}, "tableJoin", { tableId: 123, password: "" }],
+    [{ spectatingAtTable: { tableId } }, "tableSpectate", { tableId }],
+  ])("route /pre-game/123 with %o sends %s", (data, command, commandData) => {
+    const send = vi.spyOn(globals.conn!, "send");
+    Object.defineProperties(globalThis, {
+      location: {
+        configurable: true,
+        value: new URL("https://hanab.live/pre-game/123"),
+      },
+      localStorage: {
+        configurable: true,
+        value: { getItem: vi.fn(() => null) },
+      },
+    });
+
+    parseAndGoto(welcome(data));
+
+    expect(send).toHaveBeenCalledTimes(1);
+    expect(send).toHaveBeenCalledWith(command, commandData);
+  });
+
   test.each(["/lobby", "/game/123", "/game/123/shadow/0"])(
     "route %s returns to an ongoing game",
     (pathname) => {

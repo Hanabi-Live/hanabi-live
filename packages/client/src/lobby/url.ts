@@ -121,13 +121,19 @@ function gotoPath(data: ServerCommandData["welcome"]): boolean {
     return true;
   }
 
-  // Automatically join a pre-game if we are using a "/pre-game/123" URL.
+  // Automatically join a pre-game if we are using a "/pre-game/123" URL. If we were spectating it
+  // (such as before a page refresh), spectate it again instead.
   const preGameMatch = /\/pre-game\/(\d+)/u.exec(globalThis.location.pathname);
   if (preGameMatch !== null) {
     const tableIDString = preGameMatch[1];
     if (tableIDString !== undefined) {
       const tableId = parseIntSafe(tableIDString);
       if (tableId !== undefined && tableId > 0) {
+        if (data.spectatingAtTable?.tableId === tableId) {
+          globals.conn!.send("tableSpectate", data.spectatingAtTable);
+          return true;
+        }
+
         // Here we unconditionally send password from cookies. If the game has no password, the
         // server will ignore it.
         const password =

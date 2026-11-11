@@ -1430,8 +1430,10 @@ async fn blocked_players_cannot_join_or_spectate_each_others_tables() -> Result<
 }
 
 #[tokio::test]
-async fn spectators_return_to_ongoing_games_and_shared_replays_after_reconnecting() -> Result<()> {
-    let Some(mut h) = Harness::new(&["Alice", "Bob", "Carol", "Dave", "Erin"]).await? else {
+async fn spectators_return_to_their_tables_after_reconnecting() -> Result<()> {
+    let Some(mut h) =
+        Harness::new(&["Alice", "Bob", "Carol", "Dave", "Erin", "Frank", "Grace"]).await?
+    else {
         return Ok(());
     };
     let outcome = async {
@@ -1442,19 +1444,28 @@ async fn spectators_return_to_ongoing_games_and_shared_replays_after_reconnectin
             .await?;
         let replay = h.replay(3).await?;
         h.send(4, "tableSpectate", json!({"tableId":replay})).await?;
+        let pregame = h.create(5, "Spectated pregame", json!({})).await?;
+        h.send(6, "tableSpectate", json!({"tableId":pregame})).await?;
 
-        // Carol shadows seat 1 of the ongoing game; Erin watches Dave's shared replay.
+        // Carol shadows seat 1 of the ongoing game; Erin watches Dave's shared replay; Grace
+        // watches Frank's pregame.
         for restarted in [false, true] {
             if restarted {
                 h.restart().await?;
             } else {
-                for index in [2, 4] {
+                for index in [2, 4, 6] {
                     h.replace(index).await?;
                 }
             }
-            for (index, table, spectating) in [
-                (2, game, json!({"tableId":game,"shadowingPlayerIndex":1})),
-                (4, replay, json!({"tableId":replay})),
+            for (index, table, spectating, rejoined) in [
+                (
+                    2,
+                    game,
+                    json!({"tableId":game,"shadowingPlayerIndex":1}),
+                    "tableStarted",
+                ),
+                (4, replay, json!({"tableId":replay}), "tableStarted"),
+                (6, pregame, json!({"tableId":pregame}), "joined"),
             ] {
                 let welcome = h.receive(index, "welcome").await?;
                 ensure!(
@@ -1464,7 +1475,7 @@ async fn spectators_return_to_ongoing_games_and_shared_replays_after_reconnectin
                 // The client spectates the table it was told about.
                 h.send(index, "tableSpectate", spectating).await?;
                 ensure!(
-                    h.receive(index, "tableStarted").await?["tableId"] == json!(table),
+                    h.receive(index, rejoined).await?["tableId"] == json!(table),
                     "A spectator did not rejoin their table (restarted: {restarted})"
                 );
             }
