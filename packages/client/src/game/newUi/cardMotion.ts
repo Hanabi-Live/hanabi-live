@@ -161,9 +161,10 @@ export function animateCardMoves(
 }
 
 /**
- * The times of the steps that show a clue, in milliseconds. The giver's name pops, a rail runs from
- * it to the receiver's name, and then a token lands on each touched card in turn. The steps are
- * short, and each one ends at rest, so that stepping through a replay stays quick.
+ * The times of the steps that show a clue, in milliseconds. They all start when the clue is given:
+ * the giver's name pops, a rail runs from it to the receiver's name, and a token lands on each
+ * touched card in turn. The steps are short, and each one ends at rest, so that stepping through a
+ * replay stays quick.
  */
 const CLUE_TIMING = {
   /** The giver's name grows and springs back. */
@@ -175,7 +176,10 @@ const CLUE_TIMING = {
   rail: 240,
   /** The arrowhead starts to pop in this long before the rail reaches the receiver. */
   headLead: 60,
-  /** Each token falls onto its card, a little after the token to its left. */
+  /**
+   * Each token falls onto its card, a little after the token to its left. The first one falls at
+   * once.
+   */
   land: 300,
   landStagger: 70,
   /** When a falling token touches its card, as a fraction of `land`. */
@@ -216,7 +220,7 @@ export function animateClue(
 
   const id = CLUE_ANIMATION_ID;
   const t = CLUE_TIMING;
-  const landStart = t.railDelay + t.rail;
+  const railEnd = t.railDelay + t.rail;
 
   // The giver's name pops, and a ring spreads from it.
   const name = root.querySelector<HTMLElement>(
@@ -252,7 +256,7 @@ export function animateClue(
     ],
     {
       id,
-      delay: landStart - t.headLead,
+      delay: railEnd - t.headLead,
       duration: t.pop,
       easing: EASE_OUT_BACK,
       fill: "backwards",
@@ -262,9 +266,7 @@ export function animateClue(
   // The other hands fade for a moment, so that the eye goes to the clue.
   const markers = [...root.querySelectorAll<HTMLElement>("[data-clue-marker]")];
   const total =
-    landStart
-    + t.land
-    + Math.max(0, markers.length - 1) * t.landStagger
+    Math.max(railEnd, t.land + Math.max(0, markers.length - 1) * t.landStagger)
     + t.hold;
   for (const hand of root.querySelectorAll<HTMLElement>("[data-hand]")) {
     const playerIndex = Number(hand.dataset["hand"]);
@@ -284,7 +286,7 @@ export function animateClue(
   // A token falls onto each touched card in turn. On impact, the card dips and flashes, and a ring
   // bursts from the token.
   for (const [i, marker] of markers.entries()) {
-    const delay = landStart + i * t.landStagger;
+    const delay = i * t.landStagger;
     const impact = delay + t.land * t.landImpact;
     const { height } = marker.getBoundingClientRect();
 
@@ -335,7 +337,7 @@ export function animateClue(
     ],
     {
       id,
-      delay: landStart,
+      delay: 0,
       duration: t.pop,
       easing: EASE_OUT_BACK,
       fill: "backwards",
