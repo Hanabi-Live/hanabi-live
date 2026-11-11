@@ -6,8 +6,6 @@ you to create games using many different variants. Players also have the ability
 to further customize a game by using a number of
 [custom game options](https://github.com/Hanabi-Live/hanabi-live/blob/main/docs/features.md#custom-game-options).
 
-<br />
-
 ## A Quick Overview of Special Suits
 
 Normal amount of cards per suit (e.g. 10 in total):
@@ -28,8 +26,6 @@ One of each card per suit (e.g. 5 in total):
 
 The pips that are assigned to each suit is documented on the
 [pips reference page](https://hanab.live/public/standalone/pips-reference.html).
-
-<br />
 
 ## Detailed Rules per Variant
 
@@ -501,13 +497,9 @@ The pips that are assigned to each suit is documented on the
   cards each and will wrap around from 4 to 1.
 - Playing the fourth card of a suit gives back a clue.
 
-<br />
-
 ## Full Variant Listing
 
 - See [this page](/misc/variants.txt).
-
-<br />
 
 ## Variant Order Summary
 

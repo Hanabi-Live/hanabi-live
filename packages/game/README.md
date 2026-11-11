@@ -9,8 +9,6 @@ You can see the full list of things that this library provides in the
 The main export of this library is the `gameReducer` function, which can compute
 the next game state from an existing game state and a game action.
 
-<br>
-
 ## Installation
 
 If you want to use the game logic in a bot or some other Hanab-related program,
@@ -19,8 +17,6 @@ then you can install it from npm:
 ```sh
 bun add @hanabi-live/game
 ```
-
-<br>
 
 ## Publishing
 

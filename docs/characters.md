@@ -6,8 +6,6 @@
   [this post](https://boardgamegeek.com/thread/1688194/hanabi-characters-variant)
   from Sean McCarthy on the Board Game Geek forums.
 
-<br />
-
 ## List of Characters
 
 - See the

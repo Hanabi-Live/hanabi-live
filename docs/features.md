@@ -6,8 +6,6 @@ Read through this page (or use
 [`Ctrl + f`](https://www.google.com/search?q=ctrl+%2B+f) on your keyboard)
 before asking any questions in the chat.
 
-<br />
-
 ## Table of Contents
 
 1. [Basic How-To](#basic-how-to)
@@ -28,8 +26,6 @@ before asking any questions in the chat.
 1. [Bots](#bots)
 1. [Password Reset](#password-reset)
 1. [Project History](#project-history)
-
-<br />
 
 ## Basic How-To
 
@@ -65,8 +61,6 @@ before asking any questions in the chat.
     - Clicking on the button corresponding to the rank or the color.
     - Clicking on the "Give Clue" button.
 - Once the game is over, use the "Lobby" button in the bottom-left-hand corner.
-
-<br />
 
 ## Major Features
 
@@ -202,15 +196,11 @@ that have not been played yet and have only one copy remaining.)
 
 - In 6-player games, only three cards are dealt to each player.
 
-<br />
-
 ## Custom Game Options
 
 - In a pre-game, the custom game options (if any) can be seen on the left side
   of the screen.
 - In a game, the custom game (if any) can be seen by hovering over the deck.
-
-<br />
 
 ### Variants
 
@@ -311,8 +301,6 @@ that have not been played yet and have only one copy remaining.)
 - Each game has the option to be created with a password.
 - This allows private tables to be created.
 
-<br />
-
 ## Other Options
 
 ### Keldon Mode
@@ -371,8 +359,6 @@ additional UI elements are enabled:
   [special sound effect when discarding in a double discard situation](../public/sounds/turn-double-discard.mp3)
 - a
   [special sound effect when playing a 1 out of order](../public/sounds/turn-order-chop-move.mp3)
-
-<br />
 
 ## Notes
 
@@ -482,8 +468,6 @@ There are also some keyboard shortcuts for making notes:
 - Shift + alt + right-click --> [ptd]
 - Ctrl + shift + alt + right-click --> [kt]
 
-<br />
-
 ## Sounds
 
 There are different sounds for:
@@ -498,8 +482,6 @@ There are different sounds for:
 - [finishing the game with a score of 0](../public/sounds/turn-finished-fail.mp3)
 - [finishing the game with a non-perfect score](../public/sounds/turn-finished-success.mp3)
 - [finishing the game with a perfect score](../public/sounds/turn-finished-perfect.mp3)
-
-<br />
 
 ## Pace & Efficiency
 
@@ -600,8 +582,6 @@ move for the current situation.
   - Thus, a player in this situation should probably discard and in that hopes
     that a teammate can perform a 2-for-1 clue.
 
-<br />
-
 ## Keyboard Shortcuts
 
 - In the lobby:
@@ -631,8 +611,6 @@ move for the current situation.
   - Go to the end: `End`
 - In a shared replay:
   - Toggle shared turns: `Up` or `Down`
-
-<br />
 
 ## Similar Deals and Competitive Play
 
@@ -680,8 +658,6 @@ move for the current situation.
   on the first turn. The game uses the same deal, seats, and options as the
   original, so it needs the same number of players.
 
-<br />
-
 ## Chat
 
 - The website offers a public lobby chat and a private per-game chat. When
@@ -704,8 +680,6 @@ move for the current situation.
 - During an ongoing game, right-clicking the chat button will mute notifications
   from chat and hide the spectator count ("zen mode", indicated by ☯️).
   Right-clicking again reverts this.
-
-<br />
 
 ## Friends
 
@@ -735,8 +709,6 @@ move for the current situation.
   receive any of Bob's seeds, but Bob might still receive seeds that Alice has
   played. This way, each user is in control of their own seed selection.
 
-<br />
-
 ## Tags
 
 - Attaching notes to cards is useful for keeping track of things in the middle
@@ -758,8 +730,6 @@ move for the current situation.
 - You can use the `/tagsearch [tag]` command to search through all games for a
   specific tag.
 
-<br />
-
 ## Website Endpoints
 
 - As mentioned previously, the website offers pages to show statistics on
@@ -776,8 +746,6 @@ move for the current situation.
 | `/seed/[seed]`                                     | Lists the games played on a specific seed.                                                      |
 | `/variant/[id]`                                    | Lists stats for a specific variant.                                                             |
 | `/tag/[tag]`                                       | Lists all the games that match the specified tag.                                               |
-
-<br />
 
 ## JSON Games
 
@@ -829,8 +797,6 @@ The columns are `id`, `numPlayers`, `score`, and `variant` (for example,
 lists filter by any column, variant lists by `id`, `numPlayers`, or `score`, and
 seed lists by `id` or `score`.
 
-<br />
-
 ## Bots
 
 - It is possible to program a bot to play on the website with other players.
@@ -845,14 +811,10 @@ seed lists by `id` or `score`.
   To create the account on its first login, also send `createAccount=true`.
 - Unlike human players, bots can play at more than one table at a time.
 
-<br />
-
 ## Password Reset
 
 If you need to reset your password, visit
 [this page](https://hanab.live/password-reset) to learn more.
-
-<br />
 
 ## Project History
 
@@ -864,5 +826,3 @@ code is vastly different.
 Development on the site continues to the present day. There have been many
 helpful contributions from various community members. If you can code,
 [you are welcome to help us](https://github.com/Hanabi-Live/hanabi-live/blob/main/CONTRIBUTING.md).
-
-<br />

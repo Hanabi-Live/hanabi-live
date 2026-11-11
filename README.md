@@ -4,8 +4,6 @@
   <img src="https://github.com/Hanabi-Live/hanabi-live/raw/main/public/img/logos/2.png" height=200 alt="Logo" title="Logo">
 </p>
 
-<br>
-
 ## Description
 
 - This is the source code for [Hanab Live](http://hanab.live/), a website that
@@ -28,15 +26,11 @@
   directory for TypeScript consumers and [`server/engine`](server/engine) for
   the native server.
 
-<br>
-
 ## Discord
 
 Find teammates to play games with at
 [the Discord server](https://discord.gg/FADvkJp). We also discuss code changes
 here.
-
-<br>
 
 ## List of Variants
 
@@ -44,21 +38,15 @@ Hanab Live is different from normal Hanabi in that it implements
 [many special variants](https://github.com/Hanabi-Live/hanabi-live/tree/main/docs/variants.md),
 in which the rules are changed to make the game more difficult.
 
-<br>
-
 ## List of Features
 
 See the
 [features documentation](https://github.com/Hanabi-Live/hanabi-live/tree/main/docs/features.md).
 
-<br>
-
 ## Installation
 
 See the
 [installation documentation](https://github.com/Hanabi-Live/hanabi-live/tree/main/docs/install.md).
-
-<br>
 
 ## Credits
 

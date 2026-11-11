@@ -3,8 +3,6 @@
 If you need general help with the website, then read the
 [features page](features.md). If you need the list of chat commands, read on.
 
-<br />
-
 ## General Commands (that work everywhere)
 
 | Command                    | Description                                                                                                                        |
@@ -23,8 +21,6 @@ If you need general help with the website, then read the
 | `/replay [game ID] [turn]` | Generate a link to a replay so that you can share it with others                                                                   |
 | `/rules`                   | Get the link for the [Community Guidelines](https://github.com/Hanabi-Live/hanabi-live/blob/main/docs/community-guidelines.md)     |
 | `/uptime`                  | Get how long the server has been online                                                                                            |
-
-<br />
 
 ## General Commands (that work everywhere except for Discord)
 
@@ -47,8 +43,6 @@ If you need general help with the website, then read the
 | `/tagsearch [tag]`               | Search through all games for a specific tag                          |
 | `/version`                       | Show the version number of the client code                           |
 
-<br />
-
 ## Pre-game Commands (table-owner-only)
 
 | Command                              | Description                                                                                                                   |
@@ -59,8 +53,6 @@ If you need general help with the website, then read the
 | `/split [username1] [username2] ...` | Move specified players to a new lobby with the same settings. The first player in the list becomes the owner of the new lobby |
 | `/splitauto` or `/sa`                | Automatically split players into two lobbies based on total game count                                                        |
 
-<br />
-
 ## Pre-game or Game Commands
 
 | Command        | Description                                                |
@@ -68,15 +60,11 @@ If you need general help with the website, then read the
 | `/findvariant` | Find a random variant that everyone needs the max score in |
 | `/missing`     | Get the list of every max score that the team is missing   |
 
-<br />
-
 ## Pre-game, Game, and Replay Commands
 
 | Command      | Description                         |
 | ------------ | ----------------------------------- |
 | `/setleader` | Change the owner/leader of the game |
-
-<br />
 
 ## Game Commands
 
@@ -86,15 +74,11 @@ If you need general help with the website, then read the
 | `/unpause`   | Unpause the game                         |
 | `/terminate` | Terminate the game                       |
 
-<br />
-
 ## Game or Replay commands
 
 | Command      | Description                                                       |
 | ------------ | ----------------------------------------------------------------- |
 | `/tag [tag]` | Tag this game with a word or phrase so that you can find it later |
-
-<br />
 
 ## Replay Commands
 

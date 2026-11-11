@@ -3,8 +3,6 @@
 If you want to learn the basics of the game with a helpful video, then
 [watch this](https://www.youtube.com/watch?v=VrFCekQb4nY). Otherwise, read on.
 
-<br />
-
 ## Overview
 
 - Hanab is a card game based on logic and deduction.
@@ -15,8 +13,6 @@ If you want to learn the basics of the game with a helpful video, then
 - There is a deck of 50 cards comprised of 5 colors and numbers 1 through 5.
 - The goal is to play the cards for each color in order (e.g. 1 through 5), kind
   of like [Solitaire](<https://en.wikipedia.org/wiki/Klondike_(solitaire)>).
-
-<br />
 
 ## The Setup
 
@@ -32,15 +28,11 @@ If you want to learn the basics of the game with a helpful video, then
   to the shared discard pile. To start off with, no cards are discarded.
 - A random player goes first.
 
-<br />
-
 ## Actions
 
 - Play rotates clockwise around the table, with each player performing one
   action.
 - There are 3 possible actions that each player can perform:
-
-<br />
 
 ### 1) Play a Card
 
@@ -50,16 +42,12 @@ If you want to learn the basics of the game with a helpful video, then
   played onto that pile.
 - Otherwise, the card goes to the discard pile. (See "Misplays" below.)
 
-<br />
-
 ### 2) Discard a Card
 
 - A player can pick any card from their hand and discard it. (They do not need
   to know exactly what the card is.)
 - The card goes to the discard pile and the team gets an additional clue token.
 - Players are not allowed to discard if the team has 8 clue tokens available.
-
-<br />
 
 ### 3) Give a Clue
 
@@ -84,8 +72,6 @@ If you want to learn the basics of the game with a helpful video, then
   - "The second and third card are 3's."
   - "The fourth card is a 4."
 
-<br />
-
 ## Misplays
 
 - If a player attempts to play a card that is not the next card for the stack,
@@ -96,8 +82,6 @@ If you want to learn the basics of the game with a helpful video, then
 - When a misplay happens, the team gets one strike.
 - If the team gets 3 strikes, the game immediately ends and the team is given a
   score of 0 points.
-
-<br />
 
 ## The Deck
 
@@ -112,8 +96,6 @@ If you want to learn the basics of the game with a helpful video, then
   are - if all copies of a card are discarded, then the team can no longer get a
   perfect score.
 
-<br />
-
 ## The End of the Game
 
 - The end of the game is triggered when the last card of the deck is drawn. When
@@ -126,8 +108,6 @@ If you want to learn the basics of the game with a helpful video, then
   - It will take a team of new players many tries before they can reach the top
     scores.
   - Experienced players will always be aiming for the maximum score.
-
-<br />
 
 ## Other Rules
 

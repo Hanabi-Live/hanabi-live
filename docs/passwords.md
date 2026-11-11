@@ -28,5 +28,3 @@ your teeth. When you have bad hygiene, you might not notice any adverse effects
 right away. But eventually, not brushing your teeth is going to come back to
 bite you, causing a cavity, or worse. Not to mention that it comes off as pretty
 disgusting!
-
-<br />

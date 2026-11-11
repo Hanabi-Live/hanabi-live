@@ -4,14 +4,10 @@ Many tech companies have security blogs that explain how they use your data, how
 they protect your data, and provide a little transparency. This blog is a short
 attempt to provide something similar.
 
-<br />
-
 ## Owner
 
 The site is owned by me (Zamiel), an enthusiast from America. It is paid for out
 of pocket. The site does not run any ads and is not monetized in any way.
-
-<br />
 
 ## Code
 
@@ -22,8 +18,6 @@ software is
 [not necessarily more secure](https://rubygarage.org/blog/open-source-software-security)
 than closed-source software.
 
-<br />
-
 ## Staff
 
 I am the only administrator for the website. This means that only I have the
@@ -33,15 +27,11 @@ In the [Discord server](https://discord.gg/FADvkJp), any user with a "Moderator"
 role is considered a Discord administrator, and has the ability to delete
 messages, ban users, and so forth (in the Discord).
 
-<br />
-
 ## Encryption
 
 The website uses HTTPS, which means that all traffic to and from the web server
 is encrypted. The certificates for this are provided by
 [Let's Encrypt](https://letsencrypt.org/).
-
-<br />
 
 ## Password Hashing
 
@@ -52,8 +42,6 @@ the database. As of 2020, this is considered to be
 This means that if an attacker was able to access the database, they would not
 be able to derive your password (since a hash is just a random sequence of
 bytes).
-
-<br />
 
 ## Data
 
@@ -67,8 +55,6 @@ Notably, there is no
 [personally identifiable information](https://en.wikipedia.org/wiki/Personal_data)
 in the database (e.g. email addresses), which makes the website a pretty
 low-priority target for an attacker looking to harvest all of the data.
-
-<br />
 
 ## Cookies
 
@@ -87,13 +73,9 @@ users can see what their table password is in the "Create Game" tooltip. (They
 need to see what the password is in order to distribute it to the other people
 joining the table.)
 
-<br />
-
 ## Server
 
 The virtual server runs on the latest version of
 [Ubuntu Server](https://ubuntu.com/download/server). It is protected by a
 host-based firewall. I make a best-effort to keep the machine up-to-date in
 terms of operating system packages, Rust dependencies, and JavaScript packages.
-
-<br />
