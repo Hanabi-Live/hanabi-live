@@ -15,8 +15,7 @@ pub struct ChatRequest {
     #[schemars(length(min = 1))]
     pub text: String,
     /// The table whose chat the message is for. Absent means the lobby.
-    #[serde(default, rename = "tableID", skip_serializing_if = "Option::is_none")]
-    #[schemars(with = "TableId")]
+    #[serde(rename = "tableID", skip_serializing_if = "Option::is_none")]
     pub table_id: Option<TableId>,
 }
 
@@ -36,11 +35,9 @@ pub struct ChatHistoryRequest {
     #[schemars(range(min = -MAX_SAFE_INTEGER, max = MAX_SAFE_INTEGER))]
     pub amount: i64,
     /// The table whose chat the command was typed in. Absent means the lobby.
-    #[serde(default, rename = "tableID", skip_serializing_if = "Option::is_none")]
-    #[schemars(with = "TableId")]
+    #[serde(rename = "tableID", skip_serializing_if = "Option::is_none")]
     pub table_id: Option<TableId>,
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    #[schemars(with = "String")]
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub username: Option<String>,
 }
 
@@ -49,8 +46,7 @@ pub struct ChatHistoryRequest {
 pub struct ChatUserRequest {
     pub username: String,
     /// The table whose chat the command was typed in. Absent means the lobby.
-    #[serde(default, rename = "tableID", skip_serializing_if = "Option::is_none")]
-    #[schemars(with = "TableId")]
+    #[serde(rename = "tableID", skip_serializing_if = "Option::is_none")]
     pub table_id: Option<TableId>,
 }
 
@@ -58,8 +54,7 @@ pub struct ChatUserRequest {
 #[serde(default, rename_all = "camelCase", deny_unknown_fields)]
 pub struct ChatLinkedRequest {
     /// The table whose chat the command was typed in. Absent means the lobby.
-    #[serde(default, rename = "tableID", skip_serializing_if = "Option::is_none")]
-    #[schemars(with = "TableId")]
+    #[serde(rename = "tableID", skip_serializing_if = "Option::is_none")]
     pub table_id: Option<TableId>,
 }
 
@@ -101,8 +96,8 @@ pub struct TableStartRequest {
     #[serde(rename = "tableID")]
     pub table_id: TableId,
     /// The players that the owner saw seated. The server ignores a start from an outdated view.
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    #[schemars(with = "Vec<String>", length(max = MAX_PLAYERS), inner(length(min = 1)))]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    #[schemars(length(max = MAX_PLAYERS), inner(length(min = 1)))]
     pub intended_player_names: Option<Vec<String>>,
 }
 
@@ -139,8 +134,7 @@ pub struct TableSpectateRequest {
     #[serde(rename = "tableID")]
     pub table_id: TableId,
     /// The seat to shadow, if any.
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    #[schemars(with = "PlayerIndex")]
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub shadowing_player_index: Option<PlayerIndex>,
 }
 
@@ -209,8 +203,7 @@ pub struct HistorySeedRequest {
 pub struct TagSearchRequest {
     pub tag: String,
     /// The table whose chat the command was typed in. Absent means the lobby.
-    #[serde(default, rename = "tableID", skip_serializing_if = "Option::is_none")]
-    #[schemars(with = "TableId")]
+    #[serde(rename = "tableID", skip_serializing_if = "Option::is_none")]
     pub table_id: Option<TableId>,
 }
 
@@ -255,8 +248,7 @@ pub enum ReplayCreateRequest {
         game_id: GameId,
         visibility: ReplayVisibility,
         /// The seat to shadow, if any.
-        #[serde(default, skip_serializing_if = "Option::is_none")]
-        #[schemars(with = "PlayerIndex")]
+        #[serde(skip_serializing_if = "Option::is_none")]
         shadowing_player_index: Option<PlayerIndex>,
         /// For a shared replay, spectate an existing shared replay of the same game instead of
         /// creating another one, if there is one.
@@ -272,8 +264,7 @@ pub enum ReplayCreateRequest {
         game_json: Box<ReplayGame>,
         visibility: ReplayVisibility,
         /// The seat to shadow, if any.
-        #[serde(default, skip_serializing_if = "Option::is_none")]
-        #[schemars(with = "PlayerIndex")]
+        #[serde(skip_serializing_if = "Option::is_none")]
         shadowing_player_index: Option<PlayerIndex>,
         /// For a shared replay, hide what happens later in the game.
         #[serde(default)]
@@ -380,8 +371,7 @@ pub enum ReplayLeaderAction {
     /// Points at a card or a part of the board.
     Arrow {
         /// Absent to clear the arrow.
-        #[serde(default, skip_serializing_if = "Option::is_none")]
-        #[schemars(with = "ReplayArrowTarget")]
+        #[serde(skip_serializing_if = "Option::is_none")]
         target: Option<ReplayArrowTarget>,
     },
     Sound {

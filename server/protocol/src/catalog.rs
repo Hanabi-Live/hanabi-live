@@ -28,15 +28,15 @@ pub struct CatalogColor {
     #[schemars(length(min = 1))]
     pub name: String,
     /// If not specified, assume that it is the first letter of the color.
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    #[schemars(with = "String", length(min = 1, max = 1))]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    #[schemars(length(min = 1, max = 1))]
     pub abbreviation: Option<String>,
     #[schemars(length(min = 1))]
     pub fill: String,
     /// An alternate fill when "Colorblind Mode" is enabled. If not specified, assume that it is the
     /// same as the default fill.
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    #[schemars(with = "String", length(min = 1))]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    #[schemars(length(min = 1))]
     pub fill_colorblind: Option<String>,
 }
 
@@ -71,8 +71,8 @@ pub struct CatalogSuit {
     /// The one letter abbreviation to use when representing this suit as a card note. If not
     /// specified, use the abbreviation of the color with the same name, or else the first letter of
     /// the suit.
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    #[schemars(with = "String", length(min = 1, max = 1))]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    #[schemars(length(min = 1, max = 1))]
     pub abbreviation: Option<String>,
     /// Whether or not to create variant combinations based on this suit.
     #[serde(default, skip_serializing_if = "is_false")]
@@ -80,16 +80,16 @@ pub struct CatalogSuit {
     pub create_variants: bool,
     /// A simplified version of the suit name to show to end-users. If not specified, use the normal
     /// suit name.
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    #[schemars(with = "String", length(min = 1))]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    #[schemars(length(min = 1))]
     pub display_name: Option<String>,
     /// The background color of cards of the suit.
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    #[schemars(with = "String", length(min = 1))]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    #[schemars(length(min = 1))]
     pub fill: Option<String>,
     /// Allows for a gradient of different colors.
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    #[schemars(with = "Vec<String>", length(min = 1))]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    #[schemars(length(min = 1))]
     pub fill_colors: Option<Vec<String>>,
     // -----------------------------------------
     // Optional gameplay modification properties
@@ -98,8 +98,7 @@ pub struct CatalogSuit {
     #[schemars(extend("const" = true))]
     pub one_of_each: bool,
     /// The colors that touch this suit. When omitted, the color with the suit's name does.
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    #[schemars(with = "Vec<String>")]
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub clue_colors: Option<Vec<String>>,
     #[serde(default, skip_serializing_if = "is_false")]
     #[schemars(extend("const" = true))]
@@ -140,20 +139,17 @@ pub struct CatalogVariant {
     #[schemars(length(min = 1))]
     pub suits: Vec<String>,
     /// The colors that players can clue. When omitted, the suits' clue colors.
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    #[schemars(with = "Vec<String>")]
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub clue_colors: Option<Vec<String>>,
     /// The ranks that players can clue. When omitted, 1 through 5.
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    #[schemars(with = "Vec<RankClueNumber>")]
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub clue_ranks: Option<Vec<RankClueNumber>>,
     /// The number of cards in each stack. When omitted, 5.
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    #[schemars(with = "u8", extend("enum" = explicit_stack_sizes()))]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    #[schemars(extend("enum" = explicit_stack_sizes()))]
     pub stack_size: Option<u8>,
     // The following properties are listed in order of how they appear in "variants.md".
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    #[schemars(with = "CardRank")]
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub special_rank: Option<CardRank>,
     #[serde(default, skip_serializing_if = "is_false")]
     #[schemars(extend("const" = true))]
@@ -170,8 +166,7 @@ pub struct CatalogVariant {
     #[serde(default, skip_serializing_if = "is_false")]
     #[schemars(extend("const" = true))]
     pub special_rank_deceptive: bool,
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    #[schemars(with = "CardRank")]
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub critical_rank: Option<CardRank>,
     #[serde(default, skip_serializing_if = "is_false")]
     #[schemars(extend("const" = true))]

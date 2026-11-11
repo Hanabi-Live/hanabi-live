@@ -18,8 +18,8 @@ pub struct Empty {}
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct Restart {
     /// HTML explaining the downtime, present only when an administrator gave a reason.
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    #[schemars(with = "String", length(min = 1))]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    #[schemars(length(min = 1))]
     pub message: Option<String>,
 }
 
@@ -33,8 +33,7 @@ pub struct Restart {
 pub enum LobbyStatus {
     Loading {},
     Error {
-        #[serde(default, skip_serializing_if = "Option::is_none")]
-        #[schemars(with = "String")]
+        #[serde(skip_serializing_if = "Option::is_none")]
         message: Option<String>,
     },
     Ready {
@@ -52,14 +51,13 @@ pub struct User {
     #[schemars(length(min = 1))]
     pub username: String,
     pub status: Status,
-    #[serde(default, rename = "tableID", skip_serializing_if = "Option::is_none")]
-    #[schemars(with = "TableId")]
+    #[serde(rename = "tableID", skip_serializing_if = "Option::is_none")]
     pub table_id: Option<TableId>,
     pub h_group_conventions: bool,
     /// The highest H-Group level that this user wants to play at. Absent when they did not choose
     /// one.
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    #[schemars(with = "u8", range(min = 1, max = MAX_H_GROUP_LEVEL))]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    #[schemars(range(min = 1, max = MAX_H_GROUP_LEVEL))]
     pub h_group_level: Option<u8>,
     pub bot: bool,
     pub inactive: bool,
@@ -106,15 +104,11 @@ pub struct Notice {
     #[schemars(length(min = 1))]
     pub message: String,
     /// The typed cause of a server failure.
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    #[schemars(with = "String", length(min = 1))]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    #[schemars(length(min = 1))]
     pub code: Option<String>,
-    #[serde(
-        default,
-        rename = "diagnosticID",
-        skip_serializing_if = "Option::is_none"
-    )]
-    #[schemars(with = "String", length(min = 1))]
+    #[serde(rename = "diagnosticID", skip_serializing_if = "Option::is_none")]
+    #[schemars(length(min = 1))]
     pub diagnostic_id: Option<String>,
 }
 
@@ -168,8 +162,8 @@ pub struct Settings {
     pub h_group_conventions: bool,
     /// The highest H-Group level that this user wants to play at. Absent when they did not choose
     /// one; `SettingRequest::cleared` removes it.
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    #[schemars(with = "u8", range(min = 1, max = MAX_H_GROUP_LEVEL))]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    #[schemars(range(min = 1, max = MAX_H_GROUP_LEVEL))]
     pub h_group_level: Option<u8>,
     #[schemars(length(min = 1))]
     pub create_table_variant: String,
@@ -241,8 +235,7 @@ pub struct Welcome {
     /// Ongoing games the user is a player in.
     pub playing_at_tables: Vec<TableId>,
     /// The table the user was spectating when they disconnected, if any.
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    #[schemars(with = "SpectatedTable")]
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub spectating_at_table: Option<SpectatedTable>,
 }
 
@@ -252,8 +245,7 @@ pub struct Welcome {
 pub struct SpectatedTable {
     #[serde(rename = "tableID")]
     pub table_id: TableId,
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    #[schemars(with = "PlayerIndex")]
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub shadowing_player_index: Option<PlayerIndex>,
 }
 
@@ -267,7 +259,7 @@ pub struct GameOptions {
     #[schemars(length(min = 1))]
     pub variant_name: String,
     #[serde(rename = "variantID", skip_serializing_if = "Option::is_none")]
-    #[schemars(with = "u32", range(min = 0, max = u32::MAX))]
+    #[schemars(range(min = 0, max = u32::MAX))]
     pub variant_id: Option<u32>,
     pub timed: bool,
     #[schemars(range(min = 0, max = MAX_TIME_BASE_SECONDS))]
@@ -324,22 +316,17 @@ pub struct TableSettings {
     /// The deal that the table requests, as the end of its full seed: "123" in a 3-player game of
     /// No Variant deals `p3v0s123`. Absent when the server deals the next seed that none of the
     /// players have played.
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    #[schemars(with = "String", length(min = 1, max = MAX_SEED_LENGTH))]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    #[schemars(length(min = 1, max = MAX_SEED_LENGTH))]
     pub seed: Option<String>,
     /// A finished game that the table plays again with its deal, seats, characters, and options,
     /// which replace the others.
-    #[serde(
-        default,
-        rename = "replayGameID",
-        skip_serializing_if = "Option::is_none"
-    )]
-    #[schemars(with = "GameId")]
+    #[serde(rename = "replayGameID", skip_serializing_if = "Option::is_none")]
     pub replay_game_id: Option<GameId>,
     /// The turn of `replayGameID` that the game starts from, counting from 1. Absent starts from
     /// the first turn.
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    #[schemars(with = "u32", range(min = 1, max = i32::MAX))]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    #[schemars(range(min = 1, max = i32::MAX))]
     pub replay_turn: Option<u32>,
 }
 
@@ -362,8 +349,7 @@ pub struct Spectator {
     #[schemars(length(min = 1))]
     pub username: String,
     /// The seat being shadowed, if any.
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    #[schemars(with = "PlayerIndex")]
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub shadowing_player_index: Option<PlayerIndex>,
 }
 
@@ -380,8 +366,7 @@ pub struct Spectators {
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct Table {
     /// The game that a replay shows, if it is stored in the database.
-    #[serde(default, rename = "gameID", skip_serializing_if = "Option::is_none")]
-    #[schemars(with = "GameId")]
+    #[serde(rename = "gameID", skip_serializing_if = "Option::is_none")]
     pub game_id: Option<GameId>,
     #[serde(rename = "tableID")]
     pub table_id: TableId,
@@ -425,8 +410,7 @@ pub struct GameHistory {
     pub game_id: GameId,
     pub options: GameOptions,
     /// Absent for a game with its own deck instead of a seed, such as an imported one.
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    #[schemars(with = "String")]
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub seed: Option<String>,
     #[schemars(range(min = 0, max = i32::MAX))]
     pub score: i32,
@@ -470,8 +454,8 @@ pub struct PregameBestScore {
     #[schemars(with = "NumPlayers")]
     pub num_players: u8,
     /// Absent when there is no game at this player count.
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    #[schemars(with = "i32", range(min = 0, max = i32::MAX))]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    #[schemars(range(min = 0, max = i32::MAX))]
     pub score: Option<i32>,
     #[schemars(range(min = 0, max = i32::MAX))]
     pub modifier: i32,

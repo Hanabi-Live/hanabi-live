@@ -17,32 +17,29 @@ use super::*;
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct ReplayGame {
     /// The game's ID, when it is exported from the database. Importing does not use it.
-    #[serde(default, rename = "gameID", skip_serializing_if = "Option::is_none")]
-    #[schemars(with = "GameId")]
+    #[serde(rename = "gameID", skip_serializing_if = "Option::is_none")]
     pub game_id: Option<GameId>,
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    #[schemars(with = "Vec<String>", length(max = MAX_PLAYERS))]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    #[schemars(length(max = MAX_PLAYERS))]
     pub player_names: Option<Vec<String>>,
     /// The deck, by card order.
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    #[schemars(with = "Vec<ReplayCard>", length(max = MAX_DECK_SIZE))]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    #[schemars(length(max = MAX_DECK_SIZE))]
     pub deck: Option<Vec<ReplayCard>>,
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    #[schemars(with = "Vec<ReplayGameAction>", length(max = MAX_GAME_ACTIONS))]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    #[schemars(length(max = MAX_GAME_ACTIONS))]
     pub actions: Option<Vec<ReplayGameAction>>,
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    #[schemars(with = "ReplayOptions")]
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub options: Option<ReplayOptions>,
     /// Each player's notes.
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    #[schemars(with = "Vec<NoteRow>", length(max = MAX_PLAYERS))]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    #[schemars(length(max = MAX_PLAYERS))]
     pub notes: Option<Vec<NoteRow>>,
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    #[schemars(with = "Vec<ReplayCharacter>", length(max = MAX_PLAYERS))]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    #[schemars(length(max = MAX_PLAYERS))]
     pub characters: Option<Vec<ReplayCharacter>>,
     /// Absent for a game with its own deck instead of a seed, such as an imported one.
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    #[schemars(with = "String")]
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub seed: Option<String>,
 }
 
@@ -65,39 +62,31 @@ pub struct ReplayCard {
 #[derive(Clone, Debug, Default, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct ReplayOptions {
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    #[schemars(with = "String", length(min = 1))]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    #[schemars(length(min = 1))]
     pub variant_name: Option<String>,
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    #[schemars(with = "bool")]
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub timed: Option<bool>,
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    #[schemars(with = "i64", range(min = -MAX_SAFE_INTEGER, max = MAX_SAFE_INTEGER))]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    #[schemars(range(min = -MAX_SAFE_INTEGER, max = MAX_SAFE_INTEGER))]
     pub time_base_seconds: Option<i64>,
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    #[schemars(with = "i64", range(min = -MAX_SAFE_INTEGER, max = MAX_SAFE_INTEGER))]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    #[schemars(range(min = -MAX_SAFE_INTEGER, max = MAX_SAFE_INTEGER))]
     pub time_per_turn_seconds: Option<i64>,
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    #[schemars(with = "bool")]
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub speedrun: Option<bool>,
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    #[schemars(with = "bool")]
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub deck_plays: Option<bool>,
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    #[schemars(with = "bool")]
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub empty_clues: Option<bool>,
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    #[schemars(with = "bool")]
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub one_extra_card: Option<bool>,
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    #[schemars(with = "bool")]
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub one_less_card: Option<bool>,
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    #[schemars(with = "bool")]
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub all_or_nothing: Option<bool>,
     /// When present, even as false, the game must assign every player a character.
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    #[schemars(with = "bool")]
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub detrimental_characters: Option<bool>,
 }
 
@@ -106,12 +95,11 @@ pub struct ReplayOptions {
 #[serde(deny_unknown_fields)]
 pub struct ReplayCharacter {
     /// Absent, or empty, when the player has no character.
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    #[schemars(with = "String")]
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub name: Option<String>,
     /// Absent when the character has no assigned metadata.
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    #[schemars(with = "i32", range(min = i32::MIN, max = i32::MAX))]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    #[schemars(range(min = i32::MIN, max = i32::MAX))]
     pub metadata: Option<i32>,
 }
 
@@ -146,8 +134,7 @@ pub struct RankClueTurn {
 pub struct GameOverTurn {
     pub end_condition: EndCondition,
     /// The player who ended the game, such as the one who timed out. Absent when no player did.
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    #[schemars(with = "PlayerIndex")]
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub player_index: Option<PlayerIndex>,
 }
 
@@ -263,8 +250,7 @@ pub struct Hypothetical {
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct HypotheticalClue {
     /// Absent when the recipient may not see the clue's type and value.
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    #[schemars(with = "Clue")]
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub clue: Option<Clue>,
     pub giver: PlayerIndex,
     pub target: PlayerIndex,
@@ -279,11 +265,9 @@ pub struct HypotheticalClue {
 pub struct MorphedCard {
     pub order: CardOrder,
     /// Absent when the recipient may not see the card.
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    #[schemars(with = "SuitIndex")]
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub suit_index: Option<SuitIndex>,
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    #[schemars(with = "CardRank")]
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub rank: Option<CardRank>,
 }
 

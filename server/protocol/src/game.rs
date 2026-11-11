@@ -18,8 +18,7 @@ pub struct Clock {
     #[schemars(with = "Vec<SafeInteger>", length(min = MIN_PLAYERS, max = MAX_PLAYERS))]
     pub player_times_ms: Vec<i64>,
     /// Absent when the game has no active player.
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    #[schemars(with = "PlayerIndex")]
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub current_player_index: Option<PlayerIndex>,
     #[schemars(range(min = 0, max = MAX_SAFE_INTEGER))]
     pub time_taken_ms: i64,
@@ -52,8 +51,7 @@ pub struct Pause {
     #[serde(rename = "tableID")]
     pub table_id: TableId,
     /// The seat that paused the game. Absent when the game is not paused.
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    #[schemars(with = "PlayerIndex")]
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub pause_player_index: Option<PlayerIndex>,
 }
 
@@ -77,11 +75,9 @@ pub struct VoteChange {
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct CardIdentity {
     /// Absent when the recipient may not see the card.
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    #[schemars(with = "SuitIndex")]
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub suit_index: Option<SuitIndex>,
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    #[schemars(with = "CardRank")]
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub rank: Option<CardRank>,
 }
 
@@ -100,8 +96,7 @@ pub struct FinishOngoingGame {
     #[serde(rename = "tableID")]
     pub table_id: TableId,
     /// Absent when the game was not saved.
-    #[serde(default, rename = "gameID", skip_serializing_if = "Option::is_none")]
-    #[schemars(with = "GameId")]
+    #[serde(rename = "gameID", skip_serializing_if = "Option::is_none")]
     pub game_id: Option<GameId>,
     pub shared_replay: SharedReplayInit,
 }
@@ -189,11 +184,9 @@ pub struct CardEvent {
     pub player_index: PlayerIndex,
     pub order: CardOrder,
     /// Absent when the recipient may not see the card.
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    #[schemars(with = "SuitIndex")]
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub suit_index: Option<SuitIndex>,
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    #[schemars(with = "CardRank")]
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub rank: Option<CardRank>,
 }
 
@@ -204,11 +197,9 @@ pub struct DiscardEvent {
     pub player_index: PlayerIndex,
     pub order: CardOrder,
     /// Absent when the recipient may not see the card.
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    #[schemars(with = "SuitIndex")]
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub suit_index: Option<SuitIndex>,
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    #[schemars(with = "CardRank")]
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub rank: Option<CardRank>,
     /// Whether the card was a failed play.
     pub failed: bool,
@@ -221,8 +212,7 @@ pub struct TurnEvent {
     #[schemars(range(min = 0, max = MAX_SAFE_INTEGER))]
     pub num: i64,
     /// Absent once the game has ended.
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    #[schemars(with = "PlayerIndex")]
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub current_player_index: Option<PlayerIndex>,
 }
 
@@ -231,8 +221,7 @@ pub struct TurnEvent {
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct ClueEvent {
     /// Absent when the recipient may not see the clue's type and value.
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    #[schemars(with = "Clue")]
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub clue: Option<Clue>,
     pub giver: PlayerIndex,
     pub target: PlayerIndex,
@@ -248,12 +237,10 @@ pub struct ClueEvent {
 pub struct GameOverEvent {
     pub end_condition: EndCondition,
     /// The player whom the ending names, such as the one who timed out, if any.
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    #[schemars(with = "PlayerIndex")]
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub player_index: Option<PlayerIndex>,
     /// The players who voted to end the game, when a vote ended it.
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    #[schemars(with = "Vec<PlayerIndex>")]
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub votes: Option<Vec<PlayerIndex>>,
 }
 
@@ -303,17 +290,13 @@ pub struct GameEventList {
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct CharacterAssignment {
     /// Absent when the player has no character.
-    #[serde(
-        default,
-        rename = "characterID",
-        skip_serializing_if = "Option::is_none"
-    )]
-    #[schemars(with = "u32", range(min = 0, max = i32::MAX))]
+    #[serde(rename = "characterID", skip_serializing_if = "Option::is_none")]
+    #[schemars(range(min = 0, max = i32::MAX))]
     pub character_id: Option<u32>,
     /// A value that some characters use, such as the rank or suit they may not clue. Absent for
     /// other characters.
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    #[schemars(with = "i32", range(min = i32::MIN, max = i32::MAX))]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    #[schemars(range(min = i32::MIN, max = i32::MAX))]
     pub metadata: Option<i32>,
 }
 
@@ -342,31 +325,27 @@ pub struct Init {
     pub our_player_index: PlayerIndex,
     pub mode: ViewMode,
     /// The game's ID, present only in a replay of a saved game.
-    #[serde(default, rename = "gameID", skip_serializing_if = "Option::is_none")]
-    #[schemars(with = "GameId")]
+    #[serde(rename = "gameID", skip_serializing_if = "Option::is_none")]
     pub game_id: Option<GameId>,
     pub has_custom_seed: bool,
     /// Absent for a game with its own deck instead of a seed, such as an imported one.
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    #[schemars(with = "String")]
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub seed: Option<String>,
     #[schemars(with = "Timestamp")]
     pub datetime_started: String,
     /// Absent while the game is in progress.
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    #[schemars(with = "Timestamp")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    #[schemars(with = "Option<Timestamp>")]
     pub datetime_finished: Option<String>,
     pub options: GameOptions,
     /// Each player's character, in seat order, when detrimental characters are on.
     #[schemars(length(max = MAX_PLAYERS))]
     pub characters: Vec<CharacterAssignment>,
     /// Present only when `mode` is `sharedReplay`.
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    #[schemars(with = "SharedReplayInit")]
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub shared_replay: Option<SharedReplayInit>,
     /// The seat that paused the game. Absent when the game is not paused.
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    #[schemars(with = "PlayerIndex")]
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub pause_player_index: Option<PlayerIndex>,
     /// Whether the recipient asked to pause the game at their next turn.
     pub pause_queued: bool,

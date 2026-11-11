@@ -42,7 +42,7 @@ Unknown schema features fail generation rather than silently losing validation.
 ## Compatibility rules
 
 - Objects reject unknown fields. Optional fields are omitted, not serialized as
-  `null`; explicit null is rejected unless the contract explicitly permits it.
+  `null`; explicit null is always rejected.
 - Missing fields with defaults are normalized identically. Empty strings are not
   automatically replaced, trimmed, or escaped.
 - Integer bounds remain JavaScript-safe. Table IDs retain their TypeScript

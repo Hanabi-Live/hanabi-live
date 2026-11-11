@@ -126,18 +126,11 @@ fn expression(schema: &Value) -> Result<String> {
         return Ok("z.unknown()".into());
     }
     let object = schema.as_object().context("Expected a schema object")?;
-    // An Option without skip_serializing_if serializes None as null: {"type": [T, "null"]}.
-    if let Some(types) = object.get("type").and_then(Value::as_array) {
-        let mut types = types.iter().filter_map(Value::as_str).collect::<Vec<_>>();
-        ensure!(
-            types.len() == 2 && types.contains(&"null"),
-            "Only nullable single types are supported"
-        );
-        types.retain(|value| *value != "null");
-        let mut inner = schema.clone();
-        inner["type"] = Value::from(types[0]);
-        return Ok(format!("{}.nullable()", expression(&inner)?));
-    }
+    // The schemas omit null, so each one has a single type.
+    ensure!(
+        !object.get("type").is_some_and(Value::is_array),
+        "Only single types are supported"
+    );
     for key in object.keys() {
         ensure!(
             [
@@ -290,7 +283,6 @@ fn expression(schema: &Value) -> Result<String> {
                 "z.number()".into()
             }
             "boolean" => "z.boolean()".into(),
-            "null" => "z.null()".into(),
             // A map, such as variant names keyed by ID: string keys, each with a value of one schema.
             "object" if schema["additionalProperties"].is_object() => {
                 ensure!(
@@ -882,14 +874,8 @@ mod tests {
     }
 
     #[test]
-    fn nullable_and_floating_point_values() {
-        assert_eq!(
-            expression(
-                &json!({"type":["integer","null"],"format":"int64","minimum":0,"maximum":10})
-            )
-            .unwrap(),
-            "z.number().int().min(0).max(10).nullable()"
-        );
+    fn single_types_and_floating_point_values() {
+        assert!(expression(&json!({"type":["integer","null"]})).is_err());
         assert_eq!(
             expression(&json!({"type":"number","format":"double","minimum":0})).unwrap(),
             "z.number().min(0)"

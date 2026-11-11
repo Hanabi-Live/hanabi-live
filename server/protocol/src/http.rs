@@ -20,7 +20,7 @@ pub struct LoginRequest {
         deserialize_with = "deserialize_form_text",
         skip_serializing_if = "Option::is_none"
     )]
-    #[schemars(with = "String", length(min = 1))]
+    #[schemars(length(min = 1))]
     pub new_password: Option<String>,
     pub version: String,
     /// Whether the client's system prefers a dark theme. A new account starts with this as its
@@ -54,15 +54,9 @@ pub struct LoginResponse {
 #[serde(deny_unknown_fields)]
 pub struct ApiError {
     pub error: String,
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    #[schemars(with = "String")]
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub code: Option<String>,
-    #[serde(
-        default,
-        rename = "diagnosticID",
-        skip_serializing_if = "Option::is_none"
-    )]
-    #[schemars(with = "String")]
+    #[serde(rename = "diagnosticID", skip_serializing_if = "Option::is_none")]
     pub diagnostic_id: Option<String>,
 }
 
@@ -139,12 +133,12 @@ pub struct PublicGameRow {
     #[schemars(range(min = 0, max = i32::MAX))]
     pub score: i32,
     /// Variant lists omit it.
-    #[serde(default, rename = "variantID", skip_serializing_if = "Option::is_none")]
-    #[schemars(with = "u32", range(max = u32::MAX))]
+    #[serde(rename = "variantID", skip_serializing_if = "Option::is_none")]
+    #[schemars(range(max = u32::MAX))]
     pub variant_id: Option<u32>,
     /// How many games used this seed. Variant lists omit it.
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    #[schemars(with = "u32", range(max = u32::MAX))]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    #[schemars(range(max = u32::MAX))]
     pub num_games_on_seed: Option<u32>,
     /// In seat order.
     pub player_names: Vec<String>,
@@ -152,8 +146,7 @@ pub struct PublicGameRow {
     #[schemars(with = "Timestamp")]
     pub datetime: String,
     /// Absent for a game with its own deck instead of a seed, such as an imported one.
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    #[schemars(with = "String")]
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub seed: Option<String>,
 }
 

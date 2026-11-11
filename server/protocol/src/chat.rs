@@ -27,23 +27,19 @@ pub struct Chat {
     #[schemars(with = "Timestamp")]
     pub datetime: String,
     /// The author. Absent when nobody wrote the message, such as a server message.
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    #[schemars(with = "String")]
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub username: Option<String>,
-    #[serde(default, rename = "chatID", skip_serializing_if = "Option::is_none")]
-    #[schemars(with = "i64", range(min = 1, max = MAX_SAFE_INTEGER))]
+    #[serde(rename = "chatID", skip_serializing_if = "Option::is_none")]
+    #[schemars(range(min = 1, max = MAX_SAFE_INTEGER))]
     pub chat_id: Option<i64>,
     /// The table whose chat shows the message. Absent means the lobby, or the recipient's current
     /// chat for a private message.
-    #[serde(default, rename = "tableID", skip_serializing_if = "Option::is_none")]
-    #[schemars(with = "TableId")]
+    #[serde(rename = "tableID", skip_serializing_if = "Option::is_none")]
     pub table_id: Option<TableId>,
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    #[schemars(with = "String")]
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub recipient: Option<String>,
     /// What the message's button applies to the table, in a suggestion to its owner.
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    #[schemars(with = "TableSettings")]
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub suggestion: Option<TableSettings>,
 }
 
@@ -83,8 +79,7 @@ pub struct ChatList {
 pub struct ChatHistory {
     pub messages: Vec<Chat>,
     /// The table whose chat requested the history. Absent means the lobby.
-    #[serde(default, rename = "tableID", skip_serializing_if = "Option::is_none")]
-    #[schemars(with = "TableId")]
+    #[serde(rename = "tableID", skip_serializing_if = "Option::is_none")]
     pub table_id: Option<TableId>,
 }
 

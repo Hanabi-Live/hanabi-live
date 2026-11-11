@@ -8,6 +8,7 @@
 )]
 use crate::*;
 use anyhow::{Context, Result, bail};
+use schemars::Schema;
 use serde::de::DeserializeOwned;
 use serde_json::Value;
 use std::{
@@ -149,6 +150,43 @@ macro_rules! game_library_types {
     };
 }
 
+/// Removes `null` from the schemas of optional values. Every optional value on the wire is omitted
+/// when it is absent, so an explicit null is invalid.
+fn omit_null(schema: &mut Schema) {
+    schemars::transform::transform_subschemas(&mut omit_null, schema);
+    let Some(object) = schema.as_object_mut() else {
+        return;
+    };
+    if let Some(Value::Array(types)) = object.get_mut("type") {
+        types.retain(|value| value != "null");
+        if let [only] = types.as_slice() {
+            let only = only.clone();
+            object.insert("type".into(), only);
+        }
+    }
+    let null = serde_json::json!({ "type": "null" });
+    if let Some(Value::Array(options)) = object.get("anyOf")
+        && options.len() == 2
+        && let Some(Value::Object(other)) = options.iter().find(|option| **option != null)
+        && options.contains(&null)
+    {
+        let other = other.clone();
+        object.remove("anyOf");
+        for (key, value) in other {
+            object.entry(key).or_insert(value);
+        }
+    }
+}
+
+/// A type's schema, as both the server's validators and the generated clients use it.
+fn schema_value<T: JsonSchema>() -> Value {
+    let schema = schemars::generate::SchemaSettings::draft2020_12()
+        .with_transform(omit_null)
+        .into_generator()
+        .into_root_schema_for::<T>();
+    serde_json::to_value(schema).expect("A schema serializes to JSON")
+}
+
 /// Every schema that the TypeScript generator can write, keyed by type name: the command payloads,
 /// the exported types, and the game library's types, each with the schemas it references.
 pub fn schemas() -> BTreeMap<String, Value> {
@@ -157,8 +195,7 @@ pub fn schemas() -> BTreeMap<String, Value> {
         ($($ty:ty),+ $(,)?) => {$(
             schemas.insert(
                 stringify!($ty).to_owned(),
-                serde_json::to_value(schemars::schema_for!($ty))
-                    .expect("A schema serializes to JSON"),
+                schema_value::<$ty>(),
             );
         )+};
     }
@@ -198,8 +235,7 @@ fn validator<T: JsonSchema + 'static>() -> Arc<jsonschema::Validator> {
     {
         return Arc::clone(validator);
     }
-    let schema =
-        serde_json::to_value(schemars::schema_for!(T)).expect("A schema serializes to JSON");
+    let schema = schema_value::<T>();
     let validator = Arc::new(
         jsonschema::options()
             .should_validate_formats(true)
