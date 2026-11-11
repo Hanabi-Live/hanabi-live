@@ -195,8 +195,12 @@ function getSeats(state: State): readonly Seat[] {
   const hasSeat = state.playing || state.shadowing;
   // In the replay of a game that we played, our hand stays first.
   const firstPlayerIndex = getViewPlayerIndex(metadata);
+  // The clock belongs to the game as it stands. A replay shows a past turn, so its current player
+  // is not the one whose clock runs.
   const showClock =
-    metadata.options.timeControl !== undefined || settings.showTimerInUntimed;
+    (metadata.options.timeControl !== undefined || settings.showTimerInUntimed)
+    && !state.replay.active
+    && !state.finished;
   const hypo = state.replay.hypothetical;
   const controlsHypo = controlsHypothetical(state);
   const identities = getShownIdentities(state);
