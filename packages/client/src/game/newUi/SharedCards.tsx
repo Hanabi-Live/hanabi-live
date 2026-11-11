@@ -275,6 +275,16 @@ export const DiscardPile = forwardRef<
 );
 
 /**
+ * A bubble for the clue tokens or the strikes: a label, and its value below it, centered. The two
+ * bubbles have the same layout, so that their labels and values line up.
+ */
+const TOKEN_BUBBLE_CLASS =
+  "tw:relative tw:flex tw:flex-1 tw:flex-col tw:items-center tw:justify-center tw:gap-1 tw:rounded-[18px] tw:bg-game-zone tw:px-3 tw:py-5";
+
+/** The row of a value, as tall as the strike boxes, so that the two values line up. */
+const TOKEN_VALUE_CLASS = "tw:flex tw:h-[32px] tw:items-center";
+
+/**
  * The clue tokens and the strikes, below the discard pile. They are real tokens in the physical
  * game, so they sit on the table instead of with the numbers along the bottom.
  */
@@ -292,51 +302,51 @@ export function TableTokens({
   readonly strikes: number;
 }): React.JSX.Element {
   return (
-    <section
-      aria-label="Clue tokens and strikes"
-      className="tw:grid tw:shrink-0 tw:grid-cols-2 tw:items-center tw:justify-items-center tw:gap-y-1.5 tw:rounded-[18px] tw:bg-game-zone tw:px-4.5 tw:py-3.5"
-    >
-      {/* The labels share the first row, and the clues and strikes share the second, so that each
-          lines up with the other. */}
-      <span className="tw:text-[13px] tw:text-game-muted">Clues</span>
-      <span className="tw:text-[13px] tw:text-game-muted">Strikes</span>
-      {/* At max clues, the count takes the color of clues, since the team must give one. */}
-      <span
-        className={`tw:text-[22px] tw:font-bold ${
-          atMaxClues ? "tw:text-clue" : "tw:text-game-text"
-        }`}
-      >
-        {atMaxClues ? (
-          <>
-            {clues}
-            <span className="tw:font-medium"> / {maxClues}</span>
-          </>
-        ) : (
-          <OutOf max={maxClues} value={clues} />
+    // Two bubbles side by side. They share their height, so that their labels and values line up.
+    <div className="tw:flex tw:shrink-0 tw:gap-3">
+      <section aria-label="Clue tokens" className={TOKEN_BUBBLE_CLASS}>
+        <span className="tw:text-[13px] tw:text-game-muted">Clues</span>
+        {/* At max clues, the count takes the color of clues, since the team must give one. */}
+        <span
+          className={`${TOKEN_VALUE_CLASS} tw:text-[22px] tw:font-bold ${
+            atMaxClues ? "tw:text-clue" : "tw:text-game-text"
+          }`}
+        >
+          {atMaxClues ? (
+            <>
+              {clues}
+              <span className="tw:font-medium">&nbsp;/ {maxClues}</span>
+            </>
+          ) : (
+            <OutOf max={maxClues} value={clues} />
+          )}
+        </span>
+        {atMaxClues && (
+          // A badge on the bottom edge of the bubble, so that the count stays centered.
+          <span className="tw:absolute tw:bottom-0 tw:left-1/2 tw:-translate-x-1/2 tw:translate-y-1/2 tw:rounded-lg tw:bg-clue tw:px-2.5 tw:py-1 tw:text-[13px] tw:leading-none tw:font-bold tw:whitespace-nowrap tw:text-card-ink tw:shadow-md tw:ring-2 tw:ring-card-ink">
+            No discards
+          </span>
         )}
-      </span>
-      <div
-        aria-label={`${strikes} of ${MAX_STRIKES} strikes`}
-        className="tw:flex tw:gap-1.5"
-        role="img"
-      >
-        {[...eRange(MAX_STRIKES)].map((i) => (
-          <span
-            className={`tw:box-border tw:size-[32px] tw:rounded-lg tw:border-2 ${
-              i < strikes
-                ? "tw:border-critical tw:bg-critical"
-                : "tw:border-game-line"
-            }`}
-            key={i}
-          />
-        ))}
-      </div>
-      {/* The note keeps its row when hidden, so that the panel does not change height. */}
-      <span
-        className={`tw:text-[13px] tw:text-clue ${atMaxClues ? "" : "tw:invisible"}`}
-      >
-        No discards
-      </span>
-    </section>
+      </section>
+      <section aria-label="Strikes" className={TOKEN_BUBBLE_CLASS}>
+        <span className="tw:text-[13px] tw:text-game-muted">Strikes</span>
+        <div
+          aria-label={`${strikes} of ${MAX_STRIKES} strikes`}
+          className={`${TOKEN_VALUE_CLASS} tw:gap-1.5`}
+          role="img"
+        >
+          {[...eRange(MAX_STRIKES)].map((i) => (
+            <span
+              className={`tw:box-border tw:size-[32px] tw:rounded-lg tw:border-2 ${
+                i < strikes
+                  ? "tw:border-critical tw:bg-critical"
+                  : "tw:border-game-line"
+              }`}
+              key={i}
+            />
+          ))}
+        </div>
+      </section>
+    </div>
   );
 }
