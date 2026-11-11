@@ -3,6 +3,7 @@ import { useEffect, useLayoutEffect, useRef } from "react";
 import type { ClueMarkerView } from "./Card.tsx";
 import {
   CARD_HEIGHT_PER_WIDTH,
+  CLUE_TOKEN_REACH_PER_WIDTH,
   CardFace,
   describeCard,
   getClueMarkerColor,
@@ -535,11 +536,18 @@ function Hand({
       aria-label={`${seat.name}'s hand`}
       className={`tw:relative tw:flex tw:rounded-2xl tw:px-4 tw:pt-4 tw:pb-2 ${
         props.nameColumnWidth === undefined
-          ? "tw:flex-col tw:items-start tw:gap-2"
+          ? "tw:flex-col tw:items-start"
           : "tw:items-center tw:gap-4"
       } ${boxClass}`}
       data-hand={seat.playerIndex}
       role="group"
+      // With the name above the cards, the gap leaves room for the clue tokens, so that they do not
+      // cover the name.
+      style={
+        props.nameColumnWidth === undefined
+          ? { gap: props.cardWidth * CLUE_TOKEN_REACH_PER_WIDTH }
+          : undefined
+      }
     >
       <div
         className="tw:flex tw:max-w-full tw:shrink-0"

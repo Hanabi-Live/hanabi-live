@@ -15,6 +15,18 @@ const CLUED_RAISE_PER_WIDTH = 0.12;
  */
 const CLUE_TOKEN_SIZE_PER_WIDTH = 0.46;
 
+/** How much of the token is above the card's top edge. The rest overlaps the card. */
+const CLUE_TOKEN_PART_ABOVE_CARD = 0.8;
+
+/**
+ * How far a clue token reaches above the place where its card rests in a hand, as a fraction of the
+ * card's width. (A touched card is clued, so it is also raised.) A hand whose name sits above its
+ * cards leaves this much room between them.
+ */
+export const CLUE_TOKEN_REACH_PER_WIDTH =
+  CLUE_TOKEN_SIZE_PER_WIDTH * CLUE_TOKEN_PART_ABOVE_CARD
+  + CLUED_RAISE_PER_WIDTH;
+
 /**
  * The clue that a marker on a card shows: a color, a rank, or a clue that the viewer may not see
  * (in some variants).
@@ -93,7 +105,7 @@ function ClueMarker({
       className="tw:pointer-events-none tw:absolute tw:left-1/2 tw:z-10"
       data-clue-marker
       style={{
-        top: -size * 0.8,
+        top: -size * CLUE_TOKEN_PART_ABOVE_CARD,
         width: size,
         height: size,
         marginLeft: -size / 2,
