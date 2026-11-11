@@ -6,6 +6,7 @@
 
 import { clamp } from "complete-common";
 import { useRef, useState } from "react";
+import { tooltipRef } from "../../tooltipRef.ts";
 import type { State } from "../types/State.ts";
 import { globals } from "../ui/UiGlobals.ts";
 import { controlsHypothetical } from "../ui/controlsHypothetical.ts";
@@ -13,7 +14,6 @@ import * as hypothetical from "../ui/hypothetical.ts";
 import { showPassLeaderDialog } from "../ui/leader.ts";
 import * as replay from "../ui/replay.ts";
 import * as restart from "../ui/restart.ts";
-import { tooltipRef } from "./tooltipRef.ts";
 
 type Mode = "replay" | "hypothetical";
 

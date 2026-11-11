@@ -1,8 +1,8 @@
 import type { CardOrder } from "@hanabi-live/game";
 import { useLayoutEffect, useRef, useState } from "react";
+import { tooltipRef } from "../../tooltipRef.ts";
 import type { ClueMarkerView } from "./Card.tsx";
 import { getClueMarkerColor } from "./Card.tsx";
-import { tooltipRef } from "./tooltipRef.ts";
 
 /** The size of the disc that shows each clue in the log, in CSS pixels. */
 const CLUE_DISC_SIZE = 20;

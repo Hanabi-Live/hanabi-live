@@ -1,7 +1,7 @@
 import type { Rank, Suit, SuitIndex, Variant } from "@hanabi-live/game";
 import { START_CARD_RANK } from "@hanabi-live/game";
 import { START_CARD_RANK_LABEL } from "../../constants.ts";
-import { useTooltip } from "../../useTooltip.ts";
+import { tooltipRef } from "../../tooltipRef.ts";
 import { CARD_H, CARD_W } from "../ui/constants.ts";
 import { Pip } from "./Pip.tsx";
 
@@ -142,10 +142,8 @@ function ClueMarker({
 
 /** What the badge in the corner of a card means, in the site's tooltip style. */
 const STATUS_TOOLTIP = {
-  critical:
-    '<span class="small-tooltip-text">The last copy of this card. Do not discard it.</span>',
-  trash:
-    '<span class="small-tooltip-text">Known trash. This card can never be played.</span>',
+  critical: "The last copy of this card. Do not discard it.",
+  trash: "Known trash. This card can never be played.",
 } as const;
 
 /**
@@ -159,17 +157,15 @@ function StatusBadge({
   readonly critical: boolean;
   readonly width: number;
 }): React.JSX.Element {
-  const ref = useTooltip<HTMLSpanElement>(
-    critical ? STATUS_TOOLTIP.critical : STATUS_TOOLTIP.trash,
-  );
-
   return (
     <span
       aria-label={critical ? "Last copy" : "Trash"}
       className={`tw:absolute tw:flex tw:items-center tw:justify-center tw:rounded-full tw:font-extrabold tw:text-white ${
         critical ? "tw:bg-critical" : "tw:bg-game-line"
       }`}
-      ref={ref}
+      ref={tooltipRef(
+        critical ? STATUS_TOOLTIP.critical : STATUS_TOOLTIP.trash,
+      )}
       role="img"
       style={{
         right: width * 0.06,

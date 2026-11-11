@@ -5,7 +5,7 @@ import { globals } from "../../Globals.ts";
 import { DIMMED_OPACITY } from "../../constants.ts";
 import { store, useAppSelector } from "../../store.ts";
 import { TAB_CLASS_NAME } from "../../tabClassName.ts";
-import { useTooltip } from "../../useTooltip.ts";
+import { tooltipRef } from "../../tooltipRef.ts";
 import { tableJoin, tableSpectate } from "../tables/tableActions.ts";
 import { Screen } from "../types/Screen.ts";
 import { UserLink } from "./UserMenu.tsx";
@@ -19,10 +19,9 @@ import {
 } from "./usersSlice.ts";
 
 const H_GROUP_TOOLTIP =
-  '<span class="small-tooltip-text">This person is a self-identified member of the H-Group.</span>';
+  "This person is a self-identified member of the H-Group.";
 
-const BOT_TOOLTIP =
-  '<span class="small-tooltip-text">This account is a bot.</span>';
+const BOT_TOOLTIP = "This account is a bot.";
 
 const SLEEPING_EMOJI = "\u{1F4A4}";
 const ROBOT_EMOJI = "\u{1F916}";
@@ -143,7 +142,7 @@ function UserRowView({
 }
 
 function HGroupIcon() {
-  const ref = useTooltip<HTMLSpanElement>(H_GROUP_TOOLTIP);
+  const ref = tooltipRef(H_GROUP_TOOLTIP);
 
   return (
     <span ref={ref}>
@@ -163,7 +162,7 @@ function UserIcon({ user }: { readonly user: UserRow["user"] }) {
 }
 
 function BotIcon() {
-  const ref = useTooltip<HTMLSpanElement>(BOT_TOOLTIP);
+  const ref = tooltipRef(BOT_TOOLTIP);
 
   return (
     // The slot has the width of the other icons, which keeps the names aligned.

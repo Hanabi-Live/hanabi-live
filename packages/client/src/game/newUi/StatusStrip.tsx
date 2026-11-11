@@ -1,4 +1,4 @@
-import { useTooltip } from "../../useTooltip.ts";
+import { tooltipRefHtml } from "../../tooltipRef.ts";
 
 /**
  * Explains the two efficiency numbers, in the words of the classic screen's tooltip. The text wraps
@@ -68,13 +68,11 @@ function HelpIcon({
   readonly label: string;
   readonly tooltip: string;
 }): React.JSX.Element {
-  const ref = useTooltip<HTMLButtonElement>(tooltip);
-
   return (
     <button
       aria-label={label}
       className="tw:ml-1.5 tw:cursor-help tw:border-0 tw:bg-transparent tw:p-0 tw:text-game-link tw:hover:text-game-text"
-      ref={ref}
+      ref={tooltipRefHtml(tooltip)}
       type="button"
     >
       <i aria-hidden="true" className="fas fa-question-circle" />

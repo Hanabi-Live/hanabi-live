@@ -8,7 +8,7 @@ import { PATH } from "../../constants.ts";
 import { OptionIcons } from "../../enums/OptionIcons.ts";
 import { globals } from "../../Globals.ts";
 import { useAppSelector } from "../../store.ts";
-import { useTooltip } from "../../useTooltip.ts";
+import { tooltipRefHtml } from "../../tooltipRef.ts";
 import { dateTimeFormatter } from "../../utils.ts";
 import { BORDERED_TABLE } from "../borderedTable.ts";
 import {
@@ -266,7 +266,7 @@ function HistoryOptions({ options }: { readonly options: GameOptions }) {
         `<li class="tw:mb-[0.3em] tw:pl-[0.2em] tw:last:mb-0"><i class="${icon} icon-label"></i>${text}</li>`,
     )
     .join("");
-  const ref = useTooltip<HTMLDivElement>(
+  const ref = tooltipRefHtml(
     tooltip === ""
       ? undefined
       : `<ul class="tw:m-0 tw:list-none tw:p-0">${tooltip}</ul>`,

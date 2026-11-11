@@ -1,6 +1,6 @@
 import { useLayoutEffect, useRef, useState } from "react";
+import { tooltipRef } from "../../tooltipRef.ts";
 import * as gameChat from "../chat.ts";
-import { tooltipRef } from "./tooltipRef.ts";
 
 /**
  * While the panel holds the classic chat box, these classes make it fill the panel instead of the

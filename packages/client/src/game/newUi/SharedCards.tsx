@@ -2,10 +2,10 @@ import type { CardOrder, Rank, SuitIndex, Variant } from "@hanabi-live/game";
 import { MAX_STRIKES } from "@hanabi-live/game";
 import { eRange } from "complete-common";
 import { forwardRef } from "react";
+import { tooltipRef } from "../../tooltipRef.ts";
 import { CARD_HEIGHT_PER_WIDTH, CardFace, describeCard } from "./Card.tsx";
 import { Pip } from "./Pip.tsx";
 import { OutOf } from "./StatusStrip.tsx";
-import { tooltipRef } from "./tooltipRef.ts";
 
 /** How far each discarded card covers the one before it in its row, as a fraction of its width. */
 const DISCARD_OVERLAP_PER_WIDTH = 0.4;

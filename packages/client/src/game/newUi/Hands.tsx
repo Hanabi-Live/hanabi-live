@@ -1,5 +1,6 @@
 import type { CardOrder, PlayerIndex, Variant } from "@hanabi-live/game";
 import { useEffect, useLayoutEffect, useRef } from "react";
+import { tooltipRef } from "../../tooltipRef.ts";
 import type { ClueMarkerView } from "./Card.tsx";
 import {
   CARD_HEIGHT_PER_WIDTH,
@@ -9,7 +10,6 @@ import {
   getClueMarkerColor,
 } from "./Card.tsx";
 import type { CardView } from "./tableView.ts";
-import { tooltipRef } from "./tooltipRef.ts";
 
 export interface Seat {
   readonly playerIndex: PlayerIndex;

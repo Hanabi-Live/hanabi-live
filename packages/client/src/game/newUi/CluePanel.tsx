@@ -1,7 +1,7 @@
 import type { Clue, Variant } from "@hanabi-live/game";
 import { newColorClue, newRankClue } from "@hanabi-live/game";
+import { tooltipRef } from "../../tooltipRef.ts";
 import { getRankLabel } from "./Card.tsx";
-import { tooltipRef } from "./tooltipRef.ts";
 
 interface CluePanelProps {
   readonly variant: Variant;

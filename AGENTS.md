@@ -37,8 +37,8 @@ screen moves to React, delete the stylesheet rules that only that screen used.
 
 Do not use the HTML `title` attribute for tooltips. The browser draws it as a
 plain box that does not match the site's tooltips. Use the site's tooltip
-instead: the `useTooltip` hook in React components, or `tooltipRef` in the new
-game screen where a hook cannot be called, such as inside a loop.
+instead. In React components, pass `tooltipRef("text")` (or `tooltipRefHtml` for
+HTML) from `packages/client/src/tooltipRef.ts` as the element's `ref`.
 
 Before you design a new button or animation for the New UI, load the
 `frontend-design`, `game-feel`, and `game-ui-ux` skills, and follow them.

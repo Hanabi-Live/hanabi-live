@@ -1,6 +1,6 @@
 // An icon that summarizes a table's option, with a tooltip that explains it.
 
-import { useTooltip } from "../useTooltip.ts";
+import { tooltipRefHtml } from "../tooltipRef.ts";
 import type { OptionDescription } from "./optionDescriptions.ts";
 
 export function OptionIcon({
@@ -10,9 +10,7 @@ export function OptionIcon({
     readonly icon: string;
   };
 }): React.JSX.Element {
-  const ref = useTooltip<HTMLElement>(
-    `<div class="tw:text-[0.75em]">${tooltip}</div>`,
-  );
+  const ref = tooltipRefHtml(`<div class="tw:text-[0.75em]">${tooltip}</div>`);
 
   return (
     <li className="tw:mr-2 tw:inline-block tw:pl-0">
