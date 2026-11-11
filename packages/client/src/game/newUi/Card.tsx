@@ -1,6 +1,8 @@
 import type { Rank, Suit, SuitIndex, Variant } from "@hanabi-live/game";
 import { START_CARD_RANK } from "@hanabi-live/game";
+import { useEffect, useRef } from "react";
 import { START_CARD_RANK_LABEL } from "../../constants.ts";
+import * as tooltips from "../../tooltips.ts";
 import { CARD_H, CARD_W } from "../ui/constants.ts";
 import { Pip } from "./Pip.tsx";
 
@@ -139,6 +141,51 @@ function ClueMarker({
   );
 }
 
+/** What the badge in the corner of a card means, in the site's tooltip style. */
+const STATUS_TOOLTIP = {
+  critical:
+    '<span class="small-tooltip-text">The last copy of this card. Do not discard it.</span>',
+  trash:
+    '<span class="small-tooltip-text">Known trash. This card can never be played.</span>',
+} as const;
+
+/**
+ * The badge in the corner of a card. A red badge with an exclamation mark shows the last copy of a
+ * card that is still needed. A gray badge with a trash can shows a card that is known to be trash.
+ */
+function StatusBadge({
+  critical,
+  width,
+}: {
+  readonly critical: boolean;
+  readonly width: number;
+}): React.JSX.Element {
+  const ref = useRef<HTMLSpanElement>(null);
+  const tooltip = critical ? STATUS_TOOLTIP.critical : STATUS_TOOLTIP.trash;
+  useEffect(() => tooltips.attach(ref.current!, tooltip), [tooltip]);
+
+  return (
+    <span
+      aria-label={critical ? "Last copy" : "Trash"}
+      className={`tw:absolute tw:flex tw:items-center tw:justify-center tw:rounded-full tw:font-extrabold tw:text-white ${
+        critical ? "tw:bg-critical" : "tw:bg-game-line"
+      }`}
+      ref={ref}
+      role="img"
+      style={{
+        right: width * 0.06,
+        top: width * 0.06,
+        width: width * 0.3,
+        height: width * 0.3,
+        fontSize: width * 0.22,
+        boxShadow: "0 0 0 1.5px white",
+      }}
+    >
+      {critical ? "!" : <i aria-hidden="true" className="fas fa-trash-alt" />}
+    </span>
+  );
+}
+
 /**
  * Returns the colors of a card face for a suit, or the colors of an unknown card. The colors that
  * come from the theme are classes, since the theme does not define them as CSS variables.
@@ -272,26 +319,7 @@ export function CardFace({
       )}
 
       {(critical || trashIcon) && (
-        <span
-          className={`tw:absolute tw:flex tw:items-center tw:justify-center tw:rounded-full tw:font-extrabold tw:text-white ${
-            critical ? "tw:bg-critical" : "tw:bg-game-line"
-          }`}
-          style={{
-            right: width * 0.06,
-            top: width * 0.06,
-            width: width * 0.3,
-            height: width * 0.3,
-            fontSize: width * 0.22,
-            boxShadow: "0 0 0 1.5px white",
-          }}
-          title={critical ? "Last copy" : "Trash"}
-        >
-          {critical ? (
-            "!"
-          ) : (
-            <i aria-hidden="true" className="fas fa-trash-alt" />
-          )}
-        </span>
+        <StatusBadge critical={critical} width={width} />
       )}
 
       {(showSuitPips || showRankPips) && (
