@@ -296,7 +296,7 @@ pub(super) async fn list(
         .push(",g.id DESC) FROM paged g),'[]'::jsonb) AS rows");
     let page: PageRow = qb.build_query_as().fetch_one(&state.pool).await?;
     Ok(hanabi_protocol::PublicGamePage {
-        total_rows: page.total_rows,
+        total_rows: hanabi_protocol::Count(page.total_rows),
         info: format!(
             "Params: size=1...{}, page=0..., col[x]=0|1 (sort ascending or descending by one column: {}), fcol[x]=integer (filter by {})",
             super::MAX_PAGE_SIZE,
@@ -320,9 +320,9 @@ fn game_history(row: HistoryRow) -> anyhow::Result<hanabi_protocol::GameHistoryE
         end_condition: hanabi_protocol::EndCondition::try_from(i32::from(g.end_condition))
             .map_err(anyhow::Error::msg)
             .context("Invalid stored end condition")?,
-        datetime_started: crate::model::timestamp(g.datetime_started),
-        datetime_finished: crate::model::timestamp(g.datetime_finished),
-        player_names: row.names,
+        datetime_started: hanabi_protocol::Timestamp::from(g.datetime_started),
+        datetime_finished: hanabi_protocol::Timestamp::from(g.datetime_finished),
+        player_names: row.names.into_iter().map(Into::into).collect(),
         tags: row.tags,
     })
 }

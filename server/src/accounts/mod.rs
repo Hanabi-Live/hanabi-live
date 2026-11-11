@@ -576,9 +576,9 @@ async fn identity_token(
         let result = regenerate_token(&state.pool, &state.config.secret, id, &ip).await?;
         tracing::info!("Issued identity token for account {id} from IP: {ip}");
         Ok(Json(IdentityTokenResponse {
-            username,
+            username: username.into(),
             token: result.token,
-            expires_at: crate::model::timestamp(result.expires_at),
+            expires_at: hanabi_protocol::Timestamp::from(result.expires_at),
         })
         .into_response())
     }
@@ -627,7 +627,7 @@ async fn identity(
             if expiry > Utc::now() && verify_password(&ip, token, row.token_hash.clone()).await? {
                 tracing::info!("Verified identity token from IP: {ip}");
                 return Ok(Json(IdentityResponse {
-                    username: row.username.clone(),
+                    username: row.username.clone().into(),
                 })
                 .into_response());
             }

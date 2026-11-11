@@ -442,7 +442,7 @@ impl TableActor {
                 || matches!(self.table.phase, Phase::Replay { .. })
             {
                 notes.push(hanabi_protocol::PlayerNotes {
-                    username: p.name.clone(),
+                    username: p.name.clone().into(),
                     notes: s.notes[i].clone(),
                     is_spectator: false,
                 });
@@ -451,7 +451,7 @@ impl TableActor {
         for (id, n) in &s.spectator_notes {
             if *id == a.session.user || a.shadow.is_none() {
                 notes.push(hanabi_protocol::PlayerNotes {
-                    username: n.name.clone(),
+                    username: n.name.clone().into(),
                     notes: n.notes.clone(),
                     is_spectator: true,
                 });
@@ -463,7 +463,7 @@ impl TableActor {
         {
             if a.shadow.is_none() || spectator.session.user == a.session.user {
                 notes.push(hanabi_protocol::PlayerNotes {
-                    username: spectator.session.name.clone(),
+                    username: spectator.session.name.clone().into(),
                     notes: vec![String::new(); s.game.deck.len() + s.game.stacks.len()],
                     is_spectator: true,
                 });
@@ -484,7 +484,7 @@ impl TableActor {
         self.table
             .visible
             .then(|| hanabi_protocol::SharedReplayInit {
-                leader: self.leader_name(),
+                leader: self.leader_name().into(),
                 segment: replay.segment,
                 efficiency_modifier: replay.efficiency_modifier,
                 spoiler_free: replay.spoiler_free,
@@ -492,7 +492,7 @@ impl TableActor {
                 can_play_again: self.can_play_again(session),
                 // A review of a game just played begins when the game ends; a replay of an older
                 // game begins when its table is created.
-                datetime_started: crate::model::timestamp(
+                datetime_started: hanabi_protocol::Timestamp::from(
                     s.finished
                         .map_or(self.table.created, |f| f.max(self.table.created)),
                 ),
@@ -513,7 +513,7 @@ impl TableActor {
             let shared_replay = self.shared_replay_init(s, &session);
             let init = hanabi_protocol::Init {
                 table_id: self.table.id,
-                player_names: s.players.iter().map(|p| p.name.clone()).collect(),
+                player_names: s.players.iter().map(|p| p.name.as_str().into()).collect(),
                 our_player_index: a
                     .shadow
                     .or_else(|| display_seat.and_then(PlayerIndex::new))
@@ -532,8 +532,8 @@ impl TableActor {
                 game_id: s.game_id.filter(|_| replay),
                 has_custom_seed: self.table.extra.custom_seed.is_some(),
                 seed: s.seed.clone(),
-                datetime_started: crate::model::timestamp(s.started),
-                datetime_finished: s.finished.map(crate::model::timestamp),
+                datetime_started: hanabi_protocol::Timestamp::from(s.started),
+                datetime_finished: s.finished.map(hanabi_protocol::Timestamp::from),
                 options: wire_options(&s.game.options),
                 characters: if s.game.options.detrimental_characters {
                     s.game
@@ -648,7 +648,7 @@ impl TableActor {
                         hanabi_protocol::server::CHAT_TYPING,
                         ChatTyping {
                             table_id: self.table.id,
-                            username: a.session.name.clone(),
+                            username: a.session.name.clone().into(),
                             typing: true,
                         },
                     ),

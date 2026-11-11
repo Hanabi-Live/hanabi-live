@@ -219,7 +219,7 @@ impl Hub {
     fn user(p: &Presence) -> User {
         User {
             user_id: p.session.user,
-            username: p.session.name.clone(),
+            username: p.session.name.clone().into(),
             status: p.status,
             // A solo replay is private, so its table is not named.
             table_id: p.table.filter(|_| p.status != Status::Replay),

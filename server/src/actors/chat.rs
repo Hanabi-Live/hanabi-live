@@ -39,8 +39,8 @@ pub(super) fn authored_chat(id: TableId, name: &str, message: &str) -> Chat {
         )
     }
 }
-pub(super) fn chat_time() -> String {
-    crate::model::timestamp(Utc::now())
+pub(super) fn chat_time() -> hanabi_protocol::Timestamp {
+    hanabi_protocol::Timestamp::from(Utc::now())
 }
 
 /// The most table chat messages one player can send per `TABLE_CHAT_WINDOW`.
@@ -306,7 +306,7 @@ impl TableActor {
                 crate::lobby::GeneralResponse::Private(response) => {
                     let mut e = self.effects();
                     let mut message = server_chat(self.table.id, &response);
-                    message.recipient = Some(session.name.clone());
+                    message.recipient = Some(session.name.clone().into());
                     e.messages
                         .push((session, frame(hanabi_protocol::server::CHAT, message)));
                     return self.publish(e).await;
@@ -517,7 +517,7 @@ impl TableActor {
                                 "You are a CREWMATE."
                             },
                         );
-                        message.recipient = Some(a.session.name.clone());
+                        message.recipient = Some(a.session.name.clone().into());
                         e.messages.push((
                             a.session.clone(),
                             frame(hanabi_protocol::server::CHAT, message),

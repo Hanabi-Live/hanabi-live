@@ -59,19 +59,16 @@ pub struct IdentityRequest {
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct IdentityResponse {
-    #[schemars(with = "Username")]
-    pub username: String,
+    pub username: Username,
 }
 
 /// A newly issued identity token, from `/api/v1/identity/token`.
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct IdentityTokenResponse {
-    #[schemars(with = "Username")]
-    pub username: String,
+    pub username: Username,
     pub token: String,
-    #[schemars(with = "Timestamp")]
-    pub expires_at: String,
+    pub expires_at: Timestamp,
 }
 
 /// The `/password-reset` request: a new password for an administrator to set.
@@ -93,8 +90,7 @@ pub struct PasswordHashResponse {
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct PublicGamePage {
-    #[schemars(range(min = 0, max = MAX_SAFE_INTEGER))]
-    pub total_rows: i64,
+    pub total_rows: Count,
     /// The accepted parameters.
     pub info: String,
     pub rows: Vec<PublicGameRow>,
@@ -117,10 +113,8 @@ pub struct PublicGameRow {
     #[schemars(range(min = 1, max = MAX_SAFE_INTEGER))]
     pub num_games_on_seed: Option<i64>,
     /// In seat order.
-    #[schemars(with = "Vec<Username>")]
-    pub player_names: Vec<String>,
-    #[schemars(with = "Timestamp")]
-    pub datetime_finished: String,
+    pub player_names: Vec<Username>,
+    pub datetime_finished: Timestamp,
     /// Absent for a game with its own deck instead of a seed, such as an imported one.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub seed: Option<String>,

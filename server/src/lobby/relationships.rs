@@ -2,28 +2,34 @@ use super::{Effect, Publication, notice, warning};
 use crate::accounts::{escape_html, normalize_string};
 use crate::transport::{Identity, Outgoing};
 use anyhow::Result;
-use hanabi_protocol::{TableId, UserId};
+use hanabi_protocol::{TableId, UserId, Username};
 use sqlx::PgPool;
 
-pub async fn friends(pool: &PgPool, id: UserId) -> Result<Vec<String>> {
+pub async fn friends(pool: &PgPool, id: UserId) -> Result<Vec<Username>> {
     Ok(sqlx::query_scalar!(
         "SELECT u.username FROM user_friends f JOIN users u ON u.id=f.friend_id
          WHERE f.user_id=$1 ORDER BY LOWER(u.username) COLLATE \"C\"",
         id.0
     )
     .fetch_all(pool)
-    .await?)
+    .await?
+    .into_iter()
+    .map(Username::from)
+    .collect())
 }
 
 /// The users whom `id` has blocked.
-pub async fn blocked(pool: &PgPool, id: UserId) -> Result<Vec<String>> {
+pub async fn blocked(pool: &PgPool, id: UserId) -> Result<Vec<Username>> {
     Ok(sqlx::query_scalar!(
         "SELECT u.username FROM user_blocks b JOIN users u ON u.id=b.blocked_id
          WHERE b.user_id=$1 ORDER BY LOWER(u.username) COLLATE \"C\"",
         id.0
     )
     .fetch_all(pool)
-    .await?)
+    .await?
+    .into_iter()
+    .map(Username::from)
+    .collect())
 }
 
 /// Whether `user` and any of `others` have blocked each other, in either direction.

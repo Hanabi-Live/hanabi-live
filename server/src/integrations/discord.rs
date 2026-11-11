@@ -483,7 +483,7 @@ impl Bridge {
             self.broadcast(vec![Outgoing::new(
                 hanabi_protocol::server::CHAT_DELETE,
                 hanabi_protocol::ChatDelete {
-                    chat_id: i64::from(chat_id),
+                    chat_id: hanabi_protocol::ChatId(i64::from(chat_id)),
                 },
             )])
             .await?;
@@ -659,12 +659,12 @@ impl Bridge {
                     self.broadcast(vec![Outgoing::new(
                         hanabi_protocol::server::CHAT,
                         hanabi_protocol::Chat {
-                            chat_id: Some(i64::from(chat_id)),
-                            username: Some(name.clone()),
+                            chat_id: Some(hanabi_protocol::ChatId(i64::from(chat_id))),
+                            username: Some(name.clone().into()),
                             ..hanabi_protocol::Chat::new(
                                 rendered,
                                 hanabi_protocol::ChatSource::Discord,
-                                crate::model::timestamp(time),
+                                hanabi_protocol::Timestamp::from(time),
                             )
                         },
                     )])
@@ -698,7 +698,7 @@ impl Bridge {
                 self.broadcast(vec![Outgoing::new(
                     hanabi_protocol::server::CHAT_DELETE,
                     hanabi_protocol::ChatDelete {
-                        chat_id: i64::from(chat_id),
+                        chat_id: hanabi_protocol::ChatId(i64::from(chat_id)),
                     },
                 )])
                 .await?;
@@ -751,11 +751,11 @@ impl Bridge {
             self.broadcast(vec![Outgoing::new(
                 hanabi_protocol::server::CHAT,
                 hanabi_protocol::Chat {
-                    chat_id: Some(i64::from(id)),
+                    chat_id: Some(hanabi_protocol::ChatId(i64::from(id))),
                     ..hanabi_protocol::Chat::new(
                         rendered,
                         hanabi_protocol::ChatSource::Discord,
-                        crate::model::timestamp(time),
+                        hanabi_protocol::Timestamp::from(time),
                     )
                 },
             )])

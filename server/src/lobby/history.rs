@@ -78,7 +78,7 @@ pub async fn get_history(
     } else {
         rows!("g.datetime_finished DESC, g.id DESC")
     };
-    let time = crate::model::timestamp;
+    let time = hanabi_protocol::Timestamp::from;
     let mut result = Vec::new();
     for row in rows {
         let game = row.game.0;
@@ -98,7 +98,7 @@ pub async fn get_history(
                 .is_some()
                 .then(|| i64::from(row.num_games_on_this_seed)),
             seed: game.seed,
-            player_names: row.player_names,
+            player_names: row.player_names.into_iter().map(Into::into).collect(),
             tags: row.tags,
         });
     }

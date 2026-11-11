@@ -24,27 +24,29 @@ pub struct Chat {
     #[schemars(length(min = 1))]
     pub text: String,
     pub source: ChatSource,
-    #[schemars(with = "Timestamp")]
-    pub datetime: String,
+    pub datetime: Timestamp,
     /// The author. Absent when nobody wrote the message, such as a server message.
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub username: Option<String>,
+    pub username: Option<Username>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    #[schemars(range(min = 1, max = MAX_SAFE_INTEGER))]
-    pub chat_id: Option<i64>,
+    pub chat_id: Option<ChatId>,
     /// The table whose chat shows the message. Absent means the lobby, or the recipient's current
     /// chat for a private message.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub table_id: Option<TableId>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub recipient: Option<String>,
+    pub recipient: Option<Username>,
     /// What the message's button applies to the table, in a suggestion to its owner.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub suggestion: Option<TableSettings>,
 }
 
 impl Chat {
-    pub fn new(text: impl Into<String>, source: ChatSource, datetime: impl Into<String>) -> Self {
+    pub fn new(
+        text: impl Into<String>,
+        source: ChatSource,
+        datetime: impl Into<Timestamp>,
+    ) -> Self {
         Self {
             text: text.into(),
             source,
@@ -61,16 +63,14 @@ impl Chat {
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct ChatDelete {
-    #[schemars(range(min = 1, max = MAX_SAFE_INTEGER))]
-    pub chat_id: i64,
+    pub chat_id: ChatId,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct ChatList {
     pub messages: Vec<Chat>,
-    #[schemars(range(min = 0, max = MAX_SAFE_INTEGER))]
-    pub unread: i64,
+    pub unread: Count,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
@@ -86,7 +86,6 @@ pub struct ChatPmHistory {
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct ChatTyping {
     pub table_id: TableId,
-    #[schemars(with = "Username")]
-    pub username: String,
+    pub username: Username,
     pub typing: bool,
 }

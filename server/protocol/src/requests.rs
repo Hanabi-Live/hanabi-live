@@ -165,8 +165,7 @@ pub struct InactiveRequest {
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct GameHistoryRequest {
-    #[schemars(range(min = 0, max = MAX_SAFE_INTEGER))]
-    pub offset: i64,
+    pub offset: Count,
     #[schemars(range(min = 1, max = MAX_PAGE_SIZE))]
     pub amount: i64,
 }
@@ -176,8 +175,7 @@ pub struct GameHistoryRequest {
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct GameHistoryOtherScoresRequest {
     pub seed: String,
-    #[schemars(range(min = 0, max = MAX_SAFE_INTEGER))]
-    pub offset: i64,
+    pub offset: Count,
     #[schemars(range(min = 1, max = MAX_PAGE_SIZE))]
     pub amount: i64,
 }

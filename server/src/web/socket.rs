@@ -110,7 +110,7 @@ pub(super) async fn bootstrap(app: &App, account: Account, ip: &str) -> Result<B
     )?;
     let welcome = hanabi_protocol::Welcome {
         user_id: id,
-        username: name.clone(),
+        username: name.clone().into(),
         muted,
         first_time_user: Utc::now() - created < FIRST_TIME_USER_WINDOW,
         settings,
@@ -148,14 +148,14 @@ pub(super) async fn lobby_initial(app: &App, id: UserId) -> Result<(Vec<Frame>, 
         hanabi_protocol::server::CHAT_LIST,
         hanabi_protocol::ChatList {
             messages: chat,
-            unread: 0,
+            unread: hanabi_protocol::Count(0),
         },
     ));
     initial.push(frame(hanabi_protocol::server::CHAT, hanabi_protocol::Chat {
         ..hanabi_protocol::Chat::new(
             "Find teammates and discuss strategy in the <a href=\"https://discord.gg/FADvkJp\" target=\"_blank\" rel=\"noopener noreferrer\">Discord chat</a>.",
             hanabi_protocol::ChatSource::Server,
-            crate::model::timestamp(Utc::now()),
+            hanabi_protocol::Timestamp::from(Utc::now()),
         )
     }));
     let motd = app.public.root.join("motd.txt");
@@ -165,7 +165,7 @@ pub(super) async fn lobby_initial(app: &App, id: UserId) -> Result<(Vec<Frame>, 
             hanabi_protocol::Chat::new(
                 format!("[Server Notice] {}", text.trim()),
                 hanabi_protocol::ChatSource::Server,
-                crate::model::timestamp(Utc::now()),
+                hanabi_protocol::Timestamp::from(Utc::now()),
             ),
         )),
         Ok(_) => {}
@@ -222,7 +222,7 @@ pub(super) fn load_lobby(app: Arc<App>, session: Arc<Session>) {
                 }
                 session.emit(&frame(
                     hanabi_protocol::server::LOBBY_STATUS,
-                    hanabi_protocol::LobbyStatus::Ready { total_games: total },
+                    hanabi_protocol::LobbyStatus::Ready { total_games: hanabi_protocol::Count(total) },
                 ));
             }
             Err(error) => {

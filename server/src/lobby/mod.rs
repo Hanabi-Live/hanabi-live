@@ -138,7 +138,7 @@ pub(crate) fn notice_publication(
             ..hanabi_protocol::Chat::new(
                 message,
                 hanabi_protocol::ChatSource::Server,
-                crate::model::timestamp(chrono::Utc::now()),
+                hanabi_protocol::Timestamp::from(chrono::Utc::now()),
             )
         },
     ))
@@ -241,7 +241,7 @@ pub async fn dispatch(
                 .await?
         }
         ClientMessage::GameHistory(hanabi_protocol::GameHistoryRequest { offset, amount }) => {
-            let ids = history_ids(pool, caller.user, offset, amount).await?;
+            let ids = history_ids(pool, caller.user, offset.0, amount).await?;
             vec![Effect::to_self(Outgoing::new(
                 hanabi_protocol::server::GAME_HISTORY,
                 hanabi_protocol::GameHistory(get_history(pool, &ids, false).await?),
@@ -262,7 +262,7 @@ pub async fn dispatch(
                 return Ok(Some(vec![warning(error)]));
             }
             let (offset, amount) = (request.offset, request.amount);
-            let ids = seed_history_ids(pool, seed, offset, amount).await?;
+            let ids = seed_history_ids(pool, seed, offset.0, amount).await?;
             let games = get_history(pool, &ids, true).await?;
             let total = seed_game_count(pool, seed).await?;
             let variant_name = games
@@ -273,7 +273,7 @@ pub async fn dispatch(
                 hanabi_protocol::GameHistoryOtherScores {
                     games,
                     offset,
-                    num_games_on_seed: total,
+                    num_games_on_seed: hanabi_protocol::Count(total),
                     variant_name,
                     seed: seed.into(),
                 },

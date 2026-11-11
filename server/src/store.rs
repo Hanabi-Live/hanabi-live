@@ -536,7 +536,7 @@ async fn reserve_chat(
     );
     for (&index, id) in pending.iter().zip(ids) {
         let chat = &mut table.chat[index];
-        chat.message.datetime = crate::model::timestamp(chat.sent()?);
+        chat.message.datetime = hanabi_protocol::Timestamp::from(chat.sent()?);
         chat.id = Some(i32::try_from(id)?);
     }
     Ok(pending)
@@ -777,7 +777,7 @@ mod tests {
             message: hanabi_protocol::Chat::new(
                 "hello",
                 ChatSource::User,
-                crate::model::timestamp(Utc::now()),
+                hanabi_protocol::Timestamp::from(Utc::now()),
             ),
         });
         let expected = serde_json::to_value(&table)?;
@@ -861,9 +861,9 @@ mod tests {
         let mut message = hanabi_protocol::Chat::new(
             "suggestion",
             ChatSource::Server,
-            crate::model::timestamp(Utc::now()),
+            hanabi_protocol::Timestamp::from(Utc::now()),
         );
-        message.chat_id = Some(3);
+        message.chat_id = Some(hanabi_protocol::ChatId(3));
         message.table_id = Some(TableId(1));
         message.suggestion = Some(hanabi_protocol::TableSettings {
             seed_suffix: Some("7".into()),
@@ -1010,7 +1010,7 @@ mod tests {
             message: hanabi_protocol::Chat::new(
                 format!("message {id}"),
                 ChatSource::User,
-                crate::model::timestamp(Utc::now()),
+                hanabi_protocol::Timestamp::from(Utc::now()),
             ),
         };
         let keys = |encoded: &crate::checkpoint::Encoded| {
@@ -1076,18 +1076,18 @@ mod tests {
             let Phase::Pregame { players, .. } = &mut table.phase else {
                 unreachable!();
             };
-            players[0].stats.num_games = 727;
+            players[0].stats.num_games = hanabi_protocol::Count(727);
             players.push(Player {
                 id: UserId(2),
                 name: "Bob".into(),
                 bot: false,
                 stats: zero_stats(),
             });
-            players[1].stats.num_games = 572;
+            players[1].stats.num_games = hanabi_protocol::Count(572);
             let original_revision = store.save_at(&table, 0).await?;
             let mut replay = pregame(store.allocate_table().await?);
             terminal(&mut replay)?;
-            replay.game_mut().unwrap().players[0].stats.num_games = 727;
+            replay.game_mut().unwrap().players[0].stats.num_games = hanabi_protocol::Count(727);
             replay.phase = Phase::Replay {
                 snapshot: Box::new(replay.game().unwrap().clone()),
                 replay: crate::model::ReplayState {
@@ -1112,14 +1112,14 @@ mod tests {
             )
             .await??;
             let (cached, cached_revision) = store.get(table.id).await?.context("Missing pregame")?;
-            ensure!(cached_revision == original_revision && cached.players()[0].stats.num_games == 727,
+            ensure!(cached_revision == original_revision && cached.players()[0].stats.num_games == hanabi_protocol::Count(727),
                 "Startup waited for optional statistics or changed its cached snapshot");
             blocked_archive.rollback().await?;
             let Phase::Pregame { players, .. } = &mut table.phase else {
                 unreachable!();
             };
-            players[0].stats.num_games = 1;
-            players[1].stats.num_games = 0;
+            players[0].stats.num_games = hanabi_protocol::Count(1);
+            players[1].stats.num_games = hanabi_protocol::Count(0);
             let refreshed = tokio::time::timeout(Duration::from_secs(5), async {
                 loop {
                     let (durable, revision) = store.get(table.id).await?.context("Missing pregame")?;
@@ -1682,7 +1682,7 @@ mod tests {
                 .revision;
             ensure!(
                 table.chat.iter().all(|chat| chat.id.is_some())
-                    && table.chat[0].message.datetime == "2026-11-02T20:00:00.123Z",
+                    && table.chat[0].message.datetime.as_str() == "2026-11-02T20:00:00.123Z",
                 "Archived messages lack their identities or stored timestamps"
             );
             store

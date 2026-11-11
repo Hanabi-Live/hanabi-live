@@ -64,6 +64,11 @@ export const cardIdentitiesSchema = z
     tableId: tableIdSchema,
   })
   .readonly();
+
+/**
+ * A chat message's ID in `chat_log`.
+ */
+const chatIdSchema = z.number().int().min(1).max(9_007_199_254_740_991);
 const chatSourceSchema = z.enum(["user", "server", "discord"]);
 export const gameIdSchema = z
   .number()
@@ -115,9 +120,9 @@ const tableSettingsSchema = z
   .readonly();
 export const chatSchema = z
   .strictObject({
-    chatId: z.number().int().min(1).max(9_007_199_254_740_991).optional(),
+    chatId: chatIdSchema.optional(),
     datetime: z.iso.datetime({ precision: 3 }),
-    recipient: z.string().optional(),
+    recipient: z.string().min(1).optional(),
     source: chatSourceSchema,
     /**
      * What the message's button applies to the table, in a suggestion to its owner.
@@ -135,16 +140,21 @@ export const chatSchema = z
     /**
      * The author. Absent when nobody wrote the message, such as a server message.
      */
-    username: z.string().optional(),
+    username: z.string().min(1).optional(),
   })
   .readonly();
 export const chatDeleteSchema = z
-  .strictObject({ chatId: z.number().int().min(1).max(9_007_199_254_740_991) })
+  .strictObject({ chatId: chatIdSchema })
   .readonly();
+
+/**
+ * A number of things, such as games or unread messages, or a position in a list of them.
+ */
+const countSchema = z.number().int().min(0).max(9_007_199_254_740_991);
 export const chatListSchema = z
   .strictObject({
     messages: z.array(chatSchema).readonly(),
-    unread: z.number().int().min(0).max(9_007_199_254_740_991),
+    unread: countSchema,
   })
   .readonly();
 export const chatPmHistorySchema = z
@@ -325,11 +335,11 @@ export const gameHistorySchema = z.array(gameHistoryEntrySchema).readonly();
 export const gameHistoryOtherScoresSchema = z
   .strictObject({
     games: z.array(gameHistoryEntrySchema).readonly(),
-    numGamesOnSeed: z.number().int().min(0).max(9_007_199_254_740_991),
+    numGamesOnSeed: countSchema,
     /**
      * The position of the page's first game among all the games on the seed.
      */
-    offset: z.number().int().min(0).max(9_007_199_254_740_991),
+    offset: countSchema,
     seed: z.string().min(1),
     variantName: z.string().min(1),
   })
@@ -341,7 +351,7 @@ export const gameHistoryOtherScoresSchema = z
 export const gameHistoryOtherScoresRequestSchema = z
   .strictObject({
     amount: z.number().int().min(1).max(100),
-    offset: z.number().int().min(0).max(9_007_199_254_740_991),
+    offset: countSchema,
     seed: z.string(),
   })
   .readonly();
@@ -352,7 +362,7 @@ export const gameHistoryOtherScoresRequestSchema = z
 export const gameHistoryRequestSchema = z
   .strictObject({
     amount: z.number().int().min(1).max(100),
-    offset: z.number().int().min(0).max(9_007_199_254_740_991),
+    offset: countSchema,
   })
   .readonly();
 
@@ -480,10 +490,7 @@ export const lobbyStatusSchema = z.discriminatedUnion("type", [
     })
     .readonly(),
   z
-    .strictObject({
-      totalGames: z.number().int().min(0).max(9_007_199_254_740_991),
-      type: z.literal("ready"),
-    })
+    .strictObject({ totalGames: countSchema, type: z.literal("ready") })
     .readonly(),
 ]);
 
@@ -662,7 +669,7 @@ const pregameVariantStatsSchema = z
      * The best score for each player count.
      */
     bestScores: z.array(pregameBestScoreSchema).readonly(),
-    numGames: z.number().int().min(0).max(9_007_199_254_740_991),
+    numGames: countSchema,
   })
   .readonly();
 
@@ -670,10 +677,7 @@ const pregameVariantStatsSchema = z
  * A pregame player's statistics: all of their games, and their games on the table's variant.
  */
 const pregameStatsSchema = z
-  .strictObject({
-    numGames: z.number().int().min(0).max(9_007_199_254_740_991),
-    variant: pregameVariantStatsSchema,
-  })
+  .strictObject({ numGames: countSchema, variant: pregameVariantStatsSchema })
   .readonly();
 const pregamePlayerSchema = z
   .strictObject({
@@ -747,7 +751,7 @@ export const publicGamePageSchema = z
      */
     info: z.string(),
     rows: z.array(publicGameRowSchema).readonly(),
-    totalRows: z.number().int().min(0).max(9_007_199_254_740_991),
+    totalRows: countSchema,
   })
   .readonly();
 

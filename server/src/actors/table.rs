@@ -182,7 +182,7 @@ impl TableActor {
                     .table
                     .players()
                     .iter()
-                    .map(|p| p.name.clone())
+                    .map(|p| p.name.as_str().into())
                     .collect(),
                 progress: u8::try_from(progress.clamp(0, max_progress)).unwrap_or(0),
                 phase: match self.table.phase {
@@ -202,7 +202,7 @@ impl TableActor {
             .values()
             .filter(|a| a.spectator && a.session.active())
             .map(|a| hanabi_protocol::Spectator {
-                username: a.session.name.clone(),
+                username: a.session.name.clone().into(),
                 shadowing_player_index: a.shadow,
             })
             .collect()
@@ -318,7 +318,7 @@ impl TableActor {
                 .filter_map(|(seat, p)| Some((PlayerIndex::new(seat)?, p)))
                 .map(|(seat, p)| hanabi_protocol::PregamePlayer {
                     index: seat,
-                    username: p.name.clone(),
+                    username: p.name.clone().into(),
                     you: p.id == a.session.user,
                     present: self
                         .attendees
@@ -357,7 +357,9 @@ impl TableActor {
                         .iter()
                         .map(TableChat::wire_message)
                         .collect::<Result<_>>()?,
-                    unread: i64::try_from(self.table.chat.len().saturating_sub(read))?,
+                    unread: hanabi_protocol::Count(i64::try_from(
+                        self.table.chat.len().saturating_sub(read),
+                    )?),
                 },
             ),
         ));

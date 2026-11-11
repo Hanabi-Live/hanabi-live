@@ -157,9 +157,9 @@ fn player_stats(num_games: i64, row: Option<&crate::database::UserStats>) -> Pre
             )
         });
     PregameStats {
-        num_games,
+        num_games: hanabi_protocol::Count(num_games),
         variant: hanabi_protocol::PregameVariantStats {
-            num_games: variant_games,
+            num_games: hanabi_protocol::Count(variant_games),
             best_scores: (hanabi_protocol::MIN_PLAYERS..=hanabi_protocol::MAX_PLAYERS)
                 .zip(best_scores)
                 .map(|(num_players, (score, modifier))| {

@@ -113,8 +113,7 @@ pub enum GameStage {
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct PlayerNotes {
-    #[schemars(with = "Username")]
-    pub username: String,
+    pub username: Username,
     #[schemars(with = "Notes")]
     pub notes: Vec<String>,
     pub is_spectator: bool,
@@ -125,8 +124,7 @@ pub struct PlayerNotes {
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct CardNote {
     /// The person setting the note.
-    #[schemars(with = "Username")]
-    pub username: String,
+    pub username: Username,
     pub text: String,
     pub is_spectator: bool,
 }
@@ -297,8 +295,8 @@ pub enum ViewMode {
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct Init {
     pub table_id: TableId,
-    #[schemars(with = "Vec<Username>", length(min = MIN_PLAYERS, max = MAX_PLAYERS))]
-    pub player_names: Vec<String>,
+    #[schemars(length(min = MIN_PLAYERS, max = MAX_PLAYERS))]
+    pub player_names: Vec<Username>,
     /// The seat the recipient views the game from.
     pub our_player_index: PlayerIndex,
     pub mode: ViewMode,
@@ -309,12 +307,10 @@ pub struct Init {
     /// Absent for a game with its own deck instead of a seed, such as an imported one.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub seed: Option<String>,
-    #[schemars(with = "Timestamp")]
-    pub datetime_started: String,
+    pub datetime_started: Timestamp,
     /// Absent while the game is in progress.
     #[serde(skip_serializing_if = "Option::is_none")]
-    #[schemars(with = "Option<Timestamp>")]
-    pub datetime_finished: Option<String>,
+    pub datetime_finished: Option<Timestamp>,
     pub options: GameOptions,
     /// Each player's character, in seat order, when detrimental characters are on.
     #[schemars(length(max = MAX_PLAYERS))]
@@ -333,8 +329,7 @@ pub struct Init {
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct SharedReplayInit {
-    #[schemars(with = "Username")]
-    pub leader: String,
+    pub leader: Username,
     pub segment: Turn,
     #[schemars(range(min = i32::MIN, max = i32::MAX))]
     pub efficiency_modifier: i32,
@@ -342,11 +337,10 @@ pub struct SharedReplayInit {
     pub spoiler_free: bool,
     /// The players who will not play again if the leader restarts.
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
-    #[schemars(with = "Vec<Username>", length(max = MAX_PLAYERS))]
-    pub restart_declined: Vec<String>,
+    #[schemars(length(max = MAX_PLAYERS))]
+    pub restart_declined: Vec<Username>,
     /// Whether the recipient played the game of this shared replay at this table, so that they can
     /// play it again: the leader by restarting, and the other players by saying if they are ready.
     pub can_play_again: bool,
-    #[schemars(with = "Timestamp")]
-    pub datetime_started: String,
+    pub datetime_started: Timestamp,
 }

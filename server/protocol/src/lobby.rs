@@ -33,10 +33,7 @@ pub struct Restart {
 pub enum LobbyStatus {
     Loading {},
     Error(Notice),
-    Ready {
-        #[schemars(range(min = 0, max = MAX_SAFE_INTEGER))]
-        total_games: i64,
-    },
+    Ready { total_games: Count },
 }
 
 /// A user's presence in the lobby's user list.
@@ -44,8 +41,7 @@ pub enum LobbyStatus {
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct User {
     pub user_id: UserId,
-    #[schemars(with = "Username")]
-    pub username: String,
+    pub username: Username,
     pub status: Status,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub table_id: Option<TableId>,
@@ -79,16 +75,14 @@ pub struct UserInactive {
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct Friends {
-    #[schemars(with = "Vec<Username>")]
-    pub friends: Vec<String>,
+    pub friends: Vec<Username>,
 }
 
 /// The users whom we have blocked. It does not include the users who have blocked us.
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct Blocked {
-    #[schemars(with = "Vec<Username>")]
-    pub blocked: Vec<String>,
+    pub blocked: Vec<Username>,
 }
 
 /// A problem that the client shows: an `error` message, after which the connection closes, a
@@ -220,16 +214,13 @@ impl Default for Settings {
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct Welcome {
     pub user_id: UserId,
-    #[schemars(with = "Username")]
-    pub username: String,
+    pub username: Username,
     pub muted: bool,
     pub first_time_user: bool,
     pub settings: Settings,
-    #[schemars(with = "Vec<Username>")]
-    pub friends: Vec<String>,
+    pub friends: Vec<Username>,
     /// The users whom we have blocked, as in [`Blocked`].
-    #[schemars(with = "Vec<Username>")]
-    pub blocked: Vec<String>,
+    pub blocked: Vec<Username>,
     /// Ongoing games the user is a player in.
     pub playing_at_tables: Vec<TableId>,
     /// The table the user was spectating when they disconnected, if any.
@@ -334,8 +325,7 @@ impl Default for TableSettings {
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct Spectator {
-    #[schemars(with = "Username")]
-    pub username: String,
+    pub username: Username,
     /// The seat being shadowed, if any.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub shadowing_player_index: Option<PlayerIndex>,
@@ -361,8 +351,7 @@ pub struct Table {
     pub settings: TableSettings,
     pub owner_id: UserId,
     pub password_protected: bool,
-    #[schemars(with = "Vec<Username>")]
-    pub player_names: Vec<String>,
+    pub player_names: Vec<Username>,
     /// The percentage of the maximum score reached, or of a replay watched.
     #[schemars(range(min = 0, max = MAX_PROGRESS))]
     pub progress: u8,
@@ -398,16 +387,13 @@ pub struct GameHistoryEntry {
     pub score: i32,
     pub num_turns: Turn,
     pub end_condition: EndCondition,
-    #[schemars(with = "Timestamp")]
-    pub datetime_started: String,
-    #[schemars(with = "Timestamp")]
-    pub datetime_finished: String,
+    pub datetime_started: Timestamp,
+    pub datetime_finished: Timestamp,
     /// How many games used this seed. Absent when the game has no seed.
     #[serde(skip_serializing_if = "Option::is_none")]
     #[schemars(range(min = 1, max = MAX_SAFE_INTEGER))]
     pub num_games_on_seed: Option<i64>,
-    #[schemars(with = "Vec<Username>")]
-    pub player_names: Vec<String>,
+    pub player_names: Vec<Username>,
     /// The game's tags, in alphabetical order.
     pub tags: Vec<String>,
 }
@@ -423,10 +409,8 @@ pub struct GameHistory(pub Vec<GameHistoryEntry>);
 pub struct GameHistoryOtherScores {
     pub games: Vec<GameHistoryEntry>,
     /// The position of the page's first game among all the games on the seed.
-    #[schemars(range(min = 0, max = MAX_SAFE_INTEGER))]
-    pub offset: i64,
-    #[schemars(range(min = 0, max = MAX_SAFE_INTEGER))]
-    pub num_games_on_seed: i64,
+    pub offset: Count,
+    pub num_games_on_seed: Count,
     #[schemars(length(min = 1))]
     pub variant_name: String,
     #[schemars(length(min = 1))]
@@ -454,8 +438,7 @@ pub struct PregameBestScore {
 #[derive(Clone, Debug, Default, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct PregameVariantStats {
-    #[schemars(range(min = 0, max = MAX_SAFE_INTEGER))]
-    pub num_games: i64,
+    pub num_games: Count,
     /// The best score for each player count.
     pub best_scores: Vec<PregameBestScore>,
 }
@@ -464,8 +447,7 @@ pub struct PregameVariantStats {
 #[derive(Clone, Debug, Default, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct PregameStats {
-    #[schemars(range(min = 0, max = MAX_SAFE_INTEGER))]
-    pub num_games: i64,
+    pub num_games: Count,
     pub variant: PregameVariantStats,
 }
 
@@ -473,8 +455,7 @@ pub struct PregameStats {
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct PregamePlayer {
     pub index: PlayerIndex,
-    #[schemars(with = "Username")]
-    pub username: String,
+    pub username: Username,
     /// Whether this player is the recipient.
     pub you: bool,
     /// Whether this player is connected and at the table.

@@ -1075,7 +1075,8 @@ async fn shared_replays_of_older_games_start_when_their_table_is_created() -> Re
         h.send(1, "gameInitLoad", json!({"tableId":id})).await?;
         let init = h.receive(1, "init").await?;
         ensure!(
-            init["sharedReplay"]["datetimeStarted"] == crate::model::timestamp(created),
+            init["sharedReplay"]["datetimeStarted"]
+                    == hanabi_protocol::Timestamp::from(created).as_str(),
             "The shared replay did not start when its table was created: {init}"
         );
         Ok(())
@@ -2255,11 +2256,11 @@ async fn pregame_total_counts_only_normal_non_speedrun_games() -> Result<()> {
         let snapshot = h.snapshot(id).await?.0;
         let players = snapshot.players();
         ensure!(
-            players.iter().find(|player| player.id == UserId(1)).context("Missing Alice")?.stats.num_games == 2,
+            players.iter().find(|player| player.id == UserId(1)).context("Missing Alice")?.stats.num_games == hanabi_protocol::Count(2),
             "Pregame total must count normal non-speedrun games across variants, including zero-score normal finishes"
         );
         ensure!(
-            players.iter().find(|player| player.id == UserId(2)).context("Missing Bob")?.stats.num_games == 0,
+            players.iter().find(|player| player.id == UserId(2)).context("Missing Bob")?.stats.num_games == hanabi_protocol::Count(0),
             "Another player's history must not affect the total"
         );
         ensure!(

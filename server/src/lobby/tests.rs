@@ -120,7 +120,7 @@ async fn lobby_relationships_atomic_settings_and_parameterization_postgres() {
     let _ = run(&db.pool, &who, &[], "chatUnfriend", data.clone()).await;
     assert_eq!(
         friends(&db.pool, UserId(a)).await.unwrap(),
-        Vec::<String>::new()
+        Vec::<hanabi_protocol::Username>::new()
     );
     let (one, two) = tokio::join!(
         relationships::change_friend(&db.pool, UserId(a), UserId(b), true),
@@ -364,7 +364,7 @@ async fn lobby_private_messages_and_command_privacy_postgres() {
         .unwrap();
     assert_eq!(
         message["datetime"],
-        crate::model::timestamp(stored.datetime_sent)
+        hanabi_protocol::Timestamp::from(stored.datetime_sent).as_str()
     );
     sqlx::query!(
         "INSERT INTO chat_log_pm(user_id,recipient_id,message) VALUES($1,$2,'not Alice')",

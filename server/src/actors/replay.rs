@@ -198,7 +198,7 @@ impl TableActor {
             table_notice(&mut next, &text)
         } else {
             let mut message = server_chat(self.table.id, &text);
-            message.recipient = Some(session.name.clone());
+            message.recipient = Some(session.name.clone().into());
             Some(message)
         };
         self.persist_with(
@@ -277,7 +277,7 @@ impl TableActor {
             hanabi_protocol::server::REPLAY_LEADER,
             hanabi_protocol::ReplayLeader {
                 table_id: self.table.id,
-                username: target.1.clone(),
+                username: target.1.clone().into(),
             },
         );
         if matches!(self.table.phase, Phase::Pregame { .. }) {
@@ -306,7 +306,7 @@ impl TableActor {
                 hanabi_protocol::server::SUGGESTION,
                 hanabi_protocol::Suggestion {
                     table_id: self.table.id,
-                    username: session.name.clone(),
+                    username: session.name.clone().into(),
                     segment,
                 },
             ),
@@ -610,7 +610,7 @@ impl TableActor {
         self.publish(e).await
     }
     /// The names of the players who will not play again if the leader restarts, in seat order.
-    pub(super) fn restart_declined_names(&self) -> Vec<String> {
+    pub(super) fn restart_declined_names(&self) -> Vec<hanabi_protocol::Username> {
         let Phase::Replay { replay, .. } = &self.table.phase else {
             return vec![];
         };
@@ -618,7 +618,7 @@ impl TableActor {
             .players()
             .iter()
             .filter(|p| replay.restart_declined.contains(&p.id))
-            .map(|p| p.name.clone())
+            .map(|p| p.name.as_str().into())
             .collect()
     }
 }

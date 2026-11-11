@@ -247,7 +247,7 @@ pub struct TableChat {
 impl TableChat {
     /// When the message was sent.
     pub fn sent(&self) -> Result<DateTime<Utc>> {
-        Ok(DateTime::parse_from_rfc3339(&self.message.datetime)
+        Ok(DateTime::parse_from_rfc3339(self.message.datetime.as_str())
             .map_err(|_| anyhow::anyhow!("Invalid checkpoint chat timestamp"))?
             .with_timezone(&Utc))
     }
@@ -255,7 +255,7 @@ impl TableChat {
     /// archived, which messages from before timestamps had one form may write with microseconds.
     pub fn wire_message(&self) -> Result<Chat> {
         Ok(Chat {
-            datetime: timestamp(self.sent()?),
+            datetime: hanabi_protocol::Timestamp::from(self.sent()?),
             ..self.message.clone()
         })
     }
@@ -279,8 +279,8 @@ impl TableSnapshot {
             .filter(|player| users.contains(&player.id))
         {
             let count = counts.get(&player.id).copied().unwrap_or(0);
-            if player.stats.num_games != count {
-                player.stats.num_games = count;
+            if player.stats.num_games != hanabi_protocol::Count(count) {
+                player.stats.num_games = hanabi_protocol::Count(count);
                 changed = true;
             }
         }
@@ -589,7 +589,7 @@ impl Snapshot {
             .map(|p| p.name.clone())
             .collect::<Vec<_>>();
         names.sort_by_key(|s| s.to_lowercase());
-        let time = timestamp;
+        let time = hanabi_protocol::Timestamp::from;
         Some(hanabi_protocol::GameHistoryEntry {
             game_id: self.game_id?,
             options: wire_options(&self.game.options),
@@ -600,7 +600,7 @@ impl Snapshot {
             datetime_started: time(self.started),
             datetime_finished: time(self.finished.unwrap_or(self.started)),
             num_games_on_seed: count,
-            player_names: names,
+            player_names: names.into_iter().map(Into::into).collect(),
             tags: self
                 .tags
                 .iter()
@@ -724,12 +724,6 @@ pub fn tag_too_long() -> String {
     format!("Tags cannot be longer than {MAX_TAG_LENGTH} characters.")
 }
 
-/// A time as the wire carries it: RFC 3339 in UTC, with milliseconds, such as
-/// "2026-01-01T12:00:00.000Z". The clients' schemas accept only this form.
-pub fn timestamp(time: DateTime<Utc>) -> String {
-    time.to_rfc3339_opts(chrono::SecondsFormat::Millis, true)
-}
-
 /// Converts the engine's options to their wire form. Both destructure every field, so adding an
 /// option to either type fails to compile until the conversions are updated.
 pub(crate) fn wire_options(options: &Options) -> hanabi_protocol::GameOptions {
@@ -829,14 +823,6 @@ mod tests {
     }
 
     #[test]
-    fn timestamps_are_utc_with_milliseconds() {
-        let time = DateTime::<Utc>::from_timestamp(1_767_268_800, 123_456_789).unwrap();
-        assert_eq!(timestamp(time), "2026-01-01T12:00:00.123Z");
-        let whole = DateTime::<Utc>::from_timestamp(1_767_268_800, 0).unwrap();
-        assert_eq!(timestamp(whole), "2026-01-01T12:00:00.000Z");
-    }
-
-    #[test]
     fn checkpoints_store_hypothetical_actions_as_objects() {
         let stored = serde_json::json!({
             "leader": 1, "segment": 0, "efficiencyModifier": 0, "hypothetical": true,
@@ -863,10 +849,13 @@ mod tests {
             .unwrap(),
         };
         assert_eq!(
-            chat.wire_message().unwrap().datetime,
+            chat.wire_message().unwrap().datetime.as_str(),
             "2026-11-02T20:00:00.123Z"
         );
-        assert_eq!(chat.message.datetime, "2026-11-02T20:00:00.123456Z");
+        assert_eq!(
+            chat.message.datetime.as_str(),
+            "2026-11-02T20:00:00.123456Z"
+        );
     }
 
     #[test]

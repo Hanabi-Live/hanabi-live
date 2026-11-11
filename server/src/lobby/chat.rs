@@ -300,12 +300,12 @@ pub async fn private_message(
     .fetch_one(pool)
     .await?;
     let data = Chat {
-        username: Some(caller.name.clone()),
-        recipient: Some(target.identity.name.clone()),
+        username: Some(caller.name.clone().into()),
+        recipient: Some(target.identity.name.clone().into()),
         ..Chat::new(
             message,
             ChatSource::User,
-            crate::model::timestamp(row.datetime_sent),
+            hanabi_protocol::Timestamp::from(row.datetime_sent),
         )
     };
     Ok(vec![
@@ -367,16 +367,22 @@ pub async fn private_history(
     let mut list = Vec::new();
     for row in rows.iter().rev() {
         list.push(Chat {
-            username: Some(row.who.clone().context("Missing private message author")?),
+            username: Some(
+                row.who
+                    .clone()
+                    .context("Missing private message author")?
+                    .into(),
+            ),
             recipient: Some(
                 row.recipient
                     .clone()
-                    .context("Missing private message recipient")?,
+                    .context("Missing private message recipient")?
+                    .into(),
             ),
             ..Chat::new(
                 row.message.clone(),
                 ChatSource::User,
-                crate::model::timestamp(row.datetime_sent),
+                hanabi_protocol::Timestamp::from(row.datetime_sent),
             )
         });
     }
@@ -511,11 +517,11 @@ pub async fn lobby_chat(
             hanabi_protocol::server::CHAT,
             Chat {
                 username: who.map(Into::into),
-                chat_id: Some(i64::from(chat_id)),
+                chat_id: Some(hanabi_protocol::ChatId(i64::from(chat_id))),
                 ..Chat::new(
                     content,
                     serde_json::from_value(json!(source))?,
-                    crate::model::timestamp(row.datetime_sent),
+                    hanabi_protocol::Timestamp::from(row.datetime_sent),
                 )
             },
         )));
@@ -572,12 +578,12 @@ pub async fn lobby_history(pool: &PgPool, count: i64) -> Result<Vec<Chat>> {
             _ => row.username.clone(),
         };
         result.push(Chat {
-            chat_id: Some(i64::from(row.id)),
-            username: who,
+            chat_id: Some(hanabi_protocol::ChatId(i64::from(row.id))),
+            username: who.map(Into::into),
             ..Chat::new(
                 message,
                 serde_json::from_value(json!(source))?,
-                crate::model::timestamp(row.datetime_sent),
+                hanabi_protocol::Timestamp::from(row.datetime_sent),
             )
         });
     }
@@ -599,11 +605,11 @@ pub async fn server_chat(pool: &PgPool, message: &str) -> Result<SavedChat> {
         broadcast: Outgoing::new(
             hanabi_protocol::server::CHAT,
             Chat {
-                chat_id: Some(i64::from(chat_id)),
+                chat_id: Some(hanabi_protocol::ChatId(i64::from(chat_id))),
                 ..Chat::new(
                     message,
                     ChatSource::Server,
-                    crate::model::timestamp(row.datetime_sent),
+                    hanabi_protocol::Timestamp::from(row.datetime_sent),
                 )
             },
         ),

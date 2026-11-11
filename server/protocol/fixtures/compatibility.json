@@ -251,18 +251,30 @@
     "valid": true
   },
   {
-    "name": "server chat keeps empty routing fields",
+    "name": "server chat names its author and recipient",
     "direction": "server",
     "command": "chat",
     "input": {
       "text": "hello",
       "source": "user",
       "datetime": "2026-01-01T12:00:00.000Z",
-      "username": "",
-      "recipient": "",
+      "username": "Alice",
+      "recipient": "Bob",
       "chatId": 9007199254740991
     },
     "valid": true
+  },
+  {
+    "name": "server chat rejects an empty author",
+    "direction": "server",
+    "command": "chat",
+    "input": {
+      "text": "hello",
+      "source": "user",
+      "datetime": "2026-01-01T12:00:00.000Z",
+      "username": ""
+    },
+    "valid": false
   },
   {
     "name": "server chat rejects null optional fields",

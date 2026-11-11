@@ -196,8 +196,7 @@ pub enum ReplaySoundEffect {
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct ReplayLeader {
     pub table_id: TableId,
-    #[schemars(with = "Username")]
-    pub username: String,
+    pub username: Username,
 }
 
 /// The players in a shared replay who will not play again if the leader restarts.
@@ -205,8 +204,8 @@ pub struct ReplayLeader {
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct RestartDeclined {
     pub table_id: TableId,
-    #[schemars(with = "Vec<Username>", length(max = MAX_PLAYERS))]
-    pub usernames: Vec<String>,
+    #[schemars(length(max = MAX_PLAYERS))]
+    pub usernames: Vec<Username>,
 }
 
 /// A spectator suggesting a turn to the shared replay's leader.
@@ -214,8 +213,7 @@ pub struct RestartDeclined {
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct Suggestion {
     pub table_id: TableId,
-    #[schemars(with = "Username")]
-    pub username: String,
+    pub username: Username,
     pub segment: Turn,
 }
 

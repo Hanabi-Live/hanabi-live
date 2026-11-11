@@ -572,7 +572,7 @@ async fn native_browser_login_ws_bootstrap_and_command_routing_postgres() {
                     hanabi_protocol::Chat::new(
                         "must not reroute to replacement",
                         hanabi_protocol::ChatSource::User,
-                        String::from("2026-11-07T00:00:00Z"),
+                        chrono::DateTime::from_timestamp(1_794_009_600, 0).unwrap(),
                     ),
                 ),
             }],

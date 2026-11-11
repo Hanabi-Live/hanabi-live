@@ -171,7 +171,45 @@ impl JsonSchema for NumPlayers {
 
 /// A username that the server sends, which is never empty. Requests carry plain strings instead, so
 /// that the server can answer a missing name, such as in a chat command, with a helpful warning.
-pub struct Username;
+#[derive(Clone, Debug, Default, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
+#[serde(transparent)]
+pub struct Username(String);
+
+impl Username {
+    pub fn as_str(&self) -> &str {
+        &self.0
+    }
+
+    pub fn into_string(self) -> String {
+        self.0
+    }
+}
+
+impl From<String> for Username {
+    fn from(name: String) -> Self {
+        Self(name)
+    }
+}
+
+impl From<&str> for Username {
+    fn from(name: &str) -> Self {
+        Self(name.to_owned())
+    }
+}
+
+impl std::ops::Deref for Username {
+    type Target = str;
+
+    fn deref(&self) -> &str {
+        &self.0
+    }
+}
+
+impl std::fmt::Display for Username {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        self.0.fmt(f)
+    }
+}
 
 impl JsonSchema for Username {
     fn inline_schema() -> bool {
@@ -205,7 +243,28 @@ impl JsonSchema for Notes {
 
 /// A timestamp on the wire: RFC 3339 in UTC, with milliseconds, such as
 /// "2026-01-01T12:00:00.000Z". Both the server's and the clients' schemas accept only this form.
-pub struct Timestamp;
+/// Checkpoints can hold the forms that older servers wrote, so reading one does not check it.
+#[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
+#[serde(transparent)]
+pub struct Timestamp(String);
+
+impl Timestamp {
+    pub fn as_str(&self) -> &str {
+        &self.0
+    }
+}
+
+impl From<chrono::DateTime<chrono::Utc>> for Timestamp {
+    fn from(time: chrono::DateTime<chrono::Utc>) -> Self {
+        Self(time.to_rfc3339_opts(chrono::SecondsFormat::Millis, true))
+    }
+}
+
+impl std::fmt::Display for Timestamp {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        self.0.fmt(f)
+    }
+}
 
 /// The digits of a wire timestamp's fractional second (milliseconds).
 pub const TIMESTAMP_FRACTION_DIGITS: usize = 3;
@@ -287,6 +346,31 @@ macro_rules! catalog_id {
         }
     };
 }
+
+/// A chat message's ID in `chat_log`.
+#[derive(
+    Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize, JsonSchema,
+)]
+#[serde(transparent)]
+pub struct ChatId(#[schemars(range(min = 1, max = MAX_SAFE_INTEGER))] pub i64);
+
+/// A number of things, such as games or unread messages, or a position in a list of them.
+#[derive(
+    Clone,
+    Copy,
+    Debug,
+    Default,
+    PartialEq,
+    Eq,
+    PartialOrd,
+    Ord,
+    Hash,
+    Serialize,
+    Deserialize,
+    JsonSchema,
+)]
+#[serde(transparent)]
+pub struct Count(#[schemars(range(min = 0, max = MAX_SAFE_INTEGER))] pub i64);
 
 catalog_id! {
     /// A variant's number in `variants.json`. "No Variant" is 0.
@@ -506,6 +590,14 @@ mod tests {
                 );
             }
         }
+    }
+
+    #[test]
+    fn timestamps_are_utc_with_milliseconds() {
+        let time = chrono::DateTime::from_timestamp(1_767_268_800, 123_456_789).unwrap();
+        assert_eq!(Timestamp::from(time).as_str(), "2026-01-01T12:00:00.123Z");
+        let whole = chrono::DateTime::from_timestamp(1_767_268_800, 0).unwrap();
+        assert_eq!(Timestamp::from(whole).as_str(), "2026-01-01T12:00:00.000Z");
     }
 
     #[test]
