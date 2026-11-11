@@ -121,11 +121,17 @@ export function show(card: HanabiCard): void {
 
   // Update the tooltip content.
   let shownNote = get(card.order, false, true);
-  if (card.state.location === "playStack") {
+  // A card in the hole of a "Throw It in a Hole" variant is on the play stacks, but its suit can be
+  // unknown.
+  const suitDescription =
+    card.state.location === "playStack"
+      ? card.suitDescriptionNote()
+      : undefined;
+  if (suitDescription !== undefined) {
     if (shownNote !== "") {
       shownNote += "<br><br>";
     }
-    shownNote += card.suitDescriptionNote();
+    shownNote += suitDescription;
   }
   tooltips.setContent(tooltip, shownNote);
   tooltips.open(tooltip);

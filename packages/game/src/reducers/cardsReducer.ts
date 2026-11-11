@@ -146,8 +146,7 @@ export function cardsReducer(
       const { order } = action;
       const card = getCard(deck, order);
 
-      // If the rank or suit coming from the action is -1 (i.e. unknown), prefer what we already had
-      // inferred.
+      // If the action does not give the card's identity, keep what we already inferred.
       const suitIndex = action.identity?.suitIndex ?? card.suitIndex;
       const rank = action.identity?.rank ?? card.rank;
 

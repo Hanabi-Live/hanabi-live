@@ -1439,8 +1439,12 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip, UiCard {
     return this.empathy || this.cluePreviewState !== undefined;
   }
 
-  suitDescriptionNote(): string {
-    const index = this.state.suitIndex ?? 0;
+  /** A description of the card's suit, or `undefined` when its suit is unknown. */
+  suitDescriptionNote(): string | undefined {
+    const index = this.state.suitIndex;
+    if (index === undefined) {
+      return undefined;
+    }
     const { variant } = this;
     const suit = variant.suits[index]!;
     const lines: string[] = [];
