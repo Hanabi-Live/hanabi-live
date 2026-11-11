@@ -25,11 +25,11 @@ struct Applied {
 fn applied(
     state: &EngineState,
     actor: usize,
-    action: &PlayerAction,
+    action: PlayerAction,
     timing: Option<CompletionTiming>,
 ) -> Result<Applied> {
     let mut next = state.clone();
-    apply_action(&mut next, actor, action, timing)?;
+    apply_action(&mut next, actor, &action, timing)?;
     Ok(Applied {
         events: next.events[state.events.len()..].to_vec(),
         state: next,
@@ -48,12 +48,23 @@ fn terminated(
     })
 }
 
+/// The action that a client sends, or `None` if the protocol does not allow its numbers.
+fn parsed(action_type: RecordedActionType, target: i32, value: i32) -> Option<PlayerAction> {
+    let body = match action_type {
+        RecordedActionType::Play => json!({"type": "play", "order": target}),
+        RecordedActionType::Discard => json!({"type": "discard", "order": target}),
+        RecordedActionType::ColorClue => {
+            json!({"type": "colorClue", "target": target, "colorIndex": value})
+        }
+        RecordedActionType::RankClue => {
+            json!({"type": "rankClue", "target": target, "rank": value})
+        }
+        RecordedActionType::GameOver | RecordedActionType::GameOverByVote => return None,
+    };
+    serde_json::from_value(body).ok()
+}
 fn action(action_type: RecordedActionType, target: i32, value: i32) -> PlayerAction {
-    PlayerAction {
-        action_type,
-        target,
-        value,
-    }
+    parsed(action_type, target, value).expect("a valid action")
 }
 fn assignments(first: &str, second: &str) -> Vec<AssignedCharacter> {
     [first, second]
@@ -69,47 +80,33 @@ fn rejected_actions_are_atomic_and_client_terminations_are_not_actions() {
     // Rejections are checked against one state in place, which they must leave as it was.
     let mut state = standard();
     let before = serde_json::to_value(&state).unwrap();
-    // A recorded action type that is not a turn cannot come from a client, and other numbers are
-    // not action types at all.
-    for kind in [-1, i32::MAX] {
+    // Numbered action types and the end of the game cannot come from a client.
+    for kind in [json!(-1), json!(i32::MAX), json!(4), json!("gameOver")] {
         assert!(
             serde_json::from_value::<PlayerAction>(
-                serde_json::json!({"type": kind, "target": 0, "value": 3})
+                json!({"type": kind, "endCondition": 4, "order": 0})
             )
             .is_err()
         );
     }
-    for kind in [
-        RecordedActionType::GameOver,
-        RecordedActionType::GameOverByVote,
-    ] {
-        assert!(
-            apply_action(&mut state, 0, &action(kind, 0, 3), None)
-                .unwrap_err()
-                .downcast_ref::<ActionRejected>()
-                .is_some()
-        );
-    }
+    // The protocol rejects some numbers, and the rules reject the rest.
     for target in [-1, 5, 50, i32::MAX] {
         assert!(
-            applied(
-                &state,
-                0,
-                &action(RecordedActionType::Play, target, 0),
-                None
-            )
-            .is_err()
+            parsed(RecordedActionType::Play, target, 0)
+                .is_none_or(|a| applied(&state, 0, a, None).is_err())
         );
     }
-    for a in [
-        action(RecordedActionType::ColorClue, -1, 0),
-        action(RecordedActionType::RankClue, 0, 1),
-        action(RecordedActionType::ColorClue, 1, -1),
-        action(RecordedActionType::ColorClue, 1, 5),
-        action(RecordedActionType::RankClue, 1, 0),
-        action(RecordedActionType::RankClue, 1, 7),
+    for (kind, target, value) in [
+        (RecordedActionType::ColorClue, -1, 0),
+        (RecordedActionType::RankClue, 0, 1),
+        (RecordedActionType::ColorClue, 1, -1),
+        (RecordedActionType::ColorClue, 1, 5),
+        (RecordedActionType::RankClue, 1, 0),
+        (RecordedActionType::RankClue, 1, 7),
     ] {
-        assert!(validate_action(&state, 0, &a).is_err());
+        assert!(
+            parsed(kind, target, value).is_none_or(|a| validate_action(&state, 0, &a).is_err())
+        );
     }
     assert!(apply_action(&mut state, 1, &action(RecordedActionType::Play, 5, 0), None).is_err());
     assert!(
@@ -134,11 +131,15 @@ fn rejected_actions_are_atomic_and_client_terminations_are_not_actions() {
         )
         .is_err()
     );
-    let result = applied(&state, 0, &action(RecordedActionType::RankClue, 1, 1), None).unwrap();
+    let result = applied(&state, 0, action(RecordedActionType::RankClue, 1, 1), None).unwrap();
     assert_eq!(serde_json::to_value(&state).unwrap(), before);
     assert_eq!(
         result.state.actions,
-        vec![action(RecordedActionType::RankClue, 1, 1)]
+        vec![RecordedAction::from(action(
+            RecordedActionType::RankClue,
+            1,
+            1
+        ))]
     );
     for malformed in [
         json!({"type":0.5,"target":0,"value":0}),
@@ -186,7 +187,7 @@ fn termination_uses_requesting_character_and_explicit_timing() {
         applied(
             &ended.state,
             0,
-            &action(RecordedActionType::Play, 0, 0),
+            action(RecordedActionType::Play, 0, 0),
             None
         )
         .is_err()
@@ -255,7 +256,7 @@ fn termination_uses_requesting_character_and_explicit_timing() {
         applied(
             &state,
             0,
-            &action(RecordedActionType::RankClue, 1, 1),
+            action(RecordedActionType::RankClue, 1, 1),
             Some(CompletionTiming {
                 player_times: vec![0],
                 duration: 0
@@ -285,7 +286,7 @@ fn privacy_is_historical_and_invalid_shadow_seats_are_omniscient() {
                 rank, suit_index, ..
             } => {
                 draws += 1;
-                assert_eq!((*rank, *suit_index), (-1, -1));
+                assert_eq!((*rank, *suit_index), (None, None));
             }
             EngineEvent::CardIdentity {
                 player_index: 1,
@@ -293,7 +294,7 @@ fn privacy_is_historical_and_invalid_shadow_seats_are_omniscient() {
                 rank,
                 ..
             } => {
-                assert_ne!(*rank, -1);
+                assert!(rank.is_some());
                 revealed.push(*order);
             }
             EngineEvent::CardIdentity {
@@ -301,14 +302,14 @@ fn privacy_is_historical_and_invalid_shadow_seats_are_omniscient() {
                 rank,
                 suit_index,
                 ..
-            } => assert_eq!((*rank, *suit_index), (-1, -1)),
+            } => assert_eq!((*rank, *suit_index), (None, None)),
             _ => {}
         }
     }
     assert_eq!(draws, 10);
     assert_eq!(revealed, vec![5, 6, 7, 8]);
     assert!(
-        applied(&state, 0, &action(RecordedActionType::RankClue, 1, 4), None)
+        applied(&state, 0, action(RecordedActionType::RankClue, 1, 4), None)
             .unwrap_err()
             .to_string()
             .contains("touches 0 cards")
@@ -380,7 +381,7 @@ fn custom_shortened_decks_are_preserved_without_reshuffling() {
     let next = applied(
         &state,
         0,
-        &action(RecordedActionType::Play, 0, 0),
+        action(RecordedActionType::Play, 0, 0),
         Some(CompletionTiming {
             player_times: vec![0, 0],
             duration: 123,
@@ -422,7 +423,7 @@ fn custom_shortened_decks_are_preserved_without_reshuffling() {
     }]);
     let state = create_game(input).unwrap();
     let before = state.clone();
-    assert!(applied(&state, 0, &action(RecordedActionType::Play, 0, 0), None).is_err());
+    assert!(applied(&state, 0, action(RecordedActionType::Play, 0, 0), None).is_err());
     assert_eq!(state, before);
 }
 
@@ -444,7 +445,7 @@ fn first_accepted(
         if let Ok(next) = applied(
             state,
             state.active_player_index,
-            &a,
+            a,
             Some(CompletionTiming {
                 player_times: vec![0; state.players.len()],
                 duration: 0,

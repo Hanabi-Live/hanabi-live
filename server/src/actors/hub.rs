@@ -221,11 +221,8 @@ impl Hub {
             user_id: p.session.user,
             username: p.session.name.clone(),
             status: p.status,
-            table_id: if p.status == Status::Replay {
-                Some(TableId(0))
-            } else {
-                p.table
-            },
+            // A solo replay is private, so its table is not named.
+            table_id: p.table.filter(|_| p.status != Status::Replay),
             h_group_conventions: p.h_group,
             h_group_level: p.h_group_level,
             bot: p.session.bot,

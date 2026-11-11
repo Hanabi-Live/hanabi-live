@@ -1,7 +1,7 @@
 use anyhow::{Result, ensure};
-use hanabi_engine::RecordedAction;
 pub use hanabi_engine::{AssignedCharacter, DeckCard as Card, Options};
 use hanabi_engine::{CompletionTiming, EndCondition, EngineState, GameSetup, Termination};
+use hanabi_engine::{PlayerAction, RecordedAction};
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
 use serde_json::Value;
 use std::ops::Deref;
@@ -32,8 +32,7 @@ struct GameLog {
 enum GameStep {
     Action {
         actor: usize,
-        #[serde(with = "crate::model::stored_turns::one")]
-        action: RecordedAction,
+        action: PlayerAction,
         #[serde(default, skip_serializing_if = "Option::is_none")]
         timing: Option<CompletionTiming>,
     },
@@ -184,18 +183,18 @@ impl Game {
             interpretation: hanabi_engine::Interpretation::Live,
         })
     }
-    pub fn apply(&mut self, actor: usize, action: RecordedAction) -> Result<()> {
-        self.apply_timed(actor, &action, None)
+    pub fn apply(&mut self, actor: usize, action: PlayerAction) -> Result<()> {
+        self.apply_timed(actor, action, None)
     }
     pub fn apply_timed(
         &mut self,
         actor: usize,
-        action: &RecordedAction,
+        action: PlayerAction,
         timing: Option<CompletionTiming>,
     ) -> Result<()> {
         self.step(GameStep::Action {
             actor,
-            action: *action,
+            action,
             timing,
         })
     }
@@ -249,20 +248,15 @@ impl Game {
                 break;
             }
             let actor = game.active_player_index;
-            let result = if action.action_type.is_game_over() {
-                EndCondition::try_from(action.value)
-                    .map_err(anyhow::Error::msg)
-                    .and_then(|condition| {
-                        game.terminate(
-                            actor,
-                            condition,
-                            usize::try_from(action.target).ok(),
-                            None,
-                            None,
-                        )
-                    })
-            } else {
-                game.apply(actor, *action)
+            let result = match action.turn() {
+                Ok(turn) => game.apply(actor, turn),
+                Err(end) => game.terminate(
+                    actor,
+                    end.end_condition,
+                    end.player_index.map(hanabi_protocol::PlayerIndex::index),
+                    None,
+                    None,
+                ),
             };
             if let Err(error) = result {
                 return Ok((game, Some((index, error))));
@@ -318,11 +312,9 @@ mod tests {
         let mut game = Game::new(standard_deck("p2v0s1").unwrap()).unwrap();
         let active = game.active_player_index;
         let card = game.players[active].hand[0];
-        let play = RecordedAction {
-            action_type: hanabi_engine::RecordedActionType::Play,
-            target: i32::try_from(card).unwrap(),
-            value: 0,
-        };
+        let play = PlayerAction::Play(hanabi_protocol::TargetCard {
+            order: hanabi_protocol::CardOrder::new(card).unwrap(),
+        });
         game.apply(active, play).unwrap();
 
         let stored = serde_json::to_value(&game).unwrap();

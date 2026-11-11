@@ -6,7 +6,6 @@ import {
   VERSION,
   errorDetails,
   httpError,
-  tableIdSchema,
   withTabAccount,
 } from "@hanabi-live/data";
 import { SECOND_IN_MILLISECONDS } from "complete-common";
@@ -275,7 +274,7 @@ function openConnection(isReconnect: boolean) {
         globals.friends = data.friends;
         globals.blocked = data.blocked;
         theme.setDarkMode(globals.settings.darkMode);
-        const retained = tableIdSchema.parse(globals.tableId);
+        const retained = globals.joinedTableId;
         conn.on("tableStarted", (table) => {
           if (!isCurrentConnection(conn)) {
             return;
@@ -302,7 +301,7 @@ function openConnection(isReconnect: boolean) {
           gameCommands.get("gameEventList")?.(eventList);
           conn.setReady(true);
           if (!rebuilding) {
-            conn.send("loaded", { tableId: globals.tableId });
+            conn.send("loaded", { tableId: globals.joinedTableId });
           }
           initCommands(conn);
         });

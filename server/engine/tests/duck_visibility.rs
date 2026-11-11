@@ -33,10 +33,15 @@ fn duck_projection_hides_both_clue_fields_from_every_player_and_shadow() -> Resu
                 1..6
             };
             let action = values
-                .map(|value| PlayerAction {
-                    action_type: kind,
-                    target: int(target),
-                    value,
+                .map(|value| {
+                    serde_json::from_value::<PlayerAction>(
+                        if kind == RecordedActionType::ColorClue {
+                            json!({"type": "colorClue", "target": target, "colorIndex": value})
+                        } else {
+                            json!({"type": "rankClue", "target": target, "rank": value})
+                        },
+                    )
+                    .unwrap()
                 })
                 .find(|action| !touched_orders(&state, action).is_empty())
                 .unwrap();
@@ -64,10 +69,7 @@ fn duck_projection_hides_both_clue_fields_from_every_player_and_shadow() -> Resu
                                 if variant_name == "Duck (5 Suits)"
                                     && let EngineEvent::Clue { clue, .. } = &mut event
                                 {
-                                    *clue = Clue {
-                                        clue_type: None,
-                                        value: -1,
-                                    };
+                                    *clue = None;
                                 }
                                 event
                             })

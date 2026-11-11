@@ -38,7 +38,7 @@ function button(id: string) {
 }
 
 beforeEach(() => {
-  globals.userId = 1;
+  globals.userId = userIdSchema.parse(1);
   globals.username = "alice";
   globals.tableId = TABLE_ID;
   globals.conn = { send } as unknown as Connection;
@@ -84,7 +84,7 @@ describe("Nav", () => {
 
   test("a spectator can join only while the table has room", () => {
     act(() => {
-      globals.userId = 2;
+      globals.userId = userIdSchema.parse(2);
       globals.username = "me";
     });
     expect(button("start")!.classList).toContain("disabled");

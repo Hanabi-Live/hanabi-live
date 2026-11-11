@@ -114,7 +114,7 @@ gameCommands.set("finishOngoingGame", (data) => {
   ) {
     // Completed replays may reveal clues; replace the restricted history before exporting it.
     globals.lobby.conn!.send("gameStateLoad", {
-      tableId: globals.lobby.tableId,
+      tableId: globals.lobby.joinedTableId,
     });
   }
 });
@@ -333,7 +333,7 @@ gameCommands.set("idleWarning", (data) => {
     globals.state.playing
       ? () => {
           globals.lobby.conn!.send("idleReset", {
-            tableId: globals.lobby.tableId,
+            tableId: globals.lobby.joinedTableId,
           });
         }
       : undefined,

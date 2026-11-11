@@ -2,7 +2,7 @@
 
 import type { ServerCommandData } from "@hanabi-live/data";
 import type { PlayerIndex } from "@hanabi-live/game";
-import { millisecondsToClockString, NO_VALUE } from "@hanabi-live/game";
+import { millisecondsToClockString } from "@hanabi-live/game";
 import { SECOND_IN_MILLISECONDS } from "complete-common";
 import * as tooltips from "../../tooltips.ts";
 import { SoundType } from "../types/SoundType.ts";
@@ -217,15 +217,9 @@ function setTickingDownTime(timer: TimerDisplay | undefined) {
 }
 
 /** Update the tooltip that appears when you hover over a player's name. */
-function setTickingDownTimePlayerNameTooltip(
-  playerIndex: PlayerIndex | typeof NO_VALUE,
-) {
+function setTickingDownTimePlayerNameTooltip(playerIndex: PlayerIndex) {
   // This tooltip is disabled in speedrun mode.
-  if (
-    playerIndex === NO_VALUE
-    || globals.lobby.settings.speedrunMode
-    || globals.options.speedrun
-  ) {
+  if (globals.lobby.settings.speedrunMode || globals.options.speedrun) {
     return;
   }
 

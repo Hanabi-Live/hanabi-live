@@ -14,7 +14,7 @@ use crate::{
     transport::{Session, frame},
 };
 use anyhow::Context;
-use hanabi_engine::RecordedAction;
+use hanabi_engine::PlayerAction;
 use hanabi_engine::{CompletionTiming, EndCondition, Recipient};
 use hanabi_protocol::ClientMessage;
 use hanabi_protocol::PlayerIndex;
@@ -29,7 +29,7 @@ impl TableActor {
         message: ClientMessage,
     ) -> CommandResult<()> {
         match message {
-            ClientMessage::PlayerAction(r) => self.action(session, r.action.into()).await,
+            ClientMessage::PlayerAction(r) => self.action(session, r.action).await,
             ClientMessage::TableTerminate(_) => self.terminate(session, false).await,
             ClientMessage::TableTerminateVote(_) => self.terminate(session, true).await,
             ClientMessage::Pause(r) => self.pause(session, r.setting).await,
@@ -48,7 +48,7 @@ impl TableActor {
             _ => bail_internal!("A live command ran outside a live game"),
         }
     }
-    async fn action(&mut self, session: Arc<Session>, a: RecordedAction) -> CommandResult<()> {
+    async fn action(&mut self, session: Arc<Session>, a: PlayerAction) -> CommandResult<()> {
         ensure_or_reject!(self.attending(&session), "Reattend before acting");
         let seat = self.seat(&session)?;
         let old = self.live()?;
@@ -67,7 +67,7 @@ impl TableActor {
             player_times: s.clocks.clone(),
             duration: s.duration,
         };
-        s.game.apply_timed(seat, &a, Some(timing))?;
+        s.game.apply_timed(seat, a, Some(timing))?;
         s.timer_started = true;
         s.turn_elapsed = 0;
         s.idle_remaining = IDLE_TIMEOUT_MS;

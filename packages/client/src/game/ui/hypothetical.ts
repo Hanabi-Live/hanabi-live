@@ -35,7 +35,7 @@ export function startHypothetical(): void {
     });
   } else if (shared.amLeader) {
     globals.lobby.conn!.send("replayAction", {
-      tableId: globals.lobby.tableId,
+      tableId: globals.lobby.joinedTableId,
       action: {
         type: "hypoStart",
       },
@@ -77,7 +77,7 @@ export function endHypothetical(): void {
   // Wait for the server's hypoEnd event so pending actions are processed first.
   if (shared?.amLeader === true) {
     globals.lobby.conn!.send("replayAction", {
-      tableId: globals.lobby.tableId,
+      tableId: globals.lobby.joinedTableId,
       action: {
         type: "hypoEnd",
       },
@@ -216,7 +216,7 @@ export function sendHypotheticalActionToServer(
 ): void {
   if (globals.state.replay.ownHypothetical === undefined) {
     globals.lobby.conn!.send("replayAction", {
-      tableId: globals.lobby.tableId,
+      tableId: globals.lobby.joinedTableId,
       action: {
         type: "hypoAction",
         action: toWireHypotheticalAction(hypoAction),
@@ -246,7 +246,7 @@ export function sendHypotheticalBack(): void {
     });
   } else if (globals.state.replay.shared?.amLeader === true) {
     globals.lobby.conn!.send("replayAction", {
-      tableId: globals.lobby.tableId,
+      tableId: globals.lobby.joinedTableId,
       action: {
         type: "hypoBack",
       },
@@ -267,7 +267,7 @@ export function toggleRevealed(): void {
     });
   } else if (globals.state.replay.shared?.amLeader === true) {
     globals.lobby.conn!.send("replayAction", {
-      tableId: globals.lobby.tableId,
+      tableId: globals.lobby.joinedTableId,
       action: {
         type: "hypoShowDrawnCards",
         showDrawnCards: !globals.state.replay.hypothetical.showDrawnCards,

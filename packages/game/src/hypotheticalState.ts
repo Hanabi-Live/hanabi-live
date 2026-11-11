@@ -47,7 +47,7 @@ export interface HypotheticalState {
   readonly deducedFromShownIdentities: boolean;
 }
 
-/** Shows a card as another identity, or as blank when its suit and rank are -1. */
+/** Shows a card as another identity, or as blank when its suit and rank are absent. */
 export type ActionHypotheticalMorph = Readonly<
   Extract<HypotheticalWireEvent, { type: "morph" }>
 >;

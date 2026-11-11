@@ -1,23 +1,24 @@
 use crate::{
     ActionRejected, AssignedCharacter, Character, Clue, ClueType, CompletionTiming, EndCondition,
-    EngineCard, EngineEvent, EnginePlayer, EngineState, GameSetup, Interpretation, Options,
-    PlayerAction, RecordedAction, RecordedActionType, StackDirection, Termination, UNSEEDED,
+    EngineCard, EngineEvent, EnginePlayer, EngineState, GameSetup, Interpretation, NO_METADATA,
+    Options, PlayerAction, RecordedAction, StackDirection, Termination, UNSEEDED,
     assign_characters,
     characters::{
         character_post_action, character_post_clue, check_character_softlock, has_taken_last_turn,
         needs_second_action, validate_character_action, validate_character_clue,
         validate_character_discard, validate_character_play,
     },
-    clue_type, create_shuffled_deck, get_variant, index, int,
+    create_shuffled_deck, get_variant, index,
     rules::{
         calculate_max_score, clue_cost, clue_cost_for, draw_card, follower_misplays,
-        has_remaining_play, remove_card, sees_card, touched_orders, try_play, variant_for,
+        has_remaining_play, remove_card, sees_card, touched_by, try_play, variant_for,
     },
-    types::reject,
+    types::{Move, reject, seat, target_card},
 };
 use anyhow::{Result, ensure};
 use hanabi_protocol::{
-    MAX_CLUES, MAX_PLAYERS, MAX_RANK, MAX_STRIKES, MIN_PLAYERS, MIN_RANK, NO_VALUE, START_CARD_RANK,
+    GameOverTurn, MAX_CLUES, MAX_PLAYERS, MAX_RANK, MAX_STRIKES, MIN_PLAYERS, MIN_RANK,
+    START_CARD_RANK,
 };
 
 pub(crate) use hanabi_protocol::MAX_SAFE_INTEGER;
@@ -123,7 +124,7 @@ pub fn create_game(setup: GameSetup) -> Result<EngineState> {
             name,
             index,
             character: c.name.unwrap_or_default(),
-            character_metadata: c.metadata.unwrap_or(NO_VALUE),
+            character_metadata: c.metadata.unwrap_or(NO_METADATA),
             hand: vec![],
         })
         .collect();
@@ -140,7 +141,6 @@ pub fn create_game(setup: GameSetup) -> Result<EngineState> {
                 suit_index: card.suit_index,
                 rank: card.rank,
                 order,
-                slot: 0,
                 touched: false,
                 discarded: false,
                 played: false,
@@ -218,83 +218,82 @@ pub fn validate_action(state: &EngineState, actor: usize, action: &PlayerAction)
     if actor != state.active_player_index {
         return reject("It is not your turn, so you cannot perform an action.");
     }
-    if action.action_type.is_game_over() {
-        return reject("That is not a valid action type.");
-    }
-    validate_character_action(state, actor, action)?;
+    validate_character_action(state, actor, *action)?;
     let variant = variant_for(state);
-    let target = usize::try_from(action.target).ok();
-    let deck_move = state.options.deck_plays
-        && state.deck_index + 1 == state.deck.len()
-        && target == Some(state.deck_index);
-    if action.action_type == RecordedActionType::Play {
-        validate_character_play(state, actor, action)?;
-        if !deck_move && !target.is_some_and(|o| state.players[actor].hand.contains(&o)) {
-            return reject("You cannot play a card that is not in your hand.");
-        }
-    } else if action.action_type == RecordedActionType::Discard {
-        if deck_move {
-            if !variant.has_inverted {
-                return reject("You cannot discard the last card in non-Inverted games");
+    match Move::of(*action) {
+        Move::Card { order, play } => {
+            let deck_move = state.options.deck_plays
+                && state.deck_index + 1 == state.deck.len()
+                && order == state.deck_index;
+            let in_hand = state.players[actor].hand.contains(&order);
+            if play {
+                validate_character_play(state, actor, order)?;
+                if !deck_move && !in_hand {
+                    return reject("You cannot play a card that is not in your hand.");
+                }
+            } else {
+                if deck_move {
+                    if !variant.has_inverted {
+                        return reject("You cannot discard the last card in non-Inverted games");
+                    }
+                    return Ok(());
+                }
+                if !in_hand {
+                    return reject("You cannot discard a card that is not in your hand.");
+                }
+                if state.clue_tokens >= MAX_CLUES * clue_cost(state) && !variant.has_inverted {
+                    return reject(format!(
+                        "You cannot discard while the team has {MAX_CLUES} clues."
+                    ));
+                }
+                validate_character_discard(state, actor)?;
             }
-            return Ok(());
         }
-        if !target.is_some_and(|o| state.players[actor].hand.contains(&o)) {
-            return reject("You cannot discard a card that is not in your hand.");
-        }
-        if state.clue_tokens >= MAX_CLUES * clue_cost(state) && !variant.has_inverted {
-            return reject(format!(
-                "You cannot discard while the team has {MAX_CLUES} clues."
-            ));
-        }
-        validate_character_discard(state, actor)?;
-    } else {
-        let Some(target) = target.filter(|&t| t < state.players.len()) else {
-            return reject("That is an invalid clue target.");
-        };
-        if target == actor {
-            return reject("You cannot give a clue to yourself.");
-        }
-        if state.clue_tokens < clue_cost(state) {
-            return reject("You need at least 1 clue token available in order to give a clue.");
-        }
-        if action.action_type == RecordedActionType::ColorClue
-            && index(action.value).is_none_or(|value| value >= variant.clue_colors.len())
-        {
-            return reject(format!(
-                "You cannot give a color clue with a value of \"{}\".",
-                action.value
-            ));
-        }
-        if action.action_type == RecordedActionType::RankClue
-            && !variant.clue_ranks.contains(&action.value)
-        {
-            return reject(format!(
-                "You cannot give a rank clue with a value of \"{}\".",
-                action.value
-            ));
-        }
-        if variant.alternating_clues
-            && clue_type(action.action_type).is_some()
-            && clue_type(action.action_type) == state.last_clue_type_given
-        {
-            return reject("You cannot give two clues of the same time in a row in this variant.");
-        }
-        validate_character_clue(state, actor, action)?;
-        let may_touch_nothing = state.options.empty_clues
-            || (action.action_type == RecordedActionType::ColorClue
-                && variant.color_clues_touch_nothing)
-            || (action.action_type == RecordedActionType::RankClue
-                && variant.rank_clues_touch_nothing);
-        let touches_a_card = touched_orders(state, action)
-            .iter()
-            .any(|&order| sees_card(state, actor, target, order));
-        if !touches_a_card && !may_touch_nothing {
-            return Err(ActionRejected {
-                message: "You cannot give a clue that touches 0 cards in the hand.".into(),
-                silent: state.options.speedrun,
+        Move::Clue { target, clue } => {
+            if target >= state.players.len() {
+                return reject("That is an invalid clue target.");
             }
-            .into());
+            if target == actor {
+                return reject("You cannot give a clue to yourself.");
+            }
+            if state.clue_tokens < clue_cost(state) {
+                return reject("You need at least 1 clue token available in order to give a clue.");
+            }
+            if clue.clue_type == ClueType::Color
+                && index(clue.value).is_none_or(|value| value >= variant.clue_colors.len())
+            {
+                return reject(format!(
+                    "You cannot give a color clue with a value of \"{}\".",
+                    clue.value
+                ));
+            }
+            if clue.clue_type == ClueType::Rank && !variant.clue_ranks.contains(&clue.value) {
+                return reject(format!(
+                    "You cannot give a rank clue with a value of \"{}\".",
+                    clue.value
+                ));
+            }
+            if variant.alternating_clues && Some(clue.clue_type) == state.last_clue_type_given {
+                return reject(
+                    "You cannot give two clues of the same time in a row in this variant.",
+                );
+            }
+            validate_character_clue(state, actor, target, clue)?;
+            let may_touch_nothing = state.options.empty_clues
+                || match clue.clue_type {
+                    ClueType::Color => variant.color_clues_touch_nothing,
+                    ClueType::Rank => variant.rank_clues_touch_nothing,
+                };
+            let touches_a_card = touched_by(state, target, clue)
+                .iter()
+                .any(|&order| sees_card(state, actor, target, order));
+            if !touches_a_card && !may_touch_nothing {
+                return Err(ActionRejected {
+                    message: "You cannot give a clue that touches 0 cards in the hand.".into(),
+                    silent: state.options.speedrun,
+                }
+                .into());
+            }
         }
     }
     Ok(())
@@ -303,28 +302,22 @@ pub fn validate_action(state: &EngineState, actor: usize, action: &PlayerAction)
 fn discard(state: &mut EngineState, player: usize, order: usize) {
     let card = &mut state.deck[order];
     if !card.failed {
-        state.actions.push(RecordedAction {
-            action_type: RecordedActionType::Discard,
-            target: int(order),
-            value: 0,
-        });
+        state
+            .actions
+            .push(RecordedAction::Discard(target_card(order)));
     }
     card.discarded = true;
     state.events.push(EngineEvent::Discard {
         player_index: player,
         order,
-        suit_index: int(card.suit_index),
-        rank: card.rank,
+        suit_index: Some(card.suit_index),
+        rank: Some(card.rank),
         failed: card.failed,
     });
     state.max_score = state.max_score.min(calculate_max_score(state));
 }
 fn play(state: &mut EngineState, player: usize, order: usize) {
-    state.actions.push(RecordedAction {
-        action_type: RecordedActionType::Play,
-        target: int(order),
-        value: 0,
-    });
+    state.actions.push(RecordedAction::Play(target_card(order)));
     // Stack direction/start changes precede Follower's forced failure.
     let playable = try_play(state, order);
     if !playable || follower_misplays(state, player, &state.deck[order]) {
@@ -341,8 +334,8 @@ fn play(state: &mut EngineState, player: usize, order: usize) {
     state.events.push(EngineEvent::Play {
         player_index: player,
         order,
-        suit_index: int(card.suit_index),
-        rank: card.rank,
+        suit_index: Some(card.suit_index),
+        rank: Some(card.rank),
     });
     let finished = if v.has_reversed_suits() {
         (card.rank == MIN_RANK || card.rank == MAX_RANK)
@@ -357,25 +350,28 @@ fn play(state: &mut EngineState, player: usize, order: usize) {
     }
     state.max_score = state.max_score.min(calculate_max_score(state));
 }
-fn give_clue(state: &mut EngineState, actor: usize, action: &PlayerAction, clue_type: ClueType) {
-    let touched = touched_orders(state, action);
-    state.actions.push(*action);
+fn give_clue(
+    state: &mut EngineState,
+    actor: usize,
+    action: PlayerAction,
+    target: usize,
+    clue: Clue,
+) {
+    let touched = touched_by(state, target, clue);
+    state.actions.push(RecordedAction::from(action));
     state.clue_tokens -= clue_cost(state);
-    state.last_clue_type_given = Some(clue_type);
+    state.last_clue_type_given = Some(clue.clue_type);
     for &order in &touched {
         state.deck[order].touched = true;
     }
     state.events.push(EngineEvent::Clue {
-        clue: Clue {
-            clue_type: Some(clue_type),
-            value: action.value,
-        },
+        clue: Some(clue),
         giver: actor,
-        target: index(action.target).expect("the clue target was validated"),
+        target,
         list: touched.clone(),
         turn: state.turn,
     });
-    character_post_clue(state, actor, action, &touched);
+    character_post_clue(state, actor, target, clue, &touched);
 }
 
 fn check_end(state: &mut EngineState) -> bool {
@@ -415,7 +411,7 @@ fn check_end(state: &mut EngineState) -> bool {
 fn finish_action(
     state: &mut EngineState,
     actor: usize,
-    action: &RecordedAction,
+    action: RecordedAction,
     timing: Option<CompletionTiming>,
     votes: Option<Vec<usize>>,
 ) {
@@ -437,17 +433,13 @@ fn finish_action(
     if game_over {
         state.events.push(EngineEvent::GameOver {
             end_condition: state.end_condition,
-            player_index: state.end_player.map_or(NO_VALUE, int),
+            player_index: state.end_player,
             votes,
         });
     }
     state.events.push(EngineEvent::Turn {
         num: state.turn,
-        current_player_index: if ended {
-            NO_VALUE
-        } else {
-            int(state.active_player_index)
-        },
+        current_player_index: (!ended).then_some(state.active_player_index),
     });
     if ended {
         if state.end_condition as i32 > EndCondition::Normal as i32 {
@@ -488,48 +480,43 @@ pub fn apply_action(
 ) -> Result<()> {
     validate_action(state, actor, action)?;
     validate_timing(state, timing.as_ref())?;
-    if let Some(clue_type) = clue_type(action.action_type) {
-        give_clue(state, actor, action, clue_type);
-    } else {
-        let order = usize::try_from(action.target)?;
-        let deck_move = state.options.deck_plays
-            && state.deck_index + 1 == state.deck.len()
-            && order == state.deck_index;
-        let inverted = state.interpretation == Interpretation::Live
-            && variant_for(state).suits[state.deck[order].suit_index].inverted;
-        let is_play = action.action_type
-            == if inverted {
-                RecordedActionType::Discard
+    match Move::of(*action) {
+        Move::Clue { target, clue } => give_clue(state, actor, *action, target, clue),
+        Move::Card {
+            order,
+            play: chose_play,
+        } => {
+            let deck_move = state.options.deck_plays
+                && state.deck_index + 1 == state.deck.len()
+                && order == state.deck_index;
+            let inverted = state.interpretation == Interpretation::Live
+                && variant_for(state).suits[state.deck[order].suit_index].inverted;
+            let is_play = chose_play != inverted;
+            ensure!(
+                !(is_play
+                    && variant_for(state).sudoku
+                    && state.deck[order].rank == START_CARD_RANK
+                    && state.stacks[state.deck[order].suit_index] == 0),
+                "The prepared card cannot start a Sudoku stack."
+            );
+            if !is_play && state.clue_tokens < MAX_CLUES * clue_cost(state) {
+                state.clue_tokens += 1;
+            }
+            if deck_move {
+                draw_card(state, actor);
+            }
+            remove_card(state, actor, order);
+            if is_play {
+                play(state, actor, order);
             } else {
-                RecordedActionType::Play
-            };
-        ensure!(
-            !(is_play
-                && variant_for(state).sudoku
-                && state.deck[order].rank == START_CARD_RANK
-                && state.stacks[state.deck[order].suit_index] == 0),
-            "The prepared card cannot start a Sudoku stack."
-        );
-        if !is_play && state.clue_tokens < MAX_CLUES * clue_cost(state) {
-            state.clue_tokens += 1;
-        }
-        if deck_move {
-            draw_card(state, actor);
-        }
-        remove_card(state, actor, order);
-        if deck_move {
-            state.deck[order].slot = NO_VALUE;
-        }
-        if is_play {
-            play(state, actor, order);
-        } else {
-            discard(state, actor, order);
-        }
-        if !deck_move {
-            draw_card(state, actor);
+                discard(state, actor, order);
+            }
+            if !deck_move {
+                draw_card(state, actor);
+            }
         }
     }
-    finish_action(state, actor, action, timing, None);
+    finish_action(state, actor, RecordedAction::from(*action), timing, None);
     Ok(())
 }
 
@@ -578,22 +565,18 @@ pub fn terminate_game(
         .filter(|_| termination.condition == EndCondition::Timeout);
     state.end_condition = termination.condition;
     state.end_player = termination.player_index;
-    let action = RecordedAction {
-        action_type: if termination.condition == EndCondition::TerminatedByVote {
-            RecordedActionType::GameOverByVote
-        } else {
-            RecordedActionType::GameOver
-        },
-        target: if matches!(
-            termination.condition,
-            EndCondition::TerminatedByVote | EndCondition::IdleTimeout
-        ) {
-            NO_VALUE
-        } else {
-            termination.player_index.map_or(NO_VALUE, int)
-        },
-        value: termination.condition as i32,
-    };
+    let action = RecordedAction::GameOver(GameOverTurn {
+        end_condition: termination.condition,
+        player_index: termination
+            .player_index
+            .filter(|_| {
+                !matches!(
+                    termination.condition,
+                    EndCondition::TerminatedByVote | EndCondition::IdleTimeout
+                )
+            })
+            .map(seat),
+    });
     if termination.condition != EndCondition::AllOrNothingFail {
         state.actions.push(action);
     }
@@ -603,7 +586,7 @@ pub fn terminate_game(
     finish_action(
         state,
         termination.actor_index,
-        &action,
+        action,
         timing,
         termination.votes,
     );

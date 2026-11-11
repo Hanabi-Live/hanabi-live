@@ -52,7 +52,7 @@ export function show(): void {
 
   // Set the browser address bar.
   setBrowserAddressBarPath(
-    `${PATH.PRE_GAME}/${globals.tableId}`,
+    `${PATH.PRE_GAME}/${globals.joinedTableId}`,
     undefined,
     globalThis.location.pathname === PATH.LOBBY ? "push" : "replace",
   );

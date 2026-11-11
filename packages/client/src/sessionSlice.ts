@@ -1,16 +1,15 @@
 // State about our own session that React components read. The jQuery code reads and writes it
 // through the accessors on `globals`.
 
-import type { Settings } from "@hanabi-live/data";
+import type { Settings, UserID } from "@hanabi-live/data";
 import { defaultSettings } from "@hanabi-live/data";
 import type { PayloadAction } from "@reduxjs/toolkit";
 import { createSlice } from "@reduxjs/toolkit";
-import { NO_USER_ID } from "./constants.ts";
 import { Screen } from "./lobby/types/Screen.ts";
 
 interface SessionState {
-  /** `NO_USER_ID` until the server's "welcome" message arrives. */
-  readonly userId: number;
+  /** `undefined` until the server's "welcome" message arrives. */
+  readonly userId: UserID | undefined;
   readonly username: string;
   readonly friends: readonly string[];
   /** The users whom we have blocked. */
@@ -28,7 +27,7 @@ interface SessionState {
 }
 
 const initialState: SessionState = {
-  userId: NO_USER_ID,
+  userId: undefined,
   username: "",
   friends: [],
   blocked: [],
@@ -43,7 +42,7 @@ const sessionSlice = createSlice({
   name: "session",
   initialState,
   reducers: {
-    userIDChanged(state, action: PayloadAction<number>) {
+    userIDChanged(state, action: PayloadAction<UserID | undefined>) {
       state.userId = action.payload;
     },
     usernameChanged(state, action: PayloadAction<string>) {

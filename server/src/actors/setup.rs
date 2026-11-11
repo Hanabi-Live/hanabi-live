@@ -11,7 +11,6 @@ use crate::{
     transport::Session,
 };
 use chrono::Utc;
-use hanabi_engine::RecordedAction;
 use hanabi_protocol::TableId;
 use hanabi_protocol::UserId;
 use hanabi_protocol::{Chat, GameId, MAX_SEED_LENGTH, MIN_PLAYERS, Turn};
@@ -148,16 +147,7 @@ pub(super) async fn load_replay(
             })
             .collect(),
     );
-    extra.custom_actions = historical
-        .game
-        .actions
-        .iter()
-        .map(|a| RecordedAction {
-            action_type: a.action_type,
-            target: a.target,
-            value: a.value,
-        })
-        .collect();
+    extra.custom_actions.clone_from(&historical.game.actions);
     Ok(())
 }
 /// A table's settings as the lobby and its players see them, with its custom seed and replayed

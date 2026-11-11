@@ -2,7 +2,7 @@
 
 import { MAX_PLAYERS, MIN_PLAYERS } from "@hanabi-live/game";
 import { Children } from "react";
-import { NO_TABLE_ID, PATH } from "../../constants.ts";
+import { PATH } from "../../constants.ts";
 import { globals } from "../../Globals.ts";
 import { showWarning } from "../../modals.ts";
 import type { RootState } from "../../store.ts";
@@ -442,14 +442,14 @@ function selectJoinButton(state: RootState): {
 
 function startGame() {
   globals.conn!.send("tableStart", {
-    tableId: globals.tableId,
+    tableId: globals.joinedTableId,
     intendedPlayerNames: globals.game?.players.map((player) => player.username),
   });
   store.dispatch(startGameSentChanged(true));
 }
 
 function joinGame() {
-  const table = globals.getTable(globals.tableId);
+  const table = globals.getTable(globals.joinedTableId);
   if (table === undefined) {
     return;
   }
@@ -470,24 +470,24 @@ function joinGame() {
 }
 
 function spectateGame() {
-  const table = globals.getTable(globals.tableId);
+  const table = globals.getTable(globals.joinedTableId);
   if (table === undefined) {
     return;
   }
 
-  globals.conn!.send("tableLeave", { tableId: globals.tableId });
+  globals.conn!.send("tableLeave", { tableId: globals.joinedTableId });
   tableSpectate(table);
 }
 
 function returnToLobby() {
   pregame.hide();
-  globals.conn!.send("tableUnattend", { tableId: globals.tableId });
-  globals.tableId = NO_TABLE_ID;
+  globals.conn!.send("tableUnattend", { tableId: globals.joinedTableId });
+  globals.tableId = undefined;
 }
 
 function leaveGame() {
   // "Leave Game" and "Return to Lobby" are the same for spectators.
-  const table = globals.getTable(globals.tableId);
+  const table = globals.getTable(globals.joinedTableId);
   if (table === undefined) {
     return;
   }
@@ -499,6 +499,6 @@ function leaveGame() {
   ) {
     returnToLobby();
   } else {
-    globals.conn!.send("tableLeave", { tableId: globals.tableId });
+    globals.conn!.send("tableLeave", { tableId: globals.joinedTableId });
   }
 }

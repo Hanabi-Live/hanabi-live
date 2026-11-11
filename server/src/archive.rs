@@ -5,15 +5,16 @@ use crate::{
     model::{Player, Snapshot, Tag},
     stats::zero_stats,
 };
-use anyhow::{Context, Result, ensure};
+use anyhow::{Context, Result, anyhow, ensure};
 use chrono::{DateTime, Utc};
-use hanabi_engine::RecordedAction;
-use hanabi_engine::RecordedActionType;
-use hanabi_engine::{AssignedCharacter, EndCondition, GameSetup, Interpretation};
-use hanabi_protocol::GameId;
-use hanabi_protocol::NO_VALUE;
-use hanabi_protocol::TableId;
-use hanabi_protocol::UserId;
+use hanabi_engine::{
+    AssignedCharacter, EndCondition, GameSetup, Interpretation, RecordedAction, RecordedActionType,
+    recorded_action_type,
+};
+use hanabi_protocol::{
+    CardOrder, ColorClueTurn, ColorIndex, GameId, GameOverTurn, PlayerIndex, RankClueNumber,
+    RankClueTurn, TableId, TargetCard, UserId,
+};
 use serde::Deserialize;
 use sqlx::{PgPool, types::Json};
 use sqlx::{Postgres, Transaction};
@@ -33,8 +34,8 @@ pub(crate) struct ArchivePlayer {
 }
 
 /// An action as `game_actions` stores it: NULL for a game over's target when no player caused it,
-/// and for a play's or a discard's value. The engine's records use `NO_VALUE` and 0 instead.
-#[derive(Debug, Deserialize)]
+/// and for a play's or a discard's value.
+#[derive(Clone, Copy, Debug, Deserialize)]
 struct ArchiveAction {
     #[serde(rename = "type")]
     kind: RecordedActionType,
@@ -42,30 +43,65 @@ struct ArchiveAction {
     value: Option<i32>,
 }
 
-impl From<ArchiveAction> for RecordedAction {
-    fn from(action: ArchiveAction) -> Self {
-        Self {
-            action_type: action.kind,
-            target: action.target.unwrap_or(NO_VALUE),
-            value: action.value.unwrap_or(0),
-        }
+impl TryFrom<ArchiveAction> for RecordedAction {
+    type Error = anyhow::Error;
+
+    fn try_from(action: ArchiveAction) -> Result<Self> {
+        let invalid = || anyhow!("Invalid recorded action: {action:?}");
+        let card = || {
+            Ok::<_, anyhow::Error>(TargetCard {
+                order: action.target.and_then(CardOrder::new).ok_or_else(invalid)?,
+            })
+        };
+        let seat = || action.target.and_then(PlayerIndex::new).ok_or_else(invalid);
+        Ok(match action.kind {
+            RecordedActionType::Play => Self::Play(card()?),
+            RecordedActionType::Discard => Self::Discard(card()?),
+            RecordedActionType::ColorClue => Self::ColorClue(ColorClueTurn {
+                target: seat()?,
+                color_index: action.value.and_then(ColorIndex::new).ok_or_else(invalid)?,
+            }),
+            RecordedActionType::RankClue => Self::RankClue(RankClueTurn {
+                target: seat()?,
+                rank: action
+                    .value
+                    .and_then(RankClueNumber::new)
+                    .ok_or_else(invalid)?,
+            }),
+            RecordedActionType::GameOver | RecordedActionType::GameOverByVote => {
+                Self::GameOver(GameOverTurn {
+                    end_condition: EndCondition::try_from(action.value.ok_or_else(invalid)?)
+                        .map_err(anyhow::Error::msg)?,
+                    player_index: action.target.map(|_| seat()).transpose()?,
+                })
+            }
+        })
     }
 }
 
-/// The target that `game_actions` stores: NULL for a game over that no player caused.
-fn stored_target(target: i32) -> Result<Option<i16>> {
-    Ok((target != NO_VALUE)
-        .then(|| i16::try_from(target))
-        .transpose()?)
-}
-
-/// The value that `game_actions` stores: NULL for a play or a discard, which has none.
-fn stored_value(kind: RecordedActionType, value: i32) -> Result<Option<i16>> {
-    Ok(
-        (!matches!(kind, RecordedActionType::Play | RecordedActionType::Discard))
-            .then(|| i16::try_from(value))
-            .transpose()?,
-    )
+/// The type, target, and value that `game_actions` stores for an action.
+fn stored_action(action: RecordedAction) -> Result<(i16, Option<i16>, Option<i16>)> {
+    let (target, value) = match action {
+        RecordedAction::Play(card) | RecordedAction::Discard(card) => {
+            (Some(i32::from(card.order)), None)
+        }
+        RecordedAction::ColorClue(clue) => (
+            Some(i32::from(clue.target)),
+            Some(i32::from(clue.color_index)),
+        ),
+        RecordedAction::RankClue(clue) => {
+            (Some(i32::from(clue.target)), Some(i32::from(clue.rank)))
+        }
+        RecordedAction::GameOver(end) => (
+            end.player_index.map(i32::from),
+            Some(i32::from(end.end_condition)),
+        ),
+    };
+    Ok((
+        i16::try_from(i32::from(recorded_action_type(&action)))?,
+        target.map(i16::try_from).transpose()?,
+        value.map(i16::try_from).transpose()?,
+    ))
 }
 
 #[derive(Debug, Deserialize)]
@@ -142,8 +178,8 @@ pub(crate) async fn load(pool: &PgPool, id: GameId) -> Result<Option<Archive>> {
             .archive_actions
             .0
             .into_iter()
-            .map(RecordedAction::from)
-            .collect(),
+            .map(RecordedAction::try_from)
+            .collect::<Result<_>>()?,
         notes: row.archive_notes.0,
         tags: row.archive_tags.0,
         game: row.game.0,
@@ -324,24 +360,15 @@ pub(crate) async fn insert(
     )
     .execute(&mut **tx)
     .await?;
-    let kinds: Vec<i16> = s
-        .game
-        .actions
-        .iter()
-        .map(|a| i16::try_from(i32::from(a.action_type)))
-        .collect::<Result<_, _>>()?;
-    let targets: Vec<Option<i16>> = s
-        .game
-        .actions
-        .iter()
-        .map(|a| stored_target(a.target))
-        .collect::<Result<_, _>>()?;
-    let values: Vec<Option<i16>> = s
-        .game
-        .actions
-        .iter()
-        .map(|a| stored_value(a.action_type, a.value))
-        .collect::<Result<_, _>>()?;
+    let mut kinds = Vec::with_capacity(s.game.actions.len());
+    let mut targets = Vec::with_capacity(s.game.actions.len());
+    let mut values = Vec::with_capacity(s.game.actions.len());
+    for action in &s.game.actions {
+        let (kind, target, value) = stored_action(*action)?;
+        kinds.push(kind);
+        targets.push(target);
+        values.push(value);
+    }
     sqlx::query!("INSERT INTO game_actions(game_id,turn,type,target,value) SELECT $1,(a.turn-1)::smallint,a.kind,a.target,a.value FROM UNNEST($2::smallint[],$3::smallint[],$4::smallint[]) WITH ORDINALITY AS a(kind,target,value,turn)", id.0, &kinds, &targets as &[Option<i16>], &values as &[Option<i16>]).execute(&mut **tx).await?;
     let tag_users = s.tags.iter().map(|tag| tag.user.0).collect::<Vec<_>>();
     let tags = s

@@ -1,6 +1,5 @@
 use hanabi_protocol::{
-    CardOrder, ColorClueTurn, ColorIndex, DEFAULT_VARIANT_NAME, GameOverTurn, MIN_PLAYERS,
-    NO_VALUE, PlayerIndex, RankClueNumber, RankClueTurn, ReplayGameAction, TargetCard,
+    CardOrder, DEFAULT_VARIANT_NAME, GameOverTurn, MIN_PLAYERS, PlayerIndex, TargetCard,
 };
 pub use hanabi_protocol::{ClueType, EndCondition};
 use serde::{Deserialize, Serialize};
@@ -132,7 +131,7 @@ pub enum RecordedActionType {
     ColorClue = 2,
     RankClue = 3,
     /// The game ended. The value is its `EndCondition`, and the target is the player who ended it,
-    /// or -1.
+    /// if one did.
     GameOver = 4,
     /// The players voted to end the game.
     GameOverByVote = 5,
@@ -170,95 +169,73 @@ impl From<RecordedActionType> for i32 {
     }
 }
 
-#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
-#[serde(deny_unknown_fields)]
-pub struct PlayerAction {
-    #[serde(rename = "type")]
-    pub action_type: RecordedActionType,
-    pub target: i32,
-    pub value: i32,
+/// What a player does on their turn.
+pub use hanabi_protocol::PlayerAction;
+/// A turn, or the end of the game, in a game's record.
+pub use hanabi_protocol::ReplayGameAction as RecordedAction;
+
+/// The type of a recorded action.
+pub const fn recorded_action_type(action: &RecordedAction) -> RecordedActionType {
+    match action {
+        RecordedAction::Play(_) => RecordedActionType::Play,
+        RecordedAction::Discard(_) => RecordedActionType::Discard,
+        RecordedAction::ColorClue(_) => RecordedActionType::ColorClue,
+        RecordedAction::RankClue(_) => RecordedActionType::RankClue,
+        RecordedAction::GameOver(GameOverTurn {
+            end_condition: EndCondition::TerminatedByVote,
+            ..
+        }) => RecordedActionType::GameOverByVote,
+        RecordedAction::GameOver(_) => RecordedActionType::GameOver,
+    }
 }
-pub type RecordedAction = PlayerAction;
-impl From<ReplayGameAction> for PlayerAction {
-    /// The action as a game's record stores it.
-    fn from(action: ReplayGameAction) -> Self {
-        let (action_type, target, value) = match action {
-            ReplayGameAction::Play(card) => (RecordedActionType::Play, card.order.into(), 0),
-            ReplayGameAction::Discard(card) => (RecordedActionType::Discard, card.order.into(), 0),
-            ReplayGameAction::ColorClue(clue) => (
-                RecordedActionType::ColorClue,
-                clue.target.into(),
-                clue.color_index.into(),
-            ),
-            ReplayGameAction::RankClue(clue) => (
-                RecordedActionType::RankClue,
-                clue.target.into(),
-                clue.rank.into(),
-            ),
-            ReplayGameAction::GameOver(end) => (
-                if end.end_condition == EndCondition::TerminatedByVote {
-                    RecordedActionType::GameOverByVote
-                } else {
-                    RecordedActionType::GameOver
+
+/// A player's action, split into the parts that the rules use.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub(crate) enum Move {
+    /// A play or a discard of the card `order`.
+    Card { order: usize, play: bool },
+    /// A clue to the player `target`.
+    Clue { target: usize, clue: Clue },
+}
+
+impl Move {
+    pub(crate) fn of(action: PlayerAction) -> Self {
+        match action {
+            PlayerAction::Play(card) => Self::Card {
+                order: card.order.index(),
+                play: true,
+            },
+            PlayerAction::Discard(card) => Self::Card {
+                order: card.order.index(),
+                play: false,
+            },
+            PlayerAction::ColorClue(clue) => Self::Clue {
+                target: clue.target.index(),
+                clue: Clue {
+                    clue_type: ClueType::Color,
+                    value: clue.color_index.into(),
                 },
-                end.player_index.map_or(NO_VALUE, i32::from),
-                i32::from(end.end_condition),
-            ),
-        };
-        Self {
-            action_type,
-            target,
-            value,
+            },
+            PlayerAction::RankClue(clue) => Self::Clue {
+                target: clue.target.index(),
+                clue: Clue {
+                    clue_type: ClueType::Rank,
+                    value: clue.rank.into(),
+                },
+            },
         }
     }
 }
 
-impl From<hanabi_protocol::PlayerAction> for PlayerAction {
-    fn from(action: hanabi_protocol::PlayerAction) -> Self {
-        ReplayGameAction::from(action).into()
-    }
+/// A seat that the engine names. The engine only names seats that the game has.
+pub(crate) fn seat(index: usize) -> PlayerIndex {
+    PlayerIndex::new(index).expect("engine seats are below MAX_PLAYERS")
 }
 
-impl TryFrom<PlayerAction> for ReplayGameAction {
-    type Error = String;
-
-    /// An action from a game's record. Fails for a value that the replay format cannot hold, such
-    /// as an unknown end condition.
-    fn try_from(action: PlayerAction) -> Result<Self, Self::Error> {
-        let PlayerAction {
-            action_type,
-            target,
-            value,
-        } = action;
-        let invalid = || format!("Invalid recorded action: {action_type:?} {target} {value}");
-        let card = || {
-            Ok::<_, String>(TargetCard {
-                order: CardOrder::new(target).ok_or_else(invalid)?,
-            })
-        };
-        let seat = || PlayerIndex::new(target).ok_or_else(invalid);
-        Ok(match action_type {
-            RecordedActionType::Play => Self::Play(card()?),
-            RecordedActionType::Discard => Self::Discard(card()?),
-            RecordedActionType::ColorClue => Self::ColorClue(ColorClueTurn {
-                target: seat()?,
-                color_index: ColorIndex::new(value).ok_or_else(invalid)?,
-            }),
-            RecordedActionType::RankClue => Self::RankClue(RankClueTurn {
-                target: seat()?,
-                rank: RankClueNumber::new(value).ok_or_else(invalid)?,
-            }),
-            RecordedActionType::GameOver | RecordedActionType::GameOverByVote => {
-                Self::GameOver(GameOverTurn {
-                    end_condition: EndCondition::try_from(value)?,
-                    player_index: if target == NO_VALUE {
-                        None
-                    } else {
-                        Some(seat()?)
-                    },
-                })
-            }
-        })
+/// A card that the engine names. The engine only names cards that the game has.
+pub(crate) fn target_card(order: usize) -> TargetCard {
+    TargetCard {
+        order: CardOrder::new(order).expect("engine card orders are below the largest deck"),
     }
 }
 
@@ -268,7 +245,6 @@ pub struct EngineCard {
     pub suit_index: usize,
     pub rank: i32,
     pub order: usize,
-    pub slot: i32,
     pub touched: bool,
     pub discarded: bool,
     pub played: bool,
@@ -276,6 +252,10 @@ pub struct EngineCard {
     pub cannot_be_played: bool,
     pub insistent_touched: bool,
 }
+
+/// The `character_metadata` of a player whose character has none, or whose character has nothing
+/// to remember yet.
+pub const NO_METADATA: i32 = -1;
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
@@ -290,9 +270,8 @@ pub struct EnginePlayer {
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct Clue {
-    /// `None` in the events of a recipient who may not see the clue's type.
     #[serde(rename = "type")]
-    pub clue_type: Option<ClueType>,
+    pub clue_type: ClueType,
     pub value: i32,
 }
 
@@ -306,23 +285,6 @@ pub fn index(value: i32) -> Option<usize> {
     usize::try_from(value).ok()
 }
 
-/// The kind of clue that a recorded action gives, or `None` for an action that is not a clue.
-pub const fn clue_type(action_type: RecordedActionType) -> Option<ClueType> {
-    match action_type {
-        RecordedActionType::ColorClue => Some(ClueType::Color),
-        RecordedActionType::RankClue => Some(ClueType::Rank),
-        _ => None,
-    }
-}
-
-/// The recorded action type that gives a kind of clue.
-pub const fn clue_action_type(clue_type: ClueType) -> RecordedActionType {
-    match clue_type {
-        ClueType::Color => RecordedActionType::ColorClue,
-        ClueType::Rank => RecordedActionType::RankClue,
-    }
-}
-
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(
     tag = "type",
@@ -334,30 +296,35 @@ pub enum EngineEvent {
     Draw {
         player_index: usize,
         order: usize,
-        suit_index: i32,
-        rank: i32,
+        /// `None` in the events of a recipient who may not see the card.
+        suit_index: Option<usize>,
+        rank: Option<i32>,
     },
     Play {
         player_index: usize,
         order: usize,
-        suit_index: i32,
-        rank: i32,
+        /// `None` in the events of a recipient who may not see the card.
+        suit_index: Option<usize>,
+        rank: Option<i32>,
     },
     CardIdentity {
         player_index: usize,
         order: usize,
-        suit_index: i32,
-        rank: i32,
+        /// `None` in the events of a recipient who may not see the card.
+        suit_index: Option<usize>,
+        rank: Option<i32>,
     },
     Discard {
         player_index: usize,
         order: usize,
-        suit_index: i32,
-        rank: i32,
+        /// `None` in the events of a recipient who may not see the card.
+        suit_index: Option<usize>,
+        rank: Option<i32>,
         failed: bool,
     },
     Clue {
-        clue: Clue,
+        /// `None` in the events of a recipient who may not see the clue.
+        clue: Option<Clue>,
         giver: usize,
         target: usize,
         list: Vec<usize>,
@@ -365,11 +332,13 @@ pub enum EngineEvent {
     },
     Turn {
         num: i32,
-        current_player_index: i32,
+        /// `None` when the game is over.
+        current_player_index: Option<usize>,
     },
     GameOver {
         end_condition: EndCondition,
-        player_index: i32,
+        /// The player who caused the game to end, if one did.
+        player_index: Option<usize>,
         votes: Option<Vec<usize>>,
     },
     PlayerTimes {

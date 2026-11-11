@@ -3,7 +3,7 @@ use crate::{
     random::{GoRandom, seed_hash},
 };
 use anyhow::{Result, ensure};
-use hanabi_protocol::{MAX_PLAYERS, MAX_RANK, MIN_PLAYERS, NO_VALUE};
+use hanabi_protocol::{MAX_PLAYERS, MAX_RANK, MIN_PLAYERS};
 
 /// The highest rank a Dumbfounded or Awkward character is assigned, which leaves out the top rank.
 const MAX_CHARACTER_RANK: i32 = MAX_RANK - 1;
@@ -98,16 +98,16 @@ pub fn assign_characters(
                     !variant.clue_colors.is_empty(),
                     "Character requires clue colors"
                 );
-                int(rng.index(variant.clue_colors.len()))
+                Some(int(rng.index(variant.clue_colors.len())))
             }
             Some(Character::Dumbfounded | Character::Awkward) => {
-                int(rng.index(usize::try_from(MAX_CHARACTER_RANK)?)) + 1
+                Some(int(rng.index(usize::try_from(MAX_CHARACTER_RANK)?)) + 1)
             }
-            _ => NO_VALUE,
+            _ => None,
         };
         assigned.push(AssignedCharacter {
             name: Some(character.name.clone()),
-            metadata: (metadata != NO_VALUE).then_some(metadata),
+            metadata,
         });
     }
     Ok(assigned)

@@ -35,7 +35,6 @@ pub struct Player {
 #[serde(default, rename_all = "camelCase", deny_unknown_fields)]
 pub struct ExtraOptions {
     pub custom_seed: Option<String>,
-    #[serde(with = "stored_turns")]
     pub custom_actions: Vec<RecordedAction>,
     pub custom_characters: Option<Vec<AssignedCharacter>>,
     pub custom_num_players: Option<usize>,
@@ -266,55 +265,6 @@ pub fn hypothetical_bytes(actions: &[HypotheticalEvent]) -> Result<usize> {
     actions.iter().try_fold(0, |total, action| {
         Ok(total + serde_json::to_string(action)?.len())
     })
-}
-/// Stores turns in the named form of the replay format, such as `{"type":"play","order":4}`.
-pub(crate) mod stored_turns {
-    use hanabi_engine::RecordedAction;
-    use hanabi_protocol::ReplayGameAction;
-    use serde::{Deserialize, Deserializer, Serialize, Serializer};
-
-    pub fn serialize<S: Serializer>(
-        actions: &[RecordedAction],
-        serializer: S,
-    ) -> Result<S::Ok, S::Error> {
-        actions
-            .iter()
-            .map(|action| ReplayGameAction::try_from(*action))
-            .collect::<Result<Vec<_>, _>>()
-            .map_err(serde::ser::Error::custom)?
-            .serialize(serializer)
-    }
-
-    pub fn deserialize<'de, D: Deserializer<'de>>(
-        deserializer: D,
-    ) -> Result<Vec<RecordedAction>, D::Error> {
-        Ok(Vec::<ReplayGameAction>::deserialize(deserializer)?
-            .into_iter()
-            .map(RecordedAction::from)
-            .collect())
-    }
-
-    /// One turn, stored the same way.
-    pub mod one {
-        use hanabi_engine::RecordedAction;
-        use hanabi_protocol::ReplayGameAction;
-        use serde::{Deserialize, Deserializer, Serialize, Serializer};
-
-        pub fn serialize<S: Serializer>(
-            action: &RecordedAction,
-            serializer: S,
-        ) -> Result<S::Ok, S::Error> {
-            ReplayGameAction::try_from(*action)
-                .map_err(serde::ser::Error::custom)?
-                .serialize(serializer)
-        }
-
-        pub fn deserialize<'de, D: Deserializer<'de>>(
-            deserializer: D,
-        ) -> Result<RecordedAction, D::Error> {
-            Ok(ReplayGameAction::deserialize(deserializer)?.into())
-        }
-    }
 }
 impl TableSnapshot {
     /// Updates the cached game totals of the pregame players in `users`, whose totals `counts`

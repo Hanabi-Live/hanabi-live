@@ -174,7 +174,7 @@ export class TerminateMenu extends Konva.Group {
     this.voteDetail = vote.detailText;
     vote.group.on("click tap", () => {
       globals.lobby.conn!.send("tableTerminateVote", {
-        tableId: globals.lobby.tableId,
+        tableId: globals.lobby.joinedTableId,
       });
       this.close();
     });
@@ -191,7 +191,7 @@ export class TerminateMenu extends Konva.Group {
     endNowColor.moveToBottom();
     endNow.group.on("click tap", () => {
       globals.lobby.conn!.send("tableTerminate", {
-        tableId: globals.lobby.tableId,
+        tableId: globals.lobby.joinedTableId,
       });
       this.close();
     });

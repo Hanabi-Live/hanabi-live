@@ -7,7 +7,7 @@ export function onInitializationChanged(initialized: boolean): void {
 
   if (globals.loading) {
     globals.lobby.conn!.send("loaded", {
-      tableId: globals.lobby.tableId,
+      tableId: globals.lobby.joinedTableId,
     });
   }
   globals.loading = false;

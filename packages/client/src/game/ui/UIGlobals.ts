@@ -79,7 +79,7 @@ export class UIGlobals {
   playerTimes: number[] = [];
 
   /**
-   * The player whose clock is running, from the last "clock" message. `NO_VALUE` when no clock is
+   * The player whose clock is running, from the last "clock" message. `undefined` when no clock is
    * running. It indexes `playerTimes` from the same message, so it is not read from the game state.
    */
   clockPlayerIndex: PlayerIndex | undefined = undefined;

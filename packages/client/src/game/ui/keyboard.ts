@@ -385,7 +385,7 @@ function sharedReplaySendSound(sound: "buzz" | "clap" | "holy" | "nooo") {
 
   // Send it
   globals.lobby.conn!.send("replayAction", {
-    tableId: globals.lobby.tableId,
+    tableId: globals.lobby.joinedTableId,
     action: {
       type: "sound",
       sound,
@@ -490,7 +490,7 @@ function sendAction(actionType: PlayOrDiscard, order: CardOrder) {
   if (globals.state.replay.hypothetical === undefined) {
     globals.lobby.conn!.send(
       "playerAction",
-      toWireAction(globals.lobby.tableId, { type: actionType, order }),
+      toWireAction(globals.lobby.joinedTableId, { type: actionType, order }),
     );
   } else {
     hypothetical.sendHypotheticalAction({ type: actionType, order });

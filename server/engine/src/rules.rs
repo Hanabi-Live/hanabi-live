@@ -1,8 +1,8 @@
 use crate::{
-    Character, EngineCard, EngineEvent, EngineState, PlayerAction, StackDirection, Variant,
-    clue_type, get_variant, int, is_card_touched,
+    Character, Clue, EngineCard, EngineEvent, EngineState, NO_METADATA, PlayerAction,
+    StackDirection, Variant, get_variant, int, is_card_touched, types::Move,
 };
-use hanabi_protocol::{MAX_RANK, MIN_RANK, NO_VALUE, START_CARD_RANK};
+use hanabi_protocol::{MAX_RANK, MIN_RANK, START_CARD_RANK};
 use std::collections::HashSet;
 
 /// The turns left after the last card is drawn when a Contrarian plays.
@@ -22,11 +22,17 @@ pub fn clue_cost_for(variant: &Variant) -> i32 {
     if variant.clue_starved { 2 } else { 1 }
 }
 
+/// The cards that a clue action touches. Empty for an action that is not a clue.
 pub fn touched_orders(state: &EngineState, action: &PlayerAction) -> Vec<usize> {
-    let Some(player) = usize::try_from(action.target)
-        .ok()
-        .and_then(|i| state.players.get(i))
-    else {
+    match Move::of(*action) {
+        Move::Clue { target, clue } => touched_by(state, target, clue),
+        Move::Card { .. } => vec![],
+    }
+}
+
+/// The cards in `target`'s hand that `clue` touches.
+pub(crate) fn touched_by(state: &EngineState, target: usize, clue: Clue) -> Vec<usize> {
+    let Some(player) = state.players.get(target) else {
         return vec![];
     };
     player
@@ -35,15 +41,13 @@ pub fn touched_orders(state: &EngineState, action: &PlayerAction) -> Vec<usize> 
         .copied()
         .filter(|&order| {
             let card = &state.deck[order];
-            clue_type(action.action_type).is_some_and(|clue_type| {
-                is_card_touched(
-                    variant_for(state),
-                    clue_type,
-                    action.value,
-                    card.suit_index,
-                    card.rank,
-                )
-            })
+            is_card_touched(
+                variant_for(state),
+                clue.clue_type,
+                clue.value,
+                card.suit_index,
+                card.rank,
+            )
         })
         .collect()
 }
@@ -71,8 +75,8 @@ pub(crate) fn draw_card(state: &mut EngineState, player: usize) {
     state.events.push(EngineEvent::Draw {
         player_index: player,
         order: card.order,
-        suit_index: int(card.suit_index),
-        rank: card.rank,
+        suit_index: Some(card.suit_index),
+        rank: Some(card.rank),
     });
     if state.options.detrimental_characters
         && state.players[player].hand.len() > 1
@@ -86,8 +90,8 @@ pub(crate) fn draw_card(state: &mut EngineState, player: usize) {
         state.events.push(EngineEvent::CardIdentity {
             player_index: player,
             order: previous.order,
-            suit_index: int(previous.suit_index),
-            rank: previous.rank,
+            suit_index: Some(previous.suit_index),
+            rank: Some(previous.rank),
         });
     }
     if state.deck_index == state.deck.len() && !state.options.all_or_nothing {
@@ -112,7 +116,6 @@ pub(crate) fn remove_card(state: &mut EngineState, player: usize, order: usize) 
         .iter()
         .position(|&o| o == order)
         .expect("validated hand card");
-    state.deck[order].slot = int(hand.len() - index);
     hand.remove(index);
     if state.options.detrimental_characters && state.deck[order].insistent_touched {
         for &remaining in hand.iter() {
@@ -123,7 +126,7 @@ pub(crate) fn remove_card(state: &mut EngineState, player: usize, order: usize) 
             .iter_mut()
             .find(|p| p.character() == Some(Character::Insistent))
         {
-            insistent.character_metadata = NO_VALUE;
+            insistent.character_metadata = NO_METADATA;
         }
     }
 }

@@ -369,10 +369,10 @@ function HGroupLevelBadge({ name }: { readonly name: string }) {
 /** Spectates the table again, shadowing a player or no one. */
 function reattend(shadowingPlayerIndex: PlayerIndex | undefined) {
   globals.conn!.send("tableUnattend", {
-    tableId: globals.tableId,
+    tableId: globals.joinedTableId,
   });
   globals.conn!.send("tableSpectate", {
-    tableId: globals.tableId,
+    tableId: globals.joinedTableId,
     shadowingPlayerIndex,
   });
 }

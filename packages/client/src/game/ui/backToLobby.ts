@@ -22,7 +22,7 @@ export function backToLobby(): void {
   setBrowserAddressBarPath(PATH.LOBBY);
 
   globals.lobby.conn!.send("tableUnattend", {
-    tableId: globals.lobby.tableId,
+    tableId: globals.lobby.joinedTableId,
   });
   globals.game!.hide();
 }

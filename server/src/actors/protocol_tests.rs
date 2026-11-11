@@ -419,45 +419,43 @@ async fn duck_clue_identity_is_private_in_live_history_and_recovery_but_not_comp
             h.frames(index)?;
         }
         let mut originals = vec![];
-        for kind in [
-            hanabi_engine::RecordedActionType::ColorClue,
-            hanabi_engine::RecordedActionType::RankClue,
+        for clue_type in [
+            hanabi_engine::ClueType::Color,
+            hanabi_engine::ClueType::Rank,
         ] {
             let (table, _) = h.snapshot(id).await?;
             let game = table.game().unwrap().game.state();
             let seat = game.active_player_index;
             let target = (seat + 1) % game.players.len();
-            let values = if kind == hanabi_engine::RecordedActionType::ColorClue {
+            let values = if clue_type == hanabi_engine::ClueType::Color {
                 0..5
             } else {
                 1..6
             };
-            let action = values
-                .map(|value| hanabi_engine::PlayerAction {
-                    action_type: kind,
-                    target: hanabi_engine::int(target),
-                    value,
+            let (action, value) = values
+                .map(|value| {
+                    let action = if clue_type == hanabi_engine::ClueType::Color {
+                        json!({"type":"colorClue","target":target,"colorIndex":value})
+                    } else {
+                        json!({"type":"rankClue","target":target,"rank":value})
+                    };
+                    (action, value)
                 })
-                .find(|action| !hanabi_engine::touched_orders(game, action).is_empty())
+                .find(|(action, _)| {
+                    serde_json::from_value::<hanabi_engine::PlayerAction>(action.clone()).is_ok_and(
+                        |action| !hanabi_engine::touched_orders(game, &action).is_empty(),
+                    )
+                })
                 .context("Missing legal clue")?;
             let index = h
                 .users
                 .iter()
                 .position(|user| user.user == table.players()[seat].id)
                 .unwrap();
-            h.send(
-                index,
-                "playerAction",
-                if kind == hanabi_engine::RecordedActionType::ColorClue {
-                    json!({"tableId":id,"action":{"type":"colorClue","target":target,"colorIndex":action.value}})
-                } else {
-                    json!({"tableId":id,"action":{"type":"rankClue","target":target,"rank":action.value}})
-                },
-            )
-            .await?;
+            h.send(index, "playerAction", json!({"tableId":id,"action":action}))
+                .await?;
             h.barrier(index).await?;
-            let clue =
-                json!({"type":hanabi_engine::clue_type(kind),"value":action.value});
+            let clue = json!({"type":clue_type,"value":value});
             originals.push(clue.clone());
             for index in 0..5 {
                 let events = h
@@ -500,7 +498,8 @@ async fn duck_clue_identity_is_private_in_live_history_and_recovery_but_not_comp
                 .await?;
             }
             for index in 0..5 {
-                h.send(index, "gameStateLoad", json!({"tableId":id})).await?;
+                h.send(index, "gameStateLoad", json!({"tableId":id}))
+                    .await?;
                 let history = h.receive(index, "gameEventList").await?;
                 let clues = history["events"]
                     .as_array()
@@ -535,7 +534,8 @@ async fn duck_clue_identity_is_private_in_live_history_and_recovery_but_not_comp
         );
         h.send(0, "tableTerminate", json!({"tableId":id})).await?;
         for index in 0..5 {
-            h.send(index, "gameStateLoad", json!({"tableId":id})).await?;
+            h.send(index, "gameStateLoad", json!({"tableId":id}))
+                .await?;
             let history = h.receive(index, "gameEventList").await?;
             let clues = history["events"]
                 .as_array()

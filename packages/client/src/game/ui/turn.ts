@@ -75,7 +75,7 @@ function handlePremove() {
 
     globals.lobby.conn!.send(
       "playerAction",
-      toWireAction(globals.lobby.tableId, oldPremove),
+      toWireAction(globals.lobby.joinedTableId, oldPremove),
     );
 
     arrows.hideAll();
@@ -105,7 +105,7 @@ export function end(clientAction: ClientAction): void {
     showWaitingOnServerAnimation();
     globals.lobby.conn!.send(
       "playerAction",
-      toWireAction(globals.lobby.tableId, clientAction),
+      toWireAction(globals.lobby.joinedTableId, clientAction),
     );
     return;
   }

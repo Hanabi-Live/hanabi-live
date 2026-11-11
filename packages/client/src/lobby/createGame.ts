@@ -386,7 +386,10 @@ function submit() {
     globals.conn!.send("tableCreate", { settings, password });
     store.dispatch(creatingTableChanged(true));
   } else {
-    globals.conn!.send("tableUpdate", { tableId: globals.tableId, settings });
+    globals.conn!.send("tableUpdate", {
+      tableId: globals.joinedTableId,
+      settings,
+    });
   }
 }
 
@@ -394,7 +397,7 @@ export function acceptOptionsFromGuest(
   suggestion: NonNullable<ServerCommandData["chat"]["suggestion"]>,
 ): void {
   globals.conn!.send("tableUpdate", {
-    tableId: globals.tableId,
+    tableId: globals.joinedTableId,
     settings: suggestion,
   });
 }
@@ -659,7 +662,7 @@ export function ready(): void {
     $("#password-row").addClass("hidden");
 
     // Ensure create-game-table-number has a value.
-    $("#create-game-table-number").val(globals.tableId);
+    $("#create-game-table-number").val(globals.joinedTableId);
   }
 
   // Set UI Elements and values.

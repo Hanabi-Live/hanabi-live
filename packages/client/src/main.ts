@@ -6,7 +6,7 @@ import jquery from "jquery";
 import { globals } from "./Globals.ts";
 import { Loader } from "./Loader.ts";
 import * as chat from "./chat.ts";
-import { HISTORY_HASH, NO_TABLE_ID, PATH } from "./constants.ts";
+import { HISTORY_HASH, PATH } from "./constants.ts";
 import { initErrorListener } from "./errors.ts";
 import * as gameChat from "./game/chat.ts";
 import * as game from "./game/main.ts";
@@ -69,8 +69,8 @@ $(document).ready(() => {
       setBrowserAddressBarPath(PATH.LOBBY, hash);
     } else if (globals.currentScreen === Screen.PreGame) {
       lobbyPregame.hide(false);
-      globals.conn!.send("tableUnattend", { tableId: globals.tableId });
-      globals.tableId = NO_TABLE_ID;
+      globals.conn!.send("tableUnattend", { tableId: globals.joinedTableId });
+      globals.tableId = undefined;
     }
 
     if (hash.startsWith(HISTORY_HASH)) {

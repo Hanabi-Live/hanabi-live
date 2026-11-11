@@ -114,7 +114,7 @@ export function onSharedSegmentChanged(
     if (data.amLeader === true && previousData !== undefined) {
       // Tell the rest of the spectators to go to the turn that we are now on.
       globals.lobby.conn!.send("replayAction", {
-        tableId: globals.lobby.tableId,
+        tableId: globals.lobby.joinedTableId,
         action: {
           type: "segment",
           segment: data.sharedSegment,

@@ -15,13 +15,28 @@ fn card(order: usize) -> CardOrder {
     CardOrder::new(order).expect("engine card orders are below the largest deck")
 }
 
+/// A suit that the engine names. The engine only names suits that the variant has.
+fn suit(index: usize) -> SuitIndex {
+    SuitIndex::new(index).expect("engine suits are below MAX_SUITS")
+}
+
+/// A card rank that the engine names. The engine only names ranks that the catalog has.
+fn rank(rank: i32) -> CardRank {
+    CardRank::new(rank).expect("engine card ranks are catalog ranks")
+}
+
 /// A card event that names the card's identity when the recipient may see it.
-fn card_event(player_index: usize, order: usize, suit_index: i32, rank: i32) -> CardEvent {
+fn card_event(
+    player_index: usize,
+    order: usize,
+    suit_index: Option<usize>,
+    card_rank: Option<i32>,
+) -> CardEvent {
     CardEvent {
         player_index: seat(player_index),
         order: card(order),
-        suit_index: SuitIndex::new(suit_index),
-        rank: CardRank::new(rank),
+        suit_index: suit_index.map(suit),
+        rank: card_rank.map(rank),
     }
 }
 
@@ -56,19 +71,19 @@ pub(super) fn wire_event(event: &hanabi_engine::EngineEvent) -> GameEvent {
         } => GameEvent::Discard(DiscardEvent {
             player_index: seat(player_index),
             order: card(order),
-            suit_index: SuitIndex::new(suit_index),
-            rank: CardRank::new(rank),
+            suit_index: suit_index.map(suit),
+            rank: rank.map(self::rank),
             failed,
         }),
         E::Clue {
-            ref clue,
+            clue,
             giver,
             target,
             ref list,
             turn: _,
         } => GameEvent::Clue(ClueEvent {
             // The wire omits a clue that the recipient may not see.
-            clue: clue.clue_type.map(|clue_type| match clue_type {
+            clue: clue.map(|clue| match clue.clue_type {
                 ClueType::Color => Clue::Color {
                     value: ColorIndex::new(clue.value)
                         .expect("engine clue colors are suit indexes"),
@@ -86,7 +101,7 @@ pub(super) fn wire_event(event: &hanabi_engine::EngineEvent) -> GameEvent {
             current_player_index,
         } => GameEvent::Turn(TurnEvent {
             num: Turn::new(num).expect("engine turns are below MAX_GAME_ACTIONS"),
-            current_player_index: PlayerIndex::new(current_player_index),
+            current_player_index: current_player_index.map(seat),
         }),
         E::GameOver {
             end_condition,
@@ -94,7 +109,7 @@ pub(super) fn wire_event(event: &hanabi_engine::EngineEvent) -> GameEvent {
             ref votes,
         } => GameEvent::GameOver(GameOverEvent {
             end_condition,
-            player_index: PlayerIndex::new(player_index),
+            player_index: player_index.map(seat),
             votes: votes
                 .as_ref()
                 .map(|votes| votes.iter().copied().map(seat).collect()),

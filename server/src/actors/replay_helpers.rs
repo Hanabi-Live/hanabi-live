@@ -6,11 +6,10 @@ use crate::{
     stats::zero_stats,
 };
 use hanabi_engine::RecordedAction;
-use hanabi_engine::RecordedActionType;
-use hanabi_engine::{AssignedCharacter, GameSetup, Interpretation};
+use hanabi_engine::{AssignedCharacter, EndCondition, GameSetup, Interpretation};
+use hanabi_protocol::ReplayGame;
 use hanabi_protocol::TableId;
 use hanabi_protocol::UserId;
-use hanabi_protocol::{NO_VALUE, ReplayGame};
 
 /// The longest seed that a replay import can name, in bytes. A table's seed is prefixed with the
 /// player count and variant ID, so this leaves room above `MAX_SEED_LENGTH`.
@@ -136,27 +135,22 @@ pub fn parse(input: &ReplayGame) -> CommandResult<Imported> {
         !has_characters || characters.len() == players.len(),
         "The amount of characters must match the number of players"
     );
-    let actions: Vec<RecordedAction> = input
-        .actions
-        .iter()
-        .flatten()
-        .map(|action| RecordedAction::from(*action))
-        .collect();
+    let actions: Vec<RecordedAction> = input.actions.iter().flatten().copied().collect();
     for (i, a) in actions.iter().enumerate() {
         ensure_or_reject!(
-            match a.action_type {
-                RecordedActionType::Play | RecordedActionType::Discard =>
-                    usize::try_from(a.target).is_ok_and(|t| t < deck.len()) && a.value == 0,
-                RecordedActionType::ColorClue =>
-                    usize::try_from(a.target).is_ok_and(|t| t < players.len())
-                        && usize::try_from(a.value).is_ok_and(|v| v <= variant.clue_colors.len()),
-                RecordedActionType::RankClue =>
-                    usize::try_from(a.target).is_ok_and(|t| t < players.len())
-                        && (hanabi_protocol::MIN_RANK..=hanabi_protocol::MAX_RANK)
-                            .contains(&a.value),
-                RecordedActionType::GameOver =>
-                    usize::try_from(a.target).is_ok_and(|t| t < players.len()),
-                RecordedActionType::GameOverByVote => a.target == NO_VALUE,
+            match a {
+                RecordedAction::Play(card) | RecordedAction::Discard(card) =>
+                    card.order.index() < deck.len(),
+                RecordedAction::ColorClue(clue) =>
+                    clue.target.index() < players.len()
+                        && clue.color_index.index() <= variant.clue_colors.len(),
+                RecordedAction::RankClue(clue) => clue.target.index() < players.len(),
+                RecordedAction::GameOver(end) =>
+                    if end.end_condition == EndCondition::TerminatedByVote {
+                        end.player_index.is_none()
+                    } else {
+                        end.player_index.is_some_and(|p| p.index() < players.len())
+                    },
             },
             "Invalid action at index {i}"
         );

@@ -47,7 +47,7 @@ function setup(shared: boolean) {
   const send = vi.fn();
   Object.assign(globals, {
     store,
-    lobby: { tableId: 42, conn: { send } },
+    lobby: { tableId: 42, joinedTableId: 42, conn: { send } },
   });
   Object.defineProperty(globals, "state", {
     configurable: true,

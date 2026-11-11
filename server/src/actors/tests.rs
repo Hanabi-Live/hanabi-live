@@ -19,7 +19,7 @@ use crate::{
 };
 use anyhow::{Context, Result, ensure};
 use chrono::{Duration as ChronoDuration, Utc};
-use hanabi_engine::RecordedAction;
+use hanabi_engine::PlayerAction;
 use hanabi_engine::{CompletionTiming, EndCondition, Recipient};
 use hanabi_protocol::{MAX_SEED_LENGTH, Status};
 use serde_json::{Value, json};
@@ -71,11 +71,10 @@ fn typed_game_frames_preserve_wire_schema_and_projected_identities() -> Result<(
     let rank = game.deck[game.players[1].hand[0]].rank;
     game.apply(
         0,
-        RecordedAction {
-            action_type: hanabi_engine::RecordedActionType::RankClue,
-            target: 1,
-            value: rank,
-        },
+        PlayerAction::RankClue(hanabi_protocol::RankClueTurn {
+            target: PlayerIndex::new(1_usize).unwrap(),
+            rank: hanabi_protocol::RankClueNumber::new(rank).unwrap(),
+        }),
     )?;
     game.terminate(
         0,
@@ -110,22 +109,15 @@ fn typed_game_frames_preserve_wire_schema_and_projected_identities() -> Result<(
             .context("Missing protocol separator")?;
         assert_eq!(command, "gameEventList");
         let body: Value = serde_json::from_str(body)?;
-        // The engine names some fields differently, and marks a missing seat or vote list with -1 or
-        // null, which the wire omits. The wire also omits a clue's turn.
+        // The engine names some fields differently, and marks a missing value with null, which the
+        // wire omits. The wire also omits a clue's turn.
         let mut expected = serde_json::to_value(&list)?;
         for event in expected.as_array_mut().unwrap() {
             let event = event.as_object_mut().unwrap();
             if event["type"] == "clue" {
                 event.remove("turn");
             }
-            event.retain(|key, value| {
-                !(matches!(
-                    key.as_str(),
-                    "currentPlayerIndex" | "playerIndex" | "suitIndex" | "rank"
-                ) && *value == -1
-                    || key == "votes" && value.is_null()
-                    || key == "clue" && value["type"].is_null())
-            });
+            event.retain(|_, value| !value.is_null());
             for (engine, wire) in [
                 ("list", "orders"),
                 ("playerTimes", "playerTimesMs"),

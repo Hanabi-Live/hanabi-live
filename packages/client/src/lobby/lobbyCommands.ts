@@ -2,7 +2,6 @@
 
 import { setTabAccount } from "@hanabi-live/data";
 import { globals } from "../Globals.ts";
-import { NO_TABLE_ID } from "../constants.ts";
 import * as gameMain from "../game/main.ts";
 import * as spectatorsView from "../game/ui/reactive/views/spectatorsView.ts";
 import * as modals from "../modals.ts";
@@ -127,7 +126,7 @@ lobbyCommands.set("tableGone", (data) => {
     && globals.tableId === data.tableId
   ) {
     pregame.hide();
-    globals.tableId = NO_TABLE_ID;
+    globals.tableId = undefined;
   }
 
   // If we followed a link to this table, it no longer exists, so stay in the lobby.

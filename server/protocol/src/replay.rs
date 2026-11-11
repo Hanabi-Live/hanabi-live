@@ -155,6 +155,19 @@ pub enum ReplayGameAction {
     GameOver(GameOverTurn),
 }
 
+impl ReplayGameAction {
+    /// The player's action of a turn, or else the end of the game.
+    pub const fn turn(self) -> Result<PlayerAction, GameOverTurn> {
+        match self {
+            Self::Play(card) => Ok(PlayerAction::Play(card)),
+            Self::Discard(card) => Ok(PlayerAction::Discard(card)),
+            Self::ColorClue(clue) => Ok(PlayerAction::ColorClue(clue)),
+            Self::RankClue(clue) => Ok(PlayerAction::RankClue(clue)),
+            Self::GameOver(end) => Err(end),
+        }
+    }
+}
+
 impl From<PlayerAction> for ReplayGameAction {
     fn from(action: PlayerAction) -> Self {
         match action {

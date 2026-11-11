@@ -11,7 +11,7 @@ const show = vi.fn();
 vi.mock("./UIGlobals.ts", () => ({
   globals: {
     restartPending: false,
-    lobby: { tableId: 42, conn: { send } },
+    lobby: { tableId: 42, joinedTableId: 42, conn: { send } },
     elements: {
       restartButton: { setEnabled },
       restartContents: { visible: contentsVisible },

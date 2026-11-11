@@ -212,7 +212,7 @@ function input(element: HTMLInputElement, room: "lobby" | "table") {
     if (datetimeNow - datetimeLastChatInput >= TYPING_REPORT_INTERVAL_MS) {
       datetimeLastChatInput = datetimeNow;
       globals.conn!.send("chatTyping", {
-        tableId: globals.tableId,
+        tableId: globals.joinedTableId,
       });
     }
   }
@@ -276,7 +276,7 @@ function sendText(room: string, msgRaw: string) {
   // table number appended (e.g. "table123").
   let roomID = room;
   if (roomID.startsWith("table")) {
-    roomID = `table${globals.tableId}`;
+    roomID = `table${globals.joinedTableId}`;
   }
 
   // Add the chat message to the typed history so that we can use the up arrow later. (But only if

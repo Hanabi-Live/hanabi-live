@@ -218,7 +218,7 @@ export class NameFrame extends Konva.Group {
       setTimeout(() => {
         backToLobby();
         globals.lobby.conn!.send("tableSpectate", {
-          tableId: globals.lobby.tableId,
+          tableId: globals.lobby.joinedTableId,
           shadowingPlayerIndex,
         });
       }, 0);
@@ -268,7 +268,7 @@ export class NameFrame extends Konva.Group {
       setTimeout(() => {
         backToLobby();
         globals.lobby.conn!.send("tableSpectate", {
-          tableId: globals.lobby.tableId,
+          tableId: globals.lobby.joinedTableId,
           shadowingPlayerIndex,
         });
       }, 0);

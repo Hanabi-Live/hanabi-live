@@ -2308,7 +2308,7 @@ function timerClick() {
   }
 
   globals.lobby.conn!.send("pause", {
-    tableId: globals.lobby.tableId,
+    tableId: globals.lobby.joinedTableId,
     setting,
   });
 }
@@ -3020,7 +3020,7 @@ function drawPauseArea() {
   });
   globals.elements.pauseButton.on("click tap", () => {
     globals.lobby.conn!.send("pause", {
-      tableId: globals.lobby.tableId,
+      tableId: globals.lobby.joinedTableId,
       setting: "unpause",
     });
   });

@@ -1,9 +1,14 @@
 // These are exported global variables to be shared between all of the TypeScript code.
 
-import type { ServerCommandData, Settings, UserID } from "@hanabi-live/data";
+import type {
+  ServerCommandData,
+  Settings,
+  TableID,
+  UserID,
+} from "@hanabi-live/data";
+import { assertDefined } from "complete-common";
 import type { Connection } from "./Connection.ts";
 import type { Loader } from "./Loader.ts";
-import { NO_TABLE_ID } from "./constants.ts";
 import type { HanabiUI } from "./game/ui/HanabiUI.ts";
 import { totalGamesChanged } from "./lobby/gameHistory/historySlice.ts";
 import type { Game } from "./lobby/pregame/pregameSlice.ts";
@@ -38,12 +43,12 @@ export class Globals {
 
   /* eslint-disable @typescript-eslint/class-methods-use-this -- These delegate to the store. */
 
-  /** From the "welcome" message, or `NO_USER_ID` before it. */
-  get userId(): number {
+  /** From the "welcome" message, or `undefined` before it. */
+  get userId(): UserID | undefined {
     return store.getState().session.userId;
   }
 
-  set userId(userId: number) {
+  set userId(userId: UserID | undefined) {
     store.dispatch(userIDChanged(userId));
   }
 
@@ -144,8 +149,14 @@ export class Globals {
 
   idleMinutes = 0;
 
-  /** Equal to the table we are joined to or `NO_TABLE_ID` if no table. */
-  tableId = NO_TABLE_ID;
+  /** The table we are joined to, if any. */
+  tableId: TableID | undefined = undefined;
+
+  /** The table we are joined to, for code that only runs at a table. */
+  get joinedTableId(): TableID {
+    assertDefined(this.tableId, "We are not joined to a table.");
+    return this.tableId;
+  }
 
   // ------------
   // UI variables
