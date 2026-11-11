@@ -248,6 +248,8 @@ impl TableActor {
         if replay {
             next.game_mut().context("Missing replay")?.idle_remaining = IDLE_TIMEOUT_MS;
         }
+        // The user receives the leader with the replay.
+        let leader = self.present_leader(&mut next, Some(&session));
         let notice = if pregame && spectating && !self.spectating(session.user) {
             table_notice(
                 &mut next,
@@ -281,6 +283,9 @@ impl TableActor {
             *absent = None;
         }
         let mut e = self.effects();
+        if let Some((_, name)) = leader {
+            self.leader_messages(&mut e, &name, Some(session.user));
+        }
         if let Some(notice) = notice {
             for attendee in self.audience().filter(|a| a.session.user != session.user) {
                 e.messages.push((

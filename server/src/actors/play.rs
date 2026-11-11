@@ -185,7 +185,7 @@ impl TableActor {
                             table_id: self.table.id,
                             game_id: s.game_id,
                             shared_replay: self
-                                .shared_replay_init(s, &a.session)
+                                .shared_replay_init(s, &a.session)?
                                 .context("A finished game is not a shared replay")?,
                         },
                     ),
@@ -217,18 +217,15 @@ impl TableActor {
         }
         self.publish(e).await
     }
-    pub(super) fn leader_name(&self) -> String {
-        self.attendees
+    /// The name of the replay's leader, who is always at the table.
+    pub(super) fn leader_name(&self) -> CommandResult<String> {
+        Ok(self
+            .attendees
             .get(&self.table.owner)
-            .map(|a| a.session.name.clone())
-            .or_else(|| {
-                self.table
-                    .players()
-                    .iter()
-                    .find(|p| p.id == self.table.owner)
-                    .map(|p| p.name.clone())
-            })
-            .unwrap_or_default()
+            .context("The replay leader is not at the table")?
+            .session
+            .name
+            .clone())
     }
     async fn terminate(&mut self, session: Arc<Session>, vote: bool) -> CommandResult<()> {
         ensure_or_reject!(self.attending(&session), "You are not attending");
@@ -480,26 +477,27 @@ impl TableActor {
         &self,
         s: &Snapshot,
         session: &Session,
-    ) -> Option<hanabi_protocol::SharedReplayInit> {
+    ) -> CommandResult<Option<hanabi_protocol::SharedReplayInit>> {
         let Phase::Replay { replay, .. } = &self.table.phase else {
-            return None;
+            return Ok(None);
         };
-        self.table
-            .visible
-            .then(|| hanabi_protocol::SharedReplayInit {
-                leader: self.leader_name().into(),
-                segment: replay.segment,
-                efficiency_modifier: replay.efficiency_modifier,
-                spoiler_free: replay.spoiler_free,
-                restart_declined: self.restart_declined_names(),
-                can_play_again: self.can_play_again(session),
-                // A review of a game just played begins when the game ends; a replay of an older
-                // game begins when its table is created.
-                datetime_started: hanabi_protocol::Timestamp::from(
-                    s.finished
-                        .map_or(self.table.created, |f| f.max(self.table.created)),
-                ),
-            })
+        if !self.table.visible {
+            return Ok(None);
+        }
+        Ok(Some(hanabi_protocol::SharedReplayInit {
+            leader: self.leader_name()?.into(),
+            segment: replay.segment,
+            efficiency_modifier: replay.efficiency_modifier,
+            spoiler_free: replay.spoiler_free,
+            restart_declined: self.restart_declined_names(),
+            can_play_again: self.can_play_again(session),
+            // A review of a game just played begins when the game ends; a replay of an older
+            // game begins when its table is created.
+            datetime_started: hanabi_protocol::Timestamp::from(
+                s.finished
+                    .map_or(self.table.created, |f| f.max(self.table.created)),
+            ),
+        }))
     }
     pub(super) async fn info(&self, session: Arc<Session>, part: GameInfo) -> CommandResult<()> {
         ensure_or_reject!(
@@ -513,7 +511,7 @@ impl TableActor {
         let display_seat = seat.or_else(|| s.players.iter().position(|p| p.name == session.name));
         let mut e = self.effects();
         if part == GameInfo::Init {
-            let shared_replay = self.shared_replay_init(s, &session);
+            let shared_replay = self.shared_replay_init(s, &session)?;
             let init = hanabi_protocol::Init {
                 table_id: self.table.id,
                 player_names: s.players.iter().map(|p| p.name.as_str().into()).collect(),

@@ -258,6 +258,46 @@ impl TableActor {
     pub(super) fn audience(&self) -> impl Iterator<Item = &Attendance> {
         self.attendees.values().filter(|a| a.session.active())
     }
+    /// Gives a replay whose leader has left a leader who is present: the first of the audience, or
+    /// else `joining`, a user who is joining it. Returns the new leader's ID and name.
+    pub(super) fn present_leader(
+        &self,
+        next: &mut TableSnapshot,
+        joining: Option<&Session>,
+    ) -> Option<(UserId, String)> {
+        if self.attendees.contains_key(&next.owner)
+            || joining.is_some_and(|session| session.user == next.owner)
+        {
+            return None;
+        }
+        let Phase::Replay { replay, .. } = &mut next.phase else {
+            return None;
+        };
+        let (successor, name) = self
+            .audience()
+            .map(|a| a.session.as_ref())
+            .chain(joining)
+            .map(|session| (session.user, session.name.clone()))
+            .next()?;
+        replay.leader = successor;
+        next.owner = successor;
+        Some((successor, name))
+    }
+    /// Tells the audience, apart from `except`, who leads the replay now.
+    pub(super) fn leader_messages(&self, e: &mut Effects, name: &str, except: Option<UserId>) {
+        for a in self.audience().filter(|a| Some(a.session.user) != except) {
+            e.messages.push((
+                a.session.clone(),
+                frame(
+                    hanabi_protocol::server::REPLAY_LEADER,
+                    hanabi_protocol::ReplayLeader {
+                        table_id: self.table.id,
+                        username: name.into(),
+                    },
+                ),
+            ));
+        }
+    }
     pub(super) fn add_all<T: Serialize>(
         &self,
         e: &mut Effects,
@@ -526,6 +566,10 @@ impl TableActor {
             self.audience().map(|a| a.session.user),
             Utc::now(),
         )?;
+        if finished {
+            // The players receive the leader with the replay.
+            self.present_leader(&mut next, None);
+        }
         work.archive = finished && !next.extra.no_write_to_database;
         work.count_seed = finished && next.game().is_some_and(|s| s.game_id.is_some());
         let archived = work.archive;
@@ -790,21 +834,19 @@ impl TableActor {
                 *absent = None;
             }
         }
-        let successor = self.audience().next().map(|a| a.session.user);
-        if before != self.attendees.len()
-            && matches!(self.table.phase, Phase::Replay { .. })
-            && !self.attendees.contains_key(&self.table.owner)
-            && let Some(successor) = successor
-        {
+        let mut leader = None;
+        if before != self.attendees.len() {
             let mut next = self.candidate();
-            next.owner = successor;
-            if let Phase::Replay { replay, .. } = &mut next.phase {
-                replay.leader = successor;
+            leader = self.present_leader(&mut next, None);
+            if leader.is_some() {
+                self.persist(next).await?;
             }
-            self.persist(next).await?;
         }
         if before != self.attendees.len() {
             let mut e = self.effects();
+            if let Some((_, name)) = leader {
+                self.leader_messages(&mut e, &name, None);
+            }
             for (id, name) in expired {
                 self.typing_messages(&mut e, id, &name, false);
             }

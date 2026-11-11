@@ -2092,6 +2092,37 @@ async fn pregame_leader_moves_to_first_seat_without_reordering_live_players() ->
 }
 
 #[tokio::test]
+async fn a_replay_whose_leader_is_away_passes_leadership_to_the_first_to_return() -> Result<()> {
+    let Some(mut h) = Harness::new(&["Alice", "Bob"]).await? else {
+        return Ok(());
+    };
+    let result = async {
+        let id = h.replay(0).await?;
+        h.send(1, "tableSpectate", json!({"tableId":id})).await?;
+        // After a restart, the table has no one at it until its viewers return.
+        h.restart().await?;
+        h.send(1, "tableReattend", json!({"tableId":id})).await?;
+        h.send(1, "gameInitLoad", json!({"tableId":id})).await?;
+        let init = h.receive(1, "init").await?;
+        ensure!(
+            init["sharedReplay"]["leader"] == "Bob",
+            "The returning viewer did not lead the replay: {init}"
+        );
+        ensure!(h.snapshot(id).await?.0.owner == UserId(2));
+        // Alice returns to a replay that Bob now leads.
+        h.send(0, "tableReattend", json!({"tableId":id})).await?;
+        h.send(0, "gameInitLoad", json!({"tableId":id})).await?;
+        let init = h.receive(0, "init").await?;
+        ensure!(init["sharedReplay"]["leader"] == "Bob");
+        Ok::<(), anyhow::Error>(())
+    }
+    .await;
+    let cleanup = h.close().await;
+    result?;
+    cleanup
+}
+
+#[tokio::test]
 async fn finished_game_publishes_replay_leader_candidates_without_reconnecting() -> Result<()> {
     let Some(mut h) = Harness::new(&["Alice", "Bob", "Observer", "Outsider"]).await? else {
         return Ok(());
