@@ -329,6 +329,17 @@ function getClueForTurn(gameState: GameState): StateClue | undefined {
 }
 
 /** How a clue shows on the arrows and beside the name of the player who gave it. */
+/** How the clue being chosen shows on the cards that it would touch. */
+function getPreviewMarker(clue: Clue, colorblindMode: boolean): ClueMarkerView {
+  return clue.type === "color"
+    ? {
+        type: "color",
+        name: clue.value.name,
+        fill: colorblindMode ? clue.value.fillColorblind : clue.value.fill,
+      }
+    : { type: "rank", label: clue.value.toString() };
+}
+
 function getClueMarker(
   clue: StateClue,
   colorblindMode: boolean,
@@ -849,6 +860,10 @@ export function GameScreen({
     targetHand === undefined || clue === undefined
       ? []
       : getTouchedCards(variant, targetHand, getShownIdentities(state), clue);
+
+  // While the player chooses a clue, its tokens show on the cards that it would touch, as the
+  // classic screen shows arrows. They take the place of the last clue's tokens and rail.
+  const previewing = clue !== undefined && clueTarget !== undefined;
   const canGive =
     canClue
     && clueTarget !== undefined
@@ -1022,13 +1037,24 @@ export function GameScreen({
                 canDiscard={canDiscard}
                 canMoveCards={canMoveCards}
                 cardWidth={handCardWidth}
-                clueMarkers={getClueMarkers(shownClue, settings.colorblindMode)}
+                clueMarkers={
+                  previewing
+                    ? new Map(
+                        touched.map((order) => [
+                          order,
+                          getPreviewMarker(clue, settings.colorblindMode),
+                        ]),
+                      )
+                    : getClueMarkers(shownClue, settings.colorblindMode)
+                }
                 clueTarget={clueTarget}
                 colorblindMode={settings.colorblindMode}
                 draggedCard={drag?.order}
                 empathyToggled={empathyToggled}
                 emptyClueTarget={
-                  shownClue !== undefined && shownClue.list.length === 0
+                  !previewing
+                  && shownClue !== undefined
+                  && shownClue.list.length === 0
                     ? shownClue.target
                     : undefined
                 }
@@ -1081,7 +1107,7 @@ export function GameScreen({
                 onViewAs={canChooseSeat() ? viewAs : undefined}
                 seats={seats}
                 shownClue={
-                  shownClue === undefined
+                  previewing || shownClue === undefined
                     ? undefined
                     : {
                         giver: shownClue.giver,
