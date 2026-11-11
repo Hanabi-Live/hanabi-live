@@ -1584,6 +1584,10 @@ async fn expired_pregame_owner_is_removed_but_remaining_players_and_live_games_s
         while let Ok(notification) = notifications.try_recv() {
             if let HubCommand::Effects(effects) = notification {
                 for (session, message) in effects.messages {
+                    ensure!(
+                        !message.starts_with("connected "),
+                        "A pregame sent which players loaded the game: {message}"
+                    );
                     if session.user == UserId(2)
                         && let Some(body) = message.strip_prefix("pregame ")
                     {

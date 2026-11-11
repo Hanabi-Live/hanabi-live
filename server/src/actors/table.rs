@@ -808,7 +808,10 @@ impl TableActor {
             for (id, name) in expired {
                 self.typing_messages(&mut e, id, &name, false);
             }
-            self.add_all(&mut e, hanabi_protocol::server::CONNECTED, self.connected());
+            // A pregame has no game to load, and it can have fewer players than a game.
+            if !matches!(self.table.phase, Phase::Pregame { .. }) {
+                self.add_all(&mut e, hanabi_protocol::server::CONNECTED, self.connected());
+            }
             self.spectator_messages(&mut e);
             self.publish(e).await?;
         }
