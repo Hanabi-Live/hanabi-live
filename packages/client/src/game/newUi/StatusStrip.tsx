@@ -38,6 +38,16 @@ interface StatusStripProps {
   readonly onLobby: () => void;
 }
 
+/**
+ * The text of a stat's label and value. Their line heights are close to their text, so that the
+ * space above the labels and below the values looks the same. (A taller line box adds space above
+ * the small labels that no one can see is part of the box.)
+ */
+const STAT_LABEL_CLASS =
+  "tw:block tw:text-[13px] tw:leading-[16px] tw:text-game-muted";
+const STAT_VALUE_CLASS =
+  "tw:block tw:text-[22px] tw:leading-[28px] tw:font-bold tw:narrow-980:text-[17px] tw:narrow-980:leading-[22px]";
+
 function Stat({
   label,
   truncate = true,
@@ -51,9 +61,9 @@ function Stat({
 }): React.JSX.Element {
   return (
     <div className="tw:flex tw:min-w-0 tw:flex-col tw:gap-0.5">
-      <span className="tw:text-[13px] tw:text-game-muted">{label}</span>
+      <span className={STAT_LABEL_CLASS}>{label}</span>
       <span
-        className={`${truncate ? "tw:truncate" : ""} tw:text-[22px] tw:font-bold tw:text-game-text tw:narrow-980:text-[17px]`}
+        className={`${truncate ? "tw:truncate" : ""} ${STAT_VALUE_CLASS} tw:text-game-text`}
       >
         {children}
       </span>
@@ -140,9 +150,9 @@ export function StatusStrip({
       >
         <OutOf max={minEfficiency} value={futureEfficiency} />
       </Stat>
-      <div className="tw:min-w-0 tw:flex-auto">
-        <span className="tw:text-[13px] tw:text-game-muted">Variant</span>
-        <div className="tw:truncate tw:text-[22px] tw:font-bold tw:text-game-muted tw:narrow-980:text-[17px]">
+      <div className="tw:flex tw:min-w-0 tw:flex-auto tw:flex-col tw:gap-0.5">
+        <span className={STAT_LABEL_CLASS}>Variant</span>
+        <div className={`tw:truncate ${STAT_VALUE_CLASS} tw:text-game-muted`}>
           {variantName}
         </div>
       </div>
