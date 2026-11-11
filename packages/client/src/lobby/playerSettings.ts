@@ -145,9 +145,9 @@ export function setPlayerSettings(): void {
       $("#settings-volume-slider-value").html(`${value}%`);
     } else if (setting === "soundMove" || setting === "hGroupLevel") {
       // These settings are drop-down menus whose element has the same ID as the setting.
-      if (typeof value !== "number") {
+      if (typeof value !== "string" && typeof value !== "number") {
         throw new TypeError(
-          `The "${setting}" setting is not stored as a number.`,
+          `The "${setting}" setting is not stored as a string or a number.`,
         );
       }
       $(`#${setting}`).val(value);
