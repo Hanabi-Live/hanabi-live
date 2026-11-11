@@ -148,7 +148,20 @@
     is always green felt, so the dark theme does not change these.
   */
   --game-screen-bg: #26313a;
-  --game-screen-zone: #2b363f;
+
+  /*
+    The table behind the cards: dark, muted felt that is lighter toward the middle, like a lit card
+    table. It is much darker than the green suit, so that green cards stand out on it.
+  */
+  --game-screen-table: radial-gradient(
+    120% 95% at 42% 42%,
+    #25463b 0%,
+    #1b3229 52%,
+    #12221c 100%
+  );
+
+  /* A box on the table, such as the play stacks: a lighter patch of the felt under it. */
+  --game-screen-zone: rgb(255 255 255 / 5%);
   --game-screen-panel: #1f2930;
   --game-screen-raised: #3a4752;
   --game-screen-line: #4a5864;

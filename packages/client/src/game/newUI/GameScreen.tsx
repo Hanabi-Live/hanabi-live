@@ -768,7 +768,7 @@ export function GameScreen({
 
   return (
     <div
-      className="tw:fixed tw:inset-0 tw:flex tw:bg-game-bg tw:text-game-text"
+      className="tw:fixed tw:inset-0 tw:flex tw:bg-game-bg tw:[background-image:var(--game-screen-table)] tw:text-game-text"
       ref={rootRef}
     >
       <main className="tw:flex tw:min-w-0 tw:flex-1 tw:flex-col">
