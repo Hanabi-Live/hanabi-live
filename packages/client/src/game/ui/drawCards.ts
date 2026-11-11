@@ -4,6 +4,7 @@ import type { Color, Rank, Suit, Variant } from "@hanabi-live/game";
 import {
   DARK_OMNI_SUIT_NAME,
   DEFAULT_CARD_RANKS,
+  MAX_RANK,
   OMNI_SUIT_NAME,
   START_CARD_RANK,
   UNKNOWN_SUIT_NAME,
@@ -32,16 +33,13 @@ enum CardArea {
 }
 
 /**
- * Represents a stack base. Only used in this file for image drawing purposes. It fails to compile
- * if it is ever the rank of a real card.
+ * What a card image shows: a rank, the base of a play stack, or a card of unknown rank (e.g. the
+ * gray card with pips on it). Each is also the rank part of the image's name.
  */
-const STACK_BASE_RANK = 0 as const satisfies Exclude<0, Rank>;
-
-/**
- * Represents an unknown card (e.g. the gray card with pips on it). Only used in this file for image
- * drawing purposes. It fails to compile if it is ever the rank of a real card.
- */
-const UNKNOWN_CARD_RANK = 6 as const satisfies Exclude<6, Rank>;
+type CardFace =
+  | Rank
+  | typeof CARD_IMAGE_STACK_BASE_RANK_NAME
+  | typeof CARD_IMAGE_UNKNOWN_CARD_RANK_NAME;
 
 /** How far the card's outline is inset from the edges of its image. */
 const CARD_BORDER_PADDING = 4;
@@ -191,15 +189,16 @@ export function drawCards<Canvas, Image>(
 
   for (const [suitIndex, suit] of suits.entries()) {
     for (const rank of [
-      STACK_BASE_RANK,
+      CARD_IMAGE_STACK_BASE_RANK_NAME,
       ...DEFAULT_CARD_RANKS,
-      UNKNOWN_CARD_RANK,
+      CARD_IMAGE_UNKNOWN_CARD_RANK_NAME,
       START_CARD_RANK,
     ] as const) {
       // We need unknown cards for 1, 2, 3, 4, 5, and the "START" card.
       if (
         suit.name === UNKNOWN_SUIT_NAME
-        && (rank === STACK_BASE_RANK || rank === UNKNOWN_CARD_RANK)
+        && (rank === CARD_IMAGE_STACK_BASE_RANK_NAME
+          || rank === CARD_IMAGE_UNKNOWN_CARD_RANK_NAME)
       ) {
         continue;
       }
@@ -207,7 +206,7 @@ export function drawCards<Canvas, Image>(
       const { cvs, ctx } = initCanvas();
 
       // We do not need the background on the stack base.
-      if (rank !== STACK_BASE_RANK) {
+      if (rank !== CARD_IMAGE_STACK_BASE_RANK_NAME) {
         drawCardBackground(ctx, enableShadows);
       }
 
@@ -232,7 +231,10 @@ export function drawCards<Canvas, Image>(
         : RANK_LABEL_OUTLINE_WIDTH.withoutShadows;
       ctx.lineJoin = "round";
 
-      if (rank !== STACK_BASE_RANK && rank !== UNKNOWN_CARD_RANK) {
+      if (
+        rank !== CARD_IMAGE_STACK_BASE_RANK_NAME
+        && rank !== CARD_IMAGE_UNKNOWN_CARD_RANK_NAME
+      ) {
         let rankLabel = rank.toString();
         if (rank === START_CARD_RANK) {
           rankLabel = START_CARD_RANK_LABEL;
@@ -305,8 +307,7 @@ export function drawCards<Canvas, Image>(
         drawSuitPips(ctx, rank, suit, variant, colorblindMode, enableShadows);
       }
 
-      const cardImageRankName = getCardImageRankName(rank);
-      const cardImagesIndex = `card-${suit.name}-${cardImageRankName}`;
+      const cardImagesIndex = `card-${suit.name}-${rank}`;
       const cardImage = saveCanvas(cvs, ctx);
       cardImages.set(cardImagesIndex, cardImage);
     }
@@ -334,27 +335,9 @@ export function drawCards<Canvas, Image>(
   return cardImages;
 }
 
-function getCardImageRankName(
-  rank: Rank | typeof STACK_BASE_RANK | typeof UNKNOWN_CARD_RANK,
-): string {
-  switch (rank) {
-    case STACK_BASE_RANK: {
-      return CARD_IMAGE_STACK_BASE_RANK_NAME;
-    }
-
-    case UNKNOWN_CARD_RANK: {
-      return CARD_IMAGE_UNKNOWN_CARD_RANK_NAME;
-    }
-
-    default: {
-      return rank.toString();
-    }
-  }
-}
-
 function drawSuitPips(
   ctx: CanvasRenderingContext2D,
-  rank: Rank | typeof STACK_BASE_RANK | typeof UNKNOWN_CARD_RANK,
+  rank: CardFace,
   suit: Suit,
   variant: Variant,
   colorblindMode: boolean,
@@ -401,7 +384,7 @@ function drawSuitPips(
   }
 
   // Top and bottom for cards 3, 4, 5.
-  if (rank >= 3 && rank <= 5) {
+  if (typeof rank === "number" && rank >= 3 && rank <= 5) {
     const symbolYPos = pipOffsetY.ranks3To5;
     ctx.save();
     ctx.translate(CARD_CENTER.x, CARD_CENTER.y);
@@ -451,7 +434,7 @@ function drawSuitPips(
   }
 
   // Size, position, and alpha adjustment for the central icon on stack base.
-  if (rank === STACK_BASE_RANK) {
+  if (rank === CARD_IMAGE_STACK_BASE_RANK_NAME) {
     ctx.globalAlpha = 1;
     ctx.save();
     ctx.translate(CARD_CENTER.x, CARD_CENTER.y);
@@ -464,7 +447,7 @@ function drawSuitPips(
   }
 
   // Draw large suit pip.
-  if (rank === UNKNOWN_CARD_RANK || rank === START_CARD_RANK) {
+  if (rank === CARD_IMAGE_UNKNOWN_CARD_RANK_NAME || rank === START_CARD_RANK) {
     ctx.save();
     let lineWidth: number | undefined;
     if (rank === START_CARD_RANK) {
@@ -553,7 +536,7 @@ function makeDeckBack<Canvas>(
 function drawCardBase(
   ctx: CanvasRenderingContext2D,
   suit: Suit,
-  rank: Rank | typeof STACK_BASE_RANK | typeof UNKNOWN_CARD_RANK,
+  rank: CardFace,
   variant: Variant,
   colorblindMode: boolean,
   enableShadows: boolean,
@@ -584,7 +567,7 @@ function drawCardBase(
   ctx.globalAlpha = CARD_BORDER_ALPHA;
   ctx.lineWidth = CARD_BORDER_WIDTH;
   // The borders should be more opaque for the stack base.
-  if (rank === STACK_BASE_RANK) {
+  if (rank === CARD_IMAGE_STACK_BASE_RANK_NAME) {
     ctx.globalAlpha = 1;
   }
   ctx.stroke();
@@ -744,7 +727,7 @@ function drawCardBackground(
 
 function getSuitStyle(
   suit: Suit,
-  rank: Rank | typeof STACK_BASE_RANK | typeof UNKNOWN_CARD_RANK,
+  rank: CardFace,
   ctx: CanvasRenderingContext2D,
   cardArea: CardArea,
   variant: Variant,
@@ -754,9 +737,9 @@ function getSuitStyle(
     // In Synesthesia variants, color the number itself with the color that it contributes to the
     // card.
     if (variant.synesthesia) {
-      // Stack bases have no rank color. If the suit does not get clued by its rank, then coloring
-      // the rank is misleading, so use the suit color.
-      if (rank === STACK_BASE_RANK || suit.noClueRanks) {
+      // Stack bases and cards of unknown rank have no rank color. If the suit does not get clued by
+      // its rank, then coloring the rank is misleading, so use the suit color.
+      if (typeof rank !== "number" || suit.noClueRanks) {
         return suit.fill;
       }
       return getColorForRank(variant, rank)!.fill;
@@ -824,11 +807,15 @@ function getSuitStyle(
 
   if (suit.prism) {
     // Prism cards have a custom color depending on their rank.
-    if (rank === STACK_BASE_RANK) {
+    if (rank === CARD_IMAGE_STACK_BASE_RANK_NAME) {
       return suit.fill;
     }
 
-    const fillToMixHex = getColorForPrismCard(variant, rank).fill;
+    // A card of unknown rank takes the color that the rank after the highest would.
+    const fillToMixHex = getColorForPrismCard(
+      variant,
+      rank === CARD_IMAGE_UNKNOWN_CARD_RANK_NAME ? MAX_RANK + 1 : rank,
+    ).fill;
     const fillToMixRgb = hexToRgb(fillToMixHex);
     if (fillToMixRgb === undefined) {
       return suit.fill;
