@@ -639,17 +639,24 @@
     "valid": false
   },
   {
-    "name": "history accepts negative values so the server can explain them",
+    "name": "history pages start at zero or later",
     "direction": "client",
     "command": "gameHistory",
     "input": {
-      "offset": -1
-    },
-    "normalized": {
       "offset": -1,
-      "amount": 0
+      "amount": 10
     },
-    "valid": true
+    "valid": false
+  },
+  {
+    "name": "history pages hold at most the largest page",
+    "direction": "client",
+    "command": "gameHistory",
+    "input": {
+      "offset": 0,
+      "amount": 101
+    },
+    "valid": false
   },
   {
     "name": "tables report a pregame roster below the minimum",

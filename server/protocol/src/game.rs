@@ -117,6 +117,7 @@ pub enum GameStage {
 pub struct PlayerNotes {
     #[schemars(with = "Username")]
     pub username: String,
+    #[schemars(with = "Notes")]
     pub notes: Vec<String>,
     pub is_spectator: bool,
 }
@@ -140,11 +141,12 @@ pub struct NoteList {
     pub notes: Vec<PlayerNotes>,
 }
 
-/// A player's own notes, by card order.
+/// A player's own notes.
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct NoteListPlayer {
     pub table_id: TableId,
+    #[schemars(with = "Notes")]
     pub notes: Vec<String>,
 }
 
@@ -200,8 +202,7 @@ pub struct DiscardEvent {
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct TurnEvent {
-    #[schemars(range(min = 0, max = MAX_SAFE_INTEGER))]
-    pub num: i64,
+    pub num: Turn,
     /// Absent once the game has ended.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub current_player_index: Option<PlayerIndex>,

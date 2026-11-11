@@ -285,6 +285,12 @@ export const safeIntegerSchema = z
 export const suitIndexSchema = z.literal([0, 1, 2, 3, 4, 5]);
 
 /**
+ * A turn of a game, or a position in its replay, counting from 0. A game records at most
+ * `MAX_GAME_ACTIONS` actions, so it has no more turns than that.
+ */
+export const turnSchema = z.number().int().min(0).max(512);
+
+/**
  * One game event as a particular recipient sees it.
  */
 export const gameEventSchema = z.discriminatedUnion("type", [
@@ -361,7 +367,7 @@ export const gameEventSchema = z.discriminatedUnion("type", [
        * Absent once the game has ended.
        */
       currentPlayerIndex: playerIndexSchema.optional(),
-      num: z.number().int().min(0).max(9_007_199_254_740_991),
+      num: turnSchema,
       type: z.literal("turn"),
     })
     .readonly(),
@@ -478,7 +484,7 @@ export const hypotheticalEventSchema = z.discriminatedUnion("type", [
        * Absent once the game has ended.
        */
       currentPlayerIndex: playerIndexSchema.optional(),
-      num: z.number().int().min(0).max(9_007_199_254_740_991),
+      num: turnSchema,
       type: z.literal("turn"),
     })
     .readonly(),
@@ -497,6 +503,7 @@ export const hypotheticalEventSchema = z.discriminatedUnion("type", [
     .strictObject({ order: cardOrderSchema, type: z.literal("unmorph") })
     .readonly(),
 ]);
+export const notesSchema = z.array(z.string()).readonly();
 
 /**
  * One author's notes on every card.
@@ -504,7 +511,7 @@ export const hypotheticalEventSchema = z.discriminatedUnion("type", [
 export const playerNotesSchema = z
   .strictObject({
     isSpectator: z.boolean(),
-    notes: z.array(z.string()).readonly(),
+    notes: notesSchema,
     username: z.string().min(1),
   })
   .readonly();

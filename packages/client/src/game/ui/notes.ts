@@ -76,7 +76,7 @@ export function set(order: CardOrder, text: string): void {
     globals.lobby.conn!.send("note", {
       tableId: globals.lobby.tableId,
       order,
-      note: text,
+      text,
     });
   }
 

@@ -33,8 +33,9 @@ pub struct ReplayGame {
     pub options: Option<ReplayOptions>,
     /// Each player's notes.
     #[serde(skip_serializing_if = "Option::is_none")]
-    #[schemars(length(max = MAX_PLAYERS))]
-    pub notes: Option<Vec<NoteRow>>,
+    #[schemars(with = "Option<Vec<Notes>>", length(max = MAX_PLAYERS))]
+    pub notes: Option<Vec<Vec<String>>>,
+    /// One for each player. Required when `detrimentalCharacters` is on.
     #[serde(skip_serializing_if = "Option::is_none")]
     #[schemars(length(max = MAX_PLAYERS))]
     pub characters: Option<Vec<ReplayCharacter>>,
@@ -42,11 +43,6 @@ pub struct ReplayGame {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub seed: Option<String>,
 }
-
-/// One player's notes, indexed by card order.
-#[derive(Clone, Debug, Default, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
-#[serde(transparent)]
-pub struct NoteRow(pub Vec<String>);
 
 /// A card in the replay format. A missing suit is the first suit, as older exports omitted it.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
@@ -85,7 +81,6 @@ pub struct ReplayOptions {
     pub one_less_card: Option<bool>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub all_or_nothing: Option<bool>,
-    /// When present, even as false, the game must assign every player a character.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub detrimental_characters: Option<bool>,
 }
@@ -94,8 +89,9 @@ pub struct ReplayOptions {
 #[derive(Clone, Debug, Default, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct ReplayCharacter {
-    /// Absent, or empty, when the player has no character.
+    /// Absent when the player has no character.
     #[serde(skip_serializing_if = "Option::is_none")]
+    #[schemars(length(min = 1))]
     pub name: Option<String>,
     /// Absent when the character has no assigned metadata.
     #[serde(skip_serializing_if = "Option::is_none")]

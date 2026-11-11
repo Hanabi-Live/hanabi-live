@@ -65,7 +65,7 @@ mod tests {
                     json!({"tableId":1,"action":{"type":"rankClue","target":0,"rank":1}})
                 }
                 "pause" => json!({"tableId":1,"setting":"pause"}),
-                "note" => json!({"tableId":1,"order":0,"note":"test"}),
+                "note" => json!({"tableId":1,"order":0,"text":"test"}),
                 "tag" | "tagDelete" => json!({"tableId":1,"tag":"test"}),
                 "replayAction" => json!({"tableId":1,"action":{"type":"hypoStart"}}),
                 "tableRestartDecline" => json!({"tableId":1,"declined":true}),
@@ -75,8 +75,9 @@ mod tests {
                 | "chatUnblock" => json!({"username":"Alice"}),
                 "tagSearch" => json!({"tag":"test"}),
                 "tableSetVariant" => json!({"tableId":1,"variantName":"No Variant"}),
-                "sync" | "lobbyLoad" | "tableCreate" | "gameHistory" | "chatLinked"
-                | "chatBlocked" | "chatPmHistory" => json!({}),
+                "gameHistory" => json!({"offset":0,"amount":10}),
+                "sync" | "lobbyLoad" | "tableCreate" | "chatLinked" | "chatBlocked"
+                | "chatPmHistory" => json!({}),
                 _ => json!({"tableId":1}),
             };
             parse(&format!("{command} {value}")).unwrap_or_else(|e| panic!("{command}: {e}"));

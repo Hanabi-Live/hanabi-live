@@ -113,20 +113,6 @@ pub enum ExternalReply {
     },
 }
 
-/// Why a page of games cannot be read, for a start or an amount out of range.
-fn page_error(offset: i64, amount: i64) -> Option<String> {
-    if offset < 0 {
-        Some("That is not a valid start value.".to_owned())
-    } else if !(1..=hanabi_protocol::MAX_PAGE_SIZE).contains(&amount) {
-        Some(format!(
-            "The amount of games must be between 1 and {}.",
-            hanabi_protocol::MAX_PAGE_SIZE
-        ))
-    } else {
-        None
-    }
-}
-
 fn warning(message: &str) -> Effect {
     Effect::to_self(Outgoing::new(
         hanabi_protocol::server::WARNING,
@@ -255,9 +241,6 @@ pub async fn dispatch(
                 .await?
         }
         ClientMessage::GameHistory(hanabi_protocol::GameHistoryRequest { offset, amount }) => {
-            if let Some(error) = page_error(offset, amount) {
-                return Ok(Some(vec![warning(&error)]));
-            }
             let ids = history_ids(pool, caller.user, offset, amount).await?;
             vec![Effect::to_self(Outgoing::new(
                 hanabi_protocol::server::GAME_HISTORY,
@@ -279,9 +262,6 @@ pub async fn dispatch(
                 return Ok(Some(vec![warning(error)]));
             }
             let (offset, amount) = (request.offset, request.amount);
-            if let Some(error) = page_error(offset, amount) {
-                return Ok(Some(vec![warning(&error)]));
-            }
             let ids = seed_history_ids(pool, seed, offset, amount).await?;
             let games = get_history(pool, &ids, true).await?;
             let total = seed_game_count(pool, seed).await?;

@@ -34,7 +34,7 @@ impl TableActor {
             ClientMessage::TableTerminateVote(_) => self.terminate(session, true).await,
             ClientMessage::Pause(r) => self.pause(session, r.setting).await,
             ClientMessage::IdleReset(_) => self.idle_reset(session).await,
-            ClientMessage::Note(r) => self.note(session, r.order, &r.note).await,
+            ClientMessage::Note(r) => self.note(session, r.order, &r.text).await,
             message @ (ClientMessage::Tag(_)
             | ClientMessage::TagDelete(_)
             | ClientMessage::TagDeleteAll(_)) => self.tag_message(session, message).await,

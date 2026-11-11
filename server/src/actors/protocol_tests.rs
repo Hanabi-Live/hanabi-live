@@ -924,11 +924,11 @@ async fn tables_replay_a_finished_game_from_a_chosen_turn() -> Result<()> {
             .execute(&h.store.primary)
             .await?;
 
-        let id = h.create(0, "", json!({"replayGameId":game,"replayTurn":2})).await?;
+        let id = h.create(0, "", json!({"replayGameId":game,"replayTurn":1})).await?;
         let listed = h.receive(1, "table").await?;
         ensure!(
             listed["settings"]["replayGameId"] == game
-                && listed["settings"]["replayTurn"] == 2
+                && listed["settings"]["replayTurn"] == 1
                 && listed["settings"]["options"]["timed"] == true,
             "The table did not report the replayed game and its options: {listed}"
         );

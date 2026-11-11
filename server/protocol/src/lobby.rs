@@ -308,16 +308,14 @@ pub struct TableSettings {
     /// players have played.
     #[serde(skip_serializing_if = "Option::is_none")]
     #[schemars(length(min = 1, max = MAX_SEED_LENGTH))]
-    pub seed: Option<String>,
+    pub seed_suffix: Option<String>,
     /// A finished game that the table plays again with its deal, seats, characters, and options,
     /// which replace the others.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub replay_game_id: Option<GameId>,
-    /// The turn of `replayGameId` that the game starts from, counting from 1. Absent starts from
-    /// the first turn.
+    /// The turn of `replayGameId` that the game starts from. Absent starts from the first turn.
     #[serde(skip_serializing_if = "Option::is_none")]
-    #[schemars(range(min = 1, max = MAX_GAME_ACTIONS))]
-    pub replay_turn: Option<u32>,
+    pub replay_turn: Option<Turn>,
 }
 
 impl Default for TableSettings {
@@ -326,7 +324,7 @@ impl Default for TableSettings {
             name: String::new(),
             max_players: DEFAULT_MAX_PLAYERS,
             options: GameOptions::default(),
-            seed: None,
+            seed_suffix: None,
             replay_game_id: None,
             replay_turn: None,
         }

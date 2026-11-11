@@ -311,10 +311,12 @@ function submit() {
   // Seeds and replays are not saved, so that a new game does not accidentally repeat a deal.
   const seed = getText("#create-game-seed");
   const replayGameId = parseIntSafe(getText("#create-game-replay-game-id"));
+  // Players count turns from 1, and the server counts them from 0.
+  const replayTurnText = parseIntSafe(getText("#create-game-replay-turn"));
   const replayTurn =
-    replayGameId === undefined
+    replayGameId === undefined || replayTurnText === undefined
       ? undefined
-      : parseIntSafe(getText("#create-game-replay-turn"));
+      : replayTurnText - 1;
 
   const name = $("#createTableName").val();
   if (typeof name !== "string") {
@@ -373,7 +375,7 @@ function submit() {
       allOrNothing: getCheckbox("createTableAllOrNothing"),
       detrimentalCharacters: getCheckbox("createTableDetrimentalCharacters"),
     },
-    ...(seed !== "" && { seed }),
+    ...(seed !== "" && { seedSuffix: seed }),
     ...(replayGameId !== undefined && { replayGameId: replayGameId as GameID }),
     ...(replayTurn !== undefined && { replayTurn }),
   };
@@ -646,9 +648,12 @@ export function ready(): void {
     const { settings } = globals.game;
     gameName = settings.name;
     formValues = getFormValues(settings.options, settings.maxPlayers);
-    seed = settings.seed ?? "";
+    seed = settings.seedSuffix ?? "";
     replayGameId = settings.replayGameId?.toString() ?? "";
-    replayTurn = settings.replayTurn?.toString() ?? "";
+    replayTurn =
+      settings.replayTurn === undefined
+        ? ""
+        : (settings.replayTurn + 1).toString();
 
     // Can't change the password once the game is created.
     $("#password-row").addClass("hidden");

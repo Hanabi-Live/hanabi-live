@@ -9,11 +9,13 @@ import {
   gameEventSchema,
   gameOptionsSchema,
   hypotheticalEventSchema,
+  notesSchema,
   playerIndexSchema,
   playerNotesSchema,
   rankClueNumberSchema,
   safeIntegerSchema,
   suitIndexSchema,
+  turnSchema,
   variantIdSchema,
 } from "@hanabi-live/game";
 import * as z from "zod";
@@ -111,16 +113,15 @@ const tableSettingsSchema = z
      */
     replayGameId: gameIdSchema.optional(),
     /**
-     * The turn of `replayGameId` that the game starts from, counting from 1. Absent starts from
-     * the first turn.
+     * The turn of `replayGameId` that the game starts from. Absent starts from the first turn.
      */
-    replayTurn: z.number().int().min(1).max(512).optional(),
+    replayTurn: turnSchema.optional(),
     /**
      * The deal that the table requests, as the end of its full seed: "123" in a 3-player game of
      * No Variant deals `p3v0s123`. Absent when the server deals the next seed that none of the
      * players have played.
      */
-    seed: z.string().min(1).max(32).optional(),
+    seedSuffix: z.string().min(1).max(32).optional(),
   })
   .readonly();
 export const chatSchema = z
@@ -245,12 +246,6 @@ export const connectedSchema = z
 export const emptySchema = z.strictObject({}).readonly();
 
 /**
- * A turn of a game, or a position in its replay, counting from 0. A game records at most
- * `MAX_GAME_ACTIONS` actions, so it has no more turns than that.
- */
-const turnSchema = z.number().int().min(0).max(512);
-
-/**
  * The state of a shared replay that a client joins.
  */
 const sharedReplayInitSchema = z
@@ -344,49 +339,23 @@ export const gameHistoryOtherScoresSchema = z
   .readonly();
 
 /**
- * A page of the games on a seed, best scores first. Values out of range get a friendly warning.
+ * A page of the games on a seed, best scores first.
  */
 export const gameHistoryOtherScoresRequestSchema = z
   .strictObject({
-    /**
-     * The games on the page, from 1 to `MAX_PAGE_SIZE`.
-     */
-    amount: z
-      .number()
-      .int()
-      .min(-9_007_199_254_740_991)
-      .max(9_007_199_254_740_991)
-      .default(0),
-    offset: z
-      .number()
-      .int()
-      .min(-9_007_199_254_740_991)
-      .max(9_007_199_254_740_991)
-      .default(0),
+    amount: z.number().int().min(1).max(100),
+    offset: z.number().int().min(0).max(9_007_199_254_740_991),
     seed: z.string(),
   })
   .readonly();
 
 /**
- * A page of the player's own game history. Values out of range get a friendly warning.
+ * A page of the player's own game history, newest first.
  */
 export const gameHistoryRequestSchema = z
   .strictObject({
-    /**
-     * The games on the page, from 1 to `MAX_PAGE_SIZE`.
-     */
-    amount: z
-      .number()
-      .int()
-      .min(-9_007_199_254_740_991)
-      .max(9_007_199_254_740_991)
-      .default(0),
-    offset: z
-      .number()
-      .int()
-      .min(-9_007_199_254_740_991)
-      .max(9_007_199_254_740_991)
-      .default(0),
+    amount: z.number().int().min(1).max(100),
+    offset: z.number().int().min(0).max(9_007_199_254_740_991),
   })
   .readonly();
 
@@ -581,19 +550,16 @@ export const noteListSchema = z
   .readonly();
 
 /**
- * A player's own notes, by card order.
+ * A player's own notes.
  */
 export const noteListPlayerSchema = z
-  .strictObject({
-    notes: z.array(z.string()).readonly(),
-    tableId: tableIdSchema,
-  })
+  .strictObject({ notes: notesSchema, tableId: tableIdSchema })
   .readonly();
 export const noteRequestSchema = z
   .strictObject({
-    note: z.string(),
     order: cardOrderSchema,
     tableId: tableIdSchema,
+    text: z.string(),
   })
   .readonly();
 
@@ -883,11 +849,6 @@ export const replayActionSchema = z
   .readonly();
 
 /**
- * One player's notes, indexed by card order.
- */
-const noteRowSchema = z.array(z.string()).readonly();
-
-/**
  * A card in the replay format. A missing suit is the first suit, as older exports omitted it.
  */
 const replayCardSchema = z
@@ -909,9 +870,9 @@ const replayCharacterSchema = z
       .max(2_147_483_647)
       .optional(),
     /**
-     * Absent, or empty, when the player has no character.
+     * Absent when the player has no character.
      */
-    name: z.string().optional(),
+    name: z.string().min(1).optional(),
   })
   .readonly();
 
@@ -965,9 +926,6 @@ const replayOptionsSchema = z
   .strictObject({
     allOrNothing: z.boolean().optional(),
     deckPlays: z.boolean().optional(),
-    /**
-     * When present, even as false, the game must assign every player a character.
-     */
     detrimentalCharacters: z.boolean().optional(),
     emptyClues: z.boolean().optional(),
     oneExtraCard: z.boolean().optional(),
@@ -989,6 +947,9 @@ const replayOptionsSchema = z
 export const replayGameSchema = z
   .strictObject({
     actions: z.array(replayGameActionSchema).max(512).readonly().optional(),
+    /**
+     * One for each player. Required when `detrimentalCharacters` is on.
+     */
     characters: z.array(replayCharacterSchema).max(6).readonly().optional(),
     /**
      * The deck, by card order.
@@ -1001,7 +962,7 @@ export const replayGameSchema = z
     /**
      * Each player's notes.
      */
-    notes: z.array(noteRowSchema).max(6).readonly().optional(),
+    notes: z.array(notesSchema).max(6).readonly().optional(),
     options: replayOptionsSchema.optional(),
     playerNames: z.array(z.string()).max(6).readonly().optional(),
     /**

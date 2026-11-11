@@ -1,7 +1,8 @@
 use hanabi_engine::ClueType;
 use hanabi_protocol::{
     CardEvent, CardOrder, CardRank, Clue, ClueEvent, ColorIndex, DiscardEvent, GameEvent,
-    GameOverEvent, PlayerIndex, PlayerTimesEvent, RankClueNumber, SuitIndex, TableId, TurnEvent,
+    GameOverEvent, PlayerIndex, PlayerTimesEvent, RankClueNumber, SuitIndex, TableId, Turn,
+    TurnEvent,
 };
 
 /// A seat that the engine names. The engine only names seats that the game has.
@@ -84,7 +85,7 @@ pub(super) fn wire_event(event: &hanabi_engine::EngineEvent) -> GameEvent {
             num,
             current_player_index,
         } => GameEvent::Turn(TurnEvent {
-            num: num.into(),
+            num: Turn::new(num).expect("engine turns are below MAX_GAME_ACTIONS"),
             current_player_index: PlayerIndex::new(current_player_index),
         }),
         E::GameOver {

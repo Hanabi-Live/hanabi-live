@@ -36,7 +36,7 @@ pub fn parse(input: &ReplayGame) -> CommandResult<Imported> {
         .variant_name
         .unwrap_or_else(|| hanabi_protocol::DEFAULT_VARIANT_NAME.into());
     let variant = hanabi_engine::get_variant(&variant_name)?;
-    let has_characters = raw.detrimental_characters.is_some();
+    let has_characters = raw.detrimental_characters == Some(true) || input.characters.is_some();
     let defaults = Options::default();
     let mut options = Options {
         variant_name,
@@ -120,7 +120,7 @@ pub fn parse(input: &ReplayGame) -> CommandResult<Imported> {
         .iter()
         .flatten()
         .map(|character| {
-            let name = character.name.clone().filter(|name| !name.is_empty());
+            let name = character.name.clone();
             // A character that has metadata gets the first value when the import leaves it out.
             let needs_metadata = name
                 .as_deref()
@@ -169,8 +169,8 @@ pub fn parse(input: &ReplayGame) -> CommandResult<Imported> {
     );
     let mut notes = vec![vec![String::new(); size]; players.len()];
     for (i, row) in raw_notes.iter().enumerate() {
-        ensure_or_reject!(row.0.len() <= size, "Too many notes");
-        for (j, text) in row.0.iter().enumerate() {
+        ensure_or_reject!(row.len() <= size, "Too many notes");
+        for (j, text) in row.iter().enumerate() {
             ensure_or_reject!(
                 text.len() <= hanabi_protocol::MAX_IMPORTED_NOTE_LENGTH,
                 "Note too long"

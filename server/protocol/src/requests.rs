@@ -161,30 +161,24 @@ pub struct InactiveRequest {
     pub inactive: bool,
 }
 
-/// A page of the player's own game history. Values out of range get a friendly warning.
+/// A page of the player's own game history, newest first.
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct GameHistoryRequest {
-    #[serde(default)]
-    #[schemars(range(min = -MAX_SAFE_INTEGER, max = MAX_SAFE_INTEGER))]
+    #[schemars(range(min = 0, max = MAX_SAFE_INTEGER))]
     pub offset: i64,
-    /// The games on the page, from 1 to `MAX_PAGE_SIZE`.
-    #[serde(default)]
-    #[schemars(range(min = -MAX_SAFE_INTEGER, max = MAX_SAFE_INTEGER))]
+    #[schemars(range(min = 1, max = MAX_PAGE_SIZE))]
     pub amount: i64,
 }
 
-/// A page of the games on a seed, best scores first. Values out of range get a friendly warning.
+/// A page of the games on a seed, best scores first.
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct GameHistoryOtherScoresRequest {
     pub seed: String,
-    #[serde(default)]
-    #[schemars(range(min = -MAX_SAFE_INTEGER, max = MAX_SAFE_INTEGER))]
+    #[schemars(range(min = 0, max = MAX_SAFE_INTEGER))]
     pub offset: i64,
-    /// The games on the page, from 1 to `MAX_PAGE_SIZE`.
-    #[serde(default)]
-    #[schemars(range(min = -MAX_SAFE_INTEGER, max = MAX_SAFE_INTEGER))]
+    #[schemars(range(min = 1, max = MAX_PAGE_SIZE))]
     pub amount: i64,
 }
 
@@ -316,7 +310,7 @@ pub enum PauseSetting {
 pub struct NoteRequest {
     pub table_id: TableId,
     pub order: CardOrder,
-    pub note: String,
+    pub text: String,
 }
 
 /// Adds or removes one tag on the table's game.

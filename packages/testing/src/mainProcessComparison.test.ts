@@ -129,7 +129,9 @@ databaseDescribe("normal-server protocol workload", () => {
             const bobCookie = await login(address, `Bench${lane}${game}Bob`);
             let alice = await connect(aliceCookie);
             const bob = await connect(bobCookie);
-            alice.send("tableCreate", { settings: { seed: SEED_SUFFIX } });
+            alice.send("tableCreate", {
+              settings: { seedSuffix: SEED_SUFFIX },
+            });
             const { tableId } = await alice.receive(
               "joined",
               SERVER_COMMAND_SCHEMAS.joined,

@@ -136,10 +136,7 @@ pub(super) async fn export(
         deck: Some(deck),
         actions: Some(actions),
         options: (options != hanabi_protocol::ReplayOptions::default()).then_some(options),
-        notes: notes
-            .iter()
-            .any(|n| !n.is_empty())
-            .then(|| notes.into_iter().map(hanabi_protocol::NoteRow).collect()),
+        notes: notes.iter().any(|n| !n.is_empty()).then_some(notes),
         characters,
         seed: Some(seed),
     })

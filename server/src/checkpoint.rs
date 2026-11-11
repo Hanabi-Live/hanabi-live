@@ -363,7 +363,10 @@ type Upgrade = fn(&mut Value, &mut [(String, String)]) -> Result<()>;
 /// The formats that older servers wrote, each with the format after it and the upgrade between
 /// them. A graceful restart keeps the live tables that the deployed server saved, so remove a step
 /// only once no deployed server writes its format.
-const UPGRADES: &[(&str, &str, Upgrade)] = &[("hanabi-live-1", "hanabi-live-2", camel_case_ids)];
+const UPGRADES: &[(&str, &str, Upgrade)] = &[
+    ("hanabi-live-1", "hanabi-live-2", camel_case_ids),
+    ("hanabi-live-2", "hanabi-live-3", seed_suffix_and_turn),
+];
 
 /// Rewrites a table that an older server saved, one format at a time, into the current format.
 /// `head` holds the game's start.
@@ -420,6 +423,19 @@ fn camel_case_ids(_: &mut Value, parts: &mut [(String, String)]) -> Result<()> {
             "replayGameID",
             "replayGameId",
         );
+    })
+}
+
+/// Format 2 named a suggested table's seed suffix `seed`, and counted its replay turn from 1.
+fn seed_suffix_and_turn(_: &mut Value, parts: &mut [(String, String)]) -> Result<()> {
+    edit_parts(parts, CHAT, |chat| {
+        let suggestion = chat.pointer_mut("/message/suggestion");
+        rename(suggestion, "seed", "seedSuffix");
+        if let Some(turn) = chat.pointer_mut("/message/suggestion/replayTurn")
+            && let Some(counted) = turn.as_u64()
+        {
+            *turn = counted.saturating_sub(1).into();
+        }
     })
 }
 

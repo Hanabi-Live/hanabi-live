@@ -193,6 +193,19 @@ impl JsonSchema for Username {
     }
 }
 
+/// One author's notes, by card order. An empty note is a card without one.
+pub struct Notes;
+
+impl JsonSchema for Notes {
+    fn schema_name() -> std::borrow::Cow<'static, str> {
+        "Notes".into()
+    }
+
+    fn json_schema(generator: &mut schemars::SchemaGenerator) -> schemars::Schema {
+        <Vec<String>>::json_schema(generator)
+    }
+}
+
 /// A timestamp on the wire: RFC 3339 in UTC, with milliseconds, such as
 /// "2026-01-01T12:00:00.000Z". Both the server's and the clients' schemas accept only this form.
 pub struct Timestamp;

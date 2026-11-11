@@ -847,8 +847,8 @@ mod tests {
         }
         Ok(head.to_string())
     }
-    #[test]
-    fn checkpoints_from_format_1_spell_ids_in_capitals() -> Result<()> {
+    /// A table with a chat message that suggests options, as an owner's chat holds one.
+    fn suggested() -> TableSnapshot {
         let mut table = pregame(TableId(1));
         let mut message = hanabi_protocol::Chat::new(
             "suggestion",
@@ -858,7 +858,9 @@ mod tests {
         message.chat_id = Some(3);
         message.table_id = Some(TableId(1));
         message.suggestion = Some(hanabi_protocol::TableSettings {
+            seed_suffix: Some("7".into()),
             replay_game_id: Some(GameId(5)),
+            replay_turn: hanabi_protocol::Turn::new(2),
             ..hanabi_protocol::TableSettings::default()
         });
         table.chat.push(TableChat {
@@ -866,25 +868,43 @@ mod tests {
             user: UserId(1),
             message,
         });
+        table
+    }
+    /// Checks that a table that an older server saved decodes as the current server saved it.
+    /// `older` rewrites each part as the older format holds it.
+    fn upgrades(format: &str, older: impl Fn(&str) -> String) -> Result<()> {
+        let mut table = suggested();
         let expected = serde_json::to_value(&table)?;
         let (encoded, _) = crate::checkpoint::encode(&mut table, &SavedParts::default())?;
         let parts = encoded
             .changes
             .written
             .iter()
-            .map(|(key, part)| {
-                let part = part
-                    .replace("\"tableId\"", "\"tableID\"")
-                    .replace("\"chatId\"", "\"chatID\"")
-                    .replace("\"replayGameId\"", "\"replayGameID\"");
-                (key.clone(), part)
-            })
+            .map(|(key, part)| (key.clone(), older(part)))
             .collect::<Vec<_>>();
-        ensure!(parts.iter().any(|(_, part)| part.contains("replayGameID")));
-        let head = older_head(&encoded.head, "hanabi-live-1")?;
-        let decoded = crate::checkpoint::decode(&head, &parts)?;
+        ensure!(
+            parts != encoded.changes.written,
+            "The older format is the same"
+        );
+        let decoded = crate::checkpoint::decode(&older_head(&encoded.head, format)?, &parts)?;
         ensure!(serde_json::to_value(&decoded)? == expected);
         Ok(())
+    }
+    /// Rewrites a part from format 3 into format 2.
+    fn format_2(part: &str) -> String {
+        part.replace("\"seedSuffix\"", "\"seed\"")
+            .replace("\"replayTurn\":2", "\"replayTurn\":3")
+    }
+    /// Rewrites a part from format 2 into format 1.
+    fn format_1(part: &str) -> String {
+        part.replace("\"tableId\"", "\"tableID\"")
+            .replace("\"chatId\"", "\"chatID\"")
+            .replace("\"replayGameId\"", "\"replayGameID\"")
+    }
+    #[test]
+    fn checkpoints_from_older_formats_are_upgraded() -> Result<()> {
+        upgrades("hanabi-live-2", format_2)?;
+        upgrades("hanabi-live-1", |part| format_1(&format_2(part)))
     }
     #[test]
     fn saves_write_only_new_entries_and_rewrite_lists_that_do_not_continue() -> Result<()> {
@@ -1907,7 +1927,7 @@ mod tests {
             frames.push(outgoing);
         }
         let result=async{
-            send(&hub,users[0].clone(),"tableCreate",json!({"settings":{"name":"native","maxPlayers":6,"seed":"native","options":{"variantName":"Clue Starved (6 Suits)","timed":true,"timeBaseSeconds":120,"timePerTurnSeconds":20,"oneExtraCard":true,"detrimentalCharacters":true}}})).await?;
+            send(&hub,users[0].clone(),"tableCreate",json!({"settings":{"name":"native","maxPlayers":6,"seedSuffix":"native","options":{"variantName":"Clue Starved (6 Suits)","timed":true,"timeBaseSeconds":120,"timePerTurnSeconds":20,"oneExtraCard":true,"detrimentalCharacters":true}}})).await?;
             let id=store.load().await?[0].0.id;
             for user in users.iter().skip(1){send(&hub,user.clone(),"tableJoin",json!({"tableId":id,"password":""})).await?;}
             send(&hub,users[0].clone(),"tableStart",json!({"tableId":id})).await?;
@@ -1915,7 +1935,7 @@ mod tests {
             let active=s.game.active_player_index;let actor=usize::try_from(s.players[active].id.0)?-1;
             send(&hub,users[actor].clone(),"loaded",json!({"tableId":id})).await?;
             send(&hub,users[actor].clone(),"pause",json!({"tableId":id,"setting":"pause"})).await?;
-            send(&hub,users[actor].clone(),"note",json!({"tableId":id,"order":0,"note":"private"})).await?;
+            send(&hub,users[actor].clone(),"note",json!({"tableId":id,"order":0,"text":"private"})).await?;
             send(&hub,users[actor].clone(),"tag",json!({"tableId":id,"tag":"native-live"})).await?;
             let loaded=store.load().await?;let s=loaded[0].0.game().unwrap();ensure!(s.paused()&&s.notes[active][0]=="private"&&s.tags.len()==1,"Runtime mutations not durable");
             let (reply,received)=oneshot::channel();hub.send(HubCommand::Quiesce(reply)).await?;let handles=received.await?;

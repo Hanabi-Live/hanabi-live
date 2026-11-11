@@ -14,7 +14,7 @@ use chrono::Utc;
 use hanabi_engine::RecordedAction;
 use hanabi_protocol::TableId;
 use hanabi_protocol::UserId;
-use hanabi_protocol::{Chat, GameId, MAX_SEED_LENGTH, MIN_PLAYERS};
+use hanabi_protocol::{Chat, GameId, MAX_SEED_LENGTH, MIN_PLAYERS, Turn};
 use std::{collections::BTreeMap, fmt::Write as _};
 
 /// The longest table password, in bytes.
@@ -97,7 +97,7 @@ pub(super) fn requested_extra(
     request: &hanabi_protocol::TableSettings,
 ) -> CommandResult<ExtraOptions> {
     let mut extra = ExtraOptions {
-        set_seed_suffix: requested_seed(request.seed.as_deref())?,
+        set_seed_suffix: requested_seed(request.seed_suffix.as_deref())?,
         ..ExtraOptions::default()
     };
     let Some(GameId(game_id)) = request.replay_game_id else {
@@ -113,13 +113,7 @@ pub(super) fn requested_extra(
     );
     extra.replay = Some(TableReplay {
         game_id: GameId(game_id),
-        turns: match request.replay_turn {
-            Some(turn) => usize::try_from(turn)
-                .ok()
-                .and_then(|turn| turn.checked_sub(1))
-                .or_reject("Turn must be positive")?,
-            None => 0,
-        },
+        turns: request.replay_turn.map_or(0, Turn::index),
     });
     Ok(extra)
 }
@@ -178,15 +172,15 @@ pub(super) fn table_settings(
         name: name.into(),
         max_players: small(max_players),
         options: wire_options(options),
-        seed: extra.set_seed_suffix.clone(),
+        seed_suffix: extra.set_seed_suffix.clone(),
         replay_game_id: extra.replay.map(|replay| replay.game_id),
         replay_turn: replay_turn(extra),
     }
 }
-/// The turn that a replayed game starts from, counting from 1, unless it is the first turn.
-fn replay_turn(extra: &ExtraOptions) -> Option<u32> {
+/// The turn that a replayed game starts from, unless it is the first turn.
+fn replay_turn(extra: &ExtraOptions) -> Option<Turn> {
     let replay = extra.replay.filter(|replay| replay.turns > 0)?;
-    u32::try_from(replay.turns + 1).ok()
+    Turn::new(replay.turns)
 }
 /// A private message to a table's owner, with a button that applies the suggested options.
 pub(super) fn options_suggestion(
@@ -252,7 +246,8 @@ pub(super) fn option_changes(
             &extra.replay.map_or_else(
                 || "No".into(),
                 |TableReplay { game_id: id, .. }| match replay_turn(extra) {
-                    Some(turn) => format!("Game #{id} from turn {turn}"),
+                    // Players count turns from 1.
+                    Some(turn) => format!("Game #{id} from turn {}", turn.index() + 1),
                     None => format!("Game #{id}"),
                 },
             ),
@@ -339,7 +334,7 @@ pub(super) fn replay_table(
             snapshot: Box::new(snapshot),
             replay: ReplayState {
                 leader: owner,
-                segment: hanabi_protocol::Turn::default(),
+                segment: Turn::default(),
                 efficiency_modifier: 0,
                 hypothetical: false,
                 hypothetical_actions: vec![],

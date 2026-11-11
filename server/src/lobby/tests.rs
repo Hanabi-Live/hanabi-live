@@ -634,23 +634,17 @@ async fn lobby_directed_linked_seeds_and_histories_postgres() {
     assert_eq!(history[0]["gameId"], ga);
     assert_eq!(history[0]["options"]["variantName"], "No Variant");
     assert_eq!(history[0]["playerNames"], json!(["Alice"]));
-    // A page holds at least one game and at most `MAX_PAGE_SIZE`.
-    for amount in [0, hanabi_protocol::MAX_PAGE_SIZE + 1] {
-        let result = run(
-            &db.pool,
-            &who,
-            &[],
-            "gameHistory",
-            json!({"offset":0,"amount":amount}),
-        )
-        .await;
-        assert_eq!(
-            self_data(&result, "warning")["message"],
-            format!(
-                "The amount of games must be between 1 and {}.",
-                hanabi_protocol::MAX_PAGE_SIZE
-            )
-        );
+    // A page holds at least one game and at most `MAX_PAGE_SIZE`, from a start that is not
+    // negative.
+    for page in [
+        json!({"offset":0,"amount":0}),
+        json!({"offset":0,"amount":hanabi_protocol::MAX_PAGE_SIZE + 1}),
+        json!({"offset":-1,"amount":1}),
+    ] {
+        assert!(ClientMessage::decode("gameHistory", &page).is_err());
+        let mut other = page;
+        other["seed"] = "p2v0s1".into();
+        assert!(ClientMessage::decode("gameHistoryOtherScores", &other).is_err());
     }
     let result = run(
         &db.pool,
@@ -682,21 +676,6 @@ async fn lobby_directed_linked_seeds_and_histories_postgres() {
     assert_eq!(
         (&history["offset"], &history["numGamesOnSeed"]),
         (&json!(1), &json!(2))
-    );
-    let result = run(
-        &db.pool,
-        &who,
-        &[],
-        "gameHistoryOtherScores",
-        json!({"seed":"p2v0s1","offset":0,"amount":hanabi_protocol::MAX_PAGE_SIZE + 1}),
-    )
-    .await;
-    assert_eq!(
-        self_data(&result, "warning")["message"],
-        format!(
-            "The amount of games must be between 1 and {}.",
-            hanabi_protocol::MAX_PAGE_SIZE
-        )
     );
     sqlx::query!(
         "INSERT INTO game_tags(game_id,user_id,tag) VALUES($1,$2,$3)",

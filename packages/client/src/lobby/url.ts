@@ -83,7 +83,10 @@ function gotoPath(data: ServerCommandData["welcome"]): boolean {
     // A blank seed deals one that none of the players have played.
     const seed = urlParams.get("seed") ?? "";
     const replayGameId = parseIntSafe(urlParams.get("replayGameId") ?? "");
-    const replayTurn = parseIntSafe(urlParams.get("replayTurn") ?? "");
+    // Players count turns from 1, and the server counts them from 0.
+    const replayTurnParam = parseIntSafe(urlParams.get("replayTurn") ?? "");
+    const replayTurn =
+      replayTurnParam === undefined ? undefined : replayTurnParam - 1;
 
     globals.conn!.send("tableCreate", {
       settings: {
@@ -101,7 +104,7 @@ function gotoPath(data: ServerCommandData["welcome"]): boolean {
           allOrNothing,
           detrimentalCharacters,
         },
-        ...(seed !== "" && { seed }),
+        ...(seed !== "" && { seedSuffix: seed }),
         ...(replayGameId !== undefined && { replayGameId }),
         ...(replayTurn !== undefined && { replayTurn }),
       },

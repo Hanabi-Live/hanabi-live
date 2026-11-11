@@ -93,11 +93,11 @@ export function getOptionDescriptions(
     });
   }
 
-  if (settings.seed !== undefined) {
+  if (settings.seedSuffix !== undefined) {
     descriptions.push({
       name: "seed",
       icon: OptionIcons.Seed,
-      tooltip: `This table deals the custom seed of: <strong>${escapeHtml(settings.seed)}</strong>`,
+      tooltip: `This table deals the custom seed of: <strong>${escapeHtml(settings.seedSuffix)}</strong>`,
     });
   }
 
@@ -105,7 +105,7 @@ export function getOptionDescriptions(
     const turn =
       settings.replayTurn === undefined
         ? ""
-        : ` (from turn ${settings.replayTurn})`;
+        : ` (from turn ${settings.replayTurn + 1})`;
     descriptions.push({
       name: "replay",
       icon: OptionIcons.Replay,

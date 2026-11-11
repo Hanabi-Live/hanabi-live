@@ -379,7 +379,7 @@ databaseDescribe("compiled application entry point (rust)", () => {
         replacement.send("note", {
           tableId,
           order: 0,
-          note: "retained note",
+          text: "retained note",
         });
         replacement.send("tag", {
           tableId,
