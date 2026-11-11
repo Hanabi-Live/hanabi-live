@@ -59,8 +59,9 @@ interface CardPipPresentation {
   readonly rankPips: readonly RankPipPresentation[];
 
   /**
-   * Present when the clues leave a set of cards that the separate suit and rank pips cannot show,
-   * such as "any red card, or a blue 1". Then each row lists suits with the ranks they can be.
+   * Present when the clues and deduction leave a set of cards that the separate suit and rank pips
+   * cannot show, such as "any red card, or a blue 1". Then each row lists suits with the ranks they
+   * can be.
    */
   readonly possibilityRows: readonly PossibilityRowPresentation[] | undefined;
 }
@@ -236,14 +237,26 @@ export function getCardPipPresentation(
   return { suitPips, rankPips, possibilityRows };
 }
 
-/**
- * Returns undefined when the cards that the clues allow are every combination of the suits and
- * ranks they include, since the separate suit and rank pips show that set exactly. Otherwise,
- * returns one row for each group of suits that can be the same ranks.
- */
 function cardKey(suitIndex: number, rank: Rank) {
   return `${suitIndex},${rank}`;
 }
+
+/** Whether the cards are every combination of the suits and ranks that they include. */
+function isSuitRankGrid(cards: readonly SuitRankTuple[]) {
+  const suitCount = new Set(cards.map(([suitIndex]) => suitIndex)).size;
+  const rankCount = new Set(cards.map(([, rank]) => rank)).size;
+  const cardCount = new Set(
+    cards.map(([suitIndex, rank]) => cardKey(suitIndex, rank)),
+  ).size;
+  return cardCount === suitCount * rankCount;
+}
+
+/**
+ * Returns undefined when the separate suit and rank pips show the possible cards exactly. That is
+ * when the cards that the clues allow, and the cards among them that deduction leaves, are each
+ * every combination of the suits and ranks they include. Otherwise, returns one row for each group
+ * of suits that can be the same ranks.
+ */
 
 function getPossibilityRows(
   variant: Variant,
@@ -258,12 +271,10 @@ function getPossibilityRows(
   const possible = new Set(
     possibleCards.map(([suitIndex, rank]) => cardKey(suitIndex, rank)),
   );
-  const suitCount = new Set(
-    possibleCardsFromClues.map(([suitIndex]) => suitIndex),
-  ).size;
-  const rankCount = new Set(possibleCardsFromClues.map(([, rank]) => rank))
-    .size;
-  if (fromClues.size === suitCount * rankCount) {
+  const deduced = possibleCardsFromClues.filter(([suitIndex, rank]) =>
+    possible.has(cardKey(suitIndex, rank)),
+  );
+  if (isSuitRankGrid(possibleCardsFromClues) && isSuitRankGrid(deduced)) {
     return undefined;
   }
 

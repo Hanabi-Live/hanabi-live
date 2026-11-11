@@ -27,6 +27,8 @@ of the repository.
 - In the new game screen, you can now see another player's hand as they see it:
   hold the mouse button down on their cards, or click the eye beside their name.
   Hold the spacebar to see every hand this way.
+- A card now also lists each suit's ranks when cards that were seen elsewhere
+  leave possibilities that the separate suit and rank pips cannot show.
 
 ## November 10th, 2026
 
