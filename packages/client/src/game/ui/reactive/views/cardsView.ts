@@ -67,21 +67,15 @@ export function onMorphedIdentitiesChanged(
 ): void {
   changeStartingHandVisibility();
   if (previousData === undefined || !previousData.hypotheticalActive) {
-    // Initializing or entering a hypothetical. Hide the starting player's hand.
+    // Initializing or entering a hypothetical. Hide the starting player's hand. A hypothetical that
+    // we join can already have morphed cards.
+    updateMorphedCardVisuals(data.morphedIdentities);
     return;
   }
 
   if (!data.hypotheticalActive) {
     // Exiting hypothetical, update all morphed.
-    if (previousData.morphedIdentities !== undefined) {
-      for (const i of previousData.morphedIdentities.keys()) {
-        // Since `morphedIdentities` is a sparse array, we need to check for undefined.
-        if (previousData.morphedIdentities[i] !== undefined) {
-          updateCardVisuals(i as CardOrder);
-        }
-      }
-    }
-
+    updateMorphedCardVisuals(previousData.morphedIdentities);
     return;
   }
 
@@ -97,6 +91,21 @@ export function onMorphedIdentitiesChanged(
       if (data.morphedIdentities[i] !== previousData.morphedIdentities[i]) {
         updateCardVisuals(i as CardOrder);
       }
+    }
+  }
+}
+
+function updateMorphedCardVisuals(
+  morphedIdentities: readonly CardIdentity[] | undefined,
+) {
+  if (morphedIdentities === undefined) {
+    return;
+  }
+
+  for (const i of morphedIdentities.keys()) {
+    // Since `morphedIdentities` is a sparse array, we need to check for undefined.
+    if (morphedIdentities[i] !== undefined) {
+      updateCardVisuals(i as CardOrder);
     }
   }
 }

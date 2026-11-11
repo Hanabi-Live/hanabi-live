@@ -572,8 +572,7 @@ function getStates({
       path: "/",
       loggedIn: true,
       prepare: async (page) => {
-        const prismReplay = await showPrismMorph();
-        closePrismReplay = prismReplay.close;
+        closePrismReplay = await showPrismMorph();
         // The client ignores a "/game/<id>" path for an account that is a few seconds old, so
         // spectate the shared replay from its row in the lobby. The lobby ignores a click on a row
         // that just moved, so wait for the new row to settle first.
@@ -585,8 +584,6 @@ function getStates({
         await row.click({ force: true });
         await page.waitForSelector(".konvajs-content");
         await page.waitForTimeout(SETTLE_MILLISECONDS * 2);
-        await prismReplay.morph();
-        await page.waitForTimeout(SETTLE_MILLISECONDS);
       },
       // Escape cannot end a hypothetical that another account leads, so use the lobby button.
       cleanup: async (page) => {
@@ -985,13 +982,11 @@ interface Seed {
   /** When it is his turn, Bob plays a card that the team can play. */
   readonly playBobCard: () => Promise<void>;
   /**
-   * Has another account create a shared replay of a Prism game and start a hypothetical. Returns
-   * functions that morph a card to the Prism suit without a rank, and that disconnect the account.
+   * Has another account create a shared replay of a Prism game, start a hypothetical, and morph a
+   * card to the Prism suit without a rank, before the browser joins. Returns a function that
+   * disconnects the account.
    */
-  readonly showPrismMorph: () => Promise<{
-    morph: () => Promise<void>;
-    close: () => void;
-  }>;
+  readonly showPrismMorph: () => Promise<() => void>;
   readonly cookie: string;
   readonly peers: readonly Peer[];
 }
@@ -1288,30 +1283,25 @@ async function seed(address: string): Promise<Seed> {
       (data) => data.action.type === "hypoStart",
     );
 
-    async function morph() {
-      leader.send("replayAction", {
-        tableId: replayTableId,
+    leader.send("replayAction", {
+      tableId: replayTableId,
+      action: {
+        type: "hypoAction",
         action: {
-          type: "hypoAction",
-          action: {
-            type: "morph",
-            order: PRISM_MORPH_ORDER,
-            suitIndex: PRISM_SUIT_INDEX,
-          },
+          type: "morph",
+          order: PRISM_MORPH_ORDER,
+          suitIndex: PRISM_SUIT_INDEX,
         },
-      });
-      await leader.receive(
-        "replayAction",
-        SERVER_COMMAND_SCHEMAS.replayAction,
-        (data) => data.action.type === "hypoAction",
-      );
-    }
-
-    return {
-      morph,
-      close: () => {
-        leader.socket.close();
       },
+    });
+    await leader.receive(
+      "replayAction",
+      SERVER_COMMAND_SCHEMAS.replayAction,
+      (data) => data.action.type === "hypoAction",
+    );
+
+    return () => {
+      leader.socket.close();
     };
   }
 
