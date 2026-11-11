@@ -29,6 +29,12 @@ export const MAX_ANIMATED_SEGMENT_CHANGE = 1;
 /** The ID of every card movement, so that the page can tell them from other animations. */
 const CARD_MOVE_ANIMATION_ID = "card-move";
 
+/**
+ * How long a move takes here, as a fraction of the classic screen's time for the same move. The
+ * same times looked slower here than on the classic screen, so the moves are 40% shorter.
+ */
+const CARD_MOVE_TIME_FRACTION = 0.6;
+
 /** Moving cards go over the panels that they cross. */
 const MOVING_CARD_Z_INDEX = "30";
 
@@ -143,7 +149,7 @@ export function animateCardMoves(
       ],
       {
         id: CARD_MOVE_ANIMATION_ID,
-        duration: seconds * SECOND_IN_MILLISECONDS,
+        duration: seconds * CARD_MOVE_TIME_FRACTION * SECOND_IN_MILLISECONDS,
         easing: "ease-out",
       },
     );
