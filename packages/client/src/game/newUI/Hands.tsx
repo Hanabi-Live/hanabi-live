@@ -83,7 +83,12 @@ function NameChip({ seat }: { readonly seat: Seat }): React.JSX.Element {
 
   if (seat.active) {
     return (
-      <span className="tw:inline-flex tw:max-w-full tw:items-center tw:gap-2 tw:rounded-full tw:bg-game-text tw:py-1.5 tw:pr-2 tw:pl-3.5 tw:font-bold tw:text-card-ink">
+      // The clock's own pill sits close to the right edge, so the padding there is smaller.
+      <span
+        className={`tw:inline-flex tw:max-w-full tw:items-center tw:gap-2 tw:rounded-full tw:bg-game-text tw:py-1.5 tw:pl-3.5 tw:font-bold tw:text-card-ink ${
+          seat.clock === undefined ? "tw:pr-3.5" : "tw:pr-2"
+        }`}
+      >
         {youIcon}
         <span className="tw:truncate">{seat.name}</span>
         {seat.clock !== undefined && (
