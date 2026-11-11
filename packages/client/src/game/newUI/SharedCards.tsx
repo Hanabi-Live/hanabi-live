@@ -167,7 +167,8 @@ export const PlayArea = forwardRef<
 
 /**
  * The discarded cards, one row for each suit, where the player drops a card to discard it. Each
- * card is a button that shows the turn on which it was discarded.
+ * card is a button that shows the turn on which it was discarded. The pile keeps room for a row of
+ * every suit, so that it stays the same size as cards are discarded.
  */
 export const DiscardPile = forwardRef<
   HTMLElement,
@@ -185,6 +186,11 @@ export const DiscardPile = forwardRef<
     ref,
   ): React.JSX.Element => {
     const height = cardWidth * CARD_HEIGHT_PER_WIDTH;
+    const rowsHeight =
+      height
+      + (variant.suits.length - 1)
+        * height
+        * (1 - DISCARD_ROW_OVERLAP_PER_HEIGHT);
 
     return (
       <section
@@ -195,7 +201,7 @@ export const DiscardPile = forwardRef<
         <h2 className="tw:m-0 tw:text-[15px] tw:font-medium tw:text-game-muted">
           Discards
         </h2>
-        <div className="tw:flex tw:flex-col">
+        <div className="tw:flex tw:flex-col" style={{ height: rowsHeight }}>
           {rows.map((row, rowIndex) => (
             <div
               className="tw:flex"
