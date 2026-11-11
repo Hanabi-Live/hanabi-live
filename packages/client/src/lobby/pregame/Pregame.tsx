@@ -195,7 +195,8 @@ function PlayerBox({
         <StatRow
           label={`${numPlayers}-player best score:`}
           value={
-            variantStats.bestScores[numPlayers - MIN_PLAYERS]?.score ?? NO_SCORE
+            variantStats.bestScores[numPlayers - MIN_PLAYERS]?.best?.score
+            ?? NO_SCORE
           }
         />
       )}
@@ -257,22 +258,22 @@ function getBestScoresTooltip(
     if (bestScore === undefined) {
       continue;
     }
-    const { score, modifier } = bestScore;
+    const { best } = bestScore;
 
     // The grid's negative margin and gutter would push the rows out of the tooltip.
     html += '<div class="row tw:ml-0 tw:text-left">';
     html += `<div class="col-6 tw:pl-0">${bestScorePlayer}-player:</div>`;
     html += '<div class="col-6 tw:pl-0">';
-    if (score === undefined) {
+    if (best === undefined) {
       html += ` ${NO_SCORE}`;
-    } else if (score === maxScore) {
-      html += `<strong> ${score} / ${maxScore}</strong> &nbsp; `;
+    } else if (best.score === maxScore) {
+      html += `<strong> ${best.score} / ${maxScore}</strong> &nbsp; `;
       html +=
-        modifier === 0
+        best.modifier === 0
           ? '<i class="fas fa-check score-modifier green"></i>'
           : '<i class="fas fa-times score-modifier red"></i>';
     } else {
-      html += ` ${score} / ${maxScore}`;
+      html += ` ${best.score} / ${maxScore}`;
     }
     html += "</div></div>";
   }

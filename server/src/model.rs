@@ -15,7 +15,7 @@ use std::{
     time::Instant,
 };
 
-pub const FORMAT: &str = "hanabi-live-8";
+pub const FORMAT: &str = "hanabi-live-9";
 /// How long before an idle game ends to warn its table.
 pub const IDLE_WARNING_MS: i64 = 5 * CLOCK_UNITS_PER_MINUTE;
 
@@ -678,16 +678,10 @@ impl ScoreModifier {
             .map(|(_, name)| *name)
     }
 
-    /// A best score with this modifier and one flag per option, as the wire carries it. `score` is
-    /// `None` when there is no game at this player count.
-    pub fn best_score(
-        self,
-        num_players: u8,
-        score: Option<i32>,
-    ) -> hanabi_protocol::PregameBestScore {
+    /// A best score with this modifier and one flag per option, as the wire carries it.
+    pub fn best_score(self, score: i32) -> hanabi_protocol::BestScore {
         let has = |flag: i16| self.0 & flag != 0;
-        hanabi_protocol::PregameBestScore {
-            num_players,
+        hanabi_protocol::BestScore {
             score,
             modifier: i32::from(self.0),
             deck_plays: has(Self::DECK_PLAYS),
@@ -808,7 +802,7 @@ mod tests {
             ScoreModifier::from_bits(16 + 1).shown(),
             Some("allornothing")
         );
-        let best = modifier.best_score(3, Some(20));
+        let best = modifier.best_score(20);
         assert_eq!(best.modifier, 10);
         assert!(best.empty_clues && best.one_less_card);
         assert!(!best.deck_plays && !best.one_extra_card && !best.all_or_nothing);

@@ -66,6 +66,21 @@ pub(crate) struct UserStats {
     pub best_score6_mod: Option<i16>,
 }
 
+impl UserStats {
+    /// The best score and its modifier bits for each player count, from the fewest players to the
+    /// most. `None` for a player count that the user has no game at.
+    pub fn best_scores(&self) -> [Option<(i16, i16)>; PLAYER_COUNTS] {
+        [
+            (self.best_score2, self.best_score2_mod),
+            (self.best_score3, self.best_score3_mod),
+            (self.best_score4, self.best_score4_mod),
+            (self.best_score5, self.best_score5_mod),
+            (self.best_score6, self.best_score6_mod),
+        ]
+        .map(|(score, modifier)| score.zip(modifier))
+    }
+}
+
 #[derive(Serialize)]
 pub(crate) struct VariantStats {
     pub variant_id: i16,
@@ -76,6 +91,20 @@ pub(crate) struct VariantStats {
     pub best_score5: Option<i16>,
     pub best_score6: Option<i16>,
     pub num_max_scores: i32,
+}
+
+impl VariantStats {
+    /// The best score for each player count, from the fewest players to the most. `None` for a
+    /// player count that has no game.
+    pub const fn best_scores(&self) -> [Option<i16>; PLAYER_COUNTS] {
+        [
+            self.best_score2,
+            self.best_score3,
+            self.best_score4,
+            self.best_score5,
+            self.best_score6,
+        ]
+    }
 }
 
 #[cfg(test)]

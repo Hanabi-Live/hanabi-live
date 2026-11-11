@@ -441,15 +441,23 @@ pub struct GameHistoryOtherScores {
     pub seed: String,
 }
 
-#[derive(Clone, Debug, Default, Serialize, Deserialize, JsonSchema)]
+#[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct PregameBestScore {
     #[schemars(with = "NumPlayers")]
     pub num_players: u8,
     /// Absent when there is no game at this player count.
     #[serde(skip_serializing_if = "Option::is_none")]
+    pub best: Option<BestScore>,
+}
+
+/// A best score, with the options of its game that make a game easier.
+#[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct BestScore {
     #[schemars(range(min = 0, max = i32::MAX))]
-    pub score: Option<i32>,
+    pub score: i32,
+    /// The options as bits, which is 0 when the game used none of them.
     #[schemars(range(min = 0, max = i32::MAX))]
     pub modifier: i32,
     pub deck_plays: bool,

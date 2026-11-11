@@ -263,6 +263,18 @@ function getStates({
       loggedIn: false,
     },
     {
+      // The rows, where a variant without a score shows a dash.
+      name: "missing-scores-rows",
+      path: `/missing-scores/${USERNAME}`,
+      loggedIn: false,
+      prepare: async (page) => {
+        await page
+          .locator(".missing-scores-row")
+          .last()
+          .scrollIntoViewIfNeeded();
+      },
+    },
+    {
       name: "shared-missing-scores",
       path: `/shared-missing-scores/2/${USERNAME}/Bob`,
       loggedIn: false,

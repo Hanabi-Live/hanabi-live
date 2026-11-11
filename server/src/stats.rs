@@ -150,18 +150,9 @@ pub(crate) async fn refresh(pool: &PgPool, s: &Snapshot) -> Result<()> {
 /// A pregame player's statistics as their table's checkpoint stores them: all of their games, and
 /// their games and best scores on the table's variant, from `user_stats` if they have played it.
 fn player_stats(num_games: i64, row: Option<&crate::database::UserStats>) -> PregameStats {
-    let (variant_games, best_scores) =
-        row.map_or((0, [(None, None); crate::database::PLAYER_COUNTS]), |row| {
-            (
-                i64::from(row.num_games),
-                [
-                    (row.best_score2, row.best_score2_mod),
-                    (row.best_score3, row.best_score3_mod),
-                    (row.best_score4, row.best_score4_mod),
-                    (row.best_score5, row.best_score5_mod),
-                    (row.best_score6, row.best_score6_mod),
-                ],
-            )
+    let (variant_games, best_scores) = row
+        .map_or((0, [None; crate::database::PLAYER_COUNTS]), |row| {
+            (i64::from(row.num_games), row.best_scores())
         });
     PregameStats {
         num_games: hanabi_protocol::Count(num_games),
@@ -169,9 +160,12 @@ fn player_stats(num_games: i64, row: Option<&crate::database::UserStats>) -> Pre
             num_games: hanabi_protocol::Count(variant_games),
             best_scores: (hanabi_protocol::MIN_PLAYERS..=hanabi_protocol::MAX_PLAYERS)
                 .zip(best_scores)
-                .map(|(num_players, (score, modifier))| {
-                    crate::model::ScoreModifier::from_bits(modifier.unwrap_or_default())
-                        .best_score(crate::model::small(num_players), score.map(i32::from))
+                .map(|(num_players, best)| hanabi_protocol::PregameBestScore {
+                    num_players: crate::model::small(num_players),
+                    best: best.map(|(score, modifier)| {
+                        crate::model::ScoreModifier::from_bits(modifier)
+                            .best_score(i32::from(score))
+                    }),
                 })
                 .collect(),
         },
@@ -188,10 +182,7 @@ mod tests {
 
     #[test]
     fn pregame_statistics_keep_their_stored_format() {
-        let unplayed = |n: usize| {
-            json!({"numPlayers":n,"modifier":0,"deckPlays":false,"emptyClues":false,
-                "oneExtraCard":false,"oneLessCard":false,"allOrNothing":false})
-        };
+        let unplayed = |n: usize| json!({ "numPlayers": n });
         let best_scores: Vec<Value> = (hanabi_protocol::MIN_PLAYERS..=hanabi_protocol::MAX_PLAYERS)
             .map(unplayed)
             .collect();
@@ -220,15 +211,15 @@ mod tests {
         assert_eq!(stats["numGames"], 12);
         assert_eq!(stats["variant"]["numGames"], 7);
         let best = &stats["variant"]["bestScores"];
-        assert_eq!(best[0]["score"], 25);
+        assert_eq!(best[0]["best"]["score"], 25);
         assert_eq!(
             best[1],
-            json!({"numPlayers":3,"score":24,"modifier":10,"deckPlays":false,"emptyClues":true,
-                "oneExtraCard":false,"oneLessCard":true,"allOrNothing":false})
+            json!({"numPlayers":3,"best":{"score":24,"modifier":10,"deckPlays":false,
+                "emptyClues":true,"oneExtraCard":false,"oneLessCard":true,"allOrNothing":false}})
         );
-        assert!(best[2].get("score").is_none());
-        assert_eq!(best[3]["score"], 0);
+        assert_eq!(best[2], json!({ "numPlayers": 4 }));
+        assert_eq!(best[3]["best"]["score"], 0);
         assert_eq!(best[4]["numPlayers"], 6);
-        assert_eq!(best[4]["allOrNothing"], true);
+        assert_eq!(best[4]["best"]["allOrNothing"], true);
     }
 }

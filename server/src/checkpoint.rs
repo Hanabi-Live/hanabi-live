@@ -371,6 +371,7 @@ const UPGRADES: &[(&str, &str, Upgrade)] = &[
     ("hanabi-live-5", "hanabi-live-6", server_chat_authors),
     ("hanabi-live-6", "hanabi-live-7", camel_case_variant_id),
     ("hanabi-live-7", "hanabi-live-8", seats_without_users),
+    ("hanabi-live-8", "hanabi-live-9", nested_best_scores),
 ];
 
 /// Rewrites a table that an older server saved, one format at a time, into the current format.
@@ -525,6 +526,44 @@ fn seats_without_users(head: &mut Value, _: &mut [(String, String)]) -> Result<(
                 .is_some_and(|id| id < 0)
             {
                 player.remove("id");
+            }
+        }
+    }
+    Ok(())
+}
+
+/// Format 8 held a player's best score, its modifier, and its option flags side by side, with a
+/// modifier of 0 and no flags for a player count without a score.
+#[expect(
+    clippy::unnecessary_wraps,
+    reason = "every upgrade step has the `Upgrade` signature"
+)]
+fn nested_best_scores(head: &mut Value, _: &mut [(String, String)]) -> Result<()> {
+    const BEST_FIELDS: [&str; 7] = [
+        "score",
+        "modifier",
+        "deckPlays",
+        "emptyClues",
+        "oneExtraCard",
+        "oneLessCard",
+        "allOrNothing",
+    ];
+    for path in ["/phase/players", "/phase/snapshot/players"] {
+        let Some(Value::Array(players)) = head.pointer_mut(path) else {
+            continue;
+        };
+        for player in players {
+            let Some(Value::Array(scores)) = player.pointer_mut("/stats/variant/bestScores") else {
+                continue;
+            };
+            for entry in scores.iter_mut().filter_map(Value::as_object_mut) {
+                let best = BEST_FIELDS
+                    .iter()
+                    .filter_map(|field| Some(((*field).to_owned(), entry.remove(*field)?)))
+                    .collect::<Map<_, _>>();
+                if best.contains_key("score") {
+                    entry.insert("best".into(), Value::Object(best));
+                }
             }
         }
     }

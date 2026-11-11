@@ -23,7 +23,8 @@ function player(
   username: string,
   present: boolean,
 ): Game["players"][number] {
-  const bestScore = {
+  const best = {
+    score: 25,
     allOrNothing: false,
     deckPlays: false,
     emptyClues: false,
@@ -41,9 +42,9 @@ function player(
       variant: {
         numGames: 4,
         bestScores: [
-          { ...bestScore, numPlayers: 2, score: 25 },
+          { numPlayers: 2, best },
           // A player count that this player has not played.
-          { ...bestScore, numPlayers: 3 },
+          { numPlayers: 3 },
         ],
       },
     },

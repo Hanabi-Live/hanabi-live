@@ -7,6 +7,11 @@ listed here. You can see those from
 [the commit history](https://github.com/Hanabi-Live/hanabi-live/commits/main/)
 of the repository.
 
+## November 11th, 2026
+
+- The "Missing Scores" page now shows a dash instead of 0 for a variant that no
+  one in the list has played.
+
 ## November 10th, 2026
 
 - In shared replays, the "Use Shared Turns" button now says "Join Hypothetical"

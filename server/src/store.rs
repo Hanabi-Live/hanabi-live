@@ -1044,6 +1044,41 @@ mod tests {
         Ok(())
     }
     #[test]
+    fn best_scores_of_format_8_are_nested() -> Result<()> {
+        let mut table = pregame(TableId(1));
+        let Phase::Pregame { players, .. } = &mut table.phase else {
+            bail!("The table is not a pregame");
+        };
+        players[0].stats.variant.best_scores[1].best =
+            Some(crate::model::ScoreModifier::from_bits(2).best_score(20));
+        let expected = serde_json::to_value(&table)?;
+        let (encoded, _) = crate::checkpoint::encode(&mut table, &SavedParts::default())?;
+        let mut head: Value = serde_json::from_str(&older_head(&encoded.head, "hanabi-live-8")?)?;
+        let scores = head
+            .pointer_mut("/phase/players/0/stats/variant/bestScores")
+            .and_then(Value::as_array_mut)
+            .context("Missing best scores")?;
+        for entry in scores.iter_mut().filter_map(Value::as_object_mut) {
+            if let Some(Value::Object(best)) = entry.remove("best") {
+                entry.extend(best);
+            } else {
+                entry.insert("modifier".into(), json!(0));
+                for flag in [
+                    "deckPlays",
+                    "emptyClues",
+                    "oneExtraCard",
+                    "oneLessCard",
+                    "allOrNothing",
+                ] {
+                    entry.insert(flag.into(), json!(false));
+                }
+            }
+        }
+        let decoded = crate::checkpoint::decode(&head.to_string(), &encoded.changes.written)?;
+        ensure!(serde_json::to_value(&decoded)? == expected);
+        Ok(())
+    }
+    #[test]
     fn replay_seats_of_format_7_lose_their_negative_user_ids() -> Result<()> {
         let mut table = replayed()?;
         table.extra.no_write_to_database = true;
@@ -1445,15 +1480,15 @@ mod tests {
             let carol = crate::stats::pregame_stats(&store.primary, UserId(9001), 0).await?;
             let best = serde_json::to_value(&carol.variant.best_scores)?;
             ensure!(
-                best[0]["score"] == 25
-                    && best[0]["modifier"] == 4
-                    && best[0]["oneExtraCard"] == true
-                    && best[0]["deckPlays"] == false,
+                best[0]["best"]["score"] == 25
+                    && best[0]["best"]["modifier"] == 4
+                    && best[0]["best"]["oneExtraCard"] == true
+                    && best[0]["best"]["deckPlays"] == false,
                 "A modified best score lost its modifier: {}",
                 best[0]
             );
             ensure!(
-                best[1]["modifier"] == 0 && best[1]["oneExtraCard"] == false,
+                best[1]["best"]["modifier"] == 0 && best[1]["best"]["oneExtraCard"] == false,
                 "An unmodified best score gained a modifier: {}",
                 best[1]
             );

@@ -720,19 +720,31 @@ const playerActionSchema = z.discriminatedUnion("type", [
 export const playerActionRequestSchema = z
   .strictObject({ action: playerActionSchema, tableId: tableIdSchema })
   .readonly();
-const pregameBestScoreSchema = z
+
+/**
+ * A best score, with the options of its game that make a game easier.
+ */
+const bestScoreSchema = z
   .strictObject({
     allOrNothing: z.boolean(),
     deckPlays: z.boolean(),
     emptyClues: z.boolean(),
+    /**
+     * The options as bits, which is 0 when the game used none of them.
+     */
     modifier: z.number().int().min(0).max(2_147_483_647),
-    numPlayers: z.literal([2, 3, 4, 5, 6]),
     oneExtraCard: z.boolean(),
     oneLessCard: z.boolean(),
+    score: z.number().int().min(0).max(2_147_483_647),
+  })
+  .readonly();
+const pregameBestScoreSchema = z
+  .strictObject({
     /**
      * Absent when there is no game at this player count.
      */
-    score: z.number().int().min(0).max(2_147_483_647).optional(),
+    best: bestScoreSchema.optional(),
+    numPlayers: z.literal([2, 3, 4, 5, 6]),
   })
   .readonly();
 const pregameVariantStatsSchema = z

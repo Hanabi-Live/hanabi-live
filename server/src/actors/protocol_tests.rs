@@ -1697,7 +1697,7 @@ async fn remade_tables_publish_fresh_statistics_for_every_player() -> Result<()>
                 ensure!(
                     player["stats"]["numGames"] == 1
                         && player["stats"]["variant"]["numGames"] == 1
-                        && player["stats"]["variant"]["bestScores"][0]["score"] == score,
+                        && player["stats"]["variant"]["bestScores"][0]["best"]["score"] == score,
                     "Remade table published stale player statistics: {player}"
                 );
             }
@@ -1705,7 +1705,7 @@ async fn remade_tables_publish_fresh_statistics_for_every_player() -> Result<()>
         let (saved, _) = h.snapshot(remade).await?;
         for player in saved.players() {
             ensure!(
-                player.stats.variant.best_scores[0].score == Some(score),
+                player.stats.variant.best_scores[0].best.as_ref().map(|best| best.score) == Some(score),
                 "Fresh statistics were not persisted"
             );
         }

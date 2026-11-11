@@ -200,8 +200,8 @@
                 <td>{{ row.name }}</td>
                 <td class="center">{{ row.numPlayers }}</td>
                 <td class="center">
-                  {{ row.score }} / {{ row.maxScore }} &nbsp; {% if
-                  row.modifierName %}
+                  {% if row.score is none %}&ndash;{% else %}{{ row.score }}{%
+                  endif %} / {{ row.maxScore }} &nbsp; {% if row.modifierName %}
                   <i
                     class="fas fa-times score-modifier red tooltip"
                     data-tooltip-content="#modifier-{{ row.modifierName }}"

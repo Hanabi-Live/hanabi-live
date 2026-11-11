@@ -10,8 +10,8 @@ use hanabi_engine::EndCondition;
 use std::sync::Arc;
 
 /// The option that a score page names for a best score's stored modifier, if any.
-fn shown_modifier(bits: i64) -> Result<Option<&'static str>> {
-    Ok(crate::model::ScoreModifier::from_bits(i16::try_from(bits)?).shown())
+fn shown_modifier(bits: i16) -> Option<&'static str> {
+    crate::model::ScoreModifier::from_bits(bits).shown()
 }
 
 pub(super) fn templates() -> minijinja::Environment<'static> {
@@ -291,18 +291,16 @@ pub(super) async fn page(
                 id
             )
             .fetch_optional(&state.pool)
-            .await?
-            .map(serde_json::to_value)
-            .transpose()?;
-            let row = row.unwrap_or(json!({}));
-            let games = number(&row, "num_games");
-            statistics["numMaxScores"] = json!(number(&row, "num_max_scores"));
-            statistics["maxScoreRate"] = json!(percentage(number(&row, "num_max_scores"), games));
-            statistics["bestScores"] = json!(
-                (hanabi_protocol::MIN_PLAYERS..=hanabi_protocol::MAX_PLAYERS)
-                    .map(|p| row[format!("best_score{p}")].as_i64())
-                    .collect::<Vec<_>>()
-            );
+            .await?;
+            // A variant without a row has no games.
+            let games = row.as_ref().map_or(0, |row| i64::from(row.num_games));
+            let max_scores = row.as_ref().map_or(0, |row| i64::from(row.num_max_scores));
+            statistics["numMaxScores"] = json!(max_scores);
+            statistics["maxScoreRate"] = json!(percentage(max_scores, games));
+            statistics["bestScores"] = json!(row.as_ref().map_or(
+                [None; crate::database::PLAYER_COUNTS],
+                crate::database::VariantStats::best_scores
+            ));
             statistics["maxScore"] = json!(variant.max_score);
             v["stats"] = statistics;
         }
@@ -327,9 +325,6 @@ pub(super) async fn page(
     render(&state, "public-page.html", v)
 }
 
-fn number(v: &Value, key: &str) -> i64 {
-    v[key].as_i64().unwrap_or(0)
-}
 /// Converts a count to a float for display; counts are far below the 2^53 that floats hold exactly.
 #[expect(clippy::cast_precision_loss, reason = "counts are far below 2^53")]
 fn float(n: i64) -> f64 {
@@ -611,7 +606,11 @@ async fn seed_averages(
     Ok(averages)
 }
 
-async fn user_stats(state: &PublicState, id: i32) -> Result<HashMap<i64, Value>> {
+/// A user's statistics, by variant ID.
+async fn user_stats(
+    state: &PublicState,
+    id: i32,
+) -> Result<HashMap<i64, crate::database::UserStats>> {
     let rows = sqlx::query_as!(
         crate::database::UserStats,
         "SELECT user_id,variant_id,num_games,best_score2,best_score2_mod,best_score3,best_score3_mod,
@@ -621,9 +620,10 @@ async fn user_stats(state: &PublicState, id: i32) -> Result<HashMap<i64, Value>>
     )
     .fetch_all(&state.pool)
     .await?;
-    rows.into_iter()
-        .map(|row| Ok((i64::from(row.variant_id), serde_json::to_value(row)?)))
-        .collect()
+    Ok(rows
+        .into_iter()
+        .map(|row| (i64::from(row.variant_id), row))
+        .collect())
 }
 /// The decimal places that a missing score's clue efficiency is shown and filtered with.
 const EFFICIENCY_DECIMALS: usize = 2;
@@ -637,21 +637,24 @@ async fn score_summary(state: &PublicState, id: i32) -> Result<Value> {
     let mut totals = [0; crate::database::PLAYER_COUNTS];
     let mut rows = Vec::new();
     for variant in catalog::variants() {
-        let row = statistics
-            .get(&i64::from(variant.id))
-            .cloned()
-            .unwrap_or(json!({}));
+        let row = statistics.get(&i64::from(variant.id));
         let max = i64::from(variant.max_score);
         let mut best = Vec::new();
-        for p in hanabi_protocol::MIN_PLAYERS..=hanabi_protocol::MAX_PLAYERS {
-            let score = row[format!("best_score{p}")].as_i64();
-            if score == Some(max) {
-                totals[p - hanabi_protocol::MIN_PLAYERS] += 1;
+        let best_scores = row.map_or(
+            [None; crate::database::PLAYER_COUNTS],
+            crate::database::UserStats::best_scores,
+        );
+        for (total, score) in totals.iter_mut().zip(best_scores) {
+            if score.is_some_and(|(score, _)| i64::from(score) == max) {
+                *total += 1;
             }
-            let modifier = number(&row, &format!("best_score{p}_mod"));
-            best.push(json!({"score":score,"modifierName":shown_modifier(modifier)?}));
+            best.push(json!({
+                "score": score.map(|(score, _)| score),
+                "modifierName": score.and_then(|(_, modifier)| shown_modifier(modifier)),
+            }));
         }
-        let games = number(&row, "num_games");
+        // A variant without a row has no games.
+        let games = row.map_or(0, |row| i64::from(row.num_games));
         rows.push(
             json!({"id":variant.id,"name":variant.name,"maxScore":max,"numGames":games,
             "bestScores":best}),
@@ -733,19 +736,20 @@ async fn missing(
             }
             let id = i64::from(variant.id);
             let max = i64::from(variant.max_score);
-            let mut best = (0, 0);
-            for (index, s) in statistics.iter().enumerate() {
-                if let Some(row) = s.get(&id) {
-                    let score = (
-                        number(row, &format!("best_score{p}")),
-                        number(row, &format!("best_score{p}_mod")),
-                    );
-                    if index == 0 || score.0 > best.0 || score.0 == best.0 && score.1 < best.1 {
-                        best = score;
-                    }
+            let seat_count = usize::try_from(p)? - hanabi_protocol::MIN_PLAYERS;
+            // The highest score among the users, with the fewest options that make it easier.
+            let mut best: Option<(i16, i16)> = None;
+            for score in statistics
+                .iter()
+                .filter_map(|s| s.get(&id)?.best_scores()[seat_count])
+            {
+                if best
+                    .is_none_or(|best| score.0 > best.0 || (score.0 == best.0 && score.1 < best.1))
+                {
+                    best = Some(score);
                 }
             }
-            if best == (max, 0) {
+            if best.is_some_and(|(score, modifier)| i64::from(score) == max && modifier == 0) {
                 continue;
             }
             let cards = i64::try_from(hanabi_engine::create_deck(variant).len())?;
@@ -770,7 +774,7 @@ async fn missing(
             {
                 continue;
             }
-            rows.push(json!({"name":name,"numPlayers":p,"score":best.0,"maxScore":max,"modifierName":shown_modifier(best.1)?,
+            rows.push(json!({"name":name,"numPlayers":p,"score":best.map(|(score, _)| score),"maxScore":max,"modifierName":best.and_then(|(_, modifier)| shown_modifier(modifier)),
                 "efficiency":shown,"efficiencyClass":if efficiency<HARD_EFFICIENCY {"normal"}else if efficiency<VERY_HARD_EFFICIENCY {"hard"}else{"very-hard"}}));
         }
     }
