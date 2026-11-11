@@ -264,19 +264,48 @@ function animateSampled(
   });
 }
 
-/** Lifts a card above the panels while it moves, and returns a function that puts it back. */
+/** The style of each raised card at rest, and how many of its moves have not ended. */
+const raisedCards = new WeakMap<
+  HTMLElement,
+  { position: string; zIndex: string; moves: number }
+>();
+
+/**
+ * Lifts a card above the panels while it moves, and returns a function that puts it back. A card
+ * can start a new move before the "finish" event of its last move fires. It goes back to its rest
+ * style only when all of its moves end, so that it does not stay above the cards around it.
+ */
 export function raiseMovingCard(
   element: HTMLElement,
   zIndex = MOVING_CARD_Z_INDEX,
 ): () => void {
-  const { position, zIndex: previousZ } = element.style;
-  if (getComputedStyle(element).position === "static") {
-    element.style.position = "relative";
+  let rest = raisedCards.get(element);
+  if (rest === undefined) {
+    rest = {
+      position: element.style.position,
+      zIndex: element.style.zIndex,
+      moves: 0,
+    };
+    raisedCards.set(element, rest);
+    if (getComputedStyle(element).position === "static") {
+      element.style.position = "relative";
+    }
   }
+  rest.moves++;
   element.style.zIndex = zIndex;
+
+  let ended = false;
   return () => {
-    element.style.position = position;
-    element.style.zIndex = previousZ;
+    if (ended) {
+      return;
+    }
+    ended = true;
+    rest.moves--;
+    if (rest.moves === 0) {
+      raisedCards.delete(element);
+      element.style.position = rest.position;
+      element.style.zIndex = rest.zIndex;
+    }
   };
 }
 
@@ -294,7 +323,7 @@ function shadow(t: number): string {
 }
 
 /** Runs a function when an animation ends, whether it finishes or is canceled. */
-function onEnd(animation: Animation, end: () => void) {
+export function onEnd(animation: Animation, end: () => void): void {
   animation.addEventListener("finish", end);
   animation.addEventListener("cancel", end);
 }

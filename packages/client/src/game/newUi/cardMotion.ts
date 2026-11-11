@@ -15,6 +15,7 @@ import {
   animatePlay,
   animateReplayMisplay,
   isShowingPlay,
+  onEnd,
   raiseMovingCard,
 } from "./playMotion.ts";
 
@@ -188,7 +189,7 @@ export function animateCardMoves(
         easing: "ease-out",
       },
     );
-    animation.addEventListener("finish", restore);
+    onEnd(animation, restore);
   }
 }
 
