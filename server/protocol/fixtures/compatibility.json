@@ -456,7 +456,6 @@
         "name": "",
         "maxPlayers": 5,
         "options": {
-          "numPlayers": 2,
           "variantName": "No Variant",
           "timed": false,
           "speedrun": false,
@@ -659,7 +658,6 @@
     "input": {
       "tableID": 3,
       "joined": true,
-      "numPlayers": 1,
       "ownerID": 7,
       "passwordProtected": false,
       "playerNames": ["Alice"],
@@ -675,7 +673,6 @@
         "name": "Alice's game",
         "maxPlayers": 5,
         "options": {
-          "numPlayers": 2,
           "variantName": "No Variant",
           "timed": false,
           "speedrun": false,
@@ -714,7 +711,6 @@
       {
         "gameID": 12,
         "options": {
-          "numPlayers": 2,
           "variantName": "No Variant",
           "timed": false,
           "speedrun": false,
@@ -748,7 +744,6 @@
       {
         "gameID": 12,
         "options": {
-          "numPlayers": 2,
           "variantName": "No Variant",
           "timed": false,
           "speedrun": false,
@@ -782,7 +777,6 @@
       {
         "gameID": 12,
         "options": {
-          "numPlayers": 2,
           "variantName": "No Variant",
           "timed": false,
           "speedrun": false,
@@ -816,7 +810,6 @@
       {
         "gameID": 12,
         "options": {
-          "numPlayers": 2,
           "variantName": "No Variant",
           "timed": false,
           "speedrun": false,
@@ -850,7 +843,6 @@
       {
         "gameID": 12,
         "options": {
-          "numPlayers": 2,
           "variantName": "No Variant",
           "timed": false,
           "speedrun": false,
@@ -933,8 +925,7 @@
         },
         "giver": 0,
         "target": 1,
-        "orders": [3, 4],
-        "turn": 2
+        "orders": [3, 4]
       }
     },
     "valid": true
@@ -949,8 +940,7 @@
         "type": "clue",
         "giver": 0,
         "target": 1,
-        "orders": [3, 4],
-        "turn": 2
+        "orders": [3, 4]
       }
     },
     "valid": true
@@ -969,8 +959,7 @@
         },
         "giver": 0,
         "target": 1,
-        "orders": [3, 4],
-        "turn": 2
+        "orders": [3, 4]
       }
     },
     "valid": true
@@ -989,8 +978,7 @@
         },
         "giver": 0,
         "target": 1,
-        "orders": [3, 4],
-        "turn": 2
+        "orders": [3, 4]
       }
     },
     "valid": false
@@ -1009,8 +997,7 @@
         },
         "giver": 0,
         "target": 1,
-        "orders": [3, 4],
-        "turn": 2
+        "orders": [3, 4]
       }
     },
     "valid": false

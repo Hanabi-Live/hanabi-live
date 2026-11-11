@@ -95,15 +95,14 @@ export function toWireHypotheticalAction(
 
 /**
  * Converts a game event from the server into the action the game state applies. The game library
- * derives its event types from the same wire contracts. The game state does not use a clue's turn,
- * and every received clue applies its negative information.
+ * derives its event types from the same wire contracts. Every received clue applies its negative
+ * information.
  */
 export function toGameAction(event: WireEvent): GameAction {
   if (event.type !== "clue") {
     return event;
   }
-  const { turn: _turn, ...clue } = event;
-  return { ...clue, clue: toClue(clue.clue), ignoreNegative: false };
+  return { ...event, clue: toClue(event.clue), ignoreNegative: false };
 }
 
 type WireSound =

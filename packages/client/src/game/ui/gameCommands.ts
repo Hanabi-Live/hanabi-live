@@ -3,7 +3,12 @@
 // e.g. in-game replays.
 
 import type { ServerCommandData } from "@hanabi-live/data";
-import type { CardOrder, GameMetadata, NumPlayers } from "@hanabi-live/game";
+import type {
+  CardOrder,
+  GameMetadata,
+  NumPlayers,
+  Options,
+} from "@hanabi-live/game";
 import {
   getCardsPerHand,
   getEndGameLength,
@@ -493,23 +498,29 @@ function initStateStore(data: InitData) {
   // Set the variant (as a helper reference).
   globals.variant = getVariant(data.options.variantName);
 
+  const playerNames = toPlayerTuple(data.playerNames, "player names");
+  const options: Options = {
+    ...data.options,
+    numPlayers: playerNames.length,
+  };
+
   // The list is empty unless detrimental characters are on.
   let characterAssignments = data.characters.map(
     (character) => character.characterID ?? undefined,
   ) as Tuple<number | undefined, NumPlayers> | [];
 
   if (characterAssignments.length === 0) {
-    characterAssignments = newArray(
-      data.options.numPlayers,
-      undefined,
-    ) as Tuple<number | undefined, NumPlayers>;
+    characterAssignments = newArray(options.numPlayers, undefined) as Tuple<
+      number | undefined,
+      NumPlayers
+    >;
   }
 
   // Create the state store (using the Redux library).
-  const endGameLength = getEndGameLength(data.options, characterAssignments);
-  const cardsPerHand = getCardsPerHand(data.options);
+  const endGameLength = getEndGameLength(options, characterAssignments);
+  const cardsPerHand = getCardsPerHand(options);
   const minEfficiency = getMinEfficiency(
-    data.options.numPlayers,
+    options.numPlayers,
     endGameLength,
     globals.variant,
     cardsPerHand,
@@ -517,13 +528,13 @@ function initStateStore(data: InitData) {
   const hardVariant = isHardVariant(globals.variant, minEfficiency);
   const metadata: GameMetadata = {
     ourUsername: globals.lobby.username,
-    options: data.options,
-    playerNames: toPlayerTuple(data.playerNames, "player names"),
+    options,
+    playerNames,
     ourPlayerIndex: data.ourPlayerIndex,
     characterAssignments,
     characterMetadata: toPlayerTuple(
       data.characters.length === 0
-        ? newArray(data.options.numPlayers, undefined)
+        ? newArray(options.numPlayers, undefined)
         : data.characters.map((character) => character.metadata),
       "character metadata entries",
     ),

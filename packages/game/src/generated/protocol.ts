@@ -342,7 +342,6 @@ export const gameEventSchema = z.discriminatedUnion("type", [
        */
       orders: z.array(cardOrderSchema).readonly(),
       target: playerIndexSchema,
-      turn: z.number().int().min(0).max(9_007_199_254_740_991),
       type: z.literal("clue"),
     })
     .readonly(),
@@ -383,8 +382,8 @@ export const gameEventSchema = z.discriminatedUnion("type", [
 ]);
 
 /**
- * A game's options. Missing fields take their defaults. A table reports its current player count,
- * and a table's owner does not choose it.
+ * A game's options. Missing fields take their defaults. The player count is not an option: a game
+ * has one player name for each seat, and a table counts the players who join it.
  */
 export const gameOptionsSchema = z
   .strictObject({
@@ -392,14 +391,12 @@ export const gameOptionsSchema = z
     deckPlays: z.boolean().default(false),
     detrimentalCharacters: z.boolean().default(false),
     emptyClues: z.boolean().default(false),
-    numPlayers: z.literal([2, 3, 4, 5, 6]).default(2),
     oneExtraCard: z.boolean().default(false),
     oneLessCard: z.boolean().default(false),
     speedrun: z.boolean().default(false),
     timeBaseSeconds: z.number().min(0).max(604_800).default(0),
     timePerTurnSeconds: z.number().int().min(0).max(86_400).default(0),
     timed: z.boolean().default(false),
-    variantID: z.number().int().min(0).max(4_294_967_295).optional(),
     variantName: z.string().min(1).default("No Variant"),
   })
   .readonly();

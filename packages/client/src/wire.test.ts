@@ -7,8 +7,8 @@ import { describe, expect, test } from "vitest";
 import { toCardIdentity, toGameAction, toSoundType } from "./wire";
 
 /** Validates a game event as the connection does. */
-function event(action: unknown) {
-  return SERVER_COMMAND_SCHEMAS.gameEvent.parse({ tableID: 1, event: action })
+function event(data: unknown) {
+  return SERVER_COMMAND_SCHEMAS.gameEvent.parse({ tableID: 1, event: data })
     .event;
 }
 
@@ -30,7 +30,6 @@ describe("server game events", () => {
         giver: 0,
         target: 1,
         orders: [3, 4],
-        turn: 2,
       }),
     );
     if (action.type !== "clue") {

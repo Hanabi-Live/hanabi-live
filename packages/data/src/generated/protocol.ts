@@ -126,7 +126,6 @@ const tableSettingsSchema = z
       deckPlays: false,
       detrimentalCharacters: false,
       emptyClues: false,
-      numPlayers: 2,
       oneExtraCard: false,
       oneLessCard: false,
       speedrun: false,
@@ -1254,10 +1253,6 @@ export const tableSchema = z
      * Whether the recipient is one of the players.
      */
     joined: z.boolean(),
-    /**
-     * The current number of players, which can be below the minimum during a pregame.
-     */
-    numPlayers: z.number().int().min(0).max(6),
     ownerID: userIdSchema,
     passwordProtected: z.boolean(),
     phase: tablePhaseSchema,
@@ -1282,7 +1277,6 @@ export const tableCreateRequestSchema = z
         deckPlays: false,
         detrimentalCharacters: false,
         emptyClues: false,
-        numPlayers: 2,
         oneExtraCard: false,
         oneLessCard: false,
         speedrun: false,
@@ -1365,7 +1359,6 @@ export const tableUpdateRequestSchema = z
         deckPlays: false,
         detrimentalCharacters: false,
         emptyClues: false,
-        numPlayers: 2,
         oneExtraCard: false,
         oneLessCard: false,
         speedrun: false,

@@ -602,7 +602,6 @@ databaseDescribe("compiled application entry point (rust)", () => {
       for (const game of games) {
         expect(game.init.playerNames).toHaveLength(6);
         expect(game.init.options).toMatchObject({
-          numPlayers: 6,
           variantName: "Rainbow (6 Suits)",
           detrimentalCharacters: true,
           oneLessCard: true,

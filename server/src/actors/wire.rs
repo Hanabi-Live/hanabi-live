@@ -64,7 +64,7 @@ pub(super) fn wire_event(event: &hanabi_engine::EngineEvent) -> GameEvent {
             giver,
             target,
             ref list,
-            turn,
+            turn: _,
         } => GameEvent::Clue(ClueEvent {
             // The wire omits a clue that the recipient may not see.
             clue: clue.clue_type.map(|clue_type| match clue_type {
@@ -79,7 +79,6 @@ pub(super) fn wire_event(event: &hanabi_engine::EngineEvent) -> GameEvent {
             giver: seat(giver),
             target: seat(target),
             orders: list.iter().copied().map(card).collect(),
-            turn: turn.into(),
         }),
         E::Turn {
             num,

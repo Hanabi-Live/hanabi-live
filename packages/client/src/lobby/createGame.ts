@@ -9,7 +9,7 @@ import {
   SECONDS_PER_MINUTE,
   defaultSettings,
 } from "@hanabi-live/data";
-import type { Options } from "@hanabi-live/game";
+import type { GameOptions } from "@hanabi-live/game";
 import {
   DEFAULT_VARIANT_NAME,
   MAX_PLAYERS,
@@ -592,7 +592,7 @@ export function show(): void {
  * Converts the options of a table into form values. An untimed table keeps our own time values, so
  * that they are ready if the timer is turned on.
  */
-function getFormValues(options: Options, maxPlayers: number): FormValues {
+function getFormValues(options: GameOptions, maxPlayers: number): FormValues {
   return {
     createTableVariant: options.variantName,
     createTableTimed: options.timed,

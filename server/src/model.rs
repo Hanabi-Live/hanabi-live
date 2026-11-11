@@ -786,9 +786,11 @@ pub fn timestamp(time: DateTime<Utc>) -> String {
 /// option to either type fails to compile until the conversions are updated.
 pub(crate) fn wire_options(options: &Options) -> hanabi_protocol::GameOptions {
     let Options {
-        num_players,
+        // The wire counts the players by their names.
+        num_players: _,
         variant_name,
-        variant_id,
+        // The variant name identifies the variant.
+        variant_id: _,
         timed,
         time_base,
         time_per_turn,
@@ -804,9 +806,7 @@ pub(crate) fn wire_options(options: &Options) -> hanabi_protocol::GameOptions {
         max_players: _,
     } = options;
     hanabi_protocol::GameOptions {
-        num_players: small(*num_players),
         variant_name: variant_name.clone(),
-        variant_id: *variant_id,
         timed: *timed,
         time_base_seconds: *time_base,
         time_per_turn_seconds: *time_per_turn,
@@ -823,9 +823,7 @@ pub(crate) fn wire_options(options: &Options) -> hanabi_protocol::GameOptions {
 /// Converts wire options to the engine's.
 pub(crate) fn engine_options(options: &hanabi_protocol::GameOptions) -> Options {
     let hanabi_protocol::GameOptions {
-        num_players,
         variant_name,
-        variant_id,
         timed,
         time_base_seconds: time_base,
         time_per_turn_seconds: time_per_turn,
@@ -838,9 +836,10 @@ pub(crate) fn engine_options(options: &hanabi_protocol::GameOptions) -> Options 
         detrimental_characters,
     } = options;
     Options {
-        num_players: usize::from(*num_players),
+        // A table sets its player count when its game starts.
+        num_players: hanabi_protocol::MIN_PLAYERS,
         variant_name: variant_name.clone(),
-        variant_id: *variant_id,
+        variant_id: None,
         timed: *timed,
         time_base: *time_base,
         time_per_turn: *time_per_turn,

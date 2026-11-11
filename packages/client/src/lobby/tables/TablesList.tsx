@@ -104,8 +104,8 @@ function TableRowView({
   const classNames: string[] = [ROW_CLASSES[kind]];
   if (kind === "unstarted" || kind === "unstarted-password") {
     const full =
-      table.numPlayers === table.settings.maxPlayers
-      || (action === "join" && table.numPlayers >= MAX_PLAYERS);
+      table.playerNames.length === table.settings.maxPlayers
+      || (action === "join" && table.playerNames.length >= MAX_PLAYERS);
     classNames.push(full ? FULL_CURSOR : JOIN_CURSOR);
   }
   if (firstJoinable) {
@@ -162,8 +162,8 @@ function TableRowView({
       </td>
       <td className={COLUMNS.numPlayers.className}>
         {table.phase === "pregame"
-          ? `${table.numPlayers} / ${table.settings.maxPlayers}`
-          : table.numPlayers}
+          ? `${table.playerNames.length} / ${table.settings.maxPlayers}`
+          : table.playerNames.length}
       </td>
       <td className={COLUMNS.variant.className}>
         {table.settings.options.variantName}

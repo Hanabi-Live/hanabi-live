@@ -88,7 +88,9 @@ export const selectTableRows = createSelector(
     return sorted.map(({ table, hasFriends }) => {
       const action = getAction(table);
       const firstJoinable =
-        !foundJoinable && action === "join" && table.numPlayers < MAX_PLAYERS;
+        !foundJoinable
+        && action === "join"
+        && table.playerNames.length < MAX_PLAYERS;
       foundJoinable ||= firstJoinable;
       return { table, action, hasFriends, firstJoinable };
     });

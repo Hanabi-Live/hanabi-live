@@ -1,7 +1,7 @@
 // The screens that show our past games and the other games on a seed.
 
 import type { GameHistory } from "@hanabi-live/data";
-import type { Options } from "@hanabi-live/game";
+import type { GameOptions } from "@hanabi-live/game";
 import { getVariant, secondsToClockString } from "@hanabi-live/game";
 import { Fragment, useEffect, useRef } from "react";
 import { PATH } from "../../constants";
@@ -122,7 +122,7 @@ function HistoryRow({
   return (
     <tr>
       <td>#{game.gameID}</td>
-      <td>{game.options.numPlayers}</td>
+      <td>{game.playerNames.length}</td>
       <td>
         {game.score}/{getVariant(game.options.variantName).maxScore}
       </td>
@@ -256,7 +256,7 @@ function OtherScoreRow({
 }
 
 /** A few icons for the options of a game, with a tooltip that lists all of them. */
-function HistoryOptions({ options }: { readonly options: Options }) {
+function HistoryOptions({ options }: { readonly options: GameOptions }) {
   const ref = useRef<HTMLDivElement>(null);
   const items = getOptionItems(options);
   const tooltip = items
@@ -297,7 +297,7 @@ function HistoryOptions({ options }: { readonly options: Options }) {
 }
 
 function getOptionItems(
-  options: Options,
+  options: GameOptions,
 ): ReadonlyArray<{ readonly icon: OptionIcons; readonly text: string }> {
   const items: Array<{ icon: OptionIcons; text: string }> = [];
   if (options.timed) {

@@ -247,18 +247,13 @@ pub struct SpectatedTable {
     pub shadowing_player_index: Option<PlayerIndex>,
 }
 
-/// A game's options. Missing fields take their defaults. A table reports its current player count,
-/// and a table's owner does not choose it.
+/// A game's options. Missing fields take their defaults. The player count is not an option: a game
+/// has one player name for each seat, and a table counts the players who join it.
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize, JsonSchema)]
 #[serde(default, rename_all = "camelCase", deny_unknown_fields)]
 pub struct GameOptions {
-    #[schemars(with = "NumPlayers")]
-    pub num_players: u8,
     #[schemars(length(min = 1))]
     pub variant_name: String,
-    #[serde(rename = "variantID", skip_serializing_if = "Option::is_none")]
-    #[schemars(range(min = 0, max = u32::MAX))]
-    pub variant_id: Option<u32>,
     pub timed: bool,
     #[schemars(range(min = 0, max = MAX_TIME_BASE_SECONDS))]
     pub time_base_seconds: f64,
@@ -277,9 +272,7 @@ pub struct GameOptions {
 impl Default for GameOptions {
     fn default() -> Self {
         Self {
-            num_players: u8::try_from(MIN_PLAYERS).expect("the player limits fit in a byte"),
             variant_name: DEFAULT_VARIANT_NAME.into(),
-            variant_id: None,
             timed: false,
             time_base_seconds: 0.0,
             time_per_turn_seconds: 0,
@@ -371,9 +364,6 @@ pub struct Table {
     /// Whether the recipient is one of the players.
     pub joined: bool,
     pub settings: TableSettings,
-    /// The current number of players, which can be below the minimum during a pregame.
-    #[schemars(range(min = 0, max = MAX_PLAYERS))]
-    pub num_players: u8,
     #[serde(rename = "ownerID")]
     pub owner_id: UserId,
     pub password_protected: bool,

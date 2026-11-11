@@ -111,10 +111,13 @@ fn typed_game_frames_preserve_wire_schema_and_projected_identities() -> Result<(
         assert_eq!(command, "gameEventList");
         let body: Value = serde_json::from_str(body)?;
         // The engine names some fields differently, and marks a missing seat or vote list with -1 or
-        // null, which the wire omits.
+        // null, which the wire omits. The wire also omits a clue's turn.
         let mut expected = serde_json::to_value(&list)?;
         for event in expected.as_array_mut().unwrap() {
             let event = event.as_object_mut().unwrap();
+            if event["type"] == "clue" {
+                event.remove("turn");
+            }
             event.retain(|key, value| {
                 !(matches!(
                     key.as_str(),

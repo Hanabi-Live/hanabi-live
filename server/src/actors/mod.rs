@@ -327,7 +327,6 @@ pub(crate) fn test_table() -> hanabi_protocol::Table {
             name: "test".into(),
             ..hanabi_protocol::TableSettings::default()
         },
-        num_players: 1,
         owner_id: UserId(1),
         password_protected: false,
         player_names: vec!["test".into()],

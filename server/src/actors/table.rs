@@ -14,7 +14,7 @@ use crate::store::{Commit, Outcome, Saved};
 use crate::{
     model::{
         CLOCK_UNITS_PER_SECOND, IDLE_TIMEOUT_MS, IDLE_WARNING_MS, Phase, Snapshot, TableChat,
-        TableSnapshot, small,
+        TableSnapshot,
     },
     server_info::ServerInfo,
     store::Store,
@@ -176,7 +176,6 @@ impl TableActor {
                 table_id: self.table.id,
                 joined: false,
                 settings: self.settings(),
-                num_players: small(self.table.players().len()),
                 owner_id: self.table.owner,
                 password_protected: self.table.password_hash.is_some(),
                 player_names: self

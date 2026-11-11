@@ -227,8 +227,6 @@ pub struct ClueEvent {
     pub target: PlayerIndex,
     /// The orders of the cards the clue touched.
     pub orders: Vec<CardOrder>,
-    #[schemars(range(min = 0, max = MAX_SAFE_INTEGER))]
-    pub turn: i64,
 }
 
 /// The end of a game.
