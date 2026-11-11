@@ -10,7 +10,7 @@
     "type": "git",
     "url": "git+https://github.com/Hanabi-Live/hanabi-live.git"
   },
-  "license": "GPL-3.0",
+  "license": "GPL-3.0-only",
   "author": "Zamiell",
   "type": "module",
   "workspaces": {
