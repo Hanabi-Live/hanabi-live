@@ -306,14 +306,22 @@ function HypotheticalBar({
 }): React.JSX.Element {
   const hypo = state.replay.hypothetical!;
   const turn = state.visibleState!.turn.turnNum + 1;
+  const { shared } = state.replay;
+
+  // A hypothetical in a shared replay is the leader's, like the replay around it.
+  let label = "Hypothetical";
+  if (shared !== undefined && state.replay.ownHypothetical === undefined) {
+    label = shared.amLeader
+      ? "Shared hypothetical: you lead"
+      : `Shared hypothetical: ${shared.leader} leads`;
+  }
 
   if (!controlsHypothetical(state)) {
-    const leader = state.replay.shared?.leader ?? "The leader";
     return (
       <Bar mode="hypothetical">
         <Heading
           icon="fa-flask"
-          label={`${leader}'s hypothetical`}
+          label={label}
           lastTurn={undefined}
           mode="hypothetical"
           turn={turn}
@@ -334,7 +342,7 @@ function HypotheticalBar({
     <Bar mode="hypothetical">
       <Heading
         icon="fa-flask"
-        label="Hypothetical"
+        label={label}
         lastTurn={undefined}
         mode="hypothetical"
         turn={turn}
