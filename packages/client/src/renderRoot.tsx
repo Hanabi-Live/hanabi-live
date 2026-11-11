@@ -2,7 +2,7 @@ import { StrictMode } from "react";
 import type { Root } from "react-dom/client";
 import { createRoot } from "react-dom/client";
 import { Provider } from "react-redux";
-import { store } from "./store";
+import { store } from "./store.ts";
 import "./tailwind.css"; // eslint-disable-line import-x/no-unassigned-import
 
 /** Renders a React component, with access to the store, in place of an element's contents. */

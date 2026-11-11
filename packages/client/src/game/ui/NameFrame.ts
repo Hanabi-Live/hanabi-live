@@ -2,10 +2,10 @@ import type { PlayerIndex } from "@hanabi-live/game";
 import { isValidPlayerIndex } from "@hanabi-live/game";
 import { assertDefined } from "complete-common";
 import Konva from "konva";
-import * as modals from "../../modals";
-import * as tooltips from "../../tooltips";
-import { globals } from "./UIGlobals";
-import { backToLobby } from "./backToLobby";
+import * as modals from "../../modals.ts";
+import * as tooltips from "../../tooltips.ts";
+import { globals } from "./UIGlobals.ts";
+import { backToLobby } from "./backToLobby.ts";
 import {
   FONT_FAMILY,
   LABEL_COLOR,
@@ -16,8 +16,8 @@ import {
   STROKE_WIDTH_UNIT,
   TEXT_SHRINK_FACTOR,
   WARNING_COLOR,
-} from "./constants";
-import * as konvaTooltips from "./konvaTooltips";
+} from "./constants.ts";
+import * as konvaTooltips from "./konvaTooltips.ts";
 
 const NAME_SHADOW_OPACITY = 0.9;
 const ACTIVE_SHADOW_OPACITY = 0.6;

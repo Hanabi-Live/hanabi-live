@@ -4,7 +4,7 @@
 import type { Suit, Variant } from "@hanabi-live/game";
 import { Pip, SUITS_MAP } from "@hanabi-live/game";
 import { assertEnumValue, assertNotNull, getEnumValues } from "complete-common";
-import { drawPip } from "../game/ui/drawPip";
+import { drawPip } from "../game/ui/drawPip.ts";
 
 /** The width and height of each pip's canvas, in pixels. */
 const PIP_CANVAS_SIZE = 200;

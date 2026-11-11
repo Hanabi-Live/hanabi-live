@@ -1,20 +1,23 @@
 import { getDefaultMetadata, getDefaultVariant } from "@hanabi-live/game";
 import { describe, expect, test, vi } from "vitest";
 
-vi.mock("./UIGlobals", () => ({ globals: {} }));
-vi.mock("./arrows", () => ({
+vi.mock("./UIGlobals.ts", () => ({ globals: {} }));
+vi.mock("./arrows.ts", () => ({
   hideAll: vi.fn(),
   set: vi.fn(),
   isPotentialClueShown: vi.fn(),
 }));
-vi.mock("./turn", () => ({ end: vi.fn() }));
-vi.mock("./cluePreview", () => ({ setPotentialClue: vi.fn(), hide: vi.fn() }));
-vi.mock("./reactive/views/cluesView", () => ({}));
-const { globals } = await import("./UIGlobals");
-const arrows = await import("./arrows");
-const cluePreview = await import("./cluePreview");
-const turn = await import("./turn");
-const { checkLegal, give } = await import("./clues");
+vi.mock("./turn.ts", () => ({ end: vi.fn() }));
+vi.mock("./cluePreview.ts", () => ({
+  setPotentialClue: vi.fn(),
+  hide: vi.fn(),
+}));
+vi.mock("./reactive/views/cluesView.ts", () => ({}));
+const { globals } = await import("./UIGlobals.ts");
+const arrows = await import("./arrows.ts");
+const cluePreview = await import("./cluePreview.ts");
+const turn = await import("./turn.ts");
+const { checkLegal, give } = await import("./clues.ts");
 
 describe("hypothetical clue matching", () => {
   test("uses the layout card rather than its first Konva child", () => {

@@ -22,7 +22,7 @@ import {
   isCardClued,
   isCardTouchedByClue,
 } from "@hanabi-live/game";
-import { EFFICIENCY_DECIMAL_PLACES } from "../ui/constants";
+import { EFFICIENCY_DECIMAL_PLACES } from "../ui/constants.ts";
 
 /** How a card in a hand looks. */
 export interface CardView {

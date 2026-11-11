@@ -4,17 +4,17 @@ import { assertDefined } from "complete-common";
 import { beforeAll, describe, expect, test, vi } from "vitest";
 
 import testGame from "../../../test_data/up_or_down.json";
-import type { ReplayState } from "../types/ReplayState";
-import type { State } from "../types/State";
+import type { ReplayState } from "../types/ReplayState.ts";
+import type { State } from "../types/State.ts";
 
-vi.mock("./uiReducer", () => ({
+vi.mock("./uiReducer.ts", () => ({
   uiReducer: vi.fn(),
 }));
-const { loadGameJSON } = await import("../../../test/loadGameJSON");
+const { loadGameJSON } = await import("../../../test/loadGameJSON.ts");
 const { hypoAction, hypoBack, hypoEnd, hypoStart, init } =
-  await import("../../../test/testActions");
-const { replayReducer } = await import("./replayReducer");
-const { stateReducer } = await import("./stateReducer");
+  await import("../../../test/testActions.ts");
+const { replayReducer } = await import("./replayReducer.ts");
+const { stateReducer } = await import("./stateReducer.ts");
 
 let testState: State;
 let metadata: GameMetadata;

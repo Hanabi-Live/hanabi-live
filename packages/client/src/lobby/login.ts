@@ -13,16 +13,20 @@ import {
 import { assertDefined } from "complete-common";
 import * as KeyCode from "keycode-js";
 import type { z } from "zod";
-import { globals } from "../Globals";
-import { FADE_TIME_MS, HTTP_STATUS } from "../constants";
-import { reloadOutdatedClient } from "../outdatedClient";
-import * as theme from "../theme";
-import { getHTMLElement, getHTMLInputElement, getURLFromPath } from "../utils";
-import { websocketInit } from "../websocketInit";
-import { scrollLobbyChatToBottom } from "./chat/LobbyChat";
-import { TEST_COOKIE_PATH, checkCookieWithRetry } from "./cookieProbe";
-import { loginRequestBody } from "./loginRequestBody";
-import { Screen } from "./types/Screen";
+import { globals } from "../Globals.ts";
+import { FADE_TIME_MS, HTTP_STATUS } from "../constants.ts";
+import { reloadOutdatedClient } from "../outdatedClient.ts";
+import * as theme from "../theme.ts";
+import {
+  getHTMLElement,
+  getHTMLInputElement,
+  getURLFromPath,
+} from "../utils.ts";
+import { websocketInit } from "../websocketInit.ts";
+import { scrollLobbyChatToBottom } from "./chat/LobbyChat.tsx";
+import { TEST_COOKIE_PATH, checkCookieWithRetry } from "./cookieProbe.ts";
+import { loginRequestBody } from "./loginRequestBody.ts";
+import { Screen } from "./types/Screen.ts";
 
 /** How long the change-password form and the scroll to an error take to animate. */
 const ANIMATION_TIME_MS = 500;

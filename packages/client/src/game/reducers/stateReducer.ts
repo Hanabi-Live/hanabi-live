@@ -10,12 +10,12 @@ import { gameReducer, getInitialGameState } from "@hanabi-live/game";
 import { assertDefined } from "complete-common";
 import type { Draft } from "immer";
 import { castDraft, original, produce } from "immer";
-import type { State } from "../types/State";
-import type { Action } from "../types/actions";
-import { notesReducer } from "./notesReducer";
-import { replayReducer } from "./replayReducer";
-import { shouldStoreSegment } from "./stateReducerHelpers";
-import { uiReducer } from "./uiReducer";
+import type { State } from "../types/State.ts";
+import type { Action } from "../types/actions.ts";
+import { notesReducer } from "./notesReducer.ts";
+import { replayReducer } from "./replayReducer.ts";
+import { shouldStoreSegment } from "./stateReducerHelpers.ts";
+import { uiReducer } from "./uiReducer.ts";
 
 export const stateReducer = produce(stateReducerFunction, {} as State);
 

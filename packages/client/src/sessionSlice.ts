@@ -5,8 +5,8 @@ import type { Settings } from "@hanabi-live/data";
 import { defaultSettings } from "@hanabi-live/data";
 import type { PayloadAction } from "@reduxjs/toolkit";
 import { createSlice } from "@reduxjs/toolkit";
-import { NO_USER_ID } from "./constants";
-import { Screen } from "./lobby/types/Screen";
+import { NO_USER_ID } from "./constants.ts";
+import { Screen } from "./lobby/types/Screen.ts";
 
 interface SessionState {
   /** `NO_USER_ID` until the server's "welcome" message arrives. */

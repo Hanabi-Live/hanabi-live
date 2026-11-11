@@ -9,9 +9,9 @@ import {
   BUTTON_TEXT_MIDDLE,
   BUTTON_TEXT_SIZE,
   FONT_FAMILY,
-} from "../constants";
-import { drawLayer } from "../konvaHelpers";
-import { FitText } from "./FitText";
+} from "../constants.ts";
+import { drawLayer } from "../konvaHelpers.ts";
+import { FitText } from "./FitText.ts";
 
 /** How much of the button's width and height its image fills, centered with an equal margin. */
 const BUTTON_IMAGE_SCALE = 0.6;

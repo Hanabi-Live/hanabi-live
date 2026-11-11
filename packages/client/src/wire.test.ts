@@ -4,7 +4,7 @@ import {
 } from "@hanabi-live/data";
 import { EndCondition } from "@hanabi-live/game";
 import { describe, expect, test } from "vitest";
-import { toCardIdentity, toGameAction, toSoundType } from "./wire";
+import { toCardIdentity, toGameAction, toSoundType } from "./wire.ts";
 
 /** Validates a game event as the connection does. */
 function event(data: unknown) {

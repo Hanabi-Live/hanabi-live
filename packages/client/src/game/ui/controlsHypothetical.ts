@@ -1,4 +1,4 @@
-import type { State } from "../types/State";
+import type { State } from "../types/State.ts";
 
 /**
  * We control our own hypothetical, and the leader controls the shared one. Spectators only watch.

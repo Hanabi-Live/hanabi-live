@@ -1,9 +1,9 @@
-import { globals } from "../../UIGlobals";
-import { CARD_ANIMATION_LENGTH_SECONDS } from "../../constants";
+import { globals } from "../../UIGlobals.ts";
+import { CARD_ANIMATION_LENGTH_SECONDS } from "../../constants.ts";
 import {
   startEmptyDeckAnimation,
   stopEmptyDeckAnimation,
-} from "../../signalAnimations";
+} from "../../signalAnimations.ts";
 
 export function onCardsRemainingChanged(
   cardsRemainingInTheDeck: number,

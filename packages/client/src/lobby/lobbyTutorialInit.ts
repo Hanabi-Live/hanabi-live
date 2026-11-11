@@ -1,7 +1,7 @@
 // A short tutorial is shown to brand-new users.
 
-import { FADE_TIME_MS } from "../constants";
-import * as login from "./login";
+import { FADE_TIME_MS } from "../constants.ts";
+import * as login from "./login.ts";
 
 export function lobbyTutorialInit(): void {
   $("#tutorial-yes").on("click", () => {

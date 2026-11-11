@@ -5,12 +5,12 @@
 // draw from. A player can switch to the classic screen at any time.
 
 import type { Root } from "react-dom/client";
-import { FADE_TIME_MS } from "../../constants";
-import { renderRoot } from "../../renderRoot";
-import { getHTMLElement } from "../../utils";
-import { globals } from "../ui/UIGlobals";
-import { GameScreen } from "./GameScreen";
-import * as newUIState from "./newUIState";
+import { FADE_TIME_MS } from "../../constants.ts";
+import { renderRoot } from "../../renderRoot.tsx";
+import { getHTMLElement } from "../../utils.ts";
+import { globals } from "../ui/UIGlobals.ts";
+import { GameScreen } from "./GameScreen.tsx";
+import * as newUIState from "./newUIState.ts";
 
 let root: Root | undefined;
 

@@ -17,9 +17,9 @@ import Konva from "konva";
 import type * as KonvaContext from "konva/lib/Context";
 import type * as KonvaUtil from "konva/lib/Util";
 import type { RectConfig } from "konva/lib/shapes/Rect";
-import { START_CARD_RANK_LABEL } from "../../constants";
-import type { Pips } from "../types/Pips";
-import { globals } from "./UIGlobals";
+import { START_CARD_RANK_LABEL } from "../../constants.ts";
+import type { Pips } from "../types/Pips.ts";
+import { globals } from "./UIGlobals.ts";
 import {
   ARROW_STROKE_WIDTH,
   BOTTOM_LEFT_X,
@@ -41,17 +41,17 @@ import {
   TEXT_SHADOW,
   TOP_LEFT_X,
   TOP_LEFT_Y,
-} from "./constants";
-import { NoteIndicator } from "./controls/NoteIndicator";
-import { CANVAS_DEFAULT_MITER_LIMIT, RankPip } from "./controls/RankPip";
-import { drawWithKonva3Shadow } from "./controls/konva3Shadow";
-import { outlinedArrow } from "./controls/outlinedArrow";
+} from "./constants.ts";
+import { NoteIndicator } from "./controls/NoteIndicator.ts";
+import { CANVAS_DEFAULT_MITER_LIMIT, RankPip } from "./controls/RankPip.ts";
+import { drawWithKonva3Shadow } from "./controls/konva3Shadow.ts";
+import { outlinedArrow } from "./controls/outlinedArrow.ts";
 import {
   PIP_RADIUS,
   SUIT_PIP_SCALE,
   drawPip,
   getSuitPipRingPosition,
-} from "./drawPip";
+} from "./drawPip.ts";
 
 /** The opacity of the shadow under a card and under the pips drawn on it. */
 const CARD_SHADOW_OPACITY = 0.4;

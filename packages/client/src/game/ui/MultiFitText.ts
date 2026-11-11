@@ -1,7 +1,7 @@
 import { assertDefined, eRange } from "complete-common";
 import Konva from "konva";
-import { globals } from "./UIGlobals";
-import { FitText } from "./controls/FitText";
+import { globals } from "./UIGlobals.ts";
+import { FitText } from "./controls/FitText.ts";
 
 export class MultiFitText extends Konva.Group {
   maxLines: number;

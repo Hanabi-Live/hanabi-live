@@ -2,7 +2,7 @@ import type { SuitRankTuple } from "@hanabi-live/game";
 import { getDefaultVariant, getVariant } from "@hanabi-live/game";
 import { iRange } from "complete-common";
 import { describe, expect, test } from "vitest";
-import { getPossibilitiesFromKeywords } from "./noteIdentity";
+import { getPossibilitiesFromKeywords } from "./noteIdentity.ts";
 
 const DEFAULT_VARIANT = getDefaultVariant();
 const UP_OR_DOWN_VARIANT = getVariant("Up or Down (5 Suits)");

@@ -4,19 +4,19 @@ import type { GameHistoryEntry, ServerCommandData } from "@hanabi-live/data";
 import { act, cleanup, render, screen } from "@testing-library/react";
 import { Provider } from "react-redux";
 import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
-import { globals } from "../../Globals";
-import { store } from "../../store";
-import { HistoryList, OtherScoresList } from "./HistoryLists";
+import { globals } from "../../Globals.ts";
+import { store } from "../../store.ts";
+import { HistoryList, OtherScoresList } from "./HistoryLists.tsx";
 import {
   historyReceived,
   historyRequested,
   moreOtherScoresRequested,
   otherScoresReceived,
   otherScoresRequested,
-} from "./historySlice";
+} from "./historySlice.ts";
 
-vi.mock("../../tooltips", () => ({ attach: vi.fn() }));
-vi.mock("../history", () => ({
+vi.mock("../../tooltips.ts", () => ({ attach: vi.fn() }));
+vi.mock("../history.ts", () => ({
   hide: vi.fn(),
   showMore: vi.fn(),
   showMoreOtherScores: vi.fn(),

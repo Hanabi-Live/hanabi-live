@@ -16,16 +16,16 @@ import {
   isCardTouchedByClueRank,
   isValidRankClueNumber,
 } from "@hanabi-live/game";
-import * as sounds from "../../sounds";
-import { SoundType } from "../types/SoundType";
-import { ColorButton } from "./ColorButton";
-import type { HanabiCard } from "./HanabiCard";
-import { RankButton } from "./RankButton";
-import { globals } from "./UIGlobals";
-import { clickRightCheckAddNote } from "./clickNotes";
-import { LEFT_MOUSE_BUTTON, RIGHT_MOUSE_BUTTON } from "./constants";
-import { colorToColorIndex } from "./convert";
-import * as turn from "./turn";
+import * as sounds from "../../sounds.ts";
+import { SoundType } from "../types/SoundType.ts";
+import { ColorButton } from "./ColorButton.ts";
+import type { HanabiCard } from "./HanabiCard.ts";
+import { RankButton } from "./RankButton.ts";
+import { globals } from "./UIGlobals.ts";
+import { clickRightCheckAddNote } from "./clickNotes.ts";
+import { LEFT_MOUSE_BUTTON, RIGHT_MOUSE_BUTTON } from "./constants.ts";
+import { colorToColorIndex } from "./convert.ts";
+import * as turn from "./turn.ts";
 
 export function mouseDownSpeedrun(card: HanabiCard, event: MouseEvent): void {
   if (

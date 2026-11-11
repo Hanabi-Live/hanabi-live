@@ -1,5 +1,5 @@
 import { describe, expect, test } from "vitest";
-import { LobbyChatDeletionState } from "./chatDeletion";
+import { LobbyChatDeletionState } from "./chatDeletion.ts";
 
 describe("lobby chat deletion", () => {
   test("a deleted lobby message is ignored if it arrives later", () => {

@@ -1,8 +1,8 @@
 // In-game sounds.
 
 import { defaultSettings, MAX_VOLUME } from "@hanabi-live/data";
-import { globals } from "./Globals";
-import { SoundType } from "./game/types/SoundType";
+import { globals } from "./Globals.ts";
+import { SoundType } from "./game/types/SoundType.ts";
 
 export const SOUNDS_PATH = "/public/sounds";
 

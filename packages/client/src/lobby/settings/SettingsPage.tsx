@@ -8,12 +8,12 @@ import {
 } from "@hanabi-live/data";
 import { iRange, parseIntSafe } from "complete-common";
 import { Fragment, useEffect, useRef, useState } from "react";
-import { globals } from "../../Globals";
-import { SoundType } from "../../game/types/SoundType";
-import * as notifications from "../../notifications";
-import { SOUNDS_PATH } from "../../sounds";
-import { useAppSelector } from "../../store";
-import * as theme from "../../theme";
+import { globals } from "../../Globals.ts";
+import { SoundType } from "../../game/types/SoundType.ts";
+import * as notifications from "../../notifications.ts";
+import { SOUNDS_PATH } from "../../sounds.ts";
+import { useAppSelector } from "../../store.ts";
+import * as theme from "../../theme.ts";
 
 /** How long "Saved" stays beside a setting before it fades out. */
 const SAVED_STATUS_MILLISECONDS = 2000;

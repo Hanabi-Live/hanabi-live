@@ -1,9 +1,3 @@
-import { createVariantsJSON } from "./createVariantsJSON";
+import { createVariantsJSON } from "./createVariantsJSON.ts";
 
-main().catch((error: unknown) => {
-  throw new Error(String(error));
-});
-
-async function main() {
-  await createVariantsJSON();
-}
+await createVariantsJSON();

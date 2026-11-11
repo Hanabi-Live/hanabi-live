@@ -327,11 +327,9 @@ async function main(): Promise<number> {
   }
 }
 
-main()
-  .then((code) => {
-    process.exitCode = code;
-  })
-  .catch((error: unknown) => {
-    console.error("Failed to run the tests:", error);
-    process.exitCode = 1;
-  });
+try {
+  process.exitCode = await main();
+} catch (error) {
+  console.error("Failed to run the tests:", error);
+  process.exitCode = 1;
+}

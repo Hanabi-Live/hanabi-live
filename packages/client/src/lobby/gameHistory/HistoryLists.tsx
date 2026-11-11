@@ -4,20 +4,20 @@ import type { GameHistoryEntry } from "@hanabi-live/data";
 import type { GameOptions } from "@hanabi-live/game";
 import { getVariant, secondsToClockString } from "@hanabi-live/game";
 import { Fragment, useEffect, useRef } from "react";
-import { PATH } from "../../constants";
-import { OptionIcons } from "../../enums/OptionIcons";
-import { globals } from "../../Globals";
-import { useAppSelector } from "../../store";
-import * as tooltips from "../../tooltips";
-import { dateTimeFormatter } from "../../utils";
-import { BORDERED_TABLE } from "../borderedTable";
+import { PATH } from "../../constants.ts";
+import { OptionIcons } from "../../enums/OptionIcons.ts";
+import { globals } from "../../Globals.ts";
+import { useAppSelector } from "../../store.ts";
+import * as tooltips from "../../tooltips.ts";
+import { dateTimeFormatter } from "../../utils.ts";
+import { BORDERED_TABLE } from "../borderedTable.ts";
 import {
   hide,
   showMore,
   showMoreOtherScores,
   showOtherScoresFromHistory,
-} from "../history";
-import { selectHistoryGames, selectShownGameCount } from "./historySlice";
+} from "../history.ts";
+import { selectHistoryGames, selectShownGameCount } from "./historySlice.ts";
 
 /** Games with more options than this show an ellipsis, with the options listed in the tooltip. */
 const MAX_OPTION_ICONS = 3;

@@ -2,17 +2,17 @@
 
 import { MIN_PLAYERS } from "@hanabi-live/game";
 import Konva from "konva";
-import { getCanvasColors } from "../../theme";
-import * as tooltips from "../../tooltips";
-import { globals } from "./UIGlobals";
+import { getCanvasColors } from "../../theme.ts";
+import * as tooltips from "../../tooltips.ts";
+import { globals } from "./UIGlobals.ts";
 import {
   DIALOG_CORNER_RADIUS,
   FONT_FAMILY,
   STAGE_FADE_OPACITY,
   TEXT_SHADOW,
-} from "./constants";
-import { Button } from "./controls/Button";
-import { resetActiveHover } from "./konvaTooltips";
+} from "./constants.ts";
+import { Button } from "./controls/Button.ts";
+import { resetActiveHover } from "./konvaTooltips.ts";
 
 /** Sizes as fractions of the stage width (`w`) or height (everything else). */
 const MENU = {

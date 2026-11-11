@@ -1,5 +1,5 @@
 import { describe, expect, test, vi } from "vitest";
-import { ReconnectBackoff } from "./reconnect";
+import { ReconnectBackoff } from "./reconnect.ts";
 
 describe("WebSocket reconnect backoff", () => {
   test("retries immediately, then adds bounded jitter with a thirty-second cap", () => {

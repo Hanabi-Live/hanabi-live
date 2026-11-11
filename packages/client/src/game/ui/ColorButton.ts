@@ -2,7 +2,7 @@ import type { Clue, Suit, Variant } from "@hanabi-live/game";
 import { isDualColor } from "@hanabi-live/game";
 import Konva from "konva";
 import type * as KonvaContext from "konva/lib/Context";
-import { globals } from "./UIGlobals";
+import { globals } from "./UIGlobals.ts";
 import {
   BUTTON_CORNER_RADIUS,
   BUTTON_HOVER_COLOR,
@@ -12,9 +12,9 @@ import {
   BUTTON_TEXT_SIZE,
   FONT_FAMILY,
   STROKE_WIDTH_UNIT,
-} from "./constants";
-import { drawPip } from "./drawPip";
-import { drawLayer } from "./konvaHelpers";
+} from "./constants.ts";
+import { drawPip } from "./drawPip.ts";
+import { drawLayer } from "./konvaHelpers.ts";
 
 /** The opacity of the color swatch that fills the button. */
 const COLOR_SWATCH_OPACITY = 0.9;

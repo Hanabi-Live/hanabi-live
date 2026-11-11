@@ -24,14 +24,14 @@ import {
   parseFloatSafe,
   parseIntSafe,
 } from "complete-common";
-import { DIMMED_OPACITY, LOCAL_STORAGE_KEY } from "../constants";
-import { globals } from "../Globals";
-import { creatingTableChanged } from "../sessionSlice";
-import { store } from "../store";
-import { Tooltip } from "../Tooltip";
-import { escapeHtml, getHTMLInputElement } from "../utils";
-import * as lobbyPage from "./lobbyPage";
-import { Screen } from "./types/Screen";
+import { DIMMED_OPACITY, LOCAL_STORAGE_KEY } from "../constants.ts";
+import { globals } from "../Globals.ts";
+import { creatingTableChanged } from "../sessionSlice.ts";
+import { store } from "../store.ts";
+import { Tooltip } from "../Tooltip.ts";
+import { escapeHtml, getHTMLInputElement } from "../utils.ts";
+import * as lobbyPage from "./lobbyPage.ts";
+import { Screen } from "./types/Screen.ts";
 
 const BASIC_VARIANT_NAMES = [
   "No Variant",

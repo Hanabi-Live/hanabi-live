@@ -3,22 +3,22 @@
 import type { Status } from "@hanabi-live/data";
 import { StatusText } from "@hanabi-live/data";
 import { useEffect, useRef } from "react";
-import { globals } from "../../Globals";
-import { DIMMED_OPACITY } from "../../constants";
-import { store, useAppSelector } from "../../store";
-import { TAB_CLASS_NAME } from "../../tabClassName";
-import * as tooltips from "../../tooltips";
-import { tableJoin, tableSpectate } from "../tables/tableActions";
-import { Screen } from "../types/Screen";
-import { UserLink } from "./UserMenu";
-import type { UserRow } from "./usersSlice";
+import { globals } from "../../Globals.ts";
+import { DIMMED_OPACITY } from "../../constants.ts";
+import { store, useAppSelector } from "../../store.ts";
+import { TAB_CLASS_NAME } from "../../tabClassName.ts";
+import * as tooltips from "../../tooltips.ts";
+import { tableJoin, tableSpectate } from "../tables/tableActions.ts";
+import { Screen } from "../types/Screen.ts";
+import { UserLink } from "./UserMenu.tsx";
+import type { UserRow } from "./usersSlice.ts";
 import {
   botsShownChanged,
   selectBotRows,
   selectBotsShown,
   selectUserCount,
   selectUserRows,
-} from "./usersSlice";
+} from "./usersSlice.ts";
 
 const H_GROUP_TOOLTIP =
   '<span class="small-tooltip-text">This person is a self-identified member of the H-Group.</span>';

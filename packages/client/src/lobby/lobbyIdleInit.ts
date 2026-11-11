@@ -1,5 +1,5 @@
 import { MINUTE_IN_MILLISECONDS } from "complete-common";
-import { globals } from "../Globals";
+import { globals } from "../Globals.ts";
 
 const MINUTES_TO_TRIGGER_IDLE = 15;
 

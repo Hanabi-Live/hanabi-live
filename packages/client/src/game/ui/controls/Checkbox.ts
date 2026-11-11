@@ -6,8 +6,8 @@ import {
   BUTTON_OPACITY,
   FONT_FAMILY,
   MIN_FONT_SIZE,
-} from "../constants";
-import { drawLayer } from "../konvaHelpers";
+} from "../constants.ts";
+import { drawLayer } from "../konvaHelpers.ts";
 
 /** The space to the left of the box, as a fraction of the checkbox's height. */
 const PADDING = 0.24;

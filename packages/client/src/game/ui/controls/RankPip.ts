@@ -1,7 +1,7 @@
 import Konva from "konva";
 import type * as KonvaContext from "konva/lib/Context";
-import { CLUED_COLOR } from "../constants";
-import { drawWithKonva3Shadow } from "./konva3Shadow";
+import { CLUED_COLOR } from "../constants.ts";
+import { drawWithKonva3Shadow } from "./konva3Shadow.ts";
 
 /** The default miter limit of a canvas, which Konva 3 outlined text with. */
 export const CANVAS_DEFAULT_MITER_LIMIT = 10;

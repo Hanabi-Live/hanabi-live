@@ -1,6 +1,6 @@
-import { renderRoot } from "../../renderRoot";
-import { getHTMLElement } from "../../utils";
-import { HistoryList, OtherScoresList } from "./HistoryLists";
+import { renderRoot } from "../../renderRoot.tsx";
+import { getHTMLElement } from "../../utils.ts";
+import { HistoryList, OtherScoresList } from "./HistoryLists.tsx";
 
 export function mountHistoryLists(): void {
   renderRoot(getHTMLElement("#lobby-history"), <HistoryList />);

@@ -2,9 +2,9 @@
 
 import { MAX_DECK_SIZE, MAX_PLAYERS, MAX_SUITS } from "@hanabi-live/game";
 import { eRange, SECOND_IN_MILLISECONDS } from "complete-common";
-import { Tooltip } from "./Tooltip";
-import { globals } from "./game/ui/UIGlobals";
-import { getHTMLElement } from "./utils";
+import { Tooltip } from "./Tooltip.ts";
+import { globals } from "./game/ui/UIGlobals.ts";
+import { getHTMLElement } from "./utils.ts";
 
 export const TOOLTIP_DELAY_IN_MILLISECONDS = 500;
 

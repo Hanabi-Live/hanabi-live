@@ -1,13 +1,7 @@
-import { isFile, readFile } from "./completeNode";
-import { generateVariantFiles } from "./createVariantsJSON.js";
+import { isFile, readFile } from "./completeNode.ts";
+import { generateVariantFiles } from "./createVariantsJSON.ts";
 
-main().catch((error: unknown) => {
-  throw new Error(String(error));
-});
-
-async function main() {
-  await checkVariantFiles();
-}
+await checkVariantFiles();
 
 async function checkVariantFiles() {
   const files = await generateVariantFiles();

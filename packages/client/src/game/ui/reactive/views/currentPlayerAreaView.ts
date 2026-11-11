@@ -7,8 +7,8 @@ import {
 } from "@hanabi-live/game";
 import { assertDefined, eRange } from "complete-common";
 import Konva from "konva";
-import type { State } from "../../../types/State";
-import { globals } from "../../UIGlobals";
+import type { State } from "../../../types/State.ts";
+import { globals } from "../../UIGlobals.ts";
 import {
   DOUBLE_DISCARD_COLOR,
   FULL_TURN_DEGREES,
@@ -16,8 +16,8 @@ import {
   LABEL_COLOR,
   NO_CLUES_COLOR,
   TEXT_SHRINK_FACTOR,
-} from "../../constants";
-import { degreesToRadians, radiansToDegrees } from "../../konvaHelpers";
+} from "../../constants.ts";
+import { degreesToRadians, radiansToDegrees } from "../../konvaHelpers.ts";
 
 /** The most times the player name shrinks before it is drawn as it is. */
 const MAX_SHRINK_STEPS = 100;

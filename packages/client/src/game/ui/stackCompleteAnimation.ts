@@ -7,11 +7,11 @@
 
 import type { Suit } from "@hanabi-live/game";
 import Konva from "konva";
-import type { LayoutChild } from "./LayoutChild";
-import type { PlayStack } from "./PlayStack";
-import { globals } from "./UIGlobals";
-import { PLAY_ANIMATION_SECONDS } from "./constants";
-import type { Point } from "./fireworks";
+import type { LayoutChild } from "./LayoutChild.ts";
+import type { PlayStack } from "./PlayStack.ts";
+import { globals } from "./UIGlobals.ts";
+import { PLAY_ANIMATION_SECONDS } from "./constants.ts";
+import type { Point } from "./fireworks.ts";
 import {
   EffectTimeline,
   absoluteCenter,
@@ -24,8 +24,8 @@ import {
   interpolate,
   randomBetween,
   textCenter,
-} from "./fireworks";
-import { onClueTokensChanged } from "./reactive/views/gameInfoView";
+} from "./fireworks.ts";
+import { onClueTokensChanged } from "./reactive/views/gameInfoView.ts";
 
 interface BurstConfig {
   sparks: number;

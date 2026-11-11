@@ -1,11 +1,11 @@
-import type { PauseState } from "../../../types/PauseState";
-import { globals } from "../../UIGlobals";
+import type { PauseState } from "../../../types/PauseState.ts";
+import { globals } from "../../UIGlobals.ts";
 import {
   DISABLED_OPACITY,
   PAUSED_STAGE_FADE_OPACITY,
   STAGE_FADE_OPACITY,
-} from "../../constants";
-import { isOurTurn } from "../../isOurTurn";
+} from "../../constants.ts";
+import { isOurTurn } from "../../isOurTurn.ts";
 
 export function onChanged(pause: PauseState): void {
   const paused = pause.playerIndex !== undefined;

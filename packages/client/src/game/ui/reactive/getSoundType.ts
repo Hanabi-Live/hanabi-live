@@ -14,7 +14,7 @@ import {
   isHandLocked,
 } from "@hanabi-live/game";
 import { includes } from "complete-common";
-import { SoundType } from "../../types/SoundType";
+import { SoundType } from "../../types/SoundType.ts";
 
 /** The sound for each consecutive blind play, starting from the first. */
 const BLIND_PLAY_SOUND_TYPES = [

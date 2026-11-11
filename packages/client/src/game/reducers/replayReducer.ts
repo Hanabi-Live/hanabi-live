@@ -12,8 +12,8 @@ import {
 import { assertDefined } from "complete-common";
 import type { Draft } from "immer";
 import { castDraft, original, produce } from "immer";
-import type { ReplayState } from "../types/ReplayState";
-import type { ReplayAction } from "../types/actions";
+import type { ReplayState } from "../types/ReplayState.ts";
+import type { ReplayAction } from "../types/actions.ts";
 
 export const replayReducer = produce(replayReducerFunction, {} as ReplayState);
 

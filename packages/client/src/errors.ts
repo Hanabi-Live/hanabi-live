@@ -1,6 +1,6 @@
 import { PROJECT_NAME } from "@hanabi-live/data";
-import { showError } from "./modals";
-import { escapeHtml } from "./utils";
+import { showError } from "./modals.ts";
+import { escapeHtml } from "./utils.ts";
 
 /**
  * Where the Brave browser on iOS reports errors from code it injects: the character directly after

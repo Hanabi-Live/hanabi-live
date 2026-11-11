@@ -4,7 +4,7 @@ import { isArray } from "complete-common";
 import { execFileSync } from "node:child_process";
 import path from "node:path";
 import { z } from "zod";
-import { ROOT } from "./mainProcessSupport";
+import { ROOT } from "./mainProcessSupport.ts";
 
 /** Prints the server's variants as JSON. "runTests.ts" builds it. */
 const CATALOG = path.join(ROOT, "server/target/debug/examples/catalog");

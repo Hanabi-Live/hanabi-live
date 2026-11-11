@@ -96,37 +96,6 @@ export const hanabiConfigBase = defineConfig(
       // Unicode code point escapes are enforced by Unicorn, including values below 256.
       "regexp/hexadecimal-escape": "off",
 
-      // BEGIN ESM EXCEPTIONS
-
-      /**
-       * Documentation:
-       * https://github.com/mysticatea/eslint-plugin-node/blob/master/docs/rules/file-extension-in-import.md
-       *
-       * Keep this rule disabled until the project can be moved to ESM (which is contingent upon the
-       * dependencies being up to date).
-       */
-      "n/file-extension-in-import": "off",
-
-      /**
-       * Documentation:
-       * https://github.com/sindresorhus/eslint-plugin-unicorn/blob/main/docs/rules/prefer-module.md
-       *
-       * Keep this rule disabled until the project can be moved to ESM (which is contingent upon the
-       * dependencies being up to date).
-       */
-      "unicorn/prefer-module": "off",
-
-      /**
-       * Documentation:
-       * https://github.com/sindresorhus/eslint-plugin-unicorn/blob/main/docs/rules/prefer-top-level-await.md
-       *
-       * Keep this rule disabled until the project can be moved to ESM (which is contingent upon the
-       * dependencies being up to date).
-       */
-      "unicorn/prefer-top-level-await": "off",
-
-      // END ESM EXCEPTIONS
-
       // @template-customization-end
     },
   },

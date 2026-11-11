@@ -15,15 +15,15 @@ import {
 } from "@hanabi-live/game";
 import { assertDefined, parseIntSafe } from "complete-common";
 import { includes } from "lodash";
-import { SelfChatMessageType, sendSelfPMFromServer } from "../chat";
+import { SelfChatMessageType, sendSelfPMFromServer } from "../chat.ts";
 import type {
   ClientAction,
   ClientActionClue,
-} from "../game/types/ClientAction";
-import type { ReplayState } from "../game/types/ReplayState";
-import { globals } from "../game/ui/UIGlobals";
-import type { GameJSON } from "./hypoCompress";
-import { shrink } from "./hypoCompress";
+} from "../game/types/ClientAction.ts";
+import type { ReplayState } from "../game/types/ReplayState.ts";
+import { globals } from "../game/ui/UIGlobals.ts";
+import type { GameJSON } from "./hypoCompress.ts";
+import { shrink } from "./hypoCompress.ts";
 
 const PLAY_REGEX =
   /^(?:\[Hypo\] )?(.*)(?: fails to play | plays ).* from slot #(\d).*$/u;

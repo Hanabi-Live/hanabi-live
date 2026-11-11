@@ -19,34 +19,34 @@ import {
 import type { Tuple } from "complete-common";
 import { iRange, newArray } from "complete-common";
 import { createStore } from "redux";
-import { sendSelfPMFromServer } from "../../chat";
-import { PATH } from "../../constants";
-import * as modals from "../../modals";
-import { ServerHandlers } from "../../serverHandlers";
-import { setBrowserAddressBarPath } from "../../utils";
+import { sendSelfPMFromServer } from "../../chat.ts";
+import { PATH } from "../../constants.ts";
+import * as modals from "../../modals.ts";
+import { ServerHandlers } from "../../serverHandlers.ts";
+import { setBrowserAddressBarPath } from "../../utils.ts";
 import {
   toCardIdentity,
   toGameAction,
   toHypotheticalAction,
   toPlayerTuple,
   toSoundType,
-} from "../../wire";
-import * as newUIState from "../newUI/newUIState";
-import { initialState } from "../reducers/initialStates/initialState";
-import { stateReducer } from "../reducers/stateReducer";
-import { SoundType } from "../types/SoundType";
-import type { State } from "../types/State";
-import { globals } from "./UIGlobals";
-import * as arrows from "./arrows";
-import { updateTerminationVotes } from "./drawUI";
-import { getCardOrStackBase } from "./getCardOrStackBase";
-import * as hypothetical from "./hypothetical";
-import * as notes from "./notes";
-import { StateObserver } from "./reactive/StateObserver";
-import * as replay from "./replay";
-import * as stats from "./stats";
-import * as timer from "./timer";
-import { uiInit } from "./uiInit";
+} from "../../wire.ts";
+import * as newUIState from "../newUI/newUIState.ts";
+import { initialState } from "../reducers/initialStates/initialState.ts";
+import { stateReducer } from "../reducers/stateReducer.ts";
+import { SoundType } from "../types/SoundType.ts";
+import type { State } from "../types/State.ts";
+import { globals } from "./UIGlobals.ts";
+import * as arrows from "./arrows.ts";
+import { updateTerminationVotes } from "./drawUI.ts";
+import { getCardOrStackBase } from "./getCardOrStackBase.ts";
+import * as hypothetical from "./hypothetical.ts";
+import * as notes from "./notes.ts";
+import { StateObserver } from "./reactive/StateObserver.ts";
+import * as replay from "./replay.ts";
+import * as stats from "./stats.ts";
+import * as timer from "./timer.ts";
+import { uiInit } from "./uiInit.ts";
 
 // Define a command handler map.
 export const gameCommands = new ServerHandlers();

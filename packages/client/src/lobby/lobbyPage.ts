@@ -1,9 +1,9 @@
 // Full pages in the lobby (such as "Create Game" and "Resources"), which replace the lobby until
 // the user submits them or returns.
 
-import { lobbyPageShownChanged } from "../sessionSlice";
-import { store } from "../store";
-import { showLobbyHalves } from "./lobbyLayout";
+import { lobbyPageShownChanged } from "../sessionSlice.ts";
+import { store } from "../store.ts";
+import { showLobbyHalves } from "./lobbyLayout.ts";
 
 interface LobbyPage {
   readonly section: string;

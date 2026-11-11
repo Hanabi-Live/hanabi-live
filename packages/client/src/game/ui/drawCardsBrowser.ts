@@ -1,6 +1,6 @@
 import { assertNotNull } from "complete-common";
-import type { CardRendererBackend } from "./cardRendererBackend";
-import { CARD_H, CARD_W } from "./constants";
+import type { CardRendererBackend } from "./cardRendererBackend.ts";
+import { CARD_H, CARD_W } from "./constants.ts";
 
 function initCanvas(): {
   cvs: HTMLCanvasElement;

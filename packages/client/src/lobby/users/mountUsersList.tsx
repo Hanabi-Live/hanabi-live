@@ -1,6 +1,6 @@
-import { renderRoot } from "../../renderRoot";
-import { getHTMLElement } from "../../utils";
-import { UsersList, UsersTitle } from "./UsersList";
+import { renderRoot } from "../../renderRoot.tsx";
+import { getHTMLElement } from "../../utils.ts";
+import { UsersList, UsersTitle } from "./UsersList.tsx";
 
 export function mountUsersList(): void {
   renderRoot(getHTMLElement("#lobby-users-container"), <UsersList />);

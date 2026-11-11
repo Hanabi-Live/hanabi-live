@@ -8,12 +8,12 @@ import {
   UNKNOWN_SUIT_NAME,
 } from "@hanabi-live/game";
 import Konva from "konva";
-import { OptionIcons } from "../../enums/OptionIcons";
-import { globals as globals2 } from "../../Globals";
-import * as tooltips from "../../tooltips";
-import { dateTimeFormatter, escapeHtml } from "../../utils";
-import type { Pips } from "../types/Pips";
-import * as arrows from "./arrows";
+import { OptionIcons } from "../../enums/OptionIcons.ts";
+import { globals as globals2 } from "../../Globals.ts";
+import * as tooltips from "../../tooltips.ts";
+import { dateTimeFormatter, escapeHtml } from "../../utils.ts";
+import type { Pips } from "../types/Pips.ts";
+import * as arrows from "./arrows.ts";
 import {
   CARD_ANIMATION_LENGTH_SECONDS,
   CARD_W,
@@ -21,15 +21,15 @@ import {
   FONT_FAMILY,
   LEFT_MOUSE_BUTTON_HELD,
   STROKE_WIDTH_UNIT,
-} from "./constants";
-import * as cursor from "./cursor";
-import { CARD_IMAGE_UNKNOWN_CARD_RANK_NAME } from "./drawCards";
-import { updatePip } from "./HanabiCard";
-import * as HanabiCardInit from "./HanabiCardInit";
-import { isOurTurn } from "./isOurTurn";
-import * as konvaTooltips from "./konvaTooltips";
-import * as turn from "./turn";
-import { globals } from "./UIGlobals";
+} from "./constants.ts";
+import * as cursor from "./cursor.ts";
+import { CARD_IMAGE_UNKNOWN_CARD_RANK_NAME } from "./drawCards.ts";
+import { updatePip } from "./HanabiCard.ts";
+import * as HanabiCardInit from "./HanabiCardInit.ts";
+import { isOurTurn } from "./isOurTurn.ts";
+import * as konvaTooltips from "./konvaTooltips.ts";
+import * as turn from "./turn.ts";
+import { globals } from "./UIGlobals.ts";
 
 /** The size of the count of cards left in the deck, as a fraction of the deck's height. */
 const NUM_LEFT_SIZE = 0.4;

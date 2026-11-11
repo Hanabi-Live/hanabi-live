@@ -1,6 +1,6 @@
 import Konva from "konva";
 import type * as KonvaContext from "konva/lib/Context";
-import { MIN_FONT_SIZE } from "../constants";
+import { MIN_FONT_SIZE } from "../constants.ts";
 
 export class FitText extends Konva.Text {
   origFontSize: number;

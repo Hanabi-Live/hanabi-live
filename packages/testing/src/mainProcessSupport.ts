@@ -11,9 +11,9 @@ import path from "node:path";
 
 import { WebSocket } from "ws";
 import { z } from "zod";
-import { decodeSessionCookie } from "./cookie";
-import type { evaluationDatabase } from "./database";
-import { serverFrameViolation } from "./serverFrames";
+import { decodeSessionCookie } from "./cookie.ts";
+import type { evaluationDatabase } from "./database.ts";
+import { serverFrameViolation } from "./serverFrames.ts";
 
 export const ROOT = path.resolve(import.meta.dirname, "../../..");
 

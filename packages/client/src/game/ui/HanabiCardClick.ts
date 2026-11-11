@@ -3,19 +3,22 @@
 import type { CardIdentity } from "@hanabi-live/game";
 import { isCardDiscarded, isCardPlayed } from "@hanabi-live/game";
 import type Konva from "konva";
-import * as modals from "../../modals";
-import type { HanabiCard } from "./HanabiCard";
-import { globals } from "./UIGlobals";
-import * as arrows from "./arrows";
-import { clickRightCheckAddNote, preOpenNoteEditTooltip } from "./clickNotes";
+import * as modals from "../../modals.ts";
+import type { HanabiCard } from "./HanabiCard.ts";
+import { globals } from "./UIGlobals.ts";
+import * as arrows from "./arrows.ts";
+import {
+  clickRightCheckAddNote,
+  preOpenNoteEditTooltip,
+} from "./clickNotes.ts";
 import {
   LEFT_MOUSE_BUTTON,
   MIDDLE_MOUSE_BUTTON,
   RIGHT_MOUSE_BUTTON,
-} from "./constants";
-import { controlsHypothetical } from "./controlsHypothetical";
-import * as hypothetical from "./hypothetical";
-import * as replay from "./replay";
+} from "./constants.ts";
+import { controlsHypothetical } from "./controlsHypothetical.ts";
+import * as hypothetical from "./hypothetical.ts";
+import * as replay from "./replay.ts";
 
 export function HanabiCardClick(
   this: HanabiCard,

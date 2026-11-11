@@ -1,5 +1,5 @@
 import type { z } from "zod";
-import type { statusSchema } from "./generated/protocol";
+import type { statusSchema } from "./generated/protocol.ts";
 
 /** The activity that a user is currently performing. */
 export type Status = z.infer<typeof statusSchema>;

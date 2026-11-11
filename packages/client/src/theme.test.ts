@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, test, vi } from "vitest";
-import { LocalStorageStub } from "./testLocalStorage";
-import { takeLegacyDarkMode } from "./theme";
+import { LocalStorageStub } from "./testLocalStorage.ts";
+import { takeLegacyDarkMode } from "./theme.ts";
 
 const LEGACY_STORAGE_KEY = "darkMode";
 

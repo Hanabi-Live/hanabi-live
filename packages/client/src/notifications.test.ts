@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, test, vi } from "vitest";
 
-vi.mock("./modals", () => ({ showWarning: vi.fn() }));
-const { send } = await import("./notifications");
+vi.mock("./modals.ts", () => ({ showWarning: vi.fn() }));
+const { send } = await import("./notifications.ts");
 
 const originalNotification = Object.getOwnPropertyDescriptor(
   globalThis,

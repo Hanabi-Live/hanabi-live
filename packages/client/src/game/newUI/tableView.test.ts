@@ -9,7 +9,7 @@ import {
   getHandDisplayOrder,
   getTouchedCards,
   isClueAllowed,
-} from "./tableView";
+} from "./tableView.ts";
 
 const VARIANT = getDefaultVariant();
 

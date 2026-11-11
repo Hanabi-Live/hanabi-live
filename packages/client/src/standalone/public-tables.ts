@@ -12,10 +12,10 @@ import {
 import { MAX_PLAYERS, MIN_PLAYERS } from "@hanabi-live/game";
 import { iRange } from "complete-common";
 import * as z from "zod";
-import { hoverTooltip } from "../Tooltip";
-import { PATH } from "../constants";
-import type { Choice, Column, Sort } from "./shared/data-table";
-import { addTableControls, Pagers } from "./shared/data-table";
+import { hoverTooltip } from "../Tooltip.ts";
+import { PATH } from "../constants.ts";
+import type { Choice, Column, Sort } from "./shared/data-table.ts";
+import { addTableControls, Pagers } from "./shared/data-table.ts";
 
 declare const Chart: {
   register: (plugin: unknown) => void;

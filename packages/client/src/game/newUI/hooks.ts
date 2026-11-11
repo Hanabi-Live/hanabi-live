@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState, useSyncExternalStore } from "react";
-import type { State } from "../types/State";
-import { globals } from "../ui/UIGlobals";
-import * as newUIState from "./newUIState";
+import type { State } from "../types/State.ts";
+import { globals } from "../ui/UIGlobals.ts";
+import * as newUIState from "./newUIState.ts";
 
 /**
  * Subscribes to the game's store. The store does not exist until the server sends the "init"

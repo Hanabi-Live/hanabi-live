@@ -1,16 +1,16 @@
 // Shows and hides the pre-game screen.
 
-import { globals } from "../../Globals";
-import * as chat from "../../chat";
-import { PATH } from "../../constants";
-import { creatingTableChanged } from "../../sessionSlice";
-import { store } from "../../store";
-import { getHTMLInputElement, setBrowserAddressBarPath } from "../../utils";
-import { scrollLobbyChatToBottom } from "../chat/LobbyChat";
-import * as lobbyPage from "../lobbyPage";
-import { Screen } from "../types/Screen";
-import { PREGAME_CHAT_INPUT_ID } from "./PregameChat";
-import { pregameChatCleared, typingCleared } from "./pregameSlice";
+import { globals } from "../../Globals.ts";
+import * as chat from "../../chat.ts";
+import { PATH } from "../../constants.ts";
+import { creatingTableChanged } from "../../sessionSlice.ts";
+import { store } from "../../store.ts";
+import { getHTMLInputElement, setBrowserAddressBarPath } from "../../utils.ts";
+import { scrollLobbyChatToBottom } from "../chat/LobbyChat.tsx";
+import * as lobbyPage from "../lobbyPage.ts";
+import { Screen } from "../types/Screen.ts";
+import { PREGAME_CHAT_INPUT_ID } from "./PregameChat.tsx";
+import { pregameChatCleared, typingCleared } from "./pregameSlice.ts";
 
 export function show(): void {
   lobbyPage.hide();

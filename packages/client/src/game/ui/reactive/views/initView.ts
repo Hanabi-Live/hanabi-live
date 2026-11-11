@@ -1,4 +1,4 @@
-import { globals } from "../../UIGlobals";
+import { globals } from "../../UIGlobals.ts";
 
 export function onInitializationChanged(initialized: boolean): void {
   if (!initialized || globals.isResizing) {

@@ -2,13 +2,13 @@
 // game, or a hypothetical. They call the same functions as the classic screen's replay controls.
 
 import { useState } from "react";
-import type { State } from "../types/State";
-import { globals } from "../ui/UIGlobals";
-import { controlsHypothetical } from "../ui/controlsHypothetical";
-import * as hypothetical from "../ui/hypothetical";
-import { showPassLeaderDialog } from "../ui/leader";
-import * as replay from "../ui/replay";
-import * as restart from "../ui/restart";
+import type { State } from "../types/State.ts";
+import { globals } from "../ui/UIGlobals.ts";
+import { controlsHypothetical } from "../ui/controlsHypothetical.ts";
+import * as hypothetical from "../ui/hypothetical.ts";
+import { showPassLeaderDialog } from "../ui/leader.ts";
+import * as replay from "../ui/replay.ts";
+import * as restart from "../ui/restart.ts";
 
 const barClass =
   "tw:flex tw:shrink-0 tw:flex-wrap tw:items-center tw:gap-2 tw:rounded-[14px] tw:px-4 tw:py-2 tw:font-bold tw:text-card-ink";

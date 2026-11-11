@@ -1,6 +1,6 @@
 import type { Suit, Variant } from "@hanabi-live/game";
 import { useLayoutEffect, useRef } from "react";
-import { PIP_RADIUS, drawPip } from "../ui/drawPip";
+import { PIP_RADIUS, drawPip } from "../ui/drawPip.ts";
 
 /**
  * The width of the area that a pip is drawn in, in the pip's own units. It leaves room for the ring

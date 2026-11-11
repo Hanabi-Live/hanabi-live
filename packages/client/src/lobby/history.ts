@@ -1,19 +1,19 @@
 // Moving between the lobby and the screens that show past games and other scores.
 
 import { DEFAULT_PAGE_SIZE } from "@hanabi-live/data";
-import { HISTORY_HASH, PATH } from "../constants";
-import { globals } from "../Globals";
-import { store } from "../store";
-import { setBrowserAddressBarPath } from "../utils";
+import { HISTORY_HASH, PATH } from "../constants.ts";
+import { globals } from "../Globals.ts";
+import { store } from "../store.ts";
+import { setBrowserAddressBarPath } from "../utils.ts";
 import {
   historyRequested,
   moreOtherScoresRequested,
   otherScoresRequested,
   selectShownGameCount,
-} from "./gameHistory/historySlice";
-import { getOtherScoresHash } from "./historyHash";
-import { showLobbyHalves } from "./lobbyLayout";
-import { Screen } from "./types/Screen";
+} from "./gameHistory/historySlice.ts";
+import { getOtherScoresHash } from "./historyHash.ts";
+import { showLobbyHalves } from "./lobbyLayout.ts";
+import { Screen } from "./types/Screen.ts";
 
 /**
  * The number of games that each history or other scores request asks for, the same as a public

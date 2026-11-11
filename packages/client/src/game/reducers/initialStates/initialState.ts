@@ -5,7 +5,7 @@ import {
   getVariant,
 } from "@hanabi-live/game";
 import { newArray } from "complete-common";
-import type { State } from "../../types/State";
+import type { State } from "../../types/State.ts";
 
 export function initialState(metadata: GameMetadata): State {
   const gameState = getInitialGameState(metadata);

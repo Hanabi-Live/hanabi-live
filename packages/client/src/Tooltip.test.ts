@@ -1,6 +1,6 @@
 import { JSDOM } from "jsdom";
 import { afterAll, beforeAll, expect, test } from "vitest";
-import { Tooltip } from "./Tooltip";
+import { Tooltip } from "./Tooltip.ts";
 
 const WINDOW_HEIGHT = 600;
 const WINDOW_MARGIN = 8;

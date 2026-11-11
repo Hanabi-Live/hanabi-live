@@ -10,13 +10,13 @@ import {
 } from "@testing-library/react";
 import { Provider } from "react-redux";
 import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
-import type { Connection } from "../../Connection";
-import { globals } from "../../Globals";
-import { store } from "../../store";
-import { SettingsPage } from "./SettingsPage";
+import type { Connection } from "../../Connection.ts";
+import { globals } from "../../Globals.ts";
+import { store } from "../../store.ts";
+import { SettingsPage } from "./SettingsPage.tsx";
 
-vi.mock("../../theme", () => ({ setDarkMode: vi.fn() }));
-vi.mock("../../notifications", () => ({ test: vi.fn() }));
+vi.mock("../../theme.ts", () => ({ setDarkMode: vi.fn() }));
+vi.mock("../../notifications.ts", () => ({ test: vi.fn() }));
 
 const send = vi.fn();
 

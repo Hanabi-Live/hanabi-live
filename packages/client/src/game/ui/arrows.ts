@@ -20,11 +20,11 @@ import Konva from "konva";
 import type * as KonvaContext from "konva/lib/Context";
 import type { KonvaEventObject } from "konva/lib/Node";
 import type { z } from "zod";
-import * as tooltips from "../../tooltips";
-import { CardLayout } from "./CardLayout";
-import { HanabiCard } from "./HanabiCard";
-import { globals } from "./UIGlobals";
-import * as cluePreview from "./cluePreview";
+import * as tooltips from "../../tooltips.ts";
+import { CardLayout } from "./CardLayout.ts";
+import { HanabiCard } from "./HanabiCard.ts";
+import { globals } from "./UIGlobals.ts";
+import * as cluePreview from "./cluePreview.ts";
 import {
   ARROW_COLOR,
   CARD_ANIMATION_DELAY_SECONDS,
@@ -33,13 +33,13 @@ import {
   HALF_TURN_DEGREES,
   RIGHT_MOUSE_BUTTON,
   STRIKE_ARROW_TARGETS,
-} from "./constants";
-import type { Arrow } from "./controls/Arrow";
-import type { NodeWithTooltip } from "./controls/NodeWithTooltip";
-import { StrikeSquare } from "./controls/StrikeSquare";
-import { drawPip } from "./drawPip";
-import { getCardOrStackBase } from "./getCardOrStackBase";
-import * as konvaHelpers from "./konvaHelpers";
+} from "./constants.ts";
+import type { Arrow } from "./controls/Arrow.ts";
+import type { NodeWithTooltip } from "./controls/NodeWithTooltip.ts";
+import { StrikeSquare } from "./controls/StrikeSquare.ts";
+import { drawPip } from "./drawPip.ts";
+import { getCardOrStackBase } from "./getCardOrStackBase.ts";
+import * as konvaHelpers from "./konvaHelpers.ts";
 
 /**
  * Where an arrow points on an element that is not a card or a text label, as fractions of the

@@ -5,16 +5,16 @@ import { tableIdSchema } from "@hanabi-live/data";
 import { act, cleanup, render, screen } from "@testing-library/react";
 import { Provider } from "react-redux";
 import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
-import { add, removeDeletedLobbyMessage } from "../../chat";
-import { globals } from "../../Globals";
-import { store } from "../../store";
-import { Screen } from "../types/Screen";
-import { LobbyChat } from "./LobbyChat";
+import { add, removeDeletedLobbyMessage } from "../../chat.ts";
+import { globals } from "../../Globals.ts";
+import { store } from "../../store.ts";
+import { Screen } from "../types/Screen.ts";
+import { LobbyChat } from "./LobbyChat.tsx";
 
-vi.mock("../../chatCommands", () => ({ chatCommands: new Map() }));
-vi.mock("../../modals", () => ({}));
-vi.mock("../../tooltips", () => ({}));
-vi.mock("../createGame", () => ({}));
+vi.mock("../../chatCommands.ts", () => ({ chatCommands: new Map() }));
+vi.mock("../../modals.ts", () => ({}));
+vi.mock("../../tooltips.ts", () => ({}));
+vi.mock("../createGame.ts", () => ({}));
 
 function message(
   fields: Partial<ServerCommandData["chat"]>,

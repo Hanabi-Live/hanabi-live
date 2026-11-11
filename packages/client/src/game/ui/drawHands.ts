@@ -2,9 +2,9 @@ import type { NumPlayers, PlayerIndex } from "@hanabi-live/game";
 import { MAX_PLAYERS, getCardsPerHand, getCharacter } from "@hanabi-live/game";
 import { eRange } from "complete-common";
 import Konva from "konva";
-import { CardLayout } from "./CardLayout";
-import { NameFrame } from "./NameFrame";
-import { globals } from "./UIGlobals";
+import { CardLayout } from "./CardLayout.ts";
+import { NameFrame } from "./NameFrame.ts";
+import { globals } from "./UIGlobals.ts";
 import {
   BGA_ACTION_LOG,
   CARD_H,
@@ -16,9 +16,9 @@ import {
   OFF_BLACK,
   QUARTER_TURN_DEGREES,
   TEXT_SHADOW,
-} from "./constants";
-import { TextWithTooltip } from "./controls/TextWithTooltip";
-import { initKonvaTooltips } from "./konvaTooltips";
+} from "./constants.ts";
+import { TextWithTooltip } from "./controls/TextWithTooltip.ts";
+import { initKonvaTooltips } from "./konvaTooltips.ts";
 
 interface HandConfig {
   x: number;

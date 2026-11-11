@@ -4,7 +4,7 @@ import { mkdtemp, rm, writeFile } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import { setImmediate } from "node:timers/promises";
-import { bounded, startProcess, stopChild } from "./mainProcessSupport";
+import { bounded, startProcess, stopChild } from "./mainProcessSupport.ts";
 
 test("process readiness waits for both listeners on every start", async () => {
   const directory = await mkdtemp(path.join(os.tmpdir(), "hanabi-readiness-"));

@@ -1,11 +1,11 @@
-import * as chat from "../../chat";
-import { PATH } from "../../constants";
-import { typingCleared } from "../../lobby/pregame/pregameSlice";
-import { store } from "../../store";
-import * as tooltips from "../../tooltips";
-import { setBrowserAddressBarPath } from "../../utils";
-import { globals } from "./UIGlobals";
-import * as timer from "./timer";
+import * as chat from "../../chat.ts";
+import { PATH } from "../../constants.ts";
+import { typingCleared } from "../../lobby/pregame/pregameSlice.ts";
+import { store } from "../../store.ts";
+import * as tooltips from "../../tooltips.ts";
+import { setBrowserAddressBarPath } from "../../utils.ts";
+import { globals } from "./UIGlobals.ts";
+import * as timer from "./timer.ts";
 
 export function backToLobby(): void {
   // Hide any tooltips, if showing.

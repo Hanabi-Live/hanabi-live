@@ -1,7 +1,7 @@
 import type { Clock } from "@sinonjs/fake-timers";
 import { install } from "@sinonjs/fake-timers";
 import { afterEach, describe, expect, test, vi } from "vitest";
-import { checkCookieWithRetry } from "./cookieProbe";
+import { checkCookieWithRetry } from "./cookieProbe.ts";
 
 const originalFetch = globalThis.fetch;
 let clock: Clock | undefined;

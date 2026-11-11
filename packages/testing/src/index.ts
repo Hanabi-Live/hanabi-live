@@ -1,2 +1,2 @@
-export { evaluationDatabase } from "./database";
-export { serverFrameViolation } from "./serverFrames";
+export { evaluationDatabase } from "./database.ts";
+export { serverFrameViolation } from "./serverFrames.ts";

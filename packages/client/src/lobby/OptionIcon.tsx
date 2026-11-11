@@ -1,8 +1,8 @@
 // An icon that summarizes a table's option, with a tooltip that explains it.
 
 import { useEffect, useRef } from "react";
-import * as tooltips from "../tooltips";
-import type { OptionDescription } from "./optionDescriptions";
+import * as tooltips from "../tooltips.ts";
+import type { OptionDescription } from "./optionDescriptions.ts";
 
 export function OptionIcon({
   description: { icon, label, tooltip },

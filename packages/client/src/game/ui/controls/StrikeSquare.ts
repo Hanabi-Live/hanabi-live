@@ -1,5 +1,5 @@
 import Konva from "konva";
-import type { StrikeIndex } from "../constants";
+import type { StrikeIndex } from "../constants.ts";
 
 export class StrikeSquare extends Konva.Rect {
   readonly num: StrikeIndex;

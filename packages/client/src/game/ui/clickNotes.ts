@@ -1,7 +1,7 @@
 import { noop } from "complete-common";
-import type { HanabiCard } from "./HanabiCard";
-import { globals } from "./UIGlobals";
-import * as notes from "./notes";
+import type { HanabiCard } from "./HanabiCard.ts";
+import { globals } from "./UIGlobals.ts";
+import * as notes from "./notes.ts";
 
 let lastNote = "";
 

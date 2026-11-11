@@ -1,6 +1,6 @@
 import { getDefaultVariant } from "@hanabi-live/game";
 import { describe, expect, test } from "vitest";
-import { parseNote } from "./notesReducer";
+import { parseNote } from "./notesReducer.ts";
 
 const VARIANT = getDefaultVariant();
 

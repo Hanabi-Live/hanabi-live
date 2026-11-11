@@ -1,5 +1,5 @@
 import type { z } from "zod";
-import { noticeSchema } from "../generated/protocol";
+import { noticeSchema } from "../generated/protocol.ts";
 
 export function validationErrorDetails(error: z.ZodError): string {
   return error.issues

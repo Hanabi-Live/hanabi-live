@@ -2,23 +2,23 @@
 
 import { isValidPlayerIndex, MAX_PLAYERS } from "@hanabi-live/game";
 import { Fragment, useLayoutEffect, useRef } from "react";
-import { PATH } from "../../constants";
-import { useAppSelector } from "../../store";
-import * as tooltips from "../../tooltips";
-import { copyStringToClipboard, getURLFromPath } from "../../utils";
-import { OptionIcon } from "../OptionIcon";
-import { BORDERED_TABLE } from "../borderedTable";
+import { PATH } from "../../constants.ts";
+import { useAppSelector } from "../../store.ts";
+import * as tooltips from "../../tooltips.ts";
+import { copyStringToClipboard, getURLFromPath } from "../../utils.ts";
+import { OptionIcon } from "../OptionIcon.tsx";
+import { BORDERED_TABLE } from "../borderedTable.ts";
 import {
   FULL_CURSOR,
   JOIN_CURSOR,
   REJOIN_CURSOR,
   SHADOW_NAME,
   SPECTATE_CURSOR,
-} from "../cursorClasses";
-import { getOptionDescriptions } from "../optionDescriptions";
-import { tableJoin, tableReattend, tableSpectate } from "./tableActions";
-import type { Table, TableRow } from "./tablesSlice";
-import { selectTableRows } from "./tablesSlice";
+} from "../cursorClasses.ts";
+import { getOptionDescriptions } from "../optionDescriptions.ts";
+import { tableJoin, tableReattend, tableSpectate } from "./tableActions.ts";
+import type { Table, TableRow } from "./tablesSlice.ts";
+import { selectTableRows } from "./tablesSlice.ts";
 
 /**
  * How long a row ignores clicks after it appears or moves. Tables come, go, and re-sort as the

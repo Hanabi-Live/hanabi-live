@@ -1,13 +1,17 @@
 import { assertDefined } from "complete-common";
 import Konva from "konva";
-import * as modals from "../../modals";
-import { getCanvasColors } from "../../theme";
-import { globals } from "./UIGlobals";
-import { LABEL_COLOR, RANK_FONT_FAMILY, STROKE_WIDTH_UNIT } from "./constants";
-import { drawCards } from "./drawCards";
-import * as drawCardsBrowser from "./drawCardsBrowser";
-import { drawUI } from "./drawUI";
-import * as keyboard from "./keyboard";
+import * as modals from "../../modals.ts";
+import { getCanvasColors } from "../../theme.ts";
+import { globals } from "./UIGlobals.ts";
+import {
+  LABEL_COLOR,
+  RANK_FONT_FAMILY,
+  STROKE_WIDTH_UNIT,
+} from "./constants.ts";
+import { drawCards } from "./drawCards.ts";
+import * as drawCardsBrowser from "./drawCardsBrowser.ts";
+import { drawUI } from "./drawUI.ts";
+import * as keyboard from "./keyboard.ts";
 
 /**
  * The labels of the loading screen, in fractions of the stage height. Their height is also their

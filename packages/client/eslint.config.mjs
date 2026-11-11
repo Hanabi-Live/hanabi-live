@@ -74,5 +74,13 @@ export default defineConfig(
     },
   },
 
+  // The standalone pages are bundled as classic scripts, which cannot use top-level await.
+  {
+    files: ["src/standalone/**"],
+    rules: {
+      "unicorn/prefer-top-level-await": "off",
+    },
+  },
+
   { ignores: ["**/test_data/*.js"] },
 );

@@ -12,8 +12,8 @@ import path from "node:path";
 import { setTimeout as delay } from "node:timers/promises";
 import type { WebSocket } from "ws";
 import { z } from "zod";
-import { evaluationDatabase, liveTables } from "./database";
-import type { CheckpointProgress } from "./mainProcessSupport";
+import { evaluationDatabase, liveTables } from "./database.ts";
+import type { CheckpointProgress } from "./mainProcessSupport.ts";
 import {
   ROOT,
   bounded,
@@ -26,7 +26,7 @@ import {
   socketClient,
   startProcess,
   stopChild,
-} from "./mainProcessSupport";
+} from "./mainProcessSupport.ts";
 
 databaseDescribe("compiled application entry point (rust)", () => {
   test.each([

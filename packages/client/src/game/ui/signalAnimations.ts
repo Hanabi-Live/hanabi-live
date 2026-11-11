@@ -2,9 +2,9 @@
 // last strike, and the deck runs out.
 
 import Konva from "konva";
-import type { LayoutChild } from "./LayoutChild";
-import { globals } from "./UIGlobals";
-import { EMPTY_DECK_COLOR, WARNING_COLOR } from "./constants";
+import type { LayoutChild } from "./LayoutChild.ts";
+import { globals } from "./UIGlobals.ts";
+import { EMPTY_DECK_COLOR, WARNING_COLOR } from "./constants.ts";
 import {
   EffectTimeline,
   absoluteCenter,
@@ -13,8 +13,8 @@ import {
   addScoreGlow,
   interpolate,
   textCenter,
-} from "./fireworks";
-import { onScoreOrMaxScoreChanged } from "./reactive/views/gameInfoView";
+} from "./fireworks.ts";
+import { onScoreOrMaxScoreChanged } from "./reactive/views/gameInfoView.ts";
 
 // Distances and sizes are fractions of the height of a play stack.
 const MAX_SCORE_RING_RADIUS = 0.31;

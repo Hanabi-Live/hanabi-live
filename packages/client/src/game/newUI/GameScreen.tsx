@@ -19,37 +19,37 @@ import {
 } from "@hanabi-live/game";
 import { clamp } from "complete-common";
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
-import * as modals from "../../modals";
-import * as gameChat from "../chat";
+import * as modals from "../../modals.ts";
+import * as gameChat from "../chat.ts";
 import type {
   ClientAction,
   ClientActionColorClue,
-} from "../types/ClientAction";
-import type { State } from "../types/State";
-import { globals } from "../ui/UIGlobals";
-import { backToLobby } from "../ui/backToLobby";
-import { EFFICIENCY_DECIMAL_PLACES } from "../ui/constants";
-import { controlsHypothetical } from "../ui/controlsHypothetical";
-import { getCardOrStackBase } from "../ui/getCardOrStackBase";
-import * as hypothetical from "../ui/hypothetical";
-import * as replay from "../ui/replay";
-import * as turn from "../ui/turn";
-import { ActionLog } from "./ActionLog";
-import { CARD_HEIGHT_PER_WIDTH, CardFace } from "./Card";
-import { ChatPanel } from "./ChatPanel";
-import { CluePanel } from "./CluePanel";
-import type { Seat } from "./Hands";
+} from "../types/ClientAction.ts";
+import type { State } from "../types/State.ts";
+import { globals } from "../ui/UIGlobals.ts";
+import { backToLobby } from "../ui/backToLobby.ts";
+import { EFFICIENCY_DECIMAL_PLACES } from "../ui/constants.ts";
+import { controlsHypothetical } from "../ui/controlsHypothetical.ts";
+import { getCardOrStackBase } from "../ui/getCardOrStackBase.ts";
+import * as hypothetical from "../ui/hypothetical.ts";
+import * as replay from "../ui/replay.ts";
+import * as turn from "../ui/turn.ts";
+import { ActionLog } from "./ActionLog.tsx";
+import { CARD_HEIGHT_PER_WIDTH, CardFace } from "./Card.tsx";
+import { ChatPanel } from "./ChatPanel.tsx";
+import { CluePanel } from "./CluePanel.tsx";
+import type { Seat } from "./Hands.tsx";
 import {
   CARD_GAP,
   Hands,
   NAME_COLUMN_MAX_WIDTH,
   NameColumnSizer,
-} from "./Hands";
-import { ReplayBar } from "./ReplayBar";
-import type { DiscardView, StackView, ZoneState } from "./SharedCards";
-import { DiscardPile, PlayArea, TableTokens } from "./SharedCards";
-import { StatusStrip } from "./StatusStrip";
-import type { CardPositions } from "./cardMotion";
+} from "./Hands.tsx";
+import { ReplayBar } from "./ReplayBar.tsx";
+import type { DiscardView, StackView, ZoneState } from "./SharedCards.tsx";
+import { DiscardPile, PlayArea, TableTokens } from "./SharedCards.tsx";
+import { StatusStrip } from "./StatusStrip.tsx";
+import type { CardPositions } from "./cardMotion.ts";
 import {
   MAX_ANIMATED_SEGMENT_CHANGE,
   MOVE_BATCH_MILLISECONDS,
@@ -57,16 +57,16 @@ import {
   areCardsMoving,
   measureCards,
   stopCardMoves,
-} from "./cardMotion";
+} from "./cardMotion.ts";
 import {
   useElementSize,
   useGameState,
   useMediaQuery,
   useNewUIVersion,
   useNow,
-} from "./hooks";
-import * as newUIState from "./newUIState";
-import type { CardView } from "./tableView";
+} from "./hooks.ts";
+import * as newUIState from "./newUIState.ts";
+import type { CardView } from "./tableView.ts";
 import {
   BLANK_NOTE,
   formatFutureEfficiency,
@@ -75,7 +75,7 @@ import {
   getHandDisplayOrder,
   getTouchedCards,
   isClueAllowed,
-} from "./tableView";
+} from "./tableView.ts";
 
 /**
  * Window widths from the breakpoints in "public/css/tokens.css". The layout classes use the same

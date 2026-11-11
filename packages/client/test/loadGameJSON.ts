@@ -27,9 +27,9 @@ import {
   msgClueToClue,
 } from "@hanabi-live/game";
 import { assertDefined, assertEnumValue, eRange } from "complete-common";
-import { initialState } from "../src/game/reducers/initialStates/initialState";
-import { shouldStoreSegment } from "../src/game/reducers/stateReducerHelpers";
-import type { State } from "../src/game/types/State";
+import { initialState } from "../src/game/reducers/initialStates/initialState.ts";
+import { shouldStoreSegment } from "../src/game/reducers/stateReducerHelpers.ts";
+import type { State } from "../src/game/types/State.ts";
 import type testGame from "../test_data/up_or_down.json";
 
 type JSONGame = typeof testGame;

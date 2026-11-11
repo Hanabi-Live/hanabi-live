@@ -1,6 +1,6 @@
 import type { MAX_STRIKES } from "@hanabi-live/game";
 import type { Tuple } from "complete-common";
-import type { ReplayBoardElement } from "./arrows";
+import type { ReplayBoardElement } from "./arrows.ts";
 
 // ---------------------------
 // Default qualities of a card

@@ -1,13 +1,13 @@
 import type { CardIdentity, CardOrder, CardState } from "@hanabi-live/game";
 import { getTotalCardsInDeck } from "@hanabi-live/game";
 import { eRange } from "complete-common";
-import type { State } from "../../../types/State";
-import { HanabiCard } from "../../HanabiCard";
-import { globals } from "../../UIGlobals";
-import { getCardOrStackBase } from "../../getCardOrStackBase";
-import { changeStartingHandVisibility } from "../../hypothetical";
-import type { Listener, Selector, Subscription } from "../observeStore";
-import { observeStore, SKIP } from "../observeStore";
+import type { State } from "../../../types/State.ts";
+import { HanabiCard } from "../../HanabiCard.ts";
+import { globals } from "../../UIGlobals.ts";
+import { getCardOrStackBase } from "../../getCardOrStackBase.ts";
+import { changeStartingHandVisibility } from "../../hypothetical.ts";
+import type { Listener, Selector, Subscription } from "../observeStore.ts";
+import { observeStore, SKIP } from "../observeStore.ts";
 
 export function onCardsPossiblyAdded(length: number): void {
   const totalCardsInDeck = getTotalCardsInDeck(globals.variant);

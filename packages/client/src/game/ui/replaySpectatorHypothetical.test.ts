@@ -2,20 +2,21 @@ import { getDefaultMetadata } from "@hanabi-live/game";
 import { createStore } from "redux";
 import { describe, expect, test, vi } from "vitest";
 
-vi.mock("../reducers/uiReducer", () => ({ uiReducer: vi.fn() }));
-vi.mock("./UIGlobals", () => ({ globals: {} }));
-vi.mock("../../modals", () => ({}));
-vi.mock("./arrows", () => ({}));
-vi.mock("./getCardOrStackBase", () => ({}));
-vi.mock("./konvaHelpers", () => ({}));
-vi.mock("../../utils", () => ({
+vi.mock("../reducers/uiReducer.ts", () => ({ uiReducer: vi.fn() }));
+vi.mock("./UIGlobals.ts", () => ({ globals: {} }));
+vi.mock("../../modals.ts", () => ({}));
+vi.mock("./arrows.ts", () => ({}));
+vi.mock("./getCardOrStackBase.ts", () => ({}));
+vi.mock("./konvaHelpers.ts", () => ({}));
+vi.mock("../../utils.ts", () => ({
   getHTMLElement: vi.fn(),
   getHTMLInputElement: vi.fn(),
 }));
-const { initialState } = await import("../reducers/initialStates/initialState");
-const { stateReducer } = await import("../reducers/stateReducer");
-const replay = await import("./replay");
-const { globals } = await import("./UIGlobals");
+const { initialState } =
+  await import("../reducers/initialStates/initialState.ts");
+const { stateReducer } = await import("../reducers/stateReducer.ts");
+const replay = await import("./replay.ts");
+const { globals } = await import("./UIGlobals.ts");
 
 function setup(amLeader: boolean) {
   const metadata = getDefaultMetadata(2);

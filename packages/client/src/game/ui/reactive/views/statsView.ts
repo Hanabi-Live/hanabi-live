@@ -1,13 +1,13 @@
 import type { NumPlayers } from "@hanabi-live/game";
 import { PaceRisk, getEfficiency } from "@hanabi-live/game";
 import { assertDefined } from "complete-common";
-import { globals } from "../../UIGlobals";
+import { globals } from "../../UIGlobals.ts";
 import {
   EFFICIENCY_DECIMAL_PLACES,
   LABEL_COLOR,
   WARNING_COLOR,
-} from "../../constants";
-import { initKonvaTooltips } from "../../konvaTooltips";
+} from "../../constants.ts";
+import { initKonvaTooltips } from "../../konvaTooltips.ts";
 
 /** Cyan, for an efficiency that has a custom modification. */
 const MODIFIED_EFFICIENCY_COLOR = "#00ffff";

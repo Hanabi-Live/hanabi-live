@@ -1,5 +1,5 @@
-import { changeStartingHandVisibility } from "./hypothetical";
-import { globals } from "./UIGlobals";
+import { changeStartingHandVisibility } from "./hypothetical.ts";
+import { globals } from "./UIGlobals.ts";
 
 export function setGlobalEmpathy(enabled: boolean): void {
   if (enabled === globals.globalEmpathyEnabled) {

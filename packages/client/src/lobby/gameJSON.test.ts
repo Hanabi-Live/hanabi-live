@@ -1,5 +1,5 @@
 import { describe, expect, test } from "vitest";
-import { parseGameJSON } from "./gameJSON";
+import { parseGameJSON } from "./gameJSON.ts";
 
 describe("pasted game JSON", () => {
   test("exported games are accepted", () => {

@@ -1,5 +1,5 @@
-import { globals } from "./UIGlobals";
-import { controlsHypothetical } from "./controlsHypothetical";
+import { globals } from "./UIGlobals.ts";
+import { controlsHypothetical } from "./controlsHypothetical.ts";
 
 /**
  * Used to determine if it is our turn in the present. (For example, it can be our turn in the

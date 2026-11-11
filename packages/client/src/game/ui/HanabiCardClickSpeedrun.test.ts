@@ -1,18 +1,18 @@
 import { getVariant } from "@hanabi-live/game";
 import { beforeEach, describe, expect, test, vi } from "vitest";
-import { SoundType } from "../types/SoundType";
-import type { HanabiCard } from "./HanabiCard";
+import { SoundType } from "../types/SoundType.ts";
+import type { HanabiCard } from "./HanabiCard.ts";
 
 const play = vi.fn();
 const end = vi.fn();
 const pulse = vi.fn();
 
-vi.mock("./UIGlobals", () => ({ globals: {} }));
-vi.mock("../../sounds", () => ({ play }));
-vi.mock("./turn", () => ({ end }));
-vi.mock("./clickNotes", () => ({ clickRightCheckAddNote: vi.fn() }));
-const { mouseDownSpeedrun } = await import("./HanabiCardClickSpeedrun");
-const { globals } = await import("./UIGlobals");
+vi.mock("./UIGlobals.ts", () => ({ globals: {} }));
+vi.mock("../../sounds.ts", () => ({ play }));
+vi.mock("./turn.ts", () => ({ end }));
+vi.mock("./clickNotes.ts", () => ({ clickRightCheckAddNote: vi.fn() }));
+const { mouseDownSpeedrun } = await import("./HanabiCardClickSpeedrun.ts");
+const { globals } = await import("./UIGlobals.ts");
 
 const teammateCard = {
   state: { location: 1, order: 5, suitIndex: 0, rank: 3 },

@@ -3,11 +3,11 @@ import type { Tuple } from "complete-common";
 import { assertDefined, eRange, newArray } from "complete-common";
 import Konva from "konva";
 import type { ContainerConfig } from "konva/lib/Container";
-import { getCanvasColors } from "../../theme";
-import { MultiFitText } from "./MultiFitText";
-import { globals } from "./UIGlobals";
-import { FONT_FAMILY, PANEL_CORNER_RADIUS } from "./constants";
-import { FitText } from "./controls/FitText";
+import { getCanvasColors } from "../../theme.ts";
+import { MultiFitText } from "./MultiFitText.ts";
+import { globals } from "./UIGlobals.ts";
+import { FONT_FAMILY, PANEL_CORNER_RADIUS } from "./constants.ts";
+import { FitText } from "./controls/FitText.ts";
 
 /** The opacity of the log's background, which mostly hides the board behind it. */
 const BACKGROUND_OPACITY = 0.9;

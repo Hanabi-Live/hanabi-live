@@ -1,8 +1,8 @@
 import type Konva from "konva";
-import { getHTMLElement } from "../../utils";
-import type { Deck } from "./Deck";
-import type { LayoutChild } from "./LayoutChild";
-import { globals } from "./UIGlobals";
+import { getHTMLElement } from "../../utils.ts";
+import type { Deck } from "./Deck.ts";
+import type { LayoutChild } from "./LayoutChild.ts";
+import { globals } from "./UIGlobals.ts";
 
 export type CursorType = "default" | "hand" | "dragging" | "look" | "edit";
 

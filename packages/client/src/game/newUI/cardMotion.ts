@@ -5,7 +5,7 @@ import { SECOND_IN_MILLISECONDS } from "complete-common";
 import {
   CARD_ANIMATION_LENGTH_SECONDS,
   PLAY_ANIMATION_SECONDS,
-} from "../ui/constants";
+} from "../ui/constants.ts";
 
 /**
  * Where each card is, by card order, and where the deck is. The place names the hand and slot, the

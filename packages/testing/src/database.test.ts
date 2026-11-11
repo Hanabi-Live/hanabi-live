@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, test } from "bun:test";
 import { setTimeout as delay } from "node:timers/promises";
 import type postgres from "postgres";
-import { evaluationDatabase } from "./database";
+import { evaluationDatabase } from "./database.ts";
 
 const databaseDescribe =
   process.env["HANABI_TEST_DATABASE_URL"] === undefined

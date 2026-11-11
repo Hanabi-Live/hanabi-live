@@ -1,10 +1,10 @@
 // The chat for the people at the table that we are at, before its game starts.
 
 import { useRef } from "react";
-import { getTypingMessage } from "../../chat";
-import { useAppSelector } from "../../store";
-import { ChatInput, ChatTextBox } from "../chat/ChatBox";
-import { acceptOptionsFromGuest } from "../createGame";
+import { getTypingMessage } from "../../chat.ts";
+import { useAppSelector } from "../../store.ts";
+import { ChatInput, ChatTextBox } from "../chat/ChatBox.tsx";
+import { acceptOptionsFromGuest } from "../createGame.ts";
 
 export const PREGAME_CHAT_INPUT_ID = "lobby-chat-pregame-input";
 

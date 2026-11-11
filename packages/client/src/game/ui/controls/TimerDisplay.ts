@@ -6,8 +6,8 @@ import {
   TEXT_SHADOW,
   TIMER_WARNING_OPACITY,
   WARNING_COLOR,
-} from "../constants";
-import { FitText } from "./FitText";
+} from "../constants.ts";
+import { FitText } from "./FitText.ts";
 
 /** The background of a timer that is not flashing a warning. */
 const PANEL_COLOR = "black";

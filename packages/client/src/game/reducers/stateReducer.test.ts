@@ -1,12 +1,12 @@
 import { draw, getDefaultMetadata } from "@hanabi-live/game";
 import { describe, expect, test, vi } from "vitest";
 
-vi.mock("./uiReducer", () => ({
+vi.mock("./uiReducer.ts", () => ({
   uiReducer: vi.fn(),
 }));
-const { init, replayEnter } = await import("../../../test/testActions");
-const { initialState } = await import("./initialStates/initialState");
-const { stateReducer } = await import("./stateReducer");
+const { init, replayEnter } = await import("../../../test/testActions.ts");
+const { initialState } = await import("./initialStates/initialState.ts");
+const { stateReducer } = await import("./stateReducer.ts");
 
 const numPlayers = 3;
 const defaultMetadata = getDefaultMetadata(numPlayers);

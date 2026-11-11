@@ -1,8 +1,8 @@
 // Helper functions for doing actions to our own hand.
 
 import { assertDefined } from "complete-common";
-import type { CardLayout } from "./CardLayout";
-import { globals } from "./UIGlobals";
+import type { CardLayout } from "./CardLayout.ts";
+import { globals } from "./UIGlobals.ts";
 
 export function get(): CardLayout {
   if (!globals.state.playing) {

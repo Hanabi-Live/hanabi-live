@@ -2,11 +2,11 @@
 
 import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
-import { globals } from "../../Globals";
-import { Tooltip } from "../../Tooltip";
-import { useAppSelector } from "../../store";
-import { getHTMLInputElement } from "../../utils";
-import type { UserRow } from "./usersSlice";
+import { globals } from "../../Globals.ts";
+import { Tooltip } from "../../Tooltip.ts";
+import { useAppSelector } from "../../store.ts";
+import { getHTMLInputElement } from "../../utils.ts";
+import type { UserRow } from "./usersSlice.ts";
 
 const NAME_CLASSES = {
   self: "tw:text-name-me",

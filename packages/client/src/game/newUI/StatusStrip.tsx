@@ -1,5 +1,5 @@
 import { useEffect, useRef } from "react";
-import * as tooltips from "../../tooltips";
+import * as tooltips from "../../tooltips.ts";
 
 /** Explains the two efficiency numbers, in the words of the classic screen's tooltip. */
 const EFFICIENCY_HELP = `

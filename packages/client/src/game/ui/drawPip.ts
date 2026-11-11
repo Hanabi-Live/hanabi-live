@@ -6,8 +6,8 @@ import {
   CARD_W,
   FULL_CIRCLE_RADIANS,
   NO_SHADOW_COLOR,
-} from "./constants";
-import { DRAW_PIP_FUNCTIONS } from "./drawPipFunctions";
+} from "./constants.ts";
+import { DRAW_PIP_FUNCTIONS } from "./drawPipFunctions.ts";
 
 /** The scale of the suit pips arranged in a ring on an unknown card and on the deck. */
 export const SUIT_PIP_SCALE = 0.4;

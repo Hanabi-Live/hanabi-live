@@ -7,7 +7,7 @@ import { mkdir, mkdtemp, readFile, rm } from "node:fs/promises";
 import path from "node:path";
 import { setTimeout as delay } from "node:timers/promises";
 import type { WebSocket } from "ws";
-import { evaluationDatabase } from "./database";
+import { evaluationDatabase } from "./database.ts";
 import {
   ROOT,
   bounded,
@@ -21,7 +21,7 @@ import {
   startProcess,
   stopChild,
   summary,
-} from "./mainProcessSupport";
+} from "./mainProcessSupport.ts";
 
 /** The deal of this two-player seed lets the players alternate 25 plays. */
 const SEED_SUFFIX = "77621";

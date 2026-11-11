@@ -1,11 +1,11 @@
 import { configureStore } from "@reduxjs/toolkit";
 import { useSelector } from "react-redux";
-import { lobbyChatReducer } from "./lobby/chat/lobbyChatSlice";
-import { historyReducer } from "./lobby/gameHistory/historySlice";
-import { pregameReducer } from "./lobby/pregame/pregameSlice";
-import { tablesReducer } from "./lobby/tables/tablesSlice";
-import { usersReducer } from "./lobby/users/usersSlice";
-import { sessionReducer } from "./sessionSlice";
+import { lobbyChatReducer } from "./lobby/chat/lobbyChatSlice.ts";
+import { historyReducer } from "./lobby/gameHistory/historySlice.ts";
+import { pregameReducer } from "./lobby/pregame/pregameSlice.ts";
+import { tablesReducer } from "./lobby/tables/tablesSlice.ts";
+import { usersReducer } from "./lobby/users/usersSlice.ts";
+import { sessionReducer } from "./sessionSlice.ts";
 
 export const store = configureStore({
   reducer: {

@@ -1,4 +1,4 @@
-import { MIN_FONT_SIZE } from "./constants";
+import { MIN_FONT_SIZE } from "./constants.ts";
 
 /** The search for a font size stops when it is this close to the best size, in pixels. */
 const FONT_SIZE_TOLERANCE = 0.5;

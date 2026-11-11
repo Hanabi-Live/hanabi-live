@@ -2,9 +2,9 @@
 // and the flash and the shock ring of an explosion.
 
 import Konva from "konva";
-import type { LayoutChild } from "./LayoutChild";
-import { globals } from "./UIGlobals";
-import { CARD_CORNER_ROUNDNESS } from "./drawCards";
+import type { LayoutChild } from "./LayoutChild.ts";
+import { globals } from "./UIGlobals.ts";
+import { CARD_CORNER_ROUNDNESS } from "./drawCards.ts";
 
 export interface Point {
   x: number;

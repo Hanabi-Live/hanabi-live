@@ -1,6 +1,6 @@
 import { getMonorepoPackageNames, getPackageJSON } from "complete-node";
 import path from "node:path";
-import { lintDependencyCatalog } from "./dependencyCatalog.js";
+import { lintDependencyCatalog } from "./dependencyCatalog.ts";
 
 const PACKAGE_ROOT = path.resolve(import.meta.dirname, "..");
 const REPO_ROOT = path.resolve(PACKAGE_ROOT, "..", "..");

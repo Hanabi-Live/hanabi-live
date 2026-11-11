@@ -5,16 +5,16 @@
 
 import { MAX_STRIKES } from "@hanabi-live/game";
 import Konva from "konva";
-import type { LayoutChild } from "./LayoutChild";
-import { globals } from "./UIGlobals";
+import type { LayoutChild } from "./LayoutChild.ts";
+import { globals } from "./UIGlobals.ts";
 import {
   CARD_ANIMATION_LENGTH_SECONDS,
   FULL_TURN_DEGREES,
   HALF_TURN_DEGREES,
   QUARTER_TURN_DEGREES,
-} from "./constants";
-import { CARD_CORNER_ROUNDNESS } from "./drawCards";
-import type { Point } from "./fireworks";
+} from "./constants.ts";
+import { CARD_CORNER_ROUNDNESS } from "./drawCards.ts";
+import type { Point } from "./fireworks.ts";
 import {
   EffectTimeline,
   absoluteCenter,
@@ -23,13 +23,13 @@ import {
   easeOut,
   interpolate,
   randomBetween,
-} from "./fireworks";
-import { degreesToRadians } from "./konvaHelpers";
+} from "./fireworks.ts";
+import { degreesToRadians } from "./konvaHelpers.ts";
 import {
   areStrikesHidden,
   onOngoingOrVisibleStrikesChanged,
-} from "./reactive/views/gameInfoView";
-import { addStrikeoutFlash } from "./signalAnimations";
+} from "./reactive/views/gameInfoView.ts";
+import { addStrikeoutFlash } from "./signalAnimations.ts";
 
 /** The card rises over its play stack. */
 const LAUNCH_SECONDS = 0.35;

@@ -11,7 +11,7 @@ import { appendFile, mkdir, mkdtemp, rm, symlink } from "node:fs/promises";
 import path from "node:path";
 import { promisify } from "node:util";
 import { chromium } from "playwright";
-import { evaluationDatabase } from "./database";
+import { evaluationDatabase } from "./database.ts";
 import {
   ROOT,
   buildRust,
@@ -19,7 +19,7 @@ import {
   prepareRoot,
   startProcess,
   stopChild,
-} from "./mainProcessSupport";
+} from "./mainProcessSupport.ts";
 
 // eslint-disable-next-line @typescript-eslint/strict-void-return -- promisify ignores the ChildProcess return value.
 const run = promisify(execFile);
@@ -241,11 +241,9 @@ async function main(): Promise<number> {
   return 1;
 }
 
-main()
-  .then((code) => {
-    process.exitCode = code;
-  })
-  .catch((error: unknown) => {
-    console.error("Failed to generate the critical CSS:", error);
-    process.exitCode = 1;
-  });
+try {
+  process.exitCode = await main();
+} catch (error) {
+  console.error("Failed to generate the critical CSS:", error);
+  process.exitCode = 1;
+}

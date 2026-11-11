@@ -1,6 +1,6 @@
 import Konva from "konva";
-import { getCanvasColors } from "../../../theme";
-import { globals } from "../UIGlobals";
+import { getCanvasColors } from "../../../theme.ts";
+import { globals } from "../UIGlobals.ts";
 import {
   FONT_FAMILY,
   LABEL_COLOR,
@@ -9,9 +9,9 @@ import {
   PANEL_OPACITY,
   STROKE_WIDTH_UNIT,
   TEXT_SHADOW,
-} from "../constants";
-import { FitText } from "./FitText";
-import { outlinedArrow } from "./outlinedArrow";
+} from "../constants.ts";
+import { FitText } from "./FitText.ts";
+import { outlinedArrow } from "./outlinedArrow.ts";
 
 /** How far the shadow around the current player arrow spreads. */
 const ARROW_SHADOW_BLUR = 75;

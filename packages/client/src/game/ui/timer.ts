@@ -4,11 +4,11 @@ import type { ServerCommandData } from "@hanabi-live/data";
 import type { PlayerIndex } from "@hanabi-live/game";
 import { millisecondsToClockString, NO_VALUE } from "@hanabi-live/game";
 import { SECOND_IN_MILLISECONDS } from "complete-common";
-import * as tooltips from "../../tooltips";
-import { SoundType } from "../types/SoundType";
-import { globals } from "./UIGlobals";
-import type { TimerDisplay } from "./controls/TimerDisplay";
-import { drawLayer } from "./konvaHelpers";
+import * as tooltips from "../../tooltips.ts";
+import { SoundType } from "../types/SoundType.ts";
+import { globals } from "./UIGlobals.ts";
+import type { TimerDisplay } from "./controls/TimerDisplay.ts";
+import { drawLayer } from "./konvaHelpers.ts";
 
 /** How often the local timer counts down. */
 const TICK_MILLISECONDS = SECOND_IN_MILLISECONDS;

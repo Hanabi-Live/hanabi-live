@@ -1,5 +1,5 @@
 import type { LogEntry } from "@hanabi-live/game";
-import { globals } from "../../UIGlobals";
+import { globals } from "../../UIGlobals.ts";
 
 export function onLogChanged(log: readonly LogEntry[]): void {
   updateActionLog(log);

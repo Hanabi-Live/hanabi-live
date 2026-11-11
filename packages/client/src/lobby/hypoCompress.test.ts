@@ -1,7 +1,7 @@
 import { replayGameSchema } from "@hanabi-live/data";
 import { EndCondition } from "@hanabi-live/game";
 import { describe, expect, test } from "vitest";
-import { expand, shrink } from "./hypoCompress";
+import { expand, shrink } from "./hypoCompress.ts";
 
 describe("replay URL seed metadata", () => {
   // Two players, one card of each rank, one play, standard variant, and no seed.

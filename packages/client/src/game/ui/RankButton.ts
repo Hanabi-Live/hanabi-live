@@ -8,8 +8,8 @@ import {
   BUTTON_TEXT_MIDDLE,
   BUTTON_TEXT_SIZE,
   FONT_FAMILY,
-} from "./constants";
-import { drawLayer } from "./konvaHelpers";
+} from "./constants.ts";
+import { drawLayer } from "./konvaHelpers.ts";
 
 export class RankButton extends Konva.Group {
   pressed = false;

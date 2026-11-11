@@ -5,8 +5,8 @@ import { StrictMode } from "react";
 import type { Root } from "react-dom/client";
 import { createRoot } from "react-dom/client";
 import { Provider } from "react-redux";
-import { globals } from "../UIGlobals";
-import { ClueLog } from "./ClueLog";
+import { globals } from "../UIGlobals.ts";
+import { ClueLog } from "./ClueLog.tsx";
 
 let rootElement: HTMLDivElement | undefined;
 let root: Root | undefined;

@@ -1,7 +1,7 @@
 import type { CardOrder, PlayerIndex, Variant } from "@hanabi-live/game";
 import { useEffect, useRef } from "react";
-import { CARD_HEIGHT_PER_WIDTH, CardFace, describeCard } from "./Card";
-import type { CardView } from "./tableView";
+import { CARD_HEIGHT_PER_WIDTH, CardFace, describeCard } from "./Card.tsx";
+import type { CardView } from "./tableView.ts";
 
 export interface Seat {
   readonly playerIndex: PlayerIndex;

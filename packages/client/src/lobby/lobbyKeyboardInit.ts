@@ -1,10 +1,10 @@
 // Lobby keyboard shortcuts
 
 import * as KeyCode from "keycode-js";
-import { globals } from "../Globals";
-import { isModalVisible } from "../modals";
-import * as lobbyPage from "./lobbyPage";
-import { Screen } from "./types/Screen";
+import { globals } from "../Globals.ts";
+import { isModalVisible } from "../modals.ts";
+import * as lobbyPage from "./lobbyPage.ts";
+import { Screen } from "./types/Screen.ts";
 
 export function lobbyKeyboardInit(): void {
   $(document).keydown((event) => {

@@ -1,5 +1,5 @@
 import type { z } from "zod";
-import { settingsSchema } from "../generated/protocol";
+import { settingsSchema } from "../generated/protocol.ts";
 
 /**
  * These are per-user settings that are changed from the main lobby screen (in the "Settings" button

@@ -9,7 +9,7 @@ import {
   createSelector,
   createSlice,
 } from "@reduxjs/toolkit";
-import type { RootState } from "../../store";
+import type { RootState } from "../../store.ts";
 
 type OtherScores = ServerCommandData["gameHistoryOtherScores"];
 type LobbyStatus = ServerCommandData["lobbyStatus"];

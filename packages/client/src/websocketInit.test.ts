@@ -2,27 +2,27 @@ import { VERSION } from "@hanabi-live/data";
 import type { Clock } from "@sinonjs/fake-timers";
 import { install } from "@sinonjs/fake-timers";
 import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
-import { LocalStorageStub } from "./testLocalStorage";
+import { LocalStorageStub } from "./testLocalStorage.ts";
 
 let clock: Clock;
 const originalFetch = globalThis.fetch;
 
-vi.mock("./Globals", () => ({
+vi.mock("./Globals.ts", () => ({
   globals: { conn: undefined, currentScreen: "Login", ui: undefined },
 }));
-vi.mock("./commands", () => ({
+vi.mock("./commands.ts", () => ({
   commands: new Map([["error", vi.fn()]]),
 }));
-vi.mock("./lobby/lobbyCommands", () => ({
+vi.mock("./lobby/lobbyCommands.ts", () => ({
   lobbyCommands: new Map([["welcome", vi.fn()]]),
 }));
-vi.mock("./game/ui/gameCommands", () => ({
+vi.mock("./game/ui/gameCommands.ts", () => ({
   gameCommands: new Map(),
 }));
-vi.mock("./modals", () => ({ showError: vi.fn() }));
-const { globals } = await import("./Globals");
-const { commands } = await import("./commands");
-const { websocketInit } = await import("./websocketInit");
+vi.mock("./modals.ts", () => ({ showError: vi.fn() }));
+const { globals } = await import("./Globals.ts");
+const { commands } = await import("./commands.ts");
+const { websocketInit } = await import("./websocketInit.ts");
 
 interface FakeSocket {
   url: string;

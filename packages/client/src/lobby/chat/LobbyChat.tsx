@@ -1,10 +1,10 @@
 // The lobby area where everyone can chat.
 
 import { useRef } from "react";
-import { useAppSelector } from "../../store";
-import { getHTMLElement } from "../../utils";
-import { OnlineUserCount } from "../users/UsersList";
-import { ChatInput, ChatTextBox, scrollToBottom } from "./ChatBox";
+import { useAppSelector } from "../../store.ts";
+import { getHTMLElement } from "../../utils.ts";
+import { OnlineUserCount } from "../users/UsersList.tsx";
+import { ChatInput, ChatTextBox, scrollToBottom } from "./ChatBox.tsx";
 
 const TEXT_BOX_ID = "lobby-chat-text";
 

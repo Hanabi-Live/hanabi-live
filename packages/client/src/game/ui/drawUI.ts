@@ -26,24 +26,24 @@ import {
   tupleKeys,
 } from "complete-common";
 import Konva from "konva";
-import { getCanvasColors } from "../../theme";
-import { ActionLog } from "./ActionLog";
-import { ButtonGroup } from "./ButtonGroup";
-import { CardLayout } from "./CardLayout";
-import { ColorButton } from "./ColorButton";
-import { Deck } from "./Deck";
-import { Elements } from "./Elements";
-import { FullActionLog } from "./FullActionLog";
-import { HanabiCard } from "./HanabiCard";
-import { PlayStack } from "./PlayStack";
-import { RankButton } from "./RankButton";
-import { TerminateMenu } from "./TerminateMenu";
-import { globals } from "./UIGlobals";
-import * as arrows from "./arrows";
-import { backToLobby } from "./backToLobby";
-import { drawClueLog } from "./clueLog/mountClueLog";
-import * as cluePreview from "./cluePreview";
-import * as clues from "./clues";
+import { getCanvasColors } from "../../theme.ts";
+import { ActionLog } from "./ActionLog.ts";
+import { ButtonGroup } from "./ButtonGroup.ts";
+import { CardLayout } from "./CardLayout.ts";
+import { ColorButton } from "./ColorButton.ts";
+import { Deck } from "./Deck.ts";
+import { Elements } from "./Elements.ts";
+import { FullActionLog } from "./FullActionLog.ts";
+import { HanabiCard } from "./HanabiCard.ts";
+import { PlayStack } from "./PlayStack.ts";
+import { RankButton } from "./RankButton.ts";
+import { TerminateMenu } from "./TerminateMenu.ts";
+import { globals } from "./UIGlobals.ts";
+import * as arrows from "./arrows.ts";
+import { backToLobby } from "./backToLobby.ts";
+import { drawClueLog } from "./clueLog/mountClueLog.tsx";
+import * as cluePreview from "./cluePreview.ts";
+import * as clues from "./clues.ts";
 import {
   ACTIVE_INDICATOR_COLOR,
   BGA_ACTION_LOG,
@@ -72,33 +72,33 @@ import {
   TEXT_SHADOW,
   THIN_STROKE_WIDTH,
   WARNING_COLOR,
-} from "./constants";
-import { Arrow } from "./controls/Arrow";
-import { Button } from "./controls/Button";
-import { Checkbox } from "./controls/Checkbox";
-import { CurrentPlayerArea } from "./controls/CurrentPlayerArea";
-import { FitText } from "./controls/FitText";
-import { ImageWithTooltip } from "./controls/ImageWithTooltip";
-import { PlayerButton } from "./controls/PlayerButton";
-import { RectWithTooltip } from "./controls/RectWithTooltip";
-import { SlidableGroup } from "./controls/SlidableGroup";
-import { StrikeSquare } from "./controls/StrikeSquare";
-import { StrikeX } from "./controls/StrikeX";
-import type { TextWithTooltip } from "./controls/TextWithTooltip";
-import { TimerDisplay } from "./controls/TimerDisplay";
-import * as cursor from "./cursor";
-import { drawHands } from "./drawHands";
-import { drawReplayArea } from "./drawReplayArea";
-import { getCardOrStackBase } from "./getCardOrStackBase";
-import * as hypothetical from "./hypothetical";
-import { initKonvaTooltips } from "./konvaTooltips";
-import { showPassLeaderDialog } from "./leader";
-import { getGameIDLabel } from "./reactive/views/replayView";
-import * as replay from "./replay";
-import * as restart from "./restart";
-import * as stats from "./stats";
-import * as timer from "./timer";
-import { toggleZen } from "./zen";
+} from "./constants.ts";
+import { Arrow } from "./controls/Arrow.ts";
+import { Button } from "./controls/Button.ts";
+import { Checkbox } from "./controls/Checkbox.ts";
+import { CurrentPlayerArea } from "./controls/CurrentPlayerArea.ts";
+import { FitText } from "./controls/FitText.ts";
+import { ImageWithTooltip } from "./controls/ImageWithTooltip.ts";
+import { PlayerButton } from "./controls/PlayerButton.ts";
+import { RectWithTooltip } from "./controls/RectWithTooltip.ts";
+import { SlidableGroup } from "./controls/SlidableGroup.ts";
+import { StrikeSquare } from "./controls/StrikeSquare.ts";
+import { StrikeX } from "./controls/StrikeX.ts";
+import type { TextWithTooltip } from "./controls/TextWithTooltip.ts";
+import { TimerDisplay } from "./controls/TimerDisplay.ts";
+import * as cursor from "./cursor.ts";
+import { drawHands } from "./drawHands.ts";
+import { drawReplayArea } from "./drawReplayArea.ts";
+import { getCardOrStackBase } from "./getCardOrStackBase.ts";
+import * as hypothetical from "./hypothetical.ts";
+import { initKonvaTooltips } from "./konvaTooltips.ts";
+import { showPassLeaderDialog } from "./leader.ts";
+import { getGameIDLabel } from "./reactive/views/replayView.ts";
+import * as replay from "./replay.ts";
+import * as restart from "./restart.ts";
+import * as stats from "./stats.ts";
+import * as timer from "./timer.ts";
+import { toggleZen } from "./zen.ts";
 
 interface Values {
   x: number;

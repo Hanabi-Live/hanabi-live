@@ -1,8 +1,8 @@
 // Passing the lead of a shared replay to someone else.
 
-import * as modals from "../../modals";
-import { getHTMLElement } from "../../utils";
-import { globals } from "./UIGlobals";
+import * as modals from "../../modals.ts";
+import { getHTMLElement } from "../../utils.ts";
+import { globals } from "./UIGlobals.ts";
 
 const leaderPlaceholder = getHTMLElement("#leader-placeholder");
 

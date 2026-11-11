@@ -6,8 +6,8 @@ const globals = vi.hoisted(() => ({
   animateFast: false,
   state: { replay: { active: true } },
 }));
-vi.mock("./UIGlobals", () => ({ globals }));
-vi.mock("./controls/FitText", async () => {
+vi.mock("./UIGlobals.ts", () => ({ globals }));
+vi.mock("./controls/FitText.ts", async () => {
   const { default: KonvaModule } = await import("konva");
   return {
     // Konva.Text needs a canvas, which the test environment does not have.
@@ -18,7 +18,7 @@ vi.mock("./controls/FitText", async () => {
 });
 // Keep each slide at its start position.
 vi.spyOn(Konva.Tween.prototype, "play").mockReturnThis();
-const { ActionLog } = await import("./ActionLog");
+const { ActionLog } = await import("./ActionLog.ts");
 
 const MAX_LINES = 3;
 const LINE_HEIGHT = 10;

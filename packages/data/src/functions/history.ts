@@ -1,4 +1,4 @@
-import type { GameHistoryEntry } from "../interfaces/GameHistoryEntry";
+import type { GameHistoryEntry } from "../interfaces/GameHistoryEntry.ts";
 
 type CompletedGame = Pick<GameHistoryEntry, "gameID" | "datetimeFinished">;
 

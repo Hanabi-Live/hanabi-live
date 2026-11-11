@@ -4,21 +4,21 @@ import { tableIdSchema, userIdSchema } from "@hanabi-live/data";
 import { act, cleanup, render } from "@testing-library/react";
 import { Provider } from "react-redux";
 import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
-import type { Connection } from "../../Connection";
-import { globals } from "../../Globals";
-import { store } from "../../store";
-import type { Game } from "../pregame/pregameSlice";
-import { Screen } from "../types/Screen";
-import { Nav } from "./Nav";
+import type { Connection } from "../../Connection.ts";
+import { globals } from "../../Globals.ts";
+import { store } from "../../store.ts";
+import type { Game } from "../pregame/pregameSlice.ts";
+import { Screen } from "../types/Screen.ts";
+import { Nav } from "./Nav.tsx";
 
-vi.mock("../../tooltips", () => ({ attach: vi.fn(() => vi.fn()) }));
-vi.mock("../../modals", () => ({ showWarning: vi.fn() }));
-vi.mock("../createGame", () => ({ show: vi.fn() }));
-vi.mock("../history", () => ({}));
-vi.mock("../lobbyPage", () => ({}));
-vi.mock("../pregame/pregame", () => ({}));
-vi.mock("../watchReplay", () => ({}));
-vi.mock("../tables/tableActions", () => ({}));
+vi.mock("../../tooltips.ts", () => ({ attach: vi.fn(() => vi.fn()) }));
+vi.mock("../../modals.ts", () => ({ showWarning: vi.fn() }));
+vi.mock("../createGame.ts", () => ({ show: vi.fn() }));
+vi.mock("../history.ts", () => ({}));
+vi.mock("../lobbyPage.ts", () => ({}));
+vi.mock("../pregame/pregame.ts", () => ({}));
+vi.mock("../watchReplay.ts", () => ({}));
+vi.mock("../tables/tableActions.ts", () => ({}));
 
 const TABLE_ID = tableIdSchema.parse(5);
 

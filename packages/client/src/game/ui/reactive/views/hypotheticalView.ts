@@ -1,12 +1,12 @@
 import { MIN_PLAYERS } from "@hanabi-live/game";
-import type { State } from "../../../types/State";
-import { globals } from "../../UIGlobals";
-import * as arrows from "../../arrows";
-import * as clues from "../../clues";
-import type { PlayerButton } from "../../controls/PlayerButton";
-import { controlsHypothetical } from "../../controlsHypothetical";
-import { changeStartingHandVisibility } from "../../hypothetical";
-import * as turn from "../../turn";
+import type { State } from "../../../types/State.ts";
+import { globals } from "../../UIGlobals.ts";
+import * as arrows from "../../arrows.ts";
+import * as clues from "../../clues.ts";
+import type { PlayerButton } from "../../controls/PlayerButton.ts";
+import { controlsHypothetical } from "../../controlsHypothetical.ts";
+import { changeStartingHandVisibility } from "../../hypothetical.ts";
+import * as turn from "../../turn.ts";
 
 // For replay leaders, we want to disable entering a hypothetical during certain situations.
 export function shouldEnableEnterHypoButton(state: State): boolean {

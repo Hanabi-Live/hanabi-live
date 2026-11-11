@@ -1,9 +1,9 @@
 import { eRange } from "complete-common";
 import Konva from "konva";
-import type { LayoutChild } from "./LayoutChild";
-import { globals } from "./UIGlobals";
-import { PLAY_ANIMATION_SECONDS } from "./constants";
-import { animate } from "./konvaHelpers";
+import type { LayoutChild } from "./LayoutChild.ts";
+import { globals } from "./UIGlobals.ts";
+import { PLAY_ANIMATION_SECONDS } from "./constants.ts";
+import { animate } from "./konvaHelpers.ts";
 
 /**
  * Represents the stack in the middle of the table for each suit. It is composed of `LayoutChild`

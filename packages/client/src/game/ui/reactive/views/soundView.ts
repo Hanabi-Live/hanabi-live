@@ -1,13 +1,13 @@
 import type { GameAction, GameState } from "@hanabi-live/game";
 import { includes } from "complete-common";
-import { SoundType } from "../../../types/SoundType";
-import { isOurTurn } from "../../isOurTurn";
-import { globals } from "../../UIGlobals";
+import { SoundType } from "../../../types/SoundType.ts";
+import { isOurTurn } from "../../isOurTurn.ts";
+import { globals } from "../../UIGlobals.ts";
 import {
   SOUND_TYPE_ACTIONS,
   getSoundType,
   getStandardSoundType,
-} from "../getSoundType";
+} from "../getSoundType.ts";
 
 export function onNewSoundEffect(
   data: {

@@ -1,8 +1,8 @@
 import type { Rank, Suit, SuitIndex, Variant } from "@hanabi-live/game";
 import { START_CARD_RANK } from "@hanabi-live/game";
-import { START_CARD_RANK_LABEL } from "../../constants";
-import { CARD_H, CARD_W } from "../ui/constants";
-import { Pip } from "./Pip";
+import { START_CARD_RANK_LABEL } from "../../constants.ts";
+import { CARD_H, CARD_W } from "../ui/constants.ts";
+import { Pip } from "./Pip.tsx";
 
 /** Cards keep the proportions of the classic card images. */
 export const CARD_HEIGHT_PER_WIDTH = CARD_H / CARD_W;

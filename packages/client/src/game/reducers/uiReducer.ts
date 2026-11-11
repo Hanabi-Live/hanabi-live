@@ -1,6 +1,6 @@
-import type { UIAction } from "../types/UIAction";
-import type { UIState } from "../types/UIState";
-import { HanabiCard } from "../ui/HanabiCard";
+import type { UIAction } from "../types/UIAction.ts";
+import type { UIState } from "../types/UIState.ts";
+import { HanabiCard } from "../ui/HanabiCard.ts";
 
 export function uiReducer(uiState: UIState, uiAction: UIAction): UIState {
   switch (uiAction.type) {

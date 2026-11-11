@@ -5,16 +5,16 @@ import type { PlayerIndex } from "@hanabi-live/game";
 import { getVariant, MAX_PLAYERS, MIN_PLAYERS } from "@hanabi-live/game";
 import { iRange } from "complete-common";
 import { useEffect, useRef } from "react";
-import { globals } from "../../Globals";
-import { H_GROUP_LEVEL_URL_PREFIX } from "../../constants";
-import { useAppSelector } from "../../store";
-import * as tooltips from "../../tooltips";
-import { OptionIcon } from "../OptionIcon";
-import { SHADOW_NAME, UN_SHADOW_NAME } from "../cursorClasses";
-import { getOptionDescriptions } from "../optionDescriptions";
-import { selectTable } from "../tables/tablesSlice";
-import { selectHGroupLevel } from "../users/usersSlice";
-import type { Game } from "./pregameSlice";
+import { globals } from "../../Globals.ts";
+import { H_GROUP_LEVEL_URL_PREFIX } from "../../constants.ts";
+import { useAppSelector } from "../../store.ts";
+import * as tooltips from "../../tooltips.ts";
+import { OptionIcon } from "../OptionIcon.tsx";
+import { SHADOW_NAME, UN_SHADOW_NAME } from "../cursorClasses.ts";
+import { getOptionDescriptions } from "../optionDescriptions.ts";
+import { selectTable } from "../tables/tablesSlice.ts";
+import { selectHGroupLevel } from "../users/usersSlice.ts";
+import type { Game } from "./pregameSlice.ts";
 
 /** What a player's statistics show for a player count that they have not played. */
 const NO_SCORE = "\u{2013}";

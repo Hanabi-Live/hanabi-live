@@ -1,10 +1,10 @@
 import { assertDefined } from "complete-common";
 import Konva from "konva";
-import { Screen } from "../../lobby/types/Screen";
-import * as tooltips from "../../tooltips";
-import { globals } from "./UIGlobals";
-import type { NodeWithTooltip } from "./controls/NodeWithTooltip";
-import type { TextWithTooltip } from "./controls/TextWithTooltip";
+import { Screen } from "../../lobby/types/Screen.ts";
+import * as tooltips from "../../tooltips.ts";
+import { globals } from "./UIGlobals.ts";
+import type { NodeWithTooltip } from "./controls/NodeWithTooltip.ts";
+import type { TextWithTooltip } from "./controls/TextWithTooltip.ts";
 
 export function initKonvaTooltips(
   element: NodeWithTooltip,

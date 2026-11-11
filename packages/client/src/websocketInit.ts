@@ -10,22 +10,22 @@ import {
   withTabAccount,
 } from "@hanabi-live/data";
 import { SECOND_IN_MILLISECONDS } from "complete-common";
-import { commands } from "./commands";
-import { Connection } from "./Connection";
-import { HTTP_STATUS } from "./constants";
-import { gameCommands } from "./game/ui/gameCommands";
-import { globals } from "./Globals";
-import { fetchCookieOnce } from "./lobby/cookieProbe";
-import { lobbyCommands } from "./lobby/lobbyCommands";
-import { tablesCleared } from "./lobby/tables/tablesSlice";
-import { Screen } from "./lobby/types/Screen";
-import { usersCleared } from "./lobby/users/usersSlice";
-import * as modals from "./modals";
-import { reloadOutdatedClient } from "./outdatedClient";
-import { ReconnectBackoff } from "./reconnect";
-import { store } from "./store";
-import * as theme from "./theme";
-import { escapeHtml } from "./utils";
+import { commands } from "./commands.ts";
+import { Connection } from "./Connection.ts";
+import { HTTP_STATUS } from "./constants.ts";
+import { gameCommands } from "./game/ui/gameCommands.ts";
+import { globals } from "./Globals.ts";
+import { fetchCookieOnce } from "./lobby/cookieProbe.ts";
+import { lobbyCommands } from "./lobby/lobbyCommands.ts";
+import { tablesCleared } from "./lobby/tables/tablesSlice.ts";
+import { Screen } from "./lobby/types/Screen.ts";
+import { usersCleared } from "./lobby/users/usersSlice.ts";
+import * as modals from "./modals.ts";
+import { reloadOutdatedClient } from "./outdatedClient.ts";
+import { ReconnectBackoff } from "./reconnect.ts";
+import { store } from "./store.ts";
+import * as theme from "./theme.ts";
+import { escapeHtml } from "./utils.ts";
 
 const reconnectBackoff = new ReconnectBackoff();
 const CONNECT_TIMEOUT_MS = 15 * SECOND_IN_MILLISECONDS;

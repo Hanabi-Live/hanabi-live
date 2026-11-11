@@ -16,14 +16,15 @@ import {
 } from "@hanabi-live/game";
 import { describe, expect, test, vi } from "vitest";
 
-vi.mock("./UIGlobals", () => ({ globals: {} }));
-vi.mock("./HanabiCardMouse", () => ({ setEmpathyOnHand: vi.fn() }));
-const { initialState } = await import("../reducers/initialStates/initialState");
-const { globals } = await import("./UIGlobals");
-const { getCardOrStackBase } = await import("./getCardOrStackBase");
-const { sendHypotheticalAction } = await import("./hypothetical");
+vi.mock("./UIGlobals.ts", () => ({ globals: {} }));
+vi.mock("./HanabiCardMouse.ts", () => ({ setEmpathyOnHand: vi.fn() }));
+const { initialState } =
+  await import("../reducers/initialStates/initialState.ts");
+const { globals } = await import("./UIGlobals.ts");
+const { getCardOrStackBase } = await import("./getCardOrStackBase.ts");
+const { sendHypotheticalAction } = await import("./hypothetical.ts");
 const { planClientHypotheticalAction } =
-  await import("./planClientHypotheticalAction");
+  await import("./planClientHypotheticalAction.ts");
 
 const bottomOrder = 2 as CardOrder;
 

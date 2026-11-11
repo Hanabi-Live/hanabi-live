@@ -1,5 +1,5 @@
 import { describe, expect, test } from "vitest";
-import { Connection } from "./Connection";
+import { Connection } from "./Connection.ts";
 
 const sockets: FakeWebSocket[] = [];
 

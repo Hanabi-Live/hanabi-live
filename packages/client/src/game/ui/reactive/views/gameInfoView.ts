@@ -6,9 +6,9 @@ import {
   isAtMaxClueTokens,
 } from "@hanabi-live/game";
 import { eRange } from "complete-common";
-import { setBrowserAddressBarPath } from "../../../../utils";
-import { globals } from "../../UIGlobals";
-import * as arrows from "../../arrows";
+import { setBrowserAddressBarPath } from "../../../../utils.ts";
+import { globals } from "../../UIGlobals.ts";
+import * as arrows from "../../arrows.ts";
 import {
   CURRENT_TURN_COLOR,
   LABEL_COLOR,
@@ -17,9 +17,9 @@ import {
   OFF_BLACK,
   ONE_CLUE_COLOR,
   STRIKE_FADE,
-} from "../../constants";
-import { animate } from "../../konvaHelpers";
-import * as replay from "../../replay";
+} from "../../constants.ts";
+import { animate } from "../../konvaHelpers.ts";
+import * as replay from "../../replay.ts";
 
 /** The H-Group's "Low Score Phase" lasts until the score reaches this many cards for each suit. */
 const LOW_SCORE_PHASE_CARDS_PER_SUIT = 2;

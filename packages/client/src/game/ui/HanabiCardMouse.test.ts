@@ -1,29 +1,29 @@
 import { describe, expect, test, vi } from "vitest";
-import type { HanabiCard } from "./HanabiCard";
+import type { HanabiCard } from "./HanabiCard.ts";
 
-vi.mock("./UIGlobals", () => ({ globals: {} }));
-vi.mock("../../tooltips", () => ({ close: vi.fn() }));
-vi.mock("./HanabiCardClick", () => ({ HanabiCardClick: vi.fn() }));
-vi.mock("./HanabiCardClickSpeedrun", () => ({
+vi.mock("./UIGlobals.ts", () => ({ globals: {} }));
+vi.mock("../../tooltips.ts", () => ({ close: vi.fn() }));
+vi.mock("./HanabiCardClick.ts", () => ({ HanabiCardClick: vi.fn() }));
+vi.mock("./HanabiCardClickSpeedrun.ts", () => ({
   mouseDownSpeedrun: vi.fn(),
   mouseUpSpeedrun: vi.fn(),
 }));
-vi.mock("./HanabiCardTouchActions", () => ({
+vi.mock("./HanabiCardTouchActions.ts", () => ({
   HanabiCardDblTap: vi.fn(),
   HanabiCardTap: vi.fn(),
 }));
-vi.mock("./arrows", () => ({}));
-vi.mock("./clueLog/mountClueLog", () => ({ showClueMatches: vi.fn() }));
-vi.mock("./cursor", () => ({ set: vi.fn() }));
-vi.mock("./konvaTooltips", () => ({
+vi.mock("./arrows.ts", () => ({}));
+vi.mock("./clueLog/mountClueLog.tsx", () => ({ showClueMatches: vi.fn() }));
+vi.mock("./cursor.ts", () => ({ set: vi.fn() }));
+vi.mock("./konvaTooltips.ts", () => ({
   setActiveHover: vi.fn(),
   resetActiveHover: vi.fn(),
 }));
-vi.mock("./notes", () => ({}));
+vi.mock("./notes.ts", () => ({}));
 const { registerMouseHandlers, setEmpathyOnHand } =
-  await import("./HanabiCardMouse");
-const { globals } = await import("./UIGlobals");
-const tooltips = await import("../../tooltips");
+  await import("./HanabiCardMouse.ts");
+const { globals } = await import("./UIGlobals.ts");
+const tooltips = await import("../../tooltips.ts");
 
 function makeCard(parent: unknown): HanabiCard {
   return {

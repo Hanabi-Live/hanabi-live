@@ -1,16 +1,16 @@
 import { describe, expect, test, vi } from "vitest";
 
-vi.mock("./UIGlobals", () => ({ globals: {} }));
-vi.mock("../../modals", () => ({}));
-vi.mock("../../sounds", () => ({}));
-vi.mock("./confirmPlay", () => ({ confirmPlay: vi.fn() }));
-vi.mock("./cursor", () => ({}));
-vi.mock("./reactive/views/draggableView", () => ({
+vi.mock("./UIGlobals.ts", () => ({ globals: {} }));
+vi.mock("../../modals.ts", () => ({}));
+vi.mock("../../sounds.ts", () => ({}));
+vi.mock("./confirmPlay.ts", () => ({ confirmPlay: vi.fn() }));
+vi.mock("./cursor.ts", () => ({}));
+vi.mock("./reactive/views/draggableView.ts", () => ({
   draggablePlayerIndex: () => 0,
 }));
-vi.mock("./turn", () => ({}));
-const { LayoutChild } = await import("./LayoutChild");
-const { globals } = await import("./UIGlobals");
+vi.mock("./turn.ts", () => ({}));
+const { LayoutChild } = await import("./LayoutChild.ts");
+const { globals } = await import("./UIGlobals.ts");
 
 describe("LayoutChild initialization without a pointer", () => {
   test.each([null, { x: 10, y: 20 }])(

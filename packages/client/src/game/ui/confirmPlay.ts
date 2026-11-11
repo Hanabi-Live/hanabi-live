@@ -1,7 +1,7 @@
 import type { CardState, SuitRankTuple } from "@hanabi-live/game";
 import { MAX_STRIKES, isCardPotentiallyPlayable } from "@hanabi-live/game";
-import { askForConfirmation } from "../../modals";
-import { globals } from "./UIGlobals";
+import { askForConfirmation } from "../../modals.ts";
+import { globals } from "./UIGlobals.ts";
 
 /**
  * Plays a card, first asking the user for confirmation if the card is known to be unplayable or if

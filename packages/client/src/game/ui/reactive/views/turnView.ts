@@ -1,11 +1,11 @@
 import type { ClueType } from "@hanabi-live/game";
 import { getClueCost } from "@hanabi-live/game";
-import type { State } from "../../../types/State";
-import { globals } from "../../UIGlobals";
-import { DISABLED_OPACITY } from "../../constants";
-import { controlsHypothetical } from "../../controlsHypothetical";
-import { isOurTurn } from "../../isOurTurn";
-import * as turn from "../../turn";
+import type { State } from "../../../types/State.ts";
+import { globals } from "../../UIGlobals.ts";
+import { DISABLED_OPACITY } from "../../constants.ts";
+import { controlsHypothetical } from "../../controlsHypothetical.ts";
+import { isOurTurn } from "../../isOurTurn.ts";
+import * as turn from "../../turn.ts";
 
 export function shouldShowYourTurnIndicator(state: State): boolean {
   return (

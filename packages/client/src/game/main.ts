@@ -1,16 +1,16 @@
 // The Hanabi game UI.
 
-import { FADE_TIME_MS, HISTORY_HASH, PATH } from "../constants";
-import { globals } from "../Globals";
-import { scrollLobbyChatToBottom } from "../lobby/chat/LobbyChat";
-import * as lobbyPage from "../lobby/lobbyPage";
-import { Screen } from "../lobby/types/Screen";
-import * as sounds from "../sounds";
-import * as tooltips from "../tooltips";
-import { setBrowserAddressBarPath } from "../utils";
-import * as chat from "./chat";
-import * as newUI from "./newUI/newUI";
-import { HanabiUI } from "./ui/HanabiUI";
+import { FADE_TIME_MS, HISTORY_HASH, PATH } from "../constants.ts";
+import { globals } from "../Globals.ts";
+import { scrollLobbyChatToBottom } from "../lobby/chat/LobbyChat.tsx";
+import * as lobbyPage from "../lobby/lobbyPage.ts";
+import { Screen } from "../lobby/types/Screen.ts";
+import * as sounds from "../sounds.ts";
+import * as tooltips from "../tooltips.ts";
+import { setBrowserAddressBarPath } from "../utils.ts";
+import * as chat from "./chat.ts";
+import * as newUI from "./newUI/newUI.tsx";
+import { HanabiUI } from "./ui/HanabiUI.ts";
 
 /** The history screen's address (e.g. "#history"), if a replay was opened from one. */
 let historyHash = "";

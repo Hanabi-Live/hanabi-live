@@ -8,16 +8,16 @@ import {
 import { ReadonlyMap, assertDefined } from "complete-common";
 import equal from "fast-deep-equal";
 import type Konva from "konva";
-import type { HanabiCard } from "../../HanabiCard";
-import type { LayoutChild } from "../../LayoutChild";
-import { globals } from "../../UIGlobals";
-import { CARD_ANIMATION_LENGTH_SECONDS } from "../../constants";
+import type { HanabiCard } from "../../HanabiCard.ts";
+import type { LayoutChild } from "../../LayoutChild.ts";
+import { globals } from "../../UIGlobals.ts";
+import { CARD_ANIMATION_LENGTH_SECONDS } from "../../constants.ts";
 import {
   startMaxScoreDropAnimation,
   stopMaxScoreDropAnimation,
-} from "../../signalAnimations";
-import { startStackCompleteAnimation } from "../../stackCompleteAnimation";
-import { updateCardVisuals } from "./cardsView";
+} from "../../signalAnimations.ts";
+import { startStackCompleteAnimation } from "../../stackCompleteAnimation.ts";
+import { updateCardVisuals } from "./cardsView.ts";
 
 const STACK_STRINGS_REVERSED = new ReadonlyMap<StackDirection, string>([
   [StackDirection.Undecided, ""],

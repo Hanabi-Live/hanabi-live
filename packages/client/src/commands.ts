@@ -1,18 +1,18 @@
 // We will receive WebSocket messages / commands from the server that tell us to do things.
 
-import { globals } from "./Globals";
-import * as chat from "./chat";
-import * as gameChat from "./game/chat";
+import { globals } from "./Globals.ts";
+import * as chat from "./chat.ts";
+import * as gameChat from "./game/chat.ts";
 import {
   startGameSentChanged,
   typingStarted,
   typingStopped,
-} from "./lobby/pregame/pregameSlice";
-import { Screen } from "./lobby/types/Screen";
-import * as modals from "./modals";
-import { ServerHandlers } from "./serverHandlers";
-import { creatingTableChanged } from "./sessionSlice";
-import { store } from "./store";
+} from "./lobby/pregame/pregameSlice.ts";
+import { Screen } from "./lobby/types/Screen.ts";
+import * as modals from "./modals.ts";
+import { ServerHandlers } from "./serverHandlers.ts";
+import { creatingTableChanged } from "./sessionSlice.ts";
+import { store } from "./store.ts";
 
 // Define a command handler map.
 export const commands = new ServerHandlers();

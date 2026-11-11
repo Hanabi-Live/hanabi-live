@@ -8,16 +8,16 @@ import type {
 } from "@hanabi-live/game";
 import { getClueCost } from "@hanabi-live/game";
 import { eRange } from "complete-common";
-import { toWireHypotheticalAction } from "../../wire";
-import type { ClientAction } from "../types/ClientAction";
-import type { State } from "../types/State";
-import type { ActionIncludingHypothetical } from "../types/actions";
-import { setEmpathyOnHand } from "./HanabiCardMouse";
-import type { LayoutChild } from "./LayoutChild";
-import { globals } from "./UIGlobals";
-import { controlsHypothetical } from "./controlsHypothetical";
-import { getCardOrStackBase } from "./getCardOrStackBase";
-import { planClientHypotheticalAction } from "./planClientHypotheticalAction";
+import { toWireHypotheticalAction } from "../../wire.ts";
+import type { ClientAction } from "../types/ClientAction.ts";
+import type { State } from "../types/State.ts";
+import type { ActionIncludingHypothetical } from "../types/actions.ts";
+import { setEmpathyOnHand } from "./HanabiCardMouse.ts";
+import type { LayoutChild } from "./LayoutChild.ts";
+import { globals } from "./UIGlobals.ts";
+import { controlsHypothetical } from "./controlsHypothetical.ts";
+import { getCardOrStackBase } from "./getCardOrStackBase.ts";
+import { planClientHypotheticalAction } from "./planClientHypotheticalAction.ts";
 
 export function startHypothetical(): void {
   const { hypothetical, shared } = globals.state.replay;

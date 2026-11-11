@@ -13,9 +13,9 @@ import {
 } from "@hanabi-live/game";
 import { assertDefined } from "complete-common";
 import { describe, expect, test } from "vitest";
-import { loadGameJSON } from "../../../test/loadGameJSON";
+import { loadGameJSON } from "../../../test/loadGameJSON.ts";
 import sudokuGame from "../../../test_data/sudoku_hypothetical_1663033.json";
-import { initialState } from "./initialStates/initialState";
+import { initialState } from "./initialStates/initialState.ts";
 
 const replay = loadGameJSON(sudokuGame);
 const { metadata } = replay;

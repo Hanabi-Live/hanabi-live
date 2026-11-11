@@ -23,7 +23,7 @@ import {
   trimSuffix,
 } from "complete-common";
 import { isEqual } from "lodash";
-import { getSpecialClueRanks } from "./getVariantDescriptions";
+import { getSpecialClueRanks } from "./getVariantDescriptions.ts";
 
 export function getNewVariantID(
   variantDescription: VariantDescription,

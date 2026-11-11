@@ -22,8 +22,8 @@ import { assertDefined } from "complete-common";
 import equal from "fast-deep-equal";
 import type { Draft } from "immer";
 import { castDraft, produce } from "immer";
-import type { NotesState } from "../types/NotesState";
-import * as noteIdentity from "./noteIdentity";
+import type { NotesState } from "../types/NotesState.ts";
+import * as noteIdentity from "./noteIdentity.ts";
 
 export const notesReducer = produce(notesReducerFunction, {} as NotesState);
 

@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, test, vi } from "vitest";
-import { setBrowserAddressBarPath } from "./utils";
+import { setBrowserAddressBarPath } from "./utils.ts";
 
 describe("setBrowserAddressBarPath", () => {
   const originalLocation = Object.getOwnPropertyDescriptor(

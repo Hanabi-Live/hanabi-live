@@ -36,13 +36,17 @@ import {
 } from "@hanabi-live/game";
 import { assertDefined } from "complete-common";
 import Konva from "konva";
-import * as tooltips from "../../tooltips";
-import { noteEqual, noteHasMeaning, parseNote } from "../reducers/notesReducer";
-import type { UICard } from "../types/UICard";
-import * as HanabiCardInit from "./HanabiCardInit";
-import * as HanabiCardMouse from "./HanabiCardMouse";
-import { LayoutChild } from "./LayoutChild";
-import { globals } from "./UIGlobals";
+import * as tooltips from "../../tooltips.ts";
+import {
+  noteEqual,
+  noteHasMeaning,
+  parseNote,
+} from "../reducers/notesReducer.ts";
+import type { UICard } from "../types/UICard.ts";
+import * as HanabiCardInit from "./HanabiCardInit.ts";
+import * as HanabiCardMouse from "./HanabiCardMouse.ts";
+import { LayoutChild } from "./LayoutChild.ts";
+import { globals } from "./UIGlobals.ts";
 import {
   CARD_ANIMATION_LENGTH_SECONDS,
   CARD_CENTER,
@@ -53,22 +57,22 @@ import {
   DRAGGED_CARD_SHADOW_OFFSET,
   FULL_TURN_DEGREES,
   HALF_TURN_DEGREES,
-} from "./constants";
-import type { NodeWithTooltip } from "./controls/NodeWithTooltip";
-import type { NoteIndicator } from "./controls/NoteIndicator";
-import { RankPip } from "./controls/RankPip";
-import { suitIndexToSuit } from "./convert";
-import type { CursorType } from "./cursor";
+} from "./constants.ts";
+import type { NodeWithTooltip } from "./controls/NodeWithTooltip.ts";
+import type { NoteIndicator } from "./controls/NoteIndicator.ts";
+import { RankPip } from "./controls/RankPip.ts";
+import { suitIndexToSuit } from "./convert.ts";
+import type { CursorType } from "./cursor.ts";
 import {
   CARD_IMAGE_STACK_BASE_RANK_NAME,
   CARD_IMAGE_UNKNOWN_CARD_RANK_NAME,
-} from "./drawCards";
-import { animate } from "./konvaHelpers";
+} from "./drawCards.ts";
+import { animate } from "./konvaHelpers.ts";
 import {
   checkNoteImpossibility,
   possibleCardsFromNoteAndClues,
-} from "./noteCheckImpossibility";
-import * as notes from "./notes";
+} from "./noteCheckImpossibility.ts";
+import * as notes from "./notes.ts";
 
 const DECK_BACK_IMAGE = "deck-back";
 const UNKNOWN_SUIT = getSuit(UNKNOWN_SUIT_NAME);

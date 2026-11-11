@@ -2,20 +2,20 @@ import { getDefaultVariant } from "@hanabi-live/game";
 import type Konva from "konva";
 import { describe, expect, test, vi } from "vitest";
 
-import type { Arrow } from "./controls/Arrow";
+import type { Arrow } from "./controls/Arrow.ts";
 
-vi.mock("./UIGlobals", () => ({ globals: {} }));
-vi.mock("./HanabiCard", () => ({ HanabiCard: Date }));
-vi.mock("./CardLayout", () => ({ CardLayout: Date }));
-vi.mock("./controls/StrikeSquare", () => ({ StrikeSquare: Date }));
-vi.mock("./getCardOrStackBase", () => ({
+vi.mock("./UIGlobals.ts", () => ({ globals: {} }));
+vi.mock("./HanabiCard.ts", () => ({ HanabiCard: Date }));
+vi.mock("./CardLayout.ts", () => ({ CardLayout: Date }));
+vi.mock("./controls/StrikeSquare.ts", () => ({ StrikeSquare: Date }));
+vi.mock("./getCardOrStackBase.ts", () => ({
   getCardOrStackBase: vi.fn(),
 }));
-vi.mock("./konvaHelpers", () => ({}));
-vi.mock("./drawPip", () => ({ drawPip: vi.fn() }));
-vi.mock("../../tooltips", () => ({}));
-const { globals } = await import("./UIGlobals");
-const { set } = await import("./arrows");
+vi.mock("./konvaHelpers.ts", () => ({}));
+vi.mock("./drawPip.ts", () => ({ drawPip: vi.fn() }));
+vi.mock("../../tooltips.ts", () => ({}));
+const { globals } = await import("./UIGlobals.ts");
+const { set } = await import("./arrows.ts");
 
 describe("clue arrow suit pips", () => {
   test("clears a reused color pip for a Quacker clue and a highlight", () => {

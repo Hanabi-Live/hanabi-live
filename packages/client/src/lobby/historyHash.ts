@@ -1,4 +1,4 @@
-import { HISTORY_HASH } from "../constants";
+import { HISTORY_HASH } from "../constants.ts";
 
 /** The lobby address hash of the other scores of a seed, before the encoded seed. */
 const HISTORY_OTHER_SCORES_HASH_PREFIX = `${HISTORY_HASH}-other-scores-`;

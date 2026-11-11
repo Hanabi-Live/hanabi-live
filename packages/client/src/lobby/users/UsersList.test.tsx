@@ -11,25 +11,25 @@ import {
 } from "@testing-library/react";
 import { Provider } from "react-redux";
 import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
-import { globals } from "../../Globals";
-import { DIMMED_OPACITY } from "../../constants";
-import { store } from "../../store";
-import { tablesCleared, tablesListed } from "../tables/tablesSlice";
-import { Screen } from "../types/Screen";
-import { UsersList, UsersTitle } from "./UsersList";
+import { globals } from "../../Globals.ts";
+import { DIMMED_OPACITY } from "../../constants.ts";
+import { store } from "../../store.ts";
+import { tablesCleared, tablesListed } from "../tables/tablesSlice.ts";
+import { Screen } from "../types/Screen.ts";
+import { UsersList, UsersTitle } from "./UsersList.tsx";
 import {
   botsShownChanged,
   userInactiveChanged,
   userLeft,
   usersCleared,
   usersListed,
-} from "./usersSlice";
+} from "./usersSlice.ts";
 
-vi.mock("../../tooltips", () => ({
+vi.mock("../../tooltips.ts", () => ({
   attach: vi.fn(),
 }));
 // The menu tooltip shows its content in the body, since jsdom does not support popovers.
-vi.mock("../../Tooltip", () => ({
+vi.mock("../../Tooltip.ts", () => ({
   Tooltip: class {
     isOpen = false;
     private readonly content: HTMLElement;
@@ -53,11 +53,11 @@ vi.mock("../../Tooltip", () => ({
     }
   },
 }));
-vi.mock("../tables/tableActions", () => ({
+vi.mock("../tables/tableActions.ts", () => ({
   tableJoin: vi.fn(),
   tableSpectate: vi.fn(),
 }));
-const { tableJoin } = await import("../tables/tableActions");
+const { tableJoin } = await import("../tables/tableActions.ts");
 
 const TABLE_ID = tableIdSchema.parse(7);
 

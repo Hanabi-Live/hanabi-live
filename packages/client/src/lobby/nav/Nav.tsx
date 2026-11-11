@@ -2,21 +2,21 @@
 
 import { MAX_PLAYERS, MIN_PLAYERS } from "@hanabi-live/game";
 import { Children } from "react";
-import { NO_TABLE_ID, PATH } from "../../constants";
-import { globals } from "../../Globals";
-import { showWarning } from "../../modals";
-import type { RootState } from "../../store";
-import { store, useAppSelector } from "../../store";
-import * as createGame from "../createGame";
-import { ShownGameCount } from "../gameHistory/HistoryLists";
-import * as history from "../history";
-import * as lobbyPage from "../lobbyPage";
-import * as pregame from "../pregame/pregame";
-import { startGameSentChanged } from "../pregame/pregameSlice";
-import { signOut } from "../signOut";
-import { tableJoin, tableSpectate } from "../tables/tableActions";
-import { Screen } from "../types/Screen";
-import * as watchReplay from "../watchReplay";
+import { NO_TABLE_ID, PATH } from "../../constants.ts";
+import { globals } from "../../Globals.ts";
+import { showWarning } from "../../modals.ts";
+import type { RootState } from "../../store.ts";
+import { store, useAppSelector } from "../../store.ts";
+import * as createGame from "../createGame.ts";
+import { ShownGameCount } from "../gameHistory/HistoryLists.tsx";
+import * as history from "../history.ts";
+import * as lobbyPage from "../lobbyPage.ts";
+import * as pregame from "../pregame/pregame.ts";
+import { startGameSentChanged } from "../pregame/pregameSlice.ts";
+import { signOut } from "../signOut.ts";
+import { tableJoin, tableSpectate } from "../tables/tableActions.ts";
+import { Screen } from "../types/Screen.ts";
+import * as watchReplay from "../watchReplay.ts";
 
 const LIST_ITEM_CLASS_NAME = "tw:inline-block tw:pl-0";
 

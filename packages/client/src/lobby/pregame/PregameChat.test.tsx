@@ -6,18 +6,18 @@ import { defaultOptions } from "@hanabi-live/game";
 import { act, cleanup, render, screen } from "@testing-library/react";
 import { Provider } from "react-redux";
 import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
-import { add } from "../../chat";
-import { globals } from "../../Globals";
-import { store } from "../../store";
-import { acceptOptionsFromGuest } from "../createGame";
-import { Screen } from "../types/Screen";
-import { PregameChat } from "./PregameChat";
-import { pregameChatCleared, typingStarted } from "./pregameSlice";
+import { add } from "../../chat.ts";
+import { globals } from "../../Globals.ts";
+import { store } from "../../store.ts";
+import { acceptOptionsFromGuest } from "../createGame.ts";
+import { Screen } from "../types/Screen.ts";
+import { PregameChat } from "./PregameChat.tsx";
+import { pregameChatCleared, typingStarted } from "./pregameSlice.ts";
 
-vi.mock("../../chatCommands", () => ({ chatCommands: new Map() }));
-vi.mock("../../modals", () => ({}));
-vi.mock("../../tooltips", () => ({}));
-vi.mock("../createGame", () => ({ acceptOptionsFromGuest: vi.fn() }));
+vi.mock("../../chatCommands.ts", () => ({ chatCommands: new Map() }));
+vi.mock("../../modals.ts", () => ({}));
+vi.mock("../../tooltips.ts", () => ({}));
+vi.mock("../createGame.ts", () => ({ acceptOptionsFromGuest: vi.fn() }));
 // The game chat, which is not on the page, also shows who is typing.
 vi.stubGlobal("$", () => ({ html: vi.fn() }));
 

@@ -3,7 +3,7 @@
 
 import type { PayloadAction } from "@reduxjs/toolkit";
 import { createSlice } from "@reduxjs/toolkit";
-import type { ChatLine } from "./ChatBox";
+import type { ChatLine } from "./ChatBox.tsx";
 
 interface LobbyChatState {
   readonly lines: readonly ChatLine[];

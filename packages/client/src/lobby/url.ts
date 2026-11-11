@@ -7,13 +7,13 @@ import {
 import type { PlayerIndex } from "@hanabi-live/game";
 import { DEFAULT_VARIANT_NAME, isValidPlayerIndex } from "@hanabi-live/game";
 import { parseIntSafe } from "complete-common";
-import { HISTORY_HASH, LOCAL_STORAGE_KEY, PATH } from "../constants";
-import { globals } from "../Globals";
-import { setBrowserAddressBarPath } from "../utils";
-import { parseGameJSON } from "./gameJSON";
-import * as history from "./history";
-import { getOtherScoresSeed } from "./historyHash";
-import { expand } from "./hypoCompress";
+import { HISTORY_HASH, LOCAL_STORAGE_KEY, PATH } from "../constants.ts";
+import { globals } from "../Globals.ts";
+import { setBrowserAddressBarPath } from "../utils.ts";
+import { parseGameJSON } from "./gameJSON.ts";
+import * as history from "./history.ts";
+import { getOtherScoresSeed } from "./historyHash.ts";
+import { expand } from "./hypoCompress.ts";
 
 export function parseAndGoto(data: ServerCommandData["welcome"]): void {
   // A link to a specific game or replay takes precedence over returning to the table that we were

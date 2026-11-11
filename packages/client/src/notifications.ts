@@ -1,6 +1,6 @@
 // The site has the ability to send (optional) notifications.
 
-import * as modals from "./modals";
+import * as modals from "./modals.ts";
 
 export function test(): void {
   // From: https://stackoverflow.com/questions/38422340/check-if-browser-notification-is-available

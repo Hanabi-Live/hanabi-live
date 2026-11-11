@@ -1,6 +1,6 @@
 import Konva from "konva";
-import { ARROW_STROKE_WIDTH, FONT_FAMILY } from "../constants";
-import { outlinedArrow } from "./outlinedArrow";
+import { ARROW_STROKE_WIDTH, FONT_FAMILY } from "../constants.ts";
+import { outlinedArrow } from "./outlinedArrow.ts";
 
 /**
  * The point that the arrow is positioned and rotated around, relative to the end of its tail, as a

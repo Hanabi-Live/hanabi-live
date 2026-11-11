@@ -4,7 +4,7 @@
 import type { ServerCommandData } from "@hanabi-live/data";
 import type { PayloadAction } from "@reduxjs/toolkit";
 import { createSlice } from "@reduxjs/toolkit";
-import type { ChatLine } from "../chat/ChatBox";
+import type { ChatLine } from "../chat/ChatBox.tsx";
 
 interface PregameChatLine extends ChatLine {
   /** What the line's button applies to the table, in a suggestion to its owner. */

@@ -7,13 +7,13 @@ import {
   parseIntSafe,
   SECOND_IN_MILLISECONDS,
 } from "complete-common";
-import { globals } from "./Globals";
-import { LOCAL_STORAGE_KEY, START_CARD_RANK_LABEL } from "./constants";
-import * as noteIdentity from "./game/reducers/noteIdentity";
-import type { HanabiCard } from "./game/ui/HanabiCard";
-import { morphReplayFromModal } from "./game/ui/HanabiCardClick";
-import { signOut } from "./lobby/signOut";
-import { getHTMLElement, getHTMLInputElement } from "./utils";
+import { globals } from "./Globals.ts";
+import { LOCAL_STORAGE_KEY, START_CARD_RANK_LABEL } from "./constants.ts";
+import * as noteIdentity from "./game/reducers/noteIdentity.ts";
+import type { HanabiCard } from "./game/ui/HanabiCard.ts";
+import { morphReplayFromModal } from "./game/ui/HanabiCardClick.ts";
+import { signOut } from "./lobby/signOut.ts";
+import { getHTMLElement, getHTMLInputElement } from "./utils.ts";
 
 /** Used by the morph dialog. */
 type DragAreaType = "playArea" | "discardArea" | undefined;

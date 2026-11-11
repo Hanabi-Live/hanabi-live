@@ -6,8 +6,8 @@ import type {
 import fs from "node:fs";
 import path from "node:path";
 import * as prettier from "prettier";
-import { getVariantDescriptions } from "./getVariantDescriptions";
-import { getNewVariantID, validateNewVariantIDs } from "./newID";
+import { getVariantDescriptions } from "./getVariantDescriptions.ts";
+import { getNewVariantID, validateNewVariantIDs } from "./newID.ts";
 
 const PACKAGE_ROOT = path.resolve(import.meta.dirname, "..", "..");
 const REPO_ROOT = path.resolve(PACKAGE_ROOT, "..", "..");

@@ -6,16 +6,16 @@ import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { Provider } from "react-redux";
 import { createStore } from "redux";
 import { afterEach, describe, expect, test, vi } from "vitest";
-import type { State } from "../../types/State";
-import { ClueLog } from "./ClueLog";
+import type { State } from "../../types/State.ts";
+import { ClueLog } from "./ClueLog.tsx";
 
-vi.mock("../replay", () => ({ goToSegment: vi.fn() }));
+vi.mock("../replay.ts", () => ({ goToSegment: vi.fn() }));
 // The test environment has no canvas to measure text with.
-vi.mock("../fitFontSize", () => ({
+vi.mock("../fitFontSize.ts", () => ({
   fitFontSize: (_text: string, _fontFamily: string, maxFontSize: number) =>
     maxFontSize,
 }));
-const { goToSegment } = await import("../replay");
+const { goToSegment } = await import("../replay.ts");
 
 /** At this stage height, the log fits 27 entries. */
 const STAGE_HEIGHT = 900;

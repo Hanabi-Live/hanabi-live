@@ -14,7 +14,7 @@ import {
   SUIT_GROUP_NAMES,
 } from "@hanabi-live/game";
 import { eRange, newArray } from "complete-common";
-import { START_CARD_RANK_LABEL } from "../../constants";
+import { START_CARD_RANK_LABEL } from "../../constants.ts";
 
 /**
  * Represents the card identities that a card could possibly be.

@@ -1,6 +1,6 @@
 import { createStore } from "redux";
 import { describe, expect, test } from "vitest";
-import { observeStore } from "./observeStore";
+import { observeStore } from "./observeStore.ts";
 
 function stepReducer(
   state: { step: number } | undefined,

@@ -19,8 +19,8 @@ import type {
 import { isValidNumPlayers } from "@hanabi-live/game";
 import type { Tuple } from "complete-common";
 import type { z } from "zod";
-import type { ClientAction } from "./game/types/ClientAction";
-import { SoundType } from "./game/types/SoundType";
+import type { ClientAction } from "./game/types/ClientAction.ts";
+import { SoundType } from "./game/types/SoundType.ts";
 
 type WireEvent = ServerCommandData["gameEvent"]["event"];
 type WireCardIdentity =

@@ -1,18 +1,18 @@
 import { beforeEach, describe, expect, test, vi } from "vitest";
 
 vi.mock("konva", () => ({ default: {} }));
-vi.mock("../../../../tooltips", () => ({}));
-vi.mock("../../../../utils", () => ({ escapeHtml: vi.fn() }));
-vi.mock("../../konvaTooltips", () => ({}));
-vi.mock("../../timer", () => ({}));
-vi.mock("../../zen", () => ({ toggleZen: vi.fn() }));
-vi.mock("../../replay", () => ({
+vi.mock("../../../../tooltips.ts", () => ({}));
+vi.mock("../../../../utils.ts", () => ({ escapeHtml: vi.fn() }));
+vi.mock("../../konvaTooltips.ts", () => ({}));
+vi.mock("../../timer.ts", () => ({}));
+vi.mock("../../zen.ts", () => ({ toggleZen: vi.fn() }));
+vi.mock("../../replay.ts", () => ({
   adjustShuttles: vi.fn(),
 }));
-vi.mock("./cluesView", () => ({
+vi.mock("./cluesView.ts", () => ({
   refreshArrows: vi.fn(),
 }));
-vi.mock("../../UIGlobals", () => ({
+vi.mock("../../UIGlobals.ts", () => ({
   globals: {
     elements: {
       replayArea: {
@@ -32,10 +32,10 @@ vi.mock("../../UIGlobals", () => ({
     },
   },
 }));
-const { globals } = await import("../../UIGlobals");
-const replay = await import("../../replay");
-const cluesView = await import("./cluesView");
-const { onActiveChanged } = await import("./replayView");
+const { globals } = await import("../../UIGlobals.ts");
+const replay = await import("../../replay.ts");
+const cluesView = await import("./cluesView.ts");
+const { onActiveChanged } = await import("./replayView.ts");
 
 describe("replay activation", () => {
   beforeEach(() => {

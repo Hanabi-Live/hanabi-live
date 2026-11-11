@@ -2,12 +2,12 @@
 
 import type { CardOrder } from "@hanabi-live/game";
 import { ReadonlySet, trimSuffix } from "complete-common";
-import * as chat from "../../chat";
-import * as tooltips from "../../tooltips";
-import { escapeHtml } from "../../utils";
-import type { HanabiCard } from "./HanabiCard";
-import { globals } from "./UIGlobals";
-import { getCardOrStackBase } from "./getCardOrStackBase";
+import * as chat from "../../chat.ts";
+import * as tooltips from "../../tooltips.ts";
+import { escapeHtml } from "../../utils.ts";
+import type { HanabiCard } from "./HanabiCard.ts";
+import { globals } from "./UIGlobals.ts";
+import { getCardOrStackBase } from "./getCardOrStackBase.ts";
 
 const REMOVE_PIPE_KEYS = new ReadonlySet([
   "ArrowDown",

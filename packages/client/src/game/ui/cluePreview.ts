@@ -9,10 +9,10 @@ import type {
   PlayerIndex,
 } from "@hanabi-live/game";
 import { cardsReducer } from "@hanabi-live/game";
-import type { HanabiCard } from "./HanabiCard";
-import type { LayoutChild } from "./LayoutChild";
-import { globals } from "./UIGlobals";
-import { colorToColorIndex } from "./convert";
+import type { HanabiCard } from "./HanabiCard.ts";
+import type { LayoutChild } from "./LayoutChild.ts";
+import { globals } from "./UIGlobals.ts";
+import { colorToColorIndex } from "./convert.ts";
 
 interface PotentialClue {
   target: PlayerIndex;

@@ -12,8 +12,8 @@ import {
   getVariant,
 } from "@hanabi-live/game";
 import { describe, expect, test } from "vitest";
-import { SoundType } from "../../types/SoundType";
-import { getSoundType } from "./getSoundType";
+import { SoundType } from "../../types/SoundType.ts";
+import { getSoundType } from "./getSoundType.ts";
 
 const VARIANT_NAME = "Pink & Dark Omni (5 Suits)";
 test("concealed Duck clues play the quack sound", () => {

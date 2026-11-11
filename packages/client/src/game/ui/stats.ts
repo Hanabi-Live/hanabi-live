@@ -1,11 +1,11 @@
 import { parseIntSafe } from "complete-common";
 import type Konva from "konva";
-import * as modals from "../../modals";
-import { getHTMLElement, getHTMLInputElement } from "../../utils";
-import { globals } from "./UIGlobals";
-import * as arrows from "./arrows";
-import { RIGHT_MOUSE_BUTTON } from "./constants";
-import type { TextWithTooltip } from "./controls/TextWithTooltip";
+import * as modals from "../../modals.ts";
+import { getHTMLElement, getHTMLInputElement } from "../../utils.ts";
+import { globals } from "./UIGlobals.ts";
+import * as arrows from "./arrows.ts";
+import { RIGHT_MOUSE_BUTTON } from "./constants.ts";
+import type { TextWithTooltip } from "./controls/TextWithTooltip.ts";
 
 const setModifierButton = getHTMLElement("#set-modifier-button");
 const setModifierCurrent = getHTMLElement("#set-modifier-current");

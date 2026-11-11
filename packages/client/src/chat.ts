@@ -13,28 +13,28 @@ import {
 import { eRange, isArray, trimPrefix } from "complete-common";
 import linkifyHtml from "linkify-html";
 import { find as linkifyFind } from "linkifyjs";
-import { mountEmojiPicker } from "./EmojiPicker";
-import { globals } from "./Globals";
-import { chatCommands } from "./chatCommands";
-import { LobbyChatDeletionState } from "./chatDeletion";
+import { mountEmojiPicker } from "./EmojiPicker.tsx";
+import { globals } from "./Globals.ts";
+import { chatCommands } from "./chatCommands.ts";
+import { LobbyChatDeletionState } from "./chatDeletion.ts";
 import {
   FADE_TIME_MS,
   LOCAL_STORAGE_KEY,
   TYPED_HISTORY_MAX_LENGTH,
-} from "./constants";
+} from "./constants.ts";
 import {
   lobbyChatLineAdded,
   lobbyChatLineDeleted,
-} from "./lobby/chat/lobbyChatSlice";
-import { acceptOptionsFromGuest } from "./lobby/createGame";
+} from "./lobby/chat/lobbyChatSlice.ts";
+import { acceptOptionsFromGuest } from "./lobby/createGame.ts";
 import {
   pregameChatLineAdded,
   typingStopped,
-} from "./lobby/pregame/pregameSlice";
-import { Screen } from "./lobby/types/Screen";
-import * as modals from "./modals";
-import { store } from "./store";
-import { getHTMLElement, getHTMLInputElement } from "./utils";
+} from "./lobby/pregame/pregameSlice.ts";
+import { Screen } from "./lobby/types/Screen.ts";
+import * as modals from "./modals.ts";
+import { store } from "./store.ts";
+import { getHTMLElement, getHTMLInputElement } from "./utils.ts";
 
 /** Formats chat timestamps as 24-hour "HH:MM" regardless of the browser's locale. */
 const chatTimeFormatter = new Intl.DateTimeFormat("en-US", {

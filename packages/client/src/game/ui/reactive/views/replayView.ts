@@ -1,15 +1,15 @@
 import type { Spectator } from "@hanabi-live/data";
 import Konva from "konva";
-import * as tooltips from "../../../../tooltips";
-import { escapeHtml } from "../../../../utils";
-import type { SharedReplayState } from "../../../types/SharedReplayState";
-import type { State } from "../../../types/State";
-import * as replay from "../../replay";
-import * as restart from "../../restart";
-import * as timer from "../../timer";
-import { globals } from "../../UIGlobals";
-import { toggleZen } from "../../zen";
-import * as cluesView from "./cluesView";
+import * as tooltips from "../../../../tooltips.ts";
+import { escapeHtml } from "../../../../utils.ts";
+import type { SharedReplayState } from "../../../types/SharedReplayState.ts";
+import type { State } from "../../../types/State.ts";
+import * as replay from "../../replay.ts";
+import * as restart from "../../restart.ts";
+import * as timer from "../../timer.ts";
+import { globals } from "../../UIGlobals.ts";
+import { toggleZen } from "../../zen.ts";
+import * as cluesView from "./cluesView.ts";
 
 /** How long the shared replay forward and backward indicators take to fade out. */
 const SHARED_REPLAY_INDICATOR_FADE_SECONDS = 1;

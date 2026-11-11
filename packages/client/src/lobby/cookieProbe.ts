@@ -1,7 +1,7 @@
 import { httpError, withTabAccount } from "@hanabi-live/data";
 import { SECOND_IN_MILLISECONDS } from "complete-common";
-import { HTTP_STATUS } from "../constants";
-import { ReconnectBackoff } from "../reconnect";
+import { HTTP_STATUS } from "../constants.ts";
+import { ReconnectBackoff } from "../reconnect.ts";
 
 /** The endpoint that reports whether the session cookie is still valid. */
 export const TEST_COOKIE_PATH = "/test-cookie";

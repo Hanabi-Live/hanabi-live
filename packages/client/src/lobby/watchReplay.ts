@@ -1,12 +1,12 @@
 // The "Watch Specific Replay" screen.
 
 import { assertDefined, parseIntSafe } from "complete-common";
-import { LOCAL_STORAGE_KEY } from "../constants";
-import { globals } from "../Globals";
-import { escapeHtml } from "../utils";
-import type { GameJSON } from "./gameJSON";
-import { parseGameJSON } from "./gameJSON";
-import * as lobbyPage from "./lobbyPage";
+import { LOCAL_STORAGE_KEY } from "../constants.ts";
+import { globals } from "../Globals.ts";
+import { escapeHtml } from "../utils.ts";
+import type { GameJSON } from "./gameJSON.ts";
+import { parseGameJSON } from "./gameJSON.ts";
+import * as lobbyPage from "./lobbyPage.ts";
 
 export function init(): void {
   // Make the text box appear and disappear depending on which source is selected.

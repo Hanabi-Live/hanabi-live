@@ -1,11 +1,15 @@
 import { MAX_PRIVATE_HISTORY_MESSAGES, VERSION } from "@hanabi-live/data";
 import { VARIANT_NAMES } from "@hanabi-live/game";
 import { parseIntSafe } from "complete-common";
-import { globals } from "./Globals";
-import { SelfChatMessageType, roomTableID, sendSelfPMFromServer } from "./chat";
-import { NO_TABLE_ID } from "./constants";
-import * as createGame from "./lobby/createGame";
-import { createJSONFromReplay } from "./lobby/createReplayJSON";
+import { globals } from "./Globals.ts";
+import {
+  SelfChatMessageType,
+  roomTableID,
+  sendSelfPMFromServer,
+} from "./chat.ts";
+import { NO_TABLE_ID } from "./constants.ts";
+import * as createGame from "./lobby/createGame.ts";
+import { createJSONFromReplay } from "./lobby/createReplayJSON.ts";
 
 // Define a command handler map.
 // eslint-disable-next-line @typescript-eslint/no-explicit-any

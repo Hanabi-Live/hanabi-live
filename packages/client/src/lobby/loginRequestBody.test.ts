@@ -1,5 +1,5 @@
 import { describe, expect, test } from "vitest";
-import { loginRequestBody } from "./loginRequestBody";
+import { loginRequestBody } from "./loginRequestBody.ts";
 
 const request = {
   username: "alice",

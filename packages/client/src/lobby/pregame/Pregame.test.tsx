@@ -5,16 +5,16 @@ import { defaultOptions } from "@hanabi-live/game";
 import { act, cleanup, render, screen } from "@testing-library/react";
 import { Provider } from "react-redux";
 import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
-import type { Connection } from "../../Connection";
-import { globals } from "../../Globals";
-import { store } from "../../store";
-import type { Table } from "../tables/tablesSlice";
-import { tableChanged } from "../tables/tablesSlice";
-import { userChanged } from "../users/usersSlice";
-import { Pregame } from "./Pregame";
-import type { Game } from "./pregameSlice";
+import type { Connection } from "../../Connection.ts";
+import { globals } from "../../Globals.ts";
+import { store } from "../../store.ts";
+import type { Table } from "../tables/tablesSlice.ts";
+import { tableChanged } from "../tables/tablesSlice.ts";
+import { userChanged } from "../users/usersSlice.ts";
+import { Pregame } from "./Pregame.tsx";
+import type { Game } from "./pregameSlice.ts";
 
-vi.mock("../../tooltips", () => ({ attach: vi.fn(() => vi.fn()) }));
+vi.mock("../../tooltips.ts", () => ({ attach: vi.fn(() => vi.fn()) }));
 
 const TABLE_ID = tableIdSchema.parse(5);
 

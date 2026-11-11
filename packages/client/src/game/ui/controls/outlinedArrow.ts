@@ -1,6 +1,6 @@
 import Konva from "konva";
 import type { ShapeConfig } from "konva/lib/Shape";
-import { drawWithKonva3Shadow } from "./konva3Shadow";
+import { drawWithKonva3Shadow } from "./konva3Shadow.ts";
 
 interface OutlinedArrowConfig extends ShapeConfig {
   /** The tail and then the tip of the arrow: `[x1, y1, x2, y2]`. */

@@ -9,25 +9,25 @@ import {
 import { parseIntSafe } from "complete-common";
 import * as KeyCode from "keycode-js";
 import type Konva from "konva";
-import { Screen } from "../../lobby/types/Screen";
-import { closeModals, isModalVisible, showPrompt } from "../../modals";
+import { Screen } from "../../lobby/types/Screen.ts";
+import { closeModals, isModalVisible, showPrompt } from "../../modals.ts";
 import {
   copyStringToClipboard,
   getHTMLElement,
   getHTMLInputElement,
-} from "../../utils";
-import { toWireAction } from "../../wire";
-import { SoundType } from "../types/SoundType";
-import { HanabiCard } from "./HanabiCard";
-import { globals } from "./UIGlobals";
-import * as arrows from "./arrows";
-import { backToLobby } from "./backToLobby";
-import * as clues from "./clues";
-import { confirmPlay } from "./confirmPlay";
-import { controlsHypothetical } from "./controlsHypothetical";
-import * as hypothetical from "./hypothetical";
-import * as replay from "./replay";
-import { setGlobalEmpathy } from "./setGlobalEmpathy";
+} from "../../utils.ts";
+import { toWireAction } from "../../wire.ts";
+import { SoundType } from "../types/SoundType.ts";
+import { HanabiCard } from "./HanabiCard.ts";
+import { globals } from "./UIGlobals.ts";
+import * as arrows from "./arrows.ts";
+import { backToLobby } from "./backToLobby.ts";
+import * as clues from "./clues.ts";
+import { confirmPlay } from "./confirmPlay.ts";
+import { controlsHypothetical } from "./controlsHypothetical.ts";
+import * as hypothetical from "./hypothetical.ts";
+import * as replay from "./replay.ts";
+import { setGlobalEmpathy } from "./setGlobalEmpathy.ts";
 
 type Callback = () => void;
 

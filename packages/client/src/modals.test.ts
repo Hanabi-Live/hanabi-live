@@ -78,17 +78,17 @@ afterAll(() => {
   }
 });
 
-vi.mock("./Globals", () => ({
+vi.mock("./Globals.ts", () => ({
   globals: { errorOccurred: false, lastActiveElement: undefined },
 }));
-vi.mock("./game/reducers/noteIdentity", () => ({}));
-vi.mock("./game/ui/HanabiCardClick", () => ({
+vi.mock("./game/reducers/noteIdentity.ts", () => ({}));
+vi.mock("./game/ui/HanabiCardClick.ts", () => ({
   morphReplayFromModal: vi.fn(),
 }));
 
 // This must run before the error test, whose error modal cannot be closed.
 test("the idle warning counts down and only lets players keep the game going", async () => {
-  const modals = await import("./modals");
+  const modals = await import("./modals.ts");
   const { document } = dom.window;
   const idleModal = document.querySelector("#idle-modal");
   const keep = document.querySelector<HTMLElement>("#idle-modal-keep");
@@ -113,7 +113,7 @@ test("the idle warning counts down and only lets players keep the game going", a
 });
 
 test("a confirmation runs exactly one of its callbacks", async () => {
-  const modals = await import("./modals");
+  const modals = await import("./modals.ts");
   modals.init();
   const { document } = dom.window;
   const modalDialog =
@@ -153,7 +153,7 @@ test("a confirmation runs exactly one of its callbacks", async () => {
 });
 
 test("a warning shown after an error does not replace the error modal", async () => {
-  const modals = await import("./modals");
+  const modals = await import("./modals.ts");
   modals.showError("The connection was rejected.");
   // The "warning" command opens its modal after a delay, so it can arrive after an error.
   modals.showWarning("A late warning.");

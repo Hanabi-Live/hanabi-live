@@ -1,7 +1,7 @@
 import type { Clock } from "@sinonjs/fake-timers";
 import { install } from "@sinonjs/fake-timers";
 import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
-import { Loader } from "./Loader";
+import { Loader } from "./Loader.ts";
 
 let clock: Clock;
 

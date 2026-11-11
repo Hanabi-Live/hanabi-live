@@ -1,10 +1,10 @@
 import { afterEach, describe, expect, test, vi } from "vitest";
-import type { HanabiCard } from "./HanabiCard";
-import { DOUBLE_TAP_DELAY_MILLISECONDS } from "./constants";
+import type { HanabiCard } from "./HanabiCard.ts";
+import { DOUBLE_TAP_DELAY_MILLISECONDS } from "./constants.ts";
 
-vi.mock("./notes", () => ({}));
-vi.mock("./replay", () => ({}));
-const { HanabiCardTap } = await import("./HanabiCardTouchActions");
+vi.mock("./notes.ts", () => ({}));
+vi.mock("./replay.ts", () => ({}));
+const { HanabiCardTap } = await import("./HanabiCardTouchActions.ts");
 
 afterEach(() => {
   vi.useRealTimers();

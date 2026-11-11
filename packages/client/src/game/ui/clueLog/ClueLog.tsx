@@ -4,15 +4,15 @@ import type { CardOrder, StateClue, Variant } from "@hanabi-live/game";
 import { getCharacterNameForPlayer, getClueName } from "@hanabi-live/game";
 import { useState } from "react";
 import { useSelector } from "react-redux";
-import type { State } from "../../types/State";
+import type { State } from "../../types/State.ts";
 import {
   CLUE_LOG,
   FONT_FAMILY,
   PANEL_CORNER_RADIUS,
   PANEL_OPACITY,
-} from "../constants";
-import { fitFontSize } from "../fitFontSize";
-import * as replay from "../replay";
+} from "../constants.ts";
+import { fitFontSize } from "../fitFontSize.ts";
+import * as replay from "../replay.ts";
 
 /** How far the entries are inset from each edge of the panel, in fractions of the stage. */
 const TEXT_INSET = 0.01;

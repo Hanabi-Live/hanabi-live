@@ -8,18 +8,18 @@ import { SECOND_IN_MILLISECONDS, assertDefined, eRange } from "complete-common";
 import type {
   ClientActionColorClue,
   ClientActionRankClue,
-} from "../types/ClientAction";
-import type { ColorButton } from "./ColorButton";
-import type { HanabiCard } from "./HanabiCard";
-import type { LayoutChild } from "./LayoutChild";
-import type { RankButton } from "./RankButton";
-import { globals } from "./UIGlobals";
-import * as arrows from "./arrows";
-import * as cluePreview from "./cluePreview";
-import type { PlayerButton } from "./controls/PlayerButton";
-import { colorToColorIndex } from "./convert";
-import * as cluesView from "./reactive/views/cluesView";
-import * as turn from "./turn";
+} from "../types/ClientAction.ts";
+import type { ColorButton } from "./ColorButton.ts";
+import type { HanabiCard } from "./HanabiCard.ts";
+import type { LayoutChild } from "./LayoutChild.ts";
+import type { RankButton } from "./RankButton.ts";
+import { globals } from "./UIGlobals.ts";
+import * as arrows from "./arrows.ts";
+import * as cluePreview from "./cluePreview.ts";
+import type { PlayerButton } from "./controls/PlayerButton.ts";
+import { colorToColorIndex } from "./convert.ts";
+import * as cluesView from "./reactive/views/cluesView.ts";
+import * as turn from "./turn.ts";
 
 /**
  * How long after a click elsewhere in the UI (such as on the "Exit Replay" button) a clue cannot be

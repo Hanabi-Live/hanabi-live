@@ -3,8 +3,8 @@
 import type { ServerCommandData } from "@hanabi-live/data";
 import { SECONDS_PER_MINUTE } from "@hanabi-live/data";
 import { secondsToClockString } from "@hanabi-live/game";
-import { OptionIcons } from "../enums/OptionIcons";
-import { escapeHtml } from "../utils";
+import { OptionIcons } from "../enums/OptionIcons.ts";
+import { escapeHtml } from "../utils.ts";
 
 export interface OptionDescription {
   /** Identifies the option in element IDs. */

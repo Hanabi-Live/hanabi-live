@@ -3,8 +3,8 @@ import {
   START_CARD_RANK,
   canCardPossiblyBeFromEmpathy,
 } from "@hanabi-live/game";
-import * as modals from "../../modals";
-import { globals } from "./UIGlobals";
+import * as modals from "../../modals.ts";
+import { globals } from "./UIGlobals.ts";
 
 export { possibleCardsFromNoteAndClues } from "@hanabi-live/game";
 

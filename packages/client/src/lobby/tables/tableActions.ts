@@ -1,11 +1,11 @@
 // Joining, spectating, and returning to the tables in the lobby.
 
 import type { PlayerIndex } from "@hanabi-live/game";
-import { globals } from "../../Globals";
-import * as modals from "../../modals";
-import * as createGame from "../createGame";
-import { Screen } from "../types/Screen";
-import type { Table } from "./tablesSlice";
+import { globals } from "../../Globals.ts";
+import * as modals from "../../modals.ts";
+import * as createGame from "../createGame.ts";
+import { Screen } from "../types/Screen.ts";
+import type { Table } from "./tablesSlice.ts";
 
 export function tableSpectate(
   table: Table,

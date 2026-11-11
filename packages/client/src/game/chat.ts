@@ -2,10 +2,10 @@
 
 import { assertDefined, parseFloatSafe } from "complete-common";
 import interact from "interactjs";
-import { globals } from "../Globals";
-import { FADE_TIME_MS, LOCAL_STORAGE_KEY } from "../constants";
-import { getHTMLElement } from "../utils";
-import * as newUIState from "./newUI/newUIState";
+import { globals } from "../Globals.ts";
+import { FADE_TIME_MS, LOCAL_STORAGE_KEY } from "../constants.ts";
+import { getHTMLElement } from "../utils.ts";
+import * as newUIState from "./newUI/newUIState.ts";
 
 const gameChatText = getHTMLElement("#game-chat-text");
 

@@ -1,10 +1,10 @@
 // Touch actions for the HanabiCard object. These are a subset of the actions in HanabiCardClick.ts.
 
 import { isCardDiscarded, isCardPlayed } from "@hanabi-live/game";
-import type { HanabiCard } from "./HanabiCard";
-import { DOUBLE_TAP_DELAY_MILLISECONDS } from "./constants";
-import * as notes from "./notes";
-import * as replay from "./replay";
+import type { HanabiCard } from "./HanabiCard.ts";
+import { DOUBLE_TAP_DELAY_MILLISECONDS } from "./constants.ts";
+import * as notes from "./notes.ts";
+import * as replay from "./replay.ts";
 
 export function HanabiCardTap(this: HanabiCard): void {
   // We executed a tap, so prevent the code from considering a long press is happening. (Otherwise,

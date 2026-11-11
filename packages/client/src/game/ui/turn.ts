@@ -1,14 +1,14 @@
 import { getClueCost, isAtMaxClueTokens } from "@hanabi-live/game";
-import * as notifications from "../../notifications";
-import { toWireAction } from "../../wire";
-import type { ClientAction } from "../types/ClientAction";
-import { globals } from "./UIGlobals";
-import * as arrows from "./arrows";
-import * as cluePreview from "./cluePreview";
-import { PREPLAY_DELAY_MILLISECONDS } from "./constants";
-import * as hypothetical from "./hypothetical";
-import { isOurTurn } from "./isOurTurn";
-import * as replay from "./replay";
+import * as notifications from "../../notifications.ts";
+import { toWireAction } from "../../wire.ts";
+import type { ClientAction } from "../types/ClientAction.ts";
+import { globals } from "./UIGlobals.ts";
+import * as arrows from "./arrows.ts";
+import * as cluePreview from "./cluePreview.ts";
+import { PREPLAY_DELAY_MILLISECONDS } from "./constants.ts";
+import * as hypothetical from "./hypothetical.ts";
+import { isOurTurn } from "./isOurTurn.ts";
+import * as replay from "./replay.ts";
 
 export function begin(): void {
   resetSelectedClue();

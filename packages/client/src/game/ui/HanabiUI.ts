@@ -1,23 +1,23 @@
 // The object that comprises the entire game UI. It is re-created every time when going into a new
 // game (and destroyed when going to the lobby).
 
-import type { Globals as LobbyGlobals } from "../../Globals";
-import { Screen } from "../../lobby/types/Screen";
-import * as tooltips from "../../tooltips";
-import type { GameExports } from "../main";
-import * as newUIState from "../newUI/newUIState";
-import { unmountClueLog } from "./clueLog/mountClueLog";
-import { STAGE_ASPECT_RATIO } from "./constants";
-import * as cursor from "./cursor";
-import { drawUI } from "./drawUI";
-import * as keyboard from "./keyboard";
-import * as cardsView from "./reactive/views/cardsView";
-import * as cluesView from "./reactive/views/cluesView";
-import * as restart from "./restart";
-import { setGlobalEmpathy } from "./setGlobalEmpathy";
-import * as timer from "./timer";
-import type { UIGlobals } from "./UIGlobals";
-import { globals, resetGlobals } from "./UIGlobals";
+import type { Globals as LobbyGlobals } from "../../Globals.ts";
+import { Screen } from "../../lobby/types/Screen.ts";
+import * as tooltips from "../../tooltips.ts";
+import type { GameExports } from "../main.ts";
+import * as newUIState from "../newUI/newUIState.ts";
+import { unmountClueLog } from "./clueLog/mountClueLog.tsx";
+import { STAGE_ASPECT_RATIO } from "./constants.ts";
+import * as cursor from "./cursor.ts";
+import { drawUI } from "./drawUI.ts";
+import * as keyboard from "./keyboard.ts";
+import * as cardsView from "./reactive/views/cardsView.ts";
+import * as cluesView from "./reactive/views/cluesView.ts";
+import * as restart from "./restart.ts";
+import { setGlobalEmpathy } from "./setGlobalEmpathy.ts";
+import * as timer from "./timer.ts";
+import type { UIGlobals } from "./UIGlobals.ts";
+import { globals, resetGlobals } from "./UIGlobals.ts";
 
 export class HanabiUI {
   globals: UIGlobals;

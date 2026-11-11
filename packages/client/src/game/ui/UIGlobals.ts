@@ -9,16 +9,16 @@ import { getDefaultVariant } from "@hanabi-live/game";
 import { ReadonlyMap } from "complete-common";
 import Konva from "konva";
 import type * as Redux from "redux";
-import { Globals as LobbyGlobals } from "../../Globals";
-import type { Loader } from "../../Loader";
-import type { GameExports } from "../main";
-import type { State } from "../types/State";
-import type { Action } from "../types/actions";
-import { Elements } from "./Elements";
-import type { HanabiCard } from "./HanabiCard";
-import { Layers } from "./Layers";
-import * as cursor from "./cursor";
-import type { StateObserver } from "./reactive/StateObserver";
+import { Globals as LobbyGlobals } from "../../Globals.ts";
+import type { Loader } from "../../Loader.ts";
+import type { GameExports } from "../main.ts";
+import type { State } from "../types/State.ts";
+import type { Action } from "../types/actions.ts";
+import { Elements } from "./Elements.ts";
+import type { HanabiCard } from "./HanabiCard.ts";
+import { Layers } from "./Layers.ts";
+import * as cursor from "./cursor.ts";
+import type { StateObserver } from "./reactive/StateObserver.ts";
 
 // Konva 9 moved text lower within its bounds; keep the positions that the layout was designed for.
 Konva.legacyTextRendering = true;

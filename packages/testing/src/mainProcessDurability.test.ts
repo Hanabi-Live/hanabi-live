@@ -8,7 +8,7 @@ import path from "node:path";
 import { setTimeout as delay } from "node:timers/promises";
 import type { WebSocket } from "ws";
 import { z } from "zod";
-import { evaluationDatabase, liveTables } from "./database";
+import { evaluationDatabase, liveTables } from "./database.ts";
 import {
   ROOT,
   bounded,
@@ -20,7 +20,7 @@ import {
   socketClient,
   startProcess,
   stopChild,
-} from "./mainProcessSupport";
+} from "./mainProcessSupport.ts";
 
 databaseDescribe("Rust actor durability and ownership", () => {
   test.each(["crash", "lost ownership"] as const)(

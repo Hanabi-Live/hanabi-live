@@ -1,4 +1,4 @@
-import { Button } from "./Button";
+import { Button } from "./Button.ts";
 
 export class SharedTurnsButton extends Button {
   // eslint-disable-next-line @typescript-eslint/class-methods-use-this, @typescript-eslint/no-empty-function

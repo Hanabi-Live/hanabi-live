@@ -1,16 +1,16 @@
 // These are exported global variables to be shared between all of the TypeScript code.
 
 import type { ServerCommandData, Settings, UserID } from "@hanabi-live/data";
-import type { Connection } from "./Connection";
-import type { Loader } from "./Loader";
-import { NO_TABLE_ID } from "./constants";
-import type { HanabiUI } from "./game/ui/HanabiUI";
-import { totalGamesChanged } from "./lobby/gameHistory/historySlice";
-import type { Game } from "./lobby/pregame/pregameSlice";
-import { gameChanged } from "./lobby/pregame/pregameSlice";
-import type { Table } from "./lobby/tables/tablesSlice";
-import { selectTable, selectTables } from "./lobby/tables/tablesSlice";
-import type { Screen } from "./lobby/types/Screen";
+import type { Connection } from "./Connection.ts";
+import type { Loader } from "./Loader.ts";
+import { NO_TABLE_ID } from "./constants.ts";
+import type { HanabiUI } from "./game/ui/HanabiUI.ts";
+import { totalGamesChanged } from "./lobby/gameHistory/historySlice.ts";
+import type { Game } from "./lobby/pregame/pregameSlice.ts";
+import { gameChanged } from "./lobby/pregame/pregameSlice.ts";
+import type { Table } from "./lobby/tables/tablesSlice.ts";
+import { selectTable, selectTables } from "./lobby/tables/tablesSlice.ts";
+import type { Screen } from "./lobby/types/Screen.ts";
 import {
   blockedChanged,
   errorOccurredChanged,
@@ -19,8 +19,8 @@ import {
   settingsChanged,
   userIDChanged,
   usernameChanged,
-} from "./sessionSlice";
-import { store } from "./store";
+} from "./sessionSlice.ts";
+import { store } from "./store.ts";
 
 export class Globals {
   /** The WebSocket connection (set in "websocketInit.ts"). */

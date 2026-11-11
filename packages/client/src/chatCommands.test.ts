@@ -1,13 +1,13 @@
 import { describe, expect, test, vi } from "vitest";
 
-vi.mock("./chat", () => ({
+vi.mock("./chat.ts", () => ({
   SelfChatMessageType: {},
   sendSelfPMFromServer: vi.fn(),
   sendChat: vi.fn(),
 }));
-vi.mock("./Globals", () => ({ globals: {} }));
-vi.mock("./lobby/createGame", () => ({}));
-vi.mock("./modals", () => ({}));
+vi.mock("./Globals.ts", () => ({ globals: {} }));
+vi.mock("./lobby/createGame.ts", () => ({}));
+vi.mock("./modals.ts", () => ({}));
 vi.mock("./lobby/createReplayJSON.ts", () => ({
   createJSONFromReplay: vi.fn(),
 }));
@@ -15,7 +15,7 @@ const {
   getVariantFromArgs,
   getVariantNameFromPartial,
   parsePMHistoryCommandArgs,
-} = await import("./chatCommands");
+} = await import("./chatCommands.ts");
 
 const brownFives = "Brown-Fives (6 Suits)";
 const brownFivesPrism6Suits = "Brown-Fives & Prism (6 Suits)";

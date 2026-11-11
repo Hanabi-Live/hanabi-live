@@ -1,10 +1,10 @@
 import type { Spectator } from "@hanabi-live/data";
 import type { CardIdentity, GameMetadata, GameState } from "@hanabi-live/game";
-import type { ClientAction } from "./ClientAction";
-import type { NotesState } from "./NotesState";
-import type { PauseState } from "./PauseState";
-import type { ReplayState } from "./ReplayState";
-import type { UIState } from "./UIState";
+import type { ClientAction } from "./ClientAction.ts";
+import type { NotesState } from "./NotesState.ts";
+import type { PauseState } from "./PauseState.ts";
+import type { ReplayState } from "./ReplayState.ts";
+import type { UIState } from "./UIState.ts";
 
 export interface State {
   readonly visibleState: GameState | undefined; // Null during initialization

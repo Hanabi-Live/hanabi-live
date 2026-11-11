@@ -12,8 +12,8 @@ import {
   getSuit,
   getSuitAbbreviationForVariant,
 } from "@hanabi-live/game";
-import { START_CARD_RANK_LABEL } from "../../constants";
-import type { CardRendererBackend } from "./cardRendererBackend";
+import { START_CARD_RANK_LABEL } from "../../constants.ts";
+import type { CardRendererBackend } from "./cardRendererBackend.ts";
 import {
   CARD_CENTER,
   CARD_H,
@@ -22,9 +22,9 @@ import {
   FULL_CIRCLE_RADIANS,
   NO_SHADOW_COLOR,
   RANK_FONT_FAMILY,
-} from "./constants";
-import { SUIT_PIP_SCALE, drawPip, getSuitPipRingPosition } from "./drawPip";
-import { drawStylizedRank } from "./drawStylizedRank";
+} from "./constants.ts";
+import { SUIT_PIP_SCALE, drawPip, getSuitPipRingPosition } from "./drawPip.ts";
+import { drawStylizedRank } from "./drawStylizedRank.ts";
 
 enum CardArea {
   Number,

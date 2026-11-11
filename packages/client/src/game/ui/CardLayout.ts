@@ -1,11 +1,11 @@
 import { assertDefined, eRange } from "complete-common";
 import Konva from "konva";
 import type { HitCanvas, SceneCanvas } from "konva/lib/Canvas";
-import type { LayoutChild } from "./LayoutChild";
-import { globals } from "./UIGlobals";
-import { CARD_ANIMATION_LENGTH_SECONDS } from "./constants";
-import { animate, degreesToRadians } from "./konvaHelpers";
-import { startMisplayAnimation } from "./misplayAnimation";
+import type { LayoutChild } from "./LayoutChild.ts";
+import { globals } from "./UIGlobals.ts";
+import { CARD_ANIMATION_LENGTH_SECONDS } from "./constants.ts";
+import { animate, degreesToRadians } from "./konvaHelpers.ts";
+import { startMisplayAnimation } from "./misplayAnimation.ts";
 
 /** The largest gap between adjacent cards in a hand, as a fraction of the total card width. */
 const MAX_CARD_SPACING = 0.04;

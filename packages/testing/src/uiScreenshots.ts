@@ -30,7 +30,7 @@ import path from "node:path";
 import { parseArgs, promisify } from "node:util";
 import type { BrowserContext, Page } from "playwright";
 import { chromium } from "playwright";
-import { evaluationDatabase } from "./database";
+import { evaluationDatabase } from "./database.ts";
 import {
   ROOT,
   buildRust,
@@ -40,7 +40,7 @@ import {
   socketClient,
   startProcess,
   stopChild,
-} from "./mainProcessSupport";
+} from "./mainProcessSupport.ts";
 
 // eslint-disable-next-line @typescript-eslint/strict-void-return -- promisify ignores the ChildProcess return value.
 const run = promisify(execFile);
@@ -1319,7 +1319,9 @@ async function main() {
   }
 }
 
-main().catch((error: unknown) => {
+try {
+  await main();
+} catch (error) {
   console.error("Failed to take the screenshots:", error);
   process.exitCode = 1;
-});
+}

@@ -3,13 +3,13 @@
 import type { CardOrder } from "@hanabi-live/game";
 import { clamp, parseIntSafe } from "complete-common";
 import Konva from "konva";
-import { closeModals, showPrompt } from "../../modals";
-import { getHTMLElement, getHTMLInputElement } from "../../utils";
-import { globals } from "./UIGlobals";
-import * as arrows from "./arrows";
-import type { Shuttle } from "./controls/Shuttle";
-import { getCardOrStackBase } from "./getCardOrStackBase";
-import { animate } from "./konvaHelpers";
+import { closeModals, showPrompt } from "../../modals.ts";
+import { getHTMLElement, getHTMLInputElement } from "../../utils.ts";
+import { globals } from "./UIGlobals.ts";
+import * as arrows from "./arrows.ts";
+import type { Shuttle } from "./controls/Shuttle.ts";
+import { getCardOrStackBase } from "./getCardOrStackBase.ts";
+import { animate } from "./konvaHelpers.ts";
 
 /** How long a replay shuttle takes to slide to a new segment. */
 const SHUTTLE_ANIMATION_SECONDS = 0.25;

@@ -8,7 +8,7 @@ const start = vi.fn();
 const stop = vi.fn();
 const show = vi.fn();
 
-vi.mock("./UIGlobals", () => ({
+vi.mock("./UIGlobals.ts", () => ({
   globals: {
     restartPending: false,
     lobby: { tableID: 42, conn: { send } },
@@ -22,8 +22,8 @@ vi.mock("./UIGlobals", () => ({
     layers: { UI2: { batchDraw: vi.fn() } },
   },
 }));
-const { globals } = await import("./UIGlobals");
-const { request, setPending } = await import("./restart");
+const { globals } = await import("./UIGlobals.ts");
+const { request, setPending } = await import("./restart.ts");
 
 beforeEach(() => {
   vi.clearAllMocks();

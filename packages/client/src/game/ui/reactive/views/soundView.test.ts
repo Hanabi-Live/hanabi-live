@@ -1,14 +1,14 @@
 import type { GameAction, GameState } from "@hanabi-live/game";
 import { beforeEach, describe, expect, test, vi } from "vitest";
-import { SoundType } from "../../../types/SoundType";
+import { SoundType } from "../../../types/SoundType.ts";
 
-vi.mock("../../isOurTurn", () => ({ isOurTurn: () => true }));
-vi.mock("../getSoundType", () => ({
+vi.mock("../../isOurTurn.ts", () => ({ isOurTurn: () => true }));
+vi.mock("../getSoundType.ts", () => ({
   SOUND_TYPE_ACTIONS: [],
   getSoundType: () => SoundType.Us,
   getStandardSoundType: () => SoundType.Us,
 }));
-vi.mock("../../UIGlobals", () => ({
+vi.mock("../../UIGlobals.ts", () => ({
   globals: {
     lobby: { settings: { soundMove: "all", hGroupConventions: false } },
     isResizing: false,
@@ -19,8 +19,8 @@ vi.mock("../../UIGlobals", () => ({
     game: { sounds: { play: vi.fn() } },
   },
 }));
-const { globals } = await import("../../UIGlobals");
-const { onNewSoundEffect } = await import("./soundView");
+const { globals } = await import("../../UIGlobals.ts");
+const { onNewSoundEffect } = await import("./soundView.ts");
 
 const firstTurn = {
   gameState: { turn: { turnNum: 0, currentPlayerIndex: 0 } } as GameState,

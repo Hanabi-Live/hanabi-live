@@ -1,4 +1,4 @@
-import type { UICard } from "./UICard";
+import type { UICard } from "./UICard.ts";
 
 export type UIAction = ActionDragStart | ActionDragReset;
 

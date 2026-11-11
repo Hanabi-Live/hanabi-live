@@ -8,8 +8,8 @@ import type {
   CardIdentity,
   GameAction,
 } from "@hanabi-live/game";
-import type { ClientAction } from "./ClientAction";
-import type { UIAction } from "./UIAction";
+import type { ClientAction } from "./ClientAction.ts";
+import type { UIAction } from "./UIAction.ts";
 
 export type Action =
   | ActionInit

@@ -1,8 +1,8 @@
 // The parts that the lobby chat and the pre-game chat share.
 
 import { useEffect, useLayoutEffect, useRef } from "react";
-import { attachChatInput, openEmojiPicker } from "../../chat";
-import { FADE_TIME_MS } from "../../constants";
+import { attachChatInput, openEmojiPicker } from "../../chat.ts";
+import { FADE_TIME_MS } from "../../constants.ts";
 
 /** How far from the bottom the chat can be scrolled and still count as at the bottom. */
 const AT_BOTTOM_EPSILON_PIXELS = 2;

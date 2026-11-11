@@ -1,6 +1,6 @@
 import type { PlayerIndex } from "@hanabi-live/game";
 import Konva from "konva";
-import { Button } from "./Button";
+import { Button } from "./Button.ts";
 
 /** The opacity of the radio button that shows which player is selected. */
 const RADIO_OPACITY = 0.8;

@@ -3,7 +3,7 @@ import type {
   GameState,
   HypotheticalState,
 } from "@hanabi-live/game";
-import type { SharedReplayState } from "./SharedReplayState";
+import type { SharedReplayState } from "./SharedReplayState.ts";
 
 export interface ReplayState {
   readonly active: boolean;

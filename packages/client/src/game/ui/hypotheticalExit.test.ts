@@ -4,17 +4,18 @@ import { createStore } from "redux";
 import type { Mock } from "vitest";
 import { describe, expect, test, vi } from "vitest";
 
-import type { HanabiCard } from "./HanabiCard";
+import type { HanabiCard } from "./HanabiCard.ts";
 
-vi.mock("../reducers/uiReducer", () => ({ uiReducer: vi.fn() }));
-vi.mock("./UIGlobals", () => ({ globals: {} }));
-vi.mock("./HanabiCardMouse", () => ({ setEmpathyOnHand: vi.fn() }));
-const { initialState } = await import("../reducers/initialStates/initialState");
-const { stateReducer } = await import("../reducers/stateReducer");
-const mouse = await import("./HanabiCardMouse");
+vi.mock("../reducers/uiReducer.ts", () => ({ uiReducer: vi.fn() }));
+vi.mock("./UIGlobals.ts", () => ({ globals: {} }));
+vi.mock("./HanabiCardMouse.ts", () => ({ setEmpathyOnHand: vi.fn() }));
+const { initialState } =
+  await import("../reducers/initialStates/initialState.ts");
+const { stateReducer } = await import("../reducers/stateReducer.ts");
+const mouse = await import("./HanabiCardMouse.ts");
 const { changeStartingHandVisibility, endHypothetical, finishHypothetical } =
-  await import("./hypothetical");
-const { globals } = await import("./UIGlobals");
+  await import("./hypothetical.ts");
+const { globals } = await import("./UIGlobals.ts");
 
 function setup(shared: boolean) {
   const metadata = getDefaultMetadata(2);

@@ -3,8 +3,8 @@
 
 import { CHAT_EMOJI_GROUPS, CHAT_EMOTES } from "@hanabi-live/data";
 import { useState } from "react";
-import { renderRoot } from "./renderRoot";
-import { TAB_CLASS_NAME } from "./tabClassName";
+import { renderRoot } from "./renderRoot.tsx";
+import { TAB_CLASS_NAME } from "./tabClassName.ts";
 
 /** Searching for a short string matches most symbols, and drawing them all would be slow. */
 const MAX_SEARCH_RESULTS = 100;

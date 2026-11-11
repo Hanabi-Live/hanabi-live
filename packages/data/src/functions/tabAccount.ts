@@ -1,4 +1,4 @@
-import { loginResponseSchema } from "../generated/protocol";
+import { loginResponseSchema } from "../generated/protocol.ts";
 
 // Each tab remembers the account it signed in to, so that reloading or reconnecting does not switch
 // it to the account most recently signed in to in another tab. New tabs use that latest account.

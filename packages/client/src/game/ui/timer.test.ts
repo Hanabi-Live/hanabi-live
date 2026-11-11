@@ -1,9 +1,9 @@
 import { assertDefined } from "complete-common";
 import { afterEach, beforeEach, expect, test, vi } from "vitest";
 
-vi.mock("../../tooltips", () => ({ setContent: vi.fn() }));
-vi.mock("./konvaHelpers", () => ({ drawLayer: vi.fn() }));
-vi.mock("./UIGlobals", () => ({
+vi.mock("../../tooltips.ts", () => ({ setContent: vi.fn() }));
+vi.mock("./konvaHelpers.ts", () => ({ drawLayer: vi.fn() }));
+vi.mock("./UIGlobals.ts", () => ({
   globals: {
     state: { finished: true },
     elements: {
@@ -17,9 +17,9 @@ vi.mock("./UIGlobals", () => ({
     timeTaken: 0,
   },
 }));
-const { globals } = await import("./UIGlobals");
-const tooltips = await import("../../tooltips");
-const { resumeAfterResize, stop, update } = await import("./timer");
+const { globals } = await import("./UIGlobals.ts");
+const tooltips = await import("../../tooltips.ts");
+const { resumeAfterResize, stop, update } = await import("./timer.ts");
 
 beforeEach(() => {
   vi.clearAllMocks();

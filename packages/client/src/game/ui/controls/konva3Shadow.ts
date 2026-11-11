@@ -1,6 +1,6 @@
 import type Konva from "konva";
 import type { Context } from "konva/lib/Context";
-import { NO_SHADOW_COLOR } from "../constants";
+import { NO_SHADOW_COLOR } from "../constants.ts";
 
 /**
  * Draws a shadowed shape as Konva 3 did: once with the shadow and once more on top without it, so

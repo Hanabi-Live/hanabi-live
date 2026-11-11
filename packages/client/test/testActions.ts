@@ -9,7 +9,7 @@ import type {
   ActionIncludingHypothetical,
   ActionInit,
   ActionReplayEnter,
-} from "../src/game/types/actions";
+} from "../src/game/types/actions.ts";
 
 export function replayEnter(): ActionReplayEnter {
   return {

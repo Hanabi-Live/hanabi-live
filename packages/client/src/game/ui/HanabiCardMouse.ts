@@ -1,21 +1,21 @@
 import { isCardDiscarded, isCardPlayed } from "@hanabi-live/game";
 import type Konva from "konva";
-import * as tooltips from "../../tooltips";
-import type { HanabiCard } from "./HanabiCard";
-import { HanabiCardClick } from "./HanabiCardClick";
-import { mouseDownSpeedrun } from "./HanabiCardClickSpeedrun";
-import { HanabiCardDblTap, HanabiCardTap } from "./HanabiCardTouchActions";
-import type { LayoutChild } from "./LayoutChild";
-import { globals } from "./UIGlobals";
-import * as arrows from "./arrows";
-import { showClueMatches } from "./clueLog/mountClueLog";
+import * as tooltips from "../../tooltips.ts";
+import type { HanabiCard } from "./HanabiCard.ts";
+import { HanabiCardClick } from "./HanabiCardClick.ts";
+import { mouseDownSpeedrun } from "./HanabiCardClickSpeedrun.ts";
+import { HanabiCardDblTap, HanabiCardTap } from "./HanabiCardTouchActions.ts";
+import type { LayoutChild } from "./LayoutChild.ts";
+import { globals } from "./UIGlobals.ts";
+import * as arrows from "./arrows.ts";
+import { showClueMatches } from "./clueLog/mountClueLog.tsx";
 import {
   DOUBLE_TAP_DELAY_MILLISECONDS,
   LEFT_MOUSE_BUTTON_HELD,
-} from "./constants";
-import * as cursor from "./cursor";
-import * as konvaTooltips from "./konvaTooltips";
-import * as notes from "./notes";
+} from "./constants.ts";
+import * as cursor from "./cursor.ts";
+import * as konvaTooltips from "./konvaTooltips.ts";
+import * as notes from "./notes.ts";
 
 export function registerMouseHandlers(this: HanabiCard): void {
   // https://konvajs.org/docs/events/Binding_Events.html

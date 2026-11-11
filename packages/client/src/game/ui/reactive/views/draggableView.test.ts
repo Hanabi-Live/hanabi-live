@@ -1,12 +1,12 @@
 import { beforeEach, describe, expect, test, vi } from "vitest";
-import type { State } from "../../../types/State";
+import type { State } from "../../../types/State.ts";
 
 const settings = vi.hoisted(() => ({
   speedrunMode: false,
   speedrunPreplay: false,
 }));
-vi.mock("../../UIGlobals", () => ({ globals: { lobby: { settings } } }));
-const { draggablePlayerIndex } = await import("./draggableView");
+vi.mock("../../UIGlobals.ts", () => ({ globals: { lobby: { settings } } }));
+const { draggablePlayerIndex } = await import("./draggableView.ts");
 
 const OUR_PLAYER_INDEX = 1;
 const OTHER_PLAYER_INDEX = 2;

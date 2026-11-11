@@ -3,19 +3,19 @@ import { afterEach, describe, expect, test, vi } from "vitest";
 
 import { replayGameSchema, tableIdSchema } from "@hanabi-live/data";
 
-vi.mock("./history", () => ({
+vi.mock("./history.ts", () => ({
   show: vi.fn(),
   showOtherScores: vi.fn(),
 }));
-vi.mock("../Globals", () => ({
+vi.mock("../Globals.ts", () => ({
   globals: { conn: { send: vi.fn() } },
 }));
-vi.mock("../utils", () => ({ setBrowserAddressBarPath: vi.fn() }));
-const { globals } = await import("../Globals");
-const history = await import("./history");
-const { expand } = await import("./hypoCompress");
-const { leaveTableLink, parseAndGoto } = await import("./url");
-const { setBrowserAddressBarPath } = await import("../utils");
+vi.mock("../utils.ts", () => ({ setBrowserAddressBarPath: vi.fn() }));
+const { globals } = await import("../Globals.ts");
+const history = await import("./history.ts");
+const { expand } = await import("./hypoCompress.ts");
+const { leaveTableLink, parseAndGoto } = await import("./url.ts");
+const { setBrowserAddressBarPath } = await import("../utils.ts");
 
 function welcome(
   data: Partial<ServerCommandData["welcome"]> = {},

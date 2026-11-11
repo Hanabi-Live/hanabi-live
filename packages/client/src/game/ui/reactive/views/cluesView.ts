@@ -1,8 +1,8 @@
 import type { StateClue } from "@hanabi-live/game";
 import { msgClueToClue } from "@hanabi-live/game";
-import { globals } from "../../UIGlobals";
-import * as arrows from "../../arrows";
-import { getCardOrStackBase } from "../../getCardOrStackBase";
+import { globals } from "../../UIGlobals.ts";
+import * as arrows from "../../arrows.ts";
+import { getCardOrStackBase } from "../../getCardOrStackBase.ts";
 
 export function onLastClueOrSegmentChanged(data: {
   clues: readonly StateClue[];

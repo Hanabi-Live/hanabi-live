@@ -1,33 +1,33 @@
 // We will receive WebSocket messages / commands from the server that tell us to do things.
 
 import { setTabAccount } from "@hanabi-live/data";
-import { globals } from "../Globals";
-import { NO_TABLE_ID } from "../constants";
-import * as gameMain from "../game/main";
-import * as spectatorsView from "../game/ui/reactive/views/spectatorsView";
-import * as modals from "../modals";
-import { ServerHandlers } from "../serverHandlers";
-import * as sounds from "../sounds";
-import { store } from "../store";
-import * as theme from "../theme";
-import { toSoundType } from "../wire";
+import { globals } from "../Globals.ts";
+import { NO_TABLE_ID } from "../constants.ts";
+import * as gameMain from "../game/main.ts";
+import * as spectatorsView from "../game/ui/reactive/views/spectatorsView.ts";
+import * as modals from "../modals.ts";
+import { ServerHandlers } from "../serverHandlers.ts";
+import * as sounds from "../sounds.ts";
+import { store } from "../store.ts";
+import * as theme from "../theme.ts";
+import { toSoundType } from "../wire.ts";
 import {
   historyReceived,
   lobbyStatusReceived,
   otherScoresReceived,
-} from "./gameHistory/historySlice";
-import * as lobbyLogin from "./login";
-import * as pregame from "./pregame/pregame";
-import { startGameCooldownChanged } from "./pregame/pregameSlice";
-import { tableChanged, tableGone, tablesListed } from "./tables/tablesSlice";
-import { Screen } from "./types/Screen";
-import * as url from "./url";
+} from "./gameHistory/historySlice.ts";
+import * as lobbyLogin from "./login.ts";
+import * as pregame from "./pregame/pregame.ts";
+import { startGameCooldownChanged } from "./pregame/pregameSlice.ts";
+import { tableChanged, tableGone, tablesListed } from "./tables/tablesSlice.ts";
+import { Screen } from "./types/Screen.ts";
+import * as url from "./url.ts";
 import {
   userChanged,
   userInactiveChanged,
   userLeft,
   usersListed,
-} from "./users/usersSlice";
+} from "./users/usersSlice.ts";
 
 /** How long the start game button stays disabled after the player count changes. */
 const START_GAME_BUTTON_DISABLED_MILLISECONDS = 500;

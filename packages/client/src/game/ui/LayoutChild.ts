@@ -1,19 +1,19 @@
 import type { PlayerIndex } from "@hanabi-live/game";
 import { isAtMaxClueTokens } from "@hanabi-live/game";
 import Konva from "konva";
-import * as modals from "../../modals";
-import * as sounds from "../../sounds";
-import { SoundType } from "../types/SoundType";
-import type { CardLayout } from "./CardLayout";
-import type { HanabiCard } from "./HanabiCard";
-import type { PlayStack } from "./PlayStack";
-import { globals } from "./UIGlobals";
-import { confirmPlay } from "./confirmPlay";
-import * as cursor from "./cursor";
-import type { MisplayAnimation } from "./misplayAnimation";
-import { draggablePlayerIndex } from "./reactive/views/draggableView";
-import type { StackCompleteAnimation } from "./stackCompleteAnimation";
-import * as turn from "./turn";
+import * as modals from "../../modals.ts";
+import * as sounds from "../../sounds.ts";
+import { SoundType } from "../types/SoundType.ts";
+import type { CardLayout } from "./CardLayout.ts";
+import type { HanabiCard } from "./HanabiCard.ts";
+import type { PlayStack } from "./PlayStack.ts";
+import { globals } from "./UIGlobals.ts";
+import { confirmPlay } from "./confirmPlay.ts";
+import * as cursor from "./cursor.ts";
+import type { MisplayAnimation } from "./misplayAnimation.ts";
+import { draggablePlayerIndex } from "./reactive/views/draggableView.ts";
+import type { StackCompleteAnimation } from "./stackCompleteAnimation.ts";
+import * as turn from "./turn.ts";
 
 /** Parent of a `HanabiCard`. It has a `CardLayout` or `PlayStack` parent. */
 export class LayoutChild extends Konva.Group {

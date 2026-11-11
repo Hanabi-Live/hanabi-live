@@ -1,8 +1,8 @@
 import type { Spectator } from "@hanabi-live/data";
 import { assertDefined } from "complete-common";
-import * as tooltips from "../../../../tooltips";
-import { escapeHtml } from "../../../../utils";
-import { globals } from "../../UIGlobals";
+import * as tooltips from "../../../../tooltips.ts";
+import { escapeHtml } from "../../../../utils.ts";
+import { globals } from "../../UIGlobals.ts";
 
 export function onSpectatorsChanged(data: {
   spectators: Spectator[];

@@ -11,19 +11,19 @@ import {
 import { SECOND_IN_MILLISECONDS } from "complete-common";
 import { Provider } from "react-redux";
 import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
-import { globals } from "../../Globals";
-import { store } from "../../store";
-import { TablesList } from "./TablesList";
-import type { Table } from "./tablesSlice";
-import { tableChanged, tablesCleared, tablesListed } from "./tablesSlice";
+import { globals } from "../../Globals.ts";
+import { store } from "../../store.ts";
+import { TablesList } from "./TablesList.tsx";
+import type { Table } from "./tablesSlice.ts";
+import { tableChanged, tablesCleared, tablesListed } from "./tablesSlice.ts";
 
-vi.mock("../../tooltips", () => ({ attach: vi.fn(), showCopied: vi.fn() }));
-vi.mock("./tableActions", () => ({
+vi.mock("../../tooltips.ts", () => ({ attach: vi.fn(), showCopied: vi.fn() }));
+vi.mock("./tableActions.ts", () => ({
   tableJoin: vi.fn(),
   tableReattend: vi.fn(),
   tableSpectate: vi.fn(),
 }));
-const { tableJoin, tableSpectate } = await import("./tableActions");
+const { tableJoin, tableSpectate } = await import("./tableActions.ts");
 
 const ROW_HEIGHT = 20;
 
