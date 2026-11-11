@@ -182,6 +182,141 @@ function StatusBadge({
 }
 
 /**
+ * The space that the possibilities fill on a card, in fractions of the card's width. They start
+ * below the rank in the corner when it shows.
+ */
+const POSSIBILITIES = {
+  inset: 0.07,
+  topWithRank: 0.52,
+  topWithoutRank: 0.1,
+  gap: 0.05,
+  /** The most that a suit pip or a rank chip takes, so that two or three are not huge. */
+  maxPip: 0.4,
+  maxChip: 0.21,
+} as const;
+
+/**
+ * What the holder of a card knows about it: the suits and ranks that it can still be. They fill the
+ * card, so that they are easy to read at a glance. Each suit is a pip on a white chip, which stands
+ * out on the gray face of an unknown card, and each rank is a dark chip with a white number.
+ */
+function Possibilities({
+  variant,
+  width,
+  possibleSuitIndexes,
+  possibleRanks,
+  rankShown,
+  suitShown,
+}: {
+  readonly variant: Variant;
+  readonly width: number;
+  readonly possibleSuitIndexes: readonly SuitIndex[];
+  readonly possibleRanks: readonly Rank[];
+  /** Whether the card shows its rank in the corner, so that the possibilities go below it. */
+  readonly rankShown: boolean;
+  /** Whether the card shows its suit in the middle, so that the ranks go below it. */
+  readonly suitShown: boolean;
+}): React.JSX.Element {
+  const { inset, topWithRank, topWithoutRank, gap, maxPip, maxChip } =
+    POSSIBILITIES;
+  const innerWidth = width * (1 - 2 * inset);
+
+  const chipSize = Math.min(
+    width * maxChip,
+    (innerWidth - (possibleRanks.length - 1) * width * 0.03)
+      / Math.max(possibleRanks.length, 1),
+  );
+
+  // The suits take the rest of the card's height. They go in as many columns as make the pips the
+  // largest, such as two columns of three for six suits.
+  const top = width * (rankShown ? topWithRank : topWithoutRank);
+  const rankRowHeight =
+    possibleRanks.length > 0 ? chipSize * 1.1 + width * gap : 0;
+  const suitsHeight =
+    width * CARD_HEIGHT_PER_WIDTH - top - width * inset - rankRowHeight;
+  const suitCount = Math.max(possibleSuitIndexes.length, 1);
+  let suitColumns = 1;
+  let pipCell = 0;
+  for (let columns = 1; columns <= suitCount; columns++) {
+    const rows = Math.ceil(suitCount / columns);
+    const cell = Math.min(
+      innerWidth / columns,
+      suitsHeight / rows,
+      width * maxPip,
+    );
+    if (cell > pipCell) {
+      pipCell = cell;
+      suitColumns = columns;
+    }
+  }
+
+  return (
+    <div
+      className={`tw:absolute tw:flex tw:flex-col tw:items-center ${
+        suitShown ? "tw:justify-end" : "tw:justify-center"
+      }`}
+      style={{
+        left: width * inset,
+        right: width * inset,
+        top,
+        bottom: width * inset,
+        gap: width * gap,
+      }}
+    >
+      {possibleSuitIndexes.length > 0 && (
+        <div
+          className="tw:grid tw:justify-center"
+          style={{
+            gridTemplateColumns: `repeat(${suitColumns}, ${pipCell}px)`,
+            rowGap: 0,
+          }}
+        >
+          {possibleSuitIndexes.map((possibleSuitIndex) => {
+            const possibleSuit = variant.suits[possibleSuitIndex];
+            return possibleSuit === undefined ? undefined : (
+              <span
+                className="tw:flex tw:items-center tw:justify-center"
+                key={possibleSuitIndex}
+                style={{ height: pipCell }}
+              >
+                <span
+                  className="tw:flex tw:items-center tw:justify-center tw:rounded-full tw:bg-white tw:shadow-[0_1px_2px_rgb(0_0_0/30%)]"
+                  style={{ width: pipCell * 0.92, height: pipCell * 0.92 }}
+                >
+                  <Pip
+                    size={pipCell * 0.74}
+                    suit={possibleSuit}
+                    variant={variant}
+                  />
+                </span>
+              </span>
+            );
+          })}
+        </div>
+      )}
+      {possibleRanks.length > 0 && (
+        <div className="tw:flex" style={{ gap: width * 0.03 }}>
+          {possibleRanks.map((possibleRank) => (
+            <span
+              className="tw:flex tw:items-center tw:justify-center tw:bg-card-ink tw:font-extrabold tw:leading-none tw:text-white"
+              key={possibleRank}
+              style={{
+                width: chipSize,
+                height: chipSize * 1.1,
+                fontSize: chipSize * 0.72,
+                borderRadius: chipSize * 0.25,
+              }}
+            >
+              {getRankLabel(possibleRank)}
+            </span>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+/**
  * Returns the colors of a card face for a suit, or the colors of an unknown card. The colors that
  * come from the theme are classes, since the theme does not define them as CSS variables.
  */
@@ -256,7 +391,6 @@ export function CardFace({
   // A row of possibilities with one entry or none tells the holder nothing new, so it is left out.
   const showSuitPips = possibleSuitIndexes.length > 1;
   const showRankPips = possibleRanks.length > 1;
-  const smallPipSize = width * 0.17;
 
   // Clued cards get a thick border in the clue color, with a dark line inside it so that it stands
   // out against faces of a similar color. Cards that a chosen clue would touch get a white outline
@@ -324,41 +458,14 @@ export function CardFace({
       )}
 
       {(showSuitPips || showRankPips) && (
-        <div
-          className="tw:absolute tw:flex tw:flex-col tw:items-center"
-          style={{
-            left: width * 0.05,
-            right: width * 0.05,
-            bottom: width * 0.08,
-            gap: width * 0.05,
-          }}
-        >
-          {showSuitPips && (
-            <div className="tw:flex tw:flex-wrap tw:justify-center">
-              {possibleSuitIndexes.map((possibleSuitIndex) => {
-                const possibleSuit = variant.suits[possibleSuitIndex];
-                return possibleSuit === undefined ? undefined : (
-                  <Pip
-                    key={possibleSuitIndex}
-                    size={smallPipSize}
-                    suit={possibleSuit}
-                    variant={variant}
-                  />
-                );
-              })}
-            </div>
-          )}
-          {showRankPips && (
-            <div
-              className="tw:flex tw:font-bold tw:leading-none"
-              style={{ gap: width * 0.06, fontSize: width * 0.17 }}
-            >
-              {possibleRanks.map((possibleRank) => (
-                <span key={possibleRank}>{getRankLabel(possibleRank)}</span>
-              ))}
-            </div>
-          )}
-        </div>
+        <Possibilities
+          possibleRanks={showRankPips ? possibleRanks : []}
+          possibleSuitIndexes={showSuitPips ? possibleSuitIndexes : []}
+          rankShown={rank !== undefined}
+          suitShown={suit !== undefined}
+          variant={variant}
+          width={width}
+        />
       )}
     </div>
   );
