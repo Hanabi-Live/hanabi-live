@@ -29,7 +29,9 @@ const BORROWED_CHAT_BOX_CLASSES = [
   "tw:m-0",
   "tw:size-full",
   "tw:px-4",
-  "tw:py-3",
+  "tw:pt-3",
+  // The "is typing" note goes in the space below the chat box, so the box leaves room for it.
+  "tw:pb-[26px]",
   "tw:rounded-none",
   "tw:bg-transparent",
   "tw:shadow-none",
