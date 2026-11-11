@@ -1075,6 +1075,79 @@ mod tests {
         ensure!(serde_json::to_value(&decoded)? == expected);
         Ok(())
     }
+    /// Rewrites a table's options in format 11 into format 10.
+    fn format_10_options(options: &mut Value, time_base: Value) -> Result<()> {
+        let options = options.as_object_mut().context("Missing options")?;
+        let time_control = options.remove("timeControl").context("No time control")?;
+        options.insert("timed".into(), json!(!time_control.is_null()));
+        options.insert(
+            "timeBase".into(),
+            if time_control.is_null() {
+                json!(0)
+            } else {
+                time_base
+            },
+        );
+        options.insert(
+            "timePerTurn".into(),
+            time_control
+                .get("perTurnSeconds")
+                .cloned()
+                .unwrap_or_else(|| json!(0)),
+        );
+        Ok(())
+    }
+    #[test]
+    fn checkpoints_of_format_10_count_untimed_clocks_down() -> Result<()> {
+        for timed in [false, true] {
+            let mut table = pregame(TableId(1));
+            if timed {
+                table.options.time_control = Some(hanabi_protocol::TimeControl {
+                    base_seconds: 120,
+                    per_turn_seconds: 20,
+                });
+            }
+            terminal(&mut table)?;
+            table.convert_to_replay()?;
+            table.game_mut().context("Missing game")?.clocks = vec![4000, 7000];
+            let (encoded, _) = crate::checkpoint::encode(&mut table, &SavedParts::default())?;
+            // Give the steps clocks that are not 0, so that a sign that is not changed shows.
+            let mut parts = encoded.changes.written.clone();
+            for (key, part) in &mut parts {
+                if key.starts_with("step/") {
+                    let mut step: Value = serde_json::from_str(part)?;
+                    if let Some(times) = step.pointer_mut("/timing/playerTimes") {
+                        *times = json!([1000, 2000]);
+                    }
+                    *part = step.to_string();
+                }
+            }
+            let expected = serde_json::to_value(crate::checkpoint::decode(&encoded.head, &parts)?)?;
+            // A timed table of format 10 could hold a time base with a fraction.
+            let time_base = if timed { json!(120.5) } else { json!(0) };
+            let mut head: Value =
+                serde_json::from_str(&older_head(&encoded.head, "hanabi-live-10")?)?;
+            format_10_options(&mut head["options"], time_base.clone())?;
+            if !timed {
+                head["phase"]["snapshot"]["clocks"] = json!([-4000, -7000]);
+            }
+            for (key, part) in &mut parts {
+                let mut value: Value = serde_json::from_str(part)?;
+                if key == "game/start" {
+                    format_10_options(&mut value["setup"]["options"], time_base.clone())?;
+                } else if !timed && let Some(times) = value.pointer_mut("/timing/playerTimes") {
+                    *times = json!([-1000, -2000]);
+                }
+                *part = value.to_string();
+            }
+            let decoded = crate::checkpoint::decode(&head.to_string(), &parts)?;
+            ensure!(
+                serde_json::to_value(&decoded)? == expected,
+                "A format 10 table that is timed: {timed} did not upgrade"
+            );
+        }
+        Ok(())
+    }
     #[test]
     fn checkpoints_of_format_9_use_the_older_wire_names() -> Result<()> {
         let mut table = replayed()?;

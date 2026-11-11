@@ -78,11 +78,11 @@ test("untimed games without timers still update the player time tooltips", () =>
   });
   try {
     update({
-      playerTimesMs: [-5000, 0],
+      playerTimesMs: [5000, 0],
       currentPlayerIndex: 0,
       timeTakenMs: 0,
     });
-    expect(globals.playerTimes).toEqual([-5000, 0]);
+    expect(globals.playerTimes).toEqual([5000, 0]);
     expect(tooltips.setContent).toHaveBeenCalledWith(
       "#tooltip-player-0",
       "Time taken:<br /><strong>0:05</strong>",

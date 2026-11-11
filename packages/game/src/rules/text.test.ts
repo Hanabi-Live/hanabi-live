@@ -16,8 +16,9 @@ describe("secondsToClockString", () => {
 });
 
 describe("millisecondsToClockString", () => {
-  test("rounds up and ignores the untimed sign", () => {
-    expect(millisecondsToClockString(-61_001)).toBe("1:02");
+  test("rounds up and shows a negative duration as 0", () => {
+    expect(millisecondsToClockString(61_001)).toBe("1:02");
+    expect(millisecondsToClockString(-61_001)).toBe("0:00");
     expect(millisecondsToClockString(7_200_000)).toBe("2:00:00");
   });
 });

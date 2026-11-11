@@ -689,6 +689,33 @@ async fn spectating_a_live_game_does_not_refresh_its_idle_deadline() -> Result<(
     Ok(())
 }
 
+#[test]
+fn untimed_clocks_count_up_and_timed_clocks_count_down() -> Result<()> {
+    for (options, expected) in [
+        (json!({}), 1500),
+        (
+            json!({"timeControl": {"baseSeconds": 60, "perTurnSeconds": 10}}),
+            500,
+        ),
+    ] {
+        let imported = replay_helpers::parse(&hanabi_protocol::decode(&json!({
+            "playerNames": ["Alice", "Bob"],
+            "seed": "p2v0s1",
+            "options": options,
+        }))?)?;
+        let mut snapshot = seated_snapshot(imported, TableId(1));
+        snapshot.clocks = vec![1000, 0];
+        snapshot.timer_started = true;
+        let timers = table::Timers::of(&snapshot, true, 500);
+        ensure!(
+            timers.active_clock == expected,
+            "The clock of a game with options {options} is {}",
+            timers.active_clock
+        );
+    }
+    Ok(())
+}
+
 /// The game of an imported replay, played by Alice (user 1) and Bob (user 2).
 fn seated_snapshot(imported: replay_helpers::Imported, id: TableId) -> crate::model::Snapshot {
     let mut snapshot = replay_helpers::snapshot(imported, id, UserId(1));

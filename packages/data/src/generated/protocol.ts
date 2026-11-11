@@ -222,7 +222,7 @@ export const chatUserRequestSchema = z
   .readonly();
 
 /**
- * Every player's remaining time, in milliseconds.
+ * Every player's clock.
  */
 export const clockSchema = z
   .strictObject({
@@ -230,6 +230,10 @@ export const clockSchema = z
      * Absent when the game has no active player.
      */
     currentPlayerIndex: playerIndexSchema.optional(),
+    /**
+     * Each player's clock in milliseconds, in seat order: the time left in a timed game, or the
+     * time taken in an untimed one.
+     */
     playerTimesMs: z.array(safeIntegerSchema).min(2).max(6).readonly(),
     tableId: tableIdSchema,
     timeTakenMs: z.number().int().min(0).max(9_007_199_254_740_991),

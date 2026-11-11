@@ -638,16 +638,3 @@ fn synesthesia_touches_white_but_not_null_by_rank() {
         assert!(!is_card_touched(variant, ClueType::Color, green, 4, 2));
     }
 }
-
-#[test]
-fn stored_time_bases_with_a_fraction_load_as_whole_seconds() {
-    // Servers before whole-second time bases stored this field as a float.
-    let mut stored = serde_json::to_value(Options::default()).unwrap();
-    stored["timed"] = json!(true);
-    stored["timeBase"] = json!(150.5);
-    let options: Options = serde_json::from_value(stored.clone()).unwrap();
-    assert_eq!(options.time_control.unwrap().base_seconds, 150);
-    assert_eq!(serde_json::to_value(&options).unwrap()["timeBase"], 150);
-    stored["timeBase"] = json!(f64::MAX);
-    assert!(serde_json::from_value::<Options>(stored).is_err());
-}

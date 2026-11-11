@@ -459,10 +459,7 @@ function gameReducerFunction(
           break;
         }
 
-        // Player times are negative in untimed games.
-        const modifier = metadata.options.timeControl === undefined ? -1 : 1;
-        const milliseconds = playerTime * modifier;
-        const durationString = millisecondsToClockString(milliseconds);
+        const durationString = millisecondsToClockString(playerTime);
         const playerName = getPlayerName(playerIndex, metadata);
 
         const text =

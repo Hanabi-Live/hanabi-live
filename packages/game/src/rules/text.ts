@@ -298,9 +298,9 @@ export function getPlayerName(
     : (metadata.playerNames[playerIndex] ?? "[unknown]");
 }
 
+/** Formats a duration in milliseconds as `secondsToClockString` does. A negative one is 0. */
 export function millisecondsToClockString(milliseconds: number): string {
-  // Non timed games measure time in negative values.
-  const time = Math.abs(milliseconds);
+  const time = Math.max(milliseconds, 0);
   return secondsToClockString(Math.ceil(time / SECOND_IN_MILLISECONDS));
 }
 

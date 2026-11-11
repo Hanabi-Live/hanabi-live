@@ -71,10 +71,11 @@ pub(super) fn game_mut(table: &mut TableSnapshot) -> CommandResult<&mut Snapshot
 }
 
 /// A game's timers at some time after they were last brought up to date.
-struct Timers {
+pub(super) struct Timers {
     idle_remaining: i64,
-    /// The active player's clock.
-    active_clock: i64,
+    /// The active player's clock: the time they have left in a timed game, or the time they have
+    /// taken in an untimed one.
+    pub(super) active_clock: i64,
     /// How long the active player has taken this turn.
     turn_elapsed: i64,
     duration: i64,
@@ -87,13 +88,19 @@ impl Timers {
     /// The timers of game `s` `elapsed` milliseconds after they were last brought up to date.
     /// The idle timer always runs. A `live` game in progress also counts its duration, and its
     /// active player's clock once the clock has started, unless the game is paused.
-    fn of(s: &Snapshot, live: bool, elapsed: i64) -> Self {
+    pub(super) fn of(s: &Snapshot, live: bool, elapsed: i64) -> Self {
         let in_progress = live && s.game.end.is_none();
         let counting = in_progress && s.timer_started && !s.paused();
         let running = if counting { elapsed } else { 0 };
+        let timed = s.game.options.time_control.is_some();
+        let clock = s.clocks[s.game.active_player_index];
         Self {
             idle_remaining: (s.idle_remaining - elapsed).max(0),
-            active_clock: s.clocks[s.game.active_player_index] - running,
+            active_clock: if timed {
+                clock - running
+            } else {
+                clock + running
+            },
             turn_elapsed: s.turn_elapsed + running,
             duration: if in_progress {
                 s.duration.saturating_add(elapsed)
@@ -101,7 +108,7 @@ impl Timers {
                 s.duration
             },
             counting,
-            timed: s.game.options.time_control.is_some(),
+            timed,
         }
     }
     fn timed_out(&self) -> bool {

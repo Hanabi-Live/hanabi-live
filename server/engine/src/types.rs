@@ -7,10 +7,11 @@ pub use hanabi_protocol::{ClueType, EndCondition, TimeControl};
 use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
-#[serde(from = "StoredOptions", into = "StoredOptions")]
+#[serde(default, rename_all = "camelCase", deny_unknown_fields)]
 pub struct Options {
     pub num_players: usize,
     pub variant_name: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub variant_id: Option<u32>,
     /// The clock of a timed game. `None` when the game is untimed.
     pub time_control: Option<TimeControl>,
@@ -21,136 +22,10 @@ pub struct Options {
     pub one_less_card: bool,
     pub all_or_nothing: bool,
     pub detrimental_characters: bool,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub table_name: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub max_players: Option<usize>,
-}
-
-/// `Options` as checkpoints store them. An untimed game stores 0 for each time.
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
-#[serde(default, rename_all = "camelCase", deny_unknown_fields)]
-struct StoredOptions {
-    num_players: usize,
-    variant_name: String,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    variant_id: Option<u32>,
-    timed: bool,
-    /// The starting clock of a timed game, in whole seconds.
-    #[serde(deserialize_with = "whole_seconds")]
-    time_base: i64,
-    time_per_turn: i64,
-    speedrun: bool,
-    deck_plays: bool,
-    empty_clues: bool,
-    one_extra_card: bool,
-    one_less_card: bool,
-    all_or_nothing: bool,
-    detrimental_characters: bool,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    table_name: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    max_players: Option<usize>,
-}
-
-impl Default for StoredOptions {
-    fn default() -> Self {
-        Options::default().into()
-    }
-}
-
-impl From<StoredOptions> for Options {
-    fn from(stored: StoredOptions) -> Self {
-        let StoredOptions {
-            num_players,
-            variant_name,
-            variant_id,
-            timed,
-            time_base,
-            time_per_turn,
-            speedrun,
-            deck_plays,
-            empty_clues,
-            one_extra_card,
-            one_less_card,
-            all_or_nothing,
-            detrimental_characters,
-            table_name,
-            max_players,
-        } = stored;
-        Self {
-            num_players,
-            variant_name,
-            variant_id,
-            time_control: timed.then_some(TimeControl {
-                base_seconds: time_base,
-                per_turn_seconds: time_per_turn,
-            }),
-            speedrun,
-            deck_plays,
-            empty_clues,
-            one_extra_card,
-            one_less_card,
-            all_or_nothing,
-            detrimental_characters,
-            table_name,
-            max_players,
-        }
-    }
-}
-
-impl From<Options> for StoredOptions {
-    fn from(options: Options) -> Self {
-        let Options {
-            num_players,
-            variant_name,
-            variant_id,
-            time_control,
-            speedrun,
-            deck_plays,
-            empty_clues,
-            one_extra_card,
-            one_less_card,
-            all_or_nothing,
-            detrimental_characters,
-            table_name,
-            max_players,
-        } = options;
-        Self {
-            num_players,
-            variant_name,
-            variant_id,
-            timed: time_control.is_some(),
-            time_base: time_control.map_or(0, |time| time.base_seconds),
-            time_per_turn: time_control.map_or(0, |time| time.per_turn_seconds),
-            speedrun,
-            deck_plays,
-            empty_clues,
-            one_extra_card,
-            one_less_card,
-            all_or_nothing,
-            detrimental_characters,
-            table_name,
-            max_players,
-        }
-    }
-}
-
-/// Reads a time base in whole seconds. Checkpoints that servers wrote before time bases were whole
-/// seconds hold a number with a fraction, which this drops.
-fn whole_seconds<'de, D: serde::Deserializer<'de>>(deserializer: D) -> Result<i64, D::Error> {
-    #[expect(
-        clippy::cast_precision_loss,
-        reason = "the largest safe integer is exact as a float"
-    )]
-    const LIMIT: f64 = hanabi_protocol::MAX_SAFE_INTEGER as f64;
-    let seconds = f64::deserialize(deserializer)?;
-    if !seconds.is_finite() || seconds.abs() > LIMIT {
-        return Err(serde::de::Error::custom("Invalid time base"));
-    }
-    #[expect(
-        clippy::cast_possible_truncation,
-        reason = "the check above bounds the value, and the fraction is dropped on purpose"
-    )]
-    Ok(seconds as i64)
 }
 
 /// Must match `hanabi_protocol::GameOptions::default()`; a server test checks this.

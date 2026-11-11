@@ -15,7 +15,7 @@ use std::{
     time::Instant,
 };
 
-pub const FORMAT: &str = "hanabi-live-10";
+pub const FORMAT: &str = "hanabi-live-11";
 /// How long before an idle game ends to warn its table.
 pub const IDLE_WARNING_MS: i64 = 5 * CLOCK_UNITS_PER_MINUTE;
 
@@ -85,6 +85,8 @@ pub struct Snapshot {
     pub started: DateTime<Utc>,
     pub finished: Option<DateTime<Utc>>,
     pub game: Game,
+    /// Each player's clock in milliseconds: the time left in a timed game, or the time taken in an
+    /// untimed one.
     pub clocks: Vec<i64>,
     pub duration: i64,
     pub turn_elapsed: i64,

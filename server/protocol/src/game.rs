@@ -9,11 +9,13 @@
 )]
 use super::*;
 
-/// Every player's remaining time, in milliseconds.
+/// Every player's clock.
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct Clock {
     pub table_id: TableId,
+    /// Each player's clock in milliseconds, in seat order: the time left in a timed game, or the
+    /// time taken in an untimed one.
     #[schemars(with = "Vec<SafeInteger>", length(min = MIN_PLAYERS, max = MAX_PLAYERS))]
     pub player_times_ms: Vec<i64>,
     /// Absent when the game has no active player.
@@ -233,7 +235,8 @@ pub struct GameOverEvent {
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct PlayerTimesEvent {
-    /// Each player's time, in seat order.
+    /// Each player's clock in milliseconds, in seat order: the time left in a timed game, or the
+    /// time taken in an untimed one.
     #[schemars(with = "Vec<SafeInteger>", length(min = MIN_PLAYERS, max = MAX_PLAYERS))]
     pub player_times_ms: Vec<i64>,
     #[schemars(range(min = 0, max = MAX_SAFE_INTEGER))]

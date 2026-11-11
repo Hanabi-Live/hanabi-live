@@ -394,7 +394,8 @@ export const gameEventSchema = z.discriminatedUnion("type", [
     .strictObject({
       durationMs: z.number().int().min(0).max(9_007_199_254_740_991),
       /**
-       * Each player's time, in seat order.
+       * Each player's clock in milliseconds, in seat order: the time left in a timed game, or the
+       * time taken in an untimed one.
        */
       playerTimesMs: z.array(safeIntegerSchema).min(2).max(6).readonly(),
       type: z.literal("playerTimes"),

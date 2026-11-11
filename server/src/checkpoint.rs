@@ -373,6 +373,7 @@ const UPGRADES: &[(&str, &str, Upgrade)] = &[
     ("hanabi-live-7", "hanabi-live-8", seats_without_users),
     ("hanabi-live-8", "hanabi-live-9", nested_best_scores),
     ("hanabi-live-9", "hanabi-live-10", wire_renames),
+    ("hanabi-live-10", "hanabi-live-11", untimed_clocks),
 ];
 
 /// Rewrites a table that an older server saved, one format at a time, into the current format.
@@ -615,6 +616,77 @@ fn wire_renames(head: &mut Value, parts: &mut [(String, String)]) -> Result<()> 
     edit_parts(parts, CHAT, |chat| {
         rename(chat.get_mut("message"), "datetime", "sentAt");
     })
+}
+
+/// Format 10 gave a game's options `timed`, `timeBase`, and `timePerTurn`, with 0 for each time of
+/// an untimed game. It also counted an untimed game's clocks down from 0, so that they held the
+/// time taken as a negative number.
+fn untimed_clocks(head: &mut Value, parts: &mut [(String, String)]) -> Result<()> {
+    for path in ["/options", "/phase/snapshot/game/setup/options"] {
+        if let Some(options) = head.pointer_mut(path).and_then(Value::as_object_mut)
+            && let Some(timed) = options.remove("timed")
+        {
+            let base = options.remove("timeBase");
+            let per_turn = options.remove("timePerTurn");
+            let time_control = if timed == Value::Bool(true) {
+                serde_json::json!({
+                    "baseSeconds": whole_seconds(base)?,
+                    "perTurnSeconds": whole_seconds(per_turn)?,
+                })
+            } else {
+                Value::Null
+            };
+            options.insert("timeControl".into(), time_control);
+        }
+    }
+    if head
+        .pointer("/phase/snapshot/game/setup/options/timeControl")
+        .is_some_and(Value::is_null)
+    {
+        if let Some(clocks) = head.pointer_mut("/phase/snapshot/clocks") {
+            negate_all(clocks);
+        }
+        edit_parts(parts, STEP, |step| {
+            if let Some(times) = step.pointer_mut("/timing/playerTimes") {
+                negate_all(times);
+            }
+        })?;
+    }
+    Ok(())
+}
+
+/// A time option as a whole number of seconds. Servers before whole-second time bases stored the
+/// time base as a number with a fraction, which this drops.
+fn whole_seconds(seconds: Option<Value>) -> Result<Value> {
+    #[expect(
+        clippy::cast_precision_loss,
+        reason = "the largest safe integer is exact as a float"
+    )]
+    const LIMIT: f64 = hanabi_protocol::MAX_SAFE_INTEGER as f64;
+    let seconds = seconds.unwrap_or_else(|| 0.into());
+    if seconds.is_i64() {
+        return Ok(seconds);
+    }
+    let seconds = seconds
+        .as_f64()
+        .filter(|seconds| seconds.is_finite() && seconds.abs() <= LIMIT)
+        .context("Invalid time option")?;
+    #[expect(
+        clippy::cast_possible_truncation,
+        reason = "the check above bounds the value, and the fraction is dropped on purpose"
+    )]
+    Ok((seconds as i64).into())
+}
+
+/// Negates each integer of an array.
+fn negate_all(values: &mut Value) {
+    if let Value::Array(values) = values {
+        for value in values {
+            if let Some(number) = value.as_i64() {
+                *value = (-number).into();
+            }
+        }
+    }
 }
 
 /// Rewrites a clue that a turn of format 3 gives.

@@ -239,11 +239,7 @@ function getSeats(state: State): readonly Seat[] {
     const active = visibleState.turn.currentPlayerIndex === playerIndex;
     let clock: string | undefined;
     if (showClock && active && globals.clockPlayerIndex === playerIndex) {
-      const time = globals.playerTimes[playerIndex] ?? 0;
-      // Untimed games count up the time that the player has taken.
-      clock = millisecondsToClockString(
-        metadata.options.timeControl === undefined ? -time : time,
-      );
+      clock = millisecondsToClockString(globals.playerTimes[playerIndex] ?? 0);
     }
 
     seats.push({
