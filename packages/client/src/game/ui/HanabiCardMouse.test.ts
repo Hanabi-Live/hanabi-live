@@ -120,7 +120,21 @@ function pressCard() {
     children: [],
     moveToTop: vi.fn(),
   };
+  let layerOrder = 2;
+  const cardLayer = {
+    batchDraw: vi.fn(),
+    zIndex: (value?: number) => {
+      if (value !== undefined) {
+        layerOrder = value;
+      }
+      return layerOrder;
+    },
+    moveToTop: () => {
+      layerOrder = 4;
+    },
+  };
   const card = {
+    tooltipName: "card-0",
     state: { location: 1, order: 0 },
     layout: {
       parent: hand,
@@ -145,7 +159,7 @@ function pressCard() {
     options: { speedrun: false },
     lobby: { settings: { speedrunMode: false, keldonMode: true } },
     elements: { editCardsCheckbox: undefined, playerHands: [], arrows: [] },
-    layers: { card: { batchDraw: vi.fn() } },
+    layers: { card: cardLayer },
     store: { dispatch: vi.fn() },
   });
 
@@ -157,6 +171,7 @@ function pressCard() {
   vi.unstubAllGlobals();
   return {
     getRotation: () => rotation,
+    getLayerOrder: () => layerOrder,
     position,
     release: () => window.dispatchEvent(new Event("pointerup")),
   };
@@ -179,6 +194,18 @@ describe("hypothetical card rotation in Keldon mode", () => {
     release();
 
     expect(getRotation()).toBe(90);
+  });
+});
+
+describe("dragging a card", () => {
+  test("draws the cards above the other layers until the card is released", () => {
+    const { getLayerOrder, release } = pressCard();
+    expect(getLayerOrder()).toBe(4);
+    expect(tooltips.close).toHaveBeenCalledWith("#tooltip-card-0");
+
+    release();
+
+    expect(getLayerOrder()).toBe(2);
   });
 });
 

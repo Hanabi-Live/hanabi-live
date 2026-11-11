@@ -324,6 +324,11 @@ function dragStart(card: HanabiCard) {
   card.dragging = true;
   globals.store!.dispatch({ type: "dragStart", card });
 
+  // The note tooltip would cover the card and the place that it is dragged to.
+  checkHideNoteTooltip(card);
+
+  raiseCardLayer();
+
   // Enable the dragging raise effect.
   card.setRaiseAndShadowOffset();
 
@@ -386,6 +391,22 @@ function dragStart(card: HanabiCard) {
   // Move this hand to the top. (Otherwise, the card can appear under the play stacks / discard
   // stacks.)
   hand.moveToTop();
+}
+
+// Draw the cards above the other layers (such as the stats and the arrows) for the duration of the
+// drag. The card is not always under the pointer when it is released (see the rotation above), so
+// restore the layer order on any release.
+function raiseCardLayer() {
+  const layer = globals.layers.card;
+  const zIndex = layer.zIndex();
+  layer.moveToTop();
+  globalThis.addEventListener(
+    "pointerup",
+    () => {
+      layer.zIndex(zIndex);
+    },
+    { capture: true, once: true },
+  );
 }
 
 // Handle things relating to dragging a card. We cannot use the "dragend" mouse event since that
