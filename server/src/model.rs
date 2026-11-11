@@ -582,7 +582,7 @@ impl Snapshot {
         Ok(())
     }
     /// The game as a player's history lists it, or `None` for a game that is not in the database.
-    pub fn history(&self, count: i64) -> Option<hanabi_protocol::GameHistoryEntry> {
+    pub fn history(&self, count: Option<i64>) -> Option<hanabi_protocol::GameHistoryEntry> {
         let mut names = self
             .players
             .iter()

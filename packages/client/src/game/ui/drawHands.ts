@@ -266,13 +266,8 @@ const BGA_HANDS = {
   nameFrameGapY: 0.01,
 } as const;
 
-/** Shown in place of a character when a player has none, which can happen when debugging. */
-const UNASSIGNED_CHARACTER = {
-  id: -1,
-  name: "n/a",
-  description: "",
-  emoji: "",
-} as const;
+/** The tooltip for a player with no character, which can happen when debugging. */
+const UNASSIGNED_CHARACTER_TOOLTIP = "<strong>n/a</strong>";
 
 const handPos: HandConfig[][] = [];
 const namePos: HandConfig[][] = [];
@@ -808,9 +803,7 @@ function drawDetrimentalCharacters(
 
   const characterId = globals.metadata.characterAssignments[i];
   const character =
-    characterId === undefined
-      ? UNASSIGNED_CHARACTER
-      : getCharacter(characterId);
+    characterId === undefined ? undefined : getCharacter(characterId);
 
   const iconW = CHARACTER_ICON_SIZE * winW;
   const iconH = CHARACTER_ICON_SIZE * winH;
@@ -822,7 +815,7 @@ function drawDetrimentalCharacters(
     fontSize: iconH,
     fontFamily: FONT_FAMILY,
     align: "center",
-    text: character.emoji,
+    text: character?.emoji ?? "",
     fill: "yellow",
     ...TEXT_SHADOW,
     listening: true,
@@ -832,11 +825,15 @@ function drawDetrimentalCharacters(
 
   charIcon.tooltipName = `character-assignment-${i}`;
   const metadata = globals.metadata.characterMetadata[i];
-  const tooltipContent = `<strong>#${character.id} - ${character.name}</strong><br />${character.description}`;
-  charIcon.tooltipContent =
-    metadata === undefined
-      ? tooltipContent
-      : fillCharacterMetadata(tooltipContent, metadata);
+  if (character === undefined) {
+    charIcon.tooltipContent = UNASSIGNED_CHARACTER_TOOLTIP;
+  } else {
+    const tooltipContent = `<strong>#${character.id} - ${character.name}</strong><br />${character.description}`;
+    charIcon.tooltipContent =
+      metadata === undefined
+        ? tooltipContent
+        : fillCharacterMetadata(tooltipContent, metadata);
+  }
   initKonvaTooltips(charIcon, false, true);
 }
 

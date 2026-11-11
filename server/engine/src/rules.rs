@@ -1,6 +1,6 @@
 use crate::{
-    Character, Clue, EngineCard, EngineEvent, EngineState, NO_METADATA, PlayerAction,
-    StackDirection, Variant, get_variant, int, is_card_touched, types::Move,
+    Character, Clue, EngineCard, EngineEvent, EngineState, PlayerAction, StackDirection, Variant,
+    get_variant, int, is_card_touched, types::Move,
 };
 use hanabi_protocol::{MAX_RANK, MIN_RANK, START_CARD_RANK};
 use std::collections::HashSet;
@@ -126,7 +126,7 @@ pub(crate) fn remove_card(state: &mut EngineState, player: usize, order: usize) 
             .iter_mut()
             .find(|p| p.character() == Some(Character::Insistent))
         {
-            insistent.character_metadata = NO_METADATA;
+            insistent.character_metadata = None;
         }
     }
 }

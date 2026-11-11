@@ -52,7 +52,7 @@
                 id="filter-by-players"
                 data-profile-path="/missing-scores/{{ (name|urlencode) }}"
               >
-                <option value="0">-</option>
+                <option value="">-</option>
                 {% for players in [2,3,4,5,6] %}
                 <!-- The HTML formatter rewrites this Jinja comparison as attributes. -->
                 <!-- prettier-ignore -->

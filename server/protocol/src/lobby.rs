@@ -402,8 +402,10 @@ pub struct GameHistoryEntry {
     pub datetime_started: String,
     #[schemars(with = "Timestamp")]
     pub datetime_finished: String,
-    #[schemars(range(min = 0, max = MAX_SAFE_INTEGER))]
-    pub num_games_on_seed: i64,
+    /// How many games used this seed. Absent when the game has no seed.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    #[schemars(range(min = 1, max = MAX_SAFE_INTEGER))]
+    pub num_games_on_seed: Option<i64>,
     #[schemars(with = "Vec<Username>")]
     pub player_names: Vec<String>,
     /// The game's tags, in alphabetical order.

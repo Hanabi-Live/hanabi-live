@@ -112,9 +112,9 @@ pub struct PublicGameRow {
     /// Variant lists omit it.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub variant_id: Option<VariantId>,
-    /// How many games used this seed. Variant lists omit it.
+    /// How many games used this seed. Absent in variant lists and for a game with no seed.
     #[serde(skip_serializing_if = "Option::is_none")]
-    #[schemars(range(min = 0, max = MAX_SAFE_INTEGER))]
+    #[schemars(range(min = 1, max = MAX_SAFE_INTEGER))]
     pub num_games_on_seed: Option<i64>,
     /// In seat order.
     #[schemars(with = "Vec<Username>")]

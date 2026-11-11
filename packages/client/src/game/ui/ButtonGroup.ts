@@ -66,14 +66,15 @@ export class ButtonGroup extends Konva.Group {
 
   /** This is only used for groups of "PlayerButton". */
   selectNextTarget(): void {
-    const buttonIndex = this.getPressedIndex() ?? -1;
+    const pressedIndex = this.getPressedIndex();
+    const startIndex = pressedIndex === undefined ? 0 : pressedIndex + 1;
 
     // Find the next enabled button in the group.
     const total = this.list.length;
     let nextButton: ClueButton | undefined;
 
-    for (let i = 1; i <= total; i++) {
-      const candidateIndex = (buttonIndex + i) % total;
+    for (let i = 0; i < total; i++) {
+      const candidateIndex = (startIndex + i) % total;
       const candidateButton = this.list[candidateIndex];
 
       if (

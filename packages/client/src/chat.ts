@@ -80,8 +80,13 @@ const lobbyChatDeletionState = new LobbyChatDeletionState();
 let lastPM = "";
 let datetimeLastChatInput = Date.now();
 let typedChatHistory: string[] = [];
-let typedChatHistoryIndex: number | undefined;
-let typedChatHistoryPrefix = "";
+/**
+ * The state of browsing the typed history with the arrow keys, or undefined when not browsing.
+ * `prefix` is the text typed before browsing started. `index` is the history entry shown, or
+ * undefined when `prefix` is shown.
+ */
+let typedChatHistoryBrowse:
+  { readonly prefix: string; index: number | undefined } | undefined;
 let tabCompleteWordListIndex: number | undefined;
 let tabCompleteWordList: string[] = [];
 let tabCompleteOriginalText = "";
@@ -181,7 +186,7 @@ export function attachChatInput(
     (event) => {
       // We have typed a new character, so reset the tab-complete variables.
       tabResetAutoCompleteList();
-      typedChatHistoryIndex = undefined;
+      typedChatHistoryBrowse = undefined;
 
       if (event.key === "Enter") {
         send(room, element);
@@ -299,9 +304,8 @@ function sendText(room: string, msgRaw: string) {
     JSON.stringify(typedChatHistory),
   );
 
-  // Reset the typed history index.
-  typedChatHistoryPrefix = "";
-  typedChatHistoryIndex = undefined;
+  // Stop browsing the typed history.
+  typedChatHistoryBrowse = undefined;
 
   // Check for chat commands.
   const args = msg.split(" ");
@@ -332,7 +336,7 @@ function keydown(element: HTMLInputElement, event: KeyboardEvent) {
   switch (event.key) {
     case "Backspace":
     case "Delete": {
-      typedChatHistoryIndex = undefined;
+      typedChatHistoryBrowse = undefined;
       break;
     }
 
@@ -360,44 +364,54 @@ function keydown(element: HTMLInputElement, event: KeyboardEvent) {
   }
 }
 
-function historyMatchNext(
-  current: string,
-  increment: number,
-): string | undefined {
-  if (typedChatHistoryIndex === undefined) {
-    if (increment < 0) {
+/**
+ * Moves to the next older or newer history entry that starts with the text typed before browsing.
+ * Returns the text to show, or undefined when moving newer without browsing.
+ */
+function historyMatchNext(current: string, older: boolean): string | undefined {
+  if (typedChatHistoryBrowse === undefined) {
+    if (!older) {
       return undefined;
     }
-    typedChatHistoryIndex = -1;
-    typedChatHistoryPrefix = current;
+    typedChatHistoryBrowse = { prefix: current, index: undefined };
   }
-  const oldIndex = typedChatHistoryIndex;
-  do {
-    typedChatHistoryIndex += increment;
-    // Stay within bounds of history.
-    if (typedChatHistoryIndex >= typedChatHistory.length) {
-      typedChatHistoryIndex = oldIndex;
-      return current;
+  const browse = typedChatHistoryBrowse;
+
+  if (older) {
+    const start = browse.index === undefined ? 0 : browse.index + 1;
+    for (let index = start; index < typedChatHistory.length; index++) {
+      if (typedChatHistory[index]!.startsWith(browse.prefix)) {
+        browse.index = index;
+        return typedChatHistory[index]!;
+      }
     }
-    if (typedChatHistoryIndex < 0) {
-      typedChatHistoryIndex = -1;
-      return typedChatHistoryPrefix;
+
+    // There is no older match, so keep showing the current entry.
+    return current;
+  }
+
+  if (browse.index !== undefined) {
+    for (let index = browse.index - 1; index >= 0; index--) {
+      if (typedChatHistory[index]!.startsWith(browse.prefix)) {
+        browse.index = index;
+        return typedChatHistory[index]!;
+      }
     }
-  } while (
-    // Only accept history if it matches prefix.
-    !typedChatHistory[typedChatHistoryIndex]!.startsWith(typedChatHistoryPrefix)
-  );
-  return typedChatHistory[typedChatHistoryIndex]!;
+  }
+
+  // There is no newer match, so go back to what was typed.
+  browse.index = undefined;
+  return browse.prefix;
 }
 
 function arrowUp(element: HTMLInputElement) {
-  const retrievedHistory = historyMatchNext(element.value, 1);
+  const retrievedHistory = historyMatchNext(element.value, true);
   // Set the chat input box to what we last typed.
   element.value = retrievedHistory ?? "";
 }
 
 function arrowDown(element: HTMLInputElement) {
-  const retrievedHistory = historyMatchNext(element.value, -1);
+  const retrievedHistory = historyMatchNext(element.value, false);
   // Set the chat input box to what we last typed.
   element.value = retrievedHistory ?? "";
 }
@@ -413,11 +427,9 @@ export function tab(element: HTMLInputElement, shiftKey: boolean): void {
   if (tabCompleteWordListIndex === undefined) {
     tabInitAutoCompleteList(shiftKey, finalWord);
   } else if (shiftKey) {
-    // Shift-tab goes backwards
-    tabCompleteWordListIndex--;
-    if (tabCompleteWordListIndex === -1) {
-      tabCompleteWordListIndex = undefined;
-    }
+    // Shift-tab goes backwards.
+    tabCompleteWordListIndex =
+      tabCompleteWordListIndex === 0 ? undefined : tabCompleteWordListIndex - 1;
   } else {
     // Tab goes forwards.
     tabCompleteWordListIndex++;

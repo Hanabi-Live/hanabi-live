@@ -1,8 +1,7 @@
 use crate::{
     ActionRejected, AssignedCharacter, Character, Clue, ClueType, CompletionTiming, EndCondition,
-    EngineCard, EngineEvent, EnginePlayer, EngineState, GameSetup, Interpretation, NO_METADATA,
-    Options, PlayerAction, RecordedAction, StackDirection, Termination, UNSEEDED,
-    assign_characters,
+    EngineCard, EngineEvent, EnginePlayer, EngineState, GameSetup, Interpretation, Options,
+    PlayerAction, RecordedAction, StackDirection, Termination, UNSEEDED, assign_characters,
     characters::{
         character_post_action, character_post_clue, check_character_softlock, has_taken_last_turn,
         needs_second_action, validate_character_action, validate_character_clue,
@@ -124,7 +123,7 @@ pub fn create_game(setup: GameSetup) -> Result<EngineState> {
             name,
             index,
             character: c.name.unwrap_or_default(),
-            character_metadata: c.metadata.unwrap_or(NO_METADATA),
+            character_metadata: c.metadata,
             hand: vec![],
         })
         .collect();

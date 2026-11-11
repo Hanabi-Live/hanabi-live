@@ -182,7 +182,7 @@ fn termination_uses_requesting_character_and_explicit_timing() {
     .unwrap();
     assert!(ended.state.turns_inverted);
     assert_eq!(ended.state.active_player_index, 2);
-    assert_eq!(ended.state.players[2].character_metadata, 4);
+    assert_eq!(ended.state.players[2].character_metadata, Some(4));
     assert!(
         applied(
             &ended.state,

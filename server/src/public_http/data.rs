@@ -289,7 +289,7 @@ pub(super) async fn list(
         .push_bind(size).push(" OFFSET ").push_bind(offset)
         .push(") SELECT (SELECT count(*) FROM selected) AS total_rows,COALESCE((SELECT jsonb_agg(jsonb_build_object('gameId',g.id,'numPlayers',g.num_players,'score',g.score,");
     if mode != "variants" {
-        qb.push("'variantId',g.variant_id,'numGamesOnSeed',COALESCE((SELECT num_games FROM seeds WHERE seed=g.seed),0),");
+        qb.push("'variantId',g.variant_id,'numGamesOnSeed',(SELECT num_games FROM seeds WHERE seed=g.seed),");
     }
     qb.push("'playerNames',COALESCE((SELECT jsonb_agg(u.username ORDER BY gp.seat) FROM game_participants gp JOIN users u ON u.id=gp.user_id WHERE gp.game_id=g.id),'[]'::jsonb),'datetimeFinished',to_char(g.datetime_finished AT TIME ZONE 'UTC','YYYY-MM-DD\"T\"HH24:MI:SS.MS\"Z\"'),'seed',g.seed) ORDER BY g.")
         .push(column_field(order)).push(if ascending { " ASC" } else { " DESC" })
@@ -313,6 +313,7 @@ fn game_history(row: HistoryRow) -> anyhow::Result<hanabi_protocol::GameHistoryE
     Ok(hanabi_protocol::GameHistoryEntry {
         game_id: hanabi_protocol::GameId(g.id),
         options: crate::model::wire_options(&crate::archive::options(&g)?),
+        num_games_on_seed: g.seed.is_some().then(|| i64::from(row.seed_count)),
         seed: g.seed,
         score: i32::from(g.score),
         num_turns: hanabi_protocol::Turn::new(g.num_turns).context("Invalid stored turn count")?,
@@ -321,7 +322,6 @@ fn game_history(row: HistoryRow) -> anyhow::Result<hanabi_protocol::GameHistoryE
             .context("Invalid stored end condition")?,
         datetime_started: crate::model::timestamp(g.datetime_started),
         datetime_finished: crate::model::timestamp(g.datetime_finished),
-        num_games_on_seed: i64::from(row.seed_count),
         player_names: row.names,
         tags: row.tags,
     })

@@ -108,8 +108,12 @@ impl TableActor {
         Some(notice)
     }
     /// Sends the game's events from position `from` on. For a game that just finished,
-    /// `seed_games` is how many saved games use its seed.
-    pub(super) async fn transitions(&self, from: usize, seed_games: i64) -> CommandResult<()> {
+    /// `seed_games` is how many saved games use its seed, or `None` when it has no seed.
+    pub(super) async fn transitions(
+        &self,
+        from: usize,
+        seed_games: Option<i64>,
+    ) -> CommandResult<()> {
         let s = self.table.game().context("Missing game")?;
         let replay = matches!(self.table.phase, Phase::Replay { .. });
         let mut e = self.effects();
@@ -281,8 +285,7 @@ impl TableActor {
         }
         self.publish(e).await?;
         if terminate {
-            self.transitions(from, outcome.seed_games.unwrap_or(0))
-                .await?;
+            self.transitions(from, outcome.seed_games).await?;
         }
         Ok(())
     }

@@ -355,7 +355,7 @@ function initMissingScoresFilters() {
     players.addEventListener("change", () => {
       const path = players.dataset["profilePath"] ?? "";
       globalThis.location.assign(
-        players.value === "0" ? path : `${path}/${players.value}`,
+        players.value === "" ? path : `${path}/${players.value}`,
       );
     });
   }

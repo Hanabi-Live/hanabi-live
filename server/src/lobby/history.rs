@@ -93,8 +93,11 @@ pub async fn get_history(
                 .context("Invalid stored end condition")?,
             datetime_started: time(game.datetime_started),
             datetime_finished: time(game.datetime_finished),
+            num_games_on_seed: game
+                .seed
+                .is_some()
+                .then(|| i64::from(row.num_games_on_this_seed)),
             seed: game.seed,
-            num_games_on_seed: i64::from(row.num_games_on_this_seed),
             player_names: row.player_names,
             tags: row.tags,
         });

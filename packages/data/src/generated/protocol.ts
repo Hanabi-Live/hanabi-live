@@ -290,7 +290,15 @@ export const gameHistoryEntrySchema = z
     datetimeStarted: z.iso.datetime({ precision: 3 }),
     endCondition: z.enum(EndCondition),
     gameId: gameIdSchema,
-    numGamesOnSeed: z.number().int().min(0).max(9_007_199_254_740_991),
+    /**
+     * How many games used this seed. Absent when the game has no seed.
+     */
+    numGamesOnSeed: z
+      .number()
+      .int()
+      .min(1)
+      .max(9_007_199_254_740_991)
+      .optional(),
     numTurns: turnSchema,
     options: gameOptionsSchema,
     playerNames: z.array(z.string().min(1)).readonly(),
@@ -704,12 +712,12 @@ const publicGameRowSchema = z
     datetimeFinished: z.iso.datetime({ precision: 3 }),
     gameId: gameIdSchema,
     /**
-     * How many games used this seed. Variant lists omit it.
+     * How many games used this seed. Absent in variant lists and for a game with no seed.
      */
     numGamesOnSeed: z
       .number()
       .int()
-      .min(0)
+      .min(1)
       .max(9_007_199_254_740_991)
       .optional(),
     numPlayers: z.literal([2, 3, 4, 5, 6]),

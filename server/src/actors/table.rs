@@ -507,8 +507,7 @@ impl TableActor {
         from: usize,
     ) -> CommandResult<()> {
         let outcome = self.persist_with(next, Commit::default()).await?;
-        self.transitions(from, outcome.seed_games.unwrap_or(0))
-            .await
+        self.transitions(from, outcome.seed_games).await
     }
     /// Saves a change to the table, with the work that goes with it, in one transaction. A finished
     /// game becomes a replay and is archived in the same commit. When saving fails, the table keeps

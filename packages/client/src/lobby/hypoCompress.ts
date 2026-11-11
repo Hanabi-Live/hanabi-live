@@ -73,6 +73,11 @@ const BASE62 = "abcdefghijklmnopqrstuvwxyz0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 /** A compressed game over stores its end condition as its position in this list. */
 const END_CONDITIONS: readonly EndCondition[] = Object.values(EndCondition);
 
+/** The end condition that a compressed action names, or undefined when it names none. */
+function endCondition(index: number | undefined): EndCondition | undefined {
+  return index === undefined ? undefined : END_CONDITIONS[index];
+}
+
 /**
  * Compresses a string representing a `GameJSON` object. Returns undefined if the compression fails.
  *
@@ -498,14 +503,14 @@ function fromCompactAction(action: CompactAction): Action | undefined {
     case CompactType.GameOver: {
       named = {
         type: "gameOver",
-        endCondition: END_CONDITIONS[value ?? -1],
+        endCondition: endCondition(value),
         playerIndex: target,
       };
       break;
     }
 
     case CompactType.GameOverByVote: {
-      named = { type: "gameOver", endCondition: END_CONDITIONS[value ?? -1] };
+      named = { type: "gameOver", endCondition: endCondition(value) };
       break;
     }
   }

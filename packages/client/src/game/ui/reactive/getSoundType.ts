@@ -295,21 +295,19 @@ function isOrderChopMove(
   // Playing Multiple 1's - The Fresh 1's Rule (Part 2). Find out if there are any "fresh" 1s (e.g.
   // 1s that were not dealt to the starting hand).
   const freshCards = candidateCards.filter((card) => !card.dealtToStartingHand);
-  if (freshCards.length > 0) {
+  const [firstFreshCard, ...otherFreshCards] = freshCards;
+  if (firstFreshCard !== undefined) {
     // Find the newest 1.
-    let newestOneOrder = -1;
-    for (const card of freshCards) {
-      if (card.order > newestOneOrder) {
-        newestOneOrder = card.order;
+    let newestOne = firstFreshCard;
+    for (const card of otherFreshCards) {
+      if (card.order > newestOne.order) {
+        newestOne = card;
       }
     }
+    const newestOneOrder = newestOne.order;
 
     // Find out if the clue that touched the newest 1 also touched a 1 that was on chop at the same
     // time.
-    const newestOne = previousGameState.deck[newestOneOrder];
-    if (newestOne === undefined) {
-      return false;
-    }
 
     // Chop-Focus overrides the Fresh 1's Rule whenever both cards first received the 1 clue
     // together. The chop card itself may also be fresh, not just from the starting hand.

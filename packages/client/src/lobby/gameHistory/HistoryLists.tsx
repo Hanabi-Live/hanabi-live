@@ -116,8 +116,12 @@ function HistoryRow({
   readonly game: GameHistoryEntry;
   readonly username: string;
 }) {
-  const otherGameCount = game.numGamesOnSeed - 1;
-  const { seed } = game;
+  const { seed, numGamesOnSeed } = game;
+  // A game with its own deck instead of a seed has no count.
+  const otherGameCount =
+    numGamesOnSeed === undefined ? undefined : numGamesOnSeed - 1;
+  const hasOtherGames =
+    seed !== undefined && otherGameCount !== undefined && otherGameCount > 0;
 
   return (
     <tr>
@@ -141,17 +145,15 @@ function HistoryRow({
       <td>
         <button
           className={
-            otherGameCount === 0 || seed === undefined
-              ? "button fit tw:m-0 disabled"
-              : "button fit tw:m-0"
+            hasOtherGames ? "button fit tw:m-0" : "button fit tw:m-0 disabled"
           }
           id={`history-other-scores-${game.gameId}`}
           onClick={
-            otherGameCount === 0 || seed === undefined
-              ? undefined
-              : () => {
+            hasOtherGames
+              ? () => {
                   showOtherScoresFromHistory(seed);
                 }
+              : undefined
           }
           type="button"
         >

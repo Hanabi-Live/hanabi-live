@@ -259,17 +259,23 @@ pub struct EngineCard {
     pub insistent_touched: bool,
 }
 
-/// The `character_metadata` of a player whose character has none, or whose character has nothing
-/// to remember yet.
-pub const NO_METADATA: i32 = -1;
-
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct EnginePlayer {
     pub name: String,
     pub index: usize,
     pub character: String,
-    pub character_metadata: i32,
+    /// What the player's character uses, which depends on the character:
+    /// - Fuming, Dumbfounded, Inept, and Awkward: the suit index or rank chosen when characters
+    ///   were assigned.
+    /// - Genius: the target of the first of their two clues.
+    /// - Stubborn: the type of the previous player's action.
+    /// - Mood Swings: the type of their previous clue (0 for color and 1 for rank).
+    /// - Vindictive, Impulsive, Indolent, Insistent, and Panicky: `Some(0)` while their rule
+    ///   applies.
+    ///
+    /// `None` when the character has nothing to remember.
+    pub character_metadata: Option<i32>,
     pub hand: Vec<usize>,
 }
 

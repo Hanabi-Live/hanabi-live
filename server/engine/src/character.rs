@@ -110,6 +110,7 @@ impl EnginePlayer {
         self.character()
             .is_some_and(Character::has_assigned_metadata)
             .then_some(self.character_metadata)
+            .flatten()
     }
 }
 

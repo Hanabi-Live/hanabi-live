@@ -189,10 +189,7 @@ export function drawCards<Canvas, Image>(
   const unknownSuit = getSuit(UNKNOWN_SUIT_NAME);
   const suits = [...variant.suits, unknownSuit];
 
-  let suitIndex = -1;
-  for (const suit of suits) {
-    suitIndex++;
-
+  for (const [suitIndex, suit] of suits.entries()) {
     for (const rank of [
       STACK_BASE_RANK,
       ...DEFAULT_CARD_RANKS,

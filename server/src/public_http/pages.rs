@@ -778,7 +778,7 @@ async fn missing(
     let names: Vec<_> = users.iter().map(|u| u.1.clone()).collect();
     let mut v = json!({"title":"Missing Scores","name":users[0].1,
         "namesTitle":if shared {format!("Missing Scores for {}",names_title(&names))}else{format!("{} Profile",possessive(&users[0].1))},
-        "singleMissingScores":!shared,"requestedNumPlayers":num_players.unwrap_or(0),
+        "singleMissingScores":!shared,"requestedNumPlayers":num_players,
         "players":players,"rows":rows,"advancedFiltersActive":!excluded_players.is_empty()||!excluded_variants.is_empty()||bounds.iter().any(Option::is_some),
         "excludeVariants":q.get("excludeVariants").unwrap_or(""),
         "minEfficiency":q.get("minEfficiency").unwrap_or(""),"maxEfficiency":q.get("maxEfficiency").unwrap_or("")});
