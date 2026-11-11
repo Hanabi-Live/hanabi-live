@@ -1,8 +1,8 @@
 use hanabi_engine::ClueType;
 use hanabi_protocol::{
-    CardEvent, CardOrder, CardRank, Clue, ClueEvent, ColorIndex, DiscardEvent, GameEvent,
-    GameOverEvent, PlayerIndex, PlayerTimesEvent, RankClueNumber, SuitIndex, TableId, Turn,
-    TurnEvent,
+    CardEvent, CardIdentity, CardOrder, CardRank, Clue, ClueEvent, ColorIndex, DiscardEvent,
+    GameEvent, GameOverEvent, PlayerIndex, PlayerTimesEvent, RankClueNumber, SuitIndex, TableId,
+    Turn, TurnEvent,
 };
 
 /// A seat that the engine names. The engine only names seats that the game has.
@@ -25,6 +25,20 @@ fn rank(rank: i32) -> CardRank {
     CardRank::new(rank).expect("engine card ranks are catalog ranks")
 }
 
+/// A card's suit and rank, which the engine names.
+pub(super) fn card_identity(suit_index: usize, card_rank: i32) -> CardIdentity {
+    CardIdentity {
+        suit_index: suit(suit_index),
+        rank: rank(card_rank),
+    }
+}
+
+/// A card's identity, unless the engine hides it from the recipient. The engine hides a card's
+/// suit and rank together.
+fn identity(suit_index: Option<usize>, card_rank: Option<i32>) -> Option<CardIdentity> {
+    Some(card_identity(suit_index?, card_rank?))
+}
+
 /// A card event that names the card's identity when the recipient may see it.
 fn card_event(
     player_index: usize,
@@ -35,8 +49,7 @@ fn card_event(
     CardEvent {
         player_index: seat(player_index),
         order: card(order),
-        suit_index: suit_index.map(suit),
-        rank: card_rank.map(rank),
+        identity: identity(suit_index, card_rank),
     }
 }
 
@@ -71,8 +84,7 @@ pub(super) fn wire_event(event: &hanabi_engine::EngineEvent) -> GameEvent {
         } => GameEvent::Discard(DiscardEvent {
             player_index: seat(player_index),
             order: card(order),
-            suit_index: suit_index.map(suit),
-            rank: rank.map(self::rank),
+            identity: identity(suit_index, rank),
             failed,
         }),
         E::Clue {

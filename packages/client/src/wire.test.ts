@@ -58,27 +58,45 @@ describe("server game events", () => {
       }),
     ).toThrow();
     expect(() =>
-      event({ type: "draw", playerIndex: 0, order: 66, suitIndex: 0, rank: 1 }),
+      event({
+        type: "draw",
+        playerIndex: 0,
+        order: 66,
+        identity: { suitIndex: 0, rank: 1 },
+      }),
     ).toThrow();
     expect(() =>
-      event({ type: "draw", playerIndex: 0, order: 0, suitIndex: 6, rank: 1 }),
+      event({
+        type: "draw",
+        playerIndex: 0,
+        order: 0,
+        identity: { suitIndex: 6, rank: 1 },
+      }),
     ).toThrow();
     expect(() =>
-      event({ type: "draw", playerIndex: 0, order: 0, suitIndex: 0, rank: 6 }),
+      event({
+        type: "draw",
+        playerIndex: 0,
+        order: 0,
+        identity: { suitIndex: 0, rank: 6 },
+      }),
     ).toThrow();
   });
 });
 
 describe("card identities", () => {
-  test("unknown suits and ranks stay undefined", () => {
+  test("every identity names a suit and a rank", () => {
     const [identity] = SERVER_COMMAND_SCHEMAS.cardIdentities.parse({
       tableId: 1,
-      identities: [{ rank: 7 }],
+      identities: [{ suitIndex: 2, rank: 7 }],
     }).identities;
-    expect(toCardIdentity(identity!)).toEqual({
-      suitIndex: undefined,
-      rank: 7,
-    });
+    expect(toCardIdentity(identity!)).toEqual({ suitIndex: 2, rank: 7 });
+    expect(
+      SERVER_COMMAND_SCHEMAS.cardIdentities.safeParse({
+        tableId: 1,
+        identities: [{ rank: 7 }],
+      }).success,
+    ).toBe(false);
   });
 });
 

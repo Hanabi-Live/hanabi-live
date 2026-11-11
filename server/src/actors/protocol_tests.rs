@@ -435,9 +435,9 @@ async fn duck_clue_identity_is_private_in_live_history_and_recovery_but_not_comp
             let (action, value) = values
                 .map(|value| {
                     let action = if clue_type == hanabi_engine::ClueType::Color {
-                        json!({"type":"colorClue","target":target,"colorIndex":value})
+                        json!({"type":"clue","target":target,"clue":{"type":"color","value":value}})
                     } else {
-                        json!({"type":"rankClue","target":target,"rank":value})
+                        json!({"type":"clue","target":target,"clue":{"type":"rank","value":value}})
                     };
                     (action, value)
                 })
@@ -1638,7 +1638,7 @@ async fn remade_tables_publish_fresh_statistics_for_every_player() -> Result<()>
             } else if game.clue_tokens == 8 {
                 let target = 1 - active;
                 let card = &game.deck[game.players[target].hand[0]];
-                json!({"tableId":id,"action":{"type":"rankClue","target":target,"rank":card.rank}})
+                json!({"tableId":id,"action":{"type":"clue","target":target,"clue":{"type":"rank","value":card.rank}}})
             } else {
                 json!({"tableId":id,"action":{"type":"discard","order":hand[0]}})
             };

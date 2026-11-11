@@ -24,7 +24,7 @@ use anyhow::{Context, Result};
 use chrono::Utc;
 use futures_util::{FutureExt, future::BoxFuture};
 use hanabi_engine::{CompletionTiming, EndCondition};
-use hanabi_protocol::{CardRank, PlayerIndex, SuitIndex};
+use hanabi_protocol::PlayerIndex;
 use hanabi_protocol::{
     Chat, ChatTyping, ClientMessage, IdleWarning, Notice, Status, TableRef, TableStarted, UserId,
 };
@@ -886,10 +886,7 @@ impl TableActor {
                 .game
                 .identities()
                 .iter()
-                .map(|card| hanabi_protocol::CardIdentity {
-                    suit_index: SuitIndex::new(card.suit_index),
-                    rank: CardRank::new(card.rank),
-                })
+                .map(|card| super::wire::card_identity(card.suit_index, card.rank))
                 .collect(),
         }
     }

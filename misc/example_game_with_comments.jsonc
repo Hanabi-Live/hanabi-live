@@ -86,27 +86,28 @@
     },
     {
       // A color clue. "target" is the index of the player that is receiving the clue (e.g. 0
-      // corresponds to the 1st player, etc.). "colorIndex" is the index of the color in the
-      // variant's clue colors, from left to right (e.g. 0 corresponds to red, 1 corresponds to
-      // yellow, and so on in a "No Variant" game).
-      "type": "colorClue",
+      // corresponds to the 1st player, etc.). The value of a color clue is the index of the color
+      // in the variant's clue colors, from left to right (e.g. 0 corresponds to red, 1 corresponds
+      // to yellow, and so on in a "No Variant" game).
+      "type": "clue",
       "target": 1,
-      "colorIndex": 0
+      "clue": { "type": "color", "value": 0 }
     },
     {
-      // A rank clue. "rank" is the rank chosen for the clue, from 1 to 5.
-      "type": "rankClue",
+      // A rank clue. The value of a rank clue is the rank chosen for the clue, from 1 to 5.
+      "type": "clue",
       "target": 1,
-      "rank": 3
+      "clue": { "type": "rank", "value": 3 }
     },
     {
-      // The end of the game. "endCondition" is a value of the "EndCondition" enum:
+      // The end of the game. "endCondition" is the name of a value of the "EndCondition" enum:
       // https://github.com/Hanabi-Live/hanabi-live/blob/main/server/protocol/src/enums.rs
-      // (e.g. 3 corresponds to someone running out of time in a timed game, 4 corresponds to a
-      // player manually terminating the game, etc.) "playerIndex" is the index of the player that
-      // ended the game. It is omitted when no player did.
+      // (e.g. "timeout" corresponds to someone running out of time in a timed game,
+      // "terminatedByPlayer" corresponds to a player manually terminating the game, etc.)
+      // "playerIndex" is the index of the player that ended the game. It is omitted when no player
+      // did.
       "type": "gameOver",
-      "endCondition": 3,
+      "endCondition": "timeout",
       "playerIndex": 1
     }
   ],

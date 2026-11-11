@@ -12,8 +12,8 @@ use hanabi_engine::{
     recorded_action_type,
 };
 use hanabi_protocol::{
-    CardOrder, ColorClueTurn, ColorIndex, GameId, GameOverTurn, PlayerIndex, RankClueNumber,
-    RankClueTurn, TableId, TargetCard, UserId,
+    CardOrder, Clue, ClueTurn, ColorIndex, GameId, GameOverTurn, PlayerIndex, RankClueNumber,
+    TableId, TargetCard, UserId,
 };
 use serde::Deserialize;
 use sqlx::{PgPool, types::Json};
@@ -57,16 +57,20 @@ impl TryFrom<ArchiveAction> for RecordedAction {
         Ok(match action.kind {
             RecordedActionType::Play => Self::Play(card()?),
             RecordedActionType::Discard => Self::Discard(card()?),
-            RecordedActionType::ColorClue => Self::ColorClue(ColorClueTurn {
+            RecordedActionType::ColorClue => Self::Clue(ClueTurn {
                 target: seat()?,
-                color_index: action.value.and_then(ColorIndex::new).ok_or_else(invalid)?,
+                clue: Clue::Color {
+                    value: action.value.and_then(ColorIndex::new).ok_or_else(invalid)?,
+                },
             }),
-            RecordedActionType::RankClue => Self::RankClue(RankClueTurn {
+            RecordedActionType::RankClue => Self::Clue(ClueTurn {
                 target: seat()?,
-                rank: action
-                    .value
-                    .and_then(RankClueNumber::new)
-                    .ok_or_else(invalid)?,
+                clue: Clue::Rank {
+                    value: action
+                        .value
+                        .and_then(RankClueNumber::new)
+                        .ok_or_else(invalid)?,
+                },
             }),
             RecordedActionType::GameOver | RecordedActionType::GameOverByVote => {
                 Self::GameOver(GameOverTurn {
@@ -85,13 +89,13 @@ fn stored_action(action: RecordedAction) -> Result<(i16, Option<i16>, Option<i16
         RecordedAction::Play(card) | RecordedAction::Discard(card) => {
             (Some(i32::from(card.order)), None)
         }
-        RecordedAction::ColorClue(clue) => (
-            Some(i32::from(clue.target)),
-            Some(i32::from(clue.color_index)),
+        RecordedAction::Clue(ClueTurn { target, clue }) => (
+            Some(i32::from(target)),
+            Some(match clue {
+                Clue::Color { value } => i32::from(value),
+                Clue::Rank { value } => i32::from(value),
+            }),
         ),
-        RecordedAction::RankClue(clue) => {
-            (Some(i32::from(clue.target)), Some(i32::from(clue.rank)))
-        }
         RecordedAction::GameOver(end) => (
             end.player_index.map(i32::from),
             Some(i32::from(end.end_condition)),

@@ -62,7 +62,7 @@ mod tests {
                 "chatPm" => json!({"text":"hello","recipient":"Alice"}),
                 "replayCreate" => json!({"type":"id","visibility":"shared","gameId":1}),
                 "playerAction" => {
-                    json!({"tableId":1,"action":{"type":"rankClue","target":0,"rank":1}})
+                    json!({"tableId":1,"action":{"type":"clue","target":0,"clue":{"type":"rank","value":1}}})
                 }
                 "pause" => json!({"tableId":1,"setting":"pause"}),
                 "note" => json!({"tableId":1,"order":0,"text":"test"}),

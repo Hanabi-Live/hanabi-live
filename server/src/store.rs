@@ -683,6 +683,13 @@ mod tests {
         }
     }
     fn terminal(table: &mut TableSnapshot) -> Result<()> {
+        terminal_after(table, |_| Ok(()))
+    }
+    /// Ends a table's game, as `terminal` does, after `play` takes its turns.
+    fn terminal_after(
+        table: &mut TableSnapshot,
+        play: impl FnOnce(&mut Game) -> Result<()>,
+    ) -> Result<()> {
         let players = vec![
             Player {
                 id: UserId(1),
@@ -705,6 +712,7 @@ mod tests {
             characters: None,
             interpretation: Interpretation::Live,
         })?;
+        play(&mut game)?;
         game.terminate(
             0,
             EndCondition::TerminatedByPlayer,
@@ -901,10 +909,95 @@ mod tests {
             .replace("\"chatId\"", "\"chatID\"")
             .replace("\"replayGameId\"", "\"replayGameID\"")
     }
+    /// Applies `edit` to each object in a value.
+    fn each_object(value: &mut Value, edit: &impl Fn(&mut serde_json::Map<String, Value>)) {
+        match value {
+            Value::Object(object) => {
+                edit(object);
+                object
+                    .values_mut()
+                    .for_each(|value| each_object(value, edit));
+            }
+            Value::Array(items) => items.iter_mut().for_each(|value| each_object(value, edit)),
+            _ => {}
+        }
+    }
+    /// Rewrites the objects of format 4 into format 3.
+    fn format_3(object: &mut serde_json::Map<String, Value>) {
+        let card_event = ["draw", "play", "discard", "cardIdentity"]
+            .iter()
+            .any(|kind| object.get("type") == Some(&json!(kind)));
+        if card_event && let Some(Value::Object(identity)) = object.remove("identity") {
+            object.extend(identity);
+        }
+        // A turn's clue, which, unlike a clue event, has no giver.
+        if object.get("type") == Some(&json!("clue"))
+            && !object.contains_key("giver")
+            && let Some(clue) = object.remove("clue")
+        {
+            let (kind, field) = if clue["type"] == "color" {
+                ("colorClue", "colorIndex")
+            } else {
+                ("rankClue", "rank")
+            };
+            object.insert("type".into(), kind.into());
+            object.insert(field.into(), clue["value"].clone());
+        }
+    }
+    /// A replayed game whose head and parts hold turns and hypothetical events.
+    fn replayed() -> Result<TableSnapshot> {
+        let mut table = pregame(TableId(1));
+        let clue = |rank| hanabi_protocol::ClueTurn {
+            target: hanabi_protocol::PlayerIndex(1),
+            clue: hanabi_protocol::Clue::Rank {
+                value: hanabi_protocol::RankClueNumber(rank),
+            },
+        };
+        // A clue must touch a card, so give the first rank that Bob holds.
+        terminal_after(&mut table, |game| {
+            ensure!(
+                (1..=5).any(|rank| game
+                    .apply(0, hanabi_protocol::PlayerAction::Clue(clue(rank)))
+                    .is_ok()),
+                "No clue touches Bob's hand"
+            );
+            Ok(())
+        })?;
+        table.extra.custom_actions = vec![hanabi_protocol::ReplayGameAction::Clue(clue(1))];
+        table.convert_to_replay()?;
+        let Phase::Replay { replay, .. } = &mut table.phase else {
+            bail!("The table is not a replay");
+        };
+        replay.hypothetical = true;
+        replay.hypothetical_actions = vec![serde_json::from_value(json!({
+            "type": "draw", "playerIndex": 0, "order": 3,
+            "identity": {"suitIndex": 1, "rank": 2},
+        }))?];
+        Ok(table)
+    }
     #[test]
     fn checkpoints_from_older_formats_are_upgraded() -> Result<()> {
         upgrades("hanabi-live-2", format_2)?;
-        upgrades("hanabi-live-1", |part| format_1(&format_2(part)))
+        upgrades("hanabi-live-1", |part| format_1(&format_2(part)))?;
+        let mut table = replayed()?;
+        let expected = serde_json::to_value(&table)?;
+        let (encoded, _) = crate::checkpoint::encode(&mut table, &SavedParts::default())?;
+        let mut head: Value = serde_json::from_str(&older_head(&encoded.head, "hanabi-live-3")?)?;
+        each_object(&mut head, &format_3);
+        let mut parts = Vec::new();
+        for (key, part) in &encoded.changes.written {
+            let mut part: Value = serde_json::from_str(part)?;
+            each_object(&mut part, &format_3);
+            parts.push((key.clone(), part.to_string()));
+        }
+        ensure!(
+            head.to_string().contains("rankClue")
+                && parts.iter().any(|(_, part)| part.contains("rankClue")),
+            "The older format has no clue turns"
+        );
+        let decoded = crate::checkpoint::decode(&head.to_string(), &parts)?;
+        ensure!(serde_json::to_value(&decoded)? == expected);
+        Ok(())
     }
     #[test]
     fn saves_write_only_new_entries_and_rewrite_lists_that_do_not_continue() -> Result<()> {

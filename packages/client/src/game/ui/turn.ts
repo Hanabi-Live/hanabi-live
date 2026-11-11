@@ -42,8 +42,7 @@ function handlePremove() {
 
   // Perform some validation.
   switch (oldPremove.type) {
-    case "colorClue":
-    case "rankClue": {
+    case "clue": {
       // Prevent pre-cluing if there is not a clue available.
       if (clueTokens < getClueCost(globals.variant)) {
         return;

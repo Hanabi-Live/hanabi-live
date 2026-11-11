@@ -193,7 +193,7 @@ databaseDescribe("normal-server protocol workload", () => {
                     (event) =>
                       event.type === "draw"
                       && event.playerIndex === a.init.ourPlayerIndex
-                      && event.rank === undefined,
+                      && event.identity === undefined,
                   ),
                 ).toBe(true);
                 samples.liveReconnect.push(performance.now() - reconnectStart);

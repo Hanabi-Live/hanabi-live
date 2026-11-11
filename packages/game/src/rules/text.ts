@@ -219,13 +219,12 @@ export function getPlayText(
   const playerName = getPlayerName(action.playerIndex, metadata);
 
   const cardIsHidden =
-    action.suitIndex === undefined
-    || action.rank === undefined
+    action.identity === undefined
     || (variant.throwItInAHole && (playing || shadowing));
 
   const cardName = cardIsHidden
     ? "a card"
-    : getCardName(action.suitIndex, action.rank, variant);
+    : getCardName(action.identity.suitIndex, action.identity.rank, variant);
 
   const location = slot === undefined ? "the deck" : `slot #${slot}`;
   const suffix = touched ? "" : " (blind)";
@@ -264,13 +263,12 @@ export function getDiscardText(
   const playerName = getPlayerName(action.playerIndex, metadata);
 
   const cardIsHidden =
-    action.suitIndex === undefined
-    || action.rank === undefined
+    action.identity === undefined
     || (variant.throwItInAHole && (playing || shadowing));
 
   const cardName = cardIsHidden
     ? "a card"
-    : getCardName(action.suitIndex, action.rank, variant);
+    : getCardName(action.identity.suitIndex, action.identity.rank, variant);
 
   const location = slot === undefined ? "the deck" : `slot #${slot}`;
   const suffix = getDiscardTextSuffix(touched, critical);

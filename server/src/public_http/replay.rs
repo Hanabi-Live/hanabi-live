@@ -65,7 +65,7 @@ pub(super) async fn export(
             id,
         )
     })?;
-    let deck: Vec<hanabi_protocol::ReplayCard> = serde_json::from_value(deck)?;
+    let deck: Vec<hanabi_protocol::CardIdentity> = serde_json::from_value(deck)?;
     let deck_len = deck.len();
     let mut notes = vec![vec![String::new(); deck_len + variant.suits.len()]; players.len()];
     for note in archive.notes {

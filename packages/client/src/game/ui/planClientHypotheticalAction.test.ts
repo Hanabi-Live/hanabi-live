@@ -178,9 +178,9 @@ describe("client hypothetical planning", () => {
     });
 
     sendHypotheticalAction({
-      type: "rankClue",
+      type: "clue",
       target: 1 as PlayerIndex,
-      rank: 1,
+      clue: { type: "rank", value: 1 },
     });
 
     expect(dispatch).toHaveBeenCalledWith({
@@ -208,8 +208,18 @@ describe("client hypothetical planning", () => {
 
     const actions = planClientHypotheticalAction(intent, context);
     expect(actions).toEqual<unknown>([
-      { type: "draw", order: 2, playerIndex: 0, suitIndex: 0, rank: 1 },
-      { type: "play", order: 2, playerIndex: 0, suitIndex: 0, rank: 1 },
+      {
+        type: "draw",
+        order: 2,
+        playerIndex: 0,
+        identity: { suitIndex: 0, rank: 1 },
+      },
+      {
+        type: "play",
+        order: 2,
+        playerIndex: 0,
+        identity: { suitIndex: 0, rank: 1 },
+      },
       { type: "turn", num: 7, currentPlayerIndex: 1 },
     ]);
     const state = applyPlan(actions, context);
@@ -228,13 +238,17 @@ describe("client hypothetical planning", () => {
       context,
     );
     expect(actions).toEqual<unknown>([
-      { type: "draw", order: 2, playerIndex: 0, suitIndex: 0, rank: 2 },
+      {
+        type: "draw",
+        order: 2,
+        playerIndex: 0,
+        identity: { suitIndex: 0, rank: 2 },
+      },
       {
         type: "discard",
         order: 2,
         playerIndex: 0,
-        suitIndex: 0,
-        rank: 2,
+        identity: { suitIndex: 0, rank: 2 },
         failed: true,
       },
       { type: "turn", num: 7, currentPlayerIndex: 1 },

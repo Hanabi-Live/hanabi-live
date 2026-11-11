@@ -225,17 +225,15 @@ function gameReducerFunction(
           finished,
         )
       ) {
-        if (action.suitIndex === undefined) {
-          throw new Error(
-            `The suit index for a discarded card was: ${action.suitIndex}`,
-          );
+        if (action.identity === undefined) {
+          throw new Error("The identity of a discarded card is unknown.");
         }
 
         // Add it to the discard stacks.
-        const discardStack = gameState.discardStacks[action.suitIndex];
+        const discardStack = gameState.discardStacks[action.identity.suitIndex];
         assertDefined(
           discardStack,
-          `Failed to find the discard stack at index: ${action.suitIndex}`,
+          `Failed to find the discard stack at index: ${action.identity.suitIndex}`,
         );
 
         discardStack.push(action.order);
@@ -259,15 +257,15 @@ function gameReducerFunction(
       // We do not want include the "(critical)" text for dead suits.
       const critical =
         isCardCritical(
-          action.suitIndex,
-          action.rank,
+          action.identity?.suitIndex,
+          action.identity?.rank,
           gameState.deck,
           gameState.playStackDirections,
           variant,
         )
         && isCardNeededForMaxScore(
-          action.suitIndex,
-          action.rank,
+          action.identity?.suitIndex,
+          action.identity?.rank,
           gameState.deck,
           gameState.playStacks,
           gameState.playStackDirections,
@@ -405,16 +403,14 @@ function gameReducerFunction(
           finished,
         )
       ) {
-        if (action.suitIndex === undefined) {
-          throw new Error(
-            `The suit index for a played card was: ${action.suitIndex}`,
-          );
+        if (action.identity === undefined) {
+          throw new Error("The identity of a played card is unknown.");
         }
 
-        const playStack = gameState.playStacks[action.suitIndex];
+        const playStack = gameState.playStacks[action.identity.suitIndex];
         assertDefined(
           playStack,
-          `Failed to find the play stack at index: ${action.suitIndex}`,
+          `Failed to find the play stack at index: ${action.identity.suitIndex}`,
         );
 
         playStack.push(action.order);
@@ -513,7 +509,7 @@ function gameReducerFunction(
   // Resolve the stack direction.
   if (action.type === "play" && (hasReversedSuits(variant) || variant.sudoku)) {
     const suitIndex =
-      action.suitIndex ?? gameState.deck[action.order]?.suitIndex;
+      action.identity?.suitIndex ?? gameState.deck[action.order]?.suitIndex;
 
     if (suitIndex !== undefined) {
       // We have to wait until the deck is updated with the information of the card that we played
@@ -537,7 +533,7 @@ function gameReducerFunction(
   // In Sudoku variants, resolve the stack starting value.
   if (action.type === "play" && variant.sudoku) {
     const suitIndex =
-      action.suitIndex ?? gameState.deck[action.order]?.suitIndex;
+      action.identity?.suitIndex ?? gameState.deck[action.order]?.suitIndex;
 
     if (suitIndex !== undefined) {
       const playStack = gameState.playStacks[suitIndex];
@@ -557,8 +553,7 @@ function gameReducerFunction(
   // make other cards critical.
   if (
     (action.type === "play" || action.type === "discard")
-    && action.suitIndex !== undefined
-    && action.rank !== undefined
+    && action.identity !== undefined
   ) {
     // For a no-variant game, we would only have to iterate over cards of the same suit to check for
     // non-playability. But other variants become more complicated, so we iterate over the entire

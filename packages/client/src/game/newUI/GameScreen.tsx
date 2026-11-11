@@ -21,10 +21,7 @@ import { clamp } from "complete-common";
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import * as modals from "../../modals.ts";
 import * as gameChat from "../chat.ts";
-import type {
-  ClientAction,
-  ClientActionColorClue,
-} from "../types/ClientAction.ts";
+import type { ClientAction, ClientClue } from "../types/ClientAction.ts";
 import type { State } from "../types/State.ts";
 import { globals } from "../ui/UIGlobals.ts";
 import { backToLobby } from "../ui/backToLobby.ts";
@@ -608,10 +605,18 @@ export function GameScreen({
     if (clue.type === "color") {
       const colorIndex = variant.clueColors.findIndex(
         (color) => color.name === clue.value.name,
-      ) as ClientActionColorClue["colorIndex"];
-      sendAction({ type: "colorClue", target: clueTarget, colorIndex });
+      ) as Extract<ClientClue, { type: "color" }>["value"];
+      sendAction({
+        type: "clue",
+        target: clueTarget,
+        clue: { type: "color", value: colorIndex },
+      });
     } else {
-      sendAction({ type: "rankClue", target: clueTarget, rank: clue.value });
+      sendAction({
+        type: "clue",
+        target: clueTarget,
+        clue: { type: "rank", value: clue.value },
+      });
     }
   }
 

@@ -366,6 +366,7 @@ type Upgrade = fn(&mut Value, &mut [(String, String)]) -> Result<()>;
 const UPGRADES: &[(&str, &str, Upgrade)] = &[
     ("hanabi-live-1", "hanabi-live-2", camel_case_ids),
     ("hanabi-live-2", "hanabi-live-3", seed_suffix_and_turn),
+    ("hanabi-live-3", "hanabi-live-4", clues_and_identities),
 ];
 
 /// Rewrites a table that an older server saved, one format at a time, into the current format.
@@ -437,6 +438,50 @@ fn seed_suffix_and_turn(_: &mut Value, parts: &mut [(String, String)]) -> Result
             *turn = counted.saturating_sub(1).into();
         }
     })
+}
+
+/// Format 3 named a turn's clue in its type, such as `{"type":"rankClue","target":1,"rank":3}`,
+/// and held the suit and rank of a hypothetical's cards in the event itself.
+fn clues_and_identities(head: &mut Value, parts: &mut [(String, String)]) -> Result<()> {
+    if let Some(Value::Array(actions)) = head.pointer_mut("/extra/customActions") {
+        actions.iter_mut().for_each(nest_clue);
+    }
+    if let Some(Value::Array(events)) = head.pointer_mut("/phase/replay/hypotheticalActions") {
+        // A morph can name a suit or a rank alone, so it keeps them apart.
+        for event in events
+            .iter_mut()
+            .filter_map(Value::as_object_mut)
+            .filter(|event| event.get("type").is_none_or(|kind| kind != "morph"))
+        {
+            let suit_index = event.remove("suitIndex");
+            let rank = event.remove("rank");
+            if let (Some(suit_index), Some(rank)) = (suit_index, rank) {
+                event.insert(
+                    "identity".into(),
+                    serde_json::json!({ "suitIndex": suit_index, "rank": rank }),
+                );
+            }
+        }
+    }
+    edit_parts(parts, STEP, |step| {
+        if let Some(action) = step.get_mut("action") {
+            nest_clue(action);
+        }
+    })
+}
+
+/// Rewrites a clue that a turn of format 3 gives.
+fn nest_clue(action: &mut Value) {
+    let (kind, field) = match action["type"].as_str() {
+        Some("colorClue") => ("color", "colorIndex"),
+        Some("rankClue") => ("rank", "rank"),
+        _ => return,
+    };
+    *action = serde_json::json!({
+        "type": "clue",
+        "target": action["target"],
+        "clue": { "type": kind, "value": action[field] },
+    });
 }
 
 /// What a save changes among a table's parts.

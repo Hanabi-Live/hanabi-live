@@ -101,34 +101,7 @@ export function finishHypothetical(): void {
 }
 
 export function sendHypotheticalAction(hypoAction: ClientAction): void {
-  let intent: HypotheticalActionIntent;
-  switch (hypoAction.type) {
-    case "play":
-    case "discard": {
-      intent = hypoAction;
-      break;
-    }
-
-    case "colorClue": {
-      intent = {
-        type: "colorClue",
-        target: hypoAction.target,
-        value: hypoAction.colorIndex,
-      };
-      break;
-    }
-
-    case "rankClue": {
-      intent = {
-        type: "rankClue",
-        target: hypoAction.target,
-        value: hypoAction.rank,
-      };
-      break;
-    }
-  }
-
-  planAndSendHypotheticalAction(intent);
+  planAndSendHypotheticalAction(hypoAction);
 }
 
 /** Spends a clue to give the turn to the next player, without giving a clue. */
@@ -171,8 +144,7 @@ function planAndSendHypotheticalAction(intent: HypotheticalActionIntent) {
         break;
       }
 
-      case "colorClue":
-      case "rankClue": {
+      case "clue": {
         const hand = globals.elements.playerHands[intent.target]!;
         for (const child of hand.children) {
           const { card } = child as unknown as LayoutChild;

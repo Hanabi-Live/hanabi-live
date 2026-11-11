@@ -359,15 +359,13 @@ describe("hypothetical state", () => {
             type: "play",
             playerIndex: 0,
             order: order as CardOrder,
-            suitIndex: 0,
-            rank: 1,
+            identity: { suitIndex: 0, rank: 1 },
           } as const)
         : ({
             type: "discard",
             playerIndex: 0,
             order: order as CardOrder,
-            suitIndex: 0,
-            rank: 1,
+            identity: { suitIndex: 0, rank: 1 },
             failed: false,
           } as const);
     }

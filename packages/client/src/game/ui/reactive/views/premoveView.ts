@@ -43,8 +43,7 @@ export function onChanged(
         break;
       }
 
-      case "colorClue":
-      case "rankClue": {
+      case "clue": {
         text += "Clue";
         break;
       }

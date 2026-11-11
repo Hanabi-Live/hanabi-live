@@ -229,7 +229,7 @@ databaseDescribe("compiled application entry point (rust)", () => {
         if (card.type !== "draw") {
           throw new Error("Expected an initial draw.");
         }
-        expect(card.rank).toBeUndefined();
+        expect(card.identity).toBeUndefined();
         active.send("playerAction", {
           tableId,
           action: { type: "play", order: card.order },
@@ -442,7 +442,7 @@ databaseDescribe("compiled application entry point (rust)", () => {
         expect(
           replayHistory.events
             .filter((event) => event.type === "draw")
-            .every((event) => event.rank !== undefined),
+            .every((event) => event.identity !== undefined),
         ).toBe(true);
         expect(
           await client`SELECT id FROM games WHERE id = ${finished.gameId}`,
@@ -621,7 +621,7 @@ databaseDescribe("compiled application entry point (rust)", () => {
         expect(hand).toHaveLength(2);
         expect(
           hand.every(
-            (event) => event.type === "draw" && event.rank === undefined,
+            (event) => event.type === "draw" && event.identity === undefined,
           ),
         ).toBe(true);
       }
@@ -710,7 +710,7 @@ databaseDescribe("compiled application entry point (rust)", () => {
         expect(
           imported.history.events
             .filter((event) => event.type === "draw")
-            .every((event) => event.rank !== undefined),
+            .every((event) => event.identity !== undefined),
         ).toBe(true);
         let replayPeer: ReturnType<typeof socketClient> = owner;
         if (source === "json") {

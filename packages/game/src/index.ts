@@ -1,4 +1,5 @@
 export * from "./abbreviations.ts";
+export * from "./cardEventIdentity.ts";
 export * from "./cardPresentation.ts";
 export * from "./constants.ts";
 export * from "./enums/CardStatus.ts";

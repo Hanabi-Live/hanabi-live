@@ -1,4 +1,5 @@
 import { assertDefined } from "complete-common";
+import { identityField } from "./cardEventIdentity.ts";
 import { possibleCardsFromNoteAndClues } from "./cardPresentation.ts";
 import { StackDirection } from "./enums/StackDirection.ts";
 import { START_CARD_RANK } from "./generated/protocol.ts";
@@ -16,12 +17,10 @@ import {
   getNextPlayableRanksAfter,
 } from "./rules/playStacks.ts";
 import type { CardOrder } from "./types/CardOrder.ts";
-import type { ColorIndex } from "./types/ColorIndex.ts";
 import type { ActionDraw } from "./types/gameActions.ts";
 import type { MsgClue } from "./types/MsgClue.ts";
 import type { PlayerIndex } from "./types/PlayerIndex.ts";
 import type { Rank } from "./types/Rank.ts";
-import type { RankClueNumber } from "./types/RankClueNumber.ts";
 import type { SuitIndex } from "./types/SuitIndex.ts";
 import type { SuitRankTuple } from "./types/SuitRankTuple.ts";
 
@@ -29,14 +28,9 @@ export type HypotheticalActionIntent =
   | { readonly type: "play"; readonly order: CardOrder }
   | { readonly type: "discard"; readonly order: CardOrder }
   | {
-      readonly type: "colorClue";
+      readonly type: "clue";
       readonly target: PlayerIndex;
-      readonly value: ColorIndex;
-    }
-  | {
-      readonly type: "rankClue";
-      readonly target: PlayerIndex;
-      readonly value: RankClueNumber;
+      readonly clue: MsgClue;
     }
   | { readonly type: "passTurn" };
 
@@ -344,16 +338,14 @@ export function planHypotheticalAction(
         type: "play",
         playerIndex,
         order: intent.order,
-        suitIndex,
-        rank,
+        ...identityField({ suitIndex, rank }),
       });
     } else {
       actions.push({
         type: "discard",
         playerIndex,
         order: intent.order,
-        suitIndex,
-        rank,
+        ...identityField({ suitIndex, rank }),
         failed,
       });
     }
@@ -365,8 +357,10 @@ export function planHypotheticalAction(
         type: "draw",
         order: nextCardOrder,
         playerIndex,
-        suitIndex: nextCard?.suitIndex,
-        rank: nextCard?.rank,
+        ...identityField({
+          suitIndex: nextCard?.suitIndex,
+          rank: nextCard?.rank,
+        }),
       };
       const isBottomDeckAction =
         metadata.options.deckPlays
@@ -389,10 +383,7 @@ export function planHypotheticalAction(
       ignoreNegative: true,
     });
   } else {
-    const clue: MsgClue =
-      intent.type === "colorClue"
-        ? { type: "color", value: intent.value }
-        : { type: "rank", value: intent.value };
+    const { clue } = intent;
     const targetCards: HypotheticalCard[] = [];
     const targetHand = gameState.hands[intent.target];
     assertDefined(targetHand, "Expected a hand for the clue target.");

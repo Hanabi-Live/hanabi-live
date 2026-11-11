@@ -5,10 +5,7 @@ import {
   isCardTouchedByClue,
 } from "@hanabi-live/game";
 import { SECOND_IN_MILLISECONDS, assertDefined, eRange } from "complete-common";
-import type {
-  ClientActionColorClue,
-  ClientActionRankClue,
-} from "../types/ClientAction.ts";
+import type { ClientActionClue } from "../types/ClientAction.ts";
 import type { ColorButton } from "./ColorButton.ts";
 import type { HanabiCard } from "./HanabiCard.ts";
 import type { LayoutChild } from "./LayoutChild.ts";
@@ -172,23 +169,23 @@ export function give(): void {
         `Failed to get the color index for color: ${clueOrRankButton.clue.value.name}`,
       );
 
-      const clientActionColorClue: ClientActionColorClue = {
-        type: "colorClue",
+      const clientActionClue: ClientActionClue = {
+        type: "clue",
         target: playerButton.targetPlayerIndex,
-        colorIndex,
+        clue: { type: "color", value: colorIndex },
       };
-      turn.end(clientActionColorClue);
+      turn.end(clientActionClue);
 
       break;
     }
 
     case "rank": {
-      const clientActionRankClue: ClientActionRankClue = {
-        type: "rankClue",
+      const clientActionClue: ClientActionClue = {
+        type: "clue",
         target: playerButton.targetPlayerIndex,
-        rank: clueOrRankButton.clue.value,
+        clue: { type: "rank", value: clueOrRankButton.clue.value },
       };
-      turn.end(clientActionRankClue);
+      turn.end(clientActionClue);
 
       break;
     }

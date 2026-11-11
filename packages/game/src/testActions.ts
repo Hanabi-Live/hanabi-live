@@ -1,3 +1,4 @@
+import { identityField } from "./cardEventIdentity.ts";
 import type { CardOrder } from "./types/CardOrder.ts";
 import type { ColorIndex } from "./types/ColorIndex.ts";
 import type { PlayerIndex } from "./types/PlayerIndex.ts";
@@ -63,8 +64,7 @@ export function draw(
     type: "draw",
     playerIndex,
     order: order as CardOrder,
-    suitIndex,
-    rank,
+    ...identityField({ suitIndex, rank }),
   };
 }
 
@@ -80,8 +80,7 @@ export function discard(
     type: "discard",
     playerIndex,
     order: order as CardOrder,
-    suitIndex,
-    rank,
+    ...identityField({ suitIndex, rank }),
     failed,
   };
 }
@@ -97,8 +96,7 @@ export function play(
     type: "play",
     playerIndex,
     order: order as CardOrder,
-    suitIndex,
-    rank,
+    ...identityField({ suitIndex, rank }),
   };
 }
 
@@ -113,7 +111,6 @@ export function actionCardIdentity(
     type: "cardIdentity",
     playerIndex,
     order: order as CardOrder,
-    suitIndex,
-    rank,
+    ...identityField({ suitIndex, rank }),
   };
 }

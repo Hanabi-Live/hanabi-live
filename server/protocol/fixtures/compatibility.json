@@ -304,9 +304,12 @@
     "input": {
       "tableId": 7,
       "action": {
-        "type": "colorClue",
+        "type": "clue",
         "target": 1,
-        "colorIndex": 2
+        "clue": {
+          "type": "color",
+          "value": 2
+        }
       }
     },
     "valid": true
@@ -318,9 +321,12 @@
     "input": {
       "tableId": 7,
       "action": {
-        "type": "rankClue",
+        "type": "clue",
         "target": 1,
-        "rank": 7
+        "clue": {
+          "type": "rank",
+          "value": 7
+        }
       }
     },
     "valid": false
@@ -562,9 +568,12 @@
         "seed": "p2v0s1",
         "actions": [
           {
-            "type": "rankClue",
+            "type": "clue",
             "target": 1,
-            "rank": 1
+            "clue": {
+              "type": "rank",
+              "value": 1
+            }
           },
           {
             "type": "play",
@@ -585,9 +594,12 @@
         "seed": "p2v0s1",
         "actions": [
           {
-            "type": "rankClue",
+            "type": "clue",
             "target": 1,
-            "rank": 1
+            "clue": {
+              "type": "rank",
+              "value": 1
+            }
           },
           {
             "type": "play",
@@ -886,6 +898,7 @@
         "action": {
           "type": "morph",
           "order": 3,
+          "suitIndex": 0,
           "rank": 2
         }
       }
@@ -1040,7 +1053,10 @@
         "type": "draw",
         "playerIndex": 0,
         "order": 0,
-        "rank": 7
+        "identity": {
+          "suitIndex": 0,
+          "rank": 7
+        }
       }
     },
     "valid": true
@@ -1055,8 +1071,10 @@
         "type": "draw",
         "playerIndex": 6,
         "order": 0,
-        "suitIndex": 0,
-        "rank": 1
+        "identity": {
+          "suitIndex": 0,
+          "rank": 1
+        }
       }
     },
     "valid": false
@@ -1071,8 +1089,10 @@
         "type": "draw",
         "playerIndex": 0,
         "order": 66,
-        "suitIndex": 0,
-        "rank": 1
+        "identity": {
+          "suitIndex": 0,
+          "rank": 1
+        }
       }
     },
     "valid": false
@@ -1087,8 +1107,10 @@
         "type": "draw",
         "playerIndex": 0,
         "order": 0,
-        "suitIndex": 6,
-        "rank": 1
+        "identity": {
+          "suitIndex": 6,
+          "rank": 1
+        }
       }
     },
     "valid": false
@@ -1103,8 +1125,10 @@
         "type": "draw",
         "playerIndex": 0,
         "order": 0,
-        "suitIndex": 0,
-        "rank": 6
+        "identity": {
+          "suitIndex": 0,
+          "rank": 6
+        }
       }
     },
     "valid": false
@@ -1162,6 +1186,7 @@
         "action": {
           "type": "morph",
           "order": 66,
+          "suitIndex": 0,
           "rank": 2
         }
       }

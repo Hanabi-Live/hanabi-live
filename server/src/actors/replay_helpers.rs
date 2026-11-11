@@ -7,9 +7,9 @@ use crate::{
 };
 use hanabi_engine::RecordedAction;
 use hanabi_engine::{AssignedCharacter, EndCondition, GameSetup, Interpretation};
-use hanabi_protocol::ReplayGame;
 use hanabi_protocol::TableId;
 use hanabi_protocol::UserId;
+use hanabi_protocol::{Clue, ClueTurn, ReplayGame};
 
 /// The longest seed that a replay import can name, in bytes. A table's seed is prefixed with the
 /// player count and variant ID, so this leaves room above `MAX_SEED_LENGTH`.
@@ -141,10 +141,12 @@ pub fn parse(input: &ReplayGame) -> CommandResult<Imported> {
             match a {
                 RecordedAction::Play(card) | RecordedAction::Discard(card) =>
                     card.order.index() < deck.len(),
-                RecordedAction::ColorClue(clue) =>
-                    clue.target.index() < players.len()
-                        && clue.color_index.index() <= variant.clue_colors.len(),
-                RecordedAction::RankClue(clue) => clue.target.index() < players.len(),
+                RecordedAction::Clue(ClueTurn { target, clue }) =>
+                    target.index() < players.len()
+                        && match clue {
+                            Clue::Color { value } => value.index() <= variant.clue_colors.len(),
+                            Clue::Rank { .. } => true,
+                        },
                 RecordedAction::GameOver(end) =>
                     if end.end_condition == EndCondition::TerminatedByVote {
                         end.player_index.is_none()

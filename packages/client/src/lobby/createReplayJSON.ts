@@ -198,20 +198,12 @@ function getGameActionsFromState(source: ReplayState): readonly ClientAction[] {
             );
           }
 
-          case "color": {
-            actions.push({
-              type: "colorClue",
-              target: action.target,
-              colorIndex: action.clue.value,
-            });
-            break;
-          }
-
+          case "color":
           case "rank": {
             actions.push({
-              type: "rankClue",
+              type: "clue",
               target: action.target,
-              rank: action.clue.value,
+              clue: action.clue,
             });
             break;
           }
@@ -340,9 +332,9 @@ function getActionFromHypoClue(
     );
 
     return {
-      type: "colorClue",
+      type: "clue",
       target: playerIndex,
-      colorIndex,
+      clue: { type: "color", value: colorIndex },
     };
   }
 
@@ -355,9 +347,9 @@ function getActionFromHypoClue(
 
   // It is a rank clue.
   return {
-    type: "rankClue",
+    type: "clue",
     target: playerIndex,
-    rank: rankClueNumber,
+    clue: { type: "rank", value: rankClueNumber },
   };
 }
 

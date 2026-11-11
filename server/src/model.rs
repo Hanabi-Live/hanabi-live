@@ -15,7 +15,7 @@ use std::{
     time::Instant,
 };
 
-pub const FORMAT: &str = "hanabi-live-3";
+pub const FORMAT: &str = "hanabi-live-4";
 /// The author of chat that the server wrote, as `chat_log` stores it. Real users have positive IDs.
 pub const SERVER_AUTHOR: UserId = UserId(0);
 /// How long before an idle game ends to warn its table.

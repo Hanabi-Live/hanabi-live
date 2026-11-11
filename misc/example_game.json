@@ -205,37 +205,52 @@
   ],
   "actions": [
     {
-      "type": "colorClue",
+      "type": "clue",
       "target": 1,
-      "colorIndex": 2
+      "clue": {
+        "type": "color",
+        "value": 2
+      }
     },
     {
       "type": "play",
       "order": 6
     },
     {
-      "type": "colorClue",
+      "type": "clue",
       "target": 0,
-      "colorIndex": 3
+      "clue": {
+        "type": "color",
+        "value": 3
+      }
     },
     {
-      "type": "colorClue",
+      "type": "clue",
       "target": 1,
-      "colorIndex": 0
+      "clue": {
+        "type": "color",
+        "value": 0
+      }
     },
     {
-      "type": "colorClue",
+      "type": "clue",
       "target": 2,
-      "colorIndex": 4
+      "clue": {
+        "type": "color",
+        "value": 4
+      }
     },
     {
       "type": "play",
       "order": 14
     },
     {
-      "type": "colorClue",
+      "type": "clue",
       "target": 2,
-      "colorIndex": 2
+      "clue": {
+        "type": "color",
+        "value": 2
+      }
     },
     {
       "type": "play",
@@ -246,27 +261,36 @@
       "order": 10
     },
     {
-      "type": "colorClue",
+      "type": "clue",
       "target": 2,
-      "colorIndex": 2
+      "clue": {
+        "type": "color",
+        "value": 2
+      }
     },
     {
       "type": "play",
       "order": 17
     },
     {
-      "type": "rankClue",
+      "type": "clue",
       "target": 1,
-      "rank": 5
+      "clue": {
+        "type": "rank",
+        "value": 5
+      }
     },
     {
       "type": "discard",
       "order": 2
     },
     {
-      "type": "rankClue",
+      "type": "clue",
       "target": 2,
-      "rank": 3
+      "clue": {
+        "type": "rank",
+        "value": 3
+      }
     },
     {
       "type": "play",
@@ -281,14 +305,20 @@
       "order": 5
     },
     {
-      "type": "rankClue",
+      "type": "clue",
       "target": 1,
-      "rank": 2
+      "clue": {
+        "type": "rank",
+        "value": 2
+      }
     },
     {
-      "type": "rankClue",
+      "type": "clue",
       "target": 1,
-      "rank": 4
+      "clue": {
+        "type": "rank",
+        "value": 4
+      }
     },
     {
       "type": "play",
@@ -307,9 +337,12 @@
       "order": 23
     },
     {
-      "type": "rankClue",
+      "type": "clue",
       "target": 0,
-      "rank": 3
+      "clue": {
+        "type": "rank",
+        "value": 3
+      }
     },
     {
       "type": "play",
@@ -324,18 +357,24 @@
       "order": 18
     },
     {
-      "type": "colorClue",
+      "type": "clue",
       "target": 2,
-      "colorIndex": 4
+      "clue": {
+        "type": "color",
+        "value": 4
+      }
     },
     {
       "type": "discard",
       "order": 24
     },
     {
-      "type": "colorClue",
+      "type": "clue",
       "target": 0,
-      "colorIndex": 0
+      "clue": {
+        "type": "color",
+        "value": 0
+      }
     },
     {
       "type": "play",
@@ -354,9 +393,12 @@
       "order": 4
     },
     {
-      "type": "rankClue",
+      "type": "clue",
       "target": 0,
-      "rank": 4
+      "clue": {
+        "type": "rank",
+        "value": 4
+      }
     },
     {
       "type": "play",
@@ -371,9 +413,12 @@
       "order": 27
     },
     {
-      "type": "rankClue",
+      "type": "clue",
       "target": 1,
-      "rank": 5
+      "clue": {
+        "type": "rank",
+        "value": 5
+      }
     },
     {
       "type": "discard",
@@ -384,18 +429,24 @@
       "order": 31
     },
     {
-      "type": "colorClue",
+      "type": "clue",
       "target": 0,
-      "colorIndex": 1
+      "clue": {
+        "type": "color",
+        "value": 1
+      }
     },
     {
       "type": "discard",
       "order": 28
     },
     {
-      "type": "rankClue",
+      "type": "clue",
       "target": 0,
-      "rank": 2
+      "clue": {
+        "type": "rank",
+        "value": 2
+      }
     },
     {
       "type": "discard",
@@ -406,9 +457,12 @@
       "order": 39
     },
     {
-      "type": "colorClue",
+      "type": "clue",
       "target": 2,
-      "colorIndex": 1
+      "clue": {
+        "type": "color",
+        "value": 1
+      }
     },
     {
       "type": "discard",
@@ -427,18 +481,24 @@
       "order": 36
     },
     {
-      "type": "rankClue",
+      "type": "clue",
       "target": 1,
-      "rank": 5
+      "clue": {
+        "type": "rank",
+        "value": 5
+      }
     },
     {
       "type": "play",
       "order": 46
     },
     {
-      "type": "rankClue",
+      "type": "clue",
       "target": 0,
-      "rank": 5
+      "clue": {
+        "type": "rank",
+        "value": 5
+      }
     },
     {
       "type": "play",

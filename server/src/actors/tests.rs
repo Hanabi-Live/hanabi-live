@@ -71,9 +71,11 @@ fn typed_game_frames_preserve_wire_schema_and_projected_identities() -> Result<(
     let rank = game.deck[game.players[1].hand[0]].rank;
     game.apply(
         0,
-        PlayerAction::RankClue(hanabi_protocol::RankClueTurn {
+        PlayerAction::Clue(hanabi_protocol::ClueTurn {
             target: PlayerIndex::new(1_usize).unwrap(),
-            rank: hanabi_protocol::RankClueNumber::new(rank).unwrap(),
+            clue: hanabi_protocol::Clue::Rank {
+                value: hanabi_protocol::RankClueNumber::new(rank).unwrap(),
+            },
         }),
     )?;
     game.terminate(
@@ -110,12 +112,22 @@ fn typed_game_frames_preserve_wire_schema_and_projected_identities() -> Result<(
         assert_eq!(command, "gameEventList");
         let body: Value = serde_json::from_str(body)?;
         // The engine names some fields differently, and marks a missing value with null, which the
-        // wire omits. The wire also omits a clue's turn.
+        // wire omits. The wire also omits a clue's turn, and holds a card's suit and rank in its
+        // identity.
         let mut expected = serde_json::to_value(&list)?;
         for event in expected.as_array_mut().unwrap() {
             let event = event.as_object_mut().unwrap();
             if event["type"] == "clue" {
                 event.remove("turn");
+            }
+            if let (Some(suit_index), Some(rank)) =
+                (event.remove("suitIndex"), event.remove("rank"))
+                && !suit_index.is_null()
+            {
+                event.insert(
+                    "identity".into(),
+                    json!({"suitIndex":suit_index,"rank":rank}),
+                );
             }
             event.retain(|_, value| !value.is_null());
             for (engine, wire) in [
@@ -140,16 +152,15 @@ fn typed_game_frames_preserve_wire_schema_and_projected_identities() -> Result<(
             if expected["type"] == "draw" {
                 let player = usize::try_from(expected["playerIndex"].as_u64().unwrap()).unwrap();
                 let order = usize::try_from(expected["order"].as_u64().unwrap()).unwrap();
-                let (suit, rank) = if hidden == Some(player) {
-                    (Value::Null, Value::Null)
+                let identity = if hidden == Some(player) {
+                    Value::Null
                 } else {
-                    (
-                        json!(hanabi_engine::int(game.deck[order].suit_index)),
-                        json!(game.deck[order].rank),
-                    )
+                    json!({
+                        "suitIndex": hanabi_engine::int(game.deck[order].suit_index),
+                        "rank": game.deck[order].rank,
+                    })
                 };
-                assert_eq!(expected["suitIndex"], suit);
-                assert_eq!(expected["rank"], rank);
+                assert_eq!(expected["identity"], identity);
             }
         }
         let events = body["events"].as_array().unwrap();
@@ -1190,12 +1201,13 @@ fn a_table_chat_that_players_filled_still_fits_in_a_checkpoint() -> Result<()> {
 #[test]
 fn hypothetical_back_keeps_morphs() {
     let action = |kind: &str, n: i64| -> hanabi_protocol::HypotheticalEvent {
-        let card = json!({"playerIndex":0,"order":n,"suitIndex":0,"rank":1});
+        let identity = json!({"suitIndex":0,"rank":1});
+        let card = json!({"playerIndex":0,"order":n,"identity":identity});
         let mut value = match kind {
             "turn" => json!({"num":n,"currentPlayerIndex":0}),
             "morph" => json!({"order":n,"suitIndex":0,"rank":1}),
             "unmorph" => json!({"order":n}),
-            "discard" => json!({"playerIndex":0,"order":n,"suitIndex":0,"rank":1,"failed":false}),
+            "discard" => json!({"playerIndex":0,"order":n,"identity":identity,"failed":false}),
             _ => card,
         };
         value["type"] = json!(kind);

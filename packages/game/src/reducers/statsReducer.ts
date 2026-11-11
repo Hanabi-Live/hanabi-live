@@ -89,8 +89,8 @@ function statsReducerFunction(
     }
 
     case "play": {
-      if (action.suitIndex !== undefined) {
-        const playStack = gameState.playStacks[action.suitIndex];
+      if (action.identity !== undefined) {
+        const playStack = gameState.playStacks[action.identity.suitIndex];
 
         if (
           playStack !== undefined

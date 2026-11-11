@@ -447,19 +447,14 @@ function toCompactAction(action: Action): CompactAction {
       };
     }
 
-    case "colorClue": {
+    case "clue": {
       return {
-        type: CompactType.ColorClue,
+        type:
+          action.clue.type === "color"
+            ? CompactType.ColorClue
+            : CompactType.RankClue,
         target: action.target,
-        value: action.colorIndex,
-      };
-    }
-
-    case "rankClue": {
-      return {
-        type: CompactType.RankClue,
-        target: action.target,
-        value: action.rank,
+        value: action.clue.value,
       };
     }
 
@@ -491,12 +486,12 @@ function fromCompactAction(action: CompactAction): Action | undefined {
     }
 
     case CompactType.ColorClue: {
-      named = { type: "colorClue", target, colorIndex: value };
+      named = { type: "clue", target, clue: { type: "color", value } };
       break;
     }
 
     case CompactType.RankClue: {
-      named = { type: "rankClue", target, rank: value };
+      named = { type: "clue", target, clue: { type: "rank", value } };
       break;
     }
 

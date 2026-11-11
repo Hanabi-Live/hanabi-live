@@ -223,7 +223,7 @@ databaseDescribe("Rust actor durability and ownership", () => {
             (event) =>
               event.type === "draw"
               && event.playerIndex === 0
-              && event.rank === undefined,
+              && event.identity === undefined,
           ),
         ).toBe(true);
         returning.send("playerAction", action);

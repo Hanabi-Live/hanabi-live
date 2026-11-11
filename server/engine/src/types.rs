@@ -1,5 +1,6 @@
 use hanabi_protocol::{
-    CardOrder, DEFAULT_VARIANT_NAME, GameOverTurn, MIN_PLAYERS, PlayerIndex, TargetCard,
+    CardOrder, Clue as WireClue, ClueTurn, DEFAULT_VARIANT_NAME, GameOverTurn, MIN_PLAYERS,
+    PlayerIndex, TargetCard,
 };
 pub use hanabi_protocol::{ClueType, EndCondition};
 use serde::{Deserialize, Serialize};
@@ -179,8 +180,14 @@ pub const fn recorded_action_type(action: &RecordedAction) -> RecordedActionType
     match action {
         RecordedAction::Play(_) => RecordedActionType::Play,
         RecordedAction::Discard(_) => RecordedActionType::Discard,
-        RecordedAction::ColorClue(_) => RecordedActionType::ColorClue,
-        RecordedAction::RankClue(_) => RecordedActionType::RankClue,
+        RecordedAction::Clue(ClueTurn {
+            clue: WireClue::Color { .. },
+            ..
+        }) => RecordedActionType::ColorClue,
+        RecordedAction::Clue(ClueTurn {
+            clue: WireClue::Rank { .. },
+            ..
+        }) => RecordedActionType::RankClue,
         RecordedAction::GameOver(GameOverTurn {
             end_condition: EndCondition::TerminatedByVote,
             ..
@@ -209,18 +216,17 @@ impl Move {
                 order: card.order.index(),
                 play: false,
             },
-            PlayerAction::ColorClue(clue) => Self::Clue {
-                target: clue.target.index(),
-                clue: Clue {
-                    clue_type: ClueType::Color,
-                    value: clue.color_index.into(),
-                },
-            },
-            PlayerAction::RankClue(clue) => Self::Clue {
-                target: clue.target.index(),
-                clue: Clue {
-                    clue_type: ClueType::Rank,
-                    value: clue.rank.into(),
+            PlayerAction::Clue(ClueTurn { target, clue }) => Self::Clue {
+                target: target.index(),
+                clue: match clue {
+                    WireClue::Color { value } => Clue {
+                        clue_type: ClueType::Color,
+                        value: value.into(),
+                    },
+                    WireClue::Rank { value } => Clue {
+                        clue_type: ClueType::Rank,
+                        value: value.into(),
+                    },
                 },
             },
         }

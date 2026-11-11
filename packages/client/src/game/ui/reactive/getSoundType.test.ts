@@ -120,8 +120,7 @@ function soundAfterPlayingCluedOne(
     type: "play",
     playerIndex: 1,
     order: 0 as CardOrder,
-    suitIndex: playedSuitIndex,
-    rank: actualRank,
+    identity: { suitIndex: playedSuitIndex, rank: actualRank },
   };
   return getSoundType(previousGameState, gameState, action, metadata);
 }

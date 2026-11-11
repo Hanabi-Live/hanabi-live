@@ -66,14 +66,12 @@ pub struct VoteChange {
     pub votes_needed: u8,
 }
 
-#[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
+/// A card's suit and rank.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct CardIdentity {
-    /// Absent when the recipient may not see the card.
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub suit_index: Option<SuitIndex>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub rank: Option<CardRank>,
+    pub suit_index: SuitIndex,
+    pub rank: CardRank,
 }
 
 /// Every card's identity, by card order, once a game ends.
@@ -159,9 +157,8 @@ pub struct Note {
     pub notes: Vec<CardNote>,
 }
 
-/// A clue's type and value: a color clue names a suit's color, and a rank clue names a rank. Events
-/// hold it apart from their type because the recipient may not see it, while turns name the clue's
-/// type as their own (`colorClue` or `rankClue`).
+/// A clue's type and value: a color clue names one of the variant's clue colors, and a rank clue
+/// names a rank.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
 #[serde(tag = "type", rename_all = "camelCase", deny_unknown_fields)]
 pub enum Clue {
@@ -169,8 +166,7 @@ pub enum Clue {
     Rank { value: RankClueNumber },
 }
 
-/// A card that a player draws, plays, or learns. A card identity that the recipient may not see is
-/// absent.
+/// A card that a player draws, plays, or learns.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct CardEvent {
@@ -178,9 +174,7 @@ pub struct CardEvent {
     pub order: CardOrder,
     /// Absent when the recipient may not see the card.
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub suit_index: Option<SuitIndex>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub rank: Option<CardRank>,
+    pub identity: Option<CardIdentity>,
 }
 
 /// A card that a player discards, or fails to play.
@@ -191,9 +185,7 @@ pub struct DiscardEvent {
     pub order: CardOrder,
     /// Absent when the recipient may not see the card.
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub suit_index: Option<SuitIndex>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub rank: Option<CardRank>,
+    pub identity: Option<CardIdentity>,
     /// Whether the card was a failed play.
     pub failed: bool,
 }

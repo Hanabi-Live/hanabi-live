@@ -47,7 +47,7 @@ export function toPlayerTuple<T>(
   return [...values] as unknown as Tuple<T, NumPlayers>;
 }
 
-/** The server omits a suit or rank that the recipient may not see. */
+/** A card's identity, which the server names once the game ends. */
 export function toCardIdentity(identity: WireCardIdentity): CardIdentity {
   return { suitIndex: identity.suitIndex, rank: identity.rank };
 }

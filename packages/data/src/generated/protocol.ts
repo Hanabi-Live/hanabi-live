@@ -1,10 +1,10 @@
 // Generated from server/protocol. Run bash scripts/dev/generate-protocol.sh.
 import {
+  cardIdentitySchema,
   cardNoteSchema,
   cardOrderSchema,
-  cardRankSchema,
   characterIdSchema,
-  colorIndexSchema,
+  clueSchema,
   EndCondition,
   gameEventSchema,
   gameOptionsSchema,
@@ -12,9 +12,7 @@ import {
   notesSchema,
   playerIndexSchema,
   playerNotesSchema,
-  rankClueNumberSchema,
   safeIntegerSchema,
-  suitIndexSchema,
   turnSchema,
   variantIdSchema,
 } from "@hanabi-live/game";
@@ -49,15 +47,6 @@ export enum GameListColumn {
  */
 export const blockedSchema = z
   .strictObject({ blocked: z.array(z.string().min(1)).readonly() })
-  .readonly();
-const cardIdentitySchema = z
-  .strictObject({
-    rank: cardRankSchema.optional(),
-    /**
-     * Absent when the recipient may not see the card.
-     */
-    suitIndex: suitIndexSchema.optional(),
-  })
   .readonly();
 export const tableIdSchema = z
   .number()
@@ -628,22 +617,12 @@ const playerActionSchema = z.discriminatedUnion("type", [
     .readonly(),
   z
     .strictObject({
-      colorIndex: colorIndexSchema,
+      clue: clueSchema,
       /**
        * The player who receives the clue.
        */
       target: playerIndexSchema,
-      type: z.literal("colorClue"),
-    })
-    .readonly(),
-  z
-    .strictObject({
-      rank: rankClueNumberSchema,
-      /**
-       * The player who receives the clue.
-       */
-      target: playerIndexSchema,
-      type: z.literal("rankClue"),
+      type: z.literal("clue"),
     })
     .readonly(),
 ]);
@@ -849,13 +828,6 @@ export const replayActionSchema = z
   .readonly();
 
 /**
- * A card in the replay format. A missing suit is the first suit, as older exports omitted it.
- */
-const replayCardSchema = z
-  .strictObject({ rank: cardRankSchema, suitIndex: suitIndexSchema.default(0) })
-  .readonly();
-
-/**
  * A player's detrimental character in the replay format.
  */
 const replayCharacterSchema = z
@@ -888,22 +860,12 @@ const replayGameActionSchema = z.discriminatedUnion("type", [
     .readonly(),
   z
     .strictObject({
-      colorIndex: colorIndexSchema,
+      clue: clueSchema,
       /**
        * The player who receives the clue.
        */
       target: playerIndexSchema,
-      type: z.literal("colorClue"),
-    })
-    .readonly(),
-  z
-    .strictObject({
-      rank: rankClueNumberSchema,
-      /**
-       * The player who receives the clue.
-       */
-      target: playerIndexSchema,
-      type: z.literal("rankClue"),
+      type: z.literal("clue"),
     })
     .readonly(),
   z
@@ -954,7 +916,7 @@ export const replayGameSchema = z
     /**
      * The deck, by card order.
      */
-    deck: z.array(replayCardSchema).max(60).readonly().optional(),
+    deck: z.array(cardIdentitySchema).max(60).readonly().optional(),
     /**
      * The game's ID, when it is exported from the database. Importing does not use it.
      */

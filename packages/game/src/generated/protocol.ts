@@ -246,14 +246,25 @@ export const cardOrderSchema = z
 export const clueTypeSchema = z.enum(["color", "rank"]);
 
 /**
+ * A card's suit.
+ */
+export const suitIndexSchema = z.literal([0, 1, 2, 3, 4, 5]);
+
+/**
+ * A card's suit and rank.
+ */
+export const cardIdentitySchema = z
+  .strictObject({ rank: cardRankSchema, suitIndex: suitIndexSchema })
+  .readonly();
+
+/**
  * The index of a color in the variant's clue colors.
  */
 export const colorIndexSchema = z.literal([0, 1, 2, 3, 4, 5]);
 
 /**
- * A clue's type and value: a color clue names a suit's color, and a rank clue names a rank. Events
- * hold it apart from their type because the recipient may not see it, while turns name the clue's
- * type as their own (`colorClue` or `rankClue`).
+ * A clue's type and value: a color clue names one of the variant's clue colors, and a rank clue
+ * names a rank.
  */
 export const clueSchema = z.discriminatedUnion("type", [
   z
@@ -279,11 +290,6 @@ export const safeIntegerSchema = z
   .max(9_007_199_254_740_991);
 
 /**
- * A card's suit.
- */
-export const suitIndexSchema = z.literal([0, 1, 2, 3, 4, 5]);
-
-/**
  * A turn of a game, or a position in its replay, counting from 0. A game records at most
  * `MAX_GAME_ACTIONS` actions, so it has no more turns than that.
  */
@@ -295,37 +301,34 @@ export const turnSchema = z.number().int().min(0).max(512);
 export const gameEventSchema = z.discriminatedUnion("type", [
   z
     .strictObject({
-      order: cardOrderSchema,
-      playerIndex: playerIndexSchema,
-      rank: cardRankSchema.optional(),
       /**
        * Absent when the recipient may not see the card.
        */
-      suitIndex: suitIndexSchema.optional(),
+      identity: cardIdentitySchema.optional(),
+      order: cardOrderSchema,
+      playerIndex: playerIndexSchema,
       type: z.literal("draw"),
     })
     .readonly(),
   z
     .strictObject({
-      order: cardOrderSchema,
-      playerIndex: playerIndexSchema,
-      rank: cardRankSchema.optional(),
       /**
        * Absent when the recipient may not see the card.
        */
-      suitIndex: suitIndexSchema.optional(),
+      identity: cardIdentitySchema.optional(),
+      order: cardOrderSchema,
+      playerIndex: playerIndexSchema,
       type: z.literal("play"),
     })
     .readonly(),
   z
     .strictObject({
-      order: cardOrderSchema,
-      playerIndex: playerIndexSchema,
-      rank: cardRankSchema.optional(),
       /**
        * Absent when the recipient may not see the card.
        */
-      suitIndex: suitIndexSchema.optional(),
+      identity: cardIdentitySchema.optional(),
+      order: cardOrderSchema,
+      playerIndex: playerIndexSchema,
       type: z.literal("cardIdentity"),
     })
     .readonly(),
@@ -335,13 +338,12 @@ export const gameEventSchema = z.discriminatedUnion("type", [
        * Whether the card was a failed play.
        */
       failed: z.boolean(),
-      order: cardOrderSchema,
-      playerIndex: playerIndexSchema,
-      rank: cardRankSchema.optional(),
       /**
        * Absent when the recipient may not see the card.
        */
-      suitIndex: suitIndexSchema.optional(),
+      identity: cardIdentitySchema.optional(),
+      order: cardOrderSchema,
+      playerIndex: playerIndexSchema,
       type: z.literal("discard"),
     })
     .readonly(),
@@ -418,30 +420,28 @@ export const gameOptionsSchema = z
 
 /**
  * One event in a hypothetical. The server relays these; each client applies them to its own copy
- * of the game. A card identity that the recipient may not see is absent.
+ * of the game.
  */
 export const hypotheticalEventSchema = z.discriminatedUnion("type", [
   z
     .strictObject({
-      order: cardOrderSchema,
-      playerIndex: playerIndexSchema,
-      rank: cardRankSchema.optional(),
       /**
        * Absent when the recipient may not see the card.
        */
-      suitIndex: suitIndexSchema.optional(),
+      identity: cardIdentitySchema.optional(),
+      order: cardOrderSchema,
+      playerIndex: playerIndexSchema,
       type: z.literal("draw"),
     })
     .readonly(),
   z
     .strictObject({
-      order: cardOrderSchema,
-      playerIndex: playerIndexSchema,
-      rank: cardRankSchema.optional(),
       /**
        * Absent when the recipient may not see the card.
        */
-      suitIndex: suitIndexSchema.optional(),
+      identity: cardIdentitySchema.optional(),
+      order: cardOrderSchema,
+      playerIndex: playerIndexSchema,
       type: z.literal("play"),
     })
     .readonly(),
@@ -451,13 +451,12 @@ export const hypotheticalEventSchema = z.discriminatedUnion("type", [
        * Whether the card was a failed play.
        */
       failed: z.boolean(),
-      order: cardOrderSchema,
-      playerIndex: playerIndexSchema,
-      rank: cardRankSchema.optional(),
       /**
        * Absent when the recipient may not see the card.
        */
-      suitIndex: suitIndexSchema.optional(),
+      identity: cardIdentitySchema.optional(),
+      order: cardOrderSchema,
+      playerIndex: playerIndexSchema,
       type: z.literal("discard"),
     })
     .readonly(),
@@ -491,9 +490,6 @@ export const hypotheticalEventSchema = z.discriminatedUnion("type", [
     .strictObject({
       order: cardOrderSchema,
       rank: cardRankSchema.optional(),
-      /**
-       * Absent when the recipient may not see the card.
-       */
       suitIndex: suitIndexSchema.optional(),
       type: z.literal("morph"),
     })

@@ -90,9 +90,9 @@ function clickLeft(card: HanabiCard, event: MouseEvent) {
     }
 
     turn.end({
-      type: "colorClue",
+      type: "clue",
       target: card.state.location,
-      colorIndex,
+      clue: { type: "color", value: colorIndex },
     });
   }
 }
@@ -193,9 +193,9 @@ function clickRight(card: HanabiCard, event: MouseEvent) {
     }
 
     turn.end({
-      type: "rankClue",
+      type: "clue",
       target: card.state.location,
-      rank: clueRank,
+      clue: { type: "rank", value: clueRank },
     });
     return;
   }

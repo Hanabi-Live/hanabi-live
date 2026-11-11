@@ -826,20 +826,20 @@ async function seed(address: string): Promise<Seed> {
     const newest = events.findLast(
       (event) => event.type === "draw" && event.playerIndex !== 0,
     );
-    if (
-      newest?.type !== "draw"
-      || newest.rank === undefined
-      || newest.rank === START_CARD_RANK
-    ) {
+    if (newest?.type !== "draw") {
+      return;
+    }
+    const rank = newest.identity?.rank;
+    if (rank === undefined || rank === START_CARD_RANK) {
       return;
     }
     // A rank clue, since the variant's clue colors do not match its suits one to one.
     bob.send("playerAction", {
       tableId,
       action: {
-        type: "rankClue",
+        type: "clue",
         target: newest.playerIndex,
-        rank: newest.rank,
+        clue: { type: "rank", value: rank },
       },
     });
     await bob.receive("gameEvent", SERVER_COMMAND_SCHEMAS.gameEvent);

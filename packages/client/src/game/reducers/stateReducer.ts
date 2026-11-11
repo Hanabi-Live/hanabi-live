@@ -456,7 +456,7 @@ function rehydrateScrubbedActions(
       (action.type === "play"
         || action.type === "discard"
         || action.type === "draw")
-      && (action.suitIndex === undefined || action.rank === undefined)
+      && action.identity === undefined
     ) {
       const cardIdentity = cardIdentities[action.order];
       assertDefined(
@@ -473,8 +473,7 @@ function rehydrateScrubbedActions(
 
       return {
         ...action,
-        suitIndex,
-        rank,
+        identity: { suitIndex, rank },
       };
     }
 

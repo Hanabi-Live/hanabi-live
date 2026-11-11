@@ -5,7 +5,7 @@ use crate::{
     types::reject,
 };
 use anyhow::Result;
-use hanabi_protocol::{MAX_RANK, PANICKY_MAX_CLUES};
+use hanabi_protocol::{Clue as WireClue, ClueTurn, MAX_RANK, PANICKY_MAX_CLUES};
 
 /// The number that a character's metadata holds for a clue type, for characters that remember the
 /// last clue they gave.
@@ -75,10 +75,14 @@ pub(crate) fn validate_character_action(
     }
     if m != NO_METADATA {
         if p.character() == Some(Character::Genius) {
-            let PlayerAction::RankClue(clue) = action else {
+            let PlayerAction::Clue(ClueTurn {
+                target,
+                clue: WireClue::Rank { .. },
+            }) = action
+            else {
                 return reject_character(p, "so you must now give a rank clue.");
             };
-            if int(clue.target.index()) != m {
+            if int(target.index()) != m {
                 return reject_character(p, "so you must give the second clue to the same player.");
             }
         } else if p.character() == Some(Character::Panicky)
@@ -305,11 +309,21 @@ pub(crate) fn needs_second_action(
     let cost = clue_cost(state);
     let p = &mut state.players[actor];
     if p.character() == Some(Character::Genius) {
-        if let RecordedAction::ColorClue(clue) = action {
-            p.character_metadata = int(clue.target.index());
+        if let RecordedAction::Clue(ClueTurn {
+            target,
+            clue: WireClue::Color { .. },
+        }) = action
+        {
+            p.character_metadata = int(target.index());
             return true;
         }
-        if matches!(action, RecordedAction::RankClue(_)) {
+        if matches!(
+            action,
+            RecordedAction::Clue(ClueTurn {
+                clue: WireClue::Rank { .. },
+                ..
+            })
+        ) {
             p.character_metadata = NO_METADATA;
         }
     } else if p.character() == Some(Character::Panicky)

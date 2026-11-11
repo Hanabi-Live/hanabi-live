@@ -23,6 +23,7 @@ import {
   getDefaultMetadata,
   getNextPlayableRanks,
   getVariant,
+  identityField,
   isCardTouchedByClue,
   msgClueToClue,
 } from "@hanabi-live/game";
@@ -194,8 +195,7 @@ export function loadGameJSON(gameJson: JSONGame): State {
             type: "discard",
             playerIndex: a.playerIndex,
             order: a.order,
-            suitIndex: a.suitIndex,
-            rank: a.rank,
+            ...(a.identity !== undefined && { identity: a.identity }),
             failed: true,
           };
         }
@@ -283,8 +283,7 @@ function drawCard(
     type: "draw",
     playerIndex,
     order,
-    suitIndex: cardIdentity.suitIndex,
-    rank: cardIdentity.rank,
+    identity: { suitIndex: cardIdentity.suitIndex, rank: cardIdentity.rank },
   };
 }
 
@@ -340,8 +339,7 @@ function parseJSONAction(
         type: isPlay ? "play" : "discard",
         playerIndex: currentPlayer,
         order: a.target,
-        suitIndex: cardIdentity.suitIndex,
-        rank: cardIdentity.rank,
+        ...identityField(cardIdentity),
       };
 
       return isPlay ? (action as ActionPlay) : (action as ActionDiscard);

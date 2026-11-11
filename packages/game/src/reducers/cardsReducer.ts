@@ -60,8 +60,7 @@ export function cardsReducer(
       if (
         !shouldSeeSlot2CardIdentity(metadata)
         || action.playerIndex === metadata.ourPlayerIndex
-        || action.suitIndex === undefined
-        || action.rank === undefined
+        || action.identity === undefined
       ) {
         // Otherwise, the server scrubs the identity from cards that slide from slot 1 to slot 2 in
         // our own hand in order to prevent leaking information.
@@ -75,9 +74,9 @@ export function cardsReducer(
 
       newDeck[order] = {
         ...card,
-        suitIndex: action.suitIndex,
-        rank: action.rank,
-        possibleCards: [[action.suitIndex, action.rank]],
+        suitIndex: action.identity.suitIndex,
+        rank: action.identity.rank,
+        possibleCards: [[action.identity.suitIndex, action.identity.rank]],
       };
 
       break;
@@ -149,8 +148,8 @@ export function cardsReducer(
 
       // If the rank or suit coming from the action is -1 (i.e. unknown), prefer what we already had
       // inferred.
-      const suitIndex = action.suitIndex ?? card.suitIndex;
-      const rank = action.rank ?? card.rank;
+      const suitIndex = action.identity?.suitIndex ?? card.suitIndex;
+      const rank = action.identity?.rank ?? card.rank;
 
       const identityDetermined = revealCard(suitIndex, rank, card);
 
@@ -177,16 +176,16 @@ export function cardsReducer(
       const goesIntoHole =
         variant.throwItInAHole && (action.type === "play" || action.failed);
       const revealedToPlayer =
-        action.suitIndex === undefined
-        || action.rank === undefined
-        || goesIntoHole
+        action.identity === undefined || goesIntoHole
           ? card.revealedToPlayer
           : newArray(MAX_PLAYERS, true);
 
       const possibleCards =
-        action.suitIndex === undefined || action.rank === undefined
+        action.identity === undefined
           ? card.possibleCards
-          : ([[action.suitIndex, action.rank]] as readonly SuitRankTuple[]);
+          : ([
+              [action.identity.suitIndex, action.identity.rank],
+            ] as readonly SuitRankTuple[]);
 
       newDeck[order] = {
         ...card,
@@ -229,11 +228,13 @@ export function cardsReducer(
 
       let { possibleCards } = initial;
 
-      if (action.suitIndex !== undefined && action.rank !== undefined) {
-        possibleCards = [[action.suitIndex, action.rank]] as const;
+      if (action.identity !== undefined) {
+        possibleCards = [
+          [action.identity.suitIndex, action.identity.rank],
+        ] as const;
       }
 
-      const { suitIndex, rank } = action;
+      const { suitIndex, rank } = action.identity ?? {};
 
       const drawnCard = {
         ...initial,

@@ -25,7 +25,7 @@ pub struct ReplayGame {
     /// The deck, by card order.
     #[serde(skip_serializing_if = "Option::is_none")]
     #[schemars(length(max = MAX_DECK_SIZE))]
-    pub deck: Option<Vec<ReplayCard>>,
+    pub deck: Option<Vec<CardIdentity>>,
     #[serde(skip_serializing_if = "Option::is_none")]
     #[schemars(length(max = MAX_GAME_ACTIONS))]
     pub actions: Option<Vec<ReplayGameAction>>,
@@ -42,15 +42,6 @@ pub struct ReplayGame {
     /// Absent for a game with its own deck instead of a seed, such as an imported one.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub seed: Option<String>,
-}
-
-/// A card in the replay format. A missing suit is the first suit, as older exports omitted it.
-#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
-#[serde(rename_all = "camelCase", deny_unknown_fields)]
-pub struct ReplayCard {
-    #[serde(default)]
-    pub suit_index: SuitIndex,
-    pub rank: CardRank,
 }
 
 /// A game's options in the replay format. Only options that differ from their defaults are
@@ -106,22 +97,13 @@ pub struct TargetCard {
     pub order: CardOrder,
 }
 
-/// A color clue that a turn gives.
+/// A clue that a turn gives.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
-pub struct ColorClueTurn {
+pub struct ClueTurn {
     /// The player who receives the clue.
     pub target: PlayerIndex,
-    pub color_index: ColorIndex,
-}
-
-/// A rank clue that a turn gives.
-#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
-#[serde(rename_all = "camelCase", deny_unknown_fields)]
-pub struct RankClueTurn {
-    /// The player who receives the clue.
-    pub target: PlayerIndex,
-    pub rank: RankClueNumber,
+    pub clue: Clue,
 }
 
 /// The end of a game in the replay format.
@@ -140,8 +122,7 @@ pub struct GameOverTurn {
 pub enum PlayerAction {
     Play(TargetCard),
     Discard(TargetCard),
-    ColorClue(ColorClueTurn),
-    RankClue(RankClueTurn),
+    Clue(ClueTurn),
 }
 
 /// A turn, or the end of the game, in the replay format.
@@ -150,8 +131,7 @@ pub enum PlayerAction {
 pub enum ReplayGameAction {
     Play(TargetCard),
     Discard(TargetCard),
-    ColorClue(ColorClueTurn),
-    RankClue(RankClueTurn),
+    Clue(ClueTurn),
     GameOver(GameOverTurn),
 }
 
@@ -161,8 +141,7 @@ impl ReplayGameAction {
         match self {
             Self::Play(card) => Ok(PlayerAction::Play(card)),
             Self::Discard(card) => Ok(PlayerAction::Discard(card)),
-            Self::ColorClue(clue) => Ok(PlayerAction::ColorClue(clue)),
-            Self::RankClue(clue) => Ok(PlayerAction::RankClue(clue)),
+            Self::Clue(clue) => Ok(PlayerAction::Clue(clue)),
             Self::GameOver(end) => Err(end),
         }
     }
@@ -173,8 +152,7 @@ impl From<PlayerAction> for ReplayGameAction {
         match action {
             PlayerAction::Play(card) => Self::Play(card),
             PlayerAction::Discard(card) => Self::Discard(card),
-            PlayerAction::ColorClue(clue) => Self::ColorClue(clue),
-            PlayerAction::RankClue(clue) => Self::RankClue(clue),
+            PlayerAction::Clue(clue) => Self::Clue(clue),
         }
     }
 }
@@ -265,12 +243,12 @@ pub struct HypotheticalClue {
     pub ignore_negative: bool,
 }
 
-/// A card that a hypothetical shows as another identity.
+/// A card that a hypothetical shows as another identity. A player can name only its suit or only
+/// its rank, so each is absent when the player leaves it unknown.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct MorphedCard {
     pub order: CardOrder,
-    /// Absent when the recipient may not see the card.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub suit_index: Option<SuitIndex>,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -278,7 +256,7 @@ pub struct MorphedCard {
 }
 
 /// One event in a hypothetical. The server relays these; each client applies them to its own copy
-/// of the game. A card identity that the recipient may not see is absent.
+/// of the game.
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
 #[serde(tag = "type", rename_all = "camelCase")]
 pub enum HypotheticalEvent {
