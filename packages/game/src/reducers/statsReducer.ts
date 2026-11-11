@@ -31,7 +31,29 @@ import {
 import { getEndGameLength } from "../rules/turn.ts";
 import type { GameAction } from "../types/gameActions.ts";
 
-export const statsReducer = produce(statsReducerFunction, {} as StatsState);
+export function statsReducer(
+  statsState: StatsState,
+  action: GameAction,
+  previousGameState: GameState,
+  gameState: GameState,
+  playing: boolean,
+  shadowing: boolean,
+  metadata: GameMetadata,
+  ourNotes: readonly CardNote[] | undefined,
+): StatsState {
+  return produce(statsState, (draft) => {
+    statsReducerFunction(
+      draft,
+      action,
+      previousGameState,
+      gameState,
+      playing,
+      shadowing,
+      metadata,
+      ourNotes,
+    );
+  });
+}
 
 function statsReducerFunction(
   statsState: Draft<StatsState>,

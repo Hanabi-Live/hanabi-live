@@ -19,7 +19,16 @@ import {
 import type { GameAction } from "../types/gameActions.ts";
 import { getCharacterNameForPlayer } from "./reducerHelpers.ts";
 
-export const turnReducer = produce(turnReducerFunction, {} as TurnState);
+export function turnReducer(
+  turn: TurnState,
+  action: GameAction,
+  gameState: GameState,
+  metadata: GameMetadata,
+): TurnState {
+  return produce(turn, (draft) => {
+    turnReducerFunction(draft, action, gameState, metadata);
+  });
+}
 
 function turnReducerFunction(
   turn: Draft<TurnState>,

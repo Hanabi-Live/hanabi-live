@@ -48,7 +48,29 @@ import { statsReducer } from "./statsReducer.ts";
 import { turnReducer } from "./turnReducer.ts";
 
 /** Computes the next game state from a given action. */
-export const gameReducer = produce(gameReducerFunction, {} as GameState);
+export function gameReducer(
+  gameState: GameState,
+  action: GameAction,
+  playing: boolean,
+  shadowing: boolean,
+  finished: boolean,
+  hypothetical: boolean,
+  metadata: GameMetadata,
+  ourNotes?: readonly CardNote[],
+): GameState {
+  return produce(gameState, (draft) => {
+    gameReducerFunction(
+      draft,
+      action,
+      playing,
+      shadowing,
+      finished,
+      hypothetical,
+      metadata,
+      ourNotes,
+    );
+  });
+}
 
 function gameReducerFunction(
   gameState: Draft<GameState>,
