@@ -196,6 +196,15 @@ pub async fn mark_bot(pool: &PgPool, id: i32) -> Result<()> {
     Ok(())
 }
 
+/// A person who logs in to a bot's account makes it a normal account again. The bot marks it again
+/// when it logs in.
+pub async fn clear_bot(pool: &PgPool, id: i32) -> Result<()> {
+    sqlx::query!("UPDATE users SET is_bot=FALSE WHERE id=$1 AND is_bot", id)
+        .execute(pool)
+        .await?;
+    Ok(())
+}
+
 pub fn validate_client_version(version: &str, current: &str) -> Result<(), String> {
     if !version.is_empty() && version == current {
         return Ok(());
@@ -339,6 +348,8 @@ async fn login_inner(state: &Accounts, ip: &str, input: LoginRequest) -> Result<
         }
         if input.bot {
             mark_bot(&state.pool, id).await?;
+        } else {
+            clear_bot(&state.pool, id).await?;
         }
     } else {
         let normalized = normalize_string(username);

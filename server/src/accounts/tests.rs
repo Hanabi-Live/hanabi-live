@@ -159,6 +159,27 @@ async fn login_requires_matching_release_sha_or_bot_postgres() {
         !is_bot("Cathy").await.unwrap(),
         "a client login does not flag an account"
     );
+    let alice = format!("username=Alice&password=test&version={version}");
+    let (status, _, _) = request(&app, "POST", "/login", &alice, None, false).await;
+    assert_eq!(status, StatusCode::OK);
+    assert!(
+        !is_bot("Alice").await.unwrap(),
+        "a client login makes a bot's account a normal account again"
+    );
+    let (status, _, _) = request(
+        &app,
+        "POST",
+        "/login",
+        "username=Alice&password=test&bot=true",
+        None,
+        false,
+    )
+    .await;
+    assert_eq!(status, StatusCode::OK);
+    assert!(
+        is_bot("Alice").await.unwrap(),
+        "the bot flags the account again"
+    );
     for submitted in ["b".repeat(40), "42".into(), version[..12].into()] {
         let (status, _, body) = request(
             &app,
