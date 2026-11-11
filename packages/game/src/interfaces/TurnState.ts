@@ -1,4 +1,4 @@
-import type { PlayerIndex } from "../types/PlayerIndex.js";
+import type { PlayerIndex } from "../types/PlayerIndex.ts";
 
 export interface TurnState {
   /**

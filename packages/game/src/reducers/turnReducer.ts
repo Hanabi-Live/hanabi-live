@@ -3,21 +3,21 @@
 import { assertDefined } from "complete-common";
 import type { Draft } from "immer";
 import { produce } from "immer";
-import { getVariant } from "../gameData.js";
-import { EndCondition } from "../generated/protocol.js";
-import type { GameMetadata } from "../interfaces/GameMetadata.js";
-import type { GameState } from "../interfaces/GameState.js";
-import type { TurnState } from "../interfaces/TurnState.js";
-import { isInitialDealFinished } from "../rules/deck.js";
+import { getVariant } from "../gameData.ts";
+import { EndCondition } from "../generated/protocol.ts";
+import type { GameMetadata } from "../interfaces/GameMetadata.ts";
+import type { GameState } from "../interfaces/GameState.ts";
+import type { TurnState } from "../interfaces/TurnState.ts";
+import { isInitialDealFinished } from "../rules/deck.ts";
 import {
   getEndTurn,
   getNextPlayerIndex,
   shouldEndTurnAfterClue,
   shouldEndTurnAfterDraw,
   shouldPlayOrderInvert,
-} from "../rules/turn.js";
-import type { GameAction } from "../types/gameActions.js";
-import { getCharacterNameForPlayer } from "./reducerHelpers.js";
+} from "../rules/turn.ts";
+import type { GameAction } from "../types/gameActions.ts";
+import { getCharacterNameForPlayer } from "./reducerHelpers.ts";
 
 export const turnReducer = produce(turnReducerFunction, {} as TurnState);
 

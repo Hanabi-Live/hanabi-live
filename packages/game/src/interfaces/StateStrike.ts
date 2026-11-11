@@ -1,4 +1,4 @@
-import type { CardOrder } from "../types/CardOrder.js";
+import type { CardOrder } from "../types/CardOrder.ts";
 
 export interface StateStrike {
   readonly segment: number;

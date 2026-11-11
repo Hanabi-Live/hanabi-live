@@ -1,36 +1,36 @@
 import type { Tuple } from "complete-common";
 import { newArray, sumArray } from "complete-common";
-import type { CardStatus } from "../../enums/CardStatus.js";
-import type { StackDirection } from "../../enums/StackDirection.js";
-import { getVariant } from "../../gameData.js";
-import { MAX_CLUES } from "../../generated/protocol.js";
-import type { GameMetadata } from "../../interfaces/GameMetadata.js";
-import type { GameState } from "../../interfaces/GameState.js";
-import type { Variant } from "../../interfaces/Variant.js";
-import { getCardStatus } from "../../rules/card.js";
+import type { CardStatus } from "../../enums/CardStatus.ts";
+import type { StackDirection } from "../../enums/StackDirection.ts";
+import { getVariant } from "../../gameData.ts";
+import { MAX_CLUES } from "../../generated/protocol.ts";
+import type { GameMetadata } from "../../interfaces/GameMetadata.ts";
+import type { GameState } from "../../interfaces/GameState.ts";
+import type { Variant } from "../../interfaces/Variant.ts";
+import { getCardStatus } from "../../rules/card.ts";
 import {
   getAdjustedClueTokens,
   getDiscardClueTokenValue,
   getSuitCompleteClueTokenValue,
   getUnadjustedClueTokens,
-} from "../../rules/clueTokens.js";
-import { getTotalCardsInDeck } from "../../rules/deck.js";
-import { getCardsPerHand } from "../../rules/hand.js";
-import { getStackDirection } from "../../rules/playStacks.js";
+} from "../../rules/clueTokens.ts";
+import { getTotalCardsInDeck } from "../../rules/deck.ts";
+import { getCardsPerHand } from "../../rules/hand.ts";
+import { getStackDirection } from "../../rules/playStacks.ts";
 import {
   getCluesStillUsableNotRounded,
   getPaceRisk,
   getStartingDeckSize,
   getStartingPace,
-} from "../../rules/stats.js";
-import { getEndGameLength } from "../../rules/turn.js";
-import type { CardOrder } from "../../types/CardOrder.js";
-import type { NumPlayers } from "../../types/NumPlayers.js";
-import type { NumSuits } from "../../types/NumSuits.js";
-import type { Rank } from "../../types/Rank.js";
-import type { SuitIndex } from "../../types/SuitIndex.js";
-import type { SuitRankMap } from "../../types/SuitRankMap.js";
-import { getInitialTurnState } from "./initialTurnState.js";
+} from "../../rules/stats.ts";
+import { getEndGameLength } from "../../rules/turn.ts";
+import type { CardOrder } from "../../types/CardOrder.ts";
+import type { NumPlayers } from "../../types/NumPlayers.ts";
+import type { NumSuits } from "../../types/NumSuits.ts";
+import type { Rank } from "../../types/Rank.ts";
+import type { SuitIndex } from "../../types/SuitIndex.ts";
+import type { SuitRankMap } from "../../types/SuitRankMap.ts";
+import { getInitialTurnState } from "./initialTurnState.ts";
 
 export function getInitialGameState(metadata: GameMetadata): GameState {
   // Calculate some things before we get the game state properties.

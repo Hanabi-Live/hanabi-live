@@ -1,5 +1,5 @@
 import type { z } from "zod";
-import type { cardOrderSchema } from "../generated/protocol.js";
+import type { cardOrderSchema } from "../generated/protocol.ts";
 
 /**
  * A number from 0 to 65, representing the order of the card in the initial deck. (65 is the maximum

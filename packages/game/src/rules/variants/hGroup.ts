@@ -1,5 +1,5 @@
-import type { Variant } from "../../interfaces/Variant.js";
-import { isColorMute, isNumberMute } from "./variantIdentity.js";
+import type { Variant } from "../../interfaces/Variant.ts";
+import { isColorMute, isNumberMute } from "./variantIdentity.ts";
 
 const HARD_VARIANT_EFFICIENCY_THRESHOLD = 1.33;
 

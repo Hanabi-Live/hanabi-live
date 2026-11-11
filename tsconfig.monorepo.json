@@ -22,6 +22,9 @@
     "module": "preserve",
     "moduleResolution": "bundler",
 
+    // Relative imports in "packages/game" end in ".ts", and its build rewrites them to ".js".
+    "rewriteRelativeImportExtensions": true,
+
     "paths": {
       "@hanabi-live/data": ["./packages/data/src/index.ts"],
       "@hanabi-live/game": ["./packages/game/src/index.ts"],

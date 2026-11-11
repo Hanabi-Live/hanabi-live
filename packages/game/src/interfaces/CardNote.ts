@@ -1,4 +1,4 @@
-import type { SuitRankTuple } from "../types/SuitRankTuple.js";
+import type { SuitRankTuple } from "../types/SuitRankTuple.ts";
 
 export interface CardNote {
   /** The possible card identities included in the note (or an empty array if there are none). */

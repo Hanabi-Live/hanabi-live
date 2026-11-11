@@ -1,5 +1,5 @@
 import { assertDefined } from "complete-common";
-import type { Suit } from "./interfaces/Suit.js";
+import type { Suit } from "./interfaces/Suit.ts";
 
 /**
  * The names of the groups in an identity note pattern that capture a suit, one for each alternative

@@ -1,17 +1,17 @@
 import { describe, expect, spyOn, test } from "bun:test";
-import { MAX_STRIKES } from "./generated/protocol.js";
+import { MAX_STRIKES } from "./generated/protocol.ts";
 import {
   hypotheticalStateReducer,
   initializeHypotheticalState,
-} from "./hypotheticalState.js";
-import { getDefaultMetadata } from "./metadata.js";
-import * as gameReducerModule from "./reducers/gameReducer.js";
-import { gameReducer } from "./reducers/gameReducer.js";
-import { getInitialGameState } from "./reducers/initialStates/initialGameState.js";
-import { draw, rankClue } from "./testActions.js";
-import type { CardOrder } from "./types/CardOrder.js";
-import type { PlayerIndex } from "./types/PlayerIndex.js";
-import type { SuitRankTuple } from "./types/SuitRankTuple.js";
+} from "./hypotheticalState.ts";
+import { getDefaultMetadata } from "./metadata.ts";
+import * as gameReducerModule from "./reducers/gameReducer.ts";
+import { gameReducer } from "./reducers/gameReducer.ts";
+import { getInitialGameState } from "./reducers/initialStates/initialGameState.ts";
+import { draw, rankClue } from "./testActions.ts";
+import type { CardOrder } from "./types/CardOrder.ts";
+import type { PlayerIndex } from "./types/PlayerIndex.ts";
+import type { SuitRankTuple } from "./types/SuitRankTuple.ts";
 
 const metadata = getDefaultMetadata(2);
 let startingState = getInitialGameState(metadata);

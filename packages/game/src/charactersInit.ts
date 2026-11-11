@@ -1,4 +1,4 @@
-import type { Character } from "./interfaces/Character.js";
+import type { Character } from "./interfaces/Character.ts";
 import charactersJSON from "./json/characters.json" with { type: "json" };
 
 export function charactersInit(): ReadonlyMap<number, Character> {

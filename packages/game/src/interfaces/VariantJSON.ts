@@ -1,5 +1,5 @@
 import type { z } from "zod";
-import type { catalogVariantSchema } from "../generated/protocol.js";
+import type { catalogVariantSchema } from "../generated/protocol.ts";
 
 /**
  * An entry in "variants.json". This is similar to `Variant`, but it only has primitive types.

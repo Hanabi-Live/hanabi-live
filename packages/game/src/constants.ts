@@ -3,7 +3,7 @@ import {
   DEFAULT_CARD_RANKS,
   MAX_RANK,
   START_CARD_RANK,
-} from "./generated/protocol.js";
+} from "./generated/protocol.ts";
 
 /** The suit used to draw cards whose suit is not known. */
 export const UNKNOWN_SUIT_NAME = "Unknown";

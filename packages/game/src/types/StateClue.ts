@@ -1,8 +1,8 @@
-import type { CardOrder } from "./CardOrder.js";
-import type { ColorIndex } from "./ColorIndex.js";
-import type { HiddenClue } from "./HiddenClue.js";
-import type { PlayerIndex } from "./PlayerIndex.js";
-import type { RankClueNumber } from "./RankClueNumber.js";
+import type { CardOrder } from "./CardOrder.ts";
+import type { ColorIndex } from "./ColorIndex.ts";
+import type { HiddenClue } from "./HiddenClue.ts";
+import type { PlayerIndex } from "./PlayerIndex.ts";
+import type { RankClueNumber } from "./RankClueNumber.ts";
 
 interface StateClueBase {
   readonly giver: PlayerIndex;

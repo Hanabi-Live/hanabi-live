@@ -1,11 +1,11 @@
 import { newArray } from "complete-common";
-import type { CardState } from "../../interfaces/CardState.js";
-import type { Variant } from "../../interfaces/Variant.js";
-import { getTotalCardsInDeck } from "../../rules/deck.js";
-import type { CardOrder } from "../../types/CardOrder.js";
-import type { NumPlayers } from "../../types/NumPlayers.js";
-import type { SuitIndex } from "../../types/SuitIndex.js";
-import type { SuitRankTuple } from "../../types/SuitRankTuple.js";
+import type { CardState } from "../../interfaces/CardState.ts";
+import type { Variant } from "../../interfaces/Variant.ts";
+import { getTotalCardsInDeck } from "../../rules/deck.ts";
+import type { CardOrder } from "../../types/CardOrder.ts";
+import type { NumPlayers } from "../../types/NumPlayers.ts";
+import type { SuitIndex } from "../../types/SuitIndex.ts";
+import type { SuitRankTuple } from "../../types/SuitRankTuple.ts";
 
 export function getInitialCardState(
   order: CardOrder,

@@ -1,11 +1,11 @@
 // Functions related to hand management.
 
-import { MIN_PLAYERS } from "../generated/protocol.js";
-import type { CardState } from "../interfaces/CardState.js";
-import type { Options } from "../interfaces/Options.js";
-import type { CardOrder } from "../types/CardOrder.js";
-import type { NumPlayers } from "../types/NumPlayers.js";
-import { isCardClued } from "./cardState.js";
+import { MIN_PLAYERS } from "../generated/protocol.ts";
+import type { CardState } from "../interfaces/CardState.ts";
+import type { Options } from "../interfaces/Options.ts";
+import type { CardOrder } from "../types/CardOrder.ts";
+import type { NumPlayers } from "../types/NumPlayers.ts";
+import { isCardClued } from "./cardState.ts";
 
 export function getCardsPerHand(options: Options): number {
   return (

@@ -1,10 +1,10 @@
-import type { CardOrder } from "../types/CardOrder.js";
-import type { PlayerIndex } from "../types/PlayerIndex.js";
-import type { Rank } from "../types/Rank.js";
-import type { RankClueNumber } from "../types/RankClueNumber.js";
-import type { SuitIndex } from "../types/SuitIndex.js";
-import type { SuitRankTuple } from "../types/SuitRankTuple.js";
-import type { Color } from "./Color.js";
+import type { CardOrder } from "../types/CardOrder.ts";
+import type { PlayerIndex } from "../types/PlayerIndex.ts";
+import type { Rank } from "../types/Rank.ts";
+import type { RankClueNumber } from "../types/RankClueNumber.ts";
+import type { SuitIndex } from "../types/SuitIndex.ts";
+import type { SuitRankTuple } from "../types/SuitRankTuple.ts";
+import type { Color } from "./Color.ts";
 
 export interface CardState {
   readonly order: CardOrder;

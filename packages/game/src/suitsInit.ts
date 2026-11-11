@@ -1,10 +1,10 @@
 import { assertDefined, assertEnumValue } from "complete-common";
-import { ALL_RESERVED_NOTES } from "./abbreviations.js";
-import { SUIT_REVERSED_SUFFIX, UNKNOWN_SUIT_NAME } from "./constants.js";
-import { Pip } from "./enums/Pip.js";
-import type { Color } from "./interfaces/Color.js";
-import type { Suit } from "./interfaces/Suit.js";
-import type { SuitJSON } from "./interfaces/SuitJSON.js";
+import { ALL_RESERVED_NOTES } from "./abbreviations.ts";
+import { SUIT_REVERSED_SUFFIX, UNKNOWN_SUIT_NAME } from "./constants.ts";
+import { Pip } from "./enums/Pip.ts";
+import type { Color } from "./interfaces/Color.ts";
+import type { Suit } from "./interfaces/Suit.ts";
+import type { SuitJSON } from "./interfaces/SuitJSON.ts";
 import suitsJSON from "./json/suits.json" with { type: "json" };
 
 export function suitsInit(

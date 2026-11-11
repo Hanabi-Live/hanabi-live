@@ -1,4 +1,4 @@
-import type { Rank } from "./Rank.js";
-import type { SuitIndex } from "./SuitIndex.js";
+import type { Rank } from "./Rank.ts";
+import type { SuitIndex } from "./SuitIndex.ts";
 
 export type SuitRankTuple = readonly [SuitIndex, Rank];

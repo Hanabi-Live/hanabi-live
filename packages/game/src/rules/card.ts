@@ -1,23 +1,23 @@
 import { eRange, filterMap } from "complete-common";
-import { CardStatus } from "../enums/CardStatus.js";
-import { START_CARD_RANK } from "../generated/protocol.js";
-import type { CardState } from "../interfaces/CardState.js";
-import type { GameState } from "../interfaces/GameState.js";
-import type { Variant } from "../interfaces/Variant.js";
-import type { Rank } from "../types/Rank.js";
-import type { SuitIndex } from "../types/SuitIndex.js";
+import { CardStatus } from "../enums/CardStatus.ts";
+import { START_CARD_RANK } from "../generated/protocol.ts";
+import type { CardState } from "../interfaces/CardState.ts";
+import type { GameState } from "../interfaces/GameState.ts";
+import type { Variant } from "../interfaces/Variant.ts";
+import type { Rank } from "../types/Rank.ts";
+import type { SuitIndex } from "../types/SuitIndex.ts";
 import {
   getDiscardHelpers,
   getNumCopiesOfCard,
   getNumDiscardedCopiesOfCard,
-} from "./deck.js";
-import { getNextPlayableRanks } from "./playStacks.js";
+} from "./deck.ts";
+import { getNextPlayableRanks } from "./playStacks.ts";
 import {
   reversibleIsCardCritical,
   reversibleIsCardNeededForMaxScore,
-} from "./variants/reversible.js";
-import { sudokuIsCardNeededForMaxScore } from "./variants/sudoku.js";
-import { hasReversedSuits } from "./variants/variantIdentity.js";
+} from "./variants/reversible.ts";
+import { sudokuIsCardNeededForMaxScore } from "./variants/sudoku.ts";
+import { hasReversedSuits } from "./variants/variantIdentity.ts";
 
 export function getCardName(
   suitIndex: SuitIndex,

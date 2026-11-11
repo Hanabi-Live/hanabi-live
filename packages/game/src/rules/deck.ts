@@ -1,16 +1,16 @@
 // Functions related to deck information: total cards, drawing cards
 
 import { sumArray } from "complete-common";
-import { getVariant } from "../gameData.js";
-import { START_CARD_RANK } from "../generated/protocol.js";
-import type { CardState } from "../interfaces/CardState.js";
-import type { GameMetadata } from "../interfaces/GameMetadata.js";
-import type { Suit } from "../interfaces/Suit.js";
-import type { Variant } from "../interfaces/Variant.js";
-import type { Rank } from "../types/Rank.js";
-import type { SuitIndex } from "../types/SuitIndex.js";
-import { isCardDiscarded } from "./cardState.js";
-import { getCardsPerHand } from "./hand.js";
+import { getVariant } from "../gameData.ts";
+import { START_CARD_RANK } from "../generated/protocol.ts";
+import type { CardState } from "../interfaces/CardState.ts";
+import type { GameMetadata } from "../interfaces/GameMetadata.ts";
+import type { Suit } from "../interfaces/Suit.ts";
+import type { Variant } from "../interfaces/Variant.ts";
+import type { Rank } from "../types/Rank.ts";
+import type { SuitIndex } from "../types/SuitIndex.ts";
+import { isCardDiscarded } from "./cardState.ts";
+import { getCardsPerHand } from "./hand.ts";
 
 export function getTotalCardsInDeck(variant: Variant): number {
   const suitCounts = variant.suits.map((suit) =>

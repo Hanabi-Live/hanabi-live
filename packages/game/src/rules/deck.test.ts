@@ -1,6 +1,6 @@
 import { describe, expect, test } from "bun:test";
-import { getDefaultVariant, getVariant } from "../gameData.js";
-import { getTotalCardsInDeck } from "./deck.js";
+import { getDefaultVariant, getVariant } from "../gameData.ts";
+import { getTotalCardsInDeck } from "./deck.ts";
 
 const DEFAULT_VARIANT = getDefaultVariant();
 

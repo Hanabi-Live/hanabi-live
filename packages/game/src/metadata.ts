@@ -1,15 +1,15 @@
 import type { Tuple } from "complete-common";
 import { newArray } from "complete-common";
-import { DEFAULT_PLAYER_NAMES } from "./constants.js";
-import { getVariant } from "./gameData.js";
-import { DEFAULT_VARIANT_NAME } from "./generated/protocol.js";
-import type { GameMetadata } from "./interfaces/GameMetadata.js";
-import { defaultOptions } from "./interfaces/Options.js";
-import { getCardsPerHand } from "./rules/hand.js";
-import { getMinEfficiency } from "./rules/stats.js";
-import { getEndGameLength } from "./rules/turn.js";
-import { isHardVariant } from "./rules/variants/hGroup.js";
-import type { NumPlayers } from "./types/NumPlayers.js";
+import { DEFAULT_PLAYER_NAMES } from "./constants.ts";
+import { getVariant } from "./gameData.ts";
+import { DEFAULT_VARIANT_NAME } from "./generated/protocol.ts";
+import type { GameMetadata } from "./interfaces/GameMetadata.ts";
+import { defaultOptions } from "./interfaces/Options.ts";
+import { getCardsPerHand } from "./rules/hand.ts";
+import { getMinEfficiency } from "./rules/stats.ts";
+import { getEndGameLength } from "./rules/turn.ts";
+import { isHardVariant } from "./rules/variants/hGroup.ts";
+import type { NumPlayers } from "./types/NumPlayers.ts";
 
 /**
  * This function is not used by the client, because the corresponding metadata for a game will

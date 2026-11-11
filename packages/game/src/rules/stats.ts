@@ -2,32 +2,32 @@
 
 import type { Tuple } from "complete-common";
 import { assertDefined, newArray, sumArray } from "complete-common";
-import { PaceRisk } from "../enums/PaceRisk.js";
-import { MAX_CLUES } from "../generated/protocol.js";
-import type { CardNote } from "../interfaces/CardNote.js";
-import type { CardState } from "../interfaces/CardState.js";
-import type { GameState } from "../interfaces/GameState.js";
-import type { Variant } from "../interfaces/Variant.js";
-import type { CardOrder } from "../types/CardOrder.js";
-import type { NumPlayers } from "../types/NumPlayers.js";
-import type { NumSuits } from "../types/NumSuits.js";
+import { PaceRisk } from "../enums/PaceRisk.ts";
+import { MAX_CLUES } from "../generated/protocol.ts";
+import type { CardNote } from "../interfaces/CardNote.ts";
+import type { CardState } from "../interfaces/CardState.ts";
+import type { GameState } from "../interfaces/GameState.ts";
+import type { Variant } from "../interfaces/Variant.ts";
+import type { CardOrder } from "../types/CardOrder.ts";
+import type { NumPlayers } from "../types/NumPlayers.ts";
+import type { NumSuits } from "../types/NumSuits.ts";
 import {
   isAllCardPossibilitiesTrash,
   isCardNeededForMaxScore,
-} from "./card.js";
-import { isCardClued, isCardInPlayerHand } from "./cardState.js";
+} from "./card.ts";
+import { isCardClued, isCardInPlayerHand } from "./cardState.ts";
 import {
   getDiscardClueTokenValue,
   getSuitCompleteClueTokenValue,
-} from "./clueTokens.js";
+} from "./clueTokens.ts";
 import {
   getNumCopiesOfCard,
   getNumDiscardedCopiesOfCard,
   getTotalCardsInDeck,
-} from "./deck.js";
-import { isHandLocked } from "./hand.js";
-import { reversibleGetMaxScorePerStack } from "./variants/reversible.js";
-import { sudokuGetMaxScorePerStack } from "./variants/sudoku.js";
+} from "./deck.ts";
+import { isHandLocked } from "./hand.ts";
+import { reversibleGetMaxScorePerStack } from "./variants/reversible.ts";
+import { sudokuGetMaxScorePerStack } from "./variants/sudoku.ts";
 
 export function getMaxScorePerStack(
   deck: readonly CardState[],

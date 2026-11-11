@@ -1,9 +1,9 @@
-import type { Pip } from "../enums/Pip.js";
-import type { BasicRank, Rank } from "../types/Rank.js";
-import type { CatalogFlags } from "./CatalogFlags.js";
-import type { Color } from "./Color.js";
-import type { Suit } from "./Suit.js";
-import type { VariantJSON } from "./VariantJSON.js";
+import type { Pip } from "../enums/Pip.ts";
+import type { BasicRank, Rank } from "../types/Rank.ts";
+import type { CatalogFlags } from "./CatalogFlags.ts";
+import type { Color } from "./Color.ts";
+import type { Suit } from "./Suit.ts";
+import type { VariantJSON } from "./VariantJSON.ts";
 
 /**
  * - `suits` and `clueColors` are object arrays instead of string arrays.

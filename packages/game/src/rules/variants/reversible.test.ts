@@ -1,14 +1,14 @@
 import { describe, expect, test } from "bun:test";
-import { CardStatus } from "../../enums/CardStatus.js";
-import { StackDirection } from "../../enums/StackDirection.js";
-import { getVariant } from "../../gameData.js";
-import { START_CARD_RANK } from "../../generated/protocol.js";
-import type { CardState } from "../../interfaces/CardState.js";
-import type { GameState } from "../../interfaces/GameState.js";
-import type { Rank } from "../../types/Rank.js";
-import type { SuitIndex } from "../../types/SuitIndex.js";
-import { getCardStatus } from "../card.js";
-import { reversibleGetRanksUsefulForMaxScore } from "./reversible.js";
+import { CardStatus } from "../../enums/CardStatus.ts";
+import { StackDirection } from "../../enums/StackDirection.ts";
+import { getVariant } from "../../gameData.ts";
+import { START_CARD_RANK } from "../../generated/protocol.ts";
+import type { CardState } from "../../interfaces/CardState.ts";
+import type { GameState } from "../../interfaces/GameState.ts";
+import type { Rank } from "../../types/Rank.ts";
+import type { SuitIndex } from "../../types/SuitIndex.ts";
+import { getCardStatus } from "../card.ts";
+import { reversibleGetRanksUsefulForMaxScore } from "./reversible.ts";
 
 describe("upOrDownDeadCardsDirectionUndecided", () => {
   test("Handles no discard, no play", () => {

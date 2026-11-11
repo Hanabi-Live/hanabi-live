@@ -1,6 +1,6 @@
 import { ReadonlySet, trimPrefix } from "complete-common";
-import type { Suit } from "./interfaces/Suit.js";
-import type { Variant } from "./interfaces/Variant.js";
+import type { Suit } from "./interfaces/Suit.ts";
+import type { Variant } from "./interfaces/Variant.ts";
 
 export const KNOWN_TRASH_NOTES = ["kt", "trash", "stale", "bad"] as const;
 export const QUESTION_MARK_NOTES = ["?"] as const;

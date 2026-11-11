@@ -7,25 +7,25 @@ import {
   newArray,
   tupleKeys,
 } from "complete-common";
-import { getVariant } from "../gameData.js";
-import { MAX_PLAYERS } from "../generated/protocol.js";
-import type { CardState } from "../interfaces/CardState.js";
-import type { GameMetadata } from "../interfaces/GameMetadata.js";
-import type { GameState } from "../interfaces/GameState.js";
-import { msgClueToClue, shouldApplyClue } from "../rules/clues.js";
-import { isCardOnChop } from "../rules/hand.js";
-import { shouldSeeSlot2CardIdentity } from "../rules/variants/characters.js";
-import type { CardOrder } from "../types/CardOrder.js";
-import type { NumPlayers } from "../types/NumPlayers.js";
-import type { PlayerIndex } from "../types/PlayerIndex.js";
-import type { Rank } from "../types/Rank.js";
-import type { SuitIndex } from "../types/SuitIndex.js";
-import type { SuitRankTuple } from "../types/SuitRankTuple.js";
-import type { GameAction } from "../types/gameActions.js";
-import { cardDeductionReducer } from "./cardDeductionReducer.js";
-import { cardPossibilitiesReducer } from "./cardPossibilitiesReducer.js";
-import { getInitialCardState } from "./initialStates/initialCardState.js";
-import { getCharacterNameForPlayer } from "./reducerHelpers.js";
+import { getVariant } from "../gameData.ts";
+import { MAX_PLAYERS } from "../generated/protocol.ts";
+import type { CardState } from "../interfaces/CardState.ts";
+import type { GameMetadata } from "../interfaces/GameMetadata.ts";
+import type { GameState } from "../interfaces/GameState.ts";
+import { msgClueToClue, shouldApplyClue } from "../rules/clues.ts";
+import { isCardOnChop } from "../rules/hand.ts";
+import { shouldSeeSlot2CardIdentity } from "../rules/variants/characters.ts";
+import type { CardOrder } from "../types/CardOrder.ts";
+import type { NumPlayers } from "../types/NumPlayers.ts";
+import type { PlayerIndex } from "../types/PlayerIndex.ts";
+import type { Rank } from "../types/Rank.ts";
+import type { SuitIndex } from "../types/SuitIndex.ts";
+import type { SuitRankTuple } from "../types/SuitRankTuple.ts";
+import type { GameAction } from "../types/gameActions.ts";
+import { cardDeductionReducer } from "./cardDeductionReducer.ts";
+import { cardPossibilitiesReducer } from "./cardPossibilitiesReducer.ts";
+import { getInitialCardState } from "./initialStates/initialCardState.ts";
+import { getCharacterNameForPlayer } from "./reducerHelpers.ts";
 
 export function cardsReducer(
   deck: readonly CardState[],

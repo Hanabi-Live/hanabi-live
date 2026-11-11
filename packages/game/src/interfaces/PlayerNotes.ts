@@ -1,5 +1,5 @@
 import type { z } from "zod";
-import type { playerNotesSchema } from "../generated/protocol.js";
+import type { playerNotesSchema } from "../generated/protocol.ts";
 
 /** Generated from the server's wire contract. */
 // eslint-disable-next-line @typescript-eslint/no-empty-object-type

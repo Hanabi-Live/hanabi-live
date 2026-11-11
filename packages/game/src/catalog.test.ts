@@ -5,7 +5,7 @@ import {
   catalogColorSchema,
   catalogSuitSchema,
   catalogVariantSchema,
-} from "./generated/protocol.js";
+} from "./generated/protocol.ts";
 import charactersJSON from "./json/characters.json" with { type: "json" };
 import colorsJSON from "./json/colors.json" with { type: "json" };
 import suitsJSON from "./json/suits.json" with { type: "json" };

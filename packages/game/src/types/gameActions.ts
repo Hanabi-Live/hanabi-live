@@ -2,12 +2,12 @@ import type { z } from "zod";
 import type {
   gameEventSchema,
   hypotheticalEventSchema,
-} from "../generated/protocol.js";
-import type { PlayerNotes } from "../interfaces/PlayerNotes.js";
-import type { SpectatorNote } from "../interfaces/SpectatorNote.js";
-import type { CardOrder } from "./CardOrder.js";
-import type { HiddenClue } from "./HiddenClue.js";
-import type { MsgClue } from "./MsgClue.js";
+} from "../generated/protocol.ts";
+import type { PlayerNotes } from "../interfaces/PlayerNotes.ts";
+import type { SpectatorNote } from "../interfaces/SpectatorNote.ts";
+import type { CardOrder } from "./CardOrder.ts";
+import type { HiddenClue } from "./HiddenClue.ts";
+import type { MsgClue } from "./MsgClue.ts";
 
 /**
  * An in-game action that can mutate a game state. This includes the 3 in-game actions of cluing,

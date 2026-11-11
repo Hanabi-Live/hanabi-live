@@ -5,23 +5,23 @@ import {
   SECOND_IN_MILLISECONDS,
   assertDefined,
 } from "complete-common";
-import { getVariant } from "../gameData.js";
-import { EndCondition } from "../generated/protocol.js";
-import type { GameMetadata } from "../interfaces/GameMetadata.js";
-import type { Variant } from "../interfaces/Variant.js";
-import { getCharacterNameForPlayer } from "../reducers/reducerHelpers.js";
-import type { HiddenClue } from "../types/HiddenClue.js";
-import type { MsgClue } from "../types/MsgClue.js";
-import type { NumPlayers } from "../types/NumPlayers.js";
-import type { PlayerIndex } from "../types/PlayerIndex.js";
+import { getVariant } from "../gameData.ts";
+import { EndCondition } from "../generated/protocol.ts";
+import type { GameMetadata } from "../interfaces/GameMetadata.ts";
+import type { Variant } from "../interfaces/Variant.ts";
+import { getCharacterNameForPlayer } from "../reducers/reducerHelpers.ts";
+import type { HiddenClue } from "../types/HiddenClue.ts";
+import type { MsgClue } from "../types/MsgClue.ts";
+import type { NumPlayers } from "../types/NumPlayers.ts";
+import type { PlayerIndex } from "../types/PlayerIndex.ts";
 import type {
   ActionClue,
   ActionDiscard,
   ActionPlay,
-} from "../types/gameActions.js";
-import { getCardName } from "./card.js";
-import { getClueName, isPassTurnClue } from "./clues.js";
-import { getCardSlot } from "./hand.js";
+} from "../types/gameActions.ts";
+import { getCardName } from "./card.ts";
+import { getClueName, isPassTurnClue } from "./clues.ts";
+import { getCardSlot } from "./hand.ts";
 
 const SECONDS_PER_MINUTE = MINUTE_IN_MILLISECONDS / SECOND_IN_MILLISECONDS;
 const SECONDS_PER_HOUR = HOUR_IN_MILLISECONDS / SECOND_IN_MILLISECONDS;

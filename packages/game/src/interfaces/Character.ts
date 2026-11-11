@@ -1,5 +1,5 @@
 import type { z } from "zod";
-import type { catalogCharacterSchema } from "../generated/protocol.js";
+import type { catalogCharacterSchema } from "../generated/protocol.ts";
 
 /** An entry in "characters.json". Generated from the server's catalog contract. */
 // eslint-disable-next-line @typescript-eslint/no-empty-object-type

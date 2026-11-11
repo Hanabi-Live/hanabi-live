@@ -1,7 +1,7 @@
 import { describe, expect, test } from "bun:test";
 import { assertDefined } from "complete-common";
-import { getVariant } from "../gameData.js";
-import { isCardTouchedByClueColor } from "./clues.js";
+import { getVariant } from "../gameData.ts";
+import { isCardTouchedByClueColor } from "./clues.ts";
 
 describe("isCardTouchedByClueColor", () => {
   test("touches White but not Null by rank in Synesthesia", () => {

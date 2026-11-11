@@ -1,4 +1,4 @@
-import { VALID_NUM_PLAYERS } from "../constants.js";
+import { VALID_NUM_PLAYERS } from "../constants.ts";
 
 export type NumPlayers = (typeof VALID_NUM_PLAYERS)[number];
 

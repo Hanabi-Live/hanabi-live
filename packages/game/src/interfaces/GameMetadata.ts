@@ -1,7 +1,7 @@
 import type { Tuple } from "complete-common";
-import type { NumPlayers } from "../types/NumPlayers.js";
-import type { PlayerIndex } from "../types/PlayerIndex.js";
-import type { Options } from "./Options.js";
+import type { NumPlayers } from "../types/NumPlayers.ts";
+import type { PlayerIndex } from "../types/PlayerIndex.ts";
+import type { Options } from "./Options.ts";
 
 /** This is for data that does not change once a game starts. */
 export interface GameMetadata {

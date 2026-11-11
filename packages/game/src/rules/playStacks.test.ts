@@ -1,14 +1,14 @@
 import { describe, expect, test } from "bun:test";
 import type { Tuple } from "complete-common";
 import { eRange, newArray } from "complete-common";
-import { StackDirection } from "../enums/StackDirection.js";
-import { getDefaultVariant, getVariant } from "../gameData.js";
-import { START_CARD_RANK } from "../generated/protocol.js";
-import { getInitialCardState } from "../reducers/initialStates/initialCardState.js";
-import type { CardOrder } from "../types/CardOrder.js";
-import type { NumSuits } from "../types/NumSuits.js";
-import type { Rank } from "../types/Rank.js";
-import { getNextPlayableRanks, getStackDirection } from "./playStacks.js";
+import { StackDirection } from "../enums/StackDirection.ts";
+import { getDefaultVariant, getVariant } from "../gameData.ts";
+import { START_CARD_RANK } from "../generated/protocol.ts";
+import { getInitialCardState } from "../reducers/initialStates/initialCardState.ts";
+import type { CardOrder } from "../types/CardOrder.ts";
+import type { NumSuits } from "../types/NumSuits.ts";
+import type { Rank } from "../types/Rank.ts";
+import { getNextPlayableRanks, getStackDirection } from "./playStacks.ts";
 
 const NUM_PLAYERS = 2;
 const DEFAULT_VARIANT = getDefaultVariant();

@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import { millisecondsToClockString, secondsToClockString } from "./text.js";
+import { millisecondsToClockString, secondsToClockString } from "./text.ts";
 
 describe("secondsToClockString", () => {
   test("omits hours under an hour", () => {

@@ -2,10 +2,10 @@
 
 import { describe, expect, test } from "bun:test";
 import type { Tuple } from "complete-common";
-import { getVariant } from "../gameData.js";
-import type { CardState } from "../interfaces/CardState.js";
-import type { GameState } from "../interfaces/GameState.js";
-import { getDefaultMetadata } from "../metadata.js";
+import { getVariant } from "../gameData.ts";
+import type { CardState } from "../interfaces/CardState.ts";
+import type { GameState } from "../interfaces/GameState.ts";
+import { getDefaultMetadata } from "../metadata.ts";
 import {
   actionCardIdentity,
   colorClue,
@@ -13,14 +13,14 @@ import {
   draw,
   play,
   rankClue,
-} from "../testActions.js";
-import type { CardOrder } from "../types/CardOrder.js";
-import type { NumPlayers } from "../types/NumPlayers.js";
-import type { Rank } from "../types/Rank.js";
-import type { SuitIndex } from "../types/SuitIndex.js";
-import { cardsReducer } from "./cardsReducer.js";
-import { getInitialCardState } from "./initialStates/initialCardState.js";
-import { getInitialGameState } from "./initialStates/initialGameState.js";
+} from "../testActions.ts";
+import type { CardOrder } from "../types/CardOrder.ts";
+import type { NumPlayers } from "../types/NumPlayers.ts";
+import type { Rank } from "../types/Rank.ts";
+import type { SuitIndex } from "../types/SuitIndex.ts";
+import { cardsReducer } from "./cardsReducer.ts";
+import { getInitialCardState } from "./initialStates/initialCardState.ts";
+import { getInitialGameState } from "./initialStates/initialGameState.ts";
 
 const NUM_PLAYERS = 3;
 const DEFAULT_METADATA = getDefaultMetadata(NUM_PLAYERS);

@@ -1,8 +1,8 @@
 // Functions related to clues: gaining clues, giving clues, applying clues.
 
-import { MAX_CLUES } from "../generated/protocol.js";
-import type { Variant } from "../interfaces/Variant.js";
-import type { ActionDiscard, ActionPlay } from "../types/gameActions.js";
+import { MAX_CLUES } from "../generated/protocol.ts";
+import type { Variant } from "../interfaces/Variant.ts";
+import type { ActionDiscard, ActionPlay } from "../types/gameActions.ts";
 
 /** Gain a clue by discarding or finishing a stack. */
 export function getNewClueTokensAfterAction(

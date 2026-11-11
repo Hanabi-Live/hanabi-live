@@ -1,5 +1,5 @@
 import type { z } from "zod";
-import type { catalogSuitSchema } from "../generated/protocol.js";
+import type { catalogSuitSchema } from "../generated/protocol.ts";
 
 /**
  * An entry in "suits.json". This is similar to `Suit`, but it only has primitive types. Generated

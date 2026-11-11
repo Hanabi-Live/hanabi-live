@@ -1,5 +1,5 @@
 import type { z } from "zod";
-import type { hypotheticalEventSchema } from "../generated/protocol.js";
+import type { hypotheticalEventSchema } from "../generated/protocol.ts";
 
 /**
  * A clue as the server sends it in game events and hypothetical moves. The server omits a clue that
