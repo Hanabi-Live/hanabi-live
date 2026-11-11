@@ -1,7 +1,7 @@
 use crate::{
     Character, Clue, ClueType, EndCondition, EngineState, GameEnd, PlayerAction, RecordedAction,
-    RecordedActionType, int, recorded_action_type,
-    rules::{clue_cost, touched_by},
+    RecordedActionType, int, is_card_touched, recorded_action_type,
+    rules::{clue_cost, touched_by, variant_for},
     types::reject,
 };
 use anyhow::Result;
@@ -163,12 +163,22 @@ pub(crate) fn validate_character_clue(
         Some(Character::Dumbfounded) if clue == ClueType::Rank && Some(given.value) != m => {
             Some("so you can not give that type of clue.")
         }
+        // The metadata is a clue color, and Inept cannot touch any card that it would touch.
         Some(Character::Inept)
-            if touched
-                .iter()
-                .any(|o| Some(int(state.deck[*o].suit_index)) == m) =>
+            if m.is_some_and(|color| {
+                touched.iter().any(|o| {
+                    let card = &state.deck[*o];
+                    is_card_touched(
+                        variant_for(state),
+                        ClueType::Color,
+                        color,
+                        card.suit_index,
+                        card.rank,
+                    )
+                })
+            }) =>
         {
-            Some("so you cannot give clues that touch a specific suit.")
+            Some("so you cannot give clues that touch cards of a specific color.")
         }
         Some(Character::Awkward) => match m {
             Some(rank) if touched.iter().any(|o| state.deck[*o].rank == rank) => {
