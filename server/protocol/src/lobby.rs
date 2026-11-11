@@ -259,11 +259,9 @@ pub struct SpectatedTable {
 pub struct GameOptions {
     #[schemars(length(min = 1))]
     pub variant_name: String,
-    pub timed: bool,
-    #[schemars(range(min = 0, max = MAX_TIME_BASE_SECONDS))]
-    pub time_base_seconds: i64,
-    #[schemars(range(min = 0, max = MAX_TIME_PER_TURN_SECONDS))]
-    pub time_per_turn_seconds: i64,
+    /// The clock of a timed game. Absent when the game is untimed.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub time_control: Option<TimeControl>,
     pub speedrun: bool,
     pub deck_plays: bool,
     pub empty_clues: bool,
@@ -278,9 +276,7 @@ impl Default for GameOptions {
     fn default() -> Self {
         Self {
             variant_name: DEFAULT_VARIANT_NAME.into(),
-            timed: false,
-            time_base_seconds: 0,
-            time_per_turn_seconds: 0,
+            time_control: None,
             speedrun: false,
             deck_plays: false,
             empty_clues: false,
@@ -290,6 +286,19 @@ impl Default for GameOptions {
             detrimental_characters: false,
         }
     }
+}
+
+/// The clock of a timed game. New tables need at least 1 second for each value, but some old games
+/// have 0.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct TimeControl {
+    /// The starting clock of each player.
+    #[schemars(range(min = 0, max = MAX_TIME_BASE_SECONDS))]
+    pub base_seconds: i64,
+    /// The time added to a player's clock after each of their turns.
+    #[schemars(range(min = 0, max = MAX_TIME_PER_TURN_SECONDS))]
+    pub per_turn_seconds: i64,
 }
 
 const fn default_max_players() -> u8 {

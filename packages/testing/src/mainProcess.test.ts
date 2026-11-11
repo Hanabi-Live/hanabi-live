@@ -156,9 +156,9 @@ databaseDescribe("compiled application entry point (rust)", () => {
             name: "Compiled smoke table",
             options: {
               variantName: "No Variant",
-              timed: restart,
-              timeBaseSeconds: 600,
-              timePerTurnSeconds: 2,
+              timeControl: restart
+                ? { baseSeconds: 600, perTurnSeconds: 2 }
+                : undefined,
             },
           },
         });

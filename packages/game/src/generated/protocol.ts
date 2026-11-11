@@ -399,6 +399,23 @@ export const gameEventSchema = z.discriminatedUnion("type", [
 ]);
 
 /**
+ * The clock of a timed game. New tables need at least 1 second for each value, but some old games
+ * have 0.
+ */
+export const timeControlSchema = z
+  .strictObject({
+    /**
+     * The starting clock of each player.
+     */
+    baseSeconds: z.number().int().min(0).max(604_800),
+    /**
+     * The time added to a player's clock after each of their turns.
+     */
+    perTurnSeconds: z.number().int().min(0).max(86_400),
+  })
+  .readonly();
+
+/**
  * A game's options. Missing fields take their defaults. The player count is not an option: a game
  * has one player name for each seat, and a table counts the players who join it.
  */
@@ -411,9 +428,10 @@ export const gameOptionsSchema = z
     oneExtraCard: z.boolean().default(false),
     oneLessCard: z.boolean().default(false),
     speedrun: z.boolean().default(false),
-    timeBaseSeconds: z.number().int().min(0).max(604_800).default(0),
-    timePerTurnSeconds: z.number().int().min(0).max(86_400).default(0),
-    timed: z.boolean().default(false),
+    /**
+     * The clock of a timed game. Absent when the game is untimed.
+     */
+    timeControl: timeControlSchema.optional(),
     variantName: z.string().min(1).default("No Variant"),
   })
   .readonly();

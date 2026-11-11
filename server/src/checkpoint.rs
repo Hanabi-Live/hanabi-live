@@ -367,6 +367,7 @@ const UPGRADES: &[(&str, &str, Upgrade)] = &[
     ("hanabi-live-1", "hanabi-live-2", camel_case_ids),
     ("hanabi-live-2", "hanabi-live-3", seed_suffix_and_turn),
     ("hanabi-live-3", "hanabi-live-4", clues_and_identities),
+    ("hanabi-live-4", "hanabi-live-5", time_control),
 ];
 
 /// Rewrites a table that an older server saved, one format at a time, into the current format.
@@ -466,6 +467,31 @@ fn clues_and_identities(head: &mut Value, parts: &mut [(String, String)]) -> Res
     edit_parts(parts, STEP, |step| {
         if let Some(action) = step.get_mut("action") {
             nest_clue(action);
+        }
+    })
+}
+
+/// Format 4 gave a suggested table's options `timed`, `timeBaseSeconds`, and
+/// `timePerTurnSeconds`, with 0 for each time of an untimed table.
+fn time_control(_: &mut Value, parts: &mut [(String, String)]) -> Result<()> {
+    edit_parts(parts, CHAT, |chat| {
+        let Some(options) = chat
+            .pointer_mut("/message/suggestion/options")
+            .and_then(Value::as_object_mut)
+        else {
+            return;
+        };
+        let timed = options.remove("timed");
+        let base_seconds = options.remove("timeBaseSeconds");
+        let per_turn_seconds = options.remove("timePerTurnSeconds");
+        if timed == Some(Value::Bool(true)) {
+            options.insert(
+                "timeControl".into(),
+                serde_json::json!({
+                    "baseSeconds": base_seconds.unwrap_or_else(|| 0.into()),
+                    "perTurnSeconds": per_turn_seconds.unwrap_or_else(|| 0.into()),
+                }),
+            );
         }
     })
 }

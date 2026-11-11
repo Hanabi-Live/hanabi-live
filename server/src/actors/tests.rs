@@ -178,9 +178,13 @@ fn typed_game_frames_preserve_wire_schema_and_projected_identities() -> Result<(
 #[test]
 fn option_summaries_include_only_changes_and_escape_values() {
     let mut table = pregame(TableId(1));
-    table.options.timed = true;
-    table.options.time_base = 120;
-    table.options.time_per_turn = 20;
+    let time = |base_seconds, per_turn_seconds| {
+        Some(hanabi_protocol::TimeControl {
+            base_seconds,
+            per_turn_seconds,
+        })
+    };
+    table.options.time_control = time(120, 20);
     let mut options = table.options.clone();
     assert_eq!(
         option_changes(
@@ -192,7 +196,7 @@ fn option_summaries_include_only_changes_and_escape_values() {
         ),
         ""
     );
-    options.time_base = 150;
+    options.time_control = time(150, 20);
     assert_eq!(
         option_changes(
             &table,
@@ -203,8 +207,7 @@ fn option_summaries_include_only_changes_and_escape_values() {
         ),
         "<span class=\"cp\">Timed: <b>150 / 20</b></span>"
     );
-    options.time_base = 120;
-    options.time_per_turn = 30;
+    options.time_control = time(120, 30);
     assert!(
         option_changes(
             &table,
@@ -215,7 +218,7 @@ fn option_summaries_include_only_changes_and_escape_values() {
         )
         .contains("120 / 30")
     );
-    options.timed = false;
+    options.time_control = None;
     assert_eq!(
         option_changes(
             &table,
@@ -226,8 +229,8 @@ fn option_summaries_include_only_changes_and_escape_values() {
         ),
         "<span class=\"cp\">Timed: <b>No</b></span>"
     );
-    table.options.timed = false;
-    options.timed = true;
+    table.options.time_control = None;
+    options.time_control = time(120, 30);
     assert!(
         option_changes(
             &table,
@@ -238,7 +241,7 @@ fn option_summaries_include_only_changes_and_escape_values() {
         )
         .contains("120 / 30")
     );
-    options.timed = false;
+    options.time_control = None;
     options.deck_plays = true;
     options.empty_clues = true;
     options.one_extra_card = true;

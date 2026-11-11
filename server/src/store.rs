@@ -866,6 +866,13 @@ mod tests {
         message.chat_id = Some(hanabi_protocol::ChatId(3));
         message.table_id = Some(TableId(1));
         message.suggestion = Some(hanabi_protocol::TableSettings {
+            options: hanabi_protocol::GameOptions {
+                time_control: Some(hanabi_protocol::TimeControl {
+                    base_seconds: 120,
+                    per_turn_seconds: 20,
+                }),
+                ..hanabi_protocol::GameOptions::default()
+            },
             seed_suffix: Some("7".into()),
             replay_game_id: Some(GameId(5)),
             replay_turn: hanabi_protocol::Turn::new(2),
@@ -897,6 +904,13 @@ mod tests {
         let decoded = crate::checkpoint::decode(&older_head(&encoded.head, format)?, &parts)?;
         ensure!(serde_json::to_value(&decoded)? == expected);
         Ok(())
+    }
+    /// Rewrites a part from format 5 into format 4.
+    fn format_4(part: &str) -> String {
+        part.replace(
+            "\"timeControl\":{\"baseSeconds\":120,\"perTurnSeconds\":20}",
+            "\"timed\":true,\"timeBaseSeconds\":120,\"timePerTurnSeconds\":20",
+        )
     }
     /// Rewrites a part from format 3 into format 2.
     fn format_2(part: &str) -> String {
@@ -977,8 +991,9 @@ mod tests {
     }
     #[test]
     fn checkpoints_from_older_formats_are_upgraded() -> Result<()> {
-        upgrades("hanabi-live-2", format_2)?;
-        upgrades("hanabi-live-1", |part| format_1(&format_2(part)))?;
+        upgrades("hanabi-live-4", format_4)?;
+        upgrades("hanabi-live-2", |part| format_2(&format_4(part)))?;
+        upgrades("hanabi-live-1", |part| format_1(&format_2(&format_4(part))))?;
         let mut table = replayed()?;
         let expected = serde_json::to_value(&table)?;
         let (encoded, _) = crate::checkpoint::encode(&mut table, &SavedParts::default())?;
@@ -2021,7 +2036,7 @@ mod tests {
             frames.push(outgoing);
         }
         let result=async{
-            send(&hub,users[0].clone(),"tableCreate",json!({"settings":{"name":"native","maxPlayers":6,"seedSuffix":"native","options":{"variantName":"Clue Starved (6 Suits)","timed":true,"timeBaseSeconds":120,"timePerTurnSeconds":20,"oneExtraCard":true,"detrimentalCharacters":true}}})).await?;
+            send(&hub,users[0].clone(),"tableCreate",json!({"settings":{"name":"native","maxPlayers":6,"seedSuffix":"native","options":{"variantName":"Clue Starved (6 Suits)","timeControl":{"baseSeconds":120,"perTurnSeconds":20},"oneExtraCard":true,"detrimentalCharacters":true}}})).await?;
             let id=store.load().await?[0].0.id;
             for user in users.iter().skip(1){send(&hub,user.clone(),"tableJoin",json!({"tableId":id,"password":""})).await?;}
             send(&hub,users[0].clone(),"tableStart",json!({"tableId":id})).await?;

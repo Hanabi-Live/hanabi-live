@@ -60,8 +60,8 @@ impl TableActor {
         let from = old.game.events.len();
         let mut next = self.candidate();
         let s = game_mut(&mut next)?;
-        if s.game.options.timed {
-            s.clocks[seat] += s.game.options.time_per_turn * CLOCK_UNITS_PER_SECOND;
+        if let Some(time) = s.game.options.time_control {
+            s.clocks[seat] += time.per_turn_seconds * CLOCK_UNITS_PER_SECOND;
         }
         let timing = CompletionTiming {
             player_times: s.clocks.clone(),
@@ -318,7 +318,10 @@ impl TableActor {
         ensure_or_reject!(self.attending(&session), "Not attending");
         let seat = self.seat(&session)?;
         let old = self.live()?;
-        ensure_or_reject!(old.game.options.timed, "This is not a timed game");
+        ensure_or_reject!(
+            old.game.options.time_control.is_some(),
+            "This is not a timed game"
+        );
         if setting == P::PauseQueue && seat == old.game.active_player_index {
             setting = P::Pause;
         }
@@ -542,7 +545,7 @@ impl TableActor {
                         .map(|p| hanabi_protocol::CharacterAssignment {
                             character_id: hanabi_engine::characters()
                                 .iter()
-                                .find(|c| c.name == p.character)
+                                .find(|c| p.character.is_some_and(|known| c.name == known.name()))
                                 .map(|c| c.id),
                             metadata: p.assigned_metadata(),
                         })

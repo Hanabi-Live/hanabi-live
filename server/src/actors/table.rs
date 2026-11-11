@@ -101,7 +101,7 @@ impl Timers {
                 s.duration
             },
             counting,
-            timed: s.game.options.timed,
+            timed: s.game.options.time_control.is_some(),
         }
     }
     fn timed_out(&self) -> bool {
@@ -407,7 +407,7 @@ impl TableActor {
                     {
                         deadlines.push(after(s.idle_remaining - IDLE_WARNING_MS));
                     }
-                    if s.game.options.timed && s.timer_started && !s.paused() {
+                    if s.game.options.time_control.is_some() && s.timer_started && !s.paused() {
                         deadlines.push(after(s.clocks[s.game.active_player_index]));
                     }
                 }
@@ -760,7 +760,7 @@ impl TableActor {
         let mut next = self.candidate();
         if let Some(s) = next.game_mut()
             && s.game.end_condition == EndCondition::InProgress
-            && s.game.options.timed
+            && s.game.options.time_control.is_some()
             && !s.maintenance_applied
         {
             for clock in &mut s.clocks {

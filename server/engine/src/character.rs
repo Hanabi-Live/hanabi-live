@@ -2,7 +2,7 @@
 
 use crate::EnginePlayer;
 
-/// A detrimental character. Players store the character's name, which this parses.
+/// A detrimental character.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Character {
     Fuming,
@@ -99,15 +99,10 @@ impl Character {
 }
 
 impl EnginePlayer {
-    /// The player's detrimental character, or `None` when the player has none.
-    pub fn character(&self) -> Option<Character> {
-        Character::from_name(&self.character)
-    }
-
     /// The metadata chosen when the player's character was assigned, which games record, or
     /// `None` when the character has none.
     pub fn assigned_metadata(&self) -> Option<i32> {
-        self.character()
+        self.character
             .is_some_and(Character::has_assigned_metadata)
             .then_some(self.character_metadata)
             .flatten()

@@ -39,9 +39,7 @@ pub fn parse(input: &ReplayGame) -> CommandResult<Imported> {
     let defaults = Options::default();
     let mut options = Options {
         variant_name,
-        timed: raw.timed.unwrap_or(defaults.timed),
-        time_base: raw.time_base_seconds.unwrap_or(defaults.time_base),
-        time_per_turn: raw.time_per_turn_seconds.unwrap_or(defaults.time_per_turn),
+        time_control: raw.time_control,
         speedrun: raw.speedrun.unwrap_or(defaults.speedrun),
         deck_plays: raw.deck_plays.unwrap_or(defaults.deck_plays),
         empty_clues: raw.empty_clues.unwrap_or(defaults.empty_clues),
@@ -247,7 +245,7 @@ mod tests {
         assert_eq!(imported.game.players.len(), 2);
         assert_eq!(imported.notes[0][1], "a");
         for input in [
-            json!({"seed":"p2v0s1","options":{"timeBaseSeconds":1.5}}),
+            json!({"seed":"p2v0s1","options":{"timeControl":{"baseSeconds":1.5,"perTurnSeconds":1}}}),
             json!({"seed":"p2v0s1","source":"another tool"}),
             json!({"seed":"p2v0s1","actions":[{"type":"gameOver","endCondition":"terminatedByVote","turn":1}]}),
             json!({"seed":"p2v0s1","options":{"tableName":"x"}}),

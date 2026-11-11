@@ -19,23 +19,21 @@ use std::{collections::BTreeMap, fmt::Write as _};
 /// The longest table password, in bytes.
 const MAX_TABLE_PASSWORD_BYTES: usize = 1024;
 
-/// Clears the clock of an untimed or speedrun game and the hand-size options when both are set,
-/// then checks that a timed game is within the clock limits.
+/// Clears the clock of a speedrun game and the hand-size options when both are set, then checks
+/// that a timed game is within the clock limits.
 pub(super) fn normalize_options(options: &mut Options) -> CommandResult<()> {
-    if options.speedrun || !options.timed {
-        options.timed = false;
-        options.time_base = 0;
-        options.time_per_turn = 0;
+    if options.speedrun {
+        options.time_control = None;
     }
     if options.one_extra_card && options.one_less_card {
         options.one_extra_card = false;
         options.one_less_card = false;
     }
     ensure_or_reject!(
-        !options.timed
-            || ((1..=hanabi_protocol::MAX_TIME_BASE_SECONDS).contains(&options.time_base)
-                && (1..=hanabi_protocol::MAX_TIME_PER_TURN_SECONDS)
-                    .contains(&options.time_per_turn)),
+        options.time_control.is_none_or(|time| {
+            (1..=hanabi_protocol::MAX_TIME_BASE_SECONDS).contains(&time.base_seconds)
+                && (1..=hanabi_protocol::MAX_TIME_PER_TURN_SECONDS).contains(&time.per_turn_seconds)
+        }),
         "Invalid timed options"
     );
     Ok(())
@@ -142,7 +140,7 @@ pub(super) async fn load_replay(
             .players
             .iter()
             .map(|p| hanabi_engine::AssignedCharacter {
-                name: p.character().map(|c| c.name().into()),
+                name: p.character.map(|c| c.name().into()),
                 metadata: p.assigned_metadata(),
             })
             .collect(),
@@ -213,18 +211,14 @@ pub(super) fn option_changes(
     if options.variant_name != current.variant_name {
         add("Variant", &options.variant_name);
     }
-    if options.timed {
-        if !current.timed
-            || options.time_base != current.time_base
-            || options.time_per_turn != current.time_per_turn
-        {
-            add(
+    if options.time_control != current.time_control {
+        match options.time_control {
+            Some(time) => add(
                 "Timed",
-                &format!("{} / {}", options.time_base, options.time_per_turn),
-            );
+                &format!("{} / {}", time.base_seconds, time.per_turn_seconds),
+            ),
+            None => add("Timed", "No"),
         }
-    } else if current.timed {
-        add("Timed", "No");
     }
     let seed = &extra.set_seed_suffix;
     if *seed != table.extra.set_seed_suffix {

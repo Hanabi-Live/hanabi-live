@@ -2193,7 +2193,8 @@ function drawTimers() {
   // setting turned on).
   if (
     globals.state.finished
-    || (!globals.options.timed && !globals.lobby.settings.showTimerInUntimed)
+    || (globals.options.timeControl === undefined
+      && !globals.lobby.settings.showTimerInUntimed)
   ) {
     return;
   }
@@ -2270,7 +2271,10 @@ function drawTimers() {
     listening: true,
   });
   globals.layers.timer.add(globals.elements.timer2);
-  if (globals.options.timed || globals.lobby.settings.showTimerInUntimed) {
+  if (
+    globals.options.timeControl !== undefined
+    || globals.lobby.settings.showTimerInUntimed
+  ) {
     globals.elements.timer2.tooltipName = "time-taken";
     // (The content will be updated in the "setTickingDownTimeCPTooltip()" function.)
     initKonvaTooltips(globals.elements.timer2, true, false);
@@ -2279,7 +2283,7 @@ function drawTimers() {
 
 function timerClick() {
   if (
-    !globals.options.timed // We do not need to pause if this is not a timed game.
+    globals.options.timeControl === undefined // We do not need to pause if this is not a timed game.
     || globals.state.pause.playerIndex !== undefined // We do not need to pause if the game is already paused.
   ) {
     return;

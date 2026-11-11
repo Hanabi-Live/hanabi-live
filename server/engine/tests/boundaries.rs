@@ -79,7 +79,7 @@ fn assignments(first: &str, second: &str) -> Vec<AssignedCharacter> {
 fn rejected_actions_are_atomic_and_client_terminations_are_not_actions() {
     // Rejections are checked against one state in place, which they must leave as it was.
     let mut state = standard();
-    let before = serde_json::to_value(&state).unwrap();
+    let before = state.clone();
     // Numbered action types and the end of the game cannot come from a client.
     for kind in [json!(-1), json!(i32::MAX), json!(4), json!("gameOver")] {
         assert!(
@@ -132,7 +132,7 @@ fn rejected_actions_are_atomic_and_client_terminations_are_not_actions() {
         .is_err()
     );
     let result = applied(&state, 0, action(RecordedActionType::RankClue, 1, 1), None).unwrap();
-    assert_eq!(serde_json::to_value(&state).unwrap(), before);
+    assert_eq!(state, before);
     assert_eq!(
         result.state.actions,
         vec![RecordedAction::from(action(
@@ -509,7 +509,7 @@ fn long_character_histories_are_bounded() {
                 .filter(|o| **o != 0)
                 .map(|o| action(RecordedActionType::Discard, int(*o), 0))
                 .collect();
-            let candidates = if p.character == "Panicky" {
+            let candidates = if p.character == Some(Character::Panicky) {
                 [discards, clues].concat()
             } else {
                 [clues, discards].concat()
@@ -636,9 +636,11 @@ fn synesthesia_touches_white_but_not_null_by_rank() {
 fn stored_time_bases_with_a_fraction_load_as_whole_seconds() {
     // Servers before whole-second time bases stored this field as a float.
     let mut stored = serde_json::to_value(Options::default()).unwrap();
+    stored["timed"] = json!(true);
     stored["timeBase"] = json!(150.5);
     let options: Options = serde_json::from_value(stored.clone()).unwrap();
-    assert_eq!(options.time_base, 150);
+    assert_eq!(options.time_control.unwrap().base_seconds, 150);
+    assert_eq!(serde_json::to_value(&options).unwrap()["timeBase"], 150);
     stored["timeBase"] = json!(f64::MAX);
     assert!(serde_json::from_value::<Options>(stored).is_err());
 }

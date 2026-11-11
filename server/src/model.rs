@@ -15,7 +15,7 @@ use std::{
     time::Instant,
 };
 
-pub const FORMAT: &str = "hanabi-live-4";
+pub const FORMAT: &str = "hanabi-live-5";
 /// The author of chat that the server wrote, as `chat_log` stores it. Real users have positive IDs.
 pub const SERVER_AUTHOR: UserId = UserId(0);
 /// How long before an idle game ends to warn its table.
@@ -733,9 +733,7 @@ pub(crate) fn wire_options(options: &Options) -> hanabi_protocol::GameOptions {
         variant_name,
         // The variant name identifies the variant.
         variant_id: _,
-        timed,
-        time_base,
-        time_per_turn,
+        time_control,
         speedrun,
         deck_plays,
         empty_clues,
@@ -749,9 +747,7 @@ pub(crate) fn wire_options(options: &Options) -> hanabi_protocol::GameOptions {
     } = options;
     hanabi_protocol::GameOptions {
         variant_name: variant_name.clone(),
-        timed: *timed,
-        time_base_seconds: *time_base,
-        time_per_turn_seconds: *time_per_turn,
+        time_control: *time_control,
         speedrun: *speedrun,
         deck_plays: *deck_plays,
         empty_clues: *empty_clues,
@@ -766,9 +762,7 @@ pub(crate) fn wire_options(options: &Options) -> hanabi_protocol::GameOptions {
 pub(crate) fn engine_options(options: &hanabi_protocol::GameOptions) -> Options {
     let hanabi_protocol::GameOptions {
         variant_name,
-        timed,
-        time_base_seconds: time_base,
-        time_per_turn_seconds: time_per_turn,
+        time_control,
         speedrun,
         deck_plays,
         empty_clues,
@@ -782,9 +776,7 @@ pub(crate) fn engine_options(options: &hanabi_protocol::GameOptions) -> Options 
         num_players: hanabi_protocol::MIN_PLAYERS,
         variant_name: variant_name.clone(),
         variant_id: None,
-        timed: *timed,
-        time_base: *time_base,
-        time_per_turn: *time_per_turn,
+        time_control: *time_control,
         speedrun: *speedrun,
         deck_plays: *deck_plays,
         empty_clues: *empty_clues,

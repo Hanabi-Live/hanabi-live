@@ -57,7 +57,7 @@ pub(crate) fn sees_card(state: &EngineState, viewer: usize, holder: usize, order
         return true;
     }
     let n = state.players.len();
-    match state.players[viewer].character() {
+    match state.players[viewer].character {
         Some(Character::BlindSpot) if holder == (viewer + 1) % n => false,
         Some(Character::Oblivious) if holder == (viewer + n - 1) % n => false,
         Some(Character::SlowWitted) => state.players[holder].hand.last() != Some(&order),
@@ -83,7 +83,7 @@ pub(crate) fn draw_card(state: &mut EngineState, player: usize) {
         && state
             .players
             .iter()
-            .any(|p| p.character() == Some(Character::SlowWitted))
+            .any(|p| p.character == Some(Character::SlowWitted))
     {
         let hand = &state.players[player].hand;
         let previous = &state.deck[hand[hand.len() - 2]];
@@ -100,7 +100,7 @@ pub(crate) fn draw_card(state: &mut EngineState, player: usize) {
             && state
                 .players
                 .iter()
-                .any(|p| p.character() == Some(Character::Contrarian))
+                .any(|p| p.character == Some(Character::Contrarian))
         {
             CONTRARIAN_FINAL_TURNS
         } else {
@@ -124,7 +124,7 @@ pub(crate) fn remove_card(state: &mut EngineState, player: usize, order: usize) 
         if let Some(insistent) = state
             .players
             .iter_mut()
-            .find(|p| p.character() == Some(Character::Insistent))
+            .find(|p| p.character == Some(Character::Insistent))
         {
             insistent.character_metadata = None;
         }
@@ -220,7 +220,7 @@ pub(crate) fn try_play(state: &mut EngineState, order: usize) -> bool {
 
 pub(crate) fn follower_misplays(state: &EngineState, player: usize, card: &EngineCard) -> bool {
     if !state.options.detrimental_characters
-        || state.players[player].character() != Some(Character::Follower)
+        || state.players[player].character != Some(Character::Follower)
     {
         return false;
     }

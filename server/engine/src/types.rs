@@ -1,22 +1,19 @@
+use crate::Character;
 use hanabi_protocol::{
     CardOrder, Clue as WireClue, ClueTurn, DEFAULT_VARIANT_NAME, GameOverTurn, MIN_PLAYERS,
     PlayerIndex, TargetCard,
 };
-pub use hanabi_protocol::{ClueType, EndCondition};
+pub use hanabi_protocol::{ClueType, EndCondition, TimeControl};
 use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
-#[serde(default, rename_all = "camelCase", deny_unknown_fields)]
+#[serde(from = "StoredOptions", into = "StoredOptions")]
 pub struct Options {
     pub num_players: usize,
     pub variant_name: String,
-    #[serde(rename = "variantID", skip_serializing_if = "Option::is_none")]
     pub variant_id: Option<u32>,
-    pub timed: bool,
-    /// The starting clock of a timed game, in whole seconds.
-    #[serde(deserialize_with = "whole_seconds")]
-    pub time_base: i64,
-    pub time_per_turn: i64,
+    /// The clock of a timed game. `None` when the game is untimed.
+    pub time_control: Option<TimeControl>,
     pub speedrun: bool,
     pub deck_plays: bool,
     pub empty_clues: bool,
@@ -24,10 +21,117 @@ pub struct Options {
     pub one_less_card: bool,
     pub all_or_nothing: bool,
     pub detrimental_characters: bool,
-    #[serde(skip_serializing_if = "Option::is_none")]
     pub table_name: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none")]
     pub max_players: Option<usize>,
+}
+
+/// `Options` as checkpoints store them. An untimed game stores 0 for each time.
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[serde(default, rename_all = "camelCase", deny_unknown_fields)]
+struct StoredOptions {
+    num_players: usize,
+    variant_name: String,
+    #[serde(rename = "variantID", skip_serializing_if = "Option::is_none")]
+    variant_id: Option<u32>,
+    timed: bool,
+    /// The starting clock of a timed game, in whole seconds.
+    #[serde(deserialize_with = "whole_seconds")]
+    time_base: i64,
+    time_per_turn: i64,
+    speedrun: bool,
+    deck_plays: bool,
+    empty_clues: bool,
+    one_extra_card: bool,
+    one_less_card: bool,
+    all_or_nothing: bool,
+    detrimental_characters: bool,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    table_name: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    max_players: Option<usize>,
+}
+
+impl Default for StoredOptions {
+    fn default() -> Self {
+        Options::default().into()
+    }
+}
+
+impl From<StoredOptions> for Options {
+    fn from(stored: StoredOptions) -> Self {
+        let StoredOptions {
+            num_players,
+            variant_name,
+            variant_id,
+            timed,
+            time_base,
+            time_per_turn,
+            speedrun,
+            deck_plays,
+            empty_clues,
+            one_extra_card,
+            one_less_card,
+            all_or_nothing,
+            detrimental_characters,
+            table_name,
+            max_players,
+        } = stored;
+        Self {
+            num_players,
+            variant_name,
+            variant_id,
+            time_control: timed.then_some(TimeControl {
+                base_seconds: time_base,
+                per_turn_seconds: time_per_turn,
+            }),
+            speedrun,
+            deck_plays,
+            empty_clues,
+            one_extra_card,
+            one_less_card,
+            all_or_nothing,
+            detrimental_characters,
+            table_name,
+            max_players,
+        }
+    }
+}
+
+impl From<Options> for StoredOptions {
+    fn from(options: Options) -> Self {
+        let Options {
+            num_players,
+            variant_name,
+            variant_id,
+            time_control,
+            speedrun,
+            deck_plays,
+            empty_clues,
+            one_extra_card,
+            one_less_card,
+            all_or_nothing,
+            detrimental_characters,
+            table_name,
+            max_players,
+        } = options;
+        Self {
+            num_players,
+            variant_name,
+            variant_id,
+            timed: time_control.is_some(),
+            time_base: time_control.map_or(0, |time| time.base_seconds),
+            time_per_turn: time_control.map_or(0, |time| time.per_turn_seconds),
+            speedrun,
+            deck_plays,
+            empty_clues,
+            one_extra_card,
+            one_less_card,
+            all_or_nothing,
+            detrimental_characters,
+            table_name,
+            max_players,
+        }
+    }
 }
 
 /// Reads a time base in whole seconds. Checkpoints that servers wrote before time bases were whole
@@ -56,9 +160,7 @@ impl Default for Options {
             num_players: MIN_PLAYERS,
             variant_name: DEFAULT_VARIANT_NAME.into(),
             variant_id: None,
-            timed: false,
-            time_base: 0,
-            time_per_turn: 0,
+            time_control: None,
             speedrun: false,
             deck_plays: false,
             empty_clues: false,
@@ -259,12 +361,12 @@ pub struct EngineCard {
     pub insistent_touched: bool,
 }
 
-#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase", deny_unknown_fields)]
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub struct EnginePlayer {
     pub name: String,
     pub index: usize,
-    pub character: String,
+    /// `None` when the player has no detrimental character.
+    pub character: Option<Character>,
     /// What the player's character uses, which depends on the character:
     /// - Fuming, Dumbfounded, Inept, and Awkward: the suit index or rank chosen when characters
     ///   were assigned.
@@ -392,8 +494,7 @@ impl TryFrom<i32> for StackDirection {
     }
 }
 
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase", deny_unknown_fields)]
+#[derive(Clone, Debug, PartialEq)]
 pub struct EngineState {
     pub options: Options,
     pub seed: Option<String>,

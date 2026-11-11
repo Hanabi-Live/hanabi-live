@@ -121,9 +121,9 @@ pub struct GameRecord {
     pub name: String,
     pub num_players: i16,
     pub variant_id: i16,
-    pub timed: bool,
     /// NULL when the game is untimed.
     pub time_base: Option<i32>,
+    /// NULL when the game is untimed.
     pub time_per_turn: Option<i32>,
     pub speedrun: bool,
     pub deck_plays: bool,
@@ -316,7 +316,7 @@ pub(crate) async fn insert(
     let o = &s.game.options;
     let variant = hanabi_engine::get_variant(&o.variant_name)?;
     let tx = transaction;
-    sqlx::query!("INSERT INTO games(id,name,num_players,variant_id,timed,time_base,time_per_turn,speedrun,deck_plays,empty_clues,one_extra_card,one_less_card,all_or_nothing,detrimental_characters,seed,score,num_turns,end_condition,datetime_started,datetime_finished) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20)", id.0, &s.name, i16::try_from(o.num_players)?, i16::try_from(variant.id)?, o.timed, o.timed.then(|| i32::try_from(o.time_base)).transpose()?, o.timed.then(|| i32::try_from(o.time_per_turn)).transpose()?, o.speedrun, o.deck_plays, o.empty_clues, o.one_extra_card, o.one_less_card, o.all_or_nothing, o.detrimental_characters, s.seed.as_deref(), i16::try_from(s.game.score)?, i16::try_from(s.game.turn)?, s.game.end_condition as i16, s.started, finished).execute(&mut **tx).await?;
+    sqlx::query!("INSERT INTO games(id,name,num_players,variant_id,timed,time_base,time_per_turn,speedrun,deck_plays,empty_clues,one_extra_card,one_less_card,all_or_nothing,detrimental_characters,seed,score,num_turns,end_condition,datetime_started,datetime_finished) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20)", id.0, &s.name, i16::try_from(o.num_players)?, i16::try_from(variant.id)?, o.time_control.is_some(), o.time_control.map(|t| i32::try_from(t.base_seconds)).transpose()?, o.time_control.map(|t| i32::try_from(t.per_turn_seconds)).transpose()?, o.speedrun, o.deck_plays, o.empty_clues, o.one_extra_card, o.one_less_card, o.all_or_nothing, o.detrimental_characters, s.seed.as_deref(), i16::try_from(s.game.score)?, i16::try_from(s.game.turn)?, s.game.end_condition as i16, s.started, finished).execute(&mut **tx).await?;
     let mut users = vec![];
     let mut seats = vec![];
     let mut character_ids = vec![];
@@ -431,11 +431,23 @@ async fn count_game(
 fn character_columns(player: &hanabi_engine::EnginePlayer) -> Result<(Option<i16>, Option<i16>)> {
     let character_id = hanabi_engine::characters()
         .iter()
-        .find(|c| c.name == player.character)
+        .find(|c| player.character.is_some_and(|known| c.name == known.name()))
         .map(|c| i16::try_from(c.id.0))
         .transpose()?;
     let metadata = player.assigned_metadata().map(i16::try_from).transpose()?;
     Ok((character_id, metadata))
+}
+
+impl GameRecord {
+    /// The game's clock, or `None` when the game is untimed.
+    pub fn time_control(&self) -> Option<hanabi_protocol::TimeControl> {
+        self.time_base
+            .zip(self.time_per_turn)
+            .map(|(base, per_turn)| hanabi_protocol::TimeControl {
+                base_seconds: i64::from(base),
+                per_turn_seconds: i64::from(per_turn),
+            })
+    }
 }
 
 pub fn options(row: &GameRecord) -> Result<Options> {
@@ -444,9 +456,7 @@ pub fn options(row: &GameRecord) -> Result<Options> {
         num_players: usize::try_from(row.num_players)?,
         variant_name: variant.name.clone(),
         variant_id: Some(variant.id),
-        timed: row.timed,
-        time_base: row.time_base.map_or(0, i64::from),
-        time_per_turn: row.time_per_turn.map_or(0, i64::from),
+        time_control: row.time_control(),
         speedrun: row.speedrun,
         deck_plays: row.deck_plays,
         empty_clues: row.empty_clues,

@@ -929,7 +929,7 @@ async fn tables_replay_a_finished_game_from_a_chosen_turn() -> Result<()> {
         ensure!(
             listed["settings"]["replayGameId"] == game
                 && listed["settings"]["replayTurn"] == 1
-                && listed["settings"]["options"]["timed"] == true,
+                && listed["settings"]["options"]["timeControl"].is_object(),
             "The table did not report the replayed game and its options: {listed}"
         );
         h.send(1, "tableJoin", json!({"tableId":id})).await?;
@@ -1219,7 +1219,7 @@ async fn pausing_a_game_is_announced_in_its_chat() -> Result<()> {
             .create(
                 0,
                 "Pause",
-                json!({"options":{"timed":true,"timeBaseSeconds":120,"timePerTurnSeconds":20}}),
+                json!({"options":{"timeControl":{"baseSeconds":120,"perTurnSeconds":20}}}),
             )
             .await?;
         h.send(1, "tableJoin", json!({"tableId":id})).await?;
@@ -2339,7 +2339,7 @@ async fn option_proposals_publish_changed_values_but_keep_apply_button_private()
         }
         h.send(1, "tableUpdate", json!({
             "tableId":id,"settings":{"name":"Proposal","maxPlayers":2,
-            "options":{"variantName":"6 Suits","timed":true,"timeBaseSeconds":120,"timePerTurnSeconds":20,"emptyClues":true}}
+            "options":{"variantName":"6 Suits","timeControl":{"baseSeconds":120,"perTurnSeconds":20},"emptyClues":true}}
         })).await?;
         h.barrier(0).await?;
         for index in 0..3 {
@@ -3175,7 +3175,7 @@ async fn saved_characters_store_none_as_null() -> Result<()> {
                 .map(|p| {
                     let character = hanabi_engine::characters()
                         .iter()
-                        .find(|c| c.name == p.character)
+                        .find(|c| p.character.is_some_and(|known| c.name == known.name()))
                         .map(|c| i16::try_from(c.id.0))
                         .transpose()?;
                     let metadata = p.assigned_metadata().map(i16::try_from).transpose()?;

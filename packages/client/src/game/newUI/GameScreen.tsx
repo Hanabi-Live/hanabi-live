@@ -194,7 +194,8 @@ function getSeats(state: State): readonly Seat[] {
     || (state.finished && metadata.playerNames.includes(metadata.ourUsername))
       ? metadata.ourPlayerIndex
       : 0;
-  const showClock = metadata.options.timed || settings.showTimerInUntimed;
+  const showClock =
+    metadata.options.timeControl !== undefined || settings.showTimerInUntimed;
   const hypo = state.replay.hypothetical;
   const controlsHypo = controlsHypothetical(state);
   const identities = getShownIdentities(state);
@@ -240,7 +241,9 @@ function getSeats(state: State): readonly Seat[] {
     if (showClock && active && globals.clockPlayerIndex === playerIndex) {
       const time = globals.playerTimes[playerIndex] ?? 0;
       // Untimed games count up the time that the player has taken.
-      clock = millisecondsToClockString(metadata.options.timed ? time : -time);
+      clock = millisecondsToClockString(
+        metadata.options.timeControl === undefined ? -time : time,
+      );
     }
 
     seats.push({
@@ -855,7 +858,8 @@ export function GameScreen({
                 onWidthChange={setNameWidth}
                 seats={seats}
                 showClock={
-                  metadata.options.timed || settings.showTimerInUntimed
+                  metadata.options.timeControl !== undefined
+                  || settings.showTimerInUntimed
                 }
               />
               <Hands

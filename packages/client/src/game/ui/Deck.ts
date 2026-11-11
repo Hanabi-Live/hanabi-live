@@ -428,11 +428,10 @@ function getTooltipContent(): string {
     `<strong>${globals.variant.name}</strong>`,
   );
 
-  if (globals.options.timed) {
-    const timeBase = secondsToClockString(globals.options.timeBaseSeconds);
-    const timePerTurn = secondsToClockString(
-      globals.options.timePerTurnSeconds,
-    );
+  const { timeControl } = globals.options;
+  if (timeControl !== undefined) {
+    const timeBase = secondsToClockString(timeControl.baseSeconds);
+    const timePerTurn = secondsToClockString(timeControl.perTurnSeconds);
     content += tooltipItem(
       OptionIcons.Timed,
       `Timed: ${timeBase} + ${timePerTurn}`,

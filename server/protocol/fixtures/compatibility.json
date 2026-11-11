@@ -512,16 +512,13 @@
         "maxPlayers": 5,
         "options": {
           "variantName": "No Variant",
-          "timed": false,
           "speedrun": false,
           "deckPlays": false,
           "emptyClues": false,
           "oneExtraCard": false,
           "oneLessCard": false,
           "allOrNothing": false,
-          "detrimentalCharacters": false,
-          "timeBaseSeconds": 0,
-          "timePerTurnSeconds": 0
+          "detrimentalCharacters": false
         }
       }
     },
@@ -742,16 +739,13 @@
         "maxPlayers": 5,
         "options": {
           "variantName": "No Variant",
-          "timed": false,
           "speedrun": false,
           "deckPlays": false,
           "emptyClues": false,
           "oneExtraCard": false,
           "oneLessCard": false,
           "allOrNothing": false,
-          "detrimentalCharacters": false,
-          "timeBaseSeconds": 0,
-          "timePerTurnSeconds": 0
+          "detrimentalCharacters": false
         }
       }
     },
@@ -780,16 +774,13 @@
         "gameId": 12,
         "options": {
           "variantName": "No Variant",
-          "timed": false,
           "speedrun": false,
           "deckPlays": false,
           "emptyClues": false,
           "oneExtraCard": false,
           "oneLessCard": false,
           "allOrNothing": false,
-          "detrimentalCharacters": false,
-          "timeBaseSeconds": 0,
-          "timePerTurnSeconds": 0
+          "detrimentalCharacters": false
         },
         "seed": "p2v0s1",
         "score": 25,
@@ -813,16 +804,13 @@
         "gameId": 12,
         "options": {
           "variantName": "No Variant",
-          "timed": false,
           "speedrun": false,
           "deckPlays": false,
           "emptyClues": false,
           "oneExtraCard": false,
           "oneLessCard": false,
           "allOrNothing": false,
-          "detrimentalCharacters": false,
-          "timeBaseSeconds": 0,
-          "timePerTurnSeconds": 0
+          "detrimentalCharacters": false
         },
         "seed": "p2v0s1",
         "score": 25,
@@ -846,16 +834,13 @@
         "gameId": 12,
         "options": {
           "variantName": "No Variant",
-          "timed": false,
           "speedrun": false,
           "deckPlays": false,
           "emptyClues": false,
           "oneExtraCard": false,
           "oneLessCard": false,
           "allOrNothing": false,
-          "detrimentalCharacters": false,
-          "timeBaseSeconds": 0,
-          "timePerTurnSeconds": 0
+          "detrimentalCharacters": false
         },
         "seed": "p2v0s1",
         "score": 25,
@@ -879,16 +864,13 @@
         "gameId": 12,
         "options": {
           "variantName": "No Variant",
-          "timed": false,
           "speedrun": false,
           "deckPlays": false,
           "emptyClues": false,
           "oneExtraCard": false,
           "oneLessCard": false,
           "allOrNothing": false,
-          "detrimentalCharacters": false,
-          "timeBaseSeconds": 0,
-          "timePerTurnSeconds": 0
+          "detrimentalCharacters": false
         },
         "seed": "p2v0s1",
         "score": 25,
@@ -912,16 +894,13 @@
         "gameId": 12,
         "options": {
           "variantName": "No Variant",
-          "timed": false,
           "speedrun": false,
           "deckPlays": false,
           "emptyClues": false,
           "oneExtraCard": false,
           "oneLessCard": false,
           "allOrNothing": false,
-          "detrimentalCharacters": false,
-          "timeBaseSeconds": 0,
-          "timePerTurnSeconds": 0
+          "detrimentalCharacters": false
         },
         "seed": "p2v0s1",
         "score": 25,

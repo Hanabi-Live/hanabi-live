@@ -304,9 +304,14 @@ function submit() {
     return;
   }
 
-  const timed = getCheckbox("createTableTimed");
-  const timeBaseSeconds = (timed ? getTimeBaseSeconds() : undefined) ?? 0;
-  const timePerTurnSeconds = (timed ? getTimePerTurnSeconds() : undefined) ?? 0;
+  const baseSeconds = getTimeBaseSeconds();
+  const perTurnSeconds = getTimePerTurnSeconds();
+  const timeControl =
+    getCheckbox("createTableTimed")
+    && baseSeconds !== undefined
+    && perTurnSeconds !== undefined
+      ? { baseSeconds, perTurnSeconds }
+      : undefined;
 
   // Seeds and replays are not saved, so that a new game does not accidentally repeat a deal.
   const seed = getText("#create-game-seed");
@@ -364,9 +369,7 @@ function submit() {
     maxPlayers,
     options: {
       variantName: getVariantName(), // This is a hidden span field.
-      timed,
-      timeBaseSeconds,
-      timePerTurnSeconds,
+      timeControl,
       speedrun: getCheckbox("createTableSpeedrun"),
       deckPlays: getCheckbox("createTableDeckPlays"),
       emptyClues: getCheckbox("createTableEmptyClues"),
@@ -601,13 +604,13 @@ export function show(): void {
 function getFormValues(options: GameOptions, maxPlayers: number): FormValues {
   return {
     createTableVariant: options.variantName,
-    createTableTimed: options.timed,
-    createTableTimeBaseSeconds: options.timed
-      ? options.timeBaseSeconds
-      : globals.settings.createTableTimeBaseSeconds,
-    createTableTimePerTurnSeconds: options.timed
-      ? options.timePerTurnSeconds
-      : globals.settings.createTableTimePerTurnSeconds,
+    createTableTimed: options.timeControl !== undefined,
+    createTableTimeBaseSeconds:
+      options.timeControl?.baseSeconds
+      ?? globals.settings.createTableTimeBaseSeconds,
+    createTableTimePerTurnSeconds:
+      options.timeControl?.perTurnSeconds
+      ?? globals.settings.createTableTimePerTurnSeconds,
     createTableSpeedrun: options.speedrun,
     createTableDeckPlays: options.deckPlays,
     createTableEmptyClues: options.emptyClues,

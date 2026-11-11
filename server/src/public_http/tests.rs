@@ -425,8 +425,8 @@ async fn public_database_routes_filters_privacy_exports_and_html() {
     let (status, body) = request(app.clone(), "/api/v1/seed-full/same").await;
     assert_eq!(status, StatusCode::OK);
     assert_eq!(serde_json::from_str::<Vec<Value>>(&body).unwrap().len(), 2);
+    assert!(full[0]["options"]["timeControl"].is_object());
     for key in [
-        "timed",
         "speedrun",
         "deckPlays",
         "emptyClues",

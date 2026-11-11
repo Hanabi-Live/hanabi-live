@@ -32,8 +32,10 @@ pub(crate) fn validate_options(options: &Options) -> Result<()> {
         "Games require {MIN_PLAYERS} to {MAX_PLAYERS} players."
     );
     ensure!(
-        (-MAX_SAFE_INTEGER..=MAX_SAFE_INTEGER).contains(&options.time_base)
-            && (-MAX_SAFE_INTEGER..=MAX_SAFE_INTEGER).contains(&options.time_per_turn),
+        options.time_control.is_none_or(|time| {
+            (-MAX_SAFE_INTEGER..=MAX_SAFE_INTEGER).contains(&time.base_seconds)
+                && (-MAX_SAFE_INTEGER..=MAX_SAFE_INTEGER).contains(&time.per_turn_seconds)
+        }),
         "Invalid game timing."
     );
     ensure!(
@@ -122,7 +124,7 @@ pub fn create_game(setup: GameSetup) -> Result<EngineState> {
         .map(|(index, (name, c))| EnginePlayer {
             name,
             index,
-            character: c.name.unwrap_or_default(),
+            character: c.name.as_deref().and_then(Character::from_name),
             character_metadata: c.metadata,
             hand: vec![],
         })

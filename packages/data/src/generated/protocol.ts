@@ -13,6 +13,7 @@ import {
   playerIndexSchema,
   playerNotesSchema,
   safeIntegerSchema,
+  timeControlSchema,
   turnSchema,
   variantIdSchema,
 } from "@hanabi-live/game";
@@ -116,9 +117,6 @@ const tableSettingsSchema = z
       oneExtraCard: false,
       oneLessCard: false,
       speedrun: false,
-      timeBaseSeconds: 0,
-      timePerTurnSeconds: 0,
-      timed: false,
       variantName: "No Variant",
     }),
     /**
@@ -982,9 +980,10 @@ const replayOptionsSchema = z
     oneExtraCard: z.boolean().optional(),
     oneLessCard: z.boolean().optional(),
     speedrun: z.boolean().optional(),
-    timeBaseSeconds: z.number().int().min(0).max(604_800).optional(),
-    timePerTurnSeconds: z.number().int().min(0).max(86_400).optional(),
-    timed: z.boolean().optional(),
+    /**
+     * Absent when the game is untimed.
+     */
+    timeControl: timeControlSchema.optional(),
     variantName: z.string().min(1).optional(),
   })
   .readonly();
@@ -1263,9 +1262,6 @@ export const tableCreateRequestSchema = z
         oneExtraCard: false,
         oneLessCard: false,
         speedrun: false,
-        timeBaseSeconds: 0,
-        timePerTurnSeconds: 0,
-        timed: false,
         variantName: "No Variant",
       },
     }),
@@ -1345,9 +1341,6 @@ export const tableUpdateRequestSchema = z
         oneExtraCard: false,
         oneLessCard: false,
         speedrun: false,
-        timeBaseSeconds: 0,
-        timePerTurnSeconds: 0,
-        timed: false,
         variantName: "No Variant",
       },
     }),

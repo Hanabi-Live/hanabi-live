@@ -72,7 +72,7 @@ test("untimed games without timers still update the player time tooltips", () =>
       pause: { playerIndex: undefined },
     },
     elements: { timer1: undefined, timer2: undefined, deck: undefined },
-    options: { timed: false, speedrun: false },
+    options: { speedrun: false },
     lobby: { settings: { speedrunMode: false, showTimerInUntimed: false } },
     metadata: { ourPlayerIndex: 1 },
   });

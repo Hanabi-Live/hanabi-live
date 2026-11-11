@@ -354,11 +354,9 @@ impl TableActor {
         let snapshot = Snapshot {
             created: next.created,
             clocks: vec![
-                if options.timed {
-                    options.time_base * CLOCK_UNITS_PER_SECOND
-                } else {
-                    0
-                };
+                options
+                    .time_control
+                    .map_or(0, |time| time.base_seconds * CLOCK_UNITS_PER_SECOND);
                 n
             ],
             ..Snapshot::new(

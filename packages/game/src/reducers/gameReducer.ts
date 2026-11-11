@@ -459,14 +459,15 @@ function gameReducerFunction(
         }
 
         // Player times are negative in untimed games.
-        const modifier = metadata.options.timed ? 1 : -1;
+        const modifier = metadata.options.timeControl === undefined ? -1 : 1;
         const milliseconds = playerTime * modifier;
         const durationString = millisecondsToClockString(milliseconds);
         const playerName = getPlayerName(playerIndex, metadata);
 
-        const text = metadata.options.timed
-          ? `${playerName} had ${durationString} left`
-          : `${playerName} took: ${durationString}`;
+        const text =
+          metadata.options.timeControl === undefined
+            ? `${playerName} took: ${durationString}`
+            : `${playerName} had ${durationString} left`;
         gameState.log.push({
           turn: gameState.turn.turnNum + 1,
           text,

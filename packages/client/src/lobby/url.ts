@@ -62,15 +62,17 @@ function gotoPath(data: ServerCommandData["welcome"]): boolean {
     // Without a name, the server names the table after us.
     const name = urlParams.get("name") ?? "";
     const variantName = urlParams.get("variantName") ?? DEFAULT_VARIANT_NAME;
-    const timed = urlParams.get("timed") === "true";
-    const timeBaseSecondsString =
-      urlParams.get("timeBaseSeconds")
-      ?? defaultSettings.createTableTimeBaseSeconds.toString();
-    const timeBaseSeconds = parseIntSafe(timeBaseSecondsString);
-    const timePerTurnSecondsString =
-      urlParams.get("timePerTurnSeconds")
-      ?? defaultSettings.createTableTimePerTurnSeconds.toString();
-    const timePerTurnSeconds = parseIntSafe(timePerTurnSecondsString);
+    const timeControl =
+      urlParams.get("timed") === "true"
+        ? {
+            baseSeconds:
+              parseIntSafe(urlParams.get("timeBaseSeconds") ?? "")
+              ?? defaultSettings.createTableTimeBaseSeconds,
+            perTurnSeconds:
+              parseIntSafe(urlParams.get("timePerTurnSeconds") ?? "")
+              ?? defaultSettings.createTableTimePerTurnSeconds,
+          }
+        : undefined;
     const speedrun = urlParams.get("speedrun") === "true";
     const deckPlays = urlParams.get("deckPlays") === "true";
     const emptyClues = urlParams.get("emptyClues") === "true";
@@ -93,9 +95,7 @@ function gotoPath(data: ServerCommandData["welcome"]): boolean {
         name,
         options: {
           variantName,
-          timed,
-          timeBaseSeconds,
-          timePerTurnSeconds,
+          timeControl,
           speedrun,
           deckPlays,
           emptyClues,

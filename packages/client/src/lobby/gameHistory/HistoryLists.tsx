@@ -302,10 +302,11 @@ function getOptionItems(
   options: GameOptions,
 ): ReadonlyArray<{ readonly icon: OptionIcons; readonly text: string }> {
   const items: Array<{ icon: OptionIcons; text: string }> = [];
-  if (options.timed) {
+  const { timeControl } = options;
+  if (timeControl !== undefined) {
     items.push({
       icon: OptionIcons.Timed,
-      text: `Timed (${secondsToClockString(options.timeBaseSeconds)} + ${secondsToClockString(options.timePerTurnSeconds)})`,
+      text: `Timed (${secondsToClockString(timeControl.baseSeconds)} + ${secondsToClockString(timeControl.perTurnSeconds)})`,
     });
   }
   if (options.speedrun) {
