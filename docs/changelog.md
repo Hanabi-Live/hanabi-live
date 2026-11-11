@@ -22,6 +22,8 @@ of the repository.
 - In the new game screen, spectators can now watch the game from a player's seat
   with the new "View as" button, or by right-clicking a player's name. While you
   watch from a seat, the button shows whose, and its menu can stop it.
+- In the new game screen, at max clues, the discard pile has a dashed orange
+  border and says that no one can discard.
 
 ## November 10th, 2026
 

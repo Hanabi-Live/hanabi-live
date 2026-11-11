@@ -205,11 +205,22 @@ export const DiscardPile = forwardRef<
     readonly colorblindMode: boolean;
     readonly cardWidth: number;
     readonly zoneState: ZoneState;
+
+    /** Whether the team has every clue token, so that no one can discard. */
+    readonly atMaxClues: boolean;
     readonly onShowDiscard: (order: CardOrder) => void;
   }
 >(
   (
-    { rows, variant, colorblindMode, cardWidth, zoneState, onShowDiscard },
+    {
+      rows,
+      variant,
+      colorblindMode,
+      cardWidth,
+      zoneState,
+      atMaxClues,
+      onShowDiscard,
+    },
     ref,
   ): React.JSX.Element => {
     const height = cardWidth * CARD_HEIGHT_PER_WIDTH;
@@ -222,12 +233,25 @@ export const DiscardPile = forwardRef<
     return (
       <section
         aria-label="Discards"
-        className={`tw:relative tw:box-border tw:flex tw:flex-col tw:gap-3 tw:rounded-[18px] tw:px-4.5 tw:py-4 ${zoneClasses[zoneState]}`}
+        className={`tw:relative tw:box-border tw:flex tw:flex-col tw:gap-3 tw:rounded-[18px] tw:px-4.5 tw:py-4 ${zoneClasses[zoneState]} ${
+          // At max clues, a quiet dashed border in the clue color shows that no one can discard,
+          // before anyone picks up a card.
+          atMaxClues && zoneState === "idle"
+            ? "tw:outline-2 tw:-outline-offset-2 tw:outline-clue/60 tw:outline-dashed"
+            : ""
+        }`}
         ref={ref}
       >
-        <h2 className="tw:m-0 tw:text-[15px] tw:font-medium tw:text-game-muted">
-          Discards
-        </h2>
+        <div className="tw:flex tw:items-baseline tw:justify-between tw:gap-2">
+          <h2 className="tw:m-0 tw:text-[15px] tw:font-medium tw:text-game-muted">
+            Discards
+          </h2>
+          {atMaxClues && zoneState === "idle" && (
+            <span className="tw:text-[13px] tw:font-medium tw:text-clue">
+              No discards at max clues
+            </span>
+          )}
+        </div>
         <div className="tw:flex tw:flex-col" style={{ height: rowsHeight }}>
           {rows.map((row, rowIndex) => (
             <div

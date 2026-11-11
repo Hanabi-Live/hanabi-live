@@ -1002,6 +1002,7 @@ export function GameScreen({
 
           <div className="tw:flex tw:w-[300px] tw:shrink-0 tw:flex-col tw:gap-3 tw:narrow-1440:w-[240px] tw:narrow-980:w-full">
             <DiscardPile
+              atMaxClues={isAtMaxClueTokens(visibleState.clueTokens, variant)}
               cardWidth={Math.min(tableCardWidth, TABLE_CARD_WIDTH.MAX)}
               colorblindMode={settings.colorblindMode}
               onShowDiscard={showDiscard}
