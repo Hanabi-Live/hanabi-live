@@ -73,8 +73,10 @@
 
 .tooltip-box {
   max-width: calc(100vw - 2 * var(--tooltip-window-margin));
+  /* "Tooltip.ts" sets the room when the tooltip does not fit on either side of its anchor. */
   max-height: calc(
-    100vh - 2 * var(--tooltip-window-margin) - var(--tooltip-arrow-size)
+    var(--tooltip-room, 100vh - 2 * var(--tooltip-window-margin)) -
+      var(--tooltip-arrow-size)
   );
   overflow: auto;
   padding: 0.65em 0.85em;

@@ -19,8 +19,6 @@ const WINDOW_MARGIN_IN_PIXELS = 8;
 /** How often an open tooltip checks whether its anchor has been removed from the page. */
 const ANCHOR_CHECK_INTERVAL_IN_MILLISECONDS = 500;
 
-export type TooltipSide = "top" | "bottom";
-
 interface TooltipOptions {
   /** HTML, or an element to move into the tooltip. */
   readonly content: Node | string;
@@ -32,12 +30,6 @@ interface TooltipOptions {
 }
 
 export class Tooltip {
-  /**
-   * The side of the anchor that the tooltip opens on. By default, it opens above the anchor, unless
-   * only the space below the anchor fits it.
-   */
-  side: TooltipSide | undefined;
-
   private readonly anchor: HTMLElement;
   private readonly bubble = document.createElement("div");
   private readonly box = document.createElement("div");
@@ -214,18 +206,33 @@ export class Tooltip {
     }
   };
 
+  /**
+   * Places the tooltip above its anchor, or below it if only that side has room. A tooltip too tall
+   * for either side goes on the side with more room, and scrolls.
+   */
   private position() {
     // Measure the tooltip at the corner of the window, where the window's edge does not wrap it.
     this.bubble.style.left = "0px";
     this.bubble.style.top = "0px";
+    this.bubble.style.removeProperty("--tooltip-room");
     const anchor = this.anchor.getBoundingClientRect();
-    const { offsetWidth: width, offsetHeight: height } = this.bubble;
+    const { offsetWidth: width } = this.bubble;
+    let { offsetHeight: height } = this.bubble;
 
-    const fitsAbove = anchor.top - height >= WINDOW_MARGIN_IN_PIXELS;
-    const fitsBelow =
-      anchor.bottom + height <= window.innerHeight - WINDOW_MARGIN_IN_PIXELS;
-    const side = this.side ?? (!fitsAbove && fitsBelow ? "bottom" : "top");
+    const roomAbove = anchor.top - WINDOW_MARGIN_IN_PIXELS;
+    const roomBelow =
+      window.innerHeight - WINDOW_MARGIN_IN_PIXELS - anchor.bottom;
+    const side =
+      height <= roomAbove || (height > roomBelow && roomAbove >= roomBelow)
+        ? "top"
+        : "bottom";
     this.bubble.dataset["side"] = side;
+
+    const room = side === "top" ? roomAbove : roomBelow;
+    if (height > room) {
+      this.bubble.style.setProperty("--tooltip-room", `${room}px`);
+      height = this.bubble.offsetHeight;
+    }
 
     const center = anchor.left + anchor.width / 2;
     const maxLeft = window.innerWidth - WINDOW_MARGIN_IN_PIXELS - width;

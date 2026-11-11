@@ -2,7 +2,6 @@
 
 import { MAX_DECK_SIZE, MAX_PLAYERS, MAX_SUITS } from "@hanabi-live/game";
 import { eRange, SECOND_IN_MILLISECONDS } from "complete-common";
-import type { TooltipSide } from "./Tooltip";
 import { Tooltip } from "./Tooltip";
 import { globals } from "./game/ui/UIGlobals";
 import { getHTMLElement } from "./utils";
@@ -93,13 +92,6 @@ export function setPosition(
   anchor.style.top = `${rect.y}px`;
   anchor.style.width = `${rect.width}px`;
   anchor.style.height = `${rect.height}px`;
-}
-
-export function setSide(selector: string, side: TooltipSide): void {
-  const tooltip = getTooltip(selector);
-  if (tooltip !== undefined) {
-    tooltip.side = side;
-  }
 }
 
 /** Whether the tooltip is still fading out after it was closed. */

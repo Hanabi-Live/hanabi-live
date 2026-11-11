@@ -9,12 +9,6 @@ import type { HanabiCard } from "./HanabiCard";
 import { globals } from "./UIGlobals";
 import { getCardOrStackBase } from "./getCardOrStackBase";
 
-/**
- * A card nearer than this to the top of the screen shows its note below it. The value is arbitrary;
- * 100 is not big enough for the BGA layout.
- */
-const TOOLTIP_FLIP_THRESHOLD_PX = 200;
-
 const REMOVE_PIPE_KEYS = new ReadonlySet([
   "ArrowDown",
   "ArrowLeft",
@@ -122,14 +116,8 @@ export function update(card: HanabiCard, text: string): void {
 export function show(card: HanabiCard): void {
   const tooltip = `#tooltip-${card.tooltipName}`;
 
-  // The tooltip appears above the card, unless the card is too close to the top of the screen. Use
-  // the on-screen bounds so that cards in rotated hands are measured correctly.
-  const rect = card.getClientRect({});
-  tooltips.setSide(
-    tooltip,
-    rect.y < TOOLTIP_FLIP_THRESHOLD_PX ? "bottom" : "top",
-  );
-  tooltips.setPosition(tooltip, rect);
+  // Use the on-screen bounds so that cards in rotated hands are measured correctly.
+  tooltips.setPosition(tooltip, card.getClientRect({}));
 
   // Update the tooltip content.
   let shownNote = get(card.order, false, true);
