@@ -40,7 +40,6 @@
   "dependencies": {
     "complete-common": "catalog:",
     "immer": "catalog:",
-    "tslib": "catalog:",
     "zod": "catalog:"
   },
   "devDependencies": {

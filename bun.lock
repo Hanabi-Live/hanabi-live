@@ -7,7 +7,6 @@
       "dependencies": {
         "@types/bun": "catalog:",
         "prettier": "catalog:",
-        "tslib": "catalog:",
       },
       "devDependencies": {
         "complete-cli": "catalog:",
@@ -75,7 +74,6 @@
       "dependencies": {
         "complete-common": "catalog:",
         "immer": "catalog:",
-        "tslib": "catalog:",
         "zod": "catalog:",
       },
       "devDependencies": {
@@ -164,7 +162,6 @@
     "react-redux": "9.3.1",
     "redux": "5.0.1",
     "tailwindcss": "4.3.5",
-    "tslib": "2.9.1",
     "turbo": "2.11.10",
     "typedoc": "0.28.20",
     "typescript": "6.0.3",
