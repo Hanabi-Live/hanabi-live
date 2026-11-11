@@ -84,8 +84,7 @@ const emojiList: string[] = [];
 const emoteList: string[] = [];
 let chatLineNum = 1;
 const lobbyChatDeletionState = new LobbyChatDeletionState();
-/** Who sent us the most recent private message. */
-let lastPm: string | undefined;
+let lastPrivateMessageSender: string | undefined;
 let datetimeLastChatInput = Date.now();
 let typedChatHistory: string[] = [];
 /**
@@ -236,8 +235,8 @@ function input(element: HTMLInputElement, room: "lobby" | "table") {
   }
 
   // /r - A PM reply.
-  if (text === "/r " && lastPm !== undefined) {
-    element.value = `/pm ${lastPm} `;
+  if (text === "/r " && lastPrivateMessageSender !== undefined) {
+    element.value = `/pm ${lastPrivateMessageSender} `;
     return;
   }
 
@@ -613,7 +612,7 @@ function addInternal(data: ChatData, fast: boolean, updateLiveState: boolean) {
     && data.recipient === globals.username
     && data.username !== undefined
   ) {
-    lastPm = data.username;
+    lastPrivateMessageSender = data.username;
   }
 
   const box = getChatBox(data);
