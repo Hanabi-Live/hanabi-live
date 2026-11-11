@@ -30,7 +30,7 @@ pub struct ChatPmRequest {
 
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
-pub struct ChatHistoryRequest {
+pub struct ChatPmHistoryRequest {
     #[serde(default)]
     #[schemars(range(min = -MAX_SAFE_INTEGER, max = MAX_SAFE_INTEGER))]
     pub amount: i64,
@@ -52,7 +52,7 @@ pub struct ChatUserRequest {
 
 #[derive(Clone, Debug, Default, Serialize, Deserialize, JsonSchema)]
 #[serde(default, rename_all = "camelCase", deny_unknown_fields)]
-pub struct ChatLinkedRequest {
+pub struct ChatRoomRequest {
     /// The table whose chat the command was typed in. Absent means the lobby.
     #[serde(rename = "tableID", skip_serializing_if = "Option::is_none")]
     pub table_id: Option<TableId>,
@@ -60,7 +60,7 @@ pub struct ChatLinkedRequest {
 
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
-pub struct TableRequest {
+pub struct TableRef {
     #[serde(rename = "tableID")]
     pub table_id: TableId,
 }
@@ -76,7 +76,7 @@ pub struct TableJoinRequest {
 
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
-pub struct TableLeaderRequest {
+pub struct TableSetLeaderRequest {
     #[serde(rename = "tableID")]
     pub table_id: TableId,
     pub username: String,
@@ -84,7 +84,7 @@ pub struct TableLeaderRequest {
 
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
-pub struct TableVariantRequest {
+pub struct TableSetVariantRequest {
     #[serde(rename = "tableID")]
     pub table_id: TableId,
     pub variant_name: String,
@@ -174,7 +174,7 @@ pub struct InactiveRequest {
 /// A page of the player's own game history. Values out of range get a friendly warning.
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
-pub struct HistoryRequest {
+pub struct GameHistoryRequest {
     #[serde(default)]
     #[schemars(range(min = -MAX_SAFE_INTEGER, max = MAX_SAFE_INTEGER))]
     pub offset: i64,
@@ -187,7 +187,7 @@ pub struct HistoryRequest {
 /// A page of the games on a seed, best scores first. Values out of range get a friendly warning.
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
-pub struct HistorySeedRequest {
+pub struct GameHistoryOtherScoresRequest {
     pub seed: String,
     #[serde(default)]
     #[schemars(range(min = -MAX_SAFE_INTEGER, max = MAX_SAFE_INTEGER))]
@@ -348,7 +348,7 @@ pub struct TagRequest {
 /// everyone watching.
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
-pub struct SharedReplayAction {
+pub struct ReplayAction {
     #[serde(rename = "tableID")]
     pub table_id: TableId,
     pub action: ReplayLeaderAction,

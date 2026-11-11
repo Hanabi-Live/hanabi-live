@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 
-import type { GameHistory, ServerCommandData } from "@hanabi-live/data";
+import type { GameHistoryEntry, ServerCommandData } from "@hanabi-live/data";
 import { act, cleanup, render, screen } from "@testing-library/react";
 import { Provider } from "react-redux";
 import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
@@ -38,12 +38,12 @@ function game(
     playerNames,
     score: 20,
     seed: `p2v0s${id}`,
-  } as unknown as GameHistory;
+  } as unknown as GameHistoryEntry;
 }
 
 function reply(
   seed: string,
-  games: readonly GameHistory[],
+  games: readonly GameHistoryEntry[],
   offset = 0,
   total = games.length,
 ) {

@@ -5,7 +5,7 @@ export * from "./functions/golem";
 export * from "./functions/history";
 export * from "./functions/tabAccount";
 export * from "./generated/protocol";
-export type * from "./interfaces/GameHistory";
+export type * from "./interfaces/GameHistoryEntry";
 export * from "./interfaces/Settings";
 export type * from "./interfaces/Spectator";
 export * from "./statusText";

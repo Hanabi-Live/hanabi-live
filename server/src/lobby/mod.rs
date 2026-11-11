@@ -254,14 +254,14 @@ pub async fn dispatch(
             relationships::relationship(pool, caller, command, &request.username, request.table_id)
                 .await?
         }
-        ClientMessage::GameHistory(hanabi_protocol::HistoryRequest { offset, amount }) => {
+        ClientMessage::GameHistoryEntry(hanabi_protocol::GameHistoryRequest { offset, amount }) => {
             if let Some(error) = page_error(offset, amount) {
                 return Ok(Some(vec![warning(&error)]));
             }
             let ids = history_ids(pool, caller.user, offset, amount).await?;
             vec![Effect::to_self(Outgoing::new(
                 hanabi_protocol::server::GAME_HISTORY,
-                hanabi_protocol::GameHistoryList(get_history(pool, &ids, false).await?),
+                hanabi_protocol::GameHistory(get_history(pool, &ids, false).await?),
             ))]
         }
         ClientMessage::GameHistoryOtherScores(request) => {

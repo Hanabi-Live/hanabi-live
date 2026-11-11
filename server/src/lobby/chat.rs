@@ -4,7 +4,7 @@ use crate::transport::{Identity, Outgoing};
 use anyhow::{Context, Result, ensure};
 use chrono::SecondsFormat;
 use hanabi_protocol::{
-    Chat, ChatHistory, ChatHistoryRequest, ChatSource, MAX_PRIVATE_HISTORY_MESSAGES, TableId,
+    Chat, ChatPmHistory, ChatPmHistoryRequest, ChatSource, MAX_PRIVATE_HISTORY_MESSAGES, TableId,
 };
 use serde::Deserialize;
 use serde_json::json;
@@ -322,7 +322,7 @@ pub async fn private_message(
 pub async fn private_history(
     pool: &PgPool,
     caller: &Identity,
-    data: &ChatHistoryRequest,
+    data: &ChatPmHistoryRequest,
 ) -> Result<Vec<Effect>> {
     let amount = data.amount;
     if !(1..=MAX_PRIVATE_HISTORY_MESSAGES).contains(&amount) {
@@ -380,7 +380,7 @@ pub async fn private_history(
             )
         });
     }
-    let response = ChatHistory {
+    let response = ChatPmHistory {
         messages: list,
         table_id: data.table_id,
     };

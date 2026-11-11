@@ -367,7 +367,7 @@ async fn public_database_routes_filters_privacy_exports_and_html() {
     let games: Vec<Value> = serde_json::from_str(&body).unwrap();
     assert_ne!(games, Vec::<Value>::new());
     for game in &games {
-        hanabi_protocol::validate::<hanabi_protocol::GameHistory>(game).unwrap();
+        hanabi_protocol::validate::<hanabi_protocol::GameHistoryEntry>(game).unwrap();
     }
     for (path, ids) in [
         ("/api/v1/history-full/Alice?start=2", vec![3, 2]),

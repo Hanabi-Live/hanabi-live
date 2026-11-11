@@ -1,7 +1,7 @@
 // Our past games, from the "gameHistory" server message, and the other games on a seed, from the
 // "gameHistoryOtherScores" server message.
 
-import type { GameHistory, ServerCommandData } from "@hanabi-live/data";
+import type { GameHistoryEntry, ServerCommandData } from "@hanabi-live/data";
 import { compareGameHistory } from "@hanabi-live/data";
 import type { PayloadAction } from "@reduxjs/toolkit";
 import {
@@ -15,7 +15,7 @@ type OtherScores = ServerCommandData["gameHistoryOtherScores"];
 type LobbyStatus = ServerCommandData["lobbyStatus"];
 
 const gamesAdapter = createEntityAdapter({
-  selectId: (game: GameHistory): number => game.gameID,
+  selectId: (game: GameHistoryEntry): number => game.gameID,
 });
 
 interface HistoryState {
@@ -34,7 +34,7 @@ interface HistoryState {
   readonly otherScores:
     | {
         readonly seed: string;
-        readonly games: readonly GameHistory[];
+        readonly games: readonly GameHistoryEntry[];
 
         /** The seed's variant, or undefined until the server sends a game. */
         readonly variantName: string | undefined;
@@ -63,7 +63,7 @@ const historySlice = createSlice({
     historyRequested(state) {
       state.loading = true;
     },
-    historyReceived(state, action: PayloadAction<readonly GameHistory[]>) {
+    historyReceived(state, action: PayloadAction<readonly GameHistoryEntry[]>) {
       gamesAdapter.setMany(state.games, action.payload);
       state.loading = false;
     },
@@ -140,6 +140,6 @@ export const selectShownGameCount = gamesSelectors.selectTotal;
 /** The newest games come first. */
 export const selectHistoryGames = createSelector(
   [gamesSelectors.selectAll],
-  (games: readonly GameHistory[]): readonly GameHistory[] =>
+  (games: readonly GameHistoryEntry[]): readonly GameHistoryEntry[] =>
     games.toSorted(compareGameHistory),
 );

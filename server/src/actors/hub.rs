@@ -19,7 +19,7 @@ use axum::http::StatusCode;
 use futures_util::FutureExt;
 use hanabi_protocol::PlayerIndex;
 use hanabi_protocol::{
-    ClientMessage, SoundLobby, Status, TableId, TableRequest, User, UserId, UserLeft, UserList,
+    ClientMessage, SoundLobby, Status, TableId, TableRef, User, UserId, UserLeft, UserList,
 };
 use std::{
     collections::{BTreeSet, HashMap},
@@ -186,10 +186,10 @@ impl Hub {
         if self.tables.remove(&id).is_some_and(|e| e.view.visible) {
             self.broadcast(&frame(
                 hanabi_protocol::server::TABLE_GONE,
-                TableRequest { table_id: id },
+                TableRef { table_id: id },
             ));
         }
-        let boot = frame(hanabi_protocol::server::BOOT, TableRequest { table_id: id });
+        let boot = frame(hanabi_protocol::server::BOOT, TableRef { table_id: id });
         let warning = frame(hanabi_protocol::server::WARNING, report.notice());
         let users = self
             .sessions
@@ -318,7 +318,7 @@ impl Hub {
             // without a warning.
             s.emit(&frame(
                 hanabi_protocol::server::TABLE_GONE,
-                TableRequest { table_id: id },
+                TableRef { table_id: id },
             ));
             let _ = reply.send(Err(CommandError::Rejected {
                 message: "Unknown table".into(),
@@ -754,7 +754,7 @@ impl Hub {
                     if self.tables.remove(&id).is_some_and(|e| e.view.visible) {
                         self.broadcast(&frame(
                             hanabi_protocol::server::TABLE_GONE,
-                            TableRequest { table_id: id },
+                            TableRef { table_id: id },
                         ));
                     }
                 }
@@ -996,7 +996,7 @@ impl Hub {
         if hidden {
             self.broadcast(&frame(
                 hanabi_protocol::server::TABLE_GONE,
-                TableRequest {
+                TableRef {
                     table_id: effects.table,
                 },
             ));

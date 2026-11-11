@@ -26,8 +26,7 @@ use futures_util::{FutureExt, future::BoxFuture};
 use hanabi_engine::{CompletionTiming, EndCondition};
 use hanabi_protocol::{CardRank, PlayerIndex, SuitIndex};
 use hanabi_protocol::{
-    Chat, ChatTyping, ClientMessage, IdleWarning, Notice, Status, TableRequest, TableStarted,
-    UserId,
+    Chat, ChatTyping, ClientMessage, IdleWarning, Notice, Status, TableRef, TableStarted, UserId,
 };
 use serde::Serialize;
 use std::{
@@ -582,7 +581,7 @@ impl TableActor {
                 s.clone(),
                 frame(
                     hanabi_protocol::server::JOINED,
-                    TableRequest {
+                    TableRef {
                         table_id: self.table.id,
                     },
                 ),
@@ -1130,7 +1129,7 @@ impl TableActor {
                 a.session.clone(),
                 frame(
                     hanabi_protocol::server::BOOT,
-                    TableRequest {
+                    TableRef {
                         table_id: self.table.id,
                     },
                 ),

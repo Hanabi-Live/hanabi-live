@@ -171,7 +171,13 @@ export const chatSchema = z
 export const chatDeleteSchema = z
   .strictObject({ chatID: z.number().int().min(1).max(9_007_199_254_740_991) })
   .readonly();
-export const chatHistorySchema = z
+export const chatListSchema = z
+  .strictObject({
+    messages: z.array(chatSchema).readonly(),
+    unread: z.number().int().min(0).max(9_007_199_254_740_991),
+  })
+  .readonly();
+export const chatPmHistorySchema = z
   .strictObject({
     messages: z.array(chatSchema).readonly(),
     /**
@@ -180,7 +186,7 @@ export const chatHistorySchema = z
     tableID: tableIdSchema.optional(),
   })
   .readonly();
-export const chatHistoryRequestSchema = z
+export const chatPmHistoryRequestSchema = z
   .strictObject({
     amount: z
       .number()
@@ -195,20 +201,6 @@ export const chatHistoryRequestSchema = z
     username: z.string().optional(),
   })
   .readonly();
-export const chatLinkedRequestSchema = z
-  .strictObject({
-    /**
-     * The table whose chat the command was typed in. Absent means the lobby.
-     */
-    tableID: tableIdSchema.optional(),
-  })
-  .readonly();
-export const chatListSchema = z
-  .strictObject({
-    messages: z.array(chatSchema).readonly(),
-    unread: z.number().int().min(0).max(9_007_199_254_740_991),
-  })
-  .readonly();
 export const chatPmRequestSchema = z
   .strictObject({ recipient: z.string().min(1), text: z.string().min(1) })
   .readonly();
@@ -219,6 +211,14 @@ export const chatRequestSchema = z
      */
     tableID: tableIdSchema.optional(),
     text: z.string().min(1),
+  })
+  .readonly();
+export const chatRoomRequestSchema = z
+  .strictObject({
+    /**
+     * The table whose chat the command was typed in. Absent means the lobby.
+     */
+    tableID: tableIdSchema.optional(),
   })
   .readonly();
 export const chatTypingSchema = z
@@ -314,7 +314,7 @@ export const gameEventMessageSchema = z
 /**
  * A completed game in a player's history.
  */
-export const gameHistorySchema = z
+export const gameHistoryEntrySchema = z
   .strictObject({
     datetimeFinished: z.iso.datetime({ precision: 3 }),
     datetimeStarted: z.iso.datetime({ precision: 3 }),
@@ -335,14 +335,18 @@ export const gameHistorySchema = z
     tags: z.array(z.string()).readonly(),
   })
   .readonly();
-export const gameHistoryListSchema = z.array(gameHistorySchema).readonly();
+
+/**
+ * A page of the player's own game history, newest first.
+ */
+export const gameHistorySchema = z.array(gameHistoryEntrySchema).readonly();
 
 /**
  * A page of the games played on a seed.
  */
 export const gameHistoryOtherScoresSchema = z
   .strictObject({
-    games: z.array(gameHistorySchema).readonly(),
+    games: z.array(gameHistoryEntrySchema).readonly(),
     numGamesOnSeed: z.number().int().min(0).max(9_007_199_254_740_991),
     /**
      * The position of the page's first game among all the games on the seed.
@@ -354,32 +358,9 @@ export const gameHistoryOtherScoresSchema = z
   .readonly();
 
 /**
- * A page of the player's own game history. Values out of range get a friendly warning.
- */
-export const historyRequestSchema = z
-  .strictObject({
-    /**
-     * The games on the page, from 1 to `MAX_PAGE_SIZE`.
-     */
-    amount: z
-      .number()
-      .int()
-      .min(-9_007_199_254_740_991)
-      .max(9_007_199_254_740_991)
-      .default(0),
-    offset: z
-      .number()
-      .int()
-      .min(-9_007_199_254_740_991)
-      .max(9_007_199_254_740_991)
-      .default(0),
-  })
-  .readonly();
-
-/**
  * A page of the games on a seed, best scores first. Values out of range get a friendly warning.
  */
-export const historySeedRequestSchema = z
+export const gameHistoryOtherScoresRequestSchema = z
   .strictObject({
     /**
      * The games on the page, from 1 to `MAX_PAGE_SIZE`.
@@ -397,6 +378,29 @@ export const historySeedRequestSchema = z
       .max(9_007_199_254_740_991)
       .default(0),
     seed: z.string(),
+  })
+  .readonly();
+
+/**
+ * A page of the player's own game history. Values out of range get a friendly warning.
+ */
+export const gameHistoryRequestSchema = z
+  .strictObject({
+    /**
+     * The games on the page, from 1 to `MAX_PAGE_SIZE`.
+     */
+    amount: z
+      .number()
+      .int()
+      .min(-9_007_199_254_740_991)
+      .max(9_007_199_254_740_991)
+      .default(0),
+    offset: z
+      .number()
+      .int()
+      .min(-9_007_199_254_740_991)
+      .max(9_007_199_254_740_991)
+      .default(0),
   })
   .readonly();
 
@@ -826,6 +830,76 @@ export const replayBoardElementSchema = z.enum([
 ]);
 
 /**
+ * What a shared-replay arrow points at: a card, or a part of the board.
+ */
+const replayArrowTargetSchema = z.union([
+  cardOrderSchema,
+  replayBoardElementSchema,
+]);
+
+/**
+ * A sound effect that a shared-replay leader plays for everyone watching.
+ */
+export const replaySoundEffectSchema = z.enum(["buzz", "clap", "holy", "nooo"]);
+
+/**
+ * What a shared-replay leader does.
+ */
+const replayLeaderActionSchema = z.discriminatedUnion("type", [
+  z
+    .strictObject({
+      segment: z.number().int().min(0).max(2_147_483_647),
+      type: z.literal("segment"),
+    })
+    .readonly(),
+  z
+    .strictObject({
+      /**
+       * Absent to clear the arrow.
+       */
+      target: replayArrowTargetSchema.optional(),
+      type: z.literal("arrow"),
+    })
+    .readonly(),
+  z
+    .strictObject({ sound: replaySoundEffectSchema, type: z.literal("sound") })
+    .readonly(),
+  z.strictObject({ type: z.literal("hypoStart") }).readonly(),
+  z.strictObject({ type: z.literal("hypoEnd") }).readonly(),
+  z
+    .strictObject({
+      action: hypotheticalEventSchema,
+      type: z.literal("hypoAction"),
+    })
+    .readonly(),
+  z.strictObject({ type: z.literal("hypoBack") }).readonly(),
+  z
+    .strictObject({
+      showDrawnCards: z.boolean(),
+      type: z.literal("hypoShowDrawnCards"),
+    })
+    .readonly(),
+  z
+    .strictObject({
+      efficiencyModifier: z
+        .number()
+        .int()
+        .min(-2_147_483_648)
+        .max(2_147_483_647),
+      type: z.literal("efficiencyModifier"),
+    })
+    .readonly(),
+]);
+
+/**
+ * A shared-replay leader's action. The leader sends it, and the server applies it and relays it to
+ * everyone watching.
+ */
+export const replayActionSchema = z
+  .strictObject({ action: replayLeaderActionSchema, tableID: tableIdSchema })
+  .readonly();
+
+/**
  * One player's notes, indexed by card order.
  */
 const noteRowSchema = z.array(z.string()).readonly();
@@ -1001,11 +1075,6 @@ export const replayLeaderSchema = z
   .readonly();
 
 /**
- * A sound effect that a shared-replay leader plays for everyone watching.
- */
-export const replaySoundEffectSchema = z.enum(["buzz", "clap", "holy", "nooo"]);
-
-/**
  * Sent before a graceful restart or stop closes the connection.
  */
 export const restartSchema = z
@@ -1106,71 +1175,6 @@ export const settingRequestSchema = z
      */
     settings: settingsSchema,
   })
-  .readonly();
-
-/**
- * What a shared-replay arrow points at: a card, or a part of the board.
- */
-const replayArrowTargetSchema = z.union([
-  cardOrderSchema,
-  replayBoardElementSchema,
-]);
-
-/**
- * What a shared-replay leader does.
- */
-const replayLeaderActionSchema = z.discriminatedUnion("type", [
-  z
-    .strictObject({
-      segment: z.number().int().min(0).max(2_147_483_647),
-      type: z.literal("segment"),
-    })
-    .readonly(),
-  z
-    .strictObject({
-      /**
-       * Absent to clear the arrow.
-       */
-      target: replayArrowTargetSchema.optional(),
-      type: z.literal("arrow"),
-    })
-    .readonly(),
-  z
-    .strictObject({ sound: replaySoundEffectSchema, type: z.literal("sound") })
-    .readonly(),
-  z.strictObject({ type: z.literal("hypoStart") }).readonly(),
-  z.strictObject({ type: z.literal("hypoEnd") }).readonly(),
-  z
-    .strictObject({
-      action: hypotheticalEventSchema,
-      type: z.literal("hypoAction"),
-    })
-    .readonly(),
-  z.strictObject({ type: z.literal("hypoBack") }).readonly(),
-  z
-    .strictObject({
-      showDrawnCards: z.boolean(),
-      type: z.literal("hypoShowDrawnCards"),
-    })
-    .readonly(),
-  z
-    .strictObject({
-      efficiencyModifier: z
-        .number()
-        .int()
-        .min(-2_147_483_648)
-        .max(2_147_483_647),
-      type: z.literal("efficiencyModifier"),
-    })
-    .readonly(),
-]);
-
-/**
- * A shared-replay leader's action. The leader sends it, and the server applies it and relays it to
- * everyone watching.
- */
-export const sharedReplayActionSchema = z
-  .strictObject({ action: replayLeaderActionSchema, tableID: tableIdSchema })
   .readonly();
 
 /**
@@ -1282,11 +1286,8 @@ export const tableCreateRequestSchema = z
 export const tableJoinRequestSchema = z
   .strictObject({ password: z.string().default(""), tableID: tableIdSchema })
   .readonly();
-export const tableLeaderRequestSchema = z
-  .strictObject({ tableID: tableIdSchema, username: z.string() })
-  .readonly();
 export const tableListSchema = z.array(tableSchema).readonly();
-export const tableRequestSchema = z
+export const tableRefSchema = z
   .strictObject({ tableID: tableIdSchema })
   .readonly();
 
@@ -1301,6 +1302,12 @@ export const tableRestartRequestSchema = z
     hidePregame: z.boolean().default(false),
     tableID: tableIdSchema,
   })
+  .readonly();
+export const tableSetLeaderRequestSchema = z
+  .strictObject({ tableID: tableIdSchema, username: z.string() })
+  .readonly();
+export const tableSetVariantRequestSchema = z
+  .strictObject({ tableID: tableIdSchema, variantName: z.string() })
   .readonly();
 export const tableSpectateRequestSchema = z
   .strictObject({
@@ -1361,9 +1368,6 @@ export const tableUpdateRequestSchema = z
     }),
     tableID: tableIdSchema,
   })
-  .readonly();
-export const tableVariantRequestSchema = z
-  .strictObject({ tableID: tableIdSchema, variantName: z.string() })
   .readonly();
 
 /**
@@ -1473,60 +1477,60 @@ export const welcomeSchema = z
 export const CLIENT_COMMAND_SCHEMAS = {
   chat: chatRequestSchema,
   chatBlock: chatUserRequestSchema,
-  chatBlocked: chatLinkedRequestSchema,
+  chatBlocked: chatRoomRequestSchema,
   chatFriend: chatUserRequestSchema,
   chatLink: chatUserRequestSchema,
-  chatLinked: chatLinkedRequestSchema,
+  chatLinked: chatRoomRequestSchema,
   chatPM: chatPmRequestSchema,
-  chatPMHistory: chatHistoryRequestSchema,
-  chatRead: tableRequestSchema,
-  chatTyping: tableRequestSchema,
+  chatPMHistory: chatPmHistoryRequestSchema,
+  chatRead: tableRefSchema,
+  chatTyping: tableRefSchema,
   chatUnblock: chatUserRequestSchema,
   chatUnfriend: chatUserRequestSchema,
   chatUnlink: chatUserRequestSchema,
-  gameHistory: historyRequestSchema,
-  gameHistoryOtherScores: historySeedRequestSchema,
-  getGameInit: tableRequestSchema,
-  getGameState: tableRequestSchema,
-  idleReset: tableRequestSchema,
+  gameHistory: gameHistoryRequestSchema,
+  gameHistoryOtherScores: gameHistoryOtherScoresRequestSchema,
+  getGameInit: tableRefSchema,
+  getGameState: tableRefSchema,
+  idleReset: tableRefSchema,
   inactive: inactiveRequestSchema,
-  loaded: tableRequestSchema,
+  loaded: tableRefSchema,
   lobbyLoad: emptySchema,
   note: noteRequestSchema,
   pause: pauseRequestSchema,
   playerAction: playerActionRequestSchema,
-  replayAction: sharedReplayActionSchema,
+  replayAction: replayActionSchema,
   replayCreate: replayCreateRequestSchema,
   setting: settingRequestSchema,
   sync: emptySchema,
   tableCreate: tableCreateRequestSchema,
   tableJoin: tableJoinRequestSchema,
-  tableLeave: tableRequestSchema,
-  tableReattend: tableRequestSchema,
+  tableLeave: tableRefSchema,
+  tableReattend: tableRefSchema,
   tableRestart: tableRestartRequestSchema,
   tableRestartDecline: tableRestartDeclineRequestSchema,
-  tableSetLeader: tableLeaderRequestSchema,
-  tableSetVariant: tableVariantRequestSchema,
+  tableSetLeader: tableSetLeaderRequestSchema,
+  tableSetVariant: tableSetVariantRequestSchema,
   tableSpectate: tableSpectateRequestSchema,
   tableStart: tableStartRequestSchema,
   tableSuggest: tableSuggestRequestSchema,
-  tableTerminate: tableRequestSchema,
-  tableUnattend: tableRequestSchema,
+  tableTerminate: tableRefSchema,
+  tableUnattend: tableRefSchema,
   tableUpdate: tableUpdateRequestSchema,
-  tableVoteForTermination: tableRequestSchema,
+  tableVoteForTermination: tableRefSchema,
   tag: tagRequestSchema,
   tagDelete: tagRequestSchema,
   tagSearch: tagSearchRequestSchema,
-  tagsDeleteAll: tableRequestSchema,
+  tagsDeleteAll: tableRefSchema,
 } as const;
 export const SERVER_COMMAND_SCHEMAS = {
   blocked: blockedSchema,
-  boot: tableRequestSchema,
+  boot: tableRefSchema,
   cardIdentities: cardIdentitiesSchema,
   chat: chatSchema,
   chatDelete: chatDeleteSchema,
   chatList: chatListSchema,
-  chatPMHistory: chatHistorySchema,
+  chatPMHistory: chatPmHistorySchema,
   chatTyping: chatTypingSchema,
   clock: clockSchema,
   connected: connectedSchema,
@@ -1535,15 +1539,15 @@ export const SERVER_COMMAND_SCHEMAS = {
   friends: friendsSchema,
   gameEvent: gameEventMessageSchema,
   gameEventList: gameEventListSchema,
-  gameHistory: gameHistoryListSchema,
-  gameHistoryAdded: gameHistorySchema,
+  gameHistory: gameHistorySchema,
+  gameHistoryAdded: gameHistoryEntrySchema,
   gameHistoryOtherScores: gameHistoryOtherScoresSchema,
   hypothetical: hypotheticalSchema,
-  idleReset: tableRequestSchema,
+  idleReset: tableRefSchema,
   idleWarning: idleWarningSchema,
   init: initSchema,
-  joined: tableRequestSchema,
-  left: tableRequestSchema,
+  joined: tableRefSchema,
+  left: tableRefSchema,
   lobbyStatus: lobbyStatusSchema,
   note: noteSchema,
   noteList: noteListSchema,
@@ -1551,7 +1555,7 @@ export const SERVER_COMMAND_SCHEMAS = {
   outdatedClient: emptySchema,
   pause: pauseSchema,
   pregame: pregameSchema,
-  replayAction: sharedReplayActionSchema,
+  replayAction: replayActionSchema,
   replayLeader: replayLeaderSchema,
   restart: restartSchema,
   restartDeclined: restartDeclinedSchema,
@@ -1560,7 +1564,7 @@ export const SERVER_COMMAND_SCHEMAS = {
   suggestion: suggestionSchema,
   synced: emptySchema,
   table: tableSchema,
-  tableGone: tableRequestSchema,
+  tableGone: tableRefSchema,
   tableList: tableListSchema,
   tableStarted: tableStartedSchema,
   user: userSchema,

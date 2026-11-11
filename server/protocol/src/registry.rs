@@ -25,49 +25,49 @@ macro_rules! client_contracts {
             Sync "sync" => Empty;
             Chat "chat" => ChatRequest;
             ChatPM "chatPM" => ChatPmRequest;
-            ChatPMHistory "chatPMHistory" => ChatHistoryRequest;
+            ChatPMHistory "chatPMHistory" => ChatPmHistoryRequest;
             ChatFriend "chatFriend" => ChatUserRequest;
             ChatUnfriend "chatUnfriend" => ChatUserRequest;
             ChatLink "chatLink" => ChatUserRequest;
             ChatUnlink "chatUnlink" => ChatUserRequest;
-            ChatLinked "chatLinked" => ChatLinkedRequest;
+            ChatLinked "chatLinked" => ChatRoomRequest;
             ChatBlock "chatBlock" => ChatUserRequest;
             ChatUnblock "chatUnblock" => ChatUserRequest;
-            ChatBlocked "chatBlocked" => ChatLinkedRequest;
-            ChatRead "chatRead" => TableRequest;
-            ChatTyping "chatTyping" => TableRequest;
+            ChatBlocked "chatBlocked" => ChatRoomRequest;
+            ChatRead "chatRead" => TableRef;
+            ChatTyping "chatTyping" => TableRef;
             TableJoin "tableJoin" => TableJoinRequest;
-            TableLeave "tableLeave" => TableRequest;
-            TableReattend "tableReattend" => TableRequest;
-            TableSetLeader "tableSetLeader" => TableLeaderRequest;
-            TableSetVariant "tableSetVariant" => TableVariantRequest;
+            TableLeave "tableLeave" => TableRef;
+            TableReattend "tableReattend" => TableRef;
+            TableSetLeader "tableSetLeader" => TableSetLeaderRequest;
+            TableSetVariant "tableSetVariant" => TableSetVariantRequest;
             TableStart "tableStart" => TableStartRequest;
             TableRestart "tableRestart" => TableRestartRequest;
             TableRestartDecline "tableRestartDecline" => TableRestartDeclineRequest;
             TableSuggest "tableSuggest" => TableSuggestRequest;
             TableSpectate "tableSpectate" => TableSpectateRequest;
-            TableUnattend "tableUnattend" => TableRequest;
-            TableTerminate "tableTerminate" => TableRequest;
-            TableVoteForTermination "tableVoteForTermination" => TableRequest;
-            GetGameInit "getGameInit" => TableRequest;
-            GetGameState "getGameState" => TableRequest;
-            Loaded "loaded" => TableRequest;
+            TableUnattend "tableUnattend" => TableRef;
+            TableTerminate "tableTerminate" => TableRef;
+            TableVoteForTermination "tableVoteForTermination" => TableRef;
+            GetGameInit "getGameInit" => TableRef;
+            GetGameState "getGameState" => TableRef;
+            Loaded "loaded" => TableRef;
             Setting "setting" => SettingRequest;
             Inactive "inactive" => InactiveRequest;
-            GameHistory "gameHistory" => HistoryRequest;
-            GameHistoryOtherScores "gameHistoryOtherScores" => HistorySeedRequest;
+            GameHistoryEntry "gameHistory" => GameHistoryRequest;
+            GameHistoryOtherScores "gameHistoryOtherScores" => GameHistoryOtherScoresRequest;
             TagSearch "tagSearch" => TagSearchRequest;
             TableCreate "tableCreate" => TableCreateRequest;
             TableUpdate "tableUpdate" => TableUpdateRequest;
             ReplayCreate "replayCreate" => ReplayCreateRequest;
             PlayerAction "playerAction" => PlayerActionRequest;
             Pause "pause" => PauseRequest;
-            IdleReset "idleReset" => TableRequest;
+            IdleReset "idleReset" => TableRef;
             Note "note" => NoteRequest;
             Tag "tag" => TagRequest;
             TagDelete "tagDelete" => TagRequest;
-            TagsDeleteAll "tagsDeleteAll" => TableRequest;
-            ReplayAction "replayAction" => SharedReplayAction;
+            TagsDeleteAll "tagsDeleteAll" => TableRef;
+            ReplayAction "replayAction" => ReplayAction;
         }
     };
 }
@@ -80,11 +80,11 @@ macro_rules! server_contracts {
             CONNECTED "connected" => Connected;
             PAUSE "pause" => Pause;
             IDLE_WARNING "idleWarning" => IdleWarning;
-            IDLE_RESET "idleReset" => TableRequest;
+            IDLE_RESET "idleReset" => TableRef;
             VOTE_CHANGE "voteChange" => VoteChange;
             CARD_IDENTITIES "cardIdentities" => CardIdentities;
             FINISH_ONGOING_GAME "finishOngoingGame" => FinishOngoingGame;
-            REPLAY_ACTION "replayAction" => SharedReplayAction;
+            REPLAY_ACTION "replayAction" => ReplayAction;
             REPLAY_LEADER "replayLeader" => ReplayLeader;
             RESTART_DECLINED "restartDeclined" => RestartDeclined;
             SUGGESTION "suggestion" => Suggestion;
@@ -95,17 +95,17 @@ macro_rules! server_contracts {
             GAME_EVENT "gameEvent" => GameEventMessage;
             GAME_EVENT_LIST "gameEventList" => GameEventList;
             INIT "init" => Init;
-            BOOT "boot" => TableRequest;
+            BOOT "boot" => TableRef;
             SYNCED "synced" => Empty;
             LOBBY_STATUS "lobbyStatus" => LobbyStatus;
             CHAT "chat" => Chat;
             CHAT_DELETE "chatDelete" => ChatDelete;
             CHAT_LIST "chatList" => ChatList;
-            CHAT_PM_HISTORY "chatPMHistory" => ChatHistory;
+            CHAT_PM_HISTORY "chatPMHistory" => ChatPmHistory;
             CHAT_TYPING "chatTyping" => ChatTyping;
-            JOINED "joined" => TableRequest;
-            LEFT "left" => TableRequest;
-            TABLE_GONE "tableGone" => TableRequest;
+            JOINED "joined" => TableRef;
+            LEFT "left" => TableRef;
+            TABLE_GONE "tableGone" => TableRef;
             TABLE_STARTED "tableStarted" => TableStarted;
             USER "user" => User;
             USER_LIST "userList" => UserList;
@@ -122,8 +122,8 @@ macro_rules! server_contracts {
             TABLE "table" => Table;
             TABLE_LIST "tableList" => TableList;
             PREGAME "pregame" => Pregame;
-            GAME_HISTORY "gameHistory" => GameHistoryList;
-            GAME_HISTORY_ADDED "gameHistoryAdded" => GameHistory;
+            GAME_HISTORY "gameHistory" => GameHistory;
+            GAME_HISTORY_ADDED "gameHistoryAdded" => GameHistoryEntry;
             GAME_HISTORY_OTHER_SCORES "gameHistoryOtherScores" => GameHistoryOtherScores;
         }
     };
@@ -134,7 +134,7 @@ macro_rules! server_contracts {
 macro_rules! exported_types {
     ($apply:ident) => {
         $apply! {
-            TableId, GameId, UserId, Settings, Spectator, GameHistory,
+            TableId, GameId, UserId, Settings, Spectator, GameHistoryEntry,
             ReplayGame, ReplayBoardElement, ReplaySoundEffect, SoundMove, Status, LoginRequest,
             LoginResponse, PasswordHashRequest, PasswordHashResponse, PublicGamePage,
             VariantNames, ScoreFrequency,
@@ -335,13 +335,13 @@ macro_rules! server_messages {
 /// Every message the server can send. Building a frame requires one of these and its payload type.
 pub mod server {
     use super::{
-        Blocked, CardIdentities, Chat, ChatDelete, ChatHistory, ChatList, ChatTyping, Clock,
+        Blocked, CardIdentities, Chat, ChatDelete, ChatList, ChatPmHistory, ChatTyping, Clock,
         Connected, Empty, FinishOngoingGame, Friends, GameEventList, GameEventMessage, GameHistory,
-        GameHistoryList, GameHistoryOtherScores, Hypothetical, IdleWarning, Init, LobbyStatus,
-        Note, NoteList, NoteListPlayer, Notice, Pause, Pregame, ReplayLeader, Restart,
-        RestartDeclined, ServerMessage, SharedReplayAction, SoundLobby, Spectators, Suggestion,
-        Table, TableList, TableRequest, TableStarted, User, UserInactive, UserLeft, UserList,
-        VoteChange, Welcome,
+        GameHistoryEntry, GameHistoryOtherScores, Hypothetical, IdleWarning, Init, LobbyStatus,
+        Note, NoteList, NoteListPlayer, Notice, Pause, Pregame, ReplayAction, ReplayLeader,
+        Restart, RestartDeclined, ServerMessage, SoundLobby, Spectators, Suggestion, Table,
+        TableList, TableRef, TableStarted, User, UserInactive, UserLeft, UserList, VoteChange,
+        Welcome,
     };
     server_contracts!(server_messages);
 }

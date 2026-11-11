@@ -34,7 +34,7 @@ async fn websocket_errors_explain_invalid_fields_and_database_failures_postgres(
     for (request, expected) in [
         (
             "gameHistory {\"offset\":\"bad\",\"amount\":10}",
-            "Invalid HistoryRequest payload at /offset",
+            "Invalid GameHistoryRequest payload at /offset",
         ),
         (
             "gameHistory {\"offset\":0,\"amount\":10}",

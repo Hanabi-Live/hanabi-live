@@ -307,10 +307,10 @@ pub(super) async fn list(
     })
 }
 
-/// The public history lists the lobby's `GameHistory` contract.
-fn game_history(row: HistoryRow) -> anyhow::Result<hanabi_protocol::GameHistory> {
+/// The public history lists the lobby's `GameHistoryEntry` contract.
+fn game_history(row: HistoryRow) -> anyhow::Result<hanabi_protocol::GameHistoryEntry> {
     let g = row.game;
-    Ok(hanabi_protocol::GameHistory {
+    Ok(hanabi_protocol::GameHistoryEntry {
         game_id: hanabi_protocol::GameId(g.id),
         options: crate::model::wire_options(&crate::archive::options(&g)?),
         seed: g.seed,
@@ -331,7 +331,7 @@ pub(super) async fn history(
     state: &PublicState,
     s: Selection,
     seed_sort: bool,
-) -> Result<Vec<hanabi_protocol::GameHistory>> {
+) -> Result<Vec<hanabi_protocol::GameHistoryEntry>> {
     let tag_user = s.tag_user;
     let page = s.page;
     let mut qb = selected(s);
@@ -381,7 +381,7 @@ pub(super) async fn tagged(
     state: &PublicState,
     params: &Params,
     search: bool,
-) -> Result<Vec<hanabi_protocol::GameHistory>> {
+) -> Result<Vec<hanabi_protocol::GameHistoryEntry>> {
     let mut s = Selection::default();
     if search {
         let value = params

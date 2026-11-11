@@ -24,7 +24,7 @@ use hanabi_engine::{GameSetup, Interpretation};
 use hanabi_protocol::ClientMessage;
 use hanabi_protocol::PlayerIndex;
 use hanabi_protocol::UserId;
-use hanabi_protocol::{Chat, MIN_PLAYERS, Status, TableRequest, TableStarted};
+use hanabi_protocol::{Chat, MIN_PLAYERS, Status, TableRef, TableStarted};
 use std::{collections::HashSet, sync::Arc};
 
 /// Appended to the name of a table that a split creates.
@@ -261,7 +261,7 @@ impl TableActor {
                     a.session,
                     frame(
                         hanabi_protocol::server::BOOT,
-                        TableRequest {
+                        TableRef {
                             table_id: self.table.id,
                         },
                     ),
@@ -448,7 +448,7 @@ impl TableActor {
                 session.clone(),
                 frame(
                     hanabi_protocol::server::BOOT,
-                    TableRequest {
+                    TableRef {
                         table_id: self.table.id,
                     },
                 ),

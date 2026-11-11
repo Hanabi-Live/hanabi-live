@@ -18,7 +18,7 @@ use crate::{
 use anyhow::Context;
 use chrono::Utc;
 use hanabi_protocol::ClientMessage;
-use hanabi_protocol::{HypotheticalEvent, MIN_PLAYERS, PregameStats, Status, TableRequest, UserId};
+use hanabi_protocol::{HypotheticalEvent, MIN_PLAYERS, PregameStats, Status, TableRef, UserId};
 use std::{
     collections::{BTreeMap, HashSet},
     sync::Arc,
@@ -312,7 +312,7 @@ impl TableActor {
     async fn replay_action(
         &mut self,
         session: Arc<Session>,
-        r: hanabi_protocol::SharedReplayAction,
+        r: hanabi_protocol::ReplayAction,
     ) -> CommandResult<()> {
         use hanabi_protocol::ReplayLeaderAction as R;
 
@@ -529,7 +529,7 @@ impl TableActor {
         let mut e = self.effects();
         let boot = frame(
             hanabi_protocol::server::BOOT,
-            TableRequest {
+            TableRef {
                 table_id: self.table.id,
             },
         );
@@ -553,7 +553,7 @@ impl TableActor {
             self.pregame_messages(&mut e);
             let joined = frame(
                 hanabi_protocol::server::JOINED,
-                TableRequest {
+                TableRef {
                     table_id: self.table.id,
                 },
             );

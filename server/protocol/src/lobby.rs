@@ -398,7 +398,7 @@ pub struct TableList(pub Vec<Table>);
 /// A completed game in a player's history.
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
-pub struct GameHistory {
+pub struct GameHistoryEntry {
     #[serde(rename = "gameID")]
     pub game_id: GameId,
     pub options: GameOptions,
@@ -422,15 +422,16 @@ pub struct GameHistory {
     pub tags: Vec<String>,
 }
 
+/// A page of the player's own game history, newest first.
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
 #[serde(transparent)]
-pub struct GameHistoryList(pub Vec<GameHistory>);
+pub struct GameHistory(pub Vec<GameHistoryEntry>);
 
 /// A page of the games played on a seed.
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct GameHistoryOtherScores {
-    pub games: Vec<GameHistory>,
+    pub games: Vec<GameHistoryEntry>,
     /// The position of the page's first game among all the games on the seed.
     #[schemars(range(min = 0, max = MAX_SAFE_INTEGER))]
     pub offset: i64,

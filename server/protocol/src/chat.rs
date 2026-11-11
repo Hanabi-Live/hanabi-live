@@ -76,7 +76,7 @@ pub struct ChatList {
 
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
-pub struct ChatHistory {
+pub struct ChatPmHistory {
     pub messages: Vec<Chat>,
     /// The table whose chat requested the history. Absent means the lobby.
     #[serde(rename = "tableID", skip_serializing_if = "Option::is_none")]

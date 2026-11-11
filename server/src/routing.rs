@@ -25,7 +25,7 @@ pub fn route(message: &ClientMessage) -> Route {
         M::Sync(_) | M::TableCreate(_) | M::ReplayCreate(_) => return Route::Hub,
         M::Setting(_)
         | M::Inactive(_)
-        | M::GameHistory(_)
+        | M::GameHistoryEntry(_)
         | M::GameHistoryOtherScores(_)
         | M::ChatPM(_)
         | M::ChatPMHistory(_)

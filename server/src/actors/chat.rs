@@ -9,7 +9,7 @@ use crate::{
 use anyhow::{Context, Result};
 use chrono::Utc;
 use hanabi_protocol::UserId;
-use hanabi_protocol::{Chat, ChatSource, MAX_PLAYERS, MIN_PLAYERS, Status, TableId, TableRequest};
+use hanabi_protocol::{Chat, ChatSource, MAX_PLAYERS, MIN_PLAYERS, Status, TableId, TableRef};
 use std::{
     collections::HashSet,
     sync::Arc,
@@ -544,7 +544,7 @@ impl TableActor {
                 a.session,
                 frame(
                     hanabi_protocol::server::LEFT,
-                    TableRequest {
+                    TableRef {
                         table_id: self.table.id,
                     },
                 ),

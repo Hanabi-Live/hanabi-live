@@ -632,7 +632,7 @@ impl Snapshot {
         Ok(())
     }
     /// The game as a player's history lists it, or `None` for a game that is not in the database.
-    pub fn history(&self, count: i64) -> Option<hanabi_protocol::GameHistory> {
+    pub fn history(&self, count: i64) -> Option<hanabi_protocol::GameHistoryEntry> {
         let mut names = self
             .players
             .iter()
@@ -640,7 +640,7 @@ impl Snapshot {
             .collect::<Vec<_>>();
         names.sort_by_key(|s| s.to_lowercase());
         let time = timestamp;
-        Some(hanabi_protocol::GameHistory {
+        Some(hanabi_protocol::GameHistoryEntry {
             game_id: self.game_id?,
             options: wire_options(&self.game.options),
             seed: self.seed.clone(),

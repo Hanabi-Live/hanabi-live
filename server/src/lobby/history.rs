@@ -57,7 +57,7 @@ pub async fn get_history(
     pool: &PgPool,
     ids: &[i32],
     seed_order: bool,
-) -> Result<Vec<hanabi_protocol::GameHistory>> {
+) -> Result<Vec<hanabi_protocol::GameHistoryEntry>> {
     macro_rules! rows {
         ($order:literal) => {
             sqlx::query_as!(
@@ -82,7 +82,7 @@ pub async fn get_history(
     let mut result = Vec::new();
     for row in rows {
         let game = row.game.0;
-        result.push(hanabi_protocol::GameHistory {
+        result.push(hanabi_protocol::GameHistoryEntry {
             game_id: hanabi_protocol::GameId(game.id),
             options: crate::model::wire_options(&crate::archive::options(&game)?),
             score: i32::from(game.score),

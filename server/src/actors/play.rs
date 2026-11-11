@@ -18,7 +18,7 @@ use hanabi_engine::RecordedAction;
 use hanabi_engine::{CompletionTiming, EndCondition, Recipient};
 use hanabi_protocol::ClientMessage;
 use hanabi_protocol::PlayerIndex;
-use hanabi_protocol::{CardOrder, Chat, ChatTyping, MIN_PLAYERS, Status, TableRequest, ViewMode};
+use hanabi_protocol::{CardOrder, Chat, ChatTyping, MIN_PLAYERS, Status, TableRef, ViewMode};
 use std::sync::Arc;
 
 impl TableActor {
@@ -300,7 +300,7 @@ impl TableActor {
         self.add_all(
             &mut e,
             hanabi_protocol::server::IDLE_RESET,
-            TableRequest {
+            TableRef {
                 table_id: self.table.id,
             },
         );

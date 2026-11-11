@@ -11,9 +11,7 @@ use anyhow::Context;
 use chrono::Utc;
 use hanabi_protocol::PlayerIndex;
 use hanabi_protocol::UserId;
-use hanabi_protocol::{
-    LobbySound, SoundLobby, Status, TableJoinRequest, TableRequest, TableStarted,
-};
+use hanabi_protocol::{LobbySound, SoundLobby, Status, TableJoinRequest, TableRef, TableStarted};
 use std::{
     collections::{BTreeSet, HashSet},
     sync::Arc,
@@ -314,7 +312,7 @@ impl TableActor {
                 session.clone(),
                 frame(
                     hanabi_protocol::server::JOINED,
-                    TableRequest {
+                    TableRef {
                         table_id: self.table.id,
                     },
                 ),
@@ -386,7 +384,7 @@ impl TableActor {
                 session,
                 frame(
                     hanabi_protocol::server::LEFT,
-                    TableRequest {
+                    TableRef {
                         table_id: self.table.id,
                     },
                 ),

@@ -195,7 +195,7 @@ async fn discord_rendering(app: &App, text: &str) -> Option<String> {
 fn history_command(message: &ClientMessage) -> bool {
     matches!(
         message,
-        ClientMessage::GameHistory(_) | ClientMessage::GameHistoryOtherScores(_)
+        ClientMessage::GameHistoryEntry(_) | ClientMessage::GameHistoryOtherScores(_)
     )
 }
 
