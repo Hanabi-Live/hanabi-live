@@ -1,8 +1,8 @@
-import type { UIAction } from "../types/UIAction.ts";
-import type { UIState } from "../types/UIState.ts";
+import type { UiAction } from "../types/UiAction.ts";
+import type { UiState } from "../types/UiState.ts";
 import { HanabiCard } from "../ui/HanabiCard.ts";
 
-export function uiReducer(uiState: UIState, uiAction: UIAction): UIState {
+export function uiReducer(uiState: UiState, uiAction: UiAction): UiState {
   switch (uiAction.type) {
     case "dragStart": {
       if (uiAction.card instanceof HanabiCard) {

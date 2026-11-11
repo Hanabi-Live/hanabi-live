@@ -2,19 +2,19 @@ import { describe, expect, test, vi } from "vitest";
 
 vi.mock("./chat.ts", () => ({
   SelfChatMessageType: {},
-  sendSelfPMFromServer: vi.fn(),
+  sendSelfPmFromServer: vi.fn(),
   sendChat: vi.fn(),
 }));
 vi.mock("./Globals.ts", () => ({ globals: {} }));
 vi.mock("./lobby/createGame.ts", () => ({}));
 vi.mock("./modals.ts", () => ({}));
-vi.mock("./lobby/createReplayJSON.ts", () => ({
-  createJSONFromReplay: vi.fn(),
+vi.mock("./lobby/createReplayJson.ts", () => ({
+  createJsonFromReplay: vi.fn(),
 }));
 const {
   getVariantFromArgs,
   getVariantNameFromPartial,
-  parsePMHistoryCommandArgs,
+  parsePmHistoryCommandArgs,
 } = await import("./chatCommands.ts");
 
 const brownFives = "Brown-Fives (6 Suits)";
@@ -23,16 +23,16 @@ const brownFivesPrism6Suits = "Brown-Fives & Prism (6 Suits)";
 describe("functions", () => {
   describe("parsing PM history arguments", () => {
     test("uses five messages by default", () => {
-      expect(parsePMHistoryCommandArgs([])).toEqual({ amount: 5 });
-      expect(parsePMHistoryCommandArgs(["Alice"])).toEqual({
+      expect(parsePmHistoryCommandArgs([])).toEqual({ amount: 5 });
+      expect(parsePmHistoryCommandArgs(["Alice"])).toEqual({
         username: "Alice",
         amount: 5,
       });
     });
 
     test("accepts an amount with or without a username", () => {
-      expect(parsePMHistoryCommandArgs(["15"])).toEqual({ amount: 15 });
-      expect(parsePMHistoryCommandArgs(["Alice", "15"])).toEqual({
+      expect(parsePmHistoryCommandArgs(["15"])).toEqual({ amount: 15 });
+      expect(parsePmHistoryCommandArgs(["Alice", "15"])).toEqual({
         username: "Alice",
         amount: 15,
       });
@@ -46,7 +46,7 @@ describe("functions", () => {
       [["Alice", "nope"]],
       [["Alice", "5", "extra"]],
     ])("rejects invalid arguments: %j", (args: readonly string[]) => {
-      expect(parsePMHistoryCommandArgs(args)).toBeUndefined();
+      expect(parsePmHistoryCommandArgs(args)).toBeUndefined();
     });
   });
 

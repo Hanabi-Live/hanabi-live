@@ -6,4 +6,4 @@ import type { catalogSuitSchema } from "../generated/protocol.ts";
  * from the server's catalog contract.
  */
 // eslint-disable-next-line @typescript-eslint/no-empty-object-type
-export interface SuitJSON extends Readonly<z.infer<typeof catalogSuitSchema>> {}
+export interface SuitJson extends Readonly<z.infer<typeof catalogSuitSchema>> {}

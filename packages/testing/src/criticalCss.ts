@@ -40,7 +40,7 @@ async function buildBundle(directory: string): Promise<string> {
   const bundlePath = path.join(directory, "public/css", BUNDLE_FILENAME);
   await mkdir(path.dirname(bundlePath), { recursive: true });
   await run(process.execPath, [
-    path.join(ROOT, "packages/scripts/src/buildCSS.ts"),
+    path.join(ROOT, "packages/scripts/src/buildCss.ts"),
     bundlePath,
   ]);
   return await Bun.file(bundlePath).text();
@@ -51,7 +51,7 @@ async function buildBundle(directory: string): Promise<string> {
  * starts within the viewport. Rules inside media queries and cascade layers are checked the same
  * way, and other at-rules (such as font faces and keyframes) are left out.
  */
-async function getCriticalCSS({
+async function getCriticalCss({
   bundle,
   bundleFilename,
 }: {
@@ -173,7 +173,7 @@ async function extract(address: string, bundle: string): Promise<string> {
       `Failed to load "${address}" (HTTP ${String(response?.status())}).`,
     );
   }
-  const critical = await page.evaluate(getCriticalCSS, {
+  const critical = await page.evaluate(getCriticalCss, {
     bundle,
     bundleFilename: BUNDLE_FILENAME,
   });

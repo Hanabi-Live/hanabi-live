@@ -31,7 +31,7 @@ pub struct Options {
 struct StoredOptions {
     num_players: usize,
     variant_name: String,
-    #[serde(rename = "variantID", skip_serializing_if = "Option::is_none")]
+    #[serde(skip_serializing_if = "Option::is_none")]
     variant_id: Option<u32>,
     timed: bool,
     /// The starting clock of a timed game, in whole seconds.

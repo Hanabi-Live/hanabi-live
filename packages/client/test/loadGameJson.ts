@@ -33,9 +33,9 @@ import { shouldStoreSegment } from "../src/game/reducers/stateReducerHelpers.ts"
 import type { State } from "../src/game/types/State.ts";
 import type testGame from "../test_data/up_or_down.json";
 
-type JSONGame = typeof testGame;
+type JsonGame = typeof testGame;
 
-enum JSONActionType {
+enum JsonActionType {
   ActionTypePlay,
   ActionTypeDiscard,
   ActionTypeColorClue,
@@ -43,13 +43,13 @@ enum JSONActionType {
   ActionTypeGameOver,
 }
 
-interface JSONAction {
+interface JsonAction {
   type: number;
   target: number;
   value: number;
 }
 
-export function loadGameJSON(gameJson: JSONGame): State {
+export function loadGameJson(gameJson: JsonGame): State {
   const potentialNumPlayers = gameJson.players.length;
   if (potentialNumPlayers < MIN_PLAYERS || potentialNumPlayers > MAX_PLAYERS) {
     throw new Error("The game JSON does not have a valid amount of players.");
@@ -74,8 +74,8 @@ export function loadGameJSON(gameJson: JSONGame): State {
   let turn = 0; // Start on the 0th turn.
   let currentPlayerIndex: PlayerIndex = 0; // The player at index 0 goes first.
 
-  for (const actionJSON of gameJson.actions) {
-    const action = parseJSONAction(currentPlayerIndex, turn, deck, actionJSON);
+  for (const actionJson of gameJson.actions) {
+    const action = parseJsonAction(currentPlayerIndex, turn, deck, actionJson);
     if (action !== undefined) {
       actions.push(action);
       if (
@@ -94,14 +94,14 @@ export function loadGameJSON(gameJson: JSONGame): State {
   // If the game was exported from the server and it ended in a specific way, the final action will
   // be a "gameOver" action. Otherwise, we need to insert one at the end, which matches what the
   // server would do when emulating all of the database actions.
-  const finalGameJSONAction = gameJson.actions.at(-1);
+  const finalGameJsonAction = gameJson.actions.at(-1);
   assertDefined(
-    finalGameJSONAction,
+    finalGameJsonAction,
     "Failed to get the final action of the JSON.",
   );
 
   // eslint-disable-next-line @typescript-eslint/no-unsafe-enum-comparison
-  if (finalGameJSONAction.type !== JSONActionType.ActionTypeGameOver) {
+  if (finalGameJsonAction.type !== JsonActionType.ActionTypeGameOver) {
     actions.push({
       type: "gameOver",
       // Assume that the game ended normally; this is not necessarily the case and will break if a
@@ -313,21 +313,21 @@ function dealInitialCards(
   return topOfDeck;
 }
 
-function parseJSONAction(
+function parseJsonAction(
   currentPlayer: number,
   turn: number,
   deck: readonly CardIdentity[],
-  a: JSONAction,
+  a: JsonAction,
 ): GameAction | undefined {
   assertEnumValue(
     a.type,
-    JSONActionType,
+    JsonActionType,
     `Invalid JSON action type: ${a.type}`,
   );
   switch (a.type) {
-    case JSONActionType.ActionTypePlay:
-    case JSONActionType.ActionTypeDiscard: {
-      const isPlay = a.type === JSONActionType.ActionTypePlay;
+    case JsonActionType.ActionTypePlay:
+    case JsonActionType.ActionTypeDiscard: {
+      const isPlay = a.type === JsonActionType.ActionTypePlay;
 
       const cardIdentity = deck[a.target];
       assertDefined(
@@ -345,13 +345,13 @@ function parseJSONAction(
       return isPlay ? (action as ActionPlay) : (action as ActionDiscard);
     }
 
-    case JSONActionType.ActionTypeColorClue:
-    case JSONActionType.ActionTypeRankClue: {
+    case JsonActionType.ActionTypeColorClue:
+    case JsonActionType.ActionTypeRankClue: {
       return {
         type: "clue",
         clue: {
           type:
-            a.type === JSONActionType.ActionTypeColorClue ? "color" : "rank",
+            a.type === JsonActionType.ActionTypeColorClue ? "color" : "rank",
           value: a.value,
         },
         giver: currentPlayer,
@@ -362,7 +362,7 @@ function parseJSONAction(
       } as ActionClue;
     }
 
-    case JSONActionType.ActionTypeGameOver: {
+    case JsonActionType.ActionTypeGameOver: {
       // The test games store an end condition as its position in the enum.
       const endCondition = Object.values(EndCondition)[a.value];
       assertDefined(endCondition, `Invalid end condition: ${a.value}`);

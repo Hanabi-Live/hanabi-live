@@ -4,10 +4,10 @@ import { assertDefined, parseFloatSafe } from "complete-common";
 import interact from "interactjs";
 import { globals } from "../Globals.ts";
 import { FADE_TIME_MS, LOCAL_STORAGE_KEY } from "../constants.ts";
-import { getHTMLElement } from "../utils.ts";
-import * as newUIState from "./newUI/newUIState.ts";
+import { getHtmlElement } from "../utils.ts";
+import * as newUiState from "./newUi/newUiState.ts";
 
-const gameChatText = getHTMLElement("#game-chat-text");
+const gameChatText = getHtmlElement("#game-chat-text");
 
 /** The size of the chat modal before the player has moved or resized it, in percent of the page. */
 const DEFAULT_CHAT_MODAL_WIDTH_PERCENT = 20;
@@ -143,8 +143,8 @@ export function init(): void {
 
 /** Whether the player can see the in-game chat, in either game screen. */
 export function isOpen(): boolean {
-  return newUIState.isActive()
-    ? newUIState.isChatOpen()
+  return newUiState.isActive()
+    ? newUiState.isChatOpen()
     : $("#game-chat-modal").is(":visible");
 }
 
@@ -159,9 +159,9 @@ export function toggle(focusInput = true): void {
 export function show(focusInput = true): void {
   markRead();
 
-  if (newUIState.isActive()) {
+  if (newUiState.isActive()) {
     // The redesigned game screen shows the chat in its side panel instead of in the modal.
-    newUIState.setChatOpen(true);
+    newUiState.setChatOpen(true);
     if (focusInput) {
       $("#game-chat-input").trigger("focus");
     }
@@ -220,8 +220,8 @@ export function show(focusInput = true): void {
 }
 
 export function hide(): void {
-  if (newUIState.isActive()) {
-    newUIState.setChatOpen(false);
+  if (newUiState.isActive()) {
+    newUiState.setChatOpen(false);
     return;
   }
 

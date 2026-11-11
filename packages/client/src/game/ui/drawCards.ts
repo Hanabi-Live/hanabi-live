@@ -829,12 +829,12 @@ function getSuitStyle(
     }
 
     const fillToMixHex = getColorForPrismCard(variant, rank).fill;
-    const fillToMixRGB = hexToRGB(fillToMixHex);
-    if (fillToMixRGB === undefined) {
+    const fillToMixRgb = hexToRgb(fillToMixHex);
+    if (fillToMixRgb === undefined) {
       return suit.fill;
     }
 
-    const fillToMixArray = [fillToMixRGB.r, fillToMixRGB.g, fillToMixRGB.b];
+    const fillToMixArray = [fillToMixRgb.r, fillToMixRgb.g, fillToMixRgb.b];
     const fillToMixArray2 = suit.oneOfEach ? BLACK_RGB : WHITE_RGB;
 
     return colorMixer(fillToMixArray, fillToMixArray2, 0.5); // Mix the two colors evenly
@@ -920,7 +920,7 @@ function colorMixer(
 }
 
 /** From: https://stackoverflow.com/questions/5623838/rgb-to-hex-and-hex-to-rgb */
-function hexToRGB(
+function hexToRgb(
   hex: string,
 ): { r: number; g: number; b: number } | undefined {
   const result = /^#?([\da-f]{2})([\da-f]{2})([\da-f]{2})$/iu.exec(hex);

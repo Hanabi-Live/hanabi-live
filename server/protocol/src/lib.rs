@@ -290,7 +290,7 @@ impl JsonSchema for Timestamp {
     Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize, JsonSchema,
 )]
 #[serde(transparent)]
-#[schemars(extend("x-brand" = "TableID"))]
+#[schemars(extend("x-brand" = "TableId"))]
 pub struct TableId(#[schemars(range(min = 0, max = MAX_SAFE_INTEGER))] pub u64);
 
 impl std::fmt::Display for TableId {
@@ -303,7 +303,7 @@ impl std::fmt::Display for TableId {
     Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize, JsonSchema,
 )]
 #[serde(transparent)]
-#[schemars(extend("x-brand" = "UserID"))]
+#[schemars(extend("x-brand" = "UserId"))]
 pub struct UserId(#[schemars(range(min = 0, max = i32::MAX))] pub i32);
 
 impl std::fmt::Display for UserId {
@@ -316,7 +316,7 @@ impl std::fmt::Display for UserId {
     Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize, JsonSchema,
 )]
 #[serde(transparent)]
-#[schemars(extend("x-brand" = "GameID"))]
+#[schemars(extend("x-brand" = "GameId"))]
 pub struct GameId(#[schemars(range(min = 0, max = i32::MAX))] pub i32);
 
 impl std::fmt::Display for GameId {

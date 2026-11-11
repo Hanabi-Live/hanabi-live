@@ -5,7 +5,7 @@ import { createPortal } from "react-dom";
 import { globals } from "../../Globals.ts";
 import { Tooltip } from "../../Tooltip.ts";
 import { useAppSelector } from "../../store.ts";
-import { getHTMLInputElement } from "../../utils.ts";
+import { getHtmlInputElement } from "../../utils.ts";
 import type { UserRow } from "./usersSlice.ts";
 
 const NAME_CLASSES = {
@@ -47,7 +47,7 @@ export function UserLink({
     };
   }, [menu]);
 
-  const profileURL = `/scores/${encodeURIComponent(user.username)}`;
+  const profileUrl = `/scores/${encodeURIComponent(user.username)}`;
   function closeMenu() {
     tooltipRef.current?.close();
   }
@@ -56,7 +56,7 @@ export function UserLink({
     <>
       <a
         className={NAME_CLASSES[kind]}
-        href={profileURL}
+        href={profileUrl}
         onClick={(event) => {
           // A modified click still opens the profile, like other links.
           if (event.ctrlKey || event.metaKey || event.shiftKey) {
@@ -81,7 +81,7 @@ export function UserLink({
           <li>
             <a
               className={ITEM_CLASS_NAME}
-              href={profileURL}
+              href={profileUrl}
               onClick={closeMenu}
               rel="noopener noreferrer"
               target="_blank"
@@ -171,7 +171,7 @@ function MenuButton({
 
 /** Starts a private message to a user in the lobby chat, which is also shown in the pre-game. */
 function startPrivateMessage(name: string) {
-  const input = getHTMLInputElement("#lobby-chat-input");
+  const input = getHtmlInputElement("#lobby-chat-input");
   input.value = `/pm ${name} `;
   input.focus();
 }

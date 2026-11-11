@@ -5,7 +5,7 @@ import { Fragment, useLayoutEffect, useRef } from "react";
 import { PATH } from "../../constants.ts";
 import { useAppSelector } from "../../store.ts";
 import * as tooltips from "../../tooltips.ts";
-import { copyStringToClipboard, getURLFromPath } from "../../utils.ts";
+import { copyStringToClipboard, getUrlFromPath } from "../../utils.ts";
 import { OptionIcon } from "../OptionIcon.tsx";
 import { BORDERED_TABLE } from "../borderedTable.ts";
 import {
@@ -123,7 +123,7 @@ function TableRowView({
       onClick={(event) => {
         if (event.ctrlKey) {
           // Copy the URL that clicking on this row would go to.
-          copyStringToClipboard(getURLFromPath(getPath(table, action)));
+          copyStringToClipboard(getUrlFromPath(getPath(table, action)));
           tooltips.showCopied(ref.current!);
           return;
         }

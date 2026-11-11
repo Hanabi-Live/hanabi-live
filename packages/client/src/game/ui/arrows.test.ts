@@ -4,7 +4,7 @@ import { describe, expect, test, vi } from "vitest";
 
 import type { Arrow } from "./controls/Arrow.ts";
 
-vi.mock("./UIGlobals.ts", () => ({ globals: {} }));
+vi.mock("./UiGlobals.ts", () => ({ globals: {} }));
 vi.mock("./HanabiCard.ts", () => ({ HanabiCard: Date }));
 vi.mock("./CardLayout.ts", () => ({ CardLayout: Date }));
 vi.mock("./controls/StrikeSquare.ts", () => ({ StrikeSquare: Date }));
@@ -14,7 +14,7 @@ vi.mock("./getCardOrStackBase.ts", () => ({
 vi.mock("./konvaHelpers.ts", () => ({}));
 vi.mock("./drawPip.ts", () => ({ drawPip: vi.fn() }));
 vi.mock("../../tooltips.ts", () => ({}));
-const { globals } = await import("./UIGlobals.ts");
+const { globals } = await import("./UiGlobals.ts");
 const { set } = await import("./arrows.ts");
 
 describe("clue arrow suit pips", () => {

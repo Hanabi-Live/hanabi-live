@@ -6,7 +6,7 @@
 import { MAX_STRIKES } from "@hanabi-live/game";
 import Konva from "konva";
 import type { LayoutChild } from "./LayoutChild.ts";
-import { globals } from "./UIGlobals.ts";
+import { globals } from "./UiGlobals.ts";
 import {
   CARD_ANIMATION_LENGTH_SECONDS,
   FULL_TURN_DEGREES,

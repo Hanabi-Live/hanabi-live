@@ -4,7 +4,7 @@ import { MIN_PLAYERS } from "@hanabi-live/game";
 import Konva from "konva";
 import { getCanvasColors } from "../../theme.ts";
 import * as tooltips from "../../tooltips.ts";
-import { globals } from "./UIGlobals.ts";
+import { globals } from "./UiGlobals.ts";
 import {
   DIALOG_CORNER_RADIUS,
   FONT_FAMILY,

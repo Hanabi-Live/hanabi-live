@@ -15,14 +15,14 @@ import {
 } from "@hanabi-live/game";
 import { assertDefined, parseIntSafe } from "complete-common";
 import { includes } from "lodash";
-import { SelfChatMessageType, sendSelfPMFromServer } from "../chat.ts";
+import { SelfChatMessageType, sendSelfPmFromServer } from "../chat.ts";
 import type {
   ClientAction,
   ClientActionClue,
 } from "../game/types/ClientAction.ts";
 import type { ReplayState } from "../game/types/ReplayState.ts";
-import { globals } from "../game/ui/UIGlobals.ts";
-import type { GameJSON } from "./hypoCompress.ts";
+import { globals } from "../game/ui/UiGlobals.ts";
+import type { GameJson } from "./hypoCompress.ts";
 import { shrink } from "./hypoCompress.ts";
 
 const PLAY_REGEX =
@@ -30,9 +30,9 @@ const PLAY_REGEX =
 const DISCARD_REGEX = /^(?:\[Hypo\] )?(.*) discards .* slot #(\d).*$/u;
 const CLUE_REGEX = /^.+ tells (.*) about \w+ ([A-Za-z]+|\d)s?$/u;
 
-export function createJSONFromReplay(room: string): void {
+export function createJsonFromReplay(room: string): void {
   if (globals.store === undefined || !globals.state.finished) {
-    sendSelfPMFromServer(
+    sendSelfPmFromServer(
       "You can only use the <code>/copy</code> command during the review of a game.",
       room,
       SelfChatMessageType.Error,
@@ -44,7 +44,7 @@ export function createJSONFromReplay(room: string): void {
       (action) => action.type === "clue" && action.clue.type === undefined,
     )
   ) {
-    sendSelfPMFromServer(
+    sendSelfPmFromServer(
       "The completed clue history is still loading. Please try again after it loads.",
       room,
       SelfChatMessageType.Error,
@@ -53,7 +53,7 @@ export function createJSONFromReplay(room: string): void {
   }
 
   // Copy the entire deck.
-  const deck: Array<NonNullable<GameJSON["deck"]>[number]> = [];
+  const deck: Array<NonNullable<GameJson["deck"]>[number]> = [];
   for (const [i, cardIdentity] of globals.state.cardIdentities.entries()) {
     const morph = globals.state.replay.hypothetical?.morphedIdentities[i];
     if (
@@ -69,7 +69,7 @@ export function createJSONFromReplay(room: string): void {
       cardIdentity.suitIndex === undefined
       || cardIdentity.rank === undefined
     ) {
-      sendSelfPMFromServer(
+      sendSelfPmFromServer(
         "The deck is still loading. Please try again after it loads.",
         room,
         SelfChatMessageType.Error,
@@ -108,7 +108,7 @@ export function createJSONFromReplay(room: string): void {
   }
 
   // Anonymize the players
-  const game: GameJSON = {
+  const game: GameJson = {
     playerNames: DEFAULT_PLAYER_NAMES.slice(
       0,
       globals.metadata.playerNames.length,
@@ -127,9 +127,9 @@ export function createJSONFromReplay(room: string): void {
   };
 
   const json = JSON.stringify(game);
-  const URLData = shrink(json);
-  if (URLData === undefined || URLData === "") {
-    sendSelfPMFromServer(
+  const UrlData = shrink(json);
+  if (UrlData === undefined || UrlData === "") {
+    sendSelfPmFromServer(
       "Failed to compress the JSON data.",
       room,
       SelfChatMessageType.Error,
@@ -137,30 +137,30 @@ export function createJSONFromReplay(room: string): void {
     return;
   }
 
-  const URL = `${SITE_URL}/shared-replay-json/${URLData}`;
+  const URL = `${SITE_URL}/shared-replay-json/${UrlData}`;
   navigator.clipboard
     .writeText(URL)
     .then(() => {
-      sendSelfPMFromServer(
+      sendSelfPmFromServer(
         "The URL for this hypothetical is copied to your clipboard.",
         room,
         SelfChatMessageType.Info,
       );
       const urlFix = json.replaceAll('"', String.raw`\'`);
       const here = String.raw`<button href="#" onclick="navigator.clipboard.writeText('${urlFix}'.replace(/\'/g, String.fromCharCode(34)));return false;"><strong>here</strong></button>`;
-      sendSelfPMFromServer(
+      sendSelfPmFromServer(
         `Click ${here} to copy the raw JSON data to your clipboard.`,
         room,
         SelfChatMessageType.Info,
       );
     })
     .catch((error: unknown) => {
-      sendSelfPMFromServer(
+      sendSelfPmFromServer(
         `Failed to copy the URL to your clipboard: ${error}`,
         room,
         SelfChatMessageType.Error,
       );
-      sendSelfPMFromServer(URL, room);
+      sendSelfPmFromServer(URL, room);
     });
 }
 

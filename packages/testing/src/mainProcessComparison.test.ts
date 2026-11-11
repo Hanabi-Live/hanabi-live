@@ -47,7 +47,7 @@ databaseDescribe("normal-server protocol workload", () => {
       replayHistoryReady: [] as number[],
       reconnectHistoryReady: [] as number[],
     };
-    let peakRSSKiB = 0;
+    let peakRssKib = 0;
     const completed: Array<{
       gameId: number;
       aliceCookie: string;
@@ -72,8 +72,8 @@ databaseDescribe("normal-server protocol workload", () => {
           `/proc/${processState.child.pid}/status`,
           "utf8",
         );
-        peakRSSKiB = Math.max(
-          peakRSSKiB,
+        peakRssKib = Math.max(
+          peakRssKib,
           Number(/VmHWM:\s+(\d+)/u.exec(status)?.[1] ?? 0),
         );
       }
@@ -335,7 +335,7 @@ databaseDescribe("normal-server protocol workload", () => {
           seed: `p2v0s${SEED_SUFFIX}`,
           games: completed.length,
           lanes: 4,
-          peakRSSKiB,
+          peakRssKib,
           stateStore: "PostgreSQL",
           gameplayMilliseconds,
           mixedReadMilliseconds: performance.now() - readStart,

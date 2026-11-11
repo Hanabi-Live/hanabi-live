@@ -1,6 +1,6 @@
 import type { PlayerIndex } from "@hanabi-live/game";
 import type { State } from "../../../types/State.ts";
-import { globals } from "../../UIGlobals.ts";
+import { globals } from "../../UiGlobals.ts";
 import { controlsHypothetical } from "../../controlsHypothetical.ts";
 
 /** Returns the index of the player whose cards can be dragged, or undefined if no cards can be. */

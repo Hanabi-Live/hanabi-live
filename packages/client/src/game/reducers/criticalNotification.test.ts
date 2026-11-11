@@ -8,7 +8,7 @@ import {
 } from "@hanabi-live/game";
 import { assertDefined } from "complete-common";
 import { beforeAll, describe, expect, test } from "vitest";
-import { loadGameJSON } from "../../../test/loadGameJSON.ts";
+import { loadGameJson } from "../../../test/loadGameJson.ts";
 import upOrDownGame from "../../../test_data/up_or_down_critical.json";
 import type { State } from "../types/State.ts";
 
@@ -21,7 +21,7 @@ describe("UI", () => {
   describe("Up or Down test game", () => {
     beforeAll(() => {
       // Load the game and get the final state.
-      testState = loadGameJSON(upOrDownGame);
+      testState = loadGameJson(upOrDownGame);
     });
 
     describe("at turn 3", () => {

@@ -3,13 +3,13 @@
 import type {
   ServerCommandData,
   Settings,
-  TableID,
-  UserID,
+  TableId,
+  UserId,
 } from "@hanabi-live/data";
 import { assertDefined } from "complete-common";
 import type { Connection } from "./Connection.ts";
 import type { Loader } from "./Loader.ts";
-import type { HanabiUI } from "./game/ui/HanabiUI.ts";
+import type { HanabiUi } from "./game/ui/HanabiUi.ts";
 import { totalGamesChanged } from "./lobby/gameHistory/historySlice.ts";
 import type { Game } from "./lobby/pregame/pregameSlice.ts";
 import { gameChanged } from "./lobby/pregame/pregameSlice.ts";
@@ -22,7 +22,7 @@ import {
   friendsChanged,
   screenChanged,
   settingsChanged,
-  userIDChanged,
+  userIdChanged,
   usernameChanged,
 } from "./sessionSlice.ts";
 import { store } from "./store.ts";
@@ -44,12 +44,12 @@ export class Globals {
   /* eslint-disable @typescript-eslint/class-methods-use-this -- These delegate to the store. */
 
   /** From the "welcome" message, or `undefined` before it. */
-  get userId(): UserID | undefined {
+  get userId(): UserId | undefined {
     return store.getState().session.userId;
   }
 
-  set userId(userId: UserID | undefined) {
-    store.dispatch(userIDChanged(userId));
+  set userId(userId: UserId | undefined) {
+    store.dispatch(userIdChanged(userId));
   }
 
   /** From the "welcome" message. */
@@ -141,7 +141,7 @@ export class Globals {
   // -----------------------
 
   /** Keys are IDs. */
-  userMap = new Map<UserID, ServerCommandData["user"]>();
+  userMap = new Map<UserId, ServerCommandData["user"]>();
 
   /** Keys are IDs. */
 
@@ -150,10 +150,10 @@ export class Globals {
   idleMinutes = 0;
 
   /** The table we are joined to, if any. */
-  tableId: TableID | undefined = undefined;
+  tableId: TableId | undefined = undefined;
 
   /** The table we are joined to, for code that only runs at a table. */
-  get joinedTableId(): TableID {
+  get joinedTableId(): TableId {
     assertDefined(this.tableId, "We are not joined to a table.");
     return this.tableId;
   }
@@ -163,7 +163,7 @@ export class Globals {
   // ------------
 
   imageLoader: Loader | undefined = undefined;
-  ui: HanabiUI | undefined = undefined;
+  ui: HanabiUi | undefined = undefined;
 
   /** Used to keep track of how many in-game chat messages are currently unread. */
   chatUnread = 0;

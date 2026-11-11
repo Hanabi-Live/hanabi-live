@@ -965,6 +965,7 @@ mod tests {
     /// A replayed game whose head and parts hold turns and hypothetical events.
     fn replayed() -> Result<TableSnapshot> {
         let mut table = pregame(TableId(1));
+        table.options.variant_id = Some(0);
         let clue = |rank| hanabi_protocol::ClueTurn {
             target: hanabi_protocol::PlayerIndex(1),
             clue: hanabi_protocol::Clue::Rank {
@@ -1018,6 +1019,27 @@ mod tests {
             "The older format has no clue turns"
         );
         let decoded = crate::checkpoint::decode(&head.to_string(), &parts)?;
+        ensure!(serde_json::to_value(&decoded)? == expected);
+        Ok(())
+    }
+    #[test]
+    fn checkpoints_from_format_6_spell_the_variant_id_in_capitals() -> Result<()> {
+        let mut table = replayed()?;
+        let expected = serde_json::to_value(&table)?;
+        let (encoded, _) = crate::checkpoint::encode(&mut table, &SavedParts::default())?;
+        let older = |text: &str| text.replace("\"variantId\"", "\"variantID\"");
+        let head = older(&older_head(&encoded.head, "hanabi-live-6")?);
+        let parts = encoded
+            .changes
+            .written
+            .iter()
+            .map(|(key, part)| (key.clone(), older(part)))
+            .collect::<Vec<_>>();
+        ensure!(
+            head.contains("variantID") && parts.iter().any(|(_, part)| part.contains("variantID")),
+            "The older format has no variant ID"
+        );
+        let decoded = crate::checkpoint::decode(&head, &parts)?;
         ensure!(serde_json::to_value(&decoded)? == expected);
         Ok(())
     }

@@ -11,7 +11,7 @@ REPO_ROOT=$(cd -- "$DIR/../.." &> /dev/null && pwd)
 # parse.
 OUTPUT=$(mktemp)
 trap 'rm -f "$OUTPUT"' EXIT
-bun "$REPO_ROOT/packages/scripts/src/buildCSS.ts" "$OUTPUT"
+bun "$REPO_ROOT/packages/scripts/src/buildCss.ts" "$OUTPUT"
 
 CSS_DIR="$REPO_ROOT/public/css"
 TOKENS="$CSS_DIR/tokens.css"

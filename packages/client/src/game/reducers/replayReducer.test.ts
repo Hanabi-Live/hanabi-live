@@ -10,7 +10,7 @@ import type { State } from "../types/State.ts";
 vi.mock("./uiReducer.ts", () => ({
   uiReducer: vi.fn(),
 }));
-const { loadGameJSON } = await import("../../../test/loadGameJSON.ts");
+const { loadGameJson } = await import("../../../test/loadGameJson.ts");
 const { hypoAction, hypoBack, hypoEnd, hypoStart, init } =
   await import("../../../test/testActions.ts");
 const { replayReducer } = await import("./replayReducer.ts");
@@ -24,7 +24,7 @@ describe("replayReducer", () => {
   // Initialize the state before each test.
   beforeAll(() => {
     // Load the game and start a replay.
-    testState = loadGameJSON(testGame);
+    testState = loadGameJson(testGame);
     testState = stateReducer(testState, init());
     metadata = testState.metadata; // eslint-disable-line @typescript-eslint/prefer-destructuring
     const selected = testState.replay.states[testState.replay.segment];

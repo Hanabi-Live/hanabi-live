@@ -1,5 +1,5 @@
 import type { State } from "../../../types/State.ts";
-import { globals } from "../../UIGlobals.ts";
+import { globals } from "../../UiGlobals.ts";
 
 export function onObserversStarted(
   state: State,

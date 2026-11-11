@@ -369,6 +369,7 @@ const UPGRADES: &[(&str, &str, Upgrade)] = &[
     ("hanabi-live-3", "hanabi-live-4", clues_and_identities),
     ("hanabi-live-4", "hanabi-live-5", time_control),
     ("hanabi-live-5", "hanabi-live-6", server_chat_authors),
+    ("hanabi-live-6", "hanabi-live-7", camel_case_variant_id),
 ];
 
 /// Rewrites a table that an older server saved, one format at a time, into the current format.
@@ -520,6 +521,34 @@ fn nest_clue(action: &mut Value) {
         "target": action["target"],
         "clue": { "type": kind, "value": action[field] },
     });
+}
+
+/// Format 6 spelled the "ID" of a game's `variantID` option in capitals.
+#[expect(
+    clippy::unnecessary_wraps,
+    reason = "every upgrade has the signature of `Upgrade`"
+)]
+fn camel_case_variant_id(head: &mut Value, _: &mut [(String, String)]) -> Result<()> {
+    rename_everywhere(head, "variantID", "variantId");
+    Ok(())
+}
+
+/// Renames a field of every object in a value.
+fn rename_everywhere(value: &mut Value, from: &str, to: &str) {
+    match value {
+        Value::Object(object) => {
+            if let Some(field) = object.remove(from) {
+                object.insert(to.to_owned(), field);
+            }
+            object
+                .values_mut()
+                .for_each(|value| rename_everywhere(value, from, to));
+        }
+        Value::Array(items) => items
+            .iter_mut()
+            .for_each(|value| rename_everywhere(value, from, to)),
+        _ => {}
+    }
 }
 
 /// What a save changes among a table's parts.

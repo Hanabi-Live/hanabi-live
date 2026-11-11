@@ -142,9 +142,9 @@ async function clickNav(page: Page, id: string) {
  * Opens the replay of a seeded game from the lobby. The client ignores a "/replay/<id>" path for an
  * account that is a few seconds old.
  */
-async function openReplay(page: Page, replayID: number) {
+async function openReplay(page: Page, replayId: number) {
   await clickNav(page, "replay");
-  await page.fill("#replay-id", replayID.toString());
+  await page.fill("#replay-id", replayId.toString());
   await page.click("#replay-submit");
   await page.waitForSelector(".konvajs-content");
   await page.waitForTimeout(SETTLE_MILLISECONDS * 2);
@@ -237,13 +237,13 @@ async function clickCanvasElement(
 }
 
 function getStates({
-  replayID,
+  replayId,
   startGame,
   endGame,
   passLeader,
 }: Pick<
   Seed,
-  "replayID" | "startGame" | "endGame" | "passLeader"
+  "replayId" | "startGame" | "endGame" | "passLeader"
 >): readonly State[] {
   return [
     { name: "login", path: "/", loggedIn: false },
@@ -422,7 +422,7 @@ function getStates({
       path: "/",
       loggedIn: true,
       prepare: async (page) => {
-        await openReplay(page, replayID);
+        await openReplay(page, replayId);
       },
       cleanup: leaveReplay,
     },
@@ -432,7 +432,7 @@ function getStates({
       path: "/",
       loggedIn: true,
       prepare: async (page) => {
-        await openReplay(page, replayID);
+        await openReplay(page, replayId);
       },
       hover: async (page) => {
         await hoverCanvasElement(page, ["deck"]);
@@ -446,7 +446,7 @@ function getStates({
       path: "/",
       loggedIn: true,
       prepare: async (page) => {
-        await openReplay(page, replayID);
+        await openReplay(page, replayId);
       },
       hover: async (page) => {
         await hoverCanvasElement(page, ["spectatorsLabel"]);
@@ -460,7 +460,7 @@ function getStates({
       path: "/",
       loggedIn: true,
       prepare: async (page) => {
-        await openReplay(page, replayID);
+        await openReplay(page, replayId);
         await hoverCanvasElement(page, ["enterHypoButton"]);
         await page.mouse.down();
         await page.mouse.up();
@@ -485,7 +485,7 @@ function getStates({
       path: "/",
       loggedIn: true,
       prepare: async (page) => {
-        await openReplay(page, replayID);
+        await openReplay(page, replayId);
         await clickCanvasElement(page, ["enterHypoButton"]);
         await clickCanvasElement(page, ["editCardsCheckbox"]);
       },
@@ -592,7 +592,7 @@ function getStates({
       prepare: async (page) => {
         const hands = page.locator('#game-new-ui [aria-label="Hands"]');
         if (!(await hands.isVisible())) {
-          await clickCanvasElement(page, ["newUIButton"]);
+          await clickCanvasElement(page, ["newUiButton"]);
         }
         await hands.waitFor();
         await endGame();
@@ -660,7 +660,7 @@ async function buildBundle(directory: string) {
   const bundlePath = path.join(directory, "public/css", BUNDLE_FILENAME);
   await mkdir(path.dirname(bundlePath), { recursive: true });
   await run(process.execPath, [
-    path.join(ROOT, "packages/scripts/src/buildCSS.ts"),
+    path.join(ROOT, "packages/scripts/src/buildCss.ts"),
     bundlePath,
   ]);
 }
@@ -669,7 +669,7 @@ async function buildBundle(directory: string) {
 async function buildRefBundle(ref: string, directory: string): Promise<string> {
   const source = path.join(directory, "compare-source");
   await mkdir(source);
-  // Refs before the switch to ES modules name the bundler "buildCSS.mts".
+  // Refs before the switch to ES modules name the bundler "buildCss.mts".
   const { stdout: bundler } = await run(
     "git",
     [
@@ -677,8 +677,8 @@ async function buildRefBundle(ref: string, directory: string): Promise<string> {
       "--name-only",
       ref,
       "--",
-      "packages/scripts/src/buildCSS.ts",
-      "packages/scripts/src/buildCSS.mts",
+      "packages/scripts/src/buildCss.ts",
+      "packages/scripts/src/buildCss.mts",
     ],
     { cwd: ROOT },
   );
@@ -801,7 +801,7 @@ async function playGame(alice: Peer, bob: Peer): Promise<number> {
 }
 
 interface Seed {
-  readonly replayID: number;
+  readonly replayId: number;
   /** Starts the game at Bob's table, where the browser's account must be a player. */
   readonly startGame: () => Promise<void>;
   /** Ends the game at Bob's table, which turns it into a shared replay that Bob leads. */
@@ -817,13 +817,13 @@ interface Seed {
  * a bot online, so that the lobby shows a lobby chat message and the tabs of the online users list.
  */
 async function seed(address: string): Promise<Seed> {
-  let replayID = 0;
+  let replayId = 0;
   // Each game gets new connections, so that the server's messages about one game cannot affect the
   // next.
   for (let i = 0; i < 3; i++) {
     const alice = await connect(address, USERNAME);
     const bob = await connect(address, "Bob");
-    replayID = await playGame(alice, bob);
+    replayId = await playGame(alice, bob);
     alice.socket.close();
     bob.socket.close();
   }
@@ -912,7 +912,7 @@ async function seed(address: string): Promise<Seed> {
   }
 
   return {
-    replayID,
+    replayId,
     startGame,
     endGame,
     passLeader,

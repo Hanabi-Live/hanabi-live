@@ -1,15 +1,15 @@
 import { parseIntSafe } from "complete-common";
 import type Konva from "konva";
 import * as modals from "../../modals.ts";
-import { getHTMLElement, getHTMLInputElement } from "../../utils.ts";
-import { globals } from "./UIGlobals.ts";
+import { getHtmlElement, getHtmlInputElement } from "../../utils.ts";
+import { globals } from "./UiGlobals.ts";
 import * as arrows from "./arrows.ts";
 import { RIGHT_MOUSE_BUTTON } from "./constants.ts";
 import type { TextWithTooltip } from "./controls/TextWithTooltip.ts";
 
-const setModifierButton = getHTMLElement("#set-modifier-button");
-const setModifierCurrent = getHTMLElement("#set-modifier-current");
-const setModifierNew = getHTMLInputElement("#set-modifier-new");
+const setModifierButton = getHtmlElement("#set-modifier-button");
+const setModifierCurrent = getHtmlElement("#set-modifier-current");
+const setModifierNew = getHtmlInputElement("#set-modifier-new");
 
 export function setEfficiencyModifier(efficiencyModifier: number): void {
   globals.store!.dispatch({

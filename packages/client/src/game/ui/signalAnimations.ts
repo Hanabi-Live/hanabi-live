@@ -3,7 +3,7 @@
 
 import Konva from "konva";
 import type { LayoutChild } from "./LayoutChild.ts";
-import { globals } from "./UIGlobals.ts";
+import { globals } from "./UiGlobals.ts";
 import { EMPTY_DECK_COLOR, WARNING_COLOR } from "./constants.ts";
 import {
   EffectTimeline,

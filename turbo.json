@@ -24,7 +24,7 @@
       "inputs": [
         "bun.lock",
         "package.json",
-        "packages/scripts/src/buildCSS.ts",
+        "packages/scripts/src/buildCss.ts",
         "public/css/**",
         "!public/css/main.*.min.css",
         "scripts/lint/check-css.sh"
@@ -224,9 +224,9 @@
       "inputs": [
         "bun.lock",
         "package.json",
-        "packages/scripts/src/buildCSS.ts",
+        "packages/scripts/src/buildCss.ts",
         "packages/testing/package.json",
-        "packages/testing/src/criticalCSS.ts",
+        "packages/testing/src/criticalCss.ts",
         "packages/testing/src/database.ts",
         "packages/testing/src/mainProcessSupport.ts",
         "packages/testing/src/runTests.ts",

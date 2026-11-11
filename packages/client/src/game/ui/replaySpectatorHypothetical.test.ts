@@ -3,20 +3,20 @@ import { createStore } from "redux";
 import { describe, expect, test, vi } from "vitest";
 
 vi.mock("../reducers/uiReducer.ts", () => ({ uiReducer: vi.fn() }));
-vi.mock("./UIGlobals.ts", () => ({ globals: {} }));
+vi.mock("./UiGlobals.ts", () => ({ globals: {} }));
 vi.mock("../../modals.ts", () => ({}));
 vi.mock("./arrows.ts", () => ({}));
 vi.mock("./getCardOrStackBase.ts", () => ({}));
 vi.mock("./konvaHelpers.ts", () => ({}));
 vi.mock("../../utils.ts", () => ({
-  getHTMLElement: vi.fn(),
-  getHTMLInputElement: vi.fn(),
+  getHtmlElement: vi.fn(),
+  getHtmlInputElement: vi.fn(),
 }));
 const { initialState } =
   await import("../reducers/initialStates/initialState.ts");
 const { stateReducer } = await import("../reducers/stateReducer.ts");
 const replay = await import("./replay.ts");
-const { globals } = await import("./UIGlobals.ts");
+const { globals } = await import("./UiGlobals.ts");
 
 function setup(amLeader: boolean) {
   const metadata = getDefaultMetadata(2);

@@ -5,7 +5,7 @@ import Konva from "konva";
 import type { ContainerConfig } from "konva/lib/Container";
 import { getCanvasColors } from "../../theme.ts";
 import { MultiFitText } from "./MultiFitText.ts";
-import { globals } from "./UIGlobals.ts";
+import { globals } from "./UiGlobals.ts";
 import { FONT_FAMILY, PANEL_CORNER_RADIUS } from "./constants.ts";
 import { FitText } from "./controls/FitText.ts";
 

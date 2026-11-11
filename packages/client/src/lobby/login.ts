@@ -17,9 +17,9 @@ import { FADE_TIME_MS, HTTP_STATUS } from "../constants.ts";
 import { reloadOutdatedClient } from "../outdatedClient.ts";
 import * as theme from "../theme.ts";
 import {
-  getHTMLElement,
-  getHTMLInputElement,
-  getURLFromPath,
+  getHtmlElement,
+  getHtmlInputElement,
+  getUrlFromPath,
 } from "../utils.ts";
 import { websocketInit } from "../websocketInit.ts";
 import { scrollLobbyChatToBottom } from "./chat/LobbyChat.tsx";
@@ -32,10 +32,10 @@ const ANIMATION_TIME_MS = 500;
 
 const FIREFOX_WARNING_COOKIE_NAME = "acceptedFirefoxWarning";
 
-const changePassword = getHTMLInputElement("#change-password");
-const changePasswordContainer = getHTMLElement("#change-password-container");
-const loginUsername = getHTMLInputElement("#login-username");
-const loginPassword = getHTMLInputElement("#login-password");
+const changePassword = getHtmlInputElement("#change-password");
+const changePasswordContainer = getHtmlElement("#change-password-container");
+const loginUsername = getHtmlInputElement("#login-username");
+const loginPassword = getHtmlInputElement("#login-password");
 
 /**
  * The username that the server said has no account. Submitting it again creates the account, so
@@ -157,7 +157,7 @@ function send(
   $("#login-ajax").show();
 
   // Send a login request to the server; if successful, we will get a cookie back.
-  const url = getURLFromPath("/login");
+  const url = getUrlFromPath("/login");
   const data = loginRequestSchema.parse({
     username,
     password,

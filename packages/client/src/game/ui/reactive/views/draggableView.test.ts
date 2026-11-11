@@ -5,7 +5,7 @@ const settings = vi.hoisted(() => ({
   speedrunMode: false,
   speedrunPreplay: false,
 }));
-vi.mock("../../UIGlobals.ts", () => ({ globals: { lobby: { settings } } }));
+vi.mock("../../UiGlobals.ts", () => ({ globals: { lobby: { settings } } }));
 const { draggablePlayerIndex } = await import("./draggableView.ts");
 
 const OUR_PLAYER_INDEX = 1;

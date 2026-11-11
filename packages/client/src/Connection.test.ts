@@ -28,7 +28,7 @@ describe("sending commands", () => {
   test("commands wait for readiness and work without randomUUID", () => {
     // eslint-disable-next-line unicorn/no-unnecessary-global-this
     const originalWebSocket = globalThis.WebSocket;
-    const originalRandomUUID = Object.getOwnPropertyDescriptor(
+    const originalRandomUuid = Object.getOwnPropertyDescriptor(
       crypto,
       "randomUUID",
     );
@@ -66,10 +66,10 @@ describe("sending commands", () => {
       expect(sockets[0]?.sent).toHaveLength(4);
     } finally {
       globalThis.WebSocket = originalWebSocket;
-      if (originalRandomUUID === undefined) {
+      if (originalRandomUuid === undefined) {
         Reflect.deleteProperty(crypto, "randomUUID");
       } else {
-        Object.defineProperty(crypto, "randomUUID", originalRandomUUID);
+        Object.defineProperty(crypto, "randomUUID", originalRandomUuid);
       }
     }
   });

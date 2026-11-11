@@ -19,7 +19,7 @@ import type * as KonvaUtil from "konva/lib/Util";
 import type { RectConfig } from "konva/lib/shapes/Rect";
 import { START_CARD_RANK_LABEL } from "../../constants.ts";
 import type { Pips } from "../types/Pips.ts";
-import { globals } from "./UIGlobals.ts";
+import { globals } from "./UiGlobals.ts";
 import {
   ARROW_STROKE_WIDTH,
   BOTTOM_LEFT_X,

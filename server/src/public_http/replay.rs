@@ -17,7 +17,7 @@ pub(super) async fn export(
     params: &Params,
 ) -> Result<hanabi_protocol::ReplayGame> {
     let raw = params
-        .get("databaseID")
+        .get("databaseId")
         .filter(|v| !v.is_empty())
         .ok_or_else(|| HttpError::not_found("You must specify a database game ID."))?;
     let id = integer(raw).ok_or_else(|| HttpError::bad("That is not a valid database game ID."))?;

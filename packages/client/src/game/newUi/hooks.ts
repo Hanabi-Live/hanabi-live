@@ -1,16 +1,16 @@
 import { useCallback, useEffect, useState, useSyncExternalStore } from "react";
 import type { State } from "../types/State.ts";
-import { globals } from "../ui/UIGlobals.ts";
-import * as newUIState from "./newUIState.ts";
+import { globals } from "../ui/UiGlobals.ts";
+import * as newUiState from "./newUiState.ts";
 
 /**
  * Subscribes to the game's store. The store does not exist until the server sends the "init"
- * message, and it is replaced for every game, so this follows `newUIState.notify`, which runs when
+ * message, and it is replaced for every game, so this follows `newUiState.notify`, which runs when
  * the store is created.
  */
 function subscribeToGame(listener: () => void): () => void {
   let unsubscribeStore = globals.store?.subscribe(listener);
-  const unsubscribeState = newUIState.subscribe(() => {
+  const unsubscribeState = newUiState.subscribe(() => {
     unsubscribeStore?.();
     unsubscribeStore = globals.store?.subscribe(listener);
     listener();
@@ -32,8 +32,8 @@ export function useGameState(): State | undefined {
 }
 
 /** Renders again whenever the screen's own state outside of the store changes. */
-export function useNewUIVersion(): number {
-  return useSyncExternalStore(newUIState.subscribe, newUIState.getVersion);
+export function useNewUiVersion(): number {
+  return useSyncExternalStore(newUiState.subscribe, newUiState.getVersion);
 }
 
 /** The current time, updated at the given interval, for clocks that count down. */

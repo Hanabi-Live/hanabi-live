@@ -9,7 +9,7 @@ import type { Suit } from "@hanabi-live/game";
 import Konva from "konva";
 import type { LayoutChild } from "./LayoutChild.ts";
 import type { PlayStack } from "./PlayStack.ts";
-import { globals } from "./UIGlobals.ts";
+import { globals } from "./UiGlobals.ts";
 import { PLAY_ANIMATION_SECONDS } from "./constants.ts";
 import type { Point } from "./fireworks.ts";
 import {

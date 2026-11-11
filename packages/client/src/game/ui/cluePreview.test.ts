@@ -9,8 +9,8 @@ import {
 } from "@hanabi-live/game";
 import { describe, expect, test, vi } from "vitest";
 
-vi.mock("./UIGlobals.ts", () => ({ globals: {} }));
-const { globals } = await import("./UIGlobals.ts");
+vi.mock("./UiGlobals.ts", () => ({ globals: {} }));
+const { globals } = await import("./UiGlobals.ts");
 const cluePreview = await import("./cluePreview.ts");
 
 const RED_ONE = 0 as CardOrder;

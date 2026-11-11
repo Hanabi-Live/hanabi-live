@@ -2,7 +2,7 @@ import type { Clue, Suit, Variant } from "@hanabi-live/game";
 import { isDualColor } from "@hanabi-live/game";
 import Konva from "konva";
 import type * as KonvaContext from "konva/lib/Context";
-import { globals } from "./UIGlobals.ts";
+import { globals } from "./UiGlobals.ts";
 import {
   BUTTON_CORNER_RADIUS,
   BUTTON_HOVER_COLOR,

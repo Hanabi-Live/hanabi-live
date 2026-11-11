@@ -30,7 +30,7 @@ const reconnectBackoff = new ReconnectBackoff();
 const CONNECT_TIMEOUT_MS = 15 * SECOND_IN_MILLISECONDS;
 const WELCOME_TIMEOUT_MS = 15 * SECOND_IN_MILLISECONDS;
 let activeConnection: Connection | undefined;
-let websocketURL = "";
+let websocketUrl = "";
 let recovering = false;
 let stopped = false;
 let reconnectTimer: ReturnType<typeof setTimeout> | undefined;
@@ -182,7 +182,7 @@ function reconnectAfterTimeout(conn: Connection, timeoutMs: number) {
 
 function openConnection(isReconnect: boolean) {
   const url = withTabAccount(
-    `${websocketURL}?version=${encodeURIComponent(VERSION)}`,
+    `${websocketUrl}?version=${encodeURIComponent(VERSION)}`,
   );
   const conn = new Connection(url, true);
   conn.setReady(!isReconnect);
@@ -359,7 +359,7 @@ export function websocketInit(): void {
   if (globalThis.location.port !== "") {
     websocketHost += `:${globalThis.location.port}`;
   }
-  websocketURL = `${websocketProtocol}://${websocketHost}/ws`;
+  websocketUrl = `${websocketProtocol}://${websocketHost}/ws`;
 
   stopped = false;
   recovering = false;
@@ -369,7 +369,7 @@ export function websocketInit(): void {
     reconnectTimer = undefined;
   }
   registerReconnectWakeListeners();
-  console.log("Connecting to websocket URL:", websocketURL);
+  console.log("Connecting to websocket URL:", websocketUrl);
   openConnection(false);
 }
 

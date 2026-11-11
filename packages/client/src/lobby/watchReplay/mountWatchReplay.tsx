@@ -1,7 +1,7 @@
 import { renderRoot } from "../../renderRoot.tsx";
-import { getHTMLElement } from "../../utils.ts";
+import { getHtmlElement } from "../../utils.ts";
 import { WatchReplay } from "./WatchReplay.tsx";
 
 export function mountWatchReplay(): void {
-  renderRoot(getHTMLElement("#lobby-replay"), <WatchReplay />);
+  renderRoot(getHtmlElement("#lobby-replay"), <WatchReplay />);
 }

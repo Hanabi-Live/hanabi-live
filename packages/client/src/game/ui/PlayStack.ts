@@ -1,7 +1,7 @@
 import { eRange } from "complete-common";
 import Konva from "konva";
 import type { LayoutChild } from "./LayoutChild.ts";
-import { globals } from "./UIGlobals.ts";
+import { globals } from "./UiGlobals.ts";
 import { PLAY_ANIMATION_SECONDS } from "./constants.ts";
 import { animate } from "./konvaHelpers.ts";
 

@@ -242,7 +242,7 @@ function isOrderChopMove(
   }
 
   const playedCard = previousGameState.deck[action.order];
-  if (playedCard === undefined || !isCandidateOneForOCM(playedCard)) {
+  if (playedCard === undefined || !isCandidateOneForOcm(playedCard)) {
     return false;
   }
 
@@ -279,7 +279,7 @@ function isOrderChopMove(
     }
 
     const card = previousGameState.deck[order];
-    if (card !== undefined && isCandidateOneForOCM(card)) {
+    if (card !== undefined && isCandidateOneForOcm(card)) {
       candidateCards.push(card);
     }
   }
@@ -332,7 +332,7 @@ function isOrderChopMove(
   return minCandidateOrder !== action.order;
 }
 
-function isCandidateOneForOCM(card: CardState): boolean {
+function isCandidateOneForOcm(card: CardState): boolean {
   return (
     // Order Chop Moves are only performed when a player plays a card that they think is a 1
     // (e.g. a card having a positive rank 1 clue on it)

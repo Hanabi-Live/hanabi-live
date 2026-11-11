@@ -51,7 +51,7 @@ commands.set("chatPmHistory", (data) => {
   const room = chat.tableRoom(data.tableId);
 
   if (data.messages.length === 0) {
-    chat.sendSelfPMFromServer(
+    chat.sendSelfPmFromServer(
       "No private messages found.",
       room,
       chat.SelfChatMessageType.Info,
@@ -60,7 +60,7 @@ commands.set("chatPmHistory", (data) => {
   }
 
   for (const line of data.messages) {
-    chat.addPMHistory(line, room);
+    chat.addPmHistory(line, room);
   }
 });
 
@@ -68,9 +68,9 @@ function acknowledgeChatRead(
   tableId: number | undefined,
   recipient: string | undefined,
 ) {
-  const isPM = recipient !== undefined && recipient !== "";
+  const isPm = recipient !== undefined && recipient !== "";
   const isTableRoom = tableId !== undefined;
-  const isLobbyChat = !isPM && !isTableRoom;
+  const isLobbyChat = !isPm && !isTableRoom;
   if (isLobbyChat) {
     return;
   }
@@ -97,8 +97,8 @@ function acknowledgeChatRead(
       return;
     }
 
-    const UIState = globals.ui.globals.state;
-    if (UIState.playing || UIState.finished) {
+    const UiState = globals.ui.globals.state;
+    if (UiState.playing || UiState.finished) {
       // The chat window was not open; by default, keep it closed. Change the "Chat" button to say
       // "Chat (1)" (or e.g. "Chat (2)", if they have multiple unread messages).
       globals.chatUnread++;

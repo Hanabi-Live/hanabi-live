@@ -6,7 +6,7 @@
   ],
   "compilerOptions": {
     "types": ["bun"],
-    // The Node.js libraries, plus the DOM for the code that "criticalCSS.ts" runs in a page.
+    // The Node.js libraries, plus the DOM for the code that "criticalCss.ts" runs in a page.
     "lib": [
       "es2024",
       "ESNext.Array",

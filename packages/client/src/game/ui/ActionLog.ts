@@ -1,7 +1,7 @@
 import type { LogEntry } from "@hanabi-live/game";
 import { assertDefined, eRange } from "complete-common";
 import Konva from "konva";
-import { globals } from "./UIGlobals.ts";
+import { globals } from "./UiGlobals.ts";
 import { FitText } from "./controls/FitText.ts";
 
 /** The time in seconds that the lines take to slide by one line. */

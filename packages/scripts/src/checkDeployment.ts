@@ -8,7 +8,7 @@ import type { ServerCommand } from "@hanabi-live/data";
 import {
   loginResponseSchema,
   SERVER_COMMAND_SCHEMAS,
-  unpackWSMessage,
+  unpackWsMessage,
 } from "@hanabi-live/data";
 import { $ } from "bun";
 
@@ -119,7 +119,7 @@ async function joinLobby(
     if (typeof event.data !== "string") {
       return;
     }
-    const message = unpackWSMessage(event.data);
+    const message = unpackWsMessage(event.data);
     if (message === undefined) {
       reject(new Error("The server sent a message with no command."));
       return;

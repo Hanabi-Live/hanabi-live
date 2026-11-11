@@ -3,8 +3,8 @@
 import { MAX_DECK_SIZE, MAX_PLAYERS, MAX_SUITS } from "@hanabi-live/game";
 import { eRange, SECOND_IN_MILLISECONDS } from "complete-common";
 import { Tooltip } from "./Tooltip.ts";
-import { globals } from "./game/ui/UIGlobals.ts";
-import { getHTMLElement } from "./utils.ts";
+import { globals } from "./game/ui/UiGlobals.ts";
+import { getHtmlElement } from "./utils.ts";
 
 export const TOOLTIP_DELAY_IN_MILLISECONDS = 500;
 
@@ -87,7 +87,7 @@ export function setPosition(
   selector: string,
   rect: Readonly<Pick<DOMRect, "x" | "y" | "width" | "height">>,
 ): void {
-  const anchor = getHTMLElement(selector);
+  const anchor = getHtmlElement(selector);
   anchor.style.left = `${rect.x}px`;
   anchor.style.top = `${rect.y}px`;
   anchor.style.width = `${rect.width}px`;
@@ -108,7 +108,7 @@ function getTooltip(selector: string): Tooltip | undefined {
 function createGameTooltip(id: string, centered = false) {
   const anchor = document.createElement("div");
   anchor.id = id;
-  getHTMLElement("#game-tooltips").append(anchor);
+  getHtmlElement("#game-tooltips").append(anchor);
 
   // Interactive so that users can update their notes.
   const tooltip = new Tooltip(anchor, {

@@ -1,7 +1,7 @@
 import type { NumPlayers } from "@hanabi-live/game";
 import { PaceRisk, getEfficiency } from "@hanabi-live/game";
 import { assertDefined } from "complete-common";
-import { globals } from "../../UIGlobals.ts";
+import { globals } from "../../UiGlobals.ts";
 import {
   EFFICIENCY_DECIMAL_PLACES,
   LABEL_COLOR,

@@ -49,13 +49,13 @@ export class Elements {
   nameFrames: NameFrame[] = [];
   actionLog: ActionLog | undefined = undefined;
   replayButton: Button | undefined = undefined;
-  newUIButton: Button | undefined = undefined;
+  newUiButton: Button | undefined = undefined;
   chatButton: Button | undefined = undefined;
   lobbyButton: Button | undefined = undefined;
   restartButton: Button | undefined = undefined;
   readyCheckbox: Checkbox | undefined = undefined;
   deck: Deck | undefined = undefined;
-  gameIDLabel: FitText | undefined = undefined;
+  gameIdLabel: FitText | undefined = undefined;
   gameInfoImage: Konva.Image | undefined = undefined;
   deckTurnsRemainingLabel1: Konva.Text | undefined = undefined;
   deckTurnsRemainingLabel2: Konva.Text | undefined = undefined;

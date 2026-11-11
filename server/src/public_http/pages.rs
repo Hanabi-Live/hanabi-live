@@ -69,7 +69,6 @@ fn render(state: &PublicState, template: &str, mut values: Value) -> Result<Resp
     values["version"] = json!(&*state.config.client_version);
     values["domain"] = json!(&*state.config.domain);
     values["isDev"] = json!(state.config.is_dev);
-    values["useTLS"] = json!(state.config.use_tls);
     values["pagerSizes"] = json!(super::PAGER_SIZES);
     Ok(Html(
         state
@@ -264,7 +263,7 @@ pub(super) async fn page(
                 .into_iter()
                 .map(serde_json::from_value)
                 .collect::<serde_json::Result<Vec<hanabi_protocol::ScoreFrequency>>>()?;
-            v["scoreFreqsJSON"] = json!(serde_json::to_string(&rows)?);
+            v["scoreFreqsJson"] = json!(serde_json::to_string(&rows)?);
             v["stats"] = seed_stats(&state, seed, &rows).await?;
             v["frequencies"] = json!(rows);
         }

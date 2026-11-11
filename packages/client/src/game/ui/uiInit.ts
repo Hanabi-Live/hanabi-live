@@ -2,7 +2,7 @@ import { assertDefined } from "complete-common";
 import Konva from "konva";
 import * as modals from "../../modals.ts";
 import { getCanvasColors } from "../../theme.ts";
-import { globals } from "./UIGlobals.ts";
+import { globals } from "./UiGlobals.ts";
 import {
   LABEL_COLOR,
   RANK_FONT_FAMILY,
@@ -10,7 +10,7 @@ import {
 } from "./constants.ts";
 import { drawCards } from "./drawCards.ts";
 import * as drawCardsBrowser from "./drawCardsBrowser.ts";
-import { drawUI } from "./drawUI.ts";
+import { drawUi } from "./drawUi.ts";
 import * as keyboard from "./keyboard.ts";
 
 /**
@@ -23,7 +23,7 @@ const LOADING_LABEL = {
   progressY: 0.8,
 } as const;
 
-// When the HanabiUI object is instantiated, we do not know how many players are in the game or what
+// When the HanabiUi object is instantiated, we do not know how many players are in the game or what
 // the variant is. Now that the server has sent us that information, we can initialize the UI.
 export function uiInit(): void {
   assertDefined(
@@ -123,7 +123,7 @@ function finishedDownloadingImages() {
   );
 
   // Draw the user interface.
-  drawUI();
+  drawUi();
 
   // Keyboard hotkeys can only be initialized once the clue buttons are drawn.
   keyboard.init();

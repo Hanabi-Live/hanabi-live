@@ -36,7 +36,7 @@ const OPAQUE_ALPHA = 255;
 
 interface UpstreamEmote {
   readonly code: string;
-  readonly imageURL: string;
+  readonly imageUrl: string;
 }
 
 interface Service {
@@ -265,37 +265,37 @@ async function checkCategory(
 }
 
 async function fetchBetterTTVEmotes(): Promise<readonly UpstreamEmote[]> {
-  const response = await fetchOK(BETTERTTV_GLOBAL_EMOTES_URL);
+  const response = await fetchOk(BETTERTTV_GLOBAL_EMOTES_URL);
   const emotes = (await response.json()) as BetterTTVEmote[];
   return emotes
     .filter((emote) => !emote.modifier)
     .map((emote) => ({
       code: emote.code,
       // Without an extension, the CDN chooses the format from the request's "Accept" header.
-      imageURL: `https://cdn.betterttv.net/emote/${emote.id}/1x.png`,
+      imageUrl: `https://cdn.betterttv.net/emote/${emote.id}/1x.png`,
     }));
 }
 
 async function fetchFrankerFaceZEmotes(): Promise<readonly UpstreamEmote[]> {
-  const response = await fetchOK(FRANKERFACEZ_GLOBAL_EMOTES_URL);
+  const response = await fetchOk(FRANKERFACEZ_GLOBAL_EMOTES_URL);
   const { default_sets: defaultSets, sets } =
     (await response.json()) as FrankerFaceZResponse;
   return defaultSets
-    .flatMap((setID) => sets[setID]?.emoticons ?? [])
+    .flatMap((setId) => sets[setId]?.emoticons ?? [])
     .filter((emote) => !emote.modifier)
     .map((emote) => {
-      const imageURL = emote.urls["1"];
-      if (imageURL === undefined) {
+      const imageUrl = emote.urls["1"];
+      if (imageUrl === undefined) {
         throw new Error(
           `The FrankerFaceZ emote "${emote.name}" has no 1x image.`,
         );
       }
-      return { code: emote.name, imageURL };
+      return { code: emote.name, imageUrl };
     });
 }
 
 async function fetchTwitchEmotes(): Promise<readonly UpstreamEmote[]> {
-  const response = await fetchOK(TWITCH_GLOBAL_EMOTES_URL);
+  const response = await fetchOk(TWITCH_GLOBAL_EMOTES_URL);
   const emotes = (await response.json()) as MirrorEmote[];
   return emotes.map((emote) => {
     const url = emote.urls.find((candidate) => candidate.size === "1x")?.url;
@@ -303,11 +303,11 @@ async function fetchTwitchEmotes(): Promise<readonly UpstreamEmote[]> {
       throw new Error(`The Twitch emote "${emote.code}" has no 1x image.`);
     }
     // The "default" variant of an animated emote is a GIF; the "static" variant is always a PNG.
-    return { code: emote.code, imageURL: url.replace("/default/", "/static/") };
+    return { code: emote.code, imageUrl: url.replace("/default/", "/static/") };
   });
 }
 
-async function fetchOK(url: string): Promise<Response> {
+async function fetchOk(url: string): Promise<Response> {
   const response = await fetch(url, {
     signal: AbortSignal.timeout(TIMEOUT_MS),
   });
@@ -326,11 +326,11 @@ async function checkService(service: Service): Promise<readonly string[]> {
   const upstreamEmotes = await service.fetchGlobalEmotes();
 
   // Some codes are listed more than once with different images; any of them is accepted.
-  const imageURLs = new Map<string, string[]>();
-  for (const { code, imageURL } of upstreamEmotes) {
-    const urls = imageURLs.get(code) ?? [];
-    urls.push(imageURL);
-    imageURLs.set(code, urls);
+  const imageUrls = new Map<string, string[]>();
+  for (const { code, imageUrl } of upstreamEmotes) {
+    const urls = imageUrls.get(code) ?? [];
+    urls.push(imageUrl);
+    imageUrls.set(code, urls);
   }
 
   // Map each local emote code to its image path in the emote directory.
@@ -346,13 +346,13 @@ async function checkService(service: Service): Promise<readonly string[]> {
 
   const problems: string[] = [];
   for (const [code, emotePath] of localEmotes) {
-    if (!imageURLs.has(code)) {
+    if (!imageUrls.has(code)) {
       problems.push(
         `"${emotePath}${EMOTE_EXTENSION}" is not a global ${name} emote ("${code}"), so it should be removed.`,
       );
     }
   }
-  for (const code of imageURLs.keys()) {
+  for (const code of imageUrls.keys()) {
     if (
       !localEmotes.has(code)
       && (MATCHABLE_CODE.test(code) || specialEmotePaths.has(code))
@@ -365,7 +365,7 @@ async function checkService(service: Service): Promise<readonly string[]> {
 
   const imageProblems = await Promise.all(
     [...localEmotes].map(async ([code, emotePath]) => {
-      const urls = imageURLs.get(code);
+      const urls = imageUrls.get(code);
       return urls === undefined
         ? undefined
         : await checkImage(code, emotePath, urls);
@@ -393,7 +393,7 @@ async function checkImage(
   const local = await file.bytes();
   const remotes = await Promise.all(
     urls.map(async (url) => {
-      const response = await fetchOK(url);
+      const response = await fetchOk(url);
       return await response.bytes();
     }),
   );
@@ -416,8 +416,8 @@ function samePixels(a: Uint8Array, b: Uint8Array): boolean {
     return false;
   }
 
-  const pixelsA = toRGBA(imageA);
-  const pixelsB = toRGBA(imageB);
+  const pixelsA = toRgba(imageA);
+  const pixelsB = toRgba(imageB);
   for (let i = 0; i < pixelsA.length; i += RGBA_CHANNELS) {
     const alpha = pixelsA[i + RGBA_CHANNELS - 1];
     if (alpha !== pixelsB[i + RGBA_CHANNELS - 1]) {
@@ -436,7 +436,7 @@ function samePixels(a: Uint8Array, b: Uint8Array): boolean {
   return true;
 }
 
-function toRGBA(image: DecodedPng): Uint8Array {
+function toRgba(image: DecodedPng): Uint8Array {
   const { palette } = image;
   if (
     palette === undefined

@@ -13,7 +13,7 @@ import * as noteIdentity from "./game/reducers/noteIdentity.ts";
 import type { HanabiCard } from "./game/ui/HanabiCard.ts";
 import { morphReplayFromModal } from "./game/ui/HanabiCardClick.ts";
 import { signOut } from "./lobby/signOut.ts";
-import { getHTMLElement, getHTMLInputElement } from "./utils.ts";
+import { getHtmlElement, getHtmlInputElement } from "./utils.ts";
 
 /** Used by the morph dialog. */
 type DragAreaType = "playArea" | "discardArea" | undefined;
@@ -27,28 +27,28 @@ let confirmModalOnCancel: (() => void) | undefined;
 let morphDragArea: DragAreaType;
 let idleCountdown: ReturnType<typeof setInterval> | undefined;
 
-const confirmModalCancel = getHTMLElement("#confirm-modal-cancel");
-const confirmModalConfirm = getHTMLElement("#confirm-modal-confirm");
-const confirmModalDescription = getHTMLElement("#confirm-modal-description");
-const confirmModalTitle = getHTMLElement("#confirm-modal-title");
-const errorModalButton = getHTMLElement("#error-modal-button");
-const errorModalDescription = getHTMLElement("#error-modal-description");
-const errorModalSignOut = getHTMLElement("#error-modal-signout");
-const idleModalClose = getHTMLElement("#idle-modal-close");
-const idleModalDescription = getHTMLElement("#idle-modal-description");
-const idleModalKeep = getHTMLElement("#idle-modal-keep");
+const confirmModalCancel = getHtmlElement("#confirm-modal-cancel");
+const confirmModalConfirm = getHtmlElement("#confirm-modal-confirm");
+const confirmModalDescription = getHtmlElement("#confirm-modal-description");
+const confirmModalTitle = getHtmlElement("#confirm-modal-title");
+const errorModalButton = getHtmlElement("#error-modal-button");
+const errorModalDescription = getHtmlElement("#error-modal-description");
+const errorModalSignOut = getHtmlElement("#error-modal-signout");
+const idleModalClose = getHtmlElement("#idle-modal-close");
+const idleModalDescription = getHtmlElement("#idle-modal-description");
+const idleModalKeep = getHtmlElement("#idle-modal-keep");
 const modalDialog = getModalDialog();
-const modalsContainer = getHTMLElement("#modals-container");
-const morphModalButtonCancel = getHTMLElement("#morph-modal-button-cancel");
-const morphModalButtonOK = getHTMLElement("#morph-modal-button-ok");
-const morphModalDescription = getHTMLElement("#morph-modal-description");
-const morphModalTextbox = getHTMLInputElement("#morph-modal-textbox");
-const passwordModalCancel = getHTMLElement("#password-modal-cancel");
-const passwordModalID = getHTMLInputElement("#password-modal-id");
-const passwordModalPassword = getHTMLInputElement("#password-modal-password");
-const passwordModalSubmit = getHTMLElement("#password-modal-submit");
-const warningModalButton = getHTMLElement("#warning-modal-button");
-const warningModalDescription = getHTMLElement("#warning-modal-description");
+const modalsContainer = getHtmlElement("#modals-container");
+const morphModalButtonCancel = getHtmlElement("#morph-modal-button-cancel");
+const morphModalButtonOk = getHtmlElement("#morph-modal-button-ok");
+const morphModalDescription = getHtmlElement("#morph-modal-description");
+const morphModalTextbox = getHtmlInputElement("#morph-modal-textbox");
+const passwordModalCancel = getHtmlElement("#password-modal-cancel");
+const passwordModalId = getHtmlInputElement("#password-modal-id");
+const passwordModalPassword = getHtmlInputElement("#password-modal-password");
+const passwordModalSubmit = getHtmlElement("#password-modal-submit");
+const warningModalButton = getHtmlElement("#warning-modal-button");
+const warningModalDescription = getHtmlElement("#warning-modal-description");
 
 function getModalDialog(): HTMLDialogElement {
   const element = document.querySelector("#modal-dialog");
@@ -145,7 +145,7 @@ export function init(): void {
   morphModalTextbox.addEventListener("keydown", (event) => {
     if (event.key === "Enter") {
       event.preventDefault();
-      morphModalButtonOK.click();
+      morphModalButtonOk.click();
     } else if (event.key === "Escape") {
       event.preventDefault();
       event.stopPropagation();
@@ -155,8 +155,8 @@ export function init(): void {
 }
 
 function passwordSubmit() {
-  const tableIDString = passwordModalID.value;
-  const tableId = parseIntSafe(tableIDString); // The server expects this as a number
+  const tableIdString = passwordModalId.value;
+  const tableId = parseIntSafe(tableIdString); // The server expects this as a number
   if (tableId === undefined) {
     return;
   }
@@ -177,7 +177,7 @@ function passwordSubmit() {
 export function askForPassword(tableId: number): void {
   allowCloseModal = true;
 
-  passwordModalID.setAttribute("value", tableId.toString());
+  passwordModalId.setAttribute("value", tableId.toString());
 
   // We want to fill in the text field with the player's last typed-in password.
   const password = localStorage.getItem(LOCAL_STORAGE_KEY.JOIN_TABLE_PASSWORD);
@@ -240,7 +240,7 @@ export function askForMorph(
 
     // We can't use "addEventListener" because we can't easily remove the previous listener.
     // eslint-disable-next-line unicorn/prefer-add-event-listener
-    morphModalButtonOK.onclick = () => {
+    morphModalButtonOk.onclick = () => {
       morphReplayOkButton(card, variant);
     };
 
@@ -254,7 +254,7 @@ export function askForMorph(
 
     // We can't use "addEventListener" because we can't easily remove the previous listener.
     // eslint-disable-next-line unicorn/prefer-add-event-listener
-    morphModalButtonOK.onclick = () => {
+    morphModalButtonOk.onclick = () => {
       morphInGameOkButton(card, variant);
     };
 
@@ -530,7 +530,7 @@ export function isModalVisible(): boolean {
 function showModal(selector: string, allowClose: boolean, ready?: () => void) {
   closeModals();
 
-  const element = getHTMLElement(selector);
+  const element = getHtmlElement(selector);
 
   currentModal = element;
   allowCloseModal = allowClose;
@@ -551,7 +551,7 @@ function fillMorphModalWithRadios(
   possibilities: readonly SuitRankTuple[],
   cardImages: ReadonlyMap<string, HTMLCanvasElement>,
 ) {
-  const placeholder = getHTMLElement(element);
+  const placeholder = getHtmlElement(element);
   placeholder.replaceChildren();
   const table = document.createElement("table");
   table.classList.add("slim-table");

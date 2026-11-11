@@ -4,7 +4,7 @@ import { eRange } from "complete-common";
 import Konva from "konva";
 import { CardLayout } from "./CardLayout.ts";
 import { NameFrame } from "./NameFrame.ts";
-import { globals } from "./UIGlobals.ts";
+import { globals } from "./UiGlobals.ts";
 import {
   BGA_ACTION_LOG,
   CARD_H,
@@ -271,7 +271,7 @@ const UNASSIGNED_CHARACTER_TOOLTIP = "<strong>n/a</strong>";
 
 const handPos: HandConfig[][] = [];
 const namePos: HandConfig[][] = [];
-const namePosBGA: HandConfig[][] = [];
+const namePosBga: HandConfig[][] = [];
 
 /** A name frame with its top at `y`, extending `insetX` past each side of a hand. */
 function nameFrameBelow(
@@ -478,7 +478,7 @@ export function drawHands(winW: number, winH: number): void {
   }
 
   // In Board Game Arena mode, the hands are all in a line, so they do not have to be hard-coded.
-  const handPosBGA: HandConfig[][] = [];
+  const handPosBga: HandConfig[][] = [];
   if (!globals.lobby.settings.keldonMode) {
     let leftX = BGA_ACTION_LOG.x + BGA_ACTION_LOG.w + HAND_LOG_GAP;
     const rightX = CLUE_LOG.x - HAND_LOG_GAP;
@@ -527,9 +527,9 @@ export function drawHands(winW: number, winH: number): void {
       handY = topY;
     }
 
-    handPosBGA[numPlayers] = [];
+    handPosBga[numPlayers] = [];
     for (const j of eRange(numPlayers)) {
-      handPosBGA[numPlayers].push({
+      handPosBga[numPlayers].push({
         x: handX,
         y: handY + handH * (1 + handSpacing) * j,
         w: handW,
@@ -643,10 +643,10 @@ export function drawHands(winW: number, winH: number): void {
   if (!globals.lobby.settings.keldonMode) {
     const i = numPlayers;
     const { nameFrameGapY } = BGA_HANDS;
-    namePosBGA[i] = [];
+    namePosBga[i] = [];
     for (const j of eRange(i)) {
-      const hand = handPosBGA[i]![j]!;
-      namePosBGA[i].push(
+      const hand = handPosBga[i]![j]!;
+      namePosBga[i].push(
         nameFrameBelow(
           hand,
           NAME_FRAME_INSET_X,
@@ -667,8 +667,8 @@ export function drawHands(winW: number, winH: number): void {
     let playerHandPos = handPos;
     let playerNamePos = namePos;
     if (!globals.lobby.settings.keldonMode) {
-      playerHandPos = handPosBGA;
-      playerNamePos = namePosBGA;
+      playerHandPos = handPosBga;
+      playerNamePos = namePosBga;
     }
 
     const handValues = {
@@ -794,7 +794,7 @@ function drawDetrimentalCharacters(
 ) {
   let playerNamePos = namePos;
   if (!globals.lobby.settings.keldonMode) {
-    playerNamePos = namePosBGA;
+    playerNamePos = namePosBga;
   }
 
   if (!globals.options.detrimentalCharacters) {

@@ -5,13 +5,13 @@ import {
 } from "@hanabi-live/data";
 import type { z } from "zod";
 
-export type GameJSON = z.output<typeof replayGameSchema>;
+export type GameJson = z.output<typeof replayGameSchema>;
 
-type ParsedGameJSON =
-  { readonly gameJson: GameJSON } | { readonly error: string };
+type ParsedGameJson =
+  { readonly gameJson: GameJson } | { readonly error: string };
 
 /** Parses game JSON that someone pasted or linked, in the format the server imports. */
-export function parseGameJSON(text: string): ParsedGameJSON {
+export function parseGameJson(text: string): ParsedGameJson {
   let value: unknown;
   try {
     value = JSON.parse(text);

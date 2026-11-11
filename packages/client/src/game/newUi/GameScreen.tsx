@@ -26,7 +26,7 @@ import * as modals from "../../modals.ts";
 import * as gameChat from "../chat.ts";
 import type { ClientAction, ClientClue } from "../types/ClientAction.ts";
 import type { State } from "../types/State.ts";
-import { globals } from "../ui/UIGlobals.ts";
+import { globals } from "../ui/UiGlobals.ts";
 import { backToLobby } from "../ui/backToLobby.ts";
 import { EFFICIENCY_DECIMAL_PLACES } from "../ui/constants.ts";
 import { controlsHypothetical } from "../ui/controlsHypothetical.ts";
@@ -65,10 +65,10 @@ import {
   useElementSize,
   useGameState,
   useMediaQuery,
-  useNewUIVersion,
+  useNewUiVersion,
   useNow,
 } from "./hooks.ts";
-import * as newUIState from "./newUIState.ts";
+import * as newUiState from "./newUiState.ts";
 import type { CardView } from "./tableView.ts";
 import {
   BLANK_NOTE,
@@ -446,7 +446,7 @@ export function GameScreen({
 }: {
   readonly onSwitchToClassic: () => void;
 }): React.JSX.Element {
-  useNewUIVersion();
+  useNewUiVersion();
   useNow(CLOCK_TICK_MILLISECONDS);
   const state = useGameState();
   const mediumWidth = useMediaQuery(MEDIUM_WIDTH_QUERY);
@@ -980,7 +980,7 @@ export function GameScreen({
       </main>
 
       <ChatPanel
-        open={newUIState.isChatOpen()}
+        open={newUiState.isChatOpen()}
         overlay={chatOverlay}
         spectators={state.spectators.map((spectator) => spectator.username)}
         unread={globals.lobby.chatUnread}

@@ -5,8 +5,8 @@ import { Fragment, useEffect, useRef, useState } from "react";
 import { LOCAL_STORAGE_KEY } from "../../constants.ts";
 import { globals } from "../../Globals.ts";
 import { useAppSelector } from "../../store.ts";
-import type { GameJSON } from "../gameJSON.ts";
-import { parseGameJSON } from "../gameJSON.ts";
+import type { GameJson } from "../gameJson.ts";
+import { parseGameJson } from "../gameJson.ts";
 import * as lobbyPage from "../lobbyPage.ts";
 
 const SECTION = "#lobby-replay";
@@ -30,10 +30,10 @@ function WatchReplayForm() {
       ? "json"
       : "id",
   );
-  const [gameId, setGameID] = useState(
+  const [gameId, setGameId] = useState(
     () => localStorage.getItem(LOCAL_STORAGE_KEY.WATCH_REPLAY_ID) ?? "",
   );
-  const [json, setJSON] = useState(
+  const [json, setJson] = useState(
     () => localStorage.getItem(LOCAL_STORAGE_KEY.WATCH_REPLAY_JSON) ?? "",
   );
   const [visibility, setVisibility] = useState<Visibility>(() =>
@@ -47,12 +47,12 @@ function WatchReplayForm() {
       === "true",
   );
   const [error, setError] = useState<string>();
-  const gameIDRef = useRef<HTMLInputElement>(null);
+  const gameIdRef = useRef<HTMLInputElement>(null);
   const jsonRef = useRef<HTMLTextAreaElement>(null);
 
   // Select the field of the source, so that typing replaces what was used last time.
   useEffect(() => {
-    (source === "id" ? gameIDRef : jsonRef).current!.select();
+    (source === "id" ? gameIdRef : jsonRef).current!.select();
   }, [source]);
 
   function submit() {
@@ -60,7 +60,7 @@ function WatchReplayForm() {
     setError(undefined);
 
     let replay:
-      { type: "id"; gameId: number } | { type: "json"; gameJson: GameJSON };
+      { type: "id"; gameId: number } | { type: "json"; gameJson: GameJson };
     if (source === "id") {
       const id = parseIntSafe(gameId);
       if (id === undefined) {
@@ -74,7 +74,7 @@ function WatchReplayForm() {
       localStorage.setItem(LOCAL_STORAGE_KEY.WATCH_REPLAY_ID, gameId);
       replay = { type: "id", gameId: id };
     } else {
-      const parsed = parseGameJSON(json);
+      const parsed = parseGameJson(json);
       if ("error" in parsed) {
         setError(parsed.error);
         return;
@@ -130,10 +130,10 @@ function WatchReplayForm() {
                 id="replay-id"
                 inputMode="numeric"
                 onChange={(event) => {
-                  setGameID(event.target.value);
+                  setGameId(event.target.value);
                 }}
                 placeholder="Game ID"
-                ref={gameIDRef}
+                ref={gameIdRef}
                 type="text"
                 value={gameId}
               />
@@ -149,7 +149,7 @@ function WatchReplayForm() {
                 className="tw:min-h-[9em] tw:resize-y"
                 id="replay-json"
                 onChange={(event) => {
-                  setJSON(event.target.value);
+                  setJson(event.target.value);
                 }}
                 placeholder="Paste the game's JSON data"
                 ref={jsonRef}

@@ -1,7 +1,7 @@
 import { getDefaultMetadata, getDefaultVariant } from "@hanabi-live/game";
 import { describe, expect, test, vi } from "vitest";
 
-vi.mock("./UIGlobals.ts", () => ({ globals: {} }));
+vi.mock("./UiGlobals.ts", () => ({ globals: {} }));
 vi.mock("./arrows.ts", () => ({
   hideAll: vi.fn(),
   set: vi.fn(),
@@ -13,7 +13,7 @@ vi.mock("./cluePreview.ts", () => ({
   hide: vi.fn(),
 }));
 vi.mock("./reactive/views/cluesView.ts", () => ({}));
-const { globals } = await import("./UIGlobals.ts");
+const { globals } = await import("./UiGlobals.ts");
 const arrows = await import("./arrows.ts");
 const cluePreview = await import("./cluePreview.ts");
 const turn = await import("./turn.ts");
@@ -67,7 +67,7 @@ describe("giving a clue", () => {
     Object.assign(globals, {
       metadata,
       variant,
-      UIClickTime: 0,
+      uiClickTime: 0,
       state: {
         ongoingGame: { turn: { currentPlayerIndex: 0 } },
         replay: { hypothetical: { ongoing: { clueTokens: 8 } } },

@@ -1,3 +1,3 @@
-export interface UICard {
+export interface UiCard {
   setShadowOffset: (duration?: number) => void;
 }

@@ -4,11 +4,11 @@ import { parseIntSafe } from "complete-common";
 import { globals } from "./Globals.ts";
 import {
   SelfChatMessageType,
-  roomTableID,
-  sendSelfPMFromServer,
+  roomTableId,
+  sendSelfPmFromServer,
 } from "./chat.ts";
 import * as createGame from "./lobby/createGame.ts";
-import { createJSONFromReplay } from "./lobby/createReplayJSON.ts";
+import { createJsonFromReplay } from "./lobby/createReplayJson.ts";
 
 // Define a command handler map.
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -17,20 +17,20 @@ export const chatCommands = new Map<string, Callback>();
 
 /** The `tableId` field that tells the server which room a command was typed in. */
 function roomField(room: string): { tableId?: number } {
-  const tableId = roomTableID(room);
+  const tableId = roomTableId(room);
   return tableId === undefined ? {} : { tableId };
 }
 
 // /copy
 chatCommands.set("copy", (room: string) => {
-  createJSONFromReplay(room);
+  createJsonFromReplay(room);
 });
 
 // /friend [username]
 function friend(room: string, args: readonly string[]) {
   // Validate that the format of the command is correct.
   if (args.length === 0) {
-    sendSelfPMFromServer(
+    sendSelfPmFromServer(
       "The format of the /friend command is: <code>/friend Alice</code>",
       room,
       SelfChatMessageType.Info,
@@ -41,7 +41,7 @@ function friend(room: string, args: readonly string[]) {
   // Validate that we are not targeting ourselves.
   const username = args.join(" ");
   if (username.toLowerCase() === globals.username.toLowerCase()) {
-    sendSelfPMFromServer("You cannot friend yourself.", room);
+    sendSelfPmFromServer("You cannot friend yourself.", room);
   }
 
   globals.conn!.send("chatFriend", {
@@ -56,7 +56,7 @@ function friends(room: string) {
     globals.friends.length === 0
       ? "Currently, you do not have any friends on your friends list."
       : `Current friends: ${globals.friends.join(", ")}`;
-  sendSelfPMFromServer(msg, room);
+  sendSelfPmFromServer(msg, room);
 }
 chatCommands.set("friends", friends);
 
@@ -64,7 +64,7 @@ chatCommands.set("friends", friends);
 function link(room: string, args: readonly string[]) {
   // Validate that the format of the command is correct.
   if (args.length === 0) {
-    sendSelfPMFromServer(
+    sendSelfPmFromServer(
       "The format of the /link command is: <code>/link Alice</code>",
       room,
       SelfChatMessageType.Info,
@@ -75,7 +75,7 @@ function link(room: string, args: readonly string[]) {
   // Validate that we are not targeting ourselves.
   const username = args.join(" ");
   if (username.toLowerCase() === globals.username.toLowerCase()) {
-    sendSelfPMFromServer("You cannot link yourself.", room);
+    sendSelfPmFromServer("You cannot link yourself.", room);
   }
 
   globals.conn!.send("chatLink", {
@@ -87,7 +87,7 @@ function link(room: string, args: readonly string[]) {
 function unlink(room: string, args: readonly string[]) {
   // Validate that the format of the command is correct.
   if (args.length === 0) {
-    sendSelfPMFromServer(
+    sendSelfPmFromServer(
       "The format of the /unlink command is: <code>/unlink Alice</code>",
       room,
       SelfChatMessageType.Info,
@@ -98,7 +98,7 @@ function unlink(room: string, args: readonly string[]) {
   // Validate that we are not targeting ourselves.
   const username = args.join(" ");
   if (username.toLowerCase() === globals.username.toLowerCase()) {
-    sendSelfPMFromServer("You cannot unlink yourself.", room);
+    sendSelfPmFromServer("You cannot unlink yourself.", room);
   }
 
   globals.conn!.send("chatUnlink", {
@@ -119,7 +119,7 @@ chatCommands.set("links", links);
 function blockCommand(command: "block" | "unblock") {
   return (room: string, args: readonly string[]) => {
     if (args.length === 0) {
-      sendSelfPMFromServer(
+      sendSelfPmFromServer(
         `The format of the /${command} command is: <code>/${command} Alice</code>`,
         room,
         SelfChatMessageType.Info,
@@ -149,7 +149,7 @@ function pm(room: string, args: readonly string[]) {
   const msg = msgArray.join(" ").trim();
 
   if (recipient === undefined || msg === "") {
-    sendSelfPMFromServer(
+    sendSelfPmFromServer(
       "The format of a private message is: <code>/w Alice hello</code>",
       room,
       SelfChatMessageType.Info,
@@ -159,7 +159,7 @@ function pm(room: string, args: readonly string[]) {
 
   // Validate that they are not sending a private message to themselves.
   if (recipient.toLowerCase() === globals.username.toLowerCase()) {
-    sendSelfPMFromServer(
+    sendSelfPmFromServer(
       "You cannot send a private message to yourself.",
       room,
       SelfChatMessageType.Error,
@@ -173,7 +173,7 @@ function pm(room: string, args: readonly string[]) {
     (user) => user.username.toLowerCase() === recipient.toLowerCase(),
   );
   if (matchingUser === undefined) {
-    sendSelfPMFromServer(`User "${recipient}" is not currently online.`, room);
+    sendSelfPmFromServer(`User "${recipient}" is not currently online.`, room);
     return;
   }
 
@@ -191,14 +191,14 @@ chatCommands.set("tell", pm);
 /** The amount of private messages that "/pmhistory" requests when none is given. */
 const DEFAULT_PM_HISTORY_AMOUNT = 5;
 
-interface PMHistoryCommandArgs {
+interface PmHistoryCommandArgs {
   readonly username?: string;
   readonly amount: number;
 }
 
-export function parsePMHistoryCommandArgs(
+export function parsePmHistoryCommandArgs(
   args: readonly string[],
-): PMHistoryCommandArgs | undefined {
+): PmHistoryCommandArgs | undefined {
   if (args.length === 0) {
     return { amount: DEFAULT_PM_HISTORY_AMOUNT };
   }
@@ -237,9 +237,9 @@ export function parsePMHistoryCommandArgs(
 
 // Request private message history with an optional username and amount.
 function pmHistory(room: string, args: readonly string[]) {
-  const data = parsePMHistoryCommandArgs(args);
+  const data = parsePmHistoryCommandArgs(args);
   if (data === undefined) {
-    sendSelfPMFromServer(
+    sendSelfPmFromServer(
       "The format of the /pmhistory command is: "
         + "<code>/pmhistory [username] [amount]</code> or "
         + `<code>/pmhistory [amount]</code>, where amount is between 1 and ${MAX_PRIVATE_HISTORY_MESSAGES}.`,
@@ -256,7 +256,7 @@ chatCommands.set("pmhistory", pmHistory);
 // /setleader [username]
 function setLeader(room: string, args: readonly string[]) {
   if (globals.tableId === undefined) {
-    sendSelfPMFromServer(
+    sendSelfPmFromServer(
       "You are not currently at a table, so you cannot use the <code>/setleader</code> command.",
       room,
       SelfChatMessageType.Error,
@@ -275,7 +275,7 @@ chatCommands.set("setleader", setLeader);
 // /setvariant [variant]
 function setVariant(room: string, args: readonly string[]) {
   if (globals.tableId === undefined) {
-    sendSelfPMFromServer(
+    sendSelfPmFromServer(
       "You are not currently at a table, so you cannot use the <code>/setvariant</code> command.",
       room,
       SelfChatMessageType.Error,
@@ -288,7 +288,7 @@ function setVariant(room: string, args: readonly string[]) {
   // Get the first match.
   variantName = getVariantNameFromPartial(variantName);
   if (variantName === "") {
-    sendSelfPMFromServer(
+    sendSelfPmFromServer(
       `The variant of "${args.join(" ")}" is not valid.`,
       room,
       SelfChatMessageType.Error,
@@ -310,7 +310,7 @@ chatCommands.set("setvariant", setVariant);
 // /suggest [turn]
 chatCommands.set("suggest", (room: string, args: readonly string[]) => {
   if (globals.tableId === undefined) {
-    sendSelfPMFromServer(
+    sendSelfPmFromServer(
       "You are not currently at a table, so you cannot use the <code>/suggest</code> command.",
       room,
       SelfChatMessageType.Error,
@@ -319,7 +319,7 @@ chatCommands.set("suggest", (room: string, args: readonly string[]) => {
   }
 
   if (args.length === 0) {
-    sendSelfPMFromServer(
+    sendSelfPmFromServer(
       "The format of the /suggest command is: <code>/suggest [turn]</code>",
       room,
       SelfChatMessageType.Info,
@@ -334,7 +334,7 @@ chatCommands.set("suggest", (room: string, args: readonly string[]) => {
 
   const segment = parseIntSafe(firstArg);
   if (segment === undefined) {
-    sendSelfPMFromServer(
+    sendSelfPmFromServer(
       "The [turn] argument must be a valid number",
       room,
       SelfChatMessageType.Info,
@@ -351,7 +351,7 @@ chatCommands.set("suggest", (room: string, args: readonly string[]) => {
 // /tag [tag]
 chatCommands.set("tag", (room: string, args: readonly string[]) => {
   if (globals.tableId === undefined) {
-    sendSelfPMFromServer(
+    sendSelfPmFromServer(
       "You are not currently at a table, so you cannot use the <code>/tag</code> command.",
       room,
       SelfChatMessageType.Error,
@@ -368,7 +368,7 @@ chatCommands.set("tag", (room: string, args: readonly string[]) => {
 
 function untag(room: string, args: readonly string[]) {
   if (globals.tableId === undefined) {
-    sendSelfPMFromServer(
+    sendSelfPmFromServer(
       "You are not currently at a table, so you cannot use the <code>/untag</code> command.",
       room,
       SelfChatMessageType.Error,
@@ -398,7 +398,7 @@ chatCommands.set("tagsearch", (room: string, args: readonly string[]) => {
 
 chatCommands.set("tagsdeleteall", (room: string) => {
   if (globals.tableId === undefined) {
-    sendSelfPMFromServer(
+    sendSelfPmFromServer(
       "You are not currently at a table, so you cannot use the <code>/tagsdeleteall</code> command.",
       room,
       SelfChatMessageType.Error,
@@ -414,7 +414,7 @@ chatCommands.set("tagsdeleteall", (room: string) => {
 chatCommands.set("terminate", (room: string) => {
   // Terminates the ongoing game. This is the same as right-clicking the skull button.
   if (globals.tableId === undefined) {
-    sendSelfPMFromServer(
+    sendSelfPmFromServer(
       "You are not currently at a table, so you cannot use the <code>/terminate</code> command.",
       room,
       SelfChatMessageType.Error,
@@ -430,7 +430,7 @@ chatCommands.set("terminate", (room: string) => {
 chatCommands.set("unfriend", (room: string, args: readonly string[]) => {
   // Validate that the format of the command is correct.
   if (args.length === 0) {
-    sendSelfPMFromServer(
+    sendSelfPmFromServer(
       "The format of the /unfriend command is: <code>/unfriend Alice</code>",
       room,
       SelfChatMessageType.Info,
@@ -441,7 +441,7 @@ chatCommands.set("unfriend", (room: string, args: readonly string[]) => {
   // Validate that we are not targeting ourselves.
   const username = args.join(" ");
   if (username.toLowerCase() === globals.username.toLowerCase()) {
-    sendSelfPMFromServer(
+    sendSelfPmFromServer(
       "You cannot unfriend yourself.",
       room,
       SelfChatMessageType.Error,
@@ -456,7 +456,7 @@ chatCommands.set("unfriend", (room: string, args: readonly string[]) => {
 // /version
 chatCommands.set("version", (room: string) => {
   const msg = `You are running version <strong>${VERSION}</strong> of the client.`;
-  sendSelfPMFromServer(msg, room, SelfChatMessageType.Info);
+  sendSelfPmFromServer(msg, room, SelfChatMessageType.Info);
 });
 
 export function getVariantFromArgs(args: readonly string[]): string {

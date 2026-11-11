@@ -1,5 +1,5 @@
 import Konva from "konva";
-import { globals } from "./UIGlobals.ts";
+import { globals } from "./UiGlobals.ts";
 import { HALF_TURN_DEGREES } from "./constants.ts";
 
 export function drawLayer(node: Konva.Node): void {

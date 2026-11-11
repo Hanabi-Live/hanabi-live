@@ -2,7 +2,7 @@ import type { GameState } from "@hanabi-live/game";
 import type { Store, Unsubscribe } from "redux";
 import type { State } from "../../types/State.ts";
 import type { Action } from "../../types/actions.ts";
-import { globals } from "../UIGlobals.ts";
+import { globals } from "../UiGlobals.ts";
 import { canPassTurnInHypothetical } from "../hypothetical.ts";
 import type { Listener, Selector, Subscription } from "./observeStore.ts";
 import { observeStore, SKIP } from "./observeStore.ts";
@@ -72,7 +72,7 @@ function sub<T>(s: Selector<State, T>, l: Listener<T>) {
 }
 
 /** A shorthand function used to subscribe an observer to the visible state. */
-function subVS<T>(s: Selector<GameState, T>, l: Listener<T>) {
+function subVs<T>(s: Selector<GameState, T>, l: Listener<T>) {
   // We do not want anything to fire if the visible state is undefined
   // (e.g. when the UI is still initializing)
   // eslint-disable-next-line func-style
@@ -110,30 +110,30 @@ const earlyObservers: Subscriptions = [
 
 const visibleStateObservers: Subscriptions = [
   // Game info
-  subVS(
+  subVs(
     (s) => ({
       turn: s.turn.turnNum,
       endTurn: s.turn.endTurnNum,
     }),
     gameInfoView.onTurnChanged,
   ),
-  subVS(
+  subVs(
     (s) => s.turn.currentPlayerIndex,
     gameInfoView.onCurrentPlayerIndexChanged,
   ),
-  subVS(
+  subVs(
     (s) => ({
       score: s.score,
       maxScore: s.stats.maxScore,
     }),
     gameInfoView.onScoreOrMaxScoreChanged,
   ),
-  subVS(
+  subVs(
     (s) => s.stats.numAttemptedCardsPlayed,
     gameInfoView.onNumAttemptedCardsPlayedChanged,
   ),
-  subVS((s) => s.clueTokens, gameInfoView.onClueTokensChanged),
-  subVS(
+  subVs((s) => s.clueTokens, gameInfoView.onClueTokensChanged),
+  subVs(
     (s) => ({
       clueTokens: s.clueTokens,
       doubleDiscard: s.stats.doubleDiscardCard,
@@ -142,7 +142,7 @@ const visibleStateObservers: Subscriptions = [
   ),
 
   // Stats
-  subVS(
+  subVs(
     (s) => ({
       pace: s.stats.pace,
       paceRisk: s.stats.paceRisk,
@@ -184,21 +184,21 @@ const visibleStateObservers: Subscriptions = [
   ),
 
   // Logs
-  subVS((s) => s.log, logView.onLogChanged),
+  subVs((s) => s.log, logView.onLogChanged),
 
   // Cards. Each card will subscribe to changes to its own data. Must come before card layout, since
   // cards are constructed here.
-  subVS((s) => s.deck.length, cardsView.onCardsPossiblyAdded),
+  subVs((s) => s.deck.length, cardsView.onCardsPossiblyAdded),
 
   // Card layout - the order of the following subscriptions matters. Hands have to come first to
   // perform the adds/removes for the purposes of displaying animations.
-  subVS((s) => s.hands, cardLayoutView.onHandsChanged),
-  subVS((s) => s.discardStacks, cardLayoutView.onDiscardStacksChanged),
-  subVS((s) => s.hole, cardLayoutView.onHoleChanged),
+  subVs((s) => s.hands, cardLayoutView.onHandsChanged),
+  subVs((s) => s.discardStacks, cardLayoutView.onDiscardStacksChanged),
+  subVs((s) => s.hole, cardLayoutView.onHoleChanged),
   // Play stacks come last so we can show the bases if they get empty.
-  subVS((s) => s.playStacks, cardLayoutView.onPlayStacksChanged),
+  subVs((s) => s.playStacks, cardLayoutView.onPlayStacksChanged),
   // This must come after the play stacks, so that the completing card is already moving.
-  subVS(
+  subVs(
     (s) => ({
       playStacks: s.playStacks,
       clueTokens: s.clueTokens,
@@ -207,21 +207,21 @@ const visibleStateObservers: Subscriptions = [
     cardLayoutView.onStackCompletionDataChanged,
   ),
   // This must come after the discard stacks, so that a misplayed card is already moving.
-  subVS(
+  subVs(
     (s) => ({ maxScore: s.stats.maxScore, discardStacks: s.discardStacks }),
     cardLayoutView.onMaxScoreOrDiscardStacksChanged,
   ),
-  subVS(
+  subVs(
     (s) => s.playStackDirections,
     cardLayoutView.onPlayStackDirectionsChanged,
   ),
 
   // Unsubscribe and reset removed cards. Must come after card layout so animations to deck are
   // correctly triggered.
-  subVS((s) => s.deck.length, cardsView.onCardsPossiblyRemoved),
+  subVs((s) => s.deck.length, cardsView.onCardsPossiblyRemoved),
 
   // Clue arrows
-  subVS(
+  subVs(
     (s) => ({
       clues: s.clues,
       segment: s.turn.segment,
@@ -230,15 +230,15 @@ const visibleStateObservers: Subscriptions = [
   ),
 
   // Deck
-  subVS((s) => s.cardsRemainingInTheDeck, deckView.onCardsRemainingChanged),
-  subVS((s) => s.deck, deckView.onDeckChanged),
+  subVs((s) => s.cardsRemainingInTheDeck, deckView.onCardsRemainingChanged),
+  subVs((s) => s.deck, deckView.onDeckChanged),
 ];
 
 const ongoingGameObservers: Subscriptions = [
   // Clue area
   subAfterInit(
-    (s) => turnView.shouldShowTurnUI(s),
-    turnView.shouldShowTurnUIChanged,
+    (s) => turnView.shouldShowTurnUi(s),
+    turnView.shouldShowTurnUiChanged,
   ),
 
   // "No Clues" indicator and fade.
@@ -306,8 +306,8 @@ const ongoingGameObservers: Subscriptions = [
 const replayObservers: Subscriptions = [
   // Database ID
   subAfterInit(
-    (s) => replayView.getGameIDLabel(s) ?? SKIP,
-    replayView.onGameIDLabelChanged,
+    (s) => replayView.getGameIdLabel(s) ?? SKIP,
+    replayView.onGameIdLabelChanged,
   ),
 
   // Shared replay

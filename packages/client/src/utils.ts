@@ -26,7 +26,7 @@ export function escapeHtml(unsafe: string): string {
     .replaceAll("'", "&#039;");
 }
 
-export function getHTMLElement(selectors: string): HTMLElement {
+export function getHtmlElement(selectors: string): HTMLElement {
   const element = document.querySelector(selectors);
 
   if (!(element instanceof HTMLElement)) {
@@ -36,7 +36,7 @@ export function getHTMLElement(selectors: string): HTMLElement {
   return element;
 }
 
-export function getHTMLInputElement(selectors: string): HTMLInputElement {
+export function getHtmlInputElement(selectors: string): HTMLInputElement {
   const element = document.querySelector(selectors);
 
   if (!(element instanceof HTMLInputElement)) {
@@ -46,7 +46,7 @@ export function getHTMLInputElement(selectors: string): HTMLInputElement {
   return element;
 }
 
-export function getURLFromPath(path: string): string {
+export function getUrlFromPath(path: string): string {
   let url = `${globalThis.location.protocol}//${globalThis.location.hostname}`;
   if (globalThis.location.port !== "") {
     url += `:${globalThis.location.port}`;

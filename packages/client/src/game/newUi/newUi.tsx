@@ -7,19 +7,19 @@
 import type { Root } from "react-dom/client";
 import { FADE_TIME_MS } from "../../constants.ts";
 import { renderRoot } from "../../renderRoot.tsx";
-import { getHTMLElement } from "../../utils.ts";
-import { globals } from "../ui/UIGlobals.ts";
+import { getHtmlElement } from "../../utils.ts";
+import { globals } from "../ui/UiGlobals.ts";
 import { GameScreen } from "./GameScreen.tsx";
-import * as newUIState from "./newUIState.ts";
+import * as newUiState from "./newUiState.ts";
 
 let root: Root | undefined;
 
 export function mount(): void {
   unmount();
-  newUIState.setActive(true);
+  newUiState.setActive(true);
   $("#game-new-ui").fadeIn(FADE_TIME_MS);
   root = renderRoot(
-    getHTMLElement("#game-new-ui"),
+    getHtmlElement("#game-new-ui"),
     <GameScreen onSwitchToClassic={switchToClassic} />,
   );
 }
@@ -31,7 +31,7 @@ export function unmount(): void {
 
   root.unmount();
   root = undefined;
-  newUIState.setActive(false);
+  newUiState.setActive(false);
   $("#game-new-ui").hide();
 }
 

@@ -9,8 +9,8 @@ import * as sounds from "../sounds.ts";
 import * as tooltips from "../tooltips.ts";
 import { setBrowserAddressBarPath } from "../utils.ts";
 import * as chat from "./chat.ts";
-import * as newUI from "./newUI/newUI.tsx";
-import { HanabiUI } from "./ui/HanabiUI.ts";
+import * as newUi from "./newUi/newUi.tsx";
+import { HanabiUi } from "./ui/HanabiUi.ts";
 
 /** The history screen's address (e.g. "#history"), if a replay was opened from one. */
 let historyHash = "";
@@ -42,10 +42,10 @@ export function show(justStarted: boolean): void {
   }
 
   // Every time a new game is opened, the UI is rebuilt from scratch.
-  globals.ui = new HanabiUI(globals, gameExports, justStarted);
+  globals.ui = new HanabiUi(globals, gameExports, justStarted);
   globals.chatUnread = 0;
   if (globals.settings.newUi) {
-    newUI.mount();
+    newUi.mount();
   }
 
   // Request some high-level information about the game (e.g. the number of players and the variant)
@@ -57,11 +57,11 @@ export function show(justStarted: boolean): void {
 }
 
 /** Shows the redesigned game screen in place of the classic one, for the rest of this game. */
-function showNewUI() {
+function showNewUi() {
   // The new screen has its own chat panel, which takes the chat box from the classic chat window.
   $("#game-chat-modal").hide();
   $("#game").hide();
-  newUI.mount();
+  newUi.mount();
 }
 
 function hide() {
@@ -83,7 +83,7 @@ function hide() {
   }
   document.body.dataset["screen"] = "lobby";
 
-  newUI.unmount();
+  newUi.unmount();
   if (globals.ui !== undefined) {
     globals.ui.destroy();
     globals.ui = undefined;
@@ -112,13 +112,13 @@ function isDisplayed(selector: string) {
 // code (e.g. hiding the UI, playing a sound).
 export interface GameExports {
   hide: () => void;
-  showNewUI: () => void;
+  showNewUi: () => void;
   chat: typeof chat;
   sounds: typeof sounds;
 }
 const gameExports: GameExports = {
   hide,
-  showNewUI,
+  showNewUi,
   chat,
   sounds,
 };

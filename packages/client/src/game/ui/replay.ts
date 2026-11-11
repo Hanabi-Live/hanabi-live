@@ -4,8 +4,8 @@ import type { CardOrder } from "@hanabi-live/game";
 import { clamp, parseIntSafe } from "complete-common";
 import Konva from "konva";
 import { closeModals, showPrompt } from "../../modals.ts";
-import { getHTMLElement, getHTMLInputElement } from "../../utils.ts";
-import { globals } from "./UIGlobals.ts";
+import { getHtmlElement, getHtmlInputElement } from "../../utils.ts";
+import { globals } from "./UiGlobals.ts";
 import * as arrows from "./arrows.ts";
 import type { Shuttle } from "./controls/Shuttle.ts";
 import { getCardOrStackBase } from "./getCardOrStackBase.ts";
@@ -20,8 +20,8 @@ const SHUTTLE_ANIMATION_SECONDS = 0.25;
  */
 const OVERLAPPING_SHUTTLE_SCALE = 0.7;
 
-const setTurnButton = getHTMLElement("#set-turn-button");
-const setTurnInput = getHTMLInputElement("#set-turn-input");
+const setTurnButton = getHtmlElement("#set-turn-button");
+const setTurnInput = getHtmlInputElement("#set-turn-input");
 
 // ---------------------
 // Main replay functions
@@ -197,7 +197,7 @@ export function forwardFull(): void {
 export function exitButton(): void {
   // Mark the time that the user clicked the "Exit Replay" button (so that we can avoid an
   // accidental "Give Clue" double-click).
-  globals.UIClickTime = Date.now();
+  globals.uiClickTime = Date.now();
 
   exit();
 }

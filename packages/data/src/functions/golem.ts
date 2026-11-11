@@ -3,7 +3,7 @@
 
 const WEBSOCKET_COMMAND_SEPARATOR = " ";
 
-export function unpackWSMessage(
+export function unpackWsMessage(
   data: string,
 ): readonly [command: string, data: unknown] | undefined {
   const command = data.split(WEBSOCKET_COMMAND_SEPARATOR)[0];
@@ -28,7 +28,7 @@ export function unpackWSMessage(
 }
 
 /** Frames a client command and its payload as `command JSON`. */
-export function packWSMessage(command: string, data: unknown): string {
+export function packWsMessage(command: string, data: unknown): string {
   if (data === undefined || data === null) {
     return command;
   }

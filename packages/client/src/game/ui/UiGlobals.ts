@@ -27,7 +27,7 @@ Konva.legacyTextRendering = true;
  * This object contains global variables for the game UI. Each game gets a new instance from
  * "resetGlobals()".
  */
-export class UIGlobals {
+export class UiGlobals {
   // Objects sent upon UI initialization.
   lobby: LobbyGlobals = new LobbyGlobals();
   game: GameExports | undefined = undefined;
@@ -75,7 +75,7 @@ export class UIGlobals {
   lastNote = ""; // Equal to the last note entered
 
   // Timer feature
-  timerID: number | undefined = undefined;
+  timerId: number | undefined = undefined;
   playerTimes: number[] = [];
 
   /**
@@ -86,13 +86,13 @@ export class UIGlobals {
 
   timeTaken = 0;
   startingTurnTime = 0;
-  lastTimerUpdateTimeMS = 0;
+  lastTimerUpdateTimeMs = 0;
 
   // Miscellaneous
   animateFast = true;
 
   /** Used to prevent accidental double clicks. */
-  UIClickTime = 0;
+  uiClickTime = 0;
 
   restartPending = false;
 
@@ -148,7 +148,7 @@ function newStage(): Konva.Stage {
 
 // Importers read this live binding, so they see the new object after "resetGlobals()".
 // eslint-disable-next-line import-x/no-mutable-exports -- "resetGlobals()" replaces it for each game.
-export let globals = new UIGlobals();
+export let globals = new UiGlobals();
 
 /** Releases the previous game's subscriptions and replaces the globals for a new game. */
 export function resetGlobals(): void {
@@ -157,7 +157,7 @@ export function resetGlobals(): void {
     unsubscribeFunc();
   }
 
-  globals = new UIGlobals();
+  globals = new UiGlobals();
   window.globals = globals; // eslint-disable-line unicorn/prefer-global-this
 }
 
@@ -166,7 +166,7 @@ export function resetGlobals(): void {
 // https://stackoverflow.com/questions/56457935/typescript-error-property-x-does-not-exist-on-type-window
 declare global {
   interface Window {
-    globals: UIGlobals;
+    globals: UiGlobals;
   }
 }
 window.globals = globals; // eslint-disable-line unicorn/prefer-global-this

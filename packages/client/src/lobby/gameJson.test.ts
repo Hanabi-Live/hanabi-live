@@ -1,9 +1,9 @@
 import { describe, expect, test } from "vitest";
-import { parseGameJSON } from "./gameJSON.ts";
+import { parseGameJson } from "./gameJson.ts";
 
 describe("pasted game JSON", () => {
   test("exported games are accepted", () => {
-    const parsed = parseGameJSON(
+    const parsed = parseGameJson(
       JSON.stringify({
         gameId: 7,
         seed: "p2v0s1",
@@ -18,13 +18,13 @@ describe("pasted game JSON", () => {
       { seed: "p2v0s1", options: { tableName: "x" } },
       { seed: "p2v0s1", playerNames: null },
     ]) {
-      expect(parseGameJSON(JSON.stringify(game))).toHaveProperty("error");
+      expect(parseGameJson(JSON.stringify(game))).toHaveProperty("error");
     }
   });
 
   test("invalid files explain which field is wrong", () => {
-    expect(parseGameJSON("not JSON")).toHaveProperty("error");
-    const parsed = parseGameJSON(JSON.stringify({ deck: [{ rank: "five" }] }));
+    expect(parseGameJson("not JSON")).toHaveProperty("error");
+    const parsed = parseGameJson(JSON.stringify({ deck: [{ rank: "five" }] }));
     expect("error" in parsed ? parsed.error : "").toContain("deck.0.rank");
   });
 });

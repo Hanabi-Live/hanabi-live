@@ -47,7 +47,7 @@ export const tableIdSchema = z
   .int()
   .min(0)
   .max(9_007_199_254_740_991)
-  .brand<"TableID">();
+  .brand<"TableId">();
 
 /**
  * What a user is doing, and at which table. A solo replay is private, so it does not name its
@@ -97,7 +97,7 @@ export const gameIdSchema = z
   .int()
   .min(0)
   .max(2_147_483_647)
-  .brand<"GameID">();
+  .brand<"GameId">();
 
 /**
  * A table's name, player limit, options, and deal, as its owner sets them and as tables report
@@ -594,7 +594,7 @@ export const userIdSchema = z
   .int()
   .min(0)
   .max(2_147_483_647)
-  .brand<"UserID">();
+  .brand<"UserId">();
 
 /**
  * The body of a successful `/login` response.

@@ -10,7 +10,7 @@ import { parseIntSafe } from "complete-common";
 import { HISTORY_HASH, LOCAL_STORAGE_KEY, PATH } from "../constants.ts";
 import { globals } from "../Globals.ts";
 import { setBrowserAddressBarPath } from "../utils.ts";
-import { parseGameJSON } from "./gameJSON.ts";
+import { parseGameJson } from "./gameJson.ts";
 import * as history from "./history.ts";
 import { getOtherScoresSeed } from "./historyHash.ts";
 import { expand } from "./hypoCompress.ts";
@@ -40,10 +40,10 @@ export function parseAndGoto(data: ServerCommandData["welcome"]): void {
 function reconnectToTable(data: ServerCommandData["welcome"]): boolean {
   // If the server has informed us that we are currently playing in an ongoing game, automatically
   // reconnect to that game.
-  const firstTableID = data.playingAtTables[0];
-  if (firstTableID !== undefined) {
+  const firstTableId = data.playingAtTables[0];
+  if (firstTableId !== undefined) {
     globals.conn!.send("tableReattend", {
-      tableId: firstTableID,
+      tableId: firstTableId,
     });
     return true;
   }
@@ -125,9 +125,9 @@ function gotoPath(data: ServerCommandData["welcome"]): boolean {
   // (such as before a page refresh), spectate it again instead.
   const preGameMatch = /\/pre-game\/(\d+)/u.exec(globalThis.location.pathname);
   if (preGameMatch !== null) {
-    const tableIDString = preGameMatch[1];
-    if (tableIDString !== undefined) {
-      const tableId = parseIntSafe(tableIDString);
+    const tableIdString = preGameMatch[1];
+    if (tableIdString !== undefined) {
+      const tableId = parseIntSafe(tableIdString);
       if (tableId !== undefined && tableId > 0) {
         if (data.spectatingAtTable?.tableId === tableId) {
           globals.conn!.send("tableSpectate", data.spectatingAtTable);
@@ -151,9 +151,9 @@ function gotoPath(data: ServerCommandData["welcome"]): boolean {
   // of its players). We can also shadow a player in a seat with "/game/123/shadow/0".
   const gameMatch = /\/game\/(\d+)/u.exec(globalThis.location.pathname);
   if (gameMatch !== null) {
-    const tableIDString = gameMatch[1];
-    if (tableIDString !== undefined) {
-      const tableId = parseIntSafe(tableIDString);
+    const tableIdString = gameMatch[1];
+    if (tableIdString !== undefined) {
+      const tableId = parseIntSafe(tableIdString);
       if (tableId !== undefined && tableId > 0) {
         if (data.playingAtTables.includes(tableIdSchema.parse(tableId))) {
           globals.conn!.send("tableReattend", {
@@ -189,9 +189,9 @@ function gotoPath(data: ServerCommandData["welcome"]): boolean {
     globalThis.location.pathname,
   );
   if (replayMatch !== null) {
-    const gameIDString = replayMatch[1];
-    if (gameIDString !== undefined) {
-      const gameId = parseIntSafe(gameIDString);
+    const gameIdString = replayMatch[1];
+    if (gameIdString !== undefined) {
+      const gameId = parseIntSafe(gameIdString);
       if (gameId !== undefined && gameId > 0) {
         const visibility = globalThis.location.pathname.includes("shared-")
           ? "shared"
@@ -210,19 +210,19 @@ function gotoPath(data: ServerCommandData["welcome"]): boolean {
 
   // Automatically go into a replay if we are using a "/replay-json/string" or
   // "/shared-replay-json/string" URL.
-  const replayJSONMatch = /\/(?:shared-)?replay-json\/([\d,\-A-Za-z]+)$/u.exec(
+  const replayJsonMatch = /\/(?:shared-)?replay-json\/([\d,\-A-Za-z]+)$/u.exec(
     globalThis.location.pathname,
   );
-  if (replayJSONMatch !== null) {
-    const gameJSONStringCompressed = replayJSONMatch[1];
-    if (gameJSONStringCompressed !== undefined) {
+  if (replayJsonMatch !== null) {
+    const gameJsonStringCompressed = replayJsonMatch[1];
+    if (gameJsonStringCompressed !== undefined) {
       // The server expects the uncompressed JSON.
-      const gameJSONString = expand(gameJSONStringCompressed);
-      if (gameJSONString === undefined) {
+      const gameJsonString = expand(gameJsonStringCompressed);
+      if (gameJsonString === undefined) {
         return false;
       }
 
-      const parsed = parseGameJSON(gameJSONString);
+      const parsed = parseGameJson(gameJsonString);
       if ("error" in parsed) {
         return false;
       }
@@ -233,7 +233,7 @@ function gotoPath(data: ServerCommandData["welcome"]): boolean {
         : "solo";
 
       const source = "json";
-      localStorage.setItem(LOCAL_STORAGE_KEY.WATCH_REPLAY_JSON, gameJSONString);
+      localStorage.setItem(LOCAL_STORAGE_KEY.WATCH_REPLAY_JSON, gameJsonString);
       localStorage.setItem(
         LOCAL_STORAGE_KEY.WATCH_REPLAY_VISIBILITY,
         visibility,

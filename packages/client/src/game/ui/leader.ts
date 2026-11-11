@@ -1,10 +1,10 @@
 // Passing the lead of a shared replay to someone else.
 
 import * as modals from "../../modals.ts";
-import { getHTMLElement } from "../../utils.ts";
-import { globals } from "./UIGlobals.ts";
+import { getHtmlElement } from "../../utils.ts";
+import { globals } from "./UiGlobals.ts";
 
-const leaderPlaceholder = getHTMLElement("#leader-placeholder");
+const leaderPlaceholder = getHtmlElement("#leader-placeholder");
 
 /** Asks who should lead the shared replay, with a button for each other person in it. */
 export function showPassLeaderDialog(): void {

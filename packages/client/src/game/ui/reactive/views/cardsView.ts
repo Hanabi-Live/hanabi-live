@@ -3,7 +3,7 @@ import { getTotalCardsInDeck } from "@hanabi-live/game";
 import { eRange } from "complete-common";
 import type { State } from "../../../types/State.ts";
 import { HanabiCard } from "../../HanabiCard.ts";
-import { globals } from "../../UIGlobals.ts";
+import { globals } from "../../UiGlobals.ts";
 import { getCardOrStackBase } from "../../getCardOrStackBase.ts";
 import { changeStartingHandVisibility } from "../../hypothetical.ts";
 import type { Listener, Selector, Subscription } from "../observeStore.ts";

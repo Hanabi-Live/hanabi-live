@@ -1,4 +1,4 @@
-import { globals } from "../../UIGlobals.ts";
+import { globals } from "../../UiGlobals.ts";
 import { CARD_ANIMATION_LENGTH_SECONDS } from "../../constants.ts";
 import {
   startEmptyDeckAnimation,

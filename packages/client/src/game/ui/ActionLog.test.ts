@@ -6,7 +6,7 @@ const globals = vi.hoisted(() => ({
   animateFast: false,
   state: { replay: { active: true } },
 }));
-vi.mock("./UIGlobals.ts", () => ({ globals }));
+vi.mock("./UiGlobals.ts", () => ({ globals }));
 vi.mock("./controls/FitText.ts", async () => {
   const { default: KonvaModule } = await import("konva");
   return {

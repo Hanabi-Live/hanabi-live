@@ -14,7 +14,7 @@ import type { State } from "../types/State.ts";
 import type { ActionIncludingHypothetical } from "../types/actions.ts";
 import { setEmpathyOnHand } from "./HanabiCardMouse.ts";
 import type { LayoutChild } from "./LayoutChild.ts";
-import { globals } from "./UIGlobals.ts";
+import { globals } from "./UiGlobals.ts";
 import { controlsHypothetical } from "./controlsHypothetical.ts";
 import { getCardOrStackBase } from "./getCardOrStackBase.ts";
 import { planClientHypotheticalAction } from "./planClientHypotheticalAction.ts";

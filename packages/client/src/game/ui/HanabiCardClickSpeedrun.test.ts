@@ -7,12 +7,12 @@ const play = vi.fn();
 const end = vi.fn();
 const pulse = vi.fn();
 
-vi.mock("./UIGlobals.ts", () => ({ globals: {} }));
+vi.mock("./UiGlobals.ts", () => ({ globals: {} }));
 vi.mock("../../sounds.ts", () => ({ play }));
 vi.mock("./turn.ts", () => ({ end }));
 vi.mock("./clickNotes.ts", () => ({ clickRightCheckAddNote: vi.fn() }));
 const { mouseDownSpeedrun } = await import("./HanabiCardClickSpeedrun.ts");
-const { globals } = await import("./UIGlobals.ts");
+const { globals } = await import("./UiGlobals.ts");
 
 const teammateCard = {
   state: { location: 1, order: 5, suitIndex: 0, rank: 3 },

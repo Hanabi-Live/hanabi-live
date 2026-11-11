@@ -6,7 +6,7 @@ import { HanabiCardClick } from "./HanabiCardClick.ts";
 import { mouseDownSpeedrun } from "./HanabiCardClickSpeedrun.ts";
 import { HanabiCardDblTap, HanabiCardTap } from "./HanabiCardTouchActions.ts";
 import type { LayoutChild } from "./LayoutChild.ts";
-import { globals } from "./UIGlobals.ts";
+import { globals } from "./UiGlobals.ts";
 import * as arrows from "./arrows.ts";
 import { showClueMatches } from "./clueLog/mountClueLog.tsx";
 import {

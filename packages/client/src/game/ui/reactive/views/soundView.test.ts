@@ -8,7 +8,7 @@ vi.mock("../getSoundType.ts", () => ({
   getSoundType: () => SoundType.Us,
   getStandardSoundType: () => SoundType.Us,
 }));
-vi.mock("../../UIGlobals.ts", () => ({
+vi.mock("../../UiGlobals.ts", () => ({
   globals: {
     lobby: { settings: { soundMove: "all", hGroupConventions: false } },
     isResizing: false,
@@ -19,7 +19,7 @@ vi.mock("../../UIGlobals.ts", () => ({
     game: { sounds: { play: vi.fn() } },
   },
 }));
-const { globals } = await import("../../UIGlobals.ts");
+const { globals } = await import("../../UiGlobals.ts");
 const { onNewSoundEffect } = await import("./soundView.ts");
 
 const firstTurn = {

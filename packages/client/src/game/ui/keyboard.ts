@@ -13,13 +13,13 @@ import { Screen } from "../../lobby/types/Screen.ts";
 import { closeModals, isModalVisible, showPrompt } from "../../modals.ts";
 import {
   copyStringToClipboard,
-  getHTMLElement,
-  getHTMLInputElement,
+  getHtmlElement,
+  getHtmlInputElement,
 } from "../../utils.ts";
 import { toWireAction } from "../../wire.ts";
 import { SoundType } from "../types/SoundType.ts";
 import { HanabiCard } from "./HanabiCard.ts";
-import { globals } from "./UIGlobals.ts";
+import { globals } from "./UiGlobals.ts";
 import * as arrows from "./arrows.ts";
 import { backToLobby } from "./backToLobby.ts";
 import * as clues from "./clues.ts";
@@ -35,10 +35,10 @@ const hotkeyClueMap = new Map<number, Callback>();
 const hotkeyPlayMap = new Map<number, Callback>();
 const hotkeyDiscardMap = new Map<number, Callback>();
 
-const playDiscardButton = getHTMLElement("#play-discard-button");
-const playDiscardCard = getHTMLInputElement("#play-discard-card");
-const playDiscardMessage = getHTMLElement("#play-discard-message");
-const playDiscardTitle = getHTMLElement("#play-discard-title");
+const playDiscardButton = getHtmlElement("#play-discard-button");
+const playDiscardCard = getHtmlInputElement("#play-discard-card");
+const playDiscardMessage = getHtmlElement("#play-discard-message");
+const playDiscardTitle = getHtmlElement("#play-discard-title");
 
 function selectNextPlayerTarget() {
   if (globals.state.replay.hypothetical === undefined) {

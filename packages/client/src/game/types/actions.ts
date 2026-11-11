@@ -9,7 +9,7 @@ import type {
   GameAction,
 } from "@hanabi-live/game";
 import type { ClientAction } from "./ClientAction.ts";
-import type { UIAction } from "./UIAction.ts";
+import type { UiAction } from "./UiAction.ts";
 
 export type Action =
   | ActionInit
@@ -22,7 +22,7 @@ export type Action =
   | ActionPauseQueue
   | ActionSpectators
   | ActionFinishOngoingGame
-  | UIAction;
+  | UiAction;
 
 export type { ActionIncludingHypothetical } from "@hanabi-live/game";
 

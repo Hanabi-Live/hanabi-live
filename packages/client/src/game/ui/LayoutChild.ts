@@ -7,7 +7,7 @@ import { SoundType } from "../types/SoundType.ts";
 import type { CardLayout } from "./CardLayout.ts";
 import type { HanabiCard } from "./HanabiCard.ts";
 import type { PlayStack } from "./PlayStack.ts";
-import { globals } from "./UIGlobals.ts";
+import { globals } from "./UiGlobals.ts";
 import { confirmPlay } from "./confirmPlay.ts";
 import * as cursor from "./cursor.ts";
 import type { MisplayAnimation } from "./misplayAnimation.ts";

@@ -10,7 +10,7 @@ import type { ColorButton } from "./ColorButton.ts";
 import type { HanabiCard } from "./HanabiCard.ts";
 import type { LayoutChild } from "./LayoutChild.ts";
 import type { RankButton } from "./RankButton.ts";
-import { globals } from "./UIGlobals.ts";
+import { globals } from "./UiGlobals.ts";
 import * as arrows from "./arrows.ts";
 import * as cluePreview from "./cluePreview.ts";
 import type { PlayerButton } from "./controls/PlayerButton.ts";
@@ -205,7 +205,7 @@ function shouldGiveClue() {
   const clueTokenAvailable =
     ongoingGameState.clueTokens >= getClueCost(globals.variant);
   const recentlyClicked =
-    Date.now() - globals.UIClickTime <= CLUE_AFTER_UI_CLICK_DELAY_MILLISECONDS;
+    Date.now() - globals.uiClickTime <= CLUE_AFTER_UI_CLICK_DELAY_MILLISECONDS;
 
   return (
     // We can only give clues on our turn.

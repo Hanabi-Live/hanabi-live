@@ -262,7 +262,7 @@ async function runSuite(
       await buildServer();
       return await runInherited(
         process.execPath,
-        ["packages/testing/src/criticalCSS.ts", ...args],
+        ["packages/testing/src/criticalCss.ts", ...args],
         { cwd: ROOT, env },
       );
     }

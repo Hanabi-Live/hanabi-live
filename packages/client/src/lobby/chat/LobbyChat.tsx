@@ -2,7 +2,7 @@
 
 import { useRef } from "react";
 import { useAppSelector } from "../../store.ts";
-import { getHTMLElement } from "../../utils.ts";
+import { getHtmlElement } from "../../utils.ts";
 import { OnlineUserCount } from "../users/UsersList.tsx";
 import { ChatInput, ChatTextBox, scrollToBottom } from "./ChatBox.tsx";
 
@@ -29,5 +29,5 @@ export function LobbyChat(): React.JSX.Element {
 
 /** Shows the newest lines, such as after the chat box changes size or appears again. */
 export function scrollLobbyChatToBottom(): void {
-  scrollToBottom(getHTMLElement(`#${TEXT_BOX_ID}`));
+  scrollToBottom(getHtmlElement(`#${TEXT_BOX_ID}`));
 }

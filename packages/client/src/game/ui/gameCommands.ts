@@ -19,7 +19,7 @@ import {
 import type { Tuple } from "complete-common";
 import { iRange, newArray } from "complete-common";
 import { createStore } from "redux";
-import { sendSelfPMFromServer } from "../../chat.ts";
+import { sendSelfPmFromServer } from "../../chat.ts";
 import { PATH } from "../../constants.ts";
 import * as modals from "../../modals.ts";
 import { ServerHandlers } from "../../serverHandlers.ts";
@@ -31,14 +31,14 @@ import {
   toPlayerTuple,
   toSoundType,
 } from "../../wire.ts";
-import * as newUIState from "../newUI/newUIState.ts";
+import * as newUiState from "../newUi/newUiState.ts";
 import { initialState } from "../reducers/initialStates/initialState.ts";
 import { stateReducer } from "../reducers/stateReducer.ts";
 import { SoundType } from "../types/SoundType.ts";
 import type { State } from "../types/State.ts";
-import { globals } from "./UIGlobals.ts";
+import { globals } from "./UiGlobals.ts";
 import * as arrows from "./arrows.ts";
-import { updateTerminationVotes } from "./drawUI.ts";
+import { updateTerminationVotes } from "./drawUi.ts";
 import { getCardOrStackBase } from "./getCardOrStackBase.ts";
 import * as hypothetical from "./hypothetical.ts";
 import * as notes from "./notes.ts";
@@ -229,7 +229,7 @@ gameCommands.set("replayAction", ({ action: leaderAction }) => {
 });
 
 gameCommands.set("init", (metadata) => {
-  setURL(metadata);
+  setUrl(metadata);
   initStateStore(metadata);
 
   // Now that we know the number of players and the variant, we can start to load & draw the UI.
@@ -461,7 +461,7 @@ function suggestTurn(who: string, room: string, segment: number) {
       );
     }
     if (leaderSuggested) {
-      sendSelfPMFromServer(
+      sendSelfPmFromServer(
         "You are the shared replay leader, so you can simply click on the turn number instead of using the <code>/suggest</code> command.",
         room,
       );
@@ -471,7 +471,7 @@ function suggestTurn(who: string, room: string, segment: number) {
 
 type InitData = ServerCommandData["init"];
 
-function setURL(data: InitData) {
+function setUrl(data: InitData) {
   let path: string;
   if (data.mode === "replay" || data.mode === "sharedReplay") {
     // A replay of a game that is not in the database, such as an imported game, has no address.
@@ -548,7 +548,7 @@ function initStateStore(data: InitData) {
   globals.store = createStore(stateReducer, initialState(metadata));
 
   // The redesigned game screen, if showing, waits for the store before it draws anything.
-  newUIState.notify();
+  newUiState.notify();
 
   // The various UI views subscribe to the state store.
   globals.stateObserver = new StateObserver(globals.store);

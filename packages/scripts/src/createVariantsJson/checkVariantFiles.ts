@@ -1,5 +1,5 @@
 import { isFile, readFile } from "./completeNode.ts";
-import { generateVariantFiles } from "./createVariantsJSON.ts";
+import { generateVariantFiles } from "./createVariantsJson.ts";
 
 await checkVariantFiles();
 
@@ -20,7 +20,7 @@ async function checkVariantFiles() {
     );
   }
 
-  if ((await readFile(files.variantsPath)) !== files.variantsJSON) {
+  if ((await readFile(files.variantsPath)) !== files.variantsJson) {
     throw new Error(
       'The "variants.json" file is not up to date. Run: bun run create-variants-json',
     );

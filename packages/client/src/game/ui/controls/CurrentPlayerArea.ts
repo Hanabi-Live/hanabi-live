@@ -1,6 +1,6 @@
 import Konva from "konva";
 import { getCanvasColors } from "../../../theme.ts";
-import { globals } from "../UIGlobals.ts";
+import { globals } from "../UiGlobals.ts";
 import {
   FONT_FAMILY,
   LABEL_COLOR,

@@ -23,7 +23,7 @@ import type { z } from "zod";
 import * as tooltips from "../../tooltips.ts";
 import { CardLayout } from "./CardLayout.ts";
 import { HanabiCard } from "./HanabiCard.ts";
-import { globals } from "./UIGlobals.ts";
+import { globals } from "./UiGlobals.ts";
 import * as cluePreview from "./cluePreview.ts";
 import {
   ARROW_COLOR,

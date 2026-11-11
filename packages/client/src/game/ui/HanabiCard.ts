@@ -42,11 +42,11 @@ import {
   noteHasMeaning,
   parseNote,
 } from "../reducers/notesReducer.ts";
-import type { UICard } from "../types/UICard.ts";
+import type { UiCard } from "../types/UiCard.ts";
 import * as HanabiCardInit from "./HanabiCardInit.ts";
 import * as HanabiCardMouse from "./HanabiCardMouse.ts";
 import { LayoutChild } from "./LayoutChild.ts";
-import { globals } from "./UIGlobals.ts";
+import { globals } from "./UiGlobals.ts";
 import {
   CARD_ANIMATION_LENGTH_SECONDS,
   CARD_CENTER,
@@ -108,7 +108,7 @@ const REVERSED_ARROW_Y = {
 } as const;
 
 /** Represents a single card. It has a `LayoutChild` parent. */
-export class HanabiCard extends Konva.Group implements NodeWithTooltip, UICard {
+export class HanabiCard extends Konva.Group implements NodeWithTooltip, UiCard {
   // ---------------
   // Class variables
   // ---------------
@@ -878,7 +878,7 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip, UICard {
       && this.state.isKnownTrashFromEmpathy;
     this.setTrashMiniIndicator(isKnownTrash);
 
-    this.setDDA(
+    this.setDda(
       this.state.inDoubleDiscard
         && status !== CardStatus.Critical
         && !isKnownTrash,
@@ -896,8 +896,8 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip, UICard {
     }
   }
 
-  private setDDA(dda: boolean) {
-    const visible = this.shouldSetDDA(dda);
+  private setDda(dda: boolean) {
+    const visible = this.shouldSetDda(dda);
     const known = this.visibleRank !== undefined;
     if (visible) {
       this.ddaIndicatorTop.visible(!known);
@@ -908,7 +908,7 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip, UICard {
     }
   }
 
-  private shouldSetDDA(dda: boolean) {
+  private shouldSetDda(dda: boolean) {
     return (
       dda
       && !this.shouldShowClueBorder()
@@ -1450,7 +1450,7 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip, UICard {
 
     if (suit.clueColors.length > 1) {
       const colors: string[] = Array.from(suit.clueColors, (color) =>
-        getColorHTML(color),
+        getColorHtml(color),
       );
       lines.push(`Touched by ${colors.join(", ")} color clues`);
     }
@@ -1461,8 +1461,8 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip, UICard {
         : DEFAULT_CARD_RANKS;
       const cards = ranks.map((rank) => {
         const rankName = rank === START_CARD_RANK ? "START" : rank.toString();
-        const colorHTML = getColorHTML(getColorForPrismCard(variant, rank));
-        return `${rankName} is ${colorHTML}`;
+        const colorHtml = getColorHtml(getColorForPrismCard(variant, rank));
+        return `${rankName} is ${colorHtml}`;
       });
 
       lines.push(`Colors: ${cards.join(", ")}`);
@@ -1547,6 +1547,6 @@ export function updatePip(
   }
 }
 
-function getColorHTML(color: Color) {
+function getColorHtml(color: Color) {
   return `<span style="color: ${color.fillColorblind}">${color.name}</span>`;
 }

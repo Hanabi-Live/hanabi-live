@@ -4,7 +4,7 @@ import { assertDefined } from "complete-common";
 import Konva from "konva";
 import * as modals from "../../modals.ts";
 import * as tooltips from "../../tooltips.ts";
-import { globals } from "./UIGlobals.ts";
+import { globals } from "./UiGlobals.ts";
 import { backToLobby } from "./backToLobby.ts";
 import {
   FONT_FAMILY,

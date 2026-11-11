@@ -10,8 +10,8 @@ import type { Color } from "./interfaces/Color.ts";
 import type { Suit } from "./interfaces/Suit.ts";
 import type { Variant } from "./interfaces/Variant.ts";
 import type { VariantDescription } from "./interfaces/VariantDescription.ts";
-import type { VariantJSON } from "./interfaces/VariantJSON.ts";
-import variantsJSON from "./json/variants.json" with { type: "json" };
+import type { VariantJson } from "./interfaces/VariantJson.ts";
+import variantsJson from "./json/variants.json" with { type: "json" };
 import { getIdentityNotePatternForVariant } from "./notes.ts";
 import type { Rank } from "./types/Rank.ts";
 
@@ -31,11 +31,11 @@ export function variantsInit(
   const variants = new Map<string, Variant>();
 
   // A test validates the file against the server's catalog contract.
-  for (const variantJSON of variantsJSON as readonly VariantJSON[]) {
-    const { id, newId } = variantJSON;
-    const variant = createVariant(colorsMap, suitsMap, variantJSON, id, newId);
+  for (const variantJson of variantsJson as readonly VariantJson[]) {
+    const { id, newId } = variantJson;
+    const variant = createVariant(colorsMap, suitsMap, variantJson, id, newId);
 
-    variants.set(variantJSON.name, variant);
+    variants.set(variantJson.name, variant);
   }
 
   return variants;
@@ -90,7 +90,7 @@ export function createVariant(
     variantDescription.stackSize ?? DEFAULT_FINISHED_STACK_LENGTH;
 
   // -----------------------------------------------
-  // Special variant properties (from `VariantJSON`)
+  // Special variant properties (from `VariantJson`)
   // -----------------------------------------------
 
   // If "clueStarved" is not specified, assume false.
@@ -172,7 +172,7 @@ export function createVariant(
   }
 
   // --------------------------------------------
-  // Special rank properties (from `VariantJSON`)
+  // Special rank properties (from `VariantJson`)
   // --------------------------------------------
 
   // Validate the "specialRank" property (e.g. for "Rainbow-Ones"). If it is not specified, assume
@@ -351,17 +351,17 @@ function getVariantShowSuitNames(
   // If the suit ID ends in a number, it is an "Ambiguous" suit, which means that its identity is
   // not easily identifiable from a glance. Thus, we want to show the suit names for the variant in
   // this case.
-  const hasSuitIDThatEndsWithANumber = suits.some((suit) => {
-    const finalIDCharacter = suit.id.at(-1);
+  const hasSuitIdThatEndsWithANumber = suits.some((suit) => {
+    const finalIdCharacter = suit.id.at(-1);
     assertDefined(
-      finalIDCharacter,
+      finalIdCharacter,
       `Failed to get the final character of the ID of suit: ${suit.name}`,
     );
 
-    const finalIDNumber = parseIntSafe(finalIDCharacter);
-    return finalIDNumber !== undefined;
+    const finalIdNumber = parseIntSafe(finalIdCharacter);
+    return finalIdNumber !== undefined;
   });
-  if (hasSuitIDThatEndsWithANumber) {
+  if (hasSuitIdThatEndsWithANumber) {
     return true;
   }
 

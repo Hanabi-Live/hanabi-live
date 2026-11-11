@@ -21,7 +21,7 @@ import { SoundType } from "../types/SoundType.ts";
 import { ColorButton } from "./ColorButton.ts";
 import type { HanabiCard } from "./HanabiCard.ts";
 import { RankButton } from "./RankButton.ts";
-import { globals } from "./UIGlobals.ts";
+import { globals } from "./UiGlobals.ts";
 import { clickRightCheckAddNote } from "./clickNotes.ts";
 import { LEFT_MOUSE_BUTTON, RIGHT_MOUSE_BUTTON } from "./constants.ts";
 import { colorToColorIndex } from "./convert.ts";

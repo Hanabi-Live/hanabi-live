@@ -5,7 +5,7 @@ import * as chat from "../../chat.ts";
 import { PATH } from "../../constants.ts";
 import { creatingTableChanged } from "../../sessionSlice.ts";
 import { store } from "../../store.ts";
-import { getHTMLInputElement, setBrowserAddressBarPath } from "../../utils.ts";
+import { getHtmlInputElement, setBrowserAddressBarPath } from "../../utils.ts";
 import { scrollLobbyChatToBottom } from "../chat/LobbyChat.tsx";
 import * as lobbyPage from "../lobbyPage.ts";
 import { Screen } from "../types/Screen.ts";
@@ -44,7 +44,7 @@ export function show(): void {
   scrollLobbyChatToBottom();
 
   // Focus the pregame chat.
-  getHTMLInputElement(`#${PREGAME_CHAT_INPUT_ID}`).focus();
+  getHtmlInputElement(`#${PREGAME_CHAT_INPUT_ID}`).focus();
 
   // The "Create Game" button in the nav was disabled after we clicked the "Create" button, so
   // re-enable it now that we have received a message back from the server.
@@ -58,7 +58,7 @@ export function show(): void {
   );
 }
 
-export function hide(updateURL = true): void {
+export function hide(updateUrl = true): void {
   lobbyPage.hide();
   globals.currentScreen = Screen.Lobby;
 
@@ -87,7 +87,7 @@ export function hide(updateURL = true): void {
   chat.updatePeopleTyping();
 
   // Set the browser address bar.
-  if (updateURL) {
+  if (updateUrl) {
     setBrowserAddressBarPath(PATH.LOBBY);
   }
 }

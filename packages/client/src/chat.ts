@@ -1,7 +1,7 @@
 // Users can chat in the lobby, in the pregame, and in a game. Logic for the game chat box is
 // located separately in "game/chat.ts".
 
-import type { ServerCommandData, TableID } from "@hanabi-live/data";
+import type { ServerCommandData, TableId } from "@hanabi-live/data";
 import {
   CHAT_SPECIAL_EMOTES,
   CHAT_EMOJIS as emojis,
@@ -36,7 +36,7 @@ import {
 import { Screen } from "./lobby/types/Screen.ts";
 import * as modals from "./modals.ts";
 import { store } from "./store.ts";
-import { getHTMLElement, getHTMLInputElement } from "./utils.ts";
+import { getHtmlElement, getHtmlInputElement } from "./utils.ts";
 
 /** Formats chat timestamps as 24-hour "HH:MM" regardless of the browser's locale. */
 const chatTimeFormatter = new Intl.DateTimeFormat("en-US", {
@@ -48,7 +48,7 @@ const chatTimeFormatter = new Intl.DateTimeFormat("en-US", {
 type ChatData = ServerCommandData["chat"];
 
 /** The table of a chat room ("lobby" or "table" and the table's ID), or undefined for the lobby. */
-export function roomTableID(room: string): TableID | undefined {
+export function roomTableId(room: string): TableId | undefined {
   const match = /^table(\d+)$/u.exec(room);
   return match === null ? undefined : tableIdSchema.parse(Number(match[1]));
 }
@@ -57,7 +57,7 @@ export function roomTableID(room: string): TableID | undefined {
 export function tableRoom(tableId: number | undefined): string {
   return tableId === undefined ? "lobby" : `table${tableId}`;
 }
-type PMHistoryMessage = ServerCommandData["chatPmHistory"]["messages"][number];
+type PmHistoryMessage = ServerCommandData["chatPmHistory"]["messages"][number];
 
 export enum SelfChatMessageType {
   Normal,
@@ -84,7 +84,7 @@ const emojiList: string[] = [];
 const emoteList: string[] = [];
 let chatLineNum = 1;
 const lobbyChatDeletionState = new LobbyChatDeletionState();
-let lastPM = "";
+let lastPm = "";
 let datetimeLastChatInput = Date.now();
 let typedChatHistory: string[] = [];
 /**
@@ -101,16 +101,16 @@ let activeChatInput: HTMLInputElement | undefined;
 let emojiPickerMounted = false;
 
 export function init(): void {
-  const gameChatInput = getHTMLInputElement("#game-chat-input");
+  const gameChatInput = getHtmlInputElement("#game-chat-input");
   attachChatInput(gameChatInput, "table");
   mountChatLengthCounter(
-    getHTMLElement("#game-chat-length-counter"),
+    getHtmlElement("#game-chat-length-counter"),
     gameChatInput,
   );
   // (The lobby and pre-game chat inputs are React components that attach themselves.)
   $(".emoji-button[data-target]").on("click", (event) => {
     const { target } = event.currentTarget.dataset;
-    openEmojiPicker(getHTMLInputElement(`#${target}`));
+    openEmojiPicker(getHtmlInputElement(`#${target}`));
   });
 
   // Make an emoji list/map and ensure that there are no overlapping emoji.
@@ -170,7 +170,7 @@ export function openEmojiPicker(chatInput: HTMLInputElement): void {
   activeChatInput = chatInput;
   // Most users never open the picker, so it is drawn when it first opens.
   if (!emojiPickerMounted) {
-    mountEmojiPicker(getHTMLElement("#emoji-picker"), pickChatSymbol);
+    mountEmojiPicker(getHtmlElement("#emoji-picker"), pickChatSymbol);
     emojiPickerMounted = true;
   }
   modals.showPrompt("#emoji-modal");
@@ -235,8 +235,8 @@ function input(element: HTMLInputElement, room: "lobby" | "table") {
   }
 
   // /r - A PM reply.
-  if (text === "/r " && lastPM !== "") {
-    element.value = `/pm ${lastPM} `;
+  if (text === "/r " && lastPm !== "") {
+    element.value = `/pm ${lastPm} `;
     return;
   }
 
@@ -308,9 +308,9 @@ function sendText(room: string, msgRaw: string) {
 
   // Use "startsWith" instead of "===" to work around an bug where the room can already have the
   // table number appended (e.g. "table123").
-  let roomID = room;
-  if (roomID.startsWith("table")) {
-    roomID = `table${globals.joinedTableId}`;
+  let roomId = room;
+  if (roomId.startsWith("table")) {
+    roomId = `table${globals.joinedTableId}`;
   }
 
   // Add the chat message to the typed history so that we can use the up arrow later. (But only if
@@ -345,13 +345,13 @@ function sendText(room: string, msgRaw: string) {
 
     const chatCommandFunction = chatCommands.get(command);
     if (chatCommandFunction !== undefined) {
-      chatCommandFunction(roomID, args);
+      chatCommandFunction(roomId, args);
       return;
     }
   }
 
   // This is not a command, so send a the chat message to the server.
-  const tableId = roomTableID(roomID);
+  const tableId = roomTableId(roomId);
   globals.conn!.send("chat", {
     text: msg,
     ...(tableId !== undefined && { tableId }),
@@ -588,7 +588,7 @@ export function removeDeletedLobbyMessage(chatId: number): void {
   store.dispatch(lobbyChatLineDeleted(chatId));
 }
 
-export function addPMHistory(data: PMHistoryMessage, room?: string): void {
+export function addPmHistory(data: PmHistoryMessage, room?: string): void {
   addInternal(
     {
       ...data,
@@ -612,7 +612,7 @@ function addInternal(data: ChatData, fast: boolean, updateLiveState: boolean) {
     && data.recipient === globals.username
     && data.username !== undefined
   ) {
-    lastPM = data.username;
+    lastPm = data.username;
   }
 
   const box = getChatBox(data);
@@ -756,8 +756,8 @@ function appendGameChatLine(
 function getChatBox(data: ChatData): "lobby" | "pregame" | "game" | undefined {
   // A private message (PM) or private notice outside of a table has no room, so we display it on
   // the chat window that the user currently has open.
-  const isPM = data.tableId === undefined && data.recipient !== undefined;
-  if (data.tableId === undefined && !isPM) {
+  const isPm = data.tableId === undefined && data.recipient !== undefined;
+  if (data.tableId === undefined && !isPm) {
     return "lobby";
   }
 
@@ -770,7 +770,7 @@ function getChatBox(data: ChatData): "lobby" | "pregame" | "game" | undefined {
   }
 
   // Ignore table chat if we are not in a pre-game and not in a game.
-  return isPM ? "lobby" : undefined;
+  return isPm ? "lobby" : undefined;
 }
 
 /**
@@ -785,7 +785,7 @@ function getChatBox(data: ChatData): "lobby" | "pregame" | "game" | undefined {
  * WARNING: The splitting regex is not a general HTML tokenizer; a ">" inside of a quoted attribute
  * value would be misclassified. It is only sound because of the input contract of
  * `getPreparedMessage`: any tags present are either trusted markup whose attribute values never
- * contain raw angle brackets (built by the server or by `sendSelfPMFromServer`) or generated by
+ * contain raw angle brackets (built by the server or by `sendSelfPmFromServer`) or generated by
  * `fillDiscordEmotes` (whose interpolated values are restricted to word characters). Do not reuse
  * this function on arbitrary HTML (e.g. the output of `linkifyHtml`, whose "href" value contain
  * user-influenced URLs).
@@ -952,7 +952,7 @@ export function getTypingMessage(typing: readonly string[]): string {
 }
 
 // This is used when the client needs to send a chat message to itself.
-export function sendSelfPMFromServer(
+export function sendSelfPmFromServer(
   msg: string,
   room: string,
   type = SelfChatMessageType.Normal,
@@ -963,7 +963,7 @@ export function sendSelfPMFromServer(
       text: message,
       source: "server",
       datetime: new Date().toISOString(),
-      ...(roomTableID(room) !== undefined && { tableId: roomTableID(room) }),
+      ...(roomTableId(room) !== undefined && { tableId: roomTableId(room) }),
       recipient: globals.username,
     },
     false,

@@ -1,5 +1,5 @@
 import type { PauseState } from "../../../types/PauseState.ts";
-import { globals } from "../../UIGlobals.ts";
+import { globals } from "../../UiGlobals.ts";
 import {
   DISABLED_OPACITY,
   PAUSED_STAGE_FADE_OPACITY,

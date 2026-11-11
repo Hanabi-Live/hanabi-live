@@ -5,22 +5,22 @@ import type { Globals as LobbyGlobals } from "../../Globals.ts";
 import { Screen } from "../../lobby/types/Screen.ts";
 import * as tooltips from "../../tooltips.ts";
 import type { GameExports } from "../main.ts";
-import * as newUIState from "../newUI/newUIState.ts";
+import * as newUiState from "../newUi/newUiState.ts";
 import { unmountClueLog } from "./clueLog/mountClueLog.tsx";
 import { STAGE_ASPECT_RATIO } from "./constants.ts";
 import * as cursor from "./cursor.ts";
-import { drawUI } from "./drawUI.ts";
+import { drawUi } from "./drawUi.ts";
 import * as keyboard from "./keyboard.ts";
 import * as cardsView from "./reactive/views/cardsView.ts";
 import * as cluesView from "./reactive/views/cluesView.ts";
 import * as restart from "./restart.ts";
 import { setGlobalEmpathy } from "./setGlobalEmpathy.ts";
 import * as timer from "./timer.ts";
-import type { UIGlobals } from "./UIGlobals.ts";
-import { globals, resetGlobals } from "./UIGlobals.ts";
+import type { UiGlobals } from "./UiGlobals.ts";
+import { globals, resetGlobals } from "./UiGlobals.ts";
 
-export class HanabiUI {
-  globals: UIGlobals;
+export class HanabiUi {
+  globals: UiGlobals;
   private readonly resizeHandler: () => void;
   private readonly themeChangeHandler: () => void;
   private resizeRequestAnimationFrame: number | undefined = undefined;
@@ -94,11 +94,11 @@ export class HanabiUI {
       ) {
         return;
       }
-      this.rebuildGameUI();
+      this.rebuildGameUi();
     };
     document.addEventListener("theme_change", this.themeChangeHandler);
 
-    // The HanabiUI object is now instantiated, but none of the actual UI elements are drawn yet. We
+    // The HanabiUi object is now instantiated, but none of the actual UI elements are drawn yet. We
     // must wait for the "init" message from the server in order to know how many players are in the
     // game and what the variant is. Only then can we start drawing the UI.
   }
@@ -108,7 +108,7 @@ export class HanabiUI {
   // eslint-disable-next-line @typescript-eslint/class-methods-use-this
   updateChatLabel(): void {
     // The redesigned game screen shows the unread count on its own chat button.
-    newUIState.notify();
+    newUiState.notify();
 
     if (globals.elements.chatButton === undefined) {
       return;
@@ -204,7 +204,7 @@ export class HanabiUI {
    * Rebuilds the entire game UI from scratch, redrawing every element (e.g. so that canvas elements
    * pick up new theme colors or the new stage size).
    */
-  private rebuildGameUI(): void {
+  private rebuildGameUi(): void {
     const stageContainer = this.globals.stage.container();
     stageContainer.style.transform = "";
     stageContainer.style.transformOrigin = "";
@@ -223,7 +223,7 @@ export class HanabiUI {
     }
     this.globals.cardSubscriptions = [];
 
-    drawUI();
+    drawUi();
 
     // Re-subscribe the cards to the state store.
     if (visibleState !== undefined) {
@@ -248,7 +248,7 @@ export class HanabiUI {
   }
 
   private finishResize(): void {
-    this.rebuildGameUI();
+    this.rebuildGameUi();
 
     this.liveResizeActive = false;
     this.globals.isResizing = false;

@@ -7,7 +7,7 @@ import {
 } from "@hanabi-live/game";
 import { eRange } from "complete-common";
 import { setBrowserAddressBarPath } from "../../../../utils.ts";
-import { globals } from "../../UIGlobals.ts";
+import { globals } from "../../UiGlobals.ts";
 import * as arrows from "../../arrows.ts";
 import {
   CURRENT_TURN_COLOR,

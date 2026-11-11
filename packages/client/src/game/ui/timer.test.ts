@@ -3,7 +3,7 @@ import { afterEach, beforeEach, expect, test, vi } from "vitest";
 
 vi.mock("../../tooltips.ts", () => ({ setContent: vi.fn() }));
 vi.mock("./konvaHelpers.ts", () => ({ drawLayer: vi.fn() }));
-vi.mock("./UIGlobals.ts", () => ({
+vi.mock("./UiGlobals.ts", () => ({
   globals: {
     state: { finished: true },
     elements: {
@@ -11,13 +11,13 @@ vi.mock("./UIGlobals.ts", () => ({
       timer2: { hide: vi.fn() },
     },
     layers: { timer: { batchDraw: vi.fn() } },
-    timerID: undefined,
+    timerId: undefined,
     playerTimes: [],
     clockPlayerIndex: undefined,
     timeTaken: 0,
   },
 }));
-const { globals } = await import("./UIGlobals.ts");
+const { globals } = await import("./UiGlobals.ts");
 const tooltips = await import("../../tooltips.ts");
 const { resumeAfterResize, stop, update } = await import("./timer.ts");
 
@@ -25,14 +25,14 @@ beforeEach(() => {
   vi.clearAllMocks();
   globals.playerTimes = [10_000, 20_000];
   globals.clockPlayerIndex = 0;
-  globals.timerID = undefined;
+  globals.timerId = undefined;
 });
 afterEach(() => {
   vi.restoreAllMocks();
 });
 
 test("a late live clock cannot restart timers in a finished replay", () => {
-  globals.timerID = 123;
+  globals.timerId = 123;
   const clear = vi.spyOn(globalThis, "clearInterval");
   const start = vi.spyOn(globalThis, "setInterval");
   const first = globals.elements.timer1;
@@ -48,7 +48,7 @@ test("a late live clock cannot restart timers in a finished replay", () => {
   });
   expect(clear).toHaveBeenCalledWith(123);
   expect(start).not.toHaveBeenCalled();
-  expect(globals.timerID).toBeUndefined();
+  expect(globals.timerId).toBeUndefined();
   expect(globals.clockPlayerIndex).toBeUndefined();
   expect(hideFirst).toHaveBeenCalled();
   expect(hideSecond).toHaveBeenCalled();
@@ -58,7 +58,7 @@ test("resizing a replay does not resume a stale active-player clock", () => {
   const start = vi.spyOn(globalThis, "setInterval");
   resumeAfterResize();
   expect(start).not.toHaveBeenCalled();
-  expect(globals.timerID).toBeUndefined();
+  expect(globals.timerId).toBeUndefined();
 });
 
 test("untimed games without timers still update the player time tooltips", () => {

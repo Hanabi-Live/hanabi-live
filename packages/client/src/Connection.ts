@@ -5,9 +5,9 @@ import type {
   ServerCommandData,
 } from "@hanabi-live/data";
 import {
-  packWSMessage,
+  packWsMessage,
   SERVER_COMMAND_SCHEMAS,
-  unpackWSMessage,
+  unpackWsMessage,
 } from "@hanabi-live/data";
 import type { z } from "zod";
 
@@ -74,7 +74,7 @@ export class Connection {
       return;
     }
 
-    const msg = unpackWSMessage(event.data);
+    const msg = unpackWsMessage(event.data);
     if (msg === undefined) {
       return;
     }
@@ -148,7 +148,7 @@ export class Connection {
       return;
     }
 
-    const msg = packWSMessage(command, data);
+    const msg = packWsMessage(command, data);
     this.ws.send(msg);
 
     console.log(`%cSent ${command}:`, "color: green;");

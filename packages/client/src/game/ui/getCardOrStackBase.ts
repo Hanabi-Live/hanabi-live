@@ -1,7 +1,7 @@
 import type { CardOrder } from "@hanabi-live/game";
 import { getTotalCardsInDeck } from "@hanabi-live/game";
 import type { HanabiCard } from "./HanabiCard.ts";
-import { globals } from "./UIGlobals.ts";
+import { globals } from "./UiGlobals.ts";
 
 export function getCardOrStackBase(order: CardOrder): HanabiCard | undefined {
   const totalCardsInDeck = getTotalCardsInDeck(globals.variant);

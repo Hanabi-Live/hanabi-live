@@ -7,7 +7,7 @@ import { describe, expect, test, vi } from "vitest";
 import type { HanabiCard } from "./HanabiCard.ts";
 
 vi.mock("../reducers/uiReducer.ts", () => ({ uiReducer: vi.fn() }));
-vi.mock("./UIGlobals.ts", () => ({ globals: {} }));
+vi.mock("./UiGlobals.ts", () => ({ globals: {} }));
 vi.mock("./HanabiCardMouse.ts", () => ({ setEmpathyOnHand: vi.fn() }));
 const { initialState } =
   await import("../reducers/initialStates/initialState.ts");
@@ -15,7 +15,7 @@ const { stateReducer } = await import("../reducers/stateReducer.ts");
 const mouse = await import("./HanabiCardMouse.ts");
 const { changeStartingHandVisibility, endHypothetical, finishHypothetical } =
   await import("./hypothetical.ts");
-const { globals } = await import("./UIGlobals.ts");
+const { globals } = await import("./UiGlobals.ts");
 
 function setup(shared: boolean) {
   const metadata = getDefaultMetadata(2);

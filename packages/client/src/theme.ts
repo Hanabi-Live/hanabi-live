@@ -76,7 +76,7 @@ interface CanvasColors {
 }
 
 /** Reads a CSS custom property from the document root. */
-function getCSSVariable(name: string): string {
+function getCssVariable(name: string): string {
   return getComputedStyle(document.documentElement)
     .getPropertyValue(name)
     .trim();
@@ -85,10 +85,10 @@ function getCSSVariable(name: string): string {
 /** Get the canvas colors for the currently active theme. */
 export function getCanvasColors(): CanvasColors {
   return {
-    actionLogNumber: getCSSVariable("--canvas-action-log-number"),
-    currentPlayerText: getCSSVariable("--canvas-current-player-text"),
-    replayShuttle: getCSSVariable("--canvas-replay-shuttle"),
-    surfaceArea: getCSSVariable("--canvas-surface-area"),
-    loadingLabelStroke: getCSSVariable("--canvas-loading-label-stroke"),
+    actionLogNumber: getCssVariable("--canvas-action-log-number"),
+    currentPlayerText: getCssVariable("--canvas-current-player-text"),
+    replayShuttle: getCssVariable("--canvas-replay-shuttle"),
+    surfaceArea: getCssVariable("--canvas-surface-area"),
+    loadingLabelStroke: getCssVariable("--canvas-loading-label-stroke"),
   };
 }

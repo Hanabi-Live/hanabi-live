@@ -1,4 +1,4 @@
-import { globals } from "./UIGlobals.ts";
+import { globals } from "./UiGlobals.ts";
 import { controlsHypothetical } from "./controlsHypothetical.ts";
 
 /**

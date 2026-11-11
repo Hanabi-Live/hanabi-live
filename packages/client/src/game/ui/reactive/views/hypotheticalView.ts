@@ -1,6 +1,6 @@
 import { MIN_PLAYERS } from "@hanabi-live/game";
 import type { State } from "../../../types/State.ts";
-import { globals } from "../../UIGlobals.ts";
+import { globals } from "../../UiGlobals.ts";
 import * as arrows from "../../arrows.ts";
 import * as clues from "../../clues.ts";
 import type { PlayerButton } from "../../controls/PlayerButton.ts";

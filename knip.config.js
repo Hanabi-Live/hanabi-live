@@ -24,7 +24,7 @@ const config = {
     },
     "packages/scripts": {
       entry: [
-        "src/buildCSS.ts", // Run from shell scripts.
+        "src/buildCss.ts", // Run from shell scripts.
       ],
     },
     "packages/game": {
@@ -33,7 +33,7 @@ const config = {
     "packages/testing": {
       entry: [
         "src/**/*.test.ts",
-        "src/criticalCSS.ts", // Run by "runTests.ts".
+        "src/criticalCss.ts", // Run by "runTests.ts".
         "src/uiScreenshots.ts", // Run by "runTests.ts".
       ],
       // Bun reports "ws" as a built-in module, so Knip cannot see that it is used when running

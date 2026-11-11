@@ -1,4 +1,4 @@
-import { SERVER_COMMAND_SCHEMAS, unpackWSMessage } from "@hanabi-live/data";
+import { SERVER_COMMAND_SCHEMAS, unpackWsMessage } from "@hanabi-live/data";
 import { z } from "zod";
 
 const schemas: Readonly<Record<string, z.ZodType | undefined>> =
@@ -10,7 +10,7 @@ const schemas: Readonly<Record<string, z.ZodType | undefined>> =
  * problem, or undefined if the frame is valid.
  */
 export function serverFrameViolation(frame: string): string | undefined {
-  const unpacked = unpackWSMessage(frame);
+  const unpacked = unpackWsMessage(frame);
   if (unpacked === undefined) {
     return "The server sent a frame without a command.";
   }

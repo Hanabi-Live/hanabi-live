@@ -1,16 +1,16 @@
 import type Konva from "konva";
-import { getHTMLElement } from "../../utils.ts";
+import { getHtmlElement } from "../../utils.ts";
 import type { Deck } from "./Deck.ts";
 import type { LayoutChild } from "./LayoutChild.ts";
-import { globals } from "./UIGlobals.ts";
+import { globals } from "./UiGlobals.ts";
 
 export type CursorType = "default" | "hand" | "dragging" | "look" | "edit";
 
 // Module variables. (This does not have to be on the globals because it is explicitly reset in
-// HanabiUI constructor.)
+// HanabiUi constructor.)
 let currentCursorType = "default";
 
-const gameDiv = getHTMLElement("#game");
+const gameDiv = getHtmlElement("#game");
 
 export function set(cursorType: CursorType): void {
   // It is possible to receive cursor events before the UI has initialized.

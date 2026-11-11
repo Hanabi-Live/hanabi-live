@@ -13,7 +13,7 @@ import type { SuitIndex } from "../types/SuitIndex.ts";
 import type { SuitRankTuple } from "../types/SuitRankTuple.ts";
 import type { GameAction } from "../types/gameActions.ts";
 
-let cachedVariantID: number | undefined;
+let cachedVariantId: number | undefined;
 let cachedCardCountMap: readonly number[][] = [];
 
 export function cardDeductionReducer(
@@ -673,7 +673,7 @@ function identityKey(suitIndex: SuitIndex, rank: Rank): number {
 
 /** @returns A two-dimensional array which is indexed by suit index, then rank. */
 function getCardCountMap(variant: Variant): readonly number[][] {
-  if (variant.id === cachedVariantID) {
+  if (variant.id === cachedVariantId) {
     return arrayCopyTwoDimensional(cachedCardCountMap) as readonly number[][];
   }
 
@@ -686,7 +686,7 @@ function getCardCountMap(variant: Variant): readonly number[][] {
     }
   }
 
-  cachedVariantID = variant.id;
+  cachedVariantId = variant.id;
   cachedCardCountMap = arrayCopyTwoDimensional(
     possibleCardMap,
   ) as readonly number[][];

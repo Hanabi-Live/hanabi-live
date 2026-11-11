@@ -6,7 +6,7 @@ import { millisecondsToClockString } from "@hanabi-live/game";
 import { SECOND_IN_MILLISECONDS } from "complete-common";
 import * as tooltips from "../../tooltips.ts";
 import { SoundType } from "../types/SoundType.ts";
-import { globals } from "./UIGlobals.ts";
+import { globals } from "./UiGlobals.ts";
 import type { TimerDisplay } from "./controls/TimerDisplay.ts";
 import { drawLayer } from "./konvaHelpers.ts";
 
@@ -65,7 +65,7 @@ export function update(
       : globals.playerTimes[currentPlayerIndex]!;
 
   // Mark the time that we updated the local player times.
-  globals.lastTimerUpdateTimeMS = Date.now();
+  globals.lastTimerUpdateTimeMs = Date.now();
 
   const ourTurn =
     globals.state.playing
@@ -91,7 +91,7 @@ export function update(
   // the player enabled them.)
   const activeTimer = ourTurn ? timer1 : timer2;
   // eslint-disable-next-line unicorn/prefer-global-this
-  globals.timerID = window.setInterval(() => {
+  globals.timerId = window.setInterval(() => {
     setTickingDownTime(activeTimer);
     setTickingDownTimePlayerNameTooltip(currentPlayerIndex);
     setTickingDownTimeCurrentPlayerTooltip();
@@ -143,9 +143,9 @@ function updateTimerDisplays(
 }
 
 export function stop(): void {
-  if (globals.timerID !== undefined) {
-    globalThis.clearInterval(globals.timerID);
-    globals.timerID = undefined;
+  if (globals.timerId !== undefined) {
+    globalThis.clearInterval(globals.timerId);
+    globals.timerId = undefined;
   }
 }
 
@@ -173,8 +173,8 @@ export function resumeAfterResize(): void {
 function setTickingDownTime(timer: TimerDisplay | undefined) {
   // Calculate the elapsed time since the last timer update.
   const now = Date.now();
-  const elapsedTime = now - globals.lastTimerUpdateTimeMS;
-  globals.lastTimerUpdateTimeMS = now;
+  const elapsedTime = now - globals.lastTimerUpdateTimeMs;
+  globals.lastTimerUpdateTimeMs = now;
   const { clockPlayerIndex } = globals;
   if (elapsedTime < 0 || clockPlayerIndex === undefined) {
     return;

@@ -6,7 +6,7 @@ import * as chat from "../../chat.ts";
 import * as tooltips from "../../tooltips.ts";
 import { escapeHtml } from "../../utils.ts";
 import type { HanabiCard } from "./HanabiCard.ts";
-import { globals } from "./UIGlobals.ts";
+import { globals } from "./UiGlobals.ts";
 import { getCardOrStackBase } from "./getCardOrStackBase.ts";
 
 const REMOVE_PIPE_KEYS = new ReadonlySet([

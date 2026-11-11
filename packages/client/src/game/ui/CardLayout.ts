@@ -2,7 +2,7 @@ import { assertDefined, eRange } from "complete-common";
 import Konva from "konva";
 import type { HitCanvas, SceneCanvas } from "konva/lib/Canvas";
 import type { LayoutChild } from "./LayoutChild.ts";
-import { globals } from "./UIGlobals.ts";
+import { globals } from "./UiGlobals.ts";
 import { CARD_ANIMATION_LENGTH_SECONDS } from "./constants.ts";
 import { animate, degreesToRadians } from "./konvaHelpers.ts";
 import { startMisplayAnimation } from "./misplayAnimation.ts";

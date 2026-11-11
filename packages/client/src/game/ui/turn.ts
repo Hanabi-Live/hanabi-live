@@ -2,7 +2,7 @@ import { getClueCost, isAtMaxClueTokens } from "@hanabi-live/game";
 import * as notifications from "../../notifications.ts";
 import { toWireAction } from "../../wire.ts";
 import type { ClientAction } from "../types/ClientAction.ts";
-import { globals } from "./UIGlobals.ts";
+import { globals } from "./UiGlobals.ts";
 import * as arrows from "./arrows.ts";
 import * as cluePreview from "./cluePreview.ts";
 import { PREPLAY_DELAY_MILLISECONDS } from "./constants.ts";

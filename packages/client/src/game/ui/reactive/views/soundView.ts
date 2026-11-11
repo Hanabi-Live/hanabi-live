@@ -2,7 +2,7 @@ import type { GameAction, GameState } from "@hanabi-live/game";
 import { includes } from "complete-common";
 import { SoundType } from "../../../types/SoundType.ts";
 import { isOurTurn } from "../../isOurTurn.ts";
-import { globals } from "../../UIGlobals.ts";
+import { globals } from "../../UiGlobals.ts";
 import {
   SOUND_TYPE_ACTIONS,
   getSoundType,

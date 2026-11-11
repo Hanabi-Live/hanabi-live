@@ -1,7 +1,7 @@
 import { describe, expect, test, vi } from "vitest";
 import type { HanabiCard } from "./HanabiCard.ts";
 
-vi.mock("./UIGlobals.ts", () => ({ globals: {} }));
+vi.mock("./UiGlobals.ts", () => ({ globals: {} }));
 vi.mock("../../tooltips.ts", () => ({ close: vi.fn() }));
 vi.mock("./HanabiCardClick.ts", () => ({ HanabiCardClick: vi.fn() }));
 vi.mock("./HanabiCardClickSpeedrun.ts", () => ({
@@ -22,7 +22,7 @@ vi.mock("./konvaTooltips.ts", () => ({
 vi.mock("./notes.ts", () => ({}));
 const { registerMouseHandlers, setEmpathyOnHand } =
   await import("./HanabiCardMouse.ts");
-const { globals } = await import("./UIGlobals.ts");
+const { globals } = await import("./UiGlobals.ts");
 const tooltips = await import("../../tooltips.ts");
 
 function makeCard(parent: unknown): HanabiCard {

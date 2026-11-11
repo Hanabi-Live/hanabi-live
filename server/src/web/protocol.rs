@@ -106,7 +106,7 @@ mod tests {
             "sync []",
             "unknown {}",
             "historyFriendsGet {\"offset\":0,\"amount\":10}",
-            "loaded {\"tableId\":1,\"requestID\":\"r\"}",
+            "loaded {\"tableId\":1,\"requestId\":\"r\"}",
         ] {
             assert!(parse(input).is_err(), "{input}");
         }

@@ -2,7 +2,7 @@ import { describe, expect, test, vi } from "vitest";
 
 import type { LayoutChild } from "./LayoutChild.ts";
 
-vi.mock("./UIGlobals.ts", () => ({ globals: {} }));
+vi.mock("./UiGlobals.ts", () => ({ globals: {} }));
 vi.mock("./misplayAnimation.ts", () => ({}));
 const { CardLayout } = await import("./CardLayout.ts");
 

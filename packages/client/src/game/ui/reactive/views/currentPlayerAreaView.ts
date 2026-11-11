@@ -8,7 +8,7 @@ import {
 import { assertDefined, eRange } from "complete-common";
 import Konva from "konva";
 import type { State } from "../../../types/State.ts";
-import { globals } from "../../UIGlobals.ts";
+import { globals } from "../../UiGlobals.ts";
 import {
   DOUBLE_DISCARD_COLOR,
   FULL_TURN_DEGREES,

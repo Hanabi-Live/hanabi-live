@@ -3,21 +3,21 @@ import type { BasicRank, Rank } from "../types/Rank.ts";
 import type { CatalogFlags } from "./CatalogFlags.ts";
 import type { Color } from "./Color.ts";
 import type { Suit } from "./Suit.ts";
-import type { VariantJSON } from "./VariantJSON.ts";
+import type { VariantJson } from "./VariantJson.ts";
 
 /**
  * - `suits` and `clueColors` are object arrays instead of string arrays.
  * - `specialRank` and `criticalRank` are allowed to be undefined.
  * - `stackSize` can be the default of 5, which the catalog omits.
  */
-type VariantJSONModified = CatalogFlags<
+type VariantJsonModified = CatalogFlags<
   Omit<
-    VariantJSON,
+    VariantJson,
     "suits" | "clueColors" | "specialRank" | "criticalRank" | "stackSize"
   >
 >;
 
-export interface Variant extends VariantJSONModified {
+export interface Variant extends VariantJsonModified {
   readonly suits: readonly Suit[];
   readonly clueColors: readonly Color[];
   readonly specialRank: Rank | undefined;

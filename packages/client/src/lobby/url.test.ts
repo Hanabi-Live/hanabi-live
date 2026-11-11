@@ -81,7 +81,7 @@ describe("replay URL loading", () => {
       visibility,
     });
     expect(setItem).toHaveBeenCalledWith(
-      "watchReplayJSON",
+      "watchReplayJson",
       expand(`${payload}${suffix}`),
     );
     expect(globalThis.location.hash).toBe("#42");

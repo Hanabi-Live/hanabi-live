@@ -12,7 +12,7 @@ vi.mock("../../replay.ts", () => ({
 vi.mock("./cluesView.ts", () => ({
   refreshArrows: vi.fn(),
 }));
-vi.mock("../../UIGlobals.ts", () => ({
+vi.mock("../../UiGlobals.ts", () => ({
   globals: {
     elements: {
       replayArea: {
@@ -32,7 +32,7 @@ vi.mock("../../UIGlobals.ts", () => ({
     },
   },
 }));
-const { globals } = await import("../../UIGlobals.ts");
+const { globals } = await import("../../UiGlobals.ts");
 const replay = await import("../../replay.ts");
 const cluesView = await import("./cluesView.ts");
 const { onActiveChanged } = await import("./replayView.ts");

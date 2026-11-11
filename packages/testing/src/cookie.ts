@@ -1,5 +1,5 @@
 // Test-only verification of the session cookies that the server signs.
-import type { UserID } from "@hanabi-live/data";
+import type { UserId } from "@hanabi-live/data";
 import { createHmac, timingSafeEqual } from "node:crypto";
 
 const SESSION_COOKIE_NAME = "hanabi.sid";
@@ -11,7 +11,7 @@ export function decodeSessionCookie(
   encoded: string,
   secret: string,
   now = Math.floor(Date.now() / 1000),
-): UserID | undefined {
+): UserId | undefined {
   const match = /^(\d+)\.(\d+)\.([\w-]+)$/u.exec(encoded);
   if (match === null) {
     return undefined;
@@ -43,5 +43,5 @@ export function decodeSessionCookie(
   ) {
     return undefined;
   }
-  return id as UserID;
+  return id as UserId;
 }

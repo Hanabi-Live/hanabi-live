@@ -2,7 +2,7 @@
 
 import { assertDefined } from "complete-common";
 import type { CardLayout } from "./CardLayout.ts";
-import { globals } from "./UIGlobals.ts";
+import { globals } from "./UiGlobals.ts";
 
 export function get(): CardLayout {
   if (!globals.state.playing) {

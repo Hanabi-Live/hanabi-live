@@ -2,14 +2,14 @@
 const MAX_REMEMBERED_DELETIONS = 10_000;
 
 export class LobbyChatDeletionState {
-  private readonly deletedChatIDs = new Set<number>();
+  private readonly deletedChatIds = new Set<number>();
 
   public markDeleted(chatId: number): void {
-    this.deletedChatIDs.add(chatId);
-    if (this.deletedChatIDs.size > MAX_REMEMBERED_DELETIONS) {
-      const oldestID = this.deletedChatIDs.values().next().value;
-      if (oldestID !== undefined) {
-        this.deletedChatIDs.delete(oldestID);
+    this.deletedChatIds.add(chatId);
+    if (this.deletedChatIds.size > MAX_REMEMBERED_DELETIONS) {
+      const oldestId = this.deletedChatIds.values().next().value;
+      if (oldestId !== undefined) {
+        this.deletedChatIds.delete(oldestId);
       }
     }
   }
@@ -21,7 +21,7 @@ export class LobbyChatDeletionState {
     return (
       tableId === undefined
       && chatId !== undefined
-      && this.deletedChatIDs.has(chatId)
+      && this.deletedChatIds.has(chatId)
     );
   }
 }

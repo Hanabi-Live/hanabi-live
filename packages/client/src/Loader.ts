@@ -63,8 +63,8 @@ export class Loader {
 
   constructor() {
     // Build a map of image identifiers to URL paths.
-    for (const fileID of FILE_IDS) {
-      this.filePathMap.set(fileID, `/public/img/${fileID}.png`);
+    for (const fileId of FILE_IDS) {
+      this.filePathMap.set(fileId, `/public/img/${fileId}.png`);
     }
 
     // Add files to the map that do not have a ".png" extension.
@@ -74,14 +74,14 @@ export class Loader {
   }
 
   start(): void {
-    for (const [fileID, filePath] of this.filePathMap) {
-      this.loadImage(fileID, filePath);
+    for (const [fileId, filePath] of this.filePathMap) {
+      this.loadImage(fileId, filePath);
     }
 
     this.progress();
   }
 
-  private loadImage(fileID: string, filePath: string, retryCount = 0): void {
+  private loadImage(fileId: string, filePath: string, retryCount = 0): void {
     const img = new Image();
     img.addEventListener("load", () => {
       this.numLoaded++;
@@ -96,7 +96,7 @@ export class Loader {
         // Retry transient transport failures without counting the image as loaded.
         setTimeout(
           () => {
-            this.loadImage(fileID, filePath, retryCount + 1);
+            this.loadImage(fileId, filePath, retryCount + 1);
           },
           IMAGE_RETRY_BASE_DELAY_MILLISECONDS * 2 ** retryCount,
         );
@@ -106,7 +106,7 @@ export class Loader {
       this.failedFiles.add(filePath);
       this.failedCallback?.(filePath);
     });
-    this.imageMap.set(fileID, img);
+    this.imageMap.set(fileId, img);
     img.src = filePath;
   }
 

@@ -2,7 +2,7 @@ import { assertDefined } from "complete-common";
 import Konva from "konva";
 import { Screen } from "../../lobby/types/Screen.ts";
 import * as tooltips from "../../tooltips.ts";
-import { globals } from "./UIGlobals.ts";
+import { globals } from "./UiGlobals.ts";
 import type { NodeWithTooltip } from "./controls/NodeWithTooltip.ts";
 import type { TextWithTooltip } from "./controls/TextWithTooltip.ts";
 

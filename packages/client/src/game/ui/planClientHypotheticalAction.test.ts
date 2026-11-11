@@ -16,11 +16,11 @@ import {
 } from "@hanabi-live/game";
 import { describe, expect, test, vi } from "vitest";
 
-vi.mock("./UIGlobals.ts", () => ({ globals: {} }));
+vi.mock("./UiGlobals.ts", () => ({ globals: {} }));
 vi.mock("./HanabiCardMouse.ts", () => ({ setEmpathyOnHand: vi.fn() }));
 const { initialState } =
   await import("../reducers/initialStates/initialState.ts");
-const { globals } = await import("./UIGlobals.ts");
+const { globals } = await import("./UiGlobals.ts");
 const { getCardOrStackBase } = await import("./getCardOrStackBase.ts");
 const { sendHypotheticalAction } = await import("./hypothetical.ts");
 const { planClientHypotheticalAction } =

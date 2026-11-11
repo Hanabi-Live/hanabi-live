@@ -54,7 +54,7 @@ function showPage() {
 describe("WatchReplay", () => {
   test("starts with what was used last time", () => {
     localStorage.setItem("watchReplaySource", "json");
-    localStorage.setItem("watchReplayJSON", "{}");
+    localStorage.setItem("watchReplayJson", "{}");
     localStorage.setItem("watchReplayVisibility", "shared");
     localStorage.setItem("watchReplaySpoilerFree", "true");
     showPage();
@@ -102,7 +102,7 @@ describe("WatchReplay", () => {
       spoilerFree: true,
     });
     expect(hide).toHaveBeenCalled();
-    expect(localStorage.getItem("watchReplayID")).toBe("42");
+    expect(localStorage.getItem("watchReplayId")).toBe("42");
     expect(localStorage.getItem("watchReplayVisibility")).toBe("shared");
   });
 });

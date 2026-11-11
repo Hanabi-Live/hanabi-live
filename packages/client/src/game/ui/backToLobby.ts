@@ -4,7 +4,7 @@ import { typingCleared } from "../../lobby/pregame/pregameSlice.ts";
 import { store } from "../../store.ts";
 import * as tooltips from "../../tooltips.ts";
 import { setBrowserAddressBarPath } from "../../utils.ts";
-import { globals } from "./UIGlobals.ts";
+import { globals } from "./UiGlobals.ts";
 import * as timer from "./timer.ts";
 
 export function backToLobby(): void {

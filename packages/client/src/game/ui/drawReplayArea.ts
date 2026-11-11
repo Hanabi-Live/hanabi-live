@@ -1,6 +1,6 @@
 import Konva from "konva";
 import { getCanvasColors } from "../../theme.ts";
-import { globals } from "./UIGlobals.ts";
+import { globals } from "./UiGlobals.ts";
 import { BGA_ACTION_LOG, THIN_STROKE_WIDTH } from "./constants.ts";
 import { Button } from "./controls/Button.ts";
 import { EnterHypoButton } from "./controls/EnterHypoButton.ts";
@@ -205,12 +205,12 @@ export function drawReplayArea(winW: number, winH: number): void {
     globals.elements.replayBackButton.on("click tap", () => {
       // Prevent accidental double clicks.
       if (
-        Date.now() - globals.UIClickTime
+        Date.now() - globals.uiClickTime
         < ACCIDENTAL_DOUBLE_CLICK_MILLISECONDS
       ) {
         return;
       }
-      globals.UIClickTime = Date.now();
+      globals.uiClickTime = Date.now();
 
       replay.back();
     });
@@ -233,12 +233,12 @@ export function drawReplayArea(winW: number, winH: number): void {
     globals.elements.replayForwardButton.on("click tap", () => {
       // Prevent accidental double clicks.
       if (
-        Date.now() - globals.UIClickTime
+        Date.now() - globals.uiClickTime
         < ACCIDENTAL_DOUBLE_CLICK_MILLISECONDS
       ) {
         return;
       }
-      globals.UIClickTime = Date.now();
+      globals.uiClickTime = Date.now();
 
       replay.forward();
     });

@@ -20,8 +20,8 @@ class FakeImage {
 
 const originalImage = globalThis.Image;
 
-function getImage(loader: Loader, fileID: string): FakeImage {
-  return loader.imageMap.get(fileID) as unknown as FakeImage;
+function getImage(loader: Loader, fileId: string): FakeImage {
+  return loader.imageMap.get(fileId) as unknown as FakeImage;
 }
 
 describe("image loader", () => {
@@ -61,8 +61,8 @@ describe("image loader", () => {
 
   test("retries a transient image error without counting it as loaded", () => {
     const loader = new Loader();
-    const fileID = "crown";
-    const firstImage = getImage(loader, fileID);
+    const fileId = "crown";
+    const firstImage = getImage(loader, fileId);
     const onFinished = vi.fn();
     loader.finishedCallback = () => {
       onFinished();
@@ -73,12 +73,12 @@ describe("image loader", () => {
     expect(loader.finished).toBe(false);
 
     clock.tick(1000);
-    const retriedImage = getImage(loader, fileID);
+    const retriedImage = getImage(loader, fileId);
     expect(retriedImage).not.toBe(firstImage);
     retriedImage.emit("load");
 
     for (const [id] of loader.filePathMap) {
-      if (id !== fileID) {
+      if (id !== fileId) {
         getImage(loader, id).emit("load");
       }
     }
@@ -90,7 +90,7 @@ describe("image loader", () => {
 
   test("reports a permanent error after bounded retries", () => {
     const loader = new Loader();
-    const fileID = "crown";
+    const fileId = "crown";
     const onFailed = vi.fn();
     const onFinished = vi.fn();
     loader.failedCallback = (filePath) => {
@@ -100,11 +100,11 @@ describe("image loader", () => {
       onFinished();
     };
 
-    getImage(loader, fileID).emit("error");
+    getImage(loader, fileId).emit("error");
     clock.tick(1000);
-    getImage(loader, fileID).emit("error");
+    getImage(loader, fileId).emit("error");
     clock.tick(2000);
-    getImage(loader, fileID).emit("error");
+    getImage(loader, fileId).emit("error");
 
     expect(loader.failed).toBe(true);
     expect(loader.numLoaded).toBe(0);

@@ -1,7 +1,7 @@
 // The users who are currently online, from the "userList", "user", "userLeft", and "userInactive"
 // server messages.
 
-import type { ServerCommandData, UserID } from "@hanabi-live/data";
+import type { ServerCommandData, UserId } from "@hanabi-live/data";
 import type { PayloadAction } from "@reduxjs/toolkit";
 import {
   createEntityAdapter,
@@ -44,12 +44,12 @@ const usersSlice = createSlice({
     usersListed(state, action: PayloadAction<readonly User[]>) {
       usersAdapter.setMany(state, action.payload);
     },
-    userLeft(state, action: PayloadAction<UserID>) {
+    userLeft(state, action: PayloadAction<UserId>) {
       usersAdapter.removeOne(state, action.payload);
     },
     userInactiveChanged(
       state,
-      action: PayloadAction<{ userId: UserID; inactive: boolean }>,
+      action: PayloadAction<{ userId: UserId; inactive: boolean }>,
     ) {
       const { userId, inactive } = action.payload;
       usersAdapter.updateOne(state, { id: userId, changes: { inactive } });

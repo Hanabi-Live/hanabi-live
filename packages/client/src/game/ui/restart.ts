@@ -1,6 +1,6 @@
 import { MIN_PLAYERS } from "@hanabi-live/game";
 import type { SharedReplayState } from "../types/SharedReplayState.ts";
-import { globals } from "./UIGlobals.ts";
+import { globals } from "./UiGlobals.ts";
 
 /** Tells the leader whether we will play again if they restart. */
 export function decline(declined: boolean): void {

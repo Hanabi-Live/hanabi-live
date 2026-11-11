@@ -112,11 +112,11 @@ pub fn router(pool: PgPool, config: &PublicConfig) -> Router {
         "/game/{tableId}",
         "/game/{tableId}/shadow/{seat}",
         "/replay",
-        "/replay/{databaseID}",
-        "/replay/{databaseID}/{turnID}",
+        "/replay/{databaseId}",
+        "/replay/{databaseId}/{turnId}",
         "/shared-replay",
-        "/shared-replay/{databaseID}",
-        "/shared-replay/{databaseID}/{turnID}",
+        "/shared-replay/{databaseId}",
+        "/shared-replay/{databaseId}/{turnId}",
         "/replay-json/{string}",
         "/shared-replay-json/{string}",
         "/create-table",
@@ -133,7 +133,7 @@ pub fn router(pool: PgPool, config: &PublicConfig) -> Router {
         ("variant", "id"),
         ("seed", "seed"),
         ("tag", "tag"),
-        ("export", "databaseID"),
+        ("export", "databaseId"),
     ] {
         router = router
             .route(&format!("/{root}"), get(pages::page))

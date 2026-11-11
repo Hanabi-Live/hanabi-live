@@ -1,6 +1,6 @@
 // The "Create Game" screen, which also changes the options of an unstarted game.
 
-import type { GameID, ServerCommandData, Settings } from "@hanabi-live/data";
+import type { GameId, ServerCommandData, Settings } from "@hanabi-live/data";
 import {
   DEFAULT_TABLE_NAME_SUFFIX,
   MAX_SEED_LENGTH,
@@ -29,7 +29,7 @@ import { globals } from "../Globals.ts";
 import { creatingTableChanged } from "../sessionSlice.ts";
 import { store } from "../store.ts";
 import { Tooltip } from "../Tooltip.ts";
-import { escapeHtml, getHTMLInputElement } from "../utils.ts";
+import { escapeHtml, getHtmlInputElement } from "../utils.ts";
 import * as lobbyPage from "./lobbyPage.ts";
 import { Screen } from "./types/Screen.ts";
 
@@ -101,11 +101,11 @@ export function init(): void {
     placeholder: defaultSettings.createTableMaxPlayers,
   });
 
-  getHTMLInputElement("#create-game-seed").maxLength = MAX_SEED_LENGTH;
+  getHtmlInputElement("#create-game-seed").maxLength = MAX_SEED_LENGTH;
   addCheckedInput("#createTableTimeBaseMinutes", getTimeBaseError);
   addCheckedInput("#createTableTimePerTurnSeconds", getTimePerTurnError);
   addCheckedInput("#create-game-seed", getSeedError);
-  addCheckedInput("#create-game-replay-game-id", getReplayGameIDError);
+  addCheckedInput("#create-game-replay-game-id", getReplayGameIdError);
   addCheckedInput("#create-game-replay-turn", getReplayTurnError);
 
   firstVariantDropdownInit();
@@ -379,7 +379,7 @@ function submit() {
       detrimentalCharacters: getCheckbox("createTableDetrimentalCharacters"),
     },
     ...(seed !== "" && { seedSuffix: seed }),
-    ...(replayGameId !== undefined && { replayGameId: replayGameId as GameID }),
+    ...(replayGameId !== undefined && { replayGameId: replayGameId as GameId }),
     ...(replayTurn !== undefined && { replayTurn }),
   };
 
@@ -409,7 +409,7 @@ export function acceptOptionsFromGuest(
 }
 
 function addCheckedInput(selector: string, getError: () => string | undefined) {
-  const element = getHTMLInputElement(selector);
+  const element = getHtmlInputElement(selector);
   checkedInputs.push({
     element,
     tooltip: new Tooltip(element, { content: "" }),
@@ -454,14 +454,14 @@ function closeInputErrors() {
 }
 
 function getText(selector: string): string {
-  return getHTMLInputElement(selector).value.trim();
+  return getHtmlInputElement(selector).value.trim();
 }
 
 /** Whether the clock options apply, since a speedrun is never timed. */
 function isTimed(): boolean {
   return (
-    getHTMLInputElement("#createTableTimed").checked
-    && !getHTMLInputElement("#createTableSpeedrun").checked
+    getHtmlInputElement("#createTableTimed").checked
+    && !getHtmlInputElement("#createTableSpeedrun").checked
   );
 }
 
@@ -512,7 +512,7 @@ function getSeedError(): string | undefined {
   return `You cannot have these characters in a seed: ${shown}`;
 }
 
-function getReplayGameIDError(): string | undefined {
+function getReplayGameIdError(): string | undefined {
   const text = getText("#create-game-replay-game-id");
   if (text === "") {
     return undefined;
@@ -542,7 +542,7 @@ function isPositiveInteger(text: string): boolean {
 
 function getCheckbox(setting: keyof Settings): boolean {
   const selector = `#${setting}`;
-  const element = getHTMLInputElement(selector);
+  const element = getHtmlInputElement(selector);
   const value = element.checked;
   checkSettingChanged(setting, value);
   return value;
@@ -722,7 +722,7 @@ function getDefaultTableName(): string {
 }
 
 function isChecked(setting: keyof Settings): boolean {
-  return getHTMLInputElement(`#${setting}`).checked;
+  return getHtmlInputElement(`#${setting}`).checked;
 }
 
 /** Shows, hides, or disables the rows that depend on the state of a checkbox. */

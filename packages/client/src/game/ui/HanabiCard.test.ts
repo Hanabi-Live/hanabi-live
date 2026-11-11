@@ -1,6 +1,6 @@
 import { describe, expect, test, vi } from "vitest";
 
-vi.mock("./UIGlobals.ts", () => ({ globals: { activeHover: undefined } }));
+vi.mock("./UiGlobals.ts", () => ({ globals: { activeHover: undefined } }));
 vi.mock("../../tooltips.ts", () => ({}));
 vi.mock("../../Globals.ts", () => ({ globals: {} }));
 vi.mock("./noteCheckImpossibility.ts", () => ({
@@ -15,7 +15,7 @@ vi.mock("./HanabiCardMouse.ts", () => ({
 vi.mock("./notes.ts", () => ({}));
 vi.mock("./LayoutChild.ts", () => ({ LayoutChild: vi.fn() }));
 const { HanabiCard } = await import("./HanabiCard.ts");
-const { globals } = await import("./UIGlobals.ts");
+const { globals } = await import("./UiGlobals.ts");
 
 describe("removeLayoutChildFromParent", () => {
   test("releases a card that is held while it leaves the hand", () => {

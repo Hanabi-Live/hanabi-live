@@ -11,7 +11,7 @@ import type {
 import { cardsReducer } from "@hanabi-live/game";
 import type { HanabiCard } from "./HanabiCard.ts";
 import type { LayoutChild } from "./LayoutChild.ts";
-import { globals } from "./UIGlobals.ts";
+import { globals } from "./UiGlobals.ts";
 import { colorToColorIndex } from "./convert.ts";
 
 interface PotentialClue {

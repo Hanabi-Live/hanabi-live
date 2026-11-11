@@ -7,7 +7,7 @@ import type { State } from "../../../types/State.ts";
 import * as replay from "../../replay.ts";
 import * as restart from "../../restart.ts";
 import * as timer from "../../timer.ts";
-import { globals } from "../../UIGlobals.ts";
+import { globals } from "../../UiGlobals.ts";
 import { toggleZen } from "../../zen.ts";
 import * as cluesView from "./cluesView.ts";
 
@@ -211,7 +211,7 @@ function playSharedReplayTween(
 }
 
 /** The label near the deck: the game's database ID, or nothing while the game is ongoing. */
-export function getGameIDLabel(state: State): string | undefined {
+export function getGameIdLabel(state: State): string | undefined {
   if (!state.finished) {
     return undefined;
   }
@@ -221,20 +221,20 @@ export function getGameIDLabel(state: State): string | undefined {
     : `ID: ${state.replay.gameId}`;
 }
 
-export function onGameIDLabelChanged(text: string | undefined): void {
+export function onGameIdLabelChanged(text: string | undefined): void {
   if (text === undefined) {
     return;
   }
 
-  globals.elements.gameIDLabel?.text(text);
-  globals.elements.gameIDLabel?.show();
+  globals.elements.gameIdLabel?.text(text);
+  globals.elements.gameIdLabel?.show();
 
   // Also move the card count label on the deck downwards.
   if (globals.state.visibleState!.cardsRemainingInTheDeck === 0) {
     globals.elements.deck?.nudgeCountDownwards();
   }
 
-  globals.layers.arrow.batchDraw(); // gameIDLabel is on the arrow layer
+  globals.layers.arrow.batchDraw(); // gameIdLabel is on the arrow layer
   globals.layers.card.batchDraw(); // deck is on the card layer
 }
 

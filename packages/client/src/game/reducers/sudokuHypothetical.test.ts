@@ -13,11 +13,11 @@ import {
 } from "@hanabi-live/game";
 import { assertDefined } from "complete-common";
 import { describe, expect, test } from "vitest";
-import { loadGameJSON } from "../../../test/loadGameJSON.ts";
+import { loadGameJson } from "../../../test/loadGameJson.ts";
 import sudokuGame from "../../../test_data/sudoku_hypothetical_1663033.json";
 import { initialState } from "./initialStates/initialState.ts";
 
-const replay = loadGameJSON(sudokuGame);
+const replay = loadGameJson(sudokuGame);
 const { metadata } = replay;
 const variant = getVariant(metadata.options.variantName);
 const notes = initialState(metadata).notes.ourNotes;

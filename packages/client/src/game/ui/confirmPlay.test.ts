@@ -4,10 +4,10 @@ import { beforeEach, describe, expect, test, vi } from "vitest";
 
 const askForConfirmation = vi.fn();
 
-vi.mock("./UIGlobals.ts", () => ({ globals: {} }));
+vi.mock("./UiGlobals.ts", () => ({ globals: {} }));
 vi.mock("../../modals.ts", () => ({ askForConfirmation }));
 const { confirmPlay } = await import("./confirmPlay.ts");
-const { globals } = await import("./UIGlobals.ts");
+const { globals } = await import("./UiGlobals.ts");
 
 const NUM_SUITS = 5;
 const BLUE = 3;

@@ -1,4 +1,4 @@
-import { globals } from "./UIGlobals.ts";
+import { globals } from "./UiGlobals.ts";
 import { onSpectatorsChanged } from "./reactive/views/spectatorsView.ts";
 
 export function toggleZen(): void {

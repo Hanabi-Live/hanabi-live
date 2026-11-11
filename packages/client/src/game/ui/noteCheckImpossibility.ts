@@ -4,7 +4,7 @@ import {
   canCardPossiblyBeFromEmpathy,
 } from "@hanabi-live/game";
 import * as modals from "../../modals.ts";
-import { globals } from "./UIGlobals.ts";
+import { globals } from "./UiGlobals.ts";
 
 export { possibleCardsFromNoteAndClues } from "@hanabi-live/game";
 

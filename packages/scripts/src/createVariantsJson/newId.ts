@@ -1,7 +1,7 @@
 import type {
-  SuitJSON,
+  SuitJson,
   VariantDescription,
-  VariantJSON,
+  VariantJson,
 } from "@hanabi-live/game";
 import {
   DEFAULT_CLUE_RANKS,
@@ -25,29 +25,29 @@ import {
 import { isEqual } from "lodash";
 import { getSpecialClueRanks } from "./getVariantDescriptions.ts";
 
-export function getNewVariantID(
+export function getNewVariantId(
   variantDescription: VariantDescription,
-  suitsNameMap: ReadonlyMap<string, SuitJSON>,
+  suitsNameMap: ReadonlyMap<string, SuitJson>,
 ): string {
-  const suitIDs = variantDescription.suits.map((suitName) =>
-    getNewSuitID(suitName, suitsNameMap),
+  const suitIds = variantDescription.suits.map((suitName) =>
+    getNewSuitId(suitName, suitsNameMap),
   );
 
-  const suitsID = suitIDs.join(SUIT_DELIMITER);
+  const suitsId = suitIds.join(SUIT_DELIMITER);
 
-  const specialVariantIDSuffixes =
-    getSpecialVariantIDSuffixes(variantDescription);
-  if (specialVariantIDSuffixes.length === 0) {
-    return suitsID;
+  const specialVariantIdSuffixes =
+    getSpecialVariantIdSuffixes(variantDescription);
+  if (specialVariantIdSuffixes.length === 0) {
+    return suitsId;
   }
 
-  const variantSuffix = specialVariantIDSuffixes.join(VARIANT_DELIMITER);
-  return `${suitsID}${VARIANT_DELIMITER}${variantSuffix}`;
+  const variantSuffix = specialVariantIdSuffixes.join(VARIANT_DELIMITER);
+  return `${suitsId}${VARIANT_DELIMITER}${variantSuffix}`;
 }
 
-function getNewSuitID(
+function getNewSuitId(
   suitName: string,
-  suitsNameMap: ReadonlyMap<string, SuitJSON>,
+  suitsNameMap: ReadonlyMap<string, SuitJson>,
 ): string {
   // Reversed suits are a special case; they have an "R" appended to the non-reversed suit id.
   if (suitName.endsWith(SUIT_REVERSED_SUFFIX)) {
@@ -67,10 +67,10 @@ function getNewSuitID(
   return suit.id;
 }
 
-function getSpecialVariantIDSuffixes(
+function getSpecialVariantIdSuffixes(
   variantDescription: VariantDescription,
 ): readonly string[] {
-  const variantIDSuffixes: string[] = [];
+  const variantIdSuffixes: string[] = [];
 
   if (variantDescription.specialRank !== undefined) {
     // Rainbow-Ones / Rainbow-Twos / etc.
@@ -81,7 +81,7 @@ function getSpecialVariantIDSuffixes(
       && variantDescription.specialRankNoClueRanks !== true
       && variantDescription.specialRankDeceptive !== true
     ) {
-      variantIDSuffixes.push(`R${variantDescription.specialRank}`);
+      variantIdSuffixes.push(`R${variantDescription.specialRank}`);
     }
 
     // Pink-Ones / Pink-Twos / etc.
@@ -92,7 +92,7 @@ function getSpecialVariantIDSuffixes(
       && variantDescription.specialRankNoClueRanks !== true
       && variantDescription.specialRankDeceptive !== true
     ) {
-      variantIDSuffixes.push(`P${variantDescription.specialRank}`);
+      variantIdSuffixes.push(`P${variantDescription.specialRank}`);
     }
 
     // White-Ones / White-Twos / etc.
@@ -103,7 +103,7 @@ function getSpecialVariantIDSuffixes(
       && variantDescription.specialRankNoClueRanks !== true
       && variantDescription.specialRankDeceptive !== true
     ) {
-      variantIDSuffixes.push(`W${variantDescription.specialRank}`);
+      variantIdSuffixes.push(`W${variantDescription.specialRank}`);
     }
 
     // Brown-Ones / Brown-Twos / etc.
@@ -114,7 +114,7 @@ function getSpecialVariantIDSuffixes(
       && variantDescription.specialRankNoClueRanks === true
       && variantDescription.specialRankDeceptive !== true
     ) {
-      variantIDSuffixes.push(`B${variantDescription.specialRank}`);
+      variantIdSuffixes.push(`B${variantDescription.specialRank}`);
     }
 
     // Omni-Ones / Omni-Twos / etc.
@@ -125,7 +125,7 @@ function getSpecialVariantIDSuffixes(
       && variantDescription.specialRankNoClueRanks !== true
       && variantDescription.specialRankDeceptive !== true
     ) {
-      variantIDSuffixes.push(`O${variantDescription.specialRank}`);
+      variantIdSuffixes.push(`O${variantDescription.specialRank}`);
     }
 
     // Null-Ones / Null-Twos / etc.
@@ -136,7 +136,7 @@ function getSpecialVariantIDSuffixes(
       && variantDescription.specialRankNoClueRanks === true
       && variantDescription.specialRankDeceptive !== true
     ) {
-      variantIDSuffixes.push(`N${variantDescription.specialRank}`);
+      variantIdSuffixes.push(`N${variantDescription.specialRank}`);
     }
 
     // Muddy-Rainbow-Ones / Muddy-Rainbow-Twos / etc.
@@ -147,7 +147,7 @@ function getSpecialVariantIDSuffixes(
       && variantDescription.specialRankNoClueRanks === true
       && variantDescription.specialRankDeceptive !== true
     ) {
-      variantIDSuffixes.push(`M${variantDescription.specialRank}`);
+      variantIdSuffixes.push(`M${variantDescription.specialRank}`);
     }
 
     // Light-Pink-Ones / Light-Pink-Twos / etc.
@@ -158,7 +158,7 @@ function getSpecialVariantIDSuffixes(
       && variantDescription.specialRankNoClueRanks !== true
       && variantDescription.specialRankDeceptive !== true
     ) {
-      variantIDSuffixes.push(`L${variantDescription.specialRank}`);
+      variantIdSuffixes.push(`L${variantDescription.specialRank}`);
     }
 
     // Deceptive-Ones / Deceptive-Twos / etc.
@@ -169,23 +169,23 @@ function getSpecialVariantIDSuffixes(
       && variantDescription.specialRankNoClueRanks !== true
       && variantDescription.specialRankDeceptive === true
     ) {
-      variantIDSuffixes.push(`D${variantDescription.specialRank}`);
+      variantIdSuffixes.push(`D${variantDescription.specialRank}`);
     }
   }
 
   // Critical Ones / Critical Twos / etc.
   if (variantDescription.criticalRank !== undefined) {
-    variantIDSuffixes.push(`C${variantDescription.criticalRank}`);
+    variantIdSuffixes.push(`C${variantDescription.criticalRank}`);
   }
 
   // Scarce Ones
   if (variantDescription.scarceOnes === true) {
-    variantIDSuffixes.push(VariantModifier.ScarceOnes);
+    variantIdSuffixes.push(VariantModifier.ScarceOnes);
   }
 
   // Clue Starved
   if (variantDescription.clueStarved === true) {
-    variantIDSuffixes.push(VariantModifier.ClueStarved);
+    variantIdSuffixes.push(VariantModifier.ClueStarved);
   }
 
   // Color Blind
@@ -193,7 +193,7 @@ function getSpecialVariantIDSuffixes(
     variantDescription.colorCluesTouchNothing === true
     && variantDescription.rankCluesTouchNothing !== true
   ) {
-    variantIDSuffixes.push(VariantModifier.ColorBlind);
+    variantIdSuffixes.push(VariantModifier.ColorBlind);
   }
 
   // Number Blind
@@ -201,7 +201,7 @@ function getSpecialVariantIDSuffixes(
     variantDescription.colorCluesTouchNothing !== true
     && variantDescription.rankCluesTouchNothing === true
   ) {
-    variantIDSuffixes.push(VariantModifier.NumberBlind);
+    variantIdSuffixes.push(VariantModifier.NumberBlind);
   }
 
   // Totally Blind
@@ -209,7 +209,7 @@ function getSpecialVariantIDSuffixes(
     variantDescription.colorCluesTouchNothing === true
     && variantDescription.rankCluesTouchNothing === true
   ) {
-    variantIDSuffixes.push(VariantModifier.TotallyBlind);
+    variantIdSuffixes.push(VariantModifier.TotallyBlind);
   }
 
   // Color Mute
@@ -217,7 +217,7 @@ function getSpecialVariantIDSuffixes(
     variantDescription.clueColors !== undefined
     && variantDescription.clueColors.length === 0
   ) {
-    variantIDSuffixes.push(VariantModifier.ColorMute);
+    variantIdSuffixes.push(VariantModifier.ColorMute);
   }
 
   // Number Mute
@@ -225,99 +225,99 @@ function getSpecialVariantIDSuffixes(
     variantDescription.clueRanks !== undefined
     && variantDescription.clueRanks.length === 0
   ) {
-    variantIDSuffixes.push(VariantModifier.NumberMute);
+    variantIdSuffixes.push(VariantModifier.NumberMute);
   }
 
   // Alternating Clues
   if (variantDescription.alternatingClues === true) {
-    variantIDSuffixes.push(VariantModifier.AlternatingClues);
+    variantIdSuffixes.push(VariantModifier.AlternatingClues);
   }
 
   // Cow & Pig
   if (variantDescription.cowAndPig === true) {
-    variantIDSuffixes.push(VariantModifier.CowAndPig);
+    variantIdSuffixes.push(VariantModifier.CowAndPig);
   }
 
   // Duck
   if (variantDescription.duck === true) {
-    variantIDSuffixes.push(VariantModifier.Duck);
+    variantIdSuffixes.push(VariantModifier.Duck);
   }
 
   // Odds and Evens
   if (variantDescription.oddsAndEvens === true) {
-    variantIDSuffixes.push(VariantModifier.OddsAndEvens);
+    variantIdSuffixes.push(VariantModifier.OddsAndEvens);
   }
 
   // Synesthesia
   if (variantDescription.synesthesia === true) {
-    variantIDSuffixes.push(VariantModifier.Synesthesia);
+    variantIdSuffixes.push(VariantModifier.Synesthesia);
   }
 
   // Up or Down
   if (variantDescription.upOrDown === true) {
-    variantIDSuffixes.push(VariantModifier.UpOrDown);
+    variantIdSuffixes.push(VariantModifier.UpOrDown);
   }
 
   // Throw It in a Hole.
   if (variantDescription.throwItInAHole === true) {
-    variantIDSuffixes.push(VariantModifier.ThrowItInAHole);
+    variantIdSuffixes.push(VariantModifier.ThrowItInAHole);
   }
 
   // Funnels
   if (variantDescription.funnels === true) {
-    variantIDSuffixes.push(VariantModifier.Funnels);
+    variantIdSuffixes.push(VariantModifier.Funnels);
   }
 
   // Chimneys
   if (variantDescription.chimneys === true) {
-    variantIDSuffixes.push(VariantModifier.Chimneys);
+    variantIdSuffixes.push(VariantModifier.Chimneys);
   }
 
   // Sudoku
   if (variantDescription.sudoku === true) {
-    variantIDSuffixes.push(VariantModifier.Sudoku);
+    variantIdSuffixes.push(VariantModifier.Sudoku);
   }
 
-  return variantIDSuffixes;
+  return variantIdSuffixes;
 }
 
-export function validateNewVariantIDs(
-  variantsJSON: readonly VariantJSON[],
-  suitsIDMap: ReadonlyMap<string, SuitJSON>,
+export function validateNewVariantIds(
+  variantsJson: readonly VariantJson[],
+  suitsIdMap: ReadonlyMap<string, SuitJson>,
 ): void {
-  const newVariantIDs = new Set();
+  const newVariantIds = new Set();
 
-  for (const variantJSON of variantsJSON) {
-    if (variantJSON.newId === "") {
+  for (const variantJson of variantsJson) {
+    if (variantJson.newId === "") {
       throw new Error(
-        `Variant "${variantJSON.name}" is missing a "newId" property.`,
+        `Variant "${variantJson.name}" is missing a "newId" property.`,
       );
     }
 
-    if (newVariantIDs.has(variantJSON.newId)) {
-      console.error("variantJSON:", variantJSON);
+    if (newVariantIds.has(variantJson.newId)) {
+      console.error("variantJson:", variantJson);
       throw new Error(
-        `Variant "${variantJSON.name}" has a duplicate "newId" property of "${variantJSON.newId}". (See the previous object log.)`,
+        `Variant "${variantJson.name}" has a duplicate "newId" property of "${variantJson.newId}". (See the previous object log.)`,
       );
     }
 
-    newVariantIDs.add(variantJSON.newId);
+    newVariantIds.add(variantJson.newId);
 
-    const reconstructedVariant = getVariantFromNewID(
-      variantJSON.newId,
-      variantJSON.name,
-      variantJSON.id,
-      suitsIDMap,
+    const reconstructedVariant = getVariantFromNewId(
+      variantJson.newId,
+      variantJson.name,
+      variantJson.id,
+      suitsIdMap,
     );
 
-    if (!isEqual(variantJSON, reconstructedVariant)) {
+    if (!isEqual(variantJson, reconstructedVariant)) {
       console.error("--------------------------------------------------------");
-      console.error("variantJSON:", variantJSON);
+      console.error("variantJson:", variantJson);
       console.error("--------------------------------------------------------");
       console.error("reconstructedVariant:", reconstructedVariant);
       console.error("--------------------------------------------------------");
       throw new Error(
-        `Variant "${variantJSON.name}" has a new ID of "${variantJSON.newId}" that was parsed incorrectly. (See the previous object logs.)`,
+        `Variant "${variantJson.name}" has a new ID of "${variantJson.newId}" that was parsed incorrectly. (See the previous object logs.)`,
       );
     }
   }
@@ -328,24 +328,24 @@ export function validateNewVariantIDs(
  *
  * It cannot compute the name of the old ID, so those must be provided.
  */
-function getVariantFromNewID(
+function getVariantFromNewId(
   newId: string,
   name: string,
-  oldID: number,
-  suitsIDMap: ReadonlyMap<string, SuitJSON>,
-): VariantJSON {
+  oldId: number,
+  suitsIdMap: ReadonlyMap<string, SuitJson>,
+): VariantJson {
   const [suitsString, ...variantModifiers] = newId.split(VARIANT_DELIMITER);
   assertDefined(
     suitsString,
     `Failed to parse the suits string from the variant ID of: ${newId}`,
   );
 
-  const suitIDsWithModifiers = suitsString.split(SUIT_DELIMITER);
-  const suits = getSuitNamesFromSuitID(suitIDsWithModifiers, suitsIDMap);
+  const suitIdsWithModifiers = suitsString.split(SUIT_DELIMITER);
+  const suits = getSuitNamesFromSuitId(suitIdsWithModifiers, suitsIdMap);
 
-  const variant: Writeable<VariantJSON> = {
+  const variant: Writeable<VariantJson> = {
     name,
-    id: oldID,
+    id: oldId,
     newId,
     suits,
   };
@@ -671,7 +671,7 @@ function getVariantFromNewID(
         variant.sudoku = true;
         if (variant.suits.length !== 5) {
           variant.stackSize = variant.suits.length as NonNullable<
-            VariantJSON["stackSize"]
+            VariantJson["stackSize"]
           >;
           variant.clueRanks = DEFAULT_CLUE_RANKS.slice(0, variant.suits.length);
         }
@@ -683,26 +683,26 @@ function getVariantFromNewID(
   return variant;
 }
 
-function getSuitNamesFromSuitID(
-  suitIDsWithModifiers: readonly string[],
-  suitsIDMap: ReadonlyMap<string, SuitJSON>,
+function getSuitNamesFromSuitId(
+  suitIdsWithModifiers: readonly string[],
+  suitsIdMap: ReadonlyMap<string, SuitJson>,
 ): readonly string[] {
-  return suitIDsWithModifiers.map((suitIDWithModifiers) => {
-    const [suitID, ...modifiers] = suitIDWithModifiers.split(
+  return suitIdsWithModifiers.map((suitIdWithModifiers) => {
+    const [suitId, ...modifiers] = suitIdWithModifiers.split(
       SUIT_MODIFIER_DELIMITER,
     );
     assertDefined(
-      suitID,
-      `Failed to parse the suit ID: ${suitIDWithModifiers}`,
+      suitId,
+      `Failed to parse the suit ID: ${suitIdWithModifiers}`,
     );
 
-    const suit = suitsIDMap.get(suitID);
-    assertDefined(suit, `Failed to find a suit with an ID of: ${suitID}`);
+    const suit = suitsIdMap.get(suitId);
+    assertDefined(suit, `Failed to find a suit with an ID of: ${suitId}`);
 
     for (const modifier of modifiers) {
       if (!SUIT_MODIFIERS.has(modifier)) {
         throw new Error(
-          `Suit "${suit.name}" has an unknown modifier of "${modifier}" in the suit ID of: ${suitIDWithModifiers}`,
+          `Suit "${suit.name}" has an unknown modifier of "${modifier}" in the suit ID of: ${suitIdWithModifiers}`,
         );
       }
     }

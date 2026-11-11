@@ -5,17 +5,17 @@ import {
   MAX_PLAYERS,
   MIN_PLAYERS,
   getVariant,
-  getVariantByID,
+  getVariantById,
 } from "@hanabi-live/game";
 import { assertDefined, parseIntSafe } from "complete-common";
 import { isEqual } from "lodash";
 import * as z from "zod";
 
 /** A game in the replay format, generated from the server's contract. */
-export type GameJSON = z.input<typeof replayGameSchema>;
+export type GameJson = z.input<typeof replayGameSchema>;
 /** A deck card as parsing gives it, with the suit that a missing one defaults to. */
 type DeckCard = NonNullable<z.output<typeof replayGameSchema>["deck"]>[number];
-type Action = NonNullable<GameJSON["actions"]>[number];
+type Action = NonNullable<GameJson["actions"]>[number];
 
 /** The type of an action in a compressed game. */
 enum CompactType {
@@ -78,7 +78,7 @@ function endCondition(index: number | undefined): EndCondition | undefined {
 }
 
 /**
- * Compresses a string representing a `GameJSON` object. Returns undefined if the compression fails.
+ * Compresses a string representing a `GameJson` object. Returns undefined if the compression fails.
  *
  * The resulting string is composed of four substrings separated by commas:
  * - The first substring represents the number of players and the deck.
@@ -89,13 +89,13 @@ function endCondition(index: number | undefined): EndCondition | undefined {
  * Hyphens are added to the first three substrings to make URL text wrap when posting. The seed is
  * appended verbatim so that meaningful seed hyphens are preserved.
  */
-export function shrink(JSONString: string): string | undefined {
-  const gameDataJSON = parseGameJSON(JSONString);
-  if (gameDataJSON === undefined) {
+export function shrink(jsonString: string): string | undefined {
+  const gameDataJson = parseGameJson(jsonString);
+  if (gameDataJson === undefined) {
     return undefined;
   }
 
-  const compressed = gameJSONCompress(gameDataJSON);
+  const compressed = gameJsonCompress(gameDataJson);
   if (compressed === undefined) {
     return undefined;
   }
@@ -104,7 +104,7 @@ export function shrink(JSONString: string): string | undefined {
   const decompressed = expand(compressed);
   if (
     decompressed === undefined
-    || !isEqual(gameDataJSON, parseGameJSON(decompressed))
+    || !isEqual(gameDataJson, parseGameJson(decompressed))
   ) {
     return undefined;
   }
@@ -112,16 +112,16 @@ export function shrink(JSONString: string): string | undefined {
   return compressed;
 }
 
-function parseGameJSON(JSONString: string) {
+function parseGameJson(jsonString: string) {
   try {
-    const result = replayGameSchema.safeParse(JSON.parse(JSONString));
+    const result = replayGameSchema.safeParse(JSON.parse(jsonString));
     return result.success ? result.data : undefined;
   } catch {
     return undefined;
   }
 }
 
-/** Decompresses a string into a `GameJSON` object. Returns undefined if decompression fails. */
+/** Decompresses a string into a `GameJson` object. Returns undefined if decompression fails. */
 export function expand(data: string): string | undefined {
   const parts = data.split(",");
   const seed = parts[SEED_PART];
@@ -135,7 +135,7 @@ export function expand(data: string): string | undefined {
   // Remove wrapping hyphens from the compressed data, never from the seed.
   const normal = parts.slice(0, SEED_PART).join(",").replaceAll("-", "");
 
-  const [playersAndDeck, actionsString, variantIDString] = normal.split(
+  const [playersAndDeck, actionsString, variantIdString] = normal.split(
     ",",
     SEED_PART,
   );
@@ -148,7 +148,7 @@ export function expand(data: string): string | undefined {
     "Failed to parse the actions from the compress hypothetical string.",
   );
   assertDefined(
-    variantIDString,
+    variantIdString,
     "Failed to parse the variant ID from the compress hypothetical string.",
   );
 
@@ -174,13 +174,13 @@ export function expand(data: string): string | undefined {
     return undefined;
   }
 
-  const variantId = parseIntSafe(variantIDString);
+  const variantId = parseIntSafe(variantIdString);
   if (variantId === undefined) {
     return undefined;
   }
-  const variant = getVariantByID(variantId);
+  const variant = getVariantById(variantId);
 
-  const original: GameJSON = {
+  const original: GameJson = {
     playerNames: [...players],
     deck: [...deck],
     actions: [...actions],
@@ -195,8 +195,8 @@ export function expand(data: string): string | undefined {
   return JSON.stringify(original);
 }
 
-/** Compresses a `GameJSON` object into a string. Returns undefined if decompression fails. */
-function gameJSONCompress(
+/** Compresses a `GameJson` object into a string. Returns undefined if decompression fails. */
+function gameJsonCompress(
   data: z.output<typeof replayGameSchema>,
 ): string | undefined {
   // An empty last part is a game without a seed.

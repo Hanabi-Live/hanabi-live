@@ -22,13 +22,13 @@ const VARIANTS_MAP_BY_NAME = variantsInit(COLORS_MAP, SUITS_MAP);
 export const VARIANT_NAMES = [...VARIANTS_MAP_BY_NAME.keys()] as const;
 
 const VARIANTS_MAP_BY_ID: ReadonlyMap<number, Variant> = (() => {
-  const variantsMapByID = new Map<number, Variant>();
+  const variantsMapById = new Map<number, Variant>();
 
   for (const variant of VARIANTS_MAP_BY_NAME.values()) {
-    variantsMapByID.set(variant.id, variant);
+    variantsMapById.set(variant.id, variant);
   }
 
-  return variantsMapByID;
+  return variantsMapById;
 })();
 
 export function getSuit(suitName: string): Suit {
@@ -51,7 +51,7 @@ export function getVariant(variantName: string): Variant {
   return variant;
 }
 
-export function getVariantByID(variantId: number): Variant {
+export function getVariantById(variantId: number): Variant {
   const variant = VARIANTS_MAP_BY_ID.get(variantId);
   assertDefined(
     variant,
@@ -61,7 +61,7 @@ export function getVariantByID(variantId: number): Variant {
   return variant;
 }
 
-export function doesVariantIDExist(variantId: number): boolean {
+export function doesVariantIdExist(variantId: number): boolean {
   return VARIANTS_MAP_BY_ID.has(variantId);
 }
 

@@ -10,7 +10,7 @@ import equal from "fast-deep-equal";
 import type Konva from "konva";
 import type { HanabiCard } from "../../HanabiCard.ts";
 import type { LayoutChild } from "../../LayoutChild.ts";
-import { globals } from "../../UIGlobals.ts";
+import { globals } from "../../UiGlobals.ts";
 import { CARD_ANIMATION_LENGTH_SECONDS } from "../../constants.ts";
 import {
   startMaxScoreDropAnimation,
@@ -324,13 +324,13 @@ export function updatePlayStackVisuals(): void {
 
 function syncChildren(
   collections: ReadonlyArray<readonly CardOrder[]>,
-  getCollectionUI: (i: number) => Konva.Container,
-  addToCollectionUI: (card: HanabiCard, i: number) => void,
+  getCollectionUi: (i: number) => Konva.Container,
+  addToCollectionUi: (card: HanabiCard, i: number) => void,
 ) {
   for (const [i, collection] of collections.entries()) {
     // eslint-disable-next-line func-style
     const getCurrentSorting = () =>
-      ([...getCollectionUI(i).children] as LayoutChild[])
+      ([...getCollectionUi(i).children] as LayoutChild[])
         .map((layoutChild) => layoutChild.card)
         .filter((card) => !card.isStackBase)
         .map((card) => card.order);
@@ -354,7 +354,7 @@ function syncChildren(
     const addedCardOrders = collection.filter((n) => !current.includes(n));
     const addedCards = addedCardOrders.map(getCard);
     for (const card of addedCards) {
-      addToCollectionUI(card!, i);
+      addToCollectionUi(card!, i);
     }
 
     // Reorder the elements to match the collection.

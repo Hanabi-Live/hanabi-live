@@ -1,7 +1,7 @@
 import type { ClueType } from "@hanabi-live/game";
 import { getClueCost } from "@hanabi-live/game";
 import type { State } from "../../../types/State.ts";
-import { globals } from "../../UIGlobals.ts";
+import { globals } from "../../UiGlobals.ts";
 import { DISABLED_OPACITY } from "../../constants.ts";
 import { controlsHypothetical } from "../../controlsHypothetical.ts";
 import { isOurTurn } from "../../isOurTurn.ts";
@@ -20,7 +20,7 @@ export function shouldShowYourTurnIndicatorChanged(shouldShow: boolean): void {
   globals.layers.UI.batchDraw();
 }
 
-export function shouldShowTurnUI(state: State): boolean {
+export function shouldShowTurnUi(state: State): boolean {
   return (
     controlsHypothetical(state)
     || (state.playing
@@ -30,7 +30,7 @@ export function shouldShowTurnUI(state: State): boolean {
   );
 }
 
-export function shouldShowTurnUIChanged(shouldShow: boolean): void {
+export function shouldShowTurnUiChanged(shouldShow: boolean): void {
   globals.elements.clueArea?.visible(shouldShow);
 
   globals.elements.waitingOnServer?.hide();
@@ -42,7 +42,7 @@ export function shouldShowTurnUIChanged(shouldShow: boolean): void {
 /** Fade the clue UI if there is not a clue available. */
 export function shouldIndicateNoClues(state: State): boolean {
   return (
-    shouldShowTurnUI(state)
+    shouldShowTurnUi(state)
     && state.visibleState!.clueTokens < getClueCost(globals.variant)
   );
 }
@@ -57,7 +57,7 @@ export function shouldIndicateNoCluesChanged(shouldIndicate: boolean): void {
 export function shouldEnableBottomDeckBlindPlay(state: State): boolean {
   return (
     state.metadata.options.deckPlays
-    && shouldShowTurnUI(state)
+    && shouldShowTurnUi(state)
     && state.visibleState!.cardsRemainingInTheDeck === 1
   );
 }

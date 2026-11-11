@@ -666,9 +666,9 @@ databaseDescribe("compiled application entry point (rust)", () => {
       ).toHaveLength(6);
       const exported = await fetch(`${address}/export/${finished.gameId}`);
       expect(exported.status).toBe(200);
-      const replayJSON = replayGameSchema.parse(await exported.json());
-      expect(replayJSON.playerNames).toHaveLength(6);
-      expect(replayJSON.options?.variantName).toBe("Rainbow (6 Suits)");
+      const replayJson = replayGameSchema.parse(await exported.json());
+      expect(replayJson.playerNames).toHaveLength(6);
+      expect(replayJson.options?.variantName).toBe("Rainbow (6 Suits)");
       for (const peer of peers) {
         peer.send("tableUnattend", { tableId });
       }
@@ -687,7 +687,7 @@ databaseDescribe("compiled application entry point (rust)", () => {
                 visibility: "solo",
                 gameId: finished.gameId,
               }
-            : { type: source, visibility: "shared", gameJson: replayJSON },
+            : { type: source, visibility: "shared", gameJson: replayJson },
         );
         const created = await owner.receive(
           "tableStarted",

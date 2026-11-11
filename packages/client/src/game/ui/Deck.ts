@@ -29,7 +29,7 @@ import * as HanabiCardInit from "./HanabiCardInit.ts";
 import { isOurTurn } from "./isOurTurn.ts";
 import * as konvaTooltips from "./konvaTooltips.ts";
 import * as turn from "./turn.ts";
-import { globals } from "./UIGlobals.ts";
+import { globals } from "./UiGlobals.ts";
 
 /** The size of the count of cards left in the deck, as a fraction of the deck's height. */
 const NUM_LEFT_SIZE = 0.4;
@@ -323,7 +323,7 @@ export class Deck extends Konva.Group {
     );
 
     // If the game ID is showing, we want to center the deck count between it and the other labels.
-    if (count === 0 && globals.elements.gameIDLabel!.isVisible() === true) {
+    if (count === 0 && globals.elements.gameIdLabel!.isVisible() === true) {
       this.nudgeCountDownwards();
     }
 
@@ -478,6 +478,6 @@ function tooltipItem(iconClass: string, html: string) {
   return `<li><span class="game-tooltips-icon"><i class="${iconClass}"></i></span>${html}</li>`;
 }
 
-function tooltipField(iconClass: string, label: string, valueHTML: string) {
-  return tooltipItem(iconClass, `${label}: &nbsp;${valueHTML}`);
+function tooltipField(iconClass: string, label: string, valueHtml: string) {
+  return tooltipItem(iconClass, `${label}: &nbsp;${valueHtml}`);
 }

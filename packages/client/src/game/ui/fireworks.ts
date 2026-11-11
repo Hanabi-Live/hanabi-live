@@ -3,7 +3,7 @@
 
 import Konva from "konva";
 import type { LayoutChild } from "./LayoutChild.ts";
-import { globals } from "./UIGlobals.ts";
+import { globals } from "./UiGlobals.ts";
 import { CARD_CORNER_ROUNDNESS } from "./drawCards.ts";
 
 export interface Point {

@@ -38,7 +38,7 @@ import { HanabiCard } from "./HanabiCard.ts";
 import { PlayStack } from "./PlayStack.ts";
 import { RankButton } from "./RankButton.ts";
 import { TerminateMenu } from "./TerminateMenu.ts";
-import { globals } from "./UIGlobals.ts";
+import { globals } from "./UiGlobals.ts";
 import * as arrows from "./arrows.ts";
 import { backToLobby } from "./backToLobby.ts";
 import { drawClueLog } from "./clueLog/mountClueLog.tsx";
@@ -93,7 +93,7 @@ import { getCardOrStackBase } from "./getCardOrStackBase.ts";
 import * as hypothetical from "./hypothetical.ts";
 import { initKonvaTooltips } from "./konvaTooltips.ts";
 import { showPassLeaderDialog } from "./leader.ts";
-import { getGameIDLabel } from "./reactive/views/replayView.ts";
+import { getGameIdLabel } from "./reactive/views/replayView.ts";
 import * as replay from "./replay.ts";
 import * as restart from "./restart.ts";
 import * as stats from "./stats.ts";
@@ -678,7 +678,7 @@ function strikeSquareX(strikeIndex: number): number {
   return STRIKE_SQUARE.x + STRIKE_SQUARE.spacing * strikeIndex;
 }
 
-export function drawUI(): void {
+export function drawUi(): void {
   globals.elements.restartWaitingOnServerAnimation?.stop();
 
   // Constants
@@ -1162,15 +1162,15 @@ function drawBottomLeftButtons() {
   // The "New UI" button goes above the column. The Keldon layout has a hand in that place, so there
   // it goes at the top of the column instead, and the four buttons share the height of three.
   const { newUi, keldonMode } = globals.lobby.settings;
-  const newUIInColumn = newUi && keldonMode;
+  const newUiInColumn = newUi && keldonMode;
   const columnH =
     BOTTOM_LEFT_BUTTON.h * BOTTOM_LEFT_BUTTON_ROWS
     + BOTTOM_LEFT_GAP * (BOTTOM_LEFT_BUTTON_ROWS - 1);
-  const rowH = newUIInColumn
+  const rowH = newUiInColumn
     ? (columnH - BOTTOM_LEFT_GAP * BOTTOM_LEFT_BUTTON_ROWS)
       / (BOTTOM_LEFT_BUTTON_ROWS + 1)
     : BOTTOM_LEFT_BUTTON.h;
-  const firstRow = newUIInColumn ? 1 : 0;
+  const firstRow = newUiInColumn ? 1 : 0;
 
   /** The place of a button in the column, counting from the replay button's row. */
   function row(index: number) {
@@ -1208,19 +1208,19 @@ function drawBottomLeftButtons() {
 
   // The button that switches to the redesigned game screen. It shows only for players who turned on
   // the "New UI" setting.
-  const newUIButton = new Button({
+  const newUiButton = new Button({
     ...row(-1),
     text: "New UI",
     visible: newUi,
   });
-  newUIButton.on("click tap", () => {
-    globals.game!.showNewUI();
+  newUiButton.on("click tap", () => {
+    globals.game!.showNewUi();
   });
-  globals.layers.UI.add(newUIButton);
-  newUIButton.tooltipName = "new-ui";
-  newUIButton.tooltipContent = "Switch to the redesigned game screen.";
-  initKonvaTooltips(newUIButton, true, false);
-  globals.elements.newUIButton = newUIButton;
+  globals.layers.UI.add(newUiButton);
+  newUiButton.tooltipName = "new-ui";
+  newUiButton.tooltipContent = "Switch to the redesigned game screen.";
+  initKonvaTooltips(newUiButton, true, false);
+  globals.elements.newUiButton = newUiButton;
 
   // The restart button (to bring up the restart menu).
   const restartButton = new Button({
@@ -1323,8 +1323,8 @@ function drawDeck() {
 
   // Near the top of the deck, draw the database ID for the respective game. (In an ongoing game,
   // this will not show.)
-  globals.elements.gameIDLabel = new FitText({
-    text: getGameIDLabel(globals.state) ?? "",
+  globals.elements.gameIdLabel = new FitText({
+    text: getGameIdLabel(globals.state) ?? "",
     x: deckValues.x * winW,
     y: (deckValues.y + GAME_ID_LABEL.insetY) * winH,
     width: deckValues.w! * winW,
@@ -1333,12 +1333,12 @@ function drawDeck() {
     align: "center",
     fontSize: GAME_ID_LABEL.fontSize * winH,
     ...TEXT_SHADOW,
-    visible: getGameIDLabel(globals.state) !== undefined,
+    visible: getGameIdLabel(globals.state) !== undefined,
     listening: false,
   });
   // We draw the label on the arrow layer because it is on top of the card but not on top of the
   // black second layer.
-  globals.layers.arrow.add(globals.elements.gameIDLabel);
+  globals.layers.arrow.add(globals.elements.gameIdLabel);
 
   // At the bottom of the deck, draw a thing hinting that the user can mouse over the deck for
   // detailed information about the current game.
@@ -1357,7 +1357,7 @@ function drawDeck() {
     shadowBlur: GAME_INFO_IMAGE.SHADOW_BLUR,
     listening: false,
   });
-  // This goes on the same layer as the gameIDLabel.
+  // This goes on the same layer as the gameIdLabel.
   globals.layers.arrow.add(globals.elements.gameInfoImage);
 
   globals.elements.deck = new Deck({
