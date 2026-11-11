@@ -105,6 +105,21 @@ const SPECTATOR_NAMES = ["Carol", "Dave", "Erin", "Frank"] as const;
 /** The variant of the open table. */
 const LONG_VARIANT_NAME = "Rainbow-Ones & Orange (6 Suits)";
 
+/** The variant of the shared replay that shows a card morphed to a suit without a rank. */
+const PRISM_VARIANT_NAME = "Prism (5 Suits)";
+
+/** The index of the Prism suit in that variant. */
+const PRISM_SUIT_INDEX = 4;
+
+/**
+ * The card that the leader morphs: the newest card of the second player. A hypothetical hides the
+ * hand of the player whose turn it is.
+ */
+const PRISM_MORPH_ORDER = 9;
+
+/** The account that leads that shared replay. */
+const PRISM_LEADER_NAME = "Grace";
+
 /** The H-Group level that the account at the open table chooses. */
 const H_GROUP_LEVEL = 3;
 
@@ -274,6 +289,7 @@ function getStates({
   clueAccount,
   findAccountCard,
   playBobCard,
+  showPrismMorph,
 }: Pick<
   Seed,
   | "replayId"
@@ -283,7 +299,11 @@ function getStates({
   | "clueAccount"
   | "findAccountCard"
   | "playBobCard"
+  | "showPrismMorph"
 >): readonly State[] {
+  // Ends the shared replay of the "prism-unknown-rank" state.
+  let closePrismReplay: (() => void) | undefined;
+
   // The card in the account's hand that the clue log shows the clues about.
   let cluedCard: CardOrder | undefined;
 
@@ -544,6 +564,37 @@ function getStates({
         await clickCanvasElement(page, ["editCardsCheckbox"]);
       },
       cleanup: leaveReplay,
+    },
+    // A shared replay of a Prism game in the classic screen, in a hypothetical where the leader
+    // morphed a card to the Prism suit without a rank.
+    {
+      name: "prism-unknown-rank",
+      path: "/",
+      loggedIn: true,
+      prepare: async (page) => {
+        const prismReplay = await showPrismMorph();
+        closePrismReplay = prismReplay.close;
+        // The client ignores a "/game/<id>" path for an account that is a few seconds old, so
+        // spectate the shared replay from its row in the lobby. The lobby ignores a click on a row
+        // that just moved, so wait for the new row to settle first.
+        const row = page.locator("#lobby-games-table-tbody tr", {
+          hasText: PRISM_LEADER_NAME,
+        });
+        await row.waitFor();
+        await page.waitForTimeout(SETTLE_MILLISECONDS * 2);
+        await row.click({ force: true });
+        await page.waitForSelector(".konvajs-content");
+        await page.waitForTimeout(SETTLE_MILLISECONDS * 2);
+        await prismReplay.morph();
+        await page.waitForTimeout(SETTLE_MILLISECONDS);
+      },
+      // Escape cannot end a hypothetical that another account leads, so use the lobby button.
+      cleanup: async (page) => {
+        await clickCanvasElement(page, ["lobbyButton"]);
+        await page.locator("#lobby").waitFor();
+        closePrismReplay?.();
+        closePrismReplay = undefined;
+      },
     },
     // Joining a table keeps the account in it, so these states come last.
     { name: "pregame", path: "/", loggedIn: true, prepare: joinTable },
@@ -933,6 +984,14 @@ interface Seed {
   ) => Promise<CardOrder | undefined>;
   /** When it is his turn, Bob plays a card that the team can play. */
   readonly playBobCard: () => Promise<void>;
+  /**
+   * Has another account create a shared replay of a Prism game and start a hypothetical. Returns
+   * functions that morph a card to the Prism suit without a rank, and that disconnect the account.
+   */
+  readonly showPrismMorph: () => Promise<{
+    morph: () => Promise<void>;
+    close: () => void;
+  }>;
   readonly cookie: string;
   readonly peers: readonly Peer[];
 }
@@ -1198,6 +1257,64 @@ async function seed(address: string): Promise<Seed> {
     return clueTarget?.order;
   }
 
+  async function showPrismMorph() {
+    const leader = await connect(address, PRISM_LEADER_NAME);
+    leader.send("replayCreate", {
+      source: {
+        type: "imported",
+        game: {
+          // The account in the browser only watches, so it sees every card.
+          playerNames: ["Bob", PRISM_LEADER_NAME],
+          seed: SEED,
+          options: { variantName: PRISM_VARIANT_NAME },
+        },
+      },
+      visibility: "shared",
+    });
+    const { tableId: replayTableId } = await leader.receive(
+      "tableStarted",
+      SERVER_COMMAND_SCHEMAS.tableStarted,
+    );
+    leader.send("gameInitLoad", { tableId: replayTableId });
+    await leader.receive("init", SERVER_COMMAND_SCHEMAS.init);
+    leader.send("loaded", { tableId: replayTableId });
+    leader.send("replayAction", {
+      tableId: replayTableId,
+      action: { type: "hypoStart" },
+    });
+    await leader.receive(
+      "replayAction",
+      SERVER_COMMAND_SCHEMAS.replayAction,
+      (data) => data.action.type === "hypoStart",
+    );
+
+    async function morph() {
+      leader.send("replayAction", {
+        tableId: replayTableId,
+        action: {
+          type: "hypoAction",
+          action: {
+            type: "morph",
+            order: PRISM_MORPH_ORDER,
+            suitIndex: PRISM_SUIT_INDEX,
+          },
+        },
+      });
+      await leader.receive(
+        "replayAction",
+        SERVER_COMMAND_SCHEMAS.replayAction,
+        (data) => data.action.type === "hypoAction",
+      );
+    }
+
+    return {
+      morph,
+      close: () => {
+        leader.socket.close();
+      },
+    };
+  }
+
   return {
     replayId,
     startGame,
@@ -1206,6 +1323,7 @@ async function seed(address: string): Promise<Seed> {
     clueAccount,
     findAccountCard,
     playBobCard,
+    showPrismMorph,
     cookie,
     peers: [bob, ...spectators, bot],
   };

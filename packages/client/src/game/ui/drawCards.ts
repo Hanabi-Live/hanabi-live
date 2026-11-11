@@ -4,7 +4,6 @@ import type { Color, Rank, Suit, Variant } from "@hanabi-live/game";
 import {
   DARK_OMNI_SUIT_NAME,
   DEFAULT_CARD_RANKS,
-  MAX_RANK,
   OMNI_SUIT_NAME,
   START_CARD_RANK,
   UNKNOWN_SUIT_NAME,
@@ -806,16 +805,13 @@ function getSuitStyle(
   }
 
   if (suit.prism) {
-    // Prism cards have a custom color depending on their rank.
-    if (rank === CARD_IMAGE_STACK_BASE_RANK_NAME) {
+    // Prism cards have a custom color depending on their rank. A stack base and a card of unknown
+    // rank have no rank, so they use the suit color.
+    if (typeof rank !== "number") {
       return suit.fill;
     }
 
-    // A card of unknown rank takes the color that the rank after the highest would.
-    const fillToMixHex = getColorForPrismCard(
-      variant,
-      rank === CARD_IMAGE_UNKNOWN_CARD_RANK_NAME ? MAX_RANK + 1 : rank,
-    ).fill;
+    const fillToMixHex = getColorForPrismCard(variant, rank).fill;
     const fillToMixRgb = hexToRgb(fillToMixHex);
     if (fillToMixRgb === undefined) {
       return suit.fill;
