@@ -21,12 +21,6 @@ use hanabi_protocol::{
 };
 
 pub(crate) use hanabi_protocol::MAX_SAFE_INTEGER;
-/// `MAX_SAFE_INTEGER`, which a float represents exactly.
-#[expect(
-    clippy::cast_precision_loss,
-    reason = "a float represents MAX_SAFE_INTEGER exactly"
-)]
-const MAX_SAFE_FLOAT: f64 = MAX_SAFE_INTEGER as f64;
 /// The longest seed, and the longest player, variant, or table name, that the engine accepts, in
 /// bytes. It bounds memory. It is not the protocol's `MAX_SEED_LENGTH`, which limits the seed that a
 /// player can request.
@@ -38,8 +32,7 @@ pub(crate) fn validate_options(options: &Options) -> Result<()> {
         "Games require {MIN_PLAYERS} to {MAX_PLAYERS} players."
     );
     ensure!(
-        options.time_base.is_finite()
-            && options.time_base.abs() <= MAX_SAFE_FLOAT
+        (-MAX_SAFE_INTEGER..=MAX_SAFE_INTEGER).contains(&options.time_base)
             && (-MAX_SAFE_INTEGER..=MAX_SAFE_INTEGER).contains(&options.time_per_turn),
         "Invalid game timing."
     );

@@ -166,10 +166,10 @@ pub struct Settings {
     #[schemars(length(min = 1))]
     pub create_table_variant: String,
     pub create_table_timed: bool,
-    #[schemars(range(min = 0, max = MAX_TIME_BASE_SECONDS / SECONDS_PER_MINUTE))]
+    #[schemars(range(min = 0, max = MAX_TIME_BASE_SECONDS / i64::from(SECONDS_PER_MINUTE)))]
     pub create_table_time_base_minutes: f64,
     #[schemars(range(min = 0, max = MAX_TIME_PER_TURN_SECONDS))]
-    pub create_table_time_per_turn_seconds: i32,
+    pub create_table_time_per_turn_seconds: i64,
     pub create_table_speedrun: bool,
     pub create_table_deck_plays: bool,
     pub create_table_empty_clues: bool,
@@ -256,7 +256,7 @@ pub struct GameOptions {
     pub variant_name: String,
     pub timed: bool,
     #[schemars(range(min = 0, max = MAX_TIME_BASE_SECONDS))]
-    pub time_base_seconds: f64,
+    pub time_base_seconds: i64,
     #[schemars(range(min = 0, max = MAX_TIME_PER_TURN_SECONDS))]
     pub time_per_turn_seconds: i64,
     pub speedrun: bool,
@@ -274,7 +274,7 @@ impl Default for GameOptions {
         Self {
             variant_name: DEFAULT_VARIANT_NAME.into(),
             timed: false,
-            time_base_seconds: 0.0,
+            time_base_seconds: 0,
             time_per_turn_seconds: 0,
             speedrun: false,
             deck_plays: false,
@@ -409,7 +409,7 @@ pub struct GameHistory {
     pub datetime_started: String,
     #[schemars(with = "Timestamp")]
     pub datetime_finished: String,
-    #[schemars(range(min = 0, max = i32::MAX))]
+    #[schemars(range(min = 0, max = MAX_SAFE_INTEGER))]
     pub num_games_on_seed: i64,
     pub player_names: Vec<String>,
     /// The game's tags, in alphabetical order.
@@ -428,7 +428,7 @@ pub struct GameHistoryOtherScores {
     /// The position of the page's first game among all the games on the seed.
     #[schemars(range(min = 0, max = MAX_SAFE_INTEGER))]
     pub offset: i64,
-    #[schemars(range(min = 0, max = i32::MAX))]
+    #[schemars(range(min = 0, max = MAX_SAFE_INTEGER))]
     pub num_games_on_seed: i64,
     #[schemars(length(min = 1))]
     pub variant_name: String,

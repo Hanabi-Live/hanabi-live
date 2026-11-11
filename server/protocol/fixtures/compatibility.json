@@ -465,7 +465,7 @@
           "oneLessCard": false,
           "allOrNothing": false,
           "detrimentalCharacters": false,
-          "timeBaseSeconds": 0.0,
+          "timeBaseSeconds": 0,
           "timePerTurnSeconds": 0
         }
       }
@@ -682,7 +682,7 @@
           "oneLessCard": false,
           "allOrNothing": false,
           "detrimentalCharacters": false,
-          "timeBaseSeconds": 0.0,
+          "timeBaseSeconds": 0,
           "timePerTurnSeconds": 0
         }
       }
@@ -720,7 +720,7 @@
           "oneLessCard": false,
           "allOrNothing": false,
           "detrimentalCharacters": false,
-          "timeBaseSeconds": 0.0,
+          "timeBaseSeconds": 0,
           "timePerTurnSeconds": 0
         },
         "seed": "p2v0s1",
@@ -753,7 +753,7 @@
           "oneLessCard": false,
           "allOrNothing": false,
           "detrimentalCharacters": false,
-          "timeBaseSeconds": 0.0,
+          "timeBaseSeconds": 0,
           "timePerTurnSeconds": 0
         },
         "seed": "p2v0s1",
@@ -786,7 +786,7 @@
           "oneLessCard": false,
           "allOrNothing": false,
           "detrimentalCharacters": false,
-          "timeBaseSeconds": 0.0,
+          "timeBaseSeconds": 0,
           "timePerTurnSeconds": 0
         },
         "seed": "p2v0s1",
@@ -819,7 +819,7 @@
           "oneLessCard": false,
           "allOrNothing": false,
           "detrimentalCharacters": false,
-          "timeBaseSeconds": 0.0,
+          "timeBaseSeconds": 0,
           "timePerTurnSeconds": 0
         },
         "seed": "p2v0s1",
@@ -852,7 +852,7 @@
           "oneLessCard": false,
           "allOrNothing": false,
           "detrimentalCharacters": false,
-          "timeBaseSeconds": 0.0,
+          "timeBaseSeconds": 0,
           "timePerTurnSeconds": 0
         },
         "seed": "p2v0s1",

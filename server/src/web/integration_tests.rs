@@ -479,7 +479,7 @@ async fn native_browser_login_ws_bootstrap_and_command_routing_postgres() {
     let history = receive(&mut alice, "gameHistory").await;
     assert_eq!(history[0]["gameID"], historical);
     assert_eq!(history[0]["options"]["variantName"], "6 Suits");
-    assert_eq!(history[0]["options"]["timeBaseSeconds"], 180.0);
+    assert_eq!(history[0]["options"]["timeBaseSeconds"], 180);
     assert_eq!(history[0]["options"]["emptyClues"], true);
     assert_eq!(history[0]["tags"], json!(["authored"]));
     let mut bob = connect(&fixture, &bob_cookie).await;

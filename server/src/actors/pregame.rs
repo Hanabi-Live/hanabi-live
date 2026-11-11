@@ -2,7 +2,7 @@ use super::request;
 use super::table::wrong_phase;
 use super::{
     Allocation, Effects, HubCommand, TableActor, TableChange,
-    chat::{push_chat, server_chat, table_notice, truncate},
+    chat::{push_chat, server_chat, table_notice},
     setup::{
         load_replay, normalize_options, option_changes, options_suggestion, requested_extra,
         validate_table_name,
@@ -355,7 +355,7 @@ impl TableActor {
             created: next.created,
             clocks: vec![
                 if options.timed {
-                    truncate(options.time_base * f64::from(CLOCK_UNITS_PER_SECOND))
+                    options.time_base * i64::from(CLOCK_UNITS_PER_SECOND)
                 } else {
                     0
                 };

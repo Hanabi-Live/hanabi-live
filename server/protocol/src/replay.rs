@@ -68,10 +68,10 @@ pub struct ReplayOptions {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub timed: Option<bool>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    #[schemars(range(min = -MAX_SAFE_INTEGER, max = MAX_SAFE_INTEGER))]
+    #[schemars(range(min = 0, max = MAX_TIME_BASE_SECONDS))]
     pub time_base_seconds: Option<i64>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    #[schemars(range(min = -MAX_SAFE_INTEGER, max = MAX_SAFE_INTEGER))]
+    #[schemars(range(min = 0, max = MAX_TIME_PER_TURN_SECONDS))]
     pub time_per_turn_seconds: Option<i64>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub speedrun: Option<bool>,

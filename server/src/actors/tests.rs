@@ -175,7 +175,7 @@ fn typed_game_frames_preserve_wire_schema_and_projected_identities() -> Result<(
 fn option_summaries_include_only_changes_and_escape_values() {
     let mut table = pregame(TableId(1));
     table.options.timed = true;
-    table.options.time_base = 120.0;
+    table.options.time_base = 120;
     table.options.time_per_turn = 20;
     let mut options = table.options.clone();
     assert_eq!(
@@ -188,7 +188,7 @@ fn option_summaries_include_only_changes_and_escape_values() {
         ),
         ""
     );
-    options.time_base = 150.5;
+    options.time_base = 150;
     assert_eq!(
         option_changes(
             &table,
@@ -197,9 +197,9 @@ fn option_summaries_include_only_changes_and_escape_values() {
             table.max_players,
             &ExtraOptions::default()
         ),
-        "<span class=\"cp\">Timed: <b>150.5 / 20</b></span>"
+        "<span class=\"cp\">Timed: <b>150 / 20</b></span>"
     );
-    options.time_base = 120.0;
+    options.time_base = 120;
     options.time_per_turn = 30;
     assert!(
         option_changes(

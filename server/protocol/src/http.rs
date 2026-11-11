@@ -111,12 +111,12 @@ pub struct PublicGameRow {
     pub score: i32,
     /// Variant lists omit it.
     #[serde(rename = "variantID", skip_serializing_if = "Option::is_none")]
-    #[schemars(range(max = u32::MAX))]
+    #[schemars(range(min = 0, max = u32::MAX))]
     pub variant_id: Option<u32>,
     /// How many games used this seed. Variant lists omit it.
     #[serde(skip_serializing_if = "Option::is_none")]
-    #[schemars(range(max = u32::MAX))]
-    pub num_games_on_seed: Option<u32>,
+    #[schemars(range(min = 0, max = MAX_SAFE_INTEGER))]
+    pub num_games_on_seed: Option<i64>,
     /// In seat order.
     pub player_names: Vec<String>,
     #[schemars(with = "Timestamp")]
@@ -150,5 +150,5 @@ pub struct PublicVariant {
     #[schemars(range(min = 1, max = MAX_RANK))]
     pub stack_size: u8,
     #[schemars(range(min = 0, max = i32::MAX))]
-    pub max_score: u32,
+    pub max_score: i32,
 }

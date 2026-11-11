@@ -22,15 +22,6 @@ pub struct Imported {
     /// The seed that the import named, if any.
     pub custom_seed: Option<String>,
 }
-/// Converts imported whole seconds to the float that options hold. Option validation rejects any
-/// value beyond 2^53, so precision lost above it never reaches a game.
-#[expect(
-    clippy::cast_precision_loss,
-    reason = "option validation rejects values beyond 2^53"
-)]
-fn seconds(value: i64) -> f64 {
-    value as f64
-}
 
 pub fn parse(input: &ReplayGame) -> CommandResult<Imported> {
     let seed = input.seed.as_deref().unwrap_or("");
@@ -49,7 +40,7 @@ pub fn parse(input: &ReplayGame) -> CommandResult<Imported> {
     let mut options = Options {
         variant_name,
         timed: raw.timed.unwrap_or(defaults.timed),
-        time_base: raw.time_base_seconds.map_or(defaults.time_base, seconds),
+        time_base: raw.time_base_seconds.unwrap_or(defaults.time_base),
         time_per_turn: raw.time_per_turn_seconds.unwrap_or(defaults.time_per_turn),
         speedrun: raw.speedrun.unwrap_or(defaults.speedrun),
         deck_plays: raw.deck_plays.unwrap_or(defaults.deck_plays),

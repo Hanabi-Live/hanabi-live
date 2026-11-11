@@ -111,14 +111,6 @@ pub(super) fn table_notice(table: &mut TableSnapshot, text: &str) -> Option<Chat
     Some(message)
 }
 
-/// Converts a float that validation has already bounded to an integer, dropping any fraction.
-#[expect(
-    clippy::cast_possible_truncation,
-    reason = "callers pass floats that validation bounds"
-)]
-pub(super) fn truncate(value: f64) -> i64 {
-    value as i64
-}
 /// Whether a table chat message asks for a variant search.
 pub(super) fn is_variant_discovery(message: &str) -> bool {
     crate::accounts::normalize_chat(message).is_ok_and(|text| {

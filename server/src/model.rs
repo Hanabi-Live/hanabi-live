@@ -449,9 +449,7 @@ impl TableSnapshot {
         );
         hanabi_engine::get_variant(&self.options.variant_name)?;
         ensure!(
-            self.owner > UserId(0)
-                && hanabi_protocol::is_player_count(self.options.num_players)
-                && self.options.time_base.is_finite(),
+            self.owner > UserId(0) && hanabi_protocol::is_player_count(self.options.num_players),
             "Invalid table options"
         );
         ensure!(

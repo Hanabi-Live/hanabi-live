@@ -102,7 +102,7 @@ pub const HOURS_PER_DAY: i32 = 24;
 /// The number of seconds in a day.
 pub const SECONDS_PER_DAY: i32 = HOURS_PER_DAY * SECONDS_PER_HOUR;
 /// The longest starting clock a timed game can have, in seconds (one week).
-pub const MAX_TIME_BASE_SECONDS: i32 = 7 * SECONDS_PER_DAY;
+pub const MAX_TIME_BASE_SECONDS: i64 = 7 * SECONDS_PER_DAY as i64;
 /// The most time a timed game can add each turn, in seconds (one day).
 pub const MAX_TIME_PER_TURN_SECONDS: i64 = SECONDS_PER_DAY as i64;
 /// The loudest volume setting.
@@ -114,7 +114,7 @@ pub const DEFAULT_VOLUME: u8 = MAX_VOLUME / 2;
 /// The starting clock that a new user's timed tables have, in minutes.
 pub const DEFAULT_TIME_BASE_MINUTES: f64 = 2.0;
 /// The time that a new user's timed tables add each turn, in seconds.
-pub const DEFAULT_TIME_PER_TURN_SECONDS: i32 = 20;
+pub const DEFAULT_TIME_PER_TURN_SECONDS: i64 = 20;
 /// The rows on a page of a public listing when the request does not name a size.
 pub const DEFAULT_PAGE_SIZE: i64 = 10;
 /// The most rows that a page of a public listing or of a player's game history can have.

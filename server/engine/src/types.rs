@@ -13,7 +13,9 @@ pub struct Options {
     #[serde(rename = "variantID", skip_serializing_if = "Option::is_none")]
     pub variant_id: Option<u32>,
     pub timed: bool,
-    pub time_base: f64,
+    /// The starting clock of a timed game, in whole seconds.
+    #[serde(deserialize_with = "whole_seconds")]
+    pub time_base: i64,
     pub time_per_turn: i64,
     pub speedrun: bool,
     pub deck_plays: bool,
@@ -28,6 +30,25 @@ pub struct Options {
     pub max_players: Option<usize>,
 }
 
+/// Reads a time base in whole seconds. Checkpoints that servers wrote before time bases were whole
+/// seconds hold a number with a fraction, which this drops.
+fn whole_seconds<'de, D: serde::Deserializer<'de>>(deserializer: D) -> Result<i64, D::Error> {
+    #[expect(
+        clippy::cast_precision_loss,
+        reason = "the largest safe integer is exact as a float"
+    )]
+    const LIMIT: f64 = hanabi_protocol::MAX_SAFE_INTEGER as f64;
+    let seconds = f64::deserialize(deserializer)?;
+    if !seconds.is_finite() || seconds.abs() > LIMIT {
+        return Err(serde::de::Error::custom("Invalid time base"));
+    }
+    #[expect(
+        clippy::cast_possible_truncation,
+        reason = "the check above bounds the value, and the fraction is dropped on purpose"
+    )]
+    Ok(seconds as i64)
+}
+
 /// Must match `hanabi_protocol::GameOptions::default()`; a server test checks this.
 impl Default for Options {
     fn default() -> Self {
@@ -36,7 +57,7 @@ impl Default for Options {
             variant_name: DEFAULT_VARIANT_NAME.into(),
             variant_id: None,
             timed: false,
-            time_base: 0.0,
+            time_base: 0,
             time_per_turn: 0,
             speedrun: false,
             deck_plays: false,

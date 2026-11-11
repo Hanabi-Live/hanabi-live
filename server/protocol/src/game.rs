@@ -289,7 +289,7 @@ pub struct GameEventList {
 pub struct CharacterAssignment {
     /// Absent when the player has no character.
     #[serde(rename = "characterID", skip_serializing_if = "Option::is_none")]
-    #[schemars(range(min = 0, max = i32::MAX))]
+    #[schemars(range(min = 0, max = u32::MAX))]
     pub character_id: Option<u32>,
     /// A value that some characters use, such as the rank or suit they may not clue. Absent for
     /// other characters.

@@ -394,7 +394,7 @@ export const gameOptionsSchema = z
     oneExtraCard: z.boolean().default(false),
     oneLessCard: z.boolean().default(false),
     speedrun: z.boolean().default(false),
-    timeBaseSeconds: z.number().min(0).max(604_800).default(0),
+    timeBaseSeconds: z.number().int().min(0).max(604_800).default(0),
     timePerTurnSeconds: z.number().int().min(0).max(86_400).default(0),
     timed: z.boolean().default(false),
     variantName: z.string().min(1).default("No Variant"),

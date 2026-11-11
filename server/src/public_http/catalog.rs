@@ -43,7 +43,7 @@ pub(super) fn metadata() -> BTreeMap<String, PublicVariant> {
                     })
                     .collect(),
                 stack_size: u8::try_from(v.stack_size).expect("catalog stack size"),
-                max_score: u32::try_from(v.max_score).expect("catalog max score"),
+                max_score: v.max_score,
             };
             (v.id.to_string(), variant)
         })

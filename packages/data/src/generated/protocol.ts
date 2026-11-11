@@ -329,7 +329,7 @@ export const gameHistorySchema = z
     datetimeStarted: z.iso.datetime({ precision: 3 }),
     endCondition: z.enum(EndCondition),
     gameID: gameIdSchema,
-    numGamesOnSeed: z.number().int().min(0).max(2_147_483_647),
+    numGamesOnSeed: z.number().int().min(0).max(9_007_199_254_740_991),
     numTurns: z.number().int().min(0).max(2_147_483_647),
     options: gameOptionsSchema,
     playerNames: z.array(z.string()).readonly(),
@@ -352,7 +352,7 @@ export const gameHistoryListSchema = z.array(gameHistorySchema).readonly();
 export const gameHistoryOtherScoresSchema = z
   .strictObject({
     games: z.array(gameHistorySchema).readonly(),
-    numGamesOnSeed: z.number().int().min(0).max(2_147_483_647),
+    numGamesOnSeed: z.number().int().min(0).max(9_007_199_254_740_991),
     /**
      * The position of the page's first game among all the games on the seed.
      */
@@ -447,7 +447,7 @@ const characterAssignmentSchema = z
     /**
      * Absent when the player has no character.
      */
-    characterID: z.number().int().min(0).max(2_147_483_647).optional(),
+    characterID: z.number().int().min(0).max(4_294_967_295).optional(),
     /**
      * A value that some characters use, such as the rank or suit they may not clue. Absent for
      * other characters.
@@ -780,7 +780,12 @@ const publicGameRowSchema = z
     /**
      * How many games used this seed. Variant lists omit it.
      */
-    numGamesOnSeed: z.number().int().min(0).max(4_294_967_295).optional(),
+    numGamesOnSeed: z
+      .number()
+      .int()
+      .min(0)
+      .max(9_007_199_254_740_991)
+      .optional(),
     numPlayers: z.literal([2, 3, 4, 5, 6]),
     /**
      * In seat order.
@@ -920,18 +925,8 @@ const replayOptionsSchema = z
     oneExtraCard: z.boolean().optional(),
     oneLessCard: z.boolean().optional(),
     speedrun: z.boolean().optional(),
-    timeBaseSeconds: z
-      .number()
-      .int()
-      .min(-9_007_199_254_740_991)
-      .max(9_007_199_254_740_991)
-      .optional(),
-    timePerTurnSeconds: z
-      .number()
-      .int()
-      .min(-9_007_199_254_740_991)
-      .max(9_007_199_254_740_991)
-      .optional(),
+    timeBaseSeconds: z.number().int().min(0).max(604_800).optional(),
+    timePerTurnSeconds: z.number().int().min(0).max(86_400).optional(),
     timed: z.boolean().optional(),
     variantName: z.string().min(1).optional(),
   })

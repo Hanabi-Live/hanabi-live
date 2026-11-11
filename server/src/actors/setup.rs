@@ -25,7 +25,7 @@ const MAX_TABLE_PASSWORD_BYTES: usize = 1024;
 pub(super) fn normalize_options(options: &mut Options) -> CommandResult<()> {
     if options.speedrun || !options.timed {
         options.timed = false;
-        options.time_base = 0.0;
+        options.time_base = 0;
         options.time_per_turn = 0;
     }
     if options.one_extra_card && options.one_less_card {
@@ -34,8 +34,7 @@ pub(super) fn normalize_options(options: &mut Options) -> CommandResult<()> {
     }
     ensure_or_reject!(
         !options.timed
-            || (options.time_base > 0.0
-                && options.time_base <= f64::from(hanabi_protocol::MAX_TIME_BASE_SECONDS)
+            || ((1..=hanabi_protocol::MAX_TIME_BASE_SECONDS).contains(&options.time_base)
                 && (1..=hanabi_protocol::MAX_TIME_PER_TURN_SECONDS)
                     .contains(&options.time_per_turn)),
         "Invalid timed options"
@@ -207,10 +206,6 @@ pub(super) fn options_suggestion(
         )
     }
 }
-#[expect(
-    clippy::float_cmp,
-    reason = "any change to the time setting is reported"
-)]
 pub(super) fn option_changes(
     table: &TableSnapshot,
     options: &Options,
