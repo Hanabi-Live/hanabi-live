@@ -14,7 +14,6 @@ vi.mock("./HanabiCardTouchActions.ts", () => ({
 }));
 vi.mock("./arrows.ts", () => ({}));
 vi.mock("./clueLog/mountClueLog.tsx", () => ({
-  CLUE_LOG_Z_INDEX: 1,
   showClueMatches: vi.fn(),
 }));
 vi.mock("./cursor.ts", () => ({ set: vi.fn() }));
@@ -193,9 +192,9 @@ describe("hypothetical card rotation in Keldon mode", () => {
 });
 
 describe("dragging a card", () => {
-  test("draws the cards above the clue log until the card is released", () => {
+  test("draws the cards above the other layers until the card is released", () => {
     const { getCardCanvasOrder, release } = pressCard();
-    expect(getCardCanvasOrder()).toBe("2");
+    expect(getCardCanvasOrder()).toBe("1");
     expect(tooltips.close).toHaveBeenCalledWith("#tooltip-card-0");
 
     release();

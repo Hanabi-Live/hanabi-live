@@ -729,7 +729,6 @@ export function drawUi(): void {
   drawHands(winW, winH);
 
   // The right column.
-  drawClueLog();
   drawStatistics();
   drawDiscardArea();
   drawDiscardStacks();
@@ -758,6 +757,9 @@ export function drawUi(): void {
   for (const layer of layersInOrder) {
     globals.stage.add(layer);
   }
+
+  // The clue log is HTML, so it goes between the canvases of the layers.
+  drawClueLog();
 }
 
 /** Shows the latest votes to end the game on the skull and in its menu. */

@@ -259,6 +259,20 @@ function getDraggableHandIndex(): number {
   return index;
 }
 
+/** Runs in the page. Shows the restart dialog of the classic game screen. */
+function showRestartDialog() {
+  const { elements, layers } = (
+    globalThis as unknown as {
+      globals: {
+        elements: { restartArea: { visible: (visible: boolean) => void } };
+        layers: { UI2: { batchDraw: () => void } };
+      };
+    }
+  ).globals;
+  elements.restartArea.visible(true);
+  layers.UI2.batchDraw();
+}
+
 /** Runs in the page. Whether the classic game screen has finished drawing itself for a new size. */
 function isGameScreenResized(): boolean {
   return (
@@ -551,6 +565,18 @@ function getStates({
       hover: async (page) => {
         await hoverCanvasElement(page, ["spectatorsLabel"]);
         await page.locator(".game-tooltips-ol").waitFor();
+      },
+      cleanup: leaveReplay,
+    },
+    // The restart dialog of the classic game screen. It must be drawn above the clue log.
+    {
+      name: "replay-restart",
+      path: "/",
+      loggedIn: true,
+      prepare: async (page) => {
+        await openReplay(page, replayId);
+        await page.evaluate(showRestartDialog);
+        await page.waitForTimeout(SETTLE_MILLISECONDS);
       },
       cleanup: leaveReplay,
     },
