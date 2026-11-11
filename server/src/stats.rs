@@ -13,7 +13,7 @@ use std::collections::BTreeMap;
 /// A pregame player with their statistics on `variant`.
 pub(crate) async fn player(pool: &PgPool, identity: &Identity, variant: u32) -> Result<Player> {
     Ok(Player {
-        id: identity.user,
+        id: Some(identity.user),
         name: identity.name.clone(),
         bot: identity.bot,
         stats: pregame_stats(pool, identity.user, variant).await?,
@@ -34,10 +34,13 @@ pub(crate) async fn refresh_players(
     players: &mut [Player],
     variant: u32,
 ) -> Result<()> {
-    let ids = players.iter().map(|p| p.id).collect::<Vec<_>>();
+    let ids = players.iter().filter_map(|p| p.id).collect::<Vec<_>>();
     let mut stats = pregame_stats_of(pool, &ids, variant).await?;
     for player in players {
-        player.stats = stats.remove(&player.id).unwrap_or_else(zero_stats);
+        player.stats = player
+            .id
+            .and_then(|id| stats.remove(&id))
+            .unwrap_or_else(zero_stats);
     }
     Ok(())
 }
@@ -93,7 +96,11 @@ pub(crate) async fn refresh(pool: &PgPool, s: &Snapshot) -> Result<()> {
     .await?;
     let modifier = crate::model::ScoreModifier::of(&s.game.options);
     // Rows are locked in the same order as when the game is saved: players by ID, then the variant.
-    let mut users = s.players.iter().map(|p| p.id.0).collect::<Vec<_>>();
+    let mut users = s
+        .players
+        .iter()
+        .map(|p| p.user().map(|user| user.0))
+        .collect::<Result<Vec<_>>>()?;
     users.sort_unstable();
     for user in users {
         sqlx::query!(

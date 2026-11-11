@@ -161,7 +161,7 @@ impl TableActor {
             _ => None,
         };
         TableView {
-            players: self.table.players().iter().map(|p| p.id).collect(),
+            players: self.table.seated_users().collect(),
             replay,
             replay_game,
             visible: self.table.visible,
@@ -169,7 +169,7 @@ impl TableActor {
                 .table
                 .shadows
                 .iter()
-                .filter(|(id, _)| replay || self.table.players().iter().all(|p| p.id != **id))
+                .filter(|(id, _)| replay || self.table.players().iter().all(|p| !p.is(**id)))
                 .map(|(id, shadow)| (*id, *shadow))
                 .collect(),
             data: hanabi_protocol::Table {
@@ -247,11 +247,11 @@ impl TableActor {
         self.table
             .players()
             .iter()
-            .position(|p| p.id == s.user)
+            .position(|p| p.is(s.user))
             .or_reject("You are not playing at this table")
     }
     /// Whether the user in `s` played the game at this table and can play it again with a restart.
-    /// A replay of a saved or imported game has placeholder players, so it matches nobody.
+    /// The seats of a replay of a saved or imported game have no users, so it matches nobody.
     pub(super) fn can_play_again(&self, s: &Session) -> bool {
         self.table.extra.replay.is_none() && self.seat(s).is_ok()
     }
@@ -360,10 +360,10 @@ impl TableActor {
                 .map(|(seat, p)| hanabi_protocol::PregamePlayer {
                     index: seat,
                     username: p.name.clone().into(),
-                    you: p.id == a.session.user,
-                    present: self
-                        .attendees
-                        .get(&p.id)
+                    you: p.is(a.session.user),
+                    present: p
+                        .id
+                        .and_then(|id| self.attendees.get(&id))
                         .is_some_and(|a| a.session.active() && !a.spectator),
                     stats: p.stats.clone(),
                 })
@@ -671,12 +671,7 @@ impl TableActor {
         let mut pending = Pending::default();
         if initial.is_none() && matches!(self.table.phase, Phase::Pregame { .. }) {
             let pool = self.store.lobby_reads.clone();
-            let users = self
-                .table
-                .players()
-                .iter()
-                .map(|player| player.id)
-                .collect::<Vec<_>>();
+            let users = self.table.seated_users().collect::<Vec<_>>();
             pending.start(
                 async move {
                     Completed::GameCounts(
@@ -865,13 +860,13 @@ impl TableActor {
         };
         let absent = players
             .iter()
-            .filter(|p| {
+            .filter_map(|p| p.id)
+            .filter(|id| {
                 !self
                     .attendees
-                    .get(&p.id)
+                    .get(id)
                     .is_some_and(|a| !a.spectator && a.session.active())
             })
-            .map(|p| p.id)
             .collect::<HashSet<_>>();
         let Some(absent_until) = self.absent_players() else {
             return Ok(());
@@ -918,9 +913,8 @@ impl TableActor {
                 .iter()
                 .map(|p| {
                     replay
-                        || self
-                            .attendees
-                            .get(&p.id)
+                        || p.id
+                            .and_then(|id| self.attendees.get(&id))
                             .is_some_and(|a| a.loaded && !a.spectator && a.session.active())
                 })
                 .collect(),
@@ -1038,7 +1032,7 @@ impl TableActor {
                 let mut starts_clock = false;
                 if let Phase::Live { snapshot: s, .. } = &mut next.phase
                     && s.game.end_condition == EndCondition::InProgress
-                    && s.players[s.game.active_player_index].id == session.user
+                    && s.players[s.game.active_player_index].is(session.user)
                 {
                     starts_clock = !s.timer_started;
                     s.timer_started = true;

@@ -203,9 +203,9 @@ pub fn snapshot(imported: Imported, table_id: TableId, owner: UserId) -> Snapsho
         .game
         .players
         .iter()
-        .enumerate()
-        .map(|(i, p)| Player {
-            id: UserId(hanabi_engine::int(i) + 1),
+        .map(|p| Player {
+            // The players of an imported game need not be users.
+            id: None,
             name: p.name.clone(),
             bot: false,
             stats: zero_stats(),

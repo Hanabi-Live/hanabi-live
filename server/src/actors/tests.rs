@@ -310,7 +310,7 @@ pub(super) fn pregame(id: TableId) -> TableSnapshot {
         created: Utc::now(),
         phase: Phase::Pregame {
             players: vec![Player {
-                id: UserId(1),
+                id: Some(UserId(1)),
                 name: "Alice".into(),
                 bot: false,
                 stats: crate::stats::zero_stats(),
@@ -516,7 +516,7 @@ async fn live_tables_wake_at_their_next_deadline() -> Result<()> {
     let imported = replay_helpers::parse(&hanabi_protocol::decode(
         &json!({"playerNames":["Alice","Bob"],"seed":"p2v0s1"}),
     )?)?;
-    let mut snapshot = replay_helpers::snapshot(imported, id, UserId(1));
+    let mut snapshot = seated_snapshot(imported, id);
     let lead = 1000;
     snapshot.idle_remaining = IDLE_WARNING_MS + lead;
     let mut table = pregame(id);
@@ -570,7 +570,7 @@ async fn idle_live_games_warn_once_and_players_can_keep_them_going() -> Result<(
     let imported = replay_helpers::parse(&hanabi_protocol::decode(
         &json!({"playerNames":["Alice","Bob"],"seed":"p2v0s1"}),
     )?)?;
-    let mut snapshot = replay_helpers::snapshot(imported, id, UserId(1));
+    let mut snapshot = seated_snapshot(imported, id);
     snapshot.idle_remaining = IDLE_WARNING_MS;
     let mut table = pregame(id);
     table.options = snapshot.game.options.clone();
@@ -590,7 +590,7 @@ async fn idle_live_games_warn_once_and_players_can_keep_them_going() -> Result<(
         capacity.try_acquire_owned()?,
         crate::server_info::test_info(),
     );
-    let player = actor.table.players()[0].id;
+    let player = actor.table.players()[0].user()?;
     let (alice, _alice_frames) = Session::new(player, "Alice".into(), 1);
     let (viewer, _viewer_frames) = Session::new(UserId(99), "Viewer".into(), 1);
     actor
@@ -650,7 +650,7 @@ async fn spectating_a_live_game_does_not_refresh_its_idle_deadline() -> Result<(
     let imported = replay_helpers::parse(&hanabi_protocol::decode(
         &json!({"playerNames":["Alice","Bob"],"seed":"p2v0s1"}),
     )?)?;
-    let mut snapshot = replay_helpers::snapshot(imported, id, UserId(1));
+    let mut snapshot = seated_snapshot(imported, id);
     snapshot.idle_remaining = 1000;
     let mut table = pregame(id);
     table.options = snapshot.game.options.clone();
@@ -684,12 +684,21 @@ async fn spectating_a_live_game_does_not_refresh_its_idle_deadline() -> Result<(
     Ok(())
 }
 
+/// The game of an imported replay, played by Alice (user 1) and Bob (user 2).
+fn seated_snapshot(imported: replay_helpers::Imported, id: TableId) -> crate::model::Snapshot {
+    let mut snapshot = replay_helpers::snapshot(imported, id, UserId(1));
+    for (player, user) in snapshot.players.iter_mut().zip([UserId(1), UserId(2)]) {
+        player.id = Some(user);
+    }
+    snapshot
+}
+
 pub(super) fn review(id: TableId, condition: EndCondition) -> Result<TableSnapshot> {
     let mut imported = replay_helpers::parse(&hanabi_protocol::decode(
         &json!({"playerNames":["Alice","Bob"],"seed":"p2v0s1"}),
     )?)?;
     imported.game.terminate(0, condition, None, None, None)?;
-    let snapshot = replay_helpers::snapshot(imported, id, UserId(1));
+    let snapshot = seated_snapshot(imported, id);
     let mut table = pregame(id);
     table.options = snapshot.game.options.clone();
     table.phase = Phase::Replay {

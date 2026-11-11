@@ -27,9 +27,7 @@ impl TableActor {
         ensure_or_reject!(
             !self
                 .table
-                .players()
-                .iter()
-                .map(|p| p.id)
+                .seated_users()
                 .chain([self.table.owner])
                 .any(|user| blocks.contains(&user)),
             "{message}"
@@ -50,7 +48,7 @@ impl TableActor {
             "You were kicked from this table"
         );
         ensure_or_reject!(
-            !players.iter().any(|p| p.id == session.user),
+            !players.iter().any(|p| p.is(session.user)),
             "You have already joined this table."
         );
         self.ensure_not_blocked(blocks, "You cannot join this table.")?;
@@ -157,7 +155,7 @@ impl TableActor {
                 .unwrap_or_default(),
         };
         if since_last_join > JOIN_SOUND_INTERVAL {
-            let players: HashSet<UserId> = self.table.players().iter().map(|p| p.id).collect();
+            let players: HashSet<UserId> = self.table.seated_users().collect();
             let sound = frame(
                 hanabi_protocol::server::SOUND_LOBBY,
                 SoundLobby {
@@ -212,11 +210,7 @@ impl TableActor {
         requested_shadow: Option<PlayerIndex>,
     ) -> CommandResult<()> {
         let replay = matches!(self.table.phase, Phase::Replay { .. });
-        let seat = self
-            .table
-            .players()
-            .iter()
-            .position(|p| p.id == session.user);
+        let seat = self.table.players().iter().position(|p| p.is(session.user));
         ensure_or_reject!(
             spectating || seat.is_some() || replay,
             "You are not a player"
@@ -349,7 +343,7 @@ impl TableActor {
             attending
                 || (remove
                     && matches!(self.table.phase, Phase::Pregame { .. })
-                    && self.table.players().iter().any(|p| p.id == session.user)),
+                    && self.table.players().iter().any(|p| p.is(session.user))),
             "You are not attending this table"
         );
         let mut next = self.candidate();

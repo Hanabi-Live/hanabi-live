@@ -161,7 +161,7 @@ impl TableActor {
             self.table
                 .players()
                 .iter()
-                .map(|p| (p.id, p.name.clone()))
+                .filter_map(|p| Some((p.id?, p.name.clone())))
                 .collect()
         };
         ensure_or_reject!(
@@ -254,7 +254,7 @@ impl TableActor {
                 .table
                 .players()
                 .iter()
-                .all(|player| query.participants.iter().any(|(id, _)| *id == player.id))
+                .all(|player| query.participants.iter().any(|(id, _)| player.is(*id)))
             && let Some(owner) = self
                 .attendees
                 .get(&self.table.owner)
@@ -480,18 +480,16 @@ impl TableActor {
                             == crate::accounts::normalize_string(args[0])
                     })
                     .or_reject("Player not found")?;
-                ensure_or_reject!(
-                    players[index].id != session.user,
-                    "You cannot kick yourself"
-                );
+                ensure_or_reject!(!players[index].is(session.user), "You cannot kick yourself");
                 let player = players.remove(index);
-                kicked.push(player.id);
+                let user = player.user()?;
+                kicked.push(user);
                 (
                     format!(
                         "Successfully kicked \"{}\" from the game.",
                         crate::accounts::escape_html(&player.name)
                     ),
-                    player.id,
+                    user,
                 )
             }
             Some(TableChatCommand::Impostor) => {
@@ -502,7 +500,7 @@ impl TableActor {
                 let chosen = rand::random_range(0..players.len());
                 let mut e = self.effects();
                 for (i, p) in players.iter().enumerate() {
-                    if let Some(a) = self.attendees.get(&p.id) {
+                    if let Some(a) = p.id.and_then(|id| self.attendees.get(&id)) {
                         let mut message = server_chat(
                             self.table.id,
                             if i == chosen {

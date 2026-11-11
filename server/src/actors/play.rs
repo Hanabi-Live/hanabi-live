@@ -122,7 +122,7 @@ impl TableActor {
                 .table
                 .players()
                 .iter()
-                .position(|p| p.id == a.session.user)
+                .position(|p| p.is(a.session.user))
             {
                 Recipient::Player {
                     player_index: hanabi_engine::int(seat),
@@ -160,7 +160,7 @@ impl TableActor {
                     },
                     Some(self.table.id),
                 ));
-                if s.players.iter().any(|p| p.id == a.session.user)
+                if s.players.iter().any(|p| p.is(a.session.user))
                     && let Some(history) = s.history(count)
                 {
                     e.messages.push((
@@ -386,11 +386,7 @@ impl TableActor {
             "Notes cannot contain more than {} consecutive diacritics.",
             crate::accounts::MAX_CONSECUTIVE_MARKS
         );
-        let seat = self
-            .table
-            .players()
-            .iter()
-            .position(|p| p.id == session.user);
+        let seat = self.table.players().iter().position(|p| p.is(session.user));
         let mut next = self.candidate();
         let s = game_mut(&mut next)?;
         let size = s.game.deck.len() + s.game.stacks.len();
@@ -507,7 +503,7 @@ impl TableActor {
         let s = self.table.game().context("No available game")?;
         let a = self.attendees.get(&session.user).expect("attendee");
         let replay = matches!(self.table.phase, Phase::Replay { .. });
-        let seat = s.players.iter().position(|p| p.id == session.user);
+        let seat = s.players.iter().position(|p| p.is(session.user));
         let display_seat = seat.or_else(|| s.players.iter().position(|p| p.name == session.name));
         let mut e = self.effects();
         if part == GameInfo::Init {

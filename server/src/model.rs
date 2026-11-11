@@ -15,19 +15,31 @@ use std::{
     time::Instant,
 };
 
-pub const FORMAT: &str = "hanabi-live-7";
+pub const FORMAT: &str = "hanabi-live-8";
 /// How long before an idle game ends to warn its table.
 pub const IDLE_WARNING_MS: i64 = 5 * CLOCK_UNITS_PER_MINUTE;
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct Player {
-    pub id: UserId,
+    /// The user in the seat. `None` in a replay that is not saved, whose seats need not be users.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub id: Option<UserId>,
     pub name: String,
     /// Whether the player joined as a bot. Bots can play at several tables at once.
     #[serde(default, skip_serializing_if = "std::ops::Not::not")]
     pub bot: bool,
     pub stats: PregameStats,
+}
+impl Player {
+    /// Whether `user` sits in this seat.
+    pub fn is(&self, user: UserId) -> bool {
+        self.id == Some(user)
+    }
+    /// The user in the seat. Every seat of a pregame or a live game has one.
+    pub fn user(&self) -> Result<UserId> {
+        self.id.context("A seat has no user")
+    }
 }
 #[derive(Clone, Debug, Default, Serialize, Deserialize)]
 #[serde(default, rename_all = "camelCase", deny_unknown_fields)]
@@ -274,11 +286,11 @@ impl TableSnapshot {
             return false;
         };
         let mut changed = false;
-        for player in players
-            .iter_mut()
-            .filter(|player| users.contains(&player.id))
-        {
-            let count = counts.get(&player.id).copied().unwrap_or(0);
+        for player in players.iter_mut() {
+            let Some(id) = player.id.filter(|id| users.contains(id)) else {
+                continue;
+            };
+            let count = counts.get(&id).copied().unwrap_or(0);
             if player.stats.num_games != hanabi_protocol::Count(count) {
                 player.stats.num_games = hanabi_protocol::Count(count);
                 changed = true;
@@ -291,6 +303,10 @@ impl TableSnapshot {
             Phase::Pregame { players, .. } => players,
             Phase::Live { snapshot, .. } | Phase::Replay { snapshot, .. } => &snapshot.players,
         }
+    }
+    /// The users in the seats.
+    pub fn seated_users(&self) -> impl Iterator<Item = UserId> + '_ {
+        self.players().iter().filter_map(|p| p.id)
     }
     pub fn game(&self) -> Option<&Snapshot> {
         match &self.phase {
@@ -364,8 +380,8 @@ impl TableSnapshot {
         if old_ids != new_ids {
             for shadow in self.shadows.values_mut() {
                 *shadow = shadow
-                    .and_then(|seat| old_ids.get(seat.index()))
-                    .and_then(|id| new_ids.iter().position(|new| new == id))
+                    .and_then(|seat| old_ids.get(seat.index()).copied().flatten())
+                    .and_then(|id| new_ids.iter().position(|new| *new == Some(id)))
                     .and_then(PlayerIndex::new);
             }
         }
@@ -411,25 +427,15 @@ impl TableSnapshot {
         );
         ensure!(
             self.players().len() <= self.max_players
-                && self
-                    .players()
-                    .iter()
-                    .enumerate()
-                    .all(|(index, p)| (p.id > UserId(0)
-                        || (matches!(self.phase, Phase::Replay { .. })
-                            && self.extra.no_write_to_database
-                            && p.id == placeholder_player_id(index)))
-                        && !p.name.is_empty()
-                        && p.name.len() <= crate::accounts::MAX_USERNAME_LENGTH),
+                && self.players().iter().all(|p| p.id.map_or(
+                    matches!(self.phase, Phase::Replay { .. }) && self.extra.no_write_to_database,
+                    |id| id > UserId(0)
+                ) && !p.name.is_empty()
+                    && p.name.len() <= crate::accounts::MAX_USERNAME_LENGTH),
             "Invalid players"
         );
         ensure!(
-            self.players()
-                .iter()
-                .map(|p| p.id)
-                .collect::<HashSet<_>>()
-                .len()
-                == self.players().len(),
+            self.seated_users().collect::<HashSet<_>>().len() == self.seated_users().count(),
             "Duplicate players"
         );
         ensure!(self.chat.len() <= MAX_TABLE_CHAT, "Oversized table history");
@@ -448,7 +454,7 @@ impl TableSnapshot {
                 players, kicked, ..
             } => {
                 ensure!(
-                    !players.is_empty() && players.iter().any(|p| p.id == self.owner),
+                    !players.is_empty() && players.iter().any(|p| p.is(self.owner)),
                     "Invalid pregame owner"
                 );
                 ensure!(
@@ -713,12 +719,6 @@ pub const MAX_NOTE_LENGTH: usize = 300;
 const MAX_KICKED_PLAYERS: usize = 4096;
 /// The most spectators that a table remembers, with the seat that each one shadows.
 const MAX_SHADOWS: usize = 4096;
-
-/// The ID of the player in a seat of a replay that is not written to the database. It is negative,
-/// so it cannot match a user.
-pub fn placeholder_player_id(seat: usize) -> UserId {
-    UserId(-1 - hanabi_engine::int(seat))
-}
 
 pub fn tag_too_long() -> String {
     format!("Tags cannot be longer than {MAX_TAG_LENGTH} characters.")

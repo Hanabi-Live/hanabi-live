@@ -293,8 +293,8 @@ pub(super) fn replay_table(
 ) -> TableSnapshot {
     let id = snapshot.table_id;
     let options = snapshot.game.options.clone();
-    for (index, player) in snapshot.players.iter_mut().enumerate() {
-        player.id = crate::model::placeholder_player_id(index);
+    for player in &mut snapshot.players {
+        player.id = None;
     }
     let name = format!(
         "{} replay for {}",

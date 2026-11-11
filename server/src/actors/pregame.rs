@@ -53,19 +53,19 @@ pub(super) fn remove_pregame_players(
     };
     let names = players
         .iter()
-        .filter(|p| removed.contains(&p.id))
+        .filter(|p| p.id.is_some_and(|id| removed.contains(&id)))
         .map(|p| p.name.clone())
         .collect::<Vec<_>>();
     if names.is_empty() {
         return vec![];
     }
-    players.retain(|p| !removed.contains(&p.id));
+    players.retain(|p| !p.id.is_some_and(|id| removed.contains(&id)));
     let Some(first) = players.first() else {
         return vec![];
     };
-    let new_owner = (!players.iter().any(|p| p.id == table.owner)).then(|| first.clone());
-    if let Some(owner) = &new_owner {
-        table.owner = owner.id;
+    let new_owner = (!players.iter().any(|p| p.is(table.owner))).then(|| first.clone());
+    if let Some(id) = new_owner.as_ref().and_then(|owner| owner.id) {
+        table.owner = id;
     }
     for id in removed {
         table.shadows.remove(id);
@@ -227,8 +227,8 @@ impl TableActor {
             session.active(),
             "Session changed while refreshing table options"
         );
-        if players.iter().all(|p| p.id != next.owner) {
-            next.owner = players[0].id;
+        if players.iter().all(|p| !p.is(next.owner)) {
+            next.owner = players[0].user()?;
         }
         let message = table_notice(
             &mut next,
@@ -245,7 +245,7 @@ impl TableActor {
         self.persist(next).await?;
         let mut e = self.effects();
         for p in removed {
-            if let Some(a) = self.attendees.remove(&p.id) {
+            if let Some(a) = p.id.and_then(|id| self.attendees.remove(&id)) {
                 e.statuses.push((a.session.clone(), Status::Lobby, None));
                 e.messages.push((
                     a.session,
@@ -295,9 +295,9 @@ impl TableActor {
         );
         if next.extra.custom_num_players.is_some() {
             ensure_or_reject!(
-                players.iter().all(|p| self
-                    .attendees
-                    .get(&p.id)
+                players.iter().all(|p| p
+                    .id
+                    .and_then(|id| self.attendees.get(&id))
                     .is_some_and(|a| a.session.active() && !a.spectator)),
                 "Custom games require all players present"
             );
@@ -405,7 +405,7 @@ impl TableActor {
             .players()
             .iter()
             .filter(|p| !p.bot)
-            .map(|p| p.id)
+            .filter_map(|p| p.id)
             .collect::<Vec<_>>();
         let reservation = request(&self.hub, |reply| HubCommand::ReserveSeats {
             users: humans,
@@ -493,7 +493,7 @@ impl TableActor {
             let mut sorted = players.clone();
             sorted.sort_by_key(|p| std::cmp::Reverse(p.stats.num_games));
             let mid = sorted.len() / SPLIT_GROUPS;
-            if sorted[..mid].iter().any(|p| p.id == self.table.owner) {
+            if sorted[..mid].iter().any(|p| p.is(self.table.owner)) {
                 sorted[mid..].to_vec()
             } else {
                 sorted[..mid].to_vec()
@@ -521,21 +521,21 @@ impl TableActor {
             !selected.is_empty() && selected.len() <= self.table.max_players,
             "Invalid split size"
         );
-        let selected_ids = selected.iter().map(|p| p.id).collect::<HashSet<_>>();
+        let selected_ids = selected.iter().filter_map(|p| p.id).collect::<HashSet<_>>();
         let allocation = self.allocation().await?;
         ensure_or_reject!(session.active(), "Owner changed while splitting");
         let mut source = self.candidate();
         let Phase::Pregame { players, .. } = &mut source.phase else {
             bail_internal!("A pregame command ran outside a pregame");
         };
-        players.retain(|p| !selected_ids.contains(&p.id));
+        players.retain(|p| !p.id.is_some_and(|id| selected_ids.contains(&id)));
         let new_owner = players
             .first()
             .filter(|_| selected_ids.contains(&source.owner))
             .cloned();
         let retire = players.is_empty();
         if let Some(owner) = &new_owner {
-            source.owner = owner.id;
+            source.owner = owner.user()?;
         }
         let names = selected
             .iter()
@@ -564,7 +564,7 @@ impl TableActor {
                 MAX_TABLE_NAME_LENGTH - SPLIT_SUFFIX.len()
             )
         );
-        destination.owner = selected[0].id;
+        destination.owner = selected[0].user()?;
         destination.created = Utc::now();
         destination.phase = Phase::Pregame {
             players: selected,

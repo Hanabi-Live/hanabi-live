@@ -222,7 +222,7 @@ pub(crate) async fn replay(
             "Invalid replay seat"
         );
         players.push(Player {
-            id: UserId(r.user_id),
+            id: Some(UserId(r.user_id)),
             name: r.name.clone(),
             bot: false,
             stats: zero_stats(),
@@ -323,7 +323,7 @@ pub(crate) async fn insert(
     let mut assigned_metadata = vec![];
     for (seat, p) in s.players.iter().enumerate() {
         let (character_id, assigned) = character_columns(&s.game.players[seat])?;
-        users.push(p.id.0);
+        users.push(p.user()?.0);
         seats.push(i16::try_from(seat)?);
         character_ids.push(character_id);
         assigned_metadata.push(assigned);

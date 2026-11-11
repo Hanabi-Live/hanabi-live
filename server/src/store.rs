@@ -381,7 +381,7 @@ impl Store {
         let ids = players
             .iter()
             .filter(|p| !p.bot)
-            .map(|p| p.id)
+            .filter_map(|p| p.id)
             .collect::<Vec<_>>();
         let seeds = if ids.is_empty() {
             vec![]
@@ -670,7 +670,7 @@ mod tests {
             created: Utc::now(),
             phase: Phase::Pregame {
                 players: vec![Player {
-                    id: UserId(1),
+                    id: Some(UserId(1)),
                     name: "Alice".into(),
                     bot: false,
                     stats: zero_stats(),
@@ -692,13 +692,13 @@ mod tests {
     ) -> Result<()> {
         let players = vec![
             Player {
-                id: UserId(1),
+                id: Some(UserId(1)),
                 name: "Alice".into(),
                 bot: false,
                 stats: zero_stats(),
             },
             Player {
-                id: UserId(2),
+                id: Some(UserId(2)),
                 name: "Bob".into(),
                 bot: false,
                 stats: zero_stats(),
@@ -1044,6 +1044,35 @@ mod tests {
         Ok(())
     }
     #[test]
+    fn replay_seats_of_format_7_lose_their_negative_user_ids() -> Result<()> {
+        let mut table = replayed()?;
+        table.extra.no_write_to_database = true;
+        for player in &mut table.game_mut().context("Missing replay")?.players {
+            player.id = None;
+        }
+        let expected = serde_json::to_value(&table)?;
+        let (encoded, _) = crate::checkpoint::encode(&mut table, &SavedParts::default())?;
+        let mut parts = encoded.changes.written.clone();
+        let (_, start) = parts
+            .iter_mut()
+            .find(|(key, _)| key == "game/start")
+            .context("Missing game start")?;
+        let mut value: Value = serde_json::from_str(start)?;
+        for (seat, player) in value["players"]
+            .as_array_mut()
+            .context("Missing players")?
+            .iter_mut()
+            .enumerate()
+        {
+            player["id"] = json!(-1 - i64::try_from(seat)?);
+        }
+        *start = value.to_string();
+        let decoded =
+            crate::checkpoint::decode(&older_head(&encoded.head, "hanabi-live-7")?, &parts)?;
+        ensure!(serde_json::to_value(&decoded)? == expected);
+        Ok(())
+    }
+    #[test]
     fn saves_write_only_new_entries_and_rewrite_lists_that_do_not_continue() -> Result<()> {
         let mut table = pregame(TableId(1));
         terminal(&mut table)?;
@@ -1122,7 +1151,7 @@ mod tests {
             };
             players[0].stats.num_games = hanabi_protocol::Count(727);
             players.push(Player {
-                id: UserId(2),
+                id: Some(UserId(2)),
                 name: "Bob".into(),
                 bot: false,
                 stats: zero_stats(),
@@ -1342,7 +1371,7 @@ mod tests {
                 let mut snapshot = template.clone();
                 snapshot.players = (1..=hanabi_engine::int(count))
                     .map(|id| Player {
-                        id: UserId(id),
+                        id: Some(UserId(id)),
                         name: format!("Player{id}"),
                         bot: false,
                         stats: zero_stats(),
@@ -1458,7 +1487,7 @@ mod tests {
             .execute(&store.primary)
             .await?;
             let player = |id, bot| Player {
-                id: UserId(id),
+                id: Some(UserId(id)),
                 name: format!("Player {id}"),
                 bot,
                 stats: zero_stats(),
@@ -1771,7 +1800,7 @@ mod tests {
             destination.owner = UserId(2);
             if let Phase::Pregame { players, .. } = &mut destination.phase {
                 players[0] = Player {
-                    id: UserId(2),
+                    id: Some(UserId(2)),
                     name: "Bob".into(),
                     bot: false,
                     stats: zero_stats(),
@@ -1935,8 +1964,7 @@ mod tests {
                 .find(|(t, _)| t.id == id)
                 .context("Lost source")?;
             ensure!(
-                source.0.players().iter().map(|p| p.id).collect::<Vec<_>>()
-                    == vec![UserId(1), UserId(3)],
+                source.0.seated_users().collect::<Vec<_>>() == vec![UserId(1), UserId(3)],
                 "Wrong split membership"
             );
             send(
@@ -2070,7 +2098,7 @@ mod tests {
             for user in users.iter().skip(1){send(&hub,user.clone(),"tableJoin",json!({"tableId":id})).await?;}
             send(&hub,users[0].clone(),"tableStart",json!({"tableId":id})).await?;
             let loaded=store.load().await?;let s=loaded[0].0.game().unwrap();ensure!(s.players.len()==3&&s.game.stacks.len()==6&&s.game.clue_tokens==16,"Native variant ignored");
-            let active=s.game.active_player_index;let actor=usize::try_from(s.players[active].id.0)?-1;
+            let active=s.game.active_player_index;let actor=usize::try_from(s.players[active].user()?.0)?-1;
             send(&hub,users[actor].clone(),"loaded",json!({"tableId":id})).await?;
             send(&hub,users[actor].clone(),"pause",json!({"tableId":id,"setting":"pause"})).await?;
             send(&hub,users[actor].clone(),"note",json!({"tableId":id,"order":0,"text":"private"})).await?;

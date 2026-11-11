@@ -370,6 +370,7 @@ const UPGRADES: &[(&str, &str, Upgrade)] = &[
     ("hanabi-live-4", "hanabi-live-5", time_control),
     ("hanabi-live-5", "hanabi-live-6", server_chat_authors),
     ("hanabi-live-6", "hanabi-live-7", camel_case_variant_id),
+    ("hanabi-live-7", "hanabi-live-8", seats_without_users),
 ];
 
 /// Rewrites a table that an older server saved, one format at a time, into the current format.
@@ -507,6 +508,27 @@ fn server_chat_authors(_: &mut Value, parts: &mut [(String, String)]) -> Result<
             chat.remove("user");
         }
     })
+}
+
+/// Format 7 gave each seat of a replay that is not saved a negative user ID: -1 for the first seat,
+/// -2 for the second, and so on.
+#[expect(
+    clippy::unnecessary_wraps,
+    reason = "every upgrade step has the `Upgrade` signature"
+)]
+fn seats_without_users(head: &mut Value, _: &mut [(String, String)]) -> Result<()> {
+    if let Some(Value::Array(players)) = head.pointer_mut("/phase/snapshot/players") {
+        for player in players.iter_mut().filter_map(Value::as_object_mut) {
+            if player
+                .get("id")
+                .and_then(Value::as_i64)
+                .is_some_and(|id| id < 0)
+            {
+                player.remove("id");
+            }
+        }
+    }
+    Ok(())
 }
 
 /// Rewrites a clue that a turn of format 3 gives.

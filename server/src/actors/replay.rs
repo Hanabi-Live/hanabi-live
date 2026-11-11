@@ -236,7 +236,7 @@ impl TableActor {
                     crate::accounts::normalize_string(&p.name)
                         == crate::accounts::normalize_string(name)
                 })
-                .map(|p| (p.id, p.name.clone()))
+                .and_then(|p| Some((p.id?, p.name.clone())))
         }
         .or_reject("That player is not at this table")?;
         ensure_or_reject!(
@@ -252,7 +252,7 @@ impl TableActor {
         if let Phase::Pregame { players, .. } = &mut next.phase {
             let seat = players
                 .iter()
-                .position(|player| player.id == target.0)
+                .position(|player| player.is(target.0))
                 .context("New leader is missing from pregame players")?;
             players.swap(0, seat);
         }
@@ -395,12 +395,11 @@ impl TableActor {
             .players()
             .iter()
             .filter(|p| {
-                // Restarting means the leader is playing again.
-                (p.id == session.user || !replay.restart_declined.contains(&p.id))
-                    && self
-                        .attendees
-                        .get(&p.id)
-                        .is_some_and(|a| a.session.active())
+                // Restarting means the leader is playing again. A seat without a user cannot play.
+                p.id.is_some_and(|id| {
+                    (id == session.user || !replay.restart_declined.contains(&id))
+                        && self.attendees.get(&id).is_some_and(|a| a.session.active())
+                })
             })
             .cloned()
             .collect::<Vec<_>>();
@@ -435,12 +434,7 @@ impl TableActor {
         let finished = (snapshot.game_id.is_some() && !self.table.extra.no_write_to_database)
             .then(|| snapshot.clone());
         let variant = hanabi_engine::get_variant(&self.table.options.variant_name)?.id;
-        let users = self
-            .table
-            .players()
-            .iter()
-            .map(|p| p.id)
-            .collect::<Vec<_>>();
+        let users = self.table.seated_users().collect::<Vec<_>>();
         let pool = self.store.primary.clone();
         let session = session.clone();
         Ok(async move {
@@ -475,13 +469,13 @@ impl TableActor {
         let mut players = self.restart_players(&session, hide)?;
         for player in &mut players {
             player.stats = stats
-                .remove(&player.id)
+                .remove(&player.user()?)
                 .unwrap_or_else(crate::stats::zero_stats);
         }
         let humans = players
             .iter()
             .filter(|p| !p.bot)
-            .map(|p| p.id)
+            .filter_map(|p| p.id)
             .collect::<Vec<_>>();
         // Players in a replay are not seated, so they could have joined another table meanwhile.
         // The reservation lasts until the table publishes its new players.
@@ -491,7 +485,7 @@ impl TableActor {
             reply,
         })
         .await??;
-        let seated = players.iter().map(|p| p.id).collect::<HashSet<_>>();
+        let seated = players.iter().filter_map(|p| p.id).collect::<HashSet<_>>();
         let mut next = self.candidate();
         // The table keeps its ID and audience, but plays a new game, which its name counts.
         next.created = Utc::now();
@@ -617,7 +611,7 @@ impl TableActor {
         self.table
             .players()
             .iter()
-            .filter(|p| replay.restart_declined.contains(&p.id))
+            .filter(|p| p.id.is_some_and(|id| replay.restart_declined.contains(&id)))
             .map(|p| p.name.as_str().into())
             .collect()
     }

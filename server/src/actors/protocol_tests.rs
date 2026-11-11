@@ -268,7 +268,7 @@ async fn player_shadow_is_cleared_when_a_spectator_joins() -> Result<()> {
             let seat = table
                 .players()
                 .iter()
-                .position(|p| p.id == UserId(player_id))
+                .position(|p| p.is(UserId(player_id)))
                 .unwrap();
             h.send(index, "gameInitLoad", json!({"tableId":id})).await?;
             let init = h.receive(index, "init").await?;
@@ -338,12 +338,12 @@ async fn player_shadow_from_saved_games_is_cleared_on_reattend() -> Result<()> {
         let alice = table
             .players()
             .iter()
-            .position(|p| p.id == UserId(1))
+            .position(|p| p.is(UserId(1)))
             .unwrap();
         let bob = table
             .players()
             .iter()
-            .position(|p| p.id == UserId(2))
+            .position(|p| p.is(UserId(2)))
             .unwrap();
         table.shadows.insert(UserId(2), PlayerIndex::new(alice));
         h.store.save_at(&table, revision).await?;
@@ -458,7 +458,7 @@ async fn duck_clue_identity_is_private_in_live_history_and_recovery_but_not_comp
             let index = h
                 .users
                 .iter()
-                .position(|user| user.user == table.players()[seat].id)
+                .position(|user| table.players()[seat].is(user.user))
                 .unwrap();
             h.send(index, "playerAction", json!({"tableId":id,"action":action}))
                 .await?;
@@ -1245,7 +1245,7 @@ async fn pausing_a_game_is_announced_in_its_chat() -> Result<()> {
         let index = h
             .users
             .iter()
-            .position(|user| user.user == table.players()[active].id)
+            .position(|user| table.players()[active].is(user.user))
             .context("Missing active player")?;
         let card = game.players[active].hand[0];
         let error = h
@@ -1354,7 +1354,7 @@ async fn joining_a_table_with_a_password_checks_the_password() -> Result<()> {
             .snapshot(TableId(id.as_u64().context("Missing table ID")?))
             .await?;
         ensure!(
-            table.players().iter().map(|p| p.id).collect::<Vec<_>>() == [UserId(1), UserId(2)],
+            table.seated_users().collect::<Vec<_>>() == [UserId(1), UserId(2)],
             "Bob did not join with the right password"
         );
         Ok(())
@@ -1539,7 +1539,7 @@ async fn expired_pregame_owner_is_removed_but_remaining_players_and_live_games_s
         if let Phase::Pregame { players, .. } = &mut table.phase {
             for user in &h.users[1..3] {
                 players.push(Player {
-                    id: user.user,
+                    id: Some(user.user),
                     name: user.name.clone(),
                     bot: false,
                     stats: crate::stats::zero_stats(),
@@ -1576,8 +1576,7 @@ async fn expired_pregame_owner_is_removed_but_remaining_players_and_live_games_s
         actor.cleanup(now + PREGAME_RECONNECT_GRACE).await?;
         let (restored, _) = h.snapshot(id).await?;
         ensure!(
-            restored.players().iter().map(|p| p.id).collect::<Vec<_>>()
-                == vec![UserId(2), UserId(3)],
+            restored.seated_users().collect::<Vec<_>>() == vec![UserId(2), UserId(3)],
             "Disconnected owner kept a pregame seat"
         );
         ensure!(
@@ -1666,7 +1665,7 @@ async fn remade_tables_publish_fresh_statistics_for_every_player() -> Result<()>
             } else {
                 json!({"tableId":id,"action":{"type":"discard","order":hand[0]}})
             };
-            let actor = usize::try_from(snapshot.players[active].id.0)? - 1;
+            let actor = usize::try_from(snapshot.players[active].user()?.0)? - 1;
             h.send(actor, "playerAction", action).await?;
             for index in 0..3 {
                 h.frames(index)?;
@@ -2060,25 +2059,11 @@ async fn pregame_leader_moves_to_first_seat_without_reordering_live_players() ->
         }
         let expected = vec![UserId(3), UserId(2), UserId(1)];
         ensure!(
-            h.snapshot(id)
-                .await?
-                .0
-                .players()
-                .iter()
-                .map(|p| p.id)
-                .collect::<Vec<_>>()
-                == expected,
+            h.snapshot(id).await?.0.seated_users().collect::<Vec<_>>() == expected,
             "Leader seating was not persisted"
         );
         h.send(2, "tableStart", json!({"tableId":id})).await?;
-        let live_players = h
-            .snapshot(id)
-            .await?
-            .0
-            .players()
-            .iter()
-            .map(|p| p.id)
-            .collect::<Vec<_>>();
+        let live_players = h.snapshot(id).await?.0.seated_users().collect::<Vec<_>>();
         h.send(
             2,
             "tableSetLeader",
@@ -2088,7 +2073,7 @@ async fn pregame_leader_moves_to_first_seat_without_reordering_live_players() ->
         let table = h.snapshot(id).await?.0;
         ensure!(table.owner == UserId(1));
         ensure!(
-            table.players().iter().map(|p| p.id).collect::<Vec<_>>() == live_players,
+            table.seated_users().collect::<Vec<_>>() == live_players,
             "Changing a live game's leader changed the seats"
         );
         Ok::<(), anyhow::Error>(())
@@ -2310,11 +2295,11 @@ async fn pregame_total_counts_only_normal_non_speedrun_games() -> Result<()> {
         let snapshot = h.snapshot(id).await?.0;
         let players = snapshot.players();
         ensure!(
-            players.iter().find(|player| player.id == UserId(1)).context("Missing Alice")?.stats.num_games == hanabi_protocol::Count(2),
+            players.iter().find(|player| player.is(UserId(1))).context("Missing Alice")?.stats.num_games == hanabi_protocol::Count(2),
             "Pregame total must count normal non-speedrun games across variants, including zero-score normal finishes"
         );
         ensure!(
-            players.iter().find(|player| player.id == UserId(2)).context("Missing Bob")?.stats.num_games == hanabi_protocol::Count(0),
+            players.iter().find(|player| player.is(UserId(2))).context("Missing Bob")?.stats.num_games == hanabi_protocol::Count(0),
             "Another player's history must not affect the total"
         );
         ensure!(
@@ -2553,7 +2538,7 @@ async fn findvariant_rechecks_roster_after_lookup_without_blocking_table_command
         h.wait_locks(2).await?;lock.commit().await?;
         joining.await??;finding.await??;h.barrier(1).await?;
         let (table,_)=h.snapshot(id).await?;
-        ensure!(table.players().iter().map(|p|p.id).collect::<Vec<_>>()==vec![UserId(2),UserId(3)],"Concurrent roster change was blocked");
+        ensure!(table.seated_users().collect::<Vec<_>>()==vec![UserId(2),UserId(3)],"Concurrent roster change was blocked");
         for index in 0..3{
             let chats=chat_messages(&h.frames(index)?);
             ensure!(!chats.iter().any(|v|v["text"].as_str().unwrap_or("").contains("new-options")),"Stale roster received an actionable proposal");
@@ -2822,8 +2807,8 @@ async fn playing_membership_is_separate_from_replay_attendance_and_bots_can_play
             "Explicit logout did not cancel multi-table session"
         );
         ensure!(
-            h.snapshot(bot_one).await?.0.players()[0].id == UserId(4)
-                && h.snapshot(bot_two).await?.0.players()[0].id == UserId(4),
+            h.snapshot(bot_one).await?.0.players()[0].is(UserId(4))
+                && h.snapshot(bot_two).await?.0.players()[0].is(UserId(4)),
             "Logout lost durable bot memberships"
         );
         Ok::<(), anyhow::Error>(())
@@ -2899,7 +2884,7 @@ async fn pending_join_claim_survives_replacement_until_the_committed_view_is_pub
                 .0
                 .players()
                 .iter()
-                .any(|p| p.id == UserId(2)),
+                .any(|p| p.is(UserId(2))),
             "Accepted old-generation join was lost"
         );
         ensure!(
@@ -3284,7 +3269,7 @@ async fn saved_actions_store_null_for_a_missing_target_or_value() -> Result<()> 
         let index = h
             .users
             .iter()
-            .position(|user| user.user == table.players()[active].id)
+            .position(|user| table.players()[active].is(user.user))
             .context("Missing active player")?;
         let card = game.players[active].hand[0];
         h.send(
