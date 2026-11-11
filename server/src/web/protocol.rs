@@ -76,8 +76,10 @@ mod tests {
                 "tagSearch" => json!({"tag":"test"}),
                 "tableSetVariant" => json!({"tableId":1,"variantName":"No Variant"}),
                 "gameHistory" => json!({"offset":0,"amount":10}),
-                "sync" | "lobbyLoad" | "tableCreate" | "chatLinked" | "chatBlocked"
-                | "chatPmHistory" => json!({}),
+                "tableCreate" => json!({"settings":{"name":"Table"}}),
+                "tableUpdate" => json!({"tableId":1,"settings":{"name":"Table"}}),
+                "chatPmHistory" => json!({"amount":10}),
+                "sync" | "lobbyLoad" | "chatLinked" | "chatBlocked" => json!({}),
                 _ => json!({"tableId":1}),
             };
             parse(&format!("{command} {value}")).unwrap_or_else(|e| panic!("{command}: {e}"));
@@ -108,7 +110,9 @@ mod tests {
         ] {
             assert!(parse(input).is_err(), "{input}");
         }
-        let create = parse("tableCreate {}").unwrap().data();
+        let create = parse("tableCreate {\"settings\":{\"name\":\"Table\"}}")
+            .unwrap()
+            .data();
         assert_eq!(create["settings"]["maxPlayers"], 5);
         assert_eq!(create["settings"]["options"]["variantName"], "No Variant");
     }

@@ -876,7 +876,7 @@ mod tests {
             seed_suffix: Some("7".into()),
             replay_game_id: Some(GameId(5)),
             replay_turn: hanabi_protocol::Turn::new(2),
-            ..hanabi_protocol::TableSettings::default()
+            ..hanabi_protocol::TableSettings::named("suggested")
         });
         table.chat.push(TableChat {
             id: Some(3),
@@ -2038,7 +2038,7 @@ mod tests {
         let result=async{
             send(&hub,users[0].clone(),"tableCreate",json!({"settings":{"name":"native","maxPlayers":6,"seedSuffix":"native","options":{"variantName":"Clue Starved (6 Suits)","timeControl":{"baseSeconds":120,"perTurnSeconds":20},"oneExtraCard":true,"detrimentalCharacters":true}}})).await?;
             let id=store.load().await?[0].0.id;
-            for user in users.iter().skip(1){send(&hub,user.clone(),"tableJoin",json!({"tableId":id,"password":""})).await?;}
+            for user in users.iter().skip(1){send(&hub,user.clone(),"tableJoin",json!({"tableId":id})).await?;}
             send(&hub,users[0].clone(),"tableStart",json!({"tableId":id})).await?;
             let loaded=store.load().await?;let s=loaded[0].0.game().unwrap();ensure!(s.players.len()==3&&s.game.stacks.len()==6&&s.game.clue_tokens==16,"Native variant ignored");
             let active=s.game.active_player_index;let actor=usize::try_from(s.players[active].id.0)?-1;

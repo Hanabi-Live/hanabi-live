@@ -365,7 +365,7 @@ function submit() {
   checkSettingChanged("createTableMaxPlayers", maxPlayers);
 
   const settings = {
-    name,
+    name: name.trim() === "" ? getDefaultTableName() : name,
     maxPlayers,
     options: {
       variantName: getVariantName(), // This is a hidden span field.
@@ -386,7 +386,10 @@ function submit() {
   lobbyPage.hide();
 
   if (isNew) {
-    globals.conn!.send("tableCreate", { settings, password });
+    globals.conn!.send("tableCreate", {
+      settings,
+      ...(password !== "" && { password }),
+    });
     store.dispatch(creatingTableChanged(true));
   } else {
     globals.conn!.send("tableUpdate", {

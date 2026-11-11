@@ -5,7 +5,7 @@ use super::{
     chat::{push_chat, server_chat, table_notice},
     setup::{
         load_replay, normalize_options, option_changes, options_suggestion, requested_extra,
-        validate_table_name,
+        table_name,
     },
 };
 use crate::errors::CommandResult;
@@ -148,20 +148,10 @@ impl TableActor {
             options.variant_name.clone_from(variant);
         }
         normalize_options(&mut options)?;
-        let mut name = if variant_only {
-            self.table.name.clone()
-        } else {
-            crate::accounts::truncate_to_max_bytes(
-                request.as_ref().map_or("", |r| r.settings.name.as_str()),
-                MAX_TABLE_NAME_LENGTH,
-            )
-            .trim()
-            .to_owned()
+        let name = match &request {
+            Some(request) => table_name(&request.settings.name)?,
+            None => self.table.name.clone(),
         };
-        if name.is_empty() {
-            name = self.table.name.clone();
-        }
-        validate_table_name(&name)?;
         let mut max_players = if variant_only {
             self.table.max_players
         } else {

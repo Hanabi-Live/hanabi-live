@@ -333,10 +333,7 @@ pub(crate) fn test_table() -> hanabi_protocol::Table {
         game_id: None,
         table_id: TableId(1),
         joined: false,
-        settings: hanabi_protocol::TableSettings {
-            name: "test".into(),
-            ..hanabi_protocol::TableSettings::default()
-        },
+        settings: hanabi_protocol::TableSettings::named("test"),
         owner_id: UserId(1),
         password_protected: false,
         player_names: vec!["test".into()],

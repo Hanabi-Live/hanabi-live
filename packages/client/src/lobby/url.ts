@@ -1,5 +1,9 @@
 import type { ServerCommandData } from "@hanabi-live/data";
-import { defaultSettings, tableIdSchema } from "@hanabi-live/data";
+import {
+  DEFAULT_TABLE_NAME_SUFFIX,
+  defaultSettings,
+  tableIdSchema,
+} from "@hanabi-live/data";
 import type { PlayerIndex } from "@hanabi-live/game";
 import { DEFAULT_VARIANT_NAME, isValidPlayerIndex } from "@hanabi-live/game";
 import { parseIntSafe } from "complete-common";
@@ -59,8 +63,12 @@ function gotoPath(data: ServerCommandData["welcome"]): boolean {
   // Automatically create a table if we are using a "/create-table" URL.
   if (globalThis.location.pathname === PATH.CREATE_TABLE) {
     const urlParams = new URLSearchParams(globalThis.location.search);
-    // Without a name, the server names the table after us.
-    const name = urlParams.get("name") ?? "";
+    // Without a name, the table is named after us.
+    const nameParam = urlParams.get("name")?.trim() ?? "";
+    const name =
+      nameParam === ""
+        ? `${data.username}${DEFAULT_TABLE_NAME_SUFFIX}`
+        : nameParam;
     const variantName = urlParams.get("variantName") ?? DEFAULT_VARIANT_NAME;
     const timeControl =
       urlParams.get("timed") === "true"
@@ -108,7 +116,7 @@ function gotoPath(data: ServerCommandData["welcome"]): boolean {
         ...(replayGameId !== undefined && { replayGameId }),
         ...(replayTurn !== undefined && { replayTurn }),
       },
-      password,
+      ...(password !== "" && { password }),
     });
     return true;
   }

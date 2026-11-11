@@ -39,7 +39,17 @@ pub(super) fn normalize_options(options: &mut Options) -> CommandResult<()> {
     Ok(())
 }
 
-pub(super) fn validate_table_name(name: &str) -> CommandResult<()> {
+/// Reads a requested table name: trimmed, cut to the longest name, and checked.
+pub(super) fn table_name(requested: &str) -> CommandResult<String> {
+    let name = crate::accounts::truncate_to_max_bytes(requested.trim(), MAX_TABLE_NAME_LENGTH)
+        .trim_end()
+        .to_owned();
+    ensure_or_reject!(!name.is_empty(), "Table names cannot be blank");
+    validate_table_name(&name)?;
+    Ok(name)
+}
+
+fn validate_table_name(name: &str) -> CommandResult<()> {
     ensure_or_reject!(
         name.chars().all(|c| c.is_alphanumeric()
             || unicode_normalization::char::is_combining_mark(c)
@@ -386,18 +396,7 @@ pub(super) async fn prepare_table(
             }
         };
         let settings = r.settings;
-        let mut name =
-            crate::accounts::truncate_to_max_bytes(settings.name.trim(), MAX_TABLE_NAME_LENGTH)
-                .trim_end()
-                .to_owned();
-        if name.is_empty() {
-            name = format!(
-                "{}{}",
-                session.name,
-                hanabi_protocol::DEFAULT_TABLE_NAME_SUFFIX
-            );
-        }
-        validate_table_name(&name)?;
+        let name = table_name(&settings.name)?;
         let mut options = engine_options(&settings.options);
         normalize_options(&mut options)?;
         let mut extra = requested_extra(&settings)?;
@@ -407,15 +406,15 @@ pub(super) async fn prepare_table(
         let player = crate::stats::player(&store.primary, &session.identity, variant.id).await?;
         let max_players =
             usize::from(settings.max_players).max(extra.custom_num_players.unwrap_or(MIN_PLAYERS));
-        let password = r.password;
-        let password_hash = if password.is_empty() {
-            None
-        } else {
-            ensure_or_reject!(
-                password.len() <= MAX_TABLE_PASSWORD_BYTES,
-                "Passwords cannot be longer than {MAX_TABLE_PASSWORD_BYTES} bytes"
-            );
-            Some(crate::accounts::hash_password(&session.ip, password).await?)
+        let password_hash = match r.password {
+            Some(password) => {
+                ensure_or_reject!(
+                    password.len() <= MAX_TABLE_PASSWORD_BYTES,
+                    "Passwords cannot be longer than {MAX_TABLE_PASSWORD_BYTES} bytes"
+                );
+                Some(crate::accounts::hash_password(&session.ip, password).await?)
+            }
+            None => None,
         };
         ensure_or_reject!(session.active(), "Creator disconnected during preparation");
         let mut table = TableSnapshot {

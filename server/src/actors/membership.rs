@@ -69,8 +69,8 @@ impl TableActor {
         if !matches!(self.join_allowed(session, blocks), Ok(false)) {
             return None;
         }
-        let (session, blocks, password) =
-            (session.clone(), blocks.clone(), request.password.clone());
+        let password = request.password.clone()?;
+        let (session, blocks) = (session.clone(), blocks.clone());
         Some(async move {
             let valid = crate::accounts::verify_password(&session.ip, password, hash.clone()).await;
             Completed::Password {

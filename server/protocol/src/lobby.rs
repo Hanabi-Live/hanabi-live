@@ -306,12 +306,11 @@ const fn default_max_players() -> u8 {
 }
 
 /// A table's name, player limit, options, and deal, as its owner sets them and as tables report
-/// them. Missing fields take their defaults.
+/// them. Missing fields other than the name take their defaults.
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct TableSettings {
-    /// Blank in a request uses the owner's name.
-    #[serde(default)]
+    #[schemars(length(min = 1))]
     pub name: String,
     #[serde(default = "default_max_players")]
     #[schemars(with = "NumPlayers")]
@@ -333,10 +332,11 @@ pub struct TableSettings {
     pub replay_turn: Option<Turn>,
 }
 
-impl Default for TableSettings {
-    fn default() -> Self {
+impl TableSettings {
+    /// A table with this name and the default settings.
+    pub fn named(name: impl Into<String>) -> Self {
         Self {
-            name: String::new(),
+            name: name.into(),
             max_players: DEFAULT_MAX_PLAYERS,
             options: GameOptions::default(),
             seed_suffix: None,

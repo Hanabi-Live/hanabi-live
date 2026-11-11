@@ -165,7 +165,7 @@ function passwordSubmit() {
 
   globals.conn!.send("tableJoin", {
     tableId,
-    password,
+    ...(password !== "" && { password }),
   });
 
   // Record the password in local storage (cookie).

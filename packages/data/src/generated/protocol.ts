@@ -100,15 +100,12 @@ export const gameIdSchema = z
 
 /**
  * A table's name, player limit, options, and deal, as its owner sets them and as tables report
- * them. Missing fields take their defaults.
+ * them. Missing fields other than the name take their defaults.
  */
 const tableSettingsSchema = z
   .strictObject({
     maxPlayers: z.literal([2, 3, 4, 5, 6]).default(5),
-    /**
-     * Blank in a request uses the owner's name.
-     */
-    name: z.string().default(""),
+    name: z.string().min(1),
     options: gameOptionsSchema.default({
       allOrNothing: false,
       deckPlays: false,
@@ -186,17 +183,15 @@ export const chatPmHistorySchema = z
   .readonly();
 export const chatPmHistoryRequestSchema = z
   .strictObject({
-    amount: z
-      .number()
-      .int()
-      .min(-9_007_199_254_740_991)
-      .max(9_007_199_254_740_991)
-      .default(0),
+    amount: z.number().int().min(1).max(100),
     /**
      * The table whose chat the command was typed in. Absent means the lobby.
      */
     tableId: tableIdSchema.optional(),
-    username: z.string().optional(),
+    /**
+     * The other user in the conversation. Absent shows the messages with everyone.
+     */
+    username: z.string().min(1).optional(),
   })
   .readonly();
 export const chatPmRequestSchema = z
@@ -1250,25 +1245,21 @@ export const tableSchema = z
   .readonly();
 export const tableCreateRequestSchema = z
   .strictObject({
-    password: z.string().default(""),
-    settings: tableSettingsSchema.default({
-      maxPlayers: 5,
-      name: "",
-      options: {
-        allOrNothing: false,
-        deckPlays: false,
-        detrimentalCharacters: false,
-        emptyClues: false,
-        oneExtraCard: false,
-        oneLessCard: false,
-        speedrun: false,
-        variantName: "No Variant",
-      },
-    }),
+    /**
+     * Absent for a table without a password.
+     */
+    password: z.string().min(1).optional(),
+    settings: tableSettingsSchema,
   })
   .readonly();
 export const tableJoinRequestSchema = z
-  .strictObject({ password: z.string().default(""), tableId: tableIdSchema })
+  .strictObject({
+    /**
+     * Absent when the user gives no password.
+     */
+    password: z.string().min(1).optional(),
+    tableId: tableIdSchema,
+  })
   .readonly();
 export const tableListSchema = z.array(tableSchema).readonly();
 export const tableRefSchema = z
@@ -1328,24 +1319,7 @@ export const tableSuggestRequestSchema = z
   .strictObject({ segment: turnSchema, tableId: tableIdSchema })
   .readonly();
 export const tableUpdateRequestSchema = z
-  .strictObject({
-    password: z.string().default(""),
-    settings: tableSettingsSchema.default({
-      maxPlayers: 5,
-      name: "",
-      options: {
-        allOrNothing: false,
-        deckPlays: false,
-        detrimentalCharacters: false,
-        emptyClues: false,
-        oneExtraCard: false,
-        oneLessCard: false,
-        speedrun: false,
-        variantName: "No Variant",
-      },
-    }),
-    tableId: tableIdSchema,
-  })
+  .strictObject({ settings: tableSettingsSchema, tableId: tableIdSchema })
   .readonly();
 
 /**

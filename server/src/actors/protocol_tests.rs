@@ -924,7 +924,7 @@ async fn tables_replay_a_finished_game_from_a_chosen_turn() -> Result<()> {
             .execute(&h.store.primary)
             .await?;
 
-        let id = h.create(0, "", json!({"replayGameId":game,"replayTurn":1})).await?;
+        let id = h.create(0, "Replay", json!({"replayGameId":game,"replayTurn":1})).await?;
         let listed = h.receive(1, "table").await?;
         ensure!(
             listed["settings"]["replayGameId"] == game
@@ -1477,15 +1477,15 @@ async fn spectators_return_to_ongoing_games_and_shared_replays_after_reconnectin
 }
 
 #[tokio::test]
-async fn default_table_names_use_the_creator_and_remain_editable() -> Result<()> {
+async fn default_table_names_keep_the_creator_and_remain_editable() -> Result<()> {
     let names = ["Alice", "Ren\u{e9}"];
     let Some(mut h) = Harness::new(&names).await? else {
         return Ok(());
     };
     let outcome = async {
         for (index, name) in names.iter().enumerate() {
-            let id = h.create(index, "", json!({})).await?;
-            let expected = format!("{name}'s table");
+            let expected = format!("{name}{}", hanabi_protocol::DEFAULT_TABLE_NAME_SUFFIX);
+            let id = h.create(index, &expected, json!({})).await?;
             ensure!(
                 h.snapshot(id).await?.0.name == expected,
                 "Incorrect default table name"

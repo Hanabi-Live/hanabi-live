@@ -130,7 +130,7 @@ databaseDescribe("normal-server protocol workload", () => {
             let alice = await connect(aliceCookie);
             const bob = await connect(bobCookie);
             alice.send("tableCreate", {
-              settings: { seedSuffix: SEED_SUFFIX },
+              settings: { name: "Benchmark", seedSuffix: SEED_SUFFIX },
             });
             const { tableId } = await alice.receive(
               "joined",

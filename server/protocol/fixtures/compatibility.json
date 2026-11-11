@@ -105,24 +105,30 @@
     "valid": false
   },
   {
-    "name": "private history defaults amount but preserves absent filters",
+    "name": "private history requires an amount",
     "direction": "client",
     "command": "chatPmHistory",
     "input": {},
-    "valid": true,
-    "normalized": {
-      "amount": 0
-    }
+    "valid": false
   },
   {
-    "name": "private history accepts signed safe boundaries",
+    "name": "private history rejects an amount below 1",
     "direction": "client",
     "command": "chatPmHistory",
     "input": {
-      "amount": -9007199254740991,
+      "amount": 0
+    },
+    "valid": false
+  },
+  {
+    "name": "private history rejects a blank username",
+    "direction": "client",
+    "command": "chatPmHistory",
+    "input": {
+      "amount": 1,
       "username": ""
     },
-    "valid": true
+    "valid": false
   },
   {
     "name": "private history rejects unsafe integers",
@@ -138,6 +144,7 @@
     "direction": "client",
     "command": "chatPmHistory",
     "input": {
+      "amount": 1,
       "username": null
     },
     "valid": false
@@ -160,17 +167,13 @@
     "valid": false
   },
   {
-    "name": "join defaults password without coercing table ID",
+    "name": "join omits an absent password without coercing table ID",
     "direction": "client",
     "command": "tableJoin",
     "input": {
       "tableId": 0
     },
-    "valid": true,
-    "normalized": {
-      "tableId": 0,
-      "password": ""
-    }
+    "valid": true
   },
   {
     "name": "join rejects string table ID",
@@ -501,14 +504,17 @@
     "valid": false
   },
   {
-    "name": "table creation fills every default",
+    "name": "table creation fills every default but the name",
     "direction": "client",
     "command": "tableCreate",
-    "input": {},
-    "normalized": {
-      "password": "",
+    "input": {
       "settings": {
-        "name": "",
+        "name": "Alice's table"
+      }
+    },
+    "normalized": {
+      "settings": {
+        "name": "Alice's table",
         "maxPlayers": 5,
         "options": {
           "variantName": "No Variant",
@@ -523,6 +529,18 @@
       }
     },
     "valid": true
+  },
+  {
+    "name": "table creation rejects a blank password",
+    "direction": "client",
+    "command": "tableCreate",
+    "input": {
+      "settings": {
+        "name": "x"
+      },
+      "password": ""
+    },
+    "valid": false
   },
   {
     "name": "replay import accepts an exported game, including its ID",

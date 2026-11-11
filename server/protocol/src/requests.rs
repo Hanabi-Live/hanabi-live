@@ -31,13 +31,14 @@ pub struct ChatPmRequest {
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct ChatPmHistoryRequest {
-    #[serde(default)]
-    #[schemars(range(min = -MAX_SAFE_INTEGER, max = MAX_SAFE_INTEGER))]
+    #[schemars(range(min = 1, max = MAX_PRIVATE_HISTORY_MESSAGES))]
     pub amount: i64,
     /// The table whose chat the command was typed in. Absent means the lobby.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub table_id: Option<TableId>,
+    /// The other user in the conversation. Absent shows the messages with everyone.
     #[serde(skip_serializing_if = "Option::is_none")]
+    #[schemars(length(min = 1))]
     pub username: Option<String>,
 }
 
@@ -68,8 +69,10 @@ pub struct TableRef {
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct TableJoinRequest {
     pub table_id: TableId,
-    #[serde(default)]
-    pub password: String,
+    /// Absent when the user gives no password.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    #[schemars(length(min = 1))]
+    pub password: Option<String>,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
@@ -192,20 +195,18 @@ pub struct TagSearchRequest {
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct TableCreateRequest {
-    #[serde(default)]
     pub settings: TableSettings,
-    #[serde(default)]
-    pub password: String,
+    /// Absent for a table without a password.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    #[schemars(length(min = 1))]
+    pub password: Option<String>,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct TableUpdateRequest {
     pub table_id: TableId,
-    #[serde(default)]
     pub settings: TableSettings,
-    #[serde(default)]
-    pub password: String,
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]

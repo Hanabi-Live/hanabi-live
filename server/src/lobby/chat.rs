@@ -3,9 +3,7 @@ use crate::accounts::{escape_html, is_muted, normalize_chat, normalize_string, r
 use crate::transport::{Identity, Outgoing};
 use anyhow::{Context, Result, ensure};
 use chrono::SecondsFormat;
-use hanabi_protocol::{
-    Chat, ChatPmHistory, ChatPmHistoryRequest, ChatSource, MAX_PRIVATE_HISTORY_MESSAGES, TableId,
-};
+use hanabi_protocol::{Chat, ChatPmHistory, ChatPmHistoryRequest, ChatSource, TableId};
 use serde::Deserialize;
 use serde_json::json;
 use sqlx::PgPool;
@@ -325,15 +323,7 @@ pub async fn private_history(
     data: &ChatPmHistoryRequest,
 ) -> Result<Vec<Effect>> {
     let amount = data.amount;
-    if !(1..=MAX_PRIVATE_HISTORY_MESSAGES).contains(&amount) {
-        return Ok(vec![warning(&format!(
-            "Private message history amount must be between 1 and {MAX_PRIVATE_HISTORY_MESSAGES}."
-        ))]);
-    }
-    let username = data.username.as_deref().unwrap_or("");
-    let peer: Option<i32> = if username.is_empty() {
-        None
-    } else {
+    let peer: Option<i32> = if let Some(username) = data.username.as_deref() {
         let found = sqlx::query_scalar!(
             "SELECT id FROM users WHERE normalized_username=$1",
             normalize_string(username)
@@ -347,6 +337,8 @@ pub async fn private_history(
             ))]);
         }
         found
+    } else {
+        None
     };
     let rows = sqlx::query!(
         "SELECT c.message, c.datetime_sent,

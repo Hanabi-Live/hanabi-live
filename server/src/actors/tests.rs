@@ -3,7 +3,7 @@ use super::{
     Status,
     chat::{ChatBytes, authored_chat, server_chat},
     replay::undo_hypothetical_turn,
-    setup::{next_requested_seed, option_changes, requested_seed, validate_table_name},
+    setup::{next_requested_seed, option_changes, requested_seed, table_name},
     wire::{game_event, game_event_list},
 };
 use crate::errors::CommandError;
@@ -33,12 +33,12 @@ use tokio::sync::{Notify, Semaphore, mpsc, oneshot};
 use tokio_util::task::TaskTracker;
 
 #[test]
-fn table_names_allow_owner_defaults_but_reject_markup() {
+fn table_names_allow_owner_defaults_but_reject_markup_and_blanks() {
     for name in ["Alice's table", "Ren\u{e9}'s table", "Rene\u{301}'s table"] {
-        assert!(validate_table_name(name).is_ok(), "{name}");
+        assert!(table_name(name).is_ok(), "{name}");
     }
-    for name in ["<script>", "unsafe\nname", "\"attribute\""] {
-        assert!(validate_table_name(name).is_err(), "{name}");
+    for name in ["<script>", "unsafe\nname", "\"attribute\"", " "] {
+        assert!(table_name(name).is_err(), "{name}");
     }
 }
 
