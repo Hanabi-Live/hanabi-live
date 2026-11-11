@@ -293,6 +293,8 @@ export function TableTokens({
   maxClues,
   atMaxClues,
   strikes,
+  strikeSegments,
+  onShowStrike,
 }: {
   readonly clues: number;
   readonly maxClues: number;
@@ -300,6 +302,13 @@ export function TableTokens({
   /** Whether the team has every clue token, so that no one can discard. */
   readonly atMaxClues: boolean;
   readonly strikes: number;
+
+  /**
+   * For each strike box, the segment of the strike that it stands for, or `undefined` when it does
+   * not stand for one that the viewer may see. Clicking a box with a strike shows its turn.
+   */
+  readonly strikeSegments: ReadonlyArray<number | undefined>;
+  readonly onShowStrike: (segment: number) => void;
 }): React.JSX.Element {
   return (
     // Two bubbles side by side. They share their height, so that their labels and values line up.
@@ -333,18 +342,30 @@ export function TableTokens({
         <div
           aria-label={`${strikes} of ${MAX_STRIKES} strikes`}
           className={`${TOKEN_VALUE_CLASS} tw:gap-1.5`}
-          role="img"
+          role="group"
         >
-          {[...eRange(MAX_STRIKES)].map((i) => (
-            <span
-              className={`tw:box-border tw:size-[32px] tw:rounded-lg tw:border-2 ${
-                i < strikes
-                  ? "tw:border-critical tw:bg-critical"
-                  : "tw:border-game-line"
-              }`}
-              key={i}
-            />
-          ))}
+          {[...eRange(MAX_STRIKES)].map((i) => {
+            const segment = strikeSegments[i];
+            const className = `tw:box-border tw:size-[32px] tw:rounded-lg tw:border-2 tw:border-solid tw:p-0 ${
+              i < strikes
+                ? "tw:border-critical tw:bg-critical"
+                : "tw:border-game-line tw:bg-transparent"
+            }`;
+            return segment === undefined ? (
+              <span className={className} key={i} />
+            ) : (
+              <button
+                aria-label={`Show the turn of strike ${i + 1}`}
+                className={`${className} tw:cursor-pointer tw:hover:brightness-125`}
+                key={i}
+                onClick={() => {
+                  onShowStrike(segment);
+                }}
+                title="Show the turn of this strike"
+                type="button"
+              />
+            );
+          })}
         </div>
       </section>
     </div>

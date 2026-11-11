@@ -382,10 +382,29 @@ function getClueMarkers(
 /** Shows the turn on which a discarded card left its hand, in the in-game replay. */
 function showDiscard(order: CardOrder) {
   const segment = globals.state.ongoingGame.deck[order]?.segmentDiscarded;
-  if (segment === undefined) {
-    return;
+  if (segment !== undefined) {
+    showReplayTurn(segment);
+  }
+}
+
+/**
+ * For each strike box, the segment of its strike, as the classic screen's strike boxes have them.
+ * In a replay, the boxes also stand for the strikes that come later, except in a spoiler-free
+ * review. The strikes are hidden in the "Throw It in a Hole" variant.
+ */
+function getStrikeSegments(state: State): ReadonlyArray<number | undefined> {
+  if (globals.variant.throwItInAHole) {
+    return [];
   }
 
+  const { strikes } = replay.isSpoilerFree()
+    ? state.visibleState!
+    : state.ongoingGame;
+  return strikes.map((strike) => strike.segment);
+}
+
+/** Shows a turn in the in-game replay. */
+function showReplayTurn(segment: number) {
   if (globals.state.replay.active) {
     replay.goToSegment(segment, true);
   } else {
@@ -947,7 +966,9 @@ export function GameScreen({
               atMaxClues={isAtMaxClueTokens(visibleState.clueTokens, variant)}
               clues={getUnadjustedClueTokens(visibleState.clueTokens, variant)}
               maxClues={MAX_CLUES}
+              onShowStrike={showReplayTurn}
               strikes={visibleState.strikes.length}
+              strikeSegments={getStrikeSegments(state)}
             />
           </div>
         </div>
