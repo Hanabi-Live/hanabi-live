@@ -350,6 +350,11 @@ macro_rules! wire_string {
 wire_string! {
     /// A username that the server sends. Requests carry plain strings instead, as the `requests`
     /// module explains.
+    ///
+    /// Send a name alone when the client only shows it or compares it, such as a chat author or a
+    /// player's name, or when the name may have no account, such as a player of an imported game
+    /// or a Discord author. A name names one account exactly: names are unique and never change.
+    /// When the client sends the user back or acts on the account, send a `UserRef` instead.
     Username
 }
 

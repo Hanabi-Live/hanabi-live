@@ -331,6 +331,10 @@ pub struct Spectator {
     pub shadowing_player_index: Option<PlayerIndex>,
 }
 
+// Send a `UserRef` when the client sends the user back in a request or acts on the account, such
+// as a table's owner or a spectator who can take the lead. Send the ID with the name, not alone, so
+// that the client does not have to find the name. Otherwise, send a `Username`. This is a plain
+// comment because the types that flatten `UserRef` take its doc comment as their description.
 /// A user, by ID and by name. A successful `/login` and `/api/v1/identity` answer with the account.
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
