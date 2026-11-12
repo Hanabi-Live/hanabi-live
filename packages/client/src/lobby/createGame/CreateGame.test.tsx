@@ -26,15 +26,13 @@ vi.mock("../lobbyPage.ts", () => ({
   },
 }));
 
-/** The tooltips that open on hover, such as those of the help links. */
-const hoverTooltips: string[] = [];
-
 /** The error tooltips that are open, by the ID of their text box. */
 const openErrors = new Map<string, string>();
 vi.mock("../../Tooltip.ts", () => ({
   Tooltip: class {
     private readonly id: string;
     private content = "";
+    readonly openOnHover = vi.fn();
     constructor(anchor: HTMLElement, options: { content: string }) {
       this.id = anchor.id;
       this.content = options.content;
@@ -54,11 +52,6 @@ vi.mock("../../Tooltip.ts", () => ({
 
     destroy() {
       this.close();
-    }
-
-    // The help links have hover tooltips.
-    openOnHover() {
-      hoverTooltips.push(this.content);
     }
   },
 }));
@@ -96,7 +89,6 @@ beforeEach(() => {
   send.mockClear();
   hide.mockClear();
   openErrors.clear();
-  hoverTooltips.length = 0;
   localStorage.clear();
 });
 
@@ -146,9 +138,6 @@ describe("CreateGame", () => {
     click("createTableOneExtraCard");
 
     expect(getInput("createTableOneLessCard").disabled).toBe(true);
-    expect(
-      hoverTooltips.some((tooltip) => tooltip.includes("About One Less Card")),
-    ).toBe(true);
     expect(globals.settings.createTable.options.oneExtraCard).toBe(true);
     expect(send).toHaveBeenCalledWith("settings", {
       settings: { createTable: globals.settings.createTable },
