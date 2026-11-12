@@ -109,7 +109,9 @@ export function ClueLog({
         </p>
       ) : (
         <ol
-          className={`tw:m-0 tw:flex tw:min-h-0 tw:flex-1 tw:list-none tw:flex-col tw:gap-px tw:overflow-y-auto tw:px-2 tw:py-1.5 ${
+          // A thin scrollbar in the screen's colors has no arrow buttons, and the list stops short
+          // of the panel's rounded corner, so that the corner does not cut the scrollbar off.
+          className={`tw:m-0 tw:mr-1 tw:mb-2.5 tw:flex tw:min-h-0 tw:flex-1 tw:list-none tw:flex-col tw:gap-px tw:overflow-y-auto tw:px-2 tw:py-1.5 tw:[scrollbar-color:var(--game-screen-line)_transparent] tw:[scrollbar-width:thin] ${
             scrolledDown
               ? "tw:[mask-image:linear-gradient(to_bottom,transparent_0,#000_28px)]"
               : ""
