@@ -730,8 +730,6 @@ export function GameScreen({
         !dropLayout.current.stacked
         && main !== undefined
         && hands !== undefined
-        && y >= main.top
-        && y <= main.bottom
       ) {
         if (x >= main.left && x < hands.left) {
           return "play";
@@ -1147,252 +1145,262 @@ export function GameScreen({
 
   return (
     <div
-      className="tw:fixed tw:inset-0 tw:flex tw:bg-game-bg tw:[background-image:var(--game-screen-table)] tw:text-game-text"
+      className="tw:fixed tw:inset-0 tw:flex tw:flex-col tw:bg-game-bg tw:[background-image:var(--game-screen-table)] tw:text-game-text"
       ref={rootRef}
       style={{ zoom: screenScale }}
     >
-      <main className="tw:flex tw:min-w-0 tw:flex-1 tw:flex-col" ref={mainRef}>
-        <div className="tw:flex tw:min-h-0 tw:flex-1 tw:justify-center tw:gap-9 tw:px-7 tw:pt-6 tw:pb-5 tw:narrow-1440:gap-6 tw:narrow-1440:px-5 tw:narrow-980:flex-col tw:narrow-980:justify-start tw:narrow-980:gap-4 tw:narrow-980:overflow-y-auto tw:narrow-980:px-3 tw:narrow-980:pt-3">
-          <div
-            className="tw:flex tw:shrink-0 tw:narrow-980:justify-center"
-            ref={setPlayAreaElement}
-          >
-            <PlayArea
-              cardsInDeck={visibleState.cardsRemainingInTheDeck}
-              cardWidth={tableCardWidth}
-              colorblindMode={settings.colorblindMode}
-              ref={playZoneRef}
-              stacks={getStacks(state)}
-              variant={variant}
-              zoneState={playZoneState}
-            />
-          </div>
-
-          <div className="tw:flex tw:min-w-0 tw:max-w-[760px] tw:flex-1 tw:flex-col tw:gap-3.5 tw:narrow-980:order-first tw:narrow-980:max-w-none tw:narrow-980:flex-none">
-            <ReplayBar
-              editingCards={editingCards}
-              onToggleEditCards={() => {
-                setEditingCards(!editingCards);
-              }}
-              state={state}
-            />
-            {pausedBy !== undefined && (
-              <div
-                className="tw:shrink-0 tw:rounded-[14px] tw:bg-game-text tw:px-4 tw:py-2 tw:font-bold tw:text-card-ink"
-                role="status"
-              >
-                {pausedBy} paused the game.
-              </div>
-            )}
-            {showCluePanel && (
-              <CluePanel
-                canClue={canClue}
-                canGive={canGive}
-                clue={clue}
-                colorblindMode={settings.colorblindMode}
-                onChooseClue={setClue}
-                onChooseTarget={setClueTarget}
-                onGive={giveClue}
-                target={clueTarget}
-                targets={clueTargets}
-                variant={variant}
-                waitingText={waitingText}
-              />
-            )}
+      {/* The chat sits above the bar along the bottom, so that the bar's buttons stay in place
+          whether the chat is open or not, with "Lobby" in the bottom-right corner. */}
+      <div className="tw:relative tw:flex tw:min-h-0 tw:flex-1">
+        <main
+          className="tw:flex tw:min-w-0 tw:flex-1 tw:flex-col"
+          ref={mainRef}
+        >
+          <div className="tw:flex tw:min-h-0 tw:flex-1 tw:justify-center tw:gap-9 tw:px-7 tw:pt-6 tw:pb-5 tw:narrow-1440:gap-6 tw:narrow-1440:px-5 tw:narrow-980:flex-col tw:narrow-980:justify-start tw:narrow-980:gap-4 tw:narrow-980:overflow-y-auto tw:narrow-980:px-3 tw:narrow-980:pt-3">
             <div
-              className="tw:relative tw:flex tw:min-h-0 tw:flex-1 tw:flex-col tw:justify-center tw:narrow-980:flex-none"
-              ref={setHandsElement}
+              className="tw:flex tw:shrink-0 tw:narrow-980:justify-center"
+              ref={setPlayAreaElement}
             >
-              <NameColumnSizer
-                onWidthChange={setNameWidth}
-                seats={seats}
-                showClock={
-                  metadata.options.timeControl !== undefined
-                  || settings.showTimerInUntimed
-                }
-              />
-              <Hands
-                canChooseClueTarget={canClue}
-                canDiscard={canDiscard}
-                canMoveCards={canMoveCards}
-                cardWidth={handCardWidth}
-                clueMarkers={
-                  previewing
-                    ? new Map(
-                        touched.map((order) => [
-                          order,
-                          getPreviewMarker(clue, settings.colorblindMode),
-                        ]),
-                      )
-                    : getClueMarkers(shownClue, settings.colorblindMode)
-                }
-                clueTarget={clueTarget}
+              <PlayArea
+                cardsInDeck={visibleState.cardsRemainingInTheDeck}
+                cardWidth={tableCardWidth}
                 colorblindMode={settings.colorblindMode}
-                draggedCard={ghost?.order}
-                empathyToggled={empathyToggled}
-                emptyClueTarget={
-                  !previewing
-                  && shownClue !== undefined
-                  && shownClue.list.length === 0
-                    ? shownClue.target
+                ref={playZoneRef}
+                stacks={getStacks(state)}
+                variant={variant}
+                zoneState={playZoneState}
+              />
+            </div>
+
+            <div className="tw:flex tw:min-w-0 tw:max-w-[760px] tw:flex-1 tw:flex-col tw:gap-3.5 tw:narrow-980:order-first tw:narrow-980:max-w-none tw:narrow-980:flex-none">
+              <ReplayBar
+                editingCards={editingCards}
+                onToggleEditCards={() => {
+                  setEditingCards(!editingCards);
+                }}
+                state={state}
+              />
+              {pausedBy !== undefined && (
+                <div
+                  className="tw:shrink-0 tw:rounded-[14px] tw:bg-game-text tw:px-4 tw:py-2 tw:font-bold tw:text-card-ink"
+                  role="status"
+                >
+                  {pausedBy} paused the game.
+                </div>
+              )}
+              {showCluePanel && (
+                <CluePanel
+                  canClue={canClue}
+                  canGive={canGive}
+                  clue={clue}
+                  colorblindMode={settings.colorblindMode}
+                  onChooseClue={setClue}
+                  onChooseTarget={setClueTarget}
+                  onGive={giveClue}
+                  target={clueTarget}
+                  targets={clueTargets}
+                  variant={variant}
+                  waitingText={waitingText}
+                />
+              )}
+              <div
+                className="tw:relative tw:flex tw:min-h-0 tw:flex-1 tw:flex-col tw:justify-center tw:narrow-980:flex-none"
+                ref={setHandsElement}
+              >
+                <NameColumnSizer
+                  onWidthChange={setNameWidth}
+                  seats={seats}
+                  showClock={
+                    metadata.options.timeControl !== undefined
+                    || settings.showTimerInUntimed
+                  }
+                />
+                <Hands
+                  canChooseClueTarget={canClue}
+                  canDiscard={canDiscard}
+                  canMoveCards={canMoveCards}
+                  cardWidth={handCardWidth}
+                  clueMarkers={
+                    previewing
+                      ? new Map(
+                          touched.map((order) => [
+                            order,
+                            getPreviewMarker(clue, settings.colorblindMode),
+                          ]),
+                        )
+                      : getClueMarkers(shownClue, settings.colorblindMode)
+                  }
+                  clueTarget={clueTarget}
+                  colorblindMode={settings.colorblindMode}
+                  draggedCard={ghost?.order}
+                  empathyToggled={empathyToggled}
+                  emptyClueTarget={
+                    !previewing
+                    && shownClue !== undefined
+                    && shownClue.list.length === 0
+                      ? shownClue.target
+                      : undefined
+                  }
+                  menuCard={menuCard}
+                  nameColumnWidth={nameColumnWidth}
+                  onCardClick={(order) => {
+                    if (justDragged.current) {
+                      justDragged.current = false;
+                      return;
+                    }
+                    setMenuCard((current) =>
+                      current === order ? undefined : order,
+                    );
+                  }}
+                  onCardPointerDown={(event, order) => {
+                    if (canMoveCards && event.button === 0) {
+                      justDragged.current = false;
+                      pendingDrag.current = {
+                        order,
+                        x: event.clientX,
+                        y: event.clientY,
+                      };
+                    }
+                  }}
+                  onDiscard={(order) => {
+                    setMenuCard(undefined);
+                    if (canDiscardNow()) {
+                      sendAction({ type: "discard", order });
+                    }
+                  }}
+                  onEditCard={editingCards ? editCard : undefined}
+                  onHoldEmpathy={setHeldEmpathy}
+                  onHoverCard={setHoveredCard}
+                  onPlay={(order) => {
+                    setMenuCard(undefined);
+                    sendAction({ type: "play", order });
+                  }}
+                  onToggleEmpathy={(playerIndex) => {
+                    setEmpathyToggled((current) => {
+                      const next = new Set(current);
+                      if (next.has(playerIndex)) {
+                        next.delete(playerIndex);
+                      } else {
+                        next.add(playerIndex);
+                      }
+                      return next;
+                    });
+                  }}
+                  onViewAs={canChooseSeat() ? viewAs : undefined}
+                  seats={seats}
+                  shownClue={
+                    previewing || shownClue === undefined
+                      ? undefined
+                      : {
+                          giver: shownClue.giver,
+                          target: shownClue.target,
+                          marker: getClueMarker(
+                            shownClue,
+                            settings.colorblindMode,
+                          ),
+                        }
+                  }
+                  touchedCards={new Set(touched)}
+                  variant={variant}
+                />
+              </div>
+            </div>
+
+            <div className="tw:flex tw:w-[300px] tw:shrink-0 tw:flex-col tw:gap-3 tw:narrow-1440:w-[240px] tw:narrow-980:w-full">
+              <DiscardPile
+                atMaxClues={isAtMaxClueTokens(visibleState.clueTokens, variant)}
+                cardWidth={Math.min(tableCardWidth, TABLE_CARD_WIDTH.MAX)}
+                colorblindMode={settings.colorblindMode}
+                onShowDiscard={showDiscard}
+                ref={discardZoneRef}
+                rows={getDiscardRows(state)}
+                variant={variant}
+                zoneState={discardZoneState}
+              />
+              <ClueLog
+                entries={getClueLogEntries(state)}
+                // A card that left the hands under the mouse, such as one just played, no longer
+                // counts.
+                hoveredCard={
+                  seats.some((seat) =>
+                    seat.cards.some((card) => card.order === hoveredCard),
+                  )
+                    ? hoveredCard
                     : undefined
                 }
-                menuCard={menuCard}
-                nameColumnWidth={nameColumnWidth}
-                onCardClick={(order) => {
-                  if (justDragged.current) {
-                    justDragged.current = false;
-                    return;
-                  }
-                  setMenuCard((current) =>
-                    current === order ? undefined : order,
-                  );
-                }}
-                onCardPointerDown={(event, order) => {
-                  if (canMoveCards && event.button === 0) {
-                    justDragged.current = false;
-                    pendingDrag.current = {
-                      order,
-                      x: event.clientX,
-                      y: event.clientY,
-                    };
-                  }
-                }}
-                onDiscard={(order) => {
-                  setMenuCard(undefined);
-                  if (canDiscardNow()) {
-                    sendAction({ type: "discard", order });
-                  }
-                }}
-                onEditCard={editingCards ? editCard : undefined}
-                onHoldEmpathy={setHeldEmpathy}
-                onHoverCard={setHoveredCard}
-                onPlay={(order) => {
-                  setMenuCard(undefined);
-                  sendAction({ type: "play", order });
-                }}
-                onToggleEmpathy={(playerIndex) => {
-                  setEmpathyToggled((current) => {
-                    const next = new Set(current);
-                    if (next.has(playerIndex)) {
-                      next.delete(playerIndex);
-                    } else {
-                      next.add(playerIndex);
-                    }
-                    return next;
-                  });
-                }}
-                onViewAs={canChooseSeat() ? viewAs : undefined}
-                seats={seats}
-                shownClue={
-                  previewing || shownClue === undefined
-                    ? undefined
-                    : {
-                        giver: shownClue.giver,
-                        target: shownClue.target,
-                        marker: getClueMarker(
-                          shownClue,
-                          settings.colorblindMode,
-                        ),
-                      }
-                }
-                touchedCards={new Set(touched)}
-                variant={variant}
+                onShowClue={showClue}
+                shownSegment={shownClue?.segment}
+              />
+              <TableTokens
+                atMaxClues={isAtMaxClueTokens(visibleState.clueTokens, variant)}
+                clues={getUnadjustedClueTokens(
+                  visibleState.clueTokens,
+                  variant,
+                )}
+                maxClues={MAX_CLUES}
+                onShowStrike={showReplayTurn}
+                strikes={visibleState.strikes.length}
+                strikeSegments={getStrikeSegments(state)}
               />
             </div>
           </div>
+        </main>
 
-          <div className="tw:flex tw:w-[300px] tw:shrink-0 tw:flex-col tw:gap-3 tw:narrow-1440:w-[240px] tw:narrow-980:w-full">
-            <DiscardPile
-              atMaxClues={isAtMaxClueTokens(visibleState.clueTokens, variant)}
-              cardWidth={Math.min(tableCardWidth, TABLE_CARD_WIDTH.MAX)}
-              colorblindMode={settings.colorblindMode}
-              onShowDiscard={showDiscard}
-              ref={discardZoneRef}
-              rows={getDiscardRows(state)}
-              variant={variant}
-              zoneState={discardZoneState}
-            />
-            <ClueLog
-              entries={getClueLogEntries(state)}
-              // A card that left the hands under the mouse, such as one just played, no longer
-              // counts.
-              hoveredCard={
-                seats.some((seat) =>
-                  seat.cards.some((card) => card.order === hoveredCard),
-                )
-                  ? hoveredCard
-                  : undefined
-              }
-              onShowClue={showClue}
-              shownSegment={shownClue?.segment}
-            />
-            <TableTokens
-              atMaxClues={isAtMaxClueTokens(visibleState.clueTokens, variant)}
-              clues={getUnadjustedClueTokens(visibleState.clueTokens, variant)}
-              maxClues={MAX_CLUES}
-              onShowStrike={showReplayTurn}
-              strikes={visibleState.strikes.length}
-              strikeSegments={getStrikeSegments(state)}
-            />
-          </div>
-        </div>
-
-        <StatusStrip
-          canOpenReplay={!inReplay}
-          endGameMenu={
-            state.playing
-            && !state.finished && (
-              <EndGameMenu
-                numPlayers={metadata.options.numPlayers}
-                votes={globals.terminationVotes}
-              />
-            )
-          }
-          finished={state.finished}
-          futureEfficiency={formatFutureEfficiency(
-            visibleState.stats,
-            efficiencyModifier,
+        <ChatPanel
+          open={newUiState.isChatOpen()}
+          overlay={chatOverlay}
+          spectators={state.spectators.map((spectator) => spectator.username)}
+          spectatorsTooltip={getSpectatorsTooltip(
+            state.spectators,
+            state.finished,
           )}
-          maxScore={visibleState.stats.maxScore}
-          minEfficiency={metadata.minEfficiency.toFixed(
-            EFFICIENCY_DECIMAL_PLACES,
-          )}
-          onClassicView={onSwitchToClassic}
-          onLobby={backToLobby}
-          onOpenReplay={() => {
-            replay.enter();
-          }}
-          pace={formatPace(
-            visibleState.stats.pace,
-            visibleState.stats.finalRoundEffectivelyStarted,
-            options.allOrNothing,
-          )}
-          score={visibleState.score}
-          turn={visibleState.turn.turnNum + 1}
-          variantName={globals.variant.name}
-          viewAsMenu={
-            canChooseSeat() && (
-              <ViewAsMenu
-                finished={state.finished}
-                onViewAs={viewAs}
-                playerNames={metadata.playerNames}
-                viewedSeat={getViewedSeat()}
-              />
-            )
-          }
+          unread={globals.lobby.chatUnread}
         />
-      </main>
+      </div>
 
-      <ChatPanel
-        open={newUiState.isChatOpen()}
-        overlay={chatOverlay}
-        spectators={state.spectators.map((spectator) => spectator.username)}
-        spectatorsTooltip={getSpectatorsTooltip(
-          state.spectators,
-          state.finished,
+      <StatusStrip
+        canOpenReplay={!inReplay}
+        endGameMenu={
+          state.playing
+          && !state.finished && (
+            <EndGameMenu
+              numPlayers={metadata.options.numPlayers}
+              votes={globals.terminationVotes}
+            />
+          )
+        }
+        finished={state.finished}
+        futureEfficiency={formatFutureEfficiency(
+          visibleState.stats,
+          efficiencyModifier,
         )}
-        unread={globals.lobby.chatUnread}
+        maxScore={visibleState.stats.maxScore}
+        minEfficiency={metadata.minEfficiency.toFixed(
+          EFFICIENCY_DECIMAL_PLACES,
+        )}
+        onClassicView={onSwitchToClassic}
+        onLobby={backToLobby}
+        onOpenReplay={() => {
+          replay.enter();
+        }}
+        pace={formatPace(
+          visibleState.stats.pace,
+          visibleState.stats.finalRoundEffectivelyStarted,
+          options.allOrNothing,
+        )}
+        score={visibleState.score}
+        turn={visibleState.turn.turnNum + 1}
+        variantName={globals.variant.name}
+        viewAsMenu={
+          canChooseSeat() && (
+            <ViewAsMenu
+              finished={state.finished}
+              onViewAs={viewAs}
+              playerNames={metadata.playerNames}
+              viewedSeat={getViewedSeat()}
+            />
+          )
+        }
       />
 
       {ghost !== undefined && draggedView !== undefined && (

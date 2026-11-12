@@ -160,7 +160,10 @@ export function StatusStrip({
           {variantName}
         </div>
       </div>
-      <div className="tw:ml-auto tw:flex tw:max-w-full tw:shrink-0 tw:flex-wrap tw:gap-2.5">
+      <div className="tw:ml-auto tw:flex tw:max-w-full tw:shrink-0 tw:flex-wrap tw:justify-end tw:gap-2.5">
+        <button className={buttonClass} onClick={onClassicView} type="button">
+          Classic view
+        </button>
         {!finished && (
           <button
             className={buttonClass}
@@ -174,11 +177,9 @@ export function StatusStrip({
         )}
         {viewAsMenu}
         {endGameMenu}
+        {/* "Lobby" sits in the bottom-right corner of the screen, which is easy to find. */}
         <button className={buttonClass} onClick={onLobby} type="button">
           Lobby
-        </button>
-        <button className={buttonClass} onClick={onClassicView} type="button">
-          Classic view
         </button>
       </div>
     </footer>
