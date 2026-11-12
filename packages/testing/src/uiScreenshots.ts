@@ -1150,7 +1150,8 @@ function getStates({
       },
     },
     // The game from the previous state, after the account plays a card and steps back over it in
-    // the in-game replay.
+    // the in-game replay. Its video shows the step back, where the drawn card goes back to the
+    // deck.
     {
       name: "new-ui-replay",
       path: "/",
@@ -1159,7 +1160,10 @@ function getStates({
         // A card that the team can play, so that the game does not reach its last strike.
         await playAccountCard(page, await findAccountCard(true));
         await page.getByRole("button", { name: "Replay" }).click();
+      },
+      record: async (page) => {
         await page.getByRole("button", { name: "Previous turn" }).click();
+        await page.waitForTimeout(PLAY_ANIMATION_MILLISECONDS);
       },
     },
     // The game from the previous state, after Bob clues the account twice, with the account's

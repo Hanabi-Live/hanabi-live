@@ -27,7 +27,7 @@ export const EASE_OUT_BACK = "cubic-bezier(0.34, 1.56, 0.64, 1)";
 const SAMPLES_PER_SECOND = 60;
 
 /** Moving cards go over the panels that they cross. */
-const MOVING_CARD_Z_INDEX = "30";
+export const MOVING_CARD_Z_INDEX = "30";
 
 /** A played or misplayed card goes over the cards that move into its old place in the hand. */
 const PLAYED_CARD_Z_INDEX = "40";

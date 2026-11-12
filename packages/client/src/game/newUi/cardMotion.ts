@@ -11,6 +11,7 @@ import type { Misplay } from "./playMotion.ts";
 import {
   CARD_MOVE_ANIMATION_ID,
   EASE_OUT_BACK,
+  MOVING_CARD_Z_INDEX,
   animateMisplay,
   animatePlay,
   animateReplayMisplay,
@@ -18,7 +19,7 @@ import {
   onEnd,
   raiseMovingCard,
 } from "./playMotion.ts";
-import { measure } from "./screenScale.ts";
+import { getScreenScale, measure } from "./screenScale.ts";
 
 /**
  * Where each card is, by card order, and where the deck is. The place names the hand and slot, the
@@ -126,7 +127,8 @@ export function measureCards(root: HTMLElement): CardPositions {
 
 /**
  * Animates every card that moved, from its old place to its new one. When the game moves forward, a
- * card that was not on the table before was just drawn, so it comes from the deck.
+ * card that was not on the table before was just drawn, so it comes from the deck. When the game
+ * moves back, a card that left a hand was put back in the deck, so it goes to the deck.
  */
 export function animateCardMoves(
   root: HTMLElement,
@@ -189,6 +191,64 @@ export function animateCardMoves(
     );
     onEnd(animation, restore);
   }
+
+  if (!forward && deck !== undefined) {
+    for (const [key, was] of before) {
+      if (
+        key !== DECK_KEY
+        && !after.has(key)
+        && was.place.startsWith(HAND_PLACE_PREFIX)
+        && !was.element.isConnected
+      ) {
+        animateReturnToDeck(was, deck);
+      }
+    }
+  }
+}
+
+/**
+ * Moves a card that left a hand back to the deck. The card is no longer in the page, so its old
+ * element moves over the screen, and is removed when it reaches the deck.
+ */
+function animateReturnToDeck(was: CardPosition, deck: DOMRect) {
+  const { element, rect: from } = was;
+  Object.assign(element.style, {
+    position: "fixed",
+    // The card is outside of the zoomed game screen, so it takes the same zoom.
+    zoom: getScreenScale().toString(),
+    left: `${from.left}px`,
+    top: `${from.top}px`,
+    width: `${from.width}px`,
+    height: `${from.height}px`,
+    margin: "0",
+    pointerEvents: "none",
+    zIndex: MOVING_CARD_Z_INDEX,
+  });
+  document.body.append(element);
+
+  const dx = deck.left - from.left;
+  const dy = deck.top - from.top;
+  const animation = element.animate(
+    [
+      { transformOrigin: "top left", transform: "none" },
+      {
+        transformOrigin: "top left",
+        transform: `translate(${dx}px, ${dy}px) scale(${deck.width / from.width}, ${deck.height / from.height})`,
+      },
+    ],
+    {
+      id: CARD_MOVE_ANIMATION_ID,
+      duration:
+        CARD_ANIMATION_LENGTH_SECONDS
+        * CARD_MOVE_TIME_FRACTION
+        * SECOND_IN_MILLISECONDS,
+      easing: "ease-out",
+      fill: "forwards",
+    },
+  );
+  onEnd(animation, () => {
+    element.remove();
+  });
 }
 
 /** Shows a play or a misplay from a hand, if the card made one. Returns whether it did. */
