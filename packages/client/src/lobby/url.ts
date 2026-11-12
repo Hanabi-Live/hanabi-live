@@ -6,10 +6,16 @@ import {
   tableIdSchema,
 } from "@hanabi-live/data";
 import type { PlayerIndex } from "@hanabi-live/game";
-import { DEFAULT_VARIANT_NAME, isValidPlayerIndex } from "@hanabi-live/game";
+import {
+  DEFAULT_VARIANT_NAME,
+  doesVariantExist,
+  getVariant,
+  isValidPlayerIndex,
+} from "@hanabi-live/game";
 import { parseIntSafe } from "complete-common";
 import { HISTORY_HASH, LOCAL_STORAGE_KEY, PATH } from "../constants.ts";
 import { globals } from "../Globals.ts";
+import * as modals from "../modals.ts";
 import { setBrowserAddressBarPath } from "../utils.ts";
 import { readDeal } from "./deal.ts";
 import { parseGameJson } from "./gameJson.ts";
@@ -73,7 +79,12 @@ function gotoPath(data: ServerCommandData["welcome"]): boolean {
       nameParam === ""
         ? `${data.username}${DEFAULT_TABLE_NAME_SUFFIX}`
         : nameParam;
+    // The URL names its variant, as people write it.
     const variantName = urlParams.get("variantName") ?? DEFAULT_VARIANT_NAME;
+    if (!doesVariantExist(variantName)) {
+      modals.showWarning(`The variant of "${variantName}" does not exist.`);
+      return false;
+    }
     const timeControl =
       urlParams.get("timed") === "true"
         ? {
@@ -106,7 +117,7 @@ function gotoPath(data: ServerCommandData["welcome"]): boolean {
         name,
         maxPlayers: DEFAULT_MAX_PLAYERS,
         options: {
-          variantName,
+          variantId: getVariant(variantName).id,
           timeControl,
           speedrun,
           deckPlays,

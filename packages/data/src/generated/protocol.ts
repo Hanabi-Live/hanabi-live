@@ -1235,7 +1235,7 @@ const createTableSettingsSchema = z
       oneExtraCard: false,
       oneLessCard: false,
       speedrun: false,
-      variantName: "No Variant",
+      variantId: 0,
     }),
     /**
      * The clock that the form offers. The form keeps it while the table is untimed.
@@ -1274,7 +1274,7 @@ export const settingsSchema = z
         oneExtraCard: false,
         oneLessCard: false,
         speedrun: false,
-        variantName: "No Variant",
+        variantId: 0,
       },
       timeControl: { baseSeconds: 120, perTurnSeconds: 20 },
     }),

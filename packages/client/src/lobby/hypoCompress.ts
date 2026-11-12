@@ -3,7 +3,6 @@ import type { EndCondition } from "@hanabi-live/game";
 import {
   DEFAULT_PLAYER_NAMES,
   endConditionSchema,
-  getVariant,
   getVariantById,
   MAX_PLAYERS,
   MIN_PLAYERS,
@@ -186,7 +185,7 @@ export function expand(data: string): string | undefined {
     deck: [...deck],
     actions: [...actions],
     options: {
-      variantName: variant.name,
+      variantId: variant.id,
     },
     characters: [],
     notes: [],
@@ -226,17 +225,11 @@ function gameJsonCompress(
   out += `${actions},`;
 
   // Variant ID
-  const variantName = data.options?.variantName;
-  if (variantName === undefined) {
+  const variantId = data.options?.variantId;
+  if (variantId === undefined) {
     return undefined;
   }
-
-  try {
-    const variant = getVariant(variantName);
-    out += variant.id.toString();
-  } catch {
-    return undefined;
-  }
+  out += variantId.toString();
 
   // Add hyphens for URL posting (hyphens make the text wrap).
   out = out.match(new RegExp(`.{1,${HYPHEN_INTERVAL}}`, "gu"))!.join("-");

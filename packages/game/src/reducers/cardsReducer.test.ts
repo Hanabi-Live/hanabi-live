@@ -2,7 +2,7 @@
 
 import { describe, expect, test } from "bun:test";
 import type { Tuple } from "complete-common";
-import { getVariant } from "../gameData.ts";
+import { getVariantById } from "../gameData.ts";
 import type { CardState } from "../interfaces/CardState.ts";
 import type { GameState } from "../interfaces/GameState.ts";
 import { getDefaultMetadata } from "../metadata.ts";
@@ -29,7 +29,7 @@ const THROW_IT_IN_A_HOLE_METADATA = getDefaultMetadata(
   NUM_PLAYERS,
   "Throw It in a Hole (4 Suits)",
 );
-const VARIANT = getVariant(DEFAULT_METADATA.options.variantName);
+const VARIANT = getVariantById(DEFAULT_METADATA.options.variantId);
 const GAME_STATE = getInitialGameState(DEFAULT_METADATA);
 const THROW_IT_IN_A_HOLE_GAME_STATE = getInitialGameState(
   THROW_IT_IN_A_HOLE_METADATA,

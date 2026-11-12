@@ -221,13 +221,15 @@
                 {% for game in games %}
                 <tr
                   id="history-row-{{ loop.index0 }}"
-                  class="history-row history-row-players-{{ game.options.numPlayers }} history-row-score-{{ game.score }}"
-                  data-variant="{{ game.options.variantName }}"
+                  class="history-row history-row-players-{{ game.playerNames|length }} history-row-score-{{ game.score }}"
+                  data-variant="{{ game.options.variantId|variant_name }}"
                 >
-                  <td><a href="/replay/{{ game.id }}">{{ game.id }}</a></td>
-                  <td class="center">{{ game.options.numPlayers }}</td>
+                  <td>
+                    <a href="/replay/{{ game.gameId }}">{{ game.gameId }}</a>
+                  </td>
+                  <td class="center">{{ game.playerNames|length }}</td>
                   <td class="center">{{ game.score }}</td>
-                  <td>{{ game.options.variantName }}</td>
+                  <td>{{ game.options.variantId|variant_name }}</td>
                   <td>
                     <a
                       href="/history/{% for name in game.playerNames %}{{ name|urlencode }}{% if not loop.last %}/{% endif %}{% endfor %}"
@@ -237,7 +239,7 @@
                   <td>{{ game.finishedAt|history_date }}</td>
                   <td class="center">
                     <a href="/seed/{{ game.seed|urlencode }}"
-                      >{{ game.numGamesOnThisSeed }}</a
+                      >{{ game.numGamesOnSeed }}</a
                     >
                   </td>
                   {% if title == "Tagged Games" %}

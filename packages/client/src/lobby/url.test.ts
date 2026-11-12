@@ -11,7 +11,9 @@ vi.mock("../Globals.ts", () => ({
   globals: { conn: { send: vi.fn() } },
 }));
 vi.mock("../utils.ts", () => ({ setBrowserAddressBarPath: vi.fn() }));
+vi.mock("../modals.ts", () => ({ showWarning: vi.fn() }));
 const { globals } = await import("../Globals.ts");
+const modals = await import("../modals.ts");
 const history = await import("./history.ts");
 const { expand } = await import("./hypoCompress.ts");
 const { leaveTableLink, parseAndGoto } = await import("./url.ts");
@@ -230,6 +232,49 @@ describe("replay URL loading", () => {
 
     expect(vi.mocked(setBrowserAddressBarPath).mock.calls).toStrictEqual(
       leaves ? [["/lobby"]] : [],
+    );
+  });
+});
+
+describe("table creation URL", () => {
+  const locationDescriptor = Object.getOwnPropertyDescriptor(
+    globalThis,
+    "location",
+  );
+
+  afterEach(() => {
+    if (locationDescriptor === undefined) {
+      Reflect.deleteProperty(globalThis, "location");
+    } else {
+      Object.defineProperty(globalThis, "location", locationDescriptor);
+    }
+    vi.clearAllMocks();
+  });
+
+  function visit(variantName: string) {
+    Object.defineProperty(globalThis, "location", {
+      configurable: true,
+      value: new URL(
+        `https://hanab.live/create-table?variantName=${encodeURIComponent(variantName)}`,
+      ),
+    });
+    parseAndGoto(welcome({ username: "Alice" }));
+  }
+
+  test("names the variant by its ID", () => {
+    const send = vi.spyOn(globals.conn!, "send");
+    visit("Rainbow (6 Suits)");
+    const [command, data] = send.mock.calls[0] ?? [];
+    expect(command).toBe("tableCreate");
+    expect(data).toHaveProperty("settings.options.variantId", 3);
+  });
+
+  test("warns about a variant that does not exist", () => {
+    const send = vi.spyOn(globals.conn!, "send");
+    visit("No Such Variant");
+    expect(send).not.toHaveBeenCalled();
+    expect(modals.showWarning).toHaveBeenCalledWith(
+      'The variant of "No Such Variant" does not exist.',
     );
   });
 });

@@ -398,7 +398,7 @@ pub(super) async fn prepare_table(
         };
         let settings = r.settings;
         let name = table_name(&settings.name)?;
-        let mut options = engine_options(&settings.options);
+        let mut options = engine_options(&settings.options)?;
         normalize_options(&mut options)?;
         let mut extra = requested_extra(&settings)?;
         load_replay(store, &mut extra, id, session.user, &mut options).await?;

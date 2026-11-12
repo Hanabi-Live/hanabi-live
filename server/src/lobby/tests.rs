@@ -226,16 +226,6 @@ async fn lobby_relationships_atomic_settings_and_parameterization_postgres() {
         .await
         .is_err()
     );
-    let literal = "x'; DROP TABLE users; --";
-    let create = json!({"options": {"variantName": literal}});
-    set_setting(&db.pool, UserId(a), "createTable", &create)
-        .await
-        .unwrap();
-    assert_eq!(
-        serde_json::to_value(get_settings(&db.pool, UserId(a)).await.unwrap()).unwrap()["createTable"]
-            ["options"]["variantName"],
-        literal
-    );
     let (sound_timer, volume) = (json!(false), json!(25));
     let (one, two) = tokio::join!(
         set_setting(&db.pool, UserId(b), "soundTimer", &sound_timer),
@@ -659,7 +649,7 @@ async fn lobby_directed_linked_seeds_and_histories_postgres() {
     .await;
     let history = self_data(&result, "gameHistory");
     assert_eq!(history["games"][0]["gameId"], ga);
-    assert_eq!(history["games"][0]["options"]["variantName"], "No Variant");
+    assert_eq!(history["games"][0]["options"]["variantId"], 0);
     assert_eq!(history["games"][0]["playerNames"], json!(["Alice"]));
     // A page holds at least one game and at most `MAX_PAGE_SIZE`, from a start that is not
     // negative.
@@ -771,7 +761,7 @@ async fn every_setting_round_trips_and_only_changes_are_stored_postgres() {
             _ if name == "soundMove" => json!("none"),
             _ if name == "createTable" => {
                 let mut changed = default.clone();
-                changed["options"]["variantName"] = json!("Rainbow (6 Suits)");
+                changed["options"]["variantId"] = json!(3);
                 changed["options"]["timeControl"] = json!({"baseSeconds": 60, "perTurnSeconds": 5});
                 changed
             }
@@ -820,10 +810,37 @@ async fn settings_outside_the_wire_contract_are_not_sent_or_saved_postgres() {
         hanabi_protocol::CreateTableSettings::default()
     );
     assert_eq!(settings.volume, 70);
+    // Older servers named the variant of the table that the form starts from.
+    for (name, variant) in [("Rainbow (6 Suits)", Some(3)), ("Removed Variant", None)] {
+        sqlx::query!(
+            "UPDATE users SET settings=$2 WHERE id=$1",
+            id,
+            json!({"createTable":{"options":{"variantName":name,"speedrun":true}}})
+        )
+        .execute(&db.pool)
+        .await
+        .unwrap();
+        let options = get_settings(&db.pool, UserId(id))
+            .await
+            .unwrap()
+            .create_table
+            .options;
+        assert!(options.speedrun);
+        assert_eq!(
+            options.variant_id,
+            variant.map_or(
+                hanabi_protocol::DEFAULT_VARIANT_ID,
+                hanabi_protocol::VariantId
+            )
+        );
+    }
     for (name, value) in [
         ("createTable", json!({"maxPlayers": 7})),
         ("soundMove", json!(2)),
-        ("createTable", json!({"options": {"variantName": ""}})),
+        (
+            "createTable",
+            json!({"options": {"variantId": "No Variant"}}),
+        ),
     ] {
         assert!(
             set_setting(&db.pool, UserId(id), name, &value)

@@ -8,7 +8,7 @@ import type {
 import {
   canCardPossiblyBeFromCluesOnly,
   getCharacterNameForPlayer,
-  getVariant,
+  getVariantById,
   isCardClued,
   isHandLocked,
 } from "@hanabi-live/game";
@@ -68,7 +68,7 @@ export function getSoundType(
     return standardSoundType;
   }
 
-  const variant = getVariant(metadata.options.variantName);
+  const variant = getVariantById(metadata.options.variantId);
 
   // In some variants, failed plays are treated as normal plays.
   const action: GameAction =
@@ -229,7 +229,7 @@ function isOrderChopMove(
   action: ActionPlay,
   metadata: GameMetadata,
 ): boolean {
-  const variant = getVariant(metadata.options.variantName);
+  const variant = getVariantById(metadata.options.variantId);
 
   // Do not bother trying to see if this is an Order Chop Move in certain variants, as the logic
   // could be extremely complicated.

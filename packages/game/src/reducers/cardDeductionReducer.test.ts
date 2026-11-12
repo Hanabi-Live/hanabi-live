@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import { getVariant } from "../gameData.ts";
+import { getVariantById } from "../gameData.ts";
 import type { CardState } from "../interfaces/CardState.ts";
 import { getDefaultMetadata } from "../metadata.ts";
 import type { CardOrder } from "../types/CardOrder.ts";
@@ -62,7 +62,7 @@ describe("filterCardPossibilities", () => {
 describe("getDeckPossibilities", () => {
   test("rules out identities whose copies are all seen or deduced", () => {
     const metadata = getDefaultMetadata(2);
-    const variant = getVariant(metadata.options.variantName);
+    const variant = getVariantById(metadata.options.variantId);
     const red = 0 as SuitIndex;
     function card(order: number): CardState {
       return getInitialCardState(order as CardOrder, variant, 2);

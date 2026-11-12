@@ -2,7 +2,12 @@
 // starts.
 
 import type { PlayerIndex } from "@hanabi-live/game";
-import { getVariant, MAX_PLAYERS, MIN_PLAYERS } from "@hanabi-live/game";
+import {
+  getVariant,
+  getVariantById,
+  MAX_PLAYERS,
+  MIN_PLAYERS,
+} from "@hanabi-live/game";
 import { iRange } from "complete-common";
 import { globals } from "../../Globals.ts";
 import { H_GROUP_LEVEL_URL_PREFIX } from "../../constants.ts";
@@ -69,7 +74,7 @@ export function Pregame(): React.JSX.Element | undefined {
           </strong>
           <br />
           <span className="tw:block" id="lobby-pregame-variant">
-            {game.settings.options.variantName}
+            {getVariantById(game.settings.options.variantId).name}
           </span>
         </h4>
         <h4 className="tw:pb-2">
@@ -204,7 +209,7 @@ function PlayerBox({
         value={
           <BestScoresIcon
             bestScores={variantStats.bestScores}
-            variantName={game.settings.options.variantName}
+            variantName={getVariantById(game.settings.options.variantId).name}
           />
         }
       />

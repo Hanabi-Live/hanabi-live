@@ -31,7 +31,7 @@ pub fn parse(input: &ReplayGame) -> CommandResult<Imported> {
             && seed.bytes().all(|b| b.is_ascii_alphanumeric() || b == b'-'),
         "Invalid seed"
     );
-    let mut options = crate::model::engine_options(&input.options);
+    let mut options = crate::model::engine_options(&input.options)?;
     let variant = hanabi_engine::get_variant(&options.variant_name)?;
     let mut players = input.player_names.clone();
     if players.is_empty() {
@@ -264,7 +264,7 @@ mod tests {
         let suffix = "a".repeat(hanabi_protocol::MAX_SEED_LENGTH);
         let seed = format!("p{}v{}s{suffix}", hanabi_protocol::MAX_PLAYERS, variant.id);
         let imported =
-            import(&json!({"seed": seed, "options": {"variantName": variant.name}})).unwrap();
+            import(&json!({"seed": seed, "options": {"variantId": variant.id}})).unwrap();
         assert_eq!(imported.custom_seed.as_deref(), Some(seed.as_str()));
     }
 
@@ -311,7 +311,7 @@ mod tests {
             ("characters", json!([5])),
             ("notes", json!([[42], []])),
             ("seed", json!(42)),
-            ("options", json!({"variantName":42})),
+            ("options", json!({"variantId":"6 Suits"})),
         ] {
             let mut input = json!({"seed":"p2v0s1"});
             input[field] = value;

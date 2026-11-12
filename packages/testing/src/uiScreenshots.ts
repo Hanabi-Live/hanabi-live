@@ -1244,7 +1244,7 @@ async function seed(address: string): Promise<Seed> {
       options: {
         speedrun: true,
         deckPlays: true,
-        variantName: LONG_VARIANT_NAME,
+        variantId: getVariant(LONG_VARIANT_NAME).id,
       },
     },
   });
@@ -1493,7 +1493,7 @@ async function seed(address: string): Promise<Seed> {
           // The account in the browser only watches, so it sees every card.
           playerNames: ["Bob", PRISM_LEADER_NAME],
           seed: SEED,
-          options: { variantName: PRISM_VARIANT_NAME },
+          options: { variantId: getVariant(PRISM_VARIANT_NAME).id },
         },
       },
       visibility: { type: "shared", joinExisting: false, spoilerFree: false },

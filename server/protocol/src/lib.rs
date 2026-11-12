@@ -81,6 +81,8 @@ pub const MAX_SEAT: usize = MAX_PLAYERS - 1;
 pub const DEFAULT_MAX_PLAYERS: u8 = 5;
 /// The variant of a game or table that does not choose one.
 pub const DEFAULT_VARIANT_NAME: &str = "No Variant";
+/// The ID of `DEFAULT_VARIANT_NAME` in `variants.json`.
+pub const DEFAULT_VARIANT_ID: VariantId = VariantId(0);
 /// What follows the creator's name to name a table whose creator did not choose a name.
 pub const DEFAULT_TABLE_NAME_SUFFIX: &str = "'s table";
 /// The most suits a variant can have.

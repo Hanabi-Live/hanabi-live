@@ -275,8 +275,7 @@ pub struct SpectatedTable {
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize, JsonSchema)]
 #[serde(default, rename_all = "camelCase", deny_unknown_fields)]
 pub struct GameOptions {
-    #[schemars(length(min = 1))]
-    pub variant_name: String,
+    pub variant_id: VariantId,
     /// The clock of a timed game. Absent when the game is untimed.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub time_control: Option<TimeControl>,
@@ -293,7 +292,7 @@ pub struct GameOptions {
 impl Default for GameOptions {
     fn default() -> Self {
         Self {
-            variant_name: DEFAULT_VARIANT_NAME.into(),
+            variant_id: DEFAULT_VARIANT_ID,
             time_control: None,
             speedrun: false,
             deck_plays: false,

@@ -73,7 +73,7 @@ pub(super) async fn export(
         }
     }
     let options = hanabi_protocol::GameOptions {
-        variant_name: variant.name.clone(),
+        variant_id: hanabi_protocol::VariantId(variant.id),
         time_control: row.time_control(),
         speedrun: row.speedrun,
         deck_plays: row.deck_plays,

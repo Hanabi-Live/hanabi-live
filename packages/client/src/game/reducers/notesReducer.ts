@@ -11,12 +11,12 @@ import {
   DISCARD_PERMISSION_NOTES,
   EXCLAMATION_MARK_NOTES,
   FINESSED_NOTES,
+  getVariantById,
   KNOWN_TRASH_NOTES,
   NEEDS_FIX_NOTES,
   QUESTION_MARK_NOTES,
   SPOOK_NOTES,
   UNCLUED_NOTES,
-  getVariant,
 } from "@hanabi-live/game";
 import { assertDefined } from "complete-common";
 import equal from "fast-deep-equal";
@@ -36,7 +36,7 @@ function notesReducerFunction(
   playing: boolean,
   finished: boolean,
 ) {
-  const variant = getVariant(metadata.options.variantName);
+  const variant = getVariantById(metadata.options.variantId);
   switch (action.type) {
     case "setEfficiencyModifier": {
       notes.efficiencyModifier = action.efficiencyModifier;

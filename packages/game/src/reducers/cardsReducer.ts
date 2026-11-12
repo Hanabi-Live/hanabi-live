@@ -7,7 +7,7 @@ import {
   newArray,
   tupleKeys,
 } from "complete-common";
-import { getVariant } from "../gameData.ts";
+import { getVariantById } from "../gameData.ts";
 import { MAX_PLAYERS } from "../generated/protocol.ts";
 import type { CardState } from "../interfaces/CardState.ts";
 import type { GameMetadata } from "../interfaces/GameMetadata.ts";
@@ -33,7 +33,7 @@ export function cardsReducer(
   game: GameState,
   metadata: GameMetadata,
 ): readonly CardState[] {
-  const variant = getVariant(metadata.options.variantName);
+  const variant = getVariantById(metadata.options.variantId);
   const newDeck = [...deck];
   const hands = arrayCopyTwoDimensional(
     game.hands as unknown as number[][],

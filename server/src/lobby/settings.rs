@@ -41,9 +41,10 @@ pub async fn get_settings(pool: &PgPool, id: UserId) -> Result<Settings> {
 /// and values that are no longer valid (such as an empty variant name) fall back to their defaults
 /// instead of reaching clients that would reject them.
 fn from_stored(stored: Value) -> Settings {
-    let Value::Object(stored) = stored else {
+    let Value::Object(mut stored) = stored else {
         return Settings::default();
     };
+    variant_id_from_name(&mut stored);
     let valid = stored
         .into_iter()
         .filter(|(name, value)| {
@@ -51,6 +52,23 @@ fn from_stored(stored: Value) -> Settings {
         })
         .collect();
     serde_json::from_value(Value::Object(valid)).unwrap_or_default()
+}
+
+/// Settings that servers stored before the wire named variants by ID give the variant of
+/// `createTable` by its name. This replaces the name with its ID, or drops a name that the catalog
+/// no longer has, which then takes its default.
+fn variant_id_from_name(stored: &mut serde_json::Map<String, Value>) {
+    if let Some(options) = stored
+        .get_mut("createTable")
+        .and_then(|table| table.get_mut("options"))
+        .and_then(Value::as_object_mut)
+        && let Some(name) = options.remove("variantName")
+        && let Some(variant) = name
+            .as_str()
+            .and_then(|name| hanabi_engine::get_variant(name).ok())
+    {
+        options.insert("variantId".into(), variant.id.into());
+    }
 }
 
 /// Stores a change to a user's settings in one statement. A setting changed to its default, and an

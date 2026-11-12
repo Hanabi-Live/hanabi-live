@@ -1193,7 +1193,7 @@ export function GameScreen({
           )}
           score={visibleState.score}
           turn={visibleState.turn.turnNum + 1}
-          variantName={options.variantName}
+          variantName={globals.variant.name}
           viewAsMenu={
             canChooseSeat() && (
               <ViewAsMenu

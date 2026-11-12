@@ -2,7 +2,7 @@
 
 import { newArray } from "complete-common";
 import { EVEN_CARD_RANKS, ODD_CARD_RANKS } from "../constants.ts";
-import { getVariant } from "../gameData.ts";
+import { getVariantById } from "../gameData.ts";
 import { MAX_PLAYERS, ODD_RANK_CLUE } from "../generated/protocol.ts";
 import type { CardState } from "../interfaces/CardState.ts";
 import type { GameMetadata } from "../interfaces/GameMetadata.ts";
@@ -21,7 +21,7 @@ export function cardPossibilitiesReducer(
     return state;
   }
 
-  const variant = getVariant(metadata.options.variantName);
+  const variant = getVariantById(metadata.options.variantId);
 
   // Apply the clue and check what is eliminated.
   const possibleCardsFromClues = state.possibleCardsFromClues.filter(

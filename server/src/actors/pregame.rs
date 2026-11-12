@@ -118,7 +118,7 @@ impl TableActor {
     ) -> CommandResult<()> {
         ensure_or_reject!(self.attending(&session), "You must attend this table");
         self.seat(&session)?;
-        let mut options = engine_options(&request.settings.options);
+        let mut options = engine_options(&request.settings.options)?;
         normalize_options(&mut options)?;
         let name = table_name(&request.settings.name)?;
         let mut max_players = usize::from(request.settings.max_players);

@@ -5,6 +5,7 @@ import {
   SERVER_COMMAND_SCHEMAS,
   VERSION,
 } from "@hanabi-live/data";
+import { DEFAULT_VARIANT_ID, getVariant } from "@hanabi-live/game";
 import { expect, test } from "bun:test";
 import { assertDefined } from "complete-common";
 import { once } from "node:events";
@@ -158,7 +159,7 @@ databaseDescribe("compiled application entry point (rust)", () => {
             name: "Compiled smoke table",
             maxPlayers: DEFAULT_MAX_PLAYERS,
             options: {
-              variantName: "No Variant",
+              variantId: DEFAULT_VARIANT_ID,
               timeControl: restart
                 ? { baseSeconds: 600, perTurnSeconds: 2 }
                 : undefined,
@@ -567,7 +568,7 @@ databaseDescribe("compiled application entry point (rust)", () => {
           name: "Six-player variant parity",
           maxPlayers: 6,
           options: {
-            variantName: "Rainbow (6 Suits)",
+            variantId: getVariant("Rainbow (6 Suits)").id,
             detrimentalCharacters: true,
             oneLessCard: true,
             emptyClues: true,
@@ -615,7 +616,7 @@ databaseDescribe("compiled application entry point (rust)", () => {
       for (const game of games) {
         expect(game.init.playerNames).toHaveLength(6);
         expect(game.init.options).toMatchObject({
-          variantName: "Rainbow (6 Suits)",
+          variantId: getVariant("Rainbow (6 Suits)").id,
           detrimentalCharacters: true,
           oneLessCard: true,
           emptyClues: true,
@@ -675,7 +676,9 @@ databaseDescribe("compiled application entry point (rust)", () => {
       expect(exported.status).toBe(200);
       const replayJson = replayGameSchema.parse(await exported.json());
       expect(replayJson.playerNames).toHaveLength(6);
-      expect(replayJson.options?.variantName).toBe("Rainbow (6 Suits)");
+      expect(replayJson.options?.variantId).toBe(
+        getVariant("Rainbow (6 Suits)").id,
+      );
       for (const peer of peers) {
         peer.send("tableUnattend", { tableId });
       }
@@ -732,7 +735,7 @@ databaseDescribe("compiled application entry point (rust)", () => {
             settings: {
               name: "Recover this pregame",
               maxPlayers: 3,
-              options: { variantName: "Rainbow (6 Suits)" },
+              options: { variantId: getVariant("Rainbow (6 Suits)").id },
             },
           });
           const pending = await owner.receive(
@@ -758,7 +761,7 @@ databaseDescribe("compiled application entry point (rust)", () => {
             settings: {
               name: "Recover this pregame",
               maxPlayers: 3,
-              options: { variantName: "Rainbow (6 Suits)" },
+              options: { variantId: getVariant("Rainbow (6 Suits)").id },
             },
           });
           const returningObserver = socketClient(address, observer.cookie);

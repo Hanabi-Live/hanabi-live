@@ -1,4 +1,4 @@
-import { getVariant } from "../gameData.ts";
+import { getVariantById } from "../gameData.ts";
 import { MAX_STRIKES } from "../generated/protocol.ts";
 import type { CardState } from "../interfaces/CardState.ts";
 import type { GameMetadata } from "../interfaces/GameMetadata.ts";
@@ -23,11 +23,11 @@ export function isGameOver(
       gameState.playStacks,
       gameState.playStackDirections,
       gameState.playStackStarts,
-      getVariant(metadata.options.variantName),
+      getVariantById(metadata.options.variantId),
     ),
 ): boolean {
   const { options } = metadata;
-  const variant = getVariant(options.variantName);
+  const variant = getVariantById(options.variantId);
   const { currentPlayerIndex, turnNum, endTurnNum, playOrderInverted } =
     gameState.turn;
   if (currentPlayerIndex === undefined) {

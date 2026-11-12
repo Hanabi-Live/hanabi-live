@@ -1,6 +1,10 @@
 // The lobby area that shows all of the current tables.
 
-import { isValidPlayerIndex, MAX_PLAYERS } from "@hanabi-live/game";
+import {
+  getVariantById,
+  isValidPlayerIndex,
+  MAX_PLAYERS,
+} from "@hanabi-live/game";
 import { Fragment, useLayoutEffect, useRef } from "react";
 import { PATH } from "../../constants.ts";
 import { useAppSelector } from "../../store.ts";
@@ -166,7 +170,7 @@ function TableRowView({
           : table.playerNames.length}
       </td>
       <td className={COLUMNS.variant.className}>
-        {table.settings.options.variantName}
+        {getVariantById(table.settings.options.variantId).name}
       </td>
       {/* The icons stay on one line when the table is narrow. */}
       <td className={`tw:whitespace-nowrap ${COLUMNS.options.className}`}>

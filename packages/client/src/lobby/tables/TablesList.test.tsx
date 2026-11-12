@@ -30,7 +30,7 @@ const ROW_HEIGHT = 20;
 function table(id: number, name: string, fields: Partial<Table> = {}): Table {
   return {
     tableId: tableIdSchema.parse(id),
-    settings: { name, maxPlayers: 5, options: { variantName: "No Variant" } },
+    settings: { name, maxPlayers: 5, options: { variantId: 0 } },
     phase: "pregame",
     passwordProtected: false,
     numPlayers: 1,

@@ -2,7 +2,7 @@ import type { Tuple } from "complete-common";
 import { newArray, sumArray } from "complete-common";
 import type { CardStatus } from "../../enums/CardStatus.ts";
 import type { StackDirection } from "../../enums/StackDirection.ts";
-import { getVariant } from "../../gameData.ts";
+import { getVariantById } from "../../gameData.ts";
 import { MAX_CLUES } from "../../generated/protocol.ts";
 import type { GameMetadata } from "../../interfaces/GameMetadata.ts";
 import type { GameState } from "../../interfaces/GameState.ts";
@@ -35,7 +35,7 @@ import { getInitialTurnState } from "./initialTurnState.ts";
 export function getInitialGameState(metadata: GameMetadata): GameState {
   // Calculate some things before we get the game state properties.
   const { options } = metadata;
-  const variant = getVariant(options.variantName);
+  const variant = getVariantById(options.variantId);
   const playStacks = newArray<readonly CardOrder[]>(
     variant.suits.length,
     [],

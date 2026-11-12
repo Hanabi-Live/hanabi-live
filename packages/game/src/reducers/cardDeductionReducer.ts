@@ -1,5 +1,5 @@
 import { arrayCopyTwoDimensional, tupleKeys } from "complete-common";
-import { getVariant } from "../gameData.ts";
+import { getVariantById } from "../gameData.ts";
 import type { CardIdentity } from "../interfaces/CardIdentity.ts";
 import type { CardState } from "../interfaces/CardState.ts";
 import type { GameMetadata } from "../interfaces/GameMetadata.ts";
@@ -46,7 +46,7 @@ function makeDeductions(
   metadata: GameMetadata,
 ): readonly CardState[] {
   const newDeck: CardState[] = [...deck];
-  const variant = getVariant(metadata.options.variantName);
+  const variant = getVariantById(metadata.options.variantId);
   const cardCountMap = getCardCountMap(variant);
 
   // We need to calculate our own unknown cards first because those possibilities will be needed for
@@ -91,7 +91,7 @@ export function recalculateDeductions(
   identities: ReadonlyArray<CardIdentity | undefined>,
   metadata: GameMetadata,
 ): readonly CardState[] {
-  const variant = getVariant(metadata.options.variantName);
+  const variant = getVariantById(metadata.options.variantId);
   const cardCountMap = getCardCountMap(variant);
   const { ourPlayerIndex } = metadata;
 
@@ -204,7 +204,7 @@ export function getDeckPossibilities(
   deck: readonly CardState[],
   metadata: GameMetadata,
 ): readonly SuitRankTuple[] {
-  const variant = getVariant(metadata.options.variantName);
+  const variant = getVariantById(metadata.options.variantId);
   const cardCountMap = getCardCountMap(variant);
   const allIdentities = variant.suits.flatMap((_suit, suitIndex) =>
     variant.ranks
@@ -496,7 +496,7 @@ function generateDeckPossibilities(
    * applies to more than just cards that have one possibility (such as red 5 in the example).
    */
   deckPossibilities.sort((a, b) => a.length - b.length);
-  const variant = getVariant(metadata.options.variantName);
+  const variant = getVariantById(metadata.options.variantId);
   const cardCountMap = getCardCountMap(variant);
 
   return deckPossibilities.filter((a) => isPossibleCard(a, cardCountMap));

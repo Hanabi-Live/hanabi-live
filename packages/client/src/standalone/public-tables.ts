@@ -9,7 +9,7 @@ import {
   scoreFrequencySchema,
   variantNamesSchema,
 } from "@hanabi-live/data";
-import { MAX_PLAYERS, MIN_PLAYERS } from "@hanabi-live/game";
+import { getVariantById, MAX_PLAYERS, MIN_PLAYERS } from "@hanabi-live/game";
 import { iRange } from "complete-common";
 import * as z from "zod";
 import { hoverTooltip } from "../Tooltip.ts";
@@ -505,7 +505,7 @@ function gameRows(
       link(`${PATH.REPLAY}/${game.gameId}`, game.gameId),
       String(game.playerNames.length),
       String(game.score),
-      game.options.variantName,
+      getVariantById(game.options.variantId).name,
       link(
         `${PATH.HISTORY}/${names.map(encodeURIComponent).join("/")}`,
         names.join(", "),

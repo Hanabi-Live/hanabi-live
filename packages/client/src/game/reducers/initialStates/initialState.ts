@@ -2,7 +2,7 @@ import type { GameMetadata } from "@hanabi-live/game";
 import {
   getInitialGameState,
   getTotalCardsInDeck,
-  getVariant,
+  getVariantById,
 } from "@hanabi-live/game";
 import { newArray } from "complete-common";
 import type { State } from "../../types/State.ts";
@@ -11,7 +11,7 @@ export function initialState(metadata: GameMetadata): State {
   const gameState = getInitialGameState(metadata);
 
   const { options } = metadata;
-  const variant = getVariant(options.variantName);
+  const variant = getVariantById(options.variantId);
   const totalCardsInDeck = getTotalCardsInDeck(variant);
   // Notes are indexed by card order. The stack bases use the orders after the deck's final card.
   const numNoteOrders = totalCardsInDeck + variant.suits.length;

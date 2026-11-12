@@ -1,10 +1,10 @@
 import { MAX_PAGE_SIZE, VERSION } from "@hanabi-live/data";
-import { VARIANT_NAMES } from "@hanabi-live/game";
+import { getVariant, VARIANT_NAMES } from "@hanabi-live/game";
 import { parseIntSafe } from "complete-common";
 import { globals } from "./Globals.ts";
 import {
-  SelfChatMessageType,
   roomTableId,
+  SelfChatMessageType,
   sendSelfPmFromServer,
 } from "./chat.ts";
 import * as createGame from "./lobby/createGame.ts";
@@ -324,7 +324,10 @@ function setVariant(room: string, args: readonly string[]) {
     tableId: globals.tableId,
     settings: {
       ...game.settings,
-      options: { ...game.settings.options, variantName },
+      options: {
+        ...game.settings.options,
+        variantId: getVariant(variantName).id,
+      },
     },
   });
 

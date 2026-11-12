@@ -1,7 +1,7 @@
 // Functions related to deck information: total cards, drawing cards
 
 import { sumArray } from "complete-common";
-import { getVariant } from "../gameData.ts";
+import { getVariantById } from "../gameData.ts";
 import { START_CARD_RANK } from "../generated/protocol.ts";
 import type { CardState } from "../interfaces/CardState.ts";
 import type { GameMetadata } from "../interfaces/GameMetadata.ts";
@@ -115,7 +115,7 @@ export function isInitialDealFinished(
   currentDeckSize: number,
   metadata: GameMetadata,
 ): boolean {
-  const variant = getVariant(metadata.options.variantName);
+  const variant = getVariantById(metadata.options.variantId);
   const totalCardsInDeck = getTotalCardsInDeck(variant);
   const numCardsPerHand = getCardsPerHand(metadata.options);
   return (

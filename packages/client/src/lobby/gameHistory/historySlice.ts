@@ -37,7 +37,7 @@ interface HistoryState {
         readonly games: readonly GameHistoryEntry[];
 
         /** The seed's variant, or undefined until the server sends a game. */
-        readonly variantName: string | undefined;
+        readonly variantId: number | undefined;
 
         /** The number of games on the seed, or undefined until the server counts them. */
         readonly total: number | undefined;
@@ -80,7 +80,7 @@ const historySlice = createSlice({
       state.otherScores = {
         seed: action.payload,
         games: [],
-        variantName: undefined,
+        variantId: undefined,
         total: undefined,
         loading: true,
       };
@@ -104,7 +104,7 @@ const historySlice = createSlice({
           // A page replaces the games from its offset on, so a repeated reply does not add them
           // twice.
           games: [...shown.games.slice(0, offset), ...games],
-          variantName: games[0]?.options.variantName ?? shown.variantName,
+          variantId: games[0]?.options.variantId ?? shown.variantId,
           total,
           loading: false,
         },

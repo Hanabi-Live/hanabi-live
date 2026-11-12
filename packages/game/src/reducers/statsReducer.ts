@@ -6,7 +6,7 @@
 import { sumArray } from "complete-common";
 import type { Draft } from "immer";
 import { produce } from "immer";
-import { getVariant } from "../gameData.ts";
+import { getVariantById } from "../gameData.ts";
 import type { CardNote } from "../interfaces/CardNote.ts";
 import type { GameMetadata } from "../interfaces/GameMetadata.ts";
 import type { GameState } from "../interfaces/GameState.ts";
@@ -65,7 +65,7 @@ function statsReducerFunction(
   metadata: GameMetadata,
   ourNotes: readonly CardNote[] | undefined,
 ) {
-  const variant = getVariant(metadata.options.variantName);
+  const variant = getVariantById(metadata.options.variantId);
 
   switch (action.type) {
     case "clue": {

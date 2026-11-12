@@ -2,7 +2,7 @@
 
 import type { Draft } from "immer";
 import { castDraft, produce } from "immer";
-import { getVariant } from "./gameData.ts";
+import { getVariantById } from "./gameData.ts";
 import type { CardIdentity } from "./interfaces/CardIdentity.ts";
 import type { GameMetadata } from "./interfaces/GameMetadata.ts";
 import type { GameState } from "./interfaces/GameState.ts";
@@ -273,7 +273,7 @@ function isHypotheticalOver(
   gameState: GameState,
   metadata: GameMetadata,
 ): boolean {
-  const variant = getVariant(metadata.options.variantName);
+  const variant = getVariantById(metadata.options.variantId);
   const stackBaseOrder = getTotalCardsInDeck(variant);
   const isStackBaseMorphed = variant.suits.some(
     (_suit, suitIndex) =>

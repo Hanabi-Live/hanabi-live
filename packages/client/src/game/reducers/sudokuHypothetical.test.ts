@@ -6,7 +6,7 @@ import type {
   PlanHypotheticalActionContext,
 } from "@hanabi-live/game";
 import {
-  getVariant,
+  getVariantById,
   hypotheticalStateReducer,
   initializeHypotheticalState,
   planHypotheticalAction,
@@ -19,7 +19,7 @@ import { initialState } from "./initialStates/initialState.ts";
 
 const replay = loadGameJson(sudokuGame);
 const { metadata } = replay;
-const variant = getVariant(metadata.options.variantName);
+const variant = getVariantById(metadata.options.variantId);
 const notes = initialState(metadata).notes.ourNotes;
 const cardIdentities = sudokuGame.deck as unknown as readonly CardIdentity[];
 
@@ -56,7 +56,7 @@ describe("Sudoku hypothetical from public game 1663033 (issue #3040)", () => {
   test("reconstructs the hand at the reported replay segment", () => {
     const gameState = replay.replay.states[60];
     assertDefined(gameState, "Missing replay segment: 60");
-    expect(metadata.options.variantName).toBe("Sudoku (5 Suits)");
+    expect(variant.name).toBe("Sudoku (5 Suits)");
     expect(gameState.turn.currentPlayerIndex).toBe(0);
     expect(gameState.hands[0]).toEqual<unknown>([30, 38, 42, 44, 47]);
   });

@@ -21,10 +21,11 @@ export function getDefaultMetadata(
   numPlayers: NumPlayers,
   variantName: string = DEFAULT_VARIANT_NAME,
 ): GameMetadata {
+  const variant = getVariant(variantName);
   const options = {
     ...defaultOptions,
     numPlayers,
-    variantName,
+    variantId: variant.id,
   };
   const playerNames = DEFAULT_PLAYER_NAMES.slice(0, numPlayers) as Tuple<
     string,
@@ -38,7 +39,6 @@ export function getDefaultMetadata(
     number | undefined,
     NumPlayers
   >;
-  const variant = getVariant(variantName);
   const endGameLength = getEndGameLength(options, characterAssignments);
   const cardsPerHand = getCardsPerHand(options);
   const minEfficiency = getMinEfficiency(

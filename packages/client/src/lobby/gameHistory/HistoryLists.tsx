@@ -2,7 +2,7 @@
 
 import type { GameHistoryEntry } from "@hanabi-live/data";
 import type { GameOptions } from "@hanabi-live/game";
-import { getVariant, secondsToClockString } from "@hanabi-live/game";
+import { getVariantById, secondsToClockString } from "@hanabi-live/game";
 import { Fragment } from "react";
 import { PATH } from "../../constants.ts";
 import { OptionIcons } from "../../enums/OptionIcons.ts";
@@ -126,9 +126,9 @@ function HistoryRow({
       <td>#{game.gameId}</td>
       <td>{game.playerNames.length}</td>
       <td>
-        {game.score}/{getVariant(game.options.variantName).maxScore}
+        {game.score}/{getVariantById(game.options.variantId).maxScore}
       </td>
-      <td>{game.options.variantName}</td>
+      <td>{getVariantById(game.options.variantId).name}</td>
       <td>
         <HistoryOptions options={game.options} />
       </td>
@@ -166,9 +166,9 @@ function HistoryRow({
 export function OtherScoresList(): React.JSX.Element {
   const shown = useAppSelector((state) => state.history.otherScores);
   const username = useAppSelector((state) => state.session.username);
-  const variantName = shown?.variantName;
+  const variantId = shown?.variantId;
   const maxScore =
-    variantName === undefined ? 0 : getVariant(variantName).maxScore;
+    variantId === undefined ? 0 : getVariantById(variantId).maxScore;
 
   return (
     <div className="tw:h-full tw:overflow-y-auto">

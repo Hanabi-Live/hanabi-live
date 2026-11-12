@@ -458,7 +458,7 @@
         "createTable": {
           "maxPlayers": 5,
           "options": {
-            "variantName": "No Variant",
+            "variantId": 0,
             "speedrun": false,
             "deckPlays": false,
             "emptyClues": false,
@@ -529,7 +529,7 @@
         "createTable": {
           "maxPlayers": 5,
           "options": {
-            "variantName": "No Variant",
+            "variantId": 0,
             "speedrun": false,
             "deckPlays": true,
             "emptyClues": false,
@@ -587,7 +587,7 @@
         "name": "Alice's table",
         "maxPlayers": 5,
         "options": {
-          "variantName": "No Variant",
+          "variantId": 0,
           "speedrun": false,
           "deckPlays": false,
           "emptyClues": false,
@@ -636,7 +636,7 @@
           "seed": "p2v0s1",
           "playerNames": ["Alice", "Bob"],
           "options": {
-            "variantName": "6 Suits"
+            "variantId": 1
           }
         }
       },
@@ -651,7 +651,7 @@
           "seed": "p2v0s1",
           "playerNames": ["Alice", "Bob"],
           "options": {
-            "variantName": "6 Suits",
+            "variantId": 1,
             "speedrun": false,
             "deckPlays": false,
             "emptyClues": false,
@@ -878,7 +878,7 @@
         "name": "Alice's game",
         "maxPlayers": 5,
         "options": {
-          "variantName": "No Variant",
+          "variantId": 0,
           "speedrun": false,
           "deckPlays": false,
           "emptyClues": false,
@@ -915,7 +915,7 @@
         {
           "gameId": 12,
           "options": {
-            "variantName": "No Variant",
+            "variantId": 0,
             "speedrun": false,
             "deckPlays": false,
             "emptyClues": false,
@@ -949,7 +949,7 @@
         {
           "gameId": 12,
           "options": {
-            "variantName": "No Variant",
+            "variantId": 0,
             "speedrun": false,
             "deckPlays": false,
             "emptyClues": false,
@@ -983,7 +983,7 @@
         {
           "gameId": 12,
           "options": {
-            "variantName": "No Variant",
+            "variantId": 0,
             "speedrun": false,
             "deckPlays": false,
             "emptyClues": false,
@@ -1017,7 +1017,7 @@
         {
           "gameId": 12,
           "options": {
-            "variantName": "No Variant",
+            "variantId": 0,
             "speedrun": false,
             "deckPlays": false,
             "emptyClues": false,
@@ -1051,7 +1051,7 @@
         {
           "gameId": 12,
           "options": {
-            "variantName": "No Variant",
+            "variantId": 0,
             "speedrun": false,
             "deckPlays": false,
             "emptyClues": false,

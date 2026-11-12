@@ -11,11 +11,15 @@ import {
 } from "@hanabi-live/data";
 import type { GameOptions } from "@hanabi-live/game";
 import {
+  DEFAULT_VARIANT_ID,
   DEFAULT_VARIANT_NAME,
   MAX_PLAYERS,
   MIN_PLAYERS,
   VARIANT_NAMES,
   doesVariantExist,
+  doesVariantIdExist,
+  getVariant,
+  getVariantById,
   isValidNumPlayers,
 } from "@hanabi-live/game";
 import {
@@ -64,7 +68,7 @@ const checkedInputs: CheckedInput[] = [];
 type CreateTable = Settings["createTable"];
 
 /** The options that a checkbox under "Extra Options" sets. */
-type ExtraOption = Exclude<keyof GameOptions, "variantName" | "timeControl">;
+type ExtraOption = Exclude<keyof GameOptions, "variantId" | "timeControl">;
 
 /**
  * The checkboxes under "Extra Options", by the option that each one sets. They stay collapsed
@@ -511,7 +515,7 @@ function readForm(): CreateTable {
   return {
     maxPlayers: getMaxPlayers(),
     options: {
-      variantName: getVariantName(),
+      variantId: getVariant(getVariantName()).id,
       ...(isChecked(TIMED) && { timeControl }),
       ...extraOptions,
     },
@@ -536,7 +540,7 @@ export function rememberVariant(variantName: string): void {
   const { createTable } = globals.settings;
   remember({
     ...createTable,
-    options: { ...createTable.options, variantName },
+    options: { ...createTable.options, variantId: getVariant(variantName).id },
   });
 }
 
@@ -619,7 +623,7 @@ export function ready(): void {
 
   // Setting the variant dropdown is more complicated than filling in a value.
   const { options, timeControl } = formValues;
-  readyVariant(options.variantName);
+  readyVariant(options.variantId);
   // Do not trigger the "change" events, since they would remember the values in our settings.
   $(TIMED).prop("checked", options.timeControl !== undefined);
   for (const option of EXTRA_OPTION_NAMES) {
@@ -687,21 +691,21 @@ function showExtraOptions(visible: boolean) {
     .text(visible ? "Hide Extra Options" : "Show Extra Options");
 }
 
-function readyVariant(value: string) {
-  // Validate the variant name that we got from the server.
+function readyVariant(variantId: number) {
+  // Validate the variant that we got from the server.
   let variantName: string;
-  if (doesVariantExist(value)) {
-    variantName = value;
+  if (doesVariantIdExist(variantId)) {
+    variantName = getVariantById(variantId).name;
   } else {
     variantName = DEFAULT_VARIANT_NAME;
 
-    // Since the variant name is not valid, update our settings.
+    // Since the variant is not valid, update our settings.
     const { createTable } = globals.settings;
     globals.settings = {
       ...globals.settings,
       createTable: {
         ...createTable,
-        options: { ...createTable.options, variantName },
+        options: { ...createTable.options, variantId: DEFAULT_VARIANT_ID },
       },
     };
   }

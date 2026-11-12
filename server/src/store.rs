@@ -910,19 +910,30 @@ mod tests {
         ensure!(serde_json::to_value(&decoded)? == expected);
         Ok(())
     }
-    /// Rewrites a head or a part from format 16 into format 15, for the clues and morphs that these
-    /// tests give. A head lists its fields in alphabetical order, and a part in the order of their
-    /// declaration.
+    /// Rewrites a part from format 17 into format 16, for the variants that these tests suggest.
+    fn format_16(text: &str) -> String {
+        regex!(r#""options":\{"variantId":(\d+)"#)
+            .replace_all(text, |captures: &regex::Captures<'_>| {
+                let id = captures[1].parse().expect("a variant ID");
+                let variant = hanabi_engine::get_variant_by_id(id).expect("a catalog variant");
+                format!(r#""options":{{"variantName":{}"#, json!(variant.name))
+            })
+            .into_owned()
+    }
+    /// Rewrites a head or a part from format 17 into format 15, for the variants that these tests
+    /// suggest and the clues and morphs that they give. A head lists its fields in alphabetical
+    /// order, and a part in the order of their declaration.
     fn format_15(text: &str) -> String {
+        let text = format_16(text);
         let text = regex!(r#""type":"(color|rank)","(?:color|rank)":"#)
-            .replace_all(text, r#""type":"$1","value":"#);
+            .replace_all(&text, r#""type":"$1","value":"#);
         let text = regex!(r#"\{"(?:color|rank)":(\d+),"type":"(color|rank)"\}"#)
             .replace_all(&text, r#"{"type":"$2","value":$1}"#);
         regex!(r#"\{"identity":\{([^{}]*)\},"order":(\d+),"type":"morph"\}"#)
             .replace_all(&text, r#"{"order":$2,"type":"morph",$1}"#)
             .into_owned()
     }
-    /// Rewrites a part from format 16 into format 13, for the deals that these tests suggest.
+    /// Rewrites a part from format 17 into format 13, for the deals that these tests suggest.
     fn format_13(text: &str) -> String {
         format_15(text)
             .replace(
@@ -934,7 +945,7 @@ mod tests {
                 "\"seedSuffix\":\"7\"",
             )
     }
-    /// Rewrites a head or a part from format 16 into format 12, for the tables that these tests
+    /// Rewrites a head or a part from format 17 into format 12, for the tables that these tests
     /// build, which have no failed plays.
     fn format_12(text: &str) -> String {
         format_13(text)
@@ -1341,6 +1352,50 @@ mod tests {
         ensure!(
             parts.iter().any(|(key, _)| key == "game/start"),
             "The table has no game start"
+        );
+        let decoded = crate::checkpoint::decode(&head.to_string(), &parts)?;
+        ensure!(serde_json::to_value(&decoded)? == expected);
+        Ok(())
+    }
+    #[test]
+    fn checkpoints_of_format_16_name_suggested_variants() -> Result<()> {
+        let mut table = suggested();
+        let mut six_suits = table.chat[0].clone();
+        six_suits.id = Some(4);
+        six_suits.message.chat_id = Some(hanabi_protocol::ChatId(4));
+        if let Some(settings) = &mut six_suits.message.suggested_settings {
+            settings.options.variant_id = hanabi_protocol::VariantId(1);
+        }
+        table.chat.push(six_suits);
+        let mut removed = table.chat[0].clone();
+        removed.id = Some(5);
+        removed.message.chat_id = Some(hanabi_protocol::ChatId(5));
+        table.chat.push(removed);
+        let (encoded, _) = crate::checkpoint::encode(&mut table, &SavedParts::default())?;
+        // The suggestion of a variant that the catalog no longer has is dropped.
+        table.chat[2].message.suggested_settings = None;
+        let expected = serde_json::to_value(&table)?;
+        let mut head: Value = serde_json::from_str(&encoded.head)?;
+        head["format"] = json!("hanabi-live-16");
+        let parts = encoded
+            .changes
+            .written
+            .iter()
+            .map(|(key, part)| {
+                let part = format_16(part);
+                let part = if part.contains("\"chatId\":5") {
+                    part.replace("\"No Variant\"", "\"Removed Variant\"")
+                } else {
+                    part
+                };
+                (key.clone(), part)
+            })
+            .collect::<Vec<_>>();
+        ensure!(
+            parts
+                .iter()
+                .any(|(_, part)| part.contains("\"variantName\":\"6 Suits\"")),
+            "The older format has no variant names"
         );
         let decoded = crate::checkpoint::decode(&head.to_string(), &parts)?;
         ensure!(serde_json::to_value(&decoded)? == expected);
@@ -2345,7 +2400,7 @@ mod tests {
                 "tableUpdate",
                 json!({
                     "tableId":id,
-                    "settings":{"name":"Split","options":{"variantName":"Reversed (5 Suits)"}},
+                    "settings":{"name":"Split","options":{"variantId":1343}},
                 }),
             )
             .await?;
@@ -2468,7 +2523,7 @@ mod tests {
             frames.push(outgoing);
         }
         let result=async{
-            send(&hub,users[0].clone(),"tableCreate",json!({"settings":{"name":"native","maxPlayers":6,"deal":{"type":"seed","suffix":"native"},"options":{"variantName":"Clue Starved (6 Suits)","timeControl":{"baseSeconds":120,"perTurnSeconds":20},"oneExtraCard":true,"detrimentalCharacters":true}}})).await?;
+            send(&hub,users[0].clone(),"tableCreate",json!({"settings":{"name":"native","maxPlayers":6,"deal":{"type":"seed","suffix":"native"},"options":{"variantId":51,"timeControl":{"baseSeconds":120,"perTurnSeconds":20},"oneExtraCard":true,"detrimentalCharacters":true}}})).await?;
             let id=store.load().await?[0].0.id;
             for user in users.iter().skip(1){send(&hub,user.clone(),"tableJoin",json!({"tableId":id})).await?;}
             send(&hub,users[0].clone(),"tableStart",json!({"tableId":id})).await?;

@@ -424,7 +424,7 @@ async fn public_database_routes_filters_privacy_exports_and_html() {
         );
         for game in games {
             assert_eq!(game["playerNames"].as_array().unwrap().len(), 2);
-            assert!(game["options"]["variantName"].is_string());
+            assert!(game["options"]["variantId"].is_u64());
         }
     }
     let (status, body) = request(app.clone(), "/api/v1/seed-full/same").await;
@@ -442,7 +442,7 @@ async fn public_database_routes_filters_privacy_exports_and_html() {
     ] {
         assert_eq!(full[0]["options"][key], true);
     }
-    assert_eq!(full[0]["options"]["variantName"], "6 Suits");
+    assert_eq!(full[0]["options"]["variantId"], 1);
     let (_, body) = request(app.clone(), "/api/v1/tags/Alice").await;
     let tagged: Value = serde_json::from_str(&body).unwrap();
     assert_eq!(tagged.as_array().unwrap().len(), 2);
@@ -477,7 +477,7 @@ async fn public_database_routes_filters_privacy_exports_and_html() {
         export["characters"],
         json!([{"type":"color","characterId":0,"color":1},{"type":"plain","characterId":19}])
     );
-    assert_eq!(export["options"]["variantName"], "6 Suits");
+    assert_eq!(export["options"]["variantId"], 1);
     let (_, body) = request(app.clone(), "/export/1").await;
     assert_eq!(
         serde_json::from_str::<Value>(&body).unwrap()["seed"],
@@ -496,6 +496,15 @@ async fn public_database_routes_filters_privacy_exports_and_html() {
         let (status, body) = request(app.clone(), path).await;
         assert_eq!(status, StatusCode::OK, "{path}: {body}");
         assert!(body.contains("id=\"main\""), "{path}");
+    }
+    // The tagged games page names each game and its variant.
+    let (_, body) = request(app.clone(), "/tags/Alice").await;
+    for game in tagged.as_array().unwrap() {
+        let id = game["gameId"].as_u64().unwrap();
+        let variant = u32::try_from(game["options"]["variantId"].as_u64().unwrap()).unwrap();
+        let name = &hanabi_engine::get_variant_by_id(variant).unwrap().name;
+        assert!(body.contains(&format!("href=\"/replay/{id}\"")), "{body}");
+        assert!(body.contains(&format!("<td>{name}</td>")), "{body}");
     }
     // A max score shows the option that kept it from counting normally, or a check.
     let (_, body) = request(app.clone(), "/scores/Alice").await;

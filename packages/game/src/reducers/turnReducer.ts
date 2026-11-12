@@ -3,7 +3,7 @@
 import { assertDefined } from "complete-common";
 import type { Draft } from "immer";
 import { produce } from "immer";
-import { getVariant } from "../gameData.ts";
+import { getVariantById } from "../gameData.ts";
 import type { GameMetadata } from "../interfaces/GameMetadata.ts";
 import type { GameState } from "../interfaces/GameState.ts";
 import type { TurnState } from "../interfaces/TurnState.ts";
@@ -35,7 +35,7 @@ function turnReducerFunction(
   gameState: GameState,
   metadata: GameMetadata,
 ) {
-  const variant = getVariant(metadata.options.variantName);
+  const variant = getVariantById(metadata.options.variantId);
   const characterName = getCharacterNameForPlayer(
     turn.currentPlayerIndex,
     metadata.characterAssignments,

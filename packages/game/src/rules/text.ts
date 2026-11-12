@@ -5,7 +5,7 @@ import {
   SECOND_IN_MILLISECONDS,
   assertDefined,
 } from "complete-common";
-import { getVariant } from "../gameData.ts";
+import { getVariantById } from "../gameData.ts";
 import type { GameMetadata } from "../interfaces/GameMetadata.ts";
 import type { Variant } from "../interfaces/Variant.ts";
 import { getCharacterNameForPlayer } from "../reducers/reducerHelpers.ts";
@@ -59,7 +59,7 @@ export function getClueText(
   const giver = metadata.playerNames[action.playerIndex] ?? "unknown";
   const target = metadata.playerNames[action.receiverIndex] ?? "unknown";
   const word = NUMBER_WORDS[action.orders.length] ?? "unknown";
-  const variant = getVariant(metadata.options.variantName);
+  const variant = getVariantById(metadata.options.variantId);
   const hypoPrefix = hypothetical ? HYPO_PREFIX : "";
 
   if (isPassTurnClue(action)) {
@@ -216,7 +216,7 @@ export function getPlayText(
   hypothetical: boolean,
   metadata: GameMetadata,
 ): string {
-  const variant = getVariant(metadata.options.variantName);
+  const variant = getVariantById(metadata.options.variantId);
   const playerName = getPlayerName(action.playerIndex, metadata);
 
   const cardIsHidden =
@@ -246,7 +246,7 @@ export function getDiscardText(
   hypothetical: boolean,
   metadata: GameMetadata,
 ): string {
-  const variant = getVariant(metadata.options.variantName);
+  const variant = getVariantById(metadata.options.variantId);
   const playerName = getPlayerName(action.playerIndex, metadata);
 
   const cardIsHidden =

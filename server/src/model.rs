@@ -18,7 +18,7 @@ use std::{
     time::Instant,
 };
 
-pub const FORMAT: &str = "hanabi-live-16";
+pub const FORMAT: &str = "hanabi-live-17";
 /// How long before an idle game ends to warn its table.
 pub const IDLE_WARNING_MS: i64 = 5 * CLOCK_UNITS_PER_MINUTE;
 
@@ -710,13 +710,15 @@ pub fn tag_too_long() -> String {
 }
 
 /// Converts the engine's options to their wire form. Both destructure every field, so adding an
-/// option to either type fails to compile until the conversions are updated.
+/// option to either type fails to compile until the conversions are updated. The server holds only
+/// options whose variant is in the catalog: `engine_options` and the archive look it up by ID, and
+/// loading a checkpoint checks it.
 pub(crate) fn wire_options(options: &Options) -> hanabi_protocol::GameOptions {
     let Options {
         // The wire counts the players by their names.
         num_players: _,
         variant_name,
-        // The variant name identifies the variant.
+        // The catalog gives the ID of the variant that the name identifies.
         variant_id: _,
         time_control,
         speedrun,
@@ -730,8 +732,10 @@ pub(crate) fn wire_options(options: &Options) -> hanabi_protocol::GameOptions {
         table_name: _,
         max_players: _,
     } = options;
+    let variant = hanabi_engine::get_variant(variant_name)
+        .expect("the server holds only options whose variant is in the catalog");
     hanabi_protocol::GameOptions {
-        variant_name: variant_name.clone(),
+        variant_id: hanabi_protocol::VariantId(variant.id),
         time_control: *time_control,
         speedrun: *speedrun,
         deck_plays: *deck_plays,
@@ -743,10 +747,10 @@ pub(crate) fn wire_options(options: &Options) -> hanabi_protocol::GameOptions {
     }
 }
 
-/// Converts wire options to the engine's.
-pub(crate) fn engine_options(options: &hanabi_protocol::GameOptions) -> Options {
+/// Converts wire options to the engine's. It fails for a variant ID that the catalog does not have.
+pub(crate) fn engine_options(options: &hanabi_protocol::GameOptions) -> Result<Options> {
     let hanabi_protocol::GameOptions {
-        variant_name,
+        variant_id,
         time_control,
         speedrun,
         deck_plays,
@@ -756,11 +760,12 @@ pub(crate) fn engine_options(options: &hanabi_protocol::GameOptions) -> Options 
         all_or_nothing,
         detrimental_characters,
     } = options;
-    Options {
+    let variant = hanabi_engine::get_variant_by_id(variant_id.0)?;
+    Ok(Options {
         // A table sets its player count when its game starts.
         num_players: hanabi_protocol::MIN_PLAYERS,
-        variant_name: variant_name.clone(),
-        variant_id: None,
+        variant_name: variant.name.clone(),
+        variant_id: Some(variant.id),
         time_control: *time_control,
         speedrun: *speedrun,
         deck_plays: *deck_plays,
@@ -771,7 +776,7 @@ pub(crate) fn engine_options(options: &hanabi_protocol::GameOptions) -> Options 
         detrimental_characters: *detrimental_characters,
         table_name: None,
         max_players: None,
-    }
+    })
 }
 
 #[cfg(test)]
@@ -835,6 +840,13 @@ mod tests {
         let defaults = Options::default();
         let wire = hanabi_protocol::GameOptions::default();
         assert_eq!(wire_options(&defaults), wire);
-        assert_eq!(engine_options(&wire), defaults);
+        // The wire names the variant by its ID, which the engine's options then also hold.
+        assert_eq!(
+            engine_options(&wire).unwrap(),
+            Options {
+                variant_id: Some(wire.variant_id.0),
+                ..defaults
+            }
+        );
     }
 }

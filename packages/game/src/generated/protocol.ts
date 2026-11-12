@@ -4,6 +4,7 @@ import * as z from "zod";
 export const MIN_PLAYERS = 2;
 export const MAX_PLAYERS = 6;
 export const DEFAULT_VARIANT_NAME = "No Variant";
+export const DEFAULT_VARIANT_ID = 0;
 export const MAX_SUITS = 6;
 export const MAX_DECK_SIZE = 60;
 export const MIN_RANK = 1;
@@ -441,7 +442,7 @@ export const gameOptionsSchema = z
      * The clock of a timed game. Absent when the game is untimed.
      */
     timeControl: timeControlSchema.optional(),
-    variantName: z.string().min(1).default("No Variant"),
+    variantId: variantIdSchema.default(0),
   })
   .readonly();
 

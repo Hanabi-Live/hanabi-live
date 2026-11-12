@@ -1,6 +1,6 @@
 import { describe, expect, test } from "bun:test";
 import { assertDefined } from "complete-common";
-import { getVariant } from "../gameData.ts";
+import { getVariantById } from "../gameData.ts";
 import type { CardState } from "../interfaces/CardState.ts";
 import { getDefaultMetadata } from "../metadata.ts";
 import type { CardOrder } from "../types/CardOrder.ts";
@@ -13,7 +13,7 @@ import { getInitialCardState } from "./initialStates/initialCardState.ts";
 
 const NUM_PLAYERS = 3;
 const DEFAULT_METADATA = getDefaultMetadata(NUM_PLAYERS);
-const VARIANT = getVariant(DEFAULT_METADATA.options.variantName);
+const VARIANT = getVariantById(DEFAULT_METADATA.options.variantId);
 const DEFAULT_CARD = getInitialCardState(0 as CardOrder, VARIANT, NUM_PLAYERS);
 
 const FIRST_CLUE_COLOR = VARIANT.clueColors[0];
@@ -98,7 +98,7 @@ describe("cardPossibilitiesReducer", () => {
       NUM_PLAYERS,
       "Rainbow-Ones & Brown (6 Suits)",
     );
-    const rainbowOnesAndBrown = getVariant(metadata.options.variantName);
+    const rainbowOnesAndBrown = getVariantById(metadata.options.variantId);
 
     const redClue = newColorClue(FIRST_CLUE_COLOR);
     const oneClue = newRankClue(FIRST_CLUE_RANK);

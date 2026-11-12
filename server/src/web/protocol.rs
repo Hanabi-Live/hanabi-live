@@ -122,7 +122,7 @@ mod tests {
         )
         .unwrap()
         .data();
-        assert_eq!(create["settings"]["options"]["variantName"], "No Variant");
+        assert_eq!(create["settings"]["options"]["variantId"], 0);
     }
 
     #[test]

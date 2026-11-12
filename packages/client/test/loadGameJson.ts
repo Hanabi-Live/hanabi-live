@@ -20,7 +20,7 @@ import {
   getCardsPerHand,
   getDefaultMetadata,
   getNextPlayableRanks,
-  getVariant,
+  getVariantById,
   identityField,
   isCardTouchedByClue,
   MAX_PLAYERS,
@@ -57,7 +57,7 @@ export function loadGameJson(gameJson: JsonGame): State {
   const numPlayers = potentialNumPlayers as NumPlayers;
 
   const metadata = getDefaultMetadata(numPlayers, gameJson.options.variant);
-  const variant = getVariant(metadata.options.variantName);
+  const variant = getVariantById(metadata.options.variantId);
 
   const cardsPerHand = getCardsPerHand(metadata.options);
 

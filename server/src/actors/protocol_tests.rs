@@ -399,7 +399,7 @@ async fn duck_clue_identity_is_private_in_live_history_and_recovery_but_not_comp
             .create(
                 0,
                 "Duck privacy",
-                json!({"options":{"variantName":"Duck (5 Suits)"}}),
+                json!({"options":{"variantId":55}}),
             )
             .await?;
         for index in 1..3 {
@@ -2380,7 +2380,7 @@ async fn option_proposals_publish_changed_values_but_keep_apply_button_private()
         }
         h.send(1, "tableUpdate", json!({
             "tableId":id,"settings":{"name":"Proposal","maxPlayers":2,
-            "options":{"variantName":"6 Suits","timeControl":{"baseSeconds":120,"perTurnSeconds":20},"emptyClues":true}}
+            "options":{"variantId":1,"timeControl":{"baseSeconds":120,"perTurnSeconds":20},"emptyClues":true}}
         })).await?;
         h.barrier(0).await?;
         for index in 0..3 {
@@ -2396,7 +2396,7 @@ async fn option_proposals_publish_changed_values_but_keep_apply_button_private()
                 let button = button.context("Owner is missing the apply button")?;
                 ensure!(button["recipient"] == "Alice");
                 let suggestion = suggestion(button)?;
-                ensure!(suggestion["options"]["variantName"] == "6 Suits" && suggestion["maxPlayers"] == 2 && suggestion["name"] == "Proposal");
+                ensure!(suggestion["options"]["variantId"] == 1 && suggestion["maxPlayers"] == 2 && suggestion["name"] == "Proposal");
             } else {
                 ensure!(button.is_none(), "Apply button leaked to a non-owner");
             }
@@ -2503,7 +2503,7 @@ async fn findvariant_delivers_owner_button_and_guards_the_start_action() -> Resu
         ensure!(!bob.iter().any(|v|v["text"].as_str().is_some_and(|s|s.contains("new-options"))),"Non-owner received proposal");
         ensure!(bob.iter().any(|v|v["text"]=="Here is a random variant that everyone needs the 2-player max score in: Rainbow (5 Suits)"),"Wrong team discovery result");
         let suggestion=browser_json(suggestion(proposal)?);let options=&suggestion["options"];
-        ensure!(options["variantName"]=="Rainbow (5 Suits)"&&suggestion["name"]=="Team discovery"&&suggestion["maxPlayers"]==5&&options["deckPlays"]==true&&options["oneExtraCard"]==true,"Proposal lost table settings");
+        ensure!(options["variantId"]==16&&suggestion["name"]=="Team discovery"&&suggestion["maxPlayers"]==5&&options["deckPlays"]==true&&options["oneExtraCard"]==true,"Proposal lost table settings");
         let (table,_)=h.snapshot(id).await?;
         ensure!(table.chat.iter().all(|c|!c.message.text.contains("new-options")),"Private proposal entered public history");
         h.send(0,"tableUpdate",json!({"tableId":id,"settings":suggestion})).await?;
@@ -3146,7 +3146,7 @@ async fn a_failed_table_creation_ends_its_seat_reservation() -> Result<()> {
             h.send(
                 0,
                 "tableCreate",
-                json!({"settings":{"name":"Broken","options":{"variantName":"No Such Variant"}}}),
+                json!({"settings":{"name":"Broken","options":{"variantId":99_999}}}),
             )
             .await
             .is_err(),

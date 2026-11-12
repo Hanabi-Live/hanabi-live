@@ -13,7 +13,7 @@ import {
   getCardsPerHand,
   getEndGameLength,
   getMinEfficiency,
-  getVariant,
+  getVariantById,
   isHardVariant,
 } from "@hanabi-live/game";
 import type { Tuple } from "complete-common";
@@ -557,7 +557,7 @@ function assignedValue(
 
 function initStateStore(data: InitData) {
   // Set the variant (as a helper reference).
-  globals.variant = getVariant(data.options.variantName);
+  globals.variant = getVariantById(data.options.variantId);
 
   const playerNames = toPlayerTuple(data.playerNames, "player names");
   const options: Options = {

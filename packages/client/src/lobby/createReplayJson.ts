@@ -121,7 +121,7 @@ export function createJsonFromReplay(room: string): void {
     deck,
     actions,
     options: {
-      variantName: globals.options.variantName,
+      variantId: globals.options.variantId,
     },
     notes: [],
     characters: [],

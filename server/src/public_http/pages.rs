@@ -18,6 +18,14 @@ pub(super) fn templates() -> minijinja::Environment<'static> {
     let mut env = minijinja::Environment::new();
     env.add_filter("urlencode", |s: String| encoded(&s));
     env.add_filter("possessive", |s: String| possessive(&s));
+    // Game lists name a game's variant by its ID.
+    env.add_filter("variant_name", |id: u32| {
+        hanabi_engine::get_variant_by_id(id)
+            .map(|variant| variant.name.clone())
+            .map_err(|error| {
+                minijinja::Error::new(minijinja::ErrorKind::InvalidOperation, error.to_string())
+            })
+    });
     env.add_filter("history_date", |s: String| {
         chrono::DateTime::parse_from_rfc3339(&s)
             .map(|date| {

@@ -40,7 +40,7 @@ const game: Game = {
   settings: {
     name: "my table",
     maxPlayers: 5,
-    options: { ...defaultOptions, variantName: "No Variant", speedrun: true },
+    options: { ...defaultOptions, variantId: 0, speedrun: true },
   },
   ownerId: userIdSchema.parse(1),
   passwordProtected: true,

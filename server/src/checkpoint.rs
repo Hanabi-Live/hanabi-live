@@ -383,6 +383,7 @@ const UPGRADES: &[(&str, &str, Upgrade)] = &[
         "hanabi-live-16",
         clue_fields_and_morphed_identities,
     ),
+    ("hanabi-live-16", "hanabi-live-17", suggested_variant_ids),
 ];
 
 /// Rewrites a table that an older server saved, one format at a time, into the current format.
@@ -830,6 +831,37 @@ fn clue_fields_and_morphed_identities(
     edit_parts(parts, STEP, |step| {
         if let Some(action) = step.get_mut("action") {
             name_clue_field(action);
+        }
+    })
+}
+
+/// Format 16 named the variant of a chat message's suggested table by its name. A suggestion of a
+/// variant that the catalog no longer has cannot be applied, so it is dropped.
+fn suggested_variant_ids(_: &mut Value, parts: &mut [(String, String)]) -> Result<()> {
+    edit_parts(parts, CHAT, |chat| {
+        let Some(message) = chat.get_mut("message").and_then(Value::as_object_mut) else {
+            return;
+        };
+        let Some(options) = message
+            .get_mut("suggestedSettings")
+            .and_then(|settings| settings.get_mut("options"))
+            .and_then(Value::as_object_mut)
+        else {
+            return;
+        };
+        let Some(name) = options.remove("variantName") else {
+            return;
+        };
+        match name
+            .as_str()
+            .and_then(|name| hanabi_engine::get_variant(name).ok())
+        {
+            Some(variant) => {
+                options.insert("variantId".into(), variant.id.into());
+            }
+            None => {
+                message.remove("suggestedSettings");
+            }
         }
     })
 }

@@ -488,7 +488,7 @@ async fn native_browser_login_ws_bootstrap_and_command_routing_postgres() {
         .unwrap();
     let history = receive(&mut alice, "gameHistory").await;
     assert_eq!(history["games"][0]["gameId"], historical);
-    assert_eq!(history["games"][0]["options"]["variantName"], "6 Suits");
+    assert_eq!(history["games"][0]["options"]["variantId"], 1);
     assert_eq!(
         history["games"][0]["options"]["timeControl"]["baseSeconds"],
         180
@@ -551,7 +551,7 @@ async fn native_browser_login_ws_bootstrap_and_command_routing_postgres() {
     );
     alice
         .send(WireMessage::Text(
-            "tableCreate {\"settings\":{\"name\":\"Browser game\",\"maxPlayers\":5,\"options\":{\"variantName\":\"No Variant\"}}}"
+            "tableCreate {\"settings\":{\"name\":\"Browser game\",\"maxPlayers\":5,\"options\":{\"variantId\":0}}}"
                 .into(),
         ))
         .await
@@ -921,7 +921,7 @@ async fn full_history_bootstrap_queues_in_order_without_a_writer_postgres() {
             "gameHistory" => {
                 assert_eq!(data.as_array().unwrap().len(), 100);
                 assert_eq!(data[0]["playerNames"].as_array().unwrap().len(), 6);
-                assert_eq!(data[0]["options"]["variantName"], "6 Suits");
+                assert_eq!(data[0]["options"]["variantId"], 1);
                 assert_eq!(data[0]["tags"].as_array().unwrap().len(), 8);
             }
             _ => {}
