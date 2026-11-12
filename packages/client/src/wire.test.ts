@@ -2,7 +2,6 @@ import {
   replaySoundEffectSchema,
   SERVER_COMMAND_SCHEMAS,
 } from "@hanabi-live/data";
-import { EndCondition } from "@hanabi-live/game";
 import { describe, expect, test } from "vitest";
 import { toCardIdentity, toGameAction, toSoundType } from "./wire.ts";
 
@@ -21,12 +20,12 @@ describe("server game events", () => {
     expect(
       toGameAction({
         type: "gameOver",
-        endCondition: EndCondition.Normal,
+        endCondition: "normal",
         votes: [],
       }),
     ).toEqual({
       type: "gameOver",
-      endCondition: EndCondition.Normal,
+      endCondition: "normal",
       votes: [],
     });
   });

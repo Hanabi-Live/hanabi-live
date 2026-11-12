@@ -7,7 +7,6 @@ import type {
 } from "@hanabi-live/game";
 import {
   canCardPossiblyBeFromCluesOnly,
-  EndCondition,
   getCharacterNameForPlayer,
   getVariant,
   isCardClued,
@@ -177,7 +176,7 @@ export function getSoundType(
     }
 
     case "gameOver": {
-      if (action.endCondition !== EndCondition.Normal) {
+      if (action.endCondition !== "normal") {
         return SoundType.FinishedFail;
       }
 

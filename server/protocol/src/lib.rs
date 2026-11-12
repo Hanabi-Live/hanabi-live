@@ -6,10 +6,7 @@ use serde::{Deserialize, Serialize};
 
 mod enums;
 pub(crate) use enums::named_enum;
-pub use enums::{
-    ClueType, EndCondition, GameListColumn, NoticeCode, SoundMove, WIRE_ENUMS, WireEnum,
-    WireEnumMember,
-};
+pub use enums::{ClueType, EndCondition, GameListColumn, NoticeCode, SoundMove};
 mod registry;
 pub use registry::{
     ClientMessage, ServerMessage, client_contracts, decode, decode_server, exported, schemas,

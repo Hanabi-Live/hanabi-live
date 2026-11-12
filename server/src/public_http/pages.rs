@@ -419,7 +419,7 @@ async fn scan(state: &PublicState) -> Result<sqlx::Transaction<'static, sqlx::Po
 
 async fn compute_aggregate(state: &PublicState, scope: Scope) -> Result<Value> {
     let mut transaction = scan(state).await?;
-    let normal_end = EndCondition::Normal as i16;
+    let normal_end = crate::archive::end_condition_to_db(EndCondition::Normal);
     // Each case has its own query: a shared query gets a generic plan that cannot use an index.
     // The variant is compared as the column's own SMALLINT, because a cast column cannot use its
     // index either. A player's totals start from their own games. A variant's time counts every

@@ -1,11 +1,12 @@
 import { replayGameSchema } from "@hanabi-live/data";
+import type { EndCondition } from "@hanabi-live/game";
 import {
   DEFAULT_PLAYER_NAMES,
-  EndCondition,
-  MAX_PLAYERS,
-  MIN_PLAYERS,
+  endConditionSchema,
   getVariant,
   getVariantById,
+  MAX_PLAYERS,
+  MIN_PLAYERS,
 } from "@hanabi-live/game";
 import { assertDefined, parseIntSafe } from "complete-common";
 import { isEqual } from "lodash";
@@ -70,7 +71,7 @@ const COMPRESSED_ACTION_LENGTH = 2;
 const BASE62 = "abcdefghijklmnopqrstuvwxyz0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
 /** A compressed game over stores its end condition as its position in this list. */
-const END_CONDITIONS: readonly EndCondition[] = Object.values(EndCondition);
+const END_CONDITIONS: readonly EndCondition[] = endConditionSchema.options;
 
 /** The end condition that a compressed action names, or undefined when it names none. */
 function endCondition(index: number | undefined): EndCondition | undefined {

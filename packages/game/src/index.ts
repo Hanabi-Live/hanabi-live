@@ -66,6 +66,7 @@ export * from "./types/Clue.ts";
 export * from "./types/ClueRank.ts";
 export type * from "./types/ClueType.ts";
 export type * from "./types/ColorIndex.ts";
+export type * from "./types/EndCondition.ts";
 export type * from "./types/gameActions.ts";
 export type * from "./types/HiddenClue.ts";
 export type * from "./types/MsgClue.ts";

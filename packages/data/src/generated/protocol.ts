@@ -7,7 +7,7 @@ import {
   clueRankSchema,
   clueSchema,
   colorIndexSchema,
-  EndCondition,
+  endConditionSchema,
   gameEventSchema,
   gameOptionsSchema,
   hypotheticalEventSchema,
@@ -340,7 +340,7 @@ const scoreSchema = z.number().int().min(0).max(2_147_483_647);
  */
 export const gameHistoryEntrySchema = z
   .strictObject({
-    endCondition: z.enum(EndCondition),
+    endCondition: endConditionSchema,
     finishedAt: z.iso.datetime({ precision: 3 }),
     gameId: gameIdSchema,
     /**
@@ -1066,7 +1066,7 @@ const replayGameActionSchema = z.discriminatedUnion("type", [
     .readonly(),
   z
     .strictObject({
-      endCondition: z.enum(EndCondition),
+      endCondition: endConditionSchema,
       /**
        * The player who ended the game, such as the one who timed out. Absent when no player did.
        */

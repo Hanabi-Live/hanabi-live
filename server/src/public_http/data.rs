@@ -2,7 +2,6 @@ use super::{
     HttpError, PAGE_PARAMETERS, Params, PublicState, Query, Result, catalog, integer, pagination,
 };
 use crate::archive::GameRecord;
-use anyhow::Context;
 use hanabi_protocol::GameListColumn as Column;
 use sqlx::{Postgres, QueryBuilder};
 
@@ -279,9 +278,7 @@ fn game_history(row: HistoryRow) -> anyhow::Result<hanabi_protocol::GameHistoryE
             .then(|| hanabi_protocol::Count(i64::from(row.seed_count))),
         seed: g.seed,
         score: hanabi_protocol::Score(i32::from(g.score)),
-        end_condition: hanabi_protocol::EndCondition::try_from(i32::from(g.end_condition))
-            .map_err(anyhow::Error::msg)
-            .context("Invalid stored end condition")?,
+        end_condition: crate::archive::end_condition_from_db(i32::from(g.end_condition))?,
         started_at: hanabi_protocol::Timestamp::from(g.datetime_started),
         finished_at: hanabi_protocol::Timestamp::from(g.datetime_finished),
         player_names: row.names.into_iter().map(Into::into).collect(),

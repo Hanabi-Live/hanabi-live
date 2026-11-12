@@ -6,10 +6,10 @@ import {
   assertDefined,
 } from "complete-common";
 import { getVariant } from "../gameData.ts";
-import { EndCondition } from "../generated/protocol.ts";
 import type { GameMetadata } from "../interfaces/GameMetadata.ts";
 import type { Variant } from "../interfaces/Variant.ts";
 import { getCharacterNameForPlayer } from "../reducers/reducerHelpers.ts";
+import type { EndCondition } from "../types/EndCondition.ts";
 import type { HiddenClue } from "../types/HiddenClue.ts";
 import type { MsgClue } from "../types/MsgClue.ts";
 import type { NumPlayers } from "../types/NumPlayers.ts";
@@ -142,44 +142,44 @@ export function getGameOverText(
   const playerName = getPlayerName(playerIndex, metadata);
 
   switch (endCondition) {
-    case EndCondition.Normal: {
+    case "normal": {
       return `Players score ${score} points.`;
     }
 
-    case EndCondition.Strikeout: {
+    case "strikeout": {
       break;
     }
 
-    case EndCondition.Timeout: {
+    case "timeout": {
       return `${playerName} ran out of time!`;
     }
 
-    case EndCondition.TerminatedByPlayer: {
+    case "terminatedByPlayer": {
       return `${playerName} terminated the game!`;
     }
 
-    case EndCondition.TerminatedByVote: {
+    case "terminatedByVote": {
       const playerNames = getPlayerNames(votes, metadata);
       return `${playerNames} voted to terminate the game!`;
     }
 
-    case EndCondition.SpeedrunFail: {
+    case "speedrunFail": {
       break;
     }
 
-    case EndCondition.IdleTimeout: {
+    case "idleTimeout": {
       return "Players were idle for too long.";
     }
 
-    case EndCondition.CharacterSoftlock: {
+    case "characterSoftlock": {
       return `${playerName} was left with 0 clues!`;
     }
 
-    case EndCondition.AllOrNothingFail: {
+    case "allOrNothingFail": {
       break;
     }
 
-    case EndCondition.AllOrNothingSoftlock: {
+    case "allOrNothingSoftlock": {
       return `${playerName} was left with 0 clues and 0 cards!`;
     }
   }

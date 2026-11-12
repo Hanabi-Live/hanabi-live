@@ -1,5 +1,4 @@
 import type { GameAction } from "@hanabi-live/game";
-import { EndCondition } from "@hanabi-live/game";
 
 /**
  * When the game state reducer sets "segment" to a new number, it is a signal to record the current
@@ -20,10 +19,10 @@ export function shouldStoreSegment(
   // block in "turnReducer.ts".
   if (
     action.type === "gameOver"
-    && action.endCondition !== EndCondition.Timeout
-    && action.endCondition !== EndCondition.TerminatedByPlayer
-    && action.endCondition !== EndCondition.TerminatedByVote
-    && action.endCondition !== EndCondition.IdleTimeout
+    && action.endCondition !== "timeout"
+    && action.endCondition !== "terminatedByPlayer"
+    && action.endCondition !== "terminatedByVote"
+    && action.endCondition !== "idleTimeout"
   ) {
     return true;
   }

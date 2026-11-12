@@ -4,7 +4,6 @@ import { assertDefined } from "complete-common";
 import type { Draft } from "immer";
 import { produce } from "immer";
 import { getVariant } from "../gameData.ts";
-import { EndCondition } from "../generated/protocol.ts";
 import type { GameMetadata } from "../interfaces/GameMetadata.ts";
 import type { GameState } from "../interfaces/GameState.ts";
 import type { TurnState } from "../interfaces/TurnState.ts";
@@ -168,10 +167,10 @@ function turnReducerFunction(
       // on the same segment as the final action. Any new end conditions must also be updated in the
       // "shouldStoreSegment()" function in "stateReducer.ts".
       if (
-        action.endCondition === EndCondition.Timeout
-        || action.endCondition === EndCondition.TerminatedByPlayer
-        || action.endCondition === EndCondition.TerminatedByVote
-        || action.endCondition === EndCondition.IdleTimeout
+        action.endCondition === "timeout"
+        || action.endCondition === "terminatedByPlayer"
+        || action.endCondition === "terminatedByVote"
+        || action.endCondition === "idleTimeout"
       ) {
         turn.segment++;
       }

@@ -22,6 +22,40 @@ use sqlx::{Postgres, Transaction};
 #[path = "archive_tests.rs"]
 mod tests;
 
+/// The number that the database stores for an end condition, in `games.end_condition` and as a game
+/// over's value in `game_actions`. Changing a number requires a migration.
+pub(crate) const fn end_condition_to_db(condition: EndCondition) -> i16 {
+    match condition {
+        EndCondition::Normal => 1,
+        EndCondition::Strikeout => 2,
+        EndCondition::Timeout => 3,
+        EndCondition::TerminatedByPlayer => 4,
+        EndCondition::SpeedrunFail => 5,
+        EndCondition::IdleTimeout => 6,
+        EndCondition::CharacterSoftlock => 7,
+        EndCondition::AllOrNothingFail => 8,
+        EndCondition::AllOrNothingSoftlock => 9,
+        EndCondition::TerminatedByVote => 10,
+    }
+}
+
+/// The end condition that the database stores as this number.
+pub(crate) fn end_condition_from_db(value: i32) -> Result<EndCondition> {
+    Ok(match value {
+        1 => EndCondition::Normal,
+        2 => EndCondition::Strikeout,
+        3 => EndCondition::Timeout,
+        4 => EndCondition::TerminatedByPlayer,
+        5 => EndCondition::SpeedrunFail,
+        6 => EndCondition::IdleTimeout,
+        7 => EndCondition::CharacterSoftlock,
+        8 => EndCondition::AllOrNothingFail,
+        9 => EndCondition::AllOrNothingSoftlock,
+        10 => EndCondition::TerminatedByVote,
+        _ => return Err(anyhow!("Invalid stored end condition: {value}")),
+    })
+}
+
 #[derive(Debug, Deserialize)]
 pub(crate) struct ArchivePlayer {
     pub user_id: i32,
@@ -71,8 +105,7 @@ impl TryFrom<ArchiveAction> for RecordedAction {
             }),
             RecordedActionType::GameOver | RecordedActionType::GameOverByVote => {
                 Self::GameOver(GameOverTurn {
-                    end_condition: EndCondition::try_from(action.value.ok_or_else(invalid)?)
-                        .map_err(anyhow::Error::msg)?,
+                    end_condition: end_condition_from_db(action.value.ok_or_else(invalid)?)?,
                     player_index: action.target.map(|_| seat()).transpose()?,
                 })
             }
@@ -98,7 +131,7 @@ fn stored_action(action: RecordedAction) -> Result<(i16, Option<i16>, Option<i16
         ),
         RecordedAction::GameOver(end) => (
             end.player_index.map(i32::from),
-            Some(i32::from(end.end_condition)),
+            Some(i32::from(end_condition_to_db(end.end_condition))),
         ),
     };
     Ok((
@@ -275,7 +308,7 @@ pub(crate) async fn replay(
     )?;
     ensure!(
         game.score == i32::from(row.score)
-            && game.end.map(|end| end.condition as i32) == Some(i32::from(row.end_condition)),
+            && game.end.map(|end| end_condition_to_db(end.condition)) == Some(row.end_condition),
         "Historical replay result mismatch"
     );
     Ok(Snapshot {
@@ -323,7 +356,7 @@ pub(crate) async fn insert(
     let o = &s.game.options;
     let variant = hanabi_engine::get_variant(&o.variant_name)?;
     let tx = transaction;
-    sqlx::query!("INSERT INTO games(id,name,num_players,variant_id,timed,time_base,time_per_turn,speedrun,deck_plays,empty_clues,one_extra_card,one_less_card,all_or_nothing,detrimental_characters,seed,score,num_turns,end_condition,datetime_started,datetime_finished) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20)", id.0, &s.name, i16::try_from(o.num_players)?, i16::try_from(variant.id)?, o.time_control.is_some(), o.time_control.map(|t| i32::try_from(t.base_seconds)).transpose()?, o.time_control.map(|t| i32::try_from(t.per_turn_seconds)).transpose()?, o.speedrun, o.deck_plays, o.empty_clues, o.one_extra_card, o.one_less_card, o.all_or_nothing, o.detrimental_characters, s.seed.as_deref(), i16::try_from(s.game.score)?, i16::try_from(s.game.turn)?, end.condition as i16, s.started, finished).execute(&mut **tx).await?;
+    sqlx::query!("INSERT INTO games(id,name,num_players,variant_id,timed,time_base,time_per_turn,speedrun,deck_plays,empty_clues,one_extra_card,one_less_card,all_or_nothing,detrimental_characters,seed,score,num_turns,end_condition,datetime_started,datetime_finished) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20)", id.0, &s.name, i16::try_from(o.num_players)?, i16::try_from(variant.id)?, o.time_control.is_some(), o.time_control.map(|t| i32::try_from(t.base_seconds)).transpose()?, o.time_control.map(|t| i32::try_from(t.per_turn_seconds)).transpose()?, o.speedrun, o.deck_plays, o.empty_clues, o.one_extra_card, o.one_less_card, o.all_or_nothing, o.detrimental_characters, s.seed.as_deref(), i16::try_from(s.game.score)?, i16::try_from(s.game.turn)?, end_condition_to_db(end.condition), s.started, finished).execute(&mut **tx).await?;
     let mut users = vec![];
     let mut seats = vec![];
     let mut character_ids = vec![];

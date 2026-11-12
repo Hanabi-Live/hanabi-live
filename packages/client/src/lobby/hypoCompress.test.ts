@@ -1,5 +1,4 @@
 import { replayGameSchema } from "@hanabi-live/data";
-import { EndCondition } from "@hanabi-live/game";
 import { describe, expect, test } from "vitest";
 import { expand, shrink } from "./hypoCompress.ts";
 
@@ -57,7 +56,7 @@ describe("replay URL actions", () => {
         { type: "discard", order: 1 },
         {
           type: "gameOver",
-          endCondition: EndCondition.TerminatedByPlayer,
+          endCondition: "terminatedByPlayer",
           playerIndex: 1,
         },
       ],
@@ -67,7 +66,7 @@ describe("replay URL actions", () => {
     expect(expandGame(compressed!)).toEqual(game);
   });
 
-  test.each([EndCondition.TerminatedByVote, EndCondition.IdleTimeout])(
+  test.each(["terminatedByVote", "idleTimeout"])(
     "round-trips a %s game over without a player",
     (endCondition) => {
       const game = {

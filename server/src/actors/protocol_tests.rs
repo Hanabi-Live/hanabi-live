@@ -3295,7 +3295,7 @@ async fn saved_actions_store_null_for_a_missing_target_or_value() -> Result<()> 
             .collect::<Vec<_>>();
         let play = i16::try_from(i32::from(hanabi_engine::RecordedActionType::Play))?;
         let vote = i16::try_from(i32::from(hanabi_engine::RecordedActionType::GameOverByVote))?;
-        let end = i16::try_from(EndCondition::TerminatedByVote as i32)?;
+        let end = crate::archive::end_condition_to_db(EndCondition::TerminatedByVote);
         ensure!(
             stored
                 == [

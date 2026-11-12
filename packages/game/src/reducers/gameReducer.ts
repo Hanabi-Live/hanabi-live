@@ -7,7 +7,6 @@ import type { Draft } from "immer";
 import { castDraft, original, produce } from "immer";
 import { VALID_PLAYER_INDEXES } from "../constants.ts";
 import { getVariant } from "../gameData.ts";
-import { EndCondition } from "../generated/protocol.ts";
 import type { CardNote } from "../interfaces/CardNote.ts";
 import type { GameMetadata } from "../interfaces/GameMetadata.ts";
 import type { GameState } from "../interfaces/GameState.ts";
@@ -357,7 +356,7 @@ function gameReducerFunction(
      * ```ts
      */
     case "gameOver": {
-      if (action.endCondition !== EndCondition.Normal) {
+      if (action.endCondition !== "normal") {
         gameState.score = 0;
       }
 

@@ -17,25 +17,6 @@ export const MAX_STRIKES = 3;
 export const PANICKY_MAX_CLUES = 4;
 
 /**
- * How a game ended. These values are stored in the database, so changing one requires a
- * migration.
- */
-export enum EndCondition {
-  Normal = "normal",
-  Strikeout = "strikeout",
-  Timeout = "timeout",
-  TerminatedByPlayer = "terminatedByPlayer",
-  SpeedrunFail = "speedrunFail",
-  IdleTimeout = "idleTimeout",
-  CharacterSoftlock = "characterSoftlock",
-  AllOrNothingFail = "allOrNothingFail",
-  AllOrNothingSoftlock = "allOrNothingSoftlock",
-  TerminatedByVote = "terminatedByVote",
-}
-
-export const endConditionSchema = z.enum(EndCondition);
-
-/**
  * A detrimental character's number in `characters.json`.
  */
 export const characterIdSchema = z.number().int().min(0).max(4_294_967_295);
@@ -273,6 +254,22 @@ export const clueSchema = z.discriminatedUnion("type", [
 ]);
 
 /**
+ * How a game ended.
+ */
+export const endConditionSchema = z.enum([
+  "normal",
+  "strikeout",
+  "timeout",
+  "terminatedByPlayer",
+  "speedrunFail",
+  "idleTimeout",
+  "characterSoftlock",
+  "allOrNothingFail",
+  "allOrNothingSoftlock",
+  "terminatedByVote",
+]);
+
+/**
  * A seat in a game. The game library's `PlayerIndex` type.
  */
 export const playerIndexSchema = z.literal([0, 1, 2, 3, 4, 5]);
@@ -389,7 +386,7 @@ export const gameEventSchema = z.discriminatedUnion("type", [
     .readonly(),
   z
     .strictObject({
-      endCondition: z.enum(EndCondition),
+      endCondition: endConditionSchema,
       /**
        * The player whom the ending names, such as the one who timed out, if any.
        */

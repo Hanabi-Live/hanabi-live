@@ -1,5 +1,5 @@
 use crate::archive::GameRecord;
-use anyhow::{Context, Result};
+use anyhow::Result;
 use hanabi_protocol::UserId;
 use sqlx::{PgPool, types::Json};
 
@@ -87,9 +87,7 @@ pub async fn get_history(
             options: crate::model::wire_options(&crate::archive::options(&game)?),
             score: hanabi_protocol::Score(i32::from(game.score)),
             num_turns: game.turn_count()?,
-            end_condition: hanabi_protocol::EndCondition::try_from(i32::from(game.end_condition))
-                .map_err(anyhow::Error::msg)
-                .context("Invalid stored end condition")?,
+            end_condition: crate::archive::end_condition_from_db(i32::from(game.end_condition))?,
             started_at: time(game.datetime_started),
             finished_at: time(game.datetime_finished),
             num_games_on_seed: game

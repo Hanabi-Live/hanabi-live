@@ -15,9 +15,7 @@ import type {
   SuitIndex,
 } from "@hanabi-live/game";
 import {
-  EndCondition,
-  MAX_PLAYERS,
-  MIN_PLAYERS,
+  endConditionSchema,
   gameReducer,
   getCardsPerHand,
   getDefaultMetadata,
@@ -25,6 +23,8 @@ import {
   getVariant,
   identityField,
   isCardTouchedByClue,
+  MAX_PLAYERS,
+  MIN_PLAYERS,
   msgClueToClue,
 } from "@hanabi-live/game";
 import { assertDefined, assertEnumValue, eRange } from "complete-common";
@@ -106,7 +106,7 @@ export function loadGameJson(gameJson: JsonGame): State {
       type: "gameOver",
       // Assume that the game ended normally; this is not necessarily the case and will break if a
       // test game is added with a strikeout, a termination, etc.
-      endCondition: EndCondition.Normal,
+      endCondition: "normal",
       playerIndex: currentPlayerIndex,
       votes: [],
     });
@@ -365,8 +365,8 @@ function parseJsonAction(
     }
 
     case JsonActionType.ActionTypeGameOver: {
-      // The test games store an end condition as its position in the enum.
-      const endCondition = Object.values(EndCondition)[a.value];
+      // The test games store an end condition as its position in the schema.
+      const endCondition = endConditionSchema.options[a.value];
       assertDefined(endCondition, `Invalid end condition: ${a.value}`);
       return {
         type: "gameOver",
