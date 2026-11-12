@@ -283,8 +283,6 @@ const CLUE_TIMING = {
   land: 300,
   /** When a falling token touches its card, as a fraction of `land`. */
   landImpact: 0.5,
-  /** The card dips when its token lands. */
-  dip: 240,
 } as const;
 
 /** The ID of every clue animation, so that a new clue can stop the last one. */
@@ -341,9 +339,9 @@ export function animateClue(root: HTMLElement, giver: number): void {
 
   const markers = [...root.querySelectorAll<HTMLElement>("[data-clue-marker]")];
 
-  // A token falls onto every touched card at once. On impact, the card dips.
+  // A token falls onto every touched card at once. (A card that the clue newly touches slides up to
+  // its raised place on its own; see "Card.tsx".)
   for (const marker of markers) {
-    const impact = t.land * t.landImpact;
     const { height } = marker.getBoundingClientRect();
 
     marker.animate(
@@ -357,16 +355,6 @@ export function animateClue(root: HTMLElement, giver: number): void {
         { transform: "none", opacity: 1 },
       ],
       { id, duration: t.land, easing: "ease-in-out" },
-    );
-
-    const card = marker.parentElement;
-    card?.animate(
-      [
-        { translate: "0 0" },
-        { translate: "0 6px", offset: 0.3 },
-        { translate: "0 0" },
-      ],
-      { id, delay: impact, duration: t.dip, easing: EASE_OUT_BACK },
     );
   }
 
