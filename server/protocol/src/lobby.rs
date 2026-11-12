@@ -400,10 +400,11 @@ pub struct TableList {
     pub tables: Vec<Table>,
 }
 
-/// A completed game in a player's history.
+/// A saved game, as the lists of games show it: a player's history, the games on a seed, and the
+/// public lists.
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
-pub struct GameHistoryEntry {
+pub struct GameSummary {
     pub game_id: GameId,
     pub options: GameOptions,
     pub seed: Seed,
@@ -425,7 +426,7 @@ pub struct GameHistoryEntry {
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct GamePage {
-    pub games: Vec<GameHistoryEntry>,
+    pub games: Vec<GameSummary>,
     /// How many games the list has on all of its pages.
     pub total: Count,
 }

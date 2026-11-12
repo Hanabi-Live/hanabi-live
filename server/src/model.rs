@@ -602,10 +602,10 @@ impl Snapshot {
     }
     /// The game as a player's history lists it, or `None` for a game that is not in the database.
     /// `count` is how many saved games use its seed.
-    pub fn history(&self, count: Option<i64>) -> Option<hanabi_protocol::GameHistoryEntry> {
+    pub fn history(&self, count: Option<i64>) -> Option<hanabi_protocol::GameSummary> {
         let names = self.players.iter().map(|p| p.name.clone());
         let time = hanabi_protocol::Timestamp::from;
-        Some(hanabi_protocol::GameHistoryEntry {
+        Some(hanabi_protocol::GameSummary {
             game_id: self.game_id?,
             options: wire_options(&self.game.options),
             seed: self.seed.clone()?.into(),

@@ -389,39 +389,6 @@ export const gameFinishedSchema = z
   .readonly();
 
 /**
- * A game's score: the cards played, or less in a variant that scores some cards lower.
- */
-const scoreSchema = z.number().int().min(0).max(30);
-
-/**
- * A completed game in a player's history.
- */
-export const gameHistoryEntrySchema = z
-  .strictObject({
-    endCondition: endConditionSchema,
-    finishedAt: z.iso.datetime({ precision: 3 }),
-    gameId: gameIdSchema,
-    /**
-     * How many games used this seed.
-     */
-    numGamesOnSeed: countSchema,
-    numTurns: turnSchema,
-    options: gameOptionsSchema,
-    /**
-     * In seat order.
-     */
-    playerNames: z.array(z.string().min(1)).min(2).max(6).readonly(),
-    score: scoreSchema,
-    seed: z.string().min(1),
-    startedAt: z.iso.datetime({ precision: 3 }),
-    /**
-     * The game's tags, in alphabetical order.
-     */
-    tags: z.array(z.string()).readonly(),
-  })
-  .readonly();
-
-/**
  * A player's detrimental character, in a game and in the replay format, with the value that some
  * characters are assigned. Every player has one when detrimental characters are on.
  */
@@ -533,11 +500,45 @@ export const gameListColumnSchema = z.enum([
 ]);
 
 /**
+ * A game's score: the cards played, or less in a variant that scores some cards lower.
+ */
+const scoreSchema = z.number().int().min(0).max(30);
+
+/**
+ * A saved game, as the lists of games show it: a player's history, the games on a seed, and the
+ * public lists.
+ */
+export const gameSummarySchema = z
+  .strictObject({
+    endCondition: endConditionSchema,
+    finishedAt: z.iso.datetime({ precision: 3 }),
+    gameId: gameIdSchema,
+    /**
+     * How many games used this seed.
+     */
+    numGamesOnSeed: countSchema,
+    numTurns: turnSchema,
+    options: gameOptionsSchema,
+    /**
+     * In seat order.
+     */
+    playerNames: z.array(z.string().min(1)).min(2).max(6).readonly(),
+    score: scoreSchema,
+    seed: z.string().min(1),
+    startedAt: z.iso.datetime({ precision: 3 }),
+    /**
+     * The game's tags, in alphabetical order.
+     */
+    tags: z.array(z.string()).readonly(),
+  })
+  .readonly();
+
+/**
  * A page of a list of games: a player's own history, the games on a seed, or a public list.
  */
 export const gamePageSchema = z
   .strictObject({
-    games: z.array(gameHistoryEntrySchema).readonly(),
+    games: z.array(gameSummarySchema).readonly(),
     /**
      * How many games the list has on all of its pages.
      */
@@ -1735,7 +1736,7 @@ export const SERVER_COMMAND_SCHEMAS = {
   friends: friendsSchema,
   gameEvent: gameEventMessageSchema,
   gameFinished: gameFinishedSchema,
-  gameHistoryAdded: gameHistoryEntrySchema,
+  gameHistoryAdded: gameSummarySchema,
   gameInit: gameInitSchema,
   gameState: gameStateSchema,
   idleReset: tableRefSchema,

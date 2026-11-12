@@ -1,6 +1,6 @@
-import type { GameHistoryEntry } from "../interfaces/GameHistoryEntry.ts";
+import type { GameSummary } from "../interfaces/GameSummary.ts";
 
-type CompletedGame = Pick<GameHistoryEntry, "gameId" | "finishedAt">;
+type CompletedGame = Pick<GameSummary, "gameId" | "finishedAt">;
 
 export function compareGameHistory(
   left: CompletedGame,

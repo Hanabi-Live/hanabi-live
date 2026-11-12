@@ -5,7 +5,7 @@ export * from "./functions/frames.ts";
 export * from "./functions/history.ts";
 export * from "./functions/tabAccount.ts";
 export * from "./generated/protocol.ts";
-export type * from "./interfaces/GameHistoryEntry.ts";
+export type * from "./interfaces/GameSummary.ts";
 export * from "./interfaces/Settings.ts";
 export type * from "./interfaces/Spectator.ts";
 export * from "./statusText.ts";

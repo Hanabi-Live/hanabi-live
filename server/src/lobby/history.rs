@@ -58,10 +58,7 @@ struct HistoryRow {
 }
 
 /// The games with these IDs, in the same order.
-pub async fn get_history(
-    pool: &PgPool,
-    ids: &[i32],
-) -> Result<Vec<hanabi_protocol::GameHistoryEntry>> {
+pub async fn get_history(pool: &PgPool, ids: &[i32]) -> Result<Vec<hanabi_protocol::GameSummary>> {
     let rows = sqlx::query_as!(
                 HistoryRow,
         "SELECT to_jsonb(g) AS \"game!: Json<GameRecord>\",
@@ -80,7 +77,7 @@ pub async fn get_history(
     let mut result = Vec::new();
     for row in rows {
         let game = row.game.0;
-        result.push(hanabi_protocol::GameHistoryEntry {
+        result.push(hanabi_protocol::GameSummary {
             game_id: hanabi_protocol::GameId::try_from(game.id)?,
             options: crate::model::wire_options(&crate::archive::options(&game)?),
             score: hanabi_protocol::Score::try_from(game.score)?,

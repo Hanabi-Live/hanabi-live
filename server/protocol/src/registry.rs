@@ -113,7 +113,7 @@ macro_rules! server_contracts {
             TABLE "table" => Table;
             TABLE_LIST "tableList" => TableList;
             PREGAME "pregame" => Pregame;
-            GAME_HISTORY_ADDED "gameHistoryAdded" => GameHistoryEntry;
+            GAME_HISTORY_ADDED "gameHistoryAdded" => GameSummary;
         }
     };
 }
@@ -123,7 +123,7 @@ macro_rules! server_contracts {
 macro_rules! exported_types {
     ($apply:ident) => {
         $apply! {
-            TableId, GameId, UserId, ChatId, RequestId, Settings, Spectator, GameHistoryEntry,
+            TableId, GameId, UserId, ChatId, RequestId, Settings, Spectator, GameSummary,
             GamePage,
             ReplayGame, ReplayBoardElement, ReplaySoundEffect, SoundMove, Activity, LoginRequest,
             UserRef, NoticeCode, PasswordHashRequest, PasswordHashResponse,

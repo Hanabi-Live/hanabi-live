@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 
-import type { GameHistoryEntry } from "@hanabi-live/data";
-import { gameHistoryEntrySchema } from "@hanabi-live/data";
+import type { GameSummary } from "@hanabi-live/data";
+import { gameSummarySchema } from "@hanabi-live/data";
 import { act, cleanup, render, screen } from "@testing-library/react";
 import { Provider } from "react-redux";
 import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
@@ -30,7 +30,7 @@ function game(
   finished: string,
   playerNames: readonly string[] = OUR_GAME_PLAYERS,
 ) {
-  return gameHistoryEntrySchema.parse({
+  return gameSummarySchema.parse({
     gameId: id,
     options: {},
     seed: `p2v0s${id}`,
@@ -47,7 +47,7 @@ function game(
 
 function reply(
   seed: string,
-  games: readonly GameHistoryEntry[],
+  games: readonly GameSummary[],
   offset = 0,
   total = games.length,
 ) {

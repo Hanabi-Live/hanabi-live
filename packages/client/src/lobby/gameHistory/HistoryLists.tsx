@@ -1,6 +1,6 @@
 // The screens that show our past games and the other games on a seed.
 
-import type { GameHistoryEntry } from "@hanabi-live/data";
+import type { GameSummary } from "@hanabi-live/data";
 import type { GameOptions } from "@hanabi-live/game";
 import { getVariantById, secondsToClockString } from "@hanabi-live/game";
 import { Fragment } from "react";
@@ -125,7 +125,7 @@ function HistoryRow({
   game,
   username,
 }: {
-  readonly game: GameHistoryEntry;
+  readonly game: GameSummary;
   readonly username: string;
 }) {
   const { seed, numGamesOnSeed } = game;
@@ -236,7 +236,7 @@ function OtherScoreRow({
   maxScore,
   ourGame,
 }: {
-  readonly game: GameHistoryEntry;
+  readonly game: GameSummary;
   readonly maxScore: number;
   readonly ourGame: boolean;
 }) {
@@ -375,6 +375,6 @@ function ReplayButton({
   );
 }
 
-function formatDate(game: GameHistoryEntry): string {
+function formatDate(game: GameSummary): string {
   return dateTimeFormatter.format(new Date(game.finishedAt));
 }

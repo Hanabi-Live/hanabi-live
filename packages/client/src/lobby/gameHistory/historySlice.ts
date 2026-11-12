@@ -3,7 +3,7 @@
 
 import type {
   ClientReplyData,
-  GameHistoryEntry,
+  GameSummary,
   ServerCommandData,
 } from "@hanabi-live/data";
 import { compareGameHistory } from "@hanabi-live/data";
@@ -24,7 +24,7 @@ interface OtherScores {
 type LobbyStatus = ServerCommandData["lobbyStatus"];
 
 const gamesAdapter = createEntityAdapter({
-  selectId: (game: GameHistoryEntry): number => game.gameId,
+  selectId: (game: GameSummary): number => game.gameId,
 });
 
 interface HistoryState {
@@ -43,7 +43,7 @@ interface HistoryState {
   readonly otherScores:
     | {
         readonly seed: string;
-        readonly games: readonly GameHistoryEntry[];
+        readonly games: readonly GameSummary[];
 
         /** The seed's variant, or undefined until the server sends a game. */
         readonly variantId: number | undefined;
@@ -72,7 +72,7 @@ const historySlice = createSlice({
     historyRequested(state) {
       state.loading = true;
     },
-    historyReceived(state, action: PayloadAction<readonly GameHistoryEntry[]>) {
+    historyReceived(state, action: PayloadAction<readonly GameSummary[]>) {
       gamesAdapter.setMany(state.games, action.payload);
       state.loading = false;
     },
@@ -146,6 +146,6 @@ export const selectShownGameCount = gamesSelectors.selectTotal;
 /** The newest games come first. */
 export const selectHistoryGames = createSelector(
   [gamesSelectors.selectAll],
-  (games: readonly GameHistoryEntry[]): readonly GameHistoryEntry[] =>
+  (games: readonly GameSummary[]): readonly GameSummary[] =>
     games.toSorted(compareGameHistory),
 );

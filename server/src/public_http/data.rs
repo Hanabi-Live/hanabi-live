@@ -266,10 +266,10 @@ pub(super) async fn count(state: &PublicState, s: Selection) -> Result<hanabi_pr
     Ok(hanabi_protocol::Count::try_from(total)?)
 }
 
-/// The public history lists the lobby's `GameHistoryEntry` contract.
-fn game_history(row: HistoryRow) -> anyhow::Result<hanabi_protocol::GameHistoryEntry> {
+/// The public history lists the lobby's `GameSummary` contract.
+fn game_history(row: HistoryRow) -> anyhow::Result<hanabi_protocol::GameSummary> {
     let g = row.game;
-    Ok(hanabi_protocol::GameHistoryEntry {
+    Ok(hanabi_protocol::GameSummary {
         game_id: hanabi_protocol::GameId::try_from(g.id)?,
         num_turns: g.turn_count()?,
         options: crate::model::wire_options(&crate::archive::options(&g)?),
@@ -290,7 +290,7 @@ async fn history(
     s: Selection,
     order: &str,
     page: Page,
-) -> Result<Vec<hanabi_protocol::GameHistoryEntry>> {
+) -> Result<Vec<hanabi_protocol::GameSummary>> {
     let tag_user = s.tag_user;
     let mut qb = selected(s);
     qb.push(") SELECT ").push(GAME_COLUMNS);
