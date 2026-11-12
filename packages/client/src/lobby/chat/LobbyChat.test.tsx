@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 
 import type { ServerCommandData } from "@hanabi-live/data";
-import { tableIdSchema } from "@hanabi-live/data";
+import { chatIdSchema, tableIdSchema } from "@hanabi-live/data";
 import { act, cleanup, render, screen } from "@testing-library/react";
 import { Provider } from "react-redux";
 import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
@@ -48,8 +48,8 @@ afterEach(cleanup);
 describe("LobbyChat", () => {
   test("shows lobby messages and private messages, and removes deleted messages", () => {
     act(() => {
-      add(message({ chatId: 1, text: "first" }), true);
-      add(message({ chatId: 2, text: "second" }), true);
+      add(message({ chatId: chatIdSchema.parse(1), text: "first" }), true);
+      add(message({ chatId: chatIdSchema.parse(2), text: "second" }), true);
       add(
         message({
           kind: {
@@ -77,7 +77,7 @@ describe("LobbyChat", () => {
     act(() => {
       removeDeletedLobbyMessage(1);
       // A deleted message stays deleted if it arrives again.
-      add(message({ chatId: 1, text: "first" }), true);
+      add(message({ chatId: chatIdSchema.parse(1), text: "first" }), true);
     });
 
     expect(lineTexts().map((line) => line.split(" ").at(-1))).toStrictEqual([

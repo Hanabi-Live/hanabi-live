@@ -220,6 +220,18 @@ pub fn is_player_count<T: TryInto<usize>>(count: T) -> bool {
         .is_ok_and(|count| (MIN_PLAYERS..=MAX_PLAYERS).contains(&count))
 }
 
+/// A payload without fields, for a message whose name says everything.
+#[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct Empty {}
+
+/// A payload that names only a table: a request about the table, or a message about it.
+#[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct TableRef {
+    pub table_id: TableId,
+}
+
 /// A username that the server sends, which is never empty. Requests carry plain strings instead, as
 /// the `requests` module explains.
 #[derive(Clone, Debug, Default, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]

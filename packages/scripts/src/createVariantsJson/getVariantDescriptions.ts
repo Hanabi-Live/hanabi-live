@@ -12,6 +12,7 @@ import type {
 import {
   COLORS_MAP,
   DEFAULT_CLUE_RANKS,
+  DEFAULT_VARIANT_ID,
   SUITS_MAP,
   SUIT_REVERSED_SUFFIX,
   VALID_NUM_PLAYERS,
@@ -1345,7 +1346,13 @@ function isVariantAllowed(
   suitsMap: ReadonlyMap<string, Suit>,
   variantDescription: VariantDescription,
 ): boolean {
-  const variant = createVariant(colorsMap, suitsMap, variantDescription, 0, "");
+  const variant = createVariant(
+    colorsMap,
+    suitsMap,
+    variantDescription,
+    DEFAULT_VARIANT_ID,
+    "",
+  );
 
   // The requested double-dark combination can exceed the normal efficiency limit.
   if (

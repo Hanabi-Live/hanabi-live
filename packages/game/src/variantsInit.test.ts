@@ -1,5 +1,6 @@
 import { describe, expect, test } from "bun:test";
 import { COLORS_MAP, SUITS_MAP } from "./gameData.ts";
+import { DEFAULT_VARIANT_ID, variantIdSchema } from "./generated/protocol.ts";
 import { createVariant } from "./variantsInit.ts";
 
 describe("createVariant identity notes", () => {
@@ -12,7 +13,7 @@ describe("createVariant identity notes", () => {
         suits: ["Red", "Green", "Blue"],
         upOrDown: true,
       },
-      0,
+      DEFAULT_VARIANT_ID,
       "custom-up-or-down",
     );
     const customPattern = new RegExp(customUpOrDown.identityNotePattern, "u");
@@ -26,7 +27,7 @@ describe("createVariant identity notes", () => {
         name: "Up or Down (3 Suits)",
         suits: ["Red", "Green", "Blue"],
       },
-      1,
+      variantIdSchema.parse(1),
       "custom-normal",
     );
     const nameOnlyPattern = new RegExp(nameOnly.identityNotePattern, "u");

@@ -48,12 +48,6 @@ pub struct RelationshipRequest {
 
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
-pub struct TableRef {
-    pub table_id: TableId,
-}
-
-#[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
-#[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct TableJoinRequest {
     pub table_id: TableId,
     /// Absent when the user gives no password.

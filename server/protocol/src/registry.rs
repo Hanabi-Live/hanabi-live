@@ -128,7 +128,7 @@ macro_rules! server_contracts {
 macro_rules! exported_types {
     ($apply:ident) => {
         $apply! {
-            TableId, GameId, UserId, Settings, Spectator, GameHistoryEntry,
+            TableId, GameId, UserId, ChatId, Settings, Spectator, GameHistoryEntry,
             ReplayGame, ReplayBoardElement, ReplaySoundEffect, SoundMove, Activity, LoginRequest,
             LoginResponse, NoticeCode, PasswordHashRequest, PasswordHashResponse,
             VariantNames, ScoreFrequency, GameListColumn,
@@ -143,7 +143,8 @@ macro_rules! game_library_types {
     ($apply:ident) => {
         $apply! {
             CatalogCharacter, CatalogColor, CatalogSuit, CatalogVariant, CardNote, CardOrder,
-            ClueType, GameEvent, GameOptions, HypotheticalEvent, PlayerNotes,
+            CharacterId, ClueType, GameEvent, GameOptions, HypotheticalEvent, PlayerNotes,
+            VariantId,
         }
     };
 }

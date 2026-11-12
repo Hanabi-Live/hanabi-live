@@ -4,7 +4,7 @@ import * as z from "zod";
 export const MIN_PLAYERS = 2;
 export const MAX_PLAYERS = 6;
 export const DEFAULT_VARIANT_NAME = "No Variant";
-export const DEFAULT_VARIANT_ID = 0;
+export const DEFAULT_VARIANT_ID = 0 as z.output<typeof variantIdSchema>;
 export const MAX_SUITS = 6;
 export const MAX_DECK_SIZE = 60;
 export const MIN_RANK = 1;
@@ -21,7 +21,12 @@ export const PANICKY_MAX_CLUES = 4;
  * A detrimental character's number in `characters.json`. The database stores it as a
  * `SMALLINT`.
  */
-export const characterIdSchema = z.number().int().min(0).max(32_767);
+export const characterIdSchema = z
+  .number()
+  .int()
+  .min(0)
+  .max(32_767)
+  .brand<"CharacterId">();
 
 /**
  * An entry in `characters.json`: a detrimental character.
@@ -141,7 +146,12 @@ export const stackSizeSchema = z.literal([1, 2, 3, 4, 5]);
  * A variant's number in `variants.json`. "No Variant" is 0. The database stores it as a
  * `SMALLINT`.
  */
-export const variantIdSchema = z.number().int().min(0).max(32_767);
+export const variantIdSchema = z
+  .number()
+  .int()
+  .min(0)
+  .max(32_767)
+  .brand<"VariantId">();
 
 /**
  * An entry in `variants.json`. This is similar to `Variant`, but it only has primitive types.
@@ -451,18 +461,18 @@ export const timeControlSchema = z
  */
 export const gameOptionsSchema = z
   .strictObject({
-    allOrNothing: z.boolean().default(false),
-    deckPlays: z.boolean().default(false),
-    detrimentalCharacters: z.boolean().default(false),
-    emptyClues: z.boolean().default(false),
-    oneExtraCard: z.boolean().default(false),
-    oneLessCard: z.boolean().default(false),
-    speedrun: z.boolean().default(false),
+    allOrNothing: z.boolean().prefault(false),
+    deckPlays: z.boolean().prefault(false),
+    detrimentalCharacters: z.boolean().prefault(false),
+    emptyClues: z.boolean().prefault(false),
+    oneExtraCard: z.boolean().prefault(false),
+    oneLessCard: z.boolean().prefault(false),
+    speedrun: z.boolean().prefault(false),
     /**
      * The clock of a timed game. Absent when the game is untimed.
      */
     timeControl: timeControlSchema.optional(),
-    variantId: variantIdSchema.default(0),
+    variantId: variantIdSchema.prefault(0),
   })
   .readonly();
 

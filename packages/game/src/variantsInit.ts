@@ -14,6 +14,7 @@ import type { VariantJson } from "./interfaces/VariantJson.ts";
 import variantsJson from "./json/variants.json" with { type: "json" };
 import { getIdentityNotePatternForVariant } from "./notes.ts";
 import type { Rank } from "./types/Rank.ts";
+import type { VariantId } from "./types/VariantId.ts";
 
 const AUTO_PIP_PRIORITY = [
   Pip.hanabiRed1,
@@ -45,7 +46,7 @@ export function createVariant(
   colorsMap: ReadonlyMap<string, Color>,
   suitsMap: ReadonlyMap<string, Suit>,
   variantDescription: VariantDescription,
-  id: number,
+  id: VariantId,
   recipe: string,
 ): Variant {
   // Fields are validated in the order that they appear in `CatalogVariant` (in

@@ -87,7 +87,12 @@ export const cardIdentitiesSchema = z
 /**
  * A chat message's ID in `chat_log`.
  */
-const chatIdSchema = z.number().int().min(1).max(9_007_199_254_740_991);
+export const chatIdSchema = z
+  .number()
+  .int()
+  .min(1)
+  .max(9_007_199_254_740_991)
+  .brand<"ChatId">();
 
 /**
  * Who wrote a chat message.
@@ -292,6 +297,10 @@ export const connectedSchema = z
     tableId: tableIdSchema,
   })
   .readonly();
+
+/**
+ * A payload without fields, for a message whose name says everything.
+ */
 export const emptySchema = z.strictObject({}).readonly();
 export const friendsSchema = z
   .strictObject({ friends: z.array(z.string().min(1)).readonly() })
@@ -545,7 +554,7 @@ const activeHypotheticalSchema = z
 /**
  * Every player's clock, in the `clock` message and in a game's state.
  */
-const clocksSchema = z
+const clockStateSchema = z
   .strictObject({
     /**
      * Absent when the game has no active player.
@@ -626,7 +635,7 @@ export const gameStateSchema = z
     /**
      * Absent in a replay.
      */
-    clocks: clocksSchema.optional(),
+    clocks: clockStateSchema.optional(),
     /**
      * Whether each player has loaded the game, in seat order.
      */
@@ -768,24 +777,24 @@ const clientKindSchema = z.enum(["web", "bot", "app"]);
  */
 export const loginRequestSchema = z
   .strictObject({
-    client: clientKindSchema.default("web"),
+    client: clientKindSchema.prefault("web"),
     /**
      * Creates the account if the username is free. Without it, an unknown username fails with
      * `NoticeCode::NoAccount`, so that a typo does not create an account.
      */
-    createAccount: z.boolean().default(false),
+    createAccount: z.boolean().prefault(false),
     /**
      * Whether the client's system prefers a dark theme. A new account starts with this as its
      * dark mode setting.
      */
-    darkMode: z.boolean().default(false),
+    darkMode: z.boolean().prefault(false),
     /**
      * Sets a new password after the current one is verified. A blank value is absent, as forms
      * send a blank input.
      */
     newPassword: z.string().optional(),
-    password: z.string().default(""),
-    username: z.string().default(""),
+    password: z.string().prefault(""),
+    username: z.string().prefault(""),
     /**
      * The client's release. Only the website sends it. A blank value is absent, as forms send a
      * blank input.
@@ -1275,11 +1284,11 @@ export const serverRestartSchema = z
  */
 const createTableSettingsSchema = z
   .strictObject({
-    maxPlayers: numPlayersSchema.default(5),
+    maxPlayers: numPlayersSchema.prefault(5),
     /**
      * The options of that table, exactly as it had them: without a clock when it was untimed.
      */
-    options: gameOptionsSchema.default({
+    options: gameOptionsSchema.prefault({
       allOrNothing: false,
       deckPlays: false,
       detrimentalCharacters: false,
@@ -1313,8 +1322,8 @@ const volumeSchema = z.number().int().min(0).max(100);
  */
 export const settingsSchema = z
   .strictObject({
-    colorblindMode: z.boolean().default(false),
-    createTable: createTableSettingsSchema.default({
+    colorblindMode: z.boolean().prefault(false),
+    createTable: createTableSettingsSchema.prefault({
       maxPlayers: 5,
       options: {
         allOrNothing: false,
@@ -1327,28 +1336,28 @@ export const settingsSchema = z
         variantId: 0,
       },
     }),
-    darkMode: z.boolean().default(false),
-    desktopNotification: z.boolean().default(false),
-    hGroupConventions: z.boolean().default(false),
+    darkMode: z.boolean().prefault(false),
+    desktopNotification: z.boolean().prefault(false),
+    hGroupConventions: z.boolean().prefault(false),
     /**
      * The highest H-Group level that this user wants to play at. Absent when they did not
      * choose one; `SettingsRequest::cleared` removes it.
      */
     hGroupLevel: hGroupLevelSchema.optional(),
-    keldonMode: z.boolean().default(false),
+    keldonMode: z.boolean().prefault(false),
     /**
      * Shows games in the redesigned game screen, which is in testing. Players opt in.
      */
-    newUi: z.boolean().default(false),
-    realLifeMode: z.boolean().default(false),
-    reverseHands: z.boolean().default(false),
-    showTimerInUntimed: z.boolean().default(false),
-    soundMove: soundMoveSchema.default("all"),
-    soundTimer: z.boolean().default(true),
-    speedrunMode: z.boolean().default(false),
-    speedrunPreplay: z.boolean().default(false),
-    styleNumbers: z.boolean().default(false),
-    volume: volumeSchema.default(50),
+    newUi: z.boolean().prefault(false),
+    realLifeMode: z.boolean().prefault(false),
+    reverseHands: z.boolean().prefault(false),
+    showTimerInUntimed: z.boolean().prefault(false),
+    soundMove: soundMoveSchema.prefault("all"),
+    soundTimer: z.boolean().prefault(true),
+    speedrunMode: z.boolean().prefault(false),
+    speedrunPreplay: z.boolean().prefault(false),
+    styleNumbers: z.boolean().prefault(false),
+    volume: volumeSchema.prefault(50),
   })
   .readonly();
 
@@ -1463,6 +1472,10 @@ export const tableListSchema = z
 export const tableOwnerSchema = z
   .strictObject({ owner: userRefSchema, tableId: tableIdSchema })
   .readonly();
+
+/**
+ * A payload that names only a table: a request about the table, or a message about it.
+ */
 export const tableRefSchema = z
   .strictObject({ tableId: tableIdSchema })
   .readonly();

@@ -146,18 +146,18 @@ wire_integer! {
 wire_integer! {
     /// A variant's number in `variants.json`. "No Variant" is 0. The database stores it as a
     /// `SMALLINT`.
-    VariantId(pub u32), 0, i16::MAX
+    VariantId(pub u32), 0, i16::MAX, brand = "VariantId"
 }
 
 wire_integer! {
     /// A detrimental character's number in `characters.json`. The database stores it as a
     /// `SMALLINT`.
-    CharacterId(pub u32), 0, i16::MAX
+    CharacterId(pub u32), 0, i16::MAX, brand = "CharacterId"
 }
 
 wire_integer! {
     /// A chat message's ID in `chat_log`.
-    ChatId(pub i64), 1, MAX_SAFE_INTEGER
+    ChatId(pub i64), 1, MAX_SAFE_INTEGER, brand = "ChatId"
 }
 
 wire_integer! {

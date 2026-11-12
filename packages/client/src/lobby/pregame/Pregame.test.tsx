@@ -45,7 +45,7 @@ const game: Game = {
   settings: {
     name: "my table",
     maxPlayers: 5,
-    options: { ...defaultOptions, variantId: 0, speedrun: true },
+    options: { ...defaultOptions, speedrun: true },
   },
   owner: { userId: userIdSchema.parse(1), username: "alice" },
   passwordProtected: true,

@@ -1,6 +1,7 @@
 import type {
   SuitJson,
   VariantDescription,
+  VariantId,
   VariantJson,
 } from "@hanabi-live/game";
 import {
@@ -331,7 +332,7 @@ export function validateVariantRecipes(
 function getVariantFromRecipe(
   recipe: string,
   name: string,
-  oldId: number,
+  oldId: VariantId,
   suitsIdMap: ReadonlyMap<string, SuitJson>,
 ): VariantJson {
   const [suitsString, ...variantModifiers] = recipe.split(VARIANT_DELIMITER);

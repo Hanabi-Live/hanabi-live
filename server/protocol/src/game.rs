@@ -15,13 +15,13 @@ use super::*;
 pub struct Clock {
     pub table_id: TableId,
     #[serde(flatten)]
-    pub clocks: Clocks,
+    pub clocks: ClockState,
 }
 
 /// Every player's clock, in the `clock` message and in a game's state.
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
-pub struct Clocks {
+pub struct ClockState {
     /// Each player's clock, in seat order.
     #[schemars(length(min = MIN_PLAYERS, max = MAX_PLAYERS))]
     pub player_times_ms: Vec<PlayerClock>,
@@ -294,7 +294,7 @@ pub struct GameState {
     pub connected: Vec<bool>,
     /// Absent in a replay.
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub clocks: Option<Clocks>,
+    pub clocks: Option<ClockState>,
     /// Absent in a replay.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub pause: Option<PauseState>,

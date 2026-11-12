@@ -198,7 +198,9 @@ fn expression(schema: &Value) -> Result<String> {
                             !required.iter().any(|value| value == name),
                             "Required fields cannot acquire client-only defaults"
                         );
-                        write!(field, ".default({})", default_literal(default))?;
+                        // `prefault` parses the default, as the wire form that it is, so it also
+                        // suits a branded type.
+                        write!(field, ".prefault({})", default_literal(default))?;
                     } else if !required.iter().any(|value| value == name) {
                         field.push_str(".optional()");
                     }
@@ -555,7 +557,10 @@ fn game_library_constants() -> String {
         ),
         (
             "DEFAULT_VARIANT_ID",
-            hanabi_protocol::DEFAULT_VARIANT_ID.to_string(),
+            format!(
+                "{} as z.output<typeof variantIdSchema>",
+                hanabi_protocol::DEFAULT_VARIANT_ID
+            ),
         ),
         ("MAX_SUITS", hanabi_protocol::MAX_SUITS.to_string()),
         ("MAX_DECK_SIZE", hanabi_protocol::MAX_DECK_SIZE.to_string()),

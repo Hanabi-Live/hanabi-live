@@ -1,8 +1,10 @@
 import type {
   SuitJson,
   VariantDescription,
+  VariantId,
   VariantJson,
 } from "@hanabi-live/game";
+import { variantIdSchema } from "@hanabi-live/game";
 import fs from "node:fs";
 import path from "node:path";
 import * as prettier from "prettier";
@@ -176,7 +178,7 @@ function validateVariants(variants: readonly VariantJson[]) {
 }
 
 function getOldVariantMaps(variants: readonly VariantJson[]) {
-  const oldVariantsNameToIdMap = new Map<string, number>();
+  const oldVariantsNameToIdMap = new Map<string, VariantId>();
   const oldVariantsIdToNameMap = new Map<number, string>();
 
   for (const variant of variants) {
@@ -195,7 +197,7 @@ function getVariantsFromVariantDescriptions(
   variantDescriptions: readonly VariantDescription[],
   suitsNameMap: ReadonlyMap<string, SuitJson>,
   // eslint-disable-next-line complete/prefer-readonly-parameter-types
-  oldVariantsNameToIdMap: Map<string, number>,
+  oldVariantsNameToIdMap: Map<string, VariantId>,
   // eslint-disable-next-line complete/prefer-readonly-parameter-types
   oldVariantsIdToNameMap: Map<number, string>,
 ): readonly VariantJson[] {
@@ -214,10 +216,10 @@ function getVariantsFromVariantDescriptions(
 function getNextUnusedVariantId(
   variantName: string,
   // eslint-disable-next-line complete/prefer-readonly-parameter-types
-  oldVariantsNameToIdMap: Map<string, number>,
+  oldVariantsNameToIdMap: Map<string, VariantId>,
   // eslint-disable-next-line complete/prefer-readonly-parameter-types
   oldVariantsIdToNameMap: Map<number, string>,
-): number {
+): VariantId {
   // First, prefer the old/existing variant ID, if present.
   const id = oldVariantsNameToIdMap.get(variantName);
   if (id !== undefined) {
@@ -225,10 +227,11 @@ function getNextUnusedVariantId(
   }
 
   // Otherwise, find the lowest unused variant ID.
-  let variantId = 0;
-  while (oldVariantsIdToNameMap.has(variantId)) {
-    variantId++;
+  let unused = 0;
+  while (oldVariantsIdToNameMap.has(unused)) {
+    unused++;
   }
+  const variantId = variantIdSchema.parse(unused);
   oldVariantsIdToNameMap.set(variantId, variantName);
   oldVariantsNameToIdMap.set(variantName, variantId);
 
