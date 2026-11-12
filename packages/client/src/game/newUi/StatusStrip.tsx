@@ -6,17 +6,21 @@ import { tooltipRefHtml } from "../../tooltipRef.ts";
  * centered over it.
  */
 const EFFICIENCY_HELP = `
-  <span class="small-tooltip-text tw:max-w-[19em] tw:narrow-980:max-w-[15em]">
-    The first number is the minimum amount of efficiency needed from this turn
-    onward in order to win (i.e. future required efficiency).<br />
-    The second number shows the minimum possible efficiency needed to win with
-    the current number of players and the current variant.
-  </span>
+  <ul class="small-tooltip-text tw:m-0 tw:max-w-[19em] tw:list-disc tw:space-y-2 tw:pl-[1.2em] tw:narrow-980:max-w-[15em]">
+    <li>
+      <strong>First number:</strong> the efficiency that the team needs from
+      now on in order to win.
+    </li>
+    <li>
+      <strong>Second number:</strong> the efficiency needed over the whole
+      game, for this variant and number of players.
+    </li>
+  </ul>
 `;
 
 /** The plain text of `EFFICIENCY_HELP`, for screen readers. */
 const EFFICIENCY_HELP_LABEL =
-  "About efficiency: the first number is the future required efficiency, and the second number is the minimum possible efficiency needed to win with the current number of players and the current variant.";
+  "About efficiency: the first number is the efficiency that the team needs from now on in order to win, and the second number is the efficiency needed over the whole game, for this variant and number of players.";
 
 interface StatusStripProps {
   readonly turn: number;
