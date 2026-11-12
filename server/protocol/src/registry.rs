@@ -18,14 +18,15 @@ use std::{
     sync::{Arc, LazyLock, PoisonError, RwLock},
 };
 
+/// Every client request: its name, its payload, and, for a request whose reply carries data, the
+/// name of its reply in `reply` and the reply's payload. Every other reply carries no data.
 macro_rules! client_contracts {
     ($apply:ident) => {
         $apply! {
             LobbyLoad "lobbyLoad" => Empty;
-            Sync "sync" => Empty;
             Chat "chat" => ChatRequest;
             ChatPm "chatPm" => ChatPmRequest;
-            ChatPmHistory "chatPmHistory" => ChatPmHistoryRequest;
+            ChatPmHistory "chatPmHistory" => ChatPmHistoryRequest, reply CHAT_PM_HISTORY: ChatPmHistory;
             FriendAdd "friendAdd" => RelationshipRequest;
             FriendRemove "friendRemove" => RelationshipRequest;
             LinkAdd "linkAdd" => RelationshipRequest;
@@ -52,8 +53,8 @@ macro_rules! client_contracts {
             GameLoaded "gameLoaded" => TableRef;
             Settings "settings" => SettingsRequest;
             UserInactive "userInactive" => UserInactiveRequest;
-            GameHistory "gameHistory" => PageRequest;
-            SeedGames "seedGames" => SeedGamesRequest;
+            GameHistory "gameHistory" => PageRequest, reply GAME_HISTORY: GamePage;
+            SeedGames "seedGames" => SeedGamesRequest, reply SEED_GAMES: GamePage;
             TagSearch "tagSearch" => TagSearchRequest;
             TableCreate "tableCreate" => TableCreateRequest;
             TableUpdate "tableUpdate" => TableUpdateRequest;
@@ -92,12 +93,10 @@ macro_rules! server_contracts {
             GAME_STATE "gameState" => GameState;
             GAME_INIT "gameInit" => GameInit;
             TABLE_BOOTED "tableBooted" => TableRef;
-            SYNCED "synced" => Empty;
             LOBBY_STATUS "lobbyStatus" => LobbyStatus;
             CHAT "chat" => Chat;
             CHAT_DELETED "chatDeleted" => ChatDeleted;
             CHAT_LIST "chatList" => ChatList;
-            CHAT_PM_HISTORY "chatPmHistory" => ChatPmHistory;
             CHAT_TYPING "chatTyping" => ChatTyping;
             TABLE_JOINED "tableJoined" => TableJoined;
             TABLE_LEFT "tableLeft" => TableRef;
@@ -114,9 +113,7 @@ macro_rules! server_contracts {
             TABLE "table" => Table;
             TABLE_LIST "tableList" => TableList;
             PREGAME "pregame" => Pregame;
-            GAME_HISTORY "gameHistory" => GamePage;
             GAME_HISTORY_ADDED "gameHistoryAdded" => GameHistoryEntry;
-            SEED_GAMES "seedGames" => SeedGames;
         }
     };
 }
@@ -126,7 +123,8 @@ macro_rules! server_contracts {
 macro_rules! exported_types {
     ($apply:ident) => {
         $apply! {
-            TableId, GameId, UserId, ChatId, Settings, Spectator, GameHistoryEntry,
+            TableId, GameId, UserId, ChatId, RequestId, Settings, Spectator, GameHistoryEntry,
+            GamePage,
             ReplayGame, ReplayBoardElement, ReplaySoundEffect, SoundMove, Activity, LoginRequest,
             UserRef, NoticeCode, PasswordHashRequest, PasswordHashResponse,
             VariantNames, ScoreFrequency, GameListColumn,
@@ -188,6 +186,7 @@ fn schema_value<T: JsonSchema>() -> Value {
 pub fn schemas() -> BTreeMap<String, Value> {
     let mut schemas = BTreeMap::new();
     macro_rules! insert {
+        () => {};
         ($($ty:ty),+ $(,)?) => {$(
             schemas.insert(
                 stringify!($ty).to_owned(),
@@ -195,10 +194,16 @@ pub fn schemas() -> BTreeMap<String, Value> {
             );
         )+};
     }
+    macro_rules! requests {
+        ($($name:ident $command:literal => $payload:ty $(, reply $reply:ident: $data:ty)?;)+) => {
+            insert!($($payload),+);
+            $(insert!($($data)?);)+
+        };
+    }
     macro_rules! payloads {
         ($($name:ident $command:literal => $payload:ty;)+) => { insert!($($payload),+); };
     }
-    client_contracts!(payloads);
+    client_contracts!(requests);
     server_contracts!(payloads);
     exported_types!(insert);
     game_library_types!(insert);
@@ -213,6 +218,7 @@ pub fn exported() -> BTreeSet<&'static str> {
     }
     client_contracts()
         .into_values()
+        .chain(reply_contracts().into_values())
         .chain(server_contracts().into_values())
         .chain(exported_types!(names))
         .collect()
@@ -287,9 +293,21 @@ pub fn decode_server(name: &str, value: &Value) -> Result<Option<Value>> {
 
 pub fn client_contracts() -> BTreeMap<&'static str, &'static str> {
     macro_rules! names {
-        ($($name:ident $command:literal => $payload:ty;)+) => {
+        ($($name:ident $command:literal => $payload:ty $(, reply $reply:ident: $data:ty)?;)+) => {
             BTreeMap::from([$(( $command, stringify!($payload) )),+])
         };
+    }
+    client_contracts!(names)
+}
+
+/// The payload type of each reply that carries data, by the name of its request.
+pub fn reply_contracts() -> BTreeMap<&'static str, &'static str> {
+    macro_rules! names {
+        ($($name:ident $command:literal => $payload:ty $(, reply $reply:ident: $data:ty)?;)+) => {{
+            let mut names = BTreeMap::new();
+            $($(names.insert($command, stringify!($data));)?)+
+            names
+        }};
     }
     client_contracts!(names)
 }
@@ -341,8 +359,58 @@ pub mod server {
     server_contracts!(server_messages);
 }
 
+/// A registered reply that carries data: the name of its request, tied to the payload type the
+/// clients validate.
+pub struct Reply<T> {
+    command: &'static str,
+    payload: PhantomData<fn(T)>,
+}
+
+impl<T: Serialize> Reply<T> {
+    const fn new(command: &'static str) -> Self {
+        Self {
+            command,
+            payload: PhantomData,
+        }
+    }
+
+    /// The reply's data, ready for the reply to the request that this reply answers.
+    pub fn data(&self, data: T) -> ReplyData {
+        ReplyData {
+            command: self.command,
+            data: serde_json::to_value(data).expect("JSON-serializable reply payload"),
+        }
+    }
+}
+
+/// The data of a reply, with the name of the request that it answers.
+#[derive(Clone, Debug, PartialEq)]
+pub struct ReplyData {
+    pub command: &'static str,
+    pub data: Value,
+}
+
+macro_rules! reply_messages {
+    ($($name:ident $command:literal => $payload:ty $(, reply $reply:ident: $data:ty)?;)+) => {
+        $($(pub const $reply: super::Reply<$data> = super::Reply::new($command);)?)+
+    };
+}
+
+/// Every reply that carries data. Building one requires one of these and its payload type.
+pub mod reply {
+    #[cfg_attr(
+        not(test),
+        expect(
+            clippy::wildcard_imports,
+            reason = "the reply table names every payload type"
+        )
+    )]
+    use crate::*;
+    client_contracts!(reply_messages);
+}
+
 macro_rules! client_messages {
-    ($($name:ident $command:literal => $payload:ty;)+) => {
+    ($($name:ident $command:literal => $payload:ty $(, reply $reply:ident: $data:ty)?;)+) => {
         /// A client command, decoded once into its payload type. Matching on it, rather than on
         /// command names, lets the compiler check that every command is handled.
         #[derive(Clone, Debug)]

@@ -13,7 +13,6 @@ import { drawUi } from "./drawUi.ts";
 import * as keyboard from "./keyboard.ts";
 import * as cardsView from "./reactive/views/cardsView.ts";
 import * as cluesView from "./reactive/views/cluesView.ts";
-import * as restart from "./restart.ts";
 import { setGlobalEmpathy } from "./setGlobalEmpathy.ts";
 import * as timer from "./timer.ts";
 import type { UiGlobals } from "./UiGlobals.ts";
@@ -134,13 +133,6 @@ export class HanabiUi {
   focusLost(): void {
     setGlobalEmpathy(false);
     cursor.set("default");
-  }
-
-  // eslint-disable-next-line @typescript-eslint/class-methods-use-this
-  cancelPendingRestart(): void {
-    if (globals.restartPending) {
-      restart.setPending(false);
-    }
   }
 
   destroy(): void {

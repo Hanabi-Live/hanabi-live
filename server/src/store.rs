@@ -1783,7 +1783,7 @@ mod tests {
             for user in &users{send(&hub,user.clone(),"tableUnattend",json!({"tableId":id})).await?;}
             tokio::time::timeout(Duration::from_secs(3),async{
                 while let Some(frame)=outgoing[2].recv().await{
-                    if frame.message.to_text()?.starts_with("tableRemoved "){return Ok::<(),anyhow::Error>(());}
+                    if crate::transport::is_event(frame.message.to_text()?, "tableRemoved"){return Ok::<(),anyhow::Error>(());}
                 }anyhow::bail!("Socket closed before tableRemoved")
             }).await??;
             ensure!(store.load().await?.is_empty(),"Departed replay remained recoverable");

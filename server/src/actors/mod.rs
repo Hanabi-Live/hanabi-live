@@ -283,8 +283,11 @@ pub enum HubCommand {
     /// Answers whether the hub runs and the server still owns the live tables, for the
     /// operations endpoint.
     Inspect(oneshot::Sender<Result<()>>),
-    Sync {
+    /// Sends the reply to a request that succeeded. The hub sends it after the messages that the
+    /// request's work published, which reach the hub first.
+    Reply {
         session: Arc<Session>,
+        frame: Frame,
         reply: Reply,
     },
     Effects(Effects),

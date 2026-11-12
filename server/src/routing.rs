@@ -12,7 +12,7 @@ pub enum Route {
     /// A table's chat. The lobby checks it and runs chat commands first, then the rest continues to
     /// the table with this ID.
     TableChat(TableId),
-    /// The hub runs the command: a sync, or the creation of a table or replay.
+    /// The hub runs the command: the creation of a table or replay.
     Hub,
     /// The table with this ID runs the command.
     Table(TableId),
@@ -22,7 +22,7 @@ pub fn route(message: &ClientMessage) -> Route {
     use ClientMessage as M;
     let id = match message {
         M::LobbyLoad(_) => return Route::Connection,
-        M::Sync(_) | M::TableCreate(_) | M::ReplayCreate(_) => return Route::Hub,
+        M::TableCreate(_) | M::ReplayCreate(_) => return Route::Hub,
         M::Settings(_)
         | M::UserInactive(_)
         | M::GameHistory(_)

@@ -17,11 +17,11 @@ const USER_QUEUE: usize = 16;
 pub(super) enum UserCommand {
     /// A connection registered. Commands from connections with an earlier generation are refused.
     Current(u64),
-    /// A lobby command. The reply holds a chat message that continues to its table.
+    /// A lobby command.
     Lobby {
         session: Arc<Session>,
         message: Box<ClientMessage>,
-        reply: oneshot::Sender<CommandResult<Option<ClientMessage>>>,
+        reply: oneshot::Sender<CommandResult<super::dispatch::LobbyOutcome>>,
     },
 }
 

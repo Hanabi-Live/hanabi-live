@@ -13,7 +13,6 @@ import * as theme from "../theme.ts";
 import {
   historyReceived,
   lobbyStatusReceived,
-  otherScoresReceived,
 } from "./gameHistory/historySlice.ts";
 import * as lobbyLogin from "./login.ts";
 import { shouldPlayJoinSound } from "./pregame/joinSound.ts";
@@ -75,21 +74,12 @@ lobbyCommands.set("pregame", (data) => {
   }
 });
 
-lobbyCommands.set("gameHistory", (data) => {
-  // A page of the games that we have previously played.
-  store.dispatch(historyReceived(data.games));
-});
-
 lobbyCommands.set("gameHistoryAdded", (data) => {
   // We just finished a game, so add it to our history and our total.
   store.dispatch(historyReceived([data]));
   if (globals.totalGames !== undefined) {
     globals.totalGames++;
   }
-});
-
-lobbyCommands.set("seedGames", (data) => {
-  store.dispatch(otherScoresReceived(data));
 });
 
 lobbyCommands.set("tableJoined", (data) => {

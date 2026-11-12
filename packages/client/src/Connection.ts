@@ -1,13 +1,15 @@
 import type {
   CLIENT_COMMAND_SCHEMAS,
   ClientCommand,
+  ClientReplyData,
   ServerCommand,
   ServerCommandData,
 } from "@hanabi-live/data";
 import {
-  packWsMessage,
+  CLIENT_REPLY_SCHEMAS,
+  packRequest,
   SERVER_COMMAND_SCHEMAS,
-  unpackWsMessage,
+  unpackServerFrame,
 } from "@hanabi-live/data";
 import type { z } from "zod";
 
@@ -27,13 +29,23 @@ const serverSchemas: Readonly<
   Partial<Record<string, (typeof SERVER_COMMAND_SCHEMAS)[ServerCommand]>>
 > = SERVER_COMMAND_SCHEMAS;
 
+const replySchemas: Readonly<Partial<Record<string, z.ZodType>>> =
+  CLIENT_REPLY_SCHEMAS;
+
+/** The server's answer to a request: its data, or a failure, which the client has shown. */
+export type Reply<Command extends ClientCommand> =
+  | { readonly ok: true; readonly data: ClientReplyData[Command] }
+  | { readonly ok: false };
+
+/** A request that the server has not answered. */
+interface PendingRequest {
+  readonly command: ClientCommand;
+  readonly onReply: ((reply: Reply<ClientCommand>) => void) | undefined;
+}
+
 /**
- * Manages a WebSocket connection to the server.
- *
- * On top of the WebSocket protocol, the client and the server communicate using a specific format
- * based on the protocol that the Golem WebSocket framework uses: `command JSON`.
- *
- * Based on: https://github.com/trevex/golem_client/blob/master/golem.js
+ * Manages a WebSocket connection to the server. The frames are described in the data package's
+ * "frames.ts".
  */
 export class Connection {
   ws: WebSocket;
@@ -46,6 +58,8 @@ export class Connection {
   /** Called instead of the command's callback when a message does not match its schema. */
   invalidMessage?: (command: string, error: Error) => void;
   private ready = true;
+  private nextRequestId = 1;
+  private readonly pending = new Map<number, PendingRequest>();
 
   setReady(ready: boolean): void {
     this.ready = ready;
@@ -66,6 +80,11 @@ export class Connection {
   }
 
   onClose(event: CloseEvent): void {
+    // A closed connection answers nothing more.
+    for (const request of this.pending.values()) {
+      request.onReply?.({ ok: false });
+    }
+    this.pending.clear();
     this.lifecycleCallback("close")?.(event);
   }
 
@@ -74,12 +93,16 @@ export class Connection {
       return;
     }
 
-    const msg = unpackWsMessage(event.data);
-    if (msg === undefined) {
+    const frame = unpackServerFrame(event.data);
+    if (frame === undefined) {
+      console.error(`The server sent an unreadable frame: ${event.data}`);
       return;
     }
-
-    const [command, data] = msg;
+    if (frame.kind === "reply") {
+      this.onReply(frame.id, frame.data, frame.error);
+      return;
+    }
+    const { name: command, data } = frame;
 
     // `on` registered this command's callback for its payload type, which the schema check below
     // establishes.
@@ -117,6 +140,66 @@ export class Connection {
     callback(structuredClone(result.data));
   }
 
+  /** Answers a request: with its data, or, after the "warning" handler shows it, with a failure. */
+  private onReply(id: number, data: unknown, error: unknown): void {
+    const request = this.pending.get(id);
+    if (request === undefined) {
+      console.error(
+        `The server answered request ${id}, which we did not send.`,
+      );
+      return;
+    }
+    this.pending.delete(id);
+    const { command } = request;
+    function resolve(reply: Reply<ClientCommand>) {
+      request?.onReply?.(reply);
+    }
+    if (error !== undefined) {
+      const notice = SERVER_COMMAND_SCHEMAS.warning.safeParse(error);
+      if (!notice.success) {
+        this.invalidMessage?.(
+          command,
+          new TypeError(
+            `The server sent an invalid failure of "${command}": ${notice.error.message}`,
+          ),
+        );
+      } else if (notice.data.code !== "commandIgnored") {
+        // `on` registered the warning callback for this payload type.
+        const warning = this.callbacks.get("warning") as
+          ((data: ServerCommandData["warning"]) => void) | undefined;
+        warning?.(structuredClone(notice.data));
+      }
+      resolve({ ok: false });
+      return;
+    }
+    const schema = replySchemas[command];
+    if (schema === undefined) {
+      // `ClientReplyData` has no data for a command without a reply schema.
+      resolve({ ok: true, data: undefined as ClientReplyData[ClientCommand] });
+      return;
+    }
+    const result = schema.safeParse(data);
+    if (!result.success) {
+      this.invalidMessage?.(
+        command,
+        new TypeError(
+          `The server sent an invalid reply to "${command}": ${result.error.message}`,
+        ),
+      );
+      resolve({ ok: false });
+      return;
+    }
+    if (this.debug) {
+      console.log(`%cReceived the reply to ${command}:`, "color: blue;");
+      console.log(result.data);
+    }
+    // The schema of the command's reply checked the data.
+    resolve({
+      ok: true,
+      data: structuredClone(result.data) as ClientReplyData[ClientCommand],
+    });
+  }
+
   onError(event: Event): void {
     this.lifecycleCallback("socketError")?.(event);
   }
@@ -137,19 +220,31 @@ export class Connection {
     return this.callbacks.get(name) as ((event: Event) => void) | undefined;
   }
 
+  /**
+   * Sends a request. `onReply` gets the server's reply, after every message that the request's work
+   * sent. A refused request shows as a warning either way.
+   */
   send<Command extends ClientCommand>(
     command: Command,
     data: z.input<(typeof CLIENT_COMMAND_SCHEMAS)[Command]>,
+    onReply?: (reply: Reply<Command>) => void,
   ): void {
     if (
       this.ws.readyState !== WebSocket.OPEN
       || (!this.ready && !COMMANDS_BEFORE_READY.has(command))
     ) {
+      onReply?.({ ok: false });
       return;
     }
 
-    const msg = packWsMessage(command, data);
-    this.ws.send(msg);
+    const id = this.nextRequestId;
+    this.nextRequestId++;
+    this.pending.set(id, {
+      command,
+      // The reply to this ID is the reply to `command`.
+      onReply: onReply as ((reply: Reply<ClientCommand>) => void) | undefined,
+    });
+    this.ws.send(packRequest(id, command, data));
 
     console.log(`%cSent ${command}:`, "color: green;");
     console.log(data);

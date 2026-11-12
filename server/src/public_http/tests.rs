@@ -453,10 +453,7 @@ async fn public_database_routes_filters_privacy_exports_and_html() {
     let (_, body) = request(app.clone(), "/api/v1/tags/Alice?limit=1&offset=1").await;
     let page: Value = serde_json::from_str(&body).unwrap();
     assert_eq!(page["games"].as_array().unwrap().len(), 1);
-    assert_eq!(
-        (page["offset"].clone(), page["total"].clone()),
-        (json!(1), json!(2))
-    );
+    assert_eq!(page["total"], 2);
     let (_, body) = request(app.clone(), "/api/v1/tag/%20MINE%20").await;
     assert_eq!(serde_json::from_str::<Value>(&body).unwrap()["total"], 2);
     let (status, body) = request(app.clone(), "/export/3").await;

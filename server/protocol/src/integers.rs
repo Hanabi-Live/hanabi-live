@@ -191,6 +191,11 @@ wire_integer! {
 }
 
 wire_integer! {
+    /// A request's ID, which the client chooses and the server's reply repeats.
+    RequestId(pub(crate) u64), 1, MAX_SAFE_INTEGER, brand = "RequestId"
+}
+
+wire_integer! {
     /// A chat message's ID in `chat_log`.
     ChatId(pub(crate) i64), 1, MAX_SAFE_INTEGER, brand = "ChatId"
 }

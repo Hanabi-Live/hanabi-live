@@ -145,16 +145,16 @@ impl Harness {
         replied.await??;
         Ok(())
     }
-    fn frames(&mut self, index: usize) -> Result<Vec<(String, Value)>> {
+    fn frames(&mut self, index: usize) -> Vec<(String, Value)> {
         let mut values = vec![];
         while let Ok(frame) = self.outgoing[index].try_recv() {
             if let Ok(text) = frame.message.to_text()
-                && let Some((command, body)) = text.split_once(' ')
+                && let Some(event) = crate::transport::event(text)
             {
-                values.push((command.into(), serde_json::from_str(body)?));
+                values.push(event);
             }
         }
-        Ok(values)
+        values
     }
     async fn receive(&mut self, index: usize, command: &str) -> Result<Value> {
         Ok(self.receive_after(index, command).await?.1)
@@ -175,12 +175,12 @@ impl Harness {
             let mut before = vec![];
             while let Some(frame) = self.outgoing[index].recv().await {
                 if let Ok(text) = frame.message.to_text()
-                    && let Some((name, body)) = text.split_once(' ')
+                    && let Some((name, body)) = crate::transport::event(text)
                 {
                     if name == command {
-                        return Ok((before, serde_json::from_str(body)?));
+                        return Ok((before, body));
                     }
-                    before.push(name.to_owned());
+                    before.push(name);
                 }
             }
             bail!("Socket ended while waiting for {command}")
@@ -449,7 +449,7 @@ async fn spectators_receive_turns_between_the_game_state_and_loading_it() -> Res
         .await?;
         h.barrier(index).await?;
         let events = h
-            .frames(2)?
+            .frames(2)
             .into_iter()
             .filter(|(command, _)| command == "gameEvent")
             .count();
@@ -497,7 +497,7 @@ async fn duck_clue_identity_is_private_in_live_history_and_recovery_but_not_comp
         }
         h.barrier(0).await?;
         for index in 0..5 {
-            h.frames(index)?;
+            h.frames(index);
         }
         let mut originals = vec![];
         for clue_type in [
@@ -539,7 +539,7 @@ async fn duck_clue_identity_is_private_in_live_history_and_recovery_but_not_comp
             originals.push(clue.clone());
             for index in 0..5 {
                 let events = h
-                    .frames(index)?
+                    .frames(index)
                     .into_iter()
                     .filter(|(name, body)| name == "gameEvent" && body["event"]["type"] == "clue")
                     .map(|(_, body)| body["event"].clone())
@@ -657,7 +657,7 @@ async fn leader_transfers_announce_the_actor_and_target_once_to_the_table() -> R
             }
             h.barrier(0).await?;
             for index in 0..3 {
-                h.frames(index)?;
+                h.frames(index);
             }
             let before = h.snapshot(id).await?.0.chat.len();
             let actor = usize::from(phase == 1);
@@ -671,7 +671,7 @@ async fn leader_transfers_announce_the_actor_and_target_once_to_the_table() -> R
             );
             h.barrier(0).await?;
             for index in 0..2 {
-                let messages = chat_messages(&h.frames(index)?);
+                let messages = chat_messages(&h.frames(index));
                 ensure!(
                     messages.len() == 1,
                     "Expected one leader-change announcement"
@@ -680,7 +680,7 @@ async fn leader_transfers_announce_the_actor_and_target_once_to_the_table() -> R
                 ensure!(messages[0]["kind"] == json!({"type":"public","author":{"type":"server"}}));
             }
             ensure!(
-                chat_messages(&h.frames(2)?).is_empty(),
+                chat_messages(&h.frames(2)).is_empty(),
                 "Leader notice leaked outside the table"
             );
             let table = h.snapshot(id).await?.0;
@@ -711,7 +711,7 @@ async fn leader_transfers_announce_the_actor_and_target_once_to_the_table() -> R
             h.barrier(0).await?;
             for index in 0..3 {
                 ensure!(
-                    chat_messages(&h.frames(index)?).is_empty(),
+                    chat_messages(&h.frames(index)).is_empty(),
                     "Rejected or duplicate transfer emitted chat"
                 );
             }
@@ -1676,13 +1676,13 @@ async fn expired_pregame_owner_is_removed_but_remaining_players_and_live_games_s
             if let HubCommand::Effects(effects) = notification {
                 for (session, message) in effects.messages {
                     ensure!(
-                        !message.starts_with("connections "),
+                        !crate::transport::is_event(&message, "connections"),
                         "A pregame sent which players loaded the game: {message}"
                     );
                     if session.user == UserId::new(2).unwrap()
-                        && let Some(body) = message.strip_prefix("pregame ")
+                        && let Some((name, game)) = crate::transport::event(&message)
+                        && name == "pregame"
                     {
-                        let game: Value = serde_json::from_str(body)?;
                         published_owner |= game["owner"]["userId"] == 2
                             && game["players"].as_array().is_some_and(|p| p.len() == 2);
                     }
@@ -1754,12 +1754,12 @@ async fn remade_tables_publish_fresh_statistics_for_every_player() -> Result<()>
             let actor = usize::try_from(snapshot.players[active].user()?.get())? - 1;
             h.send(actor, "playerAction", action).await?;
             for index in 0..3 {
-                h.frames(index)?;
+                h.frames(index);
             }
         };
         for index in 0..3 {
             h.barrier(index).await?;
-            h.frames(index)?;
+            h.frames(index);
         }
         let mut pending = h
             .begin(0, "tableRestart", json!({"tableId":id,"startNow":false}))
@@ -1820,7 +1820,7 @@ async fn chat_read_positions_survive_game_start_reconnect_and_remake() -> Result
         h.start(0, id).await?;
         for index in 0..2 {
             h.barrier(index).await?;
-            h.frames(index)?;
+            h.frames(index);
             h.send(index, "tableReattend", json!({"tableId":id}))
                 .await?;
             h.send(index, "gameStateLoad", json!({"tableId":id}))
@@ -1844,7 +1844,7 @@ async fn chat_read_positions_survive_game_start_reconnect_and_remake() -> Result
         h.send(0, "tableTerminate", json!({"tableId":id})).await?;
         for index in 0..2 {
             h.barrier(index).await?;
-            h.frames(index)?;
+            h.frames(index);
         }
         h.send(0, "tableRestart", json!({"tableId":id,"startNow":true}))
             .await?;
@@ -1896,7 +1896,7 @@ async fn restart_leaves_out_players_who_are_done_playing() -> Result<()> {
         h.send(0, "tableTerminate", json!({"tableId":id})).await?;
         for index in 0..3 {
             h.barrier(index).await?;
-            h.frames(index)?;
+            h.frames(index);
         }
         h.send(
             2,
@@ -1942,7 +1942,7 @@ async fn restart_leaves_out_players_who_are_done_playing() -> Result<()> {
         // Everyone stays at the table: they leave the replay, then join its next pregame. Carol
         // watches it as a spectator.
         for index in 1..3 {
-            let frames = h.frames(index)?;
+            let frames = h.frames(index);
             let booted = frames
                 .iter()
                 .position(|(command, _)| command == "tableBooted");
@@ -1986,7 +1986,7 @@ async fn pregame_announces_spectators() -> Result<()> {
         ensure!(history["messages"][1]["text"] == "Bob joined the game (as a spectator).");
         h.send(1, "tableSpectate", json!({"tableId":id})).await?;
         h.send(1, "tableUnattend", json!({"tableId":id})).await?;
-        let notices = chat_messages(&h.frames(0)?)
+        let notices = chat_messages(&h.frames(0))
             .into_iter()
             .map(|m| m["text"].clone())
             .collect::<Vec<_>>();
@@ -2062,14 +2062,14 @@ async fn pregame_history_survives_join_return_and_actor_recovery() -> Result<()>
         ensure!(history["messages"][2]["text"] == "Bob joined the game.");
         ensure!(history["messages"][2]["kind"]["author"]["type"] == "server");
         ensure!(
-            chat_messages(&h.frames(0)?)
+            chat_messages(&h.frames(0))
                 .iter()
                 .any(|m| m["text"] == "Bob joined the game.")
         );
         h.send(1, "chat", json!({"tableId":id,"text":"Bob's message"}))
             .await?;
         h.send(1, "tableUnattend", json!({"tableId":id})).await?;
-        h.frames(1)?;
+        h.frames(1);
         h.send(0, "chat", json!({"tableId":id,"text":"While Bob was away"}))
             .await?;
         h.send(1, "tableReattend", json!({"tableId":id})).await?;
@@ -2082,7 +2082,7 @@ async fn pregame_history_survives_join_return_and_actor_recovery() -> Result<()>
         ensure!(history["messages"][5]["text"] == "Bob left the game.");
         ensure!(history["messages"][6]["text"] == "Bob joined the game.");
         ensure!(
-            h.frames(2)?
+            h.frames(2)
                 .iter()
                 .all(|(name, _)| name != "chat" && name != "chatList"),
             "Table chat leaked to an outsider"
@@ -2131,7 +2131,7 @@ async fn pregame_leader_moves_to_first_seat_without_reordering_live_players() ->
         }
         h.barrier(0).await?;
         for index in 0..3 {
-            h.frames(index)?;
+            h.frames(index);
         }
         h.send(0, "tableSetOwner", json!({"tableId":id,"userId":3}))
             .await?;
@@ -2219,7 +2219,7 @@ async fn finished_game_publishes_replay_leader_candidates_without_reconnecting()
         }
         h.barrier(0).await?;
         for index in 0..4 {
-            h.frames(index)?;
+            h.frames(index);
         }
         h.send(0, "tableTerminate", json!({"tableId":id})).await?;
         for index in 0..3 {
@@ -2245,7 +2245,7 @@ async fn finished_game_publishes_replay_leader_candidates_without_reconnecting()
             );
         }
         ensure!(
-            h.frames(3)?.iter().all(|(name, _)| name != "spectators"),
+            h.frames(3).iter().all(|(name, _)| name != "spectators"),
             "Replay roster was sent to a non-attendee"
         );
         h.send(0, "tableSetOwner", json!({"tableId":id,"userId":2}))
@@ -2280,11 +2280,11 @@ async fn replay_loading_reports_no_connections_and_never_starts_a_game_clock() -
         let id = h.replay(0).await?;
         let initial = h.snapshot(id).await?.0;
         h.barrier(0).await?;
-        h.frames(0)?;
+        h.frames(0);
         h.send(0, "gameLoaded", json!({"tableId":id})).await?;
         h.barrier(0).await?;
         ensure!(
-            h.frames(0)?
+            h.frames(0)
                 .iter()
                 .all(|(command, _)| command != "clock" && command != "connections")
         );
@@ -2312,7 +2312,7 @@ async fn replay_loading_reports_no_connections_and_never_starts_a_game_clock() -
         h.send(1, "gameLoaded", json!({"tableId":id})).await?;
         h.barrier(0).await?;
         for index in 0..2 {
-            let frames = h.frames(index)?;
+            let frames = h.frames(index);
             ensure!(
                 frames
                     .iter()
@@ -2419,15 +2419,15 @@ async fn unknown_table_commands_are_persisted_and_delivered_to_bots() -> Result<
                 h.start(0, id).await?;
                 ensure!(matches!(h.snapshot(id).await?.0.phase, Phase::Live { .. }));
             }
-            h.frames(0)?;
-            h.frames(2)?;
+            h.frames(0);
+            h.frames(2);
             for (text, expected) in [
                 ("/setall 11", "/setall 11"),
                 ("/custom-bot <level>", "/custom-bot &lt;level&gt;"),
             ] {
                 let before = h.snapshot(id).await?.0.chat.len();
                 h.send(1, "chat", json!({"tableId":id,"text":text})).await?;
-                let messages = chat_messages(&h.frames(0)?);
+                let messages = chat_messages(&h.frames(0));
                 ensure!(
                     messages.iter().any(|message| message["text"] == expected
                         && message["kind"]["author"] == json!({"type":"user","username":"Alice"})),
@@ -2440,7 +2440,7 @@ async fn unknown_table_commands_are_persisted_and_delivered_to_bots() -> Result<
                 );
                 ensure!(snapshot.chat[before].message.text == expected);
                 ensure!(
-                    chat_messages(&h.frames(2)?).is_empty(),
+                    chat_messages(&h.frames(2)).is_empty(),
                     "Outsider received chat"
                 );
             }
@@ -2465,7 +2465,7 @@ async fn option_proposals_publish_changed_values_but_keep_apply_button_private()
         }
         h.barrier(0).await?;
         for index in 0..4 {
-            h.frames(index)?;
+            h.frames(index);
         }
         h.send(1, "tableUpdate", json!({
             "tableId":id,"settings":{"name":"Proposal","maxPlayers":2,
@@ -2473,7 +2473,7 @@ async fn option_proposals_publish_changed_values_but_keep_apply_button_private()
         })).await?;
         h.barrier(0).await?;
         for index in 0..3 {
-            let messages = chat_messages(&h.frames(index)?);
+            let messages = chat_messages(&h.frames(index));
             let summary = messages.iter().find(|m| m["kind"]["type"] == "public").context("Missing public summary")?;
             let text = summary["text"].as_str().context("Missing summary text")?;
             for expected in ["Bob&lt;&amp;&gt; proposes the following options:", "Table Name: <b>Proposal</b>", "Variant: <b>6 Suits</b>", "Timed: <b>120 / 20</b>", "Max Players: <b>2</b>", "Empty Clues: <b>Yes</b>", "Players above the new limit will be removed."] {
@@ -2490,7 +2490,7 @@ async fn option_proposals_publish_changed_values_but_keep_apply_button_private()
                 ensure!(button.is_none(), "Apply button leaked to a non-owner");
             }
         }
-        ensure!(chat_messages(&h.frames(3)?).is_empty());
+        ensure!(chat_messages(&h.frames(3)).is_empty());
         let table = h.snapshot(id).await?.0;
         ensure!(table.options.variant_name == "No Variant" && table.name == "Original" && table.max_players == 5);
         let message = &table.chat.last().context("Summary was not persisted")?.message;
@@ -2584,9 +2584,9 @@ async fn findvariant_delivers_owner_button_and_guards_the_start_action() -> Resu
         mark_complete(&h,2,Some("Rainbow (5 Suits)")).await?;
         let id=h.create(0,"Team discovery",json!({"options":{"deckPlays":true,"oneExtraCard":true}})).await?;
         h.send(1,"tableJoin",json!({"tableId":id})).await?;h.barrier(0).await?;
-        h.frames(0)?;h.frames(1)?;
+        h.frames(0);h.frames(1);
         h.send(1,"chat",json!({"tableId":id,"text":"/findvariant"})).await?;h.barrier(0).await?;
-        let alice=chat_messages(&h.frames(0)?);let bob=chat_messages(&h.frames(1)?);
+        let alice=chat_messages(&h.frames(0));let bob=chat_messages(&h.frames(1));
         let proposal=alice.iter().find(|v|v["text"].as_str().is_some_and(|s|s.contains("new-options"))).context("Owner did not receive proposal")?;
         ensure!(proposal["kind"]["recipient"]=="Alice","Proposal was not private");
         ensure!(!bob.iter().any(|v|v["text"].as_str().is_some_and(|s|s.contains("new-options"))),"Non-owner received proposal");
@@ -2619,7 +2619,7 @@ async fn findvariant_rechecks_roster_after_lookup_without_blocking_table_command
         mark_complete(&h,2,Some("Rainbow (5 Suits)")).await?;mark_complete(&h,3,None).await?;
         let id=h.create(0,"Changing team",json!({})).await?;
         h.send(1,"tableJoin",json!({"tableId":id})).await?;h.barrier(0).await?;
-        for index in 0..3{h.frames(index)?;}
+        for index in 0..3{h.frames(index);}
         let mut lock=h.store.primary.begin().await?;
         #[expect(clippy::disallowed_methods, reason = "test SQL that sets up database state or failures directly")]
         sqlx::query("LOCK TABLE user_stats IN ACCESS EXCLUSIVE MODE").execute(&mut *lock).await?;
@@ -2632,7 +2632,7 @@ async fn findvariant_rechecks_roster_after_lookup_without_blocking_table_command
         let (table,_)=h.snapshot(id).await?;
         ensure!(table.seated_users().collect::<Vec<_>>()==vec![UserId::new(2).unwrap(),UserId::new(3).unwrap()],"Concurrent roster change was blocked");
         for index in 0..3{
-            let chats=chat_messages(&h.frames(index)?);
+            let chats=chat_messages(&h.frames(index));
             ensure!(!chats.iter().any(|v|v["text"].as_str().unwrap_or("").contains("new-options")),"Stale roster received an actionable proposal");
             if index==1{ensure!(chats.iter().any(|v|v["text"]=="Here is a random variant that everyone needs the 2-player max score in: Rainbow (5 Suits)"),"Lookup did not preserve its captured team");}
         }
@@ -2652,8 +2652,8 @@ async fn findvariant_targets_only_the_current_owner_generation() -> Result<()> {
         let id = h.create(0, "Current owner", json!({})).await?;
         h.send(1, "tableJoin", json!({"tableId":id})).await?;
         h.barrier(0).await?;
-        h.frames(0)?;
-        h.frames(1)?;
+        h.frames(0);
+        h.frames(1);
         let mut lock = h.store.primary.begin().await?;
         #[expect(
             clippy::disallowed_methods,
@@ -2673,7 +2673,7 @@ async fn findvariant_targets_only_the_current_owner_generation() -> Result<()> {
         h.barrier(0).await?;
         ensure!(!old.active(), "Owner generation was not fenced");
         ensure!(
-            chat_messages(&h.frames(0)?)
+            chat_messages(&h.frames(0))
                 .iter()
                 .any(|v| v["kind"]["recipient"] == "Alice"
                     && v["text"].as_str().unwrap_or("").contains("new-options")),
@@ -2686,7 +2686,7 @@ async fn findvariant_targets_only_the_current_owner_generation() -> Result<()> {
             );
         }
         ensure!(
-            !chat_messages(&h.frames(1)?)
+            !chat_messages(&h.frames(1))
                 .iter()
                 .any(|v| v["text"].as_str().unwrap_or("").contains("new-options")),
             "Requester received owner-only action"
@@ -2708,14 +2708,14 @@ async fn tags_use_authoritative_sorted_frames_and_private_live_acknowledgements(
         h.send(1, "tableJoin", json!({"tableId":id})).await?;
         h.start(0, id).await?;
         h.barrier(0).await?;
-        h.frames(0)?;
-        h.frames(1)?;
+        h.frames(0);
+        h.frames(1);
         for _ in 0..2 {
             h.send(0, "tagAdd", json!({"tableId":id,"tag":" ALPHA <b> "}))
                 .await?;
         }
         h.barrier(0).await?;
-        let private = chat_messages(&h.frames(0)?);
+        let private = chat_messages(&h.frames(0));
         ensure!(
             private.len() == 2
                 && private.iter().all(|v| v["text"]
@@ -2724,7 +2724,7 @@ async fn tags_use_authoritative_sorted_frames_and_private_live_acknowledgements(
             "Unexpected live tag acknowledgements"
         );
         ensure!(
-            chat_messages(&h.frames(1)?).is_empty(),
+            chat_messages(&h.frames(1)).is_empty(),
             "Live tag leaked to another player"
         );
         ensure!(
@@ -2739,8 +2739,8 @@ async fn tags_use_authoritative_sorted_frames_and_private_live_acknowledgements(
         );
         h.send(0, "tableTerminate", json!({"tableId":id})).await?;
         h.barrier(0).await?;
-        h.frames(0)?;
-        h.frames(1)?;
+        h.frames(0);
+        h.frames(1);
         let game_id = h
             .snapshot(id)
             .await?
@@ -2760,7 +2760,7 @@ async fn tags_use_authoritative_sorted_frames_and_private_live_acknowledgements(
                 .await?;
             h.barrier(0).await?;
             for index in 0..2 {
-                let chats = chat_messages(&h.frames(index)?);
+                let chats = chat_messages(&h.frames(index));
                 let lines = chats
                     .iter()
                     .map(|v| v["text"].as_str().unwrap_or(""))
@@ -2784,22 +2784,22 @@ async fn tags_use_authoritative_sorted_frames_and_private_live_acknowledgements(
             .await?;
         h.barrier(0).await?;
         ensure!(
-            chat_messages(&h.frames(0)?)
+            chat_messages(&h.frames(0))
                 .iter()
                 .any(|v| v["text"] == "Bob has deleted a game tag of \"zeta\"."),
             "Replay tag action was not published"
         );
-        h.frames(1)?;
+        h.frames(1);
         h.send(0, "tagRemoveAll", json!({"tableId":id})).await?;
         h.send(1, "tagRemoveAll", json!({"tableId":id})).await?;
         h.barrier(0).await?;
-        h.frames(0)?;
-        h.frames(1)?;
+        h.frames(0);
+        h.frames(1);
         h.send(1, "chat", json!({"tableId":id,"text":"/tags"}))
             .await?;
         h.barrier(0).await?;
         ensure!(
-            chat_messages(&h.frames(0)?)
+            chat_messages(&h.frames(0))
                 .iter()
                 .map(|v| v["text"].as_str().unwrap_or(""))
                 .collect::<Vec<_>>()
@@ -2920,7 +2920,7 @@ async fn pending_join_claim_survives_replacement_until_the_committed_view_is_pub
         let first = h.create(0, "First", json!({})).await?;
         let second = h.create(2, "Second", json!({})).await?;
         h.barrier(1).await?;
-        h.frames(1)?;
+        h.frames(1);
         // Hold the table's checkpoint row so that the join's save waits.
         let mut blocker = h.db.pool.begin().await?;
         sqlx::query_scalar!(
@@ -2991,7 +2991,7 @@ async fn pending_join_claim_survives_replacement_until_the_committed_view_is_pub
         h.barrier(1).await?;
         while let Ok(frame) = old_frames.try_recv() {
             ensure!(
-                !frame.message.to_text()?.starts_with("tableJoined "),
+                !crate::transport::is_event(frame.message.to_text()?, "tableJoined"),
                 "Old generation received delayed private join output"
             );
         }
@@ -3117,11 +3117,11 @@ async fn table_chat_commands_link_to_the_server_url() -> Result<()> {
             ("/missing", "http://localhost/shared-missing-scores/2/"),
         ] {
             h.barrier(0).await?;
-            h.frames(0)?;
+            h.frames(0);
             h.send(0, "chat", json!({"text":command,"tableId":id}))
                 .await?;
             h.barrier(0).await?;
-            let messages = chat_messages(&h.frames(0)?);
+            let messages = chat_messages(&h.frames(0));
             ensure!(
                 messages
                     .iter()

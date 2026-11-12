@@ -1,41 +1,91 @@
-use anyhow::{Result, ensure};
+use anyhow::{Context, Result, bail, ensure};
+use hanabi_protocol::{ClientMessage, RequestId};
 use serde_json::Value;
 use std::{collections::BTreeSet, sync::LazyLock};
 
-/// The client command an input names, for error messages about inputs that failed to parse.
-pub fn command_name(input: &str) -> Option<&'static str> {
+/// The keys of a request's frame: `{"id": 1, "type": "tableJoin", "data": {...}}`.
+const FRAME_KEYS: [&str; 3] = ["id", "type", "data"];
+
+/// A request as far as it could be read. A request without a valid ID cannot be answered.
+pub struct Request {
+    pub id: Option<RequestId>,
+    /// The registered command that the request names, if it names one.
+    pub command: Option<&'static str>,
+    pub message: Result<ClientMessage>,
+}
+
+/// The registered client command with this name.
+fn command_name(name: &str) -> Option<&'static str> {
     static NAMES: LazyLock<BTreeSet<&'static str>> =
         LazyLock::new(|| hanabi_protocol::client_contracts().into_keys().collect());
-    let name = input.split_once(' ').map_or(input, |(name, _)| name);
     NAMES.get(name).copied()
 }
 
-pub fn parse(input: &str) -> Result<hanabi_protocol::ClientMessage> {
+pub fn parse(input: &str) -> Request {
+    let mut request = Request {
+        id: None,
+        command: None,
+        message: Err(anyhow::anyhow!("Unreadable request")),
+    };
+    request.message = read(input, &mut request.id, &mut request.command);
+    request
+}
+
+/// Reads a request, recording its ID and command as soon as they are known, so that a failure
+/// after them can still be answered.
+fn read(
+    input: &str,
+    id: &mut Option<RequestId>,
+    command: &mut Option<&'static str>,
+) -> Result<ClientMessage> {
     ensure!(
         input.len() <= crate::transport::MAX_MESSAGE_BYTES,
         "Oversized command"
     );
-    let (name, body) = input.split_once(' ').unwrap_or((input, "{}"));
-    let data: Value = serde_json::from_str(body)?;
-    hanabi_protocol::ClientMessage::decode(name, &data)?
-        .ok_or_else(|| anyhow::anyhow!("Unknown client command"))
+    let Value::Object(mut frame) = serde_json::from_str(input)? else {
+        bail!("A request must be a JSON object");
+    };
+    *id = frame
+        .get("id")
+        .and_then(|value| hanabi_protocol::decode::<RequestId>(value).ok());
+    let name = frame
+        .get("type")
+        .and_then(Value::as_str)
+        .context("A request must name its command in \"type\"")?
+        .to_owned();
+    *command = command_name(&name);
+    if let Some(key) = frame.keys().find(|key| !FRAME_KEYS.contains(&key.as_str())) {
+        bail!("Unknown request field \"{key}\"");
+    }
+    ensure!(
+        id.is_some(),
+        "A request must have an \"id\" from 1 to 2^53 - 1"
+    );
+    let data = frame
+        .remove("data")
+        .context("A request must have its payload in \"data\"")?;
+    ClientMessage::decode(&name, &data)?.context("Unknown client command")
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
     use serde_json::json;
+    /// The frame of a request with this command and payload.
+    fn frame(command: &str, data: &Value) -> String {
+        json!({"id": 1, "type": command, "data": data}).to_string()
+    }
+    /// Parses a request with this command and payload.
+    fn request(command: &str, data: &Value) -> Result<ClientMessage> {
+        parse(&frame(command, data)).message
+    }
     #[test]
     fn shared_client_compatibility_fixtures() {
         let cases: Vec<Value> =
             serde_json::from_str(include_str!("../../protocol/fixtures/compatibility.json"))
                 .unwrap();
         for case in cases.iter().filter(|case| case["direction"] == "client") {
-            let result = parse(&format!(
-                "{} {}",
-                case["command"].as_str().unwrap(),
-                case["input"]
-            ));
+            let result = request(case["command"].as_str().unwrap(), &case["input"]);
             let valid = case["nativeValid"]
                 .as_bool()
                 .unwrap_or(case["valid"].as_bool().unwrap());
@@ -88,40 +138,41 @@ mod tests {
                 "tableRestart" => json!({"tableId":1,"startNow":false}),
                 "tableStart" => json!({"tableId":1,"intendedPlayerIds":[1]}),
                 "chatPmHistory" => json!({"limit":10}),
-                "sync" | "lobbyLoad" | "linkList" => json!({}),
+                "lobbyLoad" | "linkList" => json!({}),
                 _ => json!({"tableId":1}),
             };
-            parse(&format!("{command} {value}")).unwrap_or_else(|e| panic!("{command}: {e}"));
+            request(command, &value).unwrap_or_else(|e| panic!("{command}: {e}"));
         }
     }
     #[test]
     fn private_messages_take_only_a_message_and_recipient() {
-        assert!(parse(r#"chatPm {"text":"hello","recipient":"Alice"}"#).is_ok());
+        assert!(request("chatPm", &json!({"text":"hello","recipient":"Alice"})).is_ok());
         for data in [
             json!({"text":"hello","recipient":"Alice","tableId":1}),
             json!({"text":"hello","recipient":"Alice","admin":true}),
         ] {
-            assert!(parse(&format!("chatPm {data}")).is_err());
+            assert!(request("chatPm", &data).is_err());
         }
     }
 
     #[test]
     fn strict_types_limits_and_defaults() {
-        for input in [
-            "action {\"tableId\":1,\"type\":\"pass\",\"order\":0}",
-            "chat {\"text\":\"x\",\"admin\":true}",
-            "tableStart {\"tableId\":9007199254740992}",
-            "setting {\"settings\":{\"volume\":\"50\"}}",
-            "sync []",
-            "unknown {}",
-            "historyFriendsGet {\"offset\":0,\"amount\":10}",
-            "loaded {\"tableId\":1,\"requestId\":\"r\"}",
+        for (command, data) in [
+            ("action", json!({"tableId":1,"type":"pass","order":0})),
+            ("chat", json!({"text":"x","admin":true})),
+            ("tableStart", json!({"tableId":9_007_199_254_740_992_u64})),
+            ("setting", json!({"settings":{"volume":"50"}})),
+            ("linkList", json!([])),
+            ("unknown", json!({})),
+            ("historyFriendsGet", json!({"offset":0,"amount":10})),
+            ("loaded", json!({"tableId":1,"requestId":"r"})),
         ] {
-            assert!(parse(input).is_err(), "{input}");
+            assert!(request(command, &data).is_err(), "{command} {data}");
         }
-        assert!(parse("tableCreate {\"settings\":{\"name\":\"Table\"}}").is_err());
-        let create = parse(
-            "tableCreate {\"settings\":{\"name\":\"Table\",\"maxPlayers\":5,\"options\":{}}}",
+        assert!(request("tableCreate", &json!({"settings":{"name":"Table"}})).is_err());
+        let create = request(
+            "tableCreate",
+            &json!({"settings":{"name":"Table","maxPlayers":5,"options":{}}}),
         )
         .unwrap()
         .data();
@@ -129,16 +180,46 @@ mod tests {
     }
 
     #[test]
+    fn requests_keep_an_id_to_answer_even_when_they_fail() {
+        let unknown = parse(&json!({"id":7,"type":"unknown","data":{}}).to_string());
+        assert_eq!(unknown.id, RequestId::new(7));
+        assert!(unknown.command.is_none() && unknown.message.is_err());
+        let invalid = parse(&json!({"id":8,"type":"chat","data":{"text":1}}).to_string());
+        assert_eq!(
+            (invalid.id, invalid.command),
+            (RequestId::new(8), Some("chat"))
+        );
+        assert!(invalid.message.is_err());
+        for input in [
+            json!({"type":"linkList","data":{}}).to_string(),
+            json!({"id":0,"type":"linkList","data":{}}).to_string(),
+            json!({"id":1.5,"type":"linkList","data":{}}).to_string(),
+            "linkList {}".to_owned(),
+        ] {
+            let request = parse(&input);
+            assert!(request.id.is_none() && request.message.is_err(), "{input}");
+        }
+        let extra = parse(&json!({"id":2,"type":"linkList","data":{},"x":1}).to_string());
+        assert_eq!(extra.id, RequestId::new(2));
+        assert!(extra.message.is_err());
+        assert!(
+            parse(&json!({"id":3,"type":"linkList"}).to_string())
+                .message
+                .is_err()
+        );
+    }
+
+    #[test]
     fn full_replays_exceeding_legacy_frame_limit_are_not_truncated() {
         let note = "n".repeat(65536);
-        let input = format!(
-            "replayCreate {}",
-            json!({"visibility":{"type":"solo"},"source":{"type":"imported","game":{
+        let input = frame(
+            "replayCreate",
+            &json!({"visibility":{"type":"solo"},"source":{"type":"imported","game":{
                 "seed":"p2v0s1","notes":[[note],[]]
-            }}})
+            }}}),
         );
         assert!(input.len() > 8192);
-        let parsed = parse(&input).unwrap().data();
+        let parsed = parse(&input).message.unwrap().data();
         assert_eq!(
             parsed["source"]["game"]["notes"][0][0]
                 .as_str()
@@ -147,12 +228,16 @@ mod tests {
             65536
         );
         assert!(
-            parse(&format!(
-                "replayAction {}",
-                json!({"tableId":1,"action":{"type":"hypothetical","control":{"type":"event","event":"{\"type\":\"turn\"}"}}})
-            ))
+            request(
+                "replayAction",
+                &json!({"tableId":1,"action":{"type":"hypothetical","control":{"type":"event","event":"{\"type\":\"turn\"}"}}})
+            )
             .is_err()
         );
-        assert!(parse(&"x".repeat(crate::transport::MAX_MESSAGE_BYTES + 1)).is_err());
+        assert!(
+            parse(&"x".repeat(crate::transport::MAX_MESSAGE_BYTES + 1))
+                .message
+                .is_err()
+        );
     }
 }

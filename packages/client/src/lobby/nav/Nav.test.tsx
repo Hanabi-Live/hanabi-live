@@ -33,6 +33,7 @@ function makeGame(maxPlayers: number): Game {
   } as unknown as Game;
 }
 
+// The server never replies in these tests.
 const send = vi.fn();
 
 function button(id: string) {
@@ -72,10 +73,11 @@ describe("Nav", () => {
       button("start")!.click();
     });
     expect(send).toHaveBeenCalledOnce();
-    expect(send).toHaveBeenCalledWith("tableStart", {
-      tableId: TABLE_ID,
-      intendedPlayerIds: [1, 2],
-    });
+    expect(send).toHaveBeenCalledWith(
+      "tableStart",
+      { tableId: TABLE_ID, intendedPlayerIds: [1, 2] },
+      expect.any(Function),
+    );
     expect(button("start")!.classList).toContain("disabled");
 
     act(() => {

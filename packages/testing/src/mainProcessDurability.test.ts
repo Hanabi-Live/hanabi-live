@@ -131,11 +131,10 @@ databaseDescribe("Rust actor durability and ownership", () => {
         // Holds the table's checkpoint row so that the action's save waits.
         const blocker = await sql.reserve();
         try {
-          active.send("playerAction", {
+          await active.refused("playerAction", {
             tableId,
             action: { type: "play", order: 9999 },
           });
-          await active.receive("warning", SERVER_COMMAND_SCHEMAS.warning);
           await blocker`SET idle_in_transaction_session_timeout = 0`;
           await blocker`BEGIN`;
           await blocker`SELECT id FROM live_tables WHERE id = ${tableId} FOR UPDATE`;
@@ -199,8 +198,7 @@ databaseDescribe("Rust actor durability and ownership", () => {
         );
         await bootstrap(replacement);
         // Resending the applied move is rejected: it is no longer this player's turn.
-        replacement.send("playerAction", action);
-        await replacement.receive("warning", SERVER_COMMAND_SCHEMAS.warning);
+        await replacement.refused("playerAction", action);
         replacement.send("gameStateLoad", { tableId });
         const onceOnly = await replacement.receive(
           "gameState",
@@ -259,8 +257,7 @@ databaseDescribe("Rust actor durability and ownership", () => {
               && event.identity === undefined,
           ),
         ).toBe(true);
-        returning.send("playerAction", action);
-        await returning.receive("warning", SERVER_COMMAND_SCHEMAS.warning);
+        await returning.refused("playerAction", action);
         returning.send("gameStateLoad", { tableId });
         const duplicate = await returning.receive(
           "gameState",

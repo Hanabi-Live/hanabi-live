@@ -2,7 +2,11 @@ import { MAX_PAGE_LIMIT, VERSION } from "@hanabi-live/data";
 import { getVariant, VARIANT_NAMES } from "@hanabi-live/game";
 import { parseIntSafe } from "complete-common";
 import { globals } from "./Globals.ts";
-import { SelfChatMessageType, sendSelfPmFromServer } from "./chat.ts";
+import {
+  SelfChatMessageType,
+  sendSelfPmFromServer,
+  showPmHistory,
+} from "./chat.ts";
 import * as createGame from "./lobby/createGame.ts";
 import { createJsonFromReplay } from "./lobby/createReplayJson.ts";
 import { getOnlineUserId } from "./onlineUsers.ts";
@@ -246,7 +250,11 @@ function pmHistory(room: string, args: readonly string[]) {
     return;
   }
 
-  globals.conn!.send("chatPmHistory", data);
+  globals.conn!.send("chatPmHistory", data, (reply) => {
+    if (reply.ok) {
+      showPmHistory(reply.data.messages);
+    }
+  });
 }
 chatCommands.set("pmhistory", pmHistory);
 

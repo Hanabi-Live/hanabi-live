@@ -7,7 +7,7 @@
 import type { ServerCommand } from "@hanabi-live/data";
 import {
   SERVER_COMMAND_SCHEMAS,
-  unpackWsMessage,
+  unpackServerFrame,
   userRefSchema,
 } from "@hanabi-live/data";
 import { $ } from "bun";
@@ -119,12 +119,13 @@ async function joinLobby(
     if (typeof event.data !== "string") {
       return;
     }
-    const message = unpackWsMessage(event.data);
-    if (message === undefined) {
-      reject(new Error("The server sent a message with no command."));
+    const frame = unpackServerFrame(event.data);
+    if (frame?.kind !== "event") {
+      // The script sends no requests, so the server has nothing to answer.
+      reject(new Error(`The server sent an unexpected frame: ${event.data}`));
       return;
     }
-    const [name, data] = message;
+    const { name, data } = frame;
     if (name === "error" || name === "warning") {
       reject(new Error(`The server sent ${name}: ${JSON.stringify(data)}`));
       return;

@@ -160,11 +160,9 @@ fn typed_game_frames_preserve_wire_schema_and_projected_identities() -> Result<(
         assert_eq!(body, expected);
         for (event, expected) in list.iter().zip(body.as_array().unwrap()) {
             let encoded = test_frame("gameEvent", game_event(TableId::new(42).unwrap(), event));
-            let (command, body) = encoded
-                .split_once(' ')
-                .context("Missing action separator")?;
+            let (command, body) =
+                crate::transport::event(&encoded).context("Missing game event")?;
             assert_eq!(command, "gameEvent");
-            let body: Value = serde_json::from_str(body)?;
             assert_eq!(body, json!({"tableId":42,"event":expected}));
             if expected["type"] == "draw" {
                 let player = usize::try_from(expected["playerIndex"].as_u64().unwrap()).unwrap();
@@ -599,14 +597,13 @@ async fn completion_starts_a_fresh_review_without_reviving_idle_ended_games() ->
 
 /// Counts the published messages of one command, emptying the notifications.
 fn published(notifications: &mut mpsc::Receiver<HubCommand>, command: &str) -> usize {
-    let prefix = format!("{command} ");
     let mut count = 0;
     while let Ok(notification) = notifications.try_recv() {
         if let HubCommand::Effects(effects) = notification {
             count += effects
                 .messages
                 .iter()
-                .filter(|(_, message)| message.starts_with(&prefix))
+                .filter(|(_, message)| crate::transport::is_event(message, command))
                 .count();
         }
     }
@@ -914,7 +911,7 @@ async fn abandoned_pregames_expire_durably_even_with_a_password_or_spectator() -
                 HubCommand::Effects(effects) => {
                     observer_booted |= effects.messages.iter().any(|(session, message)| {
                         session.user == UserId::new(2).unwrap()
-                            && message.starts_with("tableBooted ")
+                            && crate::transport::is_event(message, "tableBooted")
                     });
                 }
                 _ => {}
@@ -1149,8 +1146,9 @@ async fn full_table_mailboxes_do_not_block_hub_and_replacements_fence_private_ef
     );
     let (reply, replied) = oneshot::channel();
     sender
-        .send(HubCommand::Sync {
+        .send(HubCommand::Reply {
             session: old.clone(),
+            frame: "reply".into(),
             reply,
         })
         .await?;
@@ -1184,8 +1182,9 @@ async fn full_table_mailboxes_do_not_block_hub_and_replacements_fence_private_ef
         .await?;
     let (reply, replied) = oneshot::channel();
     sender
-        .send(HubCommand::Sync {
+        .send(HubCommand::Reply {
             session: new.clone(),
+            frame: "reply".into(),
             reply,
         })
         .await?;
@@ -1266,10 +1265,16 @@ async fn a_table_that_panics_is_removed_and_frees_its_players() -> Result<()> {
     let result = async {
         let mut seen = Vec::new();
         tokio::time::timeout(Duration::from_secs(3), async {
-            while !(seen.iter().any(|f: &String| f.starts_with("tableRemoved "))
-                && seen.iter().any(|f| f.starts_with("tableBooted "))
-                && seen.iter().any(|f| f.starts_with("warning "))
-                && seen.iter().any(|f| f.starts_with("user ")))
+            while !(seen
+                .iter()
+                .any(|f: &String| crate::transport::is_event(f, "tableRemoved"))
+                && seen
+                    .iter()
+                    .any(|f| crate::transport::is_event(f, "tableBooted"))
+                && seen
+                    .iter()
+                    .any(|f| crate::transport::is_event(f, "warning"))
+                && seen.iter().any(|f| crate::transport::is_event(f, "user")))
             {
                 let frame = frames.recv().await.context("Socket closed")?;
                 seen.push(frame.message.to_text()?.to_owned());
@@ -1279,7 +1284,7 @@ async fn a_table_that_panics_is_removed_and_frees_its_players() -> Result<()> {
         .await??;
         let user = seen
             .iter()
-            .rfind(|f| f.starts_with("user "))
+            .rfind(|f| crate::transport::is_event(f, "user"))
             .context("Missing user update")?;
         ensure!(
             user.contains(r#""activity":{"type":"lobby"}"#),

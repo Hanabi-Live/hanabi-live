@@ -443,12 +443,20 @@ function selectJoinButton(state: RootState): {
 }
 
 function startGame() {
-  globals.conn!.send("tableStart", {
-    tableId: globals.joinedTableId,
-    intendedPlayerIds:
-      globals.game?.players.map((player) => player.userId) ?? [],
-  });
   store.dispatch(startGameSentChanged(true));
+  globals.conn!.send(
+    "tableStart",
+    {
+      tableId: globals.joinedTableId,
+      intendedPlayerIds:
+        globals.game?.players.map((player) => player.userId) ?? [],
+    },
+    () => {
+      // The started game arrives before the reply. A start that the server refused or ignored, such
+      // as one from an outdated view, can be sent again.
+      store.dispatch(startGameSentChanged(false));
+    },
+  );
 }
 
 function joinGame() {

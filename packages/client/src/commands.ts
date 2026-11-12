@@ -4,15 +4,10 @@ import { globals } from "./Globals.ts";
 import * as chat from "./chat.ts";
 import { chatRecipient } from "./chatKind.ts";
 import * as gameChat from "./game/chat.ts";
-import {
-  startGameSentChanged,
-  typingStarted,
-  typingStopped,
-} from "./lobby/pregame/pregameSlice.ts";
+import { typingStarted, typingStopped } from "./lobby/pregame/pregameSlice.ts";
 import { Screen } from "./lobby/types/Screen.ts";
 import * as modals from "./modals.ts";
 import { ServerHandlers } from "./serverHandlers.ts";
-import { creatingTableChanged } from "./sessionSlice.ts";
 import { store } from "./store.ts";
 
 // Define a command handler map.
@@ -20,11 +15,7 @@ export const commands = new ServerHandlers();
 
 commands.set("warning", (data) => {
   console.warn(data.message);
-  globals.ui?.cancelPendingRestart();
   modals.showWarning(data.message);
-  // Re-activate some lobby elements.
-  store.dispatch(creatingTableChanged(false));
-  store.dispatch(startGameSentChanged(false));
 });
 
 commands.set("error", (data) => {
@@ -46,22 +37,6 @@ commands.set("chat", (data) => {
 
 commands.set("chatDeleted", (data) => {
   chat.removeDeletedLobbyMessage(data.chatId);
-});
-
-commands.set("chatPmHistory", (data) => {
-  if (data.messages.length === 0) {
-    // A private notice outside of a table shows in the chat that the user has open.
-    chat.sendSelfPmFromServer(
-      "No private messages found.",
-      "lobby",
-      chat.SelfChatMessageType.Info,
-    );
-    return;
-  }
-
-  for (const line of data.messages) {
-    chat.addPmHistory(line);
-  }
 });
 
 function acknowledgeChatRead(

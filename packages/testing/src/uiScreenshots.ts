@@ -22,7 +22,7 @@ import {
   MAX_CHAT_LENGTH,
   MAX_NOTE_LENGTH,
   MAX_TABLE_NAME_LENGTH,
-  packWsMessage,
+  packEvent,
   SERVER_COMMAND_SCHEMAS,
   VERSION,
 } from "@hanabi-live/data";
@@ -573,7 +573,7 @@ function getStates({
           (ws) => {
             if (failWebSocket) {
               ws.send(
-                packWsMessage("error", {
+                packEvent("error", {
                   // The message of "validate_client_version" on the server.
                   message: [
                     "You are running an outdated version of the client code.",

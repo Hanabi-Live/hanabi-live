@@ -426,20 +426,8 @@ pub struct GameHistoryEntry {
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct GamePage {
     pub games: Vec<GameHistoryEntry>,
-    /// The position of the page's first game in the list.
-    pub offset: Count,
     /// How many games the list has on all of its pages.
     pub total: Count,
-}
-
-/// A page of the games played on a seed, best scores first.
-#[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
-#[serde(rename_all = "camelCase", deny_unknown_fields)]
-pub struct SeedGames {
-    /// The seed of the request, so that a client can ignore a reply for a seed it no longer shows.
-    pub seed: Seed,
-    #[serde(flatten)]
-    pub page: GamePage,
 }
 
 /// A player's best score on a variant at one player count.
@@ -513,6 +501,9 @@ named_enum! {
         // A command that failed for a reason the server did not anticipate. Its report keeps the
         // server's own description, so the player can pass it on with the reference.
         CommandFailed => "commandFailed",
+        // A command that no longer applies, such as a move that a speedrun refuses, or a command
+        // for a table that has ended. The client shows nothing.
+        CommandIgnored => "commandIgnored",
         ConnectionLimit => "connectionLimit",
         DatabaseConnectionFailed => "databaseConnectionFailed",
         DatabaseConstraintFailed => "databaseConstraintFailed",

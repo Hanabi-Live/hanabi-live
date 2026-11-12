@@ -1,7 +1,11 @@
-// Our past games, from the "gameHistory" server message, and the other games on a seed, from the
-// "seedGames" server message.
+// Our past games, from the replies to "gameHistory", and the other games on a seed, from the
+// replies to "seedGames".
 
-import type { GameHistoryEntry, ServerCommandData } from "@hanabi-live/data";
+import type {
+  ClientReplyData,
+  GameHistoryEntry,
+  ServerCommandData,
+} from "@hanabi-live/data";
 import { compareGameHistory } from "@hanabi-live/data";
 import type { PayloadAction } from "@reduxjs/toolkit";
 import {
@@ -11,7 +15,12 @@ import {
 } from "@reduxjs/toolkit";
 import type { RootState } from "../../store.ts";
 
-type OtherScores = ServerCommandData["seedGames"];
+/** A page of the games on a seed, with the seed and the position that the request named. */
+interface OtherScores {
+  readonly seed: string;
+  readonly offset: number;
+  readonly page: ClientReplyData["seedGames"];
+}
 type LobbyStatus = ServerCommandData["lobbyStatus"];
 
 const gamesAdapter = createEntityAdapter({
@@ -91,7 +100,11 @@ const historySlice = createSlice({
       }
     },
     otherScoresReceived(state, action: PayloadAction<OtherScores>) {
-      const { games, offset, seed, total } = action.payload;
+      const {
+        seed,
+        offset,
+        page: { games, total },
+      } = action.payload;
       const shown = state.otherScores;
       // Ignore a late reply for a seed that we no longer show.
       if (shown?.seed !== seed) {

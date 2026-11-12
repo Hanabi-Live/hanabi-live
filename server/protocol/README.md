@@ -3,9 +3,10 @@
 This crate owns every JSON payload exchanged between the server and its clients
 (WebSocket messages and HTTP API bodies) and the format of the game catalog in
 `packages/game/src/json`. It does not own database records, actors, or game
-state, and has no dependencies on those implementations. WebSocket framing
-remains `command JSON`; authorization, normalization, HTML escaping, and
-business rules remain in the server.
+state, and has no dependencies on those implementations. The WebSocket frames
+around these payloads are described in `packages/data/src/functions/frames.ts`.
+Authorization, normalization, HTML escaping, and business rules remain in the
+server.
 
 Clients use only the generated schemas and the types inferred from them. Do not
 write TypeScript interfaces for these payloads.
@@ -35,9 +36,10 @@ PostgreSQL.
 
 Schemars derives the schema from the DTOs. Native decoding validates that schema
 before serde applies defaults. The generator translates the supported schema
-subset to Zod, with `CLIENT_COMMAND_SCHEMAS` and `SERVER_COMMAND_SCHEMAS`
-registries and their inferred `ClientCommandData` and `ServerCommandData` types.
-Unknown schema features fail generation rather than silently losing validation.
+subset to Zod, with `CLIENT_COMMAND_SCHEMAS`, `CLIENT_REPLY_SCHEMAS`, and
+`SERVER_COMMAND_SCHEMAS` registries and their inferred `ClientCommandData`,
+`ClientReplyData`, and `ServerCommandData` types. Unknown schema features fail
+generation rather than silently losing validation.
 
 ## Compatibility rules
 

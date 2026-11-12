@@ -34,10 +34,16 @@ export function request(startNow: boolean): void {
   }
 
   setPending(true);
-  globals.lobby.conn!.send("tableRestart", {
-    tableId: globals.lobby.joinedTableId,
-    startNow,
-  });
+  globals.lobby.conn!.send(
+    "tableRestart",
+    { tableId: globals.lobby.joinedTableId, startNow },
+    (reply) => {
+      // A restart that succeeds leaves this replay.
+      if (!reply.ok) {
+        setPending(false);
+      }
+    },
+  );
 }
 
 export function setPending(pending: boolean): void {

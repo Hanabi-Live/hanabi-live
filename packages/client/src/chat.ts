@@ -65,8 +65,6 @@ function roomTableId(room: string): TableId | undefined {
   return match === null ? undefined : tableIdSchema.parse(Number(match[1]));
 }
 
-type PmHistoryMessage = ServerCommandData["chatPmHistory"]["messages"][number];
-
 export enum SelfChatMessageType {
   Normal,
   Info,
@@ -588,8 +586,21 @@ export function removeDeletedLobbyMessage(chatId: number): void {
   store.dispatch(lobbyChatLineDeleted(chatId));
 }
 
-export function addPmHistory(data: PmHistoryMessage): void {
-  addInternal(data, true, false);
+/** Shows the private messages that a "/pmhistory" command asked for. */
+export function showPmHistory(messages: readonly ChatData[]): void {
+  if (messages.length === 0) {
+    // A private notice outside of a table shows in the chat that the user has open.
+    sendSelfPmFromServer(
+      "No private messages found.",
+      "lobby",
+      SelfChatMessageType.Info,
+    );
+    return;
+  }
+
+  for (const message of messages) {
+    addInternal(message, true, false);
+  }
 }
 
 function addInternal(data: ChatData, fast: boolean, updateLiveState: boolean) {

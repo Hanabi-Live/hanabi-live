@@ -725,12 +725,13 @@ impl Hub {
                     attendees,
                     chat_read,
                 } => self.spawn_split(*table, saved, allocation, attendees, chat_read),
-                HubCommand::Sync { session, reply } => {
-                    let result = if self.current(&session) && !self.closing {
-                        session.emit(&frame(
-                            hanabi_protocol::server::SYNCED,
-                            hanabi_protocol::Empty {},
-                        ));
+                HubCommand::Reply {
+                    session,
+                    frame,
+                    reply,
+                } => {
+                    let result = if self.current(&session) {
+                        session.emit(&frame);
                         Ok(())
                     } else {
                         Err(rejection!("Session unavailable"))

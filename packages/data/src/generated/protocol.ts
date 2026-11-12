@@ -539,10 +539,6 @@ export const gamePageSchema = z
   .strictObject({
     games: z.array(gameHistoryEntrySchema).readonly(),
     /**
-     * The position of the page's first game in the list.
-     */
-    offset: countSchema,
-    /**
      * How many games the list has on all of its pages.
      */
     total: countSchema,
@@ -703,6 +699,7 @@ export const noticeCodeSchema = z.enum([
   "archiveInvalidCharacter",
   "archiveUnknownVariant",
   "commandFailed",
+  "commandIgnored",
   "connectionLimit",
   "databaseConnectionFailed",
   "databaseConstraintFailed",
@@ -1201,31 +1198,20 @@ export const replayCreateRequestSchema = z
   .readonly();
 
 /**
+ * A request's ID, which the client chooses and the server's reply repeats.
+ */
+export const requestIdSchema = z
+  .number()
+  .int()
+  .min(1)
+  .max(9_007_199_254_740_991)
+  .brand<"RequestId">();
+
+/**
  * How many games with a seed reached a score, as the seed page's chart shows them.
  */
 export const scoreFrequencySchema = z
   .strictObject({ numGames: countSchema, score: scoreSchema })
-  .readonly();
-
-/**
- * A page of the games played on a seed, best scores first.
- */
-export const seedGamesSchema = z
-  .strictObject({
-    games: z.array(gameHistoryEntrySchema).readonly(),
-    /**
-     * The position of the page's first game in the list.
-     */
-    offset: countSchema,
-    /**
-     * The seed of the request, so that a client can ignore a reply for a seed it no longer shows.
-     */
-    seed: z.string().min(1),
-    /**
-     * How many games the list has on all of its pages.
-     */
-    total: countSchema,
-  })
   .readonly();
 
 /**
@@ -1712,7 +1698,6 @@ export const CLIENT_COMMAND_SCHEMAS = {
   replayCreate: replayCreateRequestSchema,
   seedGames: seedGamesRequestSchema,
   settings: settingsRequestSchema,
-  sync: emptySchema,
   tableCreate: tableCreateRequestSchema,
   tableJoin: tableJoinRequestSchema,
   tableLeave: tableRefSchema,
@@ -1733,12 +1718,16 @@ export const CLIENT_COMMAND_SCHEMAS = {
   tagSearch: tagSearchRequestSchema,
   userInactive: userInactiveRequestSchema,
 } as const;
+export const CLIENT_REPLY_SCHEMAS = {
+  chatPmHistory: chatPmHistorySchema,
+  gameHistory: gamePageSchema,
+  seedGames: gamePageSchema,
+} as const;
 export const SERVER_COMMAND_SCHEMAS = {
   blocked: blockedSchema,
   chat: chatSchema,
   chatDeleted: chatDeletedSchema,
   chatList: chatListSchema,
-  chatPmHistory: chatPmHistorySchema,
   chatTyping: chatTypingSchema,
   clock: clockSchema,
   connections: connectionsSchema,
@@ -1746,7 +1735,6 @@ export const SERVER_COMMAND_SCHEMAS = {
   friends: friendsSchema,
   gameEvent: gameEventMessageSchema,
   gameFinished: gameFinishedSchema,
-  gameHistory: gamePageSchema,
   gameHistoryAdded: gameHistoryEntrySchema,
   gameInit: gameInitSchema,
   gameState: gameStateSchema,
@@ -1758,10 +1746,8 @@ export const SERVER_COMMAND_SCHEMAS = {
   pause: pauseSchema,
   pregame: pregameSchema,
   replayAction: replayActionSchema,
-  seedGames: seedGamesSchema,
   serverRestart: serverRestartSchema,
   spectators: spectatorsSchema,
-  synced: emptySchema,
   table: tableSchema,
   tableBooted: tableRefSchema,
   tableJoined: tableJoinedSchema,
@@ -1785,4 +1771,10 @@ export type ClientCommandData = {
 export type ServerCommand = keyof typeof SERVER_COMMAND_SCHEMAS;
 export type ServerCommandData = {
   [Command in ServerCommand]: z.infer<(typeof SERVER_COMMAND_SCHEMAS)[Command]>;
+};
+/** The data of the reply to each client command, or undefined for a reply without data. */
+export type ClientReplyData = {
+  [Command in ClientCommand]: Command extends keyof typeof CLIENT_REPLY_SCHEMAS
+    ? z.infer<(typeof CLIENT_REPLY_SCHEMAS)[Command]>
+    : undefined;
 };

@@ -1,11 +1,7 @@
 //! The WebSocket connection: its sign-in, its first lobby messages, and the tasks that read and
 //! write its frames.
 
-use super::{
-    App, MAX_LOGGED_CLIENT_TEXT,
-    dispatch::{command_failure, dispatch},
-    user,
-};
+use super::{App, MAX_LOGGED_CLIENT_TEXT, dispatch::answer, user};
 use crate::errors::HttpError;
 use crate::{
     accounts,
@@ -553,18 +549,7 @@ async fn connection(
             };
             // Once admitted, finish persistence rather than dropping a transaction
             // future on socket cancellation. Publication still checks generation.
-            if let Err(error) = dispatch(&app, &user, session.clone(), &command.text).await {
-                let Some(failure) = command_failure(error, &command.text) else {
-                    continue;
-                };
-                if let Some(report) = &failure.report {
-                    report.log();
-                    if failure.alert {
-                        app.alert(report);
-                    }
-                }
-                session.emit(&frame(hanabi_protocol::server::WARNING, failure.warning));
-            }
+            answer(&app, &user, &session, &command.text).await;
         }
         Ok::<(), anyhow::Error>(())
     }

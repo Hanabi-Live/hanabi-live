@@ -540,6 +540,7 @@ fn main() -> Result<()> {
         return game_library(&definitions);
     }
     let client = hanabi_protocol::client_contracts();
+    let replies = hanabi_protocol::reply_contracts();
     let server = hanabi_protocol::server_contracts();
     let exported: BTreeSet<String> = hanabi_protocol::exported()
         .into_iter()
@@ -562,6 +563,7 @@ fn main() -> Result<()> {
     print!("{}", module.output);
     for (name, contracts) in [
         ("CLIENT_COMMAND_SCHEMAS", client),
+        ("CLIENT_REPLY_SCHEMAS", replies),
         ("SERVER_COMMAND_SCHEMAS", server),
     ] {
         println!("export const {name} = {{");
@@ -580,6 +582,12 @@ fn main() -> Result<()> {
             "export type {side}CommandData = {{ [Command in {side}Command]: z.infer<(typeof {registry}_COMMAND_SCHEMAS)[Command]> }};"
         );
     }
+    println!(
+        "/** The data of the reply to each client command, or undefined for a reply without data. */"
+    );
+    println!(
+        "export type ClientReplyData = {{ [Command in ClientCommand]: Command extends keyof typeof CLIENT_REPLY_SCHEMAS ? z.infer<(typeof CLIENT_REPLY_SCHEMAS)[Command]> : undefined }};"
+    );
     Ok(())
 }
 

@@ -1,4 +1,4 @@
-use super::{Effect, ExternalReply, OnlineUser, Publication, SavedChat, notice, warning};
+use super::{Effect, ExternalReply, OnlineUser, Publication, SavedChat, notice, refused};
 use crate::accounts::{escape_html, is_muted, normalize_chat, normalize_string, regenerate_token};
 use crate::transport::{Identity, Outgoing};
 use anyhow::{Context, Result, ensure};
@@ -255,36 +255,31 @@ pub async fn private_message(
     recipient: &str,
 ) -> Result<Vec<Effect>> {
     if is_muted(pool, &caller.ip).await? {
-        return Ok(vec![warning("You have been muted by an administrator.")]);
+        return refused("You have been muted by an administrator.");
     }
     let message = match normalize_chat(message) {
         Ok(message) => message,
-        Err(error) => return Ok(vec![warning(&error)]),
+        Err(error) => return refused(error),
     };
     let recipient = match normalize_chat(recipient) {
         Ok(recipient) => recipient,
-        Err(error) => return Ok(vec![warning(&error)]),
+        Err(error) => return refused(error),
     };
     let normalized = normalize_string(&recipient);
     if normalized == caller.normalized_name {
-        return Ok(vec![warning(
-            "You cannot send a private message to yourself.",
-        )]);
+        return refused("You cannot send a private message to yourself.");
     }
     let Some(target) = online
         .iter()
         .find(|u| u.identity.normalized_name == normalized)
     else {
-        return Ok(vec![warning(&format!(
-            "User \"{}\" is not currently online.",
-            escape_html(&recipient)
-        ))]);
+        return refused(format!("User \"{recipient}\" is not currently online."));
     };
     if super::blocked_between(pool, caller.user, &[target.identity.user]).await? {
-        return Ok(vec![warning(&format!(
+        return refused(format!(
             "You cannot send a private message to \"{}\".",
-            escape_html(&target.identity.name)
-        ))]);
+            target.identity.name
+        ));
     }
     let message = escape_html(&message);
     let row = sqlx::query!(
@@ -329,10 +324,7 @@ pub async fn private_history(
         .fetch_optional(pool)
         .await?;
         if found.is_none() {
-            return Ok(vec![warning(&format!(
-                "User \"{}\" does not exist.",
-                escape_html(username)
-            ))]);
+            return refused(format!("User \"{username}\" does not exist."));
         }
         found
     } else {
@@ -371,11 +363,9 @@ pub async fn private_history(
             hanabi_protocol::Timestamp::from(row.datetime_sent),
         ));
     }
-    let response = ChatPmHistory { messages: list };
-    Ok(vec![Effect::to_self(Outgoing::new(
-        hanabi_protocol::server::CHAT_PM_HISTORY,
-        response,
-    ))])
+    Ok(vec![Effect::Reply(
+        hanabi_protocol::reply::CHAT_PM_HISTORY.data(ChatPmHistory { messages: list }),
+    )])
 }
 
 /// Returns None for table chat and table/replay-owned commands. Never persists
@@ -389,13 +379,11 @@ pub async fn lobby_chat(
     rendered: Option<&str>,
 ) -> Result<Option<Vec<Effect>>> {
     if is_muted(pool, &caller.ip).await? {
-        return Ok(Some(vec![warning(
-            "You have been muted by an administrator.",
-        )]));
+        return refused("You have been muted by an administrator.");
     }
     let message = match normalize_chat(message) {
         Ok(message) => message,
-        Err(error) => return Ok(Some(vec![warning(&error)])),
+        Err(error) => return refused(error),
     };
     let command = parsed(&message);
     if let Some((command, args)) = &command

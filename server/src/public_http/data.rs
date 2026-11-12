@@ -254,7 +254,6 @@ pub(super) async fn list(
     let order = format!("g.{} {direction},g.id DESC", column_field(column));
     Ok(hanabi_protocol::GamePage {
         games: history(state, s, &order, page).await?,
-        offset: hanabi_protocol::Count::try_from(page.offset)?,
         total,
     })
 }

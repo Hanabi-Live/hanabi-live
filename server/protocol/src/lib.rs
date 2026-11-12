@@ -47,8 +47,8 @@ macro_rules! named_enum {
 
 mod registry;
 pub use registry::{
-    ClientMessage, ServerMessage, client_contracts, decode, decode_server, exported, game_library,
-    schemas, server, server_contracts, validate,
+    ClientMessage, Reply, ReplyData, ServerMessage, client_contracts, decode, decode_server,
+    exported, game_library, reply, reply_contracts, schemas, server, server_contracts, validate,
 };
 
 mod catalog;

@@ -1,10 +1,11 @@
 import type {
   CLIENT_COMMAND_SCHEMAS,
   ClientCommand,
+  ClientReplyData,
   ServerCommandData,
   UserId,
 } from "@hanabi-live/data";
-import { VERSION } from "@hanabi-live/data";
+import { packRequest, unpackServerFrame, VERSION } from "@hanabi-live/data";
 
 import { describe, expect } from "bun:test";
 import { assertDefined } from "complete-common";
@@ -64,10 +65,24 @@ interface SocketClient {
     schema: z.ZodType<T>,
     accept?: (data: T) => boolean,
   ) => Promise<T>;
+  /** Sends a request. A later `receive` fails if the server refuses it. */
   send: <Command extends ClientCommand>(
     command: Command,
     data: z.input<(typeof CLIENT_COMMAND_SCHEMAS)[Command]>,
   ) => void;
+  /**
+   * Sends a request and waits for its reply, which comes after every message that the request's
+   * work sent. Fails if the server refuses it.
+   */
+  request: <Command extends ClientCommand>(
+    command: Command,
+    data: z.input<(typeof CLIENT_COMMAND_SCHEMAS)[Command]>,
+  ) => Promise<ClientReplyData[Command]>;
+  /** Sends a request that the server must refuse, and returns the refusal. */
+  refused: <Command extends ClientCommand>(
+    command: Command,
+    data: z.input<(typeof CLIENT_COMMAND_SCHEMAS)[Command]>,
+  ) => Promise<ServerCommandData["warning"]>;
 }
 
 const rustProgressSnapshotSchema = z.object({
@@ -331,7 +346,19 @@ export function socketClient(address: string, cookie: string): SocketClient {
       handshakeTimeout: 5000,
     },
   );
-  const messages: string[] = [];
+  /** The messages that the server sent on its own and that no `receive` took yet. */
+  const events: Array<{ readonly name: string; readonly data: unknown }> = [];
+  /** The replies that no `request` took yet, by request ID. */
+  const replies = new Map<
+    number,
+    { readonly data: unknown; readonly error: unknown }
+  >();
+  /** The command of each request that the server has not answered, by request ID. */
+  const commands = new Map<number, ClientCommand>();
+  /** The requests sent with `send` that the server refused. */
+  const refusals: string[] = [];
+  const awaited = new Set<number>();
+  let nextRequestId = 1;
   let changed = Promise.withResolvers<undefined>();
   let failure: Error | undefined;
   function wake() {
@@ -342,11 +369,27 @@ export function socketClient(address: string, cookie: string): SocketClient {
   socket.on("message", (raw) => {
     if (Buffer.isBuffer(raw)) {
       const message = raw.toString();
-      const violation = serverFrameViolation(message);
-      if (violation === undefined) {
-        messages.push(message);
-      } else {
+      const violation = serverFrameViolation(message, (id) => commands.get(id));
+      const frame = unpackServerFrame(message);
+      if (violation !== undefined || frame === undefined) {
         failure ??= new Error(violation);
+      } else if (frame.kind === "event") {
+        events.push(frame);
+      } else {
+        commands.delete(frame.id);
+        if (awaited.has(frame.id)) {
+          replies.set(frame.id, frame);
+        } else if (
+          frame.error !== undefined
+          && !(
+            typeof frame.error === "object"
+            && frame.error !== null
+            && "code" in frame.error
+            && frame.error.code === "commandIgnored"
+          )
+        ) {
+          refusals.push(message);
+        }
       }
     } else {
       failure = new Error("Expected a text WebSocket frame.");
@@ -362,6 +405,25 @@ export function socketClient(address: string, cookie: string): SocketClient {
     wake();
   });
 
+  /** Throws if the connection failed, or if the server refused a request or sent an error. */
+  function checkFailures() {
+    if (failure !== undefined) {
+      throw failure;
+    }
+    const rejection = events.find(
+      (event) => event.name === "error" || event.name === "warning",
+    );
+    if (rejection !== undefined) {
+      throw new Error(
+        `Unexpected server ${rejection.name}: ${JSON.stringify(rejection.data)}`,
+      );
+    }
+    const [refusal] = refusals;
+    if (refusal !== undefined) {
+      throw new Error(`Unexpected refused request: ${refusal}`);
+    }
+  }
+
   async function receive<T>(
     command: string,
     schema: z.ZodType<T>,
@@ -370,28 +432,17 @@ export function socketClient(address: string, cookie: string): SocketClient {
     return await bounded(
       (async () => {
         for (;;) {
-          const index = messages.findIndex((message) =>
-            message.startsWith(`${command} `),
-          );
+          const index = events.findIndex((event) => event.name === command);
           if (index !== -1) {
-            const [message] = messages.splice(index, 1);
-            assertDefined(message, "Missing queued WebSocket message.");
-            const data: unknown = JSON.parse(message.slice(command.length + 1));
-            const parsed = schema.parse(data);
+            const [event] = events.splice(index, 1);
+            assertDefined(event, "Missing queued WebSocket message.");
+            const parsed = schema.parse(event.data);
             if (accept(parsed)) {
               return parsed;
             }
             continue;
           }
-          if (failure !== undefined) {
-            throw failure;
-          }
-          const rejection = messages.find((message) =>
-            /^(?:error|warning) /u.test(message),
-          );
-          if (rejection !== undefined) {
-            throw new Error(`Unexpected server rejection: ${rejection}`);
-          }
+          checkFailures();
           // eslint-disable-next-line no-await-in-loop
           await changed.promise;
         }
@@ -399,11 +450,79 @@ export function socketClient(address: string, cookie: string): SocketClient {
       `WebSocket ${command}`,
     );
   }
+
+  function send<Command extends ClientCommand>(
+    command: Command,
+    data: z.input<(typeof CLIENT_COMMAND_SCHEMAS)[Command]>,
+  ): number {
+    const id = nextRequestId;
+    nextRequestId++;
+    commands.set(id, command);
+    socket.send(packRequest(id, command, data));
+    return id;
+  }
+
+  /** Sends a request and waits for its reply. */
+  async function answer<Command extends ClientCommand>(
+    command: Command,
+    data: z.input<(typeof CLIENT_COMMAND_SCHEMAS)[Command]>,
+  ) {
+    const id = nextRequestId;
+    awaited.add(id);
+    send(command, data);
+    return await bounded(
+      (async () => {
+        for (;;) {
+          const reply = replies.get(id);
+          if (reply !== undefined) {
+            replies.delete(id);
+            awaited.delete(id);
+            return reply;
+          }
+          if (failure !== undefined) {
+            throw failure;
+          }
+          // eslint-disable-next-line no-await-in-loop
+          await changed.promise;
+        }
+      })(),
+      `WebSocket reply to ${command}`,
+    );
+  }
+
+  async function request<Command extends ClientCommand>(
+    command: Command,
+    data: z.input<(typeof CLIENT_COMMAND_SCHEMAS)[Command]>,
+  ): Promise<ClientReplyData[Command]> {
+    const reply = await answer(command, data);
+    if (reply.error !== undefined) {
+      throw new Error(
+        `The server refused ${command}: ${JSON.stringify(reply.error)}`,
+      );
+    }
+    // `serverFrameViolation` checked the data against the reply's schema.
+    return reply.data as ClientReplyData[Command];
+  }
+
+  async function refused<Command extends ClientCommand>(
+    command: Command,
+    data: z.input<(typeof CLIENT_COMMAND_SCHEMAS)[Command]>,
+  ): Promise<ServerCommandData["warning"]> {
+    const reply = await answer(command, data);
+    if (reply.error === undefined) {
+      throw new Error(`The server did not refuse ${command}.`);
+    }
+    // `serverFrameViolation` checked the failure against the notice's schema.
+    return reply.error as ServerCommandData["warning"];
+  }
+
   return {
     socket,
     receive,
     send(command, data) {
-      socket.send(`${command} ${JSON.stringify(data)}`);
+      send(command, data);
     },
+    request,
+    refused,
   };
 }

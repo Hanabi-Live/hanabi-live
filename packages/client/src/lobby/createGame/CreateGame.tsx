@@ -319,11 +319,15 @@ export function CreateGame(): React.JSX.Element {
     lobbyPage.hide();
 
     if (isNew) {
-      globals.conn!.send("tableCreate", {
-        settings,
-        ...(password !== "" && { password }),
-      });
       store.dispatch(creatingTableChanged(true));
+      globals.conn!.send(
+        "tableCreate",
+        { settings, ...(password !== "" && { password }) },
+        () => {
+          // The new table's pregame, if any, arrives before the reply.
+          store.dispatch(creatingTableChanged(false));
+        },
+      );
     } else {
       globals.conn!.send("tableUpdate", {
         tableId: globals.joinedTableId,

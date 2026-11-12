@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 
-import type { GameHistoryEntry, ServerCommandData } from "@hanabi-live/data";
+import type { GameHistoryEntry } from "@hanabi-live/data";
 import { gameHistoryEntrySchema } from "@hanabi-live/data";
 import { act, cleanup, render, screen } from "@testing-library/react";
 import { Provider } from "react-redux";
@@ -53,10 +53,9 @@ function reply(
 ) {
   return {
     seed,
-    games,
     offset,
-    total,
-  } as ServerCommandData["seedGames"];
+    page: { games, total },
+  } as Parameters<typeof otherScoresReceived>[0];
 }
 
 function renderComponent(component: React.JSX.Element) {

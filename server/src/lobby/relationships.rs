@@ -1,4 +1,4 @@
-use super::{Effect, Publication, notice, warning};
+use super::{Effect, Publication, notice, refused};
 use crate::accounts::{escape_html, normalize_string};
 use crate::transport::{Identity, Outgoing};
 use anyhow::Result;
@@ -158,12 +158,12 @@ pub async fn relationship(
     let verb = change.verb();
     let normalized = normalize_string(name);
     if name.is_empty() {
-        return Ok(vec![warning(&format!(
+        return refused(format!(
             "The format of the /{verb} command is: /{verb} [username]"
-        ))]);
+        ));
     }
     if normalized == caller.normalized_name {
-        return Ok(vec![warning(&format!("You cannot {verb} yourself."))]);
+        return refused(format!("You cannot {verb} yourself."));
     }
     let target: Option<i32> = sqlx::query_scalar!(
         "SELECT id FROM users WHERE normalized_username=$1",
@@ -172,14 +172,13 @@ pub async fn relationship(
     .fetch_optional(pool)
     .await?;
     let Some(target) = target.map(UserId::try_from).transpose()? else {
-        return Ok(vec![warning(&format!(
-            "The username of \"{}\" does not exist in the database.",
-            escape_html(name)
-        ))]);
+        return refused(format!(
+            "The username of \"{name}\" does not exist in the database."
+        ));
     };
     let escaped = escape_html(name);
     if matches!(change, Change::Block | Change::Unblock) {
-        return block(pool, caller, target, &escaped, change == Change::Block).await;
+        return block(pool, caller, target, name, change == Change::Block).await;
     }
     let add = matches!(change, Change::Friend | Change::Link);
     let friend = matches!(change, Change::Friend | Change::Unfriend);
@@ -206,17 +205,14 @@ pub async fn relationship(
         result.rows_affected() != 0
     };
     if !changed {
-        let message = match (friend, add) {
-            (true, true) => format!("\"{escaped}\" is already your friend."),
-            (true, false) => {
-                format!("\"{escaped}\" is not your friend, so you cannot unfriend them.")
-            }
-            (false, true) => format!("\"{escaped}\" is already linked to your account."),
+        return refused(match (friend, add) {
+            (true, true) => format!("\"{name}\" is already your friend."),
+            (true, false) => format!("\"{name}\" is not your friend, so you cannot unfriend them."),
+            (false, true) => format!("\"{name}\" is already linked to your account."),
             (false, false) => {
-                format!("\"{escaped}\" is not linked to your account, so you cannot unlink them.")
+                format!("\"{name}\" is not linked to your account, so you cannot unlink them.")
             }
-        };
-        return Ok(vec![warning(&message)]);
+        });
     }
     let message = format!(
         "Successfully {} \"{escaped}\" {} your {}.",
@@ -244,7 +240,7 @@ async fn block(
     pool: &PgPool,
     caller: &Identity,
     target: UserId,
-    escaped: &str,
+    name: &str,
     add: bool,
 ) -> Result<Vec<Effect>> {
     let result = if add {
@@ -265,12 +261,13 @@ async fn block(
         .await?
     };
     if result.rows_affected() == 0 {
-        return Ok(vec![warning(&if add {
-            format!("\"{escaped}\" is already blocked.")
+        return refused(if add {
+            format!("\"{name}\" is already blocked.")
         } else {
-            format!("\"{escaped}\" is not blocked, so you cannot unblock them.")
-        })]);
+            format!("\"{name}\" is not blocked, so you cannot unblock them.")
+        });
     }
+    let escaped = escape_html(name);
     let message = if add {
         format!(
             "Successfully blocked \"{escaped}\". You can no longer join or spectate each other's tables or send each other private messages."

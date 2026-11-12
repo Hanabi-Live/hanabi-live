@@ -264,13 +264,72 @@ pub fn frame<T: Serialize>(message: hanabi_protocol::ServerMessage<T>, data: T) 
     raw_frame(message.name(), data)
 }
 
+/// Encodes a message that the server sends on its own: `{"event": name, "data": payload}`.
 fn raw_frame(command: &str, data: impl Serialize) -> Frame {
-    let mut buffer = command.as_bytes().to_vec();
-    buffer.push(b' ');
-    serde_json::to_writer(&mut buffer, &data).expect("JSON-serializable protocol payload");
-    String::from_utf8(buffer)
-        .expect("JSON protocol frames are UTF-8")
+    encode(&EventFrame {
+        event: command,
+        data,
+    })
+}
+
+#[derive(Serialize)]
+struct EventFrame<'a, T> {
+    event: &'a str,
+    data: T,
+}
+
+/// The server's answer to a request, which repeats the request's ID: `{"reply": id}`, with the
+/// reply's `data` if it has any, or with an `error`.
+#[derive(Serialize)]
+struct ReplyFrame {
+    reply: hanabi_protocol::RequestId,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    data: Option<serde_json::Value>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    error: Option<hanabi_protocol::Notice>,
+}
+
+/// Encodes the reply to a request that succeeded, with its data if it has any.
+pub fn reply_frame(
+    id: hanabi_protocol::RequestId,
+    data: Option<hanabi_protocol::ReplyData>,
+) -> Frame {
+    encode(&ReplyFrame {
+        reply: id,
+        data: data.map(|data| data.data),
+        error: None,
+    })
+}
+
+/// Encodes the reply to a request that failed.
+pub fn error_frame(id: hanabi_protocol::RequestId, error: hanabi_protocol::Notice) -> Frame {
+    encode(&ReplyFrame {
+        reply: id,
+        data: None,
+        error: Some(error),
+    })
+}
+
+fn encode(frame: &impl Serialize) -> Frame {
+    serde_json::to_string(frame)
+        .expect("JSON-serializable protocol payload")
         .into()
+}
+
+/// The name and payload of an encoded server message, or `None` for a reply.
+#[cfg(test)]
+pub fn event(frame: &str) -> Option<(String, serde_json::Value)> {
+    let serde_json::Value::Object(mut frame) = serde_json::from_str(frame).ok()? else {
+        return None;
+    };
+    let name = frame.remove("event")?.as_str()?.to_owned();
+    Some((name, frame.remove("data")?))
+}
+
+/// Whether an encoded frame is the server message with this name.
+#[cfg(test)]
+pub fn is_event(frame: &str, name: &str) -> bool {
+    event(frame).is_some_and(|(event, _)| event == name)
 }
 
 /// A registered server message waiting to be sent, such as a lobby command's reply, encoded once.
@@ -282,15 +341,12 @@ impl Outgoing {
         Self(frame(message, data))
     }
     #[cfg(test)]
-    pub fn command(&self) -> &str {
-        self.0
-            .split_once(' ')
-            .map_or(&*self.0, |(command, _)| command)
+    pub fn command(&self) -> String {
+        event(&self.0).expect("an outgoing message is an event").0
     }
     #[cfg(test)]
     pub fn data(&self) -> serde_json::Value {
-        let (_, data) = self.0.split_once(' ').expect("frames have a payload");
-        serde_json::from_str(data).expect("frames hold JSON")
+        event(&self.0).expect("an outgoing message is an event").1
     }
     pub fn frame(&self) -> &Frame {
         &self.0

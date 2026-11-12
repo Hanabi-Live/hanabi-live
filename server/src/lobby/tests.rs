@@ -26,6 +26,7 @@ fn self_data(effects: &[Effect], command: &str) -> Value {
             Effect::Publish(Publication::ToSelf(message)) if message.command() == command => {
                 Some(message.data().clone())
             }
+            Effect::Reply(reply) if reply.command == command => Some(reply.data.clone()),
             _ => None,
         })
         .unwrap_or_else(|| panic!("Missing {command} in {effects:?}"))
@@ -105,6 +106,30 @@ async fn run(
     .unwrap()
 }
 
+/// Runs a lobby command that is refused, and returns the refusal.
+async fn refusal(
+    pool: &PgPool,
+    caller: &Identity,
+    online: &[OnlineUser],
+    command: &str,
+    data: Value,
+) -> String {
+    let error = dispatch(
+        pool,
+        "synthetic-lobby-secret",
+        caller,
+        online,
+        None,
+        crate::actors::client_message(command, &data).unwrap(),
+    )
+    .await
+    .expect_err("The command was not refused");
+    match crate::errors::CommandError::from(error) {
+        crate::errors::CommandError::Rejected { message, .. } => message,
+        error => panic!("The command failed instead of being refused: {error}"),
+    }
+}
+
 #[tokio::test]
 async fn lobby_relationships_atomic_settings_and_parameterization_postgres() {
     let Some(db) = TestDb::create().await else {
@@ -116,13 +141,8 @@ async fn lobby_relationships_atomic_settings_and_parameterization_postgres() {
     let data = json!({"username":"bób"});
     let result = run(&db.pool, &who, &[], "friendAdd", data.clone()).await;
     assert_eq!(self_data(&result, "friends"), json!({"friends":["Bob"]}));
-    let repeated = run(&db.pool, &who, &[], "friendAdd", data.clone()).await;
-    assert!(
-        self_data(&repeated, "warning")["message"]
-            .as_str()
-            .unwrap()
-            .contains("already")
-    );
+    let repeated = refusal(&db.pool, &who, &[], "friendAdd", data.clone()).await;
+    assert!(repeated.contains("already"));
     let _ = run(&db.pool, &who, &[], "friendRemove", data.clone()).await;
     assert_eq!(
         friends(&db.pool, UserId::new(a).unwrap()).await.unwrap(),
@@ -299,12 +319,6 @@ async fn blocked_players_cannot_message_each_other_postgres() {
         generation: 1,
     };
     let online = vec![online_user(a, "Alice"), online_user(b, "Bob")];
-    let warning_of = |effects: &[Effect]| {
-        self_data(effects, "warning")["message"]
-            .as_str()
-            .unwrap()
-            .to_owned()
-    };
     let notice_of = |effects: &[Effect]| {
         self_data(effects, "chat")["text"]
             .as_str()
@@ -316,9 +330,9 @@ async fn blocked_players_cannot_message_each_other_postgres() {
     let blocked = run(&db.pool, &alice, &[], "blockAdd", bob_name.clone()).await;
     assert!(notice_of(&blocked).contains("Successfully blocked"));
     assert_eq!(self_data(&blocked, "blocked"), json!({"blocked":["Bob"]}));
-    let repeated = run(&db.pool, &alice, &[], "blockAdd", bob_name.clone()).await;
-    assert!(warning_of(&repeated).contains("already blocked"));
-    let own = run(
+    let repeated = refusal(&db.pool, &alice, &[], "blockAdd", bob_name.clone()).await;
+    assert!(repeated.contains("already blocked"));
+    let own = refusal(
         &db.pool,
         &alice,
         &[],
@@ -326,11 +340,11 @@ async fn blocked_players_cannot_message_each_other_postgres() {
         json!({"username":"Alice"}),
     )
     .await;
-    assert!(warning_of(&own).contains("cannot block yourself"));
+    assert!(own.contains("cannot block yourself"));
 
     // Messages are refused in both directions, and nothing is stored.
     for (from, to) in [(&alice, "Bob"), (&bob, "Alice")] {
-        let result = run(
+        let result = refusal(
             &db.pool,
             from,
             &online,
@@ -338,7 +352,7 @@ async fn blocked_players_cannot_message_each_other_postgres() {
             json!({"text":"hello","recipient":to}),
         )
         .await;
-        assert!(warning_of(&result).contains("cannot send a private message"));
+        assert!(result.contains("cannot send a private message"));
     }
     let stored: i64 = sqlx::query_scalar!("SELECT COUNT(*) AS \"v!\" FROM chat_log_pm")
         .fetch_one(&db.pool)
@@ -349,8 +363,8 @@ async fn blocked_players_cannot_message_each_other_postgres() {
     let unblocked = run(&db.pool, &alice, &[], "blockRemove", bob_name.clone()).await;
     assert!(notice_of(&unblocked).contains("Successfully unblocked"));
     assert_eq!(self_data(&unblocked, "blocked"), json!({"blocked":[]}));
-    let missing = run(&db.pool, &alice, &[], "blockRemove", bob_name).await;
-    assert!(warning_of(&missing).contains("not blocked"));
+    let missing = refusal(&db.pool, &alice, &[], "blockRemove", bob_name).await;
+    assert!(missing.contains("not blocked"));
     let result = run(
         &db.pool,
         &bob,
@@ -514,7 +528,7 @@ async fn lobby_private_messages_and_command_privacy_postgres() {
         .execute(&db.pool)
         .await
         .unwrap();
-    let result = run(
+    let result = refusal(
         &db.pool,
         &who,
         &online,
@@ -522,19 +536,9 @@ async fn lobby_private_messages_and_command_privacy_postgres() {
         json!({"text":"muted","recipient":"Bob"}),
     )
     .await;
-    assert!(
-        self_data(&result, "warning")["message"]
-            .as_str()
-            .unwrap()
-            .contains("muted")
-    );
-    let result = run(&db.pool, &who, &[], "chat", json!({"text":"muted"})).await;
-    assert!(
-        self_data(&result, "warning")["message"]
-            .as_str()
-            .unwrap()
-            .contains("muted")
-    );
+    assert!(result.contains("muted"));
+    let result = refusal(&db.pool, &who, &[], "chat", json!({"text":"muted"})).await;
+    assert!(result.contains("muted"));
     assert_eq!(
         sqlx::query_scalar!("SELECT COUNT(*) AS \"v!\" FROM chat_log")
             .fetch_one(&db.pool)
@@ -717,10 +721,7 @@ async fn lobby_directed_linked_seeds_and_histories_postgres() {
     assert_eq!(history["games"][0]["gameId"], gb);
     assert_eq!(history["games"][1]["gameId"], ga);
     assert_eq!(history["games"][2]["gameId"], gd);
-    assert_eq!(
-        (&history["offset"], &history["total"]),
-        (&json!(0), &json!(3))
-    );
+    assert_eq!(history["total"], 3);
     // Later pages continue in the same order, and count every game on the seed.
     let result = run(
         &db.pool,
@@ -733,10 +734,7 @@ async fn lobby_directed_linked_seeds_and_histories_postgres() {
     let history = self_data(&result, "seedGames");
     assert_eq!(history["games"].as_array().unwrap().len(), 1);
     assert_eq!(history["games"][0]["gameId"], ga);
-    assert_eq!(
-        (&history["offset"], &history["total"]),
-        (&json!(1), &json!(3))
-    );
+    assert_eq!(history["total"], 3);
     sqlx::query!(
         "INSERT INTO game_tags(game_id,user_id,tag) VALUES($1,$2,$3)",
         ga,

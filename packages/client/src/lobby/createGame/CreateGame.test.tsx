@@ -56,6 +56,7 @@ vi.mock("../../Tooltip.ts", () => ({
   },
 }));
 
+// The server never replies in these tests.
 const send = vi.fn();
 
 const OUR_USER_ID = 1 as UserId;
@@ -104,14 +105,18 @@ describe("CreateGame", () => {
     });
     click("create-game-submit");
 
-    expect(send).toHaveBeenCalledWith("tableCreate", {
-      settings: {
-        name: "Alice's table",
-        maxPlayers: defaultSettings.createTable.maxPlayers,
-        options: defaultSettings.createTable.options,
+    expect(send).toHaveBeenCalledWith(
+      "tableCreate",
+      {
+        settings: {
+          name: "Alice's table",
+          maxPlayers: defaultSettings.createTable.maxPlayers,
+          options: defaultSettings.createTable.options,
+        },
+        password: "secret",
       },
-      password: "secret",
-    });
+      expect.any(Function),
+    );
     expect(hide).toHaveBeenCalled();
     expect(store.getState().session.creatingTable).toBe(true);
     expect(localStorage.getItem("createTablePassword")).toBe("secret");

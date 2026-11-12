@@ -99,10 +99,7 @@ databaseDescribe("normal-server protocol workload", () => {
         peer: ReturnType<typeof socketClient>,
         tableId: number,
       ) {
-        peer.send("tableUnattend", { tableId });
-        // Unattend has no direct acknowledgement; use an ordinary ordered command.
-        peer.send("sync", {});
-        await peer.receive("synced", SERVER_COMMAND_SCHEMAS.synced);
+        await peer.request("tableUnattend", { tableId });
       }
 
       async function bootstrap(

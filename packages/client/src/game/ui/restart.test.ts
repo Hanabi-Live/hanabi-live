@@ -1,6 +1,14 @@
 import { beforeEach, expect, test, vi } from "vitest";
 
-const send = vi.fn();
+/** The server's reply to a restart, which `send` gives at once unless it is undefined. */
+let reply: { ok: boolean } | undefined;
+const send = vi.fn(
+  (_command: string, _data: unknown, onReply: (answer: unknown) => void) => {
+    if (reply !== undefined) {
+      onReply(reply);
+    }
+  },
+);
 const setEnabled = vi.fn();
 const contentsVisible = vi.fn();
 const waitingVisible = vi.fn();
@@ -28,6 +36,7 @@ const { request, setPending } = await import("./restart.ts");
 beforeEach(() => {
   vi.clearAllMocks();
   globals.restartPending = false;
+  reply = undefined;
 });
 
 test.each([true, false])(
@@ -45,18 +54,19 @@ test.each([true, false])(
     request(!startNow);
 
     expect(send).toHaveBeenCalledTimes(1);
-    expect(send).toHaveBeenCalledWith("tableRestart", {
-      tableId: 42,
-      startNow,
-    });
+    expect(send).toHaveBeenCalledWith(
+      "tableRestart",
+      { tableId: 42, startNow },
+      expect.any(Function),
+    );
     expect(setEnabled).toHaveBeenLastCalledWith(false);
     expect(show).toHaveBeenCalledTimes(1);
   },
 );
 
-test("a rejected restart restores the controls and allows retrying", () => {
+test("a refused restart restores the controls and allows retrying", () => {
+  reply = { ok: false };
   request(true);
-  setPending(false);
 
   expect(stop).toHaveBeenCalledTimes(1);
   expect(contentsVisible).toHaveBeenLastCalledWith(true);
@@ -66,10 +76,19 @@ test("a rejected restart restores the controls and allows retrying", () => {
   request(false);
 
   expect(send).toHaveBeenCalledTimes(2);
-  expect(send).toHaveBeenLastCalledWith("tableRestart", {
-    tableId: 42,
-    startNow: false,
-  });
+  expect(send).toHaveBeenLastCalledWith(
+    "tableRestart",
+    { tableId: 42, startNow: false },
+    expect.any(Function),
+  );
+});
+
+test("a restart that succeeds keeps waiting for the new table", () => {
+  reply = { ok: true };
+  request(true);
+
+  expect(globals.restartPending).toBe(true);
+  expect(stop).not.toHaveBeenCalled();
 });
 
 test("rebuilding the pending UI does not allow another restart", () => {

@@ -6,8 +6,10 @@ import { globals } from "../Globals.ts";
 import { store } from "../store.ts";
 import { setBrowserAddressBarPath } from "../utils.ts";
 import {
+  historyReceived,
   historyRequested,
   moreOtherScoresRequested,
+  otherScoresReceived,
   otherScoresRequested,
   selectShownGameCount,
 } from "./gameHistory/historySlice.ts";
@@ -43,10 +45,14 @@ export function showMore(): void {
 
 function requestPage(offset: number) {
   store.dispatch(historyRequested());
-  globals.conn!.send("gameHistory", {
-    offset,
-    limit: HISTORY_PAGE_SIZE,
-  });
+  globals.conn!.send(
+    "gameHistory",
+    { offset, limit: HISTORY_PAGE_SIZE },
+    (reply) => {
+      // A failed page adds no games.
+      store.dispatch(historyReceived(reply.ok ? reply.data.games : []));
+    },
+  );
 }
 
 export function hide(): void {
@@ -81,11 +87,15 @@ export function showMoreOtherScores(): void {
 }
 
 function requestOtherScoresPage(seed: string, offset: number) {
-  globals.conn!.send("seedGames", {
-    seed,
-    offset,
-    limit: HISTORY_PAGE_SIZE,
-  });
+  globals.conn!.send(
+    "seedGames",
+    { seed, offset, limit: HISTORY_PAGE_SIZE },
+    (reply) => {
+      if (reply.ok) {
+        store.dispatch(otherScoresReceived({ seed, offset, page: reply.data }));
+      }
+    },
+  );
 }
 
 export function hideOtherScores(): void {

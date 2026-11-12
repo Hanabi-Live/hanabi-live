@@ -31,42 +31,29 @@ async fn websocket_errors_explain_invalid_fields_and_database_failures_postgres(
     let cookie = login(&fixture, "ErrorDetails").await;
     let mut socket = connect(&fixture, &cookie).await;
     receive(&mut socket, "welcome").await;
-    for (request, expected) in [
+    for (id, page, expected) in [
         (
-            "gameHistory {\"offset\":\"bad\",\"limit\":10}",
+            1,
+            json!({"offset":"bad","limit":10}),
             "Invalid PageRequest payload at /offset",
         ),
         (
-            "gameHistory {\"offset\":0,\"limit\":10}",
+            2,
+            json!({"offset":0,"limit":10}),
             "database connection pool is closed",
         ),
     ] {
-        if request.contains("\"offset\":0") {
+        let closed = page["offset"] == 0;
+        if closed {
             fixture.app.store.primary.close().await;
         }
-        socket
-            .send(WireMessage::Text(request.into()))
-            .await
-            .unwrap();
-        let warning = tokio::time::timeout(Duration::from_secs(5), async {
-            loop {
-                let message = socket.next().await.unwrap().unwrap();
-                if let WireMessage::Text(text) = message
-                    && let Some(body) = text.strip_prefix("warning ")
-                {
-                    break serde_json::from_str::<Value>(body).unwrap()["message"]
-                        .as_str()
-                        .unwrap()
-                        .to_owned();
-                }
-            }
-        })
-        .await
-        .unwrap();
-        assert!(warning.contains(expected), "{warning}");
-        if request.contains("\"offset\":0") {
-            assert!(warning.contains("Loading game history"));
-            assert!(warning.contains("Reference:"));
+        send(&mut socket, id, "gameHistory", page).await;
+        let reply = reply(&mut socket, id).await;
+        let error = reply["error"]["message"].as_str().unwrap();
+        assert!(error.contains(expected), "{error}");
+        if closed {
+            assert!(error.contains("Loading game history"));
+            assert!(error.contains("Reference:"));
         }
     }
     socket.close(None).await.unwrap();
@@ -248,8 +235,10 @@ async fn websocket_checks_client_version_with_existing_cookie_postgres() {
             let WireMessage::Text(text) = socket.next().await.unwrap().unwrap() else {
                 panic!("Expected a version error before any bootstrap messages");
             };
-            let body = text.strip_prefix("error ").unwrap();
-            let payload: Value = serde_json::from_str(body).unwrap();
+            let Some(Received::Event(name, payload)) = parse_frame(&text) else {
+                panic!("Expected an error before any bootstrap messages: {text}");
+            };
+            assert_eq!(name, "error");
             assert_eq!(
                 payload["code"],
                 hanabi_protocol::NoticeCode::OutdatedClient.name()
@@ -293,6 +282,56 @@ async fn websocket_checks_client_version_with_existing_cookie_postgres() {
     fixture.close().await;
 }
 
+/// A frame from the server: a message with its name and data, or the reply to a request.
+enum Received {
+    Event(String, Value),
+    Reply(u64, Value),
+}
+
+fn parse_frame(text: &str) -> Option<Received> {
+    let frame: Value = serde_json::from_str(text).ok()?;
+    if let Some(id) = frame["reply"].as_u64() {
+        return Some(Received::Reply(id, frame));
+    }
+    Some(Received::Event(
+        frame["event"].as_str()?.to_owned(),
+        frame["data"].clone(),
+    ))
+}
+
+/// Sends a request with this ID.
+async fn send(socket: &mut Socket, id: u64, command: &str, data: Value) {
+    socket
+        .send(WireMessage::Text(
+            json!({"id": id, "type": command, "data": data})
+                .to_string()
+                .into(),
+        ))
+        .await
+        .unwrap();
+}
+
+/// Waits for the reply to the request with this ID, and returns it. Fails on another message
+/// that only a server failure sends.
+async fn reply(socket: &mut Socket, id: u64) -> Value {
+    tokio::time::timeout(Duration::from_secs(10), async {
+        loop {
+            let WireMessage::Text(text) = socket.next().await.unwrap().unwrap() else {
+                continue;
+            };
+            match parse_frame(&text) {
+                Some(Received::Reply(reply, frame)) if reply == id => return frame,
+                Some(Received::Event(name, _)) if name == "error" => {
+                    panic!("Unexpected error while waiting for reply {id}: {text}");
+                }
+                _ => {}
+            }
+        }
+    })
+    .await
+    .unwrap_or_else(|_| panic!("Timed out waiting for reply {id}"))
+}
+
 async fn receive(socket: &mut Socket, command: &str) -> Value {
     tokio::time::timeout(Duration::from_secs(10), async {
         loop {
@@ -300,12 +339,19 @@ async fn receive(socket: &mut Socket, command: &str) -> Value {
             let WireMessage::Text(text) = next else {
                 continue;
             };
-            let (name, body) = text.split_once(' ').unwrap();
-            if matches!(name, "warning" | "error") {
-                panic!("Unexpected {name} while waiting for {command}: {body}");
-            }
-            if name == command {
-                return serde_json::from_str(body).unwrap();
+            match parse_frame(&text) {
+                Some(Received::Event(name, data)) => {
+                    if matches!(name.as_str(), "warning" | "error") {
+                        panic!("Unexpected {name} while waiting for {command}: {data}");
+                    }
+                    if name == command {
+                        return data;
+                    }
+                }
+                Some(Received::Reply(_, frame)) if frame.get("error").is_some() => {
+                    panic!("Unexpected failed request while waiting for {command}: {frame}");
+                }
+                _ => {}
             }
         }
     })
@@ -328,42 +374,34 @@ async fn uptime_replies_only_to_requester_in_lobby_and_table_postgres() {
         receive(socket, "chatList").await;
         assert_eq!(receive(socket, "lobbyStatus").await["type"], "ready");
     }
-    alice
-        .send(WireMessage::Text(
-            "tableCreate {\"settings\":{\"name\":\"Private uptime\",\"maxPlayers\":5,\"options\":{}}}".into(),
-        ))
-        .await
-        .unwrap();
+    send(
+        &mut alice,
+        1,
+        "tableCreate",
+        json!({"settings":{"name":"Private uptime","maxPlayers":5,"options":{}}}),
+    )
+    .await;
     let table = receive(&mut alice, "tableJoined").await["tableId"]
         .as_u64()
         .unwrap();
-    bob.send(WireMessage::Text(
-        format!("tableJoin {{\"tableId\":{table}}}").into(),
-    ))
-    .await
-    .unwrap();
+    reply(&mut alice, 1).await;
+    send(&mut bob, 1, "tableJoin", json!({"tableId": table})).await;
     receive(&mut bob, "tableJoined").await;
-    alice
-        .send(WireMessage::Text("sync {}".into()))
-        .await
-        .unwrap();
-    receive(&mut alice, "synced").await;
-    bob.send(WireMessage::Text("sync {}".into())).await.unwrap();
-    receive(&mut bob, "synced").await;
+    reply(&mut bob, 1).await;
+    // Alice's reply comes after the chat that says that Bob joined.
+    send(&mut alice, 10, "gameHistory", json!({"offset":0,"limit":1})).await;
+    reply(&mut alice, 10).await;
     let before: i64 = sqlx::query_scalar!("SELECT COUNT(*) AS \"v!\" FROM chat_log")
         .fetch_one(&fixture.db.pool)
         .await
         .unwrap();
     let tables_before = fixture.app.store.load().await.unwrap();
-    for table in [None, Some(table)] {
+    for (id, table) in [(2, None), (3, Some(table))] {
         let payload = table.map_or_else(
             || json!({"text":"/UpTiMe"}),
             |table| json!({"text":"/UpTiMe","tableId":table}),
         );
-        alice
-            .send(WireMessage::Text(format!("chat {payload}").into()))
-            .await
-            .unwrap();
+        send(&mut alice, id, "chat", payload).await;
         for prefix in ["The server came online at:", "Uptime:"] {
             let reply = receive(&mut alice, "chat").await;
             assert_eq!(
@@ -375,19 +413,21 @@ async fn uptime_replies_only_to_requester_in_lobby_and_table_postgres() {
             assert!(reply["text"].as_str().unwrap().starts_with(prefix));
             assert!(reply.get("chatId").is_none());
         }
-        bob.send(WireMessage::Text("sync {}".into())).await.unwrap();
+        reply(&mut alice, id).await;
+        // Bob's own request is answered after everything that the server sent him before it.
+        send(&mut bob, id, "gameHistory", json!({"offset":0,"limit":1})).await;
         tokio::time::timeout(Duration::from_secs(5), async {
             loop {
                 let WireMessage::Text(text) = bob.next().await.unwrap().unwrap() else {
                     continue;
                 };
-                let (command, _) = text.split_once(' ').unwrap();
-                assert_ne!(
-                    command, "chat",
-                    "Private uptime leaked to another player: {text}"
-                );
-                if command == "synced" {
-                    break;
+                match parse_frame(&text) {
+                    Some(Received::Event(name, _)) => assert_ne!(
+                        name, "chat",
+                        "Private uptime leaked to another player: {text}"
+                    ),
+                    Some(Received::Reply(reply, _)) if reply == id => break,
+                    _ => {}
                 }
             }
         })
@@ -482,13 +522,8 @@ async fn native_browser_login_ws_bootstrap_and_command_routing_postgres() {
     assert_eq!(welcome["username"], "Alicè");
     assert!(receive(&mut alice, "chatList").await["messages"].is_array());
     assert_eq!(receive(&mut alice, "lobbyStatus").await["type"], "ready");
-    alice
-        .send(WireMessage::Text(
-            "gameHistory {\"offset\":0,\"limit\":10}".into(),
-        ))
-        .await
-        .unwrap();
-    let history = receive(&mut alice, "gameHistory").await;
+    send(&mut alice, 1, "gameHistory", json!({"offset":0,"limit":10})).await;
+    let history = reply(&mut alice, 1).await["data"].clone();
     assert_eq!(history["games"][0]["gameId"], historical);
     assert_eq!(history["games"][0]["options"]["variantId"], 1);
     assert_eq!(
@@ -502,24 +537,26 @@ async fn native_browser_login_ws_bootstrap_and_command_routing_postgres() {
     let _ = receive(&mut bob, "user").await;
     receive(&mut bob, "chatList").await;
     assert_eq!(receive(&mut bob, "lobbyStatus").await["type"], "ready");
-    alice
-        .send(WireMessage::Text(
-            "settings {\"settings\":{\"hGroupConventions\":true}}".into(),
-        ))
-        .await
-        .unwrap();
+    send(
+        &mut alice,
+        2,
+        "settings",
+        json!({"settings":{"hGroupConventions":true}}),
+    )
+    .await;
     loop {
         let user = receive(&mut alice, "user").await;
         if user["userId"] == welcome["userId"] && user["hGroupConventions"] == true {
             break;
         }
     }
-    alice
-        .send(WireMessage::Text(
-            r#"chatPm {"text":"private <content>","recipient":"Bob"}"#.into(),
-        ))
-        .await
-        .unwrap();
+    send(
+        &mut alice,
+        3,
+        "chatPm",
+        json!({"text":"private <content>","recipient":"Bob"}),
+    )
+    .await;
     let pm = receive(&mut bob, "chat").await;
     assert_eq!(
         pm["kind"],
@@ -530,10 +567,7 @@ async fn native_browser_login_ws_bootstrap_and_command_routing_postgres() {
     assert!(pm.get("tableId").is_none());
     let echo = receive(&mut alice, "chat").await;
     assert_eq!(echo, pm);
-    alice
-        .send(WireMessage::Text("chat {\"text\":\"/token\"}".into()))
-        .await
-        .unwrap();
+    send(&mut alice, 4, "chat", json!({"text":"/token"})).await;
     let token = receive(&mut alice, "chat").await;
     assert_eq!(token["kind"]["recipient"], "Alicè");
     assert!(token["text"].as_str().unwrap().contains("<code>"));
@@ -544,22 +578,19 @@ async fn native_browser_login_ws_bootstrap_and_command_routing_postgres() {
             .unwrap(),
         0
     );
-    alice
-        .send(WireMessage::Text("chat {\"text\":\"/findvariant\"}".into()))
-        .await
-        .unwrap();
+    send(&mut alice, 5, "chat", json!({"text":"/findvariant"})).await;
     let _ = receive(&mut alice, "chat").await;
     assert_eq!(
         receive(&mut alice, "chat").await["text"],
         "You can only perform this command while in a game."
     );
-    alice
-        .send(WireMessage::Text(
-            "tableCreate {\"settings\":{\"name\":\"Browser game\",\"maxPlayers\":5,\"options\":{\"variantId\":0}}}"
-                .into(),
-        ))
-        .await
-        .unwrap();
+    send(
+        &mut alice,
+        6,
+        "tableCreate",
+        json!({"settings":{"name":"Browser game","maxPlayers":5,"options":{"variantId":0}}}),
+    )
+    .await;
     let table = receive(&mut alice, "table").await;
     assert!(
         table["tableId"]
@@ -740,13 +771,8 @@ async fn game_archive_locks_do_not_block_authentication_and_deferred_errors_are_
         .await
         .unwrap()
         .unwrap();
-    let body = message
-        .message
-        .to_text()
-        .unwrap()
-        .strip_prefix("lobbyStatus ")
-        .unwrap();
-    let status: Value = serde_json::from_str(body).unwrap();
+    let (name, status) = crate::transport::event(message.message.to_text().unwrap()).unwrap();
+    assert_eq!(name, "lobbyStatus");
     assert_eq!(status["type"], "error");
     assert!(status.get("numGames").is_none());
     assert!(
@@ -835,7 +861,7 @@ async fn full_history_bootstrap_queues_in_order_without_a_writer_postgres() {
     assert!(
         messages
             .iter()
-            .all(|message| !message.starts_with("gameHistory"))
+            .all(|message| !crate::transport::is_event(message, "gameHistory"))
     );
     history_lock.rollback().await.unwrap();
     let own_ids = lobby::history_ids(&fixture.db.pool, UserId::new(alice).unwrap(), 0, 100)
@@ -869,7 +895,7 @@ async fn full_history_bootstrap_queues_in_order_without_a_writer_postgres() {
     assert!(
         initial
             .iter()
-            .all(|message| !message.starts_with("gameHistory"))
+            .all(|message| !crate::transport::is_event(message, "gameHistory"))
     );
     // Requested full history pages must still fit in the outbound queue.
     initial.extend([own, next]);
@@ -881,7 +907,7 @@ async fn full_history_bootstrap_queues_in_order_without_a_writer_postgres() {
     expected.extend(
         initial
             .iter()
-            .map(|message| message.split_once(' ').unwrap().0.to_owned()),
+            .map(|message| crate::transport::event(message).unwrap().0),
     );
     expected.push("user".into());
     assert!(
@@ -919,10 +945,9 @@ async fn full_history_bootstrap_queues_in_order_without_a_writer_postgres() {
         let Message::Text(text) = outbound.message else {
             panic!("Unexpected bootstrap frame");
         };
-        let (command, body) = text.split_once(' ').unwrap();
-        actual.push(command.to_owned());
-        let data: Value = serde_json::from_str(body).unwrap();
-        match command {
+        let (command, data) = crate::transport::event(&text).unwrap();
+        actual.push(command.clone());
+        match command.as_str() {
             "chatList" => assert_eq!(data["messages"].as_array().unwrap().len(), 50),
             "gameHistory" => {
                 assert_eq!(data.as_array().unwrap().len(), 100);

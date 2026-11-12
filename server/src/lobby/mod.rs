@@ -62,6 +62,8 @@ pub enum Publication {
 #[derive(Clone, Debug)]
 pub enum Effect {
     Publish(Publication),
+    /// The data of the reply to the command.
+    Reply(hanabi_protocol::ReplyData),
     /// Copies a saved lobby message to Discord.
     DiscordMirror {
         chat_id: i32,
@@ -113,11 +115,9 @@ pub enum ExternalReply {
     },
 }
 
-fn warning(message: &str) -> Effect {
-    Effect::to_self(Outgoing::new(
-        hanabi_protocol::server::WARNING,
-        hanabi_protocol::Notice::new(message),
-    ))
+/// Refuses a lobby command. The player sees the message, which is plain text.
+fn refused<T>(message: impl Into<String>) -> Result<T> {
+    Err(crate::errors::CommandError::rejected(message).into())
 }
 
 fn notice(recipient: &str, message: &str) -> Effect {
@@ -217,11 +217,9 @@ pub async fn dispatch(
         ClientMessage::GameHistory(hanabi_protocol::PageRequest { offset, limit }) => {
             let ids = history_ids(pool, caller.user, offset.get(), limit.get()).await?;
             let total = crate::database::normal_game_count(pool, caller.user, true).await?;
-            vec![Effect::to_self(Outgoing::new(
-                hanabi_protocol::server::GAME_HISTORY,
+            vec![Effect::Reply(hanabi_protocol::reply::GAME_HISTORY.data(
                 hanabi_protocol::GamePage {
                     games: get_history(pool, &ids).await?,
-                    offset,
                     total: hanabi_protocol::Count::try_from(total)?,
                 },
             ))]
@@ -238,28 +236,23 @@ pub async fn dispatch(
                 None
             };
             if let Some(error) = error {
-                return Ok(Some(vec![warning(error)]));
+                return refused(error);
             }
             let offset = request.page.offset;
             let ids = seed_history_ids(pool, seed, offset.get(), request.page.limit.get()).await?;
             let games = get_history(pool, &ids).await?;
             let total = seed_game_count(pool, seed).await?;
-            vec![Effect::to_self(Outgoing::new(
-                hanabi_protocol::server::SEED_GAMES,
-                hanabi_protocol::SeedGames {
-                    seed: seed.into(),
-                    page: hanabi_protocol::GamePage {
-                        games,
-                        offset,
-                        total: hanabi_protocol::Count::try_from(total)?,
-                    },
+            vec![Effect::Reply(hanabi_protocol::reply::SEED_GAMES.data(
+                hanabi_protocol::GamePage {
+                    games,
+                    total: hanabi_protocol::Count::try_from(total)?,
                 },
             ))]
         }
         ClientMessage::TagSearch(request) => {
             let raw = request.tag.as_str();
             if raw.chars().count() > hanabi_protocol::MAX_TAG_LENGTH {
-                return Ok(Some(vec![warning(&crate::model::tag_too_long())]));
+                return refused(crate::model::tag_too_long());
             }
             let replaced: String = raw
                 .chars()
@@ -267,7 +260,7 @@ pub async fn dispatch(
                 .collect();
             let trimmed = replaced.trim_matches(' ');
             if trimmed.is_empty() {
-                return Ok(Some(vec![warning("Tags cannot be blank.")]));
+                return refused("Tags cannot be blank.");
             }
             let tag = normalize_string(trimmed);
             let ids: Vec<i32> = sqlx::query_scalar!(
