@@ -869,35 +869,30 @@ move for the current situation.
 
 ### JSON Endpoints
 
-| URL                                           | Description                                                                                                 |
-| --------------------------------------------- | ----------------------------------------------------------------------------------------------------------- |
-| `/export/[game ID]`                           | Provides the data for an arbitrary game from the database.                                                  |
-| `/api/v1/variants`                            | Displays a list of variants and their IDs.                                                                  |
-| `/api/v1/variants-full`                       | Displays a list of variants information and their IDs.                                                      |
-| `/api/v1/history/[username]`                  | Lists a paginated list of the player's past games.                                                          |
-| `/api/v1/history/[username]/[username2]`      | Lists a paginated list of past games where the players were in together. (You can specify up to 6 players.) |
-| `/api/v1/history-full/[username]`             | Lists all the player's past games.                                                                          |
-| `/api/v1/history-full/[username]/[username2]` | Lists all the past games that 2 players were in together. (You can specify up to 6 players.)                |
-| `/api/v1/tags/[username]`                     | Lists all games tagged by the player, with only that player's tags on each game.                            |
-| `/api/v1/tag/[tag]`                           | Lists all games containing the specified tag.                                                               |
-| `/api/v1/seed/[seed]`                         | Lists paginated games played on a specific seed.                                                            |
-| `/api/v1/seed-full/[seed]`                    | Lists all the games played on a specific seed.                                                              |
+| URL                                      | Description                                                                                                 |
+| ---------------------------------------- | ----------------------------------------------------------------------------------------------------------- |
+| `/export/[game ID]`                      | Provides the data for an arbitrary game from the database.                                                  |
+| `/api/v1/variants`                       | Displays a list of variants and their IDs.                                                                  |
+| `/api/v1/variants-full`                  | Displays a list of variants information and their IDs.                                                      |
+| `/api/v1/history/[username]`             | Lists a paginated list of the player's past games.                                                          |
+| `/api/v1/history/[username]/[username2]` | Lists a paginated list of past games where the players were in together. (You can specify up to 6 players.) |
+| `/api/v1/tags/[username]`                | Lists all games tagged by the player, with only that player's tags on each game.                            |
+| `/api/v1/tag/[tag]`                      | Lists all games containing the specified tag.                                                               |
+| `/api/v1/seed/[seed]`                    | Lists paginated games played on a specific seed.                                                            |
 
-Notes: The following query parameters can be used by adding a `?` at the end of
-the URL (e.g. `/api/v1/history/Alice?limit=50&offset=100`). Group 1 applies to
-the paginated lists, and `limit` and `offset` also to `/api/v1/seed-full`. Group
-2 applies to `/api/v1/history-full`. A request with any other parameter, or with
-a parameter repeated, is rejected.
+Notes: The paginated lists take the following query parameters, added with a `?`
+at the end of the URL (e.g. `/api/v1/history/Alice?limit=50&offset=100`). A
+request with any other parameter, or with a parameter repeated, is rejected.
 
-| Group | Parameter | Type    | Explanation                      | Values          |
-| ----- | --------- | ------- | -------------------------------- | --------------- |
-| 1     | limit     | integer | controls the number of results   | 1 to 100        |
-| 1     | offset    | integer | skips this many results          | 0 to ...        |
-| 1     | sort      | string  | sorts by one column (see below)  | a column name   |
-| 1     | order     | string  | sets the direction of the sort   | `asc` or `desc` |
-| 1     | filter[x] | integer | filters by column x (see below)  | filter value    |
-| 2     | start     | integer | sets the starting ID of the data | ...             |
-| 2     | end       | integer | sets the ending ID of the data   | ...             |
+| Parameter | Type    | Explanation                     | Values          |
+| --------- | ------- | ------------------------------- | --------------- |
+| limit     | integer | controls the number of results  | 1 to 100        |
+| offset    | integer | skips this many results         | 0 to ...        |
+| sort      | string  | sorts by one column (see below) | a column name   |
+| order     | string  | sets the direction of the sort  | `asc` or `desc` |
+| filter[x] | integer | filters by column x (see below) | filter value    |
+| start     | integer | sets the lowest game ID         | ...             |
+| end       | integer | sets the highest game ID        | ...             |
 
 The columns are `gameId`, `numPlayers`, `score`, and `variantId` (for example,
 `?sort=score&order=desc`). Every list sorts by `gameId`, `numPlayers`, or

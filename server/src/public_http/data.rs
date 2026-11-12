@@ -28,11 +28,12 @@ const fn filterable_columns(mode: &str) -> &'static [Column] {
 }
 
 /// The query parameters that a game list takes: paging, `sort` with a column's name, `order` with
-/// `asc` or `desc`, and `filter[name]` with a column's value.
+/// `asc` or `desc`, `filter[name]` with a column's value, and `start` and `end` with the lowest and
+/// highest game ID.
 pub(super) fn list_parameters(mode: &str) -> Vec<String> {
     PAGE_PARAMETERS
         .into_iter()
-        .chain(["sort", "order"])
+        .chain(["sort", "order", "start", "end"])
         .map(str::to_owned)
         .chain(
             filterable_columns(mode)
@@ -44,9 +45,6 @@ pub(super) fn list_parameters(mode: &str) -> Vec<String> {
 
 /// The order of a player's history: the most recently finished game first.
 pub(super) const FINISHED_ORDER: &str = "g.datetime_finished DESC,g.id DESC";
-
-/// The order of the games on a seed: the best score first, and the earliest of equal scores.
-pub(super) const SEED_ORDER: &str = "g.score DESC,g.datetime_finished ASC,g.id ASC";
 
 #[derive(sqlx::FromRow)]
 struct HistoryRow {
@@ -232,6 +230,16 @@ pub(super) async fn list(
         }
     }
     s.filters = filters;
+    for (name, bound) in [("start", &mut s.start), ("end", &mut s.end)] {
+        *bound = q
+            .get(name)
+            .map(|value| {
+                integer(value).ok_or_else(|| {
+                    HttpError::bad(format!("The {name} game ID must be an integer."))
+                })
+            })
+            .transpose()?;
+    }
     let mut count = selected(s.clone());
     count.push(") SELECT count(*) FROM selected");
     let total: i64 = count.build_query_scalar().fetch_one(&state.pool).await?;

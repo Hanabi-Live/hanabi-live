@@ -364,32 +364,25 @@ async fn public_database_routes_filters_privacy_exports_and_html() {
     let (_, body) = request(app.clone(), "/api/v1/history/Alice").await;
     hanabi_protocol::validate::<hanabi_protocol::GamePage>(&serde_json::from_str(&body).unwrap())
         .unwrap();
-    let (_, body) = request(app.clone(), "/api/v1/history-full/Alice").await;
-    let games: Vec<Value> = serde_json::from_str(&body).unwrap();
-    assert_ne!(games, Vec::<Value>::new());
-    for game in &games {
-        hanabi_protocol::validate::<hanabi_protocol::GameHistoryEntry>(game).unwrap();
-    }
     for (path, ids) in [
-        ("/api/v1/history-full/Alice?start=2", vec![3, 2]),
-        ("/api/v1/history-full/Alice?end=1", vec![1]),
-        (
-            "/api/v1/history-full/Alice?start=-99999999999",
-            vec![3, 2, 1],
-        ),
-        ("/api/v1/history-full/Alice?start=99999999999", vec![]),
-        ("/api/v1/history-full/Alice?end=99999999999", vec![3, 2, 1]),
-        ("/api/v1/history-full/Alice?end=-99999999999", vec![]),
+        ("/api/v1/history/Alice?start=2", vec![3, 2]),
+        ("/api/v1/history/Alice?end=1", vec![1]),
+        ("/api/v1/history/Alice?start=-99999999999", vec![3, 2, 1]),
+        ("/api/v1/history/Alice?start=99999999999", vec![]),
+        ("/api/v1/history/Alice?end=99999999999", vec![3, 2, 1]),
+        ("/api/v1/history/Alice?end=-99999999999", vec![]),
+        ("/api/v1/seed/same?start=2", vec![2]),
     ] {
         let (status, body) = request(app.clone(), path).await;
         assert_eq!(status, StatusCode::OK, "{path}: {body}");
         let value: Value = serde_json::from_str(&body).unwrap();
-        let actual: Vec<_> = value
+        let actual: Vec<_> = value["games"]
             .as_array()
             .unwrap()
             .iter()
             .map(|game| game["gameId"].as_i64().unwrap())
             .collect();
+        assert_eq!(value["total"], actual.len(), "{path}");
         assert_eq!(actual, ids, "{path}");
     }
     let (status, body) = request(
@@ -402,19 +395,21 @@ async fn public_database_routes_filters_privacy_exports_and_html() {
         serde_json::from_str::<Value>(&body).unwrap()["games"][0]["gameId"],
         3
     );
-    let (_, body) = request(app.clone(), "/api/v1/history-full/Alice?start=3&end=3").await;
-    let full: Value = serde_json::from_str(&body).unwrap();
+    let (_, body) = request(app.clone(), "/api/v1/history/Alice?start=3&end=3").await;
+    let full = serde_json::from_str::<Value>(&body).unwrap()["games"].take();
     assert_eq!(full.as_array().unwrap().len(), 1);
     assert_eq!(full[0]["startedAt"], "2026-01-01T00:00:00.123Z");
     assert_eq!(full[0]["finishedAt"], "2026-01-01T01:00:00.000Z");
     for (page, expected) in [(0, vec![1]), (1, vec![2]), (2, vec![])] {
         let (status, body) = request(
             app.clone(),
-            &format!("/api/v1/seed-full/same?limit=1&offset={page}"),
+            &format!("/api/v1/seed/same?limit=1&offset={page}"),
         )
         .await;
         assert_eq!(status, StatusCode::OK, "{body}");
-        let games: Vec<Value> = serde_json::from_str(&body).unwrap();
+        let games: Vec<Value> =
+            serde_json::from_value(serde_json::from_str::<Value>(&body).unwrap()["games"].take())
+                .unwrap();
         assert_eq!(
             games
                 .iter()
@@ -427,9 +422,9 @@ async fn public_database_routes_filters_privacy_exports_and_html() {
             assert!(game["options"]["variantId"].is_u64());
         }
     }
-    let (status, body) = request(app.clone(), "/api/v1/seed-full/same").await;
+    let (status, body) = request(app.clone(), "/api/v1/seed/same").await;
     assert_eq!(status, StatusCode::OK);
-    assert_eq!(serde_json::from_str::<Vec<Value>>(&body).unwrap().len(), 2);
+    assert_eq!(serde_json::from_str::<Value>(&body).unwrap()["total"], 2);
     assert!(full[0]["options"]["timeControl"].is_object());
     for key in [
         "speedrun",
@@ -571,7 +566,7 @@ async fn public_database_routes_filters_privacy_exports_and_html() {
             400,
             "The offset must be",
         ),
-        ("/api/v1/seed-full/same?limit=0", 400, "The limit must be"),
+        ("/api/v1/seed/same?limit=0", 400, "The limit must be"),
         // Every URL rejects a parameter that it does not take, or one repeated.
         ("/api/v1/history/Alice?limit=0", 400, "The limit must be"),
         ("/api/v1/history/Alice?offset=-1", 400, "The offset must be"),
@@ -598,11 +593,7 @@ async fn public_database_routes_filters_privacy_exports_and_html() {
             "Unknown query parameter",
         ),
         ("/api/v1/variants?offset=1", 400, "takes no parameters"),
-        (
-            "/api/v1/history-full/Alice?start=x",
-            400,
-            "must be an integer",
-        ),
+        ("/api/v1/history/Alice?start=x", 400, "must be an integer"),
         ("/history/Alice?api=1", 400, "takes no value"),
         ("/scores/Alice?api", 400, "takes no parameters"),
         ("/lobby?utm_source=x", 400, "Unknown query parameter"),
@@ -612,17 +603,14 @@ async fn public_database_routes_filters_privacy_exports_and_html() {
             400,
             "takes no parameters",
         ),
-        ("/api/v1/seed-full/same?limit=101", 400, "The limit must be"),
+        ("/api/v1/seed/same?limit=101", 400, "The limit must be"),
+        ("/api/v1/seed/same?offset=-1", 400, "The offset must be"),
         (
-            "/api/v1/seed-full/same?offset=-1",
-            400,
-            "The offset must be",
-        ),
-        (
-            "/api/v1/seed-full/same?limit=100&offset=9223372036854775807",
+            "/api/v1/seed/same?limit=100&offset=9223372036854775807",
             400,
             "offset",
         ),
+        ("/api/v1/history-full/Alice", 404, ""),
         ("/export", 404, "specify a database"),
         ("/export/no", 400, "not a valid database"),
         ("/export/99999", 404, "does not exist"),
@@ -694,19 +682,15 @@ async fn public_database_routes_filters_privacy_exports_and_html() {
         SELECT 4,id,id-3 FROM generate_series(4,8) id;
         INSERT INTO game_participants(game_id,user_id,seat) VALUES(4,1,0);")
         .execute(&db.pool).await.unwrap();
-    for path in [
+    let (status, body) = request(
+        app.clone(),
         "/api/v1/history/Alice/Player4/Player5/Player6/Player7/Player8",
-        "/api/v1/history-full/Alice/Player4/Player5/Player6/Player7/Player8",
-    ] {
-        let (status, body) = request(app.clone(), path).await;
-        assert_eq!(status, StatusCode::OK, "{body}");
-        let value: Value = serde_json::from_str(&body).unwrap();
-        if value.is_array() {
-            assert_eq!(value[0]["gameId"], 4);
-        } else {
-            assert_eq!(value["total"], 1);
-        }
-    }
+    )
+    .await;
+    assert_eq!(status, StatusCode::OK, "{body}");
+    let value: Value = serde_json::from_str(&body).unwrap();
+    assert_eq!(value["total"], 1);
+    assert_eq!(value["games"][0]["gameId"], 4);
     let (status, body) = request(
         app.clone(),
         "/shared-missing-scores/6/Alice/Player4/Player5/Player6/Player7/Player8",

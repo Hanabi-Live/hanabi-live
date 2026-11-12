@@ -146,20 +146,13 @@ pub fn router(pool: PgPool, config: &PublicConfig) -> Router {
     }
     router = router.route("/password-reset", get(pages::page));
     let mut api = Router::new();
-    for root in ["history", "history-full"] {
-        let mut path = format!("{API_PREFIX}/{root}");
+    let mut path = format!("{API_PREFIX}/history");
+    api = api.route(&path, get(api_handler));
+    for i in 1..=hanabi_protocol::MAX_PLAYERS {
+        path = format!("{path}/{{player{i}}}");
         api = api.route(&path, get(api_handler));
-        for i in 1..=hanabi_protocol::MAX_PLAYERS {
-            path = format!("{path}/{{player{i}}}");
-            api = api.route(&path, get(api_handler));
-        }
     }
-    for (root, param) in [
-        ("seed", "seed"),
-        ("seed-full", "seed"),
-        ("tags", "player1"),
-        ("tag", "tag"),
-    ] {
+    for (root, param) in [("seed", "seed"), ("tags", "player1"), ("tag", "tag")] {
         api = api
             .route(&format!("{API_PREFIX}/{root}"), get(api_handler))
             .route(
@@ -271,44 +264,13 @@ async fn api_response(
         _ => Vec::new(),
     };
     let list_parameters: Vec<&str> = list_parameters.iter().map(String::as_str).collect();
-    let accepted: &[&str] = match mode {
-        "history-full" => &["start", "end"],
-        "seed-full" => &PAGE_PARAMETERS,
-        _ => &list_parameters,
-    };
-    let q = strict_query(raw.as_deref(), accepted)?;
+    let q = strict_query(raw.as_deref(), &list_parameters)?;
     Ok(match mode {
         "variants" => Json(catalog::names()).into_response(),
         "variants-full" => Json(catalog::metadata()).into_response(),
         "history" | "seed" => {
             let selection = data::selection(state, params, mode).await?;
             Json(data::list(state, selection, &q, mode).await?).into_response()
-        }
-        "history-full" | "seed-full" => {
-            let seed = mode.contains("seed");
-            let mut s =
-                data::selection(state, params, if seed { "seed" } else { "history" }).await?;
-            if seed {
-                s.page = pagination(&q)?;
-            } else {
-                let bound = |name: &str| {
-                    q.get(name)
-                        .map(|value| {
-                            integer(value).ok_or_else(|| {
-                                HttpError::bad(format!("The {name} game ID must be an integer."))
-                            })
-                        })
-                        .transpose()
-                };
-                s.start = bound("start")?;
-                s.end = bound("end")?;
-            }
-            let order = if seed {
-                data::SEED_ORDER
-            } else {
-                data::FINISHED_ORDER
-            };
-            Json(data::history(state, s, order).await?).into_response()
         }
         "tags" => Json(data::tagged(state, params, false).await?).into_response(),
         "tag" => Json(data::tagged(state, params, true).await?).into_response(),
