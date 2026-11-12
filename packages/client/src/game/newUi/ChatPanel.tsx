@@ -1,21 +1,6 @@
-import { useLayoutEffect, useRef, useState } from "react";
+import { useLayoutEffect, useRef } from "react";
 import { tooltipRef, tooltipRefHtml } from "../../tooltipRef.ts";
 import * as gameChat from "../chat.ts";
-
-/**
- * While the panel holds the classic chat box, these classes make it fill the panel instead of the
- * chat window. Tailwind utilities beat the site's stylesheets, so they override its rules.
- */
-/**
- * The text of the header's line about the people watching, when it names the first `listed` of
- * them. The rest are "and # others", a button that names them all.
- */
-function getWatchingText(names: readonly string[], listed: number): string {
-  const hidden = names.length - listed;
-  const others = hidden === 1 ? "other" : "others";
-  const rest = hidden > 0 ? `, and ${hidden} ${others}` : "";
-  return `Watching (${names.length}): ${names.slice(0, listed).join(", ")}${rest}`;
-}
 
 /**
  * The chat box's stylesheet uses the theme's colors. The game screen is dark in both themes, so the
@@ -32,6 +17,10 @@ const CHAT_BOX_COLORS = {
   "--link": "var(--game-screen-link)",
 } as React.CSSProperties;
 
+/**
+ * While the panel holds the classic chat box, these classes make it fill the panel instead of the
+ * chat window. Tailwind utilities beat the site's stylesheets, so they override its rules.
+ */
 const BORROWED_CHAT_BOX_CLASSES = [
   "tw:static",
   "tw:m-0",
@@ -70,7 +59,6 @@ export function ChatPanel({
   readonly spectatorsTooltip: string;
 }): React.JSX.Element {
   const boxRef = useRef<HTMLDivElement>(null);
-  const [showAllSpectators, setShowAllSpectators] = useState(false);
 
   // Borrow the chat box from the classic chat window while the panel is open, and give it back when
   // the panel closes, so that the classic screen can show it again.
@@ -95,53 +83,7 @@ export function ChatPanel({
     };
   }, [open]);
 
-  // The header names as many of the people watching as fit on one line. It tries every name, then
-  // drops one at a time, with "and # others" in their place, until the line fits. It measures the
-  // text in a hidden copy of the line, and again when the panel changes size.
-  const watchingLineRef = useRef<HTMLDivElement>(null);
-  const watchingMeasureRef = useRef<HTMLSpanElement>(null);
-  const [fittingSpectators, setFittingSpectators] = useState(spectators.length);
-  const spectatorsKey = spectators.join("\n");
-  useLayoutEffect(() => {
-    const line = watchingLineRef.current;
-    const measure = watchingMeasureRef.current;
-    if (line === null || measure === null) {
-      return undefined;
-    }
-    const names = spectatorsKey === "" ? [] : spectatorsKey.split("\n");
-    const text = measure.querySelector("[data-watching-text]");
-    if (text === null) {
-      return undefined;
-    }
-
-    function fit() {
-      if (line === null || measure === null || text === null) {
-        return;
-      }
-      let listed = names.length;
-      while (listed > 1) {
-        text.textContent = getWatchingText(names, listed);
-        if (measure.offsetWidth <= line.clientWidth) {
-          break;
-        }
-        listed--;
-      }
-      setFittingSpectators(listed);
-    }
-
-    fit();
-    const observer = new ResizeObserver(fit);
-    observer.observe(line);
-    return () => {
-      observer.disconnect();
-    };
-  }, [spectatorsKey, open]);
-
   const spectatorsLabel = `${spectators.length} watching`;
-  const listedSpectators = showAllSpectators
-    ? spectators
-    : spectators.slice(0, fittingSpectators);
-  const hiddenSpectators = spectators.length - listedSpectators.length;
 
   if (!open) {
     return (
@@ -193,43 +135,14 @@ export function ChatPanel({
       }`}
     >
       <header className="tw:flex tw:items-start tw:gap-2 tw:border-b tw:border-game-zone tw:py-3.5 tw:pr-2 tw:pl-5 tw:text-sm tw:text-game-muted">
-        {/* With no one watching, the header stays blank. */}
-        <div
-          className="tw:relative tw:min-w-0 tw:flex-1 tw:leading-relaxed"
-          ref={watchingLineRef}
-        >
-          {/* A hidden copy of the line, on one line, to measure how many names fit. */}
-          <span
-            aria-hidden="true"
-            className="tw:invisible tw:absolute tw:top-0 tw:left-0 tw:whitespace-nowrap"
-            ref={watchingMeasureRef}
-          >
-            <i className="fas fa-eye tw:mr-1.5" />
-            <span data-watching-text />
-          </span>
+        {/* With no one watching, the header stays blank. It names everyone, and wraps when the
+            names need more than one line. */}
+        <div className="tw:min-w-0 tw:flex-1 tw:leading-relaxed">
           {spectators.length > 0 && (
             <>
               <i aria-hidden="true" className="fas fa-eye tw:mr-1.5" />
               Watching ({spectators.length}):{" "}
-              <span className="tw:text-game-text">
-                {listedSpectators.join(", ")}
-                {hiddenSpectators > 0 && ","}
-              </span>
-              {hiddenSpectators > 0 && (
-                <>
-                  {" "}
-                  <button
-                    className="tw:cursor-pointer tw:border-0 tw:bg-transparent tw:p-0 tw:[font:inherit] tw:text-game-text tw:underline"
-                    onClick={() => {
-                      setShowAllSpectators(true);
-                    }}
-                    type="button"
-                  >
-                    and {hiddenSpectators}{" "}
-                    {hiddenSpectators === 1 ? "other" : "others"}
-                  </button>
-                </>
-              )}
+              <span className="tw:text-game-text">{spectators.join(", ")}</span>
             </>
           )}
         </div>
