@@ -12,6 +12,7 @@ import { evaluationDatabase, liveTables } from "./database.ts";
 import {
   bounded,
   buildRust,
+  cookieUserId,
   databaseDescribe,
   installSchema,
   login,
@@ -68,7 +69,10 @@ databaseDescribe("Rust actor durability and ownership", () => {
         await bob.receive("tableJoined", SERVER_COMMAND_SCHEMAS.tableJoined);
         alice.send("tableStart", {
           tableId,
-          intendedPlayerNames: ["RecoveryAlice", "RecoveryBob"],
+          intendedPlayerIds: [
+            cookieUserId(aliceCookie),
+            cookieUserId(bobCookie),
+          ],
         });
         await alice.receive(
           "tableStarted",

@@ -235,11 +235,6 @@ export const cardOrderSchema = z
   .brand<"CardOrder">();
 
 /**
- * The kind of a clue.
- */
-export const clueTypeSchema = z.enum(["color", "rank"]);
-
-/**
  * A card's suit.
  */
 export const suitIndexSchema = z.literal([0, 1, 2, 3, 4, 5]);

@@ -1,7 +1,7 @@
-use crate::int;
+use crate::{ClueType, int};
 use anyhow::{Result, anyhow};
 use hanabi_protocol::{
-    CatalogColor, CatalogSuit, CatalogVariant, ClueType, MAX_RANK, MIN_RANK, START_CARD_RANK,
+    CatalogColor, CatalogSuit, CatalogVariant, MAX_RANK, MIN_RANK, START_CARD_RANK,
 };
 use serde::Serialize;
 use serde::de::DeserializeOwned;

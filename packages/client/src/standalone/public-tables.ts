@@ -247,14 +247,14 @@ function initServerTable(
   const columns: Column[] = [...(table.tHead?.rows[0]?.cells ?? [])].map(
     () => ({ sortable: false, filter: "none" }),
   );
-  columns[position("id")] = { sortable: true, filter: "none" };
+  columns[position("gameId")] = { sortable: true, filter: "none" };
   columns[position("numPlayers")] = {
     sortable: mode === "history",
     filter: mode === "seed" ? "none" : playerCounts,
   };
   columns[position("score")] = { sortable: true, filter: "text" };
   if (mode === "history") {
-    columns[position("variant")] = {
+    columns[position("variantId")] = {
       sortable: false,
       filter: variantChoices,
     };
@@ -324,7 +324,7 @@ function initServerTable(
     table,
     columns,
     {
-      column: position(mode === "history" ? "id" : "score"),
+      column: position(mode === "history" ? "gameId" : "score"),
       descending: true,
     },
     () => {

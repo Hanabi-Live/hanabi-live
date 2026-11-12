@@ -899,9 +899,10 @@ a parameter repeated, is rejected.
 | 2     | start     | integer | sets the starting ID of the data | ...             |
 | 2     | end       | integer | sets the ending ID of the data   | ...             |
 
-The columns are `id`, `numPlayers`, `score`, and `variant` (for example,
-`?sort=score&order=desc`). Every list sorts by `id`, `numPlayers`, or `score`.
-History lists filter by any column, and seed lists by `id` or `score`.
+The columns are `gameId`, `numPlayers`, `score`, and `variantId` (for example,
+`?sort=score&order=desc`). Every list sorts by `gameId`, `numPlayers`, or
+`score`. History lists filter by any column, and seed lists by `gameId` or
+`score`.
 
 ## Bots
 

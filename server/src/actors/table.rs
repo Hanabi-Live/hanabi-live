@@ -1011,7 +1011,7 @@ impl TableActor {
         times[s.game.active_player_index] = now.active_clock;
         Ok(hanabi_protocol::Clock {
             table_id: self.table.id,
-            clocks: hanabi_protocol::ClockState {
+            clock: hanabi_protocol::ClockState {
                 player_times_ms: times.into_iter().map(super::wire::player_clock).collect(),
                 current_player_index: live
                     .then(|| PlayerIndex::new(s.game.active_player_index))

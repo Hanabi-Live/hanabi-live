@@ -15,7 +15,7 @@ use super::*;
 pub struct Clock {
     pub table_id: TableId,
     #[serde(flatten)]
-    pub clocks: ClockState,
+    pub clock: ClockState,
 }
 
 /// Every player's clock, in the `clock` message and in a game's state.
@@ -294,7 +294,7 @@ pub struct GameState {
     pub connected: Vec<bool>,
     /// Absent in a replay.
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub clocks: Option<ClockState>,
+    pub clock: Option<ClockState>,
     /// Absent in a replay.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub pause: Option<PauseState>,
@@ -436,14 +436,6 @@ pub struct SharedReplayState {
     /// When the replay began: when the game ended, for a review of a game just played, or when the
     /// table was created, for a replay of an older game. `GameInit.startedAt` is when the game began.
     pub replay_started_at: Timestamp,
-}
-
-/// The kind of a clue.
-#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize, JsonSchema)]
-#[serde(rename_all = "camelCase")]
-pub enum ClueType {
-    Color,
-    Rank,
 }
 
 /// How a game ended.

@@ -317,7 +317,7 @@ async fn public_database_routes_filters_privacy_exports_and_html() {
     for (path, total, len) in [
         ("/api/v1/history/Alice?limit=1", 3, 1),
         ("/api/v1/history/Alice/Bob?filter[score]=25", 1, 1),
-        ("/api/v1/history/Alice?filter[variant]=1", 1, 1),
+        ("/api/v1/history/Alice?filter[variantId]=1", 1, 1),
         ("/api/v1/seed/same?filter[score]=15", 1, 1),
         ("/api/v1/history/Alice?offset=4&limit=2", 3, 0),
     ] {
@@ -329,8 +329,8 @@ async fn public_database_routes_filters_privacy_exports_and_html() {
     }
     // Each sort column, direction, and filter assembles different SQL; exercise every one.
     for (path, total, first) in [
-        ("/api/v1/history/Alice?sort=id&order=asc", 3, Some(1)),
-        ("/api/v1/history/Alice?sort=id&order=desc", 3, Some(3)),
+        ("/api/v1/history/Alice?sort=gameId&order=asc", 3, Some(1)),
+        ("/api/v1/history/Alice?sort=gameId&order=desc", 3, Some(3)),
         (
             "/api/v1/history/Alice?sort=numPlayers&order=asc",
             3,
@@ -343,16 +343,16 @@ async fn public_database_routes_filters_privacy_exports_and_html() {
         ),
         ("/api/v1/history/Alice?sort=score&order=asc", 3, Some(3)),
         ("/api/v1/history/Alice?sort=score&order=desc", 3, Some(1)),
-        ("/api/v1/history/Alice?filter[id]=2", 1, Some(2)),
+        ("/api/v1/history/Alice?filter[gameId]=2", 1, Some(2)),
         ("/api/v1/history/Alice?filter[numPlayers]=2", 3, Some(3)),
         ("/api/v1/history/Alice?filter[numPlayers]=3", 0, None),
         ("/api/v1/history/Alice?filter[score]=15", 1, Some(2)),
-        ("/api/v1/history/Alice?filter[variant]=0", 2, Some(2)),
+        ("/api/v1/history/Alice?filter[variantId]=0", 2, Some(2)),
         ("/api/v1/seed/same?sort=score&order=asc", 2, Some(2)),
-        ("/api/v1/seed/same?filter[id]=1", 1, Some(1)),
+        ("/api/v1/seed/same?filter[gameId]=1", 1, Some(1)),
         // Values outside a column's type match nothing instead of failing in PostgreSQL.
         ("/api/v1/history/Alice?filter[score]=70000", 0, None),
-        ("/api/v1/history/Alice?filter[id]=99999999999", 0, None),
+        ("/api/v1/history/Alice?filter[gameId]=99999999999", 0, None),
     ] {
         let (status, body) = request(app.clone(), path).await;
         assert_eq!(status, StatusCode::OK, "{path}: {body}");

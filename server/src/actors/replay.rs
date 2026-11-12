@@ -289,7 +289,7 @@ impl TableActor {
             leader.session.clone(),
             frame(
                 hanabi_protocol::server::TABLE_SUGGESTION,
-                hanabi_protocol::TurnSuggestion {
+                hanabi_protocol::TableSuggestion {
                     table_id: self.table.id,
                     username: session.name.clone().into(),
                     turn: segment,
@@ -584,7 +584,7 @@ impl TableActor {
         self.add_all(
             &mut e,
             hanabi_protocol::server::TABLE_RESTART_DECLINED,
-            hanabi_protocol::RestartDeclined {
+            hanabi_protocol::TableRestartDeclined {
                 table_id: self.table.id,
                 restart_declined: self.restart_declined_seats(),
             },

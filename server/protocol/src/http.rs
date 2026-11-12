@@ -163,9 +163,9 @@ named_enum! {
     /// A column of the public game lists, which clients sort by `sort` and filter by
     /// `filter[name]`.
     pub enum GameListColumn {
-        Id => "id",
+        GameId => "gameId",
         NumPlayers => "numPlayers",
         Score => "score",
-        Variant => "variant",
+        VariantId => "variantId",
     }
 }

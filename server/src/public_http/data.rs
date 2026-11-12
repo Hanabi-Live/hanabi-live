@@ -8,14 +8,14 @@ const GAME_COLUMNS: &str = "g.id,g.name,g.num_players,g.variant_id,
     g.one_extra_card,g.one_less_card,g.all_or_nothing,g.detrimental_characters,
     g.seed,g.score,g.num_turns,g.end_condition,g.datetime_started,g.datetime_finished";
 
-const SORTABLE_COLUMNS: &[Column] = &[Column::Id, Column::NumPlayers, Column::Score];
+const SORTABLE_COLUMNS: &[Column] = &[Column::GameId, Column::NumPlayers, Column::Score];
 
 const fn column_field(column: Column) -> &'static str {
     match column {
-        Column::Id => "id",
+        Column::GameId => "id",
         Column::NumPlayers => "num_players",
         Column::Score => "score",
-        Column::Variant => "variant_id",
+        Column::VariantId => "variant_id",
     }
 }
 
@@ -23,7 +23,7 @@ const fn column_field(column: Column) -> &'static str {
 const fn filterable_columns(mode: &str) -> &'static [Column] {
     match mode.as_bytes() {
         b"history" => Column::ALL,
-        _ => &[Column::Id, Column::Score],
+        _ => &[Column::GameId, Column::Score],
     }
 }
 
@@ -202,7 +202,7 @@ pub(super) async fn list(
     let (limit, offset) = pagination(q)?.unwrap_or((super::DEFAULT_PAGE_LIMIT, 0));
     s.page = Some((limit, offset));
     let column = match q.get("sort") {
-        None if mode == "history" => Column::Id,
+        None if mode == "history" => Column::GameId,
         None => Column::Score,
         Some(name) => Column::from_name(name)
             .filter(|column| SORTABLE_COLUMNS.contains(column))

@@ -19,6 +19,7 @@ import type { CheckpointProgress } from "./mainProcessSupport.ts";
 import {
   bounded,
   buildRust,
+  cookieUserId,
   databaseDescribe,
   installSchema,
   login,
@@ -200,7 +201,7 @@ databaseDescribe("compiled application entry point (rust)", () => {
         await bob.receive("tableJoined", SERVER_COMMAND_SCHEMAS.tableJoined);
         alice.send("tableStart", {
           tableId,
-          intendedPlayerNames: ["SmokeAlice", "SmokeBob"],
+          intendedPlayerIds: [aliceWelcome.userId, bobWelcome.userId],
         });
         await alice.receive(
           "tableStarted",
@@ -584,7 +585,7 @@ databaseDescribe("compiled application entry point (rust)", () => {
       );
       owner.send("tableStart", {
         tableId,
-        intendedPlayerNames: players.map((_, index) => `Parity${index}`),
+        intendedPlayerIds: players.map((peer) => cookieUserId(peer.cookie)),
       });
       async function bootstrap(
         peer: ReturnType<typeof socketClient>,

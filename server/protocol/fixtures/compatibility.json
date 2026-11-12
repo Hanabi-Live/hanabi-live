@@ -171,7 +171,7 @@
     "direction": "client",
     "command": "tableJoin",
     "input": {
-      "tableId": 0
+      "tableId": 1
     },
     "valid": true
   },
@@ -209,17 +209,17 @@
     "command": "tableStart",
     "input": {
       "tableId": 1,
-      "intendedPlayerNames": ["a", "b", "c", "d", "e", "f", "g"]
+      "intendedPlayerIds": [1, 2, 3, 4, 5, 6, 7]
     },
     "valid": false
   },
   {
-    "name": "start rejects an empty intended player name",
+    "name": "start rejects an intended player ID of 0",
     "direction": "client",
     "command": "tableStart",
     "input": {
       "tableId": 1,
-      "intendedPlayerNames": ["Alice", ""]
+      "intendedPlayerIds": [1, 0]
     },
     "valid": false
   },

@@ -331,8 +331,8 @@ gameCommands.set("gameState", (data) => {
     setVotes(data.votes);
   }
   setConnected(data.connected);
-  if (data.clocks !== undefined) {
-    timer.update(data.clocks);
+  if (data.clock !== undefined) {
+    timer.update(data.clock);
   }
   if (data.pause !== undefined) {
     globals.store!.dispatch({ type: "pause", ...data.pause });

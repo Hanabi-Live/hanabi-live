@@ -26,7 +26,10 @@ function makeGame(maxPlayers: number): Game {
     tableId: TABLE_ID,
     settings: { maxPlayers },
     owner: { userId: userIdSchema.parse(1), username: "alice" },
-    players: [{ username: "alice" }, { username: "bob" }],
+    players: [
+      { userId: userIdSchema.parse(1), username: "alice" },
+      { userId: userIdSchema.parse(2), username: "bob" },
+    ],
   } as unknown as Game;
 }
 
@@ -71,7 +74,7 @@ describe("Nav", () => {
     expect(send).toHaveBeenCalledOnce();
     expect(send).toHaveBeenCalledWith("tableStart", {
       tableId: TABLE_ID,
-      intendedPlayerNames: ["alice", "bob"],
+      intendedPlayerIds: [1, 2],
     });
     expect(button("start")!.classList).toContain("disabled");
 

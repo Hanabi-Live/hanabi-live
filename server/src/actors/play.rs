@@ -581,10 +581,10 @@ impl TableActor {
                 notes,
                 votes: player_seat.map(|seat| seat_votes(s, seat)).transpose()?,
                 connected: self.connected().connected,
-                clocks: if replay {
+                clock: if replay {
                     None
                 } else {
-                    Some(self.clock()?.clocks)
+                    Some(self.clock()?.clock)
                 },
                 pause: (!replay).then(|| pause_state(s, &session)),
                 spectators: self.spectators(),

@@ -16,6 +16,7 @@
 
 /* eslint-disable no-await-in-loop -- The browser visits the states one at a time. */
 
+import type { UserId } from "@hanabi-live/data";
 import {
   DEFAULT_MAX_PLAYERS,
   MAX_CHAT_LENGTH,
@@ -1259,7 +1260,7 @@ async function linkPublicFiles(directory: string) {
   );
 }
 
-type Peer = ReturnType<typeof socketClient>;
+type Peer = ReturnType<typeof socketClient> & { readonly userId: UserId };
 
 async function connect(
   address: string,
@@ -1267,8 +1268,11 @@ async function connect(
   bot = false,
 ): Promise<Peer> {
   const peer = socketClient(address, await login(address, username, bot));
-  await peer.receive("welcome", SERVER_COMMAND_SCHEMAS.welcome);
-  return peer;
+  const { userId } = await peer.receive(
+    "welcome",
+    SERVER_COMMAND_SCHEMAS.welcome,
+  );
+  return { ...peer, userId };
 }
 
 /** Plays one turn of a game between two players and ends it, so that it is saved. */
@@ -1288,7 +1292,7 @@ async function playGame(alice: Peer, bob: Peer): Promise<number> {
   await bob.receive("tableJoined", SERVER_COMMAND_SCHEMAS.tableJoined);
   alice.send("tableStart", {
     tableId,
-    intendedPlayerNames: [USERNAME, "Bob"],
+    intendedPlayerIds: [alice.userId, bob.userId],
   });
   const peers = [alice, bob];
   const games = await Promise.all(
@@ -1419,7 +1423,10 @@ async function seed(address: string): Promise<Seed> {
   let clueTarget: { order: CardOrder; rank: ClueRank } | undefined;
 
   async function startGame() {
-    bob.send("tableStart", { tableId, intendedPlayerNames: ["Bob", USERNAME] });
+    bob.send("tableStart", {
+      tableId,
+      intendedPlayerIds: [bob.userId, cookieUserId(cookie)],
+    });
     await bob.receive("tableStarted", SERVER_COMMAND_SCHEMAS.tableStarted);
     bob.send("gameInitLoad", { tableId });
     const init = await bob.receive("gameInit", SERVER_COMMAND_SCHEMAS.gameInit);

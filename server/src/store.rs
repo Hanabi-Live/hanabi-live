@@ -216,8 +216,8 @@ impl Store {
     #[cfg(test)]
     pub async fn start_request(&self, id: TableId) -> Result<Value> {
         let (table, _) = self.get(id).await?.context("Missing durable table")?;
-        let names: Vec<&str> = table.players().iter().map(|p| p.name.as_str()).collect();
-        Ok(json!({"tableId": id, "intendedPlayerNames": names}))
+        let ids: Vec<_> = table.players().iter().filter_map(|p| p.id).collect();
+        Ok(json!({"tableId": id, "intendedPlayerIds": ids}))
     }
     /// The saved live tables. A pregame's cached game totals may be stale; its actor refreshes
     /// them after startup, so that startup does not wait for statistics.

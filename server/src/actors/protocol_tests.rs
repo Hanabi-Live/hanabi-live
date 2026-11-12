@@ -2271,7 +2271,7 @@ async fn replay_loading_keeps_names_neutral_and_never_starts_a_game_clock() -> R
         h.send(1, "tableSpectate", json!({"tableId":id})).await?;
         h.send(1, "gameStateLoad", json!({"tableId":id})).await?;
         let state = h.receive(1, "gameState").await?;
-        ensure!(state["connected"] == json!([true, true]) && state.get("clocks").is_none());
+        ensure!(state["connected"] == json!([true, true]) && state.get("clock").is_none());
         h.send(1, "gameLoaded", json!({"tableId":id})).await?;
         h.barrier(0).await?;
         for index in 0..2 {
@@ -2561,11 +2561,12 @@ async fn findvariant_delivers_owner_button_and_guards_the_start_action() -> Resu
         ensure!(table.chat.iter().all(|c|!c.message.text.contains("new-options")),"Private proposal entered public history");
         h.send(0,"tableUpdate",json!({"tableId":id,"settings":suggestion})).await?;
         let before=h.snapshot(id).await?.1;
+        let (alice,bob)=(h.users[0].user,h.users[1].user);
         for data in [
-            json!({"tableId":id,"intendedPlayerNames":["Alice","Cathy"]}),
-            json!({"tableId":id,"intendedPlayerNames":["Alice"]}),
+            json!({"tableId":id,"intendedPlayerIds":[alice,alice]}),
+            json!({"tableId":id,"intendedPlayerIds":[alice]}),
         ]{h.send(0,"tableStart",data).await?;ensure!(h.snapshot(id).await?.1==before,"Stale start intent mutated the game");}
-        h.send(0,"tableStart",json!({"tableId":id,"intendedPlayerNames":["Bob","Alice"]})).await?;
+        h.send(0,"tableStart",json!({"tableId":id,"intendedPlayerIds":[bob,alice]})).await?;
         ensure!(matches!(h.snapshot(id).await?.0.phase,Phase::Live{..}),"Valid guarded start failed");
         Ok::<(),anyhow::Error>(())
     }.await;

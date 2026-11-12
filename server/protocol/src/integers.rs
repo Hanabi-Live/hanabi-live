@@ -130,7 +130,7 @@ macro_rules! list_indexes {
 
 wire_integer! {
     /// A table's ID.
-    TableId(pub u64), 0, MAX_SAFE_INTEGER, brand = "TableId"
+    TableId(pub u64), 1, MAX_SAFE_INTEGER, brand = "TableId"
 }
 
 wire_integer! {

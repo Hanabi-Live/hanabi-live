@@ -84,7 +84,7 @@ mod tests {
                     json!({"tableId":1,"settings":{"name":"Table","maxPlayers":5,"options":{}}})
                 }
                 "tableRestart" => json!({"tableId":1,"hidePregame":false}),
-                "tableStart" => json!({"tableId":1,"intendedPlayerNames":["Alice"]}),
+                "tableStart" => json!({"tableId":1,"intendedPlayerIds":[1]}),
                 "chatPmHistory" => json!({"limit":10}),
                 "sync" | "lobbyLoad" | "linkList" => json!({}),
                 _ => json!({"tableId":1}),

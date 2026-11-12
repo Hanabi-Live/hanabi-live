@@ -69,8 +69,8 @@ pub struct TableSetOwnerRequest {
 pub struct TableStartRequest {
     pub table_id: TableId,
     /// The players that the owner saw seated. The server ignores a start from an outdated view.
-    #[schemars(length(max = MAX_PLAYERS), inner(length(min = 1)))]
-    pub intended_player_names: Vec<String>,
+    #[schemars(length(max = MAX_PLAYERS))]
+    pub intended_player_ids: Vec<UserId>,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]

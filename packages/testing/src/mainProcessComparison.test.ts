@@ -11,6 +11,7 @@ import { evaluationDatabase } from "./database.ts";
 import {
   bounded,
   buildRust,
+  cookieUserId,
   databaseDescribe,
   installSchema,
   login,
@@ -152,9 +153,9 @@ databaseDescribe("normal-server protocol workload", () => {
             );
             alice.send("tableStart", {
               tableId,
-              intendedPlayerNames: [
-                `Bench${lane}${game}Alice`,
-                `Bench${lane}${game}Bob`,
+              intendedPlayerIds: [
+                cookieUserId(aliceCookie),
+                cookieUserId(bobCookie),
               ],
             });
             await alice.receive(

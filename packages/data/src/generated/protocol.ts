@@ -42,7 +42,7 @@ export const DEFAULT_TABLE_NAME_SUFFIX = "'s table";
 export const tableIdSchema = z
   .number()
   .int()
-  .min(0)
+  .min(1)
   .max(9_007_199_254_740_991)
   .brand<"TableId">();
 
@@ -515,10 +515,10 @@ export const gameInitSchema = z
  * `filter[name]`.
  */
 export const gameListColumnSchema = z.enum([
-  "id",
+  "gameId",
   "numPlayers",
   "score",
-  "variant",
+  "variantId",
 ]);
 
 /**
@@ -635,7 +635,7 @@ export const gameStateSchema = z
     /**
      * Absent in a replay.
      */
-    clocks: clockStateSchema.optional(),
+    clock: clockStateSchema.optional(),
     /**
      * Whether each player has loaded the game, in seat order.
      */
@@ -1213,16 +1213,6 @@ export const replayCreateRequestSchema = z
   .readonly();
 
 /**
- * The seats of the players in a shared replay who will not play again if the leader restarts.
- */
-export const restartDeclinedSchema = z
-  .strictObject({
-    restartDeclined: z.array(playerIndexSchema).max(6).readonly(),
-    tableId: tableIdSchema,
-  })
-  .readonly();
-
-/**
  * How many games with a seed reached a score, as the seed page's chart shows them.
  */
 export const scoreFrequencySchema = z
@@ -1490,6 +1480,16 @@ export const tableRefSchema = z
 export const tableRestartDeclineRequestSchema = z
   .strictObject({ declined: z.boolean(), tableId: tableIdSchema })
   .readonly();
+
+/**
+ * The seats of the players in a shared replay who will not play again if the leader restarts.
+ */
+export const tableRestartDeclinedSchema = z
+  .strictObject({
+    restartDeclined: z.array(playerIndexSchema).max(6).readonly(),
+    tableId: tableIdSchema,
+  })
+  .readonly();
 export const tableRestartRequestSchema = z
   .strictObject({ hidePregame: z.boolean(), tableId: tableIdSchema })
   .readonly();
@@ -1514,7 +1514,7 @@ export const tableStartRequestSchema = z
     /**
      * The players that the owner saw seated. The server ignores a start from an outdated view.
      */
-    intendedPlayerNames: z.array(z.string().min(1)).max(6).readonly(),
+    intendedPlayerIds: z.array(userIdSchema).max(6).readonly(),
     tableId: tableIdSchema,
   })
   .readonly();
@@ -1529,6 +1529,17 @@ export const tableStartedSchema = z
   .readonly();
 export const tableSuggestRequestSchema = z
   .strictObject({ tableId: tableIdSchema, turn: turnSchema })
+  .readonly();
+
+/**
+ * A spectator suggesting a turn to the shared replay's leader.
+ */
+export const tableSuggestionSchema = z
+  .strictObject({
+    tableId: tableIdSchema,
+    turn: turnSchema,
+    username: z.string().min(1),
+  })
   .readonly();
 export const tableUpdateRequestSchema = z
   .strictObject({ settings: tableSettingsSchema, tableId: tableIdSchema })
@@ -1554,17 +1565,6 @@ export const tagSearchRequestSchema = z
      * warning.
      */
     tag: z.string(),
-  })
-  .readonly();
-
-/**
- * A spectator suggesting a turn to the shared replay's leader.
- */
-export const turnSuggestionSchema = z
-  .strictObject({
-    tableId: tableIdSchema,
-    turn: turnSchema,
-    username: z.string().min(1),
   })
   .readonly();
 
@@ -1739,9 +1739,9 @@ export const SERVER_COMMAND_SCHEMAS = {
   tableList: tableListSchema,
   tableOwner: tableOwnerSchema,
   tableRemoved: tableRefSchema,
-  tableRestartDeclined: restartDeclinedSchema,
+  tableRestartDeclined: tableRestartDeclinedSchema,
   tableStarted: tableStartedSchema,
-  tableSuggestion: turnSuggestionSchema,
+  tableSuggestion: tableSuggestionSchema,
   user: userSchema,
   userList: userListSchema,
   userRemoved: userRemovedSchema,

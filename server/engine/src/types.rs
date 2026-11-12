@@ -3,8 +3,16 @@ use hanabi_protocol::{
     CardOrder, Clue as WireClue, ClueTurn, DEFAULT_VARIANT_NAME, GameOverTurn, MIN_PLAYERS,
     PlayerIndex, TargetCard,
 };
-pub use hanabi_protocol::{ClueType, EndCondition, TimeControl};
+pub use hanabi_protocol::{EndCondition, TimeControl};
 use serde::{Deserialize, Serialize};
+
+/// The kind of a clue. Stored game states hold it by name.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub enum ClueType {
+    Color,
+    Rank,
+}
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[serde(default, rename_all = "camelCase", deny_unknown_fields)]

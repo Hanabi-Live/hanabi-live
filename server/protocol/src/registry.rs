@@ -84,8 +84,8 @@ macro_rules! server_contracts {
             GAME_FINISHED "gameFinished" => GameFinished;
             REPLAY_ACTION "replayAction" => ReplayAction;
             TABLE_OWNER "tableOwner" => TableOwner;
-            TABLE_RESTART_DECLINED "tableRestartDeclined" => RestartDeclined;
-            TABLE_SUGGESTION "tableSuggestion" => TurnSuggestion;
+            TABLE_RESTART_DECLINED "tableRestartDeclined" => TableRestartDeclined;
+            TABLE_SUGGESTION "tableSuggestion" => TableSuggestion;
             NOTE "note" => Note;
             NOTE_LIST "noteList" => NoteList;
             GAME_EVENT "gameEvent" => GameEventMessage;
@@ -143,7 +143,7 @@ macro_rules! game_library_types {
     ($apply:ident) => {
         $apply! {
             CatalogCharacter, CatalogColor, CatalogSuit, CatalogVariant, CardNote, CardOrder,
-            CharacterId, ClueType, GameEvent, GameOptions, HypotheticalEvent, PlayerNotes,
+            CharacterId, GameEvent, GameOptions, HypotheticalEvent, PlayerNotes,
             VariantId,
         }
     };
@@ -334,21 +334,13 @@ impl<T> Clone for ServerMessage<T> {
 impl<T> Copy for ServerMessage<T> {}
 
 macro_rules! server_messages {
-    ($($name:ident $command:literal => $payload:ty;)+) => {
-        $(pub const $name: ServerMessage<$payload> = ServerMessage::new($command);)+
+    ($($name:ident $command:literal => $payload:ident;)+) => {
+        $(pub const $name: super::ServerMessage<crate::$payload> = super::ServerMessage::new($command);)+
     };
 }
 
 /// Every message the server can send. Building a frame requires one of these and its payload type.
 pub mod server {
-    use super::{
-        Blocked, CardIdentities, Chat, ChatDeleted, ChatList, ChatPmHistory, ChatTyping, Clock,
-        Connected, Empty, Friends, GameEventMessage, GameFinished, GameHistoryEntry, GameInit,
-        GamePage, GameState, IdleWarning, LobbySoundMessage, LobbyStatus, Note, NoteList, Notice,
-        Pause, Pregame, ReplayAction, RestartDeclined, SeedGames, ServerMessage, ServerRestart,
-        Spectators, Table, TableList, TableOwner, TableRef, TableStarted, TurnSuggestion, User,
-        UserList, UserRemoved, Votes, Welcome,
-    };
     server_contracts!(server_messages);
 }
 

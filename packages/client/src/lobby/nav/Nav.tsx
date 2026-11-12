@@ -444,8 +444,8 @@ function selectJoinButton(state: RootState): {
 function startGame() {
   globals.conn!.send("tableStart", {
     tableId: globals.joinedTableId,
-    intendedPlayerNames:
-      globals.game?.players.map((player) => player.username) ?? [],
+    intendedPlayerIds:
+      globals.game?.players.map((player) => player.userId) ?? [],
   });
   store.dispatch(startGameSentChanged(true));
 }
