@@ -167,7 +167,7 @@ pub struct RestartDeclined {
 /// A spectator suggesting a turn to the shared replay's leader.
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
-pub struct Suggestion {
+pub struct TurnSuggestion {
     pub table_id: TableId,
     pub username: Username,
     pub turn: Turn,

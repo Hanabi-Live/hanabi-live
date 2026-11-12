@@ -118,7 +118,7 @@ databaseDescribe("normal-server protocol workload", () => {
           SERVER_COMMAND_SCHEMAS.gameState,
         );
         if (init.mode.type !== "replay" && init.mode.type !== "sharedReplay") {
-          peer.send("loaded", { tableId });
+          peer.send("gameLoaded", { tableId });
         }
         return { init, history };
       }

@@ -405,7 +405,7 @@ gameCommands.set("pause", (data) => {
   });
 });
 
-gameCommands.set("voteChanged", (data) => {
+gameCommands.set("votes", (data) => {
   setVotes(data);
 });
 
@@ -439,7 +439,7 @@ gameCommands.set("restartDeclined", (data) => {
 });
 
 // This is used in shared replays to specify who the leader is.
-gameCommands.set("suggestion", (data) => {
+gameCommands.set("turnSuggestion", (data) => {
   if (globals.state.replay.shared === undefined) {
     return;
   }

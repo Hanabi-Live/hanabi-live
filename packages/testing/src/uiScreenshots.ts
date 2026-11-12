@@ -1177,7 +1177,7 @@ async function playGame(alice: Peer, bob: Peer): Promise<number> {
         "gameState",
         SERVER_COMMAND_SCHEMAS.gameState,
       );
-      peer.send("loaded", { tableId });
+      peer.send("gameLoaded", { tableId });
       return { peer, init, history };
     }),
   );
@@ -1302,7 +1302,7 @@ async function seed(address: string): Promise<Seed> {
       "gameState",
       SERVER_COMMAND_SCHEMAS.gameState,
     );
-    bob.send("loaded", { tableId });
+    bob.send("gameLoaded", { tableId });
 
     // When Bob goes first, he clues the newest card of the browser's account, so that its hand
     // shows a clued card.
@@ -1529,7 +1529,7 @@ async function seed(address: string): Promise<Seed> {
     );
     leader.send("gameInitLoad", { tableId: replayTableId });
     await leader.receive("gameInit", SERVER_COMMAND_SCHEMAS.gameInit);
-    leader.send("loaded", { tableId: replayTableId });
+    leader.send("gameLoaded", { tableId: replayTableId });
     leader.send("replayAction", {
       tableId: replayTableId,
       action: { type: "hypothetical", control: { type: "start" } },

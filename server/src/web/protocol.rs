@@ -85,7 +85,7 @@ mod tests {
                 }
                 "tableRestart" => json!({"tableId":1,"hidePregame":false}),
                 "chatPmHistory" => json!({"limit":10}),
-                "sync" | "lobbyLoad" | "linkList" | "blockList" => json!({}),
+                "sync" | "lobbyLoad" | "linkList" => json!({}),
                 _ => json!({"tableId":1}),
             };
             parse(&format!("{command} {value}")).unwrap_or_else(|e| panic!("{command}: {e}"));

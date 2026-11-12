@@ -30,10 +30,9 @@ macro_rules! client_contracts {
             FriendRemove "friendRemove" => RelationshipRequest;
             LinkAdd "linkAdd" => RelationshipRequest;
             LinkRemove "linkRemove" => RelationshipRequest;
-            LinkList "linkList" => RelationshipListRequest;
+            LinkList "linkList" => LinkListRequest;
             BlockAdd "blockAdd" => RelationshipRequest;
             BlockRemove "blockRemove" => RelationshipRequest;
-            BlockList "blockList" => RelationshipListRequest;
             ChatRead "chatRead" => TableRef;
             ChatTyping "chatTyping" => TableRef;
             TableJoin "tableJoin" => TableJoinRequest;
@@ -50,7 +49,7 @@ macro_rules! client_contracts {
             TableTerminateVote "tableTerminateVote" => TableRef;
             GameInitLoad "gameInitLoad" => TableRef;
             GameStateLoad "gameStateLoad" => TableRef;
-            Loaded "loaded" => TableRef;
+            GameLoaded "gameLoaded" => TableRef;
             Settings "settings" => SettingsRequest;
             UserInactive "userInactive" => UserInactiveRequest;
             GameHistory "gameHistory" => PageRequest;
@@ -80,13 +79,13 @@ macro_rules! server_contracts {
             PAUSE "pause" => Pause;
             IDLE_WARNING "idleWarning" => IdleWarning;
             IDLE_RESET "idleReset" => TableRef;
-            VOTE_CHANGED "voteChanged" => VoteChanged;
+            VOTES "votes" => Votes;
             CARD_IDENTITIES "cardIdentities" => CardIdentities;
             GAME_FINISHED "gameFinished" => GameFinished;
             REPLAY_ACTION "replayAction" => ReplayAction;
             TABLE_OWNER "tableOwner" => TableOwner;
             RESTART_DECLINED "restartDeclined" => RestartDeclined;
-            SUGGESTION "suggestion" => Suggestion;
+            TURN_SUGGESTION "turnSuggestion" => TurnSuggestion;
             NOTE "note" => Note;
             NOTE_LIST "noteList" => NoteList;
             GAME_EVENT "gameEvent" => GameEventMessage;
@@ -346,8 +345,8 @@ pub mod server {
         Connected, Empty, Friends, GameEventMessage, GameFinished, GameHistoryEntry, GameInit,
         GamePage, GameState, IdleWarning, LobbySoundMessage, LobbyStatus, Note, NoteList, Notice,
         Pause, Pregame, ReplayAction, RestartDeclined, SeedGames, ServerMessage, ServerRestart,
-        Spectators, Suggestion, Table, TableList, TableOwner, TableRef, TableStarted, User,
-        UserList, UserRemoved, VoteChanged, Welcome,
+        Spectators, Table, TableList, TableOwner, TableRef, TableStarted, TurnSuggestion, User,
+        UserList, UserRemoved, Votes, Welcome,
     };
     server_contracts!(server_messages);
 }

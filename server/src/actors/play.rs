@@ -271,8 +271,8 @@ impl TableActor {
                     e.messages.push((
                         a.session.clone(),
                         frame(
-                            hanabi_protocol::server::VOTE_CHANGED,
-                            hanabi_protocol::VoteChanged {
+                            hanabi_protocol::server::VOTES,
+                            hanabi_protocol::Votes {
                                 table_id: self.table.id,
                                 votes: seat_votes(s, seat)?,
                             },
@@ -650,8 +650,8 @@ fn pause_state(s: &Snapshot, session: &Session) -> hanabi_protocol::PauseState {
     }
 }
 
-fn seat_votes(s: &Snapshot, seat: usize) -> anyhow::Result<hanabi_protocol::Votes> {
-    Ok(hanabi_protocol::Votes {
+fn seat_votes(s: &Snapshot, seat: usize) -> anyhow::Result<hanabi_protocol::VoteState> {
+    Ok(hanabi_protocol::VoteState {
         voted: s.votes[seat],
         num_votes: hanabi_protocol::VoteCount::new(s.votes.iter().filter(|v| **v).count())
             .context("Too many votes")?,

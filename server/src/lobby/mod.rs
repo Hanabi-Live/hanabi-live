@@ -205,9 +205,6 @@ pub async fn dispatch(
         ClientMessage::LinkList(request) => {
             relationships::linked_list(pool, caller, request.table_id).await?
         }
-        ClientMessage::BlockList(request) => {
-            relationships::blocked_list(pool, caller, request.table_id).await?
-        }
         ClientMessage::FriendAdd(request) => {
             relationships::relationship(
                 pool,

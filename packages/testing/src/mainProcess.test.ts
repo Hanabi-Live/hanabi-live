@@ -216,7 +216,7 @@ databaseDescribe("compiled application entry point (rust)", () => {
             "gameState",
             SERVER_COMMAND_SCHEMAS.gameState,
           );
-          peer.send("loaded", { tableId });
+          peer.send("gameLoaded", { tableId });
           await peer.receive(
             "connected",
             SERVER_COMMAND_SCHEMAS.connected,
@@ -404,14 +404,14 @@ databaseDescribe("compiled application entry point (rust)", () => {
             tableId,
           });
           await replacement.receive(
-            "voteChanged",
-            SERVER_COMMAND_SCHEMAS.voteChanged,
+            "votes",
+            SERVER_COMMAND_SCHEMAS.votes,
             (data) => data.voted,
           );
           // The other player sees the vote without having cast one.
           await bob.receive(
-            "voteChanged",
-            SERVER_COMMAND_SCHEMAS.voteChanged,
+            "votes",
+            SERVER_COMMAND_SCHEMAS.votes,
             (data) =>
               !data.voted && data.numVotes === 1 && data.numVotesNeeded === 2,
           );
@@ -601,7 +601,7 @@ databaseDescribe("compiled application entry point (rust)", () => {
           "gameState",
           SERVER_COMMAND_SCHEMAS.gameState,
         );
-        peer.send("loaded", { tableId: id });
+        peer.send("gameLoaded", { tableId: id });
         return { init, history };
       }
       const games = await Promise.all(

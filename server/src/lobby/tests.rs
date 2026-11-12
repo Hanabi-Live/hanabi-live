@@ -285,8 +285,6 @@ async fn blocked_players_cannot_message_each_other_postgres() {
     assert_eq!(self_data(&blocked, "blocked"), json!({"blocked":["Bob"]}));
     let repeated = run(&db.pool, &alice, &[], "blockAdd", bob_name.clone()).await;
     assert!(warning_of(&repeated).contains("already blocked"));
-    let list = run(&db.pool, &alice, &[], "blockList", json!({})).await;
-    assert_eq!(notice_of(&list), "Currently blocked players: Bob");
     let own = run(
         &db.pool,
         &alice,
@@ -320,8 +318,6 @@ async fn blocked_players_cannot_message_each_other_postgres() {
     assert_eq!(self_data(&unblocked, "blocked"), json!({"blocked":[]}));
     let missing = run(&db.pool, &alice, &[], "blockRemove", bob_name).await;
     assert!(warning_of(&missing).contains("not blocked"));
-    let list = run(&db.pool, &alice, &[], "blockList", json!({})).await;
-    assert_eq!(notice_of(&list), "Currently, you have not blocked anyone.");
     let result = run(
         &db.pool,
         &bob,

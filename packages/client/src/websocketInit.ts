@@ -295,7 +295,7 @@ function openConnection(isReconnect: boolean) {
           gameCommands.get("gameState")?.(state);
           conn.setReady(true);
           if (!rebuilding) {
-            conn.send("loaded", { tableId: globals.joinedTableId });
+            conn.send("gameLoaded", { tableId: globals.joinedTableId });
           }
           initCommands(conn);
         });

@@ -36,7 +36,6 @@ pub fn route(message: &ClientMessage) -> Route {
         | M::LinkList(_)
         | M::BlockAdd(_)
         | M::BlockRemove(_)
-        | M::BlockList(_)
         | M::TagSearch(_) => return Route::Lobby,
         M::Chat(r) => match r.table_id {
             Some(id) => return Route::TableChat(id),
@@ -53,7 +52,7 @@ pub fn route(message: &ClientMessage) -> Route {
         | M::GameInitLoad(r)
         | M::GameStateLoad(r)
         | M::TagRemoveAll(r)
-        | M::Loaded(r) => r.table_id,
+        | M::GameLoaded(r) => r.table_id,
         M::TableJoin(r) => r.table_id,
         M::TableSetOwner(r) => r.table_id,
         M::TableStart(r) => r.table_id,

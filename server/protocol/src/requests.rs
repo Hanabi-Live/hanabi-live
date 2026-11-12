@@ -52,10 +52,11 @@ pub struct RelationshipRequest {
     pub table_id: Option<TableId>,
 }
 
-/// Asks for the sender's links or blocked users.
+/// Asks for the sender's linked accounts. Clients already have the sender's friends and blocked
+/// users, from `welcome`, `friends`, and `blocked`.
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
-pub struct RelationshipListRequest {
+pub struct LinkListRequest {
     /// The table whose chat shows the reply. Absent means the lobby.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub table_id: Option<TableId>,

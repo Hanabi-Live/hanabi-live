@@ -57,7 +57,7 @@ function friends(room: string) {
   const msg =
     globals.friends.length === 0
       ? "Currently, you do not have any friends on your friends list."
-      : `Current friends: ${globals.friends.join(", ")}`;
+      : `Current friends: ${globals.friends.map(escapeHtml).join(", ")}`;
   sendSelfPmFromServer(msg, room);
 }
 chatCommands.set("friends", friends);
@@ -109,8 +109,8 @@ function unlink(room: string, args: readonly string[]) {
 }
 
 // /links
-function links() {
-  globals.conn!.send("linkList", {});
+function links(room: string) {
+  globals.conn!.send("linkList", roomField(room));
 }
 
 chatCommands.set("link", link);
@@ -141,7 +141,11 @@ chatCommands.set("unblock", blockCommand("unblock"));
 
 // /blocked
 chatCommands.set("blocked", (room: string) => {
-  globals.conn!.send("blockList", roomField(room));
+  const msg =
+    globals.blocked.length === 0
+      ? "Currently, you have not blocked anyone."
+      : `Currently blocked players: ${globals.blocked.map(escapeHtml).join(", ")}`;
+  sendSelfPmFromServer(msg, room);
 });
 
 // /pm [username] [msg]

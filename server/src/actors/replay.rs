@@ -288,8 +288,8 @@ impl TableActor {
         e.messages.push((
             leader.session.clone(),
             frame(
-                hanabi_protocol::server::SUGGESTION,
-                hanabi_protocol::Suggestion {
+                hanabi_protocol::server::TURN_SUGGESTION,
+                hanabi_protocol::TurnSuggestion {
                     table_id: self.table.id,
                     username: session.name.clone().into(),
                     turn: segment,

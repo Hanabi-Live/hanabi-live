@@ -420,7 +420,7 @@ async fn duck_clue_identity_is_private_in_live_history_and_recovery_but_not_comp
             "Player obtained an unrestricted spectator view"
         );
         for index in 0..5 {
-            h.send(index, "loaded", json!({"tableId":id})).await?;
+            h.send(index, "gameLoaded", json!({"tableId":id})).await?;
         }
         h.barrier(0).await?;
         for index in 0..5 {
@@ -577,7 +577,7 @@ async fn leader_transfers_announce_the_actor_and_target_once_to_the_table() -> R
             if phase == 1 {
                 h.send(1, "tableStart", json!({"tableId":id})).await?;
                 for index in 0..2 {
-                    h.send(index, "loaded", json!({"tableId":id})).await?;
+                    h.send(index, "gameLoaded", json!({"tableId":id})).await?;
                 }
             } else if phase == 2 {
                 h.send(0, "tableTerminate", json!({"tableId":id})).await?;
@@ -1642,7 +1642,7 @@ async fn remade_tables_publish_fresh_statistics_for_every_player() -> Result<()>
         h.send(0, "tableStart", json!({"tableId":id})).await?;
         h.send(2, "tableSpectate", json!({"tableId":id})).await?;
         for index in 0..3 {
-            h.send(index, "loaded", json!({"tableId":id})).await?;
+            h.send(index, "gameLoaded", json!({"tableId":id})).await?;
         }
         let mut lock = h.store.primary.begin().await?;
         crate::store::advisory_lock(&mut lock, crate::store::LockSpace::VariantStats, 0).await?;
@@ -1751,7 +1751,7 @@ async fn chat_read_positions_survive_game_start_reconnect_and_remake() -> Result
                 history["numUnread"] == i32::from(index != 0),
                 "Game start reset the chat read position: {history}"
             );
-            h.send(index, "loaded", json!({"tableId":id})).await?;
+            h.send(index, "gameLoaded", json!({"tableId":id})).await?;
         }
         h.send(1, "tableUnattend", json!({"tableId":id})).await?;
         h.replace(1).await?;
@@ -1761,7 +1761,7 @@ async fn chat_read_positions_survive_game_start_reconnect_and_remake() -> Result
             h.receive(1, "chatList").await?["numUnread"] == 1,
             "Reconnect reset the chat read position"
         );
-        h.send(1, "loaded", json!({"tableId":id})).await?;
+        h.send(1, "gameLoaded", json!({"tableId":id})).await?;
         h.send(0, "tableTerminate", json!({"tableId":id})).await?;
         for index in 0..2 {
             h.barrier(index).await?;
@@ -1812,7 +1812,7 @@ async fn restart_leaves_out_players_who_are_done_playing() -> Result<()> {
         }
         h.send(0, "tableStart", json!({"tableId":id})).await?;
         for index in 0..3 {
-            h.send(index, "loaded", json!({"tableId":id})).await?;
+            h.send(index, "gameLoaded", json!({"tableId":id})).await?;
         }
         h.send(0, "tableTerminate", json!({"tableId":id})).await?;
         for index in 0..3 {
@@ -2127,7 +2127,7 @@ async fn finished_game_publishes_replay_leader_candidates_without_reconnecting()
         h.send(0, "tableStart", json!({"tableId":id})).await?;
         h.send(2, "tableSpectate", json!({"tableId":id})).await?;
         for index in 0..3 {
-            h.send(index, "loaded", json!({"tableId":id})).await?;
+            h.send(index, "gameLoaded", json!({"tableId":id})).await?;
         }
         h.barrier(0).await?;
         for index in 0..4 {
@@ -2193,7 +2193,7 @@ async fn replay_loading_keeps_names_neutral_and_never_starts_a_game_clock() -> R
         let initial = h.snapshot(id).await?.0;
         h.barrier(0).await?;
         h.frames(0)?;
-        h.send(0, "loaded", json!({"tableId":id})).await?;
+        h.send(0, "gameLoaded", json!({"tableId":id})).await?;
         ensure!(h.receive(0, "connected").await?["connected"] == json!([true, true]));
         h.barrier(0).await?;
         ensure!(h.frames(0)?.iter().all(|(command, _)| command != "clock"));
@@ -2218,7 +2218,7 @@ async fn replay_loading_keeps_names_neutral_and_never_starts_a_game_clock() -> R
         h.send(1, "gameStateLoad", json!({"tableId":id})).await?;
         let state = h.receive(1, "gameState").await?;
         ensure!(state["connected"] == json!([true, true]) && state.get("clocks").is_none());
-        h.send(1, "loaded", json!({"tableId":id})).await?;
+        h.send(1, "gameLoaded", json!({"tableId":id})).await?;
         h.barrier(0).await?;
         for index in 0..2 {
             let frames = h.frames(index)?;
@@ -2976,7 +2976,7 @@ async fn replay_arrows_sounds_and_loads_skip_durable_checkpoints() -> Result<()>
     let result = async {
         let id = h.replay(0).await?;
         let (_, revision) = h.snapshot(id).await?;
-        h.send(0, "loaded", json!({"tableId":id})).await?;
+        h.send(0, "gameLoaded", json!({"tableId":id})).await?;
         for (kind, extra) in [
             ("arrow", json!({"target":{"type":"card","order":0}})),
             ("sound", json!({"sound":"clap"})),

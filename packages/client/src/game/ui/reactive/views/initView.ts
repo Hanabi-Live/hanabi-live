@@ -6,7 +6,7 @@ export function onInitializationChanged(initialized: boolean): void {
   }
 
   if (globals.loading) {
-    globals.lobby.conn!.send("loaded", {
+    globals.lobby.conn!.send("gameLoaded", {
       tableId: globals.lobby.joinedTableId,
     });
   }

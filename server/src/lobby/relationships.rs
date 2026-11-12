@@ -125,28 +125,6 @@ impl Change {
     }
 }
 
-/// Tells the caller whom they have blocked.
-pub async fn blocked_list(
-    pool: &PgPool,
-    caller: &Identity,
-    table: Option<TableId>,
-) -> Result<Vec<Effect>> {
-    let names = blocked(pool, caller.user).await?;
-    let message = if names.is_empty() {
-        "Currently, you have not blocked anyone.".into()
-    } else {
-        format!(
-            "Currently blocked players: {}",
-            names
-                .iter()
-                .map(|n| escape_html(n))
-                .collect::<Vec<_>>()
-                .join(", ")
-        )
-    };
-    Ok(vec![notice(&caller.name, &message, table)])
-}
-
 /// Tells the caller which accounts they have linked.
 pub async fn linked_list(
     pool: &PgPool,

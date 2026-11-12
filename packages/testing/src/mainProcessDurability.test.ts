@@ -83,7 +83,7 @@ databaseDescribe("Rust actor durability and ownership", () => {
             "gameState",
             SERVER_COMMAND_SCHEMAS.gameState,
           );
-          peer.send("loaded", { tableId });
+          peer.send("gameLoaded", { tableId });
           return { init, history };
         }
         const [a, b] = await Promise.all([bootstrap(alice), bootstrap(bob)]);

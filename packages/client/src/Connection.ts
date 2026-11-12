@@ -14,8 +14,8 @@ import type { z } from "zod";
 /** The commands that `send` delivers before the client is ready. */
 const COMMANDS_BEFORE_READY: ReadonlySet<ClientCommand> = new Set([
   "gameInitLoad",
+  "gameLoaded",
   "gameStateLoad",
-  "loaded",
   "tableReattend",
   "tableSpectate",
 ]);

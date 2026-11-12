@@ -76,17 +76,17 @@ pub struct PauseState {
 /// The votes to end the game, as one player sees them.
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
-pub struct VoteChanged {
+pub struct Votes {
     pub table_id: TableId,
     #[serde(flatten)]
-    pub votes: Votes,
+    pub votes: VoteState,
 }
 
-/// The votes to end the game, as one player sees them, in the `voteChanged` message and in a game's
+/// The votes to end the game, as one player sees them, in the `votes` message and in a game's
 /// state.
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
-pub struct Votes {
+pub struct VoteState {
     /// Whether the recipient voted.
     pub voted: bool,
     pub num_votes: VoteCount,
@@ -287,7 +287,7 @@ pub struct GameState {
     pub notes: Vec<PlayerNotes>,
     /// Present for a player of a game in progress.
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub votes: Option<Votes>,
+    pub votes: Option<VoteState>,
     /// Whether each player has loaded the game, in seat order.
     #[schemars(length(min = MIN_PLAYERS, max = MAX_PLAYERS))]
     pub connected: Vec<bool>,

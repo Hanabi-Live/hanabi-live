@@ -605,10 +605,10 @@ export const spectatorSchema = z
 const voteCountSchema = z.number().int().min(0).max(6);
 
 /**
- * The votes to end the game, as one player sees them, in the `voteChanged` message and in a game's
+ * The votes to end the game, as one player sees them, in the `votes` message and in a game's
  * state.
  */
-const votesSchema = z
+const voteStateSchema = z
   .strictObject({
     numVotes: voteCountSchema,
     /**
@@ -658,7 +658,7 @@ export const gameStateSchema = z
     /**
      * Present for a player of a game in progress.
      */
-    votes: votesSchema.optional(),
+    votes: voteStateSchema.optional(),
   })
   .readonly();
 
@@ -673,6 +673,19 @@ export const idleWarningSchema = z
      */
     remainingMs: millisecondsSchema,
     tableId: tableIdSchema,
+  })
+  .readonly();
+
+/**
+ * Asks for the sender's linked accounts. Clients already have the sender's friends and blocked
+ * users, from `welcome`, `friends`, and `blocked`.
+ */
+export const linkListRequestSchema = z
+  .strictObject({
+    /**
+     * The table whose chat shows the reply. Absent means the lobby.
+     */
+    tableId: tableIdSchema.optional(),
   })
   .readonly();
 
@@ -993,18 +1006,6 @@ export const pregameSchema = z
     players: z.array(pregamePlayerSchema).max(6).readonly(),
     settings: tableSettingsSchema,
     tableId: tableIdSchema,
-  })
-  .readonly();
-
-/**
- * Asks for the sender's links or blocked users.
- */
-export const relationshipListRequestSchema = z
-  .strictObject({
-    /**
-     * The table whose chat shows the reply. Absent means the lobby.
-     */
-    tableId: tableIdSchema.optional(),
   })
   .readonly();
 
@@ -1430,17 +1431,6 @@ export const spectatorsSchema = z
   .readonly();
 
 /**
- * A spectator suggesting a turn to the shared replay's leader.
- */
-export const suggestionSchema = z
-  .strictObject({
-    tableId: tableIdSchema,
-    turn: turnSchema,
-    username: z.string().min(1),
-  })
-  .readonly();
-
-/**
  * A table's progress, as a percentage of the maximum score, or of a replay's turns.
  */
 const progressSchema = z.number().int().min(0).max(100);
@@ -1588,6 +1578,17 @@ export const tagSearchRequestSchema = z
   .readonly();
 
 /**
+ * A spectator suggesting a turn to the shared replay's leader.
+ */
+export const turnSuggestionSchema = z
+  .strictObject({
+    tableId: tableIdSchema,
+    turn: turnSchema,
+    username: z.string().min(1),
+  })
+  .readonly();
+
+/**
  * A user's presence in the lobby's user list.
  */
 export const userSchema = z
@@ -1623,7 +1624,7 @@ export const variantNamesSchema = z.record(z.string(), z.string()).readonly();
 /**
  * The votes to end the game, as one player sees them.
  */
-export const voteChangedSchema = z
+export const votesSchema = z
   .strictObject({
     numVotes: voteCountSchema,
     /**
@@ -1676,7 +1677,6 @@ export const welcomeSchema = z
   .readonly();
 export const CLIENT_COMMAND_SCHEMAS = {
   blockAdd: relationshipRequestSchema,
-  blockList: relationshipListRequestSchema,
   blockRemove: relationshipRequestSchema,
   chat: chatRequestSchema,
   chatPm: chatPmRequestSchema,
@@ -1687,12 +1687,12 @@ export const CLIENT_COMMAND_SCHEMAS = {
   friendRemove: relationshipRequestSchema,
   gameHistory: pageRequestSchema,
   gameInitLoad: tableRefSchema,
+  gameLoaded: tableRefSchema,
   gameStateLoad: tableRefSchema,
   idleReset: tableRefSchema,
   linkAdd: relationshipRequestSchema,
-  linkList: relationshipListRequestSchema,
+  linkList: linkListRequestSchema,
   linkRemove: relationshipRequestSchema,
-  loaded: tableRefSchema,
   lobbyLoad: emptySchema,
   note: noteRequestSchema,
   pause: pauseRequestSchema,
@@ -1753,7 +1753,6 @@ export const SERVER_COMMAND_SCHEMAS = {
   seedGames: seedGamesSchema,
   serverRestart: serverRestartSchema,
   spectators: spectatorsSchema,
-  suggestion: suggestionSchema,
   synced: emptySchema,
   table: tableSchema,
   tableBooted: tableRefSchema,
@@ -1763,10 +1762,11 @@ export const SERVER_COMMAND_SCHEMAS = {
   tableOwner: tableOwnerSchema,
   tableRemoved: tableRefSchema,
   tableStarted: tableStartedSchema,
+  turnSuggestion: turnSuggestionSchema,
   user: userSchema,
   userList: userListSchema,
   userRemoved: userRemovedSchema,
-  voteChanged: voteChangedSchema,
+  votes: votesSchema,
   warning: noticeSchema,
   welcome: welcomeSchema,
 } as const;

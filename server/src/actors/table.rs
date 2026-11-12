@@ -1039,7 +1039,7 @@ impl TableActor {
             ClientMessage::TableLeave(_) => self.leave(session, true).await,
             ClientMessage::GameInitLoad(_) => self.info(session, GameInfo::Init).await,
             ClientMessage::GameStateLoad(_) => self.info(session, GameInfo::State).await,
-            ClientMessage::Loaded(_) => {
+            ClientMessage::GameLoaded(_) => {
                 ensure_or_reject!(self.attending(&session), "Reattend before loading");
                 let mut next = self.candidate();
                 let mut starts_clock = false;
