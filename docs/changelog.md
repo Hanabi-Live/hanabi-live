@@ -18,6 +18,8 @@ of the repository.
   notes.
 - When you are not the owner of a table, the button on the "Change Options"
   screen now says "Suggest to Table Owner".
+- The new game screen has an "End game" button, to vote to end the game or to
+  end it right away. While a vote is under way, the button shows the votes.
 
 ## November 11th, 2026
 

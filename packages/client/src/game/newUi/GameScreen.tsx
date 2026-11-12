@@ -43,6 +43,7 @@ import { ChatPanel } from "./ChatPanel.tsx";
 import type { ClueLogEntry } from "./ClueLog.tsx";
 import { ClueLog } from "./ClueLog.tsx";
 import { CluePanel } from "./CluePanel.tsx";
+import { EndGameMenu } from "./EndGame.tsx";
 import type { Seat } from "./Hands.tsx";
 import {
   CARD_GAP,
@@ -1172,6 +1173,15 @@ export function GameScreen({
 
         <StatusStrip
           canOpenReplay={!inReplay}
+          endGameMenu={
+            state.playing
+            && !state.finished && (
+              <EndGameMenu
+                numPlayers={metadata.options.numPlayers}
+                votes={globals.terminationVotes}
+              />
+            )
+          }
           finished={state.finished}
           futureEfficiency={formatFutureEfficiency(
             visibleState.stats,

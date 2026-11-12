@@ -1,6 +1,5 @@
 // The menu that the skull button opens, to vote to end the game or to end it now.
 
-import { MIN_PLAYERS } from "@hanabi-live/game";
 import Konva from "konva";
 import { getCanvasColors } from "../../theme.ts";
 import * as tooltips from "../../tooltips.ts";
@@ -13,7 +12,7 @@ import {
 } from "./constants.ts";
 import { Button } from "./controls/Button.ts";
 import { resetActiveHover } from "./konvaTooltips.ts";
-
+import * as terminationVotes from "./terminationVotes.ts";
 /** Sizes as fractions of the stage width (`w`) or height (everything else). */
 const MENU = {
   w: 0.25,
@@ -173,9 +172,7 @@ export class TerminateMenu extends Konva.Group {
     this.voteName = vote.nameText;
     this.voteDetail = vote.detailText;
     vote.group.on("click tap", () => {
-      globals.lobby.conn!.send("tableTerminateVote", {
-        tableId: globals.lobby.joinedTableId,
-      });
+      terminationVotes.toggleVote();
       this.close();
     });
 
@@ -190,9 +187,7 @@ export class TerminateMenu extends Konva.Group {
     endNow.group.add(endNowColor);
     endNowColor.moveToBottom();
     endNow.group.on("click tap", () => {
-      globals.lobby.conn!.send("tableTerminate", {
-        tableId: globals.lobby.joinedTableId,
-      });
+      terminationVotes.endNow();
       this.close();
     });
 
@@ -213,7 +208,7 @@ export class TerminateMenu extends Konva.Group {
     );
     this.voteName.text(votes.voted ? "Take back my vote" : "Vote to end");
     this.voteDetail.text(
-      `Ends when ${votersText(votes.numVotesNeeded, globals.options.numPlayers)} vote`,
+      `Ends when ${terminationVotes.votersText(votes.numVotesNeeded, globals.options.numPlayers)} vote`,
     );
     this.getLayer()?.batchDraw();
   }
@@ -231,13 +226,4 @@ export class TerminateMenu extends Konva.Group {
     this.hide();
     this.getLayer()?.batchDraw();
   }
-}
-
-function votersText(needed: number, numPlayers: number): string {
-  if (needed < numPlayers) {
-    return `${needed} of ${numPlayers} players`;
-  }
-  return numPlayers === MIN_PLAYERS
-    ? "both players"
-    : `all ${numPlayers} players`;
 }

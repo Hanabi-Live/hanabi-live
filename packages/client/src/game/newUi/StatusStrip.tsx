@@ -34,6 +34,9 @@ interface StatusStripProps {
 
   /** The menu to view the game from a seat, for anyone who does not play in it. */
   readonly viewAsMenu: React.ReactNode;
+
+  /** The button to end the game early, for the players of an ongoing game. */
+  readonly endGameMenu: React.ReactNode;
   readonly onClassicView: () => void;
   readonly onLobby: () => void;
 }
@@ -127,6 +130,7 @@ export function StatusStrip({
   finished,
   onOpenReplay,
   viewAsMenu,
+  endGameMenu,
   onClassicView,
   onLobby,
 }: StatusStripProps): React.JSX.Element {
@@ -156,7 +160,7 @@ export function StatusStrip({
           {variantName}
         </div>
       </div>
-      <div className="tw:ml-auto tw:flex tw:shrink-0 tw:flex-wrap tw:gap-2.5">
+      <div className="tw:ml-auto tw:flex tw:max-w-full tw:shrink-0 tw:flex-wrap tw:gap-2.5">
         {!finished && (
           <button
             className={buttonClass}
@@ -172,6 +176,7 @@ export function StatusStrip({
         <button className={buttonClass} onClick={onClassicView} type="button">
           Classic view
         </button>
+        {endGameMenu}
         <button className={buttonClass} onClick={onLobby} type="button">
           Lobby
         </button>

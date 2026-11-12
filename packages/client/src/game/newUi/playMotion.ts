@@ -231,7 +231,7 @@ export function isShowingPlay(element: HTMLElement): boolean {
     .some((animation) => animation.id === PLAY_EFFECT_ANIMATION_ID);
 }
 
-function prefersReducedMotion(): boolean {
+export function prefersReducedMotion(): boolean {
   return globalThis.matchMedia("(prefers-reduced-motion: reduce)").matches;
 }
 

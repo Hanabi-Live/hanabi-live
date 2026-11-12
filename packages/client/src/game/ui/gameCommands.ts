@@ -412,6 +412,7 @@ gameCommands.set("votes", (data) => {
 function setVotes(votes: Votes) {
   globals.terminationVotes = votes;
   updateTerminationVotes();
+  newUiState.notify();
 }
 
 // The table's owner leads its shared replay.

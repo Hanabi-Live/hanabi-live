@@ -418,6 +418,7 @@ function getStates({
   clueAccount,
   findAccountCard,
   playBobCard,
+  toggleBobVote,
   showPrismMorph,
 }: Pick<
   Seed,
@@ -428,6 +429,7 @@ function getStates({
   | "clueAccount"
   | "findAccountCard"
   | "playBobCard"
+  | "toggleBobVote"
   | "showPrismMorph"
 >): readonly State[] {
   // Ends the shared replay of the "prism-unknown-rank" state.
@@ -986,6 +988,44 @@ function getStates({
       loggedIn: true,
       hover: '#game-new-ui [aria-label^="About efficiency"]',
     },
+    // The same game, with the menu of the "End game" button open.
+    {
+      name: "new-ui-end-game-menu",
+      path: "/",
+      loggedIn: true,
+      prepare: async (page) => {
+        await page
+          .getByRole("button", { name: "End game", exact: true })
+          .click();
+      },
+    },
+    // The same game, after Bob votes to end it.
+    {
+      name: "new-ui-end-vote",
+      path: "/",
+      loggedIn: true,
+      prepare: async (page) => {
+        await toggleBobVote();
+        await page.getByRole("button", { name: /1 of 2 votes/u }).waitFor();
+      },
+    },
+    // The same game, after Bob takes back his vote and the account votes to end the game. The
+    // account then takes back its vote, so that the game goes on.
+    {
+      name: "new-ui-end-vote-own",
+      path: "/",
+      loggedIn: true,
+      prepare: async (page) => {
+        await toggleBobVote();
+        await page.getByRole("button", { name: /^End game/u }).click();
+        await page.getByRole("menuitem", { name: /Vote to end/u }).click();
+        await page.getByRole("button", { name: /including yours/u }).waitFor();
+      },
+      cleanup: async (page) => {
+        await page.getByRole("button", { name: /including yours/u }).click();
+        await page.getByRole("menuitem", { name: /Take back/u }).click();
+      },
+    },
     // The same game, after the account switches to the classic screen.
     {
       name: "new-ui-classic",
@@ -1243,6 +1283,8 @@ interface Seed {
   ) => Promise<CardOrder | undefined>;
   /** When it is his turn, Bob plays a card that the team can play. */
   readonly playBobCard: () => Promise<void>;
+  /** Bob votes to end the game at his table, or takes back his vote. */
+  readonly toggleBobVote: () => Promise<void>;
   /**
    * Has another account create a shared replay of a Prism game, start a hypothetical, and morph a
    * card to the Prism suit without a rank, before the browser joins. Returns a function that
@@ -1345,6 +1387,11 @@ async function seed(address: string): Promise<Seed> {
 
   // The browser logs in as Alice, with a session of its own.
   const cookie = await login(address, USERNAME);
+  async function toggleBobVote() {
+    bob.send("tableTerminateVote", { tableId });
+    await bob.receive("votes", SERVER_COMMAND_SCHEMAS.votes);
+  }
+
   async function endGame() {
     bob.send("tableTerminate", { tableId });
     await bob.receive("gameFinished", SERVER_COMMAND_SCHEMAS.gameFinished);
@@ -1589,6 +1636,7 @@ async function seed(address: string): Promise<Seed> {
     clueAccount,
     findAccountCard,
     playBobCard,
+    toggleBobVote,
     showPrismMorph,
     cookie,
     peers: [bob, ...spectators, bot],
