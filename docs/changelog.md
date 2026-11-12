@@ -53,6 +53,7 @@ of the repository.
   on the classic screen.
 - In the new game screen, the deck marks its last card in orange, and says
   "Final round" once it is empty.
+- Animations now play even when the operating system is set to reduce motion.
 
 ## November 11th, 2026
 

@@ -370,7 +370,7 @@ export const DiscardPile = forwardRef<
               {row.map((card, i) => (
                 <button
                   aria-label={`${describeCard(variant, card.suitIndex, card.rank)}. Show the turn it was discarded`}
-                  className="tw:shrink-0 tw:cursor-pointer tw:rounded-[9px] tw:border-0 tw:bg-transparent tw:p-0 tw:transition-transform tw:hover:z-10 tw:hover:-translate-y-1.5 tw:focus-visible:z-10 tw:focus-visible:-translate-y-1.5 tw:motion-reduce:transition-none"
+                  className="tw:shrink-0 tw:cursor-pointer tw:rounded-[9px] tw:border-0 tw:bg-transparent tw:p-0 tw:transition-transform tw:hover:z-10 tw:hover:-translate-y-1.5 tw:focus-visible:z-10 tw:focus-visible:-translate-y-1.5"
                   data-card-order={card.order}
                   data-card-place={`discard-${rowIndex}-${i}`}
                   key={card.order}

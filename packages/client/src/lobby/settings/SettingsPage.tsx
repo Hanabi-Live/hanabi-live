@@ -336,7 +336,7 @@ function useSavedStatus(): [React.ReactNode, () => void] {
           "tw:shrink-0 tw:text-[0.9em] tw:whitespace-nowrap tw:text-green-text",
           visible
             ? "tw:visible tw:opacity-100"
-            : "tw:invisible tw:opacity-0 tw:transition-[opacity,visibility] tw:duration-[0.4s] tw:ease-[ease] tw:motion-reduce:transition-none",
+            : "tw:invisible tw:opacity-0 tw:transition-[opacity,visibility] tw:duration-[0.4s] tw:ease-[ease]",
         ].join(" ")}
         role="status"
       >

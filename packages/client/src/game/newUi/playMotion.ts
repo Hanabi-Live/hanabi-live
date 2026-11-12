@@ -5,9 +5,7 @@
 // explodes there, and tumbles into the discard pile.
 
 // These animations last longer than a normal card move, so the next update of the game does not
-// finish them, as it does a card move (see "cardMotion.ts"). The decoration (sparks, smoke, rings,
-// and the shake) is left out when the operating system asks for reduced motion. The movement of the
-// card is not, since it shows what happened on the turn.
+// finish them, as it does a card move (see "cardMotion.ts").
 
 import { MAX_STRIKES } from "@hanabi-live/game";
 import { WARNING_COLOR } from "../ui/constants.ts";
@@ -230,10 +228,6 @@ export function isShowingPlay(element: HTMLElement): boolean {
   return element
     .getAnimations()
     .some((animation) => animation.id === PLAY_EFFECT_ANIMATION_ID);
-}
-
-function prefersReducedMotion(): boolean {
-  return globalThis.matchMedia("(prefers-reduced-motion: reduce)").matches;
 }
 
 /**
@@ -644,9 +638,6 @@ export function animatePlay(
 
   const impact = t.lift + t.flight;
   popScore(root, impact);
-  if (prefersReducedMotion()) {
-    return;
-  }
 
   // A burst of sparks in the colors of the suit, from the edge of the card, and a ring.
   const unit = to.height;
@@ -710,7 +701,6 @@ export function animateMisplay(
   const unit = stackRect.height;
   // Poses are relative to the size of a card on the stacks, as on the classic screen.
   const stackScale = stackRect.width / to.width;
-  const decorate = !prefersReducedMotion();
 
   const start = { ...center(from), scale: from.width / stackRect.width };
   const end = center(to);
@@ -730,9 +720,6 @@ export function animateMisplay(
     spread: number,
     duration: number,
   ) {
-    if (!decorate) {
-      return;
-    }
     for (let i = 0; i < count; i++) {
       addSpark(
         origin,
@@ -748,9 +735,6 @@ export function animateMisplay(
   }
 
   function smoke(smokeStart: number, origin: Point, count: number) {
-    if (!decorate) {
-      return;
-    }
     for (let i = 0; i < count; i++) {
       const x = origin.x + randomBetween(-0.12, 0.12) * unit;
       const drift = randomBetween(-0.18, 0.18) * unit;
@@ -781,9 +765,6 @@ export function animateMisplay(
   }
 
   function rays(raysStart: number, at: Point) {
-    if (!decorate) {
-      return;
-    }
     const duration = RAYS_SECONDS * 1000;
     for (let i = 0; i < NUM_RAYS; i++) {
       const angle = (i / NUM_RAYS) * 2 * Math.PI + randomBetween(0, 0.2);
@@ -906,24 +887,22 @@ export function animateMisplay(
 
   // 4. Boom.
   const explosion = time;
-  if (decorate) {
-    addFlash(
-      blast,
-      unit,
-      FLASH_RADIUS,
-      FLASH_COLOR,
-      FLASH_SECONDS * 1000,
-      explosion * 1000,
-    );
-    addRing(
-      blast,
-      unit,
-      RING_RADIUS,
-      RING_COLOR,
-      RING_SECONDS * 1000,
-      explosion * 1000,
-    );
-  }
+  addFlash(
+    blast,
+    unit,
+    FLASH_RADIUS,
+    FLASH_COLOR,
+    FLASH_SECONDS * 1000,
+    explosion * 1000,
+  );
+  addRing(
+    blast,
+    unit,
+    RING_RADIUS,
+    RING_COLOR,
+    RING_SECONDS * 1000,
+    explosion * 1000,
+  );
   rays(explosion, blast);
   smoke(explosion, blast, 4);
 
@@ -1002,7 +981,7 @@ export function animateMisplay(
 
   // Shake the game screen.
   const main = root.querySelector("main");
-  if (decorate && main !== null) {
+  if (main !== null) {
     const duration = SHAKE_SECONDS * 1000;
     animateSampled(
       main,
@@ -1058,7 +1037,7 @@ export function animateMisplay(
 function strikeout(root: HTMLElement, unit: number, delay: number) {
   const duration = STRIKEOUT_SECONDS * 1000;
   const boxes = root.querySelectorAll<HTMLElement>("[data-strike-box]");
-  if (boxes.length !== MAX_STRIKES || prefersReducedMotion()) {
+  if (boxes.length !== MAX_STRIKES) {
     return;
   }
   for (const box of boxes) {

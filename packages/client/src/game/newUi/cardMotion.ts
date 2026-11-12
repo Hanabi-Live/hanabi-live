@@ -127,9 +127,6 @@ export function measureCards(root: HTMLElement): CardPositions {
 /**
  * Animates every card that moved, from its old place to its new one. When the game moves forward, a
  * card that was not on the table before was just drawn, so it comes from the deck.
- *
- * Like the classic screen, it ignores the "reduced motion" preference of the operating system: the
- * movement shows what happened on the turn, so it is part of the game and not decoration.
  */
 export function animateCardMoves(
   root: HTMLElement,
