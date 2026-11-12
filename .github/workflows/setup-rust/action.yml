@@ -7,10 +7,14 @@ runs:
       run: |
         rustup show
         echo "RUSTUP_TOOLCHAIN=$(rustup show active-toolchain | cut -d ' ' -f 1)" >> "$GITHUB_ENV"
+        # Backtraces need only line tables. Full debug info makes the cache bigger and linking slower.
+        echo "CARGO_PROFILE_DEV_DEBUG=line-tables-only" >> "$GITHUB_ENV"
 
     - name: Cache Cargo dependencies
       uses: Swatinem/rust-cache@d1527c8f67ef9af357290475d4af4b0fab8f12e0 # v2
       with:
+        # Change the prefix to drop files that no job builds any more. The cache never removes them.
+        prefix-key: v1-rust
         workspaces: server -> target
         # Keep job-specific profiles/targets separate and rebuild our revision-stamped binaries.
         cache-workspace-crates: false
