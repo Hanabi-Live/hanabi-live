@@ -122,7 +122,7 @@ function HelpIcon({
   );
 }
 
-export function OutOf({
+function OutOf({
   value,
   max,
 }: {

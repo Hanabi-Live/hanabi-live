@@ -47,6 +47,8 @@ of the repository.
   cut them short.
 - In the new game screen, the deck is a pile of face-down cards that gets
   thinner as it runs low.
+- In the new game screen, the clue count is one large number, and the strikes
+  turn red as they add up.
 
 ## November 11th, 2026
 

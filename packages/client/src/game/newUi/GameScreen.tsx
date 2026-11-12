@@ -11,7 +11,6 @@ import type {
   SuitIndex,
 } from "@hanabi-live/game";
 import {
-  MAX_CLUES,
   getCardsPerHand,
   getCharacterNameForPlayer,
   getClueCost,
@@ -1357,8 +1356,8 @@ export function GameScreen({
                   visibleState.clueTokens,
                   variant,
                 )}
-                maxClues={MAX_CLUES}
                 onShowStrike={showReplayTurn}
+                outOfClues={visibleState.clueTokens < getClueCost(variant)}
                 strikes={visibleState.strikes.length}
                 strikeSegments={getStrikeSegments(state)}
               />

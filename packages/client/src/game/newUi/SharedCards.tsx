@@ -5,7 +5,6 @@ import { forwardRef } from "react";
 import { tooltipRef } from "../../tooltipRef.ts";
 import { CARD_HEIGHT_PER_WIDTH, CardFace, describeCard } from "./Card.tsx";
 import { Pip } from "./Pip.tsx";
-import { OutOf } from "./StatusStrip.tsx";
 
 /** How far each discarded card covers the one before it in its row, as a fraction of its width. */
 const DISCARD_OVERLAP_PER_WIDTH = 0.4;
@@ -401,23 +400,47 @@ const TOKEN_BUBBLE_CLASS =
 /** The row of a value, as tall as the strike boxes, so that the two values line up. */
 const TOKEN_VALUE_CLASS = "tw:flex tw:h-[32px] tw:items-center";
 
+/** The color of the clue count: it stands out only at the limits. */
+function getClueCountClass(atMaxClues: boolean, outOfClues: boolean): string {
+  if (atMaxClues) {
+    return "tw:text-clue";
+  }
+  if (outOfClues) {
+    return "tw:text-game-muted";
+  }
+  return "tw:text-game-text";
+}
+
+/** The tint of the strikes bubble: none without strikes, and strongest one strike from losing. */
+function getStrikeBubbleClass(strikes: number): string {
+  if (strikes >= MAX_STRIKES - 1) {
+    return "tw:bg-critical/20 tw:ring-2 tw:ring-critical/70";
+  }
+  if (strikes > 0) {
+    return "tw:bg-critical/10 tw:ring-1 tw:ring-critical/40";
+  }
+  return "";
+}
+
 /**
  * The clue tokens and the strikes, below the discard pile. They are real tokens in the physical
  * game, so they sit on the table instead of with the numbers along the bottom.
  */
 export function TableTokens({
   clues,
-  maxClues,
   atMaxClues,
+  outOfClues,
   strikes,
   strikeSegments,
   onShowStrike,
 }: {
   readonly clues: number;
-  readonly maxClues: number;
 
   /** Whether the team has every clue token, so that no one can discard. */
   readonly atMaxClues: boolean;
+
+  /** Whether the team has too few clue tokens to give a clue. */
+  readonly outOfClues: boolean;
   readonly strikes: number;
 
   /**
@@ -432,29 +455,32 @@ export function TableTokens({
     <div className="tw:flex tw:shrink-0 tw:gap-3">
       <section aria-label="Clue tokens" className={TOKEN_BUBBLE_CLASS}>
         <span className="tw:text-[13px] tw:text-game-muted">Clues</span>
-        {/* At max clues, the count takes the color of clues, since the team must give one. */}
+        {/* One large number: the count that players check most. It stands out only at the
+            limits, where the rules change what the team can do: in the color of clues at the
+            maximum, when someone must clue, and gray with none, when no one can. */}
         <span
-          className={`${TOKEN_VALUE_CLASS} tw:text-[22px] tw:font-bold ${
-            atMaxClues ? "tw:text-clue" : "tw:text-game-text"
-          }`}
+          className={`${TOKEN_VALUE_CLASS} tw:text-[34px] tw:leading-none tw:font-extrabold ${getClueCountClass(atMaxClues, outOfClues)}`}
         >
-          {atMaxClues ? (
-            <>
-              {clues}
-              <span className="tw:font-medium">&nbsp;/ {maxClues}</span>
-            </>
-          ) : (
-            <OutOf max={maxClues} value={clues} />
-          )}
+          {clues}
         </span>
-        {atMaxClues && (
+        {(atMaxClues || outOfClues) && (
           // A badge on the bottom edge of the bubble, so that the count stays centered.
-          <span className="tw:absolute tw:bottom-0 tw:left-1/2 tw:-translate-x-1/2 tw:translate-y-1/2 tw:rounded-lg tw:bg-clue tw:px-2.5 tw:py-1 tw:text-[13px] tw:leading-none tw:font-bold tw:whitespace-nowrap tw:text-card-ink tw:shadow-md tw:ring-2 tw:ring-card-ink">
-            No discards
+          <span
+            className={`tw:absolute tw:bottom-0 tw:left-1/2 tw:-translate-x-1/2 tw:translate-y-1/2 tw:rounded-lg tw:px-2.5 tw:py-1 tw:text-[13px] tw:leading-none tw:font-bold tw:whitespace-nowrap tw:shadow-md tw:ring-2 tw:ring-card-ink ${
+              atMaxClues
+                ? "tw:bg-clue tw:text-card-ink"
+                : "tw:bg-game-raised tw:text-game-text"
+            }`}
+          >
+            {atMaxClues ? "No discards" : "No clues"}
           </span>
         )}
       </section>
-      <section aria-label="Strikes" className={TOKEN_BUBBLE_CLASS}>
+      {/* Strikes are danger: the bubble turns red as they add up, and stays quiet without them. */}
+      <section
+        aria-label="Strikes"
+        className={`${TOKEN_BUBBLE_CLASS} ${getStrikeBubbleClass(strikes)}`}
+      >
         <span className="tw:text-[13px] tw:text-game-muted">Strikes</span>
         <div
           aria-label={`${strikes} of ${MAX_STRIKES} strikes`}
