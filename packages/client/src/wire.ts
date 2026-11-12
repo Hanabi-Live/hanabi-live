@@ -23,7 +23,7 @@ import type { ClientAction } from "./game/types/ClientAction.ts";
 import { SoundType } from "./game/types/SoundType.ts";
 
 type WireEvent = ServerCommandData["gameEvent"]["event"];
-type WireCardIdentity = ServerCommandData["cardIdentities"]["deck"][number];
+type WireCardIdentity = ServerCommandData["gameFinished"]["deck"][number];
 
 /** Converts an action that we took into the "playerAction" command's payload. */
 export function toWireAction(

@@ -77,7 +77,9 @@ pub struct TableStartRequest {
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct TableRestartRequest {
     pub table_id: TableId,
-    pub hide_pregame: bool,
+    /// Starts the new game at once with the same players. Otherwise, the new table waits in its
+    /// pregame, so that people can join or leave first.
+    pub start_now: bool,
 }
 
 /// A player in a shared replay saying whether they will play again if the leader restarts.

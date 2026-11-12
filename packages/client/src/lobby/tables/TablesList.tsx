@@ -183,7 +183,9 @@ function TableRowView({
       </td>
       <td className={COLUMNS.status.className}>
         {status}
-        {status !== "Not Started" && hasFriends && ` (${table.progress}%)`}
+        {table.phase.type !== "pregame"
+          && hasFriends
+          && ` (${table.phase.progress}%)`}
       </td>
       <td>
         {table.playerNames.map((player, playerIndex) => {

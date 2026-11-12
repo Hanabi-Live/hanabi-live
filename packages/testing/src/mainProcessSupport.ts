@@ -25,6 +25,11 @@ export const ROOT = path.resolve(import.meta.dirname, "../../..");
 /** The key that the test server signs session cookies with. */
 const SESSION_SECRET = "synthetic-process-smoke-secret-".repeat(8);
 
+/** Whether a "tableJoined" message enters a game or a replay, rather than a pregame. */
+export function entersGame(joined: ServerCommandData["tableJoined"]): boolean {
+  return joined.stage !== "pregame";
+}
+
 /** The seat that a "gameInit" message's recipient sees the game from, if any. */
 export function ourPlayerIndex(
   init: ServerCommandData["gameInit"],

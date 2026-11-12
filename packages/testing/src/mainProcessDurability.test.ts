@@ -14,6 +14,7 @@ import {
   buildRust,
   cookieUserId,
   databaseDescribe,
+  entersGame,
   installSchema,
   login,
   ourPlayerIndex,
@@ -75,10 +76,15 @@ databaseDescribe("Rust actor durability and ownership", () => {
           ],
         });
         await alice.receive(
-          "tableStarted",
-          SERVER_COMMAND_SCHEMAS.tableStarted,
+          "tableJoined",
+          SERVER_COMMAND_SCHEMAS.tableJoined,
+          entersGame,
         );
-        await bob.receive("tableStarted", SERVER_COMMAND_SCHEMAS.tableStarted);
+        await bob.receive(
+          "tableJoined",
+          SERVER_COMMAND_SCHEMAS.tableJoined,
+          entersGame,
+        );
         async function bootstrap(peer: ReturnType<typeof socketClient>) {
           peer.send("gameInitLoad", { tableId });
           const init = await peer.receive(
@@ -187,8 +193,9 @@ databaseDescribe("Rust actor durability and ownership", () => {
         }
         replacement.send("tableReattend", { tableId });
         await replacement.receive(
-          "tableStarted",
-          SERVER_COMMAND_SCHEMAS.tableStarted,
+          "tableJoined",
+          SERVER_COMMAND_SCHEMAS.tableJoined,
+          entersGame,
         );
         await bootstrap(replacement);
         // Resending the applied move is rejected: it is no longer this player's turn.
@@ -230,8 +237,9 @@ databaseDescribe("Rust actor durability and ownership", () => {
         );
         returning.send("tableReattend", { tableId });
         await returning.receive(
-          "tableStarted",
-          SERVER_COMMAND_SCHEMAS.tableStarted,
+          "tableJoined",
+          SERVER_COMMAND_SCHEMAS.tableJoined,
+          entersGame,
         );
         const restored = await bootstrap(returning);
         expect(ourPlayerIndex(restored.init)).toBe(0);

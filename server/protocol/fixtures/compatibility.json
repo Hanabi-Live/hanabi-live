@@ -300,7 +300,7 @@
     "valid": false
   },
   {
-    "name": "a suggestion carries the settings that it applies",
+    "name": "a settings suggestion carries the settings that it applies",
     "direction": "server",
     "command": "chat",
     "input": {
@@ -308,7 +308,7 @@
       "sentAt": "2026-01-01T12:00:00.000Z",
       "tableId": 1,
       "kind": {
-        "type": "suggestion",
+        "type": "settingsSuggestion",
         "recipient": "Alice",
         "settings": {
           "name": "Table",
@@ -322,7 +322,7 @@
       "sentAt": "2026-01-01T12:00:00.000Z",
       "tableId": 1,
       "kind": {
-        "type": "suggestion",
+        "type": "settingsSuggestion",
         "recipient": "Alice",
         "settings": {
           "name": "Table",
@@ -949,7 +949,6 @@
       "owner": { "userId": 7, "username": "Alice" },
       "passwordProtected": false,
       "playerNames": ["Alice"],
-      "progress": 0,
       "phase": { "type": "pregame" },
       "spectators": [
         {
@@ -974,6 +973,21 @@
       }
     },
     "valid": true
+  },
+  {
+    "name": "only a game or a replay reports its progress",
+    "direction": "server",
+    "command": "table",
+    "input": {
+      "tableId": 3,
+      "owner": { "userId": 7, "username": "Alice" },
+      "passwordProtected": false,
+      "playerNames": ["Alice"],
+      "phase": { "type": "pregame", "progress": 0 },
+      "spectators": [],
+      "settings": { "name": "Alice's game", "maxPlayers": 5, "options": {} }
+    },
+    "valid": false
   },
   {
     "name": "spectators without a shadow omit the shadowed name",

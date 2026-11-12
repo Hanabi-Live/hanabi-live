@@ -13,6 +13,7 @@ import {
   buildRust,
   cookieUserId,
   databaseDescribe,
+  entersGame,
   installSchema,
   login,
   ourPlayerIndex,
@@ -162,12 +163,14 @@ databaseDescribe("normal-server protocol workload", () => {
               ],
             });
             await alice.receive(
-              "tableStarted",
-              SERVER_COMMAND_SCHEMAS.tableStarted,
+              "tableJoined",
+              SERVER_COMMAND_SCHEMAS.tableJoined,
+              entersGame,
             );
             await bob.receive(
-              "tableStarted",
-              SERVER_COMMAND_SCHEMAS.tableStarted,
+              "tableJoined",
+              SERVER_COMMAND_SCHEMAS.tableJoined,
+              entersGame,
             );
             const [a, b] = await Promise.all([
               bootstrap(alice, tableId),
@@ -200,8 +203,9 @@ databaseDescribe("normal-server protocol workload", () => {
                 alice = await connect(aliceCookie);
                 alice.send("tableReattend", { tableId });
                 await alice.receive(
-                  "tableStarted",
-                  SERVER_COMMAND_SCHEMAS.tableStarted,
+                  "tableJoined",
+                  SERVER_COMMAND_SCHEMAS.tableJoined,
+                  entersGame,
                 );
                 const restored = await bootstrap(alice, tableId);
                 expect(ourPlayerIndex(restored.init)).toBe(aliceSeat);
@@ -301,8 +305,9 @@ databaseDescribe("normal-server protocol workload", () => {
           visibility: { type: "solo" },
         });
         const { tableId } = await peer.receive(
-          "tableStarted",
-          SERVER_COMMAND_SCHEMAS.tableStarted,
+          "tableJoined",
+          SERVER_COMMAND_SCHEMAS.tableJoined,
+          entersGame,
         );
         const replay = await bootstrap(peer, tableId);
         expect(replay.init.mode).toMatchObject({ type: "soloReplay", gameId });

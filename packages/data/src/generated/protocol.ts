@@ -77,16 +77,6 @@ export const blockedSchema = z
   .readonly();
 
 /**
- * Every card's identity, by card order, once a game ends.
- */
-export const cardIdentitiesSchema = z
-  .strictObject({
-    deck: z.array(cardIdentitySchema).max(60).readonly(),
-    tableId: tableIdSchema,
-  })
-  .readonly();
-
-/**
  * A chat message's ID in `chat_log`.
  */
 export const chatIdSchema = z
@@ -190,7 +180,7 @@ const chatKindSchema = z.discriminatedUnion("type", [
     .strictObject({
       recipient: z.string().min(1),
       settings: tableSettingsSchema,
-      type: z.literal("suggestion"),
+      type: z.literal("settingsSuggestion"),
     })
     .readonly(),
 ]);
@@ -383,6 +373,12 @@ const sharedReplayStateSchema = z
  */
 export const gameFinishedSchema = z
   .strictObject({
+    /**
+     * Every card's identity, by card order. The client rebuilds the game as a replay, which needs
+     * the cards that were hidden from it.
+     */
+    deck: z.array(cardIdentitySchema).max(60).readonly(),
+    finishedAt: z.iso.datetime({ precision: 3 }),
     /**
      * Absent when the game was not saved.
      */
@@ -1402,7 +1398,15 @@ const progressSchema = z.number().int().min(0).max(100);
  */
 const tablePhaseSchema = z.discriminatedUnion("type", [
   z.strictObject({ type: z.literal("pregame") }).readonly(),
-  z.strictObject({ type: z.literal("playing") }).readonly(),
+  z
+    .strictObject({
+      /**
+       * The game's score, as a percentage of the maximum score.
+       */
+      progress: progressSchema,
+      type: z.literal("playing"),
+    })
+    .readonly(),
   z
     .strictObject({
       /**
@@ -1410,6 +1414,10 @@ const tablePhaseSchema = z.discriminatedUnion("type", [
        * one.
        */
       gameId: gameIdSchema.optional(),
+      /**
+       * The replay's turn, as a percentage of the game's turns.
+       */
+      progress: progressSchema,
       type: z.literal("sharedReplay"),
     })
     .readonly(),
@@ -1424,7 +1432,6 @@ export const tableSchema = z
     passwordProtected: z.boolean(),
     phase: tablePhaseSchema,
     playerNames: z.array(z.string().min(1)).max(6).readonly(),
-    progress: progressSchema,
     settings: tableSettingsSchema,
     spectators: z.array(spectatorSchema).readonly(),
     tableId: tableIdSchema,
@@ -1447,6 +1454,24 @@ export const tableJoinRequestSchema = z
     password: z.string().min(1).optional(),
     tableId: tableIdSchema,
   })
+  .readonly();
+
+/**
+ * What the recipient enters at a table: its pregame, a game that started just now, a game in
+ * progress, or the replay of a finished game.
+ */
+const tableStageSchema = z.enum([
+  "pregame",
+  "justStarted",
+  "playing",
+  "replay",
+]);
+
+/**
+ * Sent when the recipient enters a table's screen: its pregame or its game.
+ */
+export const tableJoinedSchema = z
+  .strictObject({ stage: tableStageSchema, tableId: tableIdSchema })
   .readonly();
 export const tableListSchema = z
   .strictObject({ tables: z.array(tableSchema).readonly() })
@@ -1484,7 +1509,14 @@ export const tableRestartDeclinersSchema = z
   })
   .readonly();
 export const tableRestartRequestSchema = z
-  .strictObject({ hidePregame: z.boolean(), tableId: tableIdSchema })
+  .strictObject({
+    /**
+     * Starts the new game at once with the same players. Otherwise, the new table waits in its
+     * pregame, so that people can join or leave first.
+     */
+    startNow: z.boolean(),
+    tableId: tableIdSchema,
+  })
   .readonly();
 
 /**
@@ -1514,15 +1546,6 @@ export const tableStartRequestSchema = z
     intendedPlayerIds: z.array(userIdSchema).max(6).readonly(),
     tableId: tableIdSchema,
   })
-  .readonly();
-
-/**
- * How far along a game is when the recipient enters it: it started just now, it is in progress,
- * or it is over and the recipient watches a replay.
- */
-const gameStageSchema = z.enum(["justStarted", "playing", "replay"]);
-export const tableStartedSchema = z
-  .strictObject({ stage: gameStageSchema, tableId: tableIdSchema })
   .readonly();
 export const tableSuggestRequestSchema = z
   .strictObject({ tableId: tableIdSchema, turn: turnSchema })
@@ -1700,7 +1723,6 @@ export const CLIENT_COMMAND_SCHEMAS = {
 } as const;
 export const SERVER_COMMAND_SCHEMAS = {
   blocked: blockedSchema,
-  cardIdentities: cardIdentitiesSchema,
   chat: chatSchema,
   chatDeleted: chatDeletedSchema,
   chatList: chatListSchema,
@@ -1730,13 +1752,12 @@ export const SERVER_COMMAND_SCHEMAS = {
   synced: emptySchema,
   table: tableSchema,
   tableBooted: tableRefSchema,
-  tableJoined: tableRefSchema,
+  tableJoined: tableJoinedSchema,
   tableLeft: tableRefSchema,
   tableList: tableListSchema,
   tableOwner: tableOwnerSchema,
   tableRemoved: tableRefSchema,
   tableRestartDecliners: tableRestartDeclinersSchema,
-  tableStarted: tableStartedSchema,
   tableSuggestion: tableSuggestionSchema,
   user: userSchema,
   userList: userListSchema,

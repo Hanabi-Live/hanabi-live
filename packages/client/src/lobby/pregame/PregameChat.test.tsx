@@ -82,7 +82,7 @@ describe("PregameChat", () => {
       add(
         message({
           kind: {
-            type: "suggestion",
+            type: "settingsSuggestion",
             recipient: "alice",
             settings: suggestion,
           },

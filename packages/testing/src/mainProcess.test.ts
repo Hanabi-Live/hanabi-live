@@ -21,6 +21,7 @@ import {
   buildRust,
   cookieUserId,
   databaseDescribe,
+  entersGame,
   installSchema,
   login,
   ourPlayerIndex,
@@ -204,10 +205,15 @@ databaseDescribe("compiled application entry point (rust)", () => {
           intendedPlayerIds: [aliceWelcome.userId, bobWelcome.userId],
         });
         await alice.receive(
-          "tableStarted",
-          SERVER_COMMAND_SCHEMAS.tableStarted,
+          "tableJoined",
+          SERVER_COMMAND_SCHEMAS.tableJoined,
+          entersGame,
         );
-        await bob.receive("tableStarted", SERVER_COMMAND_SCHEMAS.tableStarted);
+        await bob.receive(
+          "tableJoined",
+          SERVER_COMMAND_SCHEMAS.tableJoined,
+          entersGame,
+        );
 
         async function bootstrap(peer: ReturnType<typeof socketClient>) {
           peer.send("gameInitLoad", { tableId });
@@ -343,8 +349,9 @@ databaseDescribe("compiled application entry point (rust)", () => {
             expect(returning.playingAtTables).toEqual([tableId]);
             peer.send("tableReattend", { tableId });
             await peer.receive(
-              "tableStarted",
-              SERVER_COMMAND_SCHEMAS.tableStarted,
+              "tableJoined",
+              SERVER_COMMAND_SCHEMAS.tableJoined,
+              entersGame,
             );
             return await bootstrap(peer);
           }),
@@ -609,8 +616,9 @@ databaseDescribe("compiled application entry point (rust)", () => {
       const games = await Promise.all(
         players.map(async (peer) => {
           await peer.receive(
-            "tableStarted",
-            SERVER_COMMAND_SCHEMAS.tableStarted,
+            "tableJoined",
+            SERVER_COMMAND_SCHEMAS.tableJoined,
+            entersGame,
           );
           return await bootstrap(peer, tableId);
         }),
@@ -638,8 +646,9 @@ databaseDescribe("compiled application entry point (rust)", () => {
       }
       observer.send("tableSpectate", { tableId, shadowingPlayerIndex: 0 });
       await observer.receive(
-        "tableStarted",
-        SERVER_COMMAND_SCHEMAS.tableStarted,
+        "tableJoined",
+        SERVER_COMMAND_SCHEMAS.tableJoined,
+        entersGame,
       );
       const shadow = await bootstrap(observer, tableId);
       expect(shadow.init).toMatchObject({
@@ -651,25 +660,14 @@ databaseDescribe("compiled application entry point (rust)", () => {
           .map((event) => "suitIndex" in event || "rank" in event),
       ).toEqual([false, false]);
       // The client rebuilds the game when it finishes, so it needs the identities of the scrubbed
-      // cards first.
-      const arrivals: string[] = [];
-      owner.socket.on("message", (raw) => {
-        if (Buffer.isBuffer(raw)) {
-          arrivals.push(raw.toString().split(" ", 1)[0] ?? "");
-        }
-      });
+      // cards with it.
       owner.send("tableTerminate", { tableId });
       const finished = await owner.receive(
         "gameFinished",
         SERVER_COMMAND_SCHEMAS.gameFinished,
       );
-      await owner.receive(
-        "cardIdentities",
-        SERVER_COMMAND_SCHEMAS.cardIdentities,
-      );
-      expect(arrivals.indexOf("cardIdentities")).toBeLessThan(
-        arrivals.indexOf("gameFinished"),
-      );
+      // A deck of 6 suits has 60 cards.
+      expect(finished.deck).toHaveLength(60);
       assertDefined(finished.gameId, "The finished game was not saved.");
       expect(
         await sql`SELECT seat FROM game_participants WHERE game_id=${finished.gameId}`,
@@ -708,8 +706,9 @@ databaseDescribe("compiled application entry point (rust)", () => {
               },
         );
         const created = await owner.receive(
-          "tableStarted",
-          SERVER_COMMAND_SCHEMAS.tableStarted,
+          "tableJoined",
+          SERVER_COMMAND_SCHEMAS.tableJoined,
+          entersGame,
         );
         const imported = await bootstrap(owner, created.tableId);
         expect(imported.init.mode.type).toBe(
@@ -783,9 +782,10 @@ databaseDescribe("compiled application entry point (rust)", () => {
           );
           returning.send("tableReattend", { tableId: created.tableId });
           await returning.receive(
-            "tableStarted",
-            SERVER_COMMAND_SCHEMAS.tableStarted,
-            (message) => message.tableId === created.tableId,
+            "tableJoined",
+            SERVER_COMMAND_SCHEMAS.tableJoined,
+            (message) =>
+              entersGame(message) && message.tableId === created.tableId,
           );
           const recovered = await bootstrap(returning, created.tableId);
           if (imported.init.mode.type !== "sharedReplay") {

@@ -93,17 +93,27 @@ describe("server game events", () => {
 
 describe("card identities", () => {
   test("every identity names a suit and a rank", () => {
-    const [identity] = SERVER_COMMAND_SCHEMAS.cardIdentities.parse({
-      tableId: 1,
-      deck: [{ suitIndex: 2, rank: 7 }],
-    }).deck;
-    expect(toCardIdentity(identity!)).toEqual({ suitIndex: 2, rank: 7 });
-    expect(
-      SERVER_COMMAND_SCHEMAS.cardIdentities.safeParse({
-        tableId: 1,
-        deck: [{ rank: 7 }],
-      }).success,
-    ).toBe(false);
+    const learned = event({
+      type: "cardIdentity",
+      playerIndex: 0,
+      order: 0,
+      identity: { suitIndex: 2, rank: 7 },
+    });
+    expect(learned.type === "cardIdentity" && learned.identity).toBeTruthy();
+    if (learned.type === "cardIdentity" && learned.identity !== undefined) {
+      expect(toCardIdentity(learned.identity)).toEqual({
+        suitIndex: 2,
+        rank: 7,
+      });
+    }
+    expect(() =>
+      event({
+        type: "cardIdentity",
+        playerIndex: 0,
+        order: 0,
+        identity: { rank: 7 },
+      }),
+    ).toThrow();
   });
 });
 

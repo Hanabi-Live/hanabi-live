@@ -272,11 +272,13 @@ function openConnection(isReconnect: boolean) {
         globals.blocked = data.blocked;
         theme.setDarkMode(globals.settings.darkMode);
         const retained = globals.joinedTableId;
-        conn.on("tableStarted", (table) => {
+        conn.on("tableJoined", (table) => {
           if (!isCurrentConnection(conn)) {
             return;
           }
-          if (
+          if (table.stage === "pregame") {
+            lobbyCommands.get("tableJoined")?.(table);
+          } else if (
             table.tableId === retained
             && table.stage !== "replay"
             && globals.ui !== undefined
@@ -287,7 +289,7 @@ function openConnection(isReconnect: boolean) {
           } else {
             globals.ui?.destroy();
             globals.ui = undefined;
-            lobbyCommands.get("tableStarted")?.(table);
+            lobbyCommands.get("tableJoined")?.(table);
           }
         });
         conn.on("gameState", (state) => {

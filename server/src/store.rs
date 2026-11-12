@@ -1911,7 +1911,7 @@ mod tests {
                 &hub,
                 users[0].clone(),
                 "tableRestart",
-                json!({"tableId":id,"hidePregame":true}),
+                json!({"tableId":id,"startNow":true}),
             )
             .await?;
             tokio::time::timeout(Duration::from_secs(5), async {

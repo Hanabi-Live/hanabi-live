@@ -363,7 +363,6 @@ pub struct Table {
     pub password_protected: bool,
     #[schemars(length(max = MAX_PLAYERS))]
     pub player_names: Vec<Username>,
-    pub progress: Progress,
     pub phase: TablePhase,
     pub spectators: Vec<Spectator>,
 }
@@ -379,12 +378,17 @@ pub struct Table {
 )]
 pub enum TablePhase {
     Pregame {},
-    Playing {},
+    Playing {
+        /// The game's score, as a percentage of the maximum score.
+        progress: Progress,
+    },
     SharedReplay {
         /// The game that the replay shows. Absent when the game is not saved, such as an imported
         /// one.
         #[serde(skip_serializing_if = "Option::is_none")]
         game_id: Option<GameId>,
+        /// The replay's turn, as a percentage of the game's turns.
+        progress: Progress,
     },
 }
 

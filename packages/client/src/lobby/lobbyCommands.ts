@@ -93,10 +93,18 @@ lobbyCommands.set("seedGames", (data) => {
 });
 
 lobbyCommands.set("tableJoined", (data) => {
+  // Record the table ID for later.
   globals.tableId = data.tableId;
 
-  // We joined a new game, so transition between screens.
-  pregame.show();
+  // Transition between screens.
+  if (data.stage === "pregame") {
+    pregame.show();
+    return;
+  }
+  if (data.stage !== "replay" && globals.currentScreen === Screen.PreGame) {
+    pregame.hide(false);
+  }
+  gameMain.show(data.stage === "justStarted");
 });
 
 lobbyCommands.set("tableLeft", () => {
@@ -134,16 +142,6 @@ lobbyCommands.set("tableRemoved", (data) => {
 // Received by the client upon initial connection.
 lobbyCommands.set("tableList", (data) => {
   store.dispatch(tablesListed(data.tables));
-});
-
-lobbyCommands.set("tableStarted", (data) => {
-  // Record the table ID for later.
-  globals.tableId = data.tableId;
-
-  if (data.stage !== "replay" && globals.currentScreen === Screen.PreGame) {
-    pregame.hide(false);
-  }
-  gameMain.show(data.stage === "justStarted");
 });
 
 // Received by the client when a user connects or has a new status.

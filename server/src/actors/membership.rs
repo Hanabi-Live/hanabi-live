@@ -10,7 +10,7 @@ use crate::{
 use anyhow::Context;
 use hanabi_protocol::PlayerIndex;
 use hanabi_protocol::UserId;
-use hanabi_protocol::{TableJoinRequest, TableRef, TableStarted};
+use hanabi_protocol::{TableJoinRequest, TableJoined, TableRef, TableStage};
 use std::{
     collections::{BTreeSet, HashSet},
     sync::Arc,
@@ -285,8 +285,9 @@ impl TableActor {
                 session.clone(),
                 frame(
                     hanabi_protocol::server::TABLE_JOINED,
-                    TableRef {
+                    TableJoined {
                         table_id: self.table.id,
+                        stage: TableStage::Pregame,
                     },
                 ),
             ));
@@ -295,13 +296,13 @@ impl TableActor {
             e.messages.push((
                 session,
                 frame(
-                    hanabi_protocol::server::TABLE_STARTED,
-                    TableStarted {
+                    hanabi_protocol::server::TABLE_JOINED,
+                    TableJoined {
                         table_id: self.table.id,
                         stage: if replay {
-                            hanabi_protocol::GameStage::Replay
+                            TableStage::Replay
                         } else {
-                            hanabi_protocol::GameStage::Playing
+                            TableStage::Playing
                         },
                     },
                 ),

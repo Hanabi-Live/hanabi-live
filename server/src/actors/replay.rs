@@ -539,8 +539,9 @@ impl TableActor {
             self.pregame_messages(&mut e);
             let joined = frame(
                 hanabi_protocol::server::TABLE_JOINED,
-                TableRef {
+                hanabi_protocol::TableJoined {
                     table_id: self.table.id,
+                    stage: hanabi_protocol::TableStage::Pregame,
                 },
             );
             let audience = self

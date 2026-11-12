@@ -357,7 +357,6 @@ pub(crate) fn test_table() -> hanabi_protocol::Table {
         },
         password_protected: false,
         player_names: vec!["test".into()],
-        progress: hanabi_protocol::Progress::default(),
         phase: hanabi_protocol::TablePhase::Pregame {},
         spectators: vec![],
     }

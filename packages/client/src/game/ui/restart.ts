@@ -27,7 +27,8 @@ export function canRestart(
   return willing.length >= MIN_PLAYERS;
 }
 
-export function request(hidePregame: boolean): void {
+/** Asks to play again: at once with the same players, or else in a new pregame. */
+export function request(startNow: boolean): void {
   if (globals.restartPending) {
     return;
   }
@@ -35,7 +36,7 @@ export function request(hidePregame: boolean): void {
   setPending(true);
   globals.lobby.conn!.send("tableRestart", {
     tableId: globals.lobby.joinedTableId,
-    hidePregame,
+    startNow,
   });
 }
 

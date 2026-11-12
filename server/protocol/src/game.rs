@@ -102,15 +102,6 @@ pub struct CardIdentity {
     pub rank: CardRank,
 }
 
-/// Every card's identity, by card order, once a game ends.
-#[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
-#[serde(rename_all = "camelCase", deny_unknown_fields)]
-pub struct CardIdentities {
-    pub table_id: TableId,
-    #[schemars(length(max = MAX_DECK_SIZE))]
-    pub deck: Vec<CardIdentity>,
-}
-
 /// Sent when a game ends: its players and spectators now watch its shared replay.
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
@@ -119,21 +110,28 @@ pub struct GameFinished {
     /// Absent when the game was not saved.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub game_id: Option<GameId>,
+    pub finished_at: Timestamp,
+    /// Every card's identity, by card order. The client rebuilds the game as a replay, which needs
+    /// the cards that were hidden from it.
+    #[schemars(length(max = MAX_DECK_SIZE))]
+    pub deck: Vec<CardIdentity>,
     pub shared_replay: SharedReplayState,
 }
 
+/// Sent when the recipient enters a table's screen: its pregame or its game.
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
-pub struct TableStarted {
+pub struct TableJoined {
     pub table_id: TableId,
-    pub stage: GameStage,
+    pub stage: TableStage,
 }
 
-/// How far along a game is when the recipient enters it: it started just now, it is in progress,
-/// or it is over and the recipient watches a replay.
+/// What the recipient enters at a table: its pregame, a game that started just now, a game in
+/// progress, or the replay of a finished game.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase")]
-pub enum GameStage {
+pub enum TableStage {
+    Pregame,
     JustStarted,
     Playing,
     Replay,

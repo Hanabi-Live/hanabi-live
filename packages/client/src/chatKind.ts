@@ -6,12 +6,12 @@ type ChatAuthor = Extract<Chat["kind"], { type: "public" }>["author"];
 /** The settings that a suggestion to a table's owner applies to the table. */
 export type SuggestedSettings = Extract<
   Chat["kind"],
-  { type: "suggestion" }
+  { type: "settingsSuggestion" }
 >["settings"];
 
 /** Who wrote a chat message. The server writes suggestions. */
 export function chatAuthor(chat: Chat): ChatAuthor {
-  return chat.kind.type === "suggestion"
+  return chat.kind.type === "settingsSuggestion"
     ? { type: "server" }
     : chat.kind.author;
 }
@@ -29,5 +29,7 @@ export function chatRecipient(chat: Chat): string | undefined {
 
 /** The settings that a suggestion applies, if the message is one. */
 export function chatSuggestion(chat: Chat): SuggestedSettings | undefined {
-  return chat.kind.type === "suggestion" ? chat.kind.settings : undefined;
+  return chat.kind.type === "settingsSuggestion"
+    ? chat.kind.settings
+    : undefined;
 }

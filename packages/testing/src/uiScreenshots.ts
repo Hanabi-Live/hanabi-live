@@ -52,6 +52,7 @@ import { evaluationDatabase } from "./database.ts";
 import {
   buildRust,
   cookieUserId,
+  entersGame,
   installSchema,
   login,
   ourPlayerIndex,
@@ -1487,7 +1488,11 @@ async function playGame(alice: Peer, bob: Peer): Promise<number> {
   const peers = [alice, bob];
   const games = await Promise.all(
     peers.map(async (peer) => {
-      await peer.receive("tableStarted", SERVER_COMMAND_SCHEMAS.tableStarted);
+      await peer.receive(
+        "tableJoined",
+        SERVER_COMMAND_SCHEMAS.tableJoined,
+        entersGame,
+      );
       peer.send("gameInitLoad", { tableId });
       const init = await peer.receive(
         "gameInit",
@@ -1618,7 +1623,11 @@ async function seed(address: string): Promise<Seed> {
       tableId,
       intendedPlayerIds: [bob.userId, cookieUserId(cookie)],
     });
-    await bob.receive("tableStarted", SERVER_COMMAND_SCHEMAS.tableStarted);
+    await bob.receive(
+      "tableJoined",
+      SERVER_COMMAND_SCHEMAS.tableJoined,
+      entersGame,
+    );
     bob.send("gameInitLoad", { tableId });
     const init = await bob.receive("gameInit", SERVER_COMMAND_SCHEMAS.gameInit);
     bobIndex = ourPlayerIndex(init);
@@ -1849,8 +1858,9 @@ async function seed(address: string): Promise<Seed> {
       visibility: { type: "shared", joinExisting: false, spoilerFree: false },
     });
     const { tableId: replayTableId } = await leader.receive(
-      "tableStarted",
-      SERVER_COMMAND_SCHEMAS.tableStarted,
+      "tableJoined",
+      SERVER_COMMAND_SCHEMAS.tableJoined,
+      entersGame,
     );
     leader.send("gameInitLoad", { tableId: replayTableId });
     await leader.receive("gameInit", SERVER_COMMAND_SCHEMAS.gameInit);

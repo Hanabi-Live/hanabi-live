@@ -31,8 +31,8 @@ beforeEach(() => {
 });
 
 test.each([true, false])(
-  "restart with hidePregame=%s blocks repeated and competing requests",
-  (hidePregame) => {
+  "restart with startNow=%s blocks repeated and competing requests",
+  (startNow) => {
     send.mockImplementationOnce(() => {
       expect(globals.restartPending).toBe(true);
       expect(contentsVisible).toHaveBeenLastCalledWith(false);
@@ -40,14 +40,14 @@ test.each([true, false])(
       expect(start).toHaveBeenCalledTimes(1);
     });
 
-    request(hidePregame);
-    request(hidePregame);
-    request(!hidePregame);
+    request(startNow);
+    request(startNow);
+    request(!startNow);
 
     expect(send).toHaveBeenCalledTimes(1);
     expect(send).toHaveBeenCalledWith("tableRestart", {
       tableId: 42,
-      hidePregame,
+      startNow,
     });
     expect(setEnabled).toHaveBeenLastCalledWith(false);
     expect(show).toHaveBeenCalledTimes(1);
@@ -68,7 +68,7 @@ test("a rejected restart restores the controls and allows retrying", () => {
   expect(send).toHaveBeenCalledTimes(2);
   expect(send).toHaveBeenLastCalledWith("tableRestart", {
     tableId: 42,
-    hidePregame: false,
+    startNow: false,
   });
 });
 

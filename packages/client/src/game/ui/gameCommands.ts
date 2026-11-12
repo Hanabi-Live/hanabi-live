@@ -90,11 +90,7 @@ function setConnected(connectedList: readonly boolean[]) {
   globals.layers.UI.batchDraw();
 }
 
-gameCommands.set("cardIdentities", (data) => {
-  setCardIdentities(data.deck);
-});
-
-function setCardIdentities(deck: ServerCommandData["cardIdentities"]["deck"]) {
+function setCardIdentities(deck: ServerCommandData["gameFinished"]["deck"]) {
   globals.store!.dispatch({
     type: "cardIdentities",
     cardIdentities: deck.map(toCardIdentity),
@@ -103,6 +99,9 @@ function setCardIdentities(deck: ServerCommandData["cardIdentities"]["deck"]) {
 
 gameCommands.set("gameFinished", (data) => {
   modals.closeIdleWarning();
+
+  // The game is rebuilt as a replay below, which needs the cards that were hidden from us.
+  setCardIdentities(data.deck);
 
   // A replay has no players to wait for.
   setConnected(globals.elements.nameFrames.map(() => true));
@@ -124,7 +123,7 @@ gameCommands.set("gameFinished", (data) => {
     type: "gameFinished",
     gameId: data.gameId,
     sharedReplay: data.sharedReplay,
-    datetimeFinished: new Date().toISOString(),
+    datetimeFinished: data.finishedAt,
     leader: data.sharedReplay.owner.username,
   });
   if (

@@ -55,7 +55,7 @@ pub enum ChatKind {
     },
     /// A message from the server to a table's owner, with a button that applies these settings to
     /// the table.
-    Suggestion {
+    SettingsSuggestion {
         recipient: Username,
         settings: TableSettings,
     },
@@ -149,7 +149,7 @@ impl Chat {
     pub const fn author(&self) -> &ChatAuthor {
         match &self.kind {
             ChatKind::Public { author } | ChatKind::Private { author, .. } => author,
-            ChatKind::Suggestion { .. } => &ChatAuthor::Server {},
+            ChatKind::SettingsSuggestion { .. } => &ChatAuthor::Server {},
         }
     }
 }

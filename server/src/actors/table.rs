@@ -27,7 +27,7 @@ use futures_util::{FutureExt, future::BoxFuture};
 use hanabi_engine::{CompletionTiming, EndCondition};
 use hanabi_protocol::PlayerIndex;
 use hanabi_protocol::{
-    Chat, ChatTyping, ClientMessage, IdleWarning, Notice, TableRef, TableStarted, UserId,
+    Chat, ChatTyping, ClientMessage, IdleWarning, Notice, TableJoined, TableRef, TableStage, UserId,
 };
 use serde::Serialize;
 use std::{
@@ -163,6 +163,8 @@ impl TableActor {
         } else {
             0
         };
+        let progress =
+            hanabi_protocol::Progress::new(progress.clamp(0, max_progress)).unwrap_or_default();
         let spectators = self.spectators();
         let replay_game = match &self.table.phase {
             Phase::Replay { snapshot, .. } => snapshot.game_id,
@@ -190,14 +192,13 @@ impl TableActor {
                     .iter()
                     .map(|p| p.name.as_str().into())
                     .collect(),
-                progress: hanabi_protocol::Progress::new(progress.clamp(0, max_progress))
-                    .unwrap_or_default(),
                 phase: match self.table.phase {
                     Phase::Pregame { .. } => hanabi_protocol::TablePhase::Pregame {},
                     Phase::Replay { .. } => hanabi_protocol::TablePhase::SharedReplay {
                         game_id: replay_game,
+                        progress,
                     },
-                    Phase::Live { .. } => hanabi_protocol::TablePhase::Playing {},
+                    Phase::Live { .. } => hanabi_protocol::TablePhase::Playing { progress },
                 },
                 spectators,
             }),
@@ -673,8 +674,9 @@ impl TableActor {
                 s.clone(),
                 frame(
                     hanabi_protocol::server::TABLE_JOINED,
-                    TableRef {
+                    TableJoined {
                         table_id: self.table.id,
+                        stage: TableStage::Pregame,
                     },
                 ),
             ));
@@ -692,10 +694,10 @@ impl TableActor {
             e.messages.push((
                 s.clone(),
                 frame(
-                    hanabi_protocol::server::TABLE_STARTED,
-                    TableStarted {
+                    hanabi_protocol::server::TABLE_JOINED,
+                    TableJoined {
                         table_id: self.table.id,
-                        stage: hanabi_protocol::GameStage::Replay,
+                        stage: TableStage::Replay,
                     },
                 ),
             ));
@@ -983,16 +985,12 @@ impl TableActor {
                 .collect(),
         }
     }
-    pub(super) fn card_identities(&self, s: &Snapshot) -> hanabi_protocol::CardIdentities {
-        hanabi_protocol::CardIdentities {
-            table_id: self.table.id,
-            deck: s
-                .game
-                .identities()
-                .iter()
-                .map(|card| super::wire::card_identity(card.suit_index, card.rank))
-                .collect(),
-        }
+    pub(super) fn card_identities(s: &Snapshot) -> Vec<hanabi_protocol::CardIdentity> {
+        s.game
+            .identities()
+            .iter()
+            .map(|card| super::wire::card_identity(card.suit_index, card.rank))
+            .collect()
     }
     pub(super) fn clock(&self) -> CommandResult<hanabi_protocol::Clock> {
         let s = self
@@ -1047,7 +1045,7 @@ impl TableActor {
                     .start_password_check(&session, blocks, r)
                     .map(|work| Ok(work.boxed())),
                 ClientMessage::TableRestart(r) => self
-                    .start_restart(&session, r.hide_pregame)
+                    .start_restart(&session, r.start_now)
                     .map(|work| work.map(FutureExt::boxed)),
                 _ => None,
             };

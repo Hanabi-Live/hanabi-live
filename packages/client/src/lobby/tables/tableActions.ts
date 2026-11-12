@@ -21,7 +21,7 @@ export function tableSpectate(
     tableId: table.tableId,
     shadowingPlayerIndex,
   });
-  // (We will get a "tableStarted" response back from the server.)
+  // (We will get a "tableJoined" response back from the server.)
 }
 
 export function tableJoin(table: Table): void {
@@ -50,6 +50,6 @@ export function tableReattend(table: Table): void {
   globals.conn!.send("tableReattend", {
     tableId: table.tableId,
   });
-  // (We will get either a "tableJoined" or a "tableStarted" response back from the server,
-  // depending on if the game has started or not.)
+  // (We will get a "tableJoined" response back from the server, whose stage says whether the game
+  // has started.)
 }

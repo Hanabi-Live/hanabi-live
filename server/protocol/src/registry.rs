@@ -81,7 +81,6 @@ macro_rules! server_contracts {
             IDLE_WARNING "idleWarning" => IdleWarning;
             IDLE_RESET "idleReset" => TableRef;
             VOTES "votes" => Votes;
-            CARD_IDENTITIES "cardIdentities" => CardIdentities;
             GAME_FINISHED "gameFinished" => GameFinished;
             REPLAY_ACTION "replayAction" => ReplayAction;
             TABLE_OWNER "tableOwner" => TableOwner;
@@ -100,10 +99,9 @@ macro_rules! server_contracts {
             CHAT_LIST "chatList" => ChatList;
             CHAT_PM_HISTORY "chatPmHistory" => ChatPmHistory;
             CHAT_TYPING "chatTyping" => ChatTyping;
-            TABLE_JOINED "tableJoined" => TableRef;
+            TABLE_JOINED "tableJoined" => TableJoined;
             TABLE_LEFT "tableLeft" => TableRef;
             TABLE_REMOVED "tableRemoved" => TableRef;
-            TABLE_STARTED "tableStarted" => TableStarted;
             USER "user" => User;
             USER_LIST "userList" => UserList;
             USER_REMOVED "userRemoved" => UserRemoved;

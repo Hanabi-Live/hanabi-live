@@ -158,6 +158,10 @@ impl TableActor {
         if replay {
             self.spectator_messages(&mut e);
             let count = seed_games;
+            let finished_at = hanabi_protocol::Timestamp::from(
+                s.finished.context("A finished game has no finish time")?,
+            );
+            let deck = Self::card_identities(s);
             for a in self.audience() {
                 e.statuses.push((
                     a.session.clone(),
@@ -176,15 +180,6 @@ impl TableActor {
                         frame(hanabi_protocol::server::GAME_HISTORY_ADDED, history),
                     ));
                 }
-                // The client rebuilds the game when it finishes, which needs the identities of the
-                // cards that were hidden from it.
-                e.messages.push((
-                    a.session.clone(),
-                    frame(
-                        hanabi_protocol::server::CARD_IDENTITIES,
-                        self.card_identities(s),
-                    ),
-                ));
                 e.messages.push((
                     a.session.clone(),
                     frame(
@@ -192,6 +187,8 @@ impl TableActor {
                         hanabi_protocol::GameFinished {
                             table_id: self.table.id,
                             game_id: s.game_id,
+                            finished_at: finished_at.clone(),
+                            deck: deck.clone(),
                             shared_replay: self
                                 .shared_replay_state(s, &a.session)
                                 .context("A finished game is not a shared replay")?,
@@ -581,7 +578,7 @@ impl TableActor {
             let state = hanabi_protocol::GameState {
                 table_id: self.table.id,
                 events: game_events(&list),
-                deck: replay.then(|| self.card_identities(s).deck),
+                deck: replay.then(|| Self::card_identities(s)),
                 notes,
                 votes: player_seat.map(|seat| seat_votes(s, seat)).transpose()?,
                 connections: (!replay).then(|| self.connections().connections),

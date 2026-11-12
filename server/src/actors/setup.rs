@@ -195,7 +195,7 @@ pub(super) fn options_suggestion(
         table_id: Some(id),
         ..Chat::new(
             "<span class=\"cp\"><button class=\"new-options\">click to apply the suggestion</button></span>",
-            ChatKind::Suggestion {
+            ChatKind::SettingsSuggestion {
                 recipient: owner.into(),
                 settings: table_settings(name, max_players, options, extra),
             },
