@@ -64,12 +64,6 @@ const DECK_KEY = "deck";
  */
 export const MAX_ANIMATED_SEGMENT_CHANGE = 1;
 
-/**
- * How long a move takes here, as a fraction of the classic screen's time for the same move. The
- * same times looked slower here than on the classic screen, so the moves are 40% shorter.
- */
-const CARD_MOVE_TIME_FRACTION = 0.6;
-
 function cardElements(root: HTMLElement): readonly HTMLElement[] {
   return [...root.querySelectorAll<HTMLElement>("[data-card-order]")];
 }
@@ -185,7 +179,7 @@ export function animateCardMoves(
       ],
       {
         id: CARD_MOVE_ANIMATION_ID,
-        duration: seconds * CARD_MOVE_TIME_FRACTION * SECOND_IN_MILLISECONDS,
+        duration: seconds * SECOND_IN_MILLISECONDS,
         easing: "ease-out",
       },
     );
@@ -238,10 +232,7 @@ function animateReturnToDeck(was: CardPosition, deck: DOMRect) {
     ],
     {
       id: CARD_MOVE_ANIMATION_ID,
-      duration:
-        CARD_ANIMATION_LENGTH_SECONDS
-        * CARD_MOVE_TIME_FRACTION
-        * SECOND_IN_MILLISECONDS,
+      duration: CARD_ANIMATION_LENGTH_SECONDS * SECOND_IN_MILLISECONDS,
       easing: "ease-out",
       fill: "forwards",
     },
@@ -299,9 +290,7 @@ function animateSpecialMove(
         from,
         to,
         stackSlot,
-        CARD_ANIMATION_LENGTH_SECONDS
-          * CARD_MOVE_TIME_FRACTION
-          * SECOND_IN_MILLISECONDS,
+        CARD_ANIMATION_LENGTH_SECONDS * SECOND_IN_MILLISECONDS,
       );
     }
     return true;
