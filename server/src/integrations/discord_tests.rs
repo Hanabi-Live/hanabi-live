@@ -17,7 +17,10 @@ use std::{
 };
 use tokio::sync::Mutex;
 use twilight_gateway::Event;
-use twilight_model::{channel::Message, gateway::payload::incoming::MessageCreate};
+use twilight_model::{
+    channel::{ChannelType, Message},
+    gateway::payload::incoming::MessageCreate,
+};
 
 /// A Discord HTTP API that records each request and answers with synthetic data.
 #[derive(Default)]
@@ -54,7 +57,10 @@ fn posted(id: &str, content: &str) -> Event {
         content,
     ))
     .unwrap();
-    Event::MessageCreate(Box::new(MessageCreate(message)))
+    Event::MessageCreate(Box::new(MessageCreate {
+        channel_type: Some(ChannelType::GuildText),
+        message,
+    }))
 }
 
 async fn answer(
