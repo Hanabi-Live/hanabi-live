@@ -134,7 +134,7 @@ function StepContent({
           <h3>The Rules</h3>
           <p>Do you already know how to play?</p>
           <Pair
-            left={button("2-yes", "fa-check", "3", "Yup.", true)}
+            left={button("2-yes", "fa-check", "2-1", "Yup.", true)}
             right={button("2-no", "fa-times", "2-2", "Nope.", true)}
           />
         </>

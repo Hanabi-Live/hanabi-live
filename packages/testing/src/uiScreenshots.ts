@@ -547,7 +547,7 @@ function getStates({
       loggedIn: false,
       prepare: async (page) => {
         await signInNewAccount(page, "TutorialTeam");
-        for (const button of ["yes", "2-yes", "3-ok", "4-no"]) {
+        for (const button of ["yes", "2-yes", "2-1-ok", "3-ok", "4-no"]) {
           await page.click(`#tutorial-${button}`);
           await page.waitForTimeout(SETTLE_MILLISECONDS * 2);
         }
