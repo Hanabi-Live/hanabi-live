@@ -60,6 +60,9 @@ of the repository.
   beside the cards instead of above them, so that the hands take less space.
 - In the new game screen, clicking a card no longer shows "Play" and "Discard"
   buttons. Drag the card to play or discard it.
+- In the new game screen, while you follow the leader of a shared replay, the
+  turn number rolls up or down and the timeline's knob slides, to show which way
+  they moved.
 
 ## November 11th, 2026
 

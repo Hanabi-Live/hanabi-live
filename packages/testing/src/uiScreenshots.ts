@@ -454,6 +454,12 @@ async function dragCard(page: Page, card: Locator, zone: "play" | "discard") {
   await page.mouse.up();
 }
 
+/** How long the video of a shared replay leader's moves waits after each one, to see it. */
+const LEADER_MOVE_WAIT_MILLISECONDS = 1200;
+
+/** How long the video waits after the leader's last move, until the screen is still. */
+const LEADER_SETTLE_MILLISECONDS = 1500;
+
 /** Plays a card from the account's hand, if it has one of the kind. */
 async function playAccountCard(page: Page, order: CardOrder | undefined) {
   if (order === undefined) {
@@ -476,6 +482,8 @@ function getStates({
   findAccountCard,
   playBobCard,
   showPrismMorph,
+  leaderGoTo,
+  lastClueSegment,
 }: Pick<
   Seed,
   | "replayId"
@@ -486,6 +494,8 @@ function getStates({
   | "findAccountCard"
   | "playBobCard"
   | "showPrismMorph"
+  | "leaderGoTo"
+  | "lastClueSegment"
 >): readonly State[] {
   // Ends the shared replay of the "prism-unknown-rank" state.
   let closePrismReplay: (() => void) | undefined;
@@ -1324,6 +1334,33 @@ function getStates({
         await page.getByRole("button", { name: "Ready" }).waitFor();
       },
     },
+    // Bob leads the shared replay while the account follows. Its video shows how each of his moves
+    // looks: a step forward to his last clue and back again (where no card moves), a jump to the
+    // first turn, a step on from there, and a jump to the last turn.
+    {
+      name: "new-ui-shared-replay-leader-moves",
+      path: "/",
+      loggedIn: true,
+      prepare: async (page) => {
+        await page.locator('#game-new-ui [aria-label="Hands"]').waitFor();
+        leaderGoTo((await lastClueSegment()) - 1);
+        await page.waitForTimeout(LEADER_SETTLE_MILLISECONDS);
+      },
+      record: async (page) => {
+        const clue = await lastClueSegment();
+        // The timeline's turns count from 1, and its segments from 0.
+        const lastTurn = await page
+          .getByRole("slider", { name: "Turn" })
+          .getAttribute("aria-valuemax");
+        const lastSegment = Number(lastTurn) - 1;
+        for (const segment of [clue, clue - 1, 0, 1]) {
+          leaderGoTo(segment);
+          await page.waitForTimeout(LEADER_MOVE_WAIT_MILLISECONDS);
+        }
+        leaderGoTo(lastSegment);
+        await page.waitForTimeout(LEADER_SETTLE_MILLISECONDS);
+      },
+    },
     {
       name: "new-ui-shared-replay-leader",
       path: "/",
@@ -1573,6 +1610,10 @@ interface Seed {
    * disconnects the account.
    */
   readonly showPrismMorph: () => Promise<() => void>;
+  /** Bob, as the leader of the shared replay at his table, shows a segment to everyone there. */
+  readonly leaderGoTo: (segment: number) => void;
+  /** The segment of the shared replay at Bob's table that shows the game's last clue. */
+  readonly lastClueSegment: () => Promise<number>;
   readonly cookie: string;
   readonly peers: readonly Peer[];
 }
@@ -1683,6 +1724,35 @@ async function seed(address: string): Promise<Seed> {
 
   function passLeader() {
     bob.send("tableSetOwner", { tableId, userId: cookieUserId(cookie) });
+  }
+
+  function leaderGoTo(segment: number) {
+    bob.send("replayAction", {
+      tableId,
+      action: {
+        type: "turn",
+        turn: segment,
+      },
+    });
+  }
+
+  /** Each move is a segment, so the move's position among the moves is the segment after it. */
+  async function lastClueSegment() {
+    const events = await loadEvents();
+    const moves = events.filter(
+      (event) =>
+        event.type === "play"
+        || event.type === "discard"
+        || event.type === "misplay"
+        || event.type === "clue",
+    );
+    const index = moves.findLastIndex((event) => event.type === "clue");
+    if (index < 1) {
+      throw new Error(
+        "The game at Bob's table has no clue after its first move.",
+      );
+    }
+    return index + 1;
   }
 
   /** The events of the game, as a peer sees them. A spectator sees every card. */
@@ -1922,6 +1992,8 @@ async function seed(address: string): Promise<Seed> {
     findAccountCard,
     playBobCard,
     showPrismMorph,
+    leaderGoTo,
+    lastClueSegment,
     cookie,
     peers: [bob, ...spectators, bot],
   };
