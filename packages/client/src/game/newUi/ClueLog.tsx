@@ -95,9 +95,11 @@ export function ClueLog({
   }, [entries.length, filtered, hoveredCard]);
 
   return (
+    // The log is a record to consult, not an object on the table, so it sits sunken into the felt.
+    // The discard pile above it and the clue tokens and strikes below it stand out more.
     <section
       aria-label="Clue log"
-      className="tw:flex tw:min-h-0 tw:flex-1 tw:flex-col tw:overflow-hidden tw:rounded-[18px] tw:bg-game-zone tw:narrow-980:h-[320px] tw:narrow-980:flex-none"
+      className="tw:flex tw:min-h-0 tw:flex-1 tw:flex-col tw:overflow-hidden tw:rounded-[18px] tw:bg-[rgb(0_0_0/18%)] tw:shadow-[inset_0_1px_4px_rgb(0_0_0/35%)] tw:narrow-980:h-[320px] tw:narrow-980:flex-none"
     >
       <h2 className="tw:m-0 tw:px-4.5 tw:pt-4 tw:pb-1 tw:text-[15px] tw:font-medium tw:text-game-muted">
         {filtered ? "Clues about this card" : "Clue log"}
