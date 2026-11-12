@@ -54,9 +54,14 @@ describe("replay URL loading", () => {
   });
 
   test.each([
-    ["shared-replay-json", "p4v0s3", "p4v0s3", "shared"],
-    ["replay-json", "p4v0e3", "p4v0e3", "solo"],
-    ["replay-json", "", undefined, "solo"],
+    [
+      "shared-replay-json",
+      "p4v0s3",
+      "p4v0s3",
+      { type: "shared", joinExisting: false, spoilerFree: false },
+    ],
+    ["replay-json", "p4v0e3", "p4v0e3", { type: "solo" }],
+    ["replay-json", "", undefined, { type: "solo" }],
   ])("%s preserves embedded seed %s", (route, suffix, seed, visibility) => {
     const setItem = vi.fn();
     const send = vi.spyOn(globals.conn!, "send");
@@ -78,7 +83,7 @@ describe("replay URL loading", () => {
     );
     expect(send).toHaveBeenCalledWith("replayCreate", {
       source: { type: "imported", game: { ...gameJson, seed } },
-      visibility: { type: visibility },
+      visibility,
     });
     expect(setItem).toHaveBeenCalledWith(
       "watchReplayJson",

@@ -62,7 +62,7 @@
     "command": "lobbyStatus",
     "input": {
       "type": "ready",
-      "totalGames": 0
+      "numGames": 0
     },
     "valid": true
   },
@@ -72,7 +72,7 @@
     "command": "lobbyStatus",
     "input": {
       "type": "ready",
-      "totalGames": null
+      "numGames": null
     },
     "valid": false
   },
@@ -86,13 +86,13 @@
     "valid": true
   },
   {
-    "name": "chat rejects empty messages",
+    "name": "chat leaves blank messages for the server to answer",
     "direction": "client",
     "command": "chat",
     "input": {
       "text": ""
     },
-    "valid": false
+    "valid": true
   },
   {
     "name": "chat rejects unknown fields",
@@ -572,12 +572,14 @@
     "valid": false
   },
   {
-    "name": "table creation fills every default but the name",
+    "name": "table creation fills every default option",
     "direction": "client",
     "command": "tableCreate",
     "input": {
       "settings": {
-        "name": "Alice's table"
+        "name": "Alice's table",
+        "maxPlayers": 5,
+        "options": {}
       }
     },
     "normalized": {
@@ -599,12 +601,25 @@
     "valid": true
   },
   {
+    "name": "table creation needs a player limit and options",
+    "direction": "client",
+    "command": "tableCreate",
+    "input": {
+      "settings": {
+        "name": "Alice's table"
+      }
+    },
+    "valid": false
+  },
+  {
     "name": "table creation rejects a blank password",
     "direction": "client",
     "command": "tableCreate",
     "input": {
       "settings": {
-        "name": "x"
+        "name": "x",
+        "maxPlayers": 5,
+        "options": {}
       },
       "password": ""
     },
@@ -1358,7 +1373,10 @@
       "tableId": 4,
       "action": {
         "type": "arrow",
-        "target": { "type": "board", "element": "minEfficiency" }
+        "target": {
+          "type": "board",
+          "element": "minEfficiency"
+        }
       }
     },
     "valid": true
@@ -1371,7 +1389,10 @@
       "tableId": 4,
       "action": {
         "type": "arrow",
-        "target": { "type": "card", "order": 12 }
+        "target": {
+          "type": "card",
+          "order": 12
+        }
       }
     },
     "valid": true
@@ -1396,7 +1417,10 @@
       "tableId": 4,
       "action": {
         "type": "arrow",
-        "target": { "type": "board", "element": "nothing" }
+        "target": {
+          "type": "board",
+          "element": "nothing"
+        }
       }
     },
     "valid": false
@@ -1409,7 +1433,10 @@
       "tableId": 4,
       "action": {
         "type": "arrow",
-        "target": { "type": "card", "order": 66 }
+        "target": {
+          "type": "card",
+          "order": 66
+        }
       }
     },
     "valid": false
@@ -1449,13 +1476,26 @@
           "type": "draw",
           "playerIndex": 0,
           "order": 0,
-          "identity": { "suitIndex": 0, "rank": 1 }
+          "identity": {
+            "suitIndex": 0,
+            "rank": 1
+          }
         }
       ],
-      "deck": [{ "suitIndex": 0, "rank": 1 }],
+      "deck": [
+        {
+          "suitIndex": 0,
+          "rank": 1
+        }
+      ],
       "notes": [],
       "connected": [true, false],
-      "spectators": [{ "userId": 9, "username": "Carol" }]
+      "spectators": [
+        {
+          "userId": 9,
+          "username": "Carol"
+        }
+      ]
     },
     "valid": true
   },
@@ -1496,7 +1536,7 @@
     "command": "chatList",
     "input": {
       "messages": [],
-      "unread": -1
+      "numUnread": -1
     },
     "valid": false
   }

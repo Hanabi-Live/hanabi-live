@@ -3,6 +3,7 @@
 // changes which hand is first.
 
 import type { PlayerIndex } from "@hanabi-live/game";
+import { replayVisibility } from "../../lobby/replayVisibility.ts";
 import * as modals from "../../modals.ts";
 import { globals } from "./UiGlobals.ts";
 import { backToLobby } from "./backToLobby.ts";
@@ -76,9 +77,7 @@ export function viewAs(playerIndex: PlayerIndex | undefined): void {
       backToLobby();
       globals.lobby.conn!.send("replayCreate", {
         source: { type: "saved", gameId },
-        visibility: {
-          type: globals.state.replay.shared === undefined ? "solo" : "shared",
-        },
+        visibility: replayVisibility(globals.state.replay.shared !== undefined),
         shadowingPlayerIndex: playerIndex,
       });
     }, 0);

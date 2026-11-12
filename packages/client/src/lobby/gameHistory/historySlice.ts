@@ -73,8 +73,7 @@ const historySlice = createSlice({
     },
     lobbyStatusReceived(state, action: PayloadAction<LobbyStatus>) {
       const status = action.payload;
-      state.totalGames =
-        status.type === "ready" ? status.totalGames : undefined;
+      state.totalGames = status.type === "ready" ? status.numGames : undefined;
       state.totalGamesFailed = status.type === "error";
     },
     otherScoresRequested(state, action: PayloadAction<string>) {

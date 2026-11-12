@@ -321,10 +321,22 @@ pub enum TableCommand {
     },
     Drain(oneshot::Sender<Result<()>>),
 }
-/// Decodes a command the way the WebSocket parser does, for tests that build commands by name.
+/// Decodes a command the way the WebSocket parser does, for tests that build commands by name. A
+/// test names only the table settings that it checks: the others take their defaults.
 #[cfg(test)]
 pub(crate) fn client_message(name: &str, data: &Value) -> Result<ClientMessage> {
-    ClientMessage::decode(name, data)?.with_context(|| format!("Unregistered command {name}"))
+    let mut data = data.clone();
+    if matches!(name, "tableCreate" | "tableUpdate")
+        && let Some(settings) = data.get_mut("settings").and_then(Value::as_object_mut)
+    {
+        let defaults = serde_json::to_value(hanabi_protocol::TableSettings::named(""))?;
+        for field in ["maxPlayers", "options"] {
+            settings
+                .entry(field)
+                .or_insert_with(|| defaults[field].clone());
+        }
+    }
+    ClientMessage::decode(name, &data)?.with_context(|| format!("Unregistered command {name}"))
 }
 
 #[cfg(test)]

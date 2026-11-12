@@ -1,5 +1,6 @@
 import type { ServerCommandData } from "@hanabi-live/data";
 import {
+  DEFAULT_MAX_PLAYERS,
   DEFAULT_TABLE_NAME_SUFFIX,
   defaultSettings,
   tableIdSchema,
@@ -15,6 +16,7 @@ import { parseGameJson } from "./gameJson.ts";
 import * as history from "./history.ts";
 import { getOtherScoresSeed } from "./historyHash.ts";
 import { expand } from "./hypoCompress.ts";
+import { replayVisibility } from "./replayVisibility.ts";
 
 export function parseAndGoto(data: ServerCommandData["welcome"]): void {
   // A link to a specific game or replay takes precedence over returning to the table that we were
@@ -102,6 +104,7 @@ function gotoPath(data: ServerCommandData["welcome"]): boolean {
     globals.conn!.send("tableCreate", {
       settings: {
         name,
+        maxPlayers: DEFAULT_MAX_PLAYERS,
         options: {
           variantName,
           timeControl,
@@ -202,10 +205,9 @@ function gotoPath(data: ServerCommandData["welcome"]): boolean {
         globals.conn!.send("replayCreate", {
           source: { type: "saved", gameId },
           // A link to a shared replay should join the one that people are already watching.
-          visibility:
-            visibility === "shared"
-              ? { type: "shared", joinExisting: true }
-              : { type: "solo" },
+          visibility: replayVisibility(visibility === "shared", {
+            joinExisting: true,
+          }),
         });
         return true;
       }
@@ -244,7 +246,7 @@ function gotoPath(data: ServerCommandData["welcome"]): boolean {
 
       globals.conn!.send("replayCreate", {
         source: { type: "imported", game: gameJson },
-        visibility: { type: visibility },
+        visibility: replayVisibility(visibility === "shared"),
       });
       return true;
     }

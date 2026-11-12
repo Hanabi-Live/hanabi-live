@@ -97,7 +97,7 @@ describe("WatchReplay", () => {
 
     expect(send).toHaveBeenCalledWith("replayCreate", {
       source: { type: "saved", gameId: 42 },
-      visibility: { type: "shared", spoilerFree: true },
+      visibility: { type: "shared", joinExisting: false, spoilerFree: true },
     });
     expect(hide).toHaveBeenCalled();
     expect(localStorage.getItem("watchReplayId")).toBe("42");

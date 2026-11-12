@@ -401,7 +401,7 @@ impl TableActor {
                         .iter()
                         .map(TableChat::wire_message)
                         .collect::<Result<_>>()?,
-                    unread: hanabi_protocol::Count(i64::try_from(
+                    num_unread: hanabi_protocol::Count(i64::try_from(
                         self.table.chat.len().saturating_sub(read),
                     )?),
                 },

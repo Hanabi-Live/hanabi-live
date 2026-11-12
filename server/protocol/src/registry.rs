@@ -91,7 +91,7 @@ macro_rules! server_contracts {
             NOTE_LIST "noteList" => NoteList;
             GAME_EVENT "gameEvent" => GameEventMessage;
             GAME_STATE "gameState" => GameState;
-            INIT "init" => Init;
+            GAME_INIT "gameInit" => GameInit;
             TABLE_BOOTED "tableBooted" => TableRef;
             SYNCED "synced" => Empty;
             LOBBY_STATUS "lobbyStatus" => LobbyStatus;
@@ -343,8 +343,8 @@ macro_rules! server_messages {
 pub mod server {
     use super::{
         Blocked, CardIdentities, Chat, ChatDeleted, ChatList, ChatPmHistory, ChatTyping, Clock,
-        Connected, Empty, Friends, GameEventMessage, GameFinished, GameHistoryEntry, GamePage,
-        GameState, IdleWarning, Init, LobbySoundMessage, LobbyStatus, Note, NoteList, Notice,
+        Connected, Empty, Friends, GameEventMessage, GameFinished, GameHistoryEntry, GameInit,
+        GamePage, GameState, IdleWarning, LobbySoundMessage, LobbyStatus, Note, NoteList, Notice,
         Pause, Pregame, ReplayAction, RestartDeclined, SeedGames, ServerMessage, ServerRestart,
         Spectators, Suggestion, Table, TableList, TableOwner, TableRef, TableStarted, User,
         UserList, UserRemoved, VoteChanged, Welcome,

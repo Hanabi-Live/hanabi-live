@@ -6,6 +6,7 @@ use sqlx::PgPool;
 /// A user's preferences, using the client-facing names. The database stores only the values a
 /// user changed; everything else comes from `Default`.
 pub use hanabi_protocol::Settings;
+use hanabi_protocol::{OptionalSetting, SettingsChange};
 
 /// Every setting with its default value, keyed by its client-facing name.
 pub(super) fn defaults() -> serde_json::Map<String, Value> {
@@ -52,50 +53,39 @@ fn from_stored(stored: Value) -> Settings {
     serde_json::from_value(Value::Object(valid)).unwrap_or_default()
 }
 
-/// Stores one setting, after checking it against the wire contract. A setting that is an object is
-/// stored whole, with its missing fields filled in.
-pub async fn set_setting(pool: &PgPool, id: UserId, name: &str, value: &Value) -> Result<()> {
-    validate_setting(name, value).map_err(anyhow::Error::from)?;
-    let full = serde_json::to_value(serde_json::from_value::<Settings>(
-        serde_json::json!({ name: value }),
-    )?)?;
-    let value = full.get(name).unwrap_or(value);
-    // A value equal to the default is removed, so changing a default later reaches everyone who
-    // never chose it.
-    let changed = (defaults().get(name) != Some(value)).then_some(value);
+/// Stores a change to a user's settings in one statement. A setting changed to its default, and an
+/// optional setting that is cleared, is removed, so that changing a default later reaches everyone
+/// who never chose it.
+pub async fn set_settings(
+    pool: &PgPool,
+    id: UserId,
+    change: &SettingsChange,
+    cleared: &[OptionalSetting],
+) -> Result<()> {
+    let defaults = defaults();
+    let Value::Object(changes) = serde_json::to_value(change)? else {
+        unreachable!("a settings change serializes to an object")
+    };
+    let mut removed: Vec<String> = cleared
+        .iter()
+        .map(|setting| setting.name().to_owned())
+        .collect();
+    let mut stored = serde_json::Map::new();
+    for (name, value) in changes {
+        if defaults.get(&name) == Some(&value) {
+            removed.push(name);
+        } else {
+            stored.insert(name, value);
+        }
+    }
     let updated = sqlx::query!(
-        "UPDATE users SET settings = CASE WHEN $3::jsonb IS NULL THEN settings - $2::text
-           ELSE settings || jsonb_build_object($2::text, $3::jsonb) END
-         WHERE id=$1",
+        "UPDATE users SET settings = (settings || $2::jsonb) - $3::text[] WHERE id=$1",
         id.0,
-        name,
-        changed
+        Value::Object(stored),
+        &removed
     )
     .execute(pool)
     .await?;
     ensure!(updated.rows_affected() == 1, "The user does not exist.");
-    Ok(())
-}
-
-/// Removes a setting that a user can leave unset.
-pub async fn clear_setting(pool: &PgPool, id: UserId, name: &str) -> Result<()> {
-    let updated = sqlx::query!(
-        "UPDATE users SET settings = settings - $2::text WHERE id=$1",
-        id.0,
-        name
-    )
-    .execute(pool)
-    .await?;
-    ensure!(updated.rows_affected() == 1, "The user does not exist.");
-    Ok(())
-}
-
-/// Checks a setting that a client sent. The wire contract gives each setting its type and limits.
-pub fn validate_setting(name: &str, value: &Value) -> crate::errors::CommandResult<()> {
-    ensure_or_reject!(
-        hanabi_protocol::validate::<Settings>(&serde_json::json!({ name: value })).is_ok(),
-        "The setting of \"{}\" is not an allowed value.",
-        crate::accounts::escape_html(name)
-    );
     Ok(())
 }

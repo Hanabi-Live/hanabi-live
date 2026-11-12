@@ -1,4 +1,4 @@
-import { MAX_PRIVATE_HISTORY_MESSAGES, VERSION } from "@hanabi-live/data";
+import { MAX_PAGE_SIZE, VERSION } from "@hanabi-live/data";
 import { VARIANT_NAMES } from "@hanabi-live/game";
 import { parseIntSafe } from "complete-common";
 import { globals } from "./Globals.ts";
@@ -230,7 +230,7 @@ export function parsePmHistoryCommandArgs(
     amount = parsedAmount;
   }
 
-  if (amount < 1 || amount > MAX_PRIVATE_HISTORY_MESSAGES) {
+  if (amount < 1 || amount > MAX_PAGE_SIZE) {
     return undefined;
   }
 
@@ -246,7 +246,7 @@ function pmHistory(room: string, args: readonly string[]) {
     sendSelfPmFromServer(
       "The format of the /pmhistory command is: "
         + "<code>/pmhistory [username] [amount]</code> or "
-        + `<code>/pmhistory [amount]</code>, where amount is between 1 and ${MAX_PRIVATE_HISTORY_MESSAGES}.`,
+        + `<code>/pmhistory [amount]</code>, where amount is between 1 and ${MAX_PAGE_SIZE}.`,
       room,
       SelfChatMessageType.Info,
     );

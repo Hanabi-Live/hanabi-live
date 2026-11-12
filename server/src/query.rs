@@ -52,6 +52,15 @@ impl Query {
         }
     }
 
+    /// The parameters as a JSON object of text values, to decode as a wire contract.
+    pub fn to_json(&self) -> serde_json::Value {
+        self.0
+            .iter()
+            .map(|(name, value)| (name.clone(), serde_json::Value::from(value.as_str())))
+            .collect::<serde_json::Map<_, _>>()
+            .into()
+    }
+
     /// A parameter that must not be empty when it is present.
     pub fn nonempty(&self, name: &str) -> Result<Option<&str>, String> {
         match self.get(name) {

@@ -17,6 +17,7 @@
 /* eslint-disable no-await-in-loop -- The browser visits the states one at a time. */
 
 import {
+  DEFAULT_MAX_PLAYERS,
   MAX_CHAT_LENGTH,
   SERVER_COMMAND_SCHEMAS,
   VERSION,
@@ -1123,7 +1124,13 @@ async function connect(
 
 /** Plays one turn of a game between two players and ends it, so that it is saved. */
 async function playGame(alice: Peer, bob: Peer): Promise<number> {
-  alice.send("tableCreate", { settings: { name: "Seeded game" } });
+  alice.send("tableCreate", {
+    settings: {
+      name: "Seeded game",
+      maxPlayers: DEFAULT_MAX_PLAYERS,
+      options: {},
+    },
+  });
   const { tableId } = await alice.receive(
     "tableJoined",
     SERVER_COMMAND_SCHEMAS.tableJoined,
@@ -1136,7 +1143,10 @@ async function playGame(alice: Peer, bob: Peer): Promise<number> {
     peers.map(async (peer) => {
       await peer.receive("tableStarted", SERVER_COMMAND_SCHEMAS.tableStarted);
       peer.send("gameInitLoad", { tableId });
-      const init = await peer.receive("init", SERVER_COMMAND_SCHEMAS.init);
+      const init = await peer.receive(
+        "gameInit",
+        SERVER_COMMAND_SCHEMAS.gameInit,
+      );
       peer.send("gameStateLoad", { tableId });
       const history = await peer.receive(
         "gameState",
@@ -1229,6 +1239,7 @@ async function seed(address: string): Promise<Seed> {
   bob.send("tableCreate", {
     settings: {
       name: "Bob's table",
+      maxPlayers: DEFAULT_MAX_PLAYERS,
       // A long variant name with six suits, so that the screens show how they fit both.
       options: {
         speedrun: true,
@@ -1259,7 +1270,7 @@ async function seed(address: string): Promise<Seed> {
     bob.send("tableStart", { tableId });
     await bob.receive("tableStarted", SERVER_COMMAND_SCHEMAS.tableStarted);
     bob.send("gameInitLoad", { tableId });
-    const init = await bob.receive("init", SERVER_COMMAND_SCHEMAS.init);
+    const init = await bob.receive("gameInit", SERVER_COMMAND_SCHEMAS.gameInit);
     bobIndex = ourPlayerIndex(init);
     bob.send("gameStateLoad", { tableId });
     const { events } = await bob.receive(
@@ -1485,14 +1496,14 @@ async function seed(address: string): Promise<Seed> {
           options: { variantName: PRISM_VARIANT_NAME },
         },
       },
-      visibility: { type: "shared" },
+      visibility: { type: "shared", joinExisting: false, spoilerFree: false },
     });
     const { tableId: replayTableId } = await leader.receive(
       "tableStarted",
       SERVER_COMMAND_SCHEMAS.tableStarted,
     );
     leader.send("gameInitLoad", { tableId: replayTableId });
-    await leader.receive("init", SERVER_COMMAND_SCHEMAS.init);
+    await leader.receive("gameInit", SERVER_COMMAND_SCHEMAS.gameInit);
     leader.send("loaded", { tableId: replayTableId });
     leader.send("replayAction", {
       tableId: replayTableId,

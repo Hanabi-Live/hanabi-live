@@ -24,7 +24,7 @@ use axum::{
 };
 use chrono::{DateTime, Utc};
 use futures_util::{SinkExt, StreamExt};
-use hanabi_protocol::{ClientKind, UserId};
+use hanabi_protocol::{ClientKind, UserId, WebSocketQuery};
 use std::{
     future::Future,
     net::SocketAddr,
@@ -148,7 +148,7 @@ pub(super) async fn lobby_initial(app: &App, id: UserId) -> Result<(Vec<Frame>, 
         hanabi_protocol::server::CHAT_LIST,
         hanabi_protocol::ChatList {
             messages: chat,
-            unread: hanabi_protocol::Count(0),
+            num_unread: hanabi_protocol::Count(0),
         },
     ));
     initial.push(frame(hanabi_protocol::server::CHAT, hanabi_protocol::Chat {
@@ -222,7 +222,7 @@ pub(super) fn load_lobby(app: Arc<App>, session: Arc<Session>) {
                 }
                 session.emit(&frame(
                     hanabi_protocol::server::LOBBY_STATUS,
-                    hanabi_protocol::LobbyStatus::Ready { total_games: hanabi_protocol::Count(total) },
+                    hanabi_protocol::LobbyStatus::Ready { num_games: hanabi_protocol::Count(total) },
                 ));
             }
             Err(error) => {
@@ -252,23 +252,24 @@ pub(super) async fn websocket(
             if app.lifecycle.healthy() { "The server is not accepting connections while it starts or drains for maintenance." } else { "Live-state recovery or ownership is unavailable. Wait for recovery before reconnecting." },
             StatusCode::SERVICE_UNAVAILABLE).response(true);
     }
-    let query = match accounts::account_query(uri.query(), &["account", "version", "client"]) {
-        Ok(query) => query,
-        Err(message) => {
-            return HttpError::refused(StatusCode::BAD_REQUEST, message).json();
-        }
-    };
-    let version = query.get("version").unwrap_or_default().to_owned();
-    let Some(client) = query
-        .get("client")
-        .map_or(Some(ClientKind::Web), ClientKind::from_name)
-    else {
-        return HttpError::refused(
-            StatusCode::BAD_REQUEST,
-            "The client must be \"web\", \"bot\", or \"app\".",
-        )
-        .json();
-    };
+    let query =
+        match accounts::account_query(uri.query(), &WebSocketQuery::PARAMETERS).and_then(|query| {
+            hanabi_protocol::decode::<WebSocketQuery>(&query.to_json()).map_err(|_| {
+                let clients = ClientKind::ALL
+                    .iter()
+                    .map(|client| format!("\"{}\"", client.name()))
+                    .collect::<Vec<_>>()
+                    .join(", ");
+                format!("The client must be one of {clients}.")
+            })
+        }) {
+            Ok(query) => query,
+            Err(message) => {
+                return HttpError::refused(StatusCode::BAD_REQUEST, message).json();
+            }
+        };
+    let version = query.version.unwrap_or_default();
+    let client = query.client;
     let bot = client == ClientKind::Bot;
     let ip = address.ip();
     let Some(id) = accounts::session_id(&headers, &app.public.session_secret, uri.query()) else {

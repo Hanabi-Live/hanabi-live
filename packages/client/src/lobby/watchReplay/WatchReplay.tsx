@@ -8,6 +8,7 @@ import { useAppSelector } from "../../store.ts";
 import type { GameJson } from "../gameJson.ts";
 import { parseGameJson } from "../gameJson.ts";
 import * as lobbyPage from "../lobbyPage.ts";
+import { replayVisibility } from "../replayVisibility.ts";
 
 const SECTION = "#lobby-replay";
 const SUBMIT_BUTTON_ID = "replay-submit";
@@ -92,10 +93,7 @@ function WatchReplayForm() {
     globals.conn!.send("replayCreate", {
       source: replay,
       // Only shared replays can be spoiler-free reviews.
-      visibility:
-        visibility === "shared"
-          ? { type: "shared", spoilerFree }
-          : { type: "solo" },
+      visibility: replayVisibility(visibility === "shared", { spoilerFree }),
     });
     lobbyPage.hide();
   }

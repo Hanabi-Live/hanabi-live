@@ -53,6 +53,28 @@ named_enum! {
     }
 }
 
+/// The query of the `/ws` connection.
+#[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct WebSocketQuery {
+    /// The user ID of the account to connect as, when the browser is signed in to several. Absent
+    /// uses the most recent sign-in.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    #[schemars(length(min = 1))]
+    pub account: Option<String>,
+    /// The client's release. Only the website sends it. The server tells a website with another
+    /// release, or with none, to reload.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub version: Option<String>,
+    #[serde(default)]
+    pub client: ClientKind,
+}
+
+impl WebSocketQuery {
+    /// The names of the query's parameters.
+    pub const PARAMETERS: [&str; 3] = ["account", "version", "client"];
+}
+
 /// Reads a form field that is absent when it is empty, as forms send a blank input.
 fn deserialize_form_text<'de, D>(deserializer: D) -> Result<Option<String>, D::Error>
 where
@@ -121,7 +143,12 @@ pub struct ScoreFrequency {
     pub num_games: Count,
 }
 
-/// A variant in `/api/v1/variants-full`, keyed by its ID.
+/// The variants in `/api/v1/variants-full`, keyed by variant ID.
+#[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
+#[serde(transparent)]
+pub struct PublicVariants(pub std::collections::BTreeMap<String, PublicVariant>);
+
+/// A variant in `/api/v1/variants-full`.
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct PublicVariant {
@@ -130,4 +157,15 @@ pub struct PublicVariant {
     #[schemars(range(min = 1, max = MAX_RANK))]
     pub stack_size: u8,
     pub max_score: Score,
+}
+
+named_enum! {
+    /// A column of the public game lists, which clients sort by `sort` and filter by
+    /// `filter[name]`.
+    pub enum GameListColumn {
+        Id => "id",
+        NumPlayers => "numPlayers",
+        Score => "score",
+        Variant => "variant",
+    }
 }

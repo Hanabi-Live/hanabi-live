@@ -12,6 +12,13 @@ fn caller(id: i32, name: &str) -> Identity {
     }
 }
 
+/// Changes one setting the way a `settings` command does, after the same check.
+async fn set_setting(pool: &PgPool, id: UserId, name: &str, value: &Value) -> Result<()> {
+    let change =
+        hanabi_protocol::decode::<hanabi_protocol::SettingsChange>(&json!({ name: value }))?;
+    set_settings(pool, id, &change, &[]).await
+}
+
 fn self_data(effects: &[Effect], command: &str) -> Value {
     effects
         .iter()

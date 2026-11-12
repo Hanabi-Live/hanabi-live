@@ -25,9 +25,9 @@ export const ROOT = path.resolve(import.meta.dirname, "../../..");
 /** The key that the test server signs session cookies with. */
 const SESSION_SECRET = "synthetic-process-smoke-secret-".repeat(8);
 
-/** The seat that an "init" message's recipient sees the game from, if any. */
+/** The seat that a "gameInit" message's recipient sees the game from, if any. */
 export function ourPlayerIndex(
-  init: ServerCommandData["init"],
+  init: ServerCommandData["gameInit"],
 ): number | undefined {
   return "ourPlayerIndex" in init.mode ? init.mode.ourPlayerIndex : undefined;
 }

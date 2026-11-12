@@ -130,7 +130,7 @@ commands.set("chatList", (data) => {
   }
   if (globals.ui !== undefined && !gameChat.isOpen()) {
     // If the UI is open, we assume that this is a list of in-game chat messages.
-    globals.chatUnread += data.unread;
+    globals.chatUnread += data.numUnread;
     globals.ui.updateChatLabel();
   }
 });

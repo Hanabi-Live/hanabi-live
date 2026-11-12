@@ -4,9 +4,47 @@
 pub use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
-mod enums;
-pub(crate) use enums::named_enum;
-pub use enums::{ClueType, EndCondition, GameListColumn, NoticeCode, SoundMove};
+/// Defines an enum whose members the wire carries as names, with `name` and `from_name` to convert
+/// between them. Use it for an enum whose names the server also needs as text, such as in a URL or
+/// in the database.
+macro_rules! named_enum {
+    (
+        $(#[$meta:meta])*
+        pub enum $name:ident {
+            $($(#[$member_meta:meta])* $member:ident => $wire:literal,)+
+        }
+    ) => {
+        $(#[$meta])*
+        #[derive(
+            Clone, Copy, Debug, PartialEq, Eq, Hash, serde::Serialize, serde::Deserialize,
+            schemars::JsonSchema,
+        )]
+        pub enum $name {
+            $($(#[$member_meta])* #[serde(rename = $wire)] $member,)+
+        }
+
+        impl $name {
+            /// Every member, in the order of the definition.
+            pub const ALL: &'static [Self] = &[$(Self::$member),+];
+
+            /// The member's name on the wire.
+            pub const fn name(self) -> &'static str {
+                match self {
+                    $(Self::$member => $wire,)+
+                }
+            }
+
+            /// The member with this name on the wire.
+            pub fn from_name(name: &str) -> Option<Self> {
+                match name {
+                    $($wire => Some(Self::$member),)+
+                    _ => None,
+                }
+            }
+        }
+    };
+}
+
 mod registry;
 pub use registry::{
     ClientMessage, ServerMessage, client_contracts, decode, decode_server, exported, game_library,
@@ -17,6 +55,7 @@ mod catalog;
 mod chat;
 mod game;
 mod http;
+mod integers;
 mod lobby;
 mod replay;
 mod requests;
@@ -24,6 +63,7 @@ pub use catalog::*;
 pub use chat::*;
 pub use game::*;
 pub use http::*;
+pub use integers::*;
 pub use lobby::*;
 pub use replay::*;
 pub use requests::*;
@@ -117,10 +157,9 @@ pub const DEFAULT_TIME_BASE_SECONDS: i64 = 2 * SECONDS_PER_MINUTE;
 pub const DEFAULT_TIME_PER_TURN_SECONDS: i64 = 20;
 /// The rows on a page of a public listing when the request does not name a size.
 pub const DEFAULT_PAGE_SIZE: i64 = 10;
-/// The most rows that a page of a public listing or of a player's game history can have.
+/// The most rows that a page of a public listing, a player's game history, or their private
+/// messages can have.
 pub const MAX_PAGE_SIZE: i64 = 100;
-/// The most private messages that one history request can ask for.
-pub const MAX_PRIVATE_HISTORY_MESSAGES: i64 = 100;
 /// A table's progress, as a percentage, once its game reaches the maximum score or its replay
 /// reaches the last turn.
 pub const MAX_PROGRESS: u8 = 100;
@@ -173,8 +212,8 @@ pub fn is_player_count<T: TryInto<usize>>(count: T) -> bool {
         .is_ok_and(|count| (MIN_PLAYERS..=MAX_PLAYERS).contains(&count))
 }
 
-/// A username that the server sends, which is never empty. Requests carry plain strings instead, so
-/// that the server can answer a missing name, such as in a chat command, with a helpful warning.
+/// A username that the server sends, which is never empty. Requests carry plain strings instead, as
+/// the `requests` module explains.
 #[derive(Clone, Debug, Default, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
 #[serde(transparent)]
 pub struct Username(String);
@@ -245,100 +284,6 @@ impl JsonSchema for Notes {
     }
 }
 
-/// Defines an integer that several payloads bound the same way. `new` returns the value only when it
-/// is in range, so that the server cannot send a value that the clients' schema rejects.
-macro_rules! bounded_integer {
-    (
-        $(#[$meta:meta])*
-        $name:ident($int:ty), $format:literal, $min:expr, $max:expr $(, values = $values:expr)?
-    ) => {
-        $(#[$meta])*
-        #[derive(
-            Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize,
-        )]
-        #[serde(transparent)]
-        pub struct $name($int);
-
-        impl $name {
-            /// The value, if it is in range.
-            pub fn new<T: TryInto<i64>>(value: T) -> Option<Self> {
-                let value = value.try_into().ok()?;
-                let in_range = i64::try_from($min).is_ok_and(|min| value >= min)
-                    && i64::try_from($max).is_ok_and(|max| value <= max);
-                if in_range { <$int>::try_from(value).ok().map(Self) } else { None }
-            }
-
-            pub const fn get(self) -> $int {
-                self.0
-            }
-        }
-
-        impl From<$name> for $int {
-            fn from(value: $name) -> Self {
-                value.0
-            }
-        }
-
-        impl std::fmt::Display for $name {
-            fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-                self.0.fmt(f)
-            }
-        }
-
-        impl JsonSchema for $name {
-            fn inline_schema() -> bool {
-                true
-            }
-
-            fn schema_name() -> std::borrow::Cow<'static, str> {
-                stringify!($name).into()
-            }
-
-            fn json_schema(_: &mut schemars::SchemaGenerator) -> schemars::Schema {
-                let mut schema = schemars::json_schema!({
-                    "type": "integer",
-                    "format": $format,
-                    "minimum": $min,
-                    "maximum": $max,
-                });
-                let values: Option<Vec<i64>> = None $(.or(Some($values)))?;
-                if let Some(values) = values {
-                    schema.insert("enum".into(), values.into());
-                }
-                schema
-            }
-        }
-    };
-}
-
-bounded_integer! {
-    /// A number of players, as a schema whose type lists each count.
-    NumPlayers(u8), "uint8", MIN_PLAYERS, MAX_PLAYERS,
-    values = player_counts()
-}
-
-impl From<NumPlayers> for usize {
-    fn from(value: NumPlayers) -> Self {
-        value.0.into()
-    }
-}
-
-bounded_integer! {
-    /// The highest H-Group level that a user wants to play at.
-    HGroupLevel(u8), "uint8", 1, MAX_H_GROUP_LEVEL
-}
-
-bounded_integer! {
-    /// How far a shared replay's leader moved the count of cards that the efficiency uses.
-    #[derive(Default)]
-    EfficiencyModifier(i32), "int32", -MAX_EFFICIENCY_MODIFIER, MAX_EFFICIENCY_MODIFIER
-}
-
-bounded_integer! {
-    /// The most games that one page of a game list can ask for.
-    PageLimit(i64), "int64", 1, MAX_PAGE_SIZE
-}
-
 /// The schema of a list with each player's clock, in seat order.
 pub struct PlayerTimes;
 
@@ -405,294 +350,6 @@ impl JsonSchema for Timestamp {
             "x-date": true,
         })
     }
-}
-
-#[derive(
-    Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize, JsonSchema,
-)]
-#[serde(transparent)]
-#[schemars(extend("x-brand" = "TableId"))]
-pub struct TableId(#[schemars(range(min = 0, max = MAX_SAFE_INTEGER))] pub u64);
-
-impl std::fmt::Display for TableId {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        self.0.fmt(f)
-    }
-}
-
-#[derive(
-    Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize, JsonSchema,
-)]
-#[serde(transparent)]
-#[schemars(extend("x-brand" = "UserId"))]
-pub struct UserId(#[schemars(range(min = 1, max = i32::MAX))] pub i32);
-
-impl std::fmt::Display for UserId {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        self.0.fmt(f)
-    }
-}
-
-#[derive(
-    Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize, JsonSchema,
-)]
-#[serde(transparent)]
-#[schemars(extend("x-brand" = "GameId"))]
-pub struct GameId(#[schemars(range(min = 1, max = i32::MAX))] pub i32);
-
-impl std::fmt::Display for GameId {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        self.0.fmt(f)
-    }
-}
-
-/// Defines the ID of a catalog entry, which the catalog's files and the database both number.
-macro_rules! catalog_id {
-    ($(#[doc = $doc:literal])* $name:ident) => {
-        $(#[doc = $doc])*
-        #[derive(
-            Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize,
-            JsonSchema,
-        )]
-        #[serde(transparent)]
-        pub struct $name(#[schemars(range(min = 0, max = u32::MAX))] pub u32);
-
-        impl std::fmt::Display for $name {
-            fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-                self.0.fmt(f)
-            }
-        }
-    };
-}
-
-/// A chat message's ID in `chat_log`.
-#[derive(
-    Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize, JsonSchema,
-)]
-#[serde(transparent)]
-pub struct ChatId(#[schemars(range(min = 1, max = MAX_SAFE_INTEGER))] pub i64);
-
-/// A number of things, such as games or unread messages, or a position in a list of them.
-#[derive(
-    Clone,
-    Copy,
-    Debug,
-    Default,
-    PartialEq,
-    Eq,
-    PartialOrd,
-    Ord,
-    Hash,
-    Serialize,
-    Deserialize,
-    JsonSchema,
-)]
-#[serde(transparent)]
-pub struct Count(#[schemars(range(min = 0, max = MAX_SAFE_INTEGER))] pub i64);
-
-/// A game's score: the cards played, or less in a variant that scores some cards lower.
-#[derive(
-    Clone,
-    Copy,
-    Debug,
-    Default,
-    PartialEq,
-    Eq,
-    PartialOrd,
-    Ord,
-    Hash,
-    Serialize,
-    Deserialize,
-    JsonSchema,
-)]
-#[serde(transparent)]
-pub struct Score(#[schemars(range(min = 0, max = i32::MAX))] pub i32);
-
-catalog_id! {
-    /// A variant's number in `variants.json`. "No Variant" is 0.
-    VariantId
-}
-
-catalog_id! {
-    /// A detrimental character's number in `characters.json`.
-    CharacterId
-}
-
-/// A turn of a game, or a position in its replay, counting from 0. A game records at most
-/// `MAX_GAME_ACTIONS` actions, so it has no more turns than that.
-#[derive(
-    Clone,
-    Copy,
-    Debug,
-    Default,
-    PartialEq,
-    Eq,
-    PartialOrd,
-    Ord,
-    Hash,
-    Serialize,
-    Deserialize,
-    JsonSchema,
-)]
-#[serde(transparent)]
-pub struct Turn(#[schemars(range(min = 0, max = MAX_GAME_ACTIONS))] pub u16);
-
-impl Turn {
-    /// The turn, if a game can have it.
-    pub fn new<T: TryInto<usize>>(value: T) -> Option<Self> {
-        value
-            .try_into()
-            .ok()
-            .filter(|value| *value <= MAX_GAME_ACTIONS)
-            .and_then(|value| u16::try_from(value).ok())
-            .map(Self)
-    }
-
-    pub const fn index(self) -> usize {
-        self.0 as usize
-    }
-}
-
-impl From<Turn> for i32 {
-    fn from(value: Turn) -> Self {
-        value.0.into()
-    }
-}
-
-/// An integer that JavaScript represents exactly. Lists of integers use it to bound each item.
-#[derive(
-    Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize, JsonSchema,
-)]
-#[serde(transparent)]
-pub struct SafeInteger(#[schemars(range(min = -MAX_SAFE_INTEGER, max = MAX_SAFE_INTEGER))] pub i64);
-
-/// Defines a small non-negative integer on the wire, such as a seat or a card's position. Each one
-/// is its own type, so that one cannot stand in for another, and its schema lists or bounds the
-/// values that the wire accepts.
-macro_rules! wire_index {
-    (
-        $(#[doc = $doc:literal])*
-        $name:ident, $max:expr $(, values = $values:expr)? $(, brand = $brand:literal)?
-    ) => {
-        $(#[doc = $doc])*
-        #[derive(
-            Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize,
-            JsonSchema,
-        )]
-        #[serde(transparent)]
-        $(#[schemars(extend("x-brand" = $brand))])?
-        pub struct $name(
-            #[schemars(range(min = 0, max = $max) $(, extend("enum" = $values))?)] pub u8,
-        );
-
-        impl $name {
-            /// The largest value.
-            pub const MAX: usize = $max;
-
-            /// The value, if it is in range.
-            pub fn new<T: TryInto<usize>>(value: T) -> Option<Self> {
-                value
-                    .try_into()
-                    .ok()
-                    .filter(|value| *value <= Self::MAX)
-                    .and_then(|value| u8::try_from(value).ok())
-                    .map(Self)
-            }
-
-            pub const fn index(self) -> usize {
-                self.0 as usize
-            }
-        }
-
-        impl std::fmt::Display for $name {
-            fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-                self.0.fmt(f)
-            }
-        }
-
-        impl From<$name> for i32 {
-            fn from(value: $name) -> Self {
-                value.0.into()
-            }
-        }
-
-        impl From<$name> for usize {
-            fn from(value: $name) -> Self {
-                value.index()
-            }
-        }
-    };
-}
-
-/// Every value from 0 to `max`, for schemas that list them.
-fn up_to(max: usize) -> Vec<usize> {
-    (0..=max).collect()
-}
-
-wire_index! {
-    /// A seat in a game. The game library's `PlayerIndex` type.
-    PlayerIndex, MAX_SEAT, values = up_to(MAX_SEAT)
-}
-
-wire_index! {
-    /// A card's position in the initial deck, which identifies it. Stack bases follow the cards of
-    /// the largest deck.
-    CardOrder, MAX_CARD_ORDER, brand = "CardOrder"
-}
-
-wire_index! {
-    /// A card's suit.
-    SuitIndex, MAX_SUIT_INDEX, values = up_to(MAX_SUIT_INDEX)
-}
-
-wire_index! {
-    /// The index of a color in the variant's clue colors.
-    ColorIndex, MAX_SUIT_INDEX, values = up_to(MAX_SUIT_INDEX)
-}
-
-/// A card's rank. 7 is the rank of a stack's start card.
-#[derive(
-    Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize, JsonSchema,
-)]
-#[serde(transparent)]
-pub struct CardRank(
-    #[schemars(range(min = MIN_RANK, max = START_CARD_RANK), extend("enum" = catalog_ranks()))]
-    pub u8,
-);
-
-/// A rank that clues can name.
-#[derive(
-    Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize, JsonSchema,
-)]
-#[serde(transparent)]
-pub struct ClueRank(
-    #[schemars(range(min = MIN_RANK, max = MAX_RANK), extend("enum" = ranks()))] pub u8,
-);
-
-/// Converts a rank to its wire type, if it is one that the type allows.
-macro_rules! rank_conversions {
-    ($($name:ident: $allowed:expr;)+) => {$(
-        impl $name {
-            pub fn new<T: TryInto<i32>>(rank: T) -> Option<Self> {
-                rank.try_into()
-                    .ok()
-                    .filter(|rank| $allowed.contains(rank))
-                    .and_then(|rank| u8::try_from(rank).ok())
-                    .map(Self)
-            }
-        }
-
-        impl From<$name> for i32 {
-            fn from(value: $name) -> Self {
-                value.0.into()
-            }
-        }
-    )+};
-}
-
-rank_conversions! {
-    CardRank: catalog_ranks();
-    ClueRank: ranks();
 }
 
 #[cfg(test)]

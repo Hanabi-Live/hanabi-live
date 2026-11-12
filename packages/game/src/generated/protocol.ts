@@ -51,8 +51,8 @@ export const catalogColorSchema = z
     abbreviation: z.string().min(1).max(1).optional(),
     fill: z.string().min(1),
     /**
-     * An alternate fill when "Colorblind Mode" is enabled. If not specified, assume that it is the
-     * same as the default fill.
+     * An alternate fill when "Colorblind Mode" is enabled. If not specified, assume that it is
+     * the same as the default fill.
      */
     fillColorblind: z.string().min(1).optional(),
     name: z.string().min(1),
@@ -66,8 +66,8 @@ export const catalogSuitSchema = z
   .strictObject({
     /**
      * The one letter abbreviation to use when representing this suit as a card note. If not
-     * specified, use the abbreviation of the color with the same name, or else the first letter of
-     * the suit.
+     * specified, use the abbreviation of the color with the same name, or else the first
+     * letter of the suit.
      */
     abbreviation: z.string().min(1).max(1).optional(),
     allClueColors: z.literal(true).optional(),
@@ -81,8 +81,8 @@ export const catalogSuitSchema = z
      */
     createVariants: z.literal(true).optional(),
     /**
-     * A simplified version of the suit name to show to end-users. If not specified, use the normal
-     * suit name.
+     * A simplified version of the suit name to show to end-users. If not specified, use the
+     * normal suit name.
      */
     displayName: z.string().min(1).optional(),
     /**
@@ -100,10 +100,10 @@ export const catalogSuitSchema = z
      * - Combination suits have a four character ID. (e.g. `BrRa` for "Muddy Rainbow")
      * - Dark suits have a capital D prefix. (e.g. `DRa` for "Dark Rainbow")
      * - Ambiguous suits have a capital A prefix and a number suffix. (e.g. AR1 for "Tomato")
-     * - Very Ambiguous suits have a capital V prefix and a number suffix. (e.g. "VR1" for "Tomato
-     *  VA")
-     * - Extremely Ambiguous suits have a capital E prefix and a number suffix. (e.g. "EB1" for "Ice
-     *  EA")
+     * - Very Ambiguous suits have a capital V prefix and a number suffix. (e.g. "VR1" for
+     *  "Tomato VA")
+     * - Extremely Ambiguous suits have a capital E prefix and a number suffix. (e.g. "EB1" for
+     *  "Ice EA")
      * - Dual-Color suits have a capital D prefix. (e.g. "DRY" for "Tangerine D")
      */
     id: z.string().min(1),
@@ -157,16 +157,16 @@ export const catalogVariantSchema = z
     duck: z.literal(true).optional(),
     funnels: z.literal(true).optional(),
     /**
-     * A number from 0 to N. For example, "No Variant" is variant 0, "6 Suits" is variant 1, and so
-     * on. The database and seeds name a variant by this number.
+     * A number from 0 to N. For example, "No Variant" is variant 0, "6 Suits" is variant 1,
+     * and so on. The database and seeds name a variant by this number.
      */
     id: variantIdSchema,
     name: z.string().min(1),
     oddsAndEvens: z.literal(true).optional(),
     rankCluesTouchNothing: z.literal(true).optional(),
     /**
-     * The variant's suits and modifiers, from which the catalog generator checks the entry. For
-     * example, "No Variant" is `R+Y+G+B+P`.
+     * The variant's suits and modifiers, from which the catalog generator checks the entry.
+     * For example, "No Variant" is `R+Y+G+B+P`.
      */
     recipe: z.string().min(1),
     scarceOnes: z.literal(true).optional(),

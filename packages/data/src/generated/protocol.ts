@@ -23,7 +23,8 @@ import * as z from "zod";
 export const MAX_VOLUME = 100;
 export const MAX_H_GROUP_LEVEL = 25;
 export const DEFAULT_PAGE_SIZE = 10;
-export const MAX_PRIVATE_HISTORY_MESSAGES = 100;
+export const MAX_PAGE_SIZE = 100;
+export const DEFAULT_MAX_PLAYERS = 5;
 export const SECONDS_PER_MINUTE = 60;
 export const MAX_TIME_BASE_SECONDS = 604_800;
 export const MAX_TIME_PER_TURN_SECONDS = 86_400;
@@ -33,6 +34,9 @@ export const MAX_CHAT_LENGTH = 300;
 export const MAX_EFFICIENCY_MODIFIER = 60;
 export const DEFAULT_TABLE_NAME_SUFFIX = "'s table";
 
+/**
+ * A table's ID.
+ */
 export const tableIdSchema = z
   .number()
   .int()
@@ -87,6 +91,10 @@ const chatIdSchema = z.number().int().min(1).max(9_007_199_254_740_991);
  * Who wrote a chat message. The wire and the database's chat log both use these names.
  */
 const chatSourceSchema = z.enum(["user", "server", "discord"]);
+
+/**
+ * A saved game's ID.
+ */
 export const gameIdSchema = z
   .number()
   .int()
@@ -103,7 +111,7 @@ const dealSchema = z.discriminatedUnion("type", [
       /**
        * The end of the full seed: "123" in a 3-player game of No Variant deals `p3v0s123`.
        */
-      suffix: z.string().min(1).max(32),
+      suffix: z.string().min(1),
       type: z.literal("seed"),
     })
     .readonly(),
@@ -120,8 +128,13 @@ const dealSchema = z.discriminatedUnion("type", [
 ]);
 
 /**
+ * A number of players.
+ */
+const numPlayersSchema = z.literal([2, 3, 4, 5, 6]);
+
+/**
  * A table's name, player limit, options, and deal, as its owner sets them and as tables report
- * them. Missing fields other than the name take their defaults.
+ * them.
  */
 const tableSettingsSchema = z
   .strictObject({
@@ -130,18 +143,9 @@ const tableSettingsSchema = z
      * the players have played.
      */
     deal: dealSchema.optional(),
-    maxPlayers: z.literal([2, 3, 4, 5, 6]).default(5),
-    name: z.string().min(1),
-    options: gameOptionsSchema.default({
-      allOrNothing: false,
-      deckPlays: false,
-      detrimentalCharacters: false,
-      emptyClues: false,
-      oneExtraCard: false,
-      oneLessCard: false,
-      speedrun: false,
-      variantName: "No Variant",
-    }),
+    maxPlayers: numPlayersSchema,
+    name: z.string(),
+    options: gameOptionsSchema,
   })
   .readonly();
 export const chatSchema = z
@@ -180,7 +184,7 @@ const countSchema = z.number().int().min(0).max(9_007_199_254_740_991);
 export const chatListSchema = z
   .strictObject({
     messages: z.array(chatSchema).readonly(),
-    unread: countSchema,
+    numUnread: countSchema,
   })
   .readonly();
 export const chatPmHistorySchema = z
@@ -192,9 +196,14 @@ export const chatPmHistorySchema = z
     tableId: tableIdSchema.optional(),
   })
   .readonly();
+
+/**
+ * The most rows that one page of a list can ask for.
+ */
+const pageLimitSchema = z.number().int().min(1).max(100);
 export const chatPmHistoryRequestSchema = z
   .strictObject({
-    limit: z.number().int().min(1).max(100),
+    limit: pageLimitSchema,
     /**
      * The other user in the conversation. Absent shows the messages with everyone.
      */
@@ -206,7 +215,7 @@ export const chatPmHistoryRequestSchema = z
   })
   .readonly();
 export const chatPmRequestSchema = z
-  .strictObject({ recipient: z.string().min(1), text: z.string().min(1) })
+  .strictObject({ recipient: z.string(), text: z.string() })
   .readonly();
 export const chatRequestSchema = z
   .strictObject({
@@ -214,7 +223,7 @@ export const chatRequestSchema = z
      * The table whose chat the message is for. Absent means the lobby.
      */
     tableId: tableIdSchema.optional(),
-    text: z.string().min(1),
+    text: z.string(),
   })
   .readonly();
 export const chatTypingSchema = z
@@ -264,6 +273,15 @@ export const friendsSchema = z
 export const gameEventMessageSchema = z
   .strictObject({ event: gameEventSchema, tableId: tableIdSchema })
   .readonly();
+
+/**
+ * How far a shared replay's leader moved the count of cards that the efficiency uses.
+ */
+const efficiencyModifierSchema = z.number().int().min(-60).max(60);
+
+/**
+ * A user's ID.
+ */
 export const userIdSchema = z
   .number()
   .int()
@@ -281,14 +299,14 @@ const sharedReplayInitSchema = z
      * play it again: the leader by restarting, and the other players by saying if they are ready.
      */
     canPlayAgain: z.boolean(),
-    efficiencyModifier: z.number().int().min(-60).max(60),
+    efficiencyModifier: efficiencyModifierSchema,
     /**
      * The table's owner, who leads the replay.
      */
     ownerId: userIdSchema,
     /**
      * When the replay began: when the game ended, for a review of a game just played, or when the
-     * table was created, for a replay of an older game. `Init.startedAt` is when the game began.
+     * table was created, for a replay of an older game. `GameInit.startedAt` is when the game began.
      */
     replayStartedAt: z.iso.datetime({ precision: 3 }),
     /**
@@ -347,6 +365,114 @@ export const gameHistoryEntrySchema = z
      * The game's tags, in alphabetical order.
      */
     tags: z.array(z.string()).readonly(),
+  })
+  .readonly();
+
+/**
+ * A player's detrimental character, in a game and in the replay format, with the value that some
+ * characters are assigned. Every player has one when detrimental characters are on.
+ */
+const characterAssignmentSchema = z.discriminatedUnion("type", [
+  z
+    .strictObject({ characterId: characterIdSchema, type: z.literal("plain") })
+    .readonly(),
+  z
+    .strictObject({
+      characterId: characterIdSchema,
+      color: colorIndexSchema,
+      type: z.literal("color"),
+    })
+    .readonly(),
+  z
+    .strictObject({
+      characterId: characterIdSchema,
+      rank: clueRankSchema,
+      type: z.literal("rank"),
+    })
+    .readonly(),
+]);
+
+/**
+ * How the recipient takes part in a game, and what that needs. `ourPlayerIndex` is the seat that
+ * the recipient sees the game from.
+ */
+const viewModeSchema = z.discriminatedUnion("type", [
+  z
+    .strictObject({
+      ourPlayerIndex: playerIndexSchema,
+      type: z.literal("playing"),
+    })
+    .readonly(),
+  z.strictObject({ type: z.literal("spectating") }).readonly(),
+  z
+    .strictObject({
+      ourPlayerIndex: playerIndexSchema,
+      type: z.literal("shadowing"),
+    })
+    .readonly(),
+  z
+    .strictObject({
+      /**
+       * Absent when the game is not saved, such as an imported one.
+       */
+      gameId: gameIdSchema.optional(),
+      /**
+       * The seat that the recipient played in or shadows, if any.
+       */
+      ourPlayerIndex: playerIndexSchema.optional(),
+      type: z.literal("replay"),
+    })
+    .readonly(),
+  z
+    .strictObject({
+      /**
+       * Absent when the game is not saved, such as an imported one.
+       */
+      gameId: gameIdSchema.optional(),
+      /**
+       * The seat that the recipient played in or shadows, if any.
+       */
+      ourPlayerIndex: playerIndexSchema.optional(),
+      sharedReplay: sharedReplayInitSchema,
+      type: z.literal("sharedReplay"),
+    })
+    .readonly(),
+]);
+
+/**
+ * Everything a client needs to draw a game, before its events arrive.
+ */
+export const gameInitSchema = z
+  .strictObject({
+    /**
+     * Each player's character, in seat order, when detrimental characters are on. Empty otherwise.
+     */
+    characters: z.array(characterAssignmentSchema).max(6).readonly(),
+    /**
+     * Whether the table chose its deal, so that the deck does not count down to a new seed.
+     */
+    customSeed: z.boolean(),
+    /**
+     * Absent while the game is in progress.
+     */
+    finishedAt: z.iso.datetime({ precision: 3 }).optional(),
+    mode: viewModeSchema,
+    options: gameOptionsSchema,
+    /**
+     * The seat that paused the game. Absent when the game is not paused.
+     */
+    pausePlayerIndex: playerIndexSchema.optional(),
+    /**
+     * Whether the recipient asked to pause the game at their next turn.
+     */
+    pauseQueued: z.boolean(),
+    playerNames: z.array(z.string().min(1)).min(2).max(6).readonly(),
+    /**
+     * Absent for a game with its own deck instead of a seed, such as an imported one.
+     */
+    seed: z.string().optional(),
+    startedAt: z.iso.datetime({ precision: 3 }),
+    tableId: tableIdSchema,
   })
   .readonly();
 
@@ -491,114 +617,6 @@ export const idleWarningSchema = z
   .readonly();
 
 /**
- * A player's detrimental character, in a game and in the replay format, with the value that some
- * characters are assigned. Every player has one when detrimental characters are on.
- */
-const characterAssignmentSchema = z.discriminatedUnion("type", [
-  z
-    .strictObject({ characterId: characterIdSchema, type: z.literal("plain") })
-    .readonly(),
-  z
-    .strictObject({
-      characterId: characterIdSchema,
-      color: colorIndexSchema,
-      type: z.literal("color"),
-    })
-    .readonly(),
-  z
-    .strictObject({
-      characterId: characterIdSchema,
-      rank: clueRankSchema,
-      type: z.literal("rank"),
-    })
-    .readonly(),
-]);
-
-/**
- * How the recipient takes part in a game, and what that needs. `ourPlayerIndex` is the seat that
- * the recipient sees the game from.
- */
-const viewModeSchema = z.discriminatedUnion("type", [
-  z
-    .strictObject({
-      ourPlayerIndex: playerIndexSchema,
-      type: z.literal("playing"),
-    })
-    .readonly(),
-  z.strictObject({ type: z.literal("spectating") }).readonly(),
-  z
-    .strictObject({
-      ourPlayerIndex: playerIndexSchema,
-      type: z.literal("shadowing"),
-    })
-    .readonly(),
-  z
-    .strictObject({
-      /**
-       * Absent when the game is not saved, such as an imported one.
-       */
-      gameId: gameIdSchema.optional(),
-      /**
-       * The seat that the recipient played in or shadows, if any.
-       */
-      ourPlayerIndex: playerIndexSchema.optional(),
-      type: z.literal("replay"),
-    })
-    .readonly(),
-  z
-    .strictObject({
-      /**
-       * Absent when the game is not saved, such as an imported one.
-       */
-      gameId: gameIdSchema.optional(),
-      /**
-       * The seat that the recipient played in or shadows, if any.
-       */
-      ourPlayerIndex: playerIndexSchema.optional(),
-      sharedReplay: sharedReplayInitSchema,
-      type: z.literal("sharedReplay"),
-    })
-    .readonly(),
-]);
-
-/**
- * Everything a client needs to draw a game, before its events arrive.
- */
-export const initSchema = z
-  .strictObject({
-    /**
-     * Each player's character, in seat order, when detrimental characters are on. Empty otherwise.
-     */
-    characters: z.array(characterAssignmentSchema).max(6).readonly(),
-    /**
-     * Whether the table chose its deal, so that the deck does not count down to a new seed.
-     */
-    customSeed: z.boolean(),
-    /**
-     * Absent while the game is in progress.
-     */
-    finishedAt: z.iso.datetime({ precision: 3 }).optional(),
-    mode: viewModeSchema,
-    options: gameOptionsSchema,
-    /**
-     * The seat that paused the game. Absent when the game is not paused.
-     */
-    pausePlayerIndex: playerIndexSchema.optional(),
-    /**
-     * Whether the recipient asked to pause the game at their next turn.
-     */
-    pauseQueued: z.boolean(),
-    playerNames: z.array(z.string().min(1)).min(2).max(6).readonly(),
-    /**
-     * Absent for a game with its own deck instead of a seed, such as an imported one.
-     */
-    seed: z.string().optional(),
-    startedAt: z.iso.datetime({ precision: 3 }),
-    tableId: tableIdSchema,
-  })
-  .readonly();
-
-/**
  * A sound played outside of a game. The server plays "shutdown" to everyone when it is going down,
  * and "someoneJoined" to the players at a pre-game table when another player joins it.
  */
@@ -677,7 +695,7 @@ export const lobbyStatusSchema = z.discriminatedUnion("type", [
     })
     .readonly(),
   z
-    .strictObject({ totalGames: countSchema, type: z.literal("ready") })
+    .strictObject({ numGames: countSchema, type: z.literal("ready") })
     .readonly(),
 ]);
 
@@ -779,10 +797,7 @@ export const noticeSchema = z
  * A page of a list of games: in `gameHistory`, the player's own games, newest first.
  */
 export const pageRequestSchema = z
-  .strictObject({
-    limit: z.number().int().min(1).max(100),
-    offset: countSchema,
-  })
+  .strictObject({ limit: pageLimitSchema, offset: countSchema })
   .readonly();
 
 /**
@@ -869,7 +884,7 @@ const pregameBestScoreSchema = z
      * Absent when there is no game at this player count.
      */
     best: bestScoreSchema.optional(),
-    numPlayers: z.literal([2, 3, 4, 5, 6]),
+    numPlayers: numPlayersSchema,
   })
   .readonly();
 const pregameVariantStatsSchema = z
@@ -1008,7 +1023,7 @@ const replayLeaderActionSchema = z.discriminatedUnion("type", [
     .readonly(),
   z
     .strictObject({
-      modifier: z.number().int().min(-60).max(60),
+      modifier: efficiencyModifierSchema,
       type: z.literal("efficiency"),
     })
     .readonly(),
@@ -1120,12 +1135,12 @@ const replayVisibilitySchema = z.discriminatedUnion("type", [
        * For a saved game, spectate an existing shared replay of the same game instead of
        * creating another one, if there is one.
        */
-      joinExisting: z.boolean().default(false),
+      joinExisting: z.boolean(),
       /**
        * Hide what happens later in the game: the turn slider, jumping to the end, and future
        * strikes.
        */
-      spoilerFree: z.boolean().default(false),
+      spoilerFree: z.boolean(),
       type: z.literal("shared"),
     })
     .readonly(),
@@ -1188,7 +1203,7 @@ export const seedGamesSchema = z
  */
 export const seedGamesRequestSchema = z
   .strictObject({
-    limit: z.number().int().min(1).max(100),
+    limit: pageLimitSchema,
     offset: countSchema,
     seed: z.string().min(1),
   })
@@ -1212,7 +1227,7 @@ export const serverRestartSchema = z
  */
 const createTableSettingsSchema = z
   .strictObject({
-    maxPlayers: z.literal([2, 3, 4, 5, 6]).default(5),
+    maxPlayers: numPlayersSchema.default(5),
     /**
      * The options of the next table. Their `timeControl` is present when the table is timed.
      */
@@ -1237,13 +1252,18 @@ const createTableSettingsSchema = z
   .readonly();
 
 /**
+ * The highest H-Group level that a user wants to play at.
+ */
+const hGroupLevelSchema = z.number().int().min(1).max(25);
+
+/**
  * Which moves play a sound: every move, only the moves that start the player's turn, or none.
  */
 export const soundMoveSchema = z.enum(["all", "onlyOwn", "none"]);
 
 /**
- * A user's preferences. Missing fields take their default, so stored settings only need the values
- * a user changed.
+ * A user's preferences. Missing fields take their default, so stored settings only need
+ * the values a user changed.
  */
 export const settingsSchema = z
   .strictObject({
@@ -1266,10 +1286,10 @@ export const settingsSchema = z
     desktopNotification: z.boolean().default(false),
     hGroupConventions: z.boolean().default(false),
     /**
-     * The highest H-Group level that this user wants to play at. Absent when they did not choose
-     * one; `SettingsRequest::cleared` removes it.
+     * The highest H-Group level that this user wants to play at. Absent when they did not
+     * choose one; `SettingsRequest::cleared` removes it.
      */
-    hGroupLevel: z.number().int().min(1).max(25).optional(),
+    hGroupLevel: hGroupLevelSchema.optional(),
     keldonMode: z.boolean().default(false),
     /**
      * Shows games in the redesigned game screen, which is in testing. Players opt in.
@@ -1291,16 +1311,45 @@ export const settingsSchema = z
  * A setting that a user can leave unset, by its name in `Settings`.
  */
 const optionalSettingSchema = z.literal("hGroupLevel");
+
+/**
+ * New values for some of a user's settings. An absent setting stays as it is.
+ */
+const settingsChangeSchema = z
+  .strictObject({
+    colorblindMode: z.boolean().optional(),
+    createTable: createTableSettingsSchema.optional(),
+    darkMode: z.boolean().optional(),
+    desktopNotification: z.boolean().optional(),
+    hGroupConventions: z.boolean().optional(),
+    /**
+     * The highest H-Group level that this user wants to play at. Absent when they did not
+     * choose one; `SettingsRequest::cleared` removes it.
+     */
+    hGroupLevel: hGroupLevelSchema.optional(),
+    keldonMode: z.boolean().optional(),
+    /**
+     * Shows games in the redesigned game screen, which is in testing. Players opt in.
+     */
+    newUi: z.boolean().optional(),
+    realLifeMode: z.boolean().optional(),
+    reverseHands: z.boolean().optional(),
+    showTimerInUntimed: z.boolean().optional(),
+    soundMove: soundMoveSchema.optional(),
+    soundTimer: z.boolean().optional(),
+    speedrunMode: z.boolean().optional(),
+    speedrunPreplay: z.boolean().optional(),
+    styleNumbers: z.boolean().optional(),
+    volume: z.number().int().min(0).max(100).optional(),
+  })
+  .readonly();
 export const settingsRequestSchema = z
   .strictObject({
     /**
-     * The settings to leave unset.
+     * The optional settings to leave unset.
      */
     cleared: z.array(optionalSettingSchema).readonly().optional(),
-    /**
-     * The settings to change, each with the type that `Settings` gives it.
-     */
-    settings: settingsSchema,
+    settings: settingsChangeSchema,
   })
   .readonly();
 export const spectatorsSchema = z
@@ -1394,10 +1443,7 @@ export const tableRestartDeclineRequestSchema = z
   .strictObject({ declined: z.boolean(), tableId: tableIdSchema })
   .readonly();
 export const tableRestartRequestSchema = z
-  .strictObject({
-    hidePregame: z.boolean().default(false),
-    tableId: tableIdSchema,
-  })
+  .strictObject({ hidePregame: z.boolean(), tableId: tableIdSchema })
   .readonly();
 export const tableSpectateRequestSchema = z
   .strictObject({
@@ -1474,7 +1520,7 @@ export const userSchema = z
      * The highest H-Group level that this user wants to play at. Absent when they did not choose
      * one.
      */
-    hGroupLevel: z.number().int().min(1).max(25).optional(),
+    hGroupLevel: hGroupLevelSchema.optional(),
     inactive: z.boolean(),
     userId: userIdSchema,
     username: z.string().min(1),
@@ -1613,10 +1659,10 @@ export const SERVER_COMMAND_SCHEMAS = {
   gameFinished: gameFinishedSchema,
   gameHistory: gamePageSchema,
   gameHistoryAdded: gameHistoryEntrySchema,
+  gameInit: gameInitSchema,
   gameState: gameStateSchema,
   idleReset: tableRefSchema,
   idleWarning: idleWarningSchema,
-  init: initSchema,
   lobbySound: lobbySoundMessageSchema,
   lobbyStatus: lobbyStatusSchema,
   note: noteSchema,

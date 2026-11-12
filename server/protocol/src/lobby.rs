@@ -33,7 +33,7 @@ pub struct ServerRestart {
 pub enum LobbyStatus {
     Loading {},
     Error(Notice),
-    Ready { total_games: Count },
+    Ready { num_games: Count },
 }
 
 /// A user's presence in the lobby's user list.
@@ -138,56 +138,82 @@ pub enum LobbySound {
     SomeoneJoined,
 }
 
-/// A user's preferences. Missing fields take their default, so stored settings only need the values
-/// a user changed.
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize, JsonSchema)]
-#[serde(default, rename_all = "camelCase", deny_unknown_fields)]
-pub struct Settings {
-    pub desktop_notification: bool,
-    pub sound_move: SoundMove,
-    pub sound_timer: bool,
-    pub dark_mode: bool,
-    pub keldon_mode: bool,
-    /// Shows games in the redesigned game screen, which is in testing. Players opt in.
-    pub new_ui: bool,
-    pub colorblind_mode: bool,
-    pub real_life_mode: bool,
-    pub reverse_hands: bool,
-    pub style_numbers: bool,
-    pub show_timer_in_untimed: bool,
-    #[schemars(range(min = 0, max = MAX_VOLUME))]
-    pub volume: u8,
-    pub speedrun_preplay: bool,
-    pub speedrun_mode: bool,
-    pub h_group_conventions: bool,
-    /// The highest H-Group level that this user wants to play at. Absent when they did not choose
-    /// one; `SettingsRequest::cleared` removes it.
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub h_group_level: Option<HGroupLevel>,
-    pub create_table: CreateTableSettings,
+/// Defines `Settings`, with each setting's default, and `SettingsChange`, which changes some of
+/// them. An optional setting has no default: a user can leave it unset.
+macro_rules! settings {
+    (
+        required {
+            $($(#[$attr:meta])* $field:ident: $ty:ty = $default:expr,)+
+        }
+        optional {
+            $($(#[$optional_attr:meta])* $optional:ident: $optional_ty:ty,)+
+        }
+    ) => {
+        /// A user's preferences. Missing fields take their default, so stored settings only need
+        /// the values a user changed.
+        #[derive(Clone, Debug, PartialEq, Serialize, Deserialize, JsonSchema)]
+        #[serde(default, rename_all = "camelCase", deny_unknown_fields)]
+        pub struct Settings {
+            $($(#[$attr])* pub $field: $ty,)+
+            $(
+                $(#[$optional_attr])*
+                #[serde(skip_serializing_if = "Option::is_none")]
+                pub $optional: Option<$optional_ty>,
+            )+
+        }
+
+        impl Default for Settings {
+            fn default() -> Self {
+                Self {
+                    $($field: $default,)+
+                    $($optional: None,)+
+                }
+            }
+        }
+
+        /// New values for some of a user's settings. An absent setting stays as it is.
+        #[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize, JsonSchema)]
+        #[serde(rename_all = "camelCase", deny_unknown_fields)]
+        pub struct SettingsChange {
+            $(
+                $(#[$attr])*
+                #[serde(skip_serializing_if = "Option::is_none")]
+                pub $field: Option<$ty>,
+            )+
+            $(
+                $(#[$optional_attr])*
+                #[serde(skip_serializing_if = "Option::is_none")]
+                pub $optional: Option<$optional_ty>,
+            )+
+        }
+    };
 }
 
-impl Default for Settings {
-    fn default() -> Self {
-        Self {
-            desktop_notification: false,
-            sound_move: SoundMove::All,
-            sound_timer: true,
-            dark_mode: false,
-            keldon_mode: false,
-            new_ui: false,
-            colorblind_mode: false,
-            real_life_mode: false,
-            reverse_hands: false,
-            style_numbers: false,
-            show_timer_in_untimed: false,
-            volume: DEFAULT_VOLUME,
-            speedrun_preplay: false,
-            speedrun_mode: false,
-            h_group_conventions: false,
-            h_group_level: None,
-            create_table: CreateTableSettings::default(),
-        }
+settings! {
+    required {
+        desktop_notification: bool = false,
+        sound_move: SoundMove = SoundMove::All,
+        sound_timer: bool = true,
+        dark_mode: bool = false,
+        keldon_mode: bool = false,
+        /// Shows games in the redesigned game screen, which is in testing. Players opt in.
+        new_ui: bool = false,
+        colorblind_mode: bool = false,
+        real_life_mode: bool = false,
+        reverse_hands: bool = false,
+        style_numbers: bool = false,
+        show_timer_in_untimed: bool = false,
+        #[schemars(range(min = 0, max = MAX_VOLUME))]
+        volume: u8 = DEFAULT_VOLUME,
+        speedrun_preplay: bool = false,
+        speedrun_mode: bool = false,
+        h_group_conventions: bool = false,
+        create_table: CreateTableSettings = CreateTableSettings::default(),
+    }
+    optional {
+        /// The highest H-Group level that this user wants to play at. Absent when they did not
+        /// choose one; `SettingsRequest::cleared` removes it.
+        h_group_level: HGroupLevel,
     }
 }
 
@@ -206,7 +232,7 @@ pub struct CreateTableSettings {
 impl Default for CreateTableSettings {
     fn default() -> Self {
         Self {
-            max_players: NumPlayers(DEFAULT_MAX_PLAYERS),
+            max_players: NumPlayers::default(),
             options: GameOptions::default(),
             time_control: TimeControl {
                 base_seconds: DEFAULT_TIME_BASE_SECONDS,
@@ -293,20 +319,13 @@ pub struct TimeControl {
     pub per_turn_seconds: i64,
 }
 
-const fn default_max_players() -> NumPlayers {
-    NumPlayers(DEFAULT_MAX_PLAYERS)
-}
-
 /// A table's name, player limit, options, and deal, as its owner sets them and as tables report
-/// them. Missing fields other than the name take their defaults.
+/// them.
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct TableSettings {
-    #[schemars(length(min = 1))]
     pub name: String,
-    #[serde(default = "default_max_players")]
     pub max_players: NumPlayers,
-    #[serde(default)]
     pub options: GameOptions,
     /// The deal that the table requests. Absent when the server deals the next seed that none of
     /// the players have played.
@@ -325,7 +344,7 @@ pub struct TableSettings {
 pub enum Deal {
     Seed {
         /// The end of the full seed: "123" in a 3-player game of No Variant deals `p3v0s123`.
-        #[schemars(length(min = 1, max = MAX_SEED_LENGTH))]
+        #[schemars(length(min = 1))]
         suffix: String,
     },
     /// A finished game that the table plays again with its deal, seats, characters, and options,
@@ -343,7 +362,7 @@ impl TableSettings {
     pub fn named(name: impl Into<String>) -> Self {
         Self {
             name: name.into(),
-            max_players: NumPlayers(DEFAULT_MAX_PLAYERS),
+            max_players: NumPlayers::default(),
             options: GameOptions::default(),
             deal: None,
         }
@@ -511,4 +530,85 @@ pub struct Pregame {
     #[schemars(length(max = MAX_PLAYERS))]
     pub players: Vec<PregamePlayer>,
     pub password_protected: bool,
+}
+
+/// Which moves play a sound: every move, only the moves that start the player's turn, or none.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize, JsonSchema)]
+#[serde(rename_all = "camelCase")]
+pub enum SoundMove {
+    All,
+    OnlyOwn,
+    None,
+}
+
+named_enum! {
+    /// The typed cause of a failure that a notice reports. The clients' schema cannot describe each
+    /// code, so their descriptions are comments.
+    pub enum NoticeCode {
+        ArchiveInconsistentPlayers => "archiveInconsistentPlayers",
+        ArchiveInvalidAction => "archiveInvalidAction",
+        ArchiveInvalidSeed => "archiveInvalidSeed",
+        ArchiveInvalidCharacter => "archiveInvalidCharacter",
+        ArchiveUnknownVariant => "archiveUnknownVariant",
+        // A command that failed for a reason the server did not anticipate. Its report keeps the
+        // server's own description, so the player can pass it on with the reference.
+        CommandFailed => "commandFailed",
+        ConnectionLimit => "connectionLimit",
+        DatabaseConnectionFailed => "databaseConnectionFailed",
+        DatabaseConstraintFailed => "databaseConstraintFailed",
+        DatabaseDuplicate => "databaseDuplicate",
+        DatabaseError => "databaseError",
+        DatabaseLockTimeout => "databaseLockTimeout",
+        DatabasePoolTimeout => "databasePoolTimeout",
+        DatabaseQueryCancelled => "databaseQueryCancelled",
+        DatabaseQueryTimeout => "databaseQueryTimeout",
+        DatabaseReferenceConflict => "databaseReferenceConflict",
+        DatabaseResultInvalid => "databaseResultInvalid",
+        DatabaseTransactionConflict => "databaseTransactionConflict",
+        DatabaseUnavailable => "databaseUnavailable",
+        DiscordAnnouncementTimeout => "discordAnnouncementTimeout",
+        DiscordChannelInvalid => "discordChannelInvalid",
+        DiscordConfiguration => "discordConfiguration",
+        DiscordRoleMissing => "discordRoleMissing",
+        // A failure that the report does not recognize.
+        InternalOperationFailed => "internalOperationFailed",
+        LiveStateUnavailable => "liveStateUnavailable",
+        LobbyLoadTimeout => "lobbyLoadTimeout",
+        LobbyQueueFull => "lobbyQueueFull",
+        // A login for a username that has no account, when the client did not ask to create one. The
+        // client asks the player to confirm before it creates the account.
+        NoAccount => "noAccount",
+        OperationTimeout => "operationTimeout",
+        // A login or connection from a client of a different release. The client reloads the page.
+        OutdatedClient => "outdatedClient",
+        PasswordProcessingBusy => "passwordProcessingBusy",
+        PasswordProcessingFailed => "passwordProcessingFailed",
+        // A password check that waits for earlier ones from the same address.
+        PasswordRateLimited => "passwordRateLimited",
+        PersistenceUncertain => "persistenceUncertain",
+        RecordNotFound => "recordNotFound",
+        ServerDataInvalid => "serverDataInvalid",
+        // A command or request that arrives while the server starts or drains.
+        ServerDraining => "serverDraining",
+        ServerIoError => "serverIoError",
+        ServerUnavailable => "serverUnavailable",
+        SessionGenerationExhausted => "sessionGenerationExhausted",
+        // The same account connected somewhere else.
+        SessionReplaced => "sessionReplaced",
+        TableFailed => "tableFailed",
+        TableUnreadable => "tableUnreadable",
+        UpstreamConnectionFailed => "upstreamConnectionFailed",
+        UpstreamHttpError => "upstreamHttpError",
+        UpstreamRequestInvalid => "upstreamRequestInvalid",
+        UpstreamResponseInvalid => "upstreamResponseInvalid",
+        UpstreamTimeout => "upstreamTimeout",
+        UpstreamUnauthorized => "upstreamUnauthorized",
+        WorkerFailed => "workerFailed",
+    }
+}
+
+impl std::fmt::Display for NoticeCode {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.write_str(self.name())
+    }
 }

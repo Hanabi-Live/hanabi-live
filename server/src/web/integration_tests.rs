@@ -330,7 +330,7 @@ async fn uptime_replies_only_to_requester_in_lobby_and_table_postgres() {
     }
     alice
         .send(WireMessage::Text(
-            "tableCreate {\"settings\":{\"name\":\"Private uptime\"}}".into(),
+            "tableCreate {\"settings\":{\"name\":\"Private uptime\",\"maxPlayers\":5,\"options\":{}}}".into(),
         ))
         .await
         .unwrap();
@@ -551,7 +551,7 @@ async fn native_browser_login_ws_bootstrap_and_command_routing_postgres() {
     );
     alice
         .send(WireMessage::Text(
-            "tableCreate {\"settings\":{\"name\":\"Browser game\",\"options\":{\"variantName\":\"No Variant\"}}}"
+            "tableCreate {\"settings\":{\"name\":\"Browser game\",\"maxPlayers\":5,\"options\":{\"variantName\":\"No Variant\"}}}"
                 .into(),
         ))
         .await
@@ -676,13 +676,13 @@ async fn websocket_defers_lobby_reads_without_an_opt_in_postgres() {
     let welcome = tokio::time::timeout(Duration::from_secs(1), receive(&mut socket, "welcome"))
         .await
         .expect("Archive reads blocked the welcome");
-    assert!(welcome.get("totalGames").is_none());
+    assert!(welcome.get("numGames").is_none());
     let loading = receive(&mut socket, "lobbyStatus").await;
     assert_eq!(loading["type"], "loading");
     lock.rollback().await.unwrap();
     let ready = receive(&mut socket, "lobbyStatus").await;
     assert_eq!(ready["type"], "ready");
-    assert_eq!(ready["totalGames"], 0);
+    assert_eq!(ready["numGames"], 0);
     socket.close(None).await.unwrap();
     fixture.close().await;
 }
@@ -745,7 +745,7 @@ async fn game_archive_locks_do_not_block_authentication_and_deferred_errors_are_
         .unwrap();
     let status: Value = serde_json::from_str(body).unwrap();
     assert_eq!(status["type"], "error");
-    assert!(status.get("totalGames").is_none());
+    assert!(status.get("numGames").is_none());
     assert!(
         status["message"]
             .as_str()

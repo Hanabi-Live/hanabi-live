@@ -47,10 +47,10 @@ type HypotheticalAction =
 // Initialization actions
 // ----------------------
 
-/** The parts of the "init" message that the state uses. */
+/** The parts of the "gameInit" message that the state uses. */
 export interface ActionInit extends Readonly<
   Pick<
-    ServerCommandData["init"],
+    ServerCommandData["gameInit"],
     "startedAt" | "finishedAt" | "mode" | "pausePlayerIndex" | "pauseQueued"
   >
 > {

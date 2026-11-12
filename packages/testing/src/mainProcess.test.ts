@@ -1,4 +1,5 @@
 import {
+  DEFAULT_MAX_PLAYERS,
   noticeSchema,
   replayGameSchema,
   SERVER_COMMAND_SCHEMAS,
@@ -155,6 +156,7 @@ databaseDescribe("compiled application entry point (rust)", () => {
           password: "synthetic-table-password",
           settings: {
             name: "Compiled smoke table",
+            maxPlayers: DEFAULT_MAX_PLAYERS,
             options: {
               variantName: "No Variant",
               timeControl: restart
@@ -204,7 +206,10 @@ databaseDescribe("compiled application entry point (rust)", () => {
 
         async function bootstrap(peer: ReturnType<typeof socketClient>) {
           peer.send("gameInitLoad", { tableId });
-          const init = await peer.receive("init", SERVER_COMMAND_SCHEMAS.init);
+          const init = await peer.receive(
+            "gameInit",
+            SERVER_COMMAND_SCHEMAS.gameInit,
+          );
           peer.send("gameStateLoad", { tableId });
           const history = await peer.receive(
             "gameState",
@@ -586,7 +591,10 @@ databaseDescribe("compiled application entry point (rust)", () => {
         id: number,
       ) {
         peer.send("gameInitLoad", { tableId: id });
-        const init = await peer.receive("init", SERVER_COMMAND_SCHEMAS.init);
+        const init = await peer.receive(
+          "gameInit",
+          SERVER_COMMAND_SCHEMAS.gameInit,
+        );
         peer.send("gameStateLoad", { tableId: id });
         const history = await peer.receive(
           "gameState",
@@ -687,7 +695,11 @@ databaseDescribe("compiled application entry point (rust)", () => {
               }
             : {
                 source: { type: "imported", game: replayJson },
-                visibility: { type: "shared" },
+                visibility: {
+                  type: "shared",
+                  joinExisting: false,
+                  spoilerFree: false,
+                },
               },
         );
         const created = await owner.receive(

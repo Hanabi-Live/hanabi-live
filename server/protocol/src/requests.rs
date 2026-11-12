@@ -1,4 +1,8 @@
 //! The requests that clients send.
+//!
+//! Text that a person types has no length bounds here: the server trims it, checks it, and answers
+//! a bad value with a warning that states the limit. The schemas bound only the structure, such as
+//! an optional text that cannot be empty, since only its absence means that there is none.
 
 #[cfg_attr(
     not(test),
@@ -12,7 +16,6 @@ use super::*;
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct ChatRequest {
-    #[schemars(length(min = 1))]
     pub text: String,
     /// The table whose chat the message is for. Absent means the lobby.
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -22,17 +25,14 @@ pub struct ChatRequest {
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct ChatPmRequest {
-    #[schemars(length(min = 1))]
     pub text: String,
-    #[schemars(length(min = 1))]
     pub recipient: String,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct ChatPmHistoryRequest {
-    #[schemars(range(min = 1, max = MAX_PRIVATE_HISTORY_MESSAGES))]
-    pub limit: i64,
+    pub limit: PageLimit,
     /// The table whose chat shows the reply. Absent means the lobby.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub table_id: Option<TableId>,
@@ -91,7 +91,6 @@ pub struct TableStartRequest {
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct TableRestartRequest {
     pub table_id: TableId,
-    #[serde(default)]
     pub hide_pregame: bool,
 }
 
@@ -122,10 +121,8 @@ pub struct TableSpectateRequest {
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct SettingsRequest {
-    /// The settings to change, each with the type that `Settings` gives it.
-    #[schemars(with = "Settings")]
-    pub settings: serde_json::Map<String, serde_json::Value>,
-    /// The settings to leave unset.
+    pub settings: SettingsChange,
+    /// The optional settings to leave unset.
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub cleared: Vec<OptionalSetting>,
 }
@@ -201,11 +198,9 @@ pub enum ReplayVisibility {
     Shared {
         /// For a saved game, spectate an existing shared replay of the same game instead of
         /// creating another one, if there is one.
-        #[serde(default)]
         join_existing: bool,
         /// Hide what happens later in the game: the turn slider, jumping to the end, and future
         /// strikes.
-        #[serde(default)]
         spoiler_free: bool,
     },
 }

@@ -390,8 +390,8 @@ function getTooltipContent(): string {
     );
   }
 
-  // "datetimeStarted" and "datetimeFinished" are initialized to strings during the "init" command,
-  // so they should never be undefined.
+  // "datetimeStarted" and "datetimeFinished" are initialized to strings during the "gameInit"
+  // command, so they should never be undefined.
   if (
     globals.state.datetimeStarted !== undefined
     && globals.state.datetimeFinished !== undefined

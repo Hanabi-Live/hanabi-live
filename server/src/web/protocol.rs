@@ -61,7 +61,7 @@ mod tests {
                 "chat" => json!({"text":"hello"}),
                 "chatPm" => json!({"text":"hello","recipient":"Alice"}),
                 "replayCreate" => {
-                    json!({"source":{"type":"saved","gameId":1},"visibility":{"type":"shared"}})
+                    json!({"source":{"type":"saved","gameId":1},"visibility":{"type":"shared","joinExisting":false,"spoilerFree":false}})
                 }
                 "playerAction" => {
                     json!({"tableId":1,"action":{"type":"clue","receiverIndex":0,"clue":{"type":"rank","value":1}}})
@@ -79,8 +79,11 @@ mod tests {
                 | "blockRemove" => json!({"username":"Alice"}),
                 "tagSearch" => json!({"tag":"test"}),
                 "gameHistory" => json!({"offset":0,"limit":10}),
-                "tableCreate" => json!({"settings":{"name":"Table"}}),
-                "tableUpdate" => json!({"tableId":1,"settings":{"name":"Table"}}),
+                "tableCreate" => json!({"settings":{"name":"Table","maxPlayers":5,"options":{}}}),
+                "tableUpdate" => {
+                    json!({"tableId":1,"settings":{"name":"Table","maxPlayers":5,"options":{}}})
+                }
+                "tableRestart" => json!({"tableId":1,"hidePregame":false}),
                 "chatPmHistory" => json!({"limit":10}),
                 "sync" | "lobbyLoad" | "linkList" | "blockList" => json!({}),
                 _ => json!({"tableId":1}),
@@ -113,10 +116,12 @@ mod tests {
         ] {
             assert!(parse(input).is_err(), "{input}");
         }
-        let create = parse("tableCreate {\"settings\":{\"name\":\"Table\"}}")
-            .unwrap()
-            .data();
-        assert_eq!(create["settings"]["maxPlayers"], 5);
+        assert!(parse("tableCreate {\"settings\":{\"name\":\"Table\"}}").is_err());
+        let create = parse(
+            "tableCreate {\"settings\":{\"name\":\"Table\",\"maxPlayers\":5,\"options\":{}}}",
+        )
+        .unwrap()
+        .data();
         assert_eq!(create["settings"]["options"]["variantName"], "No Variant");
     }
 

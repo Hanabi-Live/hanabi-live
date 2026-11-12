@@ -387,7 +387,7 @@ impl ViewMode {
 /// Everything a client needs to draw a game, before its events arrive.
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
-pub struct Init {
+pub struct GameInit {
     pub table_id: TableId,
     #[schemars(length(min = MIN_PLAYERS, max = MAX_PLAYERS))]
     pub player_names: Vec<Username>,
@@ -429,6 +429,30 @@ pub struct SharedReplayInit {
     /// play it again: the leader by restarting, and the other players by saying if they are ready.
     pub can_play_again: bool,
     /// When the replay began: when the game ended, for a review of a game just played, or when the
-    /// table was created, for a replay of an older game. `Init.startedAt` is when the game began.
+    /// table was created, for a replay of an older game. `GameInit.startedAt` is when the game began.
     pub replay_started_at: Timestamp,
+}
+
+/// The kind of a clue.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize, JsonSchema)]
+#[serde(rename_all = "camelCase")]
+pub enum ClueType {
+    Color,
+    Rank,
+}
+
+/// How a game ended.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize, JsonSchema)]
+#[serde(rename_all = "camelCase")]
+pub enum EndCondition {
+    Normal,
+    Strikeout,
+    Timeout,
+    TerminatedByPlayer,
+    SpeedrunFail,
+    IdleTimeout,
+    CharacterSoftlock,
+    AllOrNothingFail,
+    AllOrNothingSoftlock,
+    TerminatedByVote,
 }

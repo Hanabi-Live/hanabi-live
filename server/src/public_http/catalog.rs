@@ -1,6 +1,5 @@
 use hanabi_engine::Variant;
-use hanabi_protocol::{PublicVariant, VariantNames};
-use std::collections::BTreeMap;
+use hanabi_protocol::{PublicVariant, PublicVariants, VariantNames};
 
 // Metadata only: deck construction and card counts belong to the engine adapter.
 pub(super) fn variants() -> &'static [Variant] {
@@ -24,28 +23,30 @@ pub(super) fn names() -> VariantNames {
             .collect(),
     )
 }
-pub(super) fn metadata() -> BTreeMap<String, PublicVariant> {
-    variants()
-        .iter()
-        .map(|v| {
-            let variant = PublicVariant {
-                name: v.name.clone(),
-                // The catalog names each reversed suit by its suit's name with this suffix.
-                suits: v
-                    .suits
-                    .iter()
-                    .map(|suit| {
-                        if suit.reversed {
-                            format!("{} Reversed", suit.name)
-                        } else {
-                            suit.name.clone()
-                        }
-                    })
-                    .collect(),
-                stack_size: u8::try_from(v.stack_size).expect("catalog stack size"),
-                max_score: hanabi_protocol::Score(v.max_score),
-            };
-            (v.id.to_string(), variant)
-        })
-        .collect()
+pub(super) fn metadata() -> PublicVariants {
+    PublicVariants(
+        variants()
+            .iter()
+            .map(|v| {
+                let variant = PublicVariant {
+                    name: v.name.clone(),
+                    // The catalog names each reversed suit by its suit's name with this suffix.
+                    suits: v
+                        .suits
+                        .iter()
+                        .map(|suit| {
+                            if suit.reversed {
+                                format!("{} Reversed", suit.name)
+                            } else {
+                                suit.name.clone()
+                            }
+                        })
+                        .collect(),
+                    stack_size: u8::try_from(v.stack_size).expect("catalog stack size"),
+                    max_score: hanabi_protocol::Score(v.max_score),
+                };
+                (v.id.to_string(), variant)
+            })
+            .collect(),
+    )
 }

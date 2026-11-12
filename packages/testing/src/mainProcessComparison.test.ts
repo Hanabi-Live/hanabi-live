@@ -1,5 +1,5 @@
 /* eslint-disable no-await-in-loop -- Each lane follows the actual client protocol in order. */
-import { SERVER_COMMAND_SCHEMAS } from "@hanabi-live/data";
+import { DEFAULT_MAX_PLAYERS, SERVER_COMMAND_SCHEMAS } from "@hanabi-live/data";
 import { expect, test } from "bun:test";
 import { assertDefined } from "complete-common";
 import { once } from "node:events";
@@ -108,7 +108,10 @@ databaseDescribe("normal-server protocol workload", () => {
         tableId: number,
       ) {
         peer.send("gameInitLoad", { tableId });
-        const init = await peer.receive("init", SERVER_COMMAND_SCHEMAS.init);
+        const init = await peer.receive(
+          "gameInit",
+          SERVER_COMMAND_SCHEMAS.gameInit,
+        );
         peer.send("gameStateLoad", { tableId });
         const history = await peer.receive(
           "gameState",
@@ -133,6 +136,8 @@ databaseDescribe("normal-server protocol workload", () => {
             alice.send("tableCreate", {
               settings: {
                 name: "Benchmark",
+                maxPlayers: DEFAULT_MAX_PLAYERS,
+                options: {},
                 deal: { type: "seed", suffix: SEED_SUFFIX },
               },
             });

@@ -182,7 +182,7 @@ impl Harness {
             .context("Missing table identity")
     }
     async fn replay(&mut self, index: usize) -> Result<TableId> {
-        self.send(index,"replayCreate",json!({"source":{"type":"imported","game":{"playerNames":["Alice","Bob"],"seed":"p2v0s1"}},"visibility":{"type":"shared"}})).await?;
+        self.send(index,"replayCreate",json!({"source":{"type":"imported","game":{"playerNames":["Alice","Bob"],"seed":"p2v0s1"}},"visibility":{"type":"shared","joinExisting":false,"spoilerFree":false}})).await?;
         self.receive(index, "tableStarted").await?["tableId"]
             .as_u64()
             .map(TableId)
@@ -271,7 +271,7 @@ async fn player_shadow_is_cleared_when_a_spectator_joins() -> Result<()> {
                 .position(|p| p.is(UserId(player_id)))
                 .unwrap();
             h.send(index, "gameInitLoad", json!({"tableId":id})).await?;
-            let init = h.receive(index, "init").await?;
+            let init = h.receive(index, "gameInit").await?;
             ensure!(
                 init["mode"]["ourPlayerIndex"] == json!(seat)
                     && init["mode"]["type"] == if spectator { "shadowing" } else { "playing" },
@@ -285,7 +285,7 @@ async fn player_shadow_is_cleared_when_a_spectator_joins() -> Result<()> {
         // A spectator who does not shadow has no seat.
         h.send(3, "tableSpectate", json!({"tableId":id})).await?;
         h.send(3, "gameInitLoad", json!({"tableId":id})).await?;
-        let init = h.receive(3, "init").await?;
+        let init = h.receive(3, "gameInit").await?;
         ensure!(
             init["mode"] == json!({"type": "spectating"}),
             "A spectator without a shadow received a seat: {init}"
@@ -364,7 +364,7 @@ async fn player_shadow_from_saved_games_is_cleared_on_reattend() -> Result<()> {
             }
             h.send(1, "tableReattend", json!({"tableId":id})).await?;
             h.send(1, "gameInitLoad", json!({"tableId":id})).await?;
-            let init = h.receive(1, "init").await?;
+            let init = h.receive(1, "gameInit").await?;
             ensure!(
                 init["mode"] == json!({"type": "playing", "ourPlayerIndex": bob}),
                 "A recovered player kept another player's viewpoint: {init}"
@@ -974,7 +974,7 @@ async fn shared_replay_links_join_an_existing_replay_of_the_same_game() -> Resul
             .execute(&h.store.primary)
             .await?;
         let request = |visibility: Value| json!({"source":{"type":"saved","gameId":game},"visibility":visibility});
-        let shared = |join_existing: bool| json!({"type":"shared","joinExisting":join_existing});
+        let shared = |join_existing: bool| json!({"type":"shared","joinExisting":join_existing,"spoilerFree":false});
         let open = async |h: &mut Harness, index: usize, request: Value| -> Result<Value> {
             h.send(index, "replayCreate", request).await?;
             Ok(h.receive(index, "tableStarted").await?["tableId"].clone())
@@ -1014,14 +1014,14 @@ async fn spoiler_free_reviews_are_shared_replays_that_tell_everyone() -> Result<
         h.send(
             0,
             "replayCreate",
-            json!({"visibility":{"type":"shared","spoilerFree":true},
+            json!({"visibility":{"type":"shared","joinExisting":false,"spoilerFree":true},
                 "source":{"type":"imported","game":{"playerNames":["Alice","Bob"],"seed":"p2v0s1"}}}),
         )
         .await?;
         let id = h.receive(0, "tableStarted").await?["tableId"].clone();
         h.send(1, "tableSpectate", json!({"tableId":id})).await?;
         h.send(1, "gameInitLoad", json!({"tableId":id})).await?;
-        let init = h.receive(1, "init").await?;
+        let init = h.receive(1, "gameInit").await?;
         ensure!(
             init["mode"]["type"] == "sharedReplay"
                 && init["mode"]["sharedReplay"]["spoilerFree"] == true,
@@ -1048,7 +1048,7 @@ async fn shared_replays_of_older_games_start_when_their_table_is_created() -> Re
         h.send(
             0,
             "replayCreate",
-            json!({"visibility":{"type":"shared"},"source":{"type":"imported","game":{
+            json!({"visibility":{"type":"shared","joinExisting":false,"spoilerFree":false},"source":{"type":"imported","game":{
                 "playerNames":["Alice","Bob"],"seed":"p2v0s1",
                 "actions":[{"type":"gameOver","endCondition":"terminatedByPlayer","playerIndex":0}]}}}),
         )
@@ -1076,7 +1076,7 @@ async fn shared_replays_of_older_games_start_when_their_table_is_created() -> Re
         }
         h.send(1, "tableSpectate", json!({"tableId":id})).await?;
         h.send(1, "gameInitLoad", json!({"tableId":id})).await?;
-        let init = h.receive(1, "init").await?;
+        let init = h.receive(1, "gameInit").await?;
         ensure!(
             init["mode"]["sharedReplay"]["replayStartedAt"]
                     == hanabi_protocol::Timestamp::from(created).as_str(),
@@ -1744,7 +1744,7 @@ async fn chat_read_positions_survive_game_start_reconnect_and_remake() -> Result
                 .await?;
             let history = h.receive(index, "chatList").await?;
             ensure!(
-                history["unread"] == i32::from(index != 0),
+                history["numUnread"] == i32::from(index != 0),
                 "Game start reset the chat read position: {history}"
             );
             h.send(index, "loaded", json!({"tableId":id})).await?;
@@ -1754,7 +1754,7 @@ async fn chat_read_positions_survive_game_start_reconnect_and_remake() -> Result
         h.send(1, "tableReattend", json!({"tableId":id})).await?;
         h.send(1, "gameStateLoad", json!({"tableId":id})).await?;
         ensure!(
-            h.receive(1, "chatList").await?["unread"] == 1,
+            h.receive(1, "chatList").await?["numUnread"] == 1,
             "Reconnect reset the chat read position"
         );
         h.send(1, "loaded", json!({"tableId":id})).await?;
@@ -1784,7 +1784,7 @@ async fn chat_read_positions_survive_game_start_reconnect_and_remake() -> Result
                 .context("Missing history")?
                 .len();
             ensure!(
-                history["unread"] == total - read,
+                history["numUnread"] == total - read,
                 "Remake reset the chat read position: {history}"
             );
         }
@@ -1829,7 +1829,7 @@ async fn restart_leaves_out_players_who_are_done_playing() -> Result<()> {
             );
         }
         h.send(2, "gameInitLoad", json!({"tableId":id})).await?;
-        let init = h.receive(2, "init").await?;
+        let init = h.receive(2, "gameInit").await?;
         ensure!(
             init["mode"]["sharedReplay"]["restartDeclined"] == json!(["Carol"])
                 && init["mode"]["sharedReplay"]["canPlayAgain"] == true,
@@ -1963,7 +1963,7 @@ async fn pregame_history_survives_join_return_and_actor_recovery() -> Result<()>
         ensure!(history["messages"][0]["text"] == "Alice created the table.");
         ensure!(history["messages"][0]["source"] == "server");
         ensure!(
-            history["unread"] == 0,
+            history["numUnread"] == 0,
             "The creator has unread chat: {history}"
         );
         h.send(0, "chat", json!({"tableId":id,"text":"Before Bob joined"}))
@@ -2093,7 +2093,7 @@ async fn a_replay_whose_leader_is_away_passes_leadership_to_the_first_to_return(
         h.restart().await?;
         h.send(1, "tableReattend", json!({"tableId":id})).await?;
         h.send(1, "gameInitLoad", json!({"tableId":id})).await?;
-        let init = h.receive(1, "init").await?;
+        let init = h.receive(1, "gameInit").await?;
         ensure!(
             init["mode"]["sharedReplay"]["ownerId"] == 2,
             "The returning viewer did not lead the replay: {init}"
@@ -2102,7 +2102,7 @@ async fn a_replay_whose_leader_is_away_passes_leadership_to_the_first_to_return(
         // Alice returns to a replay that Bob now leads.
         h.send(0, "tableReattend", json!({"tableId":id})).await?;
         h.send(0, "gameInitLoad", json!({"tableId":id})).await?;
-        let init = h.receive(0, "init").await?;
+        let init = h.receive(0, "gameInit").await?;
         ensure!(init["mode"]["sharedReplay"]["ownerId"] == 2);
         Ok::<(), anyhow::Error>(())
     }

@@ -1,5 +1,5 @@
 /* eslint-disable no-await-in-loop -- Each lane follows the actual client protocol in order. */
-import { SERVER_COMMAND_SCHEMAS } from "@hanabi-live/data";
+import { DEFAULT_MAX_PLAYERS, SERVER_COMMAND_SCHEMAS } from "@hanabi-live/data";
 import { expect, test } from "bun:test";
 import { assertDefined } from "complete-common";
 import { once } from "node:events";
@@ -53,7 +53,13 @@ databaseDescribe("Rust actor durability and ownership", () => {
         }
         let alice = await connect(aliceCookie);
         let bob = await connect(bobCookie);
-        alice.send("tableCreate", { settings: { name: "Recovery" } });
+        alice.send("tableCreate", {
+          settings: {
+            name: "Recovery",
+            maxPlayers: DEFAULT_MAX_PLAYERS,
+            options: {},
+          },
+        });
         const { tableId } = await alice.receive(
           "tableJoined",
           SERVER_COMMAND_SCHEMAS.tableJoined,
@@ -68,7 +74,10 @@ databaseDescribe("Rust actor durability and ownership", () => {
         await bob.receive("tableStarted", SERVER_COMMAND_SCHEMAS.tableStarted);
         async function bootstrap(peer: ReturnType<typeof socketClient>) {
           peer.send("gameInitLoad", { tableId });
-          const init = await peer.receive("init", SERVER_COMMAND_SCHEMAS.init);
+          const init = await peer.receive(
+            "gameInit",
+            SERVER_COMMAND_SCHEMAS.gameInit,
+          );
           peer.send("gameStateLoad", { tableId });
           const history = await peer.receive(
             "gameState",

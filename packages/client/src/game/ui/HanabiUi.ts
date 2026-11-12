@@ -99,8 +99,8 @@ export class HanabiUi {
     document.addEventListener("theme_change", this.themeChangeHandler);
 
     // The HanabiUi object is now instantiated, but none of the actual UI elements are drawn yet. We
-    // must wait for the "init" message from the server in order to know how many players are in the
-    // game and what the variant is. Only then can we start drawing the UI.
+    // must wait for the "gameInit" message from the server in order to know how many players are in
+    // the game and what the variant is. Only then can we start drawing the UI.
   }
 
   // The following methods are called from various parent functions.

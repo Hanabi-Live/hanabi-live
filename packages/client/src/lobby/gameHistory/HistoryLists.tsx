@@ -17,6 +17,7 @@ import {
   showMoreOtherScores,
   showOtherScoresFromHistory,
 } from "../history.ts";
+import { replayVisibility } from "../replayVisibility.ts";
 import { selectHistoryGames, selectShownGameCount } from "./historySlice.ts";
 
 /** Games with more options than this show an ellipsis, with the options listed in the tooltip. */
@@ -343,7 +344,7 @@ function ReplayButton({
       onClick={() => {
         globals.conn!.send("replayCreate", {
           source: { type: "saved", gameId },
-          visibility: { type: visibility },
+          visibility: replayVisibility(visibility === "shared"),
         });
         if (visibility === "shared") {
           hide();

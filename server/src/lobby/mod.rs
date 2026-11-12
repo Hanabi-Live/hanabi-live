@@ -15,15 +15,15 @@ pub use history::{blocked_seeds, get_history, history_ids};
 use history::{seed_game_count, seed_history_ids};
 use relationships::Change;
 pub use relationships::{block_relations, blocked, blocked_between, friends};
-pub use settings::{changed_settings, get_settings, set_setting};
+use settings::set_settings;
+pub use settings::{changed_settings, get_settings};
 
 use crate::accounts::{escape_html, normalize_string};
 use crate::routing::{Route, route};
 use crate::transport::{Identity, Outgoing};
-use anyhow::{Context, Result, ensure};
+use anyhow::{Result, ensure};
 use hanabi_protocol::ClientMessage;
 use hanabi_protocol::{TableId, UserId};
-use serde_json::Value;
 use std::sync::Arc;
 
 use sqlx::PgPool;
@@ -164,34 +164,15 @@ pub async fn dispatch(
     ensure!(caller.user > UserId(0), "Invalid caller");
     let effects = match message {
         ClientMessage::Settings(request) => {
-            let changes = request.settings;
-            for (name, value) in &changes {
-                if let Err(error) = settings::validate_setting(name, value) {
-                    return Ok(Some(vec![warning(&error.to_string())]));
-                }
-            }
+            set_settings(pool, caller.user, &request.settings, &request.cleared).await?;
             let mut effects = vec![];
-            for (name, value) in &changes {
-                set_setting(pool, caller.user, name, value).await?;
-                // `validate_setting` has already checked each value's type and range.
-                match name.as_str() {
-                    "hGroupConventions" => {
-                        effects.push(Publication::HGroup(value == &Value::Bool(true)).into());
-                    }
-                    "hGroupLevel" => effects.push(
-                        Publication::HGroupLevel(Some(
-                            value
-                                .as_u64()
-                                .and_then(hanabi_protocol::HGroupLevel::new)
-                                .context("Invalid H-Group level")?,
-                        ))
-                        .into(),
-                    ),
-                    _ => {}
-                }
+            if let Some(conventions) = request.settings.h_group_conventions {
+                effects.push(Publication::HGroup(conventions).into());
+            }
+            if let Some(level) = request.settings.h_group_level {
+                effects.push(Publication::HGroupLevel(Some(level)).into());
             }
             for setting in request.cleared {
-                settings::clear_setting(pool, caller.user, setting.name()).await?;
                 match setting {
                     hanabi_protocol::OptionalSetting::HGroupLevel => {
                         effects.push(Publication::HGroupLevel(None).into());

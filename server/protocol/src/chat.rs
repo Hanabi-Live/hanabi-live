@@ -67,7 +67,7 @@ pub struct ChatDeleted {
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct ChatList {
     pub messages: Vec<Chat>,
-    pub unread: Count,
+    pub num_unread: Count,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]

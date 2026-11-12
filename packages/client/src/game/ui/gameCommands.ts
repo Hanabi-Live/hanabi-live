@@ -243,7 +243,7 @@ function onHypotheticalControl(control: HypotheticalControl) {
   }
 }
 
-gameCommands.set("init", (metadata) => {
+gameCommands.set("gameInit", (metadata) => {
   setUrl(metadata);
   initStateStore(metadata);
 
@@ -318,8 +318,8 @@ gameCommands.set("gameEvent", (data) => {
 });
 
 /**
- * Received after "init", when the UI is drawn, and again after we reconnect. It holds everything
- * about the game that we may see.
+ * Received after "gameInit", when the UI is drawn, and again after we reconnect. It holds
+ * everything about the game that we may see.
  */
 gameCommands.set("gameState", (data) => {
   setEvents(data.events);
@@ -519,7 +519,7 @@ function suggestTurn(who: string, room: string, segment: number) {
   }
 }
 
-type InitData = ServerCommandData["init"];
+type InitData = ServerCommandData["gameInit"];
 
 function setUrl(data: InitData) {
   const { mode } = data;

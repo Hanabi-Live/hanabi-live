@@ -501,7 +501,7 @@ impl TableActor {
         if part == GameInfo::Init {
             let shared_replay = self.shared_replay_init(s, &session);
             let our_player_index = a.shadow.or_else(|| display_seat.and_then(PlayerIndex::new));
-            let init = hanabi_protocol::Init {
+            let init = hanabi_protocol::GameInit {
                 table_id: self.table.id,
                 player_names: s.players.iter().map(|p| p.name.as_str().into()).collect(),
                 mode: match (shared_replay, a.shadow) {
@@ -542,8 +542,10 @@ impl TableActor {
                 pause_player_index: s.paused_by,
                 pause_queued: seat.is_some_and(|i| s.queued_pauses[i]),
             };
-            e.messages
-                .push((session.clone(), frame(hanabi_protocol::server::INIT, init)));
+            e.messages.push((
+                session.clone(),
+                frame(hanabi_protocol::server::GAME_INIT, init),
+            ));
         } else {
             let recipient = if replay {
                 Recipient::Spectator {

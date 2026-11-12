@@ -481,9 +481,10 @@ fn data_constants() -> String {
             "DEFAULT_PAGE_SIZE",
             hanabi_protocol::DEFAULT_PAGE_SIZE.to_string(),
         ),
+        ("MAX_PAGE_SIZE", hanabi_protocol::MAX_PAGE_SIZE.to_string()),
         (
-            "MAX_PRIVATE_HISTORY_MESSAGES",
-            hanabi_protocol::MAX_PRIVATE_HISTORY_MESSAGES.to_string(),
+            "DEFAULT_MAX_PLAYERS",
+            hanabi_protocol::DEFAULT_MAX_PLAYERS.to_string(),
         ),
         (
             "SECONDS_PER_MINUTE",

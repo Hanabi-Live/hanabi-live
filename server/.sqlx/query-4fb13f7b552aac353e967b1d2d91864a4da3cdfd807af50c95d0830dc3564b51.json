@@ -1,0 +1,16 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "UPDATE users SET settings = (settings || $2::jsonb) - $3::text[] WHERE id=$1",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Int4",
+        "Jsonb",
+        "TextArray"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "4fb13f7b552aac353e967b1d2d91864a4da3cdfd807af50c95d0830dc3564b51"
+}
