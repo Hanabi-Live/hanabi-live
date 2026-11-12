@@ -412,7 +412,6 @@ impl ViewMode {
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct GameInit {
-    pub table_id: TableId,
     #[schemars(length(min = MIN_PLAYERS, max = MAX_PLAYERS))]
     pub player_names: Vec<Username>,
     pub mode: ViewMode,

@@ -485,7 +485,6 @@ export const gameInitSchema = z
      */
     seed: z.string().min(1).optional(),
     startedAt: z.iso.datetime({ precision: 3 }),
-    tableId: tableIdSchema,
   })
   .readonly();
 

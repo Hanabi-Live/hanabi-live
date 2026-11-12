@@ -265,11 +265,11 @@ function showsTable(conn: Connection, tableId: number): boolean {
  */
 export function loadGameInit(conn: Connection, tableId: number): void {
   conn.send("gameInitLoad", { tableId }, (reply) => {
-    if (!reply.ok || !showsTable(conn, reply.data.tableId)) {
+    if (!reply.ok || !showsTable(conn, tableId)) {
       return;
     }
     const metadata: GameInit = reply.data;
-    setUrl(metadata);
+    setUrl(tableId, metadata);
     initStateStore(metadata);
 
     // Now that we know the number of players and the variant, we can start to load & draw the UI.
@@ -557,7 +557,7 @@ function suggestTurn(who: string, room: string, segment: number) {
   }
 }
 
-function setUrl(data: GameInit) {
+function setUrl(tableId: number, data: GameInit) {
   const { mode } = data;
   let path: string;
   if (mode.type === "soloReplay" || mode.type === "sharedReplay") {
@@ -567,7 +567,7 @@ function setUrl(data: GameInit) {
     }
     path = `${mode.type === "sharedReplay" ? PATH.SHARED_REPLAY : PATH.REPLAY}/${mode.gameId}`;
   } else {
-    path = `${PATH.GAME}/${data.tableId}${
+    path = `${PATH.GAME}/${tableId}${
       mode.type === "shadowing" ? `/shadow/${mode.ourPlayerIndex}` : ""
     }`;
   }

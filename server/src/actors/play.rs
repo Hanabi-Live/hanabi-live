@@ -508,7 +508,6 @@ impl TableActor {
             let shared_replay = self.shared_replay_state(s, &session);
             let our_player_index = a.shadow.or_else(|| display_seat.and_then(PlayerIndex::new));
             let init = hanabi_protocol::GameInit {
-                table_id: self.table.id,
                 player_names: s.players.iter().map(|p| p.name.as_str().into()).collect(),
                 mode: match (shared_replay, a.shadow) {
                     (Some(shared_replay), _) => ViewMode::SharedReplay {
