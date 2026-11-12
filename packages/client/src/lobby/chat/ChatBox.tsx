@@ -4,6 +4,7 @@ import { useEffect, useLayoutEffect, useRef } from "react";
 import { LengthCounter } from "../../LengthCounter.tsx";
 import {
   CHAT_LENGTH_LIMIT,
+  CHAT_LINE_CLASSES,
   attachChatInput,
   openEmojiPicker,
 } from "../../chat.ts";
@@ -76,7 +77,7 @@ function ChatLineView({ line }: { readonly line: ChatLine }) {
 
   return (
     <span
-      className="tw:block"
+      className={CHAT_LINE_CLASSES}
       // The client builds the line from text that the server already escaped.
       dangerouslySetInnerHTML={{ __html: line.html }}
       data-chat-id={line.chatId}

@@ -1125,6 +1125,26 @@ function getStates({
         await page.waitForTimeout(SETTLE_MILLISECONDS);
       },
     },
+    // The server lists the proposed options in the table chat, one option on each line.
+    {
+      name: "pregame-proposed-options",
+      path: "/",
+      loggedIn: true,
+      prepare: async (page) => {
+        await joinTable(page);
+        await page.click("#nav-buttons-pregame-change-options");
+        await page.fill("#createTableName", "Proposed Name");
+        await page.click("#create-game-submit");
+        await page
+          .locator("#lobby-chat-pregame-text .cp")
+          .first()
+          .waitFor({ state: "attached" });
+        await page
+          .locator("#lobby-toggle-show-game-chat")
+          .dispatchEvent("click");
+        await page.waitForTimeout(SETTLE_MILLISECONDS);
+      },
+    },
     // Starting the game ends the pregame, so this state comes after the pregame states.
     {
       name: "new-ui-game",

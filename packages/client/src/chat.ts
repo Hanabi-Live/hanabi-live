@@ -77,6 +77,12 @@ export enum SelfChatMessageType {
  */
 const TYPING_REPORT_INTERVAL_MS = TYPING_TIMEOUT_MS / 2;
 
+/**
+ * The classes of a chat line. The server lists the options that a player proposes as `<span
+ * class="cp">` elements, and these put each option on its own indented line.
+ */
+export const CHAT_LINE_CLASSES = "tw:block tw:[&_.cp]:block tw:[&_.cp]:pl-13";
+
 /** The limit of a chat message, which the server counts after it trims the message. */
 export const CHAT_LENGTH_LIMIT = {
   max: MAX_CHAT_LENGTH,
@@ -730,7 +736,7 @@ function appendGameChatLine(
 
   // Add the new line and fade it in.
   chat.append(
-    `<span id="chat-line-${key}" class="${fast ? "" : "hidden"}">${html}</span>`,
+    `<span id="chat-line-${key}" class="${CHAT_LINE_CLASSES}${fast ? "" : " hidden"}">${html}</span>`,
   );
   $(`#chat-line-${key}`).fadeIn(FADE_TIME_MS).css("display", "block");
   if (suggestion !== undefined) {
