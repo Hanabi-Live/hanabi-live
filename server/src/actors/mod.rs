@@ -13,6 +13,7 @@ use anyhow::Result;
 use hanabi_protocol::ClientRequest;
 use hanabi_protocol::GameId;
 use hanabi_protocol::PlayerIndex;
+use hanabi_protocol::ReplyData;
 use hanabi_protocol::TableId;
 use hanabi_protocol::UserId;
 #[cfg(test)]
@@ -44,6 +45,8 @@ mod wire;
 
 pub use hub::Hub;
 type Reply = oneshot::Sender<CommandResult>;
+/// The answer to a client request: its reply's data, if it has any.
+pub type RequestReply = oneshot::Sender<CommandResult<Option<ReplyData>>>;
 
 /// Sends an actor a command that carries a reply channel, and waits for the reply.
 pub async fn request<C, T>(
@@ -235,7 +238,7 @@ pub enum HubCommand {
     Client {
         session: Arc<Session>,
         message: ClientRequest,
-        reply: Reply,
+        reply: RequestReply,
     },
     /// Lists the online users, for a private message. Fails for a stale session.
     Directory {
@@ -254,8 +257,8 @@ pub enum HubCommand {
     },
     /// A join to a table finished; the hub ends its seat reservation and answers the request.
     JoinFinished {
-        result: CommandResult,
-        reply: Reply,
+        result: CommandResult<Option<ReplyData>>,
+        reply: RequestReply,
         reservation: SeatReservation,
     },
     /// Reserves seats for users who move from table `from` to a new table, such as in a split.
@@ -300,7 +303,7 @@ pub enum HubCommand {
         allocation: Allocation,
         session: Arc<Session>,
         warnings: Vec<String>,
-        reply: Reply,
+        reply: RequestReply,
     },
     Spawn {
         table: Box<TableSnapshot>,
@@ -327,7 +330,7 @@ pub enum TableCommand {
         /// The user's blocks when the hub sent the command.
         blocks: Blocks,
         command: Command,
-        reply: Reply,
+        reply: RequestReply,
     },
     Drain(oneshot::Sender<Result<()>>),
 }

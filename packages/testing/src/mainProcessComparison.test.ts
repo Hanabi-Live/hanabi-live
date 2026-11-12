@@ -106,11 +106,7 @@ databaseDescribe("normal-server protocol workload", () => {
         peer: ReturnType<typeof socketClient>,
         tableId: number,
       ) {
-        peer.send("gameInitLoad", { tableId });
-        const init = await peer.receive(
-          "gameInit",
-          SERVER_EVENT_SCHEMAS.gameInit,
-        );
+        const init = await peer.request("gameInitLoad", { tableId });
         peer.send("gameStateLoad", { tableId });
         const history = await peer.receive(
           "gameState",
@@ -148,10 +144,7 @@ databaseDescribe("normal-server protocol workload", () => {
               SERVER_EVENT_SCHEMAS.tableJoined,
             );
             bob.send("tableJoin", { tableId });
-            await bob.receive(
-              "tableJoined",
-              SERVER_EVENT_SCHEMAS.tableJoined,
-            );
+            await bob.receive("tableJoined", SERVER_EVENT_SCHEMAS.tableJoined);
             alice.send("tableStart", {
               tableId,
               intendedPlayerIds: [

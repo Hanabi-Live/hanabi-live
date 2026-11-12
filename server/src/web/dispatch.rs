@@ -279,14 +279,14 @@ pub(super) async fn dispatch(
     } else {
         message
     };
-    request(&app.hub, |reply| HubCommand::Client {
+    let data = request(&app.hub, |reply| HubCommand::Client {
         session,
         message,
         reply,
     })
     .await??;
     measurement.success();
-    Ok(None)
+    Ok(data)
 }
 
 /// Runs a request and answers it. A request that succeeded is answered through the hub, after the

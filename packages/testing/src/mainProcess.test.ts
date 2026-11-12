@@ -181,10 +181,7 @@ databaseDescribe("compiled application entry point (rust)", () => {
           SERVER_EVENT_SCHEMAS.tableJoined,
         );
         expect(bobJoined.tableId).toBe(tableId);
-        const game = await bob.receive(
-          "pregame",
-          SERVER_EVENT_SCHEMAS.pregame,
-        );
+        const game = await bob.receive("pregame", SERVER_EVENT_SCHEMAS.pregame);
         expect(game.players.map((player) => player.username)).toEqual([
           "SmokeAlice",
           "SmokeBob",
@@ -216,11 +213,7 @@ databaseDescribe("compiled application entry point (rust)", () => {
         );
 
         async function bootstrap(peer: ReturnType<typeof socketClient>) {
-          peer.send("gameInitLoad", { tableId });
-          const init = await peer.receive(
-            "gameInit",
-            SERVER_EVENT_SCHEMAS.gameInit,
-          );
+          const init = await peer.request("gameInitLoad", { tableId });
           peer.send("gameStateLoad", { tableId });
           const history = await peer.receive(
             "gameState",
@@ -600,11 +593,7 @@ databaseDescribe("compiled application entry point (rust)", () => {
         peer: ReturnType<typeof socketClient>,
         id: number,
       ) {
-        peer.send("gameInitLoad", { tableId: id });
-        const init = await peer.receive(
-          "gameInit",
-          SERVER_EVENT_SCHEMAS.gameInit,
-        );
+        const init = await peer.request("gameInitLoad", { tableId: id });
         peer.send("gameStateLoad", { tableId: id });
         const history = await peer.receive(
           "gameState",

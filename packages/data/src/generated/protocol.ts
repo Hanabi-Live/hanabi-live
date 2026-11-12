@@ -460,7 +460,8 @@ const viewModeSchema = z.discriminatedUnion("type", [
 ]);
 
 /**
- * Everything a client needs to draw a game, before its events arrive.
+ * Everything a client needs to draw a game, before its events arrive. It is the reply to
+ * `gameInitLoad`.
  */
 export const gameInitSchema = z
   .strictObject({
@@ -635,8 +636,9 @@ const voteStateSchema = z
   .readonly();
 
 /**
- * What a client shows of a game after `gameInit`, as the recipient may see it: the events so far, and
- * the state around them. It answers `gameStateLoad`.
+ * What a client shows of a game after its setup (`GameInit`), as the recipient may see it: the
+ * events so far, and the state around them. It answers `gameStateLoad`. It is an event, not the
+ * reply's data, so that it arrives before the table's later messages, which build on it.
  */
 export const gameStateSchema = z
   .strictObject({
@@ -1722,6 +1724,7 @@ export const CLIENT_REQUEST_SCHEMAS = {
 export const REPLY_SCHEMAS = {
   chatPmHistory: chatPmHistorySchema,
   gameHistory: gamePageSchema,
+  gameInitLoad: gameInitSchema,
   seedGames: gamePageSchema,
 } as const;
 export const SERVER_EVENT_SCHEMAS = {
@@ -1737,7 +1740,6 @@ export const SERVER_EVENT_SCHEMAS = {
   gameEvent: gameEventMessageSchema,
   gameFinished: gameFinishedSchema,
   gameHistoryAdded: gameSummarySchema,
-  gameInit: gameInitSchema,
   gameState: gameStateSchema,
   idleReset: tableRefSchema,
   idleWarning: idleWarningSchema,

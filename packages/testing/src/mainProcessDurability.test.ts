@@ -86,11 +86,7 @@ databaseDescribe("Rust actor durability and ownership", () => {
           entersGame,
         );
         async function bootstrap(peer: ReturnType<typeof socketClient>) {
-          peer.send("gameInitLoad", { tableId });
-          const init = await peer.receive(
-            "gameInit",
-            SERVER_EVENT_SCHEMAS.gameInit,
-          );
+          const init = await peer.request("gameInitLoad", { tableId });
           peer.send("gameStateLoad", { tableId });
           const history = await peer.receive(
             "gameState",

@@ -4,9 +4,9 @@ import { globals } from "../ui/UiGlobals.ts";
 import * as newUiState from "./newUiState.ts";
 
 /**
- * Subscribes to the game's store. The store does not exist until the server sends the "gameInit"
- * message, and it is replaced for every game, so this follows `newUiState.notify`, which runs when
- * the store is created.
+ * Subscribes to the game's store. The store does not exist until the server answers "gameInitLoad",
+ * and it is replaced for every game, so this follows `newUiState.notify`, which runs when the store
+ * is created.
  */
 function subscribeToGame(listener: () => void): () => void {
   let unsubscribeStore = globals.store?.subscribe(listener);

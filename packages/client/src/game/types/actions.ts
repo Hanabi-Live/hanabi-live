@@ -2,7 +2,7 @@
 // and the state reducers to fire.) All of the sub-actions from the "gameEvent" command are listed
 // here.
 
-import type { ServerEventData, Spectator } from "@hanabi-live/data";
+import type { ReplyData, ServerEventData, Spectator } from "@hanabi-live/data";
 import type {
   ActionIncludingHypothetical,
   CardIdentity,
@@ -47,9 +47,9 @@ type HypotheticalAction =
 // Initialization actions
 // ----------------------
 
-/** The parts of the "gameInit" message that the state uses. */
+/** The parts of the reply to "gameInitLoad" that the state uses. */
 export interface ActionInit extends Readonly<
-  Pick<ServerEventData["gameInit"], "startedAt" | "finishedAt" | "mode">
+  Pick<ReplyData["gameInitLoad"], "startedAt" | "finishedAt" | "mode">
 > {
   readonly type: "init";
 

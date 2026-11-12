@@ -2,7 +2,7 @@
 // client also sends these messages to itself in order to emulate actions coming from the server for
 // e.g. in-game replays.
 
-import type { ServerEventData } from "@hanabi-live/data";
+import type { ReplyData, ServerEventData } from "@hanabi-live/data";
 import type {
   CardOrder,
   GameMetadata,
@@ -19,8 +19,10 @@ import {
 import type { Tuple } from "complete-common";
 import { iRange, newArray } from "complete-common";
 import { createStore } from "redux";
+import type { Connection } from "../../Connection.ts";
 import { sendSelfPmFromServer } from "../../chat.ts";
 import { PATH } from "../../constants.ts";
+import { Screen } from "../../lobby/types/Screen.ts";
 import * as modals from "../../modals.ts";
 import { ServerHandlers } from "../../serverHandlers.ts";
 import { setBrowserAddressBarPath } from "../../utils.ts";
@@ -52,6 +54,7 @@ import { uiInit } from "./uiInit.ts";
 // Define a command handler map.
 export const gameCommands = new ServerHandlers();
 
+type GameInit = ReplyData["gameInitLoad"];
 type GameState = ServerEventData["gameState"];
 type Votes = NonNullable<GameState["votes"]>;
 type HypotheticalControl = Extract<
@@ -245,13 +248,34 @@ function onHypotheticalControl(control: HypotheticalControl) {
   }
 }
 
-gameCommands.set("gameInit", (metadata) => {
-  setUrl(metadata);
-  initStateStore(metadata);
+/** Whether a reply about a table still applies: the connection is current and shows its game. */
+function showsTable(conn: Connection, tableId: number): boolean {
+  const { lobby } = globals;
+  return (
+    lobby.conn === conn
+    && lobby.currentScreen === Screen.Game
+    && lobby.ui !== undefined
+    && lobby.joinedTableId === tableId
+  );
+}
 
-  // Now that we know the number of players and the variant, we can start to load & draw the UI.
-  uiInit();
-});
+/**
+ * Asks the server for what we need to draw the game, such as the players and the variant. When it
+ * arrives, we draw the UI, and then ask for the game's state ("gameStateLoad").
+ */
+export function loadGameInit(conn: Connection, tableId: number): void {
+  conn.send("gameInitLoad", { tableId }, (reply) => {
+    if (!reply.ok || !showsTable(conn, reply.data.tableId)) {
+      return;
+    }
+    const metadata: GameInit = reply.data;
+    setUrl(metadata);
+    initStateStore(metadata);
+
+    // Now that we know the number of players and the variant, we can start to load & draw the UI.
+    uiInit();
+  });
+}
 
 // Received when spectating a game.
 gameCommands.set("note", (data) => {
@@ -320,7 +344,7 @@ gameCommands.set("gameEvent", (data) => {
 });
 
 /**
- * Received after "gameInit", when the UI is drawn, and again after we reconnect. It holds
+ * Received after "gameInitLoad", when the UI is drawn, and again after we reconnect. It holds
  * everything about the game that we may see.
  */
 gameCommands.set("gameState", (data) => {
@@ -533,9 +557,7 @@ function suggestTurn(who: string, room: string, segment: number) {
   }
 }
 
-type InitData = ServerEventData["gameInit"];
-
-function setUrl(data: InitData) {
+function setUrl(data: GameInit) {
   const { mode } = data;
   let path: string;
   if (mode.type === "soloReplay" || mode.type === "sharedReplay") {
@@ -561,7 +583,7 @@ function setUrl(data: InitData) {
 
 /** The clue color index or rank that a character was assigned, if it has one. */
 function assignedValue(
-  character: InitData["characters"][number],
+  character: GameInit["characters"][number],
 ): number | undefined {
   if (character.type === "color") {
     return character.color;
@@ -569,7 +591,7 @@ function assignedValue(
   return character.type === "rank" ? character.rank : undefined;
 }
 
-function initStateStore(data: InitData) {
+function initStateStore(data: GameInit) {
   // Set the variant (as a helper reference).
   globals.variant = getVariantById(data.options.variantId);
 

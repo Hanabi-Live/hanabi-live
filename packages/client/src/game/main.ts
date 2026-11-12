@@ -10,6 +10,7 @@ import * as tooltips from "../tooltips.ts";
 import { setBrowserAddressBarPath } from "../utils.ts";
 import * as chat from "./chat.ts";
 import * as newUi from "./newUi/newUi.tsx";
+import { loadGameInit } from "./ui/gameCommands.ts";
 import { HanabiUi } from "./ui/HanabiUi.ts";
 
 /** The history screen's address (e.g. "#history"), if a replay was opened from one. */
@@ -52,12 +53,9 @@ export function show(justStarted: boolean): void {
     newUi.mount();
   }
 
-  // Request some high-level information about the game (e.g. the number of players and the variant)
-  // The server will send us back a "gameInit" message, which will contain enough information to
-  // start drawing the UI (we will request the specific actions for the game later on)
-  globals.conn!.send("gameInitLoad", {
-    tableId: globals.joinedTableId,
-  });
+  // Request what we need to start drawing the UI, such as the number of players and the variant. We
+  // request the game's state once the UI is drawn.
+  loadGameInit(globals.conn!, globals.joinedTableId);
 }
 
 /** Shows the redesigned game screen in place of the classic one, for the rest of this game. */

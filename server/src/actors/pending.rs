@@ -1,7 +1,7 @@
 //! Slow work that a table starts and finishes later, such as a database read or a password check.
 //! The table keeps answering other commands while it waits.
 
-use super::{Blocks, Reply, chat::VariantDiscovery};
+use super::{Blocks, RequestReply, chat::VariantDiscovery};
 use crate::transport::Session;
 use anyhow::Result;
 use futures_util::{StreamExt, future::BoxFuture, stream::FuturesUnordered};
@@ -41,7 +41,7 @@ pub(super) enum Completed {
 #[derive(Default)]
 pub(super) struct Pending {
     work: FuturesUnordered<BoxFuture<'static, (u64, Completed)>>,
-    replies: HashMap<u64, Reply>,
+    replies: HashMap<u64, RequestReply>,
     next_id: u64,
 }
 
@@ -50,7 +50,7 @@ impl Pending {
     pub(super) fn start(
         &mut self,
         work: impl Future<Output = Completed> + Send + 'static,
-        reply: Option<Reply>,
+        reply: Option<RequestReply>,
     ) {
         let id = self.next_id;
         self.next_id += 1;
@@ -62,7 +62,7 @@ impl Pending {
 
     /// The next work to finish, and the reply that waits for it. Never finishes while nothing is
     /// pending. Cancelling it loses no work.
-    pub(super) async fn next(&mut self) -> (Completed, Option<Reply>) {
+    pub(super) async fn next(&mut self) -> (Completed, Option<RequestReply>) {
         match self.work.next().await {
             Some((id, completed)) => (completed, self.replies.remove(&id)),
             None => std::future::pending().await,

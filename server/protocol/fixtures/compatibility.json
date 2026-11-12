@@ -1,14 +1,14 @@
 [
   {
     "name": "a request without data has an empty payload",
-    "direction": "client",
+    "direction": "request",
     "command": "linkList",
     "input": {},
     "valid": true
   },
   {
     "name": "a request without data rejects extra fields",
-    "direction": "client",
+    "direction": "request",
     "command": "linkList",
     "input": {
       "name": "unused"
@@ -17,7 +17,7 @@
   },
   {
     "name": "loading statistics carry no total",
-    "direction": "server",
+    "direction": "event",
     "command": "lobbyStatus",
     "input": {
       "type": "loading"
@@ -26,7 +26,7 @@
   },
   {
     "name": "failed lobby reads explain the failure",
-    "direction": "server",
+    "direction": "event",
     "command": "lobbyStatus",
     "input": {
       "type": "error",
@@ -37,7 +37,7 @@
   },
   {
     "name": "notices name only known causes",
-    "direction": "server",
+    "direction": "event",
     "command": "lobbyStatus",
     "input": {
       "type": "error",
@@ -48,7 +48,7 @@
   },
   {
     "name": "failed lobby reads cannot omit their explanation",
-    "direction": "server",
+    "direction": "event",
     "command": "lobbyStatus",
     "input": {
       "type": "error"
@@ -57,7 +57,7 @@
   },
   {
     "name": "ready statistics can accurately report zero games",
-    "direction": "server",
+    "direction": "event",
     "command": "lobbyStatus",
     "input": {
       "type": "ready",
@@ -67,7 +67,7 @@
   },
   {
     "name": "ready statistics cannot omit the real total",
-    "direction": "server",
+    "direction": "event",
     "command": "lobbyStatus",
     "input": {
       "type": "ready",
@@ -77,7 +77,7 @@
   },
   {
     "name": "chat preserves escaped text",
-    "direction": "client",
+    "direction": "request",
     "command": "chat",
     "input": {
       "text": "&lt;hello&gt;"
@@ -86,7 +86,7 @@
   },
   {
     "name": "chat leaves blank messages for the server to answer",
-    "direction": "client",
+    "direction": "request",
     "command": "chat",
     "input": {
       "text": ""
@@ -95,7 +95,7 @@
   },
   {
     "name": "chat rejects unknown fields",
-    "direction": "client",
+    "direction": "request",
     "command": "chat",
     "input": {
       "text": "hello",
@@ -105,14 +105,14 @@
   },
   {
     "name": "private history requires an amount",
-    "direction": "client",
+    "direction": "request",
     "command": "chatPmHistory",
     "input": {},
     "valid": false
   },
   {
     "name": "private history rejects a limit below 1",
-    "direction": "client",
+    "direction": "request",
     "command": "chatPmHistory",
     "input": {
       "limit": 0
@@ -121,7 +121,7 @@
   },
   {
     "name": "private history rejects a blank recipient",
-    "direction": "client",
+    "direction": "request",
     "command": "chatPmHistory",
     "input": {
       "limit": 1,
@@ -131,7 +131,7 @@
   },
   {
     "name": "private history rejects unsafe integers",
-    "direction": "client",
+    "direction": "request",
     "command": "chatPmHistory",
     "input": {
       "limit": 9007199254740992
@@ -140,7 +140,7 @@
   },
   {
     "name": "private history rejects null filters",
-    "direction": "client",
+    "direction": "request",
     "command": "chatPmHistory",
     "input": {
       "limit": 1,
@@ -150,7 +150,7 @@
   },
   {
     "name": "native parser retains integral float token rejection",
-    "direction": "client",
+    "direction": "request",
     "command": "chatPmHistory",
     "input": {
       "limit": 1.0
@@ -160,14 +160,14 @@
   },
   {
     "name": "friend requires a username",
-    "direction": "client",
+    "direction": "request",
     "command": "friendAdd",
     "input": {},
     "valid": false
   },
   {
     "name": "join omits an absent password without coercing table ID",
-    "direction": "client",
+    "direction": "request",
     "command": "tableJoin",
     "input": {
       "tableId": 1
@@ -176,7 +176,7 @@
   },
   {
     "name": "join rejects string table ID",
-    "direction": "client",
+    "direction": "request",
     "command": "tableJoin",
     "input": {
       "tableId": "1"
@@ -185,7 +185,7 @@
   },
   {
     "name": "join rejects null password instead of defaulting",
-    "direction": "client",
+    "direction": "request",
     "command": "tableJoin",
     "input": {
       "tableId": 1,
@@ -195,7 +195,7 @@
   },
   {
     "name": "start requires the intended players",
-    "direction": "client",
+    "direction": "request",
     "command": "tableStart",
     "input": {
       "tableId": 1
@@ -204,7 +204,7 @@
   },
   {
     "name": "start rejects seven intended players",
-    "direction": "client",
+    "direction": "request",
     "command": "tableStart",
     "input": {
       "tableId": 1,
@@ -214,7 +214,7 @@
   },
   {
     "name": "start rejects an intended player ID of 0",
-    "direction": "client",
+    "direction": "request",
     "command": "tableStart",
     "input": {
       "tableId": 1,
@@ -224,7 +224,7 @@
   },
   {
     "name": "spectate without a shadow seat",
-    "direction": "client",
+    "direction": "request",
     "command": "tableSpectate",
     "input": {
       "tableId": 1
@@ -233,7 +233,7 @@
   },
   {
     "name": "missing server chat fields stay omitted",
-    "direction": "server",
+    "direction": "event",
     "command": "chat",
     "input": {
       "text": "&amp;",
@@ -249,7 +249,7 @@
   },
   {
     "name": "server chat names its author and recipient",
-    "direction": "server",
+    "direction": "event",
     "command": "chat",
     "input": {
       "text": "hello",
@@ -268,7 +268,7 @@
   },
   {
     "name": "server chat rejects an empty author",
-    "direction": "server",
+    "direction": "event",
     "command": "chat",
     "input": {
       "text": "hello",
@@ -285,7 +285,7 @@
   },
   {
     "name": "a user's chat names the user",
-    "direction": "server",
+    "direction": "event",
     "command": "chat",
     "input": {
       "text": "hello",
@@ -301,7 +301,7 @@
   },
   {
     "name": "a settings suggestion carries the settings that it applies",
-    "direction": "server",
+    "direction": "event",
     "command": "chat",
     "input": {
       "text": "apply",
@@ -344,7 +344,7 @@
   },
   {
     "name": "server chat rejects null optional fields",
-    "direction": "server",
+    "direction": "event",
     "command": "chat",
     "input": {
       "text": "hello",
@@ -361,7 +361,7 @@
   },
   {
     "name": "server chat rejects unknown sources",
-    "direction": "server",
+    "direction": "event",
     "command": "chat",
     "input": {
       "text": "hello",
@@ -377,7 +377,7 @@
   },
   {
     "name": "a chat list rejects an invalid table",
-    "direction": "server",
+    "direction": "event",
     "command": "chatList",
     "input": {
       "messages": [],
@@ -387,7 +387,7 @@
   },
   {
     "name": "color clues name their receiver and color",
-    "direction": "client",
+    "direction": "request",
     "command": "playerAction",
     "input": {
       "tableId": 7,
@@ -404,7 +404,7 @@
   },
   {
     "name": "rank clues cannot name the start card's rank",
-    "direction": "client",
+    "direction": "request",
     "command": "playerAction",
     "input": {
       "tableId": 7,
@@ -421,7 +421,7 @@
   },
   {
     "name": "actions reject unknown action types",
-    "direction": "client",
+    "direction": "request",
     "command": "playerAction",
     "input": {
       "tableId": 7,
@@ -434,7 +434,7 @@
   },
   {
     "name": "user presence rejects an unknown activity",
-    "direction": "server",
+    "direction": "event",
     "command": "user",
     "input": {
       "userId": 7,
@@ -451,7 +451,7 @@
   },
   {
     "name": "user list holds presences",
-    "direction": "server",
+    "direction": "event",
     "command": "userList",
     "input": {
       "users": [
@@ -473,7 +473,7 @@
   },
   {
     "name": "a user at a table names it",
-    "direction": "server",
+    "direction": "event",
     "command": "user",
     "input": {
       "userId": 7,
@@ -489,7 +489,7 @@
   },
   {
     "name": "a user in the lobby names no table",
-    "direction": "server",
+    "direction": "event",
     "command": "user",
     "input": {
       "userId": 7,
@@ -506,7 +506,7 @@
   },
   {
     "name": "welcome fills unchanged settings with the same defaults",
-    "direction": "server",
+    "direction": "event",
     "command": "welcome",
     "input": {
       "userId": 7,
@@ -565,7 +565,7 @@
   },
   {
     "name": "welcome fills a partly stored create-table form with defaults",
-    "direction": "server",
+    "direction": "event",
     "command": "welcome",
     "input": {
       "userId": 7,
@@ -636,7 +636,7 @@
   },
   {
     "name": "welcome settings reject an unsupported player count",
-    "direction": "server",
+    "direction": "event",
     "command": "welcome",
     "input": {
       "userId": 7,
@@ -657,7 +657,7 @@
   },
   {
     "name": "table creation fills every default option",
-    "direction": "client",
+    "direction": "request",
     "command": "tableCreate",
     "input": {
       "settings": {
@@ -686,7 +686,7 @@
   },
   {
     "name": "table creation needs a player limit and options",
-    "direction": "client",
+    "direction": "request",
     "command": "tableCreate",
     "input": {
       "settings": {
@@ -697,7 +697,7 @@
   },
   {
     "name": "table creation rejects a blank password",
-    "direction": "client",
+    "direction": "request",
     "command": "tableCreate",
     "input": {
       "settings": {
@@ -711,7 +711,7 @@
   },
   {
     "name": "replay import accepts an exported game",
-    "direction": "client",
+    "direction": "request",
     "command": "replayCreate",
     "input": {
       "source": {
@@ -754,7 +754,7 @@
   },
   {
     "name": "replay import rejects a game ID",
-    "direction": "client",
+    "direction": "request",
     "command": "replayCreate",
     "input": {
       "source": {
@@ -772,7 +772,7 @@
   },
   {
     "name": "replay import rejects unknown fields",
-    "direction": "client",
+    "direction": "request",
     "command": "replayCreate",
     "input": {
       "source": {
@@ -790,7 +790,7 @@
   },
   {
     "name": "replay import rejects unknown fields in nested objects",
-    "direction": "client",
+    "direction": "request",
     "command": "replayCreate",
     "input": {
       "source": {
@@ -814,7 +814,7 @@
   },
   {
     "name": "replay imports name their actions",
-    "direction": "client",
+    "direction": "request",
     "command": "replayCreate",
     "input": {
       "source": {
@@ -878,7 +878,7 @@
   },
   {
     "name": "named replay actions carry only their own fields",
-    "direction": "client",
+    "direction": "request",
     "command": "replayCreate",
     "input": {
       "source": {
@@ -902,7 +902,7 @@
   },
   {
     "name": "replay import rejects null for an absent field",
-    "direction": "client",
+    "direction": "request",
     "command": "replayCreate",
     "input": {
       "source": {
@@ -922,7 +922,7 @@
   },
   {
     "name": "history pages start at zero or later",
-    "direction": "client",
+    "direction": "request",
     "command": "gameHistory",
     "input": {
       "offset": -1,
@@ -932,7 +932,7 @@
   },
   {
     "name": "history pages hold at most the largest page",
-    "direction": "client",
+    "direction": "request",
     "command": "gameHistory",
     "input": {
       "offset": 0,
@@ -942,7 +942,7 @@
   },
   {
     "name": "tables report a pregame roster below the minimum",
-    "direction": "server",
+    "direction": "event",
     "command": "table",
     "input": {
       "tableId": 3,
@@ -976,7 +976,7 @@
   },
   {
     "name": "only a game or a replay reports its progress",
-    "direction": "server",
+    "direction": "event",
     "command": "table",
     "input": {
       "tableId": 3,
@@ -991,7 +991,7 @@
   },
   {
     "name": "spectators without a shadow omit the shadowed name",
-    "direction": "server",
+    "direction": "event",
     "command": "spectators",
     "input": {
       "tableId": 3,
@@ -1006,7 +1006,7 @@
   },
   {
     "name": "history accepts timestamps in UTC with milliseconds",
-    "direction": "server",
+    "direction": "event",
     "command": "gameHistoryAdded",
     "input": {
       "gameId": 12,
@@ -1034,7 +1034,7 @@
   },
   {
     "name": "history rejects a timestamp with an offset",
-    "direction": "server",
+    "direction": "event",
     "command": "gameHistoryAdded",
     "input": {
       "gameId": 12,
@@ -1062,7 +1062,7 @@
   },
   {
     "name": "history rejects a timestamp without milliseconds",
-    "direction": "server",
+    "direction": "event",
     "command": "gameHistoryAdded",
     "input": {
       "gameId": 12,
@@ -1090,7 +1090,7 @@
   },
   {
     "name": "history rejects a timestamp with microseconds",
-    "direction": "server",
+    "direction": "event",
     "command": "gameHistoryAdded",
     "input": {
       "gameId": 12,
@@ -1118,7 +1118,7 @@
   },
   {
     "name": "history rejects a date that cannot be parsed",
-    "direction": "server",
+    "direction": "event",
     "command": "gameHistoryAdded",
     "input": {
       "gameId": 12,
@@ -1146,7 +1146,7 @@
   },
   {
     "name": "hypothetical actions are typed objects",
-    "direction": "client",
+    "direction": "request",
     "command": "replayAction",
     "input": {
       "tableId": 4,
@@ -1169,7 +1169,7 @@
   },
   {
     "name": "replay actions take only their own fields",
-    "direction": "client",
+    "direction": "request",
     "command": "replayAction",
     "input": {
       "tableId": 4,
@@ -1183,7 +1183,7 @@
   },
   {
     "name": "replay actions require their fields",
-    "direction": "client",
+    "direction": "request",
     "command": "replayAction",
     "input": {
       "tableId": 4,
@@ -1195,7 +1195,7 @@
   },
   {
     "name": "visible clues carry their type and rank",
-    "direction": "server",
+    "direction": "event",
     "command": "gameEvent",
     "input": {
       "tableId": 3,
@@ -1214,7 +1214,7 @@
   },
   {
     "name": "hidden clues omit their type and value",
-    "direction": "server",
+    "direction": "event",
     "command": "gameEvent",
     "input": {
       "tableId": 3,
@@ -1229,7 +1229,7 @@
   },
   {
     "name": "color clues name the first suit's color",
-    "direction": "server",
+    "direction": "event",
     "command": "gameEvent",
     "input": {
       "tableId": 3,
@@ -1248,7 +1248,7 @@
   },
   {
     "name": "color clues cannot name a seventh color",
-    "direction": "server",
+    "direction": "event",
     "command": "gameEvent",
     "input": {
       "tableId": 3,
@@ -1267,7 +1267,7 @@
   },
   {
     "name": "rank clues cannot name rank 0",
-    "direction": "server",
+    "direction": "event",
     "command": "gameEvent",
     "input": {
       "tableId": 3,
@@ -1286,7 +1286,7 @@
   },
   {
     "name": "game over events always list their votes",
-    "direction": "server",
+    "direction": "event",
     "command": "gameEvent",
     "input": {
       "tableId": 3,
@@ -1300,7 +1300,7 @@
   },
   {
     "name": "cards can be unknown or a stack's start card",
-    "direction": "server",
+    "direction": "event",
     "command": "gameEvent",
     "input": {
       "tableId": 3,
@@ -1318,7 +1318,7 @@
   },
   {
     "name": "seats stop at the sixth player",
-    "direction": "server",
+    "direction": "event",
     "command": "gameEvent",
     "input": {
       "tableId": 3,
@@ -1336,7 +1336,7 @@
   },
   {
     "name": "card orders stop after the stack bases of the largest deck",
-    "direction": "server",
+    "direction": "event",
     "command": "gameEvent",
     "input": {
       "tableId": 3,
@@ -1354,7 +1354,7 @@
   },
   {
     "name": "suits stop at the sixth suit",
-    "direction": "server",
+    "direction": "event",
     "command": "gameEvent",
     "input": {
       "tableId": 3,
@@ -1372,7 +1372,7 @@
   },
   {
     "name": "ranks skip 6",
-    "direction": "server",
+    "direction": "event",
     "command": "gameEvent",
     "input": {
       "tableId": 3,
@@ -1390,7 +1390,7 @@
   },
   {
     "name": "game over voters are seats",
-    "direction": "server",
+    "direction": "event",
     "command": "gameEvent",
     "input": {
       "tableId": 3,
@@ -1404,7 +1404,7 @@
   },
   {
     "name": "game over events name a known end condition",
-    "direction": "server",
+    "direction": "event",
     "command": "gameEvent",
     "input": {
       "tableId": 3,
@@ -1418,7 +1418,7 @@
   },
   {
     "name": "player times have one entry per player",
-    "direction": "server",
+    "direction": "event",
     "command": "gameEvent",
     "input": {
       "tableId": 3,
@@ -1432,7 +1432,7 @@
   },
   {
     "name": "hypothetical actions use the game's bounds",
-    "direction": "client",
+    "direction": "request",
     "command": "replayAction",
     "input": {
       "tableId": 4,
@@ -1453,7 +1453,7 @@
   },
   {
     "name": "replay arrows point at a card or a named part of the board",
-    "direction": "client",
+    "direction": "request",
     "command": "replayAction",
     "input": {
       "tableId": 4,
@@ -1469,7 +1469,7 @@
   },
   {
     "name": "replay arrows point at cards by order",
-    "direction": "client",
+    "direction": "request",
     "command": "replayAction",
     "input": {
       "tableId": 4,
@@ -1485,7 +1485,7 @@
   },
   {
     "name": "a replay arrow without a target clears the arrow",
-    "direction": "client",
+    "direction": "request",
     "command": "replayAction",
     "input": {
       "tableId": 4,
@@ -1497,7 +1497,7 @@
   },
   {
     "name": "replay arrows cannot point at an unnamed part of the board",
-    "direction": "client",
+    "direction": "request",
     "command": "replayAction",
     "input": {
       "tableId": 4,
@@ -1513,7 +1513,7 @@
   },
   {
     "name": "replay arrows cannot point past the cards",
-    "direction": "server",
+    "direction": "event",
     "command": "replayAction",
     "input": {
       "tableId": 4,
@@ -1529,7 +1529,7 @@
   },
   {
     "name": "clocks carry their table beside every player's time",
-    "direction": "server",
+    "direction": "event",
     "command": "clock",
     "input": {
       "tableId": 3,
@@ -1541,7 +1541,7 @@
   },
   {
     "name": "clocks reject unknown fields",
-    "direction": "server",
+    "direction": "event",
     "command": "clock",
     "input": {
       "tableId": 3,
@@ -1553,7 +1553,7 @@
   },
   {
     "name": "a replay's game state has a deck and no clocks or votes",
-    "direction": "server",
+    "direction": "event",
     "command": "gameState",
     "input": {
       "tableId": 3,
@@ -1587,7 +1587,7 @@
   },
   {
     "name": "turn numbers are never negative",
-    "direction": "server",
+    "direction": "event",
     "command": "gameEvent",
     "input": {
       "tableId": 3,
@@ -1600,13 +1600,27 @@
   },
   {
     "name": "unread counts are never negative",
-    "direction": "server",
+    "direction": "event",
     "command": "chatList",
     "input": {
       "messages": [],
       "tableId": 1,
       "numUnread": -1
     },
+    "valid": false
+  },
+  {
+    "name": "a game page counts its games",
+    "direction": "reply",
+    "command": "gameHistory",
+    "input": { "games": [], "total": 0 },
+    "valid": true
+  },
+  {
+    "name": "a game page has no offset, which only the request names",
+    "direction": "reply",
+    "command": "gameHistory",
+    "input": { "games": [], "total": 0, "offset": 0 },
     "valid": false
   }
 ]

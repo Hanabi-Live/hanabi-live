@@ -48,7 +48,7 @@ macro_rules! request_contracts {
             TableUnattend "tableUnattend" => TableRef;
             TableTerminate "tableTerminate" => TableRef;
             TableTerminateVote "tableTerminateVote" => TableTerminateVoteRequest;
-            GameInitLoad "gameInitLoad" => TableRef;
+            GameInitLoad "gameInitLoad" => TableRef, reply GAME_INIT: GameInit;
             GameStateLoad "gameStateLoad" => TableRef;
             GameLoaded "gameLoaded" => TableRef;
             Settings "settings" => SettingsRequest;
@@ -92,7 +92,6 @@ macro_rules! event_contracts {
             NOTE_LIST "noteList" => NoteList;
             GAME_EVENT "gameEvent" => GameEventMessage;
             GAME_STATE "gameState" => GameState;
-            GAME_INIT "gameInit" => GameInit;
             TABLE_BOOTED "tableBooted" => TableRef;
             LOBBY_STATUS "lobbyStatus" => LobbyStatus;
             CHAT "chat" => Chat;
@@ -291,6 +290,20 @@ pub fn decode_event(name: &str, value: &Value) -> Result<Option<Value>> {
         };
     }
     event_contracts!(dispatch)
+}
+
+/// Validates and decodes the data of a request's reply, or returns None for a request whose reply
+/// carries none.
+pub fn decode_reply(request: &str, value: &Value) -> Result<Option<Value>> {
+    macro_rules! dispatch {
+        ($($name:ident $command:literal => $payload:ty $(, reply $reply:ident: $data:ty)?;)+) => {
+            match request {
+                $($($command => Ok(Some(serde_json::to_value(decode::<$data>(value)?)?)),)?)+
+                _ => Ok(None),
+            }
+        };
+    }
+    request_contracts!(dispatch)
 }
 
 pub fn request_contracts() -> BTreeMap<&'static str, &'static str> {

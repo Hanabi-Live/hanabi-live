@@ -1,5 +1,6 @@
 import {
   CLIENT_REQUEST_SCHEMAS,
+  REPLY_SCHEMAS,
   SERVER_EVENT_SCHEMAS,
 } from "@hanabi-live/data";
 import { expect, test } from "bun:test";
@@ -9,7 +10,7 @@ import { z } from "zod";
 
 const fixture = z.strictObject({
   name: z.string(),
-  direction: z.enum(["client", "server"]),
+  direction: z.enum(["request", "reply", "event"]),
   command: z.string(),
   input: z.unknown(),
   valid: z.boolean(),
@@ -26,10 +27,14 @@ const contents = readFileSync(
 const cases = fixture.array().parse(JSON.parse(contents));
 
 test.each(cases)("$direction: $name", (entry) => {
-  const schemas: Readonly<Record<string, z.ZodType>> =
-    entry.direction === "client"
-      ? CLIENT_REQUEST_SCHEMAS
-      : SERVER_EVENT_SCHEMAS;
+  const schemasByDirection: Readonly<
+    Record<typeof entry.direction, Readonly<Record<string, z.ZodType>>>
+  > = {
+    request: CLIENT_REQUEST_SCHEMAS,
+    reply: REPLY_SCHEMAS,
+    event: SERVER_EVENT_SCHEMAS,
+  };
+  const schemas = schemasByDirection[entry.direction];
   const schema = schemas[entry.command];
   if (schema === undefined) {
     throw new Error(`Missing schema: ${entry.command}`);

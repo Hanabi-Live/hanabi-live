@@ -62,8 +62,8 @@ export function getGameInfoTooltip(showLengths = true): string {
     );
   }
 
-  // "datetimeStarted" and "datetimeFinished" are initialized to strings during the "gameInit"
-  // command, so they should never be undefined.
+  // "datetimeStarted" and "datetimeFinished" are initialized to strings from the reply to
+  // "gameInitLoad", so they should never be undefined.
   if (
     showLengths
     && globals.state.datetimeStarted !== undefined

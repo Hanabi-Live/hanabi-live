@@ -1,6 +1,6 @@
 use super::{
-    Allocation, Blocks, Command, Effects, Entry, HubCommand, Presence, Reply, SeatReservation,
-    Status, TableActor, TableCommand, TableHandle,
+    Allocation, Blocks, Command, Effects, Entry, HubCommand, Presence, RequestReply,
+    SeatReservation, Status, TableActor, TableCommand, TableHandle,
     setup::{Creation, prepare_table},
 };
 use crate::errors::{CommandError, CommandResult, Report};
@@ -145,7 +145,7 @@ impl Hub {
     fn spawn(
         &self,
         actor: TableActor,
-        initial: Option<(Arc<Session>, Vec<String>, Reply)>,
+        initial: Option<(Arc<Session>, Vec<String>, RequestReply)>,
     ) -> TableHandle {
         let (sender, receiver) = mpsc::channel(TABLE_QUEUE);
         let handle = TableHandle {
@@ -301,7 +301,7 @@ impl Hub {
             .map(|p| p.blocks.clone())
             .unwrap_or_default()
     }
-    fn route(&mut self, s: Arc<Session>, id: TableId, command: Command, reply: Reply) {
+    fn route(&mut self, s: Arc<Session>, id: TableId, command: Command, reply: RequestReply) {
         if self.closing || !self.current(&s) {
             let _ = reply.send(Err(rejection!("Stale session or draining server")));
             return;
@@ -410,7 +410,7 @@ impl Hub {
             .map(|(id, _)| *id)
             .min()
     }
-    fn create(&mut self, s: Arc<Session>, creation: Creation, reply: Reply) {
+    fn create(&mut self, s: Arc<Session>, creation: Creation, reply: RequestReply) {
         if self.closing || !self.current(&s) {
             let message = if self.closing {
                 "The server is shutting down."
@@ -865,7 +865,7 @@ impl Hub {
     }
     /// Runs a client command that the hub handles: a table or replay creation, or a command that
     /// it routes to a table.
-    fn client(&mut self, session: Arc<Session>, message: ClientRequest, reply: Reply) {
+    fn client(&mut self, session: Arc<Session>, message: ClientRequest, reply: RequestReply) {
         match message {
             ClientRequest::TableCreate(r) => self.create(session, Creation::Table(r), reply),
             ClientRequest::ReplayCreate(r) => {
@@ -918,7 +918,7 @@ impl Hub {
         saved: Saved,
         mut allocation: Allocation,
         chat_read: HashMap<UserId, usize>,
-        initial: Option<(Arc<Session>, Vec<String>, Reply)>,
+        initial: Option<(Arc<Session>, Vec<String>, RequestReply)>,
     ) -> TableHandle {
         if let Some(reservation) = allocation.reservation.take() {
             self.end_reservation(reservation);
@@ -938,7 +938,7 @@ impl Hub {
     fn add_table(
         &mut self,
         actor: TableActor,
-        initial: Option<(Arc<Session>, Vec<String>, Reply)>,
+        initial: Option<(Arc<Session>, Vec<String>, RequestReply)>,
     ) -> TableHandle {
         let id = actor.table.id;
         let view = actor.view();

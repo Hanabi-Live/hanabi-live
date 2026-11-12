@@ -436,11 +436,7 @@ function gameCallback<Command extends ServerEvent>(
     ) {
       return;
     }
-    if (
-      globals.ui.globals.loading
-      && commandName !== "gameInit"
-      && commandName !== "gameState"
-    ) {
+    if (globals.ui.globals.loading && commandName !== "gameState") {
       return;
     }
     commandFunction(data);

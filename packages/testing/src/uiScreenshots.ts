@@ -1641,11 +1641,7 @@ async function playGame(alice: Peer, bob: Peer): Promise<number> {
         SERVER_EVENT_SCHEMAS.tableJoined,
         entersGame,
       );
-      peer.send("gameInitLoad", { tableId });
-      const init = await peer.receive(
-        "gameInit",
-        SERVER_EVENT_SCHEMAS.gameInit,
-      );
+      const init = await peer.request("gameInitLoad", { tableId });
       peer.send("gameStateLoad", { tableId });
       const history = await peer.receive(
         "gameState",
@@ -1796,8 +1792,7 @@ async function seed(address: string): Promise<Seed> {
       SERVER_EVENT_SCHEMAS.tableJoined,
       entersGame,
     );
-    bob.send("gameInitLoad", { tableId });
-    const init = await bob.receive("gameInit", SERVER_EVENT_SCHEMAS.gameInit);
+    const init = await bob.request("gameInitLoad", { tableId });
     bobIndex = ourPlayerIndex(init);
     bob.send("gameStateLoad", { tableId });
     const { events } = await bob.receive(
@@ -2059,8 +2054,7 @@ async function seed(address: string): Promise<Seed> {
       SERVER_EVENT_SCHEMAS.tableJoined,
       entersGame,
     );
-    leader.send("gameInitLoad", { tableId: replayTableId });
-    await leader.receive("gameInit", SERVER_EVENT_SCHEMAS.gameInit);
+    await leader.request("gameInitLoad", { tableId: replayTableId });
     leader.send("gameLoaded", { tableId: replayTableId });
     leader.send("replayAction", {
       tableId: replayTableId,
@@ -2116,8 +2110,7 @@ async function seed(address: string): Promise<Seed> {
       SERVER_EVENT_SCHEMAS.tableJoined,
       entersGame,
     );
-    leader.send("gameInitLoad", { tableId: replayTableId });
-    await leader.receive("gameInit", SERVER_EVENT_SCHEMAS.gameInit);
+    await leader.request("gameInitLoad", { tableId: replayTableId });
     leader.send("gameLoaded", { tableId: replayTableId });
     return {
       goTo: (segment) => {

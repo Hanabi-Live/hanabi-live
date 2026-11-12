@@ -31,9 +31,9 @@ export function entersGame(joined: ServerEventData["tableJoined"]): boolean {
   return joined.stage !== "pregame";
 }
 
-/** The seat that a "gameInit" message's recipient sees the game from, if any. */
+/** The seat that the recipient of a "gameInitLoad" reply sees the game from, if any. */
 export function ourPlayerIndex(
-  init: ServerEventData["gameInit"],
+  init: ReplyData["gameInitLoad"],
 ): number | undefined {
   return "ourPlayerIndex" in init.mode ? init.mode.ourPlayerIndex : undefined;
 }

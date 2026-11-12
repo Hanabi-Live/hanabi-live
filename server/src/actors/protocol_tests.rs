@@ -115,7 +115,7 @@ impl Harness {
         index: usize,
         command: &str,
         data: Value,
-    ) -> Result<oneshot::Receiver<CommandResult>> {
+    ) -> Result<oneshot::Receiver<CommandResult<Option<ReplyData>>>> {
         let (reply, replied) = oneshot::channel();
         self.hub
             .send(HubCommand::Client {
@@ -127,12 +127,24 @@ impl Harness {
         Ok(replied)
     }
     async fn send(&self, index: usize, command: &str, data: Value) -> Result<()> {
-        tokio::time::timeout(
+        self.answer(index, command, data).await?;
+        Ok(())
+    }
+    /// Sends a request and returns its reply's data, if it has any.
+    async fn answer(&self, index: usize, command: &str, data: Value) -> Result<Option<ReplyData>> {
+        Ok(tokio::time::timeout(
             Duration::from_secs(10),
             self.begin(index, command, data).await?,
         )
-        .await???;
-        Ok(())
+        .await???)
+    }
+    /// Sends a request whose reply carries data, and returns the data.
+    async fn request(&self, index: usize, command: &str, data: Value) -> Result<Value> {
+        let reply = self
+            .answer(index, command, data)
+            .await?
+            .with_context(|| format!("The reply to {command} has no data"))?;
+        Ok(reply.data)
     }
     async fn barrier(&self, index: usize) -> Result<()> {
         let (reply, replied) = oneshot::channel();
@@ -291,8 +303,9 @@ async fn player_shadow_is_cleared_when_a_spectator_joins() -> Result<()> {
                 .iter()
                 .position(|p| p.is(UserId::new(player_id).unwrap()))
                 .unwrap();
-            h.send(index, "gameInitLoad", json!({"tableId":id})).await?;
-            let init = h.receive(index, "gameInit").await?;
+            let init = h
+                .request(index, "gameInitLoad", json!({"tableId":id}))
+                .await?;
             ensure!(
                 init["mode"]["ourPlayerIndex"] == json!(seat)
                     && init["mode"]["type"] == if spectator { "shadowing" } else { "playing" },
@@ -310,8 +323,7 @@ async fn player_shadow_is_cleared_when_a_spectator_joins() -> Result<()> {
         );
         // A spectator who does not shadow has no seat.
         h.send(3, "tableSpectate", json!({"tableId":id})).await?;
-        h.send(3, "gameInitLoad", json!({"tableId":id})).await?;
-        let init = h.receive(3, "gameInit").await?;
+        let init = h.request(3, "gameInitLoad", json!({"tableId":id})).await?;
         ensure!(
             init["mode"] == json!({"type": "spectating"}),
             "A spectator without a shadow received a seat: {init}"
@@ -391,8 +403,7 @@ async fn player_shadow_from_saved_games_is_cleared_on_reattend() -> Result<()> {
                 h.restart().await?;
             }
             h.send(1, "tableReattend", json!({"tableId":id})).await?;
-            h.send(1, "gameInitLoad", json!({"tableId":id})).await?;
-            let init = h.receive(1, "gameInit").await?;
+            let init = h.request(1, "gameInitLoad", json!({"tableId":id})).await?;
             ensure!(
                 init["mode"] == json!({"type": "playing", "ourPlayerIndex": bob}),
                 "A recovered player kept another player's viewpoint: {init}"
@@ -578,8 +589,7 @@ async fn duck_clue_identity_is_private_in_live_history_and_recovery_but_not_comp
                 .await?;
             }
             for index in 0..5 {
-                h.send(index, "gameStateLoad", json!({"tableId":id}))
-                    .await?;
+                h.send(index, "gameStateLoad", json!({"tableId":id})).await?;
                 let history = h.receive(index, "gameState").await?;
                 let clues = history["events"]
                     .as_array()
@@ -619,8 +629,7 @@ async fn duck_clue_identity_is_private_in_live_history_and_recovery_but_not_comp
         );
         h.send(0, "tableTerminate", json!({"tableId":id})).await?;
         for index in 0..5 {
-            h.send(index, "gameStateLoad", json!({"tableId":id}))
-                .await?;
+            h.send(index, "gameStateLoad", json!({"tableId":id})).await?;
             let history = h.receive(index, "gameState").await?;
             let clues = history["events"]
                 .as_array()
@@ -1097,8 +1106,7 @@ async fn spoiler_free_reviews_are_shared_replays_that_tell_everyone() -> Result<
         .await?;
         let id = h.receive_game(0).await?["tableId"].clone();
         h.send(1, "tableSpectate", json!({"tableId":id})).await?;
-        h.send(1, "gameInitLoad", json!({"tableId":id})).await?;
-        let init = h.receive(1, "gameInit").await?;
+        let init = h.request(1, "gameInitLoad", json!({"tableId":id})).await?;
         ensure!(
             init["mode"]["type"] == "sharedReplay"
                 && init["mode"]["sharedReplay"]["spoilerFree"] == true,
@@ -1152,8 +1160,7 @@ async fn shared_replays_of_older_games_start_when_their_table_is_created() -> Re
             h.replace(index).await?;
         }
         h.send(1, "tableSpectate", json!({"tableId":id})).await?;
-        h.send(1, "gameInitLoad", json!({"tableId":id})).await?;
-        let init = h.receive(1, "gameInit").await?;
+        let init = h.request(1, "gameInitLoad", json!({"tableId":id})).await?;
         ensure!(
             init["mode"]["sharedReplay"]["replayStartedAt"]
                     == hanabi_protocol::Timestamp::from(created).as_str(),
@@ -1908,8 +1915,7 @@ async fn restart_leaves_out_players_who_are_done_playing() -> Result<()> {
         for index in 0..3 {
             declined.push(h.receive(index, "tableRestartDecliners").await?);
         }
-        h.send(2, "gameInitLoad", json!({"tableId":id})).await?;
-        let init = h.receive(2, "gameInit").await?;
+        let init = h.request(2, "gameInitLoad", json!({"tableId":id})).await?;
         let carol = init["playerNames"]
             .as_array()
             .and_then(|names| names.iter().position(|name| name == "Carol"))
@@ -2184,8 +2190,7 @@ async fn a_replay_whose_leader_is_away_passes_leadership_to_the_first_to_return(
         // After a restart, the table has no one at it until its viewers return.
         h.restart().await?;
         h.send(1, "tableReattend", json!({"tableId":id})).await?;
-        h.send(1, "gameInitLoad", json!({"tableId":id})).await?;
-        let init = h.receive(1, "gameInit").await?;
+        let init = h.request(1, "gameInitLoad", json!({"tableId":id})).await?;
         ensure!(
             init["mode"]["sharedReplay"]["owner"]["userId"] == 2,
             "The returning viewer did not lead the replay: {init}"
@@ -2193,8 +2198,7 @@ async fn a_replay_whose_leader_is_away_passes_leadership_to_the_first_to_return(
         ensure!(h.snapshot(id).await?.0.owner.user_id == UserId::new(2).unwrap());
         // Alice returns to a replay that Bob now leads.
         h.send(0, "tableReattend", json!({"tableId":id})).await?;
-        h.send(0, "gameInitLoad", json!({"tableId":id})).await?;
-        let init = h.receive(0, "gameInit").await?;
+        let init = h.request(0, "gameInitLoad", json!({"tableId":id})).await?;
         ensure!(init["mode"]["sharedReplay"]["owner"]["userId"] == 2);
         Ok::<(), anyhow::Error>(())
     }

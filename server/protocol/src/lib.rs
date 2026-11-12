@@ -47,8 +47,9 @@ macro_rules! named_enum {
 
 mod registry;
 pub use registry::{
-    ClientRequest, Reply, ReplyData, ServerEvent, request_contracts, decode, decode_event,
-    exported, game_library, reply, reply_contracts, schemas, event, event_contracts, validate,
+    ClientRequest, Reply, ReplyData, ServerEvent, decode, decode_event, decode_reply, event,
+    event_contracts, exported, game_library, reply, reply_contracts, request_contracts, schemas,
+    validate,
 };
 
 mod catalog;
@@ -430,11 +431,11 @@ mod tests {
             serde_json::from_str(include_str!("../fixtures/compatibility.json")).unwrap();
         for case in cases {
             let command = case["command"].as_str().unwrap();
-            let result = if case["direction"] == "client" {
-                ClientRequest::decode(command, &case["input"])
-                    .map(|message| message.map(|message| message.data()))
-            } else {
-                decode_event(command, &case["input"])
+            let result = match case["direction"].as_str().unwrap() {
+                "request" => ClientRequest::decode(command, &case["input"])
+                    .map(|message| message.map(|message| message.data())),
+                "reply" => decode_reply(command, &case["input"]),
+                _ => decode_event(command, &case["input"]),
             };
             let valid = case["nativeValid"]
                 .as_bool()

@@ -283,8 +283,9 @@ pub struct GameEventMessage {
     pub event: GameEvent,
 }
 
-/// What a client shows of a game after `gameInit`, as the recipient may see it: the events so far, and
-/// the state around them. It answers `gameStateLoad`.
+/// What a client shows of a game after its setup (`GameInit`), as the recipient may see it: the
+/// events so far, and the state around them. It answers `gameStateLoad`. It is an event, not the
+/// reply's data, so that it arrives before the table's later messages, which build on it.
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct GameState {
@@ -406,7 +407,8 @@ impl ViewMode {
     }
 }
 
-/// Everything a client needs to draw a game, before its events arrive.
+/// Everything a client needs to draw a game, before its events arrive. It is the reply to
+/// `gameInitLoad`.
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct GameInit {

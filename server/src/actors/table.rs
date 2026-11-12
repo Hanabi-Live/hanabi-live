@@ -1,8 +1,8 @@
 use super::request;
 use super::{
     Allocation, Attendance, Blocks, Command, Effects, GameInfo, HubCommand,
-    PREGAME_RECONNECT_GRACE, REPLAY_RECONNECT_GRACE, Reply, Status, TableActor, TableCommand,
-    TableView,
+    PREGAME_RECONNECT_GRACE, REPLAY_RECONNECT_GRACE, RequestReply, Status, TableActor,
+    TableCommand, TableView,
     chat::{TABLE_CHAT_LIMIT, TABLE_CHAT_WINDOW, is_variant_discovery},
     pending::{Completed, Pending},
     pregame::remove_pregame_players,
@@ -27,7 +27,8 @@ use futures_util::{FutureExt, future::BoxFuture};
 use hanabi_engine::{CompletionTiming, EndCondition};
 use hanabi_protocol::PlayerIndex;
 use hanabi_protocol::{
-    Chat, ChatTyping, ClientRequest, IdleWarning, Notice, TableJoined, TableRef, TableStage, UserId,
+    Chat, ChatTyping, ClientRequest, IdleWarning, Notice, ReplyData, TableJoined, TableRef,
+    TableStage, UserId,
 };
 use serde::Serialize;
 use std::{
@@ -119,6 +120,13 @@ impl Timers {
 /// The time added to each clock of a timed game when a graceful restart drains its table, so that
 /// players do not lose time to the restart.
 const MAINTENANCE_CLOCK_ALLOWANCE_SECONDS: i64 = 20;
+
+/// How a client command went on: it started slow work, which finishes it later, or it finished
+/// with its reply's data, if it has any.
+enum Started {
+    Work(BoxFuture<'static, Completed>),
+    Done(Option<ReplyData>),
+}
 
 impl TableActor {
     pub(super) fn new(
@@ -713,7 +721,7 @@ impl TableActor {
     pub(super) async fn run(
         mut self,
         mut receiver: mpsc::Receiver<TableCommand>,
-        initial: Option<(Arc<Session>, Vec<String>, Reply)>,
+        initial: Option<(Arc<Session>, Vec<String>, RequestReply)>,
     ) {
         let mut pending = Pending::default();
         if initial.is_none() && matches!(self.table.phase, Phase::Pregame { .. }) {
@@ -732,7 +740,7 @@ impl TableActor {
         }
         if let Some((session, warnings, reply)) = initial {
             let result = self.initialize(session, warnings).await;
-            let _ = reply.send(result);
+            let _ = reply.send(result.map(|()| None));
         }
         // Recovered tables start their reconnection grace and catch up on missed deadlines.
         if self.store.check_state().is_ok() {
@@ -748,7 +756,7 @@ impl TableActor {
                     let result = self.complete(completed).await;
                     match reply {
                         Some(reply) => {
-                            let _ = reply.send(result);
+                            let _ = reply.send(result.map(|()| None));
                         }
                         None => {
                             if let Err(error) = result {
@@ -765,9 +773,12 @@ impl TableActor {
                     }
                     Some(TableCommand::Client { session, blocks, command, reply }) => {
                         match self.client(session, &blocks, command).await {
-                            Ok(Some(work)) => pending.start(work, Some(reply)),
-                            result => {
-                                let _ = reply.send(result.map(|_| ()));
+                            Ok(Started::Work(work)) => pending.start(work, Some(reply)),
+                            Ok(Started::Done(data)) => {
+                                let _ = reply.send(Ok(data));
+                            }
+                            Err(error) => {
+                                let _ = reply.send(Err(error));
                             }
                         }
                     }
@@ -1026,7 +1037,7 @@ impl TableActor {
         session: Arc<Session>,
         blocks: &Blocks,
         command: Command,
-    ) -> CommandResult<Option<BoxFuture<'static, Completed>>> {
+    ) -> CommandResult<Started> {
         ensure_or_reject!(session.active(), "Stale session or unavailable authority");
         // A game that ran out of time ends before the command runs, so the command sees the end.
         if matches!(self.table.phase, Phase::Live { .. })
@@ -1050,21 +1061,26 @@ impl TableActor {
                 _ => None,
             };
             if let Some(work) = work {
-                return work.map(Some);
+                return work.map(Started::Work);
             }
         }
-        self.command(session, blocks, command).await.map(|()| None)
+        self.command(session, blocks, command)
+            .await
+            .map(Started::Done)
     }
     async fn command(
         &mut self,
         session: Arc<Session>,
         blocks: &BTreeSet<UserId>,
         command: Command,
-    ) -> CommandResult<()> {
+    ) -> CommandResult<Option<ReplyData>> {
         let message = match command {
             Command::Client(message) => *message,
             Command::Reattend { spectate, shadow } => {
-                return self.reattend(session, blocks, spectate, shadow).await;
+                return self
+                    .reattend(session, blocks, spectate, shadow)
+                    .await
+                    .map(|()| None);
             }
         };
         ensure_internal!(
@@ -1072,7 +1088,7 @@ impl TableActor {
             "Unsupported table command: {}",
             message.name()
         );
-        match message {
+        let done = match message {
             // A join to a table with a password starts its password check in `client` instead.
             ClientRequest::TableJoin(_) => self.join(session, blocks, None).await,
             ClientRequest::TableReattend(_) => self.reattend(session, blocks, false, None).await,
@@ -1088,7 +1104,7 @@ impl TableActor {
             }
             ClientRequest::TableUnattend(_) => self.leave(session, false).await,
             ClientRequest::TableLeave(_) => self.leave(session, true).await,
-            ClientRequest::GameInitLoad(_) => self.info(session, GameInfo::Init).await,
+            ClientRequest::GameInitLoad(_) => return self.info(session, GameInfo::Init).await,
             ClientRequest::GameStateLoad(_) => {
                 self.info(session.clone(), GameInfo::State).await?;
                 if let Some(a) = self.attendees.get_mut(&session.user) {
@@ -1137,7 +1153,8 @@ impl TableActor {
                 Phase::Live { .. } => self.live_command(session, message).await,
                 Phase::Replay { .. } => self.replay_command(session, message).await,
             },
-        }
+        };
+        done.map(|()| None)
     }
     pub(super) async fn allocation(&self) -> CommandResult<Allocation> {
         request(&self.hub, HubCommand::Allocate).await?

@@ -14,10 +14,10 @@ use crate::{
 use anyhow::Context;
 use hanabi_engine::PlayerAction;
 use hanabi_engine::{CompletionTiming, EndCondition, Recipient};
-use hanabi_protocol::ClientRequest;
 use hanabi_protocol::MAX_NOTE_LENGTH;
 use hanabi_protocol::PlayerIndex;
 use hanabi_protocol::{CardOrder, Chat, ChatTyping, MIN_PLAYERS, TableRef, ViewMode};
+use hanabi_protocol::{ClientRequest, ReplyData};
 use std::sync::Arc;
 
 /// What a `pause` or `pauseQueue` request changes.
@@ -489,7 +489,11 @@ impl TableActor {
             ),
         })
     }
-    pub(super) async fn info(&self, session: Arc<Session>, part: GameInfo) -> CommandResult<()> {
+    pub(super) async fn info(
+        &self,
+        session: Arc<Session>,
+        part: GameInfo,
+    ) -> CommandResult<Option<ReplyData>> {
         ensure_or_reject!(
             self.attending(&session),
             "Reattend before requesting private game data"
@@ -500,7 +504,7 @@ impl TableActor {
         let seat = s.players.iter().position(|p| p.is(session.user));
         let display_seat = seat.or_else(|| s.players.iter().position(|p| p.name == session.name));
         let mut e = self.effects();
-        if part == GameInfo::Init {
+        let data = if part == GameInfo::Init {
             let shared_replay = self.shared_replay_state(s, &session);
             let our_player_index = a.shadow.or_else(|| display_seat.and_then(PlayerIndex::new));
             let init = hanabi_protocol::GameInit {
@@ -542,10 +546,7 @@ impl TableActor {
                     vec![]
                 },
             };
-            e.messages.push((
-                session.clone(),
-                frame(hanabi_protocol::event::GAME_INIT, init),
-            ));
+            Some(hanabi_protocol::reply::GAME_INIT.data(init))
         } else {
             let recipient = if replay {
                 Recipient::Spectator {
@@ -620,8 +621,10 @@ impl TableActor {
                     ),
                 ));
             }
-        }
-        self.publish(e).await
+            None
+        };
+        self.publish(e).await?;
+        Ok(data)
     }
 }
 
