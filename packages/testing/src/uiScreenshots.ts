@@ -20,6 +20,7 @@ import type { UserId } from "@hanabi-live/data";
 import {
   DEFAULT_MAX_PLAYERS,
   MAX_CHAT_LENGTH,
+  packWsMessage,
   SERVER_COMMAND_SCHEMAS,
   VERSION,
 } from "@hanabi-live/data";
@@ -461,6 +462,10 @@ function getStates({
   // The card in the account's hand that the clue log shows the clues about.
   let cluedCard: CardOrder | undefined;
 
+  // Whether the WebSocket server answers with an error, for the "loading-error" state. The route
+  // that does it stays, because Playwright cannot remove a WebSocket route.
+  let failWebSocket = false;
+
   return [
     { name: "login", path: "/", loggedIn: false },
     { name: "scores", path: `/scores/${USERNAME}`, loggedIn: false },
@@ -508,6 +513,40 @@ function getStates({
         await page.click("#login-button");
         await page.locator("#login-alert").waitFor();
         await page.waitForTimeout(SETTLE_MILLISECONDS * 2);
+      },
+    },
+    // The server rejects the client while it loads, so the loading card shows the error.
+    {
+      name: "loading-error",
+      path: "/",
+      loggedIn: false,
+      prepare: async (page) => {
+        failWebSocket = true;
+        await page.route("**/test-cookie", async (route) => {
+          await route.fulfill({ status: 200 });
+        });
+        await page.routeWebSocket(
+          (url) => url.pathname === "/ws",
+          (ws) => {
+            if (failWebSocket) {
+              ws.send(
+                packWsMessage("error", {
+                  message:
+                    "You are running an outdated version of the client code.",
+                }),
+              );
+            } else {
+              ws.connectToServer();
+            }
+          },
+        );
+        await page.reload();
+        await page.locator("#error-modal").waitFor();
+        await page.waitForTimeout(SETTLE_MILLISECONDS);
+      },
+      cleanup: async (page) => {
+        failWebSocket = false;
+        await page.unroute("**/test-cookie");
       },
     },
     // The username has no account, so the form asks to confirm its creation.

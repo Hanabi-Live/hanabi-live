@@ -14,6 +14,10 @@ const CHANGE_PASSWORD_TRANSITION_MS = 500;
 
 export function LoginBox(): React.JSX.Element {
   const stage = useAppSelector((state) => state.login.stage);
+  // An error stops the loading, so the spinning card stops too.
+  const failed = useAppSelector(
+    (state) => state.messageModal.modal?.type === "error",
+  );
 
   switch (stage) {
     case "loading": {
@@ -21,7 +25,7 @@ export function LoginBox(): React.JSX.Element {
         <section className="box align-center" id="loading">
           <h3>Loading...</h3>
           <p>{PROJECT_NAME} is loading. Please wait!</p>
-          <img src="/public/img/ajax.gif" />
+          {failed ? <FailedCard /> : <img src="/public/img/ajax.gif" />}
         </section>
       );
     }
@@ -54,6 +58,59 @@ export function LoginBox(): React.JSX.Element {
       return <SignIn />;
     }
   }
+}
+
+/**
+ * The card of the loading animation, at rest and struck out like a misplayed card. It has the same
+ * size as the animation, so that the box does not move.
+ */
+function FailedCard() {
+  return (
+    <svg
+      aria-label="Error"
+      className="tw:inline-block"
+      height="64"
+      role="img"
+      viewBox="0 0 64 64"
+      width="64"
+    >
+      <g transform="rotate(-12 32 32)">
+        <rect
+          fill="white"
+          height="52"
+          rx="4"
+          stroke="#3355cc"
+          strokeWidth="2.5"
+          width="38"
+          x="13"
+          y="6"
+        />
+        <text
+          fill="#3355cc"
+          fontFamily="sans-serif"
+          fontSize="12"
+          fontWeight="bold"
+          x="17"
+          y="18"
+        >
+          1
+        </text>
+      </g>
+      {/* The X of a strike, as "x.png" draws it. */}
+      <path
+        d="M18 18 L46 46 M46 18 L18 46"
+        stroke="black"
+        strokeLinecap="round"
+        strokeWidth="13"
+      />
+      <path
+        d="M18 18 L46 46 M46 18 L18 46"
+        stroke="#ff0000"
+        strokeLinecap="round"
+        strokeWidth="8"
+      />
+    </svg>
+  );
 }
 
 function SignIn() {
