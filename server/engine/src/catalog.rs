@@ -97,7 +97,7 @@ pub fn characters() -> &'static [Character] {
 
 fn suit(entry: CatalogSuit, colors: &[CatalogColor]) -> Suit {
     let clue_colors = entry.clue_colors.unwrap_or_else(|| {
-        if entry.all_clue_colors || entry.no_clue_colors || entry.prism || entry.name == "Unknown" {
+        if entry.all_clue_colors || entry.no_clue_colors || entry.prism {
             vec![]
         } else {
             assert!(
