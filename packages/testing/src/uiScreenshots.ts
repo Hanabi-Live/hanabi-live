@@ -16,7 +16,7 @@
 
 /* eslint-disable no-await-in-loop -- The browser visits the states one at a time. */
 
-import type { UserId } from "@hanabi-live/data";
+import type { replayGameSchema, UserId } from "@hanabi-live/data";
 import {
   DEFAULT_MAX_PLAYERS,
   MAX_CHAT_LENGTH,
@@ -26,10 +26,19 @@ import {
   SERVER_COMMAND_SCHEMAS,
   VERSION,
 } from "@hanabi-live/data";
-import type { CardOrder, ClueRank, PlayerIndex } from "@hanabi-live/game";
+import type {
+  CardOrder,
+  ClueRank,
+  PlayerIndex,
+  Rank,
+  SuitIndex,
+} from "@hanabi-live/game";
 import {
+  DEFAULT_VARIANT_NAME,
   getVariant,
   isValidClueRank,
+  MAX_CLUES,
+  MAX_RANK,
   START_CARD_RANK,
 } from "@hanabi-live/game";
 import { assertDefined } from "complete-common";
@@ -48,6 +57,7 @@ import { setTimeout } from "node:timers/promises";
 import { parseArgs, promisify } from "node:util";
 import type { BrowserContext, Locator, Page } from "playwright";
 import { chromium } from "playwright";
+import type * as z from "zod";
 import { evaluationDatabase } from "./database.ts";
 import {
   buildRust,
@@ -130,6 +140,18 @@ const PRISM_MORPH_ORDER = 9;
 
 /** The account that leads that shared replay. */
 const PRISM_LEADER_NAME = "Grace";
+
+/** The account that leads the shared replay of a 5-player game. */
+const FIVE_PLAYER_LEADER_NAME = "Heidi";
+
+/** The players of that game, none of whom is the browser's account, so that it only watches. */
+const FIVE_PLAYER_NAMES = ["Bob", "Carol", "Dave", "Erin", "Frank"] as const;
+
+/** Each player's cards in a 5-player game. */
+const FIVE_PLAYER_HAND_SIZE = 4;
+
+/** The moves of that game, enough to step through and jump across. */
+const FIVE_PLAYER_NUM_MOVES = 20;
 
 /** The H-Group level that the account at the open table chooses. */
 const H_GROUP_LEVEL = 3;
@@ -484,6 +506,7 @@ function getStates({
   showPrismMorph,
   leaderGoTo,
   lastClueSegment,
+  showFivePlayerReplay,
 }: Pick<
   Seed,
   | "replayId"
@@ -496,9 +519,13 @@ function getStates({
   | "showPrismMorph"
   | "leaderGoTo"
   | "lastClueSegment"
+  | "showFivePlayerReplay"
 >): readonly State[] {
   // Ends the shared replay of the "prism-unknown-rank" state.
   let closePrismReplay: (() => void) | undefined;
+
+  // The shared replay of the "new-ui-shared-replay-five-players" state.
+  let fivePlayerReplay: FivePlayerReplay | undefined;
 
   // The card in the account's hand that the clue log shows the clues about.
   let cluedCard: CardOrder | undefined;
@@ -1430,6 +1457,52 @@ function getStates({
         await page.waitForTimeout(SETTLE_MILLISECONDS);
       },
     },
+    // A shared replay of a 5-player game that another account leads, which the account spectates.
+    // Its video shows the leader's moves: a step forward onto a clue, a step back from that clue
+    // onto another, a jump to the first turn, a step on from there, and a jump to the last turn.
+    {
+      name: "new-ui-shared-replay-five-players",
+      path: "/",
+      loggedIn: true,
+      prepare: async (page) => {
+        fivePlayerReplay = await showFivePlayerReplay();
+        await page.getByRole("button", { name: "Lobby", exact: true }).click();
+        await page.locator("#lobby").waitFor();
+        // As in the "prism-unknown-rank" state, spectate from the row once it has settled.
+        const row = page.locator("#lobby-games-table-tbody tr", {
+          hasText: FIVE_PLAYER_LEADER_NAME,
+        });
+        await row.waitFor();
+        await page.waitForTimeout(SETTLE_MILLISECONDS * 2);
+        await row.click({ force: true });
+        const hands = page.locator('#game-new-ui [aria-label="Hands"]');
+        await page.locator("#lobby").waitFor({ state: "hidden" });
+        await page.waitForTimeout(SETTLE_MILLISECONDS * 2);
+        if (!(await hands.isVisible())) {
+          await clickCanvasElement(page, ["newUiButton"]);
+        }
+        await hands.waitFor();
+        fivePlayerReplay.goTo(fivePlayerReplay.clueStep - 1);
+        await page.waitForTimeout(LEADER_SETTLE_MILLISECONDS);
+      },
+      record: async (page) => {
+        if (fivePlayerReplay === undefined) {
+          return;
+        }
+        const { clueStep, lastSegment } = fivePlayerReplay;
+        for (const segment of [clueStep, clueStep - 1, 0, 1]) {
+          fivePlayerReplay.goTo(segment);
+          await page.waitForTimeout(LEADER_MOVE_WAIT_MILLISECONDS);
+        }
+        fivePlayerReplay.goTo(lastSegment);
+        await page.waitForTimeout(LEADER_SETTLE_MILLISECONDS);
+      },
+      // eslint-disable-next-line @typescript-eslint/require-await
+      cleanup: async () => {
+        fivePlayerReplay?.close();
+        fivePlayerReplay = undefined;
+      },
+    },
   ];
 }
 
@@ -1610,6 +1683,17 @@ async function playGame(alice: Peer, bob: Peer): Promise<number> {
   return finished.gameId;
 }
 
+/** A shared replay of a 5-player game that another account leads. */
+interface FivePlayerReplay {
+  /** The leader shows a segment to everyone in the replay. */
+  readonly goTo: (segment: number) => void;
+  /** A segment that shows a clue, right after another clue. */
+  readonly clueStep: number;
+  readonly lastSegment: number;
+  /** Disconnects the leader. */
+  readonly close: () => void;
+}
+
 interface Seed {
   readonly replayId: number;
   /** Starts the game at Bob's table, where the browser's account must be a player. */
@@ -1635,6 +1719,11 @@ interface Seed {
    * disconnects the account.
    */
   readonly showPrismMorph: () => Promise<() => void>;
+  /**
+   * Has another account create a shared replay of a 5-player game and lead it, before the browser
+   * joins.
+   */
+  readonly showFivePlayerReplay: () => Promise<FivePlayerReplay>;
   /** Bob, as the leader of the shared replay at his table, shows a segment to everyone there. */
   readonly leaderGoTo: (segment: number) => void;
   /** The segment of the shared replay at Bob's table that shows the game's last clue. */
@@ -2008,7 +2097,41 @@ async function seed(address: string): Promise<Seed> {
     };
   }
 
+  async function showFivePlayerReplay(): Promise<FivePlayerReplay> {
+    const { deck, actions, clueStep } = fivePlayerGame();
+    const leader = await connect(address, FIVE_PLAYER_LEADER_NAME);
+    leader.send("replayCreate", {
+      source: {
+        type: "imported",
+        game: { playerNames: [...FIVE_PLAYER_NAMES], deck, actions },
+      },
+      visibility: { type: "shared", joinExisting: false, spoilerFree: false },
+    });
+    const { tableId: replayTableId } = await leader.receive(
+      "tableJoined",
+      SERVER_COMMAND_SCHEMAS.tableJoined,
+      entersGame,
+    );
+    leader.send("gameInitLoad", { tableId: replayTableId });
+    await leader.receive("gameInit", SERVER_COMMAND_SCHEMAS.gameInit);
+    leader.send("gameLoaded", { tableId: replayTableId });
+    return {
+      goTo: (segment) => {
+        leader.send("replayAction", {
+          tableId: replayTableId,
+          action: { type: "turn", turn: segment },
+        });
+      },
+      clueStep,
+      lastSegment: actions.length,
+      close: () => {
+        leader.socket.close();
+      },
+    };
+  }
+
   return {
+    showFivePlayerReplay,
     replayId,
     startGame,
     endGame,
@@ -2529,4 +2652,102 @@ try {
 } catch (error) {
   console.error("Failed to take the screenshots:", error);
   process.exitCode = 1;
+}
+
+/**
+ * A 5-player game of No Variant with a deck in rank order, so that the first hands hold the 1s. On
+ * each turn, the player plays a card that the team can play, or else clues the next player about
+ * the rank of their first card, or else discards their first card. Also returns a segment that
+ * shows a clue right after another clue.
+ */
+function fivePlayerGame() {
+  const variant = getVariant(DEFAULT_VARIANT_NAME);
+  const deck: Array<{ suitIndex: SuitIndex; rank: Rank }> = [];
+  for (const rank of variant.ranks) {
+    for (let copy = 0; copy < numCopies(rank); copy++) {
+      for (const suitIndex of variant.suits.keys()) {
+        deck.push({ suitIndex: suitIndex as SuitIndex, rank });
+      }
+    }
+  }
+  function cardAt(order: number) {
+    const card = deck[order];
+    assertDefined(card, `The deck has no card ${order}.`);
+    return card;
+  }
+
+  const numPlayers = FIVE_PLAYER_NAMES.length;
+  const hands: number[][] = Array.from(
+    { length: numPlayers },
+    (_hand, player) =>
+      Array.from(
+        { length: FIVE_PLAYER_HAND_SIZE },
+        (_card, slot) => player * FIVE_PLAYER_HAND_SIZE + slot,
+      ),
+  );
+  // A player's hand, which the game changes as its player plays, discards, and draws.
+  // eslint-disable-next-line complete/no-mutable-return
+  function handOf(player: number): number[] {
+    const hand = hands[player];
+    assertDefined(hand, `There is no player ${player}.`);
+    return hand;
+  }
+  let nextCard = numPlayers * FIVE_PLAYER_HAND_SIZE;
+  const stacks = variant.suits.map(() => 0);
+  let clues = MAX_CLUES;
+  const actions: Array<
+    NonNullable<z.input<typeof replayGameSchema>["actions"]>[number]
+  > = [];
+  let clueStep: number | undefined;
+
+  for (let turn = 0; turn < FIVE_PLAYER_NUM_MOVES; turn++) {
+    const player = turn % numPlayers;
+    const hand = handOf(player);
+    const playable = hand.find((order) => {
+      const { suitIndex, rank } = cardAt(order);
+      return stacks[suitIndex] === rank - 1;
+    });
+    if (playable !== undefined) {
+      const { suitIndex, rank } = cardAt(playable);
+      stacks[suitIndex] = rank;
+      hand.splice(hand.indexOf(playable), 1);
+      actions.push({ type: "play", order: playable });
+    } else if (clues > 0) {
+      const receiver = (player + 1) % numPlayers;
+      const [first] = handOf(receiver);
+      assertDefined(first, `Player ${receiver} has no cards.`);
+      clues--;
+      actions.push({
+        type: "clue",
+        receiverIndex: receiver as PlayerIndex,
+        clue: { type: "rank", rank: cardAt(first).rank as ClueRank },
+      });
+      if (clueStep === undefined && actions.at(-2)?.type === "clue") {
+        clueStep = actions.length;
+      }
+      continue;
+    } else {
+      const order = hand.shift();
+      assertDefined(order, `Player ${player} has no cards.`);
+      clues++;
+      actions.push({ type: "discard", order });
+    }
+    if (nextCard < deck.length) {
+      hand.push(nextCard);
+      nextCard++;
+    }
+  }
+
+  if (clueStep === undefined) {
+    throw new Error("The 5-player game has no two clues in a row.");
+  }
+  return { deck, actions, clueStep };
+}
+
+/** How many copies of a rank each suit of No Variant has. */
+function numCopies(rank: Rank): number {
+  if (rank === 1) {
+    return 3;
+  }
+  return rank === MAX_RANK ? 1 : 2;
 }
