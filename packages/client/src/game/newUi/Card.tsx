@@ -264,12 +264,10 @@ function Possibilities({
       }}
     >
       {possibleSuitIndexes.length > 0 && (
+        // The rows wrap from the middle, so that a short last row is centered under the others.
         <div
-          className="tw:grid tw:justify-center"
-          style={{
-            gridTemplateColumns: `repeat(${suitColumns}, ${pipCell}px)`,
-            rowGap: 0,
-          }}
+          className="tw:flex tw:flex-wrap tw:justify-center"
+          style={{ width: suitColumns * pipCell }}
         >
           {possibleSuitIndexes.map((possibleSuitIndex) => {
             const possibleSuit = variant.suits[possibleSuitIndex];
@@ -277,7 +275,7 @@ function Possibilities({
               <span
                 className="tw:flex tw:items-center tw:justify-center"
                 key={possibleSuitIndex}
-                style={{ height: pipCell }}
+                style={{ width: pipCell, height: pipCell }}
               >
                 <span
                   className="tw:flex tw:items-center tw:justify-center tw:rounded-full tw:bg-white tw:shadow-[0_1px_2px_rgb(0_0_0/30%)]"
