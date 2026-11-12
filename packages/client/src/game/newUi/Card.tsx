@@ -80,8 +80,8 @@ export function getClueMarkerColor(marker: ClueMarkerView): string {
 
 /**
  * A token that sits on the top edge of a card that a clue touched, with a point toward the card. It
- * shows the clue: a disc of the clue's color, or a white disc with the clue's number. The "data-"
- * attributes let it land on the card with a burst when the clue is given (see "cardMotion.ts").
+ * shows the clue: a disc of the clue's color, or a white disc with the clue's number. Its
+ * "data-clue-marker" attribute lets it land on the card when a clue is given (see "cardMotion.ts").
  */
 function ClueMarker({
   marker,
@@ -112,11 +112,6 @@ function ClueMarker({
         marginLeft: -size / 2,
       }}
     >
-      <span
-        className="tw:absolute tw:inset-0 tw:box-border tw:rounded-full tw:border-solid tw:opacity-0"
-        data-clue-burst
-        style={{ borderWidth: size * 0.1, borderColor: color }}
-      />
       <span
         className="tw:absolute tw:left-1/2 tw:rotate-45 tw:bg-white tw:shadow-[0_0_0_2px_var(--card-ink)]"
         style={{
@@ -422,14 +417,7 @@ export function CardFace({
       }}
     >
       {clueMarker !== undefined && (
-        <>
-          <ClueMarker marker={clueMarker} width={width} />
-          {/* The card flashes as the token lands on it. */}
-          <span
-            className="tw:pointer-events-none tw:absolute tw:inset-0 tw:rounded-[inherit] tw:bg-white tw:opacity-0"
-            data-clue-flash
-          />
-        </>
+        <ClueMarker marker={clueMarker} width={width} />
       )}
       {rank !== undefined && (
         <span
