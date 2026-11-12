@@ -988,9 +988,6 @@ export function GameScreen({
       return;
     }
 
-    if (clueTarget === undefined) {
-      return;
-    }
     const rank = variant.clueRanks[Number(event.key) - 1];
     if (rank !== undefined && /^\d$/u.test(event.key)) {
       setClue(newRankClue(rank));

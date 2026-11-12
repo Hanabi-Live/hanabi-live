@@ -124,7 +124,6 @@ export function CluePanel({
               aria-label={color.name}
               aria-pressed={pressed}
               className={`${choiceClass} ${pressed ? "tw:ring-3 tw:ring-game-text" : ""}`}
-              disabled={targetName === undefined}
               key={color.name}
               onClick={() => {
                 onChooseClue(colorClue);
@@ -144,7 +143,6 @@ export function CluePanel({
             <button
               aria-pressed={pressed}
               className={`${choiceClass} tw:bg-game-text tw:text-card-ink ${pressed ? "tw:ring-3 tw:ring-clue" : ""}`}
-              disabled={targetName === undefined}
               key={rank}
               onClick={() => {
                 onChooseClue(rankClue);
