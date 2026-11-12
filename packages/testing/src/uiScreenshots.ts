@@ -355,6 +355,12 @@ function showPossibilityRows() {
   layers.card.batchDraw();
 }
 
+/** Runs in the page. Switches the classic game screen to the next empathy style. */
+function cycleEmpathy() {
+  const { empathy } = globalThis as unknown as { empathy: () => string };
+  empathy();
+}
+
 /** Runs in the page. Whether the classic game screen has finished drawing itself for a new size. */
 function isGameScreenResized(): boolean {
   return (
@@ -698,6 +704,27 @@ function getStates({
         await clickCanvasElement(page, ["editCardsCheckbox"]);
       },
       cleanup: leaveReplay,
+    },
+    // Every hand's view of its cards, while the spacebar is held, with the empathy style that
+    // `empathy()` picks first: one possibility row for each suit.
+    {
+      name: "replay-empathy-row-per-suit",
+      path: "/",
+      loggedIn: true,
+      prepare: async (page) => {
+        await openReplay(page, replayId);
+        await page.evaluate(cycleEmpathy);
+      },
+      // Press the spacebar again at each size, since the redrawn screen does not keep the view.
+      hover: async (page) => {
+        await page.keyboard.up("Space");
+        await page.keyboard.down("Space");
+        await page.waitForTimeout(SETTLE_MILLISECONDS);
+      },
+      cleanup: async (page) => {
+        await page.keyboard.up("Space");
+        await leaveReplay(page);
+      },
     },
     // A card that is dragged over the clue log in a hypothetical. It must be drawn above
     // everything.

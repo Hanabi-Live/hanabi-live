@@ -169,6 +169,7 @@ export function getCardPipPresentation(
   state: CardState,
   note: CardNote,
   empathy: boolean,
+  rowPerSuit = false,
 ): CardPipPresentation {
   const suitPipStates = variant.suits.map(() => PipState.Hidden);
   const rankPipStates = new Map<Rank, PipState>(
@@ -231,6 +232,7 @@ export function getCardPipPresentation(
     possibleCards,
     suitPips,
     isPositiveRank,
+    rowPerSuit,
   );
 
   return { suitPips, rankPips, possibilityRows };
@@ -243,7 +245,8 @@ function cardKey(suitIndex: number, rank: Rank) {
 /**
  * Returns undefined when the cards that the clues allow are every combination of the suits and
  * ranks they include, since the separate suit and rank pips show that set exactly. Otherwise,
- * returns one row for each group of suits that can be the same ranks.
+ * returns one row for each group of suits that can be the same ranks. With `rowPerSuit`, always
+ * returns one row for each suit.
  */
 function getPossibilityRows(
   variant: Variant,
@@ -251,6 +254,7 @@ function getPossibilityRows(
   possibleCards: readonly SuitRankTuple[],
   suitPips: readonly SuitPipPresentation[],
   isPositiveRank: (rank: Rank) => boolean,
+  rowPerSuit: boolean,
 ): readonly PossibilityRowPresentation[] | undefined {
   const fromClues = new Set(
     possibleCardsFromClues.map(([suitIndex, rank]) => cardKey(suitIndex, rank)),
@@ -263,7 +267,7 @@ function getPossibilityRows(
   ).size;
   const rankCount = new Set(possibleCardsFromClues.map(([, rank]) => rank))
     .size;
-  if (fromClues.size === suitCount * rankCount) {
+  if (!rowPerSuit && fromClues.size === suitCount * rankCount) {
     return undefined;
   }
 
@@ -286,6 +290,13 @@ function getPossibilityRows(
       const rowKey = rankPips.map((rankPip) => rankPip.state).join(",");
       return { suitPip, rankPips, clueRanksKey, rowKey };
     });
+
+  if (rowPerSuit) {
+    return suits.map(({ suitPip, rankPips }) => ({
+      suitPips: [suitPip],
+      rankPips,
+    }));
+  }
 
   // A ruled-out suit joins a row of suits that the clues allowed the same ranks, since its
   // crossed-out suit pip already shows that it is none of them.

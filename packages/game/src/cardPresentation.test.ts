@@ -427,5 +427,40 @@ describe("card presentation", () => {
         },
       ]);
     });
+
+    test("gives each suit its own row when asked, even when the pips can show the cards", () => {
+      // A red or yellow 1 or 2, where the yellow 2 is visible elsewhere.
+      const state: CardState = {
+        ...baseCard,
+        possibleCardsFromClues: [
+          [0, 1],
+          [0, 2],
+          [1, 1],
+          [1, 2],
+        ],
+        possibleCards: [
+          [0, 1],
+          [0, 2],
+          [1, 1],
+        ],
+      };
+      const presentation = getCardPipPresentation(
+        variant,
+        state,
+        emptyNote,
+        false,
+        true,
+      );
+
+      const rows = presentation.possibilityRows?.map((row) => ({
+        suits: row.suitPips.map((suitPip) => suitPip.suitIndex),
+        ranks: row.rankPips.map((rankPip) => rankPip.state),
+      }));
+      const { Hidden, Eliminated, Visible } = PipState;
+      expect(rows).toEqual([
+        { suits: [0], ranks: [Visible, Visible, Hidden, Hidden, Hidden] },
+        { suits: [1], ranks: [Visible, Eliminated, Hidden, Hidden, Hidden] },
+      ]);
+    });
   });
 });

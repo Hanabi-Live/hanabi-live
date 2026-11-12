@@ -68,6 +68,7 @@ import {
   CARD_IMAGE_STACK_BASE_RANK_NAME,
   CARD_IMAGE_UNKNOWN_CARD_RANK_NAME,
 } from "./drawCards.ts";
+import { EmpathyStyle, getEmpathyStyle } from "./empathyStyle.ts";
 import { animate } from "./konvaHelpers.ts";
 import {
   checkNoteImpossibility,
@@ -670,11 +671,13 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip, UiCard {
   // -----------
 
   updatePips(): void {
+    const empathyStyle = getEmpathyStyle();
     const presentation = getCardPipPresentation(
       this.variant,
       this.state,
       this.note,
       this.showsEmpathy,
+      empathyStyle === EmpathyStyle.RowPerSuit,
     );
 
     for (const suitPip of presentation.suitPips) {
@@ -694,7 +697,10 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip, UiCard {
       }
     }
 
-    this.possibilityRowsToDraw = presentation.possibilityRows;
+    this.possibilityRowsToDraw =
+      empathyStyle === EmpathyStyle.Pips
+        ? undefined
+        : presentation.possibilityRows;
     this.updatePipVisibility();
   }
 
