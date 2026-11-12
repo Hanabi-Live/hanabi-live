@@ -533,10 +533,18 @@ async fn test_cookie(State(state): State<Arc<Accounts>>, uri: Uri, headers: Head
         Ok(query) => query,
         Err(message) => return HttpError::refused(StatusCode::BAD_REQUEST, message).json(),
     };
-    if session_id(&headers, &state.config.secret, requested_account(&query)).is_some() {
-        "OK\n".into_response()
-    } else {
-        StatusCode::NO_CONTENT.into_response()
+    let Some(id) = session_id(&headers, &state.config.secret, requested_account(&query)) else {
+        return StatusCode::NO_CONTENT.into_response();
+    };
+    // A valid cookie can outlive its account, such as when a development database is reset.
+    let username: sqlx::Result<Option<String>> =
+        sqlx::query_scalar!("SELECT username FROM users WHERE id=$1", id)
+            .fetch_optional(&state.pool)
+            .await;
+    match username {
+        Ok(Some(_)) => "OK\n".into_response(),
+        Ok(None) => StatusCode::NO_CONTENT.into_response(),
+        Err(error) => account_failure("session-check", &error.into()),
     }
 }
 

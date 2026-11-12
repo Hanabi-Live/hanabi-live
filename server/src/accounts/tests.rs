@@ -566,6 +566,19 @@ fn tabs_choose_among_signed_in_accounts() {
 }
 
 #[tokio::test]
+async fn cookie_for_a_missing_account_is_not_a_session_postgres() {
+    let Some(db) = test_support::TestDb::create().await else {
+        return;
+    };
+    let app = router(db.pool.clone(), config());
+    let value = cookie::encode(i32::MAX, &config().secret, Utc::now().timestamp()).unwrap();
+    let cookie = format!("hanabi.sid={value}");
+    let (status, _, _) = request(&app, "GET", "/test-cookie", "", Some(&cookie), false).await;
+    assert_eq!(status, StatusCode::NO_CONTENT);
+    db.close().await;
+}
+
+#[tokio::test]
 async fn tabs_sign_in_and_out_of_separate_accounts_postgres() {
     let Some(db) = test_support::TestDb::create().await else {
         return;
