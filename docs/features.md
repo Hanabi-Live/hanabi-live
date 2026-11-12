@@ -33,8 +33,8 @@ before asking any questions in the chat.
   For visual learners, you can also try watching
   [this video explanation](https://www.youtube.com/watch?v=VrFCekQb4nY).
 - Getting a game going should be self-explanatory, but just in case:
-  - Once logged in, click on the "Create Game" button on the top navigation bar
-    and then click "Create".
+  - Once logged in, click on the "New Game" button on the top navigation bar and
+    then click "Create".
   - For everyone else, the game will now appear in the list of games. To join
     it, they need to click on row corresponding to the game.
   - Then, the creator of the table needs to click on the "Start Game" button on
@@ -78,6 +78,8 @@ before asking any questions in the chat.
   in" when appropriate.
 - You can hold down the left mouse button or tap and hold on someone else's hand
   to see how it appears to them. (This is referred to as "empathy".)
+- Before you give a clue, click the flashlight button beside "Give Clue" to see
+  the target's hand as they would see it after the clue.
 - Hold Space to see every hand this way. Hold Ctrl + Space to see every hand
   this way, but narrowed by your notes.
 
@@ -89,6 +91,13 @@ before asking any questions in the chat.
   negative clues "touch" the card.
 - The pips and numbers will automatically be crossed out if all the particular
   cards for that suit/rank are visible.
+- Sometimes the clues leave possibilities that the separate suit and rank pips
+  cannot show, such as "any pink card, or a red 3". Then the card lists each
+  suit with the ranks that it can be.
+- A trash can icon appears on a card when its holder can work out that it is
+  trash.
+- Hold the left mouse button on the deck (or hold Space) to see which suits and
+  ranks can still be in it.
 
 ### Critical Indicator
 
@@ -108,9 +117,11 @@ that have not been played yet and have only one copy remaining.)
 
 - Games will be automatically terminated by the server if no move is performed
   in 30 minutes. (This helps to clean the lobby of games that will never be
-  finished.)
-- Players can vote to terminate a game by clicking on the X button where the
-  strike indicators are (near the bottom of the screen).
+  finished.) A warning appears 5 minutes before, and a player can keep the game
+  going.
+- Players can click on the skull button (near the strike indicators at the
+  bottom of the screen) to open a menu. From the menu, they can vote to end the
+  game, or end it now. The menu shows how many players voted.
 
 ### Spectators
 
@@ -119,7 +130,10 @@ that have not been played yet and have only one copy remaining.)
 - The list of current spectators can be seen by hovering over the "👀" icon in
   the bottom-right-hand corner.
 - Spectators can right-click on a player's name to view the game from their
-  perspective. In ongoing games, this is indicated with a "🕵️" icon.
+  perspective. In ongoing games, this is indicated with a "🕵️" icon. In the new
+  game screen, spectators can also use the "View as" button.
+- Anyone can left-click on a player's name to see only that player's actions in
+  the action log.
 
 ### In-Game Replay
 
@@ -138,7 +152,8 @@ that have not been played yet and have only one copy remaining.)
     was given.
   - You can click on the three strike squares to go to the turn before the
     strike happened, if any.
-  - You can right-click on the "Turn" label to go to an arbitrary turn.
+  - You can click on the "Turn" label (or press Alt + t) to go to an arbitrary
+    turn.
 
 ### Game History and Profiles
 
@@ -152,6 +167,11 @@ that have not been played yet and have only one copy remaining.)
 - Any past game can be viewed as a replay or a shared replay.
 - Similar to an in-game replay, in a post-game replay, you can review the game
   turn by turn.
+- On the "Watch Replay" page, select "Spoiler-free review" to see only what has
+  already happened at each turn.
+- After a game, "Restart game" starts the next game with the same players, and
+  "Remake table" returns everyone to a pre-game table first. Players can click
+  "Ready" to tell the leader that they will not play another game.
 
 ### Shared Replays
 
@@ -168,8 +188,9 @@ that have not been played yet and have only one copy remaining.)
   button.)
 - The leader can right-click on a card to highlight it with an arrow (to point
   out things to the other players).
-  - Other players can create "local" arrows by Ctrl + right-clicking. These
-    arrows won't be shown to anyone else.
+  - In a solo replay, right-clicking on a card draws an arrow too.
+  - During a game, players can create "local" arrows by Ctrl + right-clicking.
+    These arrows won't be shown to anyone else.
 - The current leader can be seen by hovering over the "👑" icon in the bottom
   right-hand corner.
 - The leader role can be transferred by clicking or double-tapping the crown.
@@ -181,11 +202,18 @@ that have not been played yet and have only one copy remaining.)
   playing the game forward for as long as desired.
 - Hypotheticals are useful to show what would happen if a player decided to do a
   different move than they really did in the game.
-- When a hypothetical is active, other players cannot "break free" or return to
-  previous turns.
+- When a hypothetical is active, other players can pause the shared turns, but
+  cannot go back to previous turns. While the leader is in a hypothetical, the
+  "Use Shared Turns" button says "Join Hypothetical".
 - The leader can Alt + right-click on a card to morph it into an arbitrary card.
-  This can be useful for showing how players have to account for different kinds
-  of situations or to create specific game states.
+  (Or, check "Edit Cards" and then left-click on the card.) This can be useful
+  for showing how players have to account for different kinds of situations or
+  to create specific game states.
+- The "Pass" button (or the right arrow key) spends a clue to pass the turn to
+  the next player. The "Back" button (or the left arrow key) undoes the last
+  action.
+- Check "Show drawn cards" to show the cards that players draw during the
+  hypothetical.
 
 ### In-Game Statistics
 
@@ -193,6 +221,15 @@ that have not been played yet and have only one copy remaining.)
   well the game is going.
 - More information about the stats can be found in
   [the Pace & Efficiency section](#pace--efficiency) below.
+
+### Lobby
+
+- Click on a name in the online users list to open a menu with "Profile",
+  "Private Message", "Add to Friends", and "Block". Bots are listed on a
+  separate tab.
+- Ctrl + click on a table row to copy a link to that table.
+- Click on the spectators section of a table row to spectate a game before it
+  starts.
 
 ### 6-Player Games
 
@@ -218,8 +255,7 @@ that have not been played yet and have only one copy remaining.)
   clock after performing each move.
 - If time runs out for any player, the game immediately ends and a score of 0
   will be given.
-- The player who goes first will be refunded the amount of time that it took for
-  them to load the page.
+- The clock starts only when the player who goes first has loaded the game.
 - Players can pause (or queue a pause) by right-clicking on their timer.
 
 ### Speedruns
@@ -236,6 +272,8 @@ that have not been played yet and have only one copy remaining.)
   - Right-clicking on a card in your teammate's hand will give it a rank clue.
   - Ctrl + right-clicking on a card in your hand opens a note on the card.
   - Empathy can still be used by holding down the space bar.
+- If a card is lost so that a perfect score is no longer possible, the game
+  immediately ends with a score of 0.
 - Speedrunning games will not count towards your statistics.
 - If this mode is enabled, then the "Timed" option will be disabled.
 
@@ -280,9 +318,9 @@ that have not been played yet and have only one copy remaining.)
   players to continue playing as normal until all of the stacks are completed.
 - The game immediately ends with a score of 0 if the team gets 3 strikes, as per
   normal.
-- The game immediately ends with a score of 0 if a "critical" card is discarded.
-  (Critical cards are cards that have not been played yet and have only one copy
-  remaining.)
+- The game immediately ends with a score of 0 if a "critical" card is discarded
+  or misplayed. (Critical cards are cards that have not been played yet and have
+  only one copy remaining.)
 - The game immediately ends with a score of 0 if a player has no cards in their
   hand and no clue tokens are available.
 - (This is the fourth
@@ -304,6 +342,27 @@ that have not been played yet and have only one copy remaining.)
 - This allows private tables to be created.
 
 ## Other Options
+
+These options are on the "Settings" page.
+
+### Notifications & Sound
+
+- You can get a desktop notification when it reaches your turn.
+- You can choose to play a sound when any move is made, only when it is your
+  turn, or never.
+- You can play a sound when a timer is below 10 seconds, and set the volume.
+
+### Dark Mode
+
+- Dark mode is saved to your account. New accounts start with the system's
+  theme.
+
+### New UI
+
+- The "New UI" setting shows games and replays in a redesigned game screen. It
+  is in testing and off by default.
+- In a game, a "Classic view" button switches to the classic screen, and a "New
+  UI" button switches back.
 
 ### Keldon Mode
 
@@ -332,6 +391,12 @@ that have not been played yet and have only one copy remaining.)
 - This is useful for players that are used to drawing cards from the right side
   instead of from the left.
 
+### Other Appearance Options
+
+- "Make numbers on cards match the art style" draws the rank numbers in the
+  style of the card art.
+- "Show turn timers in untimed games" shows how long each player has taken.
+
 ### Pre-Playing
 
 - Each player has the option to enable the ability to pre-play cards, which is
@@ -341,12 +406,21 @@ that have not been played yet and have only one copy remaining.)
   hover over the location until their turn has arrived, and then the action will
   be automatically performed.
 
+### Speedrun Features
+
+- "Enable speedrun features in non-speedrun games" uses
+  [the speedrun controls](#speedruns) in every game.
+
 ### H-Group Conventions
 
 If you are playing with the [H-Group](https://hanabi.github.io/), some
 additional UI elements are enabled:
 
 - an "H" indicator next to the username in the "Online Users" section.
+- your highest H-Group level (which you can set on the "Settings" page) beside
+  your name at pre-game tables, with a link to that level's page
+- a different arrow color for chop-moved cards
+- a red efficiency number in hard variants (1.33 efficiency or higher)
 - double discard situation notification (as a border around the discard pile and
   in the "Current Player" area)
 - a blue question mark drawn on cards potentially in a double discard situation
@@ -356,7 +430,7 @@ additional UI elements are enabled:
 - a
   [special sound effect when discarding a clued card](../public/sounds/turn-discard-clued.mp3)
 - a
-  [special sound effect when discarding to enter a double discard situation](../public/sounds/turn-double_discard-cause.mp3)
+  [special sound effect when discarding to enter a double discard situation](../public/sounds/turn-double-discard-cause.mp3)
 - a
   [special sound effect when discarding in a double discard situation](../public/sounds/turn-double-discard.mp3)
 - a
@@ -367,8 +441,10 @@ additional UI elements are enabled:
 ### Basic Description
 
 - When in the middle of an ongoing game, players can right-click or double-tap
-  on any card to add a note to it. Afterward, by hovering over a card, a tooltip
-  will appear with the written note.
+  on any card to add a note to it. (Ctrl + left-click also works, for devices
+  without right-click.) Afterward, by hovering over a card, a tooltip will
+  appear with the written note.
+- Press Delete while hovering over a card to delete its note.
 - This is useful for storing contextual information about a card for later.
   (e.g. "they should know that this card is exactly red 2 from the clue on turn
   3")
@@ -378,6 +454,10 @@ additional UI elements are enabled:
   and keep any notes written.
 - Notes are saved in the database and will persist into the replay.
 - Everyone's notes are combined and shown to spectators, which is fun to see.
+- Spectators can write their own notes too. They are kept after the spectator
+  leaves, and are shown after the game, below the players' notes.
+- If you try to play a card whose note says that it is unplayable, the game asks
+  you to confirm.
 
 ### Card Identity Notes
 
@@ -393,8 +473,10 @@ additional UI elements are enabled:
 | Black           | K                                              |
 | Rainbow         | M                                              |
 | Muddy Rainbow   | M                                              |
+| Cocoa Rainbow   | M                                              |
 | Pink            | I                                              |
 | Light Pink      | I                                              |
+| Gray Pink       | I                                              |
 | Brown           | N                                              |
 | Omni            | O                                              |
 | Null            | U                                              |
@@ -424,10 +506,15 @@ additional UI elements are enabled:
 
 - A note of "f" can be written to indicate that the card is _Finessed_. This
   will draw a special border around the card.
+  - "hf", "sf", "cf", "pf", and "gd" work the same way.
+  - "xf" and "ctp" (for an unclued finesse or a call to play) also remove the
+    clue border.
 - A note of "cm" can be written to indicate that the card is _Chop Moved_. This
   will draw a special border around the card.
-- A note of "ptd" can be written to indicate that the card has _Permission to
-  Discard_. This will draw a special border around the card.
+  - "chop move", "bd", and many other chop move abbreviations (such as "5cm",
+    "tcm", "ocm", and "ttcm") work the same way.
+- A note of "ptd", "ctd", or "discard" can be written to indicate that the card
+  has _Permission to Discard_. This will draw a special border around the card.
 
 ### Other Special Notes
 
@@ -481,9 +568,9 @@ There are different sounds for:
 - [when a card blind-plays](../public/sounds/turn-blind1.mp3)
 - [when multiple cards blind-play in a row (up to 6)](../public/sounds/turn-blind2.mp3)
 - [discarding a "critical" card](../public/sounds/turn-sad.mp3)
-- [finishing the game with a score of 0](../public/sounds/turn-finished-fail.mp3)
-- [finishing the game with a non-perfect score](../public/sounds/turn-finished-success.mp3)
-- [finishing the game with a perfect score](../public/sounds/turn-finished-perfect.mp3)
+- [finishing the game with a score of 0](../public/sounds/finished-fail.mp3)
+- [finishing the game with a non-perfect score](../public/sounds/finished-success.mp3)
+- [finishing the game with a perfect score](../public/sounds/finished-perfect.mp3)
 
 ## Pace & Efficiency
 
@@ -547,8 +634,8 @@ move for the current situation.
 
 #### Manually Modifying Efficiency
 
-- Players can manually modify the "cards gotten" term by doing an
-  `alt + right-click` on the _Future Required Efficiency_.
+- Players can manually modify the "cards gotten" term by clicking on the _Future
+  Required Efficiency_.
 - This is useful to account for cards that are _Finessed_, cards that are known
   to be trash, and so forth.
 
@@ -588,12 +675,16 @@ move for the current situation.
 
 - In the lobby:
   - Join the first game: `Alt + j`
-  - Create a table: `Alt + c`
+  - Create a table: `Alt + n`
   - Show history: `Alt + h`
   - Watch a specific replay: `Alt + a`
   - Sign out: `Alt + o`
+  - Return to the lobby from a page (such as "Settings"): `Alt + r` or `Escape`
 - In a pre-game:
   - Start a game: `Alt + s`
+  - Join the game: `Alt + j`
+  - Spectate the game: `Alt + p`
+  - Change the options: `Alt + c`
   - Return to the lobby: `Alt + r` or `Escape`
   - Leave the game: `Alt + l`
 - In a game:
@@ -602,8 +693,14 @@ move for the current situation.
   - Clue:
     - `Tab` or semicolon `;` to select a player
     - `1`, `2`, `3`, `4`, `5` for a rank clue
-    - Or `q`, `w`, `e`, `r`, `t` for a color clue
+    - Or `q`, `w`, `e`, `r`, `t`, `y` for a color clue
     - Then `Ctrl + Enter` to submit
+  - Open or close the in-game replay: `Up` or `Down`
+  - Toggle the chat: `Alt + c`
+  - Go to a specific turn: `Alt + t`
+  - Delete the note of the card under the mouse: `Delete`
+  - Return to the lobby: `Alt + l`
+  - Close the chat, leave a hypothetical, or leave a replay: `Escape`
 - In a replay:
   - Rewind back one turn: `Left`
   - Fast-forward one turn: `Right`
@@ -611,8 +708,14 @@ move for the current situation.
   - Fast-forward one full rotation: `]`
   - Go to the beginning: `Home`
   - Go to the end: `End`
+  - Copy the game ID: `Ctrl + c`
 - In a shared replay:
   - Toggle shared turns: `Up` or `Down`
+  - Play a sound for everyone: `Alt + a` (clap), `Alt + b` (buzz), `Alt + h`
+    (holy), or `Alt + n` (nooo)
+- In a hypothetical:
+  - Undo the last action: `Left`
+  - Pass the turn: `Right`
 
 ## Similar Deals and Competitive Play
 
@@ -737,16 +840,18 @@ move for the current situation.
 - As mentioned previously, the website offers pages to show statistics on
   specific players, variants, and so forth.
 
-| URL                                                | Description                                                                                     |
-| -------------------------------------------------- | ----------------------------------------------------------------------------------------------- |
-| `/scores/[username]`                               | Lists the player's profile and best scores.                                                     |
-| `/history/[username]`                              | Lists the player's past games.                                                                  |
-| `/history/[username1]/[username2]`                 | Lists the past games that 2 players were in together. (You can specify up to 6 players.)        |
-| `/missing-scores/[username]`                       | Lists the player's remaining non-max scores.                                                    |
-| `/shared-missing-scores/2/[username1]/[username2]` | Lists the remaining non-max scores that 2 players both need. (You can specify up to 6 players.) |
-| `/tags/[username]`                                 | Lists the player's tagged games.                                                                |
-| `/seed/[seed]`                                     | Lists the games played on a specific seed.                                                      |
-| `/tag/[tag]`                                       | Lists all the games that match the specified tag.                                               |
+| URL                                                | Description                                                                                              |
+| -------------------------------------------------- | -------------------------------------------------------------------------------------------------------- |
+| `/scores/[username]`                               | Lists the player's profile and best scores.                                                              |
+| `/history/[username]`                              | Lists the player's past games.                                                                           |
+| `/history/[username1]/[username2]`                 | Lists the past games that 2 players were in together. (You can specify up to 6 players.)                 |
+| `/missing-scores/[username]`                       | Lists the player's remaining non-max scores.                                                             |
+| `/missing-scores/[username]/[number of players]`   | Lists the player's remaining non-max scores for one number of players.                                   |
+| `/shared-missing-scores/2/[username1]/[username2]` | Lists the remaining non-max scores that 2 players both need. (You can specify up to 6 players.)          |
+| `/tags/[username]`                                 | Lists the player's tagged games.                                                                         |
+| `/seed/[seed]`                                     | Lists the games played on a specific seed.                                                               |
+| `/tag/[tag]`                                       | Lists all the games that match the specified tag.                                                        |
+| `/create-table`                                    | Creates a table. Query parameters (such as `?variantName=Rainbow (6 Suits)&timed=true`) set its options. |
 
 ## JSON Games
 
