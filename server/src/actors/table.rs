@@ -171,7 +171,6 @@ impl TableActor {
             players: self.table.seated_users().collect(),
             replay,
             replay_game,
-            visible: self.table.visible,
             reconnects: self
                 .table
                 .shadows
@@ -179,7 +178,7 @@ impl TableActor {
                 .filter(|(id, _)| replay || self.table.players().iter().all(|p| !p.is(**id)))
                 .map(|(id, shadow)| (*id, *shadow))
                 .collect(),
-            data: hanabi_protocol::Table {
+            listing: self.table.visible.then(|| hanabi_protocol::Table {
                 game_id: replay_game,
                 table_id: self.table.id,
                 settings: self.settings(),
@@ -195,14 +194,11 @@ impl TableActor {
                     .unwrap_or_default(),
                 phase: match self.table.phase {
                     Phase::Pregame { .. } => hanabi_protocol::TablePhase::Pregame,
-                    Phase::Replay { .. } if self.table.visible => {
-                        hanabi_protocol::TablePhase::SharedReplay
-                    }
-                    Phase::Replay { .. } => hanabi_protocol::TablePhase::Replay,
+                    Phase::Replay { .. } => hanabi_protocol::TablePhase::SharedReplay,
                     Phase::Live { .. } => hanabi_protocol::TablePhase::Playing,
                 },
                 spectators,
-            },
+            }),
         }
     }
     pub(super) fn spectators(&self) -> Vec<hanabi_protocol::Spectator> {
@@ -210,8 +206,10 @@ impl TableActor {
             .values()
             .filter(|a| a.spectator && a.session.active())
             .map(|a| hanabi_protocol::Spectator {
-                user_id: a.session.user,
-                username: a.session.name.clone().into(),
+                user: hanabi_protocol::UserRef {
+                    user_id: a.session.user,
+                    username: a.session.name.clone().into(),
+                },
                 shadowing_player_index: a.shadow,
             })
             .collect()
@@ -370,8 +368,7 @@ impl TableActor {
             .filter_map(|p| p.user_ref().ok())
             .zip(self.table.players())
             .map(|(user, p)| hanabi_protocol::PregamePlayer {
-                user_id: user.user_id,
-                username: user.username,
+                user,
                 present: p
                     .id
                     .and_then(|id| self.attendees.get(&id))

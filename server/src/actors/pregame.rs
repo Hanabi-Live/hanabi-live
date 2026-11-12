@@ -93,9 +93,9 @@ impl TableActor {
             ClientMessage::TableStart(r) => {
                 let players = self.table.players();
                 // A start based on a stale view of the table does nothing.
-                if r.intended_player_names.as_ref().is_some_and(|names| {
-                    names.len() != players.len() || players.iter().any(|p| !names.contains(&p.name))
-                }) {
+                let names = &r.intended_player_names;
+                if names.len() != players.len() || players.iter().any(|p| !names.contains(&p.name))
+                {
                     return Ok(());
                 }
                 self.start(session).await
@@ -511,7 +511,7 @@ impl TableActor {
         destination.id = allocation.id;
         destination.name = format!(
             "{}{SPLIT_SUFFIX}",
-            crate::accounts::truncate_to_max_bytes(
+            crate::accounts::truncate_to_max_chars(
                 self.table.name.trim(),
                 MAX_TABLE_NAME_LENGTH - SPLIT_SUFFIX.len()
             )

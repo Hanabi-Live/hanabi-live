@@ -34,21 +34,13 @@ pub fn max_consecutive_marks(input: &str) -> usize {
     maximum
 }
 
-pub fn truncate_to_max_bytes(input: &str, max: usize) -> &str {
-    let mut end = input.len().min(max);
-    while !input.is_char_boundary(end) {
-        end -= 1;
-    }
-    &input[..end]
-}
-
 /// Removes characters that chat messages and notes do not allow.
 pub fn remove_disallowed_characters(input: &str) -> std::borrow::Cow<'_, str> {
     regex!(r"[^\p{L}\p{M}\p{N}\p{P}\p{S} ]").replace_all(input, "")
 }
 
 /// Returns the first `max` characters of `input`.
-fn truncate_to_max_chars(input: &str, max: usize) -> &str {
+pub fn truncate_to_max_chars(input: &str, max: usize) -> &str {
     input
         .char_indices()
         .nth(max)
@@ -158,7 +150,6 @@ mod tests {
             normalize_chat(" \tHello\nWorld\r "),
             Ok("HelloWorld".into())
         );
-        assert_eq!(truncate_to_max_bytes("éé", 3), "é");
         assert_eq!(truncate_to_max_chars("éé", 1), "é");
         assert_eq!(truncate_to_max_chars("éé", 3), "éé");
     }

@@ -66,7 +66,10 @@ databaseDescribe("Rust actor durability and ownership", () => {
         );
         bob.send("tableJoin", { tableId });
         await bob.receive("tableJoined", SERVER_COMMAND_SCHEMAS.tableJoined);
-        alice.send("tableStart", { tableId });
+        alice.send("tableStart", {
+          tableId,
+          intendedPlayerNames: ["RecoveryAlice", "RecoveryBob"],
+        });
         await alice.receive(
           "tableStarted",
           SERVER_COMMAND_SCHEMAS.tableStarted,

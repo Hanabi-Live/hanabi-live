@@ -371,10 +371,7 @@ pub async fn private_history(
             hanabi_protocol::Timestamp::from(row.datetime_sent),
         ));
     }
-    let response = ChatPmHistory {
-        messages: list,
-        table_id: data.table_id,
-    };
+    let response = ChatPmHistory { messages: list };
     Ok(vec![Effect::to_self(Outgoing::new(
         hanabi_protocol::server::CHAT_PM_HISTORY,
         response,
@@ -414,7 +411,7 @@ pub async fn lobby_chat(
                 token.token
             )
         };
-        return Ok(Some(vec![notice(&caller.name, &response, table)]));
+        return Ok(Some(vec![notice(&caller.name, &response)]));
     }
     if let Some((command, args)) = &command
         && command == "uptime"
@@ -422,7 +419,6 @@ pub async fn lobby_chat(
         return Ok(Some(vec![Effect::RuntimeChat {
             command: command.clone(),
             args: args.iter().map(|arg| (*arg).into()).collect(),
-            table,
         }]));
     }
     if table.is_some() {
@@ -460,7 +456,6 @@ pub async fn lobby_chat(
             runtime = Some(Effect::RuntimeChat {
                 command: command.clone(),
                 args: args.iter().map(|s| (*s).to_owned()).collect(),
-                table,
             });
         } else {
             return Ok(Some(vec![notice(
@@ -469,13 +464,12 @@ pub async fn lobby_chat(
                     "The chat command of <code>/{}</code> is not valid. Use <code>/help</code> to get a list of available commands.",
                     escape_html(command)
                 ),
-                table,
             )]));
         }
     }
     // Private commands, including help, do not enter public history.
     if let Some(response) = private_response {
-        return Ok(Some(vec![notice(&caller.name, &response, table)]));
+        return Ok(Some(vec![notice(&caller.name, &response)]));
     }
     let mut tx = pool.begin().await?;
     let mut effects = Vec::new();

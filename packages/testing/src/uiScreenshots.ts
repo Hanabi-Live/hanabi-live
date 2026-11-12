@@ -1203,7 +1203,10 @@ async function playGame(alice: Peer, bob: Peer): Promise<number> {
   );
   bob.send("tableJoin", { tableId });
   await bob.receive("tableJoined", SERVER_COMMAND_SCHEMAS.tableJoined);
-  alice.send("tableStart", { tableId });
+  alice.send("tableStart", {
+    tableId,
+    intendedPlayerNames: [USERNAME, "Bob"],
+  });
   const peers = [alice, bob];
   const games = await Promise.all(
     peers.map(async (peer) => {
@@ -1333,7 +1336,7 @@ async function seed(address: string): Promise<Seed> {
   let clueTarget: { order: CardOrder; rank: ClueRank } | undefined;
 
   async function startGame() {
-    bob.send("tableStart", { tableId });
+    bob.send("tableStart", { tableId, intendedPlayerNames: ["Bob", USERNAME] });
     await bob.receive("tableStarted", SERVER_COMMAND_SCHEMAS.tableStarted);
     bob.send("gameInitLoad", { tableId });
     const init = await bob.receive("gameInit", SERVER_COMMAND_SCHEMAS.gameInit);

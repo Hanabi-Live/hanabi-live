@@ -50,7 +50,7 @@ export function update(
 
   // We do not need to update the timers if the game is paused. (The server will send another
   // "clock" message when the game becomes unpaused.)
-  if (globals.state.pause.playerIndex !== undefined) {
+  if (globals.state.pause.pausingPlayerIndex !== undefined) {
     return;
   }
 
@@ -199,7 +199,7 @@ function setTickingDownTime(timer: TimerDisplay | undefined) {
     && milliseconds > 0
     && milliseconds <= LOW_TIME_WARNING_MILLISECONDS
     && Math.abs(elapsedTime - TICK_MILLISECONDS) < TICK_TOLERANCE_MILLISECONDS
-    && globals.state.pause.playerIndex === undefined
+    && globals.state.pause.pausingPlayerIndex === undefined
     && !globals.lobby.errorOccurred
   ) {
     timer.toggleWarningFlash();

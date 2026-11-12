@@ -365,7 +365,7 @@ function gameReducerFunction(
         action.playerIndex,
         gameState.score,
         metadata,
-        action.votes,
+        action.votes ?? [],
       );
       gameState.log.push({
         turn: gameState.turn.turnNum + 1,

@@ -370,7 +370,8 @@ async fn uptime_replies_only_to_requester_in_lobby_and_table_postgres() {
                 reply["kind"],
                 json!({"type":"private","author":{"type":"server"},"recipient":"Alice"})
             );
-            assert_eq!(reply.get("tableId").and_then(Value::as_u64), table);
+            // The reply names no table, so the client shows it in the chat that is open.
+            assert!(reply.get("tableId").is_none());
             assert!(reply["text"].as_str().unwrap().starts_with(prefix));
             assert!(reply.get("chatId").is_none());
         }

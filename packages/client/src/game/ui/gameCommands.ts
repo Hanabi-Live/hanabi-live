@@ -391,8 +391,8 @@ gameCommands.set("idleReset", () => {
 
 gameCommands.set("pause", (data) => {
   // The server also sends this when we queue or unqueue a pause, which plays no sound.
-  const paused = data.playerIndex !== undefined;
-  if (paused !== (globals.state.pause.playerIndex !== undefined)) {
+  const paused = data.pausingPlayerIndex !== undefined;
+  if (paused !== (globals.state.pause.pausingPlayerIndex !== undefined)) {
     globals.game!.sounds.play(
       paused ? SoundType.GamePaused : SoundType.GameUnpaused,
     );
@@ -400,7 +400,7 @@ gameCommands.set("pause", (data) => {
 
   globals.store!.dispatch({
     type: "pause",
-    playerIndex: data.playerIndex,
+    pausingPlayerIndex: data.pausingPlayerIndex,
     queued: data.queued,
   });
 });

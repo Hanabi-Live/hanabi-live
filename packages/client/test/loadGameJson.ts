@@ -252,7 +252,7 @@ export function loadGameJson(gameJson: JsonGame): State {
     metadata,
     premove: undefined,
     pause: {
-      playerIndex: undefined,
+      pausingPlayerIndex: undefined,
       queued: false,
     },
     spectators: [],

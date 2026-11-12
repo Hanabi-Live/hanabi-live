@@ -18,9 +18,10 @@ export const MAX_STRIKES = 3;
 export const PANICKY_MAX_CLUES = 4;
 
 /**
- * A detrimental character's number in `characters.json`.
+ * A detrimental character's number in `characters.json`. The database stores it as a
+ * `SMALLINT`.
  */
-export const characterIdSchema = z.number().int().min(0).max(4_294_967_295);
+export const characterIdSchema = z.number().int().min(0).max(32_767);
 
 /**
  * An entry in `characters.json`: a detrimental character.
@@ -137,9 +138,10 @@ export const clueRankSchema = z.literal([1, 2, 3, 4, 5]);
 export const stackSizeSchema = z.literal([1, 2, 3, 4, 5]);
 
 /**
- * A variant's number in `variants.json`. "No Variant" is 0.
+ * A variant's number in `variants.json`. "No Variant" is 0. The database stores it as a
+ * `SMALLINT`.
  */
-export const variantIdSchema = z.number().int().min(0).max(4_294_967_295);
+export const variantIdSchema = z.number().int().min(0).max(32_767);
 
 /**
  * An entry in `variants.json`. This is similar to `Variant`, but it only has primitive types.
@@ -374,7 +376,7 @@ export const gameEventSchema = z.discriminatedUnion("type", [
       /**
        * The orders of the cards the clue touched.
        */
-      orders: z.array(cardOrderSchema).readonly(),
+      orders: z.array(cardOrderSchema).max(6).readonly(),
       /**
        * The player who gives the clue.
        */
@@ -405,9 +407,9 @@ export const gameEventSchema = z.discriminatedUnion("type", [
       playerIndex: playerIndexSchema.optional(),
       type: z.literal("gameOver"),
       /**
-       * The players who voted to end the game. Empty when a vote did not end it.
+       * The players who voted to end the game, in seat order. Empty when a vote did not end it.
        */
-      votes: z.array(playerIndexSchema).max(6).readonly(),
+      votes: z.array(playerIndexSchema).max(6).readonly().optional(),
     })
     .readonly(),
   z
@@ -538,7 +540,7 @@ export const hypotheticalEventSchema = z.discriminatedUnion("type", [
       /**
        * The orders of the cards the clue touched.
        */
-      orders: z.array(cardOrderSchema).readonly(),
+      orders: z.array(cardOrderSchema).max(6).readonly(),
       /**
        * The player who gives the clue.
        */

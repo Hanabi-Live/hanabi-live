@@ -90,18 +90,10 @@ async fn publish(app: &App, session: Arc<Session>, effects: Vec<Effect>) -> Comm
         match effect {
             Effect::Publish(publication) => publications.push(publication),
             Effect::DiscordMirror { chat_id, message } => mirrors.push((chat_id, message)),
-            Effect::RuntimeChat {
-                command,
-                args,
-                table,
-            } => {
+            Effect::RuntimeChat { command, args } => {
                 for message in app.info.runtime_response(&command, &args)? {
                     if command == "uptime" {
-                        publications.push(lobby::notice_publication(
-                            &session.name,
-                            &message,
-                            table,
-                        ));
+                        publications.push(lobby::notice_publication(&session.name, &message));
                         continue;
                     }
                     let saved = lobby::server_chat(&app.store.primary, &message).await?;

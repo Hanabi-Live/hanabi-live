@@ -68,7 +68,7 @@ pub struct Pause {
 pub struct PauseState {
     /// The seat that paused the game. Absent when the game is not paused.
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub player_index: Option<PlayerIndex>,
+    pub pausing_player_index: Option<PlayerIndex>,
     /// Whether the recipient asked to pause the game at their next turn.
     pub queued: bool,
 }
@@ -135,7 +135,7 @@ pub struct TableStarted {
 #[serde(rename_all = "camelCase")]
 pub enum GameStage {
     JustStarted,
-    InProgress,
+    Playing,
     Replay,
 }
 
@@ -219,6 +219,7 @@ pub struct ClueEvent {
     /// The player who receives the clue.
     pub receiver_index: PlayerIndex,
     /// The orders of the cards the clue touched.
+    #[schemars(length(max = MAX_HAND_SIZE))]
     pub orders: Vec<CardOrder>,
     /// Whether the cards that the clue does not touch learn nothing from it. Only a hypothetical's
     /// clue can set it.
@@ -226,7 +227,7 @@ pub struct ClueEvent {
     pub ignore_negative: bool,
 }
 
-/// The end of a game.
+/// The end of a game, in a game's events and in the replay format.
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct GameOverEvent {
@@ -234,7 +235,8 @@ pub struct GameOverEvent {
     /// The player whom the ending names, such as the one who timed out, if any.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub player_index: Option<PlayerIndex>,
-    /// The players who voted to end the game. Empty when a vote did not end it.
+    /// The players who voted to end the game, in seat order. Empty when a vote did not end it.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
     #[schemars(length(max = MAX_PLAYERS))]
     pub votes: Vec<PlayerIndex>,
 }

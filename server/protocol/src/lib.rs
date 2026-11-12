@@ -93,6 +93,17 @@ pub(crate) const MAX_SUIT_INDEX: usize = MAX_SUITS - 1;
 pub const MIN_RANK: i32 = 1;
 /// The highest normal rank, which is also a suit's stack size unless the variant sets one.
 pub const MAX_RANK: i32 = 5;
+/// The highest score: every card of the most suits played.
+#[expect(
+    clippy::cast_possible_truncation,
+    clippy::cast_possible_wrap,
+    reason = "the most suits is far below i32::MAX"
+)]
+pub const MAX_SCORE: i32 = MAX_SUITS as i32 * MAX_RANK;
+/// The most cards in a hand without the options that change it: the hand of a 2- or 3-player game.
+pub const MAX_NORMAL_HAND_SIZE: usize = 5;
+/// The most cards in a hand: "One Extra Card" adds one.
+pub const MAX_HAND_SIZE: usize = MAX_NORMAL_HAND_SIZE + 1;
 /// The rank of a stack's start card, which Up or Down variants add to each suit.
 pub const START_CARD_RANK: i32 = 7;
 /// The rank clue that touches the odd ranks in an Odds and Evens variant.
@@ -110,20 +121,20 @@ pub const PANICKY_MAX_CLUES: i32 = 4;
 pub const MAX_DECK_SIZE: usize = 60;
 /// The most actions a game can record.
 pub const MAX_GAME_ACTIONS: usize = 512;
-/// The longest seed that a table can request, in bytes. The full seed also names the player count
+/// The longest seed that a table can request, in characters. The full seed also names the player count
 /// and variant, such as "p3v0s" before "123".
 pub const MAX_SEED_LENGTH: usize = 32;
 /// The longest chat message, in characters.
 pub const MAX_CHAT_LENGTH: usize = 300;
-/// The longest note, in bytes, that a player or spectator writes during a game. The server cuts a
-/// longer note to this length.
+/// The longest note, in characters, that a player or spectator writes during a game. The server
+/// cuts a longer note to this length.
 pub const MAX_NOTE_LENGTH: usize = 300;
-/// The longest game tag, in bytes.
+/// The longest game tag, in characters.
 pub const MAX_TAG_LENGTH: usize = 100;
-/// The longest table name that a player chooses, in bytes. The server cuts a longer name to this
-/// length.
+/// The longest table name that a player chooses, in characters. The server cuts a longer name to
+/// this length.
 pub const MAX_TABLE_NAME_LENGTH: usize = 45;
-/// The longest note, in bytes, that an imported game can give a card.
+/// The longest note, in characters, that an imported game can give a card.
 pub const MAX_IMPORTED_NOTE_LENGTH: usize = 65536;
 /// The number of seconds in a minute.
 pub const SECONDS_PER_MINUTE: i64 = 60;
@@ -157,11 +168,11 @@ pub const DEFAULT_VOLUME: u8 = MAX_VOLUME / 2;
 pub const DEFAULT_TIME_BASE_SECONDS: i64 = 2 * SECONDS_PER_MINUTE;
 /// The time that a new user's timed tables add each turn, in seconds.
 pub const DEFAULT_TIME_PER_TURN_SECONDS: i64 = 20;
-/// The rows on a page of a public listing when the request does not name a size.
-pub const DEFAULT_PAGE_SIZE: i64 = 10;
+/// The rows on a page of a public listing when the request does not name a limit.
+pub const DEFAULT_PAGE_LIMIT: i64 = 10;
 /// The most rows that a page of a public listing, a player's game history, or their private
 /// messages can have.
-pub const MAX_PAGE_SIZE: i64 = 100;
+pub const MAX_PAGE_LIMIT: i64 = 100;
 /// A table's progress, as a percentage, once its game reaches the maximum score or its replay
 /// reaches the last turn.
 pub const MAX_PROGRESS: u8 = 100;

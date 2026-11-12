@@ -15,19 +15,19 @@ use super::*;
 pub struct LoginRequest {
     pub username: String,
     pub password: String,
-    /// Sets a new password after the current one is verified. A form's empty field is absent.
+    /// Sets a new password after the current one is verified. A blank value is absent, as forms
+    /// send a blank input.
     #[serde(
         deserialize_with = "deserialize_form_text",
         skip_serializing_if = "Option::is_none"
     )]
-    #[schemars(length(min = 1))]
     pub new_password: Option<String>,
-    /// The client's release. Only the website sends it. A form's empty field is absent.
+    /// The client's release. Only the website sends it. A blank value is absent, as forms send a
+    /// blank input.
     #[serde(
         deserialize_with = "deserialize_form_text",
         skip_serializing_if = "Option::is_none"
     )]
-    #[schemars(length(min = 1))]
     pub version: Option<String>,
     /// Whether the client's system prefers a dark theme. A new account starts with this as its
     /// dark mode setting.
@@ -78,7 +78,8 @@ impl WebSocketQuery {
     pub const PARAMETERS: [&str; 3] = ["account", "version", "client"];
 }
 
-/// Reads a form field that is absent when it is empty, as forms send a blank input.
+/// Reads a form field that is absent when it is blank, as forms send a blank input. The schema
+/// accepts a blank value, so that the server and the clients' schemas agree on what is valid.
 fn deserialize_form_text<'de, D>(deserializer: D) -> Result<Option<String>, D::Error>
 where
     D: serde::Deserializer<'de>,

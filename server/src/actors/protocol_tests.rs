@@ -188,6 +188,11 @@ impl Harness {
             .map(TableId)
             .context("Missing replay identity")
     }
+    /// Starts a table as its owner sees it, with the players seated at it.
+    async fn start(&self, index: usize, id: TableId) -> Result<()> {
+        let request = self.store.start_request(id).await?;
+        self.send(index, "tableStart", request).await
+    }
     async fn snapshot(&self, id: TableId) -> Result<(TableSnapshot, i64)> {
         self.store.get(id).await?.context("Missing durable table")
     }
@@ -262,7 +267,7 @@ async fn player_shadow_is_cleared_when_a_spectator_joins() -> Result<()> {
             .await?;
         }
         h.send(1, "tableJoin", json!({"tableId":id})).await?;
-        h.send(0, "tableStart", json!({"tableId":id})).await?;
+        h.start(0, id).await?;
         let (table, _) = h.snapshot(id).await?;
         for (index, player_id, spectator) in [(1, 2, false), (2, 1, true)] {
             let seat = table
@@ -305,7 +310,7 @@ async fn only_the_start_of_a_game_is_marked_as_just_started() -> Result<()> {
     let outcome = async {
         let id = h.create(0, "Just started", json!({})).await?;
         h.send(1, "tableJoin", json!({"tableId":id})).await?;
-        h.send(0, "tableStart", json!({"tableId":id})).await?;
+        h.start(0, id).await?;
         let started = h.receive(1, "tableStarted").await?;
         ensure!(
             started["stage"] == "justStarted",
@@ -314,7 +319,7 @@ async fn only_the_start_of_a_game_is_marked_as_just_started() -> Result<()> {
         h.send(2, "tableSpectate", json!({"tableId":id})).await?;
         let joined = h.receive(2, "tableStarted").await?;
         ensure!(
-            joined["stage"] == "inProgress",
+            joined["stage"] == "playing",
             "A spectator who joined a game in progress was told that it started: {joined}"
         );
         Ok(())
@@ -332,7 +337,7 @@ async fn player_shadow_from_saved_games_is_cleared_on_reattend() -> Result<()> {
     let outcome = async {
         let id = h.create(0, "Recovered player viewpoint", json!({})).await?;
         h.send(1, "tableJoin", json!({"tableId":id})).await?;
-        h.send(0, "tableStart", json!({"tableId":id})).await?;
+        h.start(0, id).await?;
         h.stop_hub().await?;
         let (mut table, revision) = h.snapshot(id).await?;
         let alice = table
@@ -396,7 +401,7 @@ async fn spectators_receive_turns_between_the_game_state_and_loading_it() -> Res
     let outcome = async {
         let id = h.create(0, "Fast game", json!({})).await?;
         h.send(1, "tableJoin", json!({"tableId":id})).await?;
-        h.send(0, "tableStart", json!({"tableId":id})).await?;
+        h.start(0, id).await?;
         for index in 0..2 {
             h.send(index, "gameLoaded", json!({"tableId":id})).await?;
         }
@@ -450,7 +455,7 @@ async fn duck_clue_identity_is_private_in_live_history_and_recovery_but_not_comp
         for index in 1..3 {
             h.send(index, "tableJoin", json!({"tableId":id})).await?;
         }
-        h.send(0, "tableStart", json!({"tableId":id})).await?;
+        h.start(0, id).await?;
         h.send(3, "tableSpectate", json!({"tableId":id})).await?;
         h.send(
             4,
@@ -620,7 +625,7 @@ async fn leader_transfers_announce_the_actor_and_target_once_to_the_table() -> R
         h.send(1, "tableJoin", json!({"tableId":id})).await?;
         for phase in 0..3 {
             if phase == 1 {
-                h.send(1, "tableStart", json!({"tableId":id})).await?;
+                h.start(1, id).await?;
                 for index in 0..2 {
                     h.send(index, "gameLoaded", json!({"tableId":id})).await?;
                 }
@@ -987,7 +992,7 @@ async fn tables_replay_a_finished_game_from_a_chosen_turn() -> Result<()> {
             "The table did not report the replayed game and its options: {listed}"
         );
         h.send(1, "tableJoin", json!({"tableId":id})).await?;
-        h.send(0, "tableStart", json!({"tableId":id})).await?;
+        h.start(0, id).await?;
         let (table, _) = h.snapshot(id).await?;
         let started = table.game().context("The replayed game did not start")?;
         ensure!(
@@ -1275,7 +1280,7 @@ async fn pausing_a_game_is_announced_in_its_chat() -> Result<()> {
             )
             .await?;
         h.send(1, "tableJoin", json!({"tableId":id})).await?;
-        h.send(0, "tableStart", json!({"tableId":id})).await?;
+        h.start(0, id).await?;
         for index in 0..2 {
             h.send(index, "tableReattend", json!({"tableId":id}))
                 .await?;
@@ -1462,7 +1467,7 @@ async fn blocked_players_cannot_join_or_spectate_each_others_tables() -> Result<
         // Carol blocks Alice after sitting down; she can still return to her own seat.
         change(&h, 2, "blockAdd", "Alice").await?;
         h.send(2, "tableReattend", json!({"tableId":id})).await?;
-        h.send(0, "tableStart", json!({"tableId":id})).await?;
+        h.start(0, id).await?;
         ensure!(refused(&h, 1, "tableSpectate", id).await? == "You cannot spectate this table.");
 
         // The block applies whoever made it: Alice cannot join a replay that Bob leads.
@@ -1491,7 +1496,7 @@ async fn spectators_return_to_their_tables_after_reconnecting() -> Result<()> {
     let outcome = async {
         let game = h.create(0, "Spectated game", json!({})).await?;
         h.send(1, "tableJoin", json!({"tableId":game})).await?;
-        h.send(0, "tableStart", json!({"tableId":game})).await?;
+        h.start(0, game).await?;
         h.send(2, "tableSpectate", json!({"tableId":game,"shadowingPlayerIndex":1}))
             .await?;
         let replay = h.replay(3).await?;
@@ -1684,7 +1689,7 @@ async fn remade_tables_publish_fresh_statistics_for_every_player() -> Result<()>
     let outcome = async {
         let id = h.create(0, "Fresh restart statistics", json!({})).await?;
         h.send(1, "tableJoin", json!({"tableId":id})).await?;
-        h.send(0, "tableStart", json!({"tableId":id})).await?;
+        h.start(0, id).await?;
         h.send(2, "tableSpectate", json!({"tableId":id})).await?;
         for index in 0..3 {
             h.send(index, "gameLoaded", json!({"tableId":id})).await?;
@@ -1783,7 +1788,7 @@ async fn chat_read_positions_survive_game_start_reconnect_and_remake() -> Result
             .await?;
         h.send(0, "chatRead", json!({"tableId":id})).await?;
         let alice_read = h.snapshot(id).await?.0.chat.len();
-        h.send(0, "tableStart", json!({"tableId":id})).await?;
+        h.start(0, id).await?;
         for index in 0..2 {
             h.barrier(index).await?;
             h.frames(index)?;
@@ -1855,7 +1860,7 @@ async fn restart_leaves_out_players_who_are_done_playing() -> Result<()> {
         for index in 1..3 {
             h.send(index, "tableJoin", json!({"tableId":id})).await?;
         }
-        h.send(0, "tableStart", json!({"tableId":id})).await?;
+        h.start(0, id).await?;
         for index in 0..3 {
             h.send(index, "gameLoaded", json!({"tableId":id})).await?;
         }
@@ -2112,7 +2117,7 @@ async fn pregame_leader_moves_to_first_seat_without_reordering_live_players() ->
             h.snapshot(id).await?.0.seated_users().collect::<Vec<_>>() == expected,
             "Leader seating was not persisted"
         );
-        h.send(2, "tableStart", json!({"tableId":id})).await?;
+        h.start(2, id).await?;
         let live_players = h.snapshot(id).await?.0.seated_users().collect::<Vec<_>>();
         h.send(2, "tableSetOwner", json!({"tableId":id,"userId":1}))
             .await?;
@@ -2169,7 +2174,7 @@ async fn finished_game_publishes_replay_leader_candidates_without_reconnecting()
     let result = async {
         let id = h.create(0, "Leader candidates", json!({})).await?;
         h.send(1, "tableJoin", json!({"tableId":id})).await?;
-        h.send(0, "tableStart", json!({"tableId":id})).await?;
+        h.start(0, id).await?;
         h.send(2, "tableSpectate", json!({"tableId":id})).await?;
         for index in 0..3 {
             h.send(index, "gameLoaded", json!({"tableId":id})).await?;
@@ -2371,7 +2376,7 @@ async fn unknown_table_commands_are_persisted_and_delivered_to_bots() -> Result<
         h.send(1, "tableJoin", json!({"tableId":id})).await?;
         for running in [false, true] {
             if running {
-                h.send(0, "tableStart", json!({"tableId":id})).await?;
+                h.start(0, id).await?;
                 ensure!(matches!(h.snapshot(id).await?.0.phase, Phase::Live { .. }));
             }
             h.frames(0)?;
@@ -2660,7 +2665,7 @@ async fn tags_use_authoritative_sorted_frames_and_private_live_acknowledgements(
     let outcome = async {
         let id = h.create(0, "Tags", json!({})).await?;
         h.send(1, "tableJoin", json!({"tableId":id})).await?;
-        h.send(0, "tableStart", json!({"tableId":id})).await?;
+        h.start(0, id).await?;
         h.barrier(0).await?;
         h.frames(0)?;
         h.frames(1)?;
@@ -3163,7 +3168,7 @@ async fn commands_for_another_phase_are_rejected() -> Result<()> {
             .await
             .expect_err("A pregame accepted a replay action");
         ensure!(refusal(error)? == "Not a replay");
-        h.send(0, "tableStart", json!({"tableId": id})).await?;
+        h.start(0, id).await?;
         let error = h
             .send(
                 0,
@@ -3248,7 +3253,7 @@ async fn saved_characters_store_none_as_null() -> Result<()> {
                 )
                 .await?;
             h.send(1, "tableJoin", json!({"tableId":id})).await?;
-            h.send(0, "tableStart", json!({"tableId":id})).await?;
+            h.start(0, id).await?;
             h.receive(0, "tableStarted").await?;
             let (table, _) = h.snapshot(id).await?;
             let expected = table
@@ -3310,7 +3315,7 @@ async fn saved_actions_store_null_for_a_missing_target_or_value() -> Result<()> 
     let outcome = async {
         let id = h.create(0, "Votes", json!({})).await?;
         h.send(1, "tableJoin", json!({"tableId":id})).await?;
-        h.send(0, "tableStart", json!({"tableId":id})).await?;
+        h.start(0, id).await?;
         h.receive(0, "tableStarted").await?;
         let (table, _) = h.snapshot(id).await?;
         let game = &table.game().context("Missing game")?.game;
@@ -3333,7 +3338,7 @@ async fn saved_actions_store_null_for_a_missing_target_or_value() -> Result<()> 
         }
         h.barrier(0).await?;
         let actions = sqlx::query!(
-            "SELECT a.game_id,a.type,a.target,a.value FROM game_actions a ORDER BY a.game_id,a.turn"
+            "SELECT a.game_id,a.type,a.target,a.value,a.votes FROM game_actions a ORDER BY a.game_id,a.turn"
         )
         .fetch_all(&h.store.primary)
         .await?;
@@ -3341,6 +3346,26 @@ async fn saved_actions_store_null_for_a_missing_target_or_value() -> Result<()> 
             .iter()
             .map(|a| (a.r#type, a.target, a.value))
             .collect::<Vec<_>>();
+        // The voters' seats, in seat order.
+        let mut seats = h.users[..2]
+            .iter()
+            .map(|user| {
+                table
+                    .players()
+                    .iter()
+                    .position(|p| p.is(user.user))
+                    .context("Missing voter")
+            })
+            .collect::<Result<Vec<_>>>()?;
+        seats.sort_unstable();
+        let voters = seats
+            .iter()
+            .map(|&seat| i16::try_from(seat))
+            .collect::<Result<Vec<_>, _>>()?;
+        ensure!(
+            actions.iter().map(|a| a.votes.clone()).collect::<Vec<_>>() == [None, Some(voters)],
+            "Unexpected stored votes: {actions:?}"
+        );
         let play = i16::try_from(i32::from(hanabi_engine::RecordedActionType::Play))?;
         let vote = i16::try_from(i32::from(hanabi_engine::RecordedActionType::GameOverByVote))?;
         let end = crate::archive::end_condition_to_db(EndCondition::TerminatedByVote);
@@ -3369,9 +3394,11 @@ async fn saved_actions_store_null_for_a_missing_target_or_value() -> Result<()> 
             events.iter().any(|event| {
                 ["play", "misplay"].contains(&event["type"].as_str().unwrap_or_default())
                     && event["order"] == card
-            }) && events
-                .iter()
-                .any(|event| event["type"] == "gameOver" && event.get("playerIndex").is_none()),
+            }) && events.iter().any(|event| {
+                event["type"] == "gameOver"
+                    && event.get("playerIndex").is_none()
+                    && event["votes"] == json!(seats)
+            }),
             "The replay lost the saved actions: {history}"
         );
         Ok(())

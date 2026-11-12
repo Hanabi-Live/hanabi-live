@@ -45,19 +45,17 @@ Unknown schema features fail generation rather than silently losing validation.
   `null`; explicit null is always rejected.
 - Missing fields with defaults are normalized identically. Empty strings are not
   automatically replaced, trimmed, or escaped.
-- Integer bounds remain JavaScript-safe. Table IDs retain their TypeScript
-  brand.
-- Timestamp strings keep their existing representation; generated schemas do not
-  parse or reformat them. Readonly Zod objects/arrays retain their existing
-  behavior.
-- Rust retains its rejection of floating-point JSON tokens for integer fields.
-  JavaScript cannot distinguish `1` from `1.0` after JSON parsing. Fixtures
-  record that pre-existing difference rather than silently changing either
-  parser.
+- Integer bounds remain JavaScript-safe. An integer type with `brand` in
+  `src/integers.rs` has a branded TypeScript type.
+- Timestamps are RFC 3339 strings in UTC with milliseconds. The generated
+  schemas check this form and keep the value a string.
+- Generated objects and arrays are readonly.
+- Rust rejects floating-point JSON tokens for integer fields. JavaScript cannot
+  distinguish `1` from `1.0` after JSON parsing. The fixtures record this
+  difference.
 
-The fixtures were checked against both handwritten parsers before adoption and
-are now consumed by Rust and Bun tests. Rust process and browser tests also
-exercise the generated client validators against actual server traffic.
+Rust process and browser tests also exercise the generated client validators
+against actual server traffic.
 
 ## Game catalog
 

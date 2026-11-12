@@ -150,7 +150,13 @@ databaseDescribe("normal-server protocol workload", () => {
               "tableJoined",
               SERVER_COMMAND_SCHEMAS.tableJoined,
             );
-            alice.send("tableStart", { tableId });
+            alice.send("tableStart", {
+              tableId,
+              intendedPlayerNames: [
+                `Bench${lane}${game}Alice`,
+                `Bench${lane}${game}Bob`,
+              ],
+            });
             await alice.receive(
               "tableStarted",
               SERVER_COMMAND_SCHEMAS.tableStarted,

@@ -49,19 +49,18 @@ commands.set("chatDeleted", (data) => {
 });
 
 commands.set("chatPmHistory", (data) => {
-  const room = chat.tableRoom(data.tableId);
-
   if (data.messages.length === 0) {
+    // A private notice outside of a table shows in the chat that the user has open.
     chat.sendSelfPmFromServer(
       "No private messages found.",
-      room,
+      "lobby",
       chat.SelfChatMessageType.Info,
     );
     return;
   }
 
   for (const line of data.messages) {
-    chat.addPmHistory(line, room);
+    chat.addPmHistory(line);
   }
 });
 

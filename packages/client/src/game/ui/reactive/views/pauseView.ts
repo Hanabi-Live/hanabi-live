@@ -8,7 +8,7 @@ import {
 import { isOurTurn } from "../../isOurTurn.ts";
 
 export function onChanged(pause: PauseState): void {
-  const paused = pause.playerIndex !== undefined;
+  const paused = pause.pausingPlayerIndex !== undefined;
   const stageFadeOpacity = paused
     ? PAUSED_STAGE_FADE_OPACITY
     : STAGE_FADE_OPACITY;
@@ -22,9 +22,9 @@ export function onChanged(pause: PauseState): void {
   globals.elements.timer2?.visible(!paused && !isOurTurn());
   globals.elements.timer1Circle?.visible(pause.queued);
 
-  if (pause.playerIndex !== undefined) {
+  if (pause.pausingPlayerIndex !== undefined) {
     globals.elements.pauseText?.text(
-      `by: ${globals.metadata.playerNames[pause.playerIndex]}`,
+      `by: ${globals.metadata.playerNames[pause.pausingPlayerIndex]}`,
     );
 
     if (globals.state.playing) {

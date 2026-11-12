@@ -40,8 +40,8 @@ pub enum LobbyStatus {
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct User {
-    pub user_id: UserId,
-    pub username: Username,
+    #[serde(flatten)]
+    pub user: UserRef,
     pub activity: Activity,
     pub h_group_conventions: bool,
     /// The highest H-Group level that this user wants to play at. Absent when they did not choose
@@ -249,8 +249,8 @@ impl Default for CreateTableSettings {
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct Welcome {
-    pub user_id: UserId,
-    pub username: Username,
+    #[serde(flatten)]
+    pub user: UserRef,
     pub muted: bool,
     pub first_time_user: bool,
     pub settings: Settings,
@@ -370,8 +370,8 @@ impl TableSettings {
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct Spectator {
-    pub user_id: UserId,
-    pub username: Username,
+    #[serde(flatten)]
+    pub user: UserRef,
     /// The seat being shadowed, if any.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub shadowing_player_index: Option<PlayerIndex>,
@@ -419,14 +419,13 @@ pub struct Table {
     pub spectators: Vec<Spectator>,
 }
 
-/// What a table is doing: waiting for its game to start, playing it, or showing a finished game to
-/// its owner (replay) or to everyone (shared replay).
+/// What a listed table is doing: waiting for its game to start, playing it, or showing a finished
+/// game in a shared replay. The lobby does not list solo replays.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase")]
 pub enum TablePhase {
     Pregame,
     Playing,
-    Replay,
     SharedReplay,
 }
 
@@ -516,8 +515,8 @@ pub struct PregameStats {
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct PregamePlayer {
-    pub user_id: UserId,
-    pub username: Username,
+    #[serde(flatten)]
+    pub user: UserRef,
     /// Whether this player is connected and at the table.
     pub present: bool,
     pub stats: PregameStats,

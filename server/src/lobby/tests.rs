@@ -43,7 +43,7 @@ async fn uptime_is_private_before_history_or_discord_publication_postgres() {
         .await
         .unwrap();
     let history_before = lobby_history(&db.pool, 100).await.unwrap();
-    for table in [None, Some(TableId(42))] {
+    for table in [None, Some(hanabi_protocol::TableId(42))] {
         let message = crate::actors::client_message(
             "chat",
             &table.map_or_else(
@@ -57,8 +57,7 @@ async fn uptime_is_private_before_history_or_discord_publication_postgres() {
             .unwrap()
             .unwrap();
         assert!(matches!(effects.as_slice(),
-            [Effect::RuntimeChat { command, table: response_table, .. }]
-            if command == "uptime" && *response_table == table
+            [Effect::RuntimeChat { command, .. }] if command == "uptime"
         ));
     }
     assert!(matches!(classify_chat("/UpTiMe"), Classification::Private));
@@ -386,7 +385,7 @@ async fn lobby_private_messages_and_command_privacy_postgres() {
         &who,
         &[],
         "chatPmHistory",
-        json!({"limit":1,"recipient":"BOB","tableId":7}),
+        json!({"limit":1,"recipient":"BOB"}),
     )
     .await;
     let history = self_data(&result, "chatPmHistory");
@@ -647,11 +646,11 @@ async fn lobby_directed_linked_seeds_and_histories_postgres() {
     assert_eq!(history["games"][0]["gameId"], ga);
     assert_eq!(history["games"][0]["options"]["variantId"], 0);
     assert_eq!(history["games"][0]["playerNames"], json!(["Alice"]));
-    // A page holds at least one game and at most `MAX_PAGE_SIZE`, from a start that is not
+    // A page holds at least one game and at most `MAX_PAGE_LIMIT`, from a start that is not
     // negative.
     for page in [
         json!({"offset":0,"limit":0}),
-        json!({"offset":0,"limit":hanabi_protocol::MAX_PAGE_SIZE + 1}),
+        json!({"offset":0,"limit":hanabi_protocol::MAX_PAGE_LIMIT + 1}),
         json!({"offset":-1,"limit":1}),
     ] {
         assert!(ClientMessage::decode("gameHistory", &page).is_err());

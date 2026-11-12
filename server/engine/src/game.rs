@@ -17,7 +17,7 @@ use crate::{
 };
 use anyhow::{Context, Result, ensure};
 use hanabi_protocol::{
-    GameOverTurn, MAX_CLUES, MAX_PLAYERS, MAX_RANK, MAX_STRIKES, MIN_PLAYERS, MIN_RANK,
+    GameOverEvent, MAX_CLUES, MAX_PLAYERS, MAX_RANK, MAX_STRIKES, MIN_PLAYERS, MIN_RANK,
     START_CARD_RANK,
 };
 
@@ -410,7 +410,7 @@ fn check_end(state: &mut EngineState) -> bool {
 fn finish_action(
     state: &mut EngineState,
     actor: usize,
-    action: RecordedAction,
+    action: &RecordedAction,
     timing: Option<CompletionTiming>,
     votes: Option<Vec<usize>>,
 ) {
@@ -514,7 +514,7 @@ pub fn apply_action(
             }
         }
     }
-    finish_action(state, actor, RecordedAction::from(*action), timing, None);
+    finish_action(state, actor, &RecordedAction::from(*action), timing, None);
     Ok(())
 }
 
@@ -565,7 +565,7 @@ pub fn terminate_game(
         condition: termination.condition,
         player: termination.player_index,
     });
-    let action = RecordedAction::GameOver(GameOverTurn {
+    let action = RecordedAction::GameOver(GameOverEvent {
         end_condition: termination.condition,
         player_index: termination
             .player_index
@@ -576,9 +576,16 @@ pub fn terminate_game(
                 )
             })
             .map(seat),
+        votes: termination
+            .votes
+            .iter()
+            .flatten()
+            .copied()
+            .map(seat)
+            .collect(),
     });
     if termination.condition != EndCondition::AllOrNothingFail {
-        state.actions.push(action);
+        state.actions.push(action.clone());
     }
     if let (Some(player), Some(t)) = (timed_out, &mut timing) {
         t.player_times[player] = 0;
@@ -586,7 +593,7 @@ pub fn terminate_game(
     finish_action(
         state,
         termination.actor_index,
-        action,
+        &action,
         timing,
         termination.votes,
     );

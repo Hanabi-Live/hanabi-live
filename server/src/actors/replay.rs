@@ -24,7 +24,7 @@ use std::{
 
 /// Normalizes the text of a tag that a client sends, which may not be blank.
 fn normalize_tag(raw: &str) -> CommandResult<String> {
-    ensure_or_reject!(raw.len() <= MAX_TAG_LENGTH, "{}", tag_too_long());
+    ensure_or_reject!(raw.chars().count() <= MAX_TAG_LENGTH, "{}", tag_too_long());
     let tag = crate::accounts::normalize_string(
         raw.chars()
             .map(|c| if c.is_whitespace() { ' ' } else { c })
@@ -486,7 +486,7 @@ impl TableActor {
             let suffix = format!(" (#{count})");
             format!(
                 "{}{suffix}",
-                crate::accounts::truncate_to_max_bytes(&base, MAX_TABLE_NAME_LENGTH - suffix.len())
+                crate::accounts::truncate_to_max_chars(&base, MAX_TABLE_NAME_LENGTH - suffix.len())
             )
         };
         // A table that requested a seed moves on to the one after it.

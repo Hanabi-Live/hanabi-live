@@ -148,8 +148,10 @@ pub fn parse(input: &ReplayGame) -> CommandResult<Imported> {
                 RecordedAction::GameOver(end) =>
                     if end.end_condition == EndCondition::TerminatedByVote {
                         end.player_index.is_none()
+                            && end.votes.iter().all(|p| p.index() < players.len())
                     } else {
                         end.player_index.is_some_and(|p| p.index() < players.len())
+                            && end.votes.is_empty()
                     },
             },
             "Invalid action at index {i}"
@@ -166,7 +168,7 @@ pub fn parse(input: &ReplayGame) -> CommandResult<Imported> {
         ensure_or_reject!(row.len() <= size, "Too many notes");
         for (j, text) in row.iter().enumerate() {
             ensure_or_reject!(
-                text.len() <= hanabi_protocol::MAX_IMPORTED_NOTE_LENGTH,
+                text.chars().count() <= hanabi_protocol::MAX_IMPORTED_NOTE_LENGTH,
                 "Note too long"
             );
             text.clone_into(&mut notes[i][j]);

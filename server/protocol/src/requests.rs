@@ -33,9 +33,6 @@ pub struct ChatPmRequest {
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct ChatPmHistoryRequest {
     pub limit: PageLimit,
-    /// The table whose chat shows the reply. Absent means the lobby.
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub table_id: Option<TableId>,
     /// The other user in the conversation. Absent shows the messages with everyone.
     #[serde(skip_serializing_if = "Option::is_none")]
     #[schemars(length(min = 1))]
@@ -47,19 +44,6 @@ pub struct ChatPmHistoryRequest {
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct RelationshipRequest {
     pub username: String,
-    /// The table whose chat shows the reply. Absent means the lobby.
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub table_id: Option<TableId>,
-}
-
-/// Asks for the sender's linked accounts. Clients already have the sender's friends and blocked
-/// users, from `welcome`, `friends`, and `blocked`.
-#[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
-#[serde(rename_all = "camelCase", deny_unknown_fields)]
-pub struct LinkListRequest {
-    /// The table whose chat shows the reply. Absent means the lobby.
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub table_id: Option<TableId>,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
@@ -91,9 +75,8 @@ pub struct TableSetOwnerRequest {
 pub struct TableStartRequest {
     pub table_id: TableId,
     /// The players that the owner saw seated. The server ignores a start from an outdated view.
-    #[serde(skip_serializing_if = "Option::is_none")]
     #[schemars(length(max = MAX_PLAYERS), inner(length(min = 1)))]
-    pub intended_player_names: Option<Vec<String>>,
+    pub intended_player_names: Vec<String>,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
@@ -169,11 +152,9 @@ pub struct SeedGamesRequest {
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct TagSearchRequest {
-    /// At most `MAX_TAG_LENGTH` bytes. The server answers a longer or blank tag with a warning.
+    /// At most `MAX_TAG_LENGTH` characters. The server answers a longer or blank tag with a
+    /// warning.
     pub tag: String,
-    /// The table whose chat shows the reply. Absent means the lobby.
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub table_id: Option<TableId>,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
@@ -268,7 +249,7 @@ pub enum PauseSetting {
 pub struct NoteRequest {
     pub table_id: TableId,
     pub order: CardOrder,
-    /// The server keeps at most `MAX_NOTE_LENGTH` bytes of it.
+    /// The server keeps at most `MAX_NOTE_LENGTH` characters of it.
     pub text: String,
 }
 
@@ -277,7 +258,8 @@ pub struct NoteRequest {
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct TagRequest {
     pub table_id: TableId,
-    /// At most `MAX_TAG_LENGTH` bytes. The server answers a longer or blank tag with a warning.
+    /// At most `MAX_TAG_LENGTH` characters. The server answers a longer or blank tag with a
+    /// warning.
     pub tag: String,
 }
 

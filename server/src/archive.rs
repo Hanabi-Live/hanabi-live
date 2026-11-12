@@ -12,7 +12,7 @@ use hanabi_engine::{
     recorded_action_type,
 };
 use hanabi_protocol::{
-    CardOrder, Clue, ClueRank, ClueTurn, ColorIndex, GameId, GameOverTurn, PlayerIndex, TableId,
+    CardOrder, Clue, ClueRank, ClueTurn, ColorIndex, GameId, GameOverEvent, PlayerIndex, TableId,
     TargetCard, UserId,
 };
 use serde::Deserialize;
@@ -68,13 +68,14 @@ pub(crate) struct ArchivePlayer {
 }
 
 /// An action as `game_actions` stores it: NULL for a game over's target when no player caused it,
-/// and for a play's or a discard's value.
-#[derive(Clone, Copy, Debug, Deserialize)]
+/// for a play's or a discard's value, and for the votes of an action that a vote did not end.
+#[derive(Clone, Debug, Deserialize)]
 struct ArchiveAction {
     #[serde(rename = "type")]
     kind: RecordedActionType,
     target: Option<i32>,
     value: Option<i32>,
+    votes: Option<Vec<i32>>,
 }
 
 impl TryFrom<ArchiveAction> for RecordedAction {
@@ -104,9 +105,15 @@ impl TryFrom<ArchiveAction> for RecordedAction {
                 },
             }),
             RecordedActionType::GameOver | RecordedActionType::GameOverByVote => {
-                Self::GameOver(GameOverTurn {
+                Self::GameOver(GameOverEvent {
                     end_condition: end_condition_from_db(action.value.ok_or_else(invalid)?)?,
                     player_index: action.target.map(|_| seat()).transpose()?,
+                    votes: action
+                        .votes
+                        .iter()
+                        .flatten()
+                        .map(|&vote| PlayerIndex::new(vote).ok_or_else(invalid))
+                        .collect::<Result<_>>()?,
                 })
             }
         })
@@ -114,12 +121,12 @@ impl TryFrom<ArchiveAction> for RecordedAction {
 }
 
 /// The type, target, and value that `game_actions` stores for an action.
-fn stored_action(action: RecordedAction) -> Result<(i16, Option<i16>, Option<i16>)> {
+fn stored_action(action: &RecordedAction) -> Result<(i16, Option<i16>, Option<i16>)> {
     let (target, value) = match action {
         RecordedAction::Play(card) | RecordedAction::Discard(card) => {
             (Some(i32::from(card.order)), None)
         }
-        RecordedAction::Clue(ClueTurn {
+        &RecordedAction::Clue(ClueTurn {
             receiver_index: target,
             clue,
         }) => (
@@ -135,7 +142,7 @@ fn stored_action(action: RecordedAction) -> Result<(i16, Option<i16>, Option<i16
         ),
     };
     Ok((
-        i16::try_from(i32::from(recorded_action_type(&action)))?,
+        i16::try_from(i32::from(recorded_action_type(action)))?,
         target.map(i16::try_from).transpose()?,
         value.map(i16::try_from).transpose()?,
     ))
@@ -198,7 +205,7 @@ pub(crate) async fn load(pool: &PgPool, id: GameId) -> Result<Option<Archive>> {
           ORDER BY p.seat) FROM game_participants p JOIN users u ON u.id=p.user_id
           WHERE p.game_id=g.id),'[]'::jsonb) AS \"archive_players!: Json<Vec<ArchivePlayer>>\",
         COALESCE((SELECT jsonb_agg(jsonb_build_object(
-          'type',a.type,'target',a.target,'value',a.value) ORDER BY a.turn)
+          'type',a.type,'target',a.target,'value',a.value,'votes',a.votes) ORDER BY a.turn)
           FROM game_actions a WHERE a.game_id=g.id),'[]'::jsonb) AS \"archive_actions!: Json<Vec<ArchiveAction>>\",
         COALESCE((SELECT jsonb_agg(jsonb_build_object('seat',p.seat,'order',n.card_order,'note',n.note)
           ORDER BY p.seat,n.card_order) FROM game_participant_notes n
@@ -406,12 +413,32 @@ pub(crate) async fn insert(
     let mut targets = Vec::with_capacity(s.game.actions.len());
     let mut values = Vec::with_capacity(s.game.actions.len());
     for action in &s.game.actions {
-        let (kind, target, value) = stored_action(*action)?;
+        let (kind, target, value) = stored_action(action)?;
         kinds.push(kind);
         targets.push(target);
         values.push(value);
     }
     sqlx::query!("INSERT INTO game_actions(game_id,turn,type,target,value) SELECT $1,(a.turn-1)::smallint,a.kind,a.target,a.value FROM UNNEST($2::smallint[],$3::smallint[],$4::smallint[]) WITH ORDINALITY AS a(kind,target,value,turn)", id.0, &kinds, &targets as &[Option<i16>], &values as &[Option<i16>]).execute(&mut **tx).await?;
+    // Only the action that ends a game by vote has votes, so they are stored apart from the rest.
+    for (turn, action) in s.game.actions.iter().enumerate() {
+        if let RecordedAction::GameOver(end) = action
+            && !end.votes.is_empty()
+        {
+            let votes = end
+                .votes
+                .iter()
+                .map(|&vote| i16::try_from(i32::from(vote)))
+                .collect::<Result<Vec<_>, _>>()?;
+            sqlx::query!(
+                "UPDATE game_actions SET votes=$3 WHERE game_id=$1 AND turn=$2",
+                id.0,
+                i16::try_from(turn)?,
+                &votes
+            )
+            .execute(&mut **tx)
+            .await?;
+        }
+    }
     let tag_users = s.tags.iter().map(|tag| tag.user.0).collect::<Vec<_>>();
     let tags = s
         .tags

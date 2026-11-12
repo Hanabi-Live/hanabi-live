@@ -1,6 +1,6 @@
 // Moving between the lobby and the screens that show past games and other scores.
 
-import { DEFAULT_PAGE_SIZE } from "@hanabi-live/data";
+import { DEFAULT_PAGE_LIMIT } from "@hanabi-live/data";
 import { HISTORY_HASH, PATH } from "../constants.ts";
 import { globals } from "../Globals.ts";
 import { store } from "../store.ts";
@@ -19,7 +19,7 @@ import { Screen } from "./types/Screen.ts";
  * The number of games that each history or other scores request asks for, the same as a public
  * history page.
  */
-const HISTORY_PAGE_SIZE = DEFAULT_PAGE_SIZE;
+const HISTORY_PAGE_SIZE = DEFAULT_PAGE_LIMIT;
 
 export function show(requestHistory = true): void {
   globals.currentScreen = Screen.History;

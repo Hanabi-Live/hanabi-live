@@ -1,12 +1,8 @@
-import { MAX_PAGE_SIZE, VERSION } from "@hanabi-live/data";
+import { MAX_PAGE_LIMIT, VERSION } from "@hanabi-live/data";
 import { getVariant, VARIANT_NAMES } from "@hanabi-live/game";
 import { parseIntSafe } from "complete-common";
 import { globals } from "./Globals.ts";
-import {
-  roomTableId,
-  SelfChatMessageType,
-  sendSelfPmFromServer,
-} from "./chat.ts";
+import { SelfChatMessageType, sendSelfPmFromServer } from "./chat.ts";
 import * as createGame from "./lobby/createGame.ts";
 import { createJsonFromReplay } from "./lobby/createReplayJson.ts";
 import { getOnlineUserId } from "./onlineUsers.ts";
@@ -16,12 +12,6 @@ import { escapeHtml } from "./utils.ts";
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type Callback = (...args: any) => void;
 export const chatCommands = new Map<string, Callback>();
-
-/** The `tableId` field that tells the server which room a command was typed in. */
-function roomField(room: string): { tableId?: number } {
-  const tableId = roomTableId(room);
-  return tableId === undefined ? {} : { tableId };
-}
 
 // /copy
 chatCommands.set("copy", (room: string) => {
@@ -109,8 +99,8 @@ function unlink(room: string, args: readonly string[]) {
 }
 
 // /links
-function links(room: string) {
-  globals.conn!.send("linkList", roomField(room));
+function links() {
+  globals.conn!.send("linkList", {});
 }
 
 chatCommands.set("link", link);
@@ -131,7 +121,6 @@ function blockCommand(command: "block" | "unblock") {
 
     globals.conn!.send(command === "block" ? "blockAdd" : "blockRemove", {
       username: args.join(" "),
-      ...roomField(room),
     });
   };
 }
@@ -234,7 +223,7 @@ export function parsePmHistoryCommandArgs(
     amount = parsedAmount;
   }
 
-  if (amount < 1 || amount > MAX_PAGE_SIZE) {
+  if (amount < 1 || amount > MAX_PAGE_LIMIT) {
     return undefined;
   }
 
@@ -250,14 +239,14 @@ function pmHistory(room: string, args: readonly string[]) {
     sendSelfPmFromServer(
       "The format of the /pmhistory command is: "
         + "<code>/pmhistory [username] [amount]</code> or "
-        + `<code>/pmhistory [amount]</code>, where amount is between 1 and ${MAX_PAGE_SIZE}.`,
+        + `<code>/pmhistory [amount]</code>, where amount is between 1 and ${MAX_PAGE_LIMIT}.`,
       room,
       SelfChatMessageType.Info,
     );
     return;
   }
 
-  globals.conn!.send("chatPmHistory", { ...data, ...roomField(room) });
+  globals.conn!.send("chatPmHistory", data);
 }
 chatCommands.set("pmhistory", pmHistory);
 
@@ -421,12 +410,11 @@ function untag(room: string, args: readonly string[]) {
 chatCommands.set("untag", untag);
 
 // /tagsearch
-chatCommands.set("tagsearch", (room: string, args: readonly string[]) => {
+chatCommands.set("tagsearch", (_room: string, args: readonly string[]) => {
   const tag = args.join(" ");
 
   globals.conn!.send("tagSearch", {
     tag,
-    ...roomField(room),
   });
 });
 

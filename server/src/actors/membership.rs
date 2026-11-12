@@ -328,7 +328,7 @@ impl TableActor {
                         stage: if replay {
                             hanabi_protocol::GameStage::Replay
                         } else {
-                            hanabi_protocol::GameStage::InProgress
+                            hanabi_protocol::GameStage::Playing
                         },
                     },
                 ),

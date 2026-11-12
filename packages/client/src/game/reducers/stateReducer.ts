@@ -232,7 +232,7 @@ function stateReducerFunction(state: Draft<State>, action: Action) {
     }
 
     case "pause": {
-      state.pause.playerIndex = action.playerIndex;
+      state.pause.pausingPlayerIndex = action.pausingPlayerIndex;
       state.pause.queued = action.queued;
       break;
     }

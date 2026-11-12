@@ -53,9 +53,9 @@ fn strict_query(raw: Option<&str>, accepted: &[&str]) -> Result<Query> {
     Query::parse(raw, accepted).map_err(HttpError::bad)
 }
 
-pub(super) use hanabi_protocol::{DEFAULT_PAGE_SIZE, MAX_PAGE_SIZE};
+pub(super) use hanabi_protocol::{DEFAULT_PAGE_LIMIT, MAX_PAGE_LIMIT};
 /// The page sizes that a public listing's pager offers.
-pub(super) const PAGER_SIZES: [i64; 4] = [DEFAULT_PAGE_SIZE, 20, 50, MAX_PAGE_SIZE];
+pub(super) const PAGER_SIZES: [i64; 4] = [DEFAULT_PAGE_LIMIT, 20, 50, MAX_PAGE_LIMIT];
 
 /// The query parameters that page a list.
 const PAGE_PARAMETERS: [&str; 2] = ["offset", "limit"];
@@ -66,11 +66,11 @@ fn pagination(q: &Query) -> Result<Option<(i64, i64)>> {
         return Ok(None);
     }
     let limit = match q.get("limit") {
-        None => DEFAULT_PAGE_SIZE,
+        None => DEFAULT_PAGE_LIMIT,
         Some(limit) => integer(limit)
-            .filter(|n| (1..=MAX_PAGE_SIZE).contains(n))
+            .filter(|n| (1..=MAX_PAGE_LIMIT).contains(n))
             .ok_or_else(|| {
-                HttpError::bad(format!("The limit must be between 1 and {MAX_PAGE_SIZE}."))
+                HttpError::bad(format!("The limit must be between 1 and {MAX_PAGE_LIMIT}."))
             })?,
     };
     let offset = match q.get("offset") {

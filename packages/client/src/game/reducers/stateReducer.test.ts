@@ -50,15 +50,15 @@ describe("stateReducer", () => {
   test("a pause message replaces the pause state", () => {
     const queued = stateReducer(initialState(defaultMetadata), {
       type: "pause",
-      playerIndex: undefined,
+      pausingPlayerIndex: undefined,
       queued: true,
     });
     expect(queued.pause.queued).toBe(true);
     const paused = stateReducer(queued, {
       type: "pause",
-      playerIndex: 1,
+      pausingPlayerIndex: 1,
       queued: true,
     });
-    expect(paused.pause).toMatchObject({ playerIndex: 1, queued: true });
+    expect(paused.pause).toMatchObject({ pausingPlayerIndex: 1, queued: true });
   });
 });

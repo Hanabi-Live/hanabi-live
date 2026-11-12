@@ -478,10 +478,13 @@ fn data_constants() -> String {
             hanabi_protocol::MAX_H_GROUP_LEVEL.to_string(),
         ),
         (
-            "DEFAULT_PAGE_SIZE",
-            hanabi_protocol::DEFAULT_PAGE_SIZE.to_string(),
+            "DEFAULT_PAGE_LIMIT",
+            hanabi_protocol::DEFAULT_PAGE_LIMIT.to_string(),
         ),
-        ("MAX_PAGE_SIZE", hanabi_protocol::MAX_PAGE_SIZE.to_string()),
+        (
+            "MAX_PAGE_LIMIT",
+            hanabi_protocol::MAX_PAGE_LIMIT.to_string(),
+        ),
         (
             "DEFAULT_MAX_PLAYERS",
             hanabi_protocol::DEFAULT_MAX_PLAYERS.to_string(),

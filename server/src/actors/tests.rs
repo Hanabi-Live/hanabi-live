@@ -138,9 +138,9 @@ fn typed_game_frames_preserve_wire_schema_and_projected_identities() -> Result<(
                 );
             }
             event.retain(|_, value| !value.is_null());
-            // The wire always lists a game over's votes.
-            if event["type"] == "gameOver" {
-                event.entry("votes").or_insert(json!([]));
+            // The wire omits a game over's empty votes.
+            if event.get("votes") == Some(&json!([])) {
+                event.remove("votes");
             }
             if event.remove("failed") == Some(json!(true)) {
                 event.insert("type".into(), json!("misplay"));
@@ -183,7 +183,7 @@ fn typed_game_frames_preserve_wire_schema_and_projected_identities() -> Result<(
         let events = body.as_array().unwrap();
         let ended = events.iter().find(|e| e["type"] == "gameOver").unwrap();
         assert_eq!(ended["endCondition"], "terminatedByPlayer");
-        assert_eq!(ended["votes"], json!([]));
+        assert!(ended.get("votes").is_none());
         let timing = events.iter().find(|e| e["type"] == "playerTimes").unwrap();
         assert_eq!(timing["playerTimesMs"], json!([1234, -5678]));
         assert_eq!(timing["durationMs"], 6912);
@@ -998,8 +998,7 @@ async fn full_table_mailboxes_do_not_block_hub_and_replacements_fence_private_ef
         players: vec![UserId(1)],
         replay: false,
         replay_game: None,
-        visible: false,
-        data: test_table(),
+        listing: None,
         reconnects: BTreeMap::new(),
     };
     let mut hub = Hub {
@@ -1159,8 +1158,7 @@ async fn a_table_that_panics_is_removed_and_frees_its_players() -> Result<()> {
                 players: vec![UserId(1)],
                 replay: false,
                 replay_game: None,
-                visible: true,
-                data: test_table(),
+                listing: Some(test_table()),
                 reconnects: BTreeMap::new(),
             },
             attendees: BTreeSet::new(),

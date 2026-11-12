@@ -109,8 +109,10 @@ pub(super) async fn bootstrap(app: &App, account: Account, ip: &str) -> Result<B
         accounts::is_muted(pool, ip)
     )?;
     let welcome = hanabi_protocol::Welcome {
-        user_id: id,
-        username: name.clone().into(),
+        user: hanabi_protocol::UserRef {
+            user_id: id,
+            username: name.clone().into(),
+        },
         muted,
         first_time_user: Utc::now() - created < FIRST_TIME_USER_WINDOW,
         settings,

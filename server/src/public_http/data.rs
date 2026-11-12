@@ -199,7 +199,7 @@ pub(super) async fn list(
     q: &Query,
     mode: &str,
 ) -> Result<hanabi_protocol::GamePage> {
-    let (limit, offset) = pagination(q)?.unwrap_or((super::DEFAULT_PAGE_SIZE, 0));
+    let (limit, offset) = pagination(q)?.unwrap_or((super::DEFAULT_PAGE_LIMIT, 0));
     s.page = Some((limit, offset));
     let column = match q.get("sort") {
         None if mode == "history" => Column::Id,
@@ -294,7 +294,7 @@ pub(super) async fn history(
 }
 
 pub(super) fn sanitize_tag(value: &str) -> Result<String> {
-    if value.len() > hanabi_protocol::MAX_TAG_LENGTH {
+    if value.chars().count() > hanabi_protocol::MAX_TAG_LENGTH {
         return Err(HttpError::not_found(crate::model::tag_too_long()));
     }
     let value: String = value

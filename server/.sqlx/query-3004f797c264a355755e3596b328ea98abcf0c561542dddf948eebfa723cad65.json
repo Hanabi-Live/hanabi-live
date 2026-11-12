@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "SELECT a.game_id,a.type,a.target,a.value FROM game_actions a ORDER BY a.game_id,a.turn",
+  "query": "SELECT a.game_id,a.type,a.target,a.value,a.votes FROM game_actions a ORDER BY a.game_id,a.turn",
   "describe": {
     "columns": [
       {
@@ -46,6 +46,17 @@
             "name": "value"
           }
         }
+      },
+      {
+        "ordinal": 4,
+        "name": "votes",
+        "type_info": "Int2Array",
+        "origin": {
+          "Table": {
+            "table": "game_actions",
+            "name": "votes"
+          }
+        }
       }
     ],
     "parameters": {
@@ -55,8 +66,9 @@
       false,
       false,
       true,
+      true,
       true
     ]
   },
-  "hash": "632721004e237b9d8a73533788ab400562ccae6e8496b97b0ffa1f4436cd834b"
+  "hash": "3004f797c264a355755e3596b328ea98abcf0c561542dddf948eebfa723cad65"
 }

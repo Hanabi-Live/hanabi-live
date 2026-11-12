@@ -69,7 +69,7 @@ test("untimed games without timers still update the player time tooltips", () =>
     state: {
       finished: false,
       playing: true,
-      pause: { playerIndex: undefined },
+      pause: { pausingPlayerIndex: undefined },
     },
     elements: { timer1: undefined, timer2: undefined, deck: undefined },
     options: { speedrun: false },

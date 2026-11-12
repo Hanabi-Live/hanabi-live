@@ -570,13 +570,12 @@ impl Snapshot {
         ensure!(
             self.notes.iter().all(|n| n.len() == size
                 && n.iter()
-                    .all(|t| t.len() <= hanabi_protocol::MAX_IMPORTED_NOTE_LENGTH)),
+                    .all(|t| t.chars().count() <= hanabi_protocol::MAX_IMPORTED_NOTE_LENGTH)),
             "Invalid player notes"
         );
         ensure!(
-            self.spectator_notes.values().all(
-                |n| n.notes.len() == size && n.notes.iter().all(|t| t.len() <= MAX_NOTE_LENGTH)
-            ),
+            self.spectator_notes.values().all(|n| n.notes.len() == size
+                && n.notes.iter().all(|t| t.chars().count() <= MAX_NOTE_LENGTH)),
             "Invalid spectator notes"
         );
         ensure!(

@@ -2,7 +2,7 @@ use super::{Effect, Publication, notice, warning};
 use crate::accounts::{escape_html, normalize_string};
 use crate::transport::{Identity, Outgoing};
 use anyhow::Result;
-use hanabi_protocol::{TableId, UserId, Username};
+use hanabi_protocol::{UserId, Username};
 use sqlx::PgPool;
 
 pub async fn friends(pool: &PgPool, id: UserId) -> Result<Vec<Username>> {
@@ -126,11 +126,7 @@ impl Change {
 }
 
 /// Tells the caller which accounts they have linked.
-pub async fn linked_list(
-    pool: &PgPool,
-    caller: &Identity,
-    table: Option<TableId>,
-) -> Result<Vec<Effect>> {
+pub async fn linked_list(pool: &PgPool, caller: &Identity) -> Result<Vec<Effect>> {
     let names: Vec<String> = sqlx::query_scalar!(
         "SELECT u.username FROM user_linkages l JOIN users u ON u.id=l.linked_id
              WHERE l.user_id=$1 ORDER BY LOWER(u.username) COLLATE \"C\"",
@@ -150,7 +146,7 @@ pub async fn linked_list(
                 .join(", ")
         )
     };
-    Ok(vec![notice(&caller.name, &message, table)])
+    Ok(vec![notice(&caller.name, &message)])
 }
 
 pub async fn relationship(
@@ -158,7 +154,6 @@ pub async fn relationship(
     caller: &Identity,
     change: Change,
     name: &str,
-    table: Option<TableId>,
 ) -> Result<Vec<Effect>> {
     let verb = change.verb();
     let normalized = normalize_string(name);
@@ -184,15 +179,7 @@ pub async fn relationship(
     };
     let escaped = escape_html(name);
     if matches!(change, Change::Block | Change::Unblock) {
-        return block(
-            pool,
-            caller,
-            target,
-            &escaped,
-            change == Change::Block,
-            table,
-        )
-        .await;
+        return block(pool, caller, target, &escaped, change == Change::Block).await;
     }
     let add = matches!(change, Change::Friend | Change::Link);
     let friend = matches!(change, Change::Friend | Change::Unfriend);
@@ -241,7 +228,7 @@ pub async fn relationship(
             "linked users"
         }
     );
-    let mut effects = vec![notice(&caller.name, &message, table)];
+    let mut effects = vec![notice(&caller.name, &message)];
     if friend {
         effects.push(Effect::to_self(Outgoing::new(
             hanabi_protocol::server::FRIENDS,
@@ -259,7 +246,6 @@ async fn block(
     target: UserId,
     escaped: &str,
     add: bool,
-    table: Option<TableId>,
 ) -> Result<Vec<Effect>> {
     let result = if add {
         sqlx::query!(
@@ -293,7 +279,7 @@ async fn block(
         format!("Successfully unblocked \"{escaped}\".")
     };
     Ok(vec![
-        notice(&caller.name, &message, table),
+        notice(&caller.name, &message),
         Effect::to_self(Outgoing::new(
             hanabi_protocol::server::BLOCKED,
             hanabi_protocol::Blocked {

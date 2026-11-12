@@ -287,11 +287,15 @@ pub(crate) fn character_post_clue(
         _ => {}
     }
 }
-pub(crate) fn character_post_action(state: &mut EngineState, actor: usize, action: RecordedAction) {
+pub(crate) fn character_post_action(
+    state: &mut EngineState,
+    actor: usize,
+    action: &RecordedAction,
+) {
     if !state.options.detrimental_characters {
         return;
     }
-    let action_type = recorded_action_type(&action);
+    let action_type = recorded_action_type(action);
     match &mut state.players[actor].character_state {
         Some(CharacterState::Vindictive { clued }) => *clued = false,
         Some(CharacterState::Impulsive { slot_one_clued }) => *slot_one_clued = false,
@@ -310,7 +314,7 @@ pub(crate) fn character_post_action(state: &mut EngineState, actor: usize, actio
 pub(crate) fn needs_second_action(
     state: &mut EngineState,
     actor: usize,
-    action: RecordedAction,
+    action: &RecordedAction,
 ) -> bool {
     if !state.options.detrimental_characters {
         return false;

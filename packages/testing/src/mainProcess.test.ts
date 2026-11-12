@@ -198,7 +198,10 @@ databaseDescribe("compiled application entry point (rust)", () => {
           password: "synthetic-table-password",
         });
         await bob.receive("tableJoined", SERVER_COMMAND_SCHEMAS.tableJoined);
-        alice.send("tableStart", { tableId });
+        alice.send("tableStart", {
+          tableId,
+          intendedPlayerNames: ["SmokeAlice", "SmokeBob"],
+        });
         await alice.receive(
           "tableStarted",
           SERVER_COMMAND_SCHEMAS.tableStarted,
@@ -579,7 +582,10 @@ databaseDescribe("compiled application entry point (rust)", () => {
           await peer.receive("tableJoined", SERVER_COMMAND_SCHEMAS.tableJoined);
         }),
       );
-      owner.send("tableStart", { tableId });
+      owner.send("tableStart", {
+        tableId,
+        intendedPlayerNames: players.map((_, index) => `Parity${index}`),
+      });
       async function bootstrap(
         peer: ReturnType<typeof socketClient>,
         id: number,

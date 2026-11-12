@@ -22,8 +22,8 @@ import * as z from "zod";
 
 export const MAX_VOLUME = 100;
 export const MAX_H_GROUP_LEVEL = 25;
-export const DEFAULT_PAGE_SIZE = 10;
-export const MAX_PAGE_SIZE = 100;
+export const DEFAULT_PAGE_LIMIT = 10;
+export const MAX_PAGE_LIMIT = 100;
 export const DEFAULT_MAX_PLAYERS = 5;
 export const SECONDS_PER_MINUTE = 60;
 export const MAX_TIME_BASE_SECONDS = 604_800;
@@ -225,13 +225,7 @@ export const chatListSchema = z
   })
   .readonly();
 export const chatPmHistorySchema = z
-  .strictObject({
-    messages: z.array(chatSchema).readonly(),
-    /**
-     * The table whose chat requested the history. Absent means the lobby.
-     */
-    tableId: tableIdSchema.optional(),
-  })
+  .strictObject({ messages: z.array(chatSchema).readonly() })
   .readonly();
 
 /**
@@ -245,10 +239,6 @@ export const chatPmHistoryRequestSchema = z
      * The other user in the conversation. Absent shows the messages with everyone.
      */
     recipient: z.string().min(1).optional(),
-    /**
-     * The table whose chat shows the reply. Absent means the lobby.
-     */
-    tableId: tableIdSchema.optional(),
   })
   .readonly();
 export const chatPmRequestSchema = z
@@ -381,7 +371,7 @@ export const gameFinishedSchema = z
 /**
  * A game's score: the cards played, or less in a variant that scores some cards lower.
  */
-const scoreSchema = z.number().int().min(0).max(2_147_483_647);
+const scoreSchema = z.number().int().min(0).max(30);
 
 /**
  * A completed game in a player's history.
@@ -582,13 +572,17 @@ const pauseStateSchema = z
     /**
      * The seat that paused the game. Absent when the game is not paused.
      */
-    playerIndex: playerIndexSchema.optional(),
+    pausingPlayerIndex: playerIndexSchema.optional(),
     /**
      * Whether the recipient asked to pause the game at their next turn.
      */
     queued: z.boolean(),
   })
   .readonly();
+
+/**
+ * A user, by ID and by name.
+ */
 export const spectatorSchema = z
   .strictObject({
     /**
@@ -674,19 +668,6 @@ export const idleWarningSchema = z
      */
     remainingMs: millisecondsSchema,
     tableId: tableIdSchema,
-  })
-  .readonly();
-
-/**
- * Asks for the sender's linked accounts. Clients already have the sender's friends and blocked
- * users, from `welcome`, `friends`, and `blocked`.
- */
-export const linkListRequestSchema = z
-  .strictObject({
-    /**
-     * The table whose chat shows the reply. Absent means the lobby.
-     */
-    tableId: tableIdSchema.optional(),
   })
   .readonly();
 
@@ -799,15 +780,17 @@ export const loginRequestSchema = z
      */
     darkMode: z.boolean().default(false),
     /**
-     * Sets a new password after the current one is verified. A form's empty field is absent.
+     * Sets a new password after the current one is verified. A blank value is absent, as forms
+     * send a blank input.
      */
-    newPassword: z.string().min(1).optional(),
+    newPassword: z.string().optional(),
     password: z.string().default(""),
     username: z.string().default(""),
     /**
-     * The client's release. Only the website sends it. A form's empty field is absent.
+     * The client's release. Only the website sends it. A blank value is absent, as forms send a
+     * blank input.
      */
-    version: z.string().min(1).optional(),
+    version: z.string().optional(),
   })
   .readonly();
 
@@ -844,7 +827,7 @@ export const noteRequestSchema = z
     order: cardOrderSchema,
     tableId: tableIdSchema,
     /**
-     * The server keeps at most `MAX_NOTE_LENGTH` bytes of it.
+     * The server keeps at most `MAX_NOTE_LENGTH` characters of it.
      */
     text: z.string(),
   })
@@ -896,7 +879,7 @@ export const pauseSchema = z
     /**
      * The seat that paused the game. Absent when the game is not paused.
      */
-    playerIndex: playerIndexSchema.optional(),
+    pausingPlayerIndex: playerIndexSchema.optional(),
     /**
      * Whether the recipient asked to pause the game at their next turn.
      */
@@ -985,6 +968,10 @@ const pregameVariantStatsSchema = z
 const pregameStatsSchema = z
   .strictObject({ numGames: countSchema, variant: pregameVariantStatsSchema })
   .readonly();
+
+/**
+ * A user, by ID and by name.
+ */
 const pregamePlayerSchema = z
   .strictObject({
     /**
@@ -1014,13 +1001,7 @@ export const pregameSchema = z
  * Adds a user to, or removes them from, the sender's friends, links, or blocked users.
  */
 export const relationshipRequestSchema = z
-  .strictObject({
-    /**
-     * The table whose chat shows the reply. Absent means the lobby.
-     */
-    tableId: tableIdSchema.optional(),
-    username: z.string(),
-  })
+  .strictObject({ username: z.string() })
   .readonly();
 
 /**
@@ -1138,10 +1119,14 @@ const replayGameActionSchema = z.discriminatedUnion("type", [
     .strictObject({
       endCondition: endConditionSchema,
       /**
-       * The player who ended the game, such as the one who timed out. Absent when no player did.
+       * The player whom the ending names, such as the one who timed out, if any.
        */
       playerIndex: playerIndexSchema.optional(),
       type: z.literal("gameOver"),
+      /**
+       * The players who voted to end the game, in seat order. Empty when a vote did not end it.
+       */
+      votes: z.array(playerIndexSchema).max(6).readonly().optional(),
     })
     .readonly(),
 ]);
@@ -1437,15 +1422,10 @@ export const spectatorsSchema = z
 const progressSchema = z.number().int().min(0).max(100);
 
 /**
- * What a table is doing: waiting for its game to start, playing it, or showing a finished game to
- * its owner (replay) or to everyone (shared replay).
+ * What a listed table is doing: waiting for its game to start, playing it, or showing a finished
+ * game in a shared replay. The lobby does not list solo replays.
  */
-const tablePhaseSchema = z.enum([
-  "pregame",
-  "playing",
-  "replay",
-  "sharedReplay",
-]);
+const tablePhaseSchema = z.enum(["pregame", "playing", "sharedReplay"]);
 
 /**
  * A table in the lobby's table list.
@@ -1529,11 +1509,7 @@ export const tableStartRequestSchema = z
     /**
      * The players that the owner saw seated. The server ignores a start from an outdated view.
      */
-    intendedPlayerNames: z
-      .array(z.string().min(1))
-      .max(6)
-      .readonly()
-      .optional(),
+    intendedPlayerNames: z.array(z.string().min(1)).max(6).readonly(),
     tableId: tableIdSchema,
   })
   .readonly();
@@ -1542,7 +1518,7 @@ export const tableStartRequestSchema = z
  * How far along a game is when the recipient enters it: it started just now, it is in progress,
  * or it is over and the recipient watches a replay.
  */
-const gameStageSchema = z.enum(["justStarted", "inProgress", "replay"]);
+const gameStageSchema = z.enum(["justStarted", "playing", "replay"]);
 export const tableStartedSchema = z
   .strictObject({ stage: gameStageSchema, tableId: tableIdSchema })
   .readonly();
@@ -1560,7 +1536,8 @@ export const tagRequestSchema = z
   .strictObject({
     tableId: tableIdSchema,
     /**
-     * At most `MAX_TAG_LENGTH` bytes. The server answers a longer or blank tag with a warning.
+     * At most `MAX_TAG_LENGTH` characters. The server answers a longer or blank tag with a
+     * warning.
      */
     tag: z.string(),
   })
@@ -1568,11 +1545,8 @@ export const tagRequestSchema = z
 export const tagSearchRequestSchema = z
   .strictObject({
     /**
-     * The table whose chat shows the reply. Absent means the lobby.
-     */
-    tableId: tableIdSchema.optional(),
-    /**
-     * At most `MAX_TAG_LENGTH` bytes. The server answers a longer or blank tag with a warning.
+     * At most `MAX_TAG_LENGTH` characters. The server answers a longer or blank tag with a
+     * warning.
      */
     tag: z.string(),
   })
@@ -1691,7 +1665,7 @@ export const CLIENT_COMMAND_SCHEMAS = {
   gameStateLoad: tableRefSchema,
   idleReset: tableRefSchema,
   linkAdd: relationshipRequestSchema,
-  linkList: linkListRequestSchema,
+  linkList: emptySchema,
   linkRemove: relationshipRequestSchema,
   lobbyLoad: emptySchema,
   note: noteRequestSchema,

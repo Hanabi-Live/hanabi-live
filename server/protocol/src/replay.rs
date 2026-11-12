@@ -64,16 +64,6 @@ pub struct ClueTurn {
     pub clue: Clue,
 }
 
-/// The end of a game in the replay format.
-#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
-#[serde(rename_all = "camelCase", deny_unknown_fields)]
-pub struct GameOverTurn {
-    pub end_condition: EndCondition,
-    /// The player who ended the game, such as the one who timed out. Absent when no player did.
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub player_index: Option<PlayerIndex>,
-}
-
 /// What a player does on their turn: the `playerAction` command, and the turns of the replay format.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
 #[serde(tag = "type", rename_all = "camelCase")]
@@ -84,22 +74,22 @@ pub enum PlayerAction {
 }
 
 /// A turn, or the end of the game, in the replay format.
-#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
 #[serde(tag = "type", rename_all = "camelCase")]
 pub enum ReplayGameAction {
     Play(TargetCard),
     Discard(TargetCard),
     Clue(ClueTurn),
-    GameOver(GameOverTurn),
+    GameOver(GameOverEvent),
 }
 
 impl ReplayGameAction {
     /// The player's action of a turn, or else the end of the game.
-    pub const fn turn(self) -> Result<PlayerAction, GameOverTurn> {
+    pub const fn turn(&self) -> Result<PlayerAction, &GameOverEvent> {
         match self {
-            Self::Play(card) => Ok(PlayerAction::Play(card)),
-            Self::Discard(card) => Ok(PlayerAction::Discard(card)),
-            Self::Clue(clue) => Ok(PlayerAction::Clue(clue)),
+            Self::Play(card) => Ok(PlayerAction::Play(*card)),
+            Self::Discard(card) => Ok(PlayerAction::Discard(*card)),
+            Self::Clue(clue) => Ok(PlayerAction::Clue(*clue)),
             Self::GameOver(end) => Err(end),
         }
     }

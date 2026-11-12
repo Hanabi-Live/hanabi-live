@@ -370,7 +370,7 @@ impl TableActor {
         ensure_or_reject!(self.attending(&session), "Not attending");
         self.live()?;
         let order = card.index();
-        let text = crate::accounts::truncate_to_max_bytes(note, MAX_NOTE_LENGTH);
+        let text = crate::accounts::truncate_to_max_chars(note, MAX_NOTE_LENGTH);
         let text = crate::accounts::remove_disallowed_characters(text)
             .trim()
             .to_owned();
@@ -637,7 +637,7 @@ fn votes_needed(players: usize) -> usize {
 /// Whether the game is paused, as the user in `session` sees it.
 fn pause_state(s: &Snapshot, session: &Session) -> hanabi_protocol::PauseState {
     hanabi_protocol::PauseState {
-        player_index: s.paused_by,
+        pausing_player_index: s.paused_by,
         queued: s
             .players
             .iter()

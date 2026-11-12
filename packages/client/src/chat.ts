@@ -55,15 +55,11 @@ const chatTimeFormatter = new Intl.DateTimeFormat("en-US", {
 type ChatData = ServerCommandData["chat"];
 
 /** The table of a chat room ("lobby" or "table" and the table's ID), or undefined for the lobby. */
-export function roomTableId(room: string): TableId | undefined {
+function roomTableId(room: string): TableId | undefined {
   const match = /^table(\d+)$/u.exec(room);
   return match === null ? undefined : tableIdSchema.parse(Number(match[1]));
 }
 
-/** The chat room of a table, or the lobby when there is no table. */
-export function tableRoom(tableId: number | undefined): string {
-  return tableId === undefined ? "lobby" : `table${tableId}`;
-}
 type PmHistoryMessage = ServerCommandData["chatPmHistory"]["messages"][number];
 
 export enum SelfChatMessageType {
@@ -595,15 +591,8 @@ export function removeDeletedLobbyMessage(chatId: number): void {
   store.dispatch(lobbyChatLineDeleted(chatId));
 }
 
-export function addPmHistory(data: PmHistoryMessage, room?: string): void {
-  addInternal(
-    {
-      ...data,
-      ...(room !== undefined && { room }),
-    },
-    true,
-    false,
-  );
+export function addPmHistory(data: PmHistoryMessage): void {
+  addInternal(data, true, false);
 }
 
 function addInternal(data: ChatData, fast: boolean, updateLiveState: boolean) {

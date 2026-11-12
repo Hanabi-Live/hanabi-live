@@ -42,7 +42,7 @@ pub(super) fn normalize_options(options: &mut Options) -> CommandResult<()> {
 
 /// Reads a requested table name: trimmed, cut to the longest name, and checked.
 pub(super) fn table_name(requested: &str) -> CommandResult<String> {
-    let name = crate::accounts::truncate_to_max_bytes(requested.trim(), MAX_TABLE_NAME_LENGTH)
+    let name = crate::accounts::truncate_to_max_chars(requested.trim(), MAX_TABLE_NAME_LENGTH)
         .trim_end()
         .to_owned();
     ensure_or_reject!(!name.is_empty(), "Table names cannot be blank");
@@ -64,7 +64,7 @@ fn validate_table_name(name: &str) -> CommandResult<()> {
 pub(super) fn requested_seed(seed: Option<&str>) -> CommandResult<Option<String>> {
     let seed = seed.unwrap_or_default().trim();
     ensure_or_reject!(
-        seed.len() <= MAX_SEED_LENGTH,
+        seed.chars().count() <= MAX_SEED_LENGTH,
         "Seeds cannot be longer than {MAX_SEED_LENGTH} characters"
     );
     ensure_or_reject!(

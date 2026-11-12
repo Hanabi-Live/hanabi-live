@@ -183,7 +183,7 @@ impl Hub {
         if let Some(integrations) = self.integrations.get() {
             integrations.report(&report);
         }
-        if self.tables.remove(&id).is_some_and(|e| e.view.visible) {
+        if self.tables.remove(&id).is_some_and(|e| e.view.visible()) {
             self.broadcast(&frame(
                 hanabi_protocol::server::TABLE_REMOVED,
                 TableRef { table_id: id },
@@ -221,8 +221,10 @@ impl Hub {
     }
     fn user(p: &Presence) -> User {
         User {
-            user_id: p.session.user,
-            username: p.session.name.clone().into(),
+            user: hanabi_protocol::UserRef {
+                user_id: p.session.user,
+                username: p.session.name.clone().into(),
+            },
             activity: activity(p.status, p.table),
             h_group_conventions: p.h_group,
             h_group_level: p.h_group_level,
@@ -406,7 +408,7 @@ impl Hub {
         };
         self.tables
             .iter()
-            .filter(|(_, e)| e.view.replay && e.view.visible && e.view.replay_game == Some(game))
+            .filter(|(_, e)| e.view.replay && e.view.visible() && e.view.replay_game == Some(game))
             .map(|(id, _)| *id)
             .min()
     }
@@ -748,7 +750,7 @@ impl Hub {
                 HubCommand::Effects(effects) => self.publish_table(effects),
                 HubCommand::TableFailed(id) => self.table_failed(id),
                 HubCommand::Retire(id) => {
-                    if self.tables.remove(&id).is_some_and(|e| e.view.visible) {
+                    if self.tables.remove(&id).is_some_and(|e| e.view.visible()) {
                         self.broadcast(&frame(
                             hanabi_protocol::server::TABLE_REMOVED,
                             TableRef { table_id: id },
@@ -829,8 +831,7 @@ impl Hub {
                 tables: self
                     .tables
                     .values()
-                    .filter(|e| e.view.visible)
-                    .map(|e| e.view.data.clone())
+                    .filter_map(|e| e.view.listing.clone())
                     .collect(),
             },
         ));
@@ -992,7 +993,7 @@ impl Hub {
         let Some(entry) = self.tables.get_mut(&effects.table) else {
             return;
         };
-        let hidden = entry.view.visible && !effects.view.visible;
+        let hidden = entry.view.visible() && !effects.view.visible();
         let changed = !entry.published || entry.view != effects.view;
         entry.view = effects.view;
         entry.attendees = effects.attendees;
@@ -1014,13 +1015,12 @@ impl Hub {
             }
         }
         if changed
-            && let Some(entry) = self.tables.get(&effects.table)
-            && entry.view.visible
+            && let Some(listing) = self
+                .tables
+                .get(&effects.table)
+                .and_then(|entry| entry.view.listing.clone())
         {
-            self.broadcast(&frame(
-                hanabi_protocol::server::TABLE,
-                entry.view.data.clone(),
-            ));
+            self.broadcast(&frame(hanabi_protocol::server::TABLE, listing));
         }
         for (session, message) in effects.messages {
             if self.current(&session) {

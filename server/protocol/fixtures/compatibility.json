@@ -195,6 +195,15 @@
     "valid": false
   },
   {
+    "name": "start requires the intended players",
+    "direction": "client",
+    "command": "tableStart",
+    "input": {
+      "tableId": 1
+    },
+    "valid": false
+  },
+  {
     "name": "start rejects seven intended players",
     "direction": "client",
     "command": "tableStart",
@@ -1299,18 +1308,18 @@
     "valid": false
   },
   {
-    "name": "game over events always list their votes",
+    "name": "game over events can omit an empty vote list",
     "direction": "server",
     "command": "gameEvent",
     "input": {
       "tableId": 3,
       "event": {
         "type": "gameOver",
-        "endCondition": "normal",
+        "endCondition": "timeout",
         "playerIndex": 0
       }
     },
-    "valid": false
+    "valid": true
   },
   {
     "name": "cards can be unknown or a stack's start card",

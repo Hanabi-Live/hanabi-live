@@ -30,7 +30,7 @@ macro_rules! client_contracts {
             FriendRemove "friendRemove" => RelationshipRequest;
             LinkAdd "linkAdd" => RelationshipRequest;
             LinkRemove "linkRemove" => RelationshipRequest;
-            LinkList "linkList" => LinkListRequest;
+            LinkList "linkList" => Empty;
             BlockAdd "blockAdd" => RelationshipRequest;
             BlockRemove "blockRemove" => RelationshipRequest;
             ChatRead "chatRead" => TableRef;

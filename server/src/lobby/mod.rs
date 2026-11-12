@@ -23,7 +23,7 @@ use crate::routing::{Route, route};
 use crate::transport::{Identity, Outgoing};
 use anyhow::{Result, ensure};
 use hanabi_protocol::ClientMessage;
-use hanabi_protocol::{TableId, UserId};
+use hanabi_protocol::UserId;
 use std::sync::Arc;
 
 use sqlx::PgPool;
@@ -72,7 +72,6 @@ pub enum Effect {
     RuntimeChat {
         command: String,
         args: Vec<String>,
-        table: Option<TableId>,
     },
 }
 
@@ -121,27 +120,21 @@ fn warning(message: &str) -> Effect {
     ))
 }
 
-fn notice(recipient: &str, message: &str, table: Option<TableId>) -> Effect {
-    notice_publication(recipient, message, table).into()
+fn notice(recipient: &str, message: &str) -> Effect {
+    notice_publication(recipient, message).into()
 }
 
-/// A server reply that only the user who sent a chat command sees.
-pub(crate) fn notice_publication(
-    recipient: &str,
-    message: &str,
-    table: Option<TableId>,
-) -> Publication {
+/// A server reply that only the user who sent a chat command sees. It names no table, so the
+/// client shows it in the chat that the user has open.
+pub(crate) fn notice_publication(recipient: &str, message: &str) -> Publication {
     Publication::ToSelf(Outgoing::new(
         hanabi_protocol::server::CHAT,
-        hanabi_protocol::Chat {
-            table_id: table,
-            ..hanabi_protocol::Chat::private(
-                message,
-                hanabi_protocol::ChatAuthor::Server {},
-                recipient,
-                hanabi_protocol::Timestamp::from(chrono::Utc::now()),
-            )
-        },
+        hanabi_protocol::Chat::private(
+            message,
+            hanabi_protocol::ChatAuthor::Server {},
+            recipient,
+            hanabi_protocol::Timestamp::from(chrono::Utc::now()),
+        ),
     ))
 }
 
@@ -202,68 +195,24 @@ pub async fn dispatch(
         ClientMessage::ChatPmHistory(request) => {
             chat::private_history(pool, caller, &request).await?
         }
-        ClientMessage::LinkList(request) => {
-            relationships::linked_list(pool, caller, request.table_id).await?
-        }
+        ClientMessage::LinkList(_) => relationships::linked_list(pool, caller).await?,
         ClientMessage::FriendAdd(request) => {
-            relationships::relationship(
-                pool,
-                caller,
-                Change::Friend,
-                &request.username,
-                request.table_id,
-            )
-            .await?
+            relationships::relationship(pool, caller, Change::Friend, &request.username).await?
         }
         ClientMessage::FriendRemove(request) => {
-            relationships::relationship(
-                pool,
-                caller,
-                Change::Unfriend,
-                &request.username,
-                request.table_id,
-            )
-            .await?
+            relationships::relationship(pool, caller, Change::Unfriend, &request.username).await?
         }
         ClientMessage::LinkAdd(request) => {
-            relationships::relationship(
-                pool,
-                caller,
-                Change::Link,
-                &request.username,
-                request.table_id,
-            )
-            .await?
+            relationships::relationship(pool, caller, Change::Link, &request.username).await?
         }
         ClientMessage::LinkRemove(request) => {
-            relationships::relationship(
-                pool,
-                caller,
-                Change::Unlink,
-                &request.username,
-                request.table_id,
-            )
-            .await?
+            relationships::relationship(pool, caller, Change::Unlink, &request.username).await?
         }
         ClientMessage::BlockAdd(request) => {
-            relationships::relationship(
-                pool,
-                caller,
-                Change::Block,
-                &request.username,
-                request.table_id,
-            )
-            .await?
+            relationships::relationship(pool, caller, Change::Block, &request.username).await?
         }
         ClientMessage::BlockRemove(request) => {
-            relationships::relationship(
-                pool,
-                caller,
-                Change::Unblock,
-                &request.username,
-                request.table_id,
-            )
-            .await?
+            relationships::relationship(pool, caller, Change::Unblock, &request.username).await?
         }
         ClientMessage::GameHistory(hanabi_protocol::PageRequest { offset, limit }) => {
             let ids = history_ids(pool, caller.user, offset.0, limit.get()).await?;
@@ -309,7 +258,7 @@ pub async fn dispatch(
         }
         ClientMessage::TagSearch(request) => {
             let raw = request.tag.as_str();
-            if raw.len() > hanabi_protocol::MAX_TAG_LENGTH {
+            if raw.chars().count() > hanabi_protocol::MAX_TAG_LENGTH {
                 return Ok(Some(vec![warning(&crate::model::tag_too_long())]));
             }
             let replaced: String = raw
@@ -335,7 +284,6 @@ pub async fn dispatch(
             vec![notice(
                 &caller.name,
                 &format!("Games matching \"{}\": {list}", escape_html(&tag)),
-                request.table_id,
             )]
         }
         _ => unreachable!("the route check admits only lobby commands"),

@@ -154,9 +154,16 @@ pub struct TableView {
     replay: bool,
     /// The database game shown by a replay.
     replay_game: Option<GameId>,
-    visible: bool,
-    data: hanabi_protocol::Table,
+    /// The table's entry in the lobby's table list. Absent for a table that the lobby does not
+    /// list: a solo replay.
+    listing: Option<hanabi_protocol::Table>,
     reconnects: BTreeMap<UserId, Option<PlayerIndex>>,
+}
+impl TableView {
+    /// Whether the lobby lists the table.
+    const fn visible(&self) -> bool {
+        self.listing.is_some()
+    }
 }
 #[derive(Clone)]
 pub struct TableHandle {
@@ -359,8 +366,10 @@ pub(crate) fn test_table() -> hanabi_protocol::Table {
 #[cfg(test)]
 pub(crate) fn test_welcome() -> hanabi_protocol::Welcome {
     hanabi_protocol::Welcome {
-        user_id: UserId(1),
-        username: "test".into(),
+        user: hanabi_protocol::UserRef {
+            user_id: UserId(1),
+            username: "test".into(),
+        },
         muted: false,
         first_time_user: false,
         settings: hanabi_protocol::Settings::default(),

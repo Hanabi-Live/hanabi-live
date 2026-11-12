@@ -129,11 +129,6 @@ macro_rules! list_indexes {
 }
 
 wire_integer! {
-    /// An integer that JavaScript represents exactly. Lists of integers use it to bound each item.
-    SafeInteger(pub i64), -MAX_SAFE_INTEGER, MAX_SAFE_INTEGER
-}
-
-wire_integer! {
     /// A table's ID.
     TableId(pub u64), 0, MAX_SAFE_INTEGER, brand = "TableId"
 }
@@ -149,13 +144,15 @@ wire_integer! {
 }
 
 wire_integer! {
-    /// A variant's number in `variants.json`. "No Variant" is 0.
-    VariantId(pub u32), 0, u32::MAX
+    /// A variant's number in `variants.json`. "No Variant" is 0. The database stores it as a
+    /// `SMALLINT`.
+    VariantId(pub u32), 0, i16::MAX
 }
 
 wire_integer! {
-    /// A detrimental character's number in `characters.json`.
-    CharacterId(pub u32), 0, u32::MAX
+    /// A detrimental character's number in `characters.json`. The database stores it as a
+    /// `SMALLINT`.
+    CharacterId(pub u32), 0, i16::MAX
 }
 
 wire_integer! {
@@ -172,7 +169,7 @@ wire_integer! {
 wire_integer! {
     /// A game's score: the cards played, or less in a variant that scores some cards lower.
     #[derive(Default)]
-    Score(pub i32), 0, i32::MAX
+    Score(pub i32), 0, MAX_SCORE
 }
 
 wire_integer! {
@@ -301,7 +298,7 @@ wire_integer! {
 
 wire_integer! {
     /// The most rows that one page of a list can ask for.
-    PageLimit(pub(crate) i64), 1, MAX_PAGE_SIZE
+    PageLimit(pub(crate) i64), 1, MAX_PAGE_LIMIT
 }
 
 /// Every value from 0 to `max`, for schemas that list them.

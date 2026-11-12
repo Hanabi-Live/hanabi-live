@@ -77,7 +77,7 @@ interface ActionPremove {
 }
 
 interface ActionPause extends Readonly<
-  Pick<ServerCommandData["pause"], "playerIndex" | "queued">
+  Pick<ServerCommandData["pause"], "pausingPlayerIndex" | "queued">
 > {
   readonly type: "pause";
 }

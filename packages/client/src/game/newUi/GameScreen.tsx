@@ -968,9 +968,9 @@ export function GameScreen({
           ?.cards.find((card) => card.order === drag.order);
 
   const pausedBy =
-    state.pause.playerIndex === undefined
+    state.pause.pausingPlayerIndex === undefined
       ? undefined
-      : metadata.playerNames[state.pause.playerIndex];
+      : metadata.playerNames[state.pause.pausingPlayerIndex];
 
   // Only the efficiency of the game as it stands includes the player's own modifier.
   const efficiencyModifier =

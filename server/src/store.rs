@@ -212,6 +212,13 @@ impl Store {
             })
             .transpose()
     }
+    /// A `tableStart` request for a table's seated players, as its owner sees them.
+    #[cfg(test)]
+    pub async fn start_request(&self, id: TableId) -> Result<Value> {
+        let (table, _) = self.get(id).await?.context("Missing durable table")?;
+        let names: Vec<&str> = table.players().iter().map(|p| p.name.as_str()).collect();
+        Ok(json!({"tableId": id, "intendedPlayerNames": names}))
+    }
     /// The saved live tables. A pregame's cached game totals may be stale; its actor refreshes
     /// them after startup, so that startup does not wait for statistics.
     ///
@@ -1647,7 +1654,7 @@ mod tests {
             send(&hub,users[0].clone(),"tableCreate",json!({"settings":{"name":"auto parity"}})).await?;
             let id=store.load().await?[0].0.id;
             send(&hub,users[1].clone(),"tableJoin",json!({"tableId":id})).await?;
-            send(&hub,users[0].clone(),"tableStart",json!({"tableId":id})).await?;
+            send(&hub,users[0].clone(),"tableStart",store.start_request(id).await?).await?;
             tokio::time::timeout(Duration::from_secs(5),async{
                 loop{if store.load().await?.iter().any(|(t,_)|t.id==id&&matches!(t.phase,Phase::Live{..})){return Ok::<(),anyhow::Error>(());}tokio::time::sleep(Duration::from_millis(20)).await;}
             }).await??;
@@ -1749,7 +1756,7 @@ mod tests {
                 }),
             )
             .await?;
-            send(&hub, users[0].clone(), "tableStart", json!({"tableId":id})).await?;
+            send(&hub, users[0].clone(), "tableStart", store.start_request(id).await?).await?;
             send(
                 &hub,
                 users[0].clone(),
@@ -1871,7 +1878,7 @@ mod tests {
             send(&hub,users[0].clone(),"tableCreate",json!({"settings":{"name":"native","maxPlayers":6,"deal":{"type":"seed","suffix":"native"},"options":{"variantId":51,"timeControl":{"baseSeconds":120,"perTurnSeconds":20},"oneExtraCard":true,"detrimentalCharacters":true}}})).await?;
             let id=store.load().await?[0].0.id;
             for user in users.iter().skip(1){send(&hub,user.clone(),"tableJoin",json!({"tableId":id})).await?;}
-            send(&hub,users[0].clone(),"tableStart",json!({"tableId":id})).await?;
+            send(&hub,users[0].clone(),"tableStart",store.start_request(id).await?).await?;
             let loaded=store.load().await?;let s=loaded[0].0.game().unwrap();ensure!(s.players.len()==3&&s.game.stacks.len()==6&&s.game.clue_tokens==16,"Native variant ignored");
             let active=s.game.active_player_index;let actor=usize::try_from(s.players[active].user()?.0)?-1;
             send(&hub,users[actor].clone(),"gameLoaded",json!({"tableId":id})).await?;
