@@ -103,13 +103,14 @@ function GroupDivider(): React.JSX.Element {
   );
 }
 
-/**
- * A question mark that explains the stat beside it in a tooltip, like those on the lobby screens.
- */
+/** An icon that explains the stat beside it in a tooltip, like those on the lobby screens. */
 function HelpIcon({
+  icon = "fa-question-circle",
   label,
   tooltip,
 }: {
+  /** The Font Awesome icon: a question mark for help, or an "i" for information. */
+  readonly icon?: string;
   readonly label: string;
   readonly tooltip: string;
 }): React.JSX.Element {
@@ -120,7 +121,7 @@ function HelpIcon({
       ref={tooltipRefHtml(tooltip)}
       type="button"
     >
-      <i aria-hidden="true" className="fas fa-question-circle" />
+      <i aria-hidden="true" className={`fas ${icon}`} />
     </button>
   );
 }
@@ -200,25 +201,18 @@ export function StatusStrip({
       </div>
       <GroupDivider />
       {/* The variant opens the game's information: its seed, options, and table. */}
-      {/* The button is as wide as the name, so that its tooltip opens over the name. */}
-      <div className="tw:flex tw:min-w-0 tw:flex-auto">
-        <button
-          aria-label={`Variant: ${variantName}. Show the game's information`}
-          className="tw:flex tw:max-w-full tw:min-w-0 tw:cursor-help tw:[font-family:inherit] tw:flex-col tw:items-start tw:gap-0.5 tw:border-0 tw:bg-transparent tw:p-0 tw:text-left tw:text-game-muted tw:hover:text-game-text"
-          ref={tooltipRefHtml(gameInfoTooltip)}
-          type="button"
-        >
-          <span className={STAT_LABEL_CLASS}>
-            Variant
-            <i
-              aria-hidden="true"
-              className="fas fa-info-circle tw:ml-1.5 tw:text-game-link"
-            />
-          </span>
-          <span className="tw:block tw:max-w-full tw:truncate tw:text-[17px] tw:leading-[30px] tw:font-semibold tw:narrow-980:leading-[24px]">
-            {variantName}
-          </span>
-        </button>
+      <div className="tw:flex tw:min-w-0 tw:flex-auto tw:flex-col tw:gap-0.5">
+        <span className={STAT_LABEL_CLASS}>
+          Variant
+          <HelpIcon
+            icon="fa-info-circle"
+            label={"Show the game's information: its table, options, and seed"}
+            tooltip={gameInfoTooltip}
+          />
+        </span>
+        <span className="tw:block tw:max-w-full tw:truncate tw:text-[17px] tw:leading-[30px] tw:font-semibold tw:text-game-muted tw:narrow-980:leading-[24px]">
+          {variantName}
+        </span>
       </div>
       <div className="tw:ml-auto tw:flex tw:max-w-full tw:shrink-0 tw:flex-wrap tw:justify-end tw:gap-2.5">
         <button className={buttonClass} onClick={onClassicView} type="button">
