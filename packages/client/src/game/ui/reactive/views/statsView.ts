@@ -1,22 +1,13 @@
-import type { NumPlayers } from "@hanabi-live/game";
-import { PaceRisk, getEfficiency } from "@hanabi-live/game";
+import type { NumPlayers, PaceRisk } from "@hanabi-live/game";
+import { getEfficiency } from "@hanabi-live/game";
 import { assertDefined } from "complete-common";
 import { globals } from "../../UiGlobals.ts";
-import {
-  EFFICIENCY_DECIMAL_PLACES,
-  LABEL_COLOR,
-  WARNING_COLOR,
-} from "../../constants.ts";
+import { EFFICIENCY_DECIMAL_PLACES, LABEL_COLOR } from "../../constants.ts";
 import { initKonvaTooltips } from "../../konvaTooltips.ts";
+import { getPaceRiskColor } from "../../paceRiskColor.ts";
 
 /** Cyan, for an efficiency that has a custom modification. */
 const MODIFIED_EFFICIENCY_COLOR = "#00ffff";
-
-/** Yellow, for a medium pace risk. */
-const PACE_MEDIUM_RISK_COLOR = "#efef1d";
-
-/** Orange, for a high pace risk. */
-const PACE_HIGH_RISK_COLOR = "#ef8c1d";
 
 /** Updates the labels on the right-hand side of the screen. */
 export function onEfficiencyChanged(data: {
@@ -190,23 +181,7 @@ export function onPaceOrPaceRiskChanged(data: {
 }
 
 function getPaceLabelColor(paceRisk: PaceRisk): string {
-  switch (paceRisk) {
-    case PaceRisk.Low: {
-      return LABEL_COLOR;
-    }
-
-    case PaceRisk.Medium: {
-      return PACE_MEDIUM_RISK_COLOR;
-    }
-
-    case PaceRisk.High: {
-      return PACE_HIGH_RISK_COLOR;
-    }
-
-    case PaceRisk.Zero: {
-      return WARNING_COLOR;
-    }
-  }
+  return getPaceRiskColor(paceRisk) ?? LABEL_COLOR;
 }
 
 export function onMaxTurnsChanged(data: {

@@ -35,6 +35,7 @@ import { controlsHypothetical } from "../ui/controlsHypothetical.ts";
 import { getGameInfoTooltip } from "../ui/gameInfoTooltip.ts";
 import { getCardOrStackBase } from "../ui/getCardOrStackBase.ts";
 import * as hypothetical from "../ui/hypothetical.ts";
+import { getPaceRiskColor } from "../ui/paceRiskColor.ts";
 import * as replay from "../ui/replay.ts";
 import { getSpectatorsTooltip } from "../ui/spectatorsTooltip.ts";
 import * as turn from "../ui/turn.ts";
@@ -1413,6 +1414,15 @@ export function GameScreen({
           visibleState.stats.finalRoundEffectivelyStarted,
           options.allOrNothing,
         )}
+        // As on the classic screen, the pace takes a color by how risky it would be to discard,
+        // except when it shows no number.
+        paceColor={
+          visibleState.stats.pace === undefined
+          || visibleState.stats.finalRoundEffectivelyStarted
+          || options.allOrNothing
+            ? undefined
+            : getPaceRiskColor(visibleState.stats.paceRisk)
+        }
         score={visibleState.score}
         turn={visibleState.turn.turnNum + 1}
         variantName={globals.variant.name}

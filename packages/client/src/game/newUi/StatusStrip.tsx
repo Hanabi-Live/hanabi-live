@@ -23,6 +23,9 @@ interface StatusStripProps {
   readonly score: number;
   readonly maxScore: number;
   readonly pace: string;
+
+  /** The color of the pace, by how risky it would be to discard, as on the classic screen. */
+  readonly paceColor: string | undefined;
   readonly futureEfficiency: string;
   readonly minEfficiency: string;
   readonly variantName: string;
@@ -149,6 +152,7 @@ export function StatusStrip({
   score,
   maxScore,
   pace,
+  paceColor,
   futureEfficiency,
   minEfficiency,
   variantName,
@@ -177,7 +181,7 @@ export function StatusStrip({
       <GroupDivider />
       <div className="tw:flex tw:shrink-0 tw:items-end tw:gap-6 tw:narrow-980:gap-5">
         <Stat label="Pace" size="small">
-          {pace}
+          <span style={{ color: paceColor }}>{pace}</span>
         </Stat>
         <Stat
           label={

@@ -49,6 +49,8 @@ of the repository.
   thinner as it runs low.
 - In the new game screen, the clue count is one large number, and the strikes
   turn red as they add up.
+- In the new game screen, the pace changes color as discarding gets riskier, as
+  on the classic screen.
 
 ## November 11th, 2026
 
