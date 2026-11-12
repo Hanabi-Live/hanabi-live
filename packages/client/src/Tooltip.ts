@@ -13,6 +13,9 @@ const CLOSE_DURATION_IN_MILLISECONDS = 80;
 /** How far a tooltip slides toward its anchor as it opens. */
 const SLIDE_IN_PIXELS = 4;
 
+/** The redesigned game screen, whose tooltips keep its dark colors in the light theme too. */
+const GAME_SCREEN_SELECTOR = "#game-new-ui";
+
 /** The closest that a tooltip comes to the edge of the window. */
 const WINDOW_MARGIN_IN_PIXELS = 8;
 
@@ -109,6 +112,11 @@ export class Tooltip {
     if (!this.bubble.isConnected) {
       document.body.append(this.bubble);
     }
+    // The redesigned game screen looks the same in both themes, so its tooltips do too.
+    this.bubble.classList.toggle(
+      "tooltip-game-screen",
+      this.anchor.closest(GAME_SCREEN_SELECTOR) !== null,
+    );
 
     if (!this.isOpen) {
       this.bubble.showPopover();

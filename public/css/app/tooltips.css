@@ -19,6 +19,16 @@
     display var(--tooltip-close-duration) allow-discrete;
 }
 
+/* The redesigned game screen looks the same in both themes (see "Tooltip.ts"), so its tooltips use
+   its colors instead of the theme's. */
+.tooltip-bubble.tooltip-game-screen {
+  --tooltip-background: var(--game-screen-raised);
+  --tooltip-border: 1px solid var(--game-screen-line);
+  --text: var(--game-screen-text);
+  --text-strong: var(--game-screen-text);
+  --link: var(--game-screen-link);
+}
+
 .tooltip-bubble[data-side="bottom"] {
   padding: var(--tooltip-arrow-size) 0 0;
   transform: translateY(var(--tooltip-slide));
