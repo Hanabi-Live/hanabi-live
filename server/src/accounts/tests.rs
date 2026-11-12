@@ -554,13 +554,14 @@ fn tabs_choose_among_signed_in_accounts() {
             .unwrap(),
     )]);
     assert_eq!(session_id(&headers, secret, None), Some(2));
-    assert_eq!(session_id(&headers, secret, Some("account=1")), Some(1));
+    assert_eq!(session_id(&headers, secret, Some(1)), Some(1));
     // The latest sign-in also covers its own account, so older sessions keep working.
-    assert_eq!(session_id(&headers, secret, Some("account=2")), Some(2));
+    assert_eq!(session_id(&headers, secret, Some(2)), Some(2));
     // A cookie must belong to the account named after it.
-    assert_eq!(session_id(&headers, secret, Some("account=3")), None);
-    for query in ["account=4", "account=0", "account=x", "account="] {
-        assert_eq!(session_id(&headers, secret, Some(query)), None, "{query}");
+    assert_eq!(session_id(&headers, secret, Some(3)), None);
+    assert_eq!(session_id(&headers, secret, Some(4)), None);
+    for query in ["account=0", "account=x", "account="] {
+        assert!(account_query(Some(query), &["account"]).is_err(), "{query}");
     }
 }
 

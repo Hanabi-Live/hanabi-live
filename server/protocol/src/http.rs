@@ -57,14 +57,17 @@ named_enum! {
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct WebSocketQuery {
-    /// The user ID of the account to connect as, when the browser is signed in to several. Absent
-    /// uses the most recent sign-in.
+    /// The account to connect as, when the browser is signed in to several. Absent uses the most
+    /// recent sign-in.
     #[serde(skip_serializing_if = "Option::is_none")]
-    #[schemars(length(min = 1))]
-    pub account: Option<String>,
+    pub account: Option<UserId>,
     /// The client's release. Only the website sends it. The server tells a website with another
-    /// release, or with none, to reload.
-    #[serde(skip_serializing_if = "Option::is_none")]
+    /// release, or with none, to reload. A blank value is absent, as in the `/login` form.
+    #[serde(
+        default,
+        deserialize_with = "deserialize_form_text",
+        skip_serializing_if = "Option::is_none"
+    )]
     pub version: Option<String>,
     #[serde(default)]
     pub client: ClientKind,

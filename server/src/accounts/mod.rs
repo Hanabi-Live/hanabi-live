@@ -83,13 +83,7 @@ pub fn router(pool: PgPool, config: AccountConfig) -> Router {
 
 /// Reads the signed-in account. A tab may choose any account this browser is signed in to with
 /// `?account=<user ID>`; otherwise the most recent sign-in is used.
-pub fn session_id(headers: &HeaderMap, secret: &str, query: Option<&str>) -> Option<i32> {
-    let requested = match url::form_urlencoded::parse(query.unwrap_or_default().as_bytes())
-        .find(|(key, _)| key == "account")
-    {
-        Some((_, value)) => Some(parse_account(&value)?),
-        None => None,
-    };
+pub fn session_id(headers: &HeaderMap, secret: &str, requested: Option<i32>) -> Option<i32> {
     let account_name = requested.map(cookie::account_name);
     let now = Utc::now().timestamp();
     headers.get_all(header::COOKIE).iter().find_map(|value| {
@@ -108,6 +102,11 @@ pub fn session_id(headers: &HeaderMap, secret: &str, query: Option<&str>) -> Opt
 
 fn parse_account(value: &str) -> Option<i32> {
     value.parse().ok().filter(|id| *id > 0)
+}
+
+/// The account that a query from `account_query` names, if any.
+pub(crate) fn requested_account(query: &Query) -> Option<i32> {
+    query.get("account").and_then(parse_account)
 }
 
 /// Parses the query string of a route that may name an account with `?account=`. It rejects any
@@ -271,7 +270,7 @@ async fn login(
         Err(rejection) => {
             return unreadable_body(
                 rejection.status(),
-                "The login form must contain only a username, password, newPassword, version, darkMode, and createAccount.",
+                "The login form must contain only a username, password, newPassword, version, darkMode, createAccount, and client.",
             );
         }
     };
@@ -508,7 +507,7 @@ async fn logout(State(state): State<Arc<Accounts>>, uri: Uri, headers: HeaderMap
         }
     };
     let latest = session_id(&headers, &state.config.secret, None);
-    let requested = query.get("account").and_then(parse_account);
+    let requested = requested_account(&query);
     let mut cookies = Vec::new();
     if let Some(id) = requested.or(latest) {
         cookies.push(cookie_header(
@@ -535,10 +534,11 @@ async fn logout(State(state): State<Arc<Accounts>>, uri: Uri, headers: HeaderMap
 }
 
 async fn test_cookie(State(state): State<Arc<Accounts>>, uri: Uri, headers: HeaderMap) -> Response {
-    if let Err(message) = account_query(uri.query(), &["account"]) {
-        return HttpError::refused(StatusCode::BAD_REQUEST, message).json();
-    }
-    if session_id(&headers, &state.config.secret, uri.query()).is_some() {
+    let query = match account_query(uri.query(), &["account"]) {
+        Ok(query) => query,
+        Err(message) => return HttpError::refused(StatusCode::BAD_REQUEST, message).json(),
+    };
+    if session_id(&headers, &state.config.secret, requested_account(&query)).is_some() {
         "OK\n".into_response()
     } else {
         StatusCode::NO_CONTENT.into_response()
@@ -567,9 +567,10 @@ async fn identity_token(
     headers: HeaderMap,
     body: Result<axum::body::Bytes, axum::extract::rejection::BytesRejection>,
 ) -> Response {
-    if let Err(message) = account_query(uri.query(), &["account"]) {
-        return HttpError::refused(StatusCode::BAD_REQUEST, message).json();
-    }
+    let query = match account_query(uri.query(), &["account"]) {
+        Ok(query) => query,
+        Err(message) => return HttpError::refused(StatusCode::BAD_REQUEST, message).json(),
+    };
     match body {
         Ok(body) if body.is_empty() => {}
         Ok(_) => {
@@ -584,7 +585,7 @@ async fn identity_token(
         if is_banned(&state.pool, &address.ip().to_string()).await? {
             return Ok(banned());
         }
-        let Some(id) = session_id(&headers, &state.config.secret, uri.query()) else {
+        let Some(id) = session_id(&headers, &state.config.secret, requested_account(&query)) else {
             return Ok(
                 HttpError::refused(StatusCode::UNAUTHORIZED, "You must be logged in.").json(),
             );

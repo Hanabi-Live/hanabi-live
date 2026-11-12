@@ -253,7 +253,11 @@ pub(super) async fn websocket(
     }
     let query =
         match accounts::account_query(uri.query(), &WebSocketQuery::PARAMETERS).and_then(|query| {
-            hanabi_protocol::decode::<WebSocketQuery>(&query.to_json()).map_err(|_| {
+            let mut json = query.to_json();
+            if let Some(account) = accounts::requested_account(&query) {
+                json["account"] = account.into();
+            }
+            hanabi_protocol::decode::<WebSocketQuery>(&json).map_err(|_| {
                 let clients = ClientKind::ALL
                     .iter()
                     .map(|client| format!("\"{}\"", client.name()))
@@ -271,7 +275,8 @@ pub(super) async fn websocket(
     let client = query.client;
     let bot = client == ClientKind::Bot;
     let ip = address.ip();
-    let Some(id) = accounts::session_id(&headers, &app.public.session_secret, uri.query()) else {
+    let requested = query.account.map(|account| account.0);
+    let Some(id) = accounts::session_id(&headers, &app.public.session_secret, requested) else {
         tracing::warn!("Rejected websocket from {ip} without a valid session.");
         return HttpError::refused(StatusCode::UNAUTHORIZED, "A valid session is required.").json();
     };
