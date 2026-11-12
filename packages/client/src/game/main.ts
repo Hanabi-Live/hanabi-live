@@ -15,6 +15,9 @@ import { HanabiUi } from "./ui/HanabiUi.ts";
 /** The history screen's address (e.g. "#history"), if a replay was opened from one. */
 let historyHash = "";
 
+/** The screen that a game or replay returns to: the lobby, or the history screen it came from. */
+let screenBeforeGame = Screen.Lobby;
+
 export function init(): void {
   $("#game").on("mouseenter mouseleave", () => {
     if (globals.currentScreen === Screen.Game && globals.ui !== undefined) {
@@ -30,6 +33,7 @@ export function show(justStarted: boolean): void {
 
   tooltips.clearPlayerTimeTooltips();
   lobbyPage.hide();
+  screenBeforeGame = globals.currentScreen;
   globals.currentScreen = Screen.Game;
   document.body.dataset["screen"] = "game";
   $("#page-wrapper").hide(); // We can't fade this out as it will overlap
@@ -65,15 +69,13 @@ function showNewUi() {
 }
 
 function hide() {
-  // Account that we could be going back to one of the history screens. (We could have entered a
-  // solo replay from one of the history screens.) They are still shown inside the hidden page.
-  if (isDisplayed("#lobby-history")) {
-    globals.currentScreen = Screen.History;
-  } else if (isDisplayed("#lobby-history-other-scores")) {
-    globals.currentScreen = Screen.HistoryOtherScores;
-  } else {
-    globals.currentScreen = Screen.Lobby;
-  }
+  // We could be going back to one of the history screens, since we can enter a solo replay from
+  // them.
+  globals.currentScreen =
+    screenBeforeGame === Screen.History
+    || screenBeforeGame === Screen.HistoryOtherScores
+      ? screenBeforeGame
+      : Screen.Lobby;
   if (
     globals.currentScreen !== Screen.Lobby
     && historyHash !== ""
@@ -101,11 +103,6 @@ function hide() {
 
   // Scroll to the bottom of the chat.
   scrollLobbyChatToBottom();
-}
-
-/** Whether an element is displayed, even if a hidden ancestor keeps it from being visible. */
-function isDisplayed(selector: string) {
-  return $(selector).css("display") !== "none";
 }
 
 // These are references to some functions and submodules that need to be interacted with in the UI

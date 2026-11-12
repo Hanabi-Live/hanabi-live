@@ -3,22 +3,15 @@
 
 import { lobbyPageChanged } from "../sessionSlice.ts";
 import { store } from "../store.ts";
-import { showLobbyHalves } from "./lobbyLayout.ts";
 import type { LobbyPage } from "./types/LobbyPage.ts";
 
 /** Shows a page from the lobby or from the pre-game screen, which it returns to. */
 export function show(page: LobbyPage): void {
   store.dispatch(lobbyPageChanged(page));
-  showLobbyHalves(false);
 }
 
 export function hide(): void {
-  if (!isShown()) {
-    return;
-  }
-
   store.dispatch(lobbyPageChanged(undefined));
-  showLobbyHalves(true);
 }
 
 export function isShown(): boolean {

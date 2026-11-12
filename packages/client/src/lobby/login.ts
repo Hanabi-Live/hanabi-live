@@ -352,9 +352,6 @@ export function hide(firstTimeUser: boolean): void {
     globals.currentScreen = Screen.Lobby;
   }
   $("#lobby").removeClass("hidden");
-  $("#lobby-history").hide();
-  // We can't hide this element by default in "index.html" or else the "No game history" text will
-  // not be centered.
   $("#lobby-chat-input").trigger("focus");
 
   // Scroll to the bottom of the chat. (This is necessary if we are going to the lobby after the

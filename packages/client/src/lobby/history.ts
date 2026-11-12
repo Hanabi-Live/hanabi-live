@@ -12,7 +12,6 @@ import {
   selectShownGameCount,
 } from "./gameHistory/historySlice.ts";
 import { getOtherScoresHash } from "./historyHash.ts";
-import { showLobbyHalves } from "./lobbyLayout.ts";
 import { Screen } from "./types/Screen.ts";
 
 /**
@@ -29,10 +28,6 @@ export function show(requestHistory = true): void {
   ) {
     setBrowserAddressBarPath(PATH.LOBBY, HISTORY_HASH);
   }
-
-  $("#lobby-history-other-scores").hide();
-  $("#lobby-history").show();
-  showLobbyHalves(false);
 
   if (requestHistory) {
     requestPage(0);
@@ -57,10 +52,6 @@ function requestPage(offset: number) {
 export function hide(): void {
   globals.currentScreen = Screen.Lobby;
   setBrowserAddressBarPath(PATH.LOBBY, undefined);
-
-  $("#lobby-history").hide();
-  $("#lobby-history-other-scores").hide();
-  showLobbyHalves(true);
 }
 
 /** Shows the other games on the seed of one of our games. */
@@ -74,8 +65,6 @@ export function showOtherScores(seed: string): void {
   requestOtherScoresPage(seed, 0);
 
   globals.currentScreen = Screen.HistoryOtherScores;
-  $("#lobby-history").hide();
-  $("#lobby-history-other-scores").show();
 }
 
 /** Asks for the next page of the other scores that we show. */
@@ -102,6 +91,4 @@ function requestOtherScoresPage(seed: string, offset: number) {
 export function hideOtherScores(): void {
   globals.currentScreen = Screen.History;
   setBrowserAddressBarPath(PATH.LOBBY, HISTORY_HASH, "push");
-  $("#lobby-history").show();
-  $("#lobby-history-other-scores").hide();
 }

@@ -166,6 +166,12 @@ function longChat(length: number) {
   return "The quick brown fox. ".repeat(length).slice(0, length);
 }
 
+/** Clicks a button that switches between the halves of the lobby on small screens. */
+async function clickPanelButton(page: Page, panel: string) {
+  await page.locator(`#lobby-toggle-show-${panel}`).dispatchEvent("click");
+  await page.waitForTimeout(SETTLE_MILLISECONDS);
+}
+
 async function clickNav(page: Page, id: string) {
   await page.click(`#nav-buttons-lobby-${id}`);
   await page.waitForTimeout(SETTLE_MILLISECONDS);
@@ -476,6 +482,24 @@ function getStates({
     { name: "seed", path: `/seed/${SEED}`, loggedIn: false },
     { name: "password-reset", path: "/password-reset", loggedIn: false },
     { name: "lobby", path: "/", loggedIn: true },
+    // The buttons that switch between the halves of the lobby only show on small screens, so they
+    // are clicked without the pointer.
+    {
+      name: "lobby-panel-online",
+      path: "/",
+      loggedIn: true,
+      prepare: async (page) => {
+        await clickPanelButton(page, "online");
+      },
+    },
+    {
+      name: "lobby-panel-chat",
+      path: "/",
+      loggedIn: true,
+      prepare: async (page) => {
+        await clickPanelButton(page, "chat");
+      },
+    },
     {
       name: "user-menu",
       path: "/",
@@ -874,6 +898,15 @@ function getStates({
     },
     // Joining a table keeps the account in it, so these states come last.
     { name: "pregame", path: "/", loggedIn: true, prepare: joinTable },
+    {
+      name: "pregame-panel-game-chat",
+      path: "/",
+      loggedIn: true,
+      prepare: async (page) => {
+        await joinTable(page);
+        await clickPanelButton(page, "game-chat");
+      },
+    },
     {
       name: "pregame-chat",
       path: "/",

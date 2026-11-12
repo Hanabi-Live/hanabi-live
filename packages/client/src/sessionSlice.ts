@@ -6,6 +6,7 @@ import { defaultSettings } from "@hanabi-live/data";
 import type { PayloadAction } from "@reduxjs/toolkit";
 import { createSlice } from "@reduxjs/toolkit";
 import type { LobbyPage } from "./lobby/types/LobbyPage.ts";
+import type { LobbyPanel } from "./lobby/types/LobbyPanel.ts";
 import { Screen } from "./lobby/types/Screen.ts";
 
 interface SessionState {
@@ -19,6 +20,8 @@ interface SessionState {
   readonly screen: Screen;
   /** The lobby page, such as "Create Game" or "Settings", that replaces the lobby. */
   readonly lobbyPage: LobbyPage | undefined;
+  /** The half of the lobby that small screens show. */
+  readonly lobbyPanel: LobbyPanel;
   /** Whether we asked the server to create a table and it has not answered yet. */
   readonly creatingTable: boolean;
   /** Whether the error modal is showing, which the page cannot recover from. */
@@ -33,6 +36,7 @@ const initialState: SessionState = {
   settings: defaultSettings,
   screen: Screen.Login,
   lobbyPage: undefined,
+  lobbyPanel: "tables",
   creatingTable: false,
   errorOccurred: false,
 };
@@ -62,6 +66,9 @@ const sessionSlice = createSlice({
     lobbyPageChanged(state, action: PayloadAction<LobbyPage | undefined>) {
       state.lobbyPage = action.payload;
     },
+    lobbyPanelChanged(state, action: PayloadAction<LobbyPanel>) {
+      state.lobbyPanel = action.payload;
+    },
     creatingTableChanged(state, action: PayloadAction<boolean>) {
       state.creatingTable = action.payload;
     },
@@ -79,6 +86,7 @@ export const {
   settingsChanged,
   screenChanged,
   lobbyPageChanged,
+  lobbyPanelChanged,
   creatingTableChanged,
   errorOccurredChanged,
 } = sessionSlice.actions;

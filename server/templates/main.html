@@ -483,80 +483,8 @@
     </section>
   </div>
 
-  <!-- Lobby -->
-  <div id="lobby" class="container max hidden">
-    <div id="lobby-top-half" class="row lobby-half toggle-active">
-      <div class="col-12">
-        <!-- The "games" table (all current games) -->
-        <section id="lobby-games" class="box"></section>
-
-        <!-- The "pregame" table -->
-        <section id="lobby-pregame" class="box hidden"></section>
-      </div>
-    </div>
-
-    <!-- Spacing -->
-    <div id="lobby-separator" class="row"></div>
-
-    <div id="lobby-bottom-half" class="row lobby-half">
-      <!-- The chat for the entire lobby -->
-      <div id="lobby-chat-container" class="col-8">
-        <section id="lobby-chat" class="box"></section>
-      </div>
-
-      <!-- The chat for the players in the currently unstarted game -->
-      <div id="lobby-chat-pregame-container" class="col-4 hidden">
-        <section id="lobby-chat-pregame" class="box"></section>
-      </div>
-
-      <!-- The "Online Users" section -->
-      <div
-        id="lobby-online-users"
-        class="col-4 lobby-users-box-container narrow-screen-toggle"
-      >
-        <section class="box">
-          <h3 class="lobby-title" id="lobby-users-title">
-            Online<span id="small-screen-toggle-users-h3"> Users</span> (0)
-          </h3>
-          <div id="lobby-users-container"></div>
-        </section>
-      </div>
-    </div>
-
-    <!-- small screen toggle buttons -->
-    <div id="lobby-small-screen-buttons">
-      <nav id="nav-bottom">
-        <ul>
-          <li>
-            <a id="lobby-toggle-show-tables" class="button small toggle-active"
-              >Tables</a
-            >
-            <a id="lobby-toggle-show-online" class="button small"
-              >Who's Online</a
-            >
-            <a id="lobby-toggle-show-chat" class="button small">Chat</a>
-            <a id="lobby-toggle-show-game-chat" class="button small hidden"
-              >Pre-game Chat</a
-            >
-          </li>
-        </ul>
-      </nav>
-    </div>
-
-    <!-- History -->
-    <div id="lobby-full" class="row hidden">
-      <div class="col-12">
-        <!-- The history table (all played games) -->
-        <section id="lobby-history" class="box"></section>
-
-        <!-- The lobby page that replaces the lobby, such as "Create Game" (see "LobbyPages.tsx") -->
-        <div id="lobby-pages"></div>
-
-        <!-- The other scores table (all games on a specific seed) -->
-        <section id="lobby-history-other-scores" class="box hidden"></section>
-      </div>
-    </div>
-  </div>
+  <!-- The lobby (see "Lobby.tsx") -->
+  <div id="lobby" class="container max hidden"></div>
 </div>
 
 <!-- Modals -->
