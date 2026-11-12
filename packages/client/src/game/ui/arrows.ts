@@ -412,6 +412,11 @@ export function click(
     return;
   }
 
+  // During a game, an arrow needs Ctrl + right-click, the same as on a card.
+  if (!globals.state.finished && !event.evt.ctrlKey) {
+    return;
+  }
+
   // Do not allow followers in a shared replay to summon arrows because it could be misleading as to
   // who the real replay leader is.
   if (
