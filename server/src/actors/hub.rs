@@ -604,9 +604,10 @@ impl Hub {
             } else {
                 frame(
                     hanabi_protocol::server::ERROR,
-                    hanabi_protocol::Notice::new(
-                        "The server is going down for maintenance. Your game progress has been saved.<br />Please reconnect after the server restarts.",
-                    ),
+                    hanabi_protocol::Notice::new(format!(
+                        "{}<br />Please reconnect after the server restarts.",
+                        crate::lifecycle::MAINTENANCE_NOTICE
+                    )),
                 )
             },
         ];

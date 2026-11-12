@@ -162,6 +162,10 @@ pub enum StopReason {
     OwnershipLost,
     Failure(String),
 }
+/// The first sentences of the notice that connected users see when the server stops for
+/// maintenance.
+pub(crate) const MAINTENANCE_NOTICE: &str =
+    "The server is going down for maintenance. Your game progress has been saved.";
 impl StopReason {
     fn reconnect(&self) -> bool {
         matches!(self, Self::Restart(_) | Self::GracefulStop(_))
@@ -178,9 +182,7 @@ impl StopReason {
         Some(if matches!(self, Self::Restart(_)) {
             format!("The server is restarting and will be back shortly.<br />Reason: {reason}")
         } else {
-            format!(
-                "The server is going down for maintenance. Your game progress has been saved.<br />Reason: {reason}"
-            )
+            format!("{MAINTENANCE_NOTICE}<br />Reason: {reason}")
         })
     }
 }
