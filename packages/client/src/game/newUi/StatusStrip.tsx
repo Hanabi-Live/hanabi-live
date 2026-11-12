@@ -26,6 +26,9 @@ interface StatusStripProps {
   readonly futureEfficiency: string;
   readonly minEfficiency: string;
   readonly variantName: string;
+
+  /** The HTML of the tooltip on the variant: the game's seed, options, and table. */
+  readonly gameInfoTooltip: string;
   readonly canOpenReplay: boolean;
 
   /** A finished game is all replay, so it has no button to open one. */
@@ -48,15 +51,28 @@ interface StatusStripProps {
  */
 const STAT_LABEL_CLASS =
   "tw:block tw:text-[13px] tw:leading-[16px] tw:text-game-muted";
-const STAT_VALUE_CLASS =
-  "tw:block tw:text-[22px] tw:leading-[28px] tw:font-bold tw:narrow-980:text-[17px] tw:narrow-980:leading-[22px]";
+
+/**
+ * The sizes of the values. The score is what players check most, so it is the largest. Pace and
+ * efficiency help to plan, so they are smaller and quieter than the game's progress.
+ */
+const STAT_VALUE_CLASS = {
+  large:
+    "tw:text-[28px] tw:leading-[30px] tw:font-bold tw:text-game-text tw:narrow-980:text-[20px] tw:narrow-980:leading-[24px]",
+  normal:
+    "tw:text-[22px] tw:leading-[30px] tw:font-bold tw:text-game-text tw:narrow-980:text-[17px] tw:narrow-980:leading-[24px]",
+  small:
+    "tw:text-[17px] tw:leading-[30px] tw:font-semibold tw:text-game-text/85 tw:narrow-980:leading-[24px]",
+} as const;
 
 function Stat({
   label,
+  size = "normal",
   truncate = true,
   children,
 }: {
   readonly label: React.ReactNode;
+  readonly size?: keyof typeof STAT_VALUE_CLASS;
 
   /** Whether a long value ends with an ellipsis. A value that pops must not be cut off. */
   readonly truncate?: boolean;
@@ -66,11 +82,21 @@ function Stat({
     <div className="tw:flex tw:min-w-0 tw:flex-col tw:gap-0.5">
       <span className={STAT_LABEL_CLASS}>{label}</span>
       <span
-        className={`${truncate ? "tw:truncate" : ""} ${STAT_VALUE_CLASS} tw:text-game-text`}
+        className={`tw:block ${truncate ? "tw:truncate" : ""} ${STAT_VALUE_CLASS[size]}`}
       >
         {children}
       </span>
     </div>
+  );
+}
+
+/** A thin line between two groups of the bar. On a narrow screen, the groups wrap instead. */
+function GroupDivider(): React.JSX.Element {
+  return (
+    <span
+      aria-hidden="true"
+      className="tw:h-10 tw:w-px tw:shrink-0 tw:self-center tw:bg-game-line tw:narrow-980:hidden"
+    />
   );
 }
 
@@ -126,6 +152,7 @@ export function StatusStrip({
   futureEfficiency,
   minEfficiency,
   variantName,
+  gameInfoTooltip,
   canOpenReplay,
   finished,
   onOpenReplay,
@@ -136,29 +163,58 @@ export function StatusStrip({
 }: StatusStripProps): React.JSX.Element {
   return (
     <footer className="tw:flex tw:h-[76px] tw:shrink-0 tw:items-center tw:gap-8 tw:border-t tw:border-game-raised tw:bg-game-panel tw:px-7 tw:narrow-980:h-auto tw:narrow-980:flex-wrap tw:narrow-980:gap-x-5 tw:narrow-980:gap-y-2 tw:narrow-980:px-3 tw:narrow-980:py-3">
-      <Stat label="Turn">{turn}</Stat>
-      <Stat label="Score" truncate={false}>
-        {/* The score pops when a card lands on a stack (see "playMotion.ts"). */}
-        <span className="tw:inline-block" data-score>
-          <OutOf max={maxScore} value={score} />
-        </span>
-      </Stat>
-      <Stat label="Pace">{pace}</Stat>
-      <Stat
-        label={
-          <>
-            Efficiency
-            <HelpIcon label={EFFICIENCY_HELP_LABEL} tooltip={EFFICIENCY_HELP} />
-          </>
-        }
-      >
-        <OutOf max={minEfficiency} value={futureEfficiency} />
-      </Stat>
-      <div className="tw:flex tw:min-w-0 tw:flex-auto tw:flex-col tw:gap-0.5">
-        <span className={STAT_LABEL_CLASS}>Variant</span>
-        <div className={`tw:truncate ${STAT_VALUE_CLASS} tw:text-game-muted`}>
-          {variantName}
-        </div>
+      {/* Three groups, split by thin lines: the game's progress, the numbers that help to plan,
+          and what game this is. */}
+      <div className="tw:flex tw:shrink-0 tw:items-end tw:gap-6 tw:narrow-980:gap-5">
+        <Stat label="Turn">{turn}</Stat>
+        <Stat label="Score" size="large" truncate={false}>
+          {/* The score pops when a card lands on a stack (see "playMotion.ts"). */}
+          <span className="tw:inline-block" data-score>
+            <OutOf max={maxScore} value={score} />
+          </span>
+        </Stat>
+      </div>
+      <GroupDivider />
+      <div className="tw:flex tw:shrink-0 tw:items-end tw:gap-6 tw:narrow-980:gap-5">
+        <Stat label="Pace" size="small">
+          {pace}
+        </Stat>
+        <Stat
+          label={
+            <>
+              Efficiency
+              <HelpIcon
+                label={EFFICIENCY_HELP_LABEL}
+                tooltip={EFFICIENCY_HELP}
+              />
+            </>
+          }
+          size="small"
+        >
+          <OutOf max={minEfficiency} value={futureEfficiency} />
+        </Stat>
+      </div>
+      <GroupDivider />
+      {/* The variant opens the game's information: its seed, options, and table. */}
+      {/* The button is as wide as the name, so that its tooltip opens over the name. */}
+      <div className="tw:flex tw:min-w-0 tw:flex-auto">
+        <button
+          aria-label={`Variant: ${variantName}. Show the game's information`}
+          className="tw:flex tw:max-w-full tw:min-w-0 tw:cursor-help tw:[font-family:inherit] tw:flex-col tw:items-start tw:gap-0.5 tw:border-0 tw:bg-transparent tw:p-0 tw:text-left tw:text-game-muted tw:hover:text-game-text"
+          ref={tooltipRefHtml(gameInfoTooltip)}
+          type="button"
+        >
+          <span className={STAT_LABEL_CLASS}>
+            Variant
+            <i
+              aria-hidden="true"
+              className="fas fa-info-circle tw:ml-1.5 tw:text-game-link"
+            />
+          </span>
+          <span className="tw:block tw:max-w-full tw:truncate tw:text-[17px] tw:leading-[30px] tw:font-semibold tw:narrow-980:leading-[24px]">
+            {variantName}
+          </span>
+        </button>
       </div>
       <div className="tw:ml-auto tw:flex tw:max-w-full tw:shrink-0 tw:flex-wrap tw:justify-end tw:gap-2.5">
         <button className={buttonClass} onClick={onClassicView} type="button">

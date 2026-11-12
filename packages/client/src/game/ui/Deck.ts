@@ -2,15 +2,11 @@ import type { CardOrder } from "@hanabi-live/game";
 import {
   getDeckPossibilities,
   getTotalCardsInDeck,
-  millisecondsToClockString,
   PipState,
-  secondsToClockString,
   UNKNOWN_SUIT_NAME,
 } from "@hanabi-live/game";
 import Konva from "konva";
-import { OptionIcons } from "../../enums/OptionIcons.ts";
 import * as tooltips from "../../tooltips.ts";
-import { dateTimeFormatter, escapeHtml } from "../../utils.ts";
 import type { Pips } from "../types/Pips.ts";
 import * as arrows from "./arrows.ts";
 import {
@@ -23,6 +19,7 @@ import {
 } from "./constants.ts";
 import * as cursor from "./cursor.ts";
 import { CARD_IMAGE_UNKNOWN_CARD_RANK_NAME } from "./drawCards.ts";
+import { getGameInfoTooltip } from "./gameInfoTooltip.ts";
 import { updatePip } from "./HanabiCard.ts";
 import * as HanabiCardInit from "./HanabiCardInit.ts";
 import { isOurTurn } from "./isOurTurn.ts";
@@ -195,7 +192,7 @@ export class Deck extends Konva.Group {
     // We store the content as a class variable so that it can be reused for the faded background
     // rectangle behind the card (so that the tooltip will work when there are 0 cards left in the
     // deck).
-    this.tooltipContent = getTooltipContent();
+    this.tooltipContent = getGameInfoTooltip();
     tooltips.setContent("#tooltip-deck", this.tooltipContent);
   }
 
@@ -341,144 +338,4 @@ export class Deck extends Konva.Group {
     });
     globals.layers.card.batchDraw();
   }
-}
-
-/** The tooltip will show information about the game and the current options. */
-function getTooltipContent(): string {
-  let content = "<strong>Game Info:</strong>";
-  content += '<ul class="game-tooltips-ul">';
-
-  const currentTable = globals.lobby.getTable(globals.lobby.joinedTableId);
-  if (currentTable !== undefined) {
-    content += tooltipField(
-      "fas fa-signature",
-      "Table name",
-      escapeHtml(currentTable.settings.name),
-    );
-
-    content += tooltipField(
-      "fas fa-crown",
-      "Owner",
-      escapeHtml(currentTable.owner.username),
-    );
-  }
-
-  if (globals.state.finished && globals.state.replay.gameId !== undefined) {
-    content += tooltipField(
-      "fas fa-fingerprint",
-      "Database ID",
-      `<strong>${globals.state.replay.gameId}</strong>`,
-    );
-  }
-
-  if (globals.state.finished || globals.metadata.customSeed) {
-    const { seed } = globals.metadata;
-    const suffix = seed === undefined ? " (JSON game)" : "";
-    content += tooltipField(
-      "fas fa-seedling",
-      "Seed",
-      `<strong>${escapeHtml(seed ?? "n/a")}</strong>${suffix}`,
-    );
-  }
-
-  if (globals.state.finished && globals.state.datetimeFinished !== undefined) {
-    const datetimeFinishedDate = new Date(globals.state.datetimeFinished);
-    const formattedDatetimeFinished =
-      dateTimeFormatter.format(datetimeFinishedDate);
-    content += tooltipField(
-      "fas fa-calendar",
-      "Date Played",
-      `<strong>${formattedDatetimeFinished}</strong>`,
-    );
-  }
-
-  // "datetimeStarted" and "datetimeFinished" are initialized to strings during the "gameInit"
-  // command, so they should never be undefined.
-  if (
-    globals.state.datetimeStarted !== undefined
-    && globals.state.datetimeFinished !== undefined
-  ) {
-    const startedDate = new Date(globals.state.datetimeStarted);
-    const finishedDate = globals.state.finished
-      ? new Date(globals.state.datetimeFinished)
-      : new Date();
-    const elapsedMilliseconds = finishedDate.getTime() - startedDate.getTime();
-    const clockString = millisecondsToClockString(elapsedMilliseconds);
-    content += tooltipField(
-      "fas fa-stopwatch",
-      "Game Length",
-      `<strong>${clockString}</strong>`,
-    );
-  }
-
-  const sharedReplay = globals.state.replay.shared;
-  if (sharedReplay !== undefined) {
-    const startedDate = new Date(sharedReplay.datetimeReplayStarted);
-    const elapsedMilliseconds = Date.now() - startedDate.getTime();
-    const clockString = millisecondsToClockString(elapsedMilliseconds);
-    content += tooltipField(
-      "fas fa-hourglass-half",
-      "Shared Replay Length",
-      `<strong>${clockString}</strong>`,
-    );
-  }
-
-  content += tooltipField(
-    "fas fa-rainbow",
-    "Variant",
-    `<strong>${globals.variant.name}</strong>`,
-  );
-
-  const { timeControl } = globals.options;
-  if (timeControl !== undefined) {
-    const timeBase = secondsToClockString(timeControl.baseSeconds);
-    const timePerTurn = secondsToClockString(timeControl.perTurnSeconds);
-    content += tooltipItem(
-      OptionIcons.Timed,
-      `Timed: ${timeBase} + ${timePerTurn}`,
-    );
-  }
-
-  if (globals.options.speedrun) {
-    content += tooltipItem(OptionIcons.Speedrun, "Speedrun");
-  }
-
-  if (globals.options.deckPlays) {
-    content += tooltipItem(OptionIcons.DeckPlays, "Bottom-Deck Blind Plays");
-  }
-
-  if (globals.options.emptyClues) {
-    content += tooltipItem(OptionIcons.EmptyClues, "Empty Clues");
-  }
-
-  if (globals.options.oneExtraCard) {
-    content += tooltipItem(OptionIcons.OneExtraCard, "One Extra Card");
-  }
-
-  if (globals.options.oneLessCard) {
-    content += tooltipItem(OptionIcons.OneLessCard, "One Less Card");
-  }
-
-  if (globals.options.allOrNothing) {
-    content += tooltipItem(OptionIcons.AllOrNothing, "All or Nothing");
-  }
-
-  if (globals.options.detrimentalCharacters) {
-    content += tooltipItem(
-      OptionIcons.DetrimentalCharacters,
-      "Detrimental Characters",
-    );
-  }
-
-  content += "</ul>";
-
-  return content;
-}
-
-function tooltipItem(iconClass: string, html: string) {
-  return `<li><span class="game-tooltips-icon"><i class="${iconClass}"></i></span>${html}</li>`;
-}
-
-function tooltipField(iconClass: string, label: string, valueHtml: string) {
-  return tooltipItem(iconClass, `${label}: &nbsp;${valueHtml}`);
 }

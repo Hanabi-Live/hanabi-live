@@ -38,6 +38,8 @@ of the repository.
 - Player profiles now show the total time spent playing and reviewing.
 - The new game screen grows with the window, so on a large screen everything is
   larger instead of surrounded by empty space.
+- In the new game screen, put the mouse on the variant at the bottom to see the
+  game's information, such as its options and its table.
 
 ## November 11th, 2026
 

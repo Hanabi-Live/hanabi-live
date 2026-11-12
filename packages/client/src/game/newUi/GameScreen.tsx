@@ -33,6 +33,7 @@ import { globals } from "../ui/UiGlobals.ts";
 import { backToLobby } from "../ui/backToLobby.ts";
 import { EFFICIENCY_DECIMAL_PLACES } from "../ui/constants.ts";
 import { controlsHypothetical } from "../ui/controlsHypothetical.ts";
+import { getGameInfoTooltip } from "../ui/gameInfoTooltip.ts";
 import { getCardOrStackBase } from "../ui/getCardOrStackBase.ts";
 import * as hypothetical from "../ui/hypothetical.ts";
 import * as replay from "../ui/replay.ts";
@@ -1374,6 +1375,7 @@ export function GameScreen({
           visibleState.stats,
           efficiencyModifier,
         )}
+        gameInfoTooltip={getGameInfoTooltip(false)}
         maxScore={visibleState.stats.maxScore}
         minEfficiency={metadata.minEfficiency.toFixed(
           EFFICIENCY_DECIMAL_PLACES,
