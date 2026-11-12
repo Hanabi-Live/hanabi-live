@@ -1,10 +1,22 @@
 // Users can right-click cards to record information on them.
 
+import { MAX_NOTE_LENGTH } from "@hanabi-live/data";
 import type { CardOrder } from "@hanabi-live/game";
 import { ReadonlySet, trimSuffix } from "complete-common";
+import type { Root } from "react-dom/client";
+import type { LengthLimit } from "../../LengthCounter.tsx";
+import {
+  countCharacters,
+  mountLengthCounter,
+  rejectTooLong,
+} from "../../LengthCounter.tsx";
 import * as chat from "../../chat.ts";
 import * as tooltips from "../../tooltips.ts";
-import { escapeHtml } from "../../utils.ts";
+import {
+  escapeHtml,
+  getHtmlElement,
+  getHtmlInputElement,
+} from "../../utils.ts";
 import type { HanabiCard } from "./HanabiCard.ts";
 import { globals } from "./UiGlobals.ts";
 import { getCardOrStackBase } from "./getCardOrStackBase.ts";
@@ -21,6 +33,37 @@ const REMOVE_PIPE_KEYS = new ReadonlySet([
 ]);
 const CLOSE_NOTE_KEYS = new ReadonlySet(["Enter", "Escape"]);
 const META_KEYS = new ReadonlySet(["Alt", "Control", "Shift"]);
+
+/** The separator that editing adds after a note, so that the player can add to it. */
+const NOTE_SEPARATOR = " | ";
+
+const NOTE_LENGTH_LIMIT = {
+  max: MAX_NOTE_LENGTH,
+  left: (text) => MAX_NOTE_LENGTH - countCharacters(savedNote(text)),
+  tooLongText: "Note is too long",
+} as const satisfies LengthLimit;
+
+/** The character counter of the note that is being edited, and the tooltip that shows it. */
+let noteCounter: { readonly tooltip: string; readonly root: Root } | undefined;
+
+/** The note that the text of a note input saves. */
+function savedNote(text: string): string {
+  return chat.fillEmojis(trimSuffix(text, NOTE_SEPARATOR));
+}
+
+/**
+ * Removes the character counter when its tooltip shows other content. (It stays while the tooltip
+ * fades out.)
+ */
+function unmountNoteCounter(tooltip?: string) {
+  if (
+    noteCounter !== undefined
+    && (tooltip === undefined || noteCounter.tooltip === tooltip)
+  ) {
+    noteCounter.root.unmount();
+    noteCounter = undefined;
+  }
+}
 
 function prepareContent(rawNote: string): string {
   const safe = escapeHtml(rawNote);
@@ -120,6 +163,7 @@ export function show(card: HanabiCard): void {
   tooltips.setPosition(tooltip, card.getClientRect({}));
 
   // Update the tooltip content.
+  unmountNoteCounter(tooltip);
   let shownNote = get(card.order, false, true);
   // A card in the hole of a "Throw It in a Hole" variant is on the play stacks, but its suit can be
   // unknown.
@@ -175,10 +219,28 @@ export function openEditTooltip(
   input.setAttribute("autocorrect", "off");
   input.setAttribute("autocapitalize", "off");
 
-  tooltips.setContent(tooltip, input.outerHTML);
+  // The counter is positioned in the input's container.
+  const counterId = `tooltip-${card.tooltipName}-length-counter`;
+  tooltips.setContent(
+    tooltip,
+    `<span class="tw:relative tw:inline-block">${input.outerHTML}<span id="${counterId}"></span></span>`,
+  );
 
   // A card without a note has an empty tooltip, which "show" leaves closed.
   tooltips.open(tooltip);
+
+  const inputElement = getHtmlInputElement(
+    `#tooltip-${card.tooltipName}-input`,
+  );
+  unmountNoteCounter();
+  noteCounter = {
+    tooltip,
+    root: mountLengthCounter(
+      getHtmlElement(`#${counterId}`),
+      inputElement,
+      NOTE_LENGTH_LIMIT,
+    ),
+  };
 
   const noteTextbox = $(`#tooltip-${card.tooltipName}-input`);
   let shouldRemovePipe = true;
@@ -221,13 +283,12 @@ export function openEditTooltip(
         );
       }
 
-      newNote = val;
+      // Keep a note that is too long open, so that the player can shorten it.
+      if (rejectTooLong(inputElement, NOTE_LENGTH_LIMIT)) {
+        return;
+      }
 
-      // Remove the last pipe.
-      newNote = trimSuffix(newNote, " | ");
-
-      newNote = chat.fillEmojis(newNote);
-
+      newNote = savedNote(val);
       set(card.order, newNote);
     }
 
@@ -270,8 +331,8 @@ export function openEditTooltip(
     }
 
     let newNote = oldNote;
-    if (oldNote !== "" && !oldNote.endsWith(" | ")) {
-      newNote += " | ";
+    if (oldNote !== "" && !oldNote.endsWith(NOTE_SEPARATOR)) {
+      newNote += NOTE_SEPARATOR;
     }
     newNote += addText;
     if (newNote !== oldNote) {

@@ -33,6 +33,8 @@ export const DEFAULT_TIME_PER_TURN_SECONDS = 20;
 export const TYPING_TIMEOUT_MS = 2000;
 export const MAX_SEED_LENGTH = 32;
 export const MAX_CHAT_LENGTH = 300;
+export const MAX_NOTE_LENGTH = 300;
+export const MAX_TABLE_NAME_LENGTH = 45;
 export const MAX_EFFICIENCY_MODIFIER = 60;
 export const DEFAULT_TABLE_NAME_SUFFIX = "'s table";
 

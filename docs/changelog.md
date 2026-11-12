@@ -42,6 +42,9 @@ of the repository.
   game's information, such as its options and its table.
 - In the new game screen, the chat lists how many people are watching and names
   as many as fit, with you shown as "You".
+- Notes and table names now count down the characters left near their limit, as
+  chat messages do, and are not saved when they are too long. Before, the server
+  cut them short.
 
 ## November 11th, 2026
 

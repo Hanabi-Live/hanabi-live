@@ -20,6 +20,8 @@ import type { UserId } from "@hanabi-live/data";
 import {
   DEFAULT_MAX_PLAYERS,
   MAX_CHAT_LENGTH,
+  MAX_NOTE_LENGTH,
+  MAX_TABLE_NAME_LENGTH,
   packWsMessage,
   SERVER_COMMAND_SCHEMAS,
   VERSION,
@@ -163,8 +165,8 @@ async function hoverIfVisible(page: Page, selector: string) {
   }
 }
 
-/** A chat message of the given length in characters. */
-function longChat(length: number) {
+/** A text of the given length in characters, such as a chat message. */
+function longText(length: number) {
   return "The quick brown fox. ".repeat(length).slice(0, length);
 }
 
@@ -655,7 +657,7 @@ function getStates({
       path: "/",
       loggedIn: true,
       prepare: async (page) => {
-        await page.fill("#lobby-chat-input", longChat(MAX_CHAT_LENGTH - 20));
+        await page.fill("#lobby-chat-input", longText(MAX_CHAT_LENGTH - 20));
       },
     },
     {
@@ -663,7 +665,7 @@ function getStates({
       path: "/",
       loggedIn: true,
       prepare: async (page) => {
-        await page.fill("#lobby-chat-input", longChat(MAX_CHAT_LENGTH + 20));
+        await page.fill("#lobby-chat-input", longText(MAX_CHAT_LENGTH + 20));
       },
       hover: async (page) => {
         await hoverIfVisible(page, "#lobby-chat-input ~ span");
@@ -676,6 +678,19 @@ function getStates({
       prepare: async (page) => {
         await clickNav(page, "create-game");
       },
+    },
+    {
+      name: "create-game-name-over-limit",
+      path: "/",
+      loggedIn: true,
+      prepare: async (page) => {
+        await clickNav(page, "create-game");
+        await page.fill(
+          "#createTableName",
+          longText(MAX_TABLE_NAME_LENGTH + 5),
+        );
+      },
+      hover: "#createTableName ~ span",
     },
     {
       name: "button-focus",
@@ -1091,7 +1106,7 @@ function getStates({
       path: "/",
       loggedIn: true,
       prepare: async (page) => {
-        await page.fill("#game-chat-input", longChat(MAX_CHAT_LENGTH + 20));
+        await page.fill("#game-chat-input", longText(MAX_CHAT_LENGTH + 20));
       },
       // The input is hidden at the last width, where the chat panel is closed.
       cleanup: async (page) => {
@@ -1219,6 +1234,40 @@ function getStates({
       prepare: async (page) => {
         await page.getByRole("button", { name: "Classic view" }).click();
         await page.waitForTimeout(SETTLE_MILLISECONDS);
+      },
+    },
+    // The same game, with a note that is too long on the account's first card. The classic screen
+    // draws its hands again when the window resizes, which closes the note, so each width opens it.
+    {
+      name: "new-ui-classic-note-over-limit",
+      path: "/",
+      loggedIn: true,
+      prepare: async (page) => {
+        const classic = page.getByRole("button", { name: "Classic view" });
+        if (await classic.isVisible()) {
+          await classic.click();
+          await page.waitForTimeout(SETTLE_MILLISECONDS);
+        }
+      },
+      hover: async (page) => {
+        // Let a note that the resize closed finish fading out.
+        await page.waitForTimeout(SETTLE_MILLISECONDS);
+        await page.waitForFunction(isGameScreenResized);
+        const input = page.locator('input[id^="tooltip-"][id$="-input"]');
+        if (!(await input.isVisible())) {
+          await hoverCanvasElement(page, ["playerHands", 0, "children", 0]);
+          // The table is a speedrun, where Ctrl + right-click opens a note.
+          await page.keyboard.down("Control");
+          await page.mouse.down({ button: "right" });
+          await page.mouse.up({ button: "right" });
+          await page.keyboard.up("Control");
+          await input.fill(longText(MAX_NOTE_LENGTH + 20));
+        }
+        await page.hover('[id^="tooltip-"][id$="-length-counter"] > span');
+      },
+      // Close the note without saving it.
+      cleanup: async (page) => {
+        await page.keyboard.press("Escape");
       },
     },
     // The same game, back in the new screen, after Bob ends it. It is now a shared replay that Bob

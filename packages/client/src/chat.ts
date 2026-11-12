@@ -14,9 +14,14 @@ import {
 import { eRange, isArray, trimPrefix } from "complete-common";
 import linkifyHtml from "linkify-html";
 import { find as linkifyFind } from "linkifyjs";
-import { mountChatLengthCounter } from "./ChatLengthCounter.tsx";
 import { mountEmojiPicker } from "./EmojiPicker.tsx";
 import { globals } from "./Globals.ts";
+import type { LengthLimit } from "./LengthCounter.tsx";
+import {
+  countCharacters,
+  mountLengthCounter,
+  rejectTooLong,
+} from "./LengthCounter.tsx";
 import { chatCommands } from "./chatCommands.ts";
 import { LobbyChatDeletionState } from "./chatDeletion.ts";
 import type { SuggestedSettings } from "./chatKind.ts";
@@ -74,10 +79,12 @@ export enum SelfChatMessageType {
  */
 const TYPING_REPORT_INTERVAL_MS = TYPING_TIMEOUT_MS / 2;
 
-/**
- * The event that a chat input receives when the player tries to send a message that is too long.
- */
-export const CHAT_TOO_LONG_EVENT = "chat-too-long";
+/** The limit of a chat message, which the server counts after it trims the message. */
+export const CHAT_LENGTH_LIMIT = {
+  max: MAX_CHAT_LENGTH,
+  left: (text) => MAX_CHAT_LENGTH - countCharacters(fillEmojis(text.trim())),
+  tooLongText: "Message is too long",
+} as const satisfies LengthLimit;
 
 // The heart matches anywhere, but the emotes with colons must be surrounded by whitespace.
 const { "<3": HEART_EMOTE_PATH, ...COLON_EMOTE_PATHS } = CHAT_SPECIAL_EMOTES;
@@ -106,9 +113,11 @@ let emojiPickerMounted = false;
 export function init(): void {
   const gameChatInput = getHtmlInputElement("#game-chat-input");
   attachChatInput(gameChatInput, "table");
-  mountChatLengthCounter(
+  mountLengthCounter(
     getHtmlElement("#game-chat-length-counter"),
     gameChatInput,
+    CHAT_LENGTH_LIMIT,
+    true,
   );
   // (The lobby and pre-game chat inputs are React components that attach themselves.)
   $(".emoji-button[data-target]").on("click", (event) => {
@@ -271,8 +280,7 @@ function send(room: string, element: HTMLInputElement) {
   }
 
   // Keep a message that is too long, so that the player can shorten it.
-  if (chatLengthLeft(msg) < 0) {
-    element.dispatchEvent(new Event(CHAT_TOO_LONG_EVENT));
+  if (rejectTooLong(element, CHAT_LENGTH_LIMIT)) {
     return;
   }
 
@@ -280,17 +288,6 @@ function send(room: string, element: HTMLInputElement) {
   element.value = "";
 
   sendText(room, msg);
-}
-
-/**
- * How many more characters a chat message can have, as the server counts them. It is negative for a
- * message that is too long.
- */
-export function chatLengthLeft(text: string): number {
-  // Count code points, as the server does, so that most emoji count as one character. (An emoji
-  // made of several code points counts as several, on the server too.)
-  // eslint-disable-next-line @typescript-eslint/no-misused-spread
-  return MAX_CHAT_LENGTH - [...fillEmojis(text.trim())].length;
 }
 
 function sendText(room: string, msgRaw: string) {

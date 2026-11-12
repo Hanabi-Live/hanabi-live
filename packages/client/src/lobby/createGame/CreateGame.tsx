@@ -4,6 +4,7 @@
 import {
   DEFAULT_TABLE_NAME_SUFFIX,
   MAX_SEED_LENGTH,
+  MAX_TABLE_NAME_LENGTH,
   defaultSettings,
 } from "@hanabi-live/data";
 import type { GameOptions } from "@hanabi-live/game";
@@ -24,6 +25,12 @@ import {
 import { memo, useEffect, useRef, useState } from "react";
 import { DIMMED_OPACITY, LOCAL_STORAGE_KEY } from "../../constants.ts";
 import { globals } from "../../Globals.ts";
+import type { LengthLimit } from "../../LengthCounter.tsx";
+import {
+  LengthCounter,
+  countCharacters,
+  rejectTooLong,
+} from "../../LengthCounter.tsx";
 import { creatingTableChanged } from "../../sessionSlice.ts";
 import { store } from "../../store.ts";
 import { Tooltip } from "../../Tooltip.ts";
@@ -222,6 +229,13 @@ function getInitialForm(mode: Mode): CreateGameForm {
   };
 }
 
+/** The limit of a table name, which the server counts after it trims the name. */
+const TABLE_NAME_LENGTH_LIMIT = {
+  max: MAX_TABLE_NAME_LENGTH,
+  left: (text) => MAX_TABLE_NAME_LENGTH - countCharacters(text.trim()),
+  tooLongText: "Name is too long",
+} as const satisfies LengthLimit;
+
 function getMode(): Mode {
   const { game } = globals;
   if (game === undefined || globals.currentScreen === Screen.Lobby) {
@@ -241,6 +255,7 @@ export function CreateGame(): React.JSX.Element {
       || Object.values(form.extraOptions).some(Boolean),
   );
   const errors = getErrors(form);
+  const nameRef = useRef<HTMLInputElement>(null);
   const timed = form.timed && !form.extraOptions.speedrun;
   const replaying = isReplaying(form);
 
@@ -258,6 +273,10 @@ export function CreateGame(): React.JSX.Element {
   }
 
   function submit() {
+    if (rejectTooLong(nameRef.current!, TABLE_NAME_LENGTH_LIMIT)) {
+      return;
+    }
+
     // Leave the page open while any value is invalid, showing the extra options only when the
     // problem is among them.
     if (Object.keys(errors).length > 0) {
@@ -323,15 +342,22 @@ export function CreateGame(): React.JSX.Element {
             <RowLabel htmlFor="createTableName" icon="fa-signature">
               Name
             </RowLabel>
-            <input
-              id="createTableName"
-              onChange={(event) => {
-                change({ name: event.target.value }, false);
-              }}
-              placeholder="Name"
-              type="text"
-              value={form.name}
-            />
+            {/* The counter is positioned in the input's container, which takes the input's place in
+                the row. */}
+            <span className="tw:relative tw:flex-[0_0_20em] tw:narrow-640:basis-auto">
+              <input
+                className="tw:w-full"
+                id="createTableName"
+                onChange={(event) => {
+                  change({ name: event.target.value }, false);
+                }}
+                placeholder="Name"
+                ref={nameRef}
+                type="text"
+                value={form.name}
+              />
+              <LengthCounter input={nameRef} limit={TABLE_NAME_LENGTH_LIMIT} />
+            </span>
           </li>
           <li className="lobby-row">
             <div className="lobby-row-label">

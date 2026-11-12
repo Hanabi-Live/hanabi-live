@@ -524,6 +524,14 @@ fn data_constants() -> String {
             hanabi_protocol::MAX_CHAT_LENGTH.to_string(),
         ),
         (
+            "MAX_NOTE_LENGTH",
+            hanabi_protocol::MAX_NOTE_LENGTH.to_string(),
+        ),
+        (
+            "MAX_TABLE_NAME_LENGTH",
+            hanabi_protocol::MAX_TABLE_NAME_LENGTH.to_string(),
+        ),
+        (
             "MAX_EFFICIENCY_MODIFIER",
             hanabi_protocol::MAX_EFFICIENCY_MODIFIER.to_string(),
         ),

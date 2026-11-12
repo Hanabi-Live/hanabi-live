@@ -1,8 +1,12 @@
 // The parts that the lobby chat and the pre-game chat share.
 
 import { useEffect, useLayoutEffect, useRef } from "react";
-import { ChatLengthCounter } from "../../ChatLengthCounter.tsx";
-import { attachChatInput, openEmojiPicker } from "../../chat.ts";
+import { LengthCounter } from "../../LengthCounter.tsx";
+import {
+  CHAT_LENGTH_LIMIT,
+  attachChatInput,
+  openEmojiPicker,
+} from "../../chat.ts";
 import { FADE_TIME_MS } from "../../constants.ts";
 
 /** How far from the bottom the chat can be scrolled and still count as at the bottom. */
@@ -113,7 +117,7 @@ export function ChatInput({
       >
         <i className="fas fa-smile tw:text-[1.6em]" />
       </button>
-      <ChatLengthCounter input={ref} />
+      <LengthCounter besideButton input={ref} limit={CHAT_LENGTH_LIMIT} />
     </div>
   );
 }
