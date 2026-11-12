@@ -210,7 +210,7 @@ function setTickingDownTime(timer: TimerDisplay | undefined) {
 /** Update the tooltip that appears when you hover over a player's name. */
 function setTickingDownTimePlayerNameTooltip(playerIndex: PlayerIndex) {
   // This tooltip is disabled in speedrun mode.
-  if (globals.lobby.settings.speedrunMode || globals.options.speedrun) {
+  if (globals.lobby.settings.speedrunFeatures || globals.options.speedrun) {
     return;
   }
 

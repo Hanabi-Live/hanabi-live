@@ -14,7 +14,7 @@ export function draggablePlayerIndex(state: State): PlayerIndex | undefined {
   }
 
   const { ourPlayerIndex, options } = state.metadata;
-  const { speedrunMode, speedrunPreplay } = globals.lobby.settings;
+  const { speedrunFeatures, preplay } = globals.lobby.settings;
   const ourTurn = isOurSeat(
     state.ongoingGame.turn.currentPlayerIndex,
     state.metadata,
@@ -24,12 +24,12 @@ export function draggablePlayerIndex(state: State): PlayerIndex | undefined {
     // Spectators and replays cannot drag cards.
     state.playing
       // Our cards can only be dragged on our turn, unless pre-playing is enabled.
-      && (ourTurn || speedrunPreplay)
+      && (ourTurn || preplay)
       // A queued move must be canceled before dragging another card.
       && state.premove === undefined
       // Speedrunning uses clicks instead of dragging.
       && !options.speedrun
-      && !speedrunMode
+      && !speedrunFeatures
       ? ourPlayerIndex
       : undefined
   );

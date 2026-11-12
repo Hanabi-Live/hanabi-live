@@ -25,7 +25,7 @@ export function HanabiCardClick(
   // Speedrunning overrides the normal card clicking behavior. (But only use the speedrunning
   // behavior if we are an active player.)
   if (
-    (globals.options.speedrun || globals.lobby.settings.speedrunMode)
+    (globals.options.speedrun || globals.lobby.settings.speedrunFeatures)
     && globals.state.playing
   ) {
     return;

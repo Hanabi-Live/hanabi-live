@@ -544,8 +544,8 @@
         "styleNumbers": false,
         "showTimerInUntimed": false,
         "volume": 70,
-        "speedrunPreplay": false,
-        "speedrunMode": false,
+        "preplay": false,
+        "speedrunFeatures": false,
         "hGroupConventions": false,
         "createTable": {
           "maxPlayers": 5,
@@ -611,8 +611,8 @@
         "styleNumbers": false,
         "showTimerInUntimed": false,
         "volume": 50,
-        "speedrunPreplay": false,
-        "speedrunMode": false,
+        "preplay": false,
+        "speedrunFeatures": false,
         "hGroupConventions": false,
         "createTable": {
           "maxPlayers": 5,

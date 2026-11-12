@@ -137,7 +137,7 @@ export class NameFrame extends Konva.Group {
     this.on("mouseover touchstart", function mouseOver(this: NameFrame) {
       // Do not do anything if the tooltip is currently disabled.
       if (
-        globals.lobby.settings.speedrunMode
+        globals.lobby.settings.speedrunFeatures
         || globals.options.speedrun
         || globals.playerTimes[this.playerIndex] === undefined
         || globals.state.finished

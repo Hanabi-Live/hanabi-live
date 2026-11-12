@@ -965,7 +965,7 @@ export function GameScreen({
       : controlsHypo && actingPlayerIndex !== undefined;
   const canMoveCards =
     hypo === undefined
-      ? state.playing && !inReplay && (ourTurn || settings.speedrunPreplay)
+      ? state.playing && !inReplay && (ourTurn || settings.preplay)
       : ourTurn && !editingCards;
   const canDiscard = canDiscardNow();
   const clueAvailable = actionState.clueTokens >= getClueCost(variant);

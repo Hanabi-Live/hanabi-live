@@ -97,7 +97,7 @@ describe("hypothetical empathy mouse handling", () => {
         replay: { hypothetical: { startingPlayerIndex: 0 } },
       },
       options: { speedrun: false },
-      lobby: { settings: { speedrunMode: false } },
+      lobby: { settings: { speedrunFeatures: false } },
       elements: { playerHands: [hand] },
     });
 
@@ -151,7 +151,7 @@ function pressCard() {
   Object.assign(globals, {
     state: { replay: { hypothetical: { startingPlayerIndex: undefined } } },
     options: { speedrun: false },
-    lobby: { settings: { speedrunMode: false, keldonMode: true } },
+    lobby: { settings: { speedrunFeatures: false, keldonMode: true } },
     elements: { editCardsCheckbox: undefined, playerHands: [], arrows: [] },
     layers: { card: cardLayer },
     store: { dispatch: vi.fn() },

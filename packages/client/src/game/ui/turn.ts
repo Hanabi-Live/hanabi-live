@@ -109,7 +109,7 @@ export function end(clientAction: ClientAction): void {
     return;
   }
 
-  if (globals.lobby.settings.speedrunPreplay) {
+  if (globals.lobby.settings.preplay) {
     globals.store!.dispatch({
       type: "premove",
       premove: clientAction,

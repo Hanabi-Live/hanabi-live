@@ -2,8 +2,8 @@ import { beforeEach, describe, expect, test, vi } from "vitest";
 import type { State } from "../../../types/State.ts";
 
 const settings = vi.hoisted(() => ({
-  speedrunMode: false,
-  speedrunPreplay: false,
+  speedrunFeatures: false,
+  preplay: false,
 }));
 vi.mock("../../UiGlobals.ts", () => ({ globals: { lobby: { settings } } }));
 const { draggablePlayerIndex } = await import("./draggableView.ts");
@@ -41,7 +41,7 @@ function makeState({
 
 describe("draggablePlayerIndex", () => {
   beforeEach(() => {
-    settings.speedrunPreplay = false;
+    settings.preplay = false;
   });
 
   test("allows our cards on our turn", () => {
@@ -52,7 +52,7 @@ describe("draggablePlayerIndex", () => {
     const state = makeState({ currentPlayerIndex: OTHER_PLAYER_INDEX });
     expect(draggablePlayerIndex(state)).toBeUndefined();
 
-    settings.speedrunPreplay = true;
+    settings.preplay = true;
     expect(draggablePlayerIndex(state)).toBe(OUR_PLAYER_INDEX);
   });
 

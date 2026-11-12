@@ -1323,13 +1323,19 @@ export const settingsSchema = z
      * Shows games in the redesigned game screen, which is in testing. Players opt in.
      */
     newUi: z.boolean().prefault(false),
+    /**
+     * Lets a player choose a play or a discard before their turn comes.
+     */
+    preplay: z.boolean().prefault(false),
     realLifeMode: z.boolean().prefault(false),
     reverseHands: z.boolean().prefault(false),
     showTimerInUntimed: z.boolean().prefault(false),
     soundMove: soundMoveSchema.prefault("all"),
     soundTimer: z.boolean().prefault(true),
-    speedrunMode: z.boolean().prefault(false),
-    speedrunPreplay: z.boolean().prefault(false),
+    /**
+     * Uses the speedrun controls in games that are not speedruns.
+     */
+    speedrunFeatures: z.boolean().prefault(false),
     styleNumbers: z.boolean().prefault(false),
     volume: volumeSchema.prefault(50),
   })
@@ -1360,13 +1366,19 @@ const settingsChangeSchema = z
      * Shows games in the redesigned game screen, which is in testing. Players opt in.
      */
     newUi: z.boolean().optional(),
+    /**
+     * Lets a player choose a play or a discard before their turn comes.
+     */
+    preplay: z.boolean().optional(),
     realLifeMode: z.boolean().optional(),
     reverseHands: z.boolean().optional(),
     showTimerInUntimed: z.boolean().optional(),
     soundMove: soundMoveSchema.optional(),
     soundTimer: z.boolean().optional(),
-    speedrunMode: z.boolean().optional(),
-    speedrunPreplay: z.boolean().optional(),
+    /**
+     * Uses the speedrun controls in games that are not speedruns.
+     */
+    speedrunFeatures: z.boolean().optional(),
     styleNumbers: z.boolean().optional(),
     volume: volumeSchema.optional(),
   })

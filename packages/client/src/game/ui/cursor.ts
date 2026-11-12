@@ -20,7 +20,7 @@ export function set(cursorType: CursorType): void {
 
   // Do not show any custom cursors if we are an active player in a speedrun.
   if (
-    (globals.options.speedrun || globals.lobby.settings.speedrunMode)
+    (globals.options.speedrun || globals.lobby.settings.speedrunFeatures)
     && globals.state.playing
   ) {
     return;

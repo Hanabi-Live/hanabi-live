@@ -91,10 +91,10 @@ export function SettingsPage(): React.JSX.Element {
           </CheckboxRow>
           {/* The level only matters to people who use the H-Group features. */}
           {hGroupConventions && <HGroupLevelRow />}
-          <CheckboxRow icon="fa-forward" setting="speedrunPreplay">
+          <CheckboxRow icon="fa-forward" setting="preplay">
             Enable pre-playing cards
           </CheckboxRow>
-          <CheckboxRow icon="fa-running" setting="speedrunMode">
+          <CheckboxRow icon="fa-running" setting="speedrunFeatures">
             Enable speedrun features in non-speedrun games
           </CheckboxRow>
         </ul>

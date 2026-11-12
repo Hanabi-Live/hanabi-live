@@ -182,8 +182,10 @@ settings! {
         style_numbers: bool = false,
         show_timer_in_untimed: bool = false,
         volume: Volume = Volume(DEFAULT_VOLUME),
-        speedrun_preplay: bool = false,
-        speedrun_mode: bool = false,
+        /// Lets a player choose a play or a discard before their turn comes.
+        preplay: bool = false,
+        /// Uses the speedrun controls in games that are not speedruns.
+        speedrun_features: bool = false,
         h_group_conventions: bool = false,
         create_table: CreateTableSettings = CreateTableSettings::default(),
     }

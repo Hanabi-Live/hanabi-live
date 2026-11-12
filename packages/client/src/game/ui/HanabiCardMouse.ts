@@ -265,7 +265,7 @@ function checkHideNoteTooltip(card: HanabiCard) {
 
 function useSpeedrunClickHandlers() {
   return (
-    (globals.options.speedrun || globals.lobby.settings.speedrunMode)
+    (globals.options.speedrun || globals.lobby.settings.speedrunFeatures)
     && globals.state.playing
   );
 }
