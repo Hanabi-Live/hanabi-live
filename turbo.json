@@ -140,7 +140,12 @@
         "RUSTUP_TOOLCHAIN",
         "SQLX_OFFLINE"
       ],
-      "passThroughEnv": ["CARGO_HOME", "RUSTUP_HOME"],
+      "passThroughEnv": [
+        "CARGO_HOME",
+        "CARGO_INCREMENTAL",
+        "CARGO_PROFILE_DEV_DEBUG",
+        "RUSTUP_HOME"
+      ],
       "outputs": []
     },
     "//#test-client": {
@@ -191,7 +196,12 @@
         "RUSTUP_TOOLCHAIN",
         "TZ"
       ],
-      "passThroughEnv": ["CARGO_HOME", "RUSTUP_HOME"],
+      "passThroughEnv": [
+        "CARGO_HOME",
+        "CARGO_INCREMENTAL",
+        "CARGO_PROFILE_DEV_DEBUG",
+        "RUSTUP_HOME"
+      ],
       "outputs": []
     },
     "//#test-bun": {
@@ -217,7 +227,12 @@
         "RUSTUP_TOOLCHAIN",
         "TZ"
       ],
-      "passThroughEnv": ["CARGO_HOME", "RUSTUP_HOME"],
+      "passThroughEnv": [
+        "CARGO_HOME",
+        "CARGO_INCREMENTAL",
+        "CARGO_PROFILE_DEV_DEBUG",
+        "RUSTUP_HOME"
+      ],
       "outputs": []
     },
     "//#test-critical-css": {
@@ -251,7 +266,12 @@
         "RUSTUP_TOOLCHAIN",
         "TZ"
       ],
-      "passThroughEnv": ["CARGO_HOME", "RUSTUP_HOME"],
+      "passThroughEnv": [
+        "CARGO_HOME",
+        "CARGO_INCREMENTAL",
+        "CARGO_PROFILE_DEV_DEBUG",
+        "RUSTUP_HOME"
+      ],
       "outputs": []
     }
   }
