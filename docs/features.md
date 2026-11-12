@@ -78,10 +78,10 @@ before asking any questions in the chat.
   in" when appropriate.
 - You can hold down the left mouse button or tap and hold on someone else's hand
   to see how it appears to them. (This is referred to as "empathy".)
-- Before you give a clue, click the flashlight button beside "Give Clue" to see
-  the target's hand as they would see it after the clue.
 - Hold Space to see every hand this way. Hold Ctrl + Space to see every hand
   this way, but narrowed by your notes.
+- Before you give a clue, click the flashlight button beside "Give Clue" to see
+  the target's hand as they would see it after the clue.
 
 ### Pips
 
@@ -130,8 +130,7 @@ that have not been played yet and have only one copy remaining.)
 - The list of current spectators can be seen by hovering over the "👀" icon in
   the bottom-right-hand corner.
 - Spectators can right-click on a player's name to view the game from their
-  perspective. In ongoing games, this is indicated with a "🕵️" icon. In the new
-  game screen, spectators can also use the "View as" button.
+  perspective. In ongoing games, this is indicated with a "🕵️" icon.
 - Anyone can left-click on a player's name to see only that player's actions in
   the action log.
 
@@ -255,7 +254,6 @@ that have not been played yet and have only one copy remaining.)
   clock after performing each move.
 - If time runs out for any player, the game immediately ends and a score of 0
   will be given.
-- The clock starts only when the player who goes first has loaded the game.
 - Players can pause (or queue a pause) by right-clicking on their timer.
 
 ### Speedruns
