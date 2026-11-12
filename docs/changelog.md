@@ -53,8 +53,6 @@ of the repository.
   on the classic screen.
 - In the new game screen, the deck marks its last card in orange, and says
   "Final round" once it is empty.
-- `/api/v1/tags/[username]` and `/api/v1/tag/[tag]` now return a page of games,
-  like `/api/v1/history`, and their pages load one page at a time.
 
 ## November 11th, 2026
 
