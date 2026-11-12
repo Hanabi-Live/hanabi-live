@@ -611,7 +611,6 @@ export function GameScreen({
 
   const [chosenClueTarget, setClueTarget] = useState<PlayerIndex>();
   const [clue, setClue] = useState<Clue>();
-  const [menuCard, setMenuCard] = useState<CardOrder>();
   const [hoveredCard, setHoveredCard] = useState<CardOrder>();
   const [drag, setDrag] = useState<Drag>();
   // A card that the player dropped stays where it was dropped until its move arrives, and then the
@@ -634,7 +633,6 @@ export function GameScreen({
     undefined,
   );
   const dragRef = useRef<Drag>(undefined);
-  const justDragged = useRef(false);
   const playZoneRef = useRef<HTMLElement>(null);
   const discardZoneRef = useRef<HTMLElement>(null);
   const [handsElement, setHandsElement] = useState<HTMLDivElement | null>(null);
@@ -712,14 +710,12 @@ export function GameScreen({
     }
   }, [chatOverlay]);
 
-  // A new turn clears the clue being chosen and any open card menu. In a hypothetical, its own
-  // turns count.
+  // A new turn clears the clue being chosen. In a hypothetical, its own turns count.
   const turnNum =
     state === undefined ? undefined : getActionState(state).turn.turnNum;
   useEffect(() => {
     setClueTarget(undefined);
     setClue(undefined);
-    setMenuCard(undefined);
   }, [turnNum]);
 
   // Editing cards ends with the hypothetical.
@@ -802,8 +798,6 @@ export function GameScreen({
         return;
       }
 
-      // The click that follows the drag must not open the card's menu.
-      justDragged.current = true;
       const zone = zoneAt(event.clientX, event.clientY);
       const dropped = { ...current, x: event.clientX, y: event.clientY, zone };
       if (zone === "play") {
@@ -1254,7 +1248,6 @@ export function GameScreen({
                 />
                 <Hands
                   canChooseClueTarget={canClue}
-                  canDiscard={canDiscard}
                   canMoveCards={canMoveCards}
                   cardWidth={handCardWidth}
                   clueMarkers={
@@ -1278,20 +1271,9 @@ export function GameScreen({
                       ? shownClue.target
                       : undefined
                   }
-                  menuCard={menuCard}
                   nameColumnWidth={nameColumnWidth}
-                  onCardClick={(order) => {
-                    if (justDragged.current) {
-                      justDragged.current = false;
-                      return;
-                    }
-                    setMenuCard((current) =>
-                      current === order ? undefined : order,
-                    );
-                  }}
                   onCardPointerDown={(event, order) => {
                     if (canMoveCards && event.button === 0) {
-                      justDragged.current = false;
                       pendingDrag.current = {
                         order,
                         x: event.clientX,
@@ -1299,19 +1281,9 @@ export function GameScreen({
                       };
                     }
                   }}
-                  onDiscard={(order) => {
-                    setMenuCard(undefined);
-                    if (canDiscardNow()) {
-                      sendAction({ type: "discard", order });
-                    }
-                  }}
                   onEditCard={editingCards ? editCard : undefined}
                   onHoldEmpathy={setHeldEmpathy}
                   onHoverCard={setHoveredCard}
-                  onPlay={(order) => {
-                    setMenuCard(undefined);
-                    sendAction({ type: "play", order });
-                  }}
                   onToggleEmpathy={
                     touch
                       ? (playerIndex) => {

@@ -58,6 +58,8 @@ of the repository.
   buttons beside the names now show only on touch screens.
 - In the new game screen, on a narrow window that still has room, the names go
   beside the cards instead of above them, so that the hands take less space.
+- In the new game screen, clicking a card no longer shows "Play" and "Discard"
+  buttons. Drag the card to play or discard it.
 
 ## November 11th, 2026
 

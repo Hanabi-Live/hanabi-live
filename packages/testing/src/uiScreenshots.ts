@@ -46,7 +46,7 @@ import {
 import path from "node:path";
 import { setTimeout } from "node:timers/promises";
 import { parseArgs, promisify } from "node:util";
-import type { BrowserContext, Page } from "playwright";
+import type { BrowserContext, Locator, Page } from "playwright";
 import { chromium } from "playwright";
 import { evaluationDatabase } from "./database.ts";
 import {
@@ -429,15 +429,40 @@ async function clickCanvasElement(
 /** Long enough for a play or a misplay to finish its animation. */
 const PLAY_ANIMATION_MILLISECONDS = 3000;
 
+/** How many moves a drag takes, so that the game screen sees the pointer travel. */
+const DRAG_STEPS = 10;
+
+/** Drags a card from a hand onto the play stacks or the discard pile, as a player would. */
+async function dragCard(page: Page, card: Locator, zone: "play" | "discard") {
+  const from = await card.boundingBox();
+  const to = await page
+    .locator(
+      zone === "play"
+        ? "#game-new-ui [data-play-stacks]"
+        : '#game-new-ui [aria-label="Discards"]',
+    )
+    .boundingBox();
+  if (from === null || to === null) {
+    throw new Error(`The card or the ${zone} zone is not on the screen.`);
+  }
+  await page.mouse.move(from.x + from.width / 2, from.y + from.height / 2);
+  await page.mouse.down();
+  await page.mouse.move(to.x + to.width / 2, to.y + to.height / 2, {
+    steps: DRAG_STEPS,
+  });
+  await page.mouse.up();
+}
+
 /** Plays a card from the account's hand, if it has one of the kind. */
 async function playAccountCard(page: Page, order: CardOrder | undefined) {
   if (order === undefined) {
     throw new Error("The account has no card of the kind to play.");
   }
-  await page
-    .locator(`#game-new-ui [data-card-order="${order}"] button`)
-    .click();
-  await page.getByRole("button", { name: "Play", exact: true }).click();
+  await dragCard(
+    page,
+    page.locator(`#game-new-ui [data-card-order="${order}"] button`),
+    "play",
+  );
   await page.waitForTimeout(PLAY_ANIMATION_MILLISECONDS);
 }
 
@@ -1180,10 +1205,7 @@ function getStates({
           `#game-new-ui [aria-label="${USERNAME}'s hand"]`,
         );
         // The oldest card, which the first clue did not touch.
-        await hand.locator("button").last().click();
-        await page
-          .getByRole("button", { name: "Discard", exact: true })
-          .click();
+        await dragCard(page, hand.locator("button").last(), "discard");
         await clueAccount();
         // The card is orange, which is inverted, so the discard is a misplay, which takes a while.
         await page.waitForTimeout(PLAY_ANIMATION_MILLISECONDS);
@@ -1324,11 +1346,12 @@ function getStates({
         // Whoever goes first plays the first card in their hand. When the game ended before anyone
         // moved (without the "new-ui-replay" state), the hypothetical is already over.
         const card = page
-          .locator('#game-new-ui button[aria-label$="Play or discard"]')
+          .locator(
+            '#game-new-ui button[aria-label$="the play stacks or the discard pile"]',
+          )
           .first();
         if (await card.isVisible()) {
-          await card.click();
-          await page.getByRole("button", { name: "Play", exact: true }).click();
+          await dragCard(page, card, "play");
           await page.getByText("Turn 2", { exact: true }).waitFor();
         }
         await page.getByRole("button", { name: "Edit cards" }).click();

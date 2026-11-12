@@ -73,16 +73,13 @@ interface HandsProps {
 
   /** Whether the viewer can play or discard their own cards now. */
   readonly canMoveCards: boolean;
-  readonly canDiscard: boolean;
   readonly draggedCard: CardOrder | undefined;
-  readonly menuCard: CardOrder | undefined;
+
+  /** Starts to drag one of the viewer's cards, to play or discard it. */
   readonly onCardPointerDown: (
     event: React.PointerEvent,
     order: CardOrder,
   ) => void;
-  readonly onCardClick: (order: CardOrder) => void;
-  readonly onPlay: (order: CardOrder) => void;
-  readonly onDiscard: (order: CardOrder) => void;
 
   /** In a hypothetical, while the viewer edits cards, clicking a card changes it into another. */
   readonly onEditCard: ((order: CardOrder) => void) | undefined;
@@ -404,7 +401,6 @@ function OwnCard({
   const { variant, colorblindMode, cardWidth } = props;
   const height = cardWidth * CARD_HEIGHT_PER_WIDTH;
   const dragged = props.draggedCard === card.order;
-  const menuOpen = props.menuCard === card.order;
 
   if (dragged) {
     return (
@@ -456,15 +452,11 @@ function OwnCard({
       data-card-place={place}
     >
       <button
-        aria-expanded={menuOpen}
-        aria-label={`${label}. Play or discard`}
+        aria-label={`${label}. Drag it to the play stacks or the discard pile`}
         // Pressed, the card lifts and its shadow deepens, as if picked up, as on the classic
         // screen. It settles back when released. The shadow is a filter, so that it follows a clued
         // card, which is drawn raised.
         className="tw:block tw:cursor-grab tw:touch-none tw:rounded-[10px] tw:border-0 tw:bg-transparent tw:p-0 tw:transition-[translate,filter] tw:duration-[80ms] tw:ease-out tw:active:-translate-y-1 tw:active:drop-shadow-[0_8px_8px_rgb(0_0_0/45%)]"
-        onClick={() => {
-          props.onCardClick(card.order);
-        }}
         onPointerDown={(event) => {
           props.onCardPointerDown(event, card.order);
         }}
@@ -472,34 +464,6 @@ function OwnCard({
       >
         {face}
       </button>
-      {menuOpen && (
-        <div className="tw:absolute tw:top-full tw:left-1/2 tw:z-10 tw:mt-2 tw:flex tw:-translate-x-1/2 tw:gap-1.5 tw:rounded-[10px] tw:bg-game-text tw:p-1.5 tw:shadow-lg">
-          <button
-            className="tw:cursor-pointer tw:rounded-lg tw:border-0 tw:bg-card-ink tw:px-3 tw:py-1.5 tw:font-bold tw:text-game-text"
-            onClick={() => {
-              props.onPlay(card.order);
-            }}
-            type="button"
-          >
-            Play
-          </button>
-          <button
-            className="tw:cursor-pointer tw:rounded-lg tw:border-0 tw:bg-clue tw:px-3 tw:py-1.5 tw:font-bold tw:text-card-ink tw:disabled:cursor-default tw:disabled:opacity-50"
-            disabled={!props.canDiscard}
-            onClick={() => {
-              props.onDiscard(card.order);
-            }}
-            ref={tooltipRef(
-              props.canDiscard
-                ? undefined
-                : "The team cannot discard at the maximum number of clues.",
-            )}
-            type="button"
-          >
-            Discard
-          </button>
-        </div>
-      )}
     </div>
   );
 }
