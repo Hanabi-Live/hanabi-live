@@ -11,10 +11,11 @@ import {
   gameEventSchema,
   gameOptionsSchema,
   hypotheticalEventSchema,
+  millisecondsSchema,
   notesSchema,
+  playerClockSchema,
   playerIndexSchema,
   playerNotesSchema,
-  safeIntegerSchema,
   timeControlSchema,
   turnSchema,
 } from "@hanabi-live/game";
@@ -279,16 +280,15 @@ export const clockSchema = z
      */
     currentPlayerIndex: playerIndexSchema.optional(),
     /**
-     * Each player's clock in milliseconds, in seat order: the time left in a timed game, or the
-     * time taken in an untimed one.
+     * Each player's clock, in seat order.
      */
-    playerTimesMs: z.array(safeIntegerSchema).min(2).max(6).readonly(),
+    playerTimesMs: z.array(playerClockSchema).min(2).max(6).readonly(),
     tableId: tableIdSchema,
     /**
-     * How long the current turn has taken, in milliseconds. 0 when no turn is running, such as
-     * while the game is paused.
+     * How long the current turn has taken. 0 when no turn is running, such as while the game is
+     * paused.
      */
-    turnElapsedMs: z.number().int().min(0).max(9_007_199_254_740_991),
+    turnElapsedMs: millisecondsSchema,
   })
   .readonly();
 
@@ -394,7 +394,7 @@ export const gameHistoryEntrySchema = z
      * How many games used this seed.
      */
     numGamesOnSeed: countSchema,
-    numTurns: z.number().int().min(0).max(512),
+    numTurns: turnSchema,
     options: gameOptionsSchema,
     /**
      * In alphabetical order, ignoring case.
@@ -561,15 +561,14 @@ const clocksSchema = z
      */
     currentPlayerIndex: playerIndexSchema.optional(),
     /**
-     * Each player's clock in milliseconds, in seat order: the time left in a timed game, or the
-     * time taken in an untimed one.
+     * Each player's clock, in seat order.
      */
-    playerTimesMs: z.array(safeIntegerSchema).min(2).max(6).readonly(),
+    playerTimesMs: z.array(playerClockSchema).min(2).max(6).readonly(),
     /**
-     * How long the current turn has taken, in milliseconds. 0 when no turn is running, such as
-     * while the game is paused.
+     * How long the current turn has taken. 0 when no turn is running, such as while the game is
+     * paused.
      */
-    turnElapsedMs: z.number().int().min(0).max(9_007_199_254_740_991),
+    turnElapsedMs: millisecondsSchema,
   })
   .readonly();
 
@@ -601,16 +600,21 @@ export const spectatorSchema = z
   .readonly();
 
 /**
+ * A number of votes: at most one for each player.
+ */
+const voteCountSchema = z.number().int().min(0).max(6);
+
+/**
  * The votes to end the game, as one player sees them, in the `voteChanged` message and in a game's
  * state.
  */
 const votesSchema = z
   .strictObject({
-    numVotes: z.number().int().min(0).max(6),
+    numVotes: voteCountSchema,
     /**
      * How many votes end the game.
      */
-    numVotesNeeded: z.number().int().min(1).max(6),
+    numVotesNeeded: voteCountSchema,
     /**
      * Whether the recipient voted.
      */
@@ -664,9 +668,10 @@ export const gameStateSchema = z
 export const idleWarningSchema = z
   .strictObject({
     /**
-     * How long until the game ends, unless someone takes a turn or keeps it going.
+     * How long until the game ends, unless someone takes a turn or keeps it going. At most
+     * `IDLE_TIMEOUT_MS`.
      */
-    remainingMs: z.number().int().min(0).max(1_800_000),
+    remainingMs: millisecondsSchema,
     tableId: tableIdSchema,
   })
   .readonly();
@@ -1322,6 +1327,11 @@ const hGroupLevelSchema = z.number().int().min(1).max(25);
 export const soundMoveSchema = z.enum(["all", "onlyOwn", "none"]);
 
 /**
+ * The volume of the sounds, as a percentage.
+ */
+const volumeSchema = z.number().int().min(0).max(100);
+
+/**
  * A user's preferences. Missing fields take their default, so stored settings only need
  * the values a user changed.
  */
@@ -1363,7 +1373,7 @@ export const settingsSchema = z
     speedrunMode: z.boolean().default(false),
     speedrunPreplay: z.boolean().default(false),
     styleNumbers: z.boolean().default(false),
-    volume: z.number().int().min(0).max(100).default(50),
+    volume: volumeSchema.default(50),
   })
   .readonly();
 
@@ -1400,7 +1410,7 @@ const settingsChangeSchema = z
     speedrunMode: z.boolean().optional(),
     speedrunPreplay: z.boolean().optional(),
     styleNumbers: z.boolean().optional(),
-    volume: z.number().int().min(0).max(100).optional(),
+    volume: volumeSchema.optional(),
   })
   .readonly();
 export const settingsRequestSchema = z
@@ -1431,6 +1441,11 @@ export const suggestionSchema = z
   .readonly();
 
 /**
+ * A table's progress, as a percentage of the maximum score, or of a replay's turns.
+ */
+const progressSchema = z.number().int().min(0).max(100);
+
+/**
  * What a table is doing: waiting for its game to start, playing it, or showing a finished game to
  * its owner (replay) or to everyone (shared replay).
  */
@@ -1454,10 +1469,7 @@ export const tableSchema = z
     passwordProtected: z.boolean(),
     phase: tablePhaseSchema,
     playerNames: z.array(z.string().min(1)).max(6).readonly(),
-    /**
-     * The percentage of the maximum score reached, or of a replay watched.
-     */
-    progress: z.number().int().min(0).max(100),
+    progress: progressSchema,
     settings: tableSettingsSchema,
     spectators: z.array(spectatorSchema).readonly(),
     tableId: tableIdSchema,
@@ -1613,11 +1625,11 @@ export const variantNamesSchema = z.record(z.string(), z.string()).readonly();
  */
 export const voteChangedSchema = z
   .strictObject({
-    numVotes: z.number().int().min(0).max(6),
+    numVotes: voteCountSchema,
     /**
      * How many votes end the game.
      */
-    numVotesNeeded: z.number().int().min(1).max(6),
+    numVotesNeeded: voteCountSchema,
     tableId: tableIdSchema,
     /**
      * Whether the recipient voted.

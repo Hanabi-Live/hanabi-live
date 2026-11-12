@@ -60,7 +60,7 @@ impl TableActor {
         let mut next = self.candidate();
         let s = game_mut(&mut next)?;
         if let Some(time) = s.game.options.time_control {
-            s.clocks[seat] += time.per_turn_seconds * CLOCK_UNITS_PER_SECOND;
+            s.clocks[seat] += time.per_turn_seconds.get() * CLOCK_UNITS_PER_SECOND;
         }
         let timing = CompletionTiming {
             player_times: s.clocks.clone(),
@@ -653,7 +653,9 @@ fn pause_state(s: &Snapshot, session: &Session) -> hanabi_protocol::PauseState {
 fn seat_votes(s: &Snapshot, seat: usize) -> anyhow::Result<hanabi_protocol::Votes> {
     Ok(hanabi_protocol::Votes {
         voted: s.votes[seat],
-        num_votes: u8::try_from(s.votes.iter().filter(|v| **v).count())?,
-        num_votes_needed: u8::try_from(votes_needed(s.players.len()))?,
+        num_votes: hanabi_protocol::VoteCount::new(s.votes.iter().filter(|v| **v).count())
+            .context("Too many votes")?,
+        num_votes_needed: hanabi_protocol::VoteCount::new(votes_needed(s.players.len()))
+            .context("Too many votes needed")?,
     })
 }

@@ -143,7 +143,7 @@ fn variant(entry: CatalogVariant, suits: &HashMap<String, Suit>) -> Variant {
         }
         colors
     });
-    let stack_size = entry.stack_size.map_or(MAX_RANK, i32::from);
+    let stack_size = entry.stack_size.map_or(MAX_RANK, |size| size.get().into());
     let mut ranks: Vec<i32> = (MIN_RANK..=stack_size).collect();
     if entry.up_or_down {
         ranks.push(START_CARD_RANK);

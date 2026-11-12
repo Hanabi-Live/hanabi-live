@@ -175,11 +175,8 @@ pub struct GameRecord {
 
 impl GameRecord {
     /// The number of turns, which is at most `MAX_GAME_ACTIONS`.
-    pub fn turn_count(&self) -> Result<u16> {
-        u16::try_from(self.num_turns)
-            .ok()
-            .filter(|count| usize::from(*count) <= hanabi_protocol::MAX_GAME_ACTIONS)
-            .context("Invalid stored turn count")
+    pub fn turn_count(&self) -> Result<hanabi_protocol::Turn> {
+        hanabi_protocol::Turn::new(self.num_turns).context("Invalid stored turn count")
     }
 }
 
@@ -357,7 +354,7 @@ pub(crate) async fn insert(
     let o = &s.game.options;
     let variant = hanabi_engine::get_variant(&o.variant_name)?;
     let tx = transaction;
-    sqlx::query!("INSERT INTO games(id,name,num_players,variant_id,timed,time_base,time_per_turn,speedrun,deck_plays,empty_clues,one_extra_card,one_less_card,all_or_nothing,detrimental_characters,seed,score,num_turns,end_condition,datetime_started,datetime_finished) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20)", id.0, &s.name, i16::try_from(o.num_players)?, i16::try_from(variant.id)?, o.time_control.is_some(), o.time_control.map(|t| i32::try_from(t.base_seconds)).transpose()?, o.time_control.map(|t| i32::try_from(t.per_turn_seconds)).transpose()?, o.speedrun, o.deck_plays, o.empty_clues, o.one_extra_card, o.one_less_card, o.all_or_nothing, o.detrimental_characters, seed, i16::try_from(s.game.score)?, i16::try_from(s.game.turn)?, end_condition_to_db(end.condition), s.started, finished).execute(&mut **tx).await?;
+    sqlx::query!("INSERT INTO games(id,name,num_players,variant_id,timed,time_base,time_per_turn,speedrun,deck_plays,empty_clues,one_extra_card,one_less_card,all_or_nothing,detrimental_characters,seed,score,num_turns,end_condition,datetime_started,datetime_finished) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20)", id.0, &s.name, i16::try_from(o.num_players)?, i16::try_from(variant.id)?, o.time_control.is_some(), o.time_control.map(|t| i32::try_from(t.base_seconds.get())).transpose()?, o.time_control.map(|t| i32::try_from(t.per_turn_seconds.get())).transpose()?, o.speedrun, o.deck_plays, o.empty_clues, o.one_extra_card, o.one_less_card, o.all_or_nothing, o.detrimental_characters, seed, i16::try_from(s.game.score)?, i16::try_from(s.game.turn)?, end_condition_to_db(end.condition), s.started, finished).execute(&mut **tx).await?;
     let mut users = vec![];
     let mut seats = vec![];
     let mut character_ids = vec![];
@@ -474,8 +471,8 @@ impl GameRecord {
         self.time_base
             .zip(self.time_per_turn)
             .map(|(base, per_turn)| hanabi_protocol::TimeControl {
-                base_seconds: i64::from(base),
-                per_turn_seconds: i64::from(per_turn),
+                base_seconds: hanabi_protocol::BaseSeconds(i64::from(base)),
+                per_turn_seconds: hanabi_protocol::PerTurnSeconds(i64::from(per_turn)),
             })
     }
 }

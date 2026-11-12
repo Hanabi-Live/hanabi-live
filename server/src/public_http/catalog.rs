@@ -42,7 +42,8 @@ pub(super) fn metadata() -> PublicVariants {
                             }
                         })
                         .collect(),
-                    stack_size: u8::try_from(v.stack_size).expect("catalog stack size"),
+                    stack_size: hanabi_protocol::StackSize::new(v.stack_size)
+                        .expect("catalog stack size"),
                     max_score: hanabi_protocol::Score(v.max_score),
                 };
                 (v.id.to_string(), variant)

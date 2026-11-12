@@ -203,8 +203,7 @@ settings! {
         reverse_hands: bool = false,
         style_numbers: bool = false,
         show_timer_in_untimed: bool = false,
-        #[schemars(range(min = 0, max = MAX_VOLUME))]
-        volume: u8 = DEFAULT_VOLUME,
+        volume: Volume = Volume(DEFAULT_VOLUME),
         speedrun_preplay: bool = false,
         speedrun_mode: bool = false,
         h_group_conventions: bool = false,
@@ -235,8 +234,8 @@ impl Default for CreateTableSettings {
             max_players: NumPlayers::default(),
             options: GameOptions::default(),
             time_control: TimeControl {
-                base_seconds: DEFAULT_TIME_BASE_SECONDS,
-                per_turn_seconds: DEFAULT_TIME_PER_TURN_SECONDS,
+                base_seconds: BaseSeconds(DEFAULT_TIME_BASE_SECONDS),
+                per_turn_seconds: PerTurnSeconds(DEFAULT_TIME_PER_TURN_SECONDS),
             },
         }
     }
@@ -310,12 +309,8 @@ impl Default for GameOptions {
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct TimeControl {
-    /// The starting clock of each player.
-    #[schemars(range(min = 0, max = MAX_TIME_BASE_SECONDS))]
-    pub base_seconds: i64,
-    /// The time added to a player's clock after each of their turns.
-    #[schemars(range(min = 0, max = MAX_TIME_PER_TURN_SECONDS))]
-    pub per_turn_seconds: i64,
+    pub base_seconds: BaseSeconds,
+    pub per_turn_seconds: PerTurnSeconds,
 }
 
 /// A table's name, player limit, options, and deal, as its owner sets them and as tables report
@@ -415,9 +410,7 @@ pub struct Table {
     pub password_protected: bool,
     #[schemars(length(max = MAX_PLAYERS))]
     pub player_names: Vec<Username>,
-    /// The percentage of the maximum score reached, or of a replay watched.
-    #[schemars(range(min = 0, max = MAX_PROGRESS))]
-    pub progress: u8,
+    pub progress: Progress,
     pub phase: TablePhase,
     pub spectators: Vec<Spectator>,
 }
@@ -447,8 +440,7 @@ pub struct GameHistoryEntry {
     pub options: GameOptions,
     pub seed: String,
     pub score: Score,
-    #[schemars(range(min = 0, max = MAX_GAME_ACTIONS))]
-    pub num_turns: u16,
+    pub num_turns: Turn,
     pub end_condition: EndCondition,
     pub started_at: Timestamp,
     pub finished_at: Timestamp,

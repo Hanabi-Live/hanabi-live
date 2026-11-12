@@ -154,8 +154,7 @@ pub struct PublicVariants(pub std::collections::BTreeMap<String, PublicVariant>)
 pub struct PublicVariant {
     pub name: String,
     pub suits: Vec<String>,
-    #[schemars(range(min = 1, max = MAX_RANK))]
-    pub stack_size: u8,
+    pub stack_size: StackSize,
     pub max_score: Score,
 }
 

@@ -22,17 +22,15 @@ pub struct Clock {
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct Clocks {
-    /// Each player's clock in milliseconds, in seat order: the time left in a timed game, or the
-    /// time taken in an untimed one.
-    #[schemars(with = "PlayerTimes")]
-    pub player_times_ms: Vec<i64>,
+    /// Each player's clock, in seat order.
+    #[schemars(length(min = MIN_PLAYERS, max = MAX_PLAYERS))]
+    pub player_times_ms: Vec<PlayerClock>,
     /// Absent when the game has no active player.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub current_player_index: Option<PlayerIndex>,
-    /// How long the current turn has taken, in milliseconds. 0 when no turn is running, such as
-    /// while the game is paused.
-    #[schemars(range(min = 0, max = MAX_SAFE_INTEGER))]
-    pub turn_elapsed_ms: i64,
+    /// How long the current turn has taken. 0 when no turn is running, such as while the game is
+    /// paused.
+    pub turn_elapsed_ms: Milliseconds,
 }
 
 /// Whether each player has loaded the game, in seat order.
@@ -49,9 +47,9 @@ pub struct Connected {
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct IdleWarning {
     pub table_id: TableId,
-    /// How long until the game ends, unless someone takes a turn or keeps it going.
-    #[schemars(range(min = 0, max = IDLE_TIMEOUT_MS))]
-    pub remaining_ms: i64,
+    /// How long until the game ends, unless someone takes a turn or keeps it going. At most
+    /// `IDLE_TIMEOUT_MS`.
+    pub remaining_ms: Milliseconds,
 }
 
 /// Whether the game is paused, as one player sees it.
@@ -91,11 +89,9 @@ pub struct VoteChanged {
 pub struct Votes {
     /// Whether the recipient voted.
     pub voted: bool,
-    #[schemars(range(min = 0, max = MAX_PLAYERS))]
-    pub num_votes: u8,
+    pub num_votes: VoteCount,
     /// How many votes end the game.
-    #[schemars(range(min = 1, max = MAX_PLAYERS))]
-    pub num_votes_needed: u8,
+    pub num_votes_needed: VoteCount,
 }
 
 /// A card's suit and rank.
@@ -247,12 +243,10 @@ pub struct GameOverEvent {
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct PlayerTimesEvent {
-    /// Each player's clock in milliseconds, in seat order: the time left in a timed game, or the
-    /// time taken in an untimed one.
-    #[schemars(with = "PlayerTimes")]
-    pub player_times_ms: Vec<i64>,
-    #[schemars(range(min = 0, max = MAX_SAFE_INTEGER))]
-    pub duration_ms: i64,
+    /// Each player's clock, in seat order.
+    #[schemars(length(min = MIN_PLAYERS, max = MAX_PLAYERS))]
+    pub player_times_ms: Vec<PlayerClock>,
+    pub duration_ms: Milliseconds,
 }
 
 /// One game event as a particular recipient sees it.

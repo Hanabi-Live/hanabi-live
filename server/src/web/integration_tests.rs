@@ -956,7 +956,7 @@ async fn a_lobby_command_from_a_replaced_connection_writes_nothing_postgres() {
     let task = fixture.app.users.task(&fixture.app, UserId(id));
     task.send(user::UserCommand::Current(2)).await.unwrap();
     let (older, _frames) = Session::new(UserId(id), "Replaced".into(), 1);
-    let volume = before / 2;
+    let volume = hanabi_protocol::Volume(before.get() / 2);
     let (reply, replied) = oneshot::channel();
     task.send(user::UserCommand::Lobby {
         session: older,

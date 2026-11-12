@@ -228,6 +228,49 @@ impl From<ClueRank> for i32 {
 }
 
 wire_integer! {
+    /// A number of votes: at most one for each player.
+    VoteCount(pub u8), 0, MAX_PLAYERS
+}
+
+wire_integer! {
+    /// A length of time in milliseconds, such as how long a turn has taken.
+    #[derive(Default)]
+    Milliseconds(pub i64), 0, MAX_SAFE_INTEGER
+}
+
+wire_integer! {
+    /// A player's clock in milliseconds: the time left in a timed game, which goes below 0 when it
+    /// runs out, or the time taken in an untimed one.
+    PlayerClock(pub i64), -MAX_SAFE_INTEGER, MAX_SAFE_INTEGER
+}
+
+wire_integer! {
+    /// The starting clock of each player of a timed game, in seconds.
+    BaseSeconds(pub i64), 0, MAX_TIME_BASE_SECONDS
+}
+
+wire_integer! {
+    /// The time that a timed game adds to a player's clock after each of their turns, in seconds.
+    PerTurnSeconds(pub i64), 0, MAX_TIME_PER_TURN_SECONDS
+}
+
+wire_integer! {
+    /// A table's progress, as a percentage of the maximum score, or of a replay's turns.
+    #[derive(Default)]
+    Progress(pub u8), 0, MAX_PROGRESS
+}
+
+wire_integer! {
+    /// The volume of the sounds, as a percentage.
+    Volume(pub u8), 0, MAX_VOLUME
+}
+
+wire_integer! {
+    /// The number of cards in each stack of a variant.
+    StackSize(pub u8), MIN_RANK, MAX_RANK, values = ranks()
+}
+
+wire_integer! {
     /// A number of players.
     NumPlayers(pub(crate) u8), MIN_PLAYERS, MAX_PLAYERS, values = player_counts()
 }

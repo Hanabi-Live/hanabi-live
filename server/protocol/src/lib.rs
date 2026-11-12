@@ -195,11 +195,6 @@ fn catalog_ranks() -> Vec<i32> {
     ranks().into_iter().chain([START_CARD_RANK]).collect()
 }
 
-/// Every stack size that a variant can set, all smaller than the default of `MAX_RANK`.
-fn explicit_stack_sizes() -> Vec<i32> {
-    (1..MAX_RANK).collect()
-}
-
 /// Every number of players that a game can have.
 fn player_counts() -> Vec<i64> {
     (MIN_PLAYERS..=MAX_PLAYERS)
@@ -283,26 +278,6 @@ impl JsonSchema for Notes {
 
     fn json_schema(generator: &mut schemars::SchemaGenerator) -> schemars::Schema {
         <Vec<String>>::json_schema(generator)
-    }
-}
-
-/// The schema of a list with each player's clock, in seat order.
-pub struct PlayerTimes;
-
-impl JsonSchema for PlayerTimes {
-    fn inline_schema() -> bool {
-        true
-    }
-
-    fn schema_name() -> std::borrow::Cow<'static, str> {
-        "PlayerTimes".into()
-    }
-
-    fn json_schema(generator: &mut schemars::SchemaGenerator) -> schemars::Schema {
-        let mut schema = <Vec<SafeInteger>>::json_schema(generator);
-        schema.insert("minItems".into(), MIN_PLAYERS.into());
-        schema.insert("maxItems".into(), MAX_PLAYERS.into());
-        schema
     }
 }
 

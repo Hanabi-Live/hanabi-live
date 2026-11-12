@@ -5,6 +5,14 @@ use hanabi_protocol::{
 };
 
 /// A seat that the engine names. The engine only names seats that the game has.
+/// A player's clock, which model validation keeps within the integers that clients represent.
+pub(super) fn player_clock(ms: i64) -> hanabi_protocol::PlayerClock {
+    hanabi_protocol::PlayerClock(ms.clamp(
+        -hanabi_protocol::MAX_SAFE_INTEGER,
+        hanabi_protocol::MAX_SAFE_INTEGER,
+    ))
+}
+
 fn seat(index: usize) -> PlayerIndex {
     PlayerIndex::new(index).expect("engine seats are below MAX_PLAYERS")
 }
@@ -130,8 +138,8 @@ pub(super) fn wire_event(event: &hanabi_engine::EngineEvent) -> GameEvent {
             ref player_times,
             duration,
         } => GameEvent::PlayerTimes(PlayerTimesEvent {
-            player_times_ms: player_times.clone(),
-            duration_ms: duration,
+            player_times_ms: player_times.iter().copied().map(player_clock).collect(),
+            duration_ms: hanabi_protocol::Milliseconds(duration.max(0)),
         }),
     }
 }

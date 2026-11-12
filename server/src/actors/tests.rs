@@ -196,8 +196,8 @@ fn option_summaries_include_only_changes_and_escape_values() {
     let mut table = pregame(TableId(1));
     let time = |base_seconds, per_turn_seconds| {
         Some(hanabi_protocol::TimeControl {
-            base_seconds,
-            per_turn_seconds,
+            base_seconds: hanabi_protocol::BaseSeconds(base_seconds),
+            per_turn_seconds: hanabi_protocol::PerTurnSeconds(per_turn_seconds),
         })
     };
     table.options.time_control = time(120, 20);

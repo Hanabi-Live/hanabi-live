@@ -297,7 +297,7 @@ impl TableActor {
             clocks: vec![
                 options
                     .time_control
-                    .map_or(0, |time| time.base_seconds * CLOCK_UNITS_PER_SECOND);
+                    .map_or(0, |time| time.base_seconds.get() * CLOCK_UNITS_PER_SECOND);
                 n
             ],
             ..Snapshot::new(

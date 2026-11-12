@@ -147,8 +147,7 @@ catalog_entry! {
         pub clue_ranks: Option<Vec<ClueRank>>,
         /// The number of cards in each stack. When omitted, 5.
         #[serde(skip_serializing_if = "Option::is_none")]
-        #[schemars(extend("enum" = explicit_stack_sizes()))]
-        pub stack_size: Option<u8>,
+        pub stack_size: Option<StackSize>,
         // The following properties are listed in order of how they appear in "variants.md".
         #[serde(skip_serializing_if = "Option::is_none")]
         pub special_rank: Option<CardRank>,

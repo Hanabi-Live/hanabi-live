@@ -883,8 +883,8 @@ mod tests {
         let settings = hanabi_protocol::TableSettings {
             options: hanabi_protocol::GameOptions {
                 time_control: Some(hanabi_protocol::TimeControl {
-                    base_seconds: 120,
-                    per_turn_seconds: 20,
+                    base_seconds: hanabi_protocol::BaseSeconds(120),
+                    per_turn_seconds: hanabi_protocol::PerTurnSeconds(20),
                 }),
                 ..hanabi_protocol::GameOptions::default()
             },
@@ -1259,8 +1259,8 @@ mod tests {
             let mut table = pregame(TableId(1));
             if timed {
                 table.options.time_control = Some(hanabi_protocol::TimeControl {
-                    base_seconds: 120,
-                    per_turn_seconds: 20,
+                    base_seconds: hanabi_protocol::BaseSeconds(120),
+                    per_turn_seconds: hanabi_protocol::PerTurnSeconds(20),
                 });
             }
             terminal(&mut table)?;

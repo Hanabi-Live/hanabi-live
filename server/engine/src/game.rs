@@ -34,8 +34,8 @@ pub(crate) fn validate_options(options: &Options) -> Result<()> {
     );
     ensure!(
         options.time_control.is_none_or(|time| {
-            (-MAX_SAFE_INTEGER..=MAX_SAFE_INTEGER).contains(&time.base_seconds)
-                && (-MAX_SAFE_INTEGER..=MAX_SAFE_INTEGER).contains(&time.per_turn_seconds)
+            (-MAX_SAFE_INTEGER..=MAX_SAFE_INTEGER).contains(&time.base_seconds.get())
+                && (-MAX_SAFE_INTEGER..=MAX_SAFE_INTEGER).contains(&time.per_turn_seconds.get())
         }),
         "Invalid game timing."
     );

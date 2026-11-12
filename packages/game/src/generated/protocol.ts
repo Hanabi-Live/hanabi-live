@@ -132,6 +132,11 @@ export const cardRankSchema = z.literal([1, 2, 3, 4, 5, 7]);
 export const clueRankSchema = z.literal([1, 2, 3, 4, 5]);
 
 /**
+ * The number of cards in each stack of a variant.
+ */
+export const stackSizeSchema = z.literal([1, 2, 3, 4, 5]);
+
+/**
  * A variant's number in `variants.json`. "No Variant" is 0.
  */
 export const variantIdSchema = z.number().int().min(0).max(4_294_967_295);
@@ -180,7 +185,7 @@ export const catalogVariantSchema = z
     /**
      * The number of cards in each stack. When omitted, 5.
      */
-    stackSize: z.literal([1, 2, 3, 4]).optional(),
+    stackSize: stackSizeSchema.optional(),
     sudoku: z.literal(true).optional(),
     /**
      * Suit names, which may end in " Reversed".
@@ -267,18 +272,28 @@ export const endConditionSchema = z.enum([
 ]);
 
 /**
- * A seat in a game. The game library's `PlayerIndex` type.
+ * A length of time in milliseconds, such as how long a turn has taken.
  */
-export const playerIndexSchema = z.literal([0, 1, 2, 3, 4, 5]);
+export const millisecondsSchema = z
+  .number()
+  .int()
+  .min(0)
+  .max(9_007_199_254_740_991);
 
 /**
- * An integer that JavaScript represents exactly. Lists of integers use it to bound each item.
+ * A player's clock in milliseconds: the time left in a timed game, which goes below 0 when it
+ * runs out, or the time taken in an untimed one.
  */
-export const safeIntegerSchema = z
+export const playerClockSchema = z
   .number()
   .int()
   .min(-9_007_199_254_740_991)
   .max(9_007_199_254_740_991);
+
+/**
+ * A seat in a game. The game library's `PlayerIndex` type.
+ */
+export const playerIndexSchema = z.literal([0, 1, 2, 3, 4, 5]);
 
 /**
  * A turn of a game, or a position in its replay, counting from 0. A game records at most
@@ -397,16 +412,25 @@ export const gameEventSchema = z.discriminatedUnion("type", [
     .readonly(),
   z
     .strictObject({
-      durationMs: z.number().int().min(0).max(9_007_199_254_740_991),
+      durationMs: millisecondsSchema,
       /**
-       * Each player's clock in milliseconds, in seat order: the time left in a timed game, or the
-       * time taken in an untimed one.
+       * Each player's clock, in seat order.
        */
-      playerTimesMs: z.array(safeIntegerSchema).min(2).max(6).readonly(),
+      playerTimesMs: z.array(playerClockSchema).min(2).max(6).readonly(),
       type: z.literal("playerTimes"),
     })
     .readonly(),
 ]);
+
+/**
+ * The starting clock of each player of a timed game, in seconds.
+ */
+export const baseSecondsSchema = z.number().int().min(0).max(604_800);
+
+/**
+ * The time that a timed game adds to a player's clock after each of their turns, in seconds.
+ */
+export const perTurnSecondsSchema = z.number().int().min(0).max(86_400);
 
 /**
  * The clock of a timed game. New tables need at least 1 second for each value, but some old games
@@ -414,14 +438,8 @@ export const gameEventSchema = z.discriminatedUnion("type", [
  */
 export const timeControlSchema = z
   .strictObject({
-    /**
-     * The starting clock of each player.
-     */
-    baseSeconds: z.number().int().min(0).max(604_800),
-    /**
-     * The time added to a player's clock after each of their turns.
-     */
-    perTurnSeconds: z.number().int().min(0).max(86_400),
+    baseSeconds: baseSecondsSchema,
+    perTurnSeconds: perTurnSecondsSchema,
   })
   .readonly();
 

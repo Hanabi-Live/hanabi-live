@@ -33,8 +33,7 @@ pub(super) fn normalize_options(options: &mut Options) -> CommandResult<()> {
     }
     ensure_or_reject!(
         options.time_control.is_none_or(|time| {
-            (1..=hanabi_protocol::MAX_TIME_BASE_SECONDS).contains(&time.base_seconds)
-                && (1..=hanabi_protocol::MAX_TIME_PER_TURN_SECONDS).contains(&time.per_turn_seconds)
+            time.base_seconds.get() >= 1 && time.per_turn_seconds.get() >= 1
         }),
         "Invalid timed options"
     );

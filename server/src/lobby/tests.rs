@@ -809,7 +809,7 @@ async fn settings_outside_the_wire_contract_are_not_sent_or_saved_postgres() {
         settings.create_table,
         hanabi_protocol::CreateTableSettings::default()
     );
-    assert_eq!(settings.volume, 70);
+    assert_eq!(settings.volume, hanabi_protocol::Volume(70));
     // Older servers named the variant of the table that the form starts from.
     for (name, variant) in [("Rainbow (6 Suits)", Some(3)), ("Removed Variant", None)] {
         sqlx::query!(

@@ -612,7 +612,7 @@ impl Snapshot {
             options: wire_options(&self.game.options),
             seed: self.seed.clone()?,
             score: hanabi_protocol::Score(self.game.score),
-            num_turns: u16::try_from(self.game.turn).ok()?,
+            num_turns: hanabi_protocol::Turn::new(self.game.turn)?,
             end_condition: self.game.end?.condition,
             started_at: time(self.started),
             finished_at: time(self.finished.unwrap_or(self.started)),

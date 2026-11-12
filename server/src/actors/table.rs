@@ -191,7 +191,8 @@ impl TableActor {
                     .iter()
                     .map(|p| p.name.as_str().into())
                     .collect(),
-                progress: u8::try_from(progress.clamp(0, max_progress)).unwrap_or(0),
+                progress: hanabi_protocol::Progress::new(progress.clamp(0, max_progress))
+                    .unwrap_or_default(),
                 phase: match self.table.phase {
                     Phase::Pregame { .. } => hanabi_protocol::TablePhase::Pregame,
                     Phase::Replay { .. } if self.table.visible => {
@@ -954,15 +955,15 @@ impl TableActor {
         Ok(hanabi_protocol::Clock {
             table_id: self.table.id,
             clocks: hanabi_protocol::Clocks {
-                player_times_ms: times,
+                player_times_ms: times.into_iter().map(super::wire::player_clock).collect(),
                 current_player_index: live
                     .then(|| PlayerIndex::new(s.game.active_player_index))
                     .flatten(),
-                turn_elapsed_ms: if !live || s.paused() {
+                turn_elapsed_ms: hanabi_protocol::Milliseconds(if !live || s.paused() {
                     0
                 } else {
-                    now.turn_elapsed
-                },
+                    now.turn_elapsed.max(0)
+                }),
             },
         })
     }
@@ -1124,7 +1125,7 @@ impl TableActor {
                 .idle_warned()
                 .is_some_and(|warned| !std::mem::replace(warned, true))
         {
-            let remaining_ms = timers.idle_remaining;
+            let remaining_ms = hanabi_protocol::Milliseconds(timers.idle_remaining.max(0));
             let mut e = self.effects();
             self.add_all(
                 &mut e,
