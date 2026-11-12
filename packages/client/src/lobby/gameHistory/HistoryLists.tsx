@@ -280,6 +280,7 @@ function HistoryOptions({ options }: { readonly options: GameOptions }) {
     tooltip === ""
       ? undefined
       : `<ul class="tw:m-0 tw:list-none tw:p-0">${tooltip}</ul>`,
+    { instant: true },
   );
 
   if (items.length === 0) {

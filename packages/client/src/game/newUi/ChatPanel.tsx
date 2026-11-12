@@ -172,7 +172,7 @@ export function ChatPanel({
           <div
             aria-label={spectatorsLabel}
             className="tw:flex tw:flex-col tw:items-center tw:gap-0.5 tw:px-2 tw:py-1 tw:text-[13px] tw:text-game-muted"
-            ref={tooltipRefHtml(spectatorsTooltip)}
+            ref={tooltipRefHtml(spectatorsTooltip, { instant: true })}
             role="img"
           >
             <i aria-hidden="true" className="fas fa-eye" />

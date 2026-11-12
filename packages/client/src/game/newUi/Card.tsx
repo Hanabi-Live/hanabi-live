@@ -170,6 +170,7 @@ function StatusBadge({
       }`}
       ref={tooltipRef(
         critical ? STATUS_TOOLTIP.critical : STATUS_TOOLTIP.trash,
+        { instant: true },
       )}
       role="img"
       style={{

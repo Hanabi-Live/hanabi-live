@@ -1,10 +1,11 @@
 import { assertDefined } from "complete-common";
 import Konva from "konva";
 import { Screen } from "../../lobby/types/Screen.ts";
+import { TOOLTIP_DELAY_IN_MILLISECONDS } from "../../Tooltip.ts";
 import * as tooltips from "../../tooltips.ts";
-import { globals } from "./UiGlobals.ts";
 import type { NodeWithTooltip } from "./controls/NodeWithTooltip.ts";
 import type { TextWithTooltip } from "./controls/TextWithTooltip.ts";
+import { globals } from "./UiGlobals.ts";
 
 export function initKonvaTooltips(
   element: NodeWithTooltip,
@@ -25,7 +26,7 @@ export function initKonvaTooltips(
     if (delayed) {
       setTimeout(() => {
         show(this);
-      }, tooltips.TOOLTIP_DELAY_IN_MILLISECONDS);
+      }, TOOLTIP_DELAY_IN_MILLISECONDS);
     } else {
       show(this);
     }

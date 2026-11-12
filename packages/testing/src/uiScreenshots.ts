@@ -687,8 +687,13 @@ function getStates({
         await page.click("#lobby-chat-input + button");
         await page.fill("#emoji-picker input", "cat");
       },
-      // The name of a symbol shows in the site's tooltip.
-      hover: '#emoji-picker [role="tabpanel"] > button:first-child',
+      // The name of a symbol shows in the site's tooltip, which waits for the pointer to rest.
+      hover: async (page) => {
+        await page.hover(
+          '#emoji-picker [role="tabpanel"] > button:first-child',
+        );
+        await page.locator(".tooltip-bubble:popover-open").waitFor();
+      },
     },
     // A reply before anyone sent us a private message shows a warning.
     {

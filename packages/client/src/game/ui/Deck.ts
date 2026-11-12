@@ -6,6 +6,7 @@ import {
   UNKNOWN_SUIT_NAME,
 } from "@hanabi-live/game";
 import Konva from "konva";
+import { TOOLTIP_DELAY_IN_MILLISECONDS } from "../../Tooltip.ts";
 import type { GameTooltipName } from "../../tooltips.ts";
 import * as tooltips from "../../tooltips.ts";
 import type { Pips } from "../types/Pips.ts";
@@ -179,7 +180,7 @@ export class Deck extends Konva.Group {
       konvaTooltips.setActiveHover(this);
       setTimeout(() => {
         konvaTooltips.show(this);
-      }, tooltips.TOOLTIP_DELAY_IN_MILLISECONDS);
+      }, TOOLTIP_DELAY_IN_MILLISECONDS);
     });
     this.on("mouseout touchend", () => {
       konvaTooltips.resetActiveHover(this);

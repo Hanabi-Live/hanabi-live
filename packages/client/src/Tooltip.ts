@@ -4,6 +4,12 @@
 /** The height of the arrow that points from the tooltip to its anchor. */
 const ARROW_SIZE_IN_PIXELS = 6;
 
+/**
+ * How long the pointer rests on an element that people click, such as a button, before its tooltip
+ * opens. Without it, tooltips would pop up as the pointer passes over a row of buttons.
+ */
+export const TOOLTIP_DELAY_IN_MILLISECONDS = 500;
+
 /** How long a tooltip takes to fade in. */
 const OPEN_DURATION_IN_MILLISECONDS = 120;
 
@@ -41,6 +47,7 @@ export class Tooltip {
   private readonly box = document.createElement("div");
   private content: Node | string = "";
   private closingTimeout: ReturnType<typeof setTimeout> | undefined;
+  private openingTimeout: ReturnType<typeof setTimeout> | undefined;
   private readonly hoverListeners = new AbortController();
 
   constructor(anchor: HTMLElement, options: TooltipOptions) {
@@ -144,6 +151,8 @@ export class Tooltip {
   }
 
   close(): void {
+    clearTimeout(this.openingTimeout);
+    this.openingTimeout = undefined;
     document.removeEventListener(
       "pointerdown",
       this.closeOnPointerDownElsewhere,
@@ -164,13 +173,26 @@ export class Tooltip {
   /**
    * Opens the tooltip while a mouse is over the anchor. A tap on a touch screen opens it until the
    * next tap elsewhere.
+   *
+   * @param delayed Whether the tooltip waits for the pointer to rest on the anchor before it opens.
+   *                Use it for an anchor that people click, such as a button. A tooltip that only
+   *                explains something, such as that of an info icon, opens at once.
    */
-  openOnHover(): void {
+  openOnHover(delayed: boolean): void {
     const { signal } = this.hoverListeners;
     this.anchor.addEventListener(
       "pointerenter",
       (event) => {
-        if (event.pointerType !== "touch") {
+        if (event.pointerType === "touch") {
+          return;
+        }
+        if (delayed) {
+          clearTimeout(this.openingTimeout);
+          this.openingTimeout = setTimeout(() => {
+            this.openingTimeout = undefined;
+            this.open();
+          }, TOOLTIP_DELAY_IN_MILLISECONDS);
+        } else {
           this.open();
         }
       },

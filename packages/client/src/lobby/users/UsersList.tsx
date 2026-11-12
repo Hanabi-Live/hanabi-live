@@ -142,7 +142,7 @@ function UserRowView({
 }
 
 function HGroupIcon() {
-  const ref = tooltipRef(H_GROUP_TOOLTIP);
+  const ref = tooltipRef(H_GROUP_TOOLTIP, { instant: true });
 
   return (
     <span ref={ref}>
@@ -162,7 +162,7 @@ function UserIcon({ user }: { readonly user: UserRow["user"] }) {
 }
 
 function BotIcon() {
-  const ref = tooltipRef(BOT_TOOLTIP);
+  const ref = tooltipRef(BOT_TOOLTIP, { instant: true });
 
   return (
     // The slot has the width of the other icons, which keeps the names aligned.

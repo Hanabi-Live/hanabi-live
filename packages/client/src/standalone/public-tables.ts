@@ -79,7 +79,8 @@ async function init() {
         `The "data-tooltip-content" attribute of the tooltip anchor "#${anchor.id}" does not select an element.`,
       );
     }
-    new Tooltip(anchor, { content }).openOnHover();
+    // The anchors are icons that only explain something, so their tooltips open at once.
+    new Tooltip(anchor, { content }).openOnHover(false);
   }
 
   const main = document.querySelector("#main");

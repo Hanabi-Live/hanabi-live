@@ -1,7 +1,8 @@
 // @vitest-environment jsdom
 
 import { act, cleanup, fireEvent, render } from "@testing-library/react";
-import { afterEach, beforeAll, expect, test } from "vitest";
+import { afterEach, beforeAll, expect, test, vi } from "vitest";
+import { TOOLTIP_DELAY_IN_MILLISECONDS } from "./Tooltip.ts";
 import { tooltipRef } from "./tooltipRef.ts";
 
 // The "jsdom" library does not open popovers.
@@ -24,9 +25,15 @@ beforeAll(() => {
 
 afterEach(cleanup);
 
-function Button({ text }: { readonly text: string }) {
+function Button({
+  text,
+  instant = true,
+}: {
+  readonly text: string;
+  readonly instant?: boolean;
+}) {
   return (
-    <button ref={tooltipRef(text)} type="button">
+    <button ref={tooltipRef(text, { instant })} type="button">
       Button
     </button>
   );
@@ -62,4 +69,26 @@ test("a tooltip goes away with its element", async () => {
   });
 
   expect(getBubble()).toBeNull();
+});
+
+test("a tooltip waits for the pointer to rest on its element", () => {
+  vi.useFakeTimers();
+  try {
+    const { getByRole } = render(<Button instant={false} text="One" />);
+    const button = getByRole("button");
+
+    // The pointer passes over the button.
+    fireEvent.pointerEnter(button);
+    vi.advanceTimersByTime(TOOLTIP_DELAY_IN_MILLISECONDS - 1);
+    fireEvent.pointerLeave(button);
+    vi.advanceTimersByTime(TOOLTIP_DELAY_IN_MILLISECONDS);
+    expect(getBubble()).toBeNull();
+
+    // The pointer rests on the button.
+    fireEvent.pointerEnter(button);
+    vi.advanceTimersByTime(TOOLTIP_DELAY_IN_MILLISECONDS);
+    expect(openElements.has(getBubble()!)).toBe(true);
+  } finally {
+    vi.useRealTimers();
+  }
 });

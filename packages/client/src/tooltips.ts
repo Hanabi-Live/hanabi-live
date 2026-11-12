@@ -6,8 +6,6 @@ import { Tooltip } from "./Tooltip.ts";
 import { globals } from "./game/ui/UiGlobals.ts";
 import { getHtmlElement } from "./utils.ts";
 
-export const TOOLTIP_DELAY_IN_MILLISECONDS = 500;
-
 /** How long the tooltip that confirms a copied URL stays open. */
 const COPIED_TOOLTIP_MILLISECONDS = SECOND_IN_MILLISECONDS;
 

@@ -16,6 +16,16 @@ interface ElementTooltip {
   refs: number;
 }
 
+interface TooltipRefOptions {
+  /**
+   * Whether the tooltip opens as soon as the pointer is over the element. Use it for an element
+   * that only explains something, such as an info icon. By default, the tooltip waits for the
+   * pointer to rest on the element, because people click most elements with tooltips, such as
+   * buttons, and the tooltip would otherwise pop up as the pointer passes over them.
+   */
+  readonly instant?: boolean;
+}
+
 /** The tooltip of each element, which lasts while the element has a tooltip ref. */
 const elementTooltips = new WeakMap<HTMLElement, ElementTooltip>();
 
@@ -28,7 +38,10 @@ const elementTooltips = new WeakMap<HTMLElement, ElementTooltip>();
  * When the content changes, the element keeps its tooltip and only the content changes, so an open
  * tooltip stays open.
  */
-export function tooltipRefHtml(content = ""): TooltipRef {
+export function tooltipRefHtml(
+  content = "",
+  options: TooltipRefOptions = {},
+): TooltipRef {
   return (element) => {
     if (element === null) {
       return undefined;
@@ -37,7 +50,7 @@ export function tooltipRefHtml(content = ""): TooltipRef {
     let entry = elementTooltips.get(element);
     if (entry === undefined) {
       const tooltip = new Tooltip(element, { content: "" });
-      tooltip.openOnHover();
+      tooltip.openOnHover(options.instant !== true);
       entry = { tooltip, content: "", refs: 0 };
       elementTooltips.set(element, entry);
     }
@@ -70,10 +83,14 @@ export function tooltipRefHtml(content = ""): TooltipRef {
  *
  * Unlike a hook, it can be used inside a loop, such as for each button in a row.
  */
-export function tooltipRef(text: string | undefined): TooltipRef {
+export function tooltipRef(
+  text: string | undefined,
+  options: TooltipRefOptions = {},
+): TooltipRef {
   return tooltipRefHtml(
     text === undefined || text === ""
       ? undefined
       : `<span class="small-tooltip-text">${escapeHtml(text)}</span>`,
+    options,
   );
 }

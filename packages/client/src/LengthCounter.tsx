@@ -134,7 +134,7 @@ export function LengthCounter({
     const tooltip = new Tooltip(ref.current!, {
       content: `<span class="small-tooltip-text">${limit.tooLongText}</span>`,
     });
-    tooltip.openOnHover();
+    tooltip.openOnHover(false);
     const controller = new AbortController();
     let closeTimeout: ReturnType<typeof setTimeout> | undefined;
     input.current!.addEventListener(

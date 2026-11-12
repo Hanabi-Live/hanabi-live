@@ -122,7 +122,7 @@ function HelpIcon({
     <button
       aria-label={label}
       className="tw:ml-1.5 tw:cursor-help tw:border-0 tw:bg-transparent tw:p-0 tw:text-game-link tw:hover:text-game-text"
-      ref={tooltipRefHtml(tooltip)}
+      ref={tooltipRefHtml(tooltip, { instant: true })}
       type="button"
     >
       <i aria-hidden="true" className={`fas ${icon}`} />

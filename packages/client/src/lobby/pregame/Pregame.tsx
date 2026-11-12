@@ -246,7 +246,9 @@ function BestScoresIcon({
   return (
     <i
       className="fas fa-chart-bar green"
-      ref={tooltipRefHtml(getBestScoresTooltip(bestScores, variantName))}
+      ref={tooltipRefHtml(getBestScoresTooltip(bestScores, variantName), {
+        instant: true,
+      })}
     />
   );
 }
