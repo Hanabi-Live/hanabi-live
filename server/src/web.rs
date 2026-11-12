@@ -180,10 +180,10 @@ fn serves_json(path: &str) -> bool {
     path.starts_with("/api/")
         || path == "/export"
         || path.starts_with("/export/")
-        || matches!(
-            path,
-            "/login" | "/logout" | "/test" | "/test-cookie" | "/ws"
-        )
+        || matches!(path, "/login" | "/logout" | "/test-cookie" | "/ws")
+        || accounts::TEST_ACCOUNTS
+            .iter()
+            .any(|account| path.strip_prefix('/') == Some(account))
 }
 
 fn route_error(uri: &Uri, status: StatusCode, message: &str) -> Response {

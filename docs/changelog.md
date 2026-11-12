@@ -16,6 +16,8 @@ of the repository.
   (`/api/v1/variants/[id]`).
 - Hold Ctrl + Space to see every hand as its player sees it, narrowed by your
   notes.
+- Going to `/test2` through `/test9` logs you in as the shared "test2" through
+  "test9" accounts.
 
 ## November 11th, 2026
 

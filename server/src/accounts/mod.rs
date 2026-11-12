@@ -56,9 +56,15 @@ struct Accounts {
 }
 
 pub fn router(pool: PgPool, config: AccountConfig) -> Router {
-    Router::new()
+    TEST_ACCOUNTS
+        .iter()
+        .fold(Router::new(), |router, &account| {
+            router.route(
+                &format!("/{account}"),
+                get(move |state, address| test_login(state, address, account)),
+            )
+        })
         .route("/login", post(login))
-        .route(&format!("/{TEST_ACCOUNT}"), get(test_login))
         .route("/logout", get(logout))
         .route("/test-cookie", get(test_cookie))
         .route(
@@ -447,17 +453,21 @@ async fn update_password_if_unchanged(
         == 1)
 }
 
-/// The shared test account, whose password is its username. Visiting `/test` signs in to it.
-pub const TEST_ACCOUNT: &str = "test";
+/// The shared test accounts, whose passwords are their usernames. Visiting `/<name>` (such as
+/// `/test2`) signs in to one.
+pub const TEST_ACCOUNTS: [&str; 9] = [
+    "test", "test2", "test3", "test4", "test5", "test6", "test7", "test8", "test9",
+];
 
-/// Signs in to the test account (creating it if needed), then goes to the lobby.
+/// Signs in to a test account (creating it if needed), then goes to the lobby.
 async fn test_login(
     State(state): State<Arc<Accounts>>,
     ConnectInfo(address): ConnectInfo<SocketAddr>,
+    account: &'static str,
 ) -> Response {
     let input = LoginRequest {
-        username: TEST_ACCOUNT.into(),
-        password: TEST_ACCOUNT.into(),
+        username: account.into(),
+        password: account.into(),
         version: Some(state.config.version.clone()),
         create_account: true,
         ..LoginRequest::default()
