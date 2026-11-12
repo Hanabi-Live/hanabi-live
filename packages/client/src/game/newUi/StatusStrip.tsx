@@ -177,7 +177,7 @@ export function StatusStrip({
       <div className="tw:flex tw:shrink-0 tw:items-end tw:gap-6 tw:narrow-980:gap-5">
         <Stat label="Turn">{turn}</Stat>
         <Stat label="Score" size="large" truncate={false}>
-          {/* The score pops when a card lands on a stack (see "playMotion.ts"). */}
+          {/* The score glows red when the last strike ends the game (see "playMotion.ts"). */}
           <span className="tw:inline-block" data-score>
             <OutOf max={maxScore} value={score} />
           </span>

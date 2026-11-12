@@ -1,8 +1,7 @@
-// The animations of a play and of a misplay in a game in progress. A played card lifts out of its
-// hand, flies to its stack in an arc (turning face up on the way if its holder did not know it),
-// and lands with a burst. A misplayed card is a "dud rocket", as on the classic screen (see
-// "../ui/misplayAnimation.ts"): it launches onto its stack, sputters, misfires into its strike box,
-// explodes there, and tumbles into the discard pile.
+// The animation of a misplay in a game in progress. A misplayed card is a "dud rocket", as on the
+// classic screen (see "../ui/misplayAnimation.ts"): it launches onto its stack, sputters, misfires
+// into its strike box, explodes there, and tumbles into the discard pile. (A played card moves to
+// its stack in a straight line, like any other card; see "cardMotion.ts".)
 
 // These animations last longer than a normal card move, so the next update of the game does not
 // finish them, as it does a card move (see "cardMotion.ts").
@@ -37,53 +36,6 @@ const EFFECT_Z_INDEX = "60";
 
 /** The corners of a card face, as a fraction of its width (as in "Card.tsx"). */
 const CARD_CORNER_PER_WIDTH = 0.14;
-
-/** The times of the steps of a play, in milliseconds. */
-const PLAY_TIMING = {
-  /** The card rises out of its hand. */
-  lift: 110,
-  /** The card flies to its stack. */
-  flight: 380,
-  /** The card squashes on the stack and springs back. */
-  land: 220,
-  /** The score pops when the card lands. */
-  scorePop: 380,
-  /** The burst of the landing. */
-  burst: 480,
-} as const;
-
-/** How much the card grows as it lifts, and how far it rises, as a fraction of its height. */
-const LIFT_SCALE = 1.08;
-const LIFT_RISE = 0.08;
-
-/** How high the arc of the flight goes, as a fraction of the distance that the card flies. */
-const ARC_HEIGHT = 0.3;
-
-/** The part of the flight in which a card that its holder did not know turns face up. */
-const FLIP_START = 0.15;
-const FLIP_END = 0.85;
-
-/**
- * How much the card squashes when it lands: it widens and flattens by this fraction, then springs
- * back past its rest and settles.
- */
-const LAND_SQUASH = 0.16;
-
-/** How many half swings the landing spring makes before it settles. */
-const LAND_SPRING_HALF_SWINGS = 3;
-
-/** The shadow under the card, at rest and at the top of its lift. */
-const SHADOW_REST = { y: 2, blur: 3, alpha: 0.3 } as const;
-const SHADOW_LIFTED = { y: 16, blur: 16, alpha: 0.45 } as const;
-
-/** The sparks of the landing. Sizes and distances are fractions of the height of a stack card. */
-const LANDING_SPARKS = 12;
-const LANDING_SPARK_DISTANCE = { min: 0.25, max: 0.55 } as const;
-const LANDING_SPARK_SIZE = { min: 0.05, max: 0.09 } as const;
-/** The ring starts at the edge of the card. */
-const LANDING_RING_START_RADIUS = 0.5;
-const LANDING_RING_RADIUS = 1.1;
-const SCORE_POP_SCALE = 1.35;
 
 // The misplay is a copy of the classic screen's, so its numbers are the same.
 
@@ -182,10 +134,6 @@ function easeIn(t: number): number {
 
 function easeOut(t: number): number {
   return t * (2 - t);
-}
-
-function easeInOut(t: number): number {
-  return t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t;
 }
 
 function interpolate(a: number, b: number, t: number): number {
@@ -308,13 +256,6 @@ export function raiseMovingCard(
 function poseTransform(rest: DOMRect, pose: Pose): string {
   const { x, y } = center(rest);
   return `translate(${pose.x - x}px, ${pose.y - y}px) rotate(${pose.rotation}deg) scale(${pose.scaleX}, ${pose.scaleY})`;
-}
-
-function shadow(t: number): string {
-  const y = interpolate(SHADOW_REST.y, SHADOW_LIFTED.y, t);
-  const blur = interpolate(SHADOW_REST.blur, SHADOW_LIFTED.blur, t);
-  const alpha = interpolate(SHADOW_REST.alpha, SHADOW_LIFTED.alpha, t);
-  return `drop-shadow(0 ${y}px ${blur}px rgb(0 0 0 / ${alpha}))`;
 }
 
 /** Runs a function when an animation ends, whether it finishes or is canceled. */
@@ -464,211 +405,6 @@ function addFlash(
     undefined,
     duration,
     delay,
-  );
-}
-
-/** Pops the score, as a newly played card lands. */
-function popScore(root: HTMLElement, delay: number) {
-  root
-    .querySelector("[data-score]")
-    ?.animate(
-      [{ scale: 1 }, { scale: SCORE_POP_SCALE, offset: 0.35 }, { scale: 1 }],
-      {
-        id: PLAY_EFFECT_ANIMATION_ID,
-        delay,
-        duration: PLAY_TIMING.scorePop,
-        easing: EASE_OUT_BACK,
-      },
-    );
-}
-
-/**
- * Covers a card with its face from before it was played, which the card turns over on its way to
- * the stack. The old face is the element that left the hand. It is moved, not copied, since a copy
- * of a canvas (such as a pip) would be blank. Returns the cover, or `undefined` if the old face is
- * not known.
- */
-function addOldFace(
-  element: HTMLElement,
-  oldElement: HTMLElement,
-  from: DOMRect,
-  to: DOMRect,
-): HTMLElement | undefined {
-  const face = oldElement.querySelector<HTMLElement>("[data-card-face]");
-  if (face === null) {
-    return undefined;
-  }
-
-  for (const marker of face.querySelectorAll("[data-clue-marker]")) {
-    marker.remove();
-  }
-  Object.assign(face.style, {
-    transform: `scale(${to.width / from.width})`,
-    transformOrigin: "top left",
-  });
-
-  const cover = document.createElement("div");
-  Object.assign(cover.style, {
-    position: "absolute",
-    inset: "0",
-    zIndex: "1",
-    overflow: "hidden",
-    pointerEvents: "none",
-    borderRadius: `${to.width * CARD_CORNER_PER_WIDTH}px`,
-  });
-  cover.setAttribute("aria-hidden", "true");
-  cover.append(face);
-  element.append(cover);
-  return cover;
-}
-
-/**
- * Animates a card that was just played from a hand onto its stack.
- *
- * @param root The game screen.
- * @param element The card, where it rests on its stack.
- * @param oldElement The card as it was in the hand, so that its old face can turn over.
- * @param from Where the card was in the hand.
- * @param to Where the card rests on its stack.
- * @param colors The colors of the card's suit, for the burst when it lands.
- */
-export function animatePlay(
-  root: HTMLElement,
-  element: HTMLElement,
-  oldElement: HTMLElement | undefined,
-  from: DOMRect,
-  to: DOMRect,
-  colors: readonly string[],
-): void {
-  const t = PLAY_TIMING;
-  const total = t.lift + t.flight + t.land;
-  const start = center(from);
-  const end = center(to);
-  const startScale = from.width / to.width;
-  const lifted: Point = {
-    x: start.x,
-    y: start.y - from.height * LIFT_RISE,
-  };
-  const distance = Math.hypot(end.x - lifted.x, end.y - lifted.y);
-  const control: Point = {
-    x: (lifted.x + end.x) / 2,
-    y: Math.min(lifted.y, end.y) - distance * ARC_HEIGHT,
-  };
-
-  // Only a card whose face was not fully known turns over.
-  const cover =
-    oldElement?.querySelector("[data-card-unknown]") === null
-    || oldElement === undefined
-      ? undefined
-      : addOldFace(element, oldElement, from, to);
-
-  const restore = raiseMovingCard(element, PLAYED_CARD_Z_INDEX);
-  const animation = animateSampled(element, total, (time) => {
-    const lift = progress(time, 0, t.lift);
-    const flight = progress(time, t.lift, t.flight);
-    const land = progress(time, t.lift + t.flight, t.land);
-
-    let pose: Pose;
-    if (time < t.lift) {
-      const out = easeOut(lift);
-      const scale = startScale * interpolate(1, LIFT_SCALE, out);
-      pose = {
-        x: start.x,
-        y: interpolate(start.y, lifted.y, out),
-        scaleX: scale,
-        scaleY: scale,
-        rotation: 0,
-      };
-    } else if (land === 0) {
-      const eased = easeInOut(flight);
-      const point = bezier(lifted, control, end, eased);
-      const scale = interpolate(startScale * LIFT_SCALE, 1, eased);
-      // The card turns over by narrowing to an edge and widening again.
-      const flip = progress(flight, FLIP_START, FLIP_END - FLIP_START);
-      const turn = cover === undefined ? 1 : Math.abs(Math.cos(flip * Math.PI));
-      pose = {
-        ...point,
-        scaleX: scale * Math.max(turn, 0.02),
-        scaleY: scale,
-        rotation: 0,
-      };
-    } else {
-      // It squashes as it lands, then springs back past its rest and settles.
-      const spring =
-        Math.sin(land * Math.PI * LAND_SPRING_HALF_SWINGS) * (1 - land) ** 2;
-      pose = {
-        ...end,
-        scaleX: 1 + LAND_SQUASH * spring,
-        scaleY: 1 - LAND_SQUASH * spring,
-        rotation: 0,
-      };
-    }
-
-    // How high the card is, for its shadow: it rises as it lifts, and comes down as it flies.
-    let height = 0;
-    if (time < t.lift) {
-      height = easeOut(lift);
-    } else if (land === 0) {
-      height = 1 - easeIn(flight);
-    }
-    return {
-      transform: poseTransform(to, pose),
-      transformOrigin: "center",
-      filter: shadow(height),
-    };
-  });
-  onEnd(animation, restore);
-
-  if (cover !== undefined) {
-    // The old face shows until the card is edge-on, halfway through its turn.
-    const flipMiddle = t.lift + t.flight * ((FLIP_START + FLIP_END) / 2);
-    const coverAnimation = cover.animate(
-      [
-        { opacity: 1 },
-        { opacity: 1, offset: flipMiddle / total },
-        { opacity: 0, offset: flipMiddle / total },
-        { opacity: 0 },
-      ],
-      { id: PLAY_EFFECT_ANIMATION_ID, duration: total },
-    );
-    onEnd(coverAnimation, () => {
-      cover.remove();
-    });
-  }
-
-  const impact = t.lift + t.flight;
-  popScore(root, impact);
-
-  // A burst of sparks in the colors of the suit, from the edge of the card, and a ring.
-  const unit = to.height;
-  for (let i = 0; i < LANDING_SPARKS; i++) {
-    const angle = (i / LANDING_SPARKS) * 2 * Math.PI + randomBetween(0, 0.4);
-    const edge = {
-      x: end.x + (Math.cos(angle) * to.width) / 2,
-      y: end.y + (Math.sin(angle) * to.height) / 2,
-    };
-    addSpark(
-      edge,
-      colors[i % colors.length] ?? "white",
-      randomBetween(LANDING_SPARK_SIZE.min, LANDING_SPARK_SIZE.max) * unit,
-      angle,
-      randomBetween(LANDING_SPARK_DISTANCE.min, LANDING_SPARK_DISTANCE.max)
-        * unit,
-      0,
-      t.burst * randomBetween(0.7, 1),
-      impact,
-    );
-  }
-  addCircle(
-    end,
-    colors[0] ?? "white",
-    {
-      start: unit * LANDING_RING_START_RADIUS,
-      end: unit * LANDING_RING_RADIUS,
-    },
-    { start: RING_STROKE.start * unit, end: RING_STROKE.end * unit },
-    t.burst,
-    impact,
   );
 }
 

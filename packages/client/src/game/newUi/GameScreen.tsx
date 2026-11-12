@@ -508,18 +508,6 @@ function getMoveEffects(
     // A play or a misplay comes a moment before its turn, so the segment does not change yet.
     live: state.replay.segment === undefined && segmentChange >= 0,
     misplays,
-    getSuitColors: (suitIndex) => {
-      const suit = variant.suits[suitIndex];
-      if (suit === undefined) {
-        return [];
-      }
-      if (suit.fillColors !== undefined) {
-        return suit.fillColors;
-      }
-      return [
-        globals.lobby.settings.colorblindMode ? suit.fillColorblind : suit.fill,
-      ];
-    },
   };
 }
 

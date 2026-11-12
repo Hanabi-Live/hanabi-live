@@ -13,7 +13,6 @@ import {
   EASE_OUT_BACK,
   MOVING_CARD_Z_INDEX,
   animateMisplay,
-  animatePlay,
   animateReplayMisplay,
   isShowingPlay,
   onEnd,
@@ -46,14 +45,10 @@ export interface MoveEffects {
 
   /** The cards that were misplayed on the turn, by card order. */
   readonly misplays: ReadonlyMap<string, Misplay>;
-
-  /** The colors of a suit, for the burst when a card lands on its stack. */
-  readonly getSuitColors: (suitIndex: number) => readonly string[];
 }
 
-/** The prefixes of the places of a card in a hand and on a play stack (see "data-card-place"). */
+/** The prefix of the place of a card in a hand (see "data-card-place"). */
 const HAND_PLACE_PREFIX = "hand-";
-const STACK_PLACE_PREFIX = "stack-";
 
 /** The key of the deck in `CardPositions`, which a newly drawn card moves from. */
 const DECK_KEY = "deck";
@@ -159,7 +154,7 @@ export function animateCardMoves(
       continue;
     }
 
-    if (animateSpecialMove(root, element, key, was, now, from, to, effects)) {
+    if (animateSpecialMove(root, element, key, was, from, to, effects)) {
       continue;
     }
 
@@ -242,13 +237,12 @@ function animateReturnToDeck(was: CardPosition, deck: DOMRect) {
   });
 }
 
-/** Shows a play or a misplay from a hand, if the card made one. Returns whether it did. */
+/** Shows a misplay from a hand, if the card made one. Returns whether it did. */
 function animateSpecialMove(
   root: HTMLElement,
   element: HTMLElement,
   order: string,
   was: CardPosition | undefined,
-  now: CardPosition,
   from: DOMRect,
   to: DOMRect,
   effects: MoveEffects,
@@ -293,19 +287,6 @@ function animateSpecialMove(
         CARD_ANIMATION_LENGTH_SECONDS * SECOND_IN_MILLISECONDS,
       );
     }
-    return true;
-  }
-
-  if (effects.live && now.place.startsWith(STACK_PLACE_PREFIX)) {
-    const suitIndex = Number(now.place.slice(STACK_PLACE_PREFIX.length));
-    animatePlay(
-      root,
-      element,
-      was.element,
-      from,
-      to,
-      effects.getSuitColors(suitIndex),
-    );
     return true;
   }
 

@@ -65,6 +65,8 @@ of the repository.
   they moved.
 - In the new game screen, strikes are X's in their squares, and a replay shows
   the strikes still to come as faded X's, as the classic screen does.
+- In the new game screen, a played card moves to its stack in a straight line,
+  like any other card, without its own animation.
 
 ## November 11th, 2026
 
