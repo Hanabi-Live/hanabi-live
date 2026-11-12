@@ -1094,10 +1094,6 @@ export const replayGameSchema = z
      */
     deck: z.array(cardIdentitySchema).max(60).readonly().optional(),
     /**
-     * The game's ID, when it is exported from the database. Importing does not use it.
-     */
-    gameId: gameIdSchema.optional(),
-    /**
      * Each player's notes.
      */
     notes: z.array(notesSchema).max(6).readonly().optional(),

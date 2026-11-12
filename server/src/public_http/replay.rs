@@ -120,7 +120,6 @@ pub(super) async fn export(
             )
         })?;
     Ok(hanabi_protocol::ReplayGame {
-        game_id: Some(GameId(game_id)),
         player_names: players.iter().map(|p| p.name.clone()).collect(),
         deck,
         actions,

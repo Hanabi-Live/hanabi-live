@@ -626,14 +626,13 @@
     "valid": false
   },
   {
-    "name": "replay import accepts an exported game, including its ID",
+    "name": "replay import accepts an exported game",
     "direction": "client",
     "command": "replayCreate",
     "input": {
       "source": {
         "type": "imported",
         "game": {
-          "gameId": 7,
           "seed": "p2v0s1",
           "playerNames": ["Alice", "Bob"],
           "options": {
@@ -649,7 +648,6 @@
       "source": {
         "type": "imported",
         "game": {
-          "gameId": 7,
           "seed": "p2v0s1",
           "playerNames": ["Alice", "Bob"],
           "options": {
@@ -669,6 +667,24 @@
       }
     },
     "valid": true
+  },
+  {
+    "name": "replay import rejects a game ID",
+    "direction": "client",
+    "command": "replayCreate",
+    "input": {
+      "source": {
+        "type": "imported",
+        "game": {
+          "gameId": 7,
+          "seed": "p2v0s1"
+        }
+      },
+      "visibility": {
+        "type": "solo"
+      }
+    },
+    "valid": false
   },
   {
     "name": "replay import rejects unknown fields",

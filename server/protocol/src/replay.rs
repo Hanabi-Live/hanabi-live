@@ -16,9 +16,6 @@ use super::*;
 #[derive(Clone, Debug, Default, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct ReplayGame {
-    /// The game's ID, when it is exported from the database. Importing does not use it.
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub game_id: Option<GameId>,
     /// Empty takes the player count from the seed and names the players "Alice", "Bob", and so on.
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     #[schemars(length(max = MAX_PLAYERS))]

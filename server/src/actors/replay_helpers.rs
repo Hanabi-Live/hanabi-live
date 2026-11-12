@@ -233,7 +233,6 @@ mod tests {
     #[test]
     fn imports_accept_only_the_replay_format() {
         let imported = import(&json!({
-            "gameId": 7,
             "seed": "p2v0s1",
             "actions": [{"type": "gameOver", "endCondition": "terminatedByVote"}],
             "notes": [["", "a"], []]
@@ -244,6 +243,8 @@ mod tests {
         for input in [
             json!({"seed":"p2v0s1","options":{"timeControl":{"baseSeconds":1.5,"perTurnSeconds":1}}}),
             json!({"seed":"p2v0s1","source":"another tool"}),
+            // An export does not name its game, so neither does an import.
+            json!({"seed":"p2v0s1","gameId":7}),
             json!({"seed":"p2v0s1","actions":[{"type":"gameOver","endCondition":"terminatedByVote","turn":1}]}),
             json!({"seed":"p2v0s1","options":{"tableName":"x"}}),
             json!({"seed":"p2v0s1","playerNames":null}),
