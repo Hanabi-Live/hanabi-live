@@ -618,9 +618,15 @@ export function ready(): void {
     // Ensure create-game-table-number is empty.
     $("#create-game-table-number").val("");
   } else {
-    // Change Options. Use the options of the current table.
-    dialogTitle = "Change Game Options";
-    buttonTitle = "Change";
+    // Change Options. Use the options of the current table. The server only applies the options of
+    // the table owner; it sends the options of other players to the owner as a suggestion.
+    if (globals.game.ownerId === globals.userId) {
+      dialogTitle = "Change Game Options";
+      buttonTitle = "Change";
+    } else {
+      dialogTitle = "Suggest Game Options";
+      buttonTitle = "Suggest to Table Owner";
+    }
     const { settings } = globals.game;
     gameName = settings.name;
     formValues = getFormValues(settings.options, settings.maxPlayers);

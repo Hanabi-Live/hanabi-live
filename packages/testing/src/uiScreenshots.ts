@@ -850,6 +850,18 @@ function getStates({
         await page.waitForTimeout(SETTLE_MILLISECONDS);
       },
     },
+    // The account does not own the seeded table, so the form suggests the options to its owner.
+    {
+      name: "pregame-suggest-options",
+      path: "/",
+      loggedIn: true,
+      prepare: async (page) => {
+        await joinTable(page);
+        await page.click("#nav-buttons-pregame-change-options");
+        await page.locator("#create-game-submit").scrollIntoViewIfNeeded();
+        await page.waitForTimeout(SETTLE_MILLISECONDS);
+      },
+    },
     // Starting the game ends the pregame, so this state comes after the pregame states.
     {
       name: "new-ui-game",

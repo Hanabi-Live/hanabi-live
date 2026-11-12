@@ -16,6 +16,8 @@ of the repository.
   (`/api/v1/variants/[id]`).
 - Hold Ctrl + Space to see every hand as its player sees it, narrowed by your
   notes.
+- When you are not the owner of a table, the button on the "Change Options"
+  screen now says "Suggest to Table Owner".
 
 ## November 11th, 2026
 
