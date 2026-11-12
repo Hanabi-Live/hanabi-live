@@ -349,7 +349,6 @@ pub(crate) fn client_message(name: &str, data: &Value) -> Result<ClientMessage> 
 #[cfg(test)]
 pub(crate) fn test_table() -> hanabi_protocol::Table {
     hanabi_protocol::Table {
-        game_id: None,
         table_id: TableId(1),
         settings: hanabi_protocol::TableSettings::named("test"),
         owner: hanabi_protocol::UserRef {
@@ -359,7 +358,7 @@ pub(crate) fn test_table() -> hanabi_protocol::Table {
         password_protected: false,
         player_names: vec!["test".into()],
         progress: hanabi_protocol::Progress(0),
-        phase: hanabi_protocol::TablePhase::Pregame,
+        phase: hanabi_protocol::TablePhase::Pregame {},
         spectators: vec![],
     }
 }

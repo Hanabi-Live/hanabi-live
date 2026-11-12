@@ -139,14 +139,14 @@ export function isPlayer(table: Table, username: string): boolean {
 
 /** Whether we play at the table (rather than reviewing a shared replay of our game). */
 function isOurGame(table: Table, joined: boolean): boolean {
-  return joined && table.phase !== "sharedReplay";
+  return joined && table.phase.type !== "sharedReplay";
 }
 
 function getGroup(table: Table): TableGroup {
-  if (table.phase === "sharedReplay") {
+  if (table.phase.type === "sharedReplay") {
     return TableGroup.SharedReplay;
   }
-  if (table.phase !== "pregame") {
+  if (table.phase.type !== "pregame") {
     return TableGroup.Ongoing;
   }
   return table.passwordProtected
@@ -158,7 +158,7 @@ function getAction(table: Table, joined: boolean): TableAction {
   if (isOurGame(table, joined)) {
     return "resume";
   }
-  return table.phase === "pregame" ? "join" : "spectate";
+  return table.phase.type === "pregame" ? "join" : "spectate";
 }
 
 /** Our friends' spectating counts, but not their playing in a shared replay. */
@@ -167,7 +167,7 @@ function tableHasFriends(
   friendNames: ReadonlySet<string>,
 ): boolean {
   return (
-    (table.phase !== "sharedReplay"
+    (table.phase.type !== "sharedReplay"
       && table.playerNames.some((player) => friendNames.has(player)))
     || table.spectators.some((spectator) => friendNames.has(spectator.username))
   );

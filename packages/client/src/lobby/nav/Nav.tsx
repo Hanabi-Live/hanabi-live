@@ -458,10 +458,10 @@ function joinGame() {
 
   const oldTable = globals.tables.find(
     (value) =>
-      isPlayer(value, globals.username) && value.phase !== "sharedReplay",
+      isPlayer(value, globals.username) && value.phase.type !== "sharedReplay",
   );
   if (oldTable !== undefined) {
-    if (oldTable.phase !== "pregame") {
+    if (oldTable.phase.type !== "pregame") {
       showWarning(
         "You cannot join more than one table at a time. Terminate your other game before joining a new one.",
       );

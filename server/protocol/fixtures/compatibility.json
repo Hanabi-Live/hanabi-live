@@ -951,7 +951,7 @@
       "passwordProtected": false,
       "playerNames": ["Alice"],
       "progress": 0,
-      "phase": "pregame",
+      "phase": { "type": "pregame" },
       "spectators": [
         {
           "userId": 9,

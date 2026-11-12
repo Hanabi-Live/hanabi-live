@@ -179,7 +179,6 @@ impl TableActor {
                 .map(|(id, shadow)| (*id, *shadow))
                 .collect(),
             listing: self.table.visible.then(|| hanabi_protocol::Table {
-                game_id: replay_game,
                 table_id: self.table.id,
                 settings: self.settings(),
                 owner: self.table.owner.clone(),
@@ -193,9 +192,11 @@ impl TableActor {
                 progress: hanabi_protocol::Progress::new(progress.clamp(0, max_progress))
                     .unwrap_or_default(),
                 phase: match self.table.phase {
-                    Phase::Pregame { .. } => hanabi_protocol::TablePhase::Pregame,
-                    Phase::Replay { .. } => hanabi_protocol::TablePhase::SharedReplay,
-                    Phase::Live { .. } => hanabi_protocol::TablePhase::Playing,
+                    Phase::Pregame { .. } => hanabi_protocol::TablePhase::Pregame {},
+                    Phase::Replay { .. } => hanabi_protocol::TablePhase::SharedReplay {
+                        game_id: replay_game,
+                    },
+                    Phase::Live { .. } => hanabi_protocol::TablePhase::Playing {},
                 },
                 spectators,
             }),

@@ -31,7 +31,7 @@ function table(id: number, name: string, fields: Partial<Table> = {}): Table {
   return {
     tableId: tableIdSchema.parse(id),
     settings: { name, maxPlayers: 5, options: { variantId: 0 } },
-    phase: "pregame",
+    phase: { type: "pregame" },
     passwordProtected: false,
     numPlayers: 1,
     playerNames: ["alice"],
@@ -98,13 +98,16 @@ describe("TablesList", () => {
   test("lists our game, then our friends' tables, then each kind of table", () => {
     store.dispatch(
       tablesListed([
-        table(1, "replay", { phase: "sharedReplay" }),
-        table(2, "ongoing", { phase: "playing" }),
+        table(1, "replay", { phase: { type: "sharedReplay" } }),
+        table(2, "ongoing", { phase: { type: "playing" } }),
         table(3, "locked", { passwordProtected: true }),
         table(4, "open"),
-        table(5, "friend's", { phase: "playing", playerNames: ["bob"] }),
+        table(5, "friend's", {
+          phase: { type: "playing" },
+          playerNames: ["bob"],
+        }),
         table(6, "ours", {
-          phase: "playing",
+          phase: { type: "playing" },
           playerNames: ["me"],
         }),
         table(7, "open later"),
@@ -160,7 +163,9 @@ describe("TablesList", () => {
   });
 
   test("ignores clicks on rows that just appeared or moved", () => {
-    store.dispatch(tablesListed([table(1, "ongoing", { phase: "playing" })]));
+    store.dispatch(
+      tablesListed([table(1, "ongoing", { phase: { type: "playing" } })]),
+    );
     renderList();
     waitForRowsToSettle();
 

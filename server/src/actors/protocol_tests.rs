@@ -1037,7 +1037,7 @@ async fn shared_replay_links_join_an_existing_replay_of_the_same_game() -> Resul
         let existing = open(&mut h, 0, request(shared(true))).await?;
         let listed = h.receive(2, "table").await?;
         ensure!(
-            listed["gameId"] == game,
+            listed["phase"]["gameId"] == game,
             "The lobby listing of a shared replay did not name its game: {listed}"
         );
         ensure!(

@@ -1422,17 +1422,26 @@ const progressSchema = z.number().int().min(0).max(100);
  * What a listed table is doing: waiting for its game to start, playing it, or showing a finished
  * game in a shared replay. The lobby does not list solo replays.
  */
-const tablePhaseSchema = z.enum(["pregame", "playing", "sharedReplay"]);
+const tablePhaseSchema = z.discriminatedUnion("type", [
+  z.strictObject({ type: z.literal("pregame") }).readonly(),
+  z.strictObject({ type: z.literal("playing") }).readonly(),
+  z
+    .strictObject({
+      /**
+       * The game that the replay shows. Absent when the game is not saved, such as an imported
+       * one.
+       */
+      gameId: gameIdSchema.optional(),
+      type: z.literal("sharedReplay"),
+    })
+    .readonly(),
+]);
 
 /**
  * A table in the lobby's table list.
  */
 export const tableSchema = z
   .strictObject({
-    /**
-     * The game that a replay shows, if it is stored in the database.
-     */
-    gameId: gameIdSchema.optional(),
     owner: userRefSchema,
     passwordProtected: z.boolean(),
     phase: tablePhaseSchema,

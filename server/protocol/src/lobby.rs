@@ -382,9 +382,6 @@ pub struct Spectators {
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct Table {
-    /// The game that a replay shows, if it is stored in the database.
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub game_id: Option<GameId>,
     pub table_id: TableId,
     pub settings: TableSettings,
     pub owner: UserRef,
@@ -399,11 +396,21 @@ pub struct Table {
 /// What a listed table is doing: waiting for its game to start, playing it, or showing a finished
 /// game in a shared replay. The lobby does not list solo replays.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
-#[serde(rename_all = "camelCase")]
+#[serde(
+    tag = "type",
+    rename_all = "camelCase",
+    rename_all_fields = "camelCase",
+    deny_unknown_fields
+)]
 pub enum TablePhase {
-    Pregame,
-    Playing,
-    SharedReplay,
+    Pregame {},
+    Playing {},
+    SharedReplay {
+        /// The game that the replay shows. Absent when the game is not saved, such as an imported
+        /// one.
+        #[serde(skip_serializing_if = "Option::is_none")]
+        game_id: Option<GameId>,
+    },
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
