@@ -1119,14 +1119,10 @@ const replayGameActionSchema = z.discriminatedUnion("type", [
     .strictObject({
       endCondition: endConditionSchema,
       /**
-       * The player whom the ending names, such as the one who timed out, if any.
+       * The player who ended the game, such as the one who timed out. Absent when no player did.
        */
       playerIndex: playerIndexSchema.optional(),
       type: z.literal("gameOver"),
-      /**
-       * The players who voted to end the game, in seat order. Empty when a vote did not end it.
-       */
-      votes: z.array(playerIndexSchema).max(6).readonly().optional(),
     })
     .readonly(),
 ]);

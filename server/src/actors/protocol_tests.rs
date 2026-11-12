@@ -3338,7 +3338,7 @@ async fn saved_actions_store_null_for_a_missing_target_or_value() -> Result<()> 
         }
         h.barrier(0).await?;
         let actions = sqlx::query!(
-            "SELECT a.game_id,a.type,a.target,a.value,a.votes FROM game_actions a ORDER BY a.game_id,a.turn"
+            "SELECT a.game_id,a.type,a.target,a.value FROM game_actions a ORDER BY a.game_id,a.turn"
         )
         .fetch_all(&h.store.primary)
         .await?;
@@ -3346,26 +3346,6 @@ async fn saved_actions_store_null_for_a_missing_target_or_value() -> Result<()> 
             .iter()
             .map(|a| (a.r#type, a.target, a.value))
             .collect::<Vec<_>>();
-        // The voters' seats, in seat order.
-        let mut seats = h.users[..2]
-            .iter()
-            .map(|user| {
-                table
-                    .players()
-                    .iter()
-                    .position(|p| p.is(user.user))
-                    .context("Missing voter")
-            })
-            .collect::<Result<Vec<_>>>()?;
-        seats.sort_unstable();
-        let voters = seats
-            .iter()
-            .map(|&seat| i16::try_from(seat))
-            .collect::<Result<Vec<_>, _>>()?;
-        ensure!(
-            actions.iter().map(|a| a.votes.clone()).collect::<Vec<_>>() == [None, Some(voters)],
-            "Unexpected stored votes: {actions:?}"
-        );
         let play = i16::try_from(i32::from(hanabi_engine::RecordedActionType::Play))?;
         let vote = i16::try_from(i32::from(hanabi_engine::RecordedActionType::GameOverByVote))?;
         let end = crate::archive::end_condition_to_db(EndCondition::TerminatedByVote);
@@ -3394,11 +3374,9 @@ async fn saved_actions_store_null_for_a_missing_target_or_value() -> Result<()> 
             events.iter().any(|event| {
                 ["play", "misplay"].contains(&event["type"].as_str().unwrap_or_default())
                     && event["order"] == card
-            }) && events.iter().any(|event| {
-                event["type"] == "gameOver"
-                    && event.get("playerIndex").is_none()
-                    && event["votes"] == json!(seats)
-            }),
+            }) && events
+                .iter()
+                .any(|event| event["type"] == "gameOver" && event.get("playerIndex").is_none()),
             "The replay lost the saved actions: {history}"
         );
         Ok(())

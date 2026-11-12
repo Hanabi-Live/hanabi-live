@@ -1,6 +1,6 @@
 use crate::CharacterState;
 use hanabi_protocol::{
-    CardOrder, Clue as WireClue, ClueTurn, DEFAULT_VARIANT_NAME, GameOverEvent, MIN_PLAYERS,
+    CardOrder, Clue as WireClue, ClueTurn, DEFAULT_VARIANT_NAME, GameOverTurn, MIN_PLAYERS,
     PlayerIndex, TargetCard,
 };
 pub use hanabi_protocol::{ClueType, EndCondition, TimeControl};
@@ -165,7 +165,7 @@ pub const fn recorded_action_type(action: &RecordedAction) -> RecordedActionType
             clue: WireClue::Rank { .. },
             ..
         }) => RecordedActionType::RankClue,
-        RecordedAction::GameOver(GameOverEvent {
+        RecordedAction::GameOver(GameOverTurn {
             end_condition: EndCondition::TerminatedByVote,
             ..
         }) => RecordedActionType::GameOverByVote,

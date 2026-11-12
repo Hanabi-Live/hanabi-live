@@ -255,8 +255,7 @@ impl Game {
                     actor,
                     end.end_condition,
                     end.player_index.map(hanabi_protocol::PlayerIndex::index),
-                    (!end.votes.is_empty())
-                        .then(|| end.votes.iter().map(|vote| vote.index()).collect()),
+                    None,
                     None,
                 ),
             };

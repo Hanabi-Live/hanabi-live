@@ -1308,18 +1308,18 @@
     "valid": false
   },
   {
-    "name": "game over events can omit an empty vote list",
+    "name": "game over events always list their votes",
     "direction": "server",
     "command": "gameEvent",
     "input": {
       "tableId": 3,
       "event": {
         "type": "gameOver",
-        "endCondition": "timeout",
+        "endCondition": "normal",
         "playerIndex": 0
       }
     },
-    "valid": true
+    "valid": false
   },
   {
     "name": "cards can be unknown or a stack's start card",

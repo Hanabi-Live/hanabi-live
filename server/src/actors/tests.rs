@@ -138,9 +138,9 @@ fn typed_game_frames_preserve_wire_schema_and_projected_identities() -> Result<(
                 );
             }
             event.retain(|_, value| !value.is_null());
-            // The wire omits a game over's empty votes.
-            if event.get("votes") == Some(&json!([])) {
-                event.remove("votes");
+            // The wire always lists a game over's votes.
+            if event["type"] == "gameOver" {
+                event.entry("votes").or_insert(json!([]));
             }
             if event.remove("failed") == Some(json!(true)) {
                 event.insert("type".into(), json!("misplay"));
@@ -183,7 +183,7 @@ fn typed_game_frames_preserve_wire_schema_and_projected_identities() -> Result<(
         let events = body.as_array().unwrap();
         let ended = events.iter().find(|e| e["type"] == "gameOver").unwrap();
         assert_eq!(ended["endCondition"], "terminatedByPlayer");
-        assert!(ended.get("votes").is_none());
+        assert_eq!(ended["votes"], json!([]));
         let timing = events.iter().find(|e| e["type"] == "playerTimes").unwrap();
         assert_eq!(timing["playerTimesMs"], json!([1234, -5678]));
         assert_eq!(timing["durationMs"], 6912);

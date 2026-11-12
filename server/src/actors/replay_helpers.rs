@@ -148,10 +148,8 @@ pub fn parse(input: &ReplayGame) -> CommandResult<Imported> {
                 RecordedAction::GameOver(end) =>
                     if end.end_condition == EndCondition::TerminatedByVote {
                         end.player_index.is_none()
-                            && end.votes.iter().all(|p| p.index() < players.len())
                     } else {
                         end.player_index.is_some_and(|p| p.index() < players.len())
-                            && end.votes.is_empty()
                     },
             },
             "Invalid action at index {i}"

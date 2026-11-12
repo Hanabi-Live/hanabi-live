@@ -280,13 +280,6 @@ CREATE TABLE game_actions (
      */
     value    SMALLINT  NULL,
 
-    /**
-     * - If a game over by vote, the indexes of the players who voted to end the game, in seat
-     *   order. NULL for games that were saved before the server recorded votes.
-     * - Otherwise, NULL.
-     */
-    votes    SMALLINT[]  NULL,
-
     FOREIGN KEY (game_id) REFERENCES games (id) ON DELETE CASCADE,
     PRIMARY KEY (game_id, turn),
     CONSTRAINT game_actions_value_check CHECK ((type IN (0, 1)) = (value IS NULL)),

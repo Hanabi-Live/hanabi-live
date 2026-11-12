@@ -191,7 +191,7 @@ function getPlayerNames(
   playerIndices: readonly PlayerIndex[],
   metadata: GameMetadata,
 ): string {
-  // A game saved before the server recorded votes does not know who voted.
+  // A replay does not know who voted.
   if (playerIndices.length === 0) {
     return "The players";
   }

@@ -227,7 +227,7 @@ pub struct ClueEvent {
     pub ignore_negative: bool,
 }
 
-/// The end of a game, in a game's events and in the replay format.
+/// The end of a game.
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct GameOverEvent {
@@ -235,8 +235,7 @@ pub struct GameOverEvent {
     /// The player whom the ending names, such as the one who timed out, if any.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub player_index: Option<PlayerIndex>,
-    /// The players who voted to end the game, in seat order. Empty when a vote did not end it.
-    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    /// The players who voted to end the game. Empty when a vote did not end it.
     #[schemars(length(max = MAX_PLAYERS))]
     pub votes: Vec<PlayerIndex>,
 }
