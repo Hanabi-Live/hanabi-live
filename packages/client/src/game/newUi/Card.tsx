@@ -421,14 +421,7 @@ export function CardFace({
       }}
     >
       {clueMarker !== undefined && (
-        <>
-          <ClueMarker marker={clueMarker} width={width} />
-          {/* The card flashes as the token lands on it. */}
-          <span
-            className="tw:pointer-events-none tw:absolute tw:inset-0 tw:rounded-[inherit] tw:bg-white tw:opacity-0"
-            data-clue-flash
-          />
-        </>
+        <ClueMarker marker={clueMarker} width={width} />
       )}
       {rank !== undefined && (
         <span
