@@ -137,10 +137,10 @@ interface ActionReplayLeader {
   readonly username: string;
 }
 
-interface ActionRestartDeclined extends Readonly<
-  Pick<ServerCommandData["restartDeclined"], "restartDeclined">
-> {
+interface ActionRestartDeclined {
   readonly type: "restartDeclined";
+  /** The names of the players who will not play again if the leader restarts. */
+  readonly restartDeclined: readonly string[];
 }
 
 // --------------------

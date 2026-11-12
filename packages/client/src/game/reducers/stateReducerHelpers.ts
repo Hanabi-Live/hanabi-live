@@ -1,4 +1,4 @@
-import type { GameAction } from "@hanabi-live/game";
+import type { GameAction, PlayerIndex } from "@hanabi-live/game";
 
 /**
  * When the game state reducer sets "segment" to a new number, it is a signal to record the current
@@ -29,4 +29,12 @@ export function shouldStoreSegment(
 
   // By default, store a new segment whenever the turn reducer changes the segment number.
   return segment !== previousSegment;
+}
+
+/** The names of the players in these seats. The server names players by seat. */
+export function playerNamesAt(
+  playerNames: readonly string[],
+  seats: readonly PlayerIndex[],
+): readonly string[] {
+  return seats.map((seat) => playerNames[seat] ?? "");
 }

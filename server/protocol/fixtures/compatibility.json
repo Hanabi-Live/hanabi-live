@@ -1406,7 +1406,7 @@
     "valid": false
   },
   {
-    "name": "game over votes are seats",
+    "name": "game over voters are seats",
     "direction": "server",
     "command": "gameEvent",
     "input": {
@@ -1414,7 +1414,7 @@
       "event": {
         "type": "gameOver",
         "endCondition": "terminatedByPlayer",
-        "votes": [0, 6]
+        "voters": [0, 6]
       }
     },
     "valid": false

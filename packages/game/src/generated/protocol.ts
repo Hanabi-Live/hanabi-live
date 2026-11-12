@@ -419,7 +419,7 @@ export const gameEventSchema = z.discriminatedUnion("type", [
       /**
        * The players who voted to end the game. Empty when a vote did not end it.
        */
-      votes: z.array(playerIndexSchema).max(6).readonly(),
+      voters: z.array(playerIndexSchema).max(6).readonly(),
     })
     .readonly(),
   z

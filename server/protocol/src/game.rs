@@ -237,7 +237,7 @@ pub struct GameOverEvent {
     pub player_index: Option<PlayerIndex>,
     /// The players who voted to end the game. Empty when a vote did not end it.
     #[schemars(length(max = MAX_PLAYERS))]
-    pub votes: Vec<PlayerIndex>,
+    pub voters: Vec<PlayerIndex>,
 }
 
 /// Every player's time when a game ends.
@@ -427,9 +427,9 @@ pub struct SharedReplayState {
     pub efficiency_modifier: EfficiencyModifier,
     /// Whether the shared replay hides what happens later in the game.
     pub spoiler_free: bool,
-    /// The players who will not play again if the leader restarts.
+    /// The seats of the players who will not play again if the leader restarts.
     #[schemars(length(max = MAX_PLAYERS))]
-    pub restart_declined: Vec<Username>,
+    pub restart_declined: Vec<PlayerIndex>,
     /// Whether the recipient played the game of this shared replay at this table, so that they can
     /// play it again: the leader by restarting, and the other players by saying if they are ready.
     pub can_play_again: bool,

@@ -21,12 +21,12 @@ describe("server game events", () => {
       toGameAction({
         type: "gameOver",
         endCondition: "normal",
-        votes: [],
+        voters: [],
       }),
     ).toEqual({
       type: "gameOver",
       endCondition: "normal",
-      votes: [],
+      voters: [],
     });
   });
 

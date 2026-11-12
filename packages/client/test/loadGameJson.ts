@@ -108,7 +108,7 @@ export function loadGameJson(gameJson: JsonGame): State {
       // test game is added with a strikeout, a termination, etc.
       endCondition: "normal",
       playerIndex: currentPlayerIndex,
-      votes: [],
+      voters: [],
     });
   }
 
@@ -371,7 +371,7 @@ function parseJsonAction(
         type: "gameOver",
         endCondition,
         playerIndex: a.target as PlayerIndex,
-        votes: [],
+        voters: [],
       };
     }
   }

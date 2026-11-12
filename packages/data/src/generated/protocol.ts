@@ -352,9 +352,9 @@ const sharedReplayStateSchema = z
      */
     replayStartedAt: z.iso.datetime({ precision: 3 }),
     /**
-     * The players who will not play again if the leader restarts.
+     * The seats of the players who will not play again if the leader restarts.
      */
-    restartDeclined: z.array(z.string().min(1)).max(6).readonly(),
+    restartDeclined: z.array(playerIndexSchema).max(6).readonly(),
     /**
      * Whether the shared replay hides what happens later in the game.
      */
@@ -1218,11 +1218,11 @@ export const replayCreateRequestSchema = z
   .readonly();
 
 /**
- * The players in a shared replay who will not play again if the leader restarts.
+ * The seats of the players in a shared replay who will not play again if the leader restarts.
  */
 export const restartDeclinedSchema = z
   .strictObject({
-    restartDeclined: z.array(z.string().min(1)).max(6).readonly(),
+    restartDeclined: z.array(playerIndexSchema).max(6).readonly(),
     tableId: tableIdSchema,
   })
   .readonly();
@@ -1724,7 +1724,6 @@ export const SERVER_COMMAND_SCHEMAS = {
   pause: pauseSchema,
   pregame: pregameSchema,
   replayAction: replayActionSchema,
-  restartDeclined: restartDeclinedSchema,
   seedGames: seedGamesSchema,
   serverRestart: serverRestartSchema,
   spectators: spectatorsSchema,
@@ -1736,8 +1735,9 @@ export const SERVER_COMMAND_SCHEMAS = {
   tableList: tableListSchema,
   tableOwner: tableOwnerSchema,
   tableRemoved: tableRefSchema,
+  tableRestartDeclined: restartDeclinedSchema,
   tableStarted: tableStartedSchema,
-  turnSuggestion: turnSuggestionSchema,
+  tableSuggestion: turnSuggestionSchema,
   user: userSchema,
   userList: userListSchema,
   userRemoved: userRemovedSchema,

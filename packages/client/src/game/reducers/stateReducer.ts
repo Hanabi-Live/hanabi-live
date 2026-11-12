@@ -14,7 +14,7 @@ import type { State } from "../types/State.ts";
 import type { Action } from "../types/actions.ts";
 import { notesReducer } from "./notesReducer.ts";
 import { replayReducer } from "./replayReducer.ts";
-import { shouldStoreSegment } from "./stateReducerHelpers.ts";
+import { playerNamesAt, shouldStoreSegment } from "./stateReducerHelpers.ts";
 import { uiReducer } from "./uiReducer.ts";
 
 export const stateReducer = produce(stateReducerFunction, {} as State);
@@ -125,7 +125,9 @@ function stateReducerFunction(state: Draft<State>, action: Action) {
         datetimeReplayStarted: shared.replayStartedAt,
         spoilerFree: shared.spoilerFree,
         canPlayAgain: shared.canPlayAgain,
-        restartDeclined: castDraft(shared.restartDeclined),
+        restartDeclined: castDraft(
+          playerNamesAt(state.metadata.playerNames, shared.restartDeclined),
+        ),
         hypothetical: undefined,
       };
 
@@ -173,7 +175,12 @@ function stateReducerFunction(state: Draft<State>, action: Action) {
               datetimeReplayStarted: shared.replayStartedAt,
               spoilerFree: shared.spoilerFree,
               canPlayAgain: shared.canPlayAgain,
-              restartDeclined: castDraft(shared.restartDeclined),
+              restartDeclined: castDraft(
+                playerNamesAt(
+                  state.metadata.playerNames,
+                  shared.restartDeclined,
+                ),
+              ),
               hypothetical: undefined,
             };
             state.notes.efficiencyModifier = shared.efficiencyModifier;

@@ -1875,17 +1875,21 @@ async fn restart_leaves_out_players_who_are_done_playing() -> Result<()> {
             json!({"tableId":id,"declined":true}),
         )
         .await?;
+        let mut declined = Vec::new();
         for index in 0..3 {
-            let declined = h.receive(index, "restartDeclined").await?;
-            ensure!(
-                declined["restartDeclined"] == json!(["Carol"]),
-                "{declined}"
-            );
+            declined.push(h.receive(index, "tableRestartDeclined").await?);
         }
         h.send(2, "gameInitLoad", json!({"tableId":id})).await?;
         let init = h.receive(2, "gameInit").await?;
+        let carol = init["playerNames"]
+            .as_array()
+            .and_then(|names| names.iter().position(|name| name == "Carol"))
+            .context("Carol has no seat")?;
+        for declined in declined {
+            ensure!(declined["restartDeclined"] == json!([carol]), "{declined}");
+        }
         ensure!(
-            init["mode"]["sharedReplay"]["restartDeclined"] == json!(["Carol"])
+            init["mode"]["sharedReplay"]["restartDeclined"] == json!([carol])
                 && init["mode"]["sharedReplay"]["canPlayAgain"] == true,
             "{init}"
         );

@@ -132,7 +132,7 @@ pub(super) fn wire_event(event: &hanabi_engine::EngineEvent) -> GameEvent {
         } => GameEvent::GameOver(GameOverEvent {
             end_condition,
             player_index: player_index.map(seat),
-            votes: votes.iter().flatten().copied().map(seat).collect(),
+            voters: votes.iter().flatten().copied().map(seat).collect(),
         }),
         E::PlayerTimes {
             ref player_times,

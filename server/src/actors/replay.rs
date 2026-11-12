@@ -288,7 +288,7 @@ impl TableActor {
         e.messages.push((
             leader.session.clone(),
             frame(
-                hanabi_protocol::server::TURN_SUGGESTION,
+                hanabi_protocol::server::TABLE_SUGGESTION,
                 hanabi_protocol::TurnSuggestion {
                     table_id: self.table.id,
                     username: session.name.clone().into(),
@@ -583,24 +583,25 @@ impl TableActor {
         let mut e = self.effects();
         self.add_all(
             &mut e,
-            hanabi_protocol::server::RESTART_DECLINED,
+            hanabi_protocol::server::TABLE_RESTART_DECLINED,
             hanabi_protocol::RestartDeclined {
                 table_id: self.table.id,
-                restart_declined: self.restart_declined_names(),
+                restart_declined: self.restart_declined_seats(),
             },
         );
         self.publish(e).await
     }
-    /// The names of the players who will not play again if the leader restarts, in seat order.
-    pub(super) fn restart_declined_names(&self) -> Vec<hanabi_protocol::Username> {
+    /// The seats of the players who will not play again if the leader restarts, in seat order.
+    pub(super) fn restart_declined_seats(&self) -> Vec<hanabi_protocol::PlayerIndex> {
         let Phase::Replay { replay, .. } = &self.table.phase else {
             return vec![];
         };
         self.table
             .players()
             .iter()
-            .filter(|p| p.id.is_some_and(|id| replay.restart_declined.contains(&id)))
-            .map(|p| p.name.as_str().into())
+            .enumerate()
+            .filter(|(_, p)| p.id.is_some_and(|id| replay.restart_declined.contains(&id)))
+            .filter_map(|(seat, _)| hanabi_protocol::PlayerIndex::new(seat))
             .collect()
     }
 }

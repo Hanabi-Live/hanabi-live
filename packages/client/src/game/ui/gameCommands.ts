@@ -34,6 +34,7 @@ import {
 import * as newUiState from "../newUi/newUiState.ts";
 import { initialState } from "../reducers/initialStates/initialState.ts";
 import { stateReducer } from "../reducers/stateReducer.ts";
+import { playerNamesAt } from "../reducers/stateReducerHelpers.ts";
 import { SoundType } from "../types/SoundType.ts";
 import type { State } from "../types/State.ts";
 import { globals } from "./UiGlobals.ts";
@@ -428,19 +429,22 @@ gameCommands.set("tableOwner", (data) => {
 });
 
 // This is used in shared replays to specify which players will not play again.
-gameCommands.set("restartDeclined", (data) => {
+gameCommands.set("tableRestartDeclined", (data) => {
   if (globals.state.replay.shared === undefined) {
     return;
   }
 
   globals.store!.dispatch({
     type: "restartDeclined",
-    restartDeclined: data.restartDeclined,
+    restartDeclined: playerNamesAt(
+      globals.metadata.playerNames,
+      data.restartDeclined,
+    ),
   });
 });
 
-// This is used in shared replays to specify who the leader is.
-gameCommands.set("turnSuggestion", (data) => {
+// A spectator of a shared replay suggests a turn to its leader.
+gameCommands.set("tableSuggestion", (data) => {
   if (globals.state.replay.shared === undefined) {
     return;
   }

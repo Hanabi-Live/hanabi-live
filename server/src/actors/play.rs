@@ -478,7 +478,7 @@ impl TableActor {
             turn: replay.segment,
             efficiency_modifier: replay.efficiency_modifier,
             spoiler_free: replay.spoiler_free,
-            restart_declined: self.restart_declined_names(),
+            restart_declined: self.restart_declined_seats(),
             can_play_again: self.can_play_again(session),
             // A review of a game just played begins when the game ends; a replay of an older
             // game begins when its table is created.
