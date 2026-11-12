@@ -1339,7 +1339,7 @@ async function seed(address: string): Promise<Seed> {
   }
 
   function passLeader() {
-    bob.send("tableSetOwner", { tableId, ownerId: cookieUserId(cookie) });
+    bob.send("tableSetOwner", { tableId, userId: cookieUserId(cookie) });
   }
 
   /** The events of the game, as a peer sees them. A spectator sees every card. */

@@ -325,6 +325,13 @@ export const userIdSchema = z
   .brand<"UserId">();
 
 /**
+ * A user, by ID and by name.
+ */
+const userRefSchema = z
+  .strictObject({ userId: userIdSchema, username: z.string().min(1) })
+  .readonly();
+
+/**
  * The state of a shared replay that a client joins.
  */
 const sharedReplayInitSchema = z
@@ -338,7 +345,7 @@ const sharedReplayInitSchema = z
     /**
      * The table's owner, who leads the replay.
      */
-    ownerId: userIdSchema,
+    owner: userRefSchema,
     /**
      * When the replay began: when the game ended, for a review of a game just played, or when the
      * table was created, for a replay of an older game. `GameInit.startedAt` is when the game began.
@@ -945,6 +952,7 @@ const pregamePlayerSchema = z
      */
     present: z.boolean(),
     stats: pregameStatsSchema,
+    userId: userIdSchema,
     username: z.string().min(1),
   })
   .readonly();
@@ -954,7 +962,7 @@ const pregamePlayerSchema = z
  */
 export const pregameSchema = z
   .strictObject({
-    ownerId: userIdSchema,
+    owner: userRefSchema,
     passwordProtected: z.boolean(),
     players: z.array(pregamePlayerSchema).max(6).readonly(),
     settings: tableSettingsSchema,
@@ -1421,7 +1429,7 @@ export const tableSchema = z
      * The game that a replay shows, if it is stored in the database.
      */
     gameId: gameIdSchema.optional(),
-    ownerId: userIdSchema,
+    owner: userRefSchema,
     passwordProtected: z.boolean(),
     phase: tablePhaseSchema,
     playerNames: z.array(z.string().min(1)).max(6).readonly(),
@@ -1457,11 +1465,11 @@ export const tableListSchema = z
   .readonly();
 
 /**
- * A table's owner, who also leads its shared replay. The owner sends it to hand the table to
- * someone else, and the server sends it to everyone at the table when the owner changes.
+ * A table's new owner, who also leads its shared replay. The server sends it to everyone at the
+ * table when the owner changes.
  */
 export const tableOwnerSchema = z
-  .strictObject({ ownerId: userIdSchema, tableId: tableIdSchema })
+  .strictObject({ owner: userRefSchema, tableId: tableIdSchema })
   .readonly();
 export const tableRefSchema = z
   .strictObject({ tableId: tableIdSchema })
@@ -1475,6 +1483,13 @@ export const tableRestartDeclineRequestSchema = z
   .readonly();
 export const tableRestartRequestSchema = z
   .strictObject({ hidePregame: z.boolean(), tableId: tableIdSchema })
+  .readonly();
+
+/**
+ * The owner handing the table, and the lead of its shared replay, to another user at it.
+ */
+export const tableSetOwnerRequestSchema = z
+  .strictObject({ tableId: tableIdSchema, userId: userIdSchema })
   .readonly();
 export const tableSpectateRequestSchema = z
   .strictObject({
@@ -1660,7 +1675,7 @@ export const CLIENT_COMMAND_SCHEMAS = {
   tableReattend: tableRefSchema,
   tableRestart: tableRestartRequestSchema,
   tableRestartDecline: tableRestartDeclineRequestSchema,
-  tableSetOwner: tableOwnerSchema,
+  tableSetOwner: tableSetOwnerRequestSchema,
   tableSpectate: tableSpectateRequestSchema,
   tableStart: tableStartRequestSchema,
   tableSuggest: tableSuggestRequestSchema,

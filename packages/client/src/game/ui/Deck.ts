@@ -27,7 +27,6 @@ import { updatePip } from "./HanabiCard.ts";
 import * as HanabiCardInit from "./HanabiCardInit.ts";
 import { isOurTurn } from "./isOurTurn.ts";
 import * as konvaTooltips from "./konvaTooltips.ts";
-import { getOwnerName } from "./ownerName.ts";
 import * as turn from "./turn.ts";
 import { globals } from "./UiGlobals.ts";
 
@@ -357,8 +356,11 @@ function getTooltipContent(): string {
       escapeHtml(currentTable.settings.name),
     );
 
-    const ownerName = getOwnerName(currentTable.ownerId) ?? "Unknown";
-    content += tooltipField("fas fa-crown", "Owner", escapeHtml(ownerName));
+    content += tooltipField(
+      "fas fa-crown",
+      "Owner",
+      escapeHtml(currentTable.owner.username),
+    );
   }
 
   if (globals.state.finished && globals.state.replay.gameId !== undefined) {

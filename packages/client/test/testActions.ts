@@ -27,7 +27,7 @@ export function init(): ActionInit {
       type: "sharedReplay",
       gameId: gameIdSchema.parse(1),
       sharedReplay: {
-        ownerId: userIdSchema.parse(1),
+        owner: { userId: userIdSchema.parse(1), username: "alice" },
         turn: 0,
         efficiencyModifier: 0,
         spoilerFree: false,

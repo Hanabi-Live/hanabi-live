@@ -77,6 +77,14 @@ pub struct TableJoinRequest {
     pub password: Option<String>,
 }
 
+/// The owner handing the table, and the lead of its shared replay, to another user at it.
+#[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct TableSetOwnerRequest {
+    pub table_id: TableId,
+    pub user_id: UserId,
+}
+
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct TableStartRequest {

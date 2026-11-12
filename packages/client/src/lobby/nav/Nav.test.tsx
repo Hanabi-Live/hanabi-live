@@ -25,7 +25,7 @@ function makeGame(maxPlayers: number): Game {
   return {
     tableId: TABLE_ID,
     settings: { maxPlayers },
-    ownerId: userIdSchema.parse(1),
+    owner: { userId: userIdSchema.parse(1), username: "alice" },
     players: [{ username: "alice" }, { username: "bob" }],
   } as unknown as Game;
 }

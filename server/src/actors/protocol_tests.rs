@@ -589,7 +589,7 @@ async fn leader_transfers_announce_the_actor_and_target_once_to_the_table() -> R
             let before = h.snapshot(id).await?.0.chat.len();
             let actor = usize::from(phase == 1);
             let target = 1 - actor;
-            let data = json!({"tableId":id,"ownerId":h.users[target].user});
+            let data = json!({"tableId":id,"userId":h.users[target].user});
             h.send(actor, "tableSetOwner", data).await?;
             let expected = format!(
                 "{} has passed table ownership to: {}",
@@ -616,13 +616,13 @@ async fn leader_transfers_announce_the_actor_and_target_once_to_the_table() -> R
                 h.send(
                     2,
                     "tableSetOwner",
-                    json!({"tableId":id,"ownerId":h.users[actor].user})
+                    json!({"tableId":id,"userId":h.users[actor].user})
                 )
                 .await
                 .is_err()
             );
             ensure!(
-                h.send(actor, "tableSetOwner", json!({"tableId":id,"ownerId":99}))
+                h.send(actor, "tableSetOwner", json!({"tableId":id,"userId":99}))
                     .await
                     .is_err()
             );
@@ -630,7 +630,7 @@ async fn leader_transfers_announce_the_actor_and_target_once_to_the_table() -> R
                 h.send(
                     actor,
                     "tableSetOwner",
-                    json!({"tableId":id,"ownerId":h.users[target].user})
+                    json!({"tableId":id,"userId":h.users[target].user})
                 )
                 .await
                 .is_err()
@@ -1585,7 +1585,7 @@ async fn expired_pregame_owner_is_removed_but_remaining_players_and_live_games_s
             "Disconnected owner kept a pregame seat"
         );
         ensure!(
-            restored.owner == UserId(2),
+            restored.owner.user_id == UserId(2),
             "Ownership did not pass to a remaining player"
         );
         ensure!(
@@ -1604,7 +1604,7 @@ async fn expired_pregame_owner_is_removed_but_remaining_players_and_live_games_s
                         && let Some(body) = message.strip_prefix("pregame ")
                     {
                         let game: Value = serde_json::from_str(body)?;
-                        published_owner |= game["ownerId"] == 2
+                        published_owner |= game["owner"]["userId"] == 2
                             && game["players"].as_array().is_some_and(|p| p.len() == 2);
                     }
                 }
@@ -2049,11 +2049,11 @@ async fn pregame_leader_moves_to_first_seat_without_reordering_live_players() ->
         for index in 0..3 {
             h.frames(index)?;
         }
-        h.send(0, "tableSetOwner", json!({"tableId":id,"ownerId":3}))
+        h.send(0, "tableSetOwner", json!({"tableId":id,"userId":3}))
             .await?;
         for index in 0..3 {
             let game = h.receive(index, "pregame").await?;
-            ensure!(game["ownerId"] == 3);
+            ensure!(game["owner"]["userId"] == 3);
             let players = game["players"].as_array().context("Missing players")?;
             for (seat, name) in ["Carol", "Bob", "Alice"].iter().enumerate() {
                 ensure!(
@@ -2069,10 +2069,10 @@ async fn pregame_leader_moves_to_first_seat_without_reordering_live_players() ->
         );
         h.send(2, "tableStart", json!({"tableId":id})).await?;
         let live_players = h.snapshot(id).await?.0.seated_users().collect::<Vec<_>>();
-        h.send(2, "tableSetOwner", json!({"tableId":id,"ownerId":1}))
+        h.send(2, "tableSetOwner", json!({"tableId":id,"userId":1}))
             .await?;
         let table = h.snapshot(id).await?.0;
-        ensure!(table.owner == UserId(1));
+        ensure!(table.owner.user_id == UserId(1));
         ensure!(
             table.seated_users().collect::<Vec<_>>() == live_players,
             "Changing a live game's leader changed the seats"
@@ -2099,15 +2099,15 @@ async fn a_replay_whose_leader_is_away_passes_leadership_to_the_first_to_return(
         h.send(1, "gameInitLoad", json!({"tableId":id})).await?;
         let init = h.receive(1, "gameInit").await?;
         ensure!(
-            init["mode"]["sharedReplay"]["ownerId"] == 2,
+            init["mode"]["sharedReplay"]["owner"]["userId"] == 2,
             "The returning viewer did not lead the replay: {init}"
         );
-        ensure!(h.snapshot(id).await?.0.owner == UserId(2));
+        ensure!(h.snapshot(id).await?.0.owner.user_id == UserId(2));
         // Alice returns to a replay that Bob now leads.
         h.send(0, "tableReattend", json!({"tableId":id})).await?;
         h.send(0, "gameInitLoad", json!({"tableId":id})).await?;
         let init = h.receive(0, "gameInit").await?;
-        ensure!(init["mode"]["sharedReplay"]["ownerId"] == 2);
+        ensure!(init["mode"]["sharedReplay"]["owner"]["userId"] == 2);
         Ok::<(), anyhow::Error>(())
     }
     .await;
@@ -2160,10 +2160,10 @@ async fn finished_game_publishes_replay_leader_candidates_without_reconnecting()
             h.frames(3)?.iter().all(|(name, _)| name != "spectators"),
             "Replay roster was sent to a non-attendee"
         );
-        h.send(0, "tableSetOwner", json!({"tableId":id,"ownerId":2}))
+        h.send(0, "tableSetOwner", json!({"tableId":id,"userId":2}))
             .await?;
-        ensure!(h.receive(0, "tableOwner").await?["ownerId"] == 2);
-        ensure!(h.snapshot(id).await?.0.owner == UserId(2));
+        ensure!(h.receive(0, "tableOwner").await?["owner"]["userId"] == 2);
+        ensure!(h.snapshot(id).await?.0.owner.user_id == UserId(2));
         h.send(2, "tableUnattend", json!({"tableId":id})).await?;
         let roster = h.receive(0, "spectators").await?;
         ensure!(roster["spectators"].as_array().unwrap().len() == 2);
@@ -2472,10 +2472,10 @@ async fn players_cannot_fill_a_table_chat_and_block_the_owner() -> Result<()> {
             json!({"tableId":id,"settings":{"name":"Changed"}}),
         )
         .await?;
-        h.send(0, "tableSetOwner", json!({"tableId":id,"ownerId":2}))
+        h.send(0, "tableSetOwner", json!({"tableId":id,"userId":2}))
             .await?;
         let table = h.snapshot(id).await?.0;
-        ensure!(table.name == "Changed" && table.owner == h.users[1].user);
+        ensure!(table.name == "Changed" && table.owner.user_id == h.users[1].user);
         ensure!(table.chat.len() == crate::model::MAX_TABLE_CHAT);
         Ok::<(), anyhow::Error>(())
     }

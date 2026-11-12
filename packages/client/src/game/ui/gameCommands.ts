@@ -42,7 +42,6 @@ import { updateTerminationVotes } from "./drawUi.ts";
 import { getCardOrStackBase } from "./getCardOrStackBase.ts";
 import * as hypothetical from "./hypothetical.ts";
 import * as notes from "./notes.ts";
-import { getOwnerName } from "./ownerName.ts";
 import { StateObserver } from "./reactive/StateObserver.ts";
 import * as replay from "./replay.ts";
 import * as stats from "./stats.ts";
@@ -122,7 +121,7 @@ gameCommands.set("gameFinished", (data) => {
     gameId: data.gameId,
     sharedReplay: data.sharedReplay,
     datetimeFinished: new Date().toISOString(),
-    leader: getOwnerName(data.sharedReplay.ownerId) ?? "",
+    leader: data.sharedReplay.owner.username,
   });
   if (
     globals.state.replay.actions.some(
@@ -417,7 +416,7 @@ gameCommands.set("tableOwner", (data) => {
 
   globals.store!.dispatch({
     type: "replayLeader",
-    username: getOwnerName(data.ownerId) ?? "",
+    username: data.owner.username,
   });
 });
 
@@ -628,7 +627,7 @@ function initStateStore(data: InitData) {
     finishedAt: data.finishedAt,
     leader:
       data.mode.type === "sharedReplay"
-        ? getOwnerName(data.mode.sharedReplay.ownerId)
+        ? data.mode.sharedReplay.owner.username
         : undefined,
     pausePlayerIndex: data.pausePlayerIndex,
     pauseQueued: data.pauseQueued,

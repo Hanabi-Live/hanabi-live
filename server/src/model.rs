@@ -8,7 +8,7 @@ use hanabi_protocol::TableId;
 use hanabi_protocol::UserId;
 use hanabi_protocol::{
     CLOCK_UNITS_PER_MINUTE, Chat, HypotheticalEvent, MAX_NOTE_LENGTH, MAX_TAG_LENGTH, PlayerIndex,
-    PregameStats,
+    PregameStats, UserRef,
 };
 pub use hanabi_protocol::{CLOCK_UNITS_PER_SECOND, IDLE_TIMEOUT_MS};
 use serde::{Deserialize, Serialize};
@@ -18,7 +18,7 @@ use std::{
     time::Instant,
 };
 
-pub const FORMAT: &str = "hanabi-live-18";
+pub const FORMAT: &str = "hanabi-live-19";
 /// How long before an idle game ends to warn its table.
 pub const IDLE_WARNING_MS: i64 = 5 * CLOCK_UNITS_PER_MINUTE;
 
@@ -42,6 +42,13 @@ impl Player {
     /// The user in the seat. Every seat of a pregame or a live game has one.
     pub fn user(&self) -> Result<UserId> {
         self.id.context("A seat has no user")
+    }
+    /// The user in the seat, with their name.
+    pub fn user_ref(&self) -> Result<UserRef> {
+        Ok(UserRef {
+            user_id: self.user()?,
+            username: self.name.as_str().into(),
+        })
     }
 }
 #[derive(Clone, Debug, Default, Serialize, Deserialize)]
@@ -218,7 +225,8 @@ pub struct TableSnapshot {
     pub format: String,
     pub id: TableId,
     pub name: String,
-    pub owner: UserId,
+    /// The owner, by name too, so that clients can name them while they are away.
+    pub owner: UserRef,
     pub visible: bool,
     #[serde(deserialize_with = "deserialize_stored_options")]
     pub options: Options,
@@ -340,7 +348,7 @@ impl TableSnapshot {
         self.phase = Phase::Replay {
             snapshot,
             replay: ReplayState {
-                leader: self.owner,
+                leader: self.owner.user_id,
                 segment,
                 efficiency_modifier: hanabi_protocol::EfficiencyModifier::default(),
                 hypothetical: false,
@@ -418,7 +426,8 @@ impl TableSnapshot {
         );
         hanabi_engine::get_variant(&self.options.variant_name)?;
         ensure!(
-            self.owner > UserId(0) && hanabi_protocol::is_player_count(self.options.num_players),
+            self.owner.user_id > UserId(0)
+                && hanabi_protocol::is_player_count(self.options.num_players),
             "Invalid table options"
         );
         ensure!(
@@ -456,7 +465,7 @@ impl TableSnapshot {
                 players, kicked, ..
             } => {
                 ensure!(
-                    !players.is_empty() && players.iter().any(|p| p.is(self.owner)),
+                    !players.is_empty() && players.iter().any(|p| p.is(self.owner.user_id)),
                     "Invalid pregame owner"
                 );
                 ensure!(

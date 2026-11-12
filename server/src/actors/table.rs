@@ -183,7 +183,7 @@ impl TableActor {
                 game_id: replay_game,
                 table_id: self.table.id,
                 settings: self.settings(),
-                owner_id: self.table.owner,
+                owner: self.table.owner.clone(),
                 password_protected: self.table.password_hash.is_some(),
                 player_names: self
                     .table
@@ -271,9 +271,9 @@ impl TableActor {
         &self,
         next: &mut TableSnapshot,
         joining: Option<&Session>,
-    ) -> Option<UserId> {
-        if self.attendees.contains_key(&next.owner)
-            || joining.is_some_and(|session| session.user == next.owner)
+    ) -> Option<hanabi_protocol::UserRef> {
+        if self.attendees.contains_key(&next.owner.user_id)
+            || joining.is_some_and(|session| session.user == next.owner.user_id)
         {
             return None;
         }
@@ -284,14 +284,19 @@ impl TableActor {
             .audience()
             .map(|a| a.session.as_ref())
             .chain(joining)
-            .map(|session| session.user)
+            .map(|session| session.user_ref())
             .next()?;
-        replay.leader = successor;
-        next.owner = successor;
+        replay.leader = successor.user_id;
+        next.owner = successor.clone();
         Some(successor)
     }
     /// Tells the audience, apart from `except`, who leads the replay now.
-    pub(super) fn leader_messages(&self, e: &mut Effects, owner: UserId, except: Option<UserId>) {
+    pub(super) fn leader_messages(
+        &self,
+        e: &mut Effects,
+        owner: &hanabi_protocol::UserRef,
+        except: Option<UserId>,
+    ) {
         for a in self.audience().filter(|a| Some(a.session.user) != except) {
             e.messages.push((
                 a.session.clone(),
@@ -299,7 +304,7 @@ impl TableActor {
                     hanabi_protocol::server::TABLE_OWNER,
                     hanabi_protocol::TableOwner {
                         table_id: self.table.id,
-                        owner_id: owner,
+                        owner: owner.clone(),
                     },
                 ),
             ));
@@ -361,8 +366,11 @@ impl TableActor {
             .table
             .players()
             .iter()
-            .map(|p| hanabi_protocol::PregamePlayer {
-                username: p.name.clone().into(),
+            .filter_map(|p| p.user_ref().ok())
+            .zip(self.table.players())
+            .map(|(user, p)| hanabi_protocol::PregamePlayer {
+                user_id: user.user_id,
+                username: user.username,
                 present: p
                     .id
                     .and_then(|id| self.attendees.get(&id))
@@ -375,7 +383,7 @@ impl TableActor {
             hanabi_protocol::Pregame {
                 table_id: self.table.id,
                 settings: self.settings(),
-                owner_id: self.table.owner,
+                owner: self.table.owner.clone(),
                 players,
                 password_protected: self.table.password_hash.is_some(),
             },
@@ -843,7 +851,7 @@ impl TableActor {
         if before != self.attendees.len() {
             let mut e = self.effects();
             if let Some(owner) = leader {
-                self.leader_messages(&mut e, owner, None);
+                self.leader_messages(&mut e, &owner, None);
             }
             for (id, name) in expired {
                 self.typing_messages(&mut e, id, &name, false);
@@ -1060,7 +1068,7 @@ impl TableActor {
             ClientMessage::Chat(r) => self.chat(session, &r.text).await,
             ClientMessage::ChatRead(_) => self.chat_presence(session, false).await,
             ClientMessage::ChatTyping(_) => self.chat_presence(session, true).await,
-            ClientMessage::TableSetOwner(r) => self.leader(session, r.owner_id).await,
+            ClientMessage::TableSetOwner(r) => self.leader(session, r.user_id).await,
             // The rest depend on the table's phase.
             message => match self.table.phase {
                 Phase::Pregame { .. } => self.pregame_command(session, message).await,

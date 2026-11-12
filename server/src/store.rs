@@ -220,7 +220,15 @@ impl Store {
     /// it again.
     pub async fn recover(&self) -> Result<Recovered> {
         let mut recovered = Recovered::default();
-        for stored in self.state.load().await? {
+        for mut stored in self.state.load().await? {
+            if let Some(owner) = crate::checkpoint::unnamed_owner(&stored.payload)
+                && let Some(name) =
+                    sqlx::query_scalar!("SELECT username FROM users WHERE id=$1", owner.0)
+                        .fetch_optional(&self.primary)
+                        .await?
+            {
+                stored.payload = crate::checkpoint::name_owner(&stored.payload, &name)?;
+            }
             let read =
                 crate::checkpoint::decode(&stored.payload, &stored.parts).and_then(|table| {
                     ensure!(table.id == stored.id, "Live-table identity mismatch");
@@ -665,7 +673,10 @@ mod tests {
             format: FORMAT.into(),
             id,
             name: "Native parity".into(),
-            owner: UserId(1),
+            owner: hanabi_protocol::UserRef {
+                user_id: UserId(1),
+                username: "Alice".into(),
+            },
             visible: true,
             options: Options::default(),
             max_players: 6,
@@ -853,8 +864,13 @@ mod tests {
     }
     /// Replaces a format's name in a head that `checkpoint::encode` wrote, as an older server
     /// wrote it.
+    /// Rewrites a head from format 19 into format 18, which kept only the owner's ID.
+    fn format_18_head(head: &mut Value) {
+        head["owner"] = head["owner"]["userId"].clone();
+    }
     fn older_head(head: &str, format: &str) -> Result<String> {
         let mut head: Value = serde_json::from_str(&format_12(head))?;
+        format_18_head(&mut head);
         head["format"] = format.into();
         if let Some(snapshot) = head.pointer_mut("/phase/snapshot") {
             snapshot["format"] = format.into();
@@ -1385,6 +1401,7 @@ mod tests {
         let (encoded, _) = crate::checkpoint::encode(&mut table, &SavedParts::default())?;
         let mut head: Value = serde_json::from_str(&format_15(&encoded.head))?;
         head["format"] = json!("hanabi-live-13");
+        format_18_head(&mut head);
         let parts = encoded
             .changes
             .written
@@ -1411,6 +1428,7 @@ mod tests {
         let (encoded, _) = crate::checkpoint::encode(&mut table, &SavedParts::default())?;
         let mut head: Value = serde_json::from_str(&format_15(&encoded.head))?;
         head["format"] = json!("hanabi-live-14");
+        format_18_head(&mut head);
         head["extra"]["customCharacters"] = json!([{}, {}]);
         let parts = encoded
             .changes
@@ -1473,6 +1491,7 @@ mod tests {
         let (encoded, _) = crate::checkpoint::encode(&mut table, &SavedParts::default())?;
         let mut head: Value = serde_json::from_str(&encoded.head)?;
         head["format"] = json!("hanabi-live-17");
+        format_18_head(&mut head);
         let parts = encoded
             .changes
             .written
@@ -1491,6 +1510,26 @@ mod tests {
         }
         let decoded = crate::checkpoint::decode(&head.to_string(), &parts)?;
         ensure!(serde_json::to_value(&decoded)? == expected);
+        Ok(())
+    }
+    #[test]
+    fn checkpoints_of_format_18_name_their_owner() -> Result<()> {
+        let mut table = pregame(TableId(1));
+        let (encoded, _) = crate::checkpoint::encode(&mut table, &SavedParts::default())?;
+        let parts = encoded.changes.written;
+        let head = older_head(&encoded.head, "hanabi-live-18")?;
+        ensure!(crate::checkpoint::unnamed_owner(&head) == Some(UserId(1)));
+        // Without a name from the database, the owner's seat names them.
+        let seated = crate::checkpoint::decode(&head, &parts)?;
+        ensure!(seated.owner == table.owner);
+        let named = crate::checkpoint::name_owner(&head, "Alicia")?;
+        ensure!(
+            crate::checkpoint::decode(&named, &parts)?
+                .owner
+                .username
+                .as_str()
+                == "Alicia"
+        );
         Ok(())
     }
     #[test]
@@ -1515,6 +1554,7 @@ mod tests {
         let expected = serde_json::to_value(&table)?;
         let mut head: Value = serde_json::from_str(&encoded.head)?;
         head["format"] = json!("hanabi-live-16");
+        format_18_head(&mut head);
         let parts = encoded
             .changes
             .written
@@ -1563,6 +1603,7 @@ mod tests {
         let (encoded, _) = crate::checkpoint::encode(&mut table, &SavedParts::default())?;
         let mut head: Value = serde_json::from_str(&format_15(&encoded.head))?;
         head["format"] = json!("hanabi-live-15");
+        format_18_head(&mut head);
         let head = head.to_string();
         let parts = encoded
             .changes
@@ -1655,10 +1696,12 @@ mod tests {
             player["id"] = json!(-1 - i64::try_from(seat)?);
         }
         *start = value.to_string();
-        let decoded = crate::checkpoint::decode(
+        // No seat names the owner, so the name comes from the database, as `recover` gives it.
+        let head = crate::checkpoint::name_owner(
             &older_head(&encoded.head, "hanabi-live-7")?,
-            &format_12_parts(&parts),
+            table.owner.username.as_str(),
         )?;
+        let decoded = crate::checkpoint::decode(&head, &format_12_parts(&parts))?;
         ensure!(serde_json::to_value(&decoded)? == expected);
         Ok(())
     }
@@ -2364,7 +2407,10 @@ mod tests {
             let source = pregame(source_id);
             store.save_at(&source, 0).await?;
             let mut destination = pregame(store.allocate_table().await?);
-            destination.owner = UserId(2);
+            destination.owner = hanabi_protocol::UserRef {
+                user_id: UserId(2),
+                username: "Bob".into(),
+            };
             if let Phase::Pregame { players, .. } = &mut destination.phase {
                 players[0] = Player {
                     id: Some(UserId(2)),

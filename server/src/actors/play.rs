@@ -473,7 +473,7 @@ impl TableActor {
             return None;
         }
         Some(hanabi_protocol::SharedReplayInit {
-            owner_id: self.table.owner,
+            owner: self.table.owner.clone(),
             turn: replay.segment,
             efficiency_modifier: replay.efficiency_modifier,
             spoiler_free: replay.spoiler_free,

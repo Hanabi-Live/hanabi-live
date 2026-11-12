@@ -417,7 +417,7 @@ pub struct GameInit {
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct SharedReplayInit {
     /// The table's owner, who leads the replay.
-    pub owner_id: UserId,
+    pub owner: UserRef,
     pub turn: Turn,
     pub efficiency_modifier: EfficiencyModifier,
     /// Whether the shared replay hides what happens later in the game.

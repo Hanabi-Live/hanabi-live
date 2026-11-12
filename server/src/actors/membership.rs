@@ -28,7 +28,7 @@ impl TableActor {
             !self
                 .table
                 .seated_users()
-                .chain([self.table.owner])
+                .chain([self.table.owner.user_id])
                 .any(|user| blocks.contains(&user)),
             "{message}"
         );
@@ -278,7 +278,7 @@ impl TableActor {
         }
         let mut e = self.effects();
         if let Some(owner) = leader {
-            self.leader_messages(&mut e, owner, Some(session.user));
+            self.leader_messages(&mut e, &owner, Some(session.user));
         }
         if let Some(notice) = notice {
             for attendee in self.audience().filter(|a| a.session.user != session.user) {
@@ -366,12 +366,12 @@ impl TableActor {
             }
         }
         if matches!(next.phase, Phase::Replay { .. })
-            && next.owner == session.user
+            && next.owner.user_id == session.user
             && let Some(a) = self.audience().find(|a| a.session.user != session.user)
         {
-            next.owner = a.session.user;
+            next.owner = a.session.user_ref();
             if let Phase::Replay { replay, .. } = &mut next.phase {
-                replay.leader = next.owner;
+                replay.leader = next.owner.user_id;
             }
         }
         self.persist(next).await?;

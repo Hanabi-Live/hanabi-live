@@ -221,15 +221,19 @@ impl TableActor {
         }
         .or_reject("That player is not at this table")?;
         ensure_or_reject!(
-            target.0 != self.table.owner,
+            target.0 != self.table.owner.user_id,
             "That player is already the leader"
         );
         ensure_or_reject!(
             !matches!(self.table.phase, Phase::Replay { .. }) || self.table.visible,
             "Solo replay cannot change leader"
         );
+        let owner = hanabi_protocol::UserRef {
+            user_id: target.0,
+            username: target.1.as_str().into(),
+        };
         let mut next = self.candidate();
-        next.owner = target.0;
+        next.owner = owner.clone();
         if let Phase::Pregame { players, .. } = &mut next.phase {
             let seat = players
                 .iter()
@@ -258,7 +262,7 @@ impl TableActor {
             hanabi_protocol::server::TABLE_OWNER,
             hanabi_protocol::TableOwner {
                 table_id: self.table.id,
-                owner_id: target.0,
+                owner,
             },
         );
         if matches!(self.table.phase, Phase::Pregame { .. }) {
@@ -277,7 +281,7 @@ impl TableActor {
         );
         let leader = self
             .attendees
-            .get(&self.table.owner)
+            .get(&self.table.owner.user_id)
             .filter(|a| a.session.active())
             .or_reject("Leader is not attending")?;
         let mut e = self.effects();
@@ -302,7 +306,9 @@ impl TableActor {
         use hanabi_protocol::{HypotheticalControl as H, ReplayLeaderAction as R};
 
         ensure_or_reject!(
-            self.attending(&session) && session.user == self.table.owner && self.table.visible,
+            self.attending(&session)
+                && session.user == self.table.owner.user_id
+                && self.table.visible,
             "You must lead this shared replay"
         );
         let mut next = self.candidate();
@@ -361,7 +367,9 @@ impl TableActor {
             reject!("Only the shared replay leader can restart");
         };
         ensure_or_reject!(
-            self.attending(session) && session.user == self.table.owner && self.table.visible,
+            self.attending(session)
+                && session.user == self.table.owner.user_id
+                && self.table.visible,
             "Only the shared replay leader can restart"
         );
         self.seat(session)?;

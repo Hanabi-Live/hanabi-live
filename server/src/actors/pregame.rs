@@ -60,9 +60,9 @@ pub(super) fn remove_pregame_players(
     let Some(first) = players.first() else {
         return vec![];
     };
-    let new_owner = (!players.iter().any(|p| p.is(table.owner))).then(|| first.clone());
-    if let Some(id) = new_owner.as_ref().and_then(|owner| owner.id) {
-        table.owner = id;
+    let new_owner = (!players.iter().any(|p| p.is(table.owner.user_id))).then(|| first.clone());
+    if let Some(owner) = new_owner.as_ref().and_then(|owner| owner.user_ref().ok()) {
+        table.owner = owner;
     }
     for id in removed {
         table.shadows.remove(id);
@@ -103,7 +103,7 @@ impl TableActor {
             ClientMessage::TableUpdate(r) => self.update(session, r).await,
             ClientMessage::TableTerminate(_) => {
                 ensure_or_reject!(
-                    self.attending(&session) && session.user == self.table.owner,
+                    self.attending(&session) && session.user == self.table.owner.user_id,
                     "Only owner can terminate"
                 );
                 self.retire().await
@@ -123,7 +123,7 @@ impl TableActor {
         let name = table_name(&request.settings.name)?;
         let mut max_players = usize::from(request.settings.max_players);
         let mut extra = requested_extra(&request.settings)?;
-        if session.user == self.table.owner {
+        if session.user == self.table.owner.user_id {
             load_replay(
                 &self.store,
                 &mut extra,
@@ -136,7 +136,7 @@ impl TableActor {
         let variant = hanabi_engine::get_variant(&options.variant_name)?;
         options.variant_id = Some(variant.id);
         max_players = max_players.max(extra.custom_num_players.unwrap_or(MIN_PLAYERS));
-        if session.user != self.table.owner {
+        if session.user != self.table.owner.user_id {
             let changes = option_changes(&self.table, &options, &name, max_players, &extra);
             ensure_or_reject!(!changes.is_empty(), "There are no new options proposed.");
             // A proposal is a message from its player, so it counts like one.
@@ -153,7 +153,7 @@ impl TableActor {
             self.persist(next).await?;
             let mut e = self.effects();
             self.add_chat(&mut e, &message);
-            if let Some(owner) = self.attendees.get(&self.table.owner) {
+            if let Some(owner) = self.attendees.get(&self.table.owner.user_id) {
                 let suggestion = options_suggestion(
                     self.table.id,
                     &owner.session.name,
@@ -183,8 +183,8 @@ impl TableActor {
             session.active(),
             "Session changed while refreshing table options"
         );
-        if players.iter().all(|p| !p.is(next.owner)) {
-            next.owner = players[0].user()?;
+        if players.iter().all(|p| !p.is(next.owner.user_id)) {
+            next.owner = players[0].user_ref()?;
         }
         let message = table_notice(
             &mut next,
@@ -217,7 +217,7 @@ impl TableActor {
     }
     pub(super) async fn start(&mut self, session: Arc<Session>) -> CommandResult<()> {
         ensure_or_reject!(
-            self.attending(&session) && session.user == self.table.owner,
+            self.attending(&session) && session.user == self.table.owner.user_id,
             "Only the attended owner can start"
         );
         let next = self.started(self.candidate(), &session).await?;
@@ -303,7 +303,7 @@ impl TableActor {
             ..Snapshot::new(
                 next.id,
                 Some(game_id),
-                next.owner,
+                next.owner.user_id,
                 next.name.clone(),
                 players,
                 game,
@@ -430,7 +430,7 @@ impl TableActor {
         automatic: bool,
     ) -> CommandResult<()> {
         ensure_or_reject!(
-            self.attending(&session) && session.user == self.table.owner,
+            self.attending(&session) && session.user == self.table.owner.user_id,
             "Only owner can split"
         );
         let Phase::Pregame { players, .. } = &self.table.phase else {
@@ -444,7 +444,7 @@ impl TableActor {
             let mut sorted = players.clone();
             sorted.sort_by_key(|p| std::cmp::Reverse(p.stats.num_games));
             let mid = sorted.len() / SPLIT_GROUPS;
-            if sorted[..mid].iter().any(|p| p.is(self.table.owner)) {
+            if sorted[..mid].iter().any(|p| p.is(self.table.owner.user_id)) {
                 sorted[mid..].to_vec()
             } else {
                 sorted[..mid].to_vec()
@@ -482,11 +482,11 @@ impl TableActor {
         players.retain(|p| !p.id.is_some_and(|id| selected_ids.contains(&id)));
         let new_owner = players
             .first()
-            .filter(|_| selected_ids.contains(&source.owner))
+            .filter(|_| selected_ids.contains(&source.owner.user_id))
             .cloned();
         let retire = players.is_empty();
         if let Some(owner) = &new_owner {
-            source.owner = owner.user()?;
+            source.owner = owner.user_ref()?;
         }
         let names = selected
             .iter()
@@ -515,7 +515,7 @@ impl TableActor {
                 MAX_TABLE_NAME_LENGTH - SPLIT_SUFFIX.len()
             )
         );
-        destination.owner = selected[0].user()?;
+        destination.owner = selected[0].user_ref()?;
         destination.created = Utc::now();
         destination.phase = Phase::Pregame {
             players: selected,

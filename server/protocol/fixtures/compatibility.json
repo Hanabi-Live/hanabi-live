@@ -946,7 +946,7 @@
     "command": "table",
     "input": {
       "tableId": 3,
-      "ownerId": 7,
+      "owner": { "userId": 7, "username": "Alice" },
       "passwordProtected": false,
       "playerNames": ["Alice"],
       "progress": 0,

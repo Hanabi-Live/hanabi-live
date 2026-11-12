@@ -73,7 +73,7 @@ mod tests {
                     json!({"tableId":1,"action":{"type":"hypothetical","control":{"type":"start"}}})
                 }
                 "tableRestartDecline" => json!({"tableId":1,"declined":true}),
-                "tableSetOwner" => json!({"tableId":1,"ownerId":1}),
+                "tableSetOwner" => json!({"tableId":1,"userId":1}),
                 "tableSuggest" => json!({"tableId":1,"turn":0}),
                 "friendAdd" | "friendRemove" | "linkAdd" | "linkRemove" | "blockAdd"
                 | "blockRemove" => json!({"username":"Alice"}),

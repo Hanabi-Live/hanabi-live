@@ -385,6 +385,7 @@ const UPGRADES: &[(&str, &str, Upgrade)] = &[
     ),
     ("hanabi-live-16", "hanabi-live-17", suggested_variant_ids),
     ("hanabi-live-17", "hanabi-live-18", chat_kinds),
+    ("hanabi-live-18", "hanabi-live-19", owner_names),
 ];
 
 /// Rewrites a table that an older server saved, one format at a time, into the current format.
@@ -894,6 +895,46 @@ fn chat_kinds(_: &mut Value, parts: &mut [(String, String)]) -> Result<()> {
         };
         message.insert("kind".into(), kind);
     })
+}
+
+/// The key under which `recover` gives a head of format 18 or older its owner's name, which those
+/// formats did not keep.
+pub const OWNER_NAME: &str = "ownerName";
+
+/// The owner's ID of a head of format 18 or older, which does not keep the owner's name.
+pub fn unnamed_owner(head: &str) -> Option<UserId> {
+    let head: Value = serde_json::from_str(head).ok()?;
+    head["owner"]
+        .as_i64()
+        .and_then(|id| i32::try_from(id).ok())
+        .map(UserId)
+}
+
+/// Adds the owner's name to a head of format 18 or older, for `owner_names`.
+pub fn name_owner(head: &str, name: &str) -> Result<String> {
+    let mut head: Value = serde_json::from_str(head)?;
+    head[OWNER_NAME] = name.into();
+    Ok(serde_json::to_string(&head)?)
+}
+
+/// Format 18 kept only the owner's ID. The name comes from `OWNER_NAME`, which `recover` adds from
+/// the database, or else from the owner's seat.
+fn owner_names(head: &mut Value, _: &mut [(String, String)]) -> Result<()> {
+    let id = head["owner"].clone();
+    let seated = ["/phase/players", "/phase/snapshot/players"]
+        .into_iter()
+        .filter_map(|path| head.pointer(path).and_then(Value::as_array))
+        .flatten()
+        .find(|player| player["id"] == id)
+        .map(|player| player["name"].clone());
+    let name = head
+        .as_object_mut()
+        .and_then(|head| head.remove(OWNER_NAME))
+        .or(seated)
+        .filter(Value::is_string)
+        .context("The owner has no name")?;
+    head["owner"] = serde_json::json!({ "userId": id, "username": name });
+    Ok(())
 }
 
 /// Renames the `value` of a turn's or an event's clue to the field of its type.

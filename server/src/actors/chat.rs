@@ -265,7 +265,7 @@ impl TableActor {
                 .all(|player| query.participants.iter().any(|(id, _)| player.is(*id)))
             && let Some(owner) = self
                 .attendees
-                .get(&self.table.owner)
+                .get(&self.table.owner.user_id)
                 .filter(|a| self.attending(&a.session))
         {
             let mut options = self.table.options.clone();
@@ -468,7 +468,7 @@ impl TableActor {
             return self.split(session, &args, automatic).await;
         }
         ensure_or_reject!(
-            session.user == self.table.owner,
+            session.user == self.table.owner.user_id,
             "Only the table owner can use that command"
         );
         let Phase::Pregame {

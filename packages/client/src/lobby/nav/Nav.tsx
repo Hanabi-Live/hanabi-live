@@ -412,7 +412,7 @@ function selectCanStartGame(state: RootState): boolean {
   const { game, startGameSent, startGameCooldown } = state.pregame;
   return (
     game !== undefined
-    && game.ownerId === state.session.userId
+    && game.owner.userId === state.session.userId
     && game.players.length >= MIN_PLAYERS
     && game.players.length <= MAX_PLAYERS
     && !startGameSent

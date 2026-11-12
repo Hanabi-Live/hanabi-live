@@ -294,10 +294,10 @@ pub(super) fn replay_table(
     mut snapshot: Snapshot,
     shared: bool,
     spoiler_free: bool,
-    owner: UserId,
-    owner_name: &str,
+    owner: hanabi_protocol::UserRef,
 ) -> TableSnapshot {
     let id = snapshot.table_id;
+    let owner_id = owner.user_id;
     let options = snapshot.game.options.clone();
     for player in &mut snapshot.players {
         player.id = None;
@@ -307,6 +307,7 @@ pub(super) fn replay_table(
         if shared { "Shared" } else { "Solo" },
         snapshot.game_id.map_or_else(
             || {
+                let owner_name = owner.username.as_str();
                 format!(
                     "{owner_name}{} JSON game",
                     if owner_name.ends_with('s') { "'" } else { "'s" }
@@ -333,7 +334,7 @@ pub(super) fn replay_table(
         phase: Phase::Replay {
             snapshot: Box::new(snapshot),
             replay: ReplayState {
-                leader: owner,
+                leader: owner_id,
                 segment: Turn::default(),
                 efficiency_modifier: hanabi_protocol::EfficiencyModifier::default(),
                 hypothetical: false,
@@ -383,8 +384,7 @@ pub(super) async fn prepare_table(
                         crate::archive::replay(&store.primary, *game_id, id, session.user).await?
                     }
                 };
-                let mut table =
-                    replay_table(snapshot, shared, spoiler_free, session.user, &session.name);
+                let mut table = replay_table(snapshot, shared, spoiler_free, session.user_ref());
                 if let Some(seed) = custom_seed {
                     table.extra.custom_seed = seed;
                 }
@@ -427,7 +427,7 @@ pub(super) async fn prepare_table(
             format: FORMAT.into(),
             id,
             name,
-            owner: session.user,
+            owner: session.user_ref(),
             visible: true,
             options,
             max_players,

@@ -282,7 +282,7 @@ function setLeader(room: string, args: readonly string[]) {
   }
   globals.conn!.send("tableSetOwner", {
     tableId: globals.tableId,
-    ownerId: userId,
+    userId,
   });
 }
 chatCommands.set("setleader", setLeader);

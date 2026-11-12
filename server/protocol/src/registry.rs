@@ -39,7 +39,7 @@ macro_rules! client_contracts {
             TableJoin "tableJoin" => TableJoinRequest;
             TableLeave "tableLeave" => TableRef;
             TableReattend "tableReattend" => TableRef;
-            TableSetOwner "tableSetOwner" => TableOwner;
+            TableSetOwner "tableSetOwner" => TableSetOwnerRequest;
             TableStart "tableStart" => TableStartRequest;
             TableRestart "tableRestart" => TableRestartRequest;
             TableRestartDecline "tableRestartDecline" => TableRestartDeclineRequest;

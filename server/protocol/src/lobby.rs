@@ -378,13 +378,21 @@ pub struct Spectator {
     pub shadowing_player_index: Option<PlayerIndex>,
 }
 
-/// A table's owner, who also leads its shared replay. The owner sends it to hand the table to
-/// someone else, and the server sends it to everyone at the table when the owner changes.
+/// A user, by ID and by name.
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct UserRef {
+    pub user_id: UserId,
+    pub username: Username,
+}
+
+/// A table's new owner, who also leads its shared replay. The server sends it to everyone at the
+/// table when the owner changes.
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct TableOwner {
     pub table_id: TableId,
-    pub owner_id: UserId,
+    pub owner: UserRef,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
@@ -403,7 +411,7 @@ pub struct Table {
     pub game_id: Option<GameId>,
     pub table_id: TableId,
     pub settings: TableSettings,
-    pub owner_id: UserId,
+    pub owner: UserRef,
     pub password_protected: bool,
     #[schemars(length(max = MAX_PLAYERS))]
     pub player_names: Vec<Username>,
@@ -513,6 +521,7 @@ pub struct PregameStats {
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct PregamePlayer {
+    pub user_id: UserId,
     pub username: Username,
     /// Whether this player is connected and at the table.
     pub present: bool,
@@ -525,7 +534,7 @@ pub struct PregamePlayer {
 pub struct Pregame {
     pub table_id: TableId,
     pub settings: TableSettings,
-    pub owner_id: UserId,
+    pub owner: UserRef,
     #[schemars(length(max = MAX_PLAYERS))]
     pub players: Vec<PregamePlayer>,
     pub password_protected: bool,

@@ -104,6 +104,16 @@ pub struct Session {
     global_bytes: Arc<Semaphore>,
 }
 
+impl Identity {
+    /// The user, with their name.
+    pub fn user_ref(&self) -> hanabi_protocol::UserRef {
+        hanabi_protocol::UserRef {
+            user_id: self.user,
+            username: self.name.as_str().into(),
+        }
+    }
+}
+
 impl std::ops::Deref for Session {
     type Target = Identity;
     fn deref(&self) -> &Identity {

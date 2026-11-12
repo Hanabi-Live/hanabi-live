@@ -317,7 +317,10 @@ pub(super) fn pregame(id: TableId) -> TableSnapshot {
         format: FORMAT.into(),
         id,
         name: "reservation".into(),
-        owner: UserId(1),
+        owner: hanabi_protocol::UserRef {
+            user_id: UserId(1),
+            username: "Alice".into(),
+        },
         visible: true,
         options: Options::default(),
         max_players: 6,

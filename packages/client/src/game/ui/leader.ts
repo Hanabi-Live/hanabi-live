@@ -47,6 +47,6 @@ function setLeader(userId: UserId) {
   modals.closeModals();
   globals.lobby.conn!.send("tableSetOwner", {
     tableId: globals.lobby.joinedTableId,
-    ownerId: userId,
+    userId,
   });
 }

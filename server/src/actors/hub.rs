@@ -716,7 +716,7 @@ impl Hub {
                         let _ = reply.send(Err(internal!("Duplicate table installation")));
                     } else {
                         // The creator has seen the chat that preparing the table wrote.
-                        let chat_read = HashMap::from([(table.owner, table.chat.len())]);
+                        let chat_read = HashMap::from([(table.owner.user_id, table.chat.len())]);
                         self.install(
                             *table,
                             saved,
