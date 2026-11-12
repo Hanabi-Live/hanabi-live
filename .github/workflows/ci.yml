@@ -92,11 +92,26 @@ jobs:
 
   test:
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      # Each suite runs on its own runner. In one job, they run one after another because they share
+      # the Cargo target directory.
+      matrix:
+        include:
+          - suite: client
+            tasks: test-client
+          - suite: rust
+            tasks: test-rust
+            postgres: postgres:18-alpine
+          - suite: bun
+            tasks: test-bun test-critical-css
+            postgres: postgres:18-alpine
     env:
       HANABI_TEST_DATABASE_URL: postgres://postgres@127.0.0.1:5432/postgres?sslmode=disable
     services:
       postgres:
-        image: postgres:18-alpine
+        # An empty image skips the service.
+        image: ${{ matrix.postgres || '' }}
         env:
           POSTGRES_HOST_AUTH_METHOD: trust
         ports:
@@ -116,21 +131,24 @@ jobs:
         run: bash ./scripts/dev/set-version.sh
 
       - uses: ./.github/workflows/setup-rust
+        if: matrix.suite != 'client'
+        with:
+          cache-key: test-${{ matrix.suite }}
 
-      - name: Restore successful JavaScript test results
+      - name: Restore successful test results
         id: test-cache
         uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: .turbo/cache
-          key: test-turbo-v1-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('bun.lock', 'turbo.json') }}-${{ github.sha }}
+          key: test-turbo-v1-${{ runner.os }}-${{ runner.arch }}-${{ matrix.suite }}-${{ hashFiles('bun.lock', 'turbo.json') }}-${{ github.sha }}
           restore-keys: |
-            test-turbo-v1-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('bun.lock', 'turbo.json') }}-
-            test-turbo-v1-${{ runner.os }}-${{ runner.arch }}-
+            test-turbo-v1-${{ runner.os }}-${{ runner.arch }}-${{ matrix.suite }}-${{ hashFiles('bun.lock', 'turbo.json') }}-
+            test-turbo-v1-${{ runner.os }}-${{ runner.arch }}-${{ matrix.suite }}-
 
-      - name: Test the TypeScript and Rust code
-        run: bun run test
+      - name: Run the ${{ matrix.suite }} tests
+        run: bunx --bun --no-install turbo run ${{ matrix.tasks }} --cache=local:rw --output-logs=new-only --concurrency=1
 
-      - name: Cache successful JavaScript test results
+      - name: Cache successful test results
         if: steps.test-cache.outputs.cache-hit != 'true' && github.event_name == 'push' && github.ref == 'refs/heads/main'
         uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
