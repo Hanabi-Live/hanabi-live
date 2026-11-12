@@ -25,6 +25,8 @@ of the repository.
 - Trash cards in a hand are now faded in speedruns too, as in other games.
 - In the new game screen, drop a dragged card anywhere to the left of the hands
   to play it, or anywhere to the right of them to discard it.
+- In the new game screen, the clue panel has a button for each player, and the
+  clue hotkeys (Tab, 1 to 5, Q to Y, and Ctrl + Enter) work in it.
 
 ## November 11th, 2026
 

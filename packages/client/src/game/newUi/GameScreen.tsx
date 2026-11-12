@@ -19,6 +19,8 @@ import {
   getUnadjustedClueTokens,
   isAtMaxClueTokens,
   millisecondsToClockString,
+  newColorClue,
+  newRankClue,
 } from "@hanabi-live/game";
 import { clamp } from "complete-common";
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
@@ -131,6 +133,22 @@ interface Drag {
   readonly y: number;
   readonly zone: DropZone | undefined;
 }
+
+/** Whether a key press goes into a text box, such as the chat, rather than to the game. */
+function isTyping(target: EventTarget | null): boolean {
+  return (
+    target instanceof HTMLElement
+    && (target.isContentEditable
+      || target instanceof HTMLInputElement
+      || target instanceof HTMLTextAreaElement)
+  );
+}
+
+/**
+ * The keys that choose a color clue, in the order of the variant's colors, as on the classic
+ * screen. They sit next to the number keys, which choose a rank.
+ */
+const COLOR_CLUE_KEYS = ["q", "w", "e", "r", "t", "y"] as const;
 
 function isInside(element: HTMLElement | null, x: number, y: number): boolean {
   if (element === null) {
@@ -578,15 +596,6 @@ export function GameScreen({
   const [globalEmpathy, setGlobalEmpathy] = useState(false);
   const [globalEmpathyNotes, setGlobalEmpathyNotes] = useState(false);
   useEffect(() => {
-    function isTyping(target: EventTarget | null) {
-      return (
-        target instanceof HTMLElement
-        && (target.isContentEditable
-          || target instanceof HTMLInputElement
-          || target instanceof HTMLTextAreaElement)
-      );
-    }
-
     function onKeyDown(event: KeyboardEvent) {
       if (event.key !== " " || isTyping(event.target)) {
         return;
@@ -619,6 +628,19 @@ export function GameScreen({
       globalThis.removeEventListener("keydown", onKeyDown);
       globalThis.removeEventListener("keyup", onKeyUp);
       globalThis.removeEventListener("blur", onBlur);
+    };
+  }, []);
+
+  // The clue hotkeys (see `onClueKey.current` below). The listener stays the same, so it reads the
+  // latest screen through the ref, which each render replaces.
+  const onClueKey = useRef<(event: KeyboardEvent) => void>(undefined);
+  useEffect(() => {
+    function onKeyDown(event: KeyboardEvent) {
+      onClueKey.current?.(event);
+    }
+    globalThis.addEventListener("keydown", onKeyDown);
+    return () => {
+      globalThis.removeEventListener("keydown", onKeyDown);
     };
   }, []);
 
@@ -910,6 +932,11 @@ export function GameScreen({
     && clue !== undefined
     && isClueAllowed(clue, touched.length, variant, options);
 
+  const clueTargets = otherPlayers.map((seat) => ({
+    playerIndex: seat.playerIndex,
+    name: seat.name,
+  }));
+
   function giveClue() {
     if (!canGive) {
       return;
@@ -932,6 +959,53 @@ export function GameScreen({
       });
     }
   }
+
+  // The clue hotkeys of the classic screen: Tab or ";" picks the next player, "1" to "5" pick a
+  // rank, "q" to "y" pick a color, and Ctrl + Enter gives the clue.
+  onClueKey.current = (event) => {
+    if (!canClue || isTyping(event.target)) {
+      return;
+    }
+
+    if (event.ctrlKey && event.key === "Enter") {
+      event.preventDefault();
+      giveClue();
+      return;
+    }
+    if (event.ctrlKey || event.altKey || event.metaKey || event.shiftKey) {
+      return;
+    }
+
+    if (event.key === "Tab" || event.key === ";") {
+      event.preventDefault();
+      const index = clueTargets.findIndex(
+        (player) => player.playerIndex === clueTarget,
+      );
+      const next = clueTargets[(index + 1) % clueTargets.length];
+      if (next !== undefined) {
+        setClueTarget(next.playerIndex);
+      }
+      return;
+    }
+
+    if (clueTarget === undefined) {
+      return;
+    }
+    const rank = variant.clueRanks[Number(event.key) - 1];
+    if (rank !== undefined && /^\d$/u.test(event.key)) {
+      setClue(newRankClue(rank));
+      return;
+    }
+    const color =
+      variant.clueColors[
+        COLOR_CLUE_KEYS.indexOf(
+          event.key.toLowerCase() as (typeof COLOR_CLUE_KEYS)[number],
+        )
+      ];
+    if (color !== undefined) {
+      setClue(newColorClue(color));
+    }
+  };
 
   let waitingText = "";
   if (hypo !== undefined) {
@@ -1050,12 +1124,10 @@ export function GameScreen({
                 clue={clue}
                 colorblindMode={settings.colorblindMode}
                 onChooseClue={setClue}
+                onChooseTarget={setClueTarget}
                 onGive={giveClue}
-                targetName={
-                  clueTarget === undefined
-                    ? undefined
-                    : metadata.playerNames[clueTarget]
-                }
+                target={clueTarget}
+                targets={clueTargets}
                 variant={variant}
                 waitingText={waitingText}
               />

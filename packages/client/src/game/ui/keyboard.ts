@@ -17,6 +17,7 @@ import {
   getHtmlInputElement,
 } from "../../utils.ts";
 import { toWireAction } from "../../wire.ts";
+import * as newUiState from "../newUi/newUiState.ts";
 import { isOurSeat } from "../ourSeat.ts";
 import { SoundType } from "../types/SoundType.ts";
 import { HanabiCard } from "./HanabiCard.ts";
@@ -160,8 +161,9 @@ function keydown(event: JQuery.KeyDownEvent) {
 
   // Ctrl hotkeys
   if (event.ctrlKey && !event.shiftKey && !event.altKey && !event.metaKey) {
-    // Ctrl + Enter = Give a clue / click on the "Give Clue" button.
-    if (event.which === KeyCode.KEY_RETURN) {
+    // Ctrl + Enter = Give a clue / click on the "Give Clue" button. (The redesigned game screen
+    // handles the clue hotkeys itself.)
+    if (event.which === KeyCode.KEY_RETURN && !newUiState.isActive()) {
       clues.give(); // This function has validation inside of it
       return;
     }
@@ -347,7 +349,8 @@ function getNormalGameplayHotkeyFunction(
 
   const isClueAvailable =
     ongoingGameState.clueTokens >= getClueCost(globals.variant);
-  if (isClueAvailable) {
+  // The redesigned game screen handles the clue hotkeys itself, on its own clue panel.
+  if (isClueAvailable && !newUiState.isActive()) {
     const hotkeyFunction = hotkeyClueMap.get(keyCode);
     if (hotkeyFunction !== undefined) {
       return hotkeyFunction;
