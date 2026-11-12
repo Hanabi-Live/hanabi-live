@@ -167,6 +167,24 @@ function longChat(length: number) {
   return "The quick brown fox. ".repeat(length).slice(0, length);
 }
 
+/** Signs in to a test account that does not exist yet, which shows the tutorial. */
+async function signInNewAccount(page: Page, username: string) {
+  await page.goto(`${new URL(page.url()).origin}/?login=${username}`);
+  await page.locator("#tutorial-yes").waitFor();
+  await page.waitForTimeout(SETTLE_MILLISECONDS);
+}
+
+/**
+ * Forgets the account that "signInNewAccount" signed in to, so that later states are signed out.
+ */
+async function signOutOfNewAccount(page: Page) {
+  await page.context().clearCookies();
+  await page.evaluate(() => {
+    globalThis.localStorage.clear();
+    globalThis.sessionStorage.clear();
+  });
+}
+
 /** Clicks a button that switches between the halves of the lobby on small screens. */
 async function clickPanelButton(page: Page, panel: string) {
   await page.locator(`#lobby-toggle-show-${panel}`).dispatchEvent("click");
@@ -482,6 +500,61 @@ function getStates({
     },
     { name: "seed", path: `/seed/${SEED}`, loggedIn: false },
     { name: "password-reset", path: "/password-reset", loggedIn: false },
+    {
+      name: "login-alert",
+      path: "/",
+      loggedIn: false,
+      prepare: async (page) => {
+        await page.click("#login-button");
+        await page.locator("#login-alert").waitFor();
+        await page.waitForTimeout(SETTLE_MILLISECONDS * 2);
+      },
+    },
+    // The username has no account, so the form asks to confirm its creation.
+    {
+      name: "login-no-account",
+      path: "/",
+      loggedIn: false,
+      prepare: async (page) => {
+        await page.fill("#login-username", "Nobody");
+        await page.fill("#login-password", "password");
+        await page.click("#login-button");
+        await page.locator("#login-no-account").waitFor();
+      },
+    },
+    {
+      name: "login-change-password",
+      path: "/",
+      loggedIn: false,
+      prepare: async (page) => {
+        await page.click("#change-password-link");
+        await page.waitForTimeout(SETTLE_MILLISECONDS * 2);
+      },
+    },
+    // A new account sees the tutorial. These states sign in after the check that skips it.
+    {
+      name: "tutorial",
+      path: "/",
+      loggedIn: false,
+      prepare: async (page) => {
+        await signInNewAccount(page, "TutorialFirst");
+      },
+      cleanup: signOutOfNewAccount,
+    },
+    {
+      name: "tutorial-team",
+      path: "/",
+      loggedIn: false,
+      prepare: async (page) => {
+        await signInNewAccount(page, "TutorialTeam");
+        for (const button of ["yes", "2-yes", "3-ok", "4-no"]) {
+          await page.click(`#tutorial-${button}`);
+          await page.waitForTimeout(SETTLE_MILLISECONDS * 2);
+        }
+        await page.locator("#tutorial-5-casual").waitFor();
+      },
+      cleanup: signOutOfNewAccount,
+    },
     { name: "lobby", path: "/", loggedIn: true },
     // The buttons that switch between the halves of the lobby only show on small screens, so they
     // are clicked without the pointer.

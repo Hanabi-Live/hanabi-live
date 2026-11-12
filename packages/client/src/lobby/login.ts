@@ -9,151 +9,48 @@ import {
   noticeSchema,
   setTabAccountFromLogin,
 } from "@hanabi-live/data";
-import { assertDefined } from "complete-common";
-import * as KeyCode from "keycode-js";
 import type { z } from "zod";
 import { globals } from "../Globals.ts";
 import { FADE_TIME_MS, HTTP_STATUS } from "../constants.ts";
 import { reloadOutdatedClient } from "../outdatedClient.ts";
-import {
-  getHtmlElement,
-  getHtmlInputElement,
-  getUrlFromPath,
-} from "../utils.ts";
+import { store } from "../store.ts";
+import { getUrlFromPath } from "../utils.ts";
 import { websocketInit } from "../websocketInit.ts";
 import { scrollLobbyChatToBottom } from "./chat/LobbyChat.tsx";
 import { TEST_COOKIE_PATH, checkCookieWithRetry } from "./cookieProbe.ts";
+import {
+  loginAlertCleared,
+  loginFailed,
+  loginStageChanged,
+  loginStarted,
+  noAccountFound,
+} from "./login/loginSlice.ts";
 import { loginRequestBody } from "./loginRequestBody.ts";
 import { Screen } from "./types/Screen.ts";
 
-/** How long the change-password form and the scroll to an error take to animate. */
-const ANIMATION_TIME_MS = 500;
-
 const FIREFOX_WARNING_COOKIE_NAME = "acceptedFirefoxWarning";
 
-const changePassword = getHtmlInputElement("#change-password");
-const changePasswordContainer = getHtmlElement("#change-password-container");
-const loginUsername = getHtmlInputElement("#login-username");
-const loginPassword = getHtmlInputElement("#login-password");
-
-/**
- * The username that the server said has no account. Submitting it again creates the account, so
- * that a mistyped username does not create one by accident.
- */
-let confirmingUsername: string | undefined;
-
-export function init(): void {
-  $("#login-button").on("click", () => {
-    $("#login-form").trigger("submit");
-  });
-
-  $("#login-form").on("keypress", (event) => {
-    if (event.which === KeyCode.KEY_RETURN) {
-      event.preventDefault();
-      $("#login-form").trigger("submit");
-    }
-  });
-
-  $("#login-form").on("submit", submit);
-
-  // Editing the username cancels the account creation that it was about to confirm.
-  $("#login-username").on("input", () => {
-    if (confirmingUsername !== undefined) {
-      setConfirmingUsername(undefined);
-    }
-  });
-
-  $("#firefox-warning-button").on("click", () => {
-    localStorage.setItem(FIREFOX_WARNING_COOKIE_NAME, "true");
-    $("#firefox-warning").hide();
-    $("#loading").show();
-    automaticLogin();
-  });
-
-  $("#change-password-link").on("click", (event) => {
-    event.preventDefault();
-    const div = $("#change-password-container");
-    if (div.hasClass("hidden")) {
-      $("#login-password").attr("placeholder", "Old Password");
-      $("#change-password-container")
-        .slideDown()
-        .delay(ANIMATION_TIME_MS)
-        .removeClass("hidden");
-      setConfirmingUsername(undefined);
-      $("#login-button").html("Sign In & Change Password");
-    } else {
-      $("#login-password").attr("placeholder", "Password");
-      $("#change-password-container")
-        .slideUp()
-        .delay(ANIMATION_TIME_MS)
-        .addClass("hidden");
-      $("#login-button").html("Sign In");
-    }
-    $("#login-username").trigger("focus");
-  });
+export function acceptFirefoxWarning(): void {
+  localStorage.setItem(FIREFOX_WARNING_COOKIE_NAME, "true");
+  store.dispatch(loginStageChanged("loading"));
+  automaticLogin();
 }
 
-function submit(event: JQuery.Event) {
-  // By default, the form will reload the page, so stop this from happening.
-  event.preventDefault();
-
-  const username = loginUsername.value;
-  if (username === "") {
-    formError("You must provide a username.");
-    return;
-  }
-
-  const password = loginPassword.value;
-  if (password === "") {
-    formError("You must provide a password.");
-    return;
-  }
-
-  const changePasswordInputIsShowing =
-    !changePasswordContainer.classList.contains("hidden");
-
-  let newPassword: string | undefined;
-  if (changePasswordInputIsShowing) {
-    if (changePassword.value === "") {
-      formError("You must provide a new password.");
-      return;
-    }
-
-    newPassword = changePassword.value;
-  }
-
-  send(username, password, newPassword, username === confirmingUsername);
+/** Checks our saved session again, after the check failed. */
+export function retryAutomaticLogin(): void {
+  store.dispatch(loginAlertCleared());
+  store.dispatch(loginStageChanged("loading"));
+  automaticLogin();
 }
 
-/** Asks the player to confirm the creation of an account, or stops asking with undefined. */
-function setConfirmingUsername(username: string | undefined) {
-  confirmingUsername = username;
-  const notice = $("#login-no-account");
-  if (username === undefined) {
-    notice.addClass("hidden").empty();
-    $("#login-button").html("Sign In");
-    return;
-  }
-  notice
-    .empty()
-    .append(
-      "There is no account named ",
-      $("<strong>").text(username),
-      '. Check the spelling, or click "Create Account" to create it.',
-    )
-    .removeClass("hidden");
-  $("#login-button").html("Create Account");
-}
-
-function send(
+/** Sends a login request. `createAccount` confirms the creation of an account that has none. */
+export function signIn(
   username: string,
   password: string,
   newPassword: string | undefined,
   createAccount: boolean,
-) {
-  $("#login-button").addClass("disabled");
-  $("#login-explanation").hide();
-  $("#login-ajax").show();
+): void {
+  store.dispatch(loginStarted());
 
   // Send a login request to the server; if successful, we will get a cookie back.
   const url = getUrlFromPath("/login");
@@ -173,10 +70,7 @@ function send(
       }
       if (login === "noAccount") {
         if (newPassword === undefined) {
-          $("#login-ajax").hide();
-          $("#login-button").removeClass("disabled");
-          $("#login-alert").hide();
-          setConfirmingUsername(username);
+          store.dispatch(noAccountFound(username));
         } else {
           formError("There is no account with that username.");
         }
@@ -236,7 +130,7 @@ export function automaticLogin(): void {
   if (username !== null && username !== "") {
     console.log(`Automatically logging in as "${username}".`);
     // For test accounts, we use the username as the password, and create the account if needed.
-    send(username, username, "", true);
+    signIn(username, username, "", true);
     return;
   }
 
@@ -246,16 +140,12 @@ export function automaticLogin(): void {
     .catch((error: unknown) => {
       // Handle only failures of the cookie check; a later WebSocket error is separate.
       console.error(`Failed to fetch "${TEST_COOKIE_PATH}":`, error);
-      const alert = $("#login-alert");
-      alert.text(errorDetails(error, "Checking your saved session"));
-      const retryButton = $("<button>", { type: "button" }).text("Retry");
-      retryButton.on("click", () => {
-        alert.hide();
-        $("#sign-in").hide();
-        $("#loading").show();
-        automaticLogin();
-      });
-      alert.append(" ", retryButton).show();
+      store.dispatch(
+        loginFailed({
+          message: errorDetails(error, "Checking your saved session"),
+          retry: true,
+        }),
+      );
 
       if (!showFirefoxWarningIfNeeded()) {
         show();
@@ -305,8 +195,7 @@ function showFirefoxWarningIfNeeded(): boolean {
     isBrowserFirefox()
     && localStorage.getItem(FIREFOX_WARNING_COOKIE_NAME) !== "true"
   ) {
-    $("#loading").hide();
-    $("#firefox-warning").show();
+    store.dispatch(loginStageChanged("firefoxWarning"));
     return true;
   }
   return false;
@@ -317,10 +206,7 @@ function showFirefoxWarningIfNeeded(): boolean {
 // -------------------------
 
 function show() {
-  $("#loading").hide();
-  $("#firefox-warning").hide();
-  $("#sign-in").show();
-  $("#login-username").trigger("focus");
+  store.dispatch(loginStageChanged("signIn"));
 }
 
 export function hide(firstTimeUser: boolean): void {
@@ -357,25 +243,6 @@ export function hide(firstTimeUser: boolean): void {
   scrollLobbyChatToBottom();
 }
 
-function formError(msg: string) {
-  // For some reason this has to be invoked asynchronously in order to work properly.
-  setTimeout(() => {
-    $("#login-ajax").hide();
-    $("#login-button").removeClass("disabled");
-    $("#login-alert").html(msg);
-    $("#login-alert").fadeIn(FADE_TIME_MS);
-
-    const offset = $("#login-alert").offset();
-    assertDefined(
-      offset,
-      'Failed to get the coordinates for the "#login-alert" element.',
-    );
-
-    $("html, body").animate(
-      {
-        scrollTop: offset.top,
-      },
-      ANIMATION_TIME_MS,
-    );
-  }, 0);
+function formError(message: string) {
+  store.dispatch(loginFailed({ message }));
 }

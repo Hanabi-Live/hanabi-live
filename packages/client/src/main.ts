@@ -15,8 +15,8 @@ import * as lobbyHistory from "./lobby/history.ts";
 import { getOtherScoresSeed } from "./lobby/historyHash.ts";
 import { lobbyIdleInit } from "./lobby/lobbyIdleInit.ts";
 import { lobbyKeyboardInit } from "./lobby/lobbyKeyboardInit.ts";
-import { lobbyTutorialInit } from "./lobby/lobbyTutorialInit.ts";
 import * as lobbyLogin from "./lobby/login.ts";
+import { mountLogin } from "./lobby/login/mountLogin.tsx";
 import { mountLobby } from "./lobby/mountLobby.tsx";
 import { mountNav } from "./lobby/nav/mountNav.tsx";
 import * as lobbyPregame from "./lobby/pregame/pregame.ts";
@@ -96,10 +96,9 @@ $(document).ready(() => {
   tooltips.initGame();
   lobbyIdleInit();
   lobbyKeyboardInit();
-  lobbyLogin.init();
+  mountLogin();
   mountLobby();
   mountNav();
-  lobbyTutorialInit();
   sounds.init();
 
   // Start preloading some images that we will need for when a game starts.
