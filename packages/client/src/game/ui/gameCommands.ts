@@ -56,7 +56,7 @@ export const gameCommands = new ServerHandlers();
 
 type GameInit = ReplyData["gameInitLoad"];
 type GameState = ServerEventData["gameState"];
-type Votes = NonNullable<GameState["votes"]>;
+type Votes = Omit<ServerEventData["votes"], "tableId">;
 type HypotheticalControl = Extract<
   ServerEventData["replayAction"]["action"],
   { type: "hypothetical" }
@@ -348,32 +348,29 @@ gameCommands.set("gameEvent", (data) => {
  * everything about the game that we may see.
  */
 gameCommands.set("gameState", (data) => {
+  const { phase } = data;
   setEvents(data.events);
-  if (data.deck !== undefined) {
-    setCardIdentities(data.deck);
+  if (phase.type === "replay") {
+    setCardIdentities(phase.deck);
   }
   setNotes(data.notes);
-  if (data.votes !== undefined) {
-    setVotes(data.votes);
-  }
-  if (data.connections !== undefined) {
-    setConnected(data.connections);
-  }
-  if (data.clock !== undefined) {
-    timer.update(data.clock);
-  }
-  if (data.pause !== undefined) {
-    globals.store!.dispatch({ type: "pause", ...data.pause });
+  if (phase.type === "playing") {
+    if (phase.votes !== undefined) {
+      setVotes(phase.votes);
+    }
+    setConnected(phase.connections);
+    timer.update(phase.clock);
+    globals.store!.dispatch({ type: "pause", ...phase.pause });
   }
   setSpectators(data.spectators);
-  if (data.hypothetical !== undefined) {
+  if (phase.type === "replay" && phase.hypothetical !== undefined) {
     // We are joining a shared replay that plays through a hypothetical line. Play all of its
     // actions so far to catch up with everyone else.
     globals.store!.dispatch({
       type: "hypotheticalStart",
       shared: true,
-      showDrawnCards: data.hypothetical.showDrawnCards,
-      actions: data.hypothetical.events.map(toHypotheticalAction),
+      showDrawnCards: phase.hypothetical.showDrawnCards,
+      actions: phase.hypothetical.events.map(toHypotheticalAction),
     });
   }
 });

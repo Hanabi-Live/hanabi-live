@@ -1564,28 +1564,31 @@
           "type": "draw",
           "playerIndex": 0,
           "order": 0,
-          "identity": {
-            "suitIndex": 0,
-            "rank": 1
-          }
-        }
-      ],
-      "deck": [
-        {
-          "suitIndex": 0,
-          "rank": 1
+          "identity": { "suitIndex": 0, "rank": 1 }
         }
       ],
       "notes": [],
-      "connections": [true, false],
-      "spectators": [
-        {
-          "userId": 9,
-          "username": "Carol"
-        }
-      ]
+      "spectators": [{ "userId": 9, "username": "Carol" }],
+      "phase": { "type": "replay", "deck": [{ "suitIndex": 0, "rank": 1 }] }
     },
     "valid": true
+  },
+  {
+    "name": "a game in progress has a clock",
+    "direction": "event",
+    "command": "gameState",
+    "input": {
+      "tableId": 3,
+      "events": [],
+      "notes": [],
+      "spectators": [],
+      "phase": {
+        "type": "playing",
+        "pause": { "queued": false },
+        "connections": [true, false]
+      }
+    },
+    "valid": false
   },
   {
     "name": "turn numbers are never negative",

@@ -38,7 +38,7 @@ pub struct ClockState {
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct Connections {
     pub table_id: TableId,
-    #[schemars(length(min = MIN_PLAYERS, max = MAX_PLAYERS))]
+    #[schemars(with = "PlayerConnections")]
     pub connections: Vec<bool>,
 }
 
@@ -291,30 +291,40 @@ pub struct GameEventMessage {
 pub struct GameState {
     pub table_id: TableId,
     pub events: Vec<GameEvent>,
-    /// Every card's identity, by card order. Present in a replay.
-    #[serde(skip_serializing_if = "Option::is_none")]
-    #[schemars(length(max = MAX_DECK_SIZE))]
-    pub deck: Option<Vec<CardIdentity>>,
     /// The notes that the recipient may see, as in `noteList`.
     pub notes: Vec<AuthorNotes>,
-    /// Present for a player of a game in progress.
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub votes: Option<VoteState>,
-    /// Whether each player has loaded the game, in seat order. Absent in a replay, which has no
-    /// players to wait for.
-    #[serde(skip_serializing_if = "Option::is_none")]
-    #[schemars(length(min = MIN_PLAYERS, max = MAX_PLAYERS))]
-    pub connections: Option<Vec<bool>>,
-    /// Absent in a replay.
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub clock: Option<ClockState>,
-    /// Absent in a replay.
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub pause: Option<PauseState>,
     pub spectators: Vec<Spectator>,
-    /// The hypothetical that a shared replay plays through, if any.
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub hypothetical: Option<ActiveHypothetical>,
+    pub phase: GamePhase,
+}
+
+/// The parts of a game's state that only a game in progress or only a replay has.
+#[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
+#[serde(
+    tag = "type",
+    rename_all = "camelCase",
+    rename_all_fields = "camelCase",
+    deny_unknown_fields
+)]
+pub enum GamePhase {
+    /// A game in progress.
+    Playing {
+        clock: ClockState,
+        pause: PauseState,
+        #[schemars(with = "PlayerConnections")]
+        connections: Vec<bool>,
+        /// Present for a player of the game.
+        #[serde(skip_serializing_if = "Option::is_none")]
+        votes: Option<VoteState>,
+    },
+    /// A finished game.
+    Replay {
+        /// Every card's identity, by card order.
+        #[schemars(length(max = MAX_DECK_SIZE))]
+        deck: Vec<CardIdentity>,
+        /// The hypothetical that a shared replay plays through, if any.
+        #[serde(skip_serializing_if = "Option::is_none")]
+        hypothetical: Option<ActiveHypothetical>,
+    },
 }
 
 /// A player's detrimental character, in a game and in the replay format, with the value that some

@@ -575,29 +575,29 @@ impl TableActor {
                     .into_iter()
                     .collect()
             };
+            let phase = match &self.table.phase {
+                Phase::Replay { replay, .. } => hanabi_protocol::GamePhase::Replay {
+                    deck: Self::card_identities(s),
+                    hypothetical: replay.hypothetical.then(|| {
+                        hanabi_protocol::ActiveHypothetical {
+                            show_drawn_cards: replay.show_drawn_cards,
+                            events: replay.hypothetical_actions.clone(),
+                        }
+                    }),
+                },
+                _ => hanabi_protocol::GamePhase::Playing {
+                    clock: self.clock()?.clock,
+                    pause: pause_state(s, &session),
+                    connections: self.connections().connections,
+                    votes: player_seat.map(|seat| seat_votes(s, seat)).transpose()?,
+                },
+            };
             let state = hanabi_protocol::GameState {
                 table_id: self.table.id,
                 events: game_events(&list),
-                deck: replay.then(|| Self::card_identities(s)),
                 notes,
-                votes: player_seat.map(|seat| seat_votes(s, seat)).transpose()?,
-                connections: (!replay).then(|| self.connections().connections),
-                clock: if replay {
-                    None
-                } else {
-                    Some(self.clock()?.clock)
-                },
-                pause: (!replay).then(|| pause_state(s, &session)),
                 spectators: self.spectators(),
-                hypothetical: match &self.table.phase {
-                    Phase::Replay { replay, .. } if replay.hypothetical => {
-                        Some(hanabi_protocol::ActiveHypothetical {
-                            show_drawn_cards: replay.show_drawn_cards,
-                            events: replay.hypothetical_actions.clone(),
-                        })
-                    }
-                    _ => None,
-                },
+                phase,
             };
             e.messages.push((
                 session.clone(),

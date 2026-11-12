@@ -292,13 +292,14 @@ export const clockSchema = z
     turnElapsedMs: millisecondsSchema,
   })
   .readonly();
+const playerConnectionsSchema = z.array(z.boolean()).min(2).max(6).readonly();
 
 /**
  * Whether each player has loaded the game, in seat order. Only a game in progress sends it.
  */
 export const connectionsSchema = z
   .strictObject({
-    connections: z.array(z.boolean()).min(2).max(6).readonly(),
+    connections: playerConnectionsSchema,
     tableId: tableIdSchema,
   })
   .readonly();
@@ -598,20 +599,6 @@ const pauseStateSchema = z
   .readonly();
 
 /**
- * A user, by ID and by name. A successful `/login` and `/api/v1/identity` answer with the account.
- */
-export const spectatorSchema = z
-  .strictObject({
-    /**
-     * The seat being shadowed, if any.
-     */
-    shadowingPlayerIndex: playerIndexSchema.optional(),
-    userId: userIdSchema,
-    username: z.string().min(1),
-  })
-  .readonly();
-
-/**
  * A number of votes: at most one for each player.
  */
 const voteCountSchema = z.number().int().min(0).max(6);
@@ -635,44 +622,65 @@ const voteStateSchema = z
   .readonly();
 
 /**
+ * The parts of a game's state that only a game in progress or only a replay has.
+ */
+const gamePhaseSchema = z.discriminatedUnion("type", [
+  z
+    .strictObject({
+      clock: clockStateSchema,
+      connections: playerConnectionsSchema,
+      pause: pauseStateSchema,
+      type: z.literal("playing"),
+      /**
+       * Present for a player of the game.
+       */
+      votes: voteStateSchema.optional(),
+    })
+    .readonly(),
+  z
+    .strictObject({
+      /**
+       * Every card's identity, by card order.
+       */
+      deck: z.array(cardIdentitySchema).max(60).readonly(),
+      /**
+       * The hypothetical that a shared replay plays through, if any.
+       */
+      hypothetical: activeHypotheticalSchema.optional(),
+      type: z.literal("replay"),
+    })
+    .readonly(),
+]);
+
+/**
+ * A user, by ID and by name. A successful `/login` and `/api/v1/identity` answer with the account.
+ */
+export const spectatorSchema = z
+  .strictObject({
+    /**
+     * The seat being shadowed, if any.
+     */
+    shadowingPlayerIndex: playerIndexSchema.optional(),
+    userId: userIdSchema,
+    username: z.string().min(1),
+  })
+  .readonly();
+
+/**
  * What a client shows of a game after its setup (`GameInit`), as the recipient may see it: the
  * events so far, and the state around them. It answers `gameStateLoad`. It is an event, not the
  * reply's data, so that it arrives before the table's later messages, which build on it.
  */
 export const gameStateSchema = z
   .strictObject({
-    /**
-     * Absent in a replay.
-     */
-    clock: clockStateSchema.optional(),
-    /**
-     * Whether each player has loaded the game, in seat order. Absent in a replay, which has no
-     * players to wait for.
-     */
-    connections: z.array(z.boolean()).min(2).max(6).readonly().optional(),
-    /**
-     * Every card's identity, by card order. Present in a replay.
-     */
-    deck: z.array(cardIdentitySchema).max(60).readonly().optional(),
     events: z.array(gameEventSchema).readonly(),
-    /**
-     * The hypothetical that a shared replay plays through, if any.
-     */
-    hypothetical: activeHypotheticalSchema.optional(),
     /**
      * The notes that the recipient may see, as in `noteList`.
      */
     notes: z.array(authorNotesSchema).readonly(),
-    /**
-     * Absent in a replay.
-     */
-    pause: pauseStateSchema.optional(),
+    phase: gamePhaseSchema,
     spectators: z.array(spectatorSchema).readonly(),
     tableId: tableIdSchema,
-    /**
-     * Present for a player of a game in progress.
-     */
-    votes: voteStateSchema.optional(),
   })
   .readonly();
 

@@ -377,6 +377,24 @@ impl JsonSchema for Notes {
     }
 }
 
+/// Whether each player has loaded the game, in seat order.
+pub struct PlayerConnections;
+
+impl JsonSchema for PlayerConnections {
+    fn schema_name() -> std::borrow::Cow<'static, str> {
+        "PlayerConnections".into()
+    }
+
+    fn json_schema(_: &mut schemars::SchemaGenerator) -> schemars::Schema {
+        schemars::json_schema!({
+            "type": "array",
+            "items": { "type": "boolean" },
+            "minItems": MIN_PLAYERS,
+            "maxItems": MAX_PLAYERS,
+        })
+    }
+}
+
 /// A timestamp on the wire: RFC 3339 in UTC, with milliseconds, such as
 /// "2026-01-01T12:00:00.000Z". Both the server's and the clients' schemas accept only this form.
 /// Checkpoints can hold the forms that older servers wrote, so reading one does not check it.

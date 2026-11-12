@@ -543,7 +543,8 @@ mod tests {
             test_frame(
                 "gameState",
                 serde_json::json!({
-                    "tableId":42,"events":[],"notes":[],"connections":[true,true],"spectators":[],
+                    "tableId":42,"events":[],"notes":[],"spectators":[],
+                    "phase":{"type":"replay","deck":[]},
                 }),
             ),
             test_frame(
@@ -553,7 +554,7 @@ mod tests {
             test_frame(
                 "gameState",
                 serde_json::json!({
-                    "tableId":42,"events":[],"connections":[true,true],"spectators":[],
+                    "tableId":42,"events":[],"spectators":[],"phase":{"type":"replay","deck":[]},
                     "notes":[{"username":"Player0","notes":notes,"spectator":false}],
                 }),
             ),
