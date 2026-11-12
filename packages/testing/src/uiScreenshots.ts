@@ -837,6 +837,13 @@ function getStates({
       prepare: async (page) => {
         await clickNav(page, "settings");
       },
+      hover: async (page) => {
+        await page
+          .locator(".lobby-row", { has: page.locator("#keldonMode") })
+          .last()
+          .hover();
+        await page.waitForTimeout(SETTLE_MILLISECONDS);
+      },
       record: async (page) => {
         function row(id: string) {
           return page
