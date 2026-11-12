@@ -2299,29 +2299,18 @@ function timerClick() {
 
   const { currentPlayerIndex } = globals.state.ongoingGame.turn;
 
-  let setting: "pause" | "pauseQueue" | "pauseUnqueue";
+  const tableId = globals.lobby.joinedTableId;
   if (isOurSeat(currentPlayerIndex, globals.metadata)) {
-    setting = "pause";
-  } else if (globals.state.pause.queued) {
-    setting = "pauseUnqueue";
-
-    globals.store!.dispatch({
-      type: "pauseQueue",
-      queued: false,
-    });
-  } else {
-    setting = "pauseQueue";
-
-    globals.store!.dispatch({
-      type: "pauseQueue",
-      queued: true,
-    });
+    globals.lobby.conn!.send("pause", { tableId, paused: true });
+    return;
   }
 
-  globals.lobby.conn!.send("pause", {
-    tableId: globals.lobby.joinedTableId,
-    setting,
+  const queued = !globals.state.pause.queued;
+  globals.store!.dispatch({
+    type: "pauseQueue",
+    queued,
   });
+  globals.lobby.conn!.send("pauseQueue", { tableId, queued });
 }
 
 function drawClueArea() {
@@ -3030,7 +3019,7 @@ function drawPauseArea() {
   globals.elements.pauseButton.on("click tap", () => {
     globals.lobby.conn!.send("pause", {
       tableId: globals.lobby.joinedTableId,
-      setting: "unpause",
+      paused: false,
     });
   });
   globals.elements.pauseArea.add(globals.elements.pauseButton);

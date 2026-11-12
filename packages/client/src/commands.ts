@@ -123,13 +123,16 @@ commands.set("chatTyping", (data) => {
 
 // The "chatList" command is sent upon initial connection to give the client a list of past lobby
 // chat messages. It is also sent upon connecting to a game to give a list of past in-game chat
-// messages.
+// messages, with the table's ID and the number of unread messages.
 commands.set("chatList", (data) => {
   for (const line of data.messages) {
     chat.add(line, true); // The second argument is "fast"
   }
-  if (globals.ui !== undefined && !gameChat.isOpen()) {
-    // If the UI is open, we assume that this is a list of in-game chat messages.
+  if (
+    data.numUnread !== undefined
+    && globals.ui !== undefined
+    && !gameChat.isOpen()
+  ) {
     globals.chatUnread += data.numUnread;
     globals.ui.updateChatLabel();
   }

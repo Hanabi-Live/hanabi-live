@@ -63,6 +63,7 @@ pub fn route(message: &ClientMessage) -> Route {
         M::TableUpdate(r) => r.table_id,
         M::PlayerAction(r) => r.table_id,
         M::Pause(r) => r.table_id,
+        M::PauseQueue(r) => r.table_id,
         M::Note(r) => r.table_id,
         M::TagAdd(r) | M::TagRemove(r) => r.table_id,
         M::ReplayAction(r) => r.table_id,

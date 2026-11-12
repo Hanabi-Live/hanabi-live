@@ -60,6 +60,7 @@ macro_rules! client_contracts {
             ReplayCreate "replayCreate" => ReplayCreateRequest;
             PlayerAction "playerAction" => PlayerActionRequest;
             Pause "pause" => PauseRequest;
+            PauseQueue "pauseQueue" => PauseQueueRequest;
             IdleReset "idleReset" => TableRef;
             Note "note" => NoteRequest;
             TagAdd "tagAdd" => TagRequest;

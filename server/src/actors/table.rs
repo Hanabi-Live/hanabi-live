@@ -48,6 +48,7 @@ pub(super) fn wrong_phase(message: &ClientMessage) -> CommandError {
         M::TableUpdate(_) => "Game already started",
         M::PlayerAction(_)
         | M::Pause(_)
+        | M::PauseQueue(_)
         | M::IdleReset(_)
         | M::Note(_)
         | M::TableTerminate(_)
@@ -401,17 +402,15 @@ impl TableActor {
             session.clone(),
             frame(
                 hanabi_protocol::server::CHAT_LIST,
-                hanabi_protocol::ChatList {
-                    messages: self
-                        .table
+                hanabi_protocol::ChatList::table(
+                    self.table.id,
+                    self.table
                         .chat
                         .iter()
                         .map(TableChat::wire_message)
                         .collect::<Result<_>>()?,
-                    num_unread: hanabi_protocol::Count::try_from(
-                        self.table.chat.len().saturating_sub(read),
-                    )?,
-                },
+                    hanabi_protocol::Count::try_from(self.table.chat.len().saturating_sub(read))?,
+                ),
             ),
         ));
         Ok(())

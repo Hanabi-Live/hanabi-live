@@ -2003,7 +2003,7 @@ mod tests {
             let loaded=store.load().await?;let s=loaded[0].0.game().unwrap();ensure!(s.players.len()==3&&s.game.stacks.len()==6&&s.game.clue_tokens==16,"Native variant ignored");
             let active=s.game.active_player_index;let actor=usize::try_from(s.players[active].user()?.get())?-1;
             send(&hub,users[actor].clone(),"gameLoaded",json!({"tableId":id})).await?;
-            send(&hub,users[actor].clone(),"pause",json!({"tableId":id,"setting":"pause"})).await?;
+            send(&hub,users[actor].clone(),"pause",json!({"tableId":id,"paused":true})).await?;
             send(&hub,users[actor].clone(),"note",json!({"tableId":id,"order":0,"text":"private"})).await?;
             send(&hub,users[actor].clone(),"tagAdd",json!({"tableId":id,"tag":"native-live"})).await?;
             let loaded=store.load().await?;let s=loaded[0].0.game().unwrap();ensure!(s.paused()&&s.notes[active][0]=="private"&&s.tags.len()==1,"Runtime mutations not durable");

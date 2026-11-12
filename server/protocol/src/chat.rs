@@ -160,11 +160,39 @@ pub struct ChatDeleted {
     pub chat_id: ChatId,
 }
 
+/// The past messages of the lobby's chat or of a table's chat, which a client receives when it
+/// connects or joins the table.
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct ChatList {
     pub messages: Vec<Chat>,
-    pub num_unread: Count,
+    /// The table whose chat this is. Absent for the lobby's chat.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub table_id: Option<TableId>,
+    /// How many of the messages the recipient has not read. Present with `tableId`, as the server
+    /// does not track what a user has read in the lobby.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub num_unread: Option<Count>,
+}
+
+impl ChatList {
+    /// The lobby's past messages.
+    pub const fn lobby(messages: Vec<Chat>) -> Self {
+        Self {
+            messages,
+            table_id: None,
+            num_unread: None,
+        }
+    }
+
+    /// A table's past messages, and how many of them the recipient has not read.
+    pub const fn table(table_id: TableId, messages: Vec<Chat>, num_unread: Count) -> Self {
+        Self {
+            messages,
+            table_id: Some(table_id),
+            num_unread: Some(num_unread),
+        }
+    }
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]

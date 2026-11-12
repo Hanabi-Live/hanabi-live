@@ -222,21 +222,21 @@ pub struct PlayerActionRequest {
     pub action: PlayerAction,
 }
 
+/// Pauses or unpauses a timed game.
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct PauseRequest {
     pub table_id: TableId,
-    pub setting: PauseSetting,
+    pub paused: bool,
 }
 
-/// `pauseQueue` pauses when the player's turn comes, or immediately if it is already their turn.
-#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
-#[serde(rename_all = "camelCase")]
-pub enum PauseSetting {
-    Pause,
-    Unpause,
-    PauseQueue,
-    PauseUnqueue,
+/// Asks to pause a timed game when the sender's turn comes, or withdraws that request. If it is
+/// already their turn, a request to pause pauses the game at once.
+#[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct PauseQueueRequest {
+    pub table_id: TableId,
+    pub queued: bool,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]

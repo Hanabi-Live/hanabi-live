@@ -20,23 +20,23 @@ import {
 } from "@hanabi-live/game";
 import * as z from "zod";
 
-export const MAX_VOLUME = 100;
-export const MAX_H_GROUP_LEVEL = 25;
-export const DEFAULT_PAGE_LIMIT = 10;
-export const MAX_PAGE_LIMIT = 100;
 export const DEFAULT_MAX_PLAYERS = 5;
-export const SECONDS_PER_MINUTE = 60;
-export const MAX_TIME_BASE_SECONDS = 604_800;
-export const MAX_TIME_PER_TURN_SECONDS = 86_400;
-export const DEFAULT_TIME_BASE_SECONDS = 120;
-export const DEFAULT_TIME_PER_TURN_SECONDS = 20;
-export const TYPING_TIMEOUT_MS = 2000;
+export const DEFAULT_TABLE_NAME_SUFFIX = "'s table";
 export const MAX_SEED_LENGTH = 32;
 export const MAX_CHAT_LENGTH = 300;
 export const MAX_NOTE_LENGTH = 300;
 export const MAX_TABLE_NAME_LENGTH = 45;
+export const SECONDS_PER_MINUTE = 60;
+export const TYPING_TIMEOUT_MS = 2000;
+export const MAX_TIME_BASE_SECONDS = 604_800;
+export const MAX_TIME_PER_TURN_SECONDS = 86_400;
+export const MAX_VOLUME = 100;
+export const MAX_H_GROUP_LEVEL = 25;
+export const DEFAULT_TIME_BASE_SECONDS = 120;
+export const DEFAULT_TIME_PER_TURN_SECONDS = 20;
+export const DEFAULT_PAGE_LIMIT = 10;
+export const MAX_PAGE_LIMIT = 100;
 export const MAX_EFFICIENCY_MODIFIER = 60;
-export const DEFAULT_TABLE_NAME_SUFFIX = "'s table";
 
 /**
  * A table's ID.
@@ -225,10 +225,23 @@ export const chatDeletedSchema = z
  * A number of things, such as games or unread messages, or a position in a list of them.
  */
 const countSchema = z.number().int().min(0).max(9_007_199_254_740_991);
+
+/**
+ * The past messages of the lobby's chat or of a table's chat, which a client receives when it
+ * connects or joins the table.
+ */
 export const chatListSchema = z
   .strictObject({
     messages: z.array(chatSchema).readonly(),
-    numUnread: countSchema,
+    /**
+     * How many of the messages the recipient has not read. Present with `tableId`, as the server
+     * does not track what a user has read in the lobby.
+     */
+    numUnread: countSchema.optional(),
+    /**
+     * The table whose chat this is. Absent for the lobby's chat.
+     */
+    tableId: tableIdSchema.optional(),
   })
   .readonly();
 export const chatPmHistorySchema = z
@@ -887,16 +900,18 @@ export const pauseSchema = z
   .readonly();
 
 /**
- * `pauseQueue` pauses when the player's turn comes, or immediately if it is already their turn.
+ * Asks to pause a timed game when the sender's turn comes, or withdraws that request. If it is
+ * already their turn, a request to pause pauses the game at once.
  */
-const pauseSettingSchema = z.enum([
-  "pause",
-  "unpause",
-  "pauseQueue",
-  "pauseUnqueue",
-]);
+export const pauseQueueRequestSchema = z
+  .strictObject({ queued: z.boolean(), tableId: tableIdSchema })
+  .readonly();
+
+/**
+ * Pauses or unpauses a timed game.
+ */
 export const pauseRequestSchema = z
-  .strictObject({ setting: pauseSettingSchema, tableId: tableIdSchema })
+  .strictObject({ paused: z.boolean(), tableId: tableIdSchema })
   .readonly();
 
 /**
@@ -1658,6 +1673,7 @@ export const CLIENT_COMMAND_SCHEMAS = {
   lobbyLoad: emptySchema,
   note: noteRequestSchema,
   pause: pauseRequestSchema,
+  pauseQueue: pauseQueueRequestSchema,
   playerAction: playerActionRequestSchema,
   replayAction: replayActionSchema,
   replayCreate: replayCreateRequestSchema,

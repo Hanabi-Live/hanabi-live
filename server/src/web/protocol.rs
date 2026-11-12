@@ -66,7 +66,8 @@ mod tests {
                 "playerAction" => {
                     json!({"tableId":1,"action":{"type":"clue","receiverIndex":0,"clue":{"type":"rank","rank":1}}})
                 }
-                "pause" => json!({"tableId":1,"setting":"pause"}),
+                "pause" => json!({"tableId":1,"paused":true}),
+                "pauseQueue" => json!({"tableId":1,"queued":true}),
                 "note" => json!({"tableId":1,"order":0,"text":"test"}),
                 "tagAdd" | "tagRemove" => json!({"tableId":1,"tag":"test"}),
                 "replayAction" => {

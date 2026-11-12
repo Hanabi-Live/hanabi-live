@@ -148,10 +148,7 @@ pub(super) async fn lobby_initial(app: &App, id: UserId) -> Result<(Vec<Frame>, 
     let chat = lobby::lobby_history(pool, LOBBY_HISTORY_MESSAGES).await?;
     initial.push(frame(
         hanabi_protocol::server::CHAT_LIST,
-        hanabi_protocol::ChatList {
-            messages: chat,
-            num_unread: hanabi_protocol::Count::default(),
-        },
+        hanabi_protocol::ChatList::lobby(chat),
     ));
     initial.push(frame(
         hanabi_protocol::server::CHAT,

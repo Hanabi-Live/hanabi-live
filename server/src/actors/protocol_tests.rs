@@ -1303,7 +1303,7 @@ async fn pausing_a_game_is_announced_in_its_chat() -> Result<()> {
             h.send(index, "tableReattend", json!({"tableId":id}))
                 .await?;
         }
-        h.send(1, "pause", json!({"tableId":id,"setting":"pause"}))
+        h.send(1, "pause", json!({"tableId":id,"paused":true}))
             .await?;
         // A paused game takes no actions, even from the active player.
         let (table, _) = h.snapshot(id).await?;
@@ -1328,7 +1328,7 @@ async fn pausing_a_game_is_announced_in_its_chat() -> Result<()> {
             error.to_string().contains("paused"),
             "Unexpected error: {error}"
         );
-        h.send(0, "pause", json!({"tableId":id,"setting":"unpause"}))
+        h.send(0, "pause", json!({"tableId":id,"paused":false}))
             .await?;
         let (table, _) = h.snapshot(id).await?;
         let notices = notices(&table);
@@ -1338,6 +1338,71 @@ async fn pausing_a_game_is_announced_in_its_chat() -> Result<()> {
                 "Alice unpaused the game.".into()
             ]),
             "Unexpected notices: {notices:#?}"
+        );
+        Ok(())
+    }
+    .await;
+    h.close().await?;
+    outcome
+}
+
+#[tokio::test]
+async fn a_queued_pause_waits_for_the_turn_or_pauses_at_once_on_it() -> Result<()> {
+    let Some(mut h) = Harness::new(&["Alice", "Bob"]).await? else {
+        return Ok(());
+    };
+    let outcome = async {
+        let id = h
+            .create(
+                0,
+                "Pause queue",
+                json!({"options":{"timeControl":{"baseSeconds":120,"perTurnSeconds":20}}}),
+            )
+            .await?;
+        h.send(1, "tableJoin", json!({"tableId":id})).await?;
+        h.start(0, id).await?;
+        for index in 0..2 {
+            h.send(index, "tableReattend", json!({"tableId":id}))
+                .await?;
+        }
+        let (table, _) = h.snapshot(id).await?;
+        let game = &table.game().context("Missing game")?.game;
+        let active = game.active_player_index;
+        let seat_of = |index: usize| {
+            table
+                .players()
+                .iter()
+                .position(|player| player.is(h.users[index].user))
+        };
+        let waiting = (0..2)
+            .find(|&index| seat_of(index) != Some(active))
+            .context("Missing waiting player")?;
+        let waiting_seat = seat_of(waiting).context("Missing seat")?;
+        let acting = 1 - waiting;
+
+        h.send(waiting, "pauseQueue", json!({"tableId":id,"queued":true}))
+            .await?;
+        let (table, _) = h.snapshot(id).await?;
+        let state = table.game().context("Missing game")?;
+        ensure!(
+            state.queued_pauses[waiting_seat] && !state.paused(),
+            "Queueing a pause off turn paused the game or did not queue"
+        );
+        h.send(waiting, "pauseQueue", json!({"tableId":id,"queued":false}))
+            .await?;
+        let (table, _) = h.snapshot(id).await?;
+        let state = table.game().context("Missing game")?;
+        ensure!(
+            !state.queued_pauses[waiting_seat],
+            "Withdrawing a queued pause left it queued"
+        );
+
+        h.send(acting, "pauseQueue", json!({"tableId":id,"queued":true}))
+            .await?;
+        let (table, _) = h.snapshot(id).await?;
+        ensure!(
+            table.game().context("Missing game")?.paused(),
+            "Queueing a pause on the player's own turn did not pause the game"
         );
         Ok(())
     }

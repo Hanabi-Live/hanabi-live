@@ -68,124 +68,168 @@ pub use lobby::*;
 pub use replay::*;
 pub use requests::*;
 
-/// The largest integer that JavaScript numbers hold exactly (`Number.MAX_SAFE_INTEGER`).
-pub const MAX_SAFE_INTEGER: i64 = (1 << 53) - 1;
+/// Defines the protocol's constants. `@data` or `@game` before a constant also exports it to
+/// TypeScript under the same name, from the data package or from the game library, which
+/// `exported_constants` lists for the generator.
+macro_rules! constants {
+    (@package data) => { ConstantPackage::Data };
+    (@package game) => { ConstantPackage::Game };
+    ($(
+        $(#[$meta:meta])*
+        $(@$package:ident)? $vis:vis const $name:ident: $ty:ty = $value:expr;
+    )+) => {
+        $($(#[$meta])* $vis const $name: $ty = $value;)+
 
-/// The fewest players a game can have.
-pub const MIN_PLAYERS: usize = 2;
-/// The most players a game can have, which also bounds every per-player list.
-pub const MAX_PLAYERS: usize = 6;
-/// The highest seat index.
-pub(crate) const MAX_SEAT: usize = MAX_PLAYERS - 1;
-/// The player limit of a table whose creator did not choose one.
-pub const DEFAULT_MAX_PLAYERS: u8 = 5;
-/// The variant of a game or table that does not choose one.
-pub const DEFAULT_VARIANT_NAME: &str = "No Variant";
-/// The ID of `DEFAULT_VARIANT_NAME` in `variants.json`.
-pub const DEFAULT_VARIANT_ID: VariantId = VariantId(0);
-/// What follows the creator's name to name a table whose creator did not choose a name.
-pub const DEFAULT_TABLE_NAME_SUFFIX: &str = "'s table";
-/// The most suits a variant can have.
-pub const MAX_SUITS: usize = 6;
-/// The highest suit index.
-pub(crate) const MAX_SUIT_INDEX: usize = MAX_SUITS - 1;
-/// The lowest rank.
-pub const MIN_RANK: i32 = 1;
-/// The highest normal rank, which is also a suit's stack size unless the variant sets one.
-pub const MAX_RANK: i32 = 5;
-/// The highest score: every card of the most suits played.
-#[expect(
-    clippy::cast_possible_truncation,
-    clippy::cast_possible_wrap,
-    reason = "the most suits is far below i32::MAX"
-)]
-pub const MAX_SCORE: i32 = MAX_SUITS as i32 * MAX_RANK;
-/// The most cards in a hand without the options that change it: the hand of a 2- or 3-player game.
-pub const MAX_NORMAL_HAND_SIZE: usize = 5;
-/// The most cards in a hand: "One Extra Card" adds one.
-pub const MAX_HAND_SIZE: usize = MAX_NORMAL_HAND_SIZE + 1;
-/// The rank of a stack's start card, which Up or Down variants add to each suit.
-pub const START_CARD_RANK: i32 = 7;
-/// The rank clue that touches the odd ranks in an Odds and Evens variant.
-pub const ODD_RANK_CLUE: i32 = 1;
-/// The rank clue that touches the even ranks in an Odds and Evens variant.
-pub const EVEN_RANK_CLUE: i32 = 2;
-/// Clue tokens in play at most, before a clue-starved variant doubles their count.
-pub const MAX_CLUES: i32 = 8;
-/// The strikes that end a game.
-pub const MAX_STRIKES: i32 = 3;
-/// The clues at or below which a Panicky player must discard twice, before a clue-starved variant
-/// doubles their count.
-pub const PANICKY_MAX_CLUES: i32 = 4;
-/// The most cards a deck can have.
-pub const MAX_DECK_SIZE: usize = 60;
-/// The most actions a game can record.
-pub const MAX_GAME_ACTIONS: usize = 512;
-/// The longest seed that a table can request, in characters. The full seed also names the player count
-/// and variant, such as "p3v0s" before "123".
-pub const MAX_SEED_LENGTH: usize = 32;
-/// The longest chat message, in characters.
-pub const MAX_CHAT_LENGTH: usize = 300;
-/// The longest note, in characters, that a player or spectator writes during a game. The server
-/// cuts a longer note to this length.
-pub const MAX_NOTE_LENGTH: usize = 300;
-/// The longest game tag, in characters.
-pub const MAX_TAG_LENGTH: usize = 100;
-/// The longest table name that a player chooses, in characters. The server cuts a longer name to
-/// this length.
-pub const MAX_TABLE_NAME_LENGTH: usize = 45;
-/// The longest note, in characters, that an imported game can give a card.
-pub const MAX_IMPORTED_NOTE_LENGTH: usize = 65536;
-/// The number of seconds in a minute.
-pub const SECONDS_PER_MINUTE: i64 = 60;
-/// Player clocks and idle timers hold milliseconds; time options hold seconds.
-pub const CLOCK_UNITS_PER_SECOND: i64 = 1000;
-/// The clock units in a minute.
-pub const CLOCK_UNITS_PER_MINUTE: i64 = SECONDS_PER_MINUTE * CLOCK_UNITS_PER_SECOND;
-/// How long a game can go without a move before it ends.
-pub const IDLE_TIMEOUT_MS: i64 = 30 * CLOCK_UNITS_PER_MINUTE;
-/// How long a typing indicator lasts without another keystroke, in milliseconds.
-pub const TYPING_TIMEOUT_MS: i64 = 2 * CLOCK_UNITS_PER_SECOND;
-/// The number of minutes in an hour.
-pub const MINUTES_PER_HOUR: i64 = 60;
-/// The number of seconds in an hour.
-pub const SECONDS_PER_HOUR: i64 = MINUTES_PER_HOUR * SECONDS_PER_MINUTE;
-/// The number of hours in a day.
-pub const HOURS_PER_DAY: i64 = 24;
-/// The number of seconds in a day.
-pub const SECONDS_PER_DAY: i64 = HOURS_PER_DAY * SECONDS_PER_HOUR;
-/// The longest starting clock a timed game can have, in seconds (one week).
-pub const MAX_TIME_BASE_SECONDS: i64 = 7 * SECONDS_PER_DAY;
-/// The most time a timed game can add each turn, in seconds (one day).
-pub const MAX_TIME_PER_TURN_SECONDS: i64 = SECONDS_PER_DAY;
-/// The loudest volume setting.
-pub const MAX_VOLUME: u8 = 100;
-/// The highest level of the H-Group convention guide's learning path.
-pub const MAX_H_GROUP_LEVEL: u8 = 25;
-/// The volume setting of a new user.
-pub const DEFAULT_VOLUME: u8 = MAX_VOLUME / 2;
-/// The starting clock that the "Create Game" form offers for a timed table, in seconds.
-pub const DEFAULT_TIME_BASE_SECONDS: i64 = 2 * SECONDS_PER_MINUTE;
-/// The time that the "Create Game" form offers for a timed table to add each turn, in seconds.
-pub const DEFAULT_TIME_PER_TURN_SECONDS: i64 = 20;
-/// The rows on a page of a public listing when the request does not name a limit.
-pub const DEFAULT_PAGE_LIMIT: i64 = 10;
-/// The most rows that a page of a public listing, a player's game history, or their private
-/// messages can have.
-pub const MAX_PAGE_LIMIT: i64 = 100;
-/// A table's progress, as a percentage, once its game reaches the maximum score or its replay
-/// reaches the last turn.
-pub const MAX_PROGRESS: u8 = 100;
-/// How far a shared replay's leader can move the count of cards that the efficiency uses, either way.
-/// It never needs to be larger than a deck.
-#[expect(
-    clippy::cast_possible_truncation,
-    clippy::cast_possible_wrap,
-    reason = "the largest deck is far below i32::MAX"
-)]
-pub const MAX_EFFICIENCY_MODIFIER: i32 = MAX_DECK_SIZE as i32;
-/// The highest card order: stack bases follow the cards of the largest deck, one for each suit.
-const MAX_CARD_ORDER: usize = MAX_DECK_SIZE + MAX_SUITS - 1;
+        /// The constants that TypeScript exports, in the order of their definitions.
+        pub fn exported_constants() -> Vec<ExportedConstant> {
+            vec![$($(ExportedConstant {
+                package: constants!(@package $package),
+                name: stringify!($name),
+                type_name: stringify!($ty),
+                value: serde_json::json!($name),
+            },)?)+]
+        }
+    };
+}
+
+/// The TypeScript package that exports a constant.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum ConstantPackage {
+    /// `@hanabi-live/data`.
+    Data,
+    /// `@hanabi-live/game`.
+    Game,
+}
+
+/// A constant that TypeScript exports under the same name.
+pub struct ExportedConstant {
+    pub package: ConstantPackage,
+    pub name: &'static str,
+    /// The constant's Rust type, such as `u8` or `VariantId`.
+    pub type_name: &'static str,
+    pub value: serde_json::Value,
+}
+
+constants! {
+    /// The largest integer that JavaScript numbers hold exactly (`Number.MAX_SAFE_INTEGER`).
+    pub const MAX_SAFE_INTEGER: i64 = (1 << 53) - 1;
+
+    /// The fewest players a game can have.
+    @game pub const MIN_PLAYERS: usize = 2;
+    /// The most players a game can have, which also bounds every per-player list.
+    @game pub const MAX_PLAYERS: usize = 6;
+    /// The highest seat index.
+    pub(crate) const MAX_SEAT: usize = MAX_PLAYERS - 1;
+    /// The player limit of a table whose creator did not choose one.
+    @data pub const DEFAULT_MAX_PLAYERS: u8 = 5;
+    /// The variant of a game or table that does not choose one.
+    @game pub const DEFAULT_VARIANT_NAME: &str = "No Variant";
+    /// The ID of `DEFAULT_VARIANT_NAME` in `variants.json`.
+    @game pub const DEFAULT_VARIANT_ID: VariantId = VariantId(0);
+    /// What follows the creator's name to name a table whose creator did not choose a name.
+    @data pub const DEFAULT_TABLE_NAME_SUFFIX: &str = "'s table";
+    /// The most suits a variant can have.
+    @game pub const MAX_SUITS: usize = 6;
+    /// The highest suit index.
+    pub(crate) const MAX_SUIT_INDEX: usize = MAX_SUITS - 1;
+    /// The lowest rank.
+    @game pub const MIN_RANK: i32 = 1;
+    /// The highest normal rank, which is also a suit's stack size unless the variant sets one.
+    @game pub const MAX_RANK: i32 = 5;
+    /// The highest score: every card of the most suits played.
+    #[expect(
+        clippy::cast_possible_truncation,
+        clippy::cast_possible_wrap,
+        reason = "the most suits is far below i32::MAX"
+    )]
+    pub const MAX_SCORE: i32 = MAX_SUITS as i32 * MAX_RANK;
+    /// The most cards in a hand without the options that change it: the hand of a 2- or 3-player game.
+    pub const MAX_NORMAL_HAND_SIZE: usize = 5;
+    /// The most cards in a hand: "One Extra Card" adds one.
+    pub const MAX_HAND_SIZE: usize = MAX_NORMAL_HAND_SIZE + 1;
+    /// The rank of a stack's start card, which Up or Down variants add to each suit.
+    @game pub const START_CARD_RANK: i32 = 7;
+    /// The rank clue that touches the odd ranks in an Odds and Evens variant.
+    @game pub const ODD_RANK_CLUE: i32 = 1;
+    /// The rank clue that touches the even ranks in an Odds and Evens variant.
+    @game pub const EVEN_RANK_CLUE: i32 = 2;
+    /// Clue tokens in play at most, before a clue-starved variant doubles their count.
+    @game pub const MAX_CLUES: i32 = 8;
+    /// The strikes that end a game.
+    @game pub const MAX_STRIKES: i32 = 3;
+    /// The clues at or below which a Panicky player must discard twice, before a clue-starved variant
+    /// doubles their count.
+    @game pub const PANICKY_MAX_CLUES: i32 = 4;
+    /// The most cards a deck can have.
+    @game pub const MAX_DECK_SIZE: usize = 60;
+    /// The most actions a game can record.
+    pub const MAX_GAME_ACTIONS: usize = 512;
+    /// The longest seed that a table can request, in characters. The full seed also names the player count
+    /// and variant, such as "p3v0s" before "123".
+    @data pub const MAX_SEED_LENGTH: usize = 32;
+    /// The longest chat message, in characters.
+    @data pub const MAX_CHAT_LENGTH: usize = 300;
+    /// The longest note, in characters, that a player or spectator writes during a game. The server
+    /// cuts a longer note to this length.
+    @data pub const MAX_NOTE_LENGTH: usize = 300;
+    /// The longest game tag, in characters.
+    pub const MAX_TAG_LENGTH: usize = 100;
+    /// The longest table name that a player chooses, in characters. The server cuts a longer name to
+    /// this length.
+    @data pub const MAX_TABLE_NAME_LENGTH: usize = 45;
+    /// The longest note, in characters, that an imported game can give a card.
+    pub const MAX_IMPORTED_NOTE_LENGTH: usize = 65536;
+    /// The number of seconds in a minute.
+    @data pub const SECONDS_PER_MINUTE: i64 = 60;
+    /// Player clocks and idle timers hold milliseconds; time options hold seconds.
+    pub const CLOCK_UNITS_PER_SECOND: i64 = 1000;
+    /// The clock units in a minute.
+    pub const CLOCK_UNITS_PER_MINUTE: i64 = SECONDS_PER_MINUTE * CLOCK_UNITS_PER_SECOND;
+    /// How long a game can go without a move before it ends.
+    pub const IDLE_TIMEOUT_MS: i64 = 30 * CLOCK_UNITS_PER_MINUTE;
+    /// How long a typing indicator lasts without another keystroke, in milliseconds.
+    @data pub const TYPING_TIMEOUT_MS: i64 = 2 * CLOCK_UNITS_PER_SECOND;
+    /// The number of minutes in an hour.
+    pub const MINUTES_PER_HOUR: i64 = 60;
+    /// The number of seconds in an hour.
+    pub const SECONDS_PER_HOUR: i64 = MINUTES_PER_HOUR * SECONDS_PER_MINUTE;
+    /// The number of hours in a day.
+    pub const HOURS_PER_DAY: i64 = 24;
+    /// The number of seconds in a day.
+    pub const SECONDS_PER_DAY: i64 = HOURS_PER_DAY * SECONDS_PER_HOUR;
+    /// The longest starting clock a timed game can have, in seconds (one week).
+    @data pub const MAX_TIME_BASE_SECONDS: i64 = 7 * SECONDS_PER_DAY;
+    /// The most time a timed game can add each turn, in seconds (one day).
+    @data pub const MAX_TIME_PER_TURN_SECONDS: i64 = SECONDS_PER_DAY;
+    /// The loudest volume setting.
+    @data pub const MAX_VOLUME: u8 = 100;
+    /// The highest level of the H-Group convention guide's learning path.
+    @data pub const MAX_H_GROUP_LEVEL: u8 = 25;
+    /// The volume setting of a new user.
+    pub const DEFAULT_VOLUME: u8 = MAX_VOLUME / 2;
+    /// The starting clock that the "Create Game" form offers for a timed table, in seconds.
+    @data pub const DEFAULT_TIME_BASE_SECONDS: i64 = 2 * SECONDS_PER_MINUTE;
+    /// The time that the "Create Game" form offers for a timed table to add each turn, in seconds.
+    @data pub const DEFAULT_TIME_PER_TURN_SECONDS: i64 = 20;
+    /// The rows on a page of a public listing when the request does not name a limit.
+    @data pub const DEFAULT_PAGE_LIMIT: i64 = 10;
+    /// The most rows that a page of a public listing, a player's game history, or their private
+    /// messages can have.
+    @data pub const MAX_PAGE_LIMIT: i64 = 100;
+    /// A table's progress, as a percentage, once its game reaches the maximum score or its replay
+    /// reaches the last turn.
+    pub const MAX_PROGRESS: u8 = 100;
+    /// How far a shared replay's leader can move the count of cards that the efficiency uses, either way.
+    /// It never needs to be larger than a deck.
+    #[expect(
+        clippy::cast_possible_truncation,
+        clippy::cast_possible_wrap,
+        reason = "the largest deck is far below i32::MAX"
+    )]
+    @data pub const MAX_EFFICIENCY_MODIFIER: i32 = MAX_DECK_SIZE as i32;
+    /// The highest card order: stack bases follow the cards of the largest deck, one for each suit.
+    const MAX_CARD_ORDER: usize = MAX_DECK_SIZE + MAX_SUITS - 1;
+}
 
 /// Lets a flag be omitted when it is false; an explicit false is then never sent.
 #[expect(
@@ -232,114 +276,87 @@ pub struct TableRef {
     pub table_id: TableId,
 }
 
-/// A username that the server sends, which is never empty. Requests carry plain strings instead, as
-/// the `requests` module explains.
-#[derive(Clone, Debug, Default, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
-#[serde(transparent)]
-pub struct Username(String);
+/// Defines a string of the wire that is never empty.
+macro_rules! wire_string {
+    (
+        $(#[doc = $doc:literal])+
+        $(#[derive($($derive:ident),+)])?
+        $name:ident
+    ) => {
+        $(#[doc = $doc])+
+        #[derive(
+            Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize
+            $($(, $derive)+)?
+        )]
+        #[serde(transparent)]
+        pub struct $name(String);
 
-impl Username {
-    pub fn as_str(&self) -> &str {
-        &self.0
-    }
+        impl $name {
+            pub fn as_str(&self) -> &str {
+                &self.0
+            }
 
-    pub fn into_string(self) -> String {
-        self.0
-    }
+            pub fn into_string(self) -> String {
+                self.0
+            }
+        }
+
+        impl From<String> for $name {
+            fn from(text: String) -> Self {
+                Self(text)
+            }
+        }
+
+        impl From<&str> for $name {
+            fn from(text: &str) -> Self {
+                Self(text.to_owned())
+            }
+        }
+
+        impl std::ops::Deref for $name {
+            type Target = str;
+
+            fn deref(&self) -> &str {
+                &self.0
+            }
+        }
+
+        impl std::fmt::Display for $name {
+            fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+                self.0.fmt(f)
+            }
+        }
+
+        impl JsonSchema for $name {
+            fn inline_schema() -> bool {
+                true
+            }
+
+            fn schema_name() -> std::borrow::Cow<'static, str> {
+                stringify!($name).into()
+            }
+
+            fn json_schema(_: &mut schemars::SchemaGenerator) -> schemars::Schema {
+                schemars::json_schema!({
+                    "type": "string",
+                    "minLength": 1,
+                })
+            }
+        }
+    };
 }
 
-impl From<String> for Username {
-    fn from(name: String) -> Self {
-        Self(name)
-    }
+wire_string! {
+    /// A username that the server sends. Requests carry plain strings instead, as the `requests`
+    /// module explains.
+    #[derive(Default)]
+    Username
 }
 
-impl From<&str> for Username {
-    fn from(name: &str) -> Self {
-        Self(name.to_owned())
-    }
-}
-
-impl std::ops::Deref for Username {
-    type Target = str;
-
-    fn deref(&self) -> &str {
-        &self.0
-    }
-}
-
-impl std::fmt::Display for Username {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        self.0.fmt(f)
-    }
-}
-
-impl JsonSchema for Username {
-    fn inline_schema() -> bool {
-        true
-    }
-
-    fn schema_name() -> std::borrow::Cow<'static, str> {
-        "Username".into()
-    }
-
-    fn json_schema(_: &mut schemars::SchemaGenerator) -> schemars::Schema {
-        schemars::json_schema!({
-            "type": "string",
-            "minLength": 1,
-        })
-    }
-}
-
-/// A deal's seed, such as "p3v0s123": the player count, the variant ID, and the table's choice or a
-/// number. Never empty.
-#[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
-#[serde(transparent)]
-pub struct Seed(String);
-
-impl Seed {
-    pub fn as_str(&self) -> &str {
-        &self.0
-    }
-
-    pub fn into_string(self) -> String {
-        self.0
-    }
-}
-
-impl From<String> for Seed {
-    fn from(seed: String) -> Self {
-        Self(seed)
-    }
-}
-
-impl From<&str> for Seed {
-    fn from(seed: &str) -> Self {
-        Self(seed.to_owned())
-    }
-}
-
-impl std::fmt::Display for Seed {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        self.0.fmt(f)
-    }
-}
-
-impl JsonSchema for Seed {
-    fn inline_schema() -> bool {
-        true
-    }
-
-    fn schema_name() -> std::borrow::Cow<'static, str> {
-        "Seed".into()
-    }
-
-    fn json_schema(_: &mut schemars::SchemaGenerator) -> schemars::Schema {
-        schemars::json_schema!({
-            "type": "string",
-            "minLength": 1,
-        })
-    }
+wire_string! {
+    /// A deal's seed, such as "p3v0s123": the player count, the variant ID, and the table's choice
+    /// or a number.
+    Seed
 }
 
 /// One author's notes, by card order. An empty note is a card without one.

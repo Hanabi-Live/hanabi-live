@@ -466,140 +466,48 @@ fn game_library(definitions: &BTreeMap<String, Value>) -> Result<()> {
         module.emit(name)?;
     }
     println!("import * as z from \"zod\";\n");
-    print!("{}", game_library_constants());
+    print!(
+        "{}",
+        exported_constants(hanabi_protocol::ConstantPackage::Game, definitions)
+    );
+    print!("{}", default_card_ranks());
     print!("{}", module.output);
     Ok(())
 }
 
-/// The protocol's limits that the data package exports under the same names.
-fn data_constants() -> String {
-    exported_constants(&[
-        ("MAX_VOLUME", hanabi_protocol::MAX_VOLUME.to_string()),
-        (
-            "MAX_H_GROUP_LEVEL",
-            hanabi_protocol::MAX_H_GROUP_LEVEL.to_string(),
-        ),
-        (
-            "DEFAULT_PAGE_LIMIT",
-            hanabi_protocol::DEFAULT_PAGE_LIMIT.to_string(),
-        ),
-        (
-            "MAX_PAGE_LIMIT",
-            hanabi_protocol::MAX_PAGE_LIMIT.to_string(),
-        ),
-        (
-            "DEFAULT_MAX_PLAYERS",
-            hanabi_protocol::DEFAULT_MAX_PLAYERS.to_string(),
-        ),
-        (
-            "SECONDS_PER_MINUTE",
-            hanabi_protocol::SECONDS_PER_MINUTE.to_string(),
-        ),
-        (
-            "MAX_TIME_BASE_SECONDS",
-            literal(&hanabi_protocol::MAX_TIME_BASE_SECONDS.into()),
-        ),
-        (
-            "MAX_TIME_PER_TURN_SECONDS",
-            literal(&hanabi_protocol::MAX_TIME_PER_TURN_SECONDS.into()),
-        ),
-        (
-            "DEFAULT_TIME_BASE_SECONDS",
-            hanabi_protocol::DEFAULT_TIME_BASE_SECONDS.to_string(),
-        ),
-        (
-            "DEFAULT_TIME_PER_TURN_SECONDS",
-            hanabi_protocol::DEFAULT_TIME_PER_TURN_SECONDS.to_string(),
-        ),
-        (
-            "TYPING_TIMEOUT_MS",
-            hanabi_protocol::TYPING_TIMEOUT_MS.to_string(),
-        ),
-        (
-            "MAX_SEED_LENGTH",
-            hanabi_protocol::MAX_SEED_LENGTH.to_string(),
-        ),
-        (
-            "MAX_CHAT_LENGTH",
-            hanabi_protocol::MAX_CHAT_LENGTH.to_string(),
-        ),
-        (
-            "MAX_NOTE_LENGTH",
-            hanabi_protocol::MAX_NOTE_LENGTH.to_string(),
-        ),
-        (
-            "MAX_TABLE_NAME_LENGTH",
-            hanabi_protocol::MAX_TABLE_NAME_LENGTH.to_string(),
-        ),
-        (
-            "MAX_EFFICIENCY_MODIFIER",
-            hanabi_protocol::MAX_EFFICIENCY_MODIFIER.to_string(),
-        ),
-        (
-            "DEFAULT_TABLE_NAME_SUFFIX",
-            serde_json::to_string(hanabi_protocol::DEFAULT_TABLE_NAME_SUFFIX)
-                .expect("a string serializes"),
-        ),
-    ])
-}
-
-/// Writes each named value as an exported constant.
-fn exported_constants(constants: &[(&str, String)]) -> String {
+/// The protocol's constants that a package exports under the same names. A constant of a wire type,
+/// such as `VariantId`, has that type's schema output type.
+fn exported_constants(
+    package: hanabi_protocol::ConstantPackage,
+    definitions: &BTreeMap<String, Value>,
+) -> String {
     let mut output = String::new();
-    for (name, value) in constants {
-        writeln!(output, "export const {name} = {value};")
+    for constant in hanabi_protocol::exported_constants() {
+        if constant.package != package {
+            continue;
+        }
+        let mut value = literal(&constant.value);
+        if definitions.contains_key(constant.type_name) {
+            write!(
+                value,
+                " as z.output<typeof {}>",
+                variable(constant.type_name)
+            )
+            .expect("writing to a string cannot fail");
+        }
+        writeln!(output, "export const {} = {value};", constant.name)
             .expect("writing to a string cannot fail");
     }
     output
 }
 
-/// The protocol's constants that the game library exports under the same names.
-fn game_library_constants() -> String {
-    exported_constants(&[
-        ("MIN_PLAYERS", hanabi_protocol::MIN_PLAYERS.to_string()),
-        ("MAX_PLAYERS", hanabi_protocol::MAX_PLAYERS.to_string()),
-        (
-            "DEFAULT_VARIANT_NAME",
-            serde_json::to_string(hanabi_protocol::DEFAULT_VARIANT_NAME)
-                .expect("a string serializes"),
-        ),
-        (
-            "DEFAULT_VARIANT_ID",
-            format!(
-                "{} as z.output<typeof variantIdSchema>",
-                hanabi_protocol::DEFAULT_VARIANT_ID
-            ),
-        ),
-        ("MAX_SUITS", hanabi_protocol::MAX_SUITS.to_string()),
-        ("MAX_DECK_SIZE", hanabi_protocol::MAX_DECK_SIZE.to_string()),
-        ("MIN_RANK", hanabi_protocol::MIN_RANK.to_string()),
-        ("MAX_RANK", hanabi_protocol::MAX_RANK.to_string()),
-        (
-            "DEFAULT_CARD_RANKS",
-            format!(
-                "{} as const",
-                serde_json::to_string(
-                    &(hanabi_protocol::MIN_RANK..=hanabi_protocol::MAX_RANK).collect::<Vec<_>>()
-                )
-                .expect("a list of ranks serializes")
-            ),
-        ),
-        (
-            "START_CARD_RANK",
-            hanabi_protocol::START_CARD_RANK.to_string(),
-        ),
-        ("ODD_RANK_CLUE", hanabi_protocol::ODD_RANK_CLUE.to_string()),
-        (
-            "EVEN_RANK_CLUE",
-            hanabi_protocol::EVEN_RANK_CLUE.to_string(),
-        ),
-        ("MAX_CLUES", hanabi_protocol::MAX_CLUES.to_string()),
-        ("MAX_STRIKES", hanabi_protocol::MAX_STRIKES.to_string()),
-        (
-            "PANICKY_MAX_CLUES",
-            hanabi_protocol::PANICKY_MAX_CLUES.to_string(),
-        ),
-    ])
+/// The ranks of a stack without a start card, which the game library derives other rank lists from.
+fn default_card_ranks() -> String {
+    let ranks: Vec<_> = (hanabi_protocol::MIN_RANK..=hanabi_protocol::MAX_RANK).collect();
+    format!(
+        "export const DEFAULT_CARD_RANKS = {} as const;\n",
+        serde_json::to_string(&ranks).expect("a list of ranks serializes")
+    )
 }
 
 fn main() -> Result<()> {
@@ -647,7 +555,10 @@ fn main() -> Result<()> {
     }
     print!("{}", module.schema_imports(GAME_LIBRARY));
     println!("import * as z from \"zod\";\n");
-    println!("{}", data_constants());
+    println!(
+        "{}",
+        exported_constants(hanabi_protocol::ConstantPackage::Data, &definitions)
+    );
     print!("{}", module.output);
     for (name, contracts) in [
         ("CLIENT_COMMAND_SCHEMAS", client),

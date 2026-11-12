@@ -20,6 +20,13 @@ use hanabi_protocol::PlayerIndex;
 use hanabi_protocol::{CardOrder, Chat, ChatTyping, MIN_PLAYERS, TableRef, ViewMode};
 use std::sync::Arc;
 
+/// What a `pause` or `pauseQueue` request changes.
+#[derive(Clone, Copy, PartialEq, Eq)]
+enum PauseChange {
+    Paused(bool),
+    Queued(bool),
+}
+
 impl TableActor {
     /// Runs a command that only a game in progress accepts.
     pub(super) async fn live_command(
@@ -31,7 +38,10 @@ impl TableActor {
             ClientMessage::PlayerAction(r) => self.action(session, r.action).await,
             ClientMessage::TableTerminate(_) => self.terminate(session, false).await,
             ClientMessage::TableTerminateVote(_) => self.terminate(session, true).await,
-            ClientMessage::Pause(r) => self.pause(session, r.setting).await,
+            ClientMessage::Pause(r) => self.pause(session, PauseChange::Paused(r.paused)).await,
+            ClientMessage::PauseQueue(r) => {
+                self.pause(session, PauseChange::Queued(r.queued)).await
+            }
             ClientMessage::IdleReset(_) => self.idle_reset(session).await,
             ClientMessage::Note(r) => self.note(session, r.order, &r.text).await,
             message @ (ClientMessage::TagAdd(_)
@@ -302,12 +312,7 @@ impl TableActor {
         );
         self.publish(e).await
     }
-    async fn pause(
-        &mut self,
-        session: Arc<Session>,
-        mut setting: hanabi_protocol::PauseSetting,
-    ) -> CommandResult<()> {
-        use hanabi_protocol::PauseSetting as P;
+    async fn pause(&mut self, session: Arc<Session>, mut change: PauseChange) -> CommandResult<()> {
         ensure_or_reject!(self.attending(&session), "Not attending");
         let seat = self.seat(&session)?;
         let old = self.live()?;
@@ -315,29 +320,23 @@ impl TableActor {
             old.game.options.time_control.is_some(),
             "This is not a timed game"
         );
-        if setting == P::PauseQueue && seat == old.game.active_player_index {
-            setting = P::Pause;
+        if change == PauseChange::Queued(true) && seat == old.game.active_player_index {
+            change = PauseChange::Paused(true);
         }
         ensure_or_reject!(
-            match setting {
-                P::Pause => !old.paused(),
-                P::Unpause => old.paused(),
-                P::PauseQueue => !old.queued_pauses[seat],
-                P::PauseUnqueue => old.queued_pauses[seat],
+            match change {
+                PauseChange::Paused(paused) => old.paused() != paused,
+                PauseChange::Queued(queued) => old.queued_pauses[seat] != queued,
             },
             "Pause setting already applied"
         );
         let mut next = self.candidate();
         let s = game_mut(&mut next)?;
         let mut notice = None;
-        match setting {
-            P::PauseQueue | P::PauseUnqueue => s.queued_pauses[seat] = setting == P::PauseQueue,
-            P::Pause | P::Unpause => {
-                s.paused_by = if setting == P::Pause {
-                    PlayerIndex::new(seat)
-                } else {
-                    None
-                };
+        match change {
+            PauseChange::Queued(queued) => s.queued_pauses[seat] = queued,
+            PauseChange::Paused(paused) => {
+                s.paused_by = if paused { PlayerIndex::new(seat) } else { None };
                 if !s.paused() {
                     s.turn_elapsed = 0;
                 }
@@ -348,7 +347,7 @@ impl TableActor {
         self.persist(next).await?;
         let s = self.live()?;
         let mut e = self.effects();
-        if matches!(setting, P::Pause | P::Unpause) {
+        if matches!(change, PauseChange::Paused(_)) {
             self.pause_messages(&mut e, s);
             self.add_all(&mut e, hanabi_protocol::server::CLOCK, self.clock()?);
         } else {
