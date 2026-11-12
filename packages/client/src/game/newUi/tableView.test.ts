@@ -9,6 +9,7 @@ import {
   getHandDisplayOrder,
   getTouchedCards,
   isClueAllowed,
+  shouldFadeTrash,
 } from "./tableView.ts";
 
 const VARIANT = getDefaultVariant();
@@ -72,5 +73,33 @@ describe("isClueAllowed", () => {
         emptyClues: true,
       }),
     ).toBe(true);
+  });
+});
+
+describe("shouldFadeTrash", () => {
+  const plain = {
+    trash: true,
+    markedTrash: false,
+    clued: false,
+    positivelyClued: false,
+    note: { blank: false, chopMoved: false },
+    throwItInAHole: false,
+    speedrun: false,
+  };
+
+  test("fades trash that no clue touched", () => {
+    expect(shouldFadeTrash(plain)).toBe(true);
+  });
+
+  test("keeps clued trash at full strength", () => {
+    expect(
+      shouldFadeTrash({ ...plain, clued: true, positivelyClued: true }),
+    ).toBe(false);
+  });
+
+  test("fades a card marked as trash unless a clue touched it", () => {
+    const marked = { ...plain, trash: false, markedTrash: true, clued: true };
+    expect(shouldFadeTrash(marked)).toBe(true);
+    expect(shouldFadeTrash({ ...marked, positivelyClued: true })).toBe(false);
   });
 });

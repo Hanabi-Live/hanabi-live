@@ -250,6 +250,7 @@ function getSeats(
           empathyIncludesNotes: empathy && empathyIncludesNotes,
           finished: state.finished,
           realLifeMode: settings.realLifeMode,
+          speedrun: metadata.options.speedrun,
         }),
       );
     }

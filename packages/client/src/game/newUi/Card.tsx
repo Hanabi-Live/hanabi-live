@@ -2,7 +2,7 @@ import type { Rank, Suit, SuitIndex, Variant } from "@hanabi-live/game";
 import { START_CARD_RANK } from "@hanabi-live/game";
 import { START_CARD_RANK_LABEL } from "../../constants.ts";
 import { tooltipRef } from "../../tooltipRef.ts";
-import { CARD_H, CARD_W } from "../ui/constants.ts";
+import { CARD_FADE, CARD_H, CARD_W } from "../ui/constants.ts";
 import { Pip } from "./Pip.tsx";
 
 /** Cards keep the proportions of the classic card images. */
@@ -36,9 +36,6 @@ export type ClueMarkerView =
   | { readonly type: "color"; readonly name: string; readonly fill: string }
   | { readonly type: "rank"; readonly label: string }
   | { readonly type: "hidden" };
-
-/** Trash cards fade far enough to stand apart from the cards that still matter. */
-const TRASH_OPACITY = 0.25;
 
 /** How much of a suit's color tints a card face. The rest is white. */
 const FACE_TINT_PERCENT = 32;
@@ -418,7 +415,7 @@ export function CardFace({
         background: faceColors.background,
         color: faceColors.ink,
         transform: `translateY(${-raise}px)`,
-        opacity: trash ? TRASH_OPACITY : 1,
+        opacity: trash ? CARD_FADE : 1,
       }}
     >
       {clueMarker !== undefined && (

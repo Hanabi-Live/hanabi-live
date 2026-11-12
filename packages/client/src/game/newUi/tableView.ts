@@ -39,7 +39,7 @@ export interface CardView {
   /** The last copy of a card that still needs to be played. */
   readonly critical: boolean;
 
-  /** A card that can no longer be played. It shows faded. */
+  /** Whether the card shows faded, because it can no longer be played (see `shouldFadeTrash`). */
   readonly trash: boolean;
 
   /**
@@ -87,6 +87,9 @@ interface CardViewOptions {
 
   /** "Real life mode" hides the hints that a physical game would not have. */
   readonly realLifeMode: boolean;
+
+  /** A speedrun shows trash at full strength, as the classic screen does. */
+  readonly speedrun: boolean;
 }
 
 export function getCardView({
@@ -99,6 +102,7 @@ export function getCardView({
   empathyIncludesNotes = false,
   finished,
   realLifeMode,
+  speedrun,
 }: CardViewOptions): CardView {
   const { suitIndex, rank } = getCardIdentityToShow({
     cardIdentity,
@@ -129,21 +133,69 @@ export function getCardView({
       .map((pip) => pip.rank);
   }
 
+  const clued = isCardClued(cardState);
+  const trashIcon =
+    !realLifeMode
+    && (note.knownTrash || (empathy && cardState.isKnownTrashFromEmpathy));
+
   return {
     order: cardState.order,
     suitIndex,
     rank,
-    clued: isCardClued(cardState),
+    clued,
     critical: !realLifeMode && status === CardStatus.Critical,
     trash:
       !realLifeMode
-      && (status === CardStatus.Trash || cardState.isKnownTrashFromEmpathy),
-    trashIcon:
-      !realLifeMode
-      && (note.knownTrash || (empathy && cardState.isKnownTrashFromEmpathy)),
+      && shouldFadeTrash({
+        trash: status === CardStatus.Trash || cardState.isKnownTrashFromEmpathy,
+        markedTrash: trashIcon,
+        clued,
+        positivelyClued: cardState.numPositiveClues > 0,
+        note,
+        throwItInAHole: variant.throwItInAHole,
+        speedrun,
+      }),
+    trashIcon,
     possibleSuitIndexes,
     possibleRanks,
   };
+}
+
+/**
+ * Whether a trash card in a hand shows faded, by the rule of the classic screen. A card that the
+ * viewer marked as trash fades unless a clue touched it. Other trash fades only when nothing else
+ * marks the card as worth a look: a clue, a note that calls it blank or chop moved, a variant that
+ * hides what was played, or a speedrun.
+ */
+export function shouldFadeTrash({
+  trash,
+  markedTrash,
+  clued,
+  positivelyClued,
+  note,
+  throwItInAHole,
+  speedrun,
+}: {
+  readonly trash: boolean;
+  readonly markedTrash: boolean;
+  readonly clued: boolean;
+  readonly positivelyClued: boolean;
+  readonly note: Pick<CardNote, "blank" | "chopMoved">;
+  readonly throwItInAHole: boolean;
+  readonly speedrun: boolean;
+}): boolean {
+  if (markedTrash && !positivelyClued) {
+    return true;
+  }
+
+  return (
+    trash
+    && !clued
+    && !note.blank
+    && !note.chopMoved
+    && !throwItInAHole
+    && !speedrun
+  );
 }
 
 /** Returns the cards in a hand that a clue would touch, from the identities that we can see. */
