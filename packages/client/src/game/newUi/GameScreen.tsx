@@ -190,11 +190,13 @@ function editCard(order: CardOrder) {
 
 /**
  * Returns the seats in the order that the screen shows them. The hands of the players in
- * `empathyPlayers` show their player's view of them, as the viewer's own hand always does.
+ * `empathyPlayers` show their player's view of them, as the viewer's own hand always does. With
+ * `empathyIncludesNotes`, that view also applies the viewer's notes.
  */
 function getSeats(
   state: State,
   empathyPlayers: ReadonlySet<PlayerIndex>,
+  empathyIncludesNotes: boolean,
 ): readonly Seat[] {
   const visibleState = state.visibleState!;
   const { metadata } = state;
@@ -244,6 +246,7 @@ function getSeats(
           note: state.notes.ourNotes[order] ?? BLANK_NOTE,
           variant: globals.variant,
           empathy,
+          empathyIncludesNotes: empathy && empathyIncludesNotes,
           finished: state.finished,
           realLifeMode: settings.realLifeMode,
         }),
@@ -569,8 +572,10 @@ export function GameScreen({
   >(new Set());
   const [heldEmpathy, setHeldEmpathy] = useState<PlayerIndex>();
 
-  // Holding the spacebar shows every hand as its player sees it, as on the classic screen.
+  // Holding the spacebar shows every hand as its player sees it, as on the classic screen. Ctrl +
+  // Space also applies the viewer's notes.
   const [globalEmpathy, setGlobalEmpathy] = useState(false);
+  const [globalEmpathyNotes, setGlobalEmpathyNotes] = useState(false);
   useEffect(() => {
     function isTyping(target: EventTarget | null) {
       return (
@@ -588,6 +593,7 @@ export function GameScreen({
       // Otherwise, the spacebar would also press the button that has the focus.
       event.preventDefault();
       setGlobalEmpathy(true);
+      setGlobalEmpathyNotes(event.ctrlKey);
     }
 
     function onKeyUp(event: KeyboardEvent) {
@@ -843,7 +849,11 @@ export function GameScreen({
   if (heldEmpathy !== undefined) {
     empathyPlayers.add(heldEmpathy);
   }
-  const seats = getSeats(state, empathyPlayers);
+  const seats = getSeats(
+    state,
+    empathyPlayers,
+    globalEmpathy && globalEmpathyNotes,
+  );
   const shownClue = getClueForTurn(visibleState);
 
   // With only one other player, such as in a 2-player game, the clue can only go to them, so they

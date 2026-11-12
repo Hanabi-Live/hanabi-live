@@ -153,7 +153,8 @@ function keydown(event: JQuery.KeyDownEvent) {
       return;
     }
 
-    setGlobalEmpathy(true);
+    // Ctrl + Space = Empathy that also applies our notes.
+    setGlobalEmpathy(true, event.ctrlKey);
     return;
   }
 

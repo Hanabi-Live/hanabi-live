@@ -106,6 +106,23 @@ describe("card presentation", () => {
       ).toEqual({ suitIndex: 3, rank: 4 });
     });
 
+    test("applies the note in empathy mode only when asked", () => {
+      const note: CardNote = { ...emptyNote, possibilities: [[2, 3]] };
+      const options = {
+        cardIdentity: unknownIdentity,
+        state: baseCard,
+        note,
+        empathy: true,
+        isStackBase: false,
+        finished: false,
+      };
+
+      expect(getCardIdentityToShow(options)).toEqual(unknownIdentity);
+      expect(
+        getCardIdentityToShow({ ...options, empathyIncludesNotes: true }),
+      ).toEqual({ suitIndex: 2, rank: 3 });
+    });
+
     describe("identity from a note", () => {
       const options = {
         cardIdentity: unknownIdentity,
@@ -289,6 +306,39 @@ describe("card presentation", () => {
       expect(presentation.possibilityRows).toBeUndefined();
     });
 
+    test("narrows the empathy pips to the note only when asked", () => {
+      const state: CardState = {
+        ...baseCard,
+        possibleCardsFromClues: [
+          [0, 1],
+          [1, 1],
+          [2, 1],
+        ],
+        possibleCardsForEmpathy: [
+          [0, 1],
+          [1, 1],
+          [2, 1],
+        ],
+      };
+      const note: CardNote = {
+        ...emptyNote,
+        possibilities: [
+          [0, 1],
+          [1, 1],
+        ],
+      };
+      function visibleSuits(empathyIncludesNotes: boolean): readonly number[] {
+        return getCardPipPresentation(variant, state, note, true, {
+          empathyIncludesNotes,
+        })
+          .suitPips.filter((pip) => pip.state === PipState.Visible)
+          .map((pip) => pip.suitIndex);
+      }
+
+      expect(visibleSuits(false)).toEqual([0, 1, 2]);
+      expect(visibleSuits(true)).toEqual([0, 1]);
+    });
+
     test("groups suits into rows when the pips cannot show the possible cards", () => {
       // A red or blue 3, or any green card (other than the green 5, which is visible elsewhere).
       const greenCards: SuitRankTuple[] = [
@@ -449,7 +499,7 @@ describe("card presentation", () => {
         state,
         emptyNote,
         false,
-        true,
+        { rowPerSuit: true },
       );
 
       const rows = presentation.possibilityRows?.map((row) => ({

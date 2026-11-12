@@ -80,6 +80,9 @@ interface CardViewOptions {
    */
   readonly empathy: boolean;
 
+  /** Whether the empathy view also applies the viewer's note, as it does with Ctrl + Space. */
+  readonly empathyIncludesNotes?: boolean;
+
   readonly finished: boolean;
 
   /** "Real life mode" hides the hints that a physical game would not have. */
@@ -93,6 +96,7 @@ export function getCardView({
   note,
   variant,
   empathy,
+  empathyIncludesNotes = false,
   finished,
   realLifeMode,
 }: CardViewOptions): CardView {
@@ -101,6 +105,7 @@ export function getCardView({
     state: cardState,
     note,
     empathy,
+    empathyIncludesNotes,
     isStackBase: false,
     finished,
   });
@@ -113,7 +118,9 @@ export function getCardView({
   let possibleSuitIndexes: SuitIndex[] = [];
   let possibleRanks: Rank[] = [];
   if (empathy) {
-    const pips = getCardPipPresentation(variant, cardState, note, true);
+    const pips = getCardPipPresentation(variant, cardState, note, true, {
+      empathyIncludesNotes,
+    });
     possibleSuitIndexes = pips.suitPips
       .filter((pip) => pip.state === PipState.Visible)
       .map((pip) => pip.suitIndex as SuitIndex);

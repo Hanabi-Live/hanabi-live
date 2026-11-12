@@ -24,6 +24,10 @@ interface CardIdentityPresentationOptions {
   readonly state: CardState;
   readonly note: CardNote;
   readonly empathy: boolean;
+
+  /** Whether the empathy view also applies the possibilities that the viewer's note lists. */
+  readonly empathyIncludesNotes?: boolean;
+
   readonly morphedIdentity?: CardIdentity;
   readonly isStackBase: boolean;
   readonly finished: boolean;
@@ -70,6 +74,7 @@ export function getCardIdentityToShow({
   state,
   note,
   empathy,
+  empathyIncludesNotes = false,
   morphedIdentity,
   isStackBase,
   finished,
@@ -90,6 +95,11 @@ export function getCardIdentityToShow({
     }
     if (stateRank !== undefined && rankDetermined) {
       rank = stateRank;
+    }
+
+    if (empathyIncludesNotes) {
+      suitIndex ??= getSuitIndexFromNote(note, state);
+      rank ??= getRankFromNote(note, state);
     }
 
     if (morphedIdentity !== undefined) {
@@ -169,7 +179,16 @@ export function getCardPipPresentation(
   state: CardState,
   note: CardNote,
   empathy: boolean,
-  rowPerSuit = false,
+  {
+    rowPerSuit = false,
+    empathyIncludesNotes = false,
+  }: {
+    /** Always return one possibility row for each suit. */
+    readonly rowPerSuit?: boolean;
+
+    /** Whether the empathy view also applies the possibilities that the viewer's note lists. */
+    readonly empathyIncludesNotes?: boolean;
+  } = {},
 ): CardPipPresentation {
   const suitPipStates = variant.suits.map(() => PipState.Hidden);
   const rankPipStates = new Map<Rank, PipState>(
@@ -177,9 +196,10 @@ export function getCardPipPresentation(
   );
 
   const possibilities = possibleCardsFromNoteAndClues(note, state);
-  const possibleCardsFromClues = empathy
-    ? state.possibleCardsFromClues
-    : possibilities;
+  const possibleCardsFromClues =
+    empathy && !empathyIncludesNotes
+      ? state.possibleCardsFromClues
+      : possibilities;
   const possibleCards = empathy
     ? state.possibleCardsForEmpathy
     : state.possibleCards;

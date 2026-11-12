@@ -14,6 +14,8 @@ of the repository.
   them.
 - Removed the variant pages (`/variant/[id]`) and their API
   (`/api/v1/variants/[id]`).
+- Hold Ctrl + Space to see every hand as its player sees it, narrowed by your
+  notes.
 
 ## November 11th, 2026
 

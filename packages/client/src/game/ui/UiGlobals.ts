@@ -98,6 +98,9 @@ export class UiGlobals {
 
   globalEmpathyEnabled = false;
 
+  /** Whether the global empathy view also applies our notes (Ctrl + Space). */
+  globalEmpathyIncludesNotes = false;
+
   isResizing = false;
 
   /**

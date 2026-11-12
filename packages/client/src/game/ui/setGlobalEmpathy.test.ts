@@ -20,4 +20,19 @@ describe("setGlobalEmpathy", () => {
     expect(setEmpathy).toHaveBeenCalledWith(false);
     expect(changeStartingHandVisibility).toHaveBeenCalledOnce();
   });
+
+  test("redraws the hands when Ctrl is pressed during empathy", () => {
+    const setEmpathy = vi.fn();
+    Object.assign(globals, {
+      globalEmpathyEnabled: true,
+      globalEmpathyIncludesNotes: false,
+      elements: { playerHands: [{ setEmpathy }] },
+      state: { replay: { hypothetical: undefined } },
+    });
+
+    setGlobalEmpathy(true, true);
+
+    expect(globals.globalEmpathyIncludesNotes).toBe(true);
+    expect(setEmpathy.mock.calls).toEqual([[false], [true]]);
+  });
 });
