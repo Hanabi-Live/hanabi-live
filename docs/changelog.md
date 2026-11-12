@@ -70,6 +70,8 @@ of the repository.
 - In the new game screen on a touch screen or a narrow window, tap a card to
   play or discard it, since the play stacks and the discard pile may be off the
   screen. Dragging stays the way on a wide screen with a mouse.
+- In the new game screen, a forward or back icon also flashes beside the turn
+  number when the leader of a shared replay that you follow moves.
 
 ## November 11th, 2026
 

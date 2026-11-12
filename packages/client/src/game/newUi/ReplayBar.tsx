@@ -82,6 +82,7 @@ function Heading({
   turn,
   lastTurn,
   leaderMove,
+  following = false,
 }: {
   readonly mode: Mode;
   readonly icon: string;
@@ -91,6 +92,9 @@ function Heading({
 
   /** The shared replay leader's last move, which the turn number rolls with. */
   readonly leaderMove?: LeaderMove | undefined;
+
+  /** Whether we follow the leader, so that the icon of their direction has a place. */
+  readonly following?: boolean;
 }): React.JSX.Element {
   return (
     <div className="tw:mr-1 tw:flex tw:shrink-0 tw:flex-col tw:leading-tight">
@@ -108,6 +112,7 @@ function Heading({
             / {lastTurn}
           </span>
         )}
+        {following && <DirectionFlash move={leaderMove} />}
       </span>
     </div>
   );
@@ -501,6 +506,7 @@ function TurnsBar({ state }: { readonly state: State }): React.JSX.Element {
   return (
     <Bar mode="replay">
       <Heading
+        following={following}
         icon={shared === undefined ? "fa-history" : "fa-crown"}
         label={label}
         lastTurn={spoilerFree ? undefined : lastTurn}
@@ -726,5 +732,55 @@ function RollingNumber({
         </span>
       )}
     </span>
+  );
+}
+
+/** How long the leader's direction icon shows, from popping in to fading out, in milliseconds. */
+const DIRECTION_FLASH_MILLISECONDS = 1000;
+
+/** An overshoot, so that the icon pops in. */
+const EASE_OUT_BACK = "cubic-bezier(0.34, 1.56, 0.64, 1)";
+
+/**
+ * A forward or back icon beside the turn number, which pops in on each of the leader's moves and
+ * fades out, as the classic screen's arrow does over the board.
+ */
+function DirectionFlash({
+  move,
+}: {
+  readonly move: LeaderMove | undefined;
+}): React.JSX.Element {
+  const ref = useRef<HTMLElement>(null);
+  useLayoutEffect(() => {
+    const icon = ref.current;
+    if (icon === null || move === undefined) {
+      return undefined;
+    }
+    const pop = icon.animate(
+      [
+        { opacity: 0, transform: "scale(0.4)" },
+        { opacity: 1, transform: "scale(1)" },
+      ],
+      { duration: 180, easing: EASE_OUT_BACK },
+    );
+    const fade = icon.animate([{ opacity: 1 }, { opacity: 0 }], {
+      delay: 400,
+      duration: DIRECTION_FLASH_MILLISECONDS - 400,
+      easing: "ease-in",
+      fill: "forwards",
+    });
+    return () => {
+      pop.cancel();
+      fade.cancel();
+    };
+  }, [move]);
+
+  return (
+    <i
+      aria-hidden="true"
+      className={`fas ${move?.direction === -1 ? "fa-backward" : "fa-forward"} tw:ml-2 tw:inline-block tw:text-[15px] tw:text-game-replay tw:opacity-0`}
+      key={move?.key}
+      ref={ref}
+    />
   );
 }
