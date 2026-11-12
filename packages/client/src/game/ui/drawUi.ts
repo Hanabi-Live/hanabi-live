@@ -553,14 +553,20 @@ const CLUE_TYPE_BUTTON = {
   spacingY: 0.002,
 } as const;
 
-/** The "Give Clue" row, which has the post-clue empathy checkbox, in fractions of the stage. */
+/** The number of clue type buttons that the "Give Clue" row is as wide as. */
+const GIVE_CLUE_ROW_COLUMNS = 5;
+
+/**
+ * The "Give Clue" row, which has the post-clue empathy checkbox, in fractions of the stage. It
+ * lines up with a row of `GIVE_CLUE_ROW_COLUMNS` clue type buttons: the checkbox is as wide as the
+ * last button, and the "Give Clue" button spans the others.
+ */
 const GIVE_CLUE_BUTTON = {
-  w: 0.236,
+  w:
+    CLUE_TYPE_BUTTON.w * GIVE_CLUE_ROW_COLUMNS
+    + CLUE_TYPE_BUTTON.spacingX * (GIVE_CLUE_ROW_COLUMNS - 1),
   h: 0.051,
 } as const;
-
-/** The share of the "Give Clue" row that the post-clue empathy checkbox takes. */
-const POST_CLUE_EMPATHY_CHECKBOX_SHARE = 1 / 4;
 
 /**
  * How far the cross over a disabled clue area is inset from its corners, in fractions of the stage.
@@ -2530,12 +2536,10 @@ function drawClueArea() {
   globals.elements.lowerClueArea.add(globals.elements.clueTypeButtonGroup);
 
   // The "Give Clue" button.
-  const postClueEmpathyCheckboxW =
-    GIVE_CLUE_BUTTON.w * POST_CLUE_EMPATHY_CHECKBOX_SHARE;
   giveClueValues = {
     x: (clueAreaValues.w! - GIVE_CLUE_BUTTON.w) / 2,
     y: rankY + buttonH + buttonYSpacing,
-    w: GIVE_CLUE_BUTTON.w - postClueEmpathyCheckboxW,
+    w: GIVE_CLUE_BUTTON.w - buttonW - buttonXSpacing,
     h: GIVE_CLUE_BUTTON.h,
   };
 
@@ -2555,7 +2559,7 @@ function drawClueArea() {
     {
       x: (giveClueValues.x + giveClueValues.w! + buttonXSpacing) * winW,
       y: giveClueValues.y * winH,
-      width: (postClueEmpathyCheckboxW - buttonXSpacing) * winW,
+      width: buttonW * winW,
       height: giveClueValues.h! * winH,
     },
     globals.imageLoader!.get("flashlight"),

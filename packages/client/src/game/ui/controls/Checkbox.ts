@@ -27,6 +27,12 @@ const LABEL_SIZE = 0.4;
 /** The size of an image label, as a fraction of the checkbox's height. */
 const IMAGE_SIZE = 0.6;
 
+/**
+ * The smallest space on each side of a checkbox with an image label, as a fraction of the
+ * checkbox's height. The box and the image are centered, and the image shrinks if they do not fit.
+ */
+const IMAGE_EDGE_PADDING = 0.08;
+
 /** The opacity of an image label while the checkbox is disabled. */
 const DISABLED_IMAGE_OPACITY = 0.35;
 
@@ -73,7 +79,17 @@ export class Checkbox extends Konva.Group {
     const w = this.width();
     const h = this.height();
     const boxSize = BOX_SIZE * h;
-    const boxX = PADDING * h;
+    const imageSize =
+      typeof label === "string"
+        ? 0
+        : Math.min(
+            IMAGE_SIZE * h,
+            w - boxSize - (GAP + 2 * IMAGE_EDGE_PADDING) * h,
+          );
+    const boxX =
+      typeof label === "string"
+        ? PADDING * h
+        : (w - boxSize - GAP * h - imageSize) / 2;
     const boxY = (h - boxSize) / 2;
     const lineWidth = LINE_WIDTH * boxSize;
 
@@ -111,16 +127,15 @@ export class Checkbox extends Konva.Group {
     this.add(this.checkMark);
 
     const labelX = boxX + boxSize + GAP * h;
-    const labelW = w - labelX - LABEL_PADDING * h;
     this.label =
       typeof label === "string"
         ? this.createTextLabel(
             label,
             labelX,
-            labelW,
+            w - labelX - LABEL_PADDING * h,
             fontSize ?? LABEL_SIZE * h,
           )
-        : this.createImageLabel(label, labelX, labelW);
+        : this.createImageLabel(label, labelX, imageSize);
     this.add(this.label);
 
     this.background.on("mousedown", () => {
@@ -136,16 +151,15 @@ export class Checkbox extends Konva.Group {
     this.updateStyle();
   }
 
-  /** A square image, centered in the space for the label. */
+  /** A square image, centered vertically. */
   private createImageLabel(
     image: HTMLImageElement,
     x: number,
-    width: number,
+    size: number,
   ): Konva.Image {
     const h = this.height();
-    const size = Math.min(IMAGE_SIZE * h, width);
     return new Konva.Image({
-      x: x + (width - size) / 2,
+      x,
       y: (h - size) / 2,
       width: size,
       height: size,
