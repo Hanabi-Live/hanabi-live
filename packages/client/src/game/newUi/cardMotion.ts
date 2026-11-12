@@ -274,8 +274,6 @@ function animateSpecialMove(
 const CLUE_TIMING = {
   /** The giver's name grows and springs back. */
   pop: 260,
-  /** A ring spreads from the giver's name. */
-  ping: 420,
   /** The rail starts after the pop begins, and draws itself toward the receiver. */
   railDelay: 70,
   rail: 240,
@@ -285,10 +283,9 @@ const CLUE_TIMING = {
   land: 300,
   /** When a falling token touches its card, as a fraction of `land`. */
   landImpact: 0.5,
-  /** The card dips, flashes, and sends out a ring when its token lands. */
+  /** The card dips and flashes when its token lands. */
   dip: 240,
   flash: 320,
-  burst: 420,
 } as const;
 
 /** The ID of every clue animation, so that a new clue can stop the last one. */
@@ -309,7 +306,7 @@ export function animateClue(root: HTMLElement, giver: number): void {
   const t = CLUE_TIMING;
   const railEnd = t.railDelay + t.rail;
 
-  // The giver's name pops, and a ring spreads from it.
+  // The giver's name pops.
   const name = root.querySelector<HTMLElement>(
     `[data-name-chip="${CSS.escape(giver.toString())}"]`,
   );
@@ -318,13 +315,6 @@ export function animateClue(root: HTMLElement, giver: number): void {
     duration: t.pop,
     easing: "ease-out",
   });
-  name?.querySelector<HTMLElement>("[data-clue-ping]")?.animate(
-    [
-      { transform: "scale(1)", opacity: 1 },
-      { transform: "scale(1.5)", opacity: 0 },
-    ],
-    { id, duration: t.ping, easing: "ease-out" },
-  );
 
   // The rail draws itself from the giver to the receiver, and its arrowhead pops in at the end.
   for (const line of root.querySelectorAll("[data-clue-rail-line]")) {
@@ -352,8 +342,7 @@ export function animateClue(root: HTMLElement, giver: number): void {
 
   const markers = [...root.querySelectorAll<HTMLElement>("[data-clue-marker]")];
 
-  // A token falls onto every touched card at once. On impact, the card dips and flashes, and a ring
-  // bursts from the token.
+  // A token falls onto every touched card at once. On impact, the card dips and flashes.
   for (const marker of markers) {
     const impact = t.land * t.landImpact;
     const { height } = marker.getBoundingClientRect();
@@ -369,13 +358,6 @@ export function animateClue(root: HTMLElement, giver: number): void {
         { transform: "none", opacity: 1 },
       ],
       { id, duration: t.land, easing: "ease-in-out" },
-    );
-    marker.querySelector<HTMLElement>("[data-clue-burst]")?.animate(
-      [
-        { transform: "scale(0.9)", opacity: 1 },
-        { transform: "scale(2.3)", opacity: 0 },
-      ],
-      { id, delay: impact, duration: t.burst, easing: "ease-out" },
     );
 
     const card = marker.parentElement;
