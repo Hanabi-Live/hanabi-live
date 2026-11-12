@@ -1,3 +1,7 @@
+outputs:
+  cache-hit:
+    description: Whether the Cargo dependency cache matched exactly.
+    value: ${{ steps.cargo-cache.outputs.cache-hit }}
 runs:
   using: composite
   steps:
@@ -11,6 +15,7 @@ runs:
         echo "CARGO_PROFILE_DEV_DEBUG=line-tables-only" >> "$GITHUB_ENV"
 
     - name: Cache Cargo dependencies
+      id: cargo-cache
       uses: Swatinem/rust-cache@d1527c8f67ef9af357290475d4af4b0fab8f12e0 # v2
       with:
         workspaces: server -> target
