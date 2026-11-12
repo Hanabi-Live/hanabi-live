@@ -1264,10 +1264,10 @@ function getStates({
       },
     },
     // The game from the previous state, after Bob clues the account twice, with the account's
-    // discard between the clues. The pointer rests on the card that the first clue touched and the
-    // second missed, so the clue log shows only those two clues.
+    // discard between the clues. The mouse button is held down on the card that the first clue
+    // touched and the second missed, so the clue log shows only those two clues.
     {
-      name: "new-ui-clue-log-hover",
+      name: "new-ui-clue-log-press",
       path: "/",
       loggedIn: true,
       prepare: async (page) => {
@@ -1282,12 +1282,16 @@ function getStates({
         // The card is orange, which is inverted, so the discard is a misplay, which takes a while.
         await page.waitForTimeout(PLAY_ANIMATION_MILLISECONDS);
       },
+      // The clue log filters while the mouse button is held down on a card.
       hover: async (page) => {
         if (cluedCard !== undefined) {
+          await page.mouse.up();
           await hoverIfVisible(
             page,
             `#game-new-ui [data-card-order="${cluedCard}"]`,
           );
+          await page.mouse.down();
+          await page.waitForTimeout(SETTLE_MILLISECONDS);
         }
       },
     },

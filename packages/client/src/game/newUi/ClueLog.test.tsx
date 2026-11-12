@@ -25,13 +25,13 @@ function entry(
 
 function renderLog(
   entries: readonly ClueLogEntry[],
-  hoveredCard: number | undefined,
+  pressedCard: number | undefined,
 ) {
   render(
     <ClueLog
       entries={entries}
-      hoveredCard={hoveredCard as CardOrder | undefined}
       onShowClue={onShowClue}
+      pressedCard={pressedCard as CardOrder | undefined}
       shownSegment={undefined}
     />,
   );
@@ -55,12 +55,12 @@ afterEach(() => {
 describe("ClueLog", () => {
   const entries = [entry(0, [1], [2]), entry(1, [3], [4]), entry(2, [2], [1])];
 
-  test("shows every clue when no card is under the mouse", () => {
+  test("shows every clue when no card is pressed", () => {
     renderLog(entries, undefined);
     expect(getTurns()).toEqual(["#1", "#2", "#3"]);
   });
 
-  test("shows only the clues about the card under the mouse", () => {
+  test("shows only the clues about the pressed card", () => {
     renderLog(entries, 2);
     expect(getTurns()).toEqual(["#1", "#3"]);
     const crosses = screen
@@ -71,7 +71,7 @@ describe("ClueLog", () => {
     expect(crosses).toEqual([true, false]);
   });
 
-  test("says when no clue is about the card under the mouse", () => {
+  test("says when no clue is about the pressed card", () => {
     renderLog(entries, 5);
     expect(screen.queryAllByRole("button")).toEqual([]);
     expect(screen.getByText("No clues about this card yet.")).not.toBe(null);

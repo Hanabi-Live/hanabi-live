@@ -115,8 +115,8 @@ interface HandsProps {
   readonly onToggleEmpathy: ((playerIndex: PlayerIndex) => void) | undefined;
   readonly onHoldEmpathy: (playerIndex: PlayerIndex | undefined) => void;
 
-  /** The mouse moved onto a card in a hand, or off every card (`undefined`). */
-  readonly onHoverCard: (order: CardOrder | undefined) => void;
+  /** The mouse button went down on a card in a hand (the clue log then shows its clues). */
+  readonly onPressCard: (order: CardOrder) => void;
 }
 
 /**
@@ -778,13 +778,10 @@ export function Hands(props: HandsProps): React.JSX.Element {
     <section
       aria-label="Hands"
       className="tw:relative tw:flex tw:flex-col tw:justify-center tw:gap-2"
-      onPointerLeave={() => {
-        props.onHoverCard(undefined);
-      }}
-      onPointerOver={(event) => {
-        // Touch screens have no hover.
-        if (event.pointerType === "mouse") {
-          props.onHoverCard(getCardOrderAt(event.target));
+      onPointerDown={(event) => {
+        const order = getCardOrderAt(event.target);
+        if (event.button === 0 && order !== undefined) {
+          props.onPressCard(order);
         }
       }}
     >

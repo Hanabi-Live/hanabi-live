@@ -604,7 +604,20 @@ export function GameScreen({
 
   const [chosenClueTarget, setClueTarget] = useState<PlayerIndex>();
   const [clue, setClue] = useState<Clue>();
-  const [hoveredCard, setHoveredCard] = useState<CardOrder>();
+  // The card that the mouse button is held down on, for the clue log. Releasing it anywhere ends
+  // the press, even after the pointer moved off the card, such as in a drag.
+  const [pressedCard, setPressedCard] = useState<CardOrder>();
+  useEffect(() => {
+    function release() {
+      setPressedCard(undefined);
+    }
+    globalThis.addEventListener("pointerup", release);
+    globalThis.addEventListener("pointercancel", release);
+    return () => {
+      globalThis.removeEventListener("pointerup", release);
+      globalThis.removeEventListener("pointercancel", release);
+    };
+  }, []);
   const [drag, setDrag] = useState<Drag>();
   // A card that the player dropped stays where it was dropped until its move arrives, and then the
   // move starts from there, not from the hand.
@@ -1291,11 +1304,11 @@ export function GameScreen({
                   }}
                   onEditCard={editingCards ? editCard : undefined}
                   onHoldEmpathy={setHeldEmpathy}
-                  onHoverCard={setHoveredCard}
                   onPlay={(order) => {
                     setMenuCard(undefined);
                     sendAction({ type: "play", order });
                   }}
+                  onPressCard={setPressedCard}
                   onToggleEmpathy={
                     touch
                       ? (playerIndex) => {
@@ -1345,16 +1358,16 @@ export function GameScreen({
               />
               <ClueLog
                 entries={getClueLogEntries(state)}
-                // A card that left the hands under the mouse, such as one just played, no longer
+                onShowClue={showClue}
+                // A card that left the hands while pressed, such as one just played, no longer
                 // counts.
-                hoveredCard={
+                pressedCard={
                   seats.some((seat) =>
-                    seat.cards.some((card) => card.order === hoveredCard),
+                    seat.cards.some((card) => card.order === pressedCard),
                   )
-                    ? hoveredCard
+                    ? pressedCard
                     : undefined
                 }
-                onShowClue={showClue}
                 shownSegment={shownClue?.segment}
               />
               <TableTokens

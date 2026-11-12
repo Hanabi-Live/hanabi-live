@@ -72,6 +72,9 @@ of the repository.
   screen. Dragging stays the way on a wide screen with a mouse.
 - In the new game screen, a forward or back icon also flashes beside the turn
   number when the leader of a shared replay that you follow moves.
+- In the new game screen, the clue log shows only the clues about a card while
+  you hold the mouse button down on it, instead of whenever the mouse is over
+  it.
 
 ## November 11th, 2026
 

@@ -12,7 +12,7 @@ const CLUE_DISC_SIZE = 20;
  */
 const BOTTOM_SLOP = 2;
 
-/** How a clue relates to the card under the mouse. */
+/** How a clue relates to the card that the mouse button is held on. */
 type Match = "none" | "positive" | "negative";
 
 export interface ClueLogEntry {
@@ -48,26 +48,27 @@ function getMatch(entry: ClueLogEntry, card: CardOrder | undefined): Match {
  * is a button that shows the turn after it. The clue of the turn on screen stands out, in the same
  * color as its rail beside the hands.
  *
- * While the mouse is on a card in a hand, the log shows only the clues about that card: the ones
- * that touched it, and the ones to its hand that did not (with a cross). So all of them fit,
- * however old the card is.
+ * While the mouse button is held down on a card in a hand, the log shows only the clues about that
+ * card: the ones that touched it, and the ones to its hand that did not (with a cross). So all of
+ * them fit, however old the card is. It does not filter on hover, so that the log does not change
+ * as the mouse passes over the hands.
  */
 export function ClueLog({
   entries,
   shownSegment,
-  hoveredCard,
+  pressedCard,
   onShowClue,
 }: {
   readonly entries: readonly ClueLogEntry[];
   /** The segment of the clue that the turn on screen shows, if any. */
   readonly shownSegment: number | undefined;
-  /** The card in a hand under the mouse, if any. */
-  readonly hoveredCard: CardOrder | undefined;
+  /** The card in a hand that the mouse button is held down on, if any. */
+  readonly pressedCard: CardOrder | undefined;
   readonly onShowClue: (segment: number) => void;
 }): React.JSX.Element {
   const listRef = useRef<HTMLOListElement>(null);
 
-  // Where the viewer left the full log, to go back there when the mouse leaves a card.
+  // Where the viewer left the full log, to go back there when the mouse button is released.
   const savedScroll = useRef<{ top: number; atBottom: boolean }>({
     top: 0,
     atBottom: true,
@@ -77,9 +78,9 @@ export function ClueLog({
   // show.
   const [scrolledDown, setScrolledDown] = useState(false);
 
-  const filtered = hoveredCard !== undefined;
+  const filtered = pressedCard !== undefined;
   const rows = entries
-    .map((entry) => ({ entry, match: getMatch(entry, hoveredCard) }))
+    .map((entry) => ({ entry, match: getMatch(entry, pressedCard) }))
     .filter(({ match }) => !filtered || match !== "none");
 
   // Keep the newest clue in view, unless the viewer scrolled back in the full log.
@@ -91,7 +92,7 @@ export function ClueLog({
     const saved = savedScroll.current;
     list.scrollTop = filtered || saved.atBottom ? list.scrollHeight : saved.top;
     setScrolledDown(list.scrollTop > 0);
-  }, [entries.length, filtered, hoveredCard]);
+  }, [entries.length, filtered, pressedCard]);
 
   return (
     // The log is a record to consult, not an object on the table, so it sits sunken into the felt.
