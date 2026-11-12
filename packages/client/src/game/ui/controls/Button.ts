@@ -1,5 +1,6 @@
 import { assertDefined } from "complete-common";
 import Konva from "konva";
+import type { GameTooltipName } from "../../../tooltips.ts";
 import {
   BUTTON_CORNER_RADIUS,
   BUTTON_DISABLED_TEXT_COLOR,
@@ -26,7 +27,7 @@ export class Button extends Konva.Group {
   imageElement: Konva.Image | undefined = undefined;
   imageDisabledElement: Konva.Image | undefined = undefined;
 
-  tooltipName = "";
+  tooltipName?: GameTooltipName;
   tooltipContent = "";
 
   constructor(

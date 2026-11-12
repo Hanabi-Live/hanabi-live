@@ -1,4 +1,5 @@
 import Konva from "konva";
+import type { GameTooltipName } from "../../../tooltips.ts";
 import {
   BUTTON_CORNER_RADIUS,
   BUTTON_DISABLED_TEXT_COLOR,
@@ -59,7 +60,7 @@ export class Checkbox extends Konva.Group {
   checked = false;
   enabled = true;
 
-  tooltipName = "";
+  tooltipName?: GameTooltipName;
   tooltipContent = "";
 
   private readonly background: Konva.Rect;

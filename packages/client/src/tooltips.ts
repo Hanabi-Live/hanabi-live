@@ -14,17 +14,61 @@ const COPIED_TOOLTIP_MILLISECONDS = SECOND_IN_MILLISECONDS;
 const CLIPBOARD_CONTENT =
   '<span class="small-tooltip-text">URL copied to clipboard!</span>';
 
-/** The tooltips of the page, by their anchor element. */
-const tooltips = new WeakMap<HTMLElement, Tooltip>();
+/** The in-game tooltips that are not for a player or a card. */
+const GAME_TOOLTIP_NAMES = [
+  "chat",
+  "deck",
+  "efficiency-number",
+  "efficiency-text",
+  "hypo-back",
+  "hypo-edit-cards",
+  "hypo-pass-turn",
+  "hypo-show-drawn",
+  "kill",
+  "leader",
+  "lobby",
+  "new-ui",
+  "pace",
+  "post-clue-empathy",
+  "replay",
+  "restart",
+  "restart-ready",
+  "spectators",
+  "strikes",
+  "time-taken",
+  "turn-number",
+] as const;
+
+/** The name of an in-game tooltip. A card's tooltip holds its note. */
+export type GameTooltipName =
+  | (typeof GAME_TOOLTIP_NAMES)[number]
+  | `card-${number}`
+  | `character-assignment-${number}`
+  | `player-${number}`;
 
 /** The in-game tooltips, which last for the whole session. */
-const gameTooltips: Tooltip[] = [];
+const gameTooltips = new Map<GameTooltipName, GameTooltip>();
 
-// Initialize in-game tooltips (for notes, etc.)
+interface GameTooltip {
+  readonly anchor: HTMLElement;
+  readonly tooltip: Tooltip;
+}
+
+/** Creates the in-game tooltips. Only the tooltips of cards take the pointer, to edit notes. */
 export function initGame(): void {
-  createGameTooltips();
-  createPlayerTooltips();
-  createCardTooltips();
+  for (const name of GAME_TOOLTIP_NAMES) {
+    createGameTooltip(name, { centered: name === "time-taken" });
+  }
+
+  for (const i of eRange(MAX_PLAYERS)) {
+    createGameTooltip(`player-${i}`, { centered: true });
+    createGameTooltip(`character-assignment-${i}`, { centered: true });
+  }
+
+  // Stack bases have notes in some variants, so they have note tooltips too.
+  for (const order of eRange(MAX_DECK_SIZE + MAX_SUITS)) {
+    createGameTooltip(`card-${order}`, { interactive: true });
+  }
 }
 
 /** Briefly shows, beside an element, that a URL was copied to the clipboard. */
@@ -36,22 +80,22 @@ export function showCopied(element: HTMLElement): void {
   }, COPIED_TOOLTIP_MILLISECONDS);
 }
 
-export function open(selector: string): void {
-  getTooltip(selector)?.open();
+export function open(name: GameTooltipName): void {
+  gameTooltips.get(name)?.tooltip.open();
 }
 
-export function close(selector: string): void {
-  if (globals.editingNote === selector) {
+export function close(name: GameTooltipName): void {
+  if (globals.editingNote === name) {
     globals.editingNote = undefined;
   }
 
-  getTooltip(selector)?.close();
+  gameTooltips.get(name)?.tooltip.close();
 }
 
 export function closeAllTooltips(): void {
   globals.editingNote = undefined;
 
-  for (const tooltip of gameTooltips) {
+  for (const { tooltip } of gameTooltips.values()) {
     tooltip.close();
   }
 }
@@ -59,12 +103,12 @@ export function closeAllTooltips(): void {
 /** Clear player clock tooltips retained from a previously viewed game. */
 export function clearPlayerTimeTooltips(): void {
   for (const i of eRange(MAX_PLAYERS)) {
-    setContent(`#tooltip-player-${i}`, "");
+    setContent(`player-${i}`, "");
   }
 }
 
-export function setContent(selector: string, content: string): void {
-  getTooltip(selector)?.setContent(content);
+export function setContent(name: GameTooltipName, content: string): void {
+  gameTooltips.get(name)?.tooltip.setContent(content);
 }
 
 /**
@@ -72,10 +116,15 @@ export function setContent(selector: string, content: string): void {
  * above or below the element. A tooltip over the element would take the pointer from it and close.
  */
 export function setPosition(
-  selector: string,
+  name: GameTooltipName,
   rect: Readonly<Pick<DOMRect, "x" | "y" | "width" | "height">>,
 ): void {
-  const anchor = getHtmlElement(selector);
+  const gameTooltip = gameTooltips.get(name);
+  if (gameTooltip === undefined) {
+    return;
+  }
+
+  const { anchor } = gameTooltip;
   anchor.style.left = `${rect.x}px`;
   anchor.style.top = `${rect.y}px`;
   anchor.style.width = `${rect.width}px`;
@@ -83,75 +132,17 @@ export function setPosition(
 }
 
 /** Whether the tooltip is still fading out after it was closed. */
-export function isClosing(selector: string): boolean {
-  return getTooltip(selector)?.isClosing ?? false;
-}
-
-function getTooltip(selector: string): Tooltip | undefined {
-  const anchor = document.querySelector<HTMLElement>(selector);
-  return anchor === null ? undefined : tooltips.get(anchor);
+export function isClosing(name: GameTooltipName): boolean {
+  return gameTooltips.get(name)?.tooltip.isClosing ?? false;
 }
 
 /** Creates an in-game tooltip, which "konvaTooltips.ts" positions and opens. */
-function createGameTooltip(id: string, centered = false) {
+function createGameTooltip(
+  name: GameTooltipName,
+  options: { readonly interactive?: boolean; readonly centered?: boolean },
+) {
   const anchor = document.createElement("div");
-  anchor.id = id;
   getHtmlElement("#game-tooltips").append(anchor);
-
-  // Interactive so that users can update their notes.
-  const tooltip = new Tooltip(anchor, {
-    content: "",
-    interactive: true,
-    centered,
-  });
-  tooltips.set(anchor, tooltip);
-  gameTooltips.push(tooltip);
-}
-
-function createGameTooltips() {
-  // Initialize some basic tooltips.
-  const names = [
-    "chat",
-    "deck",
-    "discard",
-    "efficiency-text",
-    "efficiency-number",
-    "hypo-back",
-    "hypo-edit-cards",
-    "hypo-pass-turn",
-    "hypo-show-drawn",
-    "kill",
-    "leader",
-    "lobby",
-    "lobby-small",
-    "new-ui",
-    "pace",
-    "post-clue-empathy",
-    "replay",
-    "restart",
-    "restart-ready",
-    "spectators",
-    "strikes",
-    "turn-number",
-  ];
-  for (const name of names) {
-    createGameTooltip(`tooltip-${name}`);
-  }
-
-  createGameTooltip("tooltip-time-taken", true);
-}
-
-function createPlayerTooltips() {
-  for (const i of eRange(MAX_PLAYERS)) {
-    createGameTooltip(`tooltip-player-${i}`, true);
-    createGameTooltip(`tooltip-character-assignment-${i}`, true);
-  }
-}
-
-function createCardTooltips() {
-  // Create the card note tooltips. (We add the number of suits because we also need note tooltips
-  // for the stack bases.)
-  for (const order of eRange(MAX_DECK_SIZE + MAX_SUITS)) {
-    createGameTooltip(`tooltip-card-${order}`);
-  }
+  const tooltip = new Tooltip(anchor, { content: "", ...options });
+  gameTooltips.set(name, { anchor, tooltip });
 }

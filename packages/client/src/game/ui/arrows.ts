@@ -457,8 +457,8 @@ export function toggle(target: ArrowTarget, alwaysShow = false): void {
     set(0, element, undefined, undefined);
 
     // If this element has a tooltip and it is open, close it.
-    if (element.tooltipName !== undefined && element.tooltipName !== "") {
-      tooltips.close(`#tooltip-${element.tooltipName}`);
+    if (element.tooltipName !== undefined) {
+      tooltips.close(element.tooltipName);
     }
   }
 

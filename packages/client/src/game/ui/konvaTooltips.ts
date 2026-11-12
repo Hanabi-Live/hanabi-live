@@ -37,7 +37,7 @@ export function initKonvaTooltips(
       'An element that is supposed to have a tooltip does not have a "tooltipName" property.',
     );
     resetActiveHover(this);
-    tooltips.close(`#tooltip-${element.tooltipName}`);
+    tooltips.close(element.tooltipName);
   });
 
   let content = element.tooltipContent;
@@ -46,7 +46,7 @@ export function initKonvaTooltips(
     content += '<i class="fas fa-info-circle fa-sm"></i>';
     content += `<div>${element.tooltipContent}</div></div>`;
   }
-  tooltips.setContent(`#tooltip-${element.tooltipName}`, content);
+  tooltips.setContent(element.tooltipName, content);
 }
 
 export function show(element: NodeWithTooltip): void {
@@ -77,9 +77,8 @@ export function show(element: NodeWithTooltip): void {
     }
   }
   const { y, height } = element.getClientRect();
-  const tooltip = `#tooltip-${element.tooltipName}`;
-  tooltips.setPosition(tooltip, { x: pos.x, y, width, height });
-  tooltips.open(tooltip);
+  tooltips.setPosition(element.tooltipName, { x: pos.x, y, width, height });
+  tooltips.open(element.tooltipName);
 }
 
 export function setActiveHover(element: NodeWithTooltip): void {

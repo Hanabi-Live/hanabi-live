@@ -195,7 +195,7 @@ describe("dragging a card", () => {
   test("draws the cards above the other layers until the card is released", () => {
     const { getCardCanvasOrder, release } = pressCard();
     expect(getCardCanvasOrder()).toBe("1");
-    expect(tooltips.close).toHaveBeenCalledWith("#tooltip-card-0");
+    expect(tooltips.close).toHaveBeenCalledWith("card-0");
 
     release();
 
@@ -240,6 +240,6 @@ describe("touching a card", () => {
     vi.unstubAllGlobals();
 
     expect(tooltips.close).toHaveBeenCalledOnce();
-    expect(tooltips.close).toHaveBeenCalledWith("#tooltip-card-0");
+    expect(tooltips.close).toHaveBeenCalledWith("card-0");
   });
 });

@@ -83,7 +83,7 @@ function touchStart(
     this.wasRecentlyTapped = true;
     if (globals.editingNote !== undefined) {
       tooltips.close(globals.editingNote);
-      tooltips.close(`#tooltip-${this.tooltipName}`);
+      tooltips.close(this.tooltipName);
     }
   }, DOUBLE_TAP_DELAY_MILLISECONDS);
 
@@ -253,7 +253,7 @@ function shouldShowLookCursor(card: HanabiCard) {
 }
 
 function checkHideNoteTooltip(card: HanabiCard) {
-  const tooltip = `#tooltip-${card.tooltipName}`;
+  const tooltip = card.tooltipName;
 
   // Do not close the tooltip if we are currently editing a note.
   if (globals.editingNote === tooltip) {

@@ -11,6 +11,7 @@ import {
   rejectTooLong,
 } from "../../LengthCounter.tsx";
 import * as chat from "../../chat.ts";
+import type { GameTooltipName } from "../../tooltips.ts";
 import * as tooltips from "../../tooltips.ts";
 import {
   escapeHtml,
@@ -44,7 +45,8 @@ const NOTE_LENGTH_LIMIT = {
 } as const satisfies LengthLimit;
 
 /** The character counter of the note that is being edited, and the tooltip that shows it. */
-let noteCounter: { readonly tooltip: string; readonly root: Root } | undefined;
+let noteCounter:
+  { readonly tooltip: GameTooltipName; readonly root: Root } | undefined;
 
 /** The note that the text of a note input saves. */
 function savedNote(text: string): string {
@@ -55,7 +57,7 @@ function savedNote(text: string): string {
  * Removes the character counter when its tooltip shows other content. (It stays while the tooltip
  * fades out.)
  */
-function unmountNoteCounter(tooltip?: string) {
+function unmountNoteCounter(tooltip?: GameTooltipName) {
   if (
     noteCounter !== undefined
     && (tooltip === undefined || noteCounter.tooltip === tooltip)
@@ -139,8 +141,7 @@ export function set(order: CardOrder, text: string): void {
 export function update(card: HanabiCard, text: string): void {
   // Update the tooltip if it still needs to be shown.
   if (text === "" || globals.activeHover !== card) {
-    const tooltip = `#tooltip-${card.tooltipName}`;
-    tooltips.close(tooltip);
+    tooltips.close(card.tooltipName);
   } else {
     globals.editingNote = undefined;
     show(card);
@@ -157,7 +158,7 @@ export function update(card: HanabiCard, text: string): void {
 
 /** Open the tooltip for this card. */
 export function show(card: HanabiCard): void {
-  const tooltip = `#tooltip-${card.tooltipName}`;
+  const tooltip = card.tooltipName;
 
   // Use the on-screen bounds so that cards in rotated hands are measured correctly.
   tooltips.setPosition(tooltip, card.getClientRect({}));
@@ -200,7 +201,7 @@ export function openEditTooltip(
   // handler will automatically close the tooltip, but then this code will run and immediately
   // re-open the tooltip. Detect if this is happening and do nothing. The "focusout" event does not
   // fire on mobile, therefore we only check for desktop clients.
-  const tooltip = `#tooltip-${card.tooltipName}`;
+  const tooltip = card.tooltipName;
   if (isDesktop && tooltips.isClosing(tooltip)) {
     return;
   }

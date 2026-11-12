@@ -378,7 +378,7 @@ export function onLeaderOrSpectatorsChanged(data: {
   if (away) {
     content += " (away)";
   }
-  tooltips.setContent("#tooltip-leader", content);
+  tooltips.setContent("leader", content);
 }
 
 /** Paused spectators can see that the leader is in a hypothetical, and join it. */

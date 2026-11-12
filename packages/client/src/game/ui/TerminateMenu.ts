@@ -213,7 +213,7 @@ export class TerminateMenu extends Konva.Group {
   open(): void {
     // The menu covers the skull, so its tooltip would show on top of the menu.
     resetActiveHover(this.skull);
-    tooltips.close(`#tooltip-${this.skull.tooltipName}`);
+    tooltips.close("kill");
     this.update();
     this.show();
     this.getLayer()?.batchDraw();

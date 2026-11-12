@@ -1,4 +1,5 @@
 import Konva from "konva";
+import type { GameTooltipName } from "../../../tooltips.ts";
 import {
   FONT_FAMILY,
   LABEL_COLOR,
@@ -21,7 +22,7 @@ export class TimerDisplay extends Konva.Group {
   private readonly oval: Konva.Rect;
   private warningFlashOn = false;
 
-  tooltipName = "";
+  tooltipName?: GameTooltipName;
   tooltipContent = "";
 
   constructor(config: Konva.ContainerConfig) {

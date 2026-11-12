@@ -36,6 +36,7 @@ import {
 } from "@hanabi-live/game";
 import { assertDefined } from "complete-common";
 import Konva from "konva";
+import type { GameTooltipName } from "../../tooltips.ts";
 import * as tooltips from "../../tooltips.ts";
 import { shouldFadeTrash } from "../newUi/tableView.ts";
 import { getViewPlayerIndex } from "../ourSeat.ts";
@@ -205,7 +206,7 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip, UiCard {
     return this._tweening;
   }
 
-  get tooltipName(): string {
+  get tooltipName(): GameTooltipName {
     return `card-${this.order}`;
   }
 
@@ -1233,8 +1234,7 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip, UiCard {
 
     // Hide the card tooltip when the card moves to a different parent.
     if (globals.activeHover === this) {
-      const tooltip = `#tooltip-${this.tooltipName}`;
-      tooltips.close(tooltip);
+      tooltips.close(this.tooltipName);
     }
 
     // Remove the card from the player's hand in preparation of adding it to either the play stacks

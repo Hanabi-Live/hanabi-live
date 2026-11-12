@@ -2,6 +2,7 @@ import type { PlayerIndex } from "@hanabi-live/game";
 import { isValidPlayerIndex } from "@hanabi-live/game";
 import { assertDefined } from "complete-common";
 import Konva from "konva";
+import type { GameTooltipName } from "../../tooltips.ts";
 import * as tooltips from "../../tooltips.ts";
 import { globals } from "./UiGlobals.ts";
 import {
@@ -32,7 +33,7 @@ const NAME_LINE_GAP_FACTOR = 1.4;
 
 export class NameFrame extends Konva.Group {
   playerIndex: PlayerIndex;
-  tooltipName: string;
+  tooltipName: GameTooltipName;
 
   playerName: Konva.Text;
   leftLine: Konva.Line;
@@ -151,7 +152,7 @@ export class NameFrame extends Konva.Group {
     });
     this.on("mouseout touchend", () => {
       konvaTooltips.resetActiveHover(this);
-      tooltips.close(`#tooltip-${this.tooltipName}`);
+      tooltips.close(this.tooltipName);
     });
   }
 

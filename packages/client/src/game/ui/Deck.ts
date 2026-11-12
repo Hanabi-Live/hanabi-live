@@ -6,6 +6,7 @@ import {
   UNKNOWN_SUIT_NAME,
 } from "@hanabi-live/game";
 import Konva from "konva";
+import type { GameTooltipName } from "../../tooltips.ts";
 import * as tooltips from "../../tooltips.ts";
 import type { Pips } from "../types/Pips.ts";
 import * as arrows from "./arrows.ts";
@@ -63,7 +64,7 @@ export class Deck extends Konva.Group {
   numLeft: number;
   pips: Pips;
   numLeftText: Konva.Text;
-  tooltipName = "deck";
+  tooltipName: GameTooltipName = "deck";
   tooltipContent = "";
 
   constructor(config: Konva.ContainerConfig) {
@@ -182,7 +183,7 @@ export class Deck extends Konva.Group {
     });
     this.on("mouseout touchend", () => {
       konvaTooltips.resetActiveHover(this);
-      tooltips.close("#tooltip-deck");
+      tooltips.close("deck");
     });
 
     this.updateDeckTooltip();
@@ -193,7 +194,7 @@ export class Deck extends Konva.Group {
     // rectangle behind the card (so that the tooltip will work when there are 0 cards left in the
     // deck).
     this.tooltipContent = getGameInfoTooltip();
-    tooltips.setContent("#tooltip-deck", this.tooltipContent);
+    tooltips.setContent("deck", this.tooltipContent);
   }
 
   // When dragging the deck, change the cursor to emulate the behavior when dragging a card. It does
@@ -234,7 +235,7 @@ export class Deck extends Konva.Group {
       ) {
         // The game info tooltip would cover the pips.
         konvaTooltips.resetActiveHover(this);
-        tooltips.close("#tooltip-deck");
+        tooltips.close("deck");
         this.setEmpathy(true);
       }
     });

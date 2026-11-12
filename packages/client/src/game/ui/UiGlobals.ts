@@ -11,6 +11,7 @@ import Konva from "konva";
 import type * as Redux from "redux";
 import { Globals as LobbyGlobals } from "../../Globals.ts";
 import type { Loader } from "../../Loader.ts";
+import type { GameTooltipName } from "../../tooltips.ts";
 import type { GameExports } from "../main.ts";
 import type { State } from "../types/State.ts";
 import type { Action } from "../types/actions.ts";
@@ -62,9 +63,9 @@ export class UiGlobals {
 
   /**
    * Used to keep track of which card the user is editing. Users can only update one note at a time
-   * to prevent bugs. Equal to the selector of the tooltip or undefined.
+   * to prevent bugs. Equal to the name of the card's tooltip or undefined.
    */
-  editingNote: string | undefined = undefined;
+  editingNote: GameTooltipName | undefined = undefined;
 
   /** Equal to true if something happened when the note box happens to be open. */
   actionOccurred = false;

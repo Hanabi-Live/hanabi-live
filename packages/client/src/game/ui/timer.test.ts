@@ -84,13 +84,13 @@ test("untimed games without timers still update the player time tooltips", () =>
     });
     expect(globals.playerTimes).toEqual([5000, 0]);
     expect(tooltips.setContent).toHaveBeenCalledWith(
-      "#tooltip-player-0",
+      "player-0",
       "Time taken:<br /><strong>0:05</strong>",
     );
 
     vi.advanceTimersByTime(1000);
     expect(tooltips.setContent).toHaveBeenLastCalledWith(
-      "#tooltip-player-0",
+      "player-0",
       "Time taken:<br /><strong>0:06</strong>",
     );
   } finally {

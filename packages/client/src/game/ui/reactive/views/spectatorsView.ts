@@ -23,9 +23,9 @@ export function onSpectatorsChanged(data: {
     );
 
     const content = getSpectatorsTooltip(data.spectators, data.finished);
-    tooltips.setContent("#tooltip-spectators", content);
+    tooltips.setContent("spectators", content);
   } else {
-    tooltips.close("#tooltip-spectators");
+    tooltips.close("spectators");
   }
 
   globals.layers.UI.batchDraw();
