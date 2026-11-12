@@ -2,7 +2,6 @@ import type { CardOrder, Rank, SuitIndex, Variant } from "@hanabi-live/game";
 import { MAX_STRIKES } from "@hanabi-live/game";
 import { eRange } from "complete-common";
 import { forwardRef } from "react";
-import { tooltipRef } from "../../tooltipRef.ts";
 import { PACE_HIGH_RISK_COLOR } from "../ui/paceRiskColor.ts";
 import { CARD_HEIGHT_PER_WIDTH, CardFace, describeCard } from "./Card.tsx";
 import { Pip } from "./Pip.tsx";
@@ -521,7 +520,6 @@ export function TableTokens({
                 onClick={() => {
                   onShowStrike(segment);
                 }}
-                ref={tooltipRef("Show the turn of this strike")}
                 type="button"
               />
             );
