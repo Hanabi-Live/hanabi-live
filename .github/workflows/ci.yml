@@ -36,6 +36,7 @@ jobs:
           persist-credentials: false
       - uses: ./.github/workflows/setup-bun
       - uses: ./.github/workflows/setup-rust
+        id: setup-rust
         if: matrix.checks == 'rust'
       - name: Install the Rust dependency checkers
         if: matrix.checks == 'rust'
@@ -69,6 +70,11 @@ jobs:
           key: prettier-v1-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('bun.lock', 'package.json', 'bunfig.toml', 'prettier.config.mjs', '.prettierignore', '.editorconfig', 'tsconfig*.json', 'packages/*/tsconfig*.json', 'scripts/lint/check-prettier.sh') }}-${{ github.sha }}
           restore-keys: |
             prettier-v1-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('bun.lock', 'package.json', 'bunfig.toml', 'prettier.config.mjs', '.prettierignore', '.editorconfig', 'tsconfig*.json', 'packages/*/tsconfig*.json', 'scripts/lint/check-prettier.sh') }}-
+      # The Cargo cache saves only when its key did not match. Build what the Rust checks compile
+      # first, so that cached lint results cannot leave it empty.
+      - name: Build the Rust checks for the Cargo cache
+        if: matrix.checks == 'rust' && steps.setup-rust.outputs.cache-hit != 'true'
+        run: bash scripts/lint/check-rust.sh
       - name: Run the ${{ matrix.checks }} checks
         run: bash lint.sh --only=${{ matrix.checks }}
       - name: Cache successful formatting results
