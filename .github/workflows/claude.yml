@@ -53,7 +53,7 @@ jobs:
       - name: Create the "version.js" file
         run: bash ./scripts/dev/set-version.sh
       - uses: ./.github/workflows/setup-rust
-      - uses: anthropics/claude-code-action@61a9c274fa7110a66dfafc1bbbced03833eb25fe # v1
+      - uses: anthropics/claude-code-action@9eb012b6d0900c2b9eede65ee1758cec4d2973e9 # v1
         with:
           anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
           claude_args: |

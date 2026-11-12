@@ -184,9 +184,9 @@ dependencies = [
 
 [[package]]
 name = "axum-server"
-version = "0.8.0"
+version = "0.9.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b1df331683d982a0b9492b38127151e6453639cd34926eb9c07d4cd8c6d22bfc"
+checksum = "f2c55b0e6ae7c8951bc27682e97934423357c1a8208886305290a3adb1ce3c14"
 dependencies = [
  "arc-swap",
  "bytes",
@@ -199,6 +199,7 @@ dependencies = [
  "pin-project-lite",
  "rustls",
  "rustls-pki-types",
+ "socket2",
  "tokio",
  "tokio-rustls",
  "tower-service",
@@ -600,9 +601,9 @@ dependencies = [
 
 [[package]]
 name = "fancy-regex"
-version = "0.19.2"
+version = "0.20.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d301f5bf187b3c295fce6468d3875037a0bccc5f6b151c63cac2f85babf21912"
+checksum = "0a2e16b9a584b602f1e0e5e22c30ca0906786088c27500653e432d086def8b53"
 dependencies = [
  "bit-set",
  "regex-automata",
@@ -1294,9 +1295,9 @@ dependencies = [
 
 [[package]]
 name = "jsonschema"
-version = "0.60.2"
+version = "0.61.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a42a11b47492e6a2cc76e9c7bcc8077776cb31dac444e0795d7f61bcc6441c08"
+checksum = "e1324c9bebe052584e96e7c80d2f9cf2d86e1a6d83d621a46932c5636996be18"
 dependencies = [
  "ahash",
  "bytecount",
@@ -1322,18 +1323,18 @@ dependencies = [
 
 [[package]]
 name = "jsonschema-regex"
-version = "0.60.2"
+version = "0.61.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "107aeb6ff14b8deb5610096a8ce5c554ec89806b521147eaeb3cae05b07edb7a"
+checksum = "84cdf272371326ec8db8ce2608a52635d8edeeaf0189604e2ad627327b79e6db"
 dependencies = [
  "regex-syntax",
 ]
 
 [[package]]
 name = "jsonschema-value"
-version = "0.60.2"
+version = "0.61.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e281d6b177bb4834f2ffd6f92aa0443cffe29c996b251c8d94eb6f456186feba"
+checksum = "e5e4a7f3b3c19c9cd2aa37937e1704229a0bcb1b446308a148574d56ace0c6ba"
 dependencies = [
  "ahash",
  "bytecount",
@@ -1435,9 +1436,9 @@ dependencies = [
 
 [[package]]
 name = "minijinja"
-version = "3.0.5"
+version = "3.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "00f5a04892e86ddb4fc254e9160835370b63a0d44042d3ab4725bc2dbcbab136"
+checksum = "509eeb2603a84eccabb4d75f6ec8ba23b46bbf441aaeb863d6b83a5887fd51e4"
 dependencies = [
  "percent-encoding",
  "serde",
@@ -1813,9 +1814,9 @@ dependencies = [
 
 [[package]]
 name = "referencing"
-version = "0.60.2"
+version = "0.61.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f42818036d3b37cda6bd4c494543158a36e431cb717015ef7c93acc6ba214d3b"
+checksum = "eba9bfd41f0d7d8fbf9c7ed23b788a3f97e9f5d9419be812ff7e08b8dc6b14ec"
 dependencies = [
  "ahash",
  "fluent-uri",
@@ -2930,9 +2931,9 @@ dependencies = [
 
 [[package]]
 name = "twilight-gateway"
-version = "0.17.1"
+version = "0.18.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "59267541c31f888c1587da5e7cbab182ae6efd98faedd9ea2e35a4eef43ff204"
+checksum = "d8c9e5765f6cd5abb3cc936bd6bcf92f69414e2fe247764e150982664441cd50"
 dependencies = [
  "bitflags",
  "fastrand",
@@ -2949,9 +2950,9 @@ dependencies = [
 
 [[package]]
 name = "twilight-gateway-queue"
-version = "0.17.0"
+version = "0.18.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "366a73fe47f61a3d522c3aaf70475e60634b0ae59e7b94272ed7496fffa7ceb7"
+checksum = "89d36c3d0dfd786f7fb636feb479d1d65144b2e217fc763e1acd8ac0e9e99778"
 dependencies = [
  "tokio",
  "tracing",
@@ -2959,9 +2960,9 @@ dependencies = [
 
 [[package]]
 name = "twilight-http"
-version = "0.17.1"
+version = "0.18.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "05b868001d7bfb953732b3f1cd92f63cb88cd2ea902f590b1d084c66aea60e48"
+checksum = "f6e0c109c978d39708f6db201cb560a3bd01bd40ac2bedd1d8aa957e7bfb7f64"
 dependencies = [
  "fastrand",
  "http",
@@ -2982,9 +2983,9 @@ dependencies = [
 
 [[package]]
 name = "twilight-http-ratelimiting"
-version = "0.17.1"
+version = "0.18.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0515b0c30814068a7540fcb5f58b634259ca453fa335d42c3b2c8f2b06ac6a59"
+checksum = "076ca13229e378a4579b78e7579327e007ad462a50512cceb3b624dc1c3afb88"
 dependencies = [
  "hashbrown 0.16.1",
  "tokio",
@@ -2994,9 +2995,9 @@ dependencies = [
 
 [[package]]
 name = "twilight-model"
-version = "0.17.1"
+version = "0.18.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "2bf6bb7b93a7f765d89b3388cc710c0ae16104579e06bb30ea1ee6bd41420a8b"
+checksum = "f8fdf271db1a859666b6ce10bb1bba03bf8d2bc55e13cdb1f70da75a7b8ae962"
 dependencies = [
  "bitflags",
  "serde",
@@ -3007,9 +3008,9 @@ dependencies = [
 
 [[package]]
 name = "twilight-validate"
-version = "0.17.0"
+version = "0.18.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d6a27472e023e3841d1c4e4e20253ed796e8440aada8b5205b8544f1172e661d"
+checksum = "b60c92a02111538020a9d3f19fade997c81ab20554d38abecd0c9c10dc9b5ad9"
 dependencies = [
  "twilight-model",
 ]

@@ -71,7 +71,7 @@ verbose_file_reads = "deny"
 anyhow = "1"
 argon2 = "0.6"
 axum = { version = "0.8", features = ["ws"] }
-axum-server = { version = "0.8", default-features = false, features = [
+axum-server = { version = "0.9", default-features = false, features = [
   "tls-rustls-no-provider"
 ] }
 base64 = "0.23"
@@ -110,13 +110,13 @@ tokio-util = { version = "0.7", features = ["rt"] }
 
 unicode-normalization = "0.1"
 tower-http = { version = "0.7", features = ["fs", "timeout"] }
-twilight-gateway = { version = "0.17.1", default-features = false, features = [
+twilight-gateway = { version = "0.18.0", default-features = false, features = [
   "rustls-webpki-roots"
 ] }
-twilight-http = { version = "0.17.1", default-features = false, features = [
+twilight-http = { version = "0.18.0", default-features = false, features = [
   "rustls-webpki-roots"
 ] }
-twilight-model = "0.17.1"
+twilight-model = "0.18.0"
 tracing = "0.1"
 tracing-subscriber = { version = "0.3", default-features = false, features = [
   "fmt",
