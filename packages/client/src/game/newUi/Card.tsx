@@ -78,6 +78,10 @@ export function getClueMarkerColor(marker: ClueMarkerView): string {
   return marker.type === "color" ? marker.fill : "white";
 }
 
+function roundToEven(value: number): number {
+  return 2 * Math.round(value / 2);
+}
+
 /**
  * A token that sits on the top edge of a card that a clue touched, with a point toward the card. It
  * shows the clue: a disc of the clue's color, or a white disc with the clue's number. The "data-"
@@ -90,8 +94,10 @@ function ClueMarker({
   readonly marker: ClueMarkerView;
   readonly width: number;
 }): React.JSX.Element {
-  const size = width * CLUE_TOKEN_SIZE_PER_WIDTH;
-  const point = size * 0.34;
+  // Whole, even sizes, and a left edge on a whole pixel, keep the point centered under the disc.
+  // The browser snaps the disc to whole pixels, but draws the rotated point where it falls.
+  const size = roundToEven(width * CLUE_TOKEN_SIZE_PER_WIDTH);
+  const point = roundToEven(size * 0.34);
   const color = getClueMarkerColor(marker);
   let label = "";
   if (marker.type === "rank") {
@@ -103,13 +109,13 @@ function ClueMarker({
   return (
     <span
       aria-hidden="true"
-      className="tw:pointer-events-none tw:absolute tw:left-1/2 tw:z-10"
+      className="tw:pointer-events-none tw:absolute tw:z-10"
       data-clue-marker
       style={{
         top: -size * CLUE_TOKEN_PART_ABOVE_CARD,
+        left: `round(down, calc(50% - ${size / 2}px), 1px)`,
         width: size,
         height: size,
-        marginLeft: -size / 2,
       }}
     >
       <span
