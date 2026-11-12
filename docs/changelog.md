@@ -30,6 +30,8 @@ of the repository.
 - In the new game screen, holding the mouse button down on another player's
   cards shows their view right away. Clicking a hand no longer picks that player
   for a clue; use the buttons in the clue panel.
+- The profile page no longer shows the total number of max scores. The "Missing
+  Scores" page still shows it.
 
 ## November 11th, 2026
 

@@ -204,11 +204,8 @@ pub(super) async fn page(
                     v["page"] = json!("scores");
                     v["title"] = json!("Scores");
                     let mut statistics = player_statistics(&state, users[0].0).await?;
-                    let summary = score_summary(&state, users[0].0).await?;
-                    statistics
-                        .as_object_mut()
-                        .expect("stats")
-                        .extend(summary.as_object().expect("summary").clone());
+                    let mut summary = score_summary(&state, users[0].0).await?;
+                    statistics["rows"] = summary["rows"].take();
                     v["stats"] = statistics;
                 }
                 "history" => {
