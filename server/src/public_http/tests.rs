@@ -440,23 +440,25 @@ async fn public_database_routes_filters_privacy_exports_and_html() {
     assert_eq!(full[0]["options"]["variantId"], 1);
     let (_, body) = request(app.clone(), "/api/v1/tags/Alice").await;
     let tagged: Value = serde_json::from_str(&body).unwrap();
-    assert_eq!(tagged.as_array().unwrap().len(), 2);
+    hanabi_protocol::validate::<hanabi_protocol::GamePage>(&tagged).unwrap();
+    assert_eq!(tagged["total"], 2);
     assert!(
-        tagged
+        tagged["games"]
             .as_array()
             .unwrap()
             .iter()
             .all(|g| g["tags"] == json!(["mine"]))
     );
-    let (_, body) = request(app.clone(), "/api/v1/tag/%20MINE%20").await;
+    // The tagged games are paged like the other game lists.
+    let (_, body) = request(app.clone(), "/api/v1/tags/Alice?limit=1&offset=1").await;
+    let page: Value = serde_json::from_str(&body).unwrap();
+    assert_eq!(page["games"].as_array().unwrap().len(), 1);
     assert_eq!(
-        serde_json::from_str::<Value>(&body)
-            .unwrap()
-            .as_array()
-            .unwrap()
-            .len(),
-        2
+        (page["offset"].clone(), page["total"].clone()),
+        (json!(1), json!(2))
     );
+    let (_, body) = request(app.clone(), "/api/v1/tag/%20MINE%20").await;
+    assert_eq!(serde_json::from_str::<Value>(&body).unwrap()["total"], 2);
     let (status, body) = request(app.clone(), "/export/3").await;
     assert_eq!(status, StatusCode::OK, "{body}");
     let export: Value = serde_json::from_str(&body).unwrap();
@@ -492,15 +494,23 @@ async fn public_database_routes_filters_privacy_exports_and_html() {
         assert_eq!(status, StatusCode::OK, "{path}: {body}");
         assert!(body.contains("id=\"main\""), "{path}");
     }
-    // The tagged games page names each game and its variant.
+    // The tagged games pages count the games and load them from the API.
     let (_, body) = request(app.clone(), "/tags/Alice").await;
-    for game in tagged.as_array().unwrap() {
-        let id = game["gameId"].as_u64().unwrap();
-        let variant = u32::try_from(game["options"]["variantId"].as_u64().unwrap()).unwrap();
-        let name = &hanabi_engine::get_variant_by_id(variant).unwrap().name;
-        assert!(body.contains(&format!("href=\"/replay/{id}\"")), "{body}");
-        assert!(body.contains(&format!("<td>{name}</td>")), "{body}");
-    }
+    assert!(
+        body.contains("data-api-path=\"&#x2f;api&#x2f;v1&#x2f;tags&#x2f;Alice\""),
+        "{body}"
+    );
+    assert!(
+        body.contains("<span id=\"total-number-of-games\">2</span>"),
+        "{body}"
+    );
+    let (_, body) = request(app.clone(), "/tag/mine").await;
+    assert!(
+        body.contains("data-api-path=\"&#x2f;api&#x2f;v1&#x2f;tag&#x2f;mine\""),
+        "{body}"
+    );
+    let (_, body) = request(app.clone(), "/history/Alice").await;
+    assert!(body.contains("id=\"history-table\""), "{body}");
     // A max score shows the option that kept it from counting normally, or a check.
     let (_, body) = request(app.clone(), "/scores/Alice").await;
     assert!(body.contains("fa-check score-modifier green"), "{body}");

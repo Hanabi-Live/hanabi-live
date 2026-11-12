@@ -248,12 +248,13 @@ function initServerTable(
     () => ({ sortable: false, filter: "none" }),
   );
   columns[position("gameId")] = { sortable: true, filter: "none" };
-  columns[position("numPlayers")] = {
-    sortable: mode === "history",
-    filter: mode === "seed" ? "none" : playerCounts,
-  };
   columns[position("score")] = { sortable: true, filter: "text" };
-  if (mode === "history") {
+  // The games on a seed share its player count and variant.
+  if (mode !== "seed") {
+    columns[position("numPlayers")] = {
+      sortable: true,
+      filter: playerCounts,
+    };
     columns[position("variantId")] = {
       sortable: false,
       filter: variantChoices,
@@ -324,7 +325,7 @@ function initServerTable(
     table,
     columns,
     {
-      column: position(mode === "history" ? "gameId" : "score"),
+      column: position(mode === "seed" ? "score" : "gameId"),
       descending: true,
     },
     () => {
@@ -517,6 +518,7 @@ function gameRows(
             `${PATH.SEED}/${encodeURIComponent(game.seed)}`,
             game.numGamesOnSeed,
           ),
+      ...(mode === "tags" ? [game.tags.join(", ")] : []),
     ];
   });
 }

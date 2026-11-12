@@ -18,25 +18,6 @@ pub(super) fn templates() -> minijinja::Environment<'static> {
     let mut env = minijinja::Environment::new();
     env.add_filter("urlencode", |s: String| encoded(&s));
     env.add_filter("possessive", |s: String| possessive(&s));
-    // Game lists name a game's variant by its ID.
-    env.add_filter("variant_name", |id: u32| {
-        hanabi_engine::get_variant_by_id(id)
-            .map(|variant| variant.name.clone())
-            .map_err(|error| {
-                minijinja::Error::new(minijinja::ErrorKind::InvalidOperation, error.to_string())
-            })
-    });
-    env.add_filter("history_date", |s: String| {
-        chrono::DateTime::parse_from_rfc3339(&s)
-            .map(|date| {
-                date.with_timezone(&chrono::Utc)
-                    .format("%Y-%m-%d — %H:%M:%S UTC")
-                    .to_string()
-            })
-            .map_err(|error| {
-                minijinja::Error::new(minijinja::ErrorKind::InvalidOperation, error.to_string())
-            })
-    });
     for (name, source) in [
         ("layout.html", include_str!("../../templates/layout.html")),
         ("logo.html", include_str!("../../templates/logo.html")),
@@ -172,7 +153,7 @@ pub(super) async fn page(
     };
     // Redirects to the page's JSON API.
     let api_redirect = q.flag("api").map_err(HttpError::bad)?;
-    let mut v = json!({"title":"History","page":mode,"stats":{},"games":[],"frequencies":[]});
+    let mut v = json!({"title":"History","page":mode,"stats":{},"frequencies":[]});
     match mode {
         "export" => {
             return Ok(replay::export(&state, &params)
@@ -228,16 +209,14 @@ pub(super) async fn page(
                     }
                 }
                 "tags" => {
+                    let api = format!("{API_PREFIX}/tags/{}", encoded(&users[0].1));
                     if api_redirect {
-                        return Ok(Redirect::permanent(&format!(
-                            "{API_PREFIX}/tags/{}",
-                            encoded(&users[0].1)
-                        ))
-                        .into_response());
+                        return Ok(Redirect::permanent(&api).into_response());
                     }
                     v["title"] = json!("Tagged Games");
-                    v["page"] = json!("tagged");
-                    v["games"] = json!(data::tagged(&state, &params, false).await?);
+                    v["apiPath"] = json!(api);
+                    let selection = data::selection(&state, &params, mode).await?;
+                    v["total"] = json!(data::count(&state, selection).await?);
                 }
                 _ => {
                     return missing(
@@ -284,9 +263,10 @@ pub(super) async fn page(
                         .into_response(),
                 );
             }
-            v["page"] = json!("tagged");
             v["namesTitle"] = json!(format!("Games With a Tag of: {tag}"));
-            v["games"] = json!(data::tagged(&state, &params, true).await?);
+            v["apiPath"] = json!(format!("{API_PREFIX}/tag/{}", encoded(&tag)));
+            let selection = data::selection(&state, &params, mode).await?;
+            v["total"] = json!(data::count(&state, selection).await?);
         }
         _ => return Err(HttpError::not_found("Not found.")),
     }

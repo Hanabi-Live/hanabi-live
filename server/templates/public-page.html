@@ -138,21 +138,19 @@
             data-frequencies="{{ scoreFreqsJson }}"
           ></canvas>
           <hr />
-          {% endif %} {% if page == "tagged" %}
+          {% endif %} {% if page in ["tags", "tag"] %}
           <h3 class="align-center">
-            {% if games|length == 0 %}{% if title == "Tagged Games" %}No tagged
-            games.{% else %}No games played.{% endif %}{% else %}Total games:
-            <span id="total-number-of-games">{{ games|length }}</span>{% endif
-            %}
+            {% if total == 0 %}{% if page == "tags" %}No tagged games.{% else
+            %}No games played.{% endif %}{% else %}Total games:
+            <span id="total-number-of-games">{{ total }}</span>{% endif %}
           </h3>
-          {% if games|length == 0 and title == "Tagged Games" %}
+          {% if total == 0 and page == "tags" %}
           <h4 class="align-center">
             Get them to tag some games with the <code>/tag</code> command. (e.g.
             <code>/tag Layered Finesse</code>)
           </h4>
-          {% endif %} {% endif %} {% if apiPath or games|length > 0 or page ==
-          "scores" %} {% include "public-pager.html" %} {% if page == "scores"
-          %}
+          {% endif %} {% endif %} {% if page == "scores" or (apiPath and total
+          != 0) %} {% include "public-pager.html" %} {% if page == "scores" %}
           <div
             class="public-table-scroll"
             tabindex="0"
@@ -216,42 +214,12 @@
                   <th>Percentile</th>
                   {% else %}
                   <th>Other Scores</th>
-                  {% endif %} {% if title == "Tagged Games" %}
+                  {% endif %} {% if page == "tags" %}
                   <th>Tags</th>
                   {% endif %}
                 </tr>
               </thead>
-              <tbody>
-                {% for game in games %}
-                <tr
-                  id="history-row-{{ loop.index0 }}"
-                  class="history-row history-row-players-{{ game.playerNames|length }} history-row-score-{{ game.score }}"
-                  data-variant="{{ game.options.variantId|variant_name }}"
-                >
-                  <td>
-                    <a href="/replay/{{ game.gameId }}">{{ game.gameId }}</a>
-                  </td>
-                  <td class="center">{{ game.playerNames|length }}</td>
-                  <td class="center">{{ game.score }}</td>
-                  <td>{{ game.options.variantId|variant_name }}</td>
-                  <td>
-                    <a
-                      href="/history/{% for name in game.playerNames %}{{ name|urlencode }}{% if not loop.last %}/{% endif %}{% endfor %}"
-                      >{{ game.playerNames|join(", ") }}</a
-                    >
-                  </td>
-                  <td>{{ game.finishedAt|history_date }}</td>
-                  <td class="center">
-                    <a href="/seed/{{ game.seed|urlencode }}"
-                      >{{ game.numGamesOnSeed }}</a
-                    >
-                  </td>
-                  {% if title == "Tagged Games" %}
-                  <td class="center">{{ game.tags|join(", ") }}</td>
-                  {% endif %}
-                </tr>
-                {% endfor %}
-              </tbody>
+              <tbody></tbody>
             </table>
           </div>
           {% endif %} {% include "public-pager.html" %} {% if apiPath %}

@@ -60,11 +60,16 @@ pub(super) const PAGER_SIZES: [i64; 4] = [DEFAULT_PAGE_LIMIT, 20, 50, MAX_PAGE_L
 /// The query parameters that page a list.
 const PAGE_PARAMETERS: [&str; 2] = ["offset", "limit"];
 
-/// The limit and offset that a request asks for, or `None` when it names neither.
-fn pagination(q: &Query) -> Result<Option<(i64, i64)>> {
-    if PAGE_PARAMETERS.iter().all(|name| q.get(name).is_none()) {
-        return Ok(None);
-    }
+/// A page of a list: at most `limit` rows, after the first `offset`.
+#[derive(Clone, Copy)]
+struct Page {
+    limit: i64,
+    offset: i64,
+}
+
+/// The page that a request asks for. Without `limit`, a page has `DEFAULT_PAGE_LIMIT` rows, and
+/// without `offset`, it is the first page.
+fn pagination(q: &Query) -> Result<Page> {
     let limit = match q.get("limit") {
         None => DEFAULT_PAGE_LIMIT,
         Some(limit) => integer(limit)
@@ -84,7 +89,7 @@ fn pagination(q: &Query) -> Result<Option<(i64, i64)>> {
                 ))
             })?,
     };
-    Ok(Some((limit, offset)))
+    Ok(Page { limit, offset })
 }
 fn integer(s: &str) -> Option<i64> {
     let digits = s.strip_prefix(['+', '-']).unwrap_or(s);
@@ -260,7 +265,7 @@ async fn api_response(
         .and_then(|rest| rest.split('/').nth(1))
         .unwrap_or("");
     let list_parameters = match mode {
-        "history" | "seed" => data::list_parameters(mode),
+        "history" | "seed" | "tags" | "tag" => data::list_parameters(mode),
         _ => Vec::new(),
     };
     let list_parameters: Vec<&str> = list_parameters.iter().map(String::as_str).collect();
@@ -268,12 +273,10 @@ async fn api_response(
     Ok(match mode {
         "variants" => Json(catalog::names()).into_response(),
         "variants-full" => Json(catalog::metadata()).into_response(),
-        "history" | "seed" => {
+        "history" | "seed" | "tags" | "tag" => {
             let selection = data::selection(state, params, mode).await?;
             Json(data::list(state, selection, &q, mode).await?).into_response()
         }
-        "tags" => Json(data::tagged(state, params, false).await?).into_response(),
-        "tag" => Json(data::tagged(state, params, true).await?).into_response(),
         _ => return Err(HttpError::not_found("Not found.")),
     })
 }

@@ -876,8 +876,8 @@ move for the current situation.
 | `/api/v1/variants-full`                  | Displays a list of variants information and their IDs.                                                      |
 | `/api/v1/history/[username]`             | Lists a paginated list of the player's past games.                                                          |
 | `/api/v1/history/[username]/[username2]` | Lists a paginated list of past games where the players were in together. (You can specify up to 6 players.) |
-| `/api/v1/tags/[username]`                | Lists all games tagged by the player, with only that player's tags on each game.                            |
-| `/api/v1/tag/[tag]`                      | Lists all games containing the specified tag.                                                               |
+| `/api/v1/tags/[username]`                | Lists a paginated list of the games tagged by the player, with only that player's tags on each game.        |
+| `/api/v1/tag/[tag]`                      | Lists a paginated list of the games containing the specified tag.                                           |
 | `/api/v1/seed/[seed]`                    | Lists paginated games played on a specific seed.                                                            |
 
 Notes: The paginated lists take the following query parameters, added with a `?`
@@ -896,8 +896,8 @@ request with any other parameter, or with a parameter repeated, is rejected.
 
 The columns are `gameId`, `numPlayers`, `score`, and `variantId` (for example,
 `?sort=score&order=desc`). Every list sorts by `gameId`, `numPlayers`, or
-`score`. History lists filter by any column, and seed lists by `gameId` or
-`score`.
+`score`. Seed lists filter by `gameId` or `score`, and the other lists by any
+column.
 
 ## Bots
 

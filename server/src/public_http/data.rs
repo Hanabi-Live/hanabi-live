@@ -1,4 +1,6 @@
-use super::{HttpError, PAGE_PARAMETERS, Params, PublicState, Query, Result, integer, pagination};
+use super::{
+    HttpError, PAGE_PARAMETERS, Page, Params, PublicState, Query, Result, integer, pagination,
+};
 use crate::archive::GameRecord;
 use hanabi_protocol::GameListColumn as Column;
 use sqlx::{Postgres, QueryBuilder};
@@ -19,11 +21,11 @@ const fn column_field(column: Column) -> &'static str {
     }
 }
 
-/// The columns that a game list filters by.
+/// The columns that a game list filters by. The games on a seed share its player count and variant.
 const fn filterable_columns(mode: &str) -> &'static [Column] {
     match mode.as_bytes() {
-        b"history" => Column::ALL,
-        _ => &[Column::GameId, Column::Score],
+        b"seed" => &[Column::GameId, Column::Score],
+        _ => Column::ALL,
     }
 }
 
@@ -42,9 +44,6 @@ pub(super) fn list_parameters(mode: &str) -> Vec<String> {
         )
         .collect()
 }
-
-/// The order of a player's history: the most recently finished game first.
-pub(super) const FINISHED_ORDER: &str = "g.datetime_finished DESC,g.id DESC";
 
 #[derive(sqlx::FromRow)]
 struct HistoryRow {
@@ -65,7 +64,6 @@ pub(super) struct Selection {
     pub tag_user: Option<i32>,
     /// Each column's required value.
     pub filters: Vec<(&'static str, i64)>,
-    pub page: Option<(i64, i64)>,
 }
 
 pub(super) async fn players(
@@ -110,18 +108,31 @@ pub(super) async fn players(
     Ok(users)
 }
 
+/// The games that a list shows: a player's history, the games on a seed, a player's tagged games,
+/// or the games with a tag.
 pub(super) async fn selection(state: &PublicState, p: &Params, mode: &str) -> Result<Selection> {
     let mut s = Selection::default();
-    if mode == "history" {
-        s.users = players(state, p, true)
-            .await?
-            .into_iter()
-            .map(|u| u.0)
-            .collect();
-    } else {
-        s.seed = p.get("seed").filter(|v| !v.is_empty()).cloned();
-        if s.seed.is_none() {
-            return Err(HttpError::not_found("You must specify a seed."));
+    match mode {
+        "history" => {
+            s.users = players(state, p, true)
+                .await?
+                .into_iter()
+                .map(|u| u.0)
+                .collect();
+        }
+        "seed" => {
+            s.seed = p.get("seed").filter(|v| !v.is_empty()).cloned();
+            if s.seed.is_none() {
+                return Err(HttpError::not_found("You must specify a seed."));
+            }
+        }
+        "tags" => s.tag_user = Some(players(state, p, false).await?[0].0),
+        _ => {
+            let tag = p
+                .get("tag")
+                .filter(|v| !v.is_empty())
+                .ok_or_else(|| HttpError::not_found("You must specify a tag."))?;
+            s.tag = Some(sanitize_tag(tag)?);
         }
     }
     Ok(s)
@@ -197,11 +208,10 @@ pub(super) async fn list(
     q: &Query,
     mode: &str,
 ) -> Result<hanabi_protocol::GamePage> {
-    let (limit, offset) = pagination(q)?.unwrap_or((super::DEFAULT_PAGE_LIMIT, 0));
-    s.page = Some((limit, offset));
+    let page = pagination(q)?;
     let column = match q.get("sort") {
-        None if mode == "history" => Column::GameId,
-        None => Column::Score,
+        None if mode == "seed" => Column::Score,
+        None => Column::GameId,
         Some(name) => Column::from_name(name)
             .filter(|column| SORTABLE_COLUMNS.contains(column))
             .ok_or_else(|| {
@@ -240,15 +250,21 @@ pub(super) async fn list(
             })
             .transpose()?;
     }
-    let mut count = selected(s.clone());
-    count.push(") SELECT count(*) FROM selected");
-    let total: i64 = count.build_query_scalar().fetch_one(&state.pool).await?;
+    let total = count(state, s.clone()).await?;
     let order = format!("g.{} {direction},g.id DESC", column_field(column));
     Ok(hanabi_protocol::GamePage {
-        games: history(state, s, &order).await?,
-        offset: hanabi_protocol::Count::try_from(offset)?,
-        total: hanabi_protocol::Count::try_from(total)?,
+        games: history(state, s, &order, page).await?,
+        offset: hanabi_protocol::Count::try_from(page.offset)?,
+        total,
     })
+}
+
+/// How many games the selection has.
+pub(super) async fn count(state: &PublicState, s: Selection) -> Result<hanabi_protocol::Count> {
+    let mut qb = selected(s);
+    qb.push(") SELECT count(*) FROM selected");
+    let total: i64 = qb.build_query_scalar().fetch_one(&state.pool).await?;
+    Ok(hanabi_protocol::Count::try_from(total)?)
 }
 
 /// The public history lists the lobby's `GameHistoryEntry` contract.
@@ -269,14 +285,14 @@ fn game_history(row: HistoryRow) -> anyhow::Result<hanabi_protocol::GameHistoryE
     })
 }
 
-/// The selected games, in `order`, which is SQL that sorts `g`.
-pub(super) async fn history(
+/// A page of the selected games, in `order`, which is SQL that sorts `g`.
+async fn history(
     state: &PublicState,
     s: Selection,
     order: &str,
+    page: Page,
 ) -> Result<Vec<hanabi_protocol::GameHistoryEntry>> {
     let tag_user = s.tag_user;
-    let page = s.page;
     let mut qb = selected(s);
     qb.push(") SELECT ").push(GAME_COLUMNS);
     // Keep PostgreSQL's existing timestamp text, including fractional-second precision.
@@ -285,13 +301,11 @@ pub(super) async fn history(
         qb.push(" AND user_id=").push_bind(user);
     }
     qb.push("),'{}') AS tags FROM selected g ORDER BY ");
-    qb.push(order);
-    if let Some((size, offset)) = page {
-        qb.push(" LIMIT ")
-            .push_bind(size)
-            .push(" OFFSET ")
-            .push_bind(offset);
-    }
+    qb.push(order)
+        .push(" LIMIT ")
+        .push_bind(page.limit)
+        .push(" OFFSET ")
+        .push_bind(page.offset);
     Ok(qb
         .build_query_as::<HistoryRow>()
         .fetch_all(&state.pool)
@@ -314,22 +328,4 @@ pub(super) fn sanitize_tag(value: &str) -> Result<String> {
         return Err(HttpError::not_found("Tags cannot be blank."));
     }
     Ok(crate::accounts::normalize_string(value))
-}
-
-pub(super) async fn tagged(
-    state: &PublicState,
-    params: &Params,
-    search: bool,
-) -> Result<Vec<hanabi_protocol::GameHistoryEntry>> {
-    let mut s = Selection::default();
-    if search {
-        let value = params
-            .get("tag")
-            .filter(|v| !v.is_empty())
-            .ok_or_else(|| HttpError::not_found("You must specify a tag."))?;
-        s.tag = Some(sanitize_tag(value)?);
-    } else {
-        s.tag_user = Some(players(state, params, false).await?[0].0);
-    }
-    history(state, s, FINISHED_ORDER).await
 }

@@ -106,6 +106,9 @@ const MAX_ESCAPES = 3;
 /** The seed of the first seeded game: two players, the variant with ID 0, and the first seed. */
 const SEED = "p2v0s1";
 
+/** The tag that the seeded games have, for the tagged games pages. */
+const TAG = "layered finesse";
+
 /** The accounts that watch the open table. */
 const SPECTATOR_NAMES = ["Carol", "Dave", "Erin", "Frank"] as const;
 
@@ -506,6 +509,8 @@ function getStates({
       },
     },
     { name: "seed", path: `/seed/${SEED}`, loggedIn: false },
+    { name: "tags", path: `/tags/${USERNAME}`, loggedIn: false },
+    { name: "tag", path: `/tag/${encodeURIComponent(TAG)}`, loggedIn: false },
     { name: "password-reset", path: "/password-reset", loggedIn: false },
     {
       name: "login-alert",
@@ -1489,6 +1494,7 @@ async function playGame(alice: Peer, bob: Peer): Promise<number> {
     SERVER_COMMAND_SCHEMAS.gameFinished,
   );
   assertDefined(finished.gameId, "The seeded game was not saved.");
+  alice.send("tagAdd", { tableId, tag: TAG });
   // The players are now in a shared replay of the game. Leave it, or the browser would join it.
   for (const peer of peers) {
     peer.send("tableUnattend", { tableId });
