@@ -148,6 +148,9 @@ interface Drag {
  */
 const DROP_WAIT_MILLISECONDS = 3000;
 
+/** How the chat names us among the people watching. */
+const YOU = "You";
+
 /**
  * Where the card under the pointer sits, as the drag draws it (before its slight tilt), in the
  * screen's CSS pixels.
@@ -975,6 +978,17 @@ export function GameScreen({
   );
   const shownClue = getClueForTurn(visibleState);
 
+  // The chat lists everyone who is watching, with us first as "You": our own name alone in a replay
+  // would read as if the game were ours.
+  const spectators = [
+    ...state.spectators.filter(
+      (spectator) => spectator.username === metadata.ourUsername,
+    ),
+    ...state.spectators.filter(
+      (spectator) => spectator.username !== metadata.ourUsername,
+    ),
+  ];
+
   // With only one other player, such as in a 2-player game, the clue can only go to them, so they
   // do not need to be picked.
   const otherPlayers = seats.filter(
@@ -1350,10 +1364,15 @@ export function GameScreen({
         <ChatPanel
           open={newUiState.isChatOpen()}
           overlay={chatOverlay}
-          spectators={state.spectators.map((spectator) => spectator.username)}
+          spectators={spectators.map((spectator) =>
+            spectator.username === metadata.ourUsername
+              ? YOU
+              : spectator.username,
+          )}
           spectatorsTooltip={getSpectatorsTooltip(
-            state.spectators,
+            spectators,
             state.finished,
+            YOU,
           )}
           unread={globals.lobby.chatUnread}
         />

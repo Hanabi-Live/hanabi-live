@@ -40,6 +40,8 @@ of the repository.
   larger instead of surrounded by empty space.
 - In the new game screen, put the mouse on the variant at the bottom to see the
   game's information, such as its options and its table.
+- In the new game screen, the chat lists how many people are watching and names
+  as many as fit, with you shown as "You".
 
 ## November 11th, 2026
 
