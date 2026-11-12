@@ -83,13 +83,13 @@ pub struct Votes {
 }
 
 /// The votes to end the game, as one player sees them, in the `votes` message and in a game's
-/// state.
+/// state. A player sees only their own vote, so that the votes of others do not tell them what
+/// their teammates think of the game.
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct VoteState {
     /// Whether the recipient voted.
     pub voted: bool,
-    pub num_votes: VoteCount,
     /// How many votes end the game.
     pub num_votes_needed: VoteCount,
 }

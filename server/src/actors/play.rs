@@ -263,23 +263,19 @@ impl TableActor {
         }
         let outcome = self.persist_with(next, Commit::default()).await?;
         let mut e = self.effects();
-        // A vote that ends the game has already made it a replay.
+        // A vote that ends the game has already made it a replay. Only the voter learns of the vote:
+        // the votes of others would tell a player what their teammates think of the game.
         if vote && !terminate {
-            let s = self.live()?;
-            for a in self.audience().filter(|a| !a.spectator) {
-                if let Ok(seat) = self.seat(&a.session) {
-                    e.messages.push((
-                        a.session.clone(),
-                        frame(
-                            hanabi_protocol::server::VOTES,
-                            hanabi_protocol::Votes {
-                                table_id: self.table.id,
-                                votes: seat_votes(s, seat)?,
-                            },
-                        ),
-                    ));
-                }
-            }
+            e.messages.push((
+                session.clone(),
+                frame(
+                    hanabi_protocol::server::VOTES,
+                    hanabi_protocol::Votes {
+                        table_id: self.table.id,
+                        votes: seat_votes(self.live()?, seat)?,
+                    },
+                ),
+            ));
         }
         self.publish(e).await?;
         if terminate {
@@ -653,8 +649,6 @@ fn pause_state(s: &Snapshot, session: &Session) -> hanabi_protocol::PauseState {
 fn seat_votes(s: &Snapshot, seat: usize) -> anyhow::Result<hanabi_protocol::VoteState> {
     Ok(hanabi_protocol::VoteState {
         voted: s.votes[seat],
-        num_votes: hanabi_protocol::VoteCount::new(s.votes.iter().filter(|v| **v).count())
-            .context("Too many votes")?,
         num_votes_needed: hanabi_protocol::VoteCount::new(votes_needed(s.players.len()))
             .context("Too many votes needed")?,
     })

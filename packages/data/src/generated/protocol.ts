@@ -607,11 +607,11 @@ const voteCountSchema = z.number().int().min(0).max(6);
 
 /**
  * The votes to end the game, as one player sees them, in the `votes` message and in a game's
- * state.
+ * state. A player sees only their own vote, so that the votes of others do not tell them what
+ * their teammates think of the game.
  */
 const voteStateSchema = z
   .strictObject({
-    numVotes: voteCountSchema,
     /**
      * How many votes end the game.
      */
@@ -1627,7 +1627,6 @@ export const variantNamesSchema = z.record(z.string(), z.string()).readonly();
  */
 export const votesSchema = z
   .strictObject({
-    numVotes: voteCountSchema,
     /**
      * How many votes end the game.
      */

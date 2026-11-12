@@ -173,12 +173,12 @@ export function StatusStrip({
           </button>
         )}
         {viewAsMenu}
-        <button className={buttonClass} onClick={onClassicView} type="button">
-          Classic view
-        </button>
         {endGameMenu}
         <button className={buttonClass} onClick={onLobby} type="button">
           Lobby
+        </button>
+        <button className={buttonClass} onClick={onClassicView} type="button">
+          Classic view
         </button>
       </div>
     </footer>

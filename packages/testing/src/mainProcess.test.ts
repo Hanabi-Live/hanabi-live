@@ -408,13 +408,6 @@ databaseDescribe("compiled application entry point (rust)", () => {
             SERVER_COMMAND_SCHEMAS.votes,
             (data) => data.voted,
           );
-          // The other player sees the vote without having cast one.
-          await bob.receive(
-            "votes",
-            SERVER_COMMAND_SCHEMAS.votes,
-            (data) =>
-              !data.voted && data.numVotes === 1 && data.numVotesNeeded === 2,
-          );
           bob.send("tableTerminateVote", {
             tableId,
           });

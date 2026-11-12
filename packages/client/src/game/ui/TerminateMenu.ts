@@ -43,7 +43,6 @@ const ARROW_OVERLAP = 2;
 const END_NOW_COLOR = "red";
 
 export class TerminateMenu extends Konva.Group {
-  private readonly countText: Konva.Text;
   private readonly voteName: Konva.Text;
   private readonly voteDetail: Konva.Text;
 
@@ -135,11 +134,14 @@ export class TerminateMenu extends Konva.Group {
         text: "End the game?",
       }),
     );
-    this.countText = text({
-      y: countY * winH,
-      fontSize: MENU.countFontSize * winH,
-    });
-    panel.add(this.countText);
+    // The server tells each player only about their own vote.
+    panel.add(
+      text({
+        y: countY * winH,
+        fontSize: MENU.countFontSize * winH,
+        text: "Only you see your vote",
+      }),
+    );
 
     function button(buttonY: number, name: string, detail: string) {
       const group = new Button({
@@ -201,11 +203,6 @@ export class TerminateMenu extends Konva.Group {
     if (votes === undefined) {
       return;
     }
-    this.countText.text(
-      votes.numVotes === 0
-        ? "No votes yet"
-        : `Votes so far: ${votes.numVotes} of ${votes.numVotesNeeded}`,
-    );
     this.voteName.text(votes.voted ? "Take back my vote" : "Vote to end");
     this.voteDetail.text(
       `Ends when ${terminationVotes.votersText(votes.numVotesNeeded, globals.options.numPlayers)} vote`,

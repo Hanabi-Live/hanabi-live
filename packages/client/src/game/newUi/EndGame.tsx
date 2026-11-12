@@ -1,13 +1,9 @@
+import type { ServerCommandData } from "@hanabi-live/data";
 import { useEffect, useRef, useState } from "react";
 import { endNow, toggleVote, votersText } from "../ui/terminationVotes.ts";
-import { EASE_OUT_BACK, prefersReducedMotion } from "./playMotion.ts";
 
-/** The votes to end the game, as the server sends them to us. */
-interface Votes {
-  readonly voted: boolean;
-  readonly numVotes: number;
-  readonly numVotesNeeded: number;
-}
+/** Our own vote to end the game. The server does not tell us how the others voted. */
+type Votes = NonNullable<ServerCommandData["gameState"]["votes"]>;
 
 const BUTTON_CLASS =
   "tw:flex tw:h-11 tw:cursor-pointer tw:items-center tw:gap-2 tw:rounded-[10px] tw:border-0 tw:px-4 tw:text-[15px] tw:whitespace-nowrap tw:text-game-text tw:narrow-980:h-9 tw:narrow-980:px-3 tw:narrow-980:text-sm";
@@ -16,23 +12,6 @@ const ITEM_CLASS =
   "tw:flex tw:w-full tw:cursor-pointer tw:flex-col tw:items-start tw:gap-0.5 tw:rounded-lg tw:border-0 tw:px-3 tw:py-2.5 tw:text-left";
 
 const ITEM_DETAIL_CLASS = "tw:text-[12px] tw:leading-[16px]";
-
-/** How long a vote takes to pop in, in milliseconds. */
-const POP_MILLISECONDS = 220;
-
-/** Pops a vote's dot in when it fills, so that a new vote catches the eye. */
-function popIn(element: HTMLElement | null) {
-  if (element === null || prefersReducedMotion()) {
-    return;
-  }
-  element.animate(
-    [
-      { transform: "scale(0.6)", opacity: 0 },
-      { transform: "scale(1)", opacity: 1 },
-    ],
-    { duration: POP_MILLISECONDS, easing: EASE_OUT_BACK },
-  );
-}
 
 /**
  * The button that ends the game early, for the players of an ongoing game. Its menu casts (or takes
@@ -79,21 +58,15 @@ export function EndGameMenu({
   }, [open]);
 
   const voted = votes?.voted === true;
-  const numVotes = votes?.numVotes ?? 0;
-  const label =
-    votes === undefined || numVotes === 0
-      ? "End game"
-      : `End game: ${numVotes} of ${votes.numVotesNeeded} votes to end${voted ? ", including yours" : ""}`;
 
   return (
     <div className="tw:relative" ref={containerRef}>
       <button
         aria-expanded={open}
         aria-haspopup="menu"
-        aria-label={label}
         className={`${BUTTON_CLASS} ${
-          numVotes > 0
-            ? `tw:bg-critical/20 tw:hover:bg-critical/30 ${voted ? "tw:ring-2 tw:ring-critical" : "tw:ring-1 tw:ring-critical/70"}`
+          voted
+            ? "tw:bg-critical/20 tw:ring-2 tw:ring-critical tw:hover:bg-critical/30"
             : "tw:bg-game-raised tw:hover:bg-game-line"
         }`}
         onClick={() => {
@@ -103,25 +76,6 @@ export function EndGameMenu({
       >
         <i aria-hidden="true" className="fas fa-skull" />
         {voted ? "Voted to end" : "End game"}
-        {votes !== undefined && numVotes > 0 && (
-          <span aria-hidden="true" className="tw:flex tw:gap-1">
-            {Array.from({ length: votes.numVotesNeeded }, (_, i) => {
-              const filled = i < numVotes;
-              return (
-                <span
-                  className={`tw:size-2.5 tw:rounded-full ${
-                    filled
-                      ? "tw:bg-critical tw:ring-1 tw:ring-white/80"
-                      : "tw:ring-1 tw:ring-game-muted"
-                  }`}
-                  // A dot that fills is a new element, so that it pops in.
-                  key={`${i}-${filled}`}
-                  ref={filled ? popIn : undefined}
-                />
-              );
-            })}
-          </span>
-        )}
         <i aria-hidden="true" className="fas fa-caret-up tw:text-[12px]" />
       </button>
       {open && (
@@ -133,12 +87,9 @@ export function EndGameMenu({
             <span className="tw:text-[15px] tw:font-bold tw:text-game-text">
               End the game?
             </span>
-            {votes !== undefined && (
-              <span className="tw:text-[12px] tw:text-game-muted">
-                A vote ends it when{" "}
-                {votersText(votes.numVotesNeeded, numPlayers)} vote.
-              </span>
-            )}
+            <span className="tw:text-[12px] tw:text-game-muted">
+              Only you see your vote.
+            </span>
           </div>
           <button
             className={`${ITEM_CLASS} tw:bg-transparent tw:text-game-text tw:hover:bg-white/10`}
@@ -154,9 +105,7 @@ export function EndGameMenu({
             </span>
             {votes !== undefined && (
               <span className={`${ITEM_DETAIL_CLASS} tw:text-game-muted`}>
-                {votes.numVotes === 0
-                  ? "No votes yet"
-                  : `${votes.numVotes} of ${votes.numVotesNeeded} votes so far`}
+                Ends when {votersText(votes.numVotesNeeded, numPlayers)} vote
               </span>
             )}
           </button>
