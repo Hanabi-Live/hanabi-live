@@ -234,10 +234,20 @@ impl Store {
                     ensure!(table.id == stored.id, "Live-table identity mismatch");
                     Ok(table)
                 });
+            // An upgraded table saves every part again, as if the database held none of their
+            // contents.
+            let saved = if crate::checkpoint::is_outdated(&stored.payload) {
+                let blank = stored
+                    .parts
+                    .iter()
+                    .map(|(key, _)| (key.clone(), String::new()))
+                    .collect::<Vec<_>>();
+                Saved::of(stored.revision, &blank)
+            } else {
+                Saved::of(stored.revision, &stored.parts)
+            };
             match read {
-                Ok(table) => recovered
-                    .tables
-                    .push((table, Saved::of(stored.revision, &stored.parts))),
+                Ok(table) => recovered.tables.push((table, saved)),
                 Err(error) => recovered.unreadable.push((stored.id, error)),
             }
         }
@@ -1622,6 +1632,37 @@ mod tests {
         Ok(())
     }
     #[test]
+    fn checkpoints_of_format_18_rename_clue_values_that_earlier_saves_kept() -> Result<()> {
+        let mut table = replayed()?;
+        let expected = serde_json::to_value(&table)?;
+        let (encoded, _) = crate::checkpoint::encode(&mut table, &SavedParts::default())?;
+        let mut head: Value = serde_json::from_str(&encoded.head)?;
+        head["format"] = json!("hanabi-live-18");
+        format_18_head(&mut head);
+        let head = head.to_string();
+        // An earlier save kept the clue's step as format 15 wrote it, under a newer head.
+        let parts = encoded
+            .changes
+            .written
+            .iter()
+            .map(|(key, part)| {
+                let part = if key.starts_with("step/") {
+                    format_15(part)
+                } else {
+                    part.clone()
+                };
+                (key.clone(), part)
+            })
+            .collect::<Vec<_>>();
+        ensure!(
+            parts.iter().any(|(_, part)| part.contains("\"value\"")),
+            "No step holds a clue value"
+        );
+        let decoded = crate::checkpoint::decode(&head, &parts)?;
+        ensure!(serde_json::to_value(&decoded)? == expected);
+        Ok(())
+    }
+    #[test]
     fn checkpoints_of_format_9_use_the_older_wire_names() -> Result<()> {
         let mut table = replayed()?;
         table.chat = suggested().chat;
@@ -1759,6 +1800,76 @@ mod tests {
         sqlx::query!("INSERT INTO users(id,username,normalized_username,password_hash,last_ip) VALUES(1,'Alice','alice','test','127.0.0.1'),(2,'Bob','bob','test','127.0.0.1'),(3,'Cathy','cathy','test','127.0.0.1')").execute(&db.pool).await?;
         let pool = db.pool.clone();
         Ok(Some((db, pool)))
+    }
+    #[tokio::test]
+    async fn recovered_tables_of_older_formats_save_every_part_again() -> Result<()> {
+        let Some((db, pool)) = database().await? else {
+            return Ok(());
+        };
+        let state = LiveState::for_test(&pool).await?;
+        let store = Store::fixture(pool, state.clone());
+        let result = async {
+            let mut table = replayed()?;
+            table.id = store.allocate_table().await?;
+            table.game_mut().context("Missing replay")?.table_id = table.id;
+            store.save_at(&table, 0).await?;
+            // Store it as format 18 did, with its first step, a clue, still as format 15 wrote it.
+            #[expect(
+                clippy::disallowed_methods,
+                reason = "test SQL that sets up an older checkpoint directly"
+            )]
+            {
+                let head: String =
+                    sqlx::query_scalar("SELECT payload FROM live_tables WHERE id=$1")
+                        .bind(table.id.0.cast_signed())
+                        .fetch_one(&store.primary)
+                        .await?;
+                let mut head: Value = serde_json::from_str(&head)?;
+                head["format"] = json!("hanabi-live-18");
+                format_18_head(&mut head);
+                sqlx::query("UPDATE live_tables SET payload=$2 WHERE id=$1")
+                    .bind(table.id.0.cast_signed())
+                    .bind(head.to_string())
+                    .execute(&store.primary)
+                    .await?;
+                let step: String = sqlx::query_scalar(
+                    "SELECT value FROM live_table_parts WHERE table_id=$1 AND part='step/0'",
+                )
+                .bind(table.id.0.cast_signed())
+                .fetch_one(&store.primary)
+                .await?;
+                ensure!(format_15(&step) != step, "The first step is not a clue");
+                sqlx::query(
+                    "UPDATE live_table_parts SET value=$2 WHERE table_id=$1 AND part='step/0'",
+                )
+                .bind(table.id.0.cast_signed())
+                .bind(format_15(&step))
+                .execute(&store.primary)
+                .await?;
+            }
+            let (mut recovered, mut saved) = store
+                .recover()
+                .await?
+                .tables
+                .into_iter()
+                .next()
+                .context("The table was not recovered")?;
+            store.save(&mut recovered, &mut saved).await?;
+            // Without the upgrade, the next start reads every part as it is now.
+            let (reread, _) = store
+                .recover()
+                .await?
+                .tables
+                .into_iter()
+                .next()
+                .context("The table was not recovered again")?;
+            ensure!(serde_json::to_value(&reread)? == serde_json::to_value(&table)?);
+            Ok::<(), anyhow::Error>(())
+        }
+        .await;
+        store.close().await?;
+        db.close().await;
+        result
     }
     #[tokio::test]
     async fn recovered_pregames_refresh_their_totals_after_startup() -> Result<()> {

@@ -901,6 +901,12 @@ fn chat_kinds(_: &mut Value, parts: &mut [(String, String)]) -> Result<()> {
 /// formats did not keep.
 pub const OWNER_NAME: &str = "ownerName";
 
+/// Whether a head is in an older format, which `decode` upgrades. Every part of an upgraded table
+/// must be saved again, since a part that the upgrade changed can come before one that it did not.
+pub fn is_outdated(head: &str) -> bool {
+    serde_json::from_str::<Value>(head).map_or(true, |head| head["format"] != FORMAT)
+}
+
 /// The owner's ID of a head of format 18 or older, which does not keep the owner's name.
 pub fn unnamed_owner(head: &str) -> Option<UserId> {
     let head: Value = serde_json::from_str(head).ok()?;
@@ -919,7 +925,16 @@ pub fn name_owner(head: &str, name: &str) -> Result<String> {
 
 /// Format 18 kept only the owner's ID. The name comes from `OWNER_NAME`, which `recover` adds from
 /// the database, or else from the owner's seat.
-fn owner_names(head: &mut Value, _: &mut [(String, String)]) -> Result<()> {
+///
+/// Servers before format 19 also saved an upgraded table's steps only from the first step that
+/// changed. So a table of format 18 can still hold steps whose clues name their `value`, as format
+/// 15 did. This renames those again.
+fn owner_names(head: &mut Value, parts: &mut [(String, String)]) -> Result<()> {
+    edit_parts(parts, STEP, |step| {
+        if let Some(action) = step.get_mut("action") {
+            name_clue_field(action);
+        }
+    })?;
     let id = head["owner"].clone();
     let seated = ["/phase/players", "/phase/snapshot/players"]
         .into_iter()
