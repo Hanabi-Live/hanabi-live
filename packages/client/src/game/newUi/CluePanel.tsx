@@ -50,6 +50,15 @@ function fullNameTooltip(name: string) {
   return tooltipRef(name.length > LONG_NAME_LENGTH ? name : undefined);
 }
 
+/**
+ * The surface of the controls above the hands: a solid panel that sits above the table, like the
+ * bar along the bottom and the chat, so that it reads as something to operate and not as part of
+ * the game. When the viewer can give a clue, a white ring marks it, like the current player's hand.
+ * Otherwise, a thin line edges it.
+ */
+export const CONTROL_PANEL_CLASS =
+  "tw:bg-game-panel tw:shadow-[0_4px_14px_rgb(0_0_0/30%)]";
+
 const choiceClass =
   "tw:flex tw:size-9 tw:cursor-pointer tw:items-center tw:justify-center tw:rounded-lg tw:border-0 tw:text-base tw:font-extrabold tw:disabled:cursor-default tw:disabled:opacity-40";
 
@@ -74,7 +83,7 @@ export function CluePanel({
     return (
       <section
         aria-label="Give a clue"
-        className="tw:flex tw:h-14 tw:shrink-0 tw:items-center tw:rounded-[14px] tw:bg-game-zone tw:px-4 tw:text-game-muted"
+        className={`tw:flex tw:h-14 tw:shrink-0 tw:items-center tw:rounded-[14px] tw:px-4 tw:text-game-muted ${CONTROL_PANEL_CLASS} tw:ring-1 tw:ring-game-line`}
       >
         {waitingText}
       </section>
@@ -84,7 +93,7 @@ export function CluePanel({
   return (
     <section
       aria-label="Give a clue"
-      className="tw:flex tw:min-h-14 tw:shrink-0 tw:flex-wrap tw:items-center tw:gap-2 tw:rounded-[14px] tw:bg-game-zone tw:px-4 tw:py-2"
+      className={`tw:flex tw:min-h-14 tw:shrink-0 tw:flex-wrap tw:items-center tw:gap-2 tw:rounded-[14px] tw:px-4 tw:py-2 ${CONTROL_PANEL_CLASS} tw:ring-2 tw:ring-game-text`}
     >
       {/* With one other player, such as in a 2-player game, the clue can only go to them, and their
       hand stands out, so the panel shows only the clues. */}

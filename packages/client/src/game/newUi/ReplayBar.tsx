@@ -14,6 +14,7 @@ import * as hypothetical from "../ui/hypothetical.ts";
 import { showPassLeaderDialog } from "../ui/leader.ts";
 import * as replay from "../ui/replay.ts";
 import * as restart from "../ui/restart.ts";
+import { CONTROL_PANEL_CLASS } from "./CluePanel.tsx";
 
 type Mode = "replay" | "hypothetical";
 
@@ -52,7 +53,7 @@ function Bar({
 }): React.JSX.Element {
   return (
     <div
-      className="tw:relative tw:flex tw:shrink-0 tw:flex-wrap tw:items-center tw:gap-x-2.5 tw:gap-y-2 tw:overflow-hidden tw:rounded-[14px] tw:bg-game-panel tw:py-2 tw:pr-2.5 tw:pl-5 tw:ring-1 tw:ring-game-line"
+      className={`tw:relative tw:flex tw:shrink-0 tw:flex-wrap tw:items-center tw:gap-x-2.5 tw:gap-y-2 tw:overflow-hidden tw:rounded-[14px] tw:py-2 tw:pr-2.5 tw:pl-5 tw:ring-1 tw:ring-game-line ${CONTROL_PANEL_CLASS}`}
       role="status"
     >
       <span
