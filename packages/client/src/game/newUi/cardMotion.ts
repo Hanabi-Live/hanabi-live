@@ -289,14 +289,7 @@ const CLUE_TIMING = {
   dip: 240,
   flash: 320,
   burst: 420,
-  /** How long the other hands take to fade, and to come back. */
-  fade: 120,
-  /** How long the other hands stay faded after the last token lands. */
-  hold: 150,
 } as const;
-
-/** How much the hands that are not part of the clue fade while the clue shows. */
-const CLUE_BYSTANDER_OPACITY = 0.45;
 
 /** The ID of every clue animation, so that a new clue can stop the last one. */
 const CLUE_ANIMATION_ID = "clue";
@@ -305,11 +298,7 @@ const CLUE_ANIMATION_ID = "clue";
  * Shows a clue that was just given. The parts are in the page already (see "Hands.tsx" and
  * "Card.tsx"). This only moves them, and each part ends where it rests.
  */
-export function animateClue(
-  root: HTMLElement,
-  giver: number,
-  target: number,
-): void {
+export function animateClue(root: HTMLElement, giver: number): void {
   for (const animation of document.getAnimations()) {
     if (animation.id === CLUE_ANIMATION_ID) {
       animation.finish();
@@ -361,23 +350,7 @@ export function animateClue(
     },
   );
 
-  // The other hands fade for a moment, so that the eye goes to the clue.
   const markers = [...root.querySelectorAll<HTMLElement>("[data-clue-marker]")];
-  const total = Math.max(railEnd, t.land) + t.hold;
-  for (const hand of root.querySelectorAll<HTMLElement>("[data-hand]")) {
-    const playerIndex = Number(hand.dataset["hand"]);
-    if (playerIndex !== giver && playerIndex !== target) {
-      hand.animate(
-        [
-          { opacity: 1 },
-          { opacity: CLUE_BYSTANDER_OPACITY, offset: t.fade / total },
-          { opacity: CLUE_BYSTANDER_OPACITY, offset: 1 - (2 * t.fade) / total },
-          { opacity: 1 },
-        ],
-        { id, duration: total },
-      );
-    }
-  }
 
   // A token falls onto every touched card at once. On impact, the card dips and flashes, and a ring
   // bursts from the token.
