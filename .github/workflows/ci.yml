@@ -91,6 +91,7 @@ jobs:
           key: ${{ steps.cspell-cache.outputs.cache-primary-key }}
 
   test:
+    name: test (${{ matrix.suite }})
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
