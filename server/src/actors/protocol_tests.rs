@@ -829,9 +829,9 @@ async fn shared_review_hypothetical_actions_refresh_idle() -> Result<()> {
         actor.initialize(h.users[0].clone(), vec![]).await?;
         let action = json!({"type":"turn","turn":1,"currentPlayerIndex":1});
         for request in [
-            json!({"tableId":id,"action":{"type":"hypotheticalStart"}}),
-            json!({"tableId":id,"action":{"type":"hypotheticalAction","action":action}}),
-            json!({"tableId":id,"action":{"type":"hypotheticalBack"}}),
+            json!({"tableId":id,"action":{"type":"hypothetical","control":{"type":"start"}}}),
+            json!({"tableId":id,"action":{"type":"hypothetical","control":{"type":"event","event":action}}}),
+            json!({"tableId":id,"action":{"type":"hypothetical","control":{"type":"back"}}}),
         ] {
             let mut next = actor.candidate();
             next.game_mut().unwrap().idle_remaining = 1000;
@@ -1078,7 +1078,7 @@ async fn shared_replays_of_older_games_start_when_their_table_is_created() -> Re
         h.send(1, "gameInitLoad", json!({"tableId":id})).await?;
         let init = h.receive(1, "init").await?;
         ensure!(
-            init["mode"]["sharedReplay"]["startedAt"]
+            init["mode"]["sharedReplay"]["replayStartedAt"]
                     == hanabi_protocol::Timestamp::from(created).as_str(),
             "The shared replay did not start when its table was created: {init}"
         );

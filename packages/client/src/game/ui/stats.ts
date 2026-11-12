@@ -29,8 +29,8 @@ export function setEfficiencyModifier(efficiencyModifier: number): void {
     globals.lobby.conn!.send("replayAction", {
       tableId: globals.lobby.joinedTableId,
       action: {
-        type: "efficiencyModifier",
-        efficiencyModifier,
+        type: "efficiency",
+        modifier: efficiencyModifier,
       },
     });
   }

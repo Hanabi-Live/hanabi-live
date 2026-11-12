@@ -32,8 +32,7 @@ pub struct Suit {
 #[serde(rename_all = "camelCase")]
 pub struct Variant {
     pub id: u32,
-    #[serde(rename = "newId")]
-    pub new_id: String,
+    pub recipe: String,
     pub name: String,
     pub suits: Vec<Suit>,
     pub ranks: Vec<i32>,
@@ -151,7 +150,7 @@ fn variant(entry: CatalogVariant, suits: &HashMap<String, Suit>) -> Variant {
     }
     Variant {
         id: entry.id.0,
-        new_id: entry.new_id,
+        recipe: entry.recipe,
         name: entry.name,
         max_score: int(variant_suits.len()) * stack_size,
         has_inverted: variant_suits.iter().any(|suit| suit.inverted),

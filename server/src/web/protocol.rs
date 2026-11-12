@@ -57,7 +57,7 @@ mod tests {
             let value = match command {
                 "settings" => json!({"settings":{"volume":50}}),
                 "userInactive" => json!({"inactive":true}),
-                "gameHistoryOtherScores" => json!({"seed":"p2v0s1","offset":0,"limit":10}),
+                "seedGames" => json!({"seed":"p2v0s1","offset":0,"limit":10}),
                 "chat" => json!({"text":"hello"}),
                 "chatPm" => json!({"text":"hello","recipient":"Alice"}),
                 "replayCreate" => {
@@ -69,7 +69,9 @@ mod tests {
                 "pause" => json!({"tableId":1,"setting":"pause"}),
                 "note" => json!({"tableId":1,"order":0,"text":"test"}),
                 "tagAdd" | "tagRemove" => json!({"tableId":1,"tag":"test"}),
-                "replayAction" => json!({"tableId":1,"action":{"type":"hypotheticalStart"}}),
+                "replayAction" => {
+                    json!({"tableId":1,"action":{"type":"hypothetical","control":{"type":"start"}}})
+                }
                 "tableRestartDecline" => json!({"tableId":1,"declined":true}),
                 "tableSetOwner" => json!({"tableId":1,"ownerId":1}),
                 "tableSuggest" => json!({"tableId":1,"turn":0}),
@@ -139,7 +141,7 @@ mod tests {
         assert!(
             parse(&format!(
                 "replayAction {}",
-                json!({"tableId":1,"action":{"type":"hypotheticalAction","action":"{\"type\":\"turn\"}"}})
+                json!({"tableId":1,"action":{"type":"hypothetical","control":{"type":"event","event":"{\"type\":\"turn\"}"}}})
             ))
             .is_err()
         );

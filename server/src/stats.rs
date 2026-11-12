@@ -138,7 +138,7 @@ fn player_stats(num_games: i64, row: Option<&crate::database::UserStats>) -> Pre
             best_scores: (hanabi_protocol::MIN_PLAYERS..=hanabi_protocol::MAX_PLAYERS)
                 .zip(best_scores)
                 .map(|(num_players, best)| hanabi_protocol::PregameBestScore {
-                    num_players: crate::model::small(num_players),
+                    num_players: crate::model::num_players(num_players),
                     best: best.map(|(score, modifier)| {
                         crate::model::ScoreModifier::from_bits(modifier)
                             .best_score(i32::from(score))

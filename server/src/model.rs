@@ -6,7 +6,10 @@ use hanabi_engine::RecordedAction;
 use hanabi_protocol::GameId;
 use hanabi_protocol::TableId;
 use hanabi_protocol::UserId;
-use hanabi_protocol::{CLOCK_UNITS_PER_MINUTE, Chat, HypotheticalEvent, PlayerIndex, PregameStats};
+use hanabi_protocol::{
+    CLOCK_UNITS_PER_MINUTE, Chat, HypotheticalEvent, MAX_NOTE_LENGTH, MAX_TAG_LENGTH, PlayerIndex,
+    PregameStats,
+};
 pub use hanabi_protocol::{CLOCK_UNITS_PER_SECOND, IDLE_TIMEOUT_MS};
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
@@ -153,7 +156,7 @@ pub enum TagEdit {
 pub struct ReplayState {
     pub leader: UserId,
     pub segment: hanabi_protocol::Turn,
-    pub efficiency_modifier: i32,
+    pub efficiency_modifier: hanabi_protocol::EfficiencyModifier,
     /// Whether the leader is exploring a hypothetical.
     pub hypothetical: bool,
     pub hypothetical_actions: Vec<HypotheticalEvent>,
@@ -339,7 +342,7 @@ impl TableSnapshot {
             replay: ReplayState {
                 leader: self.owner,
                 segment,
-                efficiency_modifier: 0,
+                efficiency_modifier: hanabi_protocol::EfficiencyModifier::default(),
                 hypothetical: false,
                 hypothetical_actions: vec![],
                 show_drawn_cards: false,
@@ -617,9 +620,10 @@ impl Snapshot {
     }
 }
 
-/// Converts a player count, which validation keeps at most `MAX_PLAYERS`, to its wire form.
-pub(crate) fn small(value: usize) -> u8 {
-    u8::try_from(value).expect("player counts are at most MAX_PLAYERS")
+/// Converts a player count, which validation keeps from `MIN_PLAYERS` to `MAX_PLAYERS`, to its wire
+/// form.
+pub(crate) fn num_players(value: usize) -> hanabi_protocol::NumPlayers {
+    hanabi_protocol::NumPlayers::new(value).expect("player counts are valid")
 }
 
 /// The options that keep a score from counting as a normal one. The database stores them in
@@ -693,15 +697,9 @@ pub const MAX_HYPOTHETICAL_ACTIONS: usize = 4096;
 /// The most bytes that a shared replay's hypothetical moves can hold together. They are stored in
 /// the table's checkpoint, so they can be no larger than it.
 pub const MAX_HYPOTHETICAL_BYTES: usize = crate::state::MAX_CHECKPOINT_BYTES;
-/// The longest game tag, in bytes.
-pub const MAX_TAG_LENGTH: usize = 100;
-/// The longest table name, in bytes.
-pub const MAX_TABLE_NAME_LENGTH: usize = 45;
 /// The longest table name that a checkpoint can hold, in bytes. Generated replay names can be
 /// longer than a name that a player chooses.
 const MAX_STORED_TABLE_NAME_LENGTH: usize = 200;
-/// The longest note that a player or spectator writes during a game, in bytes.
-pub const MAX_NOTE_LENGTH: usize = 300;
 /// The most players that a pregame table remembers kicking.
 const MAX_KICKED_PLAYERS: usize = 4096;
 /// The most spectators that a table remembers, with the seat that each one shadows.

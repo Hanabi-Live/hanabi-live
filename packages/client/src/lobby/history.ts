@@ -92,7 +92,7 @@ export function showMoreOtherScores(): void {
 }
 
 function requestOtherScoresPage(seed: string, offset: number) {
-  globals.conn!.send("gameHistoryOtherScores", {
+  globals.conn!.send("seedGames", {
     seed,
     offset,
     limit: HISTORY_PAGE_SIZE,

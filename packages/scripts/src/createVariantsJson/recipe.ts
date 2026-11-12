@@ -25,12 +25,12 @@ import {
 import { isEqual } from "lodash";
 import { getSpecialClueRanks } from "./getVariantDescriptions.ts";
 
-export function getNewVariantId(
+export function getVariantRecipe(
   variantDescription: VariantDescription,
   suitsNameMap: ReadonlyMap<string, SuitJson>,
 ): string {
   const suitIds = variantDescription.suits.map((suitName) =>
-    getNewSuitId(suitName, suitsNameMap),
+    getSuitRecipe(suitName, suitsNameMap),
   );
 
   const suitsId = suitIds.join(SUIT_DELIMITER);
@@ -45,7 +45,7 @@ export function getNewVariantId(
   return `${suitsId}${VARIANT_DELIMITER}${variantSuffix}`;
 }
 
-function getNewSuitId(
+function getSuitRecipe(
   suitName: string,
   suitsNameMap: ReadonlyMap<string, SuitJson>,
 ): string {
@@ -281,30 +281,30 @@ function getSpecialVariantIdSuffixes(
   return variantIdSuffixes;
 }
 
-export function validateNewVariantIds(
+export function validateVariantRecipes(
   variantsJson: readonly VariantJson[],
   suitsIdMap: ReadonlyMap<string, SuitJson>,
 ): void {
-  const newVariantIds = new Set();
+  const recipes = new Set();
 
   for (const variantJson of variantsJson) {
-    if (variantJson.newId === "") {
+    if (variantJson.recipe === "") {
       throw new Error(
-        `Variant "${variantJson.name}" is missing a "newId" property.`,
+        `Variant "${variantJson.name}" is missing a "recipe" property.`,
       );
     }
 
-    if (newVariantIds.has(variantJson.newId)) {
+    if (recipes.has(variantJson.recipe)) {
       console.error("variantJson:", variantJson);
       throw new Error(
-        `Variant "${variantJson.name}" has a duplicate "newId" property of "${variantJson.newId}". (See the previous object log.)`,
+        `Variant "${variantJson.name}" has a duplicate "recipe" property of "${variantJson.recipe}". (See the previous object log.)`,
       );
     }
 
-    newVariantIds.add(variantJson.newId);
+    recipes.add(variantJson.recipe);
 
-    const reconstructedVariant = getVariantFromNewId(
-      variantJson.newId,
+    const reconstructedVariant = getVariantFromRecipe(
+      variantJson.recipe,
       variantJson.name,
       variantJson.id,
       suitsIdMap,
@@ -317,7 +317,7 @@ export function validateNewVariantIds(
       console.error("reconstructedVariant:", reconstructedVariant);
       console.error("--------------------------------------------------------");
       throw new Error(
-        `Variant "${variantJson.name}" has a new ID of "${variantJson.newId}" that was parsed incorrectly. (See the previous object logs.)`,
+        `Variant "${variantJson.name}" has a recipe of "${variantJson.recipe}" that was parsed incorrectly. (See the previous object logs.)`,
       );
     }
   }
@@ -328,16 +328,16 @@ export function validateNewVariantIds(
  *
  * It cannot compute the name of the old ID, so those must be provided.
  */
-function getVariantFromNewId(
-  newId: string,
+function getVariantFromRecipe(
+  recipe: string,
   name: string,
   oldId: number,
   suitsIdMap: ReadonlyMap<string, SuitJson>,
 ): VariantJson {
-  const [suitsString, ...variantModifiers] = newId.split(VARIANT_DELIMITER);
+  const [suitsString, ...variantModifiers] = recipe.split(VARIANT_DELIMITER);
   assertDefined(
     suitsString,
-    `Failed to parse the suits string from the variant ID of: ${newId}`,
+    `Failed to parse the suits string from the variant recipe of: ${recipe}`,
   );
 
   const suitIdsWithModifiers = suitsString.split(SUIT_DELIMITER);
@@ -346,7 +346,7 @@ function getVariantFromNewId(
   const variant: Writeable<VariantJson> = {
     name,
     id: oldId,
-    newId,
+    recipe,
     suits,
   };
 
@@ -354,7 +354,7 @@ function getVariantFromNewId(
     const secondCharacter = variantModifier[1];
     assertDefined(
       secondCharacter,
-      `Failed to get the second character of the variant modifier for variant "${name}" with a "newId" of "${newId}" and a variant modifier of "${variantModifier}".`,
+      `Failed to get the second character of the variant modifier for variant "${name}" with a "recipe" of "${recipe}" and a variant modifier of "${variantModifier}".`,
     );
 
     const variantModifierRank = parseIntSafe(secondCharacter);
@@ -368,14 +368,14 @@ function getVariantFromNewId(
       && variantModifierRank !== START_CARD_RANK
     ) {
       throw new Error(
-        `The number in the variant modifier for variant "${name}" with a "newId" of "${newId}" and a variant modifier of "${variantModifier}" was not 1, 2, 3, 4, 5, or ${START_CARD_RANK}.`,
+        `The number in the variant modifier for variant "${name}" with a "recipe" of "${recipe}" and a variant modifier of "${variantModifier}" was not 1, 2, 3, 4, 5, or ${START_CARD_RANK}.`,
       );
     }
 
     assertEnumValue(
       variantModifier,
       VariantModifier,
-      `Unknown variant modifier of "${variantModifier}" in a variant ID of "${newId}".`,
+      `Unknown variant modifier of "${variantModifier}" in a variant recipe of "${recipe}".`,
       VARIANT_MODIFIER_SET,
     );
 

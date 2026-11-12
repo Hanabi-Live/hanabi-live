@@ -1,5 +1,5 @@
 // Our past games, from the "gameHistory" server message, and the other games on a seed, from the
-// "gameHistoryOtherScores" server message.
+// "seedGames" server message.
 
 import type { GameHistoryEntry, ServerCommandData } from "@hanabi-live/data";
 import { compareGameHistory } from "@hanabi-live/data";
@@ -11,7 +11,7 @@ import {
 } from "@reduxjs/toolkit";
 import type { RootState } from "../../store.ts";
 
-type OtherScores = ServerCommandData["gameHistoryOtherScores"];
+type OtherScores = ServerCommandData["seedGames"];
 type LobbyStatus = ServerCommandData["lobbyStatus"];
 
 const gamesAdapter = createEntityAdapter({

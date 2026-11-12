@@ -741,7 +741,7 @@ pub(super) fn review(id: TableId, condition: EndCondition) -> Result<TableSnapsh
         replay: ReplayState {
             leader: UserId(1),
             segment: hanabi_protocol::Turn::new(snapshot.game.turn).unwrap(),
-            efficiency_modifier: 0,
+            efficiency_modifier: hanabi_protocol::EfficiencyModifier::default(),
             hypothetical: false,
             hypothetical_actions: vec![],
             show_drawn_cards: false,

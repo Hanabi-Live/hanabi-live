@@ -47,7 +47,7 @@ pub enum Publication {
     },
     Broadcast(Outgoing),
     HGroup(bool),
-    HGroupLevel(Option<u8>),
+    HGroupLevel(Option<hanabi_protocol::HGroupLevel>),
     Inactive(bool),
     /// Whether any block remains between two users after one of them changed it.
     BlocksChanged {
@@ -179,9 +179,12 @@ pub async fn dispatch(
                         effects.push(Publication::HGroup(value == &Value::Bool(true)).into());
                     }
                     "hGroupLevel" => effects.push(
-                        Publication::HGroupLevel(Some(u8::try_from(
-                            value.as_u64().context("Invalid H-Group level")?,
-                        )?))
+                        Publication::HGroupLevel(Some(
+                            value
+                                .as_u64()
+                                .and_then(hanabi_protocol::HGroupLevel::new)
+                                .context("Invalid H-Group level")?,
+                        ))
                         .into(),
                     ),
                     _ => {}
@@ -284,8 +287,8 @@ pub async fn dispatch(
             )
             .await?
         }
-        ClientMessage::GameHistory(hanabi_protocol::GameHistoryRequest { offset, limit }) => {
-            let ids = history_ids(pool, caller.user, offset.0, limit).await?;
+        ClientMessage::GameHistory(hanabi_protocol::PageRequest { offset, limit }) => {
+            let ids = history_ids(pool, caller.user, offset.0, limit.get()).await?;
             let total = crate::database::normal_game_count(pool, caller.user, true).await?;
             vec![Effect::to_self(Outgoing::new(
                 hanabi_protocol::server::GAME_HISTORY,
@@ -296,7 +299,7 @@ pub async fn dispatch(
                 },
             ))]
         }
-        ClientMessage::GameHistoryOtherScores(request) => {
+        ClientMessage::SeedGames(request) => {
             let seed = request.seed.as_str();
             let error = if seed.is_empty() {
                 Some("You must provide a seed.")
@@ -310,23 +313,25 @@ pub async fn dispatch(
             if let Some(error) = error {
                 return Ok(Some(vec![warning(error)]));
             }
-            let offset = request.offset;
-            let ids = seed_history_ids(pool, seed, offset.0, request.limit).await?;
+            let offset = request.page.offset;
+            let ids = seed_history_ids(pool, seed, offset.0, request.page.limit.get()).await?;
             let games = get_history(pool, &ids).await?;
             let total = seed_game_count(pool, seed).await?;
             vec![Effect::to_self(Outgoing::new(
-                hanabi_protocol::server::GAME_HISTORY_OTHER_SCORES,
-                hanabi_protocol::GameHistoryOtherScores {
-                    games,
-                    offset,
-                    total: hanabi_protocol::Count(total),
+                hanabi_protocol::server::SEED_GAMES,
+                hanabi_protocol::SeedGames {
                     seed: seed.into(),
+                    page: hanabi_protocol::GamePage {
+                        games,
+                        offset,
+                        total: hanabi_protocol::Count(total),
+                    },
                 },
             ))]
         }
         ClientMessage::TagSearch(request) => {
             let raw = request.tag.as_str();
-            if raw.len() > crate::model::MAX_TAG_LENGTH {
+            if raw.len() > hanabi_protocol::MAX_TAG_LENGTH {
                 return Ok(Some(vec![warning(&crate::model::tag_too_long())]));
             }
             let replaced: String = raw

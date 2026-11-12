@@ -7,7 +7,7 @@ import fs from "node:fs";
 import path from "node:path";
 import * as prettier from "prettier";
 import { getVariantDescriptions } from "./getVariantDescriptions.ts";
-import { getNewVariantId, validateNewVariantIds } from "./newId.ts";
+import { getVariantRecipe, validateVariantRecipes } from "./recipe.ts";
 
 const PACKAGE_ROOT = path.resolve(import.meta.dirname, "..", "..");
 const REPO_ROOT = path.resolve(PACKAGE_ROOT, "..", "..");
@@ -54,7 +54,7 @@ export async function generateVariantFiles(): Promise<VariantFiles> {
     oldVariantsIdToNameMap,
   );
 
-  validateNewVariantIds(variants, suitsIdMap);
+  validateVariantRecipes(variants, suitsIdMap);
 
   if (hasMissingVariants(variants, oldVariants)) {
     throw new Error(
@@ -205,7 +205,7 @@ function getVariantsFromVariantDescriptions(
       oldVariantsNameToIdMap,
       oldVariantsIdToNameMap,
     ),
-    newId: getNewVariantId(variantDescription, suitsNameMap),
+    recipe: getVariantRecipe(variantDescription, suitsNameMap),
     ...variantDescription,
   }));
 }

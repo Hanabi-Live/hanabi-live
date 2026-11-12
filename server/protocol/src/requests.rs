@@ -33,7 +33,7 @@ pub struct ChatPmRequest {
 pub struct ChatPmHistoryRequest {
     #[schemars(range(min = 1, max = MAX_PRIVATE_HISTORY_MESSAGES))]
     pub limit: i64,
-    /// The table whose chat the command was typed in. Absent means the lobby.
+    /// The table whose chat shows the reply. Absent means the lobby.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub table_id: Option<TableId>,
     /// The other user in the conversation. Absent shows the messages with everyone.
@@ -42,19 +42,21 @@ pub struct ChatPmHistoryRequest {
     pub recipient: Option<String>,
 }
 
+/// Adds a user to, or removes them from, the sender's friends, links, or blocked users.
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
-pub struct ChatUserRequest {
+pub struct RelationshipRequest {
     pub username: String,
-    /// The table whose chat the command was typed in. Absent means the lobby.
+    /// The table whose chat shows the reply. Absent means the lobby.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub table_id: Option<TableId>,
 }
 
+/// Asks for the sender's links or blocked users.
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
-pub struct ChatRoomRequest {
-    /// The table whose chat the command was typed in. Absent means the lobby.
+pub struct RelationshipListRequest {
+    /// The table whose chat shows the reply. Absent means the lobby.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub table_id: Option<TableId>,
 }
@@ -73,13 +75,6 @@ pub struct TableJoinRequest {
     #[serde(skip_serializing_if = "Option::is_none")]
     #[schemars(length(min = 1))]
     pub password: Option<String>,
-}
-
-#[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
-#[serde(rename_all = "camelCase", deny_unknown_fields)]
-pub struct TableSetOwnerRequest {
-    pub table_id: TableId,
-    pub owner_id: UserId,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
@@ -148,31 +143,30 @@ pub struct UserInactiveRequest {
     pub inactive: bool,
 }
 
-/// A page of the player's own game history, newest first.
+/// A page of a list of games: in `gameHistory`, the player's own games, newest first.
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
-pub struct GameHistoryRequest {
+pub struct PageRequest {
     pub offset: Count,
-    #[schemars(with = "PageLimit")]
-    pub limit: i64,
+    pub limit: PageLimit,
 }
 
 /// A page of the games on a seed, best scores first.
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
-pub struct GameHistoryOtherScoresRequest {
+pub struct SeedGamesRequest {
     #[schemars(length(min = 1))]
     pub seed: String,
-    pub offset: Count,
-    #[schemars(with = "PageLimit")]
-    pub limit: i64,
+    #[serde(flatten)]
+    pub page: PageRequest,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct TagSearchRequest {
+    /// At most `MAX_TAG_LENGTH` bytes. The server answers a longer or blank tag with a warning.
     pub tag: String,
-    /// The table whose chat the command was typed in. Absent means the lobby.
+    /// The table whose chat shows the reply. Absent means the lobby.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub table_id: Option<TableId>,
 }
@@ -271,6 +265,7 @@ pub enum PauseSetting {
 pub struct NoteRequest {
     pub table_id: TableId,
     pub order: CardOrder,
+    /// The server keeps at most `MAX_NOTE_LENGTH` bytes of it.
     pub text: String,
 }
 
@@ -279,6 +274,7 @@ pub struct NoteRequest {
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct TagRequest {
     pub table_id: TableId,
+    /// At most `MAX_TAG_LENGTH` bytes. The server answers a longer or blank tag with a warning.
     pub tag: String,
 }
 
@@ -313,19 +309,34 @@ pub enum ReplayLeaderAction {
     Sound {
         sound: ReplaySoundEffect,
     },
-    HypotheticalStart {},
-    HypotheticalEnd {},
-    HypotheticalAction {
-        action: HypotheticalEvent,
+    /// Moves the count of cards that the efficiency uses.
+    Efficiency {
+        modifier: EfficiencyModifier,
+    },
+    Hypothetical {
+        control: HypotheticalControl,
+    },
+}
+
+/// How a shared-replay leader changes the hypothetical.
+#[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
+#[serde(
+    tag = "type",
+    rename_all = "camelCase",
+    rename_all_fields = "camelCase",
+    deny_unknown_fields
+)]
+pub enum HypotheticalControl {
+    Start {},
+    End {},
+    /// Adds an event to the hypothetical.
+    Event {
+        event: HypotheticalEvent,
     },
     /// Undoes the hypothetical's last turn.
-    HypotheticalBack {},
+    Back {},
     /// Shows or hides the identities of cards drawn during the hypothetical.
-    HypotheticalShowDrawnCards {
-        show_drawn_cards: bool,
-    },
-    EfficiencyModifier {
-        #[schemars(with = "EfficiencyModifier")]
-        efficiency_modifier: i32,
+    ShowDrawnCards {
+        show: bool,
     },
 }

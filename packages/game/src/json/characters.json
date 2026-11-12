@@ -3,29 +3,25 @@
     "name": "Fuming",
     "id": 0,
     "description": "Can only clue numbers and [random color]",
-    "emoji": "🌋",
-    "writeMetadataToDatabase": true
+    "emoji": "🌋"
   },
   {
     "name": "Dumbfounded",
     "id": 1,
     "description": "Can only clue colors and [random number]",
-    "emoji": "🤯",
-    "writeMetadataToDatabase": true
+    "emoji": "🤯"
   },
   {
     "name": "Inept",
     "id": 2,
     "description": "Cannot give any clues that touch [random color] cards",
-    "emoji": "🤔",
-    "writeMetadataToDatabase": true
+    "emoji": "🤔"
   },
   {
     "name": "Awkward",
     "id": 3,
     "description": "Cannot give any clues that touch [random number]s",
-    "emoji": "😬",
-    "writeMetadataToDatabase": true
+    "emoji": "😬"
   },
   {
     "name": "Conservative",

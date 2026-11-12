@@ -4,8 +4,8 @@ use crate::errors::OrReject;
 use crate::{
     game::Options,
     model::{
-        ExtraOptions, FORMAT, MAX_TABLE_NAME_LENGTH, Phase, ReplayState, Snapshot, TableReplay,
-        TableSnapshot, engine_options, small, wire_options,
+        ExtraOptions, FORMAT, Phase, ReplayState, Snapshot, TableReplay, TableSnapshot,
+        engine_options, num_players, wire_options,
     },
     store::{Saved, Store},
     transport::Session,
@@ -13,7 +13,7 @@ use crate::{
 use chrono::Utc;
 use hanabi_protocol::TableId;
 use hanabi_protocol::UserId;
-use hanabi_protocol::{Chat, Deal, MAX_SEED_LENGTH, MIN_PLAYERS, Turn};
+use hanabi_protocol::{Chat, Deal, MAX_SEED_LENGTH, MAX_TABLE_NAME_LENGTH, MIN_PLAYERS, Turn};
 use std::{collections::BTreeMap, fmt::Write as _};
 
 /// The longest table password, in bytes.
@@ -162,7 +162,7 @@ pub(super) fn table_settings(
 ) -> hanabi_protocol::TableSettings {
     hanabi_protocol::TableSettings {
         name: name.into(),
-        max_players: small(max_players),
+        max_players: num_players(max_players),
         options: wire_options(options),
         deal: match (&extra.replay, &extra.set_seed_suffix) {
             (Some(replay), _) => Some(Deal::Replay {
@@ -330,7 +330,7 @@ pub(super) fn replay_table(
             replay: ReplayState {
                 leader: owner,
                 segment: Turn::default(),
-                efficiency_modifier: 0,
+                efficiency_modifier: hanabi_protocol::EfficiencyModifier::default(),
                 hypothetical: false,
                 hypothetical_actions: vec![],
                 show_drawn_cards: false,

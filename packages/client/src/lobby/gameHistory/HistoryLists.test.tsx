@@ -56,7 +56,7 @@ function reply(
     games,
     offset,
     total,
-  } as ServerCommandData["gameHistoryOtherScores"];
+  } as ServerCommandData["seedGames"];
 }
 
 function renderComponent(component: React.JSX.Element) {

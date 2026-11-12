@@ -26,20 +26,20 @@ macro_rules! client_contracts {
             Chat "chat" => ChatRequest;
             ChatPm "chatPm" => ChatPmRequest;
             ChatPmHistory "chatPmHistory" => ChatPmHistoryRequest;
-            FriendAdd "friendAdd" => ChatUserRequest;
-            FriendRemove "friendRemove" => ChatUserRequest;
-            LinkAdd "linkAdd" => ChatUserRequest;
-            LinkRemove "linkRemove" => ChatUserRequest;
-            LinkList "linkList" => ChatRoomRequest;
-            BlockAdd "blockAdd" => ChatUserRequest;
-            BlockRemove "blockRemove" => ChatUserRequest;
-            BlockList "blockList" => ChatRoomRequest;
+            FriendAdd "friendAdd" => RelationshipRequest;
+            FriendRemove "friendRemove" => RelationshipRequest;
+            LinkAdd "linkAdd" => RelationshipRequest;
+            LinkRemove "linkRemove" => RelationshipRequest;
+            LinkList "linkList" => RelationshipListRequest;
+            BlockAdd "blockAdd" => RelationshipRequest;
+            BlockRemove "blockRemove" => RelationshipRequest;
+            BlockList "blockList" => RelationshipListRequest;
             ChatRead "chatRead" => TableRef;
             ChatTyping "chatTyping" => TableRef;
             TableJoin "tableJoin" => TableJoinRequest;
             TableLeave "tableLeave" => TableRef;
             TableReattend "tableReattend" => TableRef;
-            TableSetOwner "tableSetOwner" => TableSetOwnerRequest;
+            TableSetOwner "tableSetOwner" => TableOwner;
             TableStart "tableStart" => TableStartRequest;
             TableRestart "tableRestart" => TableRestartRequest;
             TableRestartDecline "tableRestartDecline" => TableRestartDeclineRequest;
@@ -53,8 +53,8 @@ macro_rules! client_contracts {
             Loaded "loaded" => TableRef;
             Settings "settings" => SettingsRequest;
             UserInactive "userInactive" => UserInactiveRequest;
-            GameHistory "gameHistory" => GameHistoryRequest;
-            GameHistoryOtherScores "gameHistoryOtherScores" => GameHistoryOtherScoresRequest;
+            GameHistory "gameHistory" => PageRequest;
+            SeedGames "seedGames" => SeedGamesRequest;
             TagSearch "tagSearch" => TagSearchRequest;
             TableCreate "tableCreate" => TableCreateRequest;
             TableUpdate "tableUpdate" => TableUpdateRequest;
@@ -119,7 +119,7 @@ macro_rules! server_contracts {
             PREGAME "pregame" => Pregame;
             GAME_HISTORY "gameHistory" => GamePage;
             GAME_HISTORY_ADDED "gameHistoryAdded" => GameHistoryEntry;
-            GAME_HISTORY_OTHER_SCORES "gameHistoryOtherScores" => GameHistoryOtherScores;
+            SEED_GAMES "seedGames" => SeedGames;
         }
     };
 }
@@ -137,11 +137,15 @@ macro_rules! exported_types {
     };
 }
 
-/// The types that only the game library exports: the entries of the game catalog's files, and the
-/// clue types that the game state names.
+/// The types that the game library exports: the entries of the game catalog's files, and the game
+/// state's types. The data package imports these, and the schemas they reference, from the game
+/// library instead of writing its own copies.
 macro_rules! game_library_types {
     ($apply:ident) => {
-        $apply! { CatalogColor, CatalogSuit, CatalogVariant, CatalogCharacter, ClueType }
+        $apply! {
+            CatalogCharacter, CatalogColor, CatalogSuit, CatalogVariant, CardNote, CardOrder,
+            ClueType, GameEvent, GameOptions, HypotheticalEvent, PlayerNotes,
+        }
     };
 }
 
@@ -215,6 +219,14 @@ pub fn exported() -> BTreeSet<&'static str> {
         .chain(server_contracts().into_values())
         .chain(exported_types!(names))
         .collect()
+}
+
+/// The names of the types that the game library exports.
+pub fn game_library() -> Vec<&'static str> {
+    macro_rules! names {
+        ($($ty:ident),+ $(,)?) => { vec![$(stringify!($ty)),+] };
+    }
+    game_library_types!(names)
 }
 
 /// Each type's validator, built when the type is first validated.
@@ -331,11 +343,11 @@ macro_rules! server_messages {
 pub mod server {
     use super::{
         Blocked, CardIdentities, Chat, ChatDeleted, ChatList, ChatPmHistory, ChatTyping, Clock,
-        Connected, Empty, Friends, GameEventMessage, GameFinished, GameHistoryEntry,
-        GameHistoryOtherScores, GamePage, GameState, IdleWarning, Init, LobbySoundMessage,
-        LobbyStatus, Note, NoteList, Notice, Pause, Pregame, ReplayAction, RestartDeclined,
-        ServerMessage, ServerRestart, Spectators, Suggestion, Table, TableList, TableOwner,
-        TableRef, TableStarted, User, UserList, UserRemoved, VoteChanged, Welcome,
+        Connected, Empty, Friends, GameEventMessage, GameFinished, GameHistoryEntry, GamePage,
+        GameState, IdleWarning, Init, LobbySoundMessage, LobbyStatus, Note, NoteList, Notice,
+        Pause, Pregame, ReplayAction, RestartDeclined, SeedGames, ServerMessage, ServerRestart,
+        Spectators, Suggestion, Table, TableList, TableOwner, TableRef, TableStarted, User,
+        UserList, UserRemoved, VoteChanged, Welcome,
     };
     server_contracts!(server_messages);
 }

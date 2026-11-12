@@ -6,22 +6,6 @@ use std::fmt::Write as _;
 /// The game library's package, which the data package imports the game library's schemas from.
 const GAME_LIBRARY: &str = "@hanabi-live/game";
 
-/// Schemas the game library also needs. `--game` writes and exports these, with the schemas they
-/// reference. The data package imports them rather than writing its own copies.
-const GAME_LIBRARY_SCHEMAS: &[&str] = &[
-    "CatalogCharacter",
-    "CatalogColor",
-    "CatalogSuit",
-    "CatalogVariant",
-    "CardNote",
-    "CardOrder",
-    "ClueType",
-    "GameEvent",
-    "GameOptions",
-    "HypotheticalEvent",
-    "PlayerNotes",
-];
-
 /// Integer literals with at least this many digits get separators, in groups of `DIGIT_GROUP`.
 const MIN_SEPARATED_DIGITS: usize = 5;
 const DIGIT_GROUP: usize = 3;
@@ -463,7 +447,7 @@ impl<'a> Module<'a> {
 /// The schemas the game library writes and exports: those it needs, and the schemas they reference.
 fn game_library_schemas(definitions: &BTreeMap<String, Value>) -> Result<BTreeSet<String>> {
     let mut module = Module::new(definitions, BTreeSet::new(), BTreeSet::new());
-    for name in GAME_LIBRARY_SCHEMAS {
+    for name in hanabi_protocol::game_library() {
         module.emit(name)?;
     }
     Ok(module.emitted)
@@ -476,7 +460,7 @@ fn game_library(definitions: &BTreeMap<String, Value>) -> Result<()> {
         game_library_schemas(definitions)?,
         BTreeSet::new(),
     );
-    for name in GAME_LIBRARY_SCHEMAS {
+    for name in hanabi_protocol::game_library() {
         module.emit(name)?;
     }
     println!("import * as z from \"zod\";\n");

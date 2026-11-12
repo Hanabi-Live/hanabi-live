@@ -214,7 +214,7 @@ pub struct ClueEvent {
     pub orders: Vec<CardOrder>,
     /// Whether the cards that the clue does not touch learn nothing from it. Only a hypothetical's
     /// clue can set it.
-    #[serde(default, skip_serializing_if = "std::ops::Not::not")]
+    #[serde(default, skip_serializing_if = "is_false")]
     pub ignore_negative: bool,
 }
 
@@ -304,7 +304,8 @@ pub struct GameState {
     deny_unknown_fields
 )]
 pub enum CharacterAssignment {
-    /// A player without a character.
+    /// A player without a character: a test account in any seat but the first, so that tests with
+    /// detrimental characters are predictable.
     None {},
     /// A character without an assigned value.
     Plain { character_id: CharacterId },
@@ -423,8 +424,7 @@ pub struct SharedReplayInit {
     /// The table's owner, who leads the replay.
     pub owner_id: UserId,
     pub turn: Turn,
-    #[schemars(with = "EfficiencyModifier")]
-    pub efficiency_modifier: i32,
+    pub efficiency_modifier: EfficiencyModifier,
     /// Whether the shared replay hides what happens later in the game.
     pub spoiler_free: bool,
     /// The players who will not play again if the leader restarts.
@@ -433,5 +433,7 @@ pub struct SharedReplayInit {
     /// Whether the recipient played the game of this shared replay at this table, so that they can
     /// play it again: the leader by restarting, and the other players by saying if they are ready.
     pub can_play_again: bool,
-    pub started_at: Timestamp,
+    /// When the replay began: when the game ended, for a review of a game just played, or when the
+    /// table was created, for a replay of an older game. `Init.startedAt` is when the game began.
+    pub replay_started_at: Timestamp,
 }

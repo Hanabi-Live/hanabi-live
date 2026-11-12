@@ -153,7 +153,7 @@ async fn lobby_relationships_atomic_settings_and_parameterization_postgres() {
     .await;
     assert!(matches!(
         result.as_slice(),
-        [Effect::Publish(Publication::HGroupLevel(Some(5)))]
+        [Effect::Publish(Publication::HGroupLevel(Some(level)))] if level.get() == 5
     ));
     let result = run(
         &db.pool,
@@ -664,17 +664,17 @@ async fn lobby_directed_linked_seeds_and_histories_postgres() {
         assert!(ClientMessage::decode("gameHistory", &page).is_err());
         let mut other = page;
         other["seed"] = "p2v0s1".into();
-        assert!(ClientMessage::decode("gameHistoryOtherScores", &other).is_err());
+        assert!(ClientMessage::decode("seedGames", &other).is_err());
     }
     let result = run(
         &db.pool,
         &who,
         &[],
-        "gameHistoryOtherScores",
+        "seedGames",
         json!({"seed":"p2v0s1","offset":0,"limit":10}),
     )
     .await;
-    let history = self_data(&result, "gameHistoryOtherScores");
+    let history = self_data(&result, "seedGames");
     assert_eq!(history["games"][0]["gameId"], gb);
     assert_eq!(history["games"][1]["gameId"], ga);
     assert_eq!(history["games"][2]["gameId"], gd);
@@ -687,11 +687,11 @@ async fn lobby_directed_linked_seeds_and_histories_postgres() {
         &db.pool,
         &who,
         &[],
-        "gameHistoryOtherScores",
+        "seedGames",
         json!({"seed":"p2v0s1","offset":1,"limit":1}),
     )
     .await;
-    let history = self_data(&result, "gameHistoryOtherScores");
+    let history = self_data(&result, "seedGames");
     assert_eq!(history["games"].as_array().unwrap().len(), 1);
     assert_eq!(history["games"][0]["gameId"], ga);
     assert_eq!(

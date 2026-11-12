@@ -1234,7 +1234,9 @@ mod tests {
                 .hypothetical_actions
                 .push(serde_json::from_value(event)?);
         }
-        replay.efficiency_modifier = -hanabi_protocol::MAX_EFFICIENCY_MODIFIER;
+        replay.efficiency_modifier =
+            hanabi_protocol::EfficiencyModifier::new(-hanabi_protocol::MAX_EFFICIENCY_MODIFIER)
+                .context("The lowest efficiency modifier is valid")?;
         let expected = serde_json::to_value(&table)?;
         let (encoded, _) = crate::checkpoint::encode(&mut table, &SavedParts::default())?;
         let mut head: Value = serde_json::from_str(&older_head(&encoded.head, "hanabi-live-12")?)?;
@@ -1479,7 +1481,7 @@ mod tests {
                 replay: crate::model::ReplayState {
                     leader: UserId(1),
                     segment: hanabi_protocol::Turn::default(),
-                    efficiency_modifier: 0,
+                    efficiency_modifier: hanabi_protocol::EfficiencyModifier::default(),
                     hypothetical: false,
                     hypothetical_actions: vec![],
                     show_drawn_cards: false,
@@ -2277,7 +2279,7 @@ mod tests {
                 &hub,
                 users[0].clone(),
                 "replayAction",
-                json!({"tableId":id,"action":{"type":"hypotheticalStart"}}),
+                json!({"tableId":id,"action":{"type":"hypothetical","control":{"type":"start"}}}),
             )
             .await?;
             let action = json!({"type":"turn","turn":7,"currentPlayerIndex":1});
@@ -2285,7 +2287,7 @@ mod tests {
                 &hub,
                 users[0].clone(),
                 "replayAction",
-                json!({"tableId":id,"action":{"type":"hypotheticalAction","action":action}}),
+                json!({"tableId":id,"action":{"type":"hypothetical","control":{"type":"event","event":action}}}),
             )
             .await?;
             let tables = store.load().await?;

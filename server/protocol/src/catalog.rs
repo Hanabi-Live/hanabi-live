@@ -12,14 +12,7 @@ use super::*;
 // The game catalog: the checked-in files in `packages/game/src/json`, which the client bundles and
 // the server embeds. Each side derives its own variant model from these records.
 
-/// Catalog flags are either set to true or omitted; an explicit false is rejected.
-#[expect(
-    clippy::trivially_copy_pass_by_ref,
-    reason = "serde passes skipped fields by reference"
-)]
-fn is_false(value: &bool) -> bool {
-    !*value
-}
+// Catalog flags are either set to true or omitted; an explicit false is rejected.
 
 /// An entry in `colors.json`.
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
@@ -130,7 +123,7 @@ pub struct CatalogVariant {
     /// The variant's suits and modifiers, from which the catalog generator checks the entry. For
     /// example, "No Variant" is `R+Y+G+B+P`.
     #[schemars(length(min = 1))]
-    pub new_id: String,
+    pub recipe: String,
     #[schemars(length(min = 1))]
     pub name: String,
     /// Suit names, which may end in " Reversed".
@@ -222,10 +215,6 @@ pub struct CatalogCharacter {
     pub description: String,
     #[schemars(length(min = 1))]
     pub emoji: String,
-    /// Whether the character's random color or rank is stored with the game.
-    #[serde(default, skip_serializing_if = "is_false")]
-    #[schemars(extend("const" = true))]
-    pub write_metadata_to_database: bool,
     /// Excluded from two-player games.
     #[serde(default, skip_serializing_if = "is_false")]
     #[schemars(extend("const" = true))]

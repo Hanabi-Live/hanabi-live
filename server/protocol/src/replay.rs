@@ -149,20 +149,12 @@ pub enum ReplayBoardElement {
 
 /// A sound effect that a shared-replay leader plays for everyone watching.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
-#[serde(rename_all = "lowercase")]
+#[serde(rename_all = "camelCase")]
 pub enum ReplaySoundEffect {
     Buzz,
     Clap,
     Holy,
     Nooo,
-}
-
-/// A table's new owner, who also leads its shared replay.
-#[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
-#[serde(rename_all = "camelCase", deny_unknown_fields)]
-pub struct TableOwner {
-    pub table_id: TableId,
-    pub owner_id: UserId,
 }
 
 /// The players in a shared replay who will not play again if the leader restarts.

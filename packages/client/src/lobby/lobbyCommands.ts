@@ -83,7 +83,7 @@ lobbyCommands.set("gameHistoryAdded", (data) => {
   }
 });
 
-lobbyCommands.set("gameHistoryOtherScores", (data) => {
+lobbyCommands.set("seedGames", (data) => {
   store.dispatch(otherScoresReceived(data));
 });
 

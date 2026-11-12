@@ -12,10 +12,7 @@ use crate::errors::CommandResult;
 use crate::errors::OrReject;
 use crate::{
     game::Game,
-    model::{
-        CLOCK_UNITS_PER_SECOND, MAX_TABLE_NAME_LENGTH, Phase, Player, Snapshot, TableSnapshot,
-        engine_options,
-    },
+    model::{CLOCK_UNITS_PER_SECOND, Phase, Player, Snapshot, TableSnapshot, engine_options},
     transport::{Session, frame},
 };
 use anyhow::Context;
@@ -24,7 +21,7 @@ use hanabi_engine::{GameSetup, Interpretation};
 use hanabi_protocol::ClientMessage;
 use hanabi_protocol::PlayerIndex;
 use hanabi_protocol::UserId;
-use hanabi_protocol::{Chat, MIN_PLAYERS, TableRef, TableStarted};
+use hanabi_protocol::{Chat, MAX_TABLE_NAME_LENGTH, MIN_PLAYERS, TableRef, TableStarted};
 use std::{collections::HashSet, sync::Arc};
 
 /// Appended to the name of a table that a split creates.

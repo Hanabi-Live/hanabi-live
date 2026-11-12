@@ -9,16 +9,14 @@ use super::{
 use crate::errors::CommandResult;
 use crate::errors::OrReject;
 use crate::{
-    model::{
-        ExtraOptions, IDLE_TIMEOUT_MS, MAX_TABLE_NAME_LENGTH, MAX_TAG_LENGTH, PendingTag, Phase,
-        Player, Tag, TagEdit, tag_too_long,
-    },
+    model::{ExtraOptions, IDLE_TIMEOUT_MS, PendingTag, Phase, Player, Tag, TagEdit, tag_too_long},
     transport::{Outgoing, Session, frame},
 };
 use anyhow::Context;
 use chrono::Utc;
 use hanabi_protocol::ClientMessage;
 use hanabi_protocol::{HypotheticalEvent, MIN_PLAYERS, PregameStats, TableRef, UserId};
+use hanabi_protocol::{MAX_TABLE_NAME_LENGTH, MAX_TAG_LENGTH};
 use std::{
     collections::{BTreeMap, HashSet},
     sync::Arc,
@@ -303,7 +301,7 @@ impl TableActor {
         session: Arc<Session>,
         r: hanabi_protocol::ReplayAction,
     ) -> CommandResult<()> {
-        use hanabi_protocol::ReplayLeaderAction as R;
+        use hanabi_protocol::{HypotheticalControl as H, ReplayLeaderAction as R};
 
         ensure_or_reject!(
             self.attending(&session) && session.user == self.table.owner && self.table.visible,
@@ -321,33 +319,31 @@ impl TableActor {
         match &r.action {
             R::Turn { turn } => replay.segment = *turn,
             R::Arrow { .. } | R::Sound { .. } => {}
-            R::HypotheticalStart {} => {
-                ensure_or_reject!(!replay.hypothetical, "Already hypothetical");
-                replay.hypothetical = true;
-                replay.show_drawn_cards = false;
-            }
-            R::HypotheticalEnd {} => {
-                ensure_or_reject!(replay.hypothetical, "Not hypothetical");
-                replay.hypothetical = false;
-                replay.hypothetical_actions.clear();
-            }
-            R::HypotheticalAction { action } => {
-                ensure_or_reject!(
-                    replay.hypothetical_actions.len() < crate::model::MAX_HYPOTHETICAL_ACTIONS
-                        && crate::model::hypothetical_bytes(&replay.hypothetical_actions)?
-                            + serde_json::to_string(action)?.len()
-                            <= crate::model::MAX_HYPOTHETICAL_BYTES,
-                    "Too many hypothetical actions"
-                );
-                replay.hypothetical_actions.push(action.clone());
-            }
-            R::HypotheticalBack {} => undo_hypothetical_turn(&mut replay.hypothetical_actions),
-            R::HypotheticalShowDrawnCards { show_drawn_cards } => {
-                replay.show_drawn_cards = *show_drawn_cards;
-            }
-            R::EfficiencyModifier {
-                efficiency_modifier,
-            } => replay.efficiency_modifier = *efficiency_modifier,
+            R::Efficiency { modifier } => replay.efficiency_modifier = *modifier,
+            R::Hypothetical { control } => match control {
+                H::Start {} => {
+                    ensure_or_reject!(!replay.hypothetical, "Already hypothetical");
+                    replay.hypothetical = true;
+                    replay.show_drawn_cards = false;
+                }
+                H::End {} => {
+                    ensure_or_reject!(replay.hypothetical, "Not hypothetical");
+                    replay.hypothetical = false;
+                    replay.hypothetical_actions.clear();
+                }
+                H::Event { event } => {
+                    ensure_or_reject!(
+                        replay.hypothetical_actions.len() < crate::model::MAX_HYPOTHETICAL_ACTIONS
+                            && crate::model::hypothetical_bytes(&replay.hypothetical_actions)?
+                                + serde_json::to_string(event)?.len()
+                                <= crate::model::MAX_HYPOTHETICAL_BYTES,
+                        "Too many hypothetical actions"
+                    );
+                    replay.hypothetical_actions.push(event.clone());
+                }
+                H::Back {} => undo_hypothetical_turn(&mut replay.hypothetical_actions),
+                H::ShowDrawnCards { show } => replay.show_drawn_cards = *show,
+            },
         }
         let message = Outgoing::new(hanabi_protocol::server::REPLAY_ACTION, r);
         snapshot.idle_remaining = IDLE_TIMEOUT_MS;

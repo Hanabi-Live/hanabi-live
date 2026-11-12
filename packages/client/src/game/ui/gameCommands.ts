@@ -54,6 +54,10 @@ export const gameCommands = new ServerHandlers();
 
 type GameState = ServerCommandData["gameState"];
 type Votes = NonNullable<GameState["votes"]>;
+type HypotheticalControl = Extract<
+  ServerCommandData["replayAction"]["action"],
+  { type: "hypothetical" }
+>["control"];
 
 // ----------------
 // Command handlers
@@ -176,18 +180,41 @@ gameCommands.set("replayAction", ({ action: leaderAction }) => {
       break;
     }
 
-    case "hypotheticalStart": {
+    case "hypothetical": {
+      onHypotheticalControl(leaderAction.control);
+      break;
+    }
+
+    case "efficiency": {
+      // The leader already set the efficiency modifier.
+      if (
+        globals.state.replay.shared === undefined
+        || globals.state.replay.shared.amLeader
+      ) {
+        return;
+      }
+
+      stats.setEfficiencyModifier(leaderAction.modifier);
+      break;
+    }
+  }
+});
+
+/** Applies the shared-replay leader's change to the hypothetical. */
+function onHypotheticalControl(control: HypotheticalControl) {
+  switch (control.type) {
+    case "start": {
       hypothetical.startSharedHypothetical();
       break;
     }
 
-    case "hypotheticalEnd": {
+    case "end": {
       hypothetical.finishHypothetical();
       break;
     }
 
-    case "hypotheticalAction": {
-      const action = toHypotheticalAction(leaderAction.action);
+    case "event": {
+      const action = toHypotheticalAction(control.event);
       globals.store!.dispatch({
         type: "hypotheticalAction",
         shared: true,
@@ -197,7 +224,7 @@ gameCommands.set("replayAction", ({ action: leaderAction }) => {
       break;
     }
 
-    case "hypotheticalBack": {
+    case "back": {
       globals.store!.dispatch({
         type: "hypotheticalBack",
         shared: true,
@@ -205,29 +232,16 @@ gameCommands.set("replayAction", ({ action: leaderAction }) => {
       break;
     }
 
-    case "hypotheticalShowDrawnCards": {
+    case "showDrawnCards": {
       globals.store!.dispatch({
         type: "hypotheticalShowDrawnCards",
         shared: true,
-        showDrawnCards: leaderAction.showDrawnCards,
+        showDrawnCards: control.show,
       });
       break;
     }
-
-    case "efficiencyModifier": {
-      // The leader already set the efficiency modifier.
-      if (
-        globals.state.replay.shared === undefined
-        || globals.state.replay.shared.amLeader
-      ) {
-        return;
-      }
-
-      stats.setEfficiencyModifier(leaderAction.efficiencyModifier);
-      break;
-    }
   }
-});
+}
 
 gameCommands.set("init", (metadata) => {
   setUrl(metadata);

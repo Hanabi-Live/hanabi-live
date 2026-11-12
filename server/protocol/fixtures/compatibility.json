@@ -1052,12 +1052,15 @@
     "input": {
       "tableId": 4,
       "action": {
-        "type": "hypotheticalAction",
-        "action": {
-          "type": "morph",
-          "order": 3,
-          "suitIndex": 0,
-          "rank": 2
+        "type": "hypothetical",
+        "control": {
+          "type": "event",
+          "event": {
+            "type": "morph",
+            "order": 3,
+            "suitIndex": 0,
+            "rank": 2
+          }
         }
       }
     },
@@ -1333,12 +1336,15 @@
     "input": {
       "tableId": 4,
       "action": {
-        "type": "hypotheticalAction",
-        "action": {
-          "type": "morph",
-          "order": 66,
-          "suitIndex": 0,
-          "rank": 2
+        "type": "hypothetical",
+        "control": {
+          "type": "event",
+          "event": {
+            "type": "morph",
+            "order": 66,
+            "suitIndex": 0,
+            "rank": 2
+          }
         }
       }
     },

@@ -26,7 +26,7 @@ pub fn route(message: &ClientMessage) -> Route {
         M::Settings(_)
         | M::UserInactive(_)
         | M::GameHistory(_)
-        | M::GameHistoryOtherScores(_)
+        | M::SeedGames(_)
         | M::ChatPm(_)
         | M::ChatPmHistory(_)
         | M::FriendAdd(_)

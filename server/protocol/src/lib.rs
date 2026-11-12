@@ -9,8 +9,8 @@ pub(crate) use enums::named_enum;
 pub use enums::{ClueType, EndCondition, GameListColumn, NoticeCode, SoundMove};
 mod registry;
 pub use registry::{
-    ClientMessage, ServerMessage, client_contracts, decode, decode_server, exported, schemas,
-    server, server_contracts, validate,
+    ClientMessage, ServerMessage, client_contracts, decode, decode_server, exported, game_library,
+    schemas, server, server_contracts, validate,
 };
 
 mod catalog;
@@ -73,6 +73,14 @@ pub const MAX_GAME_ACTIONS: usize = 512;
 pub const MAX_SEED_LENGTH: usize = 32;
 /// The longest chat message, in characters.
 pub const MAX_CHAT_LENGTH: usize = 300;
+/// The longest note, in bytes, that a player or spectator writes during a game. The server cuts a
+/// longer note to this length.
+pub const MAX_NOTE_LENGTH: usize = 300;
+/// The longest game tag, in bytes.
+pub const MAX_TAG_LENGTH: usize = 100;
+/// The longest table name that a player chooses, in bytes. The server cuts a longer name to this
+/// length.
+pub const MAX_TABLE_NAME_LENGTH: usize = 45;
 /// The longest note, in bytes, that an imported game can give a card.
 pub const MAX_IMPORTED_NOTE_LENGTH: usize = 65536;
 /// The number of seconds in a minute.
@@ -127,6 +135,15 @@ pub const MAX_EFFICIENCY_MODIFIER: i32 = MAX_DECK_SIZE as i32;
 /// The highest card order: stack bases follow the cards of the largest deck, one for each suit.
 const MAX_CARD_ORDER: usize = MAX_DECK_SIZE + MAX_SUITS - 1;
 
+/// Lets a flag be omitted when it is false; an explicit false is then never sent.
+#[expect(
+    clippy::trivially_copy_pass_by_ref,
+    reason = "serde passes skipped fields by reference"
+)]
+pub(crate) fn is_false(value: &bool) -> bool {
+    !*value
+}
+
 /// Every normal rank, which are also the ranks that clues can name.
 fn ranks() -> Vec<i32> {
     (MIN_RANK..=MAX_RANK).collect()
@@ -142,34 +159,18 @@ fn explicit_stack_sizes() -> Vec<i32> {
     (1..MAX_RANK).collect()
 }
 
+/// Every number of players that a game can have.
+fn player_counts() -> Vec<i64> {
+    (MIN_PLAYERS..=MAX_PLAYERS)
+        .filter_map(|count| i64::try_from(count).ok())
+        .collect()
+}
+
 /// Whether a game can have this many players.
 pub fn is_player_count<T: TryInto<usize>>(count: T) -> bool {
     count
         .try_into()
         .is_ok_and(|count| (MIN_PLAYERS..=MAX_PLAYERS).contains(&count))
-}
-
-/// A number of players, as a schema whose type lists each count.
-pub struct NumPlayers;
-
-impl JsonSchema for NumPlayers {
-    fn inline_schema() -> bool {
-        true
-    }
-
-    fn schema_name() -> std::borrow::Cow<'static, str> {
-        "NumPlayers".into()
-    }
-
-    fn json_schema(_: &mut schemars::SchemaGenerator) -> schemars::Schema {
-        schemars::json_schema!({
-            "type": "integer",
-            "format": "uint8",
-            "minimum": MIN_PLAYERS,
-            "maximum": MAX_PLAYERS,
-            "enum": (MIN_PLAYERS..=MAX_PLAYERS).collect::<Vec<_>>(),
-        })
-    }
 }
 
 /// A username that the server sends, which is never empty. Requests carry plain strings instead, so
@@ -244,12 +245,45 @@ impl JsonSchema for Notes {
     }
 }
 
-/// Defines a schema for an integer field that several payloads bound the same way. The field keeps
-/// its integer type, and names the schema with `#[schemars(with = "...")]`.
+/// Defines an integer that several payloads bound the same way. `new` returns the value only when it
+/// is in range, so that the server cannot send a value that the clients' schema rejects.
 macro_rules! bounded_integer {
-    ($(#[doc = $doc:literal])* $name:ident, $format:literal, $min:expr, $max:expr) => {
-        $(#[doc = $doc])*
-        pub struct $name;
+    (
+        $(#[$meta:meta])*
+        $name:ident($int:ty), $format:literal, $min:expr, $max:expr $(, values = $values:expr)?
+    ) => {
+        $(#[$meta])*
+        #[derive(
+            Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize,
+        )]
+        #[serde(transparent)]
+        pub struct $name($int);
+
+        impl $name {
+            /// The value, if it is in range.
+            pub fn new<T: TryInto<i64>>(value: T) -> Option<Self> {
+                let value = value.try_into().ok()?;
+                let in_range = i64::try_from($min).is_ok_and(|min| value >= min)
+                    && i64::try_from($max).is_ok_and(|max| value <= max);
+                if in_range { <$int>::try_from(value).ok().map(Self) } else { None }
+            }
+
+            pub const fn get(self) -> $int {
+                self.0
+            }
+        }
+
+        impl From<$name> for $int {
+            fn from(value: $name) -> Self {
+                value.0
+            }
+        }
+
+        impl std::fmt::Display for $name {
+            fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+                self.0.fmt(f)
+            }
+        }
 
         impl JsonSchema for $name {
             fn inline_schema() -> bool {
@@ -261,30 +295,48 @@ macro_rules! bounded_integer {
             }
 
             fn json_schema(_: &mut schemars::SchemaGenerator) -> schemars::Schema {
-                schemars::json_schema!({
+                let mut schema = schemars::json_schema!({
                     "type": "integer",
                     "format": $format,
                     "minimum": $min,
                     "maximum": $max,
-                })
+                });
+                let values: Option<Vec<i64>> = None $(.or(Some($values)))?;
+                if let Some(values) = values {
+                    schema.insert("enum".into(), values.into());
+                }
+                schema
             }
         }
     };
 }
 
 bounded_integer! {
+    /// A number of players, as a schema whose type lists each count.
+    NumPlayers(u8), "uint8", MIN_PLAYERS, MAX_PLAYERS,
+    values = player_counts()
+}
+
+impl From<NumPlayers> for usize {
+    fn from(value: NumPlayers) -> Self {
+        value.0.into()
+    }
+}
+
+bounded_integer! {
     /// The highest H-Group level that a user wants to play at.
-    HGroupLevel, "uint8", 1, MAX_H_GROUP_LEVEL
+    HGroupLevel(u8), "uint8", 1, MAX_H_GROUP_LEVEL
 }
 
 bounded_integer! {
     /// How far a shared replay's leader moved the count of cards that the efficiency uses.
-    EfficiencyModifier, "int32", -MAX_EFFICIENCY_MODIFIER, MAX_EFFICIENCY_MODIFIER
+    #[derive(Default)]
+    EfficiencyModifier(i32), "int32", -MAX_EFFICIENCY_MODIFIER, MAX_EFFICIENCY_MODIFIER
 }
 
 bounded_integer! {
     /// The most games that one page of a game list can ask for.
-    PageLimit, "int64", 1, MAX_PAGE_SIZE
+    PageLimit(i64), "int64", 1, MAX_PAGE_SIZE
 }
 
 /// The schema of a list with each player's clock, in seat order.

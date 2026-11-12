@@ -8,5 +8,5 @@ import type { catalogVariantSchema } from "../generated/protocol.ts";
 // eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export interface VariantDescription extends Omit<
   z.infer<typeof catalogVariantSchema>,
-  "id" | "newId"
+  "id" | "recipe"
 > {}

@@ -53,13 +53,16 @@ export function toCardIdentity(identity: WireCardIdentity): CardIdentity {
 
 type WireReplayAction = ServerCommandData["replayAction"]["action"];
 type WireHypotheticalEvent = Extract<
-  WireReplayAction,
-  { type: "hypotheticalAction" }
->["action"];
+  Extract<WireReplayAction, { type: "hypothetical" }>["control"],
+  { type: "event" }
+>["event"];
 type OutgoingHypotheticalEvent = Extract<
-  ClientCommandData["replayAction"]["action"],
-  { type: "hypotheticalAction" }
->["action"];
+  Extract<
+    ClientCommandData["replayAction"]["action"],
+    { type: "hypothetical" }
+  >["control"],
+  { type: "event" }
+>["event"];
 
 /** The server omits a clue that the recipient may not see; the game state keeps its giver. */
 const HIDDEN_CLUE = {

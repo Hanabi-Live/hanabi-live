@@ -33,7 +33,7 @@ export function init(): ActionInit {
         spoilerFree: false,
         restartDeclined: [],
         canPlayAgain: false,
-        startedAt: new Date(0).toString(),
+        replayStartedAt: new Date(0).toString(),
       },
     },
     leader: "",

@@ -35,7 +35,7 @@ function setup(shared: boolean) {
             useSharedSegments: true,
             leader: metadata.ourUsername,
             amLeader: true,
-            datetimeStarted: "2026-01-01T00:00:00.000Z",
+            datetimeReplayStarted: "2026-01-01T00:00:00.000Z",
             spoilerFree: false,
             canPlayAgain: false,
             restartDeclined: [],
@@ -70,11 +70,11 @@ describe("hypothetical exit", () => {
 
     expect(send).toHaveBeenCalledWith("replayAction", {
       tableId: 42,
-      action: { type: "hypotheticalEnd" },
+      action: { type: "hypothetical", control: { type: "end" } },
     });
     expect(store.getState().replay.hypothetical).not.toBeUndefined();
 
-    // An earlier action can arrive after Exit was clicked but before hypotheticalEnd.
+    // An earlier action can arrive after Exit was clicked but before the hypothetical ends.
     store.dispatch({
       type: "hypotheticalAction",
       shared: true,

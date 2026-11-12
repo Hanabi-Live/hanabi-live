@@ -411,7 +411,7 @@ function getTooltipContent(): string {
 
   const sharedReplay = globals.state.replay.shared;
   if (sharedReplay !== undefined) {
-    const startedDate = new Date(sharedReplay.datetimeStarted);
+    const startedDate = new Date(sharedReplay.datetimeReplayStarted);
     const elapsedMilliseconds = Date.now() - startedDate.getTime();
     const clockString = millisecondsToClockString(elapsedMilliseconds);
     content += tooltipField(

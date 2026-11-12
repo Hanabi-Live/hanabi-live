@@ -32,7 +32,7 @@ pub(super) fn command_failure(error: CommandError, command: &str) -> Option<Comm
     let name = protocol::command_name(command).unwrap_or("unknown command");
     let operation = match name {
         "gameHistory" => "Loading game history".to_owned(),
-        "gameHistoryOtherScores" => "Loading seed history".to_owned(),
+        "seedGames" => "Loading seed history".to_owned(),
         "settings" => "Saving preferences".to_owned(),
         _ => format!("Command {name}"),
     };
@@ -195,7 +195,7 @@ async fn discord_rendering(app: &App, text: &str) -> Option<String> {
 fn history_command(message: &ClientMessage) -> bool {
     matches!(
         message,
-        ClientMessage::GameHistory(_) | ClientMessage::GameHistoryOtherScores(_)
+        ClientMessage::GameHistory(_) | ClientMessage::SeedGames(_)
     )
 }
 

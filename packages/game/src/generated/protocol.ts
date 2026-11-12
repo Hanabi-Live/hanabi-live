@@ -37,10 +37,6 @@ export const catalogCharacterSchema = z
      * Excluded from two-player games.
      */
     notTwoPlayer: z.literal(true).optional(),
-    /**
-     * Whether the character's random color or rank is stored with the game.
-     */
-    writeMetadataToDatabase: z.literal(true).optional(),
   })
   .readonly();
 
@@ -166,13 +162,13 @@ export const catalogVariantSchema = z
      */
     id: variantIdSchema,
     name: z.string().min(1),
+    oddsAndEvens: z.literal(true).optional(),
+    rankCluesTouchNothing: z.literal(true).optional(),
     /**
      * The variant's suits and modifiers, from which the catalog generator checks the entry. For
      * example, "No Variant" is `R+Y+G+B+P`.
      */
-    newId: z.string().min(1),
-    oddsAndEvens: z.literal(true).optional(),
-    rankCluesTouchNothing: z.literal(true).optional(),
+    recipe: z.string().min(1),
     scarceOnes: z.literal(true).optional(),
     specialRank: cardRankSchema.optional(),
     specialRankAllClueColors: z.literal(true).optional(),

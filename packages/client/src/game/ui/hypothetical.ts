@@ -37,7 +37,8 @@ export function startHypothetical(): void {
     globals.lobby.conn!.send("replayAction", {
       tableId: globals.lobby.joinedTableId,
       action: {
-        type: "hypotheticalStart",
+        type: "hypothetical",
+        control: { type: "start" },
       },
     });
     startSharedHypothetical();
@@ -74,12 +75,13 @@ export function endHypothetical(): void {
     return;
   }
 
-  // Wait for the server's hypotheticalEnd action so pending actions are processed first.
+  // Wait for the server to end the hypothetical, so that pending actions are processed first.
   if (shared?.amLeader === true) {
     globals.lobby.conn!.send("replayAction", {
       tableId: globals.lobby.joinedTableId,
       action: {
-        type: "hypotheticalEnd",
+        type: "hypothetical",
+        control: { type: "end" },
       },
     });
   }
@@ -190,8 +192,8 @@ export function sendHypotheticalActionToServer(
     globals.lobby.conn!.send("replayAction", {
       tableId: globals.lobby.joinedTableId,
       action: {
-        type: "hypotheticalAction",
-        action: toWireHypotheticalAction(hypoAction),
+        type: "hypothetical",
+        control: { type: "event", event: toWireHypotheticalAction(hypoAction) },
       },
     });
   } else {
@@ -220,7 +222,8 @@ export function sendHypotheticalBack(): void {
     globals.lobby.conn!.send("replayAction", {
       tableId: globals.lobby.joinedTableId,
       action: {
-        type: "hypotheticalBack",
+        type: "hypothetical",
+        control: { type: "back" },
       },
     });
   }
@@ -241,8 +244,11 @@ export function toggleRevealed(): void {
     globals.lobby.conn!.send("replayAction", {
       tableId: globals.lobby.joinedTableId,
       action: {
-        type: "hypotheticalShowDrawnCards",
-        showDrawnCards: !globals.state.replay.hypothetical.showDrawnCards,
+        type: "hypothetical",
+        control: {
+          type: "showDrawnCards",
+          show: !globals.state.replay.hypothetical.showDrawnCards,
+        },
       },
     });
   }

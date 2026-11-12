@@ -200,7 +200,7 @@ export const chatPmHistoryRequestSchema = z
      */
     recipient: z.string().min(1).optional(),
     /**
-     * The table whose chat the command was typed in. Absent means the lobby.
+     * The table whose chat shows the reply. Absent means the lobby.
      */
     tableId: tableIdSchema.optional(),
   })
@@ -217,28 +217,11 @@ export const chatRequestSchema = z
     text: z.string().min(1),
   })
   .readonly();
-export const chatRoomRequestSchema = z
-  .strictObject({
-    /**
-     * The table whose chat the command was typed in. Absent means the lobby.
-     */
-    tableId: tableIdSchema.optional(),
-  })
-  .readonly();
 export const chatTypingSchema = z
   .strictObject({
     tableId: tableIdSchema,
     typing: z.boolean(),
     username: z.string().min(1),
-  })
-  .readonly();
-export const chatUserRequestSchema = z
-  .strictObject({
-    /**
-     * The table whose chat the command was typed in. Absent means the lobby.
-     */
-    tableId: tableIdSchema.optional(),
-    username: z.string(),
   })
   .readonly();
 
@@ -304,6 +287,11 @@ const sharedReplayInitSchema = z
      */
     ownerId: userIdSchema,
     /**
+     * When the replay began: when the game ended, for a review of a game just played, or when the
+     * table was created, for a replay of an older game. `Init.startedAt` is when the game began.
+     */
+    replayStartedAt: z.iso.datetime({ precision: 3 }),
+    /**
      * The players who will not play again if the leader restarts.
      */
     restartDeclined: z.array(z.string().min(1)).max(6).readonly(),
@@ -311,7 +299,6 @@ const sharedReplayInitSchema = z
      * Whether the shared replay hides what happens later in the game.
      */
     spoilerFree: z.boolean(),
-    startedAt: z.iso.datetime({ precision: 3 }),
     turn: turnSchema,
   })
   .readonly();
@@ -360,48 +347,6 @@ export const gameHistoryEntrySchema = z
      * The game's tags, in alphabetical order.
      */
     tags: z.array(z.string()).readonly(),
-  })
-  .readonly();
-
-/**
- * A page of the games played on a seed, best scores first.
- */
-export const gameHistoryOtherScoresSchema = z
-  .strictObject({
-    games: z.array(gameHistoryEntrySchema).readonly(),
-    /**
-     * The position of the page's first game among all the games on the seed.
-     */
-    offset: countSchema,
-    /**
-     * The seed of the request, so that a client can ignore a reply for a seed it no longer shows.
-     */
-    seed: z.string().min(1),
-    /**
-     * How many games were played on the seed.
-     */
-    total: countSchema,
-  })
-  .readonly();
-
-/**
- * A page of the games on a seed, best scores first.
- */
-export const gameHistoryOtherScoresRequestSchema = z
-  .strictObject({
-    limit: z.number().int().min(1).max(100),
-    offset: countSchema,
-    seed: z.string().min(1),
-  })
-  .readonly();
-
-/**
- * A page of the player's own game history, newest first.
- */
-export const gameHistoryRequestSchema = z
-  .strictObject({
-    limit: z.number().int().min(1).max(100),
-    offset: countSchema,
   })
   .readonly();
 
@@ -807,6 +752,9 @@ export const noteRequestSchema = z
   .strictObject({
     order: cardOrderSchema,
     tableId: tableIdSchema,
+    /**
+     * The server keeps at most `MAX_NOTE_LENGTH` bytes of it.
+     */
     text: z.string(),
   })
   .readonly();
@@ -825,6 +773,16 @@ export const noticeSchema = z
     code: noticeCodeSchema.optional(),
     diagnosticId: z.string().min(1).optional(),
     message: z.string().min(1),
+  })
+  .readonly();
+
+/**
+ * A page of a list of games: in `gameHistory`, the player's own games, newest first.
+ */
+export const pageRequestSchema = z
+  .strictObject({
+    limit: z.number().int().min(1).max(100),
+    offset: countSchema,
   })
   .readonly();
 
@@ -956,6 +914,46 @@ export const pregameSchema = z
   .readonly();
 
 /**
+ * Asks for the sender's links or blocked users.
+ */
+export const relationshipListRequestSchema = z
+  .strictObject({
+    /**
+     * The table whose chat shows the reply. Absent means the lobby.
+     */
+    tableId: tableIdSchema.optional(),
+  })
+  .readonly();
+
+/**
+ * Adds a user to, or removes them from, the sender's friends, links, or blocked users.
+ */
+export const relationshipRequestSchema = z
+  .strictObject({
+    /**
+     * The table whose chat shows the reply. Absent means the lobby.
+     */
+    tableId: tableIdSchema.optional(),
+    username: z.string(),
+  })
+  .readonly();
+
+/**
+ * How a shared-replay leader changes the hypothetical.
+ */
+const hypotheticalControlSchema = z.discriminatedUnion("type", [
+  z.strictObject({ type: z.literal("start") }).readonly(),
+  z.strictObject({ type: z.literal("end") }).readonly(),
+  z
+    .strictObject({ event: hypotheticalEventSchema, type: z.literal("event") })
+    .readonly(),
+  z.strictObject({ type: z.literal("back") }).readonly(),
+  z
+    .strictObject({ show: z.boolean(), type: z.literal("showDrawnCards") })
+    .readonly(),
+]);
+
+/**
  * The parts of the board that a shared-replay arrow can point at, besides cards.
  */
 export const replayBoardElementSchema = z.enum([
@@ -1009,25 +1007,16 @@ const replayLeaderActionSchema = z.discriminatedUnion("type", [
   z
     .strictObject({ sound: replaySoundEffectSchema, type: z.literal("sound") })
     .readonly(),
-  z.strictObject({ type: z.literal("hypotheticalStart") }).readonly(),
-  z.strictObject({ type: z.literal("hypotheticalEnd") }).readonly(),
   z
     .strictObject({
-      action: hypotheticalEventSchema,
-      type: z.literal("hypotheticalAction"),
-    })
-    .readonly(),
-  z.strictObject({ type: z.literal("hypotheticalBack") }).readonly(),
-  z
-    .strictObject({
-      showDrawnCards: z.boolean(),
-      type: z.literal("hypotheticalShowDrawnCards"),
+      modifier: z.number().int().min(-60).max(60),
+      type: z.literal("efficiency"),
     })
     .readonly(),
   z
     .strictObject({
-      efficiencyModifier: z.number().int().min(-60).max(60),
-      type: z.literal("efficiencyModifier"),
+      control: hypotheticalControlSchema,
+      type: z.literal("hypothetical"),
     })
     .readonly(),
 ]);
@@ -1171,6 +1160,38 @@ export const restartDeclinedSchema = z
  */
 export const scoreFrequencySchema = z
   .strictObject({ numGames: countSchema, score: scoreSchema })
+  .readonly();
+
+/**
+ * A page of the games played on a seed, best scores first.
+ */
+export const seedGamesSchema = z
+  .strictObject({
+    games: z.array(gameHistoryEntrySchema).readonly(),
+    /**
+     * The position of the page's first game in the list.
+     */
+    offset: countSchema,
+    /**
+     * The seed of the request, so that a client can ignore a reply for a seed it no longer shows.
+     */
+    seed: z.string().min(1),
+    /**
+     * How many games the list has on all of its pages.
+     */
+    total: countSchema,
+  })
+  .readonly();
+
+/**
+ * A page of the games on a seed, best scores first.
+ */
+export const seedGamesRequestSchema = z
+  .strictObject({
+    limit: z.number().int().min(1).max(100),
+    offset: countSchema,
+    seed: z.string().min(1),
+  })
   .readonly();
 
 /**
@@ -1356,7 +1377,8 @@ export const tableListSchema = z
   .readonly();
 
 /**
- * A table's new owner, who also leads its shared replay.
+ * A table's owner, who also leads its shared replay. The owner sends it to hand the table to
+ * someone else, and the server sends it to everyone at the table when the owner changes.
  */
 export const tableOwnerSchema = z
   .strictObject({ ownerId: userIdSchema, tableId: tableIdSchema })
@@ -1376,9 +1398,6 @@ export const tableRestartRequestSchema = z
     hidePregame: z.boolean().default(false),
     tableId: tableIdSchema,
   })
-  .readonly();
-export const tableSetOwnerRequestSchema = z
-  .strictObject({ ownerId: userIdSchema, tableId: tableIdSchema })
   .readonly();
 export const tableSpectateRequestSchema = z
   .strictObject({
@@ -1422,14 +1441,23 @@ export const tableUpdateRequestSchema = z
  * Adds or removes one tag on the table's game.
  */
 export const tagRequestSchema = z
-  .strictObject({ tableId: tableIdSchema, tag: z.string() })
+  .strictObject({
+    tableId: tableIdSchema,
+    /**
+     * At most `MAX_TAG_LENGTH` bytes. The server answers a longer or blank tag with a warning.
+     */
+    tag: z.string(),
+  })
   .readonly();
 export const tagSearchRequestSchema = z
   .strictObject({
     /**
-     * The table whose chat the command was typed in. Absent means the lobby.
+     * The table whose chat shows the reply. Absent means the lobby.
      */
     tableId: tableIdSchema.optional(),
+    /**
+     * At most `MAX_TAG_LENGTH` bytes. The server answers a longer or blank tag with a warning.
+     */
     tag: z.string(),
   })
   .readonly();
@@ -1522,24 +1550,23 @@ export const welcomeSchema = z
   })
   .readonly();
 export const CLIENT_COMMAND_SCHEMAS = {
-  blockAdd: chatUserRequestSchema,
-  blockList: chatRoomRequestSchema,
-  blockRemove: chatUserRequestSchema,
+  blockAdd: relationshipRequestSchema,
+  blockList: relationshipListRequestSchema,
+  blockRemove: relationshipRequestSchema,
   chat: chatRequestSchema,
   chatPm: chatPmRequestSchema,
   chatPmHistory: chatPmHistoryRequestSchema,
   chatRead: tableRefSchema,
   chatTyping: tableRefSchema,
-  friendAdd: chatUserRequestSchema,
-  friendRemove: chatUserRequestSchema,
-  gameHistory: gameHistoryRequestSchema,
-  gameHistoryOtherScores: gameHistoryOtherScoresRequestSchema,
+  friendAdd: relationshipRequestSchema,
+  friendRemove: relationshipRequestSchema,
+  gameHistory: pageRequestSchema,
   gameInitLoad: tableRefSchema,
   gameStateLoad: tableRefSchema,
   idleReset: tableRefSchema,
-  linkAdd: chatUserRequestSchema,
-  linkList: chatRoomRequestSchema,
-  linkRemove: chatUserRequestSchema,
+  linkAdd: relationshipRequestSchema,
+  linkList: relationshipListRequestSchema,
+  linkRemove: relationshipRequestSchema,
   loaded: tableRefSchema,
   lobbyLoad: emptySchema,
   note: noteRequestSchema,
@@ -1547,6 +1574,7 @@ export const CLIENT_COMMAND_SCHEMAS = {
   playerAction: playerActionRequestSchema,
   replayAction: replayActionSchema,
   replayCreate: replayCreateRequestSchema,
+  seedGames: seedGamesRequestSchema,
   settings: settingsRequestSchema,
   sync: emptySchema,
   tableCreate: tableCreateRequestSchema,
@@ -1555,7 +1583,7 @@ export const CLIENT_COMMAND_SCHEMAS = {
   tableReattend: tableRefSchema,
   tableRestart: tableRestartRequestSchema,
   tableRestartDecline: tableRestartDeclineRequestSchema,
-  tableSetOwner: tableSetOwnerRequestSchema,
+  tableSetOwner: tableOwnerSchema,
   tableSpectate: tableSpectateRequestSchema,
   tableStart: tableStartRequestSchema,
   tableSuggest: tableSuggestRequestSchema,
@@ -1585,7 +1613,6 @@ export const SERVER_COMMAND_SCHEMAS = {
   gameFinished: gameFinishedSchema,
   gameHistory: gamePageSchema,
   gameHistoryAdded: gameHistoryEntrySchema,
-  gameHistoryOtherScores: gameHistoryOtherScoresSchema,
   gameState: gameStateSchema,
   idleReset: tableRefSchema,
   idleWarning: idleWarningSchema,
@@ -1598,6 +1625,7 @@ export const SERVER_COMMAND_SCHEMAS = {
   pregame: pregameSchema,
   replayAction: replayActionSchema,
   restartDeclined: restartDeclinedSchema,
+  seedGames: seedGamesSchema,
   serverRestart: serverRestartSchema,
   spectators: spectatorsSchema,
   suggestion: suggestionSchema,

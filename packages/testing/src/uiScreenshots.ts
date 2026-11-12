@@ -1496,29 +1496,36 @@ async function seed(address: string): Promise<Seed> {
     leader.send("loaded", { tableId: replayTableId });
     leader.send("replayAction", {
       tableId: replayTableId,
-      action: { type: "hypotheticalStart" },
+      action: { type: "hypothetical", control: { type: "start" } },
     });
     await leader.receive(
       "replayAction",
       SERVER_COMMAND_SCHEMAS.replayAction,
-      (data) => data.action.type === "hypotheticalStart",
+      (data) =>
+        data.action.type === "hypothetical"
+        && data.action.control.type === "start",
     );
 
     leader.send("replayAction", {
       tableId: replayTableId,
       action: {
-        type: "hypotheticalAction",
-        action: {
-          type: "morph",
-          order: PRISM_MORPH_ORDER,
-          suitIndex: PRISM_SUIT_INDEX,
+        type: "hypothetical",
+        control: {
+          type: "event",
+          event: {
+            type: "morph",
+            order: PRISM_MORPH_ORDER,
+            suitIndex: PRISM_SUIT_INDEX,
+          },
         },
       },
     });
     await leader.receive(
       "replayAction",
       SERVER_COMMAND_SCHEMAS.replayAction,
-      (data) => data.action.type === "hypotheticalAction",
+      (data) =>
+        data.action.type === "hypothetical"
+        && data.action.control.type === "event",
     );
 
     return () => {

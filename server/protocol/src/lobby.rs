@@ -47,8 +47,7 @@ pub struct User {
     /// The highest H-Group level that this user wants to play at. Absent when they did not choose
     /// one.
     #[serde(skip_serializing_if = "Option::is_none")]
-    #[schemars(with = "Option<HGroupLevel>")]
-    pub h_group_level: Option<u8>,
+    pub h_group_level: Option<HGroupLevel>,
     pub bot: bool,
     pub inactive: bool,
 }
@@ -164,8 +163,7 @@ pub struct Settings {
     /// The highest H-Group level that this user wants to play at. Absent when they did not choose
     /// one; `SettingsRequest::cleared` removes it.
     #[serde(skip_serializing_if = "Option::is_none")]
-    #[schemars(with = "Option<HGroupLevel>")]
-    pub h_group_level: Option<u8>,
+    pub h_group_level: Option<HGroupLevel>,
     pub create_table: CreateTableSettings,
 }
 
@@ -198,8 +196,7 @@ impl Default for Settings {
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize, JsonSchema)]
 #[serde(default, rename_all = "camelCase", deny_unknown_fields)]
 pub struct CreateTableSettings {
-    #[schemars(with = "NumPlayers")]
-    pub max_players: u8,
+    pub max_players: NumPlayers,
     /// The options of the next table. Their `timeControl` is present when the table is timed.
     pub options: GameOptions,
     /// The clock that the form offers. The form keeps it while the table is untimed.
@@ -209,7 +206,7 @@ pub struct CreateTableSettings {
 impl Default for CreateTableSettings {
     fn default() -> Self {
         Self {
-            max_players: DEFAULT_MAX_PLAYERS,
+            max_players: NumPlayers(DEFAULT_MAX_PLAYERS),
             options: GameOptions::default(),
             time_control: TimeControl {
                 base_seconds: DEFAULT_TIME_BASE_SECONDS,
@@ -296,8 +293,8 @@ pub struct TimeControl {
     pub per_turn_seconds: i64,
 }
 
-const fn default_max_players() -> u8 {
-    DEFAULT_MAX_PLAYERS
+const fn default_max_players() -> NumPlayers {
+    NumPlayers(DEFAULT_MAX_PLAYERS)
 }
 
 /// A table's name, player limit, options, and deal, as its owner sets them and as tables report
@@ -308,8 +305,7 @@ pub struct TableSettings {
     #[schemars(length(min = 1))]
     pub name: String,
     #[serde(default = "default_max_players")]
-    #[schemars(with = "NumPlayers")]
-    pub max_players: u8,
+    pub max_players: NumPlayers,
     #[serde(default)]
     pub options: GameOptions,
     /// The deal that the table requests. Absent when the server deals the next seed that none of
@@ -347,7 +343,7 @@ impl TableSettings {
     pub fn named(name: impl Into<String>) -> Self {
         Self {
             name: name.into(),
-            max_players: DEFAULT_MAX_PLAYERS,
+            max_players: NumPlayers(DEFAULT_MAX_PLAYERS),
             options: GameOptions::default(),
             deal: None,
         }
@@ -362,6 +358,15 @@ pub struct Spectator {
     /// The seat being shadowed, if any.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub shadowing_player_index: Option<PlayerIndex>,
+}
+
+/// A table's owner, who also leads its shared replay. The owner sends it to hand the table to
+/// someone else, and the server sends it to everyone at the table when the owner changes.
+#[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct TableOwner {
+    pub table_id: TableId,
+    pub owner_id: UserId,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
@@ -444,22 +449,18 @@ pub struct GamePage {
 /// A page of the games played on a seed, best scores first.
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
-pub struct GameHistoryOtherScores {
+pub struct SeedGames {
     /// The seed of the request, so that a client can ignore a reply for a seed it no longer shows.
     #[schemars(length(min = 1))]
     pub seed: String,
-    pub games: Vec<GameHistoryEntry>,
-    /// The position of the page's first game among all the games on the seed.
-    pub offset: Count,
-    /// How many games were played on the seed.
-    pub total: Count,
+    #[serde(flatten)]
+    pub page: GamePage,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct PregameBestScore {
-    #[schemars(with = "NumPlayers")]
-    pub num_players: u8,
+    pub num_players: NumPlayers,
     /// Absent when there is no game at this player count.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub best: Option<BestScore>,

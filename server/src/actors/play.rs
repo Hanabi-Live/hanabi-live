@@ -8,15 +8,14 @@ use crate::errors::CommandResult;
 use crate::model::{Snapshot, TableSnapshot};
 use crate::store::Commit;
 use crate::{
-    model::{
-        CLOCK_UNITS_PER_SECOND, IDLE_TIMEOUT_MS, MAX_NOTE_LENGTH, NoteOwner, Phase, wire_options,
-    },
+    model::{CLOCK_UNITS_PER_SECOND, IDLE_TIMEOUT_MS, NoteOwner, Phase, wire_options},
     transport::{Session, frame},
 };
 use anyhow::Context;
 use hanabi_engine::PlayerAction;
 use hanabi_engine::{CompletionTiming, EndCondition, Recipient};
 use hanabi_protocol::ClientMessage;
+use hanabi_protocol::MAX_NOTE_LENGTH;
 use hanabi_protocol::PlayerIndex;
 use hanabi_protocol::{CardOrder, Chat, ChatTyping, MIN_PLAYERS, TableRef, ViewMode};
 use std::sync::Arc;
@@ -482,7 +481,7 @@ impl TableActor {
             can_play_again: self.can_play_again(session),
             // A review of a game just played begins when the game ends; a replay of an older
             // game begins when its table is created.
-            started_at: hanabi_protocol::Timestamp::from(
+            replay_started_at: hanabi_protocol::Timestamp::from(
                 s.finished
                     .map_or(self.table.created, |f| f.max(self.table.created)),
             ),

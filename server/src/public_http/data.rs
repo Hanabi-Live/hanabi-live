@@ -294,7 +294,7 @@ pub(super) async fn history(
 }
 
 pub(super) fn sanitize_tag(value: &str) -> Result<String> {
-    if value.len() > crate::model::MAX_TAG_LENGTH {
+    if value.len() > hanabi_protocol::MAX_TAG_LENGTH {
         return Err(HttpError::not_found(crate::model::tag_too_long()));
     }
     let value: String = value
