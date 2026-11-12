@@ -604,9 +604,6 @@ move for the current situation.
     - `1`, `2`, `3`, `4`, `5` for a rank clue
     - Or `q`, `w`, `e`, `r`, `t` for a color clue
     - Then `Ctrl + Enter` to submit
-  - Show every hand as its player sees it: hold `Space`
-  - Show every hand as its player sees it, narrowed by your notes: hold
-    `Ctrl + Space`
 - In a replay:
   - Rewind back one turn: `Left`
   - Fast-forward one turn: `Right`
