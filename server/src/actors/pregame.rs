@@ -320,6 +320,7 @@ impl TableActor {
     pub(super) fn start_messages(&mut self, e: &mut Effects) {
         for a in self.attendees.values_mut() {
             a.loaded = false;
+            a.synced = false;
         }
         for a in self.audience() {
             e.statuses.push((

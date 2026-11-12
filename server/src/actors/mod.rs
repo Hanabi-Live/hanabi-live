@@ -380,6 +380,9 @@ enum GameInfo {
 struct Attendance {
     session: Arc<Session>,
     loaded: bool,
+    /// Whether the attendee received the game's events so far, in `gameState`. From then on, it
+    /// receives each new event, even before it reports `gameLoaded`.
+    synced: bool,
     spectator: bool,
     shadow: Option<PlayerIndex>,
     typing_until: Option<Instant>,

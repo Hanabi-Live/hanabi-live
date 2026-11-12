@@ -347,6 +347,7 @@ fn attendance(session: Arc<Session>, spectator: bool) -> Attendance {
         session,
         spectator,
         loaded: false,
+        synced: false,
         shadow: None,
         typing_until: None,
     }

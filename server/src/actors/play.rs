@@ -116,7 +116,7 @@ impl TableActor {
         let s = self.table.game().context("Missing game")?;
         let replay = matches!(self.table.phase, Phase::Replay { .. });
         let mut e = self.effects();
-        for a in self.audience().filter(|a| a.loaded) {
+        for a in self.audience().filter(|a| a.loaded || a.synced) {
             let recipient = if let Some(seat) = self
                 .table
                 .players()

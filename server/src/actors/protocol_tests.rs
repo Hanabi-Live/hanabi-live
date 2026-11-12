@@ -389,6 +389,51 @@ async fn player_shadow_from_saved_games_is_cleared_on_reattend() -> Result<()> {
 }
 
 #[tokio::test]
+async fn spectators_receive_turns_between_the_game_state_and_loading_it() -> Result<()> {
+    let Some(mut h) = Harness::new(&["Alice", "Bob", "Observer"]).await? else {
+        return Ok(());
+    };
+    let outcome = async {
+        let id = h.create(0, "Fast game", json!({})).await?;
+        h.send(1, "tableJoin", json!({"tableId":id})).await?;
+        h.send(0, "tableStart", json!({"tableId":id})).await?;
+        for index in 0..2 {
+            h.send(index, "gameLoaded", json!({"tableId":id})).await?;
+        }
+        h.send(2, "tableSpectate", json!({"tableId":id})).await?;
+        h.send(2, "gameStateLoad", json!({"tableId":id})).await?;
+        h.receive(2, "gameState").await?;
+        // A turn before the spectator reports that it loaded the game.
+        let (table, _) = h.snapshot(id).await?;
+        let game = &table.game().context("Missing game")?.game;
+        let active = game.active_player_index;
+        let index = h
+            .users
+            .iter()
+            .position(|user| table.players()[active].is(user.user))
+            .context("Missing active player")?;
+        let card = game.players[active].hand[0];
+        h.send(
+            index,
+            "playerAction",
+            json!({"tableId":id,"action":{"type":"play","order":card}}),
+        )
+        .await?;
+        h.barrier(index).await?;
+        let events = h
+            .frames(2)?
+            .into_iter()
+            .filter(|(command, _)| command == "gameEvent")
+            .count();
+        ensure!(events > 0, "The spectator missed the turn");
+        Ok(())
+    }
+    .await;
+    h.close().await?;
+    outcome
+}
+
+#[tokio::test]
 async fn duck_clue_identity_is_private_in_live_history_and_recovery_but_not_completed_replays()
 -> Result<()> {
     let Some(mut h) = Harness::new(&["Alice", "Bob", "Carol", "Observer", "Shadow"]).await? else {

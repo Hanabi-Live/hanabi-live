@@ -268,6 +268,7 @@ impl TableActor {
             Attendance {
                 session: session.clone(),
                 loaded: false,
+                synced: false,
                 spectator: spectating || replay,
                 shadow,
                 typing_until: None,

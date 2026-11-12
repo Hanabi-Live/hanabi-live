@@ -623,6 +623,7 @@ impl TableActor {
             Attendance {
                 session: s.clone(),
                 loaded: false,
+                synced: false,
                 spectator: replay,
                 shadow: None,
                 typing_until: None,
@@ -1038,7 +1039,13 @@ impl TableActor {
             ClientMessage::TableUnattend(_) => self.leave(session, false).await,
             ClientMessage::TableLeave(_) => self.leave(session, true).await,
             ClientMessage::GameInitLoad(_) => self.info(session, GameInfo::Init).await,
-            ClientMessage::GameStateLoad(_) => self.info(session, GameInfo::State).await,
+            ClientMessage::GameStateLoad(_) => {
+                self.info(session.clone(), GameInfo::State).await?;
+                if let Some(a) = self.attendees.get_mut(&session.user) {
+                    a.synced = true;
+                }
+                Ok(())
+            }
             ClientMessage::GameLoaded(_) => {
                 ensure_or_reject!(self.attending(&session), "Reattend before loading");
                 let mut next = self.candidate();

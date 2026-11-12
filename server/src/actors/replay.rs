@@ -509,6 +509,7 @@ impl TableActor {
             a.spectator = !seated.contains(&a.session.user);
             a.shadow = None;
             a.loaded = false;
+            a.synced = false;
         }
         // Everyone leaves the replay first, then enters the next game or its pregame.
         let mut e = self.effects();
