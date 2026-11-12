@@ -142,7 +142,7 @@ pub enum GameStage {
 /// One author's notes on every card.
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
-pub struct PlayerNotes {
+pub struct AuthorNotes {
     pub username: Username,
     #[schemars(with = "Notes")]
     pub notes: Vec<String>,
@@ -152,7 +152,7 @@ pub struct PlayerNotes {
 /// One author's note on a single card.
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
-pub struct CardNote {
+pub struct AuthorNote {
     /// The person setting the note.
     pub username: Username,
     pub text: String,
@@ -165,7 +165,7 @@ pub struct CardNote {
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct NoteList {
     pub table_id: TableId,
-    pub notes: Vec<PlayerNotes>,
+    pub notes: Vec<AuthorNotes>,
 }
 
 /// The notes on one card after someone changes theirs, sent to spectators.
@@ -174,7 +174,7 @@ pub struct NoteList {
 pub struct Note {
     pub table_id: TableId,
     pub order: CardOrder,
-    pub notes: Vec<CardNote>,
+    pub notes: Vec<AuthorNote>,
 }
 
 /// A clue's type and value: a color clue names one of the variant's clue colors, and a rank clue
@@ -273,7 +273,7 @@ pub struct GameEventMessage {
     pub event: GameEvent,
 }
 
-/// What a client shows of a game after `init`, as the recipient may see it: the events so far, and
+/// What a client shows of a game after `gameInit`, as the recipient may see it: the events so far, and
 /// the state around them. It answers `gameStateLoad`.
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
@@ -285,7 +285,7 @@ pub struct GameState {
     #[schemars(length(max = MAX_DECK_SIZE))]
     pub deck: Option<Vec<CardIdentity>>,
     /// The notes that the recipient may see, as in `noteList`.
-    pub notes: Vec<PlayerNotes>,
+    pub notes: Vec<AuthorNotes>,
     /// Present for a player of a game in progress.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub votes: Option<VoteState>,

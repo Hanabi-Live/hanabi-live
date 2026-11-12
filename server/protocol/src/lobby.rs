@@ -236,18 +236,11 @@ pub struct Welcome {
     pub blocked: Vec<Username>,
     /// Ongoing games the user is a player in.
     pub playing_at_tables: Vec<TableId>,
-    /// The tables that the user spectated and did not leave, newest table first. A user who closes
-    /// the page while spectating stays at that table, so this can list more than one.
-    pub spectating_at_tables: Vec<SpectatedTable>,
-}
-
-/// A table that a user spectates, and the seat they shadow there, if any.
-#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
-#[serde(rename_all = "camelCase", deny_unknown_fields)]
-pub struct SpectatedTable {
-    pub table_id: TableId,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub shadowing_player_index: Option<PlayerIndex>,
+    /// The tables that the user spectated and did not leave, newest table first, each with the seat
+    /// they shadowed there, if any. A user who closes the page while spectating stays at that table,
+    /// so this can list more than one. The client sends one back as a `tableSpectate` request to
+    /// return to it.
+    pub spectating_at_tables: Vec<TableSpectateRequest>,
 }
 
 /// A game's options. Missing fields take their defaults. The player count is not an option: a game

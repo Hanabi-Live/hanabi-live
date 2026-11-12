@@ -3,8 +3,8 @@ import type {
   gameEventSchema,
   hypotheticalEventSchema,
 } from "../generated/protocol.ts";
-import type { PlayerNotes } from "../interfaces/PlayerNotes.ts";
-import type { SpectatorNote } from "../interfaces/SpectatorNote.ts";
+import type { AuthorNote } from "../interfaces/AuthorNote.ts";
+import type { AuthorNotes } from "../interfaces/AuthorNotes.ts";
 import type { CardOrder } from "./CardOrder.ts";
 import type { HiddenClue } from "./HiddenClue.ts";
 import type { MsgClue } from "./MsgClue.ts";
@@ -95,7 +95,7 @@ export interface ActionEditNote {
 export interface ActionReceiveNote {
   readonly type: "receiveNote";
   readonly order: CardOrder;
-  readonly notes: readonly SpectatorNote[];
+  readonly notes: readonly AuthorNote[];
 }
 
 export interface ActionNoteListPlayer {
@@ -105,7 +105,7 @@ export interface ActionNoteListPlayer {
 
 export interface ActionNoteList {
   readonly type: "noteList";
-  readonly notes: readonly PlayerNotes[];
+  readonly notes: readonly AuthorNotes[];
 }
 
 export interface ActionSetEfficiencyModifier {

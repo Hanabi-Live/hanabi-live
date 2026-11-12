@@ -95,7 +95,8 @@ pub struct TableSuggestRequest {
     pub turn: Turn,
 }
 
-#[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
+/// A table to spectate, and the seat to shadow there, if any.
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct TableSpectateRequest {
     pub table_id: TableId,

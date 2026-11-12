@@ -799,18 +799,18 @@ impl Hub {
             .filter(|(_, e)| !e.view.replay && e.view.players.contains(&session.user))
             .map(|(id, _)| *id)
             .collect();
-        welcome.spectating_at_tables =
-            self.tables
-                .iter()
-                .filter_map(|(id, e)| {
-                    e.view.reconnects.get(&session.user).map(|shadow| {
-                        hanabi_protocol::SpectatedTable {
-                            table_id: *id,
-                            shadowing_player_index: *shadow,
-                        }
-                    })
+        welcome.spectating_at_tables = self
+            .tables
+            .iter()
+            .filter_map(|(id, e)| {
+                e.view.reconnects.get(&session.user).map(|shadow| {
+                    hanabi_protocol::TableSpectateRequest {
+                        table_id: *id,
+                        shadowing_player_index: *shadow,
+                    }
                 })
-                .collect();
+            })
+            .collect();
         welcome
             .spectating_at_tables
             .sort_by_key(|table| std::cmp::Reverse(table.table_id));

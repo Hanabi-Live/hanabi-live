@@ -18,6 +18,32 @@ export const MAX_STRIKES = 3;
 export const PANICKY_MAX_CLUES = 4;
 
 /**
+ * One author's note on a single card.
+ */
+export const authorNoteSchema = z
+  .strictObject({
+    spectator: z.boolean(),
+    text: z.string(),
+    /**
+     * The person setting the note.
+     */
+    username: z.string().min(1),
+  })
+  .readonly();
+export const notesSchema = z.array(z.string()).readonly();
+
+/**
+ * One author's notes on every card.
+ */
+export const authorNotesSchema = z
+  .strictObject({
+    notes: notesSchema,
+    spectator: z.boolean(),
+    username: z.string().min(1),
+  })
+  .readonly();
+
+/**
  * A detrimental character's number in `characters.json`. The database stores it as a
  * `SMALLINT`.
  */
@@ -206,20 +232,6 @@ export const catalogVariantSchema = z
     synesthesia: z.literal(true).optional(),
     throwItInAHole: z.literal(true).optional(),
     upOrDown: z.literal(true).optional(),
-  })
-  .readonly();
-
-/**
- * One author's note on a single card.
- */
-export const cardNoteSchema = z
-  .strictObject({
-    spectator: z.boolean(),
-    text: z.string(),
-    /**
-     * The person setting the note.
-     */
-    username: z.string().min(1),
   })
   .readonly();
 
@@ -578,15 +590,3 @@ export const hypotheticalEventSchema = z.discriminatedUnion("type", [
     .strictObject({ order: cardOrderSchema, type: z.literal("unmorph") })
     .readonly(),
 ]);
-export const notesSchema = z.array(z.string()).readonly();
-
-/**
- * One author's notes on every card.
- */
-export const playerNotesSchema = z
-  .strictObject({
-    notes: notesSchema,
-    spectator: z.boolean(),
-    username: z.string().min(1),
-  })
-  .readonly();

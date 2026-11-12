@@ -142,9 +142,8 @@ macro_rules! exported_types {
 macro_rules! game_library_types {
     ($apply:ident) => {
         $apply! {
-            CatalogCharacter, CatalogColor, CatalogSuit, CatalogVariant, CardNote, CardOrder,
-            CharacterId, GameEvent, GameOptions, HypotheticalEvent, PlayerNotes,
-            VariantId,
+            AuthorNote, AuthorNotes, CatalogCharacter, CatalogColor, CatalogSuit, CatalogVariant,
+            CardOrder, CharacterId, GameEvent, GameOptions, HypotheticalEvent, VariantId,
         }
     };
 }

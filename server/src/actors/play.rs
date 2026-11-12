@@ -401,7 +401,7 @@ impl TableActor {
             let notes = self
                 .observer_notes(a)
                 .into_iter()
-                .map(|n| hanabi_protocol::CardNote {
+                .map(|n| hanabi_protocol::AuthorNote {
                     text: n.notes.get(order).cloned().unwrap_or_default(),
                     username: n.username,
                     spectator: n.spectator,
@@ -421,7 +421,7 @@ impl TableActor {
         }
         self.publish(e).await
     }
-    pub(super) fn observer_notes(&self, a: &Attendance) -> Vec<hanabi_protocol::PlayerNotes> {
+    pub(super) fn observer_notes(&self, a: &Attendance) -> Vec<hanabi_protocol::AuthorNotes> {
         let Some(s) = self.table.game() else {
             return vec![];
         };
@@ -430,7 +430,7 @@ impl TableActor {
             if a.shadow.is_none_or(|shadow| shadow.index() == i)
                 || matches!(self.table.phase, Phase::Replay { .. })
             {
-                notes.push(hanabi_protocol::PlayerNotes {
+                notes.push(hanabi_protocol::AuthorNotes {
                     username: p.name.clone().into(),
                     notes: s.notes[i].clone(),
                     spectator: false,
@@ -439,7 +439,7 @@ impl TableActor {
         }
         for (id, n) in &s.spectator_notes {
             if *id == a.session.user || a.shadow.is_none() {
-                notes.push(hanabi_protocol::PlayerNotes {
+                notes.push(hanabi_protocol::AuthorNotes {
                     username: n.name.clone().into(),
                     notes: n.notes.clone(),
                     spectator: true,
@@ -451,7 +451,7 @@ impl TableActor {
             .filter(|p| p.spectator && !s.spectator_notes.contains_key(&p.session.user))
         {
             if a.shadow.is_none() || spectator.session.user == a.session.user {
-                notes.push(hanabi_protocol::PlayerNotes {
+                notes.push(hanabi_protocol::AuthorNotes {
                     username: spectator.session.name.clone().into(),
                     notes: vec![String::new(); s.game.deck.len() + s.game.stacks.len()],
                     spectator: true,
@@ -566,7 +566,7 @@ impl TableActor {
                 self.observer_notes(a)
             } else {
                 player_seat
-                    .map(|seat| hanabi_protocol::PlayerNotes {
+                    .map(|seat| hanabi_protocol::AuthorNotes {
                         username: s.players[seat].name.as_str().into(),
                         notes: s.notes[seat].clone(),
                         spectator: false,

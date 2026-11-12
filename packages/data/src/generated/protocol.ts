@@ -1,7 +1,8 @@
 // Generated from server/protocol. Run bash scripts/dev/generate-protocol.sh.
 import {
+  authorNoteSchema,
+  authorNotesSchema,
   cardIdentitySchema,
-  cardNoteSchema,
   cardOrderSchema,
   characterIdSchema,
   clueRankSchema,
@@ -15,7 +16,6 @@ import {
   notesSchema,
   playerClockSchema,
   playerIndexSchema,
-  playerNotesSchema,
   turnSchema,
 } from "@hanabi-live/game";
 import * as z from "zod";
@@ -627,7 +627,7 @@ const voteStateSchema = z
   .readonly();
 
 /**
- * What a client shows of a game after `init`, as the recipient may see it: the events so far, and
+ * What a client shows of a game after `gameInit`, as the recipient may see it: the events so far, and
  * the state around them. It answers `gameStateLoad`.
  */
 export const gameStateSchema = z
@@ -652,7 +652,7 @@ export const gameStateSchema = z
     /**
      * The notes that the recipient may see, as in `noteList`.
      */
-    notes: z.array(playerNotesSchema).readonly(),
+    notes: z.array(authorNotesSchema).readonly(),
     /**
      * Absent in a replay.
      */
@@ -810,7 +810,7 @@ export const loginResponseSchema = z
  */
 export const noteSchema = z
   .strictObject({
-    notes: z.array(cardNoteSchema).readonly(),
+    notes: z.array(authorNoteSchema).readonly(),
     order: cardOrderSchema,
     tableId: tableIdSchema,
   })
@@ -822,7 +822,7 @@ export const noteSchema = z
  */
 export const noteListSchema = z
   .strictObject({
-    notes: z.array(playerNotesSchema).readonly(),
+    notes: z.array(authorNotesSchema).readonly(),
     tableId: tableIdSchema,
   })
   .readonly();
@@ -1500,6 +1500,10 @@ export const tableRestartRequestSchema = z
 export const tableSetOwnerRequestSchema = z
   .strictObject({ tableId: tableIdSchema, userId: userIdSchema })
   .readonly();
+
+/**
+ * A table to spectate, and the seat to shadow there, if any.
+ */
 export const tableSpectateRequestSchema = z
   .strictObject({
     /**
@@ -1619,16 +1623,6 @@ export const votesSchema = z
   .readonly();
 
 /**
- * A table that a user spectates, and the seat they shadow there, if any.
- */
-const spectatedTableSchema = z
-  .strictObject({
-    shadowingPlayerIndex: playerIndexSchema.optional(),
-    tableId: tableIdSchema,
-  })
-  .readonly();
-
-/**
  * The first message after connecting.
  */
 export const welcomeSchema = z
@@ -1646,10 +1640,12 @@ export const welcomeSchema = z
     playingAtTables: z.array(tableIdSchema).readonly(),
     settings: settingsSchema,
     /**
-     * The tables that the user spectated and did not leave, newest table first. A user who closes
-     * the page while spectating stays at that table, so this can list more than one.
+     * The tables that the user spectated and did not leave, newest table first, each with the seat
+     * they shadowed there, if any. A user who closes the page while spectating stays at that table,
+     * so this can list more than one. The client sends one back as a `tableSpectate` request to
+     * return to it.
      */
-    spectatingAtTables: z.array(spectatedTableSchema).readonly(),
+    spectatingAtTables: z.array(tableSpectateRequestSchema).readonly(),
     userId: userIdSchema,
     username: z.string().min(1),
   })
