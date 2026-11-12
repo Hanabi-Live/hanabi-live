@@ -84,8 +84,12 @@ export class Tooltip {
     return this.closingTimeout !== undefined;
   }
 
+  /** Changes what the tooltip shows. With no content, the tooltip closes. */
   setContent(content: Node | string): void {
     this.content = content;
+    if (content === "") {
+      this.close();
+    }
     if (typeof content === "string") {
       // The client builds tooltip HTML itself and escapes anything that users wrote.
       // eslint-disable-next-line unicorn/no-unsafe-dom-html

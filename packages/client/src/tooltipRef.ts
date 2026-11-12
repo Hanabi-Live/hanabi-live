@@ -7,37 +7,60 @@ import { escapeHtml } from "./utils.ts";
 /** React runs the function that a callback ref returns when the element goes away. */
 type TooltipRef = (element: HTMLElement | null) => (() => void) | undefined;
 
-/**
- * The ref for each tooltip's HTML, so that the same tooltip gives the same ref on every render.
- * Otherwise, React would close and reopen the tooltip whenever the component renders again.
- */
-const refs = new Map<string, TooltipRef>();
+interface ElementTooltip {
+  readonly tooltip: Tooltip;
+  content: string;
+  /**
+   * How many refs hold the tooltip. It is zero while React swaps the ref, and after it removes it.
+   */
+  refs: number;
+}
+
+/** The tooltip of each element, which lasts while the element has a tooltip ref. */
+const elementTooltips = new WeakMap<HTMLElement, ElementTooltip>();
 
 /**
  * Returns a callback ref that shows `content`, which is HTML, in the site's tooltip while the
  * pointer is over the element. With no HTML, or empty HTML, the element has no tooltip. Escape any
  * text that users wrote, such as names, before it goes into the HTML. For plain text, use
  * `tooltipRef`.
+ *
+ * When the content changes, the element keeps its tooltip and only the content changes, so an open
+ * tooltip stays open.
  */
-export function tooltipRefHtml(content: string | undefined): TooltipRef {
-  const key = content ?? "";
-  let ref = refs.get(key);
-  if (ref === undefined) {
-    ref = (element) => {
-      if (element === null || content === undefined || content === "") {
-        return undefined;
-      }
+export function tooltipRefHtml(content = ""): TooltipRef {
+  return (element) => {
+    if (element === null) {
+      return undefined;
+    }
 
-      const tooltip = new Tooltip(element, { content });
+    let entry = elementTooltips.get(element);
+    if (entry === undefined) {
+      const tooltip = new Tooltip(element, { content: "" });
       tooltip.openOnHover();
-      return () => {
-        tooltip.destroy();
-      };
-    };
-    refs.set(key, ref);
-  }
+      entry = { tooltip, content: "", refs: 0 };
+      elementTooltips.set(element, entry);
+    }
+    entry.refs++;
+    const { tooltip } = entry;
+    // Most renders keep the content, so do not rebuild the tooltip's HTML for them.
+    if (entry.content !== content) {
+      entry.content = content;
+      tooltip.setContent(content);
+    }
 
-  return ref;
+    return () => {
+      entry.refs--;
+      // Each render makes a new ref, so React runs this and then gives the element the new ref, in
+      // the same task. Wait until then, so that the tooltip is only destroyed with the element.
+      queueMicrotask(() => {
+        if (entry.refs === 0 && elementTooltips.get(element) === entry) {
+          elementTooltips.delete(element);
+          tooltip.destroy();
+        }
+      });
+    };
+  };
 }
 
 /**

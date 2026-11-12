@@ -36,6 +36,7 @@ vi.mock("../../Tooltip.ts", () => ({
     }
 
     openOnHover = vi.fn();
+    setContent = vi.fn();
 
     openUntilClickElsewhere() {
       document.body.append(this.content);
