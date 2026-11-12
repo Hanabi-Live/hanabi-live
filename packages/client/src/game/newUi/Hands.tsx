@@ -627,6 +627,14 @@ function Hand({
           ) : (
             chip
           )}
+          {giverColor !== undefined && (
+            // A ring that spreads from the name as the clue goes out (see "cardMotion.ts").
+            <span
+              className="tw:pointer-events-none tw:absolute tw:-inset-1 tw:rounded-full tw:border-[3px] tw:border-solid tw:opacity-0"
+              data-clue-ping
+              style={{ borderColor: giverColor }}
+            />
+          )}
         </span>
         {!seat.you && (
           <button
