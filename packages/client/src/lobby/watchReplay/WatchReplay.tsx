@@ -151,7 +151,17 @@ function WatchReplayForm() {
                 onChange={(event) => {
                   setJson(event.target.value);
                 }}
-                placeholder="Paste the game's JSON data"
+                // Enter adds a line here, so a modifier is needed to submit.
+                onKeyDown={(event) => {
+                  if (
+                    event.key === "Enter"
+                    && (event.ctrlKey || event.metaKey)
+                  ) {
+                    event.preventDefault();
+                    submit();
+                  }
+                }}
+                placeholder="Paste the game's JSON data (Ctrl+Enter to watch)"
                 ref={jsonRef}
                 value={json}
               />

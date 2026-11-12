@@ -13,6 +13,7 @@ import type { Connection } from "../../Connection.ts";
 import { globals } from "../../Globals.ts";
 import { lobbyPageChanged } from "../../sessionSlice.ts";
 import { store } from "../../store.ts";
+import { parseGameJson } from "../gameJson.ts";
 import { WatchReplay } from "./WatchReplay.tsx";
 
 const hide = vi.fn();
@@ -102,5 +103,28 @@ describe("WatchReplay", () => {
     expect(hide).toHaveBeenCalled();
     expect(localStorage.getItem("watchReplayId")).toBe("42");
     expect(localStorage.getItem("watchReplayVisibility")).toBe("shared");
+  });
+
+  test("watches pasted JSON with Ctrl+Enter", () => {
+    localStorage.setItem("watchReplaySource", "json");
+    showPage();
+    const jsonBox =
+      document.querySelector<HTMLTextAreaElement>("#replay-json")!;
+    const text = JSON.stringify({ seed: "p2v0s1", options: { variantId: 0 } });
+    fireEvent.change(jsonBox, { target: { value: text } });
+
+    fireEvent.keyDown(jsonBox, { key: "Enter" });
+    expect(send).not.toHaveBeenCalled();
+
+    fireEvent.keyDown(jsonBox, { key: "Enter", ctrlKey: true });
+    const parsed = parseGameJson(text);
+    expect(send).toHaveBeenCalledWith("replayCreate", {
+      source: {
+        type: "imported",
+        game: "gameJson" in parsed ? parsed.gameJson : undefined,
+      },
+      visibility: { type: "solo" },
+    });
+    expect(hide).toHaveBeenCalled();
   });
 });

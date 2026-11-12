@@ -20,6 +20,8 @@ of the repository.
   screen now says "Suggest to Table Owner".
 - The new game screen has an "End game" button, to vote to end the game or to
   end it right away.
+- On the "Watch a Specific Replay" page, press Ctrl + Enter in the JSON box to
+  watch the replay.
 
 ## November 11th, 2026
 
