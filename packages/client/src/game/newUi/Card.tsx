@@ -96,6 +96,12 @@ function ClueMarker({
   const size = roundToEven(width * CLUE_TOKEN_SIZE_PER_WIDTH);
   const point = roundToEven(size * 0.34);
   const color = getClueMarkerColor(marker);
+  const pointStyle = {
+    width: point,
+    height: point,
+    bottom: -point * 0.38,
+    marginLeft: -point / 2,
+  };
   let label = "";
   if (marker.type === "rank") {
     ({ label } = marker);
@@ -117,12 +123,7 @@ function ClueMarker({
     >
       <span
         className="tw:absolute tw:left-1/2 tw:rotate-45 tw:bg-white tw:shadow-[0_0_0_2px_var(--card-ink)]"
-        style={{
-          width: point,
-          height: point,
-          bottom: -point * 0.38,
-          marginLeft: -point / 2,
-        }}
+        style={pointStyle}
       />
       <span
         className="tw:absolute tw:inset-0 tw:box-border tw:flex tw:items-center tw:justify-center tw:rounded-full tw:border-solid tw:border-white tw:font-extrabold tw:leading-none tw:text-card-ink tw:shadow-[0_0_0_2px_var(--card-ink),0_3px_8px_rgb(0_0_0/60%)]"
@@ -134,6 +135,12 @@ function ClueMarker({
       >
         {label}
       </span>
+      {/* The lower part of the point again, over the disc, so that the disc's ring and shadow do
+          not cross the point. Its outline comes from the point below, so the two outlines join. */}
+      <span
+        className="tw:absolute tw:left-1/2 tw:rotate-45 tw:bg-white tw:[clip-path:polygon(85%_0,100%_0,100%_100%,0_100%,0_85%)]"
+        style={pointStyle}
+      />
     </span>
   );
 }
