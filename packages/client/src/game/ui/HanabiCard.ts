@@ -37,6 +37,7 @@ import {
 import { assertDefined } from "complete-common";
 import Konva from "konva";
 import * as tooltips from "../../tooltips.ts";
+import { shouldFadeTrash } from "../newUi/tableView.ts";
 import { getViewPlayerIndex } from "../ourSeat.ts";
 import {
   noteEqual,
@@ -931,24 +932,15 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip, UiCard {
   }
 
   private shouldSetFade(isTrash: boolean) {
-    // Override any logic and always fade the card if it is explicitly marked as known trash.
-    if (
-      this.trashcan.isVisible() === true
-      && this.state.numPositiveClues === 0
-    ) {
-      return true;
-    }
-
-    return (
-      isTrash
-      && !isCardClued(this.state)
-      && !isCardPlayed(this.state)
-      && !isCardDiscarded(this.state)
-      && !this.note.blank
-      && !this.note.chopMoved
-      && !this.variant.throwItInAHole
-      && !globals.options.speedrun
-    );
+    return shouldFadeTrash({
+      trash:
+        isTrash && !isCardPlayed(this.state) && !isCardDiscarded(this.state),
+      markedTrash: this.trashcan.isVisible() === true,
+      clued: isCardClued(this.state),
+      positivelyClued: this.state.numPositiveClues > 0,
+      note: this.note,
+      throwItInAHole: this.variant.throwItInAHole,
+    });
   }
 
   private setCritical(critical: boolean) {

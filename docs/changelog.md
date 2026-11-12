@@ -22,6 +22,7 @@ of the repository.
   end it right away.
 - On the "Watch a Specific Replay" page, press Ctrl + Enter in the JSON box to
   watch the replay.
+- Trash cards in a hand are now faded in speedruns too, as in other games.
 
 ## November 11th, 2026
 

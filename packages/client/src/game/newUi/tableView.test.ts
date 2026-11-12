@@ -84,7 +84,6 @@ describe("shouldFadeTrash", () => {
     positivelyClued: false,
     note: { blank: false, chopMoved: false },
     throwItInAHole: false,
-    speedrun: false,
   };
 
   test("fades trash that no clue touched", () => {

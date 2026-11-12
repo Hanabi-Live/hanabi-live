@@ -87,9 +87,6 @@ interface CardViewOptions {
 
   /** "Real life mode" hides the hints that a physical game would not have. */
   readonly realLifeMode: boolean;
-
-  /** A speedrun shows trash at full strength, as the classic screen does. */
-  readonly speedrun: boolean;
 }
 
 export function getCardView({
@@ -102,7 +99,6 @@ export function getCardView({
   empathyIncludesNotes = false,
   finished,
   realLifeMode,
-  speedrun,
 }: CardViewOptions): CardView {
   const { suitIndex, rank } = getCardIdentityToShow({
     cardIdentity,
@@ -153,7 +149,6 @@ export function getCardView({
         positivelyClued: cardState.numPositiveClues > 0,
         note,
         throwItInAHole: variant.throwItInAHole,
-        speedrun,
       }),
     trashIcon,
     possibleSuitIndexes,
@@ -162,10 +157,10 @@ export function getCardView({
 }
 
 /**
- * Whether a trash card in a hand shows faded, by the rule of the classic screen. A card that the
- * viewer marked as trash fades unless a clue touched it. Other trash fades only when nothing else
- * marks the card as worth a look: a clue, a note that calls it blank or chop moved, a variant that
- * hides what was played, or a speedrun.
+ * Whether a trash card in a hand shows faded, on both game screens. A card that the viewer marked
+ * as trash fades unless a clue touched it. Other trash fades only when nothing else marks the card
+ * as worth a look: a clue, a note that calls it blank or chop moved, or a variant that hides what
+ * was played.
  */
 export function shouldFadeTrash({
   trash,
@@ -174,7 +169,6 @@ export function shouldFadeTrash({
   positivelyClued,
   note,
   throwItInAHole,
-  speedrun,
 }: {
   readonly trash: boolean;
   readonly markedTrash: boolean;
@@ -182,20 +176,12 @@ export function shouldFadeTrash({
   readonly positivelyClued: boolean;
   readonly note: Pick<CardNote, "blank" | "chopMoved">;
   readonly throwItInAHole: boolean;
-  readonly speedrun: boolean;
 }): boolean {
   if (markedTrash && !positivelyClued) {
     return true;
   }
 
-  return (
-    trash
-    && !clued
-    && !note.blank
-    && !note.chopMoved
-    && !throwItInAHole
-    && !speedrun
-  );
+  return trash && !clued && !note.blank && !note.chopMoved && !throwItInAHole;
 }
 
 /** Returns the cards in a hand that a clue would touch, from the identities that we can see. */
