@@ -108,16 +108,20 @@ impl Store {
             PRIMARY_CONNECTIONS,
         )
         .await?;
+        // Open every connection now, and keep them open. After a restart, players reconnect all at
+        // once, and the first lobby reads would otherwise wait for the pool to connect.
         let lobby_reads = PgPoolOptions::new()
             .max_connections(LOBBY_READ_CONNECTIONS)
+            .min_connections(LOBBY_READ_CONNECTIONS)
             .acquire_timeout(LOBBY_READ_TIMEOUT)
-            .connect_lazy_with(options.clone().application_name(&lobby_name).options([
+            .connect_with(options.clone().application_name(&lobby_name).options([
                 (
                     "statement_timeout",
                     LOBBY_READ_TIMEOUT.as_millis().to_string(),
                 ),
                 ("default_transaction_read_only", "on".to_owned()),
-            ]));
+            ]))
+            .await?;
         crate::migrations::require_current(&mut *primary.acquire().await?).await?;
         let state =
             LiveState::connect(primary.clone(), &options.application_name(&ownership_name)).await?;
