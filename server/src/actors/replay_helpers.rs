@@ -25,7 +25,10 @@ pub struct Imported {
 }
 
 pub fn parse(input: &ReplayGame) -> CommandResult<Imported> {
-    let seed = input.seed.as_deref().unwrap_or("");
+    let seed = input
+        .seed
+        .as_ref()
+        .map_or("", hanabi_protocol::Seed::as_str);
     ensure_or_reject!(
         seed.len() <= MAX_IMPORTED_SEED_LENGTH
             && seed.bytes().all(|b| b.is_ascii_alphanumeric() || b == b'-'),
@@ -332,8 +335,12 @@ mod tests {
         let mut other = seeded.clone();
         let different = (1..other.len()).find(|&i| other[i] != other[0]).unwrap();
         other.swap(0, different);
+        // An empty seed stands for a game without one.
         let input = |seed: &str, deck: Option<&[Card]>| {
-            let mut input = json!({"playerNames":["Alice","Bob"],"seed":seed});
+            let mut input = json!({"playerNames":["Alice","Bob"]});
+            if !seed.is_empty() {
+                input["seed"] = json!(seed);
+            }
             if let Some(deck) = deck {
                 input["deck"] = json!(deck);
             }

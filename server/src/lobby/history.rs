@@ -65,7 +65,7 @@ pub async fn get_history(
     let rows = sqlx::query_as!(
                 HistoryRow,
         "SELECT to_jsonb(g) AS \"game!: Json<GameRecord>\",
-            COALESCE((SELECT array_agg(u.username ORDER BY LOWER(u.username) COLLATE \"C\")
+            COALESCE((SELECT array_agg(u.username ORDER BY p.seat)
                 FROM game_participants p JOIN users u ON u.id=p.user_id WHERE p.game_id=g.id),
                 '{}') AS \"player_names!\",
             COALESCE((SELECT ARRAY_AGG(DISTINCT tag ORDER BY tag) FROM game_tags
@@ -89,7 +89,7 @@ pub async fn get_history(
             started_at: time(game.datetime_started),
             finished_at: time(game.datetime_finished),
             num_games_on_seed: hanabi_protocol::Count(i64::from(row.num_games_on_this_seed)),
-            seed: game.seed,
+            seed: game.seed.into(),
             player_names: row.player_names.into_iter().map(Into::into).collect(),
             tags: row.tags,
         });

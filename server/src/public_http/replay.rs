@@ -130,6 +130,6 @@ pub(super) async fn export(
             vec![]
         },
         characters,
-        seed: Some(row.seed),
+        seed: Some(row.seed.into()),
     })
 }

@@ -2,7 +2,6 @@ import type { ServerCommandData } from "@hanabi-live/data";
 import {
   DEFAULT_MAX_PLAYERS,
   DEFAULT_TABLE_NAME_SUFFIX,
-  defaultSettings,
   tableIdSchema,
 } from "@hanabi-live/data";
 import type { PlayerIndex } from "@hanabi-live/game";
@@ -17,6 +16,7 @@ import { HISTORY_HASH, LOCAL_STORAGE_KEY, PATH } from "../constants.ts";
 import { globals } from "../Globals.ts";
 import * as modals from "../modals.ts";
 import { setBrowserAddressBarPath } from "../utils.ts";
+import { DEFAULT_TIME_CONTROL } from "./createGame.ts";
 import { readDeal } from "./deal.ts";
 import { parseGameJson } from "./gameJson.ts";
 import * as history from "./history.ts";
@@ -90,10 +90,10 @@ function gotoPath(data: ServerCommandData["welcome"]): boolean {
         ? {
             baseSeconds:
               parseIntSafe(urlParams.get("timeBaseSeconds") ?? "")
-              ?? defaultSettings.createTable.timeControl.baseSeconds,
+              ?? DEFAULT_TIME_CONTROL.baseSeconds,
             perTurnSeconds:
               parseIntSafe(urlParams.get("timePerTurnSeconds") ?? "")
-              ?? defaultSettings.createTable.timeControl.perTurnSeconds,
+              ?? DEFAULT_TIME_CONTROL.perTurnSeconds,
           }
         : undefined;
     const speedrun = urlParams.get("speedrun") === "true";

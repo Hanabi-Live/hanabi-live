@@ -45,6 +45,7 @@ fn from_stored(stored: Value) -> Settings {
         return Settings::default();
     };
     variant_id_from_name(&mut stored);
+    timed_flag(&mut stored);
     let valid = stored
         .into_iter()
         .filter(|(name, value)| {
@@ -69,6 +70,31 @@ fn variant_id_from_name(stored: &mut serde_json::Map<String, Value>) {
     {
         options.insert("variantId".into(), variant.id.into());
     }
+}
+
+/// Settings that servers stored before the form had a `timed` flag give the table that the form
+/// starts from two clocks: one in its options when it is timed, and the form's own. This keeps the
+/// one in the options, or else the form's, and sets `timed` when the options had a clock.
+fn timed_flag(stored: &mut serde_json::Map<String, Value>) {
+    let Some(table) = stored.get_mut("createTable").and_then(Value::as_object_mut) else {
+        return;
+    };
+    if table.contains_key("timed") {
+        return;
+    }
+    let form_clock = table.remove("timeControl");
+    let Some(options) = table
+        .entry("options")
+        .or_insert_with(|| Value::Object(serde_json::Map::new()))
+        .as_object_mut()
+    else {
+        return;
+    };
+    let timed = options.contains_key("timeControl");
+    if let Some(clock) = form_clock {
+        options.entry("timeControl").or_insert(clock);
+    }
+    table.insert("timed".into(), timed.into());
 }
 
 /// Stores a change to a user's settings in one statement. A setting changed to its default, and an

@@ -161,8 +161,7 @@ pub struct PageRequest {
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct SeedGamesRequest {
-    #[schemars(length(min = 1))]
-    pub seed: String,
+    pub seed: Seed,
     #[serde(flatten)]
     pub page: PageRequest,
 }

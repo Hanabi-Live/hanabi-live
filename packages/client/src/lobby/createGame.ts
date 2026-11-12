@@ -3,6 +3,8 @@
 import type { Settings } from "@hanabi-live/data";
 import {
   DEFAULT_TABLE_NAME_SUFFIX,
+  DEFAULT_TIME_BASE_SECONDS,
+  DEFAULT_TIME_PER_TURN_SECONDS,
   MAX_SEED_LENGTH,
   MAX_TIME_BASE_SECONDS,
   MAX_TIME_PER_TURN_SECONDS,
@@ -70,6 +72,20 @@ type CreateTable = Settings["createTable"];
 
 /** The options that a checkbox under "Extra Options" sets. */
 type ExtraOption = Exclude<keyof GameOptions, "variantId" | "timeControl">;
+type TimeControl = NonNullable<GameOptions["timeControl"]>;
+
+/** The clock that a timed table has unless its creator chooses another. */
+export const DEFAULT_TIME_CONTROL = {
+  baseSeconds: DEFAULT_TIME_BASE_SECONDS,
+  perTurnSeconds: DEFAULT_TIME_PER_TURN_SECONDS,
+} as const satisfies TimeControl;
+
+/** The clock that the form offers: the one that we chose last, or else the default one. */
+function rememberedTimeControl(): TimeControl {
+  return (
+    globals.settings.createTable.options.timeControl ?? DEFAULT_TIME_CONTROL
+  );
+}
 
 /**
  * The checkboxes under "Extra Options", by the option that each one sets. They stay collapsed
@@ -313,7 +329,7 @@ function submit() {
   const settings = {
     name: name.trim() === "" ? getDefaultTableName() : name,
     maxPlayers: createTable.maxPlayers,
-    options: createTable.options,
+    options: tableOptions(createTable),
     ...(deal !== undefined && { deal }),
   };
 
@@ -498,9 +514,18 @@ function getVariantName(): string {
   return value === "" ? DEFAULT_VARIANT_NAME : value;
 }
 
+/** The options of the table that the form creates: without a clock unless it is timed. */
+function tableOptions({ options, timed }: CreateTable): GameOptions {
+  if (timed) {
+    return options;
+  }
+  const { timeControl: _, ...untimed } = options;
+  return untimed;
+}
+
 /** Reads the table that the form shows. An invalid time keeps the one that we remember. */
 function readForm(): CreateTable {
-  const remembered = globals.settings.createTable.timeControl;
+  const remembered = rememberedTimeControl();
   const timeControl = {
     baseSeconds: getTimeBaseSeconds() ?? remembered.baseSeconds,
     perTurnSeconds: getTimePerTurnSeconds() ?? remembered.perTurnSeconds,
@@ -515,10 +540,10 @@ function readForm(): CreateTable {
     maxPlayers: getMaxPlayers(),
     options: {
       variantId: getVariant(getVariantName()).id,
-      ...(isChecked(TIMED) && { timeControl }),
+      timeControl,
       ...extraOptions,
     },
-    timeControl,
+    timed: isChecked(TIMED),
   };
 }
 
@@ -561,9 +586,11 @@ function getFormValues(options: GameOptions, maxPlayers: number): CreateTable {
     maxPlayers: isValidNumPlayers(maxPlayers)
       ? maxPlayers
       : defaultSettings.createTable.maxPlayers,
-    options,
-    timeControl:
-      options.timeControl ?? globals.settings.createTable.timeControl,
+    options: {
+      ...options,
+      timeControl: options.timeControl ?? rememberedTimeControl(),
+    },
+    timed: options.timeControl !== undefined,
   };
 }
 
@@ -621,10 +648,11 @@ export function ready(): void {
   $("#create-game-replay-turn").val(replayTurn);
 
   // Setting the variant dropdown is more complicated than filling in a value.
-  const { options, timeControl } = formValues;
+  const { options, timed } = formValues;
+  const timeControl = options.timeControl ?? DEFAULT_TIME_CONTROL;
   readyVariant(options.variantId);
   // Do not trigger the "change" events, since they would remember the values in our settings.
-  $(TIMED).prop("checked", options.timeControl !== undefined);
+  $(TIMED).prop("checked", timed);
   for (const option of EXTRA_OPTION_NAMES) {
     $(EXTRA_OPTIONS[option]).prop("checked", options[option]);
   }

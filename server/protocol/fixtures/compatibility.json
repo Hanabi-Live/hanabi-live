@@ -549,12 +549,13 @@
             "oneExtraCard": false,
             "oneLessCard": false,
             "allOrNothing": false,
-            "detrimentalCharacters": false
+            "detrimentalCharacters": false,
+            "timeControl": {
+              "baseSeconds": 120,
+              "perTurnSeconds": 20
+            }
           },
-          "timeControl": {
-            "baseSeconds": 120,
-            "perTurnSeconds": 20
-          }
+          "timed": false
         }
       }
     }
@@ -626,10 +627,7 @@
               "perTurnSeconds": 10
             }
           },
-          "timeControl": {
-            "baseSeconds": 120,
-            "perTurnSeconds": 20
-          }
+          "timed": false
         }
       }
     }

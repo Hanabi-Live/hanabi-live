@@ -222,21 +222,25 @@ settings! {
 #[serde(default, rename_all = "camelCase", deny_unknown_fields)]
 pub struct CreateTableSettings {
     pub max_players: NumPlayers,
-    /// The options of the next table. Their `timeControl` is present when the table is timed.
+    /// The options of the next table. Their `timeControl` is the clock that the form offers,
+    /// which it keeps while the table is untimed.
     pub options: GameOptions,
-    /// The clock that the form offers. The form keeps it while the table is untimed.
-    pub time_control: TimeControl,
+    /// Whether the next table uses the clock in `options`.
+    pub timed: bool,
 }
 
 impl Default for CreateTableSettings {
     fn default() -> Self {
         Self {
             max_players: NumPlayers::default(),
-            options: GameOptions::default(),
-            time_control: TimeControl {
-                base_seconds: BaseSeconds(DEFAULT_TIME_BASE_SECONDS),
-                per_turn_seconds: PerTurnSeconds(DEFAULT_TIME_PER_TURN_SECONDS),
+            options: GameOptions {
+                time_control: Some(TimeControl {
+                    base_seconds: BaseSeconds(DEFAULT_TIME_BASE_SECONDS),
+                    per_turn_seconds: PerTurnSeconds(DEFAULT_TIME_PER_TURN_SECONDS),
+                }),
+                ..GameOptions::default()
             },
+            timed: false,
         }
     }
 }
@@ -438,7 +442,7 @@ pub struct TableList {
 pub struct GameHistoryEntry {
     pub game_id: GameId,
     pub options: GameOptions,
-    pub seed: String,
+    pub seed: Seed,
     pub score: Score,
     pub num_turns: Turn,
     pub end_condition: EndCondition,
@@ -446,7 +450,7 @@ pub struct GameHistoryEntry {
     pub finished_at: Timestamp,
     /// How many games used this seed.
     pub num_games_on_seed: Count,
-    /// In alphabetical order, ignoring case.
+    /// In seat order.
     #[schemars(length(min = MIN_PLAYERS, max = MAX_PLAYERS))]
     pub player_names: Vec<Username>,
     /// The game's tags, in alphabetical order.
@@ -469,8 +473,7 @@ pub struct GamePage {
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct SeedGames {
     /// The seed of the request, so that a client can ignore a reply for a seed it no longer shows.
-    #[schemars(length(min = 1))]
-    pub seed: String,
+    pub seed: Seed,
     #[serde(flatten)]
     pub page: GamePage,
 }

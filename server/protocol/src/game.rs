@@ -119,7 +119,7 @@ pub struct GameFinished {
     /// Absent when the game was not saved.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub game_id: Option<GameId>,
-    pub shared_replay: SharedReplayInit,
+    pub shared_replay: SharedReplayState,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
@@ -371,7 +371,7 @@ pub enum ViewMode {
         /// The seat that the recipient played in or shadows, if any.
         #[serde(skip_serializing_if = "Option::is_none")]
         our_player_index: Option<PlayerIndex>,
-        shared_replay: SharedReplayInit,
+        shared_replay: SharedReplayState,
     },
 }
 
@@ -405,7 +405,7 @@ pub struct GameInit {
     pub custom_seed: bool,
     /// Absent for a game with its own deck instead of a seed, such as an imported one.
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub seed: Option<String>,
+    pub seed: Option<Seed>,
     pub started_at: Timestamp,
     /// Absent while the game is in progress.
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -416,10 +416,10 @@ pub struct GameInit {
     pub characters: Vec<CharacterAssignment>,
 }
 
-/// The state of a shared replay that a client joins.
+/// The state of a shared replay, when a client joins it or when its game ends.
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
-pub struct SharedReplayInit {
+pub struct SharedReplayState {
     /// The table's owner, who leads the replay.
     pub owner: UserRef,
     pub turn: Turn,

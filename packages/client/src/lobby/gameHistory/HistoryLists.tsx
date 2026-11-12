@@ -20,6 +20,17 @@ import {
 import { replayVisibility } from "../replayVisibility.ts";
 import { selectHistoryGames, selectShownGameCount } from "./historySlice.ts";
 
+/** A game's players, which the server lists in seat order, in alphabetical order, ignoring case. */
+function alphabetical(names: readonly string[]): readonly string[] {
+  return names.toSorted((a, b) => {
+    const [first, second] = [a.toLowerCase(), b.toLowerCase()];
+    if (first === second) {
+      return 0;
+    }
+    return first < second ? -1 : 1;
+  });
+}
+
 /** Games with more options than this show an ellipsis, with the options listed in the tooltip. */
 const MAX_OPTION_ICONS = 3;
 
@@ -132,7 +143,11 @@ function HistoryRow({
       <td>
         <HistoryOptions options={game.options} />
       </td>
-      <td>{game.playerNames.filter((name) => name !== username).join(", ")}</td>
+      <td>
+        {alphabetical(game.playerNames)
+          .filter((name) => name !== username)
+          .join(", ")}
+      </td>
       <td>{formatDate(game)}</td>
       <td>
         <ReplayButton gameId={game.gameId} visibility="solo" />
@@ -239,7 +254,7 @@ function OtherScoreRow({
       <td>
         <HistoryOptions options={game.options} />
       </td>
-      <td>{emphasize(game.playerNames.join(", "))}</td>
+      <td>{emphasize(alphabetical(game.playerNames).join(", "))}</td>
       <td>{emphasize(formatDate(game))}</td>
       <td>{emphasize(seedNumber)}</td>
       <td>

@@ -499,6 +499,14 @@ fn data_constants() -> String {
             literal(&hanabi_protocol::MAX_TIME_PER_TURN_SECONDS.into()),
         ),
         (
+            "DEFAULT_TIME_BASE_SECONDS",
+            hanabi_protocol::DEFAULT_TIME_BASE_SECONDS.to_string(),
+        ),
+        (
+            "DEFAULT_TIME_PER_TURN_SECONDS",
+            hanabi_protocol::DEFAULT_TIME_PER_TURN_SECONDS.to_string(),
+        ),
+        (
             "TYPING_TIMEOUT_MS",
             hanabi_protocol::TYPING_TIMEOUT_MS.to_string(),
         ),

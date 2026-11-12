@@ -268,6 +268,57 @@ impl JsonSchema for Username {
     }
 }
 
+/// A deal's seed, such as "p3v0s123": the player count, the variant ID, and the table's choice or a
+/// number. Never empty.
+#[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
+#[serde(transparent)]
+pub struct Seed(String);
+
+impl Seed {
+    pub fn as_str(&self) -> &str {
+        &self.0
+    }
+
+    pub fn into_string(self) -> String {
+        self.0
+    }
+}
+
+impl From<String> for Seed {
+    fn from(seed: String) -> Self {
+        Self(seed)
+    }
+}
+
+impl From<&str> for Seed {
+    fn from(seed: &str) -> Self {
+        Self(seed.to_owned())
+    }
+}
+
+impl std::fmt::Display for Seed {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        self.0.fmt(f)
+    }
+}
+
+impl JsonSchema for Seed {
+    fn inline_schema() -> bool {
+        true
+    }
+
+    fn schema_name() -> std::borrow::Cow<'static, str> {
+        "Seed".into()
+    }
+
+    fn json_schema(_: &mut schemars::SchemaGenerator) -> schemars::Schema {
+        schemars::json_schema!({
+            "type": "string",
+            "minLength": 1,
+        })
+    }
+}
+
 /// One author's notes, by card order. An empty note is a card without one.
 pub struct Notes;
 

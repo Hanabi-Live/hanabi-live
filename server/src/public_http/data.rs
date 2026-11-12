@@ -251,7 +251,7 @@ fn game_history(row: HistoryRow) -> anyhow::Result<hanabi_protocol::GameHistoryE
         num_turns: g.turn_count()?,
         options: crate::model::wire_options(&crate::archive::options(&g)?),
         num_games_on_seed: hanabi_protocol::Count(i64::from(row.seed_count)),
-        seed: g.seed,
+        seed: g.seed.into(),
         score: hanabi_protocol::Score(i32::from(g.score)),
         end_condition: crate::archive::end_condition_from_db(i32::from(g.end_condition))?,
         started_at: hanabi_protocol::Timestamp::from(g.datetime_started),
@@ -272,7 +272,7 @@ pub(super) async fn history(
     let mut qb = selected(s);
     qb.push(") SELECT ").push(GAME_COLUMNS);
     // Keep PostgreSQL's existing timestamp text, including fractional-second precision.
-    qb.push(", ARRAY(SELECT u.username FROM game_participants gp JOIN users u ON u.id=gp.user_id WHERE gp.game_id=g.id ORDER BY lower(u.username),u.username) AS names, COALESCE((SELECT num_games FROM seeds WHERE seed=g.seed),0) AS seed_count, COALESCE((SELECT array_agg(DISTINCT tag ORDER BY tag) FROM game_tags WHERE game_id=g.id");
+    qb.push(", ARRAY(SELECT u.username FROM game_participants gp JOIN users u ON u.id=gp.user_id WHERE gp.game_id=g.id ORDER BY gp.seat) AS names, COALESCE((SELECT num_games FROM seeds WHERE seed=g.seed),0) AS seed_count, COALESCE((SELECT array_agg(DISTINCT tag ORDER BY tag) FROM game_tags WHERE game_id=g.id");
     if let Some(user) = tag_user {
         qb.push(" AND user_id=").push_bind(user);
     }

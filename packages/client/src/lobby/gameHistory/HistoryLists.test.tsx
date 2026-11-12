@@ -125,7 +125,7 @@ describe("OtherScoresList", () => {
     expect(firstCells()).toStrictEqual(["#7", "#8"]);
     expect(screen.getByText("#7").tagName).toBe("STRONG");
     expect(screen.getByText("#8").tagName).toBe("TD");
-    expect(screen.getByText("me, bob").tagName).toBe("STRONG");
+    expect(screen.getByText("bob, me").tagName).toBe("STRONG");
   });
 
   test("adds each page after the games before it, until every game is shown", () => {

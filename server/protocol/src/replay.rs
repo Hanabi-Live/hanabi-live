@@ -38,9 +38,9 @@ pub struct ReplayGame {
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     #[schemars(length(max = MAX_PLAYERS))]
     pub characters: Vec<CharacterAssignment>,
-    /// Absent for a game with its own deck instead of a seed, such as an imported one.
+    /// Absent for a game with its own deck instead of a seed.
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub seed: Option<String>,
+    pub seed: Option<Seed>,
 }
 
 /// Whether every option is the default, so that the replay format omits them.

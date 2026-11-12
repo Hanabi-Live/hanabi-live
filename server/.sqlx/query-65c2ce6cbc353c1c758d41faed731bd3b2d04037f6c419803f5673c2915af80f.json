@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "SELECT to_jsonb(g) AS \"game!: Json<GameRecord>\",\n            COALESCE((SELECT array_agg(u.username ORDER BY LOWER(u.username) COLLATE \"C\")\n                FROM game_participants p JOIN users u ON u.id=p.user_id WHERE p.game_id=g.id),\n                '{}') AS \"player_names!\",\n            COALESCE((SELECT ARRAY_AGG(DISTINCT tag ORDER BY tag) FROM game_tags\n                WHERE game_id=g.id),'{}') AS \"tags!\",\n            COALESCE((SELECT num_games FROM seeds WHERE seed=g.seed),0) AS \"num_games_on_this_seed!\"\n         FROM games g WHERE id=ANY($1) ORDER BY array_position($1, g.id)",
+  "query": "SELECT to_jsonb(g) AS \"game!: Json<GameRecord>\",\n            COALESCE((SELECT array_agg(u.username ORDER BY p.seat)\n                FROM game_participants p JOIN users u ON u.id=p.user_id WHERE p.game_id=g.id),\n                '{}') AS \"player_names!\",\n            COALESCE((SELECT ARRAY_AGG(DISTINCT tag ORDER BY tag) FROM game_tags\n                WHERE game_id=g.id),'{}') AS \"tags!\",\n            COALESCE((SELECT num_games FROM seeds WHERE seed=g.seed),0) AS \"num_games_on_this_seed!\"\n         FROM games g WHERE id=ANY($1) ORDER BY array_position($1, g.id)",
   "describe": {
     "columns": [
       {
@@ -40,5 +40,5 @@
       null
     ]
   },
-  "hash": "00d379a61e4c774145e24d3ee4ec3a5ec3fb7e0468f7d190e22ecdcc51a3658f"
+  "hash": "65c2ce6cbc353c1c758d41faed731bd3b2d04037f6c419803f5673c2915af80f"
 }

@@ -830,6 +830,33 @@ async fn settings_outside_the_wire_contract_are_not_sent_or_saved_postgres() {
             )
         );
     }
+    // Older servers kept the form's clock beside the options, which had one only when timed.
+    let clock = |base: i64| json!({"baseSeconds": base, "perTurnSeconds": 20});
+    for (options, timed, base) in [
+        (json!({"timeControl": clock(300)}), true, 300),
+        (json!({}), false, 180),
+    ] {
+        sqlx::query!(
+            "UPDATE users SET settings=$2 WHERE id=$1",
+            id,
+            json!({"createTable":{"options":options,"timeControl":clock(180)}})
+        )
+        .execute(&db.pool)
+        .await
+        .unwrap();
+        let table = get_settings(&db.pool, UserId(id))
+            .await
+            .unwrap()
+            .create_table;
+        assert_eq!(table.timed, timed);
+        assert_eq!(
+            table
+                .options
+                .time_control
+                .map(|time| time.base_seconds.get()),
+            Some(base)
+        );
+    }
     for (name, value) in [
         ("createTable", json!({"maxPlayers": 7})),
         ("soundMove", json!(2)),

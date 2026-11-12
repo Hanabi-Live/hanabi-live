@@ -184,7 +184,7 @@ impl TableActor {
                             table_id: self.table.id,
                             game_id: s.game_id,
                             shared_replay: self
-                                .shared_replay_init(s, &a.session)
+                                .shared_replay_state(s, &a.session)
                                 .context("A finished game is not a shared replay")?,
                         },
                     ),
@@ -466,18 +466,18 @@ impl TableActor {
     }
     /// The state of the table's shared replay that `session` joins, or `None` if the table is not
     /// a shared replay.
-    fn shared_replay_init(
+    fn shared_replay_state(
         &self,
         s: &Snapshot,
         session: &Session,
-    ) -> Option<hanabi_protocol::SharedReplayInit> {
+    ) -> Option<hanabi_protocol::SharedReplayState> {
         let Phase::Replay { replay, .. } = &self.table.phase else {
             return None;
         };
         if !self.table.visible {
             return None;
         }
-        Some(hanabi_protocol::SharedReplayInit {
+        Some(hanabi_protocol::SharedReplayState {
             owner: self.table.owner.clone(),
             turn: replay.segment,
             efficiency_modifier: replay.efficiency_modifier,
@@ -504,7 +504,7 @@ impl TableActor {
         let display_seat = seat.or_else(|| s.players.iter().position(|p| p.name == session.name));
         let mut e = self.effects();
         if part == GameInfo::Init {
-            let shared_replay = self.shared_replay_init(s, &session);
+            let shared_replay = self.shared_replay_state(s, &session);
             let our_player_index = a.shadow.or_else(|| display_seat.and_then(PlayerIndex::new));
             let init = hanabi_protocol::GameInit {
                 table_id: self.table.id,
@@ -526,7 +526,7 @@ impl TableActor {
                     },
                 },
                 custom_seed: self.table.extra.custom_seed.is_some(),
-                seed: s.seed.clone(),
+                seed: s.seed.clone().map(Into::into),
                 started_at: hanabi_protocol::Timestamp::from(s.started),
                 finished_at: s.finished.map(hanabi_protocol::Timestamp::from),
                 options: wire_options(&s.game.options),

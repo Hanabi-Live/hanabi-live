@@ -16,7 +16,6 @@ import {
   playerClockSchema,
   playerIndexSchema,
   playerNotesSchema,
-  timeControlSchema,
   turnSchema,
 } from "@hanabi-live/game";
 import * as z from "zod";
@@ -29,6 +28,8 @@ export const DEFAULT_MAX_PLAYERS = 5;
 export const SECONDS_PER_MINUTE = 60;
 export const MAX_TIME_BASE_SECONDS = 604_800;
 export const MAX_TIME_PER_TURN_SECONDS = 86_400;
+export const DEFAULT_TIME_BASE_SECONDS = 120;
+export const DEFAULT_TIME_PER_TURN_SECONDS = 20;
 export const TYPING_TIMEOUT_MS = 2000;
 export const MAX_SEED_LENGTH = 32;
 export const MAX_CHAT_LENGTH = 300;
@@ -332,9 +333,9 @@ const userRefSchema = z
   .readonly();
 
 /**
- * The state of a shared replay that a client joins.
+ * The state of a shared replay, when a client joins it or when its game ends.
  */
-const sharedReplayInitSchema = z
+const sharedReplayStateSchema = z
   .strictObject({
     /**
      * Whether the recipient played the game of this shared replay at this table, so that they can
@@ -372,7 +373,7 @@ export const gameFinishedSchema = z
      * Absent when the game was not saved.
      */
     gameId: gameIdSchema.optional(),
-    sharedReplay: sharedReplayInitSchema,
+    sharedReplay: sharedReplayStateSchema,
     tableId: tableIdSchema,
   })
   .readonly();
@@ -397,11 +398,11 @@ export const gameHistoryEntrySchema = z
     numTurns: turnSchema,
     options: gameOptionsSchema,
     /**
-     * In alphabetical order, ignoring case.
+     * In seat order.
      */
     playerNames: z.array(z.string().min(1)).min(2).max(6).readonly(),
     score: scoreSchema,
-    seed: z.string(),
+    seed: z.string().min(1),
     startedAt: z.iso.datetime({ precision: 3 }),
     /**
      * The game's tags, in alphabetical order.
@@ -475,7 +476,7 @@ const viewModeSchema = z.discriminatedUnion("type", [
        * The seat that the recipient played in or shadows, if any.
        */
       ourPlayerIndex: playerIndexSchema.optional(),
-      sharedReplay: sharedReplayInitSchema,
+      sharedReplay: sharedReplayStateSchema,
       type: z.literal("sharedReplay"),
     })
     .readonly(),
@@ -504,7 +505,7 @@ export const gameInitSchema = z
     /**
      * Absent for a game with its own deck instead of a seed, such as an imported one.
      */
-    seed: z.string().optional(),
+    seed: z.string().min(1).optional(),
     startedAt: z.iso.datetime({ precision: 3 }),
     tableId: tableIdSchema,
   })
@@ -1173,9 +1174,9 @@ export const replayGameSchema = z
      */
     playerNames: z.array(z.string()).max(6).readonly().optional(),
     /**
-     * Absent for a game with its own deck instead of a seed, such as an imported one.
+     * Absent for a game with its own deck instead of a seed.
      */
-    seed: z.string().optional(),
+    seed: z.string().min(1).optional(),
   })
   .readonly();
 
@@ -1295,7 +1296,8 @@ const createTableSettingsSchema = z
   .strictObject({
     maxPlayers: numPlayersSchema.default(5),
     /**
-     * The options of the next table. Their `timeControl` is present when the table is timed.
+     * The options of the next table. Their `timeControl` is the clock that the form offers,
+     * which it keeps while the table is untimed.
      */
     options: gameOptionsSchema.default({
       allOrNothing: false,
@@ -1305,15 +1307,13 @@ const createTableSettingsSchema = z
       oneExtraCard: false,
       oneLessCard: false,
       speedrun: false,
+      timeControl: { baseSeconds: 120, perTurnSeconds: 20 },
       variantId: 0,
     }),
     /**
-     * The clock that the form offers. The form keeps it while the table is untimed.
+     * Whether the next table uses the clock in `options`.
      */
-    timeControl: timeControlSchema.default({
-      baseSeconds: 120,
-      perTurnSeconds: 20,
-    }),
+    timed: z.boolean().default(false),
   })
   .readonly();
 
@@ -1349,9 +1349,10 @@ export const settingsSchema = z
         oneExtraCard: false,
         oneLessCard: false,
         speedrun: false,
+        timeControl: { baseSeconds: 120, perTurnSeconds: 20 },
         variantId: 0,
       },
-      timeControl: { baseSeconds: 120, perTurnSeconds: 20 },
+      timed: false,
     }),
     darkMode: z.boolean().default(false),
     desktopNotification: z.boolean().default(false),
