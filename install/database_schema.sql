@@ -165,8 +165,6 @@ CREATE INDEX games_index_num_players ON games (num_players);
 CREATE INDEX games_index_seed        ON games (seed);
 CREATE INDEX games_index_variant_id_score_id ON games (variant_id, score DESC, id DESC);
 CREATE INDEX games_index_variant_id_num_players_seed ON games (variant_id, num_players, seed) INCLUDE (score);
-/* The variant statistics count the games that are not speedruns. */
-CREATE INDEX games_index_normal_variant_id_score ON games (variant_id, score) WHERE NOT speedrun;
 
 DROP TABLE IF EXISTS game_participants CASCADE;
 CREATE TABLE game_participants (
@@ -303,23 +301,6 @@ DROP TABLE IF EXISTS seeds CASCADE;
 CREATE TABLE seeds (
     seed       TEXT     NOT NULL  PRIMARY KEY,
     num_games  INTEGER  NOT NULL
-);
-
-DROP TABLE IF EXISTS variant_stats CASCADE;
-CREATE TABLE variant_stats (
-    /* The ID for a particular variant can be found in the "variants.json" file. */
-    variant_id      SMALLINT  NOT NULL  PRIMARY KEY,
-    num_games       INTEGER   NOT NULL  DEFAULT 0,
-    /*
-     * The best score from any team for a 2-player game on this variant without options. NULL when
-     * there is no such game.
-     */
-    best_score2     SMALLINT  NULL,
-    best_score3     SMALLINT  NULL,
-    best_score4     SMALLINT  NULL,
-    best_score5     SMALLINT  NULL,
-    best_score6     SMALLINT  NULL,
-    num_max_scores  INTEGER   NOT NULL  DEFAULT 0
 );
 
 DROP TABLE IF EXISTS chat_log CASCADE;

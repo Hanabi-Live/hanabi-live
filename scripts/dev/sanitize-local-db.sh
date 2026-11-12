@@ -25,7 +25,6 @@ TRUNCATE
   user_identity_tokens,
   game_participant_notes,
   game_tags,
-  variant_stats,
   chat_log,
   chat_log_pm,
   banned_ips,
