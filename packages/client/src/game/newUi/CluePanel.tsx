@@ -22,12 +22,13 @@ interface CluePanelProps {
     readonly name: string;
   }>;
 
-  /** The chosen player, if any. */
+  /** The chosen player, if any. Clicking the chosen player again clears the choice. */
   readonly target: PlayerIndex | undefined;
-  readonly onChooseTarget: (playerIndex: PlayerIndex) => void;
+  readonly onChooseTarget: (playerIndex: PlayerIndex | undefined) => void;
 
+  /** The chosen clue, if any. Clicking the chosen clue again clears the choice. */
   readonly clue: Clue | undefined;
-  readonly onChooseClue: (clue: Clue) => void;
+  readonly onChooseClue: (clue: Clue | undefined) => void;
   readonly canGive: boolean;
   readonly onGive: () => void;
 }
@@ -116,7 +117,7 @@ export function CluePanel({
                 }`}
                 key={playerIndex}
                 onClick={() => {
-                  onChooseTarget(playerIndex);
+                  onChooseTarget(chosen ? undefined : playerIndex);
                 }}
                 ref={fullNameTooltip(name)}
                 type="button"
@@ -140,7 +141,7 @@ export function CluePanel({
               className={`${choiceClass} ${pressed ? "tw:ring-3 tw:ring-game-text" : ""}`}
               key={color.name}
               onClick={() => {
-                onChooseClue(colorClue);
+                onChooseClue(pressed ? undefined : colorClue);
               }}
               ref={tooltipRef(color.name)}
               style={{
@@ -159,7 +160,7 @@ export function CluePanel({
               className={`${choiceClass} tw:bg-game-text tw:text-card-ink ${pressed ? "tw:ring-3 tw:ring-clue" : ""}`}
               key={rank}
               onClick={() => {
-                onChooseClue(rankClue);
+                onChooseClue(pressed ? undefined : rankClue);
               }}
               type="button"
             >
