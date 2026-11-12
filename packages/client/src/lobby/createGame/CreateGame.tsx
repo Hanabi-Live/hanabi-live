@@ -779,13 +779,7 @@ export function HelpLink({
   readonly text: string;
 }): React.JSX.Element {
   return (
-    <a
-      aria-label={text}
-      href={href}
-      ref={tooltipRef(text)}
-      rel="noopener noreferrer"
-      target="_blank"
-    >
+    <a aria-label={text} href={href} rel="noopener noreferrer" target="_blank">
       <i className="fas fa-question-circle tw:hover:text-(--help-icon-hover)" />
     </a>
   );
