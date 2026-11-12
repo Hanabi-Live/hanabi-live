@@ -181,6 +181,8 @@ settings! {
         reverse_hands: bool = false,
         style_numbers: bool = false,
         show_timer_in_untimed: bool = false,
+        /// Leaves out the animations that only decorate the game.
+        reduced_motion: bool = false,
         volume: Volume = Volume(DEFAULT_VOLUME),
         /// Lets a player choose a play or a discard before their turn comes.
         preplay: bool = false,

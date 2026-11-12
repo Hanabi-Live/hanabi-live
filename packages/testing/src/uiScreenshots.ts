@@ -872,6 +872,16 @@ function getStates({
         await page.waitForTimeout(SETTLE_MILLISECONDS);
       },
     },
+    {
+      // The "Reduced motion" row is below the first screen of settings.
+      name: "settings-reduced-motion",
+      path: "/",
+      loggedIn: true,
+      prepare: async (page) => {
+        await clickNav(page, "settings");
+        await page.locator("#reducedMotion").last().scrollIntoViewIfNeeded();
+      },
+    },
     // Its video moves the mouse over checkbox rows, then clicks the padding at the corner of a row
     // twice, which turns the setting on and off.
     {

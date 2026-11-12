@@ -123,10 +123,11 @@ export function onStackCompletionDataChanged(
   data: StackCompletionData,
   previousData: StackCompletionData | undefined,
 ): void {
-  // Celebrate only in a game in progress, not in a replay.
+  // Celebrate only in a game in progress, not in a replay, and not with reduced motion.
   if (
     previousData === undefined
     || globals.animateFast
+    || globals.lobby.settings.reducedMotion
     || globals.state.replay.segment !== undefined
   ) {
     return;
@@ -175,8 +176,12 @@ export function onMaxScoreOrDiscardStacksChanged(
   }
 
   stopMaxScoreDropAnimation();
-  // Skip the animation when jumping through a replay or when going backwards.
-  if (globals.animateFast || data.maxScore > previousData.maxScore) {
+  // Skip the animation when jumping through a replay, when going backwards, or with reduced motion.
+  if (
+    globals.animateFast
+    || data.maxScore > previousData.maxScore
+    || globals.lobby.settings.reducedMotion
+  ) {
     return;
   }
 

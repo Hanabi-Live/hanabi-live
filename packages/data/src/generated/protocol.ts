@@ -1317,6 +1317,10 @@ export const settingsSchema = z
      */
     preplay: z.boolean().prefault(false),
     realLifeMode: z.boolean().prefault(false),
+    /**
+     * Leaves out the animations that only decorate the game.
+     */
+    reducedMotion: z.boolean().prefault(false),
     reverseHands: z.boolean().prefault(false),
     showTimerInUntimed: z.boolean().prefault(false),
     soundMove: soundMoveSchema.prefault("all"),
@@ -1360,6 +1364,10 @@ const settingsChangeSchema = z
      */
     preplay: z.boolean().optional(),
     realLifeMode: z.boolean().optional(),
+    /**
+     * Leaves out the animations that only decorate the game.
+     */
+    reducedMotion: z.boolean().optional(),
     reverseHands: z.boolean().optional(),
     showTimerInUntimed: z.boolean().optional(),
     soundMove: soundMoveSchema.optional(),

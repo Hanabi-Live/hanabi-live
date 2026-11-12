@@ -72,6 +72,9 @@ export function SettingsPage(): React.JSX.Element {
           <CheckboxRow icon="fa-clock" setting="showTimerInUntimed">
             Show turn timers in untimed games
           </CheckboxRow>
+          <CheckboxRow icon="fa-wind" setting="reducedMotion">
+            Reduced motion (less animations)
+          </CheckboxRow>
         </ul>
       </div>
 

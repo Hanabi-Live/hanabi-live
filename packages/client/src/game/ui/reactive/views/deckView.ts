@@ -19,11 +19,12 @@ export function onCardsRemainingChanged(
   globals.elements.deck?.resetCardBack();
 
   // Show when the last card leaves the deck, since each player then has one turn left. Skip this in
-  // a replay.
+  // a replay, or with reduced motion.
   if (
     cardsRemainingInTheDeck === 0
     && previousCardsRemaining === 1
     && !globals.animateFast
+    && !globals.lobby.settings.reducedMotion
     && globals.state.replay.segment === undefined
   ) {
     startEmptyDeckAnimation(CARD_ANIMATION_LENGTH_SECONDS);

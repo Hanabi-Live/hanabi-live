@@ -33,7 +33,9 @@ export class PlayStack extends Konva.Group {
       && !stackBase; // We want the stack bases to always be visible
 
     // Instead of fading out, the card is sucked into the hole; it is hidden once it has vanished.
-    const vortex = hidden && !globals.animateFast;
+    // With reduced motion, it fades out.
+    const vortex =
+      hidden && !globals.animateFast && !globals.lobby.settings.reducedMotion;
     if (vortex) {
       layoutChild.card.vortex(PLAY_ANIMATION_SECONDS, () => {
         layoutChild.opacity(0);

@@ -7,6 +7,7 @@
 // finish them, as it does a card move (see "cardMotion.ts").
 
 import { MAX_STRIKES } from "@hanabi-live/game";
+import { globals } from "../../Globals.ts";
 import { WARNING_COLOR } from "../ui/constants.ts";
 import { getScreenScale, measure } from "./screenScale.ts";
 
@@ -437,6 +438,9 @@ export function animateMisplay(
   const unit = stackRect.height;
   // Poses are relative to the size of a card on the stacks, as on the classic screen.
   const stackScale = stackRect.width / to.width;
+  // With reduced motion, the card still moves, but the sparks, smoke, rays, flash, ring, and shake
+  // are left out.
+  const decorate = !globals.settings.reducedMotion;
 
   const start = { ...center(from), scale: from.width / stackRect.width };
   const end = center(to);
@@ -456,6 +460,9 @@ export function animateMisplay(
     spread: number,
     duration: number,
   ) {
+    if (!decorate) {
+      return;
+    }
     for (let i = 0; i < count; i++) {
       addSpark(
         origin,
@@ -471,6 +478,9 @@ export function animateMisplay(
   }
 
   function smoke(smokeStart: number, origin: Point, count: number) {
+    if (!decorate) {
+      return;
+    }
     for (let i = 0; i < count; i++) {
       const x = origin.x + randomBetween(-0.12, 0.12) * unit;
       const drift = randomBetween(-0.18, 0.18) * unit;
@@ -501,6 +511,9 @@ export function animateMisplay(
   }
 
   function rays(raysStart: number, at: Point) {
+    if (!decorate) {
+      return;
+    }
     const duration = RAYS_SECONDS * 1000;
     for (let i = 0; i < NUM_RAYS; i++) {
       const angle = (i / NUM_RAYS) * 2 * Math.PI + randomBetween(0, 0.2);
@@ -623,22 +636,24 @@ export function animateMisplay(
 
   // 4. Boom.
   const explosion = time;
-  addFlash(
-    blast,
-    unit,
-    FLASH_RADIUS,
-    FLASH_COLOR,
-    FLASH_SECONDS * 1000,
-    explosion * 1000,
-  );
-  addRing(
-    blast,
-    unit,
-    RING_RADIUS,
-    RING_COLOR,
-    RING_SECONDS * 1000,
-    explosion * 1000,
-  );
+  if (decorate) {
+    addFlash(
+      blast,
+      unit,
+      FLASH_RADIUS,
+      FLASH_COLOR,
+      FLASH_SECONDS * 1000,
+      explosion * 1000,
+    );
+    addRing(
+      blast,
+      unit,
+      RING_RADIUS,
+      RING_COLOR,
+      RING_SECONDS * 1000,
+      explosion * 1000,
+    );
+  }
   rays(explosion, blast);
   smoke(explosion, blast, 4);
 
@@ -717,7 +732,7 @@ export function animateMisplay(
 
   // Shake the game screen.
   const main = root.querySelector("main");
-  if (main !== null) {
+  if (decorate && main !== null) {
     const duration = SHAKE_SECONDS * 1000;
     animateSampled(
       main,

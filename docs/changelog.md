@@ -75,6 +75,8 @@ of the repository.
 - In the new game screen, the clue log shows only the clues about a card while
   you hold the mouse button down on it, instead of whenever the mouse is over
   it.
+- A new "Reduced motion" setting leaves out the fireworks, explosions, shaking,
+  and pulses in games. Cards still move.
 
 ## November 11th, 2026
 

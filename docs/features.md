@@ -396,6 +396,8 @@ These options are on the "Settings" page.
 - "Make numbers on cards match the art style" draws the rank numbers in the
   style of the card art.
 - "Show turn timers in untimed games" shows how long each player has taken.
+- "Reduced motion" leaves out the fireworks, explosions, shaking, and pulses in
+  games. Cards still move. It is off by default.
 
 ### Pre-Playing
 
