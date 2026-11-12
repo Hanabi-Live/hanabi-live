@@ -132,10 +132,16 @@ export function WatchReplay(): React.JSX.Element {
           ) : (
             // A pasted game is too long for one line, so its box goes below its description.
             <li className="lobby-row tw:flex-col tw:items-stretch tw:gap-2">
-              <label htmlFor="replay-json">
-                <i className="fas fa-table fa-fw" />
-                JSON
-              </label>
+              <div className="lobby-row-label">
+                <label htmlFor="replay-json">
+                  <i className="fas fa-table fa-fw" />
+                  JSON
+                </label>
+                <HelpLink
+                  href={`${DOCS_URL}/features.md#json-games`}
+                  text="About JSON games"
+                />
+              </div>
               <textarea
                 className="tw:min-h-[9em] tw:resize-y"
                 id="replay-json"
