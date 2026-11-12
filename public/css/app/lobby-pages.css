@@ -1,6 +1,11 @@
 /*
   Lobby pages ("Create Game", "Watch Specific Replay", "Resources", and "Settings")
 */
+/* The page is laid out as if it were a section of "#lobby-full" itself. */
+#lobby-pages {
+  display: contents;
+}
+
 /* The lobby stretches its sections to full height; these fit their content instead. */
 #lobby .lobby-page {
   height: auto;
@@ -20,13 +25,6 @@
 
 .lobby-page button[type="submit"] {
   font-size: 1em;
-}
-
-/*
-  Resources screen
-*/
-#lobby #lobby-resources {
-  max-width: 64em;
 }
 
 /*

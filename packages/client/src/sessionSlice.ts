@@ -5,6 +5,7 @@ import type { Settings, UserId } from "@hanabi-live/data";
 import { defaultSettings } from "@hanabi-live/data";
 import type { PayloadAction } from "@reduxjs/toolkit";
 import { createSlice } from "@reduxjs/toolkit";
+import type { LobbyPage } from "./lobby/types/LobbyPage.ts";
 import { Screen } from "./lobby/types/Screen.ts";
 
 interface SessionState {
@@ -16,10 +17,8 @@ interface SessionState {
   readonly blocked: readonly string[];
   readonly settings: Settings;
   readonly screen: Screen;
-  /**
-   * The section of the lobby page, such as "Create Game" or "Settings", that replaces the lobby.
-   */
-  readonly lobbyPage: string | undefined;
+  /** The lobby page, such as "Create Game" or "Settings", that replaces the lobby. */
+  readonly lobbyPage: LobbyPage | undefined;
   /** Whether we asked the server to create a table and it has not answered yet. */
   readonly creatingTable: boolean;
   /** Whether the error modal is showing, which the page cannot recover from. */
@@ -60,7 +59,7 @@ const sessionSlice = createSlice({
     screenChanged(state, action: PayloadAction<Screen>) {
       state.screen = action.payload;
     },
-    lobbyPageChanged(state, action: PayloadAction<string | undefined>) {
+    lobbyPageChanged(state, action: PayloadAction<LobbyPage | undefined>) {
       state.lobbyPage = action.payload;
     },
     creatingTableChanged(state, action: PayloadAction<boolean>) {

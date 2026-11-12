@@ -145,7 +145,7 @@ function LobbyNav() {
         icon="fa-link"
         id="nav-buttons-lobby-resources"
         onClick={() => {
-          lobbyPage.show("#lobby-resources");
+          lobbyPage.show("resources");
         }}
       >
         <span className="tw:narrow-840:hidden">Resources</span>
@@ -154,7 +154,7 @@ function LobbyNav() {
         icon="fa-cog"
         id="nav-buttons-lobby-settings"
         onClick={() => {
-          lobbyPage.show("#lobby-settings");
+          lobbyPage.show("settings");
         }}
       >
         <span className="tw:narrow-840:hidden">Settings</span>

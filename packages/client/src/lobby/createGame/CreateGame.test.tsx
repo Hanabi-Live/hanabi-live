@@ -14,7 +14,6 @@ import { Provider } from "react-redux";
 import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
 import type { Connection } from "../../Connection.ts";
 import { globals } from "../../Globals.ts";
-import { lobbyPageChanged } from "../../sessionSlice.ts";
 import { store } from "../../store.ts";
 import type { Game } from "../pregame/pregameSlice.ts";
 import { Screen } from "../types/Screen.ts";
@@ -85,9 +84,6 @@ function showPage() {
       <CreateGame />
     </Provider>,
   );
-  act(() => {
-    store.dispatch(lobbyPageChanged("#lobby-create-game"));
-  });
 }
 
 beforeEach(() => {
@@ -106,7 +102,6 @@ beforeEach(() => {
 
 afterEach(() => {
   cleanup();
-  store.dispatch(lobbyPageChanged(undefined));
 });
 
 describe("CreateGame", () => {

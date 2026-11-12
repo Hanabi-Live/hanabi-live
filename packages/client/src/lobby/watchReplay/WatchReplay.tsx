@@ -4,26 +4,16 @@ import { parseIntSafe } from "complete-common";
 import { Fragment, useEffect, useRef, useState } from "react";
 import { LOCAL_STORAGE_KEY } from "../../constants.ts";
 import { globals } from "../../Globals.ts";
-import { useAppSelector } from "../../store.ts";
 import type { GameJson } from "../gameJson.ts";
 import { parseGameJson } from "../gameJson.ts";
 import * as lobbyPage from "../lobbyPage.ts";
 import { replayVisibility } from "../replayVisibility.ts";
 
-const SECTION = "#lobby-replay";
-const SUBMIT_BUTTON_ID = "replay-submit";
-
 export function show(): void {
-  lobbyPage.show(SECTION, `#${SUBMIT_BUTTON_ID}`);
+  lobbyPage.show("watchReplay");
 }
 
-/** The form starts again each time that the page shows. */
-export function WatchReplay(): React.JSX.Element | undefined {
-  const shown = useAppSelector((state) => state.session.lobbyPage === SECTION);
-  return shown ? <WatchReplayForm /> : undefined;
-}
-
-function WatchReplayForm() {
+export function WatchReplay(): React.JSX.Element {
   type Visibility = "solo" | "shared";
   type Source = "id" | "json";
   const [source, setSource] = useState<Source>(() =>
@@ -216,7 +206,7 @@ function WatchReplayForm() {
 
       <button
         className="button fit tw:mt-6"
-        id={SUBMIT_BUTTON_ID}
+        id="replay-submit"
         onClick={submit}
         type="submit"
       >

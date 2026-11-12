@@ -1,53 +1,26 @@
 // Full pages in the lobby (such as "Create Game" and "Resources"), which replace the lobby until
-// the user submits them or returns.
+// the user submits them or returns. "LobbyPages.tsx" shows the page that the store names.
 
 import { lobbyPageChanged } from "../sessionSlice.ts";
 import { store } from "../store.ts";
 import { showLobbyHalves } from "./lobbyLayout.ts";
+import type { LobbyPage } from "./types/LobbyPage.ts";
 
-interface LobbyPage {
-  readonly section: string;
-  readonly submitButton: string | undefined;
-  readonly onHide: (() => void) | undefined;
-}
-
-let current: LobbyPage | undefined;
-
-/**
- * Shows a page from the lobby or from the pre-game screen, which it returns to. Pages with a form
- * pass the button that submits it, so that pressing enter submits the form. `onHide` runs when the
- * page is hidden, such as to close its tooltips.
- */
-export function show(
-  section: string,
-  submitButton?: string,
-  onHide?: () => void,
-): void {
-  hide();
-  current = { section, submitButton, onHide };
-
-  $(section).show();
+/** Shows a page from the lobby or from the pre-game screen, which it returns to. */
+export function show(page: LobbyPage): void {
+  store.dispatch(lobbyPageChanged(page));
   showLobbyHalves(false);
-  store.dispatch(lobbyPageChanged(section));
 }
 
 export function hide(): void {
-  if (current === undefined) {
+  if (!isShown()) {
     return;
   }
 
-  $(current.section).hide();
-  current.onHide?.();
-  current = undefined;
-  showLobbyHalves(true);
   store.dispatch(lobbyPageChanged(undefined));
+  showLobbyHalves(true);
 }
 
 export function isShown(): boolean {
-  return current !== undefined;
-}
-
-/** The button that submits the form on the page being shown, if any. */
-export function getSubmitButton(): string | undefined {
-  return current?.submitButton;
+  return store.getState().session.lobbyPage !== undefined;
 }

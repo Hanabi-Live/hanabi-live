@@ -12,9 +12,6 @@ import { globals } from "../Globals.ts";
 import type { CreateTable } from "./createGameForm.ts";
 import * as lobbyPage from "./lobbyPage.ts";
 
-export const CREATE_GAME_SECTION = "#lobby-create-game";
-export const CREATE_GAME_SUBMIT_BUTTON_ID = "create-game-submit";
-
 /** Shows the page from the lobby (to create a game) or the pre-game screen (to change options). */
 export function show(): void {
   // A variant that no longer exists becomes the default one.
@@ -29,7 +26,7 @@ export function show(): void {
     };
   }
 
-  lobbyPage.show(CREATE_GAME_SECTION, `#${CREATE_GAME_SUBMIT_BUTTON_ID}`);
+  lobbyPage.show("createGame");
 }
 
 export function acceptOptionsFromGuest(suggestion: SuggestedSettings): void {

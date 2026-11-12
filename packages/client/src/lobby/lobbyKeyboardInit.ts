@@ -11,10 +11,13 @@ export function lobbyKeyboardInit(): void {
     // On a lobby page, submit its form if enter is pressed (unless it activates a focused button or
     // link, or adds a line to a text area), and only allow returning otherwise.
     if (lobbyPage.isShown() && !isModalVisible()) {
-      const submitButton = lobbyPage.getSubmitButton();
+      // A page with a form has one submit button.
+      const submitButton = document.querySelector<HTMLButtonElement>(
+        '.lobby-page button[type="submit"]',
+      );
       if (
         event.which === KeyCode.KEY_RETURN
-        && submitButton !== undefined
+        && submitButton !== null
         && !(
           document.activeElement instanceof HTMLButtonElement
           || document.activeElement instanceof HTMLAnchorElement
@@ -22,7 +25,7 @@ export function lobbyKeyboardInit(): void {
         )
       ) {
         event.preventDefault();
-        clickElement(submitButton);
+        submitButton.click();
       } else if (
         event.which === KeyCode.KEY_ESCAPE
         || (event.altKey && event.which === KeyCode.KEY_R)

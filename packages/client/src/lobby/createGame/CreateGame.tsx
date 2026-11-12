@@ -25,15 +25,11 @@ import { memo, useEffect, useRef, useState } from "react";
 import { DIMMED_OPACITY, LOCAL_STORAGE_KEY } from "../../constants.ts";
 import { globals } from "../../Globals.ts";
 import { creatingTableChanged } from "../../sessionSlice.ts";
-import { store, useAppSelector } from "../../store.ts";
+import { store } from "../../store.ts";
 import { Tooltip } from "../../Tooltip.ts";
 import { tooltipRef } from "../../tooltipRef.ts";
 import { escapeHtml } from "../../utils.ts";
-import {
-  CREATE_GAME_SECTION,
-  CREATE_GAME_SUBMIT_BUTTON_ID,
-  remember,
-} from "../createGame.ts";
+import { remember } from "../createGame.ts";
 import type {
   CreateGameForm,
   CreateTable,
@@ -168,13 +164,6 @@ const SUBMIT_LABELS = {
   suggest: "Suggest to Table Owner",
 } as const satisfies Record<Mode, string>;
 
-export function CreateGame(): React.JSX.Element | undefined {
-  const shown = useAppSelector(
-    (state) => state.session.lobbyPage === CREATE_GAME_SECTION,
-  );
-  return shown ? <CreateGamePage /> : undefined;
-}
-
 /**
  * The clock that replaces an invalid time: the one of our last timed table, or else the default.
  */
@@ -241,7 +230,7 @@ function getMode(): Mode {
   return game.owner.userId === globals.userId ? "change" : "suggest";
 }
 
-function CreateGamePage() {
+export function CreateGame(): React.JSX.Element {
   const [mode] = useState(getMode);
   const [form, setForm] = useState(() => getInitialForm(mode));
   // Only show the extra options when one of them is chosen or when the user asks for them.
@@ -601,7 +590,7 @@ function CreateGamePage() {
 
       <button
         className="button fit tw:mt-6"
-        id={CREATE_GAME_SUBMIT_BUTTON_ID}
+        id="create-game-submit"
         onClick={submit}
         type="submit"
       >

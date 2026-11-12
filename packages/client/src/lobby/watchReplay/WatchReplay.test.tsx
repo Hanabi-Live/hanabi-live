@@ -11,7 +11,6 @@ import { Provider } from "react-redux";
 import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
 import type { Connection } from "../../Connection.ts";
 import { globals } from "../../Globals.ts";
-import { lobbyPageChanged } from "../../sessionSlice.ts";
 import { store } from "../../store.ts";
 import { parseGameJson } from "../gameJson.ts";
 import { WatchReplay } from "./WatchReplay.tsx";
@@ -38,7 +37,6 @@ beforeEach(() => {
 
 afterEach(() => {
   cleanup();
-  store.dispatch(lobbyPageChanged(undefined));
 });
 
 function showPage() {
@@ -47,9 +45,6 @@ function showPage() {
       <WatchReplay />
     </Provider>,
   );
-  act(() => {
-    store.dispatch(lobbyPageChanged("#lobby-replay"));
-  });
 }
 
 describe("WatchReplay", () => {
