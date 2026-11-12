@@ -620,7 +620,7 @@ export function ready(): void {
   } else {
     // Change Options. Use the options of the current table. The server only applies the options of
     // the table owner; it sends the options of other players to the owner as a suggestion.
-    if (globals.game.ownerId === globals.userId) {
+    if (globals.game.owner.userId === globals.userId) {
       dialogTitle = "Change Game Options";
       buttonTitle = "Change";
     } else {
