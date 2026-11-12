@@ -148,7 +148,6 @@ fn expression(schema: &Value) -> Result<String> {
                 "enum",
                 "const",
                 "oneOf",
-                "anyOf",
                 "minimum",
                 "maximum",
                 "minLength",
@@ -198,14 +197,6 @@ fn expression(schema: &Value) -> Result<String> {
             serde_json::to_string(&discriminator)?,
             variants.join(",")
         )
-    } else if let Some(variants) = schema["anyOf"].as_array() {
-        // Serde's untagged enums: the first variant that validates wins, as in Rust.
-        ensure!(variants.len() >= 2, "Union needs multiple variants");
-        let variants = variants
-            .iter()
-            .map(expression)
-            .collect::<Result<Vec<_>>>()?;
-        format!("z.union([{}])", variants.join(","))
     } else if let Some(value) = schema.get("const") {
         ensure!(
             value.is_string() || value.is_i64() || value.is_boolean(),
@@ -880,7 +871,7 @@ mod tests {
     }
 
     #[test]
-    fn unions_use_their_tag_or_try_each_variant() {
+    fn unions_use_their_tag() {
         let variant = |tag: &str| {
             json!({"type":"object","additionalProperties":false,"required":["type"],
                 "properties":{"type":{"type":"string","const":tag}}})
@@ -890,10 +881,7 @@ mod tests {
             "z.discriminatedUnion(\"type\",[z.strictObject({\"type\": z.literal(\"draw\")}).readonly(),z.strictObject({\"type\": z.literal(\"play\")}).readonly()])"
         );
         assert!(expression(&json!({"oneOf":[variant("draw"),variant("draw")]})).is_err());
-        assert_eq!(
-            expression(&json!({"anyOf":[{"type":"boolean"},{"const":-1}]})).unwrap(),
-            "z.union([z.boolean(),z.literal(-1)])"
-        );
+        assert!(expression(&json!({"anyOf":[{"type":"boolean"},{"const":-1}]})).is_err());
     }
 
     #[test]

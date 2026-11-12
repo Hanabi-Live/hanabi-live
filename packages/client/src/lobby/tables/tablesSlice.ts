@@ -17,6 +17,8 @@ export type TableAction = "join" | "spectate" | "resume";
 
 export interface TableRow {
   readonly table: Table;
+  /** Whether we are one of the table's players. */
+  readonly joined: boolean;
   readonly action: TableAction;
   readonly hasFriends: boolean;
   /** The first table that we could join, which a keyboard shortcut joins. */
@@ -71,41 +73,49 @@ export const selectTables = tablesSelectors.selectAll;
  * ongoing, and shared replays, in the order that they were created.
  */
 export const selectTableRows = createSelector(
-  [selectTables, (state: RootState) => state.session.friends],
+  [
+    selectTables,
+    (state: RootState) => state.session.friends,
+    (state: RootState) => state.session.username,
+  ],
   (
     tables: readonly Table[],
     friends: readonly string[],
+    username: string,
   ): readonly TableRow[] => {
     const friendNames = new Set(friends);
     const sorted = tables
       .map((table) => ({
         table,
+        joined: isPlayer(table, username),
         hasFriends: tableHasFriends(table, friendNames),
       }))
       .toSorted((a, b) => compareSortKeys(getSortKey(a), getSortKey(b)));
 
     let foundJoinable = false;
-    return sorted.map(({ table, hasFriends }) => {
-      const action = getAction(table);
+    return sorted.map(({ table, joined, hasFriends }) => {
+      const action = getAction(table, joined);
       const firstJoinable =
         !foundJoinable
         && action === "join"
         && table.playerNames.length < MAX_PLAYERS;
       foundJoinable ||= firstJoinable;
-      return { table, action, hasFriends, firstJoinable };
+      return { table, joined, action, hasFriends, firstJoinable };
     });
   },
 );
 
 function getSortKey({
   table,
+  joined,
   hasFriends,
 }: {
   readonly table: Table;
+  readonly joined: boolean;
   readonly hasFriends: boolean;
 }): readonly number[] {
   return [
-    isOurGame(table) ? 0 : 1,
+    isOurGame(table, joined) ? 0 : 1,
     hasFriends ? 0 : 1,
     getGroup(table),
     table.tableId,
@@ -122,9 +132,14 @@ function compareSortKeys(a: readonly number[], b: readonly number[]): number {
   return 0;
 }
 
-/** Whether we are one of the players of the table (rather than reviewing a shared replay). */
-function isOurGame(table: Table): boolean {
-  return table.joined && table.phase !== "sharedReplay";
+/** Whether the user is one of the table's players. */
+export function isPlayer(table: Table, username: string): boolean {
+  return table.playerNames.includes(username);
+}
+
+/** Whether we play at the table (rather than reviewing a shared replay of our game). */
+function isOurGame(table: Table, joined: boolean): boolean {
+  return joined && table.phase !== "sharedReplay";
 }
 
 function getGroup(table: Table): TableGroup {
@@ -139,8 +154,8 @@ function getGroup(table: Table): TableGroup {
     : TableGroup.Unstarted;
 }
 
-function getAction(table: Table): TableAction {
-  if (isOurGame(table)) {
+function getAction(table: Table, joined: boolean): TableAction {
+  if (isOurGame(table, joined)) {
     return "resume";
   }
   return table.phase === "pregame" ? "join" : "spectate";

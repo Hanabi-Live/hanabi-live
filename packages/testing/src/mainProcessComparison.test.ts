@@ -111,8 +111,8 @@ databaseDescribe("normal-server protocol workload", () => {
         const init = await peer.receive("init", SERVER_COMMAND_SCHEMAS.init);
         peer.send("gameStateLoad", { tableId });
         const history = await peer.receive(
-          "gameEventList",
-          SERVER_COMMAND_SCHEMAS.gameEventList,
+          "gameState",
+          SERVER_COMMAND_SCHEMAS.gameState,
         );
         if (init.mode.type !== "replay" && init.mode.type !== "sharedReplay") {
           peer.send("loaded", { tableId });
@@ -131,7 +131,10 @@ databaseDescribe("normal-server protocol workload", () => {
             let alice = await connect(aliceCookie);
             const bob = await connect(bobCookie);
             alice.send("tableCreate", {
-              settings: { name: "Benchmark", seedSuffix: SEED_SUFFIX },
+              settings: {
+                name: "Benchmark",
+                deal: { type: "seed", suffix: SEED_SUFFIX },
+              },
             });
             const { tableId } = await alice.receive(
               "tableJoined",

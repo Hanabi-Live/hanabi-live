@@ -831,7 +831,6 @@
     "command": "table",
     "input": {
       "tableId": 3,
-      "joined": true,
       "ownerId": 7,
       "passwordProtected": false,
       "playerNames": ["Alice"],
@@ -839,6 +838,7 @@
       "phase": "pregame",
       "spectators": [
         {
+          "userId": 9,
           "username": "Carol",
           "shadowingPlayerIndex": 1
         }
@@ -868,6 +868,7 @@
       "tableId": 3,
       "spectators": [
         {
+          "userId": 9,
           "username": "Carol"
         }
       ]
@@ -1180,25 +1181,18 @@
     "valid": false
   },
   {
-    "name": "game over events allow no votes",
+    "name": "game over events always list their votes",
     "direction": "server",
-    "command": "gameEventList",
+    "command": "gameEvent",
     "input": {
       "tableId": 3,
-      "events": [
-        {
-          "type": "draw",
-          "playerIndex": 0,
-          "order": 0
-        },
-        {
-          "type": "gameOver",
-          "endCondition": "normal",
-          "playerIndex": 0
-        }
-      ]
+      "event": {
+        "type": "gameOver",
+        "endCondition": "normal",
+        "playerIndex": 0
+      }
     },
-    "valid": true
+    "valid": false
   },
   {
     "name": "cards can be unknown or a stack's start card",
@@ -1358,7 +1352,7 @@
       "tableId": 4,
       "action": {
         "type": "arrow",
-        "target": "minEfficiency"
+        "target": { "type": "board", "element": "minEfficiency" }
       }
     },
     "valid": true
@@ -1371,7 +1365,7 @@
       "tableId": 4,
       "action": {
         "type": "arrow",
-        "target": 12
+        "target": { "type": "card", "order": 12 }
       }
     },
     "valid": true
@@ -1396,7 +1390,7 @@
       "tableId": 4,
       "action": {
         "type": "arrow",
-        "target": "nothing"
+        "target": { "type": "board", "element": "nothing" }
       }
     },
     "valid": false
@@ -1409,10 +1403,55 @@
       "tableId": 4,
       "action": {
         "type": "arrow",
-        "target": 66
+        "target": { "type": "card", "order": 66 }
       }
     },
     "valid": false
+  },
+  {
+    "name": "clocks carry their table beside every player's time",
+    "direction": "server",
+    "command": "clock",
+    "input": {
+      "tableId": 3,
+      "playerTimesMs": [1000, -2000],
+      "currentPlayerIndex": 1,
+      "turnElapsedMs": 500
+    },
+    "valid": true
+  },
+  {
+    "name": "clocks reject unknown fields",
+    "direction": "server",
+    "command": "clock",
+    "input": {
+      "tableId": 3,
+      "playerTimesMs": [1000, -2000],
+      "turnElapsedMs": 500,
+      "timeTakenMs": 500
+    },
+    "valid": false
+  },
+  {
+    "name": "a replay's game state has a deck and no clocks or votes",
+    "direction": "server",
+    "command": "gameState",
+    "input": {
+      "tableId": 3,
+      "events": [
+        {
+          "type": "draw",
+          "playerIndex": 0,
+          "order": 0,
+          "identity": { "suitIndex": 0, "rank": 1 }
+        }
+      ],
+      "deck": [{ "suitIndex": 0, "rank": 1 }],
+      "notes": [],
+      "connected": [true, false],
+      "spectators": [{ "userId": 9, "username": "Carol" }]
+    },
+    "valid": true
   },
   {
     "name": "lobby sounds are named",

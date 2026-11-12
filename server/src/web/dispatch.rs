@@ -33,7 +33,7 @@ pub(super) fn command_failure(error: CommandError, command: &str) -> Option<Comm
     let operation = match name {
         "gameHistory" => "Loading game history".to_owned(),
         "gameHistoryOtherScores" => "Loading seed history".to_owned(),
-        "setting" => "Saving preferences".to_owned(),
+        "settings" => "Saving preferences".to_owned(),
         _ => format!("Command {name}"),
     };
     let (report, alert) = match error {

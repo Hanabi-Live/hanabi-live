@@ -287,12 +287,12 @@ function openConnection(isReconnect: boolean) {
             lobbyCommands.get("tableStarted")?.(table);
           }
         });
-        conn.on("gameEventList", (eventList) => {
+        conn.on("gameState", (state) => {
           if (!isCurrentConnection(conn) || globals.ui === undefined) {
             return;
           }
           const rebuilding = globals.ui.globals.loading;
-          gameCommands.get("gameEventList")?.(eventList);
+          gameCommands.get("gameState")?.(state);
           conn.setReady(true);
           if (!rebuilding) {
             conn.send("loaded", { tableId: globals.joinedTableId });
@@ -434,7 +434,7 @@ function gameCallback<Command extends ServerCommand>(
     if (
       globals.ui.globals.loading
       && commandName !== "init"
-      && commandName !== "gameEventList"
+      && commandName !== "gameState"
     ) {
       return;
     }

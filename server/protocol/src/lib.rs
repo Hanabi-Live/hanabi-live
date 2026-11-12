@@ -247,6 +247,69 @@ impl JsonSchema for Notes {
     }
 }
 
+/// Defines a schema for an integer field that several payloads bound the same way. The field keeps
+/// its integer type, and names the schema with `#[schemars(with = "...")]`.
+macro_rules! bounded_integer {
+    ($(#[doc = $doc:literal])* $name:ident, $format:literal, $min:expr, $max:expr) => {
+        $(#[doc = $doc])*
+        pub struct $name;
+
+        impl JsonSchema for $name {
+            fn inline_schema() -> bool {
+                true
+            }
+
+            fn schema_name() -> std::borrow::Cow<'static, str> {
+                stringify!($name).into()
+            }
+
+            fn json_schema(_: &mut schemars::SchemaGenerator) -> schemars::Schema {
+                schemars::json_schema!({
+                    "type": "integer",
+                    "format": $format,
+                    "minimum": $min,
+                    "maximum": $max,
+                })
+            }
+        }
+    };
+}
+
+bounded_integer! {
+    /// The highest H-Group level that a user wants to play at.
+    HGroupLevel, "uint8", 1, MAX_H_GROUP_LEVEL
+}
+
+bounded_integer! {
+    /// How far a shared replay's leader moved the count of cards that the efficiency uses.
+    EfficiencyModifier, "int32", -MAX_EFFICIENCY_MODIFIER, MAX_EFFICIENCY_MODIFIER
+}
+
+bounded_integer! {
+    /// The most games that one page of a game list can ask for.
+    PageLimit, "int64", 1, MAX_PAGE_SIZE
+}
+
+/// The schema of a list with each player's clock, in seat order.
+pub struct PlayerTimes;
+
+impl JsonSchema for PlayerTimes {
+    fn inline_schema() -> bool {
+        true
+    }
+
+    fn schema_name() -> std::borrow::Cow<'static, str> {
+        "PlayerTimes".into()
+    }
+
+    fn json_schema(generator: &mut schemars::SchemaGenerator) -> schemars::Schema {
+        let mut schema = <Vec<SafeInteger>>::json_schema(generator);
+        schema.insert("minItems".into(), MIN_PLAYERS.into());
+        schema.insert("maxItems".into(), MAX_PLAYERS.into());
+        schema
+    }
+}
+
 /// A timestamp on the wire: RFC 3339 in UTC, with milliseconds, such as
 /// "2026-01-01T12:00:00.000Z". Both the server's and the clients' schemas accept only this form.
 /// Checkpoints can hold the forms that older servers wrote, so reading one does not check it.
@@ -313,7 +376,7 @@ impl std::fmt::Display for TableId {
 )]
 #[serde(transparent)]
 #[schemars(extend("x-brand" = "UserId"))]
-pub struct UserId(#[schemars(range(min = 0, max = i32::MAX))] pub i32);
+pub struct UserId(#[schemars(range(min = 1, max = i32::MAX))] pub i32);
 
 impl std::fmt::Display for UserId {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
@@ -326,7 +389,7 @@ impl std::fmt::Display for UserId {
 )]
 #[serde(transparent)]
 #[schemars(extend("x-brand" = "GameId"))]
-pub struct GameId(#[schemars(range(min = 0, max = i32::MAX))] pub i32);
+pub struct GameId(#[schemars(range(min = 1, max = i32::MAX))] pub i32);
 
 impl std::fmt::Display for GameId {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {

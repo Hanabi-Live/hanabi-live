@@ -13,7 +13,7 @@ use crate::{
 use chrono::Utc;
 use hanabi_protocol::TableId;
 use hanabi_protocol::UserId;
-use hanabi_protocol::{Chat, GameId, MAX_SEED_LENGTH, MIN_PLAYERS, Turn};
+use hanabi_protocol::{Chat, Deal, MAX_SEED_LENGTH, MIN_PLAYERS, Turn};
 use std::{collections::BTreeMap, fmt::Write as _};
 
 /// The longest table password, in bytes.
@@ -103,26 +103,20 @@ pub(super) fn next_requested_seed(seed: Option<&str>) -> CommandResult<Option<St
 pub(super) fn requested_extra(
     request: &hanabi_protocol::TableSettings,
 ) -> CommandResult<ExtraOptions> {
-    let mut extra = ExtraOptions {
-        set_seed_suffix: requested_seed(request.seed_suffix.as_deref())?,
-        ..ExtraOptions::default()
-    };
-    let Some(GameId(game_id)) = request.replay_game_id else {
-        ensure_or_reject!(
-            request.replay_turn.is_none(),
-            "A replay turn needs a game to replay"
-        );
-        return Ok(extra);
-    };
-    ensure_or_reject!(
-        extra.set_seed_suffix.is_none(),
-        "A replay keeps its game's seed"
-    );
-    extra.replay = Some(TableReplay {
-        game_id: GameId(game_id),
-        turns: request.replay_turn.map_or(0, Turn::index),
-    });
-    Ok(extra)
+    Ok(match &request.deal {
+        None => ExtraOptions::default(),
+        Some(Deal::Seed { suffix }) => ExtraOptions {
+            set_seed_suffix: requested_seed(Some(suffix))?,
+            ..ExtraOptions::default()
+        },
+        Some(Deal::Replay { game_id, turn }) => ExtraOptions {
+            replay: Some(TableReplay {
+                game_id: *game_id,
+                turns: turn.map_or(0, Turn::index),
+            }),
+            ..ExtraOptions::default()
+        },
+    })
 }
 
 /// Loads the finished game that a table replays, if any. Its options replace `options`.
@@ -170,9 +164,16 @@ pub(super) fn table_settings(
         name: name.into(),
         max_players: small(max_players),
         options: wire_options(options),
-        seed_suffix: extra.set_seed_suffix.clone(),
-        replay_game_id: extra.replay.map(|replay| replay.game_id),
-        replay_turn: replay_turn(extra),
+        deal: match (&extra.replay, &extra.set_seed_suffix) {
+            (Some(replay), _) => Some(Deal::Replay {
+                game_id: replay.game_id,
+                turn: replay_turn(extra),
+            }),
+            (None, Some(suffix)) => Some(Deal::Seed {
+                suffix: suffix.clone(),
+            }),
+            (None, None) => None,
+        },
     }
 }
 /// The turn that a replayed game starts from, unless it is the first turn.

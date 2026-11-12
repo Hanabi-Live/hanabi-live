@@ -1140,8 +1140,8 @@ async function playGame(alice: Peer, bob: Peer): Promise<number> {
       const init = await peer.receive("init", SERVER_COMMAND_SCHEMAS.init);
       peer.send("gameStateLoad", { tableId });
       const history = await peer.receive(
-        "gameEventList",
-        SERVER_COMMAND_SCHEMAS.gameEventList,
+        "gameState",
+        SERVER_COMMAND_SCHEMAS.gameState,
       );
       peer.send("loaded", { tableId });
       return { peer, init, history };
@@ -1224,7 +1224,7 @@ async function seed(address: string): Promise<Seed> {
   }
 
   const bob = await connect(address, "Bob");
-  bob.send("setting", {
+  bob.send("settings", {
     settings: { hGroupConventions: true, hGroupLevel: H_GROUP_LEVEL },
   });
   bob.send("tableCreate", {
@@ -1264,8 +1264,8 @@ async function seed(address: string): Promise<Seed> {
     bobIndex = ourPlayerIndex(init);
     bob.send("gameStateLoad", { tableId });
     const { events } = await bob.receive(
-      "gameEventList",
-      SERVER_COMMAND_SCHEMAS.gameEventList,
+      "gameState",
+      SERVER_COMMAND_SCHEMAS.gameState,
     );
     bob.send("loaded", { tableId });
 
@@ -1311,8 +1311,8 @@ async function seed(address: string): Promise<Seed> {
   async function loadEvents(peer: Peer = bob) {
     peer.send("gameStateLoad", { tableId });
     const { events } = await peer.receive(
-      "gameEventList",
-      SERVER_COMMAND_SCHEMAS.gameEventList,
+      "gameState",
+      SERVER_COMMAND_SCHEMAS.gameState,
     );
     return events;
   }

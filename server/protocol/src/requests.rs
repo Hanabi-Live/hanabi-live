@@ -51,8 +51,8 @@ pub struct ChatUserRequest {
     pub table_id: Option<TableId>,
 }
 
-#[derive(Clone, Debug, Default, Serialize, Deserialize, JsonSchema)]
-#[serde(default, rename_all = "camelCase", deny_unknown_fields)]
+#[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct ChatRoomRequest {
     /// The table whose chat the command was typed in. Absent means the lobby.
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -126,7 +126,7 @@ pub struct TableSpectateRequest {
 
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
-pub struct SettingRequest {
+pub struct SettingsRequest {
     /// The settings to change, each with the type that `Settings` gives it.
     #[schemars(with = "Settings")]
     pub settings: serde_json::Map<String, serde_json::Value>,
@@ -144,7 +144,7 @@ named_enum! {
 
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
-pub struct InactiveRequest {
+pub struct UserInactiveRequest {
     pub inactive: bool,
 }
 
@@ -153,7 +153,7 @@ pub struct InactiveRequest {
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct GameHistoryRequest {
     pub offset: Count,
-    #[schemars(range(min = 1, max = MAX_PAGE_SIZE))]
+    #[schemars(with = "PageLimit")]
     pub limit: i64,
 }
 
@@ -161,9 +161,10 @@ pub struct GameHistoryRequest {
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct GameHistoryOtherScoresRequest {
+    #[schemars(length(min = 1))]
     pub seed: String,
     pub offset: Count,
-    #[schemars(range(min = 1, max = MAX_PAGE_SIZE))]
+    #[schemars(with = "PageLimit")]
     pub limit: i64,
 }
 
@@ -324,7 +325,7 @@ pub enum ReplayLeaderAction {
         show_drawn_cards: bool,
     },
     EfficiencyModifier {
-        #[schemars(range(min = -MAX_EFFICIENCY_MODIFIER, max = MAX_EFFICIENCY_MODIFIER))]
+        #[schemars(with = "EfficiencyModifier")]
         efficiency_modifier: i32,
     },
 }

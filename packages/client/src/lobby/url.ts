@@ -10,6 +10,7 @@ import { parseIntSafe } from "complete-common";
 import { HISTORY_HASH, LOCAL_STORAGE_KEY, PATH } from "../constants.ts";
 import { globals } from "../Globals.ts";
 import { setBrowserAddressBarPath } from "../utils.ts";
+import { readDeal } from "./deal.ts";
 import { parseGameJson } from "./gameJson.ts";
 import * as history from "./history.ts";
 import { getOtherScoresSeed } from "./historyHash.ts";
@@ -92,12 +93,11 @@ function gotoPath(data: ServerCommandData["welcome"]): boolean {
       urlParams.get("detrimentalCharacters") === "true";
     const password = urlParams.get("password") ?? "";
     // A blank seed deals one that none of the players have played.
-    const seed = urlParams.get("seed") ?? "";
-    const replayGameId = parseIntSafe(urlParams.get("replayGameId") ?? "");
-    // Players count turns from 1, and the server counts them from 0.
-    const replayTurnParam = parseIntSafe(urlParams.get("replayTurn") ?? "");
-    const replayTurn =
-      replayTurnParam === undefined ? undefined : replayTurnParam - 1;
+    const deal = readDeal(
+      urlParams.get("seed") ?? "",
+      urlParams.get("replayGameId") ?? "",
+      urlParams.get("replayTurn") ?? "",
+    );
 
     globals.conn!.send("tableCreate", {
       settings: {
@@ -113,9 +113,7 @@ function gotoPath(data: ServerCommandData["welcome"]): boolean {
           allOrNothing,
           detrimentalCharacters,
         },
-        ...(seed !== "" && { seedSuffix: seed }),
-        ...(replayGameId !== undefined && { replayGameId }),
-        ...(replayTurn !== undefined && { replayTurn }),
+        ...(deal !== undefined && { deal }),
       },
       ...(password !== "" && { password }),
     });

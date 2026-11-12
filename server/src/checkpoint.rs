@@ -376,6 +376,7 @@ const UPGRADES: &[(&str, &str, Upgrade)] = &[
     ("hanabi-live-10", "hanabi-live-11", untimed_clocks),
     ("hanabi-live-11", "hanabi-live-12", clue_player_index),
     ("hanabi-live-12", "hanabi-live-13", consistent_wire_names),
+    ("hanabi-live-13", "hanabi-live-14", suggested_deals),
 ];
 
 /// Rewrites a table that an older server saved, one format at a time, into the current format.
@@ -744,6 +745,34 @@ fn consistent_wire_names(head: &mut Value, parts: &mut [(String, String)]) -> Re
     })?;
     edit_parts(parts, CHAT, |chat| {
         rename(chat.get_mut("message"), "suggestion", "suggestedSettings");
+    })
+}
+
+/// Format 13 gave a chat message's suggested table its deal in three fields: `seedSuffix`, or
+/// `replayGameId` with an optional `replayTurn`.
+fn suggested_deals(_: &mut Value, parts: &mut [(String, String)]) -> Result<()> {
+    edit_parts(parts, CHAT, |chat| {
+        let Some(settings) = chat
+            .pointer_mut("/message/suggestedSettings")
+            .and_then(Value::as_object_mut)
+        else {
+            return;
+        };
+        let seed = settings.remove("seedSuffix");
+        let game = settings.remove("replayGameId");
+        let turn = settings.remove("replayTurn");
+        let deal = match (game, seed) {
+            (Some(game), _) => {
+                let mut deal = serde_json::json!({ "type": "replay", "gameId": game });
+                if let Some(turn) = turn {
+                    deal["turn"] = turn;
+                }
+                deal
+            }
+            (None, Some(suffix)) => serde_json::json!({ "type": "seed", "suffix": suffix }),
+            (None, None) => return,
+        };
+        settings.insert("deal".into(), deal);
     })
 }
 

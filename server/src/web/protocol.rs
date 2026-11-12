@@ -55,7 +55,7 @@ mod tests {
     fn every_registered_command_has_a_parser() {
         for command in hanabi_protocol::client_contracts().into_keys() {
             let value = match command {
-                "setting" => json!({"settings":{"volume":50}}),
+                "settings" => json!({"settings":{"volume":50}}),
                 "userInactive" => json!({"inactive":true}),
                 "gameHistoryOtherScores" => json!({"seed":"p2v0s1","offset":0,"limit":10}),
                 "chat" => json!({"text":"hello"}),

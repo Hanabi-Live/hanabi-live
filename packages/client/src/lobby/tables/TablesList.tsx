@@ -91,7 +91,7 @@ export function TablesList(): React.JSX.Element {
 }
 
 function TableRowView({
-  row: { table, action, hasFriends, firstJoinable },
+  row: { table, joined, action, hasFriends, firstJoinable },
 }: {
   readonly row: TableRow;
 }) {
@@ -100,7 +100,7 @@ function TableRowView({
   const friends = useAppSelector((state) => state.session.friends);
   const movedTime = useMovedTime(ref);
 
-  const kind = getKind(table);
+  const kind = getKind(table, joined);
   const classNames: string[] = [ROW_CLASSES[kind]];
   if (kind === "unstarted" || kind === "unstarted-password") {
     const full =
@@ -113,8 +113,8 @@ function TableRowView({
   }
 
   const status = getStatus(table);
-  const canSpectateFromCells = !table.joined;
-  const canShadow = !table.joined && table.phase !== "sharedReplay";
+  const canSpectateFromCells = !joined;
+  const canShadow = !joined && table.phase !== "sharedReplay";
 
   return (
     <tr
@@ -282,11 +282,11 @@ function useMovedTime(ref: React.RefObject<HTMLTableRowElement | null>) {
 }
 
 /** Decides the background color of the row. */
-function getKind(table: Table) {
+function getKind(table: Table, joined: boolean) {
   if (table.phase === "sharedReplay") {
     return "replay";
   }
-  if (table.joined) {
+  if (joined) {
     return "joined";
   }
   if (table.phase !== "pregame") {

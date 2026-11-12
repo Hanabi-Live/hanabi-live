@@ -1,6 +1,6 @@
 // The "Create Game" screen, which also changes the options of an unstarted game.
 
-import type { GameId, ServerCommandData, Settings } from "@hanabi-live/data";
+import type { ServerCommandData, Settings } from "@hanabi-live/data";
 import {
   DEFAULT_TABLE_NAME_SUFFIX,
   MAX_SEED_LENGTH,
@@ -31,6 +31,7 @@ import { creatingTableChanged } from "../sessionSlice.ts";
 import { store } from "../store.ts";
 import { Tooltip } from "../Tooltip.ts";
 import { escapeHtml, getHtmlInputElement } from "../utils.ts";
+import { readDeal } from "./deal.ts";
 import * as lobbyPage from "./lobbyPage.ts";
 import { Screen } from "./types/Screen.ts";
 
@@ -270,14 +271,11 @@ function submit() {
   remember(createTable);
 
   // Seeds and replays are not saved, so that a new game does not accidentally repeat a deal.
-  const seed = getText("#create-game-seed");
-  const replayGameId = parseIntSafe(getText("#create-game-replay-game-id"));
-  // Players count turns from 1, and the server counts them from 0.
-  const replayTurnText = parseIntSafe(getText("#create-game-replay-turn"));
-  const replayTurn =
-    replayGameId === undefined || replayTurnText === undefined
-      ? undefined
-      : replayTurnText - 1;
+  const deal = readDeal(
+    getText("#create-game-seed"),
+    getText("#create-game-replay-game-id"),
+    getText("#create-game-replay-turn"),
+  );
 
   const name = $("#createTableName").val();
   if (typeof name !== "string") {
@@ -311,9 +309,7 @@ function submit() {
     name: name.trim() === "" ? getDefaultTableName() : name,
     maxPlayers: createTable.maxPlayers,
     options: createTable.options,
-    ...(seed !== "" && { seedSuffix: seed }),
-    ...(replayGameId !== undefined && { replayGameId: replayGameId as GameId }),
-    ...(replayTurn !== undefined && { replayTurn }),
+    ...(deal !== undefined && { deal }),
   };
 
   lobbyPage.hide();
@@ -531,7 +527,7 @@ function rememberForm() {
 function remember(createTable: CreateTable) {
   if (!equal(createTable, globals.settings.createTable)) {
     globals.settings = { ...globals.settings, createTable };
-    globals.conn!.send("setting", { settings: { createTable } });
+    globals.conn!.send("settings", { settings: { createTable } });
   }
 }
 
@@ -598,12 +594,13 @@ export function ready(): void {
     const { settings } = globals.game;
     gameName = settings.name;
     formValues = getFormValues(settings.options, settings.maxPlayers);
-    seed = settings.seedSuffix ?? "";
-    replayGameId = settings.replayGameId?.toString() ?? "";
-    replayTurn =
-      settings.replayTurn === undefined
-        ? ""
-        : (settings.replayTurn + 1).toString();
+    const { deal } = settings;
+    if (deal?.type === "seed") {
+      seed = deal.suffix;
+    } else if (deal?.type === "replay") {
+      replayGameId = deal.gameId.toString();
+      replayTurn = deal.turn === undefined ? "" : (deal.turn + 1).toString();
+    }
 
     // Can't change the password once the game is created.
     $("#password-row").addClass("hidden");

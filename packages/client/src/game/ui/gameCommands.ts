@@ -22,7 +22,6 @@ import { createStore } from "redux";
 import { sendSelfPmFromServer } from "../../chat.ts";
 import { PATH } from "../../constants.ts";
 import * as modals from "../../modals.ts";
-import { getOnlineUsername } from "../../onlineUsers.ts";
 import { ServerHandlers } from "../../serverHandlers.ts";
 import { setBrowserAddressBarPath } from "../../utils.ts";
 import {
@@ -43,6 +42,7 @@ import { updateTerminationVotes } from "./drawUi.ts";
 import { getCardOrStackBase } from "./getCardOrStackBase.ts";
 import * as hypothetical from "./hypothetical.ts";
 import * as notes from "./notes.ts";
+import { getOwnerName } from "./ownerName.ts";
 import { StateObserver } from "./reactive/StateObserver.ts";
 import * as replay from "./replay.ts";
 import * as stats from "./stats.ts";
@@ -51,6 +51,9 @@ import { uiInit } from "./uiInit.ts";
 
 // Define a command handler map.
 export const gameCommands = new ServerHandlers();
+
+type GameState = ServerCommandData["gameState"];
+type Votes = NonNullable<GameState["votes"]>;
 
 // ----------------
 // Command handlers
@@ -69,7 +72,11 @@ gameCommands.set("clock", (data) => {
 });
 
 gameCommands.set("connected", (data) => {
-  for (const [i, connected] of data.connected.entries()) {
+  setConnected(data.connected);
+});
+
+function setConnected(connectedList: readonly boolean[]) {
+  for (const [i, connected] of connectedList.entries()) {
     const nameFrame = globals.elements.nameFrames[i];
     if (nameFrame !== undefined) {
       nameFrame.setConnected(connected);
@@ -77,14 +84,18 @@ gameCommands.set("connected", (data) => {
   }
 
   globals.layers.UI.batchDraw();
-});
+}
 
 gameCommands.set("cardIdentities", (data) => {
+  setCardIdentities(data.deck);
+});
+
+function setCardIdentities(deck: ServerCommandData["cardIdentities"]["deck"]) {
   globals.store!.dispatch({
     type: "cardIdentities",
-    cardIdentities: data.deck.map(toCardIdentity),
+    cardIdentities: deck.map(toCardIdentity),
   });
-});
+}
 
 gameCommands.set("gameFinished", (data) => {
   modals.closeIdleWarning();
@@ -107,7 +118,7 @@ gameCommands.set("gameFinished", (data) => {
     gameId: data.gameId,
     sharedReplay: data.sharedReplay,
     datetimeFinished: new Date().toISOString(),
-    leader: getOnlineUsername(data.sharedReplay.ownerId) ?? "",
+    leader: getOwnerName(data.sharedReplay.ownerId) ?? "",
   });
   if (
     globals.state.replay.actions.some(
@@ -119,19 +130,6 @@ gameCommands.set("gameFinished", (data) => {
       tableId: globals.lobby.joinedTableId,
     });
   }
-});
-
-gameCommands.set("hypothetical", (data) => {
-  // We are joining an ongoing shared replay that is currently playing through a hypothetical line.
-  // We need to "catch up" to everyone else and play all of the existing hypothetical actions that
-  // have taken place.
-
-  globals.store!.dispatch({
-    type: "hypotheticalStart",
-    shared: true,
-    showDrawnCards: data.showDrawnCards,
-    actions: data.events.map(toHypotheticalAction),
-  });
 });
 
 // The shared replay leader's actions, which the server relays to everyone watching.
@@ -166,8 +164,9 @@ gameCommands.set("replayAction", ({ action: leaderAction }) => {
       }
 
       arrows.hideAll();
-      if (leaderAction.target !== undefined) {
-        arrows.toggle(leaderAction.target);
+      const { target } = leaderAction;
+      if (target !== undefined) {
+        arrows.toggle(target.type === "card" ? target.order : target.element);
       }
       break;
     }
@@ -269,26 +268,31 @@ gameCommands.set("note", (data) => {
 });
 
 /**
- * Received when loading a game. A spectator or a replay viewer gets the notes of all the players
- * and spectators. A player in a game in progress gets only their own notes.
+ * Received when a game ends, with the notes that everyone wrote. A spectator or a replay viewer
+ * gets the notes of all the players and spectators. A player in a game in progress gets only their
+ * own notes.
  */
 gameCommands.set("noteList", (data) => {
+  setNotes(data.notes);
+});
+
+function setNotes(playerNotes: GameState["notes"]) {
   const state = globals.store!.getState();
   if (state.playing && !state.finished) {
     // A player gets only their own notes.
     globals.store!.dispatch({
       type: "noteListPlayer",
-      texts: data.notes[0]?.notes ?? [],
+      texts: playerNotes[0]?.notes ?? [],
     });
   } else {
     globals.store!.dispatch({
       type: "noteList",
-      notes: data.notes,
+      notes: playerNotes,
     });
   }
 
   setNoteIndicatorAndCheckForSpecialNote();
-});
+}
 
 // Used when the game state changes.
 gameCommands.set("gameEvent", (data) => {
@@ -299,7 +303,37 @@ gameCommands.set("gameEvent", (data) => {
   globals.store!.dispatch(toGameAction(data.event));
 });
 
-gameCommands.set("gameEventList", (data) => {
+/**
+ * Received after "init", when the UI is drawn, and again after we reconnect. It holds everything
+ * about the game that we may see.
+ */
+gameCommands.set("gameState", (data) => {
+  setEvents(data.events);
+  if (data.deck !== undefined) {
+    setCardIdentities(data.deck);
+  }
+  setNotes(data.notes);
+  if (data.votes !== undefined) {
+    setVotes(data.votes);
+  }
+  setConnected(data.connected);
+  if (data.clocks !== undefined) {
+    timer.update(data.clocks);
+  }
+  setSpectators(data.spectators);
+  if (data.hypothetical !== undefined) {
+    // We are joining a shared replay that plays through a hypothetical line. Play all of its
+    // actions so far to catch up with everyone else.
+    globals.store!.dispatch({
+      type: "hypotheticalStart",
+      shared: true,
+      showDrawnCards: data.hypothetical.showDrawnCards,
+      actions: data.hypothetical.events.map(toHypotheticalAction),
+    });
+  }
+});
+
+function setEvents(events: GameState["events"]) {
   // Users can load a specific turn in a replay by using a URL hash
   // (e.g. "/replay/123#5"). Record the hash before we load the UI (which will overwrite the hash
   // with "#1", corresponding to the first turn).
@@ -308,11 +342,10 @@ gameCommands.set("gameEventList", (data) => {
     specificTurnString = globalThis.location.hash.replace("#", ""); // Strip the leading "#".
   }
 
-  // The server has sent us the list of the game events that have occurred in the game thus far (in
-  // response to the "gameStateLoad" command). Send this list to the reducers.
+  // Send the game events so far to the reducers.
   globals.store!.dispatch({
     type: "gameActionList",
-    actions: data.events.map(toGameAction),
+    actions: events.map(toGameAction),
   });
 
   // We might need to go to a specific turn if we loaded a URL of e.g.:
@@ -320,7 +353,7 @@ gameCommands.set("gameEventList", (data) => {
   if (specificTurnString !== undefined) {
     replay.goTo(specificTurnString);
   }
-});
+}
 
 gameCommands.set("idleWarning", (data) => {
   modals.showIdleWarning(
@@ -354,9 +387,13 @@ gameCommands.set("pause", (data) => {
 });
 
 gameCommands.set("voteChanged", (data) => {
-  globals.terminationVotes = data;
-  updateTerminationVotes();
+  setVotes(data);
 });
+
+function setVotes(votes: Votes) {
+  globals.terminationVotes = votes;
+  updateTerminationVotes();
+}
 
 // The table's owner leads its shared replay.
 gameCommands.set("tableOwner", (data) => {
@@ -366,7 +403,7 @@ gameCommands.set("tableOwner", (data) => {
 
   globals.store!.dispatch({
     type: "replayLeader",
-    username: getOnlineUsername(data.ownerId) ?? "",
+    username: getOwnerName(data.ownerId) ?? "",
   });
 });
 
@@ -393,11 +430,15 @@ gameCommands.set("suggestion", (data) => {
 
 // This is used to update the names of the people currently spectating the game.
 gameCommands.set("spectators", (data) => {
+  setSpectators(data.spectators);
+});
+
+function setSpectators(spectators: GameState["spectators"]) {
   globals.store!.dispatch({
     type: "spectators",
-    spectators: data.spectators,
+    spectators,
   });
-});
+}
 
 // -----------
 // Subroutines
@@ -573,7 +614,7 @@ function initStateStore(data: InitData) {
     finishedAt: data.finishedAt,
     leader:
       data.mode.type === "sharedReplay"
-        ? getOnlineUsername(data.mode.sharedReplay.ownerId)
+        ? getOwnerName(data.mode.sharedReplay.ownerId)
         : undefined,
     pausePlayerIndex: data.pausePlayerIndex,
     pauseQueued: data.pauseQueued,

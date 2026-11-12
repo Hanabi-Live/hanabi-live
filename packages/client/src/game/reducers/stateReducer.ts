@@ -125,7 +125,7 @@ function stateReducerFunction(state: Draft<State>, action: Action) {
         datetimeStarted: shared.startedAt,
         spoilerFree: shared.spoilerFree,
         canPlayAgain: shared.canPlayAgain,
-        restartDeclined: castDraft(shared.restartDeclined ?? []),
+        restartDeclined: castDraft(shared.restartDeclined),
         hypothetical: undefined,
       };
 
@@ -173,7 +173,7 @@ function stateReducerFunction(state: Draft<State>, action: Action) {
               datetimeStarted: shared.startedAt,
               spoilerFree: shared.spoilerFree,
               canPlayAgain: shared.canPlayAgain,
-              restartDeclined: castDraft(shared.restartDeclined ?? []),
+              restartDeclined: castDraft(shared.restartDeclined),
               hypothetical: undefined,
             };
             state.notes.efficiencyModifier = shared.efficiencyModifier;

@@ -23,7 +23,7 @@ pub fn route(message: &ClientMessage) -> Route {
     let id = match message {
         M::LobbyLoad(_) => return Route::Connection,
         M::Sync(_) | M::TableCreate(_) | M::ReplayCreate(_) => return Route::Hub,
-        M::Setting(_)
+        M::Settings(_)
         | M::UserInactive(_)
         | M::GameHistory(_)
         | M::GameHistoryOtherScores(_)

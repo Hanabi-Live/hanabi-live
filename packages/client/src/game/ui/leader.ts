@@ -1,7 +1,7 @@
 // Passing the lead of a shared replay to someone else.
 
+import type { UserId } from "@hanabi-live/data";
 import * as modals from "../../modals.ts";
-import { getOnlineUserId } from "../../onlineUsers.ts";
 import { getHtmlElement } from "../../utils.ts";
 import { globals } from "./UiGlobals.ts";
 
@@ -31,10 +31,9 @@ export function showPassLeaderDialog(): void {
 
     button.textContent = spectator.username;
     button.classList.add("button");
-    button.dataset["player"] = spectator.username;
-    button.addEventListener("click", (event) => {
-      const element = event.target as HTMLElement;
-      setLeader(element.dataset["player"]);
+    const { userId } = spectator;
+    button.addEventListener("click", () => {
+      setLeader(userId);
     });
     button.type = "submit";
 
@@ -44,14 +43,8 @@ export function showPassLeaderDialog(): void {
   modals.showPrompt("#set-leader-modal");
 }
 
-function setLeader(player: string | undefined) {
+function setLeader(userId: UserId) {
   modals.closeModals();
-
-  const userId = player === undefined ? undefined : getOnlineUserId(player);
-  if (userId === undefined) {
-    return;
-  }
-
   globals.lobby.conn!.send("tableSetOwner", {
     tableId: globals.lobby.joinedTableId,
     ownerId: userId,

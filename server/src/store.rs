@@ -877,9 +877,10 @@ mod tests {
                 }),
                 ..hanabi_protocol::GameOptions::default()
             },
-            seed_suffix: Some("7".into()),
-            replay_game_id: Some(GameId(5)),
-            replay_turn: hanabi_protocol::Turn::new(2),
+            deal: Some(hanabi_protocol::Deal::Replay {
+                game_id: GameId(5),
+                turn: hanabi_protocol::Turn::new(2),
+            }),
             ..hanabi_protocol::TableSettings::named("suggested")
         });
         table.chat.push(TableChat {
@@ -909,10 +910,22 @@ mod tests {
         ensure!(serde_json::to_value(&decoded)? == expected);
         Ok(())
     }
-    /// Rewrites a head or a part from format 13 into format 12, for the tables that these tests
+    /// Rewrites a part from format 14 into format 13, for the deals that these tests suggest.
+    fn format_13(text: &str) -> String {
+        text.replace(
+            "\"deal\":{\"type\":\"replay\",\"gameId\":5,\"turn\":2}",
+            "\"replayGameId\":5,\"replayTurn\":2",
+        )
+        .replace(
+            "\"deal\":{\"type\":\"seed\",\"suffix\":\"7\"}",
+            "\"seedSuffix\":\"7\"",
+        )
+    }
+    /// Rewrites a head or a part from format 14 into format 12, for the tables that these tests
     /// build, which have no failed plays.
     fn format_12(text: &str) -> String {
-        text.replace("\"receiverIndex\"", "\"target\"")
+        format_13(text)
+            .replace("\"receiverIndex\"", "\"target\"")
             .replace("\"suggestedSettings\"", "\"suggestion\"")
     }
     /// The parts of a table as format 12 holds them.
@@ -1254,6 +1267,39 @@ mod tests {
             "The older format has no old names"
         );
         let decoded = crate::checkpoint::decode(&head, &parts)?;
+        ensure!(serde_json::to_value(&decoded)? == expected);
+        Ok(())
+    }
+    #[test]
+    fn checkpoints_of_format_13_give_the_deal_in_separate_fields() -> Result<()> {
+        let mut table = suggested();
+        let mut seeded = table.chat[0].clone();
+        seeded.id = Some(4);
+        seeded.message.chat_id = Some(hanabi_protocol::ChatId(4));
+        if let Some(settings) = &mut seeded.message.suggested_settings {
+            settings.deal = Some(hanabi_protocol::Deal::Seed { suffix: "7".into() });
+        }
+        table.chat.push(seeded);
+        let expected = serde_json::to_value(&table)?;
+        let (encoded, _) = crate::checkpoint::encode(&mut table, &SavedParts::default())?;
+        let mut head: Value = serde_json::from_str(&encoded.head)?;
+        head["format"] = json!("hanabi-live-13");
+        let parts = encoded
+            .changes
+            .written
+            .iter()
+            .map(|(key, part)| (key.clone(), format_13(part)))
+            .collect::<Vec<_>>();
+        ensure!(
+            parts
+                .iter()
+                .any(|(_, part)| part.contains("\"seedSuffix\""))
+                && parts
+                    .iter()
+                    .any(|(_, part)| part.contains("\"replayGameId\"")),
+            "The older format has no separate deal fields"
+        );
+        let decoded = crate::checkpoint::decode(&head.to_string(), &parts)?;
         ensure!(serde_json::to_value(&decoded)? == expected);
         Ok(())
     }
@@ -2359,7 +2405,7 @@ mod tests {
             frames.push(outgoing);
         }
         let result=async{
-            send(&hub,users[0].clone(),"tableCreate",json!({"settings":{"name":"native","maxPlayers":6,"seedSuffix":"native","options":{"variantName":"Clue Starved (6 Suits)","timeControl":{"baseSeconds":120,"perTurnSeconds":20},"oneExtraCard":true,"detrimentalCharacters":true}}})).await?;
+            send(&hub,users[0].clone(),"tableCreate",json!({"settings":{"name":"native","maxPlayers":6,"deal":{"type":"seed","suffix":"native"},"options":{"variantName":"Clue Starved (6 Suits)","timeControl":{"baseSeconds":120,"perTurnSeconds":20},"oneExtraCard":true,"detrimentalCharacters":true}}})).await?;
             let id=store.load().await?[0].0.id;
             for user in users.iter().skip(1){send(&hub,user.clone(),"tableJoin",json!({"tableId":id})).await?;}
             send(&hub,users[0].clone(),"tableStart",json!({"tableId":id})).await?;

@@ -119,10 +119,15 @@ impl From<PlayerAction> for ReplayGameAction {
 
 /// What a shared-replay arrow points at: a card, or a part of the board.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
-#[serde(untagged)]
+#[serde(
+    tag = "type",
+    rename_all = "camelCase",
+    rename_all_fields = "camelCase",
+    deny_unknown_fields
+)]
 pub enum ReplayArrowTarget {
-    Card(CardOrder),
-    Board(ReplayBoardElement),
+    Card { order: CardOrder },
+    Board { element: ReplayBoardElement },
 }
 
 /// The parts of the board that a shared-replay arrow can point at, besides cards.
@@ -178,11 +183,10 @@ pub struct Suggestion {
     pub turn: Turn,
 }
 
-/// The active hypothetical, sent to someone joining a shared replay.
+/// The hypothetical that a shared replay plays through.
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
-pub struct Hypothetical {
-    pub table_id: TableId,
+pub struct ActiveHypothetical {
     pub show_drawn_cards: bool,
     /// The hypothetical's events so far, in order.
     pub events: Vec<HypotheticalEvent>,

@@ -182,7 +182,6 @@ impl TableActor {
             data: hanabi_protocol::Table {
                 game_id: replay_game,
                 table_id: self.table.id,
-                joined: false,
                 settings: self.settings(),
                 owner_id: self.table.owner,
                 password_protected: self.table.password_hash.is_some(),
@@ -210,6 +209,7 @@ impl TableActor {
             .values()
             .filter(|a| a.spectator && a.session.active())
             .map(|a| hanabi_protocol::Spectator {
+                user_id: a.session.user,
                 username: a.session.name.clone().into(),
                 shadowing_player_index: a.shadow,
             })
@@ -945,14 +945,16 @@ impl TableActor {
         times[s.game.active_player_index] = now.active_clock;
         Ok(hanabi_protocol::Clock {
             table_id: self.table.id,
-            player_times_ms: times,
-            current_player_index: live
-                .then(|| PlayerIndex::new(s.game.active_player_index))
-                .flatten(),
-            turn_elapsed_ms: if !live || s.paused() {
-                0
-            } else {
-                now.turn_elapsed
+            clocks: hanabi_protocol::Clocks {
+                player_times_ms: times,
+                current_player_index: live
+                    .then(|| PlayerIndex::new(s.game.active_player_index))
+                    .flatten(),
+                turn_elapsed_ms: if !live || s.paused() {
+                    0
+                } else {
+                    now.turn_elapsed
+                },
             },
         })
     }

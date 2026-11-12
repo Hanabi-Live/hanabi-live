@@ -508,7 +508,7 @@ async fn duck_clue_identity_is_private_in_live_history_and_recovery_but_not_comp
             for index in 0..5 {
                 h.send(index, "gameStateLoad", json!({"tableId":id}))
                     .await?;
-                let history = h.receive(index, "gameEventList").await?;
+                let history = h.receive(index, "gameState").await?;
                 let clues = history["events"]
                     .as_array()
                     .unwrap()
@@ -544,7 +544,7 @@ async fn duck_clue_identity_is_private_in_live_history_and_recovery_but_not_comp
         for index in 0..5 {
             h.send(index, "gameStateLoad", json!({"tableId":id}))
                 .await?;
-            let history = h.receive(index, "gameEventList").await?;
+            let history = h.receive(index, "gameState").await?;
             let clues = history["events"]
                 .as_array()
                 .unwrap()
@@ -928,11 +928,12 @@ async fn tables_replay_a_finished_game_from_a_chosen_turn() -> Result<()> {
             .execute(&h.store.primary)
             .await?;
 
-        let id = h.create(0, "Replay", json!({"replayGameId":game,"replayTurn":1})).await?;
+        let id = h
+            .create(0, "Replay", json!({"deal":{"type":"replay","gameId":game,"turn":1}}))
+            .await?;
         let listed = h.receive(1, "table").await?;
         ensure!(
-            listed["settings"]["replayGameId"] == game
-                && listed["settings"]["replayTurn"] == 1
+            listed["settings"]["deal"] == json!({"type":"replay","gameId":game,"turn":1})
                 && listed["settings"]["options"]["timeControl"].is_object(),
             "The table did not report the replayed game and its options: {listed}"
         );
@@ -2211,7 +2212,8 @@ async fn replay_loading_keeps_names_neutral_and_never_starts_a_game_clock() -> R
         );
         h.send(1, "tableSpectate", json!({"tableId":id})).await?;
         h.send(1, "gameStateLoad", json!({"tableId":id})).await?;
-        ensure!(h.receive(1, "connected").await?["connected"] == json!([true, true]));
+        let state = h.receive(1, "gameState").await?;
+        ensure!(state["connected"] == json!([true, true]) && state.get("clocks").is_none());
         h.send(1, "loaded", json!({"tableId":id})).await?;
         h.barrier(0).await?;
         for index in 0..2 {
@@ -2973,7 +2975,7 @@ async fn replay_arrows_sounds_and_loads_skip_durable_checkpoints() -> Result<()>
         let (_, revision) = h.snapshot(id).await?;
         h.send(0, "loaded", json!({"tableId":id})).await?;
         for (kind, extra) in [
-            ("arrow", json!({"target":0})),
+            ("arrow", json!({"target":{"type":"card","order":0}})),
             ("sound", json!({"sound":"clap"})),
         ] {
             let mut data = json!({"tableId":id,"action":{"type":kind}});
@@ -3313,7 +3315,7 @@ async fn saved_actions_store_null_for_a_missing_target_or_value() -> Result<()> 
         let replay = h.receive(0, "tableStarted").await?["tableId"].clone();
         h.send(0, "gameStateLoad", json!({"tableId":replay}))
             .await?;
-        let history = h.receive(0, "gameEventList").await?;
+        let history = h.receive(0, "gameState").await?;
         let events = history["events"].as_array().context("Missing actions")?;
         ensure!(
             events.iter().any(|event| {

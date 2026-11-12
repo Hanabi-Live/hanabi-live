@@ -94,23 +94,19 @@ export function getOptionDescriptions(
     });
   }
 
-  if (settings.seedSuffix !== undefined) {
+  const { deal } = settings;
+  if (deal?.type === "seed") {
     descriptions.push({
       name: "seed",
       icon: OptionIcons.Seed,
-      tooltip: `This table deals the custom seed of: <strong>${escapeHtml(settings.seedSuffix)}</strong>`,
+      tooltip: `This table deals the custom seed of: <strong>${escapeHtml(deal.suffix)}</strong>`,
     });
-  }
-
-  if (settings.replayGameId !== undefined) {
-    const turn =
-      settings.replayTurn === undefined
-        ? ""
-        : ` (from turn ${settings.replayTurn + 1})`;
+  } else if (deal?.type === "replay") {
+    const turn = deal.turn === undefined ? "" : ` (from turn ${deal.turn + 1})`;
     descriptions.push({
       name: "replay",
       icon: OptionIcons.Replay,
-      tooltip: `This table replays game: <strong>#${settings.replayGameId}</strong>${turn}`,
+      tooltip: `This table replays game: <strong>#${deal.gameId}</strong>${turn}`,
     });
   }
 

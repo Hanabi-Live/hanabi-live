@@ -466,17 +466,19 @@ mod tests {
             .collect();
         let messages = [
             test_frame(
-                "gameEventList",
-                serde_json::json!({"tableId":42,"events":[]}),
+                "gameState",
+                serde_json::json!({
+                    "tableId":42,"events":[],"notes":[],"connected":[true,true],"spectators":[],
+                }),
             ),
             test_frame(
                 "noteList",
                 serde_json::json!({"tableId":42,"notes":all_notes}),
             ),
             test_frame(
-                "noteList",
+                "gameState",
                 serde_json::json!({
-                    "tableId":42,
+                    "tableId":42,"events":[],"connected":[true,true],"spectators":[],
                     "notes":[{"username":"Player0","notes":notes,"spectator":false}],
                 }),
             ),

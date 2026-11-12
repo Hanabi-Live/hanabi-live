@@ -177,7 +177,7 @@ lobbyCommands.set("welcome", (data) => {
 
   if (theme.takeLegacyDarkMode() && !globals.settings.darkMode) {
     globals.settings = { ...globals.settings, darkMode: true };
-    globals.conn!.send("setting", { settings: { darkMode: true } });
+    globals.conn!.send("settings", { settings: { darkMode: true } });
   }
   theme.setDarkMode(globals.settings.darkMode);
 

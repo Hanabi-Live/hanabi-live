@@ -502,7 +502,7 @@ async fn native_browser_login_ws_bootstrap_and_command_routing_postgres() {
     assert_eq!(receive(&mut bob, "lobbyStatus").await["type"], "ready");
     alice
         .send(WireMessage::Text(
-            "setting {\"settings\":{\"hGroupConventions\":true}}".into(),
+            "settings {\"settings\":{\"hGroupConventions\":true}}".into(),
         ))
         .await
         .unwrap();
@@ -959,7 +959,7 @@ async fn a_lobby_command_from_a_replaced_connection_writes_nothing_postgres() {
     task.send(user::UserCommand::Lobby {
         session: older,
         message: Box::new(
-            crate::actors::client_message("setting", &json!({ "settings": { "volume": volume } }))
+            crate::actors::client_message("settings", &json!({ "settings": { "volume": volume } }))
                 .unwrap(),
         ),
         reply,

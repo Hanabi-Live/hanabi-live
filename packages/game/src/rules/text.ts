@@ -137,7 +137,7 @@ export function getGameOverText(
   playerIndex: PlayerIndex | undefined,
   score: number,
   metadata: GameMetadata,
-  votes: readonly PlayerIndex[] | undefined,
+  votes: readonly PlayerIndex[],
 ): string {
   const playerName = getPlayerName(playerIndex, metadata);
 
@@ -188,10 +188,11 @@ export function getGameOverText(
 }
 
 function getPlayerNames(
-  playerIndices: readonly PlayerIndex[] | undefined,
+  playerIndices: readonly PlayerIndex[],
   metadata: GameMetadata,
 ): string {
-  if (playerIndices === undefined) {
+  // A replay does not know who voted.
+  if (playerIndices.length === 0) {
     return "The players";
   }
 

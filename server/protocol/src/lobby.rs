@@ -47,7 +47,7 @@ pub struct User {
     /// The highest H-Group level that this user wants to play at. Absent when they did not choose
     /// one.
     #[serde(skip_serializing_if = "Option::is_none")]
-    #[schemars(range(min = 1, max = MAX_H_GROUP_LEVEL))]
+    #[schemars(with = "Option<HGroupLevel>")]
     pub h_group_level: Option<u8>,
     pub bot: bool,
     pub inactive: bool,
@@ -162,9 +162,9 @@ pub struct Settings {
     pub speedrun_mode: bool,
     pub h_group_conventions: bool,
     /// The highest H-Group level that this user wants to play at. Absent when they did not choose
-    /// one; `SettingRequest::cleared` removes it.
+    /// one; `SettingsRequest::cleared` removes it.
     #[serde(skip_serializing_if = "Option::is_none")]
-    #[schemars(range(min = 1, max = MAX_H_GROUP_LEVEL))]
+    #[schemars(with = "Option<HGroupLevel>")]
     pub h_group_level: Option<u8>,
     pub create_table: CreateTableSettings,
 }
@@ -312,19 +312,34 @@ pub struct TableSettings {
     pub max_players: u8,
     #[serde(default)]
     pub options: GameOptions,
-    /// The deal that the table requests, as the end of its full seed: "123" in a 3-player game of
-    /// No Variant deals `p3v0s123`. Absent when the server deals the next seed that none of the
-    /// players have played.
+    /// The deal that the table requests. Absent when the server deals the next seed that none of
+    /// the players have played.
     #[serde(skip_serializing_if = "Option::is_none")]
-    #[schemars(length(min = 1, max = MAX_SEED_LENGTH))]
-    pub seed_suffix: Option<String>,
+    pub deal: Option<Deal>,
+}
+
+/// The deal that a table requests: a seed that it chooses, or the deal of a finished game.
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
+#[serde(
+    tag = "type",
+    rename_all = "camelCase",
+    rename_all_fields = "camelCase",
+    deny_unknown_fields
+)]
+pub enum Deal {
+    Seed {
+        /// The end of the full seed: "123" in a 3-player game of No Variant deals `p3v0s123`.
+        #[schemars(length(min = 1, max = MAX_SEED_LENGTH))]
+        suffix: String,
+    },
     /// A finished game that the table plays again with its deal, seats, characters, and options,
     /// which replace the others.
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub replay_game_id: Option<GameId>,
-    /// The turn of `replayGameId` that the game starts from. Absent starts from the first turn.
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub replay_turn: Option<Turn>,
+    Replay {
+        game_id: GameId,
+        /// The turn that the game starts from. Absent starts from the first turn.
+        #[serde(skip_serializing_if = "Option::is_none")]
+        turn: Option<Turn>,
+    },
 }
 
 impl TableSettings {
@@ -334,9 +349,7 @@ impl TableSettings {
             name: name.into(),
             max_players: DEFAULT_MAX_PLAYERS,
             options: GameOptions::default(),
-            seed_suffix: None,
-            replay_game_id: None,
-            replay_turn: None,
+            deal: None,
         }
     }
 }
@@ -344,6 +357,7 @@ impl TableSettings {
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct Spectator {
+    pub user_id: UserId,
     pub username: Username,
     /// The seat being shadowed, if any.
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -365,8 +379,6 @@ pub struct Table {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub game_id: Option<GameId>,
     pub table_id: TableId,
-    /// Whether the recipient is one of the players.
-    pub joined: bool,
     pub settings: TableSettings,
     pub owner_id: UserId,
     pub password_protected: bool,

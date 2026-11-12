@@ -71,8 +71,8 @@ databaseDescribe("Rust actor durability and ownership", () => {
           const init = await peer.receive("init", SERVER_COMMAND_SCHEMAS.init);
           peer.send("gameStateLoad", { tableId });
           const history = await peer.receive(
-            "gameEventList",
-            SERVER_COMMAND_SCHEMAS.gameEventList,
+            "gameState",
+            SERVER_COMMAND_SCHEMAS.gameState,
           );
           peer.send("loaded", { tableId });
           return { init, history };
@@ -180,8 +180,8 @@ databaseDescribe("Rust actor durability and ownership", () => {
         await replacement.receive("warning", SERVER_COMMAND_SCHEMAS.warning);
         replacement.send("gameStateLoad", { tableId });
         const onceOnly = await replacement.receive(
-          "gameEventList",
-          SERVER_COMMAND_SCHEMAS.gameEventList,
+          "gameState",
+          SERVER_COMMAND_SCHEMAS.gameState,
         );
         expect(
           onceOnly.events.filter(
@@ -239,8 +239,8 @@ databaseDescribe("Rust actor durability and ownership", () => {
         await returning.receive("warning", SERVER_COMMAND_SCHEMAS.warning);
         returning.send("gameStateLoad", { tableId });
         const duplicate = await returning.receive(
-          "gameEventList",
-          SERVER_COMMAND_SCHEMAS.gameEventList,
+          "gameState",
+          SERVER_COMMAND_SCHEMAS.gameState,
         );
         expect(
           duplicate.events.filter(

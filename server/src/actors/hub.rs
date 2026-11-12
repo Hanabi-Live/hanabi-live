@@ -1,6 +1,6 @@
 use super::{
     Allocation, Blocks, Command, Effects, Entry, HubCommand, Presence, Reply, SeatReservation,
-    Status, TableActor, TableCommand, TableHandle, TableView,
+    Status, TableActor, TableCommand, TableHandle,
     setup::{Creation, prepare_table},
 };
 use crate::errors::{CommandError, CommandResult, Report};
@@ -235,11 +235,6 @@ impl Hub {
         for p in self.sessions.values() {
             p.session.emit(message);
         }
-    }
-    fn table_for(v: &TableView, user: UserId) -> hanabi_protocol::Table {
-        let mut data = v.data.clone();
-        data.joined = v.players.contains(&user);
-        data
     }
     fn playing_elsewhere(&self, user: UserId, except: Option<TableId>) -> bool {
         self.tables.iter().any(|(id, entry)| {
@@ -834,7 +829,7 @@ impl Hub {
                     .tables
                     .values()
                     .filter(|e| e.view.visible)
-                    .map(|e| Self::table_for(&e.view, session.user))
+                    .map(|e| e.view.data.clone())
                     .collect(),
             },
         ));
@@ -1021,21 +1016,10 @@ impl Hub {
             && let Some(entry) = self.tables.get(&effects.table)
             && entry.view.visible
         {
-            // The hub handles one message at a time, so serialize the table once for its players
-            // and once for everyone else rather than once per user.
-            let [other, joined] = [false, true].map(|joined| {
-                let mut data = entry.view.data.clone();
-                data.joined = joined;
-                frame(hanabi_protocol::server::TABLE, data)
-            });
-            for p in self.sessions.values() {
-                p.session
-                    .emit(if entry.view.players.contains(&p.session.user) {
-                        &joined
-                    } else {
-                        &other
-                    });
-            }
+            self.broadcast(&frame(
+                hanabi_protocol::server::TABLE,
+                entry.view.data.clone(),
+            ));
         }
         for (session, message) in effects.messages {
             if self.current(&session) {

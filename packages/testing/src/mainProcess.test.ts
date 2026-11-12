@@ -207,8 +207,8 @@ databaseDescribe("compiled application entry point (rust)", () => {
           const init = await peer.receive("init", SERVER_COMMAND_SCHEMAS.init);
           peer.send("gameStateLoad", { tableId });
           const history = await peer.receive(
-            "gameEventList",
-            SERVER_COMMAND_SCHEMAS.gameEventList,
+            "gameState",
+            SERVER_COMMAND_SCHEMAS.gameState,
           );
           peer.send("loaded", { tableId });
           await peer.receive(
@@ -240,8 +240,8 @@ databaseDescribe("compiled application entry point (rust)", () => {
         await active.receive("gameEvent", SERVER_COMMAND_SCHEMAS.gameEvent);
         active.send("gameStateLoad", { tableId });
         const acknowledged = await active.receive(
-          "gameEventList",
-          SERVER_COMMAND_SCHEMAS.gameEventList,
+          "gameState",
+          SERVER_COMMAND_SCHEMAS.gameState,
         );
         const checkpoints = await checkpointProgress();
         expect(checkpoints).toHaveLength(1);
@@ -441,8 +441,8 @@ databaseDescribe("compiled application entry point (rust)", () => {
         });
         replacement.send("gameStateLoad", { tableId });
         const replayHistory = await replacement.receive(
-          "gameEventList",
-          SERVER_COMMAND_SCHEMAS.gameEventList,
+          "gameState",
+          SERVER_COMMAND_SCHEMAS.gameState,
         );
         expect(
           replayHistory.events
@@ -589,8 +589,8 @@ databaseDescribe("compiled application entry point (rust)", () => {
         const init = await peer.receive("init", SERVER_COMMAND_SCHEMAS.init);
         peer.send("gameStateLoad", { tableId: id });
         const history = await peer.receive(
-          "gameEventList",
-          SERVER_COMMAND_SCHEMAS.gameEventList,
+          "gameState",
+          SERVER_COMMAND_SCHEMAS.gameState,
         );
         peer.send("loaded", { tableId: id });
         return { init, history };

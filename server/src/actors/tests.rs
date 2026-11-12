@@ -4,7 +4,7 @@ use super::{
     chat::{ChatBytes, authored_chat, server_chat},
     replay::undo_hypothetical_turn,
     setup::{next_requested_seed, option_changes, requested_seed, table_name},
-    wire::{game_event, game_event_list},
+    wire::{game_event, game_events},
 };
 use crate::errors::CommandError;
 use crate::transport::test_frame;
@@ -106,12 +106,7 @@ fn typed_game_frames_preserve_wire_schema_and_projected_identities() -> Result<(
         ),
     ] {
         let list = hanabi_engine::events_for_recipient(game.state(), recipient, None)?;
-        let encoded = test_frame("gameEventList", game_event_list(TableId(42), &list));
-        let (command, body) = encoded
-            .split_once(' ')
-            .context("Missing protocol separator")?;
-        assert_eq!(command, "gameEventList");
-        let body: Value = serde_json::from_str(body)?;
+        let body = serde_json::to_value(game_events(&list))?;
         // The engine names some fields differently, and marks a missing value with null, which the
         // wire omits. The wire also omits a clue's turn, and holds a card's suit and rank in its
         // identity.
@@ -136,6 +131,10 @@ fn typed_game_frames_preserve_wire_schema_and_projected_identities() -> Result<(
                 );
             }
             event.retain(|_, value| !value.is_null());
+            // The wire always lists a game over's votes.
+            if event["type"] == "gameOver" {
+                event.entry("votes").or_insert(json!([]));
+            }
             if event.remove("failed") == Some(json!(true)) {
                 event.insert("type".into(), json!("misplay"));
             }
@@ -151,8 +150,8 @@ fn typed_game_frames_preserve_wire_schema_and_projected_identities() -> Result<(
                 }
             }
         }
-        assert_eq!(body, json!({"tableId":42,"events":expected}));
-        for (event, expected) in list.iter().zip(body["events"].as_array().unwrap()) {
+        assert_eq!(body, expected);
+        for (event, expected) in list.iter().zip(body.as_array().unwrap()) {
             let encoded = test_frame("gameEvent", game_event(TableId(42), event));
             let (command, body) = encoded
                 .split_once(' ')
@@ -174,10 +173,10 @@ fn typed_game_frames_preserve_wire_schema_and_projected_identities() -> Result<(
                 assert_eq!(expected["identity"], identity);
             }
         }
-        let events = body["events"].as_array().unwrap();
+        let events = body.as_array().unwrap();
         let ended = events.iter().find(|e| e["type"] == "gameOver").unwrap();
         assert_eq!(ended["endCondition"], "terminatedByPlayer");
-        assert!(ended.get("votes").is_none());
+        assert_eq!(ended["votes"], json!([]));
         let timing = events.iter().find(|e| e["type"] == "playerTimes").unwrap();
         assert_eq!(timing["playerTimesMs"], json!([1234, -5678]));
         assert_eq!(timing["durationMs"], 6912);

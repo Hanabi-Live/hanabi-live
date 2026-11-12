@@ -19,8 +19,16 @@ describe("server game events", () => {
       turn: 30,
     });
     expect(
-      toGameAction({ type: "gameOver", endCondition: EndCondition.Normal }),
-    ).toEqual({ type: "gameOver", endCondition: EndCondition.Normal });
+      toGameAction({
+        type: "gameOver",
+        endCondition: EndCondition.Normal,
+        votes: [],
+      }),
+    ).toEqual({
+      type: "gameOver",
+      endCondition: EndCondition.Normal,
+      votes: [],
+    });
   });
 
   test("hidden clues stay hidden", () => {

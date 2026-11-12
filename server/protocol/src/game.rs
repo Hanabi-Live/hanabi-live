@@ -14,9 +14,17 @@ use super::*;
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct Clock {
     pub table_id: TableId,
+    #[serde(flatten)]
+    pub clocks: Clocks,
+}
+
+/// Every player's clock, in the `clock` message and in a game's state.
+#[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct Clocks {
     /// Each player's clock in milliseconds, in seat order: the time left in a timed game, or the
     /// time taken in an untimed one.
-    #[schemars(with = "Vec<SafeInteger>", length(min = MIN_PLAYERS, max = MAX_PLAYERS))]
+    #[schemars(with = "PlayerTimes")]
     pub player_times_ms: Vec<i64>,
     /// Absent when the game has no active player.
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -60,6 +68,15 @@ pub struct Pause {
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct VoteChanged {
     pub table_id: TableId,
+    #[serde(flatten)]
+    pub votes: Votes,
+}
+
+/// The votes to end the game, as one player sees them, in the `voteChanged` message and in a game's
+/// state.
+#[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct Votes {
     /// Whether the recipient voted.
     pub voted: bool,
     #[schemars(range(min = 0, max = MAX_PLAYERS))]
@@ -209,8 +226,7 @@ pub struct GameOverEvent {
     /// The player whom the ending names, such as the one who timed out, if any.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub player_index: Option<PlayerIndex>,
-    /// The players who voted to end the game, when a vote ended it.
-    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    /// The players who voted to end the game. Empty when a vote did not end it.
     #[schemars(length(max = MAX_PLAYERS))]
     pub votes: Vec<PlayerIndex>,
 }
@@ -221,7 +237,7 @@ pub struct GameOverEvent {
 pub struct PlayerTimesEvent {
     /// Each player's clock in milliseconds, in seat order: the time left in a timed game, or the
     /// time taken in an untimed one.
-    #[schemars(with = "Vec<SafeInteger>", length(min = MIN_PLAYERS, max = MAX_PLAYERS))]
+    #[schemars(with = "PlayerTimes")]
     pub player_times_ms: Vec<i64>,
     #[schemars(range(min = 0, max = MAX_SAFE_INTEGER))]
     pub duration_ms: i64,
@@ -250,11 +266,32 @@ pub struct GameEventMessage {
     pub event: GameEvent,
 }
 
+/// What a client shows of a game after `init`, as the recipient may see it: the events so far, and
+/// the state around them. It answers `gameStateLoad`.
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
-pub struct GameEventList {
+pub struct GameState {
     pub table_id: TableId,
     pub events: Vec<GameEvent>,
+    /// Every card's identity, by card order. Present in a replay.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    #[schemars(length(max = MAX_DECK_SIZE))]
+    pub deck: Option<Vec<CardIdentity>>,
+    /// The notes that the recipient may see, as in `noteList`.
+    pub notes: Vec<PlayerNotes>,
+    /// Present for a player of a game in progress.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub votes: Option<Votes>,
+    /// Whether each player has loaded the game, in seat order.
+    #[schemars(length(min = MIN_PLAYERS, max = MAX_PLAYERS))]
+    pub connected: Vec<bool>,
+    /// Absent in a replay.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub clocks: Option<Clocks>,
+    pub spectators: Vec<Spectator>,
+    /// The hypothetical that a shared replay plays through, if any.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub hypothetical: Option<ActiveHypothetical>,
 }
 
 /// A player's detrimental character, in a game and in the replay format, with the value that some
@@ -386,12 +423,11 @@ pub struct SharedReplayInit {
     /// The table's owner, who leads the replay.
     pub owner_id: UserId,
     pub turn: Turn,
-    #[schemars(range(min = -MAX_EFFICIENCY_MODIFIER, max = MAX_EFFICIENCY_MODIFIER))]
+    #[schemars(with = "EfficiencyModifier")]
     pub efficiency_modifier: i32,
     /// Whether the shared replay hides what happens later in the game.
     pub spoiler_free: bool,
     /// The players who will not play again if the leader restarts.
-    #[serde(default, skip_serializing_if = "Vec::is_empty")]
     #[schemars(length(max = MAX_PLAYERS))]
     pub restart_declined: Vec<Username>,
     /// Whether the recipient played the game of this shared replay at this table, so that they can

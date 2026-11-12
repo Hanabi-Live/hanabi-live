@@ -47,7 +47,7 @@ describe("SettingsPage", () => {
       getInput("colorblindMode")!.click();
     });
     expect(globals.settings.colorblindMode).toBe(true);
-    expect(send).toHaveBeenCalledWith("setting", {
+    expect(send).toHaveBeenCalledWith("settings", {
       settings: { colorblindMode: true },
     });
     const status = screen.getByRole("status");
@@ -75,7 +75,7 @@ describe("SettingsPage", () => {
       fireEvent.change(getInput("hGroupLevel")!, { target: { value: "" } });
     });
     expect(globals.settings).not.toHaveProperty("hGroupLevel");
-    expect(send).toHaveBeenLastCalledWith("setting", {
+    expect(send).toHaveBeenLastCalledWith("settings", {
       settings: {},
       cleared: ["hGroupLevel"],
     });
@@ -93,6 +93,6 @@ describe("SettingsPage", () => {
       fireEvent.change(slider, { target: { value: "80" } });
     });
     expect(globals.settings.volume).toBe(80);
-    expect(send).toHaveBeenCalledWith("setting", { settings: { volume: 80 } });
+    expect(send).toHaveBeenCalledWith("settings", { settings: { volume: 80 } });
   });
 });

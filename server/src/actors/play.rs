@@ -2,7 +2,7 @@ use super::table::{game_mut, wrong_phase};
 use super::{
     Attendance, GameInfo, Status, TableActor,
     chat::table_notice,
-    wire::{game_event, game_event_list},
+    wire::{game_event, game_events},
 };
 use crate::errors::CommandResult;
 use crate::model::{Snapshot, TableSnapshot};
@@ -264,7 +264,10 @@ impl TableActor {
                         a.session.clone(),
                         frame(
                             hanabi_protocol::server::VOTE_CHANGED,
-                            vote_change(self.table.id, s, seat)?,
+                            hanabi_protocol::VoteChanged {
+                                table_id: self.table.id,
+                                votes: seat_votes(s, seat)?,
+                            },
                         ),
                     ));
                 }
@@ -554,77 +557,48 @@ impl TableActor {
                 }
             };
             let list = hanabi_engine::events_for_recipient(s.game.state(), recipient, None)?;
+            // A player of a game in progress sees only their own notes and votes.
+            let player_seat = seat.filter(|_| !replay && !a.spectator);
+            let notes = if replay || a.spectator {
+                self.observer_notes(a)
+            } else {
+                player_seat
+                    .map(|seat| hanabi_protocol::PlayerNotes {
+                        username: s.players[seat].name.as_str().into(),
+                        notes: s.notes[seat].clone(),
+                        spectator: false,
+                    })
+                    .into_iter()
+                    .collect()
+            };
+            let state = hanabi_protocol::GameState {
+                table_id: self.table.id,
+                events: game_events(&list),
+                deck: replay.then(|| self.card_identities(s).deck),
+                notes,
+                votes: player_seat.map(|seat| seat_votes(s, seat)).transpose()?,
+                connected: self.connected().connected,
+                clocks: if replay {
+                    None
+                } else {
+                    Some(self.clock()?.clocks)
+                },
+                spectators: self.spectators(),
+                hypothetical: match &self.table.phase {
+                    Phase::Replay { replay, .. } if replay.hypothetical => {
+                        Some(hanabi_protocol::ActiveHypothetical {
+                            show_drawn_cards: replay.show_drawn_cards,
+                            events: replay.hypothetical_actions.clone(),
+                        })
+                    }
+                    _ => None,
+                },
+            };
             e.messages.push((
                 session.clone(),
-                frame(
-                    hanabi_protocol::server::GAME_EVENT_LIST,
-                    game_event_list(self.table.id, &list),
-                ),
+                frame(hanabi_protocol::server::GAME_STATE, state),
             ));
-            if replay {
-                e.messages.push((
-                    session.clone(),
-                    frame(
-                        hanabi_protocol::server::CARD_IDENTITIES,
-                        self.card_identities(s),
-                    ),
-                ));
-            }
-            if replay || a.spectator {
-                e.messages.push((
-                    session.clone(),
-                    frame(
-                        hanabi_protocol::server::NOTE_LIST,
-                        hanabi_protocol::NoteList {
-                            table_id: self.table.id,
-                            notes: self.observer_notes(a),
-                        },
-                    ),
-                ));
-            } else if let Some(seat) = seat {
-                e.messages.push((
-                    session.clone(),
-                    frame(
-                        hanabi_protocol::server::NOTE_LIST,
-                        hanabi_protocol::NoteList {
-                            table_id: self.table.id,
-                            notes: vec![hanabi_protocol::PlayerNotes {
-                                username: s.players[seat].name.as_str().into(),
-                                notes: s.notes[seat].clone(),
-                                spectator: false,
-                            }],
-                        },
-                    ),
-                ));
-                e.messages.push((
-                    session.clone(),
-                    frame(
-                        hanabi_protocol::server::VOTE_CHANGED,
-                        vote_change(self.table.id, s, seat)?,
-                    ),
-                ));
-            }
-            e.messages.push((
-                session.clone(),
-                frame(hanabi_protocol::server::CONNECTED, self.connected()),
-            ));
-            if !replay {
-                e.messages.push((
-                    session.clone(),
-                    frame(hanabi_protocol::server::CLOCK, self.clock()?),
-                ));
-            }
             self.chat_history(&mut e, &session)?;
-            e.messages.push((
-                session.clone(),
-                frame(
-                    hanabi_protocol::server::SPECTATORS,
-                    hanabi_protocol::Spectators {
-                        table_id: self.table.id,
-                        spectators: self.spectators(),
-                    },
-                ),
-            ));
             for a in self
                 .audience()
                 .filter(|a| a.session.user != session.user && a.typing_until.is_some())
@@ -637,21 +611,6 @@ impl TableActor {
                             table_id: self.table.id,
                             username: a.session.name.clone().into(),
                             typing: true,
-                        },
-                    ),
-                ));
-            }
-            if let Phase::Replay { replay, .. } = &self.table.phase
-                && replay.hypothetical
-            {
-                e.messages.push((
-                    session,
-                    frame(
-                        hanabi_protocol::server::HYPOTHETICAL,
-                        hanabi_protocol::Hypothetical {
-                            table_id: self.table.id,
-                            show_drawn_cards: replay.show_drawn_cards,
-                            events: replay.hypothetical_actions.clone(),
                         },
                     ),
                 ));
@@ -671,13 +630,8 @@ fn votes_needed(players: usize) -> usize {
     }
 }
 
-fn vote_change(
-    table_id: hanabi_protocol::TableId,
-    s: &Snapshot,
-    seat: usize,
-) -> anyhow::Result<hanabi_protocol::VoteChanged> {
-    Ok(hanabi_protocol::VoteChanged {
-        table_id,
+fn seat_votes(s: &Snapshot, seat: usize) -> anyhow::Result<hanabi_protocol::Votes> {
+    Ok(hanabi_protocol::Votes {
         voted: s.votes[seat],
         num_votes: u8::try_from(s.votes.iter().filter(|v| **v).count())?,
         num_votes_needed: u8::try_from(votes_needed(s.players.len()))?,

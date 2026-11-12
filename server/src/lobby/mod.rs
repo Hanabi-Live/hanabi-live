@@ -163,7 +163,7 @@ pub async fn dispatch(
     );
     ensure!(caller.user > UserId(0), "Invalid caller");
     let effects = match message {
-        ClientMessage::Setting(request) => {
+        ClientMessage::Settings(request) => {
             let changes = request.settings;
             for (name, value) in &changes {
                 if let Err(error) = settings::validate_setting(name, value) {

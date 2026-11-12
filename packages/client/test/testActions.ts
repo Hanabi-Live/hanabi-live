@@ -31,6 +31,7 @@ export function init(): ActionInit {
         turn: 0,
         efficiencyModifier: 0,
         spoilerFree: false,
+        restartDeclined: [],
         canPlayAgain: false,
         startedAt: new Date(0).toString(),
       },

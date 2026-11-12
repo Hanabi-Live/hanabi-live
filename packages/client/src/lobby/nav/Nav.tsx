@@ -15,6 +15,7 @@ import * as pregame from "../pregame/pregame.ts";
 import { startGameSentChanged } from "../pregame/pregameSlice.ts";
 import { signOut } from "../signOut.ts";
 import { tableJoin, tableSpectate } from "../tables/tableActions.ts";
+import { isPlayer } from "../tables/tablesSlice.ts";
 import { Screen } from "../types/Screen.ts";
 import * as watchReplay from "../watchReplay/WatchReplay.tsx";
 
@@ -429,10 +430,10 @@ function selectJoinButton(state: RootState): {
     return { type: "join", enabled: false };
   }
 
-  const isPlayer = game.players.some(
+  const seated = game.players.some(
     (player) => player.username === state.session.username,
   );
-  return isPlayer
+  return seated
     ? { type: "spectate", enabled: game.players.length >= MIN_PLAYERS }
     : {
         type: "join",
@@ -455,7 +456,8 @@ function joinGame() {
   }
 
   const oldTable = globals.tables.find(
-    (value) => value.joined && value.phase !== "sharedReplay",
+    (value) =>
+      isPlayer(value, globals.username) && value.phase !== "sharedReplay",
   );
   if (oldTable !== undefined) {
     if (oldTable.phase !== "pregame") {

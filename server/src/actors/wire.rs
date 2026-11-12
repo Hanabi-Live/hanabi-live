@@ -146,12 +146,6 @@ pub(crate) fn game_event(
     }
 }
 
-pub(crate) fn game_event_list(
-    table: TableId,
-    list: &[hanabi_engine::EngineEvent],
-) -> hanabi_protocol::GameEventList {
-    hanabi_protocol::GameEventList {
-        table_id: table,
-        events: list.iter().map(wire_event).collect(),
-    }
+pub(crate) fn game_events(list: &[hanabi_engine::EngineEvent]) -> Vec<GameEvent> {
+    list.iter().map(wire_event).collect()
 }

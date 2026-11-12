@@ -31,7 +31,6 @@ function table(id: number, name: string, fields: Partial<Table> = {}): Table {
   return {
     tableId: tableIdSchema.parse(id),
     settings: { name, maxPlayers: 5, options: { variantName: "No Variant" } },
-    joined: false,
     phase: "pregame",
     passwordProtected: false,
     numPlayers: 1,
@@ -105,7 +104,6 @@ describe("TablesList", () => {
         table(4, "open"),
         table(5, "friend's", { phase: "playing", playerNames: ["bob"] }),
         table(6, "ours", {
-          joined: true,
           phase: "playing",
           playerNames: ["me"],
         }),

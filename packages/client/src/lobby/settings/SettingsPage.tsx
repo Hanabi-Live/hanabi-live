@@ -259,7 +259,7 @@ function HGroupLevelRow() {
             // A level that we did not choose is absent from our settings.
             const { hGroupLevel: _cleared, ...settings } = globals.settings;
             globals.settings = settings;
-            globals.conn!.send("setting", {
+            globals.conn!.send("settings", {
               settings: {},
               cleared: ["hGroupLevel"],
             });
@@ -301,7 +301,7 @@ function RowLabel({
 /** Changes our settings here and on the server. */
 function changeSetting(changed: Partial<Settings>) {
   globals.settings = { ...globals.settings, ...changed };
-  globals.conn!.send("setting", { settings: changed });
+  globals.conn!.send("settings", { settings: changed });
 }
 
 /**

@@ -51,8 +51,8 @@ macro_rules! client_contracts {
             GameInitLoad "gameInitLoad" => TableRef;
             GameStateLoad "gameStateLoad" => TableRef;
             Loaded "loaded" => TableRef;
-            Setting "setting" => SettingRequest;
-            UserInactive "userInactive" => InactiveRequest;
+            Settings "settings" => SettingsRequest;
+            UserInactive "userInactive" => UserInactiveRequest;
             GameHistory "gameHistory" => GameHistoryRequest;
             GameHistoryOtherScores "gameHistoryOtherScores" => GameHistoryOtherScoresRequest;
             TagSearch "tagSearch" => TagSearchRequest;
@@ -87,11 +87,10 @@ macro_rules! server_contracts {
             TABLE_OWNER "tableOwner" => TableOwner;
             RESTART_DECLINED "restartDeclined" => RestartDeclined;
             SUGGESTION "suggestion" => Suggestion;
-            HYPOTHETICAL "hypothetical" => Hypothetical;
             NOTE "note" => Note;
             NOTE_LIST "noteList" => NoteList;
             GAME_EVENT "gameEvent" => GameEventMessage;
-            GAME_EVENT_LIST "gameEventList" => GameEventList;
+            GAME_STATE "gameState" => GameState;
             INIT "init" => Init;
             TABLE_BOOTED "tableBooted" => TableRef;
             SYNCED "synced" => Empty;
@@ -332,8 +331,8 @@ macro_rules! server_messages {
 pub mod server {
     use super::{
         Blocked, CardIdentities, Chat, ChatDeleted, ChatList, ChatPmHistory, ChatTyping, Clock,
-        Connected, Empty, Friends, GameEventList, GameEventMessage, GameFinished, GameHistoryEntry,
-        GameHistoryOtherScores, GamePage, Hypothetical, IdleWarning, Init, LobbySoundMessage,
+        Connected, Empty, Friends, GameEventMessage, GameFinished, GameHistoryEntry,
+        GameHistoryOtherScores, GamePage, GameState, IdleWarning, Init, LobbySoundMessage,
         LobbyStatus, Note, NoteList, Notice, Pause, Pregame, ReplayAction, RestartDeclined,
         ServerMessage, ServerRestart, Spectators, Suggestion, Table, TableList, TableOwner,
         TableRef, TableStarted, User, UserList, UserRemoved, VoteChanged, Welcome,

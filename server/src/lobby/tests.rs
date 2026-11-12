@@ -131,7 +131,7 @@ async fn lobby_relationships_atomic_settings_and_parameterization_postgres() {
         &db.pool,
         &who,
         &[],
-        "setting",
+        "settings",
         json!({"settings":{"hGroupConventions":true}}),
     )
     .await;
@@ -147,7 +147,7 @@ async fn lobby_relationships_atomic_settings_and_parameterization_postgres() {
         &db.pool,
         &who,
         &[],
-        "setting",
+        "settings",
         json!({"settings":{"hGroupLevel":5}}),
     )
     .await;
@@ -159,7 +159,7 @@ async fn lobby_relationships_atomic_settings_and_parameterization_postgres() {
         &db.pool,
         &who,
         &[],
-        "setting",
+        "settings",
         json!({"settings":{},"cleared":["hGroupLevel"]}),
     )
     .await;

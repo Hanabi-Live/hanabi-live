@@ -464,7 +464,15 @@ export function toggle(target: ArrowTarget, alwaysShow = false): void {
   ) {
     globals.lobby.conn!.send("replayAction", {
       tableId: globals.lobby.joinedTableId,
-      action: show ? { type: "arrow", target } : { type: "arrow" },
+      action: show
+        ? {
+            type: "arrow",
+            target:
+              typeof target === "number"
+                ? { type: "card", order: target }
+                : { type: "board", element: target },
+          }
+        : { type: "arrow" },
     });
   }
 }
