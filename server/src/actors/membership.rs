@@ -8,18 +8,14 @@ use crate::{
     transport::{Session, frame},
 };
 use anyhow::Context;
-use chrono::Utc;
 use hanabi_protocol::PlayerIndex;
 use hanabi_protocol::UserId;
-use hanabi_protocol::{LobbySound, LobbySoundMessage, TableJoinRequest, TableRef, TableStarted};
+use hanabi_protocol::{TableJoinRequest, TableRef, TableStarted};
 use std::{
     collections::{BTreeSet, HashSet},
     sync::Arc,
-    time::{Duration, Instant},
+    time::Instant,
 };
-
-/// After a player joins a table, further joins within this time do not play the join sound again.
-const JOIN_SOUND_INTERVAL: Duration = Duration::from_secs(15);
 
 impl TableActor {
     /// Rejects a user who has blocked, or was blocked by, a player at this table or its owner.
@@ -142,31 +138,6 @@ impl TableActor {
                     attendee.session.clone(),
                     frame(hanabi_protocol::server::CHAT, message.clone()),
                 ));
-            }
-        }
-        let since_last_join = match self
-            .last_join()
-            .and_then(|last| last.replace(Instant::now()))
-        {
-            Some(last) => last.elapsed(),
-            // The owner joined when the table was created.
-            None => (Utc::now() - self.table.created)
-                .to_std()
-                .unwrap_or_default(),
-        };
-        if since_last_join > JOIN_SOUND_INTERVAL {
-            let players: HashSet<UserId> = self.table.seated_users().collect();
-            let sound = frame(
-                hanabi_protocol::server::LOBBY_SOUND,
-                LobbySoundMessage {
-                    sound: LobbySound::SomeoneJoined,
-                },
-            );
-            for attendee in self
-                .audience()
-                .filter(|a| a.session.user != session.user && players.contains(&a.session.user))
-            {
-                e.messages.push((attendee.session.clone(), sound.clone()));
             }
         }
         self.publish(e).await

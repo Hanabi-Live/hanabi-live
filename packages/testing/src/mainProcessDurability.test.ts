@@ -95,14 +95,14 @@ databaseDescribe("Rust actor durability and ownership", () => {
         }
         const [a, b] = await Promise.all([bootstrap(alice), bootstrap(bob)]);
         await alice.receive(
-          "connected",
-          SERVER_COMMAND_SCHEMAS.connected,
-          (data) => data.connected.every(Boolean),
+          "connections",
+          SERVER_COMMAND_SCHEMAS.connections,
+          (data) => data.connections.every(Boolean),
         );
         await bob.receive(
-          "connected",
-          SERVER_COMMAND_SCHEMAS.connected,
-          (data) => data.connected.every(Boolean),
+          "connections",
+          SERVER_COMMAND_SCHEMAS.connections,
+          (data) => data.connections.every(Boolean),
         );
         const activeIsAlice = ourPlayerIndex(a.init) === 0;
         const active = activeIsAlice ? alice : bob;

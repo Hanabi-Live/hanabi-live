@@ -9,7 +9,6 @@ use crate::{
     transport::Session,
 };
 use anyhow::{Context, Result, bail, ensure};
-use chrono::{Duration as ChronoDuration, Utc};
 use hanabi_engine::EndCondition;
 use hanabi_protocol::PlayerIndex;
 use serde_json::{Value, json};
@@ -1157,72 +1156,6 @@ async fn shared_replays_of_older_games_start_when_their_table_is_created() -> Re
     outcome
 }
 
-#[tokio::test]
-async fn joining_a_table_plays_a_sound_for_its_other_players_once_per_burst() -> Result<()> {
-    let Some(mut h) = Harness::new(&["Alice", "Bob", "Carol"]).await? else {
-        return Ok(());
-    };
-    let outcome = async {
-        // A join right after the table is created plays no sound.
-        let id = h.create(0, "Join sound", json!({})).await?;
-        h.send(1, "tableJoin", json!({"tableId":id})).await?;
-        h.barrier(0).await?;
-        ensure!(
-            !h.frames(0)?
-                .iter()
-                .any(|(command, _)| command == "lobbySound"),
-            "A join right after the table was created played a sound"
-        );
-
-        // A join long after the table is created plays it, but the next join does not.
-        let id = h.store.allocate_table().await?;
-        let mut table = tests::pregame(id);
-        table.created = Utc::now() - ChronoDuration::minutes(1);
-        let revision = h.store.save_at(&table, 0).await?;
-        let (hub, mut notifications) = mpsc::channel(32);
-        let capacity = Arc::new(Semaphore::new(1));
-        let saved = h.store.saved_at(table.id, revision).await?;
-        let mut actor = TableActor::new(
-            table,
-            saved,
-            h.store.clone(),
-            hub,
-            capacity.try_acquire_owned()?,
-            crate::server_info::test_info(),
-        );
-        actor.initialize(h.users[0].clone(), vec![]).await?;
-        let mut sounds = vec![];
-        for index in [1, 2] {
-            actor
-                .join(h.users[index].clone(), &BTreeSet::new(), None)
-                .await?;
-            let mut heard = vec![];
-            while let Ok(notification) = notifications.try_recv() {
-                if let HubCommand::Effects(effects) = notification {
-                    for (session, message) in effects.messages {
-                        if let Some(body) = message.strip_prefix("lobbySound ") {
-                            heard.push((session.user, serde_json::from_str::<Value>(body)?));
-                        }
-                    }
-                }
-            }
-            sounds.push(heard);
-        }
-        ensure!(
-            sounds
-                == vec![
-                    vec![(UserId::new(1).unwrap(), json!({"sound":"someoneJoined"}))],
-                    vec![]
-                ],
-            "Unexpected join sounds: {sounds:?}"
-        );
-        Ok(())
-    }
-    .await;
-    h.close().await?;
-    outcome
-}
-
 /// The server notices in a table's chat.
 fn notices(table: &TableSnapshot) -> Vec<String> {
     table
@@ -1732,7 +1665,7 @@ async fn expired_pregame_owner_is_removed_but_remaining_players_and_live_games_s
             if let HubCommand::Effects(effects) = notification {
                 for (session, message) in effects.messages {
                     ensure!(
-                        !message.starts_with("connected "),
+                        !message.starts_with("connections "),
                         "A pregame sent which players loaded the game: {message}"
                     );
                     if session.user == UserId::new(2).unwrap()
@@ -1971,10 +1904,10 @@ async fn restart_leaves_out_players_who_are_done_playing() -> Result<()> {
             .and_then(|names| names.iter().position(|name| name == "Carol"))
             .context("Carol has no seat")?;
         for declined in declined {
-            ensure!(declined["restartDeclined"] == json!([carol]), "{declined}");
+            ensure!(declined["restartDecliners"] == json!([carol]), "{declined}");
         }
         ensure!(
-            init["mode"]["sharedReplay"]["restartDeclined"] == json!([carol])
+            init["mode"]["sharedReplay"]["restartDecliners"] == json!([carol])
                 && init["mode"]["sharedReplay"]["canPlayAgain"] == true,
             "{init}"
         );
@@ -2280,7 +2213,7 @@ async fn finished_game_publishes_replay_leader_candidates_without_reconnecting()
         for index in 0..3 {
             let (before, roster) = h.receive_after(index, "spectators").await?;
             ensure!(
-                !before.iter().any(|name| name == "connected"),
+                !before.iter().any(|name| name == "connections"),
                 "A replay has no players to wait for"
             );
             let names = roster["spectators"]
@@ -2341,7 +2274,7 @@ async fn replay_loading_reports_no_connections_and_never_starts_a_game_clock() -
         ensure!(
             h.frames(0)?
                 .iter()
-                .all(|(command, _)| command != "clock" && command != "connected")
+                .all(|(command, _)| command != "clock" && command != "connections")
         );
         tokio::time::sleep(Duration::from_millis(25)).await;
         h.send(
@@ -2363,7 +2296,7 @@ async fn replay_loading_reports_no_connections_and_never_starts_a_game_clock() -
         h.send(1, "tableSpectate", json!({"tableId":id})).await?;
         h.send(1, "gameStateLoad", json!({"tableId":id})).await?;
         let state = h.receive(1, "gameState").await?;
-        ensure!(state.get("connected").is_none() && state.get("clock").is_none());
+        ensure!(state.get("connections").is_none() && state.get("clock").is_none());
         h.send(1, "gameLoaded", json!({"tableId":id})).await?;
         h.barrier(0).await?;
         for index in 0..2 {
@@ -2371,7 +2304,7 @@ async fn replay_loading_reports_no_connections_and_never_starts_a_game_clock() -
             ensure!(
                 frames
                     .iter()
-                    .all(|(command, _)| command != "clock" && command != "connected"),
+                    .all(|(command, _)| command != "clock" && command != "connections"),
                 "Loading another replay viewer sent a live clock or connections"
             );
         }

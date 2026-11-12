@@ -3,19 +3,20 @@
 import { setTabAccount } from "@hanabi-live/data";
 import { globals } from "../Globals.ts";
 import * as gameMain from "../game/main.ts";
+import { SoundType } from "../game/types/SoundType.ts";
 import * as spectatorsView from "../game/ui/reactive/views/spectatorsView.ts";
 import * as modals from "../modals.ts";
 import { ServerHandlers } from "../serverHandlers.ts";
 import * as sounds from "../sounds.ts";
 import { store } from "../store.ts";
 import * as theme from "../theme.ts";
-import { toSoundType } from "../wire.ts";
 import {
   historyReceived,
   lobbyStatusReceived,
   otherScoresReceived,
 } from "./gameHistory/historySlice.ts";
 import * as lobbyLogin from "./login.ts";
+import { shouldPlayJoinSound } from "./pregame/joinSound.ts";
 import * as pregame from "./pregame/pregame.ts";
 import { startGameCooldownChanged } from "./pregame/pregameSlice.ts";
 import { tableChanged, tableGone, tablesListed } from "./tables/tablesSlice.ts";
@@ -57,7 +58,11 @@ lobbyCommands.set("friends", (data) => {
 });
 
 lobbyCommands.set("pregame", (data) => {
-  const previousPlayers = globals.game?.players;
+  const previous = globals.game;
+  const previousPlayers = previous?.players;
+  if (shouldPlayJoinSound(previous, data, globals.userId, Date.now())) {
+    sounds.play(SoundType.SomeoneJoined);
+  }
   globals.game = data;
   globals.tableId = data.tableId;
   if (previousPlayers?.length !== data.players.length) {
@@ -100,10 +105,6 @@ lobbyCommands.set("tableLeft", () => {
   if (globals.currentScreen === Screen.PreGame) {
     pregame.hide();
   }
-});
-
-lobbyCommands.set("lobbySound", (data) => {
-  sounds.play(toSoundType(data.sound));
 });
 
 // Received by the client when a table is created or modified.

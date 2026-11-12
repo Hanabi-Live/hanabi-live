@@ -126,7 +126,7 @@ function stateReducerFunction(state: Draft<State>, action: Action) {
         spoilerFree: shared.spoilerFree,
         canPlayAgain: shared.canPlayAgain,
         restartDeclined: castDraft(
-          playerNamesAt(state.metadata.playerNames, shared.restartDeclined),
+          playerNamesAt(state.metadata.playerNames, shared.restartDecliners),
         ),
         hypothetical: undefined,
       };
@@ -155,7 +155,7 @@ function stateReducerFunction(state: Draft<State>, action: Action) {
           break;
         }
 
-        case "replay":
+        case "soloReplay":
         case "sharedReplay": {
           state.playing = false;
           state.shadowing = false;
@@ -178,7 +178,7 @@ function stateReducerFunction(state: Draft<State>, action: Action) {
               restartDeclined: castDraft(
                 playerNamesAt(
                   state.metadata.playerNames,
-                  shared.restartDeclined,
+                  shared.restartDecliners,
                 ),
               ),
               hypothetical: undefined,

@@ -118,7 +118,10 @@ databaseDescribe("normal-server protocol workload", () => {
           "gameState",
           SERVER_COMMAND_SCHEMAS.gameState,
         );
-        if (init.mode.type !== "replay" && init.mode.type !== "sharedReplay") {
+        if (
+          init.mode.type !== "soloReplay"
+          && init.mode.type !== "sharedReplay"
+        ) {
           peer.send("gameLoaded", { tableId });
         }
         return { init, history };
@@ -302,7 +305,7 @@ databaseDescribe("normal-server protocol workload", () => {
           SERVER_COMMAND_SCHEMAS.tableStarted,
         );
         const replay = await bootstrap(peer, tableId);
-        expect(replay.init.mode).toMatchObject({ type: "replay", gameId });
+        expect(replay.init.mode).toMatchObject({ type: "soloReplay", gameId });
         expect(
           replay.history.events.filter((event) => event.type === "play"),
         ).toHaveLength(25);

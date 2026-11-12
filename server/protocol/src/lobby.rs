@@ -63,7 +63,7 @@ pub enum Activity {
     Pregame { table_id: TableId },
     Playing { table_id: TableId },
     Spectating { table_id: TableId },
-    Replay {},
+    SoloReplay {},
     SharedReplay { table_id: TableId },
 }
 
@@ -114,20 +114,6 @@ impl Notice {
             code: None,
         }
     }
-}
-
-#[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
-#[serde(rename_all = "camelCase", deny_unknown_fields)]
-pub struct LobbySoundMessage {
-    pub sound: LobbySound,
-}
-
-/// A sound played outside of a game. The server plays "someoneJoined" to the players at a pre-game
-/// table when another player joins it.
-#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
-#[serde(rename_all = "camelCase")]
-pub enum LobbySound {
-    SomeoneJoined,
 }
 
 /// Defines `Settings`, with each setting's default, and `SettingsChange`, which changes some of

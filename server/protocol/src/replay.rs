@@ -161,7 +161,7 @@ pub enum ReplaySoundEffect {
 pub struct TableRestartDecliners {
     pub table_id: TableId,
     #[schemars(length(max = MAX_PLAYERS))]
-    pub restart_declined: Vec<PlayerIndex>,
+    pub restart_decliners: Vec<PlayerIndex>,
 }
 
 /// A spectator suggesting a turn to the shared replay's leader.

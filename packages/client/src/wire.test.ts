@@ -3,7 +3,6 @@ import {
   SERVER_COMMAND_SCHEMAS,
 } from "@hanabi-live/data";
 import { describe, expect, test } from "vitest";
-import { SoundType } from "./game/types/SoundType.ts";
 import { toCardIdentity, toGameAction, toSoundType } from "./wire.ts";
 
 /** Validates a game event as the connection does. */
@@ -113,15 +112,5 @@ describe("sounds", () => {
     for (const sound of replaySoundEffectSchema.options) {
       expect(toSoundType(sound)).toBe(sound);
     }
-  });
-
-  test("the lobby plays the join sound", () => {
-    const { sound } = SERVER_COMMAND_SCHEMAS.lobbySound.parse({
-      sound: "someoneJoined",
-    });
-    expect(toSoundType(sound)).toBe(SoundType.SomeoneJoined);
-    expect(() =>
-      SERVER_COMMAND_SCHEMAS.lobbySound.parse({ sound: "not-a-sound" }),
-    ).toThrow();
   });
 });

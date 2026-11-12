@@ -1591,7 +1591,7 @@
         }
       ],
       "notes": [],
-      "connected": [true, false],
+      "connections": [true, false],
       "spectators": [
         {
           "userId": 9,
@@ -1600,24 +1600,6 @@
       ]
     },
     "valid": true
-  },
-  {
-    "name": "lobby sounds are named",
-    "direction": "server",
-    "command": "lobbySound",
-    "input": {
-      "sound": "someoneJoined"
-    },
-    "valid": true
-  },
-  {
-    "name": "lobby sounds the client cannot play are rejected",
-    "direction": "server",
-    "command": "lobbySound",
-    "input": {
-      "sound": "not-a-sound"
-    },
-    "valid": false
   },
   {
     "name": "turn numbers are never negative",

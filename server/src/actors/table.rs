@@ -507,13 +507,6 @@ impl TableActor {
             _ => None,
         }
     }
-    /// When a player last joined a pregame. `None` outside a pregame.
-    pub(super) fn last_join(&mut self) -> Option<&mut Option<Instant>> {
-        match &mut self.table.phase {
-            Phase::Pregame { runtime, .. } => Some(&mut runtime.last_join),
-            _ => None,
-        }
-    }
     pub(super) fn candidate(&self) -> TableSnapshot {
         let mut next = self.table.clone();
         let live = matches!(next.phase, Phase::Live { .. });
@@ -916,7 +909,11 @@ impl TableActor {
             // Only a game in progress has players who can be away. (A pregame can also have fewer
             // players than a game.)
             if matches!(self.table.phase, Phase::Live { .. }) {
-                self.add_all(&mut e, hanabi_protocol::server::CONNECTED, self.connected());
+                self.add_all(
+                    &mut e,
+                    hanabi_protocol::server::CONNECTIONS,
+                    self.connections(),
+                );
             }
             self.spectator_messages(&mut e);
             self.publish(e).await?;
@@ -972,10 +969,10 @@ impl TableActor {
         }
         self.publish(effects).await
     }
-    pub(super) fn connected(&self) -> hanabi_protocol::Connected {
-        hanabi_protocol::Connected {
+    pub(super) fn connections(&self) -> hanabi_protocol::Connections {
+        hanabi_protocol::Connections {
             table_id: self.table.id,
-            connected: self
+            connections: self
                 .table
                 .players()
                 .iter()
@@ -1123,7 +1120,11 @@ impl TableActor {
                 }
                 let mut e = self.effects();
                 if matches!(self.table.phase, Phase::Live { .. }) {
-                    self.add_all(&mut e, hanabi_protocol::server::CONNECTED, self.connected());
+                    self.add_all(
+                        &mut e,
+                        hanabi_protocol::server::CONNECTIONS,
+                        self.connections(),
+                    );
                     self.add_all(&mut e, hanabi_protocol::server::CLOCK, self.clock()?);
                 }
                 self.publish(e).await

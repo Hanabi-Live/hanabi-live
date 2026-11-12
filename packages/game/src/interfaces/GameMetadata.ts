@@ -28,7 +28,7 @@ export interface GameMetadata {
   /** Whether or not this is considered a "hard" variant by the H-Group. */
   readonly hardVariant: boolean;
 
-  readonly customSeed: boolean;
+  readonly customDeal: boolean;
   /** Absent for a game with its own deck instead of a seed, such as an imported one. */
   readonly seed: string | undefined;
 }

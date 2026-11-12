@@ -333,14 +333,14 @@ mod tests {
         drop(receiver.try_recv().unwrap());
         let mut completed = session
             .close_after(
-                &["lobbySound {}".into(), "error {}".into()],
+                &["serverRestart {}".into(), "error {}".into()],
                 SERVICE_RESTART_CLOSE_CODE,
             )
             .unwrap();
         session.emit(&Frame::from("must not follow close"));
         assert_eq!(
             receiver.try_recv().unwrap().message,
-            Message::Text("lobbySound {}".into())
+            Message::Text("serverRestart {}".into())
         );
         assert_eq!(
             receiver.try_recv().unwrap().message,
@@ -478,7 +478,7 @@ mod tests {
             test_frame(
                 "gameState",
                 serde_json::json!({
-                    "tableId":42,"events":[],"notes":[],"connected":[true,true],"spectators":[],
+                    "tableId":42,"events":[],"notes":[],"connections":[true,true],"spectators":[],
                 }),
             ),
             test_frame(
@@ -488,7 +488,7 @@ mod tests {
             test_frame(
                 "gameState",
                 serde_json::json!({
-                    "tableId":42,"events":[],"connected":[true,true],"spectators":[],
+                    "tableId":42,"events":[],"connections":[true,true],"spectators":[],
                     "notes":[{"username":"Player0","notes":notes,"spectator":false}],
                 }),
             ),

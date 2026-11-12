@@ -482,7 +482,7 @@ impl TableActor {
             turn: replay.segment,
             efficiency_modifier: replay.efficiency_modifier,
             spoiler_free: replay.spoiler_free,
-            restart_declined: self.restart_declined_seats(),
+            restart_decliners: self.restart_decliners(),
             can_play_again: self.can_play_again(session),
             // A review of a game just played begins when the game ends; a replay of an older
             // game begins when its table is created.
@@ -515,7 +515,7 @@ impl TableActor {
                         our_player_index,
                         shared_replay,
                     },
-                    (None, _) if replay => ViewMode::Replay {
+                    (None, _) if replay => ViewMode::SoloReplay {
                         game_id: s.game_id,
                         our_player_index,
                     },
@@ -525,7 +525,7 @@ impl TableActor {
                         our_player_index: our_player_index.context("Missing player")?,
                     },
                 },
-                custom_seed: self.table.extra.custom_seed.is_some(),
+                custom_deal: self.table.extra.custom_seed.is_some(),
                 seed: s.seed.clone().map(Into::into),
                 started_at: hanabi_protocol::Timestamp::from(s.started),
                 finished_at: s.finished.map(hanabi_protocol::Timestamp::from),
@@ -584,7 +584,7 @@ impl TableActor {
                 deck: replay.then(|| self.card_identities(s).deck),
                 notes,
                 votes: player_seat.map(|seat| seat_votes(s, seat)).transpose()?,
-                connected: (!replay).then(|| self.connected().connected),
+                connections: (!replay).then(|| self.connections().connections),
                 clock: if replay {
                     None
                 } else {

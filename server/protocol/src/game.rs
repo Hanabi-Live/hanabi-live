@@ -36,10 +36,10 @@ pub struct ClockState {
 /// Whether each player has loaded the game, in seat order. Only a game in progress sends it.
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
-pub struct Connected {
+pub struct Connections {
     pub table_id: TableId,
     #[schemars(length(min = MIN_PLAYERS, max = MAX_PLAYERS))]
-    pub connected: Vec<bool>,
+    pub connections: Vec<bool>,
 }
 
 /// Sent when an ongoing game is about to end because nobody has taken a turn for too long.
@@ -293,7 +293,7 @@ pub struct GameState {
     /// players to wait for.
     #[serde(skip_serializing_if = "Option::is_none")]
     #[schemars(length(min = MIN_PLAYERS, max = MAX_PLAYERS))]
-    pub connected: Option<Vec<bool>>,
+    pub connections: Option<Vec<bool>>,
     /// Absent in a replay.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub clock: Option<ClockState>,
@@ -358,7 +358,7 @@ pub enum ViewMode {
     /// A spectator of a game in progress who views it from a player's seat.
     Shadowing { our_player_index: PlayerIndex },
     /// A viewer of a finished game, alone.
-    Replay {
+    SoloReplay {
         /// Absent when the game is not saved, such as an imported one.
         #[serde(skip_serializing_if = "Option::is_none")]
         game_id: Option<GameId>,
@@ -385,7 +385,7 @@ impl ViewMode {
             Self::Playing { our_player_index } | Self::Shadowing { our_player_index } => {
                 Some(*our_player_index)
             }
-            Self::Replay {
+            Self::SoloReplay {
                 our_player_index, ..
             }
             | Self::SharedReplay {
@@ -405,7 +405,7 @@ pub struct GameInit {
     pub player_names: Vec<Username>,
     pub mode: ViewMode,
     /// Whether the table chose its deal, so that the deck does not count down to a new seed.
-    pub custom_seed: bool,
+    pub custom_deal: bool,
     /// Absent for a game with its own deck instead of a seed, such as an imported one.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub seed: Option<Seed>,
@@ -431,7 +431,7 @@ pub struct SharedReplayState {
     pub spoiler_free: bool,
     /// The seats of the players who will not play again if the leader restarts.
     #[schemars(length(max = MAX_PLAYERS))]
-    pub restart_declined: Vec<PlayerIndex>,
+    pub restart_decliners: Vec<PlayerIndex>,
     /// Whether the recipient played the game of this shared replay at this table, so that they can
     /// play it again: the leader by restarting, and the other players by saying if they are ready.
     pub can_play_again: bool,

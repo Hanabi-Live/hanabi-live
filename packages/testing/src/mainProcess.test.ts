@@ -222,9 +222,9 @@ databaseDescribe("compiled application entry point (rust)", () => {
           );
           peer.send("gameLoaded", { tableId });
           await peer.receive(
-            "connected",
-            SERVER_COMMAND_SCHEMAS.connected,
-            (data) => data.connected.every(Boolean),
+            "connections",
+            SERVER_COMMAND_SCHEMAS.connections,
+            (data) => data.connections.every(Boolean),
           );
           return { init, history };
         }
@@ -713,7 +713,7 @@ databaseDescribe("compiled application entry point (rust)", () => {
         );
         const imported = await bootstrap(owner, created.tableId);
         expect(imported.init.mode.type).toBe(
-          source === "id" ? "replay" : "sharedReplay",
+          source === "id" ? "soloReplay" : "sharedReplay",
         );
         expect(imported.init.playerNames).toHaveLength(6);
         expect(imported.history.events).toEqual<unknown>(

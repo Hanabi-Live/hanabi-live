@@ -205,9 +205,6 @@ pub struct PregameRuntime {
     pub absent_until: HashMap<UserId, Instant>,
     /// Who the table was told tried to join it while it was full.
     pub full_join_notices: HashSet<UserId>,
-    /// When a player last joined the table, so that a burst of joins plays the join sound once.
-    /// Before the first join, the table's creation counts as the last join.
-    pub last_join: Option<Instant>,
 }
 #[derive(Clone, Debug, Default)]
 pub struct LiveRuntime {

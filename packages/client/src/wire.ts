@@ -107,9 +107,7 @@ export function toGameAction(event: WireEvent): GameAction {
   return { ...event, clue: toClue(event.clue), ignoreNegative: false };
 }
 
-type WireSound =
-  | Extract<WireReplayAction, { type: "sound" }>["sound"]
-  | ServerCommandData["lobbySound"]["sound"];
+type WireSound = Extract<WireReplayAction, { type: "sound" }>["sound"];
 
 /** The sound file for each sound the server names. Type checking requires one for every name. */
 const WIRE_SOUNDS = {
@@ -117,7 +115,6 @@ const WIRE_SOUNDS = {
   clap: SoundType.Clap,
   holy: SoundType.Holy,
   nooo: SoundType.Nooo,
-  someoneJoined: SoundType.SomeoneJoined,
 } as const satisfies Record<WireSound, SoundType>;
 
 export function toSoundType(value: WireSound): SoundType {

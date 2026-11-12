@@ -586,13 +586,13 @@ impl TableActor {
             hanabi_protocol::server::TABLE_RESTART_DECLINERS,
             hanabi_protocol::TableRestartDecliners {
                 table_id: self.table.id,
-                restart_declined: self.restart_declined_seats(),
+                restart_decliners: self.restart_decliners(),
             },
         );
         self.publish(e).await
     }
     /// The seats of the players who will not play again if the leader restarts, in seat order.
-    pub(super) fn restart_declined_seats(&self) -> Vec<hanabi_protocol::PlayerIndex> {
+    pub(super) fn restart_decliners(&self) -> Vec<hanabi_protocol::PlayerIndex> {
         let Phase::Replay { replay, .. } = &self.table.phase else {
             return vec![];
         };

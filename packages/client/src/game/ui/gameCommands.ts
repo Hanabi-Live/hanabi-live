@@ -75,8 +75,8 @@ gameCommands.set("clock", (data) => {
   timer.update(data);
 });
 
-gameCommands.set("connected", (data) => {
-  setConnected(data.connected);
+gameCommands.set("connections", (data) => {
+  setConnected(data.connections);
 });
 
 function setConnected(connectedList: readonly boolean[]) {
@@ -333,8 +333,8 @@ gameCommands.set("gameState", (data) => {
   if (data.votes !== undefined) {
     setVotes(data.votes);
   }
-  if (data.connected !== undefined) {
-    setConnected(data.connected);
+  if (data.connections !== undefined) {
+    setConnected(data.connections);
   }
   if (data.clock !== undefined) {
     timer.update(data.clock);
@@ -443,7 +443,7 @@ gameCommands.set("tableRestartDecliners", (data) => {
     type: "restartDeclined",
     restartDeclined: playerNamesAt(
       globals.metadata.playerNames,
-      data.restartDeclined,
+      data.restartDecliners,
     ),
   });
 });
@@ -539,7 +539,7 @@ type InitData = ServerCommandData["gameInit"];
 function setUrl(data: InitData) {
   const { mode } = data;
   let path: string;
-  if (mode.type === "replay" || mode.type === "sharedReplay") {
+  if (mode.type === "soloReplay" || mode.type === "sharedReplay") {
     // A replay of a game that is not in the database, such as an imported game, has no address.
     if (mode.gameId === undefined) {
       return;
@@ -619,7 +619,7 @@ function initStateStore(data: InitData) {
     minEfficiency,
     hardVariant,
 
-    customSeed: data.customSeed,
+    customDeal: data.customDeal,
     seed: data.seed,
   };
   globals.store = createStore(stateReducer, initialState(metadata));

@@ -76,7 +76,7 @@ macro_rules! server_contracts {
         $apply! {
             SERVER_RESTART "serverRestart" => ServerRestart;
             CLOCK "clock" => Clock;
-            CONNECTED "connected" => Connected;
+            CONNECTIONS "connections" => Connections;
             PAUSE "pause" => Pause;
             IDLE_WARNING "idleWarning" => IdleWarning;
             IDLE_RESET "idleReset" => TableRef;
@@ -111,7 +111,6 @@ macro_rules! server_contracts {
             BLOCKED "blocked" => Blocked;
             ERROR "error" => Notice;
             WARNING "warning" => Notice;
-            LOBBY_SOUND "lobbySound" => LobbySoundMessage;
             WELCOME "welcome" => Welcome;
             SPECTATORS "spectators" => Spectators;
             TABLE "table" => Table;

@@ -41,7 +41,7 @@ export function getGameInfoTooltip(showLengths = true): string {
     );
   }
 
-  if (globals.state.finished || globals.metadata.customSeed) {
+  if (globals.state.finished || globals.metadata.customDeal) {
     const { seed } = globals.metadata;
     const suffix = seed === undefined ? " (JSON game)" : "";
     content += tooltipField(

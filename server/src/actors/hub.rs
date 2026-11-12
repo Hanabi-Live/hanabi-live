@@ -1038,7 +1038,7 @@ fn activity(status: Status, table: Option<TableId>) -> hanabi_protocol::Activity
         (Status::Playing, Some(table_id)) => Activity::Playing { table_id },
         (Status::Spectating, Some(table_id)) => Activity::Spectating { table_id },
         (Status::SharedReplay, Some(table_id)) => Activity::SharedReplay { table_id },
-        (Status::Replay, _) => Activity::Replay {},
+        (Status::Replay, _) => Activity::SoloReplay {},
         (Status::Lobby, _) | (_, None) => Activity::Lobby {},
     }
 }

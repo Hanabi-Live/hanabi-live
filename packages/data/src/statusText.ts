@@ -10,6 +10,6 @@ export const StatusText = {
   pregame: "Pre-Game",
   playing: "Playing",
   spectating: "Spectating",
-  replay: "Replay",
+  soloReplay: "Replay",
   sharedReplay: "Shared Replay",
 } as const satisfies Record<Status, string>;
