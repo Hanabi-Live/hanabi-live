@@ -54,6 +54,9 @@ of the repository.
 - In the new game screen, the deck marks its last card in orange, and says
   "Final round" once it is empty.
 - Animations now play even when the operating system is set to reduce motion.
+- In the new game screen, the cursor turns into an eye over another player's
+  cards, where holding the mouse button down shows their view of them. The eye
+  buttons beside the names now show only on touch screens.
 
 ## November 11th, 2026
 

@@ -111,6 +111,9 @@ const MEDIUM_WIDTH_QUERY = "(max-width: 1440px)";
 const CHAT_OVERLAY_WIDTH_QUERY = "(max-width: 1280px)";
 const STACKED_WIDTH_QUERY = "(max-width: 980px)";
 
+/** A screen whose main pointer is a finger, which has no cursor to hover with. */
+const TOUCH_QUERY = "(pointer: coarse)";
+
 /** How far the pointer must move after pressing a card before the card starts to move with it. */
 const DRAG_THRESHOLD_PIXELS = 6;
 
@@ -597,6 +600,7 @@ export function GameScreen({
   const mediumWidth = useMediaQuery(MEDIUM_WIDTH_QUERY);
   const chatOverlay = useMediaQuery(CHAT_OVERLAY_WIDTH_QUERY);
   const stacked = useMediaQuery(STACKED_WIDTH_QUERY);
+  const touch = useMediaQuery(TOUCH_QUERY);
 
   const [chosenClueTarget, setClueTarget] = useState<PlayerIndex>();
   const [clue, setClue] = useState<Clue>();
@@ -1114,12 +1118,13 @@ export function GameScreen({
 
   let nameColumnWidth: number | undefined;
   if (!stacked) {
-    // The column also holds the eye button that shows a player's view of their hand.
+    // On a touch screen, the column also holds the eye button that shows a player's view of their
+    // hand.
     nameColumnWidth =
       Math.min(
         nameWidth,
         mediumWidth ? NAME_COLUMN_MAX_WIDTH.MEDIUM : NAME_COLUMN_MAX_WIDTH.WIDE,
-      ) + EMPATHY_TOGGLE_SPACE;
+      ) + (touch ? EMPATHY_TOGGLE_SPACE : 0);
   }
   const handCardWidth = getHandCardWidth(
     handsSize.width,
@@ -1295,17 +1300,21 @@ export function GameScreen({
                     setMenuCard(undefined);
                     sendAction({ type: "play", order });
                   }}
-                  onToggleEmpathy={(playerIndex) => {
-                    setEmpathyToggled((current) => {
-                      const next = new Set(current);
-                      if (next.has(playerIndex)) {
-                        next.delete(playerIndex);
-                      } else {
-                        next.add(playerIndex);
-                      }
-                      return next;
-                    });
-                  }}
+                  onToggleEmpathy={
+                    touch
+                      ? (playerIndex) => {
+                          setEmpathyToggled((current) => {
+                            const next = new Set(current);
+                            if (next.has(playerIndex)) {
+                              next.delete(playerIndex);
+                            } else {
+                              next.add(playerIndex);
+                            }
+                            return next;
+                          });
+                        }
+                      : undefined
+                  }
                   onViewAs={canChooseSeat() ? viewAs : undefined}
                   seats={seats}
                   shownClue={

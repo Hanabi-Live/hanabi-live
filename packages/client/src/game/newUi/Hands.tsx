@@ -96,10 +96,11 @@ interface HandsProps {
   /**
    * The hands that show their player's view of them ("empathy"): only what the clues have told the
    * player. A hand shows it while the viewer holds the pointer down on it, or while its eye button
-   * is on.
+   * is on. Only touch screens, which have no cursor to show the eye over the cards, get eye buttons
+   * (`onToggleEmpathy`).
    */
   readonly empathyToggled: ReadonlySet<PlayerIndex>;
-  readonly onToggleEmpathy: (playerIndex: PlayerIndex) => void;
+  readonly onToggleEmpathy: ((playerIndex: PlayerIndex) => void) | undefined;
   readonly onHoldEmpathy: (playerIndex: PlayerIndex | undefined) => void;
 
   /** The mouse moved onto a card in a hand, or off every card (`undefined`). */
@@ -273,6 +274,14 @@ function ClueRail({
 
 /** The width that the eye button takes beside a name, with its gap, in CSS pixels. */
 export const EMPATHY_TOGGLE_SPACE = 34;
+
+/**
+ * The cursor over another player's cards, where holding the mouse button down shows their view of
+ * them: a white eye with a dark outline, which shows on any card. It points with its center.
+ */
+const EMPATHY_CURSOR = `url("data:image/svg+xml,${encodeURIComponent(
+  "<svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'><path d='M1.5 12C4.5 6.5 8 4.5 12 4.5s7.5 2 10.5 7.5c-3 5.5-6.5 7.5-10.5 7.5S4.5 17.5 1.5 12z' fill='white' stroke='black' stroke-width='1.5'/><circle cx='12' cy='12' r='4' fill='black'/><circle cx='13.5' cy='10.5' r='1.25' fill='white'/></svg>",
+)}") 12 12, pointer`;
 
 /** The space between cards in a hand, in CSS pixels. */
 export const CARD_GAP = 10;
@@ -558,7 +567,8 @@ function Hand({
   const chip = <NameChip seat={seat} />;
 
   // Holding the pointer down on another player's cards shows their view of them until it lifts, as
-  // on the classic screen.
+  // on the classic screen. While editing cards, a press picks the card to change instead.
+  const empathyHold = !seat.you && !editing;
   const heldRef = useRef(false);
   function endHold() {
     if (heldRef.current) {
@@ -615,7 +625,7 @@ function Hand({
         >
           {chip}
         </span>
-        {!seat.you && (
+        {!seat.you && props.onToggleEmpathy !== undefined && (
           <button
             aria-label={`Show ${seat.name}'s view of their hand`}
             aria-pressed={props.empathyToggled.has(seat.playerIndex)}
@@ -625,10 +635,10 @@ function Hand({
                 : "tw:bg-transparent tw:text-game-muted tw:hover:bg-white/10 tw:hover:text-game-text"
             }`}
             onClick={() => {
-              props.onToggleEmpathy(seat.playerIndex);
+              props.onToggleEmpathy?.(seat.playerIndex);
             }}
             ref={tooltipRef(
-              `Show ${seat.name}'s hand as they see it. You can also hold the mouse button down on their cards.`,
+              `Show ${seat.name}'s hand as they see it. You can also hold your finger on their cards.`,
             )}
             type="button"
           >
@@ -637,11 +647,17 @@ function Hand({
         )}
       </div>
       <div
-        className="tw:flex"
+        // A long press on a touch screen shows the player's view instead of selecting text or
+        // opening the browser's menu.
+        className={`tw:flex ${empathyHold ? "tw:select-none tw:[-webkit-touch-callout:none]" : ""}`}
+        onContextMenu={(event) => {
+          if (empathyHold) {
+            event.preventDefault();
+          }
+        }}
         onPointerCancel={endHold}
         onPointerDown={(event) => {
-          // While editing cards, a press picks the card to change instead.
-          if (seat.you || editing || event.button !== 0) {
+          if (!empathyHold || event.button !== 0) {
             return;
           }
           heldRef.current = true;
@@ -649,7 +665,10 @@ function Hand({
         }}
         onPointerLeave={endHold}
         onPointerUp={endHold}
-        style={{ gap: CARD_GAP }}
+        style={{
+          gap: CARD_GAP,
+          cursor: empathyHold ? EMPATHY_CURSOR : undefined,
+        }}
       >
         {seat.cards.map((card, i) => {
           const place = `hand-${seat.playerIndex}-${i}`;
