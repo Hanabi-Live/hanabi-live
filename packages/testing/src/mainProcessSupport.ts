@@ -1,8 +1,8 @@
 import type {
-  CLIENT_COMMAND_SCHEMAS,
-  ClientCommand,
-  ClientReplyData,
-  ServerCommandData,
+  CLIENT_REQUEST_SCHEMAS,
+  ClientRequest,
+  ReplyData,
+  ServerEventData,
   UserId,
 } from "@hanabi-live/data";
 import { packRequest, unpackServerFrame, VERSION } from "@hanabi-live/data";
@@ -27,13 +27,13 @@ export const ROOT = path.resolve(import.meta.dirname, "../../..");
 const SESSION_SECRET = "synthetic-process-smoke-secret-".repeat(8);
 
 /** Whether a "tableJoined" message enters a game or a replay, rather than a pregame. */
-export function entersGame(joined: ServerCommandData["tableJoined"]): boolean {
+export function entersGame(joined: ServerEventData["tableJoined"]): boolean {
   return joined.stage !== "pregame";
 }
 
 /** The seat that a "gameInit" message's recipient sees the game from, if any. */
 export function ourPlayerIndex(
-  init: ServerCommandData["gameInit"],
+  init: ServerEventData["gameInit"],
 ): number | undefined {
   return "ourPlayerIndex" in init.mode ? init.mode.ourPlayerIndex : undefined;
 }
@@ -66,23 +66,23 @@ interface SocketClient {
     accept?: (data: T) => boolean,
   ) => Promise<T>;
   /** Sends a request. A later `receive` fails if the server refuses it. */
-  send: <Command extends ClientCommand>(
+  send: <Command extends ClientRequest>(
     command: Command,
-    data: z.input<(typeof CLIENT_COMMAND_SCHEMAS)[Command]>,
+    data: z.input<(typeof CLIENT_REQUEST_SCHEMAS)[Command]>,
   ) => void;
   /**
    * Sends a request and waits for its reply, which comes after every message that the request's
    * work sent. Fails if the server refuses it.
    */
-  request: <Command extends ClientCommand>(
+  request: <Command extends ClientRequest>(
     command: Command,
-    data: z.input<(typeof CLIENT_COMMAND_SCHEMAS)[Command]>,
-  ) => Promise<ClientReplyData[Command]>;
+    data: z.input<(typeof CLIENT_REQUEST_SCHEMAS)[Command]>,
+  ) => Promise<ReplyData[Command]>;
   /** Sends a request that the server must refuse, and returns the refusal. */
-  refused: <Command extends ClientCommand>(
+  refused: <Command extends ClientRequest>(
     command: Command,
-    data: z.input<(typeof CLIENT_COMMAND_SCHEMAS)[Command]>,
-  ) => Promise<ServerCommandData["warning"]>;
+    data: z.input<(typeof CLIENT_REQUEST_SCHEMAS)[Command]>,
+  ) => Promise<ServerEventData["warning"]>;
 }
 
 const rustProgressSnapshotSchema = z.object({
@@ -354,7 +354,7 @@ export function socketClient(address: string, cookie: string): SocketClient {
     { readonly data: unknown; readonly error: unknown }
   >();
   /** The command of each request that the server has not answered, by request ID. */
-  const commands = new Map<number, ClientCommand>();
+  const commands = new Map<number, ClientRequest>();
   /** The requests sent with `send` that the server refused. */
   const refusals: string[] = [];
   const awaited = new Set<number>();
@@ -451,9 +451,9 @@ export function socketClient(address: string, cookie: string): SocketClient {
     );
   }
 
-  function send<Command extends ClientCommand>(
+  function send<Command extends ClientRequest>(
     command: Command,
-    data: z.input<(typeof CLIENT_COMMAND_SCHEMAS)[Command]>,
+    data: z.input<(typeof CLIENT_REQUEST_SCHEMAS)[Command]>,
   ): number {
     const id = nextRequestId;
     nextRequestId++;
@@ -463,9 +463,9 @@ export function socketClient(address: string, cookie: string): SocketClient {
   }
 
   /** Sends a request and waits for its reply. */
-  async function answer<Command extends ClientCommand>(
+  async function answer<Command extends ClientRequest>(
     command: Command,
-    data: z.input<(typeof CLIENT_COMMAND_SCHEMAS)[Command]>,
+    data: z.input<(typeof CLIENT_REQUEST_SCHEMAS)[Command]>,
   ) {
     const id = nextRequestId;
     awaited.add(id);
@@ -490,10 +490,10 @@ export function socketClient(address: string, cookie: string): SocketClient {
     );
   }
 
-  async function request<Command extends ClientCommand>(
+  async function request<Command extends ClientRequest>(
     command: Command,
-    data: z.input<(typeof CLIENT_COMMAND_SCHEMAS)[Command]>,
-  ): Promise<ClientReplyData[Command]> {
+    data: z.input<(typeof CLIENT_REQUEST_SCHEMAS)[Command]>,
+  ): Promise<ReplyData[Command]> {
     const reply = await answer(command, data);
     if (reply.error !== undefined) {
       throw new Error(
@@ -501,19 +501,19 @@ export function socketClient(address: string, cookie: string): SocketClient {
       );
     }
     // `serverFrameViolation` checked the data against the reply's schema.
-    return reply.data as ClientReplyData[Command];
+    return reply.data as ReplyData[Command];
   }
 
-  async function refused<Command extends ClientCommand>(
+  async function refused<Command extends ClientRequest>(
     command: Command,
-    data: z.input<(typeof CLIENT_COMMAND_SCHEMAS)[Command]>,
-  ): Promise<ServerCommandData["warning"]> {
+    data: z.input<(typeof CLIENT_REQUEST_SCHEMAS)[Command]>,
+  ): Promise<ServerEventData["warning"]> {
     const reply = await answer(command, data);
     if (reply.error === undefined) {
       throw new Error(`The server did not refuse ${command}.`);
     }
     // `serverFrameViolation` checked the failure against the notice's schema.
-    return reply.error as ServerCommandData["warning"];
+    return reply.error as ServerEventData["warning"];
   }
 
   return {

@@ -1,23 +1,23 @@
 use anyhow::{Context, Result, bail, ensure};
-use hanabi_protocol::{ClientMessage, RequestId};
+use hanabi_protocol::{ClientRequest, RequestId};
 use serde_json::Value;
 use std::{collections::BTreeSet, sync::LazyLock};
 
-/// The keys of a request's frame: `{"id": 1, "type": "tableJoin", "data": {...}}`.
-const FRAME_KEYS: [&str; 3] = ["id", "type", "data"];
+/// The keys of a request's frame: `{"id": 1, "request": "tableJoin", "data": {...}}`.
+const FRAME_KEYS: [&str; 3] = ["id", "request", "data"];
 
 /// A request as far as it could be read. A request without a valid ID cannot be answered.
 pub struct Request {
     pub id: Option<RequestId>,
     /// The registered command that the request names, if it names one.
     pub command: Option<&'static str>,
-    pub message: Result<ClientMessage>,
+    pub message: Result<ClientRequest>,
 }
 
 /// The registered client command with this name.
 fn command_name(name: &str) -> Option<&'static str> {
     static NAMES: LazyLock<BTreeSet<&'static str>> =
-        LazyLock::new(|| hanabi_protocol::client_contracts().into_keys().collect());
+        LazyLock::new(|| hanabi_protocol::request_contracts().into_keys().collect());
     NAMES.get(name).copied()
 }
 
@@ -37,7 +37,7 @@ fn read(
     input: &str,
     id: &mut Option<RequestId>,
     command: &mut Option<&'static str>,
-) -> Result<ClientMessage> {
+) -> Result<ClientRequest> {
     ensure!(
         input.len() <= crate::transport::MAX_MESSAGE_BYTES,
         "Oversized command"
@@ -49,9 +49,9 @@ fn read(
         .get("id")
         .and_then(|value| hanabi_protocol::decode::<RequestId>(value).ok());
     let name = frame
-        .get("type")
+        .get("request")
         .and_then(Value::as_str)
-        .context("A request must name its command in \"type\"")?
+        .context("A request must name its command in \"request\"")?
         .to_owned();
     *command = command_name(&name);
     if let Some(key) = frame.keys().find(|key| !FRAME_KEYS.contains(&key.as_str())) {
@@ -64,7 +64,7 @@ fn read(
     let data = frame
         .remove("data")
         .context("A request must have its payload in \"data\"")?;
-    ClientMessage::decode(&name, &data)?.context("Unknown client command")
+    ClientRequest::decode(&name, &data)?.context("Unknown client command")
 }
 
 #[cfg(test)]
@@ -73,10 +73,10 @@ mod tests {
     use serde_json::json;
     /// The frame of a request with this command and payload.
     fn frame(command: &str, data: &Value) -> String {
-        json!({"id": 1, "type": command, "data": data}).to_string()
+        json!({"id": 1, "request": command, "data": data}).to_string()
     }
     /// Parses a request with this command and payload.
-    fn request(command: &str, data: &Value) -> Result<ClientMessage> {
+    fn request(command: &str, data: &Value) -> Result<ClientRequest> {
         parse(&frame(command, data)).message
     }
     #[test]
@@ -103,7 +103,7 @@ mod tests {
     }
     #[test]
     fn every_registered_command_has_a_parser() {
-        for command in hanabi_protocol::client_contracts().into_keys() {
+        for command in hanabi_protocol::request_contracts().into_keys() {
             let value = match command {
                 "settings" => json!({"settings":{"volume":50}}),
                 "userInactive" => json!({"inactive":true}),
@@ -181,29 +181,29 @@ mod tests {
 
     #[test]
     fn requests_keep_an_id_to_answer_even_when_they_fail() {
-        let unknown = parse(&json!({"id":7,"type":"unknown","data":{}}).to_string());
+        let unknown = parse(&json!({"id":7,"request":"unknown","data":{}}).to_string());
         assert_eq!(unknown.id, RequestId::new(7));
         assert!(unknown.command.is_none() && unknown.message.is_err());
-        let invalid = parse(&json!({"id":8,"type":"chat","data":{"text":1}}).to_string());
+        let invalid = parse(&json!({"id":8,"request":"chat","data":{"text":1}}).to_string());
         assert_eq!(
             (invalid.id, invalid.command),
             (RequestId::new(8), Some("chat"))
         );
         assert!(invalid.message.is_err());
         for input in [
-            json!({"type":"linkList","data":{}}).to_string(),
-            json!({"id":0,"type":"linkList","data":{}}).to_string(),
-            json!({"id":1.5,"type":"linkList","data":{}}).to_string(),
+            json!({"request":"linkList","data":{}}).to_string(),
+            json!({"id":0,"request":"linkList","data":{}}).to_string(),
+            json!({"id":1.5,"request":"linkList","data":{}}).to_string(),
             "linkList {}".to_owned(),
         ] {
             let request = parse(&input);
             assert!(request.id.is_none() && request.message.is_err(), "{input}");
         }
-        let extra = parse(&json!({"id":2,"type":"linkList","data":{},"x":1}).to_string());
+        let extra = parse(&json!({"id":2,"request":"linkList","data":{},"x":1}).to_string());
         assert_eq!(extra.id, RequestId::new(2));
         assert!(extra.message.is_err());
         assert!(
-            parse(&json!({"id":3,"type":"linkList"}).to_string())
+            parse(&json!({"id":3,"request":"linkList"}).to_string())
                 .message
                 .is_err()
         );

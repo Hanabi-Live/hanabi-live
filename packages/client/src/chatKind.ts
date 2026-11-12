@@ -1,6 +1,6 @@
-import type { ServerCommandData } from "@hanabi-live/data";
+import type { ServerEventData } from "@hanabi-live/data";
 
-type Chat = ServerCommandData["chat"];
+type Chat = ServerEventData["chat"];
 type ChatAuthor = Extract<Chat["kind"], { type: "public" }>["author"];
 
 /** The settings that a suggestion to a table's owner applies to the table. */

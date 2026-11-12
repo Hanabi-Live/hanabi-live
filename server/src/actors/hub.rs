@@ -18,7 +18,7 @@ use anyhow::{Context, Result};
 use axum::http::StatusCode;
 use futures_util::FutureExt;
 use hanabi_protocol::PlayerIndex;
-use hanabi_protocol::{ClientMessage, TableId, TableRef, User, UserId, UserList, UserRemoved};
+use hanabi_protocol::{ClientRequest, TableId, TableRef, User, UserId, UserList, UserRemoved};
 use std::{
     collections::{BTreeSet, HashMap},
     panic::AssertUnwindSafe,
@@ -183,15 +183,15 @@ impl Hub {
         }
         if self.tables.remove(&id).is_some_and(|e| e.view.visible()) {
             self.broadcast(&frame(
-                hanabi_protocol::server::TABLE_REMOVED,
+                hanabi_protocol::event::TABLE_REMOVED,
                 TableRef { table_id: id },
             ));
         }
         let boot = frame(
-            hanabi_protocol::server::TABLE_BOOTED,
+            hanabi_protocol::event::TABLE_BOOTED,
             TableRef { table_id: id },
         );
-        let warning = frame(hanabi_protocol::server::WARNING, report.notice());
+        let warning = frame(hanabi_protocol::event::WARNING, report.notice());
         let users = self
             .sessions
             .values_mut()
@@ -310,7 +310,7 @@ impl Hub {
             // The table ended, perhaps after someone shared a link to it. The client forgets it
             // without a warning.
             s.emit(&frame(
-                hanabi_protocol::server::TABLE_REMOVED,
+                hanabi_protocol::event::TABLE_REMOVED,
                 TableRef { table_id: id },
             ));
             let _ = reply.send(Err(CommandError::Rejected {
@@ -319,7 +319,7 @@ impl Hub {
             }));
             return;
         };
-        let joining = matches!(&command, Command::Client(message) if matches!(**message, ClientMessage::TableJoin(_)));
+        let joining = matches!(&command, Command::Client(message) if matches!(**message, ClientRequest::TableJoin(_)));
         let blocks = self.blocks(s.user);
         let reservation = if joining && !s.bot {
             match self.reserve(
@@ -536,7 +536,7 @@ impl Hub {
     /// Tells everyone about a change to a connected user.
     fn broadcast_user(&self, user: UserId) {
         if let Some(p) = self.sessions.get(&user) {
-            self.broadcast(&frame(hanabi_protocol::server::USER, Self::user(p)));
+            self.broadcast(&frame(hanabi_protocol::event::USER, Self::user(p)));
         }
     }
     fn disconnect(&mut self, users: &[UserId]) {
@@ -544,7 +544,7 @@ impl Hub {
             if let Some(p) = self.sessions.remove(user) {
                 p.session.cancel.cancel();
                 self.broadcast(&frame(
-                    hanabi_protocol::server::USER_REMOVED,
+                    hanabi_protocol::event::USER_REMOVED,
                     UserRemoved { user_id: *user },
                 ));
             }
@@ -591,12 +591,12 @@ impl Hub {
         }
         let messages = [if reconnect {
             frame(
-                hanabi_protocol::server::SERVER_RESTART,
+                hanabi_protocol::event::SERVER_RESTART,
                 hanabi_protocol::ServerRestart { message },
             )
         } else {
             frame(
-                hanabi_protocol::server::ERROR,
+                hanabi_protocol::event::ERROR,
                 hanabi_protocol::Notice::new(format!(
                     "{}<br />Please reconnect after the server restarts.",
                     crate::lifecycle::MAINTENANCE_NOTICE
@@ -743,7 +743,7 @@ impl Hub {
                 HubCommand::Retire(id) => {
                     if self.tables.remove(&id).is_some_and(|e| e.view.visible()) {
                         self.broadcast(&frame(
-                            hanabi_protocol::server::TABLE_REMOVED,
+                            hanabi_protocol::event::TABLE_REMOVED,
                             TableRef { table_id: id },
                         ));
                     }
@@ -809,15 +809,15 @@ impl Hub {
             session.user,
             Presence::new(session.clone(), &welcome.settings, Arc::new(blocks)),
         );
-        session.emit(&frame(hanabi_protocol::server::WELCOME, welcome));
+        session.emit(&frame(hanabi_protocol::event::WELCOME, welcome));
         session.emit(&frame(
-            hanabi_protocol::server::USER_LIST,
+            hanabi_protocol::event::USER_LIST,
             UserList {
                 users: self.sessions.values().map(Self::user).collect(),
             },
         ));
         session.emit(&frame(
-            hanabi_protocol::server::TABLE_LIST,
+            hanabi_protocol::event::TABLE_LIST,
             hanabi_protocol::TableList {
                 tables: self
                     .tables
@@ -842,7 +842,7 @@ impl Hub {
         {
             self.sessions.remove(&session.user);
             self.broadcast(&frame(
-                hanabi_protocol::server::USER_REMOVED,
+                hanabi_protocol::event::USER_REMOVED,
                 UserRemoved {
                     user_id: session.user,
                 },
@@ -865,13 +865,13 @@ impl Hub {
     }
     /// Runs a client command that the hub handles: a table or replay creation, or a command that
     /// it routes to a table.
-    fn client(&mut self, session: Arc<Session>, message: ClientMessage, reply: Reply) {
+    fn client(&mut self, session: Arc<Session>, message: ClientRequest, reply: Reply) {
         match message {
-            ClientMessage::TableCreate(r) => self.create(session, Creation::Table(r), reply),
-            ClientMessage::ReplayCreate(r) => {
+            ClientRequest::TableCreate(r) => self.create(session, Creation::Table(r), reply),
+            ClientRequest::ReplayCreate(r) => {
                 if let Some(id) = self.existing_replay(&r) {
                     let spectate =
-                        ClientMessage::TableSpectate(hanabi_protocol::TableSpectateRequest {
+                        ClientRequest::TableSpectate(hanabi_protocol::TableSpectateRequest {
                             table_id: id,
                             shadowing_player_index: r.shadowing_player_index,
                         });
@@ -991,7 +991,7 @@ impl Hub {
         entry.published = true;
         if hidden {
             self.broadcast(&frame(
-                hanabi_protocol::server::TABLE_REMOVED,
+                hanabi_protocol::event::TABLE_REMOVED,
                 TableRef {
                     table_id: effects.table,
                 },
@@ -1011,7 +1011,7 @@ impl Hub {
                 .get(&effects.table)
                 .and_then(|entry| entry.view.listing.clone())
         {
-            self.broadcast(&frame(hanabi_protocol::server::TABLE, listing));
+            self.broadcast(&frame(hanabi_protocol::event::TABLE, listing));
         }
         for (session, message) in effects.messages {
             if self.current(&session) {

@@ -1,7 +1,7 @@
 // These are exported global variables to be shared between all of the TypeScript code.
 
 import type {
-  ServerCommandData,
+  ServerEventData,
   Settings,
   TableId,
   UserId,
@@ -141,7 +141,7 @@ export class Globals {
   // -----------------------
 
   /** Keys are IDs. */
-  userMap = new Map<UserId, ServerCommandData["user"]>();
+  userMap = new Map<UserId, ServerEventData["user"]>();
 
   /** Keys are IDs. */
 

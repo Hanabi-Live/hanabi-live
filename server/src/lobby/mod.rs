@@ -22,7 +22,7 @@ use crate::accounts::{escape_html, normalize_string};
 use crate::routing::{Route, route};
 use crate::transport::{Identity, Outgoing};
 use anyhow::{Result, ensure};
-use hanabi_protocol::ClientMessage;
+use hanabi_protocol::ClientRequest;
 use hanabi_protocol::UserId;
 use std::sync::Arc;
 
@@ -128,7 +128,7 @@ fn notice(recipient: &str, message: &str) -> Effect {
 /// client shows it in the chat that the user has open.
 pub(crate) fn notice_publication(recipient: &str, message: &str) -> Publication {
     Publication::ToSelf(Outgoing::new(
-        hanabi_protocol::server::CHAT,
+        hanabi_protocol::event::CHAT,
         hanabi_protocol::Chat::private(
             message,
             hanabi_protocol::ChatAuthor::Server {},
@@ -147,7 +147,7 @@ pub async fn dispatch(
     caller: &Identity,
     online: &[OnlineUser],
     rendered: Option<&str>,
-    message: ClientMessage,
+    message: ClientRequest,
 ) -> Result<Option<Vec<Effect>>> {
     ensure!(
         matches!(route(&message), Route::Lobby | Route::TableChat(_)),
@@ -156,7 +156,7 @@ pub async fn dispatch(
     );
     ensure!(caller.user.get() > 0, "Invalid caller");
     let effects = match message {
-        ClientMessage::Settings(request) => {
+        ClientRequest::Settings(request) => {
             set_settings(pool, caller.user, &request.settings, &request.cleared).await?;
             let mut effects = vec![];
             if let Some(conventions) = request.settings.h_group_conventions {
@@ -174,10 +174,10 @@ pub async fn dispatch(
             }
             effects
         }
-        ClientMessage::UserInactive(request) => {
+        ClientRequest::UserInactive(request) => {
             vec![Publication::Inactive(request.inactive).into()]
         }
-        ClientMessage::Chat(request) => {
+        ClientRequest::Chat(request) => {
             return chat::lobby_chat(
                 pool,
                 secret,
@@ -189,32 +189,32 @@ pub async fn dispatch(
             .await;
         }
 
-        ClientMessage::ChatPm(request) => {
+        ClientRequest::ChatPm(request) => {
             chat::private_message(pool, caller, online, &request.text, &request.recipient).await?
         }
-        ClientMessage::ChatPmHistory(request) => {
+        ClientRequest::ChatPmHistory(request) => {
             chat::private_history(pool, caller, &request).await?
         }
-        ClientMessage::LinkList(_) => relationships::linked_list(pool, caller).await?,
-        ClientMessage::FriendAdd(request) => {
+        ClientRequest::LinkList(_) => relationships::linked_list(pool, caller).await?,
+        ClientRequest::FriendAdd(request) => {
             relationships::relationship(pool, caller, Change::Friend, &request.username).await?
         }
-        ClientMessage::FriendRemove(request) => {
+        ClientRequest::FriendRemove(request) => {
             relationships::relationship(pool, caller, Change::Unfriend, &request.username).await?
         }
-        ClientMessage::LinkAdd(request) => {
+        ClientRequest::LinkAdd(request) => {
             relationships::relationship(pool, caller, Change::Link, &request.username).await?
         }
-        ClientMessage::LinkRemove(request) => {
+        ClientRequest::LinkRemove(request) => {
             relationships::relationship(pool, caller, Change::Unlink, &request.username).await?
         }
-        ClientMessage::BlockAdd(request) => {
+        ClientRequest::BlockAdd(request) => {
             relationships::relationship(pool, caller, Change::Block, &request.username).await?
         }
-        ClientMessage::BlockRemove(request) => {
+        ClientRequest::BlockRemove(request) => {
             relationships::relationship(pool, caller, Change::Unblock, &request.username).await?
         }
-        ClientMessage::GameHistory(hanabi_protocol::PageRequest { offset, limit }) => {
+        ClientRequest::GameHistory(hanabi_protocol::PageRequest { offset, limit }) => {
             let ids = history_ids(pool, caller.user, offset.get(), limit.get()).await?;
             let total = crate::database::normal_game_count(pool, caller.user, true).await?;
             vec![Effect::Reply(hanabi_protocol::reply::GAME_HISTORY.data(
@@ -224,7 +224,7 @@ pub async fn dispatch(
                 },
             ))]
         }
-        ClientMessage::SeedGames(request) => {
+        ClientRequest::SeedGames(request) => {
             let seed = request.seed.as_str();
             let error = if seed.is_empty() {
                 Some("You must provide a seed.")
@@ -249,7 +249,7 @@ pub async fn dispatch(
                 },
             ))]
         }
-        ClientMessage::TagSearch(request) => {
+        ClientRequest::TagSearch(request) => {
             let raw = request.tag.as_str();
             if raw.chars().count() > hanabi_protocol::MAX_TAG_LENGTH {
                 return refused(crate::model::tag_too_long());

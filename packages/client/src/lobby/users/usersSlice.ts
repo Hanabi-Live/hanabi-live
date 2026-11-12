@@ -1,7 +1,7 @@
 // The users who are currently online, from the "userList", "user", and "userRemoved" server
 // messages.
 
-import type { ServerCommandData, UserId } from "@hanabi-live/data";
+import type { ServerEventData, UserId } from "@hanabi-live/data";
 import type { PayloadAction } from "@reduxjs/toolkit";
 import {
   createEntityAdapter,
@@ -10,7 +10,7 @@ import {
 } from "@reduxjs/toolkit";
 import type { RootState } from "../../store.ts";
 
-type User = ServerCommandData["user"];
+type User = ServerEventData["user"];
 
 /** How a user relates to us, which decides their color and position in the list. */
 type UserKind = "self" | "friend" | "other";

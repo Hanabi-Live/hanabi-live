@@ -1,4 +1,4 @@
-import type { ServerCommandData } from "@hanabi-live/data";
+import type { ServerEventData } from "@hanabi-live/data";
 import type {
   GameAction,
   GameMetadata,
@@ -95,7 +95,7 @@ export class UiGlobals {
   restartPending = false;
 
   /** The votes to end the game, as the server last sent them. */
-  terminationVotes: ServerCommandData["gameState"]["votes"] = undefined;
+  terminationVotes: ServerEventData["gameState"]["votes"] = undefined;
 
   globalEmpathyEnabled = false;
 

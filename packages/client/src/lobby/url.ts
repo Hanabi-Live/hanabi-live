@@ -1,4 +1,4 @@
-import type { ServerCommandData } from "@hanabi-live/data";
+import type { ServerEventData } from "@hanabi-live/data";
 import {
   DEFAULT_MAX_PLAYERS,
   DEFAULT_TABLE_NAME_SUFFIX,
@@ -24,7 +24,7 @@ import { getOtherScoresSeed } from "./historyHash.ts";
 import { expand } from "./hypoCompress.ts";
 import { replayVisibility } from "./replayVisibility.ts";
 
-export function parseAndGoto(data: ServerCommandData["welcome"]): void {
+export function parseAndGoto(data: ServerEventData["welcome"]): void {
   // A link to a specific game or replay takes precedence over returning to the table that we were
   // at before we disconnected. (Custom paths are disabled for first time users.)
   if (!data.firstTimeUser && gotoPath(data)) {
@@ -46,7 +46,7 @@ export function parseAndGoto(data: ServerCommandData["welcome"]): void {
 }
 
 /** Returns whether the server informed us of a table that we were at and we went back to it. */
-function reconnectToTable(data: ServerCommandData["welcome"]): boolean {
+function reconnectToTable(data: ServerEventData["welcome"]): boolean {
   // If the server has informed us that we are currently playing in an ongoing game, automatically
   // reconnect to that game.
   const firstTableId = data.playingAtTables[0];
@@ -69,7 +69,7 @@ function reconnectToTable(data: ServerCommandData["welcome"]): boolean {
 }
 
 /** Returns whether the URL path specifies somewhere to go and we went there. */
-function gotoPath(data: ServerCommandData["welcome"]): boolean {
+function gotoPath(data: ServerEventData["welcome"]): boolean {
   // Automatically create a table if we are using a "/create-table" URL.
   if (globalThis.location.pathname === PATH.CREATE_TABLE) {
     const urlParams = new URLSearchParams(globalThis.location.search);

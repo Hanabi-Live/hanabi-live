@@ -3,9 +3,9 @@
 // cover what the schemas cannot express: seat-indexed tuples.
 
 import type {
-  ClientCommandData,
+  ClientRequestData,
   playerActionRequestSchema,
-  ServerCommandData,
+  ServerEventData,
 } from "@hanabi-live/data";
 import type {
   ActionIncludingHypothetical,
@@ -23,8 +23,8 @@ import type { z } from "zod";
 import type { ClientAction } from "./game/types/ClientAction.ts";
 import { SoundType } from "./game/types/SoundType.ts";
 
-type WireEvent = ServerCommandData["gameEvent"]["event"];
-type WireCardIdentity = ServerCommandData["gameFinished"]["deck"][number];
+type WireEvent = ServerEventData["gameEvent"]["event"];
+type WireCardIdentity = ServerEventData["gameFinished"]["deck"][number];
 
 /** Converts an action that we took into the "playerAction" command's payload. */
 export function toWireAction(
@@ -52,14 +52,14 @@ export function toCardIdentity(identity: WireCardIdentity): CardIdentity {
   return { suitIndex: identity.suitIndex, rank: identity.rank };
 }
 
-type WireReplayAction = ServerCommandData["replayAction"]["action"];
+type WireReplayAction = ServerEventData["replayAction"]["action"];
 type WireHypotheticalEvent = Extract<
   Extract<WireReplayAction, { type: "hypothetical" }>["control"],
   { type: "event" }
 >["event"];
 type OutgoingHypotheticalEvent = Extract<
   Extract<
-    ClientCommandData["replayAction"]["action"],
+    ClientRequestData["replayAction"]["action"],
     { type: "hypothetical" }
   >["control"],
   { type: "event" }

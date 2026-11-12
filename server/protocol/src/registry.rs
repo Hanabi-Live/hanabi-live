@@ -3,7 +3,7 @@
     not(test),
     expect(
         clippy::wildcard_imports,
-        reason = "the command tables below name every payload type"
+        reason = "the contract tables below name every payload type"
     )
 )]
 use crate::*;
@@ -20,7 +20,7 @@ use std::{
 
 /// Every client request: its name, its payload, and, for a request whose reply carries data, the
 /// name of its reply in `reply` and the reply's payload. Every other reply carries no data.
-macro_rules! client_contracts {
+macro_rules! request_contracts {
     ($apply:ident) => {
         $apply! {
             LobbyLoad "lobbyLoad" => Empty;
@@ -72,7 +72,8 @@ macro_rules! client_contracts {
     };
 }
 
-macro_rules! server_contracts {
+/// Every event that the server sends on its own: its name and its payload.
+macro_rules! event_contracts {
     ($apply:ident) => {
         $apply! {
             SERVER_RESTART "serverRestart" => ServerRestart;
@@ -118,8 +119,8 @@ macro_rules! server_contracts {
     };
 }
 
-/// The types that the data package exports a schema for besides the command payloads: types that
-/// clients name, and the bodies of the HTTP routes that clients use.
+/// The types that the data package exports a schema for besides the request, reply, and event
+/// payloads: types that clients name, and the bodies of the HTTP routes that clients use.
 macro_rules! exported_types {
     ($apply:ident) => {
         $apply! {
@@ -181,8 +182,9 @@ fn schema_value<T: JsonSchema>() -> Value {
     serde_json::to_value(schema).expect("A schema serializes to JSON")
 }
 
-/// Every schema that the TypeScript generator can write, keyed by type name: the command payloads,
-/// the exported types, and the game library's types, each with the schemas it references.
+/// Every schema that the TypeScript generator can write, keyed by type name: the request, reply,
+/// and event payloads, the exported types, and the game library's types, each with the schemas
+/// that they reference.
 pub fn schemas() -> BTreeMap<String, Value> {
     let mut schemas = BTreeMap::new();
     macro_rules! insert {
@@ -203,23 +205,23 @@ pub fn schemas() -> BTreeMap<String, Value> {
     macro_rules! payloads {
         ($($name:ident $command:literal => $payload:ty;)+) => { insert!($($payload),+); };
     }
-    client_contracts!(requests);
-    server_contracts!(payloads);
+    request_contracts!(requests);
+    event_contracts!(payloads);
     exported_types!(insert);
     game_library_types!(insert);
     schemas
 }
 
-/// The names of the types that the data package exports: the command payloads and the exported
-/// types.
+/// The names of the types that the data package exports: the request, reply, and event payloads,
+/// and the exported types.
 pub fn exported() -> BTreeSet<&'static str> {
     macro_rules! names {
         ($($ty:ident),+ $(,)?) => { [$(stringify!($ty)),+] };
     }
-    client_contracts()
+    request_contracts()
         .into_values()
         .chain(reply_contracts().into_values())
-        .chain(server_contracts().into_values())
+        .chain(event_contracts().into_values())
         .chain(exported_types!(names))
         .collect()
 }
@@ -279,7 +281,7 @@ pub fn decode<T: JsonSchema + DeserializeOwned + 'static>(value: &Value) -> Resu
     T::deserialize(value).with_context(|| format!("Invalid {} representation", T::schema_name()))
 }
 
-pub fn decode_server(name: &str, value: &Value) -> Result<Option<Value>> {
+pub fn decode_event(name: &str, value: &Value) -> Result<Option<Value>> {
     macro_rules! dispatch {
         ($($name:ident $command:literal => $payload:ty;)+) => {
             match name {
@@ -288,16 +290,16 @@ pub fn decode_server(name: &str, value: &Value) -> Result<Option<Value>> {
             }
         };
     }
-    server_contracts!(dispatch)
+    event_contracts!(dispatch)
 }
 
-pub fn client_contracts() -> BTreeMap<&'static str, &'static str> {
+pub fn request_contracts() -> BTreeMap<&'static str, &'static str> {
     macro_rules! names {
         ($($name:ident $command:literal => $payload:ty $(, reply $reply:ident: $data:ty)?;)+) => {
             BTreeMap::from([$(( $command, stringify!($payload) )),+])
         };
     }
-    client_contracts!(names)
+    request_contracts!(names)
 }
 
 /// The payload type of each reply that carries data, by the name of its request.
@@ -309,25 +311,25 @@ pub fn reply_contracts() -> BTreeMap<&'static str, &'static str> {
             names
         }};
     }
-    client_contracts!(names)
+    request_contracts!(names)
 }
 
-pub fn server_contracts() -> BTreeMap<&'static str, &'static str> {
+pub fn event_contracts() -> BTreeMap<&'static str, &'static str> {
     macro_rules! names {
         ($($name:ident $command:literal => $payload:ty;)+) => {
             BTreeMap::from([$(( $command, stringify!($payload) )),+])
         };
     }
-    server_contracts!(names)
+    event_contracts!(names)
 }
 
-/// A registered server message: its name, tied to the payload type the clients validate.
-pub struct ServerMessage<T> {
+/// A registered server event: its name, tied to the payload type the clients validate.
+pub struct ServerEvent<T> {
     name: &'static str,
     payload: PhantomData<fn(T)>,
 }
 
-impl<T> ServerMessage<T> {
+impl<T> ServerEvent<T> {
     const fn new(name: &'static str) -> Self {
         Self {
             name,
@@ -340,36 +342,36 @@ impl<T> ServerMessage<T> {
     }
 }
 
-impl<T> Clone for ServerMessage<T> {
+impl<T> Clone for ServerEvent<T> {
     fn clone(&self) -> Self {
         *self
     }
 }
 
-impl<T> Copy for ServerMessage<T> {}
+impl<T> Copy for ServerEvent<T> {}
 
-macro_rules! server_messages {
+macro_rules! event_messages {
     ($($name:ident $command:literal => $payload:ident;)+) => {
-        $(pub const $name: super::ServerMessage<crate::$payload> = super::ServerMessage::new($command);)+
+        $(pub const $name: super::ServerEvent<crate::$payload> = super::ServerEvent::new($command);)+
     };
 }
 
-/// Every message the server can send. Building a frame requires one of these and its payload type.
-pub mod server {
-    server_contracts!(server_messages);
+/// Every event that the server can send. Building a frame requires one of these and its payload type.
+pub mod event {
+    event_contracts!(event_messages);
 }
 
 /// A registered reply that carries data: the name of its request, tied to the payload type the
 /// clients validate.
 pub struct Reply<T> {
-    command: &'static str,
+    request: &'static str,
     payload: PhantomData<fn(T)>,
 }
 
 impl<T: Serialize> Reply<T> {
-    const fn new(command: &'static str) -> Self {
+    const fn new(request: &'static str) -> Self {
         Self {
-            command,
+            request,
             payload: PhantomData,
         }
     }
@@ -377,7 +379,7 @@ impl<T: Serialize> Reply<T> {
     /// The reply's data, ready for the reply to the request that this reply answers.
     pub fn data(&self, data: T) -> ReplyData {
         ReplyData {
-            command: self.command,
+            request: self.request,
             data: serde_json::to_value(data).expect("JSON-serializable reply payload"),
         }
     }
@@ -386,7 +388,7 @@ impl<T: Serialize> Reply<T> {
 /// The data of a reply, with the name of the request that it answers.
 #[derive(Clone, Debug, PartialEq)]
 pub struct ReplyData {
-    pub command: &'static str,
+    pub request: &'static str,
     pub data: Value,
 }
 
@@ -406,20 +408,20 @@ pub mod reply {
         )
     )]
     use crate::*;
-    client_contracts!(reply_messages);
+    request_contracts!(reply_messages);
 }
 
-macro_rules! client_messages {
+macro_rules! request_enum {
     ($($name:ident $command:literal => $payload:ty $(, reply $reply:ident: $data:ty)?;)+) => {
-        /// A client command, decoded once into its payload type. Matching on it, rather than on
-        /// command names, lets the compiler check that every command is handled.
+        /// A client request, decoded once into its payload type. Matching on it, rather than on
+        /// request names, lets the compiler check that every request is handled.
         #[derive(Clone, Debug)]
-        pub enum ClientMessage {
+        pub enum ClientRequest {
             $($name($payload),)+
         }
 
-        impl ClientMessage {
-            /// Validates and decodes a command, or returns None for an unregistered name.
+        impl ClientRequest {
+            /// Validates and decodes a request, or returns None for an unregistered name.
             pub fn decode(name: &str, value: &Value) -> Result<Option<Self>> {
                 match name {
                     $($command => Ok(Some(Self::$name(decode::<$payload>(value)?))),)+
@@ -445,4 +447,4 @@ macro_rules! client_messages {
     };
 }
 
-client_contracts!(client_messages);
+request_contracts!(request_enum);

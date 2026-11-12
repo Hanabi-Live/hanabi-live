@@ -1,9 +1,9 @@
 // The deal that a new table requests, from the seed and replay fields of a form or a URL.
 
-import type { GameId, ServerCommandData } from "@hanabi-live/data";
+import type { GameId, ServerEventData } from "@hanabi-live/data";
 import { parseIntSafe } from "complete-common";
 
-export type Deal = NonNullable<ServerCommandData["table"]["settings"]["deal"]>;
+export type Deal = NonNullable<ServerEventData["table"]["settings"]["deal"]>;
 
 /**
  * A replayed game takes precedence over a seed, since a replay keeps its game's deal. Players count

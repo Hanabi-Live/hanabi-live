@@ -1,7 +1,7 @@
 // Users can chat in the lobby, in the pregame, and in a game. Logic for the game chat box is
 // located separately in "game/chat.ts".
 
-import type { ServerCommandData, TableId } from "@hanabi-live/data";
+import type { ServerEventData, TableId } from "@hanabi-live/data";
 import {
   CHAT_SPECIAL_EMOTES,
   CHAT_EMOJIS as emojis,
@@ -57,7 +57,7 @@ const chatTimeFormatter = new Intl.DateTimeFormat("en-US", {
   hourCycle: "h23",
 });
 
-type ChatData = ServerCommandData["chat"];
+type ChatData = ServerEventData["chat"];
 
 /** The table of a chat room ("lobby" or "table" and the table's ID), or undefined for the lobby. */
 function roomTableId(room: string): TableId | undefined {

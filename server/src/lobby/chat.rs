@@ -300,11 +300,11 @@ pub async fn private_message(
         hanabi_protocol::Timestamp::from(row.datetime_sent),
     );
     Ok(vec![
-        Effect::to_self(Outgoing::new(hanabi_protocol::server::CHAT, data.clone())),
+        Effect::to_self(Outgoing::new(hanabi_protocol::event::CHAT, data.clone())),
         Publication::ToUser {
             id: target.identity.user,
             generation: target.generation,
-            message: Outgoing::new(hanabi_protocol::server::CHAT, data),
+            message: Outgoing::new(hanabi_protocol::event::CHAT, data),
         }
         .into(),
     ])
@@ -481,7 +481,7 @@ pub async fn lobby_chat(
         .await?;
         let chat_id: i32 = row.id;
         effects.push(Effect::broadcast(Outgoing::new(
-            hanabi_protocol::server::CHAT,
+            hanabi_protocol::event::CHAT,
             Chat {
                 chat_id: Some(hanabi_protocol::ChatId::try_from(chat_id)?),
                 ..Chat::public(
@@ -576,7 +576,7 @@ pub async fn server_chat(pool: &PgPool, message: &str) -> Result<SavedChat> {
     Ok(SavedChat {
         chat_id,
         broadcast: Outgoing::new(
-            hanabi_protocol::server::CHAT,
+            hanabi_protocol::event::CHAT,
             Chat {
                 chat_id: Some(hanabi_protocol::ChatId::try_from(chat_id)?),
                 ..Chat::server(message, hanabi_protocol::Timestamp::from(row.datetime_sent))

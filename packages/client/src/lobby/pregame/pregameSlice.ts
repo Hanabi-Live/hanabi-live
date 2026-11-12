@@ -1,7 +1,7 @@
 // The table that we are at before its game starts: its players and options, its chat, and who is
 // typing there.
 
-import type { ServerCommandData } from "@hanabi-live/data";
+import type { ServerEventData } from "@hanabi-live/data";
 import type { PayloadAction } from "@reduxjs/toolkit";
 import { createSlice } from "@reduxjs/toolkit";
 import type { SuggestedSettings } from "../../chatKind.ts";
@@ -12,7 +12,7 @@ interface PregameChatLine extends ChatLine {
   readonly suggestion?: SuggestedSettings;
 }
 
-export type Game = ServerCommandData["pregame"];
+export type Game = ServerEventData["pregame"];
 
 interface PregameState {
   /** From the "pregame" message. */

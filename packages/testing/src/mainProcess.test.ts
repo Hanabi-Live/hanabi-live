@@ -2,7 +2,7 @@ import {
   DEFAULT_MAX_PLAYERS,
   noticeSchema,
   replayGameSchema,
-  SERVER_COMMAND_SCHEMAS,
+  SERVER_EVENT_SCHEMAS,
   VERSION,
 } from "@hanabi-live/data";
 import { DEFAULT_VARIANT_ID, getVariant } from "@hanabi-live/game";
@@ -144,7 +144,7 @@ databaseDescribe("compiled application entry point (rust)", () => {
         sockets.push(alice.socket);
         const aliceWelcome = await alice.receive(
           "welcome",
-          SERVER_COMMAND_SCHEMAS.welcome,
+          SERVER_EVENT_SCHEMAS.welcome,
         );
         expect(aliceWelcome.username).toBe("SmokeAlice");
         const bobCookie = await login(address, "SmokeBob");
@@ -152,7 +152,7 @@ databaseDescribe("compiled application entry point (rust)", () => {
         sockets.push(bob.socket);
         const bobWelcome = await bob.receive(
           "welcome",
-          SERVER_COMMAND_SCHEMAS.welcome,
+          SERVER_EVENT_SCHEMAS.welcome,
         );
         expect(bobWelcome.username).toBe("SmokeBob");
         alice.send("tableCreate", {
@@ -170,7 +170,7 @@ databaseDescribe("compiled application entry point (rust)", () => {
         });
         const { tableId } = await alice.receive(
           "tableJoined",
-          SERVER_COMMAND_SCHEMAS.tableJoined,
+          SERVER_EVENT_SCHEMAS.tableJoined,
         );
         bob.send("tableJoin", {
           tableId,
@@ -178,12 +178,12 @@ databaseDescribe("compiled application entry point (rust)", () => {
         });
         const bobJoined = await bob.receive(
           "tableJoined",
-          SERVER_COMMAND_SCHEMAS.tableJoined,
+          SERVER_EVENT_SCHEMAS.tableJoined,
         );
         expect(bobJoined.tableId).toBe(tableId);
         const game = await bob.receive(
           "pregame",
-          SERVER_COMMAND_SCHEMAS.pregame,
+          SERVER_EVENT_SCHEMAS.pregame,
         );
         expect(game.players.map((player) => player.username)).toEqual([
           "SmokeAlice",
@@ -192,26 +192,26 @@ databaseDescribe("compiled application entry point (rust)", () => {
         bob.send("tableLeave", { tableId });
         const bobLeft = await bob.receive(
           "tableLeft",
-          SERVER_COMMAND_SCHEMAS.tableLeft,
+          SERVER_EVENT_SCHEMAS.tableLeft,
         );
         expect(bobLeft.tableId).toBe(tableId);
         bob.send("tableJoin", {
           tableId,
           password: "synthetic-table-password",
         });
-        await bob.receive("tableJoined", SERVER_COMMAND_SCHEMAS.tableJoined);
+        await bob.receive("tableJoined", SERVER_EVENT_SCHEMAS.tableJoined);
         alice.send("tableStart", {
           tableId,
           intendedPlayerIds: [aliceWelcome.userId, bobWelcome.userId],
         });
         await alice.receive(
           "tableJoined",
-          SERVER_COMMAND_SCHEMAS.tableJoined,
+          SERVER_EVENT_SCHEMAS.tableJoined,
           entersGame,
         );
         await bob.receive(
           "tableJoined",
-          SERVER_COMMAND_SCHEMAS.tableJoined,
+          SERVER_EVENT_SCHEMAS.tableJoined,
           entersGame,
         );
 
@@ -219,17 +219,17 @@ databaseDescribe("compiled application entry point (rust)", () => {
           peer.send("gameInitLoad", { tableId });
           const init = await peer.receive(
             "gameInit",
-            SERVER_COMMAND_SCHEMAS.gameInit,
+            SERVER_EVENT_SCHEMAS.gameInit,
           );
           peer.send("gameStateLoad", { tableId });
           const history = await peer.receive(
             "gameState",
-            SERVER_COMMAND_SCHEMAS.gameState,
+            SERVER_EVENT_SCHEMAS.gameState,
           );
           peer.send("gameLoaded", { tableId });
           await peer.receive(
             "connections",
-            SERVER_COMMAND_SCHEMAS.connections,
+            SERVER_EVENT_SCHEMAS.connections,
             (data) => data.connections.every(Boolean),
           );
           return { init, history };
@@ -253,11 +253,11 @@ databaseDescribe("compiled application entry point (rust)", () => {
           tableId,
           action: { type: "play", order: card.order },
         });
-        await active.receive("gameEvent", SERVER_COMMAND_SCHEMAS.gameEvent);
+        await active.receive("gameEvent", SERVER_EVENT_SCHEMAS.gameEvent);
         active.send("gameStateLoad", { tableId });
         const acknowledged = await active.receive(
           "gameState",
-          SERVER_COMMAND_SCHEMAS.gameState,
+          SERVER_EVENT_SCHEMAS.gameState,
         );
         const checkpoints = await checkpointProgress();
         expect(checkpoints).toHaveLength(1);
@@ -288,7 +288,7 @@ databaseDescribe("compiled application entry point (rust)", () => {
                   async (peer) =>
                     await peer.receive(
                       "serverRestart",
-                      SERVER_COMMAND_SCHEMAS.serverRestart,
+                      SERVER_EVENT_SCHEMAS.serverRestart,
                     ),
                 ),
               );
@@ -344,13 +344,13 @@ databaseDescribe("compiled application entry point (rust)", () => {
           returningPeers.map(async (peer) => {
             const returning = await peer.receive(
               "welcome",
-              SERVER_COMMAND_SCHEMAS.welcome,
+              SERVER_EVENT_SCHEMAS.welcome,
             );
             expect(returning.playingAtTables).toEqual([tableId]);
             peer.send("tableReattend", { tableId });
             await peer.receive(
               "tableJoined",
-              SERVER_COMMAND_SCHEMAS.tableJoined,
+              SERVER_EVENT_SCHEMAS.tableJoined,
               entersGame,
             );
             return await bootstrap(peer);
@@ -417,7 +417,7 @@ databaseDescribe("compiled application entry point (rust)", () => {
           });
           await replacement.receive(
             "votes",
-            SERVER_COMMAND_SCHEMAS.votes,
+            SERVER_EVENT_SCHEMAS.votes,
             (data) => data.voted,
           );
           bob.send("tableTerminateVote", {
@@ -431,13 +431,13 @@ databaseDescribe("compiled application entry point (rust)", () => {
         }
         const finished = await replacement.receive(
           "gameFinished",
-          SERVER_COMMAND_SCHEMAS.gameFinished,
+          SERVER_EVENT_SCHEMAS.gameFinished,
         );
         assertDefined(finished.gameId, "The finished game was not saved.");
         expect<number>(finished.gameId).toBe(checkpoint.game_id);
         await replacement.receive(
           "gameHistoryAdded",
-          SERVER_COMMAND_SCHEMAS.gameHistoryAdded,
+          SERVER_EVENT_SCHEMAS.gameHistoryAdded,
           (row) => row.gameId === finished.gameId,
         );
         replacement.send("replayAction", {
@@ -446,7 +446,7 @@ databaseDescribe("compiled application entry point (rust)", () => {
         });
         const replayPosition = await replacement.receive(
           "replayAction",
-          SERVER_COMMAND_SCHEMAS.replayAction,
+          SERVER_EVENT_SCHEMAS.replayAction,
         );
         expect(replayPosition).toMatchObject({
           action: { type: "turn", turn: 1 },
@@ -454,7 +454,7 @@ databaseDescribe("compiled application entry point (rust)", () => {
         replacement.send("gameStateLoad", { tableId });
         const replayHistory = await replacement.receive(
           "gameState",
-          SERVER_COMMAND_SCHEMAS.gameState,
+          SERVER_EVENT_SCHEMAS.gameState,
         );
         expect(
           replayHistory.events
@@ -475,7 +475,7 @@ databaseDescribe("compiled application entry point (rust)", () => {
         replacement.send("tableUnattend", { tableId });
         const gone = await replacement.receive(
           "tableRemoved",
-          SERVER_COMMAND_SCHEMAS.tableRemoved,
+          SERVER_EVENT_SCHEMAS.tableRemoved,
         );
         expect(gone.tableId).toBe(tableId);
         if (signal === undefined && domain === "localhost") {
@@ -561,7 +561,7 @@ databaseDescribe("compiled application entry point (rust)", () => {
           const cookie = await login(address, `Parity${index}`);
           const peer = socketClient(address, cookie);
           sockets.push(peer.socket);
-          await peer.receive("welcome", SERVER_COMMAND_SCHEMAS.welcome);
+          await peer.receive("welcome", SERVER_EVENT_SCHEMAS.welcome);
           return { ...peer, cookie };
         }),
       );
@@ -583,13 +583,13 @@ databaseDescribe("compiled application entry point (rust)", () => {
       });
       const { tableId } = await owner.receive(
         "tableJoined",
-        SERVER_COMMAND_SCHEMAS.tableJoined,
+        SERVER_EVENT_SCHEMAS.tableJoined,
       );
       const players = peers.slice(0, 6);
       await Promise.all(
         players.slice(1).map(async (peer) => {
           peer.send("tableJoin", { tableId });
-          await peer.receive("tableJoined", SERVER_COMMAND_SCHEMAS.tableJoined);
+          await peer.receive("tableJoined", SERVER_EVENT_SCHEMAS.tableJoined);
         }),
       );
       owner.send("tableStart", {
@@ -603,12 +603,12 @@ databaseDescribe("compiled application entry point (rust)", () => {
         peer.send("gameInitLoad", { tableId: id });
         const init = await peer.receive(
           "gameInit",
-          SERVER_COMMAND_SCHEMAS.gameInit,
+          SERVER_EVENT_SCHEMAS.gameInit,
         );
         peer.send("gameStateLoad", { tableId: id });
         const history = await peer.receive(
           "gameState",
-          SERVER_COMMAND_SCHEMAS.gameState,
+          SERVER_EVENT_SCHEMAS.gameState,
         );
         peer.send("gameLoaded", { tableId: id });
         return { init, history };
@@ -617,7 +617,7 @@ databaseDescribe("compiled application entry point (rust)", () => {
         players.map(async (peer) => {
           await peer.receive(
             "tableJoined",
-            SERVER_COMMAND_SCHEMAS.tableJoined,
+            SERVER_EVENT_SCHEMAS.tableJoined,
             entersGame,
           );
           return await bootstrap(peer, tableId);
@@ -647,7 +647,7 @@ databaseDescribe("compiled application entry point (rust)", () => {
       observer.send("tableSpectate", { tableId, shadowingPlayerIndex: 0 });
       await observer.receive(
         "tableJoined",
-        SERVER_COMMAND_SCHEMAS.tableJoined,
+        SERVER_EVENT_SCHEMAS.tableJoined,
         entersGame,
       );
       const shadow = await bootstrap(observer, tableId);
@@ -664,7 +664,7 @@ databaseDescribe("compiled application entry point (rust)", () => {
       owner.send("tableTerminate", { tableId });
       const finished = await owner.receive(
         "gameFinished",
-        SERVER_COMMAND_SCHEMAS.gameFinished,
+        SERVER_EVENT_SCHEMAS.gameFinished,
       );
       // A deck of 6 suits has 60 cards.
       expect(finished.deck).toHaveLength(60);
@@ -684,7 +684,7 @@ databaseDescribe("compiled application entry point (rust)", () => {
       }
       await owner.receive(
         "tableRemoved",
-        SERVER_COMMAND_SCHEMAS.tableRemoved,
+        SERVER_EVENT_SCHEMAS.tableRemoved,
         (message) => message.tableId === tableId,
       );
       /* eslint-disable no-await-in-loop -- One client's replay imports must complete in wire order. */
@@ -707,7 +707,7 @@ databaseDescribe("compiled application entry point (rust)", () => {
         );
         const created = await owner.receive(
           "tableJoined",
-          SERVER_COMMAND_SCHEMAS.tableJoined,
+          SERVER_EVENT_SCHEMAS.tableJoined,
           entersGame,
         );
         const imported = await bootstrap(owner, created.tableId);
@@ -741,7 +741,7 @@ databaseDescribe("compiled application entry point (rust)", () => {
           });
           const pending = await owner.receive(
             "tableJoined",
-            SERVER_COMMAND_SCHEMAS.tableJoined,
+            SERVER_EVENT_SCHEMAS.tableJoined,
           );
           const crashed = once(state.child, "close");
           state.child.kill("SIGKILL");
@@ -750,11 +750,11 @@ databaseDescribe("compiled application entry point (rust)", () => {
           address = await bounded(state.ready, "pregame and replay recovery");
           const returning = socketClient(address, owner.cookie);
           sockets.push(returning.socket);
-          await returning.receive("welcome", SERVER_COMMAND_SCHEMAS.welcome);
+          await returning.receive("welcome", SERVER_EVENT_SCHEMAS.welcome);
           returning.send("tableReattend", { tableId: pending.tableId });
           const pregame = await returning.receive(
             "pregame",
-            SERVER_COMMAND_SCHEMAS.pregame,
+            SERVER_EVENT_SCHEMAS.pregame,
             (message) => message.tableId === pending.tableId,
           );
           expect(pregame).toMatchObject({
@@ -769,7 +769,7 @@ databaseDescribe("compiled application entry point (rust)", () => {
           sockets.push(returningObserver.socket);
           await returningObserver.receive(
             "welcome",
-            SERVER_COMMAND_SCHEMAS.welcome,
+            SERVER_EVENT_SCHEMAS.welcome,
           );
           returningObserver.send("tableJoin", {
             tableId: pending.tableId,
@@ -777,13 +777,13 @@ databaseDescribe("compiled application entry point (rust)", () => {
           });
           await returningObserver.receive(
             "tableJoined",
-            SERVER_COMMAND_SCHEMAS.tableJoined,
+            SERVER_EVENT_SCHEMAS.tableJoined,
             (message) => message.tableId === pending.tableId,
           );
           returning.send("tableReattend", { tableId: created.tableId });
           await returning.receive(
             "tableJoined",
-            SERVER_COMMAND_SCHEMAS.tableJoined,
+            SERVER_EVENT_SCHEMAS.tableJoined,
             (message) =>
               entersGame(message) && message.tableId === created.tableId,
           );
@@ -806,7 +806,7 @@ databaseDescribe("compiled application entry point (rust)", () => {
           returning.send("tableLeave", { tableId: pending.tableId });
           await returning.receive(
             "tableRemoved",
-            SERVER_COMMAND_SCHEMAS.tableRemoved,
+            SERVER_EVENT_SCHEMAS.tableRemoved,
             (message) => message.tableId === pending.tableId,
           );
           replayPeer = returning;

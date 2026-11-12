@@ -2,9 +2,9 @@
 // replies to "seedGames".
 
 import type {
-  ClientReplyData,
   GameSummary,
-  ServerCommandData,
+  ReplyData,
+  ServerEventData,
 } from "@hanabi-live/data";
 import { compareGameHistory } from "@hanabi-live/data";
 import type { PayloadAction } from "@reduxjs/toolkit";
@@ -19,9 +19,9 @@ import type { RootState } from "../../store.ts";
 interface OtherScores {
   readonly seed: string;
   readonly offset: number;
-  readonly page: ClientReplyData["seedGames"];
+  readonly page: ReplyData["seedGames"];
 }
-type LobbyStatus = ServerCommandData["lobbyStatus"];
+type LobbyStatus = ServerEventData["lobbyStatus"];
 
 const gamesAdapter = createEntityAdapter({
   selectId: (game: GameSummary): number => game.gameId,

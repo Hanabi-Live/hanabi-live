@@ -1,5 +1,5 @@
 /* eslint-disable no-await-in-loop -- Each lane follows the actual client protocol in order. */
-import { DEFAULT_MAX_PLAYERS, SERVER_COMMAND_SCHEMAS } from "@hanabi-live/data";
+import { DEFAULT_MAX_PLAYERS, SERVER_EVENT_SCHEMAS } from "@hanabi-live/data";
 import { expect, test } from "bun:test";
 import { assertDefined } from "complete-common";
 import { once } from "node:events";
@@ -84,7 +84,7 @@ databaseDescribe("normal-server protocol workload", () => {
       async function connect(cookie: string) {
         const peer = socketClient(address, cookie);
         sockets.add(peer.socket);
-        await peer.receive("welcome", SERVER_COMMAND_SCHEMAS.welcome);
+        await peer.receive("welcome", SERVER_EVENT_SCHEMAS.welcome);
         return peer;
       }
 
@@ -109,12 +109,12 @@ databaseDescribe("normal-server protocol workload", () => {
         peer.send("gameInitLoad", { tableId });
         const init = await peer.receive(
           "gameInit",
-          SERVER_COMMAND_SCHEMAS.gameInit,
+          SERVER_EVENT_SCHEMAS.gameInit,
         );
         peer.send("gameStateLoad", { tableId });
         const history = await peer.receive(
           "gameState",
-          SERVER_COMMAND_SCHEMAS.gameState,
+          SERVER_EVENT_SCHEMAS.gameState,
         );
         if (
           init.mode.type !== "soloReplay"
@@ -145,12 +145,12 @@ databaseDescribe("normal-server protocol workload", () => {
             });
             const { tableId } = await alice.receive(
               "tableJoined",
-              SERVER_COMMAND_SCHEMAS.tableJoined,
+              SERVER_EVENT_SCHEMAS.tableJoined,
             );
             bob.send("tableJoin", { tableId });
             await bob.receive(
               "tableJoined",
-              SERVER_COMMAND_SCHEMAS.tableJoined,
+              SERVER_EVENT_SCHEMAS.tableJoined,
             );
             alice.send("tableStart", {
               tableId,
@@ -161,12 +161,12 @@ databaseDescribe("normal-server protocol workload", () => {
             });
             await alice.receive(
               "tableJoined",
-              SERVER_COMMAND_SCHEMAS.tableJoined,
+              SERVER_EVENT_SCHEMAS.tableJoined,
               entersGame,
             );
             await bob.receive(
               "tableJoined",
-              SERVER_COMMAND_SCHEMAS.tableJoined,
+              SERVER_EVENT_SCHEMAS.tableJoined,
               entersGame,
             );
             const [a, b] = await Promise.all([
@@ -189,7 +189,7 @@ databaseDescribe("normal-server protocol workload", () => {
               });
               await peer.receive(
                 "gameEvent",
-                SERVER_COMMAND_SCHEMAS.gameEvent,
+                SERVER_EVENT_SCHEMAS.gameEvent,
                 (event) =>
                   event.event.type === "play" && event.event.order === order,
               );
@@ -201,7 +201,7 @@ databaseDescribe("normal-server protocol workload", () => {
                 alice.send("tableReattend", { tableId });
                 await alice.receive(
                   "tableJoined",
-                  SERVER_COMMAND_SCHEMAS.tableJoined,
+                  SERVER_EVENT_SCHEMAS.tableJoined,
                   entersGame,
                 );
                 const restored = await bootstrap(alice, tableId);
@@ -224,7 +224,7 @@ databaseDescribe("normal-server protocol workload", () => {
             }
             await alice.receive(
               "gameHistoryAdded",
-              SERVER_COMMAND_SCHEMAS.gameHistoryAdded,
+              SERVER_EVENT_SCHEMAS.gameHistoryAdded,
               (entry) => entry.score === 25,
             );
             const finished = await bootstrap(alice, tableId);
@@ -303,7 +303,7 @@ databaseDescribe("normal-server protocol workload", () => {
         });
         const { tableId } = await peer.receive(
           "tableJoined",
-          SERVER_COMMAND_SCHEMAS.tableJoined,
+          SERVER_EVENT_SCHEMAS.tableJoined,
           entersGame,
         );
         const replay = await bootstrap(peer, tableId);

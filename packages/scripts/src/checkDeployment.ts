@@ -4,9 +4,9 @@
 // the site serves this checkout's revision, it also validates every payload with the generated
 // schemas; otherwise those schemas may differ from the deployed ones, so it skips that.
 
-import type { ServerCommand } from "@hanabi-live/data";
+import type { ServerEvent } from "@hanabi-live/data";
 import {
-  SERVER_COMMAND_SCHEMAS,
+  SERVER_EVENT_SCHEMAS,
   unpackServerFrame,
   userRefSchema,
 } from "@hanabi-live/data";
@@ -20,8 +20,8 @@ const TIMEOUT_MS = 30_000;
 const REQUIRED = ["welcome", "userList", "tableList"] as const;
 
 const serverSchemas: Readonly<
-  Partial<Record<string, (typeof SERVER_COMMAND_SCHEMAS)[ServerCommand]>>
-> = SERVER_COMMAND_SCHEMAS;
+  Partial<Record<string, (typeof SERVER_EVENT_SCHEMAS)[ServerEvent]>>
+> = SERVER_EVENT_SCHEMAS;
 
 /**
  * Bun's WebSocket, which can send the session cookie. This package also loads the DOM's types,

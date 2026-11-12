@@ -26,7 +26,7 @@ fn self_data(effects: &[Effect], command: &str) -> Value {
             Effect::Publish(Publication::ToSelf(message)) if message.command() == command => {
                 Some(message.data().clone())
             }
-            Effect::Reply(reply) if reply.command == command => Some(reply.data.clone()),
+            Effect::Reply(reply) if reply.request == command => Some(reply.data.clone()),
             _ => None,
         })
         .unwrap_or_else(|| panic!("Missing {command} in {effects:?}"))
@@ -704,10 +704,10 @@ async fn lobby_directed_linked_seeds_and_histories_postgres() {
         json!({"offset":0,"limit":hanabi_protocol::MAX_PAGE_LIMIT + 1}),
         json!({"offset":-1,"limit":1}),
     ] {
-        assert!(ClientMessage::decode("gameHistory", &page).is_err());
+        assert!(ClientRequest::decode("gameHistory", &page).is_err());
         let mut other = page;
         other["seed"] = "p2v0s1".into();
-        assert!(ClientMessage::decode("seedGames", &other).is_err());
+        assert!(ClientRequest::decode("seedGames", &other).is_err());
     }
     let result = run(
         &db.pool,

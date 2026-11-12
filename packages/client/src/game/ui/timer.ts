@@ -1,6 +1,6 @@
 // Functions for timed games (and the timer that ticks up in untimed games).
 
-import type { ServerCommandData } from "@hanabi-live/data";
+import type { ServerEventData } from "@hanabi-live/data";
 import type { PlayerIndex } from "@hanabi-live/game";
 import { millisecondsToClockString } from "@hanabi-live/game";
 import { SECOND_IN_MILLISECONDS, assertDefined } from "complete-common";
@@ -33,9 +33,7 @@ const LOW_TIME_WARNING_MILLISECONDS = 10 * SECOND_IN_MILLISECONDS;
  * }
  * ```
  */
-export function update(
-  data: Omit<ServerCommandData["clock"], "tableId">,
-): void {
+export function update(data: Omit<ServerEventData["clock"], "tableId">): void {
   stop();
   // Absent if the game just ended.
   const { currentPlayerIndex } = data;

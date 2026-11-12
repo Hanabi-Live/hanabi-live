@@ -1,9 +1,9 @@
-import type { ServerCommandData } from "@hanabi-live/data";
+import type { ServerEventData } from "@hanabi-live/data";
 import { useEffect, useRef, useState } from "react";
 import { endNow, setVote, votersText } from "../ui/terminationVotes.ts";
 
 /** Our own vote to end the game. The server does not tell us how the others voted. */
-type Votes = NonNullable<ServerCommandData["gameState"]["votes"]>;
+type Votes = NonNullable<ServerEventData["gameState"]["votes"]>;
 
 const BUTTON_CLASS =
   "tw:flex tw:h-11 tw:cursor-pointer tw:items-center tw:gap-2 tw:rounded-[10px] tw:border-0 tw:px-4 tw:text-[15px] tw:whitespace-nowrap tw:text-game-text tw:narrow-980:h-9 tw:narrow-980:px-3 tw:narrow-980:text-sm";

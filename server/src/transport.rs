@@ -260,7 +260,7 @@ pub type Frame = axum::extract::ws::Utf8Bytes;
 
 /// Encodes a registered server message. Only registered messages with their payload type can be
 /// sent, so every frame matches a schema the clients validate.
-pub fn frame<T: Serialize>(message: hanabi_protocol::ServerMessage<T>, data: T) -> Frame {
+pub fn frame<T: Serialize>(message: hanabi_protocol::ServerEvent<T>, data: T) -> Frame {
     raw_frame(message.name(), data)
 }
 
@@ -319,7 +319,7 @@ fn encode(frame: &impl Serialize) -> Frame {
 /// Encodes a message as `command JSON`, the frame of clients from before JSON frames, so that a page
 /// opened before JSON frames can read that it is outdated and reload. Remove it a month after JSON
 /// frames are deployed, when no such page is still open.
-pub fn legacy_frame<T: Serialize>(message: hanabi_protocol::ServerMessage<T>, data: &T) -> Frame {
+pub fn legacy_frame<T: Serialize>(message: hanabi_protocol::ServerEvent<T>, data: &T) -> Frame {
     let mut text = format!("{} ", message.name());
     text.push_str(&serde_json::to_string(data).expect("JSON-serializable protocol payload"));
     text.into()
@@ -346,7 +346,7 @@ pub fn is_event(frame: &str, name: &str) -> bool {
 pub struct Outgoing(Frame);
 
 impl Outgoing {
-    pub fn new<T: Serialize>(message: hanabi_protocol::ServerMessage<T>, data: T) -> Self {
+    pub fn new<T: Serialize>(message: hanabi_protocol::ServerEvent<T>, data: T) -> Self {
         Self(frame(message, data))
     }
     #[cfg(test)]

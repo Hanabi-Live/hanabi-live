@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 
-import type { ServerCommandData } from "@hanabi-live/data";
+import type { ServerEventData } from "@hanabi-live/data";
 import { chatIdSchema, tableIdSchema } from "@hanabi-live/data";
 import { act, cleanup, render, screen } from "@testing-library/react";
 import { Provider } from "react-redux";
@@ -17,8 +17,8 @@ vi.mock("../../tooltips.ts", () => ({}));
 vi.mock("../createGame.ts", () => ({}));
 
 function message(
-  fields: Partial<ServerCommandData["chat"]>,
-): ServerCommandData["chat"] {
+  fields: Partial<ServerEventData["chat"]>,
+): ServerEventData["chat"] {
   return {
     text: "hello",
     sentAt: "2026-11-09T12:34:00.000Z",

@@ -136,7 +136,7 @@ impl TableActor {
             for attendee in self.audience().filter(|a| a.session.user != session.user) {
                 e.messages.push((
                     attendee.session.clone(),
-                    frame(hanabi_protocol::server::CHAT, message.clone()),
+                    frame(hanabi_protocol::event::CHAT, message.clone()),
                 ));
             }
         }
@@ -166,7 +166,7 @@ impl TableActor {
             for attendee in self.audience() {
                 e.messages.push((
                     attendee.session.clone(),
-                    frame(hanabi_protocol::server::CHAT, message.clone()),
+                    frame(hanabi_protocol::event::CHAT, message.clone()),
                 ));
             }
         }
@@ -258,7 +258,7 @@ impl TableActor {
             for attendee in self.audience().filter(|a| a.session.user != session.user) {
                 e.messages.push((
                     attendee.session.clone(),
-                    frame(hanabi_protocol::server::CHAT, notice.clone()),
+                    frame(hanabi_protocol::event::CHAT, notice.clone()),
                 ));
             }
         }
@@ -284,7 +284,7 @@ impl TableActor {
             e.messages.push((
                 session.clone(),
                 frame(
-                    hanabi_protocol::server::TABLE_JOINED,
+                    hanabi_protocol::event::TABLE_JOINED,
                     TableJoined {
                         table_id: self.table.id,
                         stage: TableStage::Pregame,
@@ -296,7 +296,7 @@ impl TableActor {
             e.messages.push((
                 session,
                 frame(
-                    hanabi_protocol::server::TABLE_JOINED,
+                    hanabi_protocol::event::TABLE_JOINED,
                     TableJoined {
                         table_id: self.table.id,
                         stage: if replay {
@@ -359,7 +359,7 @@ impl TableActor {
             e.messages.push((
                 session,
                 frame(
-                    hanabi_protocol::server::TABLE_LEFT,
+                    hanabi_protocol::event::TABLE_LEFT,
                     TableRef {
                         table_id: self.table.id,
                     },

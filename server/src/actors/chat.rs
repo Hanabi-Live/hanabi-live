@@ -283,7 +283,7 @@ impl TableActor {
             );
             effects.messages.push((
                 owner.session.clone(),
-                frame(hanabi_protocol::server::CHAT, proposal),
+                frame(hanabi_protocol::event::CHAT, proposal),
             ));
         }
         self.publish(effects).await
@@ -318,7 +318,7 @@ impl TableActor {
                     let mut e = self.effects();
                     let message = private_server_chat(self.table.id, &session.name, &response);
                     e.messages
-                        .push((session, frame(hanabi_protocol::server::CHAT, message)));
+                        .push((session, frame(hanabi_protocol::event::CHAT, message)));
                     return self.publish(e).await;
                 }
                 crate::lobby::GeneralResponse::Public(response) => vec![response],
@@ -522,7 +522,7 @@ impl TableActor {
                         );
                         e.messages.push((
                             a.session.clone(),
-                            frame(hanabi_protocol::server::CHAT, message),
+                            frame(hanabi_protocol::event::CHAT, message),
                         ));
                     }
                 }
@@ -547,7 +547,7 @@ impl TableActor {
             e.messages.push((
                 a.session,
                 frame(
-                    hanabi_protocol::server::TABLE_LEFT,
+                    hanabi_protocol::event::TABLE_LEFT,
                     TableRef {
                         table_id: self.table.id,
                     },

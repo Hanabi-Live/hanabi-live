@@ -1,5 +1,5 @@
 /* eslint-disable no-await-in-loop -- Each lane follows the actual client protocol in order. */
-import { DEFAULT_MAX_PLAYERS, SERVER_COMMAND_SCHEMAS } from "@hanabi-live/data";
+import { DEFAULT_MAX_PLAYERS, SERVER_EVENT_SCHEMAS } from "@hanabi-live/data";
 import { expect, test } from "bun:test";
 import { assertDefined } from "complete-common";
 import { once } from "node:events";
@@ -50,7 +50,7 @@ databaseDescribe("Rust actor durability and ownership", () => {
           peer.socket.on("message", (raw: Buffer) => {
             frames.push(raw.toString());
           });
-          await peer.receive("welcome", SERVER_COMMAND_SCHEMAS.welcome);
+          await peer.receive("welcome", SERVER_EVENT_SCHEMAS.welcome);
           return { ...peer, frames };
         }
         let alice = await connect(aliceCookie);
@@ -64,10 +64,10 @@ databaseDescribe("Rust actor durability and ownership", () => {
         });
         const { tableId } = await alice.receive(
           "tableJoined",
-          SERVER_COMMAND_SCHEMAS.tableJoined,
+          SERVER_EVENT_SCHEMAS.tableJoined,
         );
         bob.send("tableJoin", { tableId });
-        await bob.receive("tableJoined", SERVER_COMMAND_SCHEMAS.tableJoined);
+        await bob.receive("tableJoined", SERVER_EVENT_SCHEMAS.tableJoined);
         alice.send("tableStart", {
           tableId,
           intendedPlayerIds: [
@@ -77,24 +77,24 @@ databaseDescribe("Rust actor durability and ownership", () => {
         });
         await alice.receive(
           "tableJoined",
-          SERVER_COMMAND_SCHEMAS.tableJoined,
+          SERVER_EVENT_SCHEMAS.tableJoined,
           entersGame,
         );
         await bob.receive(
           "tableJoined",
-          SERVER_COMMAND_SCHEMAS.tableJoined,
+          SERVER_EVENT_SCHEMAS.tableJoined,
           entersGame,
         );
         async function bootstrap(peer: ReturnType<typeof socketClient>) {
           peer.send("gameInitLoad", { tableId });
           const init = await peer.receive(
             "gameInit",
-            SERVER_COMMAND_SCHEMAS.gameInit,
+            SERVER_EVENT_SCHEMAS.gameInit,
           );
           peer.send("gameStateLoad", { tableId });
           const history = await peer.receive(
             "gameState",
-            SERVER_COMMAND_SCHEMAS.gameState,
+            SERVER_EVENT_SCHEMAS.gameState,
           );
           peer.send("gameLoaded", { tableId });
           return { init, history };
@@ -102,12 +102,12 @@ databaseDescribe("Rust actor durability and ownership", () => {
         const [a, b] = await Promise.all([bootstrap(alice), bootstrap(bob)]);
         await alice.receive(
           "connections",
-          SERVER_COMMAND_SCHEMAS.connections,
+          SERVER_EVENT_SCHEMAS.connections,
           (data) => data.connections.every(Boolean),
         );
         await bob.receive(
           "connections",
-          SERVER_COMMAND_SCHEMAS.connections,
+          SERVER_EVENT_SCHEMAS.connections,
           (data) => data.connections.every(Boolean),
         );
         const activeIsAlice = ourPlayerIndex(a.init) === 0;
@@ -167,7 +167,7 @@ databaseDescribe("Rust actor durability and ownership", () => {
           await blocker`ROLLBACK`;
           await other.receive(
             "gameEvent",
-            SERVER_COMMAND_SCHEMAS.gameEvent,
+            SERVER_EVENT_SCHEMAS.gameEvent,
             (event) =>
               event.event.type === "play"
               || event.event.type === "discard"
@@ -193,7 +193,7 @@ databaseDescribe("Rust actor durability and ownership", () => {
         replacement.send("tableReattend", { tableId });
         await replacement.receive(
           "tableJoined",
-          SERVER_COMMAND_SCHEMAS.tableJoined,
+          SERVER_EVENT_SCHEMAS.tableJoined,
           entersGame,
         );
         await bootstrap(replacement);
@@ -202,7 +202,7 @@ databaseDescribe("Rust actor durability and ownership", () => {
         replacement.send("gameStateLoad", { tableId });
         const onceOnly = await replacement.receive(
           "gameState",
-          SERVER_COMMAND_SCHEMAS.gameState,
+          SERVER_EVENT_SCHEMAS.gameState,
         );
         expect(
           onceOnly.events.filter(
@@ -236,7 +236,7 @@ databaseDescribe("Rust actor durability and ownership", () => {
         returning.send("tableReattend", { tableId });
         await returning.receive(
           "tableJoined",
-          SERVER_COMMAND_SCHEMAS.tableJoined,
+          SERVER_EVENT_SCHEMAS.tableJoined,
           entersGame,
         );
         const restored = await bootstrap(returning);
@@ -261,7 +261,7 @@ databaseDescribe("Rust actor durability and ownership", () => {
         returning.send("gameStateLoad", { tableId });
         const duplicate = await returning.receive(
           "gameState",
-          SERVER_COMMAND_SCHEMAS.gameState,
+          SERVER_EVENT_SCHEMAS.gameState,
         );
         expect(
           duplicate.events.filter(

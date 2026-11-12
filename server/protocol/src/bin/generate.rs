@@ -539,9 +539,9 @@ fn main() -> Result<()> {
     if game {
         return game_library(&definitions);
     }
-    let client = hanabi_protocol::client_contracts();
+    let requests = hanabi_protocol::request_contracts();
     let replies = hanabi_protocol::reply_contracts();
-    let server = hanabi_protocol::server_contracts();
+    let events = hanabi_protocol::event_contracts();
     let exported: BTreeSet<String> = hanabi_protocol::exported()
         .into_iter()
         .map(String::from)
@@ -562,31 +562,34 @@ fn main() -> Result<()> {
     );
     print!("{}", module.output);
     for (name, contracts) in [
-        ("CLIENT_COMMAND_SCHEMAS", client),
-        ("CLIENT_REPLY_SCHEMAS", replies),
-        ("SERVER_COMMAND_SCHEMAS", server),
+        ("CLIENT_REQUEST_SCHEMAS", requests),
+        ("REPLY_SCHEMAS", replies),
+        ("SERVER_EVENT_SCHEMAS", events),
     ] {
         println!("export const {name} = {{");
-        for (command, contract) in contracts {
+        for (message, contract) in contracts {
             println!(
                 "{}: {},",
-                serde_json::to_string(command)?,
+                serde_json::to_string(message)?,
                 variable(contract)
             );
         }
         println!("}} as const;");
     }
-    for (side, registry) in [("Client", "CLIENT"), ("Server", "SERVER")] {
-        println!("export type {side}Command = keyof typeof {registry}_COMMAND_SCHEMAS;");
+    for (kind, registry) in [
+        ("ClientRequest", "CLIENT_REQUEST"),
+        ("ServerEvent", "SERVER_EVENT"),
+    ] {
+        println!("export type {kind} = keyof typeof {registry}_SCHEMAS;");
         println!(
-            "export type {side}CommandData = {{ [Command in {side}Command]: z.infer<(typeof {registry}_COMMAND_SCHEMAS)[Command]> }};"
+            "export type {kind}Data = {{ [Name in {kind}]: z.infer<(typeof {registry}_SCHEMAS)[Name]> }};"
         );
     }
     println!(
-        "/** The data of the reply to each client command, or undefined for a reply without data. */"
+        "/** The data of the reply to each client request, or undefined for a reply without data. */"
     );
     println!(
-        "export type ClientReplyData = {{ [Command in ClientCommand]: Command extends keyof typeof CLIENT_REPLY_SCHEMAS ? z.infer<(typeof CLIENT_REPLY_SCHEMAS)[Command]> : undefined }};"
+        "export type ReplyData = {{ [Name in ClientRequest]: Name extends keyof typeof REPLY_SCHEMAS ? z.infer<(typeof REPLY_SCHEMAS)[Name]> : undefined }};"
     );
     Ok(())
 }

@@ -13,7 +13,7 @@ use crate::{
 };
 use anyhow::Context;
 use axum::http::StatusCode;
-use hanabi_protocol::{ClientMessage, ReplyData};
+use hanabi_protocol::{ClientRequest, ReplyData};
 use std::sync::Arc;
 use tokio::sync::mpsc;
 
@@ -148,17 +148,17 @@ async fn publish(
 /// message, which continues to its table.
 pub(super) enum LobbyOutcome {
     Done(Option<ReplyData>),
-    TableChat(ClientMessage),
+    TableChat(ClientRequest),
 }
 
 /// Runs a lobby command for its user's task and publishes its effects.
 pub(super) async fn lobby_command(
     app: &App,
     session: Arc<Session>,
-    message: ClientMessage,
+    message: ClientRequest,
 ) -> CommandResult<LobbyOutcome> {
     // Only private messages need the list of online users.
-    let online = if matches!(message, ClientMessage::ChatPm(_)) {
+    let online = if matches!(message, ClientRequest::ChatPm(_)) {
         request(&app.hub, |reply| HubCommand::Directory {
             session: session.clone(),
             reply,
@@ -169,7 +169,7 @@ pub(super) async fn lobby_command(
     };
     let caller = session.identity.clone();
     let rendered = match &message {
-        ClientMessage::Chat(request) if request.table_id.is_none() => {
+        ClientRequest::Chat(request) if request.table_id.is_none() => {
             discord_rendering(app, &request.text).await
         }
         _ => None,
@@ -180,7 +180,7 @@ pub(super) async fn lobby_command(
     } else {
         &app.store.primary
     };
-    let chat = matches!(message, ClientMessage::Chat(_)).then(|| message.clone());
+    let chat = matches!(message, ClientRequest::Chat(_)).then(|| message.clone());
     let work = lobby::dispatch(
         pool,
         &app.public.session_secret,
@@ -216,10 +216,10 @@ async fn discord_rendering(app: &App, text: &str) -> Option<String> {
     Some(app.integrations.get()?.render(&normalized).await)
 }
 
-fn history_command(message: &ClientMessage) -> bool {
+fn history_command(message: &ClientRequest) -> bool {
     matches!(
         message,
-        ClientMessage::GameHistory(_) | ClientMessage::SeedGames(_)
+        ClientRequest::GameHistory(_) | ClientRequest::SeedGames(_)
     )
 }
 
@@ -228,7 +228,7 @@ pub(super) async fn dispatch(
     app: &Arc<App>,
     user: &mpsc::Sender<user::UserCommand>,
     session: Arc<Session>,
-    message: ClientMessage,
+    message: ClientRequest,
 ) -> CommandResult<Option<ReplyData>> {
     let _admission = match app.lifecycle.admit().await {
         Ok(admission) => admission,
@@ -254,7 +254,7 @@ pub(super) async fn dispatch(
     let route = crate::routing::route(&message);
     if route == Route::Connection {
         session.emit(&frame(
-            hanabi_protocol::server::LOBBY_STATUS,
+            hanabi_protocol::event::LOBBY_STATUS,
             hanabi_protocol::LobbyStatus::Loading {},
         ));
         load_lobby(app.clone(), session);
@@ -308,12 +308,12 @@ pub(super) async fn answer(
                 return;
             };
             let data = data.filter(|data| {
-                let matches = Some(data.command) == request.command;
+                let matches = Some(data.request) == request.command;
                 if !matches {
                     tracing::error!(
                         "The reply to {:?} carried the data of {}",
                         request.command,
-                        data.command
+                        data.request
                     );
                 }
                 matches
@@ -332,7 +332,7 @@ pub(super) async fn answer(
             if let Some(id) = request.id {
                 session.emit(&crate::transport::error_frame(id, failure.notice));
             } else if !failure.silent {
-                session.emit(&frame(hanabi_protocol::server::WARNING, failure.notice));
+                session.emit(&frame(hanabi_protocol::event::WARNING, failure.notice));
             }
         }
     }

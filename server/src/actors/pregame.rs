@@ -18,7 +18,7 @@ use crate::{
 use anyhow::Context;
 use chrono::Utc;
 use hanabi_engine::{GameSetup, Interpretation};
-use hanabi_protocol::ClientMessage;
+use hanabi_protocol::ClientRequest;
 use hanabi_protocol::PlayerIndex;
 use hanabi_protocol::UserId;
 use hanabi_protocol::{
@@ -89,10 +89,10 @@ impl TableActor {
     pub(super) async fn pregame_command(
         &mut self,
         session: Arc<Session>,
-        message: ClientMessage,
+        message: ClientRequest,
     ) -> CommandResult<()> {
         match message {
-            ClientMessage::TableStart(r) => {
+            ClientRequest::TableStart(r) => {
                 let players = self.table.players();
                 // A start based on a stale view of the table does nothing.
                 let ids = &r.intended_player_ids;
@@ -105,8 +105,8 @@ impl TableActor {
                 }
                 self.start(session).await
             }
-            ClientMessage::TableUpdate(r) => self.update(session, r).await,
-            ClientMessage::TableTerminate(_) => {
+            ClientRequest::TableUpdate(r) => self.update(session, r).await,
+            ClientRequest::TableTerminate(_) => {
                 ensure_or_reject!(
                     self.attending(&session) && session.user == self.table.owner.user_id,
                     "Only owner can terminate"
@@ -169,7 +169,7 @@ impl TableActor {
                 );
                 e.messages.push((
                     owner.session.clone(),
-                    frame(hanabi_protocol::server::CHAT, suggestion),
+                    frame(hanabi_protocol::event::CHAT, suggestion),
                 ));
             }
             return self.publish(e).await;
@@ -206,7 +206,7 @@ impl TableActor {
                 e.messages.push((
                     a.session,
                     frame(
-                        hanabi_protocol::server::TABLE_BOOTED,
+                        hanabi_protocol::event::TABLE_BOOTED,
                         TableRef {
                             table_id: self.table.id,
                         },
@@ -340,7 +340,7 @@ impl TableActor {
             e.messages.push((
                 a.session.clone(),
                 frame(
-                    hanabi_protocol::server::TABLE_JOINED,
+                    hanabi_protocol::event::TABLE_JOINED,
                     TableJoined {
                         table_id: self.table.id,
                         stage: TableStage::JustStarted,
@@ -392,7 +392,7 @@ impl TableActor {
             effects.messages.push((
                 session.clone(),
                 frame(
-                    hanabi_protocol::server::TABLE_BOOTED,
+                    hanabi_protocol::event::TABLE_BOOTED,
                     TableRef {
                         table_id: self.table.id,
                     },

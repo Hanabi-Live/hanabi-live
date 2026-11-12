@@ -313,7 +313,7 @@ fn parse_frame(text: &str) -> Option<Received> {
 async fn send(socket: &mut Socket, id: u64, command: &str, data: Value) {
     socket
         .send(WireMessage::Text(
-            json!({"id": id, "type": command, "data": data})
+            json!({"id": id, "request": command, "data": data})
                 .to_string()
                 .into(),
         ))
@@ -626,7 +626,7 @@ async fn native_browser_login_ws_bootstrap_and_command_routing_postgres() {
                 id: UserId::new(bob_welcome["userId"].as_i64().unwrap()).unwrap(),
                 generation: 2,
                 message: Outgoing::new(
-                    hanabi_protocol::server::CHAT,
+                    hanabi_protocol::event::CHAT,
                     hanabi_protocol::Chat::server(
                         "must not reroute to replacement",
                         chrono::DateTime::from_timestamp(1_794_009_600, 0).unwrap(),

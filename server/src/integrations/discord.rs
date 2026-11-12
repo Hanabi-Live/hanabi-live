@@ -481,7 +481,7 @@ impl Bridge {
         let id = self.send(&outbound_text(username, raw), true).await?;
         if link_copy(&self.pool, chat_id, &id).await? {
             self.broadcast(vec![Outgoing::new(
-                hanabi_protocol::server::CHAT_DELETED,
+                hanabi_protocol::event::CHAT_DELETED,
                 hanabi_protocol::ChatDeleted {
                     chat_id: hanabi_protocol::ChatId::try_from(chat_id)?,
                 },
@@ -658,7 +658,7 @@ impl Bridge {
                         .await?;
                 } else {
                     self.broadcast(vec![Outgoing::new(
-                        hanabi_protocol::server::CHAT,
+                        hanabi_protocol::event::CHAT,
                         hanabi_protocol::Chat {
                             chat_id: Some(hanabi_protocol::ChatId::try_from(chat_id)?),
                             ..hanabi_protocol::Chat::public(
@@ -698,7 +698,7 @@ impl Bridge {
         for id in ids {
             if let Some(chat_id) = delete_message(&self.pool, id).await? {
                 self.broadcast(vec![Outgoing::new(
-                    hanabi_protocol::server::CHAT_DELETED,
+                    hanabi_protocol::event::CHAT_DELETED,
                     hanabi_protocol::ChatDeleted {
                         chat_id: hanabi_protocol::ChatId::try_from(chat_id)?,
                     },
@@ -751,7 +751,7 @@ impl Bridge {
         let rendered = self.render(&notice).await;
         if let Some((id, time)) = insert_message(&self.pool, None, &rendered, None).await? {
             self.broadcast(vec![Outgoing::new(
-                hanabi_protocol::server::CHAT,
+                hanabi_protocol::event::CHAT,
                 hanabi_protocol::Chat {
                     chat_id: Some(hanabi_protocol::ChatId::try_from(id)?),
                     ..hanabi_protocol::Chat::public(

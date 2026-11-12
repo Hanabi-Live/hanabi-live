@@ -1,6 +1,6 @@
 // The tables in the lobby, from the "tableList", "table", and "tableRemoved" server messages.
 
-import type { ServerCommandData } from "@hanabi-live/data";
+import type { ServerEventData } from "@hanabi-live/data";
 import { MAX_PLAYERS } from "@hanabi-live/game";
 import type { PayloadAction } from "@reduxjs/toolkit";
 import {
@@ -10,7 +10,7 @@ import {
 } from "@reduxjs/toolkit";
 import type { RootState } from "../../store.ts";
 
-export type Table = ServerCommandData["table"];
+export type Table = ServerEventData["table"];
 
 /** What clicking on a table's row does. */
 export type TableAction = "join" | "spectate" | "resume";

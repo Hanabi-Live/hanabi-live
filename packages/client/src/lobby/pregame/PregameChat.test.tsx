@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 
-import type { ServerCommandData } from "@hanabi-live/data";
+import type { ServerEventData } from "@hanabi-live/data";
 import { tableIdSchema } from "@hanabi-live/data";
 import { defaultOptions } from "@hanabi-live/game";
 import { act, cleanup, render, screen } from "@testing-library/react";
@@ -24,8 +24,8 @@ vi.stubGlobal("$", () => ({ html: vi.fn() }));
 const TABLE_ID = tableIdSchema.parse(5);
 
 function message(
-  fields: Partial<ServerCommandData["chat"]>,
-): ServerCommandData["chat"] {
+  fields: Partial<ServerEventData["chat"]>,
+): ServerEventData["chat"] {
   return {
     text: "hello",
     sentAt: "2026-11-09T12:34:00.000Z",

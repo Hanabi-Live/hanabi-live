@@ -1,10 +1,8 @@
-import type { ServerCommandData } from "@hanabi-live/data";
+import type { ServerEventData } from "@hanabi-live/data";
 
 /** Each server message's generated payload type, keyed by the message's name. */
 type Payloads = {
-  [
-    Command in keyof ServerCommandData as `${Command}`
-  ]: ServerCommandData[Command];
+  [Command in keyof ServerEventData as `${Command}`]: ServerEventData[Command];
 };
 
 type Handler<Command extends keyof Payloads> = (

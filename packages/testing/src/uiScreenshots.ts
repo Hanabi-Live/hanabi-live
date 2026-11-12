@@ -23,7 +23,7 @@ import {
   MAX_NOTE_LENGTH,
   MAX_TABLE_NAME_LENGTH,
   packEvent,
-  SERVER_COMMAND_SCHEMAS,
+  SERVER_EVENT_SCHEMAS,
   VERSION,
 } from "@hanabi-live/data";
 import type {
@@ -1609,7 +1609,7 @@ async function connect(
   const peer = socketClient(address, await login(address, username, bot));
   const { userId } = await peer.receive(
     "welcome",
-    SERVER_COMMAND_SCHEMAS.welcome,
+    SERVER_EVENT_SCHEMAS.welcome,
   );
   return { ...peer, userId };
 }
@@ -1625,10 +1625,10 @@ async function playGame(alice: Peer, bob: Peer): Promise<number> {
   });
   const { tableId } = await alice.receive(
     "tableJoined",
-    SERVER_COMMAND_SCHEMAS.tableJoined,
+    SERVER_EVENT_SCHEMAS.tableJoined,
   );
   bob.send("tableJoin", { tableId });
-  await bob.receive("tableJoined", SERVER_COMMAND_SCHEMAS.tableJoined);
+  await bob.receive("tableJoined", SERVER_EVENT_SCHEMAS.tableJoined);
   alice.send("tableStart", {
     tableId,
     intendedPlayerIds: [alice.userId, bob.userId],
@@ -1638,18 +1638,18 @@ async function playGame(alice: Peer, bob: Peer): Promise<number> {
     peers.map(async (peer) => {
       await peer.receive(
         "tableJoined",
-        SERVER_COMMAND_SCHEMAS.tableJoined,
+        SERVER_EVENT_SCHEMAS.tableJoined,
         entersGame,
       );
       peer.send("gameInitLoad", { tableId });
       const init = await peer.receive(
         "gameInit",
-        SERVER_COMMAND_SCHEMAS.gameInit,
+        SERVER_EVENT_SCHEMAS.gameInit,
       );
       peer.send("gameStateLoad", { tableId });
       const history = await peer.receive(
         "gameState",
-        SERVER_COMMAND_SCHEMAS.gameState,
+        SERVER_EVENT_SCHEMAS.gameState,
       );
       peer.send("gameLoaded", { tableId });
       return { peer, init, history };
@@ -1667,11 +1667,11 @@ async function playGame(alice: Peer, bob: Peer): Promise<number> {
     tableId,
     action: { type: "play", order: card.order },
   });
-  await first.peer.receive("gameEvent", SERVER_COMMAND_SCHEMAS.gameEvent);
+  await first.peer.receive("gameEvent", SERVER_EVENT_SCHEMAS.gameEvent);
   alice.send("tableTerminate", { tableId });
   const finished = await alice.receive(
     "gameFinished",
-    SERVER_COMMAND_SCHEMAS.gameFinished,
+    SERVER_EVENT_SCHEMAS.gameFinished,
   );
   assertDefined(finished.gameId, "The seeded game was not saved.");
   alice.send("tagAdd", { tableId, tag: TAG });
@@ -1681,7 +1681,7 @@ async function playGame(alice: Peer, bob: Peer): Promise<number> {
   }
   await bob.receive(
     "tableRemoved",
-    SERVER_COMMAND_SCHEMAS.tableRemoved,
+    SERVER_EVENT_SCHEMAS.tableRemoved,
     (data) => data.tableId === tableId,
   );
   return finished.gameId;
@@ -1770,7 +1770,7 @@ async function seed(address: string): Promise<Seed> {
   });
   const { tableId } = await bob.receive(
     "tableJoined",
-    SERVER_COMMAND_SCHEMAS.tableJoined,
+    SERVER_EVENT_SCHEMAS.tableJoined,
   );
   bob.send("chat", { text: "Hello from the seeded lobby." });
   // More spectators than the game screen's chat header names, so that it offers to show the rest.
@@ -1778,7 +1778,7 @@ async function seed(address: string): Promise<Seed> {
   for (const name of SPECTATOR_NAMES) {
     const spectator = await connect(address, name);
     spectator.send("tableSpectate", { tableId });
-    await spectator.receive("tableJoined", SERVER_COMMAND_SCHEMAS.tableJoined);
+    await spectator.receive("tableJoined", SERVER_EVENT_SCHEMAS.tableJoined);
     spectators.push(spectator);
   }
   const bot = await connect(address, "Robot", true);
@@ -1793,16 +1793,16 @@ async function seed(address: string): Promise<Seed> {
     });
     await bob.receive(
       "tableJoined",
-      SERVER_COMMAND_SCHEMAS.tableJoined,
+      SERVER_EVENT_SCHEMAS.tableJoined,
       entersGame,
     );
     bob.send("gameInitLoad", { tableId });
-    const init = await bob.receive("gameInit", SERVER_COMMAND_SCHEMAS.gameInit);
+    const init = await bob.receive("gameInit", SERVER_EVENT_SCHEMAS.gameInit);
     bobIndex = ourPlayerIndex(init);
     bob.send("gameStateLoad", { tableId });
     const { events } = await bob.receive(
       "gameState",
-      SERVER_COMMAND_SCHEMAS.gameState,
+      SERVER_EVENT_SCHEMAS.gameState,
     );
     bob.send("gameLoaded", { tableId });
 
@@ -1830,14 +1830,14 @@ async function seed(address: string): Promise<Seed> {
         clue: { type: "rank", rank },
       },
     });
-    await bob.receive("gameEvent", SERVER_COMMAND_SCHEMAS.gameEvent);
+    await bob.receive("gameEvent", SERVER_EVENT_SCHEMAS.gameEvent);
   }
 
   // The browser logs in as Alice, with a session of its own.
   const cookie = await login(address, USERNAME);
   async function endGame() {
     bob.send("tableTerminate", { tableId });
-    await bob.receive("gameFinished", SERVER_COMMAND_SCHEMAS.gameFinished);
+    await bob.receive("gameFinished", SERVER_EVENT_SCHEMAS.gameFinished);
   }
 
   function passLeader() {
@@ -1878,7 +1878,7 @@ async function seed(address: string): Promise<Seed> {
     peer.send("gameStateLoad", { tableId });
     const { events } = await peer.receive(
       "gameState",
-      SERVER_COMMAND_SCHEMAS.gameState,
+      SERVER_EVENT_SCHEMAS.gameState,
     );
     return events;
   }
@@ -1973,7 +1973,7 @@ async function seed(address: string): Promise<Seed> {
     bob.send("playerAction", { tableId, action: { type: "play", order } });
     await bob.receive(
       "gameEvent",
-      SERVER_COMMAND_SCHEMAS.gameEvent,
+      SERVER_EVENT_SCHEMAS.gameEvent,
       (data) => data.event.type === "play" && data.event.order === order,
     );
   }
@@ -2033,7 +2033,7 @@ async function seed(address: string): Promise<Seed> {
     });
     await bob.receive(
       "gameEvent",
-      SERVER_COMMAND_SCHEMAS.gameEvent,
+      SERVER_EVENT_SCHEMAS.gameEvent,
       (data) =>
         data.event.type === "clue" && data.event.playerIndex === bobIndex,
     );
@@ -2056,11 +2056,11 @@ async function seed(address: string): Promise<Seed> {
     });
     const { tableId: replayTableId } = await leader.receive(
       "tableJoined",
-      SERVER_COMMAND_SCHEMAS.tableJoined,
+      SERVER_EVENT_SCHEMAS.tableJoined,
       entersGame,
     );
     leader.send("gameInitLoad", { tableId: replayTableId });
-    await leader.receive("gameInit", SERVER_COMMAND_SCHEMAS.gameInit);
+    await leader.receive("gameInit", SERVER_EVENT_SCHEMAS.gameInit);
     leader.send("gameLoaded", { tableId: replayTableId });
     leader.send("replayAction", {
       tableId: replayTableId,
@@ -2068,7 +2068,7 @@ async function seed(address: string): Promise<Seed> {
     });
     await leader.receive(
       "replayAction",
-      SERVER_COMMAND_SCHEMAS.replayAction,
+      SERVER_EVENT_SCHEMAS.replayAction,
       (data) =>
         data.action.type === "hypothetical"
         && data.action.control.type === "start",
@@ -2090,7 +2090,7 @@ async function seed(address: string): Promise<Seed> {
     });
     await leader.receive(
       "replayAction",
-      SERVER_COMMAND_SCHEMAS.replayAction,
+      SERVER_EVENT_SCHEMAS.replayAction,
       (data) =>
         data.action.type === "hypothetical"
         && data.action.control.type === "event",
@@ -2113,11 +2113,11 @@ async function seed(address: string): Promise<Seed> {
     });
     const { tableId: replayTableId } = await leader.receive(
       "tableJoined",
-      SERVER_COMMAND_SCHEMAS.tableJoined,
+      SERVER_EVENT_SCHEMAS.tableJoined,
       entersGame,
     );
     leader.send("gameInitLoad", { tableId: replayTableId });
-    await leader.receive("gameInit", SERVER_COMMAND_SCHEMAS.gameInit);
+    await leader.receive("gameInit", SERVER_EVENT_SCHEMAS.gameInit);
     leader.send("gameLoaded", { tableId: replayTableId });
     return {
       goTo: (segment) => {

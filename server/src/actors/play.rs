@@ -14,7 +14,7 @@ use crate::{
 use anyhow::Context;
 use hanabi_engine::PlayerAction;
 use hanabi_engine::{CompletionTiming, EndCondition, Recipient};
-use hanabi_protocol::ClientMessage;
+use hanabi_protocol::ClientRequest;
 use hanabi_protocol::MAX_NOTE_LENGTH;
 use hanabi_protocol::PlayerIndex;
 use hanabi_protocol::{CardOrder, Chat, ChatTyping, MIN_PLAYERS, TableRef, ViewMode};
@@ -32,21 +32,21 @@ impl TableActor {
     pub(super) async fn live_command(
         &mut self,
         session: Arc<Session>,
-        message: ClientMessage,
+        message: ClientRequest,
     ) -> CommandResult<()> {
         match message {
-            ClientMessage::PlayerAction(r) => self.action(session, r.action).await,
-            ClientMessage::TableTerminate(_) => self.terminate(session, None).await,
-            ClientMessage::TableTerminateVote(r) => self.terminate(session, Some(r.voted)).await,
-            ClientMessage::Pause(r) => self.pause(session, PauseChange::Paused(r.paused)).await,
-            ClientMessage::PauseQueue(r) => {
+            ClientRequest::PlayerAction(r) => self.action(session, r.action).await,
+            ClientRequest::TableTerminate(_) => self.terminate(session, None).await,
+            ClientRequest::TableTerminateVote(r) => self.terminate(session, Some(r.voted)).await,
+            ClientRequest::Pause(r) => self.pause(session, PauseChange::Paused(r.paused)).await,
+            ClientRequest::PauseQueue(r) => {
                 self.pause(session, PauseChange::Queued(r.queued)).await
             }
-            ClientMessage::IdleReset(_) => self.idle_reset(session).await,
-            ClientMessage::Note(r) => self.note(session, r.order, &r.text).await,
-            message @ (ClientMessage::TagAdd(_)
-            | ClientMessage::TagRemove(_)
-            | ClientMessage::TagRemoveAll(_)) => self.tag_message(session, message).await,
+            ClientRequest::IdleReset(_) => self.idle_reset(session).await,
+            ClientRequest::Note(r) => self.note(session, r.order, &r.text).await,
+            message @ (ClientRequest::TagAdd(_)
+            | ClientRequest::TagRemove(_)
+            | ClientRequest::TagRemoveAll(_)) => self.tag_message(session, message).await,
             message => Err(wrong_phase(&message)),
         }
     }
@@ -149,7 +149,7 @@ impl TableActor {
                 e.messages.push((
                     a.session.clone(),
                     frame(
-                        hanabi_protocol::server::GAME_EVENT,
+                        hanabi_protocol::event::GAME_EVENT,
                         game_event(self.table.id, &event),
                     ),
                 ));
@@ -177,13 +177,13 @@ impl TableActor {
                 {
                     e.messages.push((
                         a.session.clone(),
-                        frame(hanabi_protocol::server::GAME_HISTORY_ADDED, history),
+                        frame(hanabi_protocol::event::GAME_HISTORY_ADDED, history),
                     ));
                 }
                 e.messages.push((
                     a.session.clone(),
                     frame(
-                        hanabi_protocol::server::GAME_FINISHED,
+                        hanabi_protocol::event::GAME_FINISHED,
                         hanabi_protocol::GameFinished {
                             table_id: self.table.id,
                             game_id: s.game_id,
@@ -198,7 +198,7 @@ impl TableActor {
                 e.messages.push((
                     a.session.clone(),
                     frame(
-                        hanabi_protocol::server::NOTE_LIST,
+                        hanabi_protocol::event::NOTE_LIST,
                         hanabi_protocol::NoteList {
                             table_id: self.table.id,
                             notes: self.observer_notes(a),
@@ -206,9 +206,9 @@ impl TableActor {
                     ),
                 ));
             }
-            self.add_all(&mut e, hanabi_protocol::server::CLOCK, self.clock()?);
+            self.add_all(&mut e, hanabi_protocol::event::CLOCK, self.clock()?);
         } else {
-            self.add_all(&mut e, hanabi_protocol::server::CLOCK, self.clock()?);
+            self.add_all(&mut e, hanabi_protocol::event::CLOCK, self.clock()?);
             if s.paused() {
                 self.pause_messages(&mut e, s);
             }
@@ -217,7 +217,7 @@ impl TableActor {
     }
     fn pause_message(&self, s: &Snapshot, session: &Session) -> crate::transport::Frame {
         frame(
-            hanabi_protocol::server::PAUSE,
+            hanabi_protocol::event::PAUSE,
             hanabi_protocol::Pause {
                 table_id: self.table.id,
                 pause: pause_state(s, session),
@@ -281,7 +281,7 @@ impl TableActor {
             e.messages.push((
                 session.clone(),
                 frame(
-                    hanabi_protocol::server::VOTES,
+                    hanabi_protocol::event::VOTES,
                     hanabi_protocol::Votes {
                         table_id: self.table.id,
                         votes: seat_votes(self.live()?, seat)?,
@@ -308,7 +308,7 @@ impl TableActor {
         let mut e = self.effects();
         self.add_all(
             &mut e,
-            hanabi_protocol::server::IDLE_RESET,
+            hanabi_protocol::event::IDLE_RESET,
             TableRef {
                 table_id: self.table.id,
             },
@@ -352,7 +352,7 @@ impl TableActor {
         let mut e = self.effects();
         if matches!(change, PauseChange::Paused(_)) {
             self.pause_messages(&mut e, s);
-            self.add_all(&mut e, hanabi_protocol::server::CLOCK, self.clock()?);
+            self.add_all(&mut e, hanabi_protocol::event::CLOCK, self.clock()?);
         } else {
             e.messages
                 .push((session.clone(), self.pause_message(s, &session)));
@@ -411,7 +411,7 @@ impl TableActor {
             e.messages.push((
                 a.session.clone(),
                 frame(
-                    hanabi_protocol::server::NOTE,
+                    hanabi_protocol::event::NOTE,
                     hanabi_protocol::Note {
                         table_id: self.table.id,
                         order: card,
@@ -544,7 +544,7 @@ impl TableActor {
             };
             e.messages.push((
                 session.clone(),
-                frame(hanabi_protocol::server::GAME_INIT, init),
+                frame(hanabi_protocol::event::GAME_INIT, init),
             ));
         } else {
             let recipient = if replay {
@@ -601,7 +601,7 @@ impl TableActor {
             };
             e.messages.push((
                 session.clone(),
-                frame(hanabi_protocol::server::GAME_STATE, state),
+                frame(hanabi_protocol::event::GAME_STATE, state),
             ));
             self.chat_history(&mut e, &session)?;
             for a in self
@@ -611,7 +611,7 @@ impl TableActor {
                 e.messages.push((
                     session.clone(),
                     frame(
-                        hanabi_protocol::server::CHAT_TYPING,
+                        hanabi_protocol::event::CHAT_TYPING,
                         ChatTyping {
                             table_id: self.table.id,
                             username: a.session.name.clone().into(),

@@ -48,7 +48,7 @@ describe("sending commands", () => {
         action: { type: "play", order: 1 },
       });
       expect(sockets[0]?.sent[1]).toBe(
-        '{"id":2,"type":"playerAction","data":{"tableId":123,"action":{"type":"play","order":1}}}',
+        '{"id":2,"request":"playerAction","data":{"tableId":123,"action":{"type":"play","order":1}}}',
       );
       initial.setReady(false);
       initial.send("playerAction", {

@@ -14,7 +14,7 @@ use crate::{
 };
 use anyhow::Context;
 use chrono::Utc;
-use hanabi_protocol::ClientMessage;
+use hanabi_protocol::ClientRequest;
 use hanabi_protocol::{HypotheticalEvent, MIN_PLAYERS, PregameStats, TableRef, UserId};
 use hanabi_protocol::{MAX_TABLE_NAME_LENGTH, MAX_TAG_LENGTH};
 use std::{
@@ -63,21 +63,21 @@ impl TableActor {
     pub(super) async fn replay_command(
         &mut self,
         session: Arc<Session>,
-        message: ClientMessage,
+        message: ClientRequest,
     ) -> CommandResult<()> {
         match message {
-            ClientMessage::ReplayAction(r) => self.replay_action(session, r).await,
-            ClientMessage::TableSuggest(r) => self.suggest(session, r.turn).await,
+            ClientRequest::ReplayAction(r) => self.replay_action(session, r).await,
+            ClientRequest::TableSuggest(r) => self.suggest(session, r.turn).await,
             // A restart starts in `client`, through `start_restart`.
-            ClientMessage::TableRestart(_) => {
+            ClientRequest::TableRestart(_) => {
                 bail_internal!("A restart ran without its statistics")
             }
-            ClientMessage::TableRestartDecline(r) => {
+            ClientRequest::TableRestartDecline(r) => {
                 self.decline_restart(session, r.declined).await
             }
-            message @ (ClientMessage::TagAdd(_)
-            | ClientMessage::TagRemove(_)
-            | ClientMessage::TagRemoveAll(_)) => self.tag_message(session, message).await,
+            message @ (ClientRequest::TagAdd(_)
+            | ClientRequest::TagRemove(_)
+            | ClientRequest::TagRemoveAll(_)) => self.tag_message(session, message).await,
             message => Err(wrong_phase(&message)),
         }
     }
@@ -85,12 +85,12 @@ impl TableActor {
     pub(super) async fn tag_message(
         &mut self,
         session: Arc<Session>,
-        message: ClientMessage,
+        message: ClientRequest,
     ) -> CommandResult<()> {
         let edit = match message {
-            ClientMessage::TagAdd(r) => TagEdit::Add(normalize_tag(&r.tag)?),
-            ClientMessage::TagRemove(r) => TagEdit::Delete(normalize_tag(&r.tag)?),
-            ClientMessage::TagRemoveAll(_) => TagEdit::DeleteAll,
+            ClientRequest::TagAdd(r) => TagEdit::Add(normalize_tag(&r.tag)?),
+            ClientRequest::TagRemove(r) => TagEdit::Delete(normalize_tag(&r.tag)?),
+            ClientRequest::TagRemoveAll(_) => TagEdit::DeleteAll,
             message => return Err(wrong_phase(&message)),
         };
         self.tag(session, edit).await
@@ -197,7 +197,7 @@ impl TableActor {
             Some(message) if replay => self.add_chat(&mut e, &message),
             Some(message) => e
                 .messages
-                .push((session, frame(hanabi_protocol::server::CHAT, message))),
+                .push((session, frame(hanabi_protocol::event::CHAT, message))),
             None => {}
         }
         self.publish(e).await
@@ -259,7 +259,7 @@ impl TableActor {
         }
         self.add_all(
             &mut e,
-            hanabi_protocol::server::TABLE_OWNER,
+            hanabi_protocol::event::TABLE_OWNER,
             hanabi_protocol::TableOwner {
                 table_id: self.table.id,
                 owner,
@@ -288,7 +288,7 @@ impl TableActor {
         e.messages.push((
             leader.session.clone(),
             frame(
-                hanabi_protocol::server::TABLE_SUGGESTION,
+                hanabi_protocol::event::TABLE_SUGGESTION,
                 hanabi_protocol::TableSuggestion {
                     table_id: self.table.id,
                     username: session.name.clone().into(),
@@ -349,7 +349,7 @@ impl TableActor {
                 H::ShowDrawnCards { show } => replay.show_drawn_cards = *show,
             },
         }
-        let message = Outgoing::new(hanabi_protocol::server::REPLAY_ACTION, r);
+        let message = Outgoing::new(hanabi_protocol::event::REPLAY_ACTION, r);
         snapshot.idle_remaining = IDLE_TIMEOUT_MS;
         if checkpoint {
             self.persist(next).await?;
@@ -514,7 +514,7 @@ impl TableActor {
         // Everyone leaves the replay first, then enters the next game or its pregame.
         let mut e = self.effects();
         let boot = frame(
-            hanabi_protocol::server::TABLE_BOOTED,
+            hanabi_protocol::event::TABLE_BOOTED,
             TableRef {
                 table_id: self.table.id,
             },
@@ -538,7 +538,7 @@ impl TableActor {
             }
             self.pregame_messages(&mut e);
             let joined = frame(
-                hanabi_protocol::server::TABLE_JOINED,
+                hanabi_protocol::event::TABLE_JOINED,
                 hanabi_protocol::TableJoined {
                     table_id: self.table.id,
                     stage: hanabi_protocol::TableStage::Pregame,
@@ -584,7 +584,7 @@ impl TableActor {
         let mut e = self.effects();
         self.add_all(
             &mut e,
-            hanabi_protocol::server::TABLE_RESTART_DECLINERS,
+            hanabi_protocol::event::TABLE_RESTART_DECLINERS,
             hanabi_protocol::TableRestartDecliners {
                 table_id: self.table.id,
                 restart_decliners: self.restart_decliners(),

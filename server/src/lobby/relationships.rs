@@ -227,7 +227,7 @@ pub async fn relationship(
     let mut effects = vec![notice(&caller.name, &message)];
     if friend {
         effects.push(Effect::to_self(Outgoing::new(
-            hanabi_protocol::server::FRIENDS,
+            hanabi_protocol::event::FRIENDS,
             hanabi_protocol::Friends {
                 friends: friends(pool, caller.user).await?,
             },
@@ -278,7 +278,7 @@ async fn block(
     Ok(vec![
         notice(&caller.name, &message),
         Effect::to_self(Outgoing::new(
-            hanabi_protocol::server::BLOCKED,
+            hanabi_protocol::event::BLOCKED,
             hanabi_protocol::Blocked {
                 blocked: blocked(pool, caller.user).await?,
             },

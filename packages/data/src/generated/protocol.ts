@@ -1672,7 +1672,7 @@ export const welcomeSchema = z
     username: z.string().min(1),
   })
   .readonly();
-export const CLIENT_COMMAND_SCHEMAS = {
+export const CLIENT_REQUEST_SCHEMAS = {
   blockAdd: relationshipRequestSchema,
   blockRemove: relationshipRequestSchema,
   chat: chatRequestSchema,
@@ -1719,12 +1719,12 @@ export const CLIENT_COMMAND_SCHEMAS = {
   tagSearch: tagSearchRequestSchema,
   userInactive: userInactiveRequestSchema,
 } as const;
-export const CLIENT_REPLY_SCHEMAS = {
+export const REPLY_SCHEMAS = {
   chatPmHistory: chatPmHistorySchema,
   gameHistory: gamePageSchema,
   seedGames: gamePageSchema,
 } as const;
-export const SERVER_COMMAND_SCHEMAS = {
+export const SERVER_EVENT_SCHEMAS = {
   blocked: blockedSchema,
   chat: chatSchema,
   chatDeleted: chatDeletedSchema,
@@ -1765,17 +1765,17 @@ export const SERVER_COMMAND_SCHEMAS = {
   warning: noticeSchema,
   welcome: welcomeSchema,
 } as const;
-export type ClientCommand = keyof typeof CLIENT_COMMAND_SCHEMAS;
-export type ClientCommandData = {
-  [Command in ClientCommand]: z.infer<(typeof CLIENT_COMMAND_SCHEMAS)[Command]>;
+export type ClientRequest = keyof typeof CLIENT_REQUEST_SCHEMAS;
+export type ClientRequestData = {
+  [Name in ClientRequest]: z.infer<(typeof CLIENT_REQUEST_SCHEMAS)[Name]>;
 };
-export type ServerCommand = keyof typeof SERVER_COMMAND_SCHEMAS;
-export type ServerCommandData = {
-  [Command in ServerCommand]: z.infer<(typeof SERVER_COMMAND_SCHEMAS)[Command]>;
+export type ServerEvent = keyof typeof SERVER_EVENT_SCHEMAS;
+export type ServerEventData = {
+  [Name in ServerEvent]: z.infer<(typeof SERVER_EVENT_SCHEMAS)[Name]>;
 };
-/** The data of the reply to each client command, or undefined for a reply without data. */
-export type ClientReplyData = {
-  [Command in ClientCommand]: Command extends keyof typeof CLIENT_REPLY_SCHEMAS
-    ? z.infer<(typeof CLIENT_REPLY_SCHEMAS)[Command]>
+/** The data of the reply to each client request, or undefined for a reply without data. */
+export type ReplyData = {
+  [Name in ClientRequest]: Name extends keyof typeof REPLY_SCHEMAS
+    ? z.infer<(typeof REPLY_SCHEMAS)[Name]>
     : undefined;
 };

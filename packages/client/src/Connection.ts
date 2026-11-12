@@ -1,20 +1,20 @@
 import type {
-  CLIENT_COMMAND_SCHEMAS,
-  ClientCommand,
-  ClientReplyData,
-  ServerCommand,
-  ServerCommandData,
+  CLIENT_REQUEST_SCHEMAS,
+  ClientRequest,
+  ReplyData,
+  ServerEvent,
+  ServerEventData,
 } from "@hanabi-live/data";
 import {
-  CLIENT_REPLY_SCHEMAS,
   packRequest,
-  SERVER_COMMAND_SCHEMAS,
+  REPLY_SCHEMAS,
+  SERVER_EVENT_SCHEMAS,
   unpackServerFrame,
 } from "@hanabi-live/data";
 import type { z } from "zod";
 
 /** The commands that `send` delivers before the client is ready. */
-const COMMANDS_BEFORE_READY: ReadonlySet<ClientCommand> = new Set([
+const COMMANDS_BEFORE_READY: ReadonlySet<ClientRequest> = new Set([
   "gameInitLoad",
   "gameLoaded",
   "gameStateLoad",
@@ -26,21 +26,21 @@ const COMMANDS_BEFORE_READY: ReadonlySet<ClientCommand> = new Set([
 type LifecycleEvent = "open" | "close" | "socketError";
 
 const serverSchemas: Readonly<
-  Partial<Record<string, (typeof SERVER_COMMAND_SCHEMAS)[ServerCommand]>>
-> = SERVER_COMMAND_SCHEMAS;
+  Partial<Record<string, (typeof SERVER_EVENT_SCHEMAS)[ServerEvent]>>
+> = SERVER_EVENT_SCHEMAS;
 
 const replySchemas: Readonly<Partial<Record<string, z.ZodType>>> =
-  CLIENT_REPLY_SCHEMAS;
+  REPLY_SCHEMAS;
 
 /** The server's answer to a request: its data, or a failure, which the client has shown. */
-export type Reply<Command extends ClientCommand> =
-  | { readonly ok: true; readonly data: ClientReplyData[Command] }
+export type Reply<Command extends ClientRequest> =
+  | { readonly ok: true; readonly data: ReplyData[Command] }
   | { readonly ok: false };
 
 /** A request that the server has not answered. */
 interface PendingRequest {
-  readonly command: ClientCommand;
-  readonly onReply: ((reply: Reply<ClientCommand>) => void) | undefined;
+  readonly command: ClientRequest;
+  readonly onReply: ((reply: Reply<ClientRequest>) => void) | undefined;
 }
 
 /**
@@ -151,11 +151,11 @@ export class Connection {
     }
     this.pending.delete(id);
     const { command } = request;
-    function resolve(reply: Reply<ClientCommand>) {
+    function resolve(reply: Reply<ClientRequest>) {
       request?.onReply?.(reply);
     }
     if (error !== undefined) {
-      const notice = SERVER_COMMAND_SCHEMAS.warning.safeParse(error);
+      const notice = SERVER_EVENT_SCHEMAS.warning.safeParse(error);
       if (!notice.success) {
         this.invalidMessage?.(
           command,
@@ -166,7 +166,7 @@ export class Connection {
       } else if (notice.data.code !== "commandIgnored") {
         // `on` registered the warning callback for this payload type.
         const warning = this.callbacks.get("warning") as
-          ((data: ServerCommandData["warning"]) => void) | undefined;
+          ((data: ServerEventData["warning"]) => void) | undefined;
         warning?.(structuredClone(notice.data));
       }
       resolve({ ok: false });
@@ -174,8 +174,8 @@ export class Connection {
     }
     const schema = replySchemas[command];
     if (schema === undefined) {
-      // `ClientReplyData` has no data for a command without a reply schema.
-      resolve({ ok: true, data: undefined as ClientReplyData[ClientCommand] });
+      // `ReplyData` has no data for a command without a reply schema.
+      resolve({ ok: true, data: undefined as ReplyData[ClientRequest] });
       return;
     }
     const result = schema.safeParse(data);
@@ -196,7 +196,7 @@ export class Connection {
     // The schema of the command's reply checked the data.
     resolve({
       ok: true,
-      data: structuredClone(result.data) as ClientReplyData[ClientCommand],
+      data: structuredClone(result.data) as ReplyData[ClientRequest],
     });
   }
 
@@ -205,9 +205,9 @@ export class Connection {
   }
 
   on(name: LifecycleEvent, callback: (event: Event) => void): void;
-  on<Command extends ServerCommand>(
+  on<Command extends ServerEvent>(
     name: Command,
-    callback: (data: ServerCommandData[Command]) => void,
+    callback: (data: ServerEventData[Command]) => void,
   ): void;
   on(name: string, callback: (data: never) => void): void {
     this.callbacks.set(name, callback);
@@ -224,9 +224,9 @@ export class Connection {
    * Sends a request. `onReply` gets the server's reply, after every message that the request's work
    * sent. A refused request shows as a warning either way.
    */
-  send<Command extends ClientCommand>(
+  send<Command extends ClientRequest>(
     command: Command,
-    data: z.input<(typeof CLIENT_COMMAND_SCHEMAS)[Command]>,
+    data: z.input<(typeof CLIENT_REQUEST_SCHEMAS)[Command]>,
     onReply?: (reply: Reply<Command>) => void,
   ): void {
     if (
@@ -242,7 +242,7 @@ export class Connection {
     this.pending.set(id, {
       command,
       // The reply to this ID is the reply to `command`.
-      onReply: onReply as ((reply: Reply<ClientCommand>) => void) | undefined,
+      onReply: onReply as ((reply: Reply<ClientRequest>) => void) | undefined,
     });
     this.ws.send(packRequest(id, command, data));
 

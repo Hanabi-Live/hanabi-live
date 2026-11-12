@@ -1,7 +1,7 @@
-import type { ClientCommandData } from "@hanabi-live/data";
+import type { ClientRequestData } from "@hanabi-live/data";
 
 /** An in-game action that we just took: the "playerAction" command's action. */
-export type ClientAction = ClientCommandData["playerAction"]["action"];
+export type ClientAction = ClientRequestData["playerAction"]["action"];
 
 export type ClientActionClue = Extract<ClientAction, { type: "clue" }>;
 

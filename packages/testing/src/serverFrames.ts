@@ -1,16 +1,16 @@
-import type { ClientCommand } from "@hanabi-live/data";
+import type { ClientRequest } from "@hanabi-live/data";
 import {
-  CLIENT_REPLY_SCHEMAS,
-  SERVER_COMMAND_SCHEMAS,
+  REPLY_SCHEMAS,
+  SERVER_EVENT_SCHEMAS,
   unpackServerFrame,
 } from "@hanabi-live/data";
 import { z } from "zod";
 
 const schemas: Readonly<Record<string, z.ZodType | undefined>> =
-  SERVER_COMMAND_SCHEMAS;
+  SERVER_EVENT_SCHEMAS;
 
-const replySchemas: Readonly<Partial<Record<ClientCommand, z.ZodType>>> =
-  CLIENT_REPLY_SCHEMAS;
+const replySchemas: Readonly<Partial<Record<ClientRequest, z.ZodType>>> =
+  REPLY_SCHEMAS;
 
 /**
  * Checks a WebSocket frame from the server against the schemas the clients parse it with, so tests
@@ -20,7 +20,7 @@ const replySchemas: Readonly<Partial<Record<ClientCommand, z.ZodType>>> =
  */
 export function serverFrameViolation(
   frame: string,
-  requestCommand: (id: number) => ClientCommand | undefined = () => undefined,
+  requestCommand: (id: number) => ClientRequest | undefined = () => undefined,
 ): string | undefined {
   const unpacked = unpackServerFrame(frame);
   if (unpacked === undefined) {
@@ -31,7 +31,7 @@ export function serverFrameViolation(
       if (unpacked.data !== undefined) {
         return `The server sent a failed reply with data: ${frame}`;
       }
-      const result = SERVER_COMMAND_SCHEMAS.warning.safeParse(unpacked.error);
+      const result = SERVER_EVENT_SCHEMAS.warning.safeParse(unpacked.error);
       return result.success
         ? undefined
         : `The server sent an invalid failure:\n${z.prettifyError(result.error)}`;

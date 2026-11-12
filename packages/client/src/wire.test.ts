@@ -1,13 +1,13 @@
 import {
   replaySoundEffectSchema,
-  SERVER_COMMAND_SCHEMAS,
+  SERVER_EVENT_SCHEMAS,
 } from "@hanabi-live/data";
 import { describe, expect, test } from "vitest";
 import { toCardIdentity, toGameAction, toSoundType } from "./wire.ts";
 
 /** Validates a game event as the connection does. */
 function event(data: unknown) {
-  return SERVER_COMMAND_SCHEMAS.gameEvent.parse({ tableId: 1, event: data })
+  return SERVER_EVENT_SCHEMAS.gameEvent.parse({ tableId: 1, event: data })
     .event;
 }
 
@@ -73,7 +73,7 @@ describe("server game events", () => {
 
   test("values outside the game's types are rejected", () => {
     expect(() =>
-      SERVER_COMMAND_SCHEMAS.pause.parse({
+      SERVER_EVENT_SCHEMAS.pause.parse({
         tableId: 1,
         active: true,
         playerIndex: 6,

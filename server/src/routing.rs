@@ -1,6 +1,6 @@
 //! Where each client command runs. Every command is listed, so a new one needs a decision.
 
-use hanabi_protocol::ClientMessage;
+use hanabi_protocol::ClientRequest;
 use hanabi_protocol::TableId;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -18,8 +18,8 @@ pub enum Route {
     Table(TableId),
 }
 
-pub fn route(message: &ClientMessage) -> Route {
-    use ClientMessage as M;
+pub fn route(message: &ClientRequest) -> Route {
+    use ClientRequest as M;
     let id = match message {
         M::LobbyLoad(_) => return Route::Connection,
         M::TableCreate(_) | M::ReplayCreate(_) => return Route::Hub,

@@ -1,4 +1,4 @@
-import type { ServerCommandData } from "@hanabi-live/data";
+import type { ServerEventData } from "@hanabi-live/data";
 import { afterEach, describe, expect, test, vi } from "vitest";
 
 import { replayGameSchema, tableIdSchema } from "@hanabi-live/data";
@@ -20,14 +20,14 @@ const { leaveTableLink, parseAndGoto } = await import("./url.ts");
 const { setBrowserAddressBarPath } = await import("../utils.ts");
 
 function welcome(
-  data: Partial<ServerCommandData["welcome"]> = {},
-): ServerCommandData["welcome"] {
+  data: Partial<ServerEventData["welcome"]> = {},
+): ServerEventData["welcome"] {
   return {
     firstTimeUser: false,
     playingAtTables: [],
     spectatingAtTables: [],
     ...data,
-  } as ServerCommandData["welcome"];
+  } as ServerEventData["welcome"];
 }
 
 describe("replay URL loading", () => {

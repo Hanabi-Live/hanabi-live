@@ -2,7 +2,7 @@
 // client also sends these messages to itself in order to emulate actions coming from the server for
 // e.g. in-game replays.
 
-import type { ServerCommandData } from "@hanabi-live/data";
+import type { ServerEventData } from "@hanabi-live/data";
 import type {
   CardOrder,
   GameMetadata,
@@ -52,10 +52,10 @@ import { uiInit } from "./uiInit.ts";
 // Define a command handler map.
 export const gameCommands = new ServerHandlers();
 
-type GameState = ServerCommandData["gameState"];
+type GameState = ServerEventData["gameState"];
 type Votes = NonNullable<GameState["votes"]>;
 type HypotheticalControl = Extract<
-  ServerCommandData["replayAction"]["action"],
+  ServerEventData["replayAction"]["action"],
   { type: "hypothetical" }
 >["control"];
 
@@ -90,7 +90,7 @@ function setConnected(connectedList: readonly boolean[]) {
   globals.layers.UI.batchDraw();
 }
 
-function setCardIdentities(deck: ServerCommandData["gameFinished"]["deck"]) {
+function setCardIdentities(deck: ServerEventData["gameFinished"]["deck"]) {
   globals.store!.dispatch({
     type: "cardIdentities",
     cardIdentities: deck.map(toCardIdentity),
@@ -533,7 +533,7 @@ function suggestTurn(who: string, room: string, segment: number) {
   }
 }
 
-type InitData = ServerCommandData["gameInit"];
+type InitData = ServerEventData["gameInit"];
 
 function setUrl(data: InitData) {
   const { mode } = data;

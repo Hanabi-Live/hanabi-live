@@ -10,7 +10,7 @@ use crate::{
 #[cfg(test)]
 use anyhow::Context;
 use anyhow::Result;
-use hanabi_protocol::ClientMessage;
+use hanabi_protocol::ClientRequest;
 use hanabi_protocol::GameId;
 use hanabi_protocol::PlayerIndex;
 use hanabi_protocol::TableId;
@@ -234,7 +234,7 @@ pub enum HubCommand {
     Allocate(oneshot::Sender<CommandResult<Allocation>>),
     Client {
         session: Arc<Session>,
-        message: ClientMessage,
+        message: ClientRequest,
         reply: Reply,
     },
     /// Lists the online users, for a private message. Fails for a stale session.
@@ -314,7 +314,7 @@ pub enum HubCommand {
 }
 pub enum Command {
     /// A client command, decoded once into its payload type.
-    Client(Box<ClientMessage>),
+    Client(Box<ClientRequest>),
     /// Restores a reconnecting user's attendance and view.
     Reattend {
         spectate: bool,
@@ -334,7 +334,7 @@ pub enum TableCommand {
 /// Decodes a command the way the WebSocket parser does, for tests that build commands by name. A
 /// test names only the table settings that it checks: the others take their defaults.
 #[cfg(test)]
-pub(crate) fn client_message(name: &str, data: &Value) -> Result<ClientMessage> {
+pub(crate) fn client_message(name: &str, data: &Value) -> Result<ClientRequest> {
     let mut data = data.clone();
     if matches!(name, "tableCreate" | "tableUpdate")
         && let Some(settings) = data.get_mut("settings").and_then(Value::as_object_mut)
@@ -346,7 +346,7 @@ pub(crate) fn client_message(name: &str, data: &Value) -> Result<ClientMessage> 
                 .or_insert_with(|| defaults[field].clone());
         }
     }
-    ClientMessage::decode(name, &data)?.with_context(|| format!("Unregistered command {name}"))
+    ClientRequest::decode(name, &data)?.with_context(|| format!("Unregistered command {name}"))
 }
 
 #[cfg(test)]

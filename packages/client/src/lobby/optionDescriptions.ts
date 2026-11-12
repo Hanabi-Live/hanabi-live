@@ -1,6 +1,6 @@
 // The icons that summarize a table's options in the lobby, with the tooltips that explain them.
 
-import type { ServerCommandData } from "@hanabi-live/data";
+import type { ServerEventData } from "@hanabi-live/data";
 import { SECONDS_PER_MINUTE } from "@hanabi-live/data";
 import { secondsToClockString } from "@hanabi-live/game";
 import { OptionIcons } from "../enums/OptionIcons.ts";
@@ -17,7 +17,7 @@ export interface OptionDescription {
 }
 
 export function getOptionDescriptions(
-  settings: ServerCommandData["table"]["settings"],
+  settings: ServerEventData["table"]["settings"],
 ): readonly OptionDescription[] {
   const { options } = settings;
   const descriptions: OptionDescription[] = [];

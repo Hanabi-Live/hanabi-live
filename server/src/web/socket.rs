@@ -131,7 +131,7 @@ pub(super) async fn bootstrap(app: &App, account: Account, ip: &str) -> Result<B
         blocks,
         welcome,
         initial: vec![frame(
-            hanabi_protocol::server::LOBBY_STATUS,
+            hanabi_protocol::event::LOBBY_STATUS,
             hanabi_protocol::LobbyStatus::Loading {},
         )],
     })
@@ -143,11 +143,11 @@ pub(super) async fn lobby_initial(app: &App, id: UserId) -> Result<(Vec<Frame>, 
     let mut initial = vec![];
     let chat = lobby::lobby_history(pool, LOBBY_HISTORY_MESSAGES).await?;
     initial.push(frame(
-        hanabi_protocol::server::CHAT_LIST,
+        hanabi_protocol::event::CHAT_LIST,
         hanabi_protocol::ChatList::lobby(chat),
     ));
     initial.push(frame(
-        hanabi_protocol::server::CHAT,
+        hanabi_protocol::event::CHAT,
         hanabi_protocol::Chat::server(
             "Find teammates and discuss strategy in the <a href=\"https://discord.gg/FADvkJp\" target=\"_blank\" rel=\"noopener noreferrer\">Discord chat</a>.",
             hanabi_protocol::Timestamp::from(Utc::now()),
@@ -156,7 +156,7 @@ pub(super) async fn lobby_initial(app: &App, id: UserId) -> Result<(Vec<Frame>, 
     let motd = app.public.root.join("motd.txt");
     match tokio::fs::read_to_string(motd).await {
         Ok(text) if !text.trim().is_empty() => initial.push(frame(
-            hanabi_protocol::server::CHAT,
+            hanabi_protocol::event::CHAT,
             hanabi_protocol::Chat::server(
                 format!("[Server Notice] {}", text.trim()),
                 hanabi_protocol::Timestamp::from(Utc::now()),
@@ -172,7 +172,7 @@ pub(super) async fn lobby_initial(app: &App, id: UserId) -> Result<(Vec<Frame>, 
 pub(super) fn load_lobby(app: Arc<App>, session: Arc<Session>) {
     let Ok(session_slot) = session.lobby_load.clone().try_acquire_owned() else {
         session.emit(&frame(
-            hanabi_protocol::server::LOBBY_STATUS,
+            hanabi_protocol::event::LOBBY_STATUS,
             hanabi_protocol::LobbyStatus::Loading {},
         ));
         return;
@@ -217,7 +217,7 @@ pub(super) fn load_lobby(app: Arc<App>, session: Arc<Session>) {
                     session.emit(&message);
                 }
                 session.emit(&frame(
-                    hanabi_protocol::server::LOBBY_STATUS,
+                    hanabi_protocol::event::LOBBY_STATUS,
                     hanabi_protocol::LobbyStatus::Ready { num_games: total },
                 ));
             }
@@ -228,7 +228,7 @@ pub(super) fn load_lobby(app: Arc<App>, session: Arc<Session>) {
                 );
                 report.log();
                 session.emit(&frame(
-                    hanabi_protocol::server::LOBBY_STATUS,
+                    hanabi_protocol::event::LOBBY_STATUS,
                     hanabi_protocol::LobbyStatus::Error(report.notice()),
                 ));
             }
@@ -384,13 +384,13 @@ pub(super) async fn websocket(
                                 // it.
                                 socket
                                     .send(Message::Text(legacy_frame(
-                                        hanabi_protocol::server::ERROR,
+                                        hanabi_protocol::event::ERROR,
                                         &notice,
                                     )))
                                     .await?;
                                 socket
                                     .send(Message::Text(frame(
-                                        hanabi_protocol::server::ERROR,
+                                        hanabi_protocol::event::ERROR,
                                         notice,
                                     )))
                                     .await?;
@@ -434,7 +434,7 @@ async fn connection(
             let _ = tokio::time::timeout(
                 ERROR_SEND_TIMEOUT,
                 socket.send(Message::Text(frame(
-                    hanabi_protocol::server::ERROR,
+                    hanabi_protocol::event::ERROR,
                     hanabi_protocol::Notice::new("Account initialization failed."),
                 ))),
             )
@@ -498,7 +498,7 @@ async fn connection(
                 StatusCode::CONFLICT,
             );
             report.log();
-            let message = frame(hanabi_protocol::server::ERROR, report.notice());
+            let message = frame(hanabi_protocol::event::ERROR, report.notice());
             let _ =
                 tokio::time::timeout(CLOSE_SEND_TIMEOUT, sink.send(Message::Text(message)))
                     .await;

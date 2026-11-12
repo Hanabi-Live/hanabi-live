@@ -47,8 +47,8 @@ macro_rules! named_enum {
 
 mod registry;
 pub use registry::{
-    ClientMessage, Reply, ReplyData, ServerMessage, client_contracts, decode, decode_server,
-    exported, game_library, reply, reply_contracts, schemas, server, server_contracts, validate,
+    ClientRequest, Reply, ReplyData, ServerEvent, request_contracts, decode, decode_event,
+    exported, game_library, reply, reply_contracts, schemas, event, event_contracts, validate,
 };
 
 mod catalog;
@@ -431,10 +431,10 @@ mod tests {
         for case in cases {
             let command = case["command"].as_str().unwrap();
             let result = if case["direction"] == "client" {
-                ClientMessage::decode(command, &case["input"])
+                ClientRequest::decode(command, &case["input"])
                     .map(|message| message.map(|message| message.data()))
             } else {
-                decode_server(command, &case["input"])
+                decode_event(command, &case["input"])
             };
             let valid = case["nativeValid"]
                 .as_bool()

@@ -2,7 +2,7 @@
 // and the state reducers to fire.) All of the sub-actions from the "gameEvent" command are listed
 // here.
 
-import type { ServerCommandData, Spectator } from "@hanabi-live/data";
+import type { ServerEventData, Spectator } from "@hanabi-live/data";
 import type {
   ActionIncludingHypothetical,
   CardIdentity,
@@ -49,7 +49,7 @@ type HypotheticalAction =
 
 /** The parts of the "gameInit" message that the state uses. */
 export interface ActionInit extends Readonly<
-  Pick<ServerCommandData["gameInit"], "startedAt" | "finishedAt" | "mode">
+  Pick<ServerEventData["gameInit"], "startedAt" | "finishedAt" | "mode">
 > {
   readonly type: "init";
 
@@ -77,7 +77,7 @@ interface ActionPremove {
 }
 
 interface ActionPause extends Readonly<
-  Pick<ServerCommandData["pause"], "pausingPlayerIndex" | "queued">
+  Pick<ServerEventData["pause"], "pausingPlayerIndex" | "queued">
 > {
   readonly type: "pause";
 }
@@ -93,7 +93,7 @@ interface ActionSpectators {
 }
 
 interface ActionGameFinished extends Readonly<
-  Pick<ServerCommandData["gameFinished"], "gameId" | "sharedReplay">
+  Pick<ServerEventData["gameFinished"], "gameId" | "sharedReplay">
 > {
   readonly type: "gameFinished";
 

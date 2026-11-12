@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 
-import type { ServerCommandData } from "@hanabi-live/data";
+import type { ServerEventData } from "@hanabi-live/data";
 import { tableIdSchema, userIdSchema } from "@hanabi-live/data";
 import {
   act,
@@ -67,7 +67,7 @@ function user(
   userId: number,
   name: string,
   status: "lobby" | "pregame" = "lobby",
-): ServerCommandData["user"] {
+): ServerEventData["user"] {
   return {
     userId: userIdSchema.parse(userId),
     username: name,
@@ -214,7 +214,7 @@ describe("UsersList", () => {
   });
 
   test("links the status of users at a table, except from the pre-game", () => {
-    const table = { tableId: TABLE_ID } as ServerCommandData["table"];
+    const table = { tableId: TABLE_ID } as ServerEventData["table"];
     store.dispatch(tablesListed([table]));
     store.dispatch(usersListed([user(1, "Alice", "pregame"), user(2, "Bob")]));
     renderList();

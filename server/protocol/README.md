@@ -36,9 +36,9 @@ PostgreSQL.
 
 Schemars derives the schema from the DTOs. Native decoding validates that schema
 before serde applies defaults. The generator translates the supported schema
-subset to Zod, with `CLIENT_COMMAND_SCHEMAS`, `CLIENT_REPLY_SCHEMAS`, and
-`SERVER_COMMAND_SCHEMAS` registries and their inferred `ClientCommandData`,
-`ClientReplyData`, and `ServerCommandData` types. Unknown schema features fail
+subset to Zod, with `CLIENT_REQUEST_SCHEMAS`, `REPLY_SCHEMAS`, and
+`SERVER_EVENT_SCHEMAS` registries and their inferred `ClientRequestData`,
+`ReplyData`, and `ServerEventData` types. Unknown schema features fail
 generation rather than silently losing validation.
 
 ## Compatibility rules

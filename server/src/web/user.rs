@@ -4,7 +4,7 @@
 
 use super::App;
 use crate::{errors::CommandResult, transport::Session};
-use hanabi_protocol::{ClientMessage, UserId};
+use hanabi_protocol::{ClientRequest, UserId};
 use std::{
     collections::HashMap,
     sync::{Arc, Mutex, PoisonError},
@@ -20,7 +20,7 @@ pub(super) enum UserCommand {
     /// A lobby command.
     Lobby {
         session: Arc<Session>,
-        message: Box<ClientMessage>,
+        message: Box<ClientRequest>,
         reply: oneshot::Sender<CommandResult<super::dispatch::LobbyOutcome>>,
     },
 }

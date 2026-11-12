@@ -1,7 +1,7 @@
 // Communication with the server is done through the WebSocket protocol. `Connection` sends the
 // requests and passes on the server's messages and replies.
 
-import type { ServerCommand, ServerCommandData } from "@hanabi-live/data";
+import type { ServerEvent, ServerEventData } from "@hanabi-live/data";
 import {
   VERSION,
   errorDetails,
@@ -379,7 +379,7 @@ function isCurrentConnection(conn: Connection) {
 
 /** Handles an error, after which the server closes the connection. */
 function errorCallback(conn: Connection) {
-  return (data: ServerCommandData["error"]) => {
+  return (data: ServerEventData["error"]) => {
     if (!isCurrentConnection(conn)) {
       return;
     }
@@ -393,11 +393,11 @@ function errorCallback(conn: Connection) {
   };
 }
 
-function commonCallback<Command extends ServerCommand>(
+function commonCallback<Command extends ServerEvent>(
   conn: Connection,
-  commandFunction: (data: ServerCommandData[Command]) => void,
+  commandFunction: (data: ServerEventData[Command]) => void,
 ) {
-  return (data: ServerCommandData[Command]) => {
+  return (data: ServerEventData[Command]) => {
     if (!isCurrentConnection(conn)) {
       return;
     }
@@ -405,12 +405,12 @@ function commonCallback<Command extends ServerCommand>(
   };
 }
 
-function lobbyCallback<Command extends ServerCommand>(
+function lobbyCallback<Command extends ServerEvent>(
   conn: Connection,
   commandName: Command,
-  commandFunction: (data: ServerCommandData[Command]) => void,
+  commandFunction: (data: ServerEventData[Command]) => void,
 ) {
-  return (data: ServerCommandData[Command]) => {
+  return (data: ServerEventData[Command]) => {
     if (!isCurrentConnection(conn)) {
       return;
     }
@@ -422,12 +422,12 @@ function lobbyCallback<Command extends ServerCommand>(
   };
 }
 
-function gameCallback<Command extends ServerCommand>(
+function gameCallback<Command extends ServerEvent>(
   conn: Connection,
   commandName: Command,
-  commandFunction: (data: ServerCommandData[Command]) => void,
+  commandFunction: (data: ServerEventData[Command]) => void,
 ) {
-  return (data: ServerCommandData[Command]) => {
+  return (data: ServerEventData[Command]) => {
     // Ignore game events outside a loaded game, or while the UI is loading.
     if (
       !isCurrentConnection(conn)

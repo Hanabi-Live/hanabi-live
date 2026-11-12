@@ -1,6 +1,6 @@
-import type { ClientCommandData } from "@hanabi-live/data";
+import type { ClientRequestData } from "@hanabi-live/data";
 
-type ReplayVisibility = ClientCommandData["replayCreate"]["visibility"];
+type ReplayVisibility = ClientRequestData["replayCreate"]["visibility"];
 
 /**
  * Who watches a new replay: its creator alone, or anyone who joins it. A shared replay can join one
