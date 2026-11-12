@@ -71,7 +71,8 @@ const SEARCH_VARIANTS = "Search custom variants...";
 
 const VARIANT_LIST_ID = "create-game-variant-dropdown2-list";
 
-const DOCS_URL = "https://github.com/Hanabi-Live/hanabi-live/blob/main/docs";
+export const DOCS_URL =
+  "https://github.com/Hanabi-Live/hanabi-live/blob/main/docs";
 
 /** The checkboxes under "Extra Options", with what describes each one. */
 const EXTRA_OPTION_ROWS = [
@@ -770,13 +771,13 @@ function RowLabel({
 }
 
 /** A link beside a description that explains it. */
-function HelpLink({
+export function HelpLink({
   href,
   text,
 }: {
   readonly href: string;
   readonly text: string;
-}) {
+}): React.JSX.Element {
   return (
     <a
       aria-label={text}

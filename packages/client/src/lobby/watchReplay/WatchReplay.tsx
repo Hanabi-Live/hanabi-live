@@ -4,6 +4,7 @@ import { parseIntSafe } from "complete-common";
 import { Fragment, useEffect, useRef, useState } from "react";
 import { LOCAL_STORAGE_KEY } from "../../constants.ts";
 import { globals } from "../../Globals.ts";
+import { DOCS_URL, HelpLink } from "../createGame/CreateGame.tsx";
 import type { GameJson } from "../gameJson.ts";
 import { parseGameJson } from "../gameJson.ts";
 import * as lobbyPage from "../lobbyPage.ts";
@@ -180,10 +181,16 @@ export function WatchReplay(): React.JSX.Element {
           </li>
           {visibility === "shared" && (
             <li className="lobby-row">
-              <label htmlFor="replay-spoiler-free">
-                <i className="fas fa-eye-slash fa-fw" />
-                Spoiler-free review
-              </label>
+              <div className="lobby-row-label">
+                <label htmlFor="replay-spoiler-free">
+                  <i className="fas fa-eye-slash fa-fw" />
+                  Spoiler-free review
+                </label>
+                <HelpLink
+                  href={`${DOCS_URL}/features.md#replays`}
+                  text="About spoiler-free reviews"
+                />
+              </div>
               <span className="lobby-row-checkbox">
                 <input
                   checked={spoilerFree}
