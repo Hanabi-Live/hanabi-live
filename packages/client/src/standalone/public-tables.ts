@@ -12,7 +12,7 @@ import {
 import { getVariantById, MAX_PLAYERS, MIN_PLAYERS } from "@hanabi-live/game";
 import { iRange } from "complete-common";
 import * as z from "zod";
-import { hoverTooltip } from "../Tooltip.ts";
+import { Tooltip } from "../Tooltip.ts";
 import { PATH } from "../constants.ts";
 import type { Choice, Column, Sort } from "./shared/data-table.ts";
 import { addTableControls, Pagers } from "./shared/data-table.ts";
@@ -69,8 +69,17 @@ init().catch((error: unknown) => {
 });
 
 async function init() {
+  // Each anchor's "data-tooltip-content" attribute selects the element that its tooltip shows.
   for (const anchor of document.querySelectorAll<HTMLElement>(".tooltip")) {
-    hoverTooltip(anchor);
+    const selector = anchor.dataset["tooltipContent"];
+    const content =
+      selector === undefined ? null : document.querySelector(selector);
+    if (content === null) {
+      throw new Error(
+        `The "data-tooltip-content" attribute of the tooltip anchor "#${anchor.id}" does not select an element.`,
+      );
+    }
+    new Tooltip(anchor, { content }).openOnHover();
   }
 
   const main = document.querySelector("#main");

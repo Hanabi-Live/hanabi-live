@@ -43,7 +43,11 @@ function pixels(value: string) {
   return Number(value.replace(/px$/u, ""));
 }
 
-const domGlobals = { document: dom.window.document, window: dom.window };
+const domGlobals = {
+  document: dom.window.document,
+  MutationObserver: dom.window.MutationObserver,
+  window: dom.window,
+};
 const savedGlobals = new Map<string, PropertyDescriptor | undefined>();
 
 beforeAll(() => {
@@ -122,4 +126,19 @@ test("a tooltip too tall for both sides stays inside the window", () => {
     top: WINDOW_MARGIN,
     room: `${roomAbove}px`,
   });
+});
+
+test("a tooltip closes when its anchor is removed", async () => {
+  const anchor = dom.window.document.createElement("div");
+  dom.window.document.body.append(anchor);
+  const tooltip = new Tooltip(anchor, { content: "Text" });
+  tooltip.open();
+  expect(tooltip.isOpen).toBe(true);
+
+  anchor.remove();
+  // The page reports removed elements in a microtask.
+  await Promise.resolve();
+
+  expect(tooltip.isOpen).toBe(false);
+  tooltip.destroy();
 });

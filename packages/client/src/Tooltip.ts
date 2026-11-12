@@ -19,8 +19,11 @@ const GAME_SCREEN_SELECTOR = "#game-new-ui";
 /** The closest that a tooltip comes to the edge of the window. */
 const WINDOW_MARGIN_IN_PIXELS = 8;
 
-/** How often an open tooltip checks whether its anchor has been removed from the page. */
-const ANCHOR_CHECK_INTERVAL_IN_MILLISECONDS = 500;
+/** The open tooltips, which close when their anchor is removed from the page. */
+const openTooltips = new Set<Tooltip>();
+
+/** Watches the page for removed anchors while any tooltip is open. */
+let anchorObserver: MutationObserver | undefined;
 
 interface TooltipOptions {
   /** HTML, or an element to move into the tooltip. */
@@ -38,7 +41,6 @@ export class Tooltip {
   private readonly box = document.createElement("div");
   private content: Node | string = "";
   private closingTimeout: ReturnType<typeof setTimeout> | undefined;
-  private anchorCheckInterval: ReturnType<typeof setInterval> | undefined;
   private readonly hoverListeners = new AbortController();
 
   constructor(anchor: HTMLElement, options: TooltipOptions) {
@@ -77,6 +79,10 @@ export class Tooltip {
 
   get isOpen(): boolean {
     return this.bubble.matches(":popover-open");
+  }
+
+  get isAnchorConnected(): boolean {
+    return this.anchor.isConnected;
   }
 
   /** Whether the tooltip is still fading out after it was closed. */
@@ -124,11 +130,7 @@ export class Tooltip {
 
     if (!this.isOpen) {
       this.bubble.showPopover();
-      this.anchorCheckInterval = setInterval(() => {
-        if (!this.anchor.isConnected) {
-          this.close();
-        }
-      }, ANCHOR_CHECK_INTERVAL_IN_MILLISECONDS);
+      watchAnchor(this);
     }
     this.position();
   }
@@ -147,8 +149,7 @@ export class Tooltip {
       this.closeOnPointerDownElsewhere,
       { capture: true },
     );
-    clearInterval(this.anchorCheckInterval);
-    this.anchorCheckInterval = undefined;
+    unwatchAnchor(this);
     if (!this.isOpen) {
       return;
     }
@@ -260,21 +261,26 @@ export class Tooltip {
   }
 }
 
-/**
- * Creates a tooltip that opens on hover, showing the element that the anchor's
- * "data-tooltip-content" attribute selects.
- */
-export function hoverTooltip(anchor: HTMLElement): Tooltip {
-  const selector = anchor.dataset["tooltipContent"];
-  const content =
-    selector === undefined ? null : document.querySelector(selector);
-  if (content === null) {
-    throw new Error(
-      `The "data-tooltip-content" attribute of the tooltip anchor "#${anchor.id}" does not select an element.`,
-    );
+function watchAnchor(tooltip: Tooltip) {
+  openTooltips.add(tooltip);
+  if (anchorObserver === undefined) {
+    anchorObserver = new MutationObserver(closeTooltipsOfRemovedAnchors);
+    anchorObserver.observe(document.body, { childList: true, subtree: true });
   }
+}
 
-  const tooltip = new Tooltip(anchor, { content });
-  tooltip.openOnHover();
-  return tooltip;
+function unwatchAnchor(tooltip: Tooltip) {
+  openTooltips.delete(tooltip);
+  if (openTooltips.size === 0) {
+    anchorObserver?.disconnect();
+    anchorObserver = undefined;
+  }
+}
+
+function closeTooltipsOfRemovedAnchors() {
+  for (const tooltip of openTooltips) {
+    if (!tooltip.isAnchorConnected) {
+      tooltip.close();
+    }
+  }
 }
