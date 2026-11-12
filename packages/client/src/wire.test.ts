@@ -42,8 +42,33 @@ describe("server game events", () => {
     if (action.type !== "clue") {
       throw new Error("Expected a clue action");
     }
-    expect(action.clue).toEqual({ type: undefined, value: undefined });
+    expect(action.clue).toEqual({
+      type: undefined,
+      value: undefined,
+      visibleType: undefined,
+    });
     expect(action.orders.map(Number)).toEqual([3, 4]);
+  });
+
+  test("a clue keeps only its type when the server hides its value", () => {
+    const action = toGameAction(
+      event({
+        type: "clue",
+        clueType: "rank",
+        playerIndex: 0,
+        receiverIndex: 1,
+        orders: [3],
+      }),
+    );
+    if (action.type !== "clue") {
+      throw new Error("Expected a clue action");
+    }
+    expect(action.clue).toEqual({
+      type: undefined,
+      value: undefined,
+      visibleType: "rank",
+    });
+    expect(action).not.toHaveProperty("clueType");
   });
 
   test("values outside the game's types are rejected", () => {

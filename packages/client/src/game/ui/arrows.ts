@@ -189,8 +189,9 @@ export function set(
       giverPlayerIndex,
       globals.metadata.characterAssignments,
     );
+    const visibleType = clue.type ?? clue.visibleType;
     if (
-      clue.type === undefined
+      visibleType === undefined
       || globals.variant.duck
       || (giverCharacterName === "Quacker" && !globals.state.finished)
     ) {
@@ -200,13 +201,13 @@ export function set(
     } else {
       arrow.circle.show();
 
-      switch (clue.type) {
+      switch (visibleType) {
         case "color": {
           arrow.text.hide();
 
           // The circle for color clues should have a black border and a fill matching the color.
           arrow.circle.stroke("black");
-          if (globals.variant.cowAndPig) {
+          if (clue.type === undefined || globals.variant.cowAndPig) {
             // The specific clue color is hidden in "Cow & Pig" variants.
             arrow.circle.fill("white");
           } else {
@@ -247,12 +248,13 @@ export function set(
         }
 
         case "rank": {
-          let text = clue.value.toString();
-          if (globals.variant.cowAndPig) {
-            text = "#";
-          }
-          if (globals.variant.oddsAndEvens) {
-            text = clue.value === EVEN_RANK_CLUE ? "E" : "O";
+          // The specific clue rank is hidden in "Cow & Pig" variants.
+          let text = "#";
+          if (clue.type === "rank" && !globals.variant.cowAndPig) {
+            text = clue.value.toString();
+            if (globals.variant.oddsAndEvens) {
+              text = clue.value === EVEN_RANK_CLUE ? "E" : "O";
+            }
           }
           arrow.text.text(text);
           arrow.text.show();

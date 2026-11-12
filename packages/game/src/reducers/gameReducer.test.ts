@@ -61,7 +61,7 @@ describe("gameReducer", () => {
     }
     const action: ActionClue = {
       type: "clue",
-      clue: { type: undefined, value: undefined },
+      clue: { type: undefined, value: undefined, visibleType: undefined },
       playerIndex: 0,
       receiverIndex: 1,
       orders: [first.order],

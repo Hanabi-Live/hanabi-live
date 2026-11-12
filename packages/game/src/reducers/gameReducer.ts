@@ -128,6 +128,7 @@ function gameReducerFunction(
               castDraft({
                 type: undefined,
                 value: undefined,
+                visibleType: action.clue.visibleType,
                 giver: action.playerIndex,
                 target: action.receiverIndex,
                 segment: gameState.turn.segment,

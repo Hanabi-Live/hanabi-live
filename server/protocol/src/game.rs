@@ -175,6 +175,14 @@ pub struct Note {
     pub notes: Vec<AuthorNote>,
 }
 
+/// The type of a clue.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize, JsonSchema)]
+#[serde(rename_all = "camelCase")]
+pub enum ClueType {
+    Color,
+    Rank,
+}
+
 /// A clue's type and value: a color clue names one of the variant's clue colors, and a rank clue
 /// names a rank.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
@@ -209,9 +217,13 @@ pub struct TurnEvent {
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct ClueEvent {
-    /// Absent when the recipient may not see the clue's type and value.
+    /// Absent when the recipient may not see the clue's value.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub clue: Option<Clue>,
+    /// The clue's type, when the recipient may see it but not the clue's value. Absent when `clue`
+    /// is present.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub clue_type: Option<ClueType>,
     /// The player who gives the clue.
     pub player_index: PlayerIndex,
     /// The player who receives the clue.

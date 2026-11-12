@@ -16,6 +16,7 @@ import { getCharacterNameForPlayer } from "../reducers/reducerHelpers.ts";
 import type { Clue } from "../types/Clue.ts";
 import { newColorClue, newRankClue } from "../types/Clue.ts";
 import type { ClueRank } from "../types/ClueRank.ts";
+import type { ClueType } from "../types/ClueType.ts";
 import type { HiddenClue } from "../types/HiddenClue.ts";
 import type { MsgClue } from "../types/MsgClue.ts";
 import type { PlayerIndex } from "../types/PlayerIndex.ts";
@@ -31,16 +32,20 @@ export function isPassTurnClue(action: ActionClue): boolean {
   return action.playerIndex === action.receiverIndex;
 }
 
+/** The clue's type, unless the server hid it from the recipient. */
+export function getVisibleClueType(
+  clue: MsgClue | HiddenClue,
+): ClueType | undefined {
+  return clue.type ?? clue.visibleType;
+}
+
 export function getClueName(
   clue: MsgClue | HiddenClue,
   variant: Variant,
   characterName: string,
 ): string {
-  if (clue.type === undefined) {
-    return "Quack";
-  }
   if (variant.cowAndPig) {
-    switch (clue.type) {
+    switch (getVisibleClueType(clue)) {
       case "color": {
         return "Moo";
       }
@@ -48,10 +53,14 @@ export function getClueName(
       case "rank": {
         return "Oink";
       }
+
+      case undefined: {
+        break;
+      }
     }
   }
 
-  if (variant.duck || characterName === "Quacker") {
+  if (clue.type === undefined || variant.duck || characterName === "Quacker") {
     return "Quack";
   }
 

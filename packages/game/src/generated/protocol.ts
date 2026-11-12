@@ -275,6 +275,11 @@ export const clueSchema = z.discriminatedUnion("type", [
 ]);
 
 /**
+ * The type of a clue.
+ */
+export const clueTypeSchema = z.enum(["color", "rank"]);
+
+/**
  * How a game ended.
  */
 export const endConditionSchema = z.enum([
@@ -382,9 +387,14 @@ export const gameEventSchema = z.discriminatedUnion("type", [
   z
     .strictObject({
       /**
-       * Absent when the recipient may not see the clue's type and value.
+       * Absent when the recipient may not see the clue's value.
        */
       clue: clueSchema.optional(),
+      /**
+       * The clue's type, when the recipient may see it but not the clue's value. Absent when `clue`
+       * is present.
+       */
+      clueType: clueTypeSchema.optional(),
       /**
        * Whether the cards that the clue does not touch learn nothing from it. Only a hypothetical's
        * clue can set it.
@@ -546,9 +556,14 @@ export const hypotheticalEventSchema = z.discriminatedUnion("type", [
   z
     .strictObject({
       /**
-       * Absent when the recipient may not see the clue's type and value.
+       * Absent when the recipient may not see the clue's value.
        */
       clue: clueSchema.optional(),
+      /**
+       * The clue's type, when the recipient may see it but not the clue's value. Absent when `clue`
+       * is present.
+       */
+      clueType: clueTypeSchema.optional(),
       /**
        * Whether the cards that the clue does not touch learn nothing from it. Only a hypothetical's
        * clue can set it.

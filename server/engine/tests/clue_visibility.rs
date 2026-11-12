@@ -9,19 +9,40 @@ fn clues(events: &[EngineEvent]) -> Vec<EngineEvent> {
         .collect()
 }
 
+/// What a player or shadow may see of a clue.
+#[derive(Clone, Copy, Debug)]
+enum Visible {
+    All,
+    Type,
+    Nothing,
+}
+
 #[test]
-fn duck_projection_hides_both_clue_fields_from_every_player_and_shadow() -> Result<()> {
-    for variant_name in ["Duck (5 Suits)", "No Variant"] {
+fn projection_hides_what_players_and_shadows_may_not_see_of_a_clue() -> Result<()> {
+    for (variant_name, quacker, visible) in [
+        ("No Variant", false, Visible::All),
+        ("Duck (5 Suits)", false, Visible::Nothing),
+        ("Cow & Pig (5 Suits)", false, Visible::Type),
+        ("No Variant", true, Visible::Nothing),
+    ] {
         let mut state = create_game(GameSetup {
             player_names: vec!["Alice".into(), "Bob".into(), "Carol".into()],
             options: Options {
                 num_players: 3,
                 variant_name: variant_name.into(),
+                detrimental_characters: quacker,
                 ..Options::default()
             },
             seed: Some("p3v0s17".into()),
             deck: None,
-            characters: None,
+            characters: quacker.then(|| {
+                (0..3)
+                    .map(|_| AssignedCharacter {
+                        name: "Quacker".into(),
+                        metadata: None,
+                    })
+                    .collect()
+            }),
             interpretation: Interpretation::Live,
         })?;
         for kind in [RecordedActionType::ColorClue, RecordedActionType::RankClue] {
@@ -66,10 +87,17 @@ fn duck_projection_hides_both_clue_fields_from_every_player_and_shadow() -> Resu
                             .iter()
                             .cloned()
                             .map(|mut event| {
-                                if variant_name == "Duck (5 Suits)"
-                                    && let EngineEvent::Clue { clue, .. } = &mut event
+                                if let EngineEvent::Clue {
+                                    clue, clue_type, ..
+                                } = &mut event
                                 {
-                                    *clue = None;
+                                    match visible {
+                                        Visible::All => {}
+                                        Visible::Type => {
+                                            *clue_type = clue.take().map(|clue| clue.clue_type);
+                                        }
+                                        Visible::Nothing => *clue = None,
+                                    }
                                 }
                                 event
                             })

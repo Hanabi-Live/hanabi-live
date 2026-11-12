@@ -9,6 +9,7 @@ import {
   canCardPossiblyBeFromCluesOnly,
   getCharacterNameForPlayer,
   getVariantById,
+  getVisibleClueType,
   isCardClued,
   isHandLocked,
 } from "@hanabi-live/game";
@@ -85,7 +86,8 @@ export function getSoundType(
 
   switch (action.type) {
     case "clue": {
-      if (action.clue.type === undefined) {
+      const visibleType = getVisibleClueType(action.clue);
+      if (visibleType === undefined) {
         return SoundType.Quack;
       }
       if (metadata.options.detrimentalCharacters) {
@@ -100,7 +102,7 @@ export function getSoundType(
       }
 
       if (variant.cowAndPig) {
-        switch (action.clue.type) {
+        switch (visibleType) {
           case "color": {
             return SoundType.Moo;
           }

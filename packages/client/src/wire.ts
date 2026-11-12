@@ -10,6 +10,7 @@ import type {
 import type {
   ActionIncludingHypothetical,
   CardIdentity,
+  ClueType,
   GameAction,
   HiddenClue,
   MsgClue,
@@ -64,14 +65,15 @@ type OutgoingHypotheticalEvent = Extract<
   { type: "event" }
 >["event"];
 
-/** The server omits a clue that the recipient may not see; the game state keeps its giver. */
-const HIDDEN_CLUE = {
-  type: undefined,
-  value: undefined,
-} as const satisfies HiddenClue;
-
-function toClue(clue: WireClue | undefined): HiddenClue | MsgClue {
-  return clue ?? HIDDEN_CLUE;
+/**
+ * The server omits a clue that the recipient may not see, and sends its type when the recipient may
+ * see only that. The game state keeps its giver.
+ */
+function toClue(
+  clue: WireClue | undefined,
+  clueType: ClueType | undefined,
+): HiddenClue | MsgClue {
+  return clue ?? { type: undefined, value: undefined, visibleType: clueType };
 }
 
 /** Converts a hypothetical action from the server into the action the game state applies. */
@@ -81,7 +83,8 @@ export function toHypotheticalAction(
   if (action.type !== "clue") {
     return action;
   }
-  return { ...action, clue: toClue(action.clue) };
+  const { clue, clueType, ...rest } = action;
+  return { ...rest, clue: toClue(clue, clueType) };
 }
 
 /** Converts a hypothetical action for the server, which omits a hidden clue. */
@@ -92,7 +95,12 @@ export function toWireHypotheticalAction(
     return action;
   }
   const { clue, ...rest } = action;
-  return clue.type === undefined ? rest : { ...rest, clue };
+  if (clue.type !== undefined) {
+    return { ...rest, clue };
+  }
+  return clue.visibleType === undefined
+    ? rest
+    : { ...rest, clueType: clue.visibleType };
 }
 
 /**
@@ -104,7 +112,8 @@ export function toGameAction(event: WireEvent): GameAction {
   if (event.type !== "clue") {
     return event;
   }
-  return { ...event, clue: toClue(event.clue), ignoreNegative: false };
+  const { clue, clueType, ...rest } = event;
+  return { ...rest, clue: toClue(clue, clueType), ignoreNegative: false };
 }
 
 type WireSound = Extract<WireReplayAction, { type: "sound" }>["sound"];

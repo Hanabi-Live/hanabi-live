@@ -369,7 +369,7 @@ export function planHypotheticalAction(
   } else if (intent.type === "passTurn") {
     actions.push({
       type: "clue",
-      clue: { type: undefined, value: undefined },
+      clue: { type: undefined, value: undefined, visibleType: undefined },
       playerIndex,
       orders: [],
       receiverIndex: playerIndex,

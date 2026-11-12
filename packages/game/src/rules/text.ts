@@ -21,7 +21,7 @@ import type {
   ActionPlay,
 } from "../types/gameActions.ts";
 import { getCardName } from "./card.ts";
-import { getClueName, isPassTurnClue } from "./clues.ts";
+import { getClueName, getVisibleClueType, isPassTurnClue } from "./clues.ts";
 import { getCardSlot } from "./hand.ts";
 
 const SECONDS_PER_MINUTE = MINUTE_IN_MILLISECONDS / SECOND_IN_MILLISECONDS;
@@ -110,11 +110,12 @@ function getClueActionName(
   variant: Variant,
   characterName: string,
 ): string {
-  if (msgClue.type === undefined) {
+  const visibleType = getVisibleClueType(msgClue);
+  if (visibleType === undefined) {
     return "quacks";
   }
   if (variant.cowAndPig) {
-    switch (msgClue.type) {
+    switch (visibleType) {
       case "color": {
         return "moos";
       }

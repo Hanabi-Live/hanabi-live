@@ -363,6 +363,7 @@ fn give_clue(
     }
     state.events.push(EngineEvent::Clue {
         clue: Some(clue),
+        clue_type: None,
         giver: actor,
         target,
         list: touched.clone(),

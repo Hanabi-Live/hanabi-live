@@ -3,16 +3,8 @@ use hanabi_protocol::{
     CardOrder, Clue as WireClue, ClueTurn, DEFAULT_VARIANT_NAME, GameOverTurn, MIN_PLAYERS,
     PlayerIndex, TargetCard,
 };
-pub use hanabi_protocol::{EndCondition, TimeControl};
+pub use hanabi_protocol::{ClueType, EndCondition, TimeControl};
 use serde::{Deserialize, Serialize};
-
-/// The kind of a clue. Stored game states hold it by name.
-#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub enum ClueType {
-    Color,
-    Rank,
-}
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[serde(default, rename_all = "camelCase", deny_unknown_fields)]
@@ -313,8 +305,11 @@ pub enum EngineEvent {
         failed: bool,
     },
     Clue {
-        /// `None` in the events of a recipient who may not see the clue.
+        /// `None` in the events of a recipient who may not see the clue's value.
         clue: Option<Clue>,
+        /// The clue's type in the events of a recipient who may see it but not the clue's value.
+        #[serde(default, skip_serializing_if = "Option::is_none")]
+        clue_type: Option<ClueType>,
         giver: usize,
         target: usize,
         list: Vec<usize>,

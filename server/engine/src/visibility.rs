@@ -48,8 +48,20 @@ pub fn events_for_recipient(
         .cloned()
         .map(|mut event| {
             match &mut event {
-                EngineEvent::Clue { clue, .. } if variant_for(state).duck => {
-                    *clue = None;
+                EngineEvent::Clue {
+                    clue: clue @ Some(_),
+                    clue_type,
+                    giver,
+                    ..
+                } => {
+                    let variant = variant_for(state);
+                    let quacker = state.options.detrimental_characters
+                        && state.players[*giver].is(Character::Quacker);
+                    if variant.duck || quacker {
+                        *clue = None;
+                    } else if variant.cow_and_pig {
+                        *clue_type = clue.take().map(|clue| clue.clue_type);
+                    }
                 }
                 EngineEvent::Draw {
                     player_index,

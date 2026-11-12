@@ -74,10 +74,11 @@ export type ActionTurn = Event<"turn">;
 
 /**
  * A clue's giver, receiver, and the card orders that it touched. Where the server omits a clue that
- * the recipient may not see, the game state keeps a `HiddenClue`.
+ * the recipient may not see, the game state keeps a `HiddenClue` with the type that the server
+ * sent.
  */
 export type ActionClue = Readonly<
-  Omit<Extract<HypotheticalWireEvent, { type: "clue" }>, "clue">
+  Omit<Extract<HypotheticalWireEvent, { type: "clue" }>, "clue" | "clueType">
 > & {
   readonly clue: MsgClue | HiddenClue;
 };
