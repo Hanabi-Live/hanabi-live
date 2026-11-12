@@ -34,8 +34,8 @@ use axum::{
 };
 use chrono::{DateTime, Utc};
 use hanabi_protocol::{
-    ClientKind, IdentityRequest, IdentityResponse, IdentityTokenResponse, LoginRequest,
-    LoginResponse, Notice, PasswordHashRequest, PasswordHashResponse,
+    ClientKind, IdentityRequest, IdentityTokenResponse, LoginRequest, Notice, PasswordHashRequest,
+    PasswordHashResponse,
 };
 use sqlx::PgPool;
 use std::{net::SocketAddr, sync::Arc};
@@ -413,11 +413,9 @@ async fn login_inner(state: &Accounts, ip: &str, input: LoginRequest) -> Result<
     tracing::info!("Successful login for account {id}{client} from IP: {ip}");
     let signed = cookie::encode(id, &state.config.secret, Utc::now().timestamp())?;
     Ok(with_cookies(
-        Json(LoginResponse {
-            user: hanabi_protocol::UserRef {
-                user_id: hanabi_protocol::UserId::try_from(id)?,
-                username: username.into(),
-            },
+        Json(hanabi_protocol::UserRef {
+            user_id: hanabi_protocol::UserId::try_from(id)?,
+            username: username.into(),
         })
         .into_response(),
         [
@@ -657,11 +655,9 @@ async fn identity(
             let ip = address.ip().to_string();
             if expiry > Utc::now() && verify_password(&ip, token, row.token_hash.clone()).await? {
                 tracing::info!("Verified identity token from IP: {ip}");
-                return Ok(Json(IdentityResponse {
-                    user: hanabi_protocol::UserRef {
-                        user_id: hanabi_protocol::UserId::try_from(row.id)?,
-                        username: row.username.clone().into(),
-                    },
+                return Ok(Json(hanabi_protocol::UserRef {
+                    user_id: hanabi_protocol::UserId::try_from(row.id)?,
+                    username: row.username.clone().into(),
                 })
                 .into_response());
             }

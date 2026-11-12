@@ -85,28 +85,12 @@ where
     Ok(text.filter(|text| !text.is_empty()))
 }
 
-/// The body of a successful `/login` response: the account that logged in.
-#[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
-#[serde(rename_all = "camelCase", deny_unknown_fields)]
-pub struct LoginResponse {
-    #[serde(flatten)]
-    pub user: UserRef,
-}
-
 /// The `/api/v1/identity` request.
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct IdentityRequest {
     #[schemars(length(min = 1))]
     pub token: String,
-}
-
-/// The account that an identity token belongs to.
-#[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
-#[serde(rename_all = "camelCase", deny_unknown_fields)]
-pub struct IdentityResponse {
-    #[serde(flatten)]
-    pub user: UserRef,
 }
 
 /// A newly issued identity token, from `/api/v1/identity/token`.

@@ -343,7 +343,7 @@ pub struct Spectator {
     pub shadowing_player_index: Option<PlayerIndex>,
 }
 
-/// A user, by ID and by name.
+/// A user, by ID and by name. A successful `/login` and `/api/v1/identity` answer with the account.
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct UserRef {

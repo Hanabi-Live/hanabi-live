@@ -1,4 +1,4 @@
-import { loginResponseSchema } from "../generated/protocol.ts";
+import { userRefSchema } from "../generated/protocol.ts";
 
 // Each tab remembers the account it signed in to, so that reloading or reconnecting does not switch
 // it to the account most recently signed in to in another tab. New tabs use that latest account.
@@ -33,7 +33,7 @@ export function clearTabAccount(): void {
 
 /** Remembers the account from a successful "/login" response body. */
 export function setTabAccountFromLogin(body: unknown): void {
-  const result = loginResponseSchema.safeParse(body);
+  const result = userRefSchema.safeParse(body);
   if (result.success) {
     setTabAccount(result.data.userId);
   }

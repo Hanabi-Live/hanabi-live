@@ -327,9 +327,9 @@ export const userIdSchema = z
   .brand<"UserId">();
 
 /**
- * A user, by ID and by name.
+ * A user, by ID and by name. A successful `/login` and `/api/v1/identity` answer with the account.
  */
-const userRefSchema = z
+export const userRefSchema = z
   .strictObject({ userId: userIdSchema, username: z.string().min(1) })
   .readonly();
 
@@ -592,7 +592,7 @@ const pauseStateSchema = z
   .readonly();
 
 /**
- * A user, by ID and by name.
+ * A user, by ID and by name. A successful `/login` and `/api/v1/identity` answer with the account.
  */
 export const spectatorSchema = z
   .strictObject({
@@ -801,13 +801,6 @@ export const loginRequestSchema = z
   .readonly();
 
 /**
- * The body of a successful `/login` response: the account that logged in.
- */
-export const loginResponseSchema = z
-  .strictObject({ userId: userIdSchema, username: z.string().min(1) })
-  .readonly();
-
-/**
  * The notes on one card after someone changes theirs, sent to spectators.
  */
 export const noteSchema = z
@@ -967,7 +960,7 @@ const pregameStatsSchema = z
   .readonly();
 
 /**
- * A user, by ID and by name.
+ * A user, by ID and by name. A successful `/login` and `/api/v1/identity` answer with the account.
  */
 const pregamePlayerSchema = z
   .strictObject({

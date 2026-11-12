@@ -130,7 +130,7 @@ macro_rules! exported_types {
         $apply! {
             TableId, GameId, UserId, ChatId, Settings, Spectator, GameHistoryEntry,
             ReplayGame, ReplayBoardElement, ReplaySoundEffect, SoundMove, Activity, LoginRequest,
-            LoginResponse, NoticeCode, PasswordHashRequest, PasswordHashResponse,
+            UserRef, NoticeCode, PasswordHashRequest, PasswordHashResponse,
             VariantNames, ScoreFrequency, GameListColumn,
         }
     };

@@ -6,9 +6,9 @@
 
 import type { ServerCommand } from "@hanabi-live/data";
 import {
-  loginResponseSchema,
   SERVER_COMMAND_SCHEMAS,
   unpackWsMessage,
+  userRefSchema,
 } from "@hanabi-live/data";
 import { $ } from "bun";
 
@@ -79,7 +79,7 @@ async function signIn(
   }
   const body = (await response.json()) as { userId?: unknown };
   if (validate) {
-    const result = loginResponseSchema.safeParse(body);
+    const result = userRefSchema.safeParse(body);
     if (!result.success) {
       fail(
         `The server sent an invalid login response: ${result.error.message}`,
