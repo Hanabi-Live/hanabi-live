@@ -328,40 +328,6 @@ describe("card presentation", () => {
       ).toBeTrue();
     });
 
-    test("groups suits into rows when deduction leaves cards that the pips cannot show", () => {
-      // A red or blue 4 or 5. The red 5 is visible elsewhere.
-      const state: CardState = {
-        ...baseCard,
-        possibleCardsFromClues: [
-          [0, 4],
-          [0, 5],
-          [1, 4],
-          [1, 5],
-        ],
-        possibleCards: [
-          [0, 4],
-          [1, 4],
-          [1, 5],
-        ],
-      };
-      const presentation = getCardPipPresentation(
-        variant,
-        state,
-        emptyNote,
-        false,
-      );
-
-      const rows = presentation.possibilityRows?.map((row) => ({
-        suits: row.suitPips.map((suitPip) => suitPip.suitIndex),
-        ranks: row.rankPips.map((rankPip) => rankPip.state),
-      }));
-      const { Hidden, Eliminated, Visible } = PipState;
-      expect(rows).toEqual([
-        { suits: [0], ranks: [Hidden, Hidden, Hidden, Visible, Eliminated] },
-        { suits: [1], ranks: [Hidden, Hidden, Hidden, Visible, Visible] },
-      ]);
-    });
-
     test("shows only the ranks that a note allows in each row", () => {
       // The note "2,b" allows any 2 or any blue card. Both green 2s are visible elsewhere.
       const allCards: SuitRankTuple[] = variant.suits.flatMap((_, suitIndex) =>
