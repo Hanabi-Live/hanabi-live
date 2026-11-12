@@ -32,8 +32,9 @@ of the repository.
   for a clue; use the buttons in the clue panel.
 - The profile page no longer shows the total number of max scores. The "Missing
   Scores" page still shows it.
-- Profiles now show the time spent reviewing games in solo and shared replays,
-  counted from today.
+- Profiles now show the time spent reviewing games in solo and shared replays.
+  It includes the time rebuilt from the old server's logs from April 1st to
+  September 5th, 2026.
 - Player profiles now show the total time spent playing and reviewing.
 
 ## November 11th, 2026

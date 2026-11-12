@@ -42,7 +42,7 @@ CREATE TABLE users (
     num_normal_games           INTEGER  NOT NULL  DEFAULT 0,
     num_normal_speedrun_games  INTEGER  NOT NULL  DEFAULT 0,
 
-    /* The time spent in solo and shared replays, counted since November 2026. */
+    /* The time spent in solo and shared replays. */
     seconds_reviewing          BIGINT   NOT NULL  DEFAULT 0,
 
     /**
