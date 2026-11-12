@@ -1,7 +1,9 @@
 import { renderRoot } from "../renderRoot.tsx";
 import { getHtmlElement } from "../utils.ts";
-import { Lobby } from "./Lobby.tsx";
+import { Lobby, LOBBY_CLASS_NAME } from "./Lobby.tsx";
 
 export function mountLobby(): void {
-  renderRoot(getHtmlElement("#lobby"), <Lobby />);
+  const lobby = getHtmlElement("#lobby");
+  lobby.classList.add(...LOBBY_CLASS_NAME.split(" "));
+  renderRoot(lobby, <Lobby />);
 }

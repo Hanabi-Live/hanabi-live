@@ -65,6 +65,26 @@
 }
 
 /*
+  The height breakpoint from "public/css/tokens.css". These come before the width breakpoints, so
+  that a rule for a narrow screen wins over one for a short screen when both apply.
+  - "short-530": screens this tall or shorter.
+  - "short-530-wide": short screens that are wider than the 640px breakpoint.
+  - "compact": screens that are short or at most 640px wide, where the lobby shows one half at a
+    time.
+*/
+@custom-variant short-530 (@media screen and (max-height: 530px));
+@custom-variant short-530-wide (@media screen and (max-height: 530px) and (min-width: 641px));
+@custom-variant compact {
+  @media screen and (max-height: 530px) {
+    @slot;
+  }
+
+  @media screen and (max-width: 640px) {
+    @slot;
+  }
+}
+
+/*
   Breakpoints from "public/css/tokens.css", for screens this wide or narrower. For example,
   "tw:narrow-980:hidden" hides an element on screens that are at most 980px wide.
 */

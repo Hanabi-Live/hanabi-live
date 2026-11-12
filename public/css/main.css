@@ -20,7 +20,6 @@
 @import url("app/header.css") layer(app);
 @import url("app/login.css") layer(app);
 @import url("app/lobby.css") layer(app);
-@import url("app/pregame.css") layer(app);
 @import url("app/lobby-pages.css") layer(app);
 @import url("app/modals.css") layer(app);
 @import url("app/tooltips.css") layer(app);

@@ -66,7 +66,7 @@ export function UsersTitle(): React.JSX.Element {
 
   const usersLabel = (
     <>
-      Online<span id="small-screen-toggle-users-h3"> Users</span> ({userCount})
+      Online<span className="tw:narrow-640:hidden"> Users</span> ({userCount})
     </>
   );
   if (botCount === 0) {

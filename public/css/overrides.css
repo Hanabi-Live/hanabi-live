@@ -3,13 +3,6 @@
   display: none;
 }
 
-/* "hidden-640" hides an element on screens that are this wide or narrower. */
-@media screen and (max-width: 640px) {
-  .hidden-640 {
-    display: none;
-  }
-}
-
 .margin0 {
   margin: 0;
 }

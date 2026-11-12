@@ -8,21 +8,24 @@ import { SettingsPage } from "./settings/SettingsPage.tsx";
 import type { LobbyPage } from "./types/LobbyPage.ts";
 import { WatchReplay } from "./watchReplay/WatchReplay.tsx";
 
+/** The width of a page of rows. The resources are a grid, which has more room. */
+const ROWS_WIDTH = "tw:max-w-[46em]";
+
 const PAGES = {
-  createGame: { id: "lobby-create-game", Page: CreateGame, className: "" },
-  watchReplay: { id: "lobby-replay", Page: WatchReplay, className: "" },
+  createGame: { id: "lobby-create-game", Page: CreateGame, width: ROWS_WIDTH },
+  watchReplay: { id: "lobby-replay", Page: WatchReplay, width: ROWS_WIDTH },
   resources: {
     id: "lobby-resources",
     Page: Resources,
-    className: "tw:max-w-[64em]",
+    width: "tw:max-w-[64em]",
   },
-  settings: { id: "lobby-settings", Page: SettingsPage, className: "" },
+  settings: { id: "lobby-settings", Page: SettingsPage, width: ROWS_WIDTH },
 } as const satisfies Record<
   LobbyPage,
   {
     readonly id: string;
     readonly Page: () => React.JSX.Element;
-    readonly className: string;
+    readonly width: string;
   }
 >;
 
@@ -32,10 +35,12 @@ export function LobbyPages(): React.JSX.Element | undefined {
     return undefined;
   }
 
-  const { id, Page, className } = PAGES[page];
+  // Unlike the other boxes of the lobby, a page fits its content and scrolls when it is taller than
+  // the lobby.
+  const { id, Page, width } = PAGES[page];
   return (
     <section
-      className={`box lobby-page tw:mb-0 tw:p-6 ${className}`}
+      className={`box lobby-page tw:mx-auto tw:my-0 tw:h-auto tw:max-h-full tw:overflow-y-auto tw:p-6 ${width}`}
       id={id}
       key={page}
     >

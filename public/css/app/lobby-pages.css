@@ -1,20 +1,6 @@
 /*
   Lobby pages ("Create Game", "Watch Specific Replay", "Resources", and "Settings")
 */
-/* The page is laid out as if it were a section of "#lobby-full" itself. */
-#lobby-pages {
-  display: contents;
-}
-
-/* The lobby stretches its sections to full height; these fit their content instead. */
-#lobby .lobby-page {
-  height: auto;
-  margin: 0 auto;
-  max-width: 46em;
-  max-height: 100%;
-  overflow-y: auto;
-}
-
 .lobby-page h2 {
   margin-bottom: 1em;
 }

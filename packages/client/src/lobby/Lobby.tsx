@@ -17,6 +17,29 @@ import type { LobbyPanel } from "./types/LobbyPanel.ts";
 import { Screen } from "./types/Screen.ts";
 import { UsersList, UsersTitle } from "./users/UsersList.tsx";
 
+/**
+ * The classes of "#lobby", which the component renders into. The lobby fills the page below the
+ * header, and its rows share the height.
+ */
+export const LOBBY_CLASS_NAME =
+  "tw:flex tw:h-full tw:flex-col tw:pt-5 tw:pb-6 tw:compact:pb-3";
+
+/** A row that takes its share of the height of the lobby. */
+const HALF = "tw:min-h-0 tw:flex-1";
+
+/** A box that fills its column. */
+const SECTION = "box tw:mb-0 tw:h-full tw:p-6";
+
+/** A box whose list or chat fills the height below its title. */
+const CHAT_SECTION = `${SECTION} tw:flex tw:flex-col`;
+
+/**
+ * The columns of the bottom half while small screens show the pre-game chat: side by side on short
+ * screens, and above each other on narrow ones.
+ */
+const PREGAME_CHAT_LAYOUT =
+  "tw:short-530:flex-[1_1_33%] tw:short-530:h-full tw:narrow-530:h-[calc((100%-1em)/2)] tw:narrow-530:flex-[1_1_100%]";
+
 /** Joins the class names that apply. */
 function classes(...names: ReadonlyArray<string | false>): string {
   return names.filter(Boolean).join(" ");
@@ -46,26 +69,28 @@ export function Lobby(): React.JSX.Element {
     }
   }, [inPregame]);
 
-  // The halves stay rendered while they are hidden, so that the chats keep what was typed.
+  // The halves stay rendered while they are hidden, so that the chats keep what was typed. Small
+  // screens show one half at a time.
   return (
     <>
       <div
         className={classes(
-          "row lobby-half",
-          panel === "tables" && "toggle-active",
-          full && "hidden",
+          "row",
+          HALF,
+          panel !== "tables" && "tw:compact:hidden",
+          full && "tw:hidden",
         )}
         id="lobby-top-half"
       >
-        <div className="col-12">
+        <div className="col-12 tw:h-full">
           <section
-            className={classes("box", inPregame && "hidden")}
+            className={classes(SECTION, inPregame && "tw:hidden")}
             id="lobby-games"
           >
             <TablesList />
           </section>
           <section
-            className={classes("box", !inPregame && "hidden")}
+            className={classes(SECTION, !inPregame && "tw:hidden")}
             id="lobby-pregame"
           >
             <Pregame />
@@ -73,56 +98,68 @@ export function Lobby(): React.JSX.Element {
         </div>
       </div>
 
-      <div className={classes("row", full && "hidden")} id="lobby-separator" />
+      <div
+        className={classes(
+          "row tw:h-6 tw:flex-none tw:compact:hidden",
+          full && "tw:hidden",
+        )}
+        id="lobby-separator"
+      />
 
       <div
         className={classes(
-          "row lobby-half",
-          panel !== "tables" && "toggle-active",
-          full && "hidden",
+          "row",
+          HALF,
+          panel === "tables" && "tw:compact:hidden",
+          full && "tw:hidden",
         )}
         id="lobby-bottom-half"
       >
         <div
           className={classes(
             inPregame ? "col-4" : "col-8",
-            panel === "online" && "hidden-640",
-            panel === "gameChat" && "pregame-chat-layout pregame-lobby-chat",
+            "tw:h-full tw:narrow-640:w-full",
+            panel === "online" && "tw:narrow-640:hidden",
+            panel === "gameChat" && `${PREGAME_CHAT_LAYOUT} tw:compact:mb-4`,
           )}
           id="lobby-chat-container"
         >
-          <section className="box" id="lobby-chat">
+          <section className={CHAT_SECTION} id="lobby-chat">
             <LobbyChat />
           </section>
         </div>
 
         <div
           className={classes(
-            "col-4",
-            !inPregame && "hidden",
-            panel === "online" && "hidden-640",
-            panel === "gameChat" && "pregame-chat-layout",
+            "col-4 tw:h-full tw:pl-6 tw:narrow-530:ml-2",
+            !inPregame && "tw:hidden",
+            panel === "online" && "tw:narrow-640:hidden",
+            panel === "gameChat" && PREGAME_CHAT_LAYOUT,
           )}
           id="lobby-chat-pregame-container"
         >
-          <section className="box" id="lobby-chat-pregame">
+          <section className={CHAT_SECTION} id="lobby-chat-pregame">
             <PregameChat />
           </section>
         </div>
 
         <div
           className={classes(
-            "col-4 lobby-users-box-container narrow-screen-toggle",
-            (panel === "chat" || panel === "gameChat") && "hidden-640",
-            panel === "gameChat" && "pregame-chat-layout",
+            "col-4 tw:h-full tw:pl-6 tw:narrow-640:w-full tw:narrow-640:pl-8",
+            (panel === "chat" || panel === "gameChat")
+              && "tw:narrow-640:hidden",
+            panel === "gameChat" && PREGAME_CHAT_LAYOUT,
           )}
           id="lobby-online-users"
         >
-          <section className="box">
-            <h3 className="lobby-title" id="lobby-users-title">
+          <section className={CHAT_SECTION}>
+            <h3 className="tw:text-[1.3em]" id="lobby-users-title">
               <UsersTitle />
             </h3>
-            <div id="lobby-users-container">
+            <div
+              className="tw:min-h-0 tw:flex-1 tw:overflow-y-auto"
+              id="lobby-users-container"
+            >
               <UsersList />
             </div>
           </section>
@@ -130,16 +167,24 @@ export function Lobby(): React.JSX.Element {
       </div>
 
       <div
-        className={classes(full && "hidden")}
+        className={
+          full ? "tw:hidden" : "tw:mt-4 tw:hidden tw:h-[2em] tw:compact:block"
+        }
         id="lobby-small-screen-buttons"
       >
         <nav id="nav-bottom">
-          <ul>
-            <li>
+          <ul className="tw:m-0 tw:block tw:list-none tw:pl-0">
+            <li className="tw:pl-0">
               <PanelButton id="tables" panel="tables" shown>
                 {inPregame ? "Game" : "Tables"}
               </PanelButton>{" "}
-              <PanelButton id="online" panel="online" shown>
+              {/* Short, wide screens show the online users beside the chat. */}
+              <PanelButton
+                className="tw:short-530-wide:hidden"
+                id="online"
+                panel="online"
+                shown
+              >
                 Who&apos;s Online
               </PanelButton>{" "}
               <PanelButton id="chat" panel="chat" shown={!inPregame}>
@@ -153,21 +198,27 @@ export function Lobby(): React.JSX.Element {
         </nav>
       </div>
 
-      <div className={classes("row", !full && "hidden")} id="lobby-full">
-        <div className="col-12">
+      <div
+        className={classes("row", HALF, !full && "tw:hidden")}
+        id="lobby-full"
+      >
+        <div className="col-12 tw:h-full">
           <section
-            className={classes("box", screen !== Screen.History && "hidden")}
+            className={classes(
+              SECTION,
+              screen !== Screen.History && "tw:hidden",
+            )}
             id="lobby-history"
           >
             <HistoryList />
           </section>
-          <div id="lobby-pages">
+          <div className="tw:contents" id="lobby-pages">
             <LobbyPages />
           </div>
           <section
             className={classes(
-              "box",
-              screen !== Screen.HistoryOtherScores && "hidden",
+              SECTION,
+              screen !== Screen.HistoryOtherScores && "tw:hidden",
             )}
             id="lobby-history-other-scores"
           >
@@ -182,11 +233,13 @@ export function Lobby(): React.JSX.Element {
 /** A button that switches between the halves of the lobby on small screens. */
 function PanelButton({
   children,
+  className,
   id,
   panel,
   shown,
 }: {
   readonly children: React.ReactNode;
+  readonly className?: string;
   readonly id: string;
   readonly panel: LobbyPanel;
   readonly shown: boolean;
@@ -196,8 +249,9 @@ function PanelButton({
     <a
       className={classes(
         "button small",
-        active && "toggle-active",
-        !shown && "hidden",
+        className ?? false,
+        active && "tw:bg-(--button-green)",
+        !shown && "tw:hidden",
       )}
       id={`lobby-toggle-show-${id}`}
       onClick={() => {
