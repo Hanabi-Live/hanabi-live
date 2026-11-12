@@ -1270,15 +1270,14 @@ export const serverRestartSchema = z
   .readonly();
 
 /**
- * The table that the "Create Game" form starts from: the one that the user last chose. Missing
+ * The table that the "Create Game" form starts from: the last one that the user created. Missing
  * fields take their defaults.
  */
 const createTableSettingsSchema = z
   .strictObject({
     maxPlayers: numPlayersSchema.default(5),
     /**
-     * The options of the next table. Their `timeControl` is the clock that the form offers,
-     * which it keeps while the table is untimed.
+     * The options of that table, exactly as it had them: without a clock when it was untimed.
      */
     options: gameOptionsSchema.default({
       allOrNothing: false,
@@ -1288,13 +1287,8 @@ const createTableSettingsSchema = z
       oneExtraCard: false,
       oneLessCard: false,
       speedrun: false,
-      timeControl: { baseSeconds: 120, perTurnSeconds: 20 },
       variantId: 0,
     }),
-    /**
-     * Whether the next table uses the clock in `options`.
-     */
-    timed: z.boolean().default(false),
   })
   .readonly();
 
@@ -1330,10 +1324,8 @@ export const settingsSchema = z
         oneExtraCard: false,
         oneLessCard: false,
         speedrun: false,
-        timeControl: { baseSeconds: 120, perTurnSeconds: 20 },
         variantId: 0,
       },
-      timed: false,
     }),
     darkMode: z.boolean().default(false),
     desktopNotification: z.boolean().default(false),

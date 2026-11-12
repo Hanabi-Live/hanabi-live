@@ -83,13 +83,26 @@ describe("readTable", () => {
     });
   });
 
-  test("keeps the remembered clock in place of an invalid one, even when untimed", () => {
+  test("keeps the remembered clock in place of an invalid one", () => {
     const remembered = { baseSeconds: 300, perTurnSeconds: 15 };
     const table = readTable(
-      { ...defaultForm, timeBaseMinutes: "0", timePerTurnSeconds: "" },
+      {
+        ...defaultForm,
+        timed: true,
+        timeBaseMinutes: "0",
+        timePerTurnSeconds: "",
+      },
       remembered,
     );
     expect(table.options.timeControl).toStrictEqual(remembered);
+  });
+
+  test("keeps no clock for an untimed table", () => {
+    const table = readTable(
+      { ...defaultForm, timeBaseMinutes: "10" },
+      DEFAULT_TIME_CONTROL,
+    );
+    expect(table.options.timeControl).toBeUndefined();
   });
 
   test("uses the defaults for an unknown variant and an invalid player count", () => {

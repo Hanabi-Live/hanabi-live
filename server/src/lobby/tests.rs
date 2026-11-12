@@ -829,16 +829,28 @@ async fn settings_outside_the_wire_contract_are_not_sent_or_saved_postgres() {
             )
         );
     }
-    // Older servers kept the form's clock beside the options, which had one only when timed.
+    // Older servers kept a clock for an untimed table, beside the options or with `timed`. Only a
+    // timed table keeps its clock now.
     let clock = |base: i64| json!({"baseSeconds": base, "perTurnSeconds": 20});
-    for (options, timed, base) in [
-        (json!({"timeControl": clock(300)}), true, 300),
-        (json!({}), false, 180),
+    for (stored, base) in [
+        (
+            json!({"options":{"timeControl":clock(300)},"timeControl":clock(180)}),
+            Some(300),
+        ),
+        (json!({"options":{},"timeControl":clock(180)}), None),
+        (
+            json!({"options":{"timeControl":clock(300)},"timed":true}),
+            Some(300),
+        ),
+        (
+            json!({"options":{"timeControl":clock(300)},"timed":false}),
+            None,
+        ),
     ] {
         sqlx::query!(
             "UPDATE users SET settings=$2 WHERE id=$1",
             id,
-            json!({"createTable":{"options":options,"timeControl":clock(180)}})
+            json!({"createTable":stored})
         )
         .execute(&db.pool)
         .await
@@ -847,13 +859,12 @@ async fn settings_outside_the_wire_contract_are_not_sent_or_saved_postgres() {
             .await
             .unwrap()
             .create_table;
-        assert_eq!(table.timed, timed);
         assert_eq!(
             table
                 .options
                 .time_control
                 .map(|time| time.base_seconds.get()),
-            Some(base)
+            base
         );
     }
     for (name, value) in [

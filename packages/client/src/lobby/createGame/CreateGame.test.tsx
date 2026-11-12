@@ -66,9 +66,6 @@ vi.mock("../../Tooltip.ts", () => ({
 
 const send = vi.fn();
 
-const { timeControl: _, ...untimedOptions } =
-  defaultSettings.createTable.options;
-
 const OUR_USER_ID = 1 as UserId;
 const TABLE_ID = 7 as TableId;
 
@@ -124,7 +121,7 @@ describe("CreateGame", () => {
       settings: {
         name: "Alice's table",
         maxPlayers: defaultSettings.createTable.maxPlayers,
-        options: untimedOptions,
+        options: defaultSettings.createTable.options,
       },
       password: "secret",
     });

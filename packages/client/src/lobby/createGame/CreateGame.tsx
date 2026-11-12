@@ -46,7 +46,6 @@ import {
   isReplaying,
   readFormDeal,
   readTable,
-  tableOptions,
 } from "../createGameForm.ts";
 import * as lobbyPage from "../lobbyPage.ts";
 import { Screen } from "../types/Screen.ts";
@@ -176,7 +175,9 @@ export function CreateGame(): React.JSX.Element | undefined {
   return shown ? <CreateGamePage /> : undefined;
 }
 
-/** The clock that the form offers: the one that we chose last, or else the default one. */
+/**
+ * The clock that replaces an invalid time: the one of our last timed table, or else the default.
+ */
 function rememberedTimeControl(): NonNullable<GameOptions["timeControl"]> {
   return (
     globals.settings.createTable.options.timeControl ?? DEFAULT_TIME_CONTROL
@@ -209,7 +210,6 @@ function getInitialForm(mode: Mode): CreateGameForm {
     };
   }
 
-  // An untimed table keeps our own clock, so that it is ready if the timer is turned on.
   const { settings } = game;
   const { options, deal } = settings;
   return {
@@ -226,11 +226,7 @@ function getInitialForm(mode: Mode): CreateGameForm {
         maxPlayers: isValidNumPlayers(settings.maxPlayers)
           ? settings.maxPlayers
           : defaultSettings.createTable.maxPlayers,
-        options: {
-          ...options,
-          timeControl: options.timeControl ?? rememberedTimeControl(),
-        },
-        timed: options.timeControl !== undefined,
+        options,
       },
       getVariantById(options.variantId).name,
     ),
@@ -307,7 +303,7 @@ function CreateGamePage() {
     const settings = {
       name: name.trim() === "" ? getDefaultTableName() : name,
       maxPlayers: createTable.maxPlayers,
-      options: tableOptions(createTable),
+      options: createTable.options,
       ...(deal !== undefined && { deal }),
     };
 

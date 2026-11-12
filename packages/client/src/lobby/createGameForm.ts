@@ -21,7 +21,7 @@ import { parseFloatSafe, parseIntSafe } from "complete-common";
 import type { Deal } from "./deal.ts";
 import { readDeal } from "./deal.ts";
 
-/** The table that the form starts from, which our settings remember. */
+/** The table that the form starts from: the last one that we created, which our settings keep. */
 export type CreateTable = Settings["createTable"];
 
 /** The options that a checkbox under "Extra Options" sets. */
@@ -81,9 +81,12 @@ type CheckedField =
 /** Why each invalid text box is invalid. */
 export type FormErrors = Partial<Record<CheckedField, string>>;
 
-/** Fills in the form from a table. The name, password, seed, and replay come from elsewhere. */
+/**
+ * Fills in the form from a table. The name, password, seed, and replay come from elsewhere. An
+ * untimed table offers the default clock.
+ */
 export function formFromTable(
-  { maxPlayers, options, timed }: CreateTable,
+  { maxPlayers, options }: CreateTable,
   variantName: string,
 ): Omit<
   CreateGameForm,
@@ -93,7 +96,7 @@ export function formFromTable(
   return {
     variantName,
     maxPlayers: maxPlayers.toString(),
-    timed,
+    timed: options.timeControl !== undefined,
     timeBaseMinutes: (timeControl.baseSeconds / SECONDS_PER_MINUTE).toString(),
     timePerTurnSeconds: timeControl.perTurnSeconds.toString(),
     extraOptions: Object.fromEntries(
@@ -197,8 +200,8 @@ function toSeconds(minutes: number): number {
 }
 
 /**
- * Reads the table that the form shows. An invalid time keeps the one in `remembered`, and an
- * invalid player count or variant becomes the default.
+ * Reads the table that the form shows, with a clock only when it is timed. An invalid time keeps
+ * the one in `remembered`, and an invalid player count or variant becomes the default.
  */
 export function readTable(
   form: CreateGameForm,
@@ -216,21 +219,22 @@ export function readTable(
       variantId: getVariant(
         doesVariantExist(variantName) ? variantName : DEFAULT_VARIANT_NAME,
       ).id,
-      timeControl: {
-        baseSeconds:
-          minutes === undefined
-          || getTimeBaseError(form.timeBaseMinutes) !== undefined
-            ? remembered.baseSeconds
-            : toSeconds(minutes),
-        perTurnSeconds:
-          seconds === undefined
-          || getTimePerTurnError(form.timePerTurnSeconds) !== undefined
-            ? remembered.perTurnSeconds
-            : seconds,
-      },
+      ...(form.timed && {
+        timeControl: {
+          baseSeconds:
+            minutes === undefined
+            || getTimeBaseError(form.timeBaseMinutes) !== undefined
+              ? remembered.baseSeconds
+              : toSeconds(minutes),
+          perTurnSeconds:
+            seconds === undefined
+            || getTimePerTurnError(form.timePerTurnSeconds) !== undefined
+              ? remembered.perTurnSeconds
+              : seconds,
+        },
+      }),
       ...form.extraOptions,
     },
-    timed: form.timed,
   };
 }
 
@@ -241,13 +245,4 @@ export function readFormDeal(form: CreateGameForm): Deal | undefined {
     form.replayGameId.trim(),
     form.replayTurn.trim(),
   );
-}
-
-/** The options of the table that the form creates: without a clock unless it is timed. */
-export function tableOptions({ options, timed }: CreateTable): GameOptions {
-  if (timed) {
-    return options;
-  }
-  const { timeControl: _, ...untimed } = options;
-  return untimed;
 }

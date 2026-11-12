@@ -558,13 +558,8 @@
             "oneExtraCard": false,
             "oneLessCard": false,
             "allOrNothing": false,
-            "detrimentalCharacters": false,
-            "timeControl": {
-              "baseSeconds": 120,
-              "perTurnSeconds": 20
-            }
-          },
-          "timed": false
+            "detrimentalCharacters": false
+          }
         }
       }
     }
@@ -635,8 +630,7 @@
               "baseSeconds": 300,
               "perTurnSeconds": 10
             }
-          },
-          "timed": false
+          }
         }
       }
     }

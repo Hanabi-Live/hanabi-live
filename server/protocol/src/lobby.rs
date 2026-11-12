@@ -216,33 +216,14 @@ settings! {
     }
 }
 
-/// The table that the "Create Game" form starts from: the one that the user last chose. Missing
+/// The table that the "Create Game" form starts from: the last one that the user created. Missing
 /// fields take their defaults.
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize, JsonSchema)]
+#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize, JsonSchema)]
 #[serde(default, rename_all = "camelCase", deny_unknown_fields)]
 pub struct CreateTableSettings {
     pub max_players: NumPlayers,
-    /// The options of the next table. Their `timeControl` is the clock that the form offers,
-    /// which it keeps while the table is untimed.
+    /// The options of that table, exactly as it had them: without a clock when it was untimed.
     pub options: GameOptions,
-    /// Whether the next table uses the clock in `options`.
-    pub timed: bool,
-}
-
-impl Default for CreateTableSettings {
-    fn default() -> Self {
-        Self {
-            max_players: NumPlayers::default(),
-            options: GameOptions {
-                time_control: Some(TimeControl {
-                    base_seconds: BaseSeconds(DEFAULT_TIME_BASE_SECONDS),
-                    per_turn_seconds: PerTurnSeconds(DEFAULT_TIME_PER_TURN_SECONDS),
-                }),
-                ..GameOptions::default()
-            },
-            timed: false,
-        }
-    }
 }
 
 /// The first message after connecting.
