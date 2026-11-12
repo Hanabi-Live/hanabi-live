@@ -168,9 +168,9 @@ function StatusBadge({
       className={`tw:absolute tw:flex tw:items-center tw:justify-center tw:rounded-full tw:font-extrabold tw:text-white ${
         critical ? "tw:bg-critical" : "tw:bg-game-line"
       }`}
+      // The badge is on a card that people click, so its tooltip waits like the card's buttons.
       ref={tooltipRef(
         critical ? STATUS_TOOLTIP.critical : STATUS_TOOLTIP.trash,
-        { instant: true },
       )}
       role="img"
       style={{
