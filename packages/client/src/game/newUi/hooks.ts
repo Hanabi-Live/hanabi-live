@@ -74,6 +74,25 @@ export function useElementSize(element: HTMLElement | null): {
   return size;
 }
 
+/** The size of the window, which changes as it is resized. */
+export function useWindowSize(): { width: number; height: number } {
+  const [size, setSize] = useState(() => ({
+    width: globalThis.innerWidth,
+    height: globalThis.innerHeight,
+  }));
+  useEffect(() => {
+    function onResize() {
+      setSize({ width: globalThis.innerWidth, height: globalThis.innerHeight });
+    }
+    globalThis.addEventListener("resize", onResize);
+    return () => {
+      globalThis.removeEventListener("resize", onResize);
+    };
+  }, []);
+
+  return size;
+}
+
 /** Whether a media query, such as a window width, matches. It updates as the window changes. */
 export function useMediaQuery(query: string): boolean {
   const subscribe = useCallback(

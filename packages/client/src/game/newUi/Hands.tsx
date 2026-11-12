@@ -9,6 +9,7 @@ import {
   describeCard,
   getClueMarkerColor,
 } from "./Card.tsx";
+import { measure } from "./screenScale.ts";
 import type { CardView } from "./tableView.ts";
 
 export interface Seat {
@@ -167,16 +168,18 @@ function ClueRail({
         return;
       }
 
-      const box = hands.getBoundingClientRect();
-      const from = hands
-        .querySelector(`[data-name-chip="${CSS.escape(giver.toString())}"]`)
-        ?.getBoundingClientRect();
-      const to = hands
-        .querySelector(`[data-name-chip="${CSS.escape(target.toString())}"]`)
-        ?.getBoundingClientRect();
-      if (from === undefined || to === undefined) {
+      const box = measure(hands);
+      const fromChip = hands.querySelector(
+        `[data-name-chip="${CSS.escape(giver.toString())}"]`,
+      );
+      const toChip = hands.querySelector(
+        `[data-name-chip="${CSS.escape(target.toString())}"]`,
+      );
+      if (fromChip === null || toChip === null) {
         return;
       }
+      const from = measure(fromChip);
+      const to = measure(toChip);
 
       // The line starts on the ring around the giver's name, so that the two join into one shape:
       // the colored line meets the ring's color, and the line's edge meets the ring's edge.
@@ -186,9 +189,9 @@ function ClueRail({
       const fromY = from.top - box.top + from.height / 2;
       const toX = to.left - box.left - 3;
       const toY = to.top - box.top + to.height / 2;
-      const stacks = document
-        .querySelector("[data-play-stacks]")
-        ?.getBoundingClientRect();
+      const stacksElement = document.querySelector("[data-play-stacks]");
+      const stacks =
+        stacksElement === null ? undefined : measure(stacksElement);
       const railX =
         stacks !== undefined && stacks.right < box.left
           ? -(box.left - stacks.right) / 2
@@ -340,7 +343,7 @@ export function NameColumnSizer({
     const element = ref.current!;
     // Round up, so that the widest name is not cut short by a fraction of a pixel.
     const observer = new ResizeObserver(() => {
-      onWidthChange(Math.ceil(element.getBoundingClientRect().width));
+      onWidthChange(Math.ceil(measure(element).width));
     });
     observer.observe(element);
     return () => {

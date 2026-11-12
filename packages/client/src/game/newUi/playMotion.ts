@@ -11,6 +11,7 @@
 
 import { MAX_STRIKES } from "@hanabi-live/game";
 import { WARNING_COLOR } from "../ui/constants.ts";
+import { getScreenScale, measure } from "./screenScale.ts";
 
 /** The ID of every card movement, so that the page can tell them from other animations. */
 export const CARD_MOVE_ANIMATION_ID = "card-move";
@@ -342,6 +343,8 @@ function addEffect(
   const effect = document.createElement("div");
   Object.assign(effect.style, style, {
     position: "fixed",
+    // The effect is outside of the zoomed game screen, so it takes the same zoom.
+    zoom: getScreenScale().toString(),
     left: `${at.x}px`,
     top: `${at.y}px`,
     pointerEvents: "none",
@@ -703,7 +706,7 @@ export function animateMisplay(
   strikeBox: HTMLElement | undefined,
   lastStrike: boolean,
 ): void {
-  const stackRect = stackSlot.getBoundingClientRect();
+  const stackRect = measure(stackSlot);
   const unit = stackRect.height;
   // Poses are relative to the size of a card on the stacks, as on the classic screen.
   const stackScale = stackRect.width / to.width;
@@ -717,8 +720,7 @@ export function animateMisplay(
   // column, so above a stack is the stack before it.
   const hover = stackCenter;
   const fuse = { x: hover.x, y: hover.y - unit / 2 };
-  const blast =
-    strikeBox === undefined ? hover : center(strikeBox.getBoundingClientRect());
+  const blast = strikeBox === undefined ? hover : center(measure(strikeBox));
 
   function sparks(
     sparksStart: number,
@@ -1060,7 +1062,7 @@ function strikeout(root: HTMLElement, unit: number, delay: number) {
     return;
   }
   for (const box of boxes) {
-    const rect = box.getBoundingClientRect();
+    const rect = measure(box);
     addRing(
       center(rect),
       unit,
@@ -1116,7 +1118,7 @@ export function animateReplayMisplay(
   stackSlot: HTMLElement,
   stepMilliseconds: number,
 ): void {
-  const stackRect = stackSlot.getBoundingClientRect();
+  const stackRect = measure(stackSlot);
   const stack: Pose = {
     ...center(stackRect),
     scaleX: stackRect.width / to.width,

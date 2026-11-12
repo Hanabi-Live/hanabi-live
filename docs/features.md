@@ -363,6 +363,8 @@ These options are on the "Settings" page.
   is in testing and off by default.
 - In a game, a "Classic view" button switches to the classic screen, and a "New
   UI" button switches back.
+- The screen grows with the window: on a screen larger than 1600 x 900, all of
+  it shows larger.
 
 ### Keldon Mode
 

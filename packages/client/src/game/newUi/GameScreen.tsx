@@ -75,9 +75,15 @@ import {
   useMediaQuery,
   useNewUiVersion,
   useNow,
+  useWindowSize,
 } from "./hooks.ts";
 import * as newUiState from "./newUiState.ts";
 import type { Misplay } from "./playMotion.ts";
+import {
+  getScreenScaleForWindow,
+  setScreenScale,
+  toScreenPixels,
+} from "./screenScale.ts";
 import type { CardView } from "./tableView.ts";
 import {
   BLANK_NOTE,
@@ -141,12 +147,15 @@ interface Drag {
  */
 const DROP_WAIT_MILLISECONDS = 3000;
 
-/** Where the card under the pointer sits, as the drag draws it (before its slight tilt). */
+/**
+ * Where the card under the pointer sits, as the drag draws it (before its slight tilt), in the
+ * screen's CSS pixels.
+ */
 function getDropRect(drag: Drag, cardWidth: number): DOMRect {
   const height = cardWidth * CARD_HEIGHT_PER_WIDTH;
   return new DOMRect(
-    drag.x - cardWidth / 2,
-    drag.y - height / 2,
+    toScreenPixels(drag.x) - cardWidth / 2,
+    toScreenPixels(drag.y) - height / 2,
     cardWidth,
     height,
   );
@@ -804,6 +813,18 @@ export function GameScreen({
   // each one starts the cards again from where they were before the move began, toward their newest
   // places. This runs before the page is painted, so the cards never flash in their new places.
   const rootRef = useRef<HTMLDivElement>(null);
+
+  // The whole screen grows with the window (see "screenScale.ts"). The card moves below measure
+  // with the new scale, so it is set first.
+  const windowSize = useWindowSize();
+  const screenScale = getScreenScaleForWindow(
+    windowSize.width,
+    windowSize.height,
+  );
+  useLayoutEffect(() => {
+    setScreenScale(screenScale);
+  }, [screenScale]);
+
   const shown = useRef<{
     /** Where the cards were the last time that nothing was moving. */
     readonly settledPositions: CardPositions;
@@ -1128,6 +1149,7 @@ export function GameScreen({
     <div
       className="tw:fixed tw:inset-0 tw:flex tw:bg-game-bg tw:[background-image:var(--game-screen-table)] tw:text-game-text"
       ref={rootRef}
+      style={{ zoom: screenScale }}
     >
       <main className="tw:flex tw:min-w-0 tw:flex-1 tw:flex-col" ref={mainRef}>
         <div className="tw:flex tw:min-h-0 tw:flex-1 tw:justify-center tw:gap-9 tw:px-7 tw:pt-6 tw:pb-5 tw:narrow-1440:gap-6 tw:narrow-1440:px-5 tw:narrow-980:flex-col tw:narrow-980:justify-start tw:narrow-980:gap-4 tw:narrow-980:overflow-y-auto tw:narrow-980:px-3 tw:narrow-980:pt-3">

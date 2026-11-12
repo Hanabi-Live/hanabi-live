@@ -18,6 +18,7 @@ import {
   onEnd,
   raiseMovingCard,
 } from "./playMotion.ts";
+import { measure } from "./screenScale.ts";
 
 /**
  * Where each card is, by card order, and where the deck is. The place names the hand and slot, the
@@ -105,7 +106,7 @@ export function measureCards(root: HTMLElement): CardPositions {
       continue;
     }
     positions.set(key, {
-      rect: element.getBoundingClientRect(),
+      rect: measure(element),
       place,
       element,
     });
@@ -114,7 +115,7 @@ export function measureCards(root: HTMLElement): CardPositions {
   const deck = root.querySelector<HTMLElement>("[data-deck]");
   if (deck !== null) {
     positions.set(DECK_KEY, {
-      rect: deck.getBoundingClientRect(),
+      rect: measure(deck),
       place: DECK_KEY,
       element: deck,
     });
@@ -342,7 +343,7 @@ export function animateClue(root: HTMLElement, giver: number): void {
   // A token falls onto every touched card at once. (A card that the clue newly touches slides up to
   // its raised place on its own; see "Card.tsx".)
   for (const marker of markers) {
-    const { height } = marker.getBoundingClientRect();
+    const { height } = measure(marker);
 
     marker.animate(
       [

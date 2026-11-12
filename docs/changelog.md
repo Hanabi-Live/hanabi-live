@@ -36,6 +36,8 @@ of the repository.
   It includes the time rebuilt from the old server's logs from April 1st to
   September 5th, 2026.
 - Player profiles now show the total time spent playing and reviewing.
+- The new game screen grows with the window, so on a large screen everything is
+  larger instead of surrounded by empty space.
 
 ## November 11th, 2026
 
