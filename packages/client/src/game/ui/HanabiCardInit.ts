@@ -210,21 +210,27 @@ const RANK_PIP_X = {
  */
 const POSSIBILITY_ROWS = {
   /** The height that the rows share, centered on the card, as a fraction of the card height. */
-  areaH: 0.9,
+  areaH: 0.94,
   /** The height of a row when there are only a few, as a fraction of the card height. */
-  maxRowH: 0.25,
+  maxRowH: 1 / 3,
   /** The space for the suit pips, as fractions of the card width. */
-  suitsX: { start: 0.04, end: 0.3 },
+  suitsX: { start: 0.03, end: 0.27 },
   /** The suit pips of a row go in a grid with up to this many columns. */
   maxSuitColumns: 2,
-  /** The centers of the first and last rank columns, as fractions of the card width. */
-  ranksX: { start: 0.38, end: 0.88 },
+  /**
+   * The space for the rank columns, as fractions of the card width. Each rank gets an equal share
+   * of it.
+   */
+  ranksX: { start: 0.29, end: 0.94 },
   /** The radius of a suit pip, as a fraction of the smaller side of its cell in the grid. */
-  pipRadiusPerCell: 0.42,
+  pipRadiusPerCell: 0.48,
   /** The size of a rank's digit, as a fraction of the row height. */
   fontSizePerRowH: 0.7,
-  /** The largest digit, smaller than a rank pip so that the columns fit beside the suit pips. */
-  maxFontSize: Math.floor((RANK_PIP_FONT_SIZE * 3) / 4),
+  /**
+   * The width of a rank column that a digit needs, as a fraction of its font size. A bold Arial
+   * digit is 0.556 of the font size wide, and the rest keeps the outlines of two digits apart.
+   */
+  columnWidthPerFontSize: 0.62,
   /** Arial's digits sit slightly high when centered on a point, so move them down this much. */
   digitDropPerFontSize: 0.04,
   /** The line between two rows. */
@@ -623,19 +629,17 @@ function drawPossibilityRows(
 ) {
   const { suitsX, ranksX } = POSSIBILITY_ROWS;
   const { rowH, top, layouts } = getPossibilityRowLayouts(rows);
+  const columnW = ((ranksX.end - ranksX.start) * CARD_W) / rankColumns.length;
   const fontSize = Math.min(
     rowH * POSSIBILITY_ROWS.fontSizePerRowH,
-    POSSIBILITY_ROWS.maxFontSize,
+    columnW / POSSIBILITY_ROWS.columnWidthPerFontSize,
+    RANK_PIP_FONT_SIZE,
   );
   const digitDrop = fontSize * POSSIBILITY_ROWS.digitDropPerFontSize;
-  const columnStep =
-    rankColumns.length > 1
-      ? ((ranksX.end - ranksX.start) * CARD_W) / (rankColumns.length - 1)
-      : 0;
   const columnX = new Map(
     rankColumns.map((rank, i) => [
       rank,
-      ranksX.start * CARD_W + columnStep * i,
+      ranksX.start * CARD_W + columnW * (i + 0.5),
     ]),
   );
 

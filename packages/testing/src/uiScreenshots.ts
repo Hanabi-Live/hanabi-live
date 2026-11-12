@@ -273,6 +273,88 @@ function showRestartDialog() {
   layers.UI2.batchDraw();
 }
 
+/**
+ * Runs in the page. Shows the second hand of the classic game screen (the largest) as its player
+ * sees it, and gives each card a different set of possibility rows. The variant has five suits and
+ * five ranks.
+ */
+function showPossibilityRows() {
+  // These values match `PipState` of the game library, which the page does not expose.
+  const HIDDEN = 0;
+  const ELIMINATED = 1;
+  const VISIBLE = 2;
+
+  function rankState(
+    rank: number,
+    ranks: readonly number[],
+    eliminatedRanks: readonly number[],
+  ): number {
+    if (ranks.includes(rank)) {
+      return VISIBLE;
+    }
+    return eliminatedRanks.includes(rank) ? ELIMINATED : HIDDEN;
+  }
+
+  function row(
+    suitIndexes: readonly number[],
+    ranks: readonly number[],
+    eliminatedRanks: readonly number[] = [],
+  ) {
+    return {
+      suitPips: suitIndexes.map((suitIndex) => ({
+        suitIndex,
+        state: VISIBLE,
+        positive: false,
+      })),
+      rankPips: [1, 2, 3, 4, 5].map((rank) => ({
+        rank,
+        state: rankState(rank, ranks, eliminatedRanks),
+        positive: false,
+      })),
+    };
+  }
+
+  const cardRows = [
+    [row([0, 1, 2, 3, 4], [1, 2, 3, 4]), row([0], [5])],
+    [
+      row([0], [1, 2, 3, 4], [5]),
+      row([1], [1, 2, 3, 4, 5]),
+      row([3], [2, 3, 4, 5], [1]),
+    ],
+    [row([0, 1], [1, 2]), row([2, 3], [3, 4]), row([4], [5])],
+    [row([0], [1]), row([1], [2]), row([2], [3]), row([3], [4]), row([4], [5])],
+    [row([0, 1, 2], [1, 2, 3]), row([3, 4], [4, 5])],
+  ];
+
+  interface Card {
+    setEmpathy: (enabled: boolean) => void;
+    possibilityRowsToDraw: unknown;
+    pipsAllowed: { suit: boolean; rank: boolean };
+    updatePipVisibility: () => void;
+  }
+  const { elements, layers } = (
+    globalThis as unknown as {
+      globals: {
+        elements: {
+          playerHands: ReadonlyArray<{
+            children: ReadonlyArray<{ card: Card }>;
+          }>;
+        };
+        layers: { card: { batchDraw: () => void } };
+      };
+    }
+  ).globals;
+  for (const [i, { card }] of (
+    elements.playerHands[1]?.children ?? []
+  ).entries()) {
+    card.setEmpathy(true);
+    card.possibilityRowsToDraw = cardRows[i % cardRows.length];
+    card.pipsAllowed = { suit: true, rank: true };
+    card.updatePipVisibility();
+  }
+  layers.card.batchDraw();
+}
+
 /** Runs in the page. Whether the classic game screen has finished drawing itself for a new size. */
 function isGameScreenResized(): boolean {
   return (
@@ -654,6 +736,23 @@ function getStates({
         await page.mouse.up();
         await leaveReplay(page);
       },
+    },
+    // Cards in the classic screen that show possibility rows: from one row of all the suits to a
+    // row for each suit.
+    {
+      name: "possibility-rows",
+      path: "/",
+      loggedIn: true,
+      prepare: async (page) => {
+        await openReplay(page, replayId);
+      },
+      hover: async (page) => {
+        await page.waitForTimeout(SETTLE_MILLISECONDS);
+        await page.waitForFunction(isGameScreenResized);
+        await page.evaluate(showPossibilityRows);
+        await page.waitForTimeout(SETTLE_MILLISECONDS);
+      },
+      cleanup: leaveReplay,
     },
     // A shared replay of a Prism game in the classic screen, in a hypothetical where the leader
     // morphed a card to the Prism suit without a rank.
