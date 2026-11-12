@@ -3,6 +3,7 @@ import { MAX_STRIKES } from "@hanabi-live/game";
 import { eRange } from "complete-common";
 import { forwardRef } from "react";
 import { tooltipRef } from "../../tooltipRef.ts";
+import { PACE_HIGH_RISK_COLOR } from "../ui/paceRiskColor.ts";
 import { CARD_HEIGHT_PER_WIDTH, CardFace, describeCard } from "./Card.tsx";
 import { Pip } from "./Pip.tsx";
 
@@ -224,6 +225,14 @@ function Deck({
   const height = cardWidth * CARD_HEIGHT_PER_WIDTH;
   const edges = getDeckEdges(cardsInDeck);
   const empty = cardsInDeck === 0;
+  // Whoever draws the last card starts the final round, so it stands out, and its label says so.
+  const lastCard = cardsInDeck === 1;
+  let label = "In deck";
+  if (lastCard) {
+    label = "Last card";
+  } else if (empty) {
+    label = "Final round";
+  }
 
   return (
     <div
@@ -270,13 +279,21 @@ function Deck({
         >
           <span
             className={`tw:font-extrabold ${empty ? "tw:text-game-muted" : "tw:text-white"}`}
-            style={{ fontSize: cardWidth * 0.5 }}
+            style={{
+              fontSize: cardWidth * 0.5,
+              color: lastCard ? PACE_HIGH_RISK_COLOR : undefined,
+            }}
           >
             {cardsInDeck}
           </span>
         </div>
       </div>
-      <span className="tw:text-[13px] tw:text-game-muted">In deck</span>
+      <span
+        className={`tw:text-[13px] tw:whitespace-nowrap ${lastCard ? "tw:font-bold" : "tw:text-game-muted"}`}
+        style={{ color: lastCard ? PACE_HIGH_RISK_COLOR : undefined }}
+      >
+        {label}
+      </span>
     </div>
   );
 }

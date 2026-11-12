@@ -51,6 +51,8 @@ of the repository.
   turn red as they add up.
 - In the new game screen, the pace changes color as discarding gets riskier, as
   on the classic screen.
+- In the new game screen, the deck marks its last card in orange, and says
+  "Final round" once it is empty.
 
 ## November 11th, 2026
 
