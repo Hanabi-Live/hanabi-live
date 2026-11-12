@@ -78,6 +78,8 @@ before asking any questions in the chat.
   in" when appropriate.
 - You can hold down the left mouse button or tap and hold on someone else's hand
   to see how it appears to them. (This is referred to as "empathy".)
+- Hold Space to see every hand this way. Hold Ctrl + Space to see every hand
+  this way, but narrowed by your notes.
 
 ### Pips
 
@@ -602,6 +604,9 @@ move for the current situation.
     - `1`, `2`, `3`, `4`, `5` for a rank clue
     - Or `q`, `w`, `e`, `r`, `t` for a color clue
     - Then `Ctrl + Enter` to submit
+  - Show every hand as its player sees it: hold `Space`
+  - Show every hand as its player sees it, narrowed by your notes: hold
+    `Ctrl + Space`
 - In a replay:
   - Rewind back one turn: `Left`
   - Fast-forward one turn: `Right`
