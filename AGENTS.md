@@ -43,6 +43,12 @@ HTML) from `packages/client/src/tooltipRef.ts` as the element's `ref`.
 Before you design a new button or animation for the New UI, load the
 `frontend-design`, `game-feel`, and `game-ui-ux` skills, and follow them.
 
+Every animation plays for every player. Do not read the operating system's
+reduced-motion preference (`prefers-reduced-motion` in CSS or `matchMedia`, or
+Tailwind's `tw:motion-reduce:`), and do not add other versions of an animation
+for it. Players turn it on to make their system faster, but they still want to
+see the animations in the game.
+
 ## Writing style
 
 Write prose for people (replies, commit messages, pull request descriptions,
