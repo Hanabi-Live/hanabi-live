@@ -194,8 +194,8 @@ export const PlayArea = forwardRef<
 
 /**
  * The discarded cards, one row for each suit, where the player drops a card to discard it. Each
- * card is a button that shows the turn on which it was discarded. The pile has a row only for each
- * suit with a discard, and is at least one card tall, so that the clue log below it has more room.
+ * card is a button that shows the turn on which it was discarded. The pile keeps room for a row of
+ * every suit, so that it stays the same size as cards are discarded.
  */
 export const DiscardPile = forwardRef<
   HTMLElement,
@@ -226,7 +226,7 @@ export const DiscardPile = forwardRef<
     const height = cardWidth * CARD_HEIGHT_PER_WIDTH;
     const rowsHeight =
       height
-      + (Math.max(rows.length, 1) - 1)
+      + (variant.suits.length - 1)
         * height
         * (1 - DISCARD_ROW_OVERLAP_PER_HEIGHT);
 
