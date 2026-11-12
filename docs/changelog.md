@@ -67,6 +67,9 @@ of the repository.
   the strikes still to come as faded X's, as the classic screen does.
 - In the new game screen, a played card moves to its stack in a straight line,
   like any other card, without its own animation.
+- In the new game screen on a touch screen or a narrow window, tap a card to
+  play or discard it, since the play stacks and the discard pile may be off the
+  screen. Dragging stays the way on a wide screen with a mouse.
 
 ## November 11th, 2026
 

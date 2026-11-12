@@ -596,6 +596,11 @@ export function GameScreen({
   const chatOverlay = useMediaQuery(CHAT_OVERLAY_WIDTH_QUERY);
   const stacked = useMediaQuery(STACKED_WIDTH_QUERY);
   const touch = useMediaQuery(TOUCH_QUERY);
+  // On a touch screen or a narrow window, the play stacks and the discard pile can be off the
+  // screen, so the viewer taps a card and then "Play" or "Discard" instead of dragging it. Only one
+  // of the two ways works at a time.
+  const tapToMove = touch || stacked;
+  const [menuCard, setMenuCard] = useState<CardOrder>();
 
   const [chosenClueTarget, setClueTarget] = useState<PlayerIndex>();
   const [clue, setClue] = useState<Clue>();
@@ -698,12 +703,14 @@ export function GameScreen({
     }
   }, [chatOverlay]);
 
-  // A new turn clears the clue being chosen. In a hypothetical, its own turns count.
+  // A new turn clears the clue being chosen and any open card menu. In a hypothetical, its own
+  // turns count.
   const turnNum =
     state === undefined ? undefined : getActionState(state).turn.turnNum;
   useEffect(() => {
     setClueTarget(undefined);
     setClue(undefined);
+    setMenuCard(undefined);
   }, [turnNum]);
 
   // Editing cards ends with the hypothetical.
@@ -1236,6 +1243,7 @@ export function GameScreen({
                 />
                 <Hands
                   canChooseClueTarget={canClue}
+                  canDiscard={canDiscard}
                   canMoveCards={canMoveCards}
                   cardWidth={handCardWidth}
                   clueMarkers={
@@ -1259,9 +1267,10 @@ export function GameScreen({
                       ? shownClue.target
                       : undefined
                   }
+                  menuCard={menuCard}
                   nameColumnWidth={nameColumnWidth}
                   onCardPointerDown={(event, order) => {
-                    if (canMoveCards && event.button === 0) {
+                    if (canMoveCards && !tapToMove && event.button === 0) {
                       pendingDrag.current = {
                         order,
                         x: event.clientX,
@@ -1269,9 +1278,24 @@ export function GameScreen({
                       };
                     }
                   }}
+                  onCardTap={(order) => {
+                    setMenuCard((current) =>
+                      current === order ? undefined : order,
+                    );
+                  }}
+                  onDiscard={(order) => {
+                    setMenuCard(undefined);
+                    if (canDiscardNow()) {
+                      sendAction({ type: "discard", order });
+                    }
+                  }}
                   onEditCard={editingCards ? editCard : undefined}
                   onHoldEmpathy={setHeldEmpathy}
                   onHoverCard={setHoveredCard}
+                  onPlay={(order) => {
+                    setMenuCard(undefined);
+                    sendAction({ type: "play", order });
+                  }}
                   onToggleEmpathy={
                     touch
                       ? (playerIndex) => {
@@ -1301,6 +1325,7 @@ export function GameScreen({
                           ),
                         }
                   }
+                  tapToMove={tapToMove}
                   touchedCards={new Set(touched)}
                   variant={variant}
                 />
