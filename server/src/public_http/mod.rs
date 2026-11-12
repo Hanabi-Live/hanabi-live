@@ -39,7 +39,6 @@ struct PublicState {
     pool: PgPool,
     config: PublicConfig,
     templates: Arc<minijinja::Environment<'static>>,
-    site_totals: Arc<tokio::sync::Mutex<pages::SiteTotals>>,
     seed_averages: Arc<tokio::sync::Mutex<pages::SeedAverages>>,
 }
 
@@ -103,7 +102,6 @@ pub fn router(pool: PgPool, config: &PublicConfig) -> Router {
         pool,
         config: config.clone(),
         templates: Arc::new(pages::templates()),
-        site_totals: Arc::default(),
         seed_averages: Arc::default(),
     };
     let mut router = Router::new();
@@ -133,12 +131,7 @@ pub fn router(pool: PgPool, config: &PublicConfig) -> Router {
             .route(&format!("/{root}/{{player1}}"), get(pages::page));
     }
     router = router.route("/missing-scores/{player1}/{numPlayers}", get(pages::page));
-    for (root, param) in [
-        ("variant", "id"),
-        ("seed", "seed"),
-        ("tag", "tag"),
-        ("export", "databaseId"),
-    ] {
+    for (root, param) in [("seed", "seed"), ("tag", "tag"), ("export", "databaseId")] {
         router = router
             .route(&format!("/{root}"), get(pages::page))
             .route(&format!("/{root}/{{{param}}}"), get(pages::page));
@@ -177,7 +170,6 @@ pub fn router(pool: PgPool, config: &PublicConfig) -> Router {
     api = api
         .route(&format!("{API_PREFIX}/variants"), get(api_handler))
         .route(&format!("{API_PREFIX}/variants-full"), get(api_handler))
-        .route(&format!("{API_PREFIX}/variants/{{id}}"), get(api_handler))
         .route_layer(axum::middleware::from_fn_with_state(
             state.clone(),
             ban_check,
@@ -276,7 +268,6 @@ async fn api_response(
         .unwrap_or("");
     let list_parameters = match mode {
         "history" | "seed" => data::list_parameters(mode),
-        "variants" if params.contains_key("id") => data::list_parameters(mode),
         _ => Vec::new(),
     };
     let list_parameters: Vec<&str> = list_parameters.iter().map(String::as_str).collect();
@@ -287,9 +278,9 @@ async fn api_response(
     };
     let q = strict_query(raw.as_deref(), accepted)?;
     Ok(match mode {
-        "variants" if !params.contains_key("id") => Json(catalog::names()).into_response(),
+        "variants" => Json(catalog::names()).into_response(),
         "variants-full" => Json(catalog::metadata()).into_response(),
-        "history" | "seed" | "variants" => {
+        "history" | "seed" => {
             let selection = data::selection(state, params, mode).await?;
             Json(data::list(state, selection, &q, mode).await?).into_response()
         }

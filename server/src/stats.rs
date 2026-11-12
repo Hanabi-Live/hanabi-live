@@ -1,4 +1,4 @@
-//! Players' and variants' derived statistics.
+//! Players' derived statistics.
 
 use crate::{
     model::{Player, Snapshot},
@@ -85,15 +85,8 @@ pub(crate) async fn refresh(pool: &PgPool, s: &Snapshot) -> Result<()> {
     advisory_lock(&mut tx, LockSpace::VariantStats, i32::from(v)).await?;
     let seed = s.seed.as_ref().context("A saved game has a seed")?;
     sqlx::query!("INSERT INTO seeds(seed,num_games) VALUES($1,(SELECT count(*) FROM games WHERE seed=$1)) ON CONFLICT(seed) DO UPDATE SET num_games=excluded.num_games", seed).execute(&mut *tx).await?;
-    sqlx::query!(
-        "INSERT INTO variant_stats(variant_id,best_score2,best_score3,best_score4,best_score5,best_score6)
-         VALUES($1,NULL,NULL,NULL,NULL,NULL) ON CONFLICT DO NOTHING",
-        v
-    )
-    .execute(&mut *tx)
-    .await?;
     let modifier = crate::model::ScoreModifier::of(&s.game.options);
-    // Rows are locked in the same order as when the game is saved: players by ID, then the variant.
+    // Rows are locked in the same order as when the game is saved: players by ID.
     let mut users = s
         .players
         .iter()
@@ -127,20 +120,6 @@ pub(crate) async fn refresh(pool: &PgPool, s: &Snapshot) -> Result<()> {
         .execute(&mut *tx)
         .await?;
     }
-    sqlx::query!(
-        "UPDATE variant_stats SET best_score2=CASE WHEN $4=2 AND $3 THEN GREATEST(best_score2,$2) ELSE best_score2 END,
-         best_score3=CASE WHEN $4=3 AND $3 THEN GREATEST(best_score3,$2) ELSE best_score3 END,
-         best_score4=CASE WHEN $4=4 AND $3 THEN GREATEST(best_score4,$2) ELSE best_score4 END,
-         best_score5=CASE WHEN $4=5 AND $3 THEN GREATEST(best_score5,$2) ELSE best_score5 END,
-         best_score6=CASE WHEN $4=6 AND $3 THEN GREATEST(best_score6,$2) ELSE best_score6 END
-         WHERE variant_id=$1",
-        v,
-        i16::try_from(s.game.score)?,
-        modifier == crate::model::ScoreModifier::default(),
-        players,
-    )
-    .execute(&mut *tx)
-    .await?;
     tx.commit().await?;
     Ok(())
 }

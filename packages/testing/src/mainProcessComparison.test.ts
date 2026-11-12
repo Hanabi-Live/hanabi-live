@@ -257,11 +257,10 @@ databaseDescribe("normal-server protocol workload", () => {
       );
       const statsDeadline = performance.now() + 5000;
       for (;;) {
-        const [stats] = await sql<Array<{ users: number; games: number }>>`
-          SELECT COALESCE((SELECT SUM(num_games) FROM user_stats WHERE variant_id=0),0)::int AS users,
-            COALESCE((SELECT num_games FROM variant_stats WHERE variant_id=0),0)::int AS games
+        const [stats] = await sql<Array<{ users: number }>>`
+          SELECT COALESCE((SELECT SUM(num_games) FROM user_stats WHERE variant_id=0),0)::int AS users
         `;
-        if (stats?.users === 16 && stats.games === 8) {
+        if (stats?.users === 16) {
           break;
         }
         if (performance.now() > statsDeadline) {

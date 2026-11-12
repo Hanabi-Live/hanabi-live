@@ -12,6 +12,8 @@ of the repository.
 - The list of the other games on a seed now shows the games with options that
   change the rules (such as "Bottom-Deck Blind Plays") after the games without
   them.
+- Removed the variant pages (`/variant/[id]`) and their API
+  (`/api/v1/variants/[id]`).
 
 ## November 11th, 2026
 

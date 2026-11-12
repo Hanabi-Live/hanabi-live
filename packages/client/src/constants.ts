@@ -56,7 +56,6 @@ export const PATH = {
   SHARED_REPLAY: "/shared-replay",
   HISTORY: "/history",
   SEED: "/seed",
-  VARIANT: "/variant",
 } as const;
 
 /** The lobby address hash of the history screen. */

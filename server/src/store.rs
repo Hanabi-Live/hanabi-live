@@ -52,7 +52,7 @@ const STATS_RUNNING: usize = 2;
 #[derive(Clone, Copy)]
 #[repr(i32)]
 pub(crate) enum LockSpace {
-    /// A variant's statistics, by variant ID.
+    /// The players' statistics on a variant, by variant ID.
     VariantStats = 17483,
     /// Ownership of the live tables, held for as long as a server runs.
     LiveState = 17485,
@@ -1699,12 +1699,6 @@ mod tests {
                 )
                 .fetch_one(&store.primary)
                 .await?;
-                let variant = sqlx::query!(
-                    "SELECT best_score2,best_score3,best_score4,best_score5,best_score6
-                     FROM variant_stats WHERE variant_id=0"
-                )
-                .fetch_one(&store.primary)
-                .await?;
                 let users = [
                     user.best_score2,
                     user.best_score3,
@@ -1712,20 +1706,9 @@ mod tests {
                     user.best_score5,
                     user.best_score6,
                 ];
-                let variants = [
-                    variant.best_score2,
-                    variant.best_score3,
-                    variant.best_score4,
-                    variant.best_score5,
-                    variant.best_score6,
-                ];
                 ensure!(
                     users == expected,
                     "User stats after {count} players: {users:?}"
-                );
-                ensure!(
-                    variants == expected,
-                    "Variant stats after {count} players: {variants:?}"
                 );
             }
             Ok::<(), anyhow::Error>(())
@@ -1942,13 +1925,9 @@ mod tests {
             )
             .fetch_all(&pool)
             .await?;
-            let variant =
-                sqlx::query_scalar!("SELECT num_games FROM variant_stats WHERE variant_id=0")
-                    .fetch_one(&pool)
-                    .await?;
             ensure!(
-                users == [1, 1] && variant == 1,
-                "The game was not counted once: players {users:?}, variant {variant}"
+                users == [1, 1],
+                "The game was not counted once: players {users:?}"
             );
             let restored = store.load().await?;
             ensure!(

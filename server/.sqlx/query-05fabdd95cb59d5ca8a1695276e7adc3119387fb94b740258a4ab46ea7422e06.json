@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "SELECT count(*) FILTER(WHERE NOT g.speedrun AND g.end_condition=$1) AS \"normal!\",\n                count(*) FILTER(WHERE NOT g.speedrun AND g.end_condition<>$1) AS \"other!\",\n                count(*) FILTER(WHERE g.speedrun) AS \"speed!\",\n                COALESCE(sum(extract(epoch FROM g.datetime_finished-g.datetime_started))\n                  FILTER(WHERE NOT g.speedrun),0)::bigint AS \"duration!\",\n                COALESCE(sum(extract(epoch FROM g.datetime_finished-g.datetime_started))\n                  FILTER(WHERE g.speedrun),0)::bigint AS \"speed_duration!\"\n                FROM game_participants p JOIN games g ON g.id=p.game_id WHERE p.user_id=$2",
+  "query": "SELECT count(*) FILTER(WHERE NOT g.speedrun AND g.end_condition=$1) AS \"normal!\",\n        count(*) FILTER(WHERE NOT g.speedrun AND g.end_condition<>$1) AS \"other!\",\n        count(*) FILTER(WHERE g.speedrun) AS \"speed!\",\n        COALESCE(sum(extract(epoch FROM g.datetime_finished-g.datetime_started))\n          FILTER(WHERE NOT g.speedrun),0)::bigint AS \"duration!\",\n        COALESCE(sum(extract(epoch FROM g.datetime_finished-g.datetime_started))\n          FILTER(WHERE g.speedrun),0)::bigint AS \"speed_duration!\"\n        FROM game_participants p JOIN games g ON g.id=p.game_id WHERE p.user_id=$2",
   "describe": {
     "columns": [
       {
@@ -48,5 +48,5 @@
       null
     ]
   },
-  "hash": "8f6993a1096f3bd36ddcd6a3d2d4e98894e085c587c8cee9dd59fafdd5dd0704"
+  "hash": "05fabdd95cb59d5ca8a1695276e7adc3119387fb94b740258a4ab46ea7422e06"
 }

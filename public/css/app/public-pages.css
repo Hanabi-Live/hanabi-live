@@ -231,11 +231,6 @@ span.table-spinner::after {
 }
 
 @media screen and (max-width: 640px) {
-  .history.variant th:nth-child(5),
-  .history.variant td:nth-child(5) {
-    display: none;
-  }
-
   .history.personal-history th:nth-child(6),
   .history.personal-history td:nth-child(6) {
     display: none;

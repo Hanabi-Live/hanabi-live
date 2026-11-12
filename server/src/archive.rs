@@ -428,21 +428,20 @@ pub(crate) async fn insert(
     .execute(&mut **tx)
     .await?;
     if !o.speedrun {
-        count_game(tx, variant, s.game.score, users).await?;
+        count_game(tx, variant, users).await?;
     }
     Ok(())
 }
 
-/// Adds a game to its variant's and its players' game counts. It runs in the transaction that saves
-/// the game, so each game is counted once. `stats::refresh` updates the best scores later.
+/// Adds a game to its players' game counts on its variant. It runs in the transaction that saves the
+/// game, so each game is counted once. `stats::refresh` updates the best scores later.
 async fn count_game(
     tx: &mut Transaction<'static, Postgres>,
     variant: &hanabi_engine::Variant,
-    score: i32,
     mut users: Vec<i32>,
 ) -> Result<()> {
     let v = i16::try_from(variant.id)?;
-    // Rows are locked in the same order as in `stats::refresh`: players by ID, then the variant.
+    // Rows are locked in the same order as in `stats::refresh`: players by ID.
     users.sort_unstable();
     sqlx::query!(
         "INSERT INTO user_stats(user_id,variant_id,num_games)
@@ -450,15 +449,6 @@ async fn count_game(
          ON CONFLICT(user_id,variant_id) DO UPDATE SET num_games=user_stats.num_games+1",
         &users,
         v
-    )
-    .execute(&mut **tx)
-    .await?;
-    sqlx::query!(
-        "INSERT INTO variant_stats(variant_id,num_games,num_max_scores) VALUES($1,1,$2)
-         ON CONFLICT(variant_id) DO UPDATE SET num_games=variant_stats.num_games+1,
-         num_max_scores=variant_stats.num_max_scores+excluded.num_max_scores",
-        v,
-        i32::from(score == variant.max_score)
     )
     .execute(&mut **tx)
     .await?;

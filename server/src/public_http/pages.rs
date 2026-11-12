@@ -147,7 +147,7 @@ pub(super) async fn page(
 ) -> Result<Response> {
     let mode = uri.path().split('/').nth(1).unwrap_or("");
     let accepted: &[&str] = match mode {
-        "history" | "tags" | "seed" | "variant" | "tag" => &["api"],
+        "history" | "tags" | "seed" | "tag" => &["api"],
         "shared-missing-scores" => &[
             "excludePlayers",
             "excludeVariants",
@@ -195,7 +195,7 @@ pub(super) async fn page(
                 "scores" | "profile" => {
                     v["page"] = json!("scores");
                     v["title"] = json!("Scores");
-                    let mut statistics = aggregate(&state, Scope::Player(users[0].0)).await?;
+                    let mut statistics = player_statistics(&state, users[0].0).await?;
                     let summary = score_summary(&state, users[0].0).await?;
                     statistics
                         .as_object_mut()
@@ -267,43 +267,6 @@ pub(super) async fn page(
             v["stats"] = seed_stats(&state, seed, &rows).await?;
             v["frequencies"] = json!(rows);
         }
-        "variant" => {
-            let raw = params
-                .get("id")
-                .filter(|s| !s.is_empty())
-                .ok_or_else(|| HttpError::not_found("You must specify a variant ID."))?;
-            let id =
-                integer(raw).ok_or_else(|| HttpError::bad("The variant ID must be a number."))?;
-            let variant = catalog::variant(id)
-                .ok_or_else(|| HttpError::not_found("That variant does not exist."))?;
-            let api = format!("{API_PREFIX}/variants/{id}");
-            if api_redirect {
-                return Ok(Redirect::permanent(&api).into_response());
-            }
-            v["title"] = json!("Variant Stats");
-            v["namesTitle"] = json!(format!("Global Statistics for {}", variant.name));
-            v["apiPath"] = json!(api);
-            let mut statistics = aggregate(&state, Scope::Variant(id)).await?;
-            let row = sqlx::query_as!(
-                crate::database::VariantStats,
-                "SELECT variant_id,num_games,best_score2,best_score3,best_score4,best_score5,best_score6,
-                 num_max_scores FROM variant_stats WHERE variant_id::bigint=$1",
-                id
-            )
-            .fetch_optional(&state.pool)
-            .await?;
-            // A variant without a row has no games.
-            let games = row.as_ref().map_or(0, |row| i64::from(row.num_games));
-            let max_scores = row.as_ref().map_or(0, |row| i64::from(row.num_max_scores));
-            statistics["numMaxScores"] = json!(max_scores);
-            statistics["maxScoreRate"] = json!(percentage(max_scores, games));
-            statistics["bestScores"] = json!(row.as_ref().map_or(
-                [None; crate::database::PLAYER_COUNTS],
-                crate::database::VariantStats::best_scores
-            ));
-            statistics["maxScore"] = json!(variant.max_score);
-            v["stats"] = statistics;
-        }
         "tag" => {
             let raw = params
                 .get("tag")
@@ -371,39 +334,14 @@ fn names_title(names: &[String]) -> String {
     )
 }
 
-pub(super) type SiteTotals = HashMap<i64, (std::time::Instant, Value)>;
-
-/// Whose games a statistics summary counts.
-#[derive(Clone, Copy)]
-enum Scope {
-    Player(i32),
-    Variant(i64),
-}
-
-// Variant totals scan every game of the variant on a pool with only two connections, so compute
-// them at most once per period and make concurrent visitors share the result.
-const SITE_TOTALS_LIFETIME: std::time::Duration = if cfg!(test) {
+/// How long the server keeps the average scores of seeds that share a prefix.
+const SEED_AVERAGES_LIFETIME: std::time::Duration = if cfg!(test) {
     std::time::Duration::ZERO
 } else {
     std::time::Duration::from_mins(5)
 };
 /// How long a statistics scan may run, longer than the lobby pool's usual limit.
 const AGGREGATE_STATEMENT_TIMEOUT: std::time::Duration = std::time::Duration::from_secs(20);
-
-async fn aggregate(state: &PublicState, scope: Scope) -> Result<Value> {
-    let Scope::Variant(variant) = scope else {
-        return compute_aggregate(state, scope).await;
-    };
-    let mut totals = state.site_totals.lock().await;
-    if let Some((computed, statistics)) = totals.get(&variant)
-        && computed.elapsed() < SITE_TOTALS_LIFETIME
-    {
-        return Ok(statistics.clone());
-    }
-    let statistics = compute_aggregate(state, scope).await?;
-    totals.insert(variant, (std::time::Instant::now(), statistics.clone()));
-    Ok(statistics)
-}
 
 /// A transaction for a statistics scan, which may run for up to `AGGREGATE_STATEMENT_TIMEOUT`.
 async fn scan(state: &PublicState) -> Result<sqlx::Transaction<'static, sqlx::Postgres>> {
@@ -417,90 +355,43 @@ async fn scan(state: &PublicState) -> Result<sqlx::Transaction<'static, sqlx::Po
     Ok(transaction)
 }
 
-async fn compute_aggregate(state: &PublicState, scope: Scope) -> Result<Value> {
+/// A player's game counts, time played, and the date they joined.
+async fn player_statistics(state: &PublicState, user: i32) -> Result<Value> {
+    use chrono::Datelike;
     let mut transaction = scan(state).await?;
     let normal_end = crate::archive::end_condition_to_db(EndCondition::Normal);
-    // Each case has its own query: a shared query gets a generic plan that cannot use an index.
-    // The variant is compared as the column's own SMALLINT, because a cast column cannot use its
-    // index either. A player's totals start from their own games. A variant's time counts every
-    // player's time, so it is multiplied by the number of players.
-    let (normal, other, speed, played, speed_played) = match scope {
-        Scope::Player(user) => {
-            let row = sqlx::query!(
-                "SELECT count(*) FILTER(WHERE NOT g.speedrun AND g.end_condition=$1) AS \"normal!\",
-                count(*) FILTER(WHERE NOT g.speedrun AND g.end_condition<>$1) AS \"other!\",
-                count(*) FILTER(WHERE g.speedrun) AS \"speed!\",
-                COALESCE(sum(extract(epoch FROM g.datetime_finished-g.datetime_started))
-                  FILTER(WHERE NOT g.speedrun),0)::bigint AS \"duration!\",
-                COALESCE(sum(extract(epoch FROM g.datetime_finished-g.datetime_started))
-                  FILTER(WHERE g.speedrun),0)::bigint AS \"speed_duration!\"
-                FROM game_participants p JOIN games g ON g.id=p.game_id WHERE p.user_id=$2",
-                normal_end,
-                user
-            )
-            .fetch_one(&mut *transaction)
-            .await
-            .context(StatementLimit(AGGREGATE_STATEMENT_TIMEOUT))?;
-            (
-                row.normal,
-                row.other,
-                row.speed,
-                row.duration,
-                row.speed_duration,
-            )
-        }
-        Scope::Variant(variant) => {
-            let variant = i16::try_from(variant)
-                .map_err(|_| anyhow::anyhow!("Variant ID {variant} is outside the stored range"))?;
-            let row = sqlx::query!(
-                "SELECT count(*) FILTER(WHERE NOT speedrun AND end_condition=$1) AS \"normal!\",
-                count(*) FILTER(WHERE NOT speedrun AND end_condition<>$1) AS \"other!\",
-                count(*) FILTER(WHERE speedrun) AS \"speed!\",
-                COALESCE(sum(extract(epoch FROM datetime_finished-datetime_started) * num_players)
-                  FILTER(WHERE NOT speedrun),0)::bigint AS \"duration!\",
-                COALESCE(sum(extract(epoch FROM datetime_finished-datetime_started) * num_players)
-                  FILTER(WHERE speedrun),0)::bigint AS \"speed_duration!\"
-                FROM games WHERE variant_id=$2",
-                normal_end,
-                variant
-            )
-            .fetch_one(&mut *transaction)
-            .await
-            .context(StatementLimit(AGGREGATE_STATEMENT_TIMEOUT))?;
-            (
-                row.normal,
-                row.other,
-                row.speed,
-                row.duration,
-                row.speed_duration,
-            )
-        }
-    };
+    let row = sqlx::query!(
+        "SELECT count(*) FILTER(WHERE NOT g.speedrun AND g.end_condition=$1) AS \"normal!\",
+        count(*) FILTER(WHERE NOT g.speedrun AND g.end_condition<>$1) AS \"other!\",
+        count(*) FILTER(WHERE g.speedrun) AS \"speed!\",
+        COALESCE(sum(extract(epoch FROM g.datetime_finished-g.datetime_started))
+          FILTER(WHERE NOT g.speedrun),0)::bigint AS \"duration!\",
+        COALESCE(sum(extract(epoch FROM g.datetime_finished-g.datetime_started))
+          FILTER(WHERE g.speedrun),0)::bigint AS \"speed_duration!\"
+        FROM game_participants p JOIN games g ON g.id=p.game_id WHERE p.user_id=$2",
+        normal_end,
+        user
+    )
+    .fetch_one(&mut *transaction)
+    .await
+    .context(StatementLimit(AGGREGATE_STATEMENT_TIMEOUT))?;
     transaction.commit().await?;
-    let mut statistics = json!({"numGamesNormal":normal,"numGamesOther":other,"numGamesTotal":normal+other,
-        "numGamesSpeedrun":speed,"timePlayed":duration(played),
-        "timePlayedSpeedrun":duration(speed_played)});
-    if let Scope::Player(user) = scope {
-        use chrono::Datelike;
-        let date: chrono::DateTime<chrono::Utc> =
-            sqlx::query_scalar!("SELECT datetime_created FROM users WHERE id=$1", user)
-                .fetch_one(&state.pool)
-                .await?;
-        let suffix = match date.day() {
-            1 | 21 | 31 => "st",
-            2 | 22 => "nd",
-            3 | 23 => "rd",
-            _ => "th",
-        };
-        statistics["dateJoined"] = json!(format!(
-            "{} {}{}, {}",
-            date.format("%B"),
-            date.day(),
-            suffix,
-            date.year()
-        ));
-    }
-    Ok(statistics)
+    let date: chrono::DateTime<chrono::Utc> =
+        sqlx::query_scalar!("SELECT datetime_created FROM users WHERE id=$1", user)
+            .fetch_one(&state.pool)
+            .await?;
+    let suffix = match date.day() {
+        1 | 21 | 31 => "st",
+        2 | 22 => "nd",
+        3 | 23 => "rd",
+        _ => "th",
+    };
+    Ok(
+        json!({"numGamesNormal":row.normal,"numGamesOther":row.other,
+        "numGamesTotal":row.normal+row.other,"numGamesSpeedrun":row.speed,
+        "timePlayed":duration(row.duration),"timePlayedSpeedrun":duration(row.speed_duration),
+        "dateJoined":format!("{} {}{}, {}", date.format("%B"), date.day(), suffix, date.year())}),
+    )
 }
 
 /// The average scores of the seeds that share a prefix (such as "p2v0s"), sorted from lowest.
@@ -575,7 +466,7 @@ async fn seed_stats(
 const AVERAGE_SCORE_DECIMALS: usize = 1;
 
 /// The sorted average scores of the seeds with a prefix. A large variant has thousands of seeds,
-/// so the averages are shared for `SITE_TOTALS_LIFETIME`, like the variant totals.
+/// so the averages are shared for `SEED_AVERAGES_LIFETIME`.
 async fn seed_averages(
     state: &PublicState,
     prefix: String,
@@ -584,7 +475,7 @@ async fn seed_averages(
 ) -> Result<Arc<[f64]>> {
     let mut cache = state.seed_averages.lock().await;
     if let Some((computed, averages)) = cache.get(&prefix)
-        && computed.elapsed() < SITE_TOTALS_LIFETIME
+        && computed.elapsed() < SEED_AVERAGES_LIFETIME
     {
         return Ok(averages.clone());
     }

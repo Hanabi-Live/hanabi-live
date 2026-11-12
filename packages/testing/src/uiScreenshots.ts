@@ -472,7 +472,6 @@ function getStates({
         await page.click("#advanced-filters-toggle");
       },
     },
-    { name: "variant", path: "/variant/0", loggedIn: false },
     { name: "seed", path: `/seed/${SEED}`, loggedIn: false },
     { name: "password-reset", path: "/password-reset", loggedIn: false },
     { name: "lobby", path: "/", loggedIn: true },

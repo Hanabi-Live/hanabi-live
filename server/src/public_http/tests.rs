@@ -209,14 +209,14 @@ async fn shell_routes_metadata_and_static_files() {
 }
 
 #[tokio::test]
-async fn variant_database_failure_is_not_an_empty_success() {
+async fn seed_database_failure_is_not_an_empty_success() {
     let pool = PgPoolOptions::new()
         .connect_lazy("postgres://unused@127.0.0.1/unused")
         .unwrap();
     pool.close().await;
-    let (status, body) = request(router(pool, &config()), "/variant/0").await;
+    let (status, body) = request(router(pool, &config()), "/seed/same").await;
     assert_eq!(status, StatusCode::SERVICE_UNAVAILABLE);
-    assert!(body.contains("GET /variant/{id} failed"), "{body}");
+    assert!(body.contains("GET /seed/{seed} failed"), "{body}");
     assert!(body.contains("database connection pool is closed"));
     assert!(body.contains("Reference:"));
 }
@@ -308,8 +308,7 @@ async fn public_database_routes_filters_privacy_exports_and_html() {
         INSERT INTO game_actions(game_id,turn,type,target,value) VALUES(3,0,0,4,NULL),(3,1,4,0,1);
         INSERT INTO game_participant_notes(game_participant_id,card_order,note)
           SELECT id,0,'<note>' FROM game_participants WHERE game_id=3 AND user_id=1;
-        INSERT INTO user_stats(user_id,variant_id,num_games,best_score2,best_score2_mod) VALUES(1,0,2,25,0);
-        INSERT INTO variant_stats(variant_id,num_games,best_score2,num_max_scores) VALUES(0,2,25,1);")
+        INSERT INTO user_stats(user_id,variant_id,num_games,best_score2,best_score2_mod) VALUES(1,0,2,25,0);")
         .execute(&db.pool).await.unwrap();
     sqlx::query!("UPDATE games SET datetime_started='2026-01-01T00:00:00.12345Z' WHERE id=3")
         .execute(&db.pool)
@@ -320,7 +319,6 @@ async fn public_database_routes_filters_privacy_exports_and_html() {
         ("/api/v1/history/Alice/Bob?filter[score]=25", 1, 1),
         ("/api/v1/history/Alice?filter[variant]=1", 1, 1),
         ("/api/v1/seed/same?filter[score]=15", 1, 1),
-        ("/api/v1/variants/0?filter[score]=25", 1, 1),
         ("/api/v1/history/Alice?offset=4&limit=2", 3, 0),
     ] {
         let (status, body) = request(app.clone(), path).await;
@@ -352,9 +350,6 @@ async fn public_database_routes_filters_privacy_exports_and_html() {
         ("/api/v1/history/Alice?filter[variant]=0", 2, Some(2)),
         ("/api/v1/seed/same?sort=score&order=asc", 2, Some(2)),
         ("/api/v1/seed/same?filter[id]=1", 1, Some(1)),
-        ("/api/v1/variants/0?sort=id&order=asc", 2, Some(1)),
-        ("/api/v1/variants/0?filter[id]=2", 1, Some(2)),
-        ("/api/v1/variants/0?filter[numPlayers]=2", 2, Some(1)),
         // Values outside a column's type match nothing instead of failing in PostgreSQL.
         ("/api/v1/history/Alice?filter[score]=70000", 0, None),
         ("/api/v1/history/Alice?filter[id]=99999999999", 0, None),
@@ -494,7 +489,6 @@ async fn public_database_routes_filters_privacy_exports_and_html() {
         "/history/Alice/Bob",
         "/tags/Alice",
         "/seed/same",
-        "/variant/0",
         "/tag/mine",
         "/missing-scores/Alice/2",
         "/shared-missing-scores/2/Alice/Bob",
@@ -554,8 +548,6 @@ async fn public_database_routes_filters_privacy_exports_and_html() {
     )
     .await;
     assert!(body.contains("<td>No Variant</td>"));
-    let (_, body) = request(app.clone(), "/variant/0").await;
-    assert!(body.contains("4 hours and 0 minutes"), "{body}");
     for (path, status, text) in [
         ("/scores", 404, "specify a player"),
         ("/history/Missing/Alice/alice", 404, "does not exist"),
@@ -570,7 +562,6 @@ async fn public_database_routes_filters_privacy_exports_and_html() {
             400,
             "The offset must be",
         ),
-        ("/variant/no", 400, "must be a number"),
         ("/api/v1/seed-full/same?limit=0", 400, "The limit must be"),
         // Every URL rejects a parameter that it does not take, or one repeated.
         ("/api/v1/history/Alice?limit=0", 400, "The limit must be"),
@@ -623,9 +614,6 @@ async fn public_database_routes_filters_privacy_exports_and_html() {
             400,
             "offset",
         ),
-        ("/variant/99999", 404, "does not exist"),
-        ("/api/v1/variants/99999", 404, "does not exist"),
-        ("/api/v1/variants/x", 400, "must be a number"),
         ("/export", 404, "specify a database"),
         ("/export/no", 400, "not a valid database"),
         ("/export/99999", 404, "does not exist"),

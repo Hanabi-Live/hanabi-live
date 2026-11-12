@@ -81,32 +81,6 @@ impl UserStats {
     }
 }
 
-#[derive(Serialize)]
-pub(crate) struct VariantStats {
-    pub variant_id: i16,
-    pub num_games: i32,
-    pub best_score2: Option<i16>,
-    pub best_score3: Option<i16>,
-    pub best_score4: Option<i16>,
-    pub best_score5: Option<i16>,
-    pub best_score6: Option<i16>,
-    pub num_max_scores: i32,
-}
-
-impl VariantStats {
-    /// The best score for each player count, from the fewest players to the most. `None` for a
-    /// player count that has no game.
-    pub const fn best_scores(&self) -> [Option<i16>; PLAYER_COUNTS] {
-        [
-            self.best_score2,
-            self.best_score3,
-            self.best_score4,
-            self.best_score5,
-            self.best_score6,
-        ]
-    }
-}
-
 #[cfg(test)]
 mod tests {
     use super::{UserId, normal_game_counts};

@@ -744,7 +744,6 @@ move for the current situation.
 | `/shared-missing-scores/2/[username1]/[username2]` | Lists the remaining non-max scores that 2 players both need. (You can specify up to 6 players.) |
 | `/tags/[username]`                                 | Lists the player's tagged games.                                                                |
 | `/seed/[seed]`                                     | Lists the games played on a specific seed.                                                      |
-| `/variant/[id]`                                    | Lists stats for a specific variant.                                                             |
 | `/tag/[tag]`                                       | Lists all the games that match the specified tag.                                               |
 
 ## JSON Games
@@ -767,7 +766,6 @@ move for the current situation.
 | `/export/[game ID]`                           | Provides the data for an arbitrary game from the database.                                                  |
 | `/api/v1/variants`                            | Displays a list of variants and their IDs.                                                                  |
 | `/api/v1/variants-full`                       | Displays a list of variants information and their IDs.                                                      |
-| `/api/v1/variants/[variant ID]`               | Displays a paginated list of games played in that specific variant.                                         |
 | `/api/v1/history/[username]`                  | Lists a paginated list of the player's past games.                                                          |
 | `/api/v1/history/[username]/[username2]`      | Lists a paginated list of past games where the players were in together. (You can specify up to 6 players.) |
 | `/api/v1/history-full/[username]`             | Lists all the player's past games.                                                                          |
@@ -778,10 +776,10 @@ move for the current situation.
 | `/api/v1/seed-full/[seed]`                    | Lists all the games played on a specific seed.                                                              |
 
 Notes: The following query parameters can be used by adding a `?` at the end of
-the URL (e.g. `/api/v1/variants/1?limit=50&offset=100`). Group 1 applies to the
-paginated lists, and `limit` and `offset` also to `/api/v1/seed-full`. Group 2
-applies to `/api/v1/history-full`. A request with any other parameter, or with a
-parameter repeated, is rejected.
+the URL (e.g. `/api/v1/history/Alice?limit=50&offset=100`). Group 1 applies to
+the paginated lists, and `limit` and `offset` also to `/api/v1/seed-full`. Group
+2 applies to `/api/v1/history-full`. A request with any other parameter, or with
+a parameter repeated, is rejected.
 
 | Group | Parameter | Type    | Explanation                      | Values          |
 | ----- | --------- | ------- | -------------------------------- | --------------- |
@@ -795,8 +793,7 @@ parameter repeated, is rejected.
 
 The columns are `id`, `numPlayers`, `score`, and `variant` (for example,
 `?sort=score&order=desc`). Every list sorts by `id`, `numPlayers`, or `score`.
-History lists filter by any column, variant lists by `id`, `numPlayers`, or
-`score`, and seed lists by `id` or `score`.
+History lists filter by any column, and seed lists by `id` or `score`.
 
 ## Bots
 

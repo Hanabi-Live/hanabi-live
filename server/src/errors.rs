@@ -558,10 +558,8 @@ mod tests {
 
     #[test]
     fn error_responses_carry_their_report_for_alerts() {
-        let report = Report::from_error(
-            "GET /api/v1/variants/{id}",
-            &sqlx::Error::PoolTimedOut.into(),
-        );
+        let report =
+            Report::from_error("GET /api/v1/seed/{seed}", &sqlx::Error::PoolTimedOut.into());
         let response = report.response(true);
         assert!(response.status().is_server_error());
         let attached = response
@@ -569,7 +567,7 @@ mod tests {
             .get::<Report>()
             .expect("attached report");
         assert_eq!(attached.code, NoticeCode::DatabasePoolTimeout);
-        assert_eq!(attached.operation, "GET /api/v1/variants/{id}");
+        assert_eq!(attached.operation, "GET /api/v1/seed/{seed}");
         assert_eq!(attached.diagnostic_id, report.diagnostic_id);
     }
 

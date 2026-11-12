@@ -1,6 +1,4 @@
-use super::{
-    HttpError, PAGE_PARAMETERS, Params, PublicState, Query, Result, catalog, integer, pagination,
-};
+use super::{HttpError, PAGE_PARAMETERS, Params, PublicState, Query, Result, integer, pagination};
 use crate::archive::GameRecord;
 use hanabi_protocol::GameListColumn as Column;
 use sqlx::{Postgres, QueryBuilder};
@@ -25,7 +23,6 @@ const fn column_field(column: Column) -> &'static str {
 const fn filterable_columns(mode: &str) -> &'static [Column] {
     match mode.as_bytes() {
         b"history" => Column::ALL,
-        b"variants" => SORTABLE_COLUMNS,
         _ => &[Column::Id, Column::Score],
     }
 }
@@ -64,7 +61,6 @@ struct HistoryRow {
 pub(super) struct Selection {
     pub users: Vec<i32>,
     pub seed: Option<String>,
-    pub variant: Option<i64>,
     pub start: Option<i64>,
     pub end: Option<i64>,
     pub tag: Option<String>,
@@ -118,31 +114,16 @@ pub(super) async fn players(
 
 pub(super) async fn selection(state: &PublicState, p: &Params, mode: &str) -> Result<Selection> {
     let mut s = Selection::default();
-    match mode {
-        "history" => {
-            s.users = players(state, p, true)
-                .await?
-                .into_iter()
-                .map(|u| u.0)
-                .collect();
-        }
-        "variants" => {
-            let raw = p
-                .get("id")
-                .filter(|v| !v.is_empty())
-                .ok_or_else(|| HttpError::not_found("You must specify a variant ID."))?;
-            let id =
-                integer(raw).ok_or_else(|| HttpError::bad("The variant ID must be a number."))?;
-            if catalog::variant(id).is_none() {
-                return Err(HttpError::not_found("That variant does not exist."));
-            }
-            s.variant = Some(id);
-        }
-        _ => {
-            s.seed = p.get("seed").filter(|v| !v.is_empty()).cloned();
-            if s.seed.is_none() {
-                return Err(HttpError::not_found("You must specify a seed."));
-            }
+    if mode == "history" {
+        s.users = players(state, p, true)
+            .await?
+            .into_iter()
+            .map(|u| u.0)
+            .collect();
+    } else {
+        s.seed = p.get("seed").filter(|v| !v.is_empty()).cloned();
+        if s.seed.is_none() {
+            return Err(HttpError::not_found("You must specify a seed."));
         }
     }
     Ok(s)
@@ -189,9 +170,6 @@ fn selected(s: Selection) -> QueryBuilder<Postgres> {
     }
     if let Some(seed) = s.seed {
         qb.push(" AND g.seed=").push_bind(seed);
-    }
-    if let Some(id) = s.variant {
-        push_compare(&mut qb, "variant_id", "=", id);
     }
     if let Some(id) = s.start {
         push_compare(&mut qb, "id", ">=", id);

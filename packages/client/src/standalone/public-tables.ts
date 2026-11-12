@@ -297,7 +297,7 @@ function initServerTable(
         return;
       }
       totalRows = result.total;
-      showRows(table, gameRows(result, mode, variants, frequencies));
+      showRows(table, gameRows(result, mode, frequencies));
       pagers.draw(totalRows, String(totalRows));
       const error = document.querySelector<HTMLElement>("#history-error");
       if (error !== null) {
@@ -497,42 +497,27 @@ function barColor(row: ScoreFrequency, best: boolean, index: number): string {
 function gameRows(
   page: GamePage,
   mode: string | undefined,
-  variants: Readonly<Record<string, string>>,
   frequencies: readonly ScoreFrequency[],
 ): ReadonlyArray<ReadonlyArray<Node | string>> {
-  const variantIds = new Map(
-    Object.entries(variants).map(([id, name]) => [name, id]),
-  );
   return page.games.map((game) => {
     const names = game.playerNames;
-    const row: Array<Node | string> = [
+    return [
       link(`${PATH.REPLAY}/${game.gameId}`, game.gameId),
       String(game.playerNames.length),
       String(game.score),
-    ];
-    if (mode !== "variant") {
-      const { variantName } = game.options;
-      const variantId = variantIds.get(variantName);
-      row.push(
-        variantId === undefined
-          ? variantName
-          : link(`${PATH.VARIANT}/${variantId}`, variantName),
-      );
-    }
-    row.push(
+      game.options.variantName,
       link(
         `${PATH.HISTORY}/${names.map(encodeURIComponent).join("/")}`,
         names.join(", "),
       ),
       displayTime(game.finishedAt),
-    );
-    if (mode === "seed") {
-      row.push(percentile(game.score, frequencies));
-    } else {
-      const text = mode === "variant" ? game.seed : game.numGamesOnSeed;
-      row.push(link(`${PATH.SEED}/${encodeURIComponent(game.seed)}`, text));
-    }
-    return row;
+      mode === "seed"
+        ? percentile(game.score, frequencies)
+        : link(
+            `${PATH.SEED}/${encodeURIComponent(game.seed)}`,
+            game.numGamesOnSeed,
+          ),
+    ];
   });
 }
 

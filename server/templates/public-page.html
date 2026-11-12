@@ -66,11 +66,7 @@
             <p id="password-reset-error" role="alert" hidden></p>
           </form>
           <script src="/public/js/bundles/password-reset.min.js?{{ version }}"></script>
-          {% else %} {% if page in ["scores","variant"] %} {% if page ==
-          "variant" and stats.numGamesTotal == 0 and stats.numGamesSpeedrun == 0
-          %}
-          <p>No-one has played a game on this variant yet.</p>
-          {% endif %}
+          {% else %} {% if page == "scores" %}
           <div class="history-bullets">
             <ul>
               {% if stats.dateJoined %}
@@ -104,32 +100,11 @@
                 >
                 {{ stats.timePlayedSpeedrun }}
               </li>
-              {% if page == "scores" %}
               <li>
                 <span class="stat-description">Total max scores:</span> {{
                 stats.total }} &nbsp;({{ stats.percentage }}%)
               </li>
-              {% elif page == "variant" %}
-              <li>
-                <span class="stat-description">Total perfect scores:</span> {{
-                stats.numMaxScores }} / {{ stats.numGamesTotal }} &nbsp;({{
-                stats.maxScoreRate }}%)
-              </li>
-              {% endif %}
             </ul>
-            {% if page == "variant" %}
-            <ul>
-              {% for score in stats.bestScores %}
-              <li>
-                <span class="stat-description"
-                  >{{ loop.index + 1 }}-player best score:</span
-                >
-                {% if score is none %}&ndash;{% else %}{{ score }} / {{
-                stats.maxScore }}{% endif %}
-              </li>
-              {% endfor %}
-            </ul>
-            {% endif %}
           </div>
           {% endif %} {% if page == "seed" and stats.numGames %}
           <div class="history-bullets">
@@ -195,7 +170,7 @@
               <tbody>
                 {% for row in stats.rows %}{% if row.numGames > 0 %}
                 <tr>
-                  <td><a href="/variant/{{ row.id }}">{{ row.name }}</a></td>
+                  <td>{{ row.name }}</td>
                   <td class="center">{{ row.numGames }}</td>
                   {% for best in row.bestScores %}
                   <td class="center">
@@ -224,27 +199,19 @@
             role="region"
             aria-label="Game history"
           >
-            <table
-              id="history-table"
-              class="history {% if page == 'variant' %}variant{% else %}personal-history{% endif %}"
-            >
+            <table id="history-table" class="history personal-history">
               <thead>
                 <tr>
                   <th>Game ID</th>
                   <th data-filter="select"># of Players</th>
                   <th>Score</th>
-                  {% if page != "variant" %}
                   <th data-filter="select">Variant</th>
-                  {% endif %}
                   <th>Players</th>
                   <th>Date &amp; Time</th>
                   {% if page == "seed" %}
                   <th>Percentile</th>
                   {% else %}
-                  <th>
-                    {% if page == "variant" %}Seed{% else %}Other Scores{% endif
-                    %}
-                  </th>
+                  <th>Other Scores</th>
                   {% endif %} {% if title == "Tagged Games" %}
                   <th>Tags</th>
                   {% endif %}
@@ -260,11 +227,7 @@
                   <td><a href="/replay/{{ game.id }}">{{ game.id }}</a></td>
                   <td class="center">{{ game.options.numPlayers }}</td>
                   <td class="center">{{ game.score }}</td>
-                  <td>
-                    <a href="/variant/{{ game.options.variantId }}"
-                      >{{ game.options.variantName }}</a
-                    >
-                  </td>
+                  <td>{{ game.options.variantName }}</td>
                   <td>
                     <a
                       href="/history/{% for name in game.playerNames %}{{ name|urlencode }}{% if not loop.last %}/{% endif %}{% endfor %}"
@@ -273,10 +236,9 @@
                   </td>
                   <td>{{ game.finishedAt|history_date }}</td>
                   <td class="center">
-                    {% if not game.seed %}{{ game.numGamesOnThisSeed }}{% else
-                    %}<a href="/seed/{{ game.seed|urlencode }}"
+                    <a href="/seed/{{ game.seed|urlencode }}"
                       >{{ game.numGamesOnThisSeed }}</a
-                    >{% endif %}
+                    >
                   </td>
                   {% if title == "Tagged Games" %}
                   <td class="center">{{ game.tags|join(", ") }}</td>
