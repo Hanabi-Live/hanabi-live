@@ -1,14 +1,8 @@
 // The "Create Game" screen, which also changes the options of an unstarted game.
 
-import type { Settings } from "@hanabi-live/data";
 import {
   DEFAULT_TABLE_NAME_SUFFIX,
-  DEFAULT_TIME_BASE_SECONDS,
-  DEFAULT_TIME_PER_TURN_SECONDS,
   MAX_SEED_LENGTH,
-  MAX_TIME_BASE_SECONDS,
-  MAX_TIME_PER_TURN_SECONDS,
-  SECONDS_PER_MINUTE,
   defaultSettings,
 } from "@hanabi-live/data";
 import type { GameOptions } from "@hanabi-live/game";
@@ -27,7 +21,6 @@ import {
 import {
   ReadonlySet,
   getRandomArrayElement,
-  parseFloatSafe,
   parseIntSafe,
 } from "complete-common";
 import equal from "fast-deep-equal";
@@ -38,7 +31,22 @@ import { creatingTableChanged } from "../sessionSlice.ts";
 import { store } from "../store.ts";
 import { Tooltip } from "../Tooltip.ts";
 import { escapeHtml, getHtmlInputElement } from "../utils.ts";
-import { readDeal } from "./deal.ts";
+import type {
+  CheckedField,
+  CreateGameForm,
+  CreateTable,
+  ExtraOption,
+} from "./createGameForm.ts";
+import {
+  DEFAULT_TIME_CONTROL,
+  EXTRA_OPTION_NAMES,
+  formFromTable,
+  getErrors,
+  isReplaying,
+  readFormDeal,
+  readTable,
+  tableOptions,
+} from "./createGameForm.ts";
 import * as lobbyPage from "./lobbyPage.ts";
 import { Screen } from "./types/Screen.ts";
 
@@ -51,34 +59,16 @@ const BASIC_VARIANT_NAMES = [
 
 const BASIC_VARIANT_NAMES_SET = new ReadonlySet<string>(BASIC_VARIANT_NAMES);
 
-/** A character that the server accepts in a seed. */
-const SEED_CHARACTER_REGEX = /^[\d\-A-Za-z]$/u;
-
-/** The largest database ID, and the latest turn, that the server accepts. */
-const MAX_INTEGER_FIELD = 2_147_483_647;
-
 /** A text box that turns red and explains why while its value is invalid. */
 interface CheckedInput {
   readonly element: HTMLInputElement;
   readonly tooltip: Tooltip;
-  /** Returns why the value is invalid, if it is. */
-  readonly getError: () => string | undefined;
+  readonly field: CheckedField;
 }
 
 const checkedInputs: CheckedInput[] = [];
 
-/** The table that the form starts from, which our settings remember. */
-type CreateTable = Settings["createTable"];
-
-/** The options that a checkbox under "Extra Options" sets. */
-type ExtraOption = Exclude<keyof GameOptions, "variantId" | "timeControl">;
 type TimeControl = NonNullable<GameOptions["timeControl"]>;
-
-/** The clock that a timed table has unless its creator chooses another. */
-export const DEFAULT_TIME_CONTROL = {
-  baseSeconds: DEFAULT_TIME_BASE_SECONDS,
-  perTurnSeconds: DEFAULT_TIME_PER_TURN_SECONDS,
-} as const satisfies TimeControl;
 
 /** The clock that the form offers: the one that we chose last, or else the default one. */
 function rememberedTimeControl(): TimeControl {
@@ -101,8 +91,6 @@ const EXTRA_OPTIONS = {
   detrimentalCharacters: "#createTableDetrimentalCharacters",
 } as const satisfies Record<ExtraOption, string>;
 
-const EXTRA_OPTION_NAMES = Object.keys(EXTRA_OPTIONS) as readonly ExtraOption[];
-
 /** The checkbox that makes the table timed. */
 const TIMED = "#createTableTimed";
 
@@ -120,11 +108,11 @@ export function init(): void {
   });
 
   getHtmlInputElement("#create-game-seed").maxLength = MAX_SEED_LENGTH;
-  addCheckedInput("#createTableTimeBaseMinutes", getTimeBaseError);
-  addCheckedInput("#createTableTimePerTurnSeconds", getTimePerTurnError);
-  addCheckedInput("#create-game-seed", getSeedError);
-  addCheckedInput("#create-game-replay-game-id", getReplayGameIdError);
-  addCheckedInput("#create-game-replay-turn", getReplayTurnError);
+  addCheckedInput("#createTableTimeBaseMinutes", "timeBaseMinutes");
+  addCheckedInput("#createTableTimePerTurnSeconds", "timePerTurnSeconds");
+  addCheckedInput("#create-game-seed", "seed");
+  addCheckedInput("#create-game-replay-game-id", "replayGameId");
+  addCheckedInput("#create-game-replay-turn", "replayTurn");
 
   firstVariantDropdownInit();
   secondVariantDropdownInit();
@@ -279,31 +267,23 @@ function submit() {
   // Leave the dialog open while any value is invalid, showing the extra options only when the
   // problem is among them.
   if (!checkInputs()) {
+    const errors = getErrors(readValues());
     if (
-      getTimeBaseError() === undefined
-      && getTimePerTurnError() === undefined
+      errors.timeBaseMinutes === undefined
+      && errors.timePerTurnSeconds === undefined
     ) {
       showExtraOptions(true);
     }
     return;
   }
 
+  const form = readValues();
   const createTable = readForm();
   remember(createTable);
 
   // Seeds and replays are not saved, so that a new game does not accidentally repeat a deal.
-  const deal = readDeal(
-    getText("#create-game-seed"),
-    getText("#create-game-replay-game-id"),
-    getText("#create-game-replay-turn"),
-  );
-
-  const name = $("#createTableName").val();
-  if (typeof name !== "string") {
-    throw new TypeError(
-      'The value of the "createTableName" element was not a string.',
-    );
-  }
+  const deal = readFormDeal(form);
+  const { name } = form;
 
   // Table names are stored locally. The default name is not stored, so that it follows the current
   // username.
@@ -316,12 +296,7 @@ function submit() {
   }
 
   // Passwords are not stored on the server; instead, they are stored locally as cookies.
-  const password = $("#createTablePassword").val();
-  if (typeof password !== "string") {
-    throw new TypeError(
-      'The value of the "createTablePassword" element was not a string.',
-    );
-  }
+  const { password } = form;
   if (isNew) {
     localStorage.setItem(LOCAL_STORAGE_KEY.CREATE_TABLE_PASSWORD, password);
   }
@@ -356,12 +331,12 @@ export function acceptOptionsFromGuest(suggestion: SuggestedSettings): void {
   });
 }
 
-function addCheckedInput(selector: string, getError: () => string | undefined) {
+function addCheckedInput(selector: string, field: CheckedField) {
   const element = getHtmlInputElement(selector);
   checkedInputs.push({
     element,
     tooltip: new Tooltip(element, { content: "" }),
-    getError,
+    field,
   });
 
   // The fields depend on each other, so a change to one checks them all.
@@ -375,14 +350,17 @@ function addCheckedInput(selector: string, getError: () => string | undefined) {
  * all valid.
  */
 function checkInputs(): boolean {
+  const form = readValues();
+
   // The turn only applies to a replay.
-  const replaying = getText("#create-game-replay-game-id") !== "";
+  const replaying = isReplaying(form);
   $("#create-game-replay-turn").prop("disabled", !replaying);
   $("#create-game-replay-turn-label").fadeTo(0, replaying ? 1 : DIMMED_OPACITY);
 
+  const errors = getErrors(form);
   let valid = true;
-  for (const { element, tooltip, getError } of checkedInputs) {
-    const error = getError();
+  for (const { element, tooltip, field } of checkedInputs) {
+    const error = errors[field];
     element.classList.toggle("wrong-input", error !== undefined);
     if (error === undefined) {
       tooltip.close();
@@ -401,150 +379,33 @@ function closeInputErrors() {
   }
 }
 
-function getText(selector: string): string {
-  return getHtmlInputElement(selector).value.trim();
-}
-
-/** Whether the clock options apply, since a speedrun is never timed. */
-function isTimed(): boolean {
-  return isChecked(TIMED) && !isChecked(EXTRA_OPTIONS.speedrun);
-}
-
-function toSeconds(minutes: number): number {
-  return Math.round(minutes * SECONDS_PER_MINUTE);
-}
-
-function getTimeBaseError(): string | undefined {
-  if (!isTimed()) {
-    return undefined;
-  }
-  const minutes = parseFloatSafe(getText("#createTableTimeBaseMinutes"));
-  if (minutes === undefined || toSeconds(minutes) <= 0) {
-    return "The base time must be a positive number of minutes.";
-  }
-  if (toSeconds(minutes) > MAX_TIME_BASE_SECONDS) {
-    return `The base time cannot be more than ${MAX_TIME_BASE_SECONDS / SECONDS_PER_MINUTE} minutes.`;
-  }
-  return undefined;
-}
-
-function getTimePerTurnError(): string | undefined {
-  if (!isTimed()) {
-    return undefined;
-  }
-  const seconds = parseIntSafe(getText("#createTableTimePerTurnSeconds"));
-  if (seconds === undefined || seconds <= 0) {
-    return "The time per turn must be a positive whole number of seconds.";
-  }
-  if (seconds > MAX_TIME_PER_TURN_SECONDS) {
-    return `The time per turn cannot be more than ${MAX_TIME_PER_TURN_SECONDS} seconds.`;
-  }
-  return undefined;
-}
-
-function getSeedError(): string | undefined {
-  const invalidCharacters = new Set(
-    [...new Intl.Segmenter().segment(getText("#create-game-seed"))]
-      .map(({ segment }) => segment)
-      .filter((character) => !SEED_CHARACTER_REGEX.test(character)),
-  );
-  if (invalidCharacters.size === 0) {
-    return undefined;
-  }
-  const shown = [...invalidCharacters]
-    .map((character) => (character === " " ? "(space)" : character))
-    .join(" ");
-  return `You cannot have these characters in a seed: ${shown}`;
-}
-
-function getReplayGameIdError(): string | undefined {
-  const text = getText("#create-game-replay-game-id");
-  if (text === "") {
-    return undefined;
-  }
-  if (!isPositiveInteger(text)) {
-    return "The game ID must be a positive number.";
-  }
-  if (getText("#create-game-seed") !== "") {
-    return "A replay uses its game's seed, so the custom seed must be blank.";
-  }
-  return undefined;
-}
-
-function getReplayTurnError(): string | undefined {
-  const text = getText("#create-game-replay-turn");
-  return getText("#create-game-replay-game-id") === ""
-    || text === ""
-    || isPositiveInteger(text)
-    ? undefined
-    : "The turn must be a positive number.";
-}
-
-function isPositiveInteger(text: string): boolean {
-  const value = /^\d+$/u.test(text) ? parseIntSafe(text) : undefined;
-  return value !== undefined && value > 0 && value <= MAX_INTEGER_FIELD;
-}
-
-/** Returns the base time in seconds, if it is valid. The form asks for minutes. */
-function getTimeBaseSeconds(): number | undefined {
-  const minutes = parseFloatSafe(getText("#createTableTimeBaseMinutes"));
-  return minutes === undefined || getTimeBaseError() !== undefined
-    ? undefined
-    : toSeconds(minutes);
-}
-
-/** Returns the time per turn, if it is valid. */
-function getTimePerTurnSeconds(): number | undefined {
-  const seconds = parseIntSafe(getText("#createTableTimePerTurnSeconds"));
-  return seconds === undefined || getTimePerTurnError() !== undefined
-    ? undefined
-    : seconds;
-}
-
-function getMaxPlayers(): CreateTable["maxPlayers"] {
-  const maxPlayers = parseIntSafe(getText("#createTableMaxPlayers"));
-  return isValidNumPlayers(maxPlayers)
-    ? maxPlayers
-    : defaultSettings.createTable.maxPlayers;
-}
-
-function getVariantName(): string {
-  // This is a hidden span field.
-  const value = $("#createTableVariant").text().trim();
-  return value === "" ? DEFAULT_VARIANT_NAME : value;
-}
-
-/** The options of the table that the form creates: without a clock unless it is timed. */
-function tableOptions({ options, timed }: CreateTable): GameOptions {
-  if (timed) {
-    return options;
-  }
-  const { timeControl: _, ...untimed } = options;
-  return untimed;
+/** Reads what the form shows. */
+function readValues(): CreateGameForm {
+  return {
+    name: getHtmlInputElement("#createTableName").value,
+    // This is a hidden span field.
+    variantName: $("#createTableVariant").text(),
+    maxPlayers: getHtmlInputElement("#createTableMaxPlayers").value,
+    password: getHtmlInputElement("#createTablePassword").value,
+    timed: isChecked(TIMED),
+    timeBaseMinutes: getHtmlInputElement("#createTableTimeBaseMinutes").value,
+    timePerTurnSeconds: getHtmlInputElement("#createTableTimePerTurnSeconds")
+      .value,
+    extraOptions: Object.fromEntries(
+      EXTRA_OPTION_NAMES.map((option) => [
+        option,
+        isChecked(EXTRA_OPTIONS[option]),
+      ]),
+    ) as Record<ExtraOption, boolean>,
+    seed: getHtmlInputElement("#create-game-seed").value,
+    replayGameId: getHtmlInputElement("#create-game-replay-game-id").value,
+    replayTurn: getHtmlInputElement("#create-game-replay-turn").value,
+  };
 }
 
 /** Reads the table that the form shows. An invalid time keeps the one that we remember. */
 function readForm(): CreateTable {
-  const remembered = rememberedTimeControl();
-  const timeControl = {
-    baseSeconds: getTimeBaseSeconds() ?? remembered.baseSeconds,
-    perTurnSeconds: getTimePerTurnSeconds() ?? remembered.perTurnSeconds,
-  };
-  const extraOptions = Object.fromEntries(
-    EXTRA_OPTION_NAMES.map((option) => [
-      option,
-      isChecked(EXTRA_OPTIONS[option]),
-    ]),
-  ) as Record<ExtraOption, boolean>;
-  return {
-    maxPlayers: getMaxPlayers(),
-    options: {
-      variantId: getVariant(getVariantName()).id,
-      timeControl,
-      ...extraOptions,
-    },
-    timed: isChecked(TIMED),
-  };
+  return readTable(readValues(), rememberedTimeControl());
 }
 
 function rememberForm() {
@@ -654,19 +515,18 @@ export function ready(): void {
   $("#create-game-replay-turn").val(replayTurn);
 
   // Setting the variant dropdown is more complicated than filling in a value.
-  const { options, timed } = formValues;
-  const timeControl = options.timeControl ?? DEFAULT_TIME_CONTROL;
-  readyVariant(options.variantId);
+  const form = formFromTable(
+    formValues,
+    readyVariant(formValues.options.variantId),
+  );
   // Do not trigger the "change" events, since they would remember the values in our settings.
-  $(TIMED).prop("checked", timed);
+  $(TIMED).prop("checked", form.timed);
   for (const option of EXTRA_OPTION_NAMES) {
-    $(EXTRA_OPTIONS[option]).prop("checked", options[option]);
+    $(EXTRA_OPTIONS[option]).prop("checked", form.extraOptions[option]);
   }
   updateCheckboxRows();
-  $("#createTableTimeBaseMinutes").val(
-    timeControl.baseSeconds / SECONDS_PER_MINUTE,
-  );
-  $("#createTableTimePerTurnSeconds").val(timeControl.perTurnSeconds);
+  $("#createTableTimeBaseMinutes").val(form.timeBaseMinutes);
+  $("#createTableTimePerTurnSeconds").val(form.timePerTurnSeconds);
 
   // Fill in the "Password" box. (This is not stored on the server so we have to retrieve the last
   // password from a cookie.)
@@ -677,7 +537,7 @@ export function ready(): void {
     $("#createTablePassword").val(password);
   }
 
-  $("#createTableMaxPlayers").val(formValues.maxPlayers);
+  $("#createTableMaxPlayers").val(form.maxPlayers);
   checkInputs();
 
   // Only show the extra options when one of them is selected or when the user asks for them.
@@ -724,7 +584,8 @@ function showExtraOptions(visible: boolean) {
     .text(visible ? "Hide Extra Options" : "Show Extra Options");
 }
 
-function readyVariant(variantId: number) {
+/** Shows a variant in the dropdowns, and returns its name. */
+function readyVariant(variantId: number): string {
   // Validate the variant that we got from the server.
   let variantName: string;
   if (doesVariantIdExist(variantId)) {
@@ -761,4 +622,6 @@ function readyVariant(variantId: number) {
     $("#create-game-variant-dropdown2-icon").show();
     $("#dice").show();
   }
+
+  return variantName;
 }

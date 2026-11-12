@@ -16,7 +16,7 @@ import { HISTORY_HASH, LOCAL_STORAGE_KEY, PATH } from "../constants.ts";
 import { globals } from "../Globals.ts";
 import * as modals from "../modals.ts";
 import { setBrowserAddressBarPath } from "../utils.ts";
-import { DEFAULT_TIME_CONTROL } from "./createGame.ts";
+import { DEFAULT_TIME_CONTROL } from "./createGameForm.ts";
 import { readDeal } from "./deal.ts";
 import { parseGameJson } from "./gameJson.ts";
 import * as history from "./history.ts";
