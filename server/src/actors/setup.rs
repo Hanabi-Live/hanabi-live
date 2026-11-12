@@ -138,17 +138,17 @@ pub(super) async fn load_replay(
     *options = historical.game.options.clone();
     extra.custom_seed = historical.seed;
     extra.custom_num_players = Some(options.num_players);
-    extra.custom_characters = Some(
-        historical
-            .game
-            .players
-            .iter()
-            .map(|p| hanabi_engine::AssignedCharacter {
-                name: p.character().map(|c| c.name().into()),
+    extra.custom_characters = historical
+        .game
+        .players
+        .iter()
+        .map(|p| {
+            p.character().map(|c| hanabi_engine::AssignedCharacter {
+                name: c.name().into(),
                 metadata: p.assigned_value(),
             })
-            .collect(),
-    );
+        })
+        .collect();
     extra.custom_actions.clone_from(&historical.game.actions);
     Ok(())
 }

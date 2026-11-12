@@ -66,11 +66,14 @@ fn parsed(action_type: RecordedActionType, target: i32, value: i32) -> Option<Pl
 fn action(action_type: RecordedActionType, target: i32, value: i32) -> PlayerAction {
     parsed(action_type, target, value).expect("a valid action")
 }
-fn assignments(first: &str, second: &str) -> Vec<AssignedCharacter> {
-    [first, second]
+/// A character for a seat that the test does not look at. No test plays from that seat's slot 1, so
+/// its rule never applies.
+const NEUTRAL: &str = "Hesitant";
+fn assignments(names: &[&str]) -> Vec<AssignedCharacter> {
+    names
         .iter()
         .map(|name| AssignedCharacter {
-            name: (!name.is_empty()).then(|| (*name).into()),
+            name: (*name).into(),
             metadata: None,
         })
         .collect()
@@ -158,15 +161,7 @@ fn termination_uses_requesting_character_and_explicit_timing() {
             detrimental_characters: true,
             ..Options::default()
         },
-        Some(
-            [None, Some("Contrarian"), Some("Stubborn")]
-                .iter()
-                .map(|s| AssignedCharacter {
-                    name: s.map(Into::into),
-                    metadata: None,
-                })
-                .collect(),
-        ),
+        Some(assignments(&[NEUTRAL, "Contrarian", "Stubborn"])),
     ))
     .unwrap();
     let ended = terminated(
@@ -278,7 +273,7 @@ fn privacy_is_historical_and_invalid_shadow_seats_are_omniscient() {
             detrimental_characters: true,
             ..Options::default()
         },
-        Some(assignments("Slow-Witted", "")),
+        Some(assignments(&["Slow-Witted", NEUTRAL])),
     ))
     .unwrap();
     let visible =
@@ -495,7 +490,7 @@ fn long_character_histories_are_bounded() {
                 detrimental_characters: true,
                 ..Options::default()
             },
-            Some(assignments("Genius", partner)),
+            Some(assignments(&["Genius", partner])),
         );
         input.deck = Some(deck);
         let mut state = create_game(input).unwrap();
@@ -549,7 +544,7 @@ fn all_or_nothing_eventually_exhausts_resources_without_final_round() {
             detrimental_characters: true,
             ..Options::default()
         },
-        Some(assignments("Slow-Witted", "")),
+        Some(assignments(&["Slow-Witted", NEUTRAL])),
     );
     let mut deck = create_shuffled_deck(get_variant("6 Suits").unwrap(), "p2v0s1");
     deck.sort_by_key(|c| (c.rank, c.suit_index));

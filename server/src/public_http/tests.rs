@@ -302,7 +302,7 @@ async fn public_database_routes_filters_privacy_exports_and_html() {
           CASE WHEN id=1 THEN 25 WHEN id=2 THEN 15 ELSE 0 END,10,CASE WHEN id=2 THEN 2 ELSE 1 END,
           '2026-01-01T00:00:00Z'::timestamptz,'2026-01-01T01:00:00Z'::timestamptz FROM generate_series(1,3) id;
         INSERT INTO game_participants(game_id,user_id,seat,character_id,assigned_metadata)
-          VALUES(1,1,0,NULL,NULL),(1,2,1,NULL,NULL),(2,1,0,NULL,NULL),(2,3,1,NULL,NULL),(3,1,0,0,1),(3,2,1,NULL,NULL);
+          VALUES(1,1,0,NULL,NULL),(1,2,1,NULL,NULL),(2,1,0,NULL,NULL),(2,3,1,NULL,NULL),(3,1,0,0,1),(3,2,1,19,NULL);
         INSERT INTO seeds(seed,num_games) VALUES('same',2),('custom-seed',1);
         INSERT INTO game_tags(game_id,user_id,tag) VALUES(1,1,'mine'),(1,2,'other'),(3,1,'mine');
         INSERT INTO game_actions(game_id,turn,type,target,value) VALUES(3,0,0,4,NULL),(3,1,4,0,1);
@@ -475,7 +475,7 @@ async fn public_database_routes_filters_privacy_exports_and_html() {
     assert_eq!(export["notes"], json!([["<note>"], []]));
     assert_eq!(
         export["characters"],
-        json!([{"type":"color","characterId":0,"color":1},{"type":"none"}])
+        json!([{"type":"color","characterId":0,"color":1},{"type":"plain","characterId":19}])
     );
     assert_eq!(export["options"]["variantName"], "6 Suits");
     let (_, body) = request(app.clone(), "/export/1").await;

@@ -377,6 +377,7 @@ const UPGRADES: &[(&str, &str, Upgrade)] = &[
     ("hanabi-live-11", "hanabi-live-12", clue_player_index),
     ("hanabi-live-12", "hanabi-live-13", consistent_wire_names),
     ("hanabi-live-13", "hanabi-live-14", suggested_deals),
+    ("hanabi-live-14", "hanabi-live-15", characters_with_names),
 ];
 
 /// Rewrites a table that an older server saved, one format at a time, into the current format.
@@ -774,6 +775,28 @@ fn suggested_deals(_: &mut Value, parts: &mut [(String, String)]) -> Result<()> 
         };
         settings.insert("deal".into(), deal);
     })
+}
+
+/// Format 14 could list a character without a name for a player who had none. Such a list came from
+/// a game without detrimental characters, which ignores it, so it is dropped.
+#[expect(
+    clippy::unnecessary_wraps,
+    reason = "every upgrade step has the `Upgrade` signature"
+)]
+fn characters_with_names(head: &mut Value, _: &mut [(String, String)]) -> Result<()> {
+    for path in [
+        "/extra/customCharacters",
+        "/phase/snapshot/game/setup/characters",
+    ] {
+        if let Some(characters) = head.pointer_mut(path)
+            && characters
+                .as_array()
+                .is_some_and(|list| list.iter().any(|c| c.get("name").is_none()))
+        {
+            *characters = Value::Null;
+        }
+    }
+    Ok(())
 }
 
 /// Rewrites a clue that a turn of format 3 gives.

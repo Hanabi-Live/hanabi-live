@@ -492,10 +492,9 @@ export const idleWarningSchema = z
 
 /**
  * A player's detrimental character, in a game and in the replay format, with the value that some
- * characters are assigned.
+ * characters are assigned. Every player has one when detrimental characters are on.
  */
 const characterAssignmentSchema = z.discriminatedUnion("type", [
-  z.strictObject({ type: z.literal("none") }).readonly(),
   z
     .strictObject({ characterId: characterIdSchema, type: z.literal("plain") })
     .readonly(),
@@ -568,7 +567,7 @@ const viewModeSchema = z.discriminatedUnion("type", [
 export const initSchema = z
   .strictObject({
     /**
-     * Each player's character, in seat order, when detrimental characters are on.
+     * Each player's character, in seat order, when detrimental characters are on. Empty otherwise.
      */
     characters: z.array(characterAssignmentSchema).max(6).readonly(),
     /**
@@ -1071,7 +1070,8 @@ export const replayGameSchema = z
   .strictObject({
     actions: z.array(replayGameActionSchema).max(512).readonly().optional(),
     /**
-     * One for each player when `detrimentalCharacters` is on, and empty otherwise.
+     * One for each player when `detrimentalCharacters` is on, and empty otherwise. Empty with the
+     * option on deals them from the seed.
      */
     characters: z.array(characterAssignmentSchema).max(6).readonly().optional(),
     /**

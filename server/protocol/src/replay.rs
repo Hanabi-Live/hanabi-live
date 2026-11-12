@@ -36,7 +36,8 @@ pub struct ReplayGame {
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     #[schemars(with = "Vec<Notes>", length(max = MAX_PLAYERS))]
     pub notes: Vec<Vec<String>>,
-    /// One for each player when `detrimentalCharacters` is on, and empty otherwise.
+    /// One for each player when `detrimentalCharacters` is on, and empty otherwise. Empty with the
+    /// option on deals them from the seed.
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     #[schemars(length(max = MAX_PLAYERS))]
     pub characters: Vec<CharacterAssignment>,

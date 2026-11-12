@@ -295,7 +295,7 @@ pub struct GameState {
 }
 
 /// A player's detrimental character, in a game and in the replay format, with the value that some
-/// characters are assigned.
+/// characters are assigned. Every player has one when detrimental characters are on.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
 #[serde(
     tag = "type",
@@ -304,9 +304,6 @@ pub struct GameState {
     deny_unknown_fields
 )]
 pub enum CharacterAssignment {
-    /// A player without a character: a test account in any seat but the first, so that tests with
-    /// detrimental characters are predictable.
-    None {},
     /// A character without an assigned value.
     Plain { character_id: CharacterId },
     /// A character that is assigned a clue color, such as Fuming. The color is an index into the
@@ -323,13 +320,11 @@ pub enum CharacterAssignment {
 }
 
 impl CharacterAssignment {
-    /// The character, if the player has one.
-    pub const fn character_id(self) -> Option<CharacterId> {
+    pub const fn character_id(self) -> CharacterId {
         match self {
-            Self::None {} => None,
             Self::Plain { character_id }
             | Self::Color { character_id, .. }
-            | Self::Rank { character_id, .. } => Some(character_id),
+            | Self::Rank { character_id, .. } => character_id,
         }
     }
 }
@@ -407,7 +402,7 @@ pub struct Init {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub finished_at: Option<Timestamp>,
     pub options: GameOptions,
-    /// Each player's character, in seat order, when detrimental characters are on.
+    /// Each player's character, in seat order, when detrimental characters are on. Empty otherwise.
     #[schemars(length(max = MAX_PLAYERS))]
     pub characters: Vec<CharacterAssignment>,
     /// The seat that paused the game. Absent when the game is not paused.

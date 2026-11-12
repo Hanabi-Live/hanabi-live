@@ -71,9 +71,7 @@ pub struct DeckCard {
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct AssignedCharacter {
-    /// Absent when the player has no character.
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub name: Option<String>,
+    pub name: String,
     /// Absent when the character has no assigned metadata.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub metadata: Option<i32>,
@@ -93,6 +91,8 @@ pub struct GameSetup {
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub seed: Option<String>,
     pub deck: Option<Vec<DeckCard>>,
+    /// Each player's character, when detrimental characters are on. Absent deals them from the
+    /// seed.
     pub characters: Option<Vec<AssignedCharacter>>,
     #[serde(default)]
     pub interpretation: Interpretation,

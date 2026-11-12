@@ -6,14 +6,18 @@ use hanabi_protocol::PANICKY_MAX_CLUES;
 use serde_json::json;
 
 /// A game of a variant with these characters and the values that they are assigned.
-fn game(variant: &str, characters: &[(Option<&str>, Option<i32>)]) -> EngineState {
+/// A character for a seat that the test does not look at. No test plays from that seat's slot 1, so
+/// its rule never applies.
+const NEUTRAL: (&str, Option<i32>) = ("Hesitant", None);
+
+fn game(variant: &str, characters: &[(&str, Option<i32>)]) -> EngineState {
     game_with_deck(variant, characters, None)
 }
 
 /// A game like `game`, with its own deck instead of a seed's when `deck` gives one.
 fn game_with_deck(
     variant: &str,
-    characters: &[(Option<&str>, Option<i32>)],
+    characters: &[(&str, Option<i32>)],
     deck: Option<Vec<DeckCard>>,
 ) -> EngineState {
     create_game(GameSetup {
@@ -32,7 +36,7 @@ fn game_with_deck(
             characters
                 .iter()
                 .map(|(name, metadata)| AssignedCharacter {
-                    name: name.map(Into::into),
+                    name: (*name).into(),
                     metadata: *metadata,
                 })
                 .collect(),
@@ -106,7 +110,7 @@ fn other_rank(state: &EngineState, target: usize, order: usize) -> usize {
 
 #[test]
 fn fuming_gives_only_rank_clues_and_their_color() {
-    let probe = game("No Variant", &[(None, None), (None, None)]);
+    let probe = game("No Variant", &[NEUTRAL, NEUTRAL]);
     let order = probe.players[1].hand[0];
     let (suit, _) = card(&probe, order);
     let other = probe.players[1]
@@ -115,10 +119,7 @@ fn fuming_gives_only_rank_clues_and_their_color() {
         .map(|o| card(&probe, *o).0)
         .find(|s| *s != suit)
         .expect("a card of another suit");
-    let state = game(
-        "No Variant",
-        &[(Some("Fuming"), Some(int(suit))), (None, None)],
-    );
+    let state = game("No Variant", &[("Fuming", Some(int(suit))), NEUTRAL]);
     assert!(refused(&state, color_clue(1, other)));
     accepted(&state, color_clue(1, suit));
     accepted(&state, rank_clue_on(&state, 1, order));
@@ -126,14 +127,11 @@ fn fuming_gives_only_rank_clues_and_their_color() {
 
 #[test]
 fn dumbfounded_gives_only_color_clues_and_their_rank() {
-    let probe = game("No Variant", &[(None, None), (None, None)]);
+    let probe = game("No Variant", &[NEUTRAL, NEUTRAL]);
     let order = probe.players[1].hand[0];
     let (suit, rank) = card(&probe, order);
     let other = other_rank(&probe, 1, order);
-    let state = game(
-        "No Variant",
-        &[(Some("Dumbfounded"), Some(rank)), (None, None)],
-    );
+    let state = game("No Variant", &[("Dumbfounded", Some(rank)), NEUTRAL]);
     assert!(refused(&state, rank_clue_on(&state, 1, other)));
     accepted(&state, rank_clue(1, rank));
     accepted(&state, color_clue(1, suit));
@@ -141,13 +139,10 @@ fn dumbfounded_gives_only_color_clues_and_their_rank() {
 
 #[test]
 fn inept_cannot_touch_cards_of_their_color() {
-    let probe = game("No Variant", &[(None, None), (None, None)]);
+    let probe = game("No Variant", &[NEUTRAL, NEUTRAL]);
     let order = probe.players[1].hand[0];
     let (suit, _) = card(&probe, order);
-    let state = game(
-        "No Variant",
-        &[(Some("Inept"), Some(int(suit))), (None, None)],
-    );
+    let state = game("No Variant", &[("Inept", Some(int(suit))), NEUTRAL]);
     let touches_suit = |rank: i32| {
         state.players[1]
             .hand
@@ -184,11 +179,7 @@ fn inept_cannot_touch_cards_that_their_color_touches_when_suits_and_colors_diffe
     let mut deck = vec![card(0, 1); 5];
     deck.extend([card(1, 1), card(1, 2), card(5, 4), card(2, 5), card(3, 5)]);
     deck.extend(vec![card(0, 2); 5]);
-    let state = game_with_deck(
-        variant,
-        &[(Some("Inept"), Some(int(pink))), (None, None)],
-        Some(deck),
-    );
+    let state = game_with_deck(variant, &[("Inept", Some(int(pink))), NEUTRAL], Some(deck));
     assert!(
         state.players[1]
             .hand
@@ -204,10 +195,10 @@ fn inept_cannot_touch_cards_that_their_color_touches_when_suits_and_colors_diffe
 
 #[test]
 fn awkward_cannot_touch_cards_of_their_rank() {
-    let probe = game("No Variant", &[(None, None), (None, None)]);
+    let probe = game("No Variant", &[NEUTRAL, NEUTRAL]);
     let order = probe.players[1].hand[0];
     let (suit, rank) = card(&probe, order);
-    let state = game("No Variant", &[(Some("Awkward"), Some(rank)), (None, None)]);
+    let state = game("No Variant", &[("Awkward", Some(rank)), NEUTRAL]);
     assert!(refused(&state, color_clue(1, suit)));
     assert!(refused(&state, rank_clue(1, rank)));
     let other = other_rank(&state, 1, order);
@@ -228,7 +219,7 @@ fn awkward_cannot_touch_cards_of_their_rank() {
 
 #[test]
 fn vindictive_must_clue_after_being_clued_this_round() {
-    let state = game("No Variant", &[(None, None), (Some("Vindictive"), None)]);
+    let state = game("No Variant", &[NEUTRAL, ("Vindictive", None)]);
     let order = state.players[1].hand[0];
     let clued = accepted(&state, rank_clue_on(&state, 1, order));
     let own = clued.players[1].hand[0];
@@ -244,7 +235,7 @@ fn vindictive_must_clue_after_being_clued_this_round() {
 
 #[test]
 fn mood_swings_alternates_clue_types() {
-    let state = game("No Variant", &[(Some("Mood Swings"), None), (None, None)]);
+    let state = game("No Variant", &[("Mood Swings", None), NEUTRAL]);
     let order = state.players[1].hand[0];
     let (suit, _) = card(&state, order);
     let first = accepted(&state, color_clue(1, suit));
@@ -257,7 +248,7 @@ fn mood_swings_alternates_clue_types() {
 
 #[test]
 fn insistent_clues_the_same_card_until_it_leaves_the_hand() {
-    let state = game("No Variant", &[(Some("Insistent"), None), (None, None)]);
+    let state = game("No Variant", &[("Insistent", None), NEUTRAL]);
     let order = state.players[1].hand[0];
     let first = accepted(&state, rank_clue_on(&state, 1, order));
     let other = other_rank(&first, 1, order);
@@ -273,7 +264,7 @@ fn insistent_clues_the_same_card_until_it_leaves_the_hand() {
 
 #[test]
 fn impulsive_plays_their_slot_one_card_after_it_is_clued() {
-    let state = game("No Variant", &[(None, None), (Some("Impulsive"), None)]);
+    let state = game("No Variant", &[NEUTRAL, ("Impulsive", None)]);
     let slot_one = *state.players[1].hand.last().expect("a hand");
     let clued = accepted(&state, rank_clue_on(&state, 1, slot_one));
     assert!(refused(&clued, discard(slot_one)));
@@ -287,7 +278,7 @@ fn impulsive_plays_their_slot_one_card_after_it_is_clued() {
 
 #[test]
 fn indolent_cannot_play_twice_in_a_row() {
-    let state = game("No Variant", &[(Some("Indolent"), None), (None, None)]);
+    let state = game("No Variant", &[("Indolent", None), NEUTRAL]);
     let played = accepted(&state, play(state.players[0].hand[0]));
     let back = accepted(&played, rank_clue_on(&played, 0, played.players[0].hand[0]));
     assert!(refused(&back, play(back.players[0].hand[0])));
@@ -301,10 +292,7 @@ fn indolent_cannot_play_twice_in_a_row() {
 
 #[test]
 fn genius_gives_a_rank_clue_to_the_same_player_after_a_color_clue() {
-    let state = game(
-        "No Variant",
-        &[(Some("Genius"), None), (None, None), (None, None)],
-    );
+    let state = game("No Variant", &[("Genius", None), NEUTRAL, NEUTRAL]);
     let order = state.players[1].hand[0];
     let first = accepted(&state, color_clue(1, card(&state, order).0));
     assert_eq!(first.active_player_index, 0, "Genius takes a second action");
@@ -320,7 +308,7 @@ fn genius_gives_a_rank_clue_to_the_same_player_after_a_color_clue() {
 
 #[test]
 fn panicky_discards_twice_when_clues_are_low() {
-    let mut state = game("No Variant", &[(Some("Panicky"), None), (None, None)]);
+    let mut state = game("No Variant", &[("Panicky", None), NEUTRAL]);
     // Spend clues until the Panicky player discards with few left.
     while state.active_player_index != 0
         || state.clue_tokens >= PANICKY_MAX_CLUES * clue_cost(&state)
@@ -340,7 +328,7 @@ fn panicky_discards_twice_when_clues_are_low() {
 
 #[test]
 fn stubborn_cannot_repeat_the_previous_players_kind_of_action() {
-    let state = game("No Variant", &[(None, None), (Some("Stubborn"), None)]);
+    let state = game("No Variant", &[NEUTRAL, ("Stubborn", None)]);
     let played = accepted(&state, play(state.players[0].hand[0]));
     assert!(refused(&played, play(played.players[1].hand[0])));
     accepted(&played, rank_clue_on(&played, 0, played.players[0].hand[0]));

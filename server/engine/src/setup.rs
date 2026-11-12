@@ -70,24 +70,11 @@ pub fn assign_characters(
     let mut rng = GoRandom::new(seed_hash(seed));
     let catalog = characters();
     let mut assigned: Vec<AssignedCharacter> = vec![];
-    for (index, player) in players.iter().enumerate() {
-        if [
-            "test", "test1", "test2", "test3", "test4", "test5", "test6", "test7",
-        ]
-        .contains(&player.as_str())
-        {
-            assigned.push(AssignedCharacter {
-                name: (index == 0).then(|| Character::Genius.name().into()),
-                metadata: None,
-            });
-            continue;
-        }
+    for _ in players {
         let character = loop {
             let candidate = &catalog[rng.index(catalog.len())];
             if (players.len() != MIN_PLAYERS || !candidate.not_two_player)
-                && assigned
-                    .iter()
-                    .all(|c| c.name.as_deref() != Some(candidate.name.as_str()))
+                && assigned.iter().all(|c| c.name != candidate.name)
             {
                 break candidate;
             }
@@ -106,7 +93,7 @@ pub fn assign_characters(
             _ => None,
         };
         assigned.push(AssignedCharacter {
-            name: Some(character.name.clone()),
+            name: character.name.clone(),
             metadata,
         });
     }

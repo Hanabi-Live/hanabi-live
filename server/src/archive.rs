@@ -251,6 +251,7 @@ pub(crate) async fn replay(
     );
     let rows = archive.players;
     ensure!(rows.len() == options.num_players, "Invalid replay roster");
+    let detrimental = options.detrimental_characters;
     let mut players = vec![];
     let mut characters = vec![];
     let mut notes = vec![vec![String::new(); deck.len() + variant.suits.len()]; rows.len()];
@@ -265,19 +266,20 @@ pub(crate) async fn replay(
             bot: false,
             stats: zero_stats(),
         });
-        let character = r
-            .character_id
-            .map(|id| {
-                hanabi_engine::characters()
-                    .iter()
-                    .find(|c| i16::try_from(c.id.0).ok() == Some(id))
-                    .context("Unknown stored character")
-            })
-            .transpose()?;
-        characters.push(AssignedCharacter {
-            name: character.map(|c| c.name.clone()),
-            metadata: r.assigned_metadata.map(i32::from),
-        });
+        if detrimental {
+            let character = r
+                .character_id
+                .and_then(|id| {
+                    hanabi_engine::characters()
+                        .iter()
+                        .find(|c| i16::try_from(c.id.0).ok() == Some(id))
+                })
+                .context("Missing or unknown stored character")?;
+            characters.push(AssignedCharacter {
+                name: character.name.clone(),
+                metadata: r.assigned_metadata.map(i32::from),
+            });
+        }
     }
     for note in archive.notes {
         let cell = notes
@@ -296,7 +298,7 @@ pub(crate) async fn replay(
             player_names: players.iter().map(|p| p.name.clone()).collect(),
             seed: Some(row.seed.clone()),
             deck: Some(deck),
-            characters: Some(characters),
+            characters: detrimental.then_some(characters),
             interpretation: Interpretation::Recorded,
         },
         &archive.actions,

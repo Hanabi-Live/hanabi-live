@@ -95,12 +95,9 @@ pub(super) async fn export(
             };
             let character = p
                 .character_id
-                .map(|character| {
-                    catalog::character(i64::from(character))
-                        .and_then(hanabi_engine::Character::from_name)
-                        .ok_or_else(invalid)
-                })
-                .transpose()?;
+                .and_then(|character| catalog::character(i64::from(character)))
+                .and_then(hanabi_engine::Character::from_name)
+                .ok_or_else(invalid)?;
             characters.push(
                 crate::game::character_assignment(character, p.assigned_metadata.map(i32::from))
                     .map_err(|_| invalid())?,

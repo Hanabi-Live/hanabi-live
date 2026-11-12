@@ -87,29 +87,24 @@ pub fn create_game(setup: GameSetup) -> Result<EngineState> {
                 && matches!(c.rank, MIN_RANK..=MAX_RANK | START_CARD_RANK)),
         "The prepared deck contains invalid card identities."
     );
-    let assigned = if setup.options.detrimental_characters {
-        match setup.characters {
+    // Every player has a character when detrimental characters are on, and none otherwise.
+    let assigned: Vec<Option<AssignedCharacter>> = if setup.options.detrimental_characters {
+        let characters = match setup.characters {
             Some(c) => c,
             None => assign_characters(
                 variant,
                 setup.seed.as_deref().unwrap_or(UNSEEDED),
                 &setup.player_names,
             )?,
-        }
+        };
+        ensure!(
+            characters.len() == setup.player_names.len(),
+            "Invalid prepared character assignments."
+        );
+        characters.into_iter().map(Some).collect()
     } else {
-        setup
-            .player_names
-            .iter()
-            .map(|_| AssignedCharacter {
-                name: None,
-                metadata: None,
-            })
-            .collect()
+        vec![None; setup.player_names.len()]
     };
-    ensure!(
-        assigned.len() == setup.player_names.len(),
-        "Invalid prepared character assignments."
-    );
     let players = setup
         .player_names
         .into_iter()
@@ -117,11 +112,9 @@ pub fn create_game(setup: GameSetup) -> Result<EngineState> {
         .enumerate()
         .map(|(index, (name, c))| {
             let character_state = c
-                .name
-                .as_deref()
-                .map(|name| {
+                .map(|c| {
                     let character =
-                        Character::from_name(name).context("Unknown character assignment.")?;
+                        Character::from_name(&c.name).context("Unknown character assignment.")?;
                     CharacterState::new(character, c.metadata, variant)
                 })
                 .transpose()?;

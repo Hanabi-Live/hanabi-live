@@ -1306,6 +1306,34 @@ mod tests {
         Ok(())
     }
     #[test]
+    fn checkpoints_of_format_14_drop_characters_without_names() -> Result<()> {
+        let mut table = replayed()?;
+        let expected = serde_json::to_value(&table)?;
+        let (encoded, _) = crate::checkpoint::encode(&mut table, &SavedParts::default())?;
+        let mut head: Value = serde_json::from_str(&encoded.head)?;
+        head["format"] = json!("hanabi-live-14");
+        head["extra"]["customCharacters"] = json!([{}, {}]);
+        let parts = encoded
+            .changes
+            .written
+            .iter()
+            .map(|(key, part)| {
+                let mut value: Value = serde_json::from_str(part)?;
+                if key == "game/start" {
+                    value["setup"]["characters"] = json!([{}, {}]);
+                }
+                Ok((key.clone(), value.to_string()))
+            })
+            .collect::<Result<Vec<_>>>()?;
+        ensure!(
+            parts.iter().any(|(key, _)| key == "game/start"),
+            "The table has no game start"
+        );
+        let decoded = crate::checkpoint::decode(&head.to_string(), &parts)?;
+        ensure!(serde_json::to_value(&decoded)? == expected);
+        Ok(())
+    }
+    #[test]
     fn checkpoints_of_format_9_use_the_older_wire_names() -> Result<()> {
         let mut table = replayed()?;
         table.chat = suggested().chat;

@@ -566,8 +566,8 @@ function initStateStore(data: InitData) {
   };
 
   // The list is empty unless detrimental characters are on.
-  let characterAssignments = data.characters.map((character) =>
-    character.type === "none" ? undefined : character.characterId,
+  let characterAssignments = data.characters.map(
+    (character) => character.characterId,
   ) as Tuple<number | undefined, NumPlayers> | [];
 
   if (characterAssignments.length === 0) {

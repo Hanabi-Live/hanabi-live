@@ -530,7 +530,10 @@ impl TableActor {
                         .players
                         .iter()
                         .map(|p| {
-                            crate::game::character_assignment(p.character(), p.assigned_value())
+                            crate::game::character_assignment(
+                                p.character().context("A player has no character")?,
+                                p.assigned_value(),
+                            )
                         })
                         .collect::<anyhow::Result<_>>()?
                 } else {

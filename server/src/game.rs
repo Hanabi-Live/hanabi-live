@@ -303,12 +303,9 @@ pub fn catalog_character(
 /// The wire form of a character and the value that it was assigned, which the character's kind
 /// makes a clue color or a rank.
 pub fn character_assignment(
-    character: Option<Character>,
+    character: Character,
     assigned: Option<i32>,
 ) -> Result<CharacterAssignment> {
-    let Some(character) = character else {
-        return Ok(CharacterAssignment::None {});
-    };
     let character_id = catalog_character(character)?.id;
     let missing = || format!("{} has no valid assigned value", character.name());
     Ok(match character.assigned_value_type() {

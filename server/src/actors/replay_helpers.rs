@@ -33,7 +33,6 @@ pub fn parse(input: &ReplayGame) -> CommandResult<Imported> {
     );
     let mut options = crate::model::engine_options(&input.options);
     let variant = hanabi_engine::get_variant(&options.variant_name)?;
-    let has_characters = options.detrimental_characters || !input.characters.is_empty();
     let mut players = input.player_names.clone();
     if players.is_empty() {
         let pattern = regex!(crate::game::SEED_PATTERN);
@@ -94,15 +93,13 @@ pub fn parse(input: &ReplayGame) -> CommandResult<Imported> {
         seeded.as_ref().is_none_or(|d| *d == deck),
         "The deck does not match the seed"
     );
+    ensure_or_reject!(
+        options.detrimental_characters || input.characters.is_empty(),
+        "Characters need the detrimental characters option"
+    );
     let mut characters: Vec<AssignedCharacter> = vec![];
     for &assignment in &input.characters {
-        let Some(id) = assignment.character_id() else {
-            characters.push(AssignedCharacter {
-                name: None,
-                metadata: None,
-            });
-            continue;
-        };
+        let id = assignment.character_id();
         let name = hanabi_engine::characters()
             .iter()
             .find(|known| known.id == id)
@@ -124,13 +121,10 @@ pub fn parse(input: &ReplayGame) -> CommandResult<Imported> {
             (_, Some(ClueType::Rank)) => reject!("{name} must be assigned a rank."),
             (_, None) => reject!("{name} is not assigned a color or a rank."),
         };
-        characters.push(AssignedCharacter {
-            name: Some(name),
-            metadata,
-        });
+        characters.push(AssignedCharacter { name, metadata });
     }
     ensure_or_reject!(
-        !has_characters || characters.len() == players.len(),
+        characters.is_empty() || characters.len() == players.len(),
         "The amount of characters must match the number of players"
     );
     let actions: Vec<RecordedAction> = input.actions.clone();
@@ -295,13 +289,14 @@ mod tests {
             .map(hanabi_engine::EnginePlayer::assigned_value)
             .collect();
         assert_eq!(assigned, [Some(4), Some(2)]);
-        game(json!([{"type": "plain", "characterId": 4}, {"type": "none"}])).unwrap();
+        game(json!([{"type": "plain", "characterId": 4}, {"type": "plain", "characterId": 19}]))
+            .unwrap();
         for characters in [
             // No Variant has 5 clue colors.
-            json!([{"type": "color", "characterId": 0, "color": 5}, {"type": "none"}]),
-            json!([{"type": "rank", "characterId": 0, "rank": 2}, {"type": "none"}]),
-            json!([{"type": "plain", "characterId": 1}, {"type": "none"}]),
-            json!([{"type": "color", "characterId": 4, "color": 0}, {"type": "none"}]),
+            json!([{"type": "color", "characterId": 0, "color": 5}, {"type": "plain", "characterId": 19}]),
+            json!([{"type": "rank", "characterId": 0, "rank": 2}, {"type": "plain", "characterId": 19}]),
+            json!([{"type": "plain", "characterId": 1}, {"type": "plain", "characterId": 19}]),
+            json!([{"type": "color", "characterId": 4, "color": 0}, {"type": "plain", "characterId": 19}]),
         ] {
             assert!(game(characters.clone()).is_err(), "{characters}");
         }
