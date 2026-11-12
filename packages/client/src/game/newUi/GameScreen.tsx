@@ -134,6 +134,24 @@ interface Drag {
   readonly zone: DropZone | undefined;
 }
 
+/**
+ * How long a card that the player dropped on the play stacks or the discard pile waits there for
+ * the move to arrive. If the move does not arrive, such as when the server refuses it, the card
+ * goes back to the hand.
+ */
+const DROP_WAIT_MILLISECONDS = 3000;
+
+/** Where the card under the pointer sits, as the drag draws it (before its slight tilt). */
+function getDropRect(drag: Drag, cardWidth: number): DOMRect {
+  const height = cardWidth * CARD_HEIGHT_PER_WIDTH;
+  return new DOMRect(
+    drag.x - cardWidth / 2,
+    drag.y - height / 2,
+    cardWidth,
+    height,
+  );
+}
+
 /** Whether a key press goes into a text box, such as the chat, rather than to the game. */
 function isTyping(target: EventTarget | null): boolean {
   return (
@@ -567,6 +585,20 @@ export function GameScreen({
   const [menuCard, setMenuCard] = useState<CardOrder>();
   const [hoveredCard, setHoveredCard] = useState<CardOrder>();
   const [drag, setDrag] = useState<Drag>();
+  // A card that the player dropped stays where it was dropped until its move arrives, and then the
+  // move starts from there, not from the hand.
+  const [drop, setDrop] = useState<Drag>();
+  useEffect(() => {
+    if (drop === undefined) {
+      return undefined;
+    }
+    const timeout = setTimeout(() => {
+      setDrop(undefined);
+    }, DROP_WAIT_MILLISECONDS);
+    return () => {
+      clearTimeout(timeout);
+    };
+  }, [drop]);
   const [editingCards, setEditingCards] = useState(false);
 
   const pendingDrag = useRef<{ order: CardOrder; x: number; y: number }>(
@@ -746,9 +778,12 @@ export function GameScreen({
       // The click that follows the drag must not open the card's menu.
       justDragged.current = true;
       const zone = zoneAt(event.clientX, event.clientY);
+      const dropped = { ...current, x: event.clientX, y: event.clientY, zone };
       if (zone === "play") {
+        setDrop(dropped);
         sendAction({ type: "play", order: current.order });
       } else if (zone === "discard" && canDiscardNow()) {
+        setDrop(dropped);
         sendAction({ type: "discard", order: current.order });
       }
     }
@@ -815,12 +850,24 @@ export function GameScreen({
     }
 
     const now = performance.now();
+    let startPositions = previous.settledPositions;
+    // A card that the player dropped starts its move from where it was dropped.
+    if (drop !== undefined) {
+      const dropped = startPositions.get(drop.order.toString());
+      if (dropped !== undefined) {
+        startPositions = new Map(startPositions).set(drop.order.toString(), {
+          ...dropped,
+          rect: getDropRect(drop, handCardWidth),
+        });
+      }
+      setDrop(undefined);
+    }
     const move =
       previous.move !== undefined
       && now - previous.move.startedAt <= MOVE_BATCH_MILLISECONDS
         ? previous.move
         : {
-            startPositions: previous.settledPositions,
+            startPositions,
             startState: previous.shownState,
             startedAt: now,
           };
@@ -1060,12 +1107,13 @@ export function GameScreen({
     }
   }
 
+  const ghost = drag ?? drop;
   const draggedView =
-    drag === undefined
+    ghost === undefined
       ? undefined
       : seats
           .find((seat) => seat.acting)
-          ?.cards.find((card) => card.order === drag.order);
+          ?.cards.find((card) => card.order === ghost.order);
 
   const pausedBy =
     state.pause.pausingPlayerIndex === undefined
@@ -1158,7 +1206,7 @@ export function GameScreen({
                 }
                 clueTarget={clueTarget}
                 colorblindMode={settings.colorblindMode}
-                draggedCard={drag?.order}
+                draggedCard={ghost?.order}
                 empathyToggled={empathyToggled}
                 emptyClueTarget={
                   !previewing
@@ -1325,13 +1373,13 @@ export function GameScreen({
         unread={globals.lobby.chatUnread}
       />
 
-      {drag !== undefined && draggedView !== undefined && (
+      {ghost !== undefined && draggedView !== undefined && (
         <div
           aria-hidden="true"
           className="tw:pointer-events-none tw:fixed tw:z-50 tw:rotate-6 tw:opacity-95 tw:drop-shadow-2xl"
           style={{
-            left: drag.x - handCardWidth / 2,
-            top: drag.y - (handCardWidth * CARD_HEIGHT_PER_WIDTH) / 2,
+            left: getDropRect(ghost, handCardWidth).left,
+            top: getDropRect(ghost, handCardWidth).top,
           }}
         >
           <CardFace
