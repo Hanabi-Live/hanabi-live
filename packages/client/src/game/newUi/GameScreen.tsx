@@ -57,7 +57,12 @@ import {
 } from "./Hands.tsx";
 import { ReplayBar } from "./ReplayBar.tsx";
 import type { DiscardView, StackView, ZoneState } from "./SharedCards.tsx";
-import { DiscardPile, PlayArea, TableTokens } from "./SharedCards.tsx";
+import {
+  DECK_PILE_DEPTH,
+  DiscardPile,
+  PlayArea,
+  TableTokens,
+} from "./SharedCards.tsx";
 import { StatusStrip } from "./StatusStrip.tsx";
 import { ViewAsMenu } from "./ViewAsMenu.tsx";
 import type { CardPositions, MoveEffects } from "./cardMotion.ts";
@@ -129,7 +134,7 @@ const HAND_ROW_GAP = 8;
 /**
  * The height in the play area that is not cards: its padding, its heading, and the deck's label.
  */
-const PLAY_AREA_OTHER_HEIGHT = 130;
+const PLAY_AREA_OTHER_HEIGHT = 130 + DECK_PILE_DEPTH;
 const PLAY_STACK_GAP = 8;
 
 type DropZone = "play" | "discard";

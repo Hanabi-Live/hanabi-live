@@ -45,6 +45,8 @@ of the repository.
 - Notes and table names now count down the characters left near their limit, as
   chat messages do, and are not saved when they are too long. Before, the server
   cut them short.
+- In the new game screen, the deck is a pile of face-down cards that gets
+  thinner as it runs low.
 
 ## November 11th, 2026
 

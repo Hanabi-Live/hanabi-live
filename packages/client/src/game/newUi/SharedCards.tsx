@@ -168,29 +168,119 @@ export const PlayArea = forwardRef<
           </div>
           <ZoneLabel state={zoneState} text="Play" unavailableText="Play" />
         </section>
-        <div
-          aria-label={`${cardsInDeck} cards in the deck`}
-          className="tw:flex tw:flex-col tw:items-center tw:gap-1.5"
-          role="img"
-        >
-          <div
-            className="tw:flex tw:items-center tw:justify-center tw:rounded-[10px] tw:bg-game-raised tw:ring-1 tw:ring-game-line"
-            data-deck
-            style={{ width: cardWidth, height }}
-          >
-            <span
-              className="tw:font-extrabold tw:text-game-text"
-              style={{ fontSize: cardWidth * 0.5 }}
-            >
-              {cardsInDeck}
-            </span>
-          </div>
-          <span className="tw:text-[13px] tw:text-game-muted">In deck</span>
-        </div>
+        <Deck cardsInDeck={cardsInDeck} cardWidth={cardWidth} />
       </div>
     );
   },
 );
+
+/**
+ * How far each card under the top of the deck shows below and to the right of the card above it, in
+ * CSS pixels.
+ */
+const DECK_EDGE_OFFSET = 2;
+
+/**
+ * How many card edges show under the top of the deck, by the cards left: the most at the start,
+ * fewer as it runs low, and none for the last card. Each entry is the fewest cards for its edges.
+ */
+const DECK_EDGES = [
+  { minCards: 20, edges: 3 },
+  { minCards: 8, edges: 2 },
+  { minCards: 2, edges: 1 },
+] as const;
+
+/** The most room that the edges under the top of the deck take, below and to the right of it. */
+export const DECK_PILE_DEPTH = DECK_EDGES[0].edges * DECK_EDGE_OFFSET;
+
+function getDeckEdges(cardsInDeck: number): number {
+  return DECK_EDGES.find((entry) => cardsInDeck >= entry.minCards)?.edges ?? 0;
+}
+
+/**
+ * The back of a card: dark ink with a faint diagonal lattice inside a thin frame, so that the deck
+ * reads as a pile of face-down cards, not as one more slot on the table. Each card has a light
+ * edge, so that the cards under the top one show as a stack.
+ */
+const CARD_BACK_STYLE = {
+  backgroundColor: "var(--card-ink)",
+  backgroundImage: [
+    "repeating-linear-gradient(45deg, rgb(255 255 255 / 7%) 0 1px, transparent 1px 7px)",
+    "repeating-linear-gradient(-45deg, rgb(255 255 255 / 7%) 0 1px, transparent 1px 7px)",
+  ].join(", "),
+} as const;
+
+/**
+ * The deck: a pile of face-down cards with the number left on top, which gets thinner as it runs
+ * low. Once it is empty, it is an empty slot, like an empty play stack. New cards are drawn from it
+ * (see "cardMotion.ts").
+ */
+function Deck({
+  cardsInDeck,
+  cardWidth,
+}: {
+  readonly cardsInDeck: number;
+  readonly cardWidth: number;
+}): React.JSX.Element {
+  const height = cardWidth * CARD_HEIGHT_PER_WIDTH;
+  const edges = getDeckEdges(cardsInDeck);
+  const empty = cardsInDeck === 0;
+
+  return (
+    <div
+      aria-label={`${cardsInDeck} cards in the deck`}
+      className="tw:flex tw:flex-col tw:items-center tw:gap-1.5"
+      role="img"
+    >
+      <div
+        className="tw:relative"
+        style={{
+          width: cardWidth + DECK_PILE_DEPTH,
+          height: height + DECK_PILE_DEPTH,
+        }}
+      >
+        {Array.from({ length: edges }, (_, i) => {
+          const offset = (edges - i) * DECK_EDGE_OFFSET;
+          return (
+            <div
+              className="tw:absolute tw:rounded-[10px] tw:ring-1 tw:ring-game-text/80"
+              // The cards under the top one only show their edges, so they keep their order.
+              key={offset}
+              style={{
+                ...CARD_BACK_STYLE,
+                width: cardWidth,
+                height,
+                left: offset,
+                top: offset,
+              }}
+            />
+          );
+        })}
+        <div
+          className={`tw:absolute tw:top-0 tw:left-0 tw:box-border tw:flex tw:items-center tw:justify-center tw:rounded-[10px] ${
+            empty
+              ? "tw:border-2 tw:border-dashed tw:border-game-line tw:opacity-60"
+              : "tw:shadow-[inset_0_0_0_3px_var(--card-ink),inset_0_0_0_4px_rgb(255_255_255/18%)] tw:ring-1 tw:ring-game-text/80"
+          }`}
+          data-deck
+          style={{
+            ...(!empty && CARD_BACK_STYLE),
+            width: cardWidth,
+            height,
+          }}
+        >
+          <span
+            className={`tw:font-extrabold ${empty ? "tw:text-game-muted" : "tw:text-white"}`}
+            style={{ fontSize: cardWidth * 0.5 }}
+          >
+            {cardsInDeck}
+          </span>
+        </div>
+      </div>
+      <span className="tw:text-[13px] tw:text-game-muted">In deck</span>
+    </div>
+  );
+}
 
 /**
  * The discarded cards, one row for each suit, where the player drops a card to discard it. Each
