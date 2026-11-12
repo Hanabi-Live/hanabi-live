@@ -1,14 +1,28 @@
 version: 2
+
+# Update every ecosystem in one weekly pull request.
+multi-ecosystem-groups:
+  dependencies:
+    schedule:
+      interval: weekly
+
 updates:
   - package-ecosystem: github-actions
     directory: /
-    schedule:
-      interval: weekly
+    patterns: ["*"]
+    multi-ecosystem-group: dependencies
+  - package-ecosystem: bun
+    directory: /
+    patterns: ["*"]
+    multi-ecosystem-group: dependencies
+    # Keep in sync with the version locks in "package-metadata.json".
+    ignore:
+      - dependency-name: typescript
   - package-ecosystem: cargo
     directory: /server
-    schedule:
-      interval: weekly
+    patterns: ["*"]
+    multi-ecosystem-group: dependencies
   - package-ecosystem: rust-toolchain
     directory: /
-    schedule:
-      interval: weekly
+    patterns: ["*"]
+    multi-ecosystem-group: dependencies
