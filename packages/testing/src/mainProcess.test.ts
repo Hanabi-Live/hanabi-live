@@ -406,6 +406,7 @@ databaseDescribe("compiled application entry point (rust)", () => {
         if (signal === undefined && domain === "localhost") {
           replacement.send("tableTerminateVote", {
             tableId,
+            voted: true,
           });
           await replacement.receive(
             "votes",
@@ -414,6 +415,7 @@ databaseDescribe("compiled application entry point (rust)", () => {
           );
           bob.send("tableTerminateVote", {
             tableId,
+            voted: true,
           });
         } else {
           replacement.send("tableTerminate", {

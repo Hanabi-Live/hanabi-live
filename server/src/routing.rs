@@ -48,12 +48,12 @@ pub fn route(message: &ClientMessage) -> Route {
         | M::IdleReset(r)
         | M::TableUnattend(r)
         | M::TableTerminate(r)
-        | M::TableTerminateVote(r)
         | M::GameInitLoad(r)
         | M::GameStateLoad(r)
         | M::TagRemoveAll(r)
         | M::GameLoaded(r) => r.table_id,
         M::TableJoin(r) => r.table_id,
+        M::TableTerminateVote(r) => r.table_id,
         M::TableSetOwner(r) => r.table_id,
         M::TableStart(r) => r.table_id,
         M::TableRestart(r) => r.table_id,

@@ -349,7 +349,6 @@ macro_rules! wire_string {
 wire_string! {
     /// A username that the server sends. Requests carry plain strings instead, as the `requests`
     /// module explains.
-    #[derive(Default)]
     Username
 }
 

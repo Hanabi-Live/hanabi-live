@@ -36,8 +36,8 @@ impl TableActor {
     ) -> CommandResult<()> {
         match message {
             ClientMessage::PlayerAction(r) => self.action(session, r.action).await,
-            ClientMessage::TableTerminate(_) => self.terminate(session, false).await,
-            ClientMessage::TableTerminateVote(_) => self.terminate(session, true).await,
+            ClientMessage::TableTerminate(_) => self.terminate(session, None).await,
+            ClientMessage::TableTerminateVote(r) => self.terminate(session, Some(r.voted)).await,
             ClientMessage::Pause(r) => self.pause(session, PauseChange::Paused(r.paused)).await,
             ClientMessage::PauseQueue(r) => {
                 self.pause(session, PauseChange::Queued(r.queued)).await
@@ -234,7 +234,13 @@ impl TableActor {
                 .push((a.session.clone(), self.pause_message(s, &a.session)));
         }
     }
-    async fn terminate(&mut self, session: Arc<Session>, vote: bool) -> CommandResult<()> {
+    /// Ends the game now, or with a `ballot`, casts or takes back the sender's vote to end it.
+    async fn terminate(
+        &mut self,
+        session: Arc<Session>,
+        ballot: Option<bool>,
+    ) -> CommandResult<()> {
+        let vote = ballot.is_some();
         ensure_or_reject!(self.attending(&session), "You are not attending");
         let seat = self.seat(&session)?;
         let from = self.live()?.game.events.len();
@@ -242,8 +248,8 @@ impl TableActor {
         let s = game_mut(&mut next)?;
         let mut votes = None;
         let mut terminate = !vote;
-        if vote {
-            s.votes[seat] = !s.votes[seat];
+        if let Some(voted) = ballot {
+            s.votes[seat] = voted;
             let seats = s
                 .votes
                 .iter()

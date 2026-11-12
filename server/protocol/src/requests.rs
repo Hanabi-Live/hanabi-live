@@ -222,6 +222,14 @@ pub struct PlayerActionRequest {
     pub action: PlayerAction,
 }
 
+/// Casts or takes back the sender's vote to end the game.
+#[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct TableTerminateVoteRequest {
+    pub table_id: TableId,
+    pub voted: bool,
+}
+
 /// Pauses or unpauses a timed game.
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]

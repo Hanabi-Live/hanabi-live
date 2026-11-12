@@ -3428,9 +3428,14 @@ async fn saved_actions_store_null_for_a_missing_target_or_value() -> Result<()> 
             json!({"tableId":id,"action":{"type":"play","order":card}}),
         )
         .await?;
-        for index in 0..2 {
-            h.send(index, "tableTerminateVote", json!({"tableId":id}))
-                .await?;
+        // A repeated vote stays cast, so the second player's vote still ends the game.
+        for index in [0, 0, 1] {
+            h.send(
+                index,
+                "tableTerminateVote",
+                json!({"tableId":id,"voted":true}),
+            )
+            .await?;
         }
         h.barrier(0).await?;
         let actions = sqlx::query!(

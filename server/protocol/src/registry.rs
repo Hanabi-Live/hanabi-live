@@ -46,7 +46,7 @@ macro_rules! client_contracts {
             TableSpectate "tableSpectate" => TableSpectateRequest;
             TableUnattend "tableUnattend" => TableRef;
             TableTerminate "tableTerminate" => TableRef;
-            TableTerminateVote "tableTerminateVote" => TableRef;
+            TableTerminateVote "tableTerminateVote" => TableTerminateVoteRequest;
             GameInitLoad "gameInitLoad" => TableRef;
             GameStateLoad "gameStateLoad" => TableRef;
             GameLoaded "gameLoaded" => TableRef;

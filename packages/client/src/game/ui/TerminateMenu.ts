@@ -174,7 +174,7 @@ export class TerminateMenu extends Konva.Group {
     this.voteName = vote.nameText;
     this.voteDetail = vote.detailText;
     vote.group.on("click tap", () => {
-      terminationVotes.toggleVote();
+      terminationVotes.setVote(globals.terminationVotes?.voted !== true);
       this.close();
     });
 

@@ -1,6 +1,6 @@
 import type { ServerCommandData } from "@hanabi-live/data";
 import { useEffect, useRef, useState } from "react";
-import { endNow, toggleVote, votersText } from "../ui/terminationVotes.ts";
+import { endNow, setVote, votersText } from "../ui/terminationVotes.ts";
 
 /** Our own vote to end the game. The server does not tell us how the others voted. */
 type Votes = NonNullable<ServerCommandData["gameState"]["votes"]>;
@@ -95,7 +95,7 @@ export function EndGameMenu({
             className={`${ITEM_CLASS} tw:bg-transparent tw:text-game-text tw:hover:bg-white/10`}
             onClick={() => {
               setOpen(false);
-              toggleVote();
+              setVote(!voted);
             }}
             role="menuitem"
             type="button"

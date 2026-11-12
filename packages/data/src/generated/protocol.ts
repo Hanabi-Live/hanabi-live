@@ -1547,6 +1547,13 @@ export const tableSuggestionSchema = z
     username: z.string().min(1),
   })
   .readonly();
+
+/**
+ * Casts or takes back the sender's vote to end the game.
+ */
+export const tableTerminateVoteRequestSchema = z
+  .strictObject({ tableId: tableIdSchema, voted: z.boolean() })
+  .readonly();
 export const tableUpdateRequestSchema = z
   .strictObject({ settings: tableSettingsSchema, tableId: tableIdSchema })
   .readonly();
@@ -1691,7 +1698,7 @@ export const CLIENT_COMMAND_SCHEMAS = {
   tableStart: tableStartRequestSchema,
   tableSuggest: tableSuggestRequestSchema,
   tableTerminate: tableRefSchema,
-  tableTerminateVote: tableRefSchema,
+  tableTerminateVote: tableTerminateVoteRequestSchema,
   tableUnattend: tableRefSchema,
   tableUpdate: tableUpdateRequestSchema,
   tagAdd: tagRequestSchema,
