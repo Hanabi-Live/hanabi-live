@@ -29,108 +29,24 @@
   max-width: 64em;
 }
 
-.resources ul {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-}
-
-.resource-list {
-  display: grid;
-  gap: 0.75em;
-  grid-template-columns: repeat(auto-fill, minmax(22em, 1fr));
-}
-
-/* A panel that holds a group of settings or one resource. */
-.lobby-rows,
-.resource {
-  background-color: var(--surface-panel);
-  border: 1px solid var(--border-panel);
-  border-radius: var(--radius);
-}
-
-/* Each resource is one link; the title's link covers the whole element. */
-.resource {
-  align-items: flex-start;
-  display: flex;
-  gap: 1em;
-  margin: 0;
-  padding: 0.9em 1em;
-  position: relative;
-  transition:
-    background-color 0.15s ease,
-    border-color 0.15s ease;
-}
-
-.resource:hover,
-.resource:focus-within {
-  background-color: var(--surface);
-  border-color: var(--green);
-}
-
-.resource-body {
-  min-width: 0;
-}
-
-.resource-title {
-  border-bottom: 0;
-  color: var(--text-strong);
-  font-weight: 400;
-  text-decoration: none;
-}
-
-.resource-title::after {
-  content: "";
-  inset: 0;
-  position: absolute;
-}
-
-.resource:hover .resource-title,
-.resource:focus-within .resource-title {
-  color: var(--green-text);
-}
-
-.resource p {
-  font-size: 0.9em;
-  line-height: 1.5em;
-  margin: 0.2em 0 0;
-}
-
-/* Links inside a description stay clickable on their own. */
-.resource p a {
-  position: relative;
-  z-index: 1;
-}
-
-.resource-icon {
-  align-items: center;
-  background-color: var(--green-tint);
-  border-radius: 50%;
-  color: var(--green-text);
-  display: inline-flex;
-  flex-shrink: 0;
-  font-size: 1.2em;
-  height: 2.3em;
-  justify-content: center;
-  width: 2.3em;
-}
-
 /*
   Grouped rows on lobby pages ("Create Game", "Watch Replay", and "Settings")
 */
-.lobby-group + .lobby-group,
-.resource-group + .resource-group {
+.lobby-group + .lobby-group {
   margin-top: 1.5em;
 }
 
-.lobby-group h3,
-.resource-group h3 {
+.lobby-group h3 {
   color: var(--text-label);
   font-size: 1em;
   margin: 0 0 0.6em;
 }
 
+/* A panel that holds a group of rows. */
 .lobby-rows {
+  background-color: var(--surface-panel);
+  border: 1px solid var(--border-panel);
+  border-radius: var(--radius);
   list-style: none;
   margin: 0;
   padding: 0;

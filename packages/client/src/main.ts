@@ -24,6 +24,7 @@ import * as lobbyLogin from "./lobby/login.ts";
 import { mountNav } from "./lobby/nav/mountNav.tsx";
 import { mountPregame } from "./lobby/pregame/mountPregame.tsx";
 import * as lobbyPregame from "./lobby/pregame/pregame.ts";
+import { mountResources } from "./lobby/resources/mountResources.tsx";
 import { mountSettings } from "./lobby/settings/mountSettings.tsx";
 import { mountTablesList } from "./lobby/tables/mountTablesList.tsx";
 import { Screen } from "./lobby/types/Screen.ts";
@@ -109,6 +110,7 @@ $(document).ready(() => {
   mountLobbyChat();
   mountNav();
   mountPregame();
+  mountResources();
   mountSettings();
   mountTablesList();
   mountUsersList();
