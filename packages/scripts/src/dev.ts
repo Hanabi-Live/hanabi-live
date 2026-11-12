@@ -99,7 +99,7 @@ async function run(
     readonly cwd?: string;
     readonly quiet?: boolean;
   } = {},
-): Promise<{ ok: boolean; output: string }> {
+): Promise<{ ok: boolean; output: string; errors: string }> {
   const child = Bun.spawn([...command], {
     cwd: options.cwd ?? ROOT,
     stdin: "ignore",
@@ -116,7 +116,7 @@ async function run(
       log(label, line);
     }
   }
-  return { ok: code === 0, output: output.trim() };
+  return { ok: code === 0, output: output.trim(), errors: errors.trim() };
 }
 
 /** The first run creates ".env" with a random session secret and a port that needs no root. */
@@ -169,6 +169,25 @@ function psqlCommand(env: ReadonlyMap<string, string>): readonly string[] {
     `--username=${user}`,
     `--dbname=${database}`,
   ];
+}
+
+/**
+ * Every checkout shares one PostgreSQL volume, so a migration that another checkout applied can
+ * differ from this checkout's file with the same number.
+ */
+function explainModifiedMigration(env: ReadonlyMap<string, string>) {
+  const user = setting(env, "DB_USER", "hanabiuser");
+  const database = setting(env, "DB_NAME", "hanabi");
+  const [composeTool] = composeCommand();
+  log(
+    "dev",
+    "All checkouts share one database. Another checkout applied a different version of this migration.",
+  );
+  log("dev", "To reset the database and lose its data, run:");
+  log(
+    "dev",
+    `  ${composeTool} compose exec -T postgres psql -U ${user} -d postgres -c "DROP DATABASE ${database} WITH (FORCE)" -c "CREATE DATABASE ${database}"`,
+  );
 }
 
 async function startServices(env: ReadonlyMap<string, string>) {
@@ -351,6 +370,9 @@ async function main() {
   // This installs the schema into a new database and applies pending migrations.
   const migrated = await run("services", [SERVER_BINARY, "migrate", "apply"]);
   if (!migrated.ok) {
+    if (migrated.errors.includes("previously applied but has been modified")) {
+      explainModifiedMigration(env);
+    }
     fail("Could not migrate the database.");
   }
   for (const line of migrated.output.trim().split("\n")) {
