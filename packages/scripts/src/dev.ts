@@ -1,6 +1,6 @@
 // Runs Hanab Live for local development:
 // - PostgreSQL in a container (see "compose.yml"), with the schema loaded on first use.
-// - The server, rebuilt and restarted whenever its sources change.
+// - The server, rebuilt and restarted whenever its sources or the checked-out commit change.
 // - The client from Vite's development server, which reloads the page when the client changes.
 // - A watch build of the scripts of the standalone pages. "bun run dev down" stops the containers;
 //   their data is kept.
@@ -30,6 +30,8 @@ const SERVER_SOURCES = [
   "Cargo.lock",
 ] as const;
 const DEV_PORT = "1212";
+/** How often to check for a new commit, which changes the revision compiled into the server. */
+const HEAD_POLL_MS = 1000;
 
 type Label = "build" | "client" | "dev" | "standalone" | "server" | "services";
 
@@ -323,6 +325,25 @@ function watchServerSources() {
   for (const source of SERVER_SOURCES) {
     watch(path.join(SERVER_DIR, source), { recursive: true }, trigger);
   }
+  // Linting a commit writes its revision into the client, which the old server then rejects. Git
+  // replaces its ref files rather than writing them, so poll instead of watching them.
+  let head: string | undefined;
+  setInterval(() => {
+    background(
+      run("dev", ["git", "rev-parse", "HEAD"], { quiet: true }).then(
+        (result) => {
+          if (!result.ok) {
+            return;
+          }
+          if (head !== undefined && result.output !== head) {
+            log("dev", "The commit changed; rebuilding the server.");
+            trigger();
+          }
+          head = result.output;
+        },
+      ),
+    );
+  }, HEAD_POLL_MS);
 }
 
 async function shutDown(code: number) {
