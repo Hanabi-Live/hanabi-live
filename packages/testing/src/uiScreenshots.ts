@@ -533,8 +533,15 @@ function getStates({
             if (failWebSocket) {
               ws.send(
                 packWsMessage("error", {
-                  message:
+                  // The message of "validate_client_version" on the server.
+                  message: [
                     "You are running an outdated version of the client code.",
+                    "<ul>",
+                    "<li>You are on: <strong>old</strong></li>",
+                    "<li>The latest: <strong>new</strong></li>",
+                    "</ul>",
+                    "Please perform a refresh to get the latest version.",
+                  ].join(""),
                 }),
               );
             } else {

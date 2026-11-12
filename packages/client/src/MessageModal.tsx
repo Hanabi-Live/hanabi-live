@@ -11,6 +11,12 @@ import type { MessageModal as Modal } from "./messageModalSlice.ts";
 import { closeModals, confirm, keepPlaying } from "./modals.ts";
 import { useAppSelector } from "./store.ts";
 
+/**
+ * The text of a warning or an error. A list in it (such as the versions of an outdated client) has
+ * the same space above and below.
+ */
+const MESSAGE_CLASS_NAME = "tw:[&_ul]:my-[1em]";
+
 export function MessageModal(): React.JSX.Element | undefined {
   const modal = useAppSelector((state) => state.messageModal.modal);
   const count = useAppSelector((state) => state.messageModal.count);
@@ -27,7 +33,10 @@ function ModalContent({ modal }: { readonly modal: Modal }) {
         <section id="warning-modal">
           <h3>Warning</h3>
           {/* Warnings can hold markup from the server and the client. */}
-          <p dangerouslySetInnerHTML={{ __html: modal.html }} />
+          <p
+            className={MESSAGE_CLASS_NAME}
+            dangerouslySetInnerHTML={{ __html: modal.html }}
+          />
           <ul className="actions">
             <li>
               <Button autoFocus onClick={closeModals}>
@@ -44,7 +53,10 @@ function ModalContent({ modal }: { readonly modal: Modal }) {
         <section id="error-modal">
           <h3>Error</h3>
           {/* Errors can hold the formatted stack trace from "errors.ts". */}
-          <p dangerouslySetInnerHTML={{ __html: modal.html }} />
+          <p
+            className={MESSAGE_CLASS_NAME}
+            dangerouslySetInnerHTML={{ __html: modal.html }}
+          />
           <ul className="actions">
             <li>
               <Button
