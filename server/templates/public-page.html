@@ -106,6 +106,10 @@
                 >
                 {{ stats.timeReviewed }}
               </li>
+              <li>
+                <span class="stat-description">Total time spent:</span> {{
+                stats.timeTotal }}
+              </li>
             </ul>
           </div>
           {% endif %} {% if page == "seed" and stats.numGames %}

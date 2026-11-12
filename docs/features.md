@@ -160,8 +160,9 @@ that have not been played yet and have only one copy remaining.)
 - Players will be able to see their past games in the "Show History" screen.
 - You can click on a player's name in the lobby to view their profile, which
   will show all of their past games and some extra statistics.
-- Profiles show the time spent playing and the time spent reviewing replays.
-  Review time does not count the time before an idle replay closes.
+- Profiles show the time spent playing, the time spent reviewing replays, and
+  the total of both. Review time does not count the time before an idle replay
+  closes.
 
 ### Replays
 

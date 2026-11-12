@@ -399,6 +399,7 @@ async fn player_statistics(state: &PublicState, user: i32) -> Result<Value> {
         "numGamesTotal":row.normal+row.other,"numGamesSpeedrun":row.speed,
         "timePlayed":duration(row.duration),"timePlayedSpeedrun":duration(row.speed_duration),
         "timeReviewed":duration(account.seconds_reviewing),
+        "timeTotal":duration(row.duration.saturating_add(row.speed_duration).saturating_add(account.seconds_reviewing)),
         "dateJoined":format!("{} {}{}, {}", date.format("%B"), date.day(), suffix, date.year())}),
     )
 }

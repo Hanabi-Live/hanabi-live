@@ -34,6 +34,7 @@ of the repository.
   Scores" page still shows it.
 - Profiles now show the time spent reviewing games in solo and shared replays,
   counted from today.
+- Player profiles now show the total time spent playing and reviewing.
 
 ## November 11th, 2026
 
