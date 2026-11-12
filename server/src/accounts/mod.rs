@@ -209,7 +209,7 @@ pub async fn clear_bot(pool: &PgPool, id: i32) -> Result<()> {
 
 /// Rejects a client from a different release. Current clients reload the page instead of showing
 /// this explanation, so players only see it when the reload served the same client again, such as
-/// from a stale cache; hence the hard-refresh advice.
+/// from a stale cache.
 pub fn validate_client_version(version: &str, current: &str) -> Result<(), String> {
     if !version.is_empty() && version == current {
         return Ok(());
