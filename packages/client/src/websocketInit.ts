@@ -12,6 +12,7 @@ import { SECOND_IN_MILLISECONDS } from "complete-common";
 import { commands } from "./commands.ts";
 import { Connection } from "./Connection.ts";
 import { HTTP_STATUS } from "./constants.ts";
+import { SoundType } from "./game/types/SoundType.ts";
 import { gameCommands } from "./game/ui/gameCommands.ts";
 import { globals } from "./Globals.ts";
 import { fetchCookieOnce } from "./lobby/cookieProbe.ts";
@@ -22,6 +23,7 @@ import { usersCleared } from "./lobby/users/usersSlice.ts";
 import * as modals from "./modals.ts";
 import { reloadOutdatedClient } from "./outdatedClient.ts";
 import { ReconnectBackoff } from "./reconnect.ts";
+import * as sounds from "./sounds.ts";
 import { store } from "./store.ts";
 import * as theme from "./theme.ts";
 import { escapeHtml } from "./utils.ts";
@@ -238,6 +240,7 @@ function openConnection(isReconnect: boolean) {
     if (activeConnection === conn) {
       conn.setReady(false);
       reconnectBackoff.reset();
+      sounds.play(SoundType.Shutdown);
       // An administrator's reason for the downtime stays open through the reconnect.
       if (message !== undefined) {
         modals.showDowntime(message);

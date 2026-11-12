@@ -370,7 +370,35 @@ type Upgrade = fn(&mut Value, &mut [(String, String)]) -> Result<()>;
 /// The formats that older servers wrote, each with the format after it and the upgrade between
 /// them. A graceful restart keeps the live tables that the deployed server saved, so remove a step
 /// only once no deployed server writes its format. Format 19 is the oldest that a server reads.
-const UPGRADES: &[(&str, &str, Upgrade)] = &[];
+const UPGRADES: &[(&str, &str, Upgrade)] =
+    &[("hanabi-live-19", "hanabi-live-20", flat_best_scores)];
+
+/// Format 19 listed a player's best score at every player count, with the score and whether it is
+/// modified in `best`, which was absent at a count without a game. Format 20 lists only the counts
+/// with a game, with the score and the flag beside the count.
+#[expect(
+    clippy::unnecessary_wraps,
+    reason = "every upgrade step has the `Upgrade` signature"
+)]
+fn flat_best_scores(head: &mut Value, _: &mut [(String, String)]) -> Result<()> {
+    for path in ["/phase/players", "/phase/snapshot/players"] {
+        let Some(Value::Array(players)) = head.pointer_mut(path) else {
+            continue;
+        };
+        for player in players {
+            let Some(Value::Array(scores)) = player.pointer_mut("/stats/variant/bestScores") else {
+                continue;
+            };
+            scores.retain(|entry| entry.get("best").is_some());
+            for entry in scores.iter_mut().filter_map(Value::as_object_mut) {
+                if let Some(Value::Object(best)) = entry.remove("best") {
+                    entry.extend(best);
+                }
+            }
+        }
+    }
+    Ok(())
+}
 
 /// Rewrites a table that an older server saved, one format at a time, into the current format.
 /// `head` holds the game's start.

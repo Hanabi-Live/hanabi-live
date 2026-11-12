@@ -906,6 +906,77 @@ mod tests {
         ensure!(crate::checkpoint::decode(&encoded.head, &invalid).is_err());
         Ok(())
     }
+    /// Writes a player's best scores as format 19 did: one entry for each player count, with the
+    /// score and its flag nested in `best`.
+    fn format_19_best_scores(players: &mut Value) {
+        for player in players.as_array_mut().into_iter().flatten() {
+            let scores = &mut player["stats"]["variant"]["bestScores"];
+            let old = (hanabi_protocol::MIN_PLAYERS..=hanabi_protocol::MAX_PLAYERS)
+                .map(|count| {
+                    let best = scores.as_array().and_then(|scores| {
+                        scores.iter().find(|entry| entry["numPlayers"] == count)
+                    });
+                    best.map_or_else(
+                        || json!({ "numPlayers": count }),
+                        |best| {
+                            json!({
+                                "numPlayers": count,
+                                "best": { "score": best["score"], "modified": best["modified"] },
+                            })
+                        },
+                    )
+                })
+                .collect();
+            *scores = Value::Array(old);
+        }
+    }
+    #[test]
+    fn format_19_best_scores_list_only_the_player_counts_with_a_game() -> Result<()> {
+        let best = hanabi_protocol::PregameBestScore {
+            num_players: crate::model::num_players(3),
+            score: hanabi_protocol::Score::new(24).unwrap(),
+            modified: true,
+        };
+        let mut waiting = pregame(TableId::new(1).unwrap());
+        if let Phase::Pregame { players, .. } = &mut waiting.phase {
+            players[0].stats.variant.best_scores = vec![best.clone()];
+        }
+        let mut replay = pregame(TableId::new(2).unwrap());
+        terminal(&mut replay)?;
+        replay.convert_to_replay()?;
+        replay.game_mut().unwrap().players[0]
+            .stats
+            .variant
+            .best_scores = vec![best];
+        for mut table in [waiting, replay] {
+            let expected = serde_json::to_value(&table)?;
+            let (encoded, _) = crate::checkpoint::encode(&mut table, &SavedParts::default())?;
+            let mut head: Value = serde_json::from_str(&encoded.head)?;
+            head["format"] = json!("hanabi-live-19");
+            if let Some(snapshot) = head.pointer_mut("/phase/snapshot") {
+                snapshot["format"] = json!("hanabi-live-19");
+            }
+            if let Some(players) = head.pointer_mut("/phase/players") {
+                format_19_best_scores(players);
+            }
+            let mut parts = encoded.changes.written;
+            for (key, part) in &mut parts {
+                if key == "game/start" {
+                    let mut start: Value = serde_json::from_str(part)?;
+                    format_19_best_scores(&mut start["players"]);
+                    *part = start.to_string();
+                }
+            }
+            let head = head.to_string();
+            ensure!(crate::checkpoint::is_outdated(&head));
+            let decoded = crate::checkpoint::decode(&head, &parts)?;
+            ensure!(
+                serde_json::to_value(&decoded)? == expected,
+                "A format 19 table changed when it was upgraded"
+            );
+        }
+        Ok(())
+    }
     #[test]
     fn saves_write_only_new_entries_and_rewrite_lists_that_do_not_continue() -> Result<()> {
         let mut table = pregame(TableId::new(1).unwrap());
@@ -1265,12 +1336,12 @@ mod tests {
                 crate::stats::pregame_stats(&store.primary, UserId::new(9001).unwrap(), 0).await?;
             let best = serde_json::to_value(&carol.variant.best_scores)?;
             ensure!(
-                best[0]["best"]["score"] == 25 && best[0]["best"]["modified"] == true,
+                best[0]["score"] == 25 && best[0]["modified"] == true,
                 "A modified best score lost its modifier: {}",
                 best[0]
             );
             ensure!(
-                best[1]["best"]["modified"] == false,
+                best[1]["modified"] == false,
                 "An unmodified best score gained a modifier: {}",
                 best[1]
             );

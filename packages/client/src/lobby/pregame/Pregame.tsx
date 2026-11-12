@@ -199,8 +199,7 @@ function PlayerBox({
         <StatRow
           label={`${numPlayers}-player best score:`}
           value={
-            variantStats.bestScores[numPlayers - MIN_PLAYERS]?.best?.score
-            ?? NO_SCORE
+            bestScoreAt(variantStats.bestScores, numPlayers)?.score ?? NO_SCORE
           }
         />
       )}
@@ -252,6 +251,13 @@ function BestScoresIcon({
   );
 }
 
+function bestScoreAt(
+  bestScores: BestScores,
+  numPlayers: number,
+): BestScores[number] | undefined {
+  return bestScores.find((bestScore) => bestScore.numPlayers === numPlayers);
+}
+
 function getBestScoresTooltip(
   bestScores: BestScores,
   variantName: string,
@@ -259,11 +265,7 @@ function getBestScoresTooltip(
   const { maxScore } = getVariant(variantName);
   let html = '<div class="tw:w-32 tw:text-[0.75em]">';
   for (const bestScorePlayer of iRange(MIN_PLAYERS, MAX_PLAYERS)) {
-    const bestScore = bestScores[bestScorePlayer - MIN_PLAYERS];
-    if (bestScore === undefined) {
-      continue;
-    }
-    const { best } = bestScore;
+    const best = bestScoreAt(bestScores, bestScorePlayer);
 
     // The grid's negative margin and gutter would push the rows out of the tooltip.
     html += '<div class="row tw:ml-0 tw:text-left">';

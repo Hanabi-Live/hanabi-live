@@ -476,12 +476,12 @@ impl Report {
         )
     }
 
-    /// What a client shows: the escaped text, with the typed cause and the diagnostic ID.
+    /// What a client shows: the escaped text, which ends with the diagnostic ID, and the typed
+    /// cause.
     pub fn notice(&self) -> hanabi_protocol::Notice {
         hanabi_protocol::Notice {
             message: crate::accounts::escape_html(&self.text()),
             code: Some(self.code),
-            diagnostic_id: Some(self.diagnostic_id.clone()),
         }
     }
 
@@ -515,7 +515,6 @@ impl Report {
                 Json(hanabi_protocol::Notice {
                     message: self.text(),
                     code: Some(self.code),
-                    diagnostic_id: Some(self.diagnostic_id.clone()),
                 }),
             )
                 .into_response()

@@ -18,7 +18,7 @@ use std::{
     time::Instant,
 };
 
-pub const FORMAT: &str = "hanabi-live-19";
+pub const FORMAT: &str = "hanabi-live-20";
 /// How long before an idle game ends to warn its table.
 pub const IDLE_WARNING_MS: i64 = 5 * CLOCK_UNITS_PER_MINUTE;
 
@@ -691,13 +691,9 @@ impl ScoreModifier {
             .map(|(_, name)| *name)
     }
 
-    /// A best score with this modifier, as the wire carries it.
-    pub fn best_score(self, score: i32) -> hanabi_protocol::BestScore {
-        hanabi_protocol::BestScore {
-            score: hanabi_protocol::Score::new(score)
-                .expect("a game's score is at most the highest"),
-            modified: self.0 != 0,
-        }
+    /// Whether a score with this modifier does not count as a normal one.
+    pub const fn modified(self) -> bool {
+        self.0 != 0
     }
 }
 
@@ -810,8 +806,8 @@ mod tests {
             ScoreModifier::from_bits(16 + 1).shown(),
             Some("allornothing")
         );
-        assert!(modifier.best_score(20).modified);
-        assert!(!ScoreModifier::default().best_score(20).modified);
+        assert!(modifier.modified());
+        assert!(!ScoreModifier::default().modified());
     }
 
     #[test]

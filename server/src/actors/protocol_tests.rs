@@ -1774,7 +1774,7 @@ async fn remade_tables_publish_fresh_statistics_for_every_player() -> Result<()>
                 ensure!(
                     player["stats"]["numGames"] == 1
                         && player["stats"]["variant"]["numGames"] == 1
-                        && player["stats"]["variant"]["bestScores"][0]["best"]["score"] == score,
+                        && player["stats"]["variant"]["bestScores"][0]["score"] == score,
                     "Remade table published stale player statistics: {player}"
                 );
             }
@@ -1782,8 +1782,8 @@ async fn remade_tables_publish_fresh_statistics_for_every_player() -> Result<()>
         let (saved, _) = h.snapshot(remade.context("Missing remade table")?).await?;
         for player in saved.players() {
             ensure!(
-                player.stats.variant.best_scores[0].best.as_ref().map(|best| best.score)
-                    == Some(hanabi_protocol::Score::new(score).unwrap()),
+                player.stats.variant.best_scores.first().map(|best| best.score)
+                    == hanabi_protocol::Score::new(score),
                 "Fresh statistics were not persisted"
             );
         }
@@ -1897,7 +1897,7 @@ async fn restart_leaves_out_players_who_are_done_playing() -> Result<()> {
         .await?;
         let mut declined = Vec::new();
         for index in 0..3 {
-            declined.push(h.receive(index, "tableRestartDeclined").await?);
+            declined.push(h.receive(index, "tableRestartDecliners").await?);
         }
         h.send(2, "gameInitLoad", json!({"tableId":id})).await?;
         let init = h.receive(2, "gameInit").await?;

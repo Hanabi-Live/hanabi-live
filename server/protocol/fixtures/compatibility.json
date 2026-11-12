@@ -31,8 +31,7 @@
     "input": {
       "type": "error",
       "message": "Loading lobby statistics failed",
-      "code": "lobbyQueueFull",
-      "diagnosticId": "1"
+      "code": "lobbyQueueFull"
     },
     "valid": true
   },
@@ -1607,7 +1606,7 @@
     "direction": "server",
     "command": "lobbySound",
     "input": {
-      "sound": "shutdown"
+      "sound": "someoneJoined"
     },
     "valid": true
   },

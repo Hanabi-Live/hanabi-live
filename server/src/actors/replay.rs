@@ -583,8 +583,8 @@ impl TableActor {
         let mut e = self.effects();
         self.add_all(
             &mut e,
-            hanabi_protocol::server::TABLE_RESTART_DECLINED,
-            hanabi_protocol::TableRestartDeclined {
+            hanabi_protocol::server::TABLE_RESTART_DECLINERS,
+            hanabi_protocol::TableRestartDecliners {
                 table_id: self.table.id,
                 restart_declined: self.restart_declined_seats(),
             },

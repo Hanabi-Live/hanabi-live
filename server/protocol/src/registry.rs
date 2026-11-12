@@ -84,7 +84,7 @@ macro_rules! server_contracts {
             GAME_FINISHED "gameFinished" => GameFinished;
             REPLAY_ACTION "replayAction" => ReplayAction;
             TABLE_OWNER "tableOwner" => TableOwner;
-            TABLE_RESTART_DECLINED "tableRestartDeclined" => TableRestartDeclined;
+            TABLE_RESTART_DECLINERS "tableRestartDecliners" => TableRestartDecliners;
             TABLE_SUGGESTION "tableSuggestion" => TableSuggestion;
             NOTE "note" => Note;
             NOTE_LIST "noteList" => NoteList;

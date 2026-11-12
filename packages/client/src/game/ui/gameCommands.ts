@@ -434,7 +434,7 @@ gameCommands.set("tableOwner", (data) => {
 });
 
 // This is used in shared replays to specify which players will not play again.
-gameCommands.set("tableRestartDeclined", (data) => {
+gameCommands.set("tableRestartDecliners", (data) => {
   if (globals.state.replay.shared === undefined) {
     return;
   }

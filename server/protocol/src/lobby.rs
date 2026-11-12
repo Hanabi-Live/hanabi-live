@@ -9,7 +9,8 @@
 )]
 use super::*;
 
-/// Sent before a graceful restart or stop closes the connection.
+/// Sent before a graceful restart or stop closes the connection. The client plays the shutdown
+/// sound and reconnects.
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct ServerRestart {
@@ -93,8 +94,8 @@ pub struct Blocked {
 
 /// A problem that the client shows: an `error` message, after which the connection closes, a
 /// recoverable `warning`, a lobby statistics failure, or the body of a JSON HTTP error response. The
-/// text may contain HTML. A server failure also names its typed cause and the diagnostic ID that its
-/// log entry carries.
+/// text may contain HTML. A server failure also names its typed cause, and its text ends with the
+/// diagnostic ID that its log entry carries.
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct Notice {
@@ -103,9 +104,6 @@ pub struct Notice {
     /// The typed cause of a server failure.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub code: Option<NoticeCode>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    #[schemars(length(min = 1))]
-    pub diagnostic_id: Option<String>,
 }
 
 impl Notice {
@@ -114,7 +112,6 @@ impl Notice {
         Self {
             message: message.into(),
             code: None,
-            diagnostic_id: None,
         }
     }
 }
@@ -125,12 +122,11 @@ pub struct LobbySoundMessage {
     pub sound: LobbySound,
 }
 
-/// A sound played outside of a game. The server plays "shutdown" to everyone when it is going down,
-/// and "someoneJoined" to the players at a pre-game table when another player joins it.
+/// A sound played outside of a game. The server plays "someoneJoined" to the players at a pre-game
+/// table when another player joins it.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase")]
 pub enum LobbySound {
-    Shutdown,
     SomeoneJoined,
 }
 
@@ -454,19 +450,11 @@ pub struct SeedGames {
     pub page: GamePage,
 }
 
+/// A player's best score on a variant at one player count.
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct PregameBestScore {
     pub num_players: NumPlayers,
-    /// Absent when there is no game at this player count.
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub best: Option<BestScore>,
-}
-
-/// A best score, and whether it counts as a normal one.
-#[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
-#[serde(rename_all = "camelCase", deny_unknown_fields)]
-pub struct BestScore {
     pub score: Score,
     /// Whether the game used an option that keeps its score from counting as a normal one, such as
     /// "One Extra Card".
@@ -477,7 +465,8 @@ pub struct BestScore {
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct PregameVariantStats {
     pub num_games: Count,
-    /// The best score for each player count.
+    /// The best score at each player count that has a game, by player count.
+    #[schemars(length(max = MAX_PLAYERS - MIN_PLAYERS + 1))]
     pub best_scores: Vec<PregameBestScore>,
 }
 

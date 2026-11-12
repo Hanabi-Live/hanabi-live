@@ -21,7 +21,6 @@ function player(
   username: string,
   present: boolean,
 ): Game["players"][number] {
-  const best = { score: 25, modified: false };
   return {
     userId: userIdSchema.parse(userId),
     username,
@@ -30,11 +29,8 @@ function player(
       numGames: 10,
       variant: {
         numGames: 4,
-        bestScores: [
-          { numPlayers: 2, best },
-          // A player count that this player has not played.
-          { numPlayers: 3 },
-        ],
+        // This player has not played 3-player games.
+        bestScores: [{ numPlayers: 2, score: 25, modified: false }],
       },
     },
   };

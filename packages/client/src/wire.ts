@@ -117,7 +117,6 @@ const WIRE_SOUNDS = {
   clap: SoundType.Clap,
   holy: SoundType.Holy,
   nooo: SoundType.Nooo,
-  shutdown: SoundType.Shutdown,
   someoneJoined: SoundType.SomeoneJoined,
 } as const satisfies Record<WireSound, SoundType>;
 

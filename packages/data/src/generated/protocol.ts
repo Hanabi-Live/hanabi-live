@@ -684,10 +684,10 @@ export const idleWarningSchema = z
   .readonly();
 
 /**
- * A sound played outside of a game. The server plays "shutdown" to everyone when it is going down,
- * and "someoneJoined" to the players at a pre-game table when another player joins it.
+ * A sound played outside of a game. The server plays "someoneJoined" to the players at a pre-game
+ * table when another player joins it.
  */
-const lobbySoundSchema = z.enum(["shutdown", "someoneJoined"]);
+const lobbySoundSchema = z.literal("someoneJoined");
 export const lobbySoundMessageSchema = z
   .strictObject({ sound: lobbySoundSchema })
   .readonly();
@@ -756,7 +756,6 @@ export const lobbyStatusSchema = z.discriminatedUnion("type", [
        * The typed cause of a server failure.
        */
       code: noticeCodeSchema.optional(),
-      diagnosticId: z.string().min(1).optional(),
       message: z.string().min(1),
       type: z.literal("error"),
     })
@@ -843,8 +842,8 @@ export const noteRequestSchema = z
 /**
  * A problem that the client shows: an `error` message, after which the connection closes, a
  * recoverable `warning`, a lobby statistics failure, or the body of a JSON HTTP error response. The
- * text may contain HTML. A server failure also names its typed cause and the diagnostic ID that its
- * log entry carries.
+ * text may contain HTML. A server failure also names its typed cause, and its text ends with the
+ * diagnostic ID that its log entry carries.
  */
 export const noticeSchema = z
   .strictObject({
@@ -852,7 +851,6 @@ export const noticeSchema = z
      * The typed cause of a server failure.
      */
     code: noticeCodeSchema.optional(),
-    diagnosticId: z.string().min(1).optional(),
     message: z.string().min(1),
   })
   .readonly();
@@ -938,33 +936,25 @@ export const playerActionRequestSchema = z
   .readonly();
 
 /**
- * A best score, and whether it counts as a normal one.
+ * A player's best score on a variant at one player count.
  */
-const bestScoreSchema = z
+const pregameBestScoreSchema = z
   .strictObject({
     /**
      * Whether the game used an option that keeps its score from counting as a normal one, such as
      * "One Extra Card".
      */
     modified: z.boolean(),
-    score: scoreSchema,
-  })
-  .readonly();
-const pregameBestScoreSchema = z
-  .strictObject({
-    /**
-     * Absent when there is no game at this player count.
-     */
-    best: bestScoreSchema.optional(),
     numPlayers: numPlayersSchema,
+    score: scoreSchema,
   })
   .readonly();
 const pregameVariantStatsSchema = z
   .strictObject({
     /**
-     * The best score for each player count.
+     * The best score at each player count that has a game, by player count.
      */
-    bestScores: z.array(pregameBestScoreSchema).readonly(),
+    bestScores: z.array(pregameBestScoreSchema).max(5).readonly(),
     numGames: countSchema,
   })
   .readonly();
@@ -1255,7 +1245,8 @@ export const seedGamesRequestSchema = z
   .readonly();
 
 /**
- * Sent before a graceful restart or stop closes the connection.
+ * Sent before a graceful restart or stop closes the connection. The client plays the shutdown
+ * sound and reconnects.
  */
 export const serverRestartSchema = z
   .strictObject({
@@ -1487,7 +1478,7 @@ export const tableRestartDeclineRequestSchema = z
 /**
  * The seats of the players in a shared replay who will not play again if the leader restarts.
  */
-export const tableRestartDeclinedSchema = z
+export const tableRestartDeclinersSchema = z
   .strictObject({
     restartDeclined: z.array(playerIndexSchema).max(6).readonly(),
     tableId: tableIdSchema,
@@ -1738,7 +1729,7 @@ export const SERVER_COMMAND_SCHEMAS = {
   tableList: tableListSchema,
   tableOwner: tableOwnerSchema,
   tableRemoved: tableRefSchema,
-  tableRestartDeclined: tableRestartDeclinedSchema,
+  tableRestartDecliners: tableRestartDeclinersSchema,
   tableStarted: tableStartedSchema,
   tableSuggestion: tableSuggestionSchema,
   user: userSchema,

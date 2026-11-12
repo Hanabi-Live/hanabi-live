@@ -136,14 +136,17 @@ fn player_stats(num_games: i64, row: Option<&crate::database::UserStats>) -> Res
             num_games: hanabi_protocol::Count::try_from(variant_games)?,
             best_scores: (hanabi_protocol::MIN_PLAYERS..=hanabi_protocol::MAX_PLAYERS)
                 .zip(best_scores)
-                .map(|(num_players, best)| hanabi_protocol::PregameBestScore {
-                    num_players: crate::model::num_players(num_players),
-                    best: best.map(|(score, modifier)| {
-                        crate::model::ScoreModifier::from_bits(modifier)
-                            .best_score(i32::from(score))
-                    }),
+                .filter_map(|(num_players, best)| {
+                    let (score, modifier) = best?;
+                    Some(hanabi_protocol::Score::try_from(score).map(|score| {
+                        hanabi_protocol::PregameBestScore {
+                            num_players: crate::model::num_players(num_players),
+                            score,
+                            modified: crate::model::ScoreModifier::from_bits(modifier).modified(),
+                        }
+                    }))
                 })
-                .collect(),
+                .collect::<Result<_, _>>()?,
         },
     })
 }
@@ -154,17 +157,13 @@ pub fn zero_stats() -> PregameStats {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use serde_json::{Value, json};
+    use serde_json::json;
 
     #[test]
-    fn pregame_statistics_keep_their_stored_format() {
-        let unplayed = |n: usize| json!({ "numPlayers": n });
-        let best_scores: Vec<Value> = (hanabi_protocol::MIN_PLAYERS..=hanabi_protocol::MAX_PLAYERS)
-            .map(unplayed)
-            .collect();
+    fn pregame_statistics_list_only_the_player_counts_with_a_game() {
         assert_eq!(
             serde_json::to_value(zero_stats()).unwrap(),
-            json!({"numGames":0,"variant":{"numGames":0,"bestScores":best_scores}})
+            json!({"numGames":0,"variant":{"numGames":0,"bestScores":[]}})
         );
 
         let row = crate::database::UserStats {
@@ -186,15 +185,14 @@ mod tests {
         hanabi_protocol::validate::<PregameStats>(&stats).unwrap();
         assert_eq!(stats["numGames"], 12);
         assert_eq!(stats["variant"]["numGames"], 7);
-        let best = &stats["variant"]["bestScores"];
-        assert_eq!(best[0]["best"]["score"], 25);
         assert_eq!(
-            best[1],
-            json!({"numPlayers":3,"best":{"score":24,"modified":true}})
+            stats["variant"]["bestScores"],
+            json!([
+                {"numPlayers":2,"score":25,"modified":false},
+                {"numPlayers":3,"score":24,"modified":true},
+                {"numPlayers":5,"score":0,"modified":false},
+                {"numPlayers":6,"score":30,"modified":true},
+            ])
         );
-        assert_eq!(best[2], json!({ "numPlayers": 4 }));
-        assert_eq!(best[3]["best"]["score"], 0);
-        assert_eq!(best[4]["numPlayers"], 6);
-        assert_eq!(best[4]["best"]["modified"], true);
     }
 }

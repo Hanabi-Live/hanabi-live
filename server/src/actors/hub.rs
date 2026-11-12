@@ -18,9 +18,7 @@ use anyhow::{Context, Result};
 use axum::http::StatusCode;
 use futures_util::FutureExt;
 use hanabi_protocol::PlayerIndex;
-use hanabi_protocol::{
-    ClientMessage, LobbySoundMessage, TableId, TableRef, User, UserId, UserList, UserRemoved,
-};
+use hanabi_protocol::{ClientMessage, TableId, TableRef, User, UserId, UserList, UserRemoved};
 use std::{
     collections::{BTreeSet, HashMap},
     panic::AssertUnwindSafe,
@@ -591,28 +589,20 @@ impl Hub {
             let _ = reply.send(Err(error));
             return;
         }
-        let messages = [
+        let messages = [if reconnect {
             frame(
-                hanabi_protocol::server::LOBBY_SOUND,
-                LobbySoundMessage {
-                    sound: hanabi_protocol::LobbySound::Shutdown,
-                },
-            ),
-            if reconnect {
-                frame(
-                    hanabi_protocol::server::SERVER_RESTART,
-                    hanabi_protocol::ServerRestart { message },
-                )
-            } else {
-                frame(
-                    hanabi_protocol::server::ERROR,
-                    hanabi_protocol::Notice::new(format!(
-                        "{}<br />Please reconnect after the server restarts.",
-                        crate::lifecycle::MAINTENANCE_NOTICE
-                    )),
-                )
-            },
-        ];
+                hanabi_protocol::server::SERVER_RESTART,
+                hanabi_protocol::ServerRestart { message },
+            )
+        } else {
+            frame(
+                hanabi_protocol::server::ERROR,
+                hanabi_protocol::Notice::new(format!(
+                    "{}<br />Please reconnect after the server restarts.",
+                    crate::lifecycle::MAINTENANCE_NOTICE
+                )),
+            )
+        }];
         let receipts = self
             .sessions
             .values()
