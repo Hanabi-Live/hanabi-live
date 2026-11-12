@@ -78,7 +78,7 @@ export type ActionTurn = Event<"turn">;
  * sent.
  */
 export type ActionClue = Readonly<
-  Omit<Extract<HypotheticalWireEvent, { type: "clue" }>, "clue" | "clueType">
+  Omit<Extract<HypotheticalWireEvent, { type: "clue" }>, "clue">
 > & {
   readonly clue: MsgClue | HiddenClue;
 };

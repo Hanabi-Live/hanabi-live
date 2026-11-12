@@ -101,17 +101,21 @@ pub(super) fn wire_event(event: &hanabi_engine::EngineEvent) -> GameEvent {
             ref list,
             turn: _,
         } => GameEvent::Clue(ClueEvent {
-            // The wire omits a clue that the recipient may not see.
-            clue: clue.map(|clue| match clue.clue_type {
-                ClueType::Color => Clue::Color {
-                    color: ColorIndex::new(clue.value)
-                        .expect("engine clue colors are suit indexes"),
-                },
-                ClueType::Rank => Clue::Rank {
-                    rank: ClueRank::new(clue.value).expect("engine clue ranks are 1 to 5"),
-                },
-            }),
-            clue_type,
+            // The wire omits a clue, or its value, that the recipient may not see.
+            clue: clue
+                .map(|clue| {
+                    match clue.clue_type {
+                        ClueType::Color => Clue::Color {
+                            color: ColorIndex::new(clue.value)
+                                .expect("engine clue colors are suit indexes"),
+                        },
+                        ClueType::Rank => Clue::Rank {
+                            rank: ClueRank::new(clue.value).expect("engine clue ranks are 1 to 5"),
+                        },
+                    }
+                    .into()
+                })
+                .or_else(|| clue_type.map(Into::into)),
             player_index: seat(giver),
             receiver_index: seat(target),
             orders: list.iter().copied().map(card).collect(),

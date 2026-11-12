@@ -192,6 +192,40 @@ pub enum Clue {
     Rank { rank: ClueRank },
 }
 
+/// A clue as the recipient of an event sees it: its type, and its value unless the variant hides
+/// the value from them, as "Cow & Pig" does.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
+#[serde(tag = "type", rename_all = "camelCase", deny_unknown_fields)]
+pub enum VisibleClue {
+    Color {
+        #[serde(skip_serializing_if = "Option::is_none")]
+        color: Option<ColorIndex>,
+    },
+    Rank {
+        #[serde(skip_serializing_if = "Option::is_none")]
+        rank: Option<ClueRank>,
+    },
+}
+
+impl From<Clue> for VisibleClue {
+    fn from(clue: Clue) -> Self {
+        match clue {
+            Clue::Color { color } => Self::Color { color: Some(color) },
+            Clue::Rank { rank } => Self::Rank { rank: Some(rank) },
+        }
+    }
+}
+
+impl From<ClueType> for VisibleClue {
+    /// A clue whose value the recipient may not see.
+    fn from(clue_type: ClueType) -> Self {
+        match clue_type {
+            ClueType::Color => Self::Color { color: None },
+            ClueType::Rank => Self::Rank { rank: None },
+        }
+    }
+}
+
 /// A card that a player draws, plays, discards, misplays, or learns.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
@@ -217,13 +251,10 @@ pub struct TurnEvent {
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct ClueEvent {
-    /// Absent when the recipient may not see the clue's value.
+    /// Absent when the recipient may not see even the clue's type, as in a "Duck" variant or for a
+    /// clue from a Quacker.
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub clue: Option<Clue>,
-    /// The clue's type, when the recipient may see it but not the clue's value. Absent when `clue`
-    /// is present.
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub clue_type: Option<ClueType>,
+    pub clue: Option<VisibleClue>,
     /// The player who gives the clue.
     pub player_index: PlayerIndex,
     /// The player who receives the clue.

@@ -247,18 +247,6 @@ export const cardOrderSchema = z
   .brand<"CardOrder">();
 
 /**
- * A card's suit.
- */
-export const suitIndexSchema = z.literal([0, 1, 2, 3, 4, 5]);
-
-/**
- * A card's suit and rank.
- */
-export const cardIdentitySchema = z
-  .strictObject({ rank: cardRankSchema, suitIndex: suitIndexSchema })
-  .readonly();
-
-/**
  * The index of a color in the variant's clue colors.
  */
 export const colorIndexSchema = z.literal([0, 1, 2, 3, 4, 5]);
@@ -275,9 +263,16 @@ export const clueSchema = z.discriminatedUnion("type", [
 ]);
 
 /**
- * The type of a clue.
+ * A card's suit.
  */
-export const clueTypeSchema = z.enum(["color", "rank"]);
+export const suitIndexSchema = z.literal([0, 1, 2, 3, 4, 5]);
+
+/**
+ * A card's suit and rank.
+ */
+export const cardIdentitySchema = z
+  .strictObject({ rank: cardRankSchema, suitIndex: suitIndexSchema })
+  .readonly();
 
 /**
  * How a game ended.
@@ -324,6 +319,22 @@ export const playerIndexSchema = z.literal([0, 1, 2, 3, 4, 5]);
  * `MAX_GAME_ACTIONS` actions, so it has no more turns than that.
  */
 export const turnSchema = z.number().int().min(0).max(512);
+
+/**
+ * A clue as the recipient of an event sees it: its type, and its value unless the variant hides
+ * the value from them, as "Cow & Pig" does.
+ */
+export const visibleClueSchema = z.discriminatedUnion("type", [
+  z
+    .strictObject({
+      color: colorIndexSchema.optional(),
+      type: z.literal("color"),
+    })
+    .readonly(),
+  z
+    .strictObject({ rank: clueRankSchema.optional(), type: z.literal("rank") })
+    .readonly(),
+]);
 
 /**
  * One game event as a particular recipient sees it.
@@ -387,14 +398,10 @@ export const gameEventSchema = z.discriminatedUnion("type", [
   z
     .strictObject({
       /**
-       * Absent when the recipient may not see the clue's value.
+       * Absent when the recipient may not see even the clue's type, as in a "Duck" variant or for a
+       * clue from a Quacker.
        */
-      clue: clueSchema.optional(),
-      /**
-       * The clue's type, when the recipient may see it but not the clue's value. Absent when `clue`
-       * is present.
-       */
-      clueType: clueTypeSchema.optional(),
+      clue: visibleClueSchema.optional(),
       /**
        * Whether the cards that the clue does not touch learn nothing from it. Only a hypothetical's
        * clue can set it.
@@ -556,14 +563,10 @@ export const hypotheticalEventSchema = z.discriminatedUnion("type", [
   z
     .strictObject({
       /**
-       * Absent when the recipient may not see the clue's value.
+       * Absent when the recipient may not see even the clue's type, as in a "Duck" variant or for a
+       * clue from a Quacker.
        */
-      clue: clueSchema.optional(),
-      /**
-       * The clue's type, when the recipient may see it but not the clue's value. Absent when `clue`
-       * is present.
-       */
-      clueType: clueTypeSchema.optional(),
+      clue: visibleClueSchema.optional(),
       /**
        * Whether the cards that the clue does not touch learn nothing from it. Only a hypothetical's
        * clue can set it.

@@ -54,7 +54,7 @@ describe("server game events", () => {
     const action = toGameAction(
       event({
         type: "clue",
-        clueType: "rank",
+        clue: { type: "rank" },
         playerIndex: 0,
         receiverIndex: 1,
         orders: [3],
@@ -68,7 +68,6 @@ describe("server game events", () => {
       value: undefined,
       visibleType: "rank",
     });
-    expect(action).not.toHaveProperty("clueType");
   });
 
   test("values outside the game's types are rejected", () => {

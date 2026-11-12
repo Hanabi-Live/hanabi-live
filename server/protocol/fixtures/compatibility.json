@@ -1230,6 +1230,22 @@
     "valid": true
   },
   {
+    "name": "clues with a hidden value carry only their type",
+    "direction": "event",
+    "command": "gameEvent",
+    "input": {
+      "tableId": 3,
+      "event": {
+        "type": "clue",
+        "clue": { "type": "rank" },
+        "receiverIndex": 1,
+        "orders": [3, 4],
+        "playerIndex": 0
+      }
+    },
+    "valid": true
+  },
+  {
     "name": "color clues name the first suit's color",
     "direction": "event",
     "command": "gameEvent",

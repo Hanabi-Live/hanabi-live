@@ -10,12 +10,10 @@ import type {
 import type {
   ActionIncludingHypothetical,
   CardIdentity,
-  ClueType,
   GameAction,
   HiddenClue,
   MsgClue,
   NumPlayers,
-  WireClue,
 } from "@hanabi-live/game";
 import { isValidNumPlayers } from "@hanabi-live/game";
 import type { Tuple } from "complete-common";
@@ -65,15 +63,31 @@ type OutgoingHypotheticalEvent = Extract<
   { type: "event" }
 >["event"];
 
+type WireVisibleClue = NonNullable<
+  Extract<WireEvent, { type: "clue" }>["clue"]
+>;
+
 /**
- * The server omits a clue that the recipient may not see, and sends its type when the recipient may
- * see only that. The game state keeps its giver.
+ * The server omits a clue that the recipient may not see, and the clue's value when the recipient
+ * may see only its type. The game state keeps its giver.
  */
-function toClue(
-  clue: WireClue | undefined,
-  clueType: ClueType | undefined,
-): HiddenClue | MsgClue {
-  return clue ?? { type: undefined, value: undefined, visibleType: clueType };
+function toClue(clue: WireVisibleClue | undefined): HiddenClue | MsgClue {
+  if (clue === undefined) {
+    return { type: undefined, value: undefined, visibleType: undefined };
+  }
+  switch (clue.type) {
+    case "color": {
+      return clue.color === undefined
+        ? { type: undefined, value: undefined, visibleType: "color" }
+        : { type: "color", color: clue.color };
+    }
+
+    case "rank": {
+      return clue.rank === undefined
+        ? { type: undefined, value: undefined, visibleType: "rank" }
+        : { type: "rank", rank: clue.rank };
+    }
+  }
 }
 
 /** Converts a hypothetical action from the server into the action the game state applies. */
@@ -83,8 +97,8 @@ export function toHypotheticalAction(
   if (action.type !== "clue") {
     return action;
   }
-  const { clue, clueType, ...rest } = action;
-  return { ...rest, clue: toClue(clue, clueType) };
+  const { clue, ...rest } = action;
+  return { ...rest, clue: toClue(clue) };
 }
 
 /** Converts a hypothetical action for the server, which omits a hidden clue. */
@@ -100,7 +114,7 @@ export function toWireHypotheticalAction(
   }
   return clue.visibleType === undefined
     ? rest
-    : { ...rest, clueType: clue.visibleType };
+    : { ...rest, clue: { type: clue.visibleType } };
 }
 
 /**
@@ -112,8 +126,8 @@ export function toGameAction(event: WireEvent): GameAction {
   if (event.type !== "clue") {
     return event;
   }
-  const { clue, clueType, ...rest } = event;
-  return { ...rest, clue: toClue(clue, clueType), ignoreNegative: false };
+  const { clue, ...rest } = event;
+  return { ...rest, clue: toClue(clue), ignoreNegative: false };
 }
 
 type WireSound = Extract<WireReplayAction, { type: "sound" }>["sound"];
