@@ -3,7 +3,7 @@ import { getEfficiency } from "@hanabi-live/game";
 import { assertDefined } from "complete-common";
 import { globals } from "../../UiGlobals.ts";
 import { EFFICIENCY_DECIMAL_PLACES, LABEL_COLOR } from "../../constants.ts";
-import { initKonvaTooltips } from "../../konvaTooltips.ts";
+import { setKonvaTooltipContent } from "../../konvaTooltips.ts";
 import { getPaceRiskColor } from "../../paceRiskColor.ts";
 
 /** Cyan, for an efficiency that has a custom modification. */
@@ -138,8 +138,7 @@ export function onEfficiencyChanged(data: {
     <br />
     Click / Double tap this number to add a modifier.
   `;
-  effLabel.tooltipContent = tooltipContent;
-  initKonvaTooltips(effLabel, true, false);
+  setKonvaTooltipContent(effLabel, tooltipContent, false);
 
   globals.layers.UI.batchDraw();
 }
@@ -220,8 +219,11 @@ export function onMaxTurnsChanged(data: {
   const label = globals.elements.turnNumberLabel;
   assertDefined(label, "turnNumberLabel is not initialized.");
 
-  label.tooltipContent = `<span class="turns-description">Rounds left (max):</span> <strong>${maxTurnsLeftForCurrentPlayer}</strong><br />
+  setKonvaTooltipContent(
+    label,
+    `<span class="turns-description">Rounds left (max):</span> <strong>${maxTurnsLeftForCurrentPlayer}</strong><br />
 <span class="turns-description">Turns left (max):</span> <strong>${maxTurnsLeft}</strong><br />
-<span class="turns-description">Total turns:</span> <strong>${turnNum}</strong>/<strong>${maxTotalTurns}</strong>`;
-  initKonvaTooltips(label, true, false);
+<span class="turns-description">Total turns:</span> <strong>${turnNum}</strong>/<strong>${maxTotalTurns}</strong>`,
+    false,
+  );
 }

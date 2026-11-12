@@ -40,13 +40,30 @@ export function initKonvaTooltips(
     tooltips.close(element.tooltipName);
   });
 
-  let content = element.tooltipContent;
-  if (!customContent) {
-    content = '<div class="info-tooltip small-tooltip-text">';
-    content += '<i class="fas fa-info-circle fa-sm"></i>';
-    content += `<div>${element.tooltipContent}</div></div>`;
-  }
-  tooltips.setContent(element.tooltipName, content);
+  setKonvaTooltipContent(element, element.tooltipContent, customContent);
+}
+
+/**
+ * Changes the content of an element's tooltip. Unless the content is custom, it shows beside an
+ * info icon, in the smaller text.
+ */
+export function setKonvaTooltipContent(
+  element: NodeWithTooltip,
+  content: string,
+  customContent: boolean,
+): void {
+  assertDefined(
+    element.tooltipName,
+    'An element that is supposed to have a tooltip does not have a "tooltipName" property.',
+  );
+
+  element.tooltipContent = content;
+  tooltips.setContent(
+    element.tooltipName,
+    customContent || content === ""
+      ? content
+      : `<div class="info-tooltip small-tooltip-text"><i class="fas fa-info-circle fa-sm"></i><div>${content}</div></div>`,
+  );
 }
 
 export function show(element: NodeWithTooltip): void {
