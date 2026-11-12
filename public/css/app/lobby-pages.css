@@ -294,6 +294,39 @@
   position: relative;
 }
 
+/* A row with a checkbox lights up, and a click anywhere on it toggles the box. */
+.lobby-row:has(> .lobby-row-checkbox) {
+  position: relative;
+  transition: background-color 0.15s ease;
+}
+
+.lobby-row:has(> .lobby-row-checkbox):hover {
+  background-color: var(--row-hover-bg);
+}
+
+.lobby-row:has(> .lobby-row-checkbox):first-child {
+  border-top-left-radius: inherit;
+  border-top-right-radius: inherit;
+}
+
+.lobby-row:has(> .lobby-row-checkbox):last-child {
+  border-bottom-left-radius: inherit;
+  border-bottom-right-radius: inherit;
+}
+
+.lobby-row:has(> .lobby-row-checkbox) > label::after,
+.lobby-row:has(> .lobby-row-checkbox) > .lobby-row-label > label::after {
+  content: "";
+  inset: 0;
+  position: absolute;
+}
+
+/* Links in a description, and help links beside it, stay clickable on their own. */
+.lobby-row:has(> .lobby-row-checkbox) a {
+  position: relative;
+  z-index: 1;
+}
+
 /* Keep the theme's hidden checkbox from taking up room beside the box. */
 .lobby-row-checkbox input {
   margin: 0;

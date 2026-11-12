@@ -46,6 +46,9 @@
   --button-green: #449644;
   --button-green-hover: #84c884;
   --checkbox-checked: #666;
+  /* 3:1 contrast with "--surface-panel", so that an unchecked box is visible */
+  --checkbox-border: #8f8f8f;
+  --row-hover-bg: #f0f0f0;
   --button-alt-bg: transparent;
   --button-alt-hover-bg: #f8f8f8;
   --button-alt-active-bg: #f0f0f0;
@@ -200,6 +203,9 @@
   --button-green: var(--green);
   --button-green-hover: #256a29;
   --checkbox-checked: var(--green);
+  --checkbox-border: #6b7178;
+  /* Lighter than the row, so that it lights up */
+  --row-hover-bg: #2b2f34;
   --button-alt-bg: var(--surface-sunken);
   --button-alt-hover-bg: var(--surface);
   --button-alt-active-bg: var(--surface);

@@ -598,6 +598,31 @@ function getStates({
         await page.waitForTimeout(SETTLE_MILLISECONDS);
       },
     },
+    // Its video moves the mouse over checkbox rows, then clicks the padding at the corner of a row
+    // twice, which turns the setting on and off.
+    {
+      name: "settings-row-hover",
+      path: "/",
+      loggedIn: true,
+      prepare: async (page) => {
+        await clickNav(page, "settings");
+      },
+      record: async (page) => {
+        function row(id: string) {
+          return page
+            .locator(".lobby-row", { has: page.locator(`#${id}`) })
+            .last();
+        }
+        for (const id of ["keldonMode", "colorblindMode", "realLifeMode"]) {
+          await row(id).hover();
+          await page.waitForTimeout(SETTLE_MILLISECONDS);
+        }
+        for (let i = 0; i < 2; i++) {
+          await row("realLifeMode").click({ position: { x: 4, y: 4 } });
+          await page.waitForTimeout(SETTLE_MILLISECONDS);
+        }
+      },
+    },
     {
       name: "lobby-history",
       path: "/",

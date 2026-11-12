@@ -388,9 +388,9 @@ input[type="radio"] + label::before {
   font-style: normal;
   font-weight: normal;
   text-transform: none;
-  background: var(--surface-sunken);
+  background: var(--surface);
   border-radius: var(--radius);
-  border: solid 1px var(--border);
+  border: solid 1px var(--checkbox-border);
   content: "";
   display: inline-block;
   height: 1.8em;
