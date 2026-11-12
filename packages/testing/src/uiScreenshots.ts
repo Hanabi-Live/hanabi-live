@@ -677,6 +677,8 @@ function getStates({
         await page.click("#lobby-chat-input + button");
         await page.fill("#emoji-picker input", "cat");
       },
+      // The name of a symbol shows in the site's tooltip.
+      hover: '#emoji-picker [role="tabpanel"] > button:first-child',
     },
     // A reply before anyone sent us a private message shows a warning.
     {

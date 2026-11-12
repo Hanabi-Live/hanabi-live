@@ -71,6 +71,17 @@ export default defineConfig(
 
       // Keep HTML serialization compatible with browsers without Element.getHTML.
       "unicorn/prefer-dom-node-html-methods": "off",
+
+      // The HTML "title" attribute shows the browser's plain tooltip, which does not match the
+      // site's tooltips.
+      "no-restricted-syntax": [
+        "error",
+        {
+          selector: "JSXAttribute[name.name='title']",
+          message:
+            'Use the site\'s tooltip ("tooltipRef" from "src/tooltipRef.ts") instead of the "title" attribute.',
+        },
+      ],
     },
   },
 

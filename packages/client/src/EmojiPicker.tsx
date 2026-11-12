@@ -5,6 +5,7 @@ import { CHAT_EMOJI_GROUPS, CHAT_EMOTES } from "@hanabi-live/data";
 import { useState } from "react";
 import { renderRoot } from "./renderRoot.tsx";
 import { TAB_CLASS_NAME } from "./tabClassName.ts";
+import { tooltipRef } from "./tooltipRef.ts";
 
 /** Searching for a short string matches most symbols, and drawing them all would be slow. */
 const MAX_SEARCH_RESULTS = 100;
@@ -131,12 +132,13 @@ function EmojiPicker({
       >
         {symbols.map((symbol) => (
           <button
+            aria-label={symbol.title}
             className={BUTTON_CLASS_NAME}
             key={symbol.title}
             onClick={() => {
               onPick(symbol.text);
             }}
-            title={symbol.title}
+            ref={tooltipRef(symbol.title)}
             type="button"
           >
             {symbol.imagePath === undefined ? (

@@ -7,6 +7,7 @@ import { globals } from "../../Globals.ts";
 import { showWarning } from "../../modals.ts";
 import type { RootState } from "../../store.ts";
 import { store, useAppSelector } from "../../store.ts";
+import { tooltipRef } from "../../tooltipRef.ts";
 import * as createGame from "../createGame.ts";
 import { ShownGameCount } from "../gameHistory/HistoryLists.tsx";
 import * as history from "../history.ts";
@@ -319,7 +320,7 @@ function TotalGames() {
       onClick={() => {
         globals.conn?.send("lobbyLoad", {});
       }}
-      title="Loading lobby statistics failed."
+      ref={tooltipRef("Loading lobby statistics failed.")}
     >
       unavailable (click to retry)
     </span>
