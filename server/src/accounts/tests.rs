@@ -726,49 +726,22 @@ async fn an_unknown_username_creates_an_account_only_when_asked_postgres() {
 }
 
 #[tokio::test]
-async fn new_accounts_start_with_the_system_dark_mode_postgres() {
+async fn new_accounts_start_with_the_light_theme_postgres() {
     let Some(db) = test_support::TestDb::create().await else {
         return;
     };
     let app = router(db.pool.clone(), config());
-    for (username, dark_mode, expected) in [
-        ("Dark", "&darkMode=true", true),
-        ("Light", "&darkMode=false", false),
-        ("Unspecified", "", false),
-    ] {
-        let (status, _, body) = request(
-            &app,
-            "POST",
-            "/login",
-            &format!(
-                "username={username}&password=secret&version=42&createAccount=true{dark_mode}"
-            ),
-            None,
-            false,
-        )
-        .await;
-        assert_eq!(status, StatusCode::OK, "{body}");
-        let id: i32 = sqlx::query_scalar!("SELECT id FROM users WHERE username=$1", username)
-            .fetch_one(&db.pool)
-            .await
-            .unwrap();
-        let settings = crate::lobby::get_settings(&db.pool, hanabi_protocol::UserId(id))
-            .await
-            .unwrap();
-        assert_eq!(settings.dark_mode, expected, "{username}");
-    }
-    // Only a new account takes the system preference.
     let (status, _, body) = request(
         &app,
         "POST",
         "/login",
-        "username=Light&password=secret&version=42&createAccount=true&darkMode=true",
+        "username=Alice&password=secret&version=42&createAccount=true",
         None,
         false,
     )
     .await;
     assert_eq!(status, StatusCode::OK, "{body}");
-    let id: i32 = sqlx::query_scalar!("SELECT id FROM users WHERE username=$1", "Light")
+    let id: i32 = sqlx::query_scalar!("SELECT id FROM users WHERE username=$1", "Alice")
         .fetch_one(&db.pool)
         .await
         .unwrap();

@@ -15,8 +15,8 @@ pub use history::{blocked_seeds, get_history, history_ids};
 use history::{seed_game_count, seed_history_ids};
 use relationships::Change;
 pub use relationships::{block_relations, blocked, blocked_between, friends};
+pub use settings::get_settings;
 use settings::set_settings;
-pub use settings::{changed_settings, get_settings};
 
 use crate::accounts::{escape_html, normalize_string};
 use crate::routing::{Route, route};

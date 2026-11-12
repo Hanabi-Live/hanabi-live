@@ -265,7 +265,7 @@ async fn login(
         Err(rejection) => {
             return unreadable_body(
                 rejection.status(),
-                "The login form must contain only a username, password, newPassword, version, darkMode, createAccount, and client.",
+                "The login form must contain only a username, password, newPassword, version, createAccount, and client.",
             );
         }
     };
@@ -393,19 +393,14 @@ async fn login_inner(state: &Accounts, ip: &str, input: LoginRequest) -> Result<
         let hash = hash_password(ip, input.password).await?;
         // Creating an account costs as much as a guess, so it counts against the address.
         attempt.keep();
-        let settings = crate::lobby::changed_settings(&hanabi_protocol::Settings {
-            dark_mode: input.dark_mode,
-            ..Default::default()
-        });
         id = sqlx::query_scalar!(
-            "INSERT INTO users (username, normalized_username, password_hash, last_ip, is_bot, settings)
-             VALUES ($1,$2,$3,$4,$5,$6) RETURNING id",
+            "INSERT INTO users (username, normalized_username, password_hash, last_ip, is_bot)
+             VALUES ($1,$2,$3,$4,$5) RETURNING id",
             username,
             normalized,
             hash,
             ip,
-            input.client == ClientKind::Bot,
-            settings
+            input.client == ClientKind::Bot
         )
         .fetch_one(&state.pool)
         .await?;

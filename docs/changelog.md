@@ -35,6 +35,7 @@ of the repository.
 - Profiles now show the time spent reviewing games in solo and shared replays,
   counted from today.
 - Player profiles now show the total time spent playing and reviewing.
+- New accounts now start with the light theme, whatever the system theme is.
 
 ## November 11th, 2026
 

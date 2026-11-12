@@ -15,7 +15,6 @@ import type { z } from "zod";
 import { globals } from "../Globals.ts";
 import { FADE_TIME_MS, HTTP_STATUS } from "../constants.ts";
 import { reloadOutdatedClient } from "../outdatedClient.ts";
-import * as theme from "../theme.ts";
 import {
   getHtmlElement,
   getHtmlInputElement,
@@ -163,7 +162,6 @@ function send(
     password,
     newPassword,
     version: VERSION,
-    darkMode: theme.systemPrefersDark(),
     createAccount,
   });
 

@@ -29,9 +29,6 @@ pub struct LoginRequest {
         skip_serializing_if = "Option::is_none"
     )]
     pub version: Option<String>,
-    /// Whether the client's system prefers a dark theme. A new account starts with this as its
-    /// dark mode setting.
-    pub dark_mode: bool,
     /// Creates the account if the username is free. Without it, an unknown username fails with
     /// `NoticeCode::NoAccount`, so that a typo does not create an account.
     pub create_account: bool,

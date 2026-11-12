@@ -5,7 +5,6 @@ const request = {
   username: "alice",
   password: "secret",
   version: "1",
-  darkMode: false,
   createAccount: false,
   client: "web",
 } as const;

@@ -10,11 +10,10 @@ import type { z } from "zod";
 export function loginRequestBody(
   data: z.output<typeof loginRequestSchema>,
 ): URLSearchParams {
-  const { newPassword, darkMode, createAccount, ...fields } = data;
+  const { newPassword, createAccount, ...fields } = data;
   return new URLSearchParams({
     ...fields,
     ...(newPassword !== undefined && { newPassword }),
-    darkMode: String(darkMode),
     createAccount: String(createAccount),
   });
 }

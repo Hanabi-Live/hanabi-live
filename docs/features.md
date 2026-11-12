@@ -355,8 +355,7 @@ These options are on the "Settings" page.
 
 ### Dark Mode
 
-- Dark mode is saved to your account. New accounts start with the system's
-  theme.
+- Dark mode is saved to your account. New accounts start with the light theme.
 
 ### New UI
 

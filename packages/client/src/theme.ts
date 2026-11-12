@@ -8,8 +8,8 @@ const DARK = "dark";
 /** Before dark mode was an account setting, each browser stored its own choice under this key. */
 const LEGACY_STORAGE_KEY = "darkMode";
 
-/** Whether the system prefers a dark theme. A new account starts with this as its setting. */
-export function systemPrefersDark(): boolean {
+/** Whether the system prefers a dark theme. */
+function systemPrefersDark(): boolean {
   return globalThis.matchMedia("(prefers-color-scheme: dark)").matches;
 }
 

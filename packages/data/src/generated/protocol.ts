@@ -784,11 +784,6 @@ export const loginRequestSchema = z
      */
     createAccount: z.boolean().prefault(false),
     /**
-     * Whether the client's system prefers a dark theme. A new account starts with this as its
-     * dark mode setting.
-     */
-    darkMode: z.boolean().prefault(false),
-    /**
      * Sets a new password after the current one is verified. A blank value is absent, as forms
      * send a blank input.
      */
