@@ -18,7 +18,8 @@ pub async fn history_ids(pool: &PgPool, id: UserId, offset: i64, amount: i64) ->
     .await?)
 }
 
-/// A page of the games on a seed, in the order that `get_history` gives them with `seed_order`.
+/// A page of the games on a seed: the games without rule options first, then the highest scores, then
+/// the earliest games.
 pub async fn seed_history_ids(
     pool: &PgPool,
     seed: &str,
@@ -27,7 +28,10 @@ pub async fn seed_history_ids(
 ) -> Result<Vec<i32>> {
     Ok(sqlx::query_scalar!(
         "SELECT id FROM games WHERE seed=$1
-         ORDER BY score DESC, datetime_finished, id LIMIT $2 OFFSET $3",
+         ORDER BY (deck_plays OR empty_clues OR one_extra_card OR one_less_card OR all_or_nothing
+             OR detrimental_characters),
+           score DESC, datetime_finished, id
+         LIMIT $2 OFFSET $3",
         seed,
         amount,
         offset
@@ -53,14 +57,12 @@ struct HistoryRow {
     num_games_on_this_seed: i32,
 }
 
+/// The games with these IDs, in the same order.
 pub async fn get_history(
     pool: &PgPool,
     ids: &[i32],
-    seed_order: bool,
 ) -> Result<Vec<hanabi_protocol::GameHistoryEntry>> {
-    macro_rules! rows {
-        ($order:literal) => {
-            sqlx::query_as!(
+    let rows = sqlx::query_as!(
                 HistoryRow,
         "SELECT to_jsonb(g) AS \"game!: Json<GameRecord>\",
             COALESCE((SELECT array_agg(u.username ORDER BY LOWER(u.username) COLLATE \"C\")
@@ -69,15 +71,11 @@ pub async fn get_history(
             COALESCE((SELECT ARRAY_AGG(DISTINCT tag ORDER BY tag) FROM game_tags
                 WHERE game_id=g.id),'{}') AS \"tags!\",
             COALESCE((SELECT num_games FROM seeds WHERE seed=g.seed),0) AS \"num_games_on_this_seed!\"
-         FROM games g WHERE id=ANY($1) ORDER BY " + $order, ids
-            ).fetch_all(pool).await?
-        };
-    }
-    let rows = if seed_order {
-        rows!("g.score DESC, g.datetime_finished, g.id")
-    } else {
-        rows!("g.datetime_finished DESC, g.id DESC")
-    };
+         FROM games g WHERE id=ANY($1) ORDER BY array_position($1, g.id)",
+        ids
+    )
+    .fetch_all(pool)
+    .await?;
     let time = hanabi_protocol::Timestamp::from;
     let mut result = Vec::new();
     for row in rows {

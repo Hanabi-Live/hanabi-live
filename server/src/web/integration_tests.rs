@@ -846,7 +846,7 @@ async fn full_history_bootstrap_queues_in_order_without_a_writer_postgres() {
     let own = test_frame(
         "gameHistory",
         json!(
-            lobby::get_history(&fixture.db.pool, &own_ids, false)
+            lobby::get_history(&fixture.db.pool, &own_ids)
                 .await
                 .unwrap()
         ),
@@ -854,7 +854,7 @@ async fn full_history_bootstrap_queues_in_order_without_a_writer_postgres() {
     let next = test_frame(
         "gameHistory",
         json!(
-            lobby::get_history(&fixture.db.pool, &next_ids, false)
+            lobby::get_history(&fixture.db.pool, &next_ids)
                 .await
                 .unwrap()
         ),

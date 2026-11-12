@@ -600,6 +600,12 @@ async fn lobby_directed_linked_seeds_and_histories_postgres() {
     let ga = game(&db, a, "p2v0s1", 20).await;
     let gb = game(&db, b, "p2v0s1", 25).await;
     let _gc = game(&db, c, "p2v0s2", 15).await;
+    // A game with a rule option comes after the games without one, even with a higher score.
+    let gd = game(&db, b, "p2v0s1", 25).await;
+    sqlx::query!("UPDATE games SET deck_plays=TRUE WHERE id=$1", gd)
+        .execute(&db.pool)
+        .await
+        .unwrap();
     let _ = run(&db.pool, &who, &[], "linkAdd", json!({"username":"Bob"})).await;
     let _ = run(
         &db.pool,
@@ -671,9 +677,10 @@ async fn lobby_directed_linked_seeds_and_histories_postgres() {
     let history = self_data(&result, "gameHistoryOtherScores");
     assert_eq!(history["games"][0]["gameId"], gb);
     assert_eq!(history["games"][1]["gameId"], ga);
+    assert_eq!(history["games"][2]["gameId"], gd);
     assert_eq!(
         (&history["offset"], &history["total"]),
-        (&json!(0), &json!(2))
+        (&json!(0), &json!(3))
     );
     // Later pages continue in the same order, and count every game on the seed.
     let result = run(
@@ -689,7 +696,7 @@ async fn lobby_directed_linked_seeds_and_histories_postgres() {
     assert_eq!(history["games"][0]["gameId"], ga);
     assert_eq!(
         (&history["offset"], &history["total"]),
-        (&json!(1), &json!(2))
+        (&json!(1), &json!(3))
     );
     sqlx::query!(
         "INSERT INTO game_tags(game_id,user_id,tag) VALUES($1,$2,$3)",

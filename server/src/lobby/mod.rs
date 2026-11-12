@@ -290,7 +290,7 @@ pub async fn dispatch(
             vec![Effect::to_self(Outgoing::new(
                 hanabi_protocol::server::GAME_HISTORY,
                 hanabi_protocol::GamePage {
-                    games: get_history(pool, &ids, false).await?,
+                    games: get_history(pool, &ids).await?,
                     offset,
                     total: hanabi_protocol::Count(total),
                 },
@@ -312,7 +312,7 @@ pub async fn dispatch(
             }
             let offset = request.offset;
             let ids = seed_history_ids(pool, seed, offset.0, request.limit).await?;
-            let games = get_history(pool, &ids, true).await?;
+            let games = get_history(pool, &ids).await?;
             let total = seed_game_count(pool, seed).await?;
             vec![Effect::to_self(Outgoing::new(
                 hanabi_protocol::server::GAME_HISTORY_OTHER_SCORES,

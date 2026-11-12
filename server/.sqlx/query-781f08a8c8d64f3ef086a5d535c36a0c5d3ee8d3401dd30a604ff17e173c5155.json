@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "SELECT id FROM games WHERE seed=$1\n         ORDER BY score DESC, datetime_finished, id LIMIT $2 OFFSET $3",
+  "query": "SELECT id FROM games WHERE seed=$1\n         ORDER BY (deck_plays OR empty_clues OR one_extra_card OR one_less_card OR all_or_nothing\n             OR detrimental_characters),\n           score DESC, datetime_finished, id\n         LIMIT $2 OFFSET $3",
   "describe": {
     "columns": [
       {
@@ -26,5 +26,5 @@
       false
     ]
   },
-  "hash": "67df980f0e3fb8c83de37c645cf40cd0b2975fd4d81a87a0d372265ecc18a876"
+  "hash": "781f08a8c8d64f3ef086a5d535c36a0c5d3ee8d3401dd30a604ff17e173c5155"
 }
