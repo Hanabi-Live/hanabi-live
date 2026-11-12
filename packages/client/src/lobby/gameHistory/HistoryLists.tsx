@@ -270,8 +270,10 @@ function HistoryOptions({ options }: { readonly options: GameOptions }) {
     return <>[none]</>;
   }
 
+  // The tooltip's arrow points at the middle of this element, so it must be only as wide as the
+  // icons, not the cell.
   return (
-    <div ref={ref}>
+    <div className="tw:w-fit" ref={ref}>
       {items.length > MAX_OPTION_ICONS ? (
         <i className="fas fa-ellipsis-h" />
       ) : (
