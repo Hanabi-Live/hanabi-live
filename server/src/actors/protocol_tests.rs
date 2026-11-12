@@ -440,16 +440,15 @@ async fn duck_clue_identity_is_private_in_live_history_and_recovery_but_not_comp
             } else {
                 1..6
             };
-            let (action, value) = values
+            let action = values
                 .map(|value| {
-                    let action = if clue_type == hanabi_engine::ClueType::Color {
-                        json!({"type":"clue","receiverIndex":target,"clue":{"type":"color","value":value}})
+                    if clue_type == hanabi_engine::ClueType::Color {
+                        json!({"type":"clue","receiverIndex":target,"clue":{"type":"color","color":value}})
                     } else {
-                        json!({"type":"clue","receiverIndex":target,"clue":{"type":"rank","value":value}})
-                    };
-                    (action, value)
+                        json!({"type":"clue","receiverIndex":target,"clue":{"type":"rank","rank":value}})
+                    }
                 })
-                .find(|(action, _)| {
+                .find(|action| {
                     serde_json::from_value::<hanabi_engine::PlayerAction>(action.clone()).is_ok_and(
                         |action| !hanabi_engine::touched_orders(game, &action).is_empty(),
                     )
@@ -463,7 +462,7 @@ async fn duck_clue_identity_is_private_in_live_history_and_recovery_but_not_comp
             h.send(index, "playerAction", json!({"tableId":id,"action":action}))
                 .await?;
             h.barrier(index).await?;
-            let clue = json!({"type":clue_type,"value":value});
+            let clue = action["clue"].clone();
             originals.push(clue.clone());
             for index in 0..5 {
                 let events = h
@@ -534,7 +533,12 @@ async fn duck_clue_identity_is_private_in_live_history_and_recovery_but_not_comp
             .unwrap()
             .iter()
             .filter(|event| event["type"] == "clue")
-            .map(|event| event["clue"].clone())
+            .map(|event| {
+                // The engine names a clue's color or rank `value`; the wire names it by its type.
+                let clue = &event["clue"];
+                let kind = clue["type"].as_str().unwrap_or_default();
+                json!({ "type": kind, (kind): clue["value"] })
+            })
             .collect::<Vec<_>>();
         ensure!(
             saved == originals,
@@ -1664,7 +1668,7 @@ async fn remade_tables_publish_fresh_statistics_for_every_player() -> Result<()>
             } else if game.clue_tokens == 8 {
                 let target = 1 - active;
                 let card = &game.deck[game.players[target].hand[0]];
-                json!({"tableId":id,"action":{"type":"clue","receiverIndex":target,"clue":{"type":"rank","value":card.rank}}})
+                json!({"tableId":id,"action":{"type":"clue","receiverIndex":target,"clue":{"type":"rank","rank":card.rank}}})
             } else {
                 json!({"tableId":id,"action":{"type":"discard","order":hand[0]}})
             };

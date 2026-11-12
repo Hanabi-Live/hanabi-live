@@ -74,7 +74,11 @@ describe("hypothetical state", () => {
       startingState,
       false,
       [
-        { type: "morph", order: 0 as CardOrder, suitIndex: undefined, rank: 3 },
+        {
+          type: "morph",
+          order: 0 as CardOrder,
+          identity: { suitIndex: undefined, rank: 3 },
+        },
         action,
         action,
       ],
@@ -108,8 +112,7 @@ describe("hypothetical state", () => {
       {
         type: "morph",
         order: 30 as CardOrder,
-        suitIndex: undefined,
-        rank: undefined,
+        identity: { suitIndex: undefined, rank: undefined },
       },
       false,
       metadata,
@@ -124,8 +127,7 @@ describe("hypothetical state", () => {
       {
         type: "morph",
         order: 30 as CardOrder,
-        suitIndex: 1,
-        rank: 2,
+        identity: { suitIndex: 1, rank: 2 },
       },
       false,
       metadata,
@@ -305,8 +307,7 @@ describe("hypothetical state", () => {
       {
         type: "morph",
         order: 0 as CardOrder,
-        suitIndex: 1,
-        rank: 2,
+        identity: { suitIndex: 1, rank: 2 },
       },
       false,
       metadata,
@@ -484,8 +485,7 @@ describe("hypothetical state", () => {
           {
             type: "morph",
             order: 0 as CardOrder,
-            suitIndex: undefined,
-            rank: undefined,
+            identity: { suitIndex: undefined, rank: undefined },
           },
           finished,
           metadata,
@@ -559,7 +559,11 @@ describe("hypothetical state", () => {
 
     state = hypotheticalStateReducer(
       state,
-      { type: "morph", order: 0 as CardOrder, suitIndex: 3, rank: 1 },
+      {
+        type: "morph",
+        order: 0 as CardOrder,
+        identity: { suitIndex: 3, rank: 1 },
+      },
       false,
       metadata,
     );
@@ -567,7 +571,11 @@ describe("hypothetical state", () => {
 
     state = hypotheticalStateReducer(
       state,
-      { type: "morph", order: 1 as CardOrder, suitIndex: 1, rank: 5 },
+      {
+        type: "morph",
+        order: 1 as CardOrder,
+        identity: { suitIndex: 1, rank: 5 },
+      },
       false,
       metadata,
     );

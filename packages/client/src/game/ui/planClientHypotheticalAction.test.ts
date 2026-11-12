@@ -180,7 +180,7 @@ describe("client hypothetical planning", () => {
     sendHypotheticalAction({
       type: "clue",
       receiverIndex: 1 as PlayerIndex,
-      clue: { type: "rank", value: 1 },
+      clue: { type: "rank", rank: 1 },
     });
 
     expect(dispatch).toHaveBeenCalledWith({
@@ -188,7 +188,7 @@ describe("client hypothetical planning", () => {
       shared: false,
       action: {
         type: "clue",
-        clue: { type: "rank", value: 1 },
+        clue: { type: "rank", rank: 1 },
         playerIndex: 0,
         orders: [1],
         receiverIndex: 1,

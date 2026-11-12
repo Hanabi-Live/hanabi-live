@@ -844,7 +844,7 @@ describe("gameReducer", () => {
       expect(clue.giver).toBe(testClue.playerIndex);
       expect(clue.target).toBe(testClue.receiverIndex);
       expect(clue.type).toBe(testClue.clue.type);
-      expect(clue.value).toBe(testClue.clue.value);
+      expect(clue).toMatchObject({ rank: 5 });
       expect(clue.list).toEqual([]);
       expect(clue.negativeList).toEqual([]);
     });

@@ -199,13 +199,13 @@ impl Move {
             }) => Self::Clue {
                 target: target.index(),
                 clue: match clue {
-                    WireClue::Color { value } => Clue {
+                    WireClue::Color { color } => Clue {
                         clue_type: ClueType::Color,
-                        value: value.into(),
+                        value: color.into(),
                     },
-                    WireClue::Rank { value } => Clue {
+                    WireClue::Rank { rank } => Clue {
                         clue_type: ClueType::Rank,
-                        value: value.into(),
+                        value: rank.into(),
                     },
                 },
             },

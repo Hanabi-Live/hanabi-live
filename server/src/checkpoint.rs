@@ -378,6 +378,11 @@ const UPGRADES: &[(&str, &str, Upgrade)] = &[
     ("hanabi-live-12", "hanabi-live-13", consistent_wire_names),
     ("hanabi-live-13", "hanabi-live-14", suggested_deals),
     ("hanabi-live-14", "hanabi-live-15", characters_with_names),
+    (
+        "hanabi-live-15",
+        "hanabi-live-16",
+        clue_fields_and_morphed_identities,
+    ),
 ];
 
 /// Rewrites a table that an older server saved, one format at a time, into the current format.
@@ -797,6 +802,49 @@ fn characters_with_names(head: &mut Value, _: &mut [(String, String)]) -> Result
         }
     }
     Ok(())
+}
+
+/// Format 15 named the color or rank of a clue `value`, and held the suit and rank of a
+/// hypothetical's morphed card in the event itself.
+fn clue_fields_and_morphed_identities(
+    head: &mut Value,
+    parts: &mut [(String, String)],
+) -> Result<()> {
+    if let Some(Value::Array(actions)) = head.pointer_mut("/extra/customActions") {
+        actions.iter_mut().for_each(name_clue_field);
+    }
+    if let Some(Value::Array(events)) = head.pointer_mut("/phase/replay/hypotheticalActions") {
+        for event in events.iter_mut() {
+            name_clue_field(event);
+            if let Some(event) = event.as_object_mut()
+                && event.get("type").is_some_and(|kind| kind == "morph")
+            {
+                let identity = ["suitIndex", "rank"]
+                    .into_iter()
+                    .filter_map(|field| Some((field.to_owned(), event.remove(field)?)))
+                    .collect::<Map<_, _>>();
+                event.insert("identity".into(), Value::Object(identity));
+            }
+        }
+    }
+    edit_parts(parts, STEP, |step| {
+        if let Some(action) = step.get_mut("action") {
+            name_clue_field(action);
+        }
+    })
+}
+
+/// Renames the `value` of a turn's or an event's clue to the field of its type.
+fn name_clue_field(holder: &mut Value) {
+    let Some(clue) = holder.get_mut("clue") else {
+        return;
+    };
+    let field = match clue["type"].as_str() {
+        Some("color") => "color",
+        Some("rank") => "rank",
+        _ => return,
+    };
+    rename(Some(clue), "value", field);
 }
 
 /// Rewrites a clue that a turn of format 3 gives.

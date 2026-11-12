@@ -344,7 +344,7 @@ function getActionFromHypoClue(
     return {
       type: "clue",
       receiverIndex: playerIndex,
-      clue: { type: "color", value: colorIndex },
+      clue: { type: "color", color: colorIndex },
     };
   }
 
@@ -359,7 +359,7 @@ function getActionFromHypoClue(
   return {
     type: "clue",
     receiverIndex: playerIndex,
-    clue: { type: "rank", value: clueRank },
+    clue: { type: "rank", rank: clueRank },
   };
 }
 

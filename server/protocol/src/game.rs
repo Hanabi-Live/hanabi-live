@@ -174,8 +174,8 @@ pub struct Note {
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
 #[serde(tag = "type", rename_all = "camelCase", deny_unknown_fields)]
 pub enum Clue {
-    Color { value: ColorIndex },
-    Rank { value: ClueRank },
+    Color { color: ColorIndex },
+    Rank { rank: ClueRank },
 }
 
 /// A card that a player draws, plays, discards, misplays, or learns.

@@ -98,11 +98,11 @@ pub(super) fn wire_event(event: &hanabi_engine::EngineEvent) -> GameEvent {
             // The wire omits a clue that the recipient may not see.
             clue: clue.map(|clue| match clue.clue_type {
                 ClueType::Color => Clue::Color {
-                    value: ColorIndex::new(clue.value)
+                    color: ColorIndex::new(clue.value)
                         .expect("engine clue colors are suit indexes"),
                 },
                 ClueType::Rank => Clue::Rank {
-                    value: ClueRank::new(clue.value).expect("engine clue ranks are 1 to 5"),
+                    rank: ClueRank::new(clue.value).expect("engine clue ranks are 1 to 5"),
                 },
             }),
             player_index: seat(giver),

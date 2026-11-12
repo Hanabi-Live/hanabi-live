@@ -1300,7 +1300,7 @@ async function seed(address: string): Promise<Seed> {
       action: {
         type: "clue",
         receiverIndex: newest.playerIndex,
-        clue: { type: "rank", value: rank },
+        clue: { type: "rank", rank },
       },
     });
     await bob.receive("gameEvent", SERVER_COMMAND_SCHEMAS.gameEvent);
@@ -1472,7 +1472,7 @@ async function seed(address: string): Promise<Seed> {
       action: {
         type: "clue",
         receiverIndex: card.target,
-        clue: { type: "rank", value: card.rank },
+        clue: { type: "rank", rank: card.rank },
       },
     });
     await bob.receive(
@@ -1526,7 +1526,7 @@ async function seed(address: string): Promise<Seed> {
           event: {
             type: "morph",
             order: PRISM_MORPH_ORDER,
-            suitIndex: PRISM_SUIT_INDEX,
+            identity: { suitIndex: PRISM_SUIT_INDEX },
           },
         },
       },

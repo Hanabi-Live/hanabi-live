@@ -184,8 +184,8 @@ function hypotheticalStateReducerFunction(
 
     case "morph": {
       state.morphedIdentities[action.order] = {
-        suitIndex: action.suitIndex,
-        rank: action.rank,
+        suitIndex: action.identity.suitIndex,
+        rank: action.identity.rank,
       };
       return;
     }

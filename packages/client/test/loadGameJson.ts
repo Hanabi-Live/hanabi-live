@@ -351,11 +351,10 @@ function parseJsonAction(
     case JsonActionType.ActionTypeRankClue: {
       return {
         type: "clue",
-        clue: {
-          type:
-            a.type === JsonActionType.ActionTypeColorClue ? "color" : "rank",
-          value: a.value,
-        },
+        clue:
+          a.type === JsonActionType.ActionTypeColorClue
+            ? { type: "color", color: a.value }
+            : { type: "rank", rank: a.value },
         playerIndex: currentPlayer,
         receiverIndex: a.target,
         turn,

@@ -76,8 +76,7 @@ describe("replayReducer", () => {
             {
               type: "morph",
               order: 0 as CardOrder,
-              suitIndex: undefined,
-              rank: 3,
+              identity: { suitIndex: undefined, rank: 3 },
             },
             action,
             action,
@@ -113,8 +112,7 @@ describe("replayReducer", () => {
         hypoAction({
           type: "morph",
           order: 30 as CardOrder,
-          suitIndex: undefined,
-          rank: undefined,
+          identity: { suitIndex: undefined, rank: undefined },
         }),
         false,
         metadata,
@@ -129,8 +127,7 @@ describe("replayReducer", () => {
         hypoAction({
           type: "morph",
           order: 30 as CardOrder,
-          suitIndex: 1,
-          rank: 2,
+          identity: { suitIndex: 1, rank: 2 },
         }),
         false,
         metadata,
@@ -183,8 +180,7 @@ describe("replayReducer", () => {
         hypoAction({
           type: "morph",
           order: 0 as CardOrder,
-          suitIndex: 1,
-          rank: 2,
+          identity: { suitIndex: 1, rank: 2 },
         }),
         false,
         metadata,

@@ -75,7 +75,7 @@ fn typed_game_frames_preserve_wire_schema_and_projected_identities() -> Result<(
         PlayerAction::Clue(hanabi_protocol::ClueTurn {
             receiver_index: PlayerIndex::new(1_usize).unwrap(),
             clue: hanabi_protocol::Clue::Rank {
-                value: hanabi_protocol::ClueRank::new(rank).unwrap(),
+                rank: hanabi_protocol::ClueRank::new(rank).unwrap(),
             },
         }),
     )?;
@@ -108,13 +108,20 @@ fn typed_game_frames_preserve_wire_schema_and_projected_identities() -> Result<(
         let list = hanabi_engine::events_for_recipient(game.state(), recipient, None)?;
         let body = serde_json::to_value(game_events(&list))?;
         // The engine names some fields differently, and marks a missing value with null, which the
-        // wire omits. The wire also omits a clue's turn, and holds a card's suit and rank in its
-        // identity.
+        // wire omits. The wire also omits a clue's turn, names a clue's value by its type, and holds
+        // a card's suit and rank in its identity.
         let mut expected = serde_json::to_value(&list)?;
         for event in expected.as_array_mut().unwrap() {
             let event = event.as_object_mut().unwrap();
             if event["type"] == "clue" {
                 event.remove("turn");
+                // The engine names a clue's color or rank `value`; the wire names it by its type.
+                if let Some(clue) = event.get_mut("clue").and_then(Value::as_object_mut)
+                    && let Some(kind) = clue["type"].as_str().map(str::to_owned)
+                    && let Some(value) = clue.remove("value")
+                {
+                    clue.insert(kind, value);
+                }
             }
             if event["type"] == "turn"
                 && let Some(turn) = event.remove("num")
@@ -1255,7 +1262,7 @@ fn hypothetical_back_keeps_morphs() {
         let card = json!({"playerIndex":0,"order":n,"identity":identity});
         let mut value = match kind {
             "turn" => json!({"turn":n,"currentPlayerIndex":0}),
-            "morph" => json!({"order":n,"suitIndex":0,"rank":1}),
+            "morph" => json!({"order":n,"identity":identity}),
             "unmorph" => json!({"order":n}),
             _ => card,
         };

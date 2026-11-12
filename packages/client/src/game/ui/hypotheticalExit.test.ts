@@ -78,7 +78,11 @@ describe("hypothetical exit", () => {
     store.dispatch({
       type: "hypotheticalAction",
       shared: true,
-      action: { type: "morph", order: 0 as CardOrder, suitIndex: 0, rank: 1 },
+      action: {
+        type: "morph",
+        order: 0 as CardOrder,
+        identity: { suitIndex: 0, rank: 1 },
+      },
     });
     expect(store.getState().replay.hypothetical?.morphedIdentities[0]).toEqual({
       suitIndex: 0,

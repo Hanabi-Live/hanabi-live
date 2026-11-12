@@ -36,9 +36,9 @@ fn duck_projection_hides_both_clue_fields_from_every_player_and_shadow() -> Resu
                 .map(|value| {
                     serde_json::from_value::<PlayerAction>(
                         if kind == RecordedActionType::ColorClue {
-                            json!({"type": "clue", "receiverIndex": target, "clue": {"type": "color", "value": value}})
+                            json!({"type": "clue", "receiverIndex": target, "clue": {"type": "color", "color": value}})
                         } else {
-                            json!({"type": "clue", "receiverIndex": target, "clue": {"type": "rank", "value": value}})
+                            json!({"type": "clue", "receiverIndex": target, "clue": {"type": "rank", "rank": value}})
                         },
                     )
                     .unwrap()

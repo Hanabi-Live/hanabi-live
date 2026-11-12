@@ -50,8 +50,8 @@ describe("replay URL actions", () => {
     const game = {
       ...replayGameSchema.parse(JSON.parse(expand(payload)!)),
       actions: [
-        { type: "clue", receiverIndex: 1, clue: { type: "rank", value: 1 } },
-        { type: "clue", receiverIndex: 0, clue: { type: "color", value: 2 } },
+        { type: "clue", receiverIndex: 1, clue: { type: "rank", rank: 1 } },
+        { type: "clue", receiverIndex: 0, clue: { type: "color", color: 2 } },
         { type: "play", order: 0 },
         { type: "discard", order: 1 },
         {

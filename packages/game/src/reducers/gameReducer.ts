@@ -141,7 +141,7 @@ function gameReducerFunction(
           case "color": {
             const clue = castDraft({
               type: action.clue.type,
-              value: action.clue.value,
+              color: action.clue.color,
               giver: action.playerIndex,
               target: action.receiverIndex,
               segment: gameState.turn.segment,
@@ -155,7 +155,7 @@ function gameReducerFunction(
           case "rank": {
             const clue = castDraft({
               type: action.clue.type,
-              value: action.clue.value,
+              rank: action.clue.rank,
               giver: action.playerIndex,
               target: action.receiverIndex,
               segment: gameState.turn.segment,

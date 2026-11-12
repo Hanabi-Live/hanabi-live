@@ -87,7 +87,7 @@ function clickLeft(card: HanabiCard, event: MouseEvent) {
     turn.end({
       type: "clue",
       receiverIndex: card.state.location,
-      clue: { type: "color", value: colorIndex },
+      clue: { type: "color", color: colorIndex },
     });
   }
 }
@@ -190,7 +190,7 @@ function clickRight(card: HanabiCard, event: MouseEvent) {
     turn.end({
       type: "clue",
       receiverIndex: card.state.location,
-      clue: { type: "rank", value: clueRank },
+      clue: { type: "rank", rank: clueRank },
     });
     return;
   }

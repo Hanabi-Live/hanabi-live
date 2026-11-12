@@ -174,7 +174,7 @@ export function give(): void {
       const clientActionClue: ClientActionClue = {
         type: "clue",
         receiverIndex: playerButton.targetPlayerIndex,
-        clue: { type: "color", value: colorIndex },
+        clue: { type: "color", color: colorIndex },
       };
       turn.end(clientActionClue);
 
@@ -185,7 +185,7 @@ export function give(): void {
       const clientActionClue: ClientActionClue = {
         type: "clue",
         receiverIndex: playerButton.targetPlayerIndex,
-        clue: { type: "rank", value: clueOrRankButton.clue.value },
+        clue: { type: "rank", rank: clueOrRankButton.clue.value },
       };
       turn.end(clientActionClue);
 

@@ -139,7 +139,7 @@ pub fn parse(input: &ReplayGame) -> CommandResult<Imported> {
                 }) =>
                     target.index() < players.len()
                         && match clue {
-                            Clue::Color { value } => value.index() <= variant.clue_colors.len(),
+                            Clue::Color { color } => color.index() <= variant.clue_colors.len(),
                             Clue::Rank { .. } => true,
                         },
                 RecordedAction::GameOver(end) =>

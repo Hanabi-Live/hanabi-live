@@ -18,12 +18,12 @@ interface StateClueBase {
 
 export interface StateColorClue extends StateClueBase {
   readonly type: "color";
-  readonly value: ColorIndex;
+  readonly color: ColorIndex;
 }
 
 export interface StateRankClue extends StateClueBase {
   readonly type: "rank";
-  readonly value: ClueRank;
+  readonly rank: ClueRank;
 }
 
 export type StateHiddenClue = StateClueBase & HiddenClue;

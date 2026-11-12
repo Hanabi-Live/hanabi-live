@@ -94,13 +94,13 @@ impl TryFrom<ArchiveAction> for RecordedAction {
             RecordedActionType::ColorClue => Self::Clue(ClueTurn {
                 receiver_index: seat()?,
                 clue: Clue::Color {
-                    value: action.value.and_then(ColorIndex::new).ok_or_else(invalid)?,
+                    color: action.value.and_then(ColorIndex::new).ok_or_else(invalid)?,
                 },
             }),
             RecordedActionType::RankClue => Self::Clue(ClueTurn {
                 receiver_index: seat()?,
                 clue: Clue::Rank {
-                    value: action.value.and_then(ClueRank::new).ok_or_else(invalid)?,
+                    rank: action.value.and_then(ClueRank::new).ok_or_else(invalid)?,
                 },
             }),
             RecordedActionType::GameOver | RecordedActionType::GameOverByVote => {
@@ -125,8 +125,8 @@ fn stored_action(action: RecordedAction) -> Result<(i16, Option<i16>, Option<i16
         }) => (
             Some(i32::from(target)),
             Some(match clue {
-                Clue::Color { value } => i32::from(value),
-                Clue::Rank { value } => i32::from(value),
+                Clue::Color { color } => i32::from(color),
+                Clue::Rank { rank } => i32::from(rank),
             }),
         ),
         RecordedAction::GameOver(end) => (

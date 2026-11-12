@@ -185,12 +185,19 @@ pub struct ActiveHypothetical {
     pub events: Vec<HypotheticalEvent>,
 }
 
-/// A card that a hypothetical shows as another identity. A player can name only its suit or only
-/// its rank, so each is absent when the player leaves it unknown.
+/// A card that a hypothetical shows as another identity.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct MorphedCard {
     pub order: CardOrder,
+    pub identity: MorphedIdentity,
+}
+
+/// The identity that a hypothetical shows a card as. A player can name only its suit or only its
+/// rank, so each is absent when the player leaves it unknown.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct MorphedIdentity {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub suit_index: Option<SuitIndex>,
     #[serde(skip_serializing_if = "Option::is_none")]

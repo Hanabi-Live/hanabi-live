@@ -48,7 +48,7 @@ test("hidden clue frames omit the clue instead of marking it with -1", () => {
   expect(
     schema.safeParse({
       tableId: 1,
-      event: { ...event, clue: { type: -1, value: -1 } },
+      event: { ...event, clue: { type: -1, rank: -1 } },
     }).success,
   ).toBe(false);
 });

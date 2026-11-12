@@ -54,10 +54,10 @@ fn parsed(action_type: RecordedActionType, target: i32, value: i32) -> Option<Pl
         RecordedActionType::Play => json!({"type": "play", "order": target}),
         RecordedActionType::Discard => json!({"type": "discard", "order": target}),
         RecordedActionType::ColorClue => {
-            json!({"type": "clue", "receiverIndex": target, "clue": {"type": "color", "value": value}})
+            json!({"type": "clue", "receiverIndex": target, "clue": {"type": "color", "color": value}})
         }
         RecordedActionType::RankClue => {
-            json!({"type": "clue", "receiverIndex": target, "clue": {"type": "rank", "value": value}})
+            json!({"type": "clue", "receiverIndex": target, "clue": {"type": "rank", "rank": value}})
         }
         RecordedActionType::GameOver | RecordedActionType::GameOverByVote => return None,
     };

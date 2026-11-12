@@ -534,13 +534,13 @@ describe("hypothetical planning", () => {
       {
         type: "clue",
         receiverIndex: 1 as PlayerIndex,
-        clue: { type: "color", value: colorIndex },
+        clue: { type: "color", color: colorIndex },
       },
       makeContext(),
     );
     expect(colorActions?.[0]).toMatchObject({
       type: "clue",
-      clue: { type: "color", value: colorIndex },
+      clue: { type: "color", color: colorIndex },
       playerIndex: 0,
       receiverIndex: 1,
     });
@@ -548,13 +548,13 @@ describe("hypothetical planning", () => {
       {
         type: "clue",
         receiverIndex: 1 as PlayerIndex,
-        clue: { type: "rank", value: 1 as ClueRank },
+        clue: { type: "rank", rank: 1 as ClueRank },
       },
       makeContext(),
     );
     expect(rankActions?.[0]).toMatchObject({
       type: "clue",
-      clue: { type: "rank", value: 1 },
+      clue: { type: "rank", rank: 1 },
     });
   });
 
@@ -581,7 +581,7 @@ describe("hypothetical planning", () => {
         {
           type: "clue",
           receiverIndex: target as PlayerIndex,
-          clue: { type: "rank", value: 3 as ClueRank },
+          clue: { type: "rank", rank: 3 as ClueRank },
         },
         context,
       );
@@ -620,7 +620,7 @@ describe("hypothetical planning", () => {
         identity: { suitIndex: undefined, rank: undefined },
       }),
     );
-    const clue = { type: "rank" as const, value: 1 as ClueRank };
+    const clue = { type: "rank" as const, rank: 1 as ClueRank };
     expect(getHypotheticalTouchedCards([touchedCard], clue, variant)).toEqual(
       [],
     );
@@ -668,7 +668,7 @@ describe("hypothetical planning", () => {
     expect(
       getHypotheticalTouchedCards(
         [blank],
-        { type: "rank", value: 1 as ClueRank },
+        { type: "rank", rank: 1 as ClueRank },
         variant,
       ),
     ).toEqual([]);

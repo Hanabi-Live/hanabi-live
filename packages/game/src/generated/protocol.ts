@@ -244,9 +244,9 @@ export const colorIndexSchema = z.literal([0, 1, 2, 3, 4, 5]);
  */
 export const clueSchema = z.discriminatedUnion("type", [
   z
-    .strictObject({ type: z.literal("color"), value: colorIndexSchema })
+    .strictObject({ color: colorIndexSchema, type: z.literal("color") })
     .readonly(),
-  z.strictObject({ type: z.literal("rank"), value: clueRankSchema }).readonly(),
+  z.strictObject({ rank: clueRankSchema, type: z.literal("rank") }).readonly(),
 ]);
 
 /**
@@ -446,6 +446,17 @@ export const gameOptionsSchema = z
   .readonly();
 
 /**
+ * The identity that a hypothetical shows a card as. A player can name only its suit or only its
+ * rank, so each is absent when the player leaves it unknown.
+ */
+export const morphedIdentitySchema = z
+  .strictObject({
+    rank: cardRankSchema.optional(),
+    suitIndex: suitIndexSchema.optional(),
+  })
+  .readonly();
+
+/**
  * One event in a hypothetical. The server relays these; each client applies them to its own copy
  * of the game.
  */
@@ -532,9 +543,8 @@ export const hypotheticalEventSchema = z.discriminatedUnion("type", [
     .readonly(),
   z
     .strictObject({
+      identity: morphedIdentitySchema,
       order: cardOrderSchema,
-      rank: cardRankSchema.optional(),
-      suitIndex: suitIndexSchema.optional(),
       type: z.literal("morph"),
     })
     .readonly(),

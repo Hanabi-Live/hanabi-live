@@ -910,18 +910,31 @@ mod tests {
         ensure!(serde_json::to_value(&decoded)? == expected);
         Ok(())
     }
-    /// Rewrites a part from format 14 into format 13, for the deals that these tests suggest.
-    fn format_13(text: &str) -> String {
-        text.replace(
-            "\"deal\":{\"type\":\"replay\",\"gameId\":5,\"turn\":2}",
-            "\"replayGameId\":5,\"replayTurn\":2",
-        )
-        .replace(
-            "\"deal\":{\"type\":\"seed\",\"suffix\":\"7\"}",
-            "\"seedSuffix\":\"7\"",
-        )
+    /// Rewrites a head or a part from format 16 into format 15, for the clues and morphs that these
+    /// tests give. A head lists its fields in alphabetical order, and a part in the order of their
+    /// declaration.
+    fn format_15(text: &str) -> String {
+        let text = regex!(r#""type":"(color|rank)","(?:color|rank)":"#)
+            .replace_all(text, r#""type":"$1","value":"#);
+        let text = regex!(r#"\{"(?:color|rank)":(\d+),"type":"(color|rank)"\}"#)
+            .replace_all(&text, r#"{"type":"$2","value":$1}"#);
+        regex!(r#"\{"identity":\{([^{}]*)\},"order":(\d+),"type":"morph"\}"#)
+            .replace_all(&text, r#"{"order":$2,"type":"morph",$1}"#)
+            .into_owned()
     }
-    /// Rewrites a head or a part from format 14 into format 12, for the tables that these tests
+    /// Rewrites a part from format 16 into format 13, for the deals that these tests suggest.
+    fn format_13(text: &str) -> String {
+        format_15(text)
+            .replace(
+                "\"deal\":{\"type\":\"replay\",\"gameId\":5,\"turn\":2}",
+                "\"replayGameId\":5,\"replayTurn\":2",
+            )
+            .replace(
+                "\"deal\":{\"type\":\"seed\",\"suffix\":\"7\"}",
+                "\"seedSuffix\":\"7\"",
+            )
+    }
+    /// Rewrites a head or a part from format 16 into format 12, for the tables that these tests
     /// build, which have no failed plays.
     fn format_12(text: &str) -> String {
         format_13(text)
@@ -1006,7 +1019,7 @@ mod tests {
         let clue = |rank| hanabi_protocol::ClueTurn {
             receiver_index: hanabi_protocol::PlayerIndex(1),
             clue: hanabi_protocol::Clue::Rank {
-                value: hanabi_protocol::ClueRank(rank),
+                rank: hanabi_protocol::ClueRank(rank),
             },
         };
         // A clue must touch a card, so give the first rank that Bob holds.
@@ -1198,7 +1211,7 @@ mod tests {
             .hypothetical_actions
             .push(serde_json::from_value(json!({
                 "type": "clue",
-                "clue": {"type": "rank", "value": 1},
+                "clue": {"type": "rank", "rank": 1},
                 "playerIndex": 0,
                 "receiverIndex": 1,
                 "orders": [5],
@@ -1224,7 +1237,7 @@ mod tests {
             json!({"type": "misplay", "playerIndex": 0, "order": 2}),
             json!({
                 "type": "clue",
-                "clue": {"type": "rank", "value": 1},
+                "clue": {"type": "rank", "rank": 1},
                 "playerIndex": 0,
                 "receiverIndex": 1,
                 "orders": [5],
@@ -1284,7 +1297,7 @@ mod tests {
         table.chat.push(seeded);
         let expected = serde_json::to_value(&table)?;
         let (encoded, _) = crate::checkpoint::encode(&mut table, &SavedParts::default())?;
-        let mut head: Value = serde_json::from_str(&encoded.head)?;
+        let mut head: Value = serde_json::from_str(&format_15(&encoded.head))?;
         head["format"] = json!("hanabi-live-13");
         let parts = encoded
             .changes
@@ -1310,7 +1323,7 @@ mod tests {
         let mut table = replayed()?;
         let expected = serde_json::to_value(&table)?;
         let (encoded, _) = crate::checkpoint::encode(&mut table, &SavedParts::default())?;
-        let mut head: Value = serde_json::from_str(&encoded.head)?;
+        let mut head: Value = serde_json::from_str(&format_15(&encoded.head))?;
         head["format"] = json!("hanabi-live-14");
         head["extra"]["customCharacters"] = json!([{}, {}]);
         let parts = encoded
@@ -1318,7 +1331,7 @@ mod tests {
             .written
             .iter()
             .map(|(key, part)| {
-                let mut value: Value = serde_json::from_str(part)?;
+                let mut value: Value = serde_json::from_str(&format_15(part))?;
                 if key == "game/start" {
                     value["setup"]["characters"] = json!([{}, {}]);
                 }
@@ -1330,6 +1343,47 @@ mod tests {
             "The table has no game start"
         );
         let decoded = crate::checkpoint::decode(&head.to_string(), &parts)?;
+        ensure!(serde_json::to_value(&decoded)? == expected);
+        Ok(())
+    }
+    #[test]
+    fn checkpoints_of_format_15_name_clue_values_and_flatten_morphed_cards() -> Result<()> {
+        let mut table = replayed()?;
+        let Phase::Replay { replay, .. } = &mut table.phase else {
+            bail!("The table is not a replay");
+        };
+        for event in [
+            json!({"type": "morph", "order": 3, "identity": {"rank": 4}}),
+            json!({
+                "type": "clue",
+                "clue": {"type": "color", "color": 1},
+                "playerIndex": 0,
+                "receiverIndex": 1,
+                "orders": [5],
+            }),
+        ] {
+            replay
+                .hypothetical_actions
+                .push(serde_json::from_value(event)?);
+        }
+        let expected = serde_json::to_value(&table)?;
+        let (encoded, _) = crate::checkpoint::encode(&mut table, &SavedParts::default())?;
+        let mut head: Value = serde_json::from_str(&format_15(&encoded.head))?;
+        head["format"] = json!("hanabi-live-15");
+        let head = head.to_string();
+        let parts = encoded
+            .changes
+            .written
+            .iter()
+            .map(|(key, part)| (key.clone(), format_15(part)))
+            .collect::<Vec<_>>();
+        ensure!(
+            head.contains("\"order\":3,\"rank\":4")
+                && head.contains("{\"type\":\"color\",\"value\":1}")
+                && parts.iter().any(|(_, part)| part.contains("\"value\"")),
+            "The older format has no clue values or flat morphs"
+        );
+        let decoded = crate::checkpoint::decode(&head, &parts)?;
         ensure!(serde_json::to_value(&decoded)? == expected);
         Ok(())
     }

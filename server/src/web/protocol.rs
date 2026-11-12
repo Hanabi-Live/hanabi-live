@@ -64,7 +64,7 @@ mod tests {
                     json!({"source":{"type":"saved","gameId":1},"visibility":{"type":"shared","joinExisting":false,"spoilerFree":false}})
                 }
                 "playerAction" => {
-                    json!({"tableId":1,"action":{"type":"clue","receiverIndex":0,"clue":{"type":"rank","value":1}}})
+                    json!({"tableId":1,"action":{"type":"clue","receiverIndex":0,"clue":{"type":"rank","rank":1}}})
                 }
                 "pause" => json!({"tableId":1,"setting":"pause"}),
                 "note" => json!({"tableId":1,"order":0,"text":"test"}),

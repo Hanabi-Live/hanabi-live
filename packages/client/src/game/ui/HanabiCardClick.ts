@@ -223,8 +223,7 @@ export function morphReplayFromModal(
     hypothetical.sendHypotheticalActionToServer({
       type: "morph",
       order: card.order,
-      suitIndex: cardIdentity.suitIndex,
-      rank: cardIdentity.rank,
+      identity: { suitIndex: cardIdentity.suitIndex, rank: cardIdentity.rank },
     });
   }
 }

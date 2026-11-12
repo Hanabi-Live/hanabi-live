@@ -348,7 +348,7 @@ function getClueMarker(
   colorblindMode: boolean,
 ): ClueMarkerView {
   if (clue.type === "color") {
-    const color = globals.variant.clueColors[clue.value];
+    const color = globals.variant.clueColors[clue.color];
     if (color !== undefined) {
       return {
         type: "color",
@@ -357,7 +357,7 @@ function getClueMarker(
       };
     }
   } else if (clue.type === "rank") {
-    return { type: "rank", label: clue.value.toString() };
+    return { type: "rank", label: clue.rank.toString() };
   }
 
   return { type: "hidden" };
@@ -888,17 +888,17 @@ export function GameScreen({
     if (clue.type === "color") {
       const colorIndex = variant.clueColors.findIndex(
         (color) => color.name === clue.value.name,
-      ) as Extract<ClientClue, { type: "color" }>["value"];
+      ) as Extract<ClientClue, { type: "color" }>["color"];
       sendAction({
         type: "clue",
         receiverIndex: clueTarget,
-        clue: { type: "color", value: colorIndex },
+        clue: { type: "color", color: colorIndex },
       });
     } else {
       sendAction({
         type: "clue",
         receiverIndex: clueTarget,
-        clue: { type: "rank", value: clue.value },
+        clue: { type: "rank", rank: clue.value },
       });
     }
   }

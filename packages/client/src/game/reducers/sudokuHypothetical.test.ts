@@ -136,10 +136,10 @@ describe("Sudoku hypothetical from public game 1663033 (issue #3040)", () => {
     );
 
     const intents = [
-      { type: "clue", receiverIndex: 0, clue: { type: "color", value: 3 } },
-      { type: "clue", receiverIndex: 1, clue: { type: "color", value: 1 } },
-      { type: "clue", receiverIndex: 0, clue: { type: "rank", value: 4 } },
-      { type: "clue", receiverIndex: 1, clue: { type: "color", value: 0 } },
+      { type: "clue", receiverIndex: 0, clue: { type: "color", color: 3 } },
+      { type: "clue", receiverIndex: 1, clue: { type: "color", color: 1 } },
+      { type: "clue", receiverIndex: 0, clue: { type: "rank", rank: 4 } },
+      { type: "clue", receiverIndex: 1, clue: { type: "color", color: 0 } },
       { type: "play", order: 6 as CardOrder },
       { type: "play", order: 47 as CardOrder },
     ] as const;

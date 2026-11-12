@@ -28,7 +28,7 @@ function clue(
 ): StateClue {
   return {
     type: "rank",
-    value: 1,
+    rank: 1,
     giver: 0 as PlayerIndex,
     target: 1 as PlayerIndex,
     segment,

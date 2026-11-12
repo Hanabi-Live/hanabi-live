@@ -304,7 +304,7 @@
         "receiverIndex": 1,
         "clue": {
           "type": "color",
-          "value": 2
+          "color": 2
         }
       }
     },
@@ -321,7 +321,7 @@
         "receiverIndex": 1,
         "clue": {
           "type": "rank",
-          "value": 7
+          "rank": 7
         }
       }
     },
@@ -727,7 +727,7 @@
               "receiverIndex": 1,
               "clue": {
                 "type": "rank",
-                "value": 1
+                "rank": 1
               }
             },
             {
@@ -756,7 +756,7 @@
               "receiverIndex": 1,
               "clue": {
                 "type": "rank",
-                "value": 1
+                "rank": 1
               }
             },
             {
@@ -1073,8 +1073,10 @@
           "event": {
             "type": "morph",
             "order": 3,
-            "suitIndex": 0,
-            "rank": 2
+            "identity": {
+              "suitIndex": 0,
+              "rank": 2
+            }
           }
         }
       }
@@ -1108,7 +1110,7 @@
     "valid": false
   },
   {
-    "name": "visible clues carry their type and value",
+    "name": "visible clues carry their type and rank",
     "direction": "server",
     "command": "gameEvent",
     "input": {
@@ -1117,7 +1119,7 @@
         "type": "clue",
         "clue": {
           "type": "rank",
-          "value": 5
+          "rank": 5
         },
         "receiverIndex": 1,
         "orders": [3, 4],
@@ -1151,7 +1153,7 @@
         "type": "clue",
         "clue": {
           "type": "color",
-          "value": 0
+          "color": 0
         },
         "receiverIndex": 1,
         "orders": [3, 4],
@@ -1170,7 +1172,7 @@
         "type": "clue",
         "clue": {
           "type": "color",
-          "value": 6
+          "color": 6
         },
         "receiverIndex": 1,
         "orders": [3, 4],
@@ -1189,7 +1191,7 @@
         "type": "clue",
         "clue": {
           "type": "rank",
-          "value": 0
+          "rank": 0
         },
         "receiverIndex": 1,
         "orders": [3, 4],

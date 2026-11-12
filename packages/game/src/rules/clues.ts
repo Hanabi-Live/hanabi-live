@@ -56,23 +56,23 @@ export function getClueName(
   }
 
   if (variant.oddsAndEvens && clue.type === "rank") {
-    if (clue.value === ODD_RANK_CLUE) {
+    if (clue.rank === ODD_RANK_CLUE) {
       return "Odd";
     }
 
-    if (clue.value === EVEN_RANK_CLUE) {
+    if (clue.rank === EVEN_RANK_CLUE) {
       return "Even";
     }
   }
 
   switch (clue.type) {
     case "color": {
-      const color = variant.clueColors[clue.value];
+      const color = variant.clueColors[clue.color];
       return color === undefined ? "Unknown" : color.name;
     }
 
     case "rank": {
-      return clue.value.toString();
+      return clue.rank.toString();
     }
   }
 }
@@ -84,18 +84,17 @@ export function getClueName(
 export function msgClueToClue(msgClue: MsgClue, variant: Variant): Clue {
   switch (msgClue.type) {
     case "color": {
-      const color = variant.clueColors[msgClue.value];
+      const color = variant.clueColors[msgClue.color];
       assertDefined(
         color,
-        `Failed to get the variant clue color at index: ${msgClue.value}`,
+        `Failed to get the variant clue color at index: ${msgClue.color}`,
       );
 
       return newColorClue(color);
     }
 
     case "rank": {
-      const clueValue = msgClue.value;
-      return newRankClue(clueValue);
+      return newRankClue(msgClue.rank);
     }
   }
 }

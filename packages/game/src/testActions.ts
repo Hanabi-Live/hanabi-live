@@ -25,7 +25,7 @@ export function colorClue(
     type: "clue",
     clue: {
       type: "color",
-      value,
+      color: value,
     },
     playerIndex: giver,
     orders: list as CardOrder[],
@@ -45,7 +45,7 @@ export function rankClue(
     type: "clue",
     clue: {
       type: "rank",
-      value,
+      rank: value,
     },
     playerIndex: giver,
     orders: list as CardOrder[],
