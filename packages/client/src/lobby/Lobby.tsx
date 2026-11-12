@@ -19,10 +19,11 @@ import { UsersList, UsersTitle } from "./users/UsersList.tsx";
 
 /**
  * The classes of "#lobby", which the component renders into. The lobby fills the page below the
- * header, and its rows share the height.
+ * header, and its rows share the height. Tailwind's utilities beat the "hidden" class, so the lobby
+ * is a flex box only while it is shown.
  */
 export const LOBBY_CLASS_NAME =
-  "tw:flex tw:h-full tw:flex-col tw:pt-5 tw:pb-6 tw:compact:pb-3";
+  "tw:not-[.hidden]:flex tw:h-full tw:flex-col tw:pt-5 tw:pb-6 tw:compact:pb-3";
 
 /** A row that takes its share of the height of the lobby. */
 const HALF = "tw:min-h-0 tw:flex-1";
