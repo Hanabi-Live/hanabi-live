@@ -37,7 +37,6 @@ export function init(): ActionInit {
       },
     },
     leader: "",
-    pauseQueued: false,
   };
 }
 

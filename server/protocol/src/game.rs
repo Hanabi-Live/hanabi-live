@@ -54,13 +54,25 @@ pub struct IdleWarning {
     pub remaining_ms: i64,
 }
 
+/// Whether the game is paused, as one player sees it.
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct Pause {
     pub table_id: TableId,
+    #[serde(flatten)]
+    pub pause: PauseState,
+}
+
+/// Whether the game is paused, as one player sees it, in the `pause` message and in a game's
+/// state.
+#[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct PauseState {
     /// The seat that paused the game. Absent when the game is not paused.
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub pause_player_index: Option<PlayerIndex>,
+    pub player_index: Option<PlayerIndex>,
+    /// Whether the recipient asked to pause the game at their next turn.
+    pub queued: bool,
 }
 
 /// The votes to end the game, as one player sees them.
@@ -288,6 +300,9 @@ pub struct GameState {
     /// Absent in a replay.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub clocks: Option<Clocks>,
+    /// Absent in a replay.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub pause: Option<PauseState>,
     pub spectators: Vec<Spectator>,
     /// The hypothetical that a shared replay plays through, if any.
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -405,11 +420,6 @@ pub struct GameInit {
     /// Each player's character, in seat order, when detrimental characters are on. Empty otherwise.
     #[schemars(length(max = MAX_PLAYERS))]
     pub characters: Vec<CharacterAssignment>,
-    /// The seat that paused the game. Absent when the game is not paused.
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub pause_player_index: Option<PlayerIndex>,
-    /// Whether the recipient asked to pause the game at their next turn.
-    pub pause_queued: bool,
 }
 
 /// The state of a shared replay that a client joins.

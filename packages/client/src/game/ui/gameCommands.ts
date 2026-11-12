@@ -333,6 +333,9 @@ gameCommands.set("gameState", (data) => {
   if (data.clocks !== undefined) {
     timer.update(data.clocks);
   }
+  if (data.pause !== undefined) {
+    globals.store!.dispatch({ type: "pause", ...data.pause });
+  }
   setSpectators(data.spectators);
   if (data.hypothetical !== undefined) {
     // We are joining a shared replay that plays through a hypothetical line. Play all of its
@@ -387,15 +390,18 @@ gameCommands.set("idleReset", () => {
 });
 
 gameCommands.set("pause", (data) => {
-  const soundType =
-    data.pausePlayerIndex === undefined
-      ? SoundType.GameUnpaused
-      : SoundType.GamePaused;
-  globals.game!.sounds.play(soundType);
+  // The server also sends this when we queue or unqueue a pause, which plays no sound.
+  const paused = data.playerIndex !== undefined;
+  if (paused !== (globals.state.pause.playerIndex !== undefined)) {
+    globals.game!.sounds.play(
+      paused ? SoundType.GamePaused : SoundType.GameUnpaused,
+    );
+  }
 
   globals.store!.dispatch({
     type: "pause",
-    pausePlayerIndex: data.pausePlayerIndex,
+    playerIndex: data.playerIndex,
+    queued: data.queued,
   });
 });
 
@@ -629,8 +635,6 @@ function initStateStore(data: InitData) {
       data.mode.type === "sharedReplay"
         ? data.mode.sharedReplay.owner.username
         : undefined,
-    pausePlayerIndex: data.pausePlayerIndex,
-    pauseQueued: data.pauseQueued,
   });
 
   // If we happen to be joining an ongoing hypothetical, we cannot dispatch a "hypoEnter" here. We

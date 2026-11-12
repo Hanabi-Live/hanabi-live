@@ -500,14 +500,6 @@ export const gameInitSchema = z
     finishedAt: z.iso.datetime({ precision: 3 }).optional(),
     mode: viewModeSchema,
     options: gameOptionsSchema,
-    /**
-     * The seat that paused the game. Absent when the game is not paused.
-     */
-    pausePlayerIndex: playerIndexSchema.optional(),
-    /**
-     * Whether the recipient asked to pause the game at their next turn.
-     */
-    pauseQueued: z.boolean(),
     playerNames: z.array(z.string().min(1)).min(2).max(6).readonly(),
     /**
      * Absent for a game with its own deck instead of a seed, such as an imported one.
@@ -580,6 +572,23 @@ const clocksSchema = z
     turnElapsedMs: z.number().int().min(0).max(9_007_199_254_740_991),
   })
   .readonly();
+
+/**
+ * Whether the game is paused, as one player sees it, in the `pause` message and in a game's
+ * state.
+ */
+const pauseStateSchema = z
+  .strictObject({
+    /**
+     * The seat that paused the game. Absent when the game is not paused.
+     */
+    playerIndex: playerIndexSchema.optional(),
+    /**
+     * Whether the recipient asked to pause the game at their next turn.
+     */
+    queued: z.boolean(),
+  })
+  .readonly();
 export const spectatorSchema = z
   .strictObject({
     /**
@@ -636,6 +645,10 @@ export const gameStateSchema = z
      * The notes that the recipient may see, as in `noteList`.
      */
     notes: z.array(playerNotesSchema).readonly(),
+    /**
+     * Absent in a replay.
+     */
+    pause: pauseStateSchema.optional(),
     spectators: z.array(spectatorSchema).readonly(),
     tableId: tableIdSchema,
     /**
@@ -855,12 +868,20 @@ export const passwordHashRequestSchema = z
 export const passwordHashResponseSchema = z
   .strictObject({ hash: z.string() })
   .readonly();
+
+/**
+ * Whether the game is paused, as one player sees it.
+ */
 export const pauseSchema = z
   .strictObject({
     /**
      * The seat that paused the game. Absent when the game is not paused.
      */
-    pausePlayerIndex: playerIndexSchema.optional(),
+    playerIndex: playerIndexSchema.optional(),
+    /**
+     * Whether the recipient asked to pause the game at their next turn.
+     */
+    queued: z.boolean(),
     tableId: tableIdSchema,
   })
   .readonly();

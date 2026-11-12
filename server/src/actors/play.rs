@@ -204,17 +204,26 @@ impl TableActor {
         } else {
             self.add_all(&mut e, hanabi_protocol::server::CLOCK, self.clock()?);
             if s.paused() {
-                self.add_all(
-                    &mut e,
-                    hanabi_protocol::server::PAUSE,
-                    hanabi_protocol::Pause {
-                        table_id: self.table.id,
-                        pause_player_index: s.paused_by,
-                    },
-                );
+                self.pause_messages(&mut e, s);
             }
         }
         self.publish(e).await
+    }
+    fn pause_message(&self, s: &Snapshot, session: &Session) -> crate::transport::Frame {
+        frame(
+            hanabi_protocol::server::PAUSE,
+            hanabi_protocol::Pause {
+                table_id: self.table.id,
+                pause: pause_state(s, session),
+            },
+        )
+    }
+    /// Tells everyone at the table whether the game is paused.
+    fn pause_messages(&self, e: &mut super::Effects, s: &Snapshot) {
+        for a in self.audience() {
+            e.messages
+                .push((a.session.clone(), self.pause_message(s, &a.session)));
+        }
     }
     async fn terminate(&mut self, session: Arc<Session>, vote: bool) -> CommandResult<()> {
         ensure_or_reject!(self.attending(&session), "You are not attending");
@@ -345,15 +354,11 @@ impl TableActor {
         let s = self.live()?;
         let mut e = self.effects();
         if matches!(setting, P::Pause | P::Unpause) {
-            self.add_all(
-                &mut e,
-                hanabi_protocol::server::PAUSE,
-                hanabi_protocol::Pause {
-                    table_id: self.table.id,
-                    pause_player_index: s.paused_by,
-                },
-            );
+            self.pause_messages(&mut e, s);
             self.add_all(&mut e, hanabi_protocol::server::CLOCK, self.clock()?);
+        } else {
+            e.messages
+                .push((session.clone(), self.pause_message(s, &session)));
         }
         if let Some(notice) = notice {
             self.add_chat(&mut e, &notice);
@@ -539,8 +544,6 @@ impl TableActor {
                 } else {
                     vec![]
                 },
-                pause_player_index: s.paused_by,
-                pause_queued: seat.is_some_and(|i| s.queued_pauses[i]),
             };
             e.messages.push((
                 session.clone(),
@@ -587,6 +590,7 @@ impl TableActor {
                 } else {
                     Some(self.clock()?.clocks)
                 },
+                pause: (!replay).then(|| pause_state(s, &session)),
                 spectators: self.spectators(),
                 hypothetical: match &self.table.phase {
                     Phase::Replay { replay, .. } if replay.hypothetical => {
@@ -631,6 +635,18 @@ fn votes_needed(players: usize) -> usize {
         players
     } else {
         players.div_ceil(2)
+    }
+}
+
+/// Whether the game is paused, as the user in `session` sees it.
+fn pause_state(s: &Snapshot, session: &Session) -> hanabi_protocol::PauseState {
+    hanabi_protocol::PauseState {
+        player_index: s.paused_by,
+        queued: s
+            .players
+            .iter()
+            .position(|p| p.is(session.user))
+            .is_some_and(|seat| s.queued_pauses[seat]),
     }
 }
 

@@ -47,11 +47,18 @@ describe("stateReducer", () => {
     });
     expect(state.notes.efficiencyModifier).toBe(3);
   });
-  test("rejoining a game keeps a pause that the player queued", () => {
-    const state = stateReducer(initialState(defaultMetadata), {
-      ...init(),
-      pauseQueued: true,
+  test("a pause message replaces the pause state", () => {
+    const queued = stateReducer(initialState(defaultMetadata), {
+      type: "pause",
+      playerIndex: undefined,
+      queued: true,
     });
-    expect(state.pause.queued).toBe(true);
+    expect(queued.pause.queued).toBe(true);
+    const paused = stateReducer(queued, {
+      type: "pause",
+      playerIndex: 1,
+      queued: true,
+    });
+    expect(paused.pause).toMatchObject({ playerIndex: 1, queued: true });
   });
 });

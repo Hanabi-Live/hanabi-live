@@ -49,14 +49,11 @@ type HypotheticalAction =
 
 /** The parts of the "gameInit" message that the state uses. */
 export interface ActionInit extends Readonly<
-  Pick<
-    ServerCommandData["gameInit"],
-    "startedAt" | "finishedAt" | "mode" | "pausePlayerIndex" | "pauseQueued"
-  >
+  Pick<ServerCommandData["gameInit"], "startedAt" | "finishedAt" | "mode">
 > {
   readonly type: "init";
 
-  /** The name of the shared replay's leader, which the server sends as a user ID. */
+  /** The name of the shared replay's leader. */
   readonly leader: string | undefined;
 }
 
@@ -80,7 +77,7 @@ interface ActionPremove {
 }
 
 interface ActionPause extends Readonly<
-  Pick<ServerCommandData["pause"], "pausePlayerIndex">
+  Pick<ServerCommandData["pause"], "playerIndex" | "queued">
 > {
   readonly type: "pause";
 }

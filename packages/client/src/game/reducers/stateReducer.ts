@@ -182,9 +182,6 @@ function stateReducerFunction(state: Draft<State>, action: Action) {
         }
       }
 
-      state.pause.playerIndex = action.pausePlayerIndex;
-      state.pause.queued = action.pauseQueued;
-
       break;
     }
 
@@ -235,13 +232,8 @@ function stateReducerFunction(state: Draft<State>, action: Action) {
     }
 
     case "pause": {
-      state.pause.playerIndex = action.pausePlayerIndex;
-
-      // If the game is now paused, unqueue any queued pauses.
-      if (action.pausePlayerIndex !== undefined) {
-        state.pause.queued = false;
-      }
-
+      state.pause.playerIndex = action.playerIndex;
+      state.pause.queued = action.queued;
       break;
     }
 
