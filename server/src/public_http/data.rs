@@ -238,8 +238,8 @@ pub(super) async fn list(
     let order = format!("g.{} {direction},g.id DESC", column_field(column));
     Ok(hanabi_protocol::GamePage {
         games: history(state, s, &order).await?,
-        offset: hanabi_protocol::Count(offset),
-        total: hanabi_protocol::Count(total),
+        offset: hanabi_protocol::Count::try_from(offset)?,
+        total: hanabi_protocol::Count::try_from(total)?,
     })
 }
 
@@ -247,12 +247,12 @@ pub(super) async fn list(
 fn game_history(row: HistoryRow) -> anyhow::Result<hanabi_protocol::GameHistoryEntry> {
     let g = row.game;
     Ok(hanabi_protocol::GameHistoryEntry {
-        game_id: hanabi_protocol::GameId(g.id),
+        game_id: hanabi_protocol::GameId::try_from(g.id)?,
         num_turns: g.turn_count()?,
         options: crate::model::wire_options(&crate::archive::options(&g)?),
-        num_games_on_seed: hanabi_protocol::Count(i64::from(row.seed_count)),
+        num_games_on_seed: hanabi_protocol::Count::try_from(row.seed_count)?,
         seed: g.seed.into(),
-        score: hanabi_protocol::Score(i32::from(g.score)),
+        score: hanabi_protocol::Score::try_from(g.score)?,
         end_condition: crate::archive::end_condition_from_db(i32::from(g.end_condition))?,
         started_at: hanabi_protocol::Timestamp::from(g.datetime_started),
         finished_at: hanabi_protocol::Timestamp::from(g.datetime_finished),

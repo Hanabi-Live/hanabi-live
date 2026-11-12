@@ -12,7 +12,7 @@ pub(super) fn variant(id: i64) -> Option<&'static Variant> {
 pub(super) fn character(id: i64) -> Option<&'static str> {
     hanabi_engine::characters()
         .iter()
-        .find(|character| i64::from(character.id.0) == id)
+        .find(|character| i64::from(character.id.get()) == id)
         .map(|character| character.name.as_str())
 }
 pub(super) fn names() -> VariantNames {
@@ -44,7 +44,7 @@ pub(super) fn metadata() -> PublicVariants {
                         .collect(),
                     stack_size: hanabi_protocol::StackSize::new(v.stack_size)
                         .expect("catalog stack size"),
-                    max_score: hanabi_protocol::Score(v.max_score),
+                    max_score: hanabi_protocol::Score::new(v.max_score).expect("catalog max score"),
                 };
                 (v.id.to_string(), variant)
             })

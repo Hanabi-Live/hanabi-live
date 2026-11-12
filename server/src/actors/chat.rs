@@ -140,7 +140,7 @@ impl TableActor {
     /// Charges a player for a message that they cause in the table's chat. Every message rewrites
     /// the table's checkpoint, so its cost grows with the chat.
     pub(super) fn charge_chat(&mut self, user: UserId) -> CommandResult<()> {
-        if let Err(wait) = self.chat_limit.charge(user.0, Instant::now()) {
+        if let Err(wait) = self.chat_limit.charge(user.get(), Instant::now()) {
             reject!(
                 "You are sending messages too quickly. Please wait {} seconds.",
                 wait.as_secs().max(1)
@@ -195,7 +195,10 @@ impl TableActor {
         let participants = self.score_participants()?;
         self.admit_player_chat(requester.user)?;
         let count = participants.len();
-        let ids = participants.iter().map(|(id, _)| id.0).collect::<Vec<_>>();
+        let ids = participants
+            .iter()
+            .map(|(id, _)| id.get())
+            .collect::<Vec<_>>();
         let store = self.store.clone();
         let query = async move {
             let rows = sqlx::query!(

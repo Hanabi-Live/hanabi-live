@@ -66,15 +66,15 @@ pub(super) struct Account {
 
 impl Account {
     /// Reads the account with `id`, if it still exists.
-    pub(super) async fn read(pool: &sqlx::PgPool, id: i32) -> sqlx::Result<Option<Self>> {
+    pub(super) async fn read(pool: &sqlx::PgPool, id: UserId) -> sqlx::Result<Option<Self>> {
         Ok(sqlx::query!(
             "SELECT username,normalized_username,datetime_created,is_bot FROM users WHERE id=$1",
-            id
+            id.get()
         )
         .fetch_optional(pool)
         .await?
         .map(|row| Self {
-            id: UserId(id),
+            id,
             name: row.username,
             normalized_name: row.normalized_username,
             created: row.datetime_created,
@@ -123,7 +123,7 @@ pub(super) async fn bootstrap(app: &App, account: Account, ip: &str) -> Result<B
     };
     sqlx::query!(
         "UPDATE users SET datetime_last_login=NOW(),last_ip=$2 WHERE id=$1",
-        id.0,
+        id.get(),
         ip
     )
     .execute(pool)
@@ -150,7 +150,7 @@ pub(super) async fn lobby_initial(app: &App, id: UserId) -> Result<(Vec<Frame>, 
         hanabi_protocol::server::CHAT_LIST,
         hanabi_protocol::ChatList {
             messages: chat,
-            num_unread: hanabi_protocol::Count(0),
+            num_unread: hanabi_protocol::Count::default(),
         },
     ));
     initial.push(frame(
@@ -216,6 +216,8 @@ pub(super) fn load_lobby(app: Arc<App>, session: Arc<Session>) {
         if !session.active() {
             return;
         }
+        let result = result
+            .and_then(|(messages, total)| Ok((messages, hanabi_protocol::Count::try_from(total)?)));
         match result {
             Ok((messages, total)) => {
                 for message in messages {
@@ -223,7 +225,7 @@ pub(super) fn load_lobby(app: Arc<App>, session: Arc<Session>) {
                 }
                 session.emit(&frame(
                     hanabi_protocol::server::LOBBY_STATUS,
-                    hanabi_protocol::LobbyStatus::Ready { num_games: hanabi_protocol::Count(total) },
+                    hanabi_protocol::LobbyStatus::Ready { num_games: total },
                 ));
             }
             Err(error) => {
@@ -277,8 +279,10 @@ pub(super) async fn websocket(
     let client = query.client;
     let bot = client == ClientKind::Bot;
     let ip = address.ip();
-    let requested = query.account.map(|account| account.0);
-    let Some(id) = accounts::session_id(&headers, &app.public.session_secret, requested) else {
+    let requested = query.account.map(UserId::get);
+    let Some(id) =
+        accounts::session_id(&headers, &app.public.session_secret, requested).and_then(UserId::new)
+    else {
         tracing::warn!("Rejected websocket from {ip} without a valid session.");
         return HttpError::refused(StatusCode::UNAUTHORIZED, "A valid session is required.").json();
     };
@@ -340,7 +344,7 @@ pub(super) async fn websocket(
     };
     if bot {
         tracing::info!("Accepted bot websocket for account {id} from IP: {ip}");
-        if let Err(error) = accounts::mark_bot(&app.store.primary, id).await {
+        if let Err(error) = accounts::mark_bot(&app.store.primary, id.get()).await {
             return crate::errors::Report::from_error("Recording a bot connection", &error)
                 .response(true);
         }

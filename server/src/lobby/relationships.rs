@@ -9,7 +9,7 @@ pub async fn friends(pool: &PgPool, id: UserId) -> Result<Vec<Username>> {
     Ok(sqlx::query_scalar!(
         "SELECT u.username FROM user_friends f JOIN users u ON u.id=f.friend_id
          WHERE f.user_id=$1 ORDER BY LOWER(u.username) COLLATE \"C\"",
-        id.0
+        id.get()
     )
     .fetch_all(pool)
     .await?
@@ -23,7 +23,7 @@ pub async fn blocked(pool: &PgPool, id: UserId) -> Result<Vec<Username>> {
     Ok(sqlx::query_scalar!(
         "SELECT u.username FROM user_blocks b JOIN users u ON u.id=b.blocked_id
          WHERE b.user_id=$1 ORDER BY LOWER(u.username) COLLATE \"C\"",
-        id.0
+        id.get()
     )
     .fetch_all(pool)
     .await?
@@ -37,11 +37,11 @@ pub async fn blocked_between(pool: &PgPool, user: UserId, others: &[UserId]) -> 
     if others.is_empty() {
         return Ok(false);
     }
-    let others = others.iter().map(|other| other.0).collect::<Vec<_>>();
+    let others = others.iter().map(|other| other.get()).collect::<Vec<_>>();
     Ok(sqlx::query_scalar!(
         "SELECT EXISTS(SELECT 1 FROM user_blocks
          WHERE (user_id=$1 AND blocked_id=ANY($2)) OR (blocked_id=$1 AND user_id=ANY($2))) AS \"value!\"",
-        user.0,
+        user.get(),
         &others
     )
     .fetch_one(pool)
@@ -50,20 +50,20 @@ pub async fn blocked_between(pool: &PgPool, user: UserId, others: &[UserId]) -> 
 
 /// Everyone who has blocked, or was blocked by, `id`.
 pub async fn block_relations(pool: &PgPool, id: UserId) -> Result<Vec<UserId>> {
-    Ok(sqlx::query_scalar!(
+    sqlx::query_scalar!(
         "SELECT blocked_id AS \"id!\" FROM user_blocks WHERE user_id=$1
          UNION SELECT user_id FROM user_blocks WHERE blocked_id=$1",
-        id.0
+        id.get()
     )
     .fetch_all(pool)
     .await?
     .into_iter()
-    .map(UserId)
-    .collect())
+    .map(|id| Ok(UserId::try_from(id)?))
+    .collect()
 }
 
 pub async fn change_friend(pool: &PgPool, id: UserId, target: UserId, add: bool) -> Result<bool> {
-    let (id, target) = (id.0, target.0);
+    let (id, target) = (id.get(), target.get());
     let mut tx = pool.begin().await?;
     sqlx::query!("SELECT id FROM users WHERE id=$1 FOR UPDATE", id)
         .fetch_one(&mut *tx)
@@ -130,7 +130,7 @@ pub async fn linked_list(pool: &PgPool, caller: &Identity) -> Result<Vec<Effect>
     let names: Vec<String> = sqlx::query_scalar!(
         "SELECT u.username FROM user_linkages l JOIN users u ON u.id=l.linked_id
              WHERE l.user_id=$1 ORDER BY LOWER(u.username) COLLATE \"C\"",
-        caller.user.0
+        caller.user.get()
     )
     .fetch_all(pool)
     .await?;
@@ -171,7 +171,7 @@ pub async fn relationship(
     )
     .fetch_optional(pool)
     .await?;
-    let Some(target) = target.map(UserId) else {
+    let Some(target) = target.map(UserId::try_from).transpose()? else {
         return Ok(vec![warning(&format!(
             "The username of \"{}\" does not exist in the database.",
             escape_html(name)
@@ -189,16 +189,16 @@ pub async fn relationship(
         let result = if add {
             sqlx::query!(
                 "INSERT INTO user_linkages(user_id,linked_id) VALUES($1,$2) ON CONFLICT DO NOTHING",
-                caller.user.0,
-                target.0
+                caller.user.get(),
+                target.get()
             )
             .execute(pool)
             .await?
         } else {
             sqlx::query!(
                 "DELETE FROM user_linkages WHERE user_id=$1 AND linked_id=$2",
-                caller.user.0,
-                target.0
+                caller.user.get(),
+                target.get()
             )
             .execute(pool)
             .await?
@@ -250,16 +250,16 @@ async fn block(
     let result = if add {
         sqlx::query!(
             "INSERT INTO user_blocks(user_id,blocked_id) VALUES($1,$2) ON CONFLICT DO NOTHING",
-            caller.user.0,
-            target.0
+            caller.user.get(),
+            target.get()
         )
         .execute(pool)
         .await?
     } else {
         sqlx::query!(
             "DELETE FROM user_blocks WHERE user_id=$1 AND blocked_id=$2",
-            caller.user.0,
-            target.0
+            caller.user.get(),
+            target.get()
         )
         .execute(pool)
         .await?

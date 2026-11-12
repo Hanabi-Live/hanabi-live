@@ -208,7 +208,7 @@ pub(crate) async fn load(pool: &PgPool, id: GameId) -> Result<Option<Archive>> {
           ORDER BY t.user_id,t.tag) FROM game_tags t
           WHERE t.game_id=g.id),'[]'::jsonb) AS \"archive_tags!: Json<Vec<Tag>>\"
         FROM games g WHERE g.id=$1",
-        id.0
+        id.get()
     )
     .fetch_optional(pool)
     .await?
@@ -258,7 +258,7 @@ pub(crate) async fn replay(
             "Invalid replay seat"
         );
         players.push(Player {
-            id: Some(UserId(r.user_id)),
+            id: Some(UserId::try_from(r.user_id)?),
             name: r.name.clone(),
             bot: false,
             stats: zero_stats(),
@@ -269,7 +269,7 @@ pub(crate) async fn replay(
                 .and_then(|id| {
                     hanabi_engine::characters()
                         .iter()
-                        .find(|c| i16::try_from(c.id.0).ok() == Some(id))
+                        .find(|c| i16::try_from(c.id.get()).ok() == Some(id))
                 })
                 .context("Missing or unknown stored character")?;
             characters.push(AssignedCharacter {
@@ -312,7 +312,7 @@ pub(crate) async fn replay(
         tags: archive.tags,
         ..Snapshot::new(
             table_id,
-            Some(GameId(row.id)),
+            Some(GameId::try_from(row.id)?),
             owner,
             row.name.clone(),
             players,
@@ -323,7 +323,7 @@ pub(crate) async fn replay(
 
 /// A finished game's tags, or `None` if the game does not exist.
 pub(crate) async fn tags(pool: &PgPool, id: GameId) -> Result<Option<Vec<Tag>>> {
-    let rows=sqlx::query!("SELECT t.user_id AS \"user_id?\",t.tag AS \"tag?\" FROM games g LEFT JOIN game_tags t ON t.game_id=g.id WHERE g.id=$1 ORDER BY t.user_id,t.tag", id.0).fetch_all(pool).await?;
+    let rows=sqlx::query!("SELECT t.user_id AS \"user_id?\",t.tag AS \"tag?\" FROM games g LEFT JOIN game_tags t ON t.game_id=g.id WHERE g.id=$1 ORDER BY t.user_id,t.tag", id.get()).fetch_all(pool).await?;
     if rows.is_empty() {
         return Ok(None);
     }
@@ -331,7 +331,7 @@ pub(crate) async fn tags(pool: &PgPool, id: GameId) -> Result<Option<Vec<Tag>>> 
     for row in rows {
         if let Some(tag) = row.tag.clone() {
             tags.push(Tag {
-                user: UserId(row.user_id.context("Missing tag author")?),
+                user: UserId::try_from(row.user_id.context("Missing tag author")?)?,
                 tag,
             });
         }
@@ -354,14 +354,14 @@ pub(crate) async fn insert(
     let o = &s.game.options;
     let variant = hanabi_engine::get_variant(&o.variant_name)?;
     let tx = transaction;
-    sqlx::query!("INSERT INTO games(id,name,num_players,variant_id,timed,time_base,time_per_turn,speedrun,deck_plays,empty_clues,one_extra_card,one_less_card,all_or_nothing,detrimental_characters,seed,score,num_turns,end_condition,datetime_started,datetime_finished) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20)", id.0, &s.name, i16::try_from(o.num_players)?, i16::try_from(variant.id)?, o.time_control.is_some(), o.time_control.map(|t| i32::try_from(t.base_seconds.get())).transpose()?, o.time_control.map(|t| i32::try_from(t.per_turn_seconds.get())).transpose()?, o.speedrun, o.deck_plays, o.empty_clues, o.one_extra_card, o.one_less_card, o.all_or_nothing, o.detrimental_characters, seed, i16::try_from(s.game.score)?, i16::try_from(s.game.turn)?, end_condition_to_db(end.condition), s.started, finished).execute(&mut **tx).await?;
+    sqlx::query!("INSERT INTO games(id,name,num_players,variant_id,timed,time_base,time_per_turn,speedrun,deck_plays,empty_clues,one_extra_card,one_less_card,all_or_nothing,detrimental_characters,seed,score,num_turns,end_condition,datetime_started,datetime_finished) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20)", id.get(), &s.name, i16::try_from(o.num_players)?, i16::try_from(variant.id)?, o.time_control.is_some(), o.time_control.map(|t| i32::try_from(t.base_seconds.get())).transpose()?, o.time_control.map(|t| i32::try_from(t.per_turn_seconds.get())).transpose()?, o.speedrun, o.deck_plays, o.empty_clues, o.one_extra_card, o.one_less_card, o.all_or_nothing, o.detrimental_characters, seed, i16::try_from(s.game.score)?, i16::try_from(s.game.turn)?, end_condition_to_db(end.condition), s.started, finished).execute(&mut **tx).await?;
     let mut users = vec![];
     let mut seats = vec![];
     let mut character_ids = vec![];
     let mut assigned_metadata = vec![];
     for (seat, p) in s.players.iter().enumerate() {
         let (character_id, assigned) = character_columns(&s.game.players[seat])?;
-        users.push(p.user()?.0);
+        users.push(p.user()?.get());
         seats.push(i16::try_from(seat)?);
         character_ids.push(character_id);
         assigned_metadata.push(assigned);
@@ -372,7 +372,7 @@ pub(crate) async fn insert(
          FROM UNNEST($2::integer[],$3::smallint[],$4::smallint[],$5::smallint[])
          AS p(user_id,seat,character_id,assigned_metadata)
          RETURNING id,seat",
-        id.0,
+        id.get(),
         &users,
         &seats,
         &character_ids as &[Option<i16>],
@@ -411,8 +411,8 @@ pub(crate) async fn insert(
         targets.push(target);
         values.push(value);
     }
-    sqlx::query!("INSERT INTO game_actions(game_id,turn,type,target,value) SELECT $1,(a.turn-1)::smallint,a.kind,a.target,a.value FROM UNNEST($2::smallint[],$3::smallint[],$4::smallint[]) WITH ORDINALITY AS a(kind,target,value,turn)", id.0, &kinds, &targets as &[Option<i16>], &values as &[Option<i16>]).execute(&mut **tx).await?;
-    let tag_users = s.tags.iter().map(|tag| tag.user.0).collect::<Vec<_>>();
+    sqlx::query!("INSERT INTO game_actions(game_id,turn,type,target,value) SELECT $1,(a.turn-1)::smallint,a.kind,a.target,a.value FROM UNNEST($2::smallint[],$3::smallint[],$4::smallint[]) WITH ORDINALITY AS a(kind,target,value,turn)", id.get(), &kinds, &targets as &[Option<i16>], &values as &[Option<i16>]).execute(&mut **tx).await?;
+    let tag_users = s.tags.iter().map(|tag| tag.user.get()).collect::<Vec<_>>();
     let tags = s
         .tags
         .iter()
@@ -420,7 +420,7 @@ pub(crate) async fn insert(
         .collect::<Vec<_>>();
     sqlx::query!(
         "INSERT INTO game_tags(game_id,user_id,tag) SELECT $1,t.user_id,t.tag FROM UNNEST($2::integer[],$3::text[]) AS t(user_id,tag)",
-        id.0,
+        id.get(),
         &tag_users,
         &tags as &[&str]
     )
@@ -459,7 +459,9 @@ async fn count_game(
 fn character_columns(player: &hanabi_engine::EnginePlayer) -> Result<(Option<i16>, Option<i16>)> {
     let character_id = player
         .character()
-        .map(|c| Ok::<_, anyhow::Error>(i16::try_from(crate::game::catalog_character(c)?.id.0)?))
+        .map(|c| {
+            Ok::<_, anyhow::Error>(i16::try_from(crate::game::catalog_character(c)?.id.get())?)
+        })
         .transpose()?;
     let metadata = player.assigned_value().map(i16::try_from).transpose()?;
     Ok((character_id, metadata))
@@ -467,13 +469,16 @@ fn character_columns(player: &hanabi_engine::EnginePlayer) -> Result<(Option<i16
 
 impl GameRecord {
     /// The game's clock, or `None` when the game is untimed.
-    pub fn time_control(&self) -> Option<hanabi_protocol::TimeControl> {
+    pub fn time_control(&self) -> Result<Option<hanabi_protocol::TimeControl>> {
         self.time_base
             .zip(self.time_per_turn)
-            .map(|(base, per_turn)| hanabi_protocol::TimeControl {
-                base_seconds: hanabi_protocol::BaseSeconds(i64::from(base)),
-                per_turn_seconds: hanabi_protocol::PerTurnSeconds(i64::from(per_turn)),
+            .map(|(base, per_turn)| {
+                Ok(hanabi_protocol::TimeControl {
+                    base_seconds: hanabi_protocol::BaseSeconds::try_from(base)?,
+                    per_turn_seconds: hanabi_protocol::PerTurnSeconds::try_from(per_turn)?,
+                })
             })
+            .transpose()
     }
 }
 
@@ -483,7 +488,7 @@ pub fn options(row: &GameRecord) -> Result<Options> {
         num_players: usize::try_from(row.num_players)?,
         variant_name: variant.name.clone(),
         variant_id: Some(variant.id),
-        time_control: row.time_control(),
+        time_control: row.time_control()?,
         speedrun: row.speedrun,
         deck_plays: row.deck_plays,
         empty_clues: row.empty_clues,

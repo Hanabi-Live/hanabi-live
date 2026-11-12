@@ -483,7 +483,7 @@ impl Bridge {
             self.broadcast(vec![Outgoing::new(
                 hanabi_protocol::server::CHAT_DELETED,
                 hanabi_protocol::ChatDeleted {
-                    chat_id: hanabi_protocol::ChatId(i64::from(chat_id)),
+                    chat_id: hanabi_protocol::ChatId::try_from(chat_id)?,
                 },
             )])
             .await?;
@@ -660,7 +660,7 @@ impl Bridge {
                     self.broadcast(vec![Outgoing::new(
                         hanabi_protocol::server::CHAT,
                         hanabi_protocol::Chat {
-                            chat_id: Some(hanabi_protocol::ChatId(i64::from(chat_id))),
+                            chat_id: Some(hanabi_protocol::ChatId::try_from(chat_id)?),
                             ..hanabi_protocol::Chat::public(
                                 rendered,
                                 hanabi_protocol::ChatAuthor::Discord {
@@ -700,7 +700,7 @@ impl Bridge {
                 self.broadcast(vec![Outgoing::new(
                     hanabi_protocol::server::CHAT_DELETED,
                     hanabi_protocol::ChatDeleted {
-                        chat_id: hanabi_protocol::ChatId(i64::from(chat_id)),
+                        chat_id: hanabi_protocol::ChatId::try_from(chat_id)?,
                     },
                 )])
                 .await?;
@@ -753,7 +753,7 @@ impl Bridge {
             self.broadcast(vec![Outgoing::new(
                 hanabi_protocol::server::CHAT,
                 hanabi_protocol::Chat {
-                    chat_id: Some(hanabi_protocol::ChatId(i64::from(id))),
+                    chat_id: Some(hanabi_protocol::ChatId::try_from(id)?),
                     ..hanabi_protocol::Chat::public(
                         rendered,
                         hanabi_protocol::ChatAuthor::Discord { username: None },

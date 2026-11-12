@@ -414,7 +414,10 @@ async fn login_inner(state: &Accounts, ip: &str, input: LoginRequest) -> Result<
     let signed = cookie::encode(id, &state.config.secret, Utc::now().timestamp())?;
     Ok(with_cookies(
         Json(LoginResponse {
-            user_id: hanabi_protocol::UserId(id),
+            user: hanabi_protocol::UserRef {
+                user_id: hanabi_protocol::UserId::try_from(id)?,
+                username: username.into(),
+            },
         })
         .into_response(),
         [
@@ -601,7 +604,10 @@ async fn identity_token(
         let result = regenerate_token(&state.pool, &state.config.secret, id, &ip).await?;
         tracing::info!("Issued identity token for account {id} from IP: {ip}");
         Ok(Json(IdentityTokenResponse {
-            username: username.into(),
+            user: hanabi_protocol::UserRef {
+                user_id: hanabi_protocol::UserId::try_from(id)?,
+                username: username.into(),
+            },
             token: result.token,
             expires_at: hanabi_protocol::Timestamp::from(result.expires_at),
         })
@@ -640,7 +646,7 @@ async fn identity(
         };
         let lookup = token_lookup_hash(&state.config.secret, &token)?;
         let row = sqlx::query!(
-            "SELECT u.username, t.token_hash, t.expires_at FROM user_identity_tokens t
+            "SELECT u.id, u.username, t.token_hash, t.expires_at FROM user_identity_tokens t
              JOIN users u ON u.id=t.user_id WHERE t.token_lookup_hash=$1",
             lookup
         )
@@ -652,7 +658,10 @@ async fn identity(
             if expiry > Utc::now() && verify_password(&ip, token, row.token_hash.clone()).await? {
                 tracing::info!("Verified identity token from IP: {ip}");
                 return Ok(Json(IdentityResponse {
-                    username: row.username.clone().into(),
+                    user: hanabi_protocol::UserRef {
+                        user_id: hanabi_protocol::UserId::try_from(row.id)?,
+                        username: row.username.clone().into(),
+                    },
                 })
                 .into_response());
             }

@@ -10,7 +10,7 @@ pub async fn history_ids(pool: &PgPool, id: UserId, offset: i64, amount: i64) ->
     Ok(sqlx::query_scalar!(
         "SELECT game_id FROM game_participants WHERE user_id=$1
          ORDER BY game_id DESC LIMIT $2 OFFSET $3",
-        id.0,
+        id.get(),
         amount,
         offset
     )
@@ -81,14 +81,14 @@ pub async fn get_history(
     for row in rows {
         let game = row.game.0;
         result.push(hanabi_protocol::GameHistoryEntry {
-            game_id: hanabi_protocol::GameId(game.id),
+            game_id: hanabi_protocol::GameId::try_from(game.id)?,
             options: crate::model::wire_options(&crate::archive::options(&game)?),
-            score: hanabi_protocol::Score(i32::from(game.score)),
+            score: hanabi_protocol::Score::try_from(game.score)?,
             num_turns: game.turn_count()?,
             end_condition: crate::archive::end_condition_from_db(i32::from(game.end_condition))?,
             started_at: time(game.datetime_started),
             finished_at: time(game.datetime_finished),
-            num_games_on_seed: hanabi_protocol::Count(i64::from(row.num_games_on_this_seed)),
+            num_games_on_seed: hanabi_protocol::Count::try_from(row.num_games_on_this_seed)?,
             seed: game.seed.into(),
             player_names: row.player_names.into_iter().map(Into::into).collect(),
             tags: row.tags,
@@ -100,7 +100,7 @@ pub async fn get_history(
 /// Seed scope is directed, exactly one hop. A→B→C must not block C's seeds for A.
 /// Seeds starting with `prefix` already played by these users or the accounts they linked.
 pub async fn blocked_seeds(pool: &PgPool, users: &[UserId], prefix: &str) -> Result<Vec<String>> {
-    let user_ids = users.iter().map(|user| user.0).collect::<Vec<_>>();
+    let user_ids = users.iter().map(|user| user.get()).collect::<Vec<_>>();
     // Resolve linked accounts into one list first: an `OR ... IN (subquery)` condition prevents
     // the participant index from being used and scans every game.
     Ok(sqlx::query_scalar!(

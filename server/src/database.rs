@@ -10,7 +10,7 @@ pub(crate) async fn normal_game_counts(
     ids: &[UserId],
     include_speedruns: bool,
 ) -> Result<BTreeMap<UserId, i64>> {
-    let ids = ids.iter().map(|id| id.0).collect::<Vec<_>>();
+    let ids = ids.iter().map(|id| id.get()).collect::<Vec<_>>();
     let rows = sqlx::query!(
         "SELECT id AS user_id,
          (num_normal_games + CASE WHEN $2 THEN num_normal_speedrun_games ELSE 0 END)::bigint
@@ -21,10 +21,9 @@ pub(crate) async fn normal_game_counts(
     )
     .fetch_all(pool)
     .await?;
-    Ok(rows
-        .into_iter()
-        .map(|row| (UserId(row.user_id), row.count))
-        .collect())
+    rows.into_iter()
+        .map(|row| Ok((UserId::try_from(row.user_id)?, row.count)))
+        .collect()
 }
 
 pub(crate) async fn normal_game_count(
@@ -145,7 +144,7 @@ mod tests {
         game(&db, 4, false, &[alice]).await;
         game(&db, 1, false, &[bob, carol]).await;
         assert!(stored_counts_match_a_recount(&db).await);
-        let ids = [alice, bob, carol].map(UserId);
+        let ids = [alice, bob, carol].map(|id| UserId::new(id).unwrap());
         let normal = normal_game_counts(&db.pool, &ids, false).await.unwrap();
         let all = normal_game_counts(&db.pool, &ids, true).await.unwrap();
         assert_eq!(

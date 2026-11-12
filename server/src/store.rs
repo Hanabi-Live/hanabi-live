@@ -166,7 +166,7 @@ impl Store {
         )
         .fetch_one(&self.primary)
         .await?;
-        Ok(GameId(i32::try_from(id)?))
+        Ok(GameId::try_from(id)?)
     }
     /// The connections of the primary pool and of the lobby read pool.
     pub async fn database_reports(&self) -> Result<(PoolReport, PoolReport)> {
@@ -440,7 +440,7 @@ impl Store {
     pub fn credit_review_background(&self, credits: Vec<(UserId, Duration)>) {
         let (users, seconds): (Vec<i32>, Vec<i64>) = credits
             .into_iter()
-            .filter_map(|(user, time)| Some((user.0, i64::try_from(time.as_secs()).ok()?)))
+            .filter_map(|(user, time)| Some((user.get(), i64::try_from(time.as_secs()).ok()?)))
             .filter(|(_, seconds)| *seconds > 0)
             .unzip();
         if users.is_empty() {
@@ -605,13 +605,13 @@ async fn archive_chat(
     for entry in entries {
         ids.push(entry.id.context("Missing chat identity")?);
         // Server messages have no author.
-        users.push(entry.user.map(|user| user.0));
+        users.push(entry.user.map(UserId::get));
         messages.push(entry.message.text.clone());
         let table = entry
             .message
             .table_id
             .context("Invalid archived chat room")?;
-        tables.push(i64::try_from(table.0)?);
+        tables.push(i64::try_from(table.get())?);
         sources.push(match entry.message.author().source() {
             ChatSource::User => "user",
             ChatSource::Server => "server",
@@ -647,19 +647,19 @@ async fn apply_tag(
     // Serializes tag edits of the same game from different tables.
     sqlx::query!(
         "SELECT id FROM games WHERE id=$1 FOR UPDATE",
-        edit.game_id.0
+        edit.game_id.get()
     )
     .fetch_one(&mut **transaction)
     .await?;
     match &edit.edit {
         TagEdit::Add(tag) => {
-            sqlx::query!("INSERT INTO game_tags(game_id,user_id,tag) SELECT $1,$2,$3 WHERE NOT EXISTS(SELECT 1 FROM game_tags WHERE game_id=$1 AND user_id=$2 AND tag=$3)", edit.game_id.0, edit.user_id.0, tag).execute(&mut **transaction).await?;
+            sqlx::query!("INSERT INTO game_tags(game_id,user_id,tag) SELECT $1,$2,$3 WHERE NOT EXISTS(SELECT 1 FROM game_tags WHERE game_id=$1 AND user_id=$2 AND tag=$3)", edit.game_id.get(), edit.user_id.get(), tag).execute(&mut **transaction).await?;
         }
         TagEdit::Delete(tag) => {
             sqlx::query!(
                 "DELETE FROM game_tags WHERE game_id=$1 AND user_id=$2 AND tag=$3",
-                edit.game_id.0,
-                edit.user_id.0,
+                edit.game_id.get(),
+                edit.user_id.get(),
                 tag
             )
             .execute(&mut **transaction)
@@ -668,25 +668,27 @@ async fn apply_tag(
         TagEdit::DeleteAll => {
             sqlx::query!(
                 "DELETE FROM game_tags WHERE game_id=$1 AND user_id=$2",
-                edit.game_id.0,
-                edit.user_id.0
+                edit.game_id.get(),
+                edit.user_id.get()
             )
             .execute(&mut **transaction)
             .await?;
         }
     }
-    Ok(sqlx::query!(
+    sqlx::query!(
         "SELECT user_id,tag FROM game_tags WHERE game_id=$1 ORDER BY user_id,tag",
-        edit.game_id.0
+        edit.game_id.get()
     )
     .fetch_all(&mut **transaction)
     .await?
     .into_iter()
-    .map(|row| Tag {
-        user: UserId(row.user_id),
-        tag: row.tag,
+    .map(|row| {
+        Ok(Tag {
+            user: UserId::try_from(row.user_id)?,
+            tag: row.tag,
+        })
     })
-    .collect())
+    .collect()
 }
 
 #[cfg(test)]
@@ -716,7 +718,7 @@ mod tests {
             id,
             name: "Native parity".into(),
             owner: hanabi_protocol::UserRef {
-                user_id: UserId(1),
+                user_id: UserId::new(1).unwrap(),
                 username: "Alice".into(),
             },
             visible: true,
@@ -727,7 +729,7 @@ mod tests {
             created: Utc::now(),
             phase: Phase::Pregame {
                 players: vec![Player {
-                    id: Some(UserId(1)),
+                    id: Some(UserId::new(1).unwrap()),
                     name: "Alice".into(),
                     bot: false,
                     stats: zero_stats(),
@@ -749,13 +751,13 @@ mod tests {
     ) -> Result<()> {
         let players = vec![
             Player {
-                id: Some(UserId(1)),
+                id: Some(UserId::new(1).unwrap()),
                 name: "Alice".into(),
                 bot: false,
                 stats: zero_stats(),
             },
             Player {
-                id: Some(UserId(2)),
+                id: Some(UserId::new(2).unwrap()),
                 name: "Bob".into(),
                 bot: false,
                 stats: zero_stats(),
@@ -784,8 +786,8 @@ mod tests {
             snapshot: Box::new(Snapshot {
                 format: FORMAT.into(),
                 table_id: table.id,
-                game_id: Some(GameId(1)),
-                owner: UserId(1),
+                game_id: Some(GameId::new(1).unwrap()),
+                owner: UserId::new(1).unwrap(),
                 name: table.name.clone(),
                 players,
                 seed: Some("p2v0s1".into()),
@@ -803,7 +805,7 @@ mod tests {
                 notes: vec![vec![String::new(); 55]; 2],
                 spectator_notes: BTreeMap::new(),
                 tags: vec![Tag {
-                    user: UserId(1),
+                    user: UserId::new(1).unwrap(),
                     tag: "native".into(),
                 }],
                 votes: vec![false, false],
@@ -815,7 +817,7 @@ mod tests {
     }
     #[test]
     fn checkpoints_round_trip_as_a_head_and_parts() -> Result<()> {
-        let mut table = pregame(TableId(1));
+        let mut table = pregame(TableId::new(1).unwrap());
         terminal(&mut table)?;
         table.convert_to_replay()?;
         let owner = crate::model::NoteOwner {
@@ -826,11 +828,11 @@ mod tests {
             .game_mut()
             .unwrap()
             .spectator_notes
-            .insert(UserId(3), owner.clone());
+            .insert(UserId::new(3).unwrap(), owner.clone());
         table.game_mut().unwrap().notes[1][2] = "note".into();
         table.chat.push(TableChat {
             id: Some(7),
-            user: Some(UserId(1)),
+            user: Some(UserId::new(1).unwrap()),
             message: hanabi_protocol::Chat::public(
                 "hello",
                 hanabi_protocol::ChatAuthor::User {
@@ -906,12 +908,12 @@ mod tests {
     }
     #[test]
     fn saves_write_only_new_entries_and_rewrite_lists_that_do_not_continue() -> Result<()> {
-        let mut table = pregame(TableId(1));
+        let mut table = pregame(TableId::new(1).unwrap());
         terminal(&mut table)?;
         table.convert_to_replay()?;
         let message = |id: i32| TableChat {
             id: Some(id),
-            user: Some(UserId(1)),
+            user: Some(UserId::new(1).unwrap()),
             message: hanabi_protocol::Chat::public(
                 format!("message {id}"),
                 hanabi_protocol::ChatAuthor::User {
@@ -983,22 +985,22 @@ mod tests {
             let Phase::Pregame { players, .. } = &mut table.phase else {
                 unreachable!();
             };
-            players[0].stats.num_games = hanabi_protocol::Count(727);
+            players[0].stats.num_games = hanabi_protocol::Count::new(727).unwrap();
             players.push(Player {
-                id: Some(UserId(2)),
+                id: Some(UserId::new(2).unwrap()),
                 name: "Bob".into(),
                 bot: false,
                 stats: zero_stats(),
             });
-            players[1].stats.num_games = hanabi_protocol::Count(572);
+            players[1].stats.num_games = hanabi_protocol::Count::new(572).unwrap();
             let original_revision = store.save_at(&table, 0).await?;
             let mut replay = pregame(store.allocate_table().await?);
             terminal(&mut replay)?;
-            replay.game_mut().unwrap().players[0].stats.num_games = hanabi_protocol::Count(727);
+            replay.game_mut().unwrap().players[0].stats.num_games = hanabi_protocol::Count::new(727).unwrap();
             replay.phase = Phase::Replay {
                 snapshot: Box::new(replay.game().unwrap().clone()),
                 replay: crate::model::ReplayState {
-                    leader: UserId(1),
+                    leader: UserId::new(1).unwrap(),
                     segment: hanabi_protocol::Turn::default(),
                     efficiency_modifier: hanabi_protocol::EfficiencyModifier::default(),
                     hypothetical: false,
@@ -1019,14 +1021,14 @@ mod tests {
             )
             .await??;
             let (cached, cached_revision) = store.get(table.id).await?.context("Missing pregame")?;
-            ensure!(cached_revision == original_revision && cached.players()[0].stats.num_games == hanabi_protocol::Count(727),
+            ensure!(cached_revision == original_revision && cached.players()[0].stats.num_games == hanabi_protocol::Count::new(727).unwrap(),
                 "Startup waited for optional statistics or changed its cached snapshot");
             blocked_archive.rollback().await?;
             let Phase::Pregame { players, .. } = &mut table.phase else {
                 unreachable!();
             };
-            players[0].stats.num_games = hanabi_protocol::Count(1);
-            players[1].stats.num_games = hanabi_protocol::Count(0);
+            players[0].stats.num_games = hanabi_protocol::Count::new(1).unwrap();
+            players[1].stats.num_games = hanabi_protocol::Count::new(0).unwrap();
             let refreshed = tokio::time::timeout(Duration::from_secs(5), async {
                 loop {
                     let (durable, revision) = store.get(table.id).await?.context("Missing pregame")?;
@@ -1078,7 +1080,7 @@ mod tests {
                 reason = "test SQL that sets up database state or failures directly"
             )]
             sqlx::query("UPDATE live_tables SET payload = '{}' WHERE id = $1")
-                .bind(i64::try_from(bad.id.0)?)
+                .bind(i64::try_from(bad.id.get())?)
                 .execute(&store.primary)
                 .await?;
             let tasks = TaskTracker::new();
@@ -1128,7 +1130,7 @@ mod tests {
             terminal(&mut table)?;
             table.convert_to_replay()?;
 
-            let id = i64::try_from(table.id.0)?;
+            let id = i64::try_from(table.id.get())?;
             let versions = || async {
                 Ok::<_, anyhow::Error>(
                     sqlx::query!(
@@ -1205,7 +1207,7 @@ mod tests {
                 let mut snapshot = template.clone();
                 snapshot.players = (1..=hanabi_engine::int(count))
                     .map(|id| Player {
-                        id: Some(UserId(id)),
+                        id: Some(UserId::new(id).unwrap()),
                         name: format!("Player{id}"),
                         bot: false,
                         stats: zero_stats(),
@@ -1259,7 +1261,8 @@ mod tests {
             )
             .execute(&store.primary)
             .await?;
-            let carol = crate::stats::pregame_stats(&store.primary, UserId(9001), 0).await?;
+            let carol =
+                crate::stats::pregame_stats(&store.primary, UserId::new(9001).unwrap(), 0).await?;
             let best = serde_json::to_value(&carol.variant.best_scores)?;
             ensure!(
                 best[0]["best"]["score"] == 25 && best[0]["best"]["modified"] == true,
@@ -1301,7 +1304,7 @@ mod tests {
             .execute(&store.primary)
             .await?;
             let player = |id, bot| Player {
-                id: Some(UserId(id)),
+                id: Some(UserId::new(id).unwrap()),
                 name: format!("Player {id}"),
                 bot,
                 stats: zero_stats(),
@@ -1347,7 +1350,7 @@ mod tests {
     fn chat(id: TableId, text: &str) -> Result<TableChat> {
         Ok(TableChat {
             id: None,
-            user: Some(UserId(1)),
+            user: Some(UserId::new(1).unwrap()),
             message: serde_json::from_value(json!({
                 "text": text, "tableId": id, "sentAt": "2026-11-02T20:00:00.123456Z",
                 "kind": {"type": "public", "author": {"type": "user", "username": "Alice"}},
@@ -1457,8 +1460,13 @@ mod tests {
                 "The finished game did not become a fresh review"
             );
             ensure!(count(&pool, "game_actions").await? == 1);
-            let replay =
-                crate::archive::replay(&store.primary, GameId(1), TableId(99), UserId(1)).await?;
+            let replay = crate::archive::replay(
+                &store.primary,
+                GameId::new(1).unwrap(),
+                TableId::new(99).unwrap(),
+                UserId::new(1).unwrap(),
+            )
+            .await?;
             ensure!(
                 replay.game.actions == finished.game().unwrap().game.actions
                     && replay.notes == finished.game().unwrap().notes
@@ -1467,8 +1475,8 @@ mod tests {
             );
 
             let edit = PendingTag {
-                game_id: GameId(1),
-                user_id: UserId(1),
+                game_id: GameId::new(1).unwrap(),
+                user_id: UserId::new(1).unwrap(),
                 edit: TagEdit::Add("added".into()),
             };
             let tagging = || Commit {
@@ -1607,12 +1615,12 @@ mod tests {
             store.save_at(&source, 0).await?;
             let mut destination = pregame(store.allocate_table().await?);
             destination.owner = hanabi_protocol::UserRef {
-                user_id: UserId(2),
+                user_id: UserId::new(2).unwrap(),
                 username: "Bob".into(),
             };
             if let Phase::Pregame { players, .. } = &mut destination.phase {
                 players[0] = Player {
-                    id: Some(UserId(2)),
+                    id: Some(UserId::new(2).unwrap()),
                     name: "Bob".into(),
                     bot: false,
                     stats: zero_stats(),
@@ -1668,8 +1676,11 @@ mod tests {
         let mut users = vec![];
         let mut outgoing = vec![];
         for (index, name) in ["Alice", "Bob", "Cathy"].iter().enumerate() {
-            let (session, frames) =
-                Session::new(UserId(hanabi_engine::int(index) + 1), (*name).into(), 1);
+            let (session, frames) = Session::new(
+                UserId::new(hanabi_engine::int(index) + 1).unwrap(),
+                (*name).into(),
+                1,
+            );
             let (reply, received) = oneshot::channel();
             hub.send(HubCommand::Register {
                 session: session.clone(),
@@ -1694,7 +1705,7 @@ mod tests {
             send(&hub,users[2].clone(),"tableSpectate",json!({"tableId":id,"shadowingPlayerIndex":0})).await?;
             send(&hub,users[0].clone(),"chat",json!({"tableId":id,"text":"retained authored chat"})).await?;
             send(&hub,users[0].clone(),"tableTerminate",json!({"tableId":id})).await?;
-            let rows:i64=sqlx::query_scalar!("SELECT count(*) AS \"v!\" FROM chat_log WHERE user_id=1 AND source='user' AND table_id=$1 AND message='retained authored chat'", i64::try_from(id.0)?).fetch_one(&store.primary).await?;
+            let rows:i64=sqlx::query_scalar!("SELECT count(*) AS \"v!\" FROM chat_log WHERE user_id=1 AND source='user' AND table_id=$1 AND message='retained authored chat'", i64::try_from(id.get())?).fetch_one(&store.primary).await?;
             ensure!(rows==1,"Accepted authored chat was omitted or duplicated in PostgreSQL");
             let restored=store.load().await?;
             ensure!(restored[0].0.chat.iter().all(|chat|chat.id.is_some()),"Chat was not archived with its checkpoint");
@@ -1735,8 +1746,11 @@ mod tests {
         let mut users = vec![];
         let mut outgoing = vec![];
         for (index, name) in ["Alice", "Bob", "Cathy"].iter().enumerate() {
-            let (session, frames) =
-                Session::new(UserId(hanabi_engine::int(index) + 1), (*name).into(), 1);
+            let (session, frames) = Session::new(
+                UserId::new(hanabi_engine::int(index) + 1).unwrap(),
+                (*name).into(),
+                1,
+            );
             let (reply, received) = oneshot::channel();
             hub.send(HubCommand::Register {
                 session: session.clone(),
@@ -1776,7 +1790,7 @@ mod tests {
                 .find(|(t, _)| t.id == id)
                 .context("Lost source")?;
             ensure!(
-                source.0.seated_users().collect::<Vec<_>>() == vec![UserId(1), UserId(3)],
+                source.0.seated_users().collect::<Vec<_>>() == vec![UserId::new(1).unwrap(), UserId::new(3).unwrap()],
                 "Wrong split membership"
             );
             send(
@@ -1892,8 +1906,11 @@ mod tests {
         let mut users = vec![];
         let mut frames = vec![];
         for (i, name) in ["Alice", "Bob", "Cathy"].iter().enumerate() {
-            let (session, outgoing) =
-                Session::new(UserId(hanabi_engine::int(i) + 1), (*name).into(), 1);
+            let (session, outgoing) = Session::new(
+                UserId::new(hanabi_engine::int(i) + 1).unwrap(),
+                (*name).into(),
+                1,
+            );
             let (reply, received) = oneshot::channel();
             hub.send(HubCommand::Register {
                 session: session.clone(),
@@ -1913,7 +1930,7 @@ mod tests {
             for user in users.iter().skip(1){send(&hub,user.clone(),"tableJoin",json!({"tableId":id})).await?;}
             send(&hub,users[0].clone(),"tableStart",store.start_request(id).await?).await?;
             let loaded=store.load().await?;let s=loaded[0].0.game().unwrap();ensure!(s.players.len()==3&&s.game.stacks.len()==6&&s.game.clue_tokens==16,"Native variant ignored");
-            let active=s.game.active_player_index;let actor=usize::try_from(s.players[active].user()?.0)?-1;
+            let active=s.game.active_player_index;let actor=usize::try_from(s.players[active].user()?.get())?-1;
             send(&hub,users[actor].clone(),"gameLoaded",json!({"tableId":id})).await?;
             send(&hub,users[actor].clone(),"pause",json!({"tableId":id,"setting":"pause"})).await?;
             send(&hub,users[actor].clone(),"note",json!({"tableId":id,"order":0,"text":"private"})).await?;

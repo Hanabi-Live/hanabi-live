@@ -4,7 +4,7 @@ use serde_json::{Value, json};
 
 fn caller(id: i32, name: &str) -> Identity {
     Identity {
-        user: UserId(id),
+        user: UserId::new(id).unwrap(),
         name: name.into(),
         normalized_name: normalize_username(name),
         ip: "127.0.0.1".into(),
@@ -43,7 +43,7 @@ async fn uptime_is_private_before_history_or_discord_publication_postgres() {
         .await
         .unwrap();
     let history_before = lobby_history(&db.pool, 100).await.unwrap();
-    for table in [None, Some(hanabi_protocol::TableId(42))] {
+    for table in [None, Some(hanabi_protocol::TableId::new(42).unwrap())] {
         let message = crate::actors::client_message(
             "chat",
             &table.map_or_else(
@@ -125,12 +125,22 @@ async fn lobby_relationships_atomic_settings_and_parameterization_postgres() {
     );
     let _ = run(&db.pool, &who, &[], "friendRemove", data.clone()).await;
     assert_eq!(
-        friends(&db.pool, UserId(a)).await.unwrap(),
+        friends(&db.pool, UserId::new(a).unwrap()).await.unwrap(),
         Vec::<hanabi_protocol::Username>::new()
     );
     let (one, two) = tokio::join!(
-        relationships::change_friend(&db.pool, UserId(a), UserId(b), true),
-        relationships::change_friend(&db.pool, UserId(a), UserId(b), true)
+        relationships::change_friend(
+            &db.pool,
+            UserId::new(a).unwrap(),
+            UserId::new(b).unwrap(),
+            true
+        ),
+        relationships::change_friend(
+            &db.pool,
+            UserId::new(a).unwrap(),
+            UserId::new(b).unwrap(),
+            true
+        )
     );
     assert_ne!(one.unwrap(), two.unwrap());
     let result = run(
@@ -146,7 +156,12 @@ async fn lobby_relationships_atomic_settings_and_parameterization_postgres() {
         [Effect::Publish(Publication::HGroup(true))]
     ));
     assert_eq!(
-        serde_json::to_value(get_settings(&db.pool, UserId(a)).await.unwrap()).unwrap()["hGroupConventions"],
+        serde_json::to_value(
+            get_settings(&db.pool, UserId::new(a).unwrap())
+                .await
+                .unwrap()
+        )
+        .unwrap()["hGroupConventions"],
         true
     );
     let result = run(
@@ -174,41 +189,50 @@ async fn lobby_relationships_atomic_settings_and_parameterization_postgres() {
         [Effect::Publish(Publication::HGroupLevel(None))]
     ));
     assert!(
-        serde_json::to_value(get_settings(&db.pool, UserId(a)).await.unwrap())
-            .unwrap()
-            .get("hGroupLevel")
-            .is_none()
+        serde_json::to_value(
+            get_settings(&db.pool, UserId::new(a).unwrap())
+                .await
+                .unwrap()
+        )
+        .unwrap()
+        .get("hGroupLevel")
+        .is_none()
     );
     assert!(
-        set_setting(&db.pool, UserId(a), "hGroupLevel", &json!(0))
+        set_setting(&db.pool, UserId::new(a).unwrap(), "hGroupLevel", &json!(0))
             .await
             .is_err()
     );
     let too_high = json!(hanabi_protocol::MAX_H_GROUP_LEVEL + 1);
     assert!(
-        set_setting(&db.pool, UserId(a), "hGroupLevel", &too_high)
+        set_setting(&db.pool, UserId::new(a).unwrap(), "hGroupLevel", &too_high)
             .await
             .is_err()
     );
     assert!(
-        set_setting(&db.pool, UserId(a), "volume", &json!(101))
+        set_setting(&db.pool, UserId::new(a).unwrap(), "volume", &json!(101))
             .await
             .is_err()
     );
     assert!(
-        set_setting(&db.pool, UserId(a), "volume", &json!(2.1))
-            .await
-            .is_err()
-    );
-    assert!(
-        set_setting(&db.pool, UserId(a), "soundTimer", &json!("TRUE"))
+        set_setting(&db.pool, UserId::new(a).unwrap(), "volume", &json!(2.1))
             .await
             .is_err()
     );
     assert!(
         set_setting(
             &db.pool,
-            UserId(a),
+            UserId::new(a).unwrap(),
+            "soundTimer",
+            &json!("TRUE")
+        )
+        .await
+        .is_err()
+    );
+    assert!(
+        set_setting(
+            &db.pool,
+            UserId::new(a).unwrap(),
             "createTable",
             &json!({"maxPlayers": 7})
         )
@@ -218,7 +242,7 @@ async fn lobby_relationships_atomic_settings_and_parameterization_postgres() {
     assert!(
         set_setting(
             &db.pool,
-            UserId(a),
+            UserId::new(a).unwrap(),
             "volume=0; DROP TABLE users;--",
             &json!(0)
         )
@@ -227,13 +251,23 @@ async fn lobby_relationships_atomic_settings_and_parameterization_postgres() {
     );
     let (sound_timer, volume) = (json!(false), json!(25));
     let (one, two) = tokio::join!(
-        set_setting(&db.pool, UserId(b), "soundTimer", &sound_timer),
-        set_setting(&db.pool, UserId(b), "volume", &volume)
+        set_setting(
+            &db.pool,
+            UserId::new(b).unwrap(),
+            "soundTimer",
+            &sound_timer
+        ),
+        set_setting(&db.pool, UserId::new(b).unwrap(), "volume", &volume)
     );
     one.unwrap();
     two.unwrap();
     // Concurrent changes to different settings are both kept.
-    let settings = serde_json::to_value(get_settings(&db.pool, UserId(b)).await.unwrap()).unwrap();
+    let settings = serde_json::to_value(
+        get_settings(&db.pool, UserId::new(b).unwrap())
+            .await
+            .unwrap(),
+    )
+    .unwrap();
     assert_eq!(settings["soundTimer"], false);
     assert_eq!(settings["volume"], 25);
     let result = run(
@@ -358,11 +392,11 @@ async fn lobby_private_messages_and_command_privacy_postgres() {
     assert_eq!(effects.len(), 2);
     assert!(effects.iter().all(|effect| match effect {
         Effect::Publish(Publication::ToSelf(_)) => true,
-        Effect::Publish(Publication::ToUser { id, .. }) => *id == UserId(b),
+        Effect::Publish(Publication::ToUser { id, .. }) => *id == UserId::new(b).unwrap(),
         _ => false,
     }));
     assert!(effects.iter().any(
-        |e| matches!(e,Effect::Publish(Publication::ToUser {id,generation:29,..}) if *id==UserId(b))
+        |e| matches!(e,Effect::Publish(Publication::ToUser {id,generation:29,..}) if *id==UserId::new(b).unwrap())
     ));
     let stored = sqlx::query!("SELECT datetime_sent FROM chat_log_pm")
         .fetch_one(&db.pool)
@@ -551,9 +585,14 @@ async fn lobby_history_pages_include_only_own_games_postgres() {
     .execute(&db.pool)
     .await
     .unwrap();
-    relationships::change_friend(&db.pool, UserId(a), UserId(b), true)
-        .await
-        .unwrap();
+    relationships::change_friend(
+        &db.pool,
+        UserId::new(a).unwrap(),
+        UserId::new(b).unwrap(),
+        true,
+    )
+    .await
+    .unwrap();
     sqlx::query!(
         "UPDATE games SET datetime_finished='2026-11-04T00:00:00Z' WHERE id=ANY($1)",
         &[own, other, shared][..]
@@ -562,19 +601,27 @@ async fn lobby_history_pages_include_only_own_games_postgres() {
     .await
     .unwrap();
     assert_eq!(
-        history_ids(&db.pool, UserId(a), 0, 10).await.unwrap(),
+        history_ids(&db.pool, UserId::new(a).unwrap(), 0, 10)
+            .await
+            .unwrap(),
         vec![shared, own]
     );
     assert_eq!(
-        history_ids(&db.pool, UserId(a), 1, 1).await.unwrap(),
+        history_ids(&db.pool, UserId::new(a).unwrap(), 1, 1)
+            .await
+            .unwrap(),
         vec![own]
     );
     assert_eq!(
-        history_ids(&db.pool, UserId(a), 99, 10).await.unwrap(),
+        history_ids(&db.pool, UserId::new(a).unwrap(), 99, 10)
+            .await
+            .unwrap(),
         Vec::<i32>::new()
     );
     assert_eq!(
-        history_ids(&db.pool, UserId(d), 0, 10).await.unwrap(),
+        history_ids(&db.pool, UserId::new(d).unwrap(), 0, 10)
+            .await
+            .unwrap(),
         Vec::<i32>::new()
     );
     db.close().await;
@@ -608,19 +655,19 @@ async fn lobby_directed_linked_seeds_and_histories_postgres() {
     )
     .await;
     assert_eq!(
-        blocked_seeds(&db.pool, &[UserId(a)], "p2v0s")
+        blocked_seeds(&db.pool, &[UserId::new(a).unwrap()], "p2v0s")
             .await
             .unwrap(),
         vec!["p2v0s1"]
     );
     assert_eq!(
-        blocked_seeds(&db.pool, &[UserId(c)], "p2v0s")
+        blocked_seeds(&db.pool, &[UserId::new(c).unwrap()], "p2v0s")
             .await
             .unwrap(),
         vec!["p2v0s2"]
     );
     assert_eq!(
-        blocked_seeds(&db.pool, &[UserId(a)], "p3v0s")
+        blocked_seeds(&db.pool, &[UserId::new(a).unwrap()], "p3v0s")
             .await
             .unwrap(),
         Vec::<String>::new()
@@ -739,7 +786,12 @@ async fn every_setting_round_trips_and_only_changes_are_stored_postgres() {
         return;
     };
     let id = db.user("Alice").await;
-    let defaults = serde_json::to_value(get_settings(&db.pool, UserId(id)).await.unwrap()).unwrap();
+    let defaults = serde_json::to_value(
+        get_settings(&db.pool, UserId::new(id).unwrap())
+            .await
+            .unwrap(),
+    )
+    .unwrap();
     assert_eq!(defaults, json!(settings::defaults()));
     let stored = || async {
         sqlx::query_scalar!("SELECT settings FROM users WHERE id=$1", id)
@@ -763,23 +815,33 @@ async fn every_setting_round_trips_and_only_changes_are_stored_postgres() {
             _ => json!("Rainbow (6 Suits)"),
         };
         assert_ne!(default, expected, "{name} must change");
-        set_setting(&db.pool, UserId(id), &name, &expected)
+        set_setting(&db.pool, UserId::new(id).unwrap(), &name, &expected)
             .await
             .unwrap();
         assert_eq!(
-            serde_json::to_value(get_settings(&db.pool, UserId(id)).await.unwrap()).unwrap()[&name],
+            serde_json::to_value(
+                get_settings(&db.pool, UserId::new(id).unwrap())
+                    .await
+                    .unwrap()
+            )
+            .unwrap()[&name],
             expected,
             "{name}"
         );
         assert_eq!(stored().await[&name], expected, "{name} was not stored");
     }
     // Choosing the default again removes the stored value.
-    set_setting(&db.pool, UserId(id), "volume", &json!(50))
+    set_setting(&db.pool, UserId::new(id).unwrap(), "volume", &json!(50))
         .await
         .unwrap();
     assert!(stored().await.get("volume").is_none());
     assert_eq!(
-        serde_json::to_value(get_settings(&db.pool, UserId(id)).await.unwrap()).unwrap()["volume"],
+        serde_json::to_value(
+            get_settings(&db.pool, UserId::new(id).unwrap())
+                .await
+                .unwrap()
+        )
+        .unwrap()["volume"],
         50
     );
     db.close().await;
@@ -799,12 +861,14 @@ async fn settings_outside_the_wire_contract_are_not_sent_or_saved_postgres() {
     .execute(&db.pool)
     .await
     .unwrap();
-    let settings = get_settings(&db.pool, UserId(id)).await.unwrap();
+    let settings = get_settings(&db.pool, UserId::new(id).unwrap())
+        .await
+        .unwrap();
     assert_eq!(
         settings.create_table,
         hanabi_protocol::CreateTableSettings::default()
     );
-    assert_eq!(settings.volume, hanabi_protocol::Volume(70));
+    assert_eq!(settings.volume, hanabi_protocol::Volume::new(70).unwrap());
     // Older servers named the variant of the table that the form starts from.
     for (name, variant) in [("Rainbow (6 Suits)", Some(3)), ("Removed Variant", None)] {
         sqlx::query!(
@@ -815,7 +879,7 @@ async fn settings_outside_the_wire_contract_are_not_sent_or_saved_postgres() {
         .execute(&db.pool)
         .await
         .unwrap();
-        let options = get_settings(&db.pool, UserId(id))
+        let options = get_settings(&db.pool, UserId::new(id).unwrap())
             .await
             .unwrap()
             .create_table
@@ -823,10 +887,9 @@ async fn settings_outside_the_wire_contract_are_not_sent_or_saved_postgres() {
         assert!(options.speedrun);
         assert_eq!(
             options.variant_id,
-            variant.map_or(
-                hanabi_protocol::DEFAULT_VARIANT_ID,
-                hanabi_protocol::VariantId
-            )
+            variant.map_or(hanabi_protocol::DEFAULT_VARIANT_ID, |id| {
+                hanabi_protocol::VariantId::new(id).unwrap()
+            })
         );
     }
     // Older servers kept a clock for an untimed table, beside the options or with `timed`. Only a
@@ -855,7 +918,7 @@ async fn settings_outside_the_wire_contract_are_not_sent_or_saved_postgres() {
         .execute(&db.pool)
         .await
         .unwrap();
-        let table = get_settings(&db.pool, UserId(id))
+        let table = get_settings(&db.pool, UserId::new(id).unwrap())
             .await
             .unwrap()
             .create_table;
@@ -876,7 +939,7 @@ async fn settings_outside_the_wire_contract_are_not_sent_or_saved_postgres() {
         ),
     ] {
         assert!(
-            set_setting(&db.pool, UserId(id), name, &value)
+            set_setting(&db.pool, UserId::new(id).unwrap(), name, &value)
                 .await
                 .is_err(),
             "{name}={value} was accepted"

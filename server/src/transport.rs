@@ -308,7 +308,7 @@ mod tests {
     use super::*;
     #[test]
     fn outbound_saturation_cancels_without_blocking() {
-        let (session, _receiver) = Session::new(UserId(1), "Alice".into(), 1);
+        let (session, _receiver) = Session::new(UserId::new(1).unwrap(), "Alice".into(), 1);
         for _ in 0..65 {
             session.emit(&Frame::from("name {}"));
         }
@@ -316,7 +316,7 @@ mod tests {
     }
     #[test]
     fn byte_budget_is_released_when_frames_are_dropped() {
-        let (session, mut receiver) = Session::new(UserId(1), "Alice".into(), 1);
+        let (session, mut receiver) = Session::new(UserId::new(1).unwrap(), "Alice".into(), 1);
         session.emit(&Frame::from("x".repeat(131_072)));
         drop(receiver.try_recv().unwrap());
         session.emit(&Frame::from("x".repeat(131_072)));
@@ -327,7 +327,7 @@ mod tests {
 
     #[test]
     fn full_replay_frames_and_ordered_maintenance_close() {
-        let (session, mut receiver) = Session::new(UserId(1), "Alice".into(), 1);
+        let (session, mut receiver) = Session::new(UserId::new(1).unwrap(), "Alice".into(), 1);
         session.emit(&Frame::from("x".repeat(300_000)));
         assert!(session.active());
         drop(receiver.try_recv().unwrap());
@@ -363,7 +363,7 @@ mod tests {
             bytes: Arc::new(Semaphore::new(16)),
             global: global.clone(),
         };
-        let (session, _) = Session::new(UserId(1), "Alice".into(), 1);
+        let (session, _) = Session::new(UserId::new(1).unwrap(), "Alice".into(), 1);
         let (sender, mut receiver) = mpsc::channel(1);
         assert!(
             sender
@@ -397,8 +397,8 @@ mod tests {
             bytes: Arc::new(Semaphore::new(16)),
             global: global.clone(),
         };
-        let (alice, _) = Session::new(UserId(1), "Alice".into(), 1);
-        let (bob, _) = Session::new(UserId(2), "Bob".into(), 2);
+        let (alice, _) = Session::new(UserId::new(1).unwrap(), "Alice".into(), 1);
+        let (bob, _) = Session::new(UserId::new(2).unwrap(), "Bob".into(), 2);
         let processing = first.admit(&alice, "12345678").unwrap();
         assert!(second.admit(&bob, "abcdefgh").is_none());
         assert!(bob.cancel.is_cancelled());
@@ -428,7 +428,7 @@ mod tests {
     fn inbound_valid_large_replay_keeps_full_payload_and_returns_capacity() {
         let global = Arc::new(Semaphore::new(GLOBAL_INPUT_BYTES));
         let budget = InboundBudget::new(global.clone());
-        let (session, _) = Session::new(UserId(1), "Alice".into(), 1);
+        let (session, _) = Session::new(UserId::new(1).unwrap(), "Alice".into(), 1);
         let text = format!(
             "replayCreate {}",
             serde_json::json!({"visibility":{"type":"solo"},"source":{"type":"imported","game":{
@@ -450,7 +450,7 @@ mod tests {
             bytes: Arc::new(Semaphore::new(16)),
             global: global.clone(),
         };
-        let (session, _) = Session::new(UserId(1), "Alice".into(), 1);
+        let (session, _) = Session::new(UserId::new(1).unwrap(), "Alice".into(), 1);
         let message = budget.admit(&session, "12345678").unwrap();
         let task = tokio::spawn(async move {
             std::future::pending::<()>().await;
@@ -465,7 +465,7 @@ mod tests {
 
     #[test]
     fn valid_large_replay_notes_queue_without_a_writer_and_remain_complete() {
-        let (session, mut outgoing) = Session::new(UserId(1), "Alice".into(), 1);
+        let (session, mut outgoing) = Session::new(UserId::new(1).unwrap(), "Alice".into(), 1);
         let notes: Vec<_> = (0..6).map(|_| "n".repeat(65536)).collect();
         let all_notes: Vec<_> = (0..6)
             .map(|index| {

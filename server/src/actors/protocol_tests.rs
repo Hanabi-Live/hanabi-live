@@ -44,7 +44,7 @@ fn test_session(
 ) -> (Arc<Session>, mpsc::Receiver<Outbound>) {
     Session::with_token(
         crate::transport::Identity {
-            user: UserId(user),
+            user: UserId::new(user).unwrap(),
             name: name.into(),
             normalized_name: crate::accounts::normalize_username(name),
             ip: String::new(),
@@ -106,7 +106,7 @@ impl Harness {
     }
     async fn replace(&mut self, index: usize) -> Result<(Arc<Session>, mpsc::Receiver<Outbound>)> {
         let old = self.users[index].clone();
-        let (session, outgoing) = test_session(old.user.0, &old.name, old.generation + 1);
+        let (session, outgoing) = test_session(old.user.get(), &old.name, old.generation + 1);
         self.register(session.clone()).await?;
         self.users[index] = session;
         Ok((old, std::mem::replace(&mut self.outgoing[index], outgoing)))
@@ -158,13 +158,20 @@ impl Harness {
         Ok(values)
     }
     async fn receive(&mut self, index: usize, command: &str) -> Result<Value> {
+        Ok(self.receive_after(index, command).await?.1)
+    }
+    /// Waits for a message, and also returns the names of the messages before it.
+    async fn receive_after(&mut self, index: usize, command: &str) -> Result<(Vec<String>, Value)> {
         tokio::time::timeout(Duration::from_secs(15), async {
+            let mut before = vec![];
             while let Some(frame) = self.outgoing[index].recv().await {
                 if let Ok(text) = frame.message.to_text()
                     && let Some((name, body)) = text.split_once(' ')
-                    && name == command
                 {
-                    return Ok(serde_json::from_str(body)?);
+                    if name == command {
+                        return Ok((before, serde_json::from_str(body)?));
+                    }
+                    before.push(name.to_owned());
                 }
             }
             bail!("Socket ended while waiting for {command}")
@@ -178,14 +185,14 @@ impl Harness {
             .await?;
         self.receive(index, "tableJoined").await?["tableId"]
             .as_u64()
-            .map(TableId)
+            .and_then(TableId::new)
             .context("Missing table identity")
     }
     async fn replay(&mut self, index: usize) -> Result<TableId> {
         self.send(index,"replayCreate",json!({"source":{"type":"imported","game":{"playerNames":["Alice","Bob"],"seed":"p2v0s1"}},"visibility":{"type":"shared","joinExisting":false,"spoilerFree":false}})).await?;
         self.receive(index, "tableStarted").await?["tableId"]
             .as_u64()
-            .map(TableId)
+            .and_then(TableId::new)
             .context("Missing replay identity")
     }
     /// Starts a table as its owner sees it, with the players seated at it.
@@ -273,7 +280,7 @@ async fn player_shadow_is_cleared_when_a_spectator_joins() -> Result<()> {
             let seat = table
                 .players()
                 .iter()
-                .position(|p| p.is(UserId(player_id)))
+                .position(|p| p.is(UserId::new(player_id).unwrap()))
                 .unwrap();
             h.send(index, "gameInitLoad", json!({"tableId":id})).await?;
             let init = h.receive(index, "gameInit").await?;
@@ -284,7 +291,12 @@ async fn player_shadow_is_cleared_when_a_spectator_joins() -> Result<()> {
             );
         }
         ensure!(
-            table.shadows.get(&UserId(2)).copied().flatten().is_none(),
+            table
+                .shadows
+                .get(&UserId::new(2).unwrap())
+                .copied()
+                .flatten()
+                .is_none(),
             "Joining retained a durable shadow selection"
         );
         // A spectator who does not shadow has no seat.
@@ -343,14 +355,16 @@ async fn player_shadow_from_saved_games_is_cleared_on_reattend() -> Result<()> {
         let alice = table
             .players()
             .iter()
-            .position(|p| p.is(UserId(1)))
+            .position(|p| p.is(UserId::new(1).unwrap()))
             .unwrap();
         let bob = table
             .players()
             .iter()
-            .position(|p| p.is(UserId(2)))
+            .position(|p| p.is(UserId::new(2).unwrap()))
             .unwrap();
-        table.shadows.insert(UserId(2), PlayerIndex::new(alice));
+        table
+            .shadows
+            .insert(UserId::new(2).unwrap(), PlayerIndex::new(alice));
         h.store.save_at(&table, revision).await?;
         h.tasks = TaskTracker::new();
         h.hub = Hub::start(
@@ -379,7 +393,7 @@ async fn player_shadow_from_saved_games_is_cleared_on_reattend() -> Result<()> {
                     .await?
                     .0
                     .shadows
-                    .get(&UserId(2))
+                    .get(&UserId::new(2).unwrap())
                     .copied()
                     .flatten()
                     .is_none(),
@@ -1110,7 +1124,7 @@ async fn shared_replays_of_older_games_start_when_their_table_is_created() -> Re
         let id = h.receive(0, "tableStarted").await?["tableId"].clone();
         h.stop_hub().await?;
         let (mut table, revision) = h
-            .snapshot(TableId(id.as_u64().context("Missing replay identity")?))
+            .snapshot(TableId::new(id.as_u64().context("Missing replay identity")?).unwrap())
             .await?;
         let created = table.created;
         let game = table.game_mut().context("Missing replay game")?;
@@ -1195,7 +1209,11 @@ async fn joining_a_table_plays_a_sound_for_its_other_players_once_per_burst() ->
             sounds.push(heard);
         }
         ensure!(
-            sounds == vec![vec![(UserId(1), json!({"sound":"someoneJoined"}))], vec![]],
+            sounds
+                == vec![
+                    vec![(UserId::new(1).unwrap(), json!({"sound":"someoneJoined"}))],
+                    vec![]
+                ],
             "Unexpected join sounds: {sounds:?}"
         );
         Ok(())
@@ -1360,7 +1378,7 @@ async fn trying_to_join_a_full_table_tells_its_players_once() -> Result<()> {
             "Unexpected chat: {chat}"
         );
         let (table, _) = h
-            .snapshot(TableId(id.as_u64().context("Missing table ID")?))
+            .snapshot(TableId::new(id.as_u64().context("Missing table ID")?).unwrap())
             .await?;
         let notices = table
             .chat
@@ -1400,10 +1418,11 @@ async fn joining_a_table_with_a_password_checks_the_password() -> Result<()> {
         h.send(1, "tableJoin", json!({"tableId":id,"password":"secret"}))
             .await?;
         let (table, _) = h
-            .snapshot(TableId(id.as_u64().context("Missing table ID")?))
+            .snapshot(TableId::new(id.as_u64().context("Missing table ID")?).unwrap())
             .await?;
         ensure!(
-            table.seated_users().collect::<Vec<_>>() == [UserId(1), UserId(2)],
+            table.seated_users().collect::<Vec<_>>()
+                == [UserId::new(1).unwrap(), UserId::new(2).unwrap()],
             "Bob did not join with the right password"
         );
         Ok(())
@@ -1631,15 +1650,16 @@ async fn expired_pregame_owner_is_removed_but_remaining_players_and_live_games_s
         actor.cleanup(now + PREGAME_RECONNECT_GRACE).await?;
         let (restored, _) = h.snapshot(id).await?;
         ensure!(
-            restored.seated_users().collect::<Vec<_>>() == vec![UserId(2), UserId(3)],
+            restored.seated_users().collect::<Vec<_>>()
+                == vec![UserId::new(2).unwrap(), UserId::new(3).unwrap()],
             "Disconnected owner kept a pregame seat"
         );
         ensure!(
-            restored.owner.user_id == UserId(2),
+            restored.owner.user_id == UserId::new(2).unwrap(),
             "Ownership did not pass to a remaining player"
         );
         ensure!(
-            restored.shadows.get(&UserId(4)) == Some(&PlayerIndex::new(0)),
+            restored.shadows.get(&UserId::new(4).unwrap()) == Some(&PlayerIndex::new(0)),
             "Departure changed the spectator's shadow target"
         );
         let mut published_owner = false;
@@ -1650,7 +1670,7 @@ async fn expired_pregame_owner_is_removed_but_remaining_players_and_live_games_s
                         !message.starts_with("connected "),
                         "A pregame sent which players loaded the game: {message}"
                     );
-                    if session.user == UserId(2)
+                    if session.user == UserId::new(2).unwrap()
                         && let Some(body) = message.strip_prefix("pregame ")
                     {
                         let game: Value = serde_json::from_str(body)?;
@@ -1722,7 +1742,7 @@ async fn remade_tables_publish_fresh_statistics_for_every_player() -> Result<()>
             } else {
                 json!({"tableId":id,"action":{"type":"discard","order":hand[0]}})
             };
-            let actor = usize::try_from(snapshot.players[active].user()?.0)? - 1;
+            let actor = usize::try_from(snapshot.players[active].user()?.get())? - 1;
             h.send(actor, "playerAction", action).await?;
             for index in 0..3 {
                 h.frames(index)?;
@@ -1744,10 +1764,10 @@ async fn remade_tables_publish_fresh_statistics_for_every_player() -> Result<()>
         // Release the delayed completion refresh only after the remake is requested.
         lock.rollback().await?;
         pending.await??;
-        let mut remade = TableId(0);
+        let mut remade = None;
         for index in 0..3 {
             let frame = h.receive(index, "pregame").await?;
-            remade = TableId(frame["tableId"].as_u64().context("Missing remade table")?);
+            remade = TableId::new(frame["tableId"].as_u64().context("Missing remade table")?);
             let players = frame["players"].as_array().context("Missing players")?;
             ensure!(players.len() == 2, "Spectator became a player");
             for player in players {
@@ -1759,11 +1779,11 @@ async fn remade_tables_publish_fresh_statistics_for_every_player() -> Result<()>
                 );
             }
         }
-        let (saved, _) = h.snapshot(remade).await?;
+        let (saved, _) = h.snapshot(remade.context("Missing remade table")?).await?;
         for player in saved.players() {
             ensure!(
                 player.stats.variant.best_scores[0].best.as_ref().map(|best| best.score)
-                    == Some(hanabi_protocol::Score(score)),
+                    == Some(hanabi_protocol::Score::new(score).unwrap()),
                 "Fresh statistics were not persisted"
             );
         }
@@ -1822,7 +1842,7 @@ async fn chat_read_positions_survive_game_start_reconnect_and_remake() -> Result
         let started = h.receive(0, "tableStarted").await?;
         let remade = started["tableId"]
             .as_u64()
-            .map(TableId)
+            .and_then(TableId::new)
             .context("Missing remade table")?;
         // A restart keeps the table, and with a hidden pregame starts the next game at once.
         ensure!(remade == id, "The restart moved to table {remade}");
@@ -2061,7 +2081,7 @@ async fn pregame_history_survives_join_return_and_actor_recovery() -> Result<()>
         ensure!(snapshot.chat.len() == 7 && snapshot.chat.iter().all(|chat| chat.id.is_some()));
         let count: i64 = sqlx::query_scalar!(
             "SELECT count(*) AS \"v!\" FROM chat_log WHERE table_id=$1",
-            i64::try_from(id.0)?
+            i64::try_from(id.get())?
         )
         .fetch_one(&h.store.primary)
         .await?;
@@ -2116,7 +2136,11 @@ async fn pregame_leader_moves_to_first_seat_without_reordering_live_players() ->
                 );
             }
         }
-        let expected = vec![UserId(3), UserId(2), UserId(1)];
+        let expected = vec![
+            UserId::new(3).unwrap(),
+            UserId::new(2).unwrap(),
+            UserId::new(1).unwrap(),
+        ];
         ensure!(
             h.snapshot(id).await?.0.seated_users().collect::<Vec<_>>() == expected,
             "Leader seating was not persisted"
@@ -2126,7 +2150,7 @@ async fn pregame_leader_moves_to_first_seat_without_reordering_live_players() ->
         h.send(2, "tableSetOwner", json!({"tableId":id,"userId":1}))
             .await?;
         let table = h.snapshot(id).await?.0;
-        ensure!(table.owner.user_id == UserId(1));
+        ensure!(table.owner.user_id == UserId::new(1).unwrap());
         ensure!(
             table.seated_users().collect::<Vec<_>>() == live_players,
             "Changing a live game's leader changed the seats"
@@ -2156,7 +2180,7 @@ async fn a_replay_whose_leader_is_away_passes_leadership_to_the_first_to_return(
             init["mode"]["sharedReplay"]["owner"]["userId"] == 2,
             "The returning viewer did not lead the replay: {init}"
         );
-        ensure!(h.snapshot(id).await?.0.owner.user_id == UserId(2));
+        ensure!(h.snapshot(id).await?.0.owner.user_id == UserId::new(2).unwrap());
         // Alice returns to a replay that Bob now leads.
         h.send(0, "tableReattend", json!({"tableId":id})).await?;
         h.send(0, "gameInitLoad", json!({"tableId":id})).await?;
@@ -2189,11 +2213,11 @@ async fn finished_game_publishes_replay_leader_candidates_without_reconnecting()
         }
         h.send(0, "tableTerminate", json!({"tableId":id})).await?;
         for index in 0..3 {
+            let (before, roster) = h.receive_after(index, "spectators").await?;
             ensure!(
-                h.receive(index, "connected").await?["connected"] == json!([true, true]),
-                "Finished-game names must not be shown as disconnected"
+                !before.iter().any(|name| name == "connected"),
+                "A replay has no players to wait for"
             );
-            let roster = h.receive(index, "spectators").await?;
             let names = roster["spectators"]
                 .as_array()
                 .context("Missing roster")?
@@ -2217,7 +2241,7 @@ async fn finished_game_publishes_replay_leader_candidates_without_reconnecting()
         h.send(0, "tableSetOwner", json!({"tableId":id,"userId":2}))
             .await?;
         ensure!(h.receive(0, "tableOwner").await?["owner"]["userId"] == 2);
-        ensure!(h.snapshot(id).await?.0.owner.user_id == UserId(2));
+        ensure!(h.snapshot(id).await?.0.owner.user_id == UserId::new(2).unwrap());
         h.send(2, "tableUnattend", json!({"tableId":id})).await?;
         let roster = h.receive(0, "spectators").await?;
         ensure!(roster["spectators"].as_array().unwrap().len() == 2);
@@ -2238,7 +2262,7 @@ async fn finished_game_publishes_replay_leader_candidates_without_reconnecting()
 }
 
 #[tokio::test]
-async fn replay_loading_keeps_names_neutral_and_never_starts_a_game_clock() -> Result<()> {
+async fn replay_loading_reports_no_connections_and_never_starts_a_game_clock() -> Result<()> {
     let Some(mut h) = Harness::new(&["Alice", "Bob"]).await? else {
         return Ok(());
     };
@@ -2248,9 +2272,12 @@ async fn replay_loading_keeps_names_neutral_and_never_starts_a_game_clock() -> R
         h.barrier(0).await?;
         h.frames(0)?;
         h.send(0, "gameLoaded", json!({"tableId":id})).await?;
-        ensure!(h.receive(0, "connected").await?["connected"] == json!([true, true]));
         h.barrier(0).await?;
-        ensure!(h.frames(0)?.iter().all(|(command, _)| command != "clock"));
+        ensure!(
+            h.frames(0)?
+                .iter()
+                .all(|(command, _)| command != "clock" && command != "connected")
+        );
         tokio::time::sleep(Duration::from_millis(25)).await;
         h.send(
             0,
@@ -2271,18 +2298,17 @@ async fn replay_loading_keeps_names_neutral_and_never_starts_a_game_clock() -> R
         h.send(1, "tableSpectate", json!({"tableId":id})).await?;
         h.send(1, "gameStateLoad", json!({"tableId":id})).await?;
         let state = h.receive(1, "gameState").await?;
-        ensure!(state["connected"] == json!([true, true]) && state.get("clock").is_none());
+        ensure!(state.get("connected").is_none() && state.get("clock").is_none());
         h.send(1, "gameLoaded", json!({"tableId":id})).await?;
         h.barrier(0).await?;
         for index in 0..2 {
             let frames = h.frames(index)?;
             ensure!(
-                frames.iter().all(|(command, _)| command != "clock"),
-                "Loading another replay viewer sent a live clock"
+                frames
+                    .iter()
+                    .all(|(command, _)| command != "clock" && command != "connected"),
+                "Loading another replay viewer sent a live clock or connections"
             );
-            for (_, data) in frames.iter().filter(|(command, _)| command == "connected") {
-                ensure!(data["connected"] == json!([true, true]));
-            }
         }
         Ok::<(), anyhow::Error>(())
     }
@@ -2351,15 +2377,15 @@ async fn pregame_total_counts_only_normal_non_speedrun_games() -> Result<()> {
         let snapshot = h.snapshot(id).await?.0;
         let players = snapshot.players();
         ensure!(
-            players.iter().find(|player| player.is(UserId(1))).context("Missing Alice")?.stats.num_games == hanabi_protocol::Count(2),
+            players.iter().find(|player| player.is(UserId::new(1).unwrap())).context("Missing Alice")?.stats.num_games == hanabi_protocol::Count::new(2).unwrap(),
             "Pregame total must count normal non-speedrun games across variants, including zero-score normal finishes"
         );
         ensure!(
-            players.iter().find(|player| player.is(UserId(2))).context("Missing Bob")?.stats.num_games == hanabi_protocol::Count(0),
+            players.iter().find(|player| player.is(UserId::new(2).unwrap())).context("Missing Bob")?.stats.num_games == hanabi_protocol::Count::new(0).unwrap(),
             "Another player's history must not affect the total"
         );
         ensure!(
-            crate::database::normal_game_count(&h.store.primary, UserId(1), true).await? == 3,
+            crate::database::normal_game_count(&h.store.primary, UserId::new(1).unwrap(), true).await? == 3,
             "Welcome/history totals must also include normally completed speedruns"
         );
         Ok::<(), anyhow::Error>(())
@@ -2594,7 +2620,7 @@ async fn findvariant_rechecks_roster_after_lookup_without_blocking_table_command
         h.wait_locks(2).await?;lock.commit().await?;
         joining.await??;finding.await??;h.barrier(1).await?;
         let (table,_)=h.snapshot(id).await?;
-        ensure!(table.seated_users().collect::<Vec<_>>()==vec![UserId(2),UserId(3)],"Concurrent roster change was blocked");
+        ensure!(table.seated_users().collect::<Vec<_>>()==vec![UserId::new(2).unwrap(),UserId::new(3).unwrap()],"Concurrent roster change was blocked");
         for index in 0..3{
             let chats=chat_messages(&h.frames(index)?);
             ensure!(!chats.iter().any(|v|v["text"].as_str().unwrap_or("").contains("new-options")),"Stale roster received an actionable proposal");
@@ -2715,7 +2741,7 @@ async fn tags_use_authoritative_sorted_frames_and_private_live_acknowledgements(
             .context("The game was not saved")?;
         sqlx::query!(
             "INSERT INTO game_tags(game_id,user_id,tag) VALUES($1,2,'zeta'),($1,2,'alpha <b>')",
-            game_id.0
+            game_id.get()
         )
         .execute(&h.store.primary)
         .await?;
@@ -2863,8 +2889,8 @@ async fn playing_membership_is_separate_from_replay_attendance_and_bots_can_play
             "Explicit logout did not cancel multi-table session"
         );
         ensure!(
-            h.snapshot(bot_one).await?.0.players()[0].is(UserId(4))
-                && h.snapshot(bot_two).await?.0.players()[0].is(UserId(4)),
+            h.snapshot(bot_one).await?.0.players()[0].is(UserId::new(4).unwrap())
+                && h.snapshot(bot_two).await?.0.players()[0].is(UserId::new(4).unwrap()),
             "Logout lost durable bot memberships"
         );
         Ok::<(), anyhow::Error>(())
@@ -2889,7 +2915,7 @@ async fn pending_join_claim_survives_replacement_until_the_committed_view_is_pub
         let mut blocker = h.db.pool.begin().await?;
         sqlx::query_scalar!(
             "SELECT id FROM live_tables WHERE id = $1 FOR UPDATE",
-            i64::try_from(first.0)?
+            i64::try_from(first.get())?
         )
         .fetch_one(&mut *blocker)
         .await?;
@@ -2940,7 +2966,7 @@ async fn pending_join_claim_survives_replacement_until_the_committed_view_is_pub
                 .0
                 .players()
                 .iter()
-                .any(|p| p.is(UserId(2))),
+                .any(|p| p.is(UserId::new(2).unwrap())),
             "Accepted old-generation join was lost"
         );
         ensure!(
@@ -2981,7 +3007,7 @@ async fn ban_disconnects_every_session_from_the_banned_ip() -> Result<()> {
         ] {
             let (session, receiver) = Session::with_token(
                 crate::transport::Identity {
-                    user: UserId(user),
+                    user: UserId::new(user).unwrap(),
                     name: name.into(),
                     normalized_name: crate::accounts::normalize_username(name),
                     ip: ip.into(),
@@ -2999,7 +3025,7 @@ async fn ban_disconnects_every_session_from_the_banned_ip() -> Result<()> {
         h.hub
             .send(HubCommand::Operations {
                 command: Operation::Ban {
-                    user_id: UserId(1),
+                    user_id: UserId::new(1).unwrap(),
                     ip: "192.0.2.1".into(),
                 },
                 reply,
@@ -3060,7 +3086,7 @@ async fn replay_arrows_sounds_and_loads_skip_durable_checkpoints() -> Result<()>
         let Phase::Replay { replay, .. } = &table.phase else {
             bail!("Not a replay");
         };
-        ensure!(replay.segment.0 == 1, "The saved segment is stale");
+        ensure!(replay.segment.get() == 1, "The saved segment is stale");
         Ok(())
     }
     .await;
@@ -3272,7 +3298,7 @@ async fn saved_characters_store_none_as_null() -> Result<()> {
                         .character()
                         .map(|c| {
                             Ok::<_, anyhow::Error>(i16::try_from(
-                                crate::game::catalog_character(c)?.id.0,
+                                crate::game::catalog_character(c)?.id.get(),
                             )?)
                         })
                         .transpose()?;

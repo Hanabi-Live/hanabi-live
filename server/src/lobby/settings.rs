@@ -17,7 +17,7 @@ pub(super) fn defaults() -> serde_json::Map<String, Value> {
 }
 
 pub async fn get_settings(pool: &PgPool, id: UserId) -> Result<Settings> {
-    let stored = sqlx::query_scalar!("SELECT settings FROM users WHERE id=$1", id.0)
+    let stored = sqlx::query_scalar!("SELECT settings FROM users WHERE id=$1", id.get())
         .fetch_optional(pool)
         .await?
         .unwrap_or_else(|| Value::Object(serde_json::Map::new()));
@@ -101,7 +101,7 @@ pub async fn set_settings(
     }
     let updated = sqlx::query!(
         "UPDATE users SET settings = (settings || $2::jsonb) - $3::text[] WHERE id=$1",
-        id.0,
+        id.get(),
         Value::Object(stored),
         &removed
     )

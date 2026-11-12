@@ -244,7 +244,10 @@ fn encode_parts(
         replaced_parts.push((key(NOTES, seat), serde_json::to_string(notes)?));
     }
     for (user, owner) in spectator_notes.into_iter().flatten() {
-        replaced_parts.push((key(SPECTATOR_NOTES, user.0), serde_json::to_string(owner)?));
+        replaced_parts.push((
+            key(SPECTATOR_NOTES, user.get()),
+            serde_json::to_string(owner)?,
+        ));
     }
     let mut after = SavedParts {
         chat,
@@ -344,7 +347,7 @@ pub fn decode(head: &str, parts: &[(String, String)]) -> Result<TableSnapshot> {
             .into_iter()
             .map(|(user, part)| {
                 Ok((
-                    UserId(user.parse()?),
+                    UserId::try_from(user.parse::<i32>()?)?,
                     serde_json::from_str::<NoteOwner>(part)?,
                 ))
             })

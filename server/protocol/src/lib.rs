@@ -76,7 +76,7 @@ pub const MIN_PLAYERS: usize = 2;
 /// The most players a game can have, which also bounds every per-player list.
 pub const MAX_PLAYERS: usize = 6;
 /// The highest seat index.
-pub const MAX_SEAT: usize = MAX_PLAYERS - 1;
+pub(crate) const MAX_SEAT: usize = MAX_PLAYERS - 1;
 /// The player limit of a table whose creator did not choose one.
 pub const DEFAULT_MAX_PLAYERS: u8 = 5;
 /// The variant of a game or table that does not choose one.

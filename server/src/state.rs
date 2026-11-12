@@ -33,7 +33,7 @@ pub struct StoredState {
 
 /// Table IDs are positive and stay within the integers that clients represent exactly.
 fn table_id(id: TableId) -> Result<i64> {
-    i64::try_from(id.0)
+    i64::try_from(id.get())
         .ok()
         .filter(|id| (1..=hanabi_protocol::MAX_SAFE_INTEGER).contains(id))
         .context("Invalid table identity")
@@ -101,10 +101,10 @@ pub async fn save_in(
 /// always belong to its head.
 fn stored(
     rows: impl IntoIterator<Item = (i64, i64, String, Option<String>, Option<String>)>,
-) -> Vec<StoredState> {
+) -> Result<Vec<StoredState>> {
     let mut tables: Vec<StoredState> = Vec::new();
     for (id, revision, payload, part, value) in rows {
-        let id = TableId(id.cast_unsigned());
+        let id = TableId::try_from(id)?;
         if tables.last().is_none_or(|table| table.id != id) {
             tables.push(StoredState {
                 id,
@@ -117,7 +117,7 @@ fn stored(
             table.parts.push((part, value));
         }
     }
-    tables
+    Ok(tables)
 }
 
 /// Removes a table in a transaction from `LiveState::begin`, if its revision is still `expected`.
@@ -291,7 +291,7 @@ impl LiveState {
         .fetch_one(&mut *transaction)
         .await?;
         self.commit(transaction).await?;
-        Ok(TableId(id.cast_unsigned()))
+        Ok(TableId::try_from(id)?)
     }
 
     pub async fn remove(&self, id: TableId, expected: i64) -> Result<()> {
@@ -320,7 +320,7 @@ impl LiveState {
                 row.part,
                 row.value,
             )
-        }))
+        }))?
         .pop())
     }
 
@@ -336,9 +336,10 @@ impl LiveState {
         .fetch_all(&mut *transaction)
         .await?;
         self.commit(transaction).await?;
-        Ok(stored(rows.into_iter().map(|row| {
-            (row.id, row.revision, row.payload, row.part, row.value)
-        })))
+        stored(
+            rows.into_iter()
+                .map(|row| (row.id, row.revision, row.payload, row.part, row.value)),
+        )
     }
 
     /// Takes ownership of a test database's live tables.

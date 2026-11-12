@@ -290,8 +290,8 @@ pub async fn private_message(
     let row = sqlx::query!(
         "INSERT INTO chat_log_pm(user_id,recipient_id,message) VALUES($1,$2,$3)
          RETURNING id, datetime_sent",
-        caller.user.0,
-        target.identity.user.0,
+        caller.user.get(),
+        target.identity.user.get(),
         &message
     )
     .fetch_one(pool)
@@ -348,7 +348,7 @@ pub async fn private_history(
            AND ($2::int IS NULL OR (c.user_id=$1 AND c.recipient_id=$2)
                 OR (c.user_id=$2 AND c.recipient_id=$1))
          ORDER BY c.id DESC LIMIT $3",
-        caller.user.0,
+        caller.user.get(),
         peer,
         amount
     )
@@ -404,7 +404,7 @@ pub async fn lobby_chat(
         let response = if args.iter().any(|arg| !arg.is_empty()) {
             "The format of the /token command is: /token".into()
         } else {
-            let token = regenerate_token(pool, secret, caller.user.0, &caller.ip).await?;
+            let token = regenerate_token(pool, secret, caller.user.get(), &caller.ip).await?;
             format!(
                 "Identity token (valid until {} UTC): <code>{}</code>",
                 token.expires_at.to_rfc3339_opts(SecondsFormat::Secs, true),
@@ -485,7 +485,7 @@ pub async fn lobby_chat(
         let row = sqlx::query!(
             "INSERT INTO chat_log(user_id,source,message) VALUES($1,$2,$3)
              RETURNING id,datetime_sent",
-            id.map(|user| user.0),
+            id.map(hanabi_protocol::UserId::get),
             source,
             &content
         )
@@ -495,7 +495,7 @@ pub async fn lobby_chat(
         effects.push(Effect::broadcast(Outgoing::new(
             hanabi_protocol::server::CHAT,
             Chat {
-                chat_id: Some(hanabi_protocol::ChatId(i64::from(chat_id))),
+                chat_id: Some(hanabi_protocol::ChatId::try_from(chat_id)?),
                 ..Chat::public(
                     content,
                     ChatAuthor::new(
@@ -560,7 +560,7 @@ pub async fn lobby_history(pool: &PgPool, count: i64) -> Result<Vec<Chat>> {
             _ => row.username.clone(),
         };
         result.push(Chat {
-            chat_id: Some(hanabi_protocol::ChatId(i64::from(row.id))),
+            chat_id: Some(hanabi_protocol::ChatId::try_from(row.id)?),
             ..Chat::public(
                 message,
                 ChatAuthor::new(
@@ -590,7 +590,7 @@ pub async fn server_chat(pool: &PgPool, message: &str) -> Result<SavedChat> {
         broadcast: Outgoing::new(
             hanabi_protocol::server::CHAT,
             Chat {
-                chat_id: Some(hanabi_protocol::ChatId(i64::from(chat_id))),
+                chat_id: Some(hanabi_protocol::ChatId::try_from(chat_id)?),
                 ..Chat::server(message, hanabi_protocol::Timestamp::from(row.datetime_sent))
             },
         ),

@@ -154,7 +154,7 @@ pub async fn dispatch(
         "The lobby does not run {}",
         message.name()
     );
-    ensure!(caller.user > UserId(0), "Invalid caller");
+    ensure!(caller.user.get() > 0, "Invalid caller");
     let effects = match message {
         ClientMessage::Settings(request) => {
             set_settings(pool, caller.user, &request.settings, &request.cleared).await?;
@@ -215,14 +215,14 @@ pub async fn dispatch(
             relationships::relationship(pool, caller, Change::Unblock, &request.username).await?
         }
         ClientMessage::GameHistory(hanabi_protocol::PageRequest { offset, limit }) => {
-            let ids = history_ids(pool, caller.user, offset.0, limit.get()).await?;
+            let ids = history_ids(pool, caller.user, offset.get(), limit.get()).await?;
             let total = crate::database::normal_game_count(pool, caller.user, true).await?;
             vec![Effect::to_self(Outgoing::new(
                 hanabi_protocol::server::GAME_HISTORY,
                 hanabi_protocol::GamePage {
                     games: get_history(pool, &ids).await?,
                     offset,
-                    total: hanabi_protocol::Count(total),
+                    total: hanabi_protocol::Count::try_from(total)?,
                 },
             ))]
         }
@@ -241,7 +241,7 @@ pub async fn dispatch(
                 return Ok(Some(vec![warning(error)]));
             }
             let offset = request.page.offset;
-            let ids = seed_history_ids(pool, seed, offset.0, request.page.limit.get()).await?;
+            let ids = seed_history_ids(pool, seed, offset.get(), request.page.limit.get()).await?;
             let games = get_history(pool, &ids).await?;
             let total = seed_game_count(pool, seed).await?;
             vec![Effect::to_self(Outgoing::new(
@@ -251,7 +251,7 @@ pub async fn dispatch(
                     page: hanabi_protocol::GamePage {
                         games,
                         offset,
-                        total: hanabi_protocol::Count(total),
+                        total: hanabi_protocol::Count::try_from(total)?,
                     },
                 },
             ))]

@@ -52,7 +52,7 @@ pub(crate) async fn pregame_stats_of(
     variant: u32,
 ) -> Result<BTreeMap<UserId, PregameStats>> {
     let counts = crate::database::normal_game_counts(pool, ids, false).await?;
-    let raw_ids = ids.iter().map(|id| id.0).collect::<Vec<_>>();
+    let raw_ids = ids.iter().map(|id| id.get()).collect::<Vec<_>>();
     let rows = sqlx::query_as!(
         crate::database::UserStats,
         "SELECT user_id,variant_id,num_games,best_score2,best_score2_mod,best_score3,best_score3_mod,
@@ -64,15 +64,14 @@ pub(crate) async fn pregame_stats_of(
     .fetch_all(pool)
     .await?
     .into_iter()
-    .map(|row| (UserId(row.user_id), row))
-    .collect::<BTreeMap<_, _>>();
-    Ok(ids
-        .iter()
+    .map(|row| Ok((UserId::try_from(row.user_id)?, row)))
+    .collect::<Result<BTreeMap<_, _>>>()?;
+    ids.iter()
         .map(|id| {
             let count = counts.get(id).copied().unwrap_or(0);
-            (*id, player_stats(count, rows.get(id)))
+            Ok((*id, player_stats(count, rows.get(id))?))
         })
-        .collect())
+        .collect()
 }
 
 /// Updates the seed count and the best scores with a finished game. Running it again for the same
@@ -90,7 +89,7 @@ pub(crate) async fn refresh(pool: &PgPool, s: &Snapshot) -> Result<()> {
     let mut users = s
         .players
         .iter()
-        .map(|p| p.user().map(|user| user.0))
+        .map(|p| p.user().map(UserId::get))
         .collect::<Result<Vec<_>>>()?;
     users.sort_unstable();
     for user in users {
@@ -126,15 +125,15 @@ pub(crate) async fn refresh(pool: &PgPool, s: &Snapshot) -> Result<()> {
 
 /// A pregame player's statistics as their table's checkpoint stores them: all of their games, and
 /// their games and best scores on the table's variant, from `user_stats` if they have played it.
-fn player_stats(num_games: i64, row: Option<&crate::database::UserStats>) -> PregameStats {
+fn player_stats(num_games: i64, row: Option<&crate::database::UserStats>) -> Result<PregameStats> {
     let (variant_games, best_scores) = row
         .map_or((0, [None; crate::database::PLAYER_COUNTS]), |row| {
             (i64::from(row.num_games), row.best_scores())
         });
-    PregameStats {
-        num_games: hanabi_protocol::Count(num_games),
+    Ok(PregameStats {
+        num_games: hanabi_protocol::Count::try_from(num_games)?,
         variant: hanabi_protocol::PregameVariantStats {
-            num_games: hanabi_protocol::Count(variant_games),
+            num_games: hanabi_protocol::Count::try_from(variant_games)?,
             best_scores: (hanabi_protocol::MIN_PLAYERS..=hanabi_protocol::MAX_PLAYERS)
                 .zip(best_scores)
                 .map(|(num_players, best)| hanabi_protocol::PregameBestScore {
@@ -146,10 +145,10 @@ fn player_stats(num_games: i64, row: Option<&crate::database::UserStats>) -> Pre
                 })
                 .collect(),
         },
-    }
+    })
 }
 pub fn zero_stats() -> PregameStats {
-    player_stats(0, None)
+    player_stats(0, None).expect("zero is a count")
 }
 
 #[cfg(test)]
@@ -183,7 +182,7 @@ mod tests {
             best_score6: Some(30),
             best_score6_mod: Some(16),
         };
-        let stats = serde_json::to_value(player_stats(12, Some(&row))).unwrap();
+        let stats = serde_json::to_value(player_stats(12, Some(&row)).unwrap()).unwrap();
         hanabi_protocol::validate::<PregameStats>(&stats).unwrap();
         assert_eq!(stats["numGames"], 12);
         assert_eq!(stats["variant"]["numGames"], 7);

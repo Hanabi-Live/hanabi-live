@@ -226,6 +226,7 @@ macro_rules! internal_errors {
 }
 internal_errors!(
     sqlx::Error,
+    hanabi_protocol::OutOfRange,
     serde_json::Error,
     std::num::TryFromIntError,
     std::num::ParseIntError,

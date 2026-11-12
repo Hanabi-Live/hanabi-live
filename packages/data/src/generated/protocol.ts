@@ -291,7 +291,7 @@ export const clockSchema = z
   .readonly();
 
 /**
- * Whether each player has loaded the game, in seat order.
+ * Whether each player has loaded the game, in seat order. Only a game in progress sends it.
  */
 export const connectedSchema = z
   .strictObject({
@@ -639,9 +639,10 @@ export const gameStateSchema = z
      */
     clock: clockStateSchema.optional(),
     /**
-     * Whether each player has loaded the game, in seat order.
+     * Whether each player has loaded the game, in seat order. Absent in a replay, which has no
+     * players to wait for.
      */
-    connected: z.array(z.boolean()).min(2).max(6).readonly(),
+    connected: z.array(z.boolean()).min(2).max(6).readonly().optional(),
     /**
      * Every card's identity, by card order. Present in a replay.
      */
@@ -801,10 +802,10 @@ export const loginRequestSchema = z
   .readonly();
 
 /**
- * The body of a successful `/login` response.
+ * The body of a successful `/login` response: the account that logged in.
  */
 export const loginResponseSchema = z
-  .strictObject({ userId: userIdSchema })
+  .strictObject({ userId: userIdSchema, username: z.string().min(1) })
   .readonly();
 
 /**

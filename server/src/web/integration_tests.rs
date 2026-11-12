@@ -570,7 +570,7 @@ async fn native_browser_login_ws_bootstrap_and_command_routing_postgres() {
     let mut replacement = connect(&fixture, &bob_cookie).await;
     receive(&mut replacement, "welcome").await;
     let alice_generation = Session::new(
-        UserId(i32::try_from(welcome["userId"].as_i64().unwrap()).unwrap()),
+        UserId::new(welcome["userId"].as_i64().unwrap()).unwrap(),
         "Alicè".into(),
         1,
     )
@@ -582,7 +582,7 @@ async fn native_browser_login_ws_bootstrap_and_command_routing_postgres() {
         .send(HubCommand::LobbyEffects {
             session: alice_generation,
             effects: vec![Publication::ToUser {
-                id: UserId(i32::try_from(bob_welcome["userId"].as_i64().unwrap()).unwrap()),
+                id: UserId::new(bob_welcome["userId"].as_i64().unwrap()).unwrap(),
                 generation: 2,
                 message: Outgoing::new(
                     hanabi_protocol::server::CHAT,
@@ -615,7 +615,7 @@ async fn native_browser_login_ws_bootstrap_and_command_routing_postgres() {
         .app
         .hub
         .send(HubCommand::Directory {
-            session: Session::new(UserId(999), "stale".into(), 999).0,
+            session: Session::new(UserId::new(999).unwrap(), "stale".into(), 999).0,
             reply,
         })
         .await
@@ -691,7 +691,7 @@ async fn websocket_defers_lobby_reads_without_an_opt_in_postgres() {
 }
 
 async fn test_account(fixture: &test_support::Fixture, id: i32) -> Account {
-    Account::read(&fixture.app.store.primary, id)
+    Account::read(&fixture.app.store.primary, UserId::new(id).unwrap())
         .await
         .unwrap()
         .expect("test account")
@@ -734,7 +734,7 @@ async fn game_archive_locks_do_not_block_authentication_and_deferred_errors_are_
         .acquire_many_owned(64)
         .await
         .unwrap();
-    let (session, mut outgoing) = Session::new(UserId(user), "FastResume".into(), 1);
+    let (session, mut outgoing) = Session::new(UserId::new(user).unwrap(), "FastResume".into(), 1);
     load_lobby(fixture.app.clone(), session);
     let message = tokio::time::timeout(Duration::from_secs(1), outgoing.recv())
         .await
@@ -826,7 +826,7 @@ async fn full_history_bootstrap_queues_in_order_without_a_writer_postgres() {
         .unwrap();
     let (messages, total) = tokio::time::timeout(
         Duration::from_secs(1),
-        lobby_initial(&fixture.app, UserId(alice)),
+        lobby_initial(&fixture.app, UserId::new(alice).unwrap()),
     )
     .await
     .expect("Lobby initialization queried personal history")
@@ -838,10 +838,10 @@ async fn full_history_bootstrap_queues_in_order_without_a_writer_postgres() {
             .all(|message| !message.starts_with("gameHistory"))
     );
     history_lock.rollback().await.unwrap();
-    let own_ids = lobby::history_ids(&fixture.db.pool, UserId(alice), 0, 100)
+    let own_ids = lobby::history_ids(&fixture.db.pool, UserId::new(alice).unwrap(), 0, 100)
         .await
         .unwrap();
-    let next_ids = lobby::history_ids(&fixture.db.pool, UserId(alice), 100, 100)
+    let next_ids = lobby::history_ids(&fixture.db.pool, UserId::new(alice).unwrap(), 100, 100)
         .await
         .unwrap();
     assert_eq!(own_ids.len(), 100);
@@ -862,7 +862,10 @@ async fn full_history_bootstrap_queues_in_order_without_a_writer_postgres() {
                 .unwrap()
         ),
     );
-    let mut initial = lobby_initial(&fixture.app, UserId(alice)).await.unwrap().0;
+    let mut initial = lobby_initial(&fixture.app, UserId::new(alice).unwrap())
+        .await
+        .unwrap()
+        .0;
     assert!(
         initial
             .iter()
@@ -886,7 +889,7 @@ async fn full_history_bootstrap_queues_in_order_without_a_writer_postgres() {
         "This regression must exercise aggregate bootstrap size, not only a large single frame"
     );
     assert!(initial.iter().map(|message| message.len()).sum::<usize>() > 262_144);
-    let (session, mut outgoing) = Session::new(UserId(alice), prepared.name, 42);
+    let (session, mut outgoing) = Session::new(UserId::new(alice).unwrap(), prepared.name, 42);
     let (reply, received) = oneshot::channel();
     fixture
         .app
@@ -949,15 +952,18 @@ async fn a_lobby_command_from_a_replaced_connection_writes_nothing_postgres() {
         .fetch_one(&fixture.app.store.primary)
         .await
         .unwrap();
-    let before = lobby::get_settings(&fixture.app.store.primary, UserId(id))
+    let before = lobby::get_settings(&fixture.app.store.primary, UserId::new(id).unwrap())
         .await
         .unwrap()
         .volume;
     // A newer connection registered, but the older one has not noticed yet and is still active.
-    let task = fixture.app.users.task(&fixture.app, UserId(id));
+    let task = fixture
+        .app
+        .users
+        .task(&fixture.app, UserId::new(id).unwrap());
     task.send(user::UserCommand::Current(2)).await.unwrap();
-    let (older, _frames) = Session::new(UserId(id), "Replaced".into(), 1);
-    let volume = hanabi_protocol::Volume(before.get() / 2);
+    let (older, _frames) = Session::new(UserId::new(id).unwrap(), "Replaced".into(), 1);
+    let volume = hanabi_protocol::Volume::new(before.get() / 2).unwrap();
     let (reply, replied) = oneshot::channel();
     task.send(user::UserCommand::Lobby {
         session: older,
@@ -973,7 +979,7 @@ async fn a_lobby_command_from_a_replaced_connection_writes_nothing_postgres() {
         replied.await.unwrap(),
         Err(CommandError::Rejected { .. })
     ));
-    let after = lobby::get_settings(&fixture.app.store.primary, UserId(id))
+    let after = lobby::get_settings(&fixture.app.store.primary, UserId::new(id).unwrap())
         .await
         .unwrap()
         .volume;

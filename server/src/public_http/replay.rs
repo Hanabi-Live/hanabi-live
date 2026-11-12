@@ -26,7 +26,7 @@ pub(super) async fn export(
             "That game does not exist in the database.",
         ));
     };
-    let archive = crate::archive::load(&state.pool, GameId(game_id))
+    let archive = crate::archive::load(&state.pool, GameId::try_from(game_id)?)
         .await?
         .ok_or_else(|| HttpError::not_found("That game does not exist in the database."))?;
     let row = archive.game;
@@ -73,8 +73,8 @@ pub(super) async fn export(
         }
     }
     let options = hanabi_protocol::GameOptions {
-        variant_id: hanabi_protocol::VariantId(variant.id),
-        time_control: row.time_control(),
+        variant_id: hanabi_protocol::VariantId::try_from(variant.id)?,
+        time_control: row.time_control()?,
         speedrun: row.speedrun,
         deck_plays: row.deck_plays,
         empty_clues: row.empty_clues,

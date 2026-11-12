@@ -149,7 +149,7 @@ fn variant(entry: CatalogVariant, suits: &HashMap<String, Suit>) -> Variant {
         ranks.push(START_CARD_RANK);
     }
     Variant {
-        id: entry.id.0,
+        id: entry.id.get(),
         recipe: entry.recipe,
         name: entry.name,
         max_score: int(variant_suits.len()) * stack_size,

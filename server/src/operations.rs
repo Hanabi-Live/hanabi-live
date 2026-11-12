@@ -220,12 +220,12 @@ async fn user_action(control: &Control, path: &str, body: &Query) -> Result<Resp
     control
         .operation(if path == "/ban" {
             Operation::Ban {
-                user_id: UserId(id),
+                user_id: UserId::try_from(id)?,
                 ip: ip.clone(),
             }
         } else {
             Operation::Mute {
-                user_id: UserId(id),
+                user_id: UserId::try_from(id)?,
             }
         })
         .await?;

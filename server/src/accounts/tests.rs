@@ -426,13 +426,14 @@ async fn native_accounts_http_and_identity_postgres() {
     assert_eq!(status, StatusCode::OK);
     let token: Value = serde_json::from_str(&body).unwrap();
     assert_eq!(token["username"], "Alice");
+    assert_eq!(token["userId"], id);
     assert_eq!(token["token"].as_str().unwrap().len(), 128);
     let lookup = json!({"token":token["token"]}).to_string();
+    let (status, _, body) = request(&app, "POST", "/api/v1/identity", &lookup, None, true).await;
+    assert_eq!(status, StatusCode::OK);
     assert_eq!(
-        request(&app, "POST", "/api/v1/identity", &lookup, None, true)
-            .await
-            .0,
-        StatusCode::OK
+        serde_json::from_str::<Value>(&body).unwrap(),
+        json!({"userId": id, "username": "Alice"})
     );
     let (_, _, body) = request(
         &app,
@@ -746,7 +747,7 @@ async fn new_accounts_start_with_the_light_theme_postgres() {
         .await
         .unwrap();
     assert!(
-        !crate::lobby::get_settings(&db.pool, hanabi_protocol::UserId(id))
+        !crate::lobby::get_settings(&db.pool, hanabi_protocol::UserId::new(id).unwrap())
             .await
             .unwrap()
             .dark_mode

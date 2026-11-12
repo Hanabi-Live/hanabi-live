@@ -1,10 +1,21 @@
 {
   "db_name": "PostgreSQL",
-  "query": "SELECT u.username, t.token_hash, t.expires_at FROM user_identity_tokens t\n             JOIN users u ON u.id=t.user_id WHERE t.token_lookup_hash=$1",
+  "query": "SELECT u.id, u.username, t.token_hash, t.expires_at FROM user_identity_tokens t\n             JOIN users u ON u.id=t.user_id WHERE t.token_lookup_hash=$1",
   "describe": {
     "columns": [
       {
         "ordinal": 0,
+        "name": "id",
+        "type_info": "Int4",
+        "origin": {
+          "Table": {
+            "table": "users",
+            "name": "id"
+          }
+        }
+      },
+      {
+        "ordinal": 1,
         "name": "username",
         "type_info": "Text",
         "origin": {
@@ -15,7 +26,7 @@
         }
       },
       {
-        "ordinal": 1,
+        "ordinal": 2,
         "name": "token_hash",
         "type_info": "Text",
         "origin": {
@@ -26,7 +37,7 @@
         }
       },
       {
-        "ordinal": 2,
+        "ordinal": 3,
         "name": "expires_at",
         "type_info": "Timestamptz",
         "origin": {
@@ -45,8 +56,9 @@
     "nullable": [
       false,
       false,
+      false,
       false
     ]
   },
-  "hash": "f4fe0a512e0c6ff3c5846ac0bebd2e0cb8cfbc91e45d6aed12e0ba89b4fbd16c"
+  "hash": "19023e913c2ea2bacdcb79ae04edaee8c9c013daa71d056ce1e291adbd514233"
 }

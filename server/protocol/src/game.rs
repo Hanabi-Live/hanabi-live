@@ -33,7 +33,7 @@ pub struct ClockState {
     pub turn_elapsed_ms: Milliseconds,
 }
 
-/// Whether each player has loaded the game, in seat order.
+/// Whether each player has loaded the game, in seat order. Only a game in progress sends it.
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct Connected {
@@ -289,9 +289,11 @@ pub struct GameState {
     /// Present for a player of a game in progress.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub votes: Option<VoteState>,
-    /// Whether each player has loaded the game, in seat order.
+    /// Whether each player has loaded the game, in seat order. Absent in a replay, which has no
+    /// players to wait for.
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[schemars(length(min = MIN_PLAYERS, max = MAX_PLAYERS))]
-    pub connected: Vec<bool>,
+    pub connected: Option<Vec<bool>>,
     /// Absent in a replay.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub clock: Option<ClockState>,

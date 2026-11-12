@@ -274,11 +274,9 @@ async fn moderation_uses_canonical_accounts_and_persists_ip_actions() {
     let metrics: serde_json::Value = serde_json::from_str(&body).unwrap();
     assert!(metrics["database"]["totalConnections"].as_u64().unwrap() > 0);
     assert!(
-        h.operations
-            .lock()
-            .unwrap()
-            .iter()
-            .any(|o| matches!(o,Operation::Ban{user_id,..} if *user_id==UserId(user)))
+        h.operations.lock().unwrap().iter().any(
+            |o| matches!(o,Operation::Ban{user_id,..} if *user_id==UserId::new(user).unwrap())
+        )
     );
     h.close().await;
     db.close().await;

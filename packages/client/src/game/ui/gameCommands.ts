@@ -104,6 +104,9 @@ function setCardIdentities(deck: ServerCommandData["cardIdentities"]["deck"]) {
 gameCommands.set("gameFinished", (data) => {
   modals.closeIdleWarning();
 
+  // A replay has no players to wait for.
+  setConnected(globals.elements.nameFrames.map(() => true));
+
   // Zero out the user-created efficiency modifier, if any. In a shared replay, this must be synced
   // with the shared replay leader.
   globals.store!.dispatch({
@@ -330,7 +333,9 @@ gameCommands.set("gameState", (data) => {
   if (data.votes !== undefined) {
     setVotes(data.votes);
   }
-  setConnected(data.connected);
+  if (data.connected !== undefined) {
+    setConnected(data.connected);
+  }
   if (data.clock !== undefined) {
     timer.update(data.clock);
   }

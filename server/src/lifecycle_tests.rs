@@ -186,7 +186,7 @@ fn lost_ownership_or_shutdown_stops_connections() {
         let lifecycle = Lifecycle::new(lost.clone());
         let (session, mut receiver) = crate::transport::Session::with_token(
             crate::transport::Identity {
-                user: hanabi_protocol::UserId(1),
+                user: hanabi_protocol::UserId::new(1).unwrap(),
                 name: "Alice".into(),
                 normalized_name: "alice".into(),
                 ip: "127.0.0.1".into(),

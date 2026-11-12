@@ -304,7 +304,7 @@ export async function login(
     .find((value) => value.startsWith("hanabi.sid="))
     ?.split(";", 1)[0];
   assertDefined(cookie, "Login did not return a session cookie.");
-  expect(body).toEqual({ userId: cookieUserId(cookie) });
+  expect(body).toEqual({ userId: cookieUserId(cookie), username });
   return cookie;
 }
 

@@ -408,9 +408,9 @@ impl TableActor {
                         .iter()
                         .map(TableChat::wire_message)
                         .collect::<Result<_>>()?,
-                    num_unread: hanabi_protocol::Count(i64::try_from(
+                    num_unread: hanabi_protocol::Count::try_from(
                         self.table.chat.len().saturating_sub(read),
-                    )?),
+                    )?,
                 },
             ),
         ));
@@ -839,7 +839,7 @@ impl TableActor {
     ) -> CommandResult<()> {
         let (users, counts) = result?;
         let mut next = self.candidate();
-        if next.set_game_counts(&users, &counts) {
+        if next.set_game_counts(&users, &counts)? {
             self.persist(next).await?;
             let mut effects = self.effects();
             self.pregame_messages(&mut effects);
@@ -914,8 +914,9 @@ impl TableActor {
             for (id, name) in expired {
                 self.typing_messages(&mut e, id, &name, false);
             }
-            // A pregame has no game to load, and it can have fewer players than a game.
-            if !matches!(self.table.phase, Phase::Pregame { .. }) {
+            // Only a game in progress has players who can be away. (A pregame can also have fewer
+            // players than a game.)
+            if matches!(self.table.phase, Phase::Live { .. }) {
                 self.add_all(&mut e, hanabi_protocol::server::CONNECTED, self.connected());
             }
             self.spectator_messages(&mut e);
@@ -973,7 +974,6 @@ impl TableActor {
         self.publish(effects).await
     }
     pub(super) fn connected(&self) -> hanabi_protocol::Connected {
-        let replay = matches!(self.table.phase, Phase::Replay { .. });
         hanabi_protocol::Connected {
             table_id: self.table.id,
             connected: self
@@ -981,10 +981,8 @@ impl TableActor {
                 .players()
                 .iter()
                 .map(|p| {
-                    replay
-                        || p.id
-                            .and_then(|id| self.attendees.get(&id))
-                            .is_some_and(|a| a.loaded && !a.spectator && a.session.active())
+                    p.id.and_then(|id| self.attendees.get(&id))
+                        .is_some_and(|a| a.loaded && !a.spectator && a.session.active())
                 })
                 .collect(),
         }
@@ -1016,11 +1014,13 @@ impl TableActor {
                 current_player_index: live
                     .then(|| PlayerIndex::new(s.game.active_player_index))
                     .flatten(),
-                turn_elapsed_ms: hanabi_protocol::Milliseconds(if !live || s.paused() {
-                    0
-                } else {
-                    now.turn_elapsed.max(0)
-                }),
+                turn_elapsed_ms: hanabi_protocol::Milliseconds::saturating(
+                    if !live || s.paused() {
+                        0
+                    } else {
+                        now.turn_elapsed
+                    },
+                ),
             },
         })
     }
@@ -1123,8 +1123,8 @@ impl TableActor {
                     a.loaded = true;
                 }
                 let mut e = self.effects();
-                self.add_all(&mut e, hanabi_protocol::server::CONNECTED, self.connected());
                 if matches!(self.table.phase, Phase::Live { .. }) {
+                    self.add_all(&mut e, hanabi_protocol::server::CONNECTED, self.connected());
                     self.add_all(&mut e, hanabi_protocol::server::CLOCK, self.clock()?);
                 }
                 self.publish(e).await
@@ -1188,7 +1188,7 @@ impl TableActor {
                 .idle_warned()
                 .is_some_and(|warned| !std::mem::replace(warned, true))
         {
-            let remaining_ms = hanabi_protocol::Milliseconds(timers.idle_remaining.max(0));
+            let remaining_ms = hanabi_protocol::Milliseconds::saturating(timers.idle_remaining);
             let mut e = self.effects();
             self.add_all(
                 &mut e,

@@ -294,9 +294,13 @@ pub fn hypothetical_bytes(actions: &[HypotheticalEvent]) -> Result<usize> {
 impl TableSnapshot {
     /// Updates the cached game totals of the pregame players in `users`, whose totals `counts`
     /// holds (a missing user has none). Returns whether any total changed.
-    pub fn set_game_counts(&mut self, users: &[UserId], counts: &BTreeMap<UserId, i64>) -> bool {
+    pub fn set_game_counts(
+        &mut self,
+        users: &[UserId],
+        counts: &BTreeMap<UserId, i64>,
+    ) -> Result<bool> {
         let Phase::Pregame { players, .. } = &mut self.phase else {
-            return false;
+            return Ok(false);
         };
         let mut changed = false;
         for player in players.iter_mut() {
@@ -304,12 +308,13 @@ impl TableSnapshot {
                 continue;
             };
             let count = counts.get(&id).copied().unwrap_or(0);
-            if player.stats.num_games != hanabi_protocol::Count(count) {
-                player.stats.num_games = hanabi_protocol::Count(count);
+            let count = hanabi_protocol::Count::try_from(count)?;
+            if player.stats.num_games != count {
+                player.stats.num_games = count;
                 changed = true;
             }
         }
-        changed
+        Ok(changed)
     }
     pub fn players(&self) -> &[Player] {
         match &self.phase {
@@ -414,8 +419,8 @@ impl TableSnapshot {
     pub fn validate(&self) -> Result<()> {
         ensure!(
             self.format == FORMAT
-                && self.id.0 > 0
-                && self.id.0 <= hanabi_protocol::MAX_SAFE_INTEGER.unsigned_abs(),
+                && self.id.get() > 0
+                && self.id.get() <= hanabi_protocol::MAX_SAFE_INTEGER.unsigned_abs(),
             "Incompatible table checkpoint"
         );
         ensure!(
@@ -426,13 +431,13 @@ impl TableSnapshot {
         );
         hanabi_engine::get_variant(&self.options.variant_name)?;
         ensure!(
-            self.owner.user_id > UserId(0)
+            self.owner.user_id.get() > 0
                 && hanabi_protocol::is_player_count(self.options.num_players),
             "Invalid table options"
         );
         ensure!(
             self.shadows.len() <= MAX_SHADOWS
-                && self.shadows.iter().all(|(id, seat)| *id > UserId(0)
+                && self.shadows.iter().all(|(id, seat)| id.get() > 0
                     && seat.is_none_or(|seat| seat.index() < self.players().len())),
             "Invalid persisted spectator"
         );
@@ -440,7 +445,7 @@ impl TableSnapshot {
             self.players().len() <= self.max_players
                 && self.players().iter().all(|p| p.id.map_or(
                     matches!(self.phase, Phase::Replay { .. }) && self.extra.no_write_to_database,
-                    |id| id > UserId(0)
+                    |id| id.get() > 0
                 ) && !p.name.is_empty()
                     && p.name.len() <= crate::accounts::MAX_USERNAME_LENGTH),
             "Invalid players"
@@ -542,7 +547,9 @@ impl Snapshot {
     }
     pub fn validate(&self) -> Result<()> {
         ensure!(
-            self.format == FORMAT && self.table_id.0 > 0 && self.game_id.is_none_or(|id| id.0 > 0),
+            self.format == FORMAT
+                && self.table_id.get() > 0
+                && self.game_id.is_none_or(|id| id.get() > 0),
             "Incompatible game checkpoint"
         );
         let n = self.players.len();
@@ -605,12 +612,12 @@ impl Snapshot {
             game_id: self.game_id?,
             options: wire_options(&self.game.options),
             seed: self.seed.clone()?.into(),
-            score: hanabi_protocol::Score(self.game.score),
+            score: hanabi_protocol::Score::new(self.game.score)?,
             num_turns: hanabi_protocol::Turn::new(self.game.turn)?,
             end_condition: self.game.end?.condition,
             started_at: time(self.started),
             finished_at: time(self.finished.unwrap_or(self.started)),
-            num_games_on_seed: hanabi_protocol::Count(count?),
+            num_games_on_seed: hanabi_protocol::Count::new(count?)?,
             player_names: names.map(Into::into).collect(),
             tags: self
                 .tags
@@ -687,7 +694,8 @@ impl ScoreModifier {
     /// A best score with this modifier, as the wire carries it.
     pub fn best_score(self, score: i32) -> hanabi_protocol::BestScore {
         hanabi_protocol::BestScore {
-            score: hanabi_protocol::Score(score),
+            score: hanabi_protocol::Score::new(score)
+                .expect("a game's score is at most the highest"),
             modified: self.0 != 0,
         }
     }
@@ -738,7 +746,8 @@ pub(crate) fn wire_options(options: &Options) -> hanabi_protocol::GameOptions {
     let variant = hanabi_engine::get_variant(variant_name)
         .expect("the server holds only options whose variant is in the catalog");
     hanabi_protocol::GameOptions {
-        variant_id: hanabi_protocol::VariantId(variant.id),
+        variant_id: hanabi_protocol::VariantId::new(variant.id)
+            .expect("catalog variant IDs fit the wire"),
         time_control: *time_control,
         speedrun: *speedrun,
         deck_plays: *deck_plays,
@@ -763,7 +772,7 @@ pub(crate) fn engine_options(options: &hanabi_protocol::GameOptions) -> Result<O
         all_or_nothing,
         detrimental_characters,
     } = options;
-    let variant = hanabi_engine::get_variant_by_id(variant_id.0)?;
+    let variant = hanabi_engine::get_variant_by_id(variant_id.get())?;
     Ok(Options {
         // A table sets its player count when its game starts.
         num_players: hanabi_protocol::MIN_PLAYERS,
@@ -812,12 +821,12 @@ mod tests {
             "hypotheticalActions": [{"type": "unmorph", "order": 3}], "showDrawnCards": false
         });
         let replay: ReplayState = serde_json::from_value(stored.clone()).unwrap();
-        assert!(matches!(
-            replay.hypothetical_actions[..],
+        assert_eq!(
+            replay.hypothetical_actions,
             [HypotheticalEvent::Unmorph(hanabi_protocol::TargetCard {
-                order: hanabi_protocol::CardOrder(3)
+                order: hanabi_protocol::CardOrder::new(3).unwrap()
             })]
-        ));
+        );
         assert_eq!(serde_json::to_value(&replay).unwrap(), stored);
     }
 
@@ -825,7 +834,7 @@ mod tests {
     fn checkpoint_chat_keeps_its_archived_timestamp_but_sends_the_wire_form() {
         let chat = TableChat {
             id: Some(1),
-            user: Some(UserId(1)),
+            user: Some(UserId::new(1).unwrap()),
             message: serde_json::from_value(serde_json::json!(
                 {"text": "hi", "sentAt": "2026-11-02T20:00:00.123456Z",
                  "kind": {"type": "public", "author": {"type": "user", "username": "Alice"}}}
@@ -848,7 +857,7 @@ mod tests {
         assert_eq!(
             engine_options(&wire).unwrap(),
             Options {
-                variant_id: Some(wire.variant_id.0),
+                variant_id: Some(wire.variant_id.get()),
                 ..defaults
             }
         );

@@ -146,7 +146,6 @@ impl TableActor {
             }
         }
         if replay {
-            self.add_all(&mut e, hanabi_protocol::server::CONNECTED, self.connected());
             self.spectator_messages(&mut e);
             let count = seed_games;
             for a in self.audience() {
@@ -580,7 +579,7 @@ impl TableActor {
                 deck: replay.then(|| self.card_identities(s).deck),
                 notes,
                 votes: player_seat.map(|seat| seat_votes(s, seat)).transpose()?,
-                connected: self.connected().connected,
+                connected: (!replay).then(|| self.connected().connected),
                 clock: if replay {
                     None
                 } else {
