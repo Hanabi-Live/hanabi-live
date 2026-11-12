@@ -647,9 +647,38 @@ export function GameScreen({
     }
   }, [inHypothetical]);
 
+  // The drag below reads the layout when the pointer moves, so it keeps the latest one here.
+  const mainRef = useRef<HTMLElement>(null);
+  const dropLayout = useRef({ stacked, handsElement });
+  useEffect(() => {
+    dropLayout.current = { stacked, handsElement };
+  }, [stacked, handsElement]);
+
   // Move a card with the pointer, and play or discard it where the player drops it.
   useEffect(() => {
     function zoneAt(x: number, y: number): DropZone | undefined {
+      // Beside the hands, the whole half of the table is the target: everything to the left of the
+      // hands plays the card, and everything to the right discards it, from the top of the screen
+      // to the bottom. The narrow layout puts the play stacks below the hands, so there only the
+      // play stacks and the discard pile are targets.
+      const main = mainRef.current?.getBoundingClientRect();
+      const hands = dropLayout.current.handsElement?.getBoundingClientRect();
+      if (
+        !dropLayout.current.stacked
+        && main !== undefined
+        && hands !== undefined
+        && y >= main.top
+        && y <= main.bottom
+      ) {
+        if (x >= main.left && x < hands.left) {
+          return "play";
+        }
+        if (x > hands.right && x <= main.right) {
+          return "discard";
+        }
+        return undefined;
+      }
+
       if (isInside(playZoneRef.current, x, y)) {
         return "play";
       }
@@ -981,7 +1010,7 @@ export function GameScreen({
       className="tw:fixed tw:inset-0 tw:flex tw:bg-game-bg tw:[background-image:var(--game-screen-table)] tw:text-game-text"
       ref={rootRef}
     >
-      <main className="tw:flex tw:min-w-0 tw:flex-1 tw:flex-col">
+      <main className="tw:flex tw:min-w-0 tw:flex-1 tw:flex-col" ref={mainRef}>
         <div className="tw:flex tw:min-h-0 tw:flex-1 tw:justify-center tw:gap-9 tw:px-7 tw:pt-6 tw:pb-5 tw:narrow-1440:gap-6 tw:narrow-1440:px-5 tw:narrow-980:flex-col tw:narrow-980:justify-start tw:narrow-980:gap-4 tw:narrow-980:overflow-y-auto tw:narrow-980:px-3 tw:narrow-980:pt-3">
           <div
             className="tw:flex tw:shrink-0 tw:narrow-980:justify-center"

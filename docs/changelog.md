@@ -23,6 +23,8 @@ of the repository.
 - On the "Watch a Specific Replay" page, press Ctrl + Enter in the JSON box to
   watch the replay.
 - Trash cards in a hand are now faded in speedruns too, as in other games.
+- In the new game screen, drop a dragged card anywhere to the left of the hands
+  to play it, or anywhere to the right of them to discard it.
 
 ## November 11th, 2026
 
