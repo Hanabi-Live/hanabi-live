@@ -80,7 +80,7 @@ async fn drains_notify_all_tables_before_waiting_for_acknowledgements() -> Resul
                         let expected = if restart {
                             "The server is restarting and will be back shortly.<br />Reason: Upgrading &lt;db&gt;"
                         } else {
-                            "The server is going down for maintenance. Your accepted game progress has been saved.<br />Reason: Upgrading &lt;db&gt;"
+                            "The server is going down for maintenance. Your game progress has been saved.<br />Reason: Upgrading &lt;db&gt;"
                         };
                         assert_eq!(message.as_deref(), successful.then_some(expected));
                         seen.fetch_add(1, Ordering::Relaxed);

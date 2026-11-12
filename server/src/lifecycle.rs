@@ -179,7 +179,7 @@ impl StopReason {
             format!("The server is restarting and will be back shortly.<br />Reason: {reason}")
         } else {
             format!(
-                "The server is going down for maintenance. Your accepted game progress has been saved.<br />Reason: {reason}"
+                "The server is going down for maintenance. Your game progress has been saved.<br />Reason: {reason}"
             )
         })
     }
