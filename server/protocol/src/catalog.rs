@@ -98,7 +98,7 @@ catalog_entry! {
         #[serde(skip_serializing_if = "Option::is_none")]
         #[schemars(length(min = 1))]
         pub display_name: Option<String>,
-        /// The background color of cards of the suit. A suit with `fill_colors` has none.
+        /// The background color of cards of the suit. A suit with `fillColors` has none.
         #[serde(skip_serializing_if = "Option::is_none")]
         #[schemars(length(min = 1))]
         pub fill: Option<String>,

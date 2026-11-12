@@ -87,7 +87,7 @@ export const catalogSuitSchema = z
      */
     displayName: z.string().min(1).optional(),
     /**
-     * The background color of cards of the suit. A suit with `fill_colors` has none.
+     * The background color of cards of the suit. A suit with `fillColors` has none.
      */
     fill: z.string().min(1).optional(),
     /**
